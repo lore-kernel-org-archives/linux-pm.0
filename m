@@ -1,172 +1,115 @@
-From: Jiada Wang <jiada_wang@mentor.com>
-Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
- device initialization
-Date: Thu, 18 Apr 2019 20:36:54 +0900
-Message-ID: <804954a6-9f5b-28ca-ead1-891be93735ee@mentor.com>
-References: <20190411100352.15977-1-jiada_wang@mentor.com>
- <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
- <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
- <5e685e1d-dca7-7292-1342-dbe609c517d2@linaro.org>
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Subject: Avoiding merge conflicts while adding new docs - Was: Re: [PATCH
+ 00/57] Convert files to ReST
+Date: Thu, 18 Apr 2019 09:42:23 -0300
+Message-ID: <20190418091526.00e074d1@coco.lan>
+References: <cover.1555382110.git.mchehab+samsung@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5e685e1d-dca7-7292-1342-dbe609c517d2@linaro.org>
-Content-Language: en-US
+In-Reply-To: <cover.1555382110.git.mchehab+samsung@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, erosca@de.adit-jv.com, "Frkuska, Joshua" <Joshua_Frkuska@mentor.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-watchdog@vger.kernel.org, xdp-newbies@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-acpi@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, bpf@vger.kernel.org, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-scsi@vger.kernel.org, linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org, dm-devel@redhat.com, target-devel@vger.kernel.org, netdev@vger.kernel.org, kexec@lists.infradead.org, linux-fpga@vger.kernel.org, linux-rdma@vger.ke
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel
+Jon,
 
-Thanks for your comments
+Em Mon, 15 Apr 2019 23:55:25 -0300
+Mauro Carvalho Chehab <mchehab+samsung@kernel.org> escreveu:
 
-On 2019/04/17 17:05, Daniel Lezcano wrote:
-> On 17/04/2019 05:01, Jiada Wang wrote:
->> Hi Daniel
->>
->> On 2019/04/17 4:22, Daniel Lezcano wrote:
->>> On 11/04/2019 12:03, Jiada Wang wrote:
->>>> Currently IRQ is remain enabled after .remove, later if device is
->>>> probed,
->>>> IRQ is requested before .thermal_init, this may cause IRQ function be
->>>> triggered but not able to clear IRQ status, thus cause system to hang.
->>>>
->>>> this patch by moving request of IRQ after device initialization to
->>>> avoid this issue.
->>>
->>> Why not disable the interrupt and clear the irq status in the .remove
->>> callback, so the place is clean when probing again?
->>>
->>>
->>>           struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
->>>
->>>           rcar_thermal_irq_set(priv, false);
->>>
->>> should do the trick no ?
->>>
->> yes, this issue also can be addressed by disable the interrupt in .remove.
->>
->> But there is race condition between .remove and irq thread function,
->> (which enables IRQ)
->> so driver need to ensure threaded irq has been disabled before call
->> rcar_thermal_irq_set(priv, false) in .remove.
->> this adds additional complexity.
->>
->> I am fine with both solutions,
->> what is your opinion?
-> 
-> My opinion is it is the tree hiding the forest.
-> 
-> After a quick look at the irq setup and handling, it appears the
-> implementation is cumbersome. This part should be fixed before the rest:
-> 
->   - check IRQF_ONESHOT flag
->   - remove the lock in the interrupt handlers
->   - remove rcar_gen3_thermal_irq() which is pointless
->   - check the IRQF_SHARED flag is correct (I doubt)
-> 
+> I have a separate patch series with do the actual rename and
+> adjustment of references. I opted to submit this first, as it
+> sounds easier to merge this way, as each subsystem maintainer
+> can apply the conversion directly on their trees (or at docs
+> tree), avoiding merge conflects.
 
-yes, I think rather than IRQF_SHARED, IRQF_ONESHOT flag need to be used.
-these suggestions make sense, I will add these changes in v2 patch-set
+Based on the number of feedbacks we have about this, I'm
+considering to submit a second version of my conversion patch
+series that would be doing the rename together with each patch,
+adding the rst files to an index file.
 
-> As the function devm_request_threaded_irq() is called 3 times, you
-> should add the priv->tscs[i]->zone in the private data and the irq
-> thread handler should look like:
-> 
-> static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
-> {
-> 	struct thermal_zone_device *tz = data;
-> 
-> 	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
-> 
-> 	[ ... ]
-> 
->          return IRQ_HANDLED;
-> }
-> 
-hmmm, IRQ is requested 2 times to monitor low and high temperature of 
-all tzs.
+However, doing that would produce lots of warnings. We have
+already lots of those at linux-next:
 
-Thanks,
-Jiada
+	checking consistency... 
 
-> When the implementation is fixed, then we can take care of the .remove
-> 
->>>> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
->>>> ---
->>>>    drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
->>>>    1 file changed, 26 insertions(+), 22 deletions(-)
->>>>
->>>> diff --git a/drivers/thermal/rcar_gen3_thermal.c
->>>> b/drivers/thermal/rcar_gen3_thermal.c
->>>> index 88fa41cf16e8..4d095d7f9763 100644
->>>> --- a/drivers/thermal/rcar_gen3_thermal.c
->>>> +++ b/drivers/thermal/rcar_gen3_thermal.c
->>>> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct
->>>> platform_device *pdev)
->>>>          platform_set_drvdata(pdev, priv);
->>>>    -    /*
->>>> -     * Request 2 (of the 3 possible) IRQs, the driver only needs to
->>>> -     * to trigger on the low and high trip points of the current
->>>> -     * temp window at this point.
->>>> -     */
->>>> -    for (i = 0; i < 2; i++) {
->>>> -        irq = platform_get_irq(pdev, i);
->>>> -        if (irq < 0)
->>>> -            return irq;
->>>> -
->>>> -        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
->>>> -                     dev_name(dev), i);
->>>> -        if (!irqname)
->>>> -            return -ENOMEM;
->>>> -
->>>> -        ret = devm_request_threaded_irq(dev, irq,
->>>> rcar_gen3_thermal_irq,
->>>> -                        rcar_gen3_thermal_irq_thread,
->>>> -                        IRQF_SHARED, irqname, priv);
->>>> -        if (ret)
->>>> -            return ret;
->>>> -    }
->>>> -
->>>>        pm_runtime_enable(dev);
->>>>        pm_runtime_get_sync(dev);
->>>>    @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct
->>>> platform_device *pdev)
->>>>            goto error_unregister;
->>>>        }
->>>>    +    /*
->>>> +     * Request 2 (of the 3 possible) IRQs, the driver only needs to
->>>> +     * to trigger on the low and high trip points of the current
->>>> +     * temp window at this point.
->>>> +     */
->>>> +    for (i = 0; i < 2; i++) {
->>>> +        irq = platform_get_irq(pdev, i);
->>>> +        if (irq < 0) {
->>>> +            ret = irq;
->>>> +            goto error_unregister;
->>>> +        }
->>>> +
->>>> +        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
->>>> +                     dev_name(dev), i);
->>>> +        if (!irqname) {
->>>> +            ret = -ENOMEM;
->>>> +            goto error_unregister;
->>>> +        }
->>>> +
->>>> +        ret = devm_request_threaded_irq(dev, irq,
->>>> rcar_gen3_thermal_irq,
->>>> +                        rcar_gen3_thermal_irq_thread,
->>>> +                        IRQF_SHARED, irqname, priv);
->>>> +        if (ret)
->>>> +            goto error_unregister;
->>>> +    }
->>>> +
->>>>        rcar_thermal_irq_set(priv, true);
->>>>          return 0;
->>>>
->>>
->>>
-> 
-> 
+	docs/Documentation/accelerators/ocxl.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/admin-guide/mm/numaperf.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/allocators.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/attributes.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/bigalloc.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/bitmaps.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/blockgroup.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/blocks.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/checksums.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/directory.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/eainode.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/group_descr.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/ifork.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/inlinedata.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/inodes.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/journal.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/mmp.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/special_inodes.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/super.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/fmc/index.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/gpu/msm-crash-dump.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/interconnect/interconnect.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/laptops/lg-laptop.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/virtual/kvm/amd-memory-encryption.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/virtual/kvm/vcpu-requests.rst: WARNING: document isn't included in any toctree
+
+After thinking a little bit and doing some tests, I think a good solution
+would be to add ":orphan:" markup to the new .rst files that were not
+added yet into the main body (e. g. something like the enclosed example).
+
+That will make Sphinx suppress the:
+	"WARNING: document isn't included in any toctree"
+warning for the new files, while they're not included at the main indexes.
+
+This way, maintainers can do all the hard work of doing/applying the ReST
+file conversion/addition patch series on their own trees, and, once
+everything gets merged, submit a patch against the latest docs-next
+tree, removing the :orphan: tag and add them to the common index.rst
+files.
+
+That should largely avoid merging conflicts.
+
+For example, assuming that someone converts the stuff at
+Documentation/accounting and rename the text files there to
+RST (I'm actually doing that), he could add the enclosed change on
+the top of its index file:
+
+	diff --git a/Documentation/accounting/index.rst b/Documentation/accounting/index.rst
+	index e7dda5afa73f..e1f6284b5ff3 100644
+	--- a/Documentation/accounting/index.rst
+	+++ b/Documentation/accounting/index.rst
+	@@ -1,3 +1,5 @@
+	+:orphan:
+	+
+	 ==========
+	 Accounting
+	 ==========
+
+With would make Sphinx to ignore the subdir index file while
+reporting errors. It will still build the documentation, allowing
+the developer to test the changes.
+
+One of the advantages is that checking the orphaned docs is as
+easy as running:
+
+	$ git grep -l ":orphan:" Documentation/
+	...
+	Documentation/accounting/index.rst
+	...
+
+Making easy for people to check the orphaned files and send a fixup
+patch if something got orphaned after the merge window and send a
+fixes patches to be applied upstream.
+
+What do you think?
+
+Regards,
+Mauro
