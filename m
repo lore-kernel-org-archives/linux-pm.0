@@ -4,35 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70922C10F14
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6019C10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3F91C2183F
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AD9342183F
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389468AbfDROrf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 10:47:35 -0400
-Received: from shell.v3.sk ([90.176.6.54]:48031 "EHLO shell.v3.sk"
+        id S2389430AbfDROra (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 10:47:30 -0400
+Received: from shell.v3.sk ([90.176.6.54]:48007 "EHLO shell.v3.sk"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389393AbfDROrd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Apr 2019 10:47:33 -0400
+        id S2389393AbfDROr3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Apr 2019 10:47:29 -0400
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 8E8701027A1;
-        Thu, 18 Apr 2019 16:47:30 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 72D941027B5;
+        Thu, 18 Apr 2019 16:47:25 +0200 (CEST)
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
-        with ESMTP id 7vuRz-WqFDb8; Thu, 18 Apr 2019 16:47:15 +0200 (CEST)
+        with ESMTP id JockKqroE9-s; Thu, 18 Apr 2019 16:47:10 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 093911027D0;
-        Thu, 18 Apr 2019 16:47:07 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 6FCB31027C6;
+        Thu, 18 Apr 2019 16:47:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at zimbra.v3.sk
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id BshPsofo5IH0; Thu, 18 Apr 2019 16:47:02 +0200 (CEST)
+        with ESMTP id 1F6MxRxta5Ol; Thu, 18 Apr 2019 16:47:00 +0200 (CEST)
 Received: from belphegor.brq.redhat.com (nat-pool-brq-t.redhat.com [213.175.37.10])
-        by zimbra.v3.sk (Postfix) with ESMTPSA id 91C4B1027AF;
+        by zimbra.v3.sk (Postfix) with ESMTPSA id 131441027A8;
         Thu, 18 Apr 2019 16:47:00 +0200 (CEST)
 From:   Lubomir Rintel <lkundrak@v3.sk>
 To:     Sebastian Reichel <sre@kernel.org>
@@ -41,11 +42,11 @@ Cc:     Darren Hart <dvhart@infradead.org>,
         Mark Rutland <mark.rutland@arm.com>, x86@kernel.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH v7 06/10] power: supply: olpc_battery: Move priv data to a struct
-Date:   Thu, 18 Apr 2019 16:46:51 +0200
-Message-Id: <20190418144655.18758-7-lkundrak@v3.sk>
+        Pavel Machek <pavel@ucw.cz>,
+        Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH v7 04/10] x86/platform/olpc: Use a correct version when making up a battery node
+Date:   Thu, 18 Apr 2019 16:46:49 +0200
+Message-Id: <20190418144655.18758-5-lkundrak@v3.sk>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190418144655.18758-1-lkundrak@v3.sk>
 References: <20190418144655.18758-1-lkundrak@v3.sk>
@@ -56,217 +57,137 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190418144651.QCSeKBADNpfhu-HacK4EEJyfWS4uIHc8_xkZqzt1NrY@z>
+Message-ID: <20190418144649.5NPvbxcFM8rDuQ-r7k66YnM-Y-z-KnW-IfLmbZ2ggEs@z>
 
-The global variables for private data are not too nice. I'd like some
-more, and that would clutter the global name space even further.
+The XO-1 and XO-1.5 batteries apparently differ in an ability to report
+ambient temperature. We need to use a different compatible string for the
+XO-1.5 battery.
+
+Previously olpc_dt_fixup() used the presence of the battery node's
+compatible property to decide whether the DT is up to date. Now we need
+to look for a particular value in the compatible string, to decide
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
 Changes since v6:
-- Collect review tag from Sebastian Reichel
+- s/od/of/ in the commit message
+- Coalesce variables of the same type
+- Fix block comment style
+- Ack from Thomas Gleixner
+- Fix the subject prefix to "x86/platform/olpc:"
 
-Changes since v4:
-- Bring some more code that was misplaced here.
-
-Changes since v2:
-- Bring the allocaton of the priv data structure here
+Changes since v5:
+- Split the "x86, olpc: Don't split string literals when fixing up the DT=
+"
+  and "x86, olpc: trivial code move in DT fixup" parts off from this
+- Clarify some comments
 
 Changes since v1:
-- Split out the move to devm_* into a separate patch
+- Avoid splitting string literals
 
- drivers/power/supply/olpc_battery.c | 78 ++++++++++++++++++-----------
- 1 file changed, 48 insertions(+), 30 deletions(-)
+ arch/x86/platform/olpc/olpc_dt.c | 64 +++++++++++++++++++++++++-------
+ 1 file changed, 50 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
-lpc_battery.c
-index 3dcf5e19f329..f7bb9bedd893 100644
---- a/drivers/power/supply/olpc_battery.c
-+++ b/drivers/power/supply/olpc_battery.c
-@@ -53,6 +53,12 @@
-=20
- #define BAT_ADDR_MFR_TYPE	0x5F
-=20
-+struct olpc_battery_data {
-+	struct power_supply *olpc_ac;
-+	struct power_supply *olpc_bat;
-+	char bat_serial[17];
-+};
-+
- /*********************************************************************
-  *		Power
-  *********************************************************************/
-@@ -91,11 +97,8 @@ static const struct power_supply_desc olpc_ac_desc =3D=
- {
- 	.get_property =3D olpc_ac_get_prop,
- };
-=20
--static struct power_supply *olpc_ac;
--
--static char bat_serial[17]; /* Ick */
--
--static int olpc_bat_get_status(union power_supply_propval *val, uint8_t =
-ec_byte)
-+static int olpc_bat_get_status(struct olpc_battery_data *data,
-+		union power_supply_propval *val, uint8_t ec_byte)
- {
- 	if (olpc_platform_info.ecver > 0x44) {
- 		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
-@@ -326,6 +329,7 @@ static int olpc_bat_get_property(struct power_supply =
-*psy,
- 				 enum power_supply_property psp,
- 				 union power_supply_propval *val)
- {
-+	struct olpc_battery_data *data =3D power_supply_get_drvdata(psy);
- 	int ret =3D 0;
- 	__be16 ec_word;
- 	uint8_t ec_byte;
-@@ -347,7 +351,7 @@ static int olpc_bat_get_property(struct power_supply =
-*psy,
-=20
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
--		ret =3D olpc_bat_get_status(val, ec_byte);
-+		ret =3D olpc_bat_get_status(data, val, ec_byte);
- 		if (ret)
- 			return ret;
- 		break;
-@@ -450,8 +454,8 @@ static int olpc_bat_get_property(struct power_supply =
-*psy,
- 		if (ret)
- 			return ret;
-=20
--		sprintf(bat_serial, "%016llx", (long long)be64_to_cpu(ser_buf));
--		val->strval =3D bat_serial;
-+		sprintf(data->bat_serial, "%016llx", (long long)be64_to_cpu(ser_buf));
-+		val->strval =3D data->bat_serial;
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
- 		ret =3D olpc_bat_get_voltage_max_design(val);
-@@ -579,17 +583,17 @@ static struct power_supply_desc olpc_bat_desc =3D {
- 	.use_for_apm =3D 1,
- };
-=20
--static struct power_supply *olpc_bat;
--
- static int olpc_battery_suspend(struct platform_device *pdev,
- 				pm_message_t state)
- {
--	if (device_may_wakeup(&olpc_ac->dev))
-+	struct olpc_battery_data *data =3D platform_get_drvdata(pdev);
-+
-+	if (device_may_wakeup(&data->olpc_ac->dev))
- 		olpc_ec_wakeup_set(EC_SCI_SRC_ACPWR);
- 	else
- 		olpc_ec_wakeup_clear(EC_SCI_SRC_ACPWR);
-=20
--	if (device_may_wakeup(&olpc_bat->dev))
-+	if (device_may_wakeup(&data->olpc_bat->dev))
- 		olpc_ec_wakeup_set(EC_SCI_SRC_BATTERY | EC_SCI_SRC_BATSOC
- 				   | EC_SCI_SRC_BATERR);
- 	else
-@@ -601,8 +605,15 @@ static int olpc_battery_suspend(struct platform_devi=
-ce *pdev,
-=20
- static int olpc_battery_probe(struct platform_device *pdev)
- {
--	int ret;
-+	struct power_supply_config psy_cfg =3D {};
-+	struct olpc_battery_data *data;
- 	uint8_t status;
-+	int ret;
-+
-+	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+	platform_set_drvdata(pdev, data);
-=20
- 	/*
- 	 * We've seen a number of EC protocol changes; this driver requires
-@@ -620,9 +631,13 @@ static int olpc_battery_probe(struct platform_device=
- *pdev)
-=20
- 	/* Ignore the status. It doesn't actually matter */
-=20
--	olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, NULL);
--	if (IS_ERR(olpc_ac))
--		return PTR_ERR(olpc_ac);
-+	psy_cfg.of_node =3D pdev->dev.of_node;
-+	psy_cfg.drv_data =3D data;
-+
-+	data->olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, &psy=
-_cfg);
-+	if (IS_ERR(data->olpc_ac))
-+		return PTR_ERR(data->olpc_ac);
-+
- 	if (of_device_is_compatible(pdev->dev.of_node, "olpc,xo1.5-battery")) {
- 		/* XO-1.5 */
- 		olpc_bat_desc.properties =3D olpc_xo15_bat_props;
-@@ -633,42 +648,45 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
- 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
- 	}
-=20
--	olpc_bat =3D power_supply_register(&pdev->dev, &olpc_bat_desc, NULL);
--	if (IS_ERR(olpc_bat)) {
--		ret =3D PTR_ERR(olpc_bat);
-+	data->olpc_bat =3D power_supply_register(&pdev->dev, &olpc_bat_desc, &p=
-sy_cfg);
-+	if (IS_ERR(data->olpc_bat)) {
-+		ret =3D PTR_ERR(data->olpc_bat);
- 		goto battery_failed;
- 	}
-=20
--	ret =3D device_create_bin_file(&olpc_bat->dev, &olpc_bat_eeprom);
-+	ret =3D device_create_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
- 	if (ret)
- 		goto eeprom_failed;
-=20
--	ret =3D device_create_file(&olpc_bat->dev, &olpc_bat_error);
-+	ret =3D device_create_file(&data->olpc_bat->dev, &olpc_bat_error);
- 	if (ret)
- 		goto error_failed;
-=20
- 	if (olpc_ec_wakeup_available()) {
--		device_set_wakeup_capable(&olpc_ac->dev, true);
--		device_set_wakeup_capable(&olpc_bat->dev, true);
-+		device_set_wakeup_capable(&data->olpc_ac->dev, true);
-+		device_set_wakeup_capable(&data->olpc_bat->dev, true);
- 	}
-=20
- 	return 0;
-=20
- error_failed:
--	device_remove_bin_file(&olpc_bat->dev, &olpc_bat_eeprom);
-+	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
- eeprom_failed:
--	power_supply_unregister(olpc_bat);
-+	power_supply_unregister(data->olpc_bat);
- battery_failed:
--	power_supply_unregister(olpc_ac);
-+	power_supply_unregister(data->olpc_ac);
- 	return ret;
+diff --git a/arch/x86/platform/olpc/olpc_dt.c b/arch/x86/platform/olpc/ol=
+pc_dt.c
+index 820236b511b3..0296c5b55e6f 100644
+--- a/arch/x86/platform/olpc/olpc_dt.c
++++ b/arch/x86/platform/olpc/olpc_dt.c
+@@ -220,10 +220,26 @@ static u32 __init olpc_dt_get_board_revision(void)
+ 	return be32_to_cpu(rev);
  }
 =20
- static int olpc_battery_remove(struct platform_device *pdev)
++int olpc_dt_compatible_match(phandle node, const char *compat)
++{
++	char buf[64], *p;
++	int plen, len;
++
++	plen =3D olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
++	if (plen <=3D 0)
++		return 0;
++
++	len =3D strlen(compat);
++	for (p =3D buf; p < buf + plen; p +=3D strlen(p) + 1) {
++		if (strcmp(p, compat) =3D=3D 0)
++			return 1;
++	}
++
++	return 0;
++}
++
+ void __init olpc_dt_fixup(void)
  {
--	device_remove_file(&olpc_bat->dev, &olpc_bat_error);
--	device_remove_bin_file(&olpc_bat->dev, &olpc_bat_eeprom);
--	power_supply_unregister(olpc_bat);
--	power_supply_unregister(olpc_ac);
-+	struct olpc_battery_data *data =3D platform_get_drvdata(pdev);
-+
-+	device_remove_file(&data->olpc_bat->dev, &olpc_bat_error);
-+	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
-+	power_supply_unregister(data->olpc_bat);
-+	power_supply_unregister(data->olpc_ac);
-+
- 	return 0;
- }
+-	int r;
+-	char buf[64];
+ 	phandle node;
+ 	u32 board_rev;
 =20
+@@ -231,22 +247,31 @@ void __init olpc_dt_fixup(void)
+ 	if (!node)
+ 		return;
+=20
+-	/*
+-	 * If the battery node has a compatible property, we are running a new
+-	 * enough firmware and don't have fixups to make.
+-	 */
+-	r =3D olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
+-	if (r > 0)
+-		return;
+-
+-	pr_info("PROM DT: Old firmware detected, applying fixes\n");
+-
+ 	board_rev =3D olpc_dt_get_board_revision();
+ 	if (!board_rev)
+ 		return;
+=20
+ 	if (board_rev >=3D olpc_board_pre(0xd0)) {
+-		/* XO-1.5: add dcon device */
++		/* XO-1.5 */
++
++		if (olpc_dt_compatible_match(node, "olpc,xo1.5-battery"))
++			return;
++
++		/* Add olpc,xo1.5-battery compatible marker to battery node */
++		olpc_dt_interpret("\" /battery@0\" find-device");
++		olpc_dt_interpret("  \" olpc,xo1.5-battery\" +compatible");
++		olpc_dt_interpret("device-end");
++
++		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
++			/*
++			 * If we have a olpc,xo1-battery compatible, then we're
++			 * running a new enough firmware that already has
++			 * the dcon node.
++			 */
++			return;
++		}
++
++		/* Add dcon device */
+ 		olpc_dt_interpret("\" /pci/display@1\" find-device");
+ 		olpc_dt_interpret("  new-device");
+ 		olpc_dt_interpret("    \" dcon\" device-name");
+@@ -254,7 +279,18 @@ void __init olpc_dt_fixup(void)
+ 		olpc_dt_interpret("  finish-device");
+ 		olpc_dt_interpret("device-end");
+ 	} else {
+-		/* XO-1: add dcon device, mark RTC as olpc,xo1-rtc */
++		/* XO-1 */
++
++		if (olpc_dt_compatible_match(node, "olpc,xo1-battery")) {
++			/*
++			 * If we have a olpc,xo1-battery compatible, then we're
++			 * running a new enough firmware that already has
++			 * the dcon and RTC nodes.
++			 */
++			return;
++		}
++
++		/* Add dcon device, mark RTC as olpc,xo1-rtc */
+ 		olpc_dt_interpret("\" /pci/display@1,1\" find-device");
+ 		olpc_dt_interpret("  new-device");
+ 		olpc_dt_interpret("    \" dcon\" device-name");
 --=20
 2.21.0
 
