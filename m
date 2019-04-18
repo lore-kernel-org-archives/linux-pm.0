@@ -1,106 +1,27 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] x86: tsc: Rework time_cpufreq_notifier()
-Date: Thu, 18 Apr 2019 16:11:37 +0200
-Message-ID: <38900622.ao2n2t5aPS@kreacher>
+From: Lubomir Rintel <lkundrak@v3.sk>
+Subject: [PATCH v7 00/10] Add support for XO 1.75 to OLPC battery driver
+Date: Thu, 18 Apr 2019 16:46:45 +0200
+Message-ID: <20190418144655.18758-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: x86 Maintainers <x86@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hello,
 
-There are problems with running time_cpufreq_notifier() on SMP
-systems.
+This patch set modifies the OLPC battery driver so that it could eventual=
+ly
+be used on an Arm-based OLPC XO 1.75 machine.
 
-First off, the rdtsc() called from there runs on the CPU executing
-that code and not necessarily on the CPU whose sched_clock() rate is
-updated which is questionable at best.
+Compared to the previous version, it addresses review comments for the
+x86 platform parts from Thomas Gleixner. Details in individual patches'
+change logs.
 
-Second, in the cases when the frequencies of all CPUs in an SMP
-system are always in sync, it is not sufficient to update just
-one of them or the set associated with a given cpufreq policy on
-frequency changes - all CPUs in the system should be updated and
-that would require more than a simple transition notifier.
+I've failed to version the previous iteration of the set that should've
+been "v6" for the change logs to make sense. Sorry for that.
 
-Note, however, that the underlying issue (the TSC rate depending on
-the CPU frequency) has not been present in hardware shipping for the
-last few years and in quite a few relevant cases (acpi-cpufreq in
-particular) running time_cpufreq_notifier() will cause the TSC to
-be marked as unstable anyway.
-
-For this reason, make time_cpufreq_notifier() simply mark the TSC
-as unstable and give up when run on SMP and only try to carry out
-any adjustments otherwise.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- arch/x86/kernel/tsc.c |   29 ++++++++++++++---------------
- 1 file changed, 14 insertions(+), 15 deletions(-)
-
-Index: linux-pm/arch/x86/kernel/tsc.c
-===================================================================
---- linux-pm.orig/arch/x86/kernel/tsc.c
-+++ linux-pm/arch/x86/kernel/tsc.c
-@@ -185,8 +185,7 @@ static void __init cyc2ns_init_boot_cpu(
- /*
-  * Secondary CPUs do not run through tsc_init(), so set up
-  * all the scale factors for all CPUs, assuming the same
-- * speed as the bootup CPU. (cpufreq notifiers will fix this
-- * up if their speed diverges)
-+ * speed as the bootup CPU.
-  */
- static void __init cyc2ns_init_secondary_cpus(void)
- {
-@@ -937,12 +936,12 @@ void tsc_restore_sched_clock_state(void)
- }
- 
- #ifdef CONFIG_CPU_FREQ
--/* Frequency scaling support. Adjust the TSC based timer when the cpu frequency
-+/*
-+ * Frequency scaling support. Adjust the TSC based timer when the CPU frequency
-  * changes.
-  *
-- * RED-PEN: On SMP we assume all CPUs run with the same frequency.  It's
-- * not that important because current Opteron setups do not support
-- * scaling on SMP anyroads.
-+ * NOTE: On SMP the situation is not fixable in general, so simply mark the TSC
-+ * as unstable and give up in those cases.
-  *
-  * Should fix up last_tsc too. Currently gettimeofday in the
-  * first tick after the change will be slightly wrong.
-@@ -956,22 +955,22 @@ static int time_cpufreq_notifier(struct
- 				void *data)
- {
- 	struct cpufreq_freqs *freq = data;
--	unsigned long *lpj;
- 
--	lpj = &boot_cpu_data.loops_per_jiffy;
--#ifdef CONFIG_SMP
--	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
--		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
--#endif
-+	if (num_online_cpus() > 1) {
-+		mark_tsc_unstable("cpufreq changes on SMP");
-+		return 0;
-+	}
- 
- 	if (!ref_freq) {
- 		ref_freq = freq->old;
--		loops_per_jiffy_ref = *lpj;
-+		loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
- 		tsc_khz_ref = tsc_khz;
- 	}
-+
- 	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
--			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
--		*lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
-+	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-+		boot_cpu_data.loops_per_jiffy =
-+			cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
- 
- 		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
- 		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+Thank you,
+Lubo
