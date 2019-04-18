@@ -1,96 +1,52 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: Re: [PATCH v4 09/12] thermal: qoriq: Enable all sensors before
- registering them
-Date: Thu, 18 Apr 2019 13:02:24 -0700
-Message-ID: <CAHQ1cqFW0XVe4e695pgs6mDvOvJ28VXwkzAwsFtZbc3E+PUVzQ@mail.gmail.com>
-References: <20190413082748.29990-1-andrew.smirnov@gmail.com>
- <20190413082748.29990-10-andrew.smirnov@gmail.com> <8233019b-988b-05d5-6b7c-55652da8b3cd@linaro.org>
+Subject: Re: [PATCH] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
+Date: Thu, 18 Apr 2019 13:03:05 -0700
+Message-ID: <CAHQ1cqGNKr0M4KZmX3gG+Wk4N39VezGO15VxEC6rzbLdzHQ-7w@mail.gmail.com>
+References: <20190405073020.10361-1-andrew.smirnov@gmail.com> <20190417223708.4irrwrm4q7vig3vh@earth.universe>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8233019b-988b-05d5-6b7c-55652da8b3cd@linaro.org>
+In-Reply-To: <20190417223708.4irrwrm4q7vig3vh@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, dl-linux-imx <linux-imx@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Chris Healy <cphealy@gmail.com>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 16, 2019 at 10:09 AM Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
+On Wed, Apr 17, 2019 at 7:35 PM Sebastian Reichel <sre@kernel.org> wrote:
 >
-> On 13/04/2019 10:27, Andrey Smirnov wrote:
-> > Tmu_get_temp will get called as a part of sensor registration via
-> > devm_thermal_zone_of_sensor_register(). To prevent it from retruning
-> > bogus data we need to enable sensor monitoring before that. Looking at
-> > the datasheet (i.MX8MQ RM) there doesn't seem to be any harm in
-> > enabling them all, so, for the sake of simplicity, change the code to
-> > do just that.
+> Hi,
+>
+> On Fri, Apr 05, 2019 at 12:30:20AM -0700, Andrey Smirnov wrote:
+> > Fix a similar endless event loop as was done in commit 8dcf32175b4e
+> > ("i2c: prevent endless uevent loop with CONFIG_I2C_DEBUG_CORE"):
+> >
+> >   The culprit is the dev_dbg printk in the i2c uevent handler. If
+> >   this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
+> >   in an endless loop with systemd-journald.
+> >
+> >   This happens if user-space scans the system log and reads the uevent
+> >   file to get information about a newly created device, which seems
+> >   fair use to me. Unfortunately reading the "uevent" file uses the
+> >   same function that runs for creating the uevent for a new device,
+> >   generating the next syslog entry
+> >
+> > Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
+> > in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
+> > seems to have been fixed. Change debug prints to use pr_debug insted
+> > to resolve the issue.
 > >
 > > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 > > Cc: Chris Healy <cphealy@gmail.com>
-> > Cc: Lucas Stach <l.stach@pengutronix.de>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: Angus Ainslie (Purism) <angus@akkea.ca>
-> > Cc: linux-imx@nxp.com
+> > Cc: Sebastian Reichel <sre@kernel.org>
 > > Cc: linux-pm@vger.kernel.org
 > > Cc: linux-kernel@vger.kernel.org
 > > ---
-> >  drivers/thermal/qoriq_thermal.c | 27 ++++++++++++++-------------
-> >  1 file changed, 14 insertions(+), 13 deletions(-)
-> >
-> > diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> > index 9774323a17bf..abbbfe88422e 100644
-> > --- a/drivers/thermal/qoriq_thermal.c
-> > +++ b/drivers/thermal/qoriq_thermal.c
-> > @@ -23,6 +23,7 @@
-> >  #define TMR_DISABLE  0x0
-> >  #define TMR_ME               0x80000000
-> >  #define TMR_ALPF     0x0c000000
-> > +#define TMR_MSITE_ALL        GENMASK(15, 0)
-> >
-> >  #define REGS_TMTMIR  0x008   /* Temperature measurement interval Register */
-> >  #define TMTMIR_DEFAULT       0x0000000f
-> > @@ -61,28 +62,28 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
-> >  static int qoriq_tmu_register_tmu_zone(struct device *dev,
-> >                                      struct qoriq_tmu_data *qdata)
-> >  {
-> > -     int id, sites = 0;
-> > +     int id, ret;
-> > +
-> > +     regmap_write(qdata->regmap, REGS_TMR,
-> > +                  TMR_MSITE_ALL | TMR_ME | TMR_ALPF);
-> >
-> >       for (id = 0; id < SITES_MAX; id++) {
-> >               struct thermal_zone_device *tzd;
-> >
-> >               tzd = devm_thermal_zone_of_sensor_register(dev, id,
-> >                                                          qdata, &tmu_tz_ops);
-> > -             if (IS_ERR(tzd)) {
-> > -                     if (PTR_ERR(tzd) == -ENODEV)
-> > -                             continue;
-> > -                     else
-> > -                             return PTR_ERR(tzd);
-> > +             ret = PTR_ERR_OR_ZERO(tzd);
-> > +             switch (ret) {
-> > +             case -ENODEV:
-> > +                     continue;
-> > +             case 0:
 >
-> Why not simply:
->
->         if (!IS_ERR(tzd) || PTR_ERR(tzd) == -ENODEV)
->                 continue;
->
->         regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
->
->         return PTR_ERR(tzd);
->
-> ?
+> I think we should just drop these debug messages, just like I2C did.
+> They don't offer any useful information considering the info is already
+> exposed to userspace via the uevent.
 
-Seemed like less typing and smaller diff for following patch that adds
-hwmon sensor registration. I can probable make "if" work kind of the
-same, so I'll change that. I do dislike that you had to use *_ERR
-macro three times though, so I'll stick with PTR_ERR_OR_ZERO.
+OK, sounds good, will do in v2.
 
 Thanks,
 Andrey Smirnov
