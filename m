@@ -4,36 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F463C10F14
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FF07C10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2603B218CD
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 78851218D3
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 14:48:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389476AbfDROrg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 10:47:36 -0400
-Received: from shell.v3.sk ([90.176.6.54]:48039 "EHLO shell.v3.sk"
+        id S2389464AbfDROsC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 10:48:02 -0400
+Received: from shell.v3.sk ([90.176.6.54]:48047 "EHLO shell.v3.sk"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389453AbfDROrf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Apr 2019 10:47:35 -0400
+        id S2389459AbfDROrg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Apr 2019 10:47:36 -0400
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 8C6CD1027A2;
-        Thu, 18 Apr 2019 16:47:31 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 9D7E71027A7;
+        Thu, 18 Apr 2019 16:47:32 +0200 (CEST)
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
-        with ESMTP id B12qmT_LxpQz; Thu, 18 Apr 2019 16:47:16 +0200 (CEST)
+        with ESMTP id p-bVtJnL7vvK; Thu, 18 Apr 2019 16:47:16 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 0AB5E1027D8;
-        Thu, 18 Apr 2019 16:47:08 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 9D5061027D1;
+        Thu, 18 Apr 2019 16:47:07 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at zimbra.v3.sk
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id ndUDaIHXSjj5; Thu, 18 Apr 2019 16:47:04 +0200 (CEST)
+        with ESMTP id JrfbnnLYy1-M; Thu, 18 Apr 2019 16:47:03 +0200 (CEST)
 Received: from belphegor.brq.redhat.com (nat-pool-brq-t.redhat.com [213.175.37.10])
-        by zimbra.v3.sk (Postfix) with ESMTPSA id 15AA01027B4;
-        Thu, 18 Apr 2019 16:47:01 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTPSA id CF5FC1027B2;
+        Thu, 18 Apr 2019 16:47:00 +0200 (CEST)
 From:   Lubomir Rintel <lkundrak@v3.sk>
 To:     Sebastian Reichel <sre@kernel.org>
 Cc:     Darren Hart <dvhart@infradead.org>,
@@ -41,11 +42,10 @@ Cc:     Darren Hart <dvhart@infradead.org>,
         Mark Rutland <mark.rutland@arm.com>, x86@kernel.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>,
-        Pavel Machek <pavel@ucw.cz>,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH v7 08/10] power: supply: olpc_battery: Avoid using platform_info
-Date:   Thu, 18 Apr 2019 16:46:53 +0200
-Message-Id: <20190418144655.18758-9-lkundrak@v3.sk>
+Subject: [PATCH v7 07/10] power: supply: olpc_battery: Use devm_power_supply_register()
+Date:   Thu, 18 Apr 2019 16:46:52 +0200
+Message-Id: <20190418144655.18758-8-lkundrak@v3.sk>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190418144655.18758-1-lkundrak@v3.sk>
 References: <20190418144655.18758-1-lkundrak@v3.sk>
@@ -56,92 +56,83 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190418144653._oxV7FO5bT_qDyLOArq-NhSXFZwWF1zxXbWT-6UT47Y@z>
+Message-ID: <20190418144652.JAPjfEbU15Pb1EeDGUZYw197-aAmzwBCMSdpQZhjPxQ@z>
 
-This wouldn't work on the DT-based ARM platform. Let's read the EC versio=
-n
-directly from the EC driver instead.
-
-This removes x86 specific bits that would prevent this driver from being
-used with the EC of ARM-based OLPC XO 1.75.
+This simplifies the error handling.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 ---
-Changes since v5:
-- Turn new_proto into a bool
-
-Changes since v2:
-- Move the priv data allocation hunk from this patch to a proper place
-
 Changes since v1:
-- Use uint8_t instead of unsigned char [1] for ecver
+- This was split off the "power: supply: olpc_battery: Move priv data to
+  a struct" patch.
 
- drivers/power/supply/olpc_battery.c | 24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
+ drivers/power/supply/olpc_battery.c | 19 +++++--------------
+ 1 file changed, 5 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
 lpc_battery.c
-index d83c77c2a0ec..8be44c717d85 100644
+index f7bb9bedd893..d83c77c2a0ec 100644
 --- a/drivers/power/supply/olpc_battery.c
 +++ b/drivers/power/supply/olpc_battery.c
-@@ -57,6 +57,7 @@ struct olpc_battery_data {
- 	struct power_supply *olpc_ac;
- 	struct power_supply *olpc_bat;
- 	char bat_serial[17];
-+	bool new_proto;
- };
-=20
- /*********************************************************************
-@@ -100,7 +101,7 @@ static const struct power_supply_desc olpc_ac_desc =3D=
- {
- static int olpc_bat_get_status(struct olpc_battery_data *data,
- 		union power_supply_propval *val, uint8_t ec_byte)
- {
--	if (olpc_platform_info.ecver > 0x44) {
-+	if (data->new_proto) {
- 		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
- 			val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
- 		else if (ec_byte & BAT_STAT_DISCHARGING)
-@@ -608,6 +609,7 @@ static int olpc_battery_probe(struct platform_device =
+@@ -634,7 +634,7 @@ static int olpc_battery_probe(struct platform_device =
 *pdev)
- 	struct power_supply_config psy_cfg =3D {};
- 	struct olpc_battery_data *data;
- 	uint8_t status;
-+	uint8_t ecver;
- 	int ret;
+ 	psy_cfg.of_node =3D pdev->dev.of_node;
+ 	psy_cfg.drv_data =3D data;
 =20
- 	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-@@ -615,13 +617,21 @@ static int olpc_battery_probe(struct platform_devic=
+-	data->olpc_ac =3D power_supply_register(&pdev->dev, &olpc_ac_desc, &psy=
+_cfg);
++	data->olpc_ac =3D devm_power_supply_register(&pdev->dev, &olpc_ac_desc,=
+ &psy_cfg);
+ 	if (IS_ERR(data->olpc_ac))
+ 		return PTR_ERR(data->olpc_ac);
+=20
+@@ -648,15 +648,13 @@ static int olpc_battery_probe(struct platform_devic=
 e *pdev)
- 		return -ENOMEM;
- 	platform_set_drvdata(pdev, data);
-=20
--	/*
--	 * We've seen a number of EC protocol changes; this driver requires
--	 * the latest EC protocol, supported by 0x44 and above.
--	 */
--	if (olpc_platform_info.ecver < 0x44) {
-+	/* See if the EC is already there and get the EC revision */
-+	ret =3D olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, &ecver, 1);
-+	if (ret)
-+		return ret;
-+
-+	if (ecver > 0x44) {
-+		/* XO 1 or 1.5 with a new EC firmware. */
-+		data->new_proto =3D true;
-+	} else if (ecver < 0x44) {
-+		/*
-+		 * We've seen a number of EC protocol changes; this driver
-+		 * requires the latest EC protocol, supported by 0x44 and above.
-+		 */
- 		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for "
--			"battery driver.\n", olpc_platform_info.ecver);
-+			"battery driver.\n", ecver);
- 		return -ENXIO;
+ 		olpc_bat_desc.num_properties =3D ARRAY_SIZE(olpc_xo1_bat_props);
  	}
+=20
+-	data->olpc_bat =3D power_supply_register(&pdev->dev, &olpc_bat_desc, &p=
+sy_cfg);
+-	if (IS_ERR(data->olpc_bat)) {
+-		ret =3D PTR_ERR(data->olpc_bat);
+-		goto battery_failed;
+-	}
++	data->olpc_bat =3D devm_power_supply_register(&pdev->dev, &olpc_bat_des=
+c, &psy_cfg);
++	if (IS_ERR(data->olpc_bat))
++		return PTR_ERR(data->olpc_bat);
+=20
+ 	ret =3D device_create_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+ 	if (ret)
+-		goto eeprom_failed;
++		return ret;
+=20
+ 	ret =3D device_create_file(&data->olpc_bat->dev, &olpc_bat_error);
+ 	if (ret)
+@@ -671,10 +669,6 @@ static int olpc_battery_probe(struct platform_device=
+ *pdev)
+=20
+ error_failed:
+ 	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+-eeprom_failed:
+-	power_supply_unregister(data->olpc_bat);
+-battery_failed:
+-	power_supply_unregister(data->olpc_ac);
+ 	return ret;
+ }
+=20
+@@ -684,9 +678,6 @@ static int olpc_battery_remove(struct platform_device=
+ *pdev)
+=20
+ 	device_remove_file(&data->olpc_bat->dev, &olpc_bat_error);
+ 	device_remove_bin_file(&data->olpc_bat->dev, &olpc_bat_eeprom);
+-	power_supply_unregister(data->olpc_bat);
+-	power_supply_unregister(data->olpc_ac);
+-
+ 	return 0;
+ }
 =20
 --=20
 2.21.0
