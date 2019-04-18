@@ -2,74 +2,182 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC236C10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 18:40:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5191EC10F0E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 19:12:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BCAB4214DA
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 18:40:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 23D52214C6
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 19:12:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="TILromFm"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SxWxkJAU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389817AbfDRSkr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 14:40:47 -0400
-Received: from mail.skyhub.de ([5.9.137.197]:45830 "EHLO mail.skyhub.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389782AbfDRSkq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Apr 2019 14:40:46 -0400
-Received: from zn.tnic (p200300EC2F112E00D82BC62452BACB5E.dip0.t-ipconnect.de [IPv6:2003:ec:2f11:2e00:d82b:c624:52ba:cb5e])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 506A41EC0868;
-        Thu, 18 Apr 2019 20:40:45 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1555612845;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-        bh=AkTlIDunXG0KgN4W45awFJBHmltihecXWmcoRR2tLJ8=;
-        b=TILromFmYi7q+rLLGzE6Gag5bX49ZHDXiVO/54zQnmgO5SDunfkSbLpWqTXFpTocm/GxKM
-        CmSuGrydJzoxZ0SkP5xPnJP2kBfpbser3R0/5VgpQ9Or7YtWIyrEp1s9Xj2aM6h/qQPdHF
-        W4jdtoresJfhgceVZU1J1LcAzTccR2o=
-Date:   Thu, 18 Apr 2019 20:40:40 +0200
-From:   Borislav Petkov <bp@alien8.de>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        x86 Maintainers <x86@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: tsc: Rework time_cpufreq_notifier()
-Message-ID: <20190418184040.GM27160@zn.tnic>
-References: <38900622.ao2n2t5aPS@kreacher>
+        id S1732981AbfDRTMz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 15:12:55 -0400
+Received: from mail-ua1-f67.google.com ([209.85.222.67]:41057 "EHLO
+        mail-ua1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725747AbfDRTMz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 15:12:55 -0400
+Received: by mail-ua1-f67.google.com with SMTP id l22so1108128uao.8;
+        Thu, 18 Apr 2019 12:12:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
+         :user-agent;
+        bh=rpL0d8MjwshzMxV+gjiSBZ6YvAWKpJ7Ot+t/hjN16F4=;
+        b=SxWxkJAUzXF3+QtsVZ5VaCdmb38xyUf2Y92pZFu8WoQINdzAe6B0B5wugVHCwbe6If
+         kubQ/KXjo/z95zbzM6gPtfCOs9o5XuUYDnL5xtPYfvCYnDvGavYgtphGOgBqDQH8E+C0
+         17OmuKqezJgEVQmzaV3AUkxaccwIGHT02AAz2afeibTUnpI4y3LMP2IQzXZLiMtaPor4
+         gtmiiF8/MI6nHbZmJAmDlf/aZbTIurUci1WK2TgFwU1J9/87DqUEEu6mKlwL2SsJjQfR
+         93FxiaIOvjZu3u/5TqD+/ONrzt/sJq/WmP367G/su8hgJJgSz9AhtfiCcuMmiUgd7PzX
+         LiFQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+         :content-disposition:user-agent;
+        bh=rpL0d8MjwshzMxV+gjiSBZ6YvAWKpJ7Ot+t/hjN16F4=;
+        b=HPItyMtrqqC/z/mAx/3tOvW/TcIPbORXGlAzLx84KrKigpxKlzhM0pjw+2YNAuu2Qe
+         TErnQreZMeNcm/8lORErm7fzC44k2r5ZZx6C2JILKUcbYfs2EBDLZyh3Y8i2/j3a4BcX
+         pY99pfVszqTcO1j0deYbWPVjaJKC9CwuIwbZ+NU/B7Nzomv/TZ92R8mS60uGIQPxTATX
+         J715F8kLfYBpJl+zGQHI57ovZDj8+0L1Dqiz6z6Tmillg0pahzKLSqyubK82ew592wma
+         kIuZfLGZLf3EgTnsPHreqt8inBuJ8odN0/bzL8Qls8ps2UA+R0WLt2Ctavynl+W4kj+X
+         MiGg==
+X-Gm-Message-State: APjAAAX2xlMpO5egSPmU4U0hGwkyBYUmKwWtgsdt493+gnSQKHXYuDE+
+        jfKsEH4dXcDGAzpve4r9wwbb8qBB
+X-Google-Smtp-Source: APXvYqxfWK875QXBv+MhcG6VV2ijofQpwp1K6wT1G7sJkwGu8IeEh2S0eomMdIdF8/kxGPwAYaUR8g==
+X-Received: by 2002:ab0:2692:: with SMTP id t18mr24216339uao.106.1555614773906;
+        Thu, 18 Apr 2019 12:12:53 -0700 (PDT)
+Received: from vps.qemfd.net (vps.qemfd.net. [173.230.130.29])
+        by smtp.gmail.com with ESMTPSA id r3sm2252962vkr.18.2019.04.18.12.12.53
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Thu, 18 Apr 2019 12:12:53 -0700 (PDT)
+Received: from schwarzgerat.orthanc (unknown [10.88.0.2])
+        by vps.qemfd.net (Postfix) with ESMTP id F196A2B805;
+        Thu, 18 Apr 2019 15:12:52 -0400 (EDT)
+Received: by schwarzgerat.orthanc (Postfix, from userid 1000)
+        id D647C260119; Thu, 18 Apr 2019 15:12:52 -0400 (EDT)
+Date:   Thu, 18 Apr 2019 15:12:52 -0400
+From:   Nick Black <dankamongmen@gmail.com>
+To:     linux-pm@vger.kernel.org
+Cc:     Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Simon Horman <horms@verge.net.au>,
+        Rob Herring <robh@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] cpupower: correct spelling of interval
+Message-ID: <20190418191252.GA19135@schwarzgerat.orthanc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <38900622.ao2n2t5aPS@kreacher>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418184040.m4A38J79eqmKrIvdmDnBhB1fM8ThFgFH-BTHLPXV4_M@z>
+Message-ID: <20190418191252.rHhIbPzFBWfDpvJkmvRMNAdXia-GVtPfgK4umd7ObGw@z>
 
-On Thu, Apr 18, 2019 at 04:11:37PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> There are problems with running time_cpufreq_notifier() on SMP
-> systems.
+Fix up multiple instances of "intervall" to correct
+"interval" (all save one Italian instance).
 
-Just a stupid question: that must be some old rust you're fixing because
-we set X86_FEATURE_CONSTANT_TSC on almost anything that is x86 nowadays
-and if that is set, we don't reg that notifier call...
+Signed-off-by: Nick Black <dankamongmen@gmail.com>
+---
+ tools/power/cpupower/man/cpupower-monitor.1 | 2 +-
+ tools/power/cpupower/po/cs.po               | 2 +-
+ tools/power/cpupower/po/de.po               | 2 +-
+ tools/power/cpupower/po/fr.po               | 2 +-
+ tools/power/cpupower/po/it.po               | 2 +-
+ tools/power/cpupower/po/pt.po               | 2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/tools/power/cpupower/man/cpupower-monitor.1 b/tools/power/cpupower/man/cpupower-monitor.1
+index 914cbb9d9cd0..70a56476f4b0 100644
+--- a/tools/power/cpupower/man/cpupower-monitor.1
++++ b/tools/power/cpupower/man/cpupower-monitor.1
+@@ -61,7 +61,7 @@ Only display specific monitors. Use the monitor string(s) provided by \-l option
+ .PP
+ \-i seconds
+ .RS 4
+-Measure intervall.
++Measure interval.
+ .RE
+ .PP
+ \-c
+diff --git a/tools/power/cpupower/po/cs.po b/tools/power/cpupower/po/cs.po
+index cb22c45c5069..bfc7e1702ec9 100644
+--- a/tools/power/cpupower/po/cs.po
++++ b/tools/power/cpupower/po/cs.po
+@@ -98,7 +98,7 @@ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:74
+ #, c-format
+-msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
++msgid "\t -i: time interval to measure for in seconds (default 1)\n"
+ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:75
+diff --git a/tools/power/cpupower/po/de.po b/tools/power/cpupower/po/de.po
+index 840c17cc450a..70887bb8ba95 100644
+--- a/tools/power/cpupower/po/de.po
++++ b/tools/power/cpupower/po/de.po
+@@ -95,7 +95,7 @@ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:74
+ #, c-format
+-msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
++msgid "\t -i: time interval to measure for in seconds (default 1)\n"
+ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:75
+diff --git a/tools/power/cpupower/po/fr.po b/tools/power/cpupower/po/fr.po
+index b46ca2548f86..b6e505b34e4a 100644
+--- a/tools/power/cpupower/po/fr.po
++++ b/tools/power/cpupower/po/fr.po
+@@ -95,7 +95,7 @@ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:74
+ #, c-format
+-msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
++msgid "\t -i: time interval to measure for in seconds (default 1)\n"
+ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:75
+diff --git a/tools/power/cpupower/po/it.po b/tools/power/cpupower/po/it.po
+index f80c4ddb9bda..a1deeb52c9e0 100644
+--- a/tools/power/cpupower/po/it.po
++++ b/tools/power/cpupower/po/it.po
+@@ -95,7 +95,7 @@ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:74
+ #, c-format
+-msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
++msgid "\t -i: time interval to measure for in seconds (default 1)\n"
+ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:75
+diff --git a/tools/power/cpupower/po/pt.po b/tools/power/cpupower/po/pt.po
+index 990f5267ffe8..902186585bb9 100644
+--- a/tools/power/cpupower/po/pt.po
++++ b/tools/power/cpupower/po/pt.po
+@@ -93,7 +93,7 @@ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:74
+ #, c-format
+-msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
++msgid "\t -i: time interval to measure for in seconds (default 1)\n"
+ msgstr ""
+ 
+ #: utils/idle_monitor/cpupower-monitor.c:75
+-- 
+2.20.1
+
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+nick black -=- https://www.nick-black.com
+to make an apple pie from scratch,
+you need first invent a universe.
