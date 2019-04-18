@@ -1,10 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 1/4] include: dt-bindings: add Performance Monitoring
- Unit for Exynos
-Date: Thu, 18 Apr 2019 15:38:29 +0200
-Message-ID: <1555594712-18341-2-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v2 3/4] Documentation: devicetree: add PPMU events
+ description
+Date: Thu, 18 Apr 2019 15:38:31 +0200
+Message-ID: <1555594712-18341-4-git-send-email-l.luba@partner.samsung.com>
 References: <1555594712-18341-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190418133851eucas1p192c8530255d6a4ce2aa8d8115f84a3db@eucas1p1.samsung.com>
+        <CGME20190418133854eucas1p11bd927755163f0030a1748a023099a06@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1555594712-18341-1-git-send-email-l.luba@partner.samsung.com>
@@ -13,62 +13,39 @@ To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kern
 Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, l.luba@partner.samsung.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch add support of a new feature which can be used in DT:
-Performance Monitoring Unit with defined event data type.
-In this patch the event data types are defined for Exynos PPMU.
-The patch also updates the MAINTAINERS file accordingly and
-adds the header file to devfreq event subsystem.
+Extend the documenation by events description with new 'event-data-type'
+field. Add example how the event might be defined in DT.
 
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- MAINTAINERS                           |  1 +
- include/dt-bindings/pmu/exynos_ppmu.h | 26 ++++++++++++++++++++++++++
- 2 files changed, 27 insertions(+)
- create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
+ .../devicetree/bindings/devfreq/event/exynos-ppmu.txt  | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3671fde..1ba4b9b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4560,6 +4560,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
- S:	Supported
- F:	drivers/devfreq/event/
- F:	drivers/devfreq/devfreq-event.c
-+F:	include/dt-bindings/pmu/exynos_ppmu.h
- F:	include/linux/devfreq-event.h
- F:	Documentation/devicetree/bindings/devfreq/event/
- 
-diff --git a/include/dt-bindings/pmu/exynos_ppmu.h b/include/dt-bindings/pmu/exynos_ppmu.h
-new file mode 100644
-index 0000000..08fdce9
---- /dev/null
-+++ b/include/dt-bindings/pmu/exynos_ppmu.h
-@@ -0,0 +1,26 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Samsung Exynos PPMU event types for counting in regs
-+ *
-+ * Copyright (c) 2019, Samsung
-+ * Author: Lukasz Luba <l.luba@partner.samsung.com>
-+ */
+diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+index 3e36c1d..47feb5f 100644
+--- a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
++++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
+@@ -145,3 +145,21 @@ Example3 : PPMUv2 nodes in exynos5433.dtsi are listed below.
+ 			reg = <0x104d0000 0x2000>;
+ 			status = "disabled";
+ 		};
 +
-+#ifndef __DT_BINDINGS_PMU_EXYNOS_PPMU_H
-+#define __DT_BINDINGS_PMU_EXYNOS_PPMU_H
++The 'event' type specified in the PPMU node defines 'event-name'
++which also contains 'id' number and optionally 'event-data-type'.
 +
++Example:
 +
-+#define PPMU_RO_BUSY_CYCLE_CNT		0x0
-+#define PPMU_WO_BUSY_CYCLE_CNT		0x1
-+#define PPMU_RW_BUSY_CYCLE_CNT		0x2
-+#define PPMU_RO_REQUEST_CNT		0x3
-+#define PPMU_WO_REQUEST_CNT		0x4
-+#define PPMU_RO_DATA_CNT		0x5
-+#define PPMU_WO_DATA_CNT		0x6
-+#define PPMU_RO_LATENCY			0x12
-+#define PPMU_WO_LATENCY			0x16
-+#define PPMU_V2_RO_DATA_CNT		0x4
-+#define PPMU_V2_WO_DATA_CNT		0x5
-+#define PPMU_V2_EVT3_RW_DATA_CNT	0x22
++		events {
++			ppmu_leftbus_0: ppmu-event0-leftbus {
++				event-name = "ppmu-event0-leftbus";
++				event-data-type = <PPMU_RO_DATA_CNT>;
++			};
++		};
 +
-+#endif
++The 'event-data-type' defines the type of data which shell be counted
++by the counter. You can check include/dt-bindings/pmu/exynos_ppmu.h for
++all possible type, i.e. count read requests, count write data in bytes,
++etc. This field is optional and when it is missing, the driver code will
++use default data type.
 -- 
 2.7.4
