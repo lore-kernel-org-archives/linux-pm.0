@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 3/3] PM / Domains: Enable genpd_dev_pm_attach_by_id|name() for single PM domain
-Date: Thu, 18 Apr 2019 12:27:57 +0200
-Message-ID: <20190418102757.1246-4-ulf.hansson@linaro.org>
+Subject: [PATCH 1/3] PM / Domains: Don't kfree() the virtual device in the error path
+Date: Thu, 18 Apr 2019 12:27:55 +0200
+Message-ID: <20190418102757.1246-2-ulf.hansson@linaro.org>
 References: <20190418102757.1246-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190418102757.1246-1-ulf.hansson@linaro.org>
@@ -10,38 +10,27 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-If a call to dev_pm_domain_attach() succeeds to attach a device to its
-single PM domain, the important point is to prevent following calls to
-dev_pm_domain_attach_by_name|id() to fail. This is managed by checking the
-dev->pm_domain pointer and then return -EEXIST, rather than continue
-calling genpd_dev_pm_attach_by_id|name().
+It's not correct to call kfree(dev) when device_register(dev) has failed.
+Fix this by calling put_device(dev) instead.
 
-For this reason, let's enable genpd_dev_pm_attach_by_id|name() to be used
-for also single PM domains. This simplifies for future users to solely make
-use of dev_pm_domain_attach_by_id|name() rather than having to combine it
-with dev_pm_domain_attach().
-
+Fixes: 3c095f32a92b ("PM / Domains: Add support for multi PM domains per device to genpd")
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/base/power/domain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 801f31c87d16..1b026704a8fc 100644
+index ecac03dcc9b2..7fec69aebf46 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -2512,10 +2512,10 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
- 	if (!dev->of_node)
- 		return NULL;
+@@ -2528,7 +2528,7 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
  
--	/* Deal only with devices using multiple PM domains. */
-+	/* Verify that the index is within a valid range. */
- 	num_domains = of_count_phandle_with_args(dev->of_node, "power-domains",
- 						 "#power-domain-cells");
--	if (num_domains < 2 || index >= num_domains)
-+	if (index >= num_domains)
- 		return NULL;
+ 	ret = device_register(virt_dev);
+ 	if (ret) {
+-		kfree(virt_dev);
++		put_device(virt_dev);
+ 		return ERR_PTR(ret);
+ 	}
  
- 	/* Allocate and register device on the genpd bus. */
 -- 
 2.17.1
