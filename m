@@ -2,206 +2,175 @@ Return-Path: <SRS0=JVBr=SU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A39CEC10F0E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 11:37:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A02B9C10F14
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 12:42:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 670B2217F9
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 11:37:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 636912183E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Apr 2019 12:42:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1555591379;
+	bh=h9qyoCxbFTiFLg18zOHH1LOvqUQw+0hkZKUNirVyBWA=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
+	b=SHvyIcER9vOXfeq8SXg2UXSfXwaUoo3ZJxxuiBquXiy3hKUGyA294PHkv7QdXnfzO
+	 V/rcO3yrJoo3DtyLDQu5tcMFd2NpJajc3sO5be5a4+ghpTHnZmppnabaRPaC3aDztt
+	 uXutItzKcw9BziwkKmQJ0fZmZuUuJWxKb200oGkw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388375AbfDRLhX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 07:37:23 -0400
-Received: from relay1.mentorg.com ([192.94.38.131]:41344 "EHLO
-        relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728074AbfDRLhX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 07:37:23 -0400
-Received: from svr-orw-mbx-03.mgc.mentorg.com ([147.34.90.203])
-        by relay1.mentorg.com with esmtps (TLSv1.2:ECDHE-RSA-AES256-SHA384:256)
-        id 1hH5Lf-00048N-39 from Jiada_Wang@mentor.com ; Thu, 18 Apr 2019 04:36:59 -0700
-Received: from [172.30.112.46] (147.34.91.1) by svr-orw-mbx-03.mgc.mentorg.com
- (147.34.90.203) with Microsoft SMTP Server (TLS) id 15.0.1320.4; Thu, 18 Apr
- 2019 04:36:55 -0700
-Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
- device initialization
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>, <rui.zhang@intel.com>,
-        <edubezval@gmail.com>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <erosca@de.adit-jv.com>,
-        "Frkuska, Joshua" <Joshua_Frkuska@mentor.com>
-References: <20190411100352.15977-1-jiada_wang@mentor.com>
- <92504666-9e17-4c6d-fc74-6cf68b9f017b@linaro.org>
- <9a4de8ca-fa49-2050-e40b-b54d03484213@mentor.com>
- <5e685e1d-dca7-7292-1342-dbe609c517d2@linaro.org>
-From:   Jiada Wang <jiada_wang@mentor.com>
-Message-ID: <804954a6-9f5b-28ca-ead1-891be93735ee@mentor.com>
-Date:   Thu, 18 Apr 2019 20:36:54 +0900
-User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        id S2388344AbfDRMmn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Apr 2019 08:42:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49308 "EHLO
+        casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726162AbfDRMmm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2019 08:42:42 -0400
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+        MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
+        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=FVaqqPnygq1+XAL2fV0XyKGzQwLVOq4vtfOZzXdI+DY=; b=mhYX69b7VKfQqcoKdU0MCUDY48
+        wz7J5q7ip7jfFijvK+A2ZbRvvIroxJe506D3ZMQrb3CoLvm9xyPHHWa/5V6VVBpMznpOnG3TfkBul
+        kz42uT6vbsEoSWFDuxWpELrhXI3brxwrB2rUkFxbS3l/dQ1clL/hYTVu4waRAQlFVAZ3+DkBqFnzm
+        gqZN/EwyZolsR5K1343i6maSxSww63KZgfyNN3MAFzgqy9B9T+AHfzMgzbhHjdvpwUt4XzdVhma0k
+        h/lt7McRzt4geBfeCA+wuguIFyeSB89NrhZTxPp/AqEhMrzdLLhaX7EmpBQ/MpRtZ2kCWwpclFQTQ
+        +L6+vL3A==;
+Received: from 177.132.233.55.dynamic.adsl.gvt.net.br ([177.132.233.55] helo=coco.lan)
+        by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+        id 1hH6N8-0000gI-FO; Thu, 18 Apr 2019 12:42:35 +0000
+Date:   Thu, 18 Apr 2019 09:42:23 -0300
+From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To:     Jonathan Corbet <corbet@lwn.net>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        Mauro Carvalho Chehab <mchehab@infradead.org>,
+        linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-watchdog@vger.kernel.org, xdp-newbies@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org, linux-acpi@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com, bpf@vger.kernel.org,
+        linux-ide@vger.kernel.org, linux-pm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-scsi@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        x86@kernel.org, dm-devel@redhat.com, target-devel@vger.kernel.org,
+        netdev@vger.kernel.org, kexec@lists.infradead.org,
+        linux-fpga@vger.kernel.org, linux-rdma@vger.kernel.org,
+        linux-kbuild@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+        linux-security-module@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: Avoiding merge conflicts while adding new docs - Was: Re: [PATCH
+ 00/57] Convert files to ReST
+Message-ID: <20190418091526.00e074d1@coco.lan>
+In-Reply-To: <cover.1555382110.git.mchehab+samsung@kernel.org>
+References: <cover.1555382110.git.mchehab+samsung@kernel.org>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <5e685e1d-dca7-7292-1342-dbe609c517d2@linaro.org>
-Content-Type: text/plain; charset="UTF-8"; format="flowed"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: SVR-ORW-MBX-07.mgc.mentorg.com (147.34.90.207) To
- svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203)
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418113654.MUOk1PXdBewjovlGjsI0M5gy7pxk8BpipCDJyiZo9rI@z>
+Message-ID: <20190418124223.XFTihTKSc2KCh_vtIx07UbKFSds1BzWjBWEvjhYHbss@z>
 
-Hi Daniel
+Jon,
 
-Thanks for your comments
+Em Mon, 15 Apr 2019 23:55:25 -0300
+Mauro Carvalho Chehab <mchehab+samsung@kernel.org> escreveu:
 
-On 2019/04/17 17:05, Daniel Lezcano wrote:
-> On 17/04/2019 05:01, Jiada Wang wrote:
->> Hi Daniel
->>
->> On 2019/04/17 4:22, Daniel Lezcano wrote:
->>> On 11/04/2019 12:03, Jiada Wang wrote:
->>>> Currently IRQ is remain enabled after .remove, later if device is
->>>> probed,
->>>> IRQ is requested before .thermal_init, this may cause IRQ function be
->>>> triggered but not able to clear IRQ status, thus cause system to hang.
->>>>
->>>> this patch by moving request of IRQ after device initialization to
->>>> avoid this issue.
->>>
->>> Why not disable the interrupt and clear the irq status in the .remove
->>> callback, so the place is clean when probing again?
->>>
->>>
->>>           struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
->>>
->>>           rcar_thermal_irq_set(priv, false);
->>>
->>> should do the trick no ?
->>>
->> yes, this issue also can be addressed by disable the interrupt in .remove.
->>
->> But there is race condition between .remove and irq thread function,
->> (which enables IRQ)
->> so driver need to ensure threaded irq has been disabled before call
->> rcar_thermal_irq_set(priv, false) in .remove.
->> this adds additional complexity.
->>
->> I am fine with both solutions,
->> what is your opinion?
-> 
-> My opinion is it is the tree hiding the forest.
-> 
-> After a quick look at the irq setup and handling, it appears the
-> implementation is cumbersome. This part should be fixed before the rest:
-> 
->   - check IRQF_ONESHOT flag
->   - remove the lock in the interrupt handlers
->   - remove rcar_gen3_thermal_irq() which is pointless
->   - check the IRQF_SHARED flag is correct (I doubt)
-> 
+> I have a separate patch series with do the actual rename and
+> adjustment of references. I opted to submit this first, as it
+> sounds easier to merge this way, as each subsystem maintainer
+> can apply the conversion directly on their trees (or at docs
+> tree), avoiding merge conflects.
 
-yes, I think rather than IRQF_SHARED, IRQF_ONESHOT flag need to be used.
-these suggestions make sense, I will add these changes in v2 patch-set
+Based on the number of feedbacks we have about this, I'm
+considering to submit a second version of my conversion patch
+series that would be doing the rename together with each patch,
+adding the rst files to an index file.
 
-> As the function devm_request_threaded_irq() is called 3 times, you
-> should add the priv->tscs[i]->zone in the private data and the irq
-> thread handler should look like:
-> 
-> static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
-> {
-> 	struct thermal_zone_device *tz = data;
-> 
-> 	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
-> 
-> 	[ ... ]
-> 
->          return IRQ_HANDLED;
-> }
-> 
-hmmm, IRQ is requested 2 times to monitor low and high temperature of 
-all tzs.
+However, doing that would produce lots of warnings. We have
+already lots of those at linux-next:
 
-Thanks,
-Jiada
+	checking consistency... 
 
-> When the implementation is fixed, then we can take care of the .remove
-> 
->>>> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
->>>> ---
->>>>    drivers/thermal/rcar_gen3_thermal.c | 48 ++++++++++++++++-------------
->>>>    1 file changed, 26 insertions(+), 22 deletions(-)
->>>>
->>>> diff --git a/drivers/thermal/rcar_gen3_thermal.c
->>>> b/drivers/thermal/rcar_gen3_thermal.c
->>>> index 88fa41cf16e8..4d095d7f9763 100644
->>>> --- a/drivers/thermal/rcar_gen3_thermal.c
->>>> +++ b/drivers/thermal/rcar_gen3_thermal.c
->>>> @@ -375,28 +375,6 @@ static int rcar_gen3_thermal_probe(struct
->>>> platform_device *pdev)
->>>>          platform_set_drvdata(pdev, priv);
->>>>    -    /*
->>>> -     * Request 2 (of the 3 possible) IRQs, the driver only needs to
->>>> -     * to trigger on the low and high trip points of the current
->>>> -     * temp window at this point.
->>>> -     */
->>>> -    for (i = 0; i < 2; i++) {
->>>> -        irq = platform_get_irq(pdev, i);
->>>> -        if (irq < 0)
->>>> -            return irq;
->>>> -
->>>> -        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
->>>> -                     dev_name(dev), i);
->>>> -        if (!irqname)
->>>> -            return -ENOMEM;
->>>> -
->>>> -        ret = devm_request_threaded_irq(dev, irq,
->>>> rcar_gen3_thermal_irq,
->>>> -                        rcar_gen3_thermal_irq_thread,
->>>> -                        IRQF_SHARED, irqname, priv);
->>>> -        if (ret)
->>>> -            return ret;
->>>> -    }
->>>> -
->>>>        pm_runtime_enable(dev);
->>>>        pm_runtime_get_sync(dev);
->>>>    @@ -458,6 +436,32 @@ static int rcar_gen3_thermal_probe(struct
->>>> platform_device *pdev)
->>>>            goto error_unregister;
->>>>        }
->>>>    +    /*
->>>> +     * Request 2 (of the 3 possible) IRQs, the driver only needs to
->>>> +     * to trigger on the low and high trip points of the current
->>>> +     * temp window at this point.
->>>> +     */
->>>> +    for (i = 0; i < 2; i++) {
->>>> +        irq = platform_get_irq(pdev, i);
->>>> +        if (irq < 0) {
->>>> +            ret = irq;
->>>> +            goto error_unregister;
->>>> +        }
->>>> +
->>>> +        irqname = devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
->>>> +                     dev_name(dev), i);
->>>> +        if (!irqname) {
->>>> +            ret = -ENOMEM;
->>>> +            goto error_unregister;
->>>> +        }
->>>> +
->>>> +        ret = devm_request_threaded_irq(dev, irq,
->>>> rcar_gen3_thermal_irq,
->>>> +                        rcar_gen3_thermal_irq_thread,
->>>> +                        IRQF_SHARED, irqname, priv);
->>>> +        if (ret)
->>>> +            goto error_unregister;
->>>> +    }
->>>> +
->>>>        rcar_thermal_irq_set(priv, true);
->>>>          return 0;
->>>>
->>>
->>>
-> 
-> 
+	docs/Documentation/accelerators/ocxl.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/admin-guide/mm/numaperf.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/allocators.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/attributes.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/bigalloc.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/bitmaps.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/blockgroup.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/blocks.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/checksums.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/directory.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/eainode.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/group_descr.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/ifork.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/inlinedata.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/inodes.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/journal.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/mmp.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/special_inodes.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/filesystems/ext4/super.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/fmc/index.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/gpu/msm-crash-dump.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/interconnect/interconnect.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/laptops/lg-laptop.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/virtual/kvm/amd-memory-encryption.rst: WARNING: document isn't included in any toctree
+	docs/Documentation/virtual/kvm/vcpu-requests.rst: WARNING: document isn't included in any toctree
+
+After thinking a little bit and doing some tests, I think a good solution
+would be to add ":orphan:" markup to the new .rst files that were not
+added yet into the main body (e. g. something like the enclosed example).
+
+That will make Sphinx suppress the:
+	"WARNING: document isn't included in any toctree"
+warning for the new files, while they're not included at the main indexes.
+
+This way, maintainers can do all the hard work of doing/applying the ReST
+file conversion/addition patch series on their own trees, and, once
+everything gets merged, submit a patch against the latest docs-next
+tree, removing the :orphan: tag and add them to the common index.rst
+files.
+
+That should largely avoid merging conflicts.
+
+For example, assuming that someone converts the stuff at
+Documentation/accounting and rename the text files there to
+RST (I'm actually doing that), he could add the enclosed change on
+the top of its index file:
+
+	diff --git a/Documentation/accounting/index.rst b/Documentation/accounting/index.rst
+	index e7dda5afa73f..e1f6284b5ff3 100644
+	--- a/Documentation/accounting/index.rst
+	+++ b/Documentation/accounting/index.rst
+	@@ -1,3 +1,5 @@
+	+:orphan:
+	+
+	 ==========
+	 Accounting
+	 ==========
+
+With would make Sphinx to ignore the subdir index file while
+reporting errors. It will still build the documentation, allowing
+the developer to test the changes.
+
+One of the advantages is that checking the orphaned docs is as
+easy as running:
+
+	$ git grep -l ":orphan:" Documentation/
+	...
+	Documentation/accounting/index.rst
+	...
+
+Making easy for people to check the orphaned files and send a fixup
+patch if something got orphaned after the merge window and send a
+fixes patches to be applied upstream.
+
+What do you think?
+
+Regards,
+Mauro
