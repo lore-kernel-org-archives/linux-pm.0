@@ -2,349 +2,267 @@ Return-Path: <SRS0=DtRT=SV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DATE_IN_PAST_06_12,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 124F3C10F14
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 03:35:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8699FC282E1
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 18:23:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BCA0F2171F
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 03:35:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555644906;
-	bh=ayvsgjKlEhRMoM8stNcsOmczPn82q+OkKDdmlgIQoFg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=xEG9ZglpFfbeMnmgPGOWiwDjByR7wfsFSb3xKHq7KM7ihyn0lLsLQ+SfolOmgZrkY
-	 GwirIOGRtOBo/cIhesCu/n9zChtkXTCywF/xPq5B/HN04xSQWvFGi2OpJjSgknBBpC
-	 LYxLD+p6J/geo1WHlHT/5z/YnCXvsRndA75EYSJA=
+	by mail.kernel.org (Postfix) with ESMTP id 4E2D7222D2
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 18:23:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="btfi5qmd"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727291AbfDSDfB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Apr 2019 23:35:01 -0400
-Received: from mail.kernel.org ([198.145.29.99]:51376 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727149AbfDSDeu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Apr 2019 23:34:50 -0400
-Received: from earth.universe (dyndsl-091-248-050-217.ewe-ip-backbone.de [91.248.50.217])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 66182217F9;
-        Fri, 19 Apr 2019 03:34:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1555644888;
-        bh=ayvsgjKlEhRMoM8stNcsOmczPn82q+OkKDdmlgIQoFg=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=m8aRhyKpnB5sAsyKvn0eyfyKIZ63Yd/YSARccpQZOrMjdLphic70gGBkC6uaJLXYj
-         Hbc4pVm41lqB+W/+T1jiCJztKJExzpDW8uWLa3QWfYzSrEx9oqs7W+7q7UG01N8sKW
-         rWPTQ/FTghmc0M/Hnb6iOVi+iGJdvQmZg1sD1wes=
-Received: by earth.universe (Postfix, from userid 1000)
-        id 038763C08D5; Thu, 18 Apr 2019 21:46:42 +0200 (CEST)
-Date:   Thu, 18 Apr 2019 21:46:42 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Artur Rojek <contact@artur-rojek.eu>
-Cc:     Jonathan Cameron <jic23@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
-        linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: Re: [PATCH v3] power: supply: add Ingenic JZ47xx battery driver.
-Message-ID: <20190418194642.5nwofmjq3lotxs3t@earth.universe>
-References: <20190418182404.20183-1-contact@artur-rojek.eu>
+        id S1727836AbfDSSWy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Apr 2019 14:22:54 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:50856 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727451AbfDSSWx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 14:22:53 -0400
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190419133420euoutp0228065d8a4997874d8f97acf426d07a9c~W44AKtStr0104101041euoutp02r
+        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 13:34:20 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190419133420euoutp0228065d8a4997874d8f97acf426d07a9c~W44AKtStr0104101041euoutp02r
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1555680860;
+        bh=0LI72Wl7YJAp64pzLBSUOIzhmPouVZZU8BFleXkj+X4=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=btfi5qmdHmCyTVI4V/aZqGgcGeM/cJZlmsLkovhfKaHrNtNXG0t7nekYJ72DUZ63j
+         H0Ohr1VOUhsuh+HdpWnzrqWXkdKCVQwX5B/9VKwt+6j0jpFmiHspyQVQmTBMUqiPod
+         qXnUWdxs88TXwMY2eFdZrQSS17JqlLn7XlLrqDqM=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190419133419eucas1p12d4ca51ad4d845940623a39a80f34209~W43-bucE71679616796eucas1p1E;
+        Fri, 19 Apr 2019 13:34:19 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges2new.samsung.com (EUCPMTA) with SMTP id 6B.58.04377.B5EC9BC5; Fri, 19
+        Apr 2019 14:34:19 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20190419133418eucas1p2baf1c185a476dbcf40d81f872762840d~W43_r8UjW3235232352eucas1p2_;
+        Fri, 19 Apr 2019 13:34:18 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20190419133418eusmtrp2c91028d4e7e98be02c615434296af2bd~W43_d1vmc2640526405eusmtrp2i;
+        Fri, 19 Apr 2019 13:34:18 +0000 (GMT)
+X-AuditID: cbfec7f4-12dff70000001119-bb-5cb9ce5b6cd2
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+        eusmgms2.samsung.com (EUCPMTA) with SMTP id 2C.DD.04140.A5EC9BC5; Fri, 19
+        Apr 2019 14:34:18 +0100 (BST)
+Received: from [106.120.51.20] (unknown [106.120.51.20]) by
+        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190419133417eusmtip1eddd38c6578df26440b1df3235fb8cca~W439zxjJP2921829218eusmtip1H;
+        Fri, 19 Apr 2019 13:34:17 +0000 (GMT)
+Subject: Re: [PATCH v2 2/4] drivers: devfreq: events: extend events by type
+ of counted data
+To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
+        mark.rutland@arm.com, cw00.choi@samsung.com,
+        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
+        s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org,
+        willy.mh.wolff.ml@gmail.com
+From:   Lukasz Luba <l.luba@partner.samsung.com>
+Message-ID: <5ea36d22-d6c2-92a2-77e4-f9017d061f50@partner.samsung.com>
+Date:   Fri, 19 Apr 2019 15:34:16 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="gsac4u2ylfrdrtro"
-Content-Disposition: inline
-In-Reply-To: <20190418182404.20183-1-contact@artur-rojek.eu>
-User-Agent: NeoMutt/20180716
+In-Reply-To: <1555594712-18341-3-git-send-email-l.luba@partner.samsung.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SeUgUcRTH++3s7Izmxm9X05dFwpKRRloRNtEpRCxZFHQQrpWbjkfqajtq
+        WVEmeWSZYrTZ4pHkhZiarsdaeW4eaB5EapkpKQWlQrpJQlaOs5L/fd57nx/f9+BHE/Ih0pEO
+        1kSyWo06VCGxFle3zvVsUXUbfbZ+bJAxzzPKSGbA/JVkckzdJJM69p1genrKKeZN3ATFVIz1
+        k8zbukwJM5NiQkxGT72IeWYappj8gT4RM3SrSMLEvzJRTMtEIsnMtn9GB7CyJLsEKY36YUpZ
+        UXxHoqzMu6m8byhGypmK9ccl3tZ7/NnQ4GhW677P1zro4etZMiLe5Upctkkci4xOyciKBrwD
+        kpryUTKypuW4CEHmfCIlFGYE2VP1lmIGwe2uUXLpSUl9EikMChG06wYt1iSCxuF2grds8VnI
+        m/+5yHb4KYLZFm9eInCyCO6WVS4k0rQEu0Ft8SXekeJD8K7qPeJZjJ1hejRpkVfjMzDSWk4K
+        jgw6Ho+LebbCXjD3RS/hmcAO8GE8RySwE9RMZhJ8FuB5CrKmUpCw9kEY0f2wsC18azNQAq+D
+        v0bhMWAOYlNyLc51GEvNsji7oaWtj+R3JrALlNW5C21PaCioEfNtwKtgcFImrLAK0qsfEUJb
+        CkkJcsHeBIZ7vZYgeygs0VFpSKFfdph+2TH6Zcfo/+c+QeJi5MBGcWGBLLddw15249RhXJQm
+        0M0vPKwCLXy5zj9t5lpU9/tCM8I0UthIG9ONPnJSHc3FhDUjoAmFndTT3+Ajl/qrY66y2vDz
+        2qhQlmtGa2mxwkF6bcWoSo4D1ZFsCMtGsNqlqYi2coxFVq6eiu4TXicdym1DnKLifY/qRti4
+        QL1v6emJFD8Xc7Td/iEdtdLcKynQqJziyrpSm28UVB6hPDLJndKEUx57a4ZG/Ta4otqNVTZe
+        ndNtHTa7ZP0vH9SpgjsuBgR42thzeZrxF3pDg0zlfHhNblB8+ebwT/W/Js8NVE40HStNMyrE
+        XJB6myuh5dT/AJIp4+9uAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrAIsWRmVeSWpSXmKPExsVy+t/xu7pR53bGGCy6LGuxccZ6VovrX56z
+        Wsw/co7Vov/xa2aL8+c3sFucbXrDbrHp8TVWi8u75rBZfO49wmgx4/w+Jou1R+6yWyy9fpHJ
+        4nbjCjaL1r1H2C0Ov2lntfh24hGjg4DHmnlrGD12zrrL7rFpVSebx+Yl9R59W1YxenzeJBfA
+        FqVnU5RfWpKqkJFfXGKrFG1oYaRnaGmhZ2RiqWdobB5rZWSqpG9nk5Kak1mWWqRvl6CXMfXo
+        N9aCVs2KpnlHWBoYd8p3MXJySAiYSKzZ18HaxcjFISSwlFHictsJJoiEmMSkfdvZIWxhiT/X
+        utggil4zSvQebgIrEhaIlej98AEsISKwmFHiR+MDMIdZoItJ4tGLd1At9xkldm15BeRwcLAJ
+        6EnsWFUI0s0r4CZxdetNRhCbRUBV4tODDjBbVCBC4sz7FSwQNYISJ2c+AbM5Bbwlfj6bxQZi
+        MwuYSczb/JAZwhaXuPVkPhOELS+x/e0c5gmMQrOQtM9C0jILScssJC0LGFlWMYqklhbnpucW
+        G+kVJ+YWl+al6yXn525iBMb2tmM/t+xg7HoXfIhRgINRiYf3wKSdMUKsiWXFlbmHGCU4mJVE
+        eB1TtsQI8aYkVlalFuXHF5XmpBYfYjQFem4is5Rocj4w7eSVxBuaGppbWBqaG5sbm1koifOe
+        N6iMEhJITyxJzU5NLUgtgulj4uCUamBUUT+bFn2HqYhZOKbw3OzgOCWD1Hj9GTonbXlLfom9
+        Egn4ojrr2K/slP2zMlYqKFQ+mOXFOqH7dPIrfnmOjMldUUH3bHd8vHzk+q/8vT08cvPfqHxI
+        /Lv8r+YztoUb/v/Q9Vzuto7P/tyC7Rz+1bduNQbfV/l9b9134yKjM+selBv6TY5r3smpxFKc
+        kWioxVxUnAgAOvFuggMDAAA=
+X-CMS-MailID: 20190419133418eucas1p2baf1c185a476dbcf40d81f872762840d
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="UTF-8"
+X-RootMTR: 20190418133853eucas1p21ff5f58f5446b8452698910923524524
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190418133853eucas1p21ff5f58f5446b8452698910923524524
+References: <1555594712-18341-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190418133853eucas1p21ff5f58f5446b8452698910923524524@eucas1p2.samsung.com>
+        <1555594712-18341-3-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190418194642.0EsKisi4xKoj3GKeYzbctAeLkEoFT22g9eQxtT33CHQ@z>
+Message-ID: <20190419133416.iueMrWKCS8_oJUWVQC33vz-vh65Gxtl8UMnBXjok0E0@z>
 
+Hi Chanwoo,
 
---gsac4u2ylfrdrtro
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+please ignore this patch there is a comment below.
+It wrongly sets the default value.
 
-Hi,
-
-On Thu, Apr 18, 2019 at 08:24:04PM +0200, Artur Rojek wrote:
-> Add a driver for battery present on Ingenic JZ47xx SoCs.
->=20
-> Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
-> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+On 4/18/19 3:38 PM, Lukasz Luba wrote:
+> This patch adds posibility to choose what type of data should be counted
+> by the PPMU counter. Now the type comes from DT where the event has been
+> defined. When there is no 'event-data-type' the default value is used,
+> which is 'read data in bytes'.
+> It is needed when you want to know not only read+write data bytes but
+> i.e. only write data in byte, or number of read requests, etc.
+> 
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 > ---
-
-Thanks, queued.
-
--- Sebastian
-
->=20
-> Changes:
->=20
-> v2: - rework the return logic in ingenic_battery_get_property,
->     - make index offsets point forward in ingenic_battery_set_scale,
->     - fix spacing around scale_raw[best_idx + 1]
->=20
-> v3: Add the missing MODULE_LICENSE & Co.
->=20
->  drivers/power/supply/Kconfig           |  11 ++
->  drivers/power/supply/Makefile          |   1 +
->  drivers/power/supply/ingenic-battery.c | 184 +++++++++++++++++++++++++
->  3 files changed, 196 insertions(+)
->  create mode 100644 drivers/power/supply/ingenic-battery.c
->=20
-> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index b6a4265bf0ec..81b0c20b24dd 100644
-> --- a/drivers/power/supply/Kconfig
-> +++ b/drivers/power/supply/Kconfig
-> @@ -169,6 +169,17 @@ config BATTERY_COLLIE
->  	  Say Y to enable support for the battery on the Sharp Zaurus
->  	  SL-5500 (collie) models.
-> =20
-> +config BATTERY_INGENIC
-> +	tristate "Ingenic JZ47xx SoCs battery driver"
-> +	depends on MIPS || COMPILE_TEST
-> +	depends on INGENIC_ADC
-> +	help
-> +	  Choose this option if you want to monitor battery status on
-> +	  Ingenic JZ47xx SoC based devices.
-> +
-> +	  This driver can also be built as a module. If so, the module will be
-> +	  called ingenic-battery.
-> +
->  config BATTERY_IPAQ_MICRO
->  	tristate "iPAQ Atmel Micro ASIC battery driver"
->  	depends on MFD_IPAQ_MICRO
-> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> index 1cdce3ded839..976dc1698134 100644
-> --- a/drivers/power/supply/Makefile
-> +++ b/drivers/power/supply/Makefile
-> @@ -34,6 +34,7 @@ obj-$(CONFIG_BATTERY_PMU)	+=3D pmu_battery.o
->  obj-$(CONFIG_BATTERY_OLPC)	+=3D olpc_battery.o
->  obj-$(CONFIG_BATTERY_TOSA)	+=3D tosa_battery.o
->  obj-$(CONFIG_BATTERY_COLLIE)	+=3D collie_battery.o
-> +obj-$(CONFIG_BATTERY_INGENIC)	+=3D ingenic-battery.o
->  obj-$(CONFIG_BATTERY_IPAQ_MICRO) +=3D ipaq_micro_battery.o
->  obj-$(CONFIG_BATTERY_WM97XX)	+=3D wm97xx_battery.o
->  obj-$(CONFIG_BATTERY_SBS)	+=3D sbs-battery.o
-> diff --git a/drivers/power/supply/ingenic-battery.c b/drivers/power/suppl=
-y/ingenic-battery.c
-> new file mode 100644
-> index 000000000000..35816d4b3012
-> --- /dev/null
-> +++ b/drivers/power/supply/ingenic-battery.c
-> @@ -0,0 +1,184 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Battery driver for the Ingenic JZ47xx SoCs
-> + * Copyright (c) 2019 Artur Rojek <contact@artur-rojek.eu>
-> + *
-> + * based on drivers/power/supply/jz4740-battery.c
-> + */
-> +
-> +#include <linux/iio/consumer.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/power_supply.h>
-> +#include <linux/property.h>
-> +
-> +struct ingenic_battery {
-> +	struct device *dev;
-> +	struct iio_channel *channel;
-> +	struct power_supply_desc desc;
-> +	struct power_supply *battery;
-> +	struct power_supply_battery_info info;
-> +};
-> +
-> +static int ingenic_battery_get_property(struct power_supply *psy,
-> +					enum power_supply_property psp,
-> +					union power_supply_propval *val)
-> +{
-> +	struct ingenic_battery *bat =3D power_supply_get_drvdata(psy);
-> +	struct power_supply_battery_info *info =3D &bat->info;
+>   drivers/devfreq/event/exynos-ppmu.c | 61 +++++++++++++++++++++++++------------
+>   include/linux/devfreq-event.h       |  6 ++++
+>   2 files changed, 48 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+> index c61de0b..9f12201 100644
+> --- a/drivers/devfreq/event/exynos-ppmu.c
+> +++ b/drivers/devfreq/event/exynos-ppmu.c
+> @@ -154,9 +154,9 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>   	if (ret < 0)
+>   		return ret;
+>   
+> -	/* Set the event of Read/Write data count  */
+> +	/* Set the event of proper data type monitoring */
+>   	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
+> -				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
+> +			   edev->desc->data_type);
+>   	if (ret < 0)
+>   		return ret;
+>   
+> @@ -368,23 +368,11 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>   	if (ret < 0)
+>   		return ret;
+>   
+> -	/* Set the event of Read/Write data count  */
+> -	switch (id) {
+> -	case PPMU_PMNCNT0:
+> -	case PPMU_PMNCNT1:
+> -	case PPMU_PMNCNT2:
+> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> -				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
+> -		if (ret < 0)
+> -			return ret;
+> -		break;
+> -	case PPMU_PMNCNT3:
+> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> -				PPMU_V2_EVT3_RW_DATA_CNT);
+> -		if (ret < 0)
+> -			return ret;
+> -		break;
+> -	}
+> +	/* Set the event of proper data type monitoring */
+> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> +			   edev->desc->data_type);
+> +	if (ret < 0)
+> +		return ret;
+>   
+>   	/* Reset cycle counter/performance counter and enable PPMU */
+>   	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+> @@ -508,6 +496,7 @@ static int of_get_devfreq_events(struct device_node *np,
+>   	struct device *dev = info->dev;
+>   	struct device_node *events_np, *node;
+>   	int i, j, count;
 > +	int ret;
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_HEALTH:
-> +		ret =3D iio_read_channel_processed(bat->channel, &val->intval);
-> +		val->intval *=3D 1000;
-> +		if (val->intval < info->voltage_min_design_uv)
-> +			val->intval =3D POWER_SUPPLY_HEALTH_DEAD;
-> +		else if (val->intval > info->voltage_max_design_uv)
-> +			val->intval =3D POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-> +		else
-> +			val->intval =3D POWER_SUPPLY_HEALTH_GOOD;
-> +		return ret;
-> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> +		ret =3D iio_read_channel_processed(bat->channel, &val->intval);
-> +		val->intval *=3D 1000;
-> +		return ret;
-> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-> +		val->intval =3D info->voltage_min_design_uv;
-> +		return 0;
-> +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-> +		val->intval =3D info->voltage_max_design_uv;
-> +		return 0;
-> +	default:
-> +		return -EINVAL;
-> +	};
-> +}
-> +
-> +/* Set the most appropriate IIO channel voltage reference scale
-> + * based on the battery's max voltage.
-> + */
-> +static int ingenic_battery_set_scale(struct ingenic_battery *bat)
-> +{
-> +	const int *scale_raw;
-> +	int scale_len, scale_type, best_idx =3D -1, best_mV, max_raw, i, ret;
-> +	u64 max_mV;
-> +
-> +	ret =3D iio_read_max_channel_raw(bat->channel, &max_raw);
-> +	if (ret) {
-> +		dev_err(bat->dev, "Unable to read max raw channel value\n");
-> +		return ret;
-> +	}
-> +
-> +	ret =3D iio_read_avail_channel_attribute(bat->channel, &scale_raw,
-> +					       &scale_type, &scale_len,
-> +					       IIO_CHAN_INFO_SCALE);
-> +	if (ret < 0) {
-> +		dev_err(bat->dev, "Unable to read channel avail scale\n");
-> +		return ret;
-> +	}
-> +	if (ret !=3D IIO_AVAIL_LIST || scale_type !=3D IIO_VAL_FRACTIONAL_LOG2)
-> +		return -EINVAL;
-> +
-> +	max_mV =3D bat->info.voltage_max_design_uv / 1000;
-> +
-> +	for (i =3D 0; i < scale_len; i +=3D 2) {
-> +		u64 scale_mV =3D (max_raw * scale_raw[i]) >> scale_raw[i + 1];
-> +
-> +		if (scale_mV < max_mV)
-> +			continue;
-> +
-> +		if (best_idx >=3D 0 && scale_mV > best_mV)
-> +			continue;
-> +
-> +		best_mV =3D scale_mV;
-> +		best_idx =3D i;
-> +	}
-> +
-> +	if (best_idx < 0) {
-> +		dev_err(bat->dev, "Unable to find matching voltage scale\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return iio_write_channel_attribute(bat->channel,
-> +					   scale_raw[best_idx],
-> +					   scale_raw[best_idx + 1],
-> +					   IIO_CHAN_INFO_SCALE);
-> +}
-> +
-> +static enum power_supply_property ingenic_battery_properties[] =3D {
-> +	POWER_SUPPLY_PROP_HEALTH,
-> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-> +	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
-> +	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
-> +};
-> +
-> +static int ingenic_battery_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev =3D &pdev->dev;
-> +	struct ingenic_battery *bat;
-> +	struct power_supply_config psy_cfg =3D {};
-> +	struct power_supply_desc *desc;
-> +	int ret;
-> +
-> +	bat =3D devm_kzalloc(dev, sizeof(*bat), GFP_KERNEL);
-> +	if (!bat)
-> +		return -ENOMEM;
-> +
-> +	bat->dev =3D dev;
-> +	bat->channel =3D devm_iio_channel_get(dev, "battery");
-> +	if (IS_ERR(bat->channel))
-> +		return PTR_ERR(bat->channel);
-> +
-> +	desc =3D &bat->desc;
-> +	desc->name =3D "jz-battery";
-> +	desc->type =3D POWER_SUPPLY_TYPE_BATTERY;
-> +	desc->properties =3D ingenic_battery_properties;
-> +	desc->num_properties =3D ARRAY_SIZE(ingenic_battery_properties);
-> +	desc->get_property =3D ingenic_battery_get_property;
-> +	psy_cfg.drv_data =3D bat;
-> +	psy_cfg.of_node =3D dev->of_node;
-> +
-> +	bat->battery =3D devm_power_supply_register(dev, desc, &psy_cfg);
-> +	if (IS_ERR(bat->battery)) {
-> +		dev_err(dev, "Unable to register battery\n");
-> +		return PTR_ERR(bat->battery);
-> +	}
-> +
-> +	ret =3D power_supply_get_battery_info(bat->battery, &bat->info);
-> +	if (ret) {
-> +		dev_err(dev, "Unable to get battery info: %d\n", ret);
-> +		return ret;
-> +	}
-> +	if (bat->info.voltage_min_design_uv < 0) {
-> +		dev_err(dev, "Unable to get voltage min design\n");
-> +		return bat->info.voltage_min_design_uv;
-> +	}
-> +	if (bat->info.voltage_max_design_uv < 0) {
-> +		dev_err(dev, "Unable to get voltage max design\n");
-> +		return bat->info.voltage_max_design_uv;
-> +	}
-> +
-> +	return ingenic_battery_set_scale(bat);
-> +}
-> +
-> +#ifdef CONFIG_OF
-> +static const struct of_device_id ingenic_battery_of_match[] =3D {
-> +	{ .compatible =3D "ingenic,jz4740-battery", },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, ingenic_battery_of_match);
-> +#endif
-> +
-> +static struct platform_driver ingenic_battery_driver =3D {
-> +	.driver =3D {
-> +		.name =3D "ingenic-battery",
-> +		.of_match_table =3D of_match_ptr(ingenic_battery_of_match),
-> +	},
-> +	.probe =3D ingenic_battery_probe,
-> +};
-> +module_platform_driver(ingenic_battery_driver);
-> +
-> +MODULE_DESCRIPTION("Battery driver for Ingenic JZ47xx SoCs");
-> +MODULE_AUTHOR("Artur Rojek <contact@artur-rojek.eu>");
-> +MODULE_LICENSE("GPL");
-> --=20
-> 2.21.0
->=20
+>   
+>   	events_np = of_get_child_by_name(np, "events");
+>   	if (!events_np) {
+> @@ -544,6 +533,40 @@ static int of_get_devfreq_events(struct device_node *np,
+>   		desc[j].driver_data = info;
+>   
+>   		of_property_read_string(node, "event-name", &desc[j].name);
+> +		ret = of_property_read_u32(node, "event-data-type",
+> +					   &desc[j].data_type);
+> +		if (!ret) {
+It should be: if (ret)
+then it means we do not have a value in DT and we are using
+our defaults taking into account the right register type.
 
---gsac4u2ylfrdrtro
-Content-Type: application/pgp-signature; name="signature.asc"
+I am going to send v3 with this fix.
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly41BsACgkQ2O7X88g7
-+powZg//S3/3ycl3W9H8Jhtu06Arp7IFG36SGG8W4zcKHs4p8F02MogX/JENjMYy
-28ZTjIP+cxLV2z7RozPaPVIjk35MWm6YSGw8cYXIjTtCO78RahBImfS6wSpTQUbc
-twkGJz0PYvjjMh26kQt0AmmRgKkwyHJ1Z3q0kogfO/ZGfB7tQVLv4UM0TAjONRjZ
-MfVA/XKsQSrLwDdueTiqjO4ibT6vBZORtfn/IuecsP11oEBIUu4kpcdzqp78SS+w
-9QladWJ4ufS97xbcxaZN9j9hQOotxQgNf/JXTRXUowB2Qu8iejGxlVuPrV/qypHz
-vXmqYWYSqGtF5q0WcuUCKFnOjuHek8dRDz4QDr5SZO49Sz/Pkw1tWiqTKo7r64ed
-iXMF5i0X4e4T7yUH1kN1hbi2FM3LtWATn68Pvlx6ms73p1bsWif45SpTuRN4Gc0k
-pSvUt4TuCnAZkKAUuhqITauD08brT2BqooMq0s7UK1wbOejUE7KjqkUakvTl2onM
-BWyELBQA9l/LtRApkzoAySNF65bqY9TXRTSAjOja5VJF/OuayC35MSq3n9pFRYWi
-tcS5wkK/3u3nCtWoH21JhiMj2eU4VuVMX7qmD4P/C2OaTOWXcGpY0KzDhdo4GRyk
-vyEx5RNnLNOZ1GShhKf5zb4LXV8uuvOmiYplGEKe8i1mPhtD/uo=
-=VYq4
------END PGP SIGNATURE-----
-
---gsac4u2ylfrdrtro--
+Regards,
+Lukasz
+> +			/* Set the event of proper data type counting.
+> +			 * Check if the data type has been defined in DT,
+> +			 * use default if not.
+> +			 */
+> +			if (of_device_is_compatible(np,
+> +					"samsung,exynos-ppmu-v2")) {
+> +				struct devfreq_event_dev edev;
+> +				int id;
+> +				/* Not all registers take the same value for
+> +				 * read+write data count.
+> +				 */
+> +				edev.desc = &desc[j];
+> +				id = exynos_ppmu_find_ppmu_id(&edev);
+> +
+> +				switch (id) {
+> +				case PPMU_PMNCNT0:
+> +				case PPMU_PMNCNT1:
+> +				case PPMU_PMNCNT2:
+> +					desc[j].data_type = PPMU_V2_RO_DATA_CNT
+> +						| PPMU_V2_WO_DATA_CNT;
+> +					break;
+> +				case PPMU_PMNCNT3:
+> +					desc[j].data_type =
+> +						PPMU_V2_EVT3_RW_DATA_CNT;
+> +					break;
+> +				}
+> +			} else {
+> +				desc[j].data_type = PPMU_RO_DATA_CNT |
+> +					PPMU_WO_DATA_CNT;
+> +			}
+> +		}
+>   
+>   		j++;
+>   	}
+> diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
+> index 4db00b0..cc160b1 100644
+> --- a/include/linux/devfreq-event.h
+> +++ b/include/linux/devfreq-event.h
+> @@ -81,14 +81,20 @@ struct devfreq_event_ops {
+>    * struct devfreq_event_desc - the descriptor of devfreq-event device
+>    *
+>    * @name	: the name of devfreq-event device.
+> + * @data_type	: the data type which is going to be counted in the register.
+>    * @driver_data	: the private data for devfreq-event driver.
+>    * @ops		: the operation to control devfreq-event device.
+>    *
+>    * Each devfreq-event device is described with a this structure.
+>    * This structure contains the various data for devfreq-event device.
+> + * The data_type describes what is going to be counted in the register.
+> + * It might choose to count e.g. read requests, write data in bytes, etc.
+> + * The full supported list of types is present in specyfic header in:
+> + * include/dt-bindings/pmu/.
+>    */
+>   struct devfreq_event_desc {
+>   	const char *name;
+> +	u32 data_type;
+>   	void *driver_data;
+>   
+>   	const struct devfreq_event_ops *ops;
+> 
