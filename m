@@ -8,62 +8,59 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B579FC282DF
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:59:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A2BFC282DF
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 20:16:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7E93920656
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:59:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19FA320821
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 20:16:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JrdoKaAQ"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oVsYCO4T"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727526AbfDST7T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Apr 2019 15:59:19 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:43607 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726075AbfDST7T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 15:59:19 -0400
-Received: by mail-pf1-f196.google.com with SMTP id c8so2958581pfd.10
-        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 12:59:19 -0700 (PDT)
+        id S1725895AbfDSUQO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Apr 2019 16:16:14 -0400
+Received: from mail-pg1-f195.google.com ([209.85.215.195]:42696 "EHLO
+        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725817AbfDSUQO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 16:16:14 -0400
+Received: by mail-pg1-f195.google.com with SMTP id p6so3079465pgh.9
+        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 13:16:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=TucnPGUSikND03oLf42t7W5Hdl2RgTDHl761l+fESbM=;
-        b=JrdoKaAQBc2gyh4xvpQ5gms40/rECfPiUKUTwoeOsWQEnQhPbHwHkksXjKsTHiYLnS
-         jw9+TQWYUbcvhwTiJhPk/BOKbl2kVHYqDfdhv31GXwfMLYIEsTYQJJnKfD1cVA6tT2wo
-         GC/dDbagUOXrr/Dv67jWQqzxi2JiX2NDUxnt7GqB6/mN4bmD21SWw+u4KQtDeJG9FHxK
-         MkOOFZZTGuChHOGIlEvyhvnpOd2WrOU+bYZvLi1ttuHkQWiMMSMC8MxbMYt11QiDQJVU
-         Z6m5EfZ1sBZrwSsFcMq4ckhxVxrR23hwNNA49VsnNEuISqk5sz3V66FhPIRsjsgSHhgh
-         Dsjg==
+        h=from:to:cc:subject:date:message-id;
+        bh=xaKLcXqgvpIhUZ5Sb3zwLh5apBX7LqGVKrAiPbClQMU=;
+        b=oVsYCO4TDxPaipnGKirMWJZJF2RW/czl6sRMjYEULhnFairkAaX3Xqm5xKgTtqQKaR
+         eztb0/E6cF7tj1g4LtVUcES04XaFCnYuXLY0sOOBk5pa6+gQlW5L+Y2vtx7597TWBvuT
+         cVXMdwGNnw1Vl+wQlvEQPgAdd2o0wzWvS4uk7WD96nxmwIh68ElXjz7o1bftTSbugekz
+         OsRO/KAu78Z0KO86SKJA+5QG7f1YcrvIqXDnJo2j62b6Y9kie/OfgLmwruaFdTks0Jm6
+         TQK3jMXxTkXxsWp0FuaEGCp0erEpgTFwIgFvrk0oyYUKMSRRK7J7ezOSqkOgm0QOOR4h
+         w0zQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=TucnPGUSikND03oLf42t7W5Hdl2RgTDHl761l+fESbM=;
-        b=EmUQvPSq56ASmoqN8+66/LwlbMXS80JrV4FnrQBVrMPxB5uMe2i0vlzZ3+Jc3pkHVH
-         Y+GKB6BRIEuBkYMO5U3BYc4gdbTF6iWdMHo3Ge6L1Uhji5vCtw59xxW7qN0IJcbXLz3a
-         VLnuuiJkO5m+w16NMGWFQ+NeOg6M30tPyh6k5IqI293sT4SQYQjOTC3+6m1drQnDGhEp
-         05ifWOc5Kis2iOoQLqnXgBLiBE0SZ1mn09is1Lz1HmB+wSZ6pOdZHMGzV9r1by4y498D
-         fiZTETa5NMp2jT+wybeZVY8NbxUKdPcIQT/fSwwrlq1Va+MroByP2R8HtDQrW5MEn6hL
-         FX3Q==
-X-Gm-Message-State: APjAAAUjze62q3zRl+5K1JeA1Q3dU1q+fvz3ulNisUi0y9bj0zERz6Aq
-        EjfF6LPYhX2dWVa+9SGzS3kzuKF0
-X-Google-Smtp-Source: APXvYqygmMz27BsATAv7TuwQ835/lntnhwSx/Qe/v4zNX6MSeZWq1lXAAwnOy9/qqb/ND+ysU44esg==
-X-Received: by 2002:a63:2b41:: with SMTP id r62mr2197352pgr.403.1555655296717;
-        Thu, 18 Apr 2019 23:28:16 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=xaKLcXqgvpIhUZ5Sb3zwLh5apBX7LqGVKrAiPbClQMU=;
+        b=i/1wMR0gxnhrwxIpLavNZucHVIsNr8Uvk6wfYgkQ78axOL0MnSZSDqtErE3bjEMvJ3
+         swpia6O3I4/U1DImTsayr8pqFd5/N9jWQCpO6752pvZKHhBYKGAuJcCZF4514OlKAbyg
+         WcfT3VEYlD0eVTSabdg0w43H3aye2WyvMdWVlr6CfxGsaSD/8bY16mg+E+PNlBTvPAqT
+         ecOO51d0PnMVf8G0+uISqeG1jQADqx81Mr+FfXqW5W/opYkmcXoNY/t5jAMbBUHmnWbU
+         x6jVlw+iJpMVJMPFN8mKuPPcTqDNvBysIkDvld2nCrb0xRrXc11COea7zALZ8hBV1Zlk
+         17lg==
+X-Gm-Message-State: APjAAAV8Hf+yvat4Qsq85d19FVEUECUm5+fqba4ZpApXPi9B5hXLFRMP
+        Bm9fYIUW0dZpARNo8KeU/RLXz67V
+X-Google-Smtp-Source: APXvYqy476h8ycc32uFZ/pofuXPnDMb/w377+gAPmiacj6knLhaormPawOgHZuz8TGEoiViClT9LEQ==
+X-Received: by 2002:a63:1918:: with SMTP id z24mr2194261pgl.406.1555655291882;
+        Thu, 18 Apr 2019 23:28:11 -0700 (PDT)
 Received: from huyue2.ccdomain.com ([218.189.10.173])
-        by smtp.gmail.com with ESMTPSA id k6sm7880865pfj.173.2019.04.18.23.28.14
+        by smtp.gmail.com with ESMTPSA id k6sm7880865pfj.173.2019.04.18.23.28.09
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 18 Apr 2019 23:28:16 -0700 (PDT)
+        Thu, 18 Apr 2019 23:28:11 -0700 (PDT)
 From:   Yue Hu <zbestahu@gmail.com>
 To:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
         rafael.j.wysocki@intel.com
 Cc:     linux-pm@vger.kernel.org, huyue2@yulong.com
-Subject: [PATCH] cpufreq: Expose real_cpus out to userspace
-Date:   Fri, 19 Apr 2019 14:27:59 +0800
-Message-Id: <20190419062759.8524-2-zbestahu@gmail.com>
+Subject: [PATCH] cpufreq: Move ->get callback check outside of __cpufreq_get()
+Date:   Fri, 19 Apr 2019 14:27:58 +0800
+Message-Id: <20190419062759.8524-1-zbestahu@gmail.com>
 X-Mailer: git-send-email 2.17.1.windows.2
-In-Reply-To: <20190419062759.8524-1-zbestahu@gmail.com>
-References: <20190419062759.8524-1-zbestahu@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -71,46 +68,39 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Yue Hu <huyue2@yulong.com>
 
-Currently, there are 3 CPU masks, let's expose real_cpus just like the
-others if user want to know related CPUs that are actually present.
+Currenly, __cpufreq_get() called by show_cpuinfo_cur_freq() will check
+->get callback. That is needless since cpuinfo_cur_freq attribute will
+not be created if ->get is not set. So let's drop it in __cpufreq_get().
+Also keep this check in cpufreq_get().
 
 Signed-off-by: Yue Hu <huyue2@yulong.com>
 ---
- drivers/cpufreq/cpufreq.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/cpufreq/cpufreq.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c6187f1..0322cce 100644
+index 047662b..c6187f1 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -824,6 +824,11 @@ static ssize_t show_affected_cpus(struct cpufreq_policy *policy, char *buf)
- 	return cpufreq_show_cpus(policy->cpus, buf);
- }
- 
-+static ssize_t show_real_cpus(struct cpufreq_policy *policy, char *buf)
-+{
-+	return cpufreq_show_cpus(policy->real_cpus, buf);
-+}
-+
- static ssize_t store_scaling_setspeed(struct cpufreq_policy *policy,
- 					const char *buf, size_t count)
+@@ -1548,7 +1548,7 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
  {
-@@ -873,6 +878,7 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
- cpufreq_freq_attr_ro(bios_limit);
- cpufreq_freq_attr_ro(related_cpus);
- cpufreq_freq_attr_ro(affected_cpus);
-+cpufreq_freq_attr_ro(real_cpus);
- cpufreq_freq_attr_rw(scaling_min_freq);
- cpufreq_freq_attr_rw(scaling_max_freq);
- cpufreq_freq_attr_rw(scaling_governor);
-@@ -886,6 +892,7 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
- 	&scaling_max_freq.attr,
- 	&affected_cpus.attr,
- 	&related_cpus.attr,
-+	&real_cpus.attr,
- 	&scaling_governor.attr,
- 	&scaling_driver.attr,
- 	&scaling_available_governors.attr,
+ 	unsigned int ret_freq = 0;
+ 
+-	if (unlikely(policy_is_inactive(policy)) || !cpufreq_driver->get)
++	if (unlikely(policy_is_inactive(policy)))
+ 		return ret_freq;
+ 
+ 	ret_freq = cpufreq_driver->get(policy->cpu);
+@@ -1586,7 +1586,8 @@ unsigned int cpufreq_get(unsigned int cpu)
+ 
+ 	if (policy) {
+ 		down_read(&policy->rwsem);
+-		ret_freq = __cpufreq_get(policy);
++		if (cpufreq_driver->get)
++			ret_freq = __cpufreq_get(policy);
+ 		up_read(&policy->rwsem);
+ 
+ 		cpufreq_cpu_put(policy);
 -- 
 1.9.1
 
