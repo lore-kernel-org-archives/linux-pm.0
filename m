@@ -2,174 +2,244 @@ Return-Path: <SRS0=DtRT=SV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54249C282DF
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 18:38:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE7ADC282DA
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 18:58:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1843C204EC
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 18:38:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 70D72205ED
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 18:58:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="GxcdP2ur"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="QCLn0Ghb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727587AbfDSSib (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Apr 2019 14:38:31 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:36466 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727982AbfDSSho (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 14:37:44 -0400
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190419134825euoutp010eadf32cb703420807ecc21bb14ff661~W5ETdKmEm0632706327euoutp01-
-        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 13:48:25 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190419134825euoutp010eadf32cb703420807ecc21bb14ff661~W5ETdKmEm0632706327euoutp01-
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555681705;
-        bh=HLV8RfTTYMJHCpoVzMgMpnDdAuBIjRTs2a5rElTq130=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GxcdP2urj0OQVvsCtdplP9b0GvSrKZ1UdCQWrNAAInXO+f4Ge71GNkvSxaxPNDYh0
-         utCX8JcUNgu5ZsBWF9jnIBXAPL7QyF6c3SQnHseKCNTbitpE0Xzxq5T32Plqn+sArV
-         h/syhVv/jqkdbUe2WykezieIxvkuFB+roJn8w14g=
-Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190419134824eucas1p2a552ccb05f8c0f47ea9d4b24e3642b0d~W5EScF4m80964809648eucas1p2M;
-        Fri, 19 Apr 2019 13:48:24 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id 11.69.04377.8A1D9BC5; Fri, 19
-        Apr 2019 14:48:24 +0100 (BST)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6~W5ERw4Eg_2483224832eucas1p1g;
-        Fri, 19 Apr 2019 13:48:23 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190419134823eusmtrp10782bb81d2f0505051df40fa19f44671~W5ERi479W2847828478eusmtrp1L;
-        Fri, 19 Apr 2019 13:48:23 +0000 (GMT)
-X-AuditID: cbfec7f4-12dff70000001119-74-5cb9d1a8ad7a
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id BD.BE.04140.7A1D9BC5; Fri, 19
-        Apr 2019 14:48:23 +0100 (BST)
-Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190419134822eusmtip207d2af356ac28d0544c4c92fb930a231~W5EQ2JVYL0862908629eusmtip2i;
-        Fri, 19 Apr 2019 13:48:22 +0000 (GMT)
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, cw00.choi@samsung.com,
-        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
-        s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org,
-        l.luba@partner.samsung.com, willy.mh.wolff.ml@gmail.com
-Subject: [PATCH v3 4/4] DT: arm: exynos4412: add event data type which is
- monitored
-Date:   Fri, 19 Apr 2019 15:48:08 +0200
-Message-Id: <1555681688-19643-5-git-send-email-l.luba@partner.samsung.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA0WSe0hTURzHO/fu7t6NVrdp+kPDYiC97R0H01BSuBRF/0RQhq28mbSp7apZ
-        Sa3M1DEfGD1mzh5W6jLNOUQtxXRkJc5GqKmtUougfEBbQhGSt2v03+d8z+d8f4fDYUi1nQpi
-        kpLTeEOyVqeRK2WNz3+61la5m+PW3y8LwPU36ig84PtC4VtOF4WLxr6RuLf3MY17Lo7TeMi4
-        BNvH+in8pqVMjr0FToRv9LYR+JHTQ+P7A24CD1+okuOcVieNO8dzKTz9YhRFLeJqymsQ11zq
-        oTm7LV/ONdw7zz2bfEpwhQ4b4rz2kL30AWVEAq9LyuAN67YfVh6vqHZRqbWqzCejlZQRvVKY
-        kIIBdjN4anOQCSkZNVuF4GVJIy0tfAjMzWZCtNSsF8E1c+S/E/Udd0lJqkRQZH1IStLsiW/9
-        C02IYeRsGDTZToqxP1uBYLrzgOiT7AMC2rK//y31Y/dBu8VHiyxjQ2HIXEyJrGJ3woh7iJCG
-        hcCgK58UOxXsLqicyBB7gH1Fw7i1QCY5MdDjq5BL7Adfuxy0xEug+4p5zhHAWHAHSZwFY0XW
-        OWcbdHa5KbGfZFdCXcs6KY6G1h/tSIyBXQBvJxaJMTmLJY3XSSlWQd5ltWSvAIf59dyFA6Cy
-        5tpcOQfWq1/l0kuVI7j+y4OK0dLS/8NuI2RDgXy6oE/khY3J/KkwQasX0pMTw46m6O1o9id1
-        z3T5mlDL7yMdiGWQZr6qvaQ5Tk1pM4TT+g4EDKnxV0UnOOLUqgTt6TO8ISXekK7jhQ4UzMg0
-        gaqz8z4eVLOJ2jT+BM+n8oZ/uwSjCDKiGEuuJUc3/CFoOTZt3fPBM7qUjw+uoxSmT5diRxps
-        fWP5nxt2WGOn8m72DWg2lbx8MPjeN+GYBGJxdzgXsZue2Z95LjvO4g7YMq96jTcpPooPrw1d
-        Vu0fOHWohiqdog/yeeH3vnx6N5n7kajP351lSgwKOXTMs9qxrHAycoYu1ciE49oNq0iDoP0D
-        GJTDK0UDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprOIsWRmVeSWpSXmKPExsVy+t/xe7rLL+6MMVh8VtVi44z1rBbXvzxn
-        tZh/5ByrRf/j18wW589vYLc42/SG3eJWg4zFpsfXWC0u75rDZvG59wijxYzz+5gs1h65y26x
-        9PpFJovbjSvYLFr3HmG3OPymndXi24lHjA6CHmvmrWH02DnrLrvHplWdbB6bl9R7HHy3h8mj
-        b8sqRo/Pm+QC2KP0bIryS0tSFTLyi0tslaINLYz0DC0t9IxMLPUMjc1jrYxMlfTtbFJSczLL
-        Uov07RL0MhavPMdasI63Yvej5awNjKc4uxg5OSQETCQ2HlrE3MXIxSEksJRR4vOHA4wQCTGJ
-        Sfu2s0PYwhJ/rnWxQRR9YpR4cGw9UBEHB5uAnsSOVYUgcRGB5YwSx1a9BZvELLCNSWLPld1g
-        k4QFgiUa37eygdgsAqoSt3omsILYvAJeEg8v3mKC2CAncfNcJzPIUE4Bb4nlb8tAwkJAJdef
-        n2GewMi3gJFhFaNIamlxbnpusZFecWJucWleul5yfu4mRmCkbDv2c8sOxq53wYcYBTgYlXh4
-        D0zaGSPEmlhWXJl7iFGCg1lJhNcxZUuMEG9KYmVValF+fFFpTmrxIUZToJsmMkuJJucDoziv
-        JN7Q1NDcwtLQ3Njc2MxCSZz3vEFllJBAemJJanZqakFqEUwfEwenVAPjzNVrg9ouXtZ5bmyf
-        tFq+Kux+jNXMNOmGNMkjTGembrQ/wvKua+OLtf/SgiZOObrdbyOXAo/E36Vnf7DPySl4f7w2
-        xzp998Zdm+85T+gz+Vs2Vd7QpTEqOyMria/MwWaht5z8giXqr/59DkxdxqBvu+dk3HzNDsdv
-        GeJTNVpzbi88af/oyrf3SizFGYmGWsxFxYkAx9wTmqoCAAA=
-X-CMS-MailID: 20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="UTF-8"
-X-RootMTR: 20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6
-References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6@eucas1p1.samsung.com>
+        id S1728566AbfDSS6X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Apr 2019 14:58:23 -0400
+Received: from gateway34.websitewelcome.com ([192.185.149.46]:28846 "EHLO
+        gateway34.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728540AbfDSS6U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 14:58:20 -0400
+Received: from cm12.websitewelcome.com (cm12.websitewelcome.com [100.42.49.8])
+        by gateway34.websitewelcome.com (Postfix) with ESMTP id 371E41154D4
+        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 13:12:52 -0500 (CDT)
+Received: from br164.hostgator.com.br ([192.185.176.180])
+        by cmsmtp with SMTP
+        id HY0Khgm1ViQerHY0KhOiTc; Fri, 19 Apr 2019 13:12:52 -0500
+X-Authority-Reason: nr=8
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=castello.eng.br; s=default; h=Content-Transfer-Encoding:Content-Type:
+        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
+        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=POBm3POgnF9dNWYaSNQl7zAnLu6dfC4n/mraAAfr//s=; b=QCLn0Ghbw9fi2w6SWZfZQ9XlPS
+        WgwLi8mx4pW+OIGiLRfSgOZIEuzSDo0U9ftMZDF1EOtKNEwewAYKBPbf8/ZEjmky+chxdvkQ/bFIC
+        V+2kYxjLm/ToQLiOveRPW7QVXnqfcfsKIdauPP0uGxprvlIdO+Pt+L1g1RBatls+Lk2EDAETxZ/vc
+        WcKwb2yf1KsdD/G1HXhrWoGPo5ggLIBh4C/Y3wmuv4+CHZDcDrXPqWip03ak1upAklY1CnlxCc2TH
+        /rTobVg01krjGzNnfdj8L3aJ1kuILu2iSqrfa04o+Qok56ixYMeGu0L3siaBCox90fvExUP2z2vJB
+        nFsw810g==;
+Received: from [177.35.229.111] (port=52782 helo=[192.168.0.50])
+        by br164.hostgator.com.br with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
+        (Exim 4.91)
+        (envelope-from <matheus@castello.eng.br>)
+        id 1hHY0J-003wyR-DH; Fri, 19 Apr 2019 15:12:51 -0300
+Subject: Re: [PATCH v2 1/4] power: supply: max17040: Add IRQ handler for low
+ SOC alert
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= 
+        <b.zolnierkie@samsung.com>, lee.jones@linaro.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
+ <20190415012635.6369-1-matheus@castello.eng.br>
+ <20190415012635.6369-2-matheus@castello.eng.br>
+ <CAJKOXPfXS_L992rPdHqitFyRmw93En9GRLVOjRRnwGgiEwV28Q@mail.gmail.com>
+From:   Matheus Castello <matheus@castello.eng.br>
+Message-ID: <c4bffa4d-36bb-1f6c-cf56-69a990d9b832@castello.eng.br>
+Date:   Fri, 19 Apr 2019 15:12:48 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <CAJKOXPfXS_L992rPdHqitFyRmw93En9GRLVOjRRnwGgiEwV28Q@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"; format="flowed"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - br164.hostgator.com.br
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - castello.eng.br
+X-BWhitelist: no
+X-Source-IP: 177.35.229.111
+X-Source-L: No
+X-Exim-ID: 1hHY0J-003wyR-DH
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.0.50]) [177.35.229.111]:52782
+X-Source-Auth: matheus@castello.eng.br
+X-Email-Count: 8
+X-Source-Cap: Y2FzdGUyNDg7Y2FzdGUyNDg7YnIxNjQuaG9zdGdhdG9yLmNvbS5icg==
+X-Local-Domain: yes
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190419134808.ympn343B9vCZbYs4_j9VP7P675rgq66f8V5R2jrcxZw@z>
+Message-ID: <20190419181248.nytvstVtmbBc62H8ewm5miQi4hzsXMIyRscxTL9zMzg@z>
 
-The patch adds new field in the PPMU event which shows explicitly
-what kind of data the event is monitoring. It is possible to change it
-using defined values in exynos_ppmu.h file.
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- arch/arm/boot/dts/exynos4412-ppmu-common.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-index 3a3b2fa..549faba 100644
---- a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-@@ -6,12 +6,16 @@
-  * Author: Chanwoo Choi <cw00.choi@samsung.com>
-  */
- 
-+#include <dt-bindings/pmu/exynos_ppmu.h>
-+
- &ppmu_dmc0 {
-        status = "okay";
- 
-        events {
- 	       ppmu_dmc0_3: ppmu-event3-dmc0 {
- 		       event-name = "ppmu-event3-dmc0";
-+		       event-data-type = <(PPMU_RO_DATA_CNT |
-+					   PPMU_WO_DATA_CNT)>;
- 	       };
-        };
- };
-@@ -22,6 +26,8 @@
-        events {
- 	       ppmu_dmc1_3: ppmu-event3-dmc1 {
- 		       event-name = "ppmu-event3-dmc1";
-+		       event-data-type = <(PPMU_RO_DATA_CNT |
-+					   PPMU_WO_DATA_CNT)>;
- 	       };
-        };
- };
-@@ -32,6 +38,8 @@
-        events {
- 	       ppmu_leftbus_3: ppmu-event3-leftbus {
- 		       event-name = "ppmu-event3-leftbus";
-+		       event-data-type = <(PPMU_RO_DATA_CNT |
-+					   PPMU_WO_DATA_CNT)>;
- 	       };
-        };
- };
-@@ -42,6 +50,8 @@
-        events {
- 	       ppmu_rightbus_3: ppmu-event3-rightbus {
- 		       event-name = "ppmu-event3-rightbus";
-+		       event-data-type = <(PPMU_RO_DATA_CNT |
-+					   PPMU_WO_DATA_CNT)>;
- 	       };
-        };
- };
--- 
-2.7.4
+Em 4/15/19 4:10 AM, Krzysztof Kozlowski escreveu:
+> On Mon, 15 Apr 2019 at 03:49, Matheus Castello <matheus@castello.eng.br> wrote:
+>>
+>> According datasheet max17040 has a pin for alert host for low SOC.
+>> This pin can be used as external interrupt, so we need to check for
+>> interrupts assigned for device and handle it.
+>>
+>> In hadler we are checking and storing fuel gauge registers values
+>> and send an uevent to notificate user space, so user space can decide
+>> save work or turn off since the alert demonstrate that the battery may
+>> no have the power to keep the system turned on for much longer.
+>>
+>> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
+>> ---
+>>   drivers/power/supply/max17040_battery.c | 69 +++++++++++++++++++++++--
+>>   1 file changed, 64 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+>> index 91cafc7bed30..8d2f8ed3f44c 100644
+>> --- a/drivers/power/supply/max17040_battery.c
+>> +++ b/drivers/power/supply/max17040_battery.c
+>> @@ -13,6 +13,7 @@
+>>   #include <linux/err.h>
+>>   #include <linux/i2c.h>
+>>   #include <linux/delay.h>
+>> +#include <linux/interrupt.h>
+>>   #include <linux/power_supply.h>
+>>   #include <linux/max17040_battery.h>
+>>   #include <linux/slab.h>
+>> @@ -160,21 +161,40 @@ static void max17040_get_status(struct i2c_client *client)
+>>                  chip->status = POWER_SUPPLY_STATUS_FULL;
+>>   }
+>>
+>> +static void max17040_check_changes(struct i2c_client *client)
+>> +{
+>> +       max17040_get_vcell(client);
+>> +       max17040_get_soc(client);
+>> +       max17040_get_online(client);
+>> +       max17040_get_status(client);
+>> +}
+>> +
+>>   static void max17040_work(struct work_struct *work)
+>>   {
+>>          struct max17040_chip *chip;
+>>
+>>          chip = container_of(work, struct max17040_chip, work.work);
+>> -
+>> -       max17040_get_vcell(chip->client);
+>> -       max17040_get_soc(chip->client);
+>> -       max17040_get_online(chip->client);
+>> -       max17040_get_status(chip->client);
+>> +       max17040_check_changes(chip->client);
+>>
+>>          queue_delayed_work(system_power_efficient_wq, &chip->work,
+>>                             MAX17040_DELAY);
+>>   }
+>>
+>> +static irqreturn_t max17040_thread_handler(int id, void *dev)
+>> +{
+>> +       struct max17040_chip *chip = dev;
+>> +       struct i2c_client *client = chip->client;
+>> +
+>> +       dev_warn(&client->dev, "IRQ: Alert battery low level");
+>> +       /* read registers */
+>> +       max17040_check_changes(chip->client);
+>> +
+>> +       /* send uevent */
+>> +       power_supply_changed(chip->battery);
+>> +
+>> +       return IRQ_HANDLED;
+>> +}
+>> +
+>>   static enum power_supply_property max17040_battery_props[] = {
+>>          POWER_SUPPLY_PROP_STATUS,
+>>          POWER_SUPPLY_PROP_ONLINE,
+>> @@ -217,6 +237,27 @@ static int max17040_probe(struct i2c_client *client,
+>>                  return PTR_ERR(chip->battery);
+>>          }
+>>
+>> +       /* check interrupt */
+>> +       if (client->irq) {
+>> +               int ret;
+>> +               unsigned int flags;
+>> +
+>> +               dev_info(&client->dev, "IRQ: enabled\n");
+>> +               flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
+>> +
+>> +               ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
+>> +                                               max17040_thread_handler, flags,
+>> +                                               chip->battery->desc->name,
+>> +                                               chip);
+>> +
+>> +               if (ret) {
+>> +                       client->irq = 0;
+>> +                       if (ret != -EBUSY)
+> 
+> Why not on EBUSY?
+> 
+>> +                               dev_warn(&client->dev,
+>> +                                       "Failed to get IRQ err %d\n", ret);
+>> +               }
+>> +       }
+>> +
+>>          max17040_reset(client);
+>>          max17040_get_version(client);
+>>
+>> @@ -224,6 +265,8 @@ static int max17040_probe(struct i2c_client *client,
+>>          queue_delayed_work(system_power_efficient_wq, &chip->work,
+>>                             MAX17040_DELAY);
+>>
+>> +       device_init_wakeup(&client->dev, 1);
+> 
+> Either you parse DT for wakeup-source property and use it... or you
+> unconditionally enable wakeup. In the second case - there is no point
+> to check later for device_may_wakeup(). Instead check the return value
+> of device_init_wakeup().
+> 
+>> +
+>>          return 0;
+>>   }
+>>
+>> @@ -244,6 +287,14 @@ static int max17040_suspend(struct device *dev)
+>>          struct max17040_chip *chip = i2c_get_clientdata(client);
+>>
+>>          cancel_delayed_work(&chip->work);
+>> +
+>> +       if (client->irq) {
+>> +               if (device_may_wakeup(dev))
+>> +                       enable_irq_wake(client->irq);
+>> +               else
+>> +                       disable_irq_wake(client->irq);
+> 
+> Did you try the wakeup from suspend? You do not have a disable_irq()
+> here which usually was needed for interrupts to work properly on
+> suspend. Maybe this was fixed?
+> 
+> Best regards,
+> Krzysztof
+> 
+Hi Krzysztof,
+
+I test it using mem state and suspend, resuming seems to have worked 
+correctly ...
+
+Thanks for the review, I'm working in your suggestions and I expect to 
+send v3 this weekend.
+
+Best Regards,
+Matheus Castello
 
