@@ -1,86 +1,171 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v7 00/10] Add support for XO 1.75 to OLPC battery driver
-Date: Fri, 19 Apr 2019 14:42:22 +0200
-Message-ID: <20190419124222.yizj6krkdi236x74@earth.universe>
-References: <20190418144655.18758-1-lkundrak@v3.sk>
- <20190418202000.hcojhcf2f47te44u@earth.universe>
- <20190419075716.GB6795@gmail.com>
+From: Matheus Castello <matheus@castello.eng.br>
+Subject: Re: [PATCH v2 1/4] power: supply: max17040: Add IRQ handler for low
+ SOC alert
+Date: Fri, 19 Apr 2019 15:12:48 -0300
+Message-ID: <c4bffa4d-36bb-1f6c-cf56-69a990d9b832@castello.eng.br>
+References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
+ <20190415012635.6369-1-matheus@castello.eng.br>
+ <20190415012635.6369-2-matheus@castello.eng.br>
+ <CAJKOXPfXS_L992rPdHqitFyRmw93En9GRLVOjRRnwGgiEwV28Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fjpcncqz7gjt75yj"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190419075716.GB6795@gmail.com>
+In-Reply-To: <CAJKOXPfXS_L992rPdHqitFyRmw93En9GRLVOjRRnwGgiEwV28Q@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Lubomir Rintel <lkundrak@v3.sk>, Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, Chanwoo Choi <cw00.choi@samsung.com>, =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= <b.zolnierkie@samsung.com>, lee.jones@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---fjpcncqz7gjt75yj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ingo,
+Em 4/15/19 4:10 AM, Krzysztof Kozlowski escreveu:
+> On Mon, 15 Apr 2019 at 03:49, Matheus Castello <matheus@castello.eng.br> wrote:
+>>
+>> According datasheet max17040 has a pin for alert host for low SOC.
+>> This pin can be used as external interrupt, so we need to check for
+>> interrupts assigned for device and handle it.
+>>
+>> In hadler we are checking and storing fuel gauge registers values
+>> and send an uevent to notificate user space, so user space can decide
+>> save work or turn off since the alert demonstrate that the battery may
+>> no have the power to keep the system turned on for much longer.
+>>
+>> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
+>> ---
+>>   drivers/power/supply/max17040_battery.c | 69 +++++++++++++++++++++++--
+>>   1 file changed, 64 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+>> index 91cafc7bed30..8d2f8ed3f44c 100644
+>> --- a/drivers/power/supply/max17040_battery.c
+>> +++ b/drivers/power/supply/max17040_battery.c
+>> @@ -13,6 +13,7 @@
+>>   #include <linux/err.h>
+>>   #include <linux/i2c.h>
+>>   #include <linux/delay.h>
+>> +#include <linux/interrupt.h>
+>>   #include <linux/power_supply.h>
+>>   #include <linux/max17040_battery.h>
+>>   #include <linux/slab.h>
+>> @@ -160,21 +161,40 @@ static void max17040_get_status(struct i2c_client *client)
+>>                  chip->status = POWER_SUPPLY_STATUS_FULL;
+>>   }
+>>
+>> +static void max17040_check_changes(struct i2c_client *client)
+>> +{
+>> +       max17040_get_vcell(client);
+>> +       max17040_get_soc(client);
+>> +       max17040_get_online(client);
+>> +       max17040_get_status(client);
+>> +}
+>> +
+>>   static void max17040_work(struct work_struct *work)
+>>   {
+>>          struct max17040_chip *chip;
+>>
+>>          chip = container_of(work, struct max17040_chip, work.work);
+>> -
+>> -       max17040_get_vcell(chip->client);
+>> -       max17040_get_soc(chip->client);
+>> -       max17040_get_online(chip->client);
+>> -       max17040_get_status(chip->client);
+>> +       max17040_check_changes(chip->client);
+>>
+>>          queue_delayed_work(system_power_efficient_wq, &chip->work,
+>>                             MAX17040_DELAY);
+>>   }
+>>
+>> +static irqreturn_t max17040_thread_handler(int id, void *dev)
+>> +{
+>> +       struct max17040_chip *chip = dev;
+>> +       struct i2c_client *client = chip->client;
+>> +
+>> +       dev_warn(&client->dev, "IRQ: Alert battery low level");
+>> +       /* read registers */
+>> +       max17040_check_changes(chip->client);
+>> +
+>> +       /* send uevent */
+>> +       power_supply_changed(chip->battery);
+>> +
+>> +       return IRQ_HANDLED;
+>> +}
+>> +
+>>   static enum power_supply_property max17040_battery_props[] = {
+>>          POWER_SUPPLY_PROP_STATUS,
+>>          POWER_SUPPLY_PROP_ONLINE,
+>> @@ -217,6 +237,27 @@ static int max17040_probe(struct i2c_client *client,
+>>                  return PTR_ERR(chip->battery);
+>>          }
+>>
+>> +       /* check interrupt */
+>> +       if (client->irq) {
+>> +               int ret;
+>> +               unsigned int flags;
+>> +
+>> +               dev_info(&client->dev, "IRQ: enabled\n");
+>> +               flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
+>> +
+>> +               ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
+>> +                                               max17040_thread_handler, flags,
+>> +                                               chip->battery->desc->name,
+>> +                                               chip);
+>> +
+>> +               if (ret) {
+>> +                       client->irq = 0;
+>> +                       if (ret != -EBUSY)
+> 
+> Why not on EBUSY?
+> 
+>> +                               dev_warn(&client->dev,
+>> +                                       "Failed to get IRQ err %d\n", ret);
+>> +               }
+>> +       }
+>> +
+>>          max17040_reset(client);
+>>          max17040_get_version(client);
+>>
+>> @@ -224,6 +265,8 @@ static int max17040_probe(struct i2c_client *client,
+>>          queue_delayed_work(system_power_efficient_wq, &chip->work,
+>>                             MAX17040_DELAY);
+>>
+>> +       device_init_wakeup(&client->dev, 1);
+> 
+> Either you parse DT for wakeup-source property and use it... or you
+> unconditionally enable wakeup. In the second case - there is no point
+> to check later for device_may_wakeup(). Instead check the return value
+> of device_init_wakeup().
+> 
+>> +
+>>          return 0;
+>>   }
+>>
+>> @@ -244,6 +287,14 @@ static int max17040_suspend(struct device *dev)
+>>          struct max17040_chip *chip = i2c_get_clientdata(client);
+>>
+>>          cancel_delayed_work(&chip->work);
+>> +
+>> +       if (client->irq) {
+>> +               if (device_may_wakeup(dev))
+>> +                       enable_irq_wake(client->irq);
+>> +               else
+>> +                       disable_irq_wake(client->irq);
+> 
+> Did you try the wakeup from suspend? You do not have a disable_irq()
+> here which usually was needed for interrupts to work properly on
+> suspend. Maybe this was fixed?
+> 
+> Best regards,
+> Krzysztof
+> 
+Hi Krzysztof,
 
-On Fri, Apr 19, 2019 at 09:57:16AM +0200, Ingo Molnar wrote:
-> > On Thu, Apr 18, 2019 at 04:46:45PM +0200, Lubomir Rintel wrote:
-> > > This patch set modifies the OLPC battery driver so that it could even=
-tually
-> > > be used on an Arm-based OLPC XO 1.75 machine.
-> > >=20
-> > > Compared to the previous version, it addresses review comments for the
-> > > x86 platform parts from Thomas Gleixner. Details in individual patche=
-s'
-> > > change logs.
-> > >=20
-> > > I've failed to version the previous iteration of the set that should'=
-ve
-> > > been "v6" for the change logs to make sense. Sorry for that.
-> > >=20
-> > > Thank you,
-> > > Lubo
-> >=20
-> > I queued up the complete patchset via an immutable branch based on
-> > v5.1-rc1. X86 maintainers can pull this signed immutable branch as
-> > required. Thanks for the patches,
->=20
-> Would you mind sending these patches to Linus yourself, as part of the=20
-> power-supply tree?
->=20
-> That's where it really belongs, the impact on arch/x86/ was mostly=20
-> drive-by (and it's now all Acked-by Thomas), the meat of the changes is=
-=20
-> in the OLPC battery driver.
+I test it using mem state and suspend, resuming seems to have worked 
+correctly ...
 
-Yes, I merged the immutable branch into power-supply. You can either
-also merge it (e.g. when you plan to add other changes), or just ignore
-it :) This is what I usually do with other subsystems to avoid
-pointless merge conflicts.
+Thanks for the review, I'm working in your suggestions and I expect to 
+send v3 this weekend.
 
-TLDR: Yes.
-
--- Sebastian
-
---fjpcncqz7gjt75yj
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly5wiQACgkQ2O7X88g7
-+pohFhAAnMvGVvpZWUjOCSBeX6SHrawPkrxXf0+MNl9LXP58EPyPdlLep8CkDTWM
-3l2z2RuOdWyPdUjRuJquk0GdiSum+DtTiUPj+E0c1TjgFxzqOxV5p+sY1J1aGlMP
-ES6x5K1d3CFVDDYKY+e+0+SS8vU4Bhfxb+n1jOBQsEQDa6MdP7HDXDFt0QGDCqoM
-2CdNIGWPjefYvwMJD7HthEoe7Rkahv81EVGv8RbkojNSd4vr5k7pTlYyNHsrv8sR
-K3/+1BMQ+bDuvfwYFXO7FmR1UivLq+gNE+q0+TA+AkKZMpIJ6+P8fjxgspn2T8UI
-PC8XR2HVmvVVA6VeiM/gcvPbX6GnVAlnXCxeLUkGwF+NZvyIIEgg1TIsDrmV21Nn
-DQ02ELgvIXX5QdbBREP0aL83HqK4i5C0bJRO/+4kTrClP3clthuoA5GSEppOWxmP
-2kZJUMdiWCU5Q9ReGjOaXq63HMNRMwrFi+2jABbM2FSc9+shv3M+O9tr2heJi1Kx
-+e8RQkQ+iZn4w/Uz8EVIvwdfHgHKLMrip38A3iXqQABmIEk7nvI9/UXoC7nNcxDM
-8E1FXpN5hoK+b2pTaTWMCfTlsjXM7kFg2J4Pgq4KMJIp2xcLmxMkrl/9cQg0pWwb
-uO8IXoUm8ChpHvXHrS7wWPcbQCGTrV0LoVwMpbUyVF1vtVB8+Ck=
-=NiHD
------END PGP SIGNATURE-----
-
---fjpcncqz7gjt75yj--
+Best Regards,
+Matheus Castello
