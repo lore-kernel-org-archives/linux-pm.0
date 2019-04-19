@@ -1,10 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v6 01/10] clk: samsung: add needed IDs for DMC clocks in
- Exynos5420
-Date: Fri, 19 Apr 2019 16:19:19 +0200
-Message-ID: <1555683568-20882-2-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v6 08/10] drivers: devfreq: events: add Exynos PPMU new
+ events
+Date: Fri, 19 Apr 2019 16:19:26 +0200
+Message-ID: <1555683568-20882-9-git-send-email-l.luba@partner.samsung.com>
 References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419141940eucas1p295a1130863cf2e69476ca0ba11a8a102@eucas1p2.samsung.com>
+        <CGME20190419141950eucas1p2e810215d1ceaf75fc9e807bbaa78e003@eucas1p2.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
@@ -13,65 +13,31 @@ To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kern
 Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Define new IDs for clocks used by Dynamic Memory Controller in
-Exynos5422 SoC.
+Define new performance events supported by Exynos5422 SoC counters.
+The counters are built-in in Dynamic Memory Controller and provide
+information regarding memory utilization.
 
-Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ drivers/devfreq/event/exynos-ppmu.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
-index 355f469..abb1842 100644
---- a/include/dt-bindings/clock/exynos5420.h
-+++ b/include/dt-bindings/clock/exynos5420.h
-@@ -60,6 +60,7 @@
- #define CLK_MAU_EPLL		159
- #define CLK_SCLK_HSIC_12M	160
- #define CLK_SCLK_MPHY_IXTAL24	161
-+#define CLK_SCLK_BPLL		162
+diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+index 073bf2c..dca97ca 100644
+--- a/drivers/devfreq/event/exynos-ppmu.c
++++ b/drivers/devfreq/event/exynos-ppmu.c
+@@ -89,6 +89,12 @@ static struct __exynos_ppmu_events {
+ 	PPMU_EVENT(d1-cpu),
+ 	PPMU_EVENT(d1-general),
+ 	PPMU_EVENT(d1-rt),
++
++	/* For Exynos5422 SoC */
++	PPMU_EVENT(dmc0_0),
++	PPMU_EVENT(dmc0_1),
++	PPMU_EVENT(dmc1_0),
++	PPMU_EVENT(dmc1_1),
+ };
  
- /* gate clocks */
- #define CLK_UART0		257
-@@ -195,6 +196,18 @@
- #define CLK_ACLK432_CAM		518
- #define CLK_ACLK_FL1550_CAM	519
- #define CLK_ACLK550_CAM		520
-+#define CLK_CLKM_PHY0		521
-+#define CLK_CLKM_PHY1		522
-+#define CLK_ACLK_PPMU_DREX0_0	523
-+#define CLK_ACLK_PPMU_DREX0_1	524
-+#define CLK_ACLK_PPMU_DREX1_0	525
-+#define CLK_ACLK_PPMU_DREX1_1	526
-+#define CLK_PCLK_PPMU_DREX0_0	527
-+#define CLK_PCLK_PPMU_DREX0_1	528
-+#define CLK_PCLK_PPMU_DREX1_0	529
-+#define CLK_PCLK_PPMU_DREX1_1	530
-+#define CLK_CDREX_PAUSE		531
-+#define CLK_CDREX_TIMING_SET	532
- 
- /* mux clocks */
- #define CLK_MOUT_HDMI		640
-@@ -217,6 +230,8 @@
- #define CLK_MOUT_EPLL		657
- #define CLK_MOUT_MAU_EPLL	658
- #define CLK_MOUT_USER_MAU_EPLL	659
-+#define CLK_MOUT_SCLK_SPLL	660
-+#define CLK_MOUT_MX_MSPLL_CCORE_PHY	661
- 
- /* divider clocks */
- #define CLK_DOUT_PIXEL		768
-@@ -248,8 +263,9 @@
- #define CLK_DOUT_CCLK_DREX0	794
- #define CLK_DOUT_CLK2X_PHY0	795
- #define CLK_DOUT_PCLK_CORE_MEM	796
-+#define CLK_FF_DOUT_SPLL2	797
- 
- /* must be greater than maximal clock id */
--#define CLK_NR_CLKS		797
-+#define CLK_NR_CLKS		798
- 
- #endif /* _DT_BINDINGS_CLOCK_EXYNOS_5420_H */
+ static int exynos_ppmu_find_ppmu_id(struct devfreq_event_dev *edev)
 -- 
 2.7.4
