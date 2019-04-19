@@ -2,244 +2,293 @@ Return-Path: <SRS0=DtRT=SV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE7ADC282DA
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 18:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A911FC282DA
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:07:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 70D72205ED
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 18:58:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3E68920645
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:07:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="QCLn0Ghb"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="Cb/1hrNc"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728566AbfDSS6X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Apr 2019 14:58:23 -0400
-Received: from gateway34.websitewelcome.com ([192.185.149.46]:28846 "EHLO
-        gateway34.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728540AbfDSS6U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 14:58:20 -0400
-Received: from cm12.websitewelcome.com (cm12.websitewelcome.com [100.42.49.8])
-        by gateway34.websitewelcome.com (Postfix) with ESMTP id 371E41154D4
-        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 13:12:52 -0500 (CDT)
-Received: from br164.hostgator.com.br ([192.185.176.180])
-        by cmsmtp with SMTP
-        id HY0Khgm1ViQerHY0KhOiTc; Fri, 19 Apr 2019 13:12:52 -0500
-X-Authority-Reason: nr=8
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=castello.eng.br; s=default; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=POBm3POgnF9dNWYaSNQl7zAnLu6dfC4n/mraAAfr//s=; b=QCLn0Ghbw9fi2w6SWZfZQ9XlPS
-        WgwLi8mx4pW+OIGiLRfSgOZIEuzSDo0U9ftMZDF1EOtKNEwewAYKBPbf8/ZEjmky+chxdvkQ/bFIC
-        V+2kYxjLm/ToQLiOveRPW7QVXnqfcfsKIdauPP0uGxprvlIdO+Pt+L1g1RBatls+Lk2EDAETxZ/vc
-        WcKwb2yf1KsdD/G1HXhrWoGPo5ggLIBh4C/Y3wmuv4+CHZDcDrXPqWip03ak1upAklY1CnlxCc2TH
-        /rTobVg01krjGzNnfdj8L3aJ1kuILu2iSqrfa04o+Qok56ixYMeGu0L3siaBCox90fvExUP2z2vJB
-        nFsw810g==;
-Received: from [177.35.229.111] (port=52782 helo=[192.168.0.50])
-        by br164.hostgator.com.br with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
-        (Exim 4.91)
-        (envelope-from <matheus@castello.eng.br>)
-        id 1hHY0J-003wyR-DH; Fri, 19 Apr 2019 15:12:51 -0300
-Subject: Re: [PATCH v2 1/4] power: supply: max17040: Add IRQ handler for low
- SOC alert
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= 
-        <b.zolnierkie@samsung.com>, lee.jones@linaro.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
- <20190415012635.6369-1-matheus@castello.eng.br>
- <20190415012635.6369-2-matheus@castello.eng.br>
- <CAJKOXPfXS_L992rPdHqitFyRmw93En9GRLVOjRRnwGgiEwV28Q@mail.gmail.com>
-From:   Matheus Castello <matheus@castello.eng.br>
-Message-ID: <c4bffa4d-36bb-1f6c-cf56-69a990d9b832@castello.eng.br>
-Date:   Fri, 19 Apr 2019 15:12:48 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <CAJKOXPfXS_L992rPdHqitFyRmw93En9GRLVOjRRnwGgiEwV28Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format="flowed"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - br164.hostgator.com.br
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - castello.eng.br
-X-BWhitelist: no
-X-Source-IP: 177.35.229.111
-X-Source-L: No
-X-Exim-ID: 1hHY0J-003wyR-DH
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: ([192.168.0.50]) [177.35.229.111]:52782
-X-Source-Auth: matheus@castello.eng.br
-X-Email-Count: 8
-X-Source-Cap: Y2FzdGUyNDg7Y2FzdGUyNDg7YnIxNjQuaG9zdGdhdG9yLmNvbS5icg==
-X-Local-Domain: yes
+        id S1726248AbfDSTHn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Apr 2019 15:07:43 -0400
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:38809 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726934AbfDSTHn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 15:07:43 -0400
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190419141946euoutp01b61c767a8d6f35d6a484b11e125aaaeb~W5frIirSB2274622746euoutp01L
+        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 14:19:46 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190419141946euoutp01b61c767a8d6f35d6a484b11e125aaaeb~W5frIirSB2274622746euoutp01L
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1555683586;
+        bh=QJOtFNoh5dlRuZa0BCb5/nTwgHjZIpFyzRw5uANmmR8=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=Cb/1hrNcYVUi8hRFa4zdUeMw4UTIkEsHvceGQhtOq8lZFwJZ7HSoXoJ8QxU+BX9M6
+         js+KC9LMMsiKpxucEsR/y+5QdqCS8g9QPYnemU4f8hReLjMH36PJ9hVDzMirLg8bHj
+         YSHtDzUXzlWSN+40yl0YIDIXkKxuMgkz8eS4A64c=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190419141945eucas1p12471bb235563a0e133e26deffa7943eb~W5fqdOAa_3264632646eucas1p1T;
+        Fri, 19 Apr 2019 14:19:45 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges1new.samsung.com (EUCPMTA) with SMTP id 18.72.04298.109D9BC5; Fri, 19
+        Apr 2019 15:19:45 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20190419141945eucas1p1c95d65f261f82da5c856c0f2fcf1ce87~W5fpt85603259532595eucas1p1K;
+        Fri, 19 Apr 2019 14:19:45 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190419141944eusmtrp1dfa37bfa4f1f85a58af6bab1b495a033~W5fpf8l8O1759317593eusmtrp1a;
+        Fri, 19 Apr 2019 14:19:44 +0000 (GMT)
+X-AuditID: cbfec7f2-f2dff700000010ca-1f-5cb9d9017813
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 8B.02.04146.009D9BC5; Fri, 19
+        Apr 2019 15:19:44 +0100 (BST)
+Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
+        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20190419141943eusmtip24b293dda9237ad973e6b4f13ad4de701~W5fouhMCN3043830438eusmtip2A;
+        Fri, 19 Apr 2019 14:19:43 +0000 (GMT)
+From:   Lukasz Luba <l.luba@partner.samsung.com>
+To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
+        cw00.choi@samsung.com, kyungmin.park@samsung.com,
+        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+        myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com,
+        jroedel@suse.de, treding@nvidia.com, digetx@gmail.com,
+        willy.mh.wolff.ml@gmail.com,
+        Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v6 04/10] Documentation: dt: device tree bindings for LPDDR3
+ memories
+Date:   Fri, 19 Apr 2019 16:19:22 +0200
+Message-Id: <1555683568-20882-5-git-send-email-l.luba@partner.samsung.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA0WSa0hTYRjHe3cuO1uuTlPyTcVqYFSUGgS9YYVCHw5WkH1ISMmWHlRyU3c0
+        Mw1mRd61NMqWl9RCM8PbELV0upZGU+cl85KWl5FaZuWNtKhcZ9W33/N//s/lfXgpTGogHKhQ
+        ZRSrUsrDZKQYr21dNu0Gg/X+7rWjW1BVTgWB+hcmCVRg6CTQo68TAGW/zBOg9lQFypz4iCGT
+        qVKIOi7PCNGQ2gn1NuSSaD7dAFCOqUmAHhtGhOhNQimJns0kEkj3yhu9+b4OLb0YB562zNJi
+        Fs7cVXfjTL1mRMhUlyWTTPqVWZJpmX0qYDK0ZYCpMcYx89XOx0WnxAeC2LDQ86zK7dAZcUhf
+        1QIeoXO5sJjTB9TghnMKoChI74V9+SdTgJiS0qUA9hT0AT5YAHAgtQXng3kAl/vnVjOiPxUJ
+        vTNWVwmApqEG4l9Jt7lIYOlL0q6wrizSUmBHx8Hhfh1m8WD0jAB2rHzDLQlb2hcaP2f86YrT
+        LnA6/b3QwhLaG3ZnNBL8NGc42JmMWVhEH4END7Ukr78VwoHnDM+H4Wt9odVvCz+0aYU8O0Fj
+        dhrOMwfV6YXWF8TDicw8q8cDPmvrJiw7Y/QOWNHgxstecKi1lORPtA4OfNpgkbFVzKq9jfGy
+        BCZdk/Lu7VCb1iXgeSMsKb9lbc5AzZRRyF8nH8Ca4nLyOtis+T/sHgBlwJ6N5hTBLLdHyca4
+        cnIFF60Mdg0MV1SD1b9l/Nk2VwcWe87qAU0BmY2kOaveX0rIz3OxCj2AFCazk3gFaf2lkiB5
+        7EVWFR6gig5jOT1wpHCZvSRuzaiflA6WR7HnWDaCVf3NCiiRgxoUTeU0bbvz0rx4887dsUHO
+        QZ60Il67b3ociw81b41qjpJNjkUefeId2G7rGaDUb/KpC9IWG5QMsIkV+PwaUNyfNb8OTP6y
+        a9qxyfX0dKVfQJvvXLjG+CNGmejH5R/UTeQ+6PLZf5VsHXavXn/i2HDL0uZ3antHj0bfNZRO
+        dEnTIcO5EPmenZiKk/8G6wiKPFcDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrOIsWRmVeSWpSXmKPExsVy+t/xe7oMN3fGGOzv17PYOGM9q8X1L89Z
+        LeYfOcdqsfrjY0aLyafmMlmc6c616H/8mtni/PkN7BZnm96wW9xqkLG4vGsOm8Xn3iOMFjPO
+        72OyWHvkLrvF7cYVbBaH37SzWuy/4mVx+zefxbcTjxgdhD2+fZ3E4jG74SKLx85Zd9k9Nq3q
+        ZPPobX7H5nHw3R4mj74tqxg9Np+u9vi8SS6AM0rPpii/tCRVISO/uMRWKdrQwkjP0NJCz8jE
+        Us/Q2DzWyshUSd/OJiU1J7MstUjfLkEv4+rGLywF+1Urvs64ytjAOFGui5GTQ0LARKLx8htG
+        EFtIYCmjxNxOQYi4mMSkfdvZIWxhiT/Xuti6GLmAaj4xSlzYsBwowcHBJqAnsWNVIUiNiEC9
+        RP+bS2A1zAINzBJrtl9lBUkIC4RKrHrbzwxiswioSrzsfQY2lFfAS+Ji315WiAVyEjfPdYLV
+        cAp4S+xauYUN4iAviQ3X9jJNYORbwMiwilEktbQ4Nz232FCvODG3uDQvXS85P3cTIzCSth37
+        uXkH46WNwYcYBTgYlXh4D0zaGSPEmlhWXJl7iFGCg1lJhNcxZUuMEG9KYmVValF+fFFpTmrx
+        IUZToKMmMkuJJucDozyvJN7Q1NDcwtLQ3Njc2MxCSZz3vEFllJBAemJJanZqakFqEUwfEwen
+        VAOjo7PW89WM31pnT3qiZHvELerCzluO0W9dqnZu0XwRwb1l0/sdUrWZAgKdL/y3Kt5P/F/1
+        97r+Lq5dR1sDxY00XLVy2pqO9iV/ezV31+fGoJypBkdP6bytW+o3oWAR48GJCafnavvz+Nz+
+        5/r6ygah71v3GR/uuqeaFNkqfoDxie7efM1Hr1pilFiKMxINtZiLihMBvG/z/boCAAA=
+X-CMS-MailID: 20190419141945eucas1p1c95d65f261f82da5c856c0f2fcf1ce87
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="UTF-8"
+X-RootMTR: 20190419141945eucas1p1c95d65f261f82da5c856c0f2fcf1ce87
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190419141945eucas1p1c95d65f261f82da5c856c0f2fcf1ce87
+References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419141945eucas1p1c95d65f261f82da5c856c0f2fcf1ce87@eucas1p1.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190419181248.nytvstVtmbBc62H8ewm5miQi4hzsXMIyRscxTL9zMzg@z>
+Message-ID: <20190419141922.vY5xzi7jj_R7wzc8KMAHbR972LhkET1uBGcQUCY8aNw@z>
 
+The device tree bindings for LPDDR3 SDRAM memories.
 
+For specifying the AC timing parameters of the memory device
+the 'lpddr3' binding uses binding 'lpddr2-timings'.
 
-Em 4/15/19 4:10 AM, Krzysztof Kozlowski escreveu:
-> On Mon, 15 Apr 2019 at 03:49, Matheus Castello <matheus@castello.eng.br> wrote:
->>
->> According datasheet max17040 has a pin for alert host for low SOC.
->> This pin can be used as external interrupt, so we need to check for
->> interrupts assigned for device and handle it.
->>
->> In hadler we are checking and storing fuel gauge registers values
->> and send an uevent to notificate user space, so user space can decide
->> save work or turn off since the alert demonstrate that the battery may
->> no have the power to keep the system turned on for much longer.
->>
->> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
->> ---
->>   drivers/power/supply/max17040_battery.c | 69 +++++++++++++++++++++++--
->>   1 file changed, 64 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
->> index 91cafc7bed30..8d2f8ed3f44c 100644
->> --- a/drivers/power/supply/max17040_battery.c
->> +++ b/drivers/power/supply/max17040_battery.c
->> @@ -13,6 +13,7 @@
->>   #include <linux/err.h>
->>   #include <linux/i2c.h>
->>   #include <linux/delay.h>
->> +#include <linux/interrupt.h>
->>   #include <linux/power_supply.h>
->>   #include <linux/max17040_battery.h>
->>   #include <linux/slab.h>
->> @@ -160,21 +161,40 @@ static void max17040_get_status(struct i2c_client *client)
->>                  chip->status = POWER_SUPPLY_STATUS_FULL;
->>   }
->>
->> +static void max17040_check_changes(struct i2c_client *client)
->> +{
->> +       max17040_get_vcell(client);
->> +       max17040_get_soc(client);
->> +       max17040_get_online(client);
->> +       max17040_get_status(client);
->> +}
->> +
->>   static void max17040_work(struct work_struct *work)
->>   {
->>          struct max17040_chip *chip;
->>
->>          chip = container_of(work, struct max17040_chip, work.work);
->> -
->> -       max17040_get_vcell(chip->client);
->> -       max17040_get_soc(chip->client);
->> -       max17040_get_online(chip->client);
->> -       max17040_get_status(chip->client);
->> +       max17040_check_changes(chip->client);
->>
->>          queue_delayed_work(system_power_efficient_wq, &chip->work,
->>                             MAX17040_DELAY);
->>   }
->>
->> +static irqreturn_t max17040_thread_handler(int id, void *dev)
->> +{
->> +       struct max17040_chip *chip = dev;
->> +       struct i2c_client *client = chip->client;
->> +
->> +       dev_warn(&client->dev, "IRQ: Alert battery low level");
->> +       /* read registers */
->> +       max17040_check_changes(chip->client);
->> +
->> +       /* send uevent */
->> +       power_supply_changed(chip->battery);
->> +
->> +       return IRQ_HANDLED;
->> +}
->> +
->>   static enum power_supply_property max17040_battery_props[] = {
->>          POWER_SUPPLY_PROP_STATUS,
->>          POWER_SUPPLY_PROP_ONLINE,
->> @@ -217,6 +237,27 @@ static int max17040_probe(struct i2c_client *client,
->>                  return PTR_ERR(chip->battery);
->>          }
->>
->> +       /* check interrupt */
->> +       if (client->irq) {
->> +               int ret;
->> +               unsigned int flags;
->> +
->> +               dev_info(&client->dev, "IRQ: enabled\n");
->> +               flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
->> +
->> +               ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
->> +                                               max17040_thread_handler, flags,
->> +                                               chip->battery->desc->name,
->> +                                               chip);
->> +
->> +               if (ret) {
->> +                       client->irq = 0;
->> +                       if (ret != -EBUSY)
-> 
-> Why not on EBUSY?
-> 
->> +                               dev_warn(&client->dev,
->> +                                       "Failed to get IRQ err %d\n", ret);
->> +               }
->> +       }
->> +
->>          max17040_reset(client);
->>          max17040_get_version(client);
->>
->> @@ -224,6 +265,8 @@ static int max17040_probe(struct i2c_client *client,
->>          queue_delayed_work(system_power_efficient_wq, &chip->work,
->>                             MAX17040_DELAY);
->>
->> +       device_init_wakeup(&client->dev, 1);
-> 
-> Either you parse DT for wakeup-source property and use it... or you
-> unconditionally enable wakeup. In the second case - there is no point
-> to check later for device_may_wakeup(). Instead check the return value
-> of device_init_wakeup().
-> 
->> +
->>          return 0;
->>   }
->>
->> @@ -244,6 +287,14 @@ static int max17040_suspend(struct device *dev)
->>          struct max17040_chip *chip = i2c_get_clientdata(client);
->>
->>          cancel_delayed_work(&chip->work);
->> +
->> +       if (client->irq) {
->> +               if (device_may_wakeup(dev))
->> +                       enable_irq_wake(client->irq);
->> +               else
->> +                       disable_irq_wake(client->irq);
-> 
-> Did you try the wakeup from suspend? You do not have a disable_irq()
-> here which usually was needed for interrupts to work properly on
-> suspend. Maybe this was fixed?
-> 
-> Best regards,
-> Krzysztof
-> 
-Hi Krzysztof,
+Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+---
+ .../devicetree/bindings/lpddr3/lpddr3-timings.txt  | 57 +++++++++++++
+ .../devicetree/bindings/lpddr3/lpddr3.txt          | 93 ++++++++++++++++++++++
+ 2 files changed, 150 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt
+ create mode 100644 Documentation/devicetree/bindings/lpddr3/lpddr3.txt
 
-I test it using mem state and suspend, resuming seems to have worked 
-correctly ...
-
-Thanks for the review, I'm working in your suggestions and I expect to 
-send v3 this weekend.
-
-Best Regards,
-Matheus Castello
+diff --git a/Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt b/Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt
+new file mode 100644
+index 0000000..ebf3e00
+--- /dev/null
++++ b/Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt
+@@ -0,0 +1,57 @@
++* AC timing parameters of LPDDR3 memories for a given speed-bin.
++* The structures are based on LPDDR2 and extended where needed.
++
++Required properties:
++- compatible : Should be "jedec,lpddr3-timings"
++- min-freq : minimum DDR clock frequency for the speed-bin. Type is <u32>
++- max-freq : maximum DDR clock frequency for the speed-bin. Type is <u32>
++
++Optional properties:
++
++The following properties represent AC timing parameters from the memory
++data-sheet of the device for a given speed-bin. All these properties are
++of type <u32> and the default unit is ps (pico seconds).
++- tRFC
++- tRRD
++- tRPab
++- tRPpb
++- tRCD
++- tRC
++- tRAS
++- tWTR
++- tWR
++- tRTP
++- tW2W-C2C
++- tR2R-C2C
++- tFAW
++- tXSR
++- tXP
++- tCKE
++- tCKESR
++- tMRD
++
++Example:
++
++timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@0 {
++	compatible	= "jedec,lpddr3-timings";
++	min-freq	= <100000000>;
++	max-freq	= <800000000>;
++	tRFC		= <65000>;
++	tRRD		= <6000>;
++	tRPab		= <12000>;
++	tRPpb		= <12000>;
++	tRCD		= <10000>;
++	tRC		= <33750>;
++	tRAS		= <23000>;
++	tWTR		= <3750>;
++	tWR		= <7500>;
++	tRTP		= <3750>;
++	tW2W-C2C	= <0>;
++	tR2R-C2C	= <0>;
++	tFAW		= <25000>;
++	tXSR		= <70000>;
++	tXP		= <3750>;
++	tCKE		= <3750>;
++	tCKESR		= <3750>;
++	tMRD		= <7000>;
++};
+diff --git a/Documentation/devicetree/bindings/lpddr3/lpddr3.txt b/Documentation/devicetree/bindings/lpddr3/lpddr3.txt
+new file mode 100644
+index 0000000..fc7875c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/lpddr3/lpddr3.txt
+@@ -0,0 +1,93 @@
++* LPDDR3 SDRAM memories compliant to JEDEC JESD209-2
++
++Required properties:
++- compatible : Should be  - "jedec,lpddr3"
++- density  : <u32> representing density in Mb (Mega bits)
++- io-width : <u32> representing bus width. Possible values are 8, 16, 32, 64
++
++Optional properties:
++
++The following optional properties represent the minimum value of some AC
++timing parameters of the DDR device in terms of number of clock cycles.
++These values shall be obtained from the device data-sheet.
++- tRFC-min-tck
++- tRRD-min-tck
++- tRPab-min-tck
++- tRPpb-min-tck
++- tRCD-min-tck
++- tRC-min-tck
++- tRAS-min-tck
++- tWTR-min-tck
++- tWR-min-tck
++- tRTP-min-tck
++- tW2W-C2C-min-tck
++- tR2R-C2C-min-tck
++- tWL-min-tck
++- tDQSCK-min-tck
++- tRL-min-tck
++- tFAW-min-tck
++- tXSR-min-tck
++- tXP-min-tck
++- tCKE-min-tck
++- tCKESR-min-tck
++- tMRD-min-tck
++
++Child nodes:
++- The lpddr3 node may have one or more child nodes of type "lpddr3-timings".
++  "lpddr3-timings" provides AC timing parameters of the device for
++  a given speed-bin. Please see Documentation/devicetree/
++  bindings/lpddr3/lpddr3-timings.txt for more information on "lpddr3-timings"
++
++Example:
++
++samsung_K3QF2F20DB: lpddr3 {
++	compatible	= "Samsung,K3QF2F20DB","jedec,lpddr3";
++	density		= <16384>;
++	io-width	= <32>;
++
++	tRFC-min-tck		= <17>;
++	tRRD-min-tck		= <2>;
++	tRPab-min-tck		= <2>;
++	tRPpb-min-tck		= <2>;
++	tRCD-min-tck		= <3>;
++	tRC-min-tck		= <6>;
++	tRAS-min-tck		= <5>;
++	tWTR-min-tck		= <2>;
++	tWR-min-tck		= <7>;
++	tRTP-min-tck		= <2>;
++	tW2W-C2C-min-tck	= <0>;
++	tR2R-C2C-min-tck	= <0>;
++	tWL-min-tck		= <8>;
++	tDQSCK-min-tck		= <5>;
++	tRL-min-tck		= <14>;
++	tFAW-min-tck		= <5>;
++	tXSR-min-tck		= <12>;
++	tXP-min-tck		= <2>;
++	tCKE-min-tck		= <2>;
++	tCKESR-min-tck		= <2>;
++	tMRD-min-tck		= <5>;
++
++	timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@0 {
++		compatible	= "jedec,lpddr3-timings";
++		min-freq	= <100000000>;
++		max-freq	= <800000000>;
++		tRFC		= <65000>;
++		tRRD		= <6000>;
++		tRPab		= <12000>;
++		tRPpb		= <12000>;
++		tRCD		= <10000>;
++		tRC		= <33750>;
++		tRAS		= <23000>;
++		tWTR		= <3750>;
++		tWR		= <7500>;
++		tRTP		= <3750>;
++		tW2W-C2C	= <0>;
++		tR2R-C2C	= <0>;
++		tFAW		= <25000>;
++		tXSR		= <70000>;
++		tXP		= <3750>;
++		tCKE		= <3750>;
++		tCKESR		= <3750>;
++		tMRD		= <7000>;
++	};
++}
+-- 
+2.7.4
 
