@@ -1,613 +1,797 @@
-From: Nick Crews <ncrews@chromium.org>
-Subject: [PATCH v5] power_supply: platform/chrome: wilco_ec: Add charging config driver
-Date: Thu, 18 Apr 2019 17:38:38 -0600
-Message-ID: <20190418233838.149545-1-ncrews@chromium.org>
-References: <--to=enric.balletbo@collabora.com>
+From: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Subject: [PATCH v2] tools/power: turbostat: make output buffer extensible
+ (Re: [PATCH v1] tools/power: turbostat: fix buffer overrun)
+Date: Fri, 19 Apr 2019 00:25:40 +0000
+Message-ID: <20190419002540.GA22485@hori.linux.bs1.fc.nec.co.jp>
+References: <1554274934-12649-1-git-send-email-n-horiguchi@ah.jp.nec.com>
+ <f3ff449d-f431-4ea6-5c3f-8e19e2c534a8@redhat.com>
+ <20190404030756.GA22535@hori.linux.bs1.fc.nec.co.jp>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <--to=enric.balletbo@collabora.com>
+In-Reply-To: <20190404030756.GA22535@hori.linux.bs1.fc.nec.co.jp>
+Content-Language: ja-JP
+Content-ID: <2F9E78142C3E6B4EB60CD2419E82794D@gisp.nec.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
-To: bleung@chromium.org, sre@kernel.org, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dlaurie@chromium.org, lamzin@google.com, bartfab@google.com, derat@google.com, dtor@google.com, sjg@chromium.org, jchwong@chromium.org, Nick Crews <ncrews@chromium.org>
+To: Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Prarit Bhargava <prarit@redhat.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add control of the charging algorithm used on Wilco devices.
-See Documentation/ABI/testing/sysfs-class-power-wilco for the
-userspace interface and other info.
+I updated the patch with a trival fix.
+Could you review it?
 
-v5 changes:
--Remove OP_SYNC, it has no immediate use case.
--Merge properties.h into wilco-ec.h
--Remove enum get_set_sync_op from the public interface,
- since without OP_SYNC they are irrelevant.
--Fix Kconfigs and Makefiles so they actually work
- with the v4 changes
--Tweak some formatting, spacing, and comments
--Fix validation of charge_type so illegal values
- can't be set. Before negative error codes were
- accidentally getting casted to positive numbers
--Remove more unneeded parentheses.
-v4 changes:
--Use put_unaligned_le32() to store PID in request.
--Move implementation from
- drivers/platform/chrome/wilco_ec/charge_config.c to
- drivers/power/supply/wilco_charger.c
--Move drivers/platform/chrome/wilco_ec/properties.h to
- include/linux/platform_data/wilco-ec-properties.h
--Remove parentheses in switch statement in psp_val_to_charge_mode()
--Check for any negatvie return code from psp_val_to_charge_mode()
- instead of just -EINVAL so its less brittle
--Tweak comments in wilco-ec-properties.h
-v3 changes:
--Add this changelog
--Fix commit message tags
-v2 changes:
--Update Documentation to say KernelVersion 5.2
--Update Documentation to explain Trickle mode better.
--rename things from using *PCC* to *CHARGE*
--Split up conversions between POWER_SUPPLY_PROP_CHARGE_TYPE values
-and Wilco EC codes
--Use devm_ flavor of power_supply_register(), which simplifies things
--Add extra error checking on property messages received from the EC
--Fix bug in memcpy() calls in properties.c
--Refactor fill_property_id()
--Add valid input checks to charge_type
--Properly convert charge_type when get()ting
+- Naoya
 
-Signed-off-by: Nick Crews <ncrews@chromium.org>
+----
+From: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+Date: Fri, 19 Apr 2019 09:21:59 +0900
+Subject: [PATCH v2] tools/power: turbostat: make output buffer extensible
+
+"turbostat --Dump" could be terminated by general protection fault on
+some latest hardwares which (for example) support 9 levels of C-states
+and show 18 "tADDED" lines. That bloats the total output and finally
+causes buffer overrun.  So this patch sugguests to extend the output
+buffer when reaching the end.
+
+This patch also removes duplicated "pc10:" line to reduce buffer usage.
+
+Signed-off-by: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
 ---
- .../ABI/testing/sysfs-class-power-wilco       |  30 +++
- drivers/platform/chrome/wilco_ec/Kconfig      |   9 +
- drivers/platform/chrome/wilco_ec/Makefile     |   2 +-
- drivers/platform/chrome/wilco_ec/core.c       |  13 ++
- drivers/platform/chrome/wilco_ec/properties.c | 134 ++++++++++++
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/wilco-charger.c          | 190 ++++++++++++++++++
- include/linux/platform_data/wilco-ec.h        |  73 +++++++
- 8 files changed, 451 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-power-wilco
- create mode 100644 drivers/platform/chrome/wilco_ec/properties.c
- create mode 100644 drivers/power/supply/wilco-charger.c
+ChangeLog v1->v2:
+- moved va_end() before if block.
+---
+ tools/power/x86/turbostat/turbostat.c | 397 ++++++++++++++------------
+ 1 file changed, 210 insertions(+), 187 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power-wilco b/Documentation/ABI/testing/sysfs-class-power-wilco
-new file mode 100644
-index 000000000000..7f3b01310476
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-power-wilco
-@@ -0,0 +1,30 @@
-+What:		/sys/class/power_supply/wilco_charger/charge_type
-+Date:		April 2019
-+KernelVersion:	5.2
-+Description:
-+		What charging algorithm to use:
-+
-+		Standard: Fully charges battery at a standard rate.
-+		Adaptive: Battery settings adaptively optimized based on
-+			typical battery usage pattern.
-+		Fast: Battery charges over a shorter period.
-+		Trickle: Extends battery lifespan, intended for users who
-+			primarily use their Chromebook while connected to AC.
-+		Custom: A low and high threshold percentage is specified.
-+			Charging begins when level drops below
-+			charge_control_start_threshold, and ceases when
-+			level is above charge_control_end_threshold.
-+
-+What:		/sys/class/power_supply/wilco_charger/charge_control_start_threshold
-+Date:		April 2019
-+KernelVersion:	5.2
-+Description:
-+		Used when charge_type="Custom", as described above. Measured in
-+		percentages. The valid range is [50, 95].
-+
-+What:		/sys/class/power_supply/wilco_charger/charge_control_end_threshold
-+Date:		April 2019
-+KernelVersion:	5.2
-+Description:
-+		Used when charge_type="Custom", as described above. Measured in
-+		percentages. The valid range is [55, 100].
-diff --git a/drivers/platform/chrome/wilco_ec/Kconfig b/drivers/platform/chrome/wilco_ec/Kconfig
-index e09e4cebe9b4..ec0db8dd14c2 100644
---- a/drivers/platform/chrome/wilco_ec/Kconfig
-+++ b/drivers/platform/chrome/wilco_ec/Kconfig
-@@ -18,3 +18,12 @@ config WILCO_EC_DEBUGFS
- 	  manipulation and allow for testing arbitrary commands.  This
- 	  interface is intended for debug only and will not be present
- 	  on production devices.
-+
-+config CHARGER_WILCO
-+	tristate "Enable charger control"
-+	depends on WILCO_EC
-+	help
-+	  If you say Y here, you get support to control the charging
-+	  routines performed by the Wilco Embedded Controller.
-+	  Further information can be found in
-+	  Documentation/ABI/testing/sysfs-class-power-wilco)
-diff --git a/drivers/platform/chrome/wilco_ec/Makefile b/drivers/platform/chrome/wilco_ec/Makefile
-index 063e7fb4ea17..29b734137786 100644
---- a/drivers/platform/chrome/wilco_ec/Makefile
-+++ b/drivers/platform/chrome/wilco_ec/Makefile
-@@ -1,6 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index c7727be9719f..767ada558d75 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -84,6 +84,7 @@ double tsc_tweak = 1.0;
+ unsigned int show_pkg_only;
+ unsigned int show_core_only;
+ char *output_buffer, *outp;
++ssize_t outbuf_size;
+ unsigned int do_rapl;
+ unsigned int do_dts;
+ unsigned int do_ptm;
+@@ -625,6 +626,28 @@ unsigned long long bic_lookup(char *name_list, enum show_hide_mode mode)
+ 	return retval;
+ }
  
--wilco_ec-objs				:= core.o mailbox.o
-+wilco_ec-objs				:= core.o mailbox.o properties.o
- obj-$(CONFIG_WILCO_EC)			+= wilco_ec.o
- wilco_ec_debugfs-objs			:= debugfs.o
- obj-$(CONFIG_WILCO_EC_DEBUGFS)		+= wilco_ec_debugfs.o
-diff --git a/drivers/platform/chrome/wilco_ec/core.c b/drivers/platform/chrome/wilco_ec/core.c
-index 05e1e2be1c91..a8e3ef59f4ea 100644
---- a/drivers/platform/chrome/wilco_ec/core.c
-+++ b/drivers/platform/chrome/wilco_ec/core.c
-@@ -89,8 +89,20 @@ static int wilco_ec_probe(struct platform_device *pdev)
- 		goto unregister_debugfs;
++static void *append_to_output_buffer(const char *fmt, ...)
++{
++	va_list args;
++
++	va_start(args, fmt);
++	outp += vsprintf(outp, fmt, args);
++	va_end(args);
++
++	/* Approaching the buffer end, so extend it. */
++	if (outp - output_buffer >= (outbuf_size - 256)) {
++		int output_size = outp - output_buffer;
++
++		outbuf_size += 1024;
++		output_buffer = realloc(output_buffer, outbuf_size);
++		if (output_buffer == NULL)
++			err(-1, "realloc output buffer");
++		if (debug)
++			printf("Output buffer was extended.\n");
++		outp = output_buffer + output_size;
++	}
++	return outp;
++}
+ 
+ void print_header(char *delim)
+ {
+@@ -632,173 +655,173 @@ void print_header(char *delim)
+ 	int printed = 0;
+ 
+ 	if (DO_BIC(BIC_USEC))
+-		outp += sprintf(outp, "%susec", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%susec", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_TOD))
+-		outp += sprintf(outp, "%sTime_Of_Day_Seconds", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sTime_Of_Day_Seconds", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Package))
+-		outp += sprintf(outp, "%sPackage", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPackage", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Die))
+-		outp += sprintf(outp, "%sDie", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sDie", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Node))
+-		outp += sprintf(outp, "%sNode", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sNode", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Core))
+-		outp += sprintf(outp, "%sCore", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCore", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_CPU))
+-		outp += sprintf(outp, "%sCPU", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCPU", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_APIC))
+-		outp += sprintf(outp, "%sAPIC", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sAPIC", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_X2APIC))
+-		outp += sprintf(outp, "%sX2APIC", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sX2APIC", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Avg_MHz))
+-		outp += sprintf(outp, "%sAvg_MHz", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sAvg_MHz", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Busy))
+-		outp += sprintf(outp, "%sBusy%%", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sBusy%%", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Bzy_MHz))
+-		outp += sprintf(outp, "%sBzy_MHz", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sBzy_MHz", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_TSC_MHz))
+-		outp += sprintf(outp, "%sTSC_MHz", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sTSC_MHz", (printed++ ? delim : ""));
+ 
+ 	if (DO_BIC(BIC_IRQ)) {
+ 		if (sums_need_wide_columns)
+-			outp += sprintf(outp, "%s     IRQ", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s     IRQ", (printed++ ? delim : ""));
+ 		else
+-			outp += sprintf(outp, "%sIRQ", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sIRQ", (printed++ ? delim : ""));
  	}
  
-+	/* Register child device to be found by charger config driver. */
-+	ec->charger_pdev = platform_device_register_data(dev, "wilco-charger",
-+							 PLATFORM_DEVID_AUTO,
-+							 NULL, 0);
-+	if (IS_ERR(ec->charger_pdev)) {
-+		dev_err(dev, "Failed to create charger platform device\n");
-+		ret = PTR_ERR(ec->charger_pdev);
-+		goto unregister_rtc;
-+	}
-+
+ 	if (DO_BIC(BIC_SMI))
+-		outp += sprintf(outp, "%sSMI", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sSMI", (printed++ ? delim : ""));
+ 
+ 	for (mp = sys.tp; mp; mp = mp->next) {
+ 
+ 		if (mp->format == FORMAT_RAW) {
+ 			if (mp->width == 64)
+-				outp += sprintf(outp, "%s%18.18s", (printed++ ? delim : ""), mp->name);
++				outp = append_to_output_buffer("%s%18.18s", (printed++ ? delim : ""), mp->name);
+ 			else
+-				outp += sprintf(outp, "%s%10.10s", (printed++ ? delim : ""), mp->name);
++				outp = append_to_output_buffer("%s%10.10s", (printed++ ? delim : ""), mp->name);
+ 		} else {
+ 			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
+-				outp += sprintf(outp, "%s%8s", (printed++ ? delim : ""), mp->name);
++				outp = append_to_output_buffer("%s%8s", (printed++ ? delim : ""), mp->name);
+ 			else
+-				outp += sprintf(outp, "%s%s", (printed++ ? delim : ""), mp->name);
++				outp = append_to_output_buffer("%s%s", (printed++ ? delim : ""), mp->name);
+ 		}
+ 	}
+ 
+ 	if (DO_BIC(BIC_CPU_c1))
+-		outp += sprintf(outp, "%sCPU%%c1", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCPU%%c1", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_CPU_c3))
+-		outp += sprintf(outp, "%sCPU%%c3", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCPU%%c3", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_CPU_c6))
+-		outp += sprintf(outp, "%sCPU%%c6", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCPU%%c6", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_CPU_c7))
+-		outp += sprintf(outp, "%sCPU%%c7", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCPU%%c7", (printed++ ? delim : ""));
+ 
+ 	if (DO_BIC(BIC_Mod_c6))
+-		outp += sprintf(outp, "%sMod%%c6", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sMod%%c6", (printed++ ? delim : ""));
+ 
+ 	if (DO_BIC(BIC_CoreTmp))
+-		outp += sprintf(outp, "%sCoreTmp", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCoreTmp", (printed++ ? delim : ""));
+ 
+ 	if (do_rapl && !rapl_joules) {
+ 		if (DO_BIC(BIC_CorWatt) && (do_rapl & RAPL_PER_CORE_ENERGY))
+-			outp += sprintf(outp, "%sCorWatt", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sCorWatt", (printed++ ? delim : ""));
+ 	} else if (do_rapl && rapl_joules) {
+ 		if (DO_BIC(BIC_Cor_J) && (do_rapl & RAPL_PER_CORE_ENERGY))
+-			outp += sprintf(outp, "%sCor_J", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sCor_J", (printed++ ? delim : ""));
+ 	}
+ 
+ 	for (mp = sys.cp; mp; mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW) {
+ 			if (mp->width == 64)
+-				outp += sprintf(outp, "%s%18.18s", delim, mp->name);
++				outp = append_to_output_buffer("%s%18.18s", delim, mp->name);
+ 			else
+-				outp += sprintf(outp, "%s%10.10s", delim, mp->name);
++				outp = append_to_output_buffer("%s%10.10s", delim, mp->name);
+ 		} else {
+ 			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
+-				outp += sprintf(outp, "%s%8s", delim, mp->name);
++				outp = append_to_output_buffer("%s%8s", delim, mp->name);
+ 			else
+-				outp += sprintf(outp, "%s%s", delim, mp->name);
++				outp = append_to_output_buffer("%s%s", delim, mp->name);
+ 		}
+ 	}
+ 
+ 	if (DO_BIC(BIC_PkgTmp))
+-		outp += sprintf(outp, "%sPkgTmp", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPkgTmp", (printed++ ? delim : ""));
+ 
+ 	if (DO_BIC(BIC_GFX_rc6))
+-		outp += sprintf(outp, "%sGFX%%rc6", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sGFX%%rc6", (printed++ ? delim : ""));
+ 
+ 	if (DO_BIC(BIC_GFXMHz))
+-		outp += sprintf(outp, "%sGFXMHz", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sGFXMHz", (printed++ ? delim : ""));
+ 
+ 	if (DO_BIC(BIC_Totl_c0))
+-		outp += sprintf(outp, "%sTotl%%C0", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sTotl%%C0", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Any_c0))
+-		outp += sprintf(outp, "%sAny%%C0", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sAny%%C0", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_GFX_c0))
+-		outp += sprintf(outp, "%sGFX%%C0", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sGFX%%C0", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_CPUGFX))
+-		outp += sprintf(outp, "%sCPUGFX%%", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCPUGFX%%", (printed++ ? delim : ""));
+ 
+ 	if (DO_BIC(BIC_Pkgpc2))
+-		outp += sprintf(outp, "%sPkg%%pc2", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPkg%%pc2", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Pkgpc3))
+-		outp += sprintf(outp, "%sPkg%%pc3", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPkg%%pc3", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Pkgpc6))
+-		outp += sprintf(outp, "%sPkg%%pc6", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPkg%%pc6", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Pkgpc7))
+-		outp += sprintf(outp, "%sPkg%%pc7", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPkg%%pc7", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Pkgpc8))
+-		outp += sprintf(outp, "%sPkg%%pc8", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPkg%%pc8", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Pkgpc9))
+-		outp += sprintf(outp, "%sPkg%%pc9", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPkg%%pc9", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Pkgpc10))
+-		outp += sprintf(outp, "%sPk%%pc10", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sPk%%pc10", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_CPU_LPI))
+-		outp += sprintf(outp, "%sCPU%%LPI", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sCPU%%LPI", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_SYS_LPI))
+-		outp += sprintf(outp, "%sSYS%%LPI", (printed++ ? delim : ""));
++		outp = append_to_output_buffer("%sSYS%%LPI", (printed++ ? delim : ""));
+ 
+ 	if (do_rapl && !rapl_joules) {
+ 		if (DO_BIC(BIC_PkgWatt))
+-			outp += sprintf(outp, "%sPkgWatt", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sPkgWatt", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_CorWatt) && !(do_rapl & RAPL_PER_CORE_ENERGY))
+-			outp += sprintf(outp, "%sCorWatt", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sCorWatt", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_GFXWatt))
+-			outp += sprintf(outp, "%sGFXWatt", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sGFXWatt", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_RAMWatt))
+-			outp += sprintf(outp, "%sRAMWatt", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sRAMWatt", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_PKG__))
+-			outp += sprintf(outp, "%sPKG_%%", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sPKG_%%", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_RAM__))
+-			outp += sprintf(outp, "%sRAM_%%", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sRAM_%%", (printed++ ? delim : ""));
+ 	} else if (do_rapl && rapl_joules) {
+ 		if (DO_BIC(BIC_Pkg_J))
+-			outp += sprintf(outp, "%sPkg_J", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sPkg_J", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_Cor_J) && !(do_rapl & RAPL_PER_CORE_ENERGY))
+-			outp += sprintf(outp, "%sCor_J", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sCor_J", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_GFX_J))
+-			outp += sprintf(outp, "%sGFX_J", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sGFX_J", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_RAM_J))
+-			outp += sprintf(outp, "%sRAM_J", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sRAM_J", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_PKG__))
+-			outp += sprintf(outp, "%sPKG_%%", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sPKG_%%", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_RAM__))
+-			outp += sprintf(outp, "%sRAM_%%", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%sRAM_%%", (printed++ ? delim : ""));
+ 	}
+ 	for (mp = sys.pp; mp; mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW) {
+ 			if (mp->width == 64)
+-				outp += sprintf(outp, "%s%18.18s", delim, mp->name);
++				outp = append_to_output_buffer("%s%18.18s", delim, mp->name);
+ 			else
+-				outp += sprintf(outp, "%s%10.10s", delim, mp->name);
++				outp = append_to_output_buffer("%s%10.10s", delim, mp->name);
+ 		} else {
+ 			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
+-				outp += sprintf(outp, "%s%8s", delim, mp->name);
++				outp = append_to_output_buffer("%s%8s", delim, mp->name);
+ 			else
+-				outp += sprintf(outp, "%s%s", delim, mp->name);
++				outp = append_to_output_buffer("%s%s", delim, mp->name);
+ 		}
+ 	}
+ 
+-	outp += sprintf(outp, "\n");
++	outp = append_to_output_buffer("\n");
+ }
+ 
+ int dump_counters(struct thread_data *t, struct core_data *c,
+@@ -807,80 +830,79 @@ int dump_counters(struct thread_data *t, struct core_data *c,
+ 	int i;
+ 	struct msr_counter *mp;
+ 
+-	outp += sprintf(outp, "t %p, c %p, p %p\n", t, c, p);
++	outp = append_to_output_buffer("t %p, c %p, p %p\n", t, c, p);
+ 
+ 	if (t) {
+-		outp += sprintf(outp, "CPU: %d flags 0x%x\n",
++		outp = append_to_output_buffer("CPU: %d flags 0x%x\n",
+ 			t->cpu_id, t->flags);
+-		outp += sprintf(outp, "TSC: %016llX\n", t->tsc);
+-		outp += sprintf(outp, "aperf: %016llX\n", t->aperf);
+-		outp += sprintf(outp, "mperf: %016llX\n", t->mperf);
+-		outp += sprintf(outp, "c1: %016llX\n", t->c1);
++		outp = append_to_output_buffer("TSC: %016llX\n", t->tsc);
++		outp = append_to_output_buffer("aperf: %016llX\n", t->aperf);
++		outp = append_to_output_buffer("mperf: %016llX\n", t->mperf);
++		outp = append_to_output_buffer("c1: %016llX\n", t->c1);
+ 
+ 		if (DO_BIC(BIC_IRQ))
+-			outp += sprintf(outp, "IRQ: %lld\n", t->irq_count);
++			outp = append_to_output_buffer("IRQ: %lld\n", t->irq_count);
+ 		if (DO_BIC(BIC_SMI))
+-			outp += sprintf(outp, "SMI: %d\n", t->smi_count);
++			outp = append_to_output_buffer("SMI: %d\n", t->smi_count);
+ 
+ 		for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
+-			outp += sprintf(outp, "tADDED [%d] msr0x%x: %08llX\n",
++			outp = append_to_output_buffer("tADDED [%d] msr0x%x: %08llX\n",
+ 				i, mp->msr_num, t->counter[i]);
+ 		}
+ 	}
+ 
+ 	if (c) {
+-		outp += sprintf(outp, "core: %d\n", c->core_id);
+-		outp += sprintf(outp, "c3: %016llX\n", c->c3);
+-		outp += sprintf(outp, "c6: %016llX\n", c->c6);
+-		outp += sprintf(outp, "c7: %016llX\n", c->c7);
+-		outp += sprintf(outp, "DTS: %dC\n", c->core_temp_c);
+-		outp += sprintf(outp, "Joules: %0X\n", c->core_energy);
++		outp = append_to_output_buffer("core: %d\n", c->core_id);
++		outp = append_to_output_buffer("c3: %016llX\n", c->c3);
++		outp = append_to_output_buffer("c6: %016llX\n", c->c6);
++		outp = append_to_output_buffer("c7: %016llX\n", c->c7);
++		outp = append_to_output_buffer("DTS: %dC\n", c->core_temp_c);
++		outp = append_to_output_buffer("Joules: %0X\n", c->core_energy);
+ 
+ 		for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
+-			outp += sprintf(outp, "cADDED [%d] msr0x%x: %08llX\n",
++			outp = append_to_output_buffer("cADDED [%d] msr0x%x: %08llX\n",
+ 				i, mp->msr_num, c->counter[i]);
+ 		}
+-		outp += sprintf(outp, "mc6_us: %016llX\n", c->mc6_us);
++		outp = append_to_output_buffer("mc6_us: %016llX\n", c->mc6_us);
+ 	}
+ 
+ 	if (p) {
+-		outp += sprintf(outp, "package: %d\n", p->package_id);
++		outp = append_to_output_buffer("package: %d\n", p->package_id);
+ 
+-		outp += sprintf(outp, "Weighted cores: %016llX\n", p->pkg_wtd_core_c0);
+-		outp += sprintf(outp, "Any cores: %016llX\n", p->pkg_any_core_c0);
+-		outp += sprintf(outp, "Any GFX: %016llX\n", p->pkg_any_gfxe_c0);
+-		outp += sprintf(outp, "CPU + GFX: %016llX\n", p->pkg_both_core_gfxe_c0);
++		outp = append_to_output_buffer("Weighted cores: %016llX\n", p->pkg_wtd_core_c0);
++		outp = append_to_output_buffer("Any cores: %016llX\n", p->pkg_any_core_c0);
++		outp = append_to_output_buffer("Any GFX: %016llX\n", p->pkg_any_gfxe_c0);
++		outp = append_to_output_buffer("CPU + GFX: %016llX\n", p->pkg_both_core_gfxe_c0);
+ 
+-		outp += sprintf(outp, "pc2: %016llX\n", p->pc2);
++		outp = append_to_output_buffer("pc2: %016llX\n", p->pc2);
+ 		if (DO_BIC(BIC_Pkgpc3))
+-			outp += sprintf(outp, "pc3: %016llX\n", p->pc3);
++			outp = append_to_output_buffer("pc3: %016llX\n", p->pc3);
+ 		if (DO_BIC(BIC_Pkgpc6))
+-			outp += sprintf(outp, "pc6: %016llX\n", p->pc6);
++			outp = append_to_output_buffer("pc6: %016llX\n", p->pc6);
+ 		if (DO_BIC(BIC_Pkgpc7))
+-			outp += sprintf(outp, "pc7: %016llX\n", p->pc7);
+-		outp += sprintf(outp, "pc8: %016llX\n", p->pc8);
+-		outp += sprintf(outp, "pc9: %016llX\n", p->pc9);
+-		outp += sprintf(outp, "pc10: %016llX\n", p->pc10);
+-		outp += sprintf(outp, "pc10: %016llX\n", p->pc10);
+-		outp += sprintf(outp, "cpu_lpi: %016llX\n", p->cpu_lpi);
+-		outp += sprintf(outp, "sys_lpi: %016llX\n", p->sys_lpi);
+-		outp += sprintf(outp, "Joules PKG: %0X\n", p->energy_pkg);
+-		outp += sprintf(outp, "Joules COR: %0X\n", p->energy_cores);
+-		outp += sprintf(outp, "Joules GFX: %0X\n", p->energy_gfx);
+-		outp += sprintf(outp, "Joules RAM: %0X\n", p->energy_dram);
+-		outp += sprintf(outp, "Throttle PKG: %0X\n",
++			outp = append_to_output_buffer("pc7: %016llX\n", p->pc7);
++		outp = append_to_output_buffer("pc8: %016llX\n", p->pc8);
++		outp = append_to_output_buffer("pc9: %016llX\n", p->pc9);
++		outp = append_to_output_buffer("pc10: %016llX\n", p->pc10);
++		outp = append_to_output_buffer("cpu_lpi: %016llX\n", p->cpu_lpi);
++		outp = append_to_output_buffer("sys_lpi: %016llX\n", p->sys_lpi);
++		outp = append_to_output_buffer("Joules PKG: %0X\n", p->energy_pkg);
++		outp = append_to_output_buffer("Joules COR: %0X\n", p->energy_cores);
++		outp = append_to_output_buffer("Joules GFX: %0X\n", p->energy_gfx);
++		outp = append_to_output_buffer("Joules RAM: %0X\n", p->energy_dram);
++		outp = append_to_output_buffer("Throttle PKG: %0X\n",
+ 			p->rapl_pkg_perf_status);
+-		outp += sprintf(outp, "Throttle RAM: %0X\n",
++		outp = append_to_output_buffer("Throttle RAM: %0X\n",
+ 			p->rapl_dram_perf_status);
+-		outp += sprintf(outp, "PTM: %dC\n", p->pkg_temp_c);
++		outp = append_to_output_buffer("PTM: %dC\n", p->pkg_temp_c);
+ 
+ 		for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
+-			outp += sprintf(outp, "pADDED [%d] msr0x%x: %08llX\n",
++			outp = append_to_output_buffer("pADDED [%d] msr0x%x: %08llX\n",
+ 				i, mp->msr_num, p->counter[i]);
+ 		}
+ 	}
+ 
+-	outp += sprintf(outp, "\n");
++	outp = append_to_output_buffer("\n");
+ 
  	return 0;
+ }
+@@ -916,12 +938,12 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 		struct timeval tv;
  
-+unregister_rtc:
-+	platform_device_unregister(ec->rtc_pdev);
- unregister_debugfs:
- 	if (ec->debugfs_pdev)
- 		platform_device_unregister(ec->debugfs_pdev);
-@@ -102,6 +114,7 @@ static int wilco_ec_remove(struct platform_device *pdev)
+ 		timersub(&t->tv_end, &t->tv_begin, &tv);
+-		outp += sprintf(outp, "%5ld\t", tv.tv_sec * 1000000 + tv.tv_usec);
++		outp = append_to_output_buffer("%5ld\t", tv.tv_sec * 1000000 + tv.tv_usec);
+ 	}
+ 
+ 	/* Time_Of_Day_Seconds: on each row, print sec.usec last timestamp taken */
+ 	if (DO_BIC(BIC_TOD))
+-		outp += sprintf(outp, "%10ld.%06ld\t", t->tv_end.tv_sec, t->tv_end.tv_usec);
++		outp = append_to_output_buffer("%10ld.%06ld\t", t->tv_end.tv_sec, t->tv_end.tv_usec);
+ 
+ 	interval_float = tv_delta.tv_sec + tv_delta.tv_usec/1000000.0;
+ 
+@@ -930,108 +952,108 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 	/* topo columns, print blanks on 1st (average) line */
+ 	if (t == &average.threads) {
+ 		if (DO_BIC(BIC_Package))
+-			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_Die))
+-			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_Node))
+-			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_Core))
+-			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_CPU))
+-			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_APIC))
+-			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_X2APIC))
+-			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 	} else {
+ 		if (DO_BIC(BIC_Package)) {
+ 			if (p)
+-				outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), p->package_id);
++				outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), p->package_id);
+ 			else
+-				outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++				outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		}
+ 		if (DO_BIC(BIC_Die)) {
+ 			if (c)
+-				outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), cpus[t->cpu_id].die_id);
++				outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), cpus[t->cpu_id].die_id);
+ 			else
+-				outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++				outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		}
+ 		if (DO_BIC(BIC_Node)) {
+ 			if (t)
+-				outp += sprintf(outp, "%s%d",
++				outp = append_to_output_buffer("%s%d",
+ 						(printed++ ? delim : ""),
+ 					      cpus[t->cpu_id].physical_node_id);
+ 			else
+-				outp += sprintf(outp, "%s-",
++				outp = append_to_output_buffer("%s-",
+ 						(printed++ ? delim : ""));
+ 		}
+ 		if (DO_BIC(BIC_Core)) {
+ 			if (c)
+-				outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), c->core_id);
++				outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), c->core_id);
+ 			else
+-				outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++				outp = append_to_output_buffer("%s-", (printed++ ? delim : ""));
+ 		}
+ 		if (DO_BIC(BIC_CPU))
+-			outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), t->cpu_id);
++			outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), t->cpu_id);
+ 		if (DO_BIC(BIC_APIC))
+-			outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), t->apic_id);
++			outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), t->apic_id);
+ 		if (DO_BIC(BIC_X2APIC))
+-			outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), t->x2apic_id);
++			outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), t->x2apic_id);
+ 	}
+ 
+ 	if (DO_BIC(BIC_Avg_MHz))
+-		outp += sprintf(outp, "%s%.0f", (printed++ ? delim : ""),
++		outp = append_to_output_buffer("%s%.0f", (printed++ ? delim : ""),
+ 			1.0 / units * t->aperf / interval_float);
+ 
+ 	if (DO_BIC(BIC_Busy))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * t->mperf/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * t->mperf/tsc);
+ 
+ 	if (DO_BIC(BIC_Bzy_MHz)) {
+ 		if (has_base_hz)
+-			outp += sprintf(outp, "%s%.0f", (printed++ ? delim : ""), base_hz / units * t->aperf / t->mperf);
++			outp = append_to_output_buffer("%s%.0f", (printed++ ? delim : ""), base_hz / units * t->aperf / t->mperf);
+ 		else
+-			outp += sprintf(outp, "%s%.0f", (printed++ ? delim : ""),
++			outp = append_to_output_buffer("%s%.0f", (printed++ ? delim : ""),
+ 				tsc / units * t->aperf / t->mperf / interval_float);
+ 	}
+ 
+ 	if (DO_BIC(BIC_TSC_MHz))
+-		outp += sprintf(outp, "%s%.0f", (printed++ ? delim : ""), 1.0 * t->tsc/units/interval_float);
++		outp = append_to_output_buffer("%s%.0f", (printed++ ? delim : ""), 1.0 * t->tsc/units/interval_float);
+ 
+ 	/* IRQ */
+ 	if (DO_BIC(BIC_IRQ)) {
+ 		if (sums_need_wide_columns)
+-			outp += sprintf(outp, "%s%8lld", (printed++ ? delim : ""), t->irq_count);
++			outp = append_to_output_buffer("%s%8lld", (printed++ ? delim : ""), t->irq_count);
+ 		else
+-			outp += sprintf(outp, "%s%lld", (printed++ ? delim : ""), t->irq_count);
++			outp = append_to_output_buffer("%s%lld", (printed++ ? delim : ""), t->irq_count);
+ 	}
+ 
+ 	/* SMI */
+ 	if (DO_BIC(BIC_SMI))
+-		outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), t->smi_count);
++		outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), t->smi_count);
+ 
+ 	/* Added counters */
+ 	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW) {
+ 			if (mp->width == 32)
+-				outp += sprintf(outp, "%s0x%08x", (printed++ ? delim : ""), (unsigned int) t->counter[i]);
++				outp = append_to_output_buffer("%s0x%08x", (printed++ ? delim : ""), (unsigned int) t->counter[i]);
+ 			else
+-				outp += sprintf(outp, "%s0x%016llx", (printed++ ? delim : ""), t->counter[i]);
++				outp = append_to_output_buffer("%s0x%016llx", (printed++ ? delim : ""), t->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+ 			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
+-				outp += sprintf(outp, "%s%8lld", (printed++ ? delim : ""), t->counter[i]);
++				outp = append_to_output_buffer("%s%8lld", (printed++ ? delim : ""), t->counter[i]);
+ 			else
+-				outp += sprintf(outp, "%s%lld", (printed++ ? delim : ""), t->counter[i]);
++				outp = append_to_output_buffer("%s%lld", (printed++ ? delim : ""), t->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+ 			if (mp->type == COUNTER_USEC)
+-				outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), t->counter[i]/interval_float/10000);
++				outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), t->counter[i]/interval_float/10000);
+ 			else
+-				outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * t->counter[i]/tsc);
++				outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * t->counter[i]/tsc);
+ 		}
+ 	}
+ 
+ 	/* C1 */
+ 	if (DO_BIC(BIC_CPU_c1))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * t->c1/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * t->c1/tsc);
+ 
+ 
+ 	/* print per-core data only for 1st thread in core */
+@@ -1039,32 +1061,32 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 		goto done;
+ 
+ 	if (DO_BIC(BIC_CPU_c3))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * c->c3/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * c->c3/tsc);
+ 	if (DO_BIC(BIC_CPU_c6))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * c->c6/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * c->c6/tsc);
+ 	if (DO_BIC(BIC_CPU_c7))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * c->c7/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * c->c7/tsc);
+ 
+ 	/* Mod%c6 */
+ 	if (DO_BIC(BIC_Mod_c6))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * c->mc6_us / tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * c->mc6_us / tsc);
+ 
+ 	if (DO_BIC(BIC_CoreTmp))
+-		outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), c->core_temp_c);
++		outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), c->core_temp_c);
+ 
+ 	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW) {
+ 			if (mp->width == 32)
+-				outp += sprintf(outp, "%s0x%08x", (printed++ ? delim : ""), (unsigned int) c->counter[i]);
++				outp = append_to_output_buffer("%s0x%08x", (printed++ ? delim : ""), (unsigned int) c->counter[i]);
+ 			else
+-				outp += sprintf(outp, "%s0x%016llx", (printed++ ? delim : ""), c->counter[i]);
++				outp = append_to_output_buffer("%s0x%016llx", (printed++ ? delim : ""), c->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+ 			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
+-				outp += sprintf(outp, "%s%8lld", (printed++ ? delim : ""), c->counter[i]);
++				outp = append_to_output_buffer("%s%8lld", (printed++ ? delim : ""), c->counter[i]);
+ 			else
+-				outp += sprintf(outp, "%s%lld", (printed++ ? delim : ""), c->counter[i]);
++				outp = append_to_output_buffer("%s%lld", (printed++ ? delim : ""), c->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+-			outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * c->counter[i]/tsc);
++			outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * c->counter[i]/tsc);
+ 		}
+ 	}
+ 
+@@ -1078,9 +1100,9 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 		fmt8 = "%6.0f**";
+ 
+ 	if (DO_BIC(BIC_CorWatt) && (do_rapl & RAPL_PER_CORE_ENERGY))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), c->core_energy * rapl_energy_units / interval_float);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), c->core_energy * rapl_energy_units / interval_float);
+ 	if (DO_BIC(BIC_Cor_J) && (do_rapl & RAPL_PER_CORE_ENERGY))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), c->core_energy * rapl_energy_units);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), c->core_energy * rapl_energy_units);
+ 
+ 	/* print per-package data only for 1st core in package */
+ 	if (!(t->flags & CPU_IS_FIRST_CORE_IN_PACKAGE))
+@@ -1088,92 +1110,92 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 
+ 	/* PkgTmp */
+ 	if (DO_BIC(BIC_PkgTmp))
+-		outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), p->pkg_temp_c);
++		outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), p->pkg_temp_c);
+ 
+ 	/* GFXrc6 */
+ 	if (DO_BIC(BIC_GFX_rc6)) {
+ 		if (p->gfx_rc6_ms == -1) {	/* detect GFX counter reset */
+-			outp += sprintf(outp, "%s**.**", (printed++ ? delim : ""));
++			outp = append_to_output_buffer("%s**.**", (printed++ ? delim : ""));
+ 		} else {
+-			outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""),
++			outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""),
+ 				p->gfx_rc6_ms / 10.0 / interval_float);
+ 		}
+ 	}
+ 
+ 	/* GFXMHz */
+ 	if (DO_BIC(BIC_GFXMHz))
+-		outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), p->gfx_mhz);
++		outp = append_to_output_buffer("%s%d", (printed++ ? delim : ""), p->gfx_mhz);
+ 
+ 	/* Totl%C0, Any%C0 GFX%C0 CPUGFX% */
+ 	if (DO_BIC(BIC_Totl_c0))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pkg_wtd_core_c0/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pkg_wtd_core_c0/tsc);
+ 	if (DO_BIC(BIC_Any_c0))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pkg_any_core_c0/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pkg_any_core_c0/tsc);
+ 	if (DO_BIC(BIC_GFX_c0))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pkg_any_gfxe_c0/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pkg_any_gfxe_c0/tsc);
+ 	if (DO_BIC(BIC_CPUGFX))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pkg_both_core_gfxe_c0/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pkg_both_core_gfxe_c0/tsc);
+ 
+ 	if (DO_BIC(BIC_Pkgpc2))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc2/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc2/tsc);
+ 	if (DO_BIC(BIC_Pkgpc3))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc3/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc3/tsc);
+ 	if (DO_BIC(BIC_Pkgpc6))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc6/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc6/tsc);
+ 	if (DO_BIC(BIC_Pkgpc7))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc7/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc7/tsc);
+ 	if (DO_BIC(BIC_Pkgpc8))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc8/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc8/tsc);
+ 	if (DO_BIC(BIC_Pkgpc9))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc9/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc9/tsc);
+ 	if (DO_BIC(BIC_Pkgpc10))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc10/tsc);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->pc10/tsc);
+ 
+ 	if (DO_BIC(BIC_CPU_LPI))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->cpu_lpi / 1000000.0 / interval_float);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->cpu_lpi / 1000000.0 / interval_float);
+ 	if (DO_BIC(BIC_SYS_LPI))
+-		outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->sys_lpi / 1000000.0 / interval_float);
++		outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->sys_lpi / 1000000.0 / interval_float);
+ 
+ 	if (DO_BIC(BIC_PkgWatt))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), p->energy_pkg * rapl_energy_units / interval_float);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), p->energy_pkg * rapl_energy_units / interval_float);
+ 	if (DO_BIC(BIC_CorWatt) && !(do_rapl & RAPL_PER_CORE_ENERGY))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), p->energy_cores * rapl_energy_units / interval_float);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), p->energy_cores * rapl_energy_units / interval_float);
+ 	if (DO_BIC(BIC_GFXWatt))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), p->energy_gfx * rapl_energy_units / interval_float);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), p->energy_gfx * rapl_energy_units / interval_float);
+ 	if (DO_BIC(BIC_RAMWatt))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), p->energy_dram * rapl_dram_energy_units / interval_float);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), p->energy_dram * rapl_dram_energy_units / interval_float);
+ 	if (DO_BIC(BIC_Pkg_J))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), p->energy_pkg * rapl_energy_units);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), p->energy_pkg * rapl_energy_units);
+ 	if (DO_BIC(BIC_Cor_J) && !(do_rapl & RAPL_PER_CORE_ENERGY))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), p->energy_cores * rapl_energy_units);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), p->energy_cores * rapl_energy_units);
+ 	if (DO_BIC(BIC_GFX_J))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), p->energy_gfx * rapl_energy_units);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), p->energy_gfx * rapl_energy_units);
+ 	if (DO_BIC(BIC_RAM_J))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), p->energy_dram * rapl_dram_energy_units);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), p->energy_dram * rapl_dram_energy_units);
+ 	if (DO_BIC(BIC_PKG__))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), 100.0 * p->rapl_pkg_perf_status * rapl_time_units / interval_float);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), 100.0 * p->rapl_pkg_perf_status * rapl_time_units / interval_float);
+ 	if (DO_BIC(BIC_RAM__))
+-		outp += sprintf(outp, fmt8, (printed++ ? delim : ""), 100.0 * p->rapl_dram_perf_status * rapl_time_units / interval_float);
++		outp = append_to_output_buffer(fmt8, (printed++ ? delim : ""), 100.0 * p->rapl_dram_perf_status * rapl_time_units / interval_float);
+ 
+ 	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW) {
+ 			if (mp->width == 32)
+-				outp += sprintf(outp, "%s0x%08x", (printed++ ? delim : ""), (unsigned int) p->counter[i]);
++				outp = append_to_output_buffer("%s0x%08x", (printed++ ? delim : ""), (unsigned int) p->counter[i]);
+ 			else
+-				outp += sprintf(outp, "%s0x%016llx", (printed++ ? delim : ""), p->counter[i]);
++				outp = append_to_output_buffer("%s0x%016llx", (printed++ ? delim : ""), p->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+ 			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
+-				outp += sprintf(outp, "%s%8lld", (printed++ ? delim : ""), p->counter[i]);
++				outp = append_to_output_buffer("%s%8lld", (printed++ ? delim : ""), p->counter[i]);
+ 			else
+-				outp += sprintf(outp, "%s%lld", (printed++ ? delim : ""), p->counter[i]);
++				outp = append_to_output_buffer("%s%lld", (printed++ ? delim : ""), p->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+-			outp += sprintf(outp, "%s%.2f", (printed++ ? delim : ""), 100.0 * p->counter[i]/tsc);
++			outp = append_to_output_buffer("%s%.2f", (printed++ ? delim : ""), 100.0 * p->counter[i]/tsc);
+ 		}
+ 	}
+ 
+ done:
+ 	if (*(outp - 1) != '\n')
+-		outp += sprintf(outp, "\n");
++		outp = append_to_output_buffer("\n");
+ 
+ 	return 0;
+ }
+@@ -5135,7 +5157,8 @@ int initialize_counters(int cpu_id)
+ 
+ void allocate_output_buffer()
  {
- 	struct wilco_ec_device *ec = platform_get_drvdata(pdev);
- 
-+	platform_device_unregister(ec->charger_pdev);
- 	platform_device_unregister(ec->rtc_pdev);
- 	if (ec->debugfs_pdev)
- 		platform_device_unregister(ec->debugfs_pdev);
-diff --git a/drivers/platform/chrome/wilco_ec/properties.c b/drivers/platform/chrome/wilco_ec/properties.c
-new file mode 100644
-index 000000000000..307619554da8
---- /dev/null
-+++ b/drivers/platform/chrome/wilco_ec/properties.c
-@@ -0,0 +1,134 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright 2019 Google LLC
-+ */
-+
-+#include <linux/platform_data/wilco-ec.h>
-+#include <linux/string.h>
-+#include <linux/unaligned/le_memmove.h>
-+
-+/* Operation code; what the EC should do with the property */
-+enum property_op {
-+	OP_GET = 0,
-+	OP_SET = 1,
-+};
-+
-+struct ec_property_request {
-+	u8 op; /* One of enum property_op */
-+	u8 property_id[4]; /* The 32 bit PID is stored Little Endian */
-+	u8 length;
-+	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-+} __packed;
-+
-+struct ec_property_response {
-+	u8 reserved[2];
-+	u8 op; /* One of enum property_op */
-+	u8 property_id[4]; /* The 32 bit PID is stored Little Endian */
-+	u8 length;
-+	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-+} __packed;
-+
-+static int send_property_msg(struct wilco_ec_device *ec,
-+			     struct ec_property_request *rq,
-+			     struct ec_property_response *rs)
-+{
-+	struct wilco_ec_message ec_msg;
-+	int ret;
-+
-+	memset(&ec_msg, 0, sizeof(ec_msg));
-+	ec_msg.type = WILCO_EC_MSG_PROPERTY;
-+	ec_msg.request_data = rq;
-+	ec_msg.request_size = sizeof(*rq);
-+	ec_msg.response_data = rs;
-+	ec_msg.response_size = sizeof(*rs);
-+
-+	ret = wilco_ec_mailbox(ec, &ec_msg);
-+	if (ret < 0)
-+		return ret;
-+	if (rs->op != rq->op)
-+		return -EBADMSG;
-+	if (memcmp(rq->property_id, rs->property_id, sizeof(rs->property_id)))
-+		return -EBADMSG;
-+	if (rs->length > sizeof(rs->data))
-+		return -EMSGSIZE;
-+
-+	return 0;
-+}
-+
-+int wilco_ec_get_property(struct wilco_ec_device *ec,
-+			  struct wilco_ec_property_msg *prop_msg)
-+{
-+	struct ec_property_request rq;
-+	struct ec_property_response rs;
-+	int ret;
-+
-+	memset(&rq, 0, sizeof(rq));
-+	rq.op = OP_GET;
-+	put_unaligned_le32(prop_msg->property_id, rq.property_id);
-+
-+	ret = send_property_msg(ec, &rq, &rs);
-+	if (ret < 0)
-+		return ret;
-+
-+	prop_msg->length = rs.length;
-+	memcpy(prop_msg->data, rs.data, rs.length);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(wilco_ec_get_property);
-+
-+int wilco_ec_set_property(struct wilco_ec_device *ec,
-+			  struct wilco_ec_property_msg *prop_msg)
-+{
-+	struct ec_property_request rq;
-+	struct ec_property_response rs;
-+	int ret;
-+
-+	memset(&rq, 0, sizeof(rq));
-+	rq.op = OP_SET;
-+	put_unaligned_le32(prop_msg->property_id, rq.property_id);
-+	rq.length = prop_msg->length;
-+	memcpy(rq.data, prop_msg->data, prop_msg->length);
-+
-+	ret = send_property_msg(ec, &rq, &rs);
-+	if (ret < 0)
-+		return ret;
-+	if (rs.length != prop_msg->length)
-+		return -EBADMSG;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(wilco_ec_set_property);
-+
-+int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
-+			       u8 *val)
-+{
-+	struct wilco_ec_property_msg msg;
-+	int ret;
-+
-+	msg.property_id = property_id;
-+
-+	ret = wilco_ec_get_property(ec, &msg);
-+	if (ret < 0)
-+		return ret;
-+	if (msg.length != 1)
-+		return -EBADMSG;
-+
-+	*val = msg.data[0];
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(wilco_ec_get_byte_property);
-+
-+int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
-+			       u8 val)
-+{
-+	struct wilco_ec_property_msg msg;
-+
-+	msg.property_id = property_id;
-+	msg.data[0] = val;
-+	msg.length = 1;
-+
-+	return wilco_ec_set_property(ec, &msg);
-+}
-+EXPORT_SYMBOL_GPL(wilco_ec_set_byte_property);
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index b731c2a9b695..2b603a142701 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -87,3 +87,4 @@ obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
- obj-$(CONFIG_CHARGER_CROS_USBPD)	+= cros_usbpd-charger.o
- obj-$(CONFIG_CHARGER_SC2731)	+= sc2731_charger.o
- obj-$(CONFIG_FUEL_GAUGE_SC27XX)	+= sc27xx_fuel_gauge.o
-+obj-$(CONFIG_CHARGER_WILCO)	+= wilco-charger.o
-diff --git a/drivers/power/supply/wilco-charger.c b/drivers/power/supply/wilco-charger.c
-new file mode 100644
-index 000000000000..96544c25bb80
---- /dev/null
-+++ b/drivers/power/supply/wilco-charger.c
-@@ -0,0 +1,190 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Charging control driver for the Wilco EC
-+ *
-+ * Copyright 2019 Google LLC
-+ *
-+ * See Documentation/ABI/testing/sysfs-class-power and
-+ * Documentation/ABI/testing/sysfs-class-power-wilco for userspace interface
-+ * and other info.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/platform_data/wilco-ec.h>
-+#include <linux/power_supply.h>
-+
-+#define DRV_NAME "wilco-charger"
-+
-+/* Property IDs and related EC constants */
-+#define PID_CHARGE_MODE		0x0710
-+#define PID_CHARGE_LOWER_LIMIT	0x0711
-+#define PID_CHARGE_UPPER_LIMIT	0x0712
-+
-+enum charge_mode {
-+	CHARGE_MODE_ILLEGAL = -1,
-+	CHARGE_MODE_STD = 1,	/* Used for Standard */
-+	CHARGE_MODE_EXP = 2,	/* Express Charge, used for Fast */
-+	CHARGE_MODE_AC = 3,	/* Mostly AC use, used for Trickle */
-+	CHARGE_MODE_AUTO = 4,	/* Used for Adaptive */
-+	CHARGE_MODE_CUSTOM = 5,	/* Used for Custom */
-+};
-+
-+#define CHARGE_LOWER_LIMIT_MIN	50
-+#define CHARGE_LOWER_LIMIT_MAX	95
-+#define CHARGE_UPPER_LIMIT_MIN	55
-+#define CHARGE_UPPER_LIMIT_MAX	100
-+
-+/* Convert from POWER_SUPPLY_PROP_CHARGE_TYPE value to the EC's charge mode */
-+static enum charge_mode psp_val_to_charge_mode(int psp_val)
-+{
-+	switch (psp_val) {
-+	case POWER_SUPPLY_CHARGE_TYPE_TRICKLE:
-+		return CHARGE_MODE_AC;
-+	case POWER_SUPPLY_CHARGE_TYPE_FAST:
-+		return CHARGE_MODE_EXP;
-+	case POWER_SUPPLY_CHARGE_TYPE_STANDARD:
-+		return CHARGE_MODE_STD;
-+	case POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE:
-+		return CHARGE_MODE_AUTO;
-+	case POWER_SUPPLY_CHARGE_TYPE_CUSTOM:
-+		return CHARGE_MODE_CUSTOM;
-+	default:
-+		return CHARGE_MODE_ILLEGAL;
-+	}
-+}
-+
-+/* Convert from EC's charge mode to POWER_SUPPLY_PROP_CHARGE_TYPE value */
-+static int charge_mode_to_psp_val(enum charge_mode mode)
-+{
-+	switch (mode) {
-+	case CHARGE_MODE_AC:
-+		return POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-+	case CHARGE_MODE_EXP:
-+		return POWER_SUPPLY_CHARGE_TYPE_FAST;
-+	case CHARGE_MODE_STD:
-+		return POWER_SUPPLY_CHARGE_TYPE_STANDARD;
-+	case CHARGE_MODE_AUTO:
-+		return POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE;
-+	case CHARGE_MODE_CUSTOM:
-+		return POWER_SUPPLY_CHARGE_TYPE_CUSTOM;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static enum power_supply_property wilco_charge_props[] = {
-+	POWER_SUPPLY_PROP_CHARGE_TYPE,
-+	POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD,
-+	POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD,
-+};
-+
-+static int wilco_charge_get_property(struct power_supply *psy,
-+				     enum power_supply_property psp,
-+				     union power_supply_propval *val)
-+{
-+	struct wilco_ec_device *ec = power_supply_get_drvdata(psy);
-+	u32 property_id;
-+	int ret;
-+	u8 raw;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		property_id = PID_CHARGE_MODE;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD:
-+		property_id = PID_CHARGE_LOWER_LIMIT;
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
-+		property_id = PID_CHARGE_UPPER_LIMIT;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	ret = wilco_ec_get_byte_property(ec, property_id, &raw);
-+	if (ret < 0)
-+		return ret;
-+	if (property_id == PID_CHARGE_MODE) {
-+		ret = charge_mode_to_psp_val(raw);
-+		if (ret < 0)
-+			return -EBADMSG;
-+		raw = ret;
-+	}
-+	val->intval = raw;
-+
-+	return 0;
-+}
-+
-+static int wilco_charge_set_property(struct power_supply *psy,
-+				     enum power_supply_property psp,
-+				     const union power_supply_propval *val)
-+{
-+	struct wilco_ec_device *ec = power_supply_get_drvdata(psy);
-+	enum charge_mode mode;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		mode = psp_val_to_charge_mode(val->intval);
-+		if (mode == CHARGE_MODE_ILLEGAL)
-+			return -EINVAL;
-+		return wilco_ec_set_byte_property(ec, PID_CHARGE_MODE, mode);
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD:
-+		if (val->intval < CHARGE_LOWER_LIMIT_MIN ||
-+		    val->intval > CHARGE_LOWER_LIMIT_MAX)
-+			return -EINVAL;
-+		return wilco_ec_set_byte_property(ec, PID_CHARGE_LOWER_LIMIT,
-+						  val->intval);
-+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD:
-+		if (val->intval < CHARGE_UPPER_LIMIT_MIN ||
-+		    val->intval > CHARGE_UPPER_LIMIT_MAX)
-+			return -EINVAL;
-+		return wilco_ec_set_byte_property(ec, PID_CHARGE_UPPER_LIMIT,
-+						  val->intval);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int wilco_charge_property_is_writeable(struct power_supply *psy,
-+					      enum power_supply_property psp)
-+{
-+	return 1;
-+}
-+
-+static const struct power_supply_desc wilco_ps_desc = {
-+	.properties		= wilco_charge_props,
-+	.num_properties		= ARRAY_SIZE(wilco_charge_props),
-+	.get_property		= wilco_charge_get_property,
-+	.set_property		= wilco_charge_set_property,
-+	.property_is_writeable	= wilco_charge_property_is_writeable,
-+	.name			= "wilco-charger",
-+	.type			= POWER_SUPPLY_TYPE_MAINS,
-+};
-+
-+static int wilco_charge_probe(struct platform_device *pdev)
-+{
-+	struct wilco_ec_device *ec = dev_get_drvdata(pdev->dev.parent);
-+	struct power_supply_config psy_cfg = {};
-+	struct power_supply *psy;
-+
-+	psy_cfg.drv_data = ec;
-+	psy = devm_power_supply_register(&pdev->dev, &wilco_ps_desc, &psy_cfg);
-+	if (IS_ERR(psy))
-+		return PTR_ERR(psy);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver wilco_charge_driver = {
-+	.probe	= wilco_charge_probe,
-+	.driver = {
-+		.name = DRV_NAME,
-+	}
-+};
-+module_platform_driver(wilco_charge_driver);
-+
-+MODULE_ALIAS("platform:" DRV_NAME);
-+MODULE_AUTHOR("Nick Crews <ncrews@chromium.org>");
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("Wilco EC charge control driver");
-diff --git a/include/linux/platform_data/wilco-ec.h b/include/linux/platform_data/wilco-ec.h
-index 1ff224793c99..66d9f177bec2 100644
---- a/include/linux/platform_data/wilco-ec.h
-+++ b/include/linux/platform_data/wilco-ec.h
-@@ -32,6 +32,7 @@
-  * @data_size: Size of the data buffer used for EC communication.
-  * @debugfs_pdev: The child platform_device used by the debugfs sub-driver.
-  * @rtc_pdev: The child platform_device used by the RTC sub-driver.
-+ * @charger_pdev: Child platform_device used by the charger config sub-driver.
-  */
- struct wilco_ec_device {
- 	struct device *dev;
-@@ -43,6 +44,7 @@ struct wilco_ec_device {
- 	size_t data_size;
- 	struct platform_device *debugfs_pdev;
- 	struct platform_device *rtc_pdev;
-+	struct platform_device *charger_pdev;
- };
- 
- /**
-@@ -123,4 +125,75 @@ struct wilco_ec_message {
-  */
- int wilco_ec_mailbox(struct wilco_ec_device *ec, struct wilco_ec_message *msg);
- 
-+/*
-+ * A Property is typically a data item that is stored to NVRAM
-+ * by the EC. Each of these data items has an index associated
-+ * with it, known as the Property ID (PID). Properties may have
-+ * variable lengths, up to a max of WILCO_EC_PROPERTY_MAX_SIZE
-+ * bytes. Properties can be simple integers, or they may be more
-+ * complex binary data.
-+ */
-+
-+#define WILCO_EC_PROPERTY_MAX_SIZE	4
-+
-+/**
-+ * struct ec_property_set_msg - Message to get or set a property.
-+ * @property_id: Which property to get or set.
-+ * @length: Number of bytes of |data| that are used.
-+ * @data: Actual property data.
-+ */
-+struct wilco_ec_property_msg {
-+	u32 property_id;
-+	int length;
-+	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-+};
-+
-+/**
-+ * wilco_ec_get_property() - Retrieve a property from the EC.
-+ * @ec: Embedded Controller device.
-+ * @prop_msg: Message for request and response.
-+ *
-+ * The property_id field of |prop_msg| should be filled before calling this
-+ * function. The result will be stored in the data and length fields.
-+ *
-+ * Return: 0 on success, negative error code on failure.
-+ */
-+int wilco_ec_get_property(struct wilco_ec_device *ec,
-+			  struct wilco_ec_property_msg *prop_msg);
-+
-+/**
-+ * wilco_ec_set_property() - Store a property on the EC.
-+ * @ec: Embedded Controller device.
-+ * @prop_msg: Message for request and response.
-+ *
-+ * The property_id, length, and data fields of |prop_msg| should be
-+ * filled before calling this function.
-+ *
-+ * Return: 0 on success, negative error code on failure.
-+ */
-+int wilco_ec_set_property(struct wilco_ec_device *ec,
-+			  struct wilco_ec_property_msg *prop_msg);
-+
-+/**
-+ * wilco_ec_get_byte_property() - Retrieve a byte-size property from the EC.
-+ * @ec: Embedded Controller device.
-+ * @property_id: Which property to retrieve.
-+ * @val: The result value, will be filled by this function.
-+ *
-+ * Return: 0 on success, negative error code on failure.
-+ */
-+int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
-+			       u8 *val);
-+
-+/**
-+ * wilco_ec_get_byte_property() - Store a byte-size property on the EC.
-+ * @ec: Embedded Controller device.
-+ * @property_id: Which property to store.
-+ * @val: Value to store.
-+ *
-+ * Return: 0 on success, negative error code on failure.
-+ */
-+int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
-+			       u8 val);
-+
- #endif /* WILCO_EC_H */
+-	output_buffer = calloc(1, (1 + topo.num_cpus) * 1024);
++	outbuf_size = (1 + topo.num_cpus) * 1024;
++	output_buffer = calloc(1, outbuf_size);
+ 	outp = output_buffer;
+ 	if (outp == NULL)
+ 		err(-1, "calloc output buffer");
 -- 
-2.20.1
+2.17.1
