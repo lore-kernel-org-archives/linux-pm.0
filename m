@@ -2,58 +2,59 @@ Return-Path: <SRS0=DtRT=SV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D725C282DF
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:09:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E15C282DF
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:10:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3B78520693
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:09:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0D7A820869
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:10:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="lDuK7NcP"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="USvdYqwR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729358AbfDSTJx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Apr 2019 15:09:53 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:54673 "EHLO
+        id S1727026AbfDSTJ7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Apr 2019 15:09:59 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:54633 "EHLO
         mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728981AbfDSTHx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 15:07:53 -0400
+        with ESMTP id S1728496AbfDSTHw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 15:07:52 -0400
 Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190419141940euoutp022e20f4cdbbf86f507a08e9e1dbdebff7~W5fllNP0N2260922609euoutp02Y
-        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 14:19:40 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190419141940euoutp022e20f4cdbbf86f507a08e9e1dbdebff7~W5fllNP0N2260922609euoutp02Y
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190419141955euoutp028dd5ad01f2ee4d473cbfa99776ff2003~W5fzPFx_v2260722607euoutp02v
+        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 14:19:55 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190419141955euoutp028dd5ad01f2ee4d473cbfa99776ff2003~W5fzPFx_v2260722607euoutp02v
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555683580;
-        bh=laRurPPqZGLm21JPTycL20HYCYlH4Nx5jtw/RR3oQv8=;
-        h=From:To:Cc:Subject:Date:References:From;
-        b=lDuK7NcP4IBUNtuqIJcTd4n28RM82rSOpZrRjR/YC0OWgHMMAgsbveDnYkZLScczf
-         DZY6RhP6JFYlSBltSHigOaiZ5pDAccD/DRwCKmuwvhTiIXSi6LnlsD9asxs1veewRm
-         Vz3wQAapI7xmVUJa4wOeoJM9rsF+r8K47nGqN4fQ=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190419141939eucas1p23b391ac0c0158c9e4255499df89ed137~W5fkesHWX3160331603eucas1p2B;
-        Fri, 19 Apr 2019 14:19:39 +0000 (GMT)
+        s=mail20170921; t=1555683595;
+        bh=c4kx8rzUZuvENR4GPmajcyTbcTs192pPPPvnLrk0+/k=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=USvdYqwRk/ay7YugDEE84P6C3cPpsp0gk2qZtLKLaJ0dZjIFJNzmrJUypC/EhpdTn
+         lrTu6dPizJ/VkuSR4dAyGH2c7vpVGXOmY1RxWA1bDiU7UdZsb4estYF2PCvf+C2Tt1
+         1eV9AM8TyviK3C+n1xrlyc87iCJTrnDcg+mEvebY=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190419141954eucas1p1a454637b8efc38350f1e210eafe9319b~W5fyZDbzM0117601176eucas1p1e;
+        Fri, 19 Apr 2019 14:19:54 +0000 (GMT)
 Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges3new.samsung.com (EUCPMTA) with SMTP id 6A.B2.04325.AF8D9BC5; Fri, 19
-        Apr 2019 15:19:38 +0100 (BST)
+        eusmges1new.samsung.com (EUCPMTA) with SMTP id 6D.72.04298.A09D9BC5; Fri, 19
+        Apr 2019 15:19:54 +0100 (BST)
 Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
         eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190419141938eucas1p16ee6cdf897184df33cf67b55c5f3c449~W5fjMpx4m0188401884eucas1p1A;
-        Fri, 19 Apr 2019 14:19:38 +0000 (GMT)
+        20190419141953eucas1p1b403be15353fa31de3e226599b675f67~W5fxo9PK_2918129181eucas1p1f;
+        Fri, 19 Apr 2019 14:19:53 +0000 (GMT)
 Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
         eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190419141937eusmtrp1007d1aa685d250e62534f44018fb2fdd~W5fi_juGG1759317593eusmtrp1R;
-        Fri, 19 Apr 2019 14:19:37 +0000 (GMT)
-X-AuditID: cbfec7f5-b75ff700000010e5-74-5cb9d8fad053
+        20190419141953eusmtrp11e0e0cdd551996e6aa8258d8f3b685fb~W5fxa1w2G1759317593eusmtrp1k;
+        Fri, 19 Apr 2019 14:19:53 +0000 (GMT)
+X-AuditID: cbfec7f2-f2dff700000010ca-31-5cb9d90a748c
 Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id E7.02.04146.9F8D9BC5; Fri, 19
-        Apr 2019 15:19:37 +0100 (BST)
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 72.12.04146.909D9BC5; Fri, 19
+        Apr 2019 15:19:53 +0100 (BST)
 Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
         eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190419141937eusmtip230c2262191a52e35f17d79aa58010bcf~W5fiOwPSS3043530435eusmtip27;
-        Fri, 19 Apr 2019 14:19:36 +0000 (GMT)
+        20190419141952eusmtip265c67a3930848a783e7feb5fdee309e5~W5fwkwQDv3242832428eusmtip2X;
+        Fri, 19 Apr 2019 14:19:52 +0000 (GMT)
 From:   Lukasz Luba <l.luba@partner.samsung.com>
 To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
@@ -64,149 +65,74 @@ Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
         jroedel@suse.de, treding@nvidia.com, digetx@gmail.com,
         willy.mh.wolff.ml@gmail.com,
         Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v6 0/10] Exynos5 Dynamic Memory Controller driver
-Date:   Fri, 19 Apr 2019 16:19:18 +0200
-Message-Id: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v6 10/10] ARM: exynos_defconfig: enable DMC driver
+Date:   Fri, 19 Apr 2019 16:19:28 +0200
+Message-Id: <1555683568-20882-11-git-send-email-l.luba@partner.samsung.com>
 X-Mailer: git-send-email 2.7.4
-X-Brightmail-Tracker: H4sIAAAAAAAAA0VSa0hTYRju29nOjsPJcVp+zBsMIjPUotsHiWZJHYRoQkXUImceVHJTd9Sy
-        9WOpqVveUNChmV0oxTQvW6JWmtPUNJ2ipmlGKWbUMsJrWpHzTPr3fM/lfV5ePgITNfLERLQy
-        gVYp5TESXMBt6Pxl9lkda5LtTinyR3X6Gh4aXZjlobKOfh56/HMaoIKeUg56c0uBcqe/Ychs
-        ruWjvhQLH41r3NBQ820czWd3AKQ3t3BQdcckH03cqMBRuyWDh1qHQ9DEmgNa6p4Ch52opcV8
-        LlWiGeRSTcWTfKq+UotT2alzONU295xD5RgrAWXoVVPz9R5Su3MC/wg6JjqJVvkFhAmi8rJq
-        eXGft19NHe8HGtDqrgN2BCT3wSdTY7gOCAgRWQFgzUwa3yqIyAUA9Q+SWGEewM6pWu5mYjS3
-        DmOFcgB182YO+1hPZJSlAR0gCJz0hY2V8daAM6mG70dbNwIYaeHAvtWVjUlOZBA0Vjdv1HHJ
-        7XBkeRmzYiEZAsd/fMLZNg/4rl+7EYZkJx8OvP4DWCEYZlWt2LAT/Npl5LPYDfYWZNlWZaAm
-        +57Ncx1O55baPIdge9cgz7ooRu6ENc1+LB0Ec8qHMSsNSQc49t3RSmPrML+hyEYLYWa6iHV7
-        QWPWAIfF22B5VaFtOAUNDy22I16AHx7p+XnAo/h/110AKoELncgoImlmr5K+4svIFUyiMtL3
-        UqyiHqz/p96/XYuNoOV3uAmQBJDYC1/mN8lEPHkSk6wwAUhgEmdhUIRRJhJGyJOv0arYi6rE
-        GJoxAVeCK3ERqrd8PC8iI+UJ9GWajqNVmyqHsBNrgK9PsGCFzIx3vHO0zds94WxbeX7jqR1h
-        2rHQnMBC2UnpiPbE6WddBw1+M0/jxSE38aEDkpJaoSBkSPpKGbtfFxqYAydMZ8THxKGu4T3H
-        o+z9+wyONfYm0jIbcH+rMKPpSIynNGWp4W2A29QLdfQur7WC9AZtuyZ4Vv5lqFud4SnhMlHy
-        Pd6YipH/A4PQnF9LAwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprAIsWRmVeSWpSXmKPExsVy+t/xe7o/b+yMMZg0xcBi44z1rBbXvzxn
-        tZh/5ByrxeqPjxktJp+ay2RxpjvXov/xa2aL8+c3sFucbXrDbnGrQcbi8q45bBafe48wWsw4
-        v4/JYu2Ru+wWtxtXsFkcftPOarH/ipfF7d98Ft9OPGJ0EPb49nUSi8fshossHjtn3WX32LSq
-        k82jt/kdm8fBd3uYPPq2rGL02Hy62uPzJrkAzig9m6L80pJUhYz84hJbpWhDCyM9Q0sLPSMT
-        Sz1DY/NYKyNTJX07m5TUnMyy1CJ9uwS9jAk9G1gLnqlWNN86x9jAuF+2i5GTQ0LAROJ6/0bm
-        LkYuDiGBpYwS3XMnMUMkxCQm7dvODmELS/y51sUGUfSJUWLN5U6WLkYODjYBPYkdqwpBakQE
-        6iX631wCq2EWaGCWWLP9KitIQljAUWLL2l1gg1gEVCWufv8OtoBXwEvi1vuHbBAL5CRunutk
-        nsDIs4CRYRWjSGppcW56brGhXnFibnFpXrpecn7uJkZgbGw79nPzDsZLG4MPMQpwMCrx8B6Y
-        tDNGiDWxrLgy9xCjBAezkgivY8qWGCHelMTKqtSi/Pii0pzU4kOMpkDLJzJLiSbnA+M2ryTe
-        0NTQ3MLS0NzY3NjMQkmc97xBZZSQQHpiSWp2ampBahFMHxMHp1QDo0md6I/J95JUI3ge2MwO
-        yXCN+r13dlTW3T8vqzqWr3C+Wbc7saW+/JqPSdKy2alsvtwqm+N/ywkdskhtFvn4oWXPyyln
-        GBUdL5msfGNevfdW0Yf7mWxt+w5NMNidcFJhwb4jt7t9mjMrNoa9O+l78cHz3BbVVUGhcu/2
-        X1WuP8DPvv/n4Wn39JRYijMSDbWYi4oTASJCETOjAgAA
-X-CMS-MailID: 20190419141938eucas1p16ee6cdf897184df33cf67b55c5f3c449
+In-Reply-To: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA0WSe0hTURzHO/ex3Y0Wtyl5MLFYBBalCSsOFFFRcE2CwkpIQ2de1HJqu2kt
+        K6aBz5mllK98IaVNzUfLplm+lqamZkq+0kqtIM3wrQnRrnfVf5/v9/f9/c7vHA6Fy5tIeyoo
+        5BKrCVEFK0RSoqp5uWundKDae1fLMoYq0stI1Df3jUS55k4SFU+PAZTalo2hN4lqlDw2gaOu
+        rnIx6oieFKNBnQPqqbkvQrNJZoDSu15iqNQ8LEZDUUUi1DQZS6K63qNoaGUdWng9Cg7YMAvz
+        KQSTpesmmOrMYTFTaYgXMUk3p0RMw1QtxtwyGgDzpD2Sma10PC45I93nzwYHRbAal/2+0sA2
+        vUfYF/KKcSmO0IFEMgFIKEgrYUriKwtLKTldBGDG03FMEHMA6kfSxYKYBXByOMEiqNWWOr0b
+        3y2nCwFMLT3/r6E2P5ngMyLaGZoMF/mMLR0JP/TV4XwGpycx2PFrieALNvQhWLzYgfNM0Fth
+        SXmamGcZ7Q4NpmlcWM8RDnTGr7LE4tc8Mor4QZAeEcMi84A1dBh+HRkVCWwDv7cYxQI7wPZU
+        PSEwB3VJ+UDga3AsOdua2QubWrpJfmmc3gbLalwE+yBcaC2w3ncd7P+xnrdxC6ZUpeGCLYNx
+        MXIh7QSN+reYwBtgYck963AGxrcZrU+YA+DMSjN2G2zK/H9YHgAGYMeGc+oAlnMNYS87cyo1
+        Fx4S4HwuVF0JLF+r/XfLjAnMv/NrBDQFFGtl9SnV3nJSFcFp1Y0AUrjCVnbQ3+gtl/mrtFdZ
+        TaiPJjyY5RrBRopQ2Mki13zyktMBqkvsBZYNYzV/qxglsdeBPTkySYPni8F4z1kPZc6xPYv9
+        rbedzmbaxuCPNz/XeT/IOqVse+sjzSvM6svz8Tc/S1BEmB7ujd7hq7Xvre/8GPtl+vqtAm1s
+        6s/3iye3+uVW9BOjJ05luPklgewF9wavO8qez2T15rwjHm7zN07PxOVMDEWdMPQoHMe1W7rL
+        Tu++qyC4QJXrdlzDqf4ApRZqBVYDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrKIsWRmVeSWpSXmKPExsVy+t/xe7qcN3fGGOxbxmuxccZ6VovrX56z
+        Wsw/co7VYvXHx4wWk0/NZbI4051r0f/4NbPF+fMb2C3ONr1ht7jVIGNxedccNovPvUcYLWac
+        38dksfbIXXaL240r2CwOv2lntdh/xcvi9m8+i28nHjE6CHt8+zqJxWN2w0UWj52z7rJ7bFrV
+        yebR2/yOzePguz1MHn1bVjF6bD5d7fF5k1wAZ5SeTVF+aUmqQkZ+cYmtUrShhZGeoaWFnpGJ
+        pZ6hsXmslZGpkr6dTUpqTmZZapG+XYJexqme4IKnrBVbfnSwNDB2s3YxcnBICJhI7O/x7GLk
+        5BASWMoo8XAhG4gtISAmMWnfdnYIW1jiz7UuoDgXUM0nRolHW7eC9bIJ6EnsWFUIUiMiUC/R
+        /+YSWA2zQAOzxJrtV1lBEsICThKrv59lBrFZBFQl1myYDjaUV8BbYtWOj8wQC+Qkbp7rBLM5
+        geK7Vm5hgzjIS2LDtb1MExj5FjAyrGIUSS0tzk3PLTbUK07MLS7NS9dLzs/dxAiMom3Hfm7e
+        wXhpY/AhRgEORiUe3gOTdsYIsSaWFVfmHmKU4GBWEuF1TNkSI8SbklhZlVqUH19UmpNafIjR
+        FOioicxSosn5wAjPK4k3NDU0t7A0NDc2NzazUBLnPW9QGSUkkJ5YkpqdmlqQWgTTx8TBKdXA
+        WLhevurO8cVevs/SdHbs/vXjZej3KW+uiLTpL96yVqbV8W/8rO4sc55LcrVXr/gsmP5wz7MF
+        L9n/XpgQab7p6t+5VsmyDDZSJad3/+QrWXWIX7Bo5rsjqzb69nV/+7B+6qGNPzq//YvomnDp
+        ut205pIzGfp+OrqaidsaKzt6uy4ztR7q74hcMU2JpTgj0VCLuag4EQCMSGGruAIAAA==
+X-CMS-MailID: 20190419141953eucas1p1b403be15353fa31de3e226599b675f67
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="UTF-8"
-X-RootMTR: 20190419141938eucas1p16ee6cdf897184df33cf67b55c5f3c449
+X-RootMTR: 20190419141953eucas1p1b403be15353fa31de3e226599b675f67
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20190419141938eucas1p16ee6cdf897184df33cf67b55c5f3c449
-References: <CGME20190419141938eucas1p16ee6cdf897184df33cf67b55c5f3c449@eucas1p1.samsung.com>
+X-CMS-RootMailID: 20190419141953eucas1p1b403be15353fa31de3e226599b675f67
+References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419141953eucas1p1b403be15353fa31de3e226599b675f67@eucas1p1.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190419141918.qqwVxE50TTHmwmV7AVwVif8cwNBa6bqZ7aEg95a9mUE@z>
+Message-ID: <20190419141928.OnaIbWUC5gg-ZQMUnaUKJPMmeIiH-E_VEgeJEk1dwNM@z>
 
-Hi all,
+Enable driver for Exynos5422 Dynamic Memory Controller supporting
+dynamic frequency and voltage scaling in Exynos5422 SoCs.
 
-This is v6 of the patch set which adds support of Dynamic Memory Controller
-for Exynos5422 SoC.
-The driver supports Dynamic Voltage and Frequency Scalling
-for the DMC and DRAM. It also provides needed timings for different
-speed operations of the DRAM memory.
+Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+---
+ arch/arm/configs/exynos_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-The patch set depends on changes to Exynos PPMU posted on LKLM as:
-[PATCH v3 0/4] Exynos Performance Monitoring Counters enhancements
-
-changes:
-v6:
-- driver code has been converted to use generic code which parses DT memory
-  definition in drivers/memory/of_memory.c
-- extended of_memory by LPDDR3 support (there was LPDDR2 made by TI)
-- extended jedec_lpddr.h by the needed structures for LPDDR3 (AC timings)
-- driver file moved to proper directory, where other memory controllers
-  live, which is in this case drivers/memory/samsung/
-- driver code now uses regmap_{read|write} to access registers for pausing
-  and changing timings set, as suggested by Chanwoo
-- DT contains simple definition of memory device, similar to LPDDR2 made by TI
-- driver code generates the needed timings for registered OPPs, based on
-  memory description in DT
-- patch 1 contains Rob's ACK,
-- simplified memory bandwidth calculation
-- added debug information files with timings, raw counters and statistics
-- updated dt-bindings files accordingly
-- based on v5.1-rc5 (+ PPMU patches)
-v5:
-- removed unneeded wrapper functions i.e. for regulator_set_voltage
-- removed unused defines
-- removed direct access to clock register base and used CCF for
-  pause and timing set usage
-- switched to OPP comming from DT according to Chanowoo's comments
-- switched to timings comming from DT, added parsing function
-- extended dt-binding with description of OPPs and timings
-- according to Rob Herring comment, moved dt-binding file before driver code
-  in the patch set.
-- rebased on top of v5.0
-v4:
-- removed unneeded DPLL and G3D clocks IDs
-- changed names of parent clocks for mout_mx_mspll_ccore_phy_p
-  and added one more parent: mout_sclk_epll
-- removed 933Mhz and 138MHz from the BPLL ratio table
-v3:
-- in DTS align to proper indent the clocks and clock-names entries
-v2:
-- changed file name exynos5-dmc.c -> exynos5422-dmc.c
-  and related entries in other files
-- changed dt-binding file name
-- changed config entry to CONFIG_ARM_EXYNOS5422_DMC_DEVFREQ
-- removed sysfs and print info messages (print only one line)
-- removed function exynos5_read_chip_info and compact code
-- changed dt-binding patch and move it up in the patch set
-- new entries in MAINTAINERS are added with the driver c code
-- clean-up in DTS file: renamed nodes to 'ppmu' and 'memory-controller',
-  entries moved to suggested location (before nocp nodes or after),
-  moved according to alfabetical order, compacted clocks names with right indent.
-
-Regards,
-Lukasz Luba
-
-Lukasz Luba (10):
-  clk: samsung: add needed IDs for DMC clocks in Exynos5420
-  clk: samsung: add new clocks for DMC for Exynos5422 SoC
-  clk: samsung: add BPLL rate table for Exynos 5422 SoC
-  Documentation: dt: device tree bindings for LPDDR3 memories
-  drivers: memory: extend of_memory by LPDDR3 support
-  dt-bindings: memory-controllers: add Exynos5422 DMC device description
-  drivers: memory: add DMC driver for Exynos5422
-  drivers: devfreq: events: add Exynos PPMU new events
-  ARM: dts: exynos: add DMC device for exynos5422
-  ARM: exynos_defconfig: enable DMC driver
-
- .../devicetree/bindings/lpddr3/lpddr3-timings.txt  |   57 +
- .../devicetree/bindings/lpddr3/lpddr3.txt          |   93 +
- .../bindings/memory-controllers/exynos5422-dmc.txt |   73 +
- MAINTAINERS                                        |    8 +
- arch/arm/boot/dts/exynos5420.dtsi                  |  120 ++
- arch/arm/boot/dts/exynos5422-odroid-core.dtsi      |  120 ++
- arch/arm/configs/exynos_defconfig                  |    1 +
- drivers/clk/samsung/clk-exynos5420.c               |   59 +-
- drivers/devfreq/event/exynos-ppmu.c                |    6 +
- drivers/memory/of_memory.c                         |  125 ++
- drivers/memory/of_memory.h                         |   20 +-
- drivers/memory/samsung/Kconfig                     |   17 +
- drivers/memory/samsung/Makefile                    |    1 +
- drivers/memory/samsung/exynos5422-dmc.c            | 1793 ++++++++++++++++++++
- include/dt-bindings/clock/exynos5420.h             |   18 +-
- include/memory/jedec_ddr.h                         |   62 +
- 16 files changed, 2566 insertions(+), 7 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt
- create mode 100644 Documentation/devicetree/bindings/lpddr3/lpddr3.txt
- create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
- create mode 100644 drivers/memory/samsung/exynos5422-dmc.c
-
+diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
+index d635edf..04c076e 100644
+--- a/arch/arm/configs/exynos_defconfig
++++ b/arch/arm/configs/exynos_defconfig
+@@ -291,6 +291,7 @@ CONFIG_DEVFREQ_GOV_PERFORMANCE=y
+ CONFIG_DEVFREQ_GOV_POWERSAVE=y
+ CONFIG_DEVFREQ_GOV_USERSPACE=y
+ CONFIG_ARM_EXYNOS_BUS_DEVFREQ=y
++CONFIG_ARM_EXYNOS5422_DMC=y
+ CONFIG_DEVFREQ_EVENT_EXYNOS_NOCP=y
+ CONFIG_EXYNOS_IOMMU=y
+ CONFIG_EXTCON=y
 -- 
 2.7.4
 
