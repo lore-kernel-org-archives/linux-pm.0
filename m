@@ -1,111 +1,192 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v6 0/10] Exynos5 Dynamic Memory Controller driver
-Date: Fri, 19 Apr 2019 16:19:18 +0200
-Message-ID: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-References: <CGME20190419141938eucas1p16ee6cdf897184df33cf67b55c5f3c449@eucas1p1.samsung.com>
+Subject: [PATCH v6 04/10] Documentation: dt: device tree bindings for LPDDR3
+ memories
+Date: Fri, 19 Apr 2019 16:19:22 +0200
+Message-ID: <1555683568-20882-5-git-send-email-l.luba@partner.samsung.com>
+References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419141945eucas1p1c95d65f261f82da5c856c0f2fcf1ce87@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+The device tree bindings for LPDDR3 SDRAM memories.
 
-This is v6 of the patch set which adds support of Dynamic Memory Controller
-for Exynos5422 SoC.
-The driver supports Dynamic Voltage and Frequency Scalling
-for the DMC and DRAM. It also provides needed timings for different
-speed operations of the DRAM memory.
+For specifying the AC timing parameters of the memory device
+the 'lpddr3' binding uses binding 'lpddr2-timings'.
 
-The patch set depends on changes to Exynos PPMU posted on LKLM as:
-[PATCH v3 0/4] Exynos Performance Monitoring Counters enhancements
-
-changes:
-v6:
-- driver code has been converted to use generic code which parses DT memory
-  definition in drivers/memory/of_memory.c
-- extended of_memory by LPDDR3 support (there was LPDDR2 made by TI)
-- extended jedec_lpddr.h by the needed structures for LPDDR3 (AC timings)
-- driver file moved to proper directory, where other memory controllers
-  live, which is in this case drivers/memory/samsung/
-- driver code now uses regmap_{read|write} to access registers for pausing
-  and changing timings set, as suggested by Chanwoo
-- DT contains simple definition of memory device, similar to LPDDR2 made by TI
-- driver code generates the needed timings for registered OPPs, based on
-  memory description in DT
-- patch 1 contains Rob's ACK,
-- simplified memory bandwidth calculation
-- added debug information files with timings, raw counters and statistics
-- updated dt-bindings files accordingly
-- based on v5.1-rc5 (+ PPMU patches)
-v5:
-- removed unneeded wrapper functions i.e. for regulator_set_voltage
-- removed unused defines
-- removed direct access to clock register base and used CCF for
-  pause and timing set usage
-- switched to OPP comming from DT according to Chanowoo's comments
-- switched to timings comming from DT, added parsing function
-- extended dt-binding with description of OPPs and timings
-- according to Rob Herring comment, moved dt-binding file before driver code
-  in the patch set.
-- rebased on top of v5.0
-v4:
-- removed unneeded DPLL and G3D clocks IDs
-- changed names of parent clocks for mout_mx_mspll_ccore_phy_p
-  and added one more parent: mout_sclk_epll
-- removed 933Mhz and 138MHz from the BPLL ratio table
-v3:
-- in DTS align to proper indent the clocks and clock-names entries
-v2:
-- changed file name exynos5-dmc.c -> exynos5422-dmc.c
-  and related entries in other files
-- changed dt-binding file name
-- changed config entry to CONFIG_ARM_EXYNOS5422_DMC_DEVFREQ
-- removed sysfs and print info messages (print only one line)
-- removed function exynos5_read_chip_info and compact code
-- changed dt-binding patch and move it up in the patch set
-- new entries in MAINTAINERS are added with the driver c code
-- clean-up in DTS file: renamed nodes to 'ppmu' and 'memory-controller',
-  entries moved to suggested location (before nocp nodes or after),
-  moved according to alfabetical order, compacted clocks names with right indent.
-
-Regards,
-Lukasz Luba
-
-Lukasz Luba (10):
-  clk: samsung: add needed IDs for DMC clocks in Exynos5420
-  clk: samsung: add new clocks for DMC for Exynos5422 SoC
-  clk: samsung: add BPLL rate table for Exynos 5422 SoC
-  Documentation: dt: device tree bindings for LPDDR3 memories
-  drivers: memory: extend of_memory by LPDDR3 support
-  dt-bindings: memory-controllers: add Exynos5422 DMC device description
-  drivers: memory: add DMC driver for Exynos5422
-  drivers: devfreq: events: add Exynos PPMU new events
-  ARM: dts: exynos: add DMC device for exynos5422
-  ARM: exynos_defconfig: enable DMC driver
-
- .../devicetree/bindings/lpddr3/lpddr3-timings.txt  |   57 +
- .../devicetree/bindings/lpddr3/lpddr3.txt          |   93 +
- .../bindings/memory-controllers/exynos5422-dmc.txt |   73 +
- MAINTAINERS                                        |    8 +
- arch/arm/boot/dts/exynos5420.dtsi                  |  120 ++
- arch/arm/boot/dts/exynos5422-odroid-core.dtsi      |  120 ++
- arch/arm/configs/exynos_defconfig                  |    1 +
- drivers/clk/samsung/clk-exynos5420.c               |   59 +-
- drivers/devfreq/event/exynos-ppmu.c                |    6 +
- drivers/memory/of_memory.c                         |  125 ++
- drivers/memory/of_memory.h                         |   20 +-
- drivers/memory/samsung/Kconfig                     |   17 +
- drivers/memory/samsung/Makefile                    |    1 +
- drivers/memory/samsung/exynos5422-dmc.c            | 1793 ++++++++++++++++++++
- include/dt-bindings/clock/exynos5420.h             |   18 +-
- include/memory/jedec_ddr.h                         |   62 +
- 16 files changed, 2566 insertions(+), 7 deletions(-)
+Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+---
+ .../devicetree/bindings/lpddr3/lpddr3-timings.txt  | 57 +++++++++++++
+ .../devicetree/bindings/lpddr3/lpddr3.txt          | 93 ++++++++++++++++++++++
+ 2 files changed, 150 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt
  create mode 100644 Documentation/devicetree/bindings/lpddr3/lpddr3.txt
- create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
- create mode 100644 drivers/memory/samsung/exynos5422-dmc.c
 
+diff --git a/Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt b/Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt
+new file mode 100644
+index 0000000..ebf3e00
+--- /dev/null
++++ b/Documentation/devicetree/bindings/lpddr3/lpddr3-timings.txt
+@@ -0,0 +1,57 @@
++* AC timing parameters of LPDDR3 memories for a given speed-bin.
++* The structures are based on LPDDR2 and extended where needed.
++
++Required properties:
++- compatible : Should be "jedec,lpddr3-timings"
++- min-freq : minimum DDR clock frequency for the speed-bin. Type is <u32>
++- max-freq : maximum DDR clock frequency for the speed-bin. Type is <u32>
++
++Optional properties:
++
++The following properties represent AC timing parameters from the memory
++data-sheet of the device for a given speed-bin. All these properties are
++of type <u32> and the default unit is ps (pico seconds).
++- tRFC
++- tRRD
++- tRPab
++- tRPpb
++- tRCD
++- tRC
++- tRAS
++- tWTR
++- tWR
++- tRTP
++- tW2W-C2C
++- tR2R-C2C
++- tFAW
++- tXSR
++- tXP
++- tCKE
++- tCKESR
++- tMRD
++
++Example:
++
++timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@0 {
++	compatible	= "jedec,lpddr3-timings";
++	min-freq	= <100000000>;
++	max-freq	= <800000000>;
++	tRFC		= <65000>;
++	tRRD		= <6000>;
++	tRPab		= <12000>;
++	tRPpb		= <12000>;
++	tRCD		= <10000>;
++	tRC		= <33750>;
++	tRAS		= <23000>;
++	tWTR		= <3750>;
++	tWR		= <7500>;
++	tRTP		= <3750>;
++	tW2W-C2C	= <0>;
++	tR2R-C2C	= <0>;
++	tFAW		= <25000>;
++	tXSR		= <70000>;
++	tXP		= <3750>;
++	tCKE		= <3750>;
++	tCKESR		= <3750>;
++	tMRD		= <7000>;
++};
+diff --git a/Documentation/devicetree/bindings/lpddr3/lpddr3.txt b/Documentation/devicetree/bindings/lpddr3/lpddr3.txt
+new file mode 100644
+index 0000000..fc7875c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/lpddr3/lpddr3.txt
+@@ -0,0 +1,93 @@
++* LPDDR3 SDRAM memories compliant to JEDEC JESD209-2
++
++Required properties:
++- compatible : Should be  - "jedec,lpddr3"
++- density  : <u32> representing density in Mb (Mega bits)
++- io-width : <u32> representing bus width. Possible values are 8, 16, 32, 64
++
++Optional properties:
++
++The following optional properties represent the minimum value of some AC
++timing parameters of the DDR device in terms of number of clock cycles.
++These values shall be obtained from the device data-sheet.
++- tRFC-min-tck
++- tRRD-min-tck
++- tRPab-min-tck
++- tRPpb-min-tck
++- tRCD-min-tck
++- tRC-min-tck
++- tRAS-min-tck
++- tWTR-min-tck
++- tWR-min-tck
++- tRTP-min-tck
++- tW2W-C2C-min-tck
++- tR2R-C2C-min-tck
++- tWL-min-tck
++- tDQSCK-min-tck
++- tRL-min-tck
++- tFAW-min-tck
++- tXSR-min-tck
++- tXP-min-tck
++- tCKE-min-tck
++- tCKESR-min-tck
++- tMRD-min-tck
++
++Child nodes:
++- The lpddr3 node may have one or more child nodes of type "lpddr3-timings".
++  "lpddr3-timings" provides AC timing parameters of the device for
++  a given speed-bin. Please see Documentation/devicetree/
++  bindings/lpddr3/lpddr3-timings.txt for more information on "lpddr3-timings"
++
++Example:
++
++samsung_K3QF2F20DB: lpddr3 {
++	compatible	= "Samsung,K3QF2F20DB","jedec,lpddr3";
++	density		= <16384>;
++	io-width	= <32>;
++
++	tRFC-min-tck		= <17>;
++	tRRD-min-tck		= <2>;
++	tRPab-min-tck		= <2>;
++	tRPpb-min-tck		= <2>;
++	tRCD-min-tck		= <3>;
++	tRC-min-tck		= <6>;
++	tRAS-min-tck		= <5>;
++	tWTR-min-tck		= <2>;
++	tWR-min-tck		= <7>;
++	tRTP-min-tck		= <2>;
++	tW2W-C2C-min-tck	= <0>;
++	tR2R-C2C-min-tck	= <0>;
++	tWL-min-tck		= <8>;
++	tDQSCK-min-tck		= <5>;
++	tRL-min-tck		= <14>;
++	tFAW-min-tck		= <5>;
++	tXSR-min-tck		= <12>;
++	tXP-min-tck		= <2>;
++	tCKE-min-tck		= <2>;
++	tCKESR-min-tck		= <2>;
++	tMRD-min-tck		= <5>;
++
++	timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@0 {
++		compatible	= "jedec,lpddr3-timings";
++		min-freq	= <100000000>;
++		max-freq	= <800000000>;
++		tRFC		= <65000>;
++		tRRD		= <6000>;
++		tRPab		= <12000>;
++		tRPpb		= <12000>;
++		tRCD		= <10000>;
++		tRC		= <33750>;
++		tRAS		= <23000>;
++		tWTR		= <3750>;
++		tWR		= <7500>;
++		tRTP		= <3750>;
++		tW2W-C2C	= <0>;
++		tR2R-C2C	= <0>;
++		tFAW		= <25000>;
++		tXSR		= <70000>;
++		tXP		= <3750>;
++		tCKE		= <3750>;
++		tCKESR		= <3750>;
++		tMRD		= <7000>;
++	};
++}
 -- 
 2.7.4
