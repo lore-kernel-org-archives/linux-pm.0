@@ -1,158 +1,118 @@
 Return-Path: <SRS0=DtRT=SV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Level: *
+X-Spam-Status: No, score=1.5 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FSL_HELO_FAKE,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_MUTT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8A47C282DA
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:10:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76768C282DA
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:31:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 74BFE2087F
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:10:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="Jpqzdmb9"
+	by mail.kernel.org (Postfix) with ESMTP id 3D72F2171F
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Apr 2019 19:31:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1555702294;
+	bh=nivC/OJoYcBD5n0XO9LWE9dXs5Dpb9xLYaK+7342NOY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=RrgiEc0Nv5H6J3T5NLIYeqUgPXjKYH8CVySJS134GVyaLeBqbP71SlFDh9xQ1NdMD
+	 gP1aR37hREBZ0UhLXg5ahgFa528TS1pRLnBf3zVAqlW4b5IfdjRdGUcFxwiFcARU21
+	 jrse5HO4NfFyk4DpaEdpMCdl6DYKpScJ/1R0H7Yg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727470AbfDSTKC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Apr 2019 15:10:02 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:38839 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728661AbfDSTHo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 15:07:44 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190419141945euoutp01f1bdf5983961326b28ecf005e62a733c~W5fqCuU652274622746euoutp01J
-        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2019 14:19:45 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190419141945euoutp01f1bdf5983961326b28ecf005e62a733c~W5fqCuU652274622746euoutp01J
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1555683585;
-        bh=rb70fo3R6UoalWB6bfCebuUMfs2ijnziPnHY813BvAc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Jpqzdmb9qcOdi485AvCyDGzaC2BOYoHrMW4qpns1mAC3BN2r11L6xjsXkCZpDYkTy
-         ep6KdAYI90XeMwwvlhuc50uZHvZZy4LgsaJD2Y7DSo6tKtPWcnEEjBw7688Uhd7OwX
-         ufDCj85UfVnBUXO4ZHbvATYWTg3dqw8FF+2yT22U=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190419141944eucas1p2cb0bedc075ec2403b3671a55a6c7fa50~W5fpPplQD2300423004eucas1p2m;
-        Fri, 19 Apr 2019 14:19:44 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id D6.72.04298.009D9BC5; Fri, 19
-        Apr 2019 15:19:44 +0100 (BST)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d~W5foaavMv2300323003eucas1p2p;
-        Fri, 19 Apr 2019 14:19:43 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190419141943eusmtrp1dde2fb94fe9aa090fd77b880cc2c0109~W5foMawZ81759317593eusmtrp1Z;
-        Fri, 19 Apr 2019 14:19:43 +0000 (GMT)
-X-AuditID: cbfec7f2-f13ff700000010ca-1e-5cb9d900d9ca
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 4A.02.04146.FF8D9BC5; Fri, 19
-        Apr 2019 15:19:43 +0100 (BST)
-Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190419141942eusmtip21ec09455f0ff3aba8d40040b7c5ba168~W5fnalDKH3242832428eusmtip2T;
-        Fri, 19 Apr 2019 14:19:42 +0000 (GMT)
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
-        cw00.choi@samsung.com, kyungmin.park@samsung.com,
-        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
-        myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com,
-        jroedel@suse.de, treding@nvidia.com, digetx@gmail.com,
-        willy.mh.wolff.ml@gmail.com,
-        Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v6 03/10] clk: samsung: add BPLL rate table for Exynos 5422
- SoC
-Date:   Fri, 19 Apr 2019 16:19:21 +0200
-Message-Id: <1555683568-20882-4-git-send-email-l.luba@partner.samsung.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA0WSe0hTcRTH/d27u92NZrcZ+cOGwUCoJM3Q+EUliRUXRXr8EVGGrrzozE3d
-        dZUtYSpZzpk2H5mvHv9oy9LmEjXJnK/Ix3yBmVmRpWBTMx9kL3PeRf99zvec8z2HwyFxiZXw
-        IBWqJEatksfJ+CJeXceybYfLSEP4zor7ruhJUTWBhhcmCXSnrZdAD+fGAcp7VYah7iwlyhn/
-        giObrUaAetLsAvRGJ0WDjaV8NJ/dBlCR7TmGHrWNCdBoaiUftdqvEah5KASN/nRFSy8/ggNu
-        9NKikUeX6Pp5dEPxmIA2mzL5dHb6DJ9umWnC6BsWE6Bru7T0vNnzqPCUaF8UE6e4wKh9AyNF
-        MakFsQktrpc6K5eBDjxdpwckCSl/mFVA64GIlFCVAJbM5WNcsADg5wErzgXzAF5NsxN6IFzr
-        aLqZs8YSqgLA9v4Ajlc7JtpCHK58ygfWmxId8kZKC98ON6/54JQdgz0/vvMcCTfqGMzQmTAH
-        8ygvaL76B3ewmAqBhh91gJvlCUd6M9d0IRUKGx9Y+A4jSL0TwIlBI8YVHYSZn/r4HLvBqU6L
-        gGMp7Moz8DhmoS77ntP0ChzPKXPW7IWtnf2EY2mc2garG305OQg+flaFcxdyha+nNzhkfBWN
-        dbecshhez5Bw1VuhxdDnXGYTrKgqdJrTcLx9WsCdsBzAxpVaPBdsKf4/7C4AJuDOaFhlNMP6
-        qZiLPqxcyWpU0T7n4pVmsPpZXX86v9WDxYGzVkCRQLZO/MLYEC4h5BfYZKUVQBKXbRQHRVnC
-        JeIoefJlRh0fodbEMawVbCZ5Mnex1uXDaQkVLU9izjNMAqP+l8VIoYcOqDNSAoe7+3OhX/tx
-        vboq4lCY5oxUteilIA8XTmUvbQ/KvX9ScXteNZfeEVw6uHviKyb6FdpksPuHlRWEzq4sa39H
-        TtpSY+XC0HKjxxF/9yqFsr5wSHoxpyOA2LMLS3zlnT/THbx+1oh90O7XTqU0iTGb1VswO1Iz
-        8f5T8AmVjMfGyP2242pW/hcOyRqYVQMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrOIsWRmVeSWpSXmKPExsVy+t/xe7r/b+yMMTj7VMRi44z1rBbXvzxn
-        tZh/5ByrxeqPjxktJp+ay2RxpjvXov/xa2aL8+c3sFucbXrDbnGrQcbi8q45bBafe48wWsw4
-        v4/JYu2Ru+wWtxtXsFkcftPOarH/ipfF7d98Ft9OPGJ0EPb49nUSi8fshossHjtn3WX32LSq
-        k82jt/kdm8fBd3uYPPq2rGL02Hy62uPzJrkAzig9m6L80pJUhYz84hJbpWhDCyM9Q0sLPSMT
-        Sz1DY/NYKyNTJX07m5TUnMyy1CJ9uwS9jMapWQUH+SqOr/jJ2MC4laeLkZNDQsBEYs/EftYu
-        Ri4OIYGljBKL1x1jhUiISUzat50dwhaW+HOtiw2i6BOjxP72JYxdjBwcbAJ6EjtWFYLUiAjU
-        S/S/uQRWwyzQwCyxZvtVsEHCAv4Sd+ZPYASxWQRUJTa1/mMGsXkFvCR6fm1jhFggJ3HzXCdY
-        nFPAW2LXyi1sILYQUM2Ga3uZJjDyLWBkWMUoklpanJueW2yoV5yYW1yal66XnJ+7iREYSduO
-        /dy8g/HSxuBDjAIcjEo8vAcm7YwRYk0sK67MPcQowcGsJMLrmLIlRog3JbGyKrUoP76oNCe1
-        +BCjKdBRE5mlRJPzgVGeVxJvaGpobmFpaG5sbmxmoSTOe96gMkpIID2xJDU7NbUgtQimj4mD
-        U6qBUUrktX+uxkfHVXNE1JufSrKZ5DW6VunG7z/Eld8Sf2Xmb4WfEzcEqu3f2+HJkSVVE2pZ
-        9fTjqxp2zoyWi0LT1+7X3fdmzkOT7Ya1vRuWBPzuN3OcYnxaIiKw5snuZzv+yy6L0zpjH1Ex
-        f96Hpd5Oln1vmBquPmGZKvpsTgvrRqsCqdBy7W2MSizFGYmGWsxFxYkAntM8UboCAAA=
-X-CMS-MailID: 20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d
-X-Msg-Generator: CA
+        id S1726793AbfDSTbd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Apr 2019 15:31:33 -0400
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:53182 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726599AbfDSTbd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2019 15:31:33 -0400
+Received: by mail-wm1-f65.google.com with SMTP id a184so7171285wma.2;
+        Fri, 19 Apr 2019 12:31:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=lQSo614gfyQ6AWbD9USBciWn03ozXcVEKq6UIRZvntU=;
+        b=gT1REX8N3QN+Gy6qBwdrSK9q2U/fx+aabqZhNZm7PIkpGZPnwpjKafmW4Ma+SO7lXH
+         vkZnxQgVsvEJTacSJ+7R7fRC4l8Ya4G3XSLcT5I3taMInZ2Y1DjyZ1R97RklQptTzRty
+         gzJl0v+SfEH0wITTg2hG6zIX9OwfBem2kHBG2q1zgbf7VW14LN75FTZaN/wuHjn+xEWZ
+         7H4n864NWgF+CLxeyCCGom9IfwlkgDqrMxVm2ncLg6CEVSsIWoXIWrbu9R6/e72+qVZf
+         ke/WHSv+b18DUUF42u0zVsVkfkQBGMa3+I3BGCTTc2uCN93evcyt+vkCvRB+6z0TDort
+         FZpw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+         :references:mime-version:content-disposition:in-reply-to:user-agent;
+        bh=lQSo614gfyQ6AWbD9USBciWn03ozXcVEKq6UIRZvntU=;
+        b=VX7XvqGfZLfbnAhph2qBZNx65q12Mt6h784vqkjug/i0gyKsiZPsFGQvMJfCLX210r
+         b+UWUHHbFClsdjwURYkeYCuoQIr5+V1O8LJLfXAAoWZJ2Z9bJ2vCljv1aCMJdxZyPnlo
+         5mfF5fxZt1WHIIrxFlc56pYSMmbu5mUnfaUPkRpGFPVtgTBbCjRiS3sLT7B4ZBcZC4GO
+         Q9fHJfT1mAS17WV1yaqhBpDStQGbd756j9dc1sAIWCqSUF++1RC0fQbKyXS6nDioCH4v
+         dsqcMHZCYc9kPv+cozGQZXbdbj5yTEpCLgH7eQBH+PxeVvtbGQ7mxYS7SzuJFD9EXKM3
+         JDgQ==
+X-Gm-Message-State: APjAAAWddZ8DSXvXH/YiZvHcY/OTexHcTnt7n+Mlp22E3jJ5jmfcNxL6
+        tZ6Qfj3m2HNQLVqt5IwUM/a1T0FD
+X-Google-Smtp-Source: APXvYqyZGUcMDaiEWSmcNkf2DQcEC/lARkXDKNL5meVRyccMByxNghfZbqzZvfA73ReKVcZL3mj6zQ==
+X-Received: by 2002:a1c:b646:: with SMTP id g67mr1720669wmf.125.1555660639687;
+        Fri, 19 Apr 2019 00:57:19 -0700 (PDT)
+Received: from gmail.com (2E8B0CD5.catv.pool.telekom.hu. [46.139.12.213])
+        by smtp.gmail.com with ESMTPSA id c10sm3106454wru.83.2019.04.19.00.57.18
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Fri, 19 Apr 2019 00:57:18 -0700 (PDT)
+Date:   Fri, 19 Apr 2019 09:57:16 +0200
+From:   Ingo Molnar <mingo@kernel.org>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     Lubomir Rintel <lkundrak@v3.sk>,
+        Darren Hart <dvhart@infradead.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, x86@kernel.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+        Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH v7 00/10] Add support for XO 1.75 to OLPC battery driver
+Message-ID: <20190419075716.GB6795@gmail.com>
+References: <20190418144655.18758-1-lkundrak@v3.sk>
+ <20190418202000.hcojhcf2f47te44u@earth.universe>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-X-RootMTR: 20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d
-References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d@eucas1p2.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20190418202000.hcojhcf2f47te44u@earth.universe>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190419141921.ybknMO-4PeDWRU8fxBKFE0xOMNCi1Zs70Mb5-kLY2wk@z>
+Message-ID: <20190419075716.Y7I4XDSy6DpNGgJCobaCG2DT6wTnk2Eb6u134I_tF-A@z>
 
-Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
-Controller frequencies for driver's DRAM timings.
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- drivers/clk/samsung/clk-exynos5420.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+* Sebastian Reichel <sre@kernel.org> wrote:
 
-diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
-index d9e6653..ddee8bd 100644
---- a/drivers/clk/samsung/clk-exynos5420.c
-+++ b/drivers/clk/samsung/clk-exynos5420.c
-@@ -1323,6 +1323,17 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
- 	PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
- };
- 
-+static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
-+	PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
-+	PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
-+	PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
-+	PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
-+	PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
-+	PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
-+};
-+
- static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
- 	PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
- 	PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
-@@ -1465,7 +1476,7 @@ static void __init exynos5x_clk_init(struct device_node *np,
- 		exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
- 		exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
- 		exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
--		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
-+		exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
- 	}
- 
- 	samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
--- 
-2.7.4
+> Hi,
+> 
+> On Thu, Apr 18, 2019 at 04:46:45PM +0200, Lubomir Rintel wrote:
+> > This patch set modifies the OLPC battery driver so that it could eventually
+> > be used on an Arm-based OLPC XO 1.75 machine.
+> > 
+> > Compared to the previous version, it addresses review comments for the
+> > x86 platform parts from Thomas Gleixner. Details in individual patches'
+> > change logs.
+> > 
+> > I've failed to version the previous iteration of the set that should've
+> > been "v6" for the change logs to make sense. Sorry for that.
+> > 
+> > Thank you,
+> > Lubo
+> 
+> I queued up the complete patchset via an immutable branch based on
+> v5.1-rc1. X86 maintainers can pull this signed immutable branch as
+> required. Thanks for the patches,
 
+Would you mind sending these patches to Linus yourself, as part of the 
+power-supply tree?
+
+That's where it really belongs, the impact on arch/x86/ was mostly 
+drive-by (and it's now all Acked-by Thomas), the meat of the changes is 
+in the OLPC battery driver.
+
+Thanks,
+
+	Ingo
