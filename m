@@ -1,105 +1,49 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v6 06/10] dt-bindings: memory-controllers: add Exynos5422
- DMC device description
-Date: Fri, 19 Apr 2019 16:19:24 +0200
-Message-ID: <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
-References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419141947eucas1p13a27605e04169ab528ef5bfb385eddbc@eucas1p1.samsung.com>
-Content-Type: text/plain; charset="utf-8"
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v7 00/10] Add support for XO 1.75 to OLPC battery driver
+Date: Fri, 19 Apr 2019 09:57:16 +0200
+Message-ID: <20190419075716.GB6795@gmail.com>
+References: <20190418144655.18758-1-lkundrak@v3.sk>
+ <20190418202000.hcojhcf2f47te44u@earth.universe>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20190418202000.hcojhcf2f47te44u@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Lubomir Rintel <lkundrak@v3.sk>, Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-The patch adds description for DT binding for a new Exynos5422 Dynamic
-Memory Controller device.
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- .../bindings/memory-controllers/exynos5422-dmc.txt | 73 ++++++++++++++++++++++
- 1 file changed, 73 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
+* Sebastian Reichel <sre@kernel.org> wrote:
 
-diff --git a/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
-new file mode 100644
-index 0000000..133b3cc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
-@@ -0,0 +1,73 @@
-+* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
-+
-+The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
-+memory chips are connected. The driver is to monitor the controller in runtime
-+and switch frequency and voltage. To monitor the usage of the controller in
-+runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
-+is able to measure the current load of the memory.
-+When 'userspace' governor is used for the driver, an application is able to
-+switch the DMC and memory frequency.
-+
-+Required properties for DMC device for Exynos5422:
-+- compatible: Should be "samsung,exynos5422-bus".
-+- clock-names : the name of clock used by the bus, "bus".
-+- clocks : phandles for clock specified in "clock-names" property.
-+- devfreq-events : phandles for PPMU devices connected to this DMC.
-+- vdd-supply : phandle for voltage regulator which is connected.
-+- reg : registers of two CDREX controllers, chip information, clocks subsystem.
-+- operating-points-v2 : phandle for OPPs described in v2 definition.
-+- device-handle : phandle of the connected DRAM memory device. For more
-+	information please refer to Documentation
-+- devfreq-events : phandles of the PPMU events used by the controller.
-+
-+Example:
-+
-+	ppmu_dmc0_0: ppmu@10d00000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x10d00000 0x2000>;
-+		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
-+		clock-names = "ppmu";
-+		status = "okay";
-+		events {
-+			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
-+				event-name = "ppmu-event3-dmc0_0";
-+			};
-+		};
-+	};
-+
-+	dmc: memory-controller@10c20000 {
-+		compatible = "samsung,exynos5422-dmc";
-+		reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
-+			<0x10000000 0x1000>, <0x10030000 0x1000>;
-+		clocks = 	<&clock CLK_FOUT_SPLL>,
-+				<&clock CLK_MOUT_SCLK_SPLL>,
-+				<&clock CLK_FF_DOUT_SPLL2>,
-+				<&clock CLK_FOUT_BPLL>,
-+				<&clock CLK_MOUT_BPLL>,
-+				<&clock CLK_SCLK_BPLL>,
-+				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
-+				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
-+				<&clock CLK_MOUT_MCLK_CDREX>,
-+				<&clock CLK_DOUT_CLK2X_PHY0>,
-+				<&clock CLK_CLKM_PHY0>,
-+				<&clock CLK_CLKM_PHY1>;
-+		clock-names =	"fout_spll",
-+				"mout_sclk_spll",
-+				"ff_dout_spll2",
-+				"fout_bpll",
-+				"mout_bpll",
-+				"sclk_bpll",
-+				"mout_mx_mspll_ccore",
-+				"mout_mx_mspll_ccore_phy",
-+				"mout_mclk_cdrex",
-+				"dout_clk2x_phy0",
-+				"clkm_phy0",
-+			        "clkm_phy1";
-+		status = "okay";
-+		operating-points-v2 = <&dmc_opp_table>;
-+		devfreq-events = <&ppmu_event3_dmc0_0>,	<&ppmu_event3_dmc0_1>,
-+				<&ppmu_event3_dmc1_0>, <&ppmu_event3_dmc1_1>;
-+		operating-points-v2 = <&dmc_opp_table>;
-+		device-handle = <&samsung_K3QF2F20DB>;
-+		vdd-supply = <&buck1_reg>;
-+	};
--- 
-2.7.4
+> Hi,
+> 
+> On Thu, Apr 18, 2019 at 04:46:45PM +0200, Lubomir Rintel wrote:
+> > This patch set modifies the OLPC battery driver so that it could eventually
+> > be used on an Arm-based OLPC XO 1.75 machine.
+> > 
+> > Compared to the previous version, it addresses review comments for the
+> > x86 platform parts from Thomas Gleixner. Details in individual patches'
+> > change logs.
+> > 
+> > I've failed to version the previous iteration of the set that should've
+> > been "v6" for the change logs to make sense. Sorry for that.
+> > 
+> > Thank you,
+> > Lubo
+> 
+> I queued up the complete patchset via an immutable branch based on
+> v5.1-rc1. X86 maintainers can pull this signed immutable branch as
+> required. Thanks for the patches,
+
+Would you mind sending these patches to Linus yourself, as part of the 
+power-supply tree?
+
+That's where it really belongs, the impact on arch/x86/ was mostly 
+drive-by (and it's now all Acked-by Thomas), the meat of the changes is 
+in the OLPC battery driver.
+
+Thanks,
+
+	Ingo
