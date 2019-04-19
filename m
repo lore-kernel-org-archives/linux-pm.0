@@ -1,10 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v6 03/10] clk: samsung: add BPLL rate table for Exynos 5422
- SoC
-Date: Fri, 19 Apr 2019 16:19:21 +0200
-Message-ID: <1555683568-20882-4-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v6 01/10] clk: samsung: add needed IDs for DMC clocks in
+ Exynos5420
+Date: Fri, 19 Apr 2019 16:19:19 +0200
+Message-ID: <1555683568-20882-2-git-send-email-l.luba@partner.samsung.com>
 References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d@eucas1p2.samsung.com>
+        <CGME20190419141940eucas1p295a1130863cf2e69476ca0ba11a8a102@eucas1p2.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
@@ -13,44 +13,65 @@ To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kern
 Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
-Controller frequencies for driver's DRAM timings.
+Define new IDs for clocks used by Dynamic Memory Controller in
+Exynos5422 SoC.
 
+Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- drivers/clk/samsung/clk-exynos5420.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
-index d9e6653..ddee8bd 100644
---- a/drivers/clk/samsung/clk-exynos5420.c
-+++ b/drivers/clk/samsung/clk-exynos5420.c
-@@ -1323,6 +1323,17 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
- 	PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
- };
+diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
+index 355f469..abb1842 100644
+--- a/include/dt-bindings/clock/exynos5420.h
++++ b/include/dt-bindings/clock/exynos5420.h
+@@ -60,6 +60,7 @@
+ #define CLK_MAU_EPLL		159
+ #define CLK_SCLK_HSIC_12M	160
+ #define CLK_SCLK_MPHY_IXTAL24	161
++#define CLK_SCLK_BPLL		162
  
-+static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
-+	PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
-+	PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
-+	PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
-+	PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
-+	PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
-+	PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
-+	PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
-+};
-+
- static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
- 	PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
- 	PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
-@@ -1465,7 +1476,7 @@ static void __init exynos5x_clk_init(struct device_node *np,
- 		exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
- 		exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
- 		exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
--		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
-+		exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
- 	}
+ /* gate clocks */
+ #define CLK_UART0		257
+@@ -195,6 +196,18 @@
+ #define CLK_ACLK432_CAM		518
+ #define CLK_ACLK_FL1550_CAM	519
+ #define CLK_ACLK550_CAM		520
++#define CLK_CLKM_PHY0		521
++#define CLK_CLKM_PHY1		522
++#define CLK_ACLK_PPMU_DREX0_0	523
++#define CLK_ACLK_PPMU_DREX0_1	524
++#define CLK_ACLK_PPMU_DREX1_0	525
++#define CLK_ACLK_PPMU_DREX1_1	526
++#define CLK_PCLK_PPMU_DREX0_0	527
++#define CLK_PCLK_PPMU_DREX0_1	528
++#define CLK_PCLK_PPMU_DREX1_0	529
++#define CLK_PCLK_PPMU_DREX1_1	530
++#define CLK_CDREX_PAUSE		531
++#define CLK_CDREX_TIMING_SET	532
  
- 	samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
+ /* mux clocks */
+ #define CLK_MOUT_HDMI		640
+@@ -217,6 +230,8 @@
+ #define CLK_MOUT_EPLL		657
+ #define CLK_MOUT_MAU_EPLL	658
+ #define CLK_MOUT_USER_MAU_EPLL	659
++#define CLK_MOUT_SCLK_SPLL	660
++#define CLK_MOUT_MX_MSPLL_CCORE_PHY	661
+ 
+ /* divider clocks */
+ #define CLK_DOUT_PIXEL		768
+@@ -248,8 +263,9 @@
+ #define CLK_DOUT_CCLK_DREX0	794
+ #define CLK_DOUT_CLK2X_PHY0	795
+ #define CLK_DOUT_PCLK_CORE_MEM	796
++#define CLK_FF_DOUT_SPLL2	797
+ 
+ /* must be greater than maximal clock id */
+-#define CLK_NR_CLKS		797
++#define CLK_NR_CLKS		798
+ 
+ #endif /* _DT_BINDINGS_CLOCK_EXYNOS_5420_H */
 -- 
 2.7.4
