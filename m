@@ -1,84 +1,86 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v3 4/4] DT: arm: exynos4412: add event data type which is
- monitored
-Date: Fri, 19 Apr 2019 15:48:08 +0200
-Message-ID: <1555681688-19643-5-git-send-email-l.luba@partner.samsung.com>
-References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
- <CGME20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6@eucas1p1.samsung.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v7 00/10] Add support for XO 1.75 to OLPC battery driver
+Date: Fri, 19 Apr 2019 14:42:22 +0200
+Message-ID: <20190419124222.yizj6krkdi236x74@earth.universe>
+References: <20190418144655.18758-1-lkundrak@v3.sk>
+ <20190418202000.hcojhcf2f47te44u@earth.universe>
+ <20190419075716.GB6795@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: mark.rutland@arm.com, willy.mh.wolff.ml@gmail.com, kgene@kernel.org, b.zolnierkie@samsung.com, krzk@kernel.org, l.luba@partner.samsung.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, robh+dt@kernel.org, myungjoo.ham@samsung.com, s.nawrocki@samsung.com, m.szyprowski@samsung.com
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="fjpcncqz7gjt75yj"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190419075716.GB6795@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Lubomir Rintel <lkundrak@v3.sk>, Darren Hart <dvhart@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-The patch adds new field in the PPMU event which shows explicitly
-what kind of data the event is monitoring. It is possible to change it
-using defined values in exynos_ppmu.h file.
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- arch/arm/boot/dts/exynos4412-ppmu-common.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+--fjpcncqz7gjt75yj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-index 3a3b2fa..549faba 100644
---- a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
-@@ -6,12 +6,16 @@
-  * Author: Chanwoo Choi <cw00.choi@samsung.com>
-  */
- 
-+#include <dt-bindings/pmu/exynos_ppmu.h>
-+
- &ppmu_dmc0 {
-        status = "okay";
- 
-        events {
- 	       ppmu_dmc0_3: ppmu-event3-dmc0 {
- 		       event-name = "ppmu-event3-dmc0";
-+		       event-data-type = <(PPMU_RO_DATA_CNT |
-+					   PPMU_WO_DATA_CNT)>;
- 	       };
-        };
- };
-@@ -22,6 +26,8 @@
-        events {
- 	       ppmu_dmc1_3: ppmu-event3-dmc1 {
- 		       event-name = "ppmu-event3-dmc1";
-+		       event-data-type = <(PPMU_RO_DATA_CNT |
-+					   PPMU_WO_DATA_CNT)>;
- 	       };
-        };
- };
-@@ -32,6 +38,8 @@
-        events {
- 	       ppmu_leftbus_3: ppmu-event3-leftbus {
- 		       event-name = "ppmu-event3-leftbus";
-+		       event-data-type = <(PPMU_RO_DATA_CNT |
-+					   PPMU_WO_DATA_CNT)>;
- 	       };
-        };
- };
-@@ -42,6 +50,8 @@
-        events {
- 	       ppmu_rightbus_3: ppmu-event3-rightbus {
- 		       event-name = "ppmu-event3-rightbus";
-+		       event-data-type = <(PPMU_RO_DATA_CNT |
-+					   PPMU_WO_DATA_CNT)>;
- 	       };
-        };
- };
--- 
-2.7.4
+Hi Ingo,
+
+On Fri, Apr 19, 2019 at 09:57:16AM +0200, Ingo Molnar wrote:
+> > On Thu, Apr 18, 2019 at 04:46:45PM +0200, Lubomir Rintel wrote:
+> > > This patch set modifies the OLPC battery driver so that it could even=
+tually
+> > > be used on an Arm-based OLPC XO 1.75 machine.
+> > >=20
+> > > Compared to the previous version, it addresses review comments for the
+> > > x86 platform parts from Thomas Gleixner. Details in individual patche=
+s'
+> > > change logs.
+> > >=20
+> > > I've failed to version the previous iteration of the set that should'=
+ve
+> > > been "v6" for the change logs to make sense. Sorry for that.
+> > >=20
+> > > Thank you,
+> > > Lubo
+> >=20
+> > I queued up the complete patchset via an immutable branch based on
+> > v5.1-rc1. X86 maintainers can pull this signed immutable branch as
+> > required. Thanks for the patches,
+>=20
+> Would you mind sending these patches to Linus yourself, as part of the=20
+> power-supply tree?
+>=20
+> That's where it really belongs, the impact on arch/x86/ was mostly=20
+> drive-by (and it's now all Acked-by Thomas), the meat of the changes is=
+=20
+> in the OLPC battery driver.
+
+Yes, I merged the immutable branch into power-supply. You can either
+also merge it (e.g. when you plan to add other changes), or just ignore
+it :) This is what I usually do with other subsystems to avoid
+pointless merge conflicts.
+
+TLDR: Yes.
+
+-- Sebastian
+
+--fjpcncqz7gjt75yj
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAly5wiQACgkQ2O7X88g7
++pohFhAAnMvGVvpZWUjOCSBeX6SHrawPkrxXf0+MNl9LXP58EPyPdlLep8CkDTWM
+3l2z2RuOdWyPdUjRuJquk0GdiSum+DtTiUPj+E0c1TjgFxzqOxV5p+sY1J1aGlMP
+ES6x5K1d3CFVDDYKY+e+0+SS8vU4Bhfxb+n1jOBQsEQDa6MdP7HDXDFt0QGDCqoM
+2CdNIGWPjefYvwMJD7HthEoe7Rkahv81EVGv8RbkojNSd4vr5k7pTlYyNHsrv8sR
+K3/+1BMQ+bDuvfwYFXO7FmR1UivLq+gNE+q0+TA+AkKZMpIJ6+P8fjxgspn2T8UI
+PC8XR2HVmvVVA6VeiM/gcvPbX6GnVAlnXCxeLUkGwF+NZvyIIEgg1TIsDrmV21Nn
+DQ02ELgvIXX5QdbBREP0aL83HqK4i5C0bJRO/+4kTrClP3clthuoA5GSEppOWxmP
+2kZJUMdiWCU5Q9ReGjOaXq63HMNRMwrFi+2jABbM2FSc9+shv3M+O9tr2heJi1Kx
++e8RQkQ+iZn4w/Uz8EVIvwdfHgHKLMrip38A3iXqQABmIEk7nvI9/UXoC7nNcxDM
+8E1FXpN5hoK+b2pTaTWMCfTlsjXM7kFg2J4Pgq4KMJIp2xcLmxMkrl/9cQg0pWwb
+uO8IXoUm8ChpHvXHrS7wWPcbQCGTrV0LoVwMpbUyVF1vtVB8+Ck=
+=NiHD
+-----END PGP SIGNATURE-----
+
+--fjpcncqz7gjt75yj--
