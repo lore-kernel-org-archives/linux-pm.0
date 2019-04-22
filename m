@@ -1,56 +1,83 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] PM / Domains: Enable
- genpd_dev_pm_attach_by_id|name() for single PM domain
-Date: Mon, 22 Apr 2019 14:01:03 +0530
-Message-ID: <20190422083103.xnuvmap5zgbdyk4v@vireshk-i7>
-References: <20190418102757.1246-1-ulf.hansson@linaro.org>
- <20190418102757.1246-4-ulf.hansson@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: intel: int340x: processor_thermal_device:
+ simplify to get driver data
+Date: Mon, 22 Apr 2019 16:46:24 +0800
+Message-ID: <1555922784.26198.20.camel@intel.com>
+References: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
+         <20190415162809.GU9224@smile.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190418102757.1246-4-ulf.hansson@linaro.org>
+In-Reply-To: <20190415162809.GU9224@smile.fi.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Andy Shevchenko <andriy.shevchenko@intel.com>, Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+Cc: edubezval@gmail.com, daniel.lezcano@linaro.org, srinivas.pandruvada@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18-04-19, 12:27, Ulf Hansson wrote:
-> If a call to dev_pm_domain_attach() succeeds to attach a device to its
-> single PM domain, the important point is to prevent following calls to
-> dev_pm_domain_attach_by_name|id() to fail. This is managed by checking the
-> dev->pm_domain pointer and then return -EEXIST, rather than continue
-> calling genpd_dev_pm_attach_by_id|name().
+On 一, 2019-04-15 at 19:28 +0300, Andy Shevchenko wrote:
+> On Mon, Apr 15, 2019 at 08:18:30PM +0530, Sumeet Pawnikar wrote:
+> > 
+> > From: "Pawnikar, Sumeet R" <sumeet.r.pawnikar@intel.com>
+> > 
+> > This simplifies getting the 'driver_data' from 'struct device'
+> > directly.
+> > Going through platform_device or pci_dev is not required. Also
+> > removes
+> > condition check as the private data stored with dev pointer, means
+> > irrespective of enumeration mode, we can use dev_get_drvdata().
+> > This removes the unnecessary step back and forth.
+> > 
+> Indeed, good clean up!
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
 > 
-> For this reason, let's enable genpd_dev_pm_attach_by_id|name() to be used
-> for also single PM domains. This simplifies for future users to solely make
-> use of dev_pm_domain_attach_by_id|name() rather than having to combine it
-> with dev_pm_domain_attach().
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/domain.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 801f31c87d16..1b026704a8fc 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2512,10 +2512,10 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
->  	if (!dev->of_node)
->  		return NULL;
->  
-> -	/* Deal only with devices using multiple PM domains. */
-> +	/* Verify that the index is within a valid range. */
->  	num_domains = of_count_phandle_with_args(dev->of_node, "power-domains",
->  						 "#power-domain-cells");
-> -	if (num_domains < 2 || index >= num_domains)
-> +	if (index >= num_domains)
->  		return NULL;
->  
->  	/* Allocate and register device on the genpd bus. */
+Thanks, patch applied.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+-rui
+> > 
+> > Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+> > ---
+> >  .../int340x_thermal/processor_thermal_device.c     |   11 +-------
+> > ---
+> >  1 file changed, 1 insertion(+), 10 deletions(-)
+> > 
+> > diff --git
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> > index 8e1cf4d..2a7cbaa 100644
+> > ---
+> > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> > +++
+> > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+> > @@ -81,22 +81,13 @@ enum proc_thermal_emum_mode_type {
+> >  					struct device_attribute
+> > *attr, \
+> >  					char *buf) \
+> >  { \
+> > -	struct pci_dev *pci_dev; \
+> > -	struct platform_device *pdev; \
+> > -	struct proc_thermal_device *proc_dev; \
+> > +	struct proc_thermal_device *proc_dev =
+> > dev_get_drvdata(dev); \
+> >  	\
+> >  	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
+> >  		dev_warn(dev, "Attempted to get power limit before
+> > device was initialized!\n"); \
+> >  		return 0; \
+> >  	} \
+> >  	\
+> > -	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) {
+> > \
+> > -		pdev = to_platform_device(dev); \
+> > -		proc_dev = platform_get_drvdata(pdev); \
+> > -	} else { \
+> > -		pci_dev = to_pci_dev(dev); \
+> > -		proc_dev = pci_get_drvdata(pci_dev); \
+> > -	} \
+> >  	return sprintf(buf, "%lu\n",\
+> >  	(unsigned long)proc_dev->power_limits[index].suffix *
+> > 1000); \
+> >  }
+> > -- 
+> > 1.7.9.5
+> > 
