@@ -1,125 +1,153 @@
-Return-Path: <SRS0=Prsx=SX=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=/Mn0=SY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC8D0C10F14
-	for <linux-pm@archiver.kernel.org>; Sun, 21 Apr 2019 19:09:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE19DC282E3
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 06:34:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8B19020870
-	for <linux-pm@archiver.kernel.org>; Sun, 21 Apr 2019 19:09:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=vaisala.com header.i=@vaisala.com header.b="ZIUi4w4D"
+	by mail.kernel.org (Postfix) with ESMTP id A8318218AC
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 06:34:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725939AbfDUTJj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 21 Apr 2019 15:09:39 -0400
-Received: from mail-eopbgr00045.outbound.protection.outlook.com ([40.107.0.45]:18293
-        "EHLO EUR02-AM5-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726257AbfDUTJj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 21 Apr 2019 15:09:39 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vaisala.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=51Vzfp04Epz7DGAAxjZY4Szn0Da+XZMAW8XtRTOuccc=;
- b=ZIUi4w4DMTIVLsNRL8VCNE0uFDBx10igWKsBFDq0KQQZ1L4AjWDwYRkzCSb7a8pLNGs4FNu4RiY7G6xtazAoa6lFD/8pQVoaF52t+BztlY1Oom6E6aOhOlYlP3rcXfASK5FYa8j0NS95WjyndaEU9D1Z1NdAO/ElOB5J0u6ni3g=
-Received: from DB7PR06MB5563.eurprd06.prod.outlook.com (20.178.104.212) by
- DB7PR06MB4726.eurprd06.prod.outlook.com (20.177.123.158) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1813.12; Sun, 21 Apr 2019 19:09:30 +0000
-Received: from DB7PR06MB5563.eurprd06.prod.outlook.com
- ([fe80::edef:902c:11a7:478]) by DB7PR06MB5563.eurprd06.prod.outlook.com
- ([fe80::edef:902c:11a7:478%6]) with mapi id 15.20.1813.017; Sun, 21 Apr 2019
- 19:09:30 +0000
-From:   Han Nandor <nandor.han@vaisala.com>
-To:     "sre@kernel.org" <sre@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "mark.rutland@arm.com" <mark.rutland@arm.com>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-CC:     Han Nandor <nandor.han@vaisala.com>
-Subject: [PATCH v3 2/2] dt-bindings: power: reset: add document for NVMEM
- based reboot-mode
-Thread-Topic: [PATCH v3 2/2] dt-bindings: power: reset: add document for NVMEM
- based reboot-mode
-Thread-Index: AQHU+HW/2y2bWzfwvUCVCh3bzOHlxA==
-Date:   Sun, 21 Apr 2019 19:09:30 +0000
-Message-ID: <20190421190913.1478-3-nandor.han@vaisala.com>
-References: <fc60b885f1b447ce55950184c7921cfc1c96ade6>
-In-Reply-To: <fc60b885f1b447ce55950184c7921cfc1c96ade6>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: HE1PR0701CA0060.eurprd07.prod.outlook.com
- (2603:10a6:3:9e::28) To DB7PR06MB5563.eurprd06.prod.outlook.com
- (2603:10a6:10:83::20)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=nandor.han@vaisala.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-mailer: git-send-email 2.17.2
-x-originating-ip: [91.195.247.200]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: c737d067-804b-4624-2be5-08d6c68ce17e
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(2017052603328)(7193020);SRVR:DB7PR06MB4726;
-x-ms-traffictypediagnostic: DB7PR06MB4726:
-x-tenant-id: 6d7393e0-41f5-4c2e-9b12-4c2be5da5c57
-x-microsoft-antispam-prvs: <DB7PR06MB4726CEB26532A4CF6F0E425685210@DB7PR06MB4726.eurprd06.prod.outlook.com>
-x-forefront-prvs: 0014E2CF50
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(136003)(39840400004)(376002)(346002)(366004)(396003)(189003)(199004)(446003)(6512007)(486006)(71200400001)(66446008)(66476007)(36756003)(2501003)(26005)(14454004)(8936002)(81156014)(25786009)(316002)(81166006)(8676002)(110136005)(2906002)(1076003)(6506007)(76176011)(476003)(256004)(86362001)(11346002)(68736007)(66556008)(64756008)(71190400001)(2616005)(73956011)(66946007)(186003)(2201001)(102836004)(386003)(11926002)(97736004)(5660300002)(7736002)(6486002)(478600001)(99286004)(53936002)(52116002)(4326008)(5790100002)(3846002)(66066001)(6116002)(6436002)(107886003)(305945005)(50226002);DIR:OUT;SFP:1101;SCL:1;SRVR:DB7PR06MB4726;H:DB7PR06MB5563.eurprd06.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
-received-spf: None (protection.outlook.com: vaisala.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: fNyXlAqyTHktxfpqABO2IPY8fagjGbE3745l/WsduHZkz1DZTCiixhgO/ZMZdt2RV6sQe4WUAwRxvUp6A0gpbwhHeb3Z0tjJAoKUU9LzQD/xaiIHwESSXyfEWDcQQ5ppQEp9/Gj2liTVfeqD6GVJ4ssDxku62dzvqNM9kGlka+XZhogUbGrY4sUWZqEVDbIjEPi4HRw7MLruT3ZVLzSFfQxp7ucO2JJx1lkFsqc4ZGo4XP5NgPPlM+Nqy5ey9l30lCSrzO8liCM98qvMCgQZGST46zpBwmNG8vgTpdIvciI7OQVaGAc8eCfojdnVkHSbBvFqrhZUyut7/QqSK7L8D7JPGHlx6jGi2yraiIFhe7FPSD6AxJQ5IL+sm8u18t4CKJTgmVUKcn4VewmEztVt5/ABxXtXIf9lQbi5QnZ1hK0=
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
-MIME-Version: 1.0
-X-OriginatorOrg: vaisala.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c737d067-804b-4624-2be5-08d6c68ce17e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Apr 2019 19:09:30.5150
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 6d7393e0-41f5-4c2e-9b12-4c2be5da5c57
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB7PR06MB4726
+        id S1726483AbfDVGe2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Apr 2019 02:34:28 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:40810 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1726443AbfDVGeU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 02:34:20 -0400
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x3M6XlnX048213
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 02:34:18 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2s17vjh51q-1
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 02:34:18 -0400
+Received: from localhost
+        by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
+        Mon, 22 Apr 2019 07:34:16 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+        by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+        Mon, 22 Apr 2019 07:34:14 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+        by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x3M6YDTP55247052
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 22 Apr 2019 06:34:13 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 74BCB5204E;
+        Mon, 22 Apr 2019 06:34:13 +0000 (GMT)
+Received: from boston16h.aus.stglabs.ibm.com (unknown [9.3.23.78])
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1829D52059;
+        Mon, 22 Apr 2019 06:34:11 +0000 (GMT)
+From:   Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To:     linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-pm@vger.kernel.org
+Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
+        ego@linux.vnet.ibm.com, dja@axtens.net,
+        Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH 0/1] Forced-wakeup for stop lite states on Powernv
+Date:   Mon, 22 Apr 2019 01:32:30 -0500
+X-Mailer: git-send-email 2.17.1
+X-TM-AS-GCONF: 00
+x-cbid: 19042206-4275-0000-0000-0000032A459E
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19042206-4276-0000-0000-0000383986BE
+Message-Id: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-04-21_08:,,
+ signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=865 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1904220049
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190421190930.ZEFO8JmZ-fxK0WY0LSts5gJ1tDcnYIXRSJFj7muUiWw@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190422063230.XufJcAfh6wRizNF22Ai3X7hqlzgcLJGrHnaitiDUg34@z>
 
-QWRkIHRoZSBkZXZpY2UgdHJlZSBiaW5kaW5ncyBkb2N1bWVudCBmb3IgdGhlIE5WTUVNIGJhc2Vk
-IHJlYm9vdC1tb2RlDQpkcml2ZXIuDQoNClNpZ25lZC1vZmYtYnk6IE5hbmRvciBIYW4gPG5hbmRv
-ci5oYW5AdmFpc2FsYS5jb20+DQotLS0NCiAuLi4vcG93ZXIvcmVzZXQvbnZtZW0tcmVib290LW1v
-ZGUudHh0ICAgICAgICAgfCAzMiArKysrKysrKysrKysrKysrKysrDQogMSBmaWxlIGNoYW5nZWQs
-IDMyIGluc2VydGlvbnMoKykNCiBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3Jlc2V0L252bWVtLXJlYm9vdC1tb2RlLnR4dA0KDQpkaWZm
-IC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3Jlc2V0L252
-bWVtLXJlYm9vdC1tb2RlLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9w
-b3dlci9yZXNldC9udm1lbS1yZWJvb3QtbW9kZS50eHQNCm5ldyBmaWxlIG1vZGUgMTAwNjQ0DQpp
-bmRleCAwMDAwMDAwMDAwMDAuLjJlMWI4NmMzMWNiMw0KLS0tIC9kZXYvbnVsbA0KKysrIGIvRG9j
-dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3Jlc2V0L252bWVtLXJlYm9vdC1t
-b2RlLnR4dA0KQEAgLTAsMCArMSwzMiBAQA0KK05WTUVNIHJlYm9vdCBtb2RlIGRyaXZlcg0KKw0K
-K1RoaXMgZHJpdmVyIGdldHMgcmVib290IG1vZGUgbWFnaWMgdmFsdWUgZnJvbSByZWJvb3QtbW9k
-ZSBkcml2ZXINCithbmQgc3RvcmVzIGl0IGluIGEgTlZNRU0gY2VsbCBuYW1lZCAicmVib290LW1v
-ZGUiLiBUaGVuIHRoZSBib290bG9hZGVyDQorY2FuIHJlYWQgaXQgYW5kIHRha2UgZGlmZmVyZW50
-IGFjdGlvbiBhY2NvcmRpbmcgdG8gdGhlIG1hZ2ljDQordmFsdWUgc3RvcmVkLg0KKw0KK1RoaXMg
-RFQgbm9kZSBzaG91bGQgYmUgcmVwcmVzZW50ZWQgYXMgYSBzdWItbm9kZSBvZiBhICJzaW1wbGUt
-bWZkIg0KK25vZGUuDQorDQorUmVxdWlyZWQgcHJvcGVydGllczoNCistIGNvbXBhdGlibGU6IHNo
-b3VsZCBiZSAibnZtZW0tcmVib290LW1vZGUiLg0KKy0gbnZtZW0tY2VsbHM6IEEgcGhhbmRsZSB0
-byB0aGUgcmVib290IG1vZGUgcHJvdmlkZWQgYnkgYSBudm1lbSBkZXZpY2UuDQorLSBudm1lbS1j
-ZWxsLW5hbWVzOiBTaG91bGQgYmUgInJlYm9vdC1tb2RlIi4NCisNCitUaGUgcmVzdCBvZiB0aGUg
-cHJvcGVydGllcyBzaG91bGQgZm9sbG93IHRoZSBnZW5lcmljIHJlYm9vdC1tb2RlIGRlc2NyaXB0
-aW9uDQorZm91bmQgaW4gcmVib290LW1vZGUudHh0DQorDQorRXhhbXBsZToNCisJcmVib290LW1v
-ZGUtbnZtZW1AMCB7DQorCQljb21wYXRpYmxlID0gInNpbXBsZS1tZmQiOw0KKwkJcmVib290LW1v
-ZGUgew0KKwkJCWNvbXBhdGlibGUgPSAibnZtZW0tcmVib290LW1vZGUiOw0KKwkJCW52bWVtLWNl
-bGxzID0gPCZyZWJvb3RfbW9kZT47DQorCQkJbnZtZW0tY2VsbC1uYW1lcyA9ICJyZWJvb3QtbW9k
-ZSI7DQorDQorCQkJbW9kZS1ub3JtYWwgICAgID0gPDB4QUFBQTU1MDE+Ow0KKwkJCW1vZGUtYm9v
-dGxvYWRlciA9IDwweEJCQkI1NTAwPjsNCisJCQltb2RlLXJlY292ZXJ5ICAgPSA8MHhDQ0NDNTUw
-Mj47DQorCQkJbW9kZS10ZXN0ICAgICAgID0gPDB4RERERDU1MDM+Ow0KKwkJfTsNCisJfTsNCi0t
-IA0KMi4xNy4yDQoNCg==
+Currently, the cpuidle governors determine what idle state a idling CPU
+should enter into based on heuristics that depend on the idle history on
+that CPU. Given that no predictive heuristic is perfect, there are cases
+where the governor predicts a shallow idle state, hoping that the CPU will
+be busy soon. However, if no new workload is scheduled on that CPU in the
+near future, the CPU will end up in the shallow state.
+
+Motivation
+----------
+In case of POWER, this is problematic, when the predicted state in the
+aforementioned scenario is a lite stop state, as such lite states will
+inhibit SMT folding, thereby depriving the other threads in the core from
+using the core resources.
+
+So we do not want to get stucked in such states for longer duration. To
+address this, the cpuidle-core can queue timer to correspond with the
+residency value of the next available state. This timer will forcefully
+wakeup the cpu. Few such iterations will essentially train the governor to
+select a deeper state for that cpu, as the timer here corresponds to the
+next available cpuidle state residency. Cpu will be kicked out of the lite
+state and end up in a non-lite state.
+
+Experiment
+----------
+I performed experiments for three scenarios to collect some data.
+
+case 1 :
+Without this patch and without tick retained, i.e. in a upstream kernel,
+It would spend more than even a second to get out of stop0_lite.
+
+case 2 : With tick retained in a upstream kernel -
+
+Generally, we have a sched tick at 4ms(CONF_HZ = 250). Ideally I expected
+it to take 8 sched tick to get out of stop0_lite. Experimentally,
+observation was
+
+=========================================================
+sample          min            max           99percentile
+20              4ms            12ms          4ms
+=========================================================
+
+It would take atleast one sched tick to get out of stop0_lite.
+
+case 2 :  With this patch (not stopping tick, but explicitly queuing a
+          timer)
+
+============================================================
+sample          min             max             99percentile
+============================================================
+20              144us           192us           144us
+============================================================
+
+In this patch, we queue a timer just before entering into a stop0_lite
+state. The timer fires at (residency of next available state + exit latency
+of next available state * 2). Let's say if next state(stop0) is available
+which has residency of 20us, it should get out in as low as (20+2*2)*8
+[Based on the forumla (residency + 2xlatency)*history length] microseconds
+= 192us. Ideally we would expect 8 iterations, it was observed to get out
+in 6-7 iterations. Even if let's say stop2 is next available state(stop0
+and stop1 both are unavailable), it would take (100+2*10)*8 = 960us to get
+into stop2.
+
+So, We are able to get out of stop0_lite generally in 150us(with this
+patch) as compared to 4ms(with tick retained). As stated earlier, we do not
+want to get stuck into stop0_lite as it inhibits SMT folding for other
+sibling threads, depriving them of core resources. Current patch is using
+forced-wakeup only for stop0_lite, as it gives performance benefit(primary
+reason) along with lowering down power consumption. We may extend this
+model for other states in future.
+
+Abhishek Goel (1):
+  cpuidle-powernv : forced wakeup for stop lite states
+
+ arch/powerpc/include/asm/opal-api.h |  1 +
+ drivers/cpuidle/cpuidle-powernv.c   | 71 ++++++++++++++++++++++++++++-
+ 2 files changed, 71 insertions(+), 1 deletion(-)
+
+-- 
+2.17.1
+
