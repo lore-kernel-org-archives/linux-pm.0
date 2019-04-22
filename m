@@ -1,67 +1,77 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Subject: Re: [PATCH] tools/power turbostat: fix file descriptor leaks
-Date: Mon, 22 Apr 2019 10:15:58 -0500
-Message-ID: <1c208944-9162-0245-c3bd-016f4274511f@embeddedor.com>
-References: <20190408161240.GA30623@embeddedor>
- <16370c2e-c5f9-a4cf-02fc-6b5b4ab65e1c@redhat.com>
+From: Wei Wang <wvw@google.com>
+Subject: Re: [PATCH] thermal: core: skip update disabled thermal zones after suspend
+Date: Mon, 22 Apr 2019 09:44:01 -0700
+Message-ID: <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com>
+References: <20190416170701.50333-1-wvw@google.com> <1555923800.26198.30.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <16370c2e-c5f9-a4cf-02fc-6b5b4ab65e1c@redhat.com>
-Content-Language: en-US
+In-Reply-To: <1555923800.26198.30.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>, Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Wei Wang <wei.vince.wang@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+On Mon, Apr 22, 2019 at 2:03 AM Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> On =E4=BA=8C, 2019-04-16 at 10:07 -0700, Wei Wang wrote:
+> > It is unnecessary to update disabled thermal zones post suspend and
+> > sometimes leads error/warning in bad behaved thermal drivers.
+> >
+> a good catch, and in fact, there are more issues about thermal handling
+> for disabled thermal zones, like we're able to read the temperature of
+> disabled thermal zones, either via sysfs or via function calls like
+> thermal_zone_device_update.
+Thanks Rui for following up. Yes, we noticed the same behavior. Right
+now, individual thermal driver can still respect set_mode and present
+value meaningful or return error when thermal zone disabled, and
+that's what we do locally.
+Currently, sysfs-api documents "Preventing kernel thermal zone driver
+actions upon trip points so that user application can take full charge
+of the thermal management.", so is it intended for some other agents
+in kernel or user land polling temperature with function call or sysfs
+respectively?
 
-Friendly ping:
-
-Who can take this?
-
-Thanks
---
-Gustavo
-
-On 4/8/19 12:04 PM, Prarit Bhargava wrote:
-> 
-> 
-> On 4/8/19 12:12 PM, Gustavo A. R. Silva wrote:
->> Fix file descriptor leaks by closing fp before return.
->>
->> Addresses-Coverity-ID: 1444591 ("Resource leak")
->> Addresses-Coverity-ID: 1444592 ("Resource leak")
->> Fixes: 5ea7647b333f ("tools/power turbostat: Warn on bad ACPI LPIT data")
->> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-> 
-> Reviewed-by: Prarit Bhargava <prarit@redhat.com>
-> 
-> P.
-> 
->> ---
->>  tools/power/x86/turbostat/turbostat.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
->> index c7727be9719f..78d9acba8e9b 100644
->> --- a/tools/power/x86/turbostat/turbostat.c
->> +++ b/tools/power/x86/turbostat/turbostat.c
->> @@ -2924,6 +2924,7 @@ int snapshot_cpu_lpi_us(void)
->>  	if (retval != 1) {
->>  		fprintf(stderr, "Disabling Low Power Idle CPU output\n");
->>  		BIC_NOT_PRESENT(BIC_CPU_LPI);
->> +		fclose(fp);
->>  		return -1;
->>  	}
->>  
->> @@ -2950,6 +2951,7 @@ int snapshot_sys_lpi_us(void)
->>  	if (retval != 1) {
->>  		fprintf(stderr, "Disabling Low Power Idle System output\n");
->>  		BIC_NOT_PRESENT(BIC_SYS_LPI);
->> +		fclose(fp);
->>  		return -1;
->>  	}
->>  	fclose(fp);
->>
+Thanks!
+-Wei
+> For this patch, I will take it as it fixes one of the problem.
+>
+> thanks,
+> rui
+>
+> > Signed-off-by: Wei Wang <wvw@google.com>
+> > ---
+> >  drivers/thermal/thermal_core.c | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> >
+> > diff --git a/drivers/thermal/thermal_core.c
+> > b/drivers/thermal/thermal_core.c
+> > index 6590bb5cb688..5baf5cfab999 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct
+> > notifier_block *nb,
+> >                            unsigned long mode, void *_unused)
+> >  {
+> >       struct thermal_zone_device *tz;
+> > +     enum thermal_device_mode tz_mode;
+> >
+> >       switch (mode) {
+> >       case PM_HIBERNATION_PREPARE:
+> > @@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct
+> > notifier_block *nb,
+> >       case PM_POST_SUSPEND:
+> >               atomic_set(&in_suspend, 0);
+> >               list_for_each_entry(tz, &thermal_tz_list, node) {
+> > +                     tz_mode =3D THERMAL_DEVICE_ENABLED;
+> > +                     if (tz->ops->get_mode)
+> > +                             tz->ops->get_mode(tz, &tz_mode);
+> > +
+> > +                     if (tz_mode =3D=3D THERMAL_DEVICE_DISABLED)
+> > +                             continue;
+> > +
+> >                       thermal_zone_device_init(tz);
+> >                       thermal_zone_device_update(tz,
+> >                                                  THERMAL_EVENT_UNS
+> > PECIFIED);
