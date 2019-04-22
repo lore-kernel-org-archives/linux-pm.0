@@ -1,54 +1,89 @@
-From: Han Nandor <nandor.han@vaisala.com>
-Subject: [PATCH v3 0/2] Use NVMEM as reboot-mode write interface
-Date: Sun, 21 Apr 2019 19:09:28 +0000
-Message-ID: <20190421190913.1478-1-nandor.han@vaisala.com>
-References: <fc60b885f1b447ce55950184c7921cfc1c96ade6>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH 0/1] Forced-wakeup for stop lite states on Powernv
+Date: Mon, 22 Apr 2019 01:32:30 -0500
+Message-ID: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <fc60b885f1b447ce55950184c7921cfc1c96ade6>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "sre@kernel.org" <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Cc: Han Nandor <nandor.han@vaisala.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au, ego@linux.vnet.ibm.com, dja@axtens.net, Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-RGVzY3JpcHRpb24NCi0tLS0tLS0tLS0tDQpFeHRlbmQgdGhlIHJlYm9vdCBtb2RlIGRyaXZlciB0
-byB1c2UgYSBOVk1FTSBjZWxsIGFzIHdyaXRpbmcgaW50ZXJmYWNlLg0KDQpUZXN0aW5nDQotLS0t
-LS0tDQpUaGUgdGVzdGluZyBpcyBkb25lIGJ5IGNvbmZpZ3VyaW5nIERUIGZyb20gYSBjdXN0b20g
-Ym9hcmQuDQpUaGUgTlZNRU0gY2VsbCBpcyBjb25maWd1cmVkIGluIGFuIFJUQyBub24tdm9sYXRp
-bGUgbWVtb3J5Lg0KS2VybmVsOiA0LjE0LjYwICh0aGUgcGF0Y2hzZXQgd2FzIHJlYmFzZWQgb24g
-a2VybmVsIG1hc3RlcikNCg0KRFQgY29uZmlndXJhdGlvbnM6DQpgDQouLi4NCnJlYm9vdC1tb2Rl
-LW52bWVtQDAgew0KICAgIGNvbXBhdGlibGUgPSAic2ltcGxlLW1mZCI7DQogICAgcmVib290LW1v
-ZGUgew0KICAgICAgICBjb21wYXRpYmxlID0gIm52bWVtLXJlYm9vdC1tb2RlIjsNCiAgICAgICAg
-bnZtZW0tY2VsbHMgPSA8JnJlYm9vdF9tb2RlPjsNCiAgICAgICAgbnZtZW0tY2VsbC1uYW1lcyA9
-ICJyZWJvb3QtbW9kZSI7DQoNCiAgICAgICAgbW9kZS10ZXN0ICAgICAgID0gPDB4MjE5NjkxNDc+
-Ow0KICAgIH07DQp9Ow0KLi4uDQpyZWJvb3RfbW9kZTogbnZtZW1fcmVib290X21vZGVAMCB7DQog
-ICAgICAgIHJlZyA9IDwweDAwIDB4ND47DQp9Ow0KLi4uDQpgDQoNCjEuIFJlYm9vdCB0aGUgc3lz
-dGVtIHVzaW5nIHRoZSBjb21tYW5kIGByZWJvb3QgdGVzdGANCg0KMi4gVmVyaWZ5IHRoYXQga2Vy
-bmVsIGxvZ3Mgc2hvdyB0aGF0IHJlYm9vdCB3YXMgZG9uZSBpbiBtb2RlIGB0ZXN0YDoNClBBU1MN
-CmBbICA0MTMuOTU3MTcyXSByZWJvb3Q6IFJlc3RhcnRpbmcgc3lzdGVtIHdpdGggY29tbWFuZCAn
-dGVzdCcgYA0KDQozLiBTdG9wIGluIFUtQm9vdCBhbmQgdmVyaWZ5IHRoYXQgbW9kZSBgdGVzdGAg
-bWFnaWMgdmFsdWUgaXMgcHJlc2VudA0KaW4gUlRDcyBub24tdm9sYXRpbGUgbWVtb3J5OiBQQVNT
-DQoNCktlcm5lbDogNS4xLjAtcmMzDQoNCjEuIENvbmZpZ3VyZSBgYXJjaC9hcm0vY29uZmlncy9p
-bXhfdjZfdjdfZGVmY29uZmlnYCB0byBjb250YWluIA0KYENPTkZJR19OVk1FTV9SRUJPT1RfTU9E
-RT15YA0KMi4gVmVyaWZ5IHRoYXQgS2VybmVsIGNvbXBpbGVzIHN1Y2Nlc3NmdWw6IFBBU1MNCmAN
-Cm1ha2UgQVJDSD1hcm0gQ1JPU1NfQ09NUElMRT1hcm0tbGludXgtZ251LSBpbXhfdjZfdjdfZGVm
-Y29uZmlnIHpJbWFnZQ0KLi4uDQpDQyAgICAgIGRyaXZlcnMvcG93ZXIvcmVzZXQvbnZtZW0tcmVi
-b290LW1vZGUubw0KLi4uDQpLZXJuZWw6IGFyY2gvYXJtL2Jvb3QvekltYWdlIGlzIHJlYWR5DQpg
-DQpDaGFuZ2VzIHNpbmNlIHYxOg0KLS0tLS0tLS0tLS0tLS0tLS0NCiAtIHNwbGl0IHRoZSBkb2N1
-bWVudGF0aW9uIG9uIGEgc2VwYXJhdGUgcGF0Y2gNCiAtIGFkZCBhIG1pc3NpbmcgaGVhZGVyDQoN
-CkNoYW5nZXMgc2luY2UgdjI6DQotLS0tLS0tLS0tLS0tLS0tDQogLSBjaGFuZ2UgdGhlIG1vZHVs
-ZSBsaWNlbnNlIHRvIEdQTCBzaW5jZSBHUEwgdjIgaXMgZGVwcmVjYXRlZA0KDQpOYW5kb3IgSGFu
-ICgyKToNCiAgcG93ZXI6IHJlc2V0OiBudm1lbS1yZWJvb3QtbW9kZTogdXNlIE5WTUVNIGFzIHJl
-Ym9vdCBtb2RlIHdyaXRlDQogICAgaW50ZXJmYWNlDQogIGR0LWJpbmRpbmdzOiBwb3dlcjogcmVz
-ZXQ6IGFkZCBkb2N1bWVudCBmb3IgTlZNRU0gYmFzZWQgcmVib290LW1vZGUNCg0KIC4uLi9wb3dl
-ci9yZXNldC9udm1lbS1yZWJvb3QtbW9kZS50eHQgICAgICAgICB8IDMyICsrKysrKysrDQogZHJp
-dmVycy9wb3dlci9yZXNldC9LY29uZmlnICAgICAgICAgICAgICAgICAgIHwgIDkgKysrDQogZHJp
-dmVycy9wb3dlci9yZXNldC9NYWtlZmlsZSAgICAgICAgICAgICAgICAgIHwgIDEgKw0KIGRyaXZl
-cnMvcG93ZXIvcmVzZXQvbnZtZW0tcmVib290LW1vZGUuYyAgICAgICB8IDc2ICsrKysrKysrKysr
-KysrKysrKysNCiA0IGZpbGVzIGNoYW5nZWQsIDExOCBpbnNlcnRpb25zKCspDQogY3JlYXRlIG1v
-ZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9yZXNldC9u
-dm1lbS1yZWJvb3QtbW9kZS50eHQNCiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9wb3dlci9y
-ZXNldC9udm1lbS1yZWJvb3QtbW9kZS5jDQoNCi0tIA0KMi4xNy4yDQoNCg==
+Currently, the cpuidle governors determine what idle state a idling CPU
+should enter into based on heuristics that depend on the idle history on
+that CPU. Given that no predictive heuristic is perfect, there are cases
+where the governor predicts a shallow idle state, hoping that the CPU will
+be busy soon. However, if no new workload is scheduled on that CPU in the
+near future, the CPU will end up in the shallow state.
+
+Motivation
+----------
+In case of POWER, this is problematic, when the predicted state in the
+aforementioned scenario is a lite stop state, as such lite states will
+inhibit SMT folding, thereby depriving the other threads in the core from
+using the core resources.
+
+So we do not want to get stucked in such states for longer duration. To
+address this, the cpuidle-core can queue timer to correspond with the
+residency value of the next available state. This timer will forcefully
+wakeup the cpu. Few such iterations will essentially train the governor to
+select a deeper state for that cpu, as the timer here corresponds to the
+next available cpuidle state residency. Cpu will be kicked out of the lite
+state and end up in a non-lite state.
+
+Experiment
+----------
+I performed experiments for three scenarios to collect some data.
+
+case 1 :
+Without this patch and without tick retained, i.e. in a upstream kernel,
+It would spend more than even a second to get out of stop0_lite.
+
+case 2 : With tick retained in a upstream kernel -
+
+Generally, we have a sched tick at 4ms(CONF_HZ = 250). Ideally I expected
+it to take 8 sched tick to get out of stop0_lite. Experimentally,
+observation was
+
+=========================================================
+sample          min            max           99percentile
+20              4ms            12ms          4ms
+=========================================================
+
+It would take atleast one sched tick to get out of stop0_lite.
+
+case 2 :  With this patch (not stopping tick, but explicitly queuing a
+          timer)
+
+============================================================
+sample          min             max             99percentile
+============================================================
+20              144us           192us           144us
+============================================================
+
+In this patch, we queue a timer just before entering into a stop0_lite
+state. The timer fires at (residency of next available state + exit latency
+of next available state * 2). Let's say if next state(stop0) is available
+which has residency of 20us, it should get out in as low as (20+2*2)*8
+[Based on the forumla (residency + 2xlatency)*history length] microseconds
+= 192us. Ideally we would expect 8 iterations, it was observed to get out
+in 6-7 iterations. Even if let's say stop2 is next available state(stop0
+and stop1 both are unavailable), it would take (100+2*10)*8 = 960us to get
+into stop2.
+
+So, We are able to get out of stop0_lite generally in 150us(with this
+patch) as compared to 4ms(with tick retained). As stated earlier, we do not
+want to get stuck into stop0_lite as it inhibits SMT folding for other
+sibling threads, depriving them of core resources. Current patch is using
+forced-wakeup only for stop0_lite, as it gives performance benefit(primary
+reason) along with lowering down power consumption. We may extend this
+model for other states in future.
+
+Abhishek Goel (1):
+  cpuidle-powernv : forced wakeup for stop lite states
+
+ arch/powerpc/include/asm/opal-api.h |  1 +
+ drivers/cpuidle/cpuidle-powernv.c   | 71 ++++++++++++++++++++++++++++-
+ 2 files changed, 71 insertions(+), 1 deletion(-)
+
+-- 
+2.17.1
