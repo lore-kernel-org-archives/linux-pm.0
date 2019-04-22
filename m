@@ -1,133 +1,105 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 3/7] thermal/drivers/core: Add init section table for
- self-encapsulation
-Date: Mon, 22 Apr 2019 16:43:05 +0800
-Message-ID: <1555922585.26198.19.camel@intel.com>
-References: <20190402161256.11044-1-daniel.lezcano@linaro.org>
-         <20190402161256.11044-3-daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal: intel: int340x: processor_thermal_device:
+ simplify to get driver data
+Date: Mon, 22 Apr 2019 16:55:34 +0800
+Message-ID: <1555923334.26198.25.camel@intel.com>
+References: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
+         <20190415162809.GU9224@smile.fi.intel.com>
+         <1555922784.26198.20.camel@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190402161256.11044-3-daniel.lezcano@linaro.org>
+In-Reply-To: <1555922784.26198.20.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "open list:GENERIC INCLUDE/ASM HEADER FILES" <linux-arch@vger.kernel.org>
+To: Andy Shevchenko <andriy.shevchenko@intel.com>, Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+Cc: edubezval@gmail.com, daniel.lezcano@linaro.org, srinivas.pandruvada@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Daniel,
-
-Thanks for the patches, it looks good to me except this one and patch
-4/7.
-
-First, I don't think this is a cyclic dependency issue as they are in
-the same module.
-Second, I have not read include/asm-generic/vmlinux.lds.h before, it
-seems that it is used for architecture specific stuff. Fix a thermal
-issue in this way seems overkill to me.
-
-IMO, to make the code clean, we can build the governors as separate
-modules just like we do for cpu governors.
-This brings to the old commit 80a26a5c22b9("Thermal: build thermal
-governors into thermal_sys module"), and that was introduced to fix a
-problem when CONFIG_THERMAL is set to 'm'. So I think we can switch
-back to the old way as the problem is gone now.
-
-what do you think?
-
-Patch 1,2,5,6,7 applied first.
+On 一, 2019-04-22 at 16:46 +0800, Zhang Rui wrote:
+> On 一, 2019-04-15 at 19:28 +0300, Andy Shevchenko wrote:
+> > 
+> > On Mon, Apr 15, 2019 at 08:18:30PM +0530, Sumeet Pawnikar wrote:
+> > > 
+> > > 
+> > > From: "Pawnikar, Sumeet R" <sumeet.r.pawnikar@intel.com>
+> > > 
+just one comment, the author name you used is not consistent with the
+name you used for your Signed-off-by 'Pawnikar, Sumeet R <sumeet.r.pawn
+ikar@intel.com>', and checkpatch complains about missing Signed-off-by
+from patch author.
+Please fix your gitconfig and run checkpatch before sending next time.
 
 thanks,
 rui
 
-On 二, 2019-04-02 at 18:12 +0200, Daniel Lezcano wrote:
-> Currently the governors are declared in their respective files but
-> they
-> export their [un]register functions which in turn call the
-> [un]register
-> the governors core's functions. That implies a cyclic dependency
-> which is
-> not desirable. There is a way to self-encapsulate the governors by
-> letting
-> them to declare themselves in a __init section table.
+> > > This simplifies getting the 'driver_data' from 'struct device'
+> > > directly.
+> > > Going through platform_device or pci_dev is not required. Also
+> > > removes
+> > > condition check as the private data stored with dev pointer,
+> > > means
+> > > irrespective of enumeration mode, we can use dev_get_drvdata().
+> > > This removes the unnecessary step back and forth.
+> > > 
+> > Indeed, good clean up!
+> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@intel.com>
+> > 
+> Thanks, patch applied.
 > 
-> Define the table in the asm generic linker description like the other
-> tables and provide the specific macros to deal with.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/thermal/thermal_core.h    | 16 ++++++++++++++++
->  include/asm-generic/vmlinux.lds.h | 11 +++++++++++
->  2 files changed, 27 insertions(+)
-> 
-> diff --git a/drivers/thermal/thermal_core.h
-> b/drivers/thermal/thermal_core.h
-> index 0df190ed82a7..28d18083e969 100644
-> --- a/drivers/thermal/thermal_core.h
-> +++ b/drivers/thermal/thermal_core.h
-> @@ -15,6 +15,22 @@
->  /* Initial state of a cooling device during binding */
->  #define THERMAL_NO_TARGET -1UL
->  
-> +/* Init section thermal table */
-> +extern struct thermal_governor * __governor_thermal_table[];
-> +extern struct thermal_governor * __governor_thermal_table_end[];
-> +
-> +#define THERMAL_TABLE_ENTRY(table, name)			\
-> +        static typeof(name) * __thermal_table_entry_##name	\
-> +	__used __section(__##table##_thermal_table)		\
-> +		= &name;
-> +
-> +#define THERMAL_GOVERNOR_DECLARE(name)	THERMAL_TABLE_ENTRY(go
-> vernor, name)
-> +
-> +#define for_each_governor_table(__governor)		\
-> +	for (__governor = __governor_thermal_table;	\
-> +	     __governor < __governor_thermal_table_end;	\
-> +	     __governor++)
-> +
->  /*
->   * This structure is used to describe the behavior of
->   * a certain cooling device on a certain trip point
-> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-
-> generic/vmlinux.lds.h
-> index f8f6f04c4453..9893a3ed242a 100644
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -239,6 +239,16 @@
->  #define ACPI_PROBE_TABLE(name)
->  #endif
->  
-> +#ifdef CONFIG_THERMAL
-> +#define THERMAL_TABLE(name)						
-> \
-> +        . = ALIGN(8);						
-> 	\
-> +        __##name##_thermal_table = .;				
-> 	\
-> +        KEEP(*(__##name##_thermal_table))				
-> \
-> +        __##name##_thermal_table_end = .;
-> +#else
-> +#define THERMAL_TABLE(name)
-> +#endif
-> +
->  #define KERNEL_DTB()							
-> \
->  	STRUCT_ALIGN();						
-> 	\
->  	__dtb_start = .;						
-> \
-> @@ -609,6 +619,7 @@
->  	IRQCHIP_OF_MATCH_TABLE()					
-> \
->  	ACPI_PROBE_TABLE(irqchip)					
-> \
->  	ACPI_PROBE_TABLE(timer)					
-> 	\
-> +	THERMAL_TABLE(governor)					
-> 	\
->  	EARLYCON_TABLE()						
-> \
->  	LSM_TABLE()
->  
+> -rui
+> > 
+> > > 
+> > > 
+> > > Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+> > > ---
+> > >  .../int340x_thermal/processor_thermal_device.c     |   11 +-----
+> > > --
+> > > ---
+> > >  1 file changed, 1 insertion(+), 10 deletions(-)
+> > > 
+> > > diff --git
+> > > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.
+> > > c
+> > > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.
+> > > c
+> > > index 8e1cf4d..2a7cbaa 100644
+> > > ---
+> > > a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.
+> > > c
+> > > +++
+> > > b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.
+> > > c
+> > > @@ -81,22 +81,13 @@ enum proc_thermal_emum_mode_type {
+> > >  					struct device_attribute
+> > > *attr, \
+> > >  					char *buf) \
+> > >  { \
+> > > -	struct pci_dev *pci_dev; \
+> > > -	struct platform_device *pdev; \
+> > > -	struct proc_thermal_device *proc_dev; \
+> > > +	struct proc_thermal_device *proc_dev =
+> > > dev_get_drvdata(dev); \
+> > >  	\
+> > >  	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
+> > >  		dev_warn(dev, "Attempted to get power limit
+> > > before
+> > > device was initialized!\n"); \
+> > >  		return 0; \
+> > >  	} \
+> > >  	\
+> > > -	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV)
+> > > {
+> > > \
+> > > -		pdev = to_platform_device(dev); \
+> > > -		proc_dev = platform_get_drvdata(pdev); \
+> > > -	} else { \
+> > > -		pci_dev = to_pci_dev(dev); \
+> > > -		proc_dev = pci_get_drvdata(pci_dev); \
+> > > -	} \
+> > >  	return sprintf(buf, "%lu\n",\
+> > >  	(unsigned long)proc_dev->power_limits[index].suffix *
+> > > 1000); \
+> > >  }
+> > > -- 
+> > > 1.7.9.5
