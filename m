@@ -1,77 +1,305 @@
-From: Wei Wang <wvw@google.com>
-Subject: Re: [PATCH] thermal: core: skip update disabled thermal zones after suspend
-Date: Mon, 22 Apr 2019 09:44:01 -0700
-Message-ID: <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com>
-References: <20190416170701.50333-1-wvw@google.com> <1555923800.26198.30.camel@intel.com>
+From: Nick Crews <ncrews@chromium.org>
+Subject: [PATCH v6 1/2] FROMLIST: platform/chrome: wilco_ec: Add property helper library
+Date: Mon, 22 Apr 2019 12:05:22 -0600
+Message-ID: <20190422180523.99301-1-ncrews@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555923800.26198.30.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Wei Wang <wei.vince.wang@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: enric.balletbo@collabora.com, bleung@chromium.org, sre@kernel.org, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dlaurie@chromium.org, lamzin@google.com, bartfab@google.com, derat@google.com, dtor@google.com, sjg@chromium.org, jchwong@chromium.org, Nick Crews <ncrews@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 22, 2019 at 2:03 AM Zhang Rui <rui.zhang@intel.com> wrote:
->
-> On =E4=BA=8C, 2019-04-16 at 10:07 -0700, Wei Wang wrote:
-> > It is unnecessary to update disabled thermal zones post suspend and
-> > sometimes leads error/warning in bad behaved thermal drivers.
-> >
-> a good catch, and in fact, there are more issues about thermal handling
-> for disabled thermal zones, like we're able to read the temperature of
-> disabled thermal zones, either via sysfs or via function calls like
-> thermal_zone_device_update.
-Thanks Rui for following up. Yes, we noticed the same behavior. Right
-now, individual thermal driver can still respect set_mode and present
-value meaningful or return error when thermal zone disabled, and
-that's what we do locally.
-Currently, sysfs-api documents "Preventing kernel thermal zone driver
-actions upon trip points so that user application can take full charge
-of the thermal management.", so is it intended for some other agents
-in kernel or user land polling temperature with function call or sysfs
-respectively?
+A Property is typically a data item that is stored to NVRAM
+by the EC. Each of these data items has an index associated
+with it, known as the Property ID (PID). Properties may have
+variable lengths, up to a max of WILCO_EC_PROPERTY_MAX_SIZE
+bytes. Properties can be simple integers, or they may be more
+complex binary data.
 
-Thanks!
--Wei
-> For this patch, I will take it as it fixes one of the problem.
->
-> thanks,
-> rui
->
-> > Signed-off-by: Wei Wang <wvw@google.com>
-> > ---
-> >  drivers/thermal/thermal_core.c | 8 ++++++++
-> >  1 file changed, 8 insertions(+)
-> >
-> > diff --git a/drivers/thermal/thermal_core.c
-> > b/drivers/thermal/thermal_core.c
-> > index 6590bb5cb688..5baf5cfab999 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct
-> > notifier_block *nb,
-> >                            unsigned long mode, void *_unused)
-> >  {
-> >       struct thermal_zone_device *tz;
-> > +     enum thermal_device_mode tz_mode;
-> >
-> >       switch (mode) {
-> >       case PM_HIBERNATION_PREPARE:
-> > @@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct
-> > notifier_block *nb,
-> >       case PM_POST_SUSPEND:
-> >               atomic_set(&in_suspend, 0);
-> >               list_for_each_entry(tz, &thermal_tz_list, node) {
-> > +                     tz_mode =3D THERMAL_DEVICE_ENABLED;
-> > +                     if (tz->ops->get_mode)
-> > +                             tz->ops->get_mode(tz, &tz_mode);
-> > +
-> > +                     if (tz_mode =3D=3D THERMAL_DEVICE_DISABLED)
-> > +                             continue;
-> > +
-> >                       thermal_zone_device_init(tz);
-> >                       thermal_zone_device_update(tz,
-> >                                                  THERMAL_EVENT_UNS
-> > PECIFIED);
+This patch adds support for getting and setting properties.
+This will be useful for setting the charge algorithm and charge
+schedules, which all use properties.
+
+Signed-off-by: Nick Crews <ncrews@chromium.org>
+---
+v6 changes:
+-Add EC_* prefix to enum property_ops so they are more unique.
+-Split up the commit so properties are added in a first commit
+v5 changes:
+-Remove OP_SYNC, it has no immediate use case.
+-Merge properties.h into wilco-ec.h
+-Remove enum get_set_sync_op from the public interface,
+ since without OP_SYNC they are irrelevant.
+-Fix Kconfigs and Makefiles so they actually work
+ with the v4 changes
+-Tweak some formatting, spacing, and comments
+-Fix validation of charge_type so illegal values
+ can't be set. Before negative error codes were
+ accidentally getting casted to positive numbers
+-Remove more unneeded parentheses.
+v4 changes:
+-Use put_unaligned_le32() to store PID in request.
+-Move implementation from
+ drivers/platform/chrome/wilco_ec/charge_config.c to
+ drivers/power/supply/wilco_charger.c
+-Move drivers/platform/chrome/wilco_ec/properties.h to
+ include/linux/platform_data/wilco-ec-properties.h
+-Remove parentheses in switch statement in psp_val_to_charge_mode()
+-Check for any negatvie return code from psp_val_to_charge_mode()
+ instead of just -EINVAL so its less brittle
+-Tweak comments in wilco-ec-properties.h
+v3 changes:
+-Add this changelog
+-Fix commit message tags
+v2 changes:
+-Update Documentation to say KernelVersion 5.2
+-Update Documentation to explain Trickle mode better.
+-rename things from using *PCC* to *CHARGE*
+-Split up conversions between POWER_SUPPLY_PROP_CHARGE_TYPE values
+and Wilco EC codes
+-Use devm_ flavor of power_supply_register(), which simplifies things
+-Add extra error checking on property messages received from the EC
+-Fix bug in memcpy() calls in properties.c
+-Refactor fill_property_id()
+-Add valid input checks to charge_type
+-Properly convert charge_type when get()ting
+
+ drivers/platform/chrome/wilco_ec/Makefile     |   2 +-
+ drivers/platform/chrome/wilco_ec/properties.c | 132 ++++++++++++++++++
+ include/linux/platform_data/wilco-ec.h        |  71 ++++++++++
+ 3 files changed, 204 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/platform/chrome/wilco_ec/properties.c
+
+diff --git a/drivers/platform/chrome/wilco_ec/Makefile b/drivers/platform/chrome/wilco_ec/Makefile
+index 063e7fb4ea17..29b734137786 100644
+--- a/drivers/platform/chrome/wilco_ec/Makefile
++++ b/drivers/platform/chrome/wilco_ec/Makefile
+@@ -1,6 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+-wilco_ec-objs				:= core.o mailbox.o
++wilco_ec-objs				:= core.o mailbox.o properties.o
+ obj-$(CONFIG_WILCO_EC)			+= wilco_ec.o
+ wilco_ec_debugfs-objs			:= debugfs.o
+ obj-$(CONFIG_WILCO_EC_DEBUGFS)		+= wilco_ec_debugfs.o
+diff --git a/drivers/platform/chrome/wilco_ec/properties.c b/drivers/platform/chrome/wilco_ec/properties.c
+new file mode 100644
+index 000000000000..e69682c95ea2
+--- /dev/null
++++ b/drivers/platform/chrome/wilco_ec/properties.c
+@@ -0,0 +1,132 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright 2019 Google LLC
++ */
++
++#include <linux/platform_data/wilco-ec.h>
++#include <linux/string.h>
++#include <linux/unaligned/le_memmove.h>
++
++/* Operation code; what the EC should do with the property */
++enum ec_property_op {
++	EC_OP_GET = 0,
++	EC_OP_SET = 1,
++};
++
++struct ec_property_request {
++	u8 op; /* One of enum ec_property_op */
++	u8 property_id[4]; /* The 32 bit PID is stored Little Endian */
++	u8 length;
++	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
++} __packed;
++
++struct ec_property_response {
++	u8 reserved[2];
++	u8 op; /* One of enum ec_property_op */
++	u8 property_id[4]; /* The 32 bit PID is stored Little Endian */
++	u8 length;
++	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
++} __packed;
++
++static int send_property_msg(struct wilco_ec_device *ec,
++			     struct ec_property_request *rq,
++			     struct ec_property_response *rs)
++{
++	struct wilco_ec_message ec_msg;
++	int ret;
++
++	memset(&ec_msg, 0, sizeof(ec_msg));
++	ec_msg.type = WILCO_EC_MSG_PROPERTY;
++	ec_msg.request_data = rq;
++	ec_msg.request_size = sizeof(*rq);
++	ec_msg.response_data = rs;
++	ec_msg.response_size = sizeof(*rs);
++
++	ret = wilco_ec_mailbox(ec, &ec_msg);
++	if (ret < 0)
++		return ret;
++	if (rs->op != rq->op)
++		return -EBADMSG;
++	if (memcmp(rq->property_id, rs->property_id, sizeof(rs->property_id)))
++		return -EBADMSG;
++
++	return 0;
++}
++
++int wilco_ec_get_property(struct wilco_ec_device *ec,
++			  struct wilco_ec_property_msg *prop_msg)
++{
++	struct ec_property_request rq;
++	struct ec_property_response rs;
++	int ret;
++
++	memset(&rq, 0, sizeof(rq));
++	rq.op = EC_OP_GET;
++	put_unaligned_le32(prop_msg->property_id, rq.property_id);
++
++	ret = send_property_msg(ec, &rq, &rs);
++	if (ret < 0)
++		return ret;
++
++	prop_msg->length = rs.length;
++	memcpy(prop_msg->data, rs.data, rs.length);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(wilco_ec_get_property);
++
++int wilco_ec_set_property(struct wilco_ec_device *ec,
++			  struct wilco_ec_property_msg *prop_msg)
++{
++	struct ec_property_request rq;
++	struct ec_property_response rs;
++	int ret;
++
++	memset(&rq, 0, sizeof(rq));
++	rq.op = EC_OP_SET;
++	put_unaligned_le32(prop_msg->property_id, rq.property_id);
++	rq.length = prop_msg->length;
++	memcpy(rq.data, prop_msg->data, prop_msg->length);
++
++	ret = send_property_msg(ec, &rq, &rs);
++	if (ret < 0)
++		return ret;
++	if (rs.length != prop_msg->length)
++		return -EBADMSG;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(wilco_ec_set_property);
++
++int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
++			       u8 *val)
++{
++	struct wilco_ec_property_msg msg;
++	int ret;
++
++	msg.property_id = property_id;
++
++	ret = wilco_ec_get_property(ec, &msg);
++	if (ret < 0)
++		return ret;
++	if (msg.length != 1)
++		return -EBADMSG;
++
++	*val = msg.data[0];
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(wilco_ec_get_byte_property);
++
++int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
++			       u8 val)
++{
++	struct wilco_ec_property_msg msg;
++
++	msg.property_id = property_id;
++	msg.data[0] = val;
++	msg.length = 1;
++
++	return wilco_ec_set_property(ec, &msg);
++}
++EXPORT_SYMBOL_GPL(wilco_ec_set_byte_property);
+diff --git a/include/linux/platform_data/wilco-ec.h b/include/linux/platform_data/wilco-ec.h
+index 1ff224793c99..50a21bd5fd44 100644
+--- a/include/linux/platform_data/wilco-ec.h
++++ b/include/linux/platform_data/wilco-ec.h
+@@ -123,4 +123,75 @@ struct wilco_ec_message {
+  */
+ int wilco_ec_mailbox(struct wilco_ec_device *ec, struct wilco_ec_message *msg);
+ 
++/*
++ * A Property is typically a data item that is stored to NVRAM
++ * by the EC. Each of these data items has an index associated
++ * with it, known as the Property ID (PID). Properties may have
++ * variable lengths, up to a max of WILCO_EC_PROPERTY_MAX_SIZE
++ * bytes. Properties can be simple integers, or they may be more
++ * complex binary data.
++ */
++
++#define WILCO_EC_PROPERTY_MAX_SIZE	4
++
++/**
++ * struct ec_property_set_msg - Message to get or set a property.
++ * @property_id: Which property to get or set.
++ * @length: Number of bytes of |data| that are used.
++ * @data: Actual property data.
++ */
++struct wilco_ec_property_msg {
++	u32 property_id;
++	int length;
++	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
++};
++
++/**
++ * wilco_ec_get_property() - Retrieve a property from the EC.
++ * @ec: Embedded Controller device.
++ * @prop_msg: Message for request and response.
++ *
++ * The property_id field of |prop_msg| should be filled before calling this
++ * function. The result will be stored in the data and length fields.
++ *
++ * Return: 0 on success, negative error code on failure.
++ */
++int wilco_ec_get_property(struct wilco_ec_device *ec,
++			  struct wilco_ec_property_msg *prop_msg);
++
++/**
++ * wilco_ec_set_property() - Store a property on the EC.
++ * @ec: Embedded Controller device.
++ * @prop_msg: Message for request and response.
++ *
++ * The property_id, length, and data fields of |prop_msg| should be
++ * filled before calling this function.
++ *
++ * Return: 0 on success, negative error code on failure.
++ */
++int wilco_ec_set_property(struct wilco_ec_device *ec,
++			  struct wilco_ec_property_msg *prop_msg);
++
++/**
++ * wilco_ec_get_byte_property() - Retrieve a byte-size property from the EC.
++ * @ec: Embedded Controller device.
++ * @property_id: Which property to retrieve.
++ * @val: The result value, will be filled by this function.
++ *
++ * Return: 0 on success, negative error code on failure.
++ */
++int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
++			       u8 *val);
++
++/**
++ * wilco_ec_get_byte_property() - Store a byte-size property on the EC.
++ * @ec: Embedded Controller device.
++ * @property_id: Which property to store.
++ * @val: Value to store.
++ *
++ * Return: 0 on success, negative error code on failure.
++ */
++int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
++			       u8 val);
++
+ #endif /* WILCO_EC_H */
+-- 
+2.20.1
