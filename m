@@ -1,232 +1,44 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RESEND] dt-bindings: cpufreq: Document
- allwinner,sun50i-h6-operating-points
-Date: Mon, 22 Apr 2019 13:56:11 +0530
-Message-ID: <20190422082611.2hkgpeyn3t6wjf56@vireshk-i7>
-References: <20190418125538.25722-1-tiny.windzz@gmail.com>
+Subject: Re: [PATCH 1/3] PM / Domains: Don't kfree() the virtual device in
+ the error path
+Date: Mon, 22 Apr 2019 13:57:50 +0530
+Message-ID: <20190422082750.vha36l3pgwkpfnn5@vireshk-i7>
+References: <20190418102757.1246-1-ulf.hansson@linaro.org>
+ <20190418102757.1246-2-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190418125538.25722-1-tiny.windzz@gmail.com>
+In-Reply-To: <20190418102757.1246-2-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18-04-19, 08:55, Yangtao Li wrote:
-> Allwinner Process Voltage Scaling Tables defines the voltage and
-> frequency value based on the speedbin blown in the efuse combination.
-> The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> provide the OPP framework with required information.
-> This is used to determine the voltage and frequency value for each
-> OPP of operating-points-v2 table when it is parsed by the OPP framework.
+On 18-04-19, 12:27, Ulf Hansson wrote:
+> It's not correct to call kfree(dev) when device_register(dev) has failed.
+> Fix this by calling put_device(dev) instead.
 > 
-> The "allwinner,sun50i-h6-operating-points" DT extends the
-> "operating-points-v2"
-> with following parameters:
-> - nvmem-cells (NVMEM area containig the speedbin information)
-> - opp-microvolt-<name>: voltage in micro Volts.
->   At runtime, the platform can pick a <name> and matching
->   opp-microvolt-<name> property.
-> 			HW:		<name>:
-> 			sun50i-h6      speed0 speed1 speed2
-> 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> Acked-by: Maxime Ripard <maxime.ripard@bootlin.com>
+> Fixes: 3c095f32a92b ("PM / Domains: Add support for multi PM domains per device to genpd")
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
-> just fix a typo:
-> sun50iw-h6 -> sun50i-h6
+>  drivers/base/power/domain.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> This patch is [2/2].
-> for [1/2]:
-> https://patchwork.kernel.org/patch/10903381/
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index ecac03dcc9b2..7fec69aebf46 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2528,7 +2528,7 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+>  
+>  	ret = device_register(virt_dev);
+>  	if (ret) {
+> -		kfree(virt_dev);
+> +		put_device(virt_dev);
+>  		return ERR_PTR(ret);
+>  	}
 
-You should have used "--in-reply-to" feature to avoid all confusion
-here.
-
-And again, I am waiting for Rob to Ack it.
-
-> ---
->  .../bindings/opp/sun50i-nvmem-cpufreq.txt     | 167 ++++++++++++++++++
->  1 file changed, 167 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> new file mode 100644
-> index 000000000000..7deae57a587b
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/opp/sun50i-nvmem-cpufreq.txt
-> @@ -0,0 +1,167 @@
-> +Allwinner Technologies, Inc. NVMEM CPUFreq and OPP bindings
-> +===================================
-> +
-> +For some SoCs, the CPU frequency subset and voltage value of each OPP
-> +varies based on the silicon variant in use. Allwinner Process Voltage
-> +Scaling Tables defines the voltage and frequency value based on the
-> +speedbin blown in the efuse combination. The sun50i-cpufreq-nvmem driver
-> +reads the efuse value from the SoC to provide the OPP framework with
-> +required information.
-> +
-> +Required properties:
-> +--------------------
-> +In 'cpus' nodes:
-> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
-> +
-> +In 'operating-points-v2' table:
-> +- compatible: Should be
-> +	- 'allwinner,sun50i-h6-operating-points'.
-> +- nvmem-cells: A phandle pointing to a nvmem-cells node representing the
-> +		efuse registers that has information about the speedbin
-> +		that is used to select the right frequency/voltage value
-> +		pair. Please refer the for nvmem-cells bindings
-> +		Documentation/devicetree/bindings/nvmem/nvmem.txt and
-> +		also examples below.
-> +
-> +In every OPP node:
-> +- opp-microvolt-<name>: Voltage in micro Volts.
-> +			At runtime, the platform can pick a <name> and
-> +			matching opp-microvolt-<name> property.
-> +			[See: opp.txt]
-> +			HW:		<name>:
-> +			sun50i-h6	speed0 speed1 speed2
-> +
-> +Example 1:
-> +---------
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		cpu0: cpu@0 {
-> +			compatible = "arm,cortex-a53";
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			enable-method = "psci";
-> +			clocks = <&ccu CLK_CPUX>;
-> +			clock-latency-ns = <244144>; /* 8 32k periods */
-> +			operating-points-v2 = <&cpu_opp_table>;
-> +			#cooling-cells = <2>;
-> +		};
-> +
-> +		cpu1: cpu@1 {
-> +			compatible = "arm,cortex-a53";
-> +			device_type = "cpu";
-> +			reg = <1>;
-> +			enable-method = "psci";
-> +			clocks = <&ccu CLK_CPUX>;
-> +			clock-latency-ns = <244144>; /* 8 32k periods */
-> +			operating-points-v2 = <&cpu_opp_table>;
-> +			#cooling-cells = <2>;
-> +		};
-> +
-> +		cpu2: cpu@2 {
-> +			compatible = "arm,cortex-a53";
-> +			device_type = "cpu";
-> +			reg = <2>;
-> +			enable-method = "psci";
-> +			clocks = <&ccu CLK_CPUX>;
-> +			clock-latency-ns = <244144>; /* 8 32k periods */
-> +			operating-points-v2 = <&cpu_opp_table>;
-> +			#cooling-cells = <2>;
-> +		};
-> +
-> +		cpu3: cpu@3 {
-> +			compatible = "arm,cortex-a53";
-> +			device_type = "cpu";
-> +			reg = <3>;
-> +			enable-method = "psci";
-> +			clocks = <&ccu CLK_CPUX>;
-> +			clock-latency-ns = <244144>; /* 8 32k periods */
-> +			operating-points-v2 = <&cpu_opp_table>;
-> +			#cooling-cells = <2>;
-> +		};
-> +        };
-> +
-> +        cpu_opp_table: opp_table {
-> +                compatible = "allwinner,sun50i-h6-operating-points";
-> +                nvmem-cells = <&speedbin_efuse>;
-> +                opp-shared;
-> +
-> +                opp@480000000 {
-> +                        clock-latency-ns = <244144>; /* 8 32k periods */
-> +                        opp-hz = /bits/ 64 <480000000>;
-> +
-> +                        opp-microvolt-speed0 = <880000>;
-> +                        opp-microvolt-speed1 = <820000>;
-> +                        opp-microvolt-speed2 = <800000>;
-> +                };
-> +
-> +                opp@720000000 {
-> +                        clock-latency-ns = <244144>; /* 8 32k periods */
-> +                        opp-hz = /bits/ 64 <720000000>;
-> +
-> +                        opp-microvolt-speed0 = <880000>;
-> +                        opp-microvolt-speed1 = <820000>;
-> +                        opp-microvolt-speed2 = <800000>;
-> +                };
-> +
-> +                opp@816000000 {
-> +                        clock-latency-ns = <244144>; /* 8 32k periods */
-> +                        opp-hz = /bits/ 64 <816000000>;
-> +
-> +                        opp-microvolt-speed0 = <880000>;
-> +                        opp-microvolt-speed1 = <820000>;
-> +                        opp-microvolt-speed2 = <800000>;
-> +                };
-> +
-> +                opp@888000000 {
-> +                        clock-latency-ns = <244144>; /* 8 32k periods */
-> +                        opp-hz = /bits/ 64 <888000000>;
-> +
-> +                        opp-microvolt-speed0 = <940000>;
-> +                        opp-microvolt-speed1 = <820000>;
-> +                        opp-microvolt-speed2 = <800000>;
-> +                };
-> +
-> +                opp@1080000000 {
-> +                        clock-latency-ns = <244144>; /* 8 32k periods */
-> +                        opp-hz = /bits/ 64 <1080000000>;
-> +
-> +                        opp-microvolt-speed0 = <1060000>;
-> +                        opp-microvolt-speed1 = <880000>;
-> +                        opp-microvolt-speed2 = <840000>;
-> +                };
-> +
-> +                opp@1320000000 {
-> +                        clock-latency-ns = <244144>; /* 8 32k periods */
-> +                        opp-hz = /bits/ 64 <1320000000>;
-> +
-> +                        opp-microvolt-speed0 = <1160000>;
-> +                        opp-microvolt-speed1 = <940000>;
-> +                        opp-microvolt-speed2 = <900000>;
-> +                };
-> +
-> +                opp@1488000000 {
-> +                        clock-latency-ns = <244144>; /* 8 32k periods */
-> +                        opp-hz = /bits/ 64 <1488000000>;
-> +
-> +                        opp-microvolt-speed0 = <1160000>;
-> +                        opp-microvolt-speed1 = <1000000>;
-> +                        opp-microvolt-speed2 = <960000>;
-> +                };
-> +        };
-> +....
-> +soc {
-> +....
-> +	sid: sid@3006000 {
-> +		compatible = "allwinner,sun50i-h6-sid";
-> +		reg = <0x03006000 0x400>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		....
-> +		speedbin_efuse: speed@1c {
-> +			reg = <0x1c 4>;
-> +		};
-> +        };
-> +};
-> -- 
-> 2.17.0
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
