@@ -2,246 +2,118 @@ Return-Path: <SRS0=/Mn0=SY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0D25C282E1
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 06:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B26BFC282E1
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 07:11:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A119D206A3
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 06:34:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7C33E20857
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 07:11:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ig18VicH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726211AbfDVGee (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Apr 2019 02:34:34 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:44294 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1726190AbfDVGee (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 02:34:34 -0400
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x3M6XkvF074983
-        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 02:34:33 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2s1351rhjt-1
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 02:34:33 -0400
-Received: from localhost
-        by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
-        Mon, 22 Apr 2019 07:34:31 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
-        by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
-        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Mon, 22 Apr 2019 07:34:28 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-        by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x3M6YR3c55312534
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 22 Apr 2019 06:34:27 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id C512152057;
-        Mon, 22 Apr 2019 06:34:27 +0000 (GMT)
-Received: from boston16h.aus.stglabs.ibm.com (unknown [9.3.23.78])
-        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6864352051;
-        Mon, 22 Apr 2019 06:34:26 +0000 (GMT)
-From:   Abhishek Goel <huntbag@linux.vnet.ibm.com>
-To:     linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-pm@vger.kernel.org
-Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
-        ego@linux.vnet.ibm.com, dja@axtens.net,
-        Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH 1/1] cpuidle-powernv : forced wakeup for stop lite states
-Date:   Mon, 22 Apr 2019 01:32:31 -0500
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
-References: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19042206-0008-0000-0000-000002DC3A44
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19042206-0009-0000-0000-0000224884CF
-Message-Id: <20190422063231.51043-2-huntbag@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-04-21_08:,,
- signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1904220049
+        id S1726648AbfDVHLd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Apr 2019 03:11:33 -0400
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:46784 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726305AbfDVHLd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 03:11:33 -0400
+Received: by mail-pl1-f194.google.com with SMTP id o7so3148284pll.13
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 00:11:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=Fuu/HgA3Zck7zUDGxDbhlOoVzdybExIgvR3jeuv+sjs=;
+        b=ig18VicHKk8Rw/qe7ccl4KHcbu6bDhuD5OMZuE0huyrXrUTOEflofw9HL5G0O5sI7q
+         F8IuWbzcdsNka3SNKpNH9kUCwPbN8PTmpO+XmCWYETNfRJVh8HS+jW8lq9iMDfSdBzJB
+         jPvR2AF7ezPHNnj3W3ACHvfSWyAGjQxod1zPRTnsCiCoANLvRdBBWhZCprGuYvjdxUcY
+         ubICmfYPj9RsfYsaoyS9Er6Hh2xkpuJnrxMKzDbGDHaMztB+AYjuawPPAjcx7i+t+cCY
+         xQ+xqeBzqj6mr2fuXqgeGxbMyS/5ZSGnQlpoOHdsBj5EdtCNWIkXax1CDPTUEiEr1Ymu
+         l35A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=Fuu/HgA3Zck7zUDGxDbhlOoVzdybExIgvR3jeuv+sjs=;
+        b=S2kBmxhYlNbVazaYbrHPe4xIUgEYZUAh8N5cAkM4qA+qmI0iZOObuOuAXL9Ff4DoTa
+         jAAqIXOxoZsIgYk73ZnQUmD7D+Myn1/Et7y4ohDmzPv9I6r+czOuR57PSSnBhtCXjwx4
+         6siY97fNtahChF8cgYSqGqj9jAq8V/UmIw3Jmv42fnJhRskl4SpycpA+8QntxvWHCphB
+         ogKme7v45f5UgwF2bg7E9H/6lFiTY6LI7rojbHrupbnwkmr8upe1xEVafegVQnX0SFN7
+         heOmsYU8HR3H8C8fezye16XddCBQ7Nr4t+yMfuc8l0jg0WHy82muq36euLX3LrrFUupU
+         EK2w==
+X-Gm-Message-State: APjAAAXeChrv4cY4ykp10QVzsXVRTX6i2gy/9XKy22NjTsHaycqKQhdt
+        joPzbSClvNRieAS0PX+mZlQAIA==
+X-Google-Smtp-Source: APXvYqyR4OF+DNTsKPnb7mdRvFuV/v8ycBt8AejFu30hTf1XlslAFyXq+n1QcvRzpBj/6wqvKISdLg==
+X-Received: by 2002:a17:902:3324:: with SMTP id a33mr18792821plc.186.1555917092584;
+        Mon, 22 Apr 2019 00:11:32 -0700 (PDT)
+Received: from localhost ([122.166.139.136])
+        by smtp.gmail.com with ESMTPSA id n65sm29065250pfb.160.2019.04.22.00.11.31
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 22 Apr 2019 00:11:31 -0700 (PDT)
+Date:   Mon, 22 Apr 2019 12:41:29 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     mohankumar718@gmail.com
+Cc:     rjw@rjwysocki.net, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, lkp@intel.com
+Subject: Re: [RESEND] drivers: cpufreq: use kstrtoul instead of obsolete
+ simple_strtoul issue fixed
+Message-ID: <20190422071129.mttd3t3646rli4lc@vireshk-i7>
+References: <20190421150556.23341-1-mohankumar718@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <20190421150556.23341-1-mohankumar718@gmail.com>
+User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190422063231.7HJXmBQJHrK3OkQFIPjiD21UYKRZi2nPsl3ZgUkkePY@z>
+Message-ID: <20190422071129.Bp8wThwLcxAC7PQKOmD-EHBoRi1nMLZ8asQApsBZgTA@z>
 
-Currently, the cpuidle governors determine what idle state a idling CPU
-should enter into based on heuristics that depend on the idle history on
-that CPU. Given that no predictive heuristic is perfect, there are cases
-where the governor predicts a shallow idle state, hoping that the CPU will
-be busy soon. However, if no new workload is scheduled on that CPU in the
-near future, the CPU will end up in the shallow state.
+You mentioned RESEND in $subject, which is incorrect. This isn't a
+simple resend but you changed the code. You should have mentioned V2
+in $subject and ...
 
-In case of POWER, this is problematic, when the predicted state in the
-aforementioned scenario is a lite stop state, as such lite states will
-inhibit SMT folding, thereby depriving the other threads in the core from
-using the core resources.
+On 21-04-19, 18:05, mohankumar718@gmail.com wrote:
+> From: Mohan Kumar <mohankumar718@gmail.com>
+> 
+> Replace the obsolte simple_strtoul function with kstrtoul.
+> 
+> Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
+> ---
 
-So we do not want to get stucked in such states for longer duration. To
-address this, the cpuidle-core can queue timer to correspond with the
-residency value of the next available state. This timer will forcefully
-wakeup the cpu. Few such iterations will essentially train the governor to
-select a deeper state for that cpu, as the timer here corresponds to the
-next available cpuidle state residency. Cpu will be kicked out of the lite
-state and end up in a non-lite state.
+Mentioned V1->V2 diff right here in the patch.
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h |  1 +
- drivers/cpuidle/cpuidle-powernv.c   | 71 ++++++++++++++++++++++++++++-
- 2 files changed, 71 insertions(+), 1 deletion(-)
+>  drivers/cpufreq/elanfreq.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
+> index 03419f064752..6d861c2364e2 100644
+> --- a/drivers/cpufreq/elanfreq.c
+> +++ b/drivers/cpufreq/elanfreq.c
+> @@ -184,7 +184,8 @@ static int elanfreq_cpu_init(struct cpufreq_policy *policy)
+>   */
+>  static int __init elanfreq_setup(char *str)
+>  {
+> -	max_freq = simple_strtoul(str, &str, 0);
+> +	unsigned long int val = 0;
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 870fb7b23..735dec731 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -226,6 +226,7 @@
-  */
- 
- #define OPAL_PM_TIMEBASE_STOP		0x00000002
-+#define OPAL_PM_LOSE_USER_CONTEXT	0x00001000
- #define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
- #define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
- #define OPAL_PM_NAP_ENABLED		0x00010000
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 84b1ebe21..30b877962 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -15,6 +15,7 @@
- #include <linux/clockchips.h>
- #include <linux/of.h>
- #include <linux/slab.h>
-+#include <linux/hrtimer.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -43,6 +44,40 @@ struct stop_psscr_table {
- 
- static struct stop_psscr_table stop_psscr_table[CPUIDLE_STATE_MAX] __read_mostly;
- 
-+DEFINE_PER_CPU(struct hrtimer, forced_wakeup_timer);
-+
-+static int forced_wakeup_time_compute(struct cpuidle_device *dev,
-+				      struct cpuidle_driver *drv,
-+				      int index)
-+{
-+	int i, timeout_us = 0;
-+
-+	for (i = index + 1; i < drv->state_count; i++) {
-+		if (drv->states[i].disabled || dev->states_usage[i].disable)
-+			continue;
-+		timeout_us = drv->states[i].target_residency +
-+				2 * drv->states[i].exit_latency;
-+		break;
-+	}
-+
-+	return timeout_us;
-+}
-+
-+enum hrtimer_restart forced_wakeup_hrtimer_callback(struct hrtimer *hrtimer)
-+{
-+	return HRTIMER_NORESTART;
-+}
-+
-+static void forced_wakeup_timer_init(int cpu, struct cpuidle_driver *drv)
-+{
-+	struct hrtimer *cpu_forced_wakeup_timer = &per_cpu(forced_wakeup_timer,
-+								cpu);
-+
-+	hrtimer_init(cpu_forced_wakeup_timer, CLOCK_MONOTONIC,
-+			HRTIMER_MODE_REL);
-+	cpu_forced_wakeup_timer->function = forced_wakeup_hrtimer_callback;
-+}
-+
- static u64 default_snooze_timeout __read_mostly;
- static bool snooze_timeout_en __read_mostly;
- 
-@@ -103,6 +138,28 @@ static int snooze_loop(struct cpuidle_device *dev,
- 	return index;
- }
- 
-+static int stop_lite_loop(struct cpuidle_device *dev,
-+			  struct cpuidle_driver *drv,
-+			  int index)
-+{
-+	int timeout_us;
-+	struct hrtimer *this_timer = &per_cpu(forced_wakeup_timer, dev->cpu);
-+
-+	timeout_us = forced_wakeup_time_compute(dev, drv, index);
-+
-+	if (timeout_us > 0)
-+		hrtimer_start(this_timer, ns_to_ktime(timeout_us * 1000),
-+						HRTIMER_MODE_REL_PINNED);
-+
-+	power9_idle_type(stop_psscr_table[index].val,
-+			 stop_psscr_table[index].mask);
-+
-+	if (unlikely(hrtimer_is_queued(this_timer)))
-+		hrtimer_cancel(this_timer);
-+
-+	return index;
-+}
-+
- static int nap_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index)
-@@ -190,7 +247,7 @@ static int powernv_cpuidle_cpu_dead(unsigned int cpu)
-  */
- static int powernv_cpuidle_driver_init(void)
- {
--	int idle_state;
-+	int idle_state, cpu;
- 	struct cpuidle_driver *drv = &powernv_idle_driver;
- 
- 	drv->state_count = 0;
-@@ -224,6 +281,9 @@ static int powernv_cpuidle_driver_init(void)
- 
- 	drv->cpumask = (struct cpumask *)cpu_present_mask;
- 
-+	for_each_cpu(cpu, drv->cpumask)
-+		forced_wakeup_timer_init(cpu, drv);
-+
- 	return 0;
- }
- 
-@@ -299,6 +359,7 @@ static int powernv_add_idle_states(void)
- 	for (i = 0; i < dt_idle_states; i++) {
- 		unsigned int exit_latency, target_residency;
- 		bool stops_timebase = false;
-+		bool lose_user_context = false;
- 		struct pnv_idle_states_t *state = &pnv_idle_states[i];
- 
- 		/*
-@@ -324,6 +385,9 @@ static int powernv_add_idle_states(void)
- 		if (has_stop_states && !(state->valid))
- 				continue;
- 
-+		if (state->flags & OPAL_PM_LOSE_USER_CONTEXT)
-+			lose_user_context = true;
-+
- 		if (state->flags & OPAL_PM_TIMEBASE_STOP)
- 			stops_timebase = true;
- 
-@@ -332,6 +396,11 @@ static int powernv_add_idle_states(void)
- 			add_powernv_state(nr_idle_states, "Nap",
- 					  CPUIDLE_FLAG_NONE, nap_loop,
- 					  target_residency, exit_latency, 0, 0);
-+		} else if (has_stop_states && !lose_user_context) {
-+			add_powernv_state(nr_idle_states, state->name,
-+					  CPUIDLE_FLAG_NONE, stop_lite_loop,
-+					  target_residency, exit_latency,
-+					  state->psscr_val, state->psscr_mask);
- 		} else if (has_stop_states && !stops_timebase) {
- 			add_powernv_state(nr_idle_states, state->name,
- 					  CPUIDLE_FLAG_NONE, stop_loop,
+A blank line here would be nice.
+
+> +	max_freq = kstrtoul(str, 0, &val);
+
+And this looks wrong. The value isn't returned by kstrtoul but an
+error message or 0.
+
+>  	pr_warn("You're using the deprecated elanfreq command line option. Use elanfreq.max_freq instead, please!\n");
+>  	return 1;
+>  }
+> -- 
+> 2.17.1
+
 -- 
-2.17.1
-
+viresh
