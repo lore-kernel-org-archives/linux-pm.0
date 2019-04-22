@@ -2,1161 +2,164 @@ Return-Path: <SRS0=/Mn0=SY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63C1CC10F11
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 13:36:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B552FC282CE
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 15:55:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 027A62064A
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 13:36:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1555940175;
-	bh=rdhwN2QCSAvkx9Nv39FEi2nMlQqoWl1mfsbfQoupEdU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=E1ioIuiSYm0Cl0Th9TQgZRVZrY/iuY0dEPWgB4sOACUFok1QwRdYwP4s5VmTgafF1
-	 erpmIuQqbbD6F9io5k33ZVK/zbW/VoDGlqfQ2NKWhBzVH1ksVoFaGtUOxkDRZCdR11
-	 XTqJuvWyjpYXTbU1fivE271ygeWOjyYLFYc1TJdI=
+	by mail.kernel.org (Postfix) with ESMTP id 8436D2077C
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 15:55:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727437AbfDVN2P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Apr 2019 09:28:15 -0400
-Received: from bombadil.infradead.org ([198.137.202.133]:36896 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727402AbfDVN2O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 09:28:14 -0400
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
-        Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=HYB8QycB6SOcXnUVrWXVnGq0cf9ZQ/chN+ixl9wYt78=; b=ZutF45aTUSzZqAfWj0mD478Yls
-        UEK/3D9Cr/3wTaxBP+q+tGW+g2epcZ5l6jQ4UJC7B8/QerxAvAdXHWH37FWaVe2b5PHEdtr3JLC75
-        ohWlhpOcrT9ewZBFjhB/qAozs2p1OLykEVP945i9hayttHn8iCuuH/AS+AW/oyve7QPkcLo26HwJl
-        Y3u6vDZDhaTSmGMbAkTETS9P0Loz/q/RR4zR1+0C4SekPKk2negAzsdPwlg8ucxEnjL73luvXyRuz
-        vc292dqft5R+hM7KJe0MKph78iri9d7j4piNb6i+fqkIjdugc1lXj6P2UZtz9QfbHy5UjWy8/y0Nu
-        pyf4VEwg==;
-Received: from 179.176.125.229.dynamic.adsl.gvt.net.br ([179.176.125.229] helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
-        id 1hIYzU-0005HZ-Mu; Mon, 22 Apr 2019 13:28:13 +0000
-Received: from mchehab by bombadil.infradead.org with local (Exim 4.92)
-        (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1hIYzS-0005k5-Gv; Mon, 22 Apr 2019 10:28:10 -0300
-From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@infradead.org>,
-        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2 10/79] docs: cpu-freq: convert docs to ReST and rename to *.rst
-Date:   Mon, 22 Apr 2019 10:26:59 -0300
-Message-Id:
- <90ab7c100b7fb0120689ebeda5d13447b2cb2af8.1555938375.git.mchehab+samsung@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <cover.1555938375.git.mchehab+samsung@kernel.org>
-References: <cover.1555938375.git.mchehab+samsung@kernel.org>
+        id S1726945AbfDVPzH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Apr 2019 11:55:07 -0400
+Received: from gateway32.websitewelcome.com ([192.185.145.102]:13321 "EHLO
+        gateway32.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1727524AbfDVPzH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 11:55:07 -0400
+X-Greylist: delayed 1479 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Apr 2019 11:55:06 EDT
+Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
+        by gateway32.websitewelcome.com (Postfix) with ESMTP id CCA697192F7
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 10:15:59 -0500 (CDT)
+Received: from gator4166.hostgator.com ([108.167.133.22])
+        by cmsmtp with SMTP
+        id IafnhjmPI4FKpIafnhC28B; Mon, 22 Apr 2019 10:15:59 -0500
+X-Authority-Reason: nr=8
+Received: from [189.250.104.103] (port=34920 helo=[192.168.1.76])
+        by gator4166.hostgator.com with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
+        (Exim 4.91)
+        (envelope-from <gustavo@embeddedor.com>)
+        id 1hIafn-000qQe-EE; Mon, 22 Apr 2019 10:15:59 -0500
+Subject: Re: [PATCH] tools/power turbostat: fix file descriptor leaks
+To:     Prarit Bhargava <prarit@redhat.com>, Len Brown <lenb@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20190408161240.GA30623@embeddedor>
+ <16370c2e-c5f9-a4cf-02fc-6b5b4ab65e1c@redhat.com>
+From:   "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=gustavo@embeddedor.com; keydata=
+ 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
+ VtSixD1uOgytAP7RWS474w==
+Message-ID: <1c208944-9162-0245-c3bd-016f4274511f@embeddedor.com>
+Date:   Mon, 22 Apr 2019 10:15:58 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <16370c2e-c5f9-a4cf-02fc-6b5b4ab65e1c@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 189.250.104.103
+X-Source-L: No
+X-Exim-ID: 1hIafn-000qQe-EE
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.1.76]) [189.250.104.103]:34920
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 18
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190422132659.WnFM5Enxl2OpYAX17f5Rto9Bw9jWG-6uZFVf2SMmmsg@z>
+Message-ID: <20190422151558.xj51i7OIj8ay_7zn-KrMoP7scQhoSPM8Me1UbUP3XQI@z>
 
-The conversion is actually:
-  - add blank lines and identation in order to identify paragraphs;
-  - fix tables markups;
-  - add some lists markups;
-  - mark literal blocks;
-  - adjust title markups.
+Hi all,
 
-At its new index.rst, let's add a :orphan: while this is not linked to
-the main index.rst file, in order to avoid build warnings.
+Friendly ping:
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
----
- .../{amd-powernow.txt => amd-powernow.rst}    |  11 +-
- Documentation/cpu-freq/{core.txt => core.rst} |  66 +++---
- .../{cpu-drivers.txt => cpu-drivers.rst}      | 217 +++++++++---------
- ...pufreq-nforce2.txt => cpufreq-nforce2.rst} |  12 +-
- Documentation/cpu-freq/cpufreq-stats.rst      | 128 +++++++++++
- Documentation/cpu-freq/cpufreq-stats.txt      | 127 ----------
- Documentation/cpu-freq/index.rst              |  52 +++++
- Documentation/cpu-freq/index.txt              |  56 -----
- .../{pcc-cpufreq.txt => pcc-cpufreq.rst}      | 102 ++++----
- drivers/cpufreq/Kconfig.x86                   |   2 +-
- 10 files changed, 391 insertions(+), 382 deletions(-)
- rename Documentation/cpu-freq/{amd-powernow.txt => amd-powernow.rst} (91%)
- rename Documentation/cpu-freq/{core.txt => core.rst} (67%)
- rename Documentation/cpu-freq/{cpu-drivers.txt => cpu-drivers.rst} (57%)
- rename Documentation/cpu-freq/{cpufreq-nforce2.txt => cpufreq-nforce2.rst} (65%)
- create mode 100644 Documentation/cpu-freq/cpufreq-stats.rst
- delete mode 100644 Documentation/cpu-freq/cpufreq-stats.txt
- create mode 100644 Documentation/cpu-freq/index.rst
- delete mode 100644 Documentation/cpu-freq/index.txt
- rename Documentation/cpu-freq/{pcc-cpufreq.txt => pcc-cpufreq.rst} (80%)
+Who can take this?
 
-diff --git a/Documentation/cpu-freq/amd-powernow.txt b/Documentation/cpu-freq/amd-powernow.rst
-similarity index 91%
-rename from Documentation/cpu-freq/amd-powernow.txt
-rename to Documentation/cpu-freq/amd-powernow.rst
-index 254da155fa47..50b2c45c3a2c 100644
---- a/Documentation/cpu-freq/amd-powernow.txt
-+++ b/Documentation/cpu-freq/amd-powernow.rst
-@@ -1,3 +1,7 @@
-+=============================
-+AMD powernow driver specifics
-+=============================
-+
- 
- PowerNow! and Cool'n'Quiet are AMD names for frequency
- management capabilities in AMD processors. As the hardware
-@@ -23,16 +27,19 @@ not supply these tables.
- 7th Generation: powernow-k7: Athlon, Duron, Geode.
- 
- 8th Generation: powernow-k8: Athlon, Athlon 64, Opteron, Sempron.
-+
- Documentation on this functionality in 8th generation processors
- is available in the "BIOS and Kernel Developer's Guide", publication
--26094, in chapter 9, available for download from www.amd.com. 
-+26094, in chapter 9, available for download from www.amd.com.
- 
- BIOS supplied data, for powernow-k7 and for powernow-k8, may be
- from either the PSB table or from ACPI objects. The ACPI support
- is only available if the kernel config sets CONFIG_ACPI_PROCESSOR.
-+
- The powernow-k8 driver will attempt to use ACPI if so configured,
- and fall back to PST if that fails.
-+
- The powernow-k7 driver will try to use the PSB support first, and
- fall back to ACPI if the PSB support fails. A module parameter,
--acpi_force, is provided to force ACPI support to be used instead 
-+acpi_force, is provided to force ACPI support to be used instead
- of PSB support.
-diff --git a/Documentation/cpu-freq/core.txt b/Documentation/cpu-freq/core.rst
-similarity index 67%
-rename from Documentation/cpu-freq/core.txt
-rename to Documentation/cpu-freq/core.rst
-index 073f128af5a7..c719e3cb700c 100644
---- a/Documentation/cpu-freq/core.txt
-+++ b/Documentation/cpu-freq/core.rst
-@@ -1,31 +1,22 @@
--     CPU frequency and voltage scaling code in the Linux(TM) kernel
-+================================================================
-+General description of the CPUFreq core and of CPUFreq notifiers
-+================================================================
- 
-+Authors:
-+  - Dominik Brodowski  <linux@brodo.de>
-+  - David Kimdon <dwhedon@debian.org>
-+  - Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+  - Viresh Kumar <viresh.kumar@linaro.org>
- 
--		         L i n u x    C P U F r e q
- 
--			  C P U F r e q    C o r e
-+.. Contents:
- 
--
--		    Dominik Brodowski  <linux@brodo.de>
--		     David Kimdon <dwhedon@debian.org>
--		Rafael J. Wysocki <rafael.j.wysocki@intel.com>
--		   Viresh Kumar <viresh.kumar@linaro.org>
--
--
--
--   Clock scaling allows you to change the clock speed of the CPUs on the
--    fly. This is a nice method to save battery power, because the lower
--            the clock speed, the less power the CPU consumes.
--
--
--Contents:
-----------
--1.  CPUFreq core and interfaces
--2.  CPUFreq notifiers
--3.  CPUFreq Table Generation with Operating Performance Point (OPP)
-+  1.  CPUFreq core and interfaces
-+  2.  CPUFreq notifiers
-+  3.  CPUFreq Table Generation with Operating Performance Point (OPP)
- 
- 1. General Information
--=======================
-+======================
- 
- The CPUFreq core code is located in drivers/cpufreq/cpufreq.c. This
- cpufreq code offers a standardized interface for the CPUFreq
-@@ -60,18 +51,18 @@ transition notifiers.
- These are notified when a new policy is intended to be set. Each
- CPUFreq policy notifier is called twice for a policy transition:
- 
--1.) During CPUFREQ_ADJUST all CPUFreq notifiers may change the limit if
--    they see a need for this - may it be thermal considerations or
--    hardware limitations.
-+1) During CPUFREQ_ADJUST all CPUFreq notifiers may change the limit if
-+   they see a need for this - may it be thermal considerations or
-+   hardware limitations.
- 
--2.) And during CPUFREQ_NOTIFY all notifiers are informed of the new policy
--   - if two hardware drivers failed to agree on a new policy before this
-+2) And during CPUFREQ_NOTIFY all notifiers are informed of the new policy -
-+   if two hardware drivers failed to agree on a new policy before this
-    stage, the incompatible hardware shall be shut down, and the user
-    informed of this.
- 
- The phase is specified in the second argument to the notifier.
- 
--The third argument, a void *pointer, points to a struct cpufreq_policy
-+The third argument, a `void *` pointer, points to a struct cpufreq_policy
- consisting of several values, including min, max (the lower and upper
- frequencies (in kHz) of the new policy).
- 
-@@ -88,23 +79,27 @@ CPUFREQ_POSTCHANGE.
- 
- The third argument is a struct cpufreq_freqs with the following
- values:
--cpu	- number of the affected CPU
--old	- old frequency
--new	- new frequency
--flags	- flags of the cpufreq driver
-+
-+======= ===========================
-+cpu	number of the affected CPU
-+old	old frequency
-+new	new frequency
-+flags	flags of the cpufreq driver
-+======= ===========================
- 
- 3. CPUFreq Table Generation with Operating Performance Point (OPP)
- ==================================================================
- For details about OPP, see Documentation/power/opp.txt
- 
--dev_pm_opp_init_cpufreq_table -
-+dev_pm_opp_init_cpufreq_table
- 	This function provides a ready to use conversion routine to translate
- 	the OPP layer's internal information about the available frequencies
- 	into a format readily providable to cpufreq.
- 
- 	WARNING: Do not use this function in interrupt context.
- 
--	Example:
-+	Example::
-+
- 	 soc_pm_init()
- 	 {
- 		/* Do things */
-@@ -117,4 +112,5 @@ dev_pm_opp_init_cpufreq_table -
- 	NOTE: This function is available only if CONFIG_CPU_FREQ is enabled in
- 	addition to CONFIG_PM_OPP.
- 
--dev_pm_opp_free_cpufreq_table - Free up the table allocated by dev_pm_opp_init_cpufreq_table
-+dev_pm_opp_free_cpufreq_table
-+	Free up the table allocated by dev_pm_opp_init_cpufreq_table
-diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.rst
-similarity index 57%
-rename from Documentation/cpu-freq/cpu-drivers.txt
-rename to Documentation/cpu-freq/cpu-drivers.rst
-index 6e353d00cdc6..9cc2559bc34b 100644
---- a/Documentation/cpu-freq/cpu-drivers.txt
-+++ b/Documentation/cpu-freq/cpu-drivers.rst
-@@ -1,35 +1,25 @@
--     CPU frequency and voltage scaling code in the Linux(TM) kernel
--
--
--		         L i n u x    C P U F r e q
--
--			   C P U   D r i v e r s 
--
--		       - information for developers -
--
--
--		    Dominik Brodowski  <linux@brodo.de>
--		Rafael J. Wysocki <rafael.j.wysocki@intel.com>
--		   Viresh Kumar <viresh.kumar@linaro.org>
--
--
--
--   Clock scaling allows you to change the clock speed of the CPUs on the
--    fly. This is a nice method to save battery power, because the lower
--            the clock speed, the less power the CPU consumes.
--
--
--Contents:
-----------
--1.   What To Do?
--1.1  Initialization
--1.2  Per-CPU Initialization
--1.3  verify
--1.4  target/target_index or setpolicy?
--1.5  target/target_index
--1.6  setpolicy
--1.7  get_intermediate and target_intermediate
--2.   Frequency Table Helpers
-+===============================================
-+How to implement a new cpufreq processor driver
-+===============================================
-+
-+.. information for developers
-+
-+Authors:
-+  - Dominik Brodowski  <linux@brodo.de>
-+  - Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+  - Viresh Kumar <viresh.kumar@linaro.org>
-+
-+.. Contents:
-+
-+   1.   What To Do?
-+   1.1  Initialization
-+   1.2  Per-CPU Initialization
-+   1.3  verify
-+   1.4  target/target_index or setpolicy?
-+   1.5  target/target_index
-+   1.6  setpolicy
-+   1.7  get_intermediate and target_intermediate
-+   2.   Frequency Table Helpers
- 
- 
- 
-@@ -46,59 +36,73 @@ on what is necessary:
- 
- First of all, in an __initcall level 7 (module_init()) or later
- function check whether this kernel runs on the right CPU and the right
--chipset. If so, register a struct cpufreq_driver with the CPUfreq core
--using cpufreq_register_driver()
-+chipset. If so, register a `struct cpufreq_driver` with the CPUfreq core
-+using `cpufreq_register_driver()`
- 
--What shall this struct cpufreq_driver contain? 
-+What shall this `struct cpufreq_driver` contain?
- 
-- .name - The name of this driver.
-+.name
-+  The name of this driver.
- 
-- .init - A pointer to the per-policy initialization function.
-+.init
-+  A pointer to the per-policy initialization function.
- 
-- .verify - A pointer to a "verification" function.
-+.verify
-+  A pointer to a "verification" function.
- 
-- .setpolicy _or_ .fast_switch _or_ .target _or_ .target_index - See
-- below on the differences.
-+.setpolicy **or** .fast_switch **or** .target **or** .target_index
-+  See below on the differences.
- 
- And optionally
- 
-- .flags - Hints for the cpufreq core.
-+.flags
-+  Hints for the cpufreq core.
- 
-- .driver_data - cpufreq driver specific data.
-+.driver_data
-+  cpufreq driver specific data.
- 
-- .resolve_freq - Returns the most appropriate frequency for a target
-- frequency. Doesn't change the frequency though.
-+.resolve_freq
-+  Returns the most appropriate frequency for a target
-+  frequency. Doesn't change the frequency though.
- 
-- .get_intermediate and target_intermediate - Used to switch to stable
-- frequency while changing CPU frequency.
-+.get_intermediate and target_intermediate
-+  Used to switch to stable frequency while changing CPU frequency.
- 
-- .get - Returns current frequency of the CPU.
-+.get
-+  Returns current frequency of the CPU.
- 
-- .bios_limit - Returns HW/BIOS max frequency limitations for the CPU.
-+.bios_limit
-+  Returns HW/BIOS max frequency limitations for the CPU.
- 
-- .exit - A pointer to a per-policy cleanup function called during
-- CPU_POST_DEAD phase of cpu hotplug process.
-+.exit
-+  A pointer to a per-policy cleanup function called during
-+  CPU_POST_DEAD phase of cpu hotplug process.
- 
-- .stop_cpu - A pointer to a per-policy stop function called during
-- CPU_DOWN_PREPARE phase of cpu hotplug process.
-+.stop_cpu
-+  A pointer to a per-policy stop function called during
-+  CPU_DOWN_PREPARE phase of cpu hotplug process.
- 
-- .suspend - A pointer to a per-policy suspend function which is called
-- with interrupts disabled and _after_ the governor is stopped for the
-- policy.
-+.suspend
-+  A pointer to a per-policy suspend function which is called with
-+  interrupts disabled and **after** the governor is stopped for the policy.
- 
-- .resume - A pointer to a per-policy resume function which is called
-- with interrupts disabled and _before_ the governor is started again.
-+.resume
-+  A pointer to a per-policy resume function which is called
-+  with interrupts disabled and **before** the governor is started again.
- 
-- .ready - A pointer to a per-policy ready function which is called after
-- the policy is fully initialized.
-+.ready
-+  A pointer to a per-policy ready function which is called after
-+  the policy is fully initialized.
- 
-- .attr - A pointer to a NULL-terminated list of "struct freq_attr" which
-- allow to export values to sysfs.
-+.attr
-+  A pointer to a NULL-terminated list of `struct freq_attr` which
-+  allow to export values to sysfs.
- 
-- .boost_enabled - If set, boost frequencies are enabled.
-+.boost_enabled
-+  If set, boost frequencies are enabled.
- 
-- .set_boost - A pointer to a per-policy function to enable/disable boost
-- frequencies.
-+.set_boost
-+  A pointer to a per-policy function to enable/disable boost frequencies.
- 
- 
- 1.2 Per-CPU Initialization
-@@ -108,37 +112,42 @@ Whenever a new CPU is registered with the device model, or after the
- cpufreq driver registers itself, the per-policy initialization function
- cpufreq_driver.init is called if no cpufreq policy existed for the CPU.
- Note that the .init() and .exit() routines are called only once for the
--policy and not for each CPU managed by the policy. It takes a struct
--cpufreq_policy *policy as argument. What to do now?
-+policy and not for each CPU managed by the policy. It takes a `struct
-+cpufreq_policy *policy` as argument. What to do now?
- 
- If necessary, activate the CPUfreq support on your CPU.
- 
- Then, the driver must fill in the following values:
- 
--policy->cpuinfo.min_freq _and_
--policy->cpuinfo.max_freq -	the minimum and maximum frequency 
--				(in kHz) which is supported by 
--				this CPU
--policy->cpuinfo.transition_latency   the time it takes on this CPU to
--				switch between two frequencies in
--				nanoseconds (if appropriate, else
--				specify CPUFREQ_ETERNAL)
--
--policy->cur			The current operating frequency of
--				this CPU (if appropriate)
--policy->min, 
--policy->max, 
--policy->policy and, if necessary,
--policy->governor		must contain the "default policy" for
--				this CPU. A few moments later,
--				cpufreq_driver.verify and either
--				cpufreq_driver.setpolicy or
--				cpufreq_driver.target/target_index is called
--				with these values.
--policy->cpus			Update this with the masks of the
--				(online + offline) CPUs that do DVFS
--				along with this CPU (i.e.  that share
--				clock/voltage rails with it).
-++---------------------------------------+--------------------------------------+
-+| policy->cpuinfo.min_freq **and**	|				       |
-+| policy->cpuinfo.max_freq		| the minimum and maximum frequency    |
-+| 					| (in kHz) which is supported by       |
-+| 					| this CPU			       |
-++---------------------------------------+--------------------------------------+
-+| policy->cpuinfo.transition_latency	| the time it takes on this CPU to     |
-+| 					| switch between two frequencies in    |
-+| 					| nanoseconds (if appropriate, else    |
-+| 					| specify CPUFREQ_ETERNAL)	       |
-++---------------------------------------+--------------------------------------+
-+| policy->cur				| The current operating frequency of   |
-+| 					| this CPU (if appropriate)	       |
-++---------------------------------------+--------------------------------------+
-+| policy->min,				|				       |
-+| policy->max,				|				       |
-+| policy->policy and, if necessary,	|				       |
-+| policy->governor			| must contain the "default policy"    |
-+| 					| for this CPU. A few moments later,   |
-+| 					| cpufreq_driver.verify and either     |
-+| 					| cpufreq_driver.setpolicy or	       |
-+| 					| cpufreq_driver.target/target_index   |
-+| 					| is called with these values.	       |
-++---------------------------------------+--------------------------------------+
-+| policy->cpus				| Update this with the masks of the    |
-+| 					| (online + offline) CPUs that do DVFS |
-+| 					| along with this CPU (i.e. that share |
-+| 					| clock/voltage rails with it).	       |
-++---------------------------------------+--------------------------------------+
- 
- For setting some of these values (cpuinfo.min[max]_freq, policy->min[max]), the
- frequency table helpers might be helpful. See the section 2 for more information
-@@ -151,8 +160,8 @@ on them.
- When the user decides a new policy (consisting of
- "policy,governor,min,max") shall be set, this policy must be validated
- so that incompatible values can be corrected. For verifying these
--values cpufreq_verify_within_limits(struct cpufreq_policy *policy,
--unsigned int min_freq, unsigned int max_freq) function might be helpful.
-+values `cpufreq_verify_within_limits(struct cpufreq_policy *policy,
-+unsigned int min_freq, unsigned int max_freq)` function might be helpful.
- See section 2 for details on frequency table helpers.
- 
- You need to make sure that at least one valid frequency (or operating
-@@ -163,7 +172,7 @@ policy->max first, and only if this is no solution, decrease policy->min.
- 1.4 target or target_index or setpolicy or fast_switch?
- -------------------------------------------------------
- 
--Most cpufreq drivers or even most cpu frequency scaling algorithms 
-+Most cpufreq drivers or even most cpu frequency scaling algorithms
- only allow the CPU frequency to be set to predefined fixed values. For
- these, you use the ->target(), ->target_index() or ->fast_switch()
- callbacks.
-@@ -175,8 +184,8 @@ limits on their own. These shall use the ->setpolicy() callback.
- 1.5. target/target_index
- ------------------------
- 
--The target_index call has two arguments: struct cpufreq_policy *policy,
--and unsigned int index (into the exposed frequency table).
-+The target_index call has two arguments: `struct cpufreq_policy *policy`,
-+and `unsigned int index` (into the exposed frequency table).
- 
- The CPUfreq driver must set the new frequency when called here. The
- actual frequency must be determined by freq_table[index].frequency.
-@@ -184,10 +193,10 @@ actual frequency must be determined by freq_table[index].frequency.
- It should always restore to earlier frequency (i.e. policy->restore_freq) in
- case of errors, even if we switched to intermediate frequency earlier.
- 
--Deprecated:
-+Deprecated
- ----------
--The target call has three arguments: struct cpufreq_policy *policy,
--unsigned int target_frequency, unsigned int relation.
-+The target call has three arguments: `struct cpufreq_policy *policy`,
-+`unsigned int target_frequency`, `unsigned int relation`.
- 
- The CPUfreq driver must set the new frequency when called here. The
- actual frequency must be determined using the following rules:
-@@ -210,14 +219,14 @@ Not all drivers are expected to implement it, as sleeping from within
- this callback isn't allowed. This callback must be highly optimized to
- do switching as fast as possible.
- 
--This function has two arguments: struct cpufreq_policy *policy and
--unsigned int target_frequency.
-+This function has two arguments: `struct cpufreq_policy *policy` and
-+`unsigned int target_frequency`.
- 
- 
- 1.7 setpolicy
- -------------
- 
--The setpolicy call only takes a struct cpufreq_policy *policy as
-+The setpolicy call only takes a `struct cpufreq_policy *policy` as
- argument. You need to set the lower limit of the in-processor or
- in-chipset dynamic frequency switching to policy->min, the upper limit
- to policy->max, and -if supported- select a performance-oriented
-@@ -278,10 +287,10 @@ table.
- 
- cpufreq_for_each_valid_entry(pos, table) - iterates over all entries,
- excluding CPUFREQ_ENTRY_INVALID frequencies.
--Use arguments "pos" - a cpufreq_frequency_table * as a loop cursor and
--"table" - the cpufreq_frequency_table * you want to iterate over.
-+Use arguments "pos" - a `cpufreq_frequency_table *` as a loop cursor and
-+"table" - the `cpufreq_frequency_table *` you want to iterate over.
- 
--For example:
-+For example::
- 
- 	struct cpufreq_frequency_table *pos, *driver_freq_table;
- 
-diff --git a/Documentation/cpu-freq/cpufreq-nforce2.txt b/Documentation/cpu-freq/cpufreq-nforce2.rst
-similarity index 65%
-rename from Documentation/cpu-freq/cpufreq-nforce2.txt
-rename to Documentation/cpu-freq/cpufreq-nforce2.rst
-index babce1315026..d40700bd5083 100644
---- a/Documentation/cpu-freq/cpufreq-nforce2.txt
-+++ b/Documentation/cpu-freq/cpufreq-nforce2.rst
-@@ -1,3 +1,6 @@
-+=================================
-+nVidia nForce2 platform specifics
-+=================================
- 
- The cpufreq-nforce2 driver changes the FSB on nVidia nForce2 platforms.
- 
-@@ -6,14 +9,15 @@ can be controlled independently from the PCI/AGP clock.
- 
- The module has two options:
- 
-+        ======== ======================================
- 	fid: 	 multiplier * 10 (for example 8.5 = 85)
- 	min_fsb: minimum FSB
-+        ======== ======================================
- 
- If not set, fid is calculated from the current CPU speed and the FSB.
- min_fsb defaults to FSB at boot time - 50 MHz.
- 
--IMPORTANT: The available range is limited downwards!
--           Also the minimum available FSB can differ, for systems 
-+IMPORTANT:
-+           The available range is limited downwards!
-+           Also the minimum available FSB can differ, for systems
-            booting with 200 MHz, 150 should always work.
--
--
-diff --git a/Documentation/cpu-freq/cpufreq-stats.rst b/Documentation/cpu-freq/cpufreq-stats.rst
-new file mode 100644
-index 000000000000..3e33712b496e
---- /dev/null
-+++ b/Documentation/cpu-freq/cpufreq-stats.rst
-@@ -0,0 +1,128 @@
-+==========================================
-+General description of sysfs cpufreq stats
-+==========================================
-+
-+.. information for users
-+
-+
-+Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-+
-+.. Contents
-+   1. Introduction
-+   2. Statistics Provided (with example)
-+   3. Configuring cpufreq-stats
-+
-+
-+1. Introduction
-+===============
-+
-+cpufreq-stats is a driver that provides CPU frequency statistics for each CPU.
-+These statistics are provided in /sysfs as a bunch of read_only interfaces. This
-+interface (when configured) will appear in a separate directory under cpufreq
-+in /sysfs (<sysfs root>/devices/system/cpu/cpuX/cpufreq/stats/) for each CPU.
-+Various statistics will form read_only files under this directory.
-+
-+This driver is designed to be independent of any particular cpufreq_driver
-+that may be running on your CPU. So, it will work with any cpufreq_driver.
-+
-+
-+2. Statistics Provided (with example)
-+=====================================
-+
-+cpufreq stats provides following statistics (explained in detail below).
-+-  time_in_state
-+-  total_trans
-+-  trans_table
-+
-+All the statistics will be from the time the stats driver has been inserted
-+(or the time the stats were reset) to the time when a read of a particular
-+statistic is done. Obviously, stats driver will not have any information
-+about the frequency transitions before the stats driver insertion.
-+
-+::
-+
-+    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
-+    total 0
-+    drwxr-xr-x  2 root root    0 May 14 16:06 .
-+    drwxr-xr-x  3 root root    0 May 14 15:58 ..
-+    --w-------  1 root root 4096 May 14 16:06 reset
-+    -r--r--r--  1 root root 4096 May 14 16:06 time_in_state
-+    -r--r--r--  1 root root 4096 May 14 16:06 total_trans
-+    -r--r--r--  1 root root 4096 May 14 16:06 trans_table
-+
-+reset
-+  Write-only attribute that can be used to reset the stat counters. This can be
-+  useful for evaluating system behaviour under different governors without the
-+  need for a reboot.
-+
-+time_in_state
-+  This gives the amount of time spent in each of the frequencies supported by
-+  this CPU. The cat output will have "<frequency> <time>" pair in each line,
-+  which will mean this CPU spent <time> usertime units of time at <frequency>.
-+  Output will have one line for each of the supported frequencies. usertime
-+  units here is 10mS (similar to other time exported in /proc).
-+
-+::
-+
-+  <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state
-+  3600000 2089
-+  3400000 136
-+  3200000 34
-+  3000000 67
-+  2800000 172488
-+
-+
-+total_trans
-+  This gives the total number of frequency transitions on this CPU. The cat
-+  output will have a single count which is the total number of frequency
-+  transitions.
-+
-+::
-+
-+  <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
-+  20
-+
-+trans_table
-+  This will give a fine grained information about all the CPU frequency
-+  transitions. The cat output here is a two dimensional matrix, where an entry
-+  <i,j> (row i, column j) represents the count of number of transitions from
-+  Freq_i to Freq_j. Freq_i rows and Freq_j columns follow the sorting order in
-+  which the driver has provided the frequency table initially to the cpufreq
-+  core and so can be sorted (ascending or descending) or unsorted.  The output
-+  here also contains the actual freq values for each row and column for better
-+  readability.
-+
-+  If the transition table is bigger than PAGE_SIZE, reading this will
-+  return an -EFBIG error.
-+
-+::
-+
-+  <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
-+     From  :    To
-+           :   3600000   3400000   3200000   3000000   2800000
-+    3600000:         0         5         0         0         0
-+    3400000:         4         0         2         0         0
-+    3200000:         0         1         0         2         0
-+    3000000:         0         0         1         0         3
-+    2800000:         0         0         0         2         0
-+
-+3. Configuring cpufreq-stats
-+============================
-+
-+To configure cpufreq-stats in your kernel::
-+
-+   Config Main Menu
-+	Power management options (ACPI, APM)  --->
-+		CPU Frequency scaling  --->
-+			[*] CPU Frequency scaling
-+			[*]   CPU frequency translation statistics
-+
-+
-+"CPU Frequency scaling" (CONFIG_CPU_FREQ) should be enabled to configure
-+cpufreq-stats.
-+
-+"CPU frequency translation statistics" (CONFIG_CPU_FREQ_STAT) provides the
-+statistics which includes time_in_state, total_trans and trans_table.
-+
-+Once this option is enabled and your CPU supports cpufrequency, you
-+will be able to see the CPU frequency statistics in /sysfs.
-diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.txt
-deleted file mode 100644
-index 14378cecb172..000000000000
---- a/Documentation/cpu-freq/cpufreq-stats.txt
-+++ /dev/null
-@@ -1,127 +0,0 @@
--
--     CPU frequency and voltage scaling statistics in the Linux(TM) kernel
--
--
--             L i n u x    c p u f r e q - s t a t s   d r i v e r
--
--                       - information for users -
--
--
--             Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
--
--Contents
--1. Introduction
--2. Statistics Provided (with example)
--3. Configuring cpufreq-stats
--
--
--1. Introduction
--
--cpufreq-stats is a driver that provides CPU frequency statistics for each CPU.
--These statistics are provided in /sysfs as a bunch of read_only interfaces. This
--interface (when configured) will appear in a separate directory under cpufreq
--in /sysfs (<sysfs root>/devices/system/cpu/cpuX/cpufreq/stats/) for each CPU.
--Various statistics will form read_only files under this directory.
--
--This driver is designed to be independent of any particular cpufreq_driver
--that may be running on your CPU. So, it will work with any cpufreq_driver.
--
--
--2. Statistics Provided (with example)
--
--cpufreq stats provides following statistics (explained in detail below).
---  time_in_state
---  total_trans
---  trans_table
--
--All the statistics will be from the time the stats driver has been inserted
--(or the time the stats were reset) to the time when a read of a particular
--statistic is done. Obviously, stats driver will not have any information
--about the frequency transitions before the stats driver insertion.
--
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
--total 0
--drwxr-xr-x  2 root root    0 May 14 16:06 .
--drwxr-xr-x  3 root root    0 May 14 15:58 ..
----w-------  1 root root 4096 May 14 16:06 reset
---r--r--r--  1 root root 4096 May 14 16:06 time_in_state
---r--r--r--  1 root root 4096 May 14 16:06 total_trans
---r--r--r--  1 root root 4096 May 14 16:06 trans_table
----------------------------------------------------------------------------------
--
---  reset
--Write-only attribute that can be used to reset the stat counters. This can be
--useful for evaluating system behaviour under different governors without the
--need for a reboot.
--
---  time_in_state
--This gives the amount of time spent in each of the frequencies supported by
--this CPU. The cat output will have "<frequency> <time>" pair in each line, which
--will mean this CPU spent <time> usertime units of time at <frequency>. Output
--will have one line for each of the supported frequencies. usertime units here 
--is 10mS (similar to other time exported in /proc).
--
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state 
--3600000 2089
--3400000 136
--3200000 34
--3000000 67
--2800000 172488
----------------------------------------------------------------------------------
--
--
---  total_trans
--This gives the total number of frequency transitions on this CPU. The cat 
--output will have a single count which is the total number of frequency
--transitions.
--
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
--20
----------------------------------------------------------------------------------
--
---  trans_table
--This will give a fine grained information about all the CPU frequency
--transitions. The cat output here is a two dimensional matrix, where an entry
--<i,j> (row i, column j) represents the count of number of transitions from 
--Freq_i to Freq_j. Freq_i rows and Freq_j columns follow the sorting order in
--which the driver has provided the frequency table initially to the cpufreq core
--and so can be sorted (ascending or descending) or unsorted.  The output here
--also contains the actual freq values for each row and column for better
--readability.
--
--If the transition table is bigger than PAGE_SIZE, reading this will
--return an -EFBIG error.
--
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
--   From  :    To
--         :   3600000   3400000   3200000   3000000   2800000 
--  3600000:         0         5         0         0         0 
--  3400000:         4         0         2         0         0 
--  3200000:         0         1         0         2         0 
--  3000000:         0         0         1         0         3 
--  2800000:         0         0         0         2         0 
----------------------------------------------------------------------------------
--
--
--3. Configuring cpufreq-stats
--
--To configure cpufreq-stats in your kernel
--Config Main Menu
--	Power management options (ACPI, APM)  --->
--		CPU Frequency scaling  --->
--			[*] CPU Frequency scaling
--			[*]   CPU frequency translation statistics
--
--
--"CPU Frequency scaling" (CONFIG_CPU_FREQ) should be enabled to configure
--cpufreq-stats.
--
--"CPU frequency translation statistics" (CONFIG_CPU_FREQ_STAT) provides the
--statistics which includes time_in_state, total_trans and trans_table.
--
--Once this option is enabled and your CPU supports cpufrequency, you
--will be able to see the CPU frequency statistics in /sysfs.
-diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
-new file mode 100644
-index 000000000000..10e6c05f60f6
---- /dev/null
-+++ b/Documentation/cpu-freq/index.rst
-@@ -0,0 +1,52 @@
-+:orphan:
-+
-+==============================================================
-+CPU frequency and voltage scaling code in the Linux(TM) kernel
-+==============================================================
-+
-+
-+Author: Dominik Brodowski  <linux@brodo.de>
-+
-+
-+Clock scaling allows you to change the clock speed of the CPUs on the
-+fly. This is a nice method to save battery power, because the lower
-+the clock speed, the less power the CPU consumes.
-+
-+
-+.. toctree::
-+    :maxdepth: 1
-+
-+    core
-+    cpufreq-stats
-+    cpu-drivers
-+
-+    amd-powernow
-+    cpufreq-nforce2
-+    pcc-cpufreq
-+
-+.. only::  subproject and html
-+
-+   Indices
-+   =======
-+
-+   * :ref:`genindex`
-+
-+Mailing List
-+------------
-+There is a CPU frequency changing CVS commit and general list where
-+you can report bugs, problems or submit patches. To post a message,
-+send an email to linux-pm@vger.kernel.org.
-+
-+Links
-+-----
-+the FTP archives:
-+* ftp://ftp.linux.org.uk/pub/linux/cpufreq/
-+
-+how to access the CVS repository:
-+* http://cvs.arm.linux.org.uk/
-+
-+the CPUFreq Mailing list:
-+* http://vger.kernel.org/vger-lists.html#linux-pm
-+
-+Clock and voltage scaling for the SA-1100:
-+* http://www.lartmaker.nl/projects/scaling
-diff --git a/Documentation/cpu-freq/index.txt b/Documentation/cpu-freq/index.txt
-deleted file mode 100644
-index c15e75386a05..000000000000
---- a/Documentation/cpu-freq/index.txt
-+++ /dev/null
-@@ -1,56 +0,0 @@
--     CPU frequency and voltage scaling code in the Linux(TM) kernel
--
--
--		         L i n u x    C P U F r e q
--
--
--
--
--		    Dominik Brodowski  <linux@brodo.de>
--
--
--
--   Clock scaling allows you to change the clock speed of the CPUs on the
--    fly. This is a nice method to save battery power, because the lower
--            the clock speed, the less power the CPU consumes.
--
--
--
--Documents in this directory:
------------------------------
--
--amd-powernow.txt -	AMD powernow driver specific file.
--
--core.txt	-	General description of the CPUFreq core and
--			of CPUFreq notifiers.
--
--cpu-drivers.txt -	How to implement a new cpufreq processor driver.
--
--cpufreq-nforce2.txt -	nVidia nForce2 platform specific file.
--
--cpufreq-stats.txt -	General description of sysfs cpufreq stats.
--
--index.txt	-	File index, Mailing list and Links (this document)
--
--pcc-cpufreq.txt -	PCC cpufreq driver specific file.
--
--
--Mailing List
--------------
--There is a CPU frequency changing CVS commit and general list where
--you can report bugs, problems or submit patches. To post a message,
--send an email to linux-pm@vger.kernel.org.
--
--Links
-------
--the FTP archives:
--* ftp://ftp.linux.org.uk/pub/linux/cpufreq/
--
--how to access the CVS repository:
--* http://cvs.arm.linux.org.uk/
--
--the CPUFreq Mailing list:
--* http://vger.kernel.org/vger-lists.html#linux-pm
--
--Clock and voltage scaling for the SA-1100:
--* http://www.lartmaker.nl/projects/scaling
-diff --git a/Documentation/cpu-freq/pcc-cpufreq.txt b/Documentation/cpu-freq/pcc-cpufreq.rst
-similarity index 80%
-rename from Documentation/cpu-freq/pcc-cpufreq.txt
-rename to Documentation/cpu-freq/pcc-cpufreq.rst
-index 9e3c3b33514c..d846a36536e4 100644
---- a/Documentation/cpu-freq/pcc-cpufreq.txt
-+++ b/Documentation/cpu-freq/pcc-cpufreq.rst
-@@ -1,45 +1,38 @@
--/*
-- *  pcc-cpufreq.txt - PCC interface documentation
-- *
-- *  Copyright (C) 2009 Red Hat, Matthew Garrett <mjg@redhat.com>
-- *  Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
-- *      Nagananda Chumbalkar <nagananda.chumbalkar@hp.com>
-- *
-- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- *
-- *  This program is free software; you can redistribute it and/or modify
-- *  it under the terms of the GNU General Public License as published by
-- *  the Free Software Foundation; version 2 of the License.
-- *
-- *  This program is distributed in the hope that it will be useful, but
-- *  WITHOUT ANY WARRANTY; without even the implied warranty of
-- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or NON
-- *  INFRINGEMENT. See the GNU General Public License for more details.
-- *
-- *  You should have received a copy of the GNU General Public License along
-- *  with this program; if not, write to the Free Software Foundation, Inc.,
-- *  675 Mass Ave, Cambridge, MA 02139, USA.
-- *
-- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- */
--
--
--			Processor Clocking Control Driver
--			---------------------------------
--
--Contents:
-----------
--1.	Introduction
--1.1	PCC interface
--1.1.1   Get Average Frequency
--1.1.2	Set Desired Frequency
--1.2	Platforms affected
--2.	Driver and /sys details
--2.1	scaling_available_frequencies
--2.2	cpuinfo_transition_latency
--2.3	cpuinfo_cur_freq
--2.4	related_cpus
--3.	Caveats
-+==========================================================
-+Processor Clocking Control Driver cpufreq driver specifics
-+==========================================================
-+
-+
-+.. pcc-cpufreq.txt - PCC interface documentation
-+
-+    Copyright (C) 2009 Red Hat, Matthew Garrett <mjg@redhat.com>
-+    Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
-+        Nagananda Chumbalkar <nagananda.chumbalkar@hp.com>
-+
-+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; version 2 of the License.
-+
-+    This program is distributed in the hope that it will be useful, but
-+    WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or NON
-+    INFRINGEMENT. See the GNU General Public License for more details.
-+
-+
-+.. Contents:
-+   1.	Introduction
-+   1.1	PCC interface
-+   1.1.1  Get Average Frequency
-+   1.1.2  Set Desired Frequency
-+   1.2	Platforms affected
-+   2.	Driver and /sys details
-+   2.1	scaling_available_frequencies
-+   2.2	cpuinfo_transition_latency
-+   2.3	cpuinfo_cur_freq
-+   2.4	related_cpus
-+   3.	Caveats
- 
- 1. Introduction:
- ----------------
-@@ -72,6 +65,7 @@ memory region. The shared memory region header contains the "command" and
- doorbell.
- 
- The following commands are supported by the PCC interface:
-+
- * Get Average Frequency
- * Set Desired Frequency
- 
-@@ -140,7 +134,9 @@ Internally, there is no need for the driver to convert the "target" frequency
- to a corresponding P-state.
- 
- The VERSION number for the driver will be of the format v.xy.ab.
--eg: 1.00.02
-+eg::
-+
-+   1.00.02
-    ----- --
-     |    |
-     |    -- this will increase with bug fixes/enhancements to the driver
-@@ -168,21 +164,21 @@ A) Often cpuinfo_cur_freq will show a value different than what is declared
- in the scaling_available_frequencies or scaling_cur_freq, or scaling_max_freq.
- This is due to "turbo boost" available on recent Intel processors. If certain
- conditions are met the BIOS can achieve a slightly higher speed than requested
--by OSPM. An example:
-+by OSPM. An example::
- 
--scaling_cur_freq	: 2933000
--cpuinfo_cur_freq	: 3196000
-+	scaling_cur_freq	: 2933000
-+	cpuinfo_cur_freq	: 3196000
- 
- B) There is a round-off error associated with the cpuinfo_cur_freq value.
- Since the driver obtains the current frequency as a "percentage" (%) of the
- nominal frequency from the BIOS, sometimes, the values displayed by
--scaling_cur_freq and cpuinfo_cur_freq may not match. An example:
-+scaling_cur_freq and cpuinfo_cur_freq may not match. An example::
- 
--scaling_cur_freq	: 1600000
--cpuinfo_cur_freq	: 1583000
-+	scaling_cur_freq	: 1600000
-+	cpuinfo_cur_freq	: 1583000
- 
- In this example, the nominal frequency is 2933 MHz. The driver obtains the
--current frequency, cpuinfo_cur_freq, as 54% of the nominal frequency:
-+current frequency, cpuinfo_cur_freq, as 54% of the nominal frequency::
- 
- 	54% of 2933 MHz = 1583 MHz
- 
-@@ -191,10 +187,10 @@ corresponds to the frequency of the P0 P-state.
- 
- 2.4 related_cpus:
- -----------------
--The related_cpus field is identical to affected_cpus.
-+The related_cpus field is identical to affected_cpus:
- 
--affected_cpus	: 4
--related_cpus	: 4
-+	affected_cpus	: 4
-+	related_cpus	: 4
- 
- Currently, the PCC driver does not evaluate _PSD. The platforms that support
- PCC do not implement SW_ALL. So OSPM doesn't need to perform any coordination
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index 35f71825b7f3..c0c61edb8d93 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -24,7 +24,7 @@ config X86_PCC_CPUFREQ
- 	  This driver adds support for the PCC interface.
- 
- 	  For details, take a look at:
--	  <file:Documentation/cpu-freq/pcc-cpufreq.txt>.
-+	  <file:Documentation/cpu-freq/pcc-cpufreq.rst>.
- 
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called pcc-cpufreq.
--- 
-2.20.1
+Thanks
+--
+Gustavo
 
+On 4/8/19 12:04 PM, Prarit Bhargava wrote:
+> 
+> 
+> On 4/8/19 12:12 PM, Gustavo A. R. Silva wrote:
+>> Fix file descriptor leaks by closing fp before return.
+>>
+>> Addresses-Coverity-ID: 1444591 ("Resource leak")
+>> Addresses-Coverity-ID: 1444592 ("Resource leak")
+>> Fixes: 5ea7647b333f ("tools/power turbostat: Warn on bad ACPI LPIT data")
+>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> 
+> Reviewed-by: Prarit Bhargava <prarit@redhat.com>
+> 
+> P.
+> 
+>> ---
+>>  tools/power/x86/turbostat/turbostat.c | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+>> index c7727be9719f..78d9acba8e9b 100644
+>> --- a/tools/power/x86/turbostat/turbostat.c
+>> +++ b/tools/power/x86/turbostat/turbostat.c
+>> @@ -2924,6 +2924,7 @@ int snapshot_cpu_lpi_us(void)
+>>  	if (retval != 1) {
+>>  		fprintf(stderr, "Disabling Low Power Idle CPU output\n");
+>>  		BIC_NOT_PRESENT(BIC_CPU_LPI);
+>> +		fclose(fp);
+>>  		return -1;
+>>  	}
+>>  
+>> @@ -2950,6 +2951,7 @@ int snapshot_sys_lpi_us(void)
+>>  	if (retval != 1) {
+>>  		fprintf(stderr, "Disabling Low Power Idle System output\n");
+>>  		BIC_NOT_PRESENT(BIC_SYS_LPI);
+>> +		fclose(fp);
+>>  		return -1;
+>>  	}
+>>  	fclose(fp);
+>>
