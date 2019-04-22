@@ -2,184 +2,115 @@ Return-Path: <SRS0=/Mn0=SY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7E35C282E1
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 08:17:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51B7CC282E1
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 08:19:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 89C8620656
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 08:17:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 17D2220656
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 08:19:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="y3SPFbdv"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="M9rQe5Uj"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726583AbfDVIRN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Apr 2019 04:17:13 -0400
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:41066 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726440AbfDVIRN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 04:17:13 -0400
-Received: by mail-pf1-f193.google.com with SMTP id 188so5356613pfd.8
-        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 01:17:12 -0700 (PDT)
+        id S1726519AbfDVITG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Apr 2019 04:19:06 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:41678 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726305AbfDVITG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 04:19:06 -0400
+Received: by mail-pg1-f194.google.com with SMTP id f6so5502511pgs.8
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 01:19:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=42VKjbmgGJszKQVYdbl0cK7YeGeYgHMGOiMgkawBYX8=;
-        b=y3SPFbdvzwTlth0kuvgy/Zcf1lTl8LR0S7OoXISh0O37xaqdUD2Gq8D4fd6zZoABWi
-         MHfALCLxAfyOCqB1grDWADP9jEvx0IpBegfF4lVMlJVCmEPk8rbmnmc2HyZ0wKCNXdUF
-         LT/v861LY67BJuRdOAtYr+vX7965ch/yKNIPmYkldaxXCmm9S+1sq6cZvE7MvH4SgPuR
-         Zr56e1/Mi0kcKlug+555Y4MTSc0ZiC+vQMh9PyE7jCHEEs7+FWHFHpYncIhomZIsk42w
-         nBLUVaEkBb6sBH4MueVPBbv5+EoZ2/8o4EY+BqQ/BaoEH8UfF+z50ymX/jOm9odlaOVi
-         jclw==
+        bh=bm1CIuCeZeSy4hfWrM2eKzoNPXwYitYIYWuvHHswoPg=;
+        b=M9rQe5Uj3mq0zUvWJ1aQ9ibgG+T8l/ZfHXBTbQpMdwCwTQDOEdTbkXo3S3uKmkk2x/
+         eVdkJ4lyw0b7mi1x6dvecYyrxmlE0ea3k1gGvjtfwuo/A0vaFjQcSbI52ryaG486LJkh
+         ID1fLH8q6+JQNw8Oi5kvCRIC9qXMveTMIT4iUJQQa4jUZnuHlFiFs5Tjtr+4vq2nVkCC
+         NtGYwMu53Ov6zrAGGs4YZFdAhh/MH53r0EgU9puc6hQA4HUqLUkmly04lUEUyTz+EIaq
+         vMtkyBKM1i8AsoqWhEWqNeIyOfXf3yI0o3VggcUtTOScuglsY/CKW4at6kIz9wUwuq9L
+         PKJw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=42VKjbmgGJszKQVYdbl0cK7YeGeYgHMGOiMgkawBYX8=;
-        b=HuV1x57Kwl0hQ3cX8ksc1KOk/F9tcVc4QxKsgLJ8r4UJ3VJoIZ5vwO5pczPSV40Wdm
-         WfXcSmzXvAvgprD1xbeVUEj/saAva+AKE/2DA8A0gBqj0kcPoypvJjdeEbZnH9hIyK5s
-         LqbQCTAmcEb+4oI2J66MpEFeGS30AKP8pZDxcIRWwSlrzsVFHAn4sp2qZgcSpHgyQFpa
-         8x5sNQ7ARn0s1WDzsOPWzmf0n0qEMDxgJMOaT3Ei68fZodYzUUp97EnWSUvdDbjcRxq5
-         GV9/SUClgOYjO8QFLEggsHCtpn6aoboiz9b5c1gPxd5v7X8vk1z+XmMyzj3xDoGe15yg
-         y03A==
-X-Gm-Message-State: APjAAAU4+P1RhcwkqZ2pCBjlmlIvVzwlqhTXSjq51LC4xuJumwAbDQUf
-        jhsMeR3IAFQKoqRcXS5wcIglKA==
-X-Google-Smtp-Source: APXvYqxBjZT+/4TAtmMJSU1h0L1tYG3AGoYXdYHnM04KJXA5Xn2L8VxZUBBLwmyd6m/TH/sSu5YD5g==
-X-Received: by 2002:a63:84c7:: with SMTP id k190mr17696551pgd.255.1555921031991;
-        Mon, 22 Apr 2019 01:17:11 -0700 (PDT)
+        bh=bm1CIuCeZeSy4hfWrM2eKzoNPXwYitYIYWuvHHswoPg=;
+        b=BaPsixseTFwsvYb4QN5FYtW2Gg8OV/UjFiCQouSkhDVnqcCJPehIDfoGuJwpJMCC3d
+         HGJIMWkbKdWB/co9w/NLigDxh5xXhfuAj4ekalwoVD6xV82+bamv17zhs8SwVhqtYxov
+         r8I/0hqgfhabi6xKGOR/TJylLimyWswLGP+zDpoSUgDrhtsAyyjy/mlz4oej0XVKWw/+
+         roe6Boa76R1A3vk6J8kZrcuVDX5/9eCzZdw/5S9lVYBZ5+KIvgUa6O0bUo0ALGi3FviP
+         77HRjUabWjo9qLslejCbthXLkFpN/KHN5Mq6gexl0CF5B+w59TkSwReA3oXUMGwQ/7jJ
+         gXVg==
+X-Gm-Message-State: APjAAAX+3DP2iGPaRQJvGbB4J/WgOM9myYDi20Bn+aKZTUKA03DwmCP6
+        9//PtyNoqMnwsU0TTQ46RuAzJg==
+X-Google-Smtp-Source: APXvYqzHVan+PBJZ8pgNuvIUvHiSiq1W3O2OxbQ+g/zV+gL69fcj85RjaGfxLztRjmTuk0qvBFmH8w==
+X-Received: by 2002:aa7:928b:: with SMTP id j11mr19342856pfa.200.1555921145563;
+        Mon, 22 Apr 2019 01:19:05 -0700 (PDT)
 Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id b63sm33310308pfj.54.2019.04.22.01.17.10
+        by smtp.gmail.com with ESMTPSA id p26sm29569492pfa.49.2019.04.22.01.19.04
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 22 Apr 2019 01:17:10 -0700 (PDT)
-Date:   Mon, 22 Apr 2019 13:47:09 +0530
+        Mon, 22 Apr 2019 01:19:04 -0700 (PDT)
+Date:   Mon, 22 Apr 2019 13:49:02 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        x86 Maintainers <x86@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Borislav Petkov <bp@suse.de>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: tsc: Rework time_cpufreq_notifier()
-Message-ID: <20190422081709.i5mv4fbket5ls4xc@vireshk-i7>
-References: <38900622.ao2n2t5aPS@kreacher>
+To:     Yue Hu <zbestahu@gmail.com>
+Cc:     rjw@rjwysocki.net, rafael.j.wysocki@intel.com,
+        linux-pm@vger.kernel.org, huyue2@yulong.com
+Subject: Re: [PATCH] cpufreq: Move ->get callback check outside of
+ __cpufreq_get()
+Message-ID: <20190422081902.xeiu66gpspcjbrol@vireshk-i7>
+References: <20190419062759.8524-1-zbestahu@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <38900622.ao2n2t5aPS@kreacher>
+In-Reply-To: <20190419062759.8524-1-zbestahu@gmail.com>
 User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190422081709.IIFho9B43BulX-1lo2Wb4IjAXKP8utRYEiqfCcxVaGI@z>
 
-On 18-04-19, 16:11, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 19-04-19, 14:27, Yue Hu wrote:
+> From: Yue Hu <huyue2@yulong.com>
 > 
-> There are problems with running time_cpufreq_notifier() on SMP
-> systems.
+> Currenly, __cpufreq_get() called by show_cpuinfo_cur_freq() will check
+> ->get callback. That is needless since cpuinfo_cur_freq attribute will
+> not be created if ->get is not set. So let's drop it in __cpufreq_get().
+> Also keep this check in cpufreq_get().
 > 
-> First off, the rdtsc() called from there runs on the CPU executing
-> that code and not necessarily on the CPU whose sched_clock() rate is
-> updated which is questionable at best.
-> 
-> Second, in the cases when the frequencies of all CPUs in an SMP
-> system are always in sync, it is not sufficient to update just
-> one of them or the set associated with a given cpufreq policy on
-> frequency changes - all CPUs in the system should be updated and
-> that would require more than a simple transition notifier.
-> 
-> Note, however, that the underlying issue (the TSC rate depending on
-> the CPU frequency) has not been present in hardware shipping for the
-> last few years and in quite a few relevant cases (acpi-cpufreq in
-> particular) running time_cpufreq_notifier() will cause the TSC to
-> be marked as unstable anyway.
-> 
-> For this reason, make time_cpufreq_notifier() simply mark the TSC
-> as unstable and give up when run on SMP and only try to carry out
-> any adjustments otherwise.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Yue Hu <huyue2@yulong.com>
 > ---
->  arch/x86/kernel/tsc.c |   29 ++++++++++++++---------------
->  1 file changed, 14 insertions(+), 15 deletions(-)
+>  drivers/cpufreq/cpufreq.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
-> Index: linux-pm/arch/x86/kernel/tsc.c
-> ===================================================================
-> --- linux-pm.orig/arch/x86/kernel/tsc.c
-> +++ linux-pm/arch/x86/kernel/tsc.c
-> @@ -185,8 +185,7 @@ static void __init cyc2ns_init_boot_cpu(
->  /*
->   * Secondary CPUs do not run through tsc_init(), so set up
->   * all the scale factors for all CPUs, assuming the same
-> - * speed as the bootup CPU. (cpufreq notifiers will fix this
-> - * up if their speed diverges)
-> + * speed as the bootup CPU.
->   */
->  static void __init cyc2ns_init_secondary_cpus(void)
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 047662b..c6187f1 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1548,7 +1548,7 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
 >  {
-> @@ -937,12 +936,12 @@ void tsc_restore_sched_clock_state(void)
->  }
+>  	unsigned int ret_freq = 0;
 >  
->  #ifdef CONFIG_CPU_FREQ
-> -/* Frequency scaling support. Adjust the TSC based timer when the cpu frequency
-> +/*
-> + * Frequency scaling support. Adjust the TSC based timer when the CPU frequency
->   * changes.
->   *
-> - * RED-PEN: On SMP we assume all CPUs run with the same frequency.  It's
-> - * not that important because current Opteron setups do not support
-> - * scaling on SMP anyroads.
-> + * NOTE: On SMP the situation is not fixable in general, so simply mark the TSC
-> + * as unstable and give up in those cases.
->   *
->   * Should fix up last_tsc too. Currently gettimeofday in the
->   * first tick after the change will be slightly wrong.
-> @@ -956,22 +955,22 @@ static int time_cpufreq_notifier(struct
->  				void *data)
->  {
->  	struct cpufreq_freqs *freq = data;
-> -	unsigned long *lpj;
+> -	if (unlikely(policy_is_inactive(policy)) || !cpufreq_driver->get)
+> +	if (unlikely(policy_is_inactive(policy)))
+>  		return ret_freq;
 >  
-> -	lpj = &boot_cpu_data.loops_per_jiffy;
-> -#ifdef CONFIG_SMP
-> -	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
-> -		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
-> -#endif
-> +	if (num_online_cpus() > 1) {
+>  	ret_freq = cpufreq_driver->get(policy->cpu);
+> @@ -1586,7 +1586,8 @@ unsigned int cpufreq_get(unsigned int cpu)
+>  
+>  	if (policy) {
+>  		down_read(&policy->rwsem);
+> -		ret_freq = __cpufreq_get(policy);
+> +		if (cpufreq_driver->get)
+> +			ret_freq = __cpufreq_get(policy);
+>  		up_read(&policy->rwsem);
+>  
+>  		cpufreq_cpu_put(policy);
 
-What about checking num_possible_cpus() instead ? So we reliably quit
-everytime even if some CPUs are offlined.
-
-And can we place this check before registering the notifier, so it
-never gets called ?
-
-> +		mark_tsc_unstable("cpufreq changes on SMP");
-> +		return 0;
-> +	}
->  
->  	if (!ref_freq) {
->  		ref_freq = freq->old;
-> -		loops_per_jiffy_ref = *lpj;
-> +		loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
->  		tsc_khz_ref = tsc_khz;
->  	}
-> +
->  	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
-> -			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-> -		*lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
-> +	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
-> +		boot_cpu_data.loops_per_jiffy =
-> +			cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
->  
->  		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
->  		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
-> 
-> 
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
