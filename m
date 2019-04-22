@@ -2,164 +2,134 @@ Return-Path: <SRS0=/Mn0=SY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B552FC282CE
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 15:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A948CC10F11
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 16:44:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8436D2077C
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 15:55:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7ACA320859
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 16:44:16 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="qoaKDLJK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726945AbfDVPzH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Apr 2019 11:55:07 -0400
-Received: from gateway32.websitewelcome.com ([192.185.145.102]:13321 "EHLO
-        gateway32.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727524AbfDVPzH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 11:55:07 -0400
-X-Greylist: delayed 1479 seconds by postgrey-1.27 at vger.kernel.org; Mon, 22 Apr 2019 11:55:06 EDT
-Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
-        by gateway32.websitewelcome.com (Postfix) with ESMTP id CCA697192F7
-        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 10:15:59 -0500 (CDT)
-Received: from gator4166.hostgator.com ([108.167.133.22])
-        by cmsmtp with SMTP
-        id IafnhjmPI4FKpIafnhC28B; Mon, 22 Apr 2019 10:15:59 -0500
-X-Authority-Reason: nr=8
-Received: from [189.250.104.103] (port=34920 helo=[192.168.1.76])
-        by gator4166.hostgator.com with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
-        (Exim 4.91)
-        (envelope-from <gustavo@embeddedor.com>)
-        id 1hIafn-000qQe-EE; Mon, 22 Apr 2019 10:15:59 -0500
-Subject: Re: [PATCH] tools/power turbostat: fix file descriptor leaks
-To:     Prarit Bhargava <prarit@redhat.com>, Len Brown <lenb@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20190408161240.GA30623@embeddedor>
- <16370c2e-c5f9-a4cf-02fc-6b5b4ab65e1c@redhat.com>
-From:   "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=gustavo@embeddedor.com; keydata=
- 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
- VtSixD1uOgytAP7RWS474w==
-Message-ID: <1c208944-9162-0245-c3bd-016f4274511f@embeddedor.com>
-Date:   Mon, 22 Apr 2019 10:15:58 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        id S1728363AbfDVQoP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Apr 2019 12:44:15 -0400
+Received: from mail-ed1-f66.google.com ([209.85.208.66]:40479 "EHLO
+        mail-ed1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728362AbfDVQoP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 12:44:15 -0400
+Received: by mail-ed1-f66.google.com with SMTP id d46so9925534eda.7
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 09:44:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=ebT1zd4br27smf6EZfBkxJgHdh7UMLcjjUXNrZyZOT8=;
+        b=qoaKDLJKDRDOLrUU1AMfafnGpgw5ntc5sL4OzwAdUD9UBmbl7AExjhkEGTNfY6XeU0
+         QQz5nKk/lTZnDs1SPLSXvCfySEq8bMWDBtdnYpckG33aRLTmmzae/a/9d/aff78DXQyI
+         ns3VXRWSR/ZycgsZVnPpeuYksYLvN1TxZNuEXIHPslOPQ3Q9FJJXzul+gh+z3j7U+Wjp
+         TjZ/Ccxg4j1GFxgdHsmv/QTrk8z3O7p5C6USfDs/xxrjPUNZV4PNIAO3GRDjo3dSpjti
+         Js/nGX73UByJQlxW/0RpL/88hum1P+lztKC3LfJUnlaKaCzO3gsKC/stEA+rV2pUKnap
+         2W1g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=ebT1zd4br27smf6EZfBkxJgHdh7UMLcjjUXNrZyZOT8=;
+        b=ZaeYmurgtafnMCvMgmClwlrbHF3aXqVYWHlXE4XUjfr7xiJv9AqKfi163j5VrnPVCv
+         N0VGUOhD0w1KoxP2t5uaH2kyT6ocLs8Zk3w3ObOsOodwoYl2KyV7hideu61KPVH+LtoU
+         kW8rJKHtTgHVPy4tyvwHx0Enb8GOGRD2r96UPvHVE6YDVqBrSUEZIaKbDANFlutSHekk
+         ybw1WQAjausTnIGrv/GBuY5cPBS4mH9ElTjjYgtJxqjDAUe9iSxVy3dfb58QpeXfrEZR
+         l8SD/3ptRqzX9peCTZ6BMrnJaf8Wq9m5DnfAcu6iZdtGBtYoSQW6e/ObtYz3X4Im0YWe
+         PdhA==
+X-Gm-Message-State: APjAAAX6iSdQLFBV9y1kidaECuxfSV3OlY9CD3m+kYvn7i5vsgcHWAwd
+        ttvboIrvkiIFV/D7Z3Q8z2Jbkygi8D64WAoZLPGXTg==
+X-Google-Smtp-Source: APXvYqy8WG5Ky42+WKuzAypEhyjWGI+ixmX4Ua2v+4AbrT0/ud6RhLx9M3ZifZz7+ve/4miI62XJdAaBebiUOJfu02o=
+X-Received: by 2002:a17:906:4b10:: with SMTP id y16mr10098502eju.19.1555951452181;
+ Mon, 22 Apr 2019 09:44:12 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <16370c2e-c5f9-a4cf-02fc-6b5b4ab65e1c@redhat.com>
+References: <20190416170701.50333-1-wvw@google.com> <1555923800.26198.30.camel@intel.com>
+In-Reply-To: <1555923800.26198.30.camel@intel.com>
+From:   Wei Wang <wvw@google.com>
+Date:   Mon, 22 Apr 2019 09:44:01 -0700
+Message-ID:
+ <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com>
+Subject: Re: [PATCH] thermal: core: skip update disabled thermal zones after suspend
+To:     Zhang Rui <rui.zhang@intel.com>
+Cc:     Wei Wang <wei.vince.wang@gmail.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 189.250.104.103
-X-Source-L: No
-X-Exim-ID: 1hIafn-000qQe-EE
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: ([192.168.1.76]) [189.250.104.103]:34920
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 18
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190422151558.xj51i7OIj8ay_7zn-KrMoP7scQhoSPM8Me1UbUP3XQI@z>
+Message-ID: <20190422164401.5P5Bu7U4Q71AW3_qG7pXe4gvEv48m-_64L7DgG706Ns@z>
 
-Hi all,
+On Mon, Apr 22, 2019 at 2:03 AM Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> On =E4=BA=8C, 2019-04-16 at 10:07 -0700, Wei Wang wrote:
+> > It is unnecessary to update disabled thermal zones post suspend and
+> > sometimes leads error/warning in bad behaved thermal drivers.
+> >
+> a good catch, and in fact, there are more issues about thermal handling
+> for disabled thermal zones, like we're able to read the temperature of
+> disabled thermal zones, either via sysfs or via function calls like
+> thermal_zone_device_update.
+Thanks Rui for following up. Yes, we noticed the same behavior. Right
+now, individual thermal driver can still respect set_mode and present
+value meaningful or return error when thermal zone disabled, and
+that's what we do locally.
+Currently, sysfs-api documents "Preventing kernel thermal zone driver
+actions upon trip points so that user application can take full charge
+of the thermal management.", so is it intended for some other agents
+in kernel or user land polling temperature with function call or sysfs
+respectively?
 
-Friendly ping:
-
-Who can take this?
-
-Thanks
---
-Gustavo
-
-On 4/8/19 12:04 PM, Prarit Bhargava wrote:
-> 
-> 
-> On 4/8/19 12:12 PM, Gustavo A. R. Silva wrote:
->> Fix file descriptor leaks by closing fp before return.
->>
->> Addresses-Coverity-ID: 1444591 ("Resource leak")
->> Addresses-Coverity-ID: 1444592 ("Resource leak")
->> Fixes: 5ea7647b333f ("tools/power turbostat: Warn on bad ACPI LPIT data")
->> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-> 
-> Reviewed-by: Prarit Bhargava <prarit@redhat.com>
-> 
-> P.
-> 
->> ---
->>  tools/power/x86/turbostat/turbostat.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
->> index c7727be9719f..78d9acba8e9b 100644
->> --- a/tools/power/x86/turbostat/turbostat.c
->> +++ b/tools/power/x86/turbostat/turbostat.c
->> @@ -2924,6 +2924,7 @@ int snapshot_cpu_lpi_us(void)
->>  	if (retval != 1) {
->>  		fprintf(stderr, "Disabling Low Power Idle CPU output\n");
->>  		BIC_NOT_PRESENT(BIC_CPU_LPI);
->> +		fclose(fp);
->>  		return -1;
->>  	}
->>  
->> @@ -2950,6 +2951,7 @@ int snapshot_sys_lpi_us(void)
->>  	if (retval != 1) {
->>  		fprintf(stderr, "Disabling Low Power Idle System output\n");
->>  		BIC_NOT_PRESENT(BIC_SYS_LPI);
->> +		fclose(fp);
->>  		return -1;
->>  	}
->>  	fclose(fp);
->>
+Thanks!
+-Wei
+> For this patch, I will take it as it fixes one of the problem.
+>
+> thanks,
+> rui
+>
+> > Signed-off-by: Wei Wang <wvw@google.com>
+> > ---
+> >  drivers/thermal/thermal_core.c | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> >
+> > diff --git a/drivers/thermal/thermal_core.c
+> > b/drivers/thermal/thermal_core.c
+> > index 6590bb5cb688..5baf5cfab999 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct
+> > notifier_block *nb,
+> >                            unsigned long mode, void *_unused)
+> >  {
+> >       struct thermal_zone_device *tz;
+> > +     enum thermal_device_mode tz_mode;
+> >
+> >       switch (mode) {
+> >       case PM_HIBERNATION_PREPARE:
+> > @@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct
+> > notifier_block *nb,
+> >       case PM_POST_SUSPEND:
+> >               atomic_set(&in_suspend, 0);
+> >               list_for_each_entry(tz, &thermal_tz_list, node) {
+> > +                     tz_mode =3D THERMAL_DEVICE_ENABLED;
+> > +                     if (tz->ops->get_mode)
+> > +                             tz->ops->get_mode(tz, &tz_mode);
+> > +
+> > +                     if (tz_mode =3D=3D THERMAL_DEVICE_DISABLED)
+> > +                             continue;
+> > +
+> >                       thermal_zone_device_init(tz);
+> >                       thermal_zone_device_update(tz,
+> >                                                  THERMAL_EVENT_UNS
+> > PECIFIED);
