@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61AFDC10F11
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 18:05:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FE6FC10F11
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 18:08:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 26AA120B1F
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 18:05:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BABB420B1F
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 18:08:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="aSFKAWrK"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="L7rJPOMi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728406AbfDVSFf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Apr 2019 14:05:35 -0400
-Received: from mail-it1-f196.google.com ([209.85.166.196]:35821 "EHLO
-        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728371AbfDVSFe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 14:05:34 -0400
-Received: by mail-it1-f196.google.com with SMTP id w15so19572723itc.0
-        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 11:05:34 -0700 (PDT)
+        id S1728492AbfDVSIA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Apr 2019 14:08:00 -0400
+Received: from mail-it1-f193.google.com ([209.85.166.193]:37250 "EHLO
+        mail-it1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727279AbfDVSIA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2019 14:08:00 -0400
+Received: by mail-it1-f193.google.com with SMTP id u65so19557794itc.2
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2019 11:07:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=ilviJuA2ZxlxFflnGviLFpw814AFYvzeHWE1altE9lA=;
-        b=aSFKAWrKDyMbOAo//LiVHvlj13WJOnkqCP8TB1Ua5moZsSQfXdlU/OdHyIn4wHR/U7
-         g/Y73/Dpe2lUeCbidD2CFlp0HJBX5GJV1S5fJbMQH9Rwwhc4XQOQjnb3eDcXpK8JhRLu
-         Tz6l3oL8JdQ6eOOZQMUQgunn0Jm0V9ZuTJ1zQ=
+        bh=/7acEngVyzMAcI3b1epGzMSArw4YgxKtsZWlpTqW5/U=;
+        b=L7rJPOMi/YKBKs+FdagacABSg3oqxxq/pCz80d4ObwaTt/vOKpfwFDeK18GaYj/Qld
+         R2KXSqgBokFucxPqGnBppZdk3KCZLGMqqcyGVMgueafvzSehuEH2EHkxzONYXUoAYpvz
+         PndeRy56nVTv9wxdlB/vWlc9itOcKmK2WMoho=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=ilviJuA2ZxlxFflnGviLFpw814AFYvzeHWE1altE9lA=;
-        b=LecY7GeZZ0x8UJH+CRPEULeDkRn4YEEl9I4p1hxP72FBKm8ImtDl+JZ0KXljqbCmqG
-         QlWTjlTef3K4zeltPnwu+fabjgc60YiDyJNuMWvSmg1hIzDWJNHZaUC/XzssuRXQ0RHA
-         GXHRtyQs90wB5+PrJd395SRAXHrHF3YT15h9t+7maj/rK+LqSDipaKiw4OvRoHKqDJ9p
-         zjYU65ymQRw4D1CdZ15vrDDzKBwAW8PdnUMxEeP9OXfLPJufw1L0nZazpzip2KBXsoia
-         bqm3nrPwrLinvbmT3hu6sHRIy3c/ClSiA58hvMDesm8SgSf/dDGDQObzh/1K6BxQOfE3
-         5Xbg==
-X-Gm-Message-State: APjAAAWlE13SLutkVcmkL9U/uB1C/lVlXics5rOLsHFRQ6n2sAUO/qQt
-        oYIKv9ZMCytXa3qTxwX5byvdcA==
-X-Google-Smtp-Source: APXvYqxPtAAn4UW7FpCV4339BOi/ZSdGqy3oqCun9sR+boTmTlcKOY2sOEKrtdA1Lacrg6nPe21WhQ==
-X-Received: by 2002:a02:9f08:: with SMTP id z8mr14901110jal.6.1555956333738;
-        Mon, 22 Apr 2019 11:05:33 -0700 (PDT)
+        bh=/7acEngVyzMAcI3b1epGzMSArw4YgxKtsZWlpTqW5/U=;
+        b=kHXtXNGe27N5DVElRYbVpvwrMt5JN3rNvWvvrJO5SPJwj4CPFakp0QTDDHtKlUf8Y3
+         aInyfmQB2P9YpQa9TRF4+5BdXulwIAxR+niEnB8KhvTvS0ymfEj+j8VB09wZEPfNxPQB
+         vDUEzZeXbpgWVSOjnAr6Jw2WbN+1Ycbq60oGI/CFqkMXD1BILq6xmMD2c6xMZeb9+z9T
+         uWeV20mRdSngXlXiUhn1gGY8QmekYwetrQcJADadUfqZ6jthjS9IKi9UH0rdacReHWwW
+         hPa51iQOc8vxtfySOrwZZpvRU+lCTkzKpiIw4WPH3VkwgB3ns07xQ4f8oCzxsSwtV6GV
+         DK4w==
+X-Gm-Message-State: APjAAAVXEUOu+EfDkX1cEtVM8s+qA6Gsrts6kL+FzWNCkLEFgMxPIkZG
+        BATSHRY5tls6C9URGNNbjnugFA==
+X-Google-Smtp-Source: APXvYqyaGhXn3kAOYktLCA+JJLT+Mt2sf8XVMyjoAiFPpWDQCLOijuWR0fyJspspcjb4xDpyszapXA==
+X-Received: by 2002:a24:9a86:: with SMTP id l128mr14450886ite.126.1555956478783;
+        Mon, 22 Apr 2019 11:07:58 -0700 (PDT)
 Received: from ncrews2.bld.corp.google.com ([2620:15c:183:200:cb43:2cd4:65f5:5c84])
-        by smtp.gmail.com with ESMTPSA id 3sm10042895itk.1.2019.04.22.11.05.32
+        by smtp.gmail.com with ESMTPSA id 140sm289659itv.44.2019.04.22.11.07.57
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Mon, 22 Apr 2019 11:05:33 -0700 (PDT)
+        Mon, 22 Apr 2019 11:07:58 -0700 (PDT)
 From:   Nick Crews <ncrews@chromium.org>
 To:     enric.balletbo@collabora.com, bleung@chromium.org, sre@kernel.org,
         linux-pm@vger.kernel.org
@@ -58,9 +58,9 @@ Cc:     linux-kernel@vger.kernel.org, dlaurie@chromium.org,
         lamzin@google.com, bartfab@google.com, derat@google.com,
         dtor@google.com, sjg@chromium.org, jchwong@chromium.org,
         Nick Crews <ncrews@chromium.org>
-Subject: [PATCH v6 1/2] FROMLIST: platform/chrome: wilco_ec: Add property helper library
-Date:   Mon, 22 Apr 2019 12:05:22 -0600
-Message-Id: <20190422180523.99301-1-ncrews@chromium.org>
+Subject: [PATCH v7 1/2] platform/chrome: wilco_ec: Add property helper library
+Date:   Mon, 22 Apr 2019 12:07:53 -0600
+Message-Id: <20190422180754.99383-1-ncrews@chromium.org>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -69,7 +69,7 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190422180522.Y-8NUpm8qNed4oh1pjJBcKkYWkK_vgnoNVf-mn0DewA@z>
+Message-ID: <20190422180753.ArmcqDZDV1Hn7cml-ol8Kj8i-Wb6yG6KQd_mB8FZV8E@z>
 
 A Property is typically a data item that is stored to NVRAM
 by the EC. Each of these data items has an index associated
@@ -84,6 +84,8 @@ schedules, which all use properties.
 
 Signed-off-by: Nick Crews <ncrews@chromium.org>
 ---
+v7 changes:
+-Remove bogus gerrit FROMLIST tag in commit title
 v6 changes:
 -Add EC_* prefix to enum property_ops so they are more unique.
 -Split up the commit so properties are added in a first commit
