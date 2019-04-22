@@ -1,59 +1,121 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RESEND] drivers: cpufreq: use kstrtoul instead of obsolete
- simple_strtoul issue fixed
-Date: Mon, 22 Apr 2019 12:41:29 +0530
-Message-ID: <20190422071129.mttd3t3646rli4lc@vireshk-i7>
-References: <20190421150556.23341-1-mohankumar718@gmail.com>
+Subject: Re: [PATCH] x86: tsc: Rework time_cpufreq_notifier()
+Date: Mon, 22 Apr 2019 13:47:09 +0530
+Message-ID: <20190422081709.i5mv4fbket5ls4xc@vireshk-i7>
+References: <38900622.ao2n2t5aPS@kreacher>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190421150556.23341-1-mohankumar718@gmail.com>
+In-Reply-To: <38900622.ao2n2t5aPS@kreacher>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mohankumar718@gmail.com
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lkp@intel.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, x86 Maintainers <x86@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-You mentioned RESEND in $subject, which is incorrect. This isn't a
-simple resend but you changed the code. You should have mentioned V2
-in $subject and ...
-
-On 21-04-19, 18:05, mohankumar718@gmail.com wrote:
-> From: Mohan Kumar <mohankumar718@gmail.com>
+On 18-04-19, 16:11, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Replace the obsolte simple_strtoul function with kstrtoul.
+> There are problems with running time_cpufreq_notifier() on SMP
+> systems.
 > 
-> Signed-off-by: Mohan Kumar <mohankumar718@gmail.com>
+> First off, the rdtsc() called from there runs on the CPU executing
+> that code and not necessarily on the CPU whose sched_clock() rate is
+> updated which is questionable at best.
+> 
+> Second, in the cases when the frequencies of all CPUs in an SMP
+> system are always in sync, it is not sufficient to update just
+> one of them or the set associated with a given cpufreq policy on
+> frequency changes - all CPUs in the system should be updated and
+> that would require more than a simple transition notifier.
+> 
+> Note, however, that the underlying issue (the TSC rate depending on
+> the CPU frequency) has not been present in hardware shipping for the
+> last few years and in quite a few relevant cases (acpi-cpufreq in
+> particular) running time_cpufreq_notifier() will cause the TSC to
+> be marked as unstable anyway.
+> 
+> For this reason, make time_cpufreq_notifier() simply mark the TSC
+> as unstable and give up when run on SMP and only try to carry out
+> any adjustments otherwise.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
-
-Mentioned V1->V2 diff right here in the patch.
-
->  drivers/cpufreq/elanfreq.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  arch/x86/kernel/tsc.c |   29 ++++++++++++++---------------
+>  1 file changed, 14 insertions(+), 15 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
-> index 03419f064752..6d861c2364e2 100644
-> --- a/drivers/cpufreq/elanfreq.c
-> +++ b/drivers/cpufreq/elanfreq.c
-> @@ -184,7 +184,8 @@ static int elanfreq_cpu_init(struct cpufreq_policy *policy)
+> Index: linux-pm/arch/x86/kernel/tsc.c
+> ===================================================================
+> --- linux-pm.orig/arch/x86/kernel/tsc.c
+> +++ linux-pm/arch/x86/kernel/tsc.c
+> @@ -185,8 +185,7 @@ static void __init cyc2ns_init_boot_cpu(
+>  /*
+>   * Secondary CPUs do not run through tsc_init(), so set up
+>   * all the scale factors for all CPUs, assuming the same
+> - * speed as the bootup CPU. (cpufreq notifiers will fix this
+> - * up if their speed diverges)
+> + * speed as the bootup CPU.
 >   */
->  static int __init elanfreq_setup(char *str)
+>  static void __init cyc2ns_init_secondary_cpus(void)
 >  {
-> -	max_freq = simple_strtoul(str, &str, 0);
-> +	unsigned long int val = 0;
-
-A blank line here would be nice.
-
-> +	max_freq = kstrtoul(str, 0, &val);
-
-And this looks wrong. The value isn't returned by kstrtoul but an
-error message or 0.
-
->  	pr_warn("You're using the deprecated elanfreq command line option. Use elanfreq.max_freq instead, please!\n");
->  	return 1;
+> @@ -937,12 +936,12 @@ void tsc_restore_sched_clock_state(void)
 >  }
-> -- 
-> 2.17.1
+>  
+>  #ifdef CONFIG_CPU_FREQ
+> -/* Frequency scaling support. Adjust the TSC based timer when the cpu frequency
+> +/*
+> + * Frequency scaling support. Adjust the TSC based timer when the CPU frequency
+>   * changes.
+>   *
+> - * RED-PEN: On SMP we assume all CPUs run with the same frequency.  It's
+> - * not that important because current Opteron setups do not support
+> - * scaling on SMP anyroads.
+> + * NOTE: On SMP the situation is not fixable in general, so simply mark the TSC
+> + * as unstable and give up in those cases.
+>   *
+>   * Should fix up last_tsc too. Currently gettimeofday in the
+>   * first tick after the change will be slightly wrong.
+> @@ -956,22 +955,22 @@ static int time_cpufreq_notifier(struct
+>  				void *data)
+>  {
+>  	struct cpufreq_freqs *freq = data;
+> -	unsigned long *lpj;
+>  
+> -	lpj = &boot_cpu_data.loops_per_jiffy;
+> -#ifdef CONFIG_SMP
+> -	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> -		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+> -#endif
+> +	if (num_online_cpus() > 1) {
+
+What about checking num_possible_cpus() instead ? So we reliably quit
+everytime even if some CPUs are offlined.
+
+And can we place this check before registering the notifier, so it
+never gets called ?
+
+> +		mark_tsc_unstable("cpufreq changes on SMP");
+> +		return 0;
+> +	}
+>  
+>  	if (!ref_freq) {
+>  		ref_freq = freq->old;
+> -		loops_per_jiffy_ref = *lpj;
+> +		loops_per_jiffy_ref = boot_cpu_data.loops_per_jiffy;
+>  		tsc_khz_ref = tsc_khz;
+>  	}
+> +
+>  	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+> -			(val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+> -		*lpj = cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+> +	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new)) {
+> +		boot_cpu_data.loops_per_jiffy =
+> +			cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
+>  
+>  		tsc_khz = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
+>  		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> 
+> 
 
 -- 
 viresh
