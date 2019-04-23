@@ -1,68 +1,72 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH] PM / devfreq: Return -ENODEV from
- try_then_request_governor
-Date: Tue, 23 Apr 2019 11:55:52 +0200
-Message-ID: <ed7c20b9-b435-5f40-55ab-97d6384749f1@collabora.com>
-References: <20190423081158.29859-1-tomeu.vizoso@collabora.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+Date: Tue, 23 Apr 2019 12:01:07 +0200
+Message-ID: <20190423100107.p3p3jmvv6dph6uy6@verge.net.au>
+References: <20190411100352.15977-1-jiada_wang@mentor.com>
+ <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423081158.29859-1-tomeu.vizoso@collabora.com>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org
-Cc: Alyssa Rosenzweig <alyssa@rosenzweig.io>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
+To: Eugeniu Rosca <erosca@de.adit-jv.com>
+Cc: Jiada Wang <jiada_wang@mentor.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, Geert Uytterhoeven <geert+renesas@glider.be>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Hien Dang <hien.dang.eb@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, Dien Pham <dien.pham.ry@renesas.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Biju Das <biju.das@bp.renesas.com>, "George G. Davis" <george_davis@mentor.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tomeu,
-
-On 23/4/19 10:11, Tomeu Vizoso wrote:
-> Callers don't expect it to return NULL, but an error code.
+On Tue, Apr 16, 2019 at 07:48:30PM +0200, Eugeniu Rosca wrote:
+> Hi Jiada,
 > 
-> Fixes Oops such as the one below, when one tries to set a governor that
-> isn't available:
+> Adding below people, since they've made recent contributions to the
+> driver and might be interested in your patch:
 > 
-> Unable to handle kernel NULL pointer dereference at virtual address 00000018
+> git log master --since="1 year" -- drivers/thermal/rcar_gen3_thermal.c \
+>     | grep -o "\-by:.*" | sed 's/\-by: //' | sort | uniq -c | sort -rn
+>       7 Eduardo Valentin <edubezval@gmail.com>
+>       6 Simon Horman <horms+renesas@verge.net.au>
+>       5 Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+>       2 Geert Uytterhoeven <geert+renesas@glider.be>
+>       1 Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+>       1 Marek Vasut <marek.vasut+renesas@gmail.com>
+>       1 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+>       1 Hien Dang <hien.dang.eb@renesas.com>
+>       1 Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+>       1 Dien Pham <dien.pham.ry@renesas.com>
+>       1 Daniel Lezcano <daniel.lezcano@linaro.org>
+>       1 Biju Das <biju.das@bp.renesas.com>
 > 
-> [<c0dcf718>] (governor_store) from [<c0539558>] (kernfs_fop_write+0x100/0x1e0)
-> [<c0539558>] (kernfs_fop_write) from [<c04b09b4>] (__vfs_write+0x2c/0x17c)
-> [<c04b09b4>] (__vfs_write) from [<c04b33fc>] (vfs_write+0xa4/0x184)
-> [<c04b33fc>] (vfs_write) from [<c04b361c>] (ksys_write+0x4c/0xac)
-> [<c04b361c>] (ksys_write) from [<c0301000>] (ret_fast_syscall+0x0/0x28)
+> I confirm that loading and unloading the rcar3 thermal driver in a
+> loop produces soft lockup using v5.1-rc5-10-g618d919cae2f on
+> H3-ES2.0-Salvator-X. 
 > 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
-> Reported-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
-> Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-
-There is already a fix for that. The fix was initially sent in October [2] but
-unfortunately it got lost. I resend and now is queued [1]. Hopefully the Fixes
-tag will help to pick the fix to the proper kernel releases.
+> Full log and .config can be found here:
+> https://gist.github.com/erosca/1f76b6dd897cdc39581fca475155e363
+> 
+> I post an excerpt from the above [1] (why not including it in the
+> description?). Also, why not rephrasing the commit summary line in such
+> a way that everybody understands this patch fixes a severe issue, e.g.
+> "thermal: rcar_gen3_thermal: Fix soft lockup on probe" ?
+> 
+> BTW, with this patch applied I left the thermal driver being
+> loaded/unloaded on the target for over one hour w/o seeing the issue
+> reproduced. So, while there might be slight variations in how the final
+> solution looks like, I think the patch already deserves a:
+> 
+> Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+> 
+> [1] Soft lockup reproduced with v5.1-rc5-10-g618d919cae2f
 
 Thanks,
- Enric
 
-[1]
-https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=b53b0128052ffd687797d5f4deeb76327e7b5711
+Unfortunately I do not see the patch in my inbox.
+Would you care to repost it including the following recipients.
 
-[2] https://lkml.org/lkml/2018/10/16/744
+linux-pm@vger.kernel.org
+Zhang Rui <rui.zhang@intel.com>
+Eduardo Valentin <edubezval@gmail.com>
+linux-renesas-soc@vger.kernel.org
+Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 
->  drivers/devfreq/devfreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 0ae3de76833b..5539e9be718d 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
->  		/* Restore previous state before return */
->  		mutex_lock(&devfreq_list_lock);
->  		if (err)
-> -			return NULL;
-> +			return ERR_PTR(-ENODEV);
->  
->  		governor = find_devfreq_governor(name);
->  	}
-> 
+Feel free to include the suggestions made by Eugeniu above and post a v2.
