@@ -2,325 +2,141 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D075C10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 11:03:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFC8BC10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 11:24:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 346912177B
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 11:03:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1556017403;
-	bh=hOHMMIK8YJhoBNt6IMubNCxe3Gds0gx1M3Go4+P0VSw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=vCZTAGCLjVXx89AvN4Pl62RVU+LoFy8azp3dISb59WTx9pQnPZ6WJ3E/krShLhJz8
-	 edMSm8R4qxLliIwnDoMK3pD0scFrSbdWY14EAJTkF50EQEH+5gIfIfEvYKSPBRYDvS
-	 2becq0YMYHQ+/CTyVJ9Tcd7GmcRE7Nla7yKVUGz0=
+	by mail.kernel.org (Postfix) with ESMTP id 88BF02054F
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 11:24:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727469AbfDWLDR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 07:03:17 -0400
-Received: from mail.kernel.org ([198.145.29.99]:46266 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727225AbfDWLDR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 23 Apr 2019 07:03:17 -0400
-Received: from mail-lj1-f170.google.com (mail-lj1-f170.google.com [209.85.208.170])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        id S1727512AbfDWLYX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 07:24:23 -0400
+Received: from smtp1.de.adit-jv.com ([93.241.18.167]:54817 "EHLO
+        smtp1.de.adit-jv.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727467AbfDWLYX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 07:24:23 -0400
+Received: from localhost (smtp1.de.adit-jv.com [127.0.0.1])
+        by smtp1.de.adit-jv.com (Postfix) with ESMTP id 435113C00C1;
+        Tue, 23 Apr 2019 13:24:19 +0200 (CEST)
+Received: from smtp1.de.adit-jv.com ([127.0.0.1])
+        by localhost (smtp1.de.adit-jv.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id mOEBKp-w5N9V; Tue, 23 Apr 2019 13:24:11 +0200 (CEST)
+Received: from HI2EXCH01.adit-jv.com (hi2exch01.adit-jv.com [10.72.92.24])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 15420217D4;
-        Tue, 23 Apr 2019 11:03:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1556017395;
-        bh=hOHMMIK8YJhoBNt6IMubNCxe3Gds0gx1M3Go4+P0VSw=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=mX+NIEAM3rzR2FknXD6NR3Qa64g4d+jkA/iX9v3KFFNjc22QwFGVoQxIAECL+hSR6
-         5hk6y6Aepc6vZSJX2tyXO0Tx2FXOH3yjDy4c3YzC6hJNxWXNauQJQKRBZkFJlLbnJs
-         /ddOzBhQgeWFq8STXy7taZMj/i0qgDzq4wBpL4Ww=
-Received: by mail-lj1-f170.google.com with SMTP id l23so2510617lja.3;
-        Tue, 23 Apr 2019 04:03:15 -0700 (PDT)
-X-Gm-Message-State: APjAAAXf7TYP7Zi9GX3dLfoi1aMKBr22VFgkPRtw3RbOGxh2dQNqVBxN
-        gCbWK8hbXp9aa6PpzUGNZkBSyCnZf8U1oOq5Ieo=
-X-Google-Smtp-Source: APXvYqw/tp50vQEUwozb35XmiN8vnwOt06yho+vPB2c3tpYHGPeVd8GjjzJcP+skR3B78n7tVc8V5s+E7iy+9zTNHok=
-X-Received: by 2002:a2e:9895:: with SMTP id b21mr13384386ljj.183.1556017393302;
- Tue, 23 Apr 2019 04:03:13 -0700 (PDT)
+        by smtp1.de.adit-jv.com (Postfix) with ESMTPS id 4B96A3C0034;
+        Tue, 23 Apr 2019 13:24:11 +0200 (CEST)
+Received: from vmlxhi-102.adit-jv.com (10.72.93.184) by HI2EXCH01.adit-jv.com
+ (10.72.92.24) with Microsoft SMTP Server (TLS) id 14.3.439.0; Tue, 23 Apr
+ 2019 13:24:11 +0200
+Date:   Tue, 23 Apr 2019 13:24:08 +0200
+From:   Eugeniu Rosca <erosca@de.adit-jv.com>
+To:     Simon Horman <horms@verge.net.au>
+CC:     Jiada Wang <jiada_wang@mentor.com>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Niklas =?utf-8?Q?S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+        Marek Vasut <marek.vasut+renesas@gmail.com>,
+        Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+        Hien Dang <hien.dang.eb@renesas.com>,
+        Fabrizio Castro <fabrizio.castro@bp.renesas.com>,
+        Dien Pham <dien.pham.ry@renesas.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Biju Das <biju.das@bp.renesas.com>,
+        "George G. Davis" <george_davis@mentor.com>,
+        Joshua Frkuska <joshua_frkuska@mentor.com>,
+        Eugeniu Rosca <roscaeugeniu@gmail.com>,
+        Eugeniu Rosca <erosca@de.adit-jv.com>
+Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
+ device initialization
+Message-ID: <20190423112408.GA3954@vmlxhi-102.adit-jv.com>
+References: <20190411100352.15977-1-jiada_wang@mentor.com>
+ <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
+ <20190423100107.p3p3jmvv6dph6uy6@verge.net.au>
 MIME-Version: 1.0
-References: <CGME20190419141952eucas1p11dc36f30c873a947122e0f7e8d55a3bb@eucas1p1.samsung.com>
- <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com> <1555683568-20882-10-git-send-email-l.luba@partner.samsung.com>
-In-Reply-To: <1555683568-20882-10-git-send-email-l.luba@partner.samsung.com>
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-Date:   Tue, 23 Apr 2019 13:03:02 +0200
-X-Gmail-Original-Message-ID: <CAJKOXPfE2Kt_afkH6wryRgdVqfvDUH82rMf_iKFuvDVSH00LJw@mail.gmail.com>
-Message-ID:
- <CAJKOXPfE2Kt_afkH6wryRgdVqfvDUH82rMf_iKFuvDVSH00LJw@mail.gmail.com>
-Subject: Re: [PATCH v6 09/10] ARM: dts: exynos: add DMC device for exynos5422
-To:     Lukasz Luba <l.luba@partner.samsung.com>
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        "linux-samsung-soc@vger.kernel.org" 
-        <linux-samsung-soc@vger.kernel.org>,
-        =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= 
-        <b.zolnierkie@samsung.com>, kgene@kernel.org,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        kyungmin.park@samsung.com,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        s.nawrocki@samsung.com, myungjoo.ham@samsung.com,
-        keescook@chromium.org, tony@atomide.com, jroedel@suse.de,
-        treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
 Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190423100107.p3p3jmvv6dph6uy6@verge.net.au>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Originating-IP: [10.72.93.184]
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190423110302.7J1uzAd80Q2Qjtlkk304PjyOBXjq17zM4o7f65qwzcs@z>
+Message-ID: <20190423112408.eT9kvbZIzvoo0kh4jJK3kfAYXZjlcfMUZiTAfsLDoPo@z>
 
-On Fri, 19 Apr 2019 at 16:19, Lukasz Luba <l.luba@partner.samsung.com> wrote:
->
-> Add description of Dynamic Memory Controller and PPMU counters.
-> They are used by exynos5422-dmc driver.
-> There is a definition of the memory chip, hwich is then used during
+Hi Simon,
 
-which
+On Tue, Apr 23, 2019 at 12:01:07PM +0200, Simon Horman wrote:
+> On Tue, Apr 16, 2019 at 07:48:30PM +0200, Eugeniu Rosca wrote:
+> > Hi Jiada,
+> > 
+> > Adding below people, since they've made recent contributions to the
+> > driver and might be interested in your patch:
+> > 
+> > git log master --since="1 year" -- drivers/thermal/rcar_gen3_thermal.c \
+> >     | grep -o "\-by:.*" | sed 's/\-by: //' | sort | uniq -c | sort -rn
+> >       7 Eduardo Valentin <edubezval@gmail.com>
+> >       6 Simon Horman <horms+renesas@verge.net.au>
+> >       5 Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> >       2 Geert Uytterhoeven <geert+renesas@glider.be>
+> >       1 Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+> >       1 Marek Vasut <marek.vasut+renesas@gmail.com>
+> >       1 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> >       1 Hien Dang <hien.dang.eb@renesas.com>
+> >       1 Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+> >       1 Dien Pham <dien.pham.ry@renesas.com>
+> >       1 Daniel Lezcano <daniel.lezcano@linaro.org>
+> >       1 Biju Das <biju.das@bp.renesas.com>
+> > 
+> > I confirm that loading and unloading the rcar3 thermal driver in a
+> > loop produces soft lockup using v5.1-rc5-10-g618d919cae2f on
+> > H3-ES2.0-Salvator-X. 
+> > 
+> > Full log and .config can be found here:
+> > https://gist.github.com/erosca/1f76b6dd897cdc39581fca475155e363
+> > 
+> > I post an excerpt from the above [1] (why not including it in the
+> > description?). Also, why not rephrasing the commit summary line in such
+> > a way that everybody understands this patch fixes a severe issue, e.g.
+> > "thermal: rcar_gen3_thermal: Fix soft lockup on probe" ?
+> > 
+> > BTW, with this patch applied I left the thermal driver being
+> > loaded/unloaded on the target for over one hour w/o seeing the issue
+> > reproduced. So, while there might be slight variations in how the final
+> > solution looks like, I think the patch already deserves a:
+> > 
+> > Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+> > 
+> > [1] Soft lockup reproduced with v5.1-rc5-10-g618d919cae2f
+> 
+> Thanks,
+> 
+> Unfortunately I do not see the patch in my inbox.
+> Would you care to repost it including the following recipients.
+> 
+> linux-pm@vger.kernel.org
+> Zhang Rui <rui.zhang@intel.com>
+> Eduardo Valentin <edubezval@gmail.com>
+> linux-renesas-soc@vger.kernel.org
+> Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> 
+> Feel free to include the suggestions made by Eugeniu above and post a v2.
 
-> calculation of timings for each OPP.
-> The algorithm in the driver needs these two sets to bound the timings.
->
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  arch/arm/boot/dts/exynos5420.dtsi             | 120 ++++++++++++++++++++++++++
->  arch/arm/boot/dts/exynos5422-odroid-core.dtsi | 120 ++++++++++++++++++++++++++
->  2 files changed, 240 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-> index aaff158..b687cd7 100644
-> --- a/arch/arm/boot/dts/exynos5420.dtsi
-> +++ b/arch/arm/boot/dts/exynos5420.dtsi
-> @@ -14,6 +14,7 @@
->  #include <dt-bindings/clock/exynos5420.h>
->  #include <dt-bindings/clock/exynos-audss-clk.h>
->  #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +#include <dt-bindings/pmu/exynos_ppmu.h>
->
->  / {
->         compatible = "samsung,exynos5420", "samsung,exynos5";
-> @@ -235,6 +236,37 @@
->                         status = "disabled";
->                 };
->
-> +               dmc: memory-controller@10c20000 {
-> +                       compatible = "samsung,exynos5422-dmc";
-> +                       reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
+There is a v2 pushed recently:
+https://patchwork.kernel.org/cover/10911999/
+("[v2,0/2] thermal: rcar_gen3_thermal: fix IRQ issues").
 
-I think in the driver you access range up to 0xff of each DREX memory
-region. Do not map entire 0x10000 if not needed.
+It seems to include both the preparatory work suggested by Daniel
+in https://patchwork.kernel.org/patch/10895557/#22592583,
+as well as the soft lockup fix itself.
 
-
-> +                               <0x10000000 0x1000>, <0x10030000 0x1000>;
-> +                       clocks = <&clock CLK_FOUT_SPLL>,
-> +                                <&clock CLK_MOUT_SCLK_SPLL>,
-> +                                <&clock CLK_FF_DOUT_SPLL2>,
-> +                                <&clock CLK_FOUT_BPLL>,
-> +                                <&clock CLK_MOUT_BPLL>,
-> +                                <&clock CLK_SCLK_BPLL>,
-> +                                <&clock CLK_MOUT_MX_MSPLL_CCORE>,
-> +                                <&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
-> +                                <&clock CLK_MOUT_MCLK_CDREX>,
-> +                                <&clock CLK_DOUT_CLK2X_PHY0>,
-> +                                <&clock CLK_CLKM_PHY0>,
-> +                                <&clock CLK_CLKM_PHY1>;
-> +                       clock-names = "fout_spll",
-> +                                     "mout_sclk_spll",
-> +                                     "ff_dout_spll2",
-> +                                     "fout_bpll",
-> +                                     "mout_bpll",
-> +                                     "sclk_bpll",
-> +                                     "mout_mx_mspll_ccore",
-> +                                     "mout_mx_mspll_ccore_phy",
-> +                                     "mout_mclk_cdrex",
-> +                                     "dout_clk2x_phy0",
-> +                                     "clkm_phy0",
-> +                                     "clkm_phy1";
-> +                       status = "disabled";
-> +               };
-> +
->                 nocp_mem0_0: nocp@10ca1000 {
->                         compatible = "samsung,exynos5420-nocp";
->                         reg = <0x10CA1000 0x200>;
-> @@ -271,6 +303,94 @@
->                         status = "disabled";
->                 };
->
-> +               ppmu_dmc0_0: ppmu@10d00000 {
-> +                       compatible = "samsung,exynos-ppmu";
-> +                       reg = <0x10d00000 0x2000>;
-> +                       clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
-> +                       clock-names = "ppmu";
-> +                       events {
-> +                               ppmu_event0_dmc0_0: ppmu-event0-dmc0_0 {
-> +                                       event-name = "ppmu-event0-dmc0_0";
-> +                                       event-data-type = <PPMU_RO_DATA_CNT>;
-> +                               };
-> +                               ppmu_event1_dmc0_0: ppmu-event1-dmc0_0 {
-> +                                       event-name = "ppmu-event1-dmc0_0";
-> +                                       event-data-type = <PPMU_WO_DATA_CNT>;
-> +                               };
-> +                               ppmu_event3_dmc0_0: ppmu-event3-dmc0_0 {
-> +                                       event-name = "ppmu-event3-dmc0_0";
-> +                                       event-data-type = <(PPMU_RO_DATA_CNT |
-> +                                               PPMU_WO_DATA_CNT)>;
-> +                               };
-> +                       };
-> +               };
-> +
-> +               ppmu_dmc0_1: ppmu@10d10000 {
-> +                       compatible = "samsung,exynos-ppmu";
-> +                       reg = <0x10d10000 0x2000>;
-> +                       clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
-> +                       clock-names = "ppmu";
-> +                       events {
-> +                               ppmu_event0_dmc0_1: ppmu-event0-dmc0_1 {
-> +                                       event-name = "ppmu-event0-dmc0_1";
-> +                                       event-data-type = <PPMU_RO_DATA_CNT>;
-> +                               };
-> +                               ppmu_event1_dmc0_1: ppmu-event1-dmc0_1 {
-> +                                       event-name = "ppmu-event1-dmc0_1";
-> +                                       event-data-type = <PPMU_WO_DATA_CNT>;
-> +                               };
-> +                               ppmu_event3_dmc0_1: ppmu-event3-dmc0_1 {
-> +                                       event-name = "ppmu-event3-dmc0_1";
-> +                                       event-data-type = <(PPMU_RO_DATA_CNT |
-> +                                               PPMU_WO_DATA_CNT)>;
-> +                               };
-> +                       };
-> +               };
-> +
-> +               ppmu_dmc1_0: ppmu@10d60000 {
-> +                       compatible = "samsung,exynos-ppmu";
-> +                       reg = <0x10d60000 0x2000>;
-> +                       clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
-> +                       clock-names = "ppmu";
-> +                       events {
-> +                               ppmu_event0_dmc1_0: ppmu-event0-dmc1_0 {
-> +                                       event-name = "ppmu-event0-dmc1_0";
-> +                                       event-data-type = <PPMU_RO_DATA_CNT>;
-> +                               };
-> +                               ppmu_event1_dmc1_0: ppmu-event1-dmc1_0 {
-> +                                       event-name = "ppmu-event1-dmc1_0";
-> +                                       event-data-type = <PPMU_WO_DATA_CNT>;
-> +                               };
-> +                               ppmu_event3_dmc1_0: ppmu-event3-dmc1_0 {
-> +                                       event-name = "ppmu-event3-dmc1_0";
-> +                                       event-data-type = <(PPMU_RO_DATA_CNT |
-> +                                               PPMU_WO_DATA_CNT)>;
-> +                               };
-> +                       };
-> +               };
-> +
-> +               ppmu_dmc1_1: ppmu@10d70000 {
-> +                       compatible = "samsung,exynos-ppmu";
-> +                       reg = <0x10d70000 0x2000>;
-> +                       clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
-> +                       clock-names = "ppmu";
-> +                       events {
-> +                               ppmu_event0_dmc1_1: ppmu-event0-dmc1_1 {
-> +                                       event-name = "ppmu-event0-dmc1_1";
-> +                                       event-data-type = <PPMU_RO_DATA_CNT>;
-> +                               };
-> +                               ppmu_event1_dmc1_1: ppmu-event1-dmc1_1 {
-> +                                       event-name = "ppmu-event1-dmc1_1";
-> +                                       event-data-type = <PPMU_WO_DATA_CNT>;
-> +                               };
-> +                               ppmu_event3_dmc1_1: ppmu-event3-dmc1_1 {
-> +                                       event-name = "ppmu-event3-dmc1_1";
-> +                                       event-data-type = <(PPMU_RO_DATA_CNT |
-> +                                               PPMU_WO_DATA_CNT)>;
-> +                               };
-> +                       };
-> +               };
-> +
->                 gsc_pd: power-domain@10044000 {
->                         compatible = "samsung,exynos4210-pd";
->                         reg = <0x10044000 0x20>;
-> diff --git a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-> index 25d95de1..76bf0dbf 100644
-> --- a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-> +++ b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-> @@ -34,6 +34,95 @@
->                         clock-frequency = <24000000>;
->                 };
->         };
-> +
-> +       dmc_opp_table: opp_table2 {
-> +               compatible = "operating-points-v2";
-> +
-> +               opp00 {
-> +                       opp-hz = /bits/ 64 <165000000>;
-> +                       opp-microvolt = <875000>;
-> +               };
-> +               opp01 {
-> +                       opp-hz = /bits/ 64 <206000000>;
-> +                       opp-microvolt = <875000>;
-> +               };
-> +               opp02 {
-> +                       opp-hz = /bits/ 64 <275000000>;
-> +                       opp-microvolt = <875000>;
-> +               };
-> +               opp03 {
-> +                       opp-hz = /bits/ 64 <413000000>;
-> +                       opp-microvolt = <887500>;
-> +               };
-> +               opp04 {
-> +                       opp-hz = /bits/ 64 <543000000>;
-> +                       opp-microvolt = <937500>;
-> +               };
-> +               opp05 {
-> +                       opp-hz = /bits/ 64 <633000000>;
-> +                       opp-microvolt = <1012500>;
-> +               };
-> +               opp06 {
-> +                       opp-hz = /bits/ 64 <728000000>;
-> +                       opp-microvolt = <1037500>;
-> +               };
-> +               opp07 {
-> +                       opp-hz = /bits/ 64 <825000000>;
-> +                       opp-microvolt = <1050000>;
-> +               };
-> +       };
-> +
-> +       samsung_K3QF2F20DB: lpddr3 {
-> +               compatible      = "Samsung,K3QF2F20DB","jedec,lpddr3";
-
-Missing space after coma.
-
-> +               density         = <16384>;
-> +               io-width        = <32>;
-> +
-> +               tRFC-min-tck            = <17>;
-> +               tRRD-min-tck            = <2>;
-> +               tRPab-min-tck           = <2>;
-> +               tRPpb-min-tck           = <2>;
-> +               tRCD-min-tck            = <3>;
-> +               tRC-min-tck             = <6>;
-> +               tRAS-min-tck            = <5>;
-> +               tWTR-min-tck            = <2>;
-> +               tWR-min-tck             = <7>;
-> +               tRTP-min-tck            = <2>;
-> +               tW2W-C2C-min-tck        = <0>;
-> +               tR2R-C2C-min-tck        = <0>;
-> +               tWL-min-tck             = <8>;
-> +               tDQSCK-min-tck          = <5>;
-> +               tRL-min-tck             = <14>;
-> +               tFAW-min-tck            = <5>;
-> +               tXSR-min-tck            = <12>;
-> +               tXP-min-tck             = <2>;
-> +               tCKE-min-tck            = <2>;
-> +               tCKESR-min-tck          = <2>;
-> +               tMRD-min-tck            = <5>;
-> +
-> +               timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@0 {
-
-@0 does not look correct... you do not have <reg>. No DTC warnings here?
-
-Best regards,
-Krzysztof
+Best regard,
+Eugeniu.
