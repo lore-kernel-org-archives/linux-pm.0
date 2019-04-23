@@ -1,68 +1,33 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH v5 3/3] power_supply: Add missing documentation for
- CHARGE_CONTROL_* properties
-Date: Tue, 23 Apr 2019 15:56:28 +0200
-Message-ID: <ee812804-05f5-145a-801d-72990e520edc@collabora.com>
-References: <20190417214022.7jk3usygcpnls3pr@earth.universe>
- <20190418164314.161065-1-ncrews@chromium.org>
- <20190418164314.161065-3-ncrews@chromium.org>
+From: Bart Van Assche <bvanassche@acm.org>
+Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
+Date: Tue, 23 Apr 2019 07:09:42 -0700
+Message-ID: <fed0549d-a789-294c-d899-304911106113@acm.org>
+References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
+ <20190423102239.GA15531@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190418164314.161065-3-ncrews@chromium.org>
-Content-Language: en-GB
+In-Reply-To: <20190423102239.GA15531@amd>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nick Crews <ncrews@chromium.org>, bleung@chromium.org, sre@kernel.org, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, dlaurie@chromium.org, lamzin@google.com, bartfab@google.com, derat@google.com, dtor@google.com, sjg@chromium.org, jchwong@chromium.org
+To: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, axboe@kernel.dk, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 18/4/19 18:43, Nick Crews wrote:
-> The existing POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT and
-> POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX properties
-> don't have documentation. I add that documentation here.
+On 4/23/19 3:22 AM, Pavel Machek wrote:
+>>> It boots ok (unlike mainline -- I'm debugging that), and I can suspend
+>>> and resume... but then cursor in X is moving and I can talk to
+>>> applications cached in memory, but any access to disk hangs.
+>>
+>> Mainline problem was identified.
+>>
+>> But resume is still broken. I took advantage of fact that I can still
+>> do cached commands, and got complete dmesg. I'm attaching it.
 > 
-> v5 changes:
-> - Split this commit out from the previous two commits.
-> 
-> Signed-off-by: Nick Crews <ncrews@chromium.org>
+> Still broken in 0418. Ideas would be welcome at this point.
 
-Reviewed-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Have you already tried the debugging steps explained in
+Documentation/power to obtain more information about the nature of the
+suspend/resume problem?
 
-> ---
->  Documentation/ABI/testing/sysfs-class-power | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-> index a5b144f61de8..b77e30b9014e 100644
-> --- a/Documentation/ABI/testing/sysfs-class-power
-> +++ b/Documentation/ABI/testing/sysfs-class-power
-> @@ -114,6 +114,25 @@ Description:
->  		Access: Read
->  		Valid values: Represented in microamps
->  
-> +What:		/sys/class/power_supply/<supply_name>/charge_control_limit
-> +Date:		Oct 2012
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:
-> +		Maximum allowable charging current. Used for charge rate
-> +		throttling for thermal cooling or improving battery health.
-> +
-> +		Access: Read, Write
-> +		Valid values: Represented in microamps
-> +
-> +What:		/sys/class/power_supply/<supply_name>/charge_control_limit_max
-> +Date:		Oct 2012
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:
-> +		Maximum legal value for the charge_control_limit property.
-> +
-> +		Access: Read
-> +		Valid values: Represented in microamps
-> +
->  What:		/sys/class/power_supply/<supply_name>/charge_control_start_threshold
->  Date:		April 2019
->  Contact:	linux-pm@vger.kernel.org
-> 
+Bart.
