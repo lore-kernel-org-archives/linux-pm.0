@@ -1,7 +1,7 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps bindings
-Date: Tue, 23 Apr 2019 16:28:19 +0300
-Message-ID: <20190423132823.7915-2-georgi.djakov@linaro.org>
+Subject: [PATCH v2 2/5] interconnect: Add of_icc_get_by_index() helper function
+Date: Tue, 23 Apr 2019 16:28:20 +0300
+Message-ID: <20190423132823.7915-3-georgi.djakov@linaro.org>
 References: <20190423132823.7915-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,83 +12,119 @@ To: vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.ru
 Cc: jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, sibis@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-In addition to frequency and voltage, some devices may have bandwidth
-requirements for their interconnect throughput - for example a CPU
-or GPU may also need to increase or decrease their bandwidth to DDR
-memory based on the current operating performance point.
-
-Extend the OPP tables with additional property to describe the bandwidth
-needs of a device. The average and peak bandwidth values depend on the
-hardware and its properties.
+This is the same as the traditional of_icc_get() function, but the
+difference is that it takes index as an argument, instead of name.
 
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++++++++
- .../devicetree/bindings/property-units.txt    |  4 ++
- 2 files changed, 42 insertions(+)
+ drivers/interconnect/core.c  | 45 ++++++++++++++++++++++++++++--------
+ include/linux/interconnect.h |  6 +++++
+ 2 files changed, 41 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 76b6c79604a5..830f0206aea7 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -132,6 +132,9 @@ Optional properties:
- - opp-level: A value representing the performance level of the device,
-   expressed as a 32-bit integer.
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 871eb4bc4efc..a7c3c262c974 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -295,9 +295,9 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
+ }
  
-+- bandwidth-MBps: The interconnect bandwidth is specified with an array containing
-+  the two integer values for average and peak bandwidth in megabytes per second.
-+
- - clock-latency-ns: Specifies the maximum possible transition latency (in
-   nanoseconds) for switching to this OPP from any other OPP.
+ /**
+- * of_icc_get() - get a path handle from a DT node based on name
++ * of_icc_get_by_index() - get a path handle from a DT node based on index
+  * @dev: device pointer for the consumer device
+- * @name: interconnect path name
++ * @idx: interconnect path index
+  *
+  * This function will search for a path between two endpoints and return an
+  * icc_path handle on success. Use icc_put() to release constraints when they
+@@ -309,13 +309,12 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
+  * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
+  * when the API is disabled or the "interconnects" DT property is missing.
+  */
+-struct icc_path *of_icc_get(struct device *dev, const char *name)
++struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+ {
+ 	struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
+ 	struct icc_node *src_node, *dst_node;
+ 	struct device_node *np = NULL;
+ 	struct of_phandle_args src_args, dst_args;
+-	int idx = 0;
+ 	int ret;
  
-@@ -546,3 +549,38 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
- 		};
- 	};
- };
+ 	if (!dev || !dev->of_node)
+@@ -335,12 +334,6 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
+ 	 * lets support only global ids and extend this in the future if needed
+ 	 * without breaking DT compatibility.
+ 	 */
+-	if (name) {
+-		idx = of_property_match_string(np, "interconnect-names", name);
+-		if (idx < 0)
+-			return ERR_PTR(idx);
+-	}
+-
+ 	ret = of_parse_phandle_with_args(np, "interconnects",
+ 					 "#interconnect-cells", idx * 2,
+ 					 &src_args);
+@@ -383,6 +376,38 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
+ 
+ 	return path;
+ }
 +
-+Example 7: bandwidth-MBps:
-+Average and peak bandwidth values for the interconnects between CPU and DDR
-+memory and also between CPU and L3 are defined per each OPP. Bandwidth of both
-+interconnects is scaled together with CPU frequency.
++/**
++ * of_icc_get() - get a path handle from a DT node based on name
++ * @dev: device pointer for the consumer device
++ * @name: interconnect path name
++ *
++ * This function will search for a path between two endpoints and return an
++ * icc_path handle on success. Use icc_put() to release constraints when they
++ * are not needed anymore.
++ * If the interconnect API is disabled, NULL is returned and the consumer
++ * drivers will still build. Drivers are free to handle this specifically,
++ * but they don't have to.
++ *
++ * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
++ * when the API is disabled or the "interconnects" DT property is missing.
++ */
++struct icc_path *of_icc_get(struct device *dev, const char *name)
++{
++	int idx = 0;
 +
-+/ {
-+	cpus {
-+		CPU0: cpu@0 {
-+			compatible = "arm,cortex-a53", "arm,armv8";
-+			...
-+			operating-points-v2 = <&cpu_opp_table>;
-+			/* path between CPU and DDR memory and CPU and L3 */
-+			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
-+					<&noc MASTER_CPU &noc SLAVE_L3>;
-+		};
-+	};
++	if (!dev || !dev->of_node)
++		return ERR_PTR(-ENODEV);
 +
-+	cpu_opp_table: cpu_opp_table {
-+		compatible = "operating-points-v2";
-+		opp-shared;
++	if (name) {
++		idx = of_property_match_string(dev->of_node,
++					       "interconnect-names", name);
++		if (idx < 0)
++			return ERR_PTR(idx);
++	}
 +
-+		opp-200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
-+			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
-+			bandwidth-MBps = <457 1525>, <914 3050>;
-+		};
-+		opp-400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			/* CPU<->DDR bandwidth: 915 MB/s average, 3051 MB/s peak */
-+			 * CPU<->L3 bandwidth: 1828 MB/s average, 6102 MB/s peak */
-+			bandwidth-MBps = <915 3051>, <1828 6102>;
-+		};
-+	};
-diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
-index bfd33734faca..9c3dbefcdae8 100644
---- a/Documentation/devicetree/bindings/property-units.txt
-+++ b/Documentation/devicetree/bindings/property-units.txt
-@@ -41,3 +41,7 @@ Temperature
- Pressure
- ----------------------------------------
- -kpascal	: kiloPascal
++	return of_icc_get_by_index(dev, idx);
++}
+ EXPORT_SYMBOL_GPL(of_icc_get);
+ 
+ /**
+diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
+index dc25864755ba..0e430b3b6519 100644
+--- a/include/linux/interconnect.h
++++ b/include/linux/interconnect.h
+@@ -28,6 +28,7 @@ struct device;
+ struct icc_path *icc_get(struct device *dev, const int src_id,
+ 			 const int dst_id);
+ struct icc_path *of_icc_get(struct device *dev, const char *name);
++struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
+ void icc_put(struct icc_path *path);
+ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw);
+ 
+@@ -45,6 +46,11 @@ static inline struct icc_path *of_icc_get(struct device *dev,
+ 	return NULL;
+ }
+ 
++struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
++{
++	return NULL;
++}
 +
-+Throughput
-+----------------------------------------
-+-MBps		: megabytes per second
+ static inline void icc_put(struct icc_path *path)
+ {
+ }
