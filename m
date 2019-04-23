@@ -2,84 +2,127 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8109C282DD
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 19:32:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E547C282DD
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 21:53:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 977F921738
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 19:32:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D9827218EA
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 21:53:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556056423;
+	bh=rW28kVv4LMKUF1U2h3RljhEk45vJXhBHc011jZSd4w8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=UnEBzxH3eaRp/1rFtpLeNxcbVNybiLjsUZgI3ioLkxRQVBW8hSbBgBBbilS95IgD6
+	 xD+WsTL2RtFIp8OD1oc2ReyHUAPnzjcbi05tcTZnmUZ72i6Xp6IHhMKdbkWAADLqf8
+	 Ll/y0ufN5Muj+S6jb4ApROCJZpcA41kpvrtPzkLg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726339AbfDWTcz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 15:32:55 -0400
-Received: from mga11.intel.com ([192.55.52.93]:10117 "EHLO mga11.intel.com"
+        id S1727045AbfDWVxm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 17:53:42 -0400
+Received: from mail.kernel.org ([198.145.29.99]:50520 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725945AbfDWTcz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 23 Apr 2019 15:32:55 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 23 Apr 2019 12:32:54 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,386,1549958400"; 
-   d="scan'208";a="340135216"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
-  by fmsmga006.fm.intel.com with ESMTP; 23 Apr 2019 12:32:51 -0700
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
-        (envelope-from <lkp@intel.com>)
-        id 1hJ19u-000Gvs-SK; Wed, 24 Apr 2019 03:32:50 +0800
-Date:   Wed, 24 Apr 2019 03:32:07 +0800
-From:   kbuild test robot <lkp@intel.com>
-To:     Talel Shenhar <talel@amazon.com>
-Cc:     kbuild-all@01.org, linux-pm@vger.kernel.org,
-        Eduardo Valentin <edubezval@gmail.com>,
-        David Woodhouse <dwmw@amazon.co.uk>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] thermal: fix platform_no_drv_owner.cocci warnings
-Message-ID: <20190423193207.GA21807@ivb42>
-References: <201904240343.b2RBtBuM%lkp@intel.com>
+        id S1726665AbfDWVxm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Apr 2019 17:53:42 -0400
+Received: from localhost (unknown [69.71.4.100])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 92A52218D2;
+        Tue, 23 Apr 2019 21:53:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1556056421;
+        bh=rW28kVv4LMKUF1U2h3RljhEk45vJXhBHc011jZSd4w8=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=mqXq8xw+We3C5jl/WXUt/jRI2zzXr126kfPZxd3FWwqdRFpFgHWty8EMdSHU893El
+         8/oyz1vOTTvHiuys56zxF/3p8NY5qaaWSi6hx9PXNDI1K+ccVcuTurakmTBU9XzdlI
+         FEjuGHVYc+PV44AnpcmZqwaeKCFRS0hF+bX8yrvY=
+Date:   Tue, 23 Apr 2019 16:53:40 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Alexander Fomichev <fomichev.ru@gmail.com>
+Cc:     linux-pci@vger.kernel.org, linux@yadro.com,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH RESEND] PCI: disable runtime PM for PLX switches
+Message-ID: <20190423215340.GH14616@google.com>
+References: <20190415135903.wiyw34faiezdnbbs@yadro.com>
+ <20190415141554.GL126710@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201904240343.b2RBtBuM%lkp@intel.com>
-X-Patchwork-Hint: ignore
-User-Agent: Mutt/1.5.23 (2014-03-12)
+In-Reply-To: <20190415141554.GL126710@google.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: kbuild test robot <lkp@intel.com>
+[+cc Rafael, linux-pm]
 
-drivers/thermal/thermal_mmio.c:120:3-8: No need to set .owner here. The core will do it.
+On Mon, Apr 15, 2019 at 09:15:54AM -0500, Bjorn Helgaas wrote:
+> This says it's a resend, but I don't see a previous posting; maybe it was
+> HTML and rejected by the mailing list?
+> 
+> On Mon, Apr 15, 2019 at 04:59:03PM +0300, Alexander Fomichev wrote:
+> > PLX switches have an issue that their internal registers become inaccessible
+> > when runtime PM is enabled. Therefore PLX service tools can't communicate
+> > with the hardware. A kernel option "pcie_port_pm=off" can be used as a
+> > workaround. But it affects all the devices.
+> > So this solution is to add PLX switch devices to the quirk list for
+> > disabling runtime PM only for them.
+> 
+> I assume the problem is actually that the config space registers are
+> inaccessible when the device is in D3hot?
 
- Remove .owner field if calls are used which set it automatically
+Reading this again, I realize you said "internal registers".  I don't
+know whether that actually means config space registers (which
+*should* work even when the device is in D3hot (see the PCIe reference
+below and PCI Power Management Spec r1.2, sec 5.4.1)), or MMIO
+registers (which are not expected to work while in D3hot).
 
-Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
+If the service tools read MMIO registers, presumably that goes through
+some driver that should be able to manage runtime PM.  Or, if there's
+no driver, I think your service tool could prevent runtime power
+management by changing /sys/devices/.../power/control to "on" (see
+Documentation/power/runtime_pm.txt).
 
-Fixes: 35838aa51cd6 ("thermal: Introduce Amazon's Annapurna Labs Thermal Driver")
-CC: Talel Shenhar <talel@amazon.com>
-Signed-off-by: kbuild test robot <lkp@intel.com>
----
+Please repost this with more details.
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git for-kernelci
-head:   0e50a5ee6b8a23c6798aae23efcd4b8e055c06ef
-commit: 35838aa51cd6dbf5ae2c78ecd1d1df0cc0324256 [34/35] thermal: Introduce Amazon's Annapurna Labs Thermal Driver
-
- thermal_mmio.c |    1 -
- 1 file changed, 1 deletion(-)
-
---- a/drivers/thermal/thermal_mmio.c
-+++ b/drivers/thermal/thermal_mmio.c
-@@ -117,7 +117,6 @@ static struct platform_driver thermal_mm
- 	.probe = thermal_mmio_probe,
- 	.driver = {
- 		.name = "thermal-mmio",
--		.owner = THIS_MODULE,
- 		.of_match_table = of_match_ptr(thermal_mmio_id_table),
- 	},
- };
+> I think config space access is supposed to work when a device is in D3hot
+> (see PCIe r4.0, sec 5.3.1.4).
+> 
+> If it doesn't work, wouldn't that mean that we couldn't even bring the
+> device *out* of D3hot, since that requires a config write?
+> 
+> If this is really the problem, it'd be nice to identify this specifically
+> instead of piggy-backing on the "is_hotplug_bridge" thing, which might be
+> coincidentally related, but also carries other meanings.
+> 
+> > ---
+> >  drivers/pci/quirks.c | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> > 
+> > diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> > index a59ad09..8ea99aa 100644
+> > --- a/drivers/pci/quirks.c
+> > +++ b/drivers/pci/quirks.c
+> > @@ -2923,6 +2923,17 @@ static void quirk_hotplug_bridge(struct pci_dev *dev)
+> >  	dev->is_hotplug_bridge = 1;
+> >  }
+> >  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_HINT, 0x0020, quirk_hotplug_bridge);
+> > +/*
+> > + * Disable runtime PM for PLX Draco (1,2), Capella (1,2) series PCIe switches
+> > + * to prevent service tools from failing to access hardware registers.
+> > + */
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_PLX, 0x8712, quirk_hotplug_bridge);
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_PLX, 0x8733, quirk_hotplug_bridge);
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_PLX, 0x8734, quirk_hotplug_bridge);
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_PLX, 0x8780, quirk_hotplug_bridge);
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_PLX, 0x8796, quirk_hotplug_bridge);
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_PLX, 0x9781, quirk_hotplug_bridge);
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_PLX, 0x9797, quirk_hotplug_bridge);
+> >  
+> >  /*
+> >   * This is a quirk for the Ricoh MMC controller found as a part of some
+> > -- 
+> > 2.7.4
