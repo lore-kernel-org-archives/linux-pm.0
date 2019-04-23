@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75122C10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:29:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 672BAC10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:29:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 418512077C
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:29:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3675A20685
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:29:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pjyiAvWp"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lfCNfDiQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727959AbfDWN2f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 09:28:35 -0400
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:45146 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727864AbfDWN2d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 09:28:33 -0400
-Received: by mail-lj1-f196.google.com with SMTP id y6so13483316ljd.12
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 06:28:31 -0700 (PDT)
+        id S1728056AbfDWN3J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 09:29:09 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:44413 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727754AbfDWN2b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 09:28:31 -0400
+Received: by mail-lj1-f194.google.com with SMTP id h16so959719ljg.11
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 06:28:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=TmzrLG0HhMUllGPErHueXstJu/wyUlmgrIkCuicVsiY=;
-        b=pjyiAvWpRnfInL1U8vVm5G28PPwIa7vHVRINhbLFwD7Hh8RLqG1XBvcg6uhiz5Q7I/
-         oDN/v1CW3tmWtHRBfdLsTUhN3j1Ez8EdsbehRXTSLKgBkdXvWs6FxQ/neadA2MdMxyCv
-         /T86u/ZwKidHvmiwKNAiXKqlT6ADVxSxocN6dT4P477jUUBupKtT35G3+nr8vkHzgvWd
-         +6GveAO2cO7rhe58ZHp0+Kgisl4ilC3MIdSjLoHz7+E1PvM3J4aYUIFnfv5nb5ygA7N5
-         5dlcgCZuU9fe0qw3ewVCgh0ZKTnuzxJOcl7hkfXbZa6WVywG4g0j32gsnzFs0ERahaVm
-         My7g==
+        bh=3r+b8+ekNVHte2QeCZMZAWdkAU7CdygGrtvnF2S4meU=;
+        b=lfCNfDiQGJnwV59072TgSQ/QI0Z22D8koaXNkdIjyMEzEPlQgEmHSAJSJkTSafGn/5
+         giGeB/hmkrFAmAPPNycokb+0Ds1tdk66Bbbdt5LDNso09R37cP9YqBmcqN4pg3ExcM7O
+         rrOnBQLJT/B/auJOE/0fAjshwXn+mN0IHe22TUkmKy6MQHLE9HOfKLEqwnz44Fd9mhhY
+         FFHUbj8SN6LXo4m51LYKVmGdaqLDbFFlYarUWbUQ6tXdFywNb7hIyfwTT7K8eVyRE8l4
+         NG60sR2bSizrP7APx+c31+9Sax/MyyYkRLHimkZoBkdm6OjnoHSuU55AhNquY90FDcTJ
+         juJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=TmzrLG0HhMUllGPErHueXstJu/wyUlmgrIkCuicVsiY=;
-        b=MsdsKJISdukJKvRuiYJzftOZ0VTpNXDYIrefBpThtEvnlT+whSFQ6paDxYspvGmL9F
-         3bAdhm8mYdLR4t7WhrlTI5/kkAVPTOb+FjUzCiUnoZGPod0hXTGWN3xqGu7cpciyRirp
-         /sYsKalr54M8wXlyVOpw7DH7oYj8bjn3yHEJz+KZ5MzO2ce+dRJ3Bh1/Ha0f1bX51lfL
-         aU8OtVR+HshScle/KvjzUTlaEhO4IXm30gAu7IW2F3Yq8eChGIyxFm7LUlmxKFtURrjY
-         XxbfQt/oZypjV98VgDbiadBVJPb4eIMiturnUCzLlBl9Q2cvRV3wH4eHyP16wQJQ7NKg
-         qIGQ==
-X-Gm-Message-State: APjAAAXNRrsOAB5YyxD3thInNr1oZ1Cy7SZTI8He7nfGa+IfvWJ1bZb7
-        2WaBG2VsZ7EnMQzD+iY88ksIQQ==
-X-Google-Smtp-Source: APXvYqxYn5AHIWe8NubgPi748hbhffjSbR78lCUgeNHQmIJgIs0nNxYDkCygfXs7mEYHaYNwQVCsrQ==
-X-Received: by 2002:a2e:500d:: with SMTP id e13mr13748245ljb.169.1556026110607;
-        Tue, 23 Apr 2019 06:28:30 -0700 (PDT)
+        bh=3r+b8+ekNVHte2QeCZMZAWdkAU7CdygGrtvnF2S4meU=;
+        b=jqVxIFDjoctmHQ5jwAkKuPeGdOWBFKSkER0m4B56H3DsoVtDWz8fIo3yOV/NA9Mkg8
+         I5UBjlxncN22pRKTDn/V2rIi6Lw/ILvAK5tKGT6QtZJgnAB2FjHch6sCsSX8Kxk3A0qI
+         1JXpt+fhHWza7nKj6TUQ970oGMqRIj3lNHKkZ9vHyScA/sLM63xEH7SirgHJTw6BDUW6
+         XSTRT8VrR/SMrW19zrRFe7OW3Rh7c4Ts9KX4Uye/O8l0Qt4O7gyGlo5/gkxdaQkK+Amd
+         GDIGSV+RgZwBhxemDpMKU7vUye48tAkFn7j/wbnLAiSX5GG+tRdOejugAS/AG+UaiBep
+         wnlw==
+X-Gm-Message-State: APjAAAV0o2dVdCOvE8nYK6wrdsP7kOr3GTE/Yaxr8YcfFn1T5J/Bnbuy
+        qCH6hY4foWao+MWdD8w86PjxAA==
+X-Google-Smtp-Source: APXvYqxcThCJ9co/aWID+yA6D6uqJUhZ5RwV+8mms/Umltv4wn/p5ZH/93HikDYzo6iztlgRRsk5fw==
+X-Received: by 2002:a2e:9348:: with SMTP id m8mr14019864ljh.23.1556026108454;
+        Tue, 23 Apr 2019 06:28:28 -0700 (PDT)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id y206sm4617107lfc.72.2019.04.23.06.28.28
+        by smtp.googlemail.com with ESMTPSA id y206sm4617107lfc.72.2019.04.23.06.28.26
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Tue, 23 Apr 2019 06:28:29 -0700 (PDT)
+        Tue, 23 Apr 2019 06:28:27 -0700 (PDT)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     vireshk@kernel.org, sboyd@kernel.org, nm@ti.com,
         robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
@@ -64,9 +64,9 @@ Cc:     jcrouse@codeaurora.org, vincent.guittot@linaro.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         georgi.djakov@linaro.org
-Subject: [PATCH v2 2/5] interconnect: Add of_icc_get_by_index() helper function
-Date:   Tue, 23 Apr 2019 16:28:20 +0300
-Message-Id: <20190423132823.7915-3-georgi.djakov@linaro.org>
+Subject: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps bindings
+Date:   Tue, 23 Apr 2019 16:28:19 +0300
+Message-Id: <20190423132823.7915-2-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190423132823.7915-1-georgi.djakov@linaro.org>
 References: <20190423132823.7915-1-georgi.djakov@linaro.org>
@@ -77,121 +77,85 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190423132820.vKj3XZhbH3U8eJZbzd-RDFEn4AdX3h9PldA_O6pJi3A@z>
+Message-ID: <20190423132819.8uZLOizQGrWyrs5SsAVu6Brs37clVyGwD2EHdzSSnCg@z>
 
-This is the same as the traditional of_icc_get() function, but the
-difference is that it takes index as an argument, instead of name.
+In addition to frequency and voltage, some devices may have bandwidth
+requirements for their interconnect throughput - for example a CPU
+or GPU may also need to increase or decrease their bandwidth to DDR
+memory based on the current operating performance point.
+
+Extend the OPP tables with additional property to describe the bandwidth
+needs of a device. The average and peak bandwidth values depend on the
+hardware and its properties.
 
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/interconnect/core.c  | 45 ++++++++++++++++++++++++++++--------
- include/linux/interconnect.h |  6 +++++
- 2 files changed, 41 insertions(+), 10 deletions(-)
+ Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++++++++
+ .../devicetree/bindings/property-units.txt    |  4 ++
+ 2 files changed, 42 insertions(+)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 871eb4bc4efc..a7c3c262c974 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -295,9 +295,9 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
- }
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 76b6c79604a5..830f0206aea7 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -132,6 +132,9 @@ Optional properties:
+ - opp-level: A value representing the performance level of the device,
+   expressed as a 32-bit integer.
  
- /**
-- * of_icc_get() - get a path handle from a DT node based on name
-+ * of_icc_get_by_index() - get a path handle from a DT node based on index
-  * @dev: device pointer for the consumer device
-- * @name: interconnect path name
-+ * @idx: interconnect path index
-  *
-  * This function will search for a path between two endpoints and return an
-  * icc_path handle on success. Use icc_put() to release constraints when they
-@@ -309,13 +309,12 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
-  * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
-  * when the API is disabled or the "interconnects" DT property is missing.
-  */
--struct icc_path *of_icc_get(struct device *dev, const char *name)
-+struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
- {
- 	struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
- 	struct icc_node *src_node, *dst_node;
- 	struct device_node *np = NULL;
- 	struct of_phandle_args src_args, dst_args;
--	int idx = 0;
- 	int ret;
- 
- 	if (!dev || !dev->of_node)
-@@ -335,12 +334,6 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
- 	 * lets support only global ids and extend this in the future if needed
- 	 * without breaking DT compatibility.
- 	 */
--	if (name) {
--		idx = of_property_match_string(np, "interconnect-names", name);
--		if (idx < 0)
--			return ERR_PTR(idx);
--	}
--
- 	ret = of_parse_phandle_with_args(np, "interconnects",
- 					 "#interconnect-cells", idx * 2,
- 					 &src_args);
-@@ -383,6 +376,38 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
- 
- 	return path;
- }
++- bandwidth-MBps: The interconnect bandwidth is specified with an array containing
++  the two integer values for average and peak bandwidth in megabytes per second.
 +
-+/**
-+ * of_icc_get() - get a path handle from a DT node based on name
-+ * @dev: device pointer for the consumer device
-+ * @name: interconnect path name
-+ *
-+ * This function will search for a path between two endpoints and return an
-+ * icc_path handle on success. Use icc_put() to release constraints when they
-+ * are not needed anymore.
-+ * If the interconnect API is disabled, NULL is returned and the consumer
-+ * drivers will still build. Drivers are free to handle this specifically,
-+ * but they don't have to.
-+ *
-+ * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
-+ * when the API is disabled or the "interconnects" DT property is missing.
-+ */
-+struct icc_path *of_icc_get(struct device *dev, const char *name)
-+{
-+	int idx = 0;
-+
-+	if (!dev || !dev->of_node)
-+		return ERR_PTR(-ENODEV);
-+
-+	if (name) {
-+		idx = of_property_match_string(dev->of_node,
-+					       "interconnect-names", name);
-+		if (idx < 0)
-+			return ERR_PTR(idx);
-+	}
-+
-+	return of_icc_get_by_index(dev, idx);
-+}
- EXPORT_SYMBOL_GPL(of_icc_get);
+ - clock-latency-ns: Specifies the maximum possible transition latency (in
+   nanoseconds) for switching to this OPP from any other OPP.
  
- /**
-diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-index dc25864755ba..0e430b3b6519 100644
---- a/include/linux/interconnect.h
-+++ b/include/linux/interconnect.h
-@@ -28,6 +28,7 @@ struct device;
- struct icc_path *icc_get(struct device *dev, const int src_id,
- 			 const int dst_id);
- struct icc_path *of_icc_get(struct device *dev, const char *name);
-+struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
- void icc_put(struct icc_path *path);
- int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw);
- 
-@@ -45,6 +46,11 @@ static inline struct icc_path *of_icc_get(struct device *dev,
- 	return NULL;
- }
- 
-+struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
-+{
-+	return NULL;
-+}
+@@ -546,3 +549,38 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+ 		};
+ 	};
+ };
 +
- static inline void icc_put(struct icc_path *path)
- {
- }
++Example 7: bandwidth-MBps:
++Average and peak bandwidth values for the interconnects between CPU and DDR
++memory and also between CPU and L3 are defined per each OPP. Bandwidth of both
++interconnects is scaled together with CPU frequency.
++
++/ {
++	cpus {
++		CPU0: cpu@0 {
++			compatible = "arm,cortex-a53", "arm,armv8";
++			...
++			operating-points-v2 = <&cpu_opp_table>;
++			/* path between CPU and DDR memory and CPU and L3 */
++			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
++					<&noc MASTER_CPU &noc SLAVE_L3>;
++		};
++	};
++
++	cpu_opp_table: cpu_opp_table {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-200000000 {
++			opp-hz = /bits/ 64 <200000000>;
++			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
++			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
++			bandwidth-MBps = <457 1525>, <914 3050>;
++		};
++		opp-400000000 {
++			opp-hz = /bits/ 64 <400000000>;
++			/* CPU<->DDR bandwidth: 915 MB/s average, 3051 MB/s peak */
++			 * CPU<->L3 bandwidth: 1828 MB/s average, 6102 MB/s peak */
++			bandwidth-MBps = <915 3051>, <1828 6102>;
++		};
++	};
+diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
+index bfd33734faca..9c3dbefcdae8 100644
+--- a/Documentation/devicetree/bindings/property-units.txt
++++ b/Documentation/devicetree/bindings/property-units.txt
+@@ -41,3 +41,7 @@ Temperature
+ Pressure
+ ----------------------------------------
+ -kpascal	: kiloPascal
++
++Throughput
++----------------------------------------
++-MBps		: megabytes per second
