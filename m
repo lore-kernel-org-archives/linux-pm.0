@@ -1,82 +1,68 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Subject: [PATCH v10 01/11] dt-bindings: mfd: add DT bindings for max77650
-Date: Tue, 23 Apr 2019 11:04:41 +0200
-Message-ID: <20190423090451.23711-2-brgl@bgdev.pl>
-References: <20190423090451.23711-1-brgl@bgdev.pl>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: Re: [PATCH] PM / devfreq: Return -ENODEV from
+ try_then_request_governor
+Date: Tue, 23 Apr 2019 11:55:52 +0200
+Message-ID: <ed7c20b9-b435-5f40-55ab-97d6384749f1@collabora.com>
+References: <20190423081158.29859-1-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423090451.23711-1-brgl@bgdev.pl>
+In-Reply-To: <20190423081158.29859-1-tomeu.vizoso@collabora.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Rob Herring <robh@kernel.org>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org
+Cc: Alyssa Rosenzweig <alyssa@rosenzweig.io>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Hi Tomeu,
 
-Add a DT binding document for max77650 ultra-low power PMIC. This
-describes the core mfd device and the GPIO module.
+On 23/4/19 10:11, Tomeu Vizoso wrote:
+> Callers don't expect it to return NULL, but an error code.
+> 
+> Fixes Oops such as the one below, when one tries to set a governor that
+> isn't available:
+> 
+> Unable to handle kernel NULL pointer dereference at virtual address 00000018
+> 
+> [<c0dcf718>] (governor_store) from [<c0539558>] (kernfs_fop_write+0x100/0x1e0)
+> [<c0539558>] (kernfs_fop_write) from [<c04b09b4>] (__vfs_write+0x2c/0x17c)
+> [<c04b09b4>] (__vfs_write) from [<c04b33fc>] (vfs_write+0xa4/0x184)
+> [<c04b33fc>] (vfs_write) from [<c04b361c>] (ksys_write+0x4c/0xac)
+> [<c04b361c>] (ksys_write) from [<c0301000>] (ret_fast_syscall+0x0/0x28)
+> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
+> Reported-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
+> Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
----
- .../devicetree/bindings/mfd/max77650.txt      | 46 +++++++++++++++++++
- 1 file changed, 46 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
+There is already a fix for that. The fix was initially sent in October [2] but
+unfortunately it got lost. I resend and now is queued [1]. Hopefully the Fixes
+tag will help to pick the fix to the proper kernel releases.
 
-diff --git a/Documentation/devicetree/bindings/mfd/max77650.txt b/Documentation/devicetree/bindings/mfd/max77650.txt
-new file mode 100644
-index 000000000000..b529d8d19335
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/max77650.txt
-@@ -0,0 +1,46 @@
-+MAX77650 ultra low-power PMIC from Maxim Integrated.
-+
-+Required properties:
-+-------------------
-+- compatible:		Must be "maxim,max77650"
-+- reg:			I2C device address.
-+- interrupts:		The interrupt on the parent the controller is
-+			connected to.
-+- interrupt-controller: Marks the device node as an interrupt controller.
-+- #interrupt-cells:	Must be <2>.
-+
-+- gpio-controller:	Marks the device node as a gpio controller.
-+- #gpio-cells:		Must be <2>. The first cell is the pin number and
-+			the second cell is used to specify the gpio active
-+			state.
-+
-+Optional properties:
-+--------------------
-+gpio-line-names:	Single string containing the name of the GPIO line.
-+
-+The GPIO-controller module is represented as part of the top-level PMIC
-+node. The device exposes a single GPIO line.
-+
-+For device-tree bindings of other sub-modules (regulator, power supply,
-+LEDs and onkey) refer to the binding documents under the respective
-+sub-system directories.
-+
-+For more details on GPIO bindings, please refer to the generic GPIO DT
-+binding document <devicetree/bindings/gpio/gpio.txt>.
-+
-+Example:
-+--------
-+
-+	pmic@48 {
-+		compatible = "maxim,max77650";
-+		reg = <0x48>;
-+
-+		interrupt-controller;
-+		interrupt-parent = <&gpio2>;
-+		#interrupt-cells = <2>;
-+		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
-+
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		gpio-line-names = "max77650-charger";
-+	};
--- 
-2.21.0
+Thanks,
+ Enric
+
+[1]
+https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=b53b0128052ffd687797d5f4deeb76327e7b5711
+
+[2] https://lkml.org/lkml/2018/10/16/744
+
+>  drivers/devfreq/devfreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 0ae3de76833b..5539e9be718d 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
+>  		/* Restore previous state before return */
+>  		mutex_lock(&devfreq_list_lock);
+>  		if (err)
+> -			return NULL;
+> +			return ERR_PTR(-ENODEV);
+>  
+>  		governor = find_devfreq_governor(name);
+>  	}
+> 
