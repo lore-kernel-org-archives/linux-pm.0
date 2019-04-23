@@ -2,181 +2,181 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAB25C282DD
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 22:35:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25992C10F03
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 22:51:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 942AE218D2
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 22:35:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E04E0218DA
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 22:51:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Vx4afLro"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="DBJgJ3JF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727467AbfDWWfc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 18:35:32 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:46390 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726325AbfDWWfc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 18:35:32 -0400
-Received: by mail-wr1-f66.google.com with SMTP id t17so22187799wrw.13
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 15:35:30 -0700 (PDT)
+        id S1727929AbfDWWvK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 18:51:10 -0400
+Received: from mail-ed1-f68.google.com ([209.85.208.68]:43602 "EHLO
+        mail-ed1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727241AbfDWWvK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 18:51:10 -0400
+Received: by mail-ed1-f68.google.com with SMTP id j20so14151504edq.10
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 15:51:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=yTybR1aW4eMZpVM1uldf9iC6bC/GBH50ffUN3hamtG0=;
-        b=Vx4afLro/WD83P4uJyKAb7v/cxOSWu4BWx4YIAx+LBji7NIgSkt6kOcy3JngCCvxfv
-         ic9xr0YOmE60cQj08JNUKIn922CoGXcO67ZN6k4zgUq9KiXSP+Rv3ztvgN1AnUi4xVVH
-         y5Sh6mSlUft9f8fSGSKj+hNqYRKKWAiA0QOzjkz2qdAWEHPUANZ2uhTLXE9JVWkL/e8N
-         mYSy1s3lO4ADJd+Jm7dWmQ3tsYTj7gg1YROR42YX9mbj7JYGm5ykWrf26HZLak1HbXvK
-         105DyNSsUYtZdtz4kvE8YerUgXhuq+MANXL2fNK9BD8cZ3o3CiUSV0UEB5Owtey11gvz
-         lP+A==
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=Azihi0+y+0A9GqQQKlVvEfb9wIg0Y4clL04ZCREwPkY=;
+        b=DBJgJ3JFtWrhy6k9uAuDJH1eTtTuqdpkfE62I2fdCmymaSazbsb9HkLkhe+94dUSHL
+         dPdG0lEPRDlK9G005sQJCiSAlaDdUS9TGpd731NTC/aKLaDjl4W6ulM+cRg9wbJd27PK
+         bsXEsFTcqn8gNGHcaS78nfgzY4dw5UjEvmrvpRsUiVTL5+CAogclUPigxD8sO1ehHi/d
+         fBESRTO6Ts73/CXNm7xcFe5t/NHJg7ew8COCVnivHCbOlZQJKBw/w1bpi1B5Dt7aWcQt
+         Uu1F7Fs2caWVvLGN9CCf7Ii+nbQmpir9ZzZQc5SUEWG+v9mPFZkj8ba5ibmYYydO1STg
+         /3kw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=yTybR1aW4eMZpVM1uldf9iC6bC/GBH50ffUN3hamtG0=;
-        b=Fagy/NKdLU5mMDEtPNstgbTuNm7cUb9dbIJ+BxW11HmExMbDgMAiFegAFCYTfhTx+i
-         UIozqFEK4Ks1UiaXMpgQn15SaE4m6ZrX9mQH4oyNrAAAbrpv2iGzXN2vrafgNM3v3ocB
-         uI5eU8fyTLMRwRfFIsjDaTVLKY5HQ+e5zjOTHGel2gBOLutgTlWEztjpJrn5UgPZZ/Na
-         EF9NxXG4iLpocEMIb6G+WcgCstLSC5LC2dEH11L2RhnVNqufD3DgQUiMVVMuROfoUQqp
-         lcdh71T6iTcGspQgQrPY05LdkoQqT6LSbYbSvXqTGvDb5dirYgHw8yogRDdx7aLUEw7e
-         sEdA==
-X-Gm-Message-State: APjAAAWQkPJ3Rv+fsq72BK3a/0zcCtSJmjPZvg8KSPK16tHkuahR+6i5
-        1P3y6RSO9d0elKcMMIl27U0ldg==
-X-Google-Smtp-Source: APXvYqzO6ItVlv+jOBS7oMAObK1iiVAYVVl5ns4bMXuZsJgxjdMMjG8Nv11QymMvslkH+J7MV9NF8g==
-X-Received: by 2002:adf:ec09:: with SMTP id x9mr19592026wrn.187.1556058930029;
-        Tue, 23 Apr 2019 15:35:30 -0700 (PDT)
-Received: from [192.168.0.44] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
-        by smtp.googlemail.com with ESMTPSA id u189sm21269883wme.25.2019.04.23.15.35.28
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 23 Apr 2019 15:35:29 -0700 (PDT)
-Subject: Re: [PATCH v3 1/2] thermal: rcar_gen3_thermal: fix interrupt type
-To:     Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com,
-        edubezval@gmail.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se,
-        geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com,
-        marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com,
-        hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com,
-        dien.pham.ry@renesas.com, biju.das@bp.renesas.com,
-        erosca@de.adit-jv.com, george_davis@mentor.com,
-        joshua_frkuska@mentor.com
-References: <20190423141414.24264-1-jiada_wang@mentor.com>
- <20190423141414.24264-2-jiada_wang@mentor.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <a8e7d5d8-056c-a130-bf89-c3a29e982821@linaro.org>
-Date:   Wed, 24 Apr 2019 00:35:28 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=Azihi0+y+0A9GqQQKlVvEfb9wIg0Y4clL04ZCREwPkY=;
+        b=W6h97AFlvWjbz5lVrz0yYxA5iBHAch3VLr1Pz6cGhzrYBraMdkK7YDYsEqW/BiiiUb
+         gGHofca/sNdrCHpwJrCU9V5E033Md4IRBLRySe28GUpSYvLEHBGCbBEu3X5tN9j7uwxh
+         jSmfUYUAHNgkRrGdD1XGMSBv+aHpLceWnxalTbXFdiHVF4NdFLX/hcmhQUX+pIw+wFPY
+         jBp4D5CqF4vV+8nJ+VMxxP2/pWBfVpHhwiMkqLOeIWNYO3A5w6y9K9bvY+P4fi90d63c
+         mQ77u0q44KXopfZl49rP34ADh20ZSWyX/jeJkkqWL/mZvn3bU50q4DLBlbzLakOCnemt
+         vuOQ==
+X-Gm-Message-State: APjAAAXpvS8lENMsCG5gnsUuNYC4IAvg75AQmJPZKi5hry2dZ42AlJl/
+        gSncNegcGVV+UlsxkBFAHn4E5ZSqVsJ8lL2HC+YU3A==
+X-Google-Smtp-Source: APXvYqzAgWSvFmwXvZqHU/FHFza7GHyetVHeAnFJmJCXz5ucFwqzPKxmGeB1UPL7/LK2EWoMsV3eqS7yhFuHHd/5b0s=
+X-Received: by 2002:a50:b265:: with SMTP id o92mr18010685edd.221.1556059867217;
+ Tue, 23 Apr 2019 15:51:07 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190423141414.24264-2-jiada_wang@mentor.com>
+References: <20190416170701.50333-1-wvw@google.com> <1555923800.26198.30.camel@intel.com>
+ <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com> <1556000129.26198.50.camel@intel.com>
+In-Reply-To: <1556000129.26198.50.camel@intel.com>
+From:   Wei Wang <wvw@google.com>
+Date:   Tue, 23 Apr 2019 15:50:53 -0700
+Message-ID:
+ <CAGXk5ypj0ULM6mN1ZUYZimuf+7DV3BrN9wJWTm2G27OrizjzwA@mail.gmail.com>
+Subject: Re: [PATCH] thermal: core: skip update disabled thermal zones after suspend
+To:     Zhang Rui <rui.zhang@intel.com>
+Cc:     Wei Wang <wei.vince.wang@gmail.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190423223528.XYc93TtHuhBJz_nmP5kiZgDrGqndB1QxzO8OmxWXi1c@z>
+Message-ID: <20190423225053.PLBIyoEFAwGSUFohC_o7EG-ZaE2qoqKad-y2sbtP46A@z>
 
-On 23/04/2019 16:14, Jiada Wang wrote:
-> Currently IRQF_SHARED type interrupt line is allocated, but it
-> is not appropriate, as the interrupt line isn't shared between
-> different devices, instead IRQF_ONESHOT is the proper type.
-> 
-> By changing interrupt type to IRQF_ONESHOT, now irq handler is
-> no longer needed, as clear of interrupt status can be done in
-> threaded interrupt context.
-> 
-> Because IRQF_ONESHOT type interrupt line is kept disabled until
-> the threaded handler has been run, so there is no need to protect
-> read/write of REG_GEN3_IRQSTR with lock.
-> 
-> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+On Mon, Apr 22, 2019 at 11:15 PM Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> On =E4=B8=80, 2019-04-22 at 09:44 -0700, Wei Wang wrote:
+> > On Mon, Apr 22, 2019 at 2:03 AM Zhang Rui <rui.zhang@intel.com>
+> > wrote:
+> > >
+> > >
+> > > On =E4=BA=8C, 2019-04-16 at 10:07 -0700, Wei Wang wrote:
+> > > >
+> > > > It is unnecessary to update disabled thermal zones post suspend
+> > > > and
+> > > > sometimes leads error/warning in bad behaved thermal drivers.
+> > > >
+> > > a good catch, and in fact, there are more issues about thermal
+> > > handling
+> > > for disabled thermal zones, like we're able to read the temperature
+> > > of
+> > > disabled thermal zones, either via sysfs or via function calls like
+> > > thermal_zone_device_update.
+> > Thanks Rui for following up. Yes, we noticed the same behavior. Right
+> > now, individual thermal driver can still respect set_mode and present
+> > value meaningful or return error when thermal zone disabled, and
+> > that's what we do locally.
+> > Currently, sysfs-api documents "Preventing kernel thermal zone driver
+> > actions upon trip points so that user application can take full
+> > charge
+> > of the thermal management.", so is it intended for some other agents
+> > in kernel or user land polling temperature with function call or
+> > sysfs
+> > respectively?
+>
+> hmmm, here we have three cases,
+> 1). we can read the temperature and we can take cooling actions.
+> 2). we can read the temperature only
+> 3). we can not read the temperature
+>
+> we do have a case for 3), e.g. the wifi device, which registers a
+> thermal zone, but it does not work if wifi firmware is unloaded. And
+> IMO, we should set the thermal zone mode to disable for this case.
 
-Fixes: 7d4b269776ec6 ("enable hardware interrupts for trip points")
-Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Agree.
 
+Another thought of suspend/resume case is in mobile world, most of the
+thermal zone sensors are interrupt capable and the linked cooling
+devices are platform cooling devices whose states won't be affected
+during suspend.  So resetting each thermal zone during suspend/resume
+just wasted cycles/power on mobile due to re-setting trip threshold
+again and again and also delays in device resume. I am proposing that
+we have a flag in device tree per thermal zone to let thermal core not
+reset during suspend/resume.
 
+> I'm not sure if there is any case for 2), but if we do, it seems to me
+> that we should set its governor to nop, rather then the way we're
+> describing in the sys-abi file.
++1 noop sounds good. Do you have plan to change it?
 
-
-
-> ---
->  drivers/thermal/rcar_gen3_thermal.c | 34 +++++------------------------
->  1 file changed, 6 insertions(+), 28 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index 88fa41cf16e8..ebbaef5a3cf1 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -231,39 +231,17 @@ static void rcar_thermal_irq_set(struct rcar_gen3_thermal_priv *priv, bool on)
->  static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
->  {
->  	struct rcar_gen3_thermal_priv *priv = data;
-> +	int i;
->  	u32 status;
-> -	int i, ret = IRQ_HANDLED;
->  
-> -	spin_lock(&priv->lock);
->  	for (i = 0; i < priv->num_tscs; i++) {
->  		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
->  		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
->  		if (status)
-> -			ret = IRQ_WAKE_THREAD;
-> +			thermal_zone_device_update(priv->tscs[i]->zone,
-> +						   THERMAL_EVENT_UNSPECIFIED);
->  	}
->  
-> -	if (ret == IRQ_WAKE_THREAD)
-> -		rcar_thermal_irq_set(priv, false);
-> -
-> -	spin_unlock(&priv->lock);
-> -
-> -	return ret;
-> -}
-> -
-> -static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
-> -{
-> -	struct rcar_gen3_thermal_priv *priv = data;
-> -	unsigned long flags;
-> -	int i;
-> -
-> -	for (i = 0; i < priv->num_tscs; i++)
-> -		thermal_zone_device_update(priv->tscs[i]->zone,
-> -					   THERMAL_EVENT_UNSPECIFIED);
-> -
-> -	spin_lock_irqsave(&priv->lock, flags);
-> -	rcar_thermal_irq_set(priv, true);
-> -	spin_unlock_irqrestore(&priv->lock, flags);
-> -
->  	return IRQ_HANDLED;
->  }
->  
-> @@ -390,9 +368,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  		if (!irqname)
->  			return -ENOMEM;
->  
-> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
-> -						rcar_gen3_thermal_irq_thread,
-> -						IRQF_SHARED, irqname, priv);
-> +		ret = devm_request_threaded_irq(dev, irq, NULL,
-> +						rcar_gen3_thermal_irq,
-> +						IRQF_ONESHOT, irqname, priv);
->  		if (ret)
->  			return ret;
->  	}
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+>
+> we should fix the code and doc to use "mode" attribute to handle case
+> 3) instead.
+>
+> thanks,
+> rui
+> >
+> > Thanks!
+> > -Wei
+> > >
+> > > For this patch, I will take it as it fixes one of the problem.
+> > >
+> > > thanks,
+> > > rui
+> > >
+> > > >
+> > > > Signed-off-by: Wei Wang <wvw@google.com>
+> > > > ---
+> > > >  drivers/thermal/thermal_core.c | 8 ++++++++
+> > > >  1 file changed, 8 insertions(+)
+> > > >
+> > > > diff --git a/drivers/thermal/thermal_core.c
+> > > > b/drivers/thermal/thermal_core.c
+> > > > index 6590bb5cb688..5baf5cfab999 100644
+> > > > --- a/drivers/thermal/thermal_core.c
+> > > > +++ b/drivers/thermal/thermal_core.c
+> > > > @@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct
+> > > > notifier_block *nb,
+> > > >                            unsigned long mode, void *_unused)
+> > > >  {
+> > > >       struct thermal_zone_device *tz;
+> > > > +     enum thermal_device_mode tz_mode;
+> > > >
+> > > >       switch (mode) {
+> > > >       case PM_HIBERNATION_PREPARE:
+> > > > @@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct
+> > > > notifier_block *nb,
+> > > >       case PM_POST_SUSPEND:
+> > > >               atomic_set(&in_suspend, 0);
+> > > >               list_for_each_entry(tz, &thermal_tz_list, node) {
+> > > > +                     tz_mode =3D THERMAL_DEVICE_ENABLED;
+> > > > +                     if (tz->ops->get_mode)
+> > > > +                             tz->ops->get_mode(tz, &tz_mode);
+> > > > +
+> > > > +                     if (tz_mode =3D=3D THERMAL_DEVICE_DISABLED)
+> > > > +                             continue;
+> > > > +
+> > > >                       thermal_zone_device_init(tz);
+> > > >                       thermal_zone_device_update(tz,
+> > > >                                                  THERMAL_EVENT_UN
+> > > > S
+> > > > PECIFIED);
