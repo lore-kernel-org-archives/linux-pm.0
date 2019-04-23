@@ -2,113 +2,166 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E6EAC10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 08:12:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB170C10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 08:19:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 50E9220652
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 08:12:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SyA+tUpC"
+	by mail.kernel.org (Postfix) with ESMTP id AD8F720652
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 08:19:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556007586;
+	bh=mC5YvKlBNAd1rnr7YlnEjwkVNwtweqKiQ5Oh01VZI+s=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=KEtyBNtIcJ23N6rpR9aZo4E0XCjYnhTTu2dIi1MxdbYNwEHz1Gd/bOpZHBjTKA3EO
+	 Np77m6+YHpqAa6NJc2Cu6KCZJgvNIZYGMzQWrv32WyxBdVjs3o+TCN6laGwZEleS2K
+	 +rZJQnPEw6eq08KUc1B+YsFJ0SrRFn6QhBuh6YWw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725954AbfDWIML (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 04:12:11 -0400
-Received: from mail-wm1-f68.google.com ([209.85.128.68]:50775 "EHLO
-        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725939AbfDWIML (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 04:12:11 -0400
-Received: by mail-wm1-f68.google.com with SMTP id 10so1013998wmk.0;
-        Tue, 23 Apr 2019 01:12:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=BcYZCf5PYOgjHxDrrN02/6ixDizMI5wh0AGNFjJ5LZc=;
-        b=SyA+tUpCM5ovI9Zz+7yPD8BKSvd+AMjgDkZOcXpE19IQWV3S1WBaGiJMPn5zpB/Bjp
-         iBd11lr+TdIaRriUJD5eyrJs39kvqb8rvEEDmt9VWJc7Qmegs7igY1udrBMuQGpWFn+A
-         e+V9o2b2Pi99KjyWtpkUoW40QHyU+pBndUQSuW+eEhlQJ+1sZA3lr9j47m/U9hnD+hnQ
-         AngAHKNqT7d+xsGIKmsLv0d3GQV1LvpIUY9juVCvPdaOnQhhWqOGQn7HufkpwgOJ/pRd
-         srGDB+iS5WlnnyqfBndFhWe9ExUssrnN9YE3DP262A+hFx2dpE+dN41bFAI5eEr6dckr
-         YV4A==
+        id S1726421AbfDWITp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 04:19:45 -0400
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:35458 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725888AbfDWITp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 04:19:45 -0400
+Received: by mail-ot1-f68.google.com with SMTP id m10so12065070otp.2;
+        Tue, 23 Apr 2019 01:19:45 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
-         :mime-version:content-transfer-encoding;
-        bh=BcYZCf5PYOgjHxDrrN02/6ixDizMI5wh0AGNFjJ5LZc=;
-        b=ZKIreseuE+z+JW//KmPjYKpJXD21fH9fIFSFsQ3zX8uP/A/x2/KLR/T/Fg5NAusqLX
-         c+uIWkOGg/d9yX79mdgHbTY15f6+bGNz9AWfUMaLM++tGsVOFglB09Lh3jF1QJNO/Zy+
-         lP65uIOoaMndXfcX6OwCm5z7JG4cdvR63HxEvq8eVnLy9oFlt5f+uAg0gAMQ/MZDqtLW
-         YElqaoT8LFB3k3KZEfqboFigcq9RYTpv3CPSV8GpYpvrFiAaA17n8e1VATEML21wcneY
-         eaqc1l/ZYOYmgq7d3PihBT69oHK+v6z4a+hULCKJ7q9fOVl8fzrDD2iZJjUdMzA7lRfa
-         B4fQ==
-X-Gm-Message-State: APjAAAUB4uR15g2VD4rFJUI6FCmkI51mwyB1Ix/3o6r8Y+LTDhAeWgrZ
-        bn4TmlRI43nafX5V/lknx0tt70Di
-X-Google-Smtp-Source: APXvYqxcFDo/+tMhniAYV6M/cV+lnzMoYw47x8tWtHT9MqVzyMHdjvxZ8+s+zegd8pCGOhYUgtIvLg==
-X-Received: by 2002:a7b:ce1a:: with SMTP id m26mr1155912wmc.131.1556007129516;
-        Tue, 23 Apr 2019 01:12:09 -0700 (PDT)
-Received: from cizrna.lan ([109.72.12.5])
-        by smtp.gmail.com with ESMTPSA id o15sm18858829wrj.59.2019.04.23.01.12.07
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Tue, 23 Apr 2019 01:12:08 -0700 (PDT)
-From:   Tomeu Vizoso <tomeu.vizoso@collabora.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Tomeu Vizoso <tomeu.vizoso@collabora.com>,
-        Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
-Subject: [PATCH] PM / devfreq: Return -ENODEV from try_then_request_governor
-Date:   Tue, 23 Apr 2019 10:11:56 +0200
-Message-Id: <20190423081158.29859-1-tomeu.vizoso@collabora.com>
-X-Mailer: git-send-email 2.20.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=516p+GjAHChMueYIwW6iWAf1BlxelEA1TY1wh3RJfac=;
+        b=mHnuCL90glABiO9sHKPavTMb5a7OP8WBQhobAVFxJY3GPAib8zrK2cg+Z8CCbivGhP
+         fYM7nvauqG8KymhveloNCOHX5KHobaiHlDC5dMb3kD3ljdu/7etTTnDb4ou+YLSlqFeM
+         +clvQq4RIhUxfWinq3z4E//x2h9Vqs4ZpFnJgG7mHlp0mQN5vh2nsoa7LyuLzxIQQPA3
+         e9r5v0XkAQwP0HDqxIhLqpw1AbNVTfAN+fMAkBQhkz3LAMRjfdHdoFg6Omq/yQ7AKafn
+         FRu9U/UJx3AaIiHS+yKbdjBxIbjczsCOiQIMt+4t1ixlgLkw+Lpw+O44NliBHr+i8AlS
+         w2tA==
+X-Gm-Message-State: APjAAAViizm+v5N/wNr+CowlvSWxucJ55I53/DIbKQWaE4tnFud+zqfD
+        wK1mcDN0UAe0fVBs6PHwQYr8CG2XxJjiBG5Dm7k=
+X-Google-Smtp-Source: APXvYqxOhc4NT+Tts6ECSd9M4180Yx3dyXYSWJ6yMtp54wuKJ9LMMtVt2MA+uzXoPYiLZoKekNLpWZuX7vVX629hJtY=
+X-Received: by 2002:a9d:648f:: with SMTP id g15mr14105987otl.220.1556007583924;
+ Tue, 23 Apr 2019 01:19:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <38900622.ao2n2t5aPS@kreacher> <20190422081709.i5mv4fbket5ls4xc@vireshk-i7>
+In-Reply-To: <20190422081709.i5mv4fbket5ls4xc@vireshk-i7>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 23 Apr 2019 10:19:29 +0200
+Message-ID:
+ <CAJZ5v0iP4TGAdRKJ3WaXTTgg1ZyGWoYLm2cJZdww=BmYWZ2tUQ@mail.gmail.com>
+Subject: Re: [PATCH] x86: tsc: Rework time_cpufreq_notifier()
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        x86 Maintainers <x86@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Borislav Petkov <bp@suse.de>,
+        LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190423081156.JxMDfYeUTBsdCpTIT7Z_FKv7iKfgdejCe1lm5Ux6v10@z>
+Message-ID: <20190423081929.A8qeBd5OlQJpp_AMZ-YNDMmmpEVpsygDMYcRdVbk6lE@z>
 
-Callers don't expect it to return NULL, but an error code.
+On Mon, Apr 22, 2019 at 10:17 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 18-04-19, 16:11, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > There are problems with running time_cpufreq_notifier() on SMP
+> > systems.
+> >
+> > First off, the rdtsc() called from there runs on the CPU executing
+> > that code and not necessarily on the CPU whose sched_clock() rate is
+> > updated which is questionable at best.
+> >
+> > Second, in the cases when the frequencies of all CPUs in an SMP
+> > system are always in sync, it is not sufficient to update just
+> > one of them or the set associated with a given cpufreq policy on
+> > frequency changes - all CPUs in the system should be updated and
+> > that would require more than a simple transition notifier.
+> >
+> > Note, however, that the underlying issue (the TSC rate depending on
+> > the CPU frequency) has not been present in hardware shipping for the
+> > last few years and in quite a few relevant cases (acpi-cpufreq in
+> > particular) running time_cpufreq_notifier() will cause the TSC to
+> > be marked as unstable anyway.
+> >
+> > For this reason, make time_cpufreq_notifier() simply mark the TSC
+> > as unstable and give up when run on SMP and only try to carry out
+> > any adjustments otherwise.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  arch/x86/kernel/tsc.c |   29 ++++++++++++++---------------
+> >  1 file changed, 14 insertions(+), 15 deletions(-)
+> >
+> > Index: linux-pm/arch/x86/kernel/tsc.c
+> > ===================================================================
+> > --- linux-pm.orig/arch/x86/kernel/tsc.c
+> > +++ linux-pm/arch/x86/kernel/tsc.c
+> > @@ -185,8 +185,7 @@ static void __init cyc2ns_init_boot_cpu(
+> >  /*
+> >   * Secondary CPUs do not run through tsc_init(), so set up
+> >   * all the scale factors for all CPUs, assuming the same
+> > - * speed as the bootup CPU. (cpufreq notifiers will fix this
+> > - * up if their speed diverges)
+> > + * speed as the bootup CPU.
+> >   */
+> >  static void __init cyc2ns_init_secondary_cpus(void)
+> >  {
+> > @@ -937,12 +936,12 @@ void tsc_restore_sched_clock_state(void)
+> >  }
+> >
+> >  #ifdef CONFIG_CPU_FREQ
+> > -/* Frequency scaling support. Adjust the TSC based timer when the cpu frequency
+> > +/*
+> > + * Frequency scaling support. Adjust the TSC based timer when the CPU frequency
+> >   * changes.
+> >   *
+> > - * RED-PEN: On SMP we assume all CPUs run with the same frequency.  It's
+> > - * not that important because current Opteron setups do not support
+> > - * scaling on SMP anyroads.
+> > + * NOTE: On SMP the situation is not fixable in general, so simply mark the TSC
+> > + * as unstable and give up in those cases.
+> >   *
+> >   * Should fix up last_tsc too. Currently gettimeofday in the
+> >   * first tick after the change will be slightly wrong.
+> > @@ -956,22 +955,22 @@ static int time_cpufreq_notifier(struct
+> >                               void *data)
+> >  {
+> >       struct cpufreq_freqs *freq = data;
+> > -     unsigned long *lpj;
+> >
+> > -     lpj = &boot_cpu_data.loops_per_jiffy;
+> > -#ifdef CONFIG_SMP
+> > -     if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+> > -             lpj = &cpu_data(freq->cpu).loops_per_jiffy;
+> > -#endif
+> > +     if (num_online_cpus() > 1) {
+>
+> What about checking num_possible_cpus() instead ? So we reliably quit
+> everytime even if some CPUs are offlined.
 
-Fixes Oops such as the one below, when one tries to set a governor that
-isn't available:
+That would work too.
 
-Unable to handle kernel NULL pointer dereference at virtual address 00000018
+The point here is that the adjustments can work if the "additional"
+CPUs never go online.
 
-[<c0dcf718>] (governor_store) from [<c0539558>] (kernfs_fop_write+0x100/0x1e0)
-[<c0539558>] (kernfs_fop_write) from [<c04b09b4>] (__vfs_write+0x2c/0x17c)
-[<c04b09b4>] (__vfs_write) from [<c04b33fc>] (vfs_write+0xa4/0x184)
-[<c04b33fc>] (vfs_write) from [<c04b361c>] (ksys_write+0x4c/0xac)
-[<c04b361c>] (ksys_write) from [<c0301000>] (ret_fast_syscall+0x0/0x28)
+> And can we place this check before registering the notifier, so it
+> never gets called ?
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
-Reported-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
- drivers/devfreq/devfreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Well, in that case the TSC would need to be marked as unstable
+upfront, but that really only would be necessary if cpufreq was
+actually used.  If it wasn't used, whatever the reason, marking the
+TSC as unstable here would be excessive.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 0ae3de76833b..5539e9be718d 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
- 		/* Restore previous state before return */
- 		mutex_lock(&devfreq_list_lock);
- 		if (err)
--			return NULL;
-+			return ERR_PTR(-ENODEV);
- 
- 		governor = find_devfreq_governor(name);
- 	}
--- 
-2.20.1
+We're talking about old HW, mind you, and I know about systems shipped
+around that time frame that didn't support performance scaling at all
+and had the TSC (see the Opteron comment removed by this patch, for
+instance).
 
+So I'd rather not change that part.
