@@ -1,81 +1,112 @@
-From: Eugeniu Rosca <erosca@de.adit-jv.com>
-Subject: Re: [PATCH v3 0/2] thermal: rcar_gen3_thermal: fix IRQ issues
-Date: Wed, 24 Apr 2019 00:27:22 +0200
-Message-ID: <20190423222622.GA30401@vmlxhi-102.adit-jv.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 1/2] thermal: rcar_gen3_thermal: fix interrupt type
+Date: Wed, 24 Apr 2019 00:35:28 +0200
+Message-ID: <a8e7d5d8-056c-a130-bf89-c3a29e982821@linaro.org>
 References: <20190423141414.24264-1-jiada_wang@mentor.com>
+ <20190423141414.24264-2-jiada_wang@mentor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190423141414.24264-1-jiada_wang@mentor.com>
+In-Reply-To: <20190423141414.24264-2-jiada_wang@mentor.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiada Wang <jiada_wang@mentor.com>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se, geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com, biju.das@bp.renesas.com, george_davis@mentor.com, joshua_frkuska@mentor.com, Eugeniu Rosca <erosca@de.adit-jv.com>, Eugeniu Rosca <rosca.eugeniu@gmail.com>
+To: Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se, geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com, biju.das@bp.renesas.com, erosca@de.adit-jv.com, george_davis@mentor.com, joshua_frkuska@mentor.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jiada,
+On 23/04/2019 16:14, Jiada Wang wrote:
+> Currently IRQF_SHARED type interrupt line is allocated, but it
+> is not appropriate, as the interrupt line isn't shared between
+> different devices, instead IRQF_ONESHOT is the proper type.
+> 
+> By changing interrupt type to IRQF_ONESHOT, now irq handler is
+> no longer needed, as clear of interrupt status can be done in
+> threaded interrupt context.
+> 
+> Because IRQF_ONESHOT type interrupt line is kept disabled until
+> the threaded handler has been run, so there is no need to protect
+> read/write of REG_GEN3_IRQSTR with lock.
+> 
+> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
 
-On Tue, Apr 23, 2019 at 11:14:12PM +0900, Jiada Wang wrote:
-> There are issues with interrupt handling in rcar_gen3_thermal driver.
-> 
-> Currently IRQ is remain enabled after .remove, later if device is probed,
-> IRQ is requested before .thermal_init, this may cause IRQ function be
-> triggered but not able to clear IRQ status, thus cause system to hang.
-> 
-> Since the irq line isn't shared between different devices,
-> so the proper interrupt type flag should be IRQF_ONESHOT.
-> 
-> This patch-set fix these interrupt handling retated issues.
-> 
+Fixes: 7d4b269776ec6 ("enable hardware interrupts for trip points")
+Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+
+
+
+
 > ---
-> v3: fix to use correct code base
->     remove unused "flag" variable in rcar_gen3_thermal_irq
-[..]
+>  drivers/thermal/rcar_gen3_thermal.c | 34 +++++------------------------
+>  1 file changed, 6 insertions(+), 28 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+> index 88fa41cf16e8..ebbaef5a3cf1 100644
+> --- a/drivers/thermal/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+> @@ -231,39 +231,17 @@ static void rcar_thermal_irq_set(struct rcar_gen3_thermal_priv *priv, bool on)
+>  static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
+>  {
+>  	struct rcar_gen3_thermal_priv *priv = data;
+> +	int i;
+>  	u32 status;
+> -	int i, ret = IRQ_HANDLED;
+>  
+> -	spin_lock(&priv->lock);
+>  	for (i = 0; i < priv->num_tscs; i++) {
+>  		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
+>  		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
+>  		if (status)
+> -			ret = IRQ_WAKE_THREAD;
+> +			thermal_zone_device_update(priv->tscs[i]->zone,
+> +						   THERMAL_EVENT_UNSPECIFIED);
+>  	}
+>  
+> -	if (ret == IRQ_WAKE_THREAD)
+> -		rcar_thermal_irq_set(priv, false);
+> -
+> -	spin_unlock(&priv->lock);
+> -
+> -	return ret;
+> -}
+> -
+> -static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
+> -{
+> -	struct rcar_gen3_thermal_priv *priv = data;
+> -	unsigned long flags;
+> -	int i;
+> -
+> -	for (i = 0; i < priv->num_tscs; i++)
+> -		thermal_zone_device_update(priv->tscs[i]->zone,
+> -					   THERMAL_EVENT_UNSPECIFIED);
+> -
+> -	spin_lock_irqsave(&priv->lock, flags);
+> -	rcar_thermal_irq_set(priv, true);
+> -	spin_unlock_irqrestore(&priv->lock, flags);
+> -
+>  	return IRQ_HANDLED;
+>  }
+>  
+> @@ -390,9 +368,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  		if (!irqname)
+>  			return -ENOMEM;
+>  
+> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+> -						rcar_gen3_thermal_irq_thread,
+> -						IRQF_SHARED, irqname, priv);
+> +		ret = devm_request_threaded_irq(dev, irq, NULL,
+> +						rcar_gen3_thermal_irq,
+> +						IRQF_ONESHOT, irqname, priv);
+>  		if (ret)
+>  			return ret;
+>  	}
+> 
 
-Based on below:
- - basic functional testing [1]
- - 40 min of loading and unloading the driver in a loop doesn't
-   trigger the original problem (soft lockup)
-
-Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
-
-[1] Basic functional testing on H3-ES2.0-ULCB-KF-M06:
-rcar-gen3:~# T0=/sys/devices/virtual/thermal/thermal_zone0/temp
-rcar-gen3:~# T1=/sys/devices/virtual/thermal/thermal_zone1/temp
-rcar-gen3:~# T2=/sys/devices/virtual/thermal/thermal_zone2/temp
-rcar-gen3:~# stress-ng --cpu 16 --timeout 60s &
-[1] 2300
-rcar-gen3:~# stress-ng: info: [2300] dispatching hogs: 16 cpu
-rcar-gen3:~# for i in $(seq 1 24); do \
-                 cat $T0 $T1 $T2 | tr '\n' ' '; echo; sleep 5; \
-             done
-31500 37500 34500 
-32000 37500 34500 
-32500 38000 35000 
-33500 39500 36500 
-34000 39500 36500 
-35000 40500 37500 
-35500 41000 38000 
-36000 42000 38500 
-36500 42000 39000 
-37500 43000 40000 
-stress-ng: info: [2300] successful run completed in 60.55s
-[1]+  Done                    stress-ng --cpu 16 --timeout 60s
-37500 42500 39000 
-37500 41500 39000 
-37000 41000 38000 
-36500 40500 38000 
-36000 40000 37000 
-35500 39500 36500 
-35500 40000 36000 
-35000 39500 35500 
-35000 39500 36000 
-34500 38000 35500 
-34500 39000 35500 
-34000 38500 35000 
-34000 37500 35500 
-33500 38000 35500 
 
 -- 
-Best regards,
-Eugeniu.
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
