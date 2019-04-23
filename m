@@ -1,124 +1,248 @@
-From: Wei Wang <wvw@google.com>
-Subject: Re: [PATCH] thermal: core: skip update disabled thermal zones after suspend
-Date: Tue, 23 Apr 2019 15:50:53 -0700
-Message-ID: <CAGXk5ypj0ULM6mN1ZUYZimuf+7DV3BrN9wJWTm2G27OrizjzwA@mail.gmail.com>
-References: <20190416170701.50333-1-wvw@google.com> <1555923800.26198.30.camel@intel.com>
- <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com> <1556000129.26198.50.camel@intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal/drivers/of: Add a get_temp_id callback function
+Date: Wed, 24 Apr 2019 01:08:22 +0200
+Message-ID: <bc10d520-4d15-74d6-0dc2-fd63df8d9a21@linaro.org>
+References: <20190416172203.4679-1-daniel.lezcano@linaro.org>
+ <20190423154430.GA16014@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1556000129.26198.50.camel@intel.com>
+In-Reply-To: <20190423154430.GA16014@localhost.localdomain>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Wei Wang <wei.vince.wang@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, andrew.smirnov@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 22, 2019 at 11:15 PM Zhang Rui <rui.zhang@intel.com> wrote:
->
-> On =E4=B8=80, 2019-04-22 at 09:44 -0700, Wei Wang wrote:
-> > On Mon, Apr 22, 2019 at 2:03 AM Zhang Rui <rui.zhang@intel.com>
-> > wrote:
-> > >
-> > >
-> > > On =E4=BA=8C, 2019-04-16 at 10:07 -0700, Wei Wang wrote:
-> > > >
-> > > > It is unnecessary to update disabled thermal zones post suspend
-> > > > and
-> > > > sometimes leads error/warning in bad behaved thermal drivers.
-> > > >
-> > > a good catch, and in fact, there are more issues about thermal
-> > > handling
-> > > for disabled thermal zones, like we're able to read the temperature
-> > > of
-> > > disabled thermal zones, either via sysfs or via function calls like
-> > > thermal_zone_device_update.
-> > Thanks Rui for following up. Yes, we noticed the same behavior. Right
-> > now, individual thermal driver can still respect set_mode and present
-> > value meaningful or return error when thermal zone disabled, and
-> > that's what we do locally.
-> > Currently, sysfs-api documents "Preventing kernel thermal zone driver
-> > actions upon trip points so that user application can take full
-> > charge
-> > of the thermal management.", so is it intended for some other agents
-> > in kernel or user land polling temperature with function call or
-> > sysfs
-> > respectively?
->
-> hmmm, here we have three cases,
-> 1). we can read the temperature and we can take cooling actions.
-> 2). we can read the temperature only
-> 3). we can not read the temperature
->
-> we do have a case for 3), e.g. the wifi device, which registers a
-> thermal zone, but it does not work if wifi firmware is unloaded. And
-> IMO, we should set the thermal zone mode to disable for this case.
+On 23/04/2019 17:44, Eduardo Valentin wrote:
+> Hello,
+> 
+> On Tue, Apr 16, 2019 at 07:22:03PM +0200, Daniel Lezcano wrote:
+>> Currently when we register a sensor, we specify the sensor id and a data
+>> pointer to be passed when the get_temp function is called. However the
+>> sensor_id is not passed to the get_temp callback forcing the driver to
+>> do extra allocation and adding back pointer to find out from the sensor
+>> information the driver data and then back to the sensor id.
+>>
+>> Add a new callback get_temp_id() which will be called if set. It will
+>> call the get_temp_id() with the sensor id.
+>>
+>> That will be more consistent with the registering function.
+> 
+> I still do not understand why we need to have a get_id callback.
+> The use cases I have seen so far, which I have been intentionally rejecting, are
+> mainly solvable by creating other compatible entries. And really, if you
+> have, say a bandgap, chip that supports multiple sensors, but on
+> SoC version A it has 5 sensors, and on SoC version B it has only 4,
+> or on SoC version C, it has 5 but they are either logially located
+> in different places (gpu vs iva regions), these are all cases in which
+> you want a different compatible!
+> 
+> Do you mind sharing why you need a get sensor id callback?
 
-Agree.
+It is not a get sensor id callback, it is a get_temp callback which pass
+the sensor id.
 
-Another thought of suspend/resume case is in mobile world, most of the
-thermal zone sensors are interrupt capable and the linked cooling
-devices are platform cooling devices whose states won't be affected
-during suspend.  So resetting each thermal zone during suspend/resume
-just wasted cycles/power on mobile due to re-setting trip threshold
-again and again and also delays in device resume. I am proposing that
-we have a flag in device tree per thermal zone to let thermal core not
-reset during suspend/resume.
+See in the different drivers, it is a common pattern there is a
+structure for the driver, then a structure for the sensor. When the
+get_temp is called, the callback needs info from the sensor structure
+and from the driver structure, so a back pointer to the driver structure
+is added in the sensor structure.
 
-> I'm not sure if there is any case for 2), but if we do, it seems to me
-> that we should set its governor to nop, rather then the way we're
-> describing in the sys-abi file.
-+1 noop sounds good. Do you have plan to change it?
+Example:
 
->
-> we should fix the code and doc to use "mode" attribute to handle case
-> 3) instead.
->
-> thanks,
-> rui
-> >
-> > Thanks!
-> > -Wei
-> > >
-> > > For this patch, I will take it as it fixes one of the problem.
-> > >
-> > > thanks,
-> > > rui
-> > >
-> > > >
-> > > > Signed-off-by: Wei Wang <wvw@google.com>
-> > > > ---
-> > > >  drivers/thermal/thermal_core.c | 8 ++++++++
-> > > >  1 file changed, 8 insertions(+)
-> > > >
-> > > > diff --git a/drivers/thermal/thermal_core.c
-> > > > b/drivers/thermal/thermal_core.c
-> > > > index 6590bb5cb688..5baf5cfab999 100644
-> > > > --- a/drivers/thermal/thermal_core.c
-> > > > +++ b/drivers/thermal/thermal_core.c
-> > > > @@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct
-> > > > notifier_block *nb,
-> > > >                            unsigned long mode, void *_unused)
-> > > >  {
-> > > >       struct thermal_zone_device *tz;
-> > > > +     enum thermal_device_mode tz_mode;
-> > > >
-> > > >       switch (mode) {
-> > > >       case PM_HIBERNATION_PREPARE:
-> > > > @@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct
-> > > > notifier_block *nb,
-> > > >       case PM_POST_SUSPEND:
-> > > >               atomic_set(&in_suspend, 0);
-> > > >               list_for_each_entry(tz, &thermal_tz_list, node) {
-> > > > +                     tz_mode =3D THERMAL_DEVICE_ENABLED;
-> > > > +                     if (tz->ops->get_mode)
-> > > > +                             tz->ops->get_mode(tz, &tz_mode);
-> > > > +
-> > > > +                     if (tz_mode =3D=3D THERMAL_DEVICE_DISABLED)
-> > > > +                             continue;
-> > > > +
-> > > >                       thermal_zone_device_init(tz);
-> > > >                       thermal_zone_device_update(tz,
-> > > >                                                  THERMAL_EVENT_UN
-> > > > S
-> > > > PECIFIED);
+struct hisi_thermal_sensor {
+        struct hisi_thermal_data *data;   <-- back pointer
+        struct thermal_zone_device *tzd;
+        const char *irq_name;
+        uint32_t id; 		<-- note this field
+        uint32_t thres_temp;
+};
+
+struct hisi_thermal_data {
+        const struct hisi_thermal_ops *ops;
+        struct hisi_thermal_sensor *sensor;
+        struct platform_device *pdev;
+        struct clk *clk;
+        void __iomem *regs;
+        int nr_sensors;
+};
+
+
+In the get_temp callback:
+
+static int hisi_thermal_get_temp(void *__data, int *temp)
+{
+        struct hisi_thermal_sensor *sensor = __data;
+        struct hisi_thermal_data *data = sensor->data;
+
+        *temp = data->ops->get_temp(sensor);
+
+        dev_dbg(&data->pdev->dev, "tzd=%p, id=%d, temp=%d, thres=%d\n",
+                sensor->tzd, sensor->id, *temp, sensor->thres_temp);
+
+        return 0;
+}
+
+
+Another example:
+
+struct qoriq_sensor {
+        struct thermal_zone_device      *tzd;
+        struct qoriq_tmu_data           *qdata; <-- back pointer
+        int                             id;  	<-- note this field
+};
+
+struct qoriq_tmu_data {
+        struct qoriq_tmu_regs __iomem *regs;
+        bool little_endian;
+        struct qoriq_sensor     *sensor[SITES_MAX];
+};
+
+static int tmu_get_temp(void *p, int *temp)
+{
+        struct qoriq_sensor *qsensor = p;
+        struct qoriq_tmu_data *qdata = qsensor->qdata;
+        u32 val;
+
+        val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
+        *temp = (val & 0xff) * 1000;
+
+        return 0;
+}
+
+Another example:
+
+
+struct rockchip_thermal_sensor {
+        struct rockchip_thermal_data *thermal;	<-- back pointer
+        struct thermal_zone_device *tzd;
+        int id;					<-- note this field
+};
+
+struct rockchip_thermal_data {
+        const struct rockchip_tsadc_chip *chip;
+        struct platform_device *pdev;
+        struct reset_control *reset;
+
+        struct rockchip_thermal_sensor sensors[SOC_MAX_SENSORS];
+
+	[ ... ]
+};
+
+
+static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
+{
+        struct rockchip_thermal_sensor *sensor = _sensor;
+        struct rockchip_thermal_data *thermal = sensor->thermal;
+        const struct rockchip_tsadc_chip *tsadc = sensor->thermal->chip;
+        int retval;
+
+        retval = tsadc->get_temp(&tsadc->table,
+                                 sensor->id, thermal->regs, out_temp);
+        dev_dbg(&thermal->pdev->dev, "sensor %d - temp: %d, retval: %d\n",
+                sensor->id, *out_temp, retval);
+
+        return retval;
+}
+
+This patch adds an alternate get_temp_id() along with the get_temp()
+ops. If the ops field for get_temp_id is filled, it will be invoked and
+will pass the sensor id used when registering. It results the driver
+structure can be passed and the sensor id gives the index in the sensor
+ table in this structure. The back pointer is no longer needed, the id
+field neither and I suspect, by domino effect, more structures will
+disappear or will be simplified (eg. the above rockchip sensor structure
+disappear and the thermal_data structure will contain an array of
+thermal zone devices).
+
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Tested-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+>> ---
+>>  drivers/thermal/of-thermal.c | 19 +++++++++++++------
+>>  include/linux/thermal.h      |  1 +
+>>  2 files changed, 14 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+>> index 2df059cc07e2..787d1cbe13f3 100644
+>> --- a/drivers/thermal/of-thermal.c
+>> +++ b/drivers/thermal/of-thermal.c
+>> @@ -78,6 +78,8 @@ struct __thermal_zone {
+>>  
+>>  	/* sensor interface */
+>>  	void *sensor_data;
+>> +	int sensor_id;
+>> +
+>>  	const struct thermal_zone_of_device_ops *ops;
+>>  };
+>>  
+>> @@ -88,10 +90,14 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
+>>  {
+>>  	struct __thermal_zone *data = tz->devdata;
+>>  
+>> -	if (!data->ops->get_temp)
+>> -		return -EINVAL;
+>> +	if (data->ops->get_temp)
+>> +		return data->ops->get_temp(data->sensor_data, temp);
+>>  
+>> -	return data->ops->get_temp(data->sensor_data, temp);
+>> +	if (data->ops->get_temp_id)
+>> +		return data->ops->get_temp_id(data->sensor_id,
+>> +					      data->sensor_data, temp);
+>> +
+>> +	return -EINVAL;
+>>  }
+>>  
+>>  static int of_thermal_set_trips(struct thermal_zone_device *tz,
+>> @@ -407,8 +413,8 @@ static struct thermal_zone_device_ops of_thermal_ops = {
+>>  /***   sensor API   ***/
+>>  
+>>  static struct thermal_zone_device *
+>> -thermal_zone_of_add_sensor(struct device_node *zone,
+>> -			   struct device_node *sensor, void *data,
+>> +thermal_zone_of_add_sensor(struct device_node *zone, struct device_node *sensor,
+>> +			   int sensor_id, void *data,
+>>  			   const struct thermal_zone_of_device_ops *ops)
+>>  {
+>>  	struct thermal_zone_device *tzd;
+>> @@ -426,6 +432,7 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+>>  	mutex_lock(&tzd->lock);
+>>  	tz->ops = ops;
+>>  	tz->sensor_data = data;
+>> +	tz->sensor_id = sensor_id;
+>>  
+>>  	tzd->ops->get_temp = of_thermal_get_temp;
+>>  	tzd->ops->get_trend = of_thermal_get_trend;
+>> @@ -516,7 +523,7 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
+>>  		}
+>>  
+>>  		if (sensor_specs.np == sensor_np && id == sensor_id) {
+>> -			tzd = thermal_zone_of_add_sensor(child, sensor_np,
+>> +			tzd = thermal_zone_of_add_sensor(child, sensor_np, sensor_id,
+>>  							 data, ops);
+>>  			if (!IS_ERR(tzd))
+>>  				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index 5f4705f46c2f..2762d7e6dd86 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -351,6 +351,7 @@ struct thermal_genl_event {
+>>   *		   hardware.
+>>   */
+>>  struct thermal_zone_of_device_ops {
+>> +	int (*get_temp_id)(int, void *, int *);
+>>  	int (*get_temp)(void *, int *);
+>>  	int (*get_trend)(void *, int, enum thermal_trend *);
+>>  	int (*set_trips)(void *, int, int);
+>> -- 
+>> 2.17.1
+>>
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
