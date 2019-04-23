@@ -2,105 +2,116 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08C94C10F03
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 14:44:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EEC9C10F03
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 14:58:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C0DF121738
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 14:44:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=cogentembedded-com.20150623.gappssmtp.com header.i=@cogentembedded-com.20150623.gappssmtp.com header.b="vhTIMwo0"
+	by mail.kernel.org (Postfix) with ESMTP id 46EFF20674
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 14:58:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727829AbfDWOoV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 10:44:21 -0400
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:37662 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727467AbfDWOoV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 10:44:21 -0400
-Received: by mail-lj1-f193.google.com with SMTP id v13so1200810ljk.4
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 07:44:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cogentembedded-com.20150623.gappssmtp.com; s=20150623;
-        h=subject:to:cc:references:from:organization:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=vVdK0v49PgDzk6jAF71uYV8DzfTA8hkwoYIT2UMQ8Cs=;
-        b=vhTIMwo0qd3NmRWJvu5iLuqCBUgO06z7jlnTfQrfKPqWwzdN+zeDmLQ5X+KEyghxDu
-         0lRkg7q08NT2BZp7jkPZ/FlydGekUv/E/gK6AXpfDfncNKmMtKyRHj3txubK7D4E6DbL
-         cBjUbTRqv7/ajt4GMtonxTqwYhnXwclUqvvyydypXwewwefAsAEo536oEfUfM5GAklY7
-         5i/mRlfjWJvGDcI+5Y1n9oQjuTPFaQtWJ2FJigtmo1VE8XfA/CRhNboQu++1sE4SoD3G
-         dsQWX/Wgvic1dBuvvsVvy8ItDzibx3ue4J/OwsQgHnYSR2Y+lcjEJ9/pbTGHLG7X59tS
-         TvbQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:organization
-         :message-id:date:user-agent:mime-version:in-reply-to
-         :content-language:content-transfer-encoding;
-        bh=vVdK0v49PgDzk6jAF71uYV8DzfTA8hkwoYIT2UMQ8Cs=;
-        b=ia+OCNzsWpOTtQA1U2inI87KudkaR8Remszr9yPRRW08CXjoJ2x6wsVD06uJ4A5Cir
-         R7h0wJlq0ufgvDdN454PxwTKRDH2gnNFrI7An0XtMVwXCXg8kM7Svx/7in/SFAKD/x/p
-         40RTildAF4gvEprhHeqzcyVuN69WvHxxe2yuzgQaI1pz0Mb0o3xA0c/fF858rSG9ej7t
-         F21eccyYxoEHVOw0AhliIQHRc45qAS67JTGEebRWvDFZiUA42UasftXFlevfgdjnKV9B
-         PwzdDLuQ3pAKpLxktNjkIsz3RCEzKwjwYBj/VEQgB/nufLeRx5pD6KtbhC14O093Wpz0
-         NfKw==
-X-Gm-Message-State: APjAAAW3tWXLi2ll2HzlnENSaPGG8EIs27Kla3TG2juh2utEC+AQGqZK
-        WtnsgAP3eT0bb0uW7EfimvU3Vw==
-X-Google-Smtp-Source: APXvYqzxVjpV3l2jJGPXQFfa9YnHZCH72mkjmFrdE89aXpSTFia65TdDAJozqJaMxwcD6LUse6X1ew==
-X-Received: by 2002:a2e:219:: with SMTP id 25mr14113073ljc.34.1556030659021;
-        Tue, 23 Apr 2019 07:44:19 -0700 (PDT)
-Received: from wasted.cogentembedded.com ([31.173.82.73])
-        by smtp.gmail.com with ESMTPSA id 77sm3422142ljs.58.2019.04.23.07.44.16
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 23 Apr 2019 07:44:17 -0700 (PDT)
-Subject: Re: [PATCH v3 2/2] thermal: rcar_gen3_thermal: disable interrupt in
- .remove
-To:     Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com,
-        edubezval@gmail.com, daniel.lezcano@linaro.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se,
-        geert+renesas@glider.be, marek.vasut+renesas@gmail.com,
-        kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com,
-        fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com,
-        biju.das@bp.renesas.com, erosca@de.adit-jv.com,
-        george_davis@mentor.com, joshua_frkuska@mentor.com
+        id S1728356AbfDWO6L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 10:58:11 -0400
+Received: from smtp1.de.adit-jv.com ([93.241.18.167]:56529 "EHLO
+        smtp1.de.adit-jv.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728300AbfDWO6L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 10:58:11 -0400
+Received: from localhost (smtp1.de.adit-jv.com [127.0.0.1])
+        by smtp1.de.adit-jv.com (Postfix) with ESMTP id 03CDA3C00C1;
+        Tue, 23 Apr 2019 16:58:09 +0200 (CEST)
+Received: from smtp1.de.adit-jv.com ([127.0.0.1])
+        by localhost (smtp1.de.adit-jv.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id dTI8U-6u9sHw; Tue, 23 Apr 2019 16:58:02 +0200 (CEST)
+Received: from HI2EXCH01.adit-jv.com (hi2exch01.adit-jv.com [10.72.92.24])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by smtp1.de.adit-jv.com (Postfix) with ESMTPS id 507E93C0034;
+        Tue, 23 Apr 2019 16:58:02 +0200 (CEST)
+Received: from vmlxhi-102.adit-jv.com (10.72.93.184) by HI2EXCH01.adit-jv.com
+ (10.72.92.24) with Microsoft SMTP Server (TLS) id 14.3.439.0; Tue, 23 Apr
+ 2019 16:58:02 +0200
+Date:   Tue, 23 Apr 2019 16:57:59 +0200
+From:   Eugeniu Rosca <erosca@de.adit-jv.com>
+To:     Jiada Wang <jiada_wang@mentor.com>
+CC:     <rui.zhang@intel.com>, <edubezval@gmail.com>,
+        <daniel.lezcano@linaro.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <horms+renesas@verge.net.au>,
+        <niklas.soderlund+renesas@ragnatech.se>, <geert+renesas@glider.be>,
+        <sergei.shtylyov@cogentembedded.com>,
+        <marek.vasut+renesas@gmail.com>,
+        <kuninori.morimoto.gx@renesas.com>, <hien.dang.eb@renesas.com>,
+        <fabrizio.castro@bp.renesas.com>, <dien.pham.ry@renesas.com>,
+        <biju.das@bp.renesas.com>, <george_davis@mentor.com>,
+        <joshua_frkuska@mentor.com>, Eugeniu Rosca <erosca@de.adit-jv.com>,
+        Eugeniu Rosca <rosca.eugeniu@gmail.com>
+Subject: Re: [PATCH v3 1/2] thermal: rcar_gen3_thermal: fix interrupt type
+Message-ID: <20190423145759.GA29037@vmlxhi-102.adit-jv.com>
 References: <20190423141414.24264-1-jiada_wang@mentor.com>
- <20190423141414.24264-3-jiada_wang@mentor.com>
-From:   Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Organization: Cogent Embedded
-Message-ID: <2d810fcf-8d31-f07e-d94a-a127127e97cd@cogentembedded.com>
-Date:   Tue, 23 Apr 2019 17:44:15 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.2.1
+ <20190423141414.24264-2-jiada_wang@mentor.com>
 MIME-Version: 1.0
-In-Reply-To: <20190423141414.24264-3-jiada_wang@mentor.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-MW
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20190423141414.24264-2-jiada_wang@mentor.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Originating-IP: [10.72.93.184]
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190423144415.8wjFKLtVjfZ3VHJd13SRca2MpU5UA7_ZqnRmiR6scDc@z>
+Message-ID: <20190423145759._RiiGmI-5IdSKX0BkVprunltCJ3fZ7h1x_uAagHO6GM@z>
 
-On 04/23/2019 05:14 PM, Jiada Wang wrote:
+Hi Jiada,
 
-> Currently IRQ is remain enabled after .remove, later if device is probed,
-
-   IRQ remains enabled.
-
-> IRQ is requested before .thermal_init, this may cause IRQ function be
-> called before device is initialized.
+On Tue, Apr 23, 2019 at 11:14:13PM +0900, Jiada Wang wrote:
+> Currently IRQF_SHARED type interrupt line is allocated, but it
+> is not appropriate, as the interrupt line isn't shared between
+> different devices, instead IRQF_ONESHOT is the proper type.
 > 
-> this patch by disable interrupt in .remove, to ensure irq function
-
-   s/by disable/disables/.
-
-> only be called after device is fully initialized.
+> By changing interrupt type to IRQF_ONESHOT, now irq handler is
+> no longer needed, as clear of interrupt status can be done in
+> threaded interrupt context.
+> 
+> Because IRQF_ONESHOT type interrupt line is kept disabled until
+> the threaded handler has been run, so there is no need to protect
+> read/write of REG_GEN3_IRQSTR with lock.
 > 
 > Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
-[...]
+> ---
+>  drivers/thermal/rcar_gen3_thermal.c | 34 +++++------------------------
+>  1 file changed, 6 insertions(+), 28 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+> index 88fa41cf16e8..ebbaef5a3cf1 100644
+> --- a/drivers/thermal/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+> @@ -231,39 +231,17 @@ static void rcar_thermal_irq_set(struct rcar_gen3_thermal_priv *priv, bool on)
+>  static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
+>  {
+>  	struct rcar_gen3_thermal_priv *priv = data;
+> +	int i;
+>  	u32 status;
+> -	int i, ret = IRQ_HANDLED;
 
-MBR, Sergei
+nit: why not keeping 'int i' on the same line?
+
+>  
+> -	spin_lock(&priv->lock);
+[..]
+> -	spin_unlock(&priv->lock);
+[..]
+> -	spin_lock_irqsave(&priv->lock, flags);
+[..]
+> -	spin_unlock_irqrestore(&priv->lock, flags);
+[..]
+
+FWIW, after applying the patch, the 'spinlock_t lock' member of
+'struct rcar_gen3_thermal_priv' is no longer used in the driver, except
+to initialize it in probe. Is there any usage expected in future or
+should it be zapped?
+
+-- 
+Best regards,
+Eugeniu.
