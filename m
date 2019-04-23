@@ -1,112 +1,124 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 1/2] thermal: rcar_gen3_thermal: fix interrupt type
-Date: Wed, 24 Apr 2019 00:35:28 +0200
-Message-ID: <a8e7d5d8-056c-a130-bf89-c3a29e982821@linaro.org>
-References: <20190423141414.24264-1-jiada_wang@mentor.com>
- <20190423141414.24264-2-jiada_wang@mentor.com>
+From: Wei Wang <wvw@google.com>
+Subject: Re: [PATCH] thermal: core: skip update disabled thermal zones after suspend
+Date: Tue, 23 Apr 2019 15:50:53 -0700
+Message-ID: <CAGXk5ypj0ULM6mN1ZUYZimuf+7DV3BrN9wJWTm2G27OrizjzwA@mail.gmail.com>
+References: <20190416170701.50333-1-wvw@google.com> <1555923800.26198.30.camel@intel.com>
+ <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com> <1556000129.26198.50.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423141414.24264-2-jiada_wang@mentor.com>
-Content-Language: en-US
+In-Reply-To: <1556000129.26198.50.camel@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se, geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com, biju.das@bp.renesas.com, erosca@de.adit-jv.com, george_davis@mentor.com, joshua_frkuska@mentor.com
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Wei Wang <wei.vince.wang@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 23/04/2019 16:14, Jiada Wang wrote:
-> Currently IRQF_SHARED type interrupt line is allocated, but it
-> is not appropriate, as the interrupt line isn't shared between
-> different devices, instead IRQF_ONESHOT is the proper type.
-> 
-> By changing interrupt type to IRQF_ONESHOT, now irq handler is
-> no longer needed, as clear of interrupt status can be done in
-> threaded interrupt context.
-> 
-> Because IRQF_ONESHOT type interrupt line is kept disabled until
-> the threaded handler has been run, so there is no need to protect
-> read/write of REG_GEN3_IRQSTR with lock.
-> 
-> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+On Mon, Apr 22, 2019 at 11:15 PM Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> On =E4=B8=80, 2019-04-22 at 09:44 -0700, Wei Wang wrote:
+> > On Mon, Apr 22, 2019 at 2:03 AM Zhang Rui <rui.zhang@intel.com>
+> > wrote:
+> > >
+> > >
+> > > On =E4=BA=8C, 2019-04-16 at 10:07 -0700, Wei Wang wrote:
+> > > >
+> > > > It is unnecessary to update disabled thermal zones post suspend
+> > > > and
+> > > > sometimes leads error/warning in bad behaved thermal drivers.
+> > > >
+> > > a good catch, and in fact, there are more issues about thermal
+> > > handling
+> > > for disabled thermal zones, like we're able to read the temperature
+> > > of
+> > > disabled thermal zones, either via sysfs or via function calls like
+> > > thermal_zone_device_update.
+> > Thanks Rui for following up. Yes, we noticed the same behavior. Right
+> > now, individual thermal driver can still respect set_mode and present
+> > value meaningful or return error when thermal zone disabled, and
+> > that's what we do locally.
+> > Currently, sysfs-api documents "Preventing kernel thermal zone driver
+> > actions upon trip points so that user application can take full
+> > charge
+> > of the thermal management.", so is it intended for some other agents
+> > in kernel or user land polling temperature with function call or
+> > sysfs
+> > respectively?
+>
+> hmmm, here we have three cases,
+> 1). we can read the temperature and we can take cooling actions.
+> 2). we can read the temperature only
+> 3). we can not read the temperature
+>
+> we do have a case for 3), e.g. the wifi device, which registers a
+> thermal zone, but it does not work if wifi firmware is unloaded. And
+> IMO, we should set the thermal zone mode to disable for this case.
 
-Fixes: 7d4b269776ec6 ("enable hardware interrupts for trip points")
-Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Agree.
 
+Another thought of suspend/resume case is in mobile world, most of the
+thermal zone sensors are interrupt capable and the linked cooling
+devices are platform cooling devices whose states won't be affected
+during suspend.  So resetting each thermal zone during suspend/resume
+just wasted cycles/power on mobile due to re-setting trip threshold
+again and again and also delays in device resume. I am proposing that
+we have a flag in device tree per thermal zone to let thermal core not
+reset during suspend/resume.
 
+> I'm not sure if there is any case for 2), but if we do, it seems to me
+> that we should set its governor to nop, rather then the way we're
+> describing in the sys-abi file.
++1 noop sounds good. Do you have plan to change it?
 
-
-
-> ---
->  drivers/thermal/rcar_gen3_thermal.c | 34 +++++------------------------
->  1 file changed, 6 insertions(+), 28 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index 88fa41cf16e8..ebbaef5a3cf1 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -231,39 +231,17 @@ static void rcar_thermal_irq_set(struct rcar_gen3_thermal_priv *priv, bool on)
->  static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
->  {
->  	struct rcar_gen3_thermal_priv *priv = data;
-> +	int i;
->  	u32 status;
-> -	int i, ret = IRQ_HANDLED;
->  
-> -	spin_lock(&priv->lock);
->  	for (i = 0; i < priv->num_tscs; i++) {
->  		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
->  		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
->  		if (status)
-> -			ret = IRQ_WAKE_THREAD;
-> +			thermal_zone_device_update(priv->tscs[i]->zone,
-> +						   THERMAL_EVENT_UNSPECIFIED);
->  	}
->  
-> -	if (ret == IRQ_WAKE_THREAD)
-> -		rcar_thermal_irq_set(priv, false);
-> -
-> -	spin_unlock(&priv->lock);
-> -
-> -	return ret;
-> -}
-> -
-> -static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
-> -{
-> -	struct rcar_gen3_thermal_priv *priv = data;
-> -	unsigned long flags;
-> -	int i;
-> -
-> -	for (i = 0; i < priv->num_tscs; i++)
-> -		thermal_zone_device_update(priv->tscs[i]->zone,
-> -					   THERMAL_EVENT_UNSPECIFIED);
-> -
-> -	spin_lock_irqsave(&priv->lock, flags);
-> -	rcar_thermal_irq_set(priv, true);
-> -	spin_unlock_irqrestore(&priv->lock, flags);
-> -
->  	return IRQ_HANDLED;
->  }
->  
-> @@ -390,9 +368,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  		if (!irqname)
->  			return -ENOMEM;
->  
-> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
-> -						rcar_gen3_thermal_irq_thread,
-> -						IRQF_SHARED, irqname, priv);
-> +		ret = devm_request_threaded_irq(dev, irq, NULL,
-> +						rcar_gen3_thermal_irq,
-> +						IRQF_ONESHOT, irqname, priv);
->  		if (ret)
->  			return ret;
->  	}
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+>
+> we should fix the code and doc to use "mode" attribute to handle case
+> 3) instead.
+>
+> thanks,
+> rui
+> >
+> > Thanks!
+> > -Wei
+> > >
+> > > For this patch, I will take it as it fixes one of the problem.
+> > >
+> > > thanks,
+> > > rui
+> > >
+> > > >
+> > > > Signed-off-by: Wei Wang <wvw@google.com>
+> > > > ---
+> > > >  drivers/thermal/thermal_core.c | 8 ++++++++
+> > > >  1 file changed, 8 insertions(+)
+> > > >
+> > > > diff --git a/drivers/thermal/thermal_core.c
+> > > > b/drivers/thermal/thermal_core.c
+> > > > index 6590bb5cb688..5baf5cfab999 100644
+> > > > --- a/drivers/thermal/thermal_core.c
+> > > > +++ b/drivers/thermal/thermal_core.c
+> > > > @@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct
+> > > > notifier_block *nb,
+> > > >                            unsigned long mode, void *_unused)
+> > > >  {
+> > > >       struct thermal_zone_device *tz;
+> > > > +     enum thermal_device_mode tz_mode;
+> > > >
+> > > >       switch (mode) {
+> > > >       case PM_HIBERNATION_PREPARE:
+> > > > @@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct
+> > > > notifier_block *nb,
+> > > >       case PM_POST_SUSPEND:
+> > > >               atomic_set(&in_suspend, 0);
+> > > >               list_for_each_entry(tz, &thermal_tz_list, node) {
+> > > > +                     tz_mode =3D THERMAL_DEVICE_ENABLED;
+> > > > +                     if (tz->ops->get_mode)
+> > > > +                             tz->ops->get_mode(tz, &tz_mode);
+> > > > +
+> > > > +                     if (tz_mode =3D=3D THERMAL_DEVICE_DISABLED)
+> > > > +                             continue;
+> > > > +
+> > > >                       thermal_zone_device_init(tz);
+> > > >                       thermal_zone_device_update(tz,
+> > > >                                                  THERMAL_EVENT_UN
+> > > > S
+> > > > PECIFIED);
