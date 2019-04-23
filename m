@@ -2,141 +2,145 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE056C282DD
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 06:12:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7E6DC10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 06:15:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A90F420675
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 06:12:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA66E206BA
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 06:15:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726213AbfDWGMk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 02:12:40 -0400
-Received: from relay1.mentorg.com ([192.94.38.131]:41114 "EHLO
-        relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726130AbfDWGMj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 02:12:39 -0400
-Received: from svr-orw-mbx-03.mgc.mentorg.com ([147.34.90.203])
-        by relay1.mentorg.com with esmtps (TLSv1.2:ECDHE-RSA-AES256-SHA384:256)
-        id 1hIofO-0001t8-VF from Jiada_Wang@mentor.com ; Mon, 22 Apr 2019 23:12:30 -0700
-Received: from jiwang-OptiPlex-980.tokyo.mentorg.com (147.34.91.1) by
- svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203) with Microsoft SMTP Server
- (TLS) id 15.0.1320.4; Mon, 22 Apr 2019 23:12:26 -0700
-From:   Jiada Wang <jiada_wang@mentor.com>
-To:     <rui.zhang@intel.com>, <edubezval@gmail.com>,
-        <daniel.lezcano@linaro.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <erosca@de.adit-jv.com>, <joshua_frkuska@mentor.com>,
-        <jiada_wang@mentor.com>, <horms+renesas@verge.net.au>,
-        <niklas.soderlund+renesas@ragnatech.se>, <geert+renesas@glider.be>,
-        <sergei.shtylyov@cogentembedded.com>,
-        <marek.vasut+renesas@gmail.com>,
-        <kuninori.morimoto.gx@renesas.com>, <hien.dang.eb@renesas.com>,
-        <fabrizio.castro@bp.renesas.com>, <dien.pham.ry@renesas.com>,
-        <biju.das@bp.renesas.com>
-Subject: [PATCH v2 1/2] thermal: rcar_gen3_thermal: fix interrupt type
-Date:   Tue, 23 Apr 2019 15:12:17 +0900
-Message-ID: <20190423061218.29705-2-jiada_wang@mentor.com>
-X-Mailer: git-send-email 2.19.2
-In-Reply-To: <20190423061218.29705-1-jiada_wang@mentor.com>
-References: <20190423061218.29705-1-jiada_wang@mentor.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+        id S1725941AbfDWGPf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 02:15:35 -0400
+Received: from mga14.intel.com ([192.55.52.115]:19207 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725888AbfDWGPf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Apr 2019 02:15:35 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 22 Apr 2019 23:15:34 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,384,1549958400"; 
+   d="scan'208";a="318152017"
+Received: from rzhang-dell-9360.sh.intel.com ([10.239.161.125])
+  by orsmga005.jf.intel.com with ESMTP; 22 Apr 2019 23:15:32 -0700
+Message-ID: <1556000129.26198.50.camel@intel.com>
+Subject: Re: [PATCH] thermal: core: skip update disabled thermal zones after
+ suspend
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     Wei Wang <wvw@google.com>
+Cc:     Wei Wang <wei.vince.wang@gmail.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date:   Tue, 23 Apr 2019 14:15:29 +0800
+In-Reply-To: <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com>
+References: <20190416170701.50333-1-wvw@google.com>
+         <1555923800.26198.30.camel@intel.com>
+         <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-X-ClientProxiedBy: svr-orw-mbx-08.mgc.mentorg.com (147.34.90.208) To
- svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203)
+X-Mailer: Evolution 3.18.5.2-0ubuntu3.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190423061217.mGRxDYfjw-dAYHprrKySYnGowAfEJQYFzu2pN-LVbfw@z>
+Message-ID: <20190423061529.WcymB8dPVoT8MPGYJDE30xHxWZizGwOpeEeU56FlNCA@z>
 
-Currently IRQF_SHARED type interrupt line is allocated, but it
-is not appropriate, as the interrupt line isn't shared between
-different devices, instead IRQF_ONESHOT is the proper type.
+On 一, 2019-04-22 at 09:44 -0700, Wei Wang wrote:
+> On Mon, Apr 22, 2019 at 2:03 AM Zhang Rui <rui.zhang@intel.com>
+> wrote:
+> > 
+> > 
+> > On 二, 2019-04-16 at 10:07 -0700, Wei Wang wrote:
+> > > 
+> > > It is unnecessary to update disabled thermal zones post suspend
+> > > and
+> > > sometimes leads error/warning in bad behaved thermal drivers.
+> > > 
+> > a good catch, and in fact, there are more issues about thermal
+> > handling
+> > for disabled thermal zones, like we're able to read the temperature
+> > of
+> > disabled thermal zones, either via sysfs or via function calls like
+> > thermal_zone_device_update.
+> Thanks Rui for following up. Yes, we noticed the same behavior. Right
+> now, individual thermal driver can still respect set_mode and present
+> value meaningful or return error when thermal zone disabled, and
+> that's what we do locally.
+> Currently, sysfs-api documents "Preventing kernel thermal zone driver
+> actions upon trip points so that user application can take full
+> charge
+> of the thermal management.", so is it intended for some other agents
+> in kernel or user land polling temperature with function call or
+> sysfs
+> respectively?
 
-By changing interrupt type to IRQF_ONESHOT, now irq handler is
-no longer needed, as clear of interrupt status can be done in
-threaded interrupt context.
+hmmm, here we have three cases,
+1). we can read the temperature and we can take cooling actions.
+2). we can read the temperature only
+3). we can not read the temperature
 
-Because IRQF_ONESHOT type interrupt line is kept disabled until
-the threaded handler has been run, so there is no need to protect
-read/write of REG_GEN3_IRQSTR with lock.
+we do have a case for 3), e.g. the wifi device, which registers a
+thermal zone, but it does not work if wifi firmware is unloaded. And
+IMO, we should set the thermal zone mode to disable for this case.
 
-Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
----
- drivers/thermal/rcar_gen3_thermal.c | 40 ++++++++---------------------
- 1 file changed, 10 insertions(+), 30 deletions(-)
+I'm not sure if there is any case for 2), but if we do, it seems to me
+that we should set its governor to nop, rather then the way we're
+describing in the sys-abi file.
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 64035bcec42c..a11032e42f36 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -236,41 +236,21 @@ static void rcar_thermal_irq_set(struct rcar_gen3_thermal_priv *priv, bool on)
- static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
- {
- 	struct rcar_gen3_thermal_priv *priv = data;
-+	unsigned long flags;
-+	int i;
- 	u32 status;
--	int i, ret = IRQ_HANDLED;
- 
--	spin_lock(&priv->lock);
- 	for (i = 0; i < priv->num_tscs; i++) {
- 		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
- 		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
--		if (status)
--			ret = IRQ_WAKE_THREAD;
--	}
--
--	if (ret == IRQ_WAKE_THREAD)
--		rcar_thermal_irq_set(priv, false);
--
--	spin_unlock(&priv->lock);
- 
--	return ret;
--}
--
--static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
--{
--	struct rcar_gen3_thermal_priv *priv = data;
--	unsigned long flags;
--	int i;
--
--	for (i = 0; i < priv->num_tscs; i++) {
--		rcar_gen3_thermal_set_irq_temp(priv->tscs[i]);
--		thermal_zone_device_update(priv->tscs[i]->zone,
--					   THERMAL_EVENT_UNSPECIFIED);
-+		if (status) {
-+			rcar_gen3_thermal_set_irq_temp(priv->tscs[i]);
-+			thermal_zone_device_update(priv->tscs[i]->zone,
-+						   THERMAL_EVENT_UNSPECIFIED);
-+		}
- 	}
- 
--	spin_lock_irqsave(&priv->lock, flags);
--	rcar_thermal_irq_set(priv, true);
--	spin_unlock_irqrestore(&priv->lock, flags);
--
- 	return IRQ_HANDLED;
- }
- 
-@@ -397,9 +377,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 		if (!irqname)
- 			return -ENOMEM;
- 
--		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
--						rcar_gen3_thermal_irq_thread,
--						IRQF_SHARED, irqname, priv);
-+		ret = devm_request_threaded_irq(dev, irq, NULL,
-+						rcar_gen3_thermal_irq,
-+						IRQF_ONESHOT, irqname, priv);
- 		if (ret)
- 			return ret;
- 	}
--- 
-2.19.2
+we should fix the code and doc to use "mode" attribute to handle case
+3) instead.
 
+thanks,
+rui
+> 
+> Thanks!
+> -Wei
+> > 
+> > For this patch, I will take it as it fixes one of the problem.
+> > 
+> > thanks,
+> > rui
+> > 
+> > > 
+> > > Signed-off-by: Wei Wang <wvw@google.com>
+> > > ---
+> > >  drivers/thermal/thermal_core.c | 8 ++++++++
+> > >  1 file changed, 8 insertions(+)
+> > > 
+> > > diff --git a/drivers/thermal/thermal_core.c
+> > > b/drivers/thermal/thermal_core.c
+> > > index 6590bb5cb688..5baf5cfab999 100644
+> > > --- a/drivers/thermal/thermal_core.c
+> > > +++ b/drivers/thermal/thermal_core.c
+> > > @@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct
+> > > notifier_block *nb,
+> > >                            unsigned long mode, void *_unused)
+> > >  {
+> > >       struct thermal_zone_device *tz;
+> > > +     enum thermal_device_mode tz_mode;
+> > > 
+> > >       switch (mode) {
+> > >       case PM_HIBERNATION_PREPARE:
+> > > @@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct
+> > > notifier_block *nb,
+> > >       case PM_POST_SUSPEND:
+> > >               atomic_set(&in_suspend, 0);
+> > >               list_for_each_entry(tz, &thermal_tz_list, node) {
+> > > +                     tz_mode = THERMAL_DEVICE_ENABLED;
+> > > +                     if (tz->ops->get_mode)
+> > > +                             tz->ops->get_mode(tz, &tz_mode);
+> > > +
+> > > +                     if (tz_mode == THERMAL_DEVICE_DISABLED)
+> > > +                             continue;
+> > > +
+> > >                       thermal_zone_device_init(tz);
+> > >                       thermal_zone_device_update(tz,
+> > >                                                  THERMAL_EVENT_UN
+> > > S
+> > > PECIFIED);
