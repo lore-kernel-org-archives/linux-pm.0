@@ -1,33 +1,46 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
-Date: Tue, 23 Apr 2019 07:09:42 -0700
-Message-ID: <fed0549d-a789-294c-d899-304911106113@acm.org>
-References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
- <20190423102239.GA15531@amd>
+From: Jiada Wang <jiada_wang@mentor.com>
+Subject: [PATCH v3 0/2] thermal: rcar_gen3_thermal: fix IRQ issues
+Date: Tue, 23 Apr 2019 23:14:12 +0900
+Message-ID: <20190423141414.24264-1-jiada_wang@mentor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423102239.GA15531@amd>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, axboe@kernel.dk, linux-ide@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jiada_wang@mentor.com, horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se, geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com, biju.das@bp.renesas.com, erosca@de.adit-jv.com, george_davis@mentor.com, joshua_frkuska@mentor.com
 List-Id: linux-pm@vger.kernel.org
 
-On 4/23/19 3:22 AM, Pavel Machek wrote:
->>> It boots ok (unlike mainline -- I'm debugging that), and I can suspend
->>> and resume... but then cursor in X is moving and I can talk to
->>> applications cached in memory, but any access to disk hangs.
->>
->> Mainline problem was identified.
->>
->> But resume is still broken. I took advantage of fact that I can still
->> do cached commands, and got complete dmesg. I'm attaching it.
-> 
-> Still broken in 0418. Ideas would be welcome at this point.
+There are issues with interrupt handling in rcar_gen3_thermal driver.
 
-Have you already tried the debugging steps explained in
-Documentation/power to obtain more information about the nature of the
-suspend/resume problem?
+Currently IRQ is remain enabled after .remove, later if device is probed,
+IRQ is requested before .thermal_init, this may cause IRQ function be
+triggered but not able to clear IRQ status, thus cause system to hang.
 
-Bart.
+Since the irq line isn't shared between different devices,
+so the proper interrupt type flag should be IRQF_ONESHOT.
+
+This patch-set fix these interrupt handling retated issues.
+
+---
+v3: fix to use correct code base
+    remove unused "flag" variable in rcar_gen3_thermal_irq
+
+v2: use irq type IRQF_ONESHOT instead of IRQF_SHARED
+    disable interrupt in .remove
+
+v1: initial version
+
+Jiada Wang (2):
+  thermal: rcar_gen3_thermal: fix interrupt type
+  thermal: rcar_gen3_thermal: disable interrupt in .remove
+
+Jiada Wang (2):
+  thermal: rcar_gen3_thermal: fix interrupt type
+  thermal: rcar_gen3_thermal: disable interrupt in .remove
+
+ drivers/thermal/rcar_gen3_thermal.c | 37 +++++++----------------------
+ 1 file changed, 9 insertions(+), 28 deletions(-)
+
+-- 
+2.19.2
