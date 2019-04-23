@@ -1,97 +1,134 @@
-Return-Path: <SRS0=/Mn0=SY=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 794CEC282E1
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 20:43:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 033E6C282CE
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 02:33:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4800221738
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Apr 2019 20:43:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CDAE52075A
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 02:33:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728631AbfDVUnE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Apr 2019 16:43:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:42966 "EHLO mx1.redhat.com"
+        id S1730145AbfDWCdO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Apr 2019 22:33:14 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:33448 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727571AbfDVUnE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 22 Apr 2019 16:43:04 -0400
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mx1.redhat.com (Postfix) with ESMTPS id 019A03084212;
-        Mon, 22 Apr 2019 20:43:04 +0000 (UTC)
-Received: from shalem.localdomain.com (ovpn-116-58.ams2.redhat.com [10.36.116.58])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id B6E855D6A6;
-        Mon, 22 Apr 2019 20:43:02 +0000 (UTC)
-From:   Hans de Goede <hdegoede@redhat.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>,
-        linux-pm@vger.kernel.org, stable@vger.kernel.org
-Subject: [PATCH] power: supply: axp288_fuel_gauge: Add ACEPC T8 and T11 mini PCs to the blacklist
-Date:   Mon, 22 Apr 2019 22:43:01 +0200
-Message-Id: <20190422204301.6233-1-hdegoede@redhat.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.40]); Mon, 22 Apr 2019 20:43:04 +0000 (UTC)
+        id S1729504AbfDWCdO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 Apr 2019 22:33:14 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3DE292000BF;
+        Tue, 23 Apr 2019 04:33:12 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 94E03200064;
+        Tue, 23 Apr 2019 04:33:06 +0200 (CEST)
+Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 72F3A402A0;
+        Tue, 23 Apr 2019 10:32:59 +0800 (SGT)
+From:   Yuantian Tang <andy.tang@nxp.com>
+To:     shawnguo@kernel.org
+Cc:     leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com,
+        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        daniel.lezcano@linaro.org, rui.zhang@intel.com,
+        edubezval@gmail.com, Yuantian Tang <andy.tang@nxp.com>
+Subject: [PATCH v6] arm64: dts: ls1088a: add one more thermal zone node
+Date:   Tue, 23 Apr 2019 10:25:07 +0800
+Message-Id: <20190423022507.34969-1-andy.tang@nxp.com>
+X-Mailer: git-send-email 2.14.1
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190422204301.yZBiuiGPcnEe2ZrPG6Rlj2XtkDzX8Z8NGZqfeLqv-gI@z>
+Message-ID: <20190423022507.l5LovdGJ7h2rAg9ptAEDoVv2a7diVIS_ZPE5_bFVD4M@z>
 
-The ACEPC T8 and T11 Cherry Trail Z8350 mini PCs use an AXP288 and as PCs,
-rather then portables, they does not have a battery. Still for some
-reason the AXP288 not only thinks there is a battery, it actually
-thinks it is discharging while the PC is running, slowly going to
-0% full, causing userspace to shutdown the system due to the battery
-being critically low after a while.
+Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core cluster
+sensor is used to monitor the temperature of core and SoC platform is for
+platform. The current dts only support the first sensor.
+This patch adds the second sensor node to dts to enable it.
 
-This commit adds the ACEPC T8 and T11 to the axp288 fuel-gauge driver
-blacklist, so that we stop reporting bogus battery readings on this device.
-
-BugLink: https://bugzilla.redhat.com/show_bug.cgi?id=1690852
-Cc: stable@vger.kernel.org
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
 ---
- drivers/power/supply/axp288_fuel_gauge.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+v6:
+        - add cooling device map to cpu0-7 in platform node.
+ arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi |   43 +++++++++++++++++++++--
+ 1 files changed, 39 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 9ff2461820d8..368281bc0d2b 100644
---- a/drivers/power/supply/axp288_fuel_gauge.c
-+++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -685,6 +685,26 @@ static void fuel_gauge_init_irq(struct axp288_fg_info *info)
-  * detection reports one despite it not being there.
-  */
- static const struct dmi_system_id axp288_fuel_gauge_blacklist[] = {
-+	{
-+		/* ACEPC T8 Cherry Trail Z8350 mini PC */
-+		.matches = {
-+			DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "To be filled by O.E.M."),
-+			DMI_EXACT_MATCH(DMI_BOARD_NAME, "Cherry Trail CR"),
-+			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "T8"),
-+			/* also match on somewhat unique bios-version */
-+			DMI_EXACT_MATCH(DMI_BIOS_VERSION, "1.000"),
-+		},
-+	},
-+	{
-+		/* ACEPC T11 Cherry Trail Z8350 mini PC */
-+		.matches = {
-+			DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "To be filled by O.E.M."),
-+			DMI_EXACT_MATCH(DMI_BOARD_NAME, "Cherry Trail CR"),
-+			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "T11"),
-+			/* also match on somewhat unique bios-version */
-+			DMI_EXACT_MATCH(DMI_BIOS_VERSION, "1.000"),
-+		},
-+	},
- 	{
- 		/* Intel Cherry Trail Compute Stick, Windows version */
- 		.matches = {
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+index 661137f..a697a82 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+@@ -129,19 +129,19 @@
+ 	};
+ 
+ 	thermal-zones {
+-		cpu_thermal: cpu-thermal {
++		core-cluster {
+ 			polling-delay-passive = <1000>;
+ 			polling-delay = <5000>;
+ 			thermal-sensors = <&tmu 0>;
+ 
+ 			trips {
+-				cpu_alert: cpu-alert {
++				core_cluster_alert: core-cluster-alert {
+ 					temperature = <85000>;
+ 					hysteresis = <2000>;
+ 					type = "passive";
+ 				};
+ 
+-				cpu_crit: cpu-crit {
++				core_cluster_crit: core-cluster-crit {
+ 					temperature = <95000>;
+ 					hysteresis = <2000>;
+ 					type = "critical";
+@@ -150,7 +150,42 @@
+ 
+ 			cooling-maps {
+ 				map0 {
+-					trip = <&cpu_alert>;
++					trip = <&core_cluster_alert>;
++					cooling-device =
++						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++						<&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++						<&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++						<&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++						<&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++						<&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++						<&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++				};
++			};
++		};
++
++		platform {
++			polling-delay-passive = <1000>;
++			polling-delay = <5000>;
++			thermal-sensors = <&tmu 1>;
++
++			trips {
++				platform_alert: platform-alert {
++					temperature = <85000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++
++				platform_crit: platform-crit {
++					temperature = <95000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				map0 {
++					trip = <&platform_alert>;
+ 					cooling-device =
+ 						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+ 						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
 -- 
-2.21.0
+1.7.1
 
