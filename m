@@ -8,176 +8,310 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 480A1C282DD
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 15:44:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20152C10F03
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 15:46:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0D001218D3
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 15:44:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DA4D82175B
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 15:46:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="I/ZfuxG4"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="df8q7He9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728483AbfDWPog (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 11:44:36 -0400
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:35387 "EHLO
-        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728406AbfDWPof (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 11:44:35 -0400
-Received: by mail-pg1-f193.google.com with SMTP id g8so7820834pgf.2;
-        Tue, 23 Apr 2019 08:44:35 -0700 (PDT)
+        id S1728451AbfDWPqH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 11:46:07 -0400
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:44272 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728404AbfDWPqH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 11:46:07 -0400
+Received: by mail-pl1-f194.google.com with SMTP id y12so5154421plk.11;
+        Tue, 23 Apr 2019 08:46:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=UHKhNGF9h6UnRkG1fb5S0yRAer4+UyZQ8Isf84BVwlc=;
-        b=I/ZfuxG4emX1qFeKLWISK6/79zfkCARgP4ZSgnvjXKqP6YbYDE7vO2Z6Rb7bxpLujP
-         wghU3+u88ssKhf6mLMcTDUNu4MJIRcPoToVRsK4RWqMJThO3uFNwG/SG8mVc7sYxNsoi
-         jTuvhc+txnqXi5qMk/Y5tP1T3J7AD9ALqrFKHD8rC/bMJdjlTQlAtJDRVi2BvcDGFYYq
-         N/Bi6gDF5Vms7KSymsgexaN684iDBLPfzbki0s5cXdu+ks7/e8beiWJpVkQbMnUTHKmB
-         YfKWRzddej7uL+KC/JYbEqpSRjeK4RVCmDlyrjLk9tZvgOMHvCsBgqAJnZLk7MXVxOd2
-         7scA==
+        bh=Ss4coKP3/fly6lpyjZfRsj5hHm8V32Xxuy/8hmJjsSQ=;
+        b=df8q7He9B3mzZfzmiV89fsyvBR/hxPZJomPPUMV9BQnhESNRVrhK6HUaWUHvOmHgI2
+         +IOvCFwSkFt2xAvLQXONzT8+m0kjYNS72d8PEbiTXfNnno18GTz4cnx4EdOdH0IfLbJC
+         wDw5ubNSDgum2B6XvBEa6eqqQbjn54eTI5pyC2edVKd/Qz2JTMwykk2HC6oUnKysS7HH
+         ZQaqRw4KpD0CU5X8qGuDJS2/xTFzVE7nc7ree5Q4OQX85Li6F69hcf2wGnANj7sPyGQq
+         Bairsvql8CUBUF95pLKH1uKOW61I0HtSYm2krWvndt9DDnYh8g8mtOyOV8hAYdOvO01F
+         hJlQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=UHKhNGF9h6UnRkG1fb5S0yRAer4+UyZQ8Isf84BVwlc=;
-        b=Xu5LMYsiVfD+RO9Y101cK+UdSgIT0+HraRr2A5TaisSrwyB0ytomb6VIcPSez8v9MO
-         QD8/BNkbIuKX0djTPaLnqY1m+9itcELT1ka4Lsq5dqumKiHIrzEoGjX0ZPLldgiRvklj
-         YR4XP7epHov1ixTMClqnnm3hztjyxoJV8EXqWBtgToGVAcxz95qtSsQmH81Rt+OgA0kR
-         uW07krEfgQn1EqIyJEsNxF9Nhey1kWQUnxkdLxbSqUEV7oIN5Cde66i3p54Sb20+Hj2C
-         u7qUTiBrW/oSthBTEbwbnr4PLBoWpTAS4JclGJj77YAHnXgqBa8c6gC3kQ1AvAmlveIO
-         pywg==
-X-Gm-Message-State: APjAAAVkwPDSR1xWnTXA54mpFQjbM91XEHLYrRpChhwgIOgk8PSwMbCY
-        pikpcw4AKWkFgMK1sDx9+r4=
-X-Google-Smtp-Source: APXvYqxWonr93z+lwNSb0O4bPtLM6S1Q0OOVr8pt+0Qrmm2vVwgFNowIc8Qn/ZlknlLfNE1SDu26gA==
-X-Received: by 2002:a62:62c2:: with SMTP id w185mr3739702pfb.237.1556034274772;
-        Tue, 23 Apr 2019 08:44:34 -0700 (PDT)
+        bh=Ss4coKP3/fly6lpyjZfRsj5hHm8V32Xxuy/8hmJjsSQ=;
+        b=sGaD80FMo45QGj/VKPDQJKx0LJZMA9aTPG3yachU7aNyXI+tPMprIFzGq9c2GLn6eG
+         nrIkuA8bgXADjvgQRwOgu+02Kl/aVgovVS5jl/RD8gnFzE+NCFAj5KPYFEPIDHwf+peW
+         /GkXsJOOS3LRTyKmFJeDg/jXDKoAHELB3LNmtdBSCjWDcaXTajIkFvzlc0lLw+yfDMag
+         wHivYcWCtnGqK3rZd329Bkyo9513bS+UMKvC+8x+mhltFKMxpbrMdezgR8+YHAcEu8Ma
+         4q6kHKo48afp9DNey3i+trwaDGYm5C5Fk5AndgpiIygqZFMVhav8m+UtT2jbfRSkFE70
+         CL3w==
+X-Gm-Message-State: APjAAAXpkSnMrpRkpROfFRSiC/XqcyPM0UzgzHIFbLtnXhFG5DjQlACR
+        ZbA30/dhdMx97Tw+2W6DbfufxPSK
+X-Google-Smtp-Source: APXvYqwf9Q/RuzYDz7BqoHp7SgsiIlvB2mOv3cR560S44h1Amp8YvZpZ49IMcPRpuZGU7pFAEOO0WA==
+X-Received: by 2002:a17:902:e183:: with SMTP id cd3mr27035538plb.233.1556034366450;
+        Tue, 23 Apr 2019 08:46:06 -0700 (PDT)
 Received: from localhost.localdomain ([2601:644:8201:32e0:7256:81ff:febd:926d])
-        by smtp.gmail.com with ESMTPSA id m131sm41015465pga.3.2019.04.23.08.44.33
+        by smtp.gmail.com with ESMTPSA id u188sm1923377pfb.37.2019.04.23.08.46.05
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 23 Apr 2019 08:44:33 -0700 (PDT)
-Date:   Tue, 23 Apr 2019 08:44:31 -0700
+        Tue, 23 Apr 2019 08:46:05 -0700 (PDT)
+Date:   Tue, 23 Apr 2019 08:46:03 -0700
 From:   Eduardo Valentin <edubezval@gmail.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     rui.zhang@intel.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, andrew.smirnov@gmail.com
-Subject: Re: [PATCH] thermal/drivers/of: Add a get_temp_id callback function
-Message-ID: <20190423154430.GA16014@localhost.localdomain>
-References: <20190416172203.4679-1-daniel.lezcano@linaro.org>
+To:     Wei Ni <wni@nvidia.com>
+Cc:     daniel.lezcano@linaro.org, robh@kernel.org,
+        thierry.reding@gmail.com, linux-tegra@vger.kernel.org,
+        rui.zhang@intel.com, srikars@nvidia.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 12/12] thermal: tegra: enable OC hw throttle
+Message-ID: <20190423154602.GB16014@localhost.localdomain>
+References: <1550744327-4677-1-git-send-email-wni@nvidia.com>
+ <1550744327-4677-13-git-send-email-wni@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <20190416172203.4679-1-daniel.lezcano@linaro.org>
+In-Reply-To: <1550744327-4677-13-git-send-email-wni@nvidia.com>
 User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190423154431.MnM1Wj-dOyxIZHZyWw40WTqCULUe5GG0JT5ZQoVA3eQ@z>
+Message-ID: <20190423154603.B9Pl7tQF2W_xHpRemoUttezO2GAFKX4kmcjWrLgNao4@z>
 
-Hello,
-
-On Tue, Apr 16, 2019 at 07:22:03PM +0200, Daniel Lezcano wrote:
-> Currently when we register a sensor, we specify the sensor id and a data
-> pointer to be passed when the get_temp function is called. However the
-> sensor_id is not passed to the get_temp callback forcing the driver to
-> do extra allocation and adding back pointer to find out from the sensor
-> information the driver data and then back to the sensor id.
+On Thu, Feb 21, 2019 at 06:18:47PM +0800, Wei Ni wrote:
+> Parse Over Current settings from DT and program them to
+> generate interrupts. Also enable hw throttling whenever
+> there are OC events. Log the OC events as debug messages.
 > 
-> Add a new callback get_temp_id() which will be called if set. It will
-> call the get_temp_id() with the sensor id.
-> 
-> That will be more consistent with the registering function.
+> Signed-off-by: Wei Ni <wni@nvidia.com>
 
-I still do not understand why we need to have a get_id callback.
-The use cases I have seen so far, which I have been intentionally rejecting, are
-mainly solvable by creating other compatible entries. And really, if you
-have, say a bandgap, chip that supports multiple sensors, but on
-SoC version A it has 5 sensors, and on SoC version B it has only 4,
-or on SoC version C, it has 5 but they are either logially located
-in different places (gpu vs iva regions), these are all cases in which
-you want a different compatible!
+I applied this series except for this specific patch which:
+a. does not apply clean
+b. does not compile.
 
-Do you mind sharing why you need a get sensor id callback?
+Please rebase on top of my -linus branch and resend this. remember to 
+checkpatch and compile and boot test before sending.
 
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Tested-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 > ---
->  drivers/thermal/of-thermal.c | 19 +++++++++++++------
->  include/linux/thermal.h      |  1 +
->  2 files changed, 14 insertions(+), 6 deletions(-)
+>  drivers/thermal/tegra/soctherm.c | 130 ++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 120 insertions(+), 10 deletions(-)
 > 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 2df059cc07e2..787d1cbe13f3 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -78,6 +78,8 @@ struct __thermal_zone {
+> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+> index b8c66368e54e..6e3f329d1ac4 100644
+> --- a/drivers/thermal/tegra/soctherm.c
+> +++ b/drivers/thermal/tegra/soctherm.c
+> @@ -106,9 +106,26 @@
+>  #define STATS_CTL_CLR_UP			0x2
+>  #define STATS_CTL_EN_UP				0x1
 >  
->  	/* sensor interface */
->  	void *sensor_data;
-> +	int sensor_id;
+> +#define OC1_CFG					0x310
+> +#define OC1_CFG_LONG_LATENCY_MASK		BIT(6)
+> +#define OC1_CFG_HW_RESTORE_MASK			BIT(5)
+> +#define OC1_CFG_PWR_GOOD_MASK_MASK		BIT(4)
+> +#define OC1_CFG_THROTTLE_MODE_MASK		(0x3 << 2)
+> +#define OC1_CFG_ALARM_POLARITY_MASK		BIT(1)
+> +#define OC1_CFG_EN_THROTTLE_MASK		BIT(0)
 > +
->  	const struct thermal_zone_of_device_ops *ops;
+> +#define OC1_CNT_THRESHOLD			0x314
+> +#define OC1_THROTTLE_PERIOD			0x318
+> +#define OC1_ALARM_COUNT				0x31c
+> +#define OC1_FILTER				0x320
+> +#define OC1_STATS				0x3a8
+> +
+>  #define OC_INTR_STATUS				0x39c
+>  #define OC_INTR_ENABLE				0x3a0
+>  #define OC_INTR_DISABLE				0x3a4
+> +#define OC_STATS_CTL				0x3c4
+> +#define OC_STATS_CTL_CLR_ALL			0x2
+> +#define OC_STATS_CTL_EN_ALL			0x1
+>  
+>  #define OC_INTR_OC1_MASK			BIT(0)
+>  #define OC_INTR_OC2_MASK			BIT(1)
+> @@ -207,6 +224,25 @@
+>  #define THROT_DELAY_CTRL(throt)		(THROT_DELAY_LITE + \
+>  					(THROT_OFFSET * throt))
+>  
+> +#define ALARM_OFFSET			0x14
+> +#define ALARM_CFG(throt)		(OC1_CFG + \
+> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+> +
+> +#define ALARM_CNT_THRESHOLD(throt)	(OC1_CNT_THRESHOLD + \
+> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+> +
+> +#define ALARM_THROTTLE_PERIOD(throt)	(OC1_THROTTLE_PERIOD + \
+> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+> +
+> +#define ALARM_ALARM_COUNT(throt)	(OC1_ALARM_COUNT + \
+> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+> +
+> +#define ALARM_FILTER(throt)		(OC1_FILTER + \
+> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+> +
+> +#define ALARM_STATS(throt)		(OC1_STATS + \
+> +					(4 * (throt - THROTTLE_OC1)))
+> +
+>  /* get CCROC_THROT_PSKIP_xxx offset per HIGH/MED/LOW vect*/
+>  #define CCROC_THROT_OFFSET			0x0c
+>  #define CCROC_THROT_PSKIP_CTRL_CPU_REG(vect)    (CCROC_THROT_PSKIP_CTRL_CPU + \
+> @@ -218,6 +254,9 @@
+>  #define THERMCTL_LVL_REGS_SIZE		0x20
+>  #define THERMCTL_LVL_REG(rg, lv)	((rg) + ((lv) * THERMCTL_LVL_REGS_SIZE))
+>  
+> +#define OC_THROTTLE_MODE_DISABLED	0
+> +#define OC_THROTTLE_MODE_BRIEF		2
+> +
+>  static const int min_low_temp = -127000;
+>  static const int max_high_temp = 127000;
+>  
+> @@ -266,6 +305,15 @@ struct tegra_thermctl_zone {
+>  	const struct tegra_tsensor_group *sg;
 >  };
 >  
-> @@ -88,10 +90,14 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
->  {
->  	struct __thermal_zone *data = tz->devdata;
->  
-> -	if (!data->ops->get_temp)
-> -		return -EINVAL;
-> +	if (data->ops->get_temp)
-> +		return data->ops->get_temp(data->sensor_data, temp);
->  
-> -	return data->ops->get_temp(data->sensor_data, temp);
-> +	if (data->ops->get_temp_id)
-> +		return data->ops->get_temp_id(data->sensor_id,
-> +					      data->sensor_data, temp);
+> +struct soctherm_oc_cfg {
+> +	u32 active_low;
+> +	u32 throt_period;
+> +	u32 alarm_cnt_thresh;
+> +	u32 alarm_filter;
+> +	u32 mode;
+> +	bool intr_en;
+> +};
 > +
-> +	return -EINVAL;
+>  struct soctherm_throt_cfg {
+>  	const char *name;
+>  	unsigned int id;
+> @@ -273,6 +321,7 @@ struct soctherm_throt_cfg {
+>  	u8 cpu_throt_level;
+>  	u32 cpu_throt_depth;
+>  	u32 gpu_throt_level;
+> +	struct soctherm_oc_cfg oc_cfg;
+>  	struct thermal_cooling_device *cdev;
+>  	bool init;
+>  };
+> @@ -715,7 +764,7 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
+>  		return 0;
+>  	}
+>  
+> -	for (i = 0; i < THROTTLE_SIZE; i++) {
+> +	for (i = 0; i < THROTTLE_OC1; i++) {
+>  		struct thermal_cooling_device *cdev;
+>  
+>  		if (!ts->throt_cfgs[i].init)
+> @@ -1537,6 +1586,32 @@ static int soctherm_thermtrips_parse(struct platform_device *pdev)
+>  	return 0;
 >  }
 >  
->  static int of_thermal_set_trips(struct thermal_zone_device *tz,
-> @@ -407,8 +413,8 @@ static struct thermal_zone_device_ops of_thermal_ops = {
->  /***   sensor API   ***/
->  
->  static struct thermal_zone_device *
-> -thermal_zone_of_add_sensor(struct device_node *zone,
-> -			   struct device_node *sensor, void *data,
-> +thermal_zone_of_add_sensor(struct device_node *zone, struct device_node *sensor,
-> +			   int sensor_id, void *data,
->  			   const struct thermal_zone_of_device_ops *ops)
->  {
->  	struct thermal_zone_device *tzd;
-> @@ -426,6 +432,7 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->  	mutex_lock(&tzd->lock);
->  	tz->ops = ops;
->  	tz->sensor_data = data;
-> +	tz->sensor_id = sensor_id;
->  
->  	tzd->ops->get_temp = of_thermal_get_temp;
->  	tzd->ops->get_trend = of_thermal_get_trend;
-> @@ -516,7 +523,7 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
+> +static void soctherm_oc_cfg_parse(struct device *dev,
+> +				struct device_node *np_oc,
+> +				struct soctherm_throt_cfg *stc)
+> +{
+> +	u32 val;
+> +
+> +	if (of_property_read_bool(np_oc, "nvidia,polarity-active-low"))
+> +		stc->oc_cfg.active_low = 1;
+> +	else
+> +		stc->oc_cfg.active_low = 0;
+> +
+> +	if (!of_property_read_u32(np_oc, "nvidia,count-threshold", &val)) {
+> +		stc->oc_cfg.intr_en = 1;
+> +		stc->oc_cfg.alarm_cnt_thresh = val;
+> +	}
+> +
+> +	if (!of_property_read_u32(np_oc, "nvidia,throttle-period-us", &val))
+> +		stc->oc_cfg.throt_period = val;
+> +
+> +	if (!of_property_read_u32(np_oc, "nvidia,alarm-filter", &val))
+> +		stc->oc_cfg.alarm_filter = val;
+> +
+> +	/* BRIEF throttling by default, do not support STICKY */
+> +	stc->oc_cfg.mode = OC_THROTTLE_MODE_BRIEF;
+> +}
+> +
+>  static int soctherm_throt_cfg_parse(struct device *dev,
+>  				    struct device_node *np,
+>  				    struct soctherm_throt_cfg *stc)
+> @@ -1619,24 +1694,34 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
+>  			continue;
 >  		}
 >  
->  		if (sensor_specs.np == sensor_np && id == sensor_id) {
-> -			tzd = thermal_zone_of_add_sensor(child, sensor_np,
-> +			tzd = thermal_zone_of_add_sensor(child, sensor_np, sensor_id,
->  							 data, ops);
->  			if (!IS_ERR(tzd))
->  				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 5f4705f46c2f..2762d7e6dd86 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -351,6 +351,7 @@ struct thermal_genl_event {
->   *		   hardware.
->   */
->  struct thermal_zone_of_device_ops {
-> +	int (*get_temp_id)(int, void *, int *);
->  	int (*get_temp)(void *, int *);
->  	int (*get_trend)(void *, int, enum thermal_trend *);
->  	int (*set_trips)(void *, int, int);
+> +		if (stc->init) {
+> +			dev_err(dev, "throttle-cfg: %s: redefined!\n", name);
+> +			of_node_put(np_stcc);
+> +			break;
+> +		}
+>  
+>  		err = soctherm_throt_cfg_parse(dev, np_stcc, stc);
+>  		if (err)
+>  			continue;
+>  
+> -		tcd = thermal_of_cooling_device_register(np_stcc,
+> +		if (stc->id >= THROTTLE_OC1) {
+> +			soctherm_oc_cfg_parse(dev, np_stcc, stc);
+> +			stc->init = true;
+> +		} else {
+> +
+> +			tcd = thermal_of_cooling_device_register(np_stcc,
+>  							 (char *)name, ts,
+>  							 &throt_cooling_ops);
+> -		of_node_put(np_stcc);
+> -		if (IS_ERR_OR_NULL(tcd)) {
+> -			dev_err(dev,
+> -				"throttle-cfg: %s: failed to register cooling device\n",
+> -				name);
+> -			continue;
+> +			if (IS_ERR_OR_NULL(tcd)) {
+> +				dev_err(dev,
+> +					"throttle-cfg: %s: failed to register cooling device\n",
+> +					name);
+> +				continue;
+> +			}
+> +			stc->cdev = tcd;
+> +			stc->init = true;
+>  		}
+>  
+> -		stc->cdev = tcd;
+> -		stc->init = true;
+>  	}
+>  
+>  	of_node_put(np_stc);
+> @@ -1787,6 +1872,28 @@ static void throttlectl_gpu_level_select(struct tegra_soctherm *ts,
+>  	writel(r, ts->regs + THROT_PSKIP_CTRL(throt, THROTTLE_DEV_GPU));
+>  }
+>  
+> +static int soctherm_oc_cfg_program(struct tegra_soctherm *ts,
+> +				      enum soctherm_throttle_id throt)
+> +{
+> +	u32 r;
+> +	struct soctherm_oc_cfg *oc = &ts->throt_cfgs[throt].oc_cfg;
+> +
+> +	if (oc->mode == OC_THROTTLE_MODE_DISABLED)
+> +		return -EINVAL;
+> +
+> +	r = REG_SET_MASK(0, OC1_CFG_HW_RESTORE_MASK, 1);
+> +	r = REG_SET_MASK(r, OC1_CFG_THROTTLE_MODE_MASK, oc->mode);
+> +	r = REG_SET_MASK(r, OC1_CFG_ALARM_POLARITY_MASK, oc->active_low);
+> +	r = REG_SET_MASK(r, OC1_CFG_EN_THROTTLE_MASK, 1);
+> +	writel(r, ts->regs + ALARM_CFG(throt));
+> +	writel(oc->throt_period, ts->regs + ALARM_THROTTLE_PERIOD(throt));
+> +	writel(oc->alarm_cnt_thresh, ts->regs + ALARM_CNT_THRESHOLD(throt));
+> +	writel(oc->alarm_filter, ts->regs + ALARM_FILTER(throt));
+> +	soctherm_oc_intr_enable(ts, throt, oc->intr_en);
+> +
+> +	return 0;
+> +}
+> +
+>  /**
+>   * soctherm_throttle_program() - programs pulse skippers' configuration
+>   * @throt: the LIGHT/HEAVY of the throttle event id.
+> @@ -1803,6 +1910,9 @@ static void soctherm_throttle_program(struct tegra_soctherm *ts,
+>  	if (!stc.init)
+>  		return;
+>  
+> +	if ((throt >= THROTTLE_OC1) && (soctherm_oc_cfg_program(ts, throt)))
+> +		return;
+> +
+>  	/* Setup PSKIP parameters */
+>  	if (ts->soc->use_ccroc)
+>  		throttlectl_cpu_level_select(ts, throt);
 > -- 
-> 2.17.1
+> 2.7.4
 > 
