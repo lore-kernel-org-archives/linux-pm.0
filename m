@@ -2,160 +2,98 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 672BAC10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:29:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E15C2C282DD
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:55:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3675A20685
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:29:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AC30A21738
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:55:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lfCNfDiQ"
+	dkim=pass (2048-bit key) header.d=kernel-dk.20150623.gappssmtp.com header.i=@kernel-dk.20150623.gappssmtp.com header.b="OrOly8o8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728056AbfDWN3J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 09:29:09 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:44413 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727754AbfDWN2b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 09:28:31 -0400
-Received: by mail-lj1-f194.google.com with SMTP id h16so959719ljg.11
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 06:28:29 -0700 (PDT)
+        id S1727839AbfDWNzJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 09:55:09 -0400
+Received: from mail-pg1-f169.google.com ([209.85.215.169]:34978 "EHLO
+        mail-pg1-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727746AbfDWNzJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 09:55:09 -0400
+Received: by mail-pg1-f169.google.com with SMTP id g8so7668389pgf.2
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 06:55:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=3r+b8+ekNVHte2QeCZMZAWdkAU7CdygGrtvnF2S4meU=;
-        b=lfCNfDiQGJnwV59072TgSQ/QI0Z22D8koaXNkdIjyMEzEPlQgEmHSAJSJkTSafGn/5
-         giGeB/hmkrFAmAPPNycokb+0Ds1tdk66Bbbdt5LDNso09R37cP9YqBmcqN4pg3ExcM7O
-         rrOnBQLJT/B/auJOE/0fAjshwXn+mN0IHe22TUkmKy6MQHLE9HOfKLEqwnz44Fd9mhhY
-         FFHUbj8SN6LXo4m51LYKVmGdaqLDbFFlYarUWbUQ6tXdFywNb7hIyfwTT7K8eVyRE8l4
-         NG60sR2bSizrP7APx+c31+9Sax/MyyYkRLHimkZoBkdm6OjnoHSuU55AhNquY90FDcTJ
-         juJg==
+        d=kernel-dk.20150623.gappssmtp.com; s=20150623;
+        h=subject:to:references:from:message-id:date:user-agent:mime-version
+         :in-reply-to:content-language:content-transfer-encoding;
+        bh=luZOP+M2Br1z6JjqvbCNY8qb9/6fC4RpgjiwRzb9+fM=;
+        b=OrOly8o89edT05ye0GoFYglLRnhBVI2iEJom83aUVZS3azbqR0BfYsNQg4K3yNldrW
+         +g9wz3kH6GRB7RS2YOWrcjSEk7Gkz5xGOpOn3S5JlJ9yqedh5+FDEaOx6yFF2FOL93Px
+         FIRoMpMW0yTRsShbBKv395hY1iGxcyovrjcYARVsJPMJ9qXkWeWpwfUDYZFgbmAb3LPU
+         ZsZAuh6gYD/3ZCG1WQAZXGjhLrxl2Xa5WBWpw3u+6v4/6RZ11a5a5rXP3UX2r1W4Hdf5
+         SHtN7SU1zX6LMJbFBE787Gn7MHSfRNeowo4R7N358R1cdG2asO7DgvsbxhL43Eheda5h
+         PS+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=3r+b8+ekNVHte2QeCZMZAWdkAU7CdygGrtvnF2S4meU=;
-        b=jqVxIFDjoctmHQ5jwAkKuPeGdOWBFKSkER0m4B56H3DsoVtDWz8fIo3yOV/NA9Mkg8
-         I5UBjlxncN22pRKTDn/V2rIi6Lw/ILvAK5tKGT6QtZJgnAB2FjHch6sCsSX8Kxk3A0qI
-         1JXpt+fhHWza7nKj6TUQ970oGMqRIj3lNHKkZ9vHyScA/sLM63xEH7SirgHJTw6BDUW6
-         XSTRT8VrR/SMrW19zrRFe7OW3Rh7c4Ts9KX4Uye/O8l0Qt4O7gyGlo5/gkxdaQkK+Amd
-         GDIGSV+RgZwBhxemDpMKU7vUye48tAkFn7j/wbnLAiSX5GG+tRdOejugAS/AG+UaiBep
-         wnlw==
-X-Gm-Message-State: APjAAAV0o2dVdCOvE8nYK6wrdsP7kOr3GTE/Yaxr8YcfFn1T5J/Bnbuy
-        qCH6hY4foWao+MWdD8w86PjxAA==
-X-Google-Smtp-Source: APXvYqxcThCJ9co/aWID+yA6D6uqJUhZ5RwV+8mms/Umltv4wn/p5ZH/93HikDYzo6iztlgRRsk5fw==
-X-Received: by 2002:a2e:9348:: with SMTP id m8mr14019864ljh.23.1556026108454;
-        Tue, 23 Apr 2019 06:28:28 -0700 (PDT)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id y206sm4617107lfc.72.2019.04.23.06.28.26
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Tue, 23 Apr 2019 06:28:27 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     vireshk@kernel.org, sboyd@kernel.org, nm@ti.com,
-        robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
-Cc:     jcrouse@codeaurora.org, vincent.guittot@linaro.org,
-        bjorn.andersson@linaro.org, amit.kucheria@linaro.org,
-        seansw@qti.qualcomm.com, daidavid1@codeaurora.org,
-        evgreen@chromium.org, sibis@codeaurora.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        georgi.djakov@linaro.org
-Subject: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps bindings
-Date:   Tue, 23 Apr 2019 16:28:19 +0300
-Message-Id: <20190423132823.7915-2-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190423132823.7915-1-georgi.djakov@linaro.org>
-References: <20190423132823.7915-1-georgi.djakov@linaro.org>
+        h=x-gm-message-state:subject:to:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=luZOP+M2Br1z6JjqvbCNY8qb9/6fC4RpgjiwRzb9+fM=;
+        b=FfgoRTQfWIw7xaru7CD+QRSsMvOmdg851BV8RubPck/0X/Cj0dsLUuszLXkaqben41
+         iuLqypRLgxK6edsYzRxC7otCn/8c6xONQY84WNpyXRHJZcuKcFkr2eGFnqz4J/eil7Ur
+         h8wz3+tVmntKQPR2iyZp4oZu1tO2gQmjWH/leTSdUEFOoyq2HjL6WkUYAF2lJ+Ue/S6h
+         +ZrcJglKrZGSBuFy6G0rdIpKORTkrqfoS5cwy0sAMAE0UaGhvrudozv8dvGvvn1h6MUg
+         IKKEcp4XenBDaXqK/prtRCnH3YmFQWKtTxXmnNow4m79xSLTBiBKVE5RKfdS9td5Dylr
+         VncA==
+X-Gm-Message-State: APjAAAWPif2s78TliS97zKuEWU2l8/iYXN1XA0SHLSfEzl+P36DpwqMY
+        Dcz0pvRpwvVIqG0IWELZY1+Nvw==
+X-Google-Smtp-Source: APXvYqyPSeybmMUZTM8bgnWD06hCQaiW8B7Q9aMgFMFTf9FftneTu4UxQjo9GJ4QdLhH6QuMuxEgvg==
+X-Received: by 2002:a65:60c7:: with SMTP id r7mr19209315pgv.191.1556027708285;
+        Tue, 23 Apr 2019 06:55:08 -0700 (PDT)
+Received: from [192.168.1.121] (66.29.188.166.static.utbb.net. [66.29.188.166])
+        by smtp.gmail.com with ESMTPSA id v15sm21933247pff.105.2019.04.23.06.55.06
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 23 Apr 2019 06:55:07 -0700 (PDT)
+Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
+To:     Pavel Machek <pavel@ucw.cz>,
+        kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
+        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
+        linux-next@vger.kernel.org, hdegoede@redhat.com,
+        linux-ide@vger.kernel.org
+References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
+ <20190423102239.GA15531@amd>
+From:   Jens Axboe <axboe@kernel.dk>
+Message-ID: <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
+Date:   Tue, 23 Apr 2019 07:55:05 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190423102239.GA15531@amd>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190423132819.8uZLOizQGrWyrs5SsAVu6Brs37clVyGwD2EHdzSSnCg@z>
+Message-ID: <20190423135505.OAnHTHaal_zxuMCRWIKyND4KG12mf7nGDLa4HjcT3dQ@z>
 
-In addition to frequency and voltage, some devices may have bandwidth
-requirements for their interconnect throughput - for example a CPU
-or GPU may also need to increase or decrease their bandwidth to DDR
-memory based on the current operating performance point.
+On 4/23/19 4:22 AM, Pavel Machek wrote:
+> Hi!
+> 
+>>> It boots ok (unlike mainline -- I'm debugging that), and I can suspend
+>>> and resume... but then cursor in X is moving and I can talk to
+>>> applications cached in memory, but any access to disk hangs.
+>>
+>> Mainline problem was identified.
+>>
+>> But resume is still broken. I took advantage of fact that I can still
+>> do cached commands, and got complete dmesg. I'm attaching it.
+> 
+> Still broken in 0418. Ideas would be welcome at this point.
 
-Extend the OPP tables with additional property to describe the bandwidth
-needs of a device. The average and peak bandwidth values depend on the
-hardware and its properties.
+Bisect it?
 
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++++++++
- .../devicetree/bindings/property-units.txt    |  4 ++
- 2 files changed, 42 insertions(+)
+-- 
+Jens Axboe
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 76b6c79604a5..830f0206aea7 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -132,6 +132,9 @@ Optional properties:
- - opp-level: A value representing the performance level of the device,
-   expressed as a 32-bit integer.
- 
-+- bandwidth-MBps: The interconnect bandwidth is specified with an array containing
-+  the two integer values for average and peak bandwidth in megabytes per second.
-+
- - clock-latency-ns: Specifies the maximum possible transition latency (in
-   nanoseconds) for switching to this OPP from any other OPP.
- 
-@@ -546,3 +549,38 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
- 		};
- 	};
- };
-+
-+Example 7: bandwidth-MBps:
-+Average and peak bandwidth values for the interconnects between CPU and DDR
-+memory and also between CPU and L3 are defined per each OPP. Bandwidth of both
-+interconnects is scaled together with CPU frequency.
-+
-+/ {
-+	cpus {
-+		CPU0: cpu@0 {
-+			compatible = "arm,cortex-a53", "arm,armv8";
-+			...
-+			operating-points-v2 = <&cpu_opp_table>;
-+			/* path between CPU and DDR memory and CPU and L3 */
-+			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
-+					<&noc MASTER_CPU &noc SLAVE_L3>;
-+		};
-+	};
-+
-+	cpu_opp_table: cpu_opp_table {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp-200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
-+			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
-+			bandwidth-MBps = <457 1525>, <914 3050>;
-+		};
-+		opp-400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			/* CPU<->DDR bandwidth: 915 MB/s average, 3051 MB/s peak */
-+			 * CPU<->L3 bandwidth: 1828 MB/s average, 6102 MB/s peak */
-+			bandwidth-MBps = <915 3051>, <1828 6102>;
-+		};
-+	};
-diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
-index bfd33734faca..9c3dbefcdae8 100644
---- a/Documentation/devicetree/bindings/property-units.txt
-+++ b/Documentation/devicetree/bindings/property-units.txt
-@@ -41,3 +41,7 @@ Temperature
- Pressure
- ----------------------------------------
- -kpascal	: kiloPascal
-+
-+Throughput
-+----------------------------------------
-+-MBps		: megabytes per second
