@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77A91C282DD
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:28:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75122C10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:29:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 31AAD2177B
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:28:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 418512077C
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 13:29:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mx7tfKFC"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pjyiAvWp"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727827AbfDWN2w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 09:28:52 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:41133 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727978AbfDWN2j (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 09:28:39 -0400
-Received: by mail-lj1-f194.google.com with SMTP id k8so979445lja.8
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 06:28:38 -0700 (PDT)
+        id S1727959AbfDWN2f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 09:28:35 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:45146 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727864AbfDWN2d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 09:28:33 -0400
+Received: by mail-lj1-f196.google.com with SMTP id y6so13483316ljd.12
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 06:28:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=WBZVH8tY60kvdDXDwV8aJHdGVIEg5lBCBmcPhKf9y2Y=;
-        b=mx7tfKFCrLM+my8sDW7dzzb2SBOnGloSVzmUgLj2SrdsqiYsq+Uq1lnU07zY7h6C5e
-         y0YhFrKkNWfdkTfdMdlbNuKmiaMApa4h+ey7j9Jz639toJrjKFCByOrQXzoM/XHNorPX
-         XJxuAJhHm0Tv57dwC1lVcrZvp1gxj1OPAsHwveMyKCONalWR2wAGlI6E1Q94EM+yggSP
-         XsQNCgnxVz1nZZPTFmuMjHl8RLk2dSsx/7CxPZg8ylVSR+MMKw2rAlrD8vOBAYJhThDL
-         taL/1wBYpNLKnmLsVnUxn7DEHk9MjQ3LCh0f9wXjbuB6Jk14ibwh/E24H+FkhD6mc00m
-         s6xw==
+        bh=TmzrLG0HhMUllGPErHueXstJu/wyUlmgrIkCuicVsiY=;
+        b=pjyiAvWpRnfInL1U8vVm5G28PPwIa7vHVRINhbLFwD7Hh8RLqG1XBvcg6uhiz5Q7I/
+         oDN/v1CW3tmWtHRBfdLsTUhN3j1Ez8EdsbehRXTSLKgBkdXvWs6FxQ/neadA2MdMxyCv
+         /T86u/ZwKidHvmiwKNAiXKqlT6ADVxSxocN6dT4P477jUUBupKtT35G3+nr8vkHzgvWd
+         +6GveAO2cO7rhe58ZHp0+Kgisl4ilC3MIdSjLoHz7+E1PvM3J4aYUIFnfv5nb5ygA7N5
+         5dlcgCZuU9fe0qw3ewVCgh0ZKTnuzxJOcl7hkfXbZa6WVywG4g0j32gsnzFs0ERahaVm
+         My7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=WBZVH8tY60kvdDXDwV8aJHdGVIEg5lBCBmcPhKf9y2Y=;
-        b=D5jrBTXoA5qKtz0YMp8on8u2xKHaDL8KqLjegC5Qc9RW3ta3VyQu1YzAoh87ICa7DZ
-         0CRyld+dUcf+sAxlvkurVsy49gTA/gHlonsl3DiUbmmGcrK2OPQKPTUcn/hjOy7xXJXs
-         jn2YSAaXNx/4NPa2rv3y6mnT0hOFshifF3SXHkIhjWuEgtGs7xiHYBVkQp3mWTfTbqOg
-         +8n33HUXRF1IqbHU9vUpKg48PA0FtpjSswIvO11ge6BpG5MzfOWl/yEb5qKzNlziRVeE
-         a/Yxdan8wu7ZI77fsUTXNS0cvZ52v16esrNivLnn27IX3xnkBlctMetWRzvmc22NLBWb
-         XHTg==
-X-Gm-Message-State: APjAAAWzLKBmrUB69KKLUph1J4L2uk1DaNcTfg+5gs9cp/60Wipti/uh
-        PDbgTYubHDMKpuWlXH5W7Q3RGA==
-X-Google-Smtp-Source: APXvYqzNAQqhTw6N2yoD4Bz5LuIxZwqCEb1c1WFtTJ4PtefGrEYIIRNvEmZZ8vqvnt1FgOHQdMxjbA==
-X-Received: by 2002:a2e:1203:: with SMTP id t3mr3028829lje.180.1556026117559;
-        Tue, 23 Apr 2019 06:28:37 -0700 (PDT)
+        bh=TmzrLG0HhMUllGPErHueXstJu/wyUlmgrIkCuicVsiY=;
+        b=MsdsKJISdukJKvRuiYJzftOZ0VTpNXDYIrefBpThtEvnlT+whSFQ6paDxYspvGmL9F
+         3bAdhm8mYdLR4t7WhrlTI5/kkAVPTOb+FjUzCiUnoZGPod0hXTGWN3xqGu7cpciyRirp
+         /sYsKalr54M8wXlyVOpw7DH7oYj8bjn3yHEJz+KZ5MzO2ce+dRJ3Bh1/Ha0f1bX51lfL
+         aU8OtVR+HshScle/KvjzUTlaEhO4IXm30gAu7IW2F3Yq8eChGIyxFm7LUlmxKFtURrjY
+         XxbfQt/oZypjV98VgDbiadBVJPb4eIMiturnUCzLlBl9Q2cvRV3wH4eHyP16wQJQ7NKg
+         qIGQ==
+X-Gm-Message-State: APjAAAXNRrsOAB5YyxD3thInNr1oZ1Cy7SZTI8He7nfGa+IfvWJ1bZb7
+        2WaBG2VsZ7EnMQzD+iY88ksIQQ==
+X-Google-Smtp-Source: APXvYqxYn5AHIWe8NubgPi748hbhffjSbR78lCUgeNHQmIJgIs0nNxYDkCygfXs7mEYHaYNwQVCsrQ==
+X-Received: by 2002:a2e:500d:: with SMTP id e13mr13748245ljb.169.1556026110607;
+        Tue, 23 Apr 2019 06:28:30 -0700 (PDT)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id y206sm4617107lfc.72.2019.04.23.06.28.35
+        by smtp.googlemail.com with ESMTPSA id y206sm4617107lfc.72.2019.04.23.06.28.28
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Tue, 23 Apr 2019 06:28:36 -0700 (PDT)
+        Tue, 23 Apr 2019 06:28:29 -0700 (PDT)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     vireshk@kernel.org, sboyd@kernel.org, nm@ti.com,
         robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
@@ -64,9 +64,9 @@ Cc:     jcrouse@codeaurora.org, vincent.guittot@linaro.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         georgi.djakov@linaro.org
-Subject: [PATCH v2 5/5] cpufreq: dt: Add support for interconnect bandwidth scaling
-Date:   Tue, 23 Apr 2019 16:28:23 +0300
-Message-Id: <20190423132823.7915-6-georgi.djakov@linaro.org>
+Subject: [PATCH v2 2/5] interconnect: Add of_icc_get_by_index() helper function
+Date:   Tue, 23 Apr 2019 16:28:20 +0300
+Message-Id: <20190423132823.7915-3-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190423132823.7915-1-georgi.djakov@linaro.org>
 References: <20190423132823.7915-1-georgi.djakov@linaro.org>
@@ -77,83 +77,121 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190423132823.6FRyGlYHSeSUy9eWnEb7oS3LLn1LWBXIcDL9bXVOmD0@z>
+Message-ID: <20190423132820.vKj3XZhbH3U8eJZbzd-RDFEn4AdX3h9PldA_O6pJi3A@z>
 
-In addition to clocks and regulators, some devices can scale the bandwidth
-of their on-chip interconnect - for example between CPU and DDR memory. Add
-support for that, so that platforms which support it can make use of it.
+This is the same as the traditional of_icc_get() function, but the
+difference is that it takes index as an argument, instead of name.
 
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/cpufreq/cpufreq-dt.c | 27 ++++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
+ drivers/interconnect/core.c  | 45 ++++++++++++++++++++++++++++--------
+ include/linux/interconnect.h |  6 +++++
+ 2 files changed, 41 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index bde28878725b..8a20f4d0243e 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -16,6 +16,7 @@
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
- #include <linux/err.h>
-+#include <linux/interconnect.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/pm_opp.h>
-@@ -98,6 +99,7 @@ static int resources_available(void)
- 	struct device *cpu_dev;
- 	struct regulator *cpu_reg;
- 	struct clk *cpu_clk;
-+	struct icc_path *cpu_path;
- 	int ret = 0;
- 	const char *name;
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 871eb4bc4efc..a7c3c262c974 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -295,9 +295,9 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
+ }
  
-@@ -124,6 +126,19 @@ static int resources_available(void)
+ /**
+- * of_icc_get() - get a path handle from a DT node based on name
++ * of_icc_get_by_index() - get a path handle from a DT node based on index
+  * @dev: device pointer for the consumer device
+- * @name: interconnect path name
++ * @idx: interconnect path index
+  *
+  * This function will search for a path between two endpoints and return an
+  * icc_path handle on success. Use icc_put() to release constraints when they
+@@ -309,13 +309,12 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
+  * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
+  * when the API is disabled or the "interconnects" DT property is missing.
+  */
+-struct icc_path *of_icc_get(struct device *dev, const char *name)
++struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+ {
+ 	struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
+ 	struct icc_node *src_node, *dst_node;
+ 	struct device_node *np = NULL;
+ 	struct of_phandle_args src_args, dst_args;
+-	int idx = 0;
+ 	int ret;
  
- 	clk_put(cpu_clk);
+ 	if (!dev || !dev->of_node)
+@@ -335,12 +334,6 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
+ 	 * lets support only global ids and extend this in the future if needed
+ 	 * without breaking DT compatibility.
+ 	 */
+-	if (name) {
+-		idx = of_property_match_string(np, "interconnect-names", name);
+-		if (idx < 0)
+-			return ERR_PTR(idx);
+-	}
+-
+ 	ret = of_parse_phandle_with_args(np, "interconnects",
+ 					 "#interconnect-cells", idx * 2,
+ 					 &src_args);
+@@ -383,6 +376,38 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
  
-+	cpu_path = of_icc_get(cpu_dev, NULL);
-+	ret = PTR_ERR_OR_ZERO(cpu_path);
-+	if (ret) {
-+		if (ret == -EPROBE_DEFER)
-+			dev_dbg(cpu_dev, "defer icc path: %d\n", ret);
-+		else
-+			dev_err(cpu_dev, "failed to get icc path: %d\n", ret);
+ 	return path;
+ }
 +
-+		return ret;
++/**
++ * of_icc_get() - get a path handle from a DT node based on name
++ * @dev: device pointer for the consumer device
++ * @name: interconnect path name
++ *
++ * This function will search for a path between two endpoints and return an
++ * icc_path handle on success. Use icc_put() to release constraints when they
++ * are not needed anymore.
++ * If the interconnect API is disabled, NULL is returned and the consumer
++ * drivers will still build. Drivers are free to handle this specifically,
++ * but they don't have to.
++ *
++ * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
++ * when the API is disabled or the "interconnects" DT property is missing.
++ */
++struct icc_path *of_icc_get(struct device *dev, const char *name)
++{
++	int idx = 0;
++
++	if (!dev || !dev->of_node)
++		return ERR_PTR(-ENODEV);
++
++	if (name) {
++		idx = of_property_match_string(dev->of_node,
++					       "interconnect-names", name);
++		if (idx < 0)
++			return ERR_PTR(idx);
 +	}
 +
-+	icc_put(cpu_path);
-+
- 	name = find_supply_name(cpu_dev);
- 	/* Platform doesn't require regulator */
- 	if (!name)
-@@ -203,10 +218,18 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		}
- 	}
++	return of_icc_get_by_index(dev, idx);
++}
+ EXPORT_SYMBOL_GPL(of_icc_get);
  
-+	opp_table = dev_pm_opp_set_paths(cpu_dev);
-+	if (IS_ERR(opp_table)) {
-+		ret = PTR_ERR(opp_table);
-+		dev_err(cpu_dev, "Failed to set interconnect path for cpu%d: %d\n",
-+			policy->cpu, ret);
-+		goto out_put_regulator;
-+	}
-+
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
- 	if (!priv) {
- 		ret = -ENOMEM;
--		goto out_put_regulator;
-+		goto out_put_path;
- 	}
+ /**
+diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
+index dc25864755ba..0e430b3b6519 100644
+--- a/include/linux/interconnect.h
++++ b/include/linux/interconnect.h
+@@ -28,6 +28,7 @@ struct device;
+ struct icc_path *icc_get(struct device *dev, const int src_id,
+ 			 const int dst_id);
+ struct icc_path *of_icc_get(struct device *dev, const char *name);
++struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
+ void icc_put(struct icc_path *path);
+ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw);
  
- 	priv->reg_name = name;
-@@ -288,6 +311,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	if (priv->have_static_opps)
- 		dev_pm_opp_of_cpumask_remove_table(policy->cpus);
- 	kfree(priv);
-+out_put_path:
-+	dev_pm_opp_put_paths(opp_table);
- out_put_regulator:
- 	if (name)
- 		dev_pm_opp_put_regulators(opp_table);
+@@ -45,6 +46,11 @@ static inline struct icc_path *of_icc_get(struct device *dev,
+ 	return NULL;
+ }
+ 
++struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
++{
++	return NULL;
++}
++
+ static inline void icc_put(struct icc_path *path)
+ {
+ }
