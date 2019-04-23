@@ -2,301 +2,99 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF87CC10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 09:06:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68E6FC10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 09:55:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9BD8B21738
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 09:06:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="VbvwTthm"
+	by mail.kernel.org (Postfix) with ESMTP id 37F0420843
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 09:55:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726989AbfDWJFC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 05:05:02 -0400
-Received: from mail-wr1-f68.google.com ([209.85.221.68]:36795 "EHLO
-        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725955AbfDWJFB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 05:05:01 -0400
-Received: by mail-wr1-f68.google.com with SMTP id b1so7816087wru.3
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 02:05:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=YNjHHUXQ8F7c9w3O5//3/4Rn0t0p1XvuLCdF7rYj7Us=;
-        b=VbvwTthmdv8Sk1gZSD82xCZWN6LM/EgXnzRTiYwERf5t0Bs2lfZEDL2U8+CgvcVQx5
-         WvI0vHRR/WgNAaRM7iVFjHE/TA7Yv5EqxRgHlfDy6AvH4RdgSOzeK9SFZm97/jWBAtmx
-         IBh1yKsPLexyy5YcBccTVFUy6u//IDGYhvGVQyZdB9tV8Bb1QXKX1nztp1656qUnYrZk
-         jgfrdU/bVy3EAzT2ABlZ/3M4XcRqve4wKX/9l6FMu9E2W8oGeM2KZTQ5wCyTJm/op7B8
-         AokNbX1N7FhpdzjJT8B7aduOJmpLGbBgJBkl6AogiloHcJgfyz1yzMbXV790tYOO1k2b
-         CHew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=YNjHHUXQ8F7c9w3O5//3/4Rn0t0p1XvuLCdF7rYj7Us=;
-        b=clpsD1Btp0sboDEVIUM9bN/krcnoRXlFdaeU/saVFznp8G/UrySqcYk2p5TPVAoUGp
-         cESLh7ZdpmDtkDGpgMGzJpCE3PGh9UPrBymHm+HQCcrSEbUP0YGE8ZOsbchQAdwKACf6
-         2qY3MZFMy/97w813eSWjrjAF4RLs7675z9+WsBgO4a82rd96G/d1SJB19AndHr2bYk9z
-         4GqtMLxFnVkI2w8Um+cgy3/d3NVcywwwPiknRwspwukxOPmssEjOILJ1wJ2cBSEABwj+
-         FsIXR/BWcz3eH3oWamGUDIh5tgYVc3QDNuClW6tmq6SruL/n4ojgttmNl7vn/5ant1+O
-         2bdQ==
-X-Gm-Message-State: APjAAAUZC5EBwL7SJ0rh5WibXOe0P7h+1NIi0CKQN7vKTzjj4uGVUs6J
-        tLsFfDPb6cMJ+Wf+Fm6dsZufyg==
-X-Google-Smtp-Source: APXvYqwbCJMkC/4S4wMW1twrwzHRUFhWwmqfx4YdHC7n5fXgNgO895duVH6Sg5lwZiiobtuyNDFDlQ==
-X-Received: by 2002:adf:ff8e:: with SMTP id j14mr4208218wrr.219.1556010299277;
-        Tue, 23 Apr 2019 02:04:59 -0700 (PDT)
-Received: from localhost.localdomain (aputeaux-684-1-25-101.w90-86.abo.wanadoo.fr. [90.86.250.101])
-        by smtp.gmail.com with ESMTPSA id v190sm15360434wme.18.2019.04.23.02.04.57
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 23 Apr 2019 02:04:58 -0700 (PDT)
-From:   Bartosz Golaszewski <brgl@bgdev.pl>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH v10 00/11] mfd: add support for max77650 PMIC
-Date:   Tue, 23 Apr 2019 11:04:40 +0200
-Message-Id: <20190423090451.23711-1-brgl@bgdev.pl>
-X-Mailer: git-send-email 2.21.0
+        id S1726204AbfDWJz5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 05:55:57 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:50890 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726150AbfDWJz5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 05:55:57 -0400
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: eballetbo)
+        with ESMTPSA id F38A427FB1F
+Subject: Re: [PATCH] PM / devfreq: Return -ENODEV from
+ try_then_request_governor
+To:     Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        linux-kernel@vger.kernel.org
+Cc:     Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
+References: <20190423081158.29859-1-tomeu.vizoso@collabora.com>
+From:   Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Message-ID: <ed7c20b9-b435-5f40-55ab-97d6384749f1@collabora.com>
+Date:   Tue, 23 Apr 2019 11:55:52 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190423081158.29859-1-tomeu.vizoso@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190423090440.QWX_BBrLv561Ho-6YqGY8M2FNZPpuR2iGm-b5kO0x_Y@z>
+Message-ID: <20190423095552.I2svk-GKRsgNXYUzc6pj8hlMNK4VctsCeIuVjpGbK4M@z>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Hi Tomeu,
 
-This series adds support for max77650 ultra low-power PMIC. It provides
-the core mfd driver and a set of five sub-drivers for the regulator,
-power supply, gpio, leds and input subsystems.
+On 23/4/19 10:11, Tomeu Vizoso wrote:
+> Callers don't expect it to return NULL, but an error code.
+> 
+> Fixes Oops such as the one below, when one tries to set a governor that
+> isn't available:
+> 
+> Unable to handle kernel NULL pointer dereference at virtual address 00000018
+> 
+> [<c0dcf718>] (governor_store) from [<c0539558>] (kernfs_fop_write+0x100/0x1e0)
+> [<c0539558>] (kernfs_fop_write) from [<c04b09b4>] (__vfs_write+0x2c/0x17c)
+> [<c04b09b4>] (__vfs_write) from [<c04b33fc>] (vfs_write+0xa4/0x184)
+> [<c04b33fc>] (vfs_write) from [<c04b361c>] (ksys_write+0x4c/0xac)
+> [<c04b361c>] (ksys_write) from [<c0301000>] (ret_fast_syscall+0x0/0x28)
+> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
+> Reported-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
+> Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
 
-Patches 1-4 add the DT binding documents. Patch 5 documents mfd_add_devices().
-Patches 6-10 add all drivers. Last patch adds a MAINTAINERS entry for this
-device.
+There is already a fix for that. The fix was initially sent in October [2] but
+unfortunately it got lost. I resend and now is queued [1]. Hopefully the Fixes
+tag will help to pick the fix to the proper kernel releases.
 
-The regulator part is already upstream.
+Thanks,
+ Enric
 
-v1 -> v2:
-=========
+[1]
+https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=b53b0128052ffd687797d5f4deeb76327e7b5711
 
-General:
-- use C++ style comments for the SPDX license identifier and the
-  copyright header
-- s/MODULE_LICENSE("GPL")/MODULE_LICENSE("GPL v2")/
-- lookup the virtual interrupt numbers in the MFD driver, setup
-  resources for child devices and use platform_get_irq_byname()
-  in sub-drivers
-- picked up review tags
-- use devm_request_any_context_irq() for interrupt requests
+[2] https://lkml.org/lkml/2018/10/16/744
 
-LEDs:
-- changed the max77650_leds_ prefix to max77650_led_
-- drop the max77650_leds structure as the only field it held was the
-  regmap pointer, move said pointer to struct max77650_led
-- change the driver name to "max77650-led"
-- drop the last return value check and return the result of
-  regmap_write() directly
-- change the labeling scheme to one consistent with other LED drivers
-
-ONKEY:
-- drop the key reporting helper and call the input functions directly
-  from interrupt handlers
-- rename the rv local variable to error
-- drop parent device asignment
-
-Regulator:
-- drop the unnecessary init_data lookup from the driver code
-- drop unnecessary include
-
-Charger:
-- disable the charger on driver remove
-- change the power supply type to POWER_SUPPLY_TYPE_USB
-
-GPIO:
-- drop interrupt support until we have correct implementation of hierarchical
-  irqs in gpiolib
-
-v2 -> v3:
-=========
-
-General:
-- dropped regulator patches as they're already in Mark Brown's branch
-
-LED:
-- fix the compatible string in the DT binding example
-- use the max_brightness property
-- use a common prefix ("MAX77650_LED") for all defines in the driver
-
-MFD:
-- add the MODULE_DEVICE_TABLE()
-- add a sentinel to the of_device_id array
-- constify the pointers to irq names
-- use an enum instead of defines for interrupt indexes
-
-v3 -> v4:
-=========
-
-GPIO:
-- as discussed with Linus Walleij: the gpio-controller is now part of
-  the core mfd module (we don't spawn a sub-node anymore), the binding
-  document for GPIO has been dropped, the GPIO properties have been
-  defined in the binding document for the mfd core, the interrupt
-  functionality has been reintroduced with the irq directly passed from
-  the mfd part
-- due to the above changes the Reviewed-by tag from Linus was dropped
-
-v4 -> v5:
-=========
-
-General:
-- add a patch documenting mfd_add_devices()
-
-MFD:
-- pass the regmap irq_chip irq domain to mfd over mfd_add_devices so that
-  the hw interrupts from resources can be correctly mapped to virtual irqs
-- remove the enum listing cell indexes
-- extend Kconfig help
-- add a link to the programming manual
-- use REGMAP_IRQ_REG() for regmap interrupts (except for GPI which has
-  is composed of two hw interrupts for rising and falling edge)
-- add error messages in probe
-- use PLATFORM_DEVID_NONE constant in devm_mfd_add_devices()
-- set irq_base to 0 in regmap_add_irq_chip() as other users to, it's only
-  relevant if it's > 0
-
-Charger:
-- use non-maxim specific property names for minimum input voltage and current
-  limit
-- code shrink by using the enable/disable charger helpers everywhere
-- use more descriptive names for constants
-
-Onkey:
-- use EV_SW event type for slide mode
-
-LED:
-- remove stray " from Kconfig help
-
-v5 -> v6:
-=========
-
-MFD:
-- remove stray spaces in the binding document
-- rename the example dt node
-- remove unnecessary interrupt-parent property from the bindings
-
-LED:
-- add a missing dependency on LEDS_CLASS to Kconfig
-
-Onkey:
-- use boolean for the slide button property
-
-Charger:
-- fix the property names in DT example
-- make constants even more readable
-
-v6 -> v7:
-=========
-
-Charger:
-- rename the current limit property to current-limit-microamp
-
-v7 -> v8:
-=========
-
-General:
-- collected acks from Lee
-- changed the documentation for mfd_add_devices() as suggested by Lee
-- rebased on top of v5.1-rc3
-
-v8 > v9:
-========
-
-General:
-- collected new tags
-- rebased on top of v5.1-rc4
-
-MFD:
-- various improvements in error messages
-- coding style tweaks
-
-Charger:
-- named the two optional properties in a more descriptive way, so that
-  we can make them generic for charger bindings if more potential users
-  appear
-
-v9 -> v10:
-==========
-
-General:
-- added the review tag from Sebastian
-- rebased on top of v5.1-rc6
-
-Charger:
-- fixed the example in the binding document
-
-Bartosz Golaszewski (11):
-  dt-bindings: mfd: add DT bindings for max77650
-  dt-bindings: power: supply: add DT bindings for max77650
-  dt-bindings: leds: add DT bindings for max77650
-  dt-bindings: input: add DT bindings for max77650
-  mfd: core: document mfd_add_devices()
-  mfd: max77650: new core mfd driver
-  power: supply: max77650: add support for battery charger
-  gpio: max77650: add GPIO support
-  leds: max77650: add LEDs support
-  input: max77650: add onkey support
-  MAINTAINERS: add an entry for max77650 mfd driver
-
- .../bindings/input/max77650-onkey.txt         |  26 ++
- .../bindings/leds/leds-max77650.txt           |  57 +++
- .../devicetree/bindings/mfd/max77650.txt      |  46 +++
- .../power/supply/max77650-charger.txt         |  28 ++
- MAINTAINERS                                   |  14 +
- drivers/gpio/Kconfig                          |   7 +
- drivers/gpio/Makefile                         |   1 +
- drivers/gpio/gpio-max77650.c                  | 190 +++++++++
- drivers/input/misc/Kconfig                    |   9 +
- drivers/input/misc/Makefile                   |   1 +
- drivers/input/misc/max77650-onkey.c           | 121 ++++++
- drivers/leds/Kconfig                          |   6 +
- drivers/leds/Makefile                         |   1 +
- drivers/leds/leds-max77650.c                  | 147 +++++++
- drivers/mfd/Kconfig                           |  14 +
- drivers/mfd/Makefile                          |   1 +
- drivers/mfd/max77650.c                        | 232 +++++++++++
- drivers/mfd/mfd-core.c                        |  13 +
- drivers/power/supply/Kconfig                  |   7 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/max77650-charger.c       | 368 ++++++++++++++++++
- include/linux/mfd/max77650.h                  |  59 +++
- 22 files changed, 1349 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/input/max77650-onkey.txt
- create mode 100644 Documentation/devicetree/bindings/leds/leds-max77650.txt
- create mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.txt
- create mode 100644 drivers/gpio/gpio-max77650.c
- create mode 100644 drivers/input/misc/max77650-onkey.c
- create mode 100644 drivers/leds/leds-max77650.c
- create mode 100644 drivers/mfd/max77650.c
- create mode 100644 drivers/power/supply/max77650-charger.c
- create mode 100644 include/linux/mfd/max77650.h
-
--- 
-2.21.0
-
+>  drivers/devfreq/devfreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 0ae3de76833b..5539e9be718d 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
+>  		/* Restore previous state before return */
+>  		mutex_lock(&devfreq_list_lock);
+>  		if (err)
+> -			return NULL;
+> +			return ERR_PTR(-ENODEV);
+>  
+>  		governor = find_devfreq_governor(name);
+>  	}
+> 
