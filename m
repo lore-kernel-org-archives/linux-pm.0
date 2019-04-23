@@ -2,107 +2,86 @@ Return-Path: <SRS0=9RE4=SZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4AECC282DD
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 14:09:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E334CC10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 14:14:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BE7C120645
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 14:09:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BD1B620652
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Apr 2019 14:14:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727656AbfDWOJq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Apr 2019 10:09:46 -0400
-Received: from mail-pg1-f176.google.com ([209.85.215.176]:35690 "EHLO
-        mail-pg1-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726659AbfDWOJq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 10:09:46 -0400
-Received: by mail-pg1-f176.google.com with SMTP id g8so7688254pgf.2;
-        Tue, 23 Apr 2019 07:09:45 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:references:from:openpgp:autocrypt
-         :message-id:date:user-agent:mime-version:in-reply-to
-         :content-language:content-transfer-encoding;
-        bh=I3pchUjGmM6sDkLfkWSo0YhPzLUWVAw1zXokrtkmcNM=;
-        b=imTC4dkltRVfXg1CyGt6pZnvyr7eH7fs3h+fub54EUk9CiL7qyuTSqQwE1YjH70fqh
-         gEeELnTDDsrLAMV7RutQq+kbi9wvOB9BZiR4GbZ5nSKSTXIIkx31pgZeHy4El3rjMeTO
-         E7Ke4QCHWKTFjkJz2VVGE682CYsKqvSP523a488OH+T8bsSMM/h1DiE1Em8nNsI71B1B
-         R8ROo/v7hRxih585mX6Yk06WHaYbrsyFJVCkGWbpgp1I9+Eg2S9AP9wWV+NYJx77uAMa
-         2HeRmsbWkTS/gI4mpvuI897njUvq/nvkRVIvJ2Cx5toWFzA1ma7qYyKEDqwYSZ4zmLhQ
-         LRYw==
-X-Gm-Message-State: APjAAAWEb0Mb7ChACWX8dNy/vlCT8v6RChiqcVQgoHlIWiLIphAI+Cfn
-        +0SdLAbe/ViUKEUtZl0/mYfBq36m
-X-Google-Smtp-Source: APXvYqy/lkRrNpmJrpoYgdK6XnLo134MvNem080wRLc6uvljUbFYP0Soen+8dqGQrJCRIdt6OgUUPg==
-X-Received: by 2002:aa7:820c:: with SMTP id k12mr27039023pfi.177.1556028584870;
-        Tue, 23 Apr 2019 07:09:44 -0700 (PDT)
-Received: from asus.site ([2601:647:4000:5dd1:a41e:80b4:deb3:fb66])
-        by smtp.gmail.com with ESMTPSA id j14sm20863344pfa.57.2019.04.23.07.09.43
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 23 Apr 2019 07:09:43 -0700 (PDT)
-Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
-To:     Pavel Machek <pavel@ucw.cz>,
-        kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
-        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
-        linux-next@vger.kernel.org, hdegoede@redhat.com, axboe@kernel.dk,
-        linux-ide@vger.kernel.org
-References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
- <20190423102239.GA15531@amd>
-From:   Bart Van Assche <bvanassche@acm.org>
-Openpgp: preference=signencrypt
-Autocrypt: addr=bvanassche@acm.org; prefer-encrypt=mutual; keydata=
- mQENBFSOu4oBCADcRWxVUvkkvRmmwTwIjIJvZOu6wNm+dz5AF4z0FHW2KNZL3oheO3P8UZWr
- LQOrCfRcK8e/sIs2Y2D3Lg/SL7qqbMehGEYcJptu6mKkywBfoYbtBkVoJ/jQsi2H0vBiiCOy
- fmxMHIPcYxaJdXxrOG2UO4B60Y/BzE6OrPDT44w4cZA9DH5xialliWU447Bts8TJNa3lZKS1
- AvW1ZklbvJfAJJAwzDih35LxU2fcWbmhPa7EO2DCv/LM1B10GBB/oQB5kvlq4aA2PSIWkqz4
- 3SI5kCPSsygD6wKnbRsvNn2mIACva6VHdm62A7xel5dJRfpQjXj2snd1F/YNoNc66UUTABEB
- AAG0JEJhcnQgVmFuIEFzc2NoZSA8YnZhbmFzc2NoZUBhY20ub3JnPokBOQQTAQIAIwUCVI67
- igIbAwcLCQgHAwIBBhUIAgkKCwQWAgMBAh4BAheAAAoJEHFcPTXFzhAJ8QkH/1AdXblKL65M
- Y1Zk1bYKnkAb4a98LxCPm/pJBilvci6boefwlBDZ2NZuuYWYgyrehMB5H+q+Kq4P0IBbTqTa
- jTPAANn62A6jwJ0FnCn6YaM9TZQjM1F7LoDX3v+oAkaoXuq0dQ4hnxQNu792bi6QyVdZUvKc
- macVFVgfK9n04mL7RzjO3f+X4midKt/s+G+IPr4DGlrq+WH27eDbpUR3aYRk8EgbgGKvQFdD
- CEBFJi+5ZKOArmJVBSk21RHDpqyz6Vit3rjep7c1SN8s7NhVi9cjkKmMDM7KYhXkWc10lKx2
- RTkFI30rkDm4U+JpdAd2+tP3tjGf9AyGGinpzE2XY1K5AQ0EVI67igEIAKiSyd0nECrgz+H5
- PcFDGYQpGDMTl8MOPCKw/F3diXPuj2eql4xSbAdbUCJzk2ETif5s3twT2ER8cUTEVOaCEUY3
- eOiaFgQ+nGLx4BXqqGewikPJCe+UBjFnH1m2/IFn4T9jPZkV8xlkKmDUqMK5EV9n3eQLkn5g
- lco+FepTtmbkSCCjd91EfThVbNYpVQ5ZjdBCXN66CKyJDMJ85HVr5rmXG/nqriTh6cv1l1Js
- T7AFvvPjUPknS6d+BETMhTkbGzoyS+sywEsQAgA+BMCxBH4LvUmHYhpS+W6CiZ3ZMxjO8Hgc
- ++w1mLeRUvda3i4/U8wDT3SWuHcB3DWlcppECLkAEQEAAYkBHwQYAQIACQUCVI67igIbDAAK
- CRBxXD01xc4QCZ4dB/0QrnEasxjM0PGeXK5hcZMT9Eo998alUfn5XU0RQDYdwp6/kMEXMdmT
- oH0F0xB3SQ8WVSXA9rrc4EBvZruWQ+5/zjVrhhfUAx12CzL4oQ9Ro2k45daYaonKTANYG22y
- //x8dLe2Fv1By4SKGhmzwH87uXxbTJAUxiWIi1np0z3/RDnoVyfmfbbL1DY7zf2hYXLLzsJR
- mSsED/1nlJ9Oq5fALdNEPgDyPUerqHxcmIub+pF0AzJoYHK5punqpqfGmqPbjxrJLPJfHVKy
- goMj5DlBMoYqEgpbwdUYkH6QdizJJCur4icy8GUNbisFYABeoJ91pnD4IGei3MTdvINSZI5e
-Message-ID: <fed0549d-a789-294c-d899-304911106113@acm.org>
-Date:   Tue, 23 Apr 2019 07:09:42 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        id S1727740AbfDWOO1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Apr 2019 10:14:27 -0400
+Received: from relay1.mentorg.com ([192.94.38.131]:53558 "EHLO
+        relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727666AbfDWOO0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2019 10:14:26 -0400
+Received: from svr-orw-mbx-03.mgc.mentorg.com ([147.34.90.203])
+        by relay1.mentorg.com with esmtps (TLSv1.2:ECDHE-RSA-AES256-SHA384:256)
+        id 1hIwBi-00003w-9r from Jiada_Wang@mentor.com ; Tue, 23 Apr 2019 07:14:22 -0700
+Received: from jiwang-OptiPlex-980.tokyo.mentorg.com (147.34.91.1) by
+ svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203) with Microsoft SMTP Server
+ (TLS) id 15.0.1320.4; Tue, 23 Apr 2019 07:14:17 -0700
+From:   Jiada Wang <jiada_wang@mentor.com>
+To:     <rui.zhang@intel.com>, <edubezval@gmail.com>,
+        <daniel.lezcano@linaro.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <jiada_wang@mentor.com>, <horms+renesas@verge.net.au>,
+        <niklas.soderlund+renesas@ragnatech.se>, <geert+renesas@glider.be>,
+        <sergei.shtylyov@cogentembedded.com>,
+        <marek.vasut+renesas@gmail.com>,
+        <kuninori.morimoto.gx@renesas.com>, <hien.dang.eb@renesas.com>,
+        <fabrizio.castro@bp.renesas.com>, <dien.pham.ry@renesas.com>,
+        <biju.das@bp.renesas.com>, <erosca@de.adit-jv.com>,
+        <george_davis@mentor.com>, <joshua_frkuska@mentor.com>
+Subject: [PATCH v3 0/2] thermal: rcar_gen3_thermal: fix IRQ issues
+Date:   Tue, 23 Apr 2019 23:14:12 +0900
+Message-ID: <20190423141414.24264-1-jiada_wang@mentor.com>
+X-Mailer: git-send-email 2.19.2
 MIME-Version: 1.0
-In-Reply-To: <20190423102239.GA15531@amd>
+Content-Transfer-Encoding: 7BIT
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SVR-ORW-MBX-09.mgc.mentorg.com (147.34.90.209) To
+ svr-orw-mbx-03.mgc.mentorg.com (147.34.90.203)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190423140942.jryqgtt87ukdpt8gOVLctyJZjD4h6DeUicpDJH58Cu4@z>
+Message-ID: <20190423141412.h3Yj1kkgVAmPsA0FSuArgNIStBbgrRDZXyRn-mUaiLI@z>
 
-On 4/23/19 3:22 AM, Pavel Machek wrote:
->>> It boots ok (unlike mainline -- I'm debugging that), and I can suspend
->>> and resume... but then cursor in X is moving and I can talk to
->>> applications cached in memory, but any access to disk hangs.
->>
->> Mainline problem was identified.
->>
->> But resume is still broken. I took advantage of fact that I can still
->> do cached commands, and got complete dmesg. I'm attaching it.
-> 
-> Still broken in 0418. Ideas would be welcome at this point.
+There are issues with interrupt handling in rcar_gen3_thermal driver.
 
-Have you already tried the debugging steps explained in
-Documentation/power to obtain more information about the nature of the
-suspend/resume problem?
+Currently IRQ is remain enabled after .remove, later if device is probed,
+IRQ is requested before .thermal_init, this may cause IRQ function be
+triggered but not able to clear IRQ status, thus cause system to hang.
 
-Bart.
+Since the irq line isn't shared between different devices,
+so the proper interrupt type flag should be IRQF_ONESHOT.
+
+This patch-set fix these interrupt handling retated issues.
+
+---
+v3: fix to use correct code base
+    remove unused "flag" variable in rcar_gen3_thermal_irq
+
+v2: use irq type IRQF_ONESHOT instead of IRQF_SHARED
+    disable interrupt in .remove
+
+v1: initial version
+
+Jiada Wang (2):
+  thermal: rcar_gen3_thermal: fix interrupt type
+  thermal: rcar_gen3_thermal: disable interrupt in .remove
+
+Jiada Wang (2):
+  thermal: rcar_gen3_thermal: fix interrupt type
+  thermal: rcar_gen3_thermal: disable interrupt in .remove
+
+ drivers/thermal/rcar_gen3_thermal.c | 37 +++++++----------------------
+ 1 file changed, 9 insertions(+), 28 deletions(-)
+
+-- 
+2.19.2
+
