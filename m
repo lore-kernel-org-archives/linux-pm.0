@@ -1,111 +1,79 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: core: skip update disabled thermal zones after
- suspend
-Date: Tue, 23 Apr 2019 14:15:29 +0800
-Message-ID: <1556000129.26198.50.camel@intel.com>
-References: <20190416170701.50333-1-wvw@google.com>
-         <1555923800.26198.30.camel@intel.com>
-         <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com>
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: [PATCH next 23/25] thermal: Use dev_get_drvdata()
+Date: Tue, 23 Apr 2019 15:50:18 +0800
+Message-ID: <20190423075020.173734-24-wangkefeng.wang@huawei.com>
+References: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGXk5yoXgzYyK9eJMHietgqPqyT_QHXAby6+G_fSwXL-tKfd=Q@mail.gmail.com>
+In-Reply-To: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wei Wang <wvw@google.com>
-Cc: Wei Wang <wei.vince.wang@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Kefeng Wang <wangkefeng.wang@huawei.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 一, 2019-04-22 at 09:44 -0700, Wei Wang wrote:
-> On Mon, Apr 22, 2019 at 2:03 AM Zhang Rui <rui.zhang@intel.com>
-> wrote:
-> > 
-> > 
-> > On 二, 2019-04-16 at 10:07 -0700, Wei Wang wrote:
-> > > 
-> > > It is unnecessary to update disabled thermal zones post suspend
-> > > and
-> > > sometimes leads error/warning in bad behaved thermal drivers.
-> > > 
-> > a good catch, and in fact, there are more issues about thermal
-> > handling
-> > for disabled thermal zones, like we're able to read the temperature
-> > of
-> > disabled thermal zones, either via sysfs or via function calls like
-> > thermal_zone_device_update.
-> Thanks Rui for following up. Yes, we noticed the same behavior. Right
-> now, individual thermal driver can still respect set_mode and present
-> value meaningful or return error when thermal zone disabled, and
-> that's what we do locally.
-> Currently, sysfs-api documents "Preventing kernel thermal zone driver
-> actions upon trip points so that user application can take full
-> charge
-> of the thermal management.", so is it intended for some other agents
-> in kernel or user land polling temperature with function call or
-> sysfs
-> respectively?
+Using dev_get_drvdata directly.
 
-hmmm, here we have three cases,
-1). we can read the temperature and we can take cooling actions.
-2). we can read the temperature only
-3). we can not read the temperature
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+---
+ .../intel/int340x_thermal/processor_thermal_device.c      | 8 +-------
+ drivers/thermal/st/stm_thermal.c                          | 6 ++----
+ 2 files changed, 3 insertions(+), 11 deletions(-)
 
-we do have a case for 3), e.g. the wifi device, which registers a
-thermal zone, but it does not work if wifi firmware is unloaded. And
-IMO, we should set the thermal zone mode to disable for this case.
-
-I'm not sure if there is any case for 2), but if we do, it seems to me
-that we should set its governor to nop, rather then the way we're
-describing in the sys-abi file.
-
-we should fix the code and doc to use "mode" attribute to handle case
-3) instead.
-
-thanks,
-rui
-> 
-> Thanks!
-> -Wei
-> > 
-> > For this patch, I will take it as it fixes one of the problem.
-> > 
-> > thanks,
-> > rui
-> > 
-> > > 
-> > > Signed-off-by: Wei Wang <wvw@google.com>
-> > > ---
-> > >  drivers/thermal/thermal_core.c | 8 ++++++++
-> > >  1 file changed, 8 insertions(+)
-> > > 
-> > > diff --git a/drivers/thermal/thermal_core.c
-> > > b/drivers/thermal/thermal_core.c
-> > > index 6590bb5cb688..5baf5cfab999 100644
-> > > --- a/drivers/thermal/thermal_core.c
-> > > +++ b/drivers/thermal/thermal_core.c
-> > > @@ -1494,6 +1494,7 @@ static int thermal_pm_notify(struct
-> > > notifier_block *nb,
-> > >                            unsigned long mode, void *_unused)
-> > >  {
-> > >       struct thermal_zone_device *tz;
-> > > +     enum thermal_device_mode tz_mode;
-> > > 
-> > >       switch (mode) {
-> > >       case PM_HIBERNATION_PREPARE:
-> > > @@ -1506,6 +1507,13 @@ static int thermal_pm_notify(struct
-> > > notifier_block *nb,
-> > >       case PM_POST_SUSPEND:
-> > >               atomic_set(&in_suspend, 0);
-> > >               list_for_each_entry(tz, &thermal_tz_list, node) {
-> > > +                     tz_mode = THERMAL_DEVICE_ENABLED;
-> > > +                     if (tz->ops->get_mode)
-> > > +                             tz->ops->get_mode(tz, &tz_mode);
-> > > +
-> > > +                     if (tz_mode == THERMAL_DEVICE_DISABLED)
-> > > +                             continue;
-> > > +
-> > >                       thermal_zone_device_init(tz);
-> > >                       thermal_zone_device_update(tz,
-> > >                                                  THERMAL_EVENT_UN
-> > > S
-> > > PECIFIED);
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+index 8e1cf4d789be..4ad54b8d4778 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+@@ -81,8 +81,6 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
+ 					struct device_attribute *attr, \
+ 					char *buf) \
+ { \
+-	struct pci_dev *pci_dev; \
+-	struct platform_device *pdev; \
+ 	struct proc_thermal_device *proc_dev; \
+ 	\
+ 	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
+@@ -91,11 +89,7 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
+ 	} \
+ 	\
+ 	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
+-		pdev = to_platform_device(dev); \
+-		proc_dev = platform_get_drvdata(pdev); \
+-	} else { \
+-		pci_dev = to_pci_dev(dev); \
+-		proc_dev = pci_get_drvdata(pci_dev); \
++		proc_dev = dev_get_drvdata(dev); \
+ 	} \
+ 	return sprintf(buf, "%lu\n",\
+ 	(unsigned long)proc_dev->power_limits[index].suffix * 1000); \
+diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
+index bbd73c5a4a4e..cf9ddc52f30e 100644
+--- a/drivers/thermal/st/stm_thermal.c
++++ b/drivers/thermal/st/stm_thermal.c
+@@ -570,8 +570,7 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
+ static int stm_thermal_suspend(struct device *dev)
+ {
+ 	int ret;
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct stm_thermal_sensor *sensor = platform_get_drvdata(pdev);
++	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
+ 
+ 	ret = stm_thermal_sensor_off(sensor);
+ 	if (ret)
+@@ -585,8 +584,7 @@ static int stm_thermal_suspend(struct device *dev)
+ static int stm_thermal_resume(struct device *dev)
+ {
+ 	int ret;
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct stm_thermal_sensor *sensor = platform_get_drvdata(pdev);
++	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
+ 
+ 	ret = stm_thermal_prepare(sensor);
+ 	if (ret)
+-- 
+2.20.1
