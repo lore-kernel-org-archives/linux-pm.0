@@ -1,79 +1,61 @@
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-Subject: [PATCH next 23/25] thermal: Use dev_get_drvdata()
-Date: Tue, 23 Apr 2019 15:50:18 +0800
-Message-ID: <20190423075020.173734-24-wangkefeng.wang@huawei.com>
-References: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v2 3/3] thermal: cpu_cooling: Migrate to using the EM
+ framework
+Date: Tue, 23 Apr 2019 09:07:35 +0100
+Message-ID: <20190423080732.rmwxjh67re57sayk@queper01-lin>
+References: <20190417094301.17622-1-quentin.perret@arm.com>
+ <20190417094301.17622-4-quentin.perret@arm.com>
+ <20190418035323.onyfxo4kprwqz2wl@vireshk-mac-ubuntu>
+ <20190418080429.pn4r6lnftlfsf4c4@queper01-lin>
+ <20190422082518.jenl4x7rkmv3j67x@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
+Content-Disposition: inline
+In-Reply-To: <20190422082518.jenl4x7rkmv3j67x@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Kefeng Wang <wangkefeng.wang@huawei.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-Using dev_get_drvdata directly.
+On Monday 22 Apr 2019 at 13:55:18 (+0530), Viresh Kumar wrote:
+> On 18-04-19, 09:04, Quentin Perret wrote:
+> > On Thursday 18 Apr 2019 at 09:23:23 (+0530), Viresh Kumar wrote:
+> > > On 17-04-19, 10:43, Quentin Perret wrote:
+> > > >  static struct thermal_cooling_device *
+> > > >  __cpufreq_cooling_register(struct device_node *np,
+> > > > -			struct cpufreq_policy *policy, u32 capacitance)
+> > > > +			struct cpufreq_policy *policy,
+> > > > +			struct em_perf_domain *em)
+> > > >  {
+> > > 
+> > > > +	if (em_is_sane(cpufreq_cdev, em)) {
+> > > > +		cpufreq_cdev->em = em;
+> > > >  		cooling_ops = &cpufreq_power_cooling_ops;
+> > > > -	} else {
+> > > > +	} else if (policy->freq_table_sorted != CPUFREQ_TABLE_UNSORTED) {
+> > > >  		cooling_ops = &cpufreq_cooling_ops;
+> > > > +	} else {
+> > > > +		WARN(1, "cpu_cooling: no valid frequency table found\n");
+> > > 
+> > > Well the frequency table is valid, isn't it ?
+> > 
+> > True ...
+> > 
+> > > Maybe something like: "cpu_cooling doesn't support unsorted frequency tables" ?
+> > 
+> > Right, otherwise I guess that could be confused with the check on
+> > cpu_table_count_valid_entries() above. And while I'm thinking about it
+> > perhaps WARN is a bit too much here ? We can handle the error safely so
+> > pr_err() should be enough ?
+> 
+> Hmm, I would keep the WARN as it is hard to miss it compared to a
+> simple pr_err.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- .../intel/int340x_thermal/processor_thermal_device.c      | 8 +-------
- drivers/thermal/st/stm_thermal.c                          | 6 ++----
- 2 files changed, 3 insertions(+), 11 deletions(-)
+Right, I don't really mind either way TBH. But is this worse than having
+a NULL policy for example ? We have a standard pr_err() in this case.
+And same thing if the cooling device registration failed actually. Do
+you see a good reason to deal with EM stuff differently ?
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-index 8e1cf4d789be..4ad54b8d4778 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-@@ -81,8 +81,6 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
- 					struct device_attribute *attr, \
- 					char *buf) \
- { \
--	struct pci_dev *pci_dev; \
--	struct platform_device *pdev; \
- 	struct proc_thermal_device *proc_dev; \
- 	\
- 	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
-@@ -91,11 +89,7 @@ static ssize_t power_limit_##index##_##suffix##_show(struct device *dev, \
- 	} \
- 	\
- 	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
--		pdev = to_platform_device(dev); \
--		proc_dev = platform_get_drvdata(pdev); \
--	} else { \
--		pci_dev = to_pci_dev(dev); \
--		proc_dev = pci_get_drvdata(pci_dev); \
-+		proc_dev = dev_get_drvdata(dev); \
- 	} \
- 	return sprintf(buf, "%lu\n",\
- 	(unsigned long)proc_dev->power_limits[index].suffix * 1000); \
-diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-index bbd73c5a4a4e..cf9ddc52f30e 100644
---- a/drivers/thermal/st/stm_thermal.c
-+++ b/drivers/thermal/st/stm_thermal.c
-@@ -570,8 +570,7 @@ static int stm_thermal_prepare(struct stm_thermal_sensor *sensor)
- static int stm_thermal_suspend(struct device *dev)
- {
- 	int ret;
--	struct platform_device *pdev = to_platform_device(dev);
--	struct stm_thermal_sensor *sensor = platform_get_drvdata(pdev);
-+	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
- 
- 	ret = stm_thermal_sensor_off(sensor);
- 	if (ret)
-@@ -585,8 +584,7 @@ static int stm_thermal_suspend(struct device *dev)
- static int stm_thermal_resume(struct device *dev)
- {
- 	int ret;
--	struct platform_device *pdev = to_platform_device(dev);
--	struct stm_thermal_sensor *sensor = platform_get_drvdata(pdev);
-+	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
- 
- 	ret = stm_thermal_prepare(sensor);
- 	if (ret)
--- 
-2.20.1
+Thanks,
+Quentin
