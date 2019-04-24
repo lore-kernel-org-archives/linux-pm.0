@@ -1,78 +1,53 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH] PM / devfreq: Return -ENODEV from try_then_request_governor
-Date: Wed, 24 Apr 2019 07:34:06 +0200
-Message-ID: <CAAObsKBuaKtMDKuuwtYLALxx6tx82ioxbfncnVMrXVgB7dptHA@mail.gmail.com>
-References: <20190423081158.29859-1-tomeu.vizoso@collabora.com> <ed7c20b9-b435-5f40-55ab-97d6384749f1@collabora.com>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [PATCH 1/7] thermal/drivers/core: Remove the module Kconfig's option
+Date: Wed, 24 Apr 2019 11:15:05 +0530
+Message-ID: <CAHLCerOs-8pAZFvEpxc-ktNV631LaLEmjCyObsYKKC0U29kLag@mail.gmail.com>
+References: <20190402161256.11044-1-daniel.lezcano@linaro.org> <20190423155208.GC16014@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ed7c20b9-b435-5f40-55ab-97d6384749f1@collabora.com>
+In-Reply-To: <20190423155208.GC16014@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: open list <linux-kernel@vger.kernel.org>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>, Russell King <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Guan Xuetao <gxt@pku.edu.cn>, Andrew Morton <akpm@linux-foundation.org>, Alexey Brodkin <alexey.brodkin@synopsys.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Arnd Bergmann <arnd@arndb.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Daniel Mack <daniel@zonque.org>, "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>, "open list:MIPS" <linux-mips@vger.kernel>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Apr 2019 at 11:56, Enric Balletbo i Serra
-<enric.balletbo@collabora.com> wrote:
+On Tue, Apr 23, 2019 at 9:22 PM Eduardo Valentin <edubezval@gmail.com> wrote:
 >
-> Hi Tomeu,
+> Hello,
 >
-> On 23/4/19 10:11, Tomeu Vizoso wrote:
-> > Callers don't expect it to return NULL, but an error code.
+> On Tue, Apr 02, 2019 at 06:12:44PM +0200, Daniel Lezcano wrote:
+> > The module support for the thermal subsystem makes little sense:
+> >  - some subsystems relying on it are not modules, thus forcing the
+> >    framework to be compiled in
+> >  - it is compiled in for almost every configs, the remaining ones
+> >    are a few platforms where I don't see why we can not switch the thermal
+> >    to 'y'. The drivers can stay in tristate.
+> >  - platforms need the thermal to be ready as soon as possible at boot time
+> >    in order to mitigate
 > >
-> > Fixes Oops such as the one below, when one tries to set a governor that
-> > isn't available:
+> > Usually the subsystems framework are compiled-in and the plugs are as module.
 > >
-> > Unable to handle kernel NULL pointer dereference at virtual address 00000018
-> >
-> > [<c0dcf718>] (governor_store) from [<c0539558>] (kernfs_fop_write+0x100/0x1e0)
-> > [<c0539558>] (kernfs_fop_write) from [<c04b09b4>] (__vfs_write+0x2c/0x17c)
-> > [<c04b09b4>] (__vfs_write) from [<c04b33fc>] (vfs_write+0xa4/0x184)
-> > [<c04b33fc>] (vfs_write) from [<c04b361c>] (ksys_write+0x4c/0xac)
-> > [<c04b361c>] (ksys_write) from [<c0301000>] (ret_fast_syscall+0x0/0x28)
-> >
-> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> > Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
-> > Reported-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
-> > Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> > ---
+> > Remove the module option. The removal of the module related dead code will
+> > come after this patch gets in or is acked.
 >
-> There is already a fix for that. The fix was initially sent in October [2] but
-> unfortunately it got lost. I resend and now is queued [1]. Hopefully the Fixes
-> tag will help to pick the fix to the proper kernel releases.
-
-Actually, Steve Price sent a third patch for this same issue.
-
-Glad to read that it's being merged.
-
-Thanks,
-
-Tomeu
-
-
-
-> Thanks,
->  Enric
 >
-> [1]
-> https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=b53b0128052ffd687797d5f4deeb76327e7b5711
+> I remember some buzilla entry around this some time back.
 >
-> [2] https://lkml.org/lkml/2018/10/16/744
+> Rui, do you remember why you made this to be module?
 >
-> >  drivers/devfreq/devfreq.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> > index 0ae3de76833b..5539e9be718d 100644
-> > --- a/drivers/devfreq/devfreq.c
-> > +++ b/drivers/devfreq/devfreq.c
-> > @@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
-> >               /* Restore previous state before return */
-> >               mutex_lock(&devfreq_list_lock);
-> >               if (err)
-> > -                     return NULL;
-> > +                     return ERR_PTR(-ENODEV);
-> >
-> >               governor = find_devfreq_governor(name);
-> >       }
-> >
+> I dont have strong opinion here, but I would like to see
+> a better description why we are going this direction rather
+> than "most people dont use it as module". Was there any particular
+> specific technical motivation?
+
+Speaking for Qualcomm platforms, we want the thermal subsystem
+available as soon as possible for boot time thermal mitigation since
+faster boot times equals hotter cpus. Also the dependency on cpufreq
+subsystem due to the cpufreq cooling device would be simplified with
+this.
+
+In fact, I now have a follow on patch to move thermal init earlier
+than fs_initcall since we'd now not wait on modules to be available.
+
+/Amit
