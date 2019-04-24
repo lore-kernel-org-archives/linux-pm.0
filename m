@@ -2,126 +2,333 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7553AC282CE
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:38:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC82DC282CE
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:49:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4307F20878
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:38:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 665CE218B0
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:49:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fZD7VYFt"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="IyNvQ0GX"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726262AbfDXJiP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 05:38:15 -0400
-Received: from mail-wr1-f68.google.com ([209.85.221.68]:39063 "EHLO
-        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726307AbfDXJiL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 05:38:11 -0400
-Received: by mail-wr1-f68.google.com with SMTP id a9so6593606wrp.6
-        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 02:38:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=KIYWXBy0yVdZQntxiMbH9CRQ0LmxGO1cYhntj34UfNc=;
-        b=fZD7VYFtUre34XHlMUrfXxQgJvQgeXJxUsS2UIrnEFOOJSUQqr3x13upCLFu9nUvbu
-         P+vvzlbVrleng80oUiMu4GlzlXNH6EP7CvMtRckA+LRpN+GF7sdK2ilsfAm/4Lf3pzds
-         su15hNylpbtXU1/MGAhLOZubWXY3UTIPRs0XPaI9yLiUGJ0/GXPwjnuWYZfOjyMaRIBj
-         MZmqyfY+gccgSErsIBdOYD2Z5BT2oVWt/bP1b6Btc+FZLawf30/khy2fg2Wj16D4A6gu
-         wal1Z54UixsE4kU1gk+nym857FItg5jO4Zzx5vyUpMW2rNoDEQnOwbE+vPyldtkBq7yL
-         YaOw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=KIYWXBy0yVdZQntxiMbH9CRQ0LmxGO1cYhntj34UfNc=;
-        b=oMcXAj+FvE01sN2FXPC9+xJuNdYGDbGgBsyn4yvzmVtREwL3aOwvmQtliVnSxaSrcD
-         kterUffdnMRKz+UA7mJU3afS1ly2BsBN7z1zQ/Vc0paIQW1JTO3fMlUQCcMLKvno+vxy
-         b4pQhTXEF0zPlI1iNebGzKNLFoXIokMBATXCjPGcV9kP0WuNebXTw9FEOw0PTvhXmwD4
-         qrmabf0JKZ/4OACMk3K+pxa23ekPAi+UJ1hYX4I1IViJrs+5xq2Fij4yvs6geq2XNIeF
-         HU6kWI0FfGz/0ATJ1J6A3WMcYLxH36mdFSr/WcZwQF2W1G2JIhSkreyZSFtaMLMgkS6n
-         mPEg==
-X-Gm-Message-State: APjAAAXSas8M7QJFVnGa9CHicsk0mOntfSdNeMTp4EPINkcQYT+BdCIA
-        GKamGnhgHok3XYakJdmOFz4Ptg==
-X-Google-Smtp-Source: APXvYqwygbb7SyomzzY0uiOv/6g6Um0ZMB8SrVbC6/eYdOMg4ZwVS87VRAPz99KlJjZVGZXzCzcXDg==
-X-Received: by 2002:adf:eb0b:: with SMTP id s11mr22259252wrn.140.1556098689066;
-        Wed, 24 Apr 2019 02:38:09 -0700 (PDT)
-Received: from [192.168.0.44] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
-        by smtp.googlemail.com with ESMTPSA id q3sm1133033wrj.24.2019.04.24.02.38.07
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 24 Apr 2019 02:38:08 -0700 (PDT)
-Subject: Re: [PATCH v4 2/2] thermal: rcar_gen3_thermal: disable interrupt in
- .remove
-To:     Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com,
-        edubezval@gmail.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se,
-        geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com,
-        marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com,
-        hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com,
-        dien.pham.ry@renesas.com, biju.das@bp.renesas.com,
-        erosca@de.adit-jv.com, george_davis@mentor.com,
-        joshua_frkuska@mentor.com
-References: <20190424051145.23072-1-jiada_wang@mentor.com>
- <20190424051145.23072-3-jiada_wang@mentor.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <8d80c874-956f-b2e2-412b-69cc26235606@linaro.org>
-Date:   Wed, 24 Apr 2019 11:38:07 +0200
+        id S1728265AbfDXJtg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 05:49:36 -0400
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:2441 "EHLO
+        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726274AbfDXJtg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 05:49:36 -0400
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5cc031140000>; Wed, 24 Apr 2019 02:49:08 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+  by hqpgpgate102.nvidia.com (PGP Universal service);
+  Wed, 24 Apr 2019 02:49:33 -0700
+X-PGP-Universal: processed;
+        by hqpgpgate102.nvidia.com on Wed, 24 Apr 2019 02:49:33 -0700
+Received: from [10.19.225.182] (10.124.1.5) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 24 Apr
+ 2019 09:49:30 +0000
+Subject: Re: [PATCH v2 12/12] thermal: tegra: enable OC hw throttle
+From:   Wei Ni <wni@nvidia.com>
+To:     Eduardo Valentin <edubezval@gmail.com>
+CC:     <daniel.lezcano@linaro.org>, <robh@kernel.org>,
+        <thierry.reding@gmail.com>, <linux-tegra@vger.kernel.org>,
+        <rui.zhang@intel.com>, <srikars@nvidia.com>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>
+References: <1550744327-4677-1-git-send-email-wni@nvidia.com>
+ <1550744327-4677-13-git-send-email-wni@nvidia.com>
+ <20190423154602.GB16014@localhost.localdomain>
+ <a9a241aa-1d0b-b1d3-8599-969fe86569eb@nvidia.com>
+Message-ID: <b0290ba3-b9ec-ad7d-dc10-24b900c34df5@nvidia.com>
+Date:   Wed, 24 Apr 2019 17:49:28 +0800
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-In-Reply-To: <20190424051145.23072-3-jiada_wang@mentor.com>
+In-Reply-To: <a9a241aa-1d0b-b1d3-8599-969fe86569eb@nvidia.com>
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL104.nvidia.com (172.18.146.11) To
+ HQMAIL101.nvidia.com (172.20.187.10)
 Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+        t=1556099348; bh=HGHbeaJjl9kfwaOFE8kVjDtJwWL6q+AOiErmitDzwqE=;
+        h=X-PGP-Universal:Subject:From:To:CC:References:Message-ID:Date:
+         User-Agent:MIME-Version:In-Reply-To:X-Originating-IP:
+         X-ClientProxiedBy:Content-Type:Content-Language:
+         Content-Transfer-Encoding;
+        b=IyNvQ0GXAfPjitUYPwUUSOo4YBrZbyHkCjklWBpnkPdmppl7/7NQLYAtHpdIiw3XU
+         bFemfoKIuOlMsVkbSEhP3/5YY+PUtOgORmNV5ZsXq1LniwyAGX7ibQEOxgXQBnsb5E
+         iXVZga4peJc+z1H6z+9ajul2Fls2EzqZhQ0aJ7Ap5f6zm2jaAC+VxKw99yliQWQTll
+         vErbMDmFiQu1d35vt9fEsM418CQwiXvV/Wiq+gv9scIUV8Vd38wM205dlSttalLsjm
+         PwVzZNjkgFMH4UHjWqAj3zAjQAfkRuBqPO9eHmtrCro8HRibw36ReFhWm/GxOrYFvz
+         SdQmpQi36ce0Q==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424093807.MWMm9DP1GUUB2HAdVVwMRqf1JIxuHmu6NS-ZVmqIJ0Y@z>
+Message-ID: <20190424094928.tezigdafr04UOi_GADaGdwc0nDLHoPRVkmCAvSpxgVM@z>
 
-On 24/04/2019 07:11, Jiada Wang wrote:
-> Currently IRQ remains enabled after .remove, later if device is probed,
-> IRQ is requested before .thermal_init, this may cause IRQ function be
-> called before device is initialized.
+Hi Eduardo,
+
+On 24/4/2019 4:36 PM, Wei Ni wrote:
 > 
-> this patch disables interrupt in .remove, to ensure irq function
-> only be called after device is fully initialized.
 > 
-> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
-
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-> ---
->  drivers/thermal/rcar_gen3_thermal.c | 3 +++
->  1 file changed, 3 insertions(+)
+> On 23/4/2019 11:46 PM, Eduardo Valentin wrote:
+>> On Thu, Feb 21, 2019 at 06:18:47PM +0800, Wei Ni wrote:
+>>> Parse Over Current settings from DT and program them to
+>>> generate interrupts. Also enable hw throttling whenever
+>>> there are OC events. Log the OC events as debug messages.
+>>>
+>>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>>
+>> I applied this series except for this specific patch which:
+>> a. does not apply clean
+>> b. does not compile.
+>>
+>> Please rebase on top of my -linus branch and resend this. remember to 
+>> checkpatch and compile and boot test before sending.
 > 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index 065e16f53285..280230951dfe 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -307,6 +307,9 @@ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
->  static int rcar_gen3_thermal_remove(struct platform_device *pdev)
->  {
->  	struct device *dev = &pdev->dev;
-> +	struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
-> +
-> +	rcar_thermal_irq_set(priv, false);
->  
->  	pm_runtime_put(dev);
->  	pm_runtime_disable(dev);
+> Thanks for your comment, will rebase and test it.
+
+I git clone your
+"git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git",
+and "git am" this series, but doesn't have problems, all patches can be
+applied one by one.
+Because the CONFIG_TEGRA_SOCTHERM didn't be enabled in the defconfig, so
+the driver doesn't be compiled. I will send the patch to enable it next.
+Did you miss any patches before applying this last one, could you please
+try it again?
+
+Thanks.
+Wei.
+
 > 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+>>
+>>> ---
+>>>  drivers/thermal/tegra/soctherm.c | 130 ++++++++++++++++++++++++++++++++++++---
+>>>  1 file changed, 120 insertions(+), 10 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+>>> index b8c66368e54e..6e3f329d1ac4 100644
+>>> --- a/drivers/thermal/tegra/soctherm.c
+>>> +++ b/drivers/thermal/tegra/soctherm.c
+>>> @@ -106,9 +106,26 @@
+>>>  #define STATS_CTL_CLR_UP			0x2
+>>>  #define STATS_CTL_EN_UP				0x1
+>>>  
+>>> +#define OC1_CFG					0x310
+>>> +#define OC1_CFG_LONG_LATENCY_MASK		BIT(6)
+>>> +#define OC1_CFG_HW_RESTORE_MASK			BIT(5)
+>>> +#define OC1_CFG_PWR_GOOD_MASK_MASK		BIT(4)
+>>> +#define OC1_CFG_THROTTLE_MODE_MASK		(0x3 << 2)
+>>> +#define OC1_CFG_ALARM_POLARITY_MASK		BIT(1)
+>>> +#define OC1_CFG_EN_THROTTLE_MASK		BIT(0)
+>>> +
+>>> +#define OC1_CNT_THRESHOLD			0x314
+>>> +#define OC1_THROTTLE_PERIOD			0x318
+>>> +#define OC1_ALARM_COUNT				0x31c
+>>> +#define OC1_FILTER				0x320
+>>> +#define OC1_STATS				0x3a8
+>>> +
+>>>  #define OC_INTR_STATUS				0x39c
+>>>  #define OC_INTR_ENABLE				0x3a0
+>>>  #define OC_INTR_DISABLE				0x3a4
+>>> +#define OC_STATS_CTL				0x3c4
+>>> +#define OC_STATS_CTL_CLR_ALL			0x2
+>>> +#define OC_STATS_CTL_EN_ALL			0x1
+>>>  
+>>>  #define OC_INTR_OC1_MASK			BIT(0)
+>>>  #define OC_INTR_OC2_MASK			BIT(1)
+>>> @@ -207,6 +224,25 @@
+>>>  #define THROT_DELAY_CTRL(throt)		(THROT_DELAY_LITE + \
+>>>  					(THROT_OFFSET * throt))
+>>>  
+>>> +#define ALARM_OFFSET			0x14
+>>> +#define ALARM_CFG(throt)		(OC1_CFG + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_CNT_THRESHOLD(throt)	(OC1_CNT_THRESHOLD + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_THROTTLE_PERIOD(throt)	(OC1_THROTTLE_PERIOD + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_ALARM_COUNT(throt)	(OC1_ALARM_COUNT + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_FILTER(throt)		(OC1_FILTER + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_STATS(throt)		(OC1_STATS + \
+>>> +					(4 * (throt - THROTTLE_OC1)))
+>>> +
+>>>  /* get CCROC_THROT_PSKIP_xxx offset per HIGH/MED/LOW vect*/
+>>>  #define CCROC_THROT_OFFSET			0x0c
+>>>  #define CCROC_THROT_PSKIP_CTRL_CPU_REG(vect)    (CCROC_THROT_PSKIP_CTRL_CPU + \
+>>> @@ -218,6 +254,9 @@
+>>>  #define THERMCTL_LVL_REGS_SIZE		0x20
+>>>  #define THERMCTL_LVL_REG(rg, lv)	((rg) + ((lv) * THERMCTL_LVL_REGS_SIZE))
+>>>  
+>>> +#define OC_THROTTLE_MODE_DISABLED	0
+>>> +#define OC_THROTTLE_MODE_BRIEF		2
+>>> +
+>>>  static const int min_low_temp = -127000;
+>>>  static const int max_high_temp = 127000;
+>>>  
+>>> @@ -266,6 +305,15 @@ struct tegra_thermctl_zone {
+>>>  	const struct tegra_tsensor_group *sg;
+>>>  };
+>>>  
+>>> +struct soctherm_oc_cfg {
+>>> +	u32 active_low;
+>>> +	u32 throt_period;
+>>> +	u32 alarm_cnt_thresh;
+>>> +	u32 alarm_filter;
+>>> +	u32 mode;
+>>> +	bool intr_en;
+>>> +};
+>>> +
+>>>  struct soctherm_throt_cfg {
+>>>  	const char *name;
+>>>  	unsigned int id;
+>>> @@ -273,6 +321,7 @@ struct soctherm_throt_cfg {
+>>>  	u8 cpu_throt_level;
+>>>  	u32 cpu_throt_depth;
+>>>  	u32 gpu_throt_level;
+>>> +	struct soctherm_oc_cfg oc_cfg;
+>>>  	struct thermal_cooling_device *cdev;
+>>>  	bool init;
+>>>  };
+>>> @@ -715,7 +764,7 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
+>>>  		return 0;
+>>>  	}
+>>>  
+>>> -	for (i = 0; i < THROTTLE_SIZE; i++) {
+>>> +	for (i = 0; i < THROTTLE_OC1; i++) {
+>>>  		struct thermal_cooling_device *cdev;
+>>>  
+>>>  		if (!ts->throt_cfgs[i].init)
+>>> @@ -1537,6 +1586,32 @@ static int soctherm_thermtrips_parse(struct platform_device *pdev)
+>>>  	return 0;
+>>>  }
+>>>  
+>>> +static void soctherm_oc_cfg_parse(struct device *dev,
+>>> +				struct device_node *np_oc,
+>>> +				struct soctherm_throt_cfg *stc)
+>>> +{
+>>> +	u32 val;
+>>> +
+>>> +	if (of_property_read_bool(np_oc, "nvidia,polarity-active-low"))
+>>> +		stc->oc_cfg.active_low = 1;
+>>> +	else
+>>> +		stc->oc_cfg.active_low = 0;
+>>> +
+>>> +	if (!of_property_read_u32(np_oc, "nvidia,count-threshold", &val)) {
+>>> +		stc->oc_cfg.intr_en = 1;
+>>> +		stc->oc_cfg.alarm_cnt_thresh = val;
+>>> +	}
+>>> +
+>>> +	if (!of_property_read_u32(np_oc, "nvidia,throttle-period-us", &val))
+>>> +		stc->oc_cfg.throt_period = val;
+>>> +
+>>> +	if (!of_property_read_u32(np_oc, "nvidia,alarm-filter", &val))
+>>> +		stc->oc_cfg.alarm_filter = val;
+>>> +
+>>> +	/* BRIEF throttling by default, do not support STICKY */
+>>> +	stc->oc_cfg.mode = OC_THROTTLE_MODE_BRIEF;
+>>> +}
+>>> +
+>>>  static int soctherm_throt_cfg_parse(struct device *dev,
+>>>  				    struct device_node *np,
+>>>  				    struct soctherm_throt_cfg *stc)
+>>> @@ -1619,24 +1694,34 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
+>>>  			continue;
+>>>  		}
+>>>  
+>>> +		if (stc->init) {
+>>> +			dev_err(dev, "throttle-cfg: %s: redefined!\n", name);
+>>> +			of_node_put(np_stcc);
+>>> +			break;
+>>> +		}
+>>>  
+>>>  		err = soctherm_throt_cfg_parse(dev, np_stcc, stc);
+>>>  		if (err)
+>>>  			continue;
+>>>  
+>>> -		tcd = thermal_of_cooling_device_register(np_stcc,
+>>> +		if (stc->id >= THROTTLE_OC1) {
+>>> +			soctherm_oc_cfg_parse(dev, np_stcc, stc);
+>>> +			stc->init = true;
+>>> +		} else {
+>>> +
+>>> +			tcd = thermal_of_cooling_device_register(np_stcc,
+>>>  							 (char *)name, ts,
+>>>  							 &throt_cooling_ops);
+>>> -		of_node_put(np_stcc);
+>>> -		if (IS_ERR_OR_NULL(tcd)) {
+>>> -			dev_err(dev,
+>>> -				"throttle-cfg: %s: failed to register cooling device\n",
+>>> -				name);
+>>> -			continue;
+>>> +			if (IS_ERR_OR_NULL(tcd)) {
+>>> +				dev_err(dev,
+>>> +					"throttle-cfg: %s: failed to register cooling device\n",
+>>> +					name);
+>>> +				continue;
+>>> +			}
+>>> +			stc->cdev = tcd;
+>>> +			stc->init = true;
+>>>  		}
+>>>  
+>>> -		stc->cdev = tcd;
+>>> -		stc->init = true;
+>>>  	}
+>>>  
+>>>  	of_node_put(np_stc);
+>>> @@ -1787,6 +1872,28 @@ static void throttlectl_gpu_level_select(struct tegra_soctherm *ts,
+>>>  	writel(r, ts->regs + THROT_PSKIP_CTRL(throt, THROTTLE_DEV_GPU));
+>>>  }
+>>>  
+>>> +static int soctherm_oc_cfg_program(struct tegra_soctherm *ts,
+>>> +				      enum soctherm_throttle_id throt)
+>>> +{
+>>> +	u32 r;
+>>> +	struct soctherm_oc_cfg *oc = &ts->throt_cfgs[throt].oc_cfg;
+>>> +
+>>> +	if (oc->mode == OC_THROTTLE_MODE_DISABLED)
+>>> +		return -EINVAL;
+>>> +
+>>> +	r = REG_SET_MASK(0, OC1_CFG_HW_RESTORE_MASK, 1);
+>>> +	r = REG_SET_MASK(r, OC1_CFG_THROTTLE_MODE_MASK, oc->mode);
+>>> +	r = REG_SET_MASK(r, OC1_CFG_ALARM_POLARITY_MASK, oc->active_low);
+>>> +	r = REG_SET_MASK(r, OC1_CFG_EN_THROTTLE_MASK, 1);
+>>> +	writel(r, ts->regs + ALARM_CFG(throt));
+>>> +	writel(oc->throt_period, ts->regs + ALARM_THROTTLE_PERIOD(throt));
+>>> +	writel(oc->alarm_cnt_thresh, ts->regs + ALARM_CNT_THRESHOLD(throt));
+>>> +	writel(oc->alarm_filter, ts->regs + ALARM_FILTER(throt));
+>>> +	soctherm_oc_intr_enable(ts, throt, oc->intr_en);
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>>  /**
+>>>   * soctherm_throttle_program() - programs pulse skippers' configuration
+>>>   * @throt: the LIGHT/HEAVY of the throttle event id.
+>>> @@ -1803,6 +1910,9 @@ static void soctherm_throttle_program(struct tegra_soctherm *ts,
+>>>  	if (!stc.init)
+>>>  		return;
+>>>  
+>>> +	if ((throt >= THROTTLE_OC1) && (soctherm_oc_cfg_program(ts, throt)))
+>>> +		return;
+>>> +
+>>>  	/* Setup PSKIP parameters */
+>>>  	if (ts->soc->use_ccroc)
+>>>  		throttlectl_cpu_level_select(ts, throt);
+>>> -- 
+>>> 2.7.4
+>>>
