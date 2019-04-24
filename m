@@ -2,109 +2,98 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 829D0C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 08:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8CF2C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 08:58:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5382B218D3
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 08:45:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="C8Q2AxbP"
+	by mail.kernel.org (Postfix) with ESMTP id 9451B218FD
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 08:58:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729436AbfDXIpM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 04:45:12 -0400
-Received: from mail-it1-f196.google.com ([209.85.166.196]:53525 "EHLO
-        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729346AbfDXIpM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 04:45:12 -0400
-Received: by mail-it1-f196.google.com with SMTP id z4so704432itc.3
-        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 01:45:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=nMprasNgB0HsdZ7Rf0IEpgfmXifCgCUHWARLRGNw5l4=;
-        b=C8Q2AxbPg9IPm8fFhY7BQb+T9m5M9E7cvdXiJtAhdTJMZElIBJRzt7C5xxvO6lwM2M
-         hAIf3kvZJvOF01bHYaosCp6FO2g4dWEzX71vlSy4bjqzkIlTxzhLkBVXt8zuX40Ek956
-         0QYx/BxAP7ARhgF2Kp6+QOJ5j5iWDYL6Pk7KS9B30XapoOL0recjC4UK7/6lQh4Njmdn
-         eE6pnXujoAcgo1NWAb7TNZuW2fM8JpIuhGQ7lV1PXbUfsiSF9IIerDWaAIRm08L9+L9i
-         aoE/okc6ejpC0KiiYTPE5Ik3QUU9mz4r+VSQHswIwTPBhz1ntIXx8boj+5kQqEsnXBn7
-         yP9g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=nMprasNgB0HsdZ7Rf0IEpgfmXifCgCUHWARLRGNw5l4=;
-        b=G514GOwzhtJN9r4+tkxmAgV0PkhnRhsKYmrdNx3FA8NFt21/34omLVCLlb5AUITq0+
-         YX+eG/vL9L+RQjlWAaEMIsvbDInefjxCq1KGG6xjqo2f0K2mUDtw4ZAZ845ZyUXpl6jH
-         2Z8eXNpeSLcfLqCUmHcbSA5UDuVL8vkjSDdsKmi1OKguPT8uU0q9yeAEhtoDJqfOxJJ1
-         85RblmQorVr4O0SDWxhJyjPEWqApOSJovBREMzmgtE8GUckdHMCUI55YhSFJn2p3K5CJ
-         FmEL/IHtH+ewdUecyAHIG3ZjdLvBTRFgDLPzzoQnlbvijBzX/nVhbb2xqaOvFNfO2+E7
-         VUqg==
-X-Gm-Message-State: APjAAAVSCvNGYJfeHEnH6/yRjHu9OXM7mc6FHeaZP5k5/s5KMlHjOkzk
-        F29Vl+P5jA0rd49MKiGIQO9cY/JSI2VaNptI/nMBrg==
-X-Google-Smtp-Source: APXvYqxFAvjlCEyvNCS6bCbAlBurPt3V5umT7fb7BraJ4Bf3bdLENVohU/w7QzXiusJv3+/W4C35UKyNd5XWV737uoU=
-X-Received: by 2002:a02:924d:: with SMTP id y13mr20897713jag.24.1556095511507;
- Wed, 24 Apr 2019 01:45:11 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190423090451.23711-1-brgl@bgdev.pl> <20190424083127.GB6699@amd>
-In-Reply-To: <20190424083127.GB6699@amd>
-From:   Bartosz Golaszewski <brgl@bgdev.pl>
-Date:   Wed, 24 Apr 2019 10:45:00 +0200
-Message-ID:
- <CAMRc=McN78_gJw_T4EPucM8veTC9XRUu7TGJ0J+zPsU=0Hu2GQ@mail.gmail.com>
-Subject: Re: [PATCH v10 00/11] mfd: add support for max77650 PMIC
-To:     Pavel Machek <pavel@denx.de>, Lee Jones <lee.jones@linaro.org>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux Input <linux-input@vger.kernel.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+        id S1727046AbfDXI6D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 04:58:03 -0400
+Received: from mga06.intel.com ([134.134.136.31]:61509 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726451AbfDXI6C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 24 Apr 2019 04:58:02 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 24 Apr 2019 01:58:02 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,389,1549958400"; 
+   d="scan'208";a="153293323"
+Received: from rzhang-dell-9360.sh.intel.com ([10.239.161.125])
+  by orsmga002.jf.intel.com with ESMTP; 24 Apr 2019 01:58:01 -0700
+Message-ID: <1556096275.2744.28.camel@intel.com>
+Subject: Re: [PATCH] PM: wakup: export wakeup irq when system aborts suspend
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
+Date:   Wed, 24 Apr 2019 16:57:55 +0800
+In-Reply-To: <CAJZ5v0iJp1x+WReTTwQvx6GX+=U-imLkASkJVt9o4FhS74NJhQ@mail.gmail.com>
+References: <1556089181-4246-1-git-send-email-rui.zhang@intel.com>
+         <CAJZ5v0gfAzgzDuTZgghsm7h48_DK+zTmT9pEGrsqdsQE4xU-WA@mail.gmail.com>
+         <1556092001.2744.11.camel@intel.com>
+         <CAJZ5v0iJp1x+WReTTwQvx6GX+=U-imLkASkJVt9o4FhS74NJhQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Mailer: Evolution 3.18.5.2-0ubuntu3.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424084500.Ss8KCpQOWM16L5b6VY9KP7UY6oNcZBPC4Bu5m2UCwMs@z>
 
-=C5=9Br., 24 kwi 2019 o 10:31 Pavel Machek <pavel@denx.de> napisa=C5=82(a):
->
-> On Tue 2019-04-23 11:04:40, Bartosz Golaszewski wrote:
-> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> >
-> > This series adds support for max77650 ultra low-power PMIC. It provides
-> > the core mfd driver and a set of five sub-drivers for the regulator,
-> > power supply, gpio, leds and input subsystems.
-> >
-> > Patches 1-4 add the DT binding documents. Patch 5 documents mfd_add_dev=
-ices().
-> > Patches 6-10 add all drivers. Last patch adds a MAINTAINERS entry for t=
-his
-> > device.
-> >
-> > The regulator part is already upstream.
->
-> I see v10 in my inbox... and acks from all over the place, but patches
-> not going in. Who takes these? I don't think I need another 10
-> versions in my inbox...
->                                                                 Pavel
+On 三, 2019-04-24 at 10:32 +0200, Rafael J. Wysocki wrote:
+> On Wed, Apr 24, 2019 at 9:46 AM Zhang Rui <rui.zhang@intel.com>
+> wrote:
+> > 
+> > 
+> > On 三, 2019-04-24 at 09:29 +0200, Rafael J. Wysocki wrote:
+> > > 
+> > > On Wed, Apr 24, 2019 at 8:59 AM Zhang Rui <rui.zhang@intel.com>
+> > > wrote:
+> > > > 
+> > > > 
+> > > > 
+> > > > When suspend is aborted because of an ARMED irq, we can not get
+> > > > any
+> > > > useful information about which irq is triggered.
+> > > That should be provided via the /sys/power/pm_wakeup_irq
+> > > attribute.
+> > > 
+> > another case is that,
+> > say we got spurious wakeup interrupts in the idle loop, and then
+> > waked
+> > by a real wakeup interrupt, say, rtc.
+> > /sys/power/pm_wakeup_irq only shows the latest one,
+> No it doesn't, it shows the *first* one.
+> 
+> Please look at the code: pm_wakeup_irq is only set when it is zero
+> which is unless it has been set before.
+> 
 
-I think Lee Jones should take them through the MFD tree. With the ack
-from Sebastian Reichel on the driver part and the example in the
-charger binding fixed I think they are ready to be picked up.
+hmmm, by reading the code, pm_wakeup_clear() clears pm_wakeup_irq, and it is invoked inside the s2idle loop. So I think pm_wakeup_irq is cleared and set again if there is a second spurious interrupt.
 
-Bart
+> > and we can not find out the spurious wakeup interrupts.
+> The wakeup interrupts that have occurred after the first one are not
+> recorded, but your patch doesn't change that.
+> 
+> Your patch causes pm_wakeup_irq to be added to the trace only when it
+> is set, but that is the /sys/power/pm_wakeup_irq which is my point.
+
+yes, the first case (suspend aborted) can be covered
+by /sys/power/pm_wakeup_irq.
+For the spurious wakeup case, I think I observed the behavior before,
+e.g, pm_wakeup_irq keeps on showing 9 because of spurious GPE, and then
+ returns 8 because of RTC wakeup event. Anyway, let me do some
+experimental to confirm and get back to you then.
+
+thanks,
+rui
+
+
