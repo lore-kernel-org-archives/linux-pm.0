@@ -1,59 +1,111 @@
-From: Niklas Cassel <niklas.cassel@linaro.org>
-Subject: Re: [PATCH 3/3] PM / Domains: Enable
- genpd_dev_pm_attach_by_id|name() for single PM domain
-Date: Wed, 24 Apr 2019 13:28:53 +0200
-Message-ID: <20190424112853.GC30710@centauri.ideon.se>
-References: <20190418102757.1246-1-ulf.hansson@linaro.org>
- <20190418102757.1246-4-ulf.hansson@linaro.org>
+From: Eugeniu Rosca <erosca@de.adit-jv.com>
+Subject: Re: [PATCH v4 0/2] thermal: rcar_gen3_thermal: fix IRQ issues
+Date: Wed, 24 Apr 2019 14:09:53 +0200
+Message-ID: <20190424120953.GA26640@vmlxhi-102.adit-jv.com>
+References: <20190424051145.23072-1-jiada_wang@mentor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190418102757.1246-4-ulf.hansson@linaro.org>
+In-Reply-To: <20190424051145.23072-1-jiada_wang@mentor.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Jiada Wang <jiada_wang@mentor.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se, geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com, biju.das@bp.renesas.com, george_davis@mentor.com, joshua_frkuska@mentor.com, Eugeniu Rosca <erosca@de.adit-jv.com>, Eugeniu Rosca <roscaeugeniu@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 18, 2019 at 12:27:57PM +0200, Ulf Hansson wrote:
-> If a call to dev_pm_domain_attach() succeeds to attach a device to its
-> single PM domain, the important point is to prevent following calls to
-
-nit: s/prevent/ensure/
-
-> dev_pm_domain_attach_by_name|id() to fail. This is managed by checking the
-> dev->pm_domain pointer and then return -EEXIST, rather than continue
-> calling genpd_dev_pm_attach_by_id|name().
+On Wed, Apr 24, 2019 at 02:11:43PM +0900, Jiada Wang wrote:
+> There are issues with interrupt handling in rcar_gen3_thermal driver.
 > 
-> For this reason, let's enable genpd_dev_pm_attach_by_id|name() to be used
-> for also single PM domains. This simplifies for future users to solely make
-> use of dev_pm_domain_attach_by_id|name() rather than having to combine it
-> with dev_pm_domain_attach().
+> Currently IRQ is remain enabled after .remove, later if device is probed,
+> IRQ is requested before .thermal_init, this may cause IRQ function be
+> triggered but not able to clear IRQ status, thus cause system to hang.
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Since the irq line isn't shared between different devices,
+> so the proper interrupt type flag should be IRQF_ONESHOT.
+> 
+> This patch-set fix these interrupt handling retated issues.
+> 
 > ---
->  drivers/base/power/domain.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> v4: remove 'spinlock_t lock'
+>     add Fixes tag in ("thermal: rcar_gen3_thermal: fix interrupt type")
+>     fix typos in ("thermal: rcar_gen3_thermal: disable interrupt in .remove")
 > 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 801f31c87d16..1b026704a8fc 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2512,10 +2512,10 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
->  	if (!dev->of_node)
->  		return NULL;
->  
-> -	/* Deal only with devices using multiple PM domains. */
-> +	/* Verify that the index is within a valid range. */
->  	num_domains = of_count_phandle_with_args(dev->of_node, "power-domains",
->  						 "#power-domain-cells");
-> -	if (num_domains < 2 || index >= num_domains)
-> +	if (index >= num_domains)
->  		return NULL;
->  
->  	/* Allocate and register device on the genpd bus. */
+> v3: fix to use correct code base
+>     remove unused "flag" variable in rcar_gen3_thermal_irq
+> 
+> v2: use irq type IRQF_ONESHOT instead of IRQF_SHARED
+>     disable interrupt in .remove
+> 
+> v1: initial version
+> 
+> Jiada Wang (2):
+>   thermal: rcar_gen3_thermal: fix interrupt type
+>   thermal: rcar_gen3_thermal: disable interrupt in .remove
+> 
+>  drivers/thermal/rcar_gen3_thermal.c | 41 +++++++----------------------
+>  1 file changed, 9 insertions(+), 32 deletions(-)
+> 
 > -- 
-> 2.17.1
-> 
+> 2.19.2
 
-Acked-by: Niklas Cassel <niklas.cassel@linaro.org>
+For the record, below is the diff between v3 and v4 [1].
+It accurately reflects my review comments in
+https://patchwork.kernel.org/patch/10913165/#22601305 .
+
+In addition, I made sure there are either false positives or
+no new issues reported by:
+ - sparse v0.5.2-1-ga3c4716a703a
+ - smatch v0.5.0-4785-g4968bcad1c08
+ - cppcheck 1.88 dev
+ - make W=123
+ - make coccicheck
+
+I repeated the same test steps as described in
+https://patchwork.kernel.org/cover/10913163/#22602335
+and the results were the same:
+
+Reviewed-and-Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
+
+[1] diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+index c63a86d3dac6..280230951dfe 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -14,7 +14,6 @@
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+-#include <linux/spinlock.h>
+ #include <linux/sys_soc.h>
+ #include <linux/thermal.h>
+ 
+@@ -82,7 +81,6 @@ struct rcar_gen3_thermal_tsc {
+ struct rcar_gen3_thermal_priv {
+ 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
+ 	unsigned int num_tscs;
+-	spinlock_t lock; /* Protect interrupts on and off */
+ 	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
+ };
+ 
+@@ -231,8 +229,8 @@ static void rcar_thermal_irq_set(struct rcar_gen3_thermal_priv *priv, bool on)
+ static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
+ {
+ 	struct rcar_gen3_thermal_priv *priv = data;
+-	int i;
+ 	u32 status;
++	int i;
+ 
+ 	for (i = 0; i < priv->num_tscs; i++) {
+ 		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
+@@ -352,8 +350,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 	if (soc_device_match(r8a7795es1))
+ 		priv->thermal_init = rcar_gen3_thermal_init_r8a7795es1;
+ 
+-	spin_lock_init(&priv->lock);
+-
+ 	platform_set_drvdata(pdev, priv);
+ 
+ 	/*
+
+-- 
+Best regards,
+Eugeniu.
