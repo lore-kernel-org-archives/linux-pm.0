@@ -1,110 +1,100 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
- bindings
-Date: Wed, 24 Apr 2019 12:16:43 +0530
-Message-ID: <e35223d0-80ac-5236-2b8d-7f46cd3a1581@codeaurora.org>
-References: <20190423132823.7915-1-georgi.djakov@linaro.org>
- <20190423132823.7915-2-georgi.djakov@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each
+ policy
+Date: Wed, 24 Apr 2019 12:17:53 +0530
+Message-ID: <20190424064753.lwfsdeodncaai5oz@vireshk-i7>
+References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
+ <20190321114535.GM6058@hirez.programming.kicks-ass.net>
+ <20190322061957.hzhnlbmnkpuqviiv@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423132823.7915-2-georgi.djakov@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190322061957.hzhnlbmnkpuqviiv@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
-Cc: jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, sibis@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 22-03-19, 11:49, Viresh Kumar wrote:
+> On 21-03-19, 12:45, Peter Zijlstra wrote:
+> > On Wed, Mar 20, 2019 at 10:22:23AM +0530, Viresh Kumar wrote:
 
+> > > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> > > index 65e4559eef2f..1ac8c710cccc 100644
+> > > --- a/arch/x86/kvm/x86.c
+> > > +++ b/arch/x86/kvm/x86.c
+> > > @@ -6649,10 +6649,8 @@ static void kvm_hyperv_tsc_notifier(void)
+> > >  }
+> > >  #endif
+> > >  
+> > > -static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> > > -				     void *data)
+> > > +static void __kvmclock_cpufreq_notifier(struct cpufreq_freqs *freq, int cpu)
+> > >  {
+> > > -	struct cpufreq_freqs *freq = data;
+> > >  	struct kvm *kvm;
+> > >  	struct kvm_vcpu *vcpu;
+> > >  	int i, send_ipi = 0;
+> > > @@ -6696,17 +6694,12 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+> > >  	 *
+> > >  	 */
+> > >  
+> > > -	if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
+> > > -		return 0;
+> > > -	if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
+> > > -		return 0;
+> > > -
+> > > -	smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
+> > > +	smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
+> > >  
+> > >  	spin_lock(&kvm_lock);
+> > >  	list_for_each_entry(kvm, &vm_list, vm_list) {
+> > >  		kvm_for_each_vcpu(i, vcpu, kvm) {
+> > > -			if (vcpu->cpu != freq->cpu)
+> > > +			if (vcpu->cpu != cpu)
+> > >  				continue;
+> > >  			kvm_make_request(KVM_REQ_CLOCK_UPDATE, vcpu);
+> > >  			if (vcpu->cpu != smp_processor_id())
+> > > @@ -6728,8 +6721,24 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+> > >  		 * guest context is entered kvmclock will be updated,
+> > >  		 * so the guest will not see stale values.
+> > >  		 */
+> > > -		smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
+> > > +		smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
+> > >  	}
+> > > +}
+> > > +
+> > > +static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> > > +				     void *data)
+> > > +{
+> > > +	struct cpufreq_freqs *freq = data;
+> > > +	int cpu;
+> > > +
+> > > +	if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
+> > > +		return 0;
+> > > +	if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
+> > > +		return 0;
+> > > +
+> > > +	for_each_cpu(cpu, freq->policy->cpus)
+> > > +		__kvmclock_cpufreq_notifier(freq, cpu);
+> > > +
+> > >  	return 0;
+> > >  }
+> > >  
+> > 
+> > Then why to we pretend otherwise here?
+> 
+> My intention was to not add any bug here because of lack of my
+> knowledge of the architecture in question and so I tried to be safe.
+> 
+> If you guys think the behavior should be same here as of the tsc, then
+> we can add similar checks here.
 
-On 4/23/2019 6:58 PM, Georgi Djakov wrote:
-> In addition to frequency and voltage, some devices may have bandwidth
-> requirements for their interconnect throughput - for example a CPU
-> or GPU may also need to increase or decrease their bandwidth to DDR
-> memory based on the current operating performance point.
-> 
-> Extend the OPP tables with additional property to describe the bandwidth
-> needs of a device. The average and peak bandwidth values depend on the
-> hardware and its properties.
-> 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->   Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++++++++
->   .../devicetree/bindings/property-units.txt    |  4 ++
->   2 files changed, 42 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> index 76b6c79604a5..830f0206aea7 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -132,6 +132,9 @@ Optional properties:
->   - opp-level: A value representing the performance level of the device,
->     expressed as a 32-bit integer.
->   
-> +- bandwidth-MBps: The interconnect bandwidth is specified with an array containing
-> +  the two integer values for average and peak bandwidth in megabytes per second.
-> +
->   - clock-latency-ns: Specifies the maximum possible transition latency (in
->     nanoseconds) for switching to this OPP from any other OPP.
->   
-> @@ -546,3 +549,38 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
->   		};
->   	};
->   };
-> +
-> +Example 7: bandwidth-MBps:
-> +Average and peak bandwidth values for the interconnects between CPU and DDR
-> +memory and also between CPU and L3 are defined per each OPP. Bandwidth of both
-> +interconnects is scaled together with CPU frequency.
-> +
-> +/ {
-> +	cpus {
-> +		CPU0: cpu@0 {
-> +			compatible = "arm,cortex-a53", "arm,armv8";
-> +			...
-> +			operating-points-v2 = <&cpu_opp_table>;
-> +			/* path between CPU and DDR memory and CPU and L3 */
-> +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
-> +					<&noc MASTER_CPU &noc SLAVE_L3>;
-> +		};
-> +	};
-> +
-> +	cpu_opp_table: cpu_opp_table {
-> +		compatible = "operating-points-v2";
-> +		opp-shared;
-> +
-> +		opp-200000000 {
-> +			opp-hz = /bits/ 64 <200000000>;
-> +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
-> +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
-> +			bandwidth-MBps = <457 1525>, <914 3050>;
-
-Should this also have a bandwidth-MBps-name perhaps? Without that I guess we assume
-the order in which we specify the interconnects is the same as the order here?
-  
-> +		};
-> +		opp-400000000 {
-> +			opp-hz = /bits/ 64 <400000000>;
-> +			/* CPU<->DDR bandwidth: 915 MB/s average, 3051 MB/s peak */
-> +			 * CPU<->L3 bandwidth: 1828 MB/s average, 6102 MB/s peak */
-> +			bandwidth-MBps = <915 3051>, <1828 6102>;
-> +		};
-> +	};
-> diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
-> index bfd33734faca..9c3dbefcdae8 100644
-> --- a/Documentation/devicetree/bindings/property-units.txt
-> +++ b/Documentation/devicetree/bindings/property-units.txt
-> @@ -41,3 +41,7 @@ Temperature
->   Pressure
->   ----------------------------------------
->   -kpascal	: kiloPascal
-> +
-> +Throughput
-> +----------------------------------------
-> +-MBps		: megabytes per second
-> 
+I am rebasing this patch over Rafael's patch [1] and wondering if I
+should change anything here.
 
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+viresh
+
+[1] https://lore.kernel.org/lkml/38900622.ao2n2t5aPS@kreacher/
