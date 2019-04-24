@@ -2,129 +2,90 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B878DC10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 08:24:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2930FC10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 08:26:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 856CE208E4
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 08:24:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ho4lluAI"
+	by mail.kernel.org (Postfix) with ESMTP id E9A1F208E4
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 08:26:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728164AbfDXIYG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 04:24:06 -0400
-Received: from mail-qt1-f194.google.com ([209.85.160.194]:35477 "EHLO
-        mail-qt1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726733AbfDXIYG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 04:24:06 -0400
-Received: by mail-qt1-f194.google.com with SMTP id l17so110606qtp.2;
-        Wed, 24 Apr 2019 01:24:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=N+iTZQSZ69Ij61Cp9RRtOjmDEKD+cralGbazfmiX48M=;
-        b=Ho4lluAI+z5jJxffuLrvL1oAejjg0oZ2WRo//e1gjfXV3bzvJ//aMs6SgmW2Vk6JTB
-         vp3Ctv0JrWYvac7EmqVBl+qfApEs/DlHlCDKlBy1Uz91SrQbUQuEXVHxglkE3gC/62ND
-         6SwzuBASGacTlQl7FA8iZ5YkU9jE8G7xB8mPCyx5+M3vYMyrH/mwnZAbBGMCjgl8leJB
-         bCvD0PANcHdCSwQAa3bldB2/f42BvLwr8VM57cH/HcYjQkoxjXFkcItr0QMaA/XRjlYf
-         MZfzjPmXp2NsG5Xf8R41S+aVdgLAM5smd/okujHK62J2tEwDLr4tK7ye0BRCt75r7mjH
-         eNAA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=N+iTZQSZ69Ij61Cp9RRtOjmDEKD+cralGbazfmiX48M=;
-        b=s8fUZ23JdRdstDVgArhf84uGOqQT8JnfG9odm+X6cuS16E/QnTYL59et+QKze7yUXM
-         UE8+b8kfgmh2sjR+TzQhLpMAIfHOJhb2BjxwxBmHpULSOSSgUNKhOgZ4AmS1PuBjnYt2
-         kbRvdoCvLKD4ZW9wJ7vRnFjhZ79XDm3ELDO3woEECDE6iRNrSZbkLda44d/IoHKZGvMf
-         ecDqqEve7DhHl5BOSBHAEJHwhYSoJ05iTT7pbhdOmWXTIy+lYaFfKyjoygDWiYtAMHQ1
-         iAlP0fg6kSYHpazUQ7ZWFP+aNnl6VJ329ouaMV6DI/Jjr7/ugUEA8avgtpoziUWSwVxo
-         1j2Q==
-X-Gm-Message-State: APjAAAXKIz4tUw+xcpaMK5SKQQf55Dy9HIzffpVhaOhPti1ffEoUiAtz
-        6QGS/kSAPZQC7NIF3YmMi+RXN/a6ff58Vq6XC/LqjZMy
-X-Google-Smtp-Source: APXvYqzsyGnnCQPYCD0n9abgEE9w7iApmA3Pg+9cz5QOVDm3H1GBJAhJSwnRFJ2uGceS6kmN5dDYdKx3iqRzs/kQox8=
-X-Received: by 2002:ac8:3042:: with SMTP id g2mr5759911qte.252.1556094245507;
- Wed, 24 Apr 2019 01:24:05 -0700 (PDT)
+        id S1727423AbfDXI0W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 04:26:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55841 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726232AbfDXI0V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 04:26:21 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id D49D18027F; Wed, 24 Apr 2019 10:26:10 +0200 (CEST)
+Date:   Wed, 24 Apr 2019 10:26:19 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
+        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
+        linux-next@vger.kernel.org, hdegoede@redhat.com,
+        linux-ide@vger.kernel.org
+Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
+Message-ID: <20190424082618.GA6699@amd>
+References: <20190408173928.GB13260@amd>
+ <20190412102812.GA24977@amd>
+ <20190423102239.GA15531@amd>
+ <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
 MIME-Version: 1.0
-References: <20190403152602.10019-1-steven.price@arm.com>
-In-Reply-To: <20190403152602.10019-1-steven.price@arm.com>
-From:   Enric Balletbo Serra <eballetbo@gmail.com>
-Date:   Wed, 24 Apr 2019 10:23:54 +0200
-Message-ID:
- <CAFqH_512Z-R9O4oVZFq8dM629kfzKcvBuA1RbkEUn-7WH6jvHg@mail.gmail.com>
-Subject: Re: [PATCH] PM / devfreq: return PTR_ERR not NULL in try_then_request_governor()
-To:     Steven Price <steven.price@arm.com>
-Cc:     Kyungmin Park <kyungmin.park@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        linux-kernel <linux-kernel@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
+Content-Disposition: inline
+In-Reply-To: <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424082354.6gBOhdwp_Xbo6Gwa8WLX-dZVhjvzTrnqtJ2fidPr6Vc@z>
-
-Hi,
-
-Missatge de Steven Price <steven.price@arm.com> del dia dc., 3 d=E2=80=99ab=
-r.
-2019 a les 17:26:
-
->
-> The callers of try_then_request_governor() only test for a PTR_ERR using
-> IS_ERR(). However in the case that request_module() fails then NULL is
-> currently returned which will cause a NULL-pointer dereference in the
-> caller.
->
-> Instead convert the error we already have to a valid PTR_ERR and return
-> it.
->
-> Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers=
- are built as modules.")
-> Signed-off-by: Steven Price <steven.price@arm.com>
-
-There is already a fix for that. The fix was initially sent in October [2] =
-but
-unfortunately, it got lost. I resend and now is queued [1]. Hopefully, the =
-Fixes
-tag will help to pick the fix to the proper kernel releases.
-
-Thanks,
- Enric
-
-[1]
-https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=
-=3Dfor-next&id=3Db53b0128052ffd687797d5f4deeb76327e7b5711
-[2] https://lkml.org/lkml/2018/10/16/744
+Message-ID: <20190424082619.44Gbfq5bCxwAAmm9YCcinWQTQU9BjQida_lnkyOaRTw@z>
 
 
-> ---
->  drivers/devfreq/devfreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 0ae3de76833b..d29f66f0e52a 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_gove=
-rnor(const char *name)
->                 /* Restore previous state before return */
->                 mutex_lock(&devfreq_list_lock);
->                 if (err)
-> -                       return NULL;
-> +                       return ERR_PTR(err);
->
->                 governor =3D find_devfreq_governor(name);
->         }
-> --
-> 2.20.1
->
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue 2019-04-23 07:55:05, Jens Axboe wrote:
+> On 4/23/19 4:22 AM, Pavel Machek wrote:
+> > Hi!
+> >=20
+> >>> It boots ok (unlike mainline -- I'm debugging that), and I can suspend
+> >>> and resume... but then cursor in X is moving and I can talk to
+> >>> applications cached in memory, but any access to disk hangs.
+> >>
+> >> Mainline problem was identified.
+> >>
+> >> But resume is still broken. I took advantage of fact that I can still
+> >> do cached commands, and got complete dmesg. I'm attaching it.
+> >=20
+> > Still broken in 0418. Ideas would be welcome at this point.
+>=20
+> Bisect it?
+
+Before I start heavy debugging, it would be interesting to
+know... does suspend/resume work for you in -next?
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlzAHaoACgkQMOfwapXb+vJTVQCeL08UyO+MXoIE7+XqHb1+5toc
+VTEAnR63BS4swj7ABf8xe1WLhTf+W+rZ
+=crwR
+-----END PGP SIGNATURE-----
+
+--NzB8fVQJ5HfG6fxh--
