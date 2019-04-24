@@ -7,109 +7,181 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC203C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:02:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0217C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:05:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 91BAA21773
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:02:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8F2EF218D3
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:05:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qDUm/16H"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iaRrDiXx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726990AbfDXJC5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 05:02:57 -0400
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:43185 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726921AbfDXJC4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 05:02:56 -0400
-Received: by mail-pf1-f193.google.com with SMTP id e67so1109360pfe.10
-        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 02:02:56 -0700 (PDT)
+        id S1727931AbfDXJFL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 05:05:11 -0400
+Received: from mail-pg1-f193.google.com ([209.85.215.193]:43424 "EHLO
+        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727228AbfDXJFK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 05:05:10 -0400
+Received: by mail-pg1-f193.google.com with SMTP id z9so9050386pgu.10
+        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 02:05:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=bwJWBfXGuJEaev7l7LV+ex082+XmEKHmms2Uv5DMQQQ=;
-        b=qDUm/16HZIGVbyCTCOG6FC4f6zD4nF968TjEPNBLnk1txcyrG4V26SBXtw2qwWdWbd
-         GDohNmRrDup4JgMbjH4ZZ+iTgb3+Se2k4PeVZT3VX+CQUtt4zffFM5fwaTJwgolqSu4z
-         pOIuAOs869bVyw1NTZWX7utRAxBBOzc0wj+umQNbAKpmnhqmc5wdvNAG+QA19zvRB1xx
-         ZnSpjyeelRBGteHxwNZyw/o8fJHajBdKKQ7cdfQ8me/fcRoOC0NOvvsAauHMGBK/dqnd
-         J41HziGieF3rMs9b17gXVSHqSu+ms/6jhPoz0bWBT2kynwlrtPbTSOsB2cvKHvXOjozs
-         gjKg==
+        bh=9aCcMuBCvx5cbhKsdvZqDdwab4T/UsiSsBYHhigk3jc=;
+        b=iaRrDiXxRYp9/8pk3OQn4t2BCDrBfoCA4yMYTpniNB4GRPLZTPEROk3fpmsu8Pg1es
+         d9vqTg+tFMJqO+HXGTSe8Bc+nTwZPqflZciMdfAKJR6FyvYt/7IVAZ6/grIEgkcA1zbY
+         a95Br9JxKIVeTXaR7LG+qJFHuoZsFXbfmhJ7DFkgmHBT+iUMSsduvhWEUOVOxiaq8ts3
+         r/fmLwvJLsa0frY4Wd8k3AkQ6jw7pv9Q6zDSNouKSCzR4fLuO8BtU7cQA3cQHkzfSy7V
+         s+Ef2fodGIrHLe4TMQOR8hPk8I83dTvJNt/TbN1vjpQCxDy03BuYrFlg+MIj5Fl2lAIn
+         3fiQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=bwJWBfXGuJEaev7l7LV+ex082+XmEKHmms2Uv5DMQQQ=;
-        b=Mq5/YXVA1oHdLC5W9+VW9A305KIAROAnuG4E8KoS3X9mhPfaPxuF50ho4nwOM46IcQ
-         IR6KTilLR1O80eCfVmsr9D4xcP8NHd8uXE0KAgqGp8LN+kiD7xrwtTeAq8CVOtv8Kg9J
-         GucLXlJDxAA71vgytBSMRYopK+Rjvc2XagEno/h/CVHdtmEWmwe6AkkKnbvd1sackrRu
-         gUVXEndjlQlLv+RJ0LQ3dq1IFI2hTPqlsMr7fHAbkhHevdlRYduoZXtw+4TS5MVDUhB8
-         36evoqCzvtIk0I1bSqBB0OFqVere0m1iGku2kj7XtlY/ovMriSGSa87LuWfvfOZxsEfB
-         y5dA==
-X-Gm-Message-State: APjAAAXka8Yh+JCxjALzlnLxU4RJv2Enl3Zy25an/3tfZDW5uAFzw5s1
-        4rKXNiV23eeDx4imtjYURh1crg==
-X-Google-Smtp-Source: APXvYqw560mz5cPdHJUPiXi0cG2iZL09qeHwmkPqevmJs3RG5O8uUWjIlepfoylULnjQaZysooNfyw==
-X-Received: by 2002:aa7:8ac8:: with SMTP id b8mr31850624pfd.234.1556096575713;
-        Wed, 24 Apr 2019 02:02:55 -0700 (PDT)
+        bh=9aCcMuBCvx5cbhKsdvZqDdwab4T/UsiSsBYHhigk3jc=;
+        b=rEjxEYJzyiQBqk3Yby9BhJcl/lomzIMiukpJrRxmANGoMr66G8+XZP4xQQ6l/H2rY1
+         52xZ5fI3DYgDYfPgoJE+TS1hBcKsBTqXqRhs2KEUW3dQortBATaQip8doIIdXls7Xxpd
+         DmawxSvj4kfwsh0x/jaX98EPLftzxN2kQYoeZi1YAURMHZ9rqX6Dlgsa4ULVc5KNd3BC
+         XD3RAY6C1iLAcLdb0pufeMZteT70ucsOLU0MBwe2iZoJRedLe4bsy333cB/CLtGHnAdl
+         QARnyfUJUwcMUUf6Kua8BW8fXc3xpj4VSxpHvnN2QrbCYBPlmbdKytYpreA63GFHA+Bl
+         l0CA==
+X-Gm-Message-State: APjAAAWfRs2JERISsIqfFBWE7FDCYQIkfKTxeeCppgE7TlBc05chVqf0
+        wwfY4hhhDfMU6I3Ia5WSfENUnA==
+X-Google-Smtp-Source: APXvYqxDFvaWvd7wZDk4qHnBtvRFlzutSEQMpa1AjGpKYqYEqhIlaT3t8HkLkmQMJbT6G2ve3PRchQ==
+X-Received: by 2002:a63:cd50:: with SMTP id a16mr10816882pgj.394.1556096709712;
+        Wed, 24 Apr 2019 02:05:09 -0700 (PDT)
 Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id f87sm30237512pff.56.2019.04.24.02.02.54
+        by smtp.gmail.com with ESMTPSA id x9sm25834360pfn.60.2019.04.24.02.05.08
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 24 Apr 2019 02:02:54 -0700 (PDT)
-Date:   Wed, 24 Apr 2019 14:32:52 +0530
+        Wed, 24 Apr 2019 02:05:08 -0700 (PDT)
+Date:   Wed, 24 Apr 2019 14:35:06 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Andy Tang <andy.tang@nxp.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpufreq: qoriq: Add ls1028a chip support
-Message-ID: <20190424090252.7cmwzxf4t5lwjat6@vireshk-i7>
-References: <20190424023223.29614-1-andy.tang@nxp.com>
- <20190424040113.aiyaia2p7xrn5ywo@vireshk-i7>
- <CAJZ5v0hSq60Hv44wOVr5J=rHMFUPFrVKxRYOS4w+zg90oUbMag@mail.gmail.com>
+To:     Sibi Sankar <sibis@codeaurora.org>
+Cc:     Rajendra Nayak <rnayak@codeaurora.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org,
+        sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org,
+        mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org,
+        vincent.guittot@linaro.org, bjorn.andersson@linaro.org,
+        amit.kucheria@linaro.org, seansw@qti.qualcomm.com,
+        daidavid1@codeaurora.org, evgreen@chromium.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
+ bindings
+Message-ID: <20190424090506.jdwhf4ndzr2m5ea7@vireshk-i7>
+References: <20190423132823.7915-1-georgi.djakov@linaro.org>
+ <20190423132823.7915-2-georgi.djakov@linaro.org>
+ <e35223d0-80ac-5236-2b8d-7f46cd3a1581@codeaurora.org>
+ <20190424064942.v5g6jr5l3xy5z3xv@vireshk-i7>
+ <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hSq60Hv44wOVr5J=rHMFUPFrVKxRYOS4w+zg90oUbMag@mail.gmail.com>
+In-Reply-To: <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
 User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424090252.PPApL88vG-hGFuJNTgwLmkr7Fxzu4_HdXcJKPKlbjUU@z>
+Message-ID: <20190424090506.knMKmfYQk_rl08SpJH00KTafRMrYVFonXD4Fd4_aviM@z>
 
-On 24-04-19, 09:24, Rafael J. Wysocki wrote:
-> On Wed, Apr 24, 2019 at 6:01 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 24-04-19, 10:32, andy.tang@nxp.com wrote:
-> > > From: Yuantian Tang <andy.tang@nxp.com>
-> > >
-> > > Enable cpufreq feature on ls1028a chip by adding its compatible
-> > > string.
-> > >
-> > > Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
-> > > ---
-> > >  drivers/cpufreq/qoriq-cpufreq.c |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > >
-> > > diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> > > index 4295e54..d308c4d 100644
-> > > --- a/drivers/cpufreq/qoriq-cpufreq.c
-> > > +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> > > @@ -280,6 +280,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
-> > >
-> > >       { .compatible = "fsl,ls1012a-clockgen", },
-> > >       { .compatible = "fsl,ls1021a-clockgen", },
-> > > +     { .compatible = "fsl,ls1028a-clockgen", },
-> > >       { .compatible = "fsl,ls1043a-clockgen", },
-> > >       { .compatible = "fsl,ls1046a-clockgen", },
-> > >       { .compatible = "fsl,ls1088a-clockgen", },
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 24-04-19, 14:30, Sibi Sankar wrote:
+> Hey Viresh,
 > 
-> So do you want me to take this one directly?
+> On 4/24/19 12:19 PM, Viresh Kumar wrote:
+> > On 24-04-19, 12:16, Rajendra Nayak wrote:
+> > > 
+> > > 
+> > > On 4/23/2019 6:58 PM, Georgi Djakov wrote:
+> > > > In addition to frequency and voltage, some devices may have bandwidth
+> > > > requirements for their interconnect throughput - for example a CPU
+> > > > or GPU may also need to increase or decrease their bandwidth to DDR
+> > > > memory based on the current operating performance point.
+> > > > 
+> > > > Extend the OPP tables with additional property to describe the bandwidth
+> > > > needs of a device. The average and peak bandwidth values depend on the
+> > > > hardware and its properties.
+> > > > 
+> > > > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> > > > ---
+> > > >    Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++++++++
+> > > >    .../devicetree/bindings/property-units.txt    |  4 ++
+> > > >    2 files changed, 42 insertions(+)
+> > > > 
+> > > > diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> > > > index 76b6c79604a5..830f0206aea7 100644
+> > > > --- a/Documentation/devicetree/bindings/opp/opp.txt
+> > > > +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> > > > @@ -132,6 +132,9 @@ Optional properties:
+> > > >    - opp-level: A value representing the performance level of the device,
+> > > >      expressed as a 32-bit integer.
+> > > > +- bandwidth-MBps: The interconnect bandwidth is specified with an array containing
+> > > > +  the two integer values for average and peak bandwidth in megabytes per second.
+> > > > +
+> > > >    - clock-latency-ns: Specifies the maximum possible transition latency (in
+> > > >      nanoseconds) for switching to this OPP from any other OPP.
+> > > > @@ -546,3 +549,38 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+> > > >    		};
+> > > >    	};
+> > > >    };
+> > > > +
+> > > > +Example 7: bandwidth-MBps:
+> > > > +Average and peak bandwidth values for the interconnects between CPU and DDR
+> > > > +memory and also between CPU and L3 are defined per each OPP. Bandwidth of both
+> > > > +interconnects is scaled together with CPU frequency.
+> > > > +
+> > > > +/ {
+> > > > +	cpus {
+> > > > +		CPU0: cpu@0 {
+> > > > +			compatible = "arm,cortex-a53", "arm,armv8";
+> > > > +			...
+> > > > +			operating-points-v2 = <&cpu_opp_table>;
+> > > > +			/* path between CPU and DDR memory and CPU and L3 */
+> > > > +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
+> > > > +					<&noc MASTER_CPU &noc SLAVE_L3>;
+> > > > +		};
+> > > > +	};
+> > > > +
+> > > > +	cpu_opp_table: cpu_opp_table {
+> > > > +		compatible = "operating-points-v2";
+> > > > +		opp-shared;
+> > > > +
+> > > > +		opp-200000000 {
+> > > > +			opp-hz = /bits/ 64 <200000000>;
+> > > > +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
+> > > > +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
+> > > > +			bandwidth-MBps = <457 1525>, <914 3050>;
+> > > 
+> > > Should this also have a bandwidth-MBps-name perhaps? Without that I guess we assume
+> > > the order in which we specify the interconnects is the same as the order here?
+> > 
+> > Right, so I suggested not to add the -name property and to rely on the
+> > order. Though I missed that he hasn't mentioned the order thing here.
+> 
+> by skipping names, aren't we forced to specify all the specified paths
+> bandwidths for each opp even if it is redundant? i.e if the first/second
+> icc path doesn't have to change across a few opps but if the other path
+> does need to change this scheme would force it to be included and will
+> try to set the first/second path again.
+> 
+> 
+> e.g: Here the first path does not have to change across these two opps
+> but have to specified nonetheless since we omit names.
 
-I actually applied it and then realized it is powerpc and so dropped
-it. You want me to apply it ?
+The code should be efficient enough to return early in this case, but
+these value must always be present. We can get some sort of
+relationship between multiple paths that are part of same OPP, but not
+between different OPPs.
+
+> +		opp-1200000000 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			bandwidth-MBps = <457 1525>, <914 3050>;
+> +		};
+> +		opp-1400000000 {
+> +			opp-hz = /bits/ 64 <1400000000>;
+> +			bandwidth-MBps = <457 1525>, <1828 6102>;
+> +		};
+> 
 
 -- 
 viresh
