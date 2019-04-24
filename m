@@ -1,52 +1,92 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: qoriq: Add ls1028a chip support
-Date: Wed, 24 Apr 2019 11:25:07 +0200
-Message-ID: <CAJZ5v0jOOKW92X8iGPZD8Dfye4K9seXgiYaTLURby9Y3BbMYpg@mail.gmail.com>
-References: <20190424023223.29614-1-andy.tang@nxp.com> <20190424040113.aiyaia2p7xrn5ywo@vireshk-i7>
- <CAJZ5v0hSq60Hv44wOVr5J=rHMFUPFrVKxRYOS4w+zg90oUbMag@mail.gmail.com> <20190424090252.7cmwzxf4t5lwjat6@vireshk-i7>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for
+ cpu clocks
+Date: Wed, 24 Apr 2019 15:00:15 +0530
+Message-ID: <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
+References: <20190313163558.6705-1-gregory.clement@bootlin.com>
+ <20190314121541.GB19385@apalos>
+ <CAC5LXJcCs4nr-qFOWzUJpUBAJ9ngG-cgeTCVCFBKFc1SPzHMuQ@mail.gmail.com>
+ <20190314134428.GA24768@apalos>
+ <874l85v8p6.fsf@FE-laptop>
+ <20190318112844.GA1708@apalos>
+ <87h8c0s955.fsf@FE-laptop>
+ <20190318122113.GA4834@apalos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190424090252.7cmwzxf4t5lwjat6@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <20190318122113.GA4834@apalos>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Andy Tang <andy.tang@nxp.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Gregory CLEMENT <gregory.clement@bootlin.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Cc: Christian Neubert <christian.neubert.86@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 24, 2019 at 11:02 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 24-04-19, 09:24, Rafael J. Wysocki wrote:
-> > On Wed, Apr 24, 2019 at 6:01 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On 18-03-19, 14:21, Ilias Apalodimas wrote:
+> Hi Gregory, 
+> 
+> > >> 
+> > > [   14.909524] clk_pm_cpu_set_parent old=28004840 -> val=0x6000000 load_level=0
+> > > [   14.916424] clk_pm_cpu_set_parent old=2E004840 -> val=0x600 load_level=1
+> > > [   14.923315] clk_pm_cpu_set_parent old=8880A8C0 -> val=0x6000000 load_level=2
+> > > [   14.930572] clk_pm_cpu_set_parent old=8E80A8C0 -> val=0x600 load_level=3
 > > >
-> > > On 24-04-19, 10:32, andy.tang@nxp.com wrote:
-> > > > From: Yuantian Tang <andy.tang@nxp.com>
-> > > >
-> > > > Enable cpufreq feature on ls1028a chip by adding its compatible
-> > > > string.
-> > > >
-> > > > Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
-> > > > ---
-> > > >  drivers/cpufreq/qoriq-cpufreq.c |    1 +
-> > > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > > >
-> > > > diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> > > > index 4295e54..d308c4d 100644
-> > > > --- a/drivers/cpufreq/qoriq-cpufreq.c
-> > > > +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> > > > @@ -280,6 +280,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
-> > > >
-> > > >       { .compatible = "fsl,ls1012a-clockgen", },
-> > > >       { .compatible = "fsl,ls1021a-clockgen", },
-> > > > +     { .compatible = "fsl,ls1028a-clockgen", },
-> > > >       { .compatible = "fsl,ls1043a-clockgen", },
-> > > >       { .compatible = "fsl,ls1046a-clockgen", },
-> > > >       { .compatible = "fsl,ls1088a-clockgen", },
 > > >
-> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >
-> > So do you want me to take this one directly?
->
-> I actually applied it and then realized it is powerpc and so dropped
-> it. You want me to apply it ?
+> > > Let me know if you need anything else
+> > 
+> > Could you show me the output of "cat /sys/kernel/debug/clk/clk_summary"
+> > 
+> root@localhost ~ # cat /sys/kernel/debug/clk/clk_summary
+>                                  enable  prepare  protect                                duty
+>    clock                          count    count    count        rate   accuracy phase  cycle
+> ---------------------------------------------------------------------------------------------
+>  xtal                                 2        3        0    25000000          0     0  50000
+>     i2c_1                             0        0        0    25000000          0     0  50000
+>     i2c_2                             0        0        0    25000000          0     0  50000
+>     avs                               0        0        0    25000000          0     0  50000
+>     TBG-B-S                           2        2        0  1000000000          0     0  50000
+>        cpu                            0        0        0   200000000          0     0  50000
+>        usb32_ss_sys                   1        1        0   125000000          0     0  50000
+>        usb32_usb2_sys                 0        0        0   100000000          0     0  50000
+>        gbe_125                        0        0        0   125000000          0     0  50000
+>           gbe0_125                    0        0        0   125000000          0     0  50000
+>           gbe1_125                    0        0        0   125000000          0     0  50000
+>        gbe_core                       1        1        0   250000000          0     0  50000
+>           gbe_bm                      0        0        0   250000000          0     0  50000
+>           gbe0_core                   1        1        0   250000000          0     0  50000
+>           gbe1_core                   0        0        0   250000000          0     0  50000
+>        eip97                          0        0        0   500000000          0     0  50000
+>        trace                          0        0        0  1000000000          0     0  50000
+>        ddr_fclk                       0        0        0   125000000          0     0  50000
+>        pwm                            0        0        0    50000000          0     0  50000
+>        tscem_tmx                      0        0        0  1000000000          0     0  50000
+>        sec_dap                        0        0        0   100000000          0     0  50000
+>        sec_at                         0        0        0   200000000          0     0  50000
+>     TBG-A-S                           0        0        0  1600000000          0     0  50000
+>        sdio                           0        0        0   400000000          0     0  50000
+>        ddr_phy                        0        0        0   400000000          0     0  50000
+>        mmc                            0        0        0   400000000          0     0  50000
+>     TBG-B-P                           0        0        0   500000000          0     0  50000
+>        gbe_50                         0        0        0    50000000          0     0  50000
+>           gbe0_50                     0        0        0    50000000          0     0  50000
+>           gbe1_50                     0        0        0    50000000          0     0  50000
+>     TBG-A-P                           0        1        0   800000000          0     0  50000
+>        counter                        0        0        0   160000000          0     0  50000
+>        sqf                            0        1        0   200000000          0     0  50000
+>        tscem                          0        0        0   200000000          0     0  50000
+>        sata_host                      0        0        0   200000000          0     0  50000
+> root@localhost ~ # 
+> 
+> > Also, during this week-end, Christian suggested that the issue might
+> > come from the AVS support.
+> > 
+> > Could you disable it and check you still have the issue?
+> > 
+> > For this, you just have to remove the avs node in
+> > arch/arm64/boot/dts/marvell/armada-37xx.dtsi and rebuild the dtb.
+> Sure. You'll have to wait for a week though. Currently on a trip. I'll run that
+>  once i return
 
-No, I can do that, thanks!
+@Ilias: Can you please try this now and confirm to Gregory ?
+
+-- 
+viresh
