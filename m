@@ -2,152 +2,142 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F9E5C282E1
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:11:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09E0DC10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:16:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DC859218B0
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:11:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C38A720835
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:16:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r+2Kj/VR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729945AbfDXHLJ convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 03:11:09 -0400
-Received: from mail-vk1-f196.google.com ([209.85.221.196]:42509 "EHLO
-        mail-vk1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725934AbfDXHLJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 03:11:09 -0400
-Received: by mail-vk1-f196.google.com with SMTP id 195so3794095vkx.9;
-        Wed, 24 Apr 2019 00:11:08 -0700 (PDT)
+        id S1729598AbfDXHQX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 03:16:23 -0400
+Received: from mail-pg1-f195.google.com ([209.85.215.195]:39846 "EHLO
+        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729543AbfDXHQW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 03:16:22 -0400
+Received: by mail-pg1-f195.google.com with SMTP id l18so8789825pgj.6;
+        Wed, 24 Apr 2019 00:16:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=cFWyauVHMRMhPdLJI2BgTJG8Dqk8sJtHkpOrVWo1TWo=;
+        b=r+2Kj/VRRjRMppbQcgkvWYHrVcQigiDcz6vJl9rV4EfqsvTQRWdJlocMu2JlYbXrQN
+         1N804w36cUOIWkihhhKh7QVLbdIdrwRHEfVUudIk7MZjLB6Cd6HO82QRpkR0HpTwfVN+
+         W++PrIdcbxYFZabv7hfwOfJsgvW4FM6KRNbqWw0LByUpma1c/9qvYL75VqNIh8zK7wyy
+         +iCOeaZmAHRjiiD4OH7DEdldLodEaVXt2ue3LDSh+intYykAij0Vm2prclo6KGDDmrpC
+         Wxbbt46JNuTcx9NldOt+nPvWoced7TcPQsL3m1ufH4tUrhHZVwtmcKOoKzGXd5PMi0m8
+         BEKA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=nlLoanQoDogN7zFZcl1Xau0jCY9OPTPS0yU5xWm3Jpo=;
-        b=r1c2KvtIQw6pRvSY2Bql72uzi1OgWlvEKkT7U8U5L7Vh72FlovoVbWge7qwoHkmAwy
-         5C7VNQlmgu3yah+9s3C5cIF7XopPjN4uzsNZDZ5910Yu/KxzyZU7N/hnSCJAomftl4x7
-         Kh1lS4109APDdsbbH9TOaTGQxGpmP7HN+v+ANbMtwFqqgCP4+XBeHTDzZwHitZQ73ZDa
-         uMEllk5ti96SGOTkjRP1nZvg4lTFzaGMpxpqwCx24POj6uXP7f5r8VUpoWKVHjqjIAVp
-         s5U3LjfYtAGctSAsLbcPhyTf01KBk7B4OVcD6eZm2ptELM7gu00lpm8oAR++Qy8gN0aV
-         OEdg==
-X-Gm-Message-State: APjAAAVDsvbwgaJOmHa50rjXuREosJ22Rn+LBbsbkwwP3cI8wsEEUXc5
-        tTajlbDaWtfwzfUkQIJNtKG3NFWsFiKxFX6LTlI=
-X-Google-Smtp-Source: APXvYqzs2bg3MYHeD+3xxsrVAL8DId20A45tYDHRo1NzsKID/4rfc1P61sBgG6IjA9WgEYz4KF+k3cg+0ikJazUO99g=
-X-Received: by 2002:a1f:95d0:: with SMTP id x199mr16183480vkd.83.1556089868026;
- Wed, 24 Apr 2019 00:11:08 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=cFWyauVHMRMhPdLJI2BgTJG8Dqk8sJtHkpOrVWo1TWo=;
+        b=eKFqIgbvxvrC9WNCXpFD9ZSN9eS5IvhaOkNAnEpObgQmLbdHrADqN4r/DumWbxfC/6
+         uhF9li41M7f0zlY7cwru0H3GtHbQD7WgnRDRCHFoCvEgTy/xFnnemmJ+JkAFkvHkc3s0
+         EuAmd481vqDbrcncoM+BcMnMUuvqb1q7gZstXXJHTBN4L3dfOuD198ZJHfWu0Ldgbcjk
+         Ee/QRwP481IvZlNSIEnswJfIcV+Fr0xIvfmF00DNCLcB1DHZuH8BdEbRA8cLQyx97jKT
+         nLLB90yQxM6AZX1LeLjUgbU3GyHpzjBPZipS7EX7icEx47PJ3grdog8nQl66lGQsIFBU
+         5mTA==
+X-Gm-Message-State: APjAAAXscjAA7nSms4AY6BVX0R15C+szB6VK4hisGHz9vknlIWIyOows
+        Gchkqi/Kmyap02o60p83FV4jA9XqLb4=
+X-Google-Smtp-Source: APXvYqz7uB97zZH3de6DVQLA0w1ZtgCdo3tLgBOpKFilZaIr47oyOLt5sE7s7CAZsN8zMp9A2k7gGw==
+X-Received: by 2002:a63:750c:: with SMTP id q12mr29287336pgc.133.1556090181729;
+        Wed, 24 Apr 2019 00:16:21 -0700 (PDT)
+Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
+        by smtp.gmail.com with ESMTPSA id h4sm18987701pgv.61.2019.04.24.00.16.20
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Wed, 24 Apr 2019 00:16:20 -0700 (PDT)
+From:   Andrey Smirnov <andrew.smirnov@gmail.com>
+To:     linux-pm@vger.kernel.org
+Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
+        Chris Healy <cphealy@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
+Date:   Wed, 24 Apr 2019 00:16:10 -0700
+Message-Id: <20190424071610.22688-1-andrew.smirnov@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-References: <20190418071514.13027-1-horms+renesas@verge.net.au> <20190418081209.GT28515@bigcity.dyn.berto.se>
-In-Reply-To: <20190418081209.GT28515@bigcity.dyn.berto.se>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 24 Apr 2019 09:10:56 +0200
-Message-ID: <CAMuHMdVX5t-Q5tM5bj95muAZ+8+phohtQSsAO-rCeCofiqVMKQ@mail.gmail.com>
-Subject: Re: [PATCH repost] thermal: rcar_thermal: update calculation formula
- for E3
-To:     =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc:     Simon Horman <horms+renesas@verge.net.au>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Yoshihiro Kaneko <ykaneko0929@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190424071610.tISqVmYx_SpPZpqywwM3OUdHayMaj8M1gD_Zg2Urpco@z>
 
-Hi Niklas,
+Fix a similar endless event loop as was done in commit
+8dcf32175b4e ("i2c: prevent endless uevent loop with
+CONFIG_I2C_DEBUG_CORE"):
 
-On Thu, Apr 18, 2019 at 10:12 AM Niklas Söderlund
-<niklas.soderlund@ragnatech.se> wrote:
-> On 2019-04-18 09:15:14 +0200, Simon Horman wrote:
-> > From: Yoshihiro Kaneko <ykaneko0929@gmail.com>
-> >
-> > HW manual changes temperature calculation formula for E3:
->
-> Is this not also true for V3M and D3?
->
-> > - When CTEMP is less than 24
-> >    T = CTEMP[5:0] * 5.5 - 72
-> > - When CTEMP is equal to/greater than 24
-> >    T = CTEMP[5:0] * 5 - 60
-> >
-> > This was inspired by a patch in the BSP by Van Do <van.do.xw@renesas.com>
-> >
-> > Signed-off-by: Yoshihiro Kaneko <ykaneko0929@gmail.com>
-> > Tested-by: Simon Horman <horms+renesas@verge.net.au>
-> > Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> > Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
-> > ---
-> >  drivers/thermal/rcar_thermal.c | 11 ++++++++++-
-> >  1 file changed, 10 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> > index 97462e9b40d8..11df0cc63bed 100644
-> > --- a/drivers/thermal/rcar_thermal.c
-> > +++ b/drivers/thermal/rcar_thermal.c
-> > @@ -52,6 +52,7 @@ struct rcar_thermal_chip {
-> >       unsigned int irq_per_ch : 1;
-> >       unsigned int needs_suspend_resume : 1;
-> >       unsigned int nirqs;
-> > +     unsigned int ctemp_bands;
->
-> Would it be possible to rename this to something indicating that this is
-> a gen3 thing? Maybe move it to the bit fields above and name it gen3 ?
+  The culprit is the dev_dbg printk in the i2c uevent handler. If
+  this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
+  in an endless loop with systemd-journald.
 
-Is that really a good thing to do? This structure describes features of
-the thermal module, and we're already beyond the point where a simple
-check  for gen2 or gen3 was sufficient.
-Here the feature is having multiple temperature bands.
-What if some other Gen3 SoC starts having 3 temperature bands?
+  This happens if user-space scans the system log and reads the uevent
+  file to get information about a newly created device, which seems
+  fair use to me. Unfortunately reading the "uevent" file uses the
+  same function that runs for creating the uevent for a new device,
+  generating the next syslog entry
 
-> > @@ -263,7 +267,12 @@ static int rcar_thermal_get_current_temp(struct rcar_thermal_priv *priv,
-> >               return ret;
-> >
-> >       mutex_lock(&priv->lock);
-> > -     tmp =  MCELSIUS((priv->ctemp * 5) - 65);
-> > +     if (priv->chip->ctemp_bands == 1)
-> > +             tmp =  MCELSIUS((priv->ctemp * 5) - 65);
-> > +     else if (priv->ctemp < 24)
-> > +             tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
-> > +     else
-> > +             tmp = MCELSIUS((priv->ctemp * 5) - 60);
->
-> I confirm that the calculations here are correct, but hard to read ;-)
-> With the rename about how about.
->
->     if (priv->chip->gen3) {
->         if (priv->ctemp < 24)
->                 tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
->         else
->                 tmp = MCELSIUS((priv->ctemp * 5) - 60);
->     } else {
->             tmp =  MCELSIUS((priv->ctemp * 5) - 65);
->     }
+Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
+in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
+seems to have been fixed. Drop debug prints as it was done in I2C
+subsystem to resolve the issue.
 
-_Iff_ we decide on going for the rename, I'd still write it as:
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
 
-    if (!priv->chip->gen3)
-            tmp =  MCELSIUS((priv->ctemp * 5) - 65);
-    else if (priv->ctemp < 24)
-            tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
-    else
-            tmp = MCELSIUS((priv->ctemp * 5) - 60);
+Changes since [v1]:
 
-Always fold your if/else if/else constructs to minimize the need for indentation
-and braces ;-)
+    - Converted the patch to drop debug print statements
+    
+[v1] lore.kernel.org/lkml/20190405073020.10361-1-andrew.smirnov@gmail.com
 
-Gr{oetje,eeting}s,
+ drivers/power/supply/power_supply_sysfs.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-                        Geert
-
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index dce24f596160..5358a80d854f 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -383,15 +383,11 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	char *prop_buf;
+ 	char *attrname;
+ 
+-	dev_dbg(dev, "uevent\n");
+-
+ 	if (!psy || !psy->desc) {
+ 		dev_dbg(dev, "No power supply yet\n");
+ 		return ret;
+ 	}
+ 
+-	dev_dbg(dev, "POWER_SUPPLY_NAME=%s\n", psy->desc->name);
+-
+ 	ret = add_uevent_var(env, "POWER_SUPPLY_NAME=%s", psy->desc->name);
+ 	if (ret)
+ 		return ret;
+@@ -427,8 +423,6 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 			goto out;
+ 		}
+ 
+-		dev_dbg(dev, "prop %s=%s\n", attrname, prop_buf);
+-
+ 		ret = add_uevent_var(env, "POWER_SUPPLY_%s=%s", attrname, prop_buf);
+ 		kfree(attrname);
+ 		if (ret)
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.20.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
