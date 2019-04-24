@@ -2,142 +2,94 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09E0DC10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:16:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64531C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:24:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C38A720835
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:16:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="r+2Kj/VR"
+	by mail.kernel.org (Postfix) with ESMTP id 2EE7F218B0
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:24:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556090684;
+	bh=EsxSRK8/upe+0gx1dmYaLZsXJf4CArnm6lZUDOqEQLs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=nAfJpEFByNVhgm4xffSH8aweA9xv8MYTdFWrCtHgcRoa6c8qhbEmDRG4a9uLcujYE
+	 aa2btW0sS2jJ4BSvfkC37d7MySOuxXaS7DnuZ1CemaxNuUTbEK2jykAwkPhgrJaXyk
+	 c73NYtCyBxwlk7q75NlkvvxJPVfgJ72HsclC8v60=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729598AbfDXHQX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 03:16:23 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:39846 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729543AbfDXHQW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 03:16:22 -0400
-Received: by mail-pg1-f195.google.com with SMTP id l18so8789825pgj.6;
-        Wed, 24 Apr 2019 00:16:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=cFWyauVHMRMhPdLJI2BgTJG8Dqk8sJtHkpOrVWo1TWo=;
-        b=r+2Kj/VRRjRMppbQcgkvWYHrVcQigiDcz6vJl9rV4EfqsvTQRWdJlocMu2JlYbXrQN
-         1N804w36cUOIWkihhhKh7QVLbdIdrwRHEfVUudIk7MZjLB6Cd6HO82QRpkR0HpTwfVN+
-         W++PrIdcbxYFZabv7hfwOfJsgvW4FM6KRNbqWw0LByUpma1c/9qvYL75VqNIh8zK7wyy
-         +iCOeaZmAHRjiiD4OH7DEdldLodEaVXt2ue3LDSh+intYykAij0Vm2prclo6KGDDmrpC
-         Wxbbt46JNuTcx9NldOt+nPvWoced7TcPQsL3m1ufH4tUrhHZVwtmcKOoKzGXd5PMi0m8
-         BEKA==
+        id S1726451AbfDXHYn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 03:24:43 -0400
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:38339 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725913AbfDXHYn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 03:24:43 -0400
+Received: by mail-oi1-f195.google.com with SMTP id a6so13465969oie.5;
+        Wed, 24 Apr 2019 00:24:42 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=cFWyauVHMRMhPdLJI2BgTJG8Dqk8sJtHkpOrVWo1TWo=;
-        b=eKFqIgbvxvrC9WNCXpFD9ZSN9eS5IvhaOkNAnEpObgQmLbdHrADqN4r/DumWbxfC/6
-         uhF9li41M7f0zlY7cwru0H3GtHbQD7WgnRDRCHFoCvEgTy/xFnnemmJ+JkAFkvHkc3s0
-         EuAmd481vqDbrcncoM+BcMnMUuvqb1q7gZstXXJHTBN4L3dfOuD198ZJHfWu0Ldgbcjk
-         Ee/QRwP481IvZlNSIEnswJfIcV+Fr0xIvfmF00DNCLcB1DHZuH8BdEbRA8cLQyx97jKT
-         nLLB90yQxM6AZX1LeLjUgbU3GyHpzjBPZipS7EX7icEx47PJ3grdog8nQl66lGQsIFBU
-         5mTA==
-X-Gm-Message-State: APjAAAXscjAA7nSms4AY6BVX0R15C+szB6VK4hisGHz9vknlIWIyOows
-        Gchkqi/Kmyap02o60p83FV4jA9XqLb4=
-X-Google-Smtp-Source: APXvYqz7uB97zZH3de6DVQLA0w1ZtgCdo3tLgBOpKFilZaIr47oyOLt5sE7s7CAZsN8zMp9A2k7gGw==
-X-Received: by 2002:a63:750c:: with SMTP id q12mr29287336pgc.133.1556090181729;
-        Wed, 24 Apr 2019 00:16:21 -0700 (PDT)
-Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id h4sm18987701pgv.61.2019.04.24.00.16.20
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 24 Apr 2019 00:16:20 -0700 (PDT)
-From:   Andrey Smirnov <andrew.smirnov@gmail.com>
-To:     linux-pm@vger.kernel.org
-Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Chris Healy <cphealy@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
-Date:   Wed, 24 Apr 2019 00:16:10 -0700
-Message-Id: <20190424071610.22688-1-andrew.smirnov@gmail.com>
-X-Mailer: git-send-email 2.20.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=KpGazHaICUGeN5ZTD8i37y2fsljgc3xRCYjtV1tSsKs=;
+        b=ZFKbzA0BgJirbcVkrYrHI6Tj5Q2bpW3Lnu6hos+Usl8Mub5al6WxnoEHu/TE+Dx7S0
+         09aRuSLWIo8qVp1y6s/QU1j0mNSCgNvZOzNAlFG6U1Fqi9jNYizvvAfBI7MwoBpUfxQU
+         +Q3FqrXHEeGgAUiKCD+2378MyhEhCW25dhx2KKr3C0M6RHZ4kEZVURfS18j99lKGWDc8
+         hmA9mcjnHJE6sDW06rcRFPaOk2JA4L1wkBnyzD2Z/N0jiJQeyl2QOCI7b2lxY0XLS6aZ
+         ERL5zT8MRMN9vvt/bQHt/B4NvuhcqnsXuGdwIVnRpaSm5yo090ScnwBIE0f7eElcwO2Z
+         RIHQ==
+X-Gm-Message-State: APjAAAVTpWILnHZJo4QFy9CMo9HVmNrnkcgtbh4fEJBIZWGTSq1lL2DC
+        8NGr644ZddXYlyNzqccVmkpbeONgqI+Za6fUB7jgxw==
+X-Google-Smtp-Source: APXvYqzkS27xtSRDhG+yQ/+cvIY9EB2w1qbGbCVO1m98fxmTpOQ2VxTDMJQdpNknoqEu6dEKhvG75iCnMms3AApgohQ=
+X-Received: by 2002:aca:ab06:: with SMTP id u6mr4246705oie.68.1556090682387;
+ Wed, 24 Apr 2019 00:24:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20190424023223.29614-1-andy.tang@nxp.com> <20190424040113.aiyaia2p7xrn5ywo@vireshk-i7>
+In-Reply-To: <20190424040113.aiyaia2p7xrn5ywo@vireshk-i7>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 24 Apr 2019 09:24:30 +0200
+Message-ID:
+ <CAJZ5v0hSq60Hv44wOVr5J=rHMFUPFrVKxRYOS4w+zg90oUbMag@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: qoriq: Add ls1028a chip support
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Andy Tang <andy.tang@nxp.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190424071610.tISqVmYx_SpPZpqywwM3OUdHayMaj8M1gD_Zg2Urpco@z>
+Message-ID: <20190424072430.nZ9sec83PkH2sXWxHvTOauTFNm0u_M0C0RVYekq2ks4@z>
 
-Fix a similar endless event loop as was done in commit
-8dcf32175b4e ("i2c: prevent endless uevent loop with
-CONFIG_I2C_DEBUG_CORE"):
+On Wed, Apr 24, 2019 at 6:01 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 24-04-19, 10:32, andy.tang@nxp.com wrote:
+> > From: Yuantian Tang <andy.tang@nxp.com>
+> >
+> > Enable cpufreq feature on ls1028a chip by adding its compatible
+> > string.
+> >
+> > Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+> > ---
+> >  drivers/cpufreq/qoriq-cpufreq.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+> > index 4295e54..d308c4d 100644
+> > --- a/drivers/cpufreq/qoriq-cpufreq.c
+> > +++ b/drivers/cpufreq/qoriq-cpufreq.c
+> > @@ -280,6 +280,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+> >
+> >       { .compatible = "fsl,ls1012a-clockgen", },
+> >       { .compatible = "fsl,ls1021a-clockgen", },
+> > +     { .compatible = "fsl,ls1028a-clockgen", },
+> >       { .compatible = "fsl,ls1043a-clockgen", },
+> >       { .compatible = "fsl,ls1046a-clockgen", },
+> >       { .compatible = "fsl,ls1088a-clockgen", },
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-  The culprit is the dev_dbg printk in the i2c uevent handler. If
-  this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
-  in an endless loop with systemd-journald.
-
-  This happens if user-space scans the system log and reads the uevent
-  file to get information about a newly created device, which seems
-  fair use to me. Unfortunately reading the "uevent" file uses the
-  same function that runs for creating the uevent for a new device,
-  generating the next syslog entry
-
-Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
-in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
-seems to have been fixed. Drop debug prints as it was done in I2C
-subsystem to resolve the issue.
-
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
----
-
-Changes since [v1]:
-
-    - Converted the patch to drop debug print statements
-    
-[v1] lore.kernel.org/lkml/20190405073020.10361-1-andrew.smirnov@gmail.com
-
- drivers/power/supply/power_supply_sysfs.c | 6 ------
- 1 file changed, 6 deletions(-)
-
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index dce24f596160..5358a80d854f 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -383,15 +383,11 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	char *prop_buf;
- 	char *attrname;
- 
--	dev_dbg(dev, "uevent\n");
--
- 	if (!psy || !psy->desc) {
- 		dev_dbg(dev, "No power supply yet\n");
- 		return ret;
- 	}
- 
--	dev_dbg(dev, "POWER_SUPPLY_NAME=%s\n", psy->desc->name);
--
- 	ret = add_uevent_var(env, "POWER_SUPPLY_NAME=%s", psy->desc->name);
- 	if (ret)
- 		return ret;
-@@ -427,8 +423,6 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
- 			goto out;
- 		}
- 
--		dev_dbg(dev, "prop %s=%s\n", attrname, prop_buf);
--
- 		ret = add_uevent_var(env, "POWER_SUPPLY_%s=%s", attrname, prop_buf);
- 		kfree(attrname);
- 		if (ret)
--- 
-2.20.1
-
+So do you want me to take this one directly?
