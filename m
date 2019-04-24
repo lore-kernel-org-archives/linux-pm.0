@@ -2,165 +2,202 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A84D7C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:30:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31D4BC10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:31:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6E0F120878
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:30:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 01DA120878
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:31:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bVoE2GyT"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fx5JpxXZ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729163AbfDXJaV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 05:30:21 -0400
-Received: from mail-pl1-f196.google.com ([209.85.214.196]:40802 "EHLO
-        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729153AbfDXJaU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 05:30:20 -0400
-Received: by mail-pl1-f196.google.com with SMTP id b3so9001037plr.7
-        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 02:30:20 -0700 (PDT)
+        id S1727844AbfDXJbu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 05:31:50 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:34953 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726176AbfDXJbu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 05:31:50 -0400
+Received: by mail-wm1-f68.google.com with SMTP id y197so4044145wmd.0
+        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 02:31:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=jS8sA5wVvAstEMBPfxsjXr3lvFTcs0TzZqWL7gM79Nw=;
-        b=bVoE2GyTwPZO7/bsB1UtAykhVesT02vmZE7yOcPQYEvY2yKhHMsjFiKyA5CABbiYkH
-         3s6swu7SZSM8VrzmdeMqXYi+6MwxdyIF2b53WHv7/5oZg3XibbxWZkr2tznB3EI4nP9t
-         7JYAQnBNdZBDJV/IhJ+KpevyqetCOUyrurL3tXgh8pi7uJ7SeUrqvVDHAtxA3D49UmA/
-         ofd6csttFFZDzTLrcYQn+QAtvJ5uSuhczjxgN4YMIoG+VTTQQFPmXJ1isDlflWK6gAU2
-         hRaTUXak13JtonP4AH0vR1DOoWi5yCk0PTCuS2EWspp9Ugn9NTJZS7qAXtc8LrQ2EfX4
-         xJnA==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=zPRnHJyP7MBAi9zOcZR0+ZD+ek4HtjO6VwtIfrnPTfw=;
+        b=fx5JpxXZTKESXUcytCv2F5A2xeKMFyzC6c1QwdfROnEGMgD2nVWBuEmh79BtaojYws
+         Tw3O+9/yAI5OFJDo4oDBG83RTcfymvuAP2YDYG5V9zd/39PBbiMlg+LV/RJB/ulihKi3
+         9OfcvWk31VHOL6hb+k6KJAvRSFGACmsO2Nc4V63ffjvrIciCj1PyfmxskkuGlxDhCpkx
+         ifPQRTEQ3gCe3sV4zNhee1isWqGY/RSKes2rakAG+wiiGevhi9/Rpoqt/vTyh7J3yHvL
+         YiAEwBQeigoKGnZYg727n8LWTm/6p//DO02Dxc0QdjsIxkWISQI0r7jqg9oZfZ3gclaf
+         W7Dw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=jS8sA5wVvAstEMBPfxsjXr3lvFTcs0TzZqWL7gM79Nw=;
-        b=AoqMXQk0hBDvXYtVsA4WvRFXe7crYyfjomaucBCq6KicK3P6+af4IR2rcpKXbf0OTp
-         1IWg70693SK0BYVxOHfYNFtmCXLv4SFK/uUn9H+7wm1vepv4n25h9zlcyJ6LCI3EeGFS
-         dhm9CMD/Kx03m31RFKtN3Jio3PQH8WMZ4l3BLnDunif0q4VZyjg+6uMHZfdRvhVoqWjq
-         qF8KXFmpTe4b/QKqph4aQlIer8ld/PvCmCA8UNWwjZZNe9rgLrJSdfgS7XEEpqDOpy3Z
-         +XpZFa315BfCNE6ZT8Oel8XDQMCPev34+GtxtJU9PNb9o5+LR00BhJtCoswRamSOkBMc
-         sESg==
-X-Gm-Message-State: APjAAAWjC5fUsO5eRJDf514+MbVlXd814SbXnDJs8y6ZT1B/yhXOJID1
-        2GT7kFGplvSpLHtUxlxQVOh1qg==
-X-Google-Smtp-Source: APXvYqyvJbo01zmJtkIrttWV5J+5l51q8sH4KWYsVBjaJbuocJCDqsEwJfUW759839TNhvJEt02FQw==
-X-Received: by 2002:a17:902:2e01:: with SMTP id q1mr30844272plb.221.1556098218762;
-        Wed, 24 Apr 2019 02:30:18 -0700 (PDT)
-Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id j12sm22427245pgg.79.2019.04.24.02.30.17
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=zPRnHJyP7MBAi9zOcZR0+ZD+ek4HtjO6VwtIfrnPTfw=;
+        b=sTOwtxUfvNqUaRFkRgoFiI9ELxMLeaIYyZLz/zfQXwfintprIVxSWq2pCITYNrfIIm
+         DKIGFCl1A8mHE7O8Xk3i+BgtHXSKJw0gaHK6r/J/8rT1tZJQwAmD8opasAcifJeK3AkF
+         grAXtZch/DiMeQcJiOWWKmwqAkfOqhI7AjkSa6sGRp/Q8YSsb2jjkadtslky+ej8Dqqe
+         gw1l5d3K/g+BcOqioSiBq775fIBawUf8qoHIN3oSNYNvHQmeQtoFLY51L19pqO0bKU07
+         NkGCQJBli1ey5yQN94dwzpG9nhN+LHX+N+I8jk6mZjtIKdLxSWzDIAUPgpEoRvq45cy2
+         Ea5g==
+X-Gm-Message-State: APjAAAVdL9UzJIrF8Qc/VRclZaEgGSV1xw1D7pCCCHpTMrsaQh8OfEum
+        deNFM7EKba+Qy/zDoNMMTYrhow==
+X-Google-Smtp-Source: APXvYqwZAjf0D1iWvVHNuv6Q7OFzvz22Em3JLPty9j9ul50KVvYUE3lwV/ti8BrbBS81XLmO4USSmQ==
+X-Received: by 2002:a7b:c769:: with SMTP id x9mr5979658wmk.103.1556098307752;
+        Wed, 24 Apr 2019 02:31:47 -0700 (PDT)
+Received: from [192.168.0.44] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
+        by smtp.googlemail.com with ESMTPSA id g132sm16149811wme.3.2019.04.24.02.31.45
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 24 Apr 2019 02:30:17 -0700 (PDT)
-Date:   Wed, 24 Apr 2019 15:00:15 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Gregory CLEMENT <gregory.clement@bootlin.com>,
-        Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Cc:     Christian Neubert <christian.neubert.86@gmail.com>,
-        Stephen Boyd <sboyd@codeaurora.org>,
-        Mike Turquette <mturquette@baylibre.com>,
-        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Jason Cooper <jason@lakedaemon.net>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-        Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-        linux-arm-kernel@lists.infradead.org,
-        Antoine Tenart <antoine.tenart@bootlin.com>,
-        =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>,
-        Maxime Chevallier <maxime.chevallier@bootlin.com>,
-        stable@vger.kernel.org
-Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for
- cpu clocks
-Message-ID: <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
-References: <20190313163558.6705-1-gregory.clement@bootlin.com>
- <20190314121541.GB19385@apalos>
- <CAC5LXJcCs4nr-qFOWzUJpUBAJ9ngG-cgeTCVCFBKFc1SPzHMuQ@mail.gmail.com>
- <20190314134428.GA24768@apalos>
- <874l85v8p6.fsf@FE-laptop>
- <20190318112844.GA1708@apalos>
- <87h8c0s955.fsf@FE-laptop>
- <20190318122113.GA4834@apalos>
+        Wed, 24 Apr 2019 02:31:47 -0700 (PDT)
+Subject: Re: [PATCH v4 1/2] thermal: rcar_gen3_thermal: fix interrupt type
+To:     Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com,
+        edubezval@gmail.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se,
+        geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com,
+        marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com,
+        hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com,
+        dien.pham.ry@renesas.com, biju.das@bp.renesas.com,
+        erosca@de.adit-jv.com, george_davis@mentor.com,
+        joshua_frkuska@mentor.com
+References: <20190424051145.23072-1-jiada_wang@mentor.com>
+ <20190424051145.23072-2-jiada_wang@mentor.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <1bdc45cd-12fb-e607-1ab5-f06a022b263e@linaro.org>
+Date:   Wed, 24 Apr 2019 11:31:45 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190424051145.23072-2-jiada_wang@mentor.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <20190318122113.GA4834@apalos>
-User-Agent: NeoMutt/20180323-120-3dd1ac
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424093015.vrvQmzBRdpQy5L4JuAdtahocvUwEJVoU-mUXb5Z6n7s@z>
+Message-ID: <20190424093145.bCxrsd1sHx7LiKBa5m4q3G5HF-qYNnkiYLTxDKg9Jz4@z>
 
-On 18-03-19, 14:21, Ilias Apalodimas wrote:
-> Hi Gregory, 
+On 24/04/2019 07:11, Jiada Wang wrote:
+> Currently IRQF_SHARED type interrupt line is allocated, but it
+> is not appropriate, as the interrupt line isn't shared between
+> different devices, instead IRQF_ONESHOT is the proper type.
 > 
-> > >> 
-> > > [   14.909524] clk_pm_cpu_set_parent old=28004840 -> val=0x6000000 load_level=0
-> > > [   14.916424] clk_pm_cpu_set_parent old=2E004840 -> val=0x600 load_level=1
-> > > [   14.923315] clk_pm_cpu_set_parent old=8880A8C0 -> val=0x6000000 load_level=2
-> > > [   14.930572] clk_pm_cpu_set_parent old=8E80A8C0 -> val=0x600 load_level=3
-> > >
-> > >
-> > > Let me know if you need anything else
-> > 
-> > Could you show me the output of "cat /sys/kernel/debug/clk/clk_summary"
-> > 
-> root@localhost ~ # cat /sys/kernel/debug/clk/clk_summary
->                                  enable  prepare  protect                                duty
->    clock                          count    count    count        rate   accuracy phase  cycle
-> ---------------------------------------------------------------------------------------------
->  xtal                                 2        3        0    25000000          0     0  50000
->     i2c_1                             0        0        0    25000000          0     0  50000
->     i2c_2                             0        0        0    25000000          0     0  50000
->     avs                               0        0        0    25000000          0     0  50000
->     TBG-B-S                           2        2        0  1000000000          0     0  50000
->        cpu                            0        0        0   200000000          0     0  50000
->        usb32_ss_sys                   1        1        0   125000000          0     0  50000
->        usb32_usb2_sys                 0        0        0   100000000          0     0  50000
->        gbe_125                        0        0        0   125000000          0     0  50000
->           gbe0_125                    0        0        0   125000000          0     0  50000
->           gbe1_125                    0        0        0   125000000          0     0  50000
->        gbe_core                       1        1        0   250000000          0     0  50000
->           gbe_bm                      0        0        0   250000000          0     0  50000
->           gbe0_core                   1        1        0   250000000          0     0  50000
->           gbe1_core                   0        0        0   250000000          0     0  50000
->        eip97                          0        0        0   500000000          0     0  50000
->        trace                          0        0        0  1000000000          0     0  50000
->        ddr_fclk                       0        0        0   125000000          0     0  50000
->        pwm                            0        0        0    50000000          0     0  50000
->        tscem_tmx                      0        0        0  1000000000          0     0  50000
->        sec_dap                        0        0        0   100000000          0     0  50000
->        sec_at                         0        0        0   200000000          0     0  50000
->     TBG-A-S                           0        0        0  1600000000          0     0  50000
->        sdio                           0        0        0   400000000          0     0  50000
->        ddr_phy                        0        0        0   400000000          0     0  50000
->        mmc                            0        0        0   400000000          0     0  50000
->     TBG-B-P                           0        0        0   500000000          0     0  50000
->        gbe_50                         0        0        0    50000000          0     0  50000
->           gbe0_50                     0        0        0    50000000          0     0  50000
->           gbe1_50                     0        0        0    50000000          0     0  50000
->     TBG-A-P                           0        1        0   800000000          0     0  50000
->        counter                        0        0        0   160000000          0     0  50000
->        sqf                            0        1        0   200000000          0     0  50000
->        tscem                          0        0        0   200000000          0     0  50000
->        sata_host                      0        0        0   200000000          0     0  50000
-> root@localhost ~ # 
+> By changing interrupt type to IRQF_ONESHOT, now irq handler is
+> no longer needed, as clear of interrupt status can be done in
+> threaded interrupt context.
 > 
-> > Also, during this week-end, Christian suggested that the issue might
-> > come from the AVS support.
-> > 
-> > Could you disable it and check you still have the issue?
-> > 
-> > For this, you just have to remove the avs node in
-> > arch/arm64/boot/dts/marvell/armada-37xx.dtsi and rebuild the dtb.
-> Sure. You'll have to wait for a week though. Currently on a trip. I'll run that
->  once i return
+> Because IRQF_ONESHOT type interrupt line is kept disabled until
+> the threaded handler has been run, so there is no need to protect
+> read/write of REG_GEN3_IRQSTR with lock.
+> 
+> Fixes: 7d4b269776ec6 ("enable hardware interrupts for trip points")
+> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
 
-@Ilias: Can you please try this now and confirm to Gregory ?
+Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+> ---
+>  drivers/thermal/rcar_gen3_thermal.c | 38 +++++------------------------
+>  1 file changed, 6 insertions(+), 32 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+> index 88fa41cf16e8..065e16f53285 100644
+> --- a/drivers/thermal/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+> @@ -14,7 +14,6 @@
+>  #include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/pm_runtime.h>
+> -#include <linux/spinlock.h>
+>  #include <linux/sys_soc.h>
+>  #include <linux/thermal.h>
+>  
+> @@ -82,7 +81,6 @@ struct rcar_gen3_thermal_tsc {
+>  struct rcar_gen3_thermal_priv {
+>  	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
+>  	unsigned int num_tscs;
+> -	spinlock_t lock; /* Protect interrupts on and off */
+>  	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
+>  };
+>  
+> @@ -232,38 +230,16 @@ static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
+>  {
+>  	struct rcar_gen3_thermal_priv *priv = data;
+>  	u32 status;
+> -	int i, ret = IRQ_HANDLED;
+> +	int i;
+>  
+> -	spin_lock(&priv->lock);
+>  	for (i = 0; i < priv->num_tscs; i++) {
+>  		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
+>  		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
+>  		if (status)
+> -			ret = IRQ_WAKE_THREAD;
+> +			thermal_zone_device_update(priv->tscs[i]->zone,
+> +						   THERMAL_EVENT_UNSPECIFIED);
+>  	}
+>  
+> -	if (ret == IRQ_WAKE_THREAD)
+> -		rcar_thermal_irq_set(priv, false);
+> -
+> -	spin_unlock(&priv->lock);
+> -
+> -	return ret;
+> -}
+> -
+> -static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
+> -{
+> -	struct rcar_gen3_thermal_priv *priv = data;
+> -	unsigned long flags;
+> -	int i;
+> -
+> -	for (i = 0; i < priv->num_tscs; i++)
+> -		thermal_zone_device_update(priv->tscs[i]->zone,
+> -					   THERMAL_EVENT_UNSPECIFIED);
+> -
+> -	spin_lock_irqsave(&priv->lock, flags);
+> -	rcar_thermal_irq_set(priv, true);
+> -	spin_unlock_irqrestore(&priv->lock, flags);
+> -
+>  	return IRQ_HANDLED;
+>  }
+>  
+> @@ -371,8 +347,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  	if (soc_device_match(r8a7795es1))
+>  		priv->thermal_init = rcar_gen3_thermal_init_r8a7795es1;
+>  
+> -	spin_lock_init(&priv->lock);
+> -
+>  	platform_set_drvdata(pdev, priv);
+>  
+>  	/*
+> @@ -390,9 +364,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  		if (!irqname)
+>  			return -ENOMEM;
+>  
+> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+> -						rcar_gen3_thermal_irq_thread,
+> -						IRQF_SHARED, irqname, priv);
+> +		ret = devm_request_threaded_irq(dev, irq, NULL,
+> +						rcar_gen3_thermal_irq,
+> +						IRQF_ONESHOT, irqname, priv);
+>  		if (ret)
+>  			return ret;
+>  	}
+> 
+
 
 -- 
-viresh
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
