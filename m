@@ -1,81 +1,82 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
-Date: Wed, 24 Apr 2019 12:48:50 +0200
-Message-ID: <20190424104850.GC32457@amd>
-References: <20190408173928.GB13260@amd>
- <20190412102812.GA24977@amd>
- <20190423102239.GA15531@amd>
- <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
- <20190424095431.GA32457@amd>
+From: "Pawnikar, Sumeet R" <sumeet.r.pawnikar@intel.com>
+Subject: RE: [PATCH] thermal: intel: int340x: processor_thermal_device:
+ simplify to get driver data
+Date: Wed, 24 Apr 2019 11:19:03 +0000
+Message-ID: <3C3E65E75D9910479323816378A812E7414CDA84@BGSMSX104.gar.corp.intel.com>
+References: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
+         <20190415162809.GU9224@smile.fi.intel.com>
+         <1555922784.26198.20.camel@intel.com>
+ <1555923334.26198.25.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="V88s5gaDVPzZ0KCq"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190424095431.GA32457@amd>
+In-Reply-To: <1555923334.26198.25.camel@intel.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jens Axboe <axboe@kernel.dk>
-Cc: kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, linux-ide@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>, "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---V88s5gaDVPzZ0KCq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed 2019-04-24 11:54:31, Pavel Machek wrote:
-> On Tue 2019-04-23 07:55:05, Jens Axboe wrote:
-> > On 4/23/19 4:22 AM, Pavel Machek wrote:
-> > > Hi!
-> > >=20
-> > >>> It boots ok (unlike mainline -- I'm debugging that), and I can susp=
-end
-> > >>> and resume... but then cursor in X is moving and I can talk to
-> > >>> applications cached in memory, but any access to disk hangs.
-> > >>
-> > >> Mainline problem was identified.
-> > >>
-> > >> But resume is still broken. I took advantage of fact that I can still
-> > >> do cached commands, and got complete dmesg. I'm attaching it.
-> > >=20
-> > > Still broken in 0418. Ideas would be welcome at this point.
-> >=20
-> > Bisect it?
->=20
-> commit fdbbda7b3a0622fcfe630238d0bf6c57c4ba3663
-> Merge: 3c442d5 6c88d73
-> Author: Jens Axboe <axboe@kernel.dk>
-> Date:   Mon Apr 22 13:57:36 2019 -0600
->=20
-> Works ok. So... block is not responsible.
->=20
-> Let me check
->=20
-> commit 91b112cf3b599f06f1e810cfedf37023f25d5588
-> Merge: fb2c4a8 e32d939
-> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Date:   Mon Apr 22 01:52:48 2019 +0200
-
-Suspend/resume ok, so pm not responsible. Let me check next-20190423.
-
-									Pavel
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---V88s5gaDVPzZ0KCq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlzAPxIACgkQMOfwapXb+vI1uQCgvej4szRBNmj2+c0bvr6nbSwS
-bK8AnRJ6UoIYC5FNDBPHXMoYdG+b7Xp8
-=mYGZ
------END PGP SIGNATURE-----
-
---V88s5gaDVPzZ0KCq--
+DQoNCj4tLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPkZyb206IGxpbnV4LXBtLW93bmVyQHZn
+ZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXBtLQ0KPm93bmVyQHZnZXIua2VybmVsLm9yZ10g
+T24gQmVoYWxmIE9mIFpoYW5nIFJ1aQ0KPlNlbnQ6IE1vbmRheSwgQXByaWwgMjIsIDIwMTkgMjoy
+NiBQTQ0KPlRvOiBTaGV2Y2hlbmtvLCBBbmRyaXkgPGFuZHJpeS5zaGV2Y2hlbmtvQGludGVsLmNv
+bT47IFBhd25pa2FyLCBTdW1lZXQgUg0KPjxzdW1lZXQuci5wYXduaWthckBpbnRlbC5jb20+DQo+
+Q2M6IGVkdWJlenZhbEBnbWFpbC5jb207IGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc7DQo+c3Jp
+bml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
+ZzsgbGludXgtDQo+a2VybmVsQHZnZXIua2VybmVsLm9yZw0KPlN1YmplY3Q6IFJlOiBbUEFUQ0hd
+IHRoZXJtYWw6IGludGVsOiBpbnQzNDB4OiBwcm9jZXNzb3JfdGhlcm1hbF9kZXZpY2U6DQo+c2lt
+cGxpZnkgdG8gZ2V0IGRyaXZlciBkYXRhDQo+DQo+T24g5LiALCAyMDE5LTA0LTIyIGF0IDE2OjQ2
+ICswODAwLCBaaGFuZyBSdWkgd3JvdGU6DQo+PiBPbiDkuIAsIDIwMTktMDQtMTUgYXQgMTk6Mjgg
+KzAzMDAsIEFuZHkgU2hldmNoZW5rbyB3cm90ZToNCj4+ID4NCj4+ID4gT24gTW9uLCBBcHIgMTUs
+IDIwMTkgYXQgMDg6MTg6MzBQTSArMDUzMCwgU3VtZWV0IFBhd25pa2FyIHdyb3RlOg0KPj4gPiA+
+DQo+PiA+ID4NCj4+ID4gPiBGcm9tOiAiUGF3bmlrYXIsIFN1bWVldCBSIiA8c3VtZWV0LnIucGF3
+bmlrYXJAaW50ZWwuY29tPg0KPj4gPiA+DQo+anVzdCBvbmUgY29tbWVudCwgdGhlIGF1dGhvciBu
+YW1lIHlvdSB1c2VkIGlzIG5vdCBjb25zaXN0ZW50IHdpdGggdGhlIG5hbWUNCj55b3UgdXNlZCBm
+b3IgeW91ciBTaWduZWQtb2ZmLWJ5ICdQYXduaWthciwgU3VtZWV0IFIgPHN1bWVldC5yLnBhd24N
+Cj5pa2FyQGludGVsLmNvbT4nLCBhbmQgY2hlY2twYXRjaCBjb21wbGFpbnMgYWJvdXQgbWlzc2lu
+ZyBTaWduZWQtb2ZmLWJ5IGZyb20NCj5wYXRjaCBhdXRob3IuDQo+UGxlYXNlIGZpeCB5b3VyIGdp
+dGNvbmZpZyBhbmQgcnVuIGNoZWNrcGF0Y2ggYmVmb3JlIHNlbmRpbmcgbmV4dCB0aW1lLg0KPg0K
+U3VyZSwgd2lsbCBmaXggdGhpcyBnb2luZyBmb3J3YXJkLiANCg0KVGhhbmtzLA0KU3VtZWV0LiAN
+Cg0KPnRoYW5rcywNCj5ydWkNCj4NCj4+ID4gPiBUaGlzIHNpbXBsaWZpZXMgZ2V0dGluZyB0aGUg
+J2RyaXZlcl9kYXRhJyBmcm9tICdzdHJ1Y3QgZGV2aWNlJw0KPj4gPiA+IGRpcmVjdGx5Lg0KPj4g
+PiA+IEdvaW5nIHRocm91Z2ggcGxhdGZvcm1fZGV2aWNlIG9yIHBjaV9kZXYgaXMgbm90IHJlcXVp
+cmVkLiBBbHNvDQo+PiA+ID4gcmVtb3ZlcyBjb25kaXRpb24gY2hlY2sgYXMgdGhlIHByaXZhdGUg
+ZGF0YSBzdG9yZWQgd2l0aCBkZXYNCj4+ID4gPiBwb2ludGVyLCBtZWFucyBpcnJlc3BlY3RpdmUg
+b2YgZW51bWVyYXRpb24gbW9kZSwgd2UgY2FuIHVzZQ0KPj4gPiA+IGRldl9nZXRfZHJ2ZGF0YSgp
+Lg0KPj4gPiA+IFRoaXMgcmVtb3ZlcyB0aGUgdW5uZWNlc3Nhcnkgc3RlcCBiYWNrIGFuZCBmb3J0
+aC4NCj4+ID4gPg0KPj4gPiBJbmRlZWQsIGdvb2QgY2xlYW4gdXAhDQo+PiA+IFJldmlld2VkLWJ5
+OiBBbmR5IFNoZXZjaGVua28gPGFuZHJpeS5zaGV2Y2hlbmtvQGludGVsLmNvbT4NCj4+ID4NCj4+
+IFRoYW5rcywgcGF0Y2ggYXBwbGllZC4NCj4+DQo+PiAtcnVpDQo+PiA+DQo+PiA+ID4NCj4+ID4g
+Pg0KPj4gPiA+IFNpZ25lZC1vZmYtYnk6IFN1bWVldCBQYXduaWthciA8c3VtZWV0LnIucGF3bmlr
+YXJAaW50ZWwuY29tPg0KPj4gPiA+IC0tLQ0KPj4gPiA+IMKgLi4uL2ludDM0MHhfdGhlcm1hbC9w
+cm9jZXNzb3JfdGhlcm1hbF9kZXZpY2UuY8KgwqDCoMKgwqB8wqDCoMKgMTEgKy0tLS0tDQo+PiA+
+ID4gLS0NCj4+ID4gPiAtLS0NCj4+ID4gPiDCoDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigr
+KSwgMTAgZGVsZXRpb25zKC0pDQo+PiA+ID4NCj4+ID4gPiBkaWZmIC0tZ2l0DQo+PiA+ID4gYS9k
+cml2ZXJzL3RoZXJtYWwvaW50ZWwvaW50MzQweF90aGVybWFsL3Byb2Nlc3Nvcl90aGVybWFsX2Rl
+dmljZS4NCj4+ID4gPiBjDQo+PiA+ID4gYi9kcml2ZXJzL3RoZXJtYWwvaW50ZWwvaW50MzQweF90
+aGVybWFsL3Byb2Nlc3Nvcl90aGVybWFsX2RldmljZS4NCj4+ID4gPiBjDQo+PiA+ID4gaW5kZXgg
+OGUxY2Y0ZC4uMmE3Y2JhYSAxMDA2NDQNCj4+ID4gPiAtLS0NCj4+ID4gPiBhL2RyaXZlcnMvdGhl
+cm1hbC9pbnRlbC9pbnQzNDB4X3RoZXJtYWwvcHJvY2Vzc29yX3RoZXJtYWxfZGV2aWNlLg0KPj4g
+PiA+IGMNCj4+ID4gPiArKysNCj4+ID4gPiBiL2RyaXZlcnMvdGhlcm1hbC9pbnRlbC9pbnQzNDB4
+X3RoZXJtYWwvcHJvY2Vzc29yX3RoZXJtYWxfZGV2aWNlLg0KPj4gPiA+IGMNCj4+ID4gPiBAQCAt
+ODEsMjIgKzgxLDEzIEBAIGVudW0gcHJvY190aGVybWFsX2VtdW1fbW9kZV90eXBlIHsNCj4+ID4g
+PiDCoAkJCQkJc3RydWN0IGRldmljZV9hdHRyaWJ1dGUNCj4+ID4gPiAqYXR0ciwgXA0KPj4gPiA+
+IMKgCQkJCQljaGFyICpidWYpIFwNCj4+ID4gPiDCoHsgXA0KPj4gPiA+IC0Jc3RydWN0IHBjaV9k
+ZXYgKnBjaV9kZXY7IFwNCj4+ID4gPiAtCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXY7IFwN
+Cj4+ID4gPiAtCXN0cnVjdCBwcm9jX3RoZXJtYWxfZGV2aWNlICpwcm9jX2RldjsgXA0KPj4gPiA+
+ICsJc3RydWN0IHByb2NfdGhlcm1hbF9kZXZpY2UgKnByb2NfZGV2ID0NCj4+ID4gPiBkZXZfZ2V0
+X2RydmRhdGEoZGV2KTsgXA0KPj4gPiA+IMKgCVwNCj4+ID4gPiDCoAlpZiAocHJvY190aGVybWFs
+X2VtdW1fbW9kZSA9PSBQUk9DX1RIRVJNQUxfTk9ORSkgeyBcDQo+PiA+ID4gwqAJCWRldl93YXJu
+KGRldiwgIkF0dGVtcHRlZCB0byBnZXQgcG93ZXIgbGltaXQgYmVmb3JlIGRldmljZQ0KPndhcw0K
+Pj4gPiA+IGluaXRpYWxpemVkIVxuIik7IFwNCj4+ID4gPiDCoAkJcmV0dXJuIDA7IFwNCj4+ID4g
+PiDCoAl9IFwNCj4+ID4gPiDCoAlcDQo+PiA+ID4gLQlpZiAocHJvY190aGVybWFsX2VtdW1fbW9k
+ZSA9PSBQUk9DX1RIRVJNQUxfUExBVEZPUk1fREVWKQ0KPj4gPiA+IHsNCj4+ID4gPiBcDQo+PiA+
+ID4gLQkJcGRldiA9IHRvX3BsYXRmb3JtX2RldmljZShkZXYpOyBcDQo+PiA+ID4gLQkJcHJvY19k
+ZXYgPSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsgXA0KPj4gPiA+IC0JfSBlbHNlIHsgXA0K
+Pj4gPiA+IC0JCXBjaV9kZXYgPSB0b19wY2lfZGV2KGRldik7IFwNCj4+ID4gPiAtCQlwcm9jX2Rl
+diA9IHBjaV9nZXRfZHJ2ZGF0YShwY2lfZGV2KTsgXA0KPj4gPiA+IC0JfSBcDQo+PiA+ID4gwqAJ
+cmV0dXJuIHNwcmludGYoYnVmLCAiJWx1XG4iLFwNCj4+ID4gPiDCoAkodW5zaWduZWQgbG9uZylw
+cm9jX2Rldi0+cG93ZXJfbGltaXRzW2luZGV4XS5zdWZmaXggKiAxMDAwKTsgXA0KPj4gPiA+IMKg
+fQ0KPj4gPiA+IC0tDQo+PiA+ID4gMS43LjkuNQ0K
