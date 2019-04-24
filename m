@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2715BC282E1
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 06:49:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AB46C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 06:49:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E8F0B20835
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 06:49:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 36E6220656
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 06:49:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="e1VF/2wV"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ENh4FaCf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729967AbfDXGtU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 02:49:20 -0400
-Received: from mail-pl1-f196.google.com ([209.85.214.196]:37669 "EHLO
-        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729962AbfDXGtS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 02:49:18 -0400
-Received: by mail-pl1-f196.google.com with SMTP id w23so8792337ply.4;
-        Tue, 23 Apr 2019 23:49:18 -0700 (PDT)
+        id S1729997AbfDXGtY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 02:49:24 -0400
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:34620 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729988AbfDXGtX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 02:49:23 -0400
+Received: by mail-pg1-f196.google.com with SMTP id v12so8898505pgq.1;
+        Tue, 23 Apr 2019 23:49:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=/jj7xWSCu2Jvjzo3iEjqtPAm50x1l724NJndLXKBO4U=;
-        b=e1VF/2wV2sS+0wFTgirKUMj8faG2UC7kXbI2dSsc8Wglit8rvKTgNVM1CejJNT05pa
-         gEt5iEqYoLCiPSEO7xDAJpc5UWBCtWBFqXyD+gIQb2DYAEPxl2dz48yRSE2lsTZfVgkJ
-         bD9BOtuIK117DWpx65qQQdW5n0cP1GRt/Zeqp9UMJqa6PuWSTzvTKGYhEQGjHUFeMkmx
-         56cengUfcBIGJOdkS68cChJGUcPhPEqD4F72Y/78T7TzNBYbI4Yk3VJSNEY1Nnpe/qsr
-         8RY3OWGiJSZy5qUf2KgHC6R48OnQ8bPXG0ZXc5ZzehE2Ek3BFFNcvXW0OodI/Gk3YZ/y
-         0Ftg==
+        bh=LHtgcg1Zf0pIA2u538aF6THujnYqeIu7AUO/MXWnU04=;
+        b=ENh4FaCf4z2e1QhrXdvYc48z3uOFW2fMHKwFhvPG8Q3+ID/Un4pEu503bAnh9a/4/s
+         ZGY+7XV8E/bsPIdYNZ7kFzT+f2dspur8Td1C+P0fmPYty7HH+mI1XALGxD2a6I6+F+QU
+         UyIfPJcwRwU3yE/TrLPyC7HwxefJoIgrnt7oiPw0fXcm2rfGU/rsKj/ofgI6kxKFzhLb
+         YLe2ukqMscUK0dxbu9gzyTKg9UbTLwXmjgV0zXDLDYLJO0byO0ANo6UEoYYFfbvnQj/C
+         JTbYtdmsZmzWqxQNRp/VJX3E9nl49C/GwFUAC4XDaNsb1Qa02fk8Uf3GobLNfUXq11pL
+         FqrQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=/jj7xWSCu2Jvjzo3iEjqtPAm50x1l724NJndLXKBO4U=;
-        b=Torv9jasNAa6F/PR7E0EmKQBL76Cm/KfNRxxr5SKbJ9jfDr9y02GNP2oIvPD9j1xrP
-         9VZqGQ2wn8mtq1pZB7ZPGUiq7C/svKlYw2SMg+HtQ5LrX2y1zhn+RG5WJ984K0+NbEqw
-         irghqnOaJdI+3ViDeEDYmNjqcXbXdCOJ2OI1E2tPNH9nWboBtCAMJReOezriXNdjAWNw
-         ek5ZsUP4Pb6Ut04SSZmq+k3Cil3afR81cUZgXByjMfM0DnTQMmXLdJPUIhTchjpH6Kkx
-         SAMGNlFO4x7hJsGxEGyKyTWg2lPaJsfwccwiWYbRI072aQMZMIcyHiz8lHr/Lw0w4Z5v
-         aG1Q==
-X-Gm-Message-State: APjAAAXETLZuYDF6ZpttvADjLZ85M8coWq534QXsJdjURjRbxjK+q3Nh
-        bCHJ4MubIBEGunz9g9E5rC9g9rdkqrY=
-X-Google-Smtp-Source: APXvYqz44S4ts5ZAZvjah058KnwXd4auOAzS8js0AdTIjoZ0LclKHCDe4lnyFfqEVuBPHsAzjqyStw==
-X-Received: by 2002:a17:902:a582:: with SMTP id az2mr31258983plb.315.1556088557553;
-        Tue, 23 Apr 2019 23:49:17 -0700 (PDT)
+        bh=LHtgcg1Zf0pIA2u538aF6THujnYqeIu7AUO/MXWnU04=;
+        b=ZOBv2e5wpB7y7lVSdoNfxEa35drIuBGTft9RY3hAmfj3cRt0aMM0yx1+8tVCb4LNmd
+         9ZlfGJX75G/1Zfac78PYi7ahOR85highgGTU9iSUmtFprpYiKbMPZVOJs3Qc+aSua+ZH
+         iN5EmjvHtnjCun6LsAUTMGnx9iCeHPVB7UjzisJhRlA5VC6hn0/tYM8gK4JIC7xDWbGR
+         PLTba8CIL3374H6s8kQC45czRMMb/ybtonpx4aGMuIoWSeuVbBNP716EdikGndeOmuVH
+         4/xcsuEL/7AmOCjiH8Kz2RLT0ZgLLRUY9wbXTxVcXSai6WswUAjMse0VhE+LncQzTQnm
+         LHQw==
+X-Gm-Message-State: APjAAAU+u6usY+/+ARlHRULHz2bZd6m5bwNG3hQ9xOQFJahGDIisYvMp
+        Ftmj1rKvQrte/ChL8Bj6wHvj960VMxg=
+X-Google-Smtp-Source: APXvYqzrEqBa6Gy6x8lbVlOg3hQNvschZK2zRj24hNGYIMRyi9IxBVV+1OuXaLf7HxJsee/XPx8tkw==
+X-Received: by 2002:a65:6282:: with SMTP id f2mr7184655pgv.152.1556088562076;
+        Tue, 23 Apr 2019 23:49:22 -0700 (PDT)
 Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id e13sm26332457pgb.37.2019.04.23.23.49.16
+        by smtp.gmail.com with ESMTPSA id e13sm26332457pgb.37.2019.04.23.23.49.20
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Tue, 23 Apr 2019 23:49:16 -0700 (PDT)
+        Tue, 23 Apr 2019 23:49:21 -0700 (PDT)
 From:   Andrey Smirnov <andrew.smirnov@gmail.com>
 To:     linux-pm@vger.kernel.org
 Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
@@ -64,9 +64,9 @@ Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
         Eduardo Valentin <edubezval@gmail.com>,
         Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v5 07/12] thermal: qoriq: Convert driver to use devm_ioremap()
-Date:   Tue, 23 Apr 2019 23:48:25 -0700
-Message-Id: <20190424064830.18179-8-andrew.smirnov@gmail.com>
+Subject: [PATCH v5 10/12] thermal: qoriq: Do not report invalid temperature reading
+Date:   Tue, 23 Apr 2019 23:48:28 -0700
+Message-Id: <20190424064830.18179-11-andrew.smirnov@gmail.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190424064830.18179-1-andrew.smirnov@gmail.com>
 References: <20190424064830.18179-1-andrew.smirnov@gmail.com>
@@ -77,10 +77,11 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190424064825.XLgtWmKeI4vt0Vonb8MnnX_JdZMgibEFWxPV0nC_iiQ@z>
+Message-ID: <20190424064828.7oA32OfZcX5MniwwQsJkQW-YBQMa545-wx-KYrDWzJo@z>
 
-Convert driver to use devm_ioremap() to simplify memory deallocation
-and error handling code. No functional change intended.
+Before returning measured temperature data to upper layer we need to
+make sure that the reading was marked as "valid" to avoid reporting
+bogus data.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
@@ -94,70 +95,49 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 0b6937bbc7d0..64cad6d4c1d7 100644
+index d8d9f567a632..f97d0cc82b2b 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -175,6 +175,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 	struct qoriq_tmu_data *data;
- 	struct device_node *np = pdev->dev.of_node;
- 	struct device *dev = &pdev->dev;
-+	struct resource *io;
+@@ -37,6 +37,7 @@
+ #define REGS_TRITSR(n)	(0x100 + 16 * (n)) /* Immediate Temperature
+ 					    * Site Register
+ 					    */
++#define TRITSR_V	BIT(31)
+ #define REGS_TTRnCR(n)	(0xf10 + 4 * (n)) /* Temperature Range n
+ 					   * Control Register
+ 					   */
+@@ -48,10 +49,25 @@ static int tmu_get_temp(int id, void *p, int *temp)
+ {
+ 	struct qoriq_tmu_data *qdata = p;
+ 	u32 val;
++	/*
++	 * REGS_TRITSR(id) has the following layout:
++	 *
++	 * 31  ... 7 6 5 4 3 2 1 0
++	 *  V          TEMP
++	 *
++	 * Where V bit signifies if the measurement is ready and is
++	 * within sensor range. TEMP is an 8 bit value representing
++	 * temperature in C.
++	 */
++	if (regmap_read_poll_timeout(qdata->regmap,
++				     REGS_TRITSR(id),
++				     val,
++				     val & TRITSR_V,
++				     USEC_PER_MSEC,
++				     10 * USEC_PER_MSEC))
++		return -ENODATA;
  
- 	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
- 			    GFP_KERNEL);
-@@ -183,7 +184,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 
- 	data->little_endian = of_property_read_bool(np, "little-endian");
- 
--	data->regs = of_iomap(np, 0);
-+	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!io) {
-+		dev_err(dev, "Failed to get memory region\n");
-+		return -ENODEV;
-+	}
-+
-+	data->regs = devm_ioremap(dev, io->start, resource_size(io));
- 	if (!data->regs) {
- 		dev_err(dev, "Failed to get memory region\n");
- 		return -ENODEV;
-@@ -193,23 +200,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 
- 	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
- 	if (ret < 0)
--		goto err_tmu;
-+		return ret;
- 
- 	ret = qoriq_tmu_register_tmu_zone(dev, data);
- 	if (ret < 0) {
- 		dev_err(dev, "Failed to register sensors\n");
--		ret = -ENODEV;
--		goto err_tmu;
-+		return -ENODEV;
- 	}
- 
- 	platform_set_drvdata(pdev, data);
- 
+-	regmap_read(qdata->regmap, REGS_TRITSR(id), &val);
+ 	*temp = (val & 0xff) * 1000;
+-
  	return 0;
--
--err_tmu:
--	iounmap(data->regs);
--
--	return ret;
  }
  
- static int qoriq_tmu_remove(struct platform_device *pdev)
-@@ -219,7 +220,6 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
- 	/* Disable monitoring */
- 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
- 
--	iounmap(data->regs);
- 	platform_set_drvdata(pdev, NULL);
- 
- 	return 0;
 -- 
 2.20.1
 
