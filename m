@@ -2,127 +2,169 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87444C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 05:55:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95B0BC282CE
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 06:46:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 56D6C20685
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 05:55:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5E049218DA
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 06:46:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EOBsczue"
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="nPkjVyas";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="Ykm13e9H"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729482AbfDXFzP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 01:55:15 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:36744 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729449AbfDXFzP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 01:55:15 -0400
-Received: by mail-pf1-f196.google.com with SMTP id z5so8710110pfn.3
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2019 22:55:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=ugtYsAGOnQwGjRTiINsguEV7jByE9sPjdAYZfzpXuoo=;
-        b=EOBsczue/jE8A72pN7RsFGxI7f7y7cPZxM4QIsdo0M4A/jKHMU2AJJL2Ibynb8kuDQ
-         POPphhf9Qqm6H7GriSVw75SaB9Awar4tB5ONp7rWgEnmssFKXdlEe1rHZHhv2yd0p+HR
-         PRz4Ew2ZcFLs/P2xLmgJYkpWjEVDGk1nh9MDm+PlKxO6yGkiTgHeBatMhJb7tTzUnQuk
-         oEcAbXxpPaPAY1Xmq5mMJ2GLF3FF5XCrDI7R54SfnCuILHj8XFDItbADQqhxFxLRycmN
-         8iYzqkFj4hGgOpCzdf2trOCjjsHAO65lCNUrAwUyOgEZh2MZXjk04d+itNRyOsQy1buk
-         KCfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=ugtYsAGOnQwGjRTiINsguEV7jByE9sPjdAYZfzpXuoo=;
-        b=ksMpKa3Nudw9OpPuKoOrbXLh6JeZRe9hrH5Ivb+bJkbilnLQzQRdkj/qmMkTCW4rK8
-         6pwu1c23wZ+MuokzhgWBZSCuKFO4DqA7GcIq0wNF1CZVZhCvsRqd0cFOa1O9va9Qtyn+
-         d8YWH9ev7OB8A4NJZQcrFYfPwMM7chKwZdISnv1wAsNNKXN3dpzuK3pwBRX29A3DMzKn
-         bXDmzf+bviCagz0kr0r5xog2oaKP+Fo+SVJfLYooIr9bTWf4pr75hN8mur+jOhxT2APr
-         KM/JUuoiWS5faCNPtT4ErHwMff/Nr3qU8wNYoWXW6tVFQ5BhQGM6cU2Tbvz2ipuMWQk9
-         TXfA==
-X-Gm-Message-State: APjAAAUElzSjkA/J6UiMlPyNzb1f67ZJEoGQ1eRkBILYEMhnUuG4G/4g
-        4bU4gVTayjR1mD0mojJ3Zj/CIw==
-X-Google-Smtp-Source: APXvYqxjcXgM1gRGm0Th9obFaWeIq9O0F7zf4Yoab2ke07TVJG2Cg2OhVLwRV2oyV+63cFnjyFzQVQ==
-X-Received: by 2002:a63:6194:: with SMTP id v142mr10848427pgb.411.1556085314623;
-        Tue, 23 Apr 2019 22:55:14 -0700 (PDT)
-Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id h19sm28868839pfd.130.2019.04.23.22.55.13
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 23 Apr 2019 22:55:13 -0700 (PDT)
-Date:   Wed, 24 Apr 2019 11:25:12 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Georgi Djakov <georgi.djakov@linaro.org>
-Cc:     vireshk@kernel.org, sboyd@kernel.org, nm@ti.com,
-        robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net,
-        jcrouse@codeaurora.org, vincent.guittot@linaro.org,
+        id S1729876AbfDXGqy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 02:46:54 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:58824 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729875AbfDXGqy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 02:46:54 -0400
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+        id 0835E60741; Wed, 24 Apr 2019 06:46:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1556088413;
+        bh=p6f9vEXiMAoYVnBieo42Hu9mgee4TvaUHv0XZm764Lg=;
+        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+        b=nPkjVyas7wzlybxkN4QkYO7rBrOCgwy27YbW4l2zLHgN4D6ZEzvdBsdLAD69UT5Qv
+         yMNl0uoNPmyZOqAtcgs1ukoN32/cLJiS9XFEiOIzMUNj/P9wXfmlNTB7HW04Y9hknq
+         IU85t8NKfFnjHRr7EO8O+JNYSndxnUyg1P2ZQVpA=
+Received: from [192.168.0.106] (unknown [49.207.50.76])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: rnayak@smtp.codeaurora.org)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 22B0760112;
+        Wed, 24 Apr 2019 06:46:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1556088411;
+        bh=p6f9vEXiMAoYVnBieo42Hu9mgee4TvaUHv0XZm764Lg=;
+        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+        b=Ykm13e9HjYWXwLNA7slBTfAB2/7f5z2hz9d+qGWYjj9C/hksmbiKvg6WjR2LfnKjr
+         AWaj5a8svRbLOuLRns9WXJCwPNTLi3jmCVhcTTzkj4/WQHzG3quStG9USvVZVZxmXG
+         THSDFfmYSUBxrGiYeA5jK97joW7yR5r9MCtdcTu4=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 22B0760112
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=rnayak@codeaurora.org
+Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
+ bindings
+To:     Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org,
+        sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org,
+        mark.rutland@arm.com, rjw@rjwysocki.net
+Cc:     jcrouse@codeaurora.org, vincent.guittot@linaro.org,
         bjorn.andersson@linaro.org, amit.kucheria@linaro.org,
         seansw@qti.qualcomm.com, daidavid1@codeaurora.org,
         evgreen@chromium.org, sibis@codeaurora.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH v2 4/5] OPP: Update the bandwidth on OPP frequency changes
-Message-ID: <20190424055512.i6hertpilbkdxees@vireshk-i7>
 References: <20190423132823.7915-1-georgi.djakov@linaro.org>
- <20190423132823.7915-5-georgi.djakov@linaro.org>
+ <20190423132823.7915-2-georgi.djakov@linaro.org>
+From:   Rajendra Nayak <rnayak@codeaurora.org>
+Message-ID: <e35223d0-80ac-5236-2b8d-7f46cd3a1581@codeaurora.org>
+Date:   Wed, 24 Apr 2019 12:16:43 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <20190423132823.7915-5-georgi.djakov@linaro.org>
-User-Agent: NeoMutt/20180323-120-3dd1ac
+In-Reply-To: <20190423132823.7915-2-georgi.djakov@linaro.org>
+Content-Type: text/plain; charset="UTF-8"; format="flowed"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424055512.F0RnLhvi8wDDeMG_qVEXIsoBRRrhuJtSe7uXSfLh3VM@z>
+Message-ID: <20190424064643.WfZ2PDNawlqMHvecHB_WYBg6tyW7T6_0VPBhx5VOKe8@z>
 
-On 23-04-19, 16:28, Georgi Djakov wrote:
-> If the OPP bandwidth values are populated, we want to switch also the
-> interconnect bandwidth in addition to frequency and voltage.
+
+
+On 4/23/2019 6:58 PM, Georgi Djakov wrote:
+> In addition to frequency and voltage, some devices may have bandwidth
+> requirements for their interconnect throughput - for example a CPU
+> or GPU may also need to increase or decrease their bandwidth to DDR
+> memory based on the current operating performance point.
+> 
+> Extend the OPP tables with additional property to describe the bandwidth
+> needs of a device. The average and peak bandwidth values depend on the
+> hardware and its properties.
 > 
 > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 > ---
->  drivers/opp/core.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+>   Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++++++++
+>   .../devicetree/bindings/property-units.txt    |  4 ++
+>   2 files changed, 42 insertions(+)
 > 
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index 97ee39ecdebd..91d1c2abfb3e 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -707,7 +707,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
->  	unsigned long freq, old_freq;
->  	struct dev_pm_opp *old_opp, *opp;
->  	struct clk *clk;
-> -	int ret;
-> +	int ret, i;
->  
->  	if (unlikely(!target_freq)) {
->  		dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
-> @@ -780,6 +780,13 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
->  		ret = _generic_set_opp_clk_only(dev, clk, freq);
->  	}
->  
-> +	if (!ret && !IS_ERR_OR_NULL(opp_table->paths)) {
-
-Can paths ever have a error value ? I believe only checking for NULL
-is sufficient ?
-
-> +		for (i = 0; i < opp_table->path_count; i++) {
-> +			icc_set_bw(opp_table->paths[i], opp->bandwidth[i].avg,
-> +				   opp->bandwidth[i].peak);
-> +		}
-> +	}
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index 76b6c79604a5..830f0206aea7 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -132,6 +132,9 @@ Optional properties:
+>   - opp-level: A value representing the performance level of the device,
+>     expressed as a 32-bit integer.
+>   
+> +- bandwidth-MBps: The interconnect bandwidth is specified with an array containing
+> +  the two integer values for average and peak bandwidth in megabytes per second.
 > +
+>   - clock-latency-ns: Specifies the maximum possible transition latency (in
+>     nanoseconds) for switching to this OPP from any other OPP.
+>   
+> @@ -546,3 +549,38 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+>   		};
+>   	};
+>   };
+> +
+> +Example 7: bandwidth-MBps:
+> +Average and peak bandwidth values for the interconnects between CPU and DDR
+> +memory and also between CPU and L3 are defined per each OPP. Bandwidth of both
+> +interconnects is scaled together with CPU frequency.
+> +
+> +/ {
+> +	cpus {
+> +		CPU0: cpu@0 {
+> +			compatible = "arm,cortex-a53", "arm,armv8";
+> +			...
+> +			operating-points-v2 = <&cpu_opp_table>;
+> +			/* path between CPU and DDR memory and CPU and L3 */
+> +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
+> +					<&noc MASTER_CPU &noc SLAVE_L3>;
+> +		};
+> +	};
+> +
+> +	cpu_opp_table: cpu_opp_table {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp-200000000 {
+> +			opp-hz = /bits/ 64 <200000000>;
+> +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
+> +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
+> +			bandwidth-MBps = <457 1525>, <914 3050>;
 
-I will set the path after required_opps are set.
-
->  	/* Scaling down? Configure required OPPs after frequency */
->  	if (!ret && freq < old_freq) {
->  		ret = _set_required_opps(dev, opp_table, opp);
+Should this also have a bandwidth-MBps-name perhaps? Without that I guess we assume
+the order in which we specify the interconnects is the same as the order here?
+  
+> +		};
+> +		opp-400000000 {
+> +			opp-hz = /bits/ 64 <400000000>;
+> +			/* CPU<->DDR bandwidth: 915 MB/s average, 3051 MB/s peak */
+> +			 * CPU<->L3 bandwidth: 1828 MB/s average, 6102 MB/s peak */
+> +			bandwidth-MBps = <915 3051>, <1828 6102>;
+> +		};
+> +	};
+> diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
+> index bfd33734faca..9c3dbefcdae8 100644
+> --- a/Documentation/devicetree/bindings/property-units.txt
+> +++ b/Documentation/devicetree/bindings/property-units.txt
+> @@ -41,3 +41,7 @@ Temperature
+>   Pressure
+>   ----------------------------------------
+>   -kpascal	: kiloPascal
+> +
+> +Throughput
+> +----------------------------------------
+> +-MBps		: megabytes per second
+> 
 
 -- 
-viresh
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
