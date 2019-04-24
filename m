@@ -1,43 +1,99 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: qoriq: Add ls1028a chip support
-Date: Wed, 24 Apr 2019 09:24:30 +0200
-Message-ID: <CAJZ5v0hSq60Hv44wOVr5J=rHMFUPFrVKxRYOS4w+zg90oUbMag@mail.gmail.com>
-References: <20190424023223.29614-1-andy.tang@nxp.com> <20190424040113.aiyaia2p7xrn5ywo@vireshk-i7>
+Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each policy
+Date: Wed, 24 Apr 2019 09:26:50 +0200
+Message-ID: <CAJZ5v0jGofnUFKaM5-pRsZAiiQFumGGij8TE=SyX8DT8CUatQg@mail.gmail.com>
+References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
+ <20190321114535.GM6058@hirez.programming.kicks-ass.net> <20190322061957.hzhnlbmnkpuqviiv@vireshk-i7>
+ <20190424064753.lwfsdeodncaai5oz@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190424040113.aiyaia2p7xrn5ywo@vireshk-i7>
+In-Reply-To: <20190424064753.lwfsdeodncaai5oz@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andy Tang <andy.tang@nxp.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org, kvm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 24, 2019 at 6:01 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Wed, Apr 24, 2019 at 8:48 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> On 24-04-19, 10:32, andy.tang@nxp.com wrote:
-> > From: Yuantian Tang <andy.tang@nxp.com>
-> >
-> > Enable cpufreq feature on ls1028a chip by adding its compatible
-> > string.
-> >
-> > Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
-> > ---
-> >  drivers/cpufreq/qoriq-cpufreq.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> > index 4295e54..d308c4d 100644
-> > --- a/drivers/cpufreq/qoriq-cpufreq.c
-> > +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> > @@ -280,6 +280,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
-> >
-> >       { .compatible = "fsl,ls1012a-clockgen", },
-> >       { .compatible = "fsl,ls1021a-clockgen", },
-> > +     { .compatible = "fsl,ls1028a-clockgen", },
-> >       { .compatible = "fsl,ls1043a-clockgen", },
-> >       { .compatible = "fsl,ls1046a-clockgen", },
-> >       { .compatible = "fsl,ls1088a-clockgen", },
+> On 22-03-19, 11:49, Viresh Kumar wrote:
+> > On 21-03-19, 12:45, Peter Zijlstra wrote:
+> > > On Wed, Mar 20, 2019 at 10:22:23AM +0530, Viresh Kumar wrote:
 >
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> > > > index 65e4559eef2f..1ac8c710cccc 100644
+> > > > --- a/arch/x86/kvm/x86.c
+> > > > +++ b/arch/x86/kvm/x86.c
+> > > > @@ -6649,10 +6649,8 @@ static void kvm_hyperv_tsc_notifier(void)
+> > > >  }
+> > > >  #endif
+> > > >
+> > > > -static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> > > > -                              void *data)
+> > > > +static void __kvmclock_cpufreq_notifier(struct cpufreq_freqs *freq, int cpu)
+> > > >  {
+> > > > - struct cpufreq_freqs *freq = data;
+> > > >   struct kvm *kvm;
+> > > >   struct kvm_vcpu *vcpu;
+> > > >   int i, send_ipi = 0;
+> > > > @@ -6696,17 +6694,12 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+> > > >    *
+> > > >    */
+> > > >
+> > > > - if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
+> > > > -         return 0;
+> > > > - if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
+> > > > -         return 0;
+> > > > -
+> > > > - smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
+> > > > + smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
+> > > >
+> > > >   spin_lock(&kvm_lock);
+> > > >   list_for_each_entry(kvm, &vm_list, vm_list) {
+> > > >           kvm_for_each_vcpu(i, vcpu, kvm) {
+> > > > -                 if (vcpu->cpu != freq->cpu)
+> > > > +                 if (vcpu->cpu != cpu)
+> > > >                           continue;
+> > > >                   kvm_make_request(KVM_REQ_CLOCK_UPDATE, vcpu);
+> > > >                   if (vcpu->cpu != smp_processor_id())
+> > > > @@ -6728,8 +6721,24 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+> > > >            * guest context is entered kvmclock will be updated,
+> > > >            * so the guest will not see stale values.
+> > > >            */
+> > > > -         smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
+> > > > +         smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
+> > > >   }
+> > > > +}
+> > > > +
+> > > > +static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> > > > +                              void *data)
+> > > > +{
+> > > > + struct cpufreq_freqs *freq = data;
+> > > > + int cpu;
+> > > > +
+> > > > + if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
+> > > > +         return 0;
+> > > > + if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
+> > > > +         return 0;
+> > > > +
+> > > > + for_each_cpu(cpu, freq->policy->cpus)
+> > > > +         __kvmclock_cpufreq_notifier(freq, cpu);
+> > > > +
+> > > >   return 0;
+> > > >  }
+> > > >
+> > >
+> > > Then why to we pretend otherwise here?
+> >
+> > My intention was to not add any bug here because of lack of my
+> > knowledge of the architecture in question and so I tried to be safe.
+> >
+> > If you guys think the behavior should be same here as of the tsc, then
+> > we can add similar checks here.
+>
+> I am rebasing this patch over Rafael's patch [1] and wondering if I
+> should change anything here.
 
-So do you want me to take this one directly?
+I guess please repost when my patch makes it into linux-next.
+
+> [1] https://lore.kernel.org/lkml/38900622.ao2n2t5aPS@kreacher/
