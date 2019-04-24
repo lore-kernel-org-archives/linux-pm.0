@@ -1,7 +1,7 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v5 09/12] thermal: qoriq: Enable all sensors before registering them
-Date: Tue, 23 Apr 2019 23:48:27 -0700
-Message-ID: <20190424064830.18179-10-andrew.smirnov@gmail.com>
+Subject: [PATCH v5 06/12] thermal: qoriq: Pass data to qoriq_tmu_calibration() directly
+Date: Tue, 23 Apr 2019 23:48:24 -0700
+Message-ID: <20190424064830.18179-7-andrew.smirnov@gmail.com>
 References: <20190424064830.18179-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -9,17 +9,17 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190424064830.18179-1-andrew.smirnov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Chris Healy <cphealy@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Chris Healy <cphealy@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Tmu_get_temp will get called as a part of sensor registration via
-devm_thermal_zone_of_sensor_register(). To prevent it from retruning
-bogus data we need to enable sensor monitoring before that. Looking at
-the datasheet (i.MX8MQ RM) there doesn't seem to be any harm in
-enabling them all, so, for the sake of simplicity, change the code to
-do just that.
+We can simplify error cleanup code if instead of passing a "struct
+platform_device *" to qoriq_tmu_calibration() and deriving a bunch of
+pointers from it, we pass those pointers directly. This way we won't
+be force to call platform_set_drvdata() as early in qoriq_tmu_probe()
+and consequently would be able to drop the "err_iomap" error path.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Tested-by: Lucas Stach <l.stach@pengutronix.de>
 Cc: Chris Healy <cphealy@gmail.com>
 Cc: Lucas Stach <l.stach@pengutronix.de>
@@ -30,58 +30,85 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 9774323a17bf..d8d9f567a632 100644
+index 3419505a2f0a..0b6937bbc7d0 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -23,6 +23,7 @@
- #define TMR_DISABLE	0x0
- #define TMR_ME		0x80000000
- #define TMR_ALPF	0x0c000000
-+#define TMR_MSITE_ALL	GENMASK(15, 0)
+@@ -122,16 +122,16 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+ 	return 0;
+ }
  
- #define REGS_TMTMIR	0x008	/* Temperature measurement interval Register */
- #define TMTMIR_DEFAULT	0x0000000f
-@@ -61,28 +62,26 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
- static int qoriq_tmu_register_tmu_zone(struct device *dev,
- 				       struct qoriq_tmu_data *qdata)
+-static int qoriq_tmu_calibration(struct platform_device *pdev)
++static int qoriq_tmu_calibration(struct device *dev,
++				 struct qoriq_tmu_data *data)
  {
--	int id, sites = 0;
-+	int id, ret;
-+
-+	regmap_write(qdata->regmap, REGS_TMR,
-+		     TMR_MSITE_ALL | TMR_ME | TMR_ALPF);
+ 	int i, val, len;
+ 	u32 range[4];
+ 	const u32 *calibration;
+-	struct device_node *np = pdev->dev.of_node;
+-	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
++	struct device_node *np = dev->of_node;
  
- 	for (id = 0; id < SITES_MAX; id++) {
- 		struct thermal_zone_device *tzd;
- 
- 		tzd = devm_thermal_zone_of_sensor_register(dev, id,
- 							   qdata, &tmu_tz_ops);
--		if (IS_ERR(tzd)) {
--			if (PTR_ERR(tzd) == -ENODEV)
-+		ret = PTR_ERR_OR_ZERO(tzd);
-+		if (ret) {
-+			if (ret == -ENODEV)
- 				continue;
--			else
--				return PTR_ERR(tzd);
--		}
- 
--		sites |= 0x1 << (15 - id);
-+			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
-+			return ret;
-+		}
+ 	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
+-		dev_err(&pdev->dev, "missing calibration range.\n");
++		dev_err(dev, "missing calibration range.\n");
+ 		return -ENODEV;
  	}
  
--	/* Enable monitoring */
--	if (sites != 0)
--		regmap_write(qdata->regmap, REGS_TMR,
--			     sites | TMR_ME | TMR_ALPF);
+@@ -143,7 +143,7 @@ static int qoriq_tmu_calibration(struct platform_device *pdev)
+ 
+ 	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
+ 	if (calibration == NULL || len % 8) {
+-		dev_err(&pdev->dev, "invalid calibration data.\n");
++		dev_err(dev, "invalid calibration data.\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -181,20 +181,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	if (!data)
+ 		return -ENOMEM;
+ 
+-	platform_set_drvdata(pdev, data);
 -
+ 	data->little_endian = of_property_read_bool(np, "little-endian");
+ 
+ 	data->regs = of_iomap(np, 0);
+ 	if (!data->regs) {
+ 		dev_err(dev, "Failed to get memory region\n");
+-		ret = -ENODEV;
+-		goto err_iomap;
++		return -ENODEV;
+ 	}
+ 
+ 	qoriq_tmu_init_device(data);	/* TMU initialization */
+ 
+-	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
++	ret = qoriq_tmu_calibration(dev, data);	/* TMU calibration */
+ 	if (ret < 0)
+ 		goto err_tmu;
+ 
+@@ -202,17 +199,16 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	if (ret < 0) {
+ 		dev_err(dev, "Failed to register sensors\n");
+ 		ret = -ENODEV;
+-		goto err_iomap;
++		goto err_tmu;
+ 	}
+ 
++	platform_set_drvdata(pdev, data);
++
  	return 0;
+ 
+ err_tmu:
+ 	iounmap(data->regs);
+ 
+-err_iomap:
+-	platform_set_drvdata(pdev, NULL);
+-
+ 	return ret;
  }
  
 -- 
