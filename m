@@ -1,88 +1,110 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v1 1/1] thermal: rcar_gen3_thermal: request IRQ after
- device initialization
-Date: Wed, 24 Apr 2019 10:41:47 +0200
-Message-ID: <20190424084147.7ztvgxd7odaojqg6@verge.net.au>
-References: <20190411100352.15977-1-jiada_wang@mentor.com>
- <20190416174741.GA26470@vmlxhi-102.adit-jv.com>
- <20190423100107.p3p3jmvv6dph6uy6@verge.net.au>
- <20190423112408.GA3954@vmlxhi-102.adit-jv.com>
+From: Sibi Sankar <sibis@codeaurora.org>
+Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
+ bindings
+Date: Wed, 24 Apr 2019 14:14:29 +0530
+Message-ID: <662bcd9c-abed-23d1-865b-220adfd95ab7@codeaurora.org>
+References: <20190423132823.7915-1-georgi.djakov@linaro.org>
+ <20190423132823.7915-2-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190423112408.GA3954@vmlxhi-102.adit-jv.com>
+In-Reply-To: <20190423132823.7915-2-georgi.djakov@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eugeniu Rosca <erosca@de.adit-jv.com>
-Cc: Jiada Wang <jiada_wang@mentor.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, Geert Uytterhoeven <geert+renesas@glider.be>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Hien Dang <hien.dang.eb@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, Dien Pham <dien.pham.ry@renesas.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Biju Das <biju.das@bp.renesas.com>, "George G. Davis" <george_davis@mentor.com>, Joshua Frkuska <joshua_frkuska@mentor.com>, Eugeniu Rosca <roscaeugeniu@gmail>
+To: Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
+Cc: jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 23, 2019 at 01:24:08PM +0200, Eugeniu Rosca wrote:
-> Hi Simon,
-> 
-> On Tue, Apr 23, 2019 at 12:01:07PM +0200, Simon Horman wrote:
-> > On Tue, Apr 16, 2019 at 07:48:30PM +0200, Eugeniu Rosca wrote:
-> > > Hi Jiada,
-> > > 
-> > > Adding below people, since they've made recent contributions to the
-> > > driver and might be interested in your patch:
-> > > 
-> > > git log master --since="1 year" -- drivers/thermal/rcar_gen3_thermal.c \
-> > >     | grep -o "\-by:.*" | sed 's/\-by: //' | sort | uniq -c | sort -rn
-> > >       7 Eduardo Valentin <edubezval@gmail.com>
-> > >       6 Simon Horman <horms+renesas@verge.net.au>
-> > >       5 Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> > >       2 Geert Uytterhoeven <geert+renesas@glider.be>
-> > >       1 Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-> > >       1 Marek Vasut <marek.vasut+renesas@gmail.com>
-> > >       1 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> > >       1 Hien Dang <hien.dang.eb@renesas.com>
-> > >       1 Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-> > >       1 Dien Pham <dien.pham.ry@renesas.com>
-> > >       1 Daniel Lezcano <daniel.lezcano@linaro.org>
-> > >       1 Biju Das <biju.das@bp.renesas.com>
-> > > 
-> > > I confirm that loading and unloading the rcar3 thermal driver in a
-> > > loop produces soft lockup using v5.1-rc5-10-g618d919cae2f on
-> > > H3-ES2.0-Salvator-X. 
-> > > 
-> > > Full log and .config can be found here:
-> > > https://gist.github.com/erosca/1f76b6dd897cdc39581fca475155e363
-> > > 
-> > > I post an excerpt from the above [1] (why not including it in the
-> > > description?). Also, why not rephrasing the commit summary line in such
-> > > a way that everybody understands this patch fixes a severe issue, e.g.
-> > > "thermal: rcar_gen3_thermal: Fix soft lockup on probe" ?
-> > > 
-> > > BTW, with this patch applied I left the thermal driver being
-> > > loaded/unloaded on the target for over one hour w/o seeing the issue
-> > > reproduced. So, while there might be slight variations in how the final
-> > > solution looks like, I think the patch already deserves a:
-> > > 
-> > > Tested-by: Eugeniu Rosca <erosca@de.adit-jv.com>
-> > > 
-> > > [1] Soft lockup reproduced with v5.1-rc5-10-g618d919cae2f
-> > 
-> > Thanks,
-> > 
-> > Unfortunately I do not see the patch in my inbox.
-> > Would you care to repost it including the following recipients.
-> > 
-> > linux-pm@vger.kernel.org
-> > Zhang Rui <rui.zhang@intel.com>
-> > Eduardo Valentin <edubezval@gmail.com>
-> > linux-renesas-soc@vger.kernel.org
-> > Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> > 
-> > Feel free to include the suggestions made by Eugeniu above and post a v2.
-> 
-> There is a v2 pushed recently:
-> https://patchwork.kernel.org/cover/10911999/
-> ("[v2,0/2] thermal: rcar_gen3_thermal: fix IRQ issues").
-> 
-> It seems to include both the preparatory work suggested by Daniel
-> in https://patchwork.kernel.org/patch/10895557/#22592583,
-> as well as the soft lockup fix itself.
+Hey Georgi,
 
-Thanks, I see v2 now.
+On 4/23/19 6:58 PM, Georgi Djakov wrote:
+> In addition to frequency and voltage, some devices may have bandwidth
+> requirements for their interconnect throughput - for example a CPU
+> or GPU may also need to increase or decrease their bandwidth to DDR
+> memory based on the current operating performance point.
+> 
+> Extend the OPP tables with additional property to describe the bandwidth
+> needs of a device. The average and peak bandwidth values depend on the
+> hardware and its properties.
+> 
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>   Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++++++++
+>   .../devicetree/bindings/property-units.txt    |  4 ++
+>   2 files changed, 42 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index 76b6c79604a5..830f0206aea7 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -132,6 +132,9 @@ Optional properties:
+>   - opp-level: A value representing the performance level of the device,
+>     expressed as a 32-bit integer.
+>   
+> +- bandwidth-MBps: The interconnect bandwidth is specified with an array containing
+> +  the two integer values for average and peak bandwidth in megabytes per second.
+> +
+>   - clock-latency-ns: Specifies the maximum possible transition latency (in
+>     nanoseconds) for switching to this OPP from any other OPP.
+>   
+> @@ -546,3 +549,38 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+>   		};
+>   	};
+>   };
+> +
+> +Example 7: bandwidth-MBps:
+> +Average and peak bandwidth values for the interconnects between CPU and DDR
+> +memory and also between CPU and L3 are defined per each OPP. Bandwidth of both
+> +interconnects is scaled together with CPU frequency.
+> +
+> +/ {
+> +	cpus {
+> +		CPU0: cpu@0 {
+> +			compatible = "arm,cortex-a53", "arm,armv8";
+> +			...
+> +			operating-points-v2 = <&cpu_opp_table>;
+> +			/* path between CPU and DDR memory and CPU and L3 */
+> +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
+> +					<&noc MASTER_CPU &noc SLAVE_L3>;
+> +		};
+> +	};
+> +
+> +	cpu_opp_table: cpu_opp_table {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp-200000000 {
+> +			opp-hz = /bits/ 64 <200000000>;
+> +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
+> +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
+> +			bandwidth-MBps = <457 1525>, <914 3050>;
+> +		};
+> +		opp-400000000 {
+> +			opp-hz = /bits/ 64 <400000000>;
+> +			/* CPU<->DDR bandwidth: 915 MB/s average, 3051 MB/s peak */
+> +			 * CPU<->L3 bandwidth: 1828 MB/s average, 6102 MB/s peak */
+> +			bandwidth-MBps = <915 3051>, <1828 6102>;
+> +		};
+> +	};
+
+nit: missed closing braces
+
+> diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
+> index bfd33734faca..9c3dbefcdae8 100644
+> --- a/Documentation/devicetree/bindings/property-units.txt
+> +++ b/Documentation/devicetree/bindings/property-units.txt
+> @@ -41,3 +41,7 @@ Temperature
+>   Pressure
+>   ----------------------------------------
+>   -kpascal	: kiloPascal
+> +
+> +Throughput
+> +----------------------------------------
+> +-MBps		: megabytes per second
+> 
+
+-- 
+Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
