@@ -1,190 +1,128 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/7] thermal/drivers/core: Remove the module Kconfig's
- option
-Date: Wed, 24 Apr 2019 21:02:06 +0800
-Message-ID: <1556110926.2390.13.camel@intel.com>
-References: <20190402161256.11044-1-daniel.lezcano@linaro.org>
-         <20190423155208.GC16014@localhost.localdomain>
+From: Benjamin GAIGNARD <benjamin.gaignard@st.com>
+Subject: Re: [PATCH 1/5] of/device: Add of_ functions for
+ device_link_{add,remove}
+Date: Wed, 24 Apr 2019 13:39:23 +0000
+Message-ID: <a762a6b6-a039-3b80-e1dc-edbc2ebcde7c@st.com>
+References: <20190424101913.1534-1-benjamin.gaignard@st.com>
+ <20190424101913.1534-2-benjamin.gaignard@st.com>
+ <d038f078-08dc-41ff-edc2-12f37d88a8a3@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423155208.GC16014@localhost.localdomain>
+In-Reply-To: <d038f078-08dc-41ff-edc2-12f37d88a8a3@intel.com>
+Content-Language: en-US
+Content-ID: <EB55C97BB3984545BA608CBDC723BAC4@st.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>, Russell King <linux@armlinux.org.uk>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Guan Xuetao <gxt@pku.edu.cn>, Andrew Morton <akpm@linux-foundation.org>, Alexey Brodkin <alexey.brodkin@synopsys.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Arnd Bergmann <arnd@arndb.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Daniel Mack <daniel@zonque.org>, "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>, "open list:MIPS" <linux-mips@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "agx@sigxcpu.org" <agx@sigxcpu.org>, Yannick FERTRE <yannick.fertre@st.com>
+Cc: "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "hadess@hadess.net" <hadess@hadess.net>, "frowand.list@gmail.com" <frowand.list@gmail.com>, "m.felsch@pengutronix.de" <m.felsch@pengutronix.de>, "arnd@arndb.de" <arnd@arndb.de>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>, "broonie@kernel.org" <broonie@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 二, 2019-04-23 at 08:52 -0700, Eduardo Valentin wrote:
-> Hello,
-> 
-> On Tue, Apr 02, 2019 at 06:12:44PM +0200, Daniel Lezcano wrote:
-> > 
-> > The module support for the thermal subsystem makes little sense:
-> >  - some subsystems relying on it are not modules, thus forcing the
-> >    framework to be compiled in
-> >  - it is compiled in for almost every configs, the remaining ones
-> >    are a few platforms where I don't see why we can not switch the
-> > thermal
-> >    to 'y'. The drivers can stay in tristate.
-> >  - platforms need the thermal to be ready as soon as possible at
-> > boot time
-> >    in order to mitigate
-> > 
-> > Usually the subsystems framework are compiled-in and the plugs are
-> > as module.
-> > 
-> > Remove the module option. The removal of the module related dead
-> > code will
-> > come after this patch gets in or is acked.
-> 
-> I remember some buzilla entry around this some time back.
-> 
-> Rui, do you remember why you made this to be module?
-> 
-> I dont have strong opinion here, but I would like to see
-> a better description why we are going this direction rather
-> than "most people dont use it as module". Was there any particular
-> specific technical motivation?
-> 
-I checked the change log, it seems that we make CONFIG_THERMAL from
-bool to tristate long time ago.
-
-commit 63c4ec905d63834a97ec7dbbf0a2ec89ef5872be
-Author:     Zhang Rui <rui.zhang@intel.com>
-AuthorDate: Mon Apr 21 16:07:13 2008 +0800
-Commit:     Len Brown <len.brown@intel.com>
-CommitDate: Tue Apr 29 02:44:00 2008 -0400
-
-    thermal: add the support for building the generic thermal as a
-module
-    
-    Build the generic thermal driver as module "thermal_sys".
-    
-    Make ACPI thermal, video, processor and fan SELECT the generic
-    thermal driver, as these drivers rely on it to build the sysfs I/F.
-    
-    Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-    Acked-by: Jean Delvare <khali@linux-fr.org>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-But the things described in the changelog does not seem to be a solid
-reason why we need thermal to be a module.
-
-Anyway, let's try bool instead of tristate and see if everything still
-works well.
-
-thanks,
-rui
-> 
-> > 
-> > 
-> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Acked-by: Guenter Roeck <groeck@chromium.org>
-> > For mini2440:
-> > Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > ---
-> >  arch/arm/configs/mini2440_defconfig        | 2 +-
-> >  arch/arm/configs/pxa_defconfig             | 2 +-
-> >  arch/mips/configs/ip22_defconfig           | 2 +-
-> >  arch/mips/configs/ip27_defconfig           | 2 +-
-> >  arch/unicore32/configs/unicore32_defconfig | 2 +-
-> >  drivers/thermal/Kconfig                    | 4 ++--
-> >  6 files changed, 7 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/arch/arm/configs/mini2440_defconfig
-> > b/arch/arm/configs/mini2440_defconfig
-> > index d95a8059d30b..0cf1c120c4bb 100644
-> > --- a/arch/arm/configs/mini2440_defconfig
-> > +++ b/arch/arm/configs/mini2440_defconfig
-> > @@ -152,7 +152,7 @@ CONFIG_SPI_S3C24XX=y
-> >  CONFIG_SPI_SPIDEV=y
-> >  CONFIG_GPIO_SYSFS=y
-> >  CONFIG_SENSORS_LM75=y
-> > -CONFIG_THERMAL=m
-> > +CONFIG_THERMAL=y
-> >  CONFIG_WATCHDOG=y
-> >  CONFIG_S3C2410_WATCHDOG=y
-> >  CONFIG_FB=y
-> > diff --git a/arch/arm/configs/pxa_defconfig
-> > b/arch/arm/configs/pxa_defconfig
-> > index d4654755b09c..d4f9dda3a52f 100644
-> > --- a/arch/arm/configs/pxa_defconfig
-> > +++ b/arch/arm/configs/pxa_defconfig
-> > @@ -387,7 +387,7 @@ CONFIG_SENSORS_LM75=m
-> >  CONFIG_SENSORS_LM90=m
-> >  CONFIG_SENSORS_LM95245=m
-> >  CONFIG_SENSORS_NTC_THERMISTOR=m
-> > -CONFIG_THERMAL=m
-> > +CONFIG_THERMAL=y
-> >  CONFIG_WATCHDOG=y
-> >  CONFIG_XILINX_WATCHDOG=m
-> >  CONFIG_SA1100_WATCHDOG=m
-> > diff --git a/arch/mips/configs/ip22_defconfig
-> > b/arch/mips/configs/ip22_defconfig
-> > index ff40fbc2f439..21a1168ae301 100644
-> > --- a/arch/mips/configs/ip22_defconfig
-> > +++ b/arch/mips/configs/ip22_defconfig
-> > @@ -228,7 +228,7 @@ CONFIG_SERIAL_IP22_ZILOG=m
-> >  # CONFIG_HW_RANDOM is not set
-> >  CONFIG_RAW_DRIVER=m
-> >  # CONFIG_HWMON is not set
-> > -CONFIG_THERMAL=m
-> > +CONFIG_THERMAL=y
-> >  CONFIG_WATCHDOG=y
-> >  CONFIG_INDYDOG=m
-> >  # CONFIG_VGA_CONSOLE is not set
-> > diff --git a/arch/mips/configs/ip27_defconfig
-> > b/arch/mips/configs/ip27_defconfig
-> > index 81c47e18131b..54db5dedf776 100644
-> > --- a/arch/mips/configs/ip27_defconfig
-> > +++ b/arch/mips/configs/ip27_defconfig
-> > @@ -271,7 +271,7 @@ CONFIG_I2C_PARPORT_LIGHT=m
-> >  CONFIG_I2C_TAOS_EVM=m
-> >  CONFIG_I2C_STUB=m
-> >  # CONFIG_HWMON is not set
-> > -CONFIG_THERMAL=m
-> > +CONFIG_THERMAL=y
-> >  CONFIG_MFD_PCF50633=m
-> >  CONFIG_PCF50633_ADC=m
-> >  CONFIG_PCF50633_GPIO=m
-> > diff --git a/arch/unicore32/configs/unicore32_defconfig
-> > b/arch/unicore32/configs/unicore32_defconfig
-> > index aebd01fc28e5..360cc9abcdb0 100644
-> > --- a/arch/unicore32/configs/unicore32_defconfig
-> > +++ b/arch/unicore32/configs/unicore32_defconfig
-> > @@ -119,7 +119,7 @@ CONFIG_I2C_PUV3=y
-> >  #	Hardware Monitoring support
-> >  #CONFIG_SENSORS_LM75=m
-> >  #	Generic Thermal sysfs driver
-> > -#CONFIG_THERMAL=m
-> > +#CONFIG_THERMAL=y
-> >  #CONFIG_THERMAL_HWMON=y
-> >  
-> >  #	Multimedia support
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index 653aa27a25a4..ccf5b9408d7a 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -3,7 +3,7 @@
-> >  #
-> >  
-> >  menuconfig THERMAL
-> > -	tristate "Generic Thermal sysfs driver"
-> > +	bool "Generic Thermal sysfs driver"
-> >  	help
-> >  	  Generic Thermal Sysfs driver offers a generic mechanism
-> > for
-> >  	  thermal management. Usually it's made up of one or more
-> > thermal
-> > @@ -11,7 +11,7 @@ menuconfig THERMAL
-> >  	  Each thermal zone contains its own temperature, trip
-> > points,
-> >  	  cooling devices.
-> >  	  All platforms with ACPI thermal support can use this
-> > driver.
-> > -	  If you want this support, you should say Y or M here.
-> > +	  If you want this support, you should say Y here.
-> >  
-> >  if THERMAL
-> >  
+DQpPbiA0LzI0LzE5IDM6MDYgUE0sIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOg0KPiBPbiA0LzI0
+LzIwMTkgMTI6MTkgUE0sIEJlbmphbWluIEdhaWduYXJkIHdyb3RlOg0KPj4gQWxsb3dzIHRvIGNy
+ZWF0ZSBhbmQgcmVtb3ZlIGxpbmtzIGJldHdlZW4gY29uc3VtZXIgYW5kIHN1cHBsaWVycyBmcm9t
+DQo+PiBkZXZpY2UtdHJlZSBkYXRhLiBVc2UgJ2xpbmtzLWFkZCcgcHJvcGVydHkgZnJvbSBjb25z
+dW1lciBub2RlIHRvIHNldHVwDQo+PiBhIGxpbmsgd2l0aCBhIGxpc3Qgb2Ygc3VwcGxpZXJzLg0K
+Pg0KPiBPbmUgaW1tZWRpYXRlIHF1ZXN0aW9uIGFib3V0IHRoaXMgb25lIGlzIHdoeSBzdGF0ZWxl
+c3MgbGlua3MgYXJlIA0KPiBiZXR0ZXIgaGVyZT8NClRoZXkgYXJlbid0IGJldHRlciwgaXQgaXMg
+anVzdCBiZWNhdXNlIEkgd2FudGVkIHRvIGtlZXAgb25lIG9mXyBmdW5jdGlvbiANCmZvciBlYWNo
+IHJlbGF0ZWQgZGV2aWNlX2xpbmtfKiBmdW5jdGlvbnMuDQo+DQo+PiBDb25zdW1lcnMgd2lsbCBi
+ZSBzdXNwZW5kIGJlZm9yZSB0aGVpciBzdXBwbGllcnMgYW5kIHJlc3VtZSBhZnRlciB0aGVtLg0K
+Pj4NCj4+IEFkZCBkZXZtX29mX2RldmljZV9saW5rc19hZGQoKSB0byBhdXRvbWF0aWNhbGx5IHJl
+bW92ZSB0aGUgbGlua3MNCj4+IHdoZW4gdGhlIGRldmljZSBpcyB1bmJvdW5kIGZyb20gdGhlIGJ1
+cy4NCj4NCj4gQW5kIHRoaXMgbWlnaHQgbm90IGJlIG5lY2Vzc2FyeSBldmVuIHdpdGggbWFuYWdl
+ZCBsaW5rcy4NCg0KSSBndWVzcyBJIGNvdWxkIHVzZSBETF9GTEFHX1BNX1JVTlRJTUUgYW5kIERM
+X0ZMQUdfQVVUT1JFTU9WRV9DT05TVU1FUiANCmZsYWdzIGFuZCBqdXN0IGtlZXANCg0Kb2ZfZGV2
+aWNlX2xpbmtzX2FkZCgpIGJ1dCB0aGUgbmFtaW5nIHdpbGwgbm90IGJlIGV4cGxpY2l0Lg0KDQo+
+DQo+PiBTaWduZWQtb2ZmLWJ5OiBCZW5qYW1pbiBHYWlnbmFyZCA8YmVuamFtaW4uZ2FpZ25hcmRA
+c3QuY29tPg0KPj4gLS0tDQo+PiDCoCBkcml2ZXJzL29mL2RldmljZS5jwqDCoMKgwqDCoMKgIHwg
+MTAzIA0KPj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0K
+Pj4gwqAgaW5jbHVkZS9saW51eC9vZl9kZXZpY2UuaCB8wqAgMjAgKysrKysrKysrDQo+PiDCoCAy
+IGZpbGVzIGNoYW5nZWQsIDEyMyBpbnNlcnRpb25zKCspDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvb2YvZGV2aWNlLmMgYi9kcml2ZXJzL29mL2RldmljZS5jDQo+PiBpbmRleCAzNzE3ZjJh
+MjBkMGQuLjAxMWJhOWJmNzY0MiAxMDA2NDQNCj4+IC0tLSBhL2RyaXZlcnMvb2YvZGV2aWNlLmMN
+Cj4+ICsrKyBiL2RyaXZlcnMvb2YvZGV2aWNlLmMNCj4+IEBAIC0zMzYsMyArMzM2LDEwNiBAQCBp
+bnQgb2ZfZGV2aWNlX3VldmVudF9tb2RhbGlhcyhzdHJ1Y3QgZGV2aWNlIA0KPj4gKmRldiwgc3Ry
+dWN0IGtvYmpfdWV2ZW50X2VudiAqZW52KQ0KPj4gwqDCoMKgwqDCoCByZXR1cm4gMDsNCj4+IMKg
+IH0NCj4+IMKgIEVYUE9SVF9TWU1CT0xfR1BMKG9mX2RldmljZV91ZXZlbnRfbW9kYWxpYXMpOw0K
+Pj4gKw0KPj4gKy8qKg0KPj4gKyAqIG9mX2RldmljZV9saW5rc19hZGQgLSBDcmVhdGUgbGlua3Mg
+YmV0d2VlbiBjb25zdW1lciBhbmQgc3VwcGxpZXJzIA0KPj4gZnJvbQ0KPj4gKyAqIGRldmljZSB0
+cmVlIGRhdGENCj4+ICsgKg0KPj4gKyAqIEBjb25zdW1lcjogY29uc3VtZXIgZGV2aWNlDQo+PiAr
+ICoNCj4+ICsgKiBSZXR1cm5zIDAgb24gc3VjY2VzcywgPCAwIG9uIGZhaWx1cmUuDQo+PiArICov
+DQo+PiAraW50IG9mX2RldmljZV9saW5rc19hZGQoc3RydWN0IGRldmljZSAqY29uc3VtZXIpDQo+
+PiArew0KPj4gK8KgwqDCoCBzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wOw0KPj4gK8KgwqDCoCBzdHJ1
+Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2Ow0KPj4gK8KgwqDCoCBpbnQgaSA9IDA7DQo+PiArDQo+
+PiArwqDCoMKgIG5wID0gb2ZfcGFyc2VfcGhhbmRsZShjb25zdW1lci0+b2Zfbm9kZSwgImxpbmtz
+LWFkZCIsIGkrKyk7DQo+PiArwqDCoMKgIHdoaWxlIChucCkgew0KPj4gK8KgwqDCoMKgwqDCoMKg
+IHBkZXYgPSBvZl9maW5kX2RldmljZV9ieV9ub2RlKG5wKTsNCj4+ICvCoMKgwqDCoMKgwqDCoCBv
+Zl9ub2RlX3B1dChucCk7DQo+PiArwqDCoMKgwqDCoMKgwqAgaWYgKCFwZGV2KQ0KPj4gK8KgwqDC
+oMKgwqDCoMKgwqDCoMKgwqAgcmV0dXJuIC1FSU5WQUw7DQo+PiArDQo+PiArwqDCoMKgwqDCoMKg
+wqAgZGV2aWNlX2xpbmtfYWRkKGNvbnN1bWVyLCAmcGRldi0+ZGV2LCBETF9GTEFHX1NUQVRFTEVT
+Uyk7DQo+PiArwqDCoMKgwqDCoMKgwqAgcGxhdGZvcm1fZGV2aWNlX3B1dChwZGV2KTsNCj4+ICsN
+Cj4+ICvCoMKgwqDCoMKgwqDCoCBucCA9IG9mX3BhcnNlX3BoYW5kbGUoY29uc3VtZXItPm9mX25v
+ZGUsICJsaW5rcy1hZGQiLCBpKyspOw0KPj4gK8KgwqDCoCB9DQo+PiArDQo+PiArwqDCoMKgIHJl
+dHVybiAwOw0KPj4gK30NCj4+ICtFWFBPUlRfU1lNQk9MX0dQTChvZl9kZXZpY2VfbGlua3NfYWRk
+KTsNCj4+ICsNCj4+ICsvKioNCj4+ICsgKiBvZl9kZXZpY2VfbGlua3NfcmVtb3ZlIC0gUmVtb3Zl
+IGxpbmtzIGJldHdlZW4gY29uc3VtZXIgYW5kIA0KPj4gc3VwcGxpZXJzIGZyb20NCj4+ICsgKiBk
+ZXZpY2UgdHJlZSBkYXRhDQo+PiArICoNCj4+ICsgKiBAY29uc3VtZXI6IGNvbnN1bWVyIGRldmlj
+ZQ0KPj4gKyAqDQo+PiArICogUmV0dXJucyAwIG9uIHN1Y2Nlc3MsIDwgMCBvbiBmYWlsdXJlLg0K
+Pj4gKyAqLw0KPj4gK2ludCBvZl9kZXZpY2VfbGlua3NfcmVtb3ZlKHN0cnVjdCBkZXZpY2UgKmNv
+bnN1bWVyKQ0KPj4gK3sNCj4+ICvCoMKgwqAgc3RydWN0IGRldmljZV9ub2RlICpucDsNCj4+ICvC
+oMKgwqAgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldjsNCj4+ICvCoMKgwqAgaW50IGkgPSAw
+Ow0KPj4gKw0KPj4gK8KgwqDCoCBucCA9IG9mX3BhcnNlX3BoYW5kbGUoY29uc3VtZXItPm9mX25v
+ZGUsICJsaW5rcy1hZGQiLCBpKyspOw0KPj4gK8KgwqDCoCB3aGlsZSAobnApIHsNCj4+ICvCoMKg
+wqDCoMKgwqDCoCBwZGV2ID0gb2ZfZmluZF9kZXZpY2VfYnlfbm9kZShucCk7DQo+PiArwqDCoMKg
+wqDCoMKgwqAgb2Zfbm9kZV9wdXQobnApOw0KPj4gK8KgwqDCoMKgwqDCoMKgIGlmICghcGRldikN
+Cj4+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHJldHVybiAtRUlOVkFMOw0KPj4gKw0KPj4gK8Kg
+wqDCoMKgwqDCoMKgIGRldmljZV9saW5rX3JlbW92ZShjb25zdW1lciwgJnBkZXYtPmRldik7DQo+
+PiArwqDCoMKgwqDCoMKgwqAgcGxhdGZvcm1fZGV2aWNlX3B1dChwZGV2KTsNCj4+ICsNCj4+ICvC
+oMKgwqDCoMKgwqDCoCBucCA9IG9mX3BhcnNlX3BoYW5kbGUoY29uc3VtZXItPm9mX25vZGUsICJs
+aW5rcy1hZGQiLCBpKyspOw0KPj4gK8KgwqDCoCB9DQo+PiArDQo+PiArwqDCoMKgIHJldHVybiAw
+Ow0KPj4gK30NCj4+ICtFWFBPUlRfU1lNQk9MX0dQTChvZl9kZXZpY2VfbGlua3NfcmVtb3ZlKTsN
+Cj4+ICsNCj4+ICtzdGF0aWMgdm9pZCBkZXZtX29mX2RldmljZV9saW5rc19yZW1vdmUoc3RydWN0
+IGRldmljZSAqZGV2LCB2b2lkICpyZXMpDQo+PiArew0KPj4gK8KgwqDCoCBvZl9kZXZpY2VfbGlu
+a3NfcmVtb3ZlKCooc3RydWN0IGRldmljZSAqKilyZXMpOw0KPj4gK30NCj4+ICsNCj4+ICsvKioN
+Cj4+ICsgKiBkZXZtX29mX2RldmljZV9saW5rc19hZGQgLSBDcmVhdGUgbGlua3MgYmV0d2VlbiBj
+b25zdW1lciBhbmQgDQo+PiBzdXBwbGllcnMNCj4+ICsgKiBmcm9tIGRldmljZSB0cmVlIGRhdGEN
+Cj4+ICsgKg0KPj4gKyAqIEBjb25zdW1lcjogY29uc3VtZXIgZGV2aWNlDQo+PiArICoNCj4+ICsg
+KiBSZXR1cm5zIDAgb24gc3VjY2VzcywgPCAwIG9uIGZhaWx1cmUuDQo+PiArICoNCj4+ICsgKiBT
+aW1pbGFyIHRvIG9mX2RldmljZV9saW5rc19hZGQoKSwgYnV0IHdpbGwgYXV0b21hdGljYWxseSBj
+YWxsDQo+PiArICogb2ZfZGV2aWNlX2xpbmtzX3JlbW92ZSgpIHdoZW4gdGhlIGRldmljZSBpcyB1
+bmJvdW5kIGZyb20gdGhlIGJ1cy4NCj4+ICsgKi8NCj4+ICtpbnQgZGV2bV9vZl9kZXZpY2VfbGlu
+a3NfYWRkKHN0cnVjdCBkZXZpY2UgKmNvbnN1bWVyKQ0KPj4gK3sNCj4+ICvCoMKgwqDCoMKgwqDC
+oCBzdHJ1Y3QgZGV2aWNlICoqcHRyOw0KPj4gK8KgwqDCoCBpbnQgcmV0Ow0KPj4gKw0KPj4gK8Kg
+wqDCoCBpZiAoIWNvbnN1bWVyKQ0KPj4gK8KgwqDCoMKgwqDCoMKgIHJldHVybiAtRUlOVkFMOw0K
+Pj4gKw0KPj4gK8KgwqDCoCBwdHIgPSBkZXZyZXNfYWxsb2MoZGV2bV9vZl9kZXZpY2VfbGlua3Nf
+cmVtb3ZlLA0KPj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgc2l6ZW9mKCpwdHIpLCBH
+RlBfS0VSTkVMKTsNCj4+ICvCoMKgwqAgaWYgKCFwdHIpDQo+PiArwqDCoMKgwqDCoMKgwqAgcmV0
+dXJuIC1FTk9NRU07DQo+PiArDQo+PiArwqDCoMKgIHJldCA9IG9mX2RldmljZV9saW5rc19hZGQo
+Y29uc3VtZXIpOw0KPj4gK8KgwqDCoCBpZiAocmV0IDwgMCkgew0KPj4gK8KgwqDCoMKgwqDCoMKg
+IGRldnJlc19mcmVlKHB0cik7DQo+PiArwqDCoMKgIH0gZWxzZSB7DQo+PiArwqDCoMKgwqDCoMKg
+wqAgKnB0ciA9IGNvbnN1bWVyOw0KPj4gK8KgwqDCoMKgwqDCoMKgIGRldnJlc19hZGQoY29uc3Vt
+ZXIsIHB0cik7DQo+PiArwqDCoMKgIH0NCj4+ICsNCj4+ICvCoMKgwqAgcmV0dXJuIHJldDsNCj4+
+ICt9DQo+PiArRVhQT1JUX1NZTUJPTF9HUEwoZGV2bV9vZl9kZXZpY2VfbGlua3NfYWRkKTsNCj4+
+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L29mX2RldmljZS5oIGIvaW5jbHVkZS9saW51eC9v
+Zl9kZXZpY2UuaA0KPj4gaW5kZXggOGQzMWUzOWRkNTY0Li5hZDAxZGI2ODI4ZTggMTAwNjQ0DQo+
+PiAtLS0gYS9pbmNsdWRlL2xpbnV4L29mX2RldmljZS5oDQo+PiArKysgYi9pbmNsdWRlL2xpbnV4
+L29mX2RldmljZS5oDQo+PiBAQCAtNDEsNiArNDEsMTEgQEAgZXh0ZXJuIGludCBvZl9kZXZpY2Vf
+cmVxdWVzdF9tb2R1bGUoc3RydWN0IGRldmljZSANCj4+ICpkZXYpOw0KPj4gwqAgZXh0ZXJuIHZv
+aWQgb2ZfZGV2aWNlX3VldmVudChzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCANCj4+IGtvYmpf
+dWV2ZW50X2VudiAqZW52KTsNCj4+IMKgIGV4dGVybiBpbnQgb2ZfZGV2aWNlX3VldmVudF9tb2Rh
+bGlhcyhzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCANCj4+IGtvYmpfdWV2ZW50X2VudiAqZW52
+KTsNCj4+IMKgICsNCj4+ICtleHRlcm4gaW50IG9mX2RldmljZV9saW5rc19hZGQoc3RydWN0IGRl
+dmljZSAqY29uc3VtZXIpOw0KPj4gK2V4dGVybiBpbnQgb2ZfZGV2aWNlX2xpbmtzX3JlbW92ZShz
+dHJ1Y3QgZGV2aWNlICpjb25zdW1lcik7DQo+PiArZXh0ZXJuIGludCBkZXZtX29mX2RldmljZV9s
+aW5rc19hZGQoc3RydWN0IGRldmljZSAqY29uc3VtZXIpOw0KPj4gKw0KPj4gwqAgc3RhdGljIGlu
+bGluZSB2b2lkIG9mX2RldmljZV9ub2RlX3B1dChzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+PiDCoCB7
+DQo+PiDCoMKgwqDCoMKgIG9mX25vZGVfcHV0KGRldi0+b2Zfbm9kZSk7DQo+PiBAQCAtOTEsNiAr
+OTYsMjEgQEAgc3RhdGljIGlubGluZSBpbnQgb2ZfZGV2aWNlX3VldmVudF9tb2RhbGlhcyhzdHJ1
+Y3QgDQo+PiBkZXZpY2UgKmRldiwNCj4+IMKgwqDCoMKgwqAgcmV0dXJuIC1FTk9ERVY7DQo+PiDC
+oCB9DQo+PiDCoCArc3RhdGljIGludCBvZl9kZXZpY2VfbGlua3NfYWRkKHN0cnVjdCBkZXZpY2Ug
+KmNvbnN1bWVyKQ0KPj4gK3sNCj4+ICvCoMKgwqAgcmV0dXJuIDA7DQo+PiArfQ0KPj4gKw0KPj4g
+K3N0YXRpYyBpbnQgb2ZfZGV2aWNlX2xpbmtzX3JlbW92ZShzdHJ1Y3QgZGV2aWNlICpjb25zdW1l
+cikNCj4+ICt7DQo+PiArwqDCoMKgIHJldHVybiAwOw0KPj4gK30NCj4+ICsNCj4+ICtzdGF0aWMg
+aW50IGRldm1fb2ZfZGV2aWNlX2xpbmtzX2FkZChzdHJ1Y3QgZGV2aWNlICpjb25zdW1lcikNCj4+
+ICt7DQo+PiArwqDCoMKgIHJldHVybiAwOw0KPj4gK30NCj4+ICsNCj4+IMKgIHN0YXRpYyBpbmxp
+bmUgdm9pZCBvZl9kZXZpY2Vfbm9kZV9wdXQoc3RydWN0IGRldmljZSAqZGV2KSB7IH0NCj4+IMKg
+IMKgIHN0YXRpYyBpbmxpbmUgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCAqX19vZl9tYXRjaF9k
+ZXZpY2UoDQo+DQo+
