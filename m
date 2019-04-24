@@ -2,129 +2,144 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EBF8C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 20:09:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7FE2C282CE
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 20:21:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 01698204FD
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 20:09:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="r5Afy20U"
+	by mail.kernel.org (Postfix) with ESMTP id 8D6CD2175B
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 20:21:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730406AbfDXUJP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 16:09:15 -0400
-Received: from mail-qt1-f196.google.com ([209.85.160.196]:46469 "EHLO
-        mail-qt1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730519AbfDXUJP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 16:09:15 -0400
-Received: by mail-qt1-f196.google.com with SMTP id w26so15065716qto.13
-        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 13:09:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=oDZGP5KSclojoZTOU/iD4xGm6mbSVyYcUR1EAbRdEI8=;
-        b=r5Afy20Urdin9VXbj3H+4mtGg6FEzaln3tCOiG50eninnjIxjTugb4EY0oHKrLzCFN
-         Iq0OBoqbVHmO8kU8Nc8dM5t0a4fSS9DKciox290t+0zqC0g6XvyNiM/dEg3Ei67XA+tr
-         R0+vQJ4mn2VGOPN6sDQCg7epS6W3Q3nlcJy9j2IWF7MirHHpWJflLRQYvgibhfErXSKy
-         zYtcFSBSmY1PJdcJL4V/otBnXikjpT0SPBJTcbDwoGH9P63AGGKPajTYZ09dBkWICmdI
-         QvtYRb7E+nfcdewP9NN1Q1kuYiOUMrmUkwmxKyZ+HxpAARZLrwWryReMUuSJTQE9FY6c
-         7OyQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=oDZGP5KSclojoZTOU/iD4xGm6mbSVyYcUR1EAbRdEI8=;
-        b=SRJYEPeHOKJgTNR7/6r+t6uR9g+ord/Gs3qLJEp7GOuVtHwk4KUZsrtV4ptdadykPS
-         pcti+YKVkoriANxHatSrfQQRsYME6jxh+5kx9ZG7P3SLKhKGAKn6gyoNK7CmxtbMRpRs
-         bYGFWQ+1GmUs7FmOsoKZtVym3TmJuHowtBqzB4lfBFzjEEfS4b1oS9EJk7ZE+67gP+Hm
-         FbK58fPKQPUzY3Gxq47Ksi9x7JTjLizqqHIA6FnD0oAaEa5FXg1BPtUN6fIEG1J/ysNz
-         JZ6rc9Xpg4/x1NG/cUaZ8u5pxb0Mn0Id5mn0Z4KrWyjRIwnTZAI27TtOhJvAPrecOJHA
-         MJ8g==
-X-Gm-Message-State: APjAAAX44EoNJUmGBFOiS/DcXOy9odGlSZeF50qujlpVzjbY35KW2Q5Z
-        CzJ67mhsXiToGU3kHGzyvwfas3ENLAApHy//9h7sWcCK
-X-Google-Smtp-Source: APXvYqwtCz/UtyOxhlDW7Kc69rnGno7aGfpsykvfWvfmhvDYfW7ZM+Zu+7z7g7jGqmgyQGF04OfL2JgiwOPb6sQ4tGI=
-X-Received: by 2002:a0c:b0ef:: with SMTP id p44mr27694712qvc.127.1556136554103;
- Wed, 24 Apr 2019 13:09:14 -0700 (PDT)
+        id S1730578AbfDXUVX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 16:21:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59014 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730569AbfDXUVW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 16:21:22 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id 090EF806AA; Wed, 24 Apr 2019 22:21:10 +0200 (CEST)
+Date:   Wed, 24 Apr 2019 22:21:19 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Jens Axboe <axboe@kernel.dk>, jejb@linux.ibm.com,
+        martin.petersen@oracle.com
+Cc:     kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
+        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
+        linux-next@vger.kernel.org, hdegoede@redhat.com,
+        linux-ide@vger.kernel.org
+Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
+Message-ID: <20190424202119.GA26357@amd>
+References: <20190408173928.GB13260@amd>
+ <20190412102812.GA24977@amd>
+ <20190423102239.GA15531@amd>
+ <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
+ <20190424095431.GA32457@amd>
+ <20190424104850.GC32457@amd>
 MIME-Version: 1.0
-References: <201904240154.EAoubNVL%lkp@intel.com> <20190423170720.GA81562@lkp-kbuild05>
-In-Reply-To: <20190423170720.GA81562@lkp-kbuild05>
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-Date:   Thu, 25 Apr 2019 01:39:02 +0530
-Message-ID: <CAP245DXUmDSiWBbkMWn68_NinXgAVpfZ_V6zjr3YrGUXusLr=g@mail.gmail.com>
-Subject: Re: [RFC PATCH soc-thermal] drivers: thermal: tsens: tsens_v0_1_feat
- can be static
-To:     kbuild test robot <lkp@intel.com>
-Cc:     kbuild-all@01.org, Linux PM list <linux-pm@vger.kernel.org>,
-        Eduardo Valentin <edubezval@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
+Content-Disposition: inline
+In-Reply-To: <20190424104850.GC32457@amd>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-
-On Tue, Apr 23, 2019 at 10:37 PM kbuild test robot <lkp@intel.com> wrote:
->
->
-> Fixes: 5be1c7f5f9ce ("drivers: thermal: tsens: Introduce reg_fields to deal with register description")
-> Signed-off-by: kbuild test robot <lkp@intel.com>
-
-Hi Eduardo,
-
-Would you like me to fold these fixes back in and respin the series for merge?
-
-Regards,
-Amit
+Message-ID: <20190424202119.YBYc2IXu9Ijh5_fG5x-EQCvDCvFV0O0lE4ea_znFQIc@z>
 
 
-> ---
->  tsens-v0_1.c |    4 ++--
->  tsens-v2.c   |    4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-> index d171a4a..a7560e9 100644
-> --- a/drivers/thermal/qcom/tsens-v0_1.c
-> +++ b/drivers/thermal/qcom/tsens-v0_1.c
-> @@ -319,14 +319,14 @@ static int calibrate_8974(struct tsens_priv *priv)
->
->  /* v0.1: 8916, 8974 */
->
-> -const struct tsens_features tsens_v0_1_feat = {
-> +static const struct tsens_features tsens_v0_1_feat = {
->         .ver_major      = VER_0_1,
->         .crit_int       = 0,
->         .adc            = 1,
->         .srot_split     = 1,
->  };
->
-> -const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
-> +static const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
->         /* ----- SROT ------ */
->         /* No VERSION information */
->
-> diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-> index e15a302..b58f5af 100644
-> --- a/drivers/thermal/qcom/tsens-v2.c
-> +++ b/drivers/thermal/qcom/tsens-v2.c
-> @@ -83,14 +83,14 @@ static int get_temp_tsens_v2(struct tsens_priv *priv, int id, int *temp)
->
->  /* v2.x: 8996, 8998, sdm845 */
->
-> -const struct tsens_features tsens_v2_feat = {
-> +static const struct tsens_features tsens_v2_feat = {
->         .ver_major      = VER_2_X,
->         .crit_int       = 1,
->         .adc            = 0,
->         .srot_split     = 1,
->  };
->
-> -const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
-> +static const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
->         /* ----- SROT ------ */
->         /* VERSION */
->         [VER_MAJOR] = REG_FIELD(SROT_HW_VER_OFF, 28, 31),
+--Qxx1br4bt0+wmkIi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed 2019-04-24 12:48:50, Pavel Machek wrote:
+> On Wed 2019-04-24 11:54:31, Pavel Machek wrote:
+> > On Tue 2019-04-23 07:55:05, Jens Axboe wrote:
+> > > On 4/23/19 4:22 AM, Pavel Machek wrote:
+> > > > Hi!
+> > > >=20
+> > > >>> It boots ok (unlike mainline -- I'm debugging that), and I can su=
+spend
+> > > >>> and resume... but then cursor in X is moving and I can talk to
+> > > >>> applications cached in memory, but any access to disk hangs.
+> > > >>
+> > > >> Mainline problem was identified.
+> > > >>
+> > > >> But resume is still broken. I took advantage of fact that I can st=
+ill
+> > > >> do cached commands, and got complete dmesg. I'm attaching it.
+> > > >=20
+> > > > Still broken in 0418. Ideas would be welcome at this point.
+> > >=20
+> > > Bisect it?
+> >=20
+> > commit fdbbda7b3a0622fcfe630238d0bf6c57c4ba3663
+> > Merge: 3c442d5 6c88d73
+> > Author: Jens Axboe <axboe@kernel.dk>
+> > Date:   Mon Apr 22 13:57:36 2019 -0600
+> >=20
+> > Works ok. So... block is not responsible.
+> >=20
+> > Let me check
+> >=20
+> > commit 91b112cf3b599f06f1e810cfedf37023f25d5588
+> > Merge: fb2c4a8 e32d939
+> > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Date:   Mon Apr 22 01:52:48 2019 +0200
+>=20
+> Suspend/resume ok, so pm not responsible. Let me check next-20190423.
+
+Not block, but it seems scsi subsystem is:
+
+pavel@duo:/data/l/linux-next-32$ git bisect log
+# bad: [76c938fcaa4b4a5d8f05fa907925d5043834964e] Add linux-next
+specific files for 20190423
+# good: [7142eaa58b49d9de492ccc16d48df7c488a5fbb6] Merge tag
+'mips_fixes_5.1_3' of
+git://git.kernel.org/pub/scm/linux/kernel/git/mips/linux
+git bisect start 'next-20190423'
+'7142eaa58b49d9de492ccc16d48df7c488a5fbb6'
+# good: [ed04f675fa2c22316d7b57bea1258a18a47537ea] Merge
+remote-tracking branch 'crypto/master'
+git bisect good ed04f675fa2c22316d7b57bea1258a18a47537ea
+# good: [4a99e5b3463f5c936540958914bff57ec50ac1e0] Merge
+remote-tracking branch 'spi/for-next'
+git bisect good 4a99e5b3463f5c936540958914bff57ec50ac1e0
+# good: [61cabbda2a7e966b689a6791050ad675e6dff274] Merge
+remote-tracking branch 'staging/staging-next'
+git bisect good 61cabbda2a7e966b689a6791050ad675e6dff274
+# bad: [c8f0c2453f64529035e25fbfb9de9d24e98baff7] Merge
+remote-tracking branch 'coresight/next'
+git bisect bad c8f0c2453f64529035e25fbfb9de9d24e98baff7
+# bad: [6fb251c6f174d3cc571391baa9f6e57fff505446] Merge branch 'misc'
+into for-next
+git bisect bad 6fb251c6f174d3cc571391baa9f6e57fff505446
+# bad: [78a8ab3cc0f95a66c8fb2429030289103de173e7] scsi: qedf: fixup
+bit operations
+git bisect bad 78a8ab3cc0f95a66c8fb2429030289103de173e7
+# good: [c0327e67ecd86e88f5bc5fd54bfdf9b422a1c93f] scsi: core: remove
+the scsi_ioctl_reset export
+git bisect good c0327e67ecd86e88f5bc5fd54bfdf9b422a1c93f
+
+
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--Qxx1br4bt0+wmkIi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlzAxT8ACgkQMOfwapXb+vJLkACgjrICQ4T63zbaeqMZ13MHEI2S
+hUIAn0VbbKBQjEZaEQmsZHyj+BrmdQQq
+=flzY
+-----END PGP SIGNATURE-----
+
+--Qxx1br4bt0+wmkIi--
