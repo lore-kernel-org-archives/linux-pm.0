@@ -1,70 +1,63 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [PATCH] PM / devfreq: return PTR_ERR not NULL in try_then_request_governor()
-Date: Wed, 24 Apr 2019 10:23:54 +0200
-Message-ID: <CAFqH_512Z-R9O4oVZFq8dM629kfzKcvBuA1RbkEUn-7WH6jvHg@mail.gmail.com>
-References: <20190403152602.10019-1-steven.price@arm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
+Date: Wed, 24 Apr 2019 10:26:19 +0200
+Message-ID: <20190424082618.GA6699@amd>
+References: <20190408173928.GB13260@amd>
+ <20190412102812.GA24977@amd>
+ <20190423102239.GA15531@amd>
+ <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190403152602.10019-1-steven.price@arm.com>
+Content-Disposition: inline
+In-Reply-To: <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Steven Price <steven.price@arm.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-Missatge de Steven Price <steven.price@arm.com> del dia dc., 3 d=E2=80=99ab=
-r.
-2019 a les 17:26:
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> The callers of try_then_request_governor() only test for a PTR_ERR using
-> IS_ERR(). However in the case that request_module() fails then NULL is
-> currently returned which will cause a NULL-pointer dereference in the
-> caller.
->
-> Instead convert the error we already have to a valid PTR_ERR and return
-> it.
->
-> Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers=
- are built as modules.")
-> Signed-off-by: Steven Price <steven.price@arm.com>
+On Tue 2019-04-23 07:55:05, Jens Axboe wrote:
+> On 4/23/19 4:22 AM, Pavel Machek wrote:
+> > Hi!
+> >=20
+> >>> It boots ok (unlike mainline -- I'm debugging that), and I can suspend
+> >>> and resume... but then cursor in X is moving and I can talk to
+> >>> applications cached in memory, but any access to disk hangs.
+> >>
+> >> Mainline problem was identified.
+> >>
+> >> But resume is still broken. I took advantage of fact that I can still
+> >> do cached commands, and got complete dmesg. I'm attaching it.
+> >=20
+> > Still broken in 0418. Ideas would be welcome at this point.
+>=20
+> Bisect it?
 
-There is already a fix for that. The fix was initially sent in October [2] =
-but
-unfortunately, it got lost. I resend and now is queued [1]. Hopefully, the =
-Fixes
-tag will help to pick the fix to the proper kernel releases.
+Before I start heavy debugging, it would be interesting to
+know... does suspend/resume work for you in -next?
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-Thanks,
- Enric
+--NzB8fVQJ5HfG6fxh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-[1]
-https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=
-=3Dfor-next&id=3Db53b0128052ffd687797d5f4deeb76327e7b5711
-[2] https://lkml.org/lkml/2018/10/16/744
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
+iEYEARECAAYFAlzAHaoACgkQMOfwapXb+vJTVQCeL08UyO+MXoIE7+XqHb1+5toc
+VTEAnR63BS4swj7ABf8xe1WLhTf+W+rZ
+=crwR
+-----END PGP SIGNATURE-----
 
-> ---
->  drivers/devfreq/devfreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 0ae3de76833b..d29f66f0e52a 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_gove=
-rnor(const char *name)
->                 /* Restore previous state before return */
->                 mutex_lock(&devfreq_list_lock);
->                 if (err)
-> -                       return NULL;
-> +                       return ERR_PTR(err);
->
->                 governor =3D find_devfreq_governor(name);
->         }
-> --
-> 2.20.1
->
+--NzB8fVQJ5HfG6fxh--
