@@ -2,186 +2,71 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0217C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:05:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47939C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:23:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8F2EF218D3
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:05:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iaRrDiXx"
+	by mail.kernel.org (Postfix) with ESMTP id 19A2820656
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 09:23:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727931AbfDXJFL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 05:05:11 -0400
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:43424 "EHLO
-        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727228AbfDXJFK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 05:05:10 -0400
-Received: by mail-pg1-f193.google.com with SMTP id z9so9050386pgu.10
-        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 02:05:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=9aCcMuBCvx5cbhKsdvZqDdwab4T/UsiSsBYHhigk3jc=;
-        b=iaRrDiXxRYp9/8pk3OQn4t2BCDrBfoCA4yMYTpniNB4GRPLZTPEROk3fpmsu8Pg1es
-         d9vqTg+tFMJqO+HXGTSe8Bc+nTwZPqflZciMdfAKJR6FyvYt/7IVAZ6/grIEgkcA1zbY
-         a95Br9JxKIVeTXaR7LG+qJFHuoZsFXbfmhJ7DFkgmHBT+iUMSsduvhWEUOVOxiaq8ts3
-         r/fmLwvJLsa0frY4Wd8k3AkQ6jw7pv9Q6zDSNouKSCzR4fLuO8BtU7cQA3cQHkzfSy7V
-         s+Ef2fodGIrHLe4TMQOR8hPk8I83dTvJNt/TbN1vjpQCxDy03BuYrFlg+MIj5Fl2lAIn
-         3fiQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=9aCcMuBCvx5cbhKsdvZqDdwab4T/UsiSsBYHhigk3jc=;
-        b=rEjxEYJzyiQBqk3Yby9BhJcl/lomzIMiukpJrRxmANGoMr66G8+XZP4xQQ6l/H2rY1
-         52xZ5fI3DYgDYfPgoJE+TS1hBcKsBTqXqRhs2KEUW3dQortBATaQip8doIIdXls7Xxpd
-         DmawxSvj4kfwsh0x/jaX98EPLftzxN2kQYoeZi1YAURMHZ9rqX6Dlgsa4ULVc5KNd3BC
-         XD3RAY6C1iLAcLdb0pufeMZteT70ucsOLU0MBwe2iZoJRedLe4bsy333cB/CLtGHnAdl
-         QARnyfUJUwcMUUf6Kua8BW8fXc3xpj4VSxpHvnN2QrbCYBPlmbdKytYpreA63GFHA+Bl
-         l0CA==
-X-Gm-Message-State: APjAAAWfRs2JERISsIqfFBWE7FDCYQIkfKTxeeCppgE7TlBc05chVqf0
-        wwfY4hhhDfMU6I3Ia5WSfENUnA==
-X-Google-Smtp-Source: APXvYqxDFvaWvd7wZDk4qHnBtvRFlzutSEQMpa1AjGpKYqYEqhIlaT3t8HkLkmQMJbT6G2ve3PRchQ==
-X-Received: by 2002:a63:cd50:: with SMTP id a16mr10816882pgj.394.1556096709712;
-        Wed, 24 Apr 2019 02:05:09 -0700 (PDT)
-Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id x9sm25834360pfn.60.2019.04.24.02.05.08
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 24 Apr 2019 02:05:08 -0700 (PDT)
-Date:   Wed, 24 Apr 2019 14:35:06 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Sibi Sankar <sibis@codeaurora.org>
-Cc:     Rajendra Nayak <rnayak@codeaurora.org>,
-        Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org,
-        sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org,
-        mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org,
-        vincent.guittot@linaro.org, bjorn.andersson@linaro.org,
-        amit.kucheria@linaro.org, seansw@qti.qualcomm.com,
-        daidavid1@codeaurora.org, evgreen@chromium.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
- bindings
-Message-ID: <20190424090506.jdwhf4ndzr2m5ea7@vireshk-i7>
-References: <20190423132823.7915-1-georgi.djakov@linaro.org>
- <20190423132823.7915-2-georgi.djakov@linaro.org>
- <e35223d0-80ac-5236-2b8d-7f46cd3a1581@codeaurora.org>
- <20190424064942.v5g6jr5l3xy5z3xv@vireshk-i7>
- <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
+        id S1726657AbfDXJXe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 05:23:34 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:34402 "EHLO
+        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726451AbfDXJXe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 05:23:34 -0400
+Received: from reginn.horms.nl (watermunt.horms.nl [80.127.179.77])
+        by kirsty.vergenet.net (Postfix) with ESMTPA id 2037A25AE99;
+        Wed, 24 Apr 2019 19:23:32 +1000 (AEST)
+Received: by reginn.horms.nl (Postfix, from userid 7100)
+        id 1885B94041B; Wed, 24 Apr 2019 11:23:30 +0200 (CEST)
+Date:   Wed, 24 Apr 2019 11:23:30 +0200
+From:   Simon Horman <horms@verge.net.au>
+To:     Jiada Wang <jiada_wang@mentor.com>
+Cc:     rui.zhang@intel.com, edubezval@gmail.com,
+        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        niklas.soderlund+renesas@ragnatech.se, geert+renesas@glider.be,
+        sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com,
+        kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com,
+        fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com,
+        biju.das@bp.renesas.com, erosca@de.adit-jv.com,
+        george_davis@mentor.com, joshua_frkuska@mentor.com
+Subject: Re: [PATCH v4 1/2] thermal: rcar_gen3_thermal: fix interrupt type
+Message-ID: <20190424092329.bfohle5relhof4v7@verge.net.au>
+References: <20190424051145.23072-1-jiada_wang@mentor.com>
+ <20190424051145.23072-2-jiada_wang@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
-User-Agent: NeoMutt/20180323-120-3dd1ac
+In-Reply-To: <20190424051145.23072-2-jiada_wang@mentor.com>
+Organisation: Horms Solutions BV
+User-Agent: NeoMutt/20170113 (1.7.2)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424090506.knMKmfYQk_rl08SpJH00KTafRMrYVFonXD4Fd4_aviM@z>
+Message-ID: <20190424092330.jlQmF8bxjoGuQX0Ne80rBYLjCbSJprJkFkKDbWN25LM@z>
 
-On 24-04-19, 14:30, Sibi Sankar wrote:
-> Hey Viresh,
+On Wed, Apr 24, 2019 at 02:11:44PM +0900, Jiada Wang wrote:
+> Currently IRQF_SHARED type interrupt line is allocated, but it
+> is not appropriate, as the interrupt line isn't shared between
+> different devices, instead IRQF_ONESHOT is the proper type.
 > 
-> On 4/24/19 12:19 PM, Viresh Kumar wrote:
-> > On 24-04-19, 12:16, Rajendra Nayak wrote:
-> > > 
-> > > 
-> > > On 4/23/2019 6:58 PM, Georgi Djakov wrote:
-> > > > In addition to frequency and voltage, some devices may have bandwidth
-> > > > requirements for their interconnect throughput - for example a CPU
-> > > > or GPU may also need to increase or decrease their bandwidth to DDR
-> > > > memory based on the current operating performance point.
-> > > > 
-> > > > Extend the OPP tables with additional property to describe the bandwidth
-> > > > needs of a device. The average and peak bandwidth values depend on the
-> > > > hardware and its properties.
-> > > > 
-> > > > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> > > > ---
-> > > >    Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++++++++
-> > > >    .../devicetree/bindings/property-units.txt    |  4 ++
-> > > >    2 files changed, 42 insertions(+)
-> > > > 
-> > > > diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> > > > index 76b6c79604a5..830f0206aea7 100644
-> > > > --- a/Documentation/devicetree/bindings/opp/opp.txt
-> > > > +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> > > > @@ -132,6 +132,9 @@ Optional properties:
-> > > >    - opp-level: A value representing the performance level of the device,
-> > > >      expressed as a 32-bit integer.
-> > > > +- bandwidth-MBps: The interconnect bandwidth is specified with an array containing
-> > > > +  the two integer values for average and peak bandwidth in megabytes per second.
-> > > > +
-> > > >    - clock-latency-ns: Specifies the maximum possible transition latency (in
-> > > >      nanoseconds) for switching to this OPP from any other OPP.
-> > > > @@ -546,3 +549,38 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
-> > > >    		};
-> > > >    	};
-> > > >    };
-> > > > +
-> > > > +Example 7: bandwidth-MBps:
-> > > > +Average and peak bandwidth values for the interconnects between CPU and DDR
-> > > > +memory and also between CPU and L3 are defined per each OPP. Bandwidth of both
-> > > > +interconnects is scaled together with CPU frequency.
-> > > > +
-> > > > +/ {
-> > > > +	cpus {
-> > > > +		CPU0: cpu@0 {
-> > > > +			compatible = "arm,cortex-a53", "arm,armv8";
-> > > > +			...
-> > > > +			operating-points-v2 = <&cpu_opp_table>;
-> > > > +			/* path between CPU and DDR memory and CPU and L3 */
-> > > > +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
-> > > > +					<&noc MASTER_CPU &noc SLAVE_L3>;
-> > > > +		};
-> > > > +	};
-> > > > +
-> > > > +	cpu_opp_table: cpu_opp_table {
-> > > > +		compatible = "operating-points-v2";
-> > > > +		opp-shared;
-> > > > +
-> > > > +		opp-200000000 {
-> > > > +			opp-hz = /bits/ 64 <200000000>;
-> > > > +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
-> > > > +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
-> > > > +			bandwidth-MBps = <457 1525>, <914 3050>;
-> > > 
-> > > Should this also have a bandwidth-MBps-name perhaps? Without that I guess we assume
-> > > the order in which we specify the interconnects is the same as the order here?
-> > 
-> > Right, so I suggested not to add the -name property and to rely on the
-> > order. Though I missed that he hasn't mentioned the order thing here.
+> By changing interrupt type to IRQF_ONESHOT, now irq handler is
+> no longer needed, as clear of interrupt status can be done in
+> threaded interrupt context.
 > 
-> by skipping names, aren't we forced to specify all the specified paths
-> bandwidths for each opp even if it is redundant? i.e if the first/second
-> icc path doesn't have to change across a few opps but if the other path
-> does need to change this scheme would force it to be included and will
-> try to set the first/second path again.
+> Because IRQF_ONESHOT type interrupt line is kept disabled until
+> the threaded handler has been run, so there is no need to protect
+> read/write of REG_GEN3_IRQSTR with lock.
 > 
-> 
-> e.g: Here the first path does not have to change across these two opps
-> but have to specified nonetheless since we omit names.
+> Fixes: 7d4b269776ec6 ("enable hardware interrupts for trip points")
+> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
 
-The code should be efficient enough to return early in this case, but
-these value must always be present. We can get some sort of
-relationship between multiple paths that are part of same OPP, but not
-between different OPPs.
 
-> +		opp-1200000000 {
-> +			opp-hz = /bits/ 64 <1200000000>;
-> +			bandwidth-MBps = <457 1525>, <914 3050>;
-> +		};
-> +		opp-1400000000 {
-> +			opp-hz = /bits/ 64 <1400000000>;
-> +			bandwidth-MBps = <457 1525>, <1828 6102>;
-> +		};
-> 
-
--- 
-viresh
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+Tested-by: Simon Horman <horms+renesas@verge.net.au>
