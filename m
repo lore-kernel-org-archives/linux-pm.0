@@ -1,92 +1,133 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for
- cpu clocks
-Date: Wed, 24 Apr 2019 15:00:15 +0530
-Message-ID: <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
-References: <20190313163558.6705-1-gregory.clement@bootlin.com>
- <20190314121541.GB19385@apalos>
- <CAC5LXJcCs4nr-qFOWzUJpUBAJ9ngG-cgeTCVCFBKFc1SPzHMuQ@mail.gmail.com>
- <20190314134428.GA24768@apalos>
- <874l85v8p6.fsf@FE-laptop>
- <20190318112844.GA1708@apalos>
- <87h8c0s955.fsf@FE-laptop>
- <20190318122113.GA4834@apalos>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v4 1/2] thermal: rcar_gen3_thermal: fix interrupt type
+Date: Wed, 24 Apr 2019 11:31:45 +0200
+Message-ID: <1bdc45cd-12fb-e607-1ab5-f06a022b263e@linaro.org>
+References: <20190424051145.23072-1-jiada_wang@mentor.com>
+ <20190424051145.23072-2-jiada_wang@mentor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190318122113.GA4834@apalos>
+In-Reply-To: <20190424051145.23072-2-jiada_wang@mentor.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Cc: Christian Neubert <christian.neubert.86@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
+To: Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se, geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com, biju.das@bp.renesas.com, erosca@de.adit-jv.com, george_davis@mentor.com, joshua_frkuska@mentor.com
 List-Id: linux-pm@vger.kernel.org
 
-On 18-03-19, 14:21, Ilias Apalodimas wrote:
-> Hi Gregory, 
+On 24/04/2019 07:11, Jiada Wang wrote:
+> Currently IRQF_SHARED type interrupt line is allocated, but it
+> is not appropriate, as the interrupt line isn't shared between
+> different devices, instead IRQF_ONESHOT is the proper type.
 > 
-> > >> 
-> > > [   14.909524] clk_pm_cpu_set_parent old=28004840 -> val=0x6000000 load_level=0
-> > > [   14.916424] clk_pm_cpu_set_parent old=2E004840 -> val=0x600 load_level=1
-> > > [   14.923315] clk_pm_cpu_set_parent old=8880A8C0 -> val=0x6000000 load_level=2
-> > > [   14.930572] clk_pm_cpu_set_parent old=8E80A8C0 -> val=0x600 load_level=3
-> > >
-> > >
-> > > Let me know if you need anything else
-> > 
-> > Could you show me the output of "cat /sys/kernel/debug/clk/clk_summary"
-> > 
-> root@localhost ~ # cat /sys/kernel/debug/clk/clk_summary
->                                  enable  prepare  protect                                duty
->    clock                          count    count    count        rate   accuracy phase  cycle
-> ---------------------------------------------------------------------------------------------
->  xtal                                 2        3        0    25000000          0     0  50000
->     i2c_1                             0        0        0    25000000          0     0  50000
->     i2c_2                             0        0        0    25000000          0     0  50000
->     avs                               0        0        0    25000000          0     0  50000
->     TBG-B-S                           2        2        0  1000000000          0     0  50000
->        cpu                            0        0        0   200000000          0     0  50000
->        usb32_ss_sys                   1        1        0   125000000          0     0  50000
->        usb32_usb2_sys                 0        0        0   100000000          0     0  50000
->        gbe_125                        0        0        0   125000000          0     0  50000
->           gbe0_125                    0        0        0   125000000          0     0  50000
->           gbe1_125                    0        0        0   125000000          0     0  50000
->        gbe_core                       1        1        0   250000000          0     0  50000
->           gbe_bm                      0        0        0   250000000          0     0  50000
->           gbe0_core                   1        1        0   250000000          0     0  50000
->           gbe1_core                   0        0        0   250000000          0     0  50000
->        eip97                          0        0        0   500000000          0     0  50000
->        trace                          0        0        0  1000000000          0     0  50000
->        ddr_fclk                       0        0        0   125000000          0     0  50000
->        pwm                            0        0        0    50000000          0     0  50000
->        tscem_tmx                      0        0        0  1000000000          0     0  50000
->        sec_dap                        0        0        0   100000000          0     0  50000
->        sec_at                         0        0        0   200000000          0     0  50000
->     TBG-A-S                           0        0        0  1600000000          0     0  50000
->        sdio                           0        0        0   400000000          0     0  50000
->        ddr_phy                        0        0        0   400000000          0     0  50000
->        mmc                            0        0        0   400000000          0     0  50000
->     TBG-B-P                           0        0        0   500000000          0     0  50000
->        gbe_50                         0        0        0    50000000          0     0  50000
->           gbe0_50                     0        0        0    50000000          0     0  50000
->           gbe1_50                     0        0        0    50000000          0     0  50000
->     TBG-A-P                           0        1        0   800000000          0     0  50000
->        counter                        0        0        0   160000000          0     0  50000
->        sqf                            0        1        0   200000000          0     0  50000
->        tscem                          0        0        0   200000000          0     0  50000
->        sata_host                      0        0        0   200000000          0     0  50000
-> root@localhost ~ # 
+> By changing interrupt type to IRQF_ONESHOT, now irq handler is
+> no longer needed, as clear of interrupt status can be done in
+> threaded interrupt context.
 > 
-> > Also, during this week-end, Christian suggested that the issue might
-> > come from the AVS support.
-> > 
-> > Could you disable it and check you still have the issue?
-> > 
-> > For this, you just have to remove the avs node in
-> > arch/arm64/boot/dts/marvell/armada-37xx.dtsi and rebuild the dtb.
-> Sure. You'll have to wait for a week though. Currently on a trip. I'll run that
->  once i return
+> Because IRQF_ONESHOT type interrupt line is kept disabled until
+> the threaded handler has been run, so there is no need to protect
+> read/write of REG_GEN3_IRQSTR with lock.
+> 
+> Fixes: 7d4b269776ec6 ("enable hardware interrupts for trip points")
+> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
 
-@Ilias: Can you please try this now and confirm to Gregory ?
+Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+> ---
+>  drivers/thermal/rcar_gen3_thermal.c | 38 +++++------------------------
+>  1 file changed, 6 insertions(+), 32 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+> index 88fa41cf16e8..065e16f53285 100644
+> --- a/drivers/thermal/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+> @@ -14,7 +14,6 @@
+>  #include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/pm_runtime.h>
+> -#include <linux/spinlock.h>
+>  #include <linux/sys_soc.h>
+>  #include <linux/thermal.h>
+>  
+> @@ -82,7 +81,6 @@ struct rcar_gen3_thermal_tsc {
+>  struct rcar_gen3_thermal_priv {
+>  	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
+>  	unsigned int num_tscs;
+> -	spinlock_t lock; /* Protect interrupts on and off */
+>  	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
+>  };
+>  
+> @@ -232,38 +230,16 @@ static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
+>  {
+>  	struct rcar_gen3_thermal_priv *priv = data;
+>  	u32 status;
+> -	int i, ret = IRQ_HANDLED;
+> +	int i;
+>  
+> -	spin_lock(&priv->lock);
+>  	for (i = 0; i < priv->num_tscs; i++) {
+>  		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
+>  		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
+>  		if (status)
+> -			ret = IRQ_WAKE_THREAD;
+> +			thermal_zone_device_update(priv->tscs[i]->zone,
+> +						   THERMAL_EVENT_UNSPECIFIED);
+>  	}
+>  
+> -	if (ret == IRQ_WAKE_THREAD)
+> -		rcar_thermal_irq_set(priv, false);
+> -
+> -	spin_unlock(&priv->lock);
+> -
+> -	return ret;
+> -}
+> -
+> -static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
+> -{
+> -	struct rcar_gen3_thermal_priv *priv = data;
+> -	unsigned long flags;
+> -	int i;
+> -
+> -	for (i = 0; i < priv->num_tscs; i++)
+> -		thermal_zone_device_update(priv->tscs[i]->zone,
+> -					   THERMAL_EVENT_UNSPECIFIED);
+> -
+> -	spin_lock_irqsave(&priv->lock, flags);
+> -	rcar_thermal_irq_set(priv, true);
+> -	spin_unlock_irqrestore(&priv->lock, flags);
+> -
+>  	return IRQ_HANDLED;
+>  }
+>  
+> @@ -371,8 +347,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  	if (soc_device_match(r8a7795es1))
+>  		priv->thermal_init = rcar_gen3_thermal_init_r8a7795es1;
+>  
+> -	spin_lock_init(&priv->lock);
+> -
+>  	platform_set_drvdata(pdev, priv);
+>  
+>  	/*
+> @@ -390,9 +364,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+>  		if (!irqname)
+>  			return -ENOMEM;
+>  
+> -		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
+> -						rcar_gen3_thermal_irq_thread,
+> -						IRQF_SHARED, irqname, priv);
+> +		ret = devm_request_threaded_irq(dev, irq, NULL,
+> +						rcar_gen3_thermal_irq,
+> +						IRQF_ONESHOT, irqname, priv);
+>  		if (ret)
+>  			return ret;
+>  	}
+> 
+
 
 -- 
-viresh
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
