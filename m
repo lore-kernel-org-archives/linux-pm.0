@@ -1,35 +1,36 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
- asynchronous probing was Re: next-20190408..0418: Suspend/resume problems
- on Thinkpad X60
-Date: Wed, 24 Apr 2019 13:56:01 -0700
-Message-ID: <1556139361.161891.140.camel@acm.org>
-References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
-         <20190423102239.GA15531@amd>
-         <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
-         <20190424095431.GA32457@amd> <20190424104850.GC32457@amd>
-         <20190424202119.GA26357@amd> <20190424204832.GA3111@amd>
-         <20190424205150.GA4582@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-7"
-Content-Transfer-Encoding: 7bit
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] thermal/drivers/cpu_cooling: Remove pointless test in power2state()
+Date: Wed, 24 Apr 2019 22:56:09 +0200
+Message-ID: <20190424205610.9376-1-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190424205150.GA4582@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@denx.de>, Jens Axboe <axboe@kernel.dk>, jejb@linux.ibm.com, martin.petersen@oracle.com, lduncan@suse.com, hare@suse.com, mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de, gregkh@linuxfoundation.org, dan.j.williams@intel.com
-Cc: kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, linux-ide@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2019-04-24 at 22:51 +-0200, Pavel Machek wrote:
-+AD4 Unfortunately, that one does not revert cleanly on top of -next.
+When the static power computation was removed, the test with the power
+being negative was not removed. However, the substraction which was
+responsible of the negative value was removed and the variable is now
+an u32. A double reason to remove the test which does not make sense.
 
-Can you try the following:
+Fixes: 84fe2cab48590 ("cpu_cooling: Drop static-power related stuff")
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/cpu_cooling.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 +ACYAJg
-  git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
-
-I will see whether I can come up with a better way to analyze what is
-going on. I had not expected that these patches would cause any suspend/
-resume problems.
-
-Bart.
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index f7c1f49ec87f..ee8419a6390c 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -541,7 +541,6 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+ 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+ 	struct cpufreq_policy *policy = cpufreq_cdev->policy;
+ 
+-	power = power > 0 ? power : 0;
+ 	last_load = cpufreq_cdev->last_load ?: 1;
+ 	normalised_power = (power * 100) / last_load;
+ 	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
+-- 
+2.17.1
