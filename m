@@ -1,82 +1,45 @@
-From: "Pawnikar, Sumeet R" <sumeet.r.pawnikar@intel.com>
-Subject: RE: [PATCH] thermal: intel: int340x: processor_thermal_device:
- simplify to get driver data
-Date: Wed, 24 Apr 2019 11:19:03 +0000
-Message-ID: <3C3E65E75D9910479323816378A812E7414CDA84@BGSMSX104.gar.corp.intel.com>
-References: <1555339710-28028-1-git-send-email-sumeet.r.pawnikar@intel.com>
-         <20190415162809.GU9224@smile.fi.intel.com>
-         <1555922784.26198.20.camel@intel.com>
- <1555923334.26198.25.camel@intel.com>
+From: Niklas Cassel <niklas.cassel@linaro.org>
+Subject: Re: [PATCH 1/3] PM / Domains: Don't kfree() the virtual device in
+ the error path
+Date: Wed, 24 Apr 2019 13:28:18 +0200
+Message-ID: <20190424112818.GA30710@centauri.ideon.se>
+References: <20190418102757.1246-1-ulf.hansson@linaro.org>
+ <20190418102757.1246-2-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555923334.26198.25.camel@intel.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190418102757.1246-2-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4tLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPkZyb206IGxpbnV4LXBtLW93bmVyQHZn
-ZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXBtLQ0KPm93bmVyQHZnZXIua2VybmVsLm9yZ10g
-T24gQmVoYWxmIE9mIFpoYW5nIFJ1aQ0KPlNlbnQ6IE1vbmRheSwgQXByaWwgMjIsIDIwMTkgMjoy
-NiBQTQ0KPlRvOiBTaGV2Y2hlbmtvLCBBbmRyaXkgPGFuZHJpeS5zaGV2Y2hlbmtvQGludGVsLmNv
-bT47IFBhd25pa2FyLCBTdW1lZXQgUg0KPjxzdW1lZXQuci5wYXduaWthckBpbnRlbC5jb20+DQo+
-Q2M6IGVkdWJlenZhbEBnbWFpbC5jb207IGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc7DQo+c3Jp
-bml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
-ZzsgbGludXgtDQo+a2VybmVsQHZnZXIua2VybmVsLm9yZw0KPlN1YmplY3Q6IFJlOiBbUEFUQ0hd
-IHRoZXJtYWw6IGludGVsOiBpbnQzNDB4OiBwcm9jZXNzb3JfdGhlcm1hbF9kZXZpY2U6DQo+c2lt
-cGxpZnkgdG8gZ2V0IGRyaXZlciBkYXRhDQo+DQo+T24g5LiALCAyMDE5LTA0LTIyIGF0IDE2OjQ2
-ICswODAwLCBaaGFuZyBSdWkgd3JvdGU6DQo+PiBPbiDkuIAsIDIwMTktMDQtMTUgYXQgMTk6Mjgg
-KzAzMDAsIEFuZHkgU2hldmNoZW5rbyB3cm90ZToNCj4+ID4NCj4+ID4gT24gTW9uLCBBcHIgMTUs
-IDIwMTkgYXQgMDg6MTg6MzBQTSArMDUzMCwgU3VtZWV0IFBhd25pa2FyIHdyb3RlOg0KPj4gPiA+
-DQo+PiA+ID4NCj4+ID4gPiBGcm9tOiAiUGF3bmlrYXIsIFN1bWVldCBSIiA8c3VtZWV0LnIucGF3
-bmlrYXJAaW50ZWwuY29tPg0KPj4gPiA+DQo+anVzdCBvbmUgY29tbWVudCwgdGhlIGF1dGhvciBu
-YW1lIHlvdSB1c2VkIGlzIG5vdCBjb25zaXN0ZW50IHdpdGggdGhlIG5hbWUNCj55b3UgdXNlZCBm
-b3IgeW91ciBTaWduZWQtb2ZmLWJ5ICdQYXduaWthciwgU3VtZWV0IFIgPHN1bWVldC5yLnBhd24N
-Cj5pa2FyQGludGVsLmNvbT4nLCBhbmQgY2hlY2twYXRjaCBjb21wbGFpbnMgYWJvdXQgbWlzc2lu
-ZyBTaWduZWQtb2ZmLWJ5IGZyb20NCj5wYXRjaCBhdXRob3IuDQo+UGxlYXNlIGZpeCB5b3VyIGdp
-dGNvbmZpZyBhbmQgcnVuIGNoZWNrcGF0Y2ggYmVmb3JlIHNlbmRpbmcgbmV4dCB0aW1lLg0KPg0K
-U3VyZSwgd2lsbCBmaXggdGhpcyBnb2luZyBmb3J3YXJkLiANCg0KVGhhbmtzLA0KU3VtZWV0LiAN
-Cg0KPnRoYW5rcywNCj5ydWkNCj4NCj4+ID4gPiBUaGlzIHNpbXBsaWZpZXMgZ2V0dGluZyB0aGUg
-J2RyaXZlcl9kYXRhJyBmcm9tICdzdHJ1Y3QgZGV2aWNlJw0KPj4gPiA+IGRpcmVjdGx5Lg0KPj4g
-PiA+IEdvaW5nIHRocm91Z2ggcGxhdGZvcm1fZGV2aWNlIG9yIHBjaV9kZXYgaXMgbm90IHJlcXVp
-cmVkLiBBbHNvDQo+PiA+ID4gcmVtb3ZlcyBjb25kaXRpb24gY2hlY2sgYXMgdGhlIHByaXZhdGUg
-ZGF0YSBzdG9yZWQgd2l0aCBkZXYNCj4+ID4gPiBwb2ludGVyLCBtZWFucyBpcnJlc3BlY3RpdmUg
-b2YgZW51bWVyYXRpb24gbW9kZSwgd2UgY2FuIHVzZQ0KPj4gPiA+IGRldl9nZXRfZHJ2ZGF0YSgp
-Lg0KPj4gPiA+IFRoaXMgcmVtb3ZlcyB0aGUgdW5uZWNlc3Nhcnkgc3RlcCBiYWNrIGFuZCBmb3J0
-aC4NCj4+ID4gPg0KPj4gPiBJbmRlZWQsIGdvb2QgY2xlYW4gdXAhDQo+PiA+IFJldmlld2VkLWJ5
-OiBBbmR5IFNoZXZjaGVua28gPGFuZHJpeS5zaGV2Y2hlbmtvQGludGVsLmNvbT4NCj4+ID4NCj4+
-IFRoYW5rcywgcGF0Y2ggYXBwbGllZC4NCj4+DQo+PiAtcnVpDQo+PiA+DQo+PiA+ID4NCj4+ID4g
-Pg0KPj4gPiA+IFNpZ25lZC1vZmYtYnk6IFN1bWVldCBQYXduaWthciA8c3VtZWV0LnIucGF3bmlr
-YXJAaW50ZWwuY29tPg0KPj4gPiA+IC0tLQ0KPj4gPiA+IMKgLi4uL2ludDM0MHhfdGhlcm1hbC9w
-cm9jZXNzb3JfdGhlcm1hbF9kZXZpY2UuY8KgwqDCoMKgwqB8wqDCoMKgMTEgKy0tLS0tDQo+PiA+
-ID4gLS0NCj4+ID4gPiAtLS0NCj4+ID4gPiDCoDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigr
-KSwgMTAgZGVsZXRpb25zKC0pDQo+PiA+ID4NCj4+ID4gPiBkaWZmIC0tZ2l0DQo+PiA+ID4gYS9k
-cml2ZXJzL3RoZXJtYWwvaW50ZWwvaW50MzQweF90aGVybWFsL3Byb2Nlc3Nvcl90aGVybWFsX2Rl
-dmljZS4NCj4+ID4gPiBjDQo+PiA+ID4gYi9kcml2ZXJzL3RoZXJtYWwvaW50ZWwvaW50MzQweF90
-aGVybWFsL3Byb2Nlc3Nvcl90aGVybWFsX2RldmljZS4NCj4+ID4gPiBjDQo+PiA+ID4gaW5kZXgg
-OGUxY2Y0ZC4uMmE3Y2JhYSAxMDA2NDQNCj4+ID4gPiAtLS0NCj4+ID4gPiBhL2RyaXZlcnMvdGhl
-cm1hbC9pbnRlbC9pbnQzNDB4X3RoZXJtYWwvcHJvY2Vzc29yX3RoZXJtYWxfZGV2aWNlLg0KPj4g
-PiA+IGMNCj4+ID4gPiArKysNCj4+ID4gPiBiL2RyaXZlcnMvdGhlcm1hbC9pbnRlbC9pbnQzNDB4
-X3RoZXJtYWwvcHJvY2Vzc29yX3RoZXJtYWxfZGV2aWNlLg0KPj4gPiA+IGMNCj4+ID4gPiBAQCAt
-ODEsMjIgKzgxLDEzIEBAIGVudW0gcHJvY190aGVybWFsX2VtdW1fbW9kZV90eXBlIHsNCj4+ID4g
-PiDCoAkJCQkJc3RydWN0IGRldmljZV9hdHRyaWJ1dGUNCj4+ID4gPiAqYXR0ciwgXA0KPj4gPiA+
-IMKgCQkJCQljaGFyICpidWYpIFwNCj4+ID4gPiDCoHsgXA0KPj4gPiA+IC0Jc3RydWN0IHBjaV9k
-ZXYgKnBjaV9kZXY7IFwNCj4+ID4gPiAtCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXY7IFwN
-Cj4+ID4gPiAtCXN0cnVjdCBwcm9jX3RoZXJtYWxfZGV2aWNlICpwcm9jX2RldjsgXA0KPj4gPiA+
-ICsJc3RydWN0IHByb2NfdGhlcm1hbF9kZXZpY2UgKnByb2NfZGV2ID0NCj4+ID4gPiBkZXZfZ2V0
-X2RydmRhdGEoZGV2KTsgXA0KPj4gPiA+IMKgCVwNCj4+ID4gPiDCoAlpZiAocHJvY190aGVybWFs
-X2VtdW1fbW9kZSA9PSBQUk9DX1RIRVJNQUxfTk9ORSkgeyBcDQo+PiA+ID4gwqAJCWRldl93YXJu
-KGRldiwgIkF0dGVtcHRlZCB0byBnZXQgcG93ZXIgbGltaXQgYmVmb3JlIGRldmljZQ0KPndhcw0K
-Pj4gPiA+IGluaXRpYWxpemVkIVxuIik7IFwNCj4+ID4gPiDCoAkJcmV0dXJuIDA7IFwNCj4+ID4g
-PiDCoAl9IFwNCj4+ID4gPiDCoAlcDQo+PiA+ID4gLQlpZiAocHJvY190aGVybWFsX2VtdW1fbW9k
-ZSA9PSBQUk9DX1RIRVJNQUxfUExBVEZPUk1fREVWKQ0KPj4gPiA+IHsNCj4+ID4gPiBcDQo+PiA+
-ID4gLQkJcGRldiA9IHRvX3BsYXRmb3JtX2RldmljZShkZXYpOyBcDQo+PiA+ID4gLQkJcHJvY19k
-ZXYgPSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsgXA0KPj4gPiA+IC0JfSBlbHNlIHsgXA0K
-Pj4gPiA+IC0JCXBjaV9kZXYgPSB0b19wY2lfZGV2KGRldik7IFwNCj4+ID4gPiAtCQlwcm9jX2Rl
-diA9IHBjaV9nZXRfZHJ2ZGF0YShwY2lfZGV2KTsgXA0KPj4gPiA+IC0JfSBcDQo+PiA+ID4gwqAJ
-cmV0dXJuIHNwcmludGYoYnVmLCAiJWx1XG4iLFwNCj4+ID4gPiDCoAkodW5zaWduZWQgbG9uZylw
-cm9jX2Rldi0+cG93ZXJfbGltaXRzW2luZGV4XS5zdWZmaXggKiAxMDAwKTsgXA0KPj4gPiA+IMKg
-fQ0KPj4gPiA+IC0tDQo+PiA+ID4gMS43LjkuNQ0K
+On Thu, Apr 18, 2019 at 12:27:55PM +0200, Ulf Hansson wrote:
+> It's not correct to call kfree(dev) when device_register(dev) has failed.
+> Fix this by calling put_device(dev) instead.
+> 
+> Fixes: 3c095f32a92b ("PM / Domains: Add support for multi PM domains per device to genpd")
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index ecac03dcc9b2..7fec69aebf46 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2528,7 +2528,7 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+>  
+>  	ret = device_register(virt_dev);
+>  	if (ret) {
+> -		kfree(virt_dev);
+> +		put_device(virt_dev);
+>  		return ERR_PTR(ret);
+>  	}
+>  
+> -- 
+> 2.17.1
+> 
+
+Acked-by: Niklas Cassel <niklas.cassel@linaro.org>
