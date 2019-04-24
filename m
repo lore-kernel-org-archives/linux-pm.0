@@ -2,110 +2,162 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DATE_IN_PAST_12_24,
+	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71C2BC10F03
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:53:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AC5FC282E1
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 11:12:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 34EE120811
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:53:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kmyNev+5"
+	by mail.kernel.org (Postfix) with ESMTP id 3B8832084B
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 11:12:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556190728;
+	bh=xxr/gsoL6alH3mlWXMoUgEpWk4JCmpJ/sRaTzuCpCro=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=xbQLNMtZbAdpoqwFSRHWHVNZWqcywydpqDfNeDZhd5ZMr9sZ5/7DwUQt4ZudVnQgd
+	 Zn7GmmuJVBxMaoVFc+d4Xwg/DtmCaHn6leoQkxLVJVV4gDdWSI5/hKfOej4YwAhGab
+	 dkZmR13B5/0G+VB1l77/VAUBvoaicETSh6qM71Ow=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729201AbfDYKxr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 06:53:47 -0400
-Received: from mail-qt1-f195.google.com ([209.85.160.195]:42448 "EHLO
-        mail-qt1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729089AbfDYKxr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 06:53:47 -0400
-Received: by mail-qt1-f195.google.com with SMTP id p20so23816396qtc.9
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2019 03:53:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=bbteM2J1OS0fznjwkCa9uIRVim6faE/hgPnLCjvXWoY=;
-        b=kmyNev+5N9Dp4m2ofoFjryIG/zrbZ1WObLsuDQTvxQixKfTd6IhvEuoHxIZ7WfpBIP
-         UaudwtmrESbIsL4lFQQ8O5Mc5PLQCFnIcM/uGDKZt6fReW72z1goEZ1vBh7fwZvpt8N0
-         EguzHxvxfopmlS7k34AlbyvBuHBpz9PJsyaO9nMs+7XSHUi9LbiK55phqNteufpEKSrl
-         vh/Yd6WVNuKX4YL5HySd8DfI9DGI0wVJBZtT+Q0nUQuJ/nGqRLuzJEyWtoJCmnLzKrko
-         vY0cDlL/6LIT5RPoDP5hCO8eZV7dGUr0k3INv8RfdhgJ7G4acQKm64aTzYvteLwgE0wf
-         xosw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=bbteM2J1OS0fznjwkCa9uIRVim6faE/hgPnLCjvXWoY=;
-        b=qOq1AGADRKTMSsoQadvRs2VEFsZAn/F+HU2dYEdZXZxT4goeIibv9YjmXvtBdECZ9A
-         yExQQftBfSCAWnyxepHzG4oeEgGqRu7ELE19z4FxH14epiZxbYq/VR+rYbul4UZJr5ro
-         fAbkSltElgPZrjtwmdJDddwmUJUVcUNPGHqWq+UIJeloVrBGbruZoVxqZ8wBX90XpzO5
-         Yh7H2uOYws18wgKyBgOCnICSXy2mTPR0h6IJf0RUxDMjX4N4nCyIm0RAUvDtlbkNe2kA
-         BUiTg7Up7GC9B4nSlRL5PD31p/jrSt7mfoP7sVdoxorKAEsXRLOAouFepxHtJfRBmZbY
-         BTZw==
-X-Gm-Message-State: APjAAAXg0A2i6FW9SjPUP4SkuPSVPkx+AgE3zq8/o0VFfVy+CqGr7h+Y
-        I+8+XyrScPGf4rM1zDs4Zw8fy9lV4hqbAKKQdwDu+g==
-X-Google-Smtp-Source: APXvYqxViUbpermfU6+6Ze0b7ERh6nz2KaYoJJvuSz8IzQMc9KmZBZkBthAzEoMeRro8S9VQ5Y6bY4fFmaXGtxL4jQk=
-X-Received: by 2002:ac8:19b4:: with SMTP id u49mr21011428qtj.300.1556189626509;
- Thu, 25 Apr 2019 03:53:46 -0700 (PDT)
+        id S1730170AbfDYLMD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 07:12:03 -0400
+Received: from mail.kernel.org ([198.145.29.99]:45654 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726124AbfDYLMC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Apr 2019 07:12:02 -0400
+Received: from earth.universe (dyndsl-037-138-081-021.ewe-ip-backbone.de [37.138.81.21])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 4A750217FA;
+        Thu, 25 Apr 2019 11:12:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1556190721;
+        bh=xxr/gsoL6alH3mlWXMoUgEpWk4JCmpJ/sRaTzuCpCro=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=vxtB7tbdB5wSP+fdketexgu5Xt1pCgVd+Vn9HTV4JVBZSnwQZvd2MV5FiDCsIPWg2
+         qFCMtPXhu6TBH0YyACSq8IYmqw6cW9WIYvXM2e1RGrP8TNwblri5FDH2Z0d0CtEg7M
+         aekwYNV56oan4PJQH9LbXYTCA1pnDxrLzdcVwwFw=
+Received: by earth.universe (Postfix, from userid 1000)
+        id 4DBDA3C0C74; Wed, 24 Apr 2019 13:31:02 +0200 (CEST)
+Date:   Wed, 24 Apr 2019 13:31:02 +0200
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Bartosz Golaszewski <brgl@bgdev.pl>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Subject: Re: [PATCH v10 02/11] dt-bindings: power: supply: add DT bindings
+ for max77650
+Message-ID: <20190424113102.pej37jnlidwfzjhk@earth.universe>
+References: <20190423090451.23711-1-brgl@bgdev.pl>
+ <20190423090451.23711-3-brgl@bgdev.pl>
 MIME-Version: 1.0
-References: <20190424141439.GG14820@kadam>
-In-Reply-To: <20190424141439.GG14820@kadam>
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-Date:   Thu, 25 Apr 2019 16:23:35 +0530
-Message-ID: <CAP245DVZMO=oqQY=CMq1_v=NPPVku=-bx41dXuSejrDxhkwOaw@mail.gmail.com>
-Subject: Re: [soc-thermal:for-kernelci 19/35] drivers/thermal/qcom/tsens-v0_1.c:189
- calibrate_8974() warn: passing zero to 'PTR_ERR'
-To:     Dan Carpenter <dan.carpenter@oracle.com>
-Cc:     kbuild@01.org, kbuild-all@01.org,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Eduardo Valentin <edubezval@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="tzyyotohclek3npg"
+Content-Disposition: inline
+In-Reply-To: <20190423090451.23711-3-brgl@bgdev.pl>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190424113102.byZuM4IFheY_A-1mDAJE0zlWr4d-pVp3zkJWFf6SIUA@z>
 
-On Wed, Apr 24, 2019 at 7:44 PM Dan Carpenter <dan.carpenter@oracle.com> wrote:
->
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git for-kernelci
-> head:   0e50a5ee6b8a23c6798aae23efcd4b8e055c06ef
-> commit: 5853cb769573b58c319fa62e1987d063b8c5b77e [19/35] drivers: thermal: tsens: Merge tsens-8974 into tsens-v0_1
->
-> New smatch warnings:
-> drivers/thermal/qcom/tsens-v0_1.c:228 calibrate_8974() warn: mask and shift to zero
->
-> # https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?id=5853cb769573b58c319fa62e1987d063b8c5b77e
-> git remote add soc-thermal https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
-> git remote update soc-thermal
-> git checkout 5853cb769573b58c319fa62e1987d063b8c5b77e
-> vim +/PTR_ERR +189 drivers/thermal/qcom/tsens-v0_1.c
->
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  216                     /* Fall through */
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  217             case ONE_PT_CALIB:
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  218             case ONE_PT_CALIB2:
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  219                     base1 = bkp[0] & BASE1_MASK;
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  220                     p1[0] = (bkp[0] & S0_P1_MASK) >> S0_P1_SHIFT;
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  221                     p1[1] = (bkp[0] & S1_P1_MASK) >> S1_P1_SHIFT;
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  222                     p1[2] = (bkp[0] & S2_P1_MASK) >> S2_P1_SHIFT;
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  223                     p1[3] = (bkp[0] & S3_P1_MASK) >> S3_P1_SHIFT;
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  224                     p1[4] = (bkp[1] & S4_P1_MASK);
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  225                     p1[5] = (bkp[1] & S5_P1_MASK) >> S5_P1_SHIFT;
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  226                     p1[6] = (bkp[1] & S6_P1_MASK) >> S6_P1_SHIFT;
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  227                     p1[7] = (bkp[1] & S7_P1_MASK) >> S7_P1_SHIFT;
-> 5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20 @228                     p1[8] = (bkp[2] & S8_P1_MASK_BKP) >> S8_P1_SHIFT;
->                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> p1[8] always ends up being zero.  (I haven't look at the code, that's
-> what the static checker is saying).
 
-Yes, it seems that might be the case.
+--tzyyotohclek3npg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Eduardo, this commit is simply moving some old code around that I
-didn't write. I'd prefer not to touch it in this series but instead
-fix it in a separate series. The code move was done to enable a
-rewrite, in any case.
+Hi,
 
-Regards,
-Amit
+On Tue, Apr 23, 2019 at 11:04:42AM +0200, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>=20
+> Add the DT binding document for the battery charger module of max77650.
+>=20
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> ---
+
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+-- Sebastian
+
+>  .../power/supply/max77650-charger.txt         | 28 +++++++++++++++++++
+>  1 file changed, 28 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/max776=
+50-charger.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/supply/max77650-char=
+ger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charger.t=
+xt
+> new file mode 100644
+> index 000000000000..e6d0fb6ff94e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
+> @@ -0,0 +1,28 @@
+> +Battery charger driver for MAX77650 PMIC from Maxim Integrated.
+> +
+> +This module is part of the MAX77650 MFD device. For more details
+> +see Documentation/devicetree/bindings/mfd/max77650.txt.
+> +
+> +The charger is represented as a sub-node of the PMIC node on the device =
+tree.
+> +
+> +Required properties:
+> +--------------------
+> +- compatible:		Must be "maxim,max77650-charger"
+> +
+> +Optional properties:
+> +--------------------
+> +- input-voltage-min-microvolt:	Minimum CHGIN regulation voltage. Must be=
+ one
+> +				of: 4000000, 4100000, 4200000, 4300000,
+> +				4400000, 4500000, 4600000, 4700000.
+> +- input-current-limit-microamp:	CHGIN input current limit (in microamps)=
+=2E Must
+> +				be one of: 95000, 190000, 285000, 380000,
+> +				475000.
+> +
+> +Example:
+> +--------
+> +
+> +	charger {
+> +		compatible =3D "maxim,max77650-charger";
+> +		input-voltage-min-microvolt =3D <4200000>;
+> +		input-current-limit-microamp =3D <285000>;
+> +	};
+> --=20
+> 2.21.0
+>=20
+
+--tzyyotohclek3npg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzASPEACgkQ2O7X88g7
++pr0JRAApxsn5uxXytg/SEvhNBb/SxefIg95+EkMbpo96sFxk5ZP5xwaRdheUUzC
+0sBN3TDPfn0IQsksQtLaZBqQ+RmQEA/K+PS7reoMNx0he1Xgetd33E6R1dBUR1XX
+zi0thWOgS08u0TIX4tnogtitjVtXrY5tXJGDAqu0lQAhVjMuX8n81XQZ2zgZo4nG
+42I+WP00S6JNI6kWBjHt8enj0ZzXUQc8bfcBm9uGkPpeO0u4DPHAysNeVQQBR0Ef
+x4GoTX26tKiJoNrcV+V7wWDDpnpLV9c8QP0jyJCjCZPGpPtJNNieF79zhfLpgrVN
+lkCamB9WLfigpnZBYgkm8dR7f1ZTFle1haYdGBfj/G/CL+rOPnrBcnQV4mv4VeNZ
+vx5pM+H7EKRNDQASERSDXFejrtMi/VOj+pKxpUZqhyT63SgfVA0kHkTDt7xm+Ovc
+ecvpRgx4FMWCj+FFpMVqIqcLrcdYmlnrOgJQvrkXMADuLW7xkPptQkuPnCUmugDq
+uqZI4uIs7PVD/guIVM6UZhFP+4gsLFkRg8VW4T+I73NIJkN9AbKAp6L7vu2xMeYl
+V3NVfGSp4f8lJNvlNV5auM2b+8vTGX+W7Ef+xUrxHj2Nh6zOR27wmVeDRcsofbmF
+bH6mOSfxHrgnc9LG0LIahlxhIbfcmMr4XCu31xYozmL1GgwuWPM=
+=usHc
+-----END PGP SIGNATURE-----
+
+--tzyyotohclek3npg--
