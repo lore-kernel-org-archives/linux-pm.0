@@ -2,94 +2,160 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64531C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12B99C282CE
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:27:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2EE7F218B0
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:24:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D670D218DA
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 07:27:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1556090684;
-	bh=EsxSRK8/upe+0gx1dmYaLZsXJf4CArnm6lZUDOqEQLs=;
+	s=default; t=1556090829;
+	bh=KaDBoJJjYnObOploCwYXMgY0kxZJHH/0nJJXTWbCmsc=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=nAfJpEFByNVhgm4xffSH8aweA9xv8MYTdFWrCtHgcRoa6c8qhbEmDRG4a9uLcujYE
-	 aa2btW0sS2jJ4BSvfkC37d7MySOuxXaS7DnuZ1CemaxNuUTbEK2jykAwkPhgrJaXyk
-	 c73NYtCyBxwlk7q75NlkvvxJPVfgJ72HsclC8v60=
+	b=Mnf8ExkryQPmBTguvq14/KTXPC/sULEvDa7JhbaJiuMt63cRbB11CMoTowS3pb5A1
+	 jfBsv8KvYi2QGQq6BllNlIQW9lmhMiy2o2MF3QXbwFpR9kgEH3UJsZVUp25QjF7Sgs
+	 JTu/X3gVvhaw9kcTs8KLunk9QEEg2GQtLyI2icaQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726451AbfDXHYn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 03:24:43 -0400
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:38339 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725913AbfDXHYn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 03:24:43 -0400
-Received: by mail-oi1-f195.google.com with SMTP id a6so13465969oie.5;
-        Wed, 24 Apr 2019 00:24:42 -0700 (PDT)
+        id S1729919AbfDXH1D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 03:27:03 -0400
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:39876 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727137AbfDXH1D (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 03:27:03 -0400
+Received: by mail-ot1-f66.google.com with SMTP id o39so2148100ota.6;
+        Wed, 24 Apr 2019 00:27:03 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=KpGazHaICUGeN5ZTD8i37y2fsljgc3xRCYjtV1tSsKs=;
-        b=ZFKbzA0BgJirbcVkrYrHI6Tj5Q2bpW3Lnu6hos+Usl8Mub5al6WxnoEHu/TE+Dx7S0
-         09aRuSLWIo8qVp1y6s/QU1j0mNSCgNvZOzNAlFG6U1Fqi9jNYizvvAfBI7MwoBpUfxQU
-         +Q3FqrXHEeGgAUiKCD+2378MyhEhCW25dhx2KKr3C0M6RHZ4kEZVURfS18j99lKGWDc8
-         hmA9mcjnHJE6sDW06rcRFPaOk2JA4L1wkBnyzD2Z/N0jiJQeyl2QOCI7b2lxY0XLS6aZ
-         ERL5zT8MRMN9vvt/bQHt/B4NvuhcqnsXuGdwIVnRpaSm5yo090ScnwBIE0f7eElcwO2Z
-         RIHQ==
-X-Gm-Message-State: APjAAAVTpWILnHZJo4QFy9CMo9HVmNrnkcgtbh4fEJBIZWGTSq1lL2DC
-        8NGr644ZddXYlyNzqccVmkpbeONgqI+Za6fUB7jgxw==
-X-Google-Smtp-Source: APXvYqzkS27xtSRDhG+yQ/+cvIY9EB2w1qbGbCVO1m98fxmTpOQ2VxTDMJQdpNknoqEu6dEKhvG75iCnMms3AApgohQ=
-X-Received: by 2002:aca:ab06:: with SMTP id u6mr4246705oie.68.1556090682387;
- Wed, 24 Apr 2019 00:24:42 -0700 (PDT)
+        bh=uLNO+ALEpjn7XZDs/HjjZU+KRBu1qko3HM25uVzxfDc=;
+        b=JeU2jpjdH39HRV65RHPbmDfp+dSthy++iJVk9q+eBh/E9V2cLNQoCtQzWeZAxdWbYI
+         5aJD3fvbdBaSrjKu2ptCCBXDsgnfrZS7sGrFGgXKofM3Z5qNnKUQepiv7fPGnaoIddKK
+         hoBsPS3AfEXkQDCCa8lo+R1kmHPMcQC80odliONjzpFHGH3GubRwTW3rb6Aiqpkoac4k
+         HaTP8N5FNqYM1pv7idT6hw9hMrf9MWBaLYaoplzXKgjomf7ZLcmxzNRnAqbSnublWgjw
+         Rnox7H7aoWflwARusVRTva0WA3qsj7KbhgHeVtn/e9Y6XExi4iTSTef4Q1iH38Xpsa3q
+         FDSA==
+X-Gm-Message-State: APjAAAWHnwDB5VaBYQVU5aURJmoW8d1/AVMwoX2CwuMCN0YmYdv/NQZ+
+        hLAjtrAGU1lod4LldLVJzkwh1IRmvTBewVEOFVwmqQ==
+X-Google-Smtp-Source: APXvYqxyJrPNyV1aF82bL58Ait5kA70e7vPVXRilnf06niz6tAVSDHy39L3jZG3x8lr63UeZyYjasO/vFmrE+ISSHf4=
+X-Received: by 2002:a9d:7a50:: with SMTP id z16mr17331301otm.363.1556090822516;
+ Wed, 24 Apr 2019 00:27:02 -0700 (PDT)
 MIME-Version: 1.0
-References: <20190424023223.29614-1-andy.tang@nxp.com> <20190424040113.aiyaia2p7xrn5ywo@vireshk-i7>
-In-Reply-To: <20190424040113.aiyaia2p7xrn5ywo@vireshk-i7>
+References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
+ <20190321114535.GM6058@hirez.programming.kicks-ass.net> <20190322061957.hzhnlbmnkpuqviiv@vireshk-i7>
+ <20190424064753.lwfsdeodncaai5oz@vireshk-i7>
+In-Reply-To: <20190424064753.lwfsdeodncaai5oz@vireshk-i7>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 24 Apr 2019 09:24:30 +0200
+Date:   Wed, 24 Apr 2019 09:26:50 +0200
 Message-ID:
- <CAJZ5v0hSq60Hv44wOVr5J=rHMFUPFrVKxRYOS4w+zg90oUbMag@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: qoriq: Add ls1028a chip support
+ <CAJZ5v0jGofnUFKaM5-pRsZAiiQFumGGij8TE=SyX8DT8CUatQg@mail.gmail.com>
+Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each policy
 To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Andy Tang <andy.tang@nxp.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+Cc:     Peter Zijlstra <peterz@infradead.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Russell King <linux@armlinux.org.uk>,
+        "David S. Miller" <davem@davemloft.net>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        sparclinux@vger.kernel.org, kvm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424072430.nZ9sec83PkH2sXWxHvTOauTFNm0u_M0C0RVYekq2ks4@z>
+Message-ID: <20190424072650.cbYhHT6PUp0wjSK-hs-1WxnTgikZ9sYW8qx-GuafzCI@z>
 
-On Wed, Apr 24, 2019 at 6:01 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Wed, Apr 24, 2019 at 8:48 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> On 24-04-19, 10:32, andy.tang@nxp.com wrote:
-> > From: Yuantian Tang <andy.tang@nxp.com>
-> >
-> > Enable cpufreq feature on ls1028a chip by adding its compatible
-> > string.
-> >
-> > Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
-> > ---
-> >  drivers/cpufreq/qoriq-cpufreq.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> > index 4295e54..d308c4d 100644
-> > --- a/drivers/cpufreq/qoriq-cpufreq.c
-> > +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> > @@ -280,6 +280,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
-> >
-> >       { .compatible = "fsl,ls1012a-clockgen", },
-> >       { .compatible = "fsl,ls1021a-clockgen", },
-> > +     { .compatible = "fsl,ls1028a-clockgen", },
-> >       { .compatible = "fsl,ls1043a-clockgen", },
-> >       { .compatible = "fsl,ls1046a-clockgen", },
-> >       { .compatible = "fsl,ls1088a-clockgen", },
+> On 22-03-19, 11:49, Viresh Kumar wrote:
+> > On 21-03-19, 12:45, Peter Zijlstra wrote:
+> > > On Wed, Mar 20, 2019 at 10:22:23AM +0530, Viresh Kumar wrote:
 >
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> > > > index 65e4559eef2f..1ac8c710cccc 100644
+> > > > --- a/arch/x86/kvm/x86.c
+> > > > +++ b/arch/x86/kvm/x86.c
+> > > > @@ -6649,10 +6649,8 @@ static void kvm_hyperv_tsc_notifier(void)
+> > > >  }
+> > > >  #endif
+> > > >
+> > > > -static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> > > > -                              void *data)
+> > > > +static void __kvmclock_cpufreq_notifier(struct cpufreq_freqs *freq, int cpu)
+> > > >  {
+> > > > - struct cpufreq_freqs *freq = data;
+> > > >   struct kvm *kvm;
+> > > >   struct kvm_vcpu *vcpu;
+> > > >   int i, send_ipi = 0;
+> > > > @@ -6696,17 +6694,12 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+> > > >    *
+> > > >    */
+> > > >
+> > > > - if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
+> > > > -         return 0;
+> > > > - if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
+> > > > -         return 0;
+> > > > -
+> > > > - smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
+> > > > + smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
+> > > >
+> > > >   spin_lock(&kvm_lock);
+> > > >   list_for_each_entry(kvm, &vm_list, vm_list) {
+> > > >           kvm_for_each_vcpu(i, vcpu, kvm) {
+> > > > -                 if (vcpu->cpu != freq->cpu)
+> > > > +                 if (vcpu->cpu != cpu)
+> > > >                           continue;
+> > > >                   kvm_make_request(KVM_REQ_CLOCK_UPDATE, vcpu);
+> > > >                   if (vcpu->cpu != smp_processor_id())
+> > > > @@ -6728,8 +6721,24 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+> > > >            * guest context is entered kvmclock will be updated,
+> > > >            * so the guest will not see stale values.
+> > > >            */
+> > > > -         smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
+> > > > +         smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
+> > > >   }
+> > > > +}
+> > > > +
+> > > > +static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> > > > +                              void *data)
+> > > > +{
+> > > > + struct cpufreq_freqs *freq = data;
+> > > > + int cpu;
+> > > > +
+> > > > + if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
+> > > > +         return 0;
+> > > > + if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
+> > > > +         return 0;
+> > > > +
+> > > > + for_each_cpu(cpu, freq->policy->cpus)
+> > > > +         __kvmclock_cpufreq_notifier(freq, cpu);
+> > > > +
+> > > >   return 0;
+> > > >  }
+> > > >
+> > >
+> > > Then why to we pretend otherwise here?
+> >
+> > My intention was to not add any bug here because of lack of my
+> > knowledge of the architecture in question and so I tried to be safe.
+> >
+> > If you guys think the behavior should be same here as of the tsc, then
+> > we can add similar checks here.
+>
+> I am rebasing this patch over Rafael's patch [1] and wondering if I
+> should change anything here.
 
-So do you want me to take this one directly?
+I guess please repost when my patch makes it into linux-next.
+
+> [1] https://lore.kernel.org/lkml/38900622.ao2n2t5aPS@kreacher/
