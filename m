@@ -1,99 +1,70 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each policy
-Date: Wed, 24 Apr 2019 09:26:50 +0200
-Message-ID: <CAJZ5v0jGofnUFKaM5-pRsZAiiQFumGGij8TE=SyX8DT8CUatQg@mail.gmail.com>
-References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
- <20190321114535.GM6058@hirez.programming.kicks-ass.net> <20190322061957.hzhnlbmnkpuqviiv@vireshk-i7>
- <20190424064753.lwfsdeodncaai5oz@vireshk-i7>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Subject: Re: [PATCH] PM / devfreq: return PTR_ERR not NULL in try_then_request_governor()
+Date: Wed, 24 Apr 2019 10:23:54 +0200
+Message-ID: <CAFqH_512Z-R9O4oVZFq8dM629kfzKcvBuA1RbkEUn-7WH6jvHg@mail.gmail.com>
+References: <20190403152602.10019-1-steven.price@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190424064753.lwfsdeodncaai5oz@vireshk-i7>
+In-Reply-To: <20190403152602.10019-1-steven.price@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org, kvm@vger.kernel.org
+To: Steven Price <steven.price@arm.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 24, 2019 at 8:48 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 22-03-19, 11:49, Viresh Kumar wrote:
-> > On 21-03-19, 12:45, Peter Zijlstra wrote:
-> > > On Wed, Mar 20, 2019 at 10:22:23AM +0530, Viresh Kumar wrote:
->
-> > > > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> > > > index 65e4559eef2f..1ac8c710cccc 100644
-> > > > --- a/arch/x86/kvm/x86.c
-> > > > +++ b/arch/x86/kvm/x86.c
-> > > > @@ -6649,10 +6649,8 @@ static void kvm_hyperv_tsc_notifier(void)
-> > > >  }
-> > > >  #endif
-> > > >
-> > > > -static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> > > > -                              void *data)
-> > > > +static void __kvmclock_cpufreq_notifier(struct cpufreq_freqs *freq, int cpu)
-> > > >  {
-> > > > - struct cpufreq_freqs *freq = data;
-> > > >   struct kvm *kvm;
-> > > >   struct kvm_vcpu *vcpu;
-> > > >   int i, send_ipi = 0;
-> > > > @@ -6696,17 +6694,12 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
-> > > >    *
-> > > >    */
-> > > >
-> > > > - if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
-> > > > -         return 0;
-> > > > - if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
-> > > > -         return 0;
-> > > > -
-> > > > - smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
-> > > > + smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
-> > > >
-> > > >   spin_lock(&kvm_lock);
-> > > >   list_for_each_entry(kvm, &vm_list, vm_list) {
-> > > >           kvm_for_each_vcpu(i, vcpu, kvm) {
-> > > > -                 if (vcpu->cpu != freq->cpu)
-> > > > +                 if (vcpu->cpu != cpu)
-> > > >                           continue;
-> > > >                   kvm_make_request(KVM_REQ_CLOCK_UPDATE, vcpu);
-> > > >                   if (vcpu->cpu != smp_processor_id())
-> > > > @@ -6728,8 +6721,24 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
-> > > >            * guest context is entered kvmclock will be updated,
-> > > >            * so the guest will not see stale values.
-> > > >            */
-> > > > -         smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
-> > > > +         smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
-> > > >   }
-> > > > +}
-> > > > +
-> > > > +static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> > > > +                              void *data)
-> > > > +{
-> > > > + struct cpufreq_freqs *freq = data;
-> > > > + int cpu;
-> > > > +
-> > > > + if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
-> > > > +         return 0;
-> > > > + if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
-> > > > +         return 0;
-> > > > +
-> > > > + for_each_cpu(cpu, freq->policy->cpus)
-> > > > +         __kvmclock_cpufreq_notifier(freq, cpu);
-> > > > +
-> > > >   return 0;
-> > > >  }
-> > > >
-> > >
-> > > Then why to we pretend otherwise here?
-> >
-> > My intention was to not add any bug here because of lack of my
-> > knowledge of the architecture in question and so I tried to be safe.
-> >
-> > If you guys think the behavior should be same here as of the tsc, then
-> > we can add similar checks here.
->
-> I am rebasing this patch over Rafael's patch [1] and wondering if I
-> should change anything here.
+Hi,
 
-I guess please repost when my patch makes it into linux-next.
+Missatge de Steven Price <steven.price@arm.com> del dia dc., 3 d=E2=80=99ab=
+r.
+2019 a les 17:26:
 
-> [1] https://lore.kernel.org/lkml/38900622.ao2n2t5aPS@kreacher/
+>
+> The callers of try_then_request_governor() only test for a PTR_ERR using
+> IS_ERR(). However in the case that request_module() fails then NULL is
+> currently returned which will cause a NULL-pointer dereference in the
+> caller.
+>
+> Instead convert the error we already have to a valid PTR_ERR and return
+> it.
+>
+> Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers=
+ are built as modules.")
+> Signed-off-by: Steven Price <steven.price@arm.com>
+
+There is already a fix for that. The fix was initially sent in October [2] =
+but
+unfortunately, it got lost. I resend and now is queued [1]. Hopefully, the =
+Fixes
+tag will help to pick the fix to the proper kernel releases.
+
+Thanks,
+ Enric
+
+[1]
+https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=
+=3Dfor-next&id=3Db53b0128052ffd687797d5f4deeb76327e7b5711
+[2] https://lkml.org/lkml/2018/10/16/744
+
+
+> ---
+>  drivers/devfreq/devfreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 0ae3de76833b..d29f66f0e52a 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -254,7 +254,7 @@ static struct devfreq_governor *try_then_request_gove=
+rnor(const char *name)
+>                 /* Restore previous state before return */
+>                 mutex_lock(&devfreq_list_lock);
+>                 if (err)
+> -                       return NULL;
+> +                       return ERR_PTR(err);
+>
+>                 governor =3D find_devfreq_governor(name);
+>         }
+> --
+> 2.20.1
+>
