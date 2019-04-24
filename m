@@ -1,100 +1,105 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3] cpufreq: Call transition notifier only once for each
- policy
-Date: Wed, 24 Apr 2019 12:17:53 +0530
-Message-ID: <20190424064753.lwfsdeodncaai5oz@vireshk-i7>
-References: <1eb27e3bbcbb2c67e6eadc0893c9b41e5d76894b.1553057341.git.viresh.kumar@linaro.org>
- <20190321114535.GM6058@hirez.programming.kicks-ass.net>
- <20190322061957.hzhnlbmnkpuqviiv@vireshk-i7>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: [PATCH v5 00/12] QorIQ TMU multi-sensor and HWMON support
+Date: Tue, 23 Apr 2019 23:48:18 -0700
+Message-ID: <20190424064830.18179-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190322061957.hzhnlbmnkpuqviiv@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 22-03-19, 11:49, Viresh Kumar wrote:
-> On 21-03-19, 12:45, Peter Zijlstra wrote:
-> > On Wed, Mar 20, 2019 at 10:22:23AM +0530, Viresh Kumar wrote:
+Everyone:
 
-> > > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> > > index 65e4559eef2f..1ac8c710cccc 100644
-> > > --- a/arch/x86/kvm/x86.c
-> > > +++ b/arch/x86/kvm/x86.c
-> > > @@ -6649,10 +6649,8 @@ static void kvm_hyperv_tsc_notifier(void)
-> > >  }
-> > >  #endif
-> > >  
-> > > -static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> > > -				     void *data)
-> > > +static void __kvmclock_cpufreq_notifier(struct cpufreq_freqs *freq, int cpu)
-> > >  {
-> > > -	struct cpufreq_freqs *freq = data;
-> > >  	struct kvm *kvm;
-> > >  	struct kvm_vcpu *vcpu;
-> > >  	int i, send_ipi = 0;
-> > > @@ -6696,17 +6694,12 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
-> > >  	 *
-> > >  	 */
-> > >  
-> > > -	if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
-> > > -		return 0;
-> > > -	if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
-> > > -		return 0;
-> > > -
-> > > -	smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
-> > > +	smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
-> > >  
-> > >  	spin_lock(&kvm_lock);
-> > >  	list_for_each_entry(kvm, &vm_list, vm_list) {
-> > >  		kvm_for_each_vcpu(i, vcpu, kvm) {
-> > > -			if (vcpu->cpu != freq->cpu)
-> > > +			if (vcpu->cpu != cpu)
-> > >  				continue;
-> > >  			kvm_make_request(KVM_REQ_CLOCK_UPDATE, vcpu);
-> > >  			if (vcpu->cpu != smp_processor_id())
-> > > @@ -6728,8 +6721,24 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
-> > >  		 * guest context is entered kvmclock will be updated,
-> > >  		 * so the guest will not see stale values.
-> > >  		 */
-> > > -		smp_call_function_single(freq->cpu, tsc_khz_changed, freq, 1);
-> > > +		smp_call_function_single(cpu, tsc_khz_changed, freq, 1);
-> > >  	}
-> > > +}
-> > > +
-> > > +static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> > > +				     void *data)
-> > > +{
-> > > +	struct cpufreq_freqs *freq = data;
-> > > +	int cpu;
-> > > +
-> > > +	if (val == CPUFREQ_PRECHANGE && freq->old > freq->new)
-> > > +		return 0;
-> > > +	if (val == CPUFREQ_POSTCHANGE && freq->old < freq->new)
-> > > +		return 0;
-> > > +
-> > > +	for_each_cpu(cpu, freq->policy->cpus)
-> > > +		__kvmclock_cpufreq_notifier(freq, cpu);
-> > > +
-> > >  	return 0;
-> > >  }
-> > >  
-> > 
-> > Then why to we pretend otherwise here?
-> 
-> My intention was to not add any bug here because of lack of my
-> knowledge of the architecture in question and so I tried to be safe.
-> 
-> If you guys think the behavior should be same here as of the tsc, then
-> we can add similar checks here.
+This series contains patches adding support for HWMON integration, bug
+fixes and general improvements (hopefully) for TMU driver I made while
+working on it on i.MX8MQ.
 
-I am rebasing this patch over Rafael's patch [1] and wondering if I
-should change anything here.
+Feedback is welcome!
+
+Thanks,
+Andrey Smirnov
+
+Changes since [v4]
+
+    - Collected Tested-by from Lucas
+    
+    - Collected Reviewed-by from Daniel
+
+    - Converted "thermal: qoriq: Enable all sensors before registering
+      them" to use if instead of switch statement for error checking
+
+Changes since [v3]
+
+    - Series reabse on top of [rfc]
+    
+    - Fixed incorrect goto label in "thermal: qoriq: Pass data to
+      qoriq_tmu_calibration()"
+      
+    - Added REGS_TRITSR() register description to "thermal: qoriq: Do
+      not report invalid temperature reading"
+      
+    - Reworded commit message of "thermal: qoriq: Remove unnecessary
+      DT node is NULL check"
+
+Changes since [v2]
+
+    - Patches rebased on v5.1-rc1
+
+Changes since [v1]
+
+    - Rebased on "linus" branch of
+      git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+      that included latest chagnes adding multi-sensors support
+
+    - Dropped
+
+	thermal: qoriq: Add support for multiple thremal sites
+	thermal: qoriq: Be more strict when parsing
+	thermal: qoriq: Simplify error handling in qoriq_tmu_get_sensor_id()
+
+      since they are no longer relevant
+
+    - Added
+
+	thermal: qoriq: Don't store struct thermal_zone_device reference
+	thermal: qoriq: Add local struct qoriq_sensor pointer
+	thermal: qoriq: Embed per-sensor data into struct qoriq_tmu_data
+	thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
+
+      to simplify latest codebase
+
+    - Changed "thermal: qoriq: Do not report invalid temperature
+      reading" to use regmap_read_poll_timeout() to make sure that
+      tmu_get_temp() waits for fist sample to be ready before
+      reporting it. This case is triggered on my setup if
+      qoriq_thermal is compiled as a module
+
+[v1] lore.kernel.org/lkml/20190218191141.3729-1-andrew.smirnov@gmail.com
+[v2] lore.kernel.org/lkml/20190222200508.26325-1-andrew.smirnov@gmail.com
+[v3] lore.kernel.org/lkml/20190401041418.5999-1-andrew.smirnov@gmail.com
+[v4] lore.kernel.org/lkml/20190413082748.29990-1-andrew.smirnov@gmail.com
+[rfc] lore.kernel.org/lkml/20190404080647.8173-1-daniel.lezcano@linaro.org
+
+Andrey Smirnov (12):
+  thermal: qoriq: Remove unnecessary DT node is NULL check
+  thermal: qoriq: Add local struct device pointer
+  thermal: qoriq: Don't store struct thermal_zone_device reference
+  thermal: qoriq: Drop per-sensor data
+  thermal: qoriq: Pass data to qoriq_tmu_register_tmu_zone() directly
+  thermal: qoriq: Pass data to qoriq_tmu_calibration() directly
+  thermal: qoriq: Convert driver to use devm_ioremap()
+  thermal: qoriq: Convert driver to use regmap API
+  thermal: qoriq: Enable all sensors before registering them
+  thermal: qoriq: Do not report invalid temperature reading
+  thermal_hwmon: Add devres wrapper for thermal_add_hwmon_sysfs()
+  thermal: qoriq: Add hwmon support
+
+ drivers/thermal/qoriq_thermal.c | 282 +++++++++++++++-----------------
+ drivers/thermal/thermal_hwmon.c |  28 ++++
+ drivers/thermal/thermal_hwmon.h |   7 +
+ 3 files changed, 168 insertions(+), 149 deletions(-)
 
 -- 
-viresh
-
-[1] https://lore.kernel.org/lkml/38900622.ao2n2t5aPS@kreacher/
+2.20.1
