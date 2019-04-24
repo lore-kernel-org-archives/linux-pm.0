@@ -1,57 +1,278 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 2/2] thermal: rcar_gen3_thermal: disable interrupt in
- .remove
-Date: Wed, 24 Apr 2019 11:38:07 +0200
-Message-ID: <8d80c874-956f-b2e2-412b-69cc26235606@linaro.org>
-References: <20190424051145.23072-1-jiada_wang@mentor.com>
- <20190424051145.23072-3-jiada_wang@mentor.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH v2 12/12] thermal: tegra: enable OC hw throttle
+Date: Wed, 24 Apr 2019 17:49:28 +0800
+Message-ID: <b0290ba3-b9ec-ad7d-dc10-24b900c34df5@nvidia.com>
+References: <1550744327-4677-1-git-send-email-wni@nvidia.com>
+ <1550744327-4677-13-git-send-email-wni@nvidia.com>
+ <20190423154602.GB16014@localhost.localdomain>
+ <a9a241aa-1d0b-b1d3-8599-969fe86569eb@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190424051145.23072-3-jiada_wang@mentor.com>
+In-Reply-To: <a9a241aa-1d0b-b1d3-8599-969fe86569eb@nvidia.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms+renesas@verge.net.au, niklas.soderlund+renesas@ragnatech.se, geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com, biju.das@bp.renesas.com, erosca@de.adit-jv.com, george_davis@mentor.com, joshua_frkuska@mentor.com
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: daniel.lezcano@linaro.org, robh@kernel.org, thierry.reding@gmail.com, linux-tegra@vger.kernel.org, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 24/04/2019 07:11, Jiada Wang wrote:
-> Currently IRQ remains enabled after .remove, later if device is probed,
-> IRQ is requested before .thermal_init, this may cause IRQ function be
-> called before device is initialized.
+Hi Eduardo,
+
+On 24/4/2019 4:36 PM, Wei Ni wrote:
 > 
-> this patch disables interrupt in .remove, to ensure irq function
-> only be called after device is fully initialized.
 > 
-> Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
-
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-> ---
->  drivers/thermal/rcar_gen3_thermal.c | 3 +++
->  1 file changed, 3 insertions(+)
+> On 23/4/2019 11:46 PM, Eduardo Valentin wrote:
+>> On Thu, Feb 21, 2019 at 06:18:47PM +0800, Wei Ni wrote:
+>>> Parse Over Current settings from DT and program them to
+>>> generate interrupts. Also enable hw throttling whenever
+>>> there are OC events. Log the OC events as debug messages.
+>>>
+>>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>>
+>> I applied this series except for this specific patch which:
+>> a. does not apply clean
+>> b. does not compile.
+>>
+>> Please rebase on top of my -linus branch and resend this. remember to 
+>> checkpatch and compile and boot test before sending.
 > 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index 065e16f53285..280230951dfe 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -307,6 +307,9 @@ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
->  static int rcar_gen3_thermal_remove(struct platform_device *pdev)
->  {
->  	struct device *dev = &pdev->dev;
-> +	struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
-> +
-> +	rcar_thermal_irq_set(priv, false);
->  
->  	pm_runtime_put(dev);
->  	pm_runtime_disable(dev);
+> Thanks for your comment, will rebase and test it.
+
+I git clone your
+"git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git",
+and "git am" this series, but doesn't have problems, all patches can be
+applied one by one.
+Because the CONFIG_TEGRA_SOCTHERM didn't be enabled in the defconfig, so
+the driver doesn't be compiled. I will send the patch to enable it next.
+Did you miss any patches before applying this last one, could you please
+try it again?
+
+Thanks.
+Wei.
+
 > 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+>>
+>>> ---
+>>>  drivers/thermal/tegra/soctherm.c | 130 ++++++++++++++++++++++++++++++++++++---
+>>>  1 file changed, 120 insertions(+), 10 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+>>> index b8c66368e54e..6e3f329d1ac4 100644
+>>> --- a/drivers/thermal/tegra/soctherm.c
+>>> +++ b/drivers/thermal/tegra/soctherm.c
+>>> @@ -106,9 +106,26 @@
+>>>  #define STATS_CTL_CLR_UP			0x2
+>>>  #define STATS_CTL_EN_UP				0x1
+>>>  
+>>> +#define OC1_CFG					0x310
+>>> +#define OC1_CFG_LONG_LATENCY_MASK		BIT(6)
+>>> +#define OC1_CFG_HW_RESTORE_MASK			BIT(5)
+>>> +#define OC1_CFG_PWR_GOOD_MASK_MASK		BIT(4)
+>>> +#define OC1_CFG_THROTTLE_MODE_MASK		(0x3 << 2)
+>>> +#define OC1_CFG_ALARM_POLARITY_MASK		BIT(1)
+>>> +#define OC1_CFG_EN_THROTTLE_MASK		BIT(0)
+>>> +
+>>> +#define OC1_CNT_THRESHOLD			0x314
+>>> +#define OC1_THROTTLE_PERIOD			0x318
+>>> +#define OC1_ALARM_COUNT				0x31c
+>>> +#define OC1_FILTER				0x320
+>>> +#define OC1_STATS				0x3a8
+>>> +
+>>>  #define OC_INTR_STATUS				0x39c
+>>>  #define OC_INTR_ENABLE				0x3a0
+>>>  #define OC_INTR_DISABLE				0x3a4
+>>> +#define OC_STATS_CTL				0x3c4
+>>> +#define OC_STATS_CTL_CLR_ALL			0x2
+>>> +#define OC_STATS_CTL_EN_ALL			0x1
+>>>  
+>>>  #define OC_INTR_OC1_MASK			BIT(0)
+>>>  #define OC_INTR_OC2_MASK			BIT(1)
+>>> @@ -207,6 +224,25 @@
+>>>  #define THROT_DELAY_CTRL(throt)		(THROT_DELAY_LITE + \
+>>>  					(THROT_OFFSET * throt))
+>>>  
+>>> +#define ALARM_OFFSET			0x14
+>>> +#define ALARM_CFG(throt)		(OC1_CFG + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_CNT_THRESHOLD(throt)	(OC1_CNT_THRESHOLD + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_THROTTLE_PERIOD(throt)	(OC1_THROTTLE_PERIOD + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_ALARM_COUNT(throt)	(OC1_ALARM_COUNT + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_FILTER(throt)		(OC1_FILTER + \
+>>> +					(ALARM_OFFSET * (throt - THROTTLE_OC1)))
+>>> +
+>>> +#define ALARM_STATS(throt)		(OC1_STATS + \
+>>> +					(4 * (throt - THROTTLE_OC1)))
+>>> +
+>>>  /* get CCROC_THROT_PSKIP_xxx offset per HIGH/MED/LOW vect*/
+>>>  #define CCROC_THROT_OFFSET			0x0c
+>>>  #define CCROC_THROT_PSKIP_CTRL_CPU_REG(vect)    (CCROC_THROT_PSKIP_CTRL_CPU + \
+>>> @@ -218,6 +254,9 @@
+>>>  #define THERMCTL_LVL_REGS_SIZE		0x20
+>>>  #define THERMCTL_LVL_REG(rg, lv)	((rg) + ((lv) * THERMCTL_LVL_REGS_SIZE))
+>>>  
+>>> +#define OC_THROTTLE_MODE_DISABLED	0
+>>> +#define OC_THROTTLE_MODE_BRIEF		2
+>>> +
+>>>  static const int min_low_temp = -127000;
+>>>  static const int max_high_temp = 127000;
+>>>  
+>>> @@ -266,6 +305,15 @@ struct tegra_thermctl_zone {
+>>>  	const struct tegra_tsensor_group *sg;
+>>>  };
+>>>  
+>>> +struct soctherm_oc_cfg {
+>>> +	u32 active_low;
+>>> +	u32 throt_period;
+>>> +	u32 alarm_cnt_thresh;
+>>> +	u32 alarm_filter;
+>>> +	u32 mode;
+>>> +	bool intr_en;
+>>> +};
+>>> +
+>>>  struct soctherm_throt_cfg {
+>>>  	const char *name;
+>>>  	unsigned int id;
+>>> @@ -273,6 +321,7 @@ struct soctherm_throt_cfg {
+>>>  	u8 cpu_throt_level;
+>>>  	u32 cpu_throt_depth;
+>>>  	u32 gpu_throt_level;
+>>> +	struct soctherm_oc_cfg oc_cfg;
+>>>  	struct thermal_cooling_device *cdev;
+>>>  	bool init;
+>>>  };
+>>> @@ -715,7 +764,7 @@ static int tegra_soctherm_set_hwtrips(struct device *dev,
+>>>  		return 0;
+>>>  	}
+>>>  
+>>> -	for (i = 0; i < THROTTLE_SIZE; i++) {
+>>> +	for (i = 0; i < THROTTLE_OC1; i++) {
+>>>  		struct thermal_cooling_device *cdev;
+>>>  
+>>>  		if (!ts->throt_cfgs[i].init)
+>>> @@ -1537,6 +1586,32 @@ static int soctherm_thermtrips_parse(struct platform_device *pdev)
+>>>  	return 0;
+>>>  }
+>>>  
+>>> +static void soctherm_oc_cfg_parse(struct device *dev,
+>>> +				struct device_node *np_oc,
+>>> +				struct soctherm_throt_cfg *stc)
+>>> +{
+>>> +	u32 val;
+>>> +
+>>> +	if (of_property_read_bool(np_oc, "nvidia,polarity-active-low"))
+>>> +		stc->oc_cfg.active_low = 1;
+>>> +	else
+>>> +		stc->oc_cfg.active_low = 0;
+>>> +
+>>> +	if (!of_property_read_u32(np_oc, "nvidia,count-threshold", &val)) {
+>>> +		stc->oc_cfg.intr_en = 1;
+>>> +		stc->oc_cfg.alarm_cnt_thresh = val;
+>>> +	}
+>>> +
+>>> +	if (!of_property_read_u32(np_oc, "nvidia,throttle-period-us", &val))
+>>> +		stc->oc_cfg.throt_period = val;
+>>> +
+>>> +	if (!of_property_read_u32(np_oc, "nvidia,alarm-filter", &val))
+>>> +		stc->oc_cfg.alarm_filter = val;
+>>> +
+>>> +	/* BRIEF throttling by default, do not support STICKY */
+>>> +	stc->oc_cfg.mode = OC_THROTTLE_MODE_BRIEF;
+>>> +}
+>>> +
+>>>  static int soctherm_throt_cfg_parse(struct device *dev,
+>>>  				    struct device_node *np,
+>>>  				    struct soctherm_throt_cfg *stc)
+>>> @@ -1619,24 +1694,34 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
+>>>  			continue;
+>>>  		}
+>>>  
+>>> +		if (stc->init) {
+>>> +			dev_err(dev, "throttle-cfg: %s: redefined!\n", name);
+>>> +			of_node_put(np_stcc);
+>>> +			break;
+>>> +		}
+>>>  
+>>>  		err = soctherm_throt_cfg_parse(dev, np_stcc, stc);
+>>>  		if (err)
+>>>  			continue;
+>>>  
+>>> -		tcd = thermal_of_cooling_device_register(np_stcc,
+>>> +		if (stc->id >= THROTTLE_OC1) {
+>>> +			soctherm_oc_cfg_parse(dev, np_stcc, stc);
+>>> +			stc->init = true;
+>>> +		} else {
+>>> +
+>>> +			tcd = thermal_of_cooling_device_register(np_stcc,
+>>>  							 (char *)name, ts,
+>>>  							 &throt_cooling_ops);
+>>> -		of_node_put(np_stcc);
+>>> -		if (IS_ERR_OR_NULL(tcd)) {
+>>> -			dev_err(dev,
+>>> -				"throttle-cfg: %s: failed to register cooling device\n",
+>>> -				name);
+>>> -			continue;
+>>> +			if (IS_ERR_OR_NULL(tcd)) {
+>>> +				dev_err(dev,
+>>> +					"throttle-cfg: %s: failed to register cooling device\n",
+>>> +					name);
+>>> +				continue;
+>>> +			}
+>>> +			stc->cdev = tcd;
+>>> +			stc->init = true;
+>>>  		}
+>>>  
+>>> -		stc->cdev = tcd;
+>>> -		stc->init = true;
+>>>  	}
+>>>  
+>>>  	of_node_put(np_stc);
+>>> @@ -1787,6 +1872,28 @@ static void throttlectl_gpu_level_select(struct tegra_soctherm *ts,
+>>>  	writel(r, ts->regs + THROT_PSKIP_CTRL(throt, THROTTLE_DEV_GPU));
+>>>  }
+>>>  
+>>> +static int soctherm_oc_cfg_program(struct tegra_soctherm *ts,
+>>> +				      enum soctherm_throttle_id throt)
+>>> +{
+>>> +	u32 r;
+>>> +	struct soctherm_oc_cfg *oc = &ts->throt_cfgs[throt].oc_cfg;
+>>> +
+>>> +	if (oc->mode == OC_THROTTLE_MODE_DISABLED)
+>>> +		return -EINVAL;
+>>> +
+>>> +	r = REG_SET_MASK(0, OC1_CFG_HW_RESTORE_MASK, 1);
+>>> +	r = REG_SET_MASK(r, OC1_CFG_THROTTLE_MODE_MASK, oc->mode);
+>>> +	r = REG_SET_MASK(r, OC1_CFG_ALARM_POLARITY_MASK, oc->active_low);
+>>> +	r = REG_SET_MASK(r, OC1_CFG_EN_THROTTLE_MASK, 1);
+>>> +	writel(r, ts->regs + ALARM_CFG(throt));
+>>> +	writel(oc->throt_period, ts->regs + ALARM_THROTTLE_PERIOD(throt));
+>>> +	writel(oc->alarm_cnt_thresh, ts->regs + ALARM_CNT_THRESHOLD(throt));
+>>> +	writel(oc->alarm_filter, ts->regs + ALARM_FILTER(throt));
+>>> +	soctherm_oc_intr_enable(ts, throt, oc->intr_en);
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>>  /**
+>>>   * soctherm_throttle_program() - programs pulse skippers' configuration
+>>>   * @throt: the LIGHT/HEAVY of the throttle event id.
+>>> @@ -1803,6 +1910,9 @@ static void soctherm_throttle_program(struct tegra_soctherm *ts,
+>>>  	if (!stc.init)
+>>>  		return;
+>>>  
+>>> +	if ((throt >= THROTTLE_OC1) && (soctherm_oc_cfg_program(ts, throt)))
+>>> +		return;
+>>> +
+>>>  	/* Setup PSKIP parameters */
+>>>  	if (ts->soc->use_ccroc)
+>>>  		throttlectl_cpu_level_select(ts, throt);
+>>> -- 
+>>> 2.7.4
+>>>
