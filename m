@@ -2,120 +2,137 @@ Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0170C10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 14:14:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DE27C10F11
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 14:54:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8FDB421773
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 14:14:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D659C218FC
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 14:54:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="MABW/1lw"
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="jeglYtiK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725954AbfDXOOx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 10:14:53 -0400
-Received: from userp2130.oracle.com ([156.151.31.86]:57700 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725921AbfDXOOw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 10:14:52 -0400
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x3OE8qgA048456;
-        Wed, 24 Apr 2019 14:14:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : mime-version : content-type; s=corp-2018-07-02;
- bh=rzgN05gODJ01MRz24tgRfnhrJkDAEI1+MrTL7sv+tuk=;
- b=MABW/1lw2q5H4kODcP1sL4f5/y88L3lA7lvKjxi9imKD2krPDIGBUllxJD25YqcQtb7d
- Vp4rmv9JSGKqO0jr0thArrBiB80EUdfQJ2f/bGx1SJ9zeMgXkcUraHbkDLm4N583ClI5
- DF1t0VGEn37Vl/b6Se6WzzOUB51KGVhpln+S9P+xyyPfwzVWVEglLzhg8VuEt4LUIHAJ
- d61URC+lL4PkxfHqbLLsq+AU0GQpWxl1hpdg+ImKWKF+5vrzHONYRm59hHBPPUMnfWtF
- yYGKgEeCmMN98E41Mb7HP8P2flFk04ApEGI1Nan+09h+OXUL3JGFDgP1RDSjrYdJd9H6 3Q== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by userp2130.oracle.com with ESMTP id 2rytut2nnm-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 24 Apr 2019 14:14:48 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x3OEEjDv145229;
-        Wed, 24 Apr 2019 14:14:48 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by userp3020.oracle.com with ESMTP id 2s0dwev8af-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 24 Apr 2019 14:14:48 +0000
-Received: from abhmp0005.oracle.com (abhmp0005.oracle.com [141.146.116.11])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x3OEElbG014358;
-        Wed, 24 Apr 2019 14:14:47 GMT
-Received: from kadam (/196.111.187.26)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Wed, 24 Apr 2019 07:14:46 -0700
-Date:   Wed, 24 Apr 2019 17:14:39 +0300
-From:   Dan Carpenter <dan.carpenter@oracle.com>
-To:     kbuild@01.org, Amit Kucheria <amit.kucheria@linaro.org>
-Cc:     kbuild-all@01.org, linux-pm@vger.kernel.org,
-        Eduardo Valentin <edubezval@gmail.com>
-Subject: [soc-thermal:for-kernelci 19/35]
- drivers/thermal/qcom/tsens-v0_1.c:189 calibrate_8974() warn: passing zero to
- 'PTR_ERR'
-Message-ID: <20190424141439.GG14820@kadam>
-MIME-Version: 1.0
+        id S1731758AbfDXOy1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Apr 2019 10:54:27 -0400
+Received: from mail-eopbgr50068.outbound.protection.outlook.com ([40.107.5.68]:27013
+        "EHLO EUR03-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1731113AbfDXOy1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 24 Apr 2019 10:54:27 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=nDV5bQxA5k+ndE95DZzEKl1CMuva2JheTFchkJZgn84=;
+ b=jeglYtiKHfw44LvM+A6n4+ZYXE5nWMGT46CGE8fzThbenumJjqZmDip0498eC0rYdqbXZTerY/eSUC41lA5qBj0ZeQo4hlO1xYat+7IH6kVWJbK4I0xKi06BUO49e/B/Ycj2xUdjO99479tZzXudMG5WiAMFNIM01fsopukXTps=
+Received: from VI1PR04MB4800.eurprd04.prod.outlook.com (20.177.48.221) by
+ VI1PR04MB5776.eurprd04.prod.outlook.com (20.178.127.206) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1835.12; Wed, 24 Apr 2019 14:54:24 +0000
+Received: from VI1PR04MB4800.eurprd04.prod.outlook.com
+ ([fe80::9bd:1d31:d6c3:d157]) by VI1PR04MB4800.eurprd04.prod.outlook.com
+ ([fe80::9bd:1d31:d6c3:d157%6]) with mapi id 15.20.1813.017; Wed, 24 Apr 2019
+ 14:54:24 +0000
+From:   Vabhav Sharma <vabhav.sharma@nxp.com>
+To:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+CC:     "sboyd@kernel.org" <sboyd@kernel.org>,
+        "mturquette@baylibre.com" <mturquette@baylibre.com>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+        Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
+        Andy Tang <andy.tang@nxp.com>,
+        Vabhav Sharma <vabhav.sharma@nxp.com>
+Subject: [PATCH] arm64: drivers: clk: qoriq: Add clockgen support for lx2160a
+Thread-Topic: [PATCH] arm64: drivers: clk: qoriq: Add clockgen support for
+ lx2160a
+Thread-Index: AQHU+q2bE74r8QWOEEW3f2AnJYEBpA==
+Date:   Wed, 24 Apr 2019 14:54:24 +0000
+Message-ID: <1556117674-27029-1-git-send-email-vabhav.sharma@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: BM1PR0101CA0031.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:b00:1a::17) To VI1PR04MB4800.eurprd04.prod.outlook.com
+ (2603:10a6:803:53::29)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=vabhav.sharma@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-mailer: git-send-email 1.9.1
+x-originating-ip: [92.120.1.71]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 83cdeac5-85fe-4316-fb84-08d6c8c4bd8e
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:VI1PR04MB5776;
+x-ms-traffictypediagnostic: VI1PR04MB5776:
+x-microsoft-antispam-prvs: <VI1PR04MB577614B36BC688A4E88A0035F33C0@VI1PR04MB5776.eurprd04.prod.outlook.com>
+x-forefront-prvs: 00179089FD
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(396003)(376002)(39860400002)(346002)(136003)(366004)(199004)(189003)(71200400001)(71190400001)(14454004)(86362001)(53936002)(2201001)(102836004)(66476007)(66946007)(73956011)(54906003)(66556008)(64756008)(66446008)(2501003)(99286004)(5660300002)(6512007)(6116002)(97736004)(305945005)(3846002)(44832011)(50226002)(81166006)(81156014)(256004)(8676002)(8936002)(66066001)(25786009)(478600001)(26005)(52116002)(316002)(68736007)(2906002)(186003)(110136005)(486006)(2616005)(476003)(6506007)(386003)(6486002)(36756003)(7736002)(4326008)(6436002);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB5776;H:VI1PR04MB4800.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: WFCiYoBGROylOuLe+8D7x/csgKBJ5ybwx3zDblw0XVjfdOU+9PNaaK5d5XBsaNuBgzAXkUS+U9k+Zx4iGoLaijuXUuz+3GE2u8f+Djvnfbn+AFXGjErD4JZ8Q4m4eKcbsU/cPpQN2DjGeFAGQmhQ0aKwRyxRbsRPCIUmZ2sT06IZKBnm/rOR4ZlCRSZ850JRUsBbLoMPoobVi2GQb2oSWps3DA53vpEs4Qd9vZXvfl2lYoeXOd96i3z4VgEqCqstYCddkOxG0cl4vXlxzvg9BtrABa03Pb/IftFS7PtxlsETQ7bG2nAv0gX4h3QWl+01xocXgmf3SPGpCuYBPyL/wU0kHqUUrk4glJYxgdeMjOAIP60XFx6ND5KiR+n1L6naJ8tBwEc0AC21RBF5HOW2tX/kKsFlxVqUtdtZLejoaD8=
 Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9236 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1810050000 definitions=main-1904240111
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9236 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1904240111
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 83cdeac5-85fe-4316-fb84-08d6c8c4bd8e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Apr 2019 14:54:24.2606
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5776
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424141439.RueIa2Ftdd7nqJ58k0fFLQBgm1VgWjp10xaHOiB0V0I@z>
+Message-ID: <20190424145424.A3IKMY9yxj3qNvkXor6wNbwYX94M1VM1E40BtzLMt9I@z>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git for-kernelci
-head:   0e50a5ee6b8a23c6798aae23efcd4b8e055c06ef
-commit: 5853cb769573b58c319fa62e1987d063b8c5b77e [19/35] drivers: thermal: tsens: Merge tsens-8974 into tsens-v0_1
-
-New smatch warnings:
-drivers/thermal/qcom/tsens-v0_1.c:228 calibrate_8974() warn: mask and shift to zero
-
-# https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?id=5853cb769573b58c319fa62e1987d063b8c5b77e
-git remote add soc-thermal https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
-git remote update soc-thermal
-git checkout 5853cb769573b58c319fa62e1987d063b8c5b77e
-vim +/PTR_ERR +189 drivers/thermal/qcom/tsens-v0_1.c
-
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  216  			/* Fall through */
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  217  		case ONE_PT_CALIB:
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  218  		case ONE_PT_CALIB2:
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  219  			base1 = bkp[0] & BASE1_MASK;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  220  			p1[0] = (bkp[0] & S0_P1_MASK) >> S0_P1_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  221  			p1[1] = (bkp[0] & S1_P1_MASK) >> S1_P1_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  222  			p1[2] = (bkp[0] & S2_P1_MASK) >> S2_P1_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  223  			p1[3] = (bkp[0] & S3_P1_MASK) >> S3_P1_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  224  			p1[4] = (bkp[1] & S4_P1_MASK);
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  225  			p1[5] = (bkp[1] & S5_P1_MASK) >> S5_P1_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  226  			p1[6] = (bkp[1] & S6_P1_MASK) >> S6_P1_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  227  			p1[7] = (bkp[1] & S7_P1_MASK) >> S7_P1_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20 @228  			p1[8] = (bkp[2] & S8_P1_MASK_BKP) >> S8_P1_SHIFT;
-                                                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-p1[8] always ends up being zero.  (I haven't look at the code, that's
-what the static checker is saying).
-
-
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  229  			p1[9] = (bkp[2] & S9_P1_MASK_BKP) >> S9_P1_BKP_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  230  			p1[10] = (bkp[2] & S10_P1_MASK_BKP) >> S10_P1_BKP_SHIFT;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  231  			break;
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  232  		}
-5853cb7695 drivers/thermal/qcom/tsens-v0_1.c Amit Kucheria  2019-03-20  233  	} else {
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+RnJvbTogWW9nZXNoIEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29tPg0KDQpBZGQgY2xv
+Y2tnZW4gc3VwcG9ydCBmb3IgbHgyMTYwYS4NCkFkZGVkIGVudHJ5IGZvciBjb21wYXQgJ2ZzbCxs
+eDIxNjBhLWNsb2NrZ2VuJy4NCg0KU2lnbmVkLW9mZi1ieTogVGFuZyBZdWFudGlhbiA8YW5keS50
+YW5nQG54cC5jb20+DQpTaWduZWQtb2ZmLWJ5OiBZb2dlc2ggR2F1ciA8eW9nZXNobmFyYXlhbi5n
+YXVyQG54cC5jb20+DQpTaWduZWQtb2ZmLWJ5OiBWYWJoYXYgU2hhcm1hIDx2YWJoYXYuc2hhcm1h
+QG54cC5jb20+DQpBY2tlZC1ieTogU2NvdHQgV29vZCA8b3NzQGJ1c2Vycm9yLm5ldD4NCkFja2Vk
+LWJ5OiBTdGVwaGVuIEJveWQgPHNib3lkQGtlcm5lbC5vcmc+DQpBY2tlZC1ieTogVmlyZXNoIEt1
+bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCi0tLQ0KIGRyaXZlcnMvY2xrL2Nsay1xb3Jp
+cS5jICAgICAgICAgfCAxMiArKysrKysrKysrKysNCiBkcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1
+ZnJlcS5jIHwgIDEgKw0KIDIgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKQ0KDQpkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMgYi9kcml2ZXJzL2Nsay9jbGstcW9yaXEu
+Yw0KaW5kZXggZjY2MDZjZi4uOTZkYjc4MCAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvY2xrL2Nsay1x
+b3JpcS5jDQorKysgYi9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYw0KQEAgLTU3MCw2ICs1NzAsMTcg
+QEAgc3RhdGljIGNvbnN0IHN0cnVjdCBjbG9ja2dlbl9jaGlwaW5mbyBjaGlwaW5mb1tdID0gew0K
+IAkJLmZsYWdzID0gQ0dfVkVSMyB8IENHX0xJVFRMRV9FTkRJQU4sDQogCX0sDQogCXsNCisJCS5j
+b21wYXQgPSAiZnNsLGx4MjE2MGEtY2xvY2tnZW4iLA0KKwkJLmNtdXhfZ3JvdXBzID0gew0KKwkJ
+CSZjbG9ja2dlbjJfY211eF9jZ2ExMiwgJmNsb2NrZ2VuMl9jbXV4X2NnYg0KKwkJfSwNCisJCS5j
+bXV4X3RvX2dyb3VwID0gew0KKwkJCTAsIDAsIDAsIDAsIDEsIDEsIDEsIDEsIC0xDQorCQl9LA0K
+KwkJLnBsbF9tYXNrID0gMHgzNywNCisJCS5mbGFncyA9IENHX1ZFUjMgfCBDR19MSVRUTEVfRU5E
+SUFOLA0KKwl9LA0KKwl7DQogCQkuY29tcGF0ID0gImZzbCxwMjA0MS1jbG9ja2dlbiIsDQogCQku
+Z3V0c19jb21wYXQgPSAiZnNsLHFvcmlxLWRldmljZS1jb25maWctMS4wIiwNCiAJCS5pbml0X3Bl
+cmlwaCA9IHAyMDQxX2luaXRfcGVyaXBoLA0KQEAgLTE0MjcsNiArMTQzOCw3IEBAIENMS19PRl9E
+RUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX2xzMTA0M2EsICJmc2wsbHMxMDQzYS1jbG9ja2dlbiIsIGNs
+b2NrZ2VuX2luaXQpOw0KIENMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX2xzMTA0NmEsICJm
+c2wsbHMxMDQ2YS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0KIENMS19PRl9ERUNMQVJFKHFv
+cmlxX2Nsb2NrZ2VuX2xzMTA4OGEsICJmc2wsbHMxMDg4YS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2lu
+aXQpOw0KIENMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX2xzMjA4MGEsICJmc2wsbHMyMDgw
+YS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0KK0NMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2Nr
+Z2VuX2x4MjE2MGEsICJmc2wsbHgyMTYwYS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0KIENM
+S19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX3AyMDQxLCAiZnNsLHAyMDQxLWNsb2NrZ2VuIiwg
+Y2xvY2tnZW5faW5pdCk7DQogQ0xLX09GX0RFQ0xBUkUocW9yaXFfY2xvY2tnZW5fcDMwNDEsICJm
+c2wscDMwNDEtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCiBDTEtfT0ZfREVDTEFSRShxb3Jp
+cV9jbG9ja2dlbl9wNDA4MCwgImZzbCxwNDA4MC1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0K
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMgYi9kcml2ZXJzL2Nw
+dWZyZXEvcW9yaXEtY3B1ZnJlcS5jDQppbmRleCA0Mjk1ZTU0Li44MWYwMjg4IDEwMDY0NA0KLS0t
+IGEvZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYw0KKysrIGIvZHJpdmVycy9jcHVmcmVx
+L3FvcmlxLWNwdWZyZXEuYw0KQEAgLTI4NCw2ICsyODQsNyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0
+IG9mX2RldmljZV9pZCBub2RlX21hdGNoZXNbXSBfX2luaXRjb25zdCA9IHsNCiAJeyAuY29tcGF0
+aWJsZSA9ICJmc2wsbHMxMDQ2YS1jbG9ja2dlbiIsIH0sDQogCXsgLmNvbXBhdGlibGUgPSAiZnNs
+LGxzMTA4OGEtY2xvY2tnZW4iLCB9LA0KIAl7IC5jb21wYXRpYmxlID0gImZzbCxsczIwODBhLWNs
+b2NrZ2VuIiwgfSwNCisJeyAuY29tcGF0aWJsZSA9ICJmc2wsbHgyMTYwYS1jbG9ja2dlbiIsIH0s
+DQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLHA0MDgwLWNsb2NrZ2VuIiwgfSwNCiAJeyAuY29tcGF0
+aWJsZSA9ICJmc2wscW9yaXEtY2xvY2tnZW4tMS4wIiwgfSwNCiAJeyAuY29tcGF0aWJsZSA9ICJm
+c2wscW9yaXEtY2xvY2tnZW4tMi4wIiwgfSwNCi0tIA0KMi43LjQNCg0K
