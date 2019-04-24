@@ -1,36 +1,29 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] thermal/drivers/cpu_cooling: Remove pointless test in power2state()
-Date: Wed, 24 Apr 2019 22:56:09 +0200
-Message-ID: <20190424205610.9376-1-daniel.lezcano@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH V12 5/5] arm64: dts: imx: add i.MX8QXP thermal support
+Date: Wed, 24 Apr 2019 16:21:04 -0500
+Message-ID: <20190424212104.GA26974@bogus>
+References: <1555384609-7030-1-git-send-email-Anson.Huang@nxp.com>
+ <1555384609-7030-5-git-send-email-Anson.Huang@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1555384609-7030-5-git-send-email-Anson.Huang@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "festevam@gmail.com" <festevam@gmail.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Aisheng Dong <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Daniel Baluta <daniel.baluta@nxp.com>, Peng Fan <peng.fan@nxp.com>, "heiko@sntech.de" <heiko@sntech.de>, "horms+renesas@verge.net.au" <horms+renesas@verge.ne>
 List-Id: linux-pm@vger.kernel.org
 
-When the static power computation was removed, the test with the power
-being negative was not removed. However, the substraction which was
-responsible of the negative value was removed and the variable is now
-an u32. A double reason to remove the test which does not make sense.
+On Tue, 16 Apr 2019 03:22:41 +0000, Anson Huang wrote:
+> Add i.MX8QXP CPU thermal zone support.
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> ---
+> Changes since V11:
+> 	- add cooling device for all secondary CPUs.
+> ---
+>  arch/arm64/boot/dts/freescale/imx8qxp.dtsi | 37 ++++++++++++++++++++++++++++++
+>  1 file changed, 37 insertions(+)
+> 
 
-Fixes: 84fe2cab48590 ("cpu_cooling: Drop static-power related stuff")
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/cpu_cooling.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index f7c1f49ec87f..ee8419a6390c 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -541,7 +541,6 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
- 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
- 	struct cpufreq_policy *policy = cpufreq_cdev->policy;
- 
--	power = power > 0 ? power : 0;
- 	last_load = cpufreq_cdev->last_load ?: 1;
- 	normalised_power = (power * 100) / last_load;
- 	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
--- 
-2.17.1
+Reviewed-by: Rob Herring <robh@kernel.org>
