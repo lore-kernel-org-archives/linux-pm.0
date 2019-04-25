@@ -2,175 +2,138 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D9ECC43219
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 19:57:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C4CCC43218
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 21:53:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 82BBA206C1
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 19:57:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7060A206C1
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 21:53:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1556222274;
-	bh=M0klb38CAfwmfeRnmU/cPc3te8MCDlrFMp+XvcriVtI=;
+	s=default; t=1556229231;
+	bh=Plwfy3oB+OykF8/1IlF7++4WyiIFYA0MI70M18z1WSI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=0shKgz59pcsjcoOTHjURd+4o4hLFiThbjB8O02xXAy3C37ez9lFld+sPkZurCcKfE
-	 hz6LrkuKpLapSKO8cA7dPAZdHfA/MIQCSlvLw+5pOKT0r+y4ieERxalRUw95ht6SdE
-	 wLPJmuHJHnDehQjIIiD3ECWpKpqIze4zVeL9q0eo=
+	b=MIen2DXGoYYfNZKepXVU7Pe+ejqmQcyI3hvlsmZu+VV9d/ZhBbYAQQiWhyzDXo38g
+	 ynmoE12eReIYFbI1TjOQGjPLxuAYCjrRXUAxg9eOVpj87K9STWfnTye9jNUBEmE9i9
+	 XzEP2uFEb6PLO4p9VPjDNvw0hdBET/cSFyoyQB4I=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730509AbfDYT5x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 15:57:53 -0400
-Received: from mail-oi1-f194.google.com ([209.85.167.194]:42200 "EHLO
-        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726125AbfDYT5x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 15:57:53 -0400
-Received: by mail-oi1-f194.google.com with SMTP id w139so1061069oie.9;
-        Thu, 25 Apr 2019 12:57:52 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=Q+ZqzLPdQ6UxCMOOHKP9B7YQ4swKS1G4qWBFIt51nI0=;
-        b=RtvB3vbjrHl40Wwur/LAwQ/2nMZ0nHW0xRTRfe+X+jI9uLlvgLPRn9wadoD5sq9dK+
-         oj7qiovxQV3G6eK6cSIwqHWHSqAdyfVuubdsA0qq8vzVQ0t2tIk7TwFirScwfy+HtpAW
-         mRtHHgQljJd2YsYQqA9jCtMdEbSyPYcgm6ntlOBJMCpHnFoyh0x15qPm9kc5Pr4W2ZcC
-         uBp1Dhe+HlTNKxe8+55hlk8jDUeRVPmQWjmAAv25dD69I/PkzRjGOowXBVcQoyLJq3cX
-         p58l/HkxrazIopFNtGAt+Y8ygfmnpaj1GdWxx8uv5ioFe+7VAIj4bNvvaCCzN0Z92NDP
-         YEdw==
-X-Gm-Message-State: APjAAAUYCxSbY4tFjr4QtWMGDQEHAVJPXo8hs1IUJPy9DWorIc681L7v
-        2eGDmRNT7Z6JIQITq5xhSg==
-X-Google-Smtp-Source: APXvYqws+IT22HvmUSol1kl5L/dHeIPkCQ71NEVYtJ9VVyntv8s8Sl5K3c2g+pxIBr2jTJOGHYpESw==
-X-Received: by 2002:aca:4c47:: with SMTP id z68mr1368440oia.64.1556222272113;
-        Thu, 25 Apr 2019 12:57:52 -0700 (PDT)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id p14sm9141466otq.34.2019.04.25.12.57.51
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Thu, 25 Apr 2019 12:57:51 -0700 (PDT)
-Date:   Thu, 25 Apr 2019 14:57:50 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Lukasz Luba <l.luba@partner.samsung.com>
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
-        cw00.choi@samsung.com, kyungmin.park@samsung.com,
-        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
-        myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com,
-        jroedel@suse.de, treding@nvidia.com, digetx@gmail.com,
-        willy.mh.wolff.ml@gmail.com
-Subject: Re: [PATCH v6 06/10] dt-bindings: memory-controllers: add Exynos5422
- DMC device description
-Message-ID: <20190425195750.GA26031@bogus>
-References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
- <CGME20190419141947eucas1p13a27605e04169ab528ef5bfb385eddbc@eucas1p1.samsung.com>
- <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
+        id S1730663AbfDYVxq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 17:53:46 -0400
+Received: from mail.kernel.org ([198.145.29.99]:53328 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726150AbfDYVxq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Apr 2019 17:53:46 -0400
+Received: from earth.universe (unknown [185.62.205.103])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 67A24206C1;
+        Thu, 25 Apr 2019 21:53:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1556229224;
+        bh=Plwfy3oB+OykF8/1IlF7++4WyiIFYA0MI70M18z1WSI=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=jqQL/dbcwqs2D51cN4rE1l6EI93UALyGTXHF8GdW/erXVaGHeb+oSgw6ECTy0Q8Ou
+         whkQPwJF+dfOPOqiUrGQbXLMKHCX1ErBvIBGnh3koruCpj91M7nhiLVWHUlynOf1L1
+         DYQ0C/P50aeIJOcRJWdsI5+pnq5rwwqQ5JbkrcSw=
+Received: by earth.universe (Postfix, from userid 1000)
+        id 00E5D3C0D1D; Thu, 25 Apr 2019 23:46:09 +0200 (CEST)
+Date:   Thu, 25 Apr 2019 23:46:09 +0200
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Bartosz Golaszewski <brgl@bgdev.pl>
+Cc:     Pavel Machek <pavel@denx.de>, Lee Jones <lee.jones@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux Input <linux-input@vger.kernel.org>,
+        Linux LED Subsystem <linux-leds@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Subject: Re: [PATCH v10 00/11] mfd: add support for max77650 PMIC
+Message-ID: <20190425214609.rav7ooxovzhvgn7e@earth.universe>
+References: <20190423090451.23711-1-brgl@bgdev.pl>
+ <20190424083127.GB6699@amd>
+ <CAMRc=McN78_gJw_T4EPucM8veTC9XRUu7TGJ0J+zPsU=0Hu2GQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="hkqjlur2zgw6jemw"
 Content-Disposition: inline
-In-Reply-To: <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <CAMRc=McN78_gJw_T4EPucM8veTC9XRUu7TGJ0J+zPsU=0Hu2GQ@mail.gmail.com>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425195750.1RvZ29Ll-OgDTx-f92MKGOmMaPk34_x5WF8W51dKDEw@z>
+Message-ID: <20190425214609.zr1GQM9LC89dppSKeJksURGJQGU4807QCd8eqlTYolA@z>
 
-On Fri, Apr 19, 2019 at 04:19:24PM +0200, Lukasz Luba wrote:
-> The patch adds description for DT binding for a new Exynos5422 Dynamic
-> Memory Controller device.
-> 
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  .../bindings/memory-controllers/exynos5422-dmc.txt | 73 ++++++++++++++++++++++
->  1 file changed, 73 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
-> new file mode 100644
-> index 0000000..133b3cc
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
-> @@ -0,0 +1,73 @@
-> +* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
-> +
-> +The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
-> +memory chips are connected. The driver is to monitor the controller in runtime
-> +and switch frequency and voltage. To monitor the usage of the controller in
-> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
-> +is able to measure the current load of the memory.
-> +When 'userspace' governor is used for the driver, an application is able to
-> +switch the DMC and memory frequency.
-> +
-> +Required properties for DMC device for Exynos5422:
-> +- compatible: Should be "samsung,exynos5422-bus".
-> +- clock-names : the name of clock used by the bus, "bus".
-> +- clocks : phandles for clock specified in "clock-names" property.
-> +- devfreq-events : phandles for PPMU devices connected to this DMC.
-> +- vdd-supply : phandle for voltage regulator which is connected.
-> +- reg : registers of two CDREX controllers, chip information, clocks subsystem.
-> +- operating-points-v2 : phandle for OPPs described in v2 definition.
-> +- device-handle : phandle of the connected DRAM memory device. For more
-> +	information please refer to Documentation
 
-The memory node(s) should be a child of the memory controller IMO.
+--hkqjlur2zgw6jemw
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> +- devfreq-events : phandles of the PPMU events used by the controller.
-> +
-> +Example:
-> +
-> +	ppmu_dmc0_0: ppmu@10d00000 {
-> +		compatible = "samsung,exynos-ppmu";
-> +		reg = <0x10d00000 0x2000>;
-> +		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
-> +		clock-names = "ppmu";
-> +		status = "okay";
+Hi,
 
-Don't show 'status' in examples.
+On Wed, Apr 24, 2019 at 10:45:00AM +0200, Bartosz Golaszewski wrote:
+> =C5=9Br., 24 kwi 2019 o 10:31 Pavel Machek <pavel@denx.de> napisa=C5=82(a=
+):
+> >
+> > On Tue 2019-04-23 11:04:40, Bartosz Golaszewski wrote:
+> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > >
+> > > This series adds support for max77650 ultra low-power PMIC. It provid=
+es
+> > > the core mfd driver and a set of five sub-drivers for the regulator,
+> > > power supply, gpio, leds and input subsystems.
+> > >
+> > > Patches 1-4 add the DT binding documents. Patch 5 documents mfd_add_d=
+evices().
+> > > Patches 6-10 add all drivers. Last patch adds a MAINTAINERS entry for=
+ this
+> > > device.
+> > >
+> > > The regulator part is already upstream.
+> >
+> > I see v10 in my inbox... and acks from all over the place, but patches
+> > not going in. Who takes these? I don't think I need another 10
+> > versions in my inbox...
+> >                                                                 Pavel
+>=20
+> I think Lee Jones should take them through the MFD tree. With the ack
+> from Sebastian Reichel on the driver part and the example in the
+> charger binding fixed I think they are ready to be picked up.
 
-> +		events {
-> +			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
-> +				event-name = "ppmu-event3-dmc0_0";
-> +			};
-> +		};
-> +	};
-> +
-> +	dmc: memory-controller@10c20000 {
-> +		compatible = "samsung,exynos5422-dmc";
-> +		reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
-> +			<0x10000000 0x1000>, <0x10030000 0x1000>;
-> +		clocks = 	<&clock CLK_FOUT_SPLL>,
-> +				<&clock CLK_MOUT_SCLK_SPLL>,
-> +				<&clock CLK_FF_DOUT_SPLL2>,
-> +				<&clock CLK_FOUT_BPLL>,
-> +				<&clock CLK_MOUT_BPLL>,
-> +				<&clock CLK_SCLK_BPLL>,
-> +				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
-> +				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
-> +				<&clock CLK_MOUT_MCLK_CDREX>,
-> +				<&clock CLK_DOUT_CLK2X_PHY0>,
-> +				<&clock CLK_CLKM_PHY0>,
-> +				<&clock CLK_CLKM_PHY1>;
-> +		clock-names =	"fout_spll",
-> +				"mout_sclk_spll",
-> +				"ff_dout_spll2",
-> +				"fout_bpll",
-> +				"mout_bpll",
-> +				"sclk_bpll",
-> +				"mout_mx_mspll_ccore",
-> +				"mout_mx_mspll_ccore_phy",
-> +				"mout_mclk_cdrex",
-> +				"dout_clk2x_phy0",
-> +				"clkm_phy0",
-> +			        "clkm_phy1";
-> +		status = "okay";
-> +		operating-points-v2 = <&dmc_opp_table>;
-> +		devfreq-events = <&ppmu_event3_dmc0_0>,	<&ppmu_event3_dmc0_1>,
-> +				<&ppmu_event3_dmc1_0>, <&ppmu_event3_dmc1_1>;
-> +		operating-points-v2 = <&dmc_opp_table>;
-> +		device-handle = <&samsung_K3QF2F20DB>;
-> +		vdd-supply = <&buck1_reg>;
-> +	};
-> -- 
-> 2.7.4
-> 
+Fine with me.
+
+-- Sebastian
+
+--hkqjlur2zgw6jemw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzCKpoACgkQ2O7X88g7
++pr2mBAAkSSqMITsZQW+RCxTbutrVPO+dqNO9WPo6/0+bjuOfMLt5V9ty3vimvhi
+K/dCIpbQRO417ZwlyCM+mt5wuhPBGbgOy/65EBAcdFKweDFv4q/tug45qh6V3fZ8
+6iaSwd9wXMf2UttkJZ5UeOX+O+ud19RjBVmoJ8HqUG5LA+ud0ZbUcVDhlUEiMcEJ
++zNMo0HQpUuKMmHRp2iKlWkoekPFDhEWnQZbuBxwhVhKbvZCX4LavbHeiR3GCkO8
+Q1onr1MjkpFJfrQTjbQLOKFB5i2/I4EMmZ63LECwv5PhaYkb3Rf7dtGj7koS+4ni
+rVKYEvSuiCXDPliimXmV6zorkK4FQd2ykZc+pHamTdEMsqanOr+K/BpSh4qOZvqH
+Mo2t4FiEqKZ2ATKnfimQsqnPG37cr5yq4cKwukL+hND36maWjws0jF9o2HkXJI8Y
+CTcIs+ZGjuDRDgW5bxkpao9P+M16FlKzrkO1EP6LLCBtIQde4nWf5jn26xHj8j56
+QHGToQk12PykVLrXrzpWFYxHilzCtV7ZNdSj02rMFJFiCwcxkqPv2jJqQhILJnuR
+CcdSpEILZZgcTan0H4p7plyOJWoPpminEHFZLHTNkQyywFYXXQRGHVRvNXjc/P/I
+vpvXVsB8WQCEXVhUtJz1fzyEhBSKN0XGOPEWEe6OYtI4rgtm+io=
+=X5TB
+-----END PGP SIGNATURE-----
+
+--hkqjlur2zgw6jemw--
