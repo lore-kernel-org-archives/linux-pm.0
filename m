@@ -2,139 +2,132 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C49AC43218
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 13:36:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0350C43219
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 13:44:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 01037206BF
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 13:36:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A8A93206C1
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 13:44:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="kJMMa5hC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729798AbfDYNgC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 09:36:02 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:35736 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727416AbfDYNgC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 09:36:02 -0400
-Received: by mail-pf1-f196.google.com with SMTP id t21so11213969pfh.2;
-        Thu, 25 Apr 2019 06:36:01 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
-         :message-id:date:user-agent:mime-version:in-reply-to
-         :content-language:content-transfer-encoding;
-        bh=l17uPVGpdSiv8IfUe123oAga8SuqeCZI9ns3aS/aHQA=;
-        b=ryb0Q2U9tiVUN1bI5XWSJ90q5fQ4ie8ePv9WxyV5xOVSDETrnAg2Rk8VdyPjObzv1Q
-         xv1G4/mElBy2e/39+3BFLP0k6dMBantUKchoErrXZhyfGRKPUmQRaxYHdP5zHvc7I7Ic
-         NJ+El10aMxrwrnA4mPsCspUec6UbBEFcr3MdjmRGQQryrKUhwUt7ygzy/5MNnMS8rSb9
-         9Awig+pVqoA5rzZIDSyQj3ldD0OEZjgGINCaBEFq+BZCOmi9Y/z/OJx8PmfCtTx8paLu
-         yq6rmjn2j73p0JEyk6t08xSyX/BaKfwNcm6wVllOqQtmmde9aOhFofKX8BR0j3Z1SLWc
-         nTDA==
-X-Gm-Message-State: APjAAAVyj9dg2hhhckXJ0wG4reUdIRjivtYLwee51X0luoHt0iEHl7a0
-        tqc6KrIjMxw4dIEbhctE66sNLQtPZ1E=
-X-Google-Smtp-Source: APXvYqwHF3LQd/hbE3iZGRyRB+bjoYMXBy+7bjmZVXvZiX7ckqln8SC8m5F8s/LsOHji83tNZFdrIg==
-X-Received: by 2002:a63:2ad3:: with SMTP id q202mr19144778pgq.423.1556199360860;
-        Thu, 25 Apr 2019 06:36:00 -0700 (PDT)
-Received: from asus.site ([2601:647:4000:5dd1:a41e:80b4:deb3:fb66])
-        by smtp.gmail.com with ESMTPSA id r145sm48531119pgr.84.2019.04.25.06.35.59
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 25 Apr 2019 06:35:59 -0700 (PDT)
-Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
- asynchronous probing was Re: next-20190408..0418: Suspend/resume problems on
- Thinkpad X60
-To:     Pavel Machek <pavel@denx.de>
-Cc:     Jens Axboe <axboe@kernel.dk>, jejb@linux.ibm.com,
-        martin.petersen@oracle.com, lduncan@suse.com, hare@suse.com,
-        mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de,
-        gregkh@linuxfoundation.org, dan.j.williams@intel.com,
-        kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
-        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
-        linux-next@vger.kernel.org, hdegoede@redhat.com,
-        linux-ide@vger.kernel.org
-References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
- <20190423102239.GA15531@amd> <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
- <20190424095431.GA32457@amd> <20190424104850.GC32457@amd>
- <20190424202119.GA26357@amd> <20190424204832.GA3111@amd>
- <20190424205150.GA4582@amd> <1556139361.161891.140.camel@acm.org>
- <20190425073343.GA19600@amd>
-From:   Bart Van Assche <bvanassche@acm.org>
-Openpgp: preference=signencrypt
-Autocrypt: addr=bvanassche@acm.org; prefer-encrypt=mutual; keydata=
- mQENBFSOu4oBCADcRWxVUvkkvRmmwTwIjIJvZOu6wNm+dz5AF4z0FHW2KNZL3oheO3P8UZWr
- LQOrCfRcK8e/sIs2Y2D3Lg/SL7qqbMehGEYcJptu6mKkywBfoYbtBkVoJ/jQsi2H0vBiiCOy
- fmxMHIPcYxaJdXxrOG2UO4B60Y/BzE6OrPDT44w4cZA9DH5xialliWU447Bts8TJNa3lZKS1
- AvW1ZklbvJfAJJAwzDih35LxU2fcWbmhPa7EO2DCv/LM1B10GBB/oQB5kvlq4aA2PSIWkqz4
- 3SI5kCPSsygD6wKnbRsvNn2mIACva6VHdm62A7xel5dJRfpQjXj2snd1F/YNoNc66UUTABEB
- AAG0JEJhcnQgVmFuIEFzc2NoZSA8YnZhbmFzc2NoZUBhY20ub3JnPokBOQQTAQIAIwUCVI67
- igIbAwcLCQgHAwIBBhUIAgkKCwQWAgMBAh4BAheAAAoJEHFcPTXFzhAJ8QkH/1AdXblKL65M
- Y1Zk1bYKnkAb4a98LxCPm/pJBilvci6boefwlBDZ2NZuuYWYgyrehMB5H+q+Kq4P0IBbTqTa
- jTPAANn62A6jwJ0FnCn6YaM9TZQjM1F7LoDX3v+oAkaoXuq0dQ4hnxQNu792bi6QyVdZUvKc
- macVFVgfK9n04mL7RzjO3f+X4midKt/s+G+IPr4DGlrq+WH27eDbpUR3aYRk8EgbgGKvQFdD
- CEBFJi+5ZKOArmJVBSk21RHDpqyz6Vit3rjep7c1SN8s7NhVi9cjkKmMDM7KYhXkWc10lKx2
- RTkFI30rkDm4U+JpdAd2+tP3tjGf9AyGGinpzE2XY1K5AQ0EVI67igEIAKiSyd0nECrgz+H5
- PcFDGYQpGDMTl8MOPCKw/F3diXPuj2eql4xSbAdbUCJzk2ETif5s3twT2ER8cUTEVOaCEUY3
- eOiaFgQ+nGLx4BXqqGewikPJCe+UBjFnH1m2/IFn4T9jPZkV8xlkKmDUqMK5EV9n3eQLkn5g
- lco+FepTtmbkSCCjd91EfThVbNYpVQ5ZjdBCXN66CKyJDMJ85HVr5rmXG/nqriTh6cv1l1Js
- T7AFvvPjUPknS6d+BETMhTkbGzoyS+sywEsQAgA+BMCxBH4LvUmHYhpS+W6CiZ3ZMxjO8Hgc
- ++w1mLeRUvda3i4/U8wDT3SWuHcB3DWlcppECLkAEQEAAYkBHwQYAQIACQUCVI67igIbDAAK
- CRBxXD01xc4QCZ4dB/0QrnEasxjM0PGeXK5hcZMT9Eo998alUfn5XU0RQDYdwp6/kMEXMdmT
- oH0F0xB3SQ8WVSXA9rrc4EBvZruWQ+5/zjVrhhfUAx12CzL4oQ9Ro2k45daYaonKTANYG22y
- //x8dLe2Fv1By4SKGhmzwH87uXxbTJAUxiWIi1np0z3/RDnoVyfmfbbL1DY7zf2hYXLLzsJR
- mSsED/1nlJ9Oq5fALdNEPgDyPUerqHxcmIub+pF0AzJoYHK5punqpqfGmqPbjxrJLPJfHVKy
- goMj5DlBMoYqEgpbwdUYkH6QdizJJCur4icy8GUNbisFYABeoJ91pnD4IGei3MTdvINSZI5e
-Message-ID: <360f6936-ee21-a036-9bd4-93ecfee829e2@acm.org>
-Date:   Thu, 25 Apr 2019 06:35:58 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <20190425073343.GA19600@amd>
-Content-Type: text/plain; charset="UTF-8"
+        id S1726861AbfDYNoN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 09:44:13 -0400
+Received: from mail-eopbgr40061.outbound.protection.outlook.com ([40.107.4.61]:34886
+        "EHLO EUR03-DB5-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725900AbfDYNoN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Apr 2019 09:44:13 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=EXadrvWo/MMrUXkY+9OfXOMW1w7nle4YZSh36tluxaU=;
+ b=kJMMa5hCGaO88l5JcgjAJECvXOhyShlL0HFVYNOsWkwWNhnLrS75yOZyuloaZYw0Tz5pxMyGKYfFcFiDt8cOEIC9jixTxHbREOtK2HOICYGAfnBFaIUhXh2WL5bzeQfBKYqjFWYkm4pelC+Exv3wYoSNKhIgepXBEp+8feFf3iA=
+Received: from VI1PR04MB4800.eurprd04.prod.outlook.com (20.177.48.221) by
+ VI1PR04MB4125.eurprd04.prod.outlook.com (52.133.14.154) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1835.13; Thu, 25 Apr 2019 13:44:09 +0000
+Received: from VI1PR04MB4800.eurprd04.prod.outlook.com
+ ([fe80::9bd:1d31:d6c3:d157]) by VI1PR04MB4800.eurprd04.prod.outlook.com
+ ([fe80::9bd:1d31:d6c3:d157%6]) with mapi id 15.20.1813.017; Thu, 25 Apr 2019
+ 13:44:09 +0000
+From:   Vabhav Sharma <vabhav.sharma@nxp.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Andy Tang <andy.tang@nxp.com>
+CC:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "sboyd@kernel.org" <sboyd@kernel.org>,
+        "mturquette@baylibre.com" <mturquette@baylibre.com>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+        Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>
+Subject: RE: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
+Thread-Topic: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for
+ lx2160a
+Thread-Index: AQHU+0v+B00Z51pg7EC3G4Yx/RLSjaZMpcWAgAABiCCAAAWOgIAANlDw
+Date:   Thu, 25 Apr 2019 13:44:08 +0000
+Message-ID:
+ <VI1PR04MB4800B9D8F71166868CB6D209F33D0@VI1PR04MB4800.eurprd04.prod.outlook.com>
+References: <1556185703-26243-1-git-send-email-vabhav.sharma@nxp.com>
+ <CAJZ5v0iwrjonKpA3Skkhkg3g5Pp9Qzx0v2GBYKdv7eM_jL4p8g@mail.gmail.com>
+ <VI1PR04MB43336A0C62B956CA29A7E621F33D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <CAJZ5v0jQFXpHmpxSYSUxwGkMV98g3S+zV1oh1RYxvkebmzT29Q@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jQFXpHmpxSYSUxwGkMV98g3S+zV1oh1RYxvkebmzT29Q@mail.gmail.com>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=vabhav.sharma@nxp.com; 
+x-originating-ip: [92.120.0.4]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 5e356d6a-6d88-498f-507a-08d6c9841815
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:VI1PR04MB4125;
+x-ms-traffictypediagnostic: VI1PR04MB4125:
+x-microsoft-antispam-prvs: <VI1PR04MB4125F4AE949F37E031AD508AF33D0@VI1PR04MB4125.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0018A2705B
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(39860400002)(346002)(136003)(366004)(396003)(376002)(189003)(199004)(13464003)(54534003)(66556008)(66476007)(53936002)(93886005)(64756008)(66446008)(7696005)(486006)(256004)(14444005)(66946007)(26005)(76176011)(73956011)(186003)(76116006)(52536014)(6246003)(8936002)(102836004)(9686003)(55016002)(81166006)(81156014)(8676002)(4326008)(33656002)(6636002)(476003)(99286004)(3846002)(6116002)(86362001)(478600001)(68736007)(446003)(11346002)(305945005)(7736002)(5660300002)(229853002)(54906003)(97736004)(6436002)(14454004)(6506007)(25786009)(53546011)(44832011)(74316002)(71200400001)(316002)(71190400001)(110136005)(2906002)(66066001);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB4125;H:VI1PR04MB4800.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: Dvc4f9y3MTjL3WWomGL9l8FVJ1tvdpdKE7QCollr9FyV5EDuz6SPisrGp9X3E42PoKBazpis7+elYOK1XyEeI1BrZcbtFq7lkF4d0k1PktxaEw3tmtK/Nvm95uSaMkUTfuX5FB+BVNaRuzCDZbtnOLtCa4pZWiKPIWcRus/EIZKaDtBrpEMj9rmiRPsjEKo0O1sfSeg93UoYh3kKSV45Tl1VIf+R/d5dTix/7nJGu5QarS1YD/h6HgLduqUUxcnkT48z/dDZc9Ptop7gfuKhDzFPr8pUEE3JTLn2zKBGBw/ttCrTIO2Tf+bTvolqkDGeNoNSmWzNzgQFJtBbD7Yqtfn60bnft9dB/+Dn68uWYq4qiL5QzVlOovQi4jbYYDy8L9ycRuD/MsYImRx6TKEHoLVguuhfil6XcB2vLN0l9XI=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5e356d6a-6d88-498f-507a-08d6c9841815
+X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Apr 2019 13:44:09.3197
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB4125
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425133558.rc-oy7WjKLENIpCPM416hnHgwqpTsNqak8K55Zxf10E@z>
+Message-ID: <20190425134408.kifctKywf3mWF8D7GtXaaNf0WFNK5UafDTh7JKTYd4Y@z>
 
-On 4/25/19 12:33 AM, Pavel Machek wrote:
-> On Wed 2019-04-24 13:56:01, Bart Van Assche wrote:
->> On Wed, 2019-04-24 at 22:51 +0200, Pavel Machek wrote:
->>> Unfortunately, that one does not revert cleanly on top of -next.
->>
->> Can you try the following:
->>
->> git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 &&
->>   git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
->>
->> I will see whether I can come up with a better way to analyze what is
->> going on. I had not expected that these patches would cause any suspend/
->> resume problems.
-> 
-> Not even d16ece reverts:
-> 
-> pavel@duo:/data/l/linux-next-32$ git show  | head -3
-> commit 76c938fcaa4b4a5d8f05fa907925d5043834964e
-> Author: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date:   Tue Apr 23 20:24:59 2019 +1000
-> pavel@duo:/data/l/linux-next-32$ git revert
-> d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
-> error: could not revert d16ece5... scsi: sd: Inline sd_probe_part2()
-> hint: after resolving the conflicts, mark the corrected paths
-> hint: with 'git add <paths>' or 'git rm <paths>'
-> hint: and commit the result with 'git commit'
-
-There has been a non-trivial merge between the block and scsi trees in
-linux-next. That's probably what prevents these patches to revert
-cleanly. How about performing the following tests:
-* Build, boot and test Martin's latest for-5.2 branch
-(git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git; branch
-5.2/scsi-queue).
-* If suspend/resume does not work reliably with that branch, revert the
-two patches above, rebuild, reboot and retest.
-
-Thanks,
-
-Bart.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgPHJhZmFlbEBrZXJuZWwub3JnPg0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMjUsIDIwMTkg
+Mzo1OSBQTQ0KPiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4NCj4gQ2M6IFJhZmFl
+bCBKLiBXeXNvY2tpIDxyYWZhZWxAa2VybmVsLm9yZz47IFZhYmhhdiBTaGFybWENCj4gPHZhYmhh
+di5zaGFybWFAbnhwLmNvbT47IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0K
+PiBjbGtAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IHNib3lkQGtl
+cm5lbC5vcmc7DQo+IG10dXJxdWV0dGVAYmF5bGlicmUuY29tOyByandAcmp3eXNvY2tpLm5ldDsg
+dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7DQo+IFlvZ2VzaCBOYXJheWFuIEdhdXIgPHlvZ2VzaG5h
+cmF5YW4uZ2F1ckBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW0VYVF0gUmU6IFtQQVRDSCB2Ml0g
+Y2xrOiBxb3JpcTogQWRkIGNsb2NrZ2VuIHN1cHBvcnQgZm9yIGx4MjE2MGENCj4gDQo+IENhdXRp
+b246IEVYVCBFbWFpbA0KPiANCj4gT24gVGh1LCBBcHIgMjUsIDIwMTkgYXQgMTI6MTUgUE0gQW5k
+eSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4gd3JvdGU6DQo+ID4NCj4gPg0KPiA+ID4gLS0tLS1P
+cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZh
+ZWxAa2VybmVsLm9yZz4NCj4gPiA+IFNlbnQ6IDIwMTnlubQ05pyIMjXml6UgMTg6MDQNCj4gPiA+
+IFRvOiBWYWJoYXYgU2hhcm1hIDx2YWJoYXYuc2hhcm1hQG54cC5jb20+DQo+ID4gPiBDYzogbGlu
+dXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtY2xrQHZnZXIua2VybmVsLm9yZzsNCj4g
+PiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgc2JveWRAa2VybmVsLm9yZzsgbXR1cnF1ZXR0
+ZUBiYXlsaWJyZS5jb207DQo+ID4gPiByandAcmp3eXNvY2tpLm5ldDsgdmlyZXNoLmt1bWFyQGxp
+bmFyby5vcmc7IFlvZ2VzaCBOYXJheWFuIEdhdXINCj4gPiA+IDx5b2dlc2huYXJheWFuLmdhdXJA
+bnhwLmNvbT47IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+ID4gPiBTdWJqZWN0OiBb
+RVhUXSBSZTogW1BBVENIIHYyXSBjbGs6IHFvcmlxOiBBZGQgY2xvY2tnZW4gc3VwcG9ydCBmb3IN
+Cj4gPiA+IGx4MjE2MGENCj4gPiA+DQo+ID4gPiBDYXV0aW9uOiBFWFQgRW1haWwNCj4gPiA+DQo+
+ID4gPiBPbiBUaHUsIEFwciAyNSwgMjAxOSBhdCAxMTo0OCBBTSBWYWJoYXYgU2hhcm1hDQo+ID4g
+PiA8dmFiaGF2LnNoYXJtYUBueHAuY29tPg0KPiA+ID4gd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+
+IEZyb206IFlvZ2VzaCBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT4NCj4gPiA+ID4N
+Cj4gPiA+ID4gQWRkIGNsb2NrZ2VuIHN1cHBvcnQgZm9yIGx4MjE2MGEuDQo+ID4gPiA+IEFkZGVk
+IGVudHJ5IGZvciBjb21wYXQgJ2ZzbCxseDIxNjBhLWNsb2NrZ2VuJy4NCj4gPiA+DQo+ID4gPiBX
+ZWxsLCBpZiBJJ20gZXhwZWN0ZWQgdG8gYXBwbHkgdGhpcywgdGhlIGFib3ZlIGlzIGEgYml0IHRl
+cnNlLg0KPiA+ID4NCj4gPiA+IEl0IGxvb2tzIGxpa2UgdGhlIHBhdGNoIG1ha2VzIHRoZSBxb3Jp
+cS1jcHVmcmVxIGRyaXZlciBoYW5kbGUgc29tZQ0KPiA+ID4gbmV3IGhhcmR3YXJlLCBidXQgdGhl
+IGNoYW5nZWxvZyBkb2Vzbid0IHNheSBtdWNoIGFib3V0IHRoYXQuDQo+ID4gPg0KPiA+ID4gSSdt
+IGd1ZXNzaW5nIHRoYXQgdGhlIGNsb2NrZ2VuIHN1cHBvcnQgYWRkZWQgaGVyZSBtYWtlcyBpdCBw
+b3NzaWJsZQ0KPiA+ID4gZm9yIHFvcmlxLWNwdWZyZXEgdG8gaGFuZGxlIHRoaXMgY2hpcCwgaXMg
+dGhhdCBjb3JyZWN0Pw0KPiA+IFllcywgeW91ciBndWVzcyBpcyBjb3JyZWN0LiBUaGUgY3B1ZnJl
+cSBmZWF0dXJlIGlzIGJhc2VkIG9uIGNsb2NrIGRyaXZlci4NCj4gPiBJdCBzaG91bGQgaGFkIGJl
+ZW4gc2VwYXJhdGVkIHRvIHR3byBwYXRjaGVzIGFuZCByZWR1Y2VkIHRoZSBjb25mdXNlLg0KPiA+
+IERvIEkgbmVlZCB0byB1cGRhdGUgdGhlIGNvbW1pdCBtZXNzYWdlIG9yIHlvdSBqdXN0IHRha2Ug
+aXQ/DQo+IA0KPiBQbGVhc2UgdXBkYXRlIHRoZSBjb21taXQgbWVzc2FnZS4NCj4gDQo+IFRoYW5r
+cyENCk9rDQo=
