@@ -1,53 +1,34 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/4] PM / Domains: Improve support for CPUs in genpd
-Date: Thu, 25 Apr 2019 12:11:09 +0200
-Message-ID: <CAPDyKFqP+92wwscW2V3352DVS1QM=DjMZ3e0uty1eQ4=5JyHWA@mail.gmail.com>
-References: <20190425090413.10700-1-ulf.hansson@linaro.org>
- <CAJZ5v0jxGcFu-aqvyR4UgjRuCwB9q9fZCiXf+D3NL3TJ5OVEPA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJZ5v0jxGcFu-aqvyR4UgjRuCwB9q9fZCiXf+D3NL3TJ5OVEPA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Niklas Cassel <niklas.cassel@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+From: Elaine Zhang <zhangqing@rock-chips.com>
+Subject: [PATCH v2 0/3] thermal: rockchip: fix up thermal driver
+Date: Thu, 25 Apr 2019 18:12:26 +0800
+Message-ID: <1556187154-22632-1-git-send-email-zhangqing@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: heiko@sntech.de
+Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 25 Apr 2019 at 11:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Thu, Apr 25, 2019 at 11:04 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > Recently genpd was extended to cope with devices belonging to CPUs. However,
-> > attaching CPU devices via genpd_dev_pm_attach_by_id|name() doesn't work,
-> > because of the virtual device that genpd allocates in this path.
-> >
-> > In this series, this limitation is addressed, together with a few other related
-> > fixes/cleanups.
-> >
-> > Ulf Hansson (4):
-> >   PM / Domains: Use the base device for
-> >     driver_deferred_probe_check_state()
-> >   PM / Domains: Drop unused in-parameter to some genpd functions
-> >   PM / Domains: Search for the CPU device outside the genpd lock
-> >   PM / Domains: Allow to attach a CPU via
-> >     genpd_dev_pm_attach_by_id|name()
-> >
-> >  drivers/base/power/domain.c | 73 ++++++++++++++++++-------------------
-> >  include/linux/pm_domain.h   |  1 +
-> >  2 files changed, 36 insertions(+), 38 deletions(-)
->
-> Are there any dependencies between this and the series you've recently posted?
+1. add pinctrl control.
+2. support PX30 soc
 
-Yep. I should have stated that, sorry. This should be applied on top.
+change in V2:
+PATCH V2 1/3: keep tshut_mode TSHUT_MODE_GPIO;
+	      In case of pinctrl get or lookup error, just bail out;
+	      No need to use the thermal_pinctrl_select_otp/gpio wrappers,
+	      just replace them with:
+PATCH V2 2/3: No change in V2.
+PATCH V2 2/3: keep tshut_mode TSHUT_MODE_GPIO;
+              Remove the grf in 'rk_tsadcv4_initialize' function.
 
-Kind regards
-Uffe
+pinctrl_select_state(thermal->pinctrl, thermal->pinctrl_state);
+Elaine Zhang (3):
+  thermal: rockchip: fix up the tsadc pinctrl setting error
+  dt-bindings: rockchip-thermal: Support the PX30 SoC compatible
+  thermal: rockchip: Support the PX30 SoC in thermal driver
+
+ .../bindings/thermal/rockchip-thermal.txt          |  1 +
+ drivers/thermal/rockchip_thermal.c                 | 74 +++++++++++++++++++++-
+ 2 files changed, 72 insertions(+), 3 deletions(-)
+
+-- 
+1.9.1
