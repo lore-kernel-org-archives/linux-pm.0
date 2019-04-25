@@ -2,215 +2,110 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E758C10F03
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:29:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 358F5C282E1
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:29:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3B8CA208E4
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:29:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="oZoTGqVN"
+	by mail.kernel.org (Postfix) with ESMTP id 061412084B
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:29:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556188171;
+	bh=eNrv5UrP9L6BsclZYbT7L2DpxpieXYZWg/6ctIGmqms=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=iov8vmsqATfbKp/UeLRLHIM6i5oX+RAt+mE6anKW74/b96DxPB0UpVKhdioB4Uek8
+	 bZNTKxu2yoGZdahSjgp/yz9zzE5GtT/hHDPvjVBblVWeaHSnRmpNW64qljXN0YwFFs
+	 5vuDXilgI9YaD6wINaKiUampZ+yLlk0a4+FYxWG4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730006AbfDYK3R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 06:29:17 -0400
-Received: from mail-eopbgr70040.outbound.protection.outlook.com ([40.107.7.40]:12549
-        "EHLO EUR04-HE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726120AbfDYK3R (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Apr 2019 06:29:17 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=dl1sCttsC9wSBCKY0H2e9l5rtl7Z0pRP/eHmTqrZy9c=;
- b=oZoTGqVNZY2ssLEUXIra4Mx/m0YIKEA8DEVxXlvFGaq7+tsf4Va74vI+0tjqa+SUnh4PJVN4BknY+//ba4UFrsBirmZfhdzZIOStql4fTFE+FIHEG6b00U/JX7dLkJQ1xfAPVxmyj6IvIvRwo682duEJIHds6bSgcCWDkKg6DdM=
-Received: from AM6PR04MB6440.eurprd04.prod.outlook.com (20.179.244.217) by
- AM6PR04MB6344.eurprd04.prod.outlook.com (10.255.168.21) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1835.12; Thu, 25 Apr 2019 10:29:12 +0000
-Received: from AM6PR04MB6440.eurprd04.prod.outlook.com
- ([fe80::14c2:1e08:524c:6ff4]) by AM6PR04MB6440.eurprd04.prod.outlook.com
- ([fe80::14c2:1e08:524c:6ff4%2]) with mapi id 15.20.1835.010; Thu, 25 Apr 2019
- 10:29:11 +0000
-From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Lucas Stach <l.stach@pengutronix.de>
-CC:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Abel Vesa <abel.vesa@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: [RFC] cpufreq: Add imx-cpufreq-dt driver
-Thread-Topic: [RFC] cpufreq: Add imx-cpufreq-dt driver
-Thread-Index: AQHU+1G5n8xA1o8EXEODrFl/NmnNOQ==
-Date:   Thu, 25 Apr 2019 10:29:11 +0000
-Message-ID:
- <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [89.37.124.34]
-x-mailer: git-send-email 2.17.1
-x-clientproxiedby: LO2P265CA0064.GBRP265.PROD.OUTLOOK.COM
- (2603:10a6:600:60::28) To AM6PR04MB6440.eurprd04.prod.outlook.com
- (2603:10a6:20b:f4::25)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=leonard.crestez@nxp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: e1855397-7263-4072-c4f0-08d6c968db6a
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:AM6PR04MB6344;
-x-ms-traffictypediagnostic: AM6PR04MB6344:
-x-microsoft-antispam-prvs: <AM6PR04MB6344661D2FE7ABC2EFDF4633EE3D0@AM6PR04MB6344.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0018A2705B
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(136003)(366004)(376002)(346002)(39860400002)(396003)(189003)(199004)(68736007)(2616005)(53936002)(186003)(102836004)(476003)(26005)(6512007)(256004)(386003)(6506007)(8676002)(305945005)(7736002)(81166006)(81156014)(99286004)(8936002)(6116002)(3846002)(5660300002)(2906002)(478600001)(54906003)(118296001)(71190400001)(71200400001)(14454004)(36756003)(316002)(50226002)(6486002)(110136005)(52116002)(6436002)(97736004)(4326008)(66476007)(66556008)(64756008)(86362001)(25786009)(73956011)(66946007)(66066001)(66446008)(44832011)(486006);DIR:OUT;SFP:1101;SCL:1;SRVR:AM6PR04MB6344;H:AM6PR04MB6440.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: IG4Jw0AQhfl1ecbx8tWRv9Kop79xPWSNclz3+o/dH6T47xabSQo91R9CSt/B20/jjcNTAAG26ZETyYQPgyX0qF6f1pNBqu5u/ZL83jEsgMoE0qstdPt5rzq/FLP5wJfY0XneTOX0vfCHtsHoqGIgrI80BenE1SkjfxA8PwDEIyWM0wCtr/MAs9yabyZf1/aGTWbS2KtQx03DvfXmtVj6IpQjR49EI6K94Nujh6xbFArEZscR9IL2JbZ8hZY7oGkU7UY3f/SxijWYtwq/Bz0RuJgb6anb973fpbNhBYYqfS2NgkkCyuiCr/45ScvDLf3YlbrTM0U/ff8Zs2TsexPnPGW0FdzYJlkN8T2BO5cixkRhT4tmq3bo8jvwQJnUlW+AW3kSn3SbVAjt5Dth+1eDlty/sJ9KUYRaHrRPtqLmhBI=
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+        id S1730129AbfDYK30 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 06:29:26 -0400
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:35531 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726120AbfDYK3Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 06:29:25 -0400
+Received: by mail-ot1-f66.google.com with SMTP id m10so18962360otp.2;
+        Thu, 25 Apr 2019 03:29:25 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=NaEO2hbJnAfSocLc5D5wA6ojFT1ikDji2rc336ze4Z8=;
+        b=QqWf1xwulkEBHpxv/hMe5ElOQ5VmwZEXr9Wh/I7Vb3u6hZjO+RA2dBJFrTuliPfCNY
+         kFj/X/iTFueTe0U/S+XOLp3ryul9lf9yKytUxYEC0d8xfZ6bX4Ao2wSO2uSZYEiCiG3w
+         UWJ2iF1kIFwMaPmNXr8kP27RHs9j93j7PWoRCwzjw+o7hhpMTKBOZSNzygPJgqE9wglE
+         Nh+f7uZayV8Bag4Jca2FfQI0UL3BLG7kWC4EewZ1PETfQxEZx8syndwpk94R+g6O9L+R
+         sv7VaZr1KorCDya+WIaAnBjMVOD2GI06vtdihq6ssKF37CCDBnow4uEzjTZTfhXTZF+2
+         ZzkQ==
+X-Gm-Message-State: APjAAAVn7S89zlOOlrSb6CNRmCxbG9vFLxuDn6xjRTCTu4q72agW62ge
+        WFtDrCLHSFVGckFJH+0La2d7KHtaZjUXN1Gotvs=
+X-Google-Smtp-Source: APXvYqw3NB5FFAFcBBhNbDiq0JrF1J0ZYM/WZJ7qsjLnZ2oD/chnauzFJOzvJGycLTCYTL/SMIVYBXvlG1LiTEN03pw=
+X-Received: by 2002:a05:6830:20cd:: with SMTP id z13mr23847099otq.168.1556188165036;
+ Thu, 25 Apr 2019 03:29:25 -0700 (PDT)
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e1855397-7263-4072-c4f0-08d6c968db6a
-X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Apr 2019 10:29:11.8305
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB6344
+References: <1556185703-26243-1-git-send-email-vabhav.sharma@nxp.com>
+ <CAJZ5v0iwrjonKpA3Skkhkg3g5Pp9Qzx0v2GBYKdv7eM_jL4p8g@mail.gmail.com> <VI1PR04MB43336A0C62B956CA29A7E621F33D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+In-Reply-To: <VI1PR04MB43336A0C62B956CA29A7E621F33D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 25 Apr 2019 12:29:13 +0200
+Message-ID:
+ <CAJZ5v0jQFXpHmpxSYSUxwGkMV98g3S+zV1oh1RYxvkebmzT29Q@mail.gmail.com>
+Subject: Re: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
+To:     Andy Tang <andy.tang@nxp.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Vabhav Sharma <vabhav.sharma@nxp.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "sboyd@kernel.org" <sboyd@kernel.org>,
+        "mturquette@baylibre.com" <mturquette@baylibre.com>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+        Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425102911.cSlzGI93JPaif9G6KoeNI2BD2MDICY6op61njxznuhM@z>
+Message-ID: <20190425102913.eoIIOcL8PhTDIxooaDXjrL0gOBB_WiGez3s4d9cLG-4@z>
 
-UmlnaHQgbm93IGluIHVwc3RyZWFtIGlteDhtIGNwdWZyZXEgc3VwcG9ydCBqdXN0IGxpc3RzIGEg
-Y29tbW9uIHN1YnNldA0Kb2YgT1BQcyBiZWNhdXNlIHRoZSBoaWdoZXIgb25lcyBzaG91bGQgb25s
-eSBiZSBhdHRlbXB0ZWQgYWZ0ZXIgY2hlY2tpbmcNCnNwZWVkIGdyYWRpbmcgaW4gZnVzZXMuDQoN
-ClRoaXMgaXMgbm90IGEgcmVhc29uYWJsZSBsaW1pdGF0aW9uIGFuZCBtZWFucyB3ZSBtdXN0IHN0
-aWxsIGNhcnJ5IGENCnNlcGFyYXRlIGNwdWZyZXEgZHJpdmVyIGluIE5YUCB0cmVlLg0KDQpUaGlz
-IGlzIGEgc21hbGwgZHJpdmVyIHdoaWNoIGNoZWNrcyBzcGVlZCBncmFkaW5nIGZyb20gbnZtZW0g
-YmVmb3JlDQpyZWdpc3RlcmluZyBjcHVmcmVxLWR0LiBVbmxpa2UgaW14NnEtY3B1ZnJlcSBhbmQg
-dmFyaW91cyBvdGhlciByZWplY3RlZA0KaW14Ny84IGNwdWZyZXEgZHJpdmVycyBpdCBjb250YWlu
-cyBubyBhY3R1YWwgZnJlcXVlbmN5IHN3aXRjaGluZyBjb2RlLA0KanVzdCBmdXNlIHJlYWRpbmcg
-dGhyb3VnaCBudm1lbSBBUEkuDQoNCkNvZGUgaXMgaW5zcGlyZWQgYnkgc2ltaWxhciBjcHVmcmVx
-IHdyYXBwZXJzIGZyb20gYSBkb3plbiBkaWZmZXJlbnQNCnZlbmRvcnMuIEN1cnJlbnRseSBmb3Ig
-aW14OG1tIGJ1dCBzYW1lIGlzc3VlIGFwcGxpZXMgdG8gaW14OG1xIGFuZA0Kb3RoZXJzLg0KDQpT
-aWduZWQtb2ZmLWJ5OiBMZW9uYXJkIENyZXN0ZXogPGxlb25hcmQuY3Jlc3RlekBueHAuY29tPg0K
-DQotLS0NCiBkcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy5hcm0gICAgICAgICAgfCAgIDUgKysNCiBk
-cml2ZXJzL2NwdWZyZXEvTWFrZWZpbGUgICAgICAgICAgICAgfCAgIDEgKw0KIGRyaXZlcnMvY3B1
-ZnJlcS9jcHVmcmVxLWR0LXBsYXRkZXYuYyB8ICAgMiArDQogZHJpdmVycy9jcHVmcmVxL2lteC1j
-cHVmcmVxLWR0LmMgICAgIHwgMTAxICsrKysrKysrKysrKysrKysrKysrKysrKysrKw0KIDQgZmls
-ZXMgY2hhbmdlZCwgMTA5IGluc2VydGlvbnMoKykNCiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVy
-cy9jcHVmcmVxL2lteC1jcHVmcmVxLWR0LmMNCg0KU2luY2UgbnZtZW0gaXMgYSBtb2R1bGUgdGhp
-cyBkcml2ZXIgYWxzbyBuZWVkcyB0byBiZSB0dXJuZWQgaW50byBhDQpwcm9wZXIgbW9kdWxlLCBy
-aWdodCBub3cgaXQgd2lsbCBzaW1wbHkgZmFpbCBpZiBudm1lbSBpcyB1bmF2YWlsYWJsZSBhdA0K
-aW5pdCB0aW1lLiBMZXQgbWUga25vdyBpZiB5b3UgYWdyZWUgd2l0aCB0aGlzIGFwcHJvYWNoIGJl
-Zm9yZSBJIHR1cm4gaXQNCmludG8gYSBtb2R1bGUuDQoNCkluIHZlbmRvciB0cmVlIHRoaXMgaXMg
-ZG9uZSBpbiBzb2MgZHJpdmVyIGJ1dCBtYW55IG90aGVyIHZlbmRvcnMgZG8gaXQNCmluIGRyaXZl
-cnMvY3B1ZnJlcSBzbyB0aGlzIGlzIHdoZXJlIGl0IGJlbG9uZ3MuDQoNClRoaXMgaXMgc2VsZWN0
-IGJ5IGRlZmF1bHQgaW4gS2NvbmZpZywgaWYgYW55dGhpbmcgZmFpbHMgdGhlbiByZWd1bGFyDQpj
-cHVmcmVxLWR0IGlzIG5vdCBhdmFpbGFibGUuIFRoaXMgaXMgaW50ZW50aW9uYWwgYmVjYXVzZSBo
-aWdoZXIgT1BQcyBhcmUNCnBvdGVudGlhbGx5IHVuc3RhYmxlLg0KDQpkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9jcHVmcmVxL0tjb25maWcuYXJtIGIvZHJpdmVycy9jcHVmcmVxL0tjb25maWcuYXJtDQpp
-bmRleCAxNzlhMWQzMDJmNDguLjRhMDk4YTZiZWZiMiAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvY3B1
-ZnJlcS9LY29uZmlnLmFybQ0KKysrIGIvZHJpdmVycy9jcHVmcmVxL0tjb25maWcuYXJtDQpAQCAt
-OTAsMTAgKzkwLDE1IEBAIGNvbmZpZyBBUk1fSU1YNlFfQ1BVRlJFUQ0KIAloZWxwDQogCSAgVGhp
-cyBhZGRzIGNwdWZyZXEgZHJpdmVyIHN1cHBvcnQgZm9yIEZyZWVzY2FsZSBpLk1YNiBzZXJpZXMg
-U29Dcy4NCiANCiAJICBJZiBpbiBkb3VidCwgc2F5IE4uDQogDQorY29uZmlnIEFSTV9JTVhfQ1BV
-RlJFUV9EVA0KKwlib29sICJGcmVlc2NhbGUgaS5NWDhNTSBjcHVmcmVxIHN1cHBvcnQiDQorCWRl
-cGVuZHMgb24gQ1BVRlJFUV9EVCAmJiBBUkNIX01YQw0KKwlkZWZhdWx0IHkNCisNCiBjb25maWcg
-QVJNX0tJUktXT09EX0NQVUZSRVENCiAJZGVmX2Jvb2wgTUFDSF9LSVJLV09PRA0KIAloZWxwDQog
-CSAgVGhpcyBhZGRzIHRoZSBDUFVGcmVxIGRyaXZlciBmb3IgTWFydmVsbCBLaXJrd29vZA0KIAkg
-IFNvQ3MuDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlIGIvZHJpdmVycy9j
-cHVmcmVxL01ha2VmaWxlDQppbmRleCA2ODliMjZjNmY5NDkuLjdiY2RhMjI3M2QwYyAxMDA2NDQN
-Ci0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9NYWtlZmlsZQ0KKysrIGIvZHJpdmVycy9jcHVmcmVxL01h
-a2VmaWxlDQpAQCAtNTQsMTAgKzU0LDExIEBAIG9iai0kKENPTkZJR19BUk1fQVJNQURBXzhLX0NQ
-VUZSRVEpCSs9IGFybWFkYS04ay1jcHVmcmVxLm8NCiBvYmotJChDT05GSUdfQVJNX0JSQ01TVEJf
-QVZTX0NQVUZSRVEpCSs9IGJyY21zdGItYXZzLWNwdWZyZXEubw0KIG9iai0kKENPTkZJR19BQ1BJ
-X0NQUENfQ1BVRlJFUSkJCSs9IGNwcGNfY3B1ZnJlcS5vDQogb2JqLSQoQ09ORklHX0FSQ0hfREFW
-SU5DSSkJCSs9IGRhdmluY2ktY3B1ZnJlcS5vDQogb2JqLSQoQ09ORklHX0FSTV9ISUdIQkFOS19D
-UFVGUkVRKQkrPSBoaWdoYmFuay1jcHVmcmVxLm8NCiBvYmotJChDT05GSUdfQVJNX0lNWDZRX0NQ
-VUZSRVEpCQkrPSBpbXg2cS1jcHVmcmVxLm8NCitvYmotJChDT05GSUdfQVJNX0lNWF9DUFVGUkVR
-X0RUKQkrPSBpbXgtY3B1ZnJlcS1kdC5vDQogb2JqLSQoQ09ORklHX0FSTV9LSVJLV09PRF9DUFVG
-UkVRKQkrPSBraXJrd29vZC1jcHVmcmVxLm8NCiBvYmotJChDT05GSUdfQVJNX01FRElBVEVLX0NQ
-VUZSRVEpCSs9IG1lZGlhdGVrLWNwdWZyZXEubw0KIG9iai0kKENPTkZJR19NQUNIX01WRUJVX1Y3
-KQkJKz0gbXZlYnUtY3B1ZnJlcS5vDQogb2JqLSQoQ09ORklHX0FSTV9PTUFQMlBMVVNfQ1BVRlJF
-USkJKz0gb21hcC1jcHVmcmVxLm8NCiBvYmotJChDT05GSUdfQVJNX1BYQTJ4eF9DUFVGUkVRKQkr
-PSBweGEyeHgtY3B1ZnJlcS5vDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEt
-ZHQtcGxhdGRldi5jIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEtZHQtcGxhdGRldi5jDQppbmRl
-eCA0NzcyOWEyMmMxNTkuLmI4NGJhZWIxYmYxYiAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvY3B1ZnJl
-cS9jcHVmcmVxLWR0LXBsYXRkZXYuYw0KKysrIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEtZHQt
-cGxhdGRldi5jDQpAQCAtMTA2LDEwICsxMDYsMTIgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9k
-ZXZpY2VfaWQgd2hpdGVsaXN0W10gX19pbml0Y29uc3QgPSB7DQogICovDQogc3RhdGljIGNvbnN0
-IHN0cnVjdCBvZl9kZXZpY2VfaWQgYmxhY2tsaXN0W10gX19pbml0Y29uc3QgPSB7DQogCXsgLmNv
-bXBhdGlibGUgPSAiY2FseGVkYSxoaWdoYmFuayIsIH0sDQogCXsgLmNvbXBhdGlibGUgPSAiY2Fs
-eGVkYSxlY3gtMjAwMCIsIH0sDQogDQorCXsgLmNvbXBhdGlibGUgPSAiZnNsLGlteDhtbSIsIH0s
-DQorDQogCXsgLmNvbXBhdGlibGUgPSAibWFydmVsbCxhcm1hZGF4cCIsIH0sDQogDQogCXsgLmNv
-bXBhdGlibGUgPSAibWVkaWF0ZWssbXQyNzAxIiwgfSwNCiAJeyAuY29tcGF0aWJsZSA9ICJtZWRp
-YXRlayxtdDI3MTIiLCB9LA0KIAl7IC5jb21wYXRpYmxlID0gIm1lZGlhdGVrLG10NzYyMiIsIH0s
-DQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lteC1jcHVmcmVxLWR0LmMgYi9kcml2ZXJz
-L2NwdWZyZXEvaW14LWNwdWZyZXEtZHQuYw0KbmV3IGZpbGUgbW9kZSAxMDA2NDQNCmluZGV4IDAw
-MDAwMDAwMDAwMC4uYzM0MTMwOGE4MTQyDQotLS0gL2Rldi9udWxsDQorKysgYi9kcml2ZXJzL2Nw
-dWZyZXEvaW14LWNwdWZyZXEtZHQuYw0KQEAgLTAsMCArMSwxMDEgQEANCisvLyBTUERYLUxpY2Vu
-c2UtSWRlbnRpZmllcjogR1BMLTIuMA0KKy8qDQorICogQ29weXJpZ2h0IDIwMTkgTlhQDQorICov
-DQorDQorI2luY2x1ZGUgPGxpbnV4L2NwdS5oPg0KKyNpbmNsdWRlIDxsaW51eC9lcnIuaD4NCisj
-aW5jbHVkZSA8bGludXgvaW5pdC5oPg0KKyNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4NCisjaW5j
-bHVkZSA8bGludXgvbW9kdWxlLmg+DQorI2luY2x1ZGUgPGxpbnV4L252bWVtLWNvbnN1bWVyLmg+
-DQorI2luY2x1ZGUgPGxpbnV4L29mLmg+DQorI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2Rldmlj
-ZS5oPg0KKyNpbmNsdWRlIDxsaW51eC9wbV9vcHAuaD4NCisjaW5jbHVkZSA8bGludXgvc2xhYi5o
-Pg0KKw0KKyNkZWZpbmUgT0NPVFBfQ0ZHM19TUEVFRF9HUkFERV9TSElGVAk4DQorI2RlZmluZSBP
-Q09UUF9DRkczX1NQRUVEX0dSQURFX01BU0sJKDB4MyA8PCA4KQ0KKw0KKyNkZWZpbmUgT0NPVFBf
-Q0ZHM19NS1RfU0VHTUVOVF9TSElGVAk2DQorI2RlZmluZSBPQ09UUF9DRkczX01LVF9TRUdNRU5U
-X01BU0sJKDB4MyA8PCA2KQ0KKw0KKyNkZWZpbmUgT0NPVFBfQ0ZHM19DT05TVU1FUgkJMA0KKyNk
-ZWZpbmUgT0NPVFBfQ0ZHM19FWFRfQ09OU1VNRVIJCTENCisjZGVmaW5lIE9DT1RQX0NGRzNfSU5E
-VVNUUklBTAkJMg0KKyNkZWZpbmUgT0NPVFBfQ0ZHM19BVVRPCQkJMw0KKw0KKyNkZWZpbmUgT0NP
-VFBfQ0ZHM184TU1fU1BFRURfMFA4R0haCTANCisjZGVmaW5lIE9DT1RQX0NGRzNfOE1NX1NQRUVE
-XzFQMkdIWgkxDQorI2RlZmluZSBPQ09UUF9DRkczXzhNTV9TUEVFRF8xUDZHSFoJMg0KKyNkZWZp
-bmUgT0NPVFBfQ0ZHM184TU1fU1BFRURfMVA4R0haCTMNCisNCitzdGF0aWMgaW50IGlteDhtbV9v
-cHBfY2hlY2tfc3BlZWRfZ3JhZGluZyhzdHJ1Y3QgZGV2aWNlICpjcHVfZGV2KQ0KK3sNCisJdTMy
-IHZhbCwgc3BlZWRfZ3JhZGUsIG1rdF9zZWdtZW50Ow0KKwlpbnQgcmV0ID0gMDsNCisNCisJcmV0
-ID0gbnZtZW1fY2VsbF9yZWFkX3UzMihjcHVfZGV2LCAic3BlZWRfZ3JhZGUiLCAmdmFsKTsNCisJ
-aWYgKHJldCkNCisJCXJldHVybiByZXQ7DQorDQorCXNwZWVkX2dyYWRlID0gKHZhbCAmIE9DT1RQ
-X0NGRzNfU1BFRURfR1JBREVfTUFTSykgPj4gT0NPVFBfQ0ZHM19TUEVFRF9HUkFERV9TSElGVDsN
-CisJbWt0X3NlZ21lbnQgPSAodmFsICYgT0NPVFBfQ0ZHM19NS1RfU0VHTUVOVF9NQVNLKSA+PiBP
-Q09UUF9DRkczX01LVF9TRUdNRU5UX1NISUZUOw0KKw0KKwlkZXZfaW5mbyhjcHVfZGV2LCAiaW14
-OG1tIGNwdSBzcGVlZCBncmFkZSAlZCBzZWdtZW50ICVkXG4iLA0KKwkJCXNwZWVkX2dyYWRlLCBt
-a3Rfc2VnbWVudCk7DQorDQorCXN3aXRjaCAobWt0X3NlZ21lbnQpIHsNCisJY2FzZSBPQ09UUF9D
-RkczX0NPTlNVTUVSOg0KKwkJaWYgKHNwZWVkX2dyYWRlIDwgT0NPVFBfQ0ZHM184TU1fU1BFRURf
-MVA4R0haKQ0KKwkJCWlmIChkZXZfcG1fb3BwX2Rpc2FibGUoY3B1X2RldiwgMTgwMDAwMDAwMCkp
-DQorCQkJCXByX3dhcm4oImZhaWxlZCB0byBkaXNhYmxlIDEuOEdIeiBPUFAhXG4iKTsNCisJCWlm
-IChzcGVlZF9ncmFkZSA8IE9DT1RQX0NGRzNfOE1NX1NQRUVEXzFQNkdIWikNCisJCQlpZiAoZGV2
-X3BtX29wcF9kaXNhYmxlKGNwdV9kZXYsIDE2MDAwMDAwMDApKQ0KKwkJCQlwcl93YXJuKCJmYWls
-ZWQgdG8gZGlzYWJsZSAxLjZHSHogT1BQIVxuIik7DQorCQlicmVhazsNCisJY2FzZSBPQ09UUF9D
-RkczX0lORFVTVFJJQUw6DQorCQlpZiAoZGV2X3BtX29wcF9kaXNhYmxlKGNwdV9kZXYsIDE4MDAw
-MDAwMDApKQ0KKwkJCXByX3dhcm4oImZhaWxlZCB0byBkaXNhYmxlIDEuOEdIeiBPUFAhXG4iKTsN
-CisJCWlmICh2YWwgPCBPQ09UUF9DRkczXzhNTV9TUEVFRF8xUDZHSFopDQorCQkJaWYgKGRldl9w
-bV9vcHBfZGlzYWJsZShjcHVfZGV2LCAxNjAwMDAwMDAwKSkNCisJCQkJcHJfd2FybigiZmFpbGVk
-IHRvIGRpc2FibGUgMS42R0h6IE9QUCFcbiIpOw0KKwkJYnJlYWs7DQorCWRlZmF1bHQ6DQorCQli
-cmVhazsNCisJfQ0KKw0KKwlyZXR1cm4gcmV0Ow0KK30NCisNCitzdGF0aWMgY29uc3Qgc3RydWN0
-IG9mX2RldmljZV9pZCBpbXhfY3B1ZnJlcV9kdF9tYXRjaF9saXN0W10gX19pbml0Y29uc3QgPSB7
-DQorCXsgLmNvbXBhdGlibGUgPSAiZnNsLGlteDhtbSIsIC5kYXRhID0gaW14OG1tX29wcF9jaGVj
-a19zcGVlZF9ncmFkaW5nIH0sDQorCXt9DQorfTsNCisNCitzdGF0aWMgaW50IF9faW5pdCBpbXhf
-Y3B1ZnJlcV9kdF9pbml0KHZvaWQpDQorew0KKwlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wOw0KKwlj
-b25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkICppZDsNCisJc3RydWN0IGRldmljZSAqY3B1X2RldiA9
-IGdldF9jcHVfZGV2aWNlKDApOw0KKwl1MzIgKCpjaGVja19zcGVlZF9ncmFkaW5nKShzdHJ1Y3Qg
-ZGV2aWNlICopOw0KKwlpbnQgcmV0Ow0KKw0KKyAgICAgICAJbnAgPSBvZl9maW5kX25vZGVfYnlf
-cGF0aCgiLyIpOw0KKwlpZCA9IG9mX21hdGNoX25vZGUoaW14X2NwdWZyZXFfZHRfbWF0Y2hfbGlz
-dCwgbnApOw0KKwlvZl9ub2RlX3B1dChucCk7DQorCWlmICghaWQpDQorCQlyZXR1cm4gLUVOT0RF
-VjsNCisNCisJY2hlY2tfc3BlZWRfZ3JhZGluZyA9IGlkLT5kYXRhOw0KKwlpZiAoKHJldCA9IGNo
-ZWNrX3NwZWVkX2dyYWRpbmcoY3B1X2RldikpKSB7DQorCQlkZXZfZXJyKGNwdV9kZXYsICJGYWls
-ZWQgdG8gY2hlY2sgc3BlZWQgZ3JhZGluZzogJWRcbiIsIHJldCk7DQorCQlyZXR1cm4gcmV0Ow0K
-Kwl9DQorDQorCXJldHVybiBQVFJfRVJSX09SX1pFUk8ocGxhdGZvcm1fZGV2aWNlX3JlZ2lzdGVy
-X3NpbXBsZSgNCisJCQkiY3B1ZnJlcS1kdCIsIC0xLCBOVUxMLCAwKSk7DQorfQ0KK2xhdGVfaW5p
-dGNhbGwoaW14X2NwdWZyZXFfZHRfaW5pdCk7DQorDQorTU9EVUxFX0xJQ0VOU0UoIkdQTCB2MiIp
-Ow0KLS0gDQoyLjE3LjENCg0K
+On Thu, Apr 25, 2019 at 12:15 PM Andy Tang <andy.tang@nxp.com> wrote:
+>
+>
+> > -----Original Message-----
+> > From: Rafael J. Wysocki <rafael@kernel.org>
+> > Sent: 2019年4月25日 18:04
+> > To: Vabhav Sharma <vabhav.sharma@nxp.com>
+> > Cc: linux-kernel@vger.kernel.org; linux-clk@vger.kernel.org;
+> > linux-pm@vger.kernel.org; sboyd@kernel.org; mturquette@baylibre.com;
+> > rjw@rjwysocki.net; viresh.kumar@linaro.org; Yogesh Narayan Gaur
+> > <yogeshnarayan.gaur@nxp.com>; Andy Tang <andy.tang@nxp.com>
+> > Subject: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
+> >
+> > Caution: EXT Email
+> >
+> > On Thu, Apr 25, 2019 at 11:48 AM Vabhav Sharma <vabhav.sharma@nxp.com>
+> > wrote:
+> > >
+> > > From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> > >
+> > > Add clockgen support for lx2160a.
+> > > Added entry for compat 'fsl,lx2160a-clockgen'.
+> >
+> > Well, if I'm expected to apply this, the above is a bit terse.
+> >
+> > It looks like the patch makes the qoriq-cpufreq driver handle some new
+> > hardware, but the changelog doesn't say much about that.
+> >
+> > I'm guessing that the clockgen support added here makes it possible for
+> > qoriq-cpufreq to handle this chip, is that correct?
+> Yes, your guess is correct. The cpufreq feature is based on clock driver.
+> It should had been separated to two patches and reduced the confuse.
+> Do I need to update the commit message or you just take it?
+
+Please update the commit message.
+
+Thanks!
