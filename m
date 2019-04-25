@@ -2,108 +2,200 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3650BC10F03
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 07:33:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7E11C10F03
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 08:34:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 100EC217FA
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 07:33:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A1D2A208E4
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 08:34:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730286AbfDYHdr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 03:33:47 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59166 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730224AbfDYHdr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 03:33:47 -0400
-Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
-        id 7B9728058A; Thu, 25 Apr 2019 09:33:35 +0200 (CEST)
-Date:   Thu, 25 Apr 2019 09:33:43 +0200
-From:   Pavel Machek <pavel@denx.de>
-To:     Bart Van Assche <bvanassche@acm.org>
-Cc:     Pavel Machek <pavel@denx.de>, Jens Axboe <axboe@kernel.dk>,
-        jejb@linux.ibm.com, martin.petersen@oracle.com, lduncan@suse.com,
-        hare@suse.com, mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de,
-        gregkh@linuxfoundation.org, dan.j.williams@intel.com,
-        kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
-        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
-        linux-next@vger.kernel.org, hdegoede@redhat.com,
-        linux-ide@vger.kernel.org
-Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
- asynchronous probing was Re: next-20190408..0418: Suspend/resume problems on
- Thinkpad X60
-Message-ID: <20190425073343.GA19600@amd>
-References: <20190408173928.GB13260@amd>
- <20190412102812.GA24977@amd>
- <20190423102239.GA15531@amd>
- <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
- <20190424095431.GA32457@amd>
- <20190424104850.GC32457@amd>
- <20190424202119.GA26357@amd>
- <20190424204832.GA3111@amd>
- <20190424205150.GA4582@amd>
- <1556139361.161891.140.camel@acm.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
-Content-Disposition: inline
-In-Reply-To: <1556139361.161891.140.camel@acm.org>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+        id S1729376AbfDYIeX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 04:34:23 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:57836 "EHLO inva021.nxp.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726272AbfDYIeW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Apr 2019 04:34:22 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id D5AE72000C4;
+        Thu, 25 Apr 2019 10:34:19 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 52994200069;
+        Thu, 25 Apr 2019 10:34:14 +0200 (CEST)
+Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 869E3402D8;
+        Thu, 25 Apr 2019 16:34:07 +0800 (SGT)
+From:   Yuantian Tang <andy.tang@nxp.com>
+To:     shawnguo@kernel.org
+Cc:     leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com,
+        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        daniel.lezcano@linaro.org, rui.zhang@intel.com,
+        edubezval@gmail.com, Yuantian Tang <andy.tang@nxp.com>
+Subject: [PATCH] arm64: dts: ls1028a: Add Thermal Monitor Unit node
+Date:   Thu, 25 Apr 2019 16:26:40 +0800
+Message-Id: <20190425082640.37982-1-andy.tang@nxp.com>
+X-Mailer: git-send-email 2.14.1
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425073343.KrzfmgQlRhuGAVTQ3zhMRkvLt3e9m4qM2ZL39HLWAp8@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190425082640.JePsN9pZtdVLPUePeS4K_bl5aB54koxM5it67J3_yqE@z>
 
+The Thermal Monitoring Unit (TMU) monitors and reports the
+temperature from 2 remote temperature measurement sites
+located on ls1028a chip.
+Add TMU dts node to enable this feature.
 
---k+w/mQv8wyuph6w0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+---
+ arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi |  114 ++++++++++++++++++++++++
+ 1 files changed, 114 insertions(+), 0 deletions(-)
 
-On Wed 2019-04-24 13:56:01, Bart Van Assche wrote:
-> On Wed, 2019-04-24 at 22:51 +0200, Pavel Machek wrote:
-> > Unfortunately, that one does not revert cleanly on top of -next.
->=20
-> Can you try the following:
->=20
-> git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 &&
->   git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
->=20
-> I will see whether I can come up with a better way to analyze what is
-> going on. I had not expected that these patches would cause any suspend/
-> resume problems.
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
+index b045812..a25f5fc 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
+@@ -29,6 +29,7 @@
+ 			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&l2>;
+ 			cpu-idle-states = <&CPU_PH20>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -39,6 +40,7 @@
+ 			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&l2>;
+ 			cpu-idle-states = <&CPU_PH20>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		l2: l2-cache {
+@@ -398,6 +400,118 @@
+ 			status = "disabled";
+ 		};
+ 
++		tmu: tmu@1f00000 {
++			compatible = "fsl,qoriq-tmu";
++			reg = <0x0 0x1f80000 0x0 0x10000>;
++			interrupts = <0 23 0x4>;
++			fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x70061>;
++			fsl,tmu-calibration = <0x00000000 0x00000024
++					       0x00000001 0x0000002b
++					       0x00000002 0x00000031
++					       0x00000003 0x00000038
++					       0x00000004 0x0000003f
++					       0x00000005 0x00000045
++					       0x00000006 0x0000004c
++					       0x00000007 0x00000053
++					       0x00000008 0x00000059
++					       0x00000009 0x00000060
++					       0x0000000a 0x00000066
++					       0x0000000b 0x0000006d
++
++					       0x00010000 0x0000001c
++					       0x00010001 0x00000024
++					       0x00010002 0x0000002c
++					       0x00010003 0x00000035
++					       0x00010004 0x0000003d
++					       0x00010005 0x00000045
++					       0x00010006 0x0000004d
++					       0x00010007 0x00000045
++					       0x00010008 0x0000005e
++					       0x00010009 0x00000066
++					       0x0001000a 0x0000006e
++
++					       0x00020000 0x00000018
++					       0x00020001 0x00000022
++					       0x00020002 0x0000002d
++					       0x00020003 0x00000038
++					       0x00020004 0x00000043
++					       0x00020005 0x0000004d
++					       0x00020006 0x00000058
++					       0x00020007 0x00000063
++					       0x00020008 0x0000006e
++
++					       0x00030000 0x00000010
++					       0x00030001 0x0000001c
++					       0x00030002 0x00000029
++					       0x00030003 0x00000036
++					       0x00030004 0x00000042
++					       0x00030005 0x0000004f
++					       0x00030006 0x0000005b
++					       0x00030007 0x00000068>;
++			little-endian;
++			#thermal-sensor-cells = <1>;
++		};
++
++		thermal-zones {
++			core-cluster {
++				polling-delay-passive = <1000>;
++				polling-delay = <5000>;
++				thermal-sensors = <&tmu 0>;
++
++				trips {
++					core_cluster_alert: core-cluster-alert {
++						temperature = <85000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
++
++					core_cluster_crit: core-cluster-crit {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "critical";
++					};
++				};
++
++				cooling-maps {
++					map0 {
++						trip = <&core_cluster_alert>;
++						cooling-device =
++							<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++					};
++				};
++			};
++
++			ddr-controller {
++				polling-delay-passive = <1000>;
++				polling-delay = <5000>;
++				thermal-sensors = <&tmu 1>;
++
++				trips {
++					ddr_controller_alert: ddr-controller-alert {
++						temperature = <85000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
++
++					ddr_controller_crit: ddr-controller-crit {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "critical";
++					};
++				};
++
++				cooling-maps {
++					map0 {
++						trip = <&ddr_controller_alert>;
++						cooling-device =
++							<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
++							<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++					};
++				};
++			};
++		};
++
+ 		pcie@1f0000000 { /* Integrated Endpoint Root Complex */
+ 			compatible = "pci-host-ecam-generic";
+ 			reg = <0x01 0xf0000000 0x0 0x100000>;
+-- 
+1.7.1
 
-Not even d16ece reverts:
-
-pavel@duo:/data/l/linux-next-32$ git show  | head -3
-commit 76c938fcaa4b4a5d8f05fa907925d5043834964e
-Author: Stephen Rothwell <sfr@canb.auug.org.au>
-Date:   Tue Apr 23 20:24:59 2019 +1000
-pavel@duo:/data/l/linux-next-32$ git revert
-d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
-error: could not revert d16ece5... scsi: sd: Inline sd_probe_part2()
-hint: after resolving the conflicts, mark the corrected paths
-hint: with 'git add <paths>' or 'git rm <paths>'
-hint: and commit the result with 'git commit'
-
-								Pavel
---=20
-DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-
---k+w/mQv8wyuph6w0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlzBYtcACgkQMOfwapXb+vLSPACggAjbyoCyqU8ktZSlP27yCCjh
-Y5sAnRe/NkQIgD/Wl4euXqOxeO2JdhOO
-=JJcZ
------END PGP SIGNATURE-----
-
---k+w/mQv8wyuph6w0--
