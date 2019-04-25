@@ -1,62 +1,58 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
- asynchronous probing was Re: next-20190408..0418: Suspend/resume problems on
- Thinkpad X60
-Date: Thu, 25 Apr 2019 06:35:58 -0700
-Message-ID: <360f6936-ee21-a036-9bd4-93ecfee829e2@acm.org>
-References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
- <20190423102239.GA15531@amd> <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
- <20190424095431.GA32457@amd> <20190424104850.GC32457@amd>
- <20190424202119.GA26357@amd> <20190424204832.GA3111@amd>
- <20190424205150.GA4582@amd> <1556139361.161891.140.camel@acm.org>
- <20190425073343.GA19600@amd>
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+Subject: RE: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
+Date: Thu, 25 Apr 2019 13:44:08 +0000
+Message-ID: <VI1PR04MB4800B9D8F71166868CB6D209F33D0@VI1PR04MB4800.eurprd04.prod.outlook.com>
+References: <1556185703-26243-1-git-send-email-vabhav.sharma@nxp.com>
+ <CAJZ5v0iwrjonKpA3Skkhkg3g5Pp9Qzx0v2GBYKdv7eM_jL4p8g@mail.gmail.com>
+ <VI1PR04MB43336A0C62B956CA29A7E621F33D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <CAJZ5v0jQFXpHmpxSYSUxwGkMV98g3S+zV1oh1RYxvkebmzT29Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190425073343.GA19600@amd>
+In-Reply-To: <CAJZ5v0jQFXpHmpxSYSUxwGkMV98g3S+zV1oh1RYxvkebmzT29Q@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@denx.de>
-Cc: Jens Axboe <axboe@kernel.dk>, jejb@linux.ibm.com, martin.petersen@oracle.com, lduncan@suse.com, hare@suse.com, mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de, gregkh@linuxfoundation.org, dan.j.williams@intel.com, kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, linux-ide@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Andy Tang <andy.tang@nxp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sboyd@kernel.org" <sboyd@kernel.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 4/25/19 12:33 AM, Pavel Machek wrote:
-> On Wed 2019-04-24 13:56:01, Bart Van Assche wrote:
->> On Wed, 2019-04-24 at 22:51 +0200, Pavel Machek wrote:
->>> Unfortunately, that one does not revert cleanly on top of -next.
->>
->> Can you try the following:
->>
->> git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 &&
->>   git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
->>
->> I will see whether I can come up with a better way to analyze what is
->> going on. I had not expected that these patches would cause any suspend/
->> resume problems.
-> 
-> Not even d16ece reverts:
-> 
-> pavel@duo:/data/l/linux-next-32$ git show  | head -3
-> commit 76c938fcaa4b4a5d8f05fa907925d5043834964e
-> Author: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date:   Tue Apr 23 20:24:59 2019 +1000
-> pavel@duo:/data/l/linux-next-32$ git revert
-> d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
-> error: could not revert d16ece5... scsi: sd: Inline sd_probe_part2()
-> hint: after resolving the conflicts, mark the corrected paths
-> hint: with 'git add <paths>' or 'git rm <paths>'
-> hint: and commit the result with 'git commit'
-
-There has been a non-trivial merge between the block and scsi trees in
-linux-next. That's probably what prevents these patches to revert
-cleanly. How about performing the following tests:
-* Build, boot and test Martin's latest for-5.2 branch
-(git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git; branch
-5.2/scsi-queue).
-* If suspend/resume does not work reliably with that branch, revert the
-two patches above, rebuild, reboot and retest.
-
-Thanks,
-
-Bart.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgPHJhZmFlbEBrZXJuZWwub3JnPg0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMjUsIDIwMTkg
+Mzo1OSBQTQ0KPiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4NCj4gQ2M6IFJhZmFl
+bCBKLiBXeXNvY2tpIDxyYWZhZWxAa2VybmVsLm9yZz47IFZhYmhhdiBTaGFybWENCj4gPHZhYmhh
+di5zaGFybWFAbnhwLmNvbT47IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0K
+PiBjbGtAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IHNib3lkQGtl
+cm5lbC5vcmc7DQo+IG10dXJxdWV0dGVAYmF5bGlicmUuY29tOyByandAcmp3eXNvY2tpLm5ldDsg
+dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7DQo+IFlvZ2VzaCBOYXJheWFuIEdhdXIgPHlvZ2VzaG5h
+cmF5YW4uZ2F1ckBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW0VYVF0gUmU6IFtQQVRDSCB2Ml0g
+Y2xrOiBxb3JpcTogQWRkIGNsb2NrZ2VuIHN1cHBvcnQgZm9yIGx4MjE2MGENCj4gDQo+IENhdXRp
+b246IEVYVCBFbWFpbA0KPiANCj4gT24gVGh1LCBBcHIgMjUsIDIwMTkgYXQgMTI6MTUgUE0gQW5k
+eSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4gd3JvdGU6DQo+ID4NCj4gPg0KPiA+ID4gLS0tLS1P
+cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZh
+ZWxAa2VybmVsLm9yZz4NCj4gPiA+IFNlbnQ6IDIwMTnlubQ05pyIMjXml6UgMTg6MDQNCj4gPiA+
+IFRvOiBWYWJoYXYgU2hhcm1hIDx2YWJoYXYuc2hhcm1hQG54cC5jb20+DQo+ID4gPiBDYzogbGlu
+dXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtY2xrQHZnZXIua2VybmVsLm9yZzsNCj4g
+PiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgc2JveWRAa2VybmVsLm9yZzsgbXR1cnF1ZXR0
+ZUBiYXlsaWJyZS5jb207DQo+ID4gPiByandAcmp3eXNvY2tpLm5ldDsgdmlyZXNoLmt1bWFyQGxp
+bmFyby5vcmc7IFlvZ2VzaCBOYXJheWFuIEdhdXINCj4gPiA+IDx5b2dlc2huYXJheWFuLmdhdXJA
+bnhwLmNvbT47IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+ID4gPiBTdWJqZWN0OiBb
+RVhUXSBSZTogW1BBVENIIHYyXSBjbGs6IHFvcmlxOiBBZGQgY2xvY2tnZW4gc3VwcG9ydCBmb3IN
+Cj4gPiA+IGx4MjE2MGENCj4gPiA+DQo+ID4gPiBDYXV0aW9uOiBFWFQgRW1haWwNCj4gPiA+DQo+
+ID4gPiBPbiBUaHUsIEFwciAyNSwgMjAxOSBhdCAxMTo0OCBBTSBWYWJoYXYgU2hhcm1hDQo+ID4g
+PiA8dmFiaGF2LnNoYXJtYUBueHAuY29tPg0KPiA+ID4gd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+
+IEZyb206IFlvZ2VzaCBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT4NCj4gPiA+ID4N
+Cj4gPiA+ID4gQWRkIGNsb2NrZ2VuIHN1cHBvcnQgZm9yIGx4MjE2MGEuDQo+ID4gPiA+IEFkZGVk
+IGVudHJ5IGZvciBjb21wYXQgJ2ZzbCxseDIxNjBhLWNsb2NrZ2VuJy4NCj4gPiA+DQo+ID4gPiBX
+ZWxsLCBpZiBJJ20gZXhwZWN0ZWQgdG8gYXBwbHkgdGhpcywgdGhlIGFib3ZlIGlzIGEgYml0IHRl
+cnNlLg0KPiA+ID4NCj4gPiA+IEl0IGxvb2tzIGxpa2UgdGhlIHBhdGNoIG1ha2VzIHRoZSBxb3Jp
+cS1jcHVmcmVxIGRyaXZlciBoYW5kbGUgc29tZQ0KPiA+ID4gbmV3IGhhcmR3YXJlLCBidXQgdGhl
+IGNoYW5nZWxvZyBkb2Vzbid0IHNheSBtdWNoIGFib3V0IHRoYXQuDQo+ID4gPg0KPiA+ID4gSSdt
+IGd1ZXNzaW5nIHRoYXQgdGhlIGNsb2NrZ2VuIHN1cHBvcnQgYWRkZWQgaGVyZSBtYWtlcyBpdCBw
+b3NzaWJsZQ0KPiA+ID4gZm9yIHFvcmlxLWNwdWZyZXEgdG8gaGFuZGxlIHRoaXMgY2hpcCwgaXMg
+dGhhdCBjb3JyZWN0Pw0KPiA+IFllcywgeW91ciBndWVzcyBpcyBjb3JyZWN0LiBUaGUgY3B1ZnJl
+cSBmZWF0dXJlIGlzIGJhc2VkIG9uIGNsb2NrIGRyaXZlci4NCj4gPiBJdCBzaG91bGQgaGFkIGJl
+ZW4gc2VwYXJhdGVkIHRvIHR3byBwYXRjaGVzIGFuZCByZWR1Y2VkIHRoZSBjb25mdXNlLg0KPiA+
+IERvIEkgbmVlZCB0byB1cGRhdGUgdGhlIGNvbW1pdCBtZXNzYWdlIG9yIHlvdSBqdXN0IHRha2Ug
+aXQ/DQo+IA0KPiBQbGVhc2UgdXBkYXRlIHRoZSBjb21taXQgbWVzc2FnZS4NCj4gDQo+IFRoYW5r
+cyENCk9rDQo=
