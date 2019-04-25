@@ -1,64 +1,36 @@
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v3] clk: qoriq: add support for lx2160a
-Date: Thu, 25 Apr 2019 13:57:05 +0000
-Message-ID: <1556200638-24066-1-git-send-email-vabhav.sharma@nxp.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [GIT PULL] interconnect changes for v5.2-rc1
+Date: Thu, 25 Apr 2019 19:40:35 +0200
+Message-ID: <20190425174035.GA8690@kroah.com>
+References: <eafe23a5-e3cd-760d-f3f0-c82b50e78417@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <eafe23a5-e3cd-760d-f3f0-c82b50e78417@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "sboyd@kernel.org" <sboyd@kernel.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogWW9nZXNoIEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29tPg0KDQpBZGQgY2xv
-Y2tnZW4gc3VwcG9ydCBhbmQgY29uZmlndXJhdGlvbiBmb3IgTlhQIFNvQyBseDIxNjBhIGluIHFv
-cmlxDQpjbG9jayBkcml2ZXIgd2l0aCBjb21wYXRpYmxlIHByb3BlcnR5IGFzICJmc2wsbHgyMTYw
-YS1jbG9ja2dlbiIuDQoNCnFvcmlxLWNwdWZyZXEgZHJpdmVyIGlzIGJhc2VkIG9uIHFvcmlxIGNs
-b2NrIGRyaXZlciwgZW5hYmxlIHN1cHBvcnQNCm9mIE5YUCBTb0MgbHgyMTYwYSBpbiBxb3JpcSBj
-cHVmcmVxIGRyaXZlciB0byBoYW5kbGUgdGhlIGx4MjE2MGEgU29DLg0KDQpTaWduZWQtb2ZmLWJ5
-OiBUYW5nIFl1YW50aWFuIDxhbmR5LnRhbmdAbnhwLmNvbT4NClNpZ25lZC1vZmYtYnk6IFlvZ2Vz
-aCBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT4NClNpZ25lZC1vZmYtYnk6IFZhYmhh
-diBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNvbT4NCkFja2VkLWJ5OiBTY290dCBXb29kIDxv
-c3NAYnVzZXJyb3IubmV0Pg0KQWNrZWQtYnk6IFN0ZXBoZW4gQm95ZCA8c2JveWRAa2VybmVsLm9y
-Zz4NCkFja2VkLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPg0KLS0t
-DQpDaGFuZ2VzIGZvciB2MzoNCi0gSW5jb3Jwb3JhdGVkIHJldmlldyBjb21tZW50cyBvZiBSYWZh
-ZWwgSi4gV3lzb2NraQ0KLSBVcGRhdGVkIGNvbW1pdCBtZXNzYWdlDQogDQpDaGFuZ2VzIGZvciB2
-MjoNCi0gU3ViamVjdCBsaW5lIHVwZGF0ZWQNCg0KIGRyaXZlcnMvY2xrL2Nsay1xb3JpcS5jICAg
-ICAgICAgfCAxMiArKysrKysrKysrKysNCiBkcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5j
-IHwgIDEgKw0KIDIgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKQ0KDQpkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMgYi9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYw0KaW5k
-ZXggM2Q1MWQ3Yy4uMWExNTIwMSAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvY2xrL2Nsay1xb3JpcS5j
-DQorKysgYi9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYw0KQEAgLTU3MCw2ICs1NzAsMTcgQEAgc3Rh
-dGljIGNvbnN0IHN0cnVjdCBjbG9ja2dlbl9jaGlwaW5mbyBjaGlwaW5mb1tdID0gew0KIAkJLmZs
-YWdzID0gQ0dfVkVSMyB8IENHX0xJVFRMRV9FTkRJQU4sDQogCX0sDQogCXsNCisJCS5jb21wYXQg
-PSAiZnNsLGx4MjE2MGEtY2xvY2tnZW4iLA0KKwkJLmNtdXhfZ3JvdXBzID0gew0KKwkJCSZjbG9j
-a2dlbjJfY211eF9jZ2ExMiwgJmNsb2NrZ2VuMl9jbXV4X2NnYg0KKwkJfSwNCisJCS5jbXV4X3Rv
-X2dyb3VwID0gew0KKwkJCTAsIDAsIDAsIDAsIDEsIDEsIDEsIDEsIC0xDQorCQl9LA0KKwkJLnBs
-bF9tYXNrID0gMHgzNywNCisJCS5mbGFncyA9IENHX1ZFUjMgfCBDR19MSVRUTEVfRU5ESUFOLA0K
-Kwl9LA0KKwl7DQogCQkuY29tcGF0ID0gImZzbCxwMjA0MS1jbG9ja2dlbiIsDQogCQkuZ3V0c19j
-b21wYXQgPSAiZnNsLHFvcmlxLWRldmljZS1jb25maWctMS4wIiwNCiAJCS5pbml0X3BlcmlwaCA9
-IHAyMDQxX2luaXRfcGVyaXBoLA0KQEAgLTE0MjcsNiArMTQzOCw3IEBAIENMS19PRl9ERUNMQVJF
-KHFvcmlxX2Nsb2NrZ2VuX2xzMTA0M2EsICJmc2wsbHMxMDQzYS1jbG9ja2dlbiIsIGNsb2NrZ2Vu
-X2luaXQpOw0KIENMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX2xzMTA0NmEsICJmc2wsbHMx
-MDQ2YS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0KIENMS19PRl9ERUNMQVJFKHFvcmlxX2Ns
-b2NrZ2VuX2xzMTA4OGEsICJmc2wsbHMxMDg4YS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0K
-IENMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX2xzMjA4MGEsICJmc2wsbHMyMDgwYS1jbG9j
-a2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0KK0NMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX2x4
-MjE2MGEsICJmc2wsbHgyMTYwYS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0KIENMS19PRl9E
-RUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX3AyMDQxLCAiZnNsLHAyMDQxLWNsb2NrZ2VuIiwgY2xvY2tn
-ZW5faW5pdCk7DQogQ0xLX09GX0RFQ0xBUkUocW9yaXFfY2xvY2tnZW5fcDMwNDEsICJmc2wscDMw
-NDEtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCiBDTEtfT0ZfREVDTEFSRShxb3JpcV9jbG9j
-a2dlbl9wNDA4MCwgImZzbCxwNDA4MC1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0KZGlmZiAt
-LWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEv
-cW9yaXEtY3B1ZnJlcS5jDQppbmRleCA0Mjk1ZTU0Li44MWYwMjg4IDEwMDY0NA0KLS0tIGEvZHJp
-dmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYw0KKysrIGIvZHJpdmVycy9jcHVmcmVxL3Fvcmlx
-LWNwdWZyZXEuYw0KQEAgLTI4NCw2ICsyODQsNyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2Rl
-dmljZV9pZCBub2RlX21hdGNoZXNbXSBfX2luaXRjb25zdCA9IHsNCiAJeyAuY29tcGF0aWJsZSA9
-ICJmc2wsbHMxMDQ2YS1jbG9ja2dlbiIsIH0sDQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLGxzMTA4
-OGEtY2xvY2tnZW4iLCB9LA0KIAl7IC5jb21wYXRpYmxlID0gImZzbCxsczIwODBhLWNsb2NrZ2Vu
-IiwgfSwNCisJeyAuY29tcGF0aWJsZSA9ICJmc2wsbHgyMTYwYS1jbG9ja2dlbiIsIH0sDQogCXsg
-LmNvbXBhdGlibGUgPSAiZnNsLHA0MDgwLWNsb2NrZ2VuIiwgfSwNCiAJeyAuY29tcGF0aWJsZSA9
-ICJmc2wscW9yaXEtY2xvY2tnZW4tMS4wIiwgfSwNCiAJeyAuY29tcGF0aWJsZSA9ICJmc2wscW9y
-aXEtY2xvY2tnZW4tMi4wIiwgfSwNCi0tIA0KMi43LjQNCg0K
+On Thu, Apr 25, 2019 at 02:25:55PM +0300, Georgi Djakov wrote:
+> Hi Greg,
+> 
+> This is a tiny pull request with interconnect patches for the 5.2 merge window.
+> The patches have spent a few weeks in linux-next without reported issues. The
+> details are in the signed tag. Please consider pulling into char-misc-next.
+> 
+> Thanks,
+> Georgi
+> 
+> The following changes since commit 79a3aaa7b82e3106be97842dedfd8429248896e6:
+> 
+>   Linux 5.1-rc3 (2019-03-31 14:39:29 -0700)
+> 
+> are available in the Git repository at:
+> 
+>   https://git.linaro.org/people/georgi.djakov/linux.git tags/icc-5.2-rc1
+
+Pulled and pushed out, thanks,
+
+greg k-h
