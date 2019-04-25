@@ -1,141 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/4] PM / Domains: Allow to attach a CPU via
- genpd_dev_pm_attach_by_id|name()
-Date: Thu, 25 Apr 2019 15:17:41 +0530
-Message-ID: <20190425094741.olaw3zgfox3yc7bc@vireshk-i7>
-References: <20190425090413.10700-1-ulf.hansson@linaro.org>
- <20190425090413.10700-5-ulf.hansson@linaro.org>
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+Subject: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
+Date: Thu, 25 Apr 2019 09:48:10 +0000
+Message-ID: <1556185703-26243-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190425090413.10700-5-ulf.hansson@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "sboyd@kernel.org" <sboyd@kernel.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 25-04-19, 11:04, Ulf Hansson wrote:
-> Attaching a device via genpd_dev_pm_attach_by_id|name() makes genpd to
-> allocate a virtual device that it attaches instead. This leads to a problem
-> in case the base device belongs to a CPU. More precisely, it means
-> genpd_get_cpu() compares against the virtual device, thus it fails to find
-> a matching CPU device.
-> 
-> Address this limitation, by passing the base device to genpd_get_cpu()
-> rather than the virtual device. Moreover, to deal with detach correctly
-> from genpd_remove_device(), let's store the CPU number in the struct
-> generic_pm_domain_data, as to be able to clear the corresponding bit in the
-> cpumask for the genpd.
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/domain.c | 20 ++++++++++----------
->  include/linux/pm_domain.h   |  1 +
->  2 files changed, 11 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index da1c99178943..3d899e8abd58 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1499,10 +1499,11 @@ static int genpd_get_cpu(struct generic_pm_domain *genpd, struct device *dev)
->  	return -1;
->  }
->  
-> -static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
-> +static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
-> +			    struct device *base_dev)
->  {
->  	struct generic_pm_domain_data *gpd_data;
-> -	int ret, cpu;
-> +	int ret;
->  
->  	dev_dbg(dev, "%s()\n", __func__);
->  
-> @@ -1513,7 +1514,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
->  	if (IS_ERR(gpd_data))
->  		return PTR_ERR(gpd_data);
->  
-> -	cpu = genpd_get_cpu(genpd, dev);
-> +	gpd_data->cpu = genpd_get_cpu(genpd, base_dev);
->  
->  	ret = genpd->attach_dev ? genpd->attach_dev(genpd, dev) : 0;
->  	if (ret)
-> @@ -1521,7 +1522,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
->  
->  	genpd_lock(genpd);
->  
-> -	genpd_set_cpumask(genpd, cpu);
-> +	genpd_set_cpumask(genpd, gpd_data->cpu);
->  	dev_pm_domain_set(dev, &genpd->domain);
->  
->  	genpd->device_count++;
-> @@ -1549,7 +1550,7 @@ int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
->  	int ret;
->  
->  	mutex_lock(&gpd_list_lock);
-> -	ret = genpd_add_device(genpd, dev);
-> +	ret = genpd_add_device(genpd, dev, dev);
->  	mutex_unlock(&gpd_list_lock);
->  
->  	return ret;
-> @@ -1561,14 +1562,13 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
->  {
->  	struct generic_pm_domain_data *gpd_data;
->  	struct pm_domain_data *pdd;
-> -	int cpu, ret = 0;
-> +	int ret = 0;
->  
->  	dev_dbg(dev, "%s()\n", __func__);
->  
->  	pdd = dev->power.subsys_data->domain_data;
->  	gpd_data = to_gpd_data(pdd);
->  	dev_pm_qos_remove_notifier(dev, &gpd_data->nb);
-> -	cpu = genpd_get_cpu(genpd, dev);
->  
->  	genpd_lock(genpd);
->  
-> @@ -1580,7 +1580,7 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
->  	genpd->device_count--;
->  	genpd->max_off_time_changed = true;
->  
-> -	genpd_clear_cpumask(genpd, cpu);
-> +	genpd_clear_cpumask(genpd, gpd_data->cpu);
->  	dev_pm_domain_set(dev, NULL);
->  
->  	list_del_init(&pdd->list_node);
-> @@ -2256,7 +2256,7 @@ int of_genpd_add_device(struct of_phandle_args *genpdspec, struct device *dev)
->  		goto out;
->  	}
->  
-> -	ret = genpd_add_device(genpd, dev);
-> +	ret = genpd_add_device(genpd, dev, dev);
->  
->  out:
->  	mutex_unlock(&gpd_list_lock);
-> @@ -2426,7 +2426,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
->  
->  	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
->  
-> -	ret = genpd_add_device(pd, dev);
-> +	ret = genpd_add_device(pd, dev, base_dev);
->  	mutex_unlock(&gpd_list_lock);
->  
->  	if (ret < 0) {
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index bc82e74560ee..0e8e356bed6a 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -175,6 +175,7 @@ struct generic_pm_domain_data {
->  	struct pm_domain_data base;
->  	struct gpd_timing_data td;
->  	struct notifier_block nb;
-> +	int cpu;
->  	unsigned int performance_state;
->  	void *data;
->  };
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+RnJvbTogWW9nZXNoIEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29tPg0KDQpBZGQgY2xv
+Y2tnZW4gc3VwcG9ydCBmb3IgbHgyMTYwYS4NCkFkZGVkIGVudHJ5IGZvciBjb21wYXQgJ2ZzbCxs
+eDIxNjBhLWNsb2NrZ2VuJy4NCg0KU2lnbmVkLW9mZi1ieTogVGFuZyBZdWFudGlhbiA8YW5keS50
+YW5nQG54cC5jb20+DQpTaWduZWQtb2ZmLWJ5OiBZb2dlc2ggR2F1ciA8eW9nZXNobmFyYXlhbi5n
+YXVyQG54cC5jb20+DQpTaWduZWQtb2ZmLWJ5OiBWYWJoYXYgU2hhcm1hIDx2YWJoYXYuc2hhcm1h
+QG54cC5jb20+DQpBY2tlZC1ieTogU2NvdHQgV29vZCA8b3NzQGJ1c2Vycm9yLm5ldD4NCkFja2Vk
+LWJ5OiBTdGVwaGVuIEJveWQgPHNib3lkQGtlcm5lbC5vcmc+DQpBY2tlZC1ieTogVmlyZXNoIEt1
+bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCi0tLQ0KQ2hhbmdlcyBmb3IgdjI6DQotIFN1
+YmplY3QgbGluZSB1cGRhdGVkDQoNCiBkcml2ZXJzL2Nsay9jbGstcW9yaXEuYyAgICAgICAgIHwg
+MTIgKysrKysrKysrKysrDQogZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYyB8ICAxICsN
+CiAyIGZpbGVzIGNoYW5nZWQsIDEzIGluc2VydGlvbnMoKykNCg0KZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvY2xrL2Nsay1xb3JpcS5jIGIvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMNCmluZGV4IDNkNTFk
+N2MuLjFhMTUyMDEgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYw0KKysrIGIv
+ZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMNCkBAIC01NzAsNiArNTcwLDE3IEBAIHN0YXRpYyBjb25z
+dCBzdHJ1Y3QgY2xvY2tnZW5fY2hpcGluZm8gY2hpcGluZm9bXSA9IHsNCiAJCS5mbGFncyA9IENH
+X1ZFUjMgfCBDR19MSVRUTEVfRU5ESUFOLA0KIAl9LA0KIAl7DQorCQkuY29tcGF0ID0gImZzbCxs
+eDIxNjBhLWNsb2NrZ2VuIiwNCisJCS5jbXV4X2dyb3VwcyA9IHsNCisJCQkmY2xvY2tnZW4yX2Nt
+dXhfY2dhMTIsICZjbG9ja2dlbjJfY211eF9jZ2INCisJCX0sDQorCQkuY211eF90b19ncm91cCA9
+IHsNCisJCQkwLCAwLCAwLCAwLCAxLCAxLCAxLCAxLCAtMQ0KKwkJfSwNCisJCS5wbGxfbWFzayA9
+IDB4MzcsDQorCQkuZmxhZ3MgPSBDR19WRVIzIHwgQ0dfTElUVExFX0VORElBTiwNCisJfSwNCisJ
+ew0KIAkJLmNvbXBhdCA9ICJmc2wscDIwNDEtY2xvY2tnZW4iLA0KIAkJLmd1dHNfY29tcGF0ID0g
+ImZzbCxxb3JpcS1kZXZpY2UtY29uZmlnLTEuMCIsDQogCQkuaW5pdF9wZXJpcGggPSBwMjA0MV9p
+bml0X3BlcmlwaCwNCkBAIC0xNDI3LDYgKzE0MzgsNyBAQCBDTEtfT0ZfREVDTEFSRShxb3JpcV9j
+bG9ja2dlbl9sczEwNDNhLCAiZnNsLGxzMTA0M2EtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsN
+CiBDTEtfT0ZfREVDTEFSRShxb3JpcV9jbG9ja2dlbl9sczEwNDZhLCAiZnNsLGxzMTA0NmEtY2xv
+Y2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCiBDTEtfT0ZfREVDTEFSRShxb3JpcV9jbG9ja2dlbl9s
+czEwODhhLCAiZnNsLGxzMTA4OGEtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCiBDTEtfT0Zf
+REVDTEFSRShxb3JpcV9jbG9ja2dlbl9sczIwODBhLCAiZnNsLGxzMjA4MGEtY2xvY2tnZW4iLCBj
+bG9ja2dlbl9pbml0KTsNCitDTEtfT0ZfREVDTEFSRShxb3JpcV9jbG9ja2dlbl9seDIxNjBhLCAi
+ZnNsLGx4MjE2MGEtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCiBDTEtfT0ZfREVDTEFSRShx
+b3JpcV9jbG9ja2dlbl9wMjA0MSwgImZzbCxwMjA0MS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQp
+Ow0KIENMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX3AzMDQxLCAiZnNsLHAzMDQxLWNsb2Nr
+Z2VuIiwgY2xvY2tnZW5faW5pdCk7DQogQ0xLX09GX0RFQ0xBUkUocW9yaXFfY2xvY2tnZW5fcDQw
+ODAsICJmc2wscDQwODAtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCmRpZmYgLS1naXQgYS9k
+cml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNw
+dWZyZXEuYw0KaW5kZXggNDI5NWU1NC4uODFmMDI4OCAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvY3B1
+ZnJlcS9xb3JpcS1jcHVmcmVxLmMNCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVx
+LmMNCkBAIC0yODQsNiArMjg0LDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQg
+bm9kZV9tYXRjaGVzW10gX19pbml0Y29uc3QgPSB7DQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLGxz
+MTA0NmEtY2xvY2tnZW4iLCB9LA0KIAl7IC5jb21wYXRpYmxlID0gImZzbCxsczEwODhhLWNsb2Nr
+Z2VuIiwgfSwNCiAJeyAuY29tcGF0aWJsZSA9ICJmc2wsbHMyMDgwYS1jbG9ja2dlbiIsIH0sDQor
+CXsgLmNvbXBhdGlibGUgPSAiZnNsLGx4MjE2MGEtY2xvY2tnZW4iLCB9LA0KIAl7IC5jb21wYXRp
+YmxlID0gImZzbCxwNDA4MC1jbG9ja2dlbiIsIH0sDQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLHFv
+cmlxLWNsb2NrZ2VuLTEuMCIsIH0sDQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLHFvcmlxLWNsb2Nr
+Z2VuLTIuMCIsIH0sDQotLSANCjIuNy40DQoNCg==
