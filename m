@@ -2,91 +2,87 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66EA5C43218
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 18:22:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13ACDC43219
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 18:34:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D9DC520717
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 18:22:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 72E9520717
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 18:34:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1556216554;
-	bh=8FwAZHmi9UHXsQc/fK2P+f7BQai0va4r7Z/zs/ULFsc=;
-	h=In-Reply-To:References:Cc:From:Subject:To:Date:List-ID:From;
-	b=DErd58HB0m1UBR+fQJ8vH97h5xE9IMhhrNnrAEaEH/O0XlM37dxqmJ93SQiWZFSbN
-	 eb/HUTgP/XpvIZXzENKWoUQFcNwhVm81lBvz1kK+sPACANgntZrpBw/tUeDD7uirOT
-	 1Ra9k+JAzncL81IYfDzglMsDtMgK+tMliv62MX2A=
+	s=default; t=1556217272;
+	bh=bIBQVXd/KNA6jqyx9hv3g+WsCnVoK1JvpJ9uIFeUzt8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=A0werDgJLOEYNTiPWmGShYaOd6PtXxqMKXMKxmMI8XSCZtkiDKCsTlGG2qCx7oVPG
+	 thhtRwenRfAKAxM54qViE+SrCJI5HJKU5l9q1AJR/BnCGIDQGMJB4X0QwKZ186Bvma
+	 YSdtbS3TDZmnBVPsBgAZgKVKWODgFCls5zWdQmkE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729465AbfDYSWZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 14:22:25 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38040 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726040AbfDYSWZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Apr 2019 14:22:25 -0400
-Received: from localhost (unknown [104.132.0.74])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id AF08B20656;
-        Thu, 25 Apr 2019 18:22:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1556216544;
-        bh=8FwAZHmi9UHXsQc/fK2P+f7BQai0va4r7Z/zs/ULFsc=;
-        h=In-Reply-To:References:Cc:From:Subject:To:Date:From;
-        b=U6BiAeMhAxc4gsPpYf+jfcZlkBDn70cguLWZHUqiXfFNMgqvr9hF+p8eyRWBV5+oo
-         3R86GSUHUW0yhYTL2zEMHAj6ARZDGo4FLV/5QB5h8//uTtX6o+no2g1k1kVQeHwpC2
-         IAR53Ot9UwqSvD/zjVpA7SiMXYLXpbpIP2azCgX0=
-Content-Type: text/plain; charset="UTF-8"
+        id S1730610AbfDYSea (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 14:34:30 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:45591 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727486AbfDYSe3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 14:34:29 -0400
+Received: by mail-ot1-f65.google.com with SMTP id e5so377069otk.12;
+        Thu, 25 Apr 2019 11:34:29 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=JucYdQOjktWK4R4Dnhp8S1uhnfEWCyEkBMWf5UPjo1Y=;
+        b=OAsHDxi3Tv+iOpEtZFzR/VOVUgzBxmYLLjAD9RigNIBwrJcLDz51ieokJ0LqLZEeOD
+         ysumXyXSc/gERIGr0NbnJpxE2RaXZ3yqada6KCWBuLkWxCSjmhjU9bVVszd70TE7yE6P
+         c614xAB+vv6w2ayPrnAxIzshI/pk2L65+9lkPLOypibzizTlxjIlNgu0OqeOP2wiO1vN
+         utGkoVYHYcYwAhMip2T9bx4Ck4lpJblRcdvj7GU4W6eq2YxHvf74XJ12xTUtiZkqAhIb
+         ljwXSHpvj1leNoXXD+wSNu/9WVUUSxU4fLd8HvuPhwz/t3ZdFuMVHst34y5qaPac/Xz6
+         46Vw==
+X-Gm-Message-State: APjAAAWWlWtaUwvr455gJwRbiLIYSwpycsiYJNu1fLJ70Kc2z9sHfU4W
+        wDmBk1JcBqsjgWFGxZ97GQ==
+X-Google-Smtp-Source: APXvYqxAcFZBguZUxwdDfCR6ntakTeh7eJunfev9fdspBZ0ROsSZ5AvcBTNvYIL+RYSaH+Aymge7Gg==
+X-Received: by 2002:a9d:560e:: with SMTP id e14mr24327581oti.31.1556217268573;
+        Thu, 25 Apr 2019 11:34:28 -0700 (PDT)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id x29sm11153512ote.41.2019.04.25.11.34.27
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Thu, 25 Apr 2019 11:34:27 -0700 (PDT)
+Date:   Thu, 25 Apr 2019 13:34:26 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Bartosz Golaszewski <brgl@bgdev.pl>
+Cc:     Liam Girdwood <lgirdwood@gmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Subject: Re: [PATCH v10 02/11] dt-bindings: power: supply: add DT bindings
+ for max77650
+Message-ID: <20190425183426.GA30229@bogus>
+References: <20190423090451.23711-1-brgl@bgdev.pl>
+ <20190423090451.23711-3-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <1556200638-24066-1-git-send-email-vabhav.sharma@nxp.com>
-References: <1556200638-24066-1-git-send-email-vabhav.sharma@nxp.com>
-Cc:     "mturquette@baylibre.com" <mturquette@baylibre.com>,
-        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
-        Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
-        Andy Tang <andy.tang@nxp.com>,
-        Vabhav Sharma <vabhav.sharma@nxp.com>
-From:   Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v3] clk: qoriq: add support for lx2160a
-To:     "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        Vabhav Sharma <vabhav.sharma@nxp.com>
-Message-ID:
- <155621654326.15276.741983919838675194@swboyd.mtv.corp.google.com>
-User-Agent: alot/0.8
-Date:   Thu, 25 Apr 2019 11:22:23 -0700
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <20190423090451.23711-3-brgl@bgdev.pl>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425182223.icF6QN5GN3PayQJlnjFvZYAx__lXObLTq-rcxUfNboc@z>
+Message-ID: <20190425183426.K4_8_6xIItVB8zXR1-L6vHGvkZnbx4yHLIxIpg7UapM@z>
 
-Quoting Vabhav Sharma (2019-04-25 06:57:05)
-> From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
->=20
-> Add clockgen support and configuration for NXP SoC lx2160a in qoriq
-> clock driver with compatible property as "fsl,lx2160a-clockgen".
->=20
-> qoriq-cpufreq driver is based on qoriq clock driver, enable support
-> of NXP SoC lx2160a in qoriq cpufreq driver to handle the lx2160a SoC.
->=20
-> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> Acked-by: Scott Wood <oss@buserror.net>
-> Acked-by: Stephen Boyd <sboyd@kernel.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Tue, 23 Apr 2019 11:04:42 +0200, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> 
+> Add the DT binding document for the battery charger module of max77650.
+> 
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > ---
-> Changes for v3:
-> - Incorporated review comments of Rafael J. Wysocki
-> - Updated commit message
+>  .../power/supply/max77650-charger.txt         | 28 +++++++++++++++++++
+>  1 file changed, 28 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.txt
+> 
 
-If you can split it into clk and cpufreq that would be preferred. Then I
-can take the clk part and PM tree can take the cpufreq part. Otherwise,
-you have sent other patches to drivers/clk/clk-qoriq.c and I'm worried
-there will be cross tree conflicts if I take those other patches this
-cycle.
-
+Reviewed-by: Rob Herring <robh@kernel.org>
