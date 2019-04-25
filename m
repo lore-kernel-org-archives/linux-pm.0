@@ -1,59 +1,68 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/4] PM / Domains: Improve support for CPUs in genpd
-Date: Thu, 25 Apr 2019 12:32:24 +0200
-Message-ID: <CAJZ5v0iK03ajPVE2LdkJHKBQzeeS+dkkaYfvUuVYAcZKStU-EQ@mail.gmail.com>
-References: <20190425090413.10700-1-ulf.hansson@linaro.org>
- <CAJZ5v0jxGcFu-aqvyR4UgjRuCwB9q9fZCiXf+D3NL3TJ5OVEPA@mail.gmail.com>
- <CAPDyKFqP+92wwscW2V3352DVS1QM=DjMZ3e0uty1eQ4=5JyHWA@mail.gmail.com>
- <CAJZ5v0jTRF1wvcYTxfSd59ByhnzXdLL8CVg1qnUfQhAj1L1qLA@mail.gmail.com> <CAPDyKFq3QTjX5m9HoNYFTd-e-p_BXsqPH8s+P_yQ5YEJvHBoag@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC] cpufreq: Add imx-cpufreq-dt driver
+Date: Thu, 25 Apr 2019 16:02:34 +0530
+Message-ID: <20190425103234.4u6dsh4jxhifiux7@vireshk-i7>
+References: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFq3QTjX5m9HoNYFTd-e-p_BXsqPH8s+P_yQ5YEJvHBoag@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, Abel Vesa <abel.vesa@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 25, 2019 at 12:17 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Thu, 25 Apr 2019 at 12:14, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Thu, Apr 25, 2019 at 12:11 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > On Thu, 25 Apr 2019 at 11:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > >
-> > > > On Thu, Apr 25, 2019 at 11:04 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > > > >
-> > > > > Recently genpd was extended to cope with devices belonging to CPUs. However,
-> > > > > attaching CPU devices via genpd_dev_pm_attach_by_id|name() doesn't work,
-> > > > > because of the virtual device that genpd allocates in this path.
-> > > > >
-> > > > > In this series, this limitation is addressed, together with a few other related
-> > > > > fixes/cleanups.
-> > > > >
-> > > > > Ulf Hansson (4):
-> > > > >   PM / Domains: Use the base device for
-> > > > >     driver_deferred_probe_check_state()
-> > > > >   PM / Domains: Drop unused in-parameter to some genpd functions
-> > > > >   PM / Domains: Search for the CPU device outside the genpd lock
-> > > > >   PM / Domains: Allow to attach a CPU via
-> > > > >     genpd_dev_pm_attach_by_id|name()
-> > > > >
-> > > > >  drivers/base/power/domain.c | 73 ++++++++++++++++++-------------------
-> > > > >  include/linux/pm_domain.h   |  1 +
-> > > > >  2 files changed, 36 insertions(+), 38 deletions(-)
-> > > >
-> > > > Are there any dependencies between this and the series you've recently posted?
-> > >
-> > > Yep. I should have stated that, sorry. This should be applied on top.
-> >
-> > On top of which series?
->
-> [PATCH 0/3] PM / Domains: Improve support for multi PM domains
->
-> and
->
-> [PATCH v13 0/4] PM / Domains: Support hierarchical CPU arrangement (PSCI/ARM)
+On 25-04-19, 10:29, Leonard Crestez wrote:
+> Right now in upstream imx8m cpufreq support just lists a common subset
+> of OPPs because the higher ones should only be attempted after checking
+> speed grading in fuses.
+> 
+> This is not a reasonable limitation and means we must still carry a
+> separate cpufreq driver in NXP tree.
+> 
+> This is a small driver which checks speed grading from nvmem before
+> registering cpufreq-dt. Unlike imx6q-cpufreq and various other rejected
+> imx7/8 cpufreq drivers it contains no actual frequency switching code,
+> just fuse reading through nvmem API.
+> 
+> Code is inspired by similar cpufreq wrappers from a dozen different
+> vendors. Currently for imx8mm but same issue applies to imx8mq and
+> others.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> 
+> ---
+>  drivers/cpufreq/Kconfig.arm          |   5 ++
+>  drivers/cpufreq/Makefile             |   1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c |   2 +
+>  drivers/cpufreq/imx-cpufreq-dt.c     | 101 +++++++++++++++++++++++++++
+>  4 files changed, 109 insertions(+)
+>  create mode 100644 drivers/cpufreq/imx-cpufreq-dt.c
+> 
+> Since nvmem is a module this driver also needs to be turned into a
+> proper module, right now it will simply fail if nvmem is unavailable at
+> init time. Let me know if you agree with this approach before I turn it
+> into a module.
+> 
+> In vendor tree this is done in soc driver but many other vendors do it
+> in drivers/cpufreq so this is where it belongs.
+> 
+> This is select by default in Kconfig, if anything fails then regular
+> cpufreq-dt is not available. This is intentional because higher OPPs are
+> potentially unstable.
 
-OK, thanks!
+No objections on this stuff from me. This is how we are doing it for
+everyone using cpufreq-dt.
+
+-- 
+viresh
