@@ -1,42 +1,62 @@
-From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for
- cpu clocks
-Date: Thu, 25 Apr 2019 15:33:03 +0300
-Message-ID: <20190425123303.GA12659@apalos>
-References: <20190313163558.6705-1-gregory.clement@bootlin.com>
- <20190314121541.GB19385@apalos>
- <CAC5LXJcCs4nr-qFOWzUJpUBAJ9ngG-cgeTCVCFBKFc1SPzHMuQ@mail.gmail.com>
- <20190314134428.GA24768@apalos>
- <874l85v8p6.fsf@FE-laptop>
- <20190318112844.GA1708@apalos>
- <87h8c0s955.fsf@FE-laptop>
- <20190318122113.GA4834@apalos>
- <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
+From: Bart Van Assche <bvanassche@acm.org>
+Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
+ asynchronous probing was Re: next-20190408..0418: Suspend/resume problems on
+ Thinkpad X60
+Date: Thu, 25 Apr 2019 06:35:58 -0700
+Message-ID: <360f6936-ee21-a036-9bd4-93ecfee829e2@acm.org>
+References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
+ <20190423102239.GA15531@amd> <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
+ <20190424095431.GA32457@amd> <20190424104850.GC32457@amd>
+ <20190424202119.GA26357@amd> <20190424204832.GA3111@amd>
+ <20190424205150.GA4582@amd> <1556139361.161891.140.camel@acm.org>
+ <20190425073343.GA19600@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
+In-Reply-To: <20190425073343.GA19600@amd>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Gregory CLEMENT <gregory.clement@bootlin.com>, Christian Neubert <christian.neubert.86@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?iso-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
+To: Pavel Machek <pavel@denx.de>
+Cc: Jens Axboe <axboe@kernel.dk>, jejb@linux.ibm.com, martin.petersen@oracle.com, lduncan@suse.com, hare@suse.com, mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de, gregkh@linuxfoundation.org, dan.j.williams@intel.com, kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, linux-ide@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
-
-> > > Also, during this week-end, Christian suggested that the issue might
-> > > come from the AVS support.
-> > > 
-> > > Could you disable it and check you still have the issue?
-> > > 
-> > > For this, you just have to remove the avs node in
-> > > arch/arm64/boot/dts/marvell/armada-37xx.dtsi and rebuild the dtb.
-> > Sure. You'll have to wait for a week though. Currently on a trip. I'll run that
-> >  once i return
+On 4/25/19 12:33 AM, Pavel Machek wrote:
+> On Wed 2019-04-24 13:56:01, Bart Van Assche wrote:
+>> On Wed, 2019-04-24 at 22:51 +0200, Pavel Machek wrote:
+>>> Unfortunately, that one does not revert cleanly on top of -next.
+>>
+>> Can you try the following:
+>>
+>> git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 &&
+>>   git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
+>>
+>> I will see whether I can come up with a better way to analyze what is
+>> going on. I had not expected that these patches would cause any suspend/
+>> resume problems.
 > 
-> @Ilias: Can you please try this now and confirm to Gregory ?
-I am more overloaded than usual and totally forgot about this. Apologies.
-I'll try finding some time and do this.
+> Not even d16ece reverts:
+> 
+> pavel@duo:/data/l/linux-next-32$ git show  | head -3
+> commit 76c938fcaa4b4a5d8f05fa907925d5043834964e
+> Author: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date:   Tue Apr 23 20:24:59 2019 +1000
+> pavel@duo:/data/l/linux-next-32$ git revert
+> d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
+> error: could not revert d16ece5... scsi: sd: Inline sd_probe_part2()
+> hint: after resolving the conflicts, mark the corrected paths
+> hint: with 'git add <paths>' or 'git rm <paths>'
+> hint: and commit the result with 'git commit'
 
-Thanks
-/Ilias
+There has been a non-trivial merge between the block and scsi trees in
+linux-next. That's probably what prevents these patches to revert
+cleanly. How about performing the following tests:
+* Build, boot and test Martin's latest for-5.2 branch
+(git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git; branch
+5.2/scsi-queue).
+* If suspend/resume does not work reliably with that branch, revert the
+two patches above, rebuild, reboot and retest.
+
+Thanks,
+
+Bart.
