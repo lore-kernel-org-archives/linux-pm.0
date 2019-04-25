@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22F2BC10F03
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57E92C282E1
 	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 09:04:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DE717218DE
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 09:04:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 20C8821908
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 09:04:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yC5dRReB"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="A2KTRy+U"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726521AbfDYJEr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726751AbfDYJEr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 25 Apr 2019 05:04:47 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:43093 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727939AbfDYJEi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 05:04:38 -0400
-Received: by mail-lf1-f65.google.com with SMTP id i68so16915686lfi.10
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2019 02:04:35 -0700 (PDT)
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:46609 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725965AbfDYJEe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 05:04:34 -0400
+Received: by mail-lf1-f66.google.com with SMTP id k18so16891749lfj.13
+        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2019 02:04:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=+vO/H92ltJAN7Sc2E9gRf3gzSgRQawDyXMnQqUjpfmc=;
-        b=yC5dRReBJJI91/9zHctiDbBK59FaHXwQvaYJBTJebSGUCyuzX/iD6Buf3sCzCASEqs
-         NmeLl71rKWz3ChLuH3k8bRaYGUa9bkODHy531ZOa+0dPu6nMNXfg6d/fMpKJT1VJf0SS
-         igBn8+5X2lfYrp6Y3N2KYQklvlU/tpTdiCLvl78TcSITlhpLRvJ0WVshNKmVCovDJsBY
-         r3K73wXOzmWETpoYQVNMLcSKBlpxpmQ31bh9p14BxZnG0PHtdHILwcx4IjLygixHEQU8
-         XcFxD9itxPzWX8dF3ZUDS1TuceFbeyme+Mg1cA37EQog0ybfvN9XnIbN3mjxxh7t25wf
-         +Mfw==
+        bh=wzmNVY0MlNQoNKUiuFMitPMY1YZ/UR3X4yK7u+qVxVk=;
+        b=A2KTRy+UTjfFd6veJikGx+mAUNWRwrabYPXJSq0/v4iJK3R2oiqxGAkZNOydnxTg9w
+         tw1lnJBBGtW5bXKza56jkpnosPgGqY0VRU7lYp+Gm7PWF0gkJ3s//k5r+seLl9U3FOp7
+         W4n3veKjXDH+OwuSS8DNc41UC42eOdfT2EoWJA39ky+yMOe1atsVWy+yT6Nx5fC3ZcbM
+         RZNY7K2SSnY8kzITh0pniHbFQvxp5wYL6xcds5xDhQtAol+LWvaRW3RNcx2lIkpNdY6K
+         IwWLXk+4yIBe4yKQmqGbrYq962cxUxnYSUNbkoGY9kOcyMPqnlUTVQwCSQkPDF6+KYYf
+         c2Dg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=+vO/H92ltJAN7Sc2E9gRf3gzSgRQawDyXMnQqUjpfmc=;
-        b=VCbFZj3BuFnZCsqO+RhQE65u3COjR/l/4xR0w9tS+CV/DpPqBhV9G9YpHj9B7G+MA7
-         X6tTmkENdPHnSBJ8+gcukIXa8vm3Bvi1Z2zxeTF5kg1hOHao8bGmern/e5zqsGuF33ko
-         YcwZCNfLoBLa6F3Z8Mgs539LnhKz/yIlI4/jH18J1Ln2NFFTAf64M7pB50KB5JBlWBDP
-         HhfWu4NSwfRlg3Ej1yxo/6OrHIIoeS1GSl0x0zUd8s6DkvrMSsJ3HdZ6S2LZ31Ibh1i8
-         lgp6kmqRDBm8sesIrutfs2vWEhTUObo6Okf85UsV8OBzVD/pAI6iePfbttUr3g48kUVY
-         a7eQ==
-X-Gm-Message-State: APjAAAXIkkC2b4AuZO5xNPWZGstVevQLji85QnVmQwJvV/JJFLRy0wG0
-        lmsQSbTpnf11ZWLNEdmNZiICHw==
-X-Google-Smtp-Source: APXvYqzk3cC5yBbK4/5Bi8xvesd2ymcePZ07SfwUeHdRpIavXWYij45EEO0csvL4Ao/ccnoOMwwZSA==
-X-Received: by 2002:ac2:5088:: with SMTP id f8mr21568780lfm.107.1556183075155;
-        Thu, 25 Apr 2019 02:04:35 -0700 (PDT)
+        bh=wzmNVY0MlNQoNKUiuFMitPMY1YZ/UR3X4yK7u+qVxVk=;
+        b=dWT9NOtuCYabAooYlNMrGYt7J3WqRvD/WgzOls9yDsKzbxnxKEQ4KL2k4NA6+z5b6k
+         LW+KT/1ystxQT3k1klUTatjS49OAEvma3QftKxXqrlqZVnfSBr7MLk1xenUNP2yIMZJ2
+         fr/e4/YJieVpDxi9S+PwnXahJrZzXxIUn4wDvv4EQcA6G2w55lhVyOgZtcm+SfH0g65S
+         UDmaNvMdaXfkuLiqIyUqTN7VWQv9eKpiXfyZOGkGlLMZAL6DHVfolxxLv9KIG6qvD7kb
+         l0UIK2mEPmtz4aOttArONmL+NKR9bc2FabTWErxtb/6K7zLOlxQn237Le/M0Ct2EfR3s
+         apWA==
+X-Gm-Message-State: APjAAAW71TqIPLgWkMK7SvBeVdlPtEpnlUCYOeLNeOgxCYNLZFmvxl2L
+        ol+Denyczt24hdAniU75xdOSvg==
+X-Google-Smtp-Source: APXvYqxOExGs7TchsFt3Iosql2c44CBBoUo1AKafGwYXzlB0y9Oui8WYRfkMv0ESWoUQPAPCVag72A==
+X-Received: by 2002:a19:f50e:: with SMTP id j14mr19043514lfb.11.1556183072109;
+        Thu, 25 Apr 2019 02:04:32 -0700 (PDT)
 Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id v26sm4517353lja.60.2019.04.25.02.04.33
+        by smtp.gmail.com with ESMTPSA id v26sm4517353lja.60.2019.04.25.02.04.30
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 25 Apr 2019 02:04:34 -0700 (PDT)
+        Thu, 25 Apr 2019 02:04:31 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
@@ -66,9 +66,9 @@ Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Niklas Cassel <niklas.cassel@linaro.org>,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 4/4] PM / Domains: Allow to attach a CPU via genpd_dev_pm_attach_by_id|name()
-Date:   Thu, 25 Apr 2019 11:04:13 +0200
-Message-Id: <20190425090413.10700-5-ulf.hansson@linaro.org>
+Subject: [PATCH 2/4] PM / Domains: Drop unused in-parameter to some genpd functions
+Date:   Thu, 25 Apr 2019 11:04:11 +0200
+Message-Id: <20190425090413.10700-3-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190425090413.10700-1-ulf.hansson@linaro.org>
 References: <20190425090413.10700-1-ulf.hansson@linaro.org>
@@ -77,126 +77,88 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190425090413.UKKdXO5esIzjAjtGuWP0Aaez0rwYjnoYXuWobMh_Zn8@z>
+Message-ID: <20190425090411.a8QXl8CkFPn6TE9tlVMSRzr0lu7a4QvJPNTjt5Aaab8@z>
 
-Attaching a device via genpd_dev_pm_attach_by_id|name() makes genpd to
-allocate a virtual device that it attaches instead. This leads to a problem
-in case the base device belongs to a CPU. More precisely, it means
-genpd_get_cpu() compares against the virtual device, thus it fails to find
-a matching CPU device.
-
-Address this limitation, by passing the base device to genpd_get_cpu()
-rather than the virtual device. Moreover, to deal with detach correctly
-from genpd_remove_device(), let's store the CPU number in the struct
-generic_pm_domain_data, as to be able to clear the corresponding bit in the
-cpumask for the genpd.
+Both genpd_alloc_dev_data() and genpd_add_device(), whom are internal genpd
+functions, allows a struct gpd_timing_data *td to be passed as an
+in-parameter. However, as NULL is always passed, let's just drop the
+in-parameter altogether.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 20 ++++++++++----------
- include/linux/pm_domain.h   |  1 +
- 2 files changed, 11 insertions(+), 10 deletions(-)
+ drivers/base/power/domain.c | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index da1c99178943..3d899e8abd58 100644
+index 8aca1c9b4406..93298b7db408 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -1499,10 +1499,11 @@ static int genpd_get_cpu(struct generic_pm_domain *genpd, struct device *dev)
- 	return -1;
- }
+@@ -1396,8 +1396,7 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
  
--static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
-+static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
-+			    struct device *base_dev)
+ #endif /* CONFIG_PM_SLEEP */
+ 
+-static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+-					struct gpd_timing_data *td)
++static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
  {
  	struct generic_pm_domain_data *gpd_data;
--	int ret, cpu;
-+	int ret;
+ 	int ret;
+@@ -1412,9 +1411,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+ 		goto err_put;
+ 	}
  
- 	dev_dbg(dev, "%s()\n", __func__);
+-	if (td)
+-		gpd_data->td = *td;
+-
+ 	gpd_data->base.dev = dev;
+ 	gpd_data->td.constraint_changed = true;
+ 	gpd_data->td.effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS;
+@@ -1504,8 +1500,7 @@ static void genpd_clear_cpumask(struct generic_pm_domain *genpd,
+ 	genpd_update_cpumask(genpd, dev, false);
+ }
  
-@@ -1513,7 +1514,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
+-static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+-			    struct gpd_timing_data *td)
++static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
+ {
+ 	struct generic_pm_domain_data *gpd_data;
+ 	int ret;
+@@ -1515,7 +1510,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
+ 		return -EINVAL;
+ 
+-	gpd_data = genpd_alloc_dev_data(dev, td);
++	gpd_data = genpd_alloc_dev_data(dev);
  	if (IS_ERR(gpd_data))
  		return PTR_ERR(gpd_data);
  
--	cpu = genpd_get_cpu(genpd, dev);
-+	gpd_data->cpu = genpd_get_cpu(genpd, base_dev);
- 
- 	ret = genpd->attach_dev ? genpd->attach_dev(genpd, dev) : 0;
- 	if (ret)
-@@ -1521,7 +1522,7 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
- 
- 	genpd_lock(genpd);
- 
--	genpd_set_cpumask(genpd, cpu);
-+	genpd_set_cpumask(genpd, gpd_data->cpu);
- 	dev_pm_domain_set(dev, &genpd->domain);
- 
- 	genpd->device_count++;
-@@ -1549,7 +1550,7 @@ int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
+@@ -1553,7 +1548,7 @@ int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
  	int ret;
  
  	mutex_lock(&gpd_list_lock);
--	ret = genpd_add_device(genpd, dev);
-+	ret = genpd_add_device(genpd, dev, dev);
+-	ret = genpd_add_device(genpd, dev, NULL);
++	ret = genpd_add_device(genpd, dev);
  	mutex_unlock(&gpd_list_lock);
  
  	return ret;
-@@ -1561,14 +1562,13 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
- {
- 	struct generic_pm_domain_data *gpd_data;
- 	struct pm_domain_data *pdd;
--	int cpu, ret = 0;
-+	int ret = 0;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
- 
- 	pdd = dev->power.subsys_data->domain_data;
- 	gpd_data = to_gpd_data(pdd);
- 	dev_pm_qos_remove_notifier(dev, &gpd_data->nb);
--	cpu = genpd_get_cpu(genpd, dev);
- 
- 	genpd_lock(genpd);
- 
-@@ -1580,7 +1580,7 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
- 	genpd->device_count--;
- 	genpd->max_off_time_changed = true;
- 
--	genpd_clear_cpumask(genpd, cpu);
-+	genpd_clear_cpumask(genpd, gpd_data->cpu);
- 	dev_pm_domain_set(dev, NULL);
- 
- 	list_del_init(&pdd->list_node);
-@@ -2256,7 +2256,7 @@ int of_genpd_add_device(struct of_phandle_args *genpdspec, struct device *dev)
+@@ -2259,7 +2254,7 @@ int of_genpd_add_device(struct of_phandle_args *genpdspec, struct device *dev)
  		goto out;
  	}
  
--	ret = genpd_add_device(genpd, dev);
-+	ret = genpd_add_device(genpd, dev, dev);
+-	ret = genpd_add_device(genpd, dev, NULL);
++	ret = genpd_add_device(genpd, dev);
  
  out:
  	mutex_unlock(&gpd_list_lock);
-@@ -2426,7 +2426,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
+@@ -2429,7 +2424,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
  
  	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
  
--	ret = genpd_add_device(pd, dev);
-+	ret = genpd_add_device(pd, dev, base_dev);
+-	ret = genpd_add_device(pd, dev, NULL);
++	ret = genpd_add_device(pd, dev);
  	mutex_unlock(&gpd_list_lock);
  
  	if (ret < 0) {
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index bc82e74560ee..0e8e356bed6a 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -175,6 +175,7 @@ struct generic_pm_domain_data {
- 	struct pm_domain_data base;
- 	struct gpd_timing_data td;
- 	struct notifier_block nb;
-+	int cpu;
- 	unsigned int performance_state;
- 	void *data;
- };
 -- 
 2.17.1
 
