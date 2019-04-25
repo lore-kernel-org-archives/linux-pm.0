@@ -1,55 +1,40 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [GIT PULL] interconnect changes for v5.2-rc1
-Date: Thu, 25 Apr 2019 14:25:55 +0300
-Message-ID: <eafe23a5-e3cd-760d-f3f0-c82b50e78417@linaro.org>
+From: Daniel Baluta <daniel.baluta@nxp.com>
+Subject: Re: [RFC] cpufreq: Add imx-cpufreq-dt driver
+Date: Thu, 25 Apr 2019 11:38:40 +0000
+Message-ID: <0e33e8f8e7f5aae410750a815dffc0cd8d2b1d2e.camel@nxp.com>
+References: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-ID: <57215398384D874883E3369C039A37DC@eurprd04.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, Abel Vesa <abel.vesa@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Greg,
+Minor comment,
 
-This is a tiny pull request with interconnect patches for the 5.2 merge window.
-The patches have spent a few weeks in linux-next without reported issues. The
-details are in the signed tag. Please consider pulling into char-misc-next.
+<snip>
+> +	u32 (*check_speed_grading)(struct device *);
+> +	int ret;
+> +
+> +       	np = of_find_node_by_path("/");
 
-Thanks,
-Georgi
+Indentation looks strange here ^
 
-The following changes since commit 79a3aaa7b82e3106be97842dedfd8429248896e6:
-
-  Linux 5.1-rc3 (2019-03-31 14:39:29 -0700)
-
-are available in the Git repository at:
-
-  https://git.linaro.org/people/georgi.djakov/linux.git tags/icc-5.2-rc1
-
-for you to fetch changes up to 83fdb2dfb0c2925f253449677830ed11461ac5c8:
-
-  interconnect: convert to DEFINE_SHOW_ATTRIBUTE (2019-04-06 22:03:03 +0700)
-
-----------------------------------------------------------------
-interconnect: for 5.2
-
-Here are some tiny patches for the 5.2-rc1 merge window:
-
-- Add linux-pm@ as a mailing list for the interconnect API.
-- Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
-
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-
-----------------------------------------------------------------
-Georgi Djakov (1):
-      MAINTAINERS: Add mailing list for the interconnect API
-
-Yangtao Li (1):
-      interconnect: convert to DEFINE_SHOW_ATTRIBUTE
-
- MAINTAINERS                 |  1 +
- drivers/interconnect/core.c | 13 +------------
- 2 files changed, 2 insertions(+), 12 deletions(-)
+> +	id = of_match_node(imx_cpufreq_dt_match_list, np);
+> +	of_node_put(np);
+> +	if (!id)
+> +		return -ENODEV;
+> 
