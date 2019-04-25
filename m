@@ -2,98 +2,115 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44955C10F03
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 11:38:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A724C282E1
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 12:33:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 15BD520811
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 11:38:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 34FE12081C
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 12:33:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="GwfE2Vzx"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hHDWKwAV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730956AbfDYLip (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 07:38:45 -0400
-Received: from mail-eopbgr60084.outbound.protection.outlook.com ([40.107.6.84]:19844
-        "EHLO EUR04-DB3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726223AbfDYLip (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Apr 2019 07:38:45 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=PCzaOWZUuEfGHzVD0baNs0c+Nb231KggJsqsdEhMaZU=;
- b=GwfE2Vzx+49+NX9/a1EDvikCQvGGWvX+WdGoyflM8YcJfosdA8UMAvcDST5to+5qoVN4bjVFhqfbksBG1sLp8Azf6JLpiM16PzYLRyajxgN8XIZ8w3rnE68KRSqHN11xqxxERjHwqV6ju5PxuwzLABDRgky5e/YX8wqGpbmJLaw=
-Received: from AM6PR0402MB3350.eurprd04.prod.outlook.com (52.133.21.17) by
- AM6PR0402MB3528.eurprd04.prod.outlook.com (52.133.19.153) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1813.19; Thu, 25 Apr 2019 11:38:40 +0000
-Received: from AM6PR0402MB3350.eurprd04.prod.outlook.com
- ([fe80::f504:a635:91b3:1e7a]) by AM6PR0402MB3350.eurprd04.prod.outlook.com
- ([fe80::f504:a635:91b3:1e7a%3]) with mapi id 15.20.1813.017; Thu, 25 Apr 2019
- 11:38:40 +0000
-From:   Daniel Baluta <daniel.baluta@nxp.com>
-To:     "l.stach@pengutronix.de" <l.stach@pengutronix.de>,
-        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
-        Leonard Crestez <leonard.crestez@nxp.com>
-CC:     dl-linux-imx <linux-imx@nxp.com>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        Abel Vesa <abel.vesa@nxp.com>,
-        "shawnguo@kernel.org" <shawnguo@kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>
-Subject: Re: [RFC] cpufreq: Add imx-cpufreq-dt driver
-Thread-Topic: [RFC] cpufreq: Add imx-cpufreq-dt driver
-Thread-Index: AQHU+1G5n8xA1o8EXEODrFl/NmnNOaZMwDaA
-Date:   Thu, 25 Apr 2019 11:38:40 +0000
-Message-ID: <0e33e8f8e7f5aae410750a815dffc0cd8d2b1d2e.camel@nxp.com>
-References: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
-In-Reply-To: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=daniel.baluta@nxp.com; 
-x-originating-ip: [89.37.124.34]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: ee743f11-389d-42a1-ac4f-08d6c9729071
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:AM6PR0402MB3528;
-x-ms-traffictypediagnostic: AM6PR0402MB3528:
-x-microsoft-antispam-prvs: <AM6PR0402MB3528F3BA99A6EEB920DF0B07F93D0@AM6PR0402MB3528.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0018A2705B
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(396003)(376002)(136003)(39860400002)(346002)(366004)(199004)(189003)(76176011)(5660300002)(6486002)(14454004)(71190400001)(6436002)(71200400001)(316002)(73956011)(118296001)(99286004)(229853002)(7736002)(305945005)(66066001)(66946007)(66476007)(54906003)(6636002)(66446008)(76116006)(64756008)(66556008)(91956017)(110136005)(2501003)(478600001)(97736004)(8936002)(486006)(68736007)(2616005)(11346002)(53936002)(476003)(6246003)(3846002)(102836004)(81166006)(558084003)(6116002)(2906002)(6506007)(26005)(81156014)(8676002)(4326008)(256004)(25786009)(36756003)(44832011)(6512007)(186003)(446003)(86362001);DIR:OUT;SFP:1101;SCL:1;SRVR:AM6PR0402MB3528;H:AM6PR0402MB3350.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: 9RmibougQzaxOoHzuZWg5XhOthxL3SrUpJeZ/fLwZoo5s6gj8pHLUV8MlxAGG6EBLKUBQlp/DUsal+Igqb6XC+gVqI+4o1rDrjbKbxFCzECv1iqtekiZ+BU5pVrpv1Yy12Rvn7tx861ubPdN5ETPHmlHdcvUBA7cCdzjltKRt0ZaKHpP0Uby+NZtJcegrZdlOGwT5ak48NnsGODKlG+cLAyepHt4hZrPAyQtvQ2MfzuhFHy1bZFy5EmZkIC1MVAaR08PcVHf74LLWOqsmUZbjs3RNgleEIjdstHiQpMkmn4Z0g+0+F0/9Vs4T3hgRg3PkWpTC4fQ1hq+MgHXTFsfu0b0DDjYBk+bnMtDIfJUpUZrv5v1YWAamiWH+UKyMqtbis5/pYiVyb9/pITlt+P9+E5HofTeH6SBTbGU90gHJV0=
-Content-Type: text/plain; charset="UTF-8"
-Content-ID: <57215398384D874883E3369C039A37DC@eurprd04.prod.outlook.com>
-Content-Transfer-Encoding: base64
+        id S1729647AbfDYMdK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 08:33:10 -0400
+Received: from mail-wm1-f42.google.com ([209.85.128.42]:37350 "EHLO
+        mail-wm1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727573AbfDYMdK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 08:33:10 -0400
+Received: by mail-wm1-f42.google.com with SMTP id v14so10364923wmf.2
+        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2019 05:33:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=Tmlh66TVXb+pSFlqjzdKxmks/bQ0y8g4h02Q2AlwVMA=;
+        b=hHDWKwAV5nYFX6rVYSYfwUolebmMX3j62o6yjHU45+9SpEt8301nswM+kEfWQdAoLm
+         fW4mMyasKnxApgWqR7SQJ4ejX6ZFoesknAxGgmjPO5MssprQfn/9aD42VJ+ZDM+m5q8e
+         0K1A/ZdVNIvgCLFq7YFc0aWlqh3LANecYz2byijnLrEwmakPuyoBq8/GXhIB8H8EMqcv
+         dq2mvKiiNgLx4bR67kPRjhQHFxIjyDCxuPz5jO4k8/CS6aO101lrJSW10xMVjoloIHAT
+         o14WlOVR2qezBex6eRSLvfcC5RXN7WJVnN0jiHxikp4MueONLuGWNcyLAKNe1KMIfRoB
+         e5Ow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=Tmlh66TVXb+pSFlqjzdKxmks/bQ0y8g4h02Q2AlwVMA=;
+        b=pfy8c4pBZ4pygxp+0PECYG0yEkkletV+R5grDVZyp13+lYdzmuwiGOSiD5b8eOXdtC
+         ex83vu3Eg0IDBDXYWOu0Pj+DwtSDc0kZWx4wPXamJEKNjW2aKkDOnWi64UMiXTGhg3TF
+         pntCkeH38Hq5SS4DuWG/ikMmzxVrLbJXckhgkXe2lxc0MPuLfuzjk8xXJe3WY11yxBar
+         caUg963WsYUtQ7rs3Ve2QNdhe4JdC1w4KAMWKOVC56kqIBVMzChKTFsQSWIesX4VMVVM
+         4mJbTO07zwi+xU6YfUCJHFreD770ql3E4dd6TG/E/uvuorNXE/R3ycF11apktB4onDhl
+         0ktA==
+X-Gm-Message-State: APjAAAWQOLLxgyuSuRu67kFYKGQaIRsOiTHhuLsFxOF0HCjwjhJLJIHL
+        WsVCCcRqIpPXvOPUm4xr3Cbotg==
+X-Google-Smtp-Source: APXvYqyO73VogtYJaAG2wco5dVXxq7D6ym3CqkjHRmSdg3sRZSfQ9pQAWVmnWn5TqLxqTjxNqcSEZw==
+X-Received: by 2002:a1c:730c:: with SMTP id d12mr3212612wmb.47.1556195588720;
+        Thu, 25 Apr 2019 05:33:08 -0700 (PDT)
+Received: from apalos (athedsl-4485328.home.otenet.gr. [94.71.60.216])
+        by smtp.gmail.com with ESMTPSA id t9sm26127402wra.71.2019.04.25.05.33.05
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 25 Apr 2019 05:33:07 -0700 (PDT)
+Date:   Thu, 25 Apr 2019 15:33:03 +0300
+From:   Ilias Apalodimas <ilias.apalodimas@linaro.org>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Gregory CLEMENT <gregory.clement@bootlin.com>,
+        Christian Neubert <christian.neubert.86@gmail.com>,
+        Stephen Boyd <sboyd@codeaurora.org>,
+        Mike Turquette <mturquette@baylibre.com>,
+        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Jason Cooper <jason@lakedaemon.net>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+        Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+        linux-arm-kernel@lists.infradead.org,
+        Antoine Tenart <antoine.tenart@bootlin.com>,
+        =?iso-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>,
+        Maxime Chevallier <maxime.chevallier@bootlin.com>,
+        stable@vger.kernel.org
+Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for
+ cpu clocks
+Message-ID: <20190425123303.GA12659@apalos>
+References: <20190313163558.6705-1-gregory.clement@bootlin.com>
+ <20190314121541.GB19385@apalos>
+ <CAC5LXJcCs4nr-qFOWzUJpUBAJ9ngG-cgeTCVCFBKFc1SPzHMuQ@mail.gmail.com>
+ <20190314134428.GA24768@apalos>
+ <874l85v8p6.fsf@FE-laptop>
+ <20190318112844.GA1708@apalos>
+ <87h8c0s955.fsf@FE-laptop>
+ <20190318122113.GA4834@apalos>
+ <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ee743f11-389d-42a1-ac4f-08d6c9729071
-X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Apr 2019 11:38:40.4566
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR0402MB3528
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425113840.Gj2sIep330gwMXp3NnUfaWa80VFqpmadQCaALECCqxg@z>
+Message-ID: <20190425123303.UeQld269go03cnvwpX46sDtdmJRkKTwQy2-QJYGnNlA@z>
 
-TWlub3IgY29tbWVudCwNCg0KPHNuaXA+DQo+ICsJdTMyICgqY2hlY2tfc3BlZWRfZ3JhZGluZyko
-c3RydWN0IGRldmljZSAqKTsNCj4gKwlpbnQgcmV0Ow0KPiArDQo+ICsgICAgICAgCW5wID0gb2Zf
-ZmluZF9ub2RlX2J5X3BhdGgoIi8iKTsNCg0KSW5kZW50YXRpb24gbG9va3Mgc3RyYW5nZSBoZXJl
-IF4NCg0KPiArCWlkID0gb2ZfbWF0Y2hfbm9kZShpbXhfY3B1ZnJlcV9kdF9tYXRjaF9saXN0LCBu
-cCk7DQo+ICsJb2Zfbm9kZV9wdXQobnApOw0KPiArCWlmICghaWQpDQo+ICsJCXJldHVybiAtRU5P
-REVWOw0KPiANCg0KDQo=
+Hi Viresh,
+
+> > > Also, during this week-end, Christian suggested that the issue might
+> > > come from the AVS support.
+> > > 
+> > > Could you disable it and check you still have the issue?
+> > > 
+> > > For this, you just have to remove the avs node in
+> > > arch/arm64/boot/dts/marvell/armada-37xx.dtsi and rebuild the dtb.
+> > Sure. You'll have to wait for a week though. Currently on a trip. I'll run that
+> >  once i return
+> 
+> @Ilias: Can you please try this now and confirm to Gregory ?
+I am more overloaded than usual and totally forgot about this. Apologies.
+I'll try finding some time and do this.
+
+Thanks
+/Ilias
