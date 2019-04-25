@@ -1,134 +1,116 @@
-From: Paul Walmsley <paul.walmsley@sifive.com>
-Subject: Re: [PATCH 9/9] riscv: call pm_power_off from machine_halt /
- machine_power_off
-Date: Thu, 25 Apr 2019 12:57:11 -0700 (PDT)
-Message-ID: <alpine.DEB.2.21.9999.1904251227220.17442@viisi.sifive.com>
-References: <20190411115623.5749-1-hch@lst.de> <20190411115623.5749-10-hch@lst.de>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v6 06/10] dt-bindings: memory-controllers: add Exynos5422
+ DMC device description
+Date: Thu, 25 Apr 2019 14:57:50 -0500
+Message-ID: <20190425195750.GA26031@bogus>
+References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+ <CGME20190419141947eucas1p13a27605e04169ab528ef5bfb385eddbc@eucas1p1.samsung.com>
+ <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190411115623.5749-10-hch@lst.de>
+Content-Disposition: inline
+In-Reply-To: <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Christoph Hellwig <hch@lst.de>
-Cc: Palmer Dabbelt <palmer@sifive.com>, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 11 Apr 2019, Christoph Hellwig wrote:
-
-> This way any override of pm_power_off also affects the halt path and
-> we don't need additional infrastructure for it.
+On Fri, Apr 19, 2019 at 04:19:24PM +0200, Lukasz Luba wrote:
+> The patch adds description for DT binding for a new Exynos5422 Dynamic
+> Memory Controller device.
 > 
-> Also remove the pm_power_off export - at least for now we don't have
-> any modular drivers overriding it.
-
-I'd propose that we keep the pm_power_off export - both to align with 
-other architectures:
-
-$ fgrep -r pm_power_off arch/ | grep EXPORT
-arch/s390/kernel/setup.c:EXPORT_SYMBOL_GPL(pm_power_off);
-arch/m68k/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/hexagon/kernel/reset.c:EXPORT_SYMBOL(pm_power_off);
-arch/ia64/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/sparc/kernel/process_32.c:EXPORT_SYMBOL(pm_power_off);
-arch/sparc/kernel/reboot.c:EXPORT_SYMBOL(pm_power_off);
-arch/sh/kernel/reboot.c:EXPORT_SYMBOL(pm_power_off);
-arch/um/kernel/reboot.c:EXPORT_SYMBOL(pm_power_off);
-arch/openrisc/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/nios2/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/arc/kernel/reset.c:EXPORT_SYMBOL(pm_power_off);
-arch/arm/kernel/reboot.c:EXPORT_SYMBOL(pm_power_off);
-arch/nds32/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/csky/kernel/power.c:EXPORT_SYMBOL(pm_power_off);
-arch/alpha/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/arm64/kernel/process.c:EXPORT_SYMBOL_GPL(pm_power_off);
-arch/unicore32/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/c6x/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/xtensa/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/h8300/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/powerpc/kernel/setup-common.c:EXPORT_SYMBOL_GPL(pm_power_off);
-arch/mips/kernel/reset.c:EXPORT_SYMBOL(pm_power_off);
-arch/riscv/kernel/reset.c:EXPORT_SYMBOL(pm_power_off);
-arch/microblaze/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-arch/x86/kernel/reboot.c:EXPORT_SYMBOL(pm_power_off);
-arch/parisc/kernel/process.c:EXPORT_SYMBOL(pm_power_off);
-$
-
-and to make sure there's no hassle with the drivers that expect to assign 
-something to it:
-
-$ fgrep -r pm_power_off drivers/ | fgrep =  | cut -f1 -d:  | sort -u | wc -l
-39
-$
-
-For what it's worth, I agree with the implied criticism that reassigning 
-pm_power_off is not a good interface.  There is the obvious problem that 
-more than one chunk of independent code could all try to assign to 
-pm_power_off.  However, to avoid creating a RISC-V-specific mess when 
-someone uses a TI PMIC driver on a RISC-V board, or tries to use ACPI with 
-RISC-V, fixing that seems best done as a separate tree-wide series.
-
-...
-
-Replacing machine_power_off() with a call to your default_power_off() 
-looks fine to me.  However I think it makes sense to change our existing 
-machine_halt() (which was not added by your patch).  Looking at other 
-major architectures - x86, ARM64, and ARM - they don't actually try to 
-power down the system in machine_halt(), instead just entering an 
-infinite loop, WFI, or calling into firmware or a hypervisor.  I'd propose 
-that we align with that approach.
-
-
-- Paul
-
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 > ---
->  arch/riscv/kernel/reset.c | 15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
+>  .../bindings/memory-controllers/exynos5422-dmc.txt | 73 ++++++++++++++++++++++
+>  1 file changed, 73 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
 > 
-> diff --git a/arch/riscv/kernel/reset.c b/arch/riscv/kernel/reset.c
-> index 2a53d26ffdd6..ed637aee514b 100644
-> --- a/arch/riscv/kernel/reset.c
-> +++ b/arch/riscv/kernel/reset.c
-> @@ -12,11 +12,15 @@
->   */
->  
->  #include <linux/reboot.h>
-> -#include <linux/export.h>
->  #include <asm/sbi.h>
->  
-> -void (*pm_power_off)(void) = machine_power_off;
-> -EXPORT_SYMBOL(pm_power_off);
-> +static void default_power_off(void)
-> +{
-> +	sbi_shutdown();
-> +	while (1);
-> +}
+> diff --git a/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
+> new file mode 100644
+> index 0000000..133b3cc
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
+> @@ -0,0 +1,73 @@
+> +* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
 > +
-> +void (*pm_power_off)(void) = default_power_off;
->  
->  void machine_restart(char *cmd)
->  {
-> @@ -26,11 +30,10 @@ void machine_restart(char *cmd)
->  
->  void machine_halt(void)
->  {
-> -	machine_power_off();
-> +	pm_power_off();
->  }
->  
->  void machine_power_off(void)
->  {
-> -	sbi_shutdown();
-> -	while (1);
-> +	pm_power_off();
->  }
+> +The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
+> +memory chips are connected. The driver is to monitor the controller in runtime
+> +and switch frequency and voltage. To monitor the usage of the controller in
+> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
+> +is able to measure the current load of the memory.
+> +When 'userspace' governor is used for the driver, an application is able to
+> +switch the DMC and memory frequency.
+> +
+> +Required properties for DMC device for Exynos5422:
+> +- compatible: Should be "samsung,exynos5422-bus".
+> +- clock-names : the name of clock used by the bus, "bus".
+> +- clocks : phandles for clock specified in "clock-names" property.
+> +- devfreq-events : phandles for PPMU devices connected to this DMC.
+> +- vdd-supply : phandle for voltage regulator which is connected.
+> +- reg : registers of two CDREX controllers, chip information, clocks subsystem.
+> +- operating-points-v2 : phandle for OPPs described in v2 definition.
+> +- device-handle : phandle of the connected DRAM memory device. For more
+> +	information please refer to Documentation
+
+The memory node(s) should be a child of the memory controller IMO.
+
+> +- devfreq-events : phandles of the PPMU events used by the controller.
+> +
+> +Example:
+> +
+> +	ppmu_dmc0_0: ppmu@10d00000 {
+> +		compatible = "samsung,exynos-ppmu";
+> +		reg = <0x10d00000 0x2000>;
+> +		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
+> +		clock-names = "ppmu";
+> +		status = "okay";
+
+Don't show 'status' in examples.
+
+> +		events {
+> +			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
+> +				event-name = "ppmu-event3-dmc0_0";
+> +			};
+> +		};
+> +	};
+> +
+> +	dmc: memory-controller@10c20000 {
+> +		compatible = "samsung,exynos5422-dmc";
+> +		reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
+> +			<0x10000000 0x1000>, <0x10030000 0x1000>;
+> +		clocks = 	<&clock CLK_FOUT_SPLL>,
+> +				<&clock CLK_MOUT_SCLK_SPLL>,
+> +				<&clock CLK_FF_DOUT_SPLL2>,
+> +				<&clock CLK_FOUT_BPLL>,
+> +				<&clock CLK_MOUT_BPLL>,
+> +				<&clock CLK_SCLK_BPLL>,
+> +				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
+> +				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
+> +				<&clock CLK_MOUT_MCLK_CDREX>,
+> +				<&clock CLK_DOUT_CLK2X_PHY0>,
+> +				<&clock CLK_CLKM_PHY0>,
+> +				<&clock CLK_CLKM_PHY1>;
+> +		clock-names =	"fout_spll",
+> +				"mout_sclk_spll",
+> +				"ff_dout_spll2",
+> +				"fout_bpll",
+> +				"mout_bpll",
+> +				"sclk_bpll",
+> +				"mout_mx_mspll_ccore",
+> +				"mout_mx_mspll_ccore_phy",
+> +				"mout_mclk_cdrex",
+> +				"dout_clk2x_phy0",
+> +				"clkm_phy0",
+> +			        "clkm_phy1";
+> +		status = "okay";
+> +		operating-points-v2 = <&dmc_opp_table>;
+> +		devfreq-events = <&ppmu_event3_dmc0_0>,	<&ppmu_event3_dmc0_1>,
+> +				<&ppmu_event3_dmc1_0>, <&ppmu_event3_dmc1_1>;
+> +		operating-points-v2 = <&dmc_opp_table>;
+> +		device-handle = <&samsung_K3QF2F20DB>;
+> +		vdd-supply = <&buck1_reg>;
+> +	};
 > -- 
-> 2.20.1
-> 
-> 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+> 2.7.4
 > 
