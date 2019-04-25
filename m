@@ -1,161 +1,59 @@
-From: Yuantian Tang <andy.tang@nxp.com>
-Subject: [PATCH] arm64: dts: ls1028a: Add Thermal Monitor Unit node
-Date: Thu, 25 Apr 2019 16:26:40 +0800
-Message-ID: <20190425082640.37982-1-andy.tang@nxp.com>
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+Subject: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
+Date: Thu, 25 Apr 2019 09:00:16 +0000
+Message-ID: <1556182821-9187-1-git-send-email-vabhav.sharma@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: shawnguo@kernel.org
-Cc: leoyang.li@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, rui.zhang@intel.com, edubezval@gmail.com, Yuantian Tang <andy.tang@nxp.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "sboyd@kernel.org" <sboyd@kernel.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-The Thermal Monitoring Unit (TMU) monitors and reports the
-temperature from 2 remote temperature measurement sites
-located on ls1028a chip.
-Add TMU dts node to enable this feature.
-
-Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
----
- arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi |  114 ++++++++++++++++++++++++
- 1 files changed, 114 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-index b045812..a25f5fc 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1028a.dtsi
-@@ -29,6 +29,7 @@
- 			clocks = <&clockgen 1 0>;
- 			next-level-cache = <&l2>;
- 			cpu-idle-states = <&CPU_PH20>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -39,6 +40,7 @@
- 			clocks = <&clockgen 1 0>;
- 			next-level-cache = <&l2>;
- 			cpu-idle-states = <&CPU_PH20>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		l2: l2-cache {
-@@ -398,6 +400,118 @@
- 			status = "disabled";
- 		};
- 
-+		tmu: tmu@1f00000 {
-+			compatible = "fsl,qoriq-tmu";
-+			reg = <0x0 0x1f80000 0x0 0x10000>;
-+			interrupts = <0 23 0x4>;
-+			fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x70061>;
-+			fsl,tmu-calibration = <0x00000000 0x00000024
-+					       0x00000001 0x0000002b
-+					       0x00000002 0x00000031
-+					       0x00000003 0x00000038
-+					       0x00000004 0x0000003f
-+					       0x00000005 0x00000045
-+					       0x00000006 0x0000004c
-+					       0x00000007 0x00000053
-+					       0x00000008 0x00000059
-+					       0x00000009 0x00000060
-+					       0x0000000a 0x00000066
-+					       0x0000000b 0x0000006d
-+
-+					       0x00010000 0x0000001c
-+					       0x00010001 0x00000024
-+					       0x00010002 0x0000002c
-+					       0x00010003 0x00000035
-+					       0x00010004 0x0000003d
-+					       0x00010005 0x00000045
-+					       0x00010006 0x0000004d
-+					       0x00010007 0x00000045
-+					       0x00010008 0x0000005e
-+					       0x00010009 0x00000066
-+					       0x0001000a 0x0000006e
-+
-+					       0x00020000 0x00000018
-+					       0x00020001 0x00000022
-+					       0x00020002 0x0000002d
-+					       0x00020003 0x00000038
-+					       0x00020004 0x00000043
-+					       0x00020005 0x0000004d
-+					       0x00020006 0x00000058
-+					       0x00020007 0x00000063
-+					       0x00020008 0x0000006e
-+
-+					       0x00030000 0x00000010
-+					       0x00030001 0x0000001c
-+					       0x00030002 0x00000029
-+					       0x00030003 0x00000036
-+					       0x00030004 0x00000042
-+					       0x00030005 0x0000004f
-+					       0x00030006 0x0000005b
-+					       0x00030007 0x00000068>;
-+			little-endian;
-+			#thermal-sensor-cells = <1>;
-+		};
-+
-+		thermal-zones {
-+			core-cluster {
-+				polling-delay-passive = <1000>;
-+				polling-delay = <5000>;
-+				thermal-sensors = <&tmu 0>;
-+
-+				trips {
-+					core_cluster_alert: core-cluster-alert {
-+						temperature = <85000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
-+
-+					core_cluster_crit: core-cluster-crit {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "critical";
-+					};
-+				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&core_cluster_alert>;
-+						cooling-device =
-+							<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+					};
-+				};
-+			};
-+
-+			ddr-controller {
-+				polling-delay-passive = <1000>;
-+				polling-delay = <5000>;
-+				thermal-sensors = <&tmu 1>;
-+
-+				trips {
-+					ddr_controller_alert: ddr-controller-alert {
-+						temperature = <85000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
-+
-+					ddr_controller_crit: ddr-controller-crit {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "critical";
-+					};
-+				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&ddr_controller_alert>;
-+						cooling-device =
-+							<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+					};
-+				};
-+			};
-+		};
-+
- 		pcie@1f0000000 { /* Integrated Endpoint Root Complex */
- 			compatible = "pci-host-ecam-generic";
- 			reg = <0x01 0xf0000000 0x0 0x100000>;
--- 
-1.7.1
+RnJvbTogWW9nZXNoIEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29tPg0KDQpBZGQgY2xv
+Y2tnZW4gc3VwcG9ydCBmb3IgbHgyMTYwYS4NCkFkZGVkIGVudHJ5IGZvciBjb21wYXQgJ2ZzbCxs
+eDIxNjBhLWNsb2NrZ2VuJy4NCg0KU2lnbmVkLW9mZi1ieTogVGFuZyBZdWFudGlhbiA8YW5keS50
+YW5nQG54cC5jb20+DQpTaWduZWQtb2ZmLWJ5OiBZb2dlc2ggR2F1ciA8eW9nZXNobmFyYXlhbi5n
+YXVyQG54cC5jb20+DQpTaWduZWQtb2ZmLWJ5OiBWYWJoYXYgU2hhcm1hIDx2YWJoYXYuc2hhcm1h
+QG54cC5jb20+DQpBY2tlZC1ieTogU2NvdHQgV29vZCA8b3NzQGJ1c2Vycm9yLm5ldD4NCkFja2Vk
+LWJ5OiBTdGVwaGVuIEJveWQgPHNib3lkQGtlcm5lbC5vcmc+DQpBY2tlZC1ieTogVmlyZXNoIEt1
+bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCg0KQ2hhbmdlcyBmb3IgdjI6DQotIFN1Ympl
+Y3QgbGluZSB1cGRhdGVkDQotLS0NCiBkcml2ZXJzL2Nsay9jbGstcW9yaXEuYyAgICAgICAgIHwg
+MTIgKysrKysrKysrKysrDQogZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYyB8ICAxICsN
+CiAyIGZpbGVzIGNoYW5nZWQsIDEzIGluc2VydGlvbnMoKykNCg0KZGlmZiAtLWdpdCBhL2RyaXZl
+cnMvY2xrL2Nsay1xb3JpcS5jIGIvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMNCmluZGV4IDNkNTFk
+N2MuLjFhMTUyMDEgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYw0KKysrIGIv
+ZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMNCkBAIC01NzAsNiArNTcwLDE3IEBAIHN0YXRpYyBjb25z
+dCBzdHJ1Y3QgY2xvY2tnZW5fY2hpcGluZm8gY2hpcGluZm9bXSA9IHsNCiAJCS5mbGFncyA9IENH
+X1ZFUjMgfCBDR19MSVRUTEVfRU5ESUFOLA0KIAl9LA0KIAl7DQorCQkuY29tcGF0ID0gImZzbCxs
+eDIxNjBhLWNsb2NrZ2VuIiwNCisJCS5jbXV4X2dyb3VwcyA9IHsNCisJCQkmY2xvY2tnZW4yX2Nt
+dXhfY2dhMTIsICZjbG9ja2dlbjJfY211eF9jZ2INCisJCX0sDQorCQkuY211eF90b19ncm91cCA9
+IHsNCisJCQkwLCAwLCAwLCAwLCAxLCAxLCAxLCAxLCAtMQ0KKwkJfSwNCisJCS5wbGxfbWFzayA9
+IDB4MzcsDQorCQkuZmxhZ3MgPSBDR19WRVIzIHwgQ0dfTElUVExFX0VORElBTiwNCisJfSwNCisJ
+ew0KIAkJLmNvbXBhdCA9ICJmc2wscDIwNDEtY2xvY2tnZW4iLA0KIAkJLmd1dHNfY29tcGF0ID0g
+ImZzbCxxb3JpcS1kZXZpY2UtY29uZmlnLTEuMCIsDQogCQkuaW5pdF9wZXJpcGggPSBwMjA0MV9p
+bml0X3BlcmlwaCwNCkBAIC0xNDI3LDYgKzE0MzgsNyBAQCBDTEtfT0ZfREVDTEFSRShxb3JpcV9j
+bG9ja2dlbl9sczEwNDNhLCAiZnNsLGxzMTA0M2EtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsN
+CiBDTEtfT0ZfREVDTEFSRShxb3JpcV9jbG9ja2dlbl9sczEwNDZhLCAiZnNsLGxzMTA0NmEtY2xv
+Y2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCiBDTEtfT0ZfREVDTEFSRShxb3JpcV9jbG9ja2dlbl9s
+czEwODhhLCAiZnNsLGxzMTA4OGEtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCiBDTEtfT0Zf
+REVDTEFSRShxb3JpcV9jbG9ja2dlbl9sczIwODBhLCAiZnNsLGxzMjA4MGEtY2xvY2tnZW4iLCBj
+bG9ja2dlbl9pbml0KTsNCitDTEtfT0ZfREVDTEFSRShxb3JpcV9jbG9ja2dlbl9seDIxNjBhLCAi
+ZnNsLGx4MjE2MGEtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCiBDTEtfT0ZfREVDTEFSRShx
+b3JpcV9jbG9ja2dlbl9wMjA0MSwgImZzbCxwMjA0MS1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQp
+Ow0KIENMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX3AzMDQxLCAiZnNsLHAzMDQxLWNsb2Nr
+Z2VuIiwgY2xvY2tnZW5faW5pdCk7DQogQ0xLX09GX0RFQ0xBUkUocW9yaXFfY2xvY2tnZW5fcDQw
+ODAsICJmc2wscDQwODAtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCmRpZmYgLS1naXQgYS9k
+cml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNw
+dWZyZXEuYw0KaW5kZXggNDI5NWU1NC4uODFmMDI4OCAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvY3B1
+ZnJlcS9xb3JpcS1jcHVmcmVxLmMNCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVx
+LmMNCkBAIC0yODQsNiArMjg0LDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQg
+bm9kZV9tYXRjaGVzW10gX19pbml0Y29uc3QgPSB7DQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLGxz
+MTA0NmEtY2xvY2tnZW4iLCB9LA0KIAl7IC5jb21wYXRpYmxlID0gImZzbCxsczEwODhhLWNsb2Nr
+Z2VuIiwgfSwNCiAJeyAuY29tcGF0aWJsZSA9ICJmc2wsbHMyMDgwYS1jbG9ja2dlbiIsIH0sDQor
+CXsgLmNvbXBhdGlibGUgPSAiZnNsLGx4MjE2MGEtY2xvY2tnZW4iLCB9LA0KIAl7IC5jb21wYXRp
+YmxlID0gImZzbCxwNDA4MC1jbG9ja2dlbiIsIH0sDQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLHFv
+cmlxLWNsb2NrZ2VuLTEuMCIsIH0sDQogCXsgLmNvbXBhdGlibGUgPSAiZnNsLHFvcmlxLWNsb2Nr
+Z2VuLTIuMCIsIH0sDQotLSANCjIuNy40DQoNCg==
