@@ -1,53 +1,59 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
-Date: Thu, 25 Apr 2019 12:29:13 +0200
-Message-ID: <CAJZ5v0jQFXpHmpxSYSUxwGkMV98g3S+zV1oh1RYxvkebmzT29Q@mail.gmail.com>
-References: <1556185703-26243-1-git-send-email-vabhav.sharma@nxp.com>
- <CAJZ5v0iwrjonKpA3Skkhkg3g5Pp9Qzx0v2GBYKdv7eM_jL4p8g@mail.gmail.com> <VI1PR04MB43336A0C62B956CA29A7E621F33D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+Subject: Re: [PATCH 0/4] PM / Domains: Improve support for CPUs in genpd
+Date: Thu, 25 Apr 2019 12:32:24 +0200
+Message-ID: <CAJZ5v0iK03ajPVE2LdkJHKBQzeeS+dkkaYfvUuVYAcZKStU-EQ@mail.gmail.com>
+References: <20190425090413.10700-1-ulf.hansson@linaro.org>
+ <CAJZ5v0jxGcFu-aqvyR4UgjRuCwB9q9fZCiXf+D3NL3TJ5OVEPA@mail.gmail.com>
+ <CAPDyKFqP+92wwscW2V3352DVS1QM=DjMZ3e0uty1eQ4=5JyHWA@mail.gmail.com>
+ <CAJZ5v0jTRF1wvcYTxfSd59ByhnzXdLL8CVg1qnUfQhAj1L1qLA@mail.gmail.com> <CAPDyKFq3QTjX5m9HoNYFTd-e-p_BXsqPH8s+P_yQ5YEJvHBoag@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <VI1PR04MB43336A0C62B956CA29A7E621F33D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+In-Reply-To: <CAPDyKFq3QTjX5m9HoNYFTd-e-p_BXsqPH8s+P_yQ5YEJvHBoag@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Tang <andy.tang@nxp.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Vabhav Sharma <vabhav.sharma@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "sboyd@kernel.org" <sboyd@kernel.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 25, 2019 at 12:15 PM Andy Tang <andy.tang@nxp.com> wrote:
+On Thu, Apr 25, 2019 at 12:17 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >
+> On Thu, 25 Apr 2019 at 12:14, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Thu, Apr 25, 2019 at 12:11 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > >
+> > > On Thu, 25 Apr 2019 at 11:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > >
+> > > > On Thu, Apr 25, 2019 at 11:04 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > > >
+> > > > > Recently genpd was extended to cope with devices belonging to CPUs. However,
+> > > > > attaching CPU devices via genpd_dev_pm_attach_by_id|name() doesn't work,
+> > > > > because of the virtual device that genpd allocates in this path.
+> > > > >
+> > > > > In this series, this limitation is addressed, together with a few other related
+> > > > > fixes/cleanups.
+> > > > >
+> > > > > Ulf Hansson (4):
+> > > > >   PM / Domains: Use the base device for
+> > > > >     driver_deferred_probe_check_state()
+> > > > >   PM / Domains: Drop unused in-parameter to some genpd functions
+> > > > >   PM / Domains: Search for the CPU device outside the genpd lock
+> > > > >   PM / Domains: Allow to attach a CPU via
+> > > > >     genpd_dev_pm_attach_by_id|name()
+> > > > >
+> > > > >  drivers/base/power/domain.c | 73 ++++++++++++++++++-------------------
+> > > > >  include/linux/pm_domain.h   |  1 +
+> > > > >  2 files changed, 36 insertions(+), 38 deletions(-)
+> > > >
+> > > > Are there any dependencies between this and the series you've recently posted?
+> > >
+> > > Yep. I should have stated that, sorry. This should be applied on top.
+> >
+> > On top of which series?
 >
-> > -----Original Message-----
-> > From: Rafael J. Wysocki <rafael@kernel.org>
-> > Sent: 2019年4月25日 18:04
-> > To: Vabhav Sharma <vabhav.sharma@nxp.com>
-> > Cc: linux-kernel@vger.kernel.org; linux-clk@vger.kernel.org;
-> > linux-pm@vger.kernel.org; sboyd@kernel.org; mturquette@baylibre.com;
-> > rjw@rjwysocki.net; viresh.kumar@linaro.org; Yogesh Narayan Gaur
-> > <yogeshnarayan.gaur@nxp.com>; Andy Tang <andy.tang@nxp.com>
-> > Subject: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
-> >
-> > Caution: EXT Email
-> >
-> > On Thu, Apr 25, 2019 at 11:48 AM Vabhav Sharma <vabhav.sharma@nxp.com>
-> > wrote:
-> > >
-> > > From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> > >
-> > > Add clockgen support for lx2160a.
-> > > Added entry for compat 'fsl,lx2160a-clockgen'.
-> >
-> > Well, if I'm expected to apply this, the above is a bit terse.
-> >
-> > It looks like the patch makes the qoriq-cpufreq driver handle some new
-> > hardware, but the changelog doesn't say much about that.
-> >
-> > I'm guessing that the clockgen support added here makes it possible for
-> > qoriq-cpufreq to handle this chip, is that correct?
-> Yes, your guess is correct. The cpufreq feature is based on clock driver.
-> It should had been separated to two patches and reduced the confuse.
-> Do I need to update the commit message or you just take it?
+> [PATCH 0/3] PM / Domains: Improve support for multi PM domains
+>
+> and
+>
+> [PATCH v13 0/4] PM / Domains: Support hierarchical CPU arrangement (PSCI/ARM)
 
-Please update the commit message.
-
-Thanks!
+OK, thanks!
