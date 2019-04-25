@@ -2,115 +2,139 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A724C282E1
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 12:33:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C49AC43218
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 13:36:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 34FE12081C
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 12:33:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hHDWKwAV"
+	by mail.kernel.org (Postfix) with ESMTP id 01037206BF
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 13:36:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729647AbfDYMdK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 08:33:10 -0400
-Received: from mail-wm1-f42.google.com ([209.85.128.42]:37350 "EHLO
-        mail-wm1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727573AbfDYMdK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 08:33:10 -0400
-Received: by mail-wm1-f42.google.com with SMTP id v14so10364923wmf.2
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2019 05:33:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=Tmlh66TVXb+pSFlqjzdKxmks/bQ0y8g4h02Q2AlwVMA=;
-        b=hHDWKwAV5nYFX6rVYSYfwUolebmMX3j62o6yjHU45+9SpEt8301nswM+kEfWQdAoLm
-         fW4mMyasKnxApgWqR7SQJ4ejX6ZFoesknAxGgmjPO5MssprQfn/9aD42VJ+ZDM+m5q8e
-         0K1A/ZdVNIvgCLFq7YFc0aWlqh3LANecYz2byijnLrEwmakPuyoBq8/GXhIB8H8EMqcv
-         dq2mvKiiNgLx4bR67kPRjhQHFxIjyDCxuPz5jO4k8/CS6aO101lrJSW10xMVjoloIHAT
-         o14WlOVR2qezBex6eRSLvfcC5RXN7WJVnN0jiHxikp4MueONLuGWNcyLAKNe1KMIfRoB
-         e5Ow==
+        id S1729798AbfDYNgC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 09:36:02 -0400
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:35736 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727416AbfDYNgC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 09:36:02 -0400
+Received: by mail-pf1-f196.google.com with SMTP id t21so11213969pfh.2;
+        Thu, 25 Apr 2019 06:36:01 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=Tmlh66TVXb+pSFlqjzdKxmks/bQ0y8g4h02Q2AlwVMA=;
-        b=pfy8c4pBZ4pygxp+0PECYG0yEkkletV+R5grDVZyp13+lYdzmuwiGOSiD5b8eOXdtC
-         ex83vu3Eg0IDBDXYWOu0Pj+DwtSDc0kZWx4wPXamJEKNjW2aKkDOnWi64UMiXTGhg3TF
-         pntCkeH38Hq5SS4DuWG/ikMmzxVrLbJXckhgkXe2lxc0MPuLfuzjk8xXJe3WY11yxBar
-         caUg963WsYUtQ7rs3Ve2QNdhe4JdC1w4KAMWKOVC56kqIBVMzChKTFsQSWIesX4VMVVM
-         4mJbTO07zwi+xU6YfUCJHFreD770ql3E4dd6TG/E/uvuorNXE/R3ycF11apktB4onDhl
-         0ktA==
-X-Gm-Message-State: APjAAAWQOLLxgyuSuRu67kFYKGQaIRsOiTHhuLsFxOF0HCjwjhJLJIHL
-        WsVCCcRqIpPXvOPUm4xr3Cbotg==
-X-Google-Smtp-Source: APXvYqyO73VogtYJaAG2wco5dVXxq7D6ym3CqkjHRmSdg3sRZSfQ9pQAWVmnWn5TqLxqTjxNqcSEZw==
-X-Received: by 2002:a1c:730c:: with SMTP id d12mr3212612wmb.47.1556195588720;
-        Thu, 25 Apr 2019 05:33:08 -0700 (PDT)
-Received: from apalos (athedsl-4485328.home.otenet.gr. [94.71.60.216])
-        by smtp.gmail.com with ESMTPSA id t9sm26127402wra.71.2019.04.25.05.33.05
+        h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+         :message-id:date:user-agent:mime-version:in-reply-to
+         :content-language:content-transfer-encoding;
+        bh=l17uPVGpdSiv8IfUe123oAga8SuqeCZI9ns3aS/aHQA=;
+        b=ryb0Q2U9tiVUN1bI5XWSJ90q5fQ4ie8ePv9WxyV5xOVSDETrnAg2Rk8VdyPjObzv1Q
+         xv1G4/mElBy2e/39+3BFLP0k6dMBantUKchoErrXZhyfGRKPUmQRaxYHdP5zHvc7I7Ic
+         NJ+El10aMxrwrnA4mPsCspUec6UbBEFcr3MdjmRGQQryrKUhwUt7ygzy/5MNnMS8rSb9
+         9Awig+pVqoA5rzZIDSyQj3ldD0OEZjgGINCaBEFq+BZCOmi9Y/z/OJx8PmfCtTx8paLu
+         yq6rmjn2j73p0JEyk6t08xSyX/BaKfwNcm6wVllOqQtmmde9aOhFofKX8BR0j3Z1SLWc
+         nTDA==
+X-Gm-Message-State: APjAAAVyj9dg2hhhckXJ0wG4reUdIRjivtYLwee51X0luoHt0iEHl7a0
+        tqc6KrIjMxw4dIEbhctE66sNLQtPZ1E=
+X-Google-Smtp-Source: APXvYqwHF3LQd/hbE3iZGRyRB+bjoYMXBy+7bjmZVXvZiX7ckqln8SC8m5F8s/LsOHji83tNZFdrIg==
+X-Received: by 2002:a63:2ad3:: with SMTP id q202mr19144778pgq.423.1556199360860;
+        Thu, 25 Apr 2019 06:36:00 -0700 (PDT)
+Received: from asus.site ([2601:647:4000:5dd1:a41e:80b4:deb3:fb66])
+        by smtp.gmail.com with ESMTPSA id r145sm48531119pgr.84.2019.04.25.06.35.59
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 25 Apr 2019 05:33:07 -0700 (PDT)
-Date:   Thu, 25 Apr 2019 15:33:03 +0300
-From:   Ilias Apalodimas <ilias.apalodimas@linaro.org>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Gregory CLEMENT <gregory.clement@bootlin.com>,
-        Christian Neubert <christian.neubert.86@gmail.com>,
-        Stephen Boyd <sboyd@codeaurora.org>,
-        Mike Turquette <mturquette@baylibre.com>,
-        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Jason Cooper <jason@lakedaemon.net>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-        Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-        linux-arm-kernel@lists.infradead.org,
-        Antoine Tenart <antoine.tenart@bootlin.com>,
-        =?iso-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>,
-        Maxime Chevallier <maxime.chevallier@bootlin.com>,
-        stable@vger.kernel.org
-Subject: Re: [PATCH] clk: mvebu: armada-37xx-periph: Fix initialization for
- cpu clocks
-Message-ID: <20190425123303.GA12659@apalos>
-References: <20190313163558.6705-1-gregory.clement@bootlin.com>
- <20190314121541.GB19385@apalos>
- <CAC5LXJcCs4nr-qFOWzUJpUBAJ9ngG-cgeTCVCFBKFc1SPzHMuQ@mail.gmail.com>
- <20190314134428.GA24768@apalos>
- <874l85v8p6.fsf@FE-laptop>
- <20190318112844.GA1708@apalos>
- <87h8c0s955.fsf@FE-laptop>
- <20190318122113.GA4834@apalos>
- <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
+        Thu, 25 Apr 2019 06:35:59 -0700 (PDT)
+Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
+ asynchronous probing was Re: next-20190408..0418: Suspend/resume problems on
+ Thinkpad X60
+To:     Pavel Machek <pavel@denx.de>
+Cc:     Jens Axboe <axboe@kernel.dk>, jejb@linux.ibm.com,
+        martin.petersen@oracle.com, lduncan@suse.com, hare@suse.com,
+        mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de,
+        gregkh@linuxfoundation.org, dan.j.williams@intel.com,
+        kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
+        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
+        linux-next@vger.kernel.org, hdegoede@redhat.com,
+        linux-ide@vger.kernel.org
+References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
+ <20190423102239.GA15531@amd> <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
+ <20190424095431.GA32457@amd> <20190424104850.GC32457@amd>
+ <20190424202119.GA26357@amd> <20190424204832.GA3111@amd>
+ <20190424205150.GA4582@amd> <1556139361.161891.140.camel@acm.org>
+ <20190425073343.GA19600@amd>
+From:   Bart Van Assche <bvanassche@acm.org>
+Openpgp: preference=signencrypt
+Autocrypt: addr=bvanassche@acm.org; prefer-encrypt=mutual; keydata=
+ mQENBFSOu4oBCADcRWxVUvkkvRmmwTwIjIJvZOu6wNm+dz5AF4z0FHW2KNZL3oheO3P8UZWr
+ LQOrCfRcK8e/sIs2Y2D3Lg/SL7qqbMehGEYcJptu6mKkywBfoYbtBkVoJ/jQsi2H0vBiiCOy
+ fmxMHIPcYxaJdXxrOG2UO4B60Y/BzE6OrPDT44w4cZA9DH5xialliWU447Bts8TJNa3lZKS1
+ AvW1ZklbvJfAJJAwzDih35LxU2fcWbmhPa7EO2DCv/LM1B10GBB/oQB5kvlq4aA2PSIWkqz4
+ 3SI5kCPSsygD6wKnbRsvNn2mIACva6VHdm62A7xel5dJRfpQjXj2snd1F/YNoNc66UUTABEB
+ AAG0JEJhcnQgVmFuIEFzc2NoZSA8YnZhbmFzc2NoZUBhY20ub3JnPokBOQQTAQIAIwUCVI67
+ igIbAwcLCQgHAwIBBhUIAgkKCwQWAgMBAh4BAheAAAoJEHFcPTXFzhAJ8QkH/1AdXblKL65M
+ Y1Zk1bYKnkAb4a98LxCPm/pJBilvci6boefwlBDZ2NZuuYWYgyrehMB5H+q+Kq4P0IBbTqTa
+ jTPAANn62A6jwJ0FnCn6YaM9TZQjM1F7LoDX3v+oAkaoXuq0dQ4hnxQNu792bi6QyVdZUvKc
+ macVFVgfK9n04mL7RzjO3f+X4midKt/s+G+IPr4DGlrq+WH27eDbpUR3aYRk8EgbgGKvQFdD
+ CEBFJi+5ZKOArmJVBSk21RHDpqyz6Vit3rjep7c1SN8s7NhVi9cjkKmMDM7KYhXkWc10lKx2
+ RTkFI30rkDm4U+JpdAd2+tP3tjGf9AyGGinpzE2XY1K5AQ0EVI67igEIAKiSyd0nECrgz+H5
+ PcFDGYQpGDMTl8MOPCKw/F3diXPuj2eql4xSbAdbUCJzk2ETif5s3twT2ER8cUTEVOaCEUY3
+ eOiaFgQ+nGLx4BXqqGewikPJCe+UBjFnH1m2/IFn4T9jPZkV8xlkKmDUqMK5EV9n3eQLkn5g
+ lco+FepTtmbkSCCjd91EfThVbNYpVQ5ZjdBCXN66CKyJDMJ85HVr5rmXG/nqriTh6cv1l1Js
+ T7AFvvPjUPknS6d+BETMhTkbGzoyS+sywEsQAgA+BMCxBH4LvUmHYhpS+W6CiZ3ZMxjO8Hgc
+ ++w1mLeRUvda3i4/U8wDT3SWuHcB3DWlcppECLkAEQEAAYkBHwQYAQIACQUCVI67igIbDAAK
+ CRBxXD01xc4QCZ4dB/0QrnEasxjM0PGeXK5hcZMT9Eo998alUfn5XU0RQDYdwp6/kMEXMdmT
+ oH0F0xB3SQ8WVSXA9rrc4EBvZruWQ+5/zjVrhhfUAx12CzL4oQ9Ro2k45daYaonKTANYG22y
+ //x8dLe2Fv1By4SKGhmzwH87uXxbTJAUxiWIi1np0z3/RDnoVyfmfbbL1DY7zf2hYXLLzsJR
+ mSsED/1nlJ9Oq5fALdNEPgDyPUerqHxcmIub+pF0AzJoYHK5punqpqfGmqPbjxrJLPJfHVKy
+ goMj5DlBMoYqEgpbwdUYkH6QdizJJCur4icy8GUNbisFYABeoJ91pnD4IGei3MTdvINSZI5e
+Message-ID: <360f6936-ee21-a036-9bd4-93ecfee829e2@acm.org>
+Date:   Thu, 25 Apr 2019 06:35:58 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190425073343.GA19600@amd>
 Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <20190424093015.rcr5auamfccxf6ei@vireshk-i7>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425123303.UeQld269go03cnvwpX46sDtdmJRkKTwQy2-QJYGnNlA@z>
+Message-ID: <20190425133558.rc-oy7WjKLENIpCPM416hnHgwqpTsNqak8K55Zxf10E@z>
 
-Hi Viresh,
-
-> > > Also, during this week-end, Christian suggested that the issue might
-> > > come from the AVS support.
-> > > 
-> > > Could you disable it and check you still have the issue?
-> > > 
-> > > For this, you just have to remove the avs node in
-> > > arch/arm64/boot/dts/marvell/armada-37xx.dtsi and rebuild the dtb.
-> > Sure. You'll have to wait for a week though. Currently on a trip. I'll run that
-> >  once i return
+On 4/25/19 12:33 AM, Pavel Machek wrote:
+> On Wed 2019-04-24 13:56:01, Bart Van Assche wrote:
+>> On Wed, 2019-04-24 at 22:51 +0200, Pavel Machek wrote:
+>>> Unfortunately, that one does not revert cleanly on top of -next.
+>>
+>> Can you try the following:
+>>
+>> git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 &&
+>>   git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
+>>
+>> I will see whether I can come up with a better way to analyze what is
+>> going on. I had not expected that these patches would cause any suspend/
+>> resume problems.
 > 
-> @Ilias: Can you please try this now and confirm to Gregory ?
-I am more overloaded than usual and totally forgot about this. Apologies.
-I'll try finding some time and do this.
+> Not even d16ece reverts:
+> 
+> pavel@duo:/data/l/linux-next-32$ git show  | head -3
+> commit 76c938fcaa4b4a5d8f05fa907925d5043834964e
+> Author: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date:   Tue Apr 23 20:24:59 2019 +1000
+> pavel@duo:/data/l/linux-next-32$ git revert
+> d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
+> error: could not revert d16ece5... scsi: sd: Inline sd_probe_part2()
+> hint: after resolving the conflicts, mark the corrected paths
+> hint: with 'git add <paths>' or 'git rm <paths>'
+> hint: and commit the result with 'git commit'
 
-Thanks
-/Ilias
+There has been a non-trivial merge between the block and scsi trees in
+linux-next. That's probably what prevents these patches to revert
+cleanly. How about performing the following tests:
+* Build, boot and test Martin's latest for-5.2 branch
+(git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git; branch
+5.2/scsi-queue).
+* If suspend/resume does not work reliably with that branch, revert the
+two patches above, rebuild, reboot and retest.
+
+Thanks,
+
+Bart.
