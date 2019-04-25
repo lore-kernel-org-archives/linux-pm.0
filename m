@@ -1,40 +1,30 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v3] clk: qoriq: add support for lx2160a
-Date: Thu, 25 Apr 2019 11:22:23 -0700
-Message-ID: <155621654326.15276.741983919838675194@swboyd.mtv.corp.google.com>
-References: <1556200638-24066-1-git-send-email-vabhav.sharma@nxp.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v10 02/11] dt-bindings: power: supply: add DT bindings
+ for max77650
+Date: Thu, 25 Apr 2019 13:34:26 -0500
+Message-ID: <20190425183426.GA30229@bogus>
+References: <20190423090451.23711-1-brgl@bgdev.pl>
+ <20190423090451.23711-3-brgl@bgdev.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1556200638-24066-1-git-send-email-vabhav.sharma@nxp.com>
+Content-Disposition: inline
+In-Reply-To: <20190423090451.23711-3-brgl@bgdev.pl>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Vabhav Sharma (2019-04-25 06:57:05)
-> From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
->=20
-> Add clockgen support and configuration for NXP SoC lx2160a in qoriq
-> clock driver with compatible property as "fsl,lx2160a-clockgen".
->=20
-> qoriq-cpufreq driver is based on qoriq clock driver, enable support
-> of NXP SoC lx2160a in qoriq cpufreq driver to handle the lx2160a SoC.
->=20
-> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> Acked-by: Scott Wood <oss@buserror.net>
-> Acked-by: Stephen Boyd <sboyd@kernel.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Tue, 23 Apr 2019 11:04:42 +0200, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> 
+> Add the DT binding document for the battery charger module of max77650.
+> 
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > ---
-> Changes for v3:
-> - Incorporated review comments of Rafael J. Wysocki
-> - Updated commit message
+>  .../power/supply/max77650-charger.txt         | 28 +++++++++++++++++++
+>  1 file changed, 28 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.txt
+> 
 
-If you can split it into clk and cpufreq that would be preferred. Then I
-can take the clk part and PM tree can take the cpufreq part. Otherwise,
-you have sent other patches to drivers/clk/clk-qoriq.c and I'm worried
-there will be cross tree conflicts if I take those other patches this
-cycle.
+Reviewed-by: Rob Herring <robh@kernel.org>
