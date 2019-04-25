@@ -2,157 +2,98 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73362C10F03
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 11:26:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44955C10F03
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 11:38:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3968C218B0
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 11:26:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 15BD520811
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 11:38:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZRqZYwTQ"
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="GwfE2Vzx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726088AbfDYL0C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 07:26:02 -0400
-Received: from mail-lf1-f66.google.com ([209.85.167.66]:37201 "EHLO
-        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725977AbfDYL0C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 07:26:02 -0400
-Received: by mail-lf1-f66.google.com with SMTP id h126so6574265lfh.4
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2019 04:26:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:subject:openpgp:autocrypt:to:cc:message-id:date:mime-version
-         :content-language:content-transfer-encoding;
-        bh=7n+73XXcQJZoFiwfDZaSuSkC8S2rR3EJ/z9Q9rUuu5Y=;
-        b=ZRqZYwTQG160ejBtsZbP1yhFAEQXXacKXw2CwoMUoalFX1HPcidO7Z3IwtM9joPluv
-         LLTHIA+n3x2F63Z4Mzew5dtZdMPqyRTabhRK6kiYp+PRk9anezrNZHH/aSsWV/Vgzq2A
-         0iVBCo4SrcB53ALkYVCA5KIfuGgTxaExIkVI24dewe55vhGAZ+9I4uogOKrlCGzF5OOt
-         DVfjq2r+rp4iXVxqGTb3Ah1n97YbnJbjq27GkkbdsSvQ12OHxGO+YboeNrJxorarRF5P
-         zXytICVEuxAf+xmYcP5DfLXc//VcB+kH8Th4wvHQb4tRxNii1zmQfEJi/nMJuziWPPVH
-         lggw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:subject:openpgp:autocrypt:to:cc:message-id
-         :date:mime-version:content-language:content-transfer-encoding;
-        bh=7n+73XXcQJZoFiwfDZaSuSkC8S2rR3EJ/z9Q9rUuu5Y=;
-        b=sFRKq4lydjENHk4Q71onf3xrx/sfHcIXK4QLEVc1OoWzLTTBEMkYX9kToVXufWqW1M
-         NpOjU1SAhwhfjWiWU20n4B8vE932TK8EFsYsKl5kYNF/XJ14FbfuKZKwv4yIdb4xo1yA
-         c7Wn6akNy78ev9gp3SfPphwansEu5S6hXRROPvDwAHdAHZkmuKGtai7i4OoXqyr8eRdF
-         Wh/6yZ7dg2vElmsWzdP3FKyDOptQ/gB6QDY8M5GYbXQeAjQqqkWmrSGpsFSj2Yd6c8NH
-         447QGW5bqNJLryRzDYR6GYBSiUd+WIWIl7jS6T7DPV9eh9WRCg1huP9U6AHOTWuISDgt
-         0ukA==
-X-Gm-Message-State: APjAAAUajjyVRk+4dNA8XItEbdZmFdaRJz8vqLABfVsIF8mGvTi+YlLN
-        phGNxwuqGz1IB4z0mDoMxTs30w==
-X-Google-Smtp-Source: APXvYqwx94+hAungFBnG8L/s/bOBzQwUgIe3GaiU/CZDJr1OJlCr+b6pJELhJERaSe0L5AFvmzJE1w==
-X-Received: by 2002:ac2:5107:: with SMTP id q7mr20419380lfb.162.1556191559594;
-        Thu, 25 Apr 2019 04:25:59 -0700 (PDT)
-Received: from [10.44.66.8] ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id o17sm4517043ljc.66.2019.04.25.04.25.58
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 25 Apr 2019 04:25:58 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [GIT PULL] interconnect changes for v5.2-rc1
-Openpgp: preference=signencrypt
-Autocrypt: addr=georgi.djakov@linaro.org; prefer-encrypt=mutual; keydata=
- mQINBFjTuRcBEACyAOVzghvyN19Sa/Nit4LPBWkICi5W20p6bwiZvdjhtuh50H5q4ktyxJtp
- 1+s8dMSa/j58hAWhrc2SNL3fttOCo+MM1bQWwe8uMBQJP4swgXf5ZUYkSssQlXxGKqBSbWLB
- uFHOOBTzaQBaNgsdXo+mQ1h8UCgM0zQOmbs2ort8aHnH2i65oLs5/Xgv/Qivde/FcFtvEFaL
- 0TZ7odM67u+M32VetH5nBVPESmnEDjRBPw/DOPhFBPXtal53ZFiiRr6Bm1qKVu3dOEYXHHDt
- nF13gB+vBZ6x5pjl02NUEucSHQiuCc2Aaavo6xnuBc3lnd4z/xk6GLBqFP3P/eJ56eJv4d0B
- 0LLgQ7c1T3fU4/5NDRRCnyk6HJ5+HSxD4KVuluj0jnXW4CKzFkKaTxOp7jE6ZD/9Sh74DM8v
- etN8uwDjtYsM07I3Szlh/I+iThxe/4zVtUQsvgXjwuoOOBWWc4m4KKg+W4zm8bSCqrd1DUgL
- f67WiEZgvN7tPXEzi84zT1PiUOM98dOnmREIamSpKOKFereIrKX2IcnZn8jyycE12zMkk+Sc
- ASMfXhfywB0tXRNmzsywdxQFcJ6jblPNxscnGMh2VlY2rezmqJdcK4G4Lprkc0jOHotV/6oJ
- mj9h95Ouvbq5TDHx+ERn8uytPygDBR67kNHs18LkvrEex/Z1cQARAQABtChHZW9yZ2kgRGph
- a292IDxnZW9yZ2kuZGpha292QGxpbmFyby5vcmc+iQI+BBMBAgAoBQJY07kXAhsDBQkHhM4A
- BgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRCyi/eZcnWWUuvsD/4miikUeAO6fU2Xy3fT
- l7RUCeb2Uuh1/nxYoE1vtXcow6SyAvIVTD32kHXucJJfYy2zFzptWpvD6Sa0Sc58qe4iLY4j
- M54ugOYK7XeRKkQHFqqR2T3g/toVG1BOLS2atooXEU+8OFbpLkBXbIdItqJ1M1SEw8YgKmmr
- JlLAaKMq3hMb5bDQx9erq7PqEKOB/Va0nNu17IL58q+Q5Om7S1x54Oj6LiG/9kNOxQTklOQZ
- t61oW1Ewjbl325fW0/Lk0QzmfLCrmGXXiedFEMRLCJbVImXVKdIt/Ubk6SAAUrA5dFVNBzm2
- L8r+HxJcfDeEpdOZJzuwRyFnH96u1Xz+7X2V26zMU6Wl2+lhvr2Tj7spxjppR+nuFiybQq7k
- MIwyEF0mb75RLhW33sdGStCZ/nBsXIGAUS7OBj+a5fm47vQKv6ekg60oRTHWysFSJm1mlRyq
- exhI6GwUo5GM/vE36rIPSJFRRgkt6nynoba/1c4VXxfhok2rkP0x3CApJ5RimbvITTnINY0o
- CU6f1ng1I0A1UTi2YcLjFq/gmCdOHExT4huywfu1DDf0p1xDyPA1FJaii/gJ32bBP3zK53hM
- dj5S7miqN7F6ZpvGSGXgahQzkGyYpBR5pda0m0k8drV2IQn+0W8Qwh4XZ6/YdfI81+xyFlXc
- CJjljqsMCJW6PdgEH7kCDQRY07kXARAAvupGd4Jdd8zRRiF+jMpv6ZGz8L55Di1fl1YRth6m
- lIxYTLwGf0/p0oDLIRldKswena3fbWh5bbTMkJmRiOQ/hffhPSNSyyh+WQeLY2kzl6geiHxD
- zbw37e2hd3rWAEfVFEXOLnmenaUeJFyhA3Wd8OLdRMuoV+RaLhNfeHctiEn1YGy2gLCq4VNb
- 4Wj5hEzABGO7+LZ14hdw3hJIEGKtQC65Jh/vTayGD+qdwedhINnIqslk9tCQ33a+jPrCjXLW
- X29rcgqigzsLHH7iVHWA9R5Aq7pCy5hSFsl4NBn1uV6UHlyOBUuiHBDVwTIAUnZ4S8EQiwgv
- WQxEkXEWLM850V+G6R593yZndTr3yydPgYv0xEDACd6GcNLR/x8mawmHKzNmnRJoOh6Rkfw2
- fSiVGesGo83+iYq0NZASrXHAjWgtZXO1YwjW9gCQ2jYu9RGuQM8zIPY1VDpQ6wJtjO/KaOLm
- NehSR2R6tgBJK7XD9it79LdbPKDKoFSqxaAvXwWgXBj0Oz+Y0BqfClnAbxx3kYlSwfPHDFYc
- R/ppSgnbR5j0Rjz/N6Lua3S42MDhQGoTlVkgAi1btbdV3qpFE6jglJsJUDlqnEnwf03EgjdJ
- 6KEh0z57lyVcy5F/EUKfTAMZweBnkPo+BF2LBYn3Qd+CS6haZAWaG7vzVJu4W/mPQzsAEQEA
- AYkCJQQYAQIADwUCWNO5FwIbDAUJB4TOAAAKCRCyi/eZcnWWUhlHD/0VE/2x6lKh2FGP+QHH
- UTKmiiwtMurYKJsSJlQx0T+j/1f+zYkY3MDX+gXa0d0xb4eFv8WNlEjkcpSPFr+pQ7CiAI33
- 99kAVMQEip/MwoTYvM9NXSMTpyRJ/asnLeqa0WU6l6Z9mQ41lLzPFBAJ21/ddT4xeBDv0dxM
- GqaH2C6bSnJkhSfSja9OxBe+F6LIAZgCFzlogbmSWmUdLBg+sh3K6aiBDAdZPUMvGHzHK3fj
- gHK4GqGCFK76bFrHQYgiBOrcR4GDklj4Gk9osIfdXIAkBvRGw8zg1zzUYwMYk+A6v40gBn00
- OOB13qJe9zyKpReWMAhg7BYPBKIm/qSr82aIQc4+FlDX2Ot6T/4tGUDr9MAHaBKFtVyIqXBO
- xOf0vQEokkUGRKWBE0uA3zFVRfLiT6NUjDQ0vdphTnsdA7h01MliZLQ2lLL2Mt5lsqU+6sup
- Tfql1omgEpjnFsPsyFebzcKGbdEr6vySGa3Cof+miX06hQXKe99a5+eHNhtZJcMAIO89wZmj
- 7ayYJIXFqjl/X0KBcCbiAl4vbdBw1bqFnO4zd1lMXKVoa29UHqby4MPbQhjWNVv9kqp8A39+
- E9xw890l1xdERkjVKX6IEJu2hf7X3MMl9tOjBK6MvdOUxvh1bNNmXh7OlBL1MpJYY/ydIm3B
- KEmKjLDvB0pePJkdTw==
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Message-ID: <eafe23a5-e3cd-760d-f3f0-c82b50e78417@linaro.org>
-Date:   Thu, 25 Apr 2019 14:25:55 +0300
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+        id S1730956AbfDYLip (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 07:38:45 -0400
+Received: from mail-eopbgr60084.outbound.protection.outlook.com ([40.107.6.84]:19844
+        "EHLO EUR04-DB3-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726223AbfDYLip (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Apr 2019 07:38:45 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PCzaOWZUuEfGHzVD0baNs0c+Nb231KggJsqsdEhMaZU=;
+ b=GwfE2Vzx+49+NX9/a1EDvikCQvGGWvX+WdGoyflM8YcJfosdA8UMAvcDST5to+5qoVN4bjVFhqfbksBG1sLp8Azf6JLpiM16PzYLRyajxgN8XIZ8w3rnE68KRSqHN11xqxxERjHwqV6ju5PxuwzLABDRgky5e/YX8wqGpbmJLaw=
+Received: from AM6PR0402MB3350.eurprd04.prod.outlook.com (52.133.21.17) by
+ AM6PR0402MB3528.eurprd04.prod.outlook.com (52.133.19.153) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1813.19; Thu, 25 Apr 2019 11:38:40 +0000
+Received: from AM6PR0402MB3350.eurprd04.prod.outlook.com
+ ([fe80::f504:a635:91b3:1e7a]) by AM6PR0402MB3350.eurprd04.prod.outlook.com
+ ([fe80::f504:a635:91b3:1e7a%3]) with mapi id 15.20.1813.017; Thu, 25 Apr 2019
+ 11:38:40 +0000
+From:   Daniel Baluta <daniel.baluta@nxp.com>
+To:     "l.stach@pengutronix.de" <l.stach@pengutronix.de>,
+        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+        Leonard Crestez <leonard.crestez@nxp.com>
+CC:     dl-linux-imx <linux-imx@nxp.com>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        Abel Vesa <abel.vesa@nxp.com>,
+        "shawnguo@kernel.org" <shawnguo@kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>
+Subject: Re: [RFC] cpufreq: Add imx-cpufreq-dt driver
+Thread-Topic: [RFC] cpufreq: Add imx-cpufreq-dt driver
+Thread-Index: AQHU+1G5n8xA1o8EXEODrFl/NmnNOaZMwDaA
+Date:   Thu, 25 Apr 2019 11:38:40 +0000
+Message-ID: <0e33e8f8e7f5aae410750a815dffc0cd8d2b1d2e.camel@nxp.com>
+References: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
+In-Reply-To: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=daniel.baluta@nxp.com; 
+x-originating-ip: [89.37.124.34]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: ee743f11-389d-42a1-ac4f-08d6c9729071
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:AM6PR0402MB3528;
+x-ms-traffictypediagnostic: AM6PR0402MB3528:
+x-microsoft-antispam-prvs: <AM6PR0402MB3528F3BA99A6EEB920DF0B07F93D0@AM6PR0402MB3528.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0018A2705B
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(396003)(376002)(136003)(39860400002)(346002)(366004)(199004)(189003)(76176011)(5660300002)(6486002)(14454004)(71190400001)(6436002)(71200400001)(316002)(73956011)(118296001)(99286004)(229853002)(7736002)(305945005)(66066001)(66946007)(66476007)(54906003)(6636002)(66446008)(76116006)(64756008)(66556008)(91956017)(110136005)(2501003)(478600001)(97736004)(8936002)(486006)(68736007)(2616005)(11346002)(53936002)(476003)(6246003)(3846002)(102836004)(81166006)(558084003)(6116002)(2906002)(6506007)(26005)(81156014)(8676002)(4326008)(256004)(25786009)(36756003)(44832011)(6512007)(186003)(446003)(86362001);DIR:OUT;SFP:1101;SCL:1;SRVR:AM6PR0402MB3528;H:AM6PR0402MB3350.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: 9RmibougQzaxOoHzuZWg5XhOthxL3SrUpJeZ/fLwZoo5s6gj8pHLUV8MlxAGG6EBLKUBQlp/DUsal+Igqb6XC+gVqI+4o1rDrjbKbxFCzECv1iqtekiZ+BU5pVrpv1Yy12Rvn7tx861ubPdN5ETPHmlHdcvUBA7cCdzjltKRt0ZaKHpP0Uby+NZtJcegrZdlOGwT5ak48NnsGODKlG+cLAyepHt4hZrPAyQtvQ2MfzuhFHy1bZFy5EmZkIC1MVAaR08PcVHf74LLWOqsmUZbjs3RNgleEIjdstHiQpMkmn4Z0g+0+F0/9Vs4T3hgRg3PkWpTC4fQ1hq+MgHXTFsfu0b0DDjYBk+bnMtDIfJUpUZrv5v1YWAamiWH+UKyMqtbis5/pYiVyb9/pITlt+P9+E5HofTeH6SBTbGU90gHJV0=
+Content-Type: text/plain; charset="UTF-8"
+Content-ID: <57215398384D874883E3369C039A37DC@eurprd04.prod.outlook.com>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ee743f11-389d-42a1-ac4f-08d6c9729071
+X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Apr 2019 11:38:40.4566
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR0402MB3528
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425112555.gJ44bC_RG-g47zDZ5w6E0Xtj3K7aqc0YzKojoCYlAfM@z>
+Message-ID: <20190425113840.Gj2sIep330gwMXp3NnUfaWa80VFqpmadQCaALECCqxg@z>
 
-Hi Greg,
-
-This is a tiny pull request with interconnect patches for the 5.2 merge window.
-The patches have spent a few weeks in linux-next without reported issues. The
-details are in the signed tag. Please consider pulling into char-misc-next.
-
-Thanks,
-Georgi
-
-The following changes since commit 79a3aaa7b82e3106be97842dedfd8429248896e6:
-
-  Linux 5.1-rc3 (2019-03-31 14:39:29 -0700)
-
-are available in the Git repository at:
-
-  https://git.linaro.org/people/georgi.djakov/linux.git tags/icc-5.2-rc1
-
-for you to fetch changes up to 83fdb2dfb0c2925f253449677830ed11461ac5c8:
-
-  interconnect: convert to DEFINE_SHOW_ATTRIBUTE (2019-04-06 22:03:03 +0700)
-
-----------------------------------------------------------------
-interconnect: for 5.2
-
-Here are some tiny patches for the 5.2-rc1 merge window:
-
-- Add linux-pm@ as a mailing list for the interconnect API.
-- Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
-
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-
-----------------------------------------------------------------
-Georgi Djakov (1):
-      MAINTAINERS: Add mailing list for the interconnect API
-
-Yangtao Li (1):
-      interconnect: convert to DEFINE_SHOW_ATTRIBUTE
-
- MAINTAINERS                 |  1 +
- drivers/interconnect/core.c | 13 +------------
- 2 files changed, 2 insertions(+), 12 deletions(-)
+TWlub3IgY29tbWVudCwNCg0KPHNuaXA+DQo+ICsJdTMyICgqY2hlY2tfc3BlZWRfZ3JhZGluZyko
+c3RydWN0IGRldmljZSAqKTsNCj4gKwlpbnQgcmV0Ow0KPiArDQo+ICsgICAgICAgCW5wID0gb2Zf
+ZmluZF9ub2RlX2J5X3BhdGgoIi8iKTsNCg0KSW5kZW50YXRpb24gbG9va3Mgc3RyYW5nZSBoZXJl
+IF4NCg0KPiArCWlkID0gb2ZfbWF0Y2hfbm9kZShpbXhfY3B1ZnJlcV9kdF9tYXRjaF9saXN0LCBu
+cCk7DQo+ICsJb2Zfbm9kZV9wdXQobnApOw0KPiArCWlmICghaWQpDQo+ICsJCXJldHVybiAtRU5P
+REVWOw0KPiANCg0KDQo=
