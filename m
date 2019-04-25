@@ -1,43 +1,82 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
-Date: Wed, 24 Apr 2019 15:34:57 -0700
-Message-ID: <1556145297.161891.143.camel@acm.org>
-References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
-         <20190423102239.GA15531@amd> <fed0549d-a789-294c-d899-304911106113@acm.org>
-         <20190424101711.GB32457@amd>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
+ bindings
+Date: Wed, 24 Apr 2019 21:24:50 -0700
+Message-ID: <20190425042450.GB2867@tuxbook-pro>
+References: <20190423132823.7915-1-georgi.djakov@linaro.org>
+ <20190423132823.7915-2-georgi.djakov@linaro.org>
+ <e35223d0-80ac-5236-2b8d-7f46cd3a1581@codeaurora.org>
+ <20190424064942.v5g6jr5l3xy5z3xv@vireshk-i7>
+ <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-7"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190424101711.GB32457@amd>
+Content-Disposition: inline
+In-Reply-To: <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, axboe@kernel.dk, linux-ide@vger.kernel.org
+To: Sibi Sankar <sibis@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org, vincent.guittot@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2019-04-24 at 12:17 +-0200, Pavel Machek wrote:
-+AD4 On Tue 2019-04-23 07:09:42, Bart Van Assche wrote:
-+AD4 +AD4 On 4/23/19 3:22 AM, Pavel Machek wrote:
-+AD4 +AD4 +AD4 +AD4 +AD4 It boots ok (unlike mainline -- I'm debugging that), and I can suspend
-+AD4 +AD4 +AD4 +AD4 +AD4 and resume... but then cursor in X is moving and I can talk to
-+AD4 +AD4 +AD4 +AD4 +AD4 applications cached in memory, but any access to disk hangs.
-+AD4 +AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 +AD4 Mainline problem was identified.
-+AD4 +AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 +AD4 But resume is still broken. I took advantage of fact that I can still
-+AD4 +AD4 +AD4 +AD4 do cached commands, and got complete dmesg. I'm attaching it.
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 Still broken in 0418. Ideas would be welcome at this point.
-+AD4 +AD4 
-+AD4 +AD4 Have you already tried the debugging steps explained in
-+AD4 +AD4 Documentation/power to obtain more information about the nature of the
-+AD4 +AD4 suspend/resume problem?
-+AD4 
-+AD4 That won't help, as system resumes ok, then disk hangs.
-+AD4 
-+AD4 Does it work for you?
+On Wed 24 Apr 02:00 PDT 2019, Sibi Sankar wrote:
+> On 4/24/19 12:19 PM, Viresh Kumar wrote:
+> > On 24-04-19, 12:16, Rajendra Nayak wrote:
+> > > On 4/23/2019 6:58 PM, Georgi Djakov wrote:
+[..]
+> > > > +/ {
+> > > > +	cpus {
+> > > > +		CPU0: cpu@0 {
+> > > > +			compatible = "arm,cortex-a53", "arm,armv8";
+> > > > +			...
+> > > > +			operating-points-v2 = <&cpu_opp_table>;
+> > > > +			/* path between CPU and DDR memory and CPU and L3 */
+> > > > +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
+> > > > +					<&noc MASTER_CPU &noc SLAVE_L3>;
+> > > > +		};
+> > > > +	};
+> > > > +
+> > > > +	cpu_opp_table: cpu_opp_table {
+> > > > +		compatible = "operating-points-v2";
+> > > > +		opp-shared;
+> > > > +
+> > > > +		opp-200000000 {
+> > > > +			opp-hz = /bits/ 64 <200000000>;
+> > > > +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
+> > > > +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
+> > > > +			bandwidth-MBps = <457 1525>, <914 3050>;
+> > > 
+> > > Should this also have a bandwidth-MBps-name perhaps? Without that I guess we assume
+> > > the order in which we specify the interconnects is the same as the order here?
+> > 
+> > Right, so I suggested not to add the -name property and to rely on the
+> > order. Though I missed that he hasn't mentioned the order thing here.
+> 
+> by skipping names, aren't we forced to specify all the specified paths
+> bandwidths for each opp even if it is redundant? i.e if the first/second
+> icc path doesn't have to change across a few opps but if the other path
+> does need to change this scheme would force it to be included and will
+> try to set the first/second path again.
+> 
+> 
+> e.g: Here the first path does not have to change across these two opps
+> but have to specified nonetheless since we omit names.
+> 
 
-Both +ACI-systemctl hibernate+ACI and +ACI-systemctl suspend+ACI work perfectly with the
-next-20190424 kernel on my laptop (a Dell Precision laptop).
+If this is a pair in the middle of the list, we would either have to
+define how non-specified values are inherited from neighbouring nodes or
+you will get different behavior if you're coming from a lower or a
+higher opp.
 
-Bart.
+I think it looks clearer to just be explicit and repeat the values.
+
+Regards,
+Bjorn
+
+> +		opp-1200000000 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			bandwidth-MBps = <457 1525>, <914 3050>;
+> +		};
+> +		opp-1400000000 {
+> +			opp-hz = /bits/ 64 <1400000000>;
+> +			bandwidth-MBps = <457 1525>, <1828 6102>;
+> +		};
