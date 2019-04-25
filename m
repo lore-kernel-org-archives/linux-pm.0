@@ -1,157 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/4] PM / Domains: Search for the CPU device outside the
- genpd lock
-Date: Thu, 25 Apr 2019 15:47:12 +0530
-Message-ID: <20190425101712.abb4ikiksl453yrf@vireshk-i7>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/4] PM / Domains: Improve support for CPUs in genpd
+Date: Thu, 25 Apr 2019 12:17:12 +0200
+Message-ID: <CAPDyKFq3QTjX5m9HoNYFTd-e-p_BXsqPH8s+P_yQ5YEJvHBoag@mail.gmail.com>
 References: <20190425090413.10700-1-ulf.hansson@linaro.org>
- <20190425090413.10700-4-ulf.hansson@linaro.org>
+ <CAJZ5v0jxGcFu-aqvyR4UgjRuCwB9q9fZCiXf+D3NL3TJ5OVEPA@mail.gmail.com>
+ <CAPDyKFqP+92wwscW2V3352DVS1QM=DjMZ3e0uty1eQ4=5JyHWA@mail.gmail.com> <CAJZ5v0jTRF1wvcYTxfSd59ByhnzXdLL8CVg1qnUfQhAj1L1qLA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190425090413.10700-4-ulf.hansson@linaro.org>
+In-Reply-To: <CAJZ5v0jTRF1wvcYTxfSd59ByhnzXdLL8CVg1qnUfQhAj1L1qLA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25-04-19, 11:04, Ulf Hansson wrote:
-> While attaching/detaching a device to a PM domain (genpd) that has the
-> GENPD_FLAG_CPU_DOMAIN set, genpd iterates the cpu_possible_mask to check
-> whether the device corresponds to a CPU. This iteration is done while
-> holding the genpd's lock, which is unnecessary. Let's avoid the locking,
-> by restructuring the corresponding code a bit.
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/domain.c | 52 +++++++++++++++++++------------------
->  1 file changed, 27 insertions(+), 25 deletions(-)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 93298b7db408..da1c99178943 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1450,8 +1450,8 @@ static void genpd_free_dev_data(struct device *dev,
->  	dev_pm_put_subsys_data(dev);
->  }
->  
-> -static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
-> -				   int cpu, bool set, unsigned int depth)
-> +static void genpd_update_cpumask(struct generic_pm_domain *genpd,
-> +				 int cpu, bool set, unsigned int depth)
->  {
->  	struct gpd_link *link;
->  
-> @@ -1462,7 +1462,7 @@ static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
->  		struct generic_pm_domain *master = link->master;
->  
->  		genpd_lock_nested(master, depth + 1);
-> -		__genpd_update_cpumask(master, cpu, set, depth + 1);
-> +		genpd_update_cpumask(master, cpu, set, depth + 1);
->  		genpd_unlock(master);
->  	}
->  
-> @@ -1472,38 +1472,37 @@ static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
->  		cpumask_clear_cpu(cpu, genpd->cpus);
->  }
->  
-> -static void genpd_update_cpumask(struct generic_pm_domain *genpd,
-> -				 struct device *dev, bool set)
-> +static void genpd_set_cpumask(struct generic_pm_domain *genpd, int cpu)
-> +{
-> +	if (cpu >= 0)
-> +		genpd_update_cpumask(genpd, cpu, true, 0);
-> +}
-> +
-> +static void genpd_clear_cpumask(struct generic_pm_domain *genpd, int cpu)
-> +{
-> +	if (cpu >= 0)
-> +		genpd_update_cpumask(genpd, cpu, false, 0);
-> +}
-> +
-> +static int genpd_get_cpu(struct generic_pm_domain *genpd, struct device *dev)
->  {
->  	int cpu;
->  
->  	if (!genpd_is_cpu_domain(genpd))
-> -		return;
-> +		return -1;
->  
->  	for_each_possible_cpu(cpu) {
-> -		if (get_cpu_device(cpu) == dev) {
-> -			__genpd_update_cpumask(genpd, cpu, set, 0);
-> -			return;
-> -		}
-> +		if (get_cpu_device(cpu) == dev)
-> +			return cpu;
->  	}
-> -}
->  
-> -static void genpd_set_cpumask(struct generic_pm_domain *genpd,
-> -			      struct device *dev)
-> -{
-> -	genpd_update_cpumask(genpd, dev, true);
-> -}
-> -
-> -static void genpd_clear_cpumask(struct generic_pm_domain *genpd,
-> -				struct device *dev)
-> -{
-> -	genpd_update_cpumask(genpd, dev, false);
-> +	return -1;
->  }
->  
->  static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
->  {
->  	struct generic_pm_domain_data *gpd_data;
-> -	int ret;
-> +	int ret, cpu;
->  
->  	dev_dbg(dev, "%s()\n", __func__);
->  
-> @@ -1514,13 +1513,15 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
->  	if (IS_ERR(gpd_data))
->  		return PTR_ERR(gpd_data);
->  
-> +	cpu = genpd_get_cpu(genpd, dev);
-> +
->  	ret = genpd->attach_dev ? genpd->attach_dev(genpd, dev) : 0;
->  	if (ret)
->  		goto out;
->  
->  	genpd_lock(genpd);
->  
-> -	genpd_set_cpumask(genpd, dev);
-> +	genpd_set_cpumask(genpd, cpu);
->  	dev_pm_domain_set(dev, &genpd->domain);
->  
->  	genpd->device_count++;
-> @@ -1560,13 +1561,14 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
->  {
->  	struct generic_pm_domain_data *gpd_data;
->  	struct pm_domain_data *pdd;
-> -	int ret = 0;
-> +	int cpu, ret = 0;
->  
->  	dev_dbg(dev, "%s()\n", __func__);
->  
->  	pdd = dev->power.subsys_data->domain_data;
->  	gpd_data = to_gpd_data(pdd);
->  	dev_pm_qos_remove_notifier(dev, &gpd_data->nb);
-> +	cpu = genpd_get_cpu(genpd, dev);
->  
->  	genpd_lock(genpd);
->  
-> @@ -1578,7 +1580,7 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
->  	genpd->device_count--;
->  	genpd->max_off_time_changed = true;
->  
-> -	genpd_clear_cpumask(genpd, dev);
-> +	genpd_clear_cpumask(genpd, cpu);
->  	dev_pm_domain_set(dev, NULL);
->  
->  	list_del_init(&pdd->list_node);
+On Thu, 25 Apr 2019 at 12:14, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Thu, Apr 25, 2019 at 12:11 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >
+> > On Thu, 25 Apr 2019 at 11:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >
+> > > On Thu, Apr 25, 2019 at 11:04 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > >
+> > > > Recently genpd was extended to cope with devices belonging to CPUs. However,
+> > > > attaching CPU devices via genpd_dev_pm_attach_by_id|name() doesn't work,
+> > > > because of the virtual device that genpd allocates in this path.
+> > > >
+> > > > In this series, this limitation is addressed, together with a few other related
+> > > > fixes/cleanups.
+> > > >
+> > > > Ulf Hansson (4):
+> > > >   PM / Domains: Use the base device for
+> > > >     driver_deferred_probe_check_state()
+> > > >   PM / Domains: Drop unused in-parameter to some genpd functions
+> > > >   PM / Domains: Search for the CPU device outside the genpd lock
+> > > >   PM / Domains: Allow to attach a CPU via
+> > > >     genpd_dev_pm_attach_by_id|name()
+> > > >
+> > > >  drivers/base/power/domain.c | 73 ++++++++++++++++++-------------------
+> > > >  include/linux/pm_domain.h   |  1 +
+> > > >  2 files changed, 36 insertions(+), 38 deletions(-)
+> > >
+> > > Are there any dependencies between this and the series you've recently posted?
+> >
+> > Yep. I should have stated that, sorry. This should be applied on top.
+>
+> On top of which series?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+[PATCH 0/3] PM / Domains: Improve support for multi PM domains
 
--- 
-viresh
+and
+
+[PATCH v13 0/4] PM / Domains: Support hierarchical CPU arrangement (PSCI/ARM)
+
+Kind regards
+Uffe
