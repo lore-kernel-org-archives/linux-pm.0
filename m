@@ -2,108 +2,108 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,TVD_SUBJ_WIPE_DEBT,URIBL_BLOCKED,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFA9EC10F03
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 05:33:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3650BC10F03
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 07:33:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9DB4E217FA
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 05:33:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="DmlEx3Co"
+	by mail.kernel.org (Postfix) with ESMTP id 100EC217FA
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 07:33:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729172AbfDYFds (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 01:33:48 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:47044 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725900AbfDYFdr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 01:33:47 -0400
-Received: by mail-pf1-f194.google.com with SMTP id 9so10512780pfj.13
-        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 22:33:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=bGbOlwrEu27uYFRCRa8Q0xuJA8piGO/iw07sacj4LBQ=;
-        b=DmlEx3Cou3fYcL5Tc9n45aJNBfqx6ET7RZxGJ43WK/sVsrYiJ19gnFdi9Ph71USj7y
-         zlaVKPsUg4ZwhXhg/WZQnMe3JaeNnkYIJwztVkdsiSIR8T1xBzHkAVpzPPuQiPn7Fwrl
-         aRGjVeX3Do4GSKjolysd84Ch7ISASC2MNDzhRBojseUaw2EWVHnQThaU8m/Ibo7gwN2N
-         nO60SCni4liW381QVt0CIA8eEbuZl+bqNe/9q2jAZveUN5vq35dMU0TVsDFSGRaCcCU8
-         qbJbgjKG9J9Gz7Ego70U9xJhrstLeMQvPv0cC2/Bo/sGdZUAk+yoMkyq6iquohO1Wa0I
-         iFwA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=bGbOlwrEu27uYFRCRa8Q0xuJA8piGO/iw07sacj4LBQ=;
-        b=B7x5ChulXQiAV5tyeu8oXUnrzqt4PXNf0tyhP1SgBEMmKEIb9/WTDqlDA3EsUgJoeH
-         qcmAkwcr98PfnxdU7YYEFk43biB7yEgEBz2JU5SM0chlpUnooL1DP2iHNDITb78dIiE2
-         jfvMjRoi9PdICJc34sozcOhBayn+bW1nK0AEOcOTlg7ZOPcHAG7a/3XlcxZB0q5oq+Zb
-         7PAhj9e0mlu407Vd94BXpShqyRrlocIGiAIJz74YQOYNzXuu3ZD/loXrEc9Qolb8duzc
-         24Y026qL5EmrqnVo7IGvJBSU/MoDMPXioo8mpQrlRL0BxFUgNyHD20XcCrdwKH5h3voz
-         12JQ==
-X-Gm-Message-State: APjAAAUgcYeD39jj5LXsxsen+bqridBms4Bsl1YaKGFhu7TgD8S40D0n
-        R/L1AwV4JetvMdbcWEoo6KXuqw==
-X-Google-Smtp-Source: APXvYqwtUnXXdq6HS2MftOK2MHAFwU/1+JxWis1kobwXPRwHPQXM4xsAIBMAHMaJTj2HyTMu+N1WpA==
-X-Received: by 2002:a63:243:: with SMTP id 64mr34747986pgc.214.1556170427003;
-        Wed, 24 Apr 2019 22:33:47 -0700 (PDT)
-Received: from localhost ([122.166.139.136])
-        by smtp.gmail.com with ESMTPSA id h19sm34841891pfd.130.2019.04.24.22.33.44
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 24 Apr 2019 22:33:45 -0700 (PDT)
-Date:   Thu, 25 Apr 2019 11:03:43 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     edubezval@gmail.com, rui.zhang@intel.com,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Javi Merino <javi.merino@kernel.org>,
-        "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>,
-        open list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] thermal/drivers/cpu_cooling: Remove pointless test in
- power2state()
-Message-ID: <20190425053343.zmvwd3ndpxkh24j5@vireshk-i7>
-References: <20190424205610.9376-1-daniel.lezcano@linaro.org>
+        id S1730286AbfDYHdr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 03:33:47 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59166 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730224AbfDYHdr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 03:33:47 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id 7B9728058A; Thu, 25 Apr 2019 09:33:35 +0200 (CEST)
+Date:   Thu, 25 Apr 2019 09:33:43 +0200
+From:   Pavel Machek <pavel@denx.de>
+To:     Bart Van Assche <bvanassche@acm.org>
+Cc:     Pavel Machek <pavel@denx.de>, Jens Axboe <axboe@kernel.dk>,
+        jejb@linux.ibm.com, martin.petersen@oracle.com, lduncan@suse.com,
+        hare@suse.com, mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de,
+        gregkh@linuxfoundation.org, dan.j.williams@intel.com,
+        kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
+        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
+        linux-next@vger.kernel.org, hdegoede@redhat.com,
+        linux-ide@vger.kernel.org
+Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
+ asynchronous probing was Re: next-20190408..0418: Suspend/resume problems on
+ Thinkpad X60
+Message-ID: <20190425073343.GA19600@amd>
+References: <20190408173928.GB13260@amd>
+ <20190412102812.GA24977@amd>
+ <20190423102239.GA15531@amd>
+ <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
+ <20190424095431.GA32457@amd>
+ <20190424104850.GC32457@amd>
+ <20190424202119.GA26357@amd>
+ <20190424204832.GA3111@amd>
+ <20190424205150.GA4582@amd>
+ <1556139361.161891.140.camel@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
 Content-Disposition: inline
-In-Reply-To: <20190424205610.9376-1-daniel.lezcano@linaro.org>
-User-Agent: NeoMutt/20180323-120-3dd1ac
+In-Reply-To: <1556139361.161891.140.camel@acm.org>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425053343.Hjvm7keLeLpn9CFgWsc8_5OFT4fFUmNylNtLrmQ1wtI@z>
+Message-ID: <20190425073343.KrzfmgQlRhuGAVTQ3zhMRkvLt3e9m4qM2ZL39HLWAp8@z>
 
-On 24-04-19, 22:56, Daniel Lezcano wrote:
-> When the static power computation was removed, the test with the power
-> being negative was not removed. However, the substraction which was
-> responsible of the negative value was removed and the variable is now
-> an u32. A double reason to remove the test which does not make sense.
-> 
-> Fixes: 84fe2cab48590 ("cpu_cooling: Drop static-power related stuff")
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/thermal/cpu_cooling.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index f7c1f49ec87f..ee8419a6390c 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -541,7 +541,6 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
->  	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
->  	struct cpufreq_policy *policy = cpufreq_cdev->policy;
->  
-> -	power = power > 0 ? power : 0;
->  	last_load = cpufreq_cdev->last_load ?: 1;
->  	normalised_power = (power * 100) / last_load;
->  	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-viresh
+On Wed 2019-04-24 13:56:01, Bart Van Assche wrote:
+> On Wed, 2019-04-24 at 22:51 +0200, Pavel Machek wrote:
+> > Unfortunately, that one does not revert cleanly on top of -next.
+>=20
+> Can you try the following:
+>=20
+> git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 &&
+>   git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
+>=20
+> I will see whether I can come up with a better way to analyze what is
+> going on. I had not expected that these patches would cause any suspend/
+> resume problems.
+
+Not even d16ece reverts:
+
+pavel@duo:/data/l/linux-next-32$ git show  | head -3
+commit 76c938fcaa4b4a5d8f05fa907925d5043834964e
+Author: Stephen Rothwell <sfr@canb.auug.org.au>
+Date:   Tue Apr 23 20:24:59 2019 +1000
+pavel@duo:/data/l/linux-next-32$ git revert
+d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
+error: could not revert d16ece5... scsi: sd: Inline sd_probe_part2()
+hint: after resolving the conflicts, mark the corrected paths
+hint: with 'git add <paths>' or 'git rm <paths>'
+hint: and commit the result with 'git commit'
+
+								Pavel
+--=20
+DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+
+--k+w/mQv8wyuph6w0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlzBYtcACgkQMOfwapXb+vLSPACggAjbyoCyqU8ktZSlP27yCCjh
+Y5sAnRe/NkQIgD/Wl4euXqOxeO2JdhOO
+=JJcZ
+-----END PGP SIGNATURE-----
+
+--k+w/mQv8wyuph6w0--
