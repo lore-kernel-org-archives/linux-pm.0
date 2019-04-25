@@ -1,82 +1,46 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
- bindings
-Date: Wed, 24 Apr 2019 21:24:50 -0700
-Message-ID: <20190425042450.GB2867@tuxbook-pro>
-References: <20190423132823.7915-1-georgi.djakov@linaro.org>
- <20190423132823.7915-2-georgi.djakov@linaro.org>
- <e35223d0-80ac-5236-2b8d-7f46cd3a1581@codeaurora.org>
- <20190424064942.v5g6jr5l3xy5z3xv@vireshk-i7>
- <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] thermal/drivers/cpu_cooling: Remove pointless test in
+ power2state()
+Date: Thu, 25 Apr 2019 11:03:43 +0530
+Message-ID: <20190425053343.zmvwd3ndpxkh24j5@vireshk-i7>
+References: <20190424205610.9376-1-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
+In-Reply-To: <20190424205610.9376-1-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sibi Sankar <sibis@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org, vincent.guittot@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 24 Apr 02:00 PDT 2019, Sibi Sankar wrote:
-> On 4/24/19 12:19 PM, Viresh Kumar wrote:
-> > On 24-04-19, 12:16, Rajendra Nayak wrote:
-> > > On 4/23/2019 6:58 PM, Georgi Djakov wrote:
-[..]
-> > > > +/ {
-> > > > +	cpus {
-> > > > +		CPU0: cpu@0 {
-> > > > +			compatible = "arm,cortex-a53", "arm,armv8";
-> > > > +			...
-> > > > +			operating-points-v2 = <&cpu_opp_table>;
-> > > > +			/* path between CPU and DDR memory and CPU and L3 */
-> > > > +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
-> > > > +					<&noc MASTER_CPU &noc SLAVE_L3>;
-> > > > +		};
-> > > > +	};
-> > > > +
-> > > > +	cpu_opp_table: cpu_opp_table {
-> > > > +		compatible = "operating-points-v2";
-> > > > +		opp-shared;
-> > > > +
-> > > > +		opp-200000000 {
-> > > > +			opp-hz = /bits/ 64 <200000000>;
-> > > > +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
-> > > > +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
-> > > > +			bandwidth-MBps = <457 1525>, <914 3050>;
-> > > 
-> > > Should this also have a bandwidth-MBps-name perhaps? Without that I guess we assume
-> > > the order in which we specify the interconnects is the same as the order here?
-> > 
-> > Right, so I suggested not to add the -name property and to rely on the
-> > order. Though I missed that he hasn't mentioned the order thing here.
+On 24-04-19, 22:56, Daniel Lezcano wrote:
+> When the static power computation was removed, the test with the power
+> being negative was not removed. However, the substraction which was
+> responsible of the negative value was removed and the variable is now
+> an u32. A double reason to remove the test which does not make sense.
 > 
-> by skipping names, aren't we forced to specify all the specified paths
-> bandwidths for each opp even if it is redundant? i.e if the first/second
-> icc path doesn't have to change across a few opps but if the other path
-> does need to change this scheme would force it to be included and will
-> try to set the first/second path again.
+> Fixes: 84fe2cab48590 ("cpu_cooling: Drop static-power related stuff")
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/thermal/cpu_cooling.c | 1 -
+>  1 file changed, 1 deletion(-)
 > 
-> 
-> e.g: Here the first path does not have to change across these two opps
-> but have to specified nonetheless since we omit names.
-> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index f7c1f49ec87f..ee8419a6390c 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -541,7 +541,6 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+>  	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+>  	struct cpufreq_policy *policy = cpufreq_cdev->policy;
+>  
+> -	power = power > 0 ? power : 0;
+>  	last_load = cpufreq_cdev->last_load ?: 1;
+>  	normalised_power = (power * 100) / last_load;
+>  	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
 
-If this is a pair in the middle of the list, we would either have to
-define how non-specified values are inherited from neighbouring nodes or
-you will get different behavior if you're coming from a lower or a
-higher opp.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I think it looks clearer to just be explicit and repeat the values.
-
-Regards,
-Bjorn
-
-> +		opp-1200000000 {
-> +			opp-hz = /bits/ 64 <1200000000>;
-> +			bandwidth-MBps = <457 1525>, <914 3050>;
-> +		};
-> +		opp-1400000000 {
-> +			opp-hz = /bits/ 64 <1400000000>;
-> +			bandwidth-MBps = <457 1525>, <1828 6102>;
-> +		};
+-- 
+viresh
