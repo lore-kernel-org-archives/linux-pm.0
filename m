@@ -1,91 +1,150 @@
-Return-Path: <SRS0=aEVV=S2=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D707CC10F11
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 22:35:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B447FC282E1
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 04:24:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AC520208E4
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Apr 2019 22:35:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 79B02218B0
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 04:24:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XkGh3k76"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726294AbfDXWfA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Apr 2019 18:35:00 -0400
-Received: from mail-pg1-f196.google.com ([209.85.215.196]:36885 "EHLO
-        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726291AbfDXWfA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2019 18:35:00 -0400
-Received: by mail-pg1-f196.google.com with SMTP id e6so10116535pgc.4;
-        Wed, 24 Apr 2019 15:34:59 -0700 (PDT)
+        id S1726362AbfDYEYz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 00:24:55 -0400
+Received: from mail-pl1-f193.google.com ([209.85.214.193]:46371 "EHLO
+        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726368AbfDYEYy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 00:24:54 -0400
+Received: by mail-pl1-f193.google.com with SMTP id o7so8158362pll.13
+        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 21:24:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=MZ0ZquoXjXt5YQFZ1wMrrbk19uCV0UUA3XVrwhRs4M8=;
+        b=XkGh3k76hbcbOi/MX/s5uM85MbIjTe3GUxlo97a63B6spbtzwdVlSgqGQXtjd+FQ4Z
+         O2e0Hmuq0LfxKhMmVzxHgOO4xZMCCPu/vn9jVrRMN5/GktnGisXEKCThoq7xuEM/wXfd
+         6aU2FluO5NEww6Z7vACix3Mn9QlFWYRlnUHMwHM9n1Hn3BxkB6Yn4/P8xnFaRxAlbHFa
+         mp693inIHUcCexOMa50f1BzGR/XXpajPkRwLS5uVeZTwse31B/M/0J4lvP+FiuPt22br
+         fqzkpQ59MSaLPPNw4dZjjgngY7g2dHBpgOIC6QS3/Yfpd/NnjKRoBeJQ8hPuBmVLH7HI
+         a/Fg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=w28r0x/zBL707cFfGwPd+N8cqQQkJsnRMtyGogYxZ8w=;
-        b=U4RmvXc6ij4Ji44toD6vYlbg42fLJ85cVyrSfWO4eXhYS0oRF9X27itJhUUDMi4I8i
-         OMt6/YLZrHOgRMF2TlLbgfvsCwIY2wTxB6zFNY7gxgt7zA2c12Rir2VUy9ngWo0lQ4tv
-         Wic9a77fBP1lU3wV9ibdV1cewN+BINv0XP8Mtg+kZMnMCSWE5PdOEQuitS17dqqzfuU1
-         r6aUJ9fxNwC4aJBproeheNjxIwedDTO+Yy/EBSG8DGc2iv5jU917TN43SWqLb0wWIU6/
-         igCnyrWjxoy+08khjy4yITb1k8SL1Q9h0IHhsk6dMyMwAFMm4q4VBE3KBoxehHu4LE9k
-         gQdA==
-X-Gm-Message-State: APjAAAXYWC3Yv1mAP5d4G147ZYa5feKcdTOexk1rH8iTyqT3u7dNFiD7
-        6p1RZyU/ukpcRIybbGMRyxgEr8Ifc/4=
-X-Google-Smtp-Source: APXvYqwnVRGDodqVeo5eJ0m5RF8yAPDOdwC3xPIXk6ms4szKaZwm6KdQHd7DCO7RZQlREI4xerTdbw==
-X-Received: by 2002:a65:4482:: with SMTP id l2mr11054578pgq.362.1556145299259;
-        Wed, 24 Apr 2019 15:34:59 -0700 (PDT)
-Received: from ?IPv6:2620:15c:2cd:203:5cdc:422c:7b28:ebb5? ([2620:15c:2cd:203:5cdc:422c:7b28:ebb5])
-        by smtp.gmail.com with ESMTPSA id v19sm26824512pfn.62.2019.04.24.15.34.58
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=MZ0ZquoXjXt5YQFZ1wMrrbk19uCV0UUA3XVrwhRs4M8=;
+        b=dOFAVWxf+oXbaG16zA+obTP4guWVcpBSGqdfA7kroG+2Gyb559Yv3j7eUKr98ZN93s
+         f6HRWbdZbLNE/h8Ws7mer3wbSaTgw4Xn8j3ZlQucMmFo0AFdWiBuidBlpXV32zE7v74G
+         C0T3uA0Y08w/M/n4PJZhmdxEx/ARYZJn809tnaXcZCZPVzZZcIMRP5H0rfQ7du97BK8P
+         LrPYUpFdCWd4LVIf/FFS5poLVxNkR6BmI1YDNrihV4/RxXkDaSgK2oGgplnoEW1ylTRo
+         yLHiFnP8r4uZFecUK1EsTOgda+j2VyjWkbZrFXjJYjHhkoEp6VKtEvJdG00QXLnomfJS
+         AJJA==
+X-Gm-Message-State: APjAAAXfSI1XVw58SMBFDGWiAq8A6+tt2LsLLq/joB21RLPtvnQU3bqW
+        e7Gs+xWSbhJqjj7J3ImCjYWslA==
+X-Google-Smtp-Source: APXvYqwVyaHQRyRc/H1q1tzitljEXvhQueIXGZNsgusbQEPPcU4cH+xz6ecZzeYFl2Ach6N34UnmOA==
+X-Received: by 2002:a17:902:1d4a:: with SMTP id u10mr11040129plu.272.1556166293565;
+        Wed, 24 Apr 2019 21:24:53 -0700 (PDT)
+Received: from tuxbook-pro (104-188-17-28.lightspeed.sndgca.sbcglobal.net. [104.188.17.28])
+        by smtp.gmail.com with ESMTPSA id m23sm28564839pfa.117.2019.04.24.21.24.51
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 24 Apr 2019 15:34:58 -0700 (PDT)
-Message-ID: <1556145297.161891.143.camel@acm.org>
-Subject: Re: next-20190408..0418: Suspend/resume problems on Thinkpad X60
-From:   Bart Van Assche <bvanassche@acm.org>
-To:     Pavel Machek <pavel@ucw.cz>
-Cc:     kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
-        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
-        linux-next@vger.kernel.org, hdegoede@redhat.com, axboe@kernel.dk,
-        linux-ide@vger.kernel.org
-Date:   Wed, 24 Apr 2019 15:34:57 -0700
-In-Reply-To: <20190424101711.GB32457@amd>
-References: <20190408173928.GB13260@amd> <20190412102812.GA24977@amd>
-         <20190423102239.GA15531@amd> <fed0549d-a789-294c-d899-304911106113@acm.org>
-         <20190424101711.GB32457@amd>
+        Wed, 24 Apr 2019 21:24:52 -0700 (PDT)
+Date:   Wed, 24 Apr 2019 21:24:50 -0700
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Sibi Sankar <sibis@codeaurora.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org,
+        sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org,
+        mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org,
+        vincent.guittot@linaro.org, amit.kucheria@linaro.org,
+        seansw@qti.qualcomm.com, daidavid1@codeaurora.org,
+        evgreen@chromium.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
+ bindings
+Message-ID: <20190425042450.GB2867@tuxbook-pro>
+References: <20190423132823.7915-1-georgi.djakov@linaro.org>
+ <20190423132823.7915-2-georgi.djakov@linaro.org>
+ <e35223d0-80ac-5236-2b8d-7f46cd3a1581@codeaurora.org>
+ <20190424064942.v5g6jr5l3xy5z3xv@vireshk-i7>
+ <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.26.2-1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190424223457.LNPvIlYo0UsvRPLzca0P1rrFuQ9grrLj0a0TTH3ZrjA@z>
+Message-ID: <20190425042450.a5BSM9DbmAOTmhpsBBgP8reDdjoGGLeYWc2WhwCXKpc@z>
 
-On Wed, 2019-04-24 at 12:17 +-0200, Pavel Machek wrote:
-+AD4 On Tue 2019-04-23 07:09:42, Bart Van Assche wrote:
-+AD4 +AD4 On 4/23/19 3:22 AM, Pavel Machek wrote:
-+AD4 +AD4 +AD4 +AD4 +AD4 It boots ok (unlike mainline -- I'm debugging that), and I can suspend
-+AD4 +AD4 +AD4 +AD4 +AD4 and resume... but then cursor in X is moving and I can talk to
-+AD4 +AD4 +AD4 +AD4 +AD4 applications cached in memory, but any access to disk hangs.
-+AD4 +AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 +AD4 Mainline problem was identified.
-+AD4 +AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 +AD4 But resume is still broken. I took advantage of fact that I can still
-+AD4 +AD4 +AD4 +AD4 do cached commands, and got complete dmesg. I'm attaching it.
-+AD4 +AD4 +AD4 
-+AD4 +AD4 +AD4 Still broken in 0418. Ideas would be welcome at this point.
-+AD4 +AD4 
-+AD4 +AD4 Have you already tried the debugging steps explained in
-+AD4 +AD4 Documentation/power to obtain more information about the nature of the
-+AD4 +AD4 suspend/resume problem?
-+AD4 
-+AD4 That won't help, as system resumes ok, then disk hangs.
-+AD4 
-+AD4 Does it work for you?
+On Wed 24 Apr 02:00 PDT 2019, Sibi Sankar wrote:
+> On 4/24/19 12:19 PM, Viresh Kumar wrote:
+> > On 24-04-19, 12:16, Rajendra Nayak wrote:
+> > > On 4/23/2019 6:58 PM, Georgi Djakov wrote:
+[..]
+> > > > +/ {
+> > > > +	cpus {
+> > > > +		CPU0: cpu@0 {
+> > > > +			compatible = "arm,cortex-a53", "arm,armv8";
+> > > > +			...
+> > > > +			operating-points-v2 = <&cpu_opp_table>;
+> > > > +			/* path between CPU and DDR memory and CPU and L3 */
+> > > > +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
+> > > > +					<&noc MASTER_CPU &noc SLAVE_L3>;
+> > > > +		};
+> > > > +	};
+> > > > +
+> > > > +	cpu_opp_table: cpu_opp_table {
+> > > > +		compatible = "operating-points-v2";
+> > > > +		opp-shared;
+> > > > +
+> > > > +		opp-200000000 {
+> > > > +			opp-hz = /bits/ 64 <200000000>;
+> > > > +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
+> > > > +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
+> > > > +			bandwidth-MBps = <457 1525>, <914 3050>;
+> > > 
+> > > Should this also have a bandwidth-MBps-name perhaps? Without that I guess we assume
+> > > the order in which we specify the interconnects is the same as the order here?
+> > 
+> > Right, so I suggested not to add the -name property and to rely on the
+> > order. Though I missed that he hasn't mentioned the order thing here.
+> 
+> by skipping names, aren't we forced to specify all the specified paths
+> bandwidths for each opp even if it is redundant? i.e if the first/second
+> icc path doesn't have to change across a few opps but if the other path
+> does need to change this scheme would force it to be included and will
+> try to set the first/second path again.
+> 
+> 
+> e.g: Here the first path does not have to change across these two opps
+> but have to specified nonetheless since we omit names.
+> 
 
-Both +ACI-systemctl hibernate+ACI and +ACI-systemctl suspend+ACI work perfectly with the
-next-20190424 kernel on my laptop (a Dell Precision laptop).
+If this is a pair in the middle of the list, we would either have to
+define how non-specified values are inherited from neighbouring nodes or
+you will get different behavior if you're coming from a lower or a
+higher opp.
 
-Bart.
+I think it looks clearer to just be explicit and repeat the values.
+
+Regards,
+Bjorn
+
+> +		opp-1200000000 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			bandwidth-MBps = <457 1525>, <914 3050>;
+> +		};
+> +		opp-1400000000 {
+> +			opp-hz = /bits/ 64 <1400000000>;
+> +			bandwidth-MBps = <457 1525>, <1828 6102>;
+> +		};
