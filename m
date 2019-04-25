@@ -2,89 +2,105 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86423C10F03
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EE39C10F03
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:14:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 607A2214AE
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:13:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E1B9620656
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:14:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556187261;
+	bh=a22G66B5D/LmRZKM87Q8YD/ptccO6erKbrQ5kNn8BKo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=DUStE4Ndub6QmsUlmdYmTaI7lbrQLEK1hbdmDohb5SZchiNaEn7rJHT+Uah0j3Jsv
+	 8MskG98UMKukw3JT4ptzxGxk1zw1HjarNokqbnrRJ38I6dRH5t/BZEuOS1uUzDKNHk
+	 D7VxRsfHQseqV6r7bHwMjwFLKKiyLLhcSCARgSQU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726866AbfDYKMm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 06:12:42 -0400
-Received: from regular1.263xmail.com ([211.150.70.196]:49826 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726247AbfDYKMl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 06:12:41 -0400
-Received: from zhangqing?rock-chips.com (unknown [192.168.167.13])
-        by regular1.263xmail.com (Postfix) with ESMTP id 73959785;
-        Thu, 25 Apr 2019 18:12:33 +0800 (CST)
-X-263anti-spam: KSV:0;BIG:0;
-X-MAIL-GRAY: 0
-X-MAIL-DELIVERY: 1
-X-KSVirus-check: 0
-X-ADDR-CHECKED4: 1
-X-ABS-CHECKED: 1
-X-SKE-CHECKED: 1
-X-ANTISPAM-LEVEL: 2
-Received: from localhost.localdomain (unknown [58.22.7.114])
-        by smtp.263.net (postfix) whith ESMTP id P797T140025968707328S1556187150403323_;
-        Thu, 25 Apr 2019 18:12:32 +0800 (CST)
-X-IP-DOMAINF: 1
-X-UNIQUE-TAG: <e11f934d71261e75036e5e9d47d74e6f>
-X-RL-SENDER: zhangqing@rock-chips.com
-X-SENDER: zhangqing@rock-chips.com
-X-LOGIN-NAME: zhangqing@rock-chips.com
-X-FST-TO: heiko@sntech.de
-X-SENDER-IP: 58.22.7.114
-X-ATTACHMENT-NUM: 0
-X-DNS-TYPE: 0
-From:   Elaine Zhang <zhangqing@rock-chips.com>
-To:     heiko@sntech.de
-Cc:     rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
-        xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com,
-        Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v2 0/3] thermal: rockchip: fix up thermal driver
-Date:   Thu, 25 Apr 2019 18:12:26 +0800
-Message-Id: <1556187154-22632-1-git-send-email-zhangqing@rock-chips.com>
-X-Mailer: git-send-email 1.9.1
+        id S1726873AbfDYKOU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 06:14:20 -0400
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:46416 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726810AbfDYKOT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 06:14:19 -0400
+Received: by mail-oi1-f194.google.com with SMTP id l12so5785766oie.13;
+        Thu, 25 Apr 2019 03:14:19 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=9PFhRHLh905/ae2n9ldFIZhiiWQtx1no+9jBJyJ29Hw=;
+        b=cE3FseffrbnqAEznhjHR1lwUVxJASt64koah1nGdUGQ07U9CTHFmA2RBhH+7G2LPem
+         1noKcCvq0N3QhhhraYTo+fnFm94LZMX3s7snZuws2Pgw7eTpgjOHCCMXeCg7zdd/0EQa
+         B64qzzVC4FgfjLK1mpxv0kvd3nixo9cVb9PnDbFpksJB0yooOCOXEgocwK3N/5YEKHUh
+         R2LyztR1nzpYQO8Pv1GbOhm9qSES2rM0ri/yZfvyayZzcVrZYjkJEdhnXZLd5BWKVsqH
+         0cKEnOQgtar403ijJhHjOflYCWTvDoGoK23Foh6UAlum+g/grDCaK6DdJ8IDaLzvi3iD
+         NF7Q==
+X-Gm-Message-State: APjAAAV5HD9LUto8cSFgbFrzjOj8sLTnqP8euIfW3jtN5QJVtFLvf5HY
+        pklZdgmSd5gviP14QQRYqcnycEBY+CsfpcDszuM=
+X-Google-Smtp-Source: APXvYqxR4nfgOudsylfecHigcgh+E+S0uhjeP+wNgjqANYOXzRk4nj+KoayVOgqpUynhhjaMVwV2hbrF0XsVXS8i8Tc=
+X-Received: by 2002:aca:6c47:: with SMTP id h68mr2869874oic.57.1556187258168;
+ Thu, 25 Apr 2019 03:14:18 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190425090413.10700-1-ulf.hansson@linaro.org>
+ <CAJZ5v0jxGcFu-aqvyR4UgjRuCwB9q9fZCiXf+D3NL3TJ5OVEPA@mail.gmail.com> <CAPDyKFqP+92wwscW2V3352DVS1QM=DjMZ3e0uty1eQ4=5JyHWA@mail.gmail.com>
+In-Reply-To: <CAPDyKFqP+92wwscW2V3352DVS1QM=DjMZ3e0uty1eQ4=5JyHWA@mail.gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 25 Apr 2019 12:14:07 +0200
+Message-ID:
+ <CAJZ5v0jTRF1wvcYTxfSd59ByhnzXdLL8CVg1qnUfQhAj1L1qLA@mail.gmail.com>
+Subject: Re: [PATCH 0/4] PM / Domains: Improve support for CPUs in genpd
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Niklas Cassel <niklas.cassel@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190425101226.PDUq5vP1rruiKtAkxpGgdb0He1z0GtfVIKteD_eAOTU@z>
+Message-ID: <20190425101407.pHe7S0X0qWEGKTkbtEpI_xi6lU1TXTS0Bj-vKRM29N0@z>
 
-1. add pinctrl control.
-2. support PX30 soc
+On Thu, Apr 25, 2019 at 12:11 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On Thu, 25 Apr 2019 at 11:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Thu, Apr 25, 2019 at 11:04 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > >
+> > > Recently genpd was extended to cope with devices belonging to CPUs. However,
+> > > attaching CPU devices via genpd_dev_pm_attach_by_id|name() doesn't work,
+> > > because of the virtual device that genpd allocates in this path.
+> > >
+> > > In this series, this limitation is addressed, together with a few other related
+> > > fixes/cleanups.
+> > >
+> > > Ulf Hansson (4):
+> > >   PM / Domains: Use the base device for
+> > >     driver_deferred_probe_check_state()
+> > >   PM / Domains: Drop unused in-parameter to some genpd functions
+> > >   PM / Domains: Search for the CPU device outside the genpd lock
+> > >   PM / Domains: Allow to attach a CPU via
+> > >     genpd_dev_pm_attach_by_id|name()
+> > >
+> > >  drivers/base/power/domain.c | 73 ++++++++++++++++++-------------------
+> > >  include/linux/pm_domain.h   |  1 +
+> > >  2 files changed, 36 insertions(+), 38 deletions(-)
+> >
+> > Are there any dependencies between this and the series you've recently posted?
+>
+> Yep. I should have stated that, sorry. This should be applied on top.
 
-change in V2:
-PATCH V2 1/3: keep tshut_mode TSHUT_MODE_GPIO;
-	      In case of pinctrl get or lookup error, just bail out;
-	      No need to use the thermal_pinctrl_select_otp/gpio wrappers,
-	      just replace them with:
-PATCH V2 2/3: No change in V2.
-PATCH V2 2/3: keep tshut_mode TSHUT_MODE_GPIO;
-              Remove the grf in 'rk_tsadcv4_initialize' function.
-
-pinctrl_select_state(thermal->pinctrl, thermal->pinctrl_state);
-Elaine Zhang (3):
-  thermal: rockchip: fix up the tsadc pinctrl setting error
-  dt-bindings: rockchip-thermal: Support the PX30 SoC compatible
-  thermal: rockchip: Support the PX30 SoC in thermal driver
-
- .../bindings/thermal/rockchip-thermal.txt          |  1 +
- drivers/thermal/rockchip_thermal.c                 | 74 +++++++++++++++++++++-
- 2 files changed, 72 insertions(+), 3 deletions(-)
-
--- 
-1.9.1
-
-
-
+On top of which series?
