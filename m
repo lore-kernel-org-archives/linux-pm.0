@@ -6,106 +6,115 @@ X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 358F5C282E1
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:29:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1AFBC10F03
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:32:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 061412084B
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:29:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9DD772084B
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 10:32:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1556188171;
-	bh=eNrv5UrP9L6BsclZYbT7L2DpxpieXYZWg/6ctIGmqms=;
+	s=default; t=1556188356;
+	bh=ikNdpMJYg29HonRPDwbbNZqSQGpOz28XgRvY4DOUgIU=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=iov8vmsqATfbKp/UeLRLHIM6i5oX+RAt+mE6anKW74/b96DxPB0UpVKhdioB4Uek8
-	 bZNTKxu2yoGZdahSjgp/yz9zzE5GtT/hHDPvjVBblVWeaHSnRmpNW64qljXN0YwFFs
-	 5vuDXilgI9YaD6wINaKiUampZ+yLlk0a4+FYxWG4=
+	b=bmvKhPNEboN4LADb5sPrOAZQnYRD46QcA9ho4EqLx/+/H9UaTEY8aBHRk0NzKTgDG
+	 MF/VdvcJOoKGI1TN39tmIO/YnkFmMVHhzo1XPii8h/OOw+qiVuZ90Cf4DWtzSejQW0
+	 qVic3Y+4kSPSs9D7Qrg5lU5XQMTdVXnWD5AIwvZU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730129AbfDYK30 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 06:29:26 -0400
-Received: from mail-ot1-f66.google.com ([209.85.210.66]:35531 "EHLO
-        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726120AbfDYK3Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 06:29:25 -0400
-Received: by mail-ot1-f66.google.com with SMTP id m10so18962360otp.2;
-        Thu, 25 Apr 2019 03:29:25 -0700 (PDT)
+        id S1726567AbfDYKcg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 06:32:36 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:40534 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726266AbfDYKcf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 06:32:35 -0400
+Received: by mail-ot1-f65.google.com with SMTP id t8so18937467otp.7;
+        Thu, 25 Apr 2019 03:32:35 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=NaEO2hbJnAfSocLc5D5wA6ojFT1ikDji2rc336ze4Z8=;
-        b=QqWf1xwulkEBHpxv/hMe5ElOQ5VmwZEXr9Wh/I7Vb3u6hZjO+RA2dBJFrTuliPfCNY
-         kFj/X/iTFueTe0U/S+XOLp3ryul9lf9yKytUxYEC0d8xfZ6bX4Ao2wSO2uSZYEiCiG3w
-         UWJ2iF1kIFwMaPmNXr8kP27RHs9j93j7PWoRCwzjw+o7hhpMTKBOZSNzygPJgqE9wglE
-         Nh+f7uZayV8Bag4Jca2FfQI0UL3BLG7kWC4EewZ1PETfQxEZx8syndwpk94R+g6O9L+R
-         sv7VaZr1KorCDya+WIaAnBjMVOD2GI06vtdihq6ssKF37CCDBnow4uEzjTZTfhXTZF+2
-         ZzkQ==
-X-Gm-Message-State: APjAAAVn7S89zlOOlrSb6CNRmCxbG9vFLxuDn6xjRTCTu4q72agW62ge
-        WFtDrCLHSFVGckFJH+0La2d7KHtaZjUXN1Gotvs=
-X-Google-Smtp-Source: APXvYqw3NB5FFAFcBBhNbDiq0JrF1J0ZYM/WZJ7qsjLnZ2oD/chnauzFJOzvJGycLTCYTL/SMIVYBXvlG1LiTEN03pw=
-X-Received: by 2002:a05:6830:20cd:: with SMTP id z13mr23847099otq.168.1556188165036;
- Thu, 25 Apr 2019 03:29:25 -0700 (PDT)
+         :message-id:subject:to:cc;
+        bh=pbTspqmMHl6lzjfEGJMBs25JPgJC8+QH26Jub2MLcuA=;
+        b=J38U4GMsj4+7ghcExtIftFztX8fa+0OXkL6+0Q7TI8qtOvBI8HXYWkaFnqrIpE0F9w
+         Y/AJaCcV3AOZdX40d6nN+WajBqum1lnbQO6AkyUu6oCo8/E9sBl4n3e5qD25qazHefiD
+         kazgdm/KwV16tm5AzemHTRqBusl/T9K/kwVZ7iV8Uqz1iTaK40t8SYp0Q/WWS84vCm1O
+         IhPlZxMOmV4JqtMw6ffvDXiWC9wZNX1nN82aaQtxeAeGhilFpX0sNZadCRuPrEQKEioj
+         bRpDO7MQyg9T4f0LBCeCkatb8PtLIHAjJ+L8KusCafxSDv5g928Kxy+wmyzytRnYg0hk
+         Fu1w==
+X-Gm-Message-State: APjAAAWq1caJIDCg7Td/HRxBb3cDI5B1eqlH0BXx73d+RztX6tT0MPBT
+        S0Un6A74bs2LD4e4997A5iXWoR8MKP92tK9dNzH7nw==
+X-Google-Smtp-Source: APXvYqz65yVA0+fR3WR/Mam5YBG86jsLjcQX7fsqonTQle8rgCvclLHD/zRTjk7zZMU3EBJiW/TQf+qsskV73yHZy+8=
+X-Received: by 2002:a9d:6e17:: with SMTP id e23mr23202213otr.65.1556188354951;
+ Thu, 25 Apr 2019 03:32:34 -0700 (PDT)
 MIME-Version: 1.0
-References: <1556185703-26243-1-git-send-email-vabhav.sharma@nxp.com>
- <CAJZ5v0iwrjonKpA3Skkhkg3g5Pp9Qzx0v2GBYKdv7eM_jL4p8g@mail.gmail.com> <VI1PR04MB43336A0C62B956CA29A7E621F33D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
-In-Reply-To: <VI1PR04MB43336A0C62B956CA29A7E621F33D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+References: <20190425090413.10700-1-ulf.hansson@linaro.org>
+ <CAJZ5v0jxGcFu-aqvyR4UgjRuCwB9q9fZCiXf+D3NL3TJ5OVEPA@mail.gmail.com>
+ <CAPDyKFqP+92wwscW2V3352DVS1QM=DjMZ3e0uty1eQ4=5JyHWA@mail.gmail.com>
+ <CAJZ5v0jTRF1wvcYTxfSd59ByhnzXdLL8CVg1qnUfQhAj1L1qLA@mail.gmail.com> <CAPDyKFq3QTjX5m9HoNYFTd-e-p_BXsqPH8s+P_yQ5YEJvHBoag@mail.gmail.com>
+In-Reply-To: <CAPDyKFq3QTjX5m9HoNYFTd-e-p_BXsqPH8s+P_yQ5YEJvHBoag@mail.gmail.com>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 25 Apr 2019 12:29:13 +0200
+Date:   Thu, 25 Apr 2019 12:32:24 +0200
 Message-ID:
- <CAJZ5v0jQFXpHmpxSYSUxwGkMV98g3S+zV1oh1RYxvkebmzT29Q@mail.gmail.com>
-Subject: Re: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
-To:     Andy Tang <andy.tang@nxp.com>
+ <CAJZ5v0iK03ajPVE2LdkJHKBQzeeS+dkkaYfvUuVYAcZKStU-EQ@mail.gmail.com>
+Subject: Re: [PATCH 0/4] PM / Domains: Improve support for CPUs in genpd
+To:     Ulf Hansson <ulf.hansson@linaro.org>
 Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Vabhav Sharma <vabhav.sharma@nxp.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "sboyd@kernel.org" <sboyd@kernel.org>,
-        "mturquette@baylibre.com" <mturquette@baylibre.com>,
-        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
-        Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Tony Lindgren <tony@atomide.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Niklas Cassel <niklas.cassel@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425102913.eoIIOcL8PhTDIxooaDXjrL0gOBB_WiGez3s4d9cLG-4@z>
+Message-ID: <20190425103224.M-di0_cXv57Ag1gVGy6N5SUWmhX2dKYx1g8P2Siz4jI@z>
 
-On Thu, Apr 25, 2019 at 12:15 PM Andy Tang <andy.tang@nxp.com> wrote:
+On Thu, Apr 25, 2019 at 12:17 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >
+> On Thu, 25 Apr 2019 at 12:14, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Thu, Apr 25, 2019 at 12:11 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > >
+> > > On Thu, 25 Apr 2019 at 11:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > >
+> > > > On Thu, Apr 25, 2019 at 11:04 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > > >
+> > > > > Recently genpd was extended to cope with devices belonging to CPUs. However,
+> > > > > attaching CPU devices via genpd_dev_pm_attach_by_id|name() doesn't work,
+> > > > > because of the virtual device that genpd allocates in this path.
+> > > > >
+> > > > > In this series, this limitation is addressed, together with a few other related
+> > > > > fixes/cleanups.
+> > > > >
+> > > > > Ulf Hansson (4):
+> > > > >   PM / Domains: Use the base device for
+> > > > >     driver_deferred_probe_check_state()
+> > > > >   PM / Domains: Drop unused in-parameter to some genpd functions
+> > > > >   PM / Domains: Search for the CPU device outside the genpd lock
+> > > > >   PM / Domains: Allow to attach a CPU via
+> > > > >     genpd_dev_pm_attach_by_id|name()
+> > > > >
+> > > > >  drivers/base/power/domain.c | 73 ++++++++++++++++++-------------------
+> > > > >  include/linux/pm_domain.h   |  1 +
+> > > > >  2 files changed, 36 insertions(+), 38 deletions(-)
+> > > >
+> > > > Are there any dependencies between this and the series you've recently posted?
+> > >
+> > > Yep. I should have stated that, sorry. This should be applied on top.
+> >
+> > On top of which series?
 >
-> > -----Original Message-----
-> > From: Rafael J. Wysocki <rafael@kernel.org>
-> > Sent: 2019年4月25日 18:04
-> > To: Vabhav Sharma <vabhav.sharma@nxp.com>
-> > Cc: linux-kernel@vger.kernel.org; linux-clk@vger.kernel.org;
-> > linux-pm@vger.kernel.org; sboyd@kernel.org; mturquette@baylibre.com;
-> > rjw@rjwysocki.net; viresh.kumar@linaro.org; Yogesh Narayan Gaur
-> > <yogeshnarayan.gaur@nxp.com>; Andy Tang <andy.tang@nxp.com>
-> > Subject: [EXT] Re: [PATCH v2] clk: qoriq: Add clockgen support for lx2160a
-> >
-> > Caution: EXT Email
-> >
-> > On Thu, Apr 25, 2019 at 11:48 AM Vabhav Sharma <vabhav.sharma@nxp.com>
-> > wrote:
-> > >
-> > > From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> > >
-> > > Add clockgen support for lx2160a.
-> > > Added entry for compat 'fsl,lx2160a-clockgen'.
-> >
-> > Well, if I'm expected to apply this, the above is a bit terse.
-> >
-> > It looks like the patch makes the qoriq-cpufreq driver handle some new
-> > hardware, but the changelog doesn't say much about that.
-> >
-> > I'm guessing that the clockgen support added here makes it possible for
-> > qoriq-cpufreq to handle this chip, is that correct?
-> Yes, your guess is correct. The cpufreq feature is based on clock driver.
-> It should had been separated to two patches and reduced the confuse.
-> Do I need to update the commit message or you just take it?
+> [PATCH 0/3] PM / Domains: Improve support for multi PM domains
+>
+> and
+>
+> [PATCH v13 0/4] PM / Domains: Support hierarchical CPU arrangement (PSCI/ARM)
 
-Please update the commit message.
-
-Thanks!
+OK, thanks!
