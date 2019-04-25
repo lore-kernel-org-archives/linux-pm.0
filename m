@@ -2,149 +2,108 @@ Return-Path: <SRS0=5pBW=S3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,TVD_SUBJ_WIPE_DEBT,URIBL_BLOCKED,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B447FC282E1
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 04:24:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFA9EC10F03
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 05:33:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 79B02218B0
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 04:24:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9DB4E217FA
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Apr 2019 05:33:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XkGh3k76"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="DmlEx3Co"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726362AbfDYEYz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Apr 2019 00:24:55 -0400
-Received: from mail-pl1-f193.google.com ([209.85.214.193]:46371 "EHLO
-        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726368AbfDYEYy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 00:24:54 -0400
-Received: by mail-pl1-f193.google.com with SMTP id o7so8158362pll.13
-        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 21:24:54 -0700 (PDT)
+        id S1729172AbfDYFds (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Apr 2019 01:33:48 -0400
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:47044 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725900AbfDYFdr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2019 01:33:47 -0400
+Received: by mail-pf1-f194.google.com with SMTP id 9so10512780pfj.13
+        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2019 22:33:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=MZ0ZquoXjXt5YQFZ1wMrrbk19uCV0UUA3XVrwhRs4M8=;
-        b=XkGh3k76hbcbOi/MX/s5uM85MbIjTe3GUxlo97a63B6spbtzwdVlSgqGQXtjd+FQ4Z
-         O2e0Hmuq0LfxKhMmVzxHgOO4xZMCCPu/vn9jVrRMN5/GktnGisXEKCThoq7xuEM/wXfd
-         6aU2FluO5NEww6Z7vACix3Mn9QlFWYRlnUHMwHM9n1Hn3BxkB6Yn4/P8xnFaRxAlbHFa
-         mp693inIHUcCexOMa50f1BzGR/XXpajPkRwLS5uVeZTwse31B/M/0J4lvP+FiuPt22br
-         fqzkpQ59MSaLPPNw4dZjjgngY7g2dHBpgOIC6QS3/Yfpd/NnjKRoBeJQ8hPuBmVLH7HI
-         a/Fg==
+        bh=bGbOlwrEu27uYFRCRa8Q0xuJA8piGO/iw07sacj4LBQ=;
+        b=DmlEx3Cou3fYcL5Tc9n45aJNBfqx6ET7RZxGJ43WK/sVsrYiJ19gnFdi9Ph71USj7y
+         zlaVKPsUg4ZwhXhg/WZQnMe3JaeNnkYIJwztVkdsiSIR8T1xBzHkAVpzPPuQiPn7Fwrl
+         aRGjVeX3Do4GSKjolysd84Ch7ISASC2MNDzhRBojseUaw2EWVHnQThaU8m/Ibo7gwN2N
+         nO60SCni4liW381QVt0CIA8eEbuZl+bqNe/9q2jAZveUN5vq35dMU0TVsDFSGRaCcCU8
+         qbJbgjKG9J9Gz7Ego70U9xJhrstLeMQvPv0cC2/Bo/sGdZUAk+yoMkyq6iquohO1Wa0I
+         iFwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=MZ0ZquoXjXt5YQFZ1wMrrbk19uCV0UUA3XVrwhRs4M8=;
-        b=dOFAVWxf+oXbaG16zA+obTP4guWVcpBSGqdfA7kroG+2Gyb559Yv3j7eUKr98ZN93s
-         f6HRWbdZbLNE/h8Ws7mer3wbSaTgw4Xn8j3ZlQucMmFo0AFdWiBuidBlpXV32zE7v74G
-         C0T3uA0Y08w/M/n4PJZhmdxEx/ARYZJn809tnaXcZCZPVzZZcIMRP5H0rfQ7du97BK8P
-         LrPYUpFdCWd4LVIf/FFS5poLVxNkR6BmI1YDNrihV4/RxXkDaSgK2oGgplnoEW1ylTRo
-         yLHiFnP8r4uZFecUK1EsTOgda+j2VyjWkbZrFXjJYjHhkoEp6VKtEvJdG00QXLnomfJS
-         AJJA==
-X-Gm-Message-State: APjAAAXfSI1XVw58SMBFDGWiAq8A6+tt2LsLLq/joB21RLPtvnQU3bqW
-        e7Gs+xWSbhJqjj7J3ImCjYWslA==
-X-Google-Smtp-Source: APXvYqwVyaHQRyRc/H1q1tzitljEXvhQueIXGZNsgusbQEPPcU4cH+xz6ecZzeYFl2Ach6N34UnmOA==
-X-Received: by 2002:a17:902:1d4a:: with SMTP id u10mr11040129plu.272.1556166293565;
-        Wed, 24 Apr 2019 21:24:53 -0700 (PDT)
-Received: from tuxbook-pro (104-188-17-28.lightspeed.sndgca.sbcglobal.net. [104.188.17.28])
-        by smtp.gmail.com with ESMTPSA id m23sm28564839pfa.117.2019.04.24.21.24.51
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 24 Apr 2019 21:24:52 -0700 (PDT)
-Date:   Wed, 24 Apr 2019 21:24:50 -0700
-From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     Sibi Sankar <sibis@codeaurora.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org,
-        sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org,
-        mark.rutland@arm.com, rjw@rjwysocki.net, jcrouse@codeaurora.org,
-        vincent.guittot@linaro.org, amit.kucheria@linaro.org,
-        seansw@qti.qualcomm.com, daidavid1@codeaurora.org,
-        evgreen@chromium.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH v2 1/5] dt-bindings: opp: Introduce bandwidth-MBps
- bindings
-Message-ID: <20190425042450.GB2867@tuxbook-pro>
-References: <20190423132823.7915-1-georgi.djakov@linaro.org>
- <20190423132823.7915-2-georgi.djakov@linaro.org>
- <e35223d0-80ac-5236-2b8d-7f46cd3a1581@codeaurora.org>
- <20190424064942.v5g6jr5l3xy5z3xv@vireshk-i7>
- <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
+        bh=bGbOlwrEu27uYFRCRa8Q0xuJA8piGO/iw07sacj4LBQ=;
+        b=B7x5ChulXQiAV5tyeu8oXUnrzqt4PXNf0tyhP1SgBEMmKEIb9/WTDqlDA3EsUgJoeH
+         qcmAkwcr98PfnxdU7YYEFk43biB7yEgEBz2JU5SM0chlpUnooL1DP2iHNDITb78dIiE2
+         jfvMjRoi9PdICJc34sozcOhBayn+bW1nK0AEOcOTlg7ZOPcHAG7a/3XlcxZB0q5oq+Zb
+         7PAhj9e0mlu407Vd94BXpShqyRrlocIGiAIJz74YQOYNzXuu3ZD/loXrEc9Qolb8duzc
+         24Y026qL5EmrqnVo7IGvJBSU/MoDMPXioo8mpQrlRL0BxFUgNyHD20XcCrdwKH5h3voz
+         12JQ==
+X-Gm-Message-State: APjAAAUgcYeD39jj5LXsxsen+bqridBms4Bsl1YaKGFhu7TgD8S40D0n
+        R/L1AwV4JetvMdbcWEoo6KXuqw==
+X-Google-Smtp-Source: APXvYqwtUnXXdq6HS2MftOK2MHAFwU/1+JxWis1kobwXPRwHPQXM4xsAIBMAHMaJTj2HyTMu+N1WpA==
+X-Received: by 2002:a63:243:: with SMTP id 64mr34747986pgc.214.1556170427003;
+        Wed, 24 Apr 2019 22:33:47 -0700 (PDT)
+Received: from localhost ([122.166.139.136])
+        by smtp.gmail.com with ESMTPSA id h19sm34841891pfd.130.2019.04.24.22.33.44
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 24 Apr 2019 22:33:45 -0700 (PDT)
+Date:   Thu, 25 Apr 2019 11:03:43 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     edubezval@gmail.com, rui.zhang@intel.com,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Javi Merino <javi.merino@kernel.org>,
+        "open list:THERMAL/CPU_COOLING" <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] thermal/drivers/cpu_cooling: Remove pointless test in
+ power2state()
+Message-ID: <20190425053343.zmvwd3ndpxkh24j5@vireshk-i7>
+References: <20190424205610.9376-1-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <dd6f055c-e7df-13e8-72aa-2973d3c664d0@codeaurora.org>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+In-Reply-To: <20190424205610.9376-1-daniel.lezcano@linaro.org>
+User-Agent: NeoMutt/20180323-120-3dd1ac
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190425042450.a5BSM9DbmAOTmhpsBBgP8reDdjoGGLeYWc2WhwCXKpc@z>
+Message-ID: <20190425053343.Hjvm7keLeLpn9CFgWsc8_5OFT4fFUmNylNtLrmQ1wtI@z>
 
-On Wed 24 Apr 02:00 PDT 2019, Sibi Sankar wrote:
-> On 4/24/19 12:19 PM, Viresh Kumar wrote:
-> > On 24-04-19, 12:16, Rajendra Nayak wrote:
-> > > On 4/23/2019 6:58 PM, Georgi Djakov wrote:
-[..]
-> > > > +/ {
-> > > > +	cpus {
-> > > > +		CPU0: cpu@0 {
-> > > > +			compatible = "arm,cortex-a53", "arm,armv8";
-> > > > +			...
-> > > > +			operating-points-v2 = <&cpu_opp_table>;
-> > > > +			/* path between CPU and DDR memory and CPU and L3 */
-> > > > +			interconnects = <&noc MASTER_CPU &noc SLAVE_DDR>,
-> > > > +					<&noc MASTER_CPU &noc SLAVE_L3>;
-> > > > +		};
-> > > > +	};
-> > > > +
-> > > > +	cpu_opp_table: cpu_opp_table {
-> > > > +		compatible = "operating-points-v2";
-> > > > +		opp-shared;
-> > > > +
-> > > > +		opp-200000000 {
-> > > > +			opp-hz = /bits/ 64 <200000000>;
-> > > > +			/* CPU<->DDR bandwidth: 457 MB/s average, 1525 MB/s peak */
-> > > > +			 * CPU<->L3 bandwidth: 914 MB/s average, 3050 MB/s peak */
-> > > > +			bandwidth-MBps = <457 1525>, <914 3050>;
-> > > 
-> > > Should this also have a bandwidth-MBps-name perhaps? Without that I guess we assume
-> > > the order in which we specify the interconnects is the same as the order here?
-> > 
-> > Right, so I suggested not to add the -name property and to rely on the
-> > order. Though I missed that he hasn't mentioned the order thing here.
+On 24-04-19, 22:56, Daniel Lezcano wrote:
+> When the static power computation was removed, the test with the power
+> being negative was not removed. However, the substraction which was
+> responsible of the negative value was removed and the variable is now
+> an u32. A double reason to remove the test which does not make sense.
 > 
-> by skipping names, aren't we forced to specify all the specified paths
-> bandwidths for each opp even if it is redundant? i.e if the first/second
-> icc path doesn't have to change across a few opps but if the other path
-> does need to change this scheme would force it to be included and will
-> try to set the first/second path again.
+> Fixes: 84fe2cab48590 ("cpu_cooling: Drop static-power related stuff")
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/thermal/cpu_cooling.c | 1 -
+>  1 file changed, 1 deletion(-)
 > 
-> 
-> e.g: Here the first path does not have to change across these two opps
-> but have to specified nonetheless since we omit names.
-> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index f7c1f49ec87f..ee8419a6390c 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -541,7 +541,6 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+>  	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+>  	struct cpufreq_policy *policy = cpufreq_cdev->policy;
+>  
+> -	power = power > 0 ? power : 0;
+>  	last_load = cpufreq_cdev->last_load ?: 1;
+>  	normalised_power = (power * 100) / last_load;
+>  	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
 
-If this is a pair in the middle of the list, we would either have to
-define how non-specified values are inherited from neighbouring nodes or
-you will get different behavior if you're coming from a lower or a
-higher opp.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I think it looks clearer to just be explicit and repeat the values.
-
-Regards,
-Bjorn
-
-> +		opp-1200000000 {
-> +			opp-hz = /bits/ 64 <1200000000>;
-> +			bandwidth-MBps = <457 1525>, <914 3050>;
-> +		};
-> +		opp-1400000000 {
-> +			opp-hz = /bits/ 64 <1400000000>;
-> +			bandwidth-MBps = <457 1525>, <1828 6102>;
-> +		};
+-- 
+viresh
