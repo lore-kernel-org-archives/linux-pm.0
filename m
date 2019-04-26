@@ -1,96 +1,49 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCH v2 03/12] arm64: dts: tegra210: set thermtrip
-Date: Fri, 26 Apr 2019 11:21:05 +0800
-Message-ID: <2accde0e-6c6d-fdf9-44fe-479a4330729d@nvidia.com>
-References: <1550744327-4677-1-git-send-email-wni@nvidia.com>
- <1550744327-4677-4-git-send-email-wni@nvidia.com>
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+Subject: RE: [EXT] Re: [PATCH v3] clk: qoriq: add support for lx2160a
+Date: Fri, 26 Apr 2019 06:49:43 +0000
+Message-ID: <AM6PR04MB478978C59EA044545A2E90F5F33E0@AM6PR04MB4789.eurprd04.prod.outlook.com>
+References: <1556200638-24066-1-git-send-email-vabhav.sharma@nxp.com>
+ <155621654326.15276.741983919838675194@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1550744327-4677-4-git-send-email-wni@nvidia.com>
+In-Reply-To: <155621654326.15276.741983919838675194@swboyd.mtv.corp.google.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: thierry.reding@gmail.com
-Cc: daniel.lezcano@linaro.org, edubezval@gmail.com, robh@kernel.org, linux-tegra@vger.kernel.org, rui.zhang@intel.com, srikars@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Stephen Boyd <sboyd@kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Thierry,
-Eduardo have picked this series to his branch except dts patches.
-Please check
-"git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git"
-in the linus branch. They will be merged in the next major kernel release.
-
-Could you please take these three dts changes?
-Here is the list:
-[PATCH v2 03/12] arm64: dts: tegra210: set thermtrip
-[PATCH v2 06/12] arm64: dts: tegra210: set gpu hw throttle level
-[PATCH v2 10/12] arm64: dts: tegra210: set EDP interrupt line
-
-Thanks.
-Wei.
-
-On 21/2/2019 6:18 PM, Wei Ni wrote:
-> Set "nvidia,thermtrips" property, it used to set
-> HW shutdown temperatures.
-> 
-> Signed-off-by: Wei Ni <wni@nvidia.com>
-> ---
->  arch/arm64/boot/dts/nvidia/tegra210.dtsi | 15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-> index 6574396d2257..582d56820bbb 100644
-> --- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-> +++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-> @@ -1410,6 +1410,9 @@
->  		reset-names = "soctherm";
->  		#thermal-sensor-cells = <1>;
->  
-> +		nvidia,thermtrips = <TEGRA124_SOCTHERM_SENSOR_CPU 102500
-> +				     TEGRA124_SOCTHERM_SENSOR_GPU 103000>;
-> +
->  		throttle-cfgs {
->  			throttle_heavy: heavy {
->  				nvidia,priority = <100>;
-> @@ -1429,8 +1432,8 @@
->  				<&soctherm TEGRA124_SOCTHERM_SENSOR_CPU>;
->  
->  			trips {
-> -				cpu-shutdown-trip {
-> -					temperature = <102500>;
-> +				cpu-critical-trip {
-> +					temperature = <102000>;
->  					hysteresis = <0>;
->  					type = "critical";
->  				};
-> @@ -1457,7 +1460,7 @@
->  				<&soctherm TEGRA124_SOCTHERM_SENSOR_MEM>;
->  
->  			trips {
-> -				mem-shutdown-trip {
-> +				mem-critical-trip {
->  					temperature = <103000>;
->  					hysteresis = <0>;
->  					type = "critical";
-> @@ -1479,8 +1482,8 @@
->  				<&soctherm TEGRA124_SOCTHERM_SENSOR_GPU>;
->  
->  			trips {
-> -				gpu-shutdown-trip {
-> -					temperature = <103000>;
-> +				gpu-critical-trip {
-> +					temperature = <102500>;
->  					hysteresis = <0>;
->  					type = "critical";
->  				};
-> @@ -1507,7 +1510,7 @@
->  				<&soctherm TEGRA124_SOCTHERM_SENSOR_PLLX>;
->  
->  			trips {
-> -				pllx-shutdown-trip {
-> +				pllx-critical-trip {
->  					temperature = <103000>;
->  					hysteresis = <0>;
->  					type = "critical";
-> 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU3RlcGhlbiBCb3lkIDxz
+Ym95ZEBrZXJuZWwub3JnPg0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMjUsIDIwMTkgMTE6NTIg
+UE0NCj4gVG86IGxpbnV4LWNsa0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtl
+cm5lbC5vcmc7IGxpbnV4LQ0KPiBwbUB2Z2VyLmtlcm5lbC5vcmc7IFZhYmhhdiBTaGFybWEgPHZh
+Ymhhdi5zaGFybWFAbnhwLmNvbT4NCj4gQ2M6IG10dXJxdWV0dGVAYmF5bGlicmUuY29tOyByandA
+cmp3eXNvY2tpLm5ldDsgdmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7DQo+IFlvZ2VzaCBOYXJheWFu
+IEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29tPjsgQW5keSBUYW5nDQo+IDxhbmR5LnRh
+bmdAbnhwLmNvbT47IFZhYmhhdiBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNvbT4NCj4gU3Vi
+amVjdDogW0VYVF0gUmU6IFtQQVRDSCB2M10gY2xrOiBxb3JpcTogYWRkIHN1cHBvcnQgZm9yIGx4
+MjE2MGENCj4gDQo+IENhdXRpb246IEVYVCBFbWFpbA0KPiANCj4gUXVvdGluZyBWYWJoYXYgU2hh
+cm1hICgyMDE5LTA0LTI1IDA2OjU3OjA1KQ0KPiA+IEZyb206IFlvZ2VzaCBHYXVyIDx5b2dlc2hu
+YXJheWFuLmdhdXJAbnhwLmNvbT4NCj4gPg0KPiA+IEFkZCBjbG9ja2dlbiBzdXBwb3J0IGFuZCBj
+b25maWd1cmF0aW9uIGZvciBOWFAgU29DIGx4MjE2MGEgaW4gcW9yaXENCj4gPiBjbG9jayBkcml2
+ZXIgd2l0aCBjb21wYXRpYmxlIHByb3BlcnR5IGFzICJmc2wsbHgyMTYwYS1jbG9ja2dlbiIuDQo+
+ID4NCj4gPiBxb3JpcS1jcHVmcmVxIGRyaXZlciBpcyBiYXNlZCBvbiBxb3JpcSBjbG9jayBkcml2
+ZXIsIGVuYWJsZSBzdXBwb3J0IG9mDQo+ID4gTlhQIFNvQyBseDIxNjBhIGluIHFvcmlxIGNwdWZy
+ZXEgZHJpdmVyIHRvIGhhbmRsZSB0aGUgbHgyMTYwYSBTb0MuDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBUYW5nIFl1YW50aWFuIDxhbmR5LnRhbmdAbnhwLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5
+OiBZb2dlc2ggR2F1ciA8eW9nZXNobmFyYXlhbi5nYXVyQG54cC5jb20+DQo+ID4gU2lnbmVkLW9m
+Zi1ieTogVmFiaGF2IFNoYXJtYSA8dmFiaGF2LnNoYXJtYUBueHAuY29tPg0KPiA+IEFja2VkLWJ5
+OiBTY290dCBXb29kIDxvc3NAYnVzZXJyb3IubmV0Pg0KPiA+IEFja2VkLWJ5OiBTdGVwaGVuIEJv
+eWQgPHNib3lkQGtlcm5lbC5vcmc+DQo+ID4gQWNrZWQtYnk6IFZpcmVzaCBLdW1hciA8dmlyZXNo
+Lmt1bWFyQGxpbmFyby5vcmc+DQo+ID4gLS0tDQo+ID4gQ2hhbmdlcyBmb3IgdjM6DQo+ID4gLSBJ
+bmNvcnBvcmF0ZWQgcmV2aWV3IGNvbW1lbnRzIG9mIFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gLSBV
+cGRhdGVkIGNvbW1pdCBtZXNzYWdlDQo+IA0KPiBJZiB5b3UgY2FuIHNwbGl0IGl0IGludG8gY2xr
+IGFuZCBjcHVmcmVxIHRoYXQgd291bGQgYmUgcHJlZmVycmVkLiBUaGVuIEkgY2FuDQo+IHRha2Ug
+dGhlIGNsayBwYXJ0IGFuZCBQTSB0cmVlIGNhbiB0YWtlIHRoZSBjcHVmcmVxIHBhcnQuIE90aGVy
+d2lzZSwgeW91IGhhdmUNCj4gc2VudCBvdGhlciBwYXRjaGVzIHRvIGRyaXZlcnMvY2xrL2Nsay1x
+b3JpcS5jIGFuZCBJJ20gd29ycmllZCB0aGVyZSB3aWxsIGJlDQo+IGNyb3NzIHRyZWUgY29uZmxp
+Y3RzIGlmIEkgdGFrZSB0aG9zZSBvdGhlciBwYXRjaGVzIHRoaXMgY3ljbGUuDQpBZ3JlZSwgc3Vy
+ZS4NCkkgd2lsbCBzcGxpdCB0aGUgcGF0Y2ggYW5kIHNlbnQgaXQgdG8gY2xrIGFuZCBQTSB0cmVl
+Lg0KDQo=
