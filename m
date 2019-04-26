@@ -2,113 +2,140 @@ Return-Path: <SRS0=x0P7=S4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62A79C43219
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:32:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE752C43218
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:46:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 322C720656
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:32:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TKoGLxWM"
+	by mail.kernel.org (Postfix) with ESMTP id B65F2206BA
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:46:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556272003;
+	bh=9RT8xA5jMBv6EzT8N9JRPoEns1coQhC9bYDVc6PmTws=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
+	b=eZ5vsW8JNy1n0qxghdumQRoQLCkNP9Xc1tYY2H0bYKgwE3AMvJVKyadqrfO0S9YkY
+	 nQKrKL8PdLSNlhvaGdcy2xxe5uK+9LGyq+GiKUPoLa/GqFWeeoP5/zfjzsTgrkxQED
+	 yqYy4temixq2YBQxdGHatQvbK9GKGMvvmRtH8AXA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726077AbfDZJcr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Apr 2019 05:32:47 -0400
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:40456 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725954AbfDZJcr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 05:32:47 -0400
-Received: by mail-wm1-f65.google.com with SMTP id h11so3375756wmb.5;
-        Fri, 26 Apr 2019 02:32:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=XQjCBJGeVMN1HAGq1KM1VDwJvL2JrNuIukZbKMAyOjU=;
-        b=TKoGLxWMY/4fvOzNglpRglOjf+oQzs4VyoXQ6YTaaTEbQTNGpHvR8ZkZiUWTIz6boe
-         HfffPZRKDgp0gtPJz9dP35q+QF/OPBc0akxvZMy+EvvB0K7IymFDS35pKPj5SHx+EPCH
-         27JZWKQZwzF36CW3MfRScYXXctAT6pXXo4HZQvxe2BD8h1GWvfmAO8ukCCx3HRj7xXuz
-         hCBueIF2BeVtYzNts32C4RFLekJcpwN14rj9KufAajGiy+bB0ZBFTO7cik2n6SIcp5us
-         MGpvdasSqxq1lIlMsBqwhm5WKVt4Kpi79+qvmoVhAkT6lez3Rejx9+XVUEgA8mHDXo/4
-         h1Rg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=XQjCBJGeVMN1HAGq1KM1VDwJvL2JrNuIukZbKMAyOjU=;
-        b=pBnD9thjmMQ6PXHRhIX7WdbiOCLdM+CMi9rq0t6F6Qz40E/VU6m3V+n64sAUKQGkfV
-         etYhGne8+b+FmUqAM6uqXo9t8ZMWbPVIHTo5sbFM0nzW3VDl6c2QPytOM/Optmibn9Ku
-         jHF+2CyXuFhpIbwj5q4ydTL9or/UTAgM8xwklRm8siMO+xjwmxwNxEgcd1uZ3DFU6dvS
-         C5CK8L8zLo5cUEf+aCG7mh2QpsVTUaxbK3G8QyaNX5ruIkoHqbY3HBPbn+v3uLLZynMB
-         ymthn0/WKp0KFstPBPuh8RSExojOUJ74+cHdtJ0rxKmlMmMJEhpy8ccUW0+1OkV4ivT7
-         TpGA==
-X-Gm-Message-State: APjAAAVb/GYG7tZqh/f41Dgwl4cjc7+WkYJ6iR+HPS/dm8BgWkRAetM6
-        W+AUar7Z8N2aX/u0OLyexuWVD5jp
-X-Google-Smtp-Source: APXvYqyAbdKzR6hT3z3P3OmSbvrP9qU3IwkhddyCD7DC3c5aQeb5Jbnz5RCb1D2hsmPrdgRBNDpPCQ==
-X-Received: by 2002:a1c:e085:: with SMTP id x127mr6876397wmg.87.1556271165747;
-        Fri, 26 Apr 2019 02:32:45 -0700 (PDT)
-Received: from pali ([2a02:2b88:2:1::5cc6:2f])
-        by smtp.gmail.com with ESMTPSA id y125sm36574835wmc.39.2019.04.26.02.32.44
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Fri, 26 Apr 2019 02:32:44 -0700 (PDT)
-Date:   Fri, 26 Apr 2019 11:32:43 +0200
-From:   Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power: supply: bq27xxx_battery: Notify also about status
- changes
-Message-ID: <20190426093243.zazld4wwv4qybwaf@pali>
-References: <1556270808-21331-1-git-send-email-krzk@kernel.org>
+        id S1726531AbfDZJqf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Apr 2019 05:46:35 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52042 "EHLO
+        casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725985AbfDZJqf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 05:46:35 -0400
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+        MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
+        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=gTBjYHF7PdfcMS747oVD2PM5dGAfiuGzrLBbmiynnAI=; b=ThiRHSVnK8igKQlUt70ItUpgfn
+        ahvUpV2Rj5VYX6v2qdgqkJ5YDlrjlEHjCiqciVId/LoW/vvbKtqqhjBZvImCJFrk4tTc96+SgQTMt
+        3OwLruS8ajlGs/wQ20K30ls643aeeOVpb/B7MjXylL0emp1dw6nykZEPhyzyfDfgrbPNaH7y3BxV8
+        0/Pf9E/MtLsN+dZ02jvg38Neh4bT8CtGsUuBDGhhjAjqMii4uRKfUZed6iZ/INQKwoT8UUu5T/2j8
+        o0WOHq5yMZ0fJgkLpfKIpMcsztztvKqpYFW56Aq/Y4OzodfEabMJl4Dq9mXtvOf21R/5AYdWX7Hzf
+        niiIxfrA==;
+Received: from [179.95.39.209] (helo=coco.lan)
+        by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+        id 1hJxQz-000573-Hl; Fri, 26 Apr 2019 09:46:22 +0000
+Date:   Fri, 26 Apr 2019 06:46:09 -0300
+From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To:     Mark Brown <broonie@kernel.org>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        Mauro Carvalho Chehab <mchehab@infradead.org>,
+        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        Sebastian Reichel <sre@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Harry Wei <harryxiyou@gmail.com>,
+        Alex Shi <alex.shi@linux.alibaba.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        "David S. Miller" <davem@davemloft.net>, linux-pm@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2 25/79] docs: convert docs to ReST and rename to *.rst
+Message-ID: <20190426064609.7f00e013@coco.lan>
+In-Reply-To: <20190425180758.GC23183@sirena.org.uk>
+References: <cover.1555938375.git.mchehab+samsung@kernel.org>
+        <7adf9035ae06ecc6c7e46b51cb677f0a8f61d19a.1555938376.git.mchehab+samsung@kernel.org>
+        <20190425180758.GC23183@sirena.org.uk>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1556270808-21331-1-git-send-email-krzk@kernel.org>
-User-Agent: NeoMutt/20170113 (1.7.2)
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190426093243.XEf0d4W9-z3qszXaJ-faZQg22sKuenEogVAnVI0jfiM@z>
+Message-ID: <20190426094609.JFubCb2rYV35_xSg8eAfCXFp8SuRNutYPYtIelohDd8@z>
 
-On Friday 26 April 2019 11:26:48 Krzysztof Kozlowski wrote:
-> User-space might be interested in receiving uevents when the charging
-> starts/stops or if conditions of battery changes (e.g.
-> over-temperature).  Notify about changes in battery also when the flags
-> change, not only SoC.
+Hi Mark,
 
-This looks like a good idea.
+Em Thu, 25 Apr 2019 19:07:58 +0100
+Mark Brown <broonie@kernel.org> escreveu:
 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> ---
->  drivers/power/supply/bq27xxx_battery.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> On Mon, Apr 22, 2019 at 10:27:14AM -0300, Mauro Carvalho Chehab wrote:
+> > Convert the PM documents to ReST, in order to allow them to
+> > build with Sphinx.  
 > 
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index 29b3a4056865..cb9306160c14 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -1612,7 +1612,8 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
->  			di->charge_design_full = bq27xxx_battery_read_dcap(di);
->  	}
->  
-> -	if (di->cache.capacity != cache.capacity)
-> +	if ((di->cache.capacity != cache.capacity) || \
-                                                      ^^
-                                      You have there an extra backslash
+> This is massively CCed covering a large range of subsystems and is patch
+> 25 of a 79 patch series so I've no context for what's going on here or
+> why...  
 
-> +	    (di->cache.flags != cache.flags))
->  		power_supply_changed(di->bat);
->  
->  	if (memcmp(&di->cache, &cache, sizeof(cache)) != 0)
+There are two goals of this series:
 
--- 
-Pali Rohár
-pali.rohar@gmail.com
+1) to prepare for placing the new *.rst files under Documentation/ into an
+   index file, being part of one of the books. Most of the stuff covered
+   on this series either fit at the system admin guide or at the
+   Kernel API documentation book;
+
+2) to ensure that, if some edition on a file would cause warnings at
+   Sphinx build, someone will notice and submit a followup patch.
+
+You can see more details at patch 00/79:
+	https://lore.kernel.org/lkml/20190422115110.26443b44@coco.lan/
+
+In order to do that, this series has one patch per Documentation/*
+sub-directory. This specific one is for the documents under
+Documentation/power/ [1].
+
+[1] btw, the title of this specific patch should be, instead:
+	docs: power: convert docs to ReST and rename to *.rst
+
+The series is long because I'm trying to cover a significant part
+of the documentation files. In any case, except if an eventual
+conflict might rise on some file, this patch is independent from
+all other files, and should be safe to apply directly via the
+subsystem git tree.
+
+I'm working on a follow-up patch series that should be adding the
+power/index.rst file into another index file - probably at
+Documentation/index.rst[1]. As such patch will be adding a lot of other
+index files, the best would be to merge it via the docs tree, in
+order to avoid conflicts.
+
+
+[1] such patch will be removing the ":orphan:" meta-tag from it
+(that basically tells the build system to not produce warnings if
+the file is not directly or indirectly referenced by the main
+index file).
+
+Thanks,
+Mauro
