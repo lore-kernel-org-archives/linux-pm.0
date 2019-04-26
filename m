@@ -1,37 +1,62 @@
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v4] cpufreq: qoriq: add support for lx2160a
-Date: Fri, 26 Apr 2019 06:55:55 +0000
-Message-ID: <1556261743-20584-1-git-send-email-vabhav.sharma@nxp.com>
+From: Kalle Valo <kvalo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH] ath10k: Drop WARN_ON()s that always trigger during system resume
+Date: Fri, 26 Apr 2019 10:18:16 +0300
+Message-ID: <87o94tutdz.fsf@kamboji.qca.qualcomm.com>
+References: <2884043.Jv1Mn93hE8@aspire.rjw.lan>
+        <20190403195718.GA74723@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Vabhav Sharma <vabhav.sharma@nxp.com>, Andy Tang <andy.tang@nxp.com>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>
+Content-Type: text/plain
+Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20190403195718.GA74723-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org> (Brian Norris's message of
+        "Wed, 3 Apr 2019 12:57:20 -0700")
+Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Claire Chang <tientzu-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Sriram R <srirrama-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pradeep Kumar Chitrapu <pradeepc-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ath10k-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Todd Brandt <todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-RW5hYmxlIHN1cHBvcnQgb2YgTlhQIFNvQyBseDIxNjBhIHRvIGhhbmRsZSB0aGUNCmx4MjE2MGEg
-U29DLg0KDQpTaWduZWQtb2ZmLWJ5OiBUYW5nIFl1YW50aWFuIDxhbmR5LnRhbmdAbnhwLmNvbT4N
-ClNpZ25lZC1vZmYtYnk6IFlvZ2VzaCBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT4N
-ClNpZ25lZC1vZmYtYnk6IFZhYmhhdiBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNvbT4NCkFj
-a2VkLWJ5OiBTY290dCBXb29kIDxvc3NAYnVzZXJyb3IubmV0Pg0KQWNrZWQtYnk6IFN0ZXBoZW4g
-Qm95ZCA8c2JveWRAa2VybmVsLm9yZz4NCkFja2VkLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5r
-dW1hckBsaW5hcm8ub3JnPg0KLS0tDQpDaGFuZ2VzIGZvciB2NDoNCi0gSW5jb3Jwb3JhdGVkIHJl
-dmlldyBjb21tZW50cyBmcm9tIFN0ZXBoZW4gQm95ZA0KDQpDaGFuZ2VzIGZvciB2MzoNCi0gSW5j
-b3Jwb3JhdGVkIHJldmlldyBjb21tZW50cyBvZiBSYWZhZWwgSi4gV3lzb2NraQ0KLSBVcGRhdGVk
-IGNvbW1pdCBtZXNzYWdlDQoNCkNoYW5nZXMgZm9yIHYyOg0KLSBTdWJqZWN0IGxpbmUgdXBkYXRl
-ZA0KDQogZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYyB8IDEgKw0KIDEgZmlsZSBjaGFu
-Z2VkLCAxIGluc2VydGlvbigrKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3Fvcmlx
-LWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMNCmluZGV4IDQyOTVl
-NTQuLjgxZjAyODggMTAwNjQ0DQotLS0gYS9kcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5j
-DQorKysgYi9kcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jDQpAQCAtMjg0LDYgKzI4NCw3
-IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIG5vZGVfbWF0Y2hlc1tdIF9faW5p
-dGNvbnN0ID0gew0KIAl7IC5jb21wYXRpYmxlID0gImZzbCxsczEwNDZhLWNsb2NrZ2VuIiwgfSwN
-CiAJeyAuY29tcGF0aWJsZSA9ICJmc2wsbHMxMDg4YS1jbG9ja2dlbiIsIH0sDQogCXsgLmNvbXBh
-dGlibGUgPSAiZnNsLGxzMjA4MGEtY2xvY2tnZW4iLCB9LA0KKwl7IC5jb21wYXRpYmxlID0gImZz
-bCxseDIxNjBhLWNsb2NrZ2VuIiwgfSwNCiAJeyAuY29tcGF0aWJsZSA9ICJmc2wscDQwODAtY2xv
-Y2tnZW4iLCB9LA0KIAl7IC5jb21wYXRpYmxlID0gImZzbCxxb3JpcS1jbG9ja2dlbi0xLjAiLCB9
-LA0KIAl7IC5jb21wYXRpYmxlID0gImZzbCxxb3JpcS1jbG9ja2dlbi0yLjAiLCB9LA0KLS0gDQoy
-LjcuNA0KDQo=
+Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> writes:
+
+> + Sriram, Pradeep, Claire
+>
+> On Sun, Mar 03, 2019 at 06:24:33PM +0100, Rafael J. Wysocki wrote:
+>
+> Ooh, exactly 1 month ago!
+>
+>> From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+>> 
+>> ath10k_mac_vif_chan() always returns an error for the given vif
+>> during system-wide resume which reliably triggers two WARN_ON()s
+>> in ath10k_bss_info_changed() and they are not particularly
+>> useful in that code path, so drop them.
+>> 
+>
+> Particularly, when WOWLAN isn't enabled, we get called during resume via
+> ieee80211_reconfig(), where we're not associated and don't have any
+> channel contexts. AFAICT, we shouldn't need to communicate anything in
+> particular to the firmware here, and so failing the 'if' is definitely
+> not worth WARN-ing about.
+>
+> I'd love to see this get applied with:
+>
+> Fixes: cd93b83ad927 ("ath10k: support for multicast rate control")
+> Fixes: f279294e9ee2 ("ath10k: add support for configuring management packet rate")
+>
+> and sent to stable. This has been bugging people since 4.19. Spurious
+> WARN_ON()s can trigger reports to various crash trackers, and on some
+> systems appear as user-visible warnings ("System problem detected").
+>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+>
+> Reviewed-by: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> Tested-by: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+
+I added these now to the commit log, thanks Brian.
+
+Rafael, could you please provide the hardware and firmware versions you
+tested this on? We have so many different firmware branches to support
+that I prefer to have that documented in the commit log. Providing
+ath10k startup messages in dmesg are enough, I can then add it to the
+commit log.
+
+-- 
+Kalle Valo
