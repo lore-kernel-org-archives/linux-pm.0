@@ -2,231 +2,136 @@ Return-Path: <SRS0=x0P7=S4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E825AC43219
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:47:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD134C43219
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:55:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B9E94206BA
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:47:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8961F20679
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:55:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726294AbfDZJrS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Apr 2019 05:47:18 -0400
-Received: from metis.ext.pengutronix.de ([85.220.165.71]:55353 "EHLO
-        metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725935AbfDZJrS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 05:47:18 -0400
-Received: from kresse.hi.pengutronix.de ([2001:67c:670:100:1d::2a])
-        by metis.ext.pengutronix.de with esmtp (Exim 4.89)
-        (envelope-from <l.stach@pengutronix.de>)
-        id 1hJxRm-0005vx-Ge; Fri, 26 Apr 2019 11:47:10 +0200
-Message-ID: <1556272029.2584.31.camel@pengutronix.de>
-Subject: Re: [RFC] cpufreq: Add imx-cpufreq-dt driver
-From:   Lucas Stach <l.stach@pengutronix.de>
-To:     Leonard Crestez <leonard.crestez@nxp.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Abel Vesa <abel.vesa@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Date:   Fri, 26 Apr 2019 11:47:09 +0200
-In-Reply-To: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
-References: <83a3ade389239bd492ee646aa4868c5e37e65434.1556187603.git.leonard.crestez@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.22.6-1+deb9u1 
-Mime-Version: 1.0
+        id S1726155AbfDZJzR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Apr 2019 05:55:17 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:45932 "EHLO
+        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725901AbfDZJzQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 05:55:16 -0400
+Received: from reginn.horms.nl (watermunt.horms.nl [80.127.179.77])
+        by kirsty.vergenet.net (Postfix) with ESMTPA id 6F9F925AD60;
+        Fri, 26 Apr 2019 19:55:13 +1000 (AEST)
+Received: by reginn.horms.nl (Postfix, from userid 7100)
+        id 710219403ED; Fri, 26 Apr 2019 11:55:11 +0200 (CEST)
+Date:   Fri, 26 Apr 2019 11:55:11 +0200
+From:   Simon Horman <horms@verge.net.au>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        Yoshihiro Kaneko <ykaneko0929@gmail.com>
+Subject: Re: [PATCH repost] thermal: rcar_thermal: update calculation formula
+ for E3
+Message-ID: <20190426095511.tkgbxkf43psesgkv@verge.net.au>
+References: <20190418071514.13027-1-horms+renesas@verge.net.au>
+ <20190418081209.GT28515@bigcity.dyn.berto.se>
+ <CAMuHMdVX5t-Q5tM5bj95muAZ+8+phohtQSsAO-rCeCofiqVMKQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::2a
-X-SA-Exim-Mail-From: l.stach@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+In-Reply-To: <CAMuHMdVX5t-Q5tM5bj95muAZ+8+phohtQSsAO-rCeCofiqVMKQ@mail.gmail.com>
+Organisation: Horms Solutions BV
+User-Agent: NeoMutt/20170113 (1.7.2)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190426094709.aHhE2uamKD1cLwJZhj4FGSumEolSsD4oNUSIi84LmO8@z>
 
-Hi Leonard,
+On Wed, Apr 24, 2019 at 09:10:56AM +0200, Geert Uytterhoeven wrote:
+> Hi Niklas,
+> 
+> On Thu, Apr 18, 2019 at 10:12 AM Niklas Söderlund
+> <niklas.soderlund@ragnatech.se> wrote:
+> > On 2019-04-18 09:15:14 +0200, Simon Horman wrote:
+> > > From: Yoshihiro Kaneko <ykaneko0929@gmail.com>
+> > >
+> > > HW manual changes temperature calculation formula for E3:
+> >
+> > Is this not also true for V3M and D3?
+> >
+> > > - When CTEMP is less than 24
+> > >    T = CTEMP[5:0] * 5.5 - 72
+> > > - When CTEMP is equal to/greater than 24
+> > >    T = CTEMP[5:0] * 5 - 60
+> > >
+> > > This was inspired by a patch in the BSP by Van Do <van.do.xw@renesas.com>
+> > >
+> > > Signed-off-by: Yoshihiro Kaneko <ykaneko0929@gmail.com>
+> > > Tested-by: Simon Horman <horms+renesas@verge.net.au>
+> > > Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+> > > Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+> > > ---
+> > >  drivers/thermal/rcar_thermal.c | 11 ++++++++++-
+> > >  1 file changed, 10 insertions(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> > > index 97462e9b40d8..11df0cc63bed 100644
+> > > --- a/drivers/thermal/rcar_thermal.c
+> > > +++ b/drivers/thermal/rcar_thermal.c
+> > > @@ -52,6 +52,7 @@ struct rcar_thermal_chip {
+> > >       unsigned int irq_per_ch : 1;
+> > >       unsigned int needs_suspend_resume : 1;
+> > >       unsigned int nirqs;
+> > > +     unsigned int ctemp_bands;
+> >
+> > Would it be possible to rename this to something indicating that this is
+> > a gen3 thing? Maybe move it to the bit fields above and name it gen3 ?
+> 
+> Is that really a good thing to do? This structure describes features of
+> the thermal module, and we're already beyond the point where a simple
+> check  for gen2 or gen3 was sufficient.
+> Here the feature is having multiple temperature bands.
+> What if some other Gen3 SoC starts having 3 temperature bands?
+> 
+> > > @@ -263,7 +267,12 @@ static int rcar_thermal_get_current_temp(struct rcar_thermal_priv *priv,
+> > >               return ret;
+> > >
+> > >       mutex_lock(&priv->lock);
+> > > -     tmp =  MCELSIUS((priv->ctemp * 5) - 65);
+> > > +     if (priv->chip->ctemp_bands == 1)
+> > > +             tmp =  MCELSIUS((priv->ctemp * 5) - 65);
+> > > +     else if (priv->ctemp < 24)
+> > > +             tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
+> > > +     else
+> > > +             tmp = MCELSIUS((priv->ctemp * 5) - 60);
+> >
+> > I confirm that the calculations here are correct, but hard to read ;-)
+> > With the rename about how about.
+> >
+> >     if (priv->chip->gen3) {
+> >         if (priv->ctemp < 24)
+> >                 tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
+> >         else
+> >                 tmp = MCELSIUS((priv->ctemp * 5) - 60);
+> >     } else {
+> >             tmp =  MCELSIUS((priv->ctemp * 5) - 65);
+> >     }
+> 
+> _Iff_ we decide on going for the rename, I'd still write it as:
+> 
+>     if (!priv->chip->gen3)
+>             tmp =  MCELSIUS((priv->ctemp * 5) - 65);
+>     else if (priv->ctemp < 24)
+>             tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
+>     else
+>             tmp = MCELSIUS((priv->ctemp * 5) - 60);
+> 
+> Always fold your if/else if/else constructs to minimize the need for indentation
+> and braces ;-)
 
-Am Donnerstag, den 25.04.2019, 10:29 +0000 schrieb Leonard Crestez:
-> Right now in upstream imx8m cpufreq support just lists a common subset
-> of OPPs because the higher ones should only be attempted after checking
-> speed grading in fuses.
-> 
-> This is not a reasonable limitation and means we must still carry a
-> separate cpufreq driver in NXP tree.
-> 
-> This is a small driver which checks speed grading from nvmem before
-> registering cpufreq-dt. Unlike imx6q-cpufreq and various other rejected
-> imx7/8 cpufreq drivers it contains no actual frequency switching code,
-> just fuse reading through nvmem API.
-> 
-> Code is inspired by similar cpufreq wrappers from a dozen different
-> vendors. Currently for imx8mm but same issue applies to imx8mq and
-> others.
-> 
-> > Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> 
-> ---
->  drivers/cpufreq/Kconfig.arm          |   5 ++
->  drivers/cpufreq/Makefile             |   1 +
->  drivers/cpufreq/cpufreq-dt-platdev.c |   2 +
->  drivers/cpufreq/imx-cpufreq-dt.c     | 101 +++++++++++++++++++++++++++
->  4 files changed, 109 insertions(+)
->  create mode 100644 drivers/cpufreq/imx-cpufreq-dt.c
-> 
-> Since nvmem is a module this driver also needs to be turned into a
-> proper module, right now it will simply fail if nvmem is unavailable at
-> init time. Let me know if you agree with this approach before I turn it
-> into a module.
-> 
-> In vendor tree this is done in soc driver but many other vendors do it
-> in drivers/cpufreq so this is where it belongs.
-> 
-> This is select by default in Kconfig, if anything fails then regular
-> cpufreq-dt is not available. This is intentional because higher OPPs are
-> potentially unstable.
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 179a1d302f48..4a098a6befb2 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -90,10 +90,15 @@ config ARM_IMX6Q_CPUFREQ
-> >  	help
-> >  	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
->  
-> >  	  If in doubt, say N.
->  
-> +config ARM_IMX_CPUFREQ_DT
-> > +	bool "Freescale i.MX8MM cpufreq support"
-> > +	depends on CPUFREQ_DT && ARCH_MXC
-> > +	default y
-> +
->  config ARM_KIRKWOOD_CPUFREQ
-> >  	def_bool MACH_KIRKWOOD
-> >  	help
-> >  	  This adds the CPUFreq driver for Marvell Kirkwood
-> >  	  SoCs.
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 689b26c6f949..7bcda2273d0c 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> > @@ -54,10 +54,11 @@ obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
-> >  obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
-> >  obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
-> >  obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
-> >  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
-> >  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
-> > +obj-$(CONFIG_ARM_IMX_CPUFREQ_DT)	+= imx-cpufreq-dt.o
-> >  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
-> >  obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
-> >  obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
-> >  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
-> >  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 47729a22c159..b84baeb1bf1b 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -106,10 +106,12 @@ static const struct of_device_id whitelist[] __initconst = {
->   */
->  static const struct of_device_id blacklist[] __initconst = {
-> >  	{ .compatible = "calxeda,highbank", },
-> >  	{ .compatible = "calxeda,ecx-2000", },
->  
-> > +	{ .compatible = "fsl,imx8mm", },
-> +
-> >  	{ .compatible = "marvell,armadaxp", },
->  
-> >  	{ .compatible = "mediatek,mt2701", },
-> >  	{ .compatible = "mediatek,mt2712", },
-> >  	{ .compatible = "mediatek,mt7622", },
-> diff --git a/drivers/cpufreq/imx-cpufreq-dt.c b/drivers/cpufreq/imx-cpufreq-dt.c
-> new file mode 100644
-> index 000000000000..c341308a8142
-> --- /dev/null
-> +++ b/drivers/cpufreq/imx-cpufreq-dt.c
-> @@ -0,0 +1,101 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright 2019 NXP
-> + */
-> +
-> +#include <linux/cpu.h>
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/nvmem-consumer.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/slab.h>
-> +
-> > +#define OCOTP_CFG3_SPEED_GRADE_SHIFT	8
-> > +#define OCOTP_CFG3_SPEED_GRADE_MASK	(0x3 << 8)
-> +
-> > +#define OCOTP_CFG3_MKT_SEGMENT_SHIFT	6
-> > +#define OCOTP_CFG3_MKT_SEGMENT_MASK	(0x3 << 6)
-> +
-> > +#define OCOTP_CFG3_CONSUMER		0
-> > +#define OCOTP_CFG3_EXT_CONSUMER		1
-> > +#define OCOTP_CFG3_INDUSTRIAL		2
-> > +#define OCOTP_CFG3_AUTO			3
-> +
-> > +#define OCOTP_CFG3_8MM_SPEED_0P8GHZ	0
-> > +#define OCOTP_CFG3_8MM_SPEED_1P2GHZ	1
-> > +#define OCOTP_CFG3_8MM_SPEED_1P6GHZ	2
-> > +#define OCOTP_CFG3_8MM_SPEED_1P8GHZ	3
-> +
-> +static int imx8mm_opp_check_speed_grading(struct device *cpu_dev)
-> +{
-> > +	u32 val, speed_grade, mkt_segment;
-> > +	int ret = 0;
-> +
-> > +	ret = nvmem_cell_read_u32(cpu_dev, "speed_grade", &val);
-> > +	if (ret)
-> > +		return ret;
-> +
-> > +	speed_grade = (val & OCOTP_CFG3_SPEED_GRADE_MASK) >> OCOTP_CFG3_SPEED_GRADE_SHIFT;
-> > +	mkt_segment = (val & OCOTP_CFG3_MKT_SEGMENT_MASK) >> OCOTP_CFG3_MKT_SEGMENT_SHIFT;
-> +
-> > +	dev_info(cpu_dev, "imx8mm cpu speed grade %d segment %d\n",
-> > +			speed_grade, mkt_segment);
-> +
-> > +	switch (mkt_segment) {
-> > +	case OCOTP_CFG3_CONSUMER:
-> > +		if (speed_grade < OCOTP_CFG3_8MM_SPEED_1P8GHZ)
-> > +			if (dev_pm_opp_disable(cpu_dev, 1800000000))
-> > +				pr_warn("failed to disable 1.8GHz OPP!\n");
-> > +		if (speed_grade < OCOTP_CFG3_8MM_SPEED_1P6GHZ)
-> > +			if (dev_pm_opp_disable(cpu_dev, 1600000000))
-> > +				pr_warn("failed to disable 1.6GHz OPP!\n");
-> > +		break;
-> > +	case OCOTP_CFG3_INDUSTRIAL:
-> > +		if (dev_pm_opp_disable(cpu_dev, 1800000000))
-> > +			pr_warn("failed to disable 1.8GHz OPP!\n");
-> > +		if (val < OCOTP_CFG3_8MM_SPEED_1P6GHZ)
-> > +			if (dev_pm_opp_disable(cpu_dev, 1600000000))
-> > +				pr_warn("failed to disable 1.6GHz OPP!\n");
-> > +		break;
-> > +	default:
-> > +		break;
-> +	}
-
-Do we need to take the market segment classification into account here?
-I would have expected that the speed grade would be fused correctly for
-all parts, so a industrial part would never get a speed grade of
-1.8GHz. Is this assumption wrong?
-
-Also I don't see any code to disable the 1.2GHz OPP for parts with a
-speed grade of 0.
-
-Regards,
-Lucas
+From my PoV I think the patch is fine in its current form.
+Niklas do you feel particularly strongly about changing it?
