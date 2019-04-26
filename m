@@ -1,43 +1,47 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 2/2] dt-bindings: cpufreq: Document
- allwinner,cpu-operating-points-v2
-Date: Fri, 26 Apr 2019 16:15:40 -0500
-Message-ID: <20190426211540.GA890@bogus>
-References: <20190410174139.20012-1-tiny.windzz@gmail.com>
- <20190410174139.20012-3-tiny.windzz@gmail.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH v4 0/2] Allow imx6qp PU domain off in suspend
+Date: Fri, 26 Apr 2019 21:38:13 +0000
+Message-ID: <cover.1556313614.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190410174139.20012-3-tiny.windzz@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, Anson Huang <anson.huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Arulpandiyan Vadivel <Arulpandiyan_Vadivel@mentor.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 10, 2019 at 01:41:39PM -0400, Yangtao Li wrote:
-> Allwinner Process Voltage Scaling Tables defines the voltage and
-> frequency value based on the speedbin blown in the efuse combination.
-> The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> provide the OPP framework with required information.
-> This is used to determine the voltage and frequency value for each
-> OPP of operating-points-v2 table when it is parsed by the OPP framework.
-> 
-> The "allwinner,cpu-operating-points-v2" DT extends the "operating-points-v2"
-> with following parameters:
-> - nvmem-cells (NVMEM area containig the speedbin information)
-> - opp-microvolt-<name>: voltage in micro Volts.
->   At runtime, the platform can pick a <name> and matching
->   opp-microvolt-<name> property.
-> 			HW:		<name>:
-> 			sun50iw-h6      speed0 speed1 speed2
+On imx6qp power gating on the PU domain is disabled because of errata
+ERR009619. However power gating during suspend/resume can still be
+performed.
 
-We already have at least one way to support speed bins with QC kryo 
-binding. Why do we need a different way?
+Implemented with a new core flag because otherwise distinguishing
+between "runtime off" and "suspend off" is very complicated.
 
-> 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> ---
->  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 168 ++++++++++++++++++
->  1 file changed, 168 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+Link to v3 for previous attempt: https://lkml.org/lkml/2018/7/6/698
+
+The imx vendor tree has been doing this for a many years but it uses
+direct calls from platform suspend to GPC driver.
+
+Link to v1 for similar attempt: https://lkml.org/lkml/2018/7/2/357
+
+Leonard Crestez (2):
+  PM / Domains: Add GENPD_FLAG_NO_RUNTIME_OFF flag
+  soc: imx: gpc: Use GENPD_FLAG_NO_RUNTIME_OFF for ERR009619
+
+ drivers/base/power/domain.c |  8 ++++++--
+ drivers/soc/imx/gpc.c       | 13 +++++++++++--
+ include/linux/pm_domain.h   |  4 ++++
+ 3 files changed, 21 insertions(+), 4 deletions(-)
+
+-- 
+2.17.1
