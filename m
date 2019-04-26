@@ -1,123 +1,54 @@
-From: Pavel Machek <pavel@denx.de>
-Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
- asynchronous probing was Re: next-20190408..0418: Suspend/resume problems on
- Thinkpad X60
-Date: Fri, 26 Apr 2019 12:32:49 +0200
-Message-ID: <20190426103249.GA5001@amd>
-References: <20190423102239.GA15531@amd>
- <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
- <20190424095431.GA32457@amd>
- <20190424104850.GC32457@amd>
- <20190424202119.GA26357@amd>
- <20190424204832.GA3111@amd>
- <20190424205150.GA4582@amd>
- <1556139361.161891.140.camel@acm.org>
- <20190425073343.GA19600@amd>
- <360f6936-ee21-a036-9bd4-93ecfee829e2@acm.org>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH v2] power: supply: bq27xxx_battery: Notify also about
+ status changes
+Date: Fri, 26 Apr 2019 12:47:19 +0200
+Message-ID: <20190426104719.t6gyo3no7l4wjesz@pali>
+References: <1556272742-17232-1-git-send-email-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <360f6936-ee21-a036-9bd4-93ecfee829e2@acm.org>
+In-Reply-To: <1556272742-17232-1-git-send-email-krzk@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bart Van Assche <bvanassche@acm.org>
-Cc: Pavel Machek <pavel@denx.de>, Jens Axboe <axboe@kernel.dk>, jejb@linux.ibm.com, martin.petersen@oracle.com, lduncan@suse.com, hare@suse.com, mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de, gregkh@linuxfoundation.org, dan.j.williams@intel.com, kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org, hdegoede@redhat.com, linux-ide@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Friday 26 April 2019 11:59:02 Krzysztof Kozlowski wrote:
+> User-space might be interested in receiving uevents when the charging
+> starts/stops or if conditions of battery changes (e.g.
+> over-temperature).  Notify about changes in battery also when the flags
+> change, not only SoC.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ok, you can add my
+Reviewed-by: Pali Rohár <pali.rohar@gmail.com>
 
-On Thu 2019-04-25 06:35:58, Bart Van Assche wrote:
-> On 4/25/19 12:33 AM, Pavel Machek wrote:
-> > On Wed 2019-04-24 13:56:01, Bart Van Assche wrote:
-> >> On Wed, 2019-04-24 at 22:51 +0200, Pavel Machek wrote:
-> >>> Unfortunately, that one does not revert cleanly on top of -next.
-> >>
-> >> Can you try the following:
-> >>
-> >> git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 &&
-> >>   git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
-> >>
-> >> I will see whether I can come up with a better way to analyze what is
-> >> going on. I had not expected that these patches would cause any suspen=
-d/
-> >> resume problems.
-> >=20
-> > Not even d16ece reverts:
-> >=20
-> > pavel@duo:/data/l/linux-next-32$ git show  | head -3
-> > commit 76c938fcaa4b4a5d8f05fa907925d5043834964e
-> > Author: Stephen Rothwell <sfr@canb.auug.org.au>
-> > Date:   Tue Apr 23 20:24:59 2019 +1000
-> > pavel@duo:/data/l/linux-next-32$ git revert
-> > d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
-> > error: could not revert d16ece5... scsi: sd: Inline sd_probe_part2()
-> > hint: after resolving the conflicts, mark the corrected paths
-> > hint: with 'git add <paths>' or 'git rm <paths>'
-> > hint: and commit the result with 'git commit'
->=20
-> There has been a non-trivial merge between the block and scsi trees in
-> linux-next. That's probably what prevents these patches to revert
-> cleanly. How about performing the following tests:
-> * Build, boot and test Martin's latest for-5.2 branch
-> (git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git; branch
-> 5.2/scsi-queue).
+> ---
+> 
+> Changes since v1:
+> 1. Remove unneeded backslash (pointed by Pali).
+> ---
+>  drivers/power/supply/bq27xxx_battery.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 29b3a4056865..195c18c2f426 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -1612,7 +1612,8 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>  			di->charge_design_full = bq27xxx_battery_read_dcap(di);
+>  	}
+>  
+> -	if (di->cache.capacity != cache.capacity)
+> +	if ((di->cache.capacity != cache.capacity) ||
+> +	    (di->cache.flags != cache.flags))
+>  		power_supply_changed(di->bat);
+>  
+>  	if (memcmp(&di->cache, &cache, sizeof(cache)) != 0)
 
-Ok, so that's commit a7634b6f7cbbdc6efcf772e080a6fe845d1f6161
-=2E Suspend/resume is broken there.
-
-> * If suspend/resume does not work reliably with that branch, revert the
-> two patches above, rebuild, reboot and retest.
-
-pavel@duo:/data/l/linux-next-32$ git show
-commit a7634b6f7cbbdc6efcf772e080a6fe845d1f6161
-Author: Colin Ian King <colin.king@canonical.com>
-pavel@duo:/data/l/linux-next-32$ git revert
-d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
-Editing file: /data/fast/l/linux-next-32/.git/COMMIT_EDITMSG
-1026
-?
-[detached HEAD 916db0d] Revert "scsi: sd: Inline sd_probe_part2()"
- 1 file changed, 58 insertions(+), 43 deletions(-)
- pavel@duo:/data/l/linux-next-32$ git revert
- 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
- Editing file: /data/fast/l/linux-next-32/.git/COMMIT_EDITMSG
- 1163
- ?
- [detached HEAD ac8d625] Revert "scsi: sd: Rely on the driver core for
- asynchronous probing"
-  4 files changed, 47 insertions(+), 5 deletions(-)
-
-
-And reverting those two indeed fixes it:
-
-Checking version...
-version is  Linux amd 5.1.0-rc1autobisect1556274387+ #261 SMP Fri Apr
-26 12:27:12 CEST 2019 i686 GNU/Linux
-Running test...
-Result is [ TEST SUCCESS ]
-Test said TEST SUCCESS
-
-								Pavel
-
---=20
-DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-
---vtzGhvizbBRQ85DL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlzC3lEACgkQMOfwapXb+vJoTQCffu48EpOKwrjNHzlGLiZ8G0rw
-4xgAoIa4q0JCnAK+g4FAgxxuCYx82gQt
-=bMOt
------END PGP SIGNATURE-----
-
---vtzGhvizbBRQ85DL--
+-- 
+Pali Rohár
+pali.rohar@gmail.com
