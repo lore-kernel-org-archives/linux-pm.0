@@ -1,61 +1,43 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1] thermal: Add some error messages
-Date: Sat, 27 Apr 2019 00:45:15 +0530
-Message-ID: <640cd0cd93e199459af6d6d04bad228e909faf54.1556305991.git.amit.kucheria@linaro.org>
-References: <cover.1556305991.git.amit.kucheria@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 2/2] dt-bindings: cpufreq: Document
+ allwinner,cpu-operating-points-v2
+Date: Fri, 26 Apr 2019 16:15:40 -0500
+Message-ID: <20190426211540.GA890@bogus>
+References: <20190410174139.20012-1-tiny.windzz@gmail.com>
+ <20190410174139.20012-3-tiny.windzz@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1556305991.git.amit.kucheria@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20190410174139.20012-3-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, rjw@rjwysocki.net, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, nicolas.ferre@microchip.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When registering a thermal zone device, we currently return -EINVAL in
-four cases. This is makes is a little hard to debug the real cause of
-the failure.
+On Wed, Apr 10, 2019 at 01:41:39PM -0400, Yangtao Li wrote:
+> Allwinner Process Voltage Scaling Tables defines the voltage and
+> frequency value based on the speedbin blown in the efuse combination.
+> The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+> provide the OPP framework with required information.
+> This is used to determine the voltage and frequency value for each
+> OPP of operating-points-v2 table when it is parsed by the OPP framework.
+> 
+> The "allwinner,cpu-operating-points-v2" DT extends the "operating-points-v2"
+> with following parameters:
+> - nvmem-cells (NVMEM area containig the speedbin information)
+> - opp-microvolt-<name>: voltage in micro Volts.
+>   At runtime, the platform can pick a <name> and matching
+>   opp-microvolt-<name> property.
+> 			HW:		<name>:
+> 			sun50iw-h6      speed0 speed1 speed2
 
-Print some error messages to make it easier for developer to figure out
-what happened.
+We already have at least one way to support speed bins with QC kryo 
+binding. Why do we need a different way?
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/thermal_core.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6590bb5cb688..51cb6d2bf7a2 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1189,17 +1189,26 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	int count;
- 	struct thermal_governor *governor;
- 
--	if (!type || strlen(type) == 0)
-+	if (!type || strlen(type) == 0) {
-+		pr_err("Error: No thermal zone type defined");
- 		return ERR_PTR(-EINVAL);
-+	}
- 
--	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-+	if (type && strlen(type) >= THERMAL_NAME_LENGTH) {
-+		pr_err("Error: Thermal zone name (%s) too long, should be under %d chars",
-+		       type, THERMAL_NAME_LENGTH);
- 		return ERR_PTR(-EINVAL);
-+	}
- 
--	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips)
-+	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips) {
-+		pr_err("Error: Incorrect number of thermal trips");
- 		return ERR_PTR(-EINVAL);
-+	}
- 
--	if (!ops)
-+	if (!ops) {
-+		pr_err("Error: Thermal zone device ops not defined");
- 		return ERR_PTR(-EINVAL);
-+	}
- 
- 	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp))
- 		return ERR_PTR(-EINVAL);
--- 
-2.17.1
+> 
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> ---
+>  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 168 ++++++++++++++++++
+>  1 file changed, 168 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
