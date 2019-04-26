@@ -2,188 +2,123 @@ Return-Path: <SRS0=x0P7=S4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFF83C43218
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 06:31:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8979C4321A
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 06:49:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B4591206BA
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 06:31:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9D8152089E
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 06:49:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="G6z9YQjo"
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="XilYRzyf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726005AbfDZGbq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Apr 2019 02:31:46 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:42100 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725800AbfDZGbq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 02:31:46 -0400
-Received: by mail-pg1-f195.google.com with SMTP id p6so1094342pgh.9
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2019 23:31:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=rg301AJeUX6SniXvIL6sMei3175i1ojT8p/13FHDPAQ=;
-        b=G6z9YQjoB4gDXu9FmlVrKnDfNFUWHzoAbGCy70KBfQXQmt49Dwr6rIDtGnNU4y6zao
-         H8mhiDbT9SUUkukWhiGwihzOUR/PxYlS8q9W03BDlHxooxVps5OsKAe2mgRm1ENuMRiA
-         NhnpMYSKz+QLRh1ncxhtPg9fMBUa7NbI3sOKsAvRFyCAh61OhxCrxvnb75aVDZDZ3qrf
-         lLJCuNxups+VcQjsbfAHrtyYza9NaZK+2LF1oQI8Jn+P3aHRij3G/UUDLupeRn6rHvsC
-         eCJOM4Rv9ZI+255Xsjipaz4bvbOuXHNDMNdo8N2LpJsh+NTg+KVzeyP0NLGPcYF9XZt3
-         t4Zg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=rg301AJeUX6SniXvIL6sMei3175i1ojT8p/13FHDPAQ=;
-        b=ktkA68H3cDVkS+n9lUYGvUnUPLYqitesV5OKcrP1LxbErK8PD42SZt3FxNAdFHC4lp
-         DmU+D6ULwV92OlAayvpeE+BzCqFyU5+mWjZNHwmoHqJ75f6e8uUQ4cM+h7FHnRCS+eV6
-         F7m6UeosF3FrWtnwrsEpKFjHxnzJ6I55lo1GisaP8Ot6gKHaC94+snS0zraEPl+kj6o1
-         H/EDPd5NnqOydH30aMmCufyx1NYosdmWrBcZG5Z9i7Q6HbEyDe8wxlOW6uSLkNPzP7I7
-         HvafiprbkInq+41J6xBI9A5rB5u3yFBzeEOiVf59GjcYJ3n9qxzAJ8uVTcsPcY4h74TV
-         0KyQ==
-X-Gm-Message-State: APjAAAVgQHxv4H+rYN3X+7OS94vg9ugAvx19IslLf+yqPM4geL87eWDV
-        fd7/2QB38iKSU2FRlnYsxYg=
-X-Google-Smtp-Source: APXvYqwLCLM2IXePbr+fFOb+mnU+jBieG2biouw0uxQYHNbIpGYkhr5sCeQD+l1t5jl6D9QaUSefSQ==
-X-Received: by 2002:a63:5560:: with SMTP id f32mr42183443pgm.334.1556260305576;
-        Thu, 25 Apr 2019 23:31:45 -0700 (PDT)
-Received: from huyue2.ccdomain.com ([218.189.10.173])
-        by smtp.gmail.com with ESMTPSA id r18sm9072136pfd.89.2019.04.25.23.31.43
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 25 Apr 2019 23:31:44 -0700 (PDT)
-From:   Yue Hu <zbestahu@gmail.com>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        rafael.j.wysocki@intel.com
-Cc:     linux-pm@vger.kernel.org, huyue2@yulong.com
-Subject: [PATCH v2] cpufreq: Don't find governor for setpolicy drivers in cpufreq_init_policy()
-Date:   Fri, 26 Apr 2019 14:31:35 +0800
-Message-Id: <20190426063135.5200-1-zbestahu@gmail.com>
-X-Mailer: git-send-email 2.17.1.windows.2
+        id S1725893AbfDZGtv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Apr 2019 02:49:51 -0400
+Received: from mail-eopbgr40069.outbound.protection.outlook.com ([40.107.4.69]:1344
+        "EHLO EUR03-DB5-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725899AbfDZGts (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 26 Apr 2019 02:49:48 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=agxfFhjzG/itdRxjk62Z1TS6kfiYRHc10H1UdZzBsWA=;
+ b=XilYRzyfqUCz8438e0wzZnemZcSdpu/w8DvlejTatwWvF7hISD8Aggaw5vfqs6YURAn3tgSc50mbwaBwiTp+oWdJRxT0+aj4oIGy/UQNGhMqLF1KJglNa+9jhl5m9XZwCMVsY72RwGrl4BFWzpDfPx/t+J3jk/U943WjwBsb+D8=
+Received: from AM6PR04MB4789.eurprd04.prod.outlook.com (20.177.32.218) by
+ AM6PR04MB5046.eurprd04.prod.outlook.com (20.177.34.94) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1835.13; Fri, 26 Apr 2019 06:49:43 +0000
+Received: from AM6PR04MB4789.eurprd04.prod.outlook.com
+ ([fe80::2c:6837:2927:a618]) by AM6PR04MB4789.eurprd04.prod.outlook.com
+ ([fe80::2c:6837:2927:a618%3]) with mapi id 15.20.1813.017; Fri, 26 Apr 2019
+ 06:49:43 +0000
+From:   Vabhav Sharma <vabhav.sharma@nxp.com>
+To:     Stephen Boyd <sboyd@kernel.org>,
+        "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+CC:     "mturquette@baylibre.com" <mturquette@baylibre.com>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+        Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
+        Andy Tang <andy.tang@nxp.com>
+Subject: RE: [EXT] Re: [PATCH v3] clk: qoriq: add support for lx2160a
+Thread-Topic: [EXT] Re: [PATCH v3] clk: qoriq: add support for lx2160a
+Thread-Index: AQHU+27EnTHp/aOrT06vySVf5Nn13KZNMMmAgADQekA=
+Date:   Fri, 26 Apr 2019 06:49:43 +0000
+Message-ID:
+ <AM6PR04MB478978C59EA044545A2E90F5F33E0@AM6PR04MB4789.eurprd04.prod.outlook.com>
+References: <1556200638-24066-1-git-send-email-vabhav.sharma@nxp.com>
+ <155621654326.15276.741983919838675194@swboyd.mtv.corp.google.com>
+In-Reply-To: <155621654326.15276.741983919838675194@swboyd.mtv.corp.google.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=vabhav.sharma@nxp.com; 
+x-originating-ip: [92.120.0.2]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 92c2b8a1-5677-4bb6-2e01-08d6ca135d5d
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:AM6PR04MB5046;
+x-ms-traffictypediagnostic: AM6PR04MB5046:
+x-microsoft-antispam-prvs: <AM6PR04MB504629754D2010F8BC7EDE9AF33E0@AM6PR04MB5046.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:8882;
+x-forefront-prvs: 001968DD50
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(396003)(366004)(39860400002)(346002)(376002)(136003)(13464003)(189003)(199004)(64756008)(66446008)(66946007)(66476007)(110136005)(54906003)(66556008)(316002)(2201001)(486006)(8936002)(73956011)(5660300002)(7696005)(97736004)(476003)(52536014)(76116006)(2906002)(186003)(26005)(53546011)(6506007)(76176011)(66066001)(446003)(71200400001)(6436002)(71190400001)(102836004)(11346002)(86362001)(6116002)(3846002)(44832011)(55016002)(229853002)(256004)(305945005)(478600001)(33656002)(4326008)(7736002)(14454004)(25786009)(2501003)(9686003)(81166006)(8676002)(81156014)(53936002)(99286004)(68736007)(74316002)(6246003);DIR:OUT;SFP:1101;SCL:1;SRVR:AM6PR04MB5046;H:AM6PR04MB4789.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: 94NZtJvq1eVNRTESyARjprAu67BrrnVUEmDW0ytEPDZICFGN6enggBypG1/dReGwE6YvcJez1Ds5JLDFeNFoSH0vsk34hs62YP0dYuTgIL2+E5WRd40KoMNcufqVLpL6UqsaaVCnEYhS7vOvUncnIYDTGWoZlfjP64iXnm1EG2LnbDwXBameY4JM5hUjfge7Tdka1WEoeItuGkhyn0AbmqeB4IQ2NfZDWZY7ilCS7n50hI9bZTim17lnvnMTxj8ON1SRKhboKm+dRsFEpFUOd/awz+syYuit9nFwKMVU2yx4NeZKZODhsJjb1aMiC+6xda82uyEwG0R21sHPafGHMB5mTSvw79OGF0/ZpYIjNziazK7bYR9+tX3zS5DzG6u8kqcwF/6VGnZLVWQ6hIiBRnd0EH06/cvvrghNXJ42JIA=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 92c2b8a1-5677-4bb6-2e01-08d6ca135d5d
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Apr 2019 06:49:43.7930
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB5046
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190426064943.oXn62xSxfYrbwLsEv96kinpZ6h2H5qscJ2Rb28sxjE4@z>
 
-From: Yue Hu <huyue2@yulong.com>
-
-In cpufreq_init_policy() we will check if there's last_governor for target
-and setpolicy type. However last_governor is set only if has_target() is
-true in cpufreq_offline(). That means find last_governor for setpolicy
-type is pointless. Also new_policy.governor will not be used if ->setpolicy
-callback is set in cpufreq_set_policy().
-
-Moreover, there's duplicate ->setpolicy check in using default policy path.
-Let's add a new helper function to avoid it. Also fix a little comment.
-
-Signed-off-by: Yue Hu <huyue2@yulong.com>
----
-v2: fix ->setplicy typo.
-
- drivers/cpufreq/cpufreq.c | 66 ++++++++++++++++++++++++++++-------------------
- 1 file changed, 40 insertions(+), 26 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0322cce..b822a3e 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -578,6 +578,20 @@ static struct cpufreq_governor *find_governor(const char *str_governor)
- 	return NULL;
- }
- 
-+static int cpufreq_parse_static_governor(char *str_governor,
-+					struct cpufreq_policy *policy)
-+{
-+	if (!strncasecmp(str_governor, "performance", CPUFREQ_NAME_LEN)) {
-+		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
-+		return 0;
-+	}
-+	if (!strncasecmp(str_governor, "powersave", CPUFREQ_NAME_LEN)) {
-+		policy->policy = CPUFREQ_POLICY_POWERSAVE;
-+		return 0;
-+	}
-+	return -EINVAL;
-+}
-+
- /**
-  * cpufreq_parse_governor - parse a governor string
-  */
-@@ -585,15 +599,7 @@ static int cpufreq_parse_governor(char *str_governor,
- 				  struct cpufreq_policy *policy)
- {
- 	if (cpufreq_driver->setpolicy) {
--		if (!strncasecmp(str_governor, "performance", CPUFREQ_NAME_LEN)) {
--			policy->policy = CPUFREQ_POLICY_PERFORMANCE;
--			return 0;
--		}
--
--		if (!strncasecmp(str_governor, "powersave", CPUFREQ_NAME_LEN)) {
--			policy->policy = CPUFREQ_POLICY_POWERSAVE;
--			return 0;
--		}
-+		return cpufreq_parse_static_governor(str_governor, policy);
- 	} else {
- 		struct cpufreq_governor *t;
- 
-@@ -1020,32 +1026,40 @@ __weak struct cpufreq_governor *cpufreq_default_governor(void)
- 
- static int cpufreq_init_policy(struct cpufreq_policy *policy)
- {
--	struct cpufreq_governor *gov = NULL;
-+	struct cpufreq_governor *gov = NULL, *def_gov = NULL;
- 	struct cpufreq_policy new_policy;
- 
- 	memcpy(&new_policy, policy, sizeof(*policy));
- 
--	/* Update governor of new_policy to the governor used before hotplug */
--	gov = find_governor(policy->last_governor);
--	if (gov) {
--		pr_debug("Restoring governor %s for cpu %d\n",
-+	def_gov = cpufreq_default_governor();
-+
-+	if (has_target()) {
-+		/*
-+		 * Update governor of new_policy to the governor used before
-+		 * hotplug
-+		 */
-+		gov = find_governor(policy->last_governor);
-+		if (gov)
-+			pr_debug("Restoring governor %s for cpu %d\n",
- 				policy->governor->name, policy->cpu);
-+		else {
-+			if (!def_gov)
-+				return -ENODATA;
-+			gov = def_gov;
-+		}
-+		new_policy.governor = gov;
- 	} else {
--		gov = cpufreq_default_governor();
--		if (!gov)
--			return -ENODATA;
--	}
--
--	new_policy.governor = gov;
--
--	/* Use the default policy if there is no last_policy. */
--	if (cpufreq_driver->setpolicy) {
-+		/* Use the default policy if there is no last_policy. */
- 		if (policy->last_policy)
- 			new_policy.policy = policy->last_policy;
--		else
--			cpufreq_parse_governor(gov->name, &new_policy);
-+		else {
-+			if (!def_gov)
-+				return -ENODATA;
-+			cpufreq_parse_static_governor(def_gov->name,
-+						      &new_policy);
-+		}
- 	}
--	/* set default policy */
-+	/* Set new policy */
- 	return cpufreq_set_policy(policy, &new_policy);
- }
- 
--- 
-1.9.1
-
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU3RlcGhlbiBCb3lkIDxz
+Ym95ZEBrZXJuZWwub3JnPg0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMjUsIDIwMTkgMTE6NTIg
+UE0NCj4gVG86IGxpbnV4LWNsa0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtl
+cm5lbC5vcmc7IGxpbnV4LQ0KPiBwbUB2Z2VyLmtlcm5lbC5vcmc7IFZhYmhhdiBTaGFybWEgPHZh
+Ymhhdi5zaGFybWFAbnhwLmNvbT4NCj4gQ2M6IG10dXJxdWV0dGVAYmF5bGlicmUuY29tOyByandA
+cmp3eXNvY2tpLm5ldDsgdmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7DQo+IFlvZ2VzaCBOYXJheWFu
+IEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29tPjsgQW5keSBUYW5nDQo+IDxhbmR5LnRh
+bmdAbnhwLmNvbT47IFZhYmhhdiBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNvbT4NCj4gU3Vi
+amVjdDogW0VYVF0gUmU6IFtQQVRDSCB2M10gY2xrOiBxb3JpcTogYWRkIHN1cHBvcnQgZm9yIGx4
+MjE2MGENCj4gDQo+IENhdXRpb246IEVYVCBFbWFpbA0KPiANCj4gUXVvdGluZyBWYWJoYXYgU2hh
+cm1hICgyMDE5LTA0LTI1IDA2OjU3OjA1KQ0KPiA+IEZyb206IFlvZ2VzaCBHYXVyIDx5b2dlc2hu
+YXJheWFuLmdhdXJAbnhwLmNvbT4NCj4gPg0KPiA+IEFkZCBjbG9ja2dlbiBzdXBwb3J0IGFuZCBj
+b25maWd1cmF0aW9uIGZvciBOWFAgU29DIGx4MjE2MGEgaW4gcW9yaXENCj4gPiBjbG9jayBkcml2
+ZXIgd2l0aCBjb21wYXRpYmxlIHByb3BlcnR5IGFzICJmc2wsbHgyMTYwYS1jbG9ja2dlbiIuDQo+
+ID4NCj4gPiBxb3JpcS1jcHVmcmVxIGRyaXZlciBpcyBiYXNlZCBvbiBxb3JpcSBjbG9jayBkcml2
+ZXIsIGVuYWJsZSBzdXBwb3J0IG9mDQo+ID4gTlhQIFNvQyBseDIxNjBhIGluIHFvcmlxIGNwdWZy
+ZXEgZHJpdmVyIHRvIGhhbmRsZSB0aGUgbHgyMTYwYSBTb0MuDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBUYW5nIFl1YW50aWFuIDxhbmR5LnRhbmdAbnhwLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5
+OiBZb2dlc2ggR2F1ciA8eW9nZXNobmFyYXlhbi5nYXVyQG54cC5jb20+DQo+ID4gU2lnbmVkLW9m
+Zi1ieTogVmFiaGF2IFNoYXJtYSA8dmFiaGF2LnNoYXJtYUBueHAuY29tPg0KPiA+IEFja2VkLWJ5
+OiBTY290dCBXb29kIDxvc3NAYnVzZXJyb3IubmV0Pg0KPiA+IEFja2VkLWJ5OiBTdGVwaGVuIEJv
+eWQgPHNib3lkQGtlcm5lbC5vcmc+DQo+ID4gQWNrZWQtYnk6IFZpcmVzaCBLdW1hciA8dmlyZXNo
+Lmt1bWFyQGxpbmFyby5vcmc+DQo+ID4gLS0tDQo+ID4gQ2hhbmdlcyBmb3IgdjM6DQo+ID4gLSBJ
+bmNvcnBvcmF0ZWQgcmV2aWV3IGNvbW1lbnRzIG9mIFJhZmFlbCBKLiBXeXNvY2tpDQo+ID4gLSBV
+cGRhdGVkIGNvbW1pdCBtZXNzYWdlDQo+IA0KPiBJZiB5b3UgY2FuIHNwbGl0IGl0IGludG8gY2xr
+IGFuZCBjcHVmcmVxIHRoYXQgd291bGQgYmUgcHJlZmVycmVkLiBUaGVuIEkgY2FuDQo+IHRha2Ug
+dGhlIGNsayBwYXJ0IGFuZCBQTSB0cmVlIGNhbiB0YWtlIHRoZSBjcHVmcmVxIHBhcnQuIE90aGVy
+d2lzZSwgeW91IGhhdmUNCj4gc2VudCBvdGhlciBwYXRjaGVzIHRvIGRyaXZlcnMvY2xrL2Nsay1x
+b3JpcS5jIGFuZCBJJ20gd29ycmllZCB0aGVyZSB3aWxsIGJlDQo+IGNyb3NzIHRyZWUgY29uZmxp
+Y3RzIGlmIEkgdGFrZSB0aG9zZSBvdGhlciBwYXRjaGVzIHRoaXMgY3ljbGUuDQpBZ3JlZSwgc3Vy
+ZS4NCkkgd2lsbCBzcGxpdCB0aGUgcGF0Y2ggYW5kIHNlbnQgaXQgdG8gY2xrIGFuZCBQTSB0cmVl
+Lg0KDQo=
