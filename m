@@ -2,136 +2,100 @@ Return-Path: <SRS0=x0P7=S4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD134C43219
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:55:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E2C0C43219
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:58:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8961F20679
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:55:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DA31020679
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:58:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556272705;
+	bh=R7WPbdQ+/Wvrbcvvu7v/nltqqTfTDu4jGYBWUskiL+A=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=b9kBg/bfKojX5M0oXX8K86x+LE0BrJ1ns+nQbGktao4BQlFu2IY1IRDgYvzTceeJb
+	 fd3f8z3gDKsVtbBsTD47PxFKKwMUdADYrp8E32efgYasO6YZf7hi8TTMi+0hQf7x2y
+	 PM8FZovoMCaLdsRjDjDQQ65LQ+SE1YfgMgWHLFbM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726155AbfDZJzR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Apr 2019 05:55:17 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:45932 "EHLO
-        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725901AbfDZJzQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 05:55:16 -0400
-Received: from reginn.horms.nl (watermunt.horms.nl [80.127.179.77])
-        by kirsty.vergenet.net (Postfix) with ESMTPA id 6F9F925AD60;
-        Fri, 26 Apr 2019 19:55:13 +1000 (AEST)
-Received: by reginn.horms.nl (Postfix, from userid 7100)
-        id 710219403ED; Fri, 26 Apr 2019 11:55:11 +0200 (CEST)
-Date:   Fri, 26 Apr 2019 11:55:11 +0200
-From:   Simon Horman <horms@verge.net.au>
-To:     Geert Uytterhoeven <geert@linux-m68k.org>
-Cc:     Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Yoshihiro Kaneko <ykaneko0929@gmail.com>
-Subject: Re: [PATCH repost] thermal: rcar_thermal: update calculation formula
- for E3
-Message-ID: <20190426095511.tkgbxkf43psesgkv@verge.net.au>
-References: <20190418071514.13027-1-horms+renesas@verge.net.au>
- <20190418081209.GT28515@bigcity.dyn.berto.se>
- <CAMuHMdVX5t-Q5tM5bj95muAZ+8+phohtQSsAO-rCeCofiqVMKQ@mail.gmail.com>
+        id S1726584AbfDZJ6T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Apr 2019 05:58:19 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47294 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726491AbfDZJ6K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 26 Apr 2019 05:58:10 -0400
+Received: from mail-lj1-f182.google.com (mail-lj1-f182.google.com [209.85.208.182])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 87DAD2089E;
+        Fri, 26 Apr 2019 09:58:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1556272689;
+        bh=R7WPbdQ+/Wvrbcvvu7v/nltqqTfTDu4jGYBWUskiL+A=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=PAnUmEv18l8c6IA6BGSpKR6FQbP/UqGpgcJsSZM6Z+TQoznRzTkZkK9oCUVf1nL/g
+         o4IBBGJpJ5r3hD+8zyTvCz7d5PEToTfUuCt4TlAcXKGAyI4pvPNjtZbDJpvx7k16xc
+         2sy9nj9lm5tkwqO9u2Vk51H9EBslyVTWAV+dhCjg=
+Received: by mail-lj1-f182.google.com with SMTP id k8so2357337lja.8;
+        Fri, 26 Apr 2019 02:58:09 -0700 (PDT)
+X-Gm-Message-State: APjAAAWzO2z2EyeHxdvgld2r6R3DGJPrXhPrCpU9DgdzFyXdRFFylXcX
+        Q6N+xI92Mi8p7xsc76RS2b+unB32Q4PaVpEJYJI=
+X-Google-Smtp-Source: APXvYqwADgm7W5o9fjcYm+QQGX1McsZ2QxVQupTUPIAg6yIsx4746GQcC4bAahhuuVRZ9ezM519RYxR1+aN9B+r0rzQ=
+X-Received: by 2002:a2e:9ec3:: with SMTP id h3mr24387182ljk.131.1556272687780;
+ Fri, 26 Apr 2019 02:58:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAMuHMdVX5t-Q5tM5bj95muAZ+8+phohtQSsAO-rCeCofiqVMKQ@mail.gmail.com>
-Organisation: Horms Solutions BV
-User-Agent: NeoMutt/20170113 (1.7.2)
+References: <1556270808-21331-1-git-send-email-krzk@kernel.org> <20190426093243.zazld4wwv4qybwaf@pali>
+In-Reply-To: <20190426093243.zazld4wwv4qybwaf@pali>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+Date:   Fri, 26 Apr 2019 11:57:56 +0200
+X-Gmail-Original-Message-ID: <CAJKOXPedb=TX=4ZDW4SARPBb5_K_zMFVBA3wJCYTieTuxk+9xg@mail.gmail.com>
+Message-ID:
+ <CAJKOXPedb=TX=4ZDW4SARPBb5_K_zMFVBA3wJCYTieTuxk+9xg@mail.gmail.com>
+Subject: Re: [PATCH] power: supply: bq27xxx_battery: Notify also about status changes
+To:     =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>
+Cc:     "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190426095756.D4fhbypZYAVvXLDMWZIF64o_XuWLgiSxHTakgXkF2_8@z>
 
-On Wed, Apr 24, 2019 at 09:10:56AM +0200, Geert Uytterhoeven wrote:
-> Hi Niklas,
-> 
-> On Thu, Apr 18, 2019 at 10:12 AM Niklas Söderlund
-> <niklas.soderlund@ragnatech.se> wrote:
-> > On 2019-04-18 09:15:14 +0200, Simon Horman wrote:
-> > > From: Yoshihiro Kaneko <ykaneko0929@gmail.com>
-> > >
-> > > HW manual changes temperature calculation formula for E3:
+On Fri, 26 Apr 2019 at 11:32, Pali Roh=C3=A1r <pali.rohar@gmail.com> wrote:
+>
+> On Friday 26 April 2019 11:26:48 Krzysztof Kozlowski wrote:
+> > User-space might be interested in receiving uevents when the charging
+> > starts/stops or if conditions of battery changes (e.g.
+> > over-temperature).  Notify about changes in battery also when the flags
+> > change, not only SoC.
+>
+> This looks like a good idea.
+>
+> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > ---
+> >  drivers/power/supply/bq27xxx_battery.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
 > >
-> > Is this not also true for V3M and D3?
+> > diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/sup=
+ply/bq27xxx_battery.c
+> > index 29b3a4056865..cb9306160c14 100644
+> > --- a/drivers/power/supply/bq27xxx_battery.c
+> > +++ b/drivers/power/supply/bq27xxx_battery.c
+> > @@ -1612,7 +1612,8 @@ void bq27xxx_battery_update(struct bq27xxx_device=
+_info *di)
+> >                       di->charge_design_full =3D bq27xxx_battery_read_d=
+cap(di);
+> >       }
 > >
-> > > - When CTEMP is less than 24
-> > >    T = CTEMP[5:0] * 5.5 - 72
-> > > - When CTEMP is equal to/greater than 24
-> > >    T = CTEMP[5:0] * 5 - 60
-> > >
-> > > This was inspired by a patch in the BSP by Van Do <van.do.xw@renesas.com>
-> > >
-> > > Signed-off-by: Yoshihiro Kaneko <ykaneko0929@gmail.com>
-> > > Tested-by: Simon Horman <horms+renesas@verge.net.au>
-> > > Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> > > Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
-> > > ---
-> > >  drivers/thermal/rcar_thermal.c | 11 ++++++++++-
-> > >  1 file changed, 10 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> > > index 97462e9b40d8..11df0cc63bed 100644
-> > > --- a/drivers/thermal/rcar_thermal.c
-> > > +++ b/drivers/thermal/rcar_thermal.c
-> > > @@ -52,6 +52,7 @@ struct rcar_thermal_chip {
-> > >       unsigned int irq_per_ch : 1;
-> > >       unsigned int needs_suspend_resume : 1;
-> > >       unsigned int nirqs;
-> > > +     unsigned int ctemp_bands;
-> >
-> > Would it be possible to rename this to something indicating that this is
-> > a gen3 thing? Maybe move it to the bit fields above and name it gen3 ?
-> 
-> Is that really a good thing to do? This structure describes features of
-> the thermal module, and we're already beyond the point where a simple
-> check  for gen2 or gen3 was sufficient.
-> Here the feature is having multiple temperature bands.
-> What if some other Gen3 SoC starts having 3 temperature bands?
-> 
-> > > @@ -263,7 +267,12 @@ static int rcar_thermal_get_current_temp(struct rcar_thermal_priv *priv,
-> > >               return ret;
-> > >
-> > >       mutex_lock(&priv->lock);
-> > > -     tmp =  MCELSIUS((priv->ctemp * 5) - 65);
-> > > +     if (priv->chip->ctemp_bands == 1)
-> > > +             tmp =  MCELSIUS((priv->ctemp * 5) - 65);
-> > > +     else if (priv->ctemp < 24)
-> > > +             tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
-> > > +     else
-> > > +             tmp = MCELSIUS((priv->ctemp * 5) - 60);
-> >
-> > I confirm that the calculations here are correct, but hard to read ;-)
-> > With the rename about how about.
-> >
-> >     if (priv->chip->gen3) {
-> >         if (priv->ctemp < 24)
-> >                 tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
-> >         else
-> >                 tmp = MCELSIUS((priv->ctemp * 5) - 60);
-> >     } else {
-> >             tmp =  MCELSIUS((priv->ctemp * 5) - 65);
-> >     }
-> 
-> _Iff_ we decide on going for the rename, I'd still write it as:
-> 
->     if (!priv->chip->gen3)
->             tmp =  MCELSIUS((priv->ctemp * 5) - 65);
->     else if (priv->ctemp < 24)
->             tmp = MCELSIUS(((priv->ctemp * 55) - 720) / 10);
->     else
->             tmp = MCELSIUS((priv->ctemp * 5) - 60);
-> 
-> Always fold your if/else if/else constructs to minimize the need for indentation
-> and braces ;-)
+> > -     if (di->cache.capacity !=3D cache.capacity)
+> > +     if ((di->cache.capacity !=3D cache.capacity) || \
+>                                                       ^^
+>                                       You have there an extra backslash
 
-From my PoV I think the patch is fine in its current form.
-Niklas do you feel particularly strongly about changing it?
+Indeed, Thanks! Let me send v2.
+
+Best regards,
+Krzysztof
