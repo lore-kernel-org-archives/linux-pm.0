@@ -2,123 +2,276 @@ Return-Path: <SRS0=x0P7=S4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 243BDC43218
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 17:04:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C55EC43218
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 18:46:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E2FC62146E
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 17:04:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Q1JGHWp/"
+	by mail.kernel.org (Postfix) with ESMTP id 2A63020B7C
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 18:46:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556304363;
+	bh=vbUBuq8Ke3WEk3Qq565Mdwux2WtCV8ZE+bNrPCIj5GM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=gyqrBhS98J5yiQlw3vgiE8d86d9UBnbKz+/4Db8RSc5+VoWAmMuttUecHnk+zGkvN
+	 XKlTcBJVHsLZqe5+dnURvoMFYDImKnzccTiOUEN10JZMZTb/FsCZtWpxghW2wVoVZP
+	 Bsfs0oC86m2BMiRQmea9N6UsuaRxGdR5TICtY034=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726068AbfDZREl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Apr 2019 13:04:41 -0400
-Received: from mail-pg1-f196.google.com ([209.85.215.196]:38947 "EHLO
-        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725944AbfDZREk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 13:04:40 -0400
-Received: by mail-pg1-f196.google.com with SMTP id l18so1911334pgj.6;
-        Fri, 26 Apr 2019 10:04:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=7zNlK1betosrFH/BCVaeqIioafWUd8DPdFnWt1Oy7GQ=;
-        b=Q1JGHWp/6QJkmaxij4MEyeszUMRmP9c12l2fDn1WI9mZ2RS11GeOaqOyNkJlVCok2/
-         YV58rkDQnJXin+xz7bDguh1oluWhSDr9w2Wd6/EdAkRorCOKVZN+hnXpmszA9X8KUwsV
-         wOqfK2m40tVx4nnsw1d+CEM89xgf0Ql5SavNlWPbrNxNX93AKsf+Qm0gN1/PA42GIJLi
-         eb3Y+JruVAtuaEVOa4dsLiWEON8e69/53YiTvA5Xll/jz63K7VrhEiCUttBYHR7uA8Nu
-         /EZPl7uZBDq5JBn2x0Kptu3DLbOgHzt3OKPBinYQXXPUZ4Vv3IjvGgfOgT3xOYNP0g3D
-         gwpg==
+        id S1726124AbfDZSqC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Apr 2019 14:46:02 -0400
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:33672 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726049AbfDZSqC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 14:46:02 -0400
+Received: by mail-ot1-f66.google.com with SMTP id j10so3547190otq.0;
+        Fri, 26 Apr 2019 11:46:01 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
-         :references:mime-version:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent;
-        bh=7zNlK1betosrFH/BCVaeqIioafWUd8DPdFnWt1Oy7GQ=;
-        b=htuiIvDbnWsgcO/j8zb/ojfpk9DNTl3dttOOlGNoE5xdcjQXYk7xPbF5/Js4cJBdRx
-         VKcjQxipxLmhGdwb0aHxcOQYCIcs3Op5WauhXgvlPEwFzKTd4hLha9Vu8FmNuGwzKEh9
-         9tuBJ6ywM7MninBvhDeth8rq9NMVvN//CZGmn4wmbrcjZREtbjAbA+U/grTxQHaxcaQP
-         mE2m04dVUSvB9AgvObdA4NTAS06OaxYebkKy6TakdMObFo9ALsw2TiVATfZ6IfGW+DMJ
-         TGHggh/CcZNNB41kxWJ+HDjqXBnwqPIFh78dn+ko93E9za2Kup8r9H+D1r8akKBztD6x
-         qvMw==
-X-Gm-Message-State: APjAAAWo9HlP4K/0LETRHvvhbFJtGvFgx78qD6qy5sxji2bhqYJ2z3rm
-        kR9hGX9T9Kwnr5ISz4EZRKE=
-X-Google-Smtp-Source: APXvYqysBR49sd/I3qpTj292b80UptiG2M/+wC1xYonyovDMjXV6NTGeQaw+1M/gxkAYKrdkbprzcg==
-X-Received: by 2002:a62:4595:: with SMTP id n21mr48726359pfi.79.1556298279995;
-        Fri, 26 Apr 2019 10:04:39 -0700 (PDT)
-Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id 6sm33834436pfj.95.2019.04.26.10.04.37
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 26 Apr 2019 10:04:38 -0700 (PDT)
-Date:   Fri, 26 Apr 2019 10:04:37 -0700
-From:   Guenter Roeck <linux@roeck-us.net>
-To:     Enric Balletbo Serra <eballetbo@gmail.com>
-Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Chris Health <cphealy@gmail.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] power: supply: Add driver for Microchip UCS1002
-Message-ID: <20190426170437.GA9087@roeck-us.net>
-References: <20190417084457.28747-1-andrew.smirnov@gmail.com>
- <20190417084457.28747-3-andrew.smirnov@gmail.com>
- <CAFqH_53vo__70Xm5pOoLvqPG2iNN32VP5cbFCatDq=o0GLYzsA@mail.gmail.com>
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        bh=pEPusRheoqG6L8hFDZ+UpNai2za15r7H5JF7WhwGE5Y=;
+        b=e89yjqxLOaqEo5TAss3psn8IL/mYzV5RUDgjJ3BLRpLQc3HUJykv/2PKANhm870dP/
+         nPIffEA/n6a/qUfkxb3ZLsNz10QHzHf0ZwZxG1Rfc3DfNU3Tq6hl6iIvGYNBTN+ROXGe
+         frfh2QFYDhoZ8/rXkN0eaZYqGUOzFRnx9y8IWO6kk6usN8UQkS9oDhpCkf4J0AlU0vE/
+         d1q39aC3ZnssN6MmofJ8Nj8+3CdtS2W+A/5QSVQoX+CyAvAc3XM2+1ak6D42eJEcqLJf
+         X1U2sPsOeECnOQ8TpqTpXtrQnzg01ug1po9IS2ZD+G+mkmfOiLFrEVXn4sEAouoIh19f
+         wLuA==
+X-Gm-Message-State: APjAAAVX5PBkiaPh7oNJhij9PDPSHkh04d959rAw26hoAXqHN5ejGWJe
+        n8ASDys44SNMI1+WBtpxyQ==
+X-Google-Smtp-Source: APXvYqzzyZ6deOywfEMtSX0sji3SN3TApLJhNC2zk1n2ENmAnHUeVNtTigzhvxrFey+mOYmGQ+PuEw==
+X-Received: by 2002:a05:6830:2090:: with SMTP id y16mr13359330otq.97.1556304360935;
+        Fri, 26 Apr 2019 11:46:00 -0700 (PDT)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id o66sm11050999oig.11.2019.04.26.11.45.59
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Fri, 26 Apr 2019 11:45:59 -0700 (PDT)
+Date:   Fri, 26 Apr 2019 13:45:59 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     =?iso-8859-1?Q?Ga=EBl?= PORTAY <gael.portay@collabora.com>
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
+        Lin Huang <hl@rock-chips.com>,
+        Brian Norris <briannorris@chromium.org>,
+        Douglas Anderson <dianders@chromium.org>,
+        Klaus Goger <klaus.goger@theobroma-systems.com>,
+        Derek Basehore <dbasehore@chromium.org>,
+        Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-rockchip@lists.infradead.org,
+        Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v4 5/5] arm64: dts: rockchip: Enable dmc and dfi nodes on
+ gru.
+Message-ID: <20190426184559.GA29242@bogus>
+References: <20190415212948.7736-1-gael.portay@collabora.com>
+ <20190415212948.7736-6-gael.portay@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAFqH_53vo__70Xm5pOoLvqPG2iNN32VP5cbFCatDq=o0GLYzsA@mail.gmail.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+In-Reply-To: <20190415212948.7736-6-gael.portay@collabora.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190426170437.dCpNUKkHgrHCvGhf9Zdbe8pvsUyVG5flKoHbI-IFEFU@z>
+Message-ID: <20190426184559.LOOZeLa_YW-gEjZOn9Rz_3kXlCcKgVrY8xjMYYnunlM@z>
 
-On Fri, Apr 26, 2019 at 06:51:51PM +0200, Enric Balletbo Serra wrote:
-> Hi Andrey,
+On Mon, Apr 15, 2019 at 05:29:48PM -0400, Gaël PORTAY wrote:
+> From: Lin Huang <hl@rock-chips.com>
 > 
-> Many thanks to push this upstream. Actually this the fifth version [1]
-> of this patchset. I think that is interesting for the maintainers
-> maintain the history and the changelog.
+> Enable the DMC (Dynamic Memory Controller) and the DFI (DDR PHY
+> Interface) nodes on gru boards so we can support DDR DVFS.
 > 
-> [1] https://lkml.org/lkml/2016/3/14/233
+> The patch also introduces a new file with default DRAM settings.
 > 
-> Missatge de Andrey Smirnov <andrew.smirnov@gmail.com> del dia dc., 17
-> dâ€™abr. 2019 a les 10:46:
-> >
-> > Add driver for Microchip UCS1002 Programmable USB Port Power
-> > Controller with Charger Emulation. The driver exposed a power supply
-> > device to control/monitor various parameter of the device as well as a
-> > regulator to allow controlling VBUS line.
-> >
-> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> > Cc: Chris Health <cphealy@gmail.com>
-> > Cc: Lucas Stach <l.stach@pengutronix.de>
-> > Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> > Cc: Guenter Roeck <linux@roeck-us.net>
-> > Cc: Sebastian Reichel <sre@kernel.org>
-> > Cc: linux-kernel@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> > ---
+> Signed-off-by: Lin Huang <hl@rock-chips.com>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
+> ---
+> 
+> Changes in v4:
+> - [PATCH v3 5/5] Add board related DDR settings (moved from 4/5).
+> 
+> Changes in v3:
+> - [PATCH v2 5/5] Remove display_subsystem nodes.
+> 
+> Changes in v2:
+> - [PATCH 8/8] Move center-supply attribute of dmc node in file
+>               rk3399-gru-chromebook.dtsi (where ppvar_centerlogic is
+> 	      defined).
+> 
+> Changes in v1: None
+> 
+>  .../dts/rockchip/rk3399-gru-chromebook.dtsi   |  4 +
+>  arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi  | 46 ++++++++++++
+>  .../boot/dts/rockchip/rk3399-op1-opp.dtsi     | 29 ++++++++
+>  include/dt-bindings/power/rk3399-dram.h       | 73 +++++++++++++++++++
+>  4 files changed, 152 insertions(+)
+>  create mode 100644 include/dt-bindings/power/rk3399-dram.h
+> 
+> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru-chromebook.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-gru-chromebook.dtsi
+> index 931640e9aed4..cfb81356c61e 100644
+> --- a/arch/arm64/boot/dts/rockchip/rk3399-gru-chromebook.dtsi
+> +++ b/arch/arm64/boot/dts/rockchip/rk3399-gru-chromebook.dtsi
+> @@ -400,3 +400,7 @@ ap_i2c_tp: &i2c5 {
+>  		rockchip,pins = <0 8 RK_FUNC_GPIO &pcfg_pull_none>;
+>  	};
+>  };
+> +
+> +&dmc {
+> +	center-supply = <&ppvar_centerlogic>;
+> +};
+> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+> index da03fa9c5662..40e78186560b 100644
+> --- a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+> +++ b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+> @@ -6,6 +6,7 @@
+>   */
+>  
+>  #include <dt-bindings/input/input.h>
+> +#include <dt-bindings/power/rk3399-dram.h>
+>  #include "rk3399.dtsi"
+>  #include "rk3399-op1-opp.dtsi"
+>  
+> @@ -289,6 +290,12 @@
+>  	status = "okay";
+>  };
+>  
+> +&dmc_opp_table {
+> +	opp04 {
+> +		opp-suspend;
+> +	};
+> +};
+> +
+>  /*
+>   * Set some suspend operating points to avoid OVP in suspend
+>   *
+> @@ -489,6 +496,45 @@ ap_i2c_audio: &i2c8 {
+>  	status = "okay";
+>  };
+>  
+> +&dfi {
+> +	status = "okay";
+> +};
+> +
+> +&dmc {
+> +	status = "okay";
+> +	upthreshold = <25>;
+> +	downdifferential = <15>;
+> +	rockchip,ddr3_speed_bin = <21>;
+> +	rockchip,pd_idle = <0x40>;
+> +	rockchip,sr_idle = <0x2>;
+> +	rockchip,sr_mc_gate_idle = <0x3>;
+> +	rockchip,srpd_lite_idle	= <0x4>;
+> +	rockchip,standby_idle = <0x2000>;
+> +	rockchip,dram_dll_dis_freq = <300000000>;
+> +	rockchip,phy_dll_dis_freq = <125000000>;
+> +	rockchip,auto_pd_dis_freq = <666000000>;
+> +	rockchip,ddr3_odt_dis_freq = <333000000>;
+> +	rockchip,ddr3_drv = <DDR3_DS_40ohm>;
+> +	rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
+> +	rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
+> +	rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
+> +	rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
+> +	rockchip,lpddr3_odt_dis_freq = <333000000>;
+> +	rockchip,lpddr3_drv = <LP3_DS_34ohm>;
+> +	rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
+> +	rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
+> +	rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
+> +	rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
+> +	rockchip,lpddr4_odt_dis_freq = <333000000>;
+> +	rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
+> +	rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
+> +	rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
+> +	rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
+> +	rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
+> +	rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
+> +	rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
+> +};
+> +
+>  &sdhci {
+>  	/*
+>  	 * Signal integrity isn't great at 200 MHz and 150 MHz (DDR) gives the
+> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi
+> index 69cc9b05baa5..c9e7032b01a8 100644
+> --- a/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi
+> +++ b/arch/arm64/boot/dts/rockchip/rk3399-op1-opp.dtsi
+> @@ -110,6 +110,31 @@
+>  			opp-microvolt = <1075000>;
+>  		};
+>  	};
+> +
+> +	dmc_opp_table: dmc_opp_table {
+> +		compatible = "operating-points-v2";
+> +
+> +		opp00 {
+> +			opp-hz = /bits/ 64 <200000000>;
+> +			opp-microvolt = <900000>;
+> +		};
+> +		opp01 {
+> +			opp-hz = /bits/ 64 <400000000>;
+> +			opp-microvolt = <900000>;
+> +		};
+> +		opp02 {
+> +			opp-hz = /bits/ 64 <666000000>;
+> +			opp-microvolt = <900000>;
+> +		};
+> +		opp03 {
+> +			opp-hz = /bits/ 64 <800000000>;
+> +			opp-microvolt = <900000>;
+> +		};
+> +		opp04 {
+> +			opp-hz = /bits/ 64 <928000000>;
+> +			opp-microvolt = <900000>;
+> +		};
+> +	};
+>  };
+>  
+>  &cpu_l0 {
+> @@ -139,3 +164,7 @@
+>  &gpu {
+>  	operating-points-v2 = <&gpu_opp_table>;
+>  };
+> +
+> +&dmc {
+> +	operating-points-v2 = <&dmc_opp_table>;
+> +};
+> diff --git a/include/dt-bindings/power/rk3399-dram.h b/include/dt-bindings/power/rk3399-dram.h
+> new file mode 100644
+> index 000000000000..4b3d4a79923b
+> --- /dev/null
+> +++ b/include/dt-bindings/power/rk3399-dram.h
+> @@ -0,0 +1,73 @@
+> +/* SPDX-License-Identifier: (GPL-2.0+ OR X11) */
+> +/*
+> + * Copyright (c) 2016-2018, Fuzhou Rockchip Electronics Co., Ltd
+> + *
+> + * Author: Lin Huang <hl@rock-chips.com>
+> + */
+> +
+> +#ifndef _DTS_DRAM_ROCKCHIP_RK3399_H
+> +#define _DTS_DRAM_ROCKCHIP_RK3399_H
+> +
+> +#define DDR3_DS_34ohm		34
+> +#define DDR3_DS_40ohm		40
+> +
+> +#define DDR3_ODT_DIS		0
+> +#define DDR3_ODT_40ohm		40
+> +#define DDR3_ODT_60ohm		60
+> +#define DDR3_ODT_120ohm		120
 
-...
+I don't think these defines add much value given the value is in the 
+define itself.
 
-> > +       static const int bit_weights_uAh[BITS_PER_TYPE(u32)] = {
-> > +               0, 0, 0, 0, 0, 0, 3, 5,
-> > +
-> 
-> nit: I personally don't like these empty lines here.
-> 
-I stumbled over those as well, but then I realized that they
-split up the 32 bit into bytes, so it does make some sense. 
+Do these get used by the driver? If not, then the header can go with the 
+dts file. But I'd just get rid of the header.
 
-Guenter
+Rob
