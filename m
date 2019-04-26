@@ -1,54 +1,87 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH v2] power: supply: bq27xxx_battery: Notify also about
- status changes
-Date: Fri, 26 Apr 2019 12:47:19 +0200
-Message-ID: <20190426104719.t6gyo3no7l4wjesz@pali>
-References: <1556272742-17232-1-git-send-email-krzk@kernel.org>
+From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Subject: Re: [Bug 203297] Synaptics touchpad TM-3127 functionality broken by
+ PCI runtime power management patch on 4.20.2
+Date: Fri, 26 Apr 2019 15:12:42 +0300
+Message-ID: <3a1139ef-10ed-6923-73c5-30fbf0c065c3@linux.intel.com>
+References: <20190422130814.GJ173520@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1556272742-17232-1-git-send-email-krzk@kernel.org>
+In-Reply-To: <20190422130814.GJ173520@google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Keijo Vaara <ferdasyn@rocketmail.com>, Jean Delvare <jdelvare@suse.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Benjamin Tissoires <benjamin.tissoires@redhat.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 26 April 2019 11:59:02 Krzysztof Kozlowski wrote:
-> User-space might be interested in receiving uevents when the charging
-> starts/stops or if conditions of battery changes (e.g.
-> over-temperature).  Notify about changes in battery also when the flags
-> change, not only SoC.
+On 4/22/19 4:08 PM, Bjorn Helgaas wrote:
+> https://bugzilla.kernel.org/show_bug.cgi?id=203297
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Regression, suspected but as yet unconfirmed cause:
+> 
+>    c5eb1190074c ("PCI / PM: Allow runtime PM without callback functions")
+> 
+> backported to 4.20 stable as 39e1be324c2f.
+> 
+With help of Keijo it was confirmed above patch broke the Synaptics 
+touchpad. Not bisected but touchpad works again by forcing the i2c-i801 
+SMBus controller always on:
+"echo on >/sys/bus/pci/devices/0000\:00\:1f.3/power/control"
 
-Ok, you can add my
-Reviewed-by: Pali Rohár <pali.rohar@gmail.com>
+Above patch is a generalized fix that fixed the runtime PM regression on 
+i2c-i801 and re-allow the controller go to runtime suspend when idle. So 
+most probably Synaptics touchpad was broken by i2c-i801 runtime PM also 
+before but got unnoticed. Which is easy since on many platforms SMBus 
+controller doesn't necessarily have the PCI PM capabilities.
 
-> ---
-> 
-> Changes since v1:
-> 1. Remove unneeded backslash (pointed by Pali).
-> ---
->  drivers/power/supply/bq27xxx_battery.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index 29b3a4056865..195c18c2f426 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -1612,7 +1612,8 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
->  			di->charge_design_full = bq27xxx_battery_read_dcap(di);
->  	}
->  
-> -	if (di->cache.capacity != cache.capacity)
-> +	if ((di->cache.capacity != cache.capacity) ||
-> +	    (di->cache.flags != cache.flags))
->  		power_supply_changed(di->bat);
->  
->  	if (memcmp(&di->cache, &cache, sizeof(cache)) != 0)
+I would like to ask help from input subsystem experts what kind of SMBus 
+power state dependency Synaptics RMI4 SMBus devices have since it cease 
+to work if SMBus controllers idles between transfers and how this is 
+best to fix?
+
+Instead of revert I think we'd need to have some method to force SMBus 
+controller on whenever the touchpad is active, like when there is a 
+userspace listening.
+
+I'm not expert in this area so as quick proof of concept I had a 
+following hack which forces the I2C/SMBus adapter, and eventually the 
+parent PCI device of it on when the RMI4 SMBus device is probed and let 
+the SMBus controller to idle when removed.
+
+According to Keijo it fixes the issue but I like to hear input experts 
+for better place to put these.
+
+diff --git a/drivers/input/rmi4/rmi_smbus.c b/drivers/input/rmi4/rmi_smbus.c
+index b6ccf39c6a7b..2b11d69be313 100644
+--- a/drivers/input/rmi4/rmi_smbus.c
++++ b/drivers/input/rmi4/rmi_smbus.c
+@@ -16,6 +16,7 @@
+  #include <linux/lockdep.h>
+  #include <linux/module.h>
+  #include <linux/pm.h>
++#include <linux/pm_runtime.h>
+  #include <linux/rmi.h>
+  #include <linux/slab.h>
+  #include "rmi_driver.h"
+@@ -332,6 +333,9 @@ static int rmi_smb_probe(struct i2c_client *client,
+
+  	dev_info(&client->dev, "registering SMbus-connected sensor\n");
+
++	/* Force SMBus adapter on while RMI4 device is connected */
++	pm_runtime_get(&client->adapter->dev);
++
+  	error = rmi_register_transport_device(&rmi_smb->xport);
+  	if (error) {
+  		dev_err(&client->dev, "failed to register sensor: %d\n", error);
+@@ -346,6 +350,7 @@ static int rmi_smb_remove(struct i2c_client *client)
+  	struct rmi_smb_xport *rmi_smb = i2c_get_clientdata(client);
+
+  	rmi_unregister_transport_device(&rmi_smb->xport);
++	pm_runtime_put(&client->adapter->dev);
+
+  	return 0;
+  }
 
 -- 
-Pali Rohár
-pali.rohar@gmail.com
+Jarkko
