@@ -2,87 +2,154 @@ Return-Path: <SRS0=x0P7=S4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E708C43219
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:59:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56F55C43219
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 10:32:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6337B2089E
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 09:59:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1556272751;
-	bh=USBSOIn9PPHmz35nori7rGi4K5WQipJCz6pyQldkYaA=;
-	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=HmxX5zAv/WCW0qTaOyLiJehF+StosN1s2d0XxKMTE0fV+99Ja+B+7zHA+YHZHqOUu
-	 ggFSBljp3LpnEqpuuuaZ5dmTu8k/v90LnCuuUojzk/jER6AXl3qPwH03HCVADsm9pb
-	 eMZ+FTnwAcChP9goeUnREoCYhG/kwJxwV19Y4CeQ=
+	by mail.kernel.org (Postfix) with ESMTP id 33CD02084F
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Apr 2019 10:32:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726295AbfDZJ7K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Apr 2019 05:59:10 -0400
-Received: from mail.kernel.org ([198.145.29.99]:48408 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726294AbfDZJ7K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 26 Apr 2019 05:59:10 -0400
-Received: from PC-kkoz.proceq.com (unknown [213.160.61.66])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id ECC8E20679;
-        Fri, 26 Apr 2019 09:59:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1556272750;
-        bh=USBSOIn9PPHmz35nori7rGi4K5WQipJCz6pyQldkYaA=;
-        h=From:To:Cc:Subject:Date:From;
-        b=PILyeA2dwbdsHU0P2pvSPvm6o0Z57VQt2fYRKyL52gnvw0Qvj+nIyIim3aO9fTkNL
-         Q2sxfrN+qo6CFkSrITtryQ+lCL2p2z2ORzKxOmAK+tQVncoppy3VzGrAcFB9S9dbYa
-         m1czvc+3viT8Di8BDuiz3GeR/UFbfzGdyyLID364=
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>,
-        "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v2] power: supply: bq27xxx_battery: Notify also about status changes
-Date:   Fri, 26 Apr 2019 11:59:02 +0200
-Message-Id: <1556272742-17232-1-git-send-email-krzk@kernel.org>
-X-Mailer: git-send-email 2.7.4
+        id S1726120AbfDZKcy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Apr 2019 06:32:54 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51779 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725901AbfDZKcy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 06:32:54 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id 4DE07805DC; Fri, 26 Apr 2019 12:32:41 +0200 (CEST)
+Date:   Fri, 26 Apr 2019 12:32:49 +0200
+From:   Pavel Machek <pavel@denx.de>
+To:     Bart Van Assche <bvanassche@acm.org>
+Cc:     Pavel Machek <pavel@denx.de>, Jens Axboe <axboe@kernel.dk>,
+        jejb@linux.ibm.com, martin.petersen@oracle.com, lduncan@suse.com,
+        hare@suse.com, mcgrof@kernel.org, jthumshirn@suse.de, hch@lst.de,
+        gregkh@linuxfoundation.org, dan.j.williams@intel.com,
+        kernel list <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net,
+        linux-pm@vger.kernel.org, sfr@canb.auug.org.au,
+        linux-next@vger.kernel.org, hdegoede@redhat.com,
+        linux-ide@vger.kernel.org
+Subject: Re: regression -next -- scsi: sd: Rely on the driver core for
+ asynchronous probing was Re: next-20190408..0418: Suspend/resume problems on
+ Thinkpad X60
+Message-ID: <20190426103249.GA5001@amd>
+References: <20190423102239.GA15531@amd>
+ <41d56ba6-d0cb-5d5e-f5f4-9bca045440dd@kernel.dk>
+ <20190424095431.GA32457@amd>
+ <20190424104850.GC32457@amd>
+ <20190424202119.GA26357@amd>
+ <20190424204832.GA3111@amd>
+ <20190424205150.GA4582@amd>
+ <1556139361.161891.140.camel@acm.org>
+ <20190425073343.GA19600@amd>
+ <360f6936-ee21-a036-9bd4-93ecfee829e2@acm.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+Content-Disposition: inline
+In-Reply-To: <360f6936-ee21-a036-9bd4-93ecfee829e2@acm.org>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190426095902.oVLV5VXUVhKDIimBBMg9mo0Ge950kyo8a4NAp2vwaVg@z>
+Message-ID: <20190426103249.o5eZ9uW1e1SiGXvO-UX883kFlr1ExnWemgQnQZwNvt0@z>
 
-User-space might be interested in receiving uevents when the charging
-starts/stops or if conditions of battery changes (e.g.
-over-temperature).  Notify about changes in battery also when the flags
-change, not only SoC.
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
----
+On Thu 2019-04-25 06:35:58, Bart Van Assche wrote:
+> On 4/25/19 12:33 AM, Pavel Machek wrote:
+> > On Wed 2019-04-24 13:56:01, Bart Van Assche wrote:
+> >> On Wed, 2019-04-24 at 22:51 +0200, Pavel Machek wrote:
+> >>> Unfortunately, that one does not revert cleanly on top of -next.
+> >>
+> >> Can you try the following:
+> >>
+> >> git revert d16ece577bf2cee7f94bab75a0d967bcb89dd2a7 &&
+> >>   git revert 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
+> >>
+> >> I will see whether I can come up with a better way to analyze what is
+> >> going on. I had not expected that these patches would cause any suspen=
+d/
+> >> resume problems.
+> >=20
+> > Not even d16ece reverts:
+> >=20
+> > pavel@duo:/data/l/linux-next-32$ git show  | head -3
+> > commit 76c938fcaa4b4a5d8f05fa907925d5043834964e
+> > Author: Stephen Rothwell <sfr@canb.auug.org.au>
+> > Date:   Tue Apr 23 20:24:59 2019 +1000
+> > pavel@duo:/data/l/linux-next-32$ git revert
+> > d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
+> > error: could not revert d16ece5... scsi: sd: Inline sd_probe_part2()
+> > hint: after resolving the conflicts, mark the corrected paths
+> > hint: with 'git add <paths>' or 'git rm <paths>'
+> > hint: and commit the result with 'git commit'
+>=20
+> There has been a non-trivial merge between the block and scsi trees in
+> linux-next. That's probably what prevents these patches to revert
+> cleanly. How about performing the following tests:
+> * Build, boot and test Martin's latest for-5.2 branch
+> (git://git.kernel.org/pub/scm/linux/kernel/git/mkp/scsi.git; branch
+> 5.2/scsi-queue).
 
-Changes since v1:
-1. Remove unneeded backslash (pointed by Pali).
----
- drivers/power/supply/bq27xxx_battery.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Ok, so that's commit a7634b6f7cbbdc6efcf772e080a6fe845d1f6161
+=2E Suspend/resume is broken there.
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 29b3a4056865..195c18c2f426 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1612,7 +1612,8 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
- 			di->charge_design_full = bq27xxx_battery_read_dcap(di);
- 	}
- 
--	if (di->cache.capacity != cache.capacity)
-+	if ((di->cache.capacity != cache.capacity) ||
-+	    (di->cache.flags != cache.flags))
- 		power_supply_changed(di->bat);
- 
- 	if (memcmp(&di->cache, &cache, sizeof(cache)) != 0)
--- 
-2.7.4
+> * If suspend/resume does not work reliably with that branch, revert the
+> two patches above, rebuild, reboot and retest.
 
+pavel@duo:/data/l/linux-next-32$ git show
+commit a7634b6f7cbbdc6efcf772e080a6fe845d1f6161
+Author: Colin Ian King <colin.king@canonical.com>
+pavel@duo:/data/l/linux-next-32$ git revert
+d16ece577bf2cee7f94bab75a0d967bcb89dd2a7
+Editing file: /data/fast/l/linux-next-32/.git/COMMIT_EDITMSG
+1026
+?
+[detached HEAD 916db0d] Revert "scsi: sd: Inline sd_probe_part2()"
+ 1 file changed, 58 insertions(+), 43 deletions(-)
+ pavel@duo:/data/l/linux-next-32$ git revert
+ 21e6ba3f0e0257cce1a226c1f15e0a8ba4338ca3
+ Editing file: /data/fast/l/linux-next-32/.git/COMMIT_EDITMSG
+ 1163
+ ?
+ [detached HEAD ac8d625] Revert "scsi: sd: Rely on the driver core for
+ asynchronous probing"
+  4 files changed, 47 insertions(+), 5 deletions(-)
+
+
+And reverting those two indeed fixes it:
+
+Checking version...
+version is  Linux amd 5.1.0-rc1autobisect1556274387+ #261 SMP Fri Apr
+26 12:27:12 CEST 2019 i686 GNU/Linux
+Running test...
+Result is [ TEST SUCCESS ]
+Test said TEST SUCCESS
+
+								Pavel
+
+--=20
+DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+
+--vtzGhvizbBRQ85DL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlzC3lEACgkQMOfwapXb+vJoTQCffu48EpOKwrjNHzlGLiZ8G0rw
+4xgAoIa4q0JCnAK+g4FAgxxuCYx82gQt
+=bMOt
+-----END PGP SIGNATURE-----
+
+--vtzGhvizbBRQ85DL--
