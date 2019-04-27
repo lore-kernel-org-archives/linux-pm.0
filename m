@@ -1,83 +1,79 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v1] thermal: Add some error messages
-Date: Sat, 27 Apr 2019 17:32:05 +0200
-Message-ID: <a7496561-cc51-a8bd-2266-d69efbce0981@linaro.org>
-References: <cover.1556305991.git.amit.kucheria@linaro.org>
- <640cd0cd93e199459af6d6d04bad228e909faf54.1556305991.git.amit.kucheria@linaro.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 25/79] docs: convert docs to ReST and rename to *.rst
+Date: Sun, 28 Apr 2019 02:25:51 +0900
+Message-ID: <20190427172551.GI14916@sirena.org.uk>
+References: <cover.1555938375.git.mchehab+samsung@kernel.org>
+ <7adf9035ae06ecc6c7e46b51cb677f0a8f61d19a.1555938376.git.mchehab+samsung@kernel.org>
+ <20190425180758.GC23183@sirena.org.uk>
+ <20190426064609.7f00e013@coco.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <640cd0cd93e199459af6d6d04bad228e909faf54.1556305991.git.amit.kucheria@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============0234842190=="
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20190426064609.7f00e013@coco.lan>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>, linux-wireless@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>, David Airlie <airlied@linux.ie>, Viresh Kumar <viresh.kumar@linaro.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Harry Wei <harryxiyou@gmail.com>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Alex Shi <alex.shi@linux.alibaba.com>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, linux-pci@vger.kernel.org, Len Brown <len.brown@intel.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, intel-gfx@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Borislav Petkov <bp@alien8.de>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Mathieu Poirier <mathieu.poirier@linaro.org>, Step
 List-Id: linux-pm@vger.kernel.org
 
 
-Hi Amit,
-
-On 26/04/2019 21:15, Amit Kucheria wrote:
-> When registering a thermal zone device, we currently return -EINVAL in
-> four cases. This is makes is a little hard to debug the real cause of
-> the failure.
-> 
-> Print some error messages to make it easier for developer to figure out
-> what happened.
-
-Adding "Error" in the pr_err message is redundant. However I'm not sure
-adding more traces is really important, that will add more RO data for a
-function which is supposed to be called from wise code.
-
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> ---
->  drivers/thermal/thermal_core.c | 17 +++++++++++++----
->  1 file changed, 13 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 6590bb5cb688..51cb6d2bf7a2 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1189,17 +1189,26 @@ thermal_zone_device_register(const char *type, int trips, int mask,
->  	int count;
->  	struct thermal_governor *governor;
->  
-> -	if (!type || strlen(type) == 0)
-> +	if (!type || strlen(type) == 0) {
-> +		pr_err("Error: No thermal zone type defined");
->  		return ERR_PTR(-EINVAL);
-> +	}
->  
-> -	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-> +	if (type && strlen(type) >= THERMAL_NAME_LENGTH) {
-> +		pr_err("Error: Thermal zone name (%s) too long, should be under %d chars",
-> +		       type, THERMAL_NAME_LENGTH);
->  		return ERR_PTR(-EINVAL);
-> +	}
-
-May be take the opportunity to remove the test 'type' is true because it
-is always true after the previous test?
-
-> -	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips)
-> +	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips) {
-> +		pr_err("Error: Incorrect number of thermal trips");
->  		return ERR_PTR(-EINVAL);
-> +	}
->  
-> -	if (!ops)
-> +	if (!ops) {
-> +		pr_err("Error: Thermal zone device ops not defined");
->  		return ERR_PTR(-EINVAL);
-> +	}
->  
->  	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp)>  		return ERR_PTR(-EINVAL);
-> 
+--===============0234842190==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="WR+jf/RUebEcofwt"
+Content-Disposition: inline
 
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+--WR+jf/RUebEcofwt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+On Fri, Apr 26, 2019 at 06:46:09AM -0300, Mauro Carvalho Chehab wrote:
+> Mark Brown <broonie@kernel.org> escreveu:
+
+> > This is massively CCed covering a large range of subsystems and is patch
+> > 25 of a 79 patch series so I've no context for what's going on here or
+> > why... =20
+
+> You can see more details at patch 00/79:
+> 	https://lore.kernel.org/lkml/20190422115110.26443b44@coco.lan/
+
+OK, it would've helped to CC people on that.  Anyway
+
+Acked-by: Mark Brown <broonie@kernel.org>
+
+--WR+jf/RUebEcofwt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlzEkJ4ACgkQJNaLcl1U
+h9CLPQf/egnMPfy5Djt33xwT726spS5SVTG7kuJqe4sKQ3OXBoMa44iGLw9gz/+M
+FmO/XFmO150AIxC3d1OJKSoimebzY1IPIiJFOOQC7SJDtKoOMVm4MTP5w+B8jdvC
+o51B7dkua7q/hKAbj78Q023V/jvpOU+353/om9x82lB7jvoxnN+pGEcEDqQEBtk6
+dSbAla2qU+BoMPdyoOGiCu9mjLpTSGWbU+lz4IKiIQHK5zWx9xFrBCgB1zyjoDEm
+H69kzCVDwYkkiaGriSEV5ksQThpov8Ka2zvrJPZ8HOTaX4GSW3W2Ailr6FJ8cLbo
+mPFwHR0sNRuPgcZtXvdaivvevBYKMw==
+=wBS3
+-----END PGP SIGNATURE-----
+
+--WR+jf/RUebEcofwt--
+
+--===============0234842190==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVs
+IG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVs
+
+--===============0234842190==--
