@@ -2,110 +2,94 @@ Return-Path: <SRS0=byRM=S5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9507C43219
-	for <linux-pm@archiver.kernel.org>; Sat, 27 Apr 2019 00:40:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A78DCC43218
+	for <linux-pm@archiver.kernel.org>; Sat, 27 Apr 2019 10:54:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7892B2084F
-	for <linux-pm@archiver.kernel.org>; Sat, 27 Apr 2019 00:40:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PMCQTNAt"
+	by mail.kernel.org (Postfix) with ESMTP id 6F5B5208CA
+	for <linux-pm@archiver.kernel.org>; Sat, 27 Apr 2019 10:54:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727150AbfD0Ak0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Apr 2019 20:40:26 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:33800 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726266AbfD0Ak0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2019 20:40:26 -0400
-Received: by mail-pf1-f196.google.com with SMTP id b3so2486160pfd.1;
-        Fri, 26 Apr 2019 17:40:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=71g7874Dm8GzDB1gp/UmnroMo/FuKzXQ28vDBNXnuLY=;
-        b=PMCQTNAti2IUDiu5w5RuV5bzMeagemKbYMycGKukmKSty2oWlxYn9Hxe8q3QjHukn+
-         Pt6XDBaP8iA+FIOZk2zfMnhMBvvp07uU7pfO/EJcyd6ysvrlyGsPSqICUaDQ6m8paByp
-         /1vutIP6bzqi5/MQftNoq1uNwC+hPZhNQZVuVaJe/0iQIJ3BbJP1llDP1epLk2PnR7y8
-         CgS2tnvELBSf/ZTKILC+Ar+ww0rixHMgzMrbQt9VSY7Gte87d4N5dg9xAD7Zv2G4MCkw
-         5OPSrO8PBPIpo/TqDWTNvJkBWz5B749Ha9mvv87GuBwW5wIXThaUEs3fuQKaQ+jKWqxw
-         SUfA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=71g7874Dm8GzDB1gp/UmnroMo/FuKzXQ28vDBNXnuLY=;
-        b=cvgNY/znl7qcmMW5Z6u/6Pwg9ffah6dHAuNLCS6w26akIapEbtfBAi+gRa2kMg7rFF
-         g9Sek7CqeoaL5MZRyODEcbmWYLCenpI5XrnpVmZoUn7bg3IfloKJwdchKg6iRPJ6koTw
-         8DftkYc7HWFqJbq3MpYKHYvCzT/FLiXDc0x/L6oN6JsUtcmeVDL+jrqzL9mBfxcDoFIh
-         aC7rwh+apXwAfbHmzi78cs4NW0KsaybuiTmxJZMYCL7oXTjoS1vZTb0t3RSAsosAvuuP
-         +1/rImngdUHUxPMqCMO7wCGBsz5mnqlSUqyU4xJyhtDlejq/06ZBWf4qRrvaQ3Fmpv4I
-         iIuA==
-X-Gm-Message-State: APjAAAX2QyArlAKaSPvLxyWZ8Tj/ZpkKqUF3+mCaWz5I/nb5z9u1ycBq
-        tWeJliAz2CGTaTmXcN79Vr4=
-X-Google-Smtp-Source: APXvYqxHvSvk521QXFirB2vyDQcDxGFNHB+cB0K/N9kLQPlFl5qeuUiIoy/zSQVLOLxfbIoHXsos7A==
-X-Received: by 2002:a63:ee15:: with SMTP id e21mr17697767pgi.180.1556325625196;
-        Fri, 26 Apr 2019 17:40:25 -0700 (PDT)
-Received: from icarus ([2001:268:c1c1:24b4:c70:4af9:86e2:2])
-        by smtp.gmail.com with ESMTPSA id s20sm31884210pgs.39.2019.04.26.17.40.18
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Fri, 26 Apr 2019 17:40:24 -0700 (PDT)
-Date:   Sat, 27 Apr 2019 09:41:34 +0900
-From:   William Breathitt Gray <vilhelm.gray@gmail.com>
-To:     linus.walleij@linaro.org, bgolaszewski@baylibre.com,
-        akpm@linux-foundation.org
-Cc:     linux-gpio@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-kernel@vger.kernel.org, andriy.shevchenko@linux.intel.com,
-        linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        geert@linux-m68k.org, preid@electromag.com.au, lukas@wunner.de,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v14 01/11] bitops: Introduce the for_each_set_clump8 macro
-Message-ID: <20190427004134.GB26000@icarus>
-References: <cover.1553828158.git.vilhelm.gray@gmail.com>
- <1cc8b30bb3954ca2a0961ffb0a2eed8a005ed670.1553828158.git.vilhelm.gray@gmail.com>
+        id S1725912AbfD0KyD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 27 Apr 2019 06:54:03 -0400
+Received: from mx3.molgen.mpg.de ([141.14.17.11]:39281 "EHLO mx1.molgen.mpg.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725871AbfD0KyC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 27 Apr 2019 06:54:02 -0400
+Received: from [192.168.0.2] (ip5f5bf0d8.dynamic.kabel-deutschland.de [95.91.240.216])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: pmenzel)
+        by mx.molgen.mpg.de (Postfix) with ESMTPSA id 32804604E3661;
+        Sat, 27 Apr 2019 12:54:00 +0200 (CEST)
+From:   Paul Menzel <pmenzel@molgen.mpg.de>
+To:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: Why is suspend with s2idle available on POWER8 systems?
+Message-ID: <5fdabbb9-0a62-4802-f1ca-f83584f935fa@molgen.mpg.de>
+Date:   Sat, 27 Apr 2019 12:53:59 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <1cc8b30bb3954ca2a0961ffb0a2eed8a005ed670.1553828158.git.vilhelm.gray@gmail.com>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+Content-Type: text/plain; charset="UTF-8"; format="flowed"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190427004134.w4po5rQ6g_xhyiKh8QVBAPG-RYsWEJn_fZ98vzk8xhA@z>
+Message-ID: <20190427105359.byBH2UDRJQLa0IZNFV_jj3lNaydsKs_gdT9CZDkAAio@z>
 
-On Fri, Mar 29, 2019 at 12:04:08PM +0900, William Breathitt Gray wrote:
-> This macro iterates for each 8-bit group of bits (clump) with set bits,
-> within a bitmap memory region. For each iteration, "start" is set to the
-> bit offset of the found clump, while the respective clump value is
-> stored to the location pointed by "clump". Additionally, the
-> bitmap_get_value8 and bitmap_set_value8 functions are introduced to
-> respectively get and set an 8-bit value in a bitmap memory region.
-> 
-> Suggested-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> Suggested-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> Suggested-by: Lukas Wunner <lukas@wunner.de>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Acked-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
-> ---
->  include/asm-generic/bitops/find.h | 61 +++++++++++++++++++++++++++++++
->  include/linux/bitops.h            |  5 +++
->  2 files changed, 66 insertions(+)
+Dear Linux folks,
 
-Andrew, Linus,
 
-I reverted your Acked-by/Reviewed-by lines to Cc in this release because
-the code has significantly changed from the simplification effort. If
-you are satisfied with these changes, please ack to confirm.
+Updating an IBM S822LC from Ubuntu 18.10 to 19.04 some user space stuff 
+seems to have changed, so that going into sleep/suspend is enabled.
 
-William Breathitt Gray
+That raises two questions.
+
+1.  Is suspend actually supported on a POWER8 processor?
+
+> Apr 27 10:18:13 power NetworkManager[7534]: <info>  [1556353093.7224] manager: sleep: sleep requested (sleeping: no  e
+> Apr 27 10:18:13 power systemd[1]: Reached target Sleep.
+> Apr 27 10:18:13 power systemd[1]: Starting Suspend...
+> Apr 27 10:18:13 power systemd-sleep[82190]: Suspending system...
+> Apr 27 10:18:13 power kernel: PM: suspend entry (s2idle)
+> -- Reboot --
+
+> $ uname -m
+> ppc64le
+> $ more /proc/version
+> Linux version 5.1.0-rc6+ (joey@power) (gcc version 8.3.0 (Ubuntu 8.3.0-6ubuntu1)) #1 SMP Sat Apr 27 10:01:48 CEST 2019
+> $ more /sys/power/mem_sleep
+> [s2idle]
+> $ more /sys/power/state
+> freeze mem
+> $ grep _SUSPEND /boot/config-5.0.0-14-generic # also enabled in Ubuntu’s configuration
+> CONFIG_ARCH_SUSPEND_POSSIBLE=y
+> CONFIG_SUSPEND=y
+> CONFIG_SUSPEND_FREEZER=y
+> # CONFIG_SUSPEND_SKIP_SYNC is not set
+> # CONFIG_PM_TEST_SUSPEND is not set
+
+Should the Kconfig symbol `SUSPEND` be selectable? If yes, should their 
+be some detection during runtime?
+
+2.  If it is supported, what are the ways to getting it to resume? What 
+would the IPMI command be?
+
+For now I disabled the automatic suspend, masking the targets [1].
+
+
+Kind regards,
+
+Paul
+
+
+[1]: https://wiki.debian.org/Suspend#Disable_suspend_and_hibernation
