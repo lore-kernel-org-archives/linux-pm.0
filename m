@@ -2,94 +2,146 @@ Return-Path: <SRS0=byRM=S5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A78DCC43218
-	for <linux-pm@archiver.kernel.org>; Sat, 27 Apr 2019 10:54:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53A3EC43219
+	for <linux-pm@archiver.kernel.org>; Sat, 27 Apr 2019 15:32:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6F5B5208CA
-	for <linux-pm@archiver.kernel.org>; Sat, 27 Apr 2019 10:54:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1F4F2206A3
+	for <linux-pm@archiver.kernel.org>; Sat, 27 Apr 2019 15:32:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eJ240hgn"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725912AbfD0KyD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 27 Apr 2019 06:54:03 -0400
-Received: from mx3.molgen.mpg.de ([141.14.17.11]:39281 "EHLO mx1.molgen.mpg.de"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725871AbfD0KyC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 27 Apr 2019 06:54:02 -0400
-Received: from [192.168.0.2] (ip5f5bf0d8.dynamic.kabel-deutschland.de [95.91.240.216])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: pmenzel)
-        by mx.molgen.mpg.de (Postfix) with ESMTPSA id 32804604E3661;
-        Sat, 27 Apr 2019 12:54:00 +0200 (CEST)
-From:   Paul Menzel <pmenzel@molgen.mpg.de>
-To:     Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Why is suspend with s2idle available on POWER8 systems?
-Message-ID: <5fdabbb9-0a62-4802-f1ca-f83584f935fa@molgen.mpg.de>
-Date:   Sat, 27 Apr 2019 12:53:59 +0200
+        id S1726762AbfD0PcK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 27 Apr 2019 11:32:10 -0400
+Received: from mail-wr1-f67.google.com ([209.85.221.67]:43647 "EHLO
+        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726791AbfD0PcJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 27 Apr 2019 11:32:09 -0400
+Received: by mail-wr1-f67.google.com with SMTP id a12so8742754wrq.10
+        for <linux-pm@vger.kernel.org>; Sat, 27 Apr 2019 08:32:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=tw+ip3/cl2Dgl2j36NuswCngMdqYSO6skOoyJNpN018=;
+        b=eJ240hgn6AAyx+FNBnLB+GSIdM5TCn0pph1n9ROc/Fchbuo4lZC3R9vu4ePIKYNa0q
+         daa3GlojyH0fvDepn1vIsRnY0I6E5kCEd6r8IXD0f/o1t9mEx6dO5OVVgFNPBpB3sYWf
+         Y5wfUfcOPxZytdJyRgve8qEJysYojPt1Q0UTh7TfxjeP3s5/n2F326tH/KiHp5OtS5cj
+         GPcDcQXs10F+duvQ07LBO1GXdC3yjIcjwCpFXxPDb76jgALop6T0W0EZnJ3bd/bf8Lhd
+         oHjwvLHGsTqBPh7alH7thnwJx3M0/LFjCPShmsmIy65b9j5TITsRHPjJs0qPMuoTdLfU
+         bl3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=tw+ip3/cl2Dgl2j36NuswCngMdqYSO6skOoyJNpN018=;
+        b=nE7X7zQua9Vkjs5s58iQpKVezgBDHMxllA86JNBZjBstsbL8AjD7sbpCA0BFHDq7xx
+         Gj/EAyyn7XjCuYC3BeNZQD5Vv9L9I6CN7Wr3pucXvJUgLUoow+U08VuOJNr8sE0S+SlQ
+         Q06ycpjFz5dePfOs/wak9JFWs+RwM+MgYlCN5dQ/M1CqG9CKeKDcH4tBXdYC2aYBZk0y
+         6K88fYLnXscGtiugPWsHhZg9pPcs+vyElMPWDWLJRX/7x4HaItRveqAAJDE0UGcIjhTw
+         oluYQtajI8AGfoRa0GqEo/7MsRRoIATF3PLcZmwiBKi6YKy4djvtscZZ1nNsLEaqQBGv
+         NxLg==
+X-Gm-Message-State: APjAAAWDcpU6bqmTUHeEJADcecIYUj+3DnGYaqidoT1m0XE4XE2+oB7z
+        2h+XGmT881jncgbgDsm046lfRk8h4zk=
+X-Google-Smtp-Source: APXvYqw7pAZlMKmSaYWppv28yuzJ5mtWx10PZM3237MkHFcF2ALg5wdss96xiZletxIzMLzs7xK64Q==
+X-Received: by 2002:adf:8567:: with SMTP id 94mr4894599wrh.286.1556379126825;
+        Sat, 27 Apr 2019 08:32:06 -0700 (PDT)
+Received: from [192.168.0.41] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
+        by smtp.googlemail.com with ESMTPSA id c6sm23427549wmb.21.2019.04.27.08.32.05
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Sat, 27 Apr 2019 08:32:06 -0700 (PDT)
+Subject: Re: [PATCH v1] thermal: Add some error messages
+To:     Amit Kucheria <amit.kucheria@linaro.org>,
+        linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>
+Cc:     linux-pm@vger.kernel.org
+References: <cover.1556305991.git.amit.kucheria@linaro.org>
+ <640cd0cd93e199459af6d6d04bad228e909faf54.1556305991.git.amit.kucheria@linaro.org>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <a7496561-cc51-a8bd-2266-d69efbce0981@linaro.org>
+Date:   Sat, 27 Apr 2019 17:32:05 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format="flowed"
+In-Reply-To: <640cd0cd93e199459af6d6d04bad228e909faf54.1556305991.git.amit.kucheria@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190427105359.byBH2UDRJQLa0IZNFV_jj3lNaydsKs_gdT9CZDkAAio@z>
-
-Dear Linux folks,
+Message-ID: <20190427153205.S1eg1ab1395AnTYBdjwAtoUx8HXx0VwbZp-kTMQSXNM@z>
 
 
-Updating an IBM S822LC from Ubuntu 18.10 to 19.04 some user space stuff 
-seems to have changed, so that going into sleep/suspend is enabled.
+Hi Amit,
 
-That raises two questions.
+On 26/04/2019 21:15, Amit Kucheria wrote:
+> When registering a thermal zone device, we currently return -EINVAL in
+> four cases. This is makes is a little hard to debug the real cause of
+> the failure.
+> 
+> Print some error messages to make it easier for developer to figure out
+> what happened.
 
-1.  Is suspend actually supported on a POWER8 processor?
+Adding "Error" in the pr_err message is redundant. However I'm not sure
+adding more traces is really important, that will add more RO data for a
+function which is supposed to be called from wise code.
 
-> Apr 27 10:18:13 power NetworkManager[7534]: <info>  [1556353093.7224] manager: sleep: sleep requested (sleeping: no  e
-> Apr 27 10:18:13 power systemd[1]: Reached target Sleep.
-> Apr 27 10:18:13 power systemd[1]: Starting Suspend...
-> Apr 27 10:18:13 power systemd-sleep[82190]: Suspending system...
-> Apr 27 10:18:13 power kernel: PM: suspend entry (s2idle)
-> -- Reboot --
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  drivers/thermal/thermal_core.c | 17 +++++++++++++----
+>  1 file changed, 13 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 6590bb5cb688..51cb6d2bf7a2 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -1189,17 +1189,26 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+>  	int count;
+>  	struct thermal_governor *governor;
+>  
+> -	if (!type || strlen(type) == 0)
+> +	if (!type || strlen(type) == 0) {
+> +		pr_err("Error: No thermal zone type defined");
+>  		return ERR_PTR(-EINVAL);
+> +	}
+>  
+> -	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+> +	if (type && strlen(type) >= THERMAL_NAME_LENGTH) {
+> +		pr_err("Error: Thermal zone name (%s) too long, should be under %d chars",
+> +		       type, THERMAL_NAME_LENGTH);
+>  		return ERR_PTR(-EINVAL);
+> +	}
 
-> $ uname -m
-> ppc64le
-> $ more /proc/version
-> Linux version 5.1.0-rc6+ (joey@power) (gcc version 8.3.0 (Ubuntu 8.3.0-6ubuntu1)) #1 SMP Sat Apr 27 10:01:48 CEST 2019
-> $ more /sys/power/mem_sleep
-> [s2idle]
-> $ more /sys/power/state
-> freeze mem
-> $ grep _SUSPEND /boot/config-5.0.0-14-generic # also enabled in Ubuntu’s configuration
-> CONFIG_ARCH_SUSPEND_POSSIBLE=y
-> CONFIG_SUSPEND=y
-> CONFIG_SUSPEND_FREEZER=y
-> # CONFIG_SUSPEND_SKIP_SYNC is not set
-> # CONFIG_PM_TEST_SUSPEND is not set
+May be take the opportunity to remove the test 'type' is true because it
+is always true after the previous test?
 
-Should the Kconfig symbol `SUSPEND` be selectable? If yes, should their 
-be some detection during runtime?
-
-2.  If it is supported, what are the ways to getting it to resume? What 
-would the IPMI command be?
-
-For now I disabled the automatic suspend, masking the targets [1].
+> -	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips)
+> +	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips) {
+> +		pr_err("Error: Incorrect number of thermal trips");
+>  		return ERR_PTR(-EINVAL);
+> +	}
+>  
+> -	if (!ops)
+> +	if (!ops) {
+> +		pr_err("Error: Thermal zone device ops not defined");
+>  		return ERR_PTR(-EINVAL);
+> +	}
+>  
+>  	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp)>  		return ERR_PTR(-EINVAL);
+> 
 
 
-Kind regards,
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Paul
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-
-[1]: https://wiki.debian.org/Suspend#Disable_suspend_and_hibernation
