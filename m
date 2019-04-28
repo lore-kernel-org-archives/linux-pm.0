@@ -2,117 +2,106 @@ Return-Path: <SRS0=Zmry=S6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 694A2C43218
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 09:53:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8D4AC43219
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 11:24:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 39D8D206C1
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 09:53:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE62C2075D
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 11:24:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Zl8SyZ3F"
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="hiQoakOR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726404AbfD1JxL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 28 Apr 2019 05:53:11 -0400
-Received: from mail-io1-f65.google.com ([209.85.166.65]:33593 "EHLO
-        mail-io1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726252AbfD1JxL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Apr 2019 05:53:11 -0400
-Received: by mail-io1-f65.google.com with SMTP id u12so6557895iop.0;
-        Sun, 28 Apr 2019 02:53:10 -0700 (PDT)
+        id S1726546AbfD1LYs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 28 Apr 2019 07:24:48 -0400
+Received: from smtp-fw-6002.amazon.com ([52.95.49.90]:14787 "EHLO
+        smtp-fw-6002.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726404AbfD1LYs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Apr 2019 07:24:48 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=mrjoLB3/jtI5jqEi/ydYyCCjyNdzpn6OvBS3steifLY=;
-        b=Zl8SyZ3FZJQcjJnYc4f8rStzNJwBUNjZgSSMmAZRQ5lhl0+5dw610ANYnvX+MqTATw
-         Umky+zr7OfDRa+7dmuUNsXg9ZQ14c4b0FUfMPULL/J3htxxESfOneYtQdzzkBIFznkUE
-         Kh3sBe8+Abo543yYtKEDVKi5rJoLjktDkR0mvAFFUBUiyLaXol8OW2i4CbKoOONRi7V4
-         Yya0ZXv0OKPYWBtSpu41tEgYnCxR9ypKV7+m4IicNa6VXcQwuWB0bnPOuBx0ChtFg5iu
-         fmYbbu8MvzEPi4MRSKnS0Nvzx79dH4byrjzKvd1VctJYpIziDko8ttaiudwSnZbIZ1yW
-         gvcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=mrjoLB3/jtI5jqEi/ydYyCCjyNdzpn6OvBS3steifLY=;
-        b=kOR1P4PuxaWGXDpyMrg0tG5aCK11HZBwP7AH8qJA2VbT2arecUhkB8ohdCsdCa+qrm
-         aAMT7V+fuC2jIDjg0bIGUiBn8jZjWXRSlUp7k0W7nPuw5Z+Pz6wHhxHY9UB1AHpDMPzw
-         ArdX9Ona9UyUMbIPkJNfqnX9D6xc41gjt4+xy90wVsfxO14bPK5DIdcU4lQsmQHQVG3a
-         e/CKXOYjZaEgr/OiGPsWOYBLarvef8n2+sU6EEg2n1YtKobsI6Aa2u9Idq5kPcNCRGpy
-         eI7GvgNaA2k4oU9YIs5J7HHn1Vqc7mp11Yw1xkWK19AmWvzaO+82Q1ktjqjZy9UDdl7V
-         9iaQ==
-X-Gm-Message-State: APjAAAWKnFtMsfHs5NMjkhzom1TooYtHuai+DtlDlVpehflb7lM/fyuT
-        UCGzhoXDmYVZpker4aQSCZ6CO2/xBgtwwPEiY/8=
-X-Google-Smtp-Source: APXvYqyb4275QBINybmElDXHkdyvUfwyJnFJPm/jb+IRVjHSMuHo1H8b8RFIg2M23blRxG9GuqZz/LU9PEuEMR2XlFA=
-X-Received: by 2002:a6b:c8d1:: with SMTP id y200mr3349440iof.225.1556445190264;
- Sun, 28 Apr 2019 02:53:10 -0700 (PDT)
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1556450688; x=1587986688;
+  h=subject:to:cc:references:from:message-id:date:
+   mime-version:in-reply-to:content-transfer-encoding;
+  bh=xG4Hg+vJh8AiCWU96vXZUw5+0Ad8aUOexX6kLP9nW7Y=;
+  b=hiQoakORL4K9EPfouSw/qydXi5coB512E/29E1hczJY3C+7cWwwQx9Kk
+   diZeXHjXjjkmrjCodL20c0U61e6cnPELbgxdpXR1nj554KTY1hs2OgW7J
+   5uO7E/6BEKKLDn3hTGy1Z9NC50FXPh7ClA832XJeAlFchXGDmWnZUKoNK
+   0=;
+X-IronPort-AV: E=Sophos;i="5.60,405,1549929600"; 
+   d="scan'208";a="399985727"
+Received: from iad6-co-svc-p1-lb1-vlan3.amazon.com (HELO email-inbound-relay-2b-8cc5d68b.us-west-2.amazon.com) ([10.124.125.6])
+  by smtp-border-fw-out-6002.iad6.amazon.com with ESMTP/TLS/DHE-RSA-AES256-SHA; 28 Apr 2019 11:24:46 +0000
+Received: from EX13MTAUEA001.ant.amazon.com (pdx1-ws-svc-p6-lb9-vlan2.pdx.amazon.com [10.236.137.194])
+        by email-inbound-relay-2b-8cc5d68b.us-west-2.amazon.com (8.14.7/8.14.7) with ESMTP id x3SBOhkn045175
+        (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=FAIL);
+        Sun, 28 Apr 2019 11:24:44 GMT
+Received: from EX13D01EUB001.ant.amazon.com (10.43.166.194) by
+ EX13MTAUEA001.ant.amazon.com (10.43.61.243) with Microsoft SMTP Server (TLS)
+ id 15.0.1367.3; Sun, 28 Apr 2019 11:24:44 +0000
+Received: from [10.54.3.159] (10.43.160.63) by EX13D01EUB001.ant.amazon.com
+ (10.43.166.194) with Microsoft SMTP Server (TLS) id 15.0.1367.3; Sun, 28 Apr
+ 2019 11:24:40 +0000
+Subject: Re: [PATCH] thermal: fix platform_no_drv_owner.cocci warnings
+To:     kbuild test robot <lkp@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>
+CC:     <kbuild-all@01.org>, <linux-pm@vger.kernel.org>,
+        David Woodhouse <dwmw@amazon.co.uk>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+References: <201904240343.b2RBtBuM%lkp@intel.com>
+ <20190423193207.GA21807@ivb42>
+From:   "Shenhar, Talel" <talel@amazon.com>
+Message-ID: <ea8fec02-116b-a9ce-bcb0-e035bb0340ee@amazon.com>
+Date:   Sun, 28 Apr 2019 14:24:34 +0300
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <20190410174139.20012-1-tiny.windzz@gmail.com> <20190410174139.20012-3-tiny.windzz@gmail.com>
- <20190426211540.GA890@bogus>
-In-Reply-To: <20190426211540.GA890@bogus>
-From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Sun, 28 Apr 2019 17:53:05 +0800
-Message-ID:
- <CAEExFWs2UwPLzgyO0apMOZf56um5isdZmf+7-wj_TqMozxZJQg@mail.gmail.com>
-Subject: Re: [PATCH v3 2/2] dt-bindings: cpufreq: Document allwinner,cpu-operating-points-v2
-To:     Rob Herring <robh@kernel.org>
-Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
-        mark.rutland@arm.com, Maxime Ripard <maxime.ripard@bootlin.com>,
-        Chen-Yu Tsai <wens@csie.org>, rjw@rjwysocki.net,
-        davem@davemloft.net, mchehab+samsung@kernel.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        nicolas.ferre@microchip.com, Linux PM <linux-pm@vger.kernel.org>,
-        devicetree@vger.kernel.org,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190423193207.GA21807@ivb42>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Originating-IP: [10.43.160.63]
+X-ClientProxiedBy: EX13D17UWC001.ant.amazon.com (10.43.162.188) To
+ EX13D01EUB001.ant.amazon.com (10.43.166.194)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190428095305.24LO6SD5HEmmEHBeO3MT8IYarFZwRZ-o3kh13tK1LbU@z>
 
-On Sat, Apr 27, 2019 at 5:15 AM Rob Herring <robh@kernel.org> wrote:
+Acked-by: Talel Shenhar <talel@amazon.com>
+
+
+On 4/23/2019 10:32 PM, kbuild test robot wrote:
+> From: kbuild test robot <lkp@intel.com>
 >
-> On Wed, Apr 10, 2019 at 01:41:39PM -0400, Yangtao Li wrote:
-> > Allwinner Process Voltage Scaling Tables defines the voltage and
-> > frequency value based on the speedbin blown in the efuse combination.
-> > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> > provide the OPP framework with required information.
-> > This is used to determine the voltage and frequency value for each
-> > OPP of operating-points-v2 table when it is parsed by the OPP framework.
-> >
-> > The "allwinner,cpu-operating-points-v2" DT extends the "operating-points-v2"
-> > with following parameters:
-> > - nvmem-cells (NVMEM area containig the speedbin information)
-> > - opp-microvolt-<name>: voltage in micro Volts.
-> >   At runtime, the platform can pick a <name> and matching
-> >   opp-microvolt-<name> property.
-> >                       HW:             <name>:
-> >                       sun50iw-h6      speed0 speed1 speed2
+> drivers/thermal/thermal_mmio.c:120:3-8: No need to set .owner here. The core will do it.
 >
-> We already have at least one way to support speed bins with QC kryo
-> binding. Why do we need a different way?
-
-For some SOCs, for some reason (making the CPU have approximate performance),
-they use the same frequency but different voltage. In the case where
-this speed bin
-is not a lot and opp uses the same frequency, too many repeated opp
-nodes are a bit
-redundant and not intuitive enough.
-
-So, I think it's worth the new method.
-
-Yangtao
-
+>   Remove .owner field if calls are used which set it automatically
 >
-> >
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > ---
-> >  .../bindings/opp/sunxi-nvmem-cpufreq.txt      | 168 ++++++++++++++++++
-> >  1 file changed, 168 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/opp/sunxi-nvmem-cpufreq.txt
+> Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
+>
+> Fixes: 35838aa51cd6 ("thermal: Introduce Amazon's Annapurna Labs Thermal Driver")
+> CC: Talel Shenhar <talel@amazon.com>
+> Signed-off-by: kbuild test robot <lkp@intel.com>
+> ---
+>
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git for-kernelci
+> head:   0e50a5ee6b8a23c6798aae23efcd4b8e055c06ef
+> commit: 35838aa51cd6dbf5ae2c78ecd1d1df0cc0324256 [34/35] thermal: Introduce Amazon's Annapurna Labs Thermal Driver
+>
+>   thermal_mmio.c |    1 -
+>   1 file changed, 1 deletion(-)
+>
+> --- a/drivers/thermal/thermal_mmio.c
+> +++ b/drivers/thermal/thermal_mmio.c
+> @@ -117,7 +117,6 @@ static struct platform_driver thermal_mm
+>   	.probe = thermal_mmio_probe,
+>   	.driver = {
+>   		.name = "thermal-mmio",
+> -		.owner = THIS_MODULE,
+>   		.of_match_table = of_match_ptr(thermal_mmio_id_table),
+>   	},
+>   };
