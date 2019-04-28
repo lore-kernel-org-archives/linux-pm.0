@@ -2,106 +2,242 @@ Return-Path: <SRS0=Zmry=S6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8D4AC43219
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 11:24:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C631AC43218
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 12:45:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AE62C2075D
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 11:24:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 82807206A3
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 12:45:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="hiQoakOR"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cd5k/15u"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726546AbfD1LYs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 28 Apr 2019 07:24:48 -0400
-Received: from smtp-fw-6002.amazon.com ([52.95.49.90]:14787 "EHLO
-        smtp-fw-6002.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726404AbfD1LYs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Apr 2019 07:24:48 -0400
+        id S1726606AbfD1Mpc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 28 Apr 2019 08:45:32 -0400
+Received: from mail-wr1-f67.google.com ([209.85.221.67]:46518 "EHLO
+        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726480AbfD1Mpc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Apr 2019 08:45:32 -0400
+Received: by mail-wr1-f67.google.com with SMTP id t17so11516712wrw.13
+        for <linux-pm@vger.kernel.org>; Sun, 28 Apr 2019 05:45:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1556450688; x=1587986688;
-  h=subject:to:cc:references:from:message-id:date:
-   mime-version:in-reply-to:content-transfer-encoding;
-  bh=xG4Hg+vJh8AiCWU96vXZUw5+0Ad8aUOexX6kLP9nW7Y=;
-  b=hiQoakORL4K9EPfouSw/qydXi5coB512E/29E1hczJY3C+7cWwwQx9Kk
-   diZeXHjXjjkmrjCodL20c0U61e6cnPELbgxdpXR1nj554KTY1hs2OgW7J
-   5uO7E/6BEKKLDn3hTGy1Z9NC50FXPh7ClA832XJeAlFchXGDmWnZUKoNK
-   0=;
-X-IronPort-AV: E=Sophos;i="5.60,405,1549929600"; 
-   d="scan'208";a="399985727"
-Received: from iad6-co-svc-p1-lb1-vlan3.amazon.com (HELO email-inbound-relay-2b-8cc5d68b.us-west-2.amazon.com) ([10.124.125.6])
-  by smtp-border-fw-out-6002.iad6.amazon.com with ESMTP/TLS/DHE-RSA-AES256-SHA; 28 Apr 2019 11:24:46 +0000
-Received: from EX13MTAUEA001.ant.amazon.com (pdx1-ws-svc-p6-lb9-vlan2.pdx.amazon.com [10.236.137.194])
-        by email-inbound-relay-2b-8cc5d68b.us-west-2.amazon.com (8.14.7/8.14.7) with ESMTP id x3SBOhkn045175
-        (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=FAIL);
-        Sun, 28 Apr 2019 11:24:44 GMT
-Received: from EX13D01EUB001.ant.amazon.com (10.43.166.194) by
- EX13MTAUEA001.ant.amazon.com (10.43.61.243) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Sun, 28 Apr 2019 11:24:44 +0000
-Received: from [10.54.3.159] (10.43.160.63) by EX13D01EUB001.ant.amazon.com
- (10.43.166.194) with Microsoft SMTP Server (TLS) id 15.0.1367.3; Sun, 28 Apr
- 2019 11:24:40 +0000
-Subject: Re: [PATCH] thermal: fix platform_no_drv_owner.cocci warnings
-To:     kbuild test robot <lkp@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>
-CC:     <kbuild-all@01.org>, <linux-pm@vger.kernel.org>,
-        David Woodhouse <dwmw@amazon.co.uk>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-References: <201904240343.b2RBtBuM%lkp@intel.com>
- <20190423193207.GA21807@ivb42>
-From:   "Shenhar, Talel" <talel@amazon.com>
-Message-ID: <ea8fec02-116b-a9ce-bcb0-e035bb0340ee@amazon.com>
-Date:   Sun, 28 Apr 2019 14:24:34 +0300
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+        d=linaro.org; s=google;
+        h=from:subject:to:cc:references:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=kjtjPVeH9uJpdgJ4+Mz+dHECKsOeFzPmFSYQ0lOXlR8=;
+        b=cd5k/15uADqLMAJw5B8UKQEopJ8j6JAZ8bDdTsspGpZJM9P99gq16aT6wnVAGC9zdQ
+         b0XQImUdKpjAK96KhCQtqj1LBQfMNyQh8Vq3DjDtk1sUdiVtEump4CyxBlpEnvy2jsp5
+         FKYRefQkMzhOjvsllnKX3FHpZc7A41Tu79VdNJ1UjdII9P1jX3HmkXT+u78WShOmHf/C
+         PgRcAA51s/ZwPZ+OiZ1c6yAhJrGjkfRen4mIwO/oNbe9izzg+MlZ3IrsEHWoRMG5vEah
+         oQHzFAyIbAivvD/hA3O7YenYJ87R6D3iwxdRXcV7ncRhIoPe3D8MIgn4P7hVUxzXqAO5
+         aSMg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:subject:to:cc:references:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=kjtjPVeH9uJpdgJ4+Mz+dHECKsOeFzPmFSYQ0lOXlR8=;
+        b=Te0LFlEYPadtn8fdCVUGpwnSj6NZ54b6wwycOXcqgmX/WAX0a9Hq91XWxWZHlU85CA
+         DjjzmexYrUwJgMIcCzvqpeSX5LlIuIyrMN7SLUyhcLIeYrSYGRaUwPmGV+Mko94ahK8w
+         Ud8c27oj95LGZWHt156naYwG0bJ6LkpK4LnrPoeNr5Tb9OK5sSt1EEY3c5BTSmmF0V1S
+         0je6KkqZbKIa/yLYw7Y5M+QsMbRXlpJr5ZxgSmQlmWzGr8pf7Mu5w5qWFGclkyXgqI82
+         D71JZ0vbfKRu1Q3qsCYuVXT9LIEtrtt9ZyLTpkv5tlccDLOYvhrREfIvjItlv2U/fZLi
+         48Qg==
+X-Gm-Message-State: APjAAAVOwajzoNZOo3LylExWeymWedV82FZpBtexk4gidiFTJoIOAmkv
+        So9C7UT1DZHjS+Bdtj6R41gtsA==
+X-Google-Smtp-Source: APXvYqwtDjW+k72NDXuTsG5WeDiwQ61HiZNWbQq5aHjsOa5EhP2zQp77AArxVEbt3c/64dpOVmjsVw==
+X-Received: by 2002:a5d:4e86:: with SMTP id e6mr385971wru.59.1556455529976;
+        Sun, 28 Apr 2019 05:45:29 -0700 (PDT)
+Received: from [192.168.0.41] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
+        by smtp.googlemail.com with ESMTPSA id d11sm3488520wmb.39.2019.04.28.05.45.28
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 28 Apr 2019 05:45:29 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2 1/3] thermal: rockchip: fix up the tsadc pinctrl
+ setting error
+To:     Elaine Zhang <zhangqing@rock-chips.com>, heiko@sntech.de
+Cc:     rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org,
+        mark.rutland@arm.com, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org,
+        xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com
+References: <1556187154-22632-1-git-send-email-zhangqing@rock-chips.com>
+ <1556187154-22632-2-git-send-email-zhangqing@rock-chips.com>
+Message-ID: <be0170d7-64dc-896d-b847-5be192304791@linaro.org>
+Date:   Sun, 28 Apr 2019 14:45:28 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190423193207.GA21807@ivb42>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1556187154-22632-2-git-send-email-zhangqing@rock-chips.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
-X-Originating-IP: [10.43.160.63]
-X-ClientProxiedBy: EX13D17UWC001.ant.amazon.com (10.43.162.188) To
- EX13D01EUB001.ant.amazon.com (10.43.166.194)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190428124528.Bj_P9XIrZmggdSHMrHK6cRtBF5mVPXLaO7p0orC-QKE@z>
 
-Acked-by: Talel Shenhar <talel@amazon.com>
-
-
-On 4/23/2019 10:32 PM, kbuild test robot wrote:
-> From: kbuild test robot <lkp@intel.com>
->
-> drivers/thermal/thermal_mmio.c:120:3-8: No need to set .owner here. The core will do it.
->
->   Remove .owner field if calls are used which set it automatically
->
-> Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
->
-> Fixes: 35838aa51cd6 ("thermal: Introduce Amazon's Annapurna Labs Thermal Driver")
-> CC: Talel Shenhar <talel@amazon.com>
-> Signed-off-by: kbuild test robot <lkp@intel.com>
+On 25/04/2019 12:12, Elaine Zhang wrote:
+> Explicitly use the pinctrl to set/unset the right mode
+> instead of relying on the pinctrl init mode.
+> And it requires setting the tshut polarity before select pinctrl.
+> 
+> When the temperature sensor mode is set to 0, it will automatically
+> reset the board via the Clock-Reset-Unit (CRU) if the over temperature
+> threshold is reached. However, when the pinctrl initializes, it does a
+> transition to "otp_out" which may lead the SoC restart all the time.
+> 
+> "otp_out" IO may be connected to the RESET circuit on the hardware.
+> If the IO is in the wrong state, it will trigger RESET.
+> (similar to the effect of pressing the RESET button)
+> which will cause the soc to restart all the time.
+> 
+> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
 > ---
->
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git for-kernelci
-> head:   0e50a5ee6b8a23c6798aae23efcd4b8e055c06ef
-> commit: 35838aa51cd6dbf5ae2c78ecd1d1df0cc0324256 [34/35] thermal: Introduce Amazon's Annapurna Labs Thermal Driver
->
->   thermal_mmio.c |    1 -
->   1 file changed, 1 deletion(-)
->
-> --- a/drivers/thermal/thermal_mmio.c
-> +++ b/drivers/thermal/thermal_mmio.c
-> @@ -117,7 +117,6 @@ static struct platform_driver thermal_mm
->   	.probe = thermal_mmio_probe,
->   	.driver = {
->   		.name = "thermal-mmio",
-> -		.owner = THIS_MODULE,
->   		.of_match_table = of_match_ptr(thermal_mmio_id_table),
->   	},
->   };
+>  drivers/thermal/rockchip_thermal.c | 37 ++++++++++++++++++++++++++++++++++---
+>  1 file changed, 34 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index 9c7643d62ed7..03ff494f2864 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -172,6 +172,9 @@ struct rockchip_thermal_data {
+>  	int tshut_temp;
+>  	enum tshut_mode tshut_mode;
+>  	enum tshut_polarity tshut_polarity;
+> +	struct pinctrl *pinctrl;
+> +	struct pinctrl_state *gpio_state;
+> +	struct pinctrl_state *otp_state;
+>  };
+>  
+>  /**
+> @@ -1242,6 +1245,8 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+>  		return error;
+>  	}
+>  
+> +	thermal->chip->control(thermal->regs, false);
+> +
+>  	error = clk_prepare_enable(thermal->clk);
+>  	if (error) {
+>  		dev_err(&pdev->dev, "failed to enable converter clock: %d\n",
+> @@ -1267,6 +1272,31 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+>  	thermal->chip->initialize(thermal->grf, thermal->regs,
+>  				  thermal->tshut_polarity);
+>  
+> +	if (thermal->tshut_mode == TSHUT_MODE_GPIO) {
+> +		thermal->pinctrl = devm_pinctrl_get(&pdev->dev);
+> +		if (IS_ERR(thermal->pinctrl)) {
+> +			dev_err(&pdev->dev, "failed to find thermal pinctrl\n");
+> +			panic("panic_on_find thermal pinctrl...\n");
+
+I realize my comment was confusing. I was not saying to add a panic()
+call here but that the code was accessing a NULL pointer. Please remove
+the panic.
+
+> +			return PTR_ERR(thermal->pinctrl);
+> +		}
+> +
+> +		thermal->gpio_state = pinctrl_lookup_state(thermal->pinctrl,
+> +							   "gpio");
+> +		if (IS_ERR_OR_NULL(thermal->gpio_state)) {
+> +			dev_err(&pdev->dev, "failed to find thermal gpio state\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +		thermal->otp_state = pinctrl_lookup_state(thermal->pinctrl,
+> +							  "otpout");
+> +		if (IS_ERR_OR_NULL(thermal->otp_state)) {
+> +			dev_err(&pdev->dev, "failed to find thermal otpout state\n");
+> +			return -EINVAL;
+> +		}
+> +
+> +		pinctrl_select_state(thermal->pinctrl, thermal->otp_state);
+
+I don't understand this portion of code. The test above says tshut_mode
+is TSHUT_MODE_GPIO. Why acting on thermal->otp_state then ?
+
+
+In my previous comment, I was suggesting the following:
+
+Two more fields instead of three:
+
+	struct rockchip_thermal_data {
+  		int tshut_temp;
+	  	enum tshut_mode tshut_mode;
+  		enum tshut_polarity tshut_polarity;
+	 	struct pinctrl *pinctrl;
+		struct pinctrl_state *pinctrl_state;
+	};
+
+	[ ... ]
+
+	thermal->pinctrl = devm_pinctrl_get(&pdev->dev);
+	if (IS_ERR(thermal->pinctrl)) {
+		dev_err("...");
+		return PTR_ERR(thermal->pinctrl);
+	}
+
+	thermal->pinctrl_state = pinctrl_lookup_state(thermal->pinctrl,
+		thermal->tshut_mode == TSHUT_MODE_GPIO ? "gpio" :
+							"otpout";
+
+	if (IS_ERR_OR_NULL(thermal->pinctrl_state) {
+		dev_err("...");
+		return PTR_ERR(thermal->pinctrl_state);
+	}
+
+ 	pinctrl_select_state(thermal->pinctrl, thermal->pinctrl_state);
+
+
+	[ ... ]
+
+Is it wrong ?
+
+
+> +	}
+> +
+>  	for (i = 0; i < thermal->chip->chn_num; i++) {
+>  		error = rockchip_thermal_register_sensor(pdev, thermal,
+>  						&thermal->sensors[i],
+> @@ -1337,8 +1367,8 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
+>  
+>  	clk_disable(thermal->pclk);
+>  	clk_disable(thermal->clk);
+> -
+> -	pinctrl_pm_select_sleep_state(dev);
+> +	if (thermal->tshut_mode == TSHUT_MODE_GPIO)
+> +		pinctrl_select_state(thermal->pinctrl, thermal->gpio_state);
+
+And then:
+	 pinctrl_select_state(thermal->pinctrl, thermal->pinctrl_state);
+
+>  
+>  	return 0;
+>  }
+> @@ -1383,7 +1413,8 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+>  	for (i = 0; i < thermal->chip->chn_num; i++)
+>  		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
+>  
+> -	pinctrl_pm_select_default_state(dev);
+> +	if (thermal->tshut_mode == TSHUT_MODE_GPIO)
+> +		pinctrl_select_state(thermal->pinctrl, thermal->otp_state);
+
+And then
+	pinctrl_select_state(thermal->pinctrl, thermal->pinctrl_state);
+
+>  	return 0;
+>  }
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
