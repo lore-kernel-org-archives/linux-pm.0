@@ -7,97 +7,121 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6DC8C43218
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 09:51:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8CEFC43219
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 09:51:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8B1BF216FD
-	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 09:51:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 89A01206BB
+	for <linux-pm@archiver.kernel.org>; Sun, 28 Apr 2019 09:51:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="PjzpGgCB"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Lx+jPmcT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726454AbfD1Jvf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 28 Apr 2019 05:51:35 -0400
-Received: from mail-wr1-f65.google.com ([209.85.221.65]:38436 "EHLO
-        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726448AbfD1Jve (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Apr 2019 05:51:34 -0400
-Received: by mail-wr1-f65.google.com with SMTP id k16so11145057wrn.5
-        for <linux-pm@vger.kernel.org>; Sun, 28 Apr 2019 02:51:34 -0700 (PDT)
+        id S1726592AbfD1Jvn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 28 Apr 2019 05:51:43 -0400
+Received: from mail-wr1-f66.google.com ([209.85.221.66]:32897 "EHLO
+        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726252AbfD1Jvi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 28 Apr 2019 05:51:38 -0400
+Received: by mail-wr1-f66.google.com with SMTP id s18so11201082wrp.0
+        for <linux-pm@vger.kernel.org>; Sun, 28 Apr 2019 02:51:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=aAPgdAL7F9ZQM/t7uLbFfU6JxKR0GNZw8r9SgrUMppI=;
-        b=PjzpGgCB5XRY0j6HusinIsXEi/Eap6Nk/cbJiEydwQtyWIobVOOQkeZcOawkgDWIoX
-         WPCW7KzSjI4FwhJnQddUslEXf26IjYl30ryZeI5S/+qtROqEoca8zLCUBM96ddj3vehI
-         Cq7A0op7llO4ABD50JZFGFWxA0W9N04Lwu6O/l3HgNlIC2e4Ici64DhhnHR2J5Z4VOnI
-         kYrzGY2JR74loxBPn77j45qgLB9ZDnaYNKdn976D4C9/m2tPAHqql/Zx03/DuPiiVQ6k
-         eajovNUFa42a1L0f660SRko5bYVoupwYyfVjP2zCAnN5Lyrgc5Z4q/th1udlZqQ4g32S
-         cE/Q==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=40vQhCWF25KCOygjTxWMwR00SFUppKuwSlIi4NPfG4I=;
+        b=Lx+jPmcTYGJuK8G7wOr1Hg6U+yhw+gL4mmxquj/CLIDtsag/ZM0B3C1VqTJLYrIYXt
+         0RK+cDTUhMBkv8aeQipfghWXbKa3fdVw4l3p3NcP3G80kQZKLf63CYq3SfrrfWvRytg9
+         hqNeUDHK7FLELHlDvhi6iRH3j4t+4ZkM357v+0YTFf29/iocxTgacEXE7fLRrNFw0kMO
+         e4+4j8GMpouzh1itkcOLsqvrT1VniJ3jM/+OD4H4tnZF8gHrwmS+uYKKe+IrsUNU5M0t
+         05Uv2GcYR+tVjxpM8aBt98XkBFZB8C8BUSBnEb5lLazDfubqcXOAbjaGxF48WJz3WSUV
+         8gEg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=aAPgdAL7F9ZQM/t7uLbFfU6JxKR0GNZw8r9SgrUMppI=;
-        b=spzCJ3Ur3HIDU2qLy2ZWDoMTKyiJQr9h/W49pTJWC8arY5q4EvzpM460eAQdtIkHXS
-         HYkaw1kJadXM0PxvQwTlAMF9t+mzDks0WUZ6NPiP8LSIrjqLHRFOOGG1gZvZ6G82TiNb
-         s1mGh+D8TVGQVuDUwuda/CsVF88HKKsemmjSSP44cvEZTc9En7e2DZAWSRHiGwTTtt6K
-         DX52zAnsR3HoSXq0HWj9hspg40eKXxtfl5EuZhzs5xB40qe+NG/nvj47TQEfL0EBDZ5O
-         PXsWsL6y4sH3ToDCfogI4JdzWgOjGq2DdauO7kOjpdj+y9Z8kDYbcc1ei2/PGoAJJIPu
-         DwUA==
-X-Gm-Message-State: APjAAAXzJLASt8Uno/fuTJIEucBxErb1lC4BVfoNceZjHVJtgnezhbfE
-        WYCAfbpGW1LTNa6J4dYV+I9qvA==
-X-Google-Smtp-Source: APXvYqwLA4kk+NumkHkcyFweOkN16QWgMmE0Y+Hj6jaAfH8+mLSReJEGZEtQvX6o7++PTpcZvCIk0A==
-X-Received: by 2002:a5d:66c3:: with SMTP id k3mr1542361wrw.104.1556445093253;
-        Sun, 28 Apr 2019 02:51:33 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=40vQhCWF25KCOygjTxWMwR00SFUppKuwSlIi4NPfG4I=;
+        b=sjAX3uEX++upWyhdIor8gwY+aEy4YCPKshXY28dO6EYMrsiOyxOzrHkV5/WNNH8nsv
+         1HM3VEMNA9N0dW25XwVKFsFUiRShVQ0UKKD9HSjxjEyyfJMNYIjoU8yq+0E4DhphJ8jb
+         1s3ANzJwrfupzcj1GO4uq/ZnYvroaDPhkPAomkWpCZ51xJ3gx1TLIvjFtuBKj8bpq5/M
+         dZNF45i09cKAud0R8eAC2zQ9+Lisa+Cu0FIrH6nL4TGN4CznNUx6sHaM/kLk5A6T2dD3
+         x++wUdsw0XJ5ZQXrRePqqpdsv6rQAY7h4ZoRSJbym5NOZ1Gh0N5LxQlaR1bonXmY3QvY
+         /ICA==
+X-Gm-Message-State: APjAAAWO4VEYe6L+s7pGWF/E7PHQySvFHI+AMxUGfmh4GI1EigVjaZsr
+        1/XjCSpb3qylKTDtgPW/e6YJJQ==
+X-Google-Smtp-Source: APXvYqwInBZjS2ofuNIYsrUI0kvN/WOkPj4ELFPWfyez18CoVxYWPiMOJ5cqdfFcQ+cLjVaJFGrs2A==
+X-Received: by 2002:a5d:6ac3:: with SMTP id u3mr3683132wrw.13.1556445096437;
+        Sun, 28 Apr 2019 02:51:36 -0700 (PDT)
 Received: from clegane.local (86.204.129.77.rev.sfr.net. [77.129.204.86])
-        by smtp.gmail.com with ESMTPSA id e5sm1560675wrh.79.2019.04.28.02.51.31
+        by smtp.gmail.com with ESMTPSA id e5sm1560675wrh.79.2019.04.28.02.51.35
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 28 Apr 2019 02:51:32 -0700 (PDT)
+        Sun, 28 Apr 2019 02:51:35 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     edubezval@gmail.com, rui.zhang@intel.com
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
         Javi Merino <javi.merino@kernel.org>
-Subject: [PATCH - resend 1/3] thermal/drivers/cpu_cooling: Fixup the header and copyright
-Date:   Sun, 28 Apr 2019 11:51:03 +0200
-Message-Id: <20190428095106.5171-1-daniel.lezcano@linaro.org>
+Subject: [PATCH - resend 3/3] thermal/drivers/cpu_cooling: Remove pointless field
+Date:   Sun, 28 Apr 2019 11:51:05 +0200
+Message-Id: <20190428095106.5171-3-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190428095106.5171-1-daniel.lezcano@linaro.org>
+References: <20190428095106.5171-1-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190428095103.EYPvs9lIr21o-1ZOVWdlzWKlK9cMKCvBPLzcHnq5294@z>
+Message-ID: <20190428095105.dYT1fpGm7GAU16Nw4sUBTx2mo1_sUsw3diV3SP1L-7g@z>
 
-The copyright format does not conform to the format requested by
-Linaro: https://wiki.linaro.org/Copyright
+The structure cpufreq_cooling_device provides a backpointer to the thermal
+device but this one is used for a trace and to unregister. For the trace,
+we don't really need this field and the unregister function as the same
+pointer passed as parameter. Remove it.
 
-Fix it.
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/thermal/cpu_cooling.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index ee8419a6390c..42aeb9087cab 100644
+index b9d152a5f7ba..9b014d0e8e70 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -2,9 +2,11 @@
-  *  linux/drivers/thermal/cpu_cooling.c
-  *
-  *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
-- *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
-  *
-- *  Copyright (C) 2014  Viresh Kumar <viresh.kumar@linaro.org>
-+ *  Copyright (C) 2012-2018 Linaro Limited.
-+ *
-+ *  Authors:	Amit Daniel <amit.kachhap@linaro.org>
-+ *		Viresh Kumar <viresh.kumar@linaro.org>
-  *
-  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  *  This program is free software; you can redistribute it and/or modify
+@@ -87,7 +87,6 @@ struct cpufreq_cooling_device {
+ 	unsigned int clipped_freq;
+ 	unsigned int max_level;
+ 	struct freq_table *freq_table;	/* In descending order */
+-	struct thermal_cooling_device *cdev;
+ 	struct cpufreq_policy *policy;
+ 	struct list_head node;
+ 	struct time_in_idle *idle_time;
+@@ -195,8 +194,7 @@ static int update_freq_table(struct cpufreq_cooling_device *cpufreq_cdev,
+ 
+ 	dev = get_cpu_device(cpu);
+ 	if (unlikely(!dev)) {
+-		dev_warn(&cpufreq_cdev->cdev->device,
+-			 "No cpu device for cpu %d\n", cpu);
++		pr_warn("No cpu device for cpu %d\n", cpu);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -679,7 +677,6 @@ __cpufreq_cooling_register(struct device_node *np,
+ 		goto remove_ida;
+ 
+ 	cpufreq_cdev->clipped_freq = cpufreq_cdev->freq_table[0].frequency;
+-	cpufreq_cdev->cdev = cdev;
+ 
+ 	mutex_lock(&cooling_list_lock);
+ 	/* Register the notifier for first cpufreq cooling device */
+@@ -797,7 +794,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
+ 					    CPUFREQ_POLICY_NOTIFIER);
+ 
+-	thermal_cooling_device_unregister(cpufreq_cdev->cdev);
++	thermal_cooling_device_unregister(cdev);
+ 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
+ 	kfree(cpufreq_cdev->idle_time);
+ 	kfree(cpufreq_cdev->freq_table);
 -- 
 2.17.1
 
