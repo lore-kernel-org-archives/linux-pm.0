@@ -1,56 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4] cpufreq: qoriq: add support for lx2160a
-Date: Mon, 29 Apr 2019 10:46:37 +0530
-Message-ID: <20190429051637.d5y4cfiekrysli3w@vireshk-i7>
-References: <1556261743-20584-1-git-send-email-vabhav.sharma@nxp.com>
+Subject: Re: [PATCH - resend 1/3] thermal/drivers/cpu_cooling: Fixup the
+ header and copyright
+Date: Mon, 29 Apr 2019 11:13:50 +0530
+Message-ID: <20190429054350.kaup4w2b5yx3mdqb@vireshk-i7>
+References: <20190428095106.5171-1-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1556261743-20584-1-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <20190428095106.5171-1-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vabhav Sharma <vabhav.sharma@nxp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Andy Tang <andy.tang@nxp.com>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 26-04-19, 06:55, Vabhav Sharma wrote:
-> Enable support of NXP SoC lx2160a to handle the
-> lx2160a SoC.
+On 28-04-19, 11:51, Daniel Lezcano wrote:
+> The copyright format does not conform to the format requested by
+> Linaro: https://wiki.linaro.org/Copyright
 > 
-> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> Acked-by: Scott Wood <oss@buserror.net>
-> Acked-by: Stephen Boyd <sboyd@kernel.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Changes for v4:
-> - Incorporated review comments from Stephen Boyd
+> Fix it.
 > 
-> Changes for v3:
-> - Incorporated review comments of Rafael J. Wysocki
-> - Updated commit message
-> 
-> Changes for v2:
-> - Subject line updated
-> 
->  drivers/cpufreq/qoriq-cpufreq.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> index 4295e54..81f0288 100644
-> --- a/drivers/cpufreq/qoriq-cpufreq.c
-> +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> @@ -284,6 +284,7 @@ static const struct of_device_id node_matches[] __initconst = {
->  	{ .compatible = "fsl,ls1046a-clockgen", },
->  	{ .compatible = "fsl,ls1088a-clockgen", },
->  	{ .compatible = "fsl,ls2080a-clockgen", },
-> +	{ .compatible = "fsl,lx2160a-clockgen", },
->  	{ .compatible = "fsl,p4080-clockgen", },
->  	{ .compatible = "fsl,qoriq-clockgen-1.0", },
->  	{ .compatible = "fsl,qoriq-clockgen-2.0", },
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Viresh Kumar <viresh.kumar@linaro.org>
 
-@Rafael, please apply this version. Thanks.
+What exactly have I done here ? :)
+
+> ---
+>  drivers/thermal/cpu_cooling.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index ee8419a6390c..42aeb9087cab 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -2,9 +2,11 @@
+>   *  linux/drivers/thermal/cpu_cooling.c
+>   *
+>   *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
+> - *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
+>   *
+> - *  Copyright (C) 2014  Viresh Kumar <viresh.kumar@linaro.org>
+> + *  Copyright (C) 2012-2018 Linaro Limited.
+> + *
+> + *  Authors:	Amit Daniel <amit.kachhap@linaro.org>
+> + *		Viresh Kumar <viresh.kumar@linaro.org>
+>   *
+>   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>   *  This program is free software; you can redistribute it and/or modify
+> -- 
+> 2.17.1
 
 -- 
 viresh
