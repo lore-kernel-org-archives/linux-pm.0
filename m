@@ -4,110 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F266C43219
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 16:55:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDD1CC43219
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 17:57:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 369EC2087B
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 16:55:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AD843215EA
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 17:57:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="bIp8G+wu"
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="vGMkC/TI"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728823AbfD2Qzr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Apr 2019 12:55:47 -0400
-Received: from mail-pf1-f195.google.com ([209.85.210.195]:46241 "EHLO
-        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728748AbfD2Qzr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 12:55:47 -0400
-Received: by mail-pf1-f195.google.com with SMTP id j11so5587863pff.13
-        for <linux-pm@vger.kernel.org>; Mon, 29 Apr 2019 09:55:47 -0700 (PDT)
+        id S1728882AbfD2R5L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Apr 2019 13:57:11 -0400
+Received: from smtp-fw-2101.amazon.com ([72.21.196.25]:18027 "EHLO
+        smtp-fw-2101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728844AbfD2R5L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 13:57:11 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=broadcom.com; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=AMPQbvcwEN3ZxVejjVGKTdlBJSPIcIJE/Kqfir3TvYk=;
-        b=bIp8G+wuW7rQ37gmaDIBfuVrDfU8/YiaQDK8l32Oica8Kx/A1l2ujRTouhaWa+Z+ij
-         flAq4xBxcbvNGPlRN9vQpCyQPxD12S0O29alldRN9z70HpZdhWyiJSeZPCztOCgfQXnf
-         O4JwOSc6XAbQ3t2XNr1sX0N3pkIf9wisrgu5U=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=AMPQbvcwEN3ZxVejjVGKTdlBJSPIcIJE/Kqfir3TvYk=;
-        b=hvYlIbO44keTQ3AM+VAJuSD+8AxYaG+uFktcxH9QxrC1k1NGXxSQXkuCUnyGz7t3mA
-         xMnYjN3g9JmmbYNxSCgBehqwQ/8MXKYDHjURPp8OKC2TezAYEypPvf+BwDhgm6jV+xpA
-         oFX+FQo5uwUGinPs3HoqeUzzN+gJ8b/iAuZT63RTvaiyFA2AehrmhbyWBMrG94y3c0aA
-         LvV9KxLLVhTW+og5Gufn66rRowgnS9mWyxJkpeceuIl2Tfg9iO02hzFUG14uBwwJ0UgV
-         CPgEgSxfAMeonNixUybveEtLAQydgBZOZhbB75ks8to4nTezFi9fvb5FuCp3zrhr1boM
-         I90Q==
-X-Gm-Message-State: APjAAAUKUyFiP2nxZTMivtraBgMwRqXGlUTeG5X5O29mETCkugLQYCMH
-        4J/tlAYBFwLbMMpo1kzlm/2wHw==
-X-Google-Smtp-Source: APXvYqxUDG2Rl+yER4noZW2kdX8sLT0Bu5I2nqTLysmUo8pb2pNLanJKAOumCSV+467bL/eGFeLSWA==
-X-Received: by 2002:a63:500f:: with SMTP id e15mr59974587pgb.198.1556556946665;
-        Mon, 29 Apr 2019 09:55:46 -0700 (PDT)
-Received: from mannams-OptiPlex-7010.dhcp.broadcom.net ([192.19.234.250])
-        by smtp.gmail.com with ESMTPSA id 132sm24490812pfw.87.2019.04.29.09.55.43
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Mon, 29 Apr 2019 09:55:45 -0700 (PDT)
-From:   Srinath Mannam <srinath.mannam@broadcom.com>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        David Woodhouse <dwmw2@infradead.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        bcm-kernel-feedback-list@broadcom.com,
-        Srinath Mannam <srinath.mannam@broadcom.com>
-Subject: [PATCH] thermal: broadcom: Remove ACPI support
-Date:   Mon, 29 Apr 2019 22:25:29 +0530
-Message-Id: <1556556929-25704-1-git-send-email-srinath.mannam@broadcom.com>
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1556560630; x=1588096630;
+  h=from:to:subject:date:message-id:in-reply-to:references:
+   mime-version;
+  bh=VP2cUI8KjAFIewDrbCGl5adztK+upR77ms3b6lJ7QZA=;
+  b=vGMkC/TIMg40oY1Hbrd0Wc2gQyQNMKIhHUOTF4sFguENHVbeKt/yY64L
+   oWsU0K9l67tOzd6sNx6HnLmXG1yJg6QD8PiZ3NybmaXYINX0MdCTOoy2s
+   kxaD36wYKvnEZwQgOiF4APMYqFaic4nV0W/fHtEhL8e++4GaVMWCd7skj
+   4=;
+X-IronPort-AV: E=Sophos;i="5.60,410,1549929600"; 
+   d="scan'208";a="730991733"
+Received: from iad6-co-svc-p1-lb1-vlan2.amazon.com (HELO email-inbound-relay-1d-74cf8b49.us-east-1.amazon.com) ([10.124.125.2])
+  by smtp-border-fw-out-2101.iad2.amazon.com with ESMTP/TLS/DHE-RSA-AES256-SHA; 29 Apr 2019 09:47:57 +0000
+Received: from EX13MTAUEA001.ant.amazon.com (iad55-ws-svc-p15-lb9-vlan2.iad.amazon.com [10.40.159.162])
+        by email-inbound-relay-1d-74cf8b49.us-east-1.amazon.com (8.14.7/8.14.7) with ESMTP id x3T9ltnl088636
+        (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=FAIL);
+        Mon, 29 Apr 2019 09:47:55 GMT
+Received: from EX13D01EUB001.ant.amazon.com (10.43.166.194) by
+ EX13MTAUEA001.ant.amazon.com (10.43.61.243) with Microsoft SMTP Server (TLS)
+ id 15.0.1367.3; Mon, 29 Apr 2019 09:47:55 +0000
+Received: from udc4a3e82dbc15a031435.hfa14.amazon.com (10.43.160.175) by
+ EX13D01EUB001.ant.amazon.com (10.43.166.194) with Microsoft SMTP Server (TLS)
+ id 15.0.1367.3; Mon, 29 Apr 2019 09:47:48 +0000
+From:   Talel Shenhar <talel@amazon.com>
+To:     <talel@amazon.com>, <robh@kernel.org>, <edubezval@gmail.com>,
+        <daniel.lezcano@linaro.org>, <dwmw@amazon.co.uk>,
+        <jonnyc@amazon.com>, <rui.zhang@intel.com>, <hhhawa@amazon.com>,
+        <ronenk@amazon.com>, <hanochu@amazon.com>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH 1/1] thermal: Fix build error of missing devm_ioremap_resource on UM
+Date:   Mon, 29 Apr 2019 12:47:36 +0300
+Message-ID: <1556531256-26321-1-git-send-email-talel@amazon.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <201904261215.nJZXSFjx%lkp@intel.com>
+References: <201904261215.nJZXSFjx%lkp@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+X-Originating-IP: [10.43.160.175]
+X-ClientProxiedBy: EX13D18UWC004.ant.amazon.com (10.43.162.77) To
+ EX13D01EUB001.ant.amazon.com (10.43.166.194)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190429165529.dg9jwIWvnIUS6KLAR-wKSLDFTjhOfqqE6QcmDhYhEhs@z>
+Message-ID: <20190429094736.-70pXKryM463qT3FsSTOcq2Rqk5pQSH30jEvDn5YtqA@z>
 
-Unlike DT framework, thermal-zones and its parameters can't be parsed
-using ACPI framework. So that ACPI support is removed in this driver.
+The devres.o gets linked if HAS_IOMEM is present so on ARCH=um
+allyesconfig (COMPILE_TEST) failed on many files with:
 
-Signed-off-by: Srinath Mannam <srinath.mannam@broadcom.com>
-Reported-by: David Woodhouse <dwmw2@infradead.org>
+drivers/thermal/thermal_mmio.o:
+In function 'thermal_mmio_probe':thermal_mmio.c:(.text+0xe1):
+undefined reference to `devm_ioremap_resource'
+
+The users of devm_ioremap_resource() which are compile-testable
+should depend on HAS_IOMEM.
+
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Talel Shenhar <talel@amazon.com>
 ---
- drivers/thermal/broadcom/sr-thermal.c | 8 --------
- 1 file changed, 8 deletions(-)
+ drivers/thermal/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/broadcom/sr-thermal.c b/drivers/thermal/broadcom/sr-thermal.c
-index 2284cbe..475ce29 100644
---- a/drivers/thermal/broadcom/sr-thermal.c
-+++ b/drivers/thermal/broadcom/sr-thermal.c
-@@ -3,7 +3,6 @@
-  * Copyright (C) 2018 Broadcom
-  */
- 
--#include <linux/acpi.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
-@@ -100,18 +99,11 @@ static const struct of_device_id sr_thermal_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, sr_thermal_of_match);
- 
--static const struct acpi_device_id sr_thermal_acpi_ids[] = {
--	{ .id = "BRCM0500" },
--	{ /* sentinel */ }
--};
--MODULE_DEVICE_TABLE(acpi, sr_thermal_acpi_ids);
--
- static struct platform_driver sr_thermal_driver = {
- 	.probe		= sr_thermal_probe,
- 	.driver = {
- 		.name = "sr-thermal",
- 		.of_match_table = sr_thermal_of_match,
--		.acpi_match_table = ACPI_PTR(sr_thermal_acpi_ids),
- 	},
- };
- module_platform_driver(sr_thermal_driver);
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 41f3943..66a709d 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -203,6 +203,7 @@ config THERMAL_EMULATION
+ config THERMAL_MMIO
+ 	tristate "Generic Thermal MMIO driver"
+ 	depends on OF || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	help
+ 	  This option enables the generic thermal MMIO driver that will use
+ 	  memory-mapped reads to get the temperature.  Any HW/System that
 -- 
 2.7.4
 
