@@ -1,124 +1,37 @@
-From: "elaine.zhang" <zhangqing@rock-chips.com>
-Subject: Re: [PATCH v2 1/3] thermal: rockchip: fix up the tsadc pinctrl
- setting error
-Date: Mon, 29 Apr 2019 17:51:32 +0800
-Message-ID: <8d41ea98-e0e8-60c8-3237-ade5d0d169bf@rock-chips.com>
-References: <1556187154-22632-1-git-send-email-zhangqing@rock-chips.com>
- <1556187154-22632-2-git-send-email-zhangqing@rock-chips.com>
- <be0170d7-64dc-896d-b847-5be192304791@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: armada-37xx: fix frequency calculation for
+ opp
+Date: Mon, 29 Apr 2019 15:23:21 +0530
+Message-ID: <20190429095321.ah5taomlznghsxu5@vireshk-i7>
+References: <20190308164710.10597-1-gregory.clement@bootlin.com>
+ <20190308164710.10597-3-gregory.clement@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <be0170d7-64dc-896d-b847-5be192304791@linaro.org>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, heiko@sntech.de
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, huangtao@rock-chips.com, linux-pm@vger.kernel.org, xxx@rock-chips.com, xf@rock-chips.com, linux-kernel@vger.kernel.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, robh+dt@kernel.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190308164710.10597-3-gregory.clement@bootlin.com>
+Sender: stable-owner@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@bootlin.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Christian Neubert <christian.neubert.86@gmail.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-aGksCgrlnKggMjAxOS80LzI4IOS4i+WNiDg6NDUsIERhbmllbCBMZXpjYW5vIOWGmemBkzoKPiBP
-biAyNS8wNC8yMDE5IDEyOjEyLCBFbGFpbmUgWmhhbmcgd3JvdGU6Cj4+IEV4cGxpY2l0bHkgdXNl
-IHRoZSBwaW5jdHJsIHRvIHNldC91bnNldCB0aGUgcmlnaHQgbW9kZQo+PiBpbnN0ZWFkIG9mIHJl
-bHlpbmcgb24gdGhlIHBpbmN0cmwgaW5pdCBtb2RlLgo+PiBBbmQgaXQgcmVxdWlyZXMgc2V0dGlu
-ZyB0aGUgdHNodXQgcG9sYXJpdHkgYmVmb3JlIHNlbGVjdCBwaW5jdHJsLgo+Pgo+PiBXaGVuIHRo
-ZSB0ZW1wZXJhdHVyZSBzZW5zb3IgbW9kZSBpcyBzZXQgdG8gMCwgaXQgd2lsbCBhdXRvbWF0aWNh
-bGx5Cj4+IHJlc2V0IHRoZSBib2FyZCB2aWEgdGhlIENsb2NrLVJlc2V0LVVuaXQgKENSVSkgaWYg
-dGhlIG92ZXIgdGVtcGVyYXR1cmUKPj4gdGhyZXNob2xkIGlzIHJlYWNoZWQuIEhvd2V2ZXIsIHdo
-ZW4gdGhlIHBpbmN0cmwgaW5pdGlhbGl6ZXMsIGl0IGRvZXMgYQo+PiB0cmFuc2l0aW9uIHRvICJv
-dHBfb3V0IiB3aGljaCBtYXkgbGVhZCB0aGUgU29DIHJlc3RhcnQgYWxsIHRoZSB0aW1lLgo+Pgo+
-PiAib3RwX291dCIgSU8gbWF5IGJlIGNvbm5lY3RlZCB0byB0aGUgUkVTRVQgY2lyY3VpdCBvbiB0
-aGUgaGFyZHdhcmUuCj4+IElmIHRoZSBJTyBpcyBpbiB0aGUgd3Jvbmcgc3RhdGUsIGl0IHdpbGwg
-dHJpZ2dlciBSRVNFVC4KPj4gKHNpbWlsYXIgdG8gdGhlIGVmZmVjdCBvZiBwcmVzc2luZyB0aGUg
-UkVTRVQgYnV0dG9uKQo+PiB3aGljaCB3aWxsIGNhdXNlIHRoZSBzb2MgdG8gcmVzdGFydCBhbGwg
-dGhlIHRpbWUuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IEVsYWluZSBaaGFuZyA8emhhbmdxaW5nQHJv
-Y2stY2hpcHMuY29tPgo+PiAtLS0KPj4gICBkcml2ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1h
-bC5jIHwgMzcgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLQo+PiAgIDEgZmls
-ZSBjaGFuZ2VkLCAzNCBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQo+Pgo+PiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyBiL2RyaXZlcnMvdGhlcm1h
-bC9yb2NrY2hpcF90aGVybWFsLmMKPj4gaW5kZXggOWM3NjQzZDYyZWQ3Li4wM2ZmNDk0ZjI4NjQg
-MTAwNjQ0Cj4+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMKPj4gKysr
-IGIvZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYwo+PiBAQCAtMTcyLDYgKzE3Miw5
-IEBAIHN0cnVjdCByb2NrY2hpcF90aGVybWFsX2RhdGEgewo+PiAgIAlpbnQgdHNodXRfdGVtcDsK
-Pj4gICAJZW51bSB0c2h1dF9tb2RlIHRzaHV0X21vZGU7Cj4+ICAgCWVudW0gdHNodXRfcG9sYXJp
-dHkgdHNodXRfcG9sYXJpdHk7Cj4+ICsJc3RydWN0IHBpbmN0cmwgKnBpbmN0cmw7Cj4+ICsJc3Ry
-dWN0IHBpbmN0cmxfc3RhdGUgKmdwaW9fc3RhdGU7Cj4+ICsJc3RydWN0IHBpbmN0cmxfc3RhdGUg
-Km90cF9zdGF0ZTsKPj4gICB9Owo+PiAgIAo+PiAgIC8qKgo+PiBAQCAtMTI0Miw2ICsxMjQ1LDgg
-QEAgc3RhdGljIGludCByb2NrY2hpcF90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZp
-Y2UgKnBkZXYpCj4+ICAgCQlyZXR1cm4gZXJyb3I7Cj4+ICAgCX0KPj4gICAKPj4gKwl0aGVybWFs
-LT5jaGlwLT5jb250cm9sKHRoZXJtYWwtPnJlZ3MsIGZhbHNlKTsKPj4gKwo+PiAgIAllcnJvciA9
-IGNsa19wcmVwYXJlX2VuYWJsZSh0aGVybWFsLT5jbGspOwo+PiAgIAlpZiAoZXJyb3IpIHsKPj4g
-ICAJCWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byBlbmFibGUgY29udmVydGVyIGNsb2Nr
-OiAlZFxuIiwKPj4gQEAgLTEyNjcsNiArMTI3MiwzMSBAQCBzdGF0aWMgaW50IHJvY2tjaGlwX3Ro
-ZXJtYWxfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPj4gICAJdGhlcm1hbC0+
-Y2hpcC0+aW5pdGlhbGl6ZSh0aGVybWFsLT5ncmYsIHRoZXJtYWwtPnJlZ3MsCj4+ICAgCQkJCSAg
-dGhlcm1hbC0+dHNodXRfcG9sYXJpdHkpOwo+PiAgIAo+PiArCWlmICh0aGVybWFsLT50c2h1dF9t
-b2RlID09IFRTSFVUX01PREVfR1BJTykgewo+PiArCQl0aGVybWFsLT5waW5jdHJsID0gZGV2bV9w
-aW5jdHJsX2dldCgmcGRldi0+ZGV2KTsKPj4gKwkJaWYgKElTX0VSUih0aGVybWFsLT5waW5jdHJs
-KSkgewo+PiArCQkJZGV2X2VycigmcGRldi0+ZGV2LCAiZmFpbGVkIHRvIGZpbmQgdGhlcm1hbCBw
-aW5jdHJsXG4iKTsKPj4gKwkJCXBhbmljKCJwYW5pY19vbl9maW5kIHRoZXJtYWwgcGluY3RybC4u
-LlxuIik7Cj4gSSByZWFsaXplIG15IGNvbW1lbnQgd2FzIGNvbmZ1c2luZy4gSSB3YXMgbm90IHNh
-eWluZyB0byBhZGQgYSBwYW5pYygpCj4gY2FsbCBoZXJlIGJ1dCB0aGF0IHRoZSBjb2RlIHdhcyBh
-Y2Nlc3NpbmcgYSBOVUxMIHBvaW50ZXIuIFBsZWFzZSByZW1vdmUKPiB0aGUgcGFuaWMuCk9LLCBJ
-J2xsIGZpeGVkIGl0Lgo+Cj4+ICsJCQlyZXR1cm4gUFRSX0VSUih0aGVybWFsLT5waW5jdHJsKTsK
-Pj4gKwkJfQo+PiArCj4+ICsJCXRoZXJtYWwtPmdwaW9fc3RhdGUgPSBwaW5jdHJsX2xvb2t1cF9z
-dGF0ZSh0aGVybWFsLT5waW5jdHJsLAo+PiArCQkJCQkJCSAgICJncGlvIik7Cj4+ICsJCWlmIChJ
-U19FUlJfT1JfTlVMTCh0aGVybWFsLT5ncGlvX3N0YXRlKSkgewo+PiArCQkJZGV2X2VycigmcGRl
-di0+ZGV2LCAiZmFpbGVkIHRvIGZpbmQgdGhlcm1hbCBncGlvIHN0YXRlXG4iKTsKPj4gKwkJCXJl
-dHVybiAtRUlOVkFMOwo+PiArCQl9Cj4+ICsKPj4gKwkJdGhlcm1hbC0+b3RwX3N0YXRlID0gcGlu
-Y3RybF9sb29rdXBfc3RhdGUodGhlcm1hbC0+cGluY3RybCwKPj4gKwkJCQkJCQkgICJvdHBvdXQi
-KTsKPj4gKwkJaWYgKElTX0VSUl9PUl9OVUxMKHRoZXJtYWwtPm90cF9zdGF0ZSkpIHsKPj4gKwkJ
-CWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byBmaW5kIHRoZXJtYWwgb3Rwb3V0IHN0YXRl
-XG4iKTsKPj4gKwkJCXJldHVybiAtRUlOVkFMOwo+PiArCQl9Cj4+ICsKPj4gKwkJcGluY3RybF9z
-ZWxlY3Rfc3RhdGUodGhlcm1hbC0+cGluY3RybCwgdGhlcm1hbC0+b3RwX3N0YXRlKTsKPiBJIGRv
-bid0IHVuZGVyc3RhbmQgdGhpcyBwb3J0aW9uIG9mIGNvZGUuIFRoZSB0ZXN0IGFib3ZlIHNheXMg
-dHNodXRfbW9kZQo+IGlzIFRTSFVUX01PREVfR1BJTy4gV2h5IGFjdGluZyBvbiB0aGVybWFsLT5v
-dHBfc3RhdGUgdGhlbiA/Cj4KPgo+IEluIG15IHByZXZpb3VzIGNvbW1lbnQsIEkgd2FzIHN1Z2dl
-c3RpbmcgdGhlIGZvbGxvd2luZzoKPgo+IFR3byBtb3JlIGZpZWxkcyBpbnN0ZWFkIG9mIHRocmVl
-Ogo+Cj4gCXN0cnVjdCByb2NrY2hpcF90aGVybWFsX2RhdGEgewo+ICAgIAkJaW50IHRzaHV0X3Rl
-bXA7Cj4gCSAgCWVudW0gdHNodXRfbW9kZSB0c2h1dF9tb2RlOwo+ICAgIAkJZW51bSB0c2h1dF9w
-b2xhcml0eSB0c2h1dF9wb2xhcml0eTsKPiAJIAlzdHJ1Y3QgcGluY3RybCAqcGluY3RybDsKPiAJ
-CXN0cnVjdCBwaW5jdHJsX3N0YXRlICpwaW5jdHJsX3N0YXRlOwo+IAl9Owo+Cj4gCVsgLi4uIF0K
-Pgo+IAl0aGVybWFsLT5waW5jdHJsID0gZGV2bV9waW5jdHJsX2dldCgmcGRldi0+ZGV2KTsKPiAJ
-aWYgKElTX0VSUih0aGVybWFsLT5waW5jdHJsKSkgewo+IAkJZGV2X2VycigiLi4uIik7Cj4gCQly
-ZXR1cm4gUFRSX0VSUih0aGVybWFsLT5waW5jdHJsKTsKPiAJfQo+Cj4gCXRoZXJtYWwtPnBpbmN0
-cmxfc3RhdGUgPSBwaW5jdHJsX2xvb2t1cF9zdGF0ZSh0aGVybWFsLT5waW5jdHJsLAo+IAkJdGhl
-cm1hbC0+dHNodXRfbW9kZSA9PSBUU0hVVF9NT0RFX0dQSU8gPyAiZ3BpbyIgOgo+IAkJCQkJCQki
-b3Rwb3V0IjsKPgo+IAlpZiAoSVNfRVJSX09SX05VTEwodGhlcm1hbC0+cGluY3RybF9zdGF0ZSkg
-ewo+IAkJZGV2X2VycigiLi4uIik7Cj4gCQlyZXR1cm4gUFRSX0VSUih0aGVybWFsLT5waW5jdHJs
-X3N0YXRlKTsKPiAJfQo+Cj4gICAJcGluY3RybF9zZWxlY3Rfc3RhdGUodGhlcm1hbC0+cGluY3Ry
-bCwgdGhlcm1hbC0+cGluY3RybF9zdGF0ZSk7Cj4KPgo+IAlbIC4uLiBdCj4KPiBJcyBpdCB3cm9u
-ZyA/Cj4KPgo+PiArCX0KPj4gKwo+PiAgIAlmb3IgKGkgPSAwOyBpIDwgdGhlcm1hbC0+Y2hpcC0+
-Y2huX251bTsgaSsrKSB7Cj4+ICAgCQllcnJvciA9IHJvY2tjaGlwX3RoZXJtYWxfcmVnaXN0ZXJf
-c2Vuc29yKHBkZXYsIHRoZXJtYWwsCj4+ICAgCQkJCQkJJnRoZXJtYWwtPnNlbnNvcnNbaV0sCj4+
-IEBAIC0xMzM3LDggKzEzNjcsOCBAQCBzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIHJvY2tjaGlw
-X3RoZXJtYWxfc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYpCj4+ICAgCj4+ICAgCWNsa19kaXNh
-YmxlKHRoZXJtYWwtPnBjbGspOwo+PiAgIAljbGtfZGlzYWJsZSh0aGVybWFsLT5jbGspOwo+PiAt
-Cj4+IC0JcGluY3RybF9wbV9zZWxlY3Rfc2xlZXBfc3RhdGUoZGV2KTsKPj4gKwlpZiAodGhlcm1h
-bC0+dHNodXRfbW9kZSA9PSBUU0hVVF9NT0RFX0dQSU8pCj4+ICsJCXBpbmN0cmxfc2VsZWN0X3N0
-YXRlKHRoZXJtYWwtPnBpbmN0cmwsIHRoZXJtYWwtPmdwaW9fc3RhdGUpOwo+IEFuZCB0aGVuOgo+
-IAkgcGluY3RybF9zZWxlY3Rfc3RhdGUodGhlcm1hbC0+cGluY3RybCwgdGhlcm1hbC0+cGluY3Ry
-bF9zdGF0ZSk7CgpwaW5jdHJsIHNlbGVjdCB0byBncGlvIG1vZGUgd2hlbiB0c2FkYyBzdXNwZW5k
-IGFuZCBzaHV0ZG93bi4KCldoZW4gc3VzcGVuZCwgdHNhZGMgaXMgZGlzYWJsZWQsIHRoZSBvdHBf
-cGluIHNob3VsZCByZXZlcnQgdG8gdGhlIApkZWZhdWx0IGdwaW8gc3RhdGUuCgo+Cj4+ICAgCj4+
-ICAgCXJldHVybiAwOwo+PiAgIH0KPj4gQEAgLTEzODMsNyArMTQxMyw4IEBAIHN0YXRpYyBpbnQg
-X19tYXliZV91bnVzZWQgcm9ja2NoaXBfdGhlcm1hbF9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2
-KQo+PiAgIAlmb3IgKGkgPSAwOyBpIDwgdGhlcm1hbC0+Y2hpcC0+Y2huX251bTsgaSsrKQo+PiAg
-IAkJcm9ja2NoaXBfdGhlcm1hbF90b2dnbGVfc2Vuc29yKCZ0aGVybWFsLT5zZW5zb3JzW2ldLCB0
-cnVlKTsKPj4gICAKPj4gLQlwaW5jdHJsX3BtX3NlbGVjdF9kZWZhdWx0X3N0YXRlKGRldik7Cj4+
-ICsJaWYgKHRoZXJtYWwtPnRzaHV0X21vZGUgPT0gVFNIVVRfTU9ERV9HUElPKQo+PiArCQlwaW5j
-dHJsX3NlbGVjdF9zdGF0ZSh0aGVybWFsLT5waW5jdHJsLCB0aGVybWFsLT5vdHBfc3RhdGUpOwo+
-IEFuZCB0aGVuCj4gCXBpbmN0cmxfc2VsZWN0X3N0YXRlKHRoZXJtYWwtPnBpbmN0cmwsIHRoZXJt
-YWwtPnBpbmN0cmxfc3RhdGUpOwoKcGluY3RybCBzZWxlY3QgdG8gb3RwIG1vZGUgd2hlbiB0c2Fk
-YyByZXN1bWUuCgo+Cj4+ICAgCXJldHVybiAwOwo+PiAgIH0KPj4KPgoKCgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
-bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On 08-03-19, 17:47, Gregory CLEMENT wrote:
+> The frequency calculation was based on the current(max) frequency of the
+> CPU. However for low frequency, the value used was already the parent
+> frequency divided by a factor of 2.
+> 
+> Instead of using this frequency, this fix directly get the frequency from
+> the parent clock.
+> 
+> Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
+> Cc: <stable@vger.kernel.org>
+> Reported-by: Christian Neubert <christian.neubert.86@gmail.com>
+> Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
+> ---
+>  drivers/cpufreq/armada-37xx-cpufreq.c | 22 +++++++++++++++++++---
+>  1 file changed, 19 insertions(+), 3 deletions(-)
+
+Applied this one.
+
+-- 
+viresh
