@@ -2,100 +2,122 @@ Return-Path: <SRS0=2Oin=S7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDD1CC43219
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 17:57:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45D5DC43219
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 19:10:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AD843215EA
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 17:57:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1153420675
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 19:10:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="vGMkC/TI"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ve8XuKyG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728882AbfD2R5L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Apr 2019 13:57:11 -0400
-Received: from smtp-fw-2101.amazon.com ([72.21.196.25]:18027 "EHLO
-        smtp-fw-2101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728844AbfD2R5L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 13:57:11 -0400
+        id S1729083AbfD2TKk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Apr 2019 15:10:40 -0400
+Received: from mail-it1-f196.google.com ([209.85.166.196]:37780 "EHLO
+        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729054AbfD2TKk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 15:10:40 -0400
+Received: by mail-it1-f196.google.com with SMTP id r85so818268itc.2;
+        Mon, 29 Apr 2019 12:10:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1556560630; x=1588096630;
-  h=from:to:subject:date:message-id:in-reply-to:references:
-   mime-version;
-  bh=VP2cUI8KjAFIewDrbCGl5adztK+upR77ms3b6lJ7QZA=;
-  b=vGMkC/TIMg40oY1Hbrd0Wc2gQyQNMKIhHUOTF4sFguENHVbeKt/yY64L
-   oWsU0K9l67tOzd6sNx6HnLmXG1yJg6QD8PiZ3NybmaXYINX0MdCTOoy2s
-   kxaD36wYKvnEZwQgOiF4APMYqFaic4nV0W/fHtEhL8e++4GaVMWCd7skj
-   4=;
-X-IronPort-AV: E=Sophos;i="5.60,410,1549929600"; 
-   d="scan'208";a="730991733"
-Received: from iad6-co-svc-p1-lb1-vlan2.amazon.com (HELO email-inbound-relay-1d-74cf8b49.us-east-1.amazon.com) ([10.124.125.2])
-  by smtp-border-fw-out-2101.iad2.amazon.com with ESMTP/TLS/DHE-RSA-AES256-SHA; 29 Apr 2019 09:47:57 +0000
-Received: from EX13MTAUEA001.ant.amazon.com (iad55-ws-svc-p15-lb9-vlan2.iad.amazon.com [10.40.159.162])
-        by email-inbound-relay-1d-74cf8b49.us-east-1.amazon.com (8.14.7/8.14.7) with ESMTP id x3T9ltnl088636
-        (version=TLSv1/SSLv3 cipher=AES256-SHA bits=256 verify=FAIL);
-        Mon, 29 Apr 2019 09:47:55 GMT
-Received: from EX13D01EUB001.ant.amazon.com (10.43.166.194) by
- EX13MTAUEA001.ant.amazon.com (10.43.61.243) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Mon, 29 Apr 2019 09:47:55 +0000
-Received: from udc4a3e82dbc15a031435.hfa14.amazon.com (10.43.160.175) by
- EX13D01EUB001.ant.amazon.com (10.43.166.194) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Mon, 29 Apr 2019 09:47:48 +0000
-From:   Talel Shenhar <talel@amazon.com>
-To:     <talel@amazon.com>, <robh@kernel.org>, <edubezval@gmail.com>,
-        <daniel.lezcano@linaro.org>, <dwmw@amazon.co.uk>,
-        <jonnyc@amazon.com>, <rui.zhang@intel.com>, <hhhawa@amazon.com>,
-        <ronenk@amazon.com>, <hanochu@amazon.com>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH 1/1] thermal: Fix build error of missing devm_ioremap_resource on UM
-Date:   Mon, 29 Apr 2019 12:47:36 +0300
-Message-ID: <1556531256-26321-1-git-send-email-talel@amazon.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <201904261215.nJZXSFjx%lkp@intel.com>
-References: <201904261215.nJZXSFjx%lkp@intel.com>
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=KkDvipA08mC8IxvH8qSF4bz6Gcm5+BjwC5oiwie6/+k=;
+        b=Ve8XuKyGlDC7d2Jvv5JaFeEFVAN2jn4Wg3QY/h79fYFFc1Gn6E1SWgOE0LXGs3cKFE
+         6uJSMSnHFL3OsVIykxCMPR0dttZ74X/ELKhgOBL/ILoONnzQ5ThckDLH1amLcUVNx3d6
+         W/GUBBAdD1ZPt3D110gl+7UoYrQEFRHsuAOLEsF1Rf6WgvZ7q0UqANogslubKvkn9tbF
+         9WbTvIoSc5HK9pb826UynoX6IbBoyw0t5qU8973CIGOQalIHLmjjCufU5CwqO/ovGSmV
+         FjgjjcPs9sqpnYkXcILGgODVrWI8Aef3xVhVoTbkJY1uRom7QOEMy/Pnn+J/nw8hHS0V
+         P/Nw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=KkDvipA08mC8IxvH8qSF4bz6Gcm5+BjwC5oiwie6/+k=;
+        b=RI4LI1MzZQtp2BVEm0mp0MN9NN/FUWuyBl736HfLvXHbvqEOFJn7CM+sJfLZLThHZ6
+         nSIDKGfmN9Rb7+VrkihIJQAkYiNBnkXmG52a8MimgIhEPwuyOlxu5Mo8wX1tIlCd+PbF
+         6g7kSESYpSsrpwWKA8+TeoDs0GXocJ4wCVuZasaMUQqOpH/YIdZ8BP5wpMA40pio3t1D
+         eQsKRgw6XrKKpeUe3XI5+20B0uBwsH4JyzVigPoDpcHKeBvlZstBUM0XvkPV4LshEXWE
+         w2TPODtMChCRYoGkS+YdbCnEYf9oA5W2r/AZ6IxsAnAh9ZcqcsHeuF3PHhf2Ju6nbPCN
+         BM4g==
+X-Gm-Message-State: APjAAAVsBwIG9aeQ+XQbW8RdO03s8L13w8iACZk6TGt2WCeyj0lwZAH2
+        8my/gW0CKqkaNsq/wD2XiVqiK8zGRwROvCmzDZM=
+X-Google-Smtp-Source: APXvYqxjcgCsVThGvzbspmleSENSy0vAB6gHVpHLHIM/eJvNC75iwpTXhF3s96hudw8y9HP19dvMhBdh2kK5aKvCYO4=
+X-Received: by 2002:a02:62ce:: with SMTP id d197mr43109134jac.91.1556565038867;
+ Mon, 29 Apr 2019 12:10:38 -0700 (PDT)
 MIME-Version: 1.0
+References: <20190429054741.7286-1-andrew.smirnov@gmail.com>
+ <20190429054741.7286-3-andrew.smirnov@gmail.com> <1556533656.2560.7.camel@pengutronix.de>
+In-Reply-To: <1556533656.2560.7.camel@pengutronix.de>
+From:   Andrey Smirnov <andrew.smirnov@gmail.com>
+Date:   Mon, 29 Apr 2019 12:10:27 -0700
+Message-ID:
+ <CAHQ1cqECkn3242zVb55ifmgEHdq0se91=PpS1zDL4wj2WdZmbw@mail.gmail.com>
+Subject: Re: [PATCH v2 2/3] power: supply: Add driver for Microchip UCS1002
+To:     Lucas Stach <l.stach@pengutronix.de>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        Enric Balletbo Serra <enric.balletbo@collabora.com>,
+        Chris Healy <cphealy@gmail.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Sebastian Reichel <sre@kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Originating-IP: [10.43.160.175]
-X-ClientProxiedBy: EX13D18UWC004.ant.amazon.com (10.43.162.77) To
- EX13D01EUB001.ant.amazon.com (10.43.166.194)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190429094736.-70pXKryM463qT3FsSTOcq2Rqk5pQSH30jEvDn5YtqA@z>
+Message-ID: <20190429191027.lG7uRGj1_pRHlHgok4-KwiIK8LyrOJxlkjNtLxxDkdg@z>
 
-The devres.o gets linked if HAS_IOMEM is present so on ARCH=um
-allyesconfig (COMPILE_TEST) failed on many files with:
+On Mon, Apr 29, 2019 at 3:27 AM Lucas Stach <l.stach@pengutronix.de> wrote:
+>
+> Hi Andrey,
+>
+> Am Sonntag, den 28.04.2019, 22:47 -0700 schrieb Andrey Smirnov:
+> > Add driver for Microchip UCS1002 Programmable USB Port Power
+> > Controller with Charger Emulation. The driver exposed a power supply
+> > device to control/monitor various parameter of the device as well as a
+> > regulator to allow controlling VBUS line.
+> >
+> > > Signed-off-by: Enric Balletbo Serra <enric.balletbo@collabora.com>
+> > > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> > > Cc: Chris Healy <cphealy@gmail.com>
+> > > Cc: Lucas Stach <l.stach@pengutronix.de>
+> > > Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> > > Cc: Guenter Roeck <linux@roeck-us.net>
+> > > Cc: Sebastian Reichel <sre@kernel.org>
+> > Cc: linux-kernel@vger.kernel.org
+> > Cc: linux-pm@vger.kernel.org
+> > ---
+> [...]
+> > +     /* Enable charge rationing by default */
+> > > +   ret = regmap_update_bits(info->regmap, UCS1002_REG_GENERAL_CFG,
+> > > +                            F_RATION_EN, F_RATION_EN);
+> > > +   if (ret) {
+> > > +           dev_err(dev, "Failed to read general config: %d\n", ret);
+> > > +           return ret;
+> > > +   }
+> > +
+> > > +   /*
+> > > +    * Ignore the M1, M2, PWR_EN, and EM_EN pin states. Set active
+> > > +    * mode selection to BC1.2 CDP.
+> > > +    */
+> > > +   ret = regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
+> > > +                            V_SET_ACTIVE_MODE_MASK,
+> > +                              V_SET_ACTIVE_MODE_BC12_CDP);
+>
+> This doesn't work as the F_PIN_IGNORE bit isn't set, so the the
+> external strap settings are applied. I had to apply the following diff
+> to make the driver behave as expected again:
+>
 
-drivers/thermal/thermal_mmio.o:
-In function 'thermal_mmio_probe':thermal_mmio.c:(.text+0xe1):
-undefined reference to `devm_ioremap_resource'
+Ugh, I missed this since pins on my board are set properly. Thanks for
+catching that and sorry about the bug. Will fix in v3.
 
-The users of devm_ioremap_resource() which are compile-testable
-should depend on HAS_IOMEM.
-
-Reported-by: kbuild test robot <lkp@intel.com>
-Signed-off-by: Talel Shenhar <talel@amazon.com>
----
- drivers/thermal/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 41f3943..66a709d 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -203,6 +203,7 @@ config THERMAL_EMULATION
- config THERMAL_MMIO
- 	tristate "Generic Thermal MMIO driver"
- 	depends on OF || COMPILE_TEST
-+	depends on HAS_IOMEM
- 	help
- 	  This option enables the generic thermal MMIO driver that will use
- 	  memory-mapped reads to get the temperature.  Any HW/System that
--- 
-2.7.4
-
+Thanks,
+Andrey Smirnov
