@@ -1,92 +1,74 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v3 2/3] power: supply: Add driver for Microchip UCS1002
-Date: Mon, 29 Apr 2019 13:36:01 -0700
-Message-ID: <20190429203601.GA22613@roeck-us.net>
-References: <20190429195349.20335-1-andrew.smirnov@gmail.com>
- <20190429195349.20335-3-andrew.smirnov@gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 2/4] dt-bindings: power: supply: Max17040: Add low
+ level SOC alert threshold
+Date: Mon, 29 Apr 2019 17:13:53 -0500
+Message-ID: <20190429221353.GA25837@bogus>
+References: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
+ <20190415012635.6369-1-matheus@castello.eng.br>
+ <20190415012635.6369-3-matheus@castello.eng.br>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190429195349.20335-3-andrew.smirnov@gmail.com>
+In-Reply-To: <20190415012635.6369-3-matheus@castello.eng.br>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
+To: Matheus Castello <matheus@castello.eng.br>
+Cc: sre@kernel.org, krzk@kernel.org, mark.rutland@arm.com, cw00.choi@samsung.com, b.zolnierkie@samsung.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 29, 2019 at 12:53:48PM -0700, Andrey Smirnov wrote:
-> Add driver for Microchip UCS1002 Programmable USB Port Power
-> Controller with Charger Emulation. The driver exposed a power supply
-> device to control/monitor various parameter of the device as well as a
-> regulator to allow controlling VBUS line.
+On Sun, Apr 14, 2019 at 10:26:33PM -0300, Matheus Castello wrote:
+> For configure low level state of charge threshold alert signaled from
+> max17040 we add "maxim,alert-soc-level" property.
 > 
-> Signed-off-by: Enric Balletbo Serra <enric.balletbo@collabora.com>
-> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> Cc: Chris Healy <cphealy@gmail.com>
-> Cc: Lucas Stach <l.stach@pengutronix.de>
-> Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
 > ---
->  drivers/power/supply/Kconfig         |   9 +
->  drivers/power/supply/Makefile        |   1 +
->  drivers/power/supply/ucs1002_power.c | 646 +++++++++++++++++++++++++++
->  3 files changed, 656 insertions(+)
->  create mode 100644 drivers/power/supply/ucs1002_power.c
+>  .../power/supply/max17040_battery.txt         | 24 +++++++++++++++++++
+>  1 file changed, 24 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
 > 
-> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index e901b9879e7e..c614c8a196f3 100644
-> --- a/drivers/power/supply/Kconfig
-> +++ b/drivers/power/supply/Kconfig
-> @@ -660,4 +660,13 @@ config FUEL_GAUGE_SC27XX
->  	 Say Y here to enable support for fuel gauge with SC27XX
->  	 PMIC chips.
->  
-> +config CHARGER_UCS1002
-> +        tristate "Microchip UCS1002 USB Port Power Controller"
-> +	depends on I2C
-> +	depends on OF
-> +	select REGMAP_I2C
-> +	help
-> +	  Say Y to enable support for Microchip UCS1002 Programmable
-> +	  USB Port Power Controller with Charger Emulation.
-> +
->  endif # POWER_SUPPLY
-> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> index b731c2a9b695..c56803a9e4fe 100644
-> --- a/drivers/power/supply/Makefile
-> +++ b/drivers/power/supply/Makefile
-> @@ -87,3 +87,4 @@ obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
->  obj-$(CONFIG_CHARGER_CROS_USBPD)	+= cros_usbpd-charger.o
->  obj-$(CONFIG_CHARGER_SC2731)	+= sc2731_charger.o
->  obj-$(CONFIG_FUEL_GAUGE_SC27XX)	+= sc27xx_fuel_gauge.o
-> +obj-$(CONFIG_CHARGER_UCS1002)	+= ucs1002_power.o
-> diff --git a/drivers/power/supply/ucs1002_power.c b/drivers/power/supply/ucs1002_power.c
+> diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
 > new file mode 100644
-> index 000000000000..677f20a4d76f
+> index 000000000000..9b2cc67d556f
 > --- /dev/null
-> +++ b/drivers/power/supply/ucs1002_power.c
-> @@ -0,0 +1,646 @@
-...
+> +++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+> @@ -0,0 +1,24 @@
+> +max17040_battery
+> +~~~~~~~~~~~~~~~~
 > +
-> +static enum power_supply_usb_type ucs1002_usb_types[] = {
-> +	POWER_SUPPLY_USB_TYPE_PD,
-> +	POWER_SUPPLY_USB_TYPE_SDP,
-> +	POWER_SUPPLY_USB_TYPE_DCP,
-> +	POWER_SUPPLY_USB_TYPE_CDP,
-> +	POWER_SUPPLY_USB_TYPE_UNKNOWN,
-> +};
-> +
-> +static int ucs1002_set_usb_type(struct ucs1002_info *info, int val)
-> +{
-> +	unsigned int mode;
-> +
-> +	if (val >= ARRAY_SIZE(ucs1002_usb_types))
-> +		return -EINVAL;
-> +
-I hate to bring it up that late, but I don't see a check
-against val being negative anywhere in the calling code.
+> +Required properties :
+> + - compatible : "maxim,max17040" or "maxim,max77836-battery"
 
-Guenter
+This is really a charger, not a battery.
+
+> +
+> +Optional properties :
+> +- maxim,alert-soc-level :	The alert threshold that sets the state of
+> + 				charge level where an interrupt is generated.
+> +                          	Can be configured from 1 up to 32. If skipped
+> +				the power up default value of 4 will be used.
+
+Units? This is a low or high alert? Does a common property make sense 
+here?
+
+> +- interrupt-parent : 		The GPIO bank from the interrupt line.
+
+Drop this. interrupt-parent is implied.
+
+> +- interrupts : 			Interrupt line see Documentation/devicetree/
+> +				bindings/interrupt-controller/interrupts.txt
+> +
+> +Example:
+> +
+> +	battery-charger@36 {
+> +		compatible = "maxim,max17040";
+> +		reg = <0x36>;
+> +		maxim,alert-soc-level = <10>;
+> +		interrupt-parent = <&gpio7>;
+> +		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
+
+Usually there are battery properties that need to be described too...
+
+> +	};
+> -- 
+> 2.17.0
+> 
