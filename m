@@ -2,152 +2,105 @@ Return-Path: <SRS0=2Oin=S7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7275C43219
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 08:38:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 667B5C43219
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 08:41:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 90446214AE
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 08:38:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 34DB0205ED
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 08:41:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Tn+XgiyH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727566AbfD2IiD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Apr 2019 04:38:03 -0400
-Received: from mga18.intel.com ([134.134.136.126]:64691 "EHLO mga18.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727517AbfD2IiD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Apr 2019 04:38:03 -0400
-X-Amp-Result: UNSCANNABLE
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 29 Apr 2019 01:38:02 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,409,1549958400"; 
-   d="diff'?scan'208";a="341737777"
-Received: from mylly.fi.intel.com (HELO [10.237.72.79]) ([10.237.72.79])
-  by fmsmga006.fm.intel.com with ESMTP; 29 Apr 2019 01:37:59 -0700
-Subject: Re: [Bug 203297] Synaptics touchpad TM-3127 functionality broken by
- PCI runtime power management patch on 4.20.2
-To:     Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Cc:     Bjorn Helgaas <helgaas@kernel.org>,
-        Keijo Vaara <ferdasyn@rocketmail.com>,
-        Jean Delvare <jdelvare@suse.de>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        linux-pm@vger.kernel.org, linux-pci@vger.kernel.org,
-        lkml <linux-kernel@vger.kernel.org>,
-        "open list:HID CORE LAYER" <linux-input@vger.kernel.org>
-References: <20190422130814.GJ173520@google.com>
- <3a1139ef-10ed-6923-73c5-30fbf0c065c3@linux.intel.com>
- <CAO-hwJKvXO6L7m0g1D6wycFP=Wu_qLDyLXTtmm0TkpxT5Z8ygw@mail.gmail.com>
-From:   Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Message-ID: <e96a7220-974f-1df6-70ee-695ee815057f@linux.intel.com>
-Date:   Mon, 29 Apr 2019 11:36:16 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <CAO-hwJKvXO6L7m0g1D6wycFP=Wu_qLDyLXTtmm0TkpxT5Z8ygw@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------004E56005F75F0C34870FB19"
-Content-Language: en-US
+        id S1727547AbfD2IlA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Apr 2019 04:41:00 -0400
+Received: from mail-wr1-f68.google.com ([209.85.221.68]:35039 "EHLO
+        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727669AbfD2IlA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 04:41:00 -0400
+Received: by mail-wr1-f68.google.com with SMTP id f7so6229915wrs.2
+        for <linux-pm@vger.kernel.org>; Mon, 29 Apr 2019 01:40:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=RkuphNEeqnp3OCEr+63Sfar4bxKyDZqKVHUmZHrORFY=;
+        b=Tn+XgiyHsSFyzqj6mkPF6TWU/4PyPnJREoDA1sBsDlBHvI31Bsltv/9TaD6qLH7plq
+         UuYqnjCfnvsMNujerwut2P8bQ0faee6kXncevbLSpxt2Y7+SqclZDwbLlW4XCaFRU9JA
+         ta0D4RAK1aeP7xBQozPEesR1FkG56N/bKj/mRORuDY0wtn/X1lmAr8IOp7Rqmdumd6Jq
+         daC8WXTQVn+up+RJlTXIwgex0wrJ1CicFQjVc9c4eR2pcDHQHeu5PuwG4BulNhUPZoux
+         GdcLvhmA+scPpv81SXivS7zAvWTgqQnTguQE3i9kmf/Hm9htglHwaZF/QC60k89XyVwk
+         kEqw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=RkuphNEeqnp3OCEr+63Sfar4bxKyDZqKVHUmZHrORFY=;
+        b=G8bHa9C2+LcgN78lq5SutRUpo22OuhHfUPjtSX1EO2lNlN41hxBwEx9+KK63Sj9mAY
+         pnYNwPLVmXvhk4PNGWKGWO4y/AE3WL6tKW+6zLTnrepto96LzADHLL+Dk0AVft6G1bNC
+         GMvgSDm08vZnlMszPrAt2Vm1HEPf7Bpm/JPkJrX4j+kevUx/lkrREPqLgxzTcwRNcCIR
+         4Yu7v96O8dWl7mnbaZB3iCmw3TTDz6fYqvYcqgKPNVdVR1WjD4oC0OzmG7M9CoVU9Wkv
+         inNtVr2gWfWnWxrJ8ojQbcleOi7mPq4S4Ky6vJqzLzRGOuKCF4ejpt9mZC6YsceEbBJI
+         YnfA==
+X-Gm-Message-State: APjAAAWo+qgp6bZ/T0i70Gsyuw4/XrlAYxNyzA546PU6dSRoaoHKzUb7
+        rc+gqWZIouXubQn1X+MEEKjKag==
+X-Google-Smtp-Source: APXvYqxGzGkretE4afo2nM4aoNaWHr/uFvy91W/ZDPl9IB3/bIPrF2LMkCXOtnEDQghdyePdoVt7pA==
+X-Received: by 2002:adf:fc49:: with SMTP id e9mr17637388wrs.269.1556527258884;
+        Mon, 29 Apr 2019 01:40:58 -0700 (PDT)
+Received: from clegane.local (129.201.95.92.rev.sfr.net. [92.95.201.129])
+        by smtp.gmail.com with ESMTPSA id n6sm39795964wmn.48.2019.04.29.01.40.57
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 29 Apr 2019 01:40:58 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     edubezval@gmail.com, rui.zhang@intel.com
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Javi Merino <javi.merino@kernel.org>
+Subject: [PATCH - resend] thermal/drivers/cpu_cooling: Fixup the header and copyright
+Date:   Mon, 29 Apr 2019 10:40:12 +0200
+Message-Id: <20190429084012.23244-1-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190429054350.kaup4w2b5yx3mdqb@vireshk-i7>
+References: <20190429054350.kaup4w2b5yx3mdqb@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190429083616.0CkcFmhlOB5k7-VImiD1M2h2D-ISjbs_8hZ7R9pu9_E@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190429084012.WyfHTRr-i3gE_nehkG275jmUSIyQHPdIOEUMOqd5whc@z>
 
-This is a multi-part message in MIME format.
---------------004E56005F75F0C34870FB19
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+The copyright format does not conform to the format requested by
+Linaro: https://wiki.linaro.org/Copyright
 
-On 4/29/19 10:45 AM, Benjamin Tissoires wrote:
->> I would like to ask help from input subsystem experts what kind of SMBus
->> power state dependency Synaptics RMI4 SMBus devices have since it cease
->> to work if SMBus controllers idles between transfers and how this is
->> best to fix?
-> 
-> Hmm, I am not sure there is such an existing architecture you could
-> use in a simple patch.
-> 
-> rmi-driver.c does indeed create an input device we could use to toggle
-> on/off the PM state, but those callbacks are not wired to the
-> transport driver (rmi_smbus.c), so it would required a little bit of
-> extra work. And then, there are other RMI4 functions (firmware
-> upgrade) that would not be happy if PM is in suspend while there is no
-> open input node.
-> 
-I see.
+Fix it.
 
-I got another thought about this. I noticed these input drivers need 
-SMBus Host Notify, maybe that explain the PM dependency? If that's the 
-only dependency then we could prevent the controller suspend if there is 
-a client needing host notify mechanism. IMHO that's less hack than the 
-patch to rmi_smbus.c.
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/thermal/cpu_cooling.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Keijo: care to test does this idea would fix the issue (without the 
-previous patch)? I also attached the diff.
-
-diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-index 38af18645133..d54eafad7727 100644
---- a/drivers/i2c/i2c-core-base.c
-+++ b/drivers/i2c/i2c-core-base.c
-@@ -327,6 +327,8 @@ static int i2c_device_probe(struct device *dev)
-
-  		if (client->flags & I2C_CLIENT_HOST_NOTIFY) {
-  			dev_dbg(dev, "Using Host Notify IRQ\n");
-+			/* Adapter should not suspend for Host Notify */
-+			pm_runtime_get_sync(&client->adapter->dev);
-  			irq = i2c_smbus_host_notify_to_irq(client);
-  		} else if (dev->of_node) {
-  			irq = of_irq_get_byname(dev->of_node, "irq");
-@@ -431,6 +433,8 @@ static int i2c_device_remove(struct device *dev)
-  	device_init_wakeup(&client->dev, false);
-
-  	client->irq = client->init_irq;
-+	if (client->flags & I2C_CLIENT_HOST_NOTIFY)
-+		pm_runtime_put(&client->adapter->dev);
-
-  	return status;
-  }
-
-> So I think this "hack" (with Mika's comments addressed) should go in
-> until someone starts propagating the PM states correctly.
-> 
-I guess you mean the Rafael's pm_runtime_get_sync() comment?
-
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index ee8419a6390c..42aeb9087cab 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -2,9 +2,11 @@
+  *  linux/drivers/thermal/cpu_cooling.c
+  *
+  *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
+- *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
+  *
+- *  Copyright (C) 2014  Viresh Kumar <viresh.kumar@linaro.org>
++ *  Copyright (C) 2012-2018 Linaro Limited.
++ *
++ *  Authors:	Amit Daniel <amit.kachhap@linaro.org>
++ *		Viresh Kumar <viresh.kumar@linaro.org>
+  *
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  *  This program is free software; you can redistribute it and/or modify
 -- 
-Jarkko
+2.17.1
 
---------------004E56005F75F0C34870FB19
-Content-Type: text/x-patch;
- name="i2c-core-host-notify-pm.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="i2c-core-host-notify-pm.diff"
-
-diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-index 38af18645133..d54eafad7727 100644
---- a/drivers/i2c/i2c-core-base.c
-+++ b/drivers/i2c/i2c-core-base.c
-@@ -327,6 +327,8 @@ static int i2c_device_probe(struct device *dev)
- 
- 		if (client->flags & I2C_CLIENT_HOST_NOTIFY) {
- 			dev_dbg(dev, "Using Host Notify IRQ\n");
-+			/* Adapter should not suspend for Host Notify */
-+			pm_runtime_get_sync(&client->adapter->dev);
- 			irq = i2c_smbus_host_notify_to_irq(client);
- 		} else if (dev->of_node) {
- 			irq = of_irq_get_byname(dev->of_node, "irq");
-@@ -431,6 +433,8 @@ static int i2c_device_remove(struct device *dev)
- 	device_init_wakeup(&client->dev, false);
- 
- 	client->irq = client->init_irq;
-+	if (client->flags & I2C_CLIENT_HOST_NOTIFY)
-+		pm_runtime_put(&client->adapter->dev);
- 
- 	return status;
- }
-
---------------004E56005F75F0C34870FB19--
