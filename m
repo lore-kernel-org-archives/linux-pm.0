@@ -1,68 +1,92 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v3 0/3] Driver for UCS1002
-Date: Mon, 29 Apr 2019 12:53:46 -0700
-Message-ID: <20190429195349.20335-1-andrew.smirnov@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 2/3] power: supply: Add driver for Microchip UCS1002
+Date: Mon, 29 Apr 2019 13:36:01 -0700
+Message-ID: <20190429203601.GA22613@roeck-us.net>
+References: <20190429195349.20335-1-andrew.smirnov@gmail.com>
+ <20190429195349.20335-3-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190429195349.20335-3-andrew.smirnov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Enric Balletbo Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
+To: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: linux-pm@vger.kernel.org, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Everyone:
+On Mon, Apr 29, 2019 at 12:53:48PM -0700, Andrey Smirnov wrote:
+> Add driver for Microchip UCS1002 Programmable USB Port Power
+> Controller with Charger Emulation. The driver exposed a power supply
+> device to control/monitor various parameter of the device as well as a
+> regulator to allow controlling VBUS line.
+> 
+> Signed-off-by: Enric Balletbo Serra <enric.balletbo@collabora.com>
+> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> Cc: Chris Healy <cphealy@gmail.com>
+> Cc: Lucas Stach <l.stach@pengutronix.de>
+> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  drivers/power/supply/Kconfig         |   9 +
+>  drivers/power/supply/Makefile        |   1 +
+>  drivers/power/supply/ucs1002_power.c | 646 +++++++++++++++++++++++++++
+>  3 files changed, 656 insertions(+)
+>  create mode 100644 drivers/power/supply/ucs1002_power.c
+> 
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index e901b9879e7e..c614c8a196f3 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -660,4 +660,13 @@ config FUEL_GAUGE_SC27XX
+>  	 Say Y here to enable support for fuel gauge with SC27XX
+>  	 PMIC chips.
+>  
+> +config CHARGER_UCS1002
+> +        tristate "Microchip UCS1002 USB Port Power Controller"
+> +	depends on I2C
+> +	depends on OF
+> +	select REGMAP_I2C
+> +	help
+> +	  Say Y to enable support for Microchip UCS1002 Programmable
+> +	  USB Port Power Controller with Charger Emulation.
+> +
+>  endif # POWER_SUPPLY
+> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+> index b731c2a9b695..c56803a9e4fe 100644
+> --- a/drivers/power/supply/Makefile
+> +++ b/drivers/power/supply/Makefile
+> @@ -87,3 +87,4 @@ obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
+>  obj-$(CONFIG_CHARGER_CROS_USBPD)	+= cros_usbpd-charger.o
+>  obj-$(CONFIG_CHARGER_SC2731)	+= sc2731_charger.o
+>  obj-$(CONFIG_FUEL_GAUGE_SC27XX)	+= sc27xx_fuel_gauge.o
+> +obj-$(CONFIG_CHARGER_UCS1002)	+= ucs1002_power.o
+> diff --git a/drivers/power/supply/ucs1002_power.c b/drivers/power/supply/ucs1002_power.c
+> new file mode 100644
+> index 000000000000..677f20a4d76f
+> --- /dev/null
+> +++ b/drivers/power/supply/ucs1002_power.c
+> @@ -0,0 +1,646 @@
+...
+> +
+> +static enum power_supply_usb_type ucs1002_usb_types[] = {
+> +	POWER_SUPPLY_USB_TYPE_PD,
+> +	POWER_SUPPLY_USB_TYPE_SDP,
+> +	POWER_SUPPLY_USB_TYPE_DCP,
+> +	POWER_SUPPLY_USB_TYPE_CDP,
+> +	POWER_SUPPLY_USB_TYPE_UNKNOWN,
+> +};
+> +
+> +static int ucs1002_set_usb_type(struct ucs1002_info *info, int val)
+> +{
+> +	unsigned int mode;
+> +
+> +	if (val >= ARRAY_SIZE(ucs1002_usb_types))
+> +		return -EINVAL;
+> +
+I hate to bring it up that late, but I don't see a check
+against val being negative anywhere in the calling code.
 
-This small series adds a driver for UCS1002 Programmable USB Port
-Power Controller with Charger Emulation. See [page] for product page
-and [datasheet] for device dataseet. Hopefully each individual patch
-is self explanatory.
-
-Note that this series is a revival of the upstreaming effort by Enric
-Balletbo Serra last version of which can be found at [original-effort]
-
-Feedback is welcome!
-
-Thanks,
-Andrey Smirnov
-
-Changes since [v2]:
-
-    - Fixed a bug pointed out by Lucas
-
-Changes since [v1]:
-
-    - Moved IRQ trigger specification to DT
-
-    - Fixed silent error paths in probe()
-    
-    - Dropped error message in ucs1002_set_max_current()
-
-    - Fixed license mismatch
-
-    - Changed the driver to configure the chip to BC1.2 CDP by default
-
-    - Made other small fixes as per feedback for v1
-
-[v2] https://lore.kernel.org/lkml/20190429054741.7286-1-andrew.smirnov@gmail.com
-[v1] https://lore.kernel.org/lkml/20190417084457.28747-1-andrew.smirnov@gmail.com/
-[page] https://www.microchip.com/wwwproducts/en/UCS1002-2
-[datasheet] https://ww1.microchip.com/downloads/en/DeviceDoc/UCS1002-2%20Data%20Sheet.pdf
-[original-effort] https://lore.kernel.org/lkml/1460705181-10493-1-git-send-email-enric.balletbo@collabora.com/
-
-Andrey Smirnov (3):
-  power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
-  power: supply: Add driver for Microchip UCS1002
-  dt-bindings: power: supply: Add bindings for Microchip UCS1002
-
- .../power/supply/microchip,ucs1002.txt        |  27 +
- drivers/power/supply/Kconfig                  |   9 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/power_supply_sysfs.c     |   2 +-
- drivers/power/supply/ucs1002_power.c          | 646 ++++++++++++++++++
- include/linux/power_supply.h                  |   1 +
- 6 files changed, 685 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
- create mode 100644 drivers/power/supply/ucs1002_power.c
-
--- 
-2.20.1
+Guenter
