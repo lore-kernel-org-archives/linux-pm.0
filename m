@@ -1,113 +1,94 @@
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-Subject: Re: [PATCH next 23/25] thermal: Use dev_get_drvdata()
-Date: Mon, 29 Apr 2019 14:55:28 +0800
-Message-ID: <c835c3db-a070-94d5-d4d1-ae9bb521b76d@huawei.com>
-References: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
- <20190423075020.173734-24-wangkefeng.wang@huawei.com>
- <1556509663.2396.8.camel@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [Bug 203297] Synaptics touchpad TM-3127 functionality broken by
+ PCI runtime power management patch on 4.20.2
+Date: Mon, 29 Apr 2019 09:04:05 +0200
+Message-ID: <CAJZ5v0iYYJBR77R51y1hVKsBQDmUpv5_dtSqMMiCoEZgC5cX=g@mail.gmail.com>
+References: <20190422130814.GJ173520@google.com> <3a1139ef-10ed-6923-73c5-30fbf0c065c3@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1556509663.2396.8.camel@intel.com>
-Content-Language: en-US
+In-Reply-To: <3a1139ef-10ed-6923-73c5-30fbf0c065c3@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Keijo Vaara <ferdasyn@rocketmail.com>, Jean Delvare <jdelvare@suse.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Benjamin Tissoires <benjamin.tissoires@redhat.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-On 2019/4/29 11:47, Zhang Rui wrote:
-> On 二, 2019-04-23 at 15:50 +0800, Kefeng Wang wrote:
->> Using dev_get_drvdata directly.
->>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <edubezval@gmail.com>
->> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
->> ---
->>  .../intel/int340x_thermal/processor_thermal_device.c      | 8 +-----
->> --
->>  drivers/thermal/st/stm_thermal.c                          | 6 ++----
->>  2 files changed, 3 insertions(+), 11 deletions(-)
->>
->> diff --git
->> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
->> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
->> index 8e1cf4d789be..4ad54b8d4778 100644
->> ---
->> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
->> +++
->> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
->> @@ -81,8 +81,6 @@ static ssize_t
->> power_limit_##index##_##suffix##_show(struct device *dev, \
->>  					struct device_attribute
->> *attr, \
->>  					char *buf) \
->>  { \
->> -	struct pci_dev *pci_dev; \
->> -	struct platform_device *pdev; \
->>  	struct proc_thermal_device *proc_dev; \
->>  	\
->>  	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
->> @@ -91,11 +89,7 @@ static ssize_t
->> power_limit_##index##_##suffix##_show(struct device *dev, \
->>  	} \
->>  	\
->>  	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
->> -		pdev = to_platform_device(dev); \
->> -		proc_dev = platform_get_drvdata(pdev); \
->> -	} else { \
->> -		pci_dev = to_pci_dev(dev); \
->> -		proc_dev = pci_get_drvdata(pci_dev); \
->> +		proc_dev = dev_get_drvdata(dev); \
->>  	} \
->>  	return sprintf(buf, "%lu\n",\
->>  	(unsigned long)proc_dev->power_limits[index].suffix * 1000);
->> \
-> Sumeet has a patch to fix the same issue, which has been in my tree
-> https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git/commit
-> /?h=next&id=1948d498dcf680bc650391f23da2f97e59f9126d
+On Fri, Apr 26, 2019 at 2:14 PM Jarkko Nikula
+<jarkko.nikula@linux.intel.com> wrote:
 >
-> Plus, the previous fix is wrong because proc_dev will be left
-> uninitialized if proc_thermal_emum_mode equals PROC_THERMAL_PCI.
-
-oh, Sumeet's patch is the right one and much cleaner.
-
-
+> On 4/22/19 4:08 PM, Bjorn Helgaas wrote:
+> > https://bugzilla.kernel.org/show_bug.cgi?id=203297
+> >
+> > Regression, suspected but as yet unconfirmed cause:
+> >
+> >    c5eb1190074c ("PCI / PM: Allow runtime PM without callback functions")
+> >
+> > backported to 4.20 stable as 39e1be324c2f.
+> >
+> With help of Keijo it was confirmed above patch broke the Synaptics
+> touchpad. Not bisected but touchpad works again by forcing the i2c-i801
+> SMBus controller always on:
+> "echo on >/sys/bus/pci/devices/0000\:00\:1f.3/power/control"
 >
-> thanks,
-> rui
+> Above patch is a generalized fix that fixed the runtime PM regression on
+> i2c-i801 and re-allow the controller go to runtime suspend when idle. So
+> most probably Synaptics touchpad was broken by i2c-i801 runtime PM also
+> before but got unnoticed. Which is easy since on many platforms SMBus
+> controller doesn't necessarily have the PCI PM capabilities.
 >
->> diff --git a/drivers/thermal/st/stm_thermal.c
->> b/drivers/thermal/st/stm_thermal.c
->> index bbd73c5a4a4e..cf9ddc52f30e 100644
->> --- a/drivers/thermal/st/stm_thermal.c
->> +++ b/drivers/thermal/st/stm_thermal.c
->> @@ -570,8 +570,7 @@ static int stm_thermal_prepare(struct
->> stm_thermal_sensor *sensor)
->>  static int stm_thermal_suspend(struct device *dev)
->>  {
->>  	int ret;
->> -	struct platform_device *pdev = to_platform_device(dev);
->> -	struct stm_thermal_sensor *sensor =
->> platform_get_drvdata(pdev);
->> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
->>  
->>  	ret = stm_thermal_sensor_off(sensor);
->>  	if (ret)
->> @@ -585,8 +584,7 @@ static int stm_thermal_suspend(struct device
->> *dev)
->>  static int stm_thermal_resume(struct device *dev)
->>  {
->>  	int ret;
->> -	struct platform_device *pdev = to_platform_device(dev);
->> -	struct stm_thermal_sensor *sensor =
->> platform_get_drvdata(pdev);
->> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
->>  
->>  	ret = stm_thermal_prepare(sensor);
->>  	if (ret)
-> .
+> I would like to ask help from input subsystem experts what kind of SMBus
+> power state dependency Synaptics RMI4 SMBus devices have since it cease
+> to work if SMBus controllers idles between transfers and how this is
+> best to fix?
 >
+> Instead of revert I think we'd need to have some method to force SMBus
+> controller on whenever the touchpad is active, like when there is a
+> userspace listening.
+>
+> I'm not expert in this area so as quick proof of concept I had a
+> following hack which forces the I2C/SMBus adapter, and eventually the
+> parent PCI device of it on when the RMI4 SMBus device is probed and let
+> the SMBus controller to idle when removed.
+>
+> According to Keijo it fixes the issue but I like to hear input experts
+> for better place to put these.
+>
+> diff --git a/drivers/input/rmi4/rmi_smbus.c b/drivers/input/rmi4/rmi_smbus.c
+> index b6ccf39c6a7b..2b11d69be313 100644
+> --- a/drivers/input/rmi4/rmi_smbus.c
+> +++ b/drivers/input/rmi4/rmi_smbus.c
+> @@ -16,6 +16,7 @@
+>   #include <linux/lockdep.h>
+>   #include <linux/module.h>
+>   #include <linux/pm.h>
+> +#include <linux/pm_runtime.h>
+>   #include <linux/rmi.h>
+>   #include <linux/slab.h>
+>   #include "rmi_driver.h"
+> @@ -332,6 +333,9 @@ static int rmi_smb_probe(struct i2c_client *client,
+>
+>         dev_info(&client->dev, "registering SMbus-connected sensor\n");
+>
+> +       /* Force SMBus adapter on while RMI4 device is connected */
+> +       pm_runtime_get(&client->adapter->dev);
+
+That should be pm_runtime_get_sync() IMO.
+
+Otherwise, the rmi_register_transport_device() may be called before
+completing the PM transition.
+
+> +
+>         error = rmi_register_transport_device(&rmi_smb->xport);
+>         if (error) {
+>                 dev_err(&client->dev, "failed to register sensor: %d\n", error);
+> @@ -346,6 +350,7 @@ static int rmi_smb_remove(struct i2c_client *client)
+>         struct rmi_smb_xport *rmi_smb = i2c_get_clientdata(client);
+>
+>         rmi_unregister_transport_device(&rmi_smb->xport);
+> +       pm_runtime_put(&client->adapter->dev);
+>
+>         return 0;
+>   }
+>
+> --
+> Jarkko
