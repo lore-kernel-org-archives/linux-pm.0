@@ -1,43 +1,62 @@
-From: Talel Shenhar <talel@amazon.com>
-Subject: [PATCH 1/1] thermal: Fix build error of missing devm_ioremap_resource on UM
-Date: Mon, 29 Apr 2019 12:47:36 +0300
-Message-ID: <1556531256-26321-1-git-send-email-talel@amazon.com>
-References: <201904261215.nJZXSFjx%lkp@intel.com>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: Re: [PATCH v2 2/3] power: supply: Add driver for Microchip UCS1002
+Date: Mon, 29 Apr 2019 12:10:27 -0700
+Message-ID: <CAHQ1cqECkn3242zVb55ifmgEHdq0se91=PpS1zDL4wj2WdZmbw@mail.gmail.com>
+References: <20190429054741.7286-1-andrew.smirnov@gmail.com>
+ <20190429054741.7286-3-andrew.smirnov@gmail.com> <1556533656.2560.7.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201904261215.nJZXSFjx%lkp@intel.com>
+In-Reply-To: <1556533656.2560.7.camel@pengutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: talel@amazon.com, robh@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, dwmw@amazon.co.uk, jonnyc@amazon.com, rui.zhang@intel.com, hhhawa@amazon.com, ronenk@amazon.com, hanochu@amazon.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The devres.o gets linked if HAS_IOMEM is present so on ARCH=um
-allyesconfig (COMPILE_TEST) failed on many files with:
+On Mon, Apr 29, 2019 at 3:27 AM Lucas Stach <l.stach@pengutronix.de> wrote:
+>
+> Hi Andrey,
+>
+> Am Sonntag, den 28.04.2019, 22:47 -0700 schrieb Andrey Smirnov:
+> > Add driver for Microchip UCS1002 Programmable USB Port Power
+> > Controller with Charger Emulation. The driver exposed a power supply
+> > device to control/monitor various parameter of the device as well as a
+> > regulator to allow controlling VBUS line.
+> >
+> > > Signed-off-by: Enric Balletbo Serra <enric.balletbo@collabora.com>
+> > > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> > > Cc: Chris Healy <cphealy@gmail.com>
+> > > Cc: Lucas Stach <l.stach@pengutronix.de>
+> > > Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> > > Cc: Guenter Roeck <linux@roeck-us.net>
+> > > Cc: Sebastian Reichel <sre@kernel.org>
+> > Cc: linux-kernel@vger.kernel.org
+> > Cc: linux-pm@vger.kernel.org
+> > ---
+> [...]
+> > +     /* Enable charge rationing by default */
+> > > +   ret = regmap_update_bits(info->regmap, UCS1002_REG_GENERAL_CFG,
+> > > +                            F_RATION_EN, F_RATION_EN);
+> > > +   if (ret) {
+> > > +           dev_err(dev, "Failed to read general config: %d\n", ret);
+> > > +           return ret;
+> > > +   }
+> > +
+> > > +   /*
+> > > +    * Ignore the M1, M2, PWR_EN, and EM_EN pin states. Set active
+> > > +    * mode selection to BC1.2 CDP.
+> > > +    */
+> > > +   ret = regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
+> > > +                            V_SET_ACTIVE_MODE_MASK,
+> > +                              V_SET_ACTIVE_MODE_BC12_CDP);
+>
+> This doesn't work as the F_PIN_IGNORE bit isn't set, so the the
+> external strap settings are applied. I had to apply the following diff
+> to make the driver behave as expected again:
+>
 
-drivers/thermal/thermal_mmio.o:
-In function 'thermal_mmio_probe':thermal_mmio.c:(.text+0xe1):
-undefined reference to `devm_ioremap_resource'
+Ugh, I missed this since pins on my board are set properly. Thanks for
+catching that and sorry about the bug. Will fix in v3.
 
-The users of devm_ioremap_resource() which are compile-testable
-should depend on HAS_IOMEM.
-
-Reported-by: kbuild test robot <lkp@intel.com>
-Signed-off-by: Talel Shenhar <talel@amazon.com>
----
- drivers/thermal/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 41f3943..66a709d 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -203,6 +203,7 @@ config THERMAL_EMULATION
- config THERMAL_MMIO
- 	tristate "Generic Thermal MMIO driver"
- 	depends on OF || COMPILE_TEST
-+	depends on HAS_IOMEM
- 	help
- 	  This option enables the generic thermal MMIO driver that will use
- 	  memory-mapped reads to get the temperature.  Any HW/System that
--- 
-2.7.4
+Thanks,
+Andrey Smirnov
