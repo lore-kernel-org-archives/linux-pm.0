@@ -1,52 +1,43 @@
-From: Srinath Mannam <srinath.mannam@broadcom.com>
-Subject: [PATCH] thermal: broadcom: Remove ACPI support
-Date: Mon, 29 Apr 2019 22:25:29 +0530
-Message-ID: <1556556929-25704-1-git-send-email-srinath.mannam@broadcom.com>
+From: Talel Shenhar <talel@amazon.com>
+Subject: [PATCH 1/1] thermal: Fix build error of missing devm_ioremap_resource on UM
+Date: Mon, 29 Apr 2019 12:47:36 +0300
+Message-ID: <1556531256-26321-1-git-send-email-talel@amazon.com>
+References: <201904261215.nJZXSFjx%lkp@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <201904261215.nJZXSFjx%lkp@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Srinath Mannam <srinath.mannam@broadcom.com>
+To: talel@amazon.com, robh@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, dwmw@amazon.co.uk, jonnyc@amazon.com, rui.zhang@intel.com, hhhawa@amazon.com, ronenk@amazon.com, hanochu@amazon.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Unlike DT framework, thermal-zones and its parameters can't be parsed
-using ACPI framework. So that ACPI support is removed in this driver.
+The devres.o gets linked if HAS_IOMEM is present so on ARCH=um
+allyesconfig (COMPILE_TEST) failed on many files with:
 
-Signed-off-by: Srinath Mannam <srinath.mannam@broadcom.com>
-Reported-by: David Woodhouse <dwmw2@infradead.org>
+drivers/thermal/thermal_mmio.o:
+In function 'thermal_mmio_probe':thermal_mmio.c:(.text+0xe1):
+undefined reference to `devm_ioremap_resource'
+
+The users of devm_ioremap_resource() which are compile-testable
+should depend on HAS_IOMEM.
+
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Talel Shenhar <talel@amazon.com>
 ---
- drivers/thermal/broadcom/sr-thermal.c | 8 --------
- 1 file changed, 8 deletions(-)
+ drivers/thermal/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/broadcom/sr-thermal.c b/drivers/thermal/broadcom/sr-thermal.c
-index 2284cbe..475ce29 100644
---- a/drivers/thermal/broadcom/sr-thermal.c
-+++ b/drivers/thermal/broadcom/sr-thermal.c
-@@ -3,7 +3,6 @@
-  * Copyright (C) 2018 Broadcom
-  */
- 
--#include <linux/acpi.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
-@@ -100,18 +99,11 @@ static const struct of_device_id sr_thermal_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, sr_thermal_of_match);
- 
--static const struct acpi_device_id sr_thermal_acpi_ids[] = {
--	{ .id = "BRCM0500" },
--	{ /* sentinel */ }
--};
--MODULE_DEVICE_TABLE(acpi, sr_thermal_acpi_ids);
--
- static struct platform_driver sr_thermal_driver = {
- 	.probe		= sr_thermal_probe,
- 	.driver = {
- 		.name = "sr-thermal",
- 		.of_match_table = sr_thermal_of_match,
--		.acpi_match_table = ACPI_PTR(sr_thermal_acpi_ids),
- 	},
- };
- module_platform_driver(sr_thermal_driver);
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 41f3943..66a709d 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -203,6 +203,7 @@ config THERMAL_EMULATION
+ config THERMAL_MMIO
+ 	tristate "Generic Thermal MMIO driver"
+ 	depends on OF || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	help
+ 	  This option enables the generic thermal MMIO driver that will use
+ 	  memory-mapped reads to get the temperature.  Any HW/System that
 -- 
 2.7.4
