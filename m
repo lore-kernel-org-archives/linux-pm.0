@@ -2,127 +2,237 @@ Return-Path: <SRS0=2Oin=S7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A9D4C43219
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 05:48:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30D85C004C9
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 06:35:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CE4FF2087B
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 05:48:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E93BA214AF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 06:35:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qyf1fENV"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l1nzf8rB"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727281AbfD2FsI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Apr 2019 01:48:08 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:46701 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725468AbfD2FsG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 01:48:06 -0400
-Received: by mail-pf1-f194.google.com with SMTP id j11so4742585pff.13;
-        Sun, 28 Apr 2019 22:48:06 -0700 (PDT)
+        id S1727281AbfD2Gfm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Apr 2019 02:35:42 -0400
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:35984 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727440AbfD2Gfl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 02:35:41 -0400
+Received: by mail-pf1-f195.google.com with SMTP id v80so226744pfa.3
+        for <linux-pm@vger.kernel.org>; Sun, 28 Apr 2019 23:35:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
+        h=date:from:to:cc:subject:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=2VW37A7CK8zNP+puxGj5PzGbX48/U7vlPhB5EcPFYbg=;
-        b=Qyf1fENV7j7gZgJ6TmSmVGl9uzWk+GQMzfGHnrxqpyGyqoNdcH5k9vhZasXipNV+28
-         lG1Pzkb+66XJwproEs/bYg07ScDOPrbnpKCiIO3tSh52+qYHYgpvfHFO+HBnlIEXtbvg
-         NSHbzozFW2+4LD+QQE74NesC0ZtN4IEB5WpZ1uAEgcHkdexjj1GI485ln0KWM2xJmw0k
-         zy99Tofp8rOWucCRib+Gp/AzUh+eFvaRkm/Y78yeImqrbDTLGTHapj53/7kkrSR+w2Gu
-         l4ZPp2hHpKN1eEjUu+j0lQx3VKJAWj7gvcdbB5rkab549tta57g+g9hqDT0fVBImXFw8
-         U15Q==
+        bh=+vkHVdjAvn3P7cquxmWBstCw2+EbflFUpipYDFngWe0=;
+        b=l1nzf8rBA7g3aJpYL9nhxw4ANySfH9trkB67VWGvE6L7nayrTX1MZughwWG3DhXkzH
+         MWSRq3HyQIzNC0fUb116kaODhJx0dlkrjkeMRPi7Onrh/Svu20pQkXYOEuzNnvChoSde
+         oeu5MelBRHA+au6i0+KlPc49glxCR5TnXDRZ1WjbJTJBEgQmTvpCQD+5TyWYXER4rGbd
+         3sPo6o0Tv+Kuv5zW75EZ/4DbCziNj1A/tP6WKaLI6A8MP2zpbAmAU6qmzArmluQOzPQQ
+         1pViQSf4cvxo+a9nc9vn0O9/fod60jwlxBdQeOPhZJqVJ9Z6jMdl2zzPkE1/u1Dn/f+v
+         I6WA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=2VW37A7CK8zNP+puxGj5PzGbX48/U7vlPhB5EcPFYbg=;
-        b=ckfF3WfilpSn6CmExIXyTSXUFNfWsjJw9FTTIIooRlYT1bhblldTi2v4CRkgrHhtXf
-         b2VqitoZ6fk8+1FMTZ39AWcH4xfvsDYg6HVu1YOPK/m19knq+vG7IrHrLxeLZk7ntHRo
-         piOuS0d+kh7jLCIk5ofRa5zDQ91iYdXM+Tbcg93q6KxYABNdS4Ei/lz1GDU+gRddqYGw
-         Scul7PeSfOMDCCrUG28bEG36hYWt6C0n9QvCdFTX8cYN1+R7iSxHrBpFhmXul5324/j0
-         OXrnLQyIm+8ix4+C58JLanRbNfUh57GJAFNEdYYjDe+EMK6AVxAzMst+rBoiY81SnH/0
-         HYCw==
-X-Gm-Message-State: APjAAAWAA9YSoraBpYILdIQHy/Z3BQ+TqmrUabmi8r5Ev+JY03x6qSNs
-        uSLSX/ZZtVgvlSRpWHd/EYSLhdjJc5E=
-X-Google-Smtp-Source: APXvYqzyMQ+SR5eQGHpimMe7wlsV50oEX9PDI38GBkP1NISWIAH9TmIa9sRVtnle+Gvzwv0SaumJGQ==
-X-Received: by 2002:a63:1160:: with SMTP id 32mr6659179pgr.106.1556516885633;
-        Sun, 28 Apr 2019 22:48:05 -0700 (PDT)
-Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id g10sm37856567pgq.54.2019.04.28.22.48.03
+        bh=+vkHVdjAvn3P7cquxmWBstCw2+EbflFUpipYDFngWe0=;
+        b=DYbkZ7KRMPYbkgWhItNpS76o8NCoG85M89GeGW91zs1PYDC4BB5HBxhbpQZBpkcvqq
+         6BuwDJkgmJE6rVMf1oH5jiR2R4EkHZu4QxBPkwud3eevaduKQWNsmqd+eLLODQJlLy8g
+         Y2AfzH/R+Eq3sL9L7XOHN/seEUJJkc7i6GvPZ5r/XoqlvekmSJ7jx9rNeWDvs5f36ifO
+         L1ZJlQdztddCg+NhLv8rGOSb0s+iZO9sjxAN0xlAeQzqEuUxAHwa1Ope3mpecftRW33N
+         YZ3Mm/xpULY2Ck4mUf/PxDcb8TR5muL5s0itCmYZWX2K75q+iRBwXVAN42VvxLfU7YvN
+         +tQQ==
+X-Gm-Message-State: APjAAAWTgqKw1/N8CHNpa32skPIJK/f0yPsZCTM6uVY1i4B8UdxlGR8j
+        7ASVzibPjekWWDaG3MZP200=
+X-Google-Smtp-Source: APXvYqxWxbbyVFR/k77cOzf7mTrdds5rKtcOy22DSUq4u36zzuI/gRhEkPhuO9CsNHqVKGenrv1M1A==
+X-Received: by 2002:a62:4351:: with SMTP id q78mr59895996pfa.86.1556519741029;
+        Sun, 28 Apr 2019 23:35:41 -0700 (PDT)
+Received: from localhost ([218.189.10.173])
+        by smtp.gmail.com with ESMTPSA id 6sm45464769pfp.143.2019.04.28.23.35.38
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Sun, 28 Apr 2019 22:48:04 -0700 (PDT)
-From:   Andrey Smirnov <andrew.smirnov@gmail.com>
-To:     linux-pm@vger.kernel.org
-Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Enric Balletbo Serra <enric.balletbo@collabora.com>,
-        Chris Healy <cphealy@gmail.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/3] power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
-Date:   Sun, 28 Apr 2019 22:47:39 -0700
-Message-Id: <20190429054741.7286-2-andrew.smirnov@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190429054741.7286-1-andrew.smirnov@gmail.com>
-References: <20190429054741.7286-1-andrew.smirnov@gmail.com>
+        Sun, 28 Apr 2019 23:35:40 -0700 (PDT)
+Date:   Mon, 29 Apr 2019 14:35:28 +0800
+From:   Yue Hu <zbestahu@gmail.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     rjw@rjwysocki.net, rafael.j.wysocki@intel.com,
+        linux-pm@vger.kernel.org, huyue2@yulong.com
+Subject: Re: [PATCH v2] cpufreq: Don't find governor for setpolicy drivers
+ in cpufreq_init_policy()
+Message-ID: <20190429143528.00002ae4.zbestahu@gmail.com>
+In-Reply-To: <20190429051507.cabsr62rhc5evka5@vireshk-i7>
+References: <20190426063135.5200-1-zbestahu@gmail.com>
+        <20190429051507.cabsr62rhc5evka5@vireshk-i7>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; i686-w64-mingw32)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190429054739.T4NuG13lBfNLWSaC2aO_jhZ0DisGXjduk19q7pCSdr0@z>
 
-Add POWER_SUPPLY_HEALTH_OVERCURRENT constant in order to allow
-singalling overcurrent condition via power supply health information.
+On Mon, 29 Apr 2019 10:45:07 +0530
+Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- drivers/power/supply/power_supply_sysfs.c | 2 +-
- include/linux/power_supply.h              | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+> On 26-04-19, 14:31, Yue Hu wrote:
+> > From: Yue Hu <huyue2@yulong.com>
+> > 
+> > In cpufreq_init_policy() we will check if there's last_governor for target
+> > and setpolicy type. However last_governor is set only if has_target() is
+> > true in cpufreq_offline(). That means find last_governor for setpolicy
+> > type is pointless. Also new_policy.governor will not be used if ->setpolicy
+> > callback is set in cpufreq_set_policy().
+> > 
+> > Moreover, there's duplicate ->setpolicy check in using default policy path.
+> > Let's add a new helper function to avoid it. Also fix a little comment.
+> > 
+> > Signed-off-by: Yue Hu <huyue2@yulong.com>
+> > ---
+> > v2: fix ->setplicy typo.
+> > 
+> >  drivers/cpufreq/cpufreq.c | 66 ++++++++++++++++++++++++++++-------------------
+> >  1 file changed, 40 insertions(+), 26 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index 0322cce..b822a3e 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -578,6 +578,20 @@ static struct cpufreq_governor *find_governor(const char *str_governor)
+> >  	return NULL;
+> >  }
+> >  
+> > +static int cpufreq_parse_static_governor(char *str_governor,
+> > +					struct cpufreq_policy *policy)
+> > +{
+> > +	if (!strncasecmp(str_governor, "performance", CPUFREQ_NAME_LEN)) {
+> > +		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+> > +		return 0;
+> > +	}
+> > +	if (!strncasecmp(str_governor, "powersave", CPUFREQ_NAME_LEN)) {
+> > +		policy->policy = CPUFREQ_POLICY_POWERSAVE;
+> > +		return 0;
+> > +	}
+> > +	return -EINVAL;
+> > +}
+> > +
+> >  /**
+> >   * cpufreq_parse_governor - parse a governor string
+> >   */
+> > @@ -585,15 +599,7 @@ static int cpufreq_parse_governor(char *str_governor,
+> >  				  struct cpufreq_policy *policy)
+> >  {  
+> 
+> There were only two callers of cpufreq_parse_governor() and one of them you have
+> removed already.
+> 
+> >  	if (cpufreq_driver->setpolicy) {
+> > -		if (!strncasecmp(str_governor, "performance", CPUFREQ_NAME_LEN)) {
+> > -			policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+> > -			return 0;
+> > -		}
+> > -
+> > -		if (!strncasecmp(str_governor, "powersave", CPUFREQ_NAME_LEN)) {
+> > -			policy->policy = CPUFREQ_POLICY_POWERSAVE;
+> > -			return 0;
+> > -		}
+> > +		return cpufreq_parse_static_governor(str_governor, policy);  
+> 
+> So I will rather remove above completely from here and let
+> cpufreq_parse_governor() governor only handle !set_policy.
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 5358a80d854f..153f4a6ca57c 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -62,7 +62,7 @@ static const char * const power_supply_charge_type_text[] = {
- static const char * const power_supply_health_text[] = {
- 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
- 	"Unspecified failure", "Cold", "Watchdog timer expire",
--	"Safety timer expire"
-+	"Safety timer expire", "Over current"
- };
+So, also need update store_scaling_governor() as below if doing that above, right?
+
+        if (cpufreq_driver->setpolicy) {
+                if (cpufreq_parse_static_governor(str_governor, &new_policy))
+                        return -EINVAL;
+        } else {
+                if (cpufreq_parse_governor(str_governor, &new_policy))
+                        return -EINVAL;
+        } 
+
+Moreover, change cpufreq_parse_static_governor() to cpufreq_parse_generic_policy()
+should be better?
+
+> 
+> >  	} else {
+> >  		struct cpufreq_governor *t;
+> >  
+> > @@ -1020,32 +1026,40 @@ __weak struct cpufreq_governor *cpufreq_default_governor(void)
+> >  
+> >  static int cpufreq_init_policy(struct cpufreq_policy *policy)
+> >  {
+> > -	struct cpufreq_governor *gov = NULL;
+> > +	struct cpufreq_governor *gov = NULL, *def_gov = NULL;
+> >  	struct cpufreq_policy new_policy;
+> >  
+> >  	memcpy(&new_policy, policy, sizeof(*policy));
+> >  
+> > -	/* Update governor of new_policy to the governor used before hotplug */
+> > -	gov = find_governor(policy->last_governor);
+> > -	if (gov) {
+> > -		pr_debug("Restoring governor %s for cpu %d\n",
+> > +	def_gov = cpufreq_default_governor();
+> > +
+> > +	if (has_target()) {
+> > +		/*
+> > +		 * Update governor of new_policy to the governor used before
+> > +		 * hotplug
+> > +		 */
+> > +		gov = find_governor(policy->last_governor);
+> > +		if (gov)  
+> 
+> You must use {} here in the if block as well for two reasons:
+> - Below pr_debug is across multiple lines
+> - And else part already uses {}
+>
+
+Ok, fix it in v3.
  
- static const char * const power_supply_technology_text[] = {
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 2f9c201a54d1..bdab14c7ca4d 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -57,6 +57,7 @@ enum {
- 	POWER_SUPPLY_HEALTH_COLD,
- 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
- 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
-+	POWER_SUPPLY_HEALTH_OVERCURRENT,
- };
- 
- enum {
--- 
-2.20.1
+> > +			pr_debug("Restoring governor %s for cpu %d\n",
+> >  				policy->governor->name, policy->cpu);
+> > +		else {
+> > +			if (!def_gov)
+> > +				return -ENODATA;
+> > +			gov = def_gov;
+> > +		}
+> > +		new_policy.governor = gov;
+> >  	} else {
+> > -		gov = cpufreq_default_governor();
+> > -		if (!gov)
+> > -			return -ENODATA;
+> > -	}
+> > -
+> > -	new_policy.governor = gov;
+> > -
+> > -	/* Use the default policy if there is no last_policy. */
+> > -	if (cpufreq_driver->setpolicy) {
+> > +		/* Use the default policy if there is no last_policy. */
+> >  		if (policy->last_policy)
+> >  			new_policy.policy = policy->last_policy;
+> > -		else
+> > -			cpufreq_parse_governor(gov->name, &new_policy);
+> > +		else {
+> > +			if (!def_gov)
+> > +				return -ENODATA;
+> > +			cpufreq_parse_static_governor(def_gov->name,
+> > +						      &new_policy);
+> > +		}
+> >  	}
+> > -	/* set default policy */
+> > +	/* Set new policy */  
+> 
+> Just drop the comment and make it a blank line.
+
+Ok, fix it in v3.
+
+> 
+> >  	return cpufreq_set_policy(policy, &new_policy);
+> >  }
+> >  
+> > -- 
+> > 1.9.1  
+> 
 
