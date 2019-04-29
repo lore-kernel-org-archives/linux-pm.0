@@ -1,68 +1,113 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v2 3/3] dt-bindings: power: supply: Add bindings for Microchip UCS1002
-Date: Sun, 28 Apr 2019 22:47:41 -0700
-Message-ID: <20190429054741.7286-4-andrew.smirnov@gmail.com>
-References: <20190429054741.7286-1-andrew.smirnov@gmail.com>
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: Re: [PATCH next 23/25] thermal: Use dev_get_drvdata()
+Date: Mon, 29 Apr 2019 14:55:28 +0800
+Message-ID: <c835c3db-a070-94d5-d4d1-ae9bb521b76d@huawei.com>
+References: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
+ <20190423075020.173734-24-wangkefeng.wang@huawei.com>
+ <1556509663.2396.8.camel@intel.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190429054741.7286-1-andrew.smirnov@gmail.com>
+In-Reply-To: <1556509663.2396.8.camel@intel.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add bindings for Microchip UCS1002 Programmable USB Port Power
-Controller with Charger Emulation.
 
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: devicetree@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
- 1 file changed, 27 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+On 2019/4/29 11:47, Zhang Rui wrote:
+> On 二, 2019-04-23 at 15:50 +0800, Kefeng Wang wrote:
+>> Using dev_get_drvdata directly.
+>>
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Cc: linux-pm@vger.kernel.org
+>> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+>> ---
+>>  .../intel/int340x_thermal/processor_thermal_device.c      | 8 +-----
+>> --
+>>  drivers/thermal/st/stm_thermal.c                          | 6 ++----
+>>  2 files changed, 3 insertions(+), 11 deletions(-)
+>>
+>> diff --git
+>> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+>> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+>> index 8e1cf4d789be..4ad54b8d4778 100644
+>> ---
+>> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+>> +++
+>> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+>> @@ -81,8 +81,6 @@ static ssize_t
+>> power_limit_##index##_##suffix##_show(struct device *dev, \
+>>  					struct device_attribute
+>> *attr, \
+>>  					char *buf) \
+>>  { \
+>> -	struct pci_dev *pci_dev; \
+>> -	struct platform_device *pdev; \
+>>  	struct proc_thermal_device *proc_dev; \
+>>  	\
+>>  	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
+>> @@ -91,11 +89,7 @@ static ssize_t
+>> power_limit_##index##_##suffix##_show(struct device *dev, \
+>>  	} \
+>>  	\
+>>  	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
+>> -		pdev = to_platform_device(dev); \
+>> -		proc_dev = platform_get_drvdata(pdev); \
+>> -	} else { \
+>> -		pci_dev = to_pci_dev(dev); \
+>> -		proc_dev = pci_get_drvdata(pci_dev); \
+>> +		proc_dev = dev_get_drvdata(dev); \
+>>  	} \
+>>  	return sprintf(buf, "%lu\n",\
+>>  	(unsigned long)proc_dev->power_limits[index].suffix * 1000);
+>> \
+> Sumeet has a patch to fix the same issue, which has been in my tree
+> https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git/commit
+> /?h=next&id=1948d498dcf680bc650391f23da2f97e59f9126d
+>
+> Plus, the previous fix is wrong because proc_dev will be left
+> uninitialized if proc_thermal_emum_mode equals PROC_THERMAL_PCI.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
-new file mode 100644
-index 000000000000..021fd7aba75e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
-@@ -0,0 +1,27 @@
-+Microchip UCS1002 USB Port Power Controller
-+
-+Required properties:
-+- compatible		: Should be "microchip,ucs1002";
-+- reg			: I2C slave address
-+
-+Optional properties:
-+- interrupts-extended	: A list of interrupts lines present (could be either
-+			  corresponding to A_DET# pin, ALERT# pin, or both)
-+- interrupt-names	: A list of interrupt names. Should contain (if
-+			  present):
-+			  - "a_det" for line connected to A_DET# pin
-+			  - "alert" for line connected to ALERT# pin
-+			  Both are expected to be IRQ_TYPE_EDGE_BOTH
-+Example:
-+
-+&i2c3 {
-+	charger@32 {
-+		compatible = "microchip,ucs1002";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_ucs1002_pins>;
-+		reg = <0x32>;
-+		interrupts-extended = <&gpio5 2 IRQ_TYPE_EDGE_BOTH>,
-+				      <&gpio3 21 IRQ_TYPE_EDGE_BOTH>;
-+		interrupt-names = "a_det", "alert";
-+	};
-+};
--- 
-2.20.1
+oh, Sumeet's patch is the right one and much cleaner.
+
+
+>
+> thanks,
+> rui
+>
+>> diff --git a/drivers/thermal/st/stm_thermal.c
+>> b/drivers/thermal/st/stm_thermal.c
+>> index bbd73c5a4a4e..cf9ddc52f30e 100644
+>> --- a/drivers/thermal/st/stm_thermal.c
+>> +++ b/drivers/thermal/st/stm_thermal.c
+>> @@ -570,8 +570,7 @@ static int stm_thermal_prepare(struct
+>> stm_thermal_sensor *sensor)
+>>  static int stm_thermal_suspend(struct device *dev)
+>>  {
+>>  	int ret;
+>> -	struct platform_device *pdev = to_platform_device(dev);
+>> -	struct stm_thermal_sensor *sensor =
+>> platform_get_drvdata(pdev);
+>> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
+>>  
+>>  	ret = stm_thermal_sensor_off(sensor);
+>>  	if (ret)
+>> @@ -585,8 +584,7 @@ static int stm_thermal_suspend(struct device
+>> *dev)
+>>  static int stm_thermal_resume(struct device *dev)
+>>  {
+>>  	int ret;
+>> -	struct platform_device *pdev = to_platform_device(dev);
+>> -	struct stm_thermal_sensor *sensor =
+>> platform_get_drvdata(pdev);
+>> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
+>>  
+>>  	ret = stm_thermal_prepare(sensor);
+>>  	if (ret)
+> .
+>
