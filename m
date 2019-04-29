@@ -1,285 +1,93 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v6 09/10] ARM: dts: exynos: add DMC device for
- exynos5422
-Date: Mon, 29 Apr 2019 14:38:45 +0200
-Message-ID: <34ae95ae-9788-6334-d4ef-7f9add76b77c@partner.samsung.com>
-References: <CGME20190419141952eucas1p11dc36f30c873a947122e0f7e8d55a3bb@eucas1p1.samsung.com>
-        <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <1555683568-20882-10-git-send-email-l.luba@partner.samsung.com>
-        <CAJKOXPfE2Kt_afkH6wryRgdVqfvDUH82rMf_iKFuvDVSH00LJw@mail.gmail.com>
+From: Kalle Valo <kvalo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH] ath10k: Drop WARN_ON()s that always trigger during system resume
+Date: Mon, 29 Apr 2019 17:10:08 +0300
+Message-ID: <87imuwsy0v.fsf@kamboji.qca.qualcomm.com>
+References: <2884043.Jv1Mn93hE8@aspire.rjw.lan>
+        <20190403195718.GA74723@google.com>
+        <87o94tutdz.fsf@kamboji.qca.qualcomm.com>
+        <CAJZ5v0ifD=DATprUeeO2_LGs04aEEhPB6AcGVPxWUdQaOma+ww@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPfE2Kt_afkH6wryRgdVqfvDUH82rMf_iKFuvDVSH00LJw@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= <b.zolnierkie@samsung.com>, kgene@kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, kyungmin.park@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
+Content-Type: text/plain
+Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAJZ5v0ifD=DATprUeeO2_LGs04aEEhPB6AcGVPxWUdQaOma+ww-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+        (Rafael J. Wysocki's message of "Mon, 29 Apr 2019 10:48:35 +0200")
+Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Claire Chang <tientzu-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Sriram R <srirrama-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pradeep Kumar Chitrapu <pradeepc-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "open list:NETWORKING DRIVERS (WIRELESS)" <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ath10k-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Todd Brandt <todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
+"Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> writes:
 
-Thank you the review, please check my comments below.
+> On Fri, Apr 26, 2019 at 9:18 AM Kalle Valo <kvalo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>>
+>> Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> writes:
+>>
+>> > + Sriram, Pradeep, Claire
+>> >
+>> > On Sun, Mar 03, 2019 at 06:24:33PM +0100, Rafael J. Wysocki wrote:
+>> >
+>> > Ooh, exactly 1 month ago!
+>> >
+>> >> From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+>> >>
+>> >> ath10k_mac_vif_chan() always returns an error for the given vif
+>> >> during system-wide resume which reliably triggers two WARN_ON()s
+>> >> in ath10k_bss_info_changed() and they are not particularly
+>> >> useful in that code path, so drop them.
+>> >>
+>> >
+>> > Particularly, when WOWLAN isn't enabled, we get called during resume via
+>> > ieee80211_reconfig(), where we're not associated and don't have any
+>> > channel contexts. AFAICT, we shouldn't need to communicate anything in
+>> > particular to the firmware here, and so failing the 'if' is definitely
+>> > not worth WARN-ing about.
+>> >
+>> > I'd love to see this get applied with:
+>> >
+>> > Fixes: cd93b83ad927 ("ath10k: support for multicast rate control")
+>> > Fixes: f279294e9ee2 ("ath10k: add support for configuring management packet rate")
+>> >
+>> > and sent to stable. This has been bugging people since 4.19. Spurious
+>> > WARN_ON()s can trigger reports to various crash trackers, and on some
+>> > systems appear as user-visible warnings ("System problem detected").
+>> >
+>> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+>> >
+>> > Reviewed-by: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>> > Tested-by: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>>
+>> I added these now to the commit log, thanks Brian.
+>>
+>> Rafael, could you please provide the hardware and firmware versions you
+>> tested this on? We have so many different firmware branches to support
+>> that I prefer to have that documented in the commit log. Providing
+>> ath10k startup messages in dmesg are enough,
+>
+> There you go:
+>
+> [    4.695349] ath10k_pci 0000:3a:00.0: enabling device (0000 -> 0002)
+> [    4.698165] ath10k_pci 0000:3a:00.0: pci irq msi oper_irq_mode 2
+> irq_mode 0 reset_mode 0
+> [    4.912240] ath10k_pci 0000:3a:00.0: qca6174 hw3.2 target
+> 0x05030000 chip_id 0x00340aff sub 1a56:1535
+> [    4.912255] ath10k_pci 0000:3a:00.0: kconfig debug 0 debugfs 0
+> tracing 0 dfs 0 testmode 0
+> [    4.912716] ath10k_pci 0000:3a:00.0: firmware ver
+> WLAN.RM.2.0-00180-QCARMSWPZ-1 api 4 features
+> wowlan,ignore-otp,no-4addr-pad crc32 75dee6c5
+> [    4.982563] ath10k_pci 0000:3a:00.0: board_file api 2 bmi_id N/A
+> crc32 19644295
 
-On 4/23/19 1:03 PM, Krzysztof Kozlowski wrote:
-> On Fri, 19 Apr 2019 at 16:19, Lukasz Luba <l.luba@partner.samsung.com> wrote:
->>
->> Add description of Dynamic Memory Controller and PPMU counters.
->> They are used by exynos5422-dmc driver.
->> There is a definition of the memory chip, hwich is then used during
-> 
-> which
-ACK
-> 
->> calculation of timings for each OPP.
->> The algorithm in the driver needs these two sets to bound the timings.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   arch/arm/boot/dts/exynos5420.dtsi             | 120 ++++++++++++++++++++++++++
->>   arch/arm/boot/dts/exynos5422-odroid-core.dtsi | 120 ++++++++++++++++++++++++++
->>   2 files changed, 240 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
->> index aaff158..b687cd7 100644
->> --- a/arch/arm/boot/dts/exynos5420.dtsi
->> +++ b/arch/arm/boot/dts/exynos5420.dtsi
->> @@ -14,6 +14,7 @@
->>   #include <dt-bindings/clock/exynos5420.h>
->>   #include <dt-bindings/clock/exynos-audss-clk.h>
->>   #include <dt-bindings/interrupt-controller/arm-gic.h>
->> +#include <dt-bindings/pmu/exynos_ppmu.h>
->>
->>   / {
->>          compatible = "samsung,exynos5420", "samsung,exynos5";
->> @@ -235,6 +236,37 @@
->>                          status = "disabled";
->>                  };
->>
->> +               dmc: memory-controller@10c20000 {
->> +                       compatible = "samsung,exynos5422-dmc";
->> +                       reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
-> 
-> I think in the driver you access range up to 0xff of each DREX memory
-> region. Do not map entire 0x10000 if not needed.
-I agree, I will map only 0x100.
-> 
-> 
->> +                               <0x10000000 0x1000>, <0x10030000 0x1000>;
->> +                       clocks = <&clock CLK_FOUT_SPLL>,
->> +                                <&clock CLK_MOUT_SCLK_SPLL>,
->> +                                <&clock CLK_FF_DOUT_SPLL2>,
->> +                                <&clock CLK_FOUT_BPLL>,
->> +                                <&clock CLK_MOUT_BPLL>,
->> +                                <&clock CLK_SCLK_BPLL>,
->> +                                <&clock CLK_MOUT_MX_MSPLL_CCORE>,
->> +                                <&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
->> +                                <&clock CLK_MOUT_MCLK_CDREX>,
->> +                                <&clock CLK_DOUT_CLK2X_PHY0>,
->> +                                <&clock CLK_CLKM_PHY0>,
->> +                                <&clock CLK_CLKM_PHY1>;
->> +                       clock-names = "fout_spll",
->> +                                     "mout_sclk_spll",
->> +                                     "ff_dout_spll2",
->> +                                     "fout_bpll",
->> +                                     "mout_bpll",
->> +                                     "sclk_bpll",
->> +                                     "mout_mx_mspll_ccore",
->> +                                     "mout_mx_mspll_ccore_phy",
->> +                                     "mout_mclk_cdrex",
->> +                                     "dout_clk2x_phy0",
->> +                                     "clkm_phy0",
->> +                                     "clkm_phy1";
->> +                       status = "disabled";
->> +               };
->> +
->>                  nocp_mem0_0: nocp@10ca1000 {
->>                          compatible = "samsung,exynos5420-nocp";
->>                          reg = <0x10CA1000 0x200>;
->> @@ -271,6 +303,94 @@
->>                          status = "disabled";
->>                  };
->>
->> +               ppmu_dmc0_0: ppmu@10d00000 {
->> +                       compatible = "samsung,exynos-ppmu";
->> +                       reg = <0x10d00000 0x2000>;
->> +                       clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
->> +                       clock-names = "ppmu";
->> +                       events {
->> +                               ppmu_event0_dmc0_0: ppmu-event0-dmc0_0 {
->> +                                       event-name = "ppmu-event0-dmc0_0";
->> +                                       event-data-type = <PPMU_RO_DATA_CNT>;
->> +                               };
->> +                               ppmu_event1_dmc0_0: ppmu-event1-dmc0_0 {
->> +                                       event-name = "ppmu-event1-dmc0_0";
->> +                                       event-data-type = <PPMU_WO_DATA_CNT>;
->> +                               };
->> +                               ppmu_event3_dmc0_0: ppmu-event3-dmc0_0 {
->> +                                       event-name = "ppmu-event3-dmc0_0";
->> +                                       event-data-type = <(PPMU_RO_DATA_CNT |
->> +                                               PPMU_WO_DATA_CNT)>;
->> +                               };
->> +                       };
->> +               };
->> +
->> +               ppmu_dmc0_1: ppmu@10d10000 {
->> +                       compatible = "samsung,exynos-ppmu";
->> +                       reg = <0x10d10000 0x2000>;
->> +                       clocks = <&clock CLK_PCLK_PPMU_DREX0_1>;
->> +                       clock-names = "ppmu";
->> +                       events {
->> +                               ppmu_event0_dmc0_1: ppmu-event0-dmc0_1 {
->> +                                       event-name = "ppmu-event0-dmc0_1";
->> +                                       event-data-type = <PPMU_RO_DATA_CNT>;
->> +                               };
->> +                               ppmu_event1_dmc0_1: ppmu-event1-dmc0_1 {
->> +                                       event-name = "ppmu-event1-dmc0_1";
->> +                                       event-data-type = <PPMU_WO_DATA_CNT>;
->> +                               };
->> +                               ppmu_event3_dmc0_1: ppmu-event3-dmc0_1 {
->> +                                       event-name = "ppmu-event3-dmc0_1";
->> +                                       event-data-type = <(PPMU_RO_DATA_CNT |
->> +                                               PPMU_WO_DATA_CNT)>;
->> +                               };
->> +                       };
->> +               };
->> +
->> +               ppmu_dmc1_0: ppmu@10d60000 {
->> +                       compatible = "samsung,exynos-ppmu";
->> +                       reg = <0x10d60000 0x2000>;
->> +                       clocks = <&clock CLK_PCLK_PPMU_DREX1_0>;
->> +                       clock-names = "ppmu";
->> +                       events {
->> +                               ppmu_event0_dmc1_0: ppmu-event0-dmc1_0 {
->> +                                       event-name = "ppmu-event0-dmc1_0";
->> +                                       event-data-type = <PPMU_RO_DATA_CNT>;
->> +                               };
->> +                               ppmu_event1_dmc1_0: ppmu-event1-dmc1_0 {
->> +                                       event-name = "ppmu-event1-dmc1_0";
->> +                                       event-data-type = <PPMU_WO_DATA_CNT>;
->> +                               };
->> +                               ppmu_event3_dmc1_0: ppmu-event3-dmc1_0 {
->> +                                       event-name = "ppmu-event3-dmc1_0";
->> +                                       event-data-type = <(PPMU_RO_DATA_CNT |
->> +                                               PPMU_WO_DATA_CNT)>;
->> +                               };
->> +                       };
->> +               };
->> +
->> +               ppmu_dmc1_1: ppmu@10d70000 {
->> +                       compatible = "samsung,exynos-ppmu";
->> +                       reg = <0x10d70000 0x2000>;
->> +                       clocks = <&clock CLK_PCLK_PPMU_DREX1_1>;
->> +                       clock-names = "ppmu";
->> +                       events {
->> +                               ppmu_event0_dmc1_1: ppmu-event0-dmc1_1 {
->> +                                       event-name = "ppmu-event0-dmc1_1";
->> +                                       event-data-type = <PPMU_RO_DATA_CNT>;
->> +                               };
->> +                               ppmu_event1_dmc1_1: ppmu-event1-dmc1_1 {
->> +                                       event-name = "ppmu-event1-dmc1_1";
->> +                                       event-data-type = <PPMU_WO_DATA_CNT>;
->> +                               };
->> +                               ppmu_event3_dmc1_1: ppmu-event3-dmc1_1 {
->> +                                       event-name = "ppmu-event3-dmc1_1";
->> +                                       event-data-type = <(PPMU_RO_DATA_CNT |
->> +                                               PPMU_WO_DATA_CNT)>;
->> +                               };
->> +                       };
->> +               };
->> +
->>                  gsc_pd: power-domain@10044000 {
->>                          compatible = "samsung,exynos4210-pd";
->>                          reg = <0x10044000 0x20>;
->> diff --git a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
->> index 25d95de1..76bf0dbf 100644
->> --- a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
->> +++ b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
->> @@ -34,6 +34,95 @@
->>                          clock-frequency = <24000000>;
->>                  };
->>          };
->> +
->> +       dmc_opp_table: opp_table2 {
->> +               compatible = "operating-points-v2";
->> +
->> +               opp00 {
->> +                       opp-hz = /bits/ 64 <165000000>;
->> +                       opp-microvolt = <875000>;
->> +               };
->> +               opp01 {
->> +                       opp-hz = /bits/ 64 <206000000>;
->> +                       opp-microvolt = <875000>;
->> +               };
->> +               opp02 {
->> +                       opp-hz = /bits/ 64 <275000000>;
->> +                       opp-microvolt = <875000>;
->> +               };
->> +               opp03 {
->> +                       opp-hz = /bits/ 64 <413000000>;
->> +                       opp-microvolt = <887500>;
->> +               };
->> +               opp04 {
->> +                       opp-hz = /bits/ 64 <543000000>;
->> +                       opp-microvolt = <937500>;
->> +               };
->> +               opp05 {
->> +                       opp-hz = /bits/ 64 <633000000>;
->> +                       opp-microvolt = <1012500>;
->> +               };
->> +               opp06 {
->> +                       opp-hz = /bits/ 64 <728000000>;
->> +                       opp-microvolt = <1037500>;
->> +               };
->> +               opp07 {
->> +                       opp-hz = /bits/ 64 <825000000>;
->> +                       opp-microvolt = <1050000>;
->> +               };
->> +       };
->> +
->> +       samsung_K3QF2F20DB: lpddr3 {
->> +               compatible      = "Samsung,K3QF2F20DB","jedec,lpddr3";
-> 
-> Missing space after coma.
-Good catch, thank you.
-> 
->> +               density         = <16384>;
->> +               io-width        = <32>;
->> +
->> +               tRFC-min-tck            = <17>;
->> +               tRRD-min-tck            = <2>;
->> +               tRPab-min-tck           = <2>;
->> +               tRPpb-min-tck           = <2>;
->> +               tRCD-min-tck            = <3>;
->> +               tRC-min-tck             = <6>;
->> +               tRAS-min-tck            = <5>;
->> +               tWTR-min-tck            = <2>;
->> +               tWR-min-tck             = <7>;
->> +               tRTP-min-tck            = <2>;
->> +               tW2W-C2C-min-tck        = <0>;
->> +               tR2R-C2C-min-tck        = <0>;
->> +               tWL-min-tck             = <8>;
->> +               tDQSCK-min-tck          = <5>;
->> +               tRL-min-tck             = <14>;
->> +               tFAW-min-tck            = <5>;
->> +               tXSR-min-tck            = <12>;
->> +               tXP-min-tck             = <2>;
->> +               tCKE-min-tck            = <2>;
->> +               tCKESR-min-tck          = <2>;
->> +               tMRD-min-tck            = <5>;
->> +
->> +               timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@0 {
-> 
-> @0 does not look correct... you do not have <reg>. No DTC warnings here?
-Rob also pointed out that it should have 'reg'. I have followed the
-LPDDR2 definitions, but in the meantime DT rules have changed and now
-'reg' is needed. I will put 'reg' instead of 'max-freq' if Rob agrees.
+Thanks, I added the info to the commit log.
 
-Regards,
-Lukasz
-> 
-> Best regards,
-> Krzysztof
-> 
-> 
+>> I can then add it to the commit log.
+>
+> Still, I'm quite sure that the WARN_ON()s trigger during system resume
+> regardless of the hw/fw combination.
+
+Sure, I'm not claiming anything else. We just have so many different
+hw/fw combos that I want to have the environment documented in the
+commit log in case we need to investigate history in the future.
+
+-- 
+Kalle Valo
