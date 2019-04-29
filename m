@@ -2,122 +2,127 @@ Return-Path: <SRS0=2Oin=S7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45D5DC43219
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 19:10:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC59AC43219
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 20:00:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1153420675
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 19:10:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8A1822075E
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 20:00:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ve8XuKyG"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Vu6lQgcG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729083AbfD2TKk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Apr 2019 15:10:40 -0400
-Received: from mail-it1-f196.google.com ([209.85.166.196]:37780 "EHLO
-        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729054AbfD2TKk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 15:10:40 -0400
-Received: by mail-it1-f196.google.com with SMTP id r85so818268itc.2;
-        Mon, 29 Apr 2019 12:10:39 -0700 (PDT)
+        id S1729140AbfD2UAT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Apr 2019 16:00:19 -0400
+Received: from mail-pl1-f195.google.com ([209.85.214.195]:38337 "EHLO
+        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728928AbfD2UAT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 16:00:19 -0400
+Received: by mail-pl1-f195.google.com with SMTP id f36so5585994plb.5;
+        Mon, 29 Apr 2019 13:00:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=KkDvipA08mC8IxvH8qSF4bz6Gcm5+BjwC5oiwie6/+k=;
-        b=Ve8XuKyGlDC7d2Jvv5JaFeEFVAN2jn4Wg3QY/h79fYFFc1Gn6E1SWgOE0LXGs3cKFE
-         6uJSMSnHFL3OsVIykxCMPR0dttZ74X/ELKhgOBL/ILoONnzQ5ThckDLH1amLcUVNx3d6
-         W/GUBBAdD1ZPt3D110gl+7UoYrQEFRHsuAOLEsF1Rf6WgvZ7q0UqANogslubKvkn9tbF
-         9WbTvIoSc5HK9pb826UynoX6IbBoyw0t5qU8973CIGOQalIHLmjjCufU5CwqO/ovGSmV
-         FjgjjcPs9sqpnYkXcILGgODVrWI8Aef3xVhVoTbkJY1uRom7QOEMy/Pnn+J/nw8hHS0V
-         P/Nw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=2VW37A7CK8zNP+puxGj5PzGbX48/U7vlPhB5EcPFYbg=;
+        b=Vu6lQgcGV7NLvAdTLwPERdPkA1ElUQP6TOeZe9BkQiHmR+OtBqZ9IrXmFicNORmsZ7
+         UTyVfwcRnf9QBAeDUBFeJ9oSPwY3lbvQtZutaAzNOBl31e2RG2xEgzvRMaP5ynPKq83e
+         Nh/wWwlzi6Uz+vJ4Ip7OtACVOlhDpra0HCqcGDkdapNlu9J4zIAm9tSjzZ46hlAy8Ho6
+         jdBpk/6Q/N/6s7OeamdgkKDUbd6mdH+fwGEPfSTj172FQaabJebZnQ3ofufokK69yALK
+         4aL4fAx7Uw8UCjkZh+97hoPEfLjXs1EFUXk8YzrGvVuzR5Im4Hf/pOCCac7QfEilX6/h
+         ffjw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=KkDvipA08mC8IxvH8qSF4bz6Gcm5+BjwC5oiwie6/+k=;
-        b=RI4LI1MzZQtp2BVEm0mp0MN9NN/FUWuyBl736HfLvXHbvqEOFJn7CM+sJfLZLThHZ6
-         nSIDKGfmN9Rb7+VrkihIJQAkYiNBnkXmG52a8MimgIhEPwuyOlxu5Mo8wX1tIlCd+PbF
-         6g7kSESYpSsrpwWKA8+TeoDs0GXocJ4wCVuZasaMUQqOpH/YIdZ8BP5wpMA40pio3t1D
-         eQsKRgw6XrKKpeUe3XI5+20B0uBwsH4JyzVigPoDpcHKeBvlZstBUM0XvkPV4LshEXWE
-         w2TPODtMChCRYoGkS+YdbCnEYf9oA5W2r/AZ6IxsAnAh9ZcqcsHeuF3PHhf2Ju6nbPCN
-         BM4g==
-X-Gm-Message-State: APjAAAVsBwIG9aeQ+XQbW8RdO03s8L13w8iACZk6TGt2WCeyj0lwZAH2
-        8my/gW0CKqkaNsq/wD2XiVqiK8zGRwROvCmzDZM=
-X-Google-Smtp-Source: APXvYqxjcgCsVThGvzbspmleSENSy0vAB6gHVpHLHIM/eJvNC75iwpTXhF3s96hudw8y9HP19dvMhBdh2kK5aKvCYO4=
-X-Received: by 2002:a02:62ce:: with SMTP id d197mr43109134jac.91.1556565038867;
- Mon, 29 Apr 2019 12:10:38 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190429054741.7286-1-andrew.smirnov@gmail.com>
- <20190429054741.7286-3-andrew.smirnov@gmail.com> <1556533656.2560.7.camel@pengutronix.de>
-In-Reply-To: <1556533656.2560.7.camel@pengutronix.de>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=2VW37A7CK8zNP+puxGj5PzGbX48/U7vlPhB5EcPFYbg=;
+        b=rKrGZLJ5xuVyDlTU0wIo1RC11GTOx8B45BwkZEnduEMpTlIYnS/OOv5F+ThppBRhSo
+         zyLo/Bcs1LxTnZTH8+HZpA513xXJEUlHafkzxKPyNB9nAx7WTiBz5ugK/DUtl6uJoYL6
+         ZkOfug3WqQ1lXTftzZV8EOrO9cSj42qyMhxgZCWa/E0+aSHCdfEfLhIoFL/vdBk9JThw
+         t8FZH6Rs21zOAnK7RI81UDM0jdzNDVanSz8sHgUQ/O8jj0L2rbcs7aMEhSFaETruZqM6
+         yc22MdULCxrdvvfnSTGgUK5QNQHBWjBZtwZXWW18DVNMZ4O8zZZGT9Ep1Vibx51qCzCh
+         6d+g==
+X-Gm-Message-State: APjAAAV8EntPk/V8mAbshponEqudD49l1Cd9sXQKiwc1xl+G1mD6lH1a
+        EguXYONQMOruOzi26x1WAJ3Y0VCP1z0=
+X-Google-Smtp-Source: APXvYqxX1NtYOvBAqjA+CmqfXlrWdx0r1XIT8njws5CvJ/z/aBa2pmMzVStRmggOt/c0x/W2syQajw==
+X-Received: by 2002:a17:902:8c89:: with SMTP id t9mr65874264plo.265.1556567637977;
+        Mon, 29 Apr 2019 12:53:57 -0700 (PDT)
+Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
+        by smtp.gmail.com with ESMTPSA id l2sm39841783pgl.2.2019.04.29.12.53.56
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Mon, 29 Apr 2019 12:53:57 -0700 (PDT)
 From:   Andrey Smirnov <andrew.smirnov@gmail.com>
-Date:   Mon, 29 Apr 2019 12:10:27 -0700
-Message-ID:
- <CAHQ1cqECkn3242zVb55ifmgEHdq0se91=PpS1zDL4wj2WdZmbw@mail.gmail.com>
-Subject: Re: [PATCH v2 2/3] power: supply: Add driver for Microchip UCS1002
-To:     Lucas Stach <l.stach@pengutronix.de>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+To:     linux-pm@vger.kernel.org
+Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
+        Guenter Roeck <linux@roeck-us.net>,
         Enric Balletbo Serra <enric.balletbo@collabora.com>,
         Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
         Fabio Estevam <fabio.estevam@nxp.com>,
-        Guenter Roeck <linux@roeck-us.net>,
         Sebastian Reichel <sre@kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/3] power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
+Date:   Mon, 29 Apr 2019 12:53:47 -0700
+Message-Id: <20190429195349.20335-2-andrew.smirnov@gmail.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190429195349.20335-1-andrew.smirnov@gmail.com>
+References: <20190429195349.20335-1-andrew.smirnov@gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190429191027.lG7uRGj1_pRHlHgok4-KwiIK8LyrOJxlkjNtLxxDkdg@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190429195347.r6OT1OGntoUwGQtYKkLDHrAnRAY0AISAwMc27kquPro@z>
 
-On Mon, Apr 29, 2019 at 3:27 AM Lucas Stach <l.stach@pengutronix.de> wrote:
->
-> Hi Andrey,
->
-> Am Sonntag, den 28.04.2019, 22:47 -0700 schrieb Andrey Smirnov:
-> > Add driver for Microchip UCS1002 Programmable USB Port Power
-> > Controller with Charger Emulation. The driver exposed a power supply
-> > device to control/monitor various parameter of the device as well as a
-> > regulator to allow controlling VBUS line.
-> >
-> > > Signed-off-by: Enric Balletbo Serra <enric.balletbo@collabora.com>
-> > > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> > > Cc: Chris Healy <cphealy@gmail.com>
-> > > Cc: Lucas Stach <l.stach@pengutronix.de>
-> > > Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> > > Cc: Guenter Roeck <linux@roeck-us.net>
-> > > Cc: Sebastian Reichel <sre@kernel.org>
-> > Cc: linux-kernel@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> > ---
-> [...]
-> > +     /* Enable charge rationing by default */
-> > > +   ret = regmap_update_bits(info->regmap, UCS1002_REG_GENERAL_CFG,
-> > > +                            F_RATION_EN, F_RATION_EN);
-> > > +   if (ret) {
-> > > +           dev_err(dev, "Failed to read general config: %d\n", ret);
-> > > +           return ret;
-> > > +   }
-> > +
-> > > +   /*
-> > > +    * Ignore the M1, M2, PWR_EN, and EM_EN pin states. Set active
-> > > +    * mode selection to BC1.2 CDP.
-> > > +    */
-> > > +   ret = regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
-> > > +                            V_SET_ACTIVE_MODE_MASK,
-> > +                              V_SET_ACTIVE_MODE_BC12_CDP);
->
-> This doesn't work as the F_PIN_IGNORE bit isn't set, so the the
-> external strap settings are applied. I had to apply the following diff
-> to make the driver behave as expected again:
->
+Add POWER_SUPPLY_HEALTH_OVERCURRENT constant in order to allow
+singalling overcurrent condition via power supply health information.
 
-Ugh, I missed this since pins on my board are set properly. Thanks for
-catching that and sorry about the bug. Will fix in v3.
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/power/supply/power_supply_sysfs.c | 2 +-
+ include/linux/power_supply.h              | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-Thanks,
-Andrey Smirnov
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 5358a80d854f..153f4a6ca57c 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -62,7 +62,7 @@ static const char * const power_supply_charge_type_text[] = {
+ static const char * const power_supply_health_text[] = {
+ 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
+ 	"Unspecified failure", "Cold", "Watchdog timer expire",
+-	"Safety timer expire"
++	"Safety timer expire", "Over current"
+ };
+ 
+ static const char * const power_supply_technology_text[] = {
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 2f9c201a54d1..bdab14c7ca4d 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -57,6 +57,7 @@ enum {
+ 	POWER_SUPPLY_HEALTH_COLD,
+ 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
+ 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
++	POWER_SUPPLY_HEALTH_OVERCURRENT,
+ };
+ 
+ enum {
+-- 
+2.20.1
+
