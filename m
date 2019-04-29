@@ -2,73 +2,76 @@ Return-Path: <SRS0=2Oin=S7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23AE0C43219
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 05:48:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17014C004C9
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 05:48:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D968A2087B
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 05:48:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DAD492087B
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Apr 2019 05:48:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PTModMY2"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MHr5iFRw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725958AbfD2FsF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Apr 2019 01:48:05 -0400
-Received: from mail-pl1-f193.google.com ([209.85.214.193]:46827 "EHLO
-        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725468AbfD2FsF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 01:48:05 -0400
-Received: by mail-pl1-f193.google.com with SMTP id o7so4516180pll.13;
-        Sun, 28 Apr 2019 22:48:04 -0700 (PDT)
+        id S1727363AbfD2FsK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Apr 2019 01:48:10 -0400
+Received: from mail-pg1-f193.google.com ([209.85.215.193]:46083 "EHLO
+        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727332AbfD2FsJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2019 01:48:09 -0400
+Received: by mail-pg1-f193.google.com with SMTP id n2so4593458pgg.13;
+        Sun, 28 Apr 2019 22:48:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=pLT7t8PBRMyNajJ9X5FXiY9soaMVZaxDHWbzSb9y91M=;
-        b=PTModMY29lrcG90hHUqbFV1t0cDIUYJe4jHhcGKoiqS8xvcJp80gXB6JcldK7YKWxA
-         /UENjQ16F5PsTuXL0jaSE3xhfBJgo47VajDeYhqIt8MSb2UU0GBfWlUB4R2/h76E9cZp
-         EaQxOjXKZ3ZgcprbwhiC2fKG51PcWJsLhMcHIz1iZsLVf+DRc0W88YpunNBhDMTFzUA8
-         X18jdal6rY/XTbiwbCQcmBn5y4myO1l5R7Ds5Nt638FE/TwtTesjBe8qs3KqjFo2kBRp
-         cs0QNeZgaupb/RvvauqPBMahIf1/Y6MFsOMJPjjRbAYKRU6DP/yLosIfkIS2pUUIiUTn
-         HC2g==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Fjs/QlJccPdiIzSXEBVK27qZZaOYBQoAnxJi1UWQC3c=;
+        b=MHr5iFRw+tp+gqiL3I3y4eiNAWoHTeP+vDeAwqND73yHii7k0YdDk4QJXrkSgDsXXh
+         WI9oP9MFw6VNcWwFRwYeu19g0O/ihRMgUXX8RDekZAAYwEd6GqF0KZvw8fmdgzIDXF4d
+         uZpbr6VVFPTTdhcazRIDYl3EmgY4r67PaMKYE04XF3NMzrA441VRqG4JfhzQZxWhMCPl
+         C5vJ+Bj/mv+gVUljMAEV+lzaK4/Q6qwUmsPINDN2DNeYClJve9RZjW1redqzcctclzwP
+         Ez/UH8DpqFmD4lmSkfe8/Ek9gNxN/WOJj1+Bdq7F1PHSKdCRFy5jXF459ckeNbvUtv2y
+         bZaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=pLT7t8PBRMyNajJ9X5FXiY9soaMVZaxDHWbzSb9y91M=;
-        b=oJsLNi1ISI8rxyVrMbgE90lsRwfdmaKp8VJb8Wt0Yl8yw34DN8GapHrgmsZFYvl3Ma
-         5FPHYJwqbhBERLXJEM7HiudvinaQByVkm+KG/aUbhp/AdrHA0vT/Z4ZPhL01yry6RsGB
-         g58ndAUeYd28IWeErvpV7/a8rt2iWC8StVXXee4lkJQM6oSK+o2yLEUrac+lsZ7wXmAR
-         5ljOdJeAbL1BxRWkVoeicm+sYY8CZGQ8Nt7kSa/t/Tcfp4NZJY5ZvmA3ofosN8r5wZsk
-         AxyqPYm5xXWWmFvS7jR0W5Avy38Mt0JGMAxyXnUhyb6MlKawLlHYlD/baFQPb6ZjYdfz
-         n51g==
-X-Gm-Message-State: APjAAAUJjWAkEPlUFe4mcMnX+sSJYMpNjd39uCDR5yBiKEG44Oju7gJH
-        7vgWIgNHz9CmIhGYsXjPIk7Tfeu8nOk=
-X-Google-Smtp-Source: APXvYqxBi/aUOK0/Q3hwpDWsvW4lM370uMGUyXQQ9rPNl0ysuxt06HmaVviJQkapq70DLnPVrCbM4A==
-X-Received: by 2002:a17:902:a585:: with SMTP id az5mr26003981plb.261.1556516883878;
-        Sun, 28 Apr 2019 22:48:03 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Fjs/QlJccPdiIzSXEBVK27qZZaOYBQoAnxJi1UWQC3c=;
+        b=K8v8E8G+rtjKlEJiAQV0Di1EHdWYrMKUrejk9r4uRSf894JJ3NpL1RUoH/miwksgQd
+         JFUzY/mBAJgnYu1uCKUFxF+PX1kl6pQMOJwMCoLoaQi7gGMOZanmCw6VuDORfVZ0G7bV
+         mfHz1L+oeC9CQZ7wUMsUwc0mVeJqQdkb39eE8ezPsIA2Gxk8R9JsUU/dLq+izMANy6+B
+         YTnBdb1eYdeqbkzw/Px3baiMwI3vWyIFw/OrCbeee3v49+jhZztFsLsv+eEnZZRdBphW
+         C6w+HMIRi0mg3TtPHnltIAbxCcUGSvMGMJKFEjykUPO6ud5Bh9GqtzN7wYefCajLlbzr
+         fTXw==
+X-Gm-Message-State: APjAAAWsMuju657FT2iLIRaLLZlmPhrKqzhMXnr7f4f4y+tSSIOfyySd
+        ds+hYecR4TX1PEiC5aRAnLG1OAS3uwg=
+X-Google-Smtp-Source: APXvYqxF/KdEF10+njoKQkhrf1cNzcNM8W+SyXl+dItO+8/5IZT0o2KfXzp6CnOAqYV0yslD/zFzEA==
+X-Received: by 2002:a65:4183:: with SMTP id a3mr57054240pgq.121.1556516888732;
+        Sun, 28 Apr 2019 22:48:08 -0700 (PDT)
 Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id g10sm37856567pgq.54.2019.04.28.22.48.02
+        by smtp.gmail.com with ESMTPSA id g10sm37856567pgq.54.2019.04.28.22.48.07
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Sun, 28 Apr 2019 22:48:02 -0700 (PDT)
+        Sun, 28 Apr 2019 22:48:07 -0700 (PDT)
 From:   Andrey Smirnov <andrew.smirnov@gmail.com>
 To:     linux-pm@vger.kernel.org
 Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
+        Enric Balletbo Serra <enric.balletbo@collabora.com>,
         Chris Healy <cphealy@gmail.com>,
         Lucas Stach <l.stach@pengutronix.de>,
         Fabio Estevam <fabio.estevam@nxp.com>,
         Guenter Roeck <linux@roeck-us.net>,
+        Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
         Sebastian Reichel <sre@kernel.org>,
-        Enric Balletbo Serra <enric.balletbo@collabora.com>,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/3] Driver for UCS1002
-Date:   Sun, 28 Apr 2019 22:47:38 -0700
-Message-Id: <20190429054741.7286-1-andrew.smirnov@gmail.com>
+Subject: [PATCH v2 3/3] dt-bindings: power: supply: Add bindings for Microchip UCS1002
+Date:   Sun, 28 Apr 2019 22:47:41 -0700
+Message-Id: <20190429054741.7286-4-andrew.smirnov@gmail.com>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190429054741.7286-1-andrew.smirnov@gmail.com>
+References: <20190429054741.7286-1-andrew.smirnov@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -76,57 +79,60 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190429054738.h-To_BsgRqaOjnezkrQIyWiA-Ast4pZWidX0gkN7YdE@z>
+Message-ID: <20190429054741.WnsRizMndn14pj9PymuGpVswF-TIYl69FHoJS8QnopU@z>
 
-Everyone:
+Add bindings for Microchip UCS1002 Programmable USB Port Power
+Controller with Charger Emulation.
 
-This small series adds a driver for UCS1002 Programmable USB Port
-Power Controller with Charger Emulation. See [page] for product page
-and [datasheet] for device dataseet. Hopefully each individual patch
-is self explanatory.
-
-Note that this series is a revival of the upstreaming effort by Enric
-Balletbo Serra last version of which can be found at [original-effort]
-
-Feedback is welcome!
-
-Thanks,
-Andrey Smirnov
-
-Changes since [v1]:
-
-    - Moved IRQ trigger specification to DT
-
-    - Fixed silent error paths in probe()
-    
-    - Dropped error message in ucs1002_set_max_current()
-
-    - Fixed license mismatch
-
-    - Changed the driver to configure the chip to BC1.2 CDP by default
-
-    - Made other small fixes as per feedback for v1
-
-[v1] https://lore.kernel.org/lkml/20190417084457.28747-1-andrew.smirnov@gmail.com/
-[page] https://www.microchip.com/wwwproducts/en/UCS1002-2
-[datasheet] https://ww1.microchip.com/downloads/en/DeviceDoc/UCS1002-2%20Data%20Sheet.pdf
-[original-effort] https://lore.kernel.org/lkml/1460705181-10493-1-git-send-email-enric.balletbo@collabora.com/
-
-Andrey Smirnov (3):
-  power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
-  power: supply: Add driver for Microchip UCS1002
-  dt-bindings: power: supply: Add bindings for Microchip UCS1002
-
- .../power/supply/microchip,ucs1002.txt        |  27 +
- drivers/power/supply/Kconfig                  |   9 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/power_supply_sysfs.c     |   2 +-
- drivers/power/supply/ucs1002_power.c          | 646 ++++++++++++++++++
- include/linux/power_supply.h                  |   1 +
- 6 files changed, 685 insertions(+), 1 deletion(-)
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: devicetree@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
+ 1 file changed, 27 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
- create mode 100644 drivers/power/supply/ucs1002_power.c
 
+diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+new file mode 100644
+index 000000000000..021fd7aba75e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+@@ -0,0 +1,27 @@
++Microchip UCS1002 USB Port Power Controller
++
++Required properties:
++- compatible		: Should be "microchip,ucs1002";
++- reg			: I2C slave address
++
++Optional properties:
++- interrupts-extended	: A list of interrupts lines present (could be either
++			  corresponding to A_DET# pin, ALERT# pin, or both)
++- interrupt-names	: A list of interrupt names. Should contain (if
++			  present):
++			  - "a_det" for line connected to A_DET# pin
++			  - "alert" for line connected to ALERT# pin
++			  Both are expected to be IRQ_TYPE_EDGE_BOTH
++Example:
++
++&i2c3 {
++	charger@32 {
++		compatible = "microchip,ucs1002";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_ucs1002_pins>;
++		reg = <0x32>;
++		interrupts-extended = <&gpio5 2 IRQ_TYPE_EDGE_BOTH>,
++				      <&gpio3 21 IRQ_TYPE_EDGE_BOTH>;
++		interrupt-names = "a_det", "alert";
++	};
++};
 -- 
 2.20.1
 
