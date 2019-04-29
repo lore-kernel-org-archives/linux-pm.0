@@ -1,104 +1,56 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH next 23/25] thermal: Use dev_get_drvdata()
-Date: Mon, 29 Apr 2019 11:47:43 +0800
-Message-ID: <1556509663.2396.8.camel@intel.com>
-References: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
-         <20190423075020.173734-24-wangkefeng.wang@huawei.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4] cpufreq: qoriq: add support for lx2160a
+Date: Mon, 29 Apr 2019 10:46:37 +0530
+Message-ID: <20190429051637.d5y4cfiekrysli3w@vireshk-i7>
+References: <1556261743-20584-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423075020.173734-24-wangkefeng.wang@huawei.com>
+Content-Disposition: inline
+In-Reply-To: <1556261743-20584-1-git-send-email-vabhav.sharma@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kefeng Wang <wangkefeng.wang@huawei.com>, linux-kernel@vger.kernel.org
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: Vabhav Sharma <vabhav.sharma@nxp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Andy Tang <andy.tang@nxp.com>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 二, 2019-04-23 at 15:50 +0800, Kefeng Wang wrote:
-> Using dev_get_drvdata directly.
+On 26-04-19, 06:55, Vabhav Sharma wrote:
+> Enable support of NXP SoC lx2160a to handle the
+> lx2160a SoC.
 > 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> Acked-by: Scott Wood <oss@buserror.net>
+> Acked-by: Stephen Boyd <sboyd@kernel.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  .../intel/int340x_thermal/processor_thermal_device.c      | 8 +-----
-> --
->  drivers/thermal/st/stm_thermal.c                          | 6 ++----
->  2 files changed, 3 insertions(+), 11 deletions(-)
+> Changes for v4:
+> - Incorporated review comments from Stephen Boyd
 > 
-> diff --git
-> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> index 8e1cf4d789be..4ad54b8d4778 100644
-> ---
-> a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> +++
-> b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-> @@ -81,8 +81,6 @@ static ssize_t
-> power_limit_##index##_##suffix##_show(struct device *dev, \
->  					struct device_attribute
-> *attr, \
->  					char *buf) \
->  { \
-> -	struct pci_dev *pci_dev; \
-> -	struct platform_device *pdev; \
->  	struct proc_thermal_device *proc_dev; \
->  	\
->  	if (proc_thermal_emum_mode == PROC_THERMAL_NONE) { \
-> @@ -91,11 +89,7 @@ static ssize_t
-> power_limit_##index##_##suffix##_show(struct device *dev, \
->  	} \
->  	\
->  	if (proc_thermal_emum_mode == PROC_THERMAL_PLATFORM_DEV) { \
-> -		pdev = to_platform_device(dev); \
-> -		proc_dev = platform_get_drvdata(pdev); \
-> -	} else { \
-> -		pci_dev = to_pci_dev(dev); \
-> -		proc_dev = pci_get_drvdata(pci_dev); \
-> +		proc_dev = dev_get_drvdata(dev); \
->  	} \
->  	return sprintf(buf, "%lu\n",\
->  	(unsigned long)proc_dev->power_limits[index].suffix * 1000);
-> \
+> Changes for v3:
+> - Incorporated review comments of Rafael J. Wysocki
+> - Updated commit message
+> 
+> Changes for v2:
+> - Subject line updated
+> 
+>  drivers/cpufreq/qoriq-cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+> index 4295e54..81f0288 100644
+> --- a/drivers/cpufreq/qoriq-cpufreq.c
+> +++ b/drivers/cpufreq/qoriq-cpufreq.c
+> @@ -284,6 +284,7 @@ static const struct of_device_id node_matches[] __initconst = {
+>  	{ .compatible = "fsl,ls1046a-clockgen", },
+>  	{ .compatible = "fsl,ls1088a-clockgen", },
+>  	{ .compatible = "fsl,ls2080a-clockgen", },
+> +	{ .compatible = "fsl,lx2160a-clockgen", },
+>  	{ .compatible = "fsl,p4080-clockgen", },
+>  	{ .compatible = "fsl,qoriq-clockgen-1.0", },
+>  	{ .compatible = "fsl,qoriq-clockgen-2.0", },
 
-Sumeet has a patch to fix the same issue, which has been in my tree
-https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git/commit
-/?h=next&id=1948d498dcf680bc650391f23da2f97e59f9126d
+@Rafael, please apply this version. Thanks.
 
-Plus, the previous fix is wrong because proc_dev will be left
-uninitialized if proc_thermal_emum_mode equals PROC_THERMAL_PCI.
-
-thanks,
-rui
-
-> diff --git a/drivers/thermal/st/stm_thermal.c
-> b/drivers/thermal/st/stm_thermal.c
-> index bbd73c5a4a4e..cf9ddc52f30e 100644
-> --- a/drivers/thermal/st/stm_thermal.c
-> +++ b/drivers/thermal/st/stm_thermal.c
-> @@ -570,8 +570,7 @@ static int stm_thermal_prepare(struct
-> stm_thermal_sensor *sensor)
->  static int stm_thermal_suspend(struct device *dev)
->  {
->  	int ret;
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct stm_thermal_sensor *sensor =
-> platform_get_drvdata(pdev);
-> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
->  
->  	ret = stm_thermal_sensor_off(sensor);
->  	if (ret)
-> @@ -585,8 +584,7 @@ static int stm_thermal_suspend(struct device
-> *dev)
->  static int stm_thermal_resume(struct device *dev)
->  {
->  	int ret;
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct stm_thermal_sensor *sensor =
-> platform_get_drvdata(pdev);
-> +	struct stm_thermal_sensor *sensor = dev_get_drvdata(dev);
->  
->  	ret = stm_thermal_prepare(sensor);
->  	if (ret)
+-- 
+viresh
