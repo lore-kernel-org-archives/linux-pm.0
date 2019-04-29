@@ -1,54 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH - resend 1/3] thermal/drivers/cpu_cooling: Fixup the
- header and copyright
-Date: Mon, 29 Apr 2019 11:13:50 +0530
-Message-ID: <20190429054350.kaup4w2b5yx3mdqb@vireshk-i7>
-References: <20190428095106.5171-1-daniel.lezcano@linaro.org>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: [PATCH v2 0/3] Driver for UCS1002
+Date: Sun, 28 Apr 2019 22:47:38 -0700
+Message-ID: <20190429054741.7286-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190428095106.5171-1-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: edubezval@gmail.com, rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Enric Balletbo Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 28-04-19, 11:51, Daniel Lezcano wrote:
-> The copyright format does not conform to the format requested by
-> Linaro: https://wiki.linaro.org/Copyright
-> 
-> Fix it.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Viresh Kumar <viresh.kumar@linaro.org>
+Everyone:
 
-What exactly have I done here ? :)
+This small series adds a driver for UCS1002 Programmable USB Port
+Power Controller with Charger Emulation. See [page] for product page
+and [datasheet] for device dataseet. Hopefully each individual patch
+is self explanatory.
 
-> ---
->  drivers/thermal/cpu_cooling.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index ee8419a6390c..42aeb9087cab 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -2,9 +2,11 @@
->   *  linux/drivers/thermal/cpu_cooling.c
->   *
->   *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
-> - *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
->   *
-> - *  Copyright (C) 2014  Viresh Kumar <viresh.kumar@linaro.org>
-> + *  Copyright (C) 2012-2018 Linaro Limited.
-> + *
-> + *  Authors:	Amit Daniel <amit.kachhap@linaro.org>
-> + *		Viresh Kumar <viresh.kumar@linaro.org>
->   *
->   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->   *  This program is free software; you can redistribute it and/or modify
-> -- 
-> 2.17.1
+Note that this series is a revival of the upstreaming effort by Enric
+Balletbo Serra last version of which can be found at [original-effort]
+
+Feedback is welcome!
+
+Thanks,
+Andrey Smirnov
+
+Changes since [v1]:
+
+    - Moved IRQ trigger specification to DT
+
+    - Fixed silent error paths in probe()
+    
+    - Dropped error message in ucs1002_set_max_current()
+
+    - Fixed license mismatch
+
+    - Changed the driver to configure the chip to BC1.2 CDP by default
+
+    - Made other small fixes as per feedback for v1
+
+[v1] https://lore.kernel.org/lkml/20190417084457.28747-1-andrew.smirnov@gmail.com/
+[page] https://www.microchip.com/wwwproducts/en/UCS1002-2
+[datasheet] https://ww1.microchip.com/downloads/en/DeviceDoc/UCS1002-2%20Data%20Sheet.pdf
+[original-effort] https://lore.kernel.org/lkml/1460705181-10493-1-git-send-email-enric.balletbo@collabora.com/
+
+Andrey Smirnov (3):
+  power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
+  power: supply: Add driver for Microchip UCS1002
+  dt-bindings: power: supply: Add bindings for Microchip UCS1002
+
+ .../power/supply/microchip,ucs1002.txt        |  27 +
+ drivers/power/supply/Kconfig                  |   9 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/power_supply_sysfs.c     |   2 +-
+ drivers/power/supply/ucs1002_power.c          | 646 ++++++++++++++++++
+ include/linux/power_supply.h                  |   1 +
+ 6 files changed, 685 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+ create mode 100644 drivers/power/supply/ucs1002_power.c
 
 -- 
-viresh
+2.20.1
