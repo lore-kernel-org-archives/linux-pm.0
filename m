@@ -1,68 +1,31 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v2 2/3] power: supply: Add driver for Microchip UCS1002
-Date: Mon, 29 Apr 2019 12:27:36 +0200
-Message-ID: <1556533656.2560.7.camel@pengutronix.de>
-References: <20190429054741.7286-1-andrew.smirnov@gmail.com>
-         <20190429054741.7286-3-andrew.smirnov@gmail.com>
+From: Claire Chang <tientzu-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH] ath10k: Drop WARN_ON()s that always trigger during system resume
+Date: Mon, 29 Apr 2019 18:41:50 +0800
+Message-ID: <CALiNf2_qV+iViHbS0tQquTMZfu6XfFvQCH14mdT5bixn94DZ2Q@mail.gmail.com>
+References: <2884043.Jv1Mn93hE8@aspire.rjw.lan> <20190403195718.GA74723@google.com>
+ <87o94tutdz.fsf@kamboji.qca.qualcomm.com> <CAJZ5v0ifD=DATprUeeO2_LGs04aEEhPB6AcGVPxWUdQaOma+ww@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190429054741.7286-3-andrew.smirnov@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org
-Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
+Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAJZ5v0ifD=DATprUeeO2_LGs04aEEhPB6AcGVPxWUdQaOma+ww-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Kalle Valo <kvalo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Sriram R <srirrama-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pradeep Kumar Chitrapu <pradeepc-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "open list:NETWORKING DRIVERS (WIRELESS)" <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ath10k-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Todd Brandt <todd.e.brandt-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Andrey,
+Tested-by: Claire Chang <tientzu-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 
-Am Sonntag, den 28.04.2019, 22:47 -0700 schrieb Andrey Smirnov:
-> Add driver for Microchip UCS1002 Programmable USB Port Power
-> Controller with Charger Emulation. The driver exposed a power supply
-> device to control/monitor various parameter of the device as well as a
-> regulator to allow controlling VBUS line.
-> 
-> > Signed-off-by: Enric Balletbo Serra <enric.balletbo@collabora.com>
-> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> > Cc: Chris Healy <cphealy@gmail.com>
-> > Cc: Lucas Stach <l.stach@pengutronix.de>
-> > Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> > Cc: Guenter Roeck <linux@roeck-us.net>
-> > Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> ---
-[...]
-> +	/* Enable charge rationing by default */
-> > +	ret = regmap_update_bits(info->regmap, UCS1002_REG_GENERAL_CFG,
-> > +				 F_RATION_EN, F_RATION_EN);
-> > +	if (ret) {
-> > +		dev_err(dev, "Failed to read general config: %d\n", ret);
-> > +		return ret;
-> > +	}
-> +
-> > +	/*
-> > +	 * Ignore the M1, M2, PWR_EN, and EM_EN pin states. Set active
-> > +	 * mode selection to BC1.2 CDP.
-> > +	 */
-> > +	ret = regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
-> > +				 V_SET_ACTIVE_MODE_MASK,
-> +				 V_SET_ACTIVE_MODE_BC12_CDP);
+> Still, I'm quite sure that the WARN_ON()s trigger during system resume
+> regardless of the hw/fw combination.
 
-This doesn't work as the F_PIN_IGNORE bit isn't set, so the the
-external strap settings are applied. I had to apply the following diff
-to make the driver behave as expected again:
+Also see this on sido:
 
---- a/drivers/power/supply/ucs1002_power.c
-+++ b/drivers/power/supply/ucs1002_power.c
-@@ -548,8 +548,8 @@ static int ucs1002_probe(struct i2c_client *client,
-         * mode selection to BC1.2 CDP.
-         */
-        ret = regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
--                                V_SET_ACTIVE_MODE_MASK,
--                                V_SET_ACTIVE_MODE_BC12_CDP);
-+                                V_SET_ACTIVE_MODE_MASK | F_PIN_IGNORE,
-+                                V_SET_ACTIVE_MODE_BC12_CDP | F_PIN_IGNORE);
-
-Regards,
-Lucas
+[    4.925278] ath10k_sdio mmc1:0001:1: qca6174 hw3.2 sdio target
+0x05030000 chip_id 0x00000000 sub 0000:0000
+[    4.935721] ath10k_sdio mmc1:0001:1: kconfig debug 1 debugfs 1
+tracing 1 dfs 0 testmode 1
+[    4.948750] ath10k_sdio mmc1:0001:1: firmware ver
+WLAN.RMH.4.4.1-00007-QCARMSWP-1 api 6 features wowlan,ignore-otp crc32
+b98adaf8
+[    5.132728] ath10k_sdio mmc1:0001:1: board_file api 2 bmi_id 0:4
+crc32 6364cfcc
