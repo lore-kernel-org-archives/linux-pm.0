@@ -1,91 +1,111 @@
-From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Subject: Re: [Bug 203297] Synaptics touchpad TM-3127 functionality broken by
- PCI runtime power management patch on 4.20.2
-Date: Mon, 29 Apr 2019 10:53:40 +0200
-Message-ID: <CAO-hwJLCPd-KfoK7OnSpEWG4B5cYfsH3J0tYAxJeVMqHyJEN1A@mail.gmail.com>
-References: <20190422130814.GJ173520@google.com> <3a1139ef-10ed-6923-73c5-30fbf0c065c3@linux.intel.com>
- <CAO-hwJKvXO6L7m0g1D6wycFP=Wu_qLDyLXTtmm0TkpxT5Z8ygw@mail.gmail.com> <e96a7220-974f-1df6-70ee-695ee815057f@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: Why is suspend with s2idle available on POWER8 systems?
+Date: Mon, 29 Apr 2019 11:08:37 +0200
+Message-ID: <CAJZ5v0jhrtaRmb9_n_=hpqZU0iFvEsV8FKoZ1v7QANXq-dWVFQ@mail.gmail.com>
+References: <5fdabbb9-0a62-4802-f1ca-f83584f935fa@molgen.mpg.de>
+ <CAJZ5v0gobp60Pn5cdh0CohGAXSBs-EvntNqKc_dj_UTnOiogkQ@mail.gmail.com> <c4c2f89f-9af7-01de-9144-9f11a8dafd58@molgen.mpg.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e96a7220-974f-1df6-70ee-695ee815057f@linux.intel.com>
+In-Reply-To: <c4c2f89f-9af7-01de-9144-9f11a8dafd58@molgen.mpg.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Keijo Vaara <ferdasyn@rocketmail.com>, Jean Delvare <jdelvare@suse.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, "open list:HID CORE LAYER" <linux-input@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 29, 2019 at 10:38 AM Jarkko Nikula
-<jarkko.nikula@linux.intel.com> wrote:
+On Mon, Apr 29, 2019 at 10:50 AM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
 >
-> On 4/29/19 10:45 AM, Benjamin Tissoires wrote:
-> >> I would like to ask help from input subsystem experts what kind of SMBus
-> >> power state dependency Synaptics RMI4 SMBus devices have since it cease
-> >> to work if SMBus controllers idles between transfers and how this is
-> >> best to fix?
+> Dear Rafael,
+>
+>
+> On 04/29/2019 09:17 AM, Rafael J. Wysocki wrote:
+> > On Sat, Apr 27, 2019 at 12:54 PM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+>
+> >> Updating an IBM S822LC from Ubuntu 18.10 to 19.04 some user space stuff
+> >> seems to have changed, so that going into sleep/suspend is enabled.
+> >>
+> >> That raises two questions.
+> >>
+> >> 1.  Is suspend actually supported on a POWER8 processor?
 > >
-> > Hmm, I am not sure there is such an existing architecture you could
-> > use in a simple patch.
+> > Suspend-to-idle is a special variant of system suspend that does not
+> > depend on any special platform support.  It works by suspending
+> > devices and letting all of the CPUs in the system go idle (hence the
+> > name).
 > >
-> > rmi-driver.c does indeed create an input device we could use to toggle
-> > on/off the PM state, but those callbacks are not wired to the
-> > transport driver (rmi_smbus.c), so it would required a little bit of
-> > extra work. And then, there are other RMI4 functions (firmware
-> > upgrade) that would not be happy if PM is in suspend while there is no
-> > open input node.
+> > Also see https://www.kernel.org/doc/html/latest/admin-guide/pm/sleep-states.html#suspend-to-idle
+>
+> Thanks. I guess I mixed it up with the new S0ix-states [1].
+
+Those can be entered via suspend-to-idle, if supported and actually
+reachable on a given platform, but suspend-to-idle is more general
+than that.
+
+> >>> Apr 27 10:18:13 power NetworkManager[7534]: <info>  [1556353093.7224] manager: sleep: sleep requested (sleeping: no  e
+> >>> Apr 27 10:18:13 power systemd[1]: Reached target Sleep.
+> >>> Apr 27 10:18:13 power systemd[1]: Starting Suspend...
+> >>> Apr 27 10:18:13 power systemd-sleep[82190]: Suspending system...
+> >>> Apr 27 10:18:13 power kernel: PM: suspend entry (s2idle)
+> >>> -- Reboot --
+> >>
+> >>> $ uname -m
+> >>> ppc64le
+> >>> $ more /proc/version
+> >>> Linux version 5.1.0-rc6+ (joey@power) (gcc version 8.3.0 (Ubuntu 8.3.0-6ubuntu1)) #1 SMP Sat Apr 27 10:01:48 CEST 2019
+> >>> $ more /sys/power/mem_sleep
+> >>> [s2idle]
+> >>> $ more /sys/power/state
+> >>> freeze mem
+> >>> $ grep _SUSPEND /boot/config-5.0.0-14-generic # also enabled in Ubuntu’s configuration
+> >>> CONFIG_ARCH_SUSPEND_POSSIBLE=y
+> >>> CONFIG_SUSPEND=y
+> >>> CONFIG_SUSPEND_FREEZER=y
+> >>> # CONFIG_SUSPEND_SKIP_SYNC is not set
+> >>> # CONFIG_PM_TEST_SUSPEND is not set
+> >>
+> >> Should the Kconfig symbol `SUSPEND` be selectable? If yes, should their
+> >> be some detection during runtime?
+> >>
+> >> 2.  If it is supported, what are the ways to getting it to resume? What
+> >> would the IPMI command be?
 > >
-> I see.
->
-> I got another thought about this. I noticed these input drivers need
-> SMBus Host Notify, maybe that explain the PM dependency? If that's the
-> only dependency then we could prevent the controller suspend if there is
-> a client needing host notify mechanism. IMHO that's less hack than the
-> patch to rmi_smbus.c.
-
-So currently, AFAIK, only Synaptics (rmi4) and Elantech are using
-SMBus Host Notify.
-So this patch would prevent the same bugs for those 2 vendors, which is good.
-
-It took me some time to understand why this would be less than a hack.
-And indeed, given that Host Notify relies on the I2C connection to be
-ready for the IRQ, we can not put the controller in suspend like we do
-for others where the IRQ controller is still ready.
-
-So yes, that could work from me. Not sure what Wolfram and Jean would
-say though.
-
->
-> Keijo: care to test does this idea would fix the issue (without the
-> previous patch)? I also attached the diff.
->
-> diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-> index 38af18645133..d54eafad7727 100644
-> --- a/drivers/i2c/i2c-core-base.c
-> +++ b/drivers/i2c/i2c-core-base.c
-> @@ -327,6 +327,8 @@ static int i2c_device_probe(struct device *dev)
->
->                 if (client->flags & I2C_CLIENT_HOST_NOTIFY) {
->                         dev_dbg(dev, "Using Host Notify IRQ\n");
-> +                       /* Adapter should not suspend for Host Notify */
-> +                       pm_runtime_get_sync(&client->adapter->dev);
->                         irq = i2c_smbus_host_notify_to_irq(client);
->                 } else if (dev->of_node) {
->                         irq = of_irq_get_byname(dev->of_node, "irq");
-> @@ -431,6 +433,8 @@ static int i2c_device_remove(struct device *dev)
->         device_init_wakeup(&client->dev, false);
->
->         client->irq = client->init_irq;
-> +       if (client->flags & I2C_CLIENT_HOST_NOTIFY)
-> +               pm_runtime_put(&client->adapter->dev);
->
->         return status;
->   }
->
-> > So I think this "hack" (with Mika's comments addressed) should go in
-> > until someone starts propagating the PM states correctly.
+> > That would depend on the distribution.
 > >
-> I guess you mean the Rafael's pm_runtime_get_sync() comment?
+> > Generally, you need to set up at least one device to generate wakeup
+> > interrupts.
+> >
+> > The interface to do that are the /sys/devices/.../power/wakeup files,
+> > but that has to cause enble_irq_wake() to be called for the given IRQ,
+> > so some support in the underlying drivers need to be present for it to
+> > work.
+> >
+> > USB devices generally work as wakeup sources if the controllers reside
+> > on a PCI bus, for example.
+>
+> ```
+> $ find /sys/devices/ -name wakeup | xargs grep enabled
+> /sys/devices/pci0021:00/0021:00:00.0/0021:01:00.0/0021:02:09.0/0021:0d:00.0/usb1/1-3/1-3.4/power/wakeup:enabled
+> /sys/devices/pci0021:00/0021:00:00.0/0021:01:00.0/0021:02:09.0/0021:0d:00.0/power/wakeup:enabled
+> $ lsusb -t
+> /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/4p, 5000M
+> /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/4p, 480M
+>     |__ Port 3: Dev 2, If 0, Class=Hub, Driver=hub/5p, 480M
+>         |__ Port 1: Dev 3, If 0, Class=Mass Storage, Driver=usb-storage, 480M
+>         |__ Port 2: Dev 4, If 0, Class=Mass Storage, Driver=usb-storage, 480M
+>         |__ Port 3: Dev 5, If 0, Class=Mass Storage, Driver=usb-storage, 480M
+>         |__ Port 4: Dev 6, If 0, Class=Human Interface Device, Driver=usbhid, 1.5M
+>         |__ Port 4: Dev 6, If 1, Class=Human Interface Device, Driver=usbhid, 1.5M
+> $ lsusb
+> Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+> Bus 001 Device 006: ID 046b:ff10 American Megatrends, Inc. Virtual Keyboard and Mouse
+> Bus 001 Device 005: ID 046b:ff31 American Megatrends, Inc.
+> Bus 001 Device 004: ID 046b:ff40 American Megatrends, Inc.
+> Bus 001 Device 003: ID 046b:ff20 American Megatrends, Inc.
+> Bus 001 Device 002: ID 046b:ff01 American Megatrends, Inc.
+> Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+> ```
 
-Oops, yes, that one, sorry :)
-
-Cheers,
-Benjamin
+I'm not really sure what you wanted to say here, but it looks like
+system wakeup is not enabled for device 6 on bus 1 which is probably
+what you want.
