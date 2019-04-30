@@ -1,59 +1,83 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] drivers: thermal: processor_thermal: Read PPCC on resume
-Date: Mon, 29 Apr 2019 20:47:43 -0700
-Message-ID: <20190430034743.43576-1-srinivas.pandruvada@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 2/2] dt-bindings: cpufreq: Document
+ allwinner,cpu-operating-points-v2
+Date: Tue, 30 Apr 2019 10:12:45 +0530
+Message-ID: <20190430044245.s4viduudej6q2eq6@vireshk-i7>
+References: <20190410174139.20012-1-tiny.windzz@gmail.com>
+ <20190410174139.20012-3-tiny.windzz@gmail.com>
+ <20190426211540.GA890@bogus>
+ <CAEExFWs2UwPLzgyO0apMOZf56um5isdZmf+7-wj_TqMozxZJQg@mail.gmail.com>
+ <CAL_Jsq+0mQYyAqfY3nmF-oFx2X4qHU567chQ1s8p-rgD2GEFnw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAL_Jsq+0mQYyAqfY3nmF-oFx2X4qHU567chQ1s8p-rgD2GEFnw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Frank Lee <tiny.windzz@gmail.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, David Miller <davem@davemloft.net>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Read PPCC power limits on system resume in case those limits changed
-while system was suspended.
+On 29-04-19, 11:18, Rob Herring wrote:
+> On Sun, Apr 28, 2019 at 4:53 AM Frank Lee <tiny.windzz@gmail.com> wrote:
+> >
+> > On Sat, Apr 27, 2019 at 5:15 AM Rob Herring <robh@kernel.org> wrote:
+> > >
+> > > On Wed, Apr 10, 2019 at 01:41:39PM -0400, Yangtao Li wrote:
+> > > > Allwinner Process Voltage Scaling Tables defines the voltage and
+> > > > frequency value based on the speedbin blown in the efuse combination.
+> > > > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
+> > > > provide the OPP framework with required information.
+> > > > This is used to determine the voltage and frequency value for each
+> > > > OPP of operating-points-v2 table when it is parsed by the OPP framework.
+> > > >
+> > > > The "allwinner,cpu-operating-points-v2" DT extends the "operating-points-v2"
+> > > > with following parameters:
+> > > > - nvmem-cells (NVMEM area containig the speedbin information)
+> > > > - opp-microvolt-<name>: voltage in micro Volts.
+> > > >   At runtime, the platform can pick a <name> and matching
+> > > >   opp-microvolt-<name> property.
+> > > >                       HW:             <name>:
+> > > >                       sun50iw-h6      speed0 speed1 speed2
+> > >
+> > > We already have at least one way to support speed bins with QC kryo
+> > > binding. Why do we need a different way?
+> >
+> > For some SOCs, for some reason (making the CPU have approximate performance),
+> > they use the same frequency but different voltage. In the case where
+> > this speed bin
+> > is not a lot and opp uses the same frequency, too many repeated opp
+> > nodes are a bit
+> > redundant and not intuitive enough.
+> >
+> > So, I think it's worth the new method.
+> 
+> Well, I don't.
+> 
+> We can't have every SoC vendor doing their own thing just because they
+> want to. If there are technical reasons why existing bindings don't
+> work, then maybe we need to do something different. But I haven't
+> heard any reasons.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- .../int340x_thermal/processor_thermal_device.c     | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+Well there is a good reason for attempting the new bindings and I wasn't sure if
+updating the earlier bindings or adding another one for platform is correct. As
+we aren't really adding new bindings, but just documentation around it.
 
-diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-index 436c256f111d..acb22157b9ac 100644
---- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
-@@ -465,6 +465,18 @@ static void  proc_thermal_pci_remove(struct pci_dev *pdev)
- 	pci_disable_device(pdev);
- }
- 
-+static int proc_thermal_resume(struct device *dev)
-+{
-+	struct proc_thermal_device *proc_dev;
-+
-+	proc_dev = dev_get_drvdata(dev);
-+	proc_thermal_read_ppcc(proc_dev);
-+
-+	return 0;
-+}
-+
-+static SIMPLE_DEV_PM_OPS(proc_thermal_pm, NULL, proc_thermal_resume);
-+
- static const struct pci_device_id proc_thermal_pci_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BDW_THERMAL)},
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_HSB_THERMAL)},
-@@ -489,6 +501,7 @@ static struct pci_driver proc_thermal_pci_driver = {
- 	.probe		= proc_thermal_pci_probe,
- 	.remove		= proc_thermal_pci_remove,
- 	.id_table	= proc_thermal_pci_ids,
-+	.driver.pm	= &proc_thermal_pm,
- };
- 
- static const struct acpi_device_id int3401_device_ids[] = {
-@@ -503,6 +516,7 @@ static struct platform_driver int3401_driver = {
- 	.driver = {
- 		.name = "int3401 thermal",
- 		.acpi_match_table = int3401_device_ids,
-+		.pm = &proc_thermal_pm,
- 	},
- };
- 
+So there are two ways OPP core support this thing:
+
+- opp-supported-hw: This is a better fit if we have a smaller group of
+  frequencies to select from a bigger group, so we disable non-required OPPs
+  completely. This is what Qcom did as they wanted to select different
+  frequencies all together.
+
+- opp-microvolt-<name>: This is a better fit if the frequencies remain same and
+  only few of the properties like voltage/current have a different value. So we
+  don't disable any OPPs but just select the right voltage/current for those
+  frequencies. This avoids unnecessary duplication of the OPPs in DT and that's
+  what allwinner guys want.
+
+The kryo nvmem bindings currently supports opp-supported-hw, maybe we can add
+mention support for second one in the same file and rename it well.
+
 -- 
-2.17.2
+viresh
