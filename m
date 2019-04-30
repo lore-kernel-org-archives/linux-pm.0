@@ -1,92 +1,82 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v3 4/4] DT: arm: exynos4412: add event data type which
- is monitored
-Date: Tue, 30 Apr 2019 23:24:27 +0200
-Message-ID: <f8873863-9524-1ef0-9633-868edc3b56d3@partner.samsung.com>
-References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6@eucas1p1.samsung.com>
-        <1555681688-19643-5-git-send-email-l.luba@partner.samsung.com>
-        <cee7b5a2-377e-59d6-7c6e-b6f9b3140d4f@samsung.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 3/3] dt-bindings: power: supply: Add bindings for
+ Microchip UCS1002
+Date: Tue, 30 Apr 2019 17:32:36 -0500
+Message-ID: <20190430223236.GA10236@bogus>
+References: <20190430064557.28469-1-andrew.smirnov@gmail.com>
+ <20190430064557.28469-4-andrew.smirnov@gmail.com>
+ <20190430161542.GB731@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cee7b5a2-377e-59d6-7c6e-b6f9b3140d4f@samsung.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190430161542.GB731@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, willy.mh.wolff.ml@gmail.com
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Apr 30, 2019 at 09:15:42AM -0700, Guenter Roeck wrote:
+> On Mon, Apr 29, 2019 at 11:45:57PM -0700, Andrey Smirnov wrote:
+> > Add bindings for Microchip UCS1002 Programmable USB Port Power
+> > Controller with Charger Emulation.
+> > 
+> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> > Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
+> > Cc: Chris Healy <cphealy@gmail.com>
+> > Cc: Lucas Stach <l.stach@pengutronix.de>
+> > Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> > Cc: Guenter Roeck <linux@roeck-us.net>
+> > Cc: Rob Herring <robh+dt@kernel.org>
+> > Cc: devicetree@vger.kernel.org
+> > Cc: Sebastian Reichel <sre@kernel.org>
+> > Cc: linux-kernel@vger.kernel.org
+> > Cc: linux-pm@vger.kernel.org
+> > ---
+> >  .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
+> >  1 file changed, 27 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> > new file mode 100644
+> > index 000000000000..021fd7aba75e
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> > @@ -0,0 +1,27 @@
+> > +Microchip UCS1002 USB Port Power Controller
+> > +
+> > +Required properties:
+> > +- compatible		: Should be "microchip,ucs1002";
+> > +- reg			: I2C slave address
+> > +
+> > +Optional properties:
+> > +- interrupts-extended	: A list of interrupts lines present (could be either
+> > +			  corresponding to A_DET# pin, ALERT# pin, or both)
 
+Just make this 'interrupts'. Support for 'interrupts-extended' is 
+implied.
 
-On 4/30/19 8:10 AM, Chanwoo Choi wrote:
-> Hi,
-> 
-> On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
->> The patch adds new field in the PPMU event which shows explicitly
->> what kind of data the event is monitoring. It is possible to change it
->> using defined values in exynos_ppmu.h file.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   arch/arm/boot/dts/exynos4412-ppmu-common.dtsi | 10 ++++++++++
->>   1 file changed, 10 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
->> index 3a3b2fa..549faba 100644
->> --- a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
->> +++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
->> @@ -6,12 +6,16 @@
->>    * Author: Chanwoo Choi <cw00.choi@samsung.com>
->>    */
->>   
->> +#include <dt-bindings/pmu/exynos_ppmu.h>
->> +
->>   &ppmu_dmc0 {
->>          status = "okay";
->>   
->>          events {
->>   	       ppmu_dmc0_3: ppmu-event3-dmc0 {
->>   		       event-name = "ppmu-event3-dmc0";
->> +		       event-data-type = <(PPMU_RO_DATA_CNT |
->> +					   PPMU_WO_DATA_CNT)>;
->>   	       };
->>          };
->>   };
->> @@ -22,6 +26,8 @@
->>          events {
->>   	       ppmu_dmc1_3: ppmu-event3-dmc1 {
->>   		       event-name = "ppmu-event3-dmc1";
->> +		       event-data-type = <(PPMU_RO_DATA_CNT |
->> +					   PPMU_WO_DATA_CNT)>;
->>   	       };
->>          };
->>   };
->> @@ -32,6 +38,8 @@
->>          events {
->>   	       ppmu_leftbus_3: ppmu-event3-leftbus {
->>   		       event-name = "ppmu-event3-leftbus";
->> +		       event-data-type = <(PPMU_RO_DATA_CNT |
->> +					   PPMU_WO_DATA_CNT)>;
->>   	       };
->>          };
->>   };
->> @@ -42,6 +50,8 @@
->>          events {
->>   	       ppmu_rightbus_3: ppmu-event3-rightbus {
->>   		       event-name = "ppmu-event3-rightbus";
->> +		       event-data-type = <(PPMU_RO_DATA_CNT |
->> +					   PPMU_WO_DATA_CNT)>;
->>   	       };
->>          };
->>   };
->>
-> 
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-Thank you, added to the patch.
+With that,
 
-Regards,
-Lukasz
+Reviewed-by: Rob Herring <robh@kernel.org>
+
+> > +- interrupt-names	: A list of interrupt names. Should contain (if
+> > +			  present):
+> > +			  - "a_det" for line connected to A_DET# pin
+> > +			  - "alert" for line connected to ALERT# pin
+> > +			  Both are expected to be IRQ_TYPE_EDGE_BOTH
+> > +Example:
+> > +
+> > +&i2c3 {
+> > +	charger@32 {
+> > +		compatible = "microchip,ucs1002";
+> > +		pinctrl-names = "default";
+> > +		pinctrl-0 = <&pinctrl_ucs1002_pins>;
 > 
-> 
+> Document the above ? Or is that optional ?
+
+I would have said to document this, but recently we had some discussion 
+about allowing this to be implied when there's only a 'default' entry. 
+We'll add it automatically for schemas.
+
+Rob
