@@ -2,25 +2,26 @@ Return-Path: <SRS0=BPTh=TA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02776C43219
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 18:05:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11819C43219
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 18:05:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D347121670
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 18:05:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E2FF821670
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 18:05:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726061AbfD3SFk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Apr 2019 14:05:40 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:60814 "EHLO
+        id S1727106AbfD3SFv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Apr 2019 14:05:51 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:60896 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725950AbfD3SFk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2019 14:05:40 -0400
+        with ESMTP id S1727083AbfD3SFu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2019 14:05:50 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: gportay)
-        with ESMTPSA id 60BAB281CB7
+        with ESMTPSA id 67D3F282FE4
 From:   =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
 To:     Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
@@ -45,10 +46,12 @@ Cc:     Douglas Anderson <dianders@chromium.org>,
         Enric Balletbo i Serra <enric.balletbo@collabora.com>,
         Boris Brezillon <boris.brezillon@collabora.com>,
         kernel@collabora.com
-Subject: [RFC 0/4] Add support for drm/rockchip to dynamically control  the DDR frequency within vblank for gru chromebooks.
-Date:   Tue, 30 Apr 2019 14:05:20 -0400
-Message-Id: <20190430180524.22710-1-gael.portay@collabora.com>
+Subject: [RFC 4/4] arm64: dts: rockchip: Set the display-subsystem devfreq
+Date:   Tue, 30 Apr 2019 14:05:24 -0400
+Message-Id: <20190430180524.22710-5-gael.portay@collabora.com>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190430180524.22710-1-gael.portay@collabora.com>
+References: <20190430180524.22710-1-gael.portay@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
@@ -56,81 +59,45 @@ Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190430180520.QBDrGCjIz_Q2U5Ubjc0xa0x9MopyGmGqRDtKlt7QHFE@z>
+Message-ID: <20190430180524.E6cY4HMlIYySRmYsIko6U-nlqEKmCw0G5OWp_xsLRCA@z>
 
-Dear all,
+Use the Dynamic Memory Controller as the display-subsystem's devfreq
+device.
 
-The purpose of that RFC is to enable de DMC device for the Rockchip
-based GRU Chromebooks, and to add a mean of synchronization between the
-Rockchip DRM driver and that DMC devfreq driver.
+Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
+---
+ arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi | 4 ++++
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi     | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-The DMC device is responsible for updating the DDR frequency according
-to the load of the DDR memory. Changing that clock rate within the
-display scanout leads to glitches. Thus, the devfreq framework needs a
-mean to synchronize the rate change with other devices.
-
-In that case, the DRM driver display has to synchronize a change rate
-within the VBLANK.
-
-The first patch adds a locking API to the devfreq framework. The users
-of a devfreq device can control the frequency change by locking and
-unlocking the devfreq device whenever they want. When a change rate is
-requested, and the device is locked, the drivers that hold a lock are
-called back, and the change will be applied as soon as the device is
-unlocked.
-
-The second patch adds the devfreq support in the Rockchip DRM drivers
-and uses the devfreq lock API to defer the change of the DDR frequency
-within the next VBLANK. The DRM driver locks the devfreq device and gets
-notified when a change is wanted then. Next, it enables the VBLANK
-interrupt, releases the lock on interrupt and starts a timer that
-relocks the devfreq device at the end of the vertical blanking interval.
-Also, the DRM driver disables the devfreq device if more than one CRTC
-becomes active.
-
-The third patch merges the Rockchip DDR clock code to the Rockchip DMC
-devfreq driver. These drivers both perform SMC calls to the
-Trusted-Firmware A to run SiP services that are related to the DDR
-memory. This merge puts the code at the same place. It avoids the
-contention in the Common Clock Framework that may cause to miss the
-deadline during which the rate can be changing without making glitches.
-
-The fourth patch tells display-subsystem to use the DMC devfreq device.
-
-I am waiting for your feedback.
-
-Note: This RFC needs patchset[1]. Its purpose is to addresses the review
-that was made in v1[2]. I dropped some patches in v2 to address things
-separately (in that RFC).
-
-[1]: https://patchwork.kernel.org/cover/10901577/
-[2]: https://lkml.org/lkml/fancy/2018/8/2/7
-
-Best regards,
-Gaël PORTAY (3):
-  PM / devfreq: add devfreq_lock/unlock() functions
-  drm: rockchip: Add DDR devfreq support.
-  clk: rockchip: merge clk-ddr in dmc devfreq driver
-  arm64: dts: rockchip: Set the display-subsystem devfreq
-
- arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi |   4 +
- arch/arm64/boot/dts/rockchip/rk3399.dtsi     |   2 +-
- drivers/clk/rockchip/Makefile                |   1 -
- drivers/clk/rockchip/clk-ddr.c               | 147 --------------
- drivers/clk/rockchip/clk-rk3399.c            |   2 -
- drivers/clk/rockchip/clk.c                   |   9 -
- drivers/clk/rockchip/clk.h                   |  33 ---
- drivers/devfreq/devfreq.c                    | 200 ++++++++++++++++++-
- drivers/devfreq/rk3399_dmc.c                 |  42 ++--
- drivers/gpu/drm/rockchip/rockchip_drm_drv.c  |  51 ++++-
- drivers/gpu/drm/rockchip/rockchip_drm_drv.h  |   6 +
- drivers/gpu/drm/rockchip/rockchip_drm_fb.c   | 177 +++++++++++++++-
- drivers/gpu/drm/rockchip/rockchip_drm_fb.h   |   3 +-
- drivers/gpu/drm/rockchip/rockchip_drm_vop.c  |  82 ++++++++
- include/linux/devfreq.h                      |  64 ++++++
- 15 files changed, 611 insertions(+), 212 deletions(-)
- delete mode 100644 drivers/clk/rockchip/clk-ddr.c
-
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+index 40e78186560b..a5cbbc08f7e1 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+@@ -375,6 +375,10 @@
+ 		<200000000>;
+ };
+ 
++&display_subsystem {
++	devfreq = <&dmc>;
++};
++
+ &emmc_phy {
+ 	status = "okay";
+ };
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+index 87ee084fac89..253b476163fd 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+@@ -155,7 +155,7 @@
+ 		};
+ 	};
+ 
+-	display-subsystem {
++	display_subsystem: display-subsystem {
+ 		compatible = "rockchip,display-subsystem";
+ 		ports = <&vopl_out>, <&vopb_out>;
+ 	};
 -- 
 2.21.0
 
