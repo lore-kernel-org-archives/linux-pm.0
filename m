@@ -2,170 +2,337 @@ Return-Path: <SRS0=BPTh=TA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA6E2C43219
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 20:57:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35A34C43219
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 21:19:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 88E0F21783
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 20:57:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1556657825;
-	bh=miUeaLFCnWKHINyh2/y4Kt9PnKsbK3R3pzQJayne5D0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:List-ID:
-	 From;
-	b=m/zMstTQzf8dsX88Z8RBRWs/36rdhS4wxrVRwrMWNHNn+kwrbVNGfUgLKjY6Q3XiU
-	 3Cg6QKL+jjZeJ5HNMe3fd+DI+52B/GHHGZffh7i8E3+BD7T2s9KVct690JKAO65p+p
-	 rICJrD4Vte6TsFTdrQXEUBrGzjJ7pjeessmI2j6I=
+	by mail.kernel.org (Postfix) with ESMTP id D1ADB2177B
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 21:19:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="QdS5VXN0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727341AbfD3U5A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Apr 2019 16:57:00 -0400
-Received: from mail-io1-f66.google.com ([209.85.166.66]:41311 "EHLO
-        mail-io1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727245AbfD3U4Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2019 16:56:25 -0400
-Received: by mail-io1-f66.google.com with SMTP id r10so13452415ioc.8;
-        Tue, 30 Apr 2019 13:56:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
-         :reply-to:organization;
-        bh=w/ZY9LTiyXKRM2OFIeRR1GiI8yAd/kYfgFgfki8il0s=;
-        b=YtJt6pfFzExu2nn2LD/pkgzdudwBDuE9TUPd9cJOxZbchHajih+IO9O2DlwWaCge8C
-         vrkIQHu3PXCNJroWsn2EKTyqnZs1lZt9GDmUMILlmp7LelLOpoWJyhV8dcE9vlizJ19N
-         woTX8yMwAUWG5+cublTU0hJeSToDwqWSQTZSFHfuE5EdS+BDRIsIsTksACKYCP94PFQt
-         +EK8VSoBqV19fmYDF42i7XdigDYg5k0rEG1FkkuEc/VhcUFzaqMEwqbJESKImL/zEI0l
-         qT8MQiXa6+aQXeytm0s5b8vjtCu7GYrJbv7CcjaF9jclweaI+PpBUnF3iZHEGBsLSJ0a
-         ljCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
-         :in-reply-to:references:reply-to:organization;
-        bh=w/ZY9LTiyXKRM2OFIeRR1GiI8yAd/kYfgFgfki8il0s=;
-        b=FdAshPbIlgkXeCD7mpRQP+Qf4mJVELFw3h2qIIXgyFtnJ+69/h/Y1wSBgO6O/bWts2
-         i/YjUpgJIAar3Bm8JfPG+9BGo3IcWZZsEVBLmhf1MhfXRlvHTtomSRGJ6HZethwey6OF
-         xAHnGqXg6Ez7Ut+E6U/vSM0UjpqLHSNzbHOUqkgmr4NJf7NSeEY43jybDTa9/zfebezH
-         JRXYlwDqWE6IiYsol0XE82wfzs2CkgJo79K4cna/ZdT+/j+/cKBosi1X+sP64v93oPjR
-         iu+oOgIqTwQJZodngnlFJd+Ps5xJiUL3vf+UwkjM4jmnJ9kriNf0E3uADN2PzMYgHjDK
-         wdCA==
-X-Gm-Message-State: APjAAAVsDBb9h4r+9uEvVythR4YB1ttZbxJ/Fbsf4HsUNbKQ0R/EUSD7
-        SjCkBI8KEMDV9d57VfhCj1A=
-X-Google-Smtp-Source: APXvYqw+hkhvc4UfnFK9B4mXemX3ZTN3zSJ+I9BaX1p+MLWYR/R/gF5jtQXW0ZqQtut+wXsAqlbIiw==
-X-Received: by 2002:a6b:ee13:: with SMTP id i19mr6970437ioh.113.1556657784833;
-        Tue, 30 Apr 2019 13:56:24 -0700 (PDT)
-Received: from nuc8.lan (h69-131-112-51.cntcnh.dsl.dynamic.tds.net. [69.131.112.51])
-        by smtp.gmail.com with ESMTPSA id s7sm9799349ioo.17.2019.04.30.13.56.23
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Apr 2019 13:56:24 -0700 (PDT)
-From:   Len Brown <lenb@kernel.org>
-To:     x86@kernel.org
-Cc:     linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
-Subject: [PATCH 08/14] powercap/intel_rapl: Simplify rapl_find_package()
-Date:   Tue, 30 Apr 2019 16:55:53 -0400
-Message-Id:
- <f1e0f58b39cc60cbb90f4b3e476b5827041d0a12.1553624867.git.len.brown@intel.com>
-X-Mailer: git-send-email 2.18.0-rc0
-In-Reply-To: <75386dff62ee869eb7357dff1e60dfd9b3e68023.1553624867.git.len.brown@intel.com>
-References: <75386dff62ee869eb7357dff1e60dfd9b3e68023.1553624867.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
+        id S1726612AbfD3VTN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Apr 2019 17:19:13 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:50698 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726123AbfD3VTM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2019 17:19:12 -0400
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190430211910euoutp0259383d3768e21120fd7b21003d314c2c~aXUAHhmCV0828308283euoutp02g
+        for <linux-pm@vger.kernel.org>; Tue, 30 Apr 2019 21:19:10 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190430211910euoutp0259383d3768e21120fd7b21003d314c2c~aXUAHhmCV0828308283euoutp02g
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1556659150;
+        bh=4EI1v4CayMjzpl2T5dvi9jPEnNc2wJ+J/pfui+gzwWs=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=QdS5VXN0sy6P8Wx2hmvLPSX/KhVJbalxEpv8W8NWRXOwH+ZHrE6GJ/ZuUCZiZO5LR
+         v0CcCHd1lE8Ut+Etdg6GvgkGy54kq26qVP56NFvyqRSmAzSUxyBm5mCBIendDd8fqP
+         rWDALLtJT9ImTVzZkz8c8L82kCqXS6u6ekYtClO8=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20190430211909eucas1p2e0749e479fff20c4265196e24bcb93d8~aXT-Hxq7L2561325613eucas1p2u;
+        Tue, 30 Apr 2019 21:19:09 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges3new.samsung.com (EUCPMTA) with SMTP id CE.85.04325.DCBB8CC5; Tue, 30
+        Apr 2019 22:19:09 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20190430211907eucas1p24b3ebf45d318800450029f36634c2196~aXT9fEjMd2985729857eucas1p2N;
+        Tue, 30 Apr 2019 21:19:07 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20190430211907eusmtrp2d3cd71e7687ee349645ca356e255f220~aXT9PZwjY1026210262eusmtrp2c;
+        Tue, 30 Apr 2019 21:19:07 +0000 (GMT)
+X-AuditID: cbfec7f5-b75ff700000010e5-13-5cc8bbcdded2
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 96.44.04146.BCBB8CC5; Tue, 30
+        Apr 2019 22:19:07 +0100 (BST)
+Received: from [106.120.51.20] (unknown [106.120.51.20]) by
+        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190430211906eusmtip197ae411abadc6b6716615af2d6afb0fc~aXT8Um-a81212112121eusmtip1L;
+        Tue, 30 Apr 2019 21:19:06 +0000 (GMT)
+Subject: Re: [PATCH v3 2/4] drivers: devfreq: events: extend events by type
+ of counted data
+To:     Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org,
+        mark.rutland@arm.com, kyungmin.park@samsung.com,
+        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+        myungjoo.ham@samsung.com, kgene@kernel.org,
+        willy.mh.wolff.ml@gmail.com
+From:   Lukasz Luba <l.luba@partner.samsung.com>
+Message-ID: <adb6e86a-880e-f9b7-76b2-777a531895d2@partner.samsung.com>
+Date:   Tue, 30 Apr 2019 23:19:05 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <3557d507-0463-89de-4025-fbeaaef78bed@samsung.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrJKsWRmVeSWpSXmKPExsWy7djP87pnd5+IMXgxX8xi44z1rBbXvzxn
+        tZh/5ByrRf/j18wW589vYLc42/SG3WLT42usFpd3zWGz+Nx7hNFixvl9TBZrj9xlt1h6/SKT
+        xe3GFWwWrXuPsFscftPOavHtxCNGBwGPNfPWMHrsnHWX3WPTqk42j81L6j36tqxi9Pi8SS6A
+        LYrLJiU1J7MstUjfLoEr49mGI6wF220r7q5sZmxgXKXTxcjJISFgItH+tZm9i5GLQ0hgBaPE
+        yWVHWSCcL4wSzQ/mM4FUCQl8ZpQ4viEFpuNl+0w2iKLljBJbn95ggSh6yyixfL4eiC0sECtx
+        a8I0VpAiEYGTjBK9jXfBHGaQSScfXANyODjYBPQkdqwqBGngFXCT+DLrITNImEVAVeL1XjaQ
+        sKhAhMT9YxtYIUoEJU7OfAK2i1PAXuL9uc1gNcwC4hK3nkAcyiwgL9G8dTYzyCoJgUYOielb
+        J7NBXO0i8fFgByuELSzx6vgWdghbRuL/TohmCYFiiYbehYwQdo3E4/65UDXWEoePXwQ7mVlA
+        U2L9Ln2IsKPE2/U/mEDCEgJ8EjfeCkKcwCcxadt0Zogwr0RHmxBEtYbElp4LUIvEJJavmcY+
+        gVFpFpLHZiF5ZhaSZ2Yh7F3AyLKKUTy1tDg3PbXYOC+1XK84Mbe4NC9dLzk/dxMjMMGd/nf8
+        6w7GfX+SDjEKcDAq8fBqeJ6IEWJNLCuuzD3EKMHBrCTC63H8aIwQb0piZVVqUX58UWlOavEh
+        RmkOFiVx3mqGB9FCAumJJanZqakFqUUwWSYOTqkGRgelpUqG2728uFwMyrW2+Ldd4ghzauWQ
+        KnOzD1CVuWZ83ZRx2Z78Opaq7NYfHz9xNS2qPSXrEBA0tXTRx21GOlGuxvPysz9fD1uRcejE
+        /LcuyxheXH8vM/FgM+dqCVHbFRtrkm5Kq0cKLEjlP7vNfWHboQnGRpfmaZkufZjnvd9WNc3T
+        yVxHiaU4I9FQi7moOBEA5/7qHWwDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrPIsWRmVeSWpSXmKPExsVy+t/xu7qnd5+IMdjYLWaxccZ6VovrX56z
+        Wsw/co7Vov/xa2aL8+c3sFucbXrDbrHp8TVWi8u75rBZfO49wmgx4/w+Jou1R+6yWyy9fpHJ
+        4nbjCjaL1r1H2C0Ov2lntfh24hGjg4DHmnlrGD12zrrL7rFpVSebx+Yl9R59W1YxenzeJBfA
+        FqVnU5RfWpKqkJFfXGKrFG1oYaRnaGmhZ2RiqWdobB5rZWSqpG9nk5Kak1mWWqRvl6CX8WzD
+        EdaC7bYVd1c2MzYwrtLpYuTkkBAwkXjZPpOti5GLQ0hgKaPEre5NbBAJMYlJ+7azQ9jCEn+u
+        dUEVvWaU2LHiOCNIQlggVmL+4n2MIAkRgZOMErMn/GUCcZgFPjNKTF9zmRmiZQqTxLY/c4HK
+        ODjYBPQkdqwqBOnmFXCT+DLrITNImEVAVeL1XrDNogIREmfer2CBKBGUODnzCZjNKWAv8f7c
+        ZrAaZgEziXmbQVpBbHGJW0/mM0HY8hLNW2czT2AUmoWkfRaSlllIWmYhaVnAyLKKUSS1tDg3
+        PbfYUK84Mbe4NC9dLzk/dxMjMLK3Hfu5eQfjpY3BhxgFOBiVeHgvuJ2IEWJNLCuuzD3EKMHB
+        rCTC63H8aIwQb0piZVVqUX58UWlOavEhRlOg3yYyS4km5wOTTl5JvKGpobmFpaG5sbmxmYWS
+        OG+HwMEYIYH0xJLU7NTUgtQimD4mDk6pBsZk21yDyV7/Zwl5H53TIyFSFla672Zsn8r9P6oW
+        zN53bkz+eqN0f4SxyeGf874aK2x9XfbizNkDcirTX379fFQy0PlriQeHXps4Z9OJvdK5HJ6p
+        3YwOPr9fL532Z/XFpzZXjzC6PVr0tn+61p07mcksuYlGHiVz5aMirrcuFd8QknJpr9qJFyeV
+        WIozEg21mIuKEwE8Ie5bAgMAAA==
+X-CMS-MailID: 20190430211907eucas1p24b3ebf45d318800450029f36634c2196
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="UTF-8"
+X-RootMTR: 20190419134821eucas1p2461a27e28387ff2b87c149f09582d2a0
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190419134821eucas1p2461a27e28387ff2b87c149f09582d2a0
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419134821eucas1p2461a27e28387ff2b87c149f09582d2a0@eucas1p2.samsung.com>
+        <1555681688-19643-3-git-send-email-l.luba@partner.samsung.com>
+        <3557d507-0463-89de-4025-fbeaaef78bed@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190430205553.xgE5piPf99iUzA1TXEJaPCQ4nSlf0k5qq0SVS9hyoaU@z>
+Message-ID: <20190430211905.1TxJlQu74w3Sf4IWTCLvZc0l2SLOE4oLgct6LSIJJhc@z>
 
-From: Zhang Rui <rui.zhang@intel.com>
+Hi Chanwoo,
 
-Syntax only, no functional or semantic change.
+On 4/30/19 9:34 AM, Chanwoo Choi wrote:
+> Hi Lukasz,
+> 
+> On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
+>> This patch adds posibility to choose what type of data should be counted
+>> by the PPMU counter. Now the type comes from DT where the event has been
+>> defined. When there is no 'event-data-type' the default value is used,
+>> which is 'read data in bytes'.
+>> It is needed when you want to know not only read+write data bytes but
+>> i.e. only write data in byte, or number of read requests, etc.
+>>
+>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>> ---
+>>   drivers/devfreq/event/exynos-ppmu.c | 61 +++++++++++++++++++++++++------------
+>>   include/linux/devfreq-event.h       |  6 ++++
+>>   2 files changed, 48 insertions(+), 19 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+>> index c61de0b..073bf2c 100644
+>> --- a/drivers/devfreq/event/exynos-ppmu.c
+>> +++ b/drivers/devfreq/event/exynos-ppmu.c
+>> @@ -154,9 +154,9 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>>   	if (ret < 0)
+>>   		return ret;
+>>   
+>> -	/* Set the event of Read/Write data count  */
+>> +	/* Set the event of proper data type monitoring */
+>>   	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
+>> -				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
+>> +			   edev->desc->data_type);
+>>   	if (ret < 0)
+>>   		return ret;
+>>   
+>> @@ -368,23 +368,11 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>>   	if (ret < 0)
+>>   		return ret;
+>>   
+>> -	/* Set the event of Read/Write data count  */
+>> -	switch (id) {
+>> -	case PPMU_PMNCNT0:
+>> -	case PPMU_PMNCNT1:
+>> -	case PPMU_PMNCNT2:
+>> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+>> -				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
+>> -		if (ret < 0)
+>> -			return ret;
+>> -		break;
+>> -	case PPMU_PMNCNT3:
+>> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+>> -				PPMU_V2_EVT3_RW_DATA_CNT);
+>> -		if (ret < 0)
+>> -			return ret;
+>> -		break;
+>> -	}
+>> +	/* Set the event of proper data type monitoring */
+>> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+>> +			   edev->desc->data_type);
+>> +	if (ret < 0)
+>> +		return ret;
+>>   
+>>   	/* Reset cycle counter/performance counter and enable PPMU */
+>>   	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+>> @@ -508,6 +496,7 @@ static int of_get_devfreq_events(struct device_node *np,
+>>   	struct device *dev = info->dev;
+>>   	struct device_node *events_np, *node;
+>>   	int i, j, count;
+>> +	int ret;
+>>   
+>>   	events_np = of_get_child_by_name(np, "events");
+>>   	if (!events_np) {
+>> @@ -544,6 +533,40 @@ static int of_get_devfreq_events(struct device_node *np,
+>>   		desc[j].driver_data = info;
+>>   
+>>   		of_property_read_string(node, "event-name", &desc[j].name);
+>> +		ret = of_property_read_u32(node, "event-data-type",
+>> +					   &desc[j].data_type);
+>> +		if (ret) {
+>> +			/* Set the event of proper data type counting.
+>> +			 * Check if the data type has been defined in DT,
+>> +			 * use default if not.
+>> +			 */
+>> +			if (of_device_is_compatible(np,
+>> +					"samsung,exynos-ppmu-v2")) {
+> 
+> It is not proper to compare the compatible string again
+> in the device driver. Instead, you can define the ppmu device type
+> as following and then use 'struct of_device_id' in order to
+> identify the device type.
+I have been thinking about modifying the code in similar fashion as you
+did. Good to see similar approach. I'll take your changes with a small
+additional code, which sets the 'info->ppmu_type' before the for
+loop, as an additional patch. Would it be OK if I add you as an author
+and add Sign-off-by: Chanwoo Choi <cw00.choi@samsung.com>?
 
-Simplify how the code to discover a package is called.
-Rename find_package_by_id() to rapl_find_package_domain()
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: linux-pm@vger.kernel.org
----
- drivers/powercap/intel_rapl.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 6cdb2c14eee4..8b2f3631aba6 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
- static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
- 
- /* caller to ensure CPU hotplug lock is held */
--static struct rapl_package *find_package_by_id(int id)
-+static struct rapl_package *rapl_find_package_domain(int cpu)
- {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
- 	list_for_each_entry(rp, &rapl_packages, plist) {
-@@ -1298,7 +1299,7 @@ static int __init rapl_register_psys(void)
- 	rd->rpl[0].name = pl1_name;
- 	rd->rpl[1].prim_id = PL2_ENABLE;
- 	rd->rpl[1].name = pl2_name;
--	rd->rp = find_package_by_id(0);
-+	rd->rp = rapl_find_package_domain(0);
- 
- 	power_zone = powercap_register_zone(&rd->power_zone, control_type,
- 					    "psys", NULL,
-@@ -1454,8 +1455,9 @@ static void rapl_remove_package(struct rapl_package *rp)
- }
- 
- /* called from CPU hotplug notifier, hotplug lock held */
--static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-+static struct rapl_package *rapl_add_package(int cpu)
- {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int ret;
- 
-@@ -1464,7 +1466,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
- 		return ERR_PTR(-ENOMEM);
- 
- 	/* add the new package to the list */
--	rp->id = pkgid;
-+	rp->id = id;
- 	rp->lead_cpu = cpu;
- 
- 	/* check if the package contains valid domains */
-@@ -1495,12 +1497,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-  */
- static int rapl_cpu_online(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package_domain(cpu);
- 	if (!rp) {
--		rp = rapl_add_package(cpu, pkgid);
-+		rp = rapl_add_package(cpu);
- 		if (IS_ERR(rp))
- 			return PTR_ERR(rp);
- 	}
-@@ -1510,11 +1511,10 @@ static int rapl_cpu_online(unsigned int cpu)
- 
- static int rapl_cpu_down_prep(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int lead_cpu;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package_domain(cpu);
- 	if (!rp)
- 		return 0;
- 
--- 
-2.18.0-rc0
-
+Regards,
+Lukasz
+> 
+> 	enum exynos_ppmu_type {
+> 		EXYNOS_TYPE_PPMU,
+> 		EXYNOS_TYPE_PPMU_V2,
+> 	};
+> 
+>   static const struct of_device_id exynos_ppmu_id_match[] = {
+>          {
+>                  .compatible = "samsung,exynos-ppmu",
+> -               .data = (void *)&exynos_ppmu_ops,
+> +               .data = (void *)EXYNOS_TYPE_PPMU,
+>          }, {
+>                  .compatible = "samsung,exynos-ppmu-v2",
+> -               .data = (void *)&exynos_ppmu_v2_ops,
+> +               .data = (void *)EXYNOS_TYPE_PPMU_V2,
+>          },
+> 
+> 
+> The many device drivers in the mainline uses this code
+> in order to get the device type. You can refer the example
+> in the drivers/mfd/max14577.c.
+> 
+> (snip)
+> 
+> 
+> Example, I add the example. but it is not tested.
+> 
+> --- a/drivers/devfreq/event/exynos-ppmu.c
+> +++ b/drivers/devfreq/event/exynos-ppmu.c
+> @@ -16,6 +16,7 @@
+>   #include <linux/kernel.h>
+>   #include <linux/module.h>
+>   #include <linux/of_address.h>
+> +#include <linux/of_device.h>
+>   #include <linux/platform_device.h>
+>   #include <linux/regmap.h>
+>   #include <linux/suspend.h>
+> @@ -23,6 +24,11 @@
+>   
+>   #include "exynos-ppmu.h"
+>   
+> +enum exynos_ppmu_type {
+> +       EXYNOS_TYPE_PPMU,
+> +       EXYNOS_TYPE_PPMU_V2,
+> +};
+> +
+>   struct exynos_ppmu_data {
+>          struct clk *clk;
+>   };
+> @@ -36,6 +42,7 @@ struct exynos_ppmu {
+>          struct regmap *regmap;
+>   
+>          struct exynos_ppmu_data ppmu;
+> +       enum exynos_ppmu_type ppmu_type;
+>   };
+>   
+>   #define PPMU_EVENT(name)                       \
+>   
+>          /* Reset cycle counter/performance counter and enable PPMU */
+>          ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+> @@ -483,31 +476,23 @@ static const struct devfreq_event_ops exynos_ppmu_v2_ops = {
+>   static const struct of_device_id exynos_ppmu_id_match[] = {
+>          {
+>                  .compatible = "samsung,exynos-ppmu",
+> -               .data = (void *)&exynos_ppmu_ops,
+> +               .data = (void *)EXYNOS_TYPE_PPMU,
+>          }, {
+>                  .compatible = "samsung,exynos-ppmu-v2",
+> -               .data = (void *)&exynos_ppmu_v2_ops,
+> +               .data = (void *)EXYNOS_TYPE_PPMU_V2,
+>          },
+>          { /* sentinel */ },
+>   };
+>   MODULE_DEVICE_TABLE(of, exynos_ppmu_id_match);
+>   
+> -static struct devfreq_event_ops *exynos_bus_get_ops(struct device_node *np)
+> -{
+> -       const struct of_device_id *match;
+> -
+> -       match = of_match_node(exynos_ppmu_id_match, np);
+> -       return (struct devfreq_event_ops *)match->data;
+> -}
+> -
+>   static int of_get_devfreq_events(struct device_node *np,
+>                                   struct exynos_ppmu *info)
+>   {
+>          struct devfreq_event_desc *desc;
+> -       struct devfreq_event_ops *event_ops;
+>          struct device *dev = info->dev;
+>          struct device_node *events_np, *node;
+>          int i, j, count;
+>   
+>          events_np = of_get_child_by_name(np, "events");
+>          if (!events_np) {
+> @@ -515,7 +500,6 @@ static int of_get_devfreq_events(struct device_node *np,
+>                          "failed to get child node of devfreq-event devices\n");
+>                  return -EINVAL;
+>          }
+> -       event_ops = exynos_bus_get_ops(np);
+>   
+>          count = of_get_child_count(events_np);
+>          desc = devm_kcalloc(dev, count, sizeof(*desc), GFP_KERNEL);
+> @@ -540,11 +524,38 @@ static int of_get_devfreq_events(struct device_node *np,
+>                          continue;
+>                  }
+>   
+> -               desc[j].ops = event_ops;
+> +               switch (info->ppmu_type) {
+> +               case EXYNOS_TYPE_PPMU:
+> +                       desc[j].ops = &exynos_ppmu_ops;
+> +                       break;
+> +               case EXYNOS_TYPE_PPMU_V2:
+> +                       desc[j].ops = &exynos_ppmu_v2_ops;
+> +                       break;
+> +               }
+> +
+> 
+> 
