@@ -1,108 +1,31 @@
-From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v3 1/3] thermal: rockchip: fix up the tsadc pinctrl setting error
-Date: Tue, 30 Apr 2019 18:09:44 +0800
-Message-ID: <1556618986-18923-2-git-send-email-zhangqing@rock-chips.com>
-References: <1556618986-18923-1-git-send-email-zhangqing@rock-chips.com>
+From: Ido Schimmel <idosch@mellanox.com>
+Subject: Re: [PATCH -next] mlxsw: Remove obsolete dependency on THERMAL=m
+Date: Tue, 30 Apr 2019 10:16:10 +0000
+Message-ID: <20190430101608.GB6343@splinter>
+References: <20190430092832.7376-1-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1556618986-18923-1-git-send-email-zhangqing@rock-chips.com>
+In-Reply-To: <20190430092832.7376-1-geert+renesas@glider.be>
+Content-Language: en-US
+Content-ID: <323BFEDD0C772C4F9395BE241D4B9385@eurprd05.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de
-Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Jiri Pirko <jiri@mellanox.com>, "David S . Miller" <davem@davemloft.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Explicitly use the pinctrl to set/unset the right mode
-instead of relying on the pinctrl init mode.
-And it requires setting the tshut polarity before select pinctrl.
+On Tue, Apr 30, 2019 at 11:28:32AM +0200, Geert Uytterhoeven wrote:
+> The THERMAL configuration option was changed from tristate to bool, but
+> a dependency on THERMAL=3Dm was forgotten, leading to a warning when
+> running "make savedefconfig":
+>=20
+>     boolean symbol THERMAL tested for 'm'? test forced to 'n'
+>=20
+> Fixes: be33e4fbbea581ea ("thermal/drivers/core: Remove the module Kconfig=
+'s option")
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-When the temperature sensor mode is set to 0, it will automatically
-reset the board via the Clock-Reset-Unit (CRU) if the over temperature
-threshold is reached. However, when the pinctrl initializes, it does a
-transition to "otp_out" which may lead the SoC restart all the time.
+Reviewed-by: Ido Schimmel <idosch@mellanox.com>
 
-"otp_out" IO may be connected to the RESET circuit on the hardware.
-If the IO is in the wrong state, it will trigger RESET.
-(similar to the effect of pressing the RESET button)
-which will cause the soc to restart all the time.
-
-Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
----
- drivers/thermal/rockchip_thermal.c | 36 +++++++++++++++++++++++++++++++++---
- 1 file changed, 33 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 9c7643d62ed7..6dc7fc516abf 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -172,6 +172,9 @@ struct rockchip_thermal_data {
- 	int tshut_temp;
- 	enum tshut_mode tshut_mode;
- 	enum tshut_polarity tshut_polarity;
-+	struct pinctrl *pinctrl;
-+	struct pinctrl_state *gpio_state;
-+	struct pinctrl_state *otp_state;
- };
- 
- /**
-@@ -1242,6 +1245,8 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 		return error;
- 	}
- 
-+	thermal->chip->control(thermal->regs, false);
-+
- 	error = clk_prepare_enable(thermal->clk);
- 	if (error) {
- 		dev_err(&pdev->dev, "failed to enable converter clock: %d\n",
-@@ -1267,6 +1272,30 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 	thermal->chip->initialize(thermal->grf, thermal->regs,
- 				  thermal->tshut_polarity);
- 
-+	if (thermal->tshut_mode == TSHUT_MODE_GPIO) {
-+		thermal->pinctrl = devm_pinctrl_get(&pdev->dev);
-+		if (IS_ERR(thermal->pinctrl)) {
-+			dev_err(&pdev->dev, "failed to find thermal pinctrl\n");
-+			return PTR_ERR(thermal->pinctrl);
-+		}
-+
-+		thermal->gpio_state = pinctrl_lookup_state(thermal->pinctrl,
-+							   "gpio");
-+		if (IS_ERR_OR_NULL(thermal->gpio_state)) {
-+			dev_err(&pdev->dev, "failed to find thermal gpio state\n");
-+			return -EINVAL;
-+		}
-+
-+		thermal->otp_state = pinctrl_lookup_state(thermal->pinctrl,
-+							  "otpout");
-+		if (IS_ERR_OR_NULL(thermal->otp_state)) {
-+			dev_err(&pdev->dev, "failed to find thermal otpout state\n");
-+			return -EINVAL;
-+		}
-+
-+		pinctrl_select_state(thermal->pinctrl, thermal->otp_state);
-+	}
-+
- 	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		error = rockchip_thermal_register_sensor(pdev, thermal,
- 						&thermal->sensors[i],
-@@ -1337,8 +1366,8 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
- 
- 	clk_disable(thermal->pclk);
- 	clk_disable(thermal->clk);
--
--	pinctrl_pm_select_sleep_state(dev);
-+	if (thermal->tshut_mode == TSHUT_MODE_GPIO)
-+		pinctrl_select_state(thermal->pinctrl, thermal->gpio_state);
- 
- 	return 0;
- }
-@@ -1383,7 +1412,8 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
- 	for (i = 0; i < thermal->chip->chn_num; i++)
- 		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
- 
--	pinctrl_pm_select_default_state(dev);
-+	if (thermal->tshut_mode == TSHUT_MODE_GPIO)
-+		pinctrl_select_state(thermal->pinctrl, thermal->otp_state);
- 
- 	return 0;
- }
--- 
-1.9.1
+I assume this will be applied to the thermal tree?
