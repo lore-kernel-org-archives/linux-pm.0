@@ -1,184 +1,311 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 08/16] PM / devfreq: tegra: Clean up driver's probe /
- remove
-Date: Tue, 30 Apr 2019 09:16:03 +0900
-Message-ID: <236a553b-ccb5-f8fd-d404-af78f04d6985@samsung.com>
+Subject: Re: [PATCH v3 16/16] PM / devfreq: Introduce driver for NVIDIA
+ Tegra20
+Date: Tue, 30 Apr 2019 09:21:38 +0900
+Message-ID: <298cb2de-4191-4cd4-5bee-4501efe1967b@samsung.com>
 References: <20190417222925.5815-1-digetx@gmail.com>
-        <CGME20190417224114epcas4p14b20e269f10a3e3bfea4c8ec4c3300b3@epcas4p1.samsung.com>
-        <20190417222925.5815-9-digetx@gmail.com>
+        <CGME20190417224323epcas2p1fdc2aa12d442dd8e22e3cdd04d0204c8@epcas2p1.samsung.com>
+        <20190417222925.5815-17-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190417222925.5815-9-digetx@gmail.com>
+In-Reply-To: <20190417222925.5815-17-digetx@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Dmitry,
+
+Looks good to me. But, just I have one minor comment
+about '8' divider value in the tegra_devfreq_get_dev_status().
+
+On the next version, you better to add the comment about the meaning
+of '8' divider value.
+
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 On 19. 4. 18. 오전 7:29, Dmitry Osipenko wrote:
-> Reset hardware, disable ACTMON clock, release OPP's and handle all
-> possible error cases correctly, maintaining the correct tear down
-> order. Also use devm_platform_ioremap_resource() which is now available
-> in the kernel.
+> Add devfreq driver for NVIDIA Tegra20 SoC's. The driver periodically
+> reads out Memory Controller counters and adjusts memory frequency based
+> on the memory clients activity.
 > 
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/devfreq/tegra-devfreq.c | 83 +++++++++++++++++++--------------
->  1 file changed, 47 insertions(+), 36 deletions(-)
+>  MAINTAINERS                       |   8 ++
+>  drivers/devfreq/Kconfig           |  10 ++
+>  drivers/devfreq/Makefile          |   1 +
+>  drivers/devfreq/tegra20-devfreq.c | 202 ++++++++++++++++++++++++++++++
+>  4 files changed, 221 insertions(+)
+>  create mode 100644 drivers/devfreq/tegra20-devfreq.c
 > 
-> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index ce1eb97a2090..70946e432d3c 100644
-> --- a/drivers/devfreq/tegra-devfreq.c
-> +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -610,7 +610,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  {
->  	struct tegra_devfreq *tegra;
->  	struct tegra_devfreq_device *dev;
-> -	struct resource *res;
->  	unsigned int i;
->  	unsigned long rate;
->  	int err;
-> @@ -619,9 +618,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  	if (!tegra)
->  		return -ENOMEM;
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 002d564efbe5..c70896550a27 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10070,6 +10070,14 @@ F:	include/linux/memblock.h
+>  F:	mm/memblock.c
+>  F:	Documentation/core-api/boot-time-mm.rst
 >  
-> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -
-> -	tegra->regs = devm_ioremap_resource(&pdev->dev, res);
-> +	tegra->regs = devm_platform_ioremap_resource(pdev, 0);
->  	if (IS_ERR(tegra->regs))
->  		return PTR_ERR(tegra->regs);
+> +MEMORY FREQUENCY SCALING DRIVER FOR NVIDIA TEGRA20
+> +M:	Dmitry Osipenko <digetx@gmail.com>
+> +L:	linux-pm@vger.kernel.org
+> +L:	linux-tegra@vger.kernel.org
+> +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
+> +S:	Maintained
+> +F:	drivers/devfreq/tegra20-devfreq.c
+> +
+>  MEMORY MANAGEMENT
+>  L:	linux-mm@kvack.org
+>  W:	http://www.linux-mm.org
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index a6bba6e1e7d9..1530dbefa31f 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -100,6 +100,16 @@ config ARM_TEGRA_DEVFREQ
+>  	  It reads ACTMON counters of memory controllers and adjusts the
+>  	  operating frequencies and voltages with OPP support.
 >  
-> @@ -643,11 +640,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  		return PTR_ERR(tegra->emc_clock);
->  	}
+> +config ARM_TEGRA20_DEVFREQ
+> +	tristate "NVIDIA Tegra20 DEVFREQ Driver"
+> +	depends on (TEGRA_MC && TEGRA20_EMC) || COMPILE_TEST
+> +	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+> +	select PM_OPP
+> +	help
+> +	  This adds the DEVFREQ driver for the Tegra20 family of SoCs.
+> +	  It reads Memory Controller counters and adjusts the operating
+> +	  frequencies and voltages with OPP support.
+> +
+>  config ARM_RK3399_DMC_DEVFREQ
+>  	tristate "ARM RK3399 DMC DEVFREQ Driver"
+>  	depends on ARCH_ROCKCHIP
+> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+> index 47e5aeeebfd1..338ae8440db6 100644
+> --- a/drivers/devfreq/Makefile
+> +++ b/drivers/devfreq/Makefile
+> @@ -11,6 +11,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+>  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+>  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+>  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra30-devfreq.o
+> +obj-$(CONFIG_ARM_TEGRA20_DEVFREQ)	+= tegra20-devfreq.o
 >  
-> -	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
-> -	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
-> -	if (err) {
-> -		dev_err(&pdev->dev,
-> -			"Failed to register rate change notifier\n");
-> +	tegra->irq = platform_get_irq(pdev, 0);
-> +	if (tegra->irq < 0) {
-> +		err = tegra->irq;
-> +		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
->  		return err;
->  	}
->  
-> @@ -678,54 +674,69 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  
->  	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
->  		rate = clk_round_rate(tegra->emc_clock, rate);
-> -		dev_pm_opp_add(&pdev->dev, rate, 0);
-> -	}
->  
-> -	tegra->irq = platform_get_irq(pdev, 0);
-> -	if (tegra->irq < 0) {
-> -		err = tegra->irq;
-> -		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
-> -		return err;
+>  # DEVFREQ Event Drivers
+>  obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
+> diff --git a/drivers/devfreq/tegra20-devfreq.c b/drivers/devfreq/tegra20-devfreq.c
+> new file mode 100644
+> index 000000000000..ec2cec6808ed
+> --- /dev/null
+> +++ b/drivers/devfreq/tegra20-devfreq.c
+> @@ -0,0 +1,202 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * NVIDIA Tegra20 devfreq driver
+> + *
+> + * Copyright (C) 2019 GRATE-DRIVER project
+> + */
+> +
+> +#include <linux/clk.h>
+> +#include <linux/devfreq.h>
+> +#include <linux/io.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_opp.h>
+> +#include <linux/slab.h>
+> +
+> +#include <soc/tegra/mc.h>
+> +
+> +#include "governor.h"
+> +
+> +#define MC_STAT_CONTROL				0x90
+> +#define MC_STAT_EMC_CLOCK_LIMIT			0xa0
+> +#define MC_STAT_EMC_CLOCKS			0xa4
+> +#define MC_STAT_EMC_CONTROL			0xa8
+> +#define MC_STAT_EMC_COUNT			0xb8
+> +
+> +#define EMC_GATHER_CLEAR			(1 << 8)
+> +#define EMC_GATHER_ENABLE			(3 << 8)
+> +
+> +struct tegra_devfreq {
+> +	struct devfreq *devfreq;
+> +	struct clk *clk;
+> +	void __iomem *regs;
+> +};
+> +
+> +static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+> +				u32 flags)
+> +{
+> +	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+> +	struct devfreq *devfreq = tegra->devfreq;
+> +	struct dev_pm_opp *opp;
+> +	unsigned long rate;
+> +	int err;
+> +
+> +	opp = devfreq_recommended_opp(dev, freq, flags);
+> +	if (IS_ERR(opp))
+> +		return PTR_ERR(opp);
+> +
+> +	rate = dev_pm_opp_get_freq(opp);
+> +	dev_pm_opp_put(opp);
+> +
+> +	err = clk_set_min_rate(tegra->clk, rate);
+> +	if (err)
+> +		return err;
+> +
+> +	err = clk_set_rate(tegra->clk, 0);
+> +	if (err)
+> +		goto restore_min_rate;
+> +
+> +	return 0;
+> +
+> +restore_min_rate:
+> +	clk_set_min_rate(tegra->clk, devfreq->previous_freq);
+> +
+> +	return err;
+> +}
+> +
+> +static int tegra_devfreq_get_dev_status(struct device *dev,
+> +					struct devfreq_dev_status *stat)
+> +{
+> +	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+> +
+> +	stat->busy_time = readl_relaxed(tegra->regs + MC_STAT_EMC_COUNT);
+> +	stat->total_time = readl_relaxed(tegra->regs + MC_STAT_EMC_CLOCKS) / 8;
+
+How about adding the comment why divide with '8' constant value?
+
+
+> +	stat->current_frequency = clk_get_rate(tegra->clk);
+> +
+> +	writel_relaxed(EMC_GATHER_CLEAR, tegra->regs + MC_STAT_CONTROL);
+> +	writel_relaxed(EMC_GATHER_ENABLE, tegra->regs + MC_STAT_CONTROL);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct devfreq_dev_profile tegra_devfreq_profile = {
+> +	.polling_ms	= 500,
+> +	.target		= tegra_devfreq_target,
+> +	.get_dev_status	= tegra_devfreq_get_dev_status,
+> +};
+> +
+> +static struct tegra_mc *tegra_get_memory_controller(void)
+> +{
+> +	struct platform_device *pdev;
+> +	struct device_node *np;
+> +	struct tegra_mc *mc;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "nvidia,tegra20-mc-gart");
+> +	if (!np)
+> +		return ERR_PTR(-ENOENT);
+> +
+> +	pdev = of_find_device_by_node(np);
+> +	of_node_put(np);
+> +	if (!pdev)
+> +		return ERR_PTR(-ENODEV);
+> +
+> +	mc = platform_get_drvdata(pdev);
+> +	if (!mc)
+> +		return ERR_PTR(-EPROBE_DEFER);
+> +
+> +	return mc;
+> +}
+> +
+> +static int tegra_devfreq_probe(struct platform_device *pdev)
+> +{
+> +	struct tegra_devfreq *tegra;
+> +	struct tegra_mc *mc;
+> +	unsigned long max_rate;
+> +	unsigned long rate;
+> +	int err;
+> +
+> +	mc = tegra_get_memory_controller();
+> +	if (IS_ERR(mc)) {
+> +		err = PTR_ERR(mc);
+> +		dev_err(&pdev->dev, "failed to get memory controller: %d\n",
+> +			err);
+> +		return err;
+> +	}
+> +
+> +	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+> +	if (!tegra)
+> +		return -ENOMEM;
+> +
+> +	/* EMC is a system-critical clock that is always enabled */
+> +	tegra->clk = devm_clk_get(&pdev->dev, "emc");
+> +	if (IS_ERR(tegra->clk)) {
+> +		err = PTR_ERR(tegra->clk);
+> +		dev_err(&pdev->dev, "failed to get emc clock: %d\n", err);
+> +		return err;
+> +	}
+> +
+> +	tegra->regs = mc->regs;
+> +
+> +	max_rate = clk_round_rate(tegra->clk, ULONG_MAX);
+> +
+> +	for (rate = 0; rate <= max_rate; rate++) {
+> +		rate = clk_round_rate(tegra->clk, rate);
+> +
 > +		err = dev_pm_opp_add(&pdev->dev, rate, 0);
 > +		if (err) {
-> +			dev_err(&pdev->dev, "Failed to add OPP: %d\n", err);
+> +			dev_err(&pdev->dev, "failed to add opp: %d\n", err);
 > +			goto remove_opps;
 > +		}
->  	}
->  
->  	platform_set_drvdata(pdev, tegra);
->  
-> +	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
-> +	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
-> +	if (err) {
-> +		dev_err(&pdev->dev,
-> +			"Failed to register rate change notifier\n");
+> +	}
+> +
+> +	/*
+> +	 * Reset statistic gathers state, select global bandwidth for the
+> +	 * statistics collection mode and set clocks counter saturation
+> +	 * limit to maximum.
+> +	 */
+> +	writel_relaxed(0x00000000, tegra->regs + MC_STAT_CONTROL);
+> +	writel_relaxed(0x00000000, tegra->regs + MC_STAT_EMC_CONTROL);
+> +	writel_relaxed(0xffffffff, tegra->regs + MC_STAT_EMC_CLOCK_LIMIT);
+> +
+> +	platform_set_drvdata(pdev, tegra);
+> +
+> +	tegra->devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
+> +					    DEVFREQ_GOV_SIMPLE_ONDEMAND, NULL);
+> +	if (IS_ERR(tegra->devfreq)) {
+> +		err = PTR_ERR(tegra->devfreq);
 > +		goto remove_opps;
 > +	}
 > +
-> +	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
-> +	tegra->devfreq = devfreq_add_device(&pdev->dev,
-> +					    &tegra_devfreq_profile,
-> +					    "tegra_actmon",
-> +					    NULL);
-> +	if (IS_ERR(tegra->devfreq)) {
-> +		err = PTR_ERR(tegra->devfreq);
-> +		goto unreg_notifier;
-> +	}
-> +
->  	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
->  					actmon_thread_isr, IRQF_ONESHOT,
->  					"tegra-devfreq", tegra);
->  	if (err) {
-> -		dev_err(&pdev->dev, "Interrupt request failed\n");
-> -		return err;
-> +		dev_err(&pdev->dev, "Interrupt request failed: %d\n", err);
-> +		goto remove_devfreq;
->  	}
->  
-> -	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
-> -	tegra->devfreq = devm_devfreq_add_device(&pdev->dev,
-> -						 &tegra_devfreq_profile,
-> -						 "tegra_actmon",
-> -						 NULL);
-> -
->  	return 0;
-> +
-> +remove_devfreq:
-> +	devfreq_remove_device(tegra->devfreq);
-> +
-> +unreg_notifier:
-> +	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
+> +	return 0;
 > +
 > +remove_opps:
 > +	dev_pm_opp_remove_all_dynamic(&pdev->dev);
 > +
-> +	reset_control_reset(tegra->reset);
-> +	clk_disable_unprepare(tegra->clock);
-> +
 > +	return err;
->  }
->  
->  static int tegra_devfreq_remove(struct platform_device *pdev)
->  {
->  	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
-> -	int irq = platform_get_irq(pdev, 0);
-> -	u32 val;
-> -	unsigned int i;
-> -
-> -	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
-> -		val = device_readl(&tegra->devices[i], ACTMON_DEV_CTRL);
-> -		val &= ~ACTMON_DEV_CTRL_ENB;
-> -		device_writel(&tegra->devices[i], val, ACTMON_DEV_CTRL);
-> -	}
-> -
-> -	actmon_write_barrier(tegra);
->  
-> -	devm_free_irq(&pdev->dev, irq, tegra);
+> +}
+> +
+> +static int tegra_devfreq_remove(struct platform_device *pdev)
+> +{
+> +	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
+> +
 > +	devfreq_remove_device(tegra->devfreq);
 > +	dev_pm_opp_remove_all_dynamic(&pdev->dev);
->  
->  	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
-
-nitpick: the probe function  has following call sequence if error case,
-First, clk_notifier_unregister()
-Second, dev_pm_opp_remove_all_dynamic()
-
-If possible, you better to keep the same sequence
-in the tegra_devfreq_remove(). But, it is just opinion.
-If you think that it doesn't break the routine of device removal,
-jut keep this code.
-
->  
-> +	reset_control_reset(tegra->reset);
->  	clk_disable_unprepare(tegra->clock);
->  
->  	return 0;
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver tegra_devfreq_driver = {
+> +	.probe		= tegra_devfreq_probe,
+> +	.remove		= tegra_devfreq_remove,
+> +	.driver		= {
+> +		.name	= "tegra20-devfreq",
+> +	},
+> +};
+> +module_platform_driver(tegra_devfreq_driver);
+> +
+> +MODULE_ALIAS("platform:tegra20-devfreq");
+> +MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
+> +MODULE_DESCRIPTION("NVIDIA Tegra20 devfreq driver");
+> +MODULE_LICENSE("GPL v2");
 > 
-
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 
 -- 
