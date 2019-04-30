@@ -1,80 +1,88 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v4 3/3] dt-bindings: power: supply: Add bindings for
- Microchip UCS1002
-Date: Tue, 30 Apr 2019 09:15:42 -0700
-Message-ID: <20190430161542.GB731@roeck-us.net>
-References: <20190430064557.28469-1-andrew.smirnov@gmail.com>
- <20190430064557.28469-4-andrew.smirnov@gmail.com>
+From: =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
+Subject: [RFC 0/4] Add support for drm/rockchip to dynamically control  the DDR frequency within vblank for gru chromebooks.
+Date: Tue, 30 Apr 2019 14:05:20 -0400
+Message-ID: <20190430180524.22710-1-gael.portay@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190430064557.28469-4-andrew.smirnov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Derek Basehore <dbasehore@chromium.org>, Lin Huang <hl@rock-chips.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Boris Brezillon <boris.brezillon@collabora.com>, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 29, 2019 at 11:45:57PM -0700, Andrey Smirnov wrote:
-> Add bindings for Microchip UCS1002 Programmable USB Port Power
-> Controller with Charger Emulation.
-> 
-> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
-> Cc: Chris Healy <cphealy@gmail.com>
-> Cc: Lucas Stach <l.stach@pengutronix.de>
-> Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: devicetree@vger.kernel.org
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> ---
->  .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
->  1 file changed, 27 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
-> new file mode 100644
-> index 000000000000..021fd7aba75e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
-> @@ -0,0 +1,27 @@
-> +Microchip UCS1002 USB Port Power Controller
-> +
-> +Required properties:
-> +- compatible		: Should be "microchip,ucs1002";
-> +- reg			: I2C slave address
-> +
-> +Optional properties:
-> +- interrupts-extended	: A list of interrupts lines present (could be either
-> +			  corresponding to A_DET# pin, ALERT# pin, or both)
-> +- interrupt-names	: A list of interrupt names. Should contain (if
-> +			  present):
-> +			  - "a_det" for line connected to A_DET# pin
-> +			  - "alert" for line connected to ALERT# pin
-> +			  Both are expected to be IRQ_TYPE_EDGE_BOTH
-> +Example:
-> +
-> +&i2c3 {
-> +	charger@32 {
-> +		compatible = "microchip,ucs1002";
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&pinctrl_ucs1002_pins>;
+Dear all,
 
-Document the above ? Or is that optional ?
+The purpose of that RFC is to enable de DMC device for the Rockchip
+based GRU Chromebooks, and to add a mean of synchronization between the
+Rockchip DRM driver and that DMC devfreq driver.
 
-[ I am not a DT expert, so feel free to ignore. ]
+The DMC device is responsible for updating the DDR frequency according
+to the load of the DDR memory. Changing that clock rate within the
+display scanout leads to glitches. Thus, the devfreq framework needs a
+mean to synchronize the rate change with other devices.
 
-Guenter
+In that case, the DRM driver display has to synchronize a change rate
+within the VBLANK.
 
-> +		reg = <0x32>;
-> +		interrupts-extended = <&gpio5 2 IRQ_TYPE_EDGE_BOTH>,
-> +				      <&gpio3 21 IRQ_TYPE_EDGE_BOTH>;
-> +		interrupt-names = "a_det", "alert";
-> +	};
-> +};
-> -- 
-> 2.20.1
-> 
+The first patch adds a locking API to the devfreq framework. The users
+of a devfreq device can control the frequency change by locking and
+unlocking the devfreq device whenever they want. When a change rate is
+requested, and the device is locked, the drivers that hold a lock are
+called back, and the change will be applied as soon as the device is
+unlocked.
+
+The second patch adds the devfreq support in the Rockchip DRM drivers
+and uses the devfreq lock API to defer the change of the DDR frequency
+within the next VBLANK. The DRM driver locks the devfreq device and gets
+notified when a change is wanted then. Next, it enables the VBLANK
+interrupt, releases the lock on interrupt and starts a timer that
+relocks the devfreq device at the end of the vertical blanking interval.
+Also, the DRM driver disables the devfreq device if more than one CRTC
+becomes active.
+
+The third patch merges the Rockchip DDR clock code to the Rockchip DMC
+devfreq driver. These drivers both perform SMC calls to the
+Trusted-Firmware A to run SiP services that are related to the DDR
+memory. This merge puts the code at the same place. It avoids the
+contention in the Common Clock Framework that may cause to miss the
+deadline during which the rate can be changing without making glitches.
+
+The fourth patch tells display-subsystem to use the DMC devfreq device.
+
+I am waiting for your feedback.
+
+Note: This RFC needs patchset[1]. Its purpose is to addresses the review
+that was made in v1[2]. I dropped some patches in v2 to address things
+separately (in that RFC).
+
+[1]: https://patchwork.kernel.org/cover/10901577/
+[2]: https://lkml.org/lkml/fancy/2018/8/2/7
+
+Best regards,
+Gaël PORTAY (3):
+  PM / devfreq: add devfreq_lock/unlock() functions
+  drm: rockchip: Add DDR devfreq support.
+  clk: rockchip: merge clk-ddr in dmc devfreq driver
+  arm64: dts: rockchip: Set the display-subsystem devfreq
+
+ arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi |   4 +
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi     |   2 +-
+ drivers/clk/rockchip/Makefile                |   1 -
+ drivers/clk/rockchip/clk-ddr.c               | 147 --------------
+ drivers/clk/rockchip/clk-rk3399.c            |   2 -
+ drivers/clk/rockchip/clk.c                   |   9 -
+ drivers/clk/rockchip/clk.h                   |  33 ---
+ drivers/devfreq/devfreq.c                    | 200 ++++++++++++++++++-
+ drivers/devfreq/rk3399_dmc.c                 |  42 ++--
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c  |  51 ++++-
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.h  |   6 +
+ drivers/gpu/drm/rockchip/rockchip_drm_fb.c   | 177 +++++++++++++++-
+ drivers/gpu/drm/rockchip/rockchip_drm_fb.h   |   3 +-
+ drivers/gpu/drm/rockchip/rockchip_drm_vop.c  |  82 ++++++++
+ include/linux/devfreq.h                      |  64 ++++++
+ 15 files changed, 611 insertions(+), 212 deletions(-)
+ delete mode 100644 drivers/clk/rockchip/clk-ddr.c
+
+-- 
+2.21.0
