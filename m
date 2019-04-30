@@ -1,54 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Fix kobject memleak
-Date: Tue, 30 Apr 2019 11:35:52 +0530
-Message-ID: <815f7c7cea02e05c90d5bf678ea8717f01cc9f63.1556604312.git.viresh.kumar@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 4/4] DT: arm: exynos4412: add event data type which
+ is monitored
+Date: Tue, 30 Apr 2019 15:10:45 +0900
+Message-ID: <cee7b5a2-377e-59d6-7c6e-b6f9b3140d4f@samsung.com>
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6@eucas1p1.samsung.com>
+        <1555681688-19643-5-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1555681688-19643-5-git-send-email-l.luba@partner.samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, tobin@kernel.org, linux-kernel@vger.kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Currently the error return path from kobject_init_and_add() is not
-followed by a call to kobject_put() - which means we are leaking the
-kobject.
+Hi,
 
-Fix it by adding a call to kobject_put() in the error path of
-kobject_init_and_add().
+On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
+> The patch adds new field in the PPMU event which shows explicitly
+> what kind of data the event is monitoring. It is possible to change it
+> using defined values in exynos_ppmu.h file.
+> 
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  arch/arm/boot/dts/exynos4412-ppmu-common.dtsi | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+> index 3a3b2fa..549faba 100644
+> --- a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+> +++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+> @@ -6,12 +6,16 @@
+>   * Author: Chanwoo Choi <cw00.choi@samsung.com>
+>   */
+>  
+> +#include <dt-bindings/pmu/exynos_ppmu.h>
+> +
+>  &ppmu_dmc0 {
+>         status = "okay";
+>  
+>         events {
+>  	       ppmu_dmc0_3: ppmu-event3-dmc0 {
+>  		       event-name = "ppmu-event3-dmc0";
+> +		       event-data-type = <(PPMU_RO_DATA_CNT |
+> +					   PPMU_WO_DATA_CNT)>;
+>  	       };
+>         };
+>  };
+> @@ -22,6 +26,8 @@
+>         events {
+>  	       ppmu_dmc1_3: ppmu-event3-dmc1 {
+>  		       event-name = "ppmu-event3-dmc1";
+> +		       event-data-type = <(PPMU_RO_DATA_CNT |
+> +					   PPMU_WO_DATA_CNT)>;
+>  	       };
+>         };
+>  };
+> @@ -32,6 +38,8 @@
+>         events {
+>  	       ppmu_leftbus_3: ppmu-event3-leftbus {
+>  		       event-name = "ppmu-event3-leftbus";
+> +		       event-data-type = <(PPMU_RO_DATA_CNT |
+> +					   PPMU_WO_DATA_CNT)>;
+>  	       };
+>         };
+>  };
+> @@ -42,6 +50,8 @@
+>         events {
+>  	       ppmu_rightbus_3: ppmu-event3-rightbus {
+>  		       event-name = "ppmu-event3-rightbus";
+> +		       event-data-type = <(PPMU_RO_DATA_CNT |
+> +					   PPMU_WO_DATA_CNT)>;
+>  	       };
+>         };
+>  };
+> 
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Tobin fixed this for schedutil already.
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 
- drivers/cpufreq/cpufreq.c          | 1 +
- drivers/cpufreq/cpufreq_governor.c | 2 ++
- 2 files changed, 3 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e10922709d13..bbf79544d0ad 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1098,6 +1098,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 				   cpufreq_global_kobject, "policy%u", cpu);
- 	if (ret) {
- 		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
-+		kobject_put(&policy->kobj);
- 		goto err_free_real_cpus;
- 	}
- 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index ffa9adeaba31..9d1d9bf02710 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -459,6 +459,8 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
- 	/* Failure, so roll back. */
- 	pr_err("initialization failed (dbs_data kobject init error %d)\n", ret);
- 
-+	kobject_put(&dbs_data->attr_set.kobj);
-+
- 	policy->governor_data = NULL;
- 
- 	if (!have_governor_per_policy())
 -- 
-2.21.0.rc0.269.g1a574e7a288b
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
