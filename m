@@ -1,127 +1,107 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 1/3] thermal: rockchip: fix up the tsadc pinctrl
- setting error
-Date: Tue, 30 Apr 2019 15:38:51 +0200
-Message-ID: <785392a0-282a-1e51-a4d6-a6d5ca478949@linaro.org>
-References: <1556618986-18923-1-git-send-email-zhangqing@rock-chips.com>
- <1556618986-18923-2-git-send-email-zhangqing@rock-chips.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH v5 1/2] PM / Domains: Add GENPD_FLAG_RPM_ALWAYS_ON flag
+Date: Tue, 30 Apr 2019 15:06:11 +0000
+Message-ID: <30247a52be55c3cb31d16b8ac0710d3ad51eea09.1556636234.git.leonard.crestez@nxp.com>
+References: <cover.1556636234.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1556618986-18923-2-git-send-email-zhangqing@rock-chips.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <cover.1556636234.git.leonard.crestez@nxp.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Elaine Zhang <zhangqing@rock-chips.com>, heiko@sntech.de
-Cc: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J.
+ Wysocki" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30/04/2019 12:09, Elaine Zhang wrote:
-> Explicitly use the pinctrl to set/unset the right mode
-> instead of relying on the pinctrl init mode.
-> And it requires setting the tshut polarity before select pinctrl.
-> 
-> When the temperature sensor mode is set to 0, it will automatically
-> reset the board via the Clock-Reset-Unit (CRU) if the over temperature
-> threshold is reached. However, when the pinctrl initializes, it does a
-> transition to "otp_out" which may lead the SoC restart all the time.
-> 
-> "otp_out" IO may be connected to the RESET circuit on the hardware.
-> If the IO is in the wrong state, it will trigger RESET.
-> (similar to the effect of pressing the RESET button)
-> which will cause the soc to restart all the time.
-> 
-> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+This is for power domains which can only be powered off for suspend but
+not as part of runtime PM.
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ drivers/base/power/domain.c | 8 ++++++--
+ include/linux/pm_domain.h   | 4 ++++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-
-
-> ---
->  drivers/thermal/rockchip_thermal.c | 36 +++++++++++++++++++++++++++++++++---
->  1 file changed, 33 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index 9c7643d62ed7..6dc7fc516abf 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -172,6 +172,9 @@ struct rockchip_thermal_data {
->  	int tshut_temp;
->  	enum tshut_mode tshut_mode;
->  	enum tshut_polarity tshut_polarity;
-> +	struct pinctrl *pinctrl;
-> +	struct pinctrl_state *gpio_state;
-> +	struct pinctrl_state *otp_state;
->  };
->  
->  /**
-> @@ -1242,6 +1245,8 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
->  		return error;
->  	}
->  
-> +	thermal->chip->control(thermal->regs, false);
-> +
->  	error = clk_prepare_enable(thermal->clk);
->  	if (error) {
->  		dev_err(&pdev->dev, "failed to enable converter clock: %d\n",
-> @@ -1267,6 +1272,30 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
->  	thermal->chip->initialize(thermal->grf, thermal->regs,
->  				  thermal->tshut_polarity);
->  
-> +	if (thermal->tshut_mode == TSHUT_MODE_GPIO) {
-> +		thermal->pinctrl = devm_pinctrl_get(&pdev->dev);
-> +		if (IS_ERR(thermal->pinctrl)) {
-> +			dev_err(&pdev->dev, "failed to find thermal pinctrl\n");
-> +			return PTR_ERR(thermal->pinctrl);
-> +		}
-> +
-> +		thermal->gpio_state = pinctrl_lookup_state(thermal->pinctrl,
-> +							   "gpio");
-> +		if (IS_ERR_OR_NULL(thermal->gpio_state)) {
-> +			dev_err(&pdev->dev, "failed to find thermal gpio state\n");
-> +			return -EINVAL;
-> +		}
-> +
-> +		thermal->otp_state = pinctrl_lookup_state(thermal->pinctrl,
-> +							  "otpout");
-> +		if (IS_ERR_OR_NULL(thermal->otp_state)) {
-> +			dev_err(&pdev->dev, "failed to find thermal otpout state\n");
-> +			return -EINVAL;
-> +		}
-> +
-> +		pinctrl_select_state(thermal->pinctrl, thermal->otp_state);
-> +	}
-> +
->  	for (i = 0; i < thermal->chip->chn_num; i++) {
->  		error = rockchip_thermal_register_sensor(pdev, thermal,
->  						&thermal->sensors[i],
-> @@ -1337,8 +1366,8 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
->  
->  	clk_disable(thermal->pclk);
->  	clk_disable(thermal->clk);
-> -
-> -	pinctrl_pm_select_sleep_state(dev);
-> +	if (thermal->tshut_mode == TSHUT_MODE_GPIO)
-> +		pinctrl_select_state(thermal->pinctrl, thermal->gpio_state);
->  
->  	return 0;
->  }
-> @@ -1383,7 +1412,8 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
->  	for (i = 0; i < thermal->chip->chn_num; i++)
->  		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
->  
-> -	pinctrl_pm_select_default_state(dev);
-> +	if (thermal->tshut_mode == TSHUT_MODE_GPIO)
-> +		pinctrl_select_state(thermal->pinctrl, thermal->otp_state);
->  
->  	return 0;
->  }
-> 
-
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 7a6aa2318915..33c30c1e6a30 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -126,10 +126,11 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+ #define genpd_status_on(genpd)		(genpd->status == GPD_STATE_ACTIVE)
+ #define genpd_is_irq_safe(genpd)	(genpd->flags & GENPD_FLAG_IRQ_SAFE)
+ #define genpd_is_always_on(genpd)	(genpd->flags & GENPD_FLAG_ALWAYS_ON)
+ #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
+ #define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
++#define genpd_is_rpm_always_on(genpd)	(genpd->flags & GENPD_FLAG_RPM_ALWAYS_ON)
+ 
+ static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
+ 		const struct generic_pm_domain *genpd)
+ {
+ 	bool ret;
+@@ -513,11 +514,13 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+ 	/*
+ 	 * Abort power off for the PM domain in the following situations:
+ 	 * (1) The domain is configured as always on.
+ 	 * (2) When the domain has a subdomain being powered on.
+ 	 */
+-	if (genpd_is_always_on(genpd) || atomic_read(&genpd->sd_count) > 0)
++	if (genpd_is_always_on(genpd) ||
++			genpd_is_rpm_always_on(genpd) ||
++			atomic_read(&genpd->sd_count) > 0)
+ 		return -EBUSY;
+ 
+ 	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+ 		enum pm_qos_flags_status stat;
+ 
+@@ -1810,11 +1813,12 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 		genpd->dev_ops.stop = pm_clk_suspend;
+ 		genpd->dev_ops.start = pm_clk_resume;
+ 	}
+ 
+ 	/* Always-on domains must be powered on at initialization. */
+-	if (genpd_is_always_on(genpd) && !genpd_status_on(genpd))
++	if ((genpd_is_always_on(genpd) || genpd_is_rpm_always_on(genpd)) &&
++			!genpd_status_on(genpd))
+ 		return -EINVAL;
+ 
+ 	if (genpd_is_cpu_domain(genpd) &&
+ 	    !zalloc_cpumask_var(&genpd->cpus, GFP_KERNEL))
+ 		return -ENOMEM;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 0e8e356bed6a..b21f35f0ee2e 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -51,16 +51,20 @@
+  *				deploy idle power management support for CPUs
+  *				and groups of CPUs. Note that, the backend
+  *				driver must then comply with the so called,
+  *				last-man-standing algorithm, for the CPUs in the
+  *				PM domain.
++ *
++ * GENPD_FLAG_RPM_ALWAYS_ON:	Instructs genpd to always keep the PM domain
++ *				powered on except for system suspend.
+  */
+ #define GENPD_FLAG_PM_CLK	 (1U << 0)
+ #define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
+ #define GENPD_FLAG_ALWAYS_ON	 (1U << 2)
+ #define GENPD_FLAG_ACTIVE_WAKEUP (1U << 3)
+ #define GENPD_FLAG_CPU_DOMAIN	 (1U << 4)
++#define GENPD_FLAG_RPM_ALWAYS_ON (1U << 5)
+ 
+ enum gpd_status {
+ 	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
+ 	GPD_STATE_POWER_OFF,	/* PM domain is off */
+ };
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.17.1
