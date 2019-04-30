@@ -1,83 +1,123 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 2/2] dt-bindings: cpufreq: Document
- allwinner,cpu-operating-points-v2
-Date: Tue, 30 Apr 2019 10:12:45 +0530
-Message-ID: <20190430044245.s4viduudej6q2eq6@vireshk-i7>
-References: <20190410174139.20012-1-tiny.windzz@gmail.com>
- <20190410174139.20012-3-tiny.windzz@gmail.com>
- <20190426211540.GA890@bogus>
- <CAEExFWs2UwPLzgyO0apMOZf56um5isdZmf+7-wj_TqMozxZJQg@mail.gmail.com>
- <CAL_Jsq+0mQYyAqfY3nmF-oFx2X4qHU567chQ1s8p-rgD2GEFnw@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v6 06/10] dt-bindings: memory-controllers: add
+ Exynos5422 DMC device description
+Date: Tue, 30 Apr 2019 13:46:17 +0900
+Message-ID: <babae08b-3ea6-30f4-6a46-85dea0eacd86@samsung.com>
+References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419141947eucas1p13a27605e04169ab528ef5bfb385eddbc@eucas1p1.samsung.com>
+        <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAL_Jsq+0mQYyAqfY3nmF-oFx2X4qHU567chQ1s8p-rgD2GEFnw@mail.gmail.com>
+In-Reply-To: <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Frank Lee <tiny.windzz@gmail.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, David Miller <davem@davemloft.net>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On 29-04-19, 11:18, Rob Herring wrote:
-> On Sun, Apr 28, 2019 at 4:53 AM Frank Lee <tiny.windzz@gmail.com> wrote:
-> >
-> > On Sat, Apr 27, 2019 at 5:15 AM Rob Herring <robh@kernel.org> wrote:
-> > >
-> > > On Wed, Apr 10, 2019 at 01:41:39PM -0400, Yangtao Li wrote:
-> > > > Allwinner Process Voltage Scaling Tables defines the voltage and
-> > > > frequency value based on the speedbin blown in the efuse combination.
-> > > > The sunxi-cpufreq-nvmem driver reads the efuse value from the SoC to
-> > > > provide the OPP framework with required information.
-> > > > This is used to determine the voltage and frequency value for each
-> > > > OPP of operating-points-v2 table when it is parsed by the OPP framework.
-> > > >
-> > > > The "allwinner,cpu-operating-points-v2" DT extends the "operating-points-v2"
-> > > > with following parameters:
-> > > > - nvmem-cells (NVMEM area containig the speedbin information)
-> > > > - opp-microvolt-<name>: voltage in micro Volts.
-> > > >   At runtime, the platform can pick a <name> and matching
-> > > >   opp-microvolt-<name> property.
-> > > >                       HW:             <name>:
-> > > >                       sun50iw-h6      speed0 speed1 speed2
-> > >
-> > > We already have at least one way to support speed bins with QC kryo
-> > > binding. Why do we need a different way?
-> >
-> > For some SOCs, for some reason (making the CPU have approximate performance),
-> > they use the same frequency but different voltage. In the case where
-> > this speed bin
-> > is not a lot and opp uses the same frequency, too many repeated opp
-> > nodes are a bit
-> > redundant and not intuitive enough.
-> >
-> > So, I think it's worth the new method.
+On 19. 4. 19. 오후 11:19, Lukasz Luba wrote:
+> The patch adds description for DT binding for a new Exynos5422 Dynamic
+> Memory Controller device.
 > 
-> Well, I don't.
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  .../bindings/memory-controllers/exynos5422-dmc.txt | 73 ++++++++++++++++++++++
+>  1 file changed, 73 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
 > 
-> We can't have every SoC vendor doing their own thing just because they
-> want to. If there are technical reasons why existing bindings don't
-> work, then maybe we need to do something different. But I haven't
-> heard any reasons.
+> diff --git a/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
+> new file mode 100644
+> index 0000000..133b3cc
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
+> @@ -0,0 +1,73 @@
+> +* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
+> +
+> +The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
+> +memory chips are connected. The driver is to monitor the controller in runtime
+> +and switch frequency and voltage. To monitor the usage of the controller in
+> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
+> +is able to measure the current load of the memory.
+> +When 'userspace' governor is used for the driver, an application is able to
+> +switch the DMC and memory frequency.
+> +
+> +Required properties for DMC device for Exynos5422:
+> +- compatible: Should be "samsung,exynos5422-bus".
 
-Well there is a good reason for attempting the new bindings and I wasn't sure if
-updating the earlier bindings or adding another one for platform is correct. As
-we aren't really adding new bindings, but just documentation around it.
+As I already mentioned on many times, it is not fixed.
+You have to fix it as following:
+- exynos5422-bus -> exynos5422-dmc
 
-So there are two ways OPP core support this thing:
+> +- clock-names : the name of clock used by the bus, "bus".
 
-- opp-supported-hw: This is a better fit if we have a smaller group of
-  frequencies to select from a bigger group, so we disable non-required OPPs
-  completely. This is what Qcom did as they wanted to select different
-  frequencies all together.
+The below examples doesn't contain the 'bus' clock name.
 
-- opp-microvolt-<name>: This is a better fit if the frequencies remain same and
-  only few of the properties like voltage/current have a different value. So we
-  don't disable any OPPs but just select the right voltage/current for those
-  frequencies. This avoids unnecessary duplication of the OPPs in DT and that's
-  what allwinner guys want.
+> +- clocks : phandles for clock specified in "clock-names" property.
+> +- devfreq-events : phandles for PPMU devices connected to this DMC.
+> +- vdd-supply : phandle for voltage regulator which is connected.
+> +- reg : registers of two CDREX controllers, chip information, clocks subsystem.
+> +- operating-points-v2 : phandle for OPPs described in v2 definition.
+> +- device-handle : phandle of the connected DRAM memory device. For more
+> +	information please refer to Documentation
+> +- devfreq-events : phandles of the PPMU events used by the controller.
+> +
+> +Example:
+> +
+> +	ppmu_dmc0_0: ppmu@10d00000 {
+> +		compatible = "samsung,exynos-ppmu";
+> +		reg = <0x10d00000 0x2000>;
+> +		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
+> +		clock-names = "ppmu";
+> +		status = "okay";
+> +		events {
+> +			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
+> +				event-name = "ppmu-event3-dmc0_0";
+> +			};
+> +		};
+> +	};
+> +
+> +	dmc: memory-controller@10c20000 {
+> +		compatible = "samsung,exynos5422-dmc";
+> +		reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
+> +			<0x10000000 0x1000>, <0x10030000 0x1000>;
+> +		clocks = 	<&clock CLK_FOUT_SPLL>,
+> +				<&clock CLK_MOUT_SCLK_SPLL>,
+> +				<&clock CLK_FF_DOUT_SPLL2>,
+> +				<&clock CLK_FOUT_BPLL>,
+> +				<&clock CLK_MOUT_BPLL>,
+> +				<&clock CLK_SCLK_BPLL>,
+> +				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
+> +				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
+> +				<&clock CLK_MOUT_MCLK_CDREX>,
+> +				<&clock CLK_DOUT_CLK2X_PHY0>,
+> +				<&clock CLK_CLKM_PHY0>,
+> +				<&clock CLK_CLKM_PHY1>;
+> +		clock-names =	"fout_spll",
+> +				"mout_sclk_spll",
+> +				"ff_dout_spll2",
+> +				"fout_bpll",
+> +				"mout_bpll",
+> +				"sclk_bpll",
+> +				"mout_mx_mspll_ccore",
+> +				"mout_mx_mspll_ccore_phy",
+> +				"mout_mclk_cdrex",
+> +				"dout_clk2x_phy0",
+> +				"clkm_phy0",
+> +			        "clkm_phy1";
+> +		status = "okay";
+> +		operating-points-v2 = <&dmc_opp_table>;
+> +		devfreq-events = <&ppmu_event3_dmc0_0>,	<&ppmu_event3_dmc0_1>,
+> +				<&ppmu_event3_dmc1_0>, <&ppmu_event3_dmc1_1>;
+> +		operating-points-v2 = <&dmc_opp_table>;
+> +		device-handle = <&samsung_K3QF2F20DB>;
+> +		vdd-supply = <&buck1_reg>;
+> +	};
+> 
 
-The kryo nvmem bindings currently supports opp-supported-hw, maybe we can add
-mention support for second one in the same file and rename it well.
 
 -- 
-viresh
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
