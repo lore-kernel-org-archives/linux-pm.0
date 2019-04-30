@@ -1,210 +1,162 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 12/16] PM / devfreq: tegra: Reconfigure hardware on
- governor's restart
-Date: Tue, 30 Apr 2019 10:19:22 +0900
-Message-ID: <2bcf8ece-c744-bf18-0b7b-177cbb09c174@samsung.com>
-References: <20190417222925.5815-1-digetx@gmail.com>
-        <CGME20190417224236epcas1p15d8c9b1b75ce29ac06d1ecbae46a572b@epcas1p1.samsung.com>
-        <20190417222925.5815-13-digetx@gmail.com>
+Subject: Re: [PATCH v6 02/10] clk: samsung: add new clocks for DMC for
+ Exynos5422 SoC
+Date: Tue, 30 Apr 2019 10:31:48 +0900
+Message-ID: <68c3d065-ff8e-1ed5-204a-27bacebdbbb8@samsung.com>
+References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419141942eucas1p2eaa1d17d785a27632b214a2da011a9fb@eucas1p2.samsung.com>
+        <1555683568-20882-3-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190417222925.5815-13-digetx@gmail.com>
+In-Reply-To: <1555683568-20882-3-git-send-email-l.luba@partner.samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Lukasz,
 
-On 19. 4. 18. 오전 7:29, Dmitry Osipenko wrote:
-> Move hardware configuration to governor's start/resume methods.
-> This allows to re-initialize hardware counters and reconfigure
-> cleanly if governor was stopped/paused. That is needed because we
-> are not aware of all hardware changes that happened while governor
-> was stopped and the paused state may get out of sync with reality,
-> hence it's better to start with a clean slate after the pause. In
-> a result there is no memory bandwidth starvation after resume from
-> suspend-to-ram that results in display controller underflowing that
-> happens on resume because of improper decision made by devfreq about
-> the required memory frequency. This change also cleans up code a tad
-> by moving hardware-configuration code into a single location.
+I have no objection about this patch. 
+Instead, as I commented on v4, in order to reduce the confusion
+about multiple clock definitions with same bit range of DIV_CDREX0,
+
+You need to add the additional comment and you better to
+define the three clocks at the nearby in this driver.
+(CLKDIV_PCLK_CDREX, CLKDIV_PCLK_DREX0, CLKDIV_PCLK_DREX1)
+If they are scattered, it is difficult for understanding
+why they are developed like this.
+
+[1] [v4,2/8] clk: samsung: add new clocks for DMC for Exynos5422 SoC
+- https://lkml.org/lkml/2019/2/12/12
+
+Regards,
+Chanwoo Choi
+
+
+On 19. 4. 19. 오후 11:19, Lukasz Luba wrote:
+> This patch provides support for clocks needed for Dynamic Memory Controller
+> in Exynos5422 SoC. It adds CDREX base register addresses, new DIV, MUX and
+> GATE entries.
 > 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 > ---
->  drivers/devfreq/tegra-devfreq.c | 98 ++++++++++++++-------------------
->  1 file changed, 40 insertions(+), 58 deletions(-)
+>  drivers/clk/samsung/clk-exynos5420.c | 46 ++++++++++++++++++++++++++++++++----
+>  1 file changed, 42 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index 62f35e818122..e9ab49394d35 100644
-> --- a/drivers/devfreq/tegra-devfreq.c
-> +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -392,55 +392,6 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
->  	return NOTIFY_OK;
->  }
+> diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
+> index 34cce3c..d9e6653 100644
+> --- a/drivers/clk/samsung/clk-exynos5420.c
+> +++ b/drivers/clk/samsung/clk-exynos5420.c
+> @@ -134,6 +134,8 @@
+>  #define SRC_CDREX		0x20200
+>  #define DIV_CDREX0		0x20500
+>  #define DIV_CDREX1		0x20504
+> +#define GATE_BUS_CDREX0		0x20700
+> +#define GATE_BUS_CDREX1		0x20704
+>  #define KPLL_LOCK		0x28000
+>  #define KPLL_CON0		0x28100
+>  #define SRC_KFC			0x28200
+> @@ -248,6 +250,8 @@ static const unsigned long exynos5x_clk_regs[] __initconst = {
+>  	DIV_CDREX1,
+>  	SRC_KFC,
+>  	DIV_KFC0,
+> +	GATE_BUS_CDREX0,
+> +	GATE_BUS_CDREX1,
+>  };
 >  
-> -static void tegra_actmon_enable_interrupts(struct tegra_devfreq *tegra)
-> -{
-> -	struct tegra_devfreq_device *dev;
-> -	u32 val;
-> -	unsigned int i;
-> -
-> -	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
-> -		dev = &tegra->devices[i];
-> -
-> -		val = device_readl(dev, ACTMON_DEV_CTRL);
-> -		val |= ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
-> -		val |= ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
-> -		val |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
-> -		val |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
-> -
-> -		device_writel(dev, val, ACTMON_DEV_CTRL);
-> -	}
-> -
-> -	actmon_write_barrier(tegra);
-> -}
-> -
-> -static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
-> -{
-> -	struct tegra_devfreq_device *dev;
-> -	u32 val;
-> -	unsigned int i;
-> -
-> -	disable_irq(tegra->irq);
-> -
-> -	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
-> -		dev = &tegra->devices[i];
-> -
-> -		val = device_readl(dev, ACTMON_DEV_CTRL);
-> -		val &= ~ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
-> -		val &= ~ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
-> -		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
-> -		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
-> -
-> -		device_writel(dev, val, ACTMON_DEV_CTRL);
-> -
-> -		device_writel(dev, ACTMON_INTR_STATUS_CLEAR,
-> -			      ACTMON_DEV_INTR_STATUS);
-> -	}
-> -
-> -	actmon_write_barrier(tegra);
-> -
-> -	enable_irq(tegra->irq);
-> -}
-> -
->  static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
->  					  struct tegra_devfreq_device *dev)
->  {
-> @@ -464,11 +415,47 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
->  		<< ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_NUM_SHIFT;
->  	val |= (ACTMON_ABOVE_WMARK_WINDOW - 1)
->  		<< ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_NUM_SHIFT;
-> +	val |= ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
-> +	val |= ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
-> +	val |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
-> +	val |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
->  	val |= ACTMON_DEV_CTRL_ENB;
+>  static const unsigned long exynos5800_clk_regs[] __initconst = {
+> @@ -425,6 +429,9 @@ PNAME(mout_group13_5800_p)	= { "dout_osc_div", "mout_sw_aclkfl1_550_cam" };
+>  PNAME(mout_group14_5800_p)	= { "dout_aclk550_cam", "dout_sclk_sw" };
+>  PNAME(mout_group15_5800_p)	= { "dout_osc_div", "mout_sw_aclk550_cam" };
+>  PNAME(mout_group16_5800_p)	= { "dout_osc_div", "mout_mau_epll_clk" };
+> +PNAME(mout_mx_mspll_ccore_phy_p) = { "sclk_bpll", "mout_sclk_dpll",
+> +					"mout_sclk_mpll", "ff_dout_spll2",
+> +					"mout_sclk_spll", "mout_sclk_epll"};
 >  
->  	device_writel(dev, val, ACTMON_DEV_CTRL);
-> +}
-> +
-> +static void tegra_actmon_start(struct tegra_devfreq *tegra)
-> +{
-> +	unsigned int i;
-> +
-> +	disable_irq(tegra->irq);
-> +
-> +	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
-> +		      ACTMON_GLB_PERIOD_CTRL);
-> +
-> +	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
-> +		tegra_actmon_configure_device(tegra, &tegra->devices[i]);
-
-nitpick.
-I agree this patch.
-
-In order to make it more simple, I think that you can remove
-tegra_actmon_configure() function and then just do some opertion
-under the for loop in the tegra_actmon_start() to keep
-similar style with tegra_actmon_stop(). But there is perfect solution.
-If you agree, edit it on next patch. If you think that it is not necessary,
-just keep this code.
-
-> +
-> +	actmon_write_barrier(tegra);
-> +
-> +	enable_irq(tegra->irq);
-> +}
-> +
-> +static void tegra_actmon_stop(struct tegra_devfreq *tegra)
-> +{
-> +	unsigned int i;
-> +
-> +	disable_irq(tegra->irq);
-> +
-> +	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
-> +		device_writel(&tegra->devices[i], 0x00000000, ACTMON_DEV_CTRL);
-> +		device_writel(&tegra->devices[i], ACTMON_INTR_STATUS_CLEAR,
-> +			      ACTMON_DEV_INTR_STATUS);
-> +	}
+>  /* fixed rate clocks generated outside the soc */
+>  static struct samsung_fixed_rate_clock
+> @@ -450,7 +457,7 @@ static const struct samsung_fixed_factor_clock
+>  static const struct samsung_fixed_factor_clock
+>  		exynos5800_fixed_factor_clks[] __initconst = {
+>  	FFACTOR(0, "ff_dout_epll2", "mout_sclk_epll", 1, 2, 0),
+> -	FFACTOR(0, "ff_dout_spll2", "mout_sclk_spll", 1, 2, 0),
+> +	FFACTOR(CLK_FF_DOUT_SPLL2, "ff_dout_spll2", "mout_sclk_spll", 1, 2, 0),
+>  };
 >  
->  	actmon_write_barrier(tegra);
+>  static const struct samsung_mux_clock exynos5800_mux_clks[] __initconst = {
+> @@ -472,11 +479,14 @@ static const struct samsung_mux_clock exynos5800_mux_clks[] __initconst = {
+>  	MUX(0, "mout_aclk300_disp1", mout_group5_5800_p, SRC_TOP2, 24, 2),
+>  	MUX(0, "mout_aclk300_gscl", mout_group5_5800_p, SRC_TOP2, 28, 2),
+>  
+> +	MUX(CLK_MOUT_MX_MSPLL_CCORE_PHY, "mout_mx_mspll_ccore_phy",
+> +		mout_mx_mspll_ccore_phy_p, SRC_TOP7, 0, 3),
 > +
-> +	enable_irq(tegra->irq);
->  }
+>  	MUX(CLK_MOUT_MX_MSPLL_CCORE, "mout_mx_mspll_ccore",
+> -			mout_mx_mspll_ccore_p, SRC_TOP7, 16, 2),
+> +			mout_mx_mspll_ccore_p, SRC_TOP7, 16, 3),
+>  	MUX_F(CLK_MOUT_MAU_EPLL, "mout_mau_epll_clk", mout_mau_epll_clk_5800_p,
+>  			SRC_TOP7, 20, 2, CLK_SET_RATE_PARENT, 0),
+> -	MUX(0, "sclk_bpll", mout_bpll_p, SRC_TOP7, 24, 1),
+> +	MUX(CLK_SCLK_BPLL, "sclk_bpll", mout_bpll_p, SRC_TOP7, 24, 1),
+>  	MUX(0, "mout_epll2", mout_epll2_5800_p, SRC_TOP7, 28, 1),
 >  
->  static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
-> @@ -580,22 +567,22 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
->  	switch (event) {
->  	case DEVFREQ_GOV_START:
->  		devfreq_monitor_start(devfreq);
-> -		tegra_actmon_enable_interrupts(tegra);
-> +		tegra_actmon_start(tegra);
->  		break;
+>  	MUX(0, "mout_aclk550_cam", mout_group3_5800_p, SRC_TOP8, 16, 3),
+> @@ -648,7 +658,7 @@ static const struct samsung_mux_clock exynos5x_mux_clks[] __initconst = {
 >  
->  	case DEVFREQ_GOV_STOP:
-> -		tegra_actmon_disable_interrupts(tegra);
-> +		tegra_actmon_stop(tegra);
->  		devfreq_monitor_stop(devfreq);
->  		break;
+>  	MUX(0, "mout_sclk_mpll", mout_mpll_p, SRC_TOP6, 0, 1),
+>  	MUX(CLK_MOUT_VPLL, "mout_sclk_vpll", mout_vpll_p, SRC_TOP6, 4, 1),
+> -	MUX(0, "mout_sclk_spll", mout_spll_p, SRC_TOP6, 8, 1),
+> +	MUX(CLK_MOUT_SCLK_SPLL, "mout_sclk_spll", mout_spll_p, SRC_TOP6, 8, 1),
+>  	MUX(0, "mout_sclk_ipll", mout_ipll_p, SRC_TOP6, 12, 1),
+>  	MUX(0, "mout_sclk_rpll", mout_rpll_p, SRC_TOP6, 16, 1),
+>  	MUX_F(CLK_MOUT_EPLL, "mout_sclk_epll", mout_epll_p, SRC_TOP6, 20, 1,
+> @@ -817,6 +827,8 @@ static const struct samsung_div_clock exynos5x_div_clks[] __initconst = {
+>  	DIV(CLK_DOUT_CLK2X_PHY0, "dout_clk2x_phy0", "dout_sclk_cdrex",
+>  			DIV_CDREX0, 3, 5),
 >  
->  	case DEVFREQ_GOV_SUSPEND:
-> -		tegra_actmon_disable_interrupts(tegra);
-> +		tegra_actmon_stop(tegra);
->  		devfreq_monitor_suspend(devfreq);
->  		break;
+> +	DIV(0, "dout_pclk_drex0", "dout_cclk_drex0", DIV_CDREX0, 28, 3),
+> +
+>  	DIV(CLK_DOUT_PCLK_CORE_MEM, "dout_pclk_core_mem", "mout_mclk_cdrex",
+>  			DIV_CDREX1, 8, 3),
 >  
->  	case DEVFREQ_GOV_RESUME:
->  		devfreq_monitor_resume(devfreq);
-> -		tegra_actmon_enable_interrupts(tegra);
-> +		tegra_actmon_start(tegra);
->  		break;
->  	}
+> @@ -1170,6 +1182,32 @@ static const struct samsung_gate_clock exynos5x_gate_clks[] __initconst = {
+>  			GATE_TOP_SCLK_ISP, 12, CLK_SET_RATE_PARENT, 0),
 >  
-> @@ -664,15 +651,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  	tegra->max_freq = clk_round_rate(tegra->emc_clock, ULONG_MAX) / KHZ;
->  	tegra->cur_freq = clk_get_rate(tegra->emc_clock) / KHZ;
+>  	GATE(CLK_G3D, "g3d", "mout_user_aclk_g3d", GATE_IP_G3D, 9, 0, 0),
+> +
+> +	/* CDREX */
+> +	GATE(CLK_CLKM_PHY0, "clkm_phy0", "dout_sclk_cdrex",
+> +			GATE_BUS_CDREX0, 0, 0, 0),
+> +	GATE(CLK_CLKM_PHY1, "clkm_phy1", "dout_sclk_cdrex",
+> +			GATE_BUS_CDREX0, 1, 0, 0),
+> +	GATE(0, "mx_mspll_ccore_phy", "mout_mx_mspll_ccore_phy",
+> +			SRC_MASK_TOP7, 0, CLK_IGNORE_UNUSED, 0),
+> +
+> +	GATE(CLK_ACLK_PPMU_DREX1_1, "aclk_ppmu_drex1_1", "dout_aclk_cdrex1",
+> +			GATE_BUS_CDREX1, 12, CLK_IGNORE_UNUSED, 0),
+> +	GATE(CLK_ACLK_PPMU_DREX1_0, "aclk_ppmu_drex1_0", "dout_aclk_cdrex1",
+> +			GATE_BUS_CDREX1, 13, CLK_IGNORE_UNUSED, 0),
+> +	GATE(CLK_ACLK_PPMU_DREX0_1, "aclk_ppmu_drex0_1", "dout_aclk_cdrex1",
+> +			GATE_BUS_CDREX1, 14, CLK_IGNORE_UNUSED, 0),
+> +	GATE(CLK_ACLK_PPMU_DREX0_0, "aclk_ppmu_drex0_0", "dout_aclk_cdrex1",
+> +			GATE_BUS_CDREX1, 15, CLK_IGNORE_UNUSED, 0),
+> +
+> +	GATE(CLK_PCLK_PPMU_DREX1_1, "pclk_ppmu_drex1_1", "dout_pclk_cdrex",
+> +			GATE_BUS_CDREX1, 26, CLK_IGNORE_UNUSED, 0),
+> +	GATE(CLK_PCLK_PPMU_DREX1_0, "pclk_ppmu_drex1_0", "dout_pclk_cdrex",
+> +			GATE_BUS_CDREX1, 27, CLK_IGNORE_UNUSED, 0),
+> +	GATE(CLK_PCLK_PPMU_DREX0_1, "pclk_ppmu_drex0_1", "dout_pclk_cdrex",
+> +			GATE_BUS_CDREX1, 28, CLK_IGNORE_UNUSED, 0),
+> +	GATE(CLK_PCLK_PPMU_DREX0_0, "pclk_ppmu_drex0_0", "dout_pclk_cdrex",
+> +			GATE_BUS_CDREX1, 29, CLK_IGNORE_UNUSED, 0),
+>  };
 >  
-> -	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
-> -		      ACTMON_GLB_PERIOD_CTRL);
-> -
->  	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
->  		dev = tegra->devices + i;
->  		dev->config = actmon_device_configs + i;
->  		dev->regs = tegra->regs + dev->config->offset;
-> -
-> -		tegra_actmon_configure_device(tegra, dev);
->  	}
->  
->  	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
+>  static const struct samsung_div_clock exynos5x_disp_div_clks[] __initconst = {
 > 
 
-I agree to always initialize the device when START or RESUME
-and also to reset the device when STOP or SUSPEND.
-
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 -- 
 Best Regards,
