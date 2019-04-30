@@ -2,107 +2,147 @@ Return-Path: <SRS0=BPTh=TA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A92CC43219
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 11:15:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D31A5C43219
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 11:21:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2B5572080C
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 11:15:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rqr36y92"
+	by mail.kernel.org (Postfix) with ESMTP id AD12620835
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 11:21:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727138AbfD3LPp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Apr 2019 07:15:45 -0400
-Received: from mail-vs1-f65.google.com ([209.85.217.65]:40645 "EHLO
-        mail-vs1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726648AbfD3LPo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2019 07:15:44 -0400
-Received: by mail-vs1-f65.google.com with SMTP id e207so3454224vsd.7
-        for <linux-pm@vger.kernel.org>; Tue, 30 Apr 2019 04:15:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=wSBbwzwwF7jNGcnQ7AVNOQW/kFea/OR3OycjgcD+M5c=;
-        b=rqr36y92aNmQTYvCTP0FbjlLcgvOVgOIBDQwTiV31lnCFvvEh8wCoUcO64jDLLDEVY
-         erRc/duAARlv2giV0RtYCNNtSSCmqITwLtB+L4/D0ucYfJzTeOIB89fcC/J2ZOZAffia
-         JrkKLpnlC9Wp/ICfZhlxo3jAJq+YRQRtDZQ/0aafaMj3L3tH3gTwA8JMsEShNcWpEvbU
-         AF/x1vC/l7cxkkQSdkJlKbiNVILNcykOjHmE2vL8rr2FlwozHnQquuhJRRpBH0lh71t+
-         6oQhOCuBTEy9fGKd3IkepvbwFpy3ufl0kWCdkGv4N7yE8fF1UMT07z7o1d6//HstvPZ0
-         CCsw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=wSBbwzwwF7jNGcnQ7AVNOQW/kFea/OR3OycjgcD+M5c=;
-        b=htuIpfjDK/m4/DlTUZsVfcUl83mOch3tkXYPnKL5CGMOC1QEhCNWpUSw9Gch9hk5qy
-         dAydIO3Z1quiOAHJaAs0s++ramiHeAGxIFurRvxaFzdDh+mY+Yox/Uxva/SN+xmqoAfA
-         Pic47oBJaIs9lHylIyuFkiL2XGnDuf2H7JbFMlq4Re+wimkDmnEBMLfOAOxVSEF7eXwg
-         EZmyYIkM5ALvI08/3Iqnac921ipIK3UPCytQ19GuGvZ36OcR7wzU23uP9zd9ZlGOefgs
-         sJ4VMGwIqGEJ+n24YIT3nub+tiKgcdtwJUmopK4PVPfrTJ9uYkxmtn7PaErzLX9ADkTm
-         Lq2Q==
-X-Gm-Message-State: APjAAAWUKLclcWUvNfC/T5bhyrREfwf8jABerFAFC6maOr8cXV3E05Mx
-        BVgWUNKNblaI2LffETOsvpxl/dPxsn3uXH6oj+tHvw==
-X-Google-Smtp-Source: APXvYqwIlfZlHtUketaXOMujjHfd/qGbL3oe7HXJ7joLacYaYzlaaHb9SIRBw0nNzNuiizbcbBYifZAmFXX0o+LqXyk=
-X-Received: by 2002:a67:8155:: with SMTP id c82mr5940813vsd.200.1556622943522;
- Tue, 30 Apr 2019 04:15:43 -0700 (PDT)
+        id S1727522AbfD3LVf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Apr 2019 07:21:35 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:33963 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726129AbfD3LVf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2019 07:21:35 -0400
+X-UUID: fe58e1bc20b74c34aac0d21a6cfca7f5-20190430
+X-UUID: fe58e1bc20b74c34aac0d21a6cfca7f5-20190430
+Received: from mtkcas08.mediatek.inc [(172.21.101.126)] by mailgw02.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (mhqrelay.mediatek.com ESMTP with TLS)
+        with ESMTP id 1490610211; Tue, 30 Apr 2019 19:21:31 +0800
+Received: from mtkcas09.mediatek.inc (172.21.101.178) by
+ mtkmbs08n2.mediatek.inc (172.21.101.56) with Microsoft SMTP Server (TLS) id
+ 15.0.1395.4; Tue, 30 Apr 2019 19:21:29 +0800
+Received: from mtkslt207.mediatek.inc (10.21.15.94) by mtkcas09.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1395.4 via Frontend
+ Transport; Tue, 30 Apr 2019 19:21:29 +0800
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Rob Herring <robh+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>
+CC:     Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>,
+        Kevin Hilman <khilman@kernel.org>,
+        Roger Lu <roger.lu@mediatek.com>, <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [RFC v1 1/3] dt-bindings: soc: add mtk svs dt-bindings
+Date:   Tue, 30 Apr 2019 19:20:10 +0800
+Message-ID: <20190430112012.4514-2-roger.lu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20190430112012.4514-1-roger.lu@mediatek.com>
+References: <20190430112012.4514-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
-References: <cover.1556313614.git.leonard.crestez@nxp.com> <68ccb5a90d1d2a596e7ed94ba3245171f013c781.1556313614.git.leonard.crestez@nxp.com>
- <CAPDyKFpCCapBfNbsR1Q+nyg8aenVJWxj9qmTCCCfmONZR3t1sg@mail.gmail.com> <AM0PR04MB6434B2BBECCA6B2644CDF044EE390@AM0PR04MB6434.eurprd04.prod.outlook.com>
-In-Reply-To: <AM0PR04MB6434B2BBECCA6B2644CDF044EE390@AM0PR04MB6434.eurprd04.prod.outlook.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Tue, 30 Apr 2019 13:15:07 +0200
-Message-ID:
- <CAPDyKFr_CsHBTjAXC+g7Oxnz9WhhyhyW3BGJkr=dqkJECvsyRw@mail.gmail.com>
-Subject: Re: [PATCH v4 1/2] PM / Domains: Add GENPD_FLAG_NO_RUNTIME_OFF flag
-To:     Leonard Crestez <leonard.crestez@nxp.com>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Anson Huang <anson.huang@nxp.com>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Robin Gong <yibin.gong@nxp.com>,
-        Arulpandiyan Vadivel <Arulpandiyan_Vadivel@mentor.com>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>
 Content-Type: text/plain; charset="UTF-8"
+X-TM-SNTS-SMTP: E98BCA2A6482E39BD36EDBBB3E007502447FBA8A75806DE18C05AF44705A47AC2000:8
+X-MTK:  N
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190430111507.hFuSB6WHj-6IzztpK0VoinNEin6XTOsqo2kCVjGjB4k@z>
+Message-ID: <20190430112010.Hw5x1GLmrbIcGLEo2-9aaCAdBPVR4ZvgDPd9gfGq__M@z>
 
-On Mon, 29 Apr 2019 at 16:39, Leonard Crestez <leonard.crestez@nxp.com> wrote:
->
-> On 4/29/2019 12:11 PM, Ulf Hansson wrote:
-> > On Fri, 26 Apr 2019 at 23:38, Leonard Crestez <leonard.crestez@nxp.com> wrote:
-> >>
-> >> This is for power domains which can only be powered off for suspend but
-> >> not as part of runtime PM.
-> >>
-> >> @@ -126,10 +126,11 @@ static const struct genpd_lock_ops genpd_spin_ops = {
-> >>   #define genpd_status_on(genpd)         (genpd->status == GPD_STATE_ACTIVE)
-> >>   #define genpd_is_irq_safe(genpd)       (genpd->flags & GENPD_FLAG_IRQ_SAFE)
-> >>   #define genpd_is_always_on(genpd)      (genpd->flags & GENPD_FLAG_ALWAYS_ON)
-> >>   #define genpd_is_active_wakeup(genpd)  (genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
-> >>   #define genpd_is_cpu_domain(genpd)     (genpd->flags & GENPD_FLAG_CPU_DOMAIN)
-> >> +#define genpd_is_no_runtime_off(genpd) (genpd->flags & GENPD_FLAG_NO_RUNTIME_OFF) >
-> > May I suggest to switch the name to, GENPD_FLAG_RUNTIME_ON.
-> >
-> > Other than that, this looks good to me!
->
-> Then it's easy to confuse genpd_status_on with genpd_is_runtime_on. How
-> about genpd_is_rpm_always_on?
+Document the binding for enabling mtk svs on MediaTek SoC.
 
-Even better, let's take that.
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+---
+ .../devicetree/bindings/power/mtk-svs.txt     | 70 +++++++++++++++++++
+ 1 file changed, 70 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/mtk-svs.txt
 
-Kind regards
-Uffe
+diff --git a/Documentation/devicetree/bindings/power/mtk-svs.txt b/Documentation/devicetree/bindings/power/mtk-svs.txt
+new file mode 100644
+index 000000000000..355329db74ba
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/mtk-svs.txt
+@@ -0,0 +1,70 @@
++* Mediatek Smart Voltage Scaling (MTK SVS)
++
++This describes the device tree binding for the MTK SVS controller
++which helps provide the optimized CPU/GPU/CCI voltages. This device also
++needs thermal data to calculate thermal slope for accurately compensate
++the voltages when temperature change.
++
++Required properties:
++- compatible:
++  - "mediatek,mt8183-svs" : For MT8183 family of SoCs
++- reg: Address range of the MTK SVS controller.
++- interrupts: IRQ for the MTK SVS controller.
++- clocks, clock-names: Clocks needed for the svs controller. required
++                       clocks are:
++		       "main_clk": Main clock needed for register access
++- nvmem-cells: Phandle to the calibration data provided by a nvmem device.
++- nvmem-cell-names: Should be "svs-calibration-data" and "calibration-data"
++- svs_xxx: Phandle of svs_bank device for controlling corresponding opp
++           table and power-domains.
++- vxxx-supply: Phandle to each regulator. vxxx can be "vcpu_little",
++	       "vcpu_big", "vcci" and "vgpu".
++
++Example:
++
++	svs: svs@1100b000 {
++		compatible = "mediatek,mt8183-svs";
++		reg = <0 0x1100b000 0 0x1000>;
++		interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW 0>;
++		clocks = <&infracfg CLK_INFRA_THERM>;
++		clock-names = "main_clk";
++		nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
++		nvmem-cell-names = "svs-calibration-data", "calibration-data";
++
++		svs_cpu_little: svs_cpu_little {
++			compatible = "mediatek,mt8183-svs-cpu-little";
++			operating-points-v2 = <&cluster0_opp>;
++		};
++
++		svs_cpu_big: svs_cpu_big {
++			compatible = "mediatek,mt8183-svs-cpu-big";
++			operating-points-v2 = <&cluster1_opp>;
++		};
++
++		svs_cci: svs_cci {
++			compatible = "mediatek,mt8183-svs-cci";
++			operating-points-v2 = <&cluster2_opp>;
++		};
++
++		svs_gpu: svs_gpu {
++			compatible = "mediatek,mt8183-svs-gpu";
++			power-domains = <&scpsys MT8183_POWER_DOMAIN_MFG_2D>;
++			operating-points-v2 = <&gpu_opp_table>;
++		};
++	};
++
++	&svs_cpu_little {
++		vcpu_little-supply = <&mt6358_vproc12_reg>;
++	};
++
++	&svs_cpu_big {
++		vcpu_big-supply = <&mt6358_vproc11_reg>;
++	};
++
++	&svs_cci {
++		vcci-supply = <&mt6358_vproc12_reg>;
++	};
++
++	&svs_gpu {
++		vgpu-spply = <&mt6358_vgpu_reg>;
++	};
+-- 
+2.18.0
+
