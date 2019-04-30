@@ -1,82 +1,33 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 3/3] dt-bindings: power: supply: Add bindings for
- Microchip UCS1002
-Date: Tue, 30 Apr 2019 17:32:36 -0500
-Message-ID: <20190430223236.GA10236@bogus>
-References: <20190430064557.28469-1-andrew.smirnov@gmail.com>
- <20190430064557.28469-4-andrew.smirnov@gmail.com>
- <20190430161542.GB731@roeck-us.net>
+Subject: Re: [PATCH v3 1/4] include: dt-bindings: add Performance Monitoring
+  Unit for Exynos
+Date: Tue, 30 Apr 2019 17:33:58 -0500
+Message-ID: <20190430223358.GA22052@bogus>
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+ <CGME20190419134820eucas1p154e839769af0e1b8bae17ce3efa0ba93@eucas1p1.samsung.com>
+ <1555681688-19643-2-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190430161542.GB731@roeck-us.net>
+In-Reply-To: <1555681688-19643-2-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, l.luba@partner.samsung.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 30, 2019 at 09:15:42AM -0700, Guenter Roeck wrote:
-> On Mon, Apr 29, 2019 at 11:45:57PM -0700, Andrey Smirnov wrote:
-> > Add bindings for Microchip UCS1002 Programmable USB Port Power
-> > Controller with Charger Emulation.
-> > 
-> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> > Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
-> > Cc: Chris Healy <cphealy@gmail.com>
-> > Cc: Lucas Stach <l.stach@pengutronix.de>
-> > Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> > Cc: Guenter Roeck <linux@roeck-us.net>
-> > Cc: Rob Herring <robh+dt@kernel.org>
-> > Cc: devicetree@vger.kernel.org
-> > Cc: Sebastian Reichel <sre@kernel.org>
-> > Cc: linux-kernel@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> > ---
-> >  .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
-> >  1 file changed, 27 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
-> > new file mode 100644
-> > index 000000000000..021fd7aba75e
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
-> > @@ -0,0 +1,27 @@
-> > +Microchip UCS1002 USB Port Power Controller
-> > +
-> > +Required properties:
-> > +- compatible		: Should be "microchip,ucs1002";
-> > +- reg			: I2C slave address
-> > +
-> > +Optional properties:
-> > +- interrupts-extended	: A list of interrupts lines present (could be either
-> > +			  corresponding to A_DET# pin, ALERT# pin, or both)
-
-Just make this 'interrupts'. Support for 'interrupts-extended' is 
-implied.
-
-With that,
+On Fri, 19 Apr 2019 15:48:05 +0200, Lukasz Luba wrote:
+> This patch add support of a new feature which can be used in DT:
+> Performance Monitoring Unit with defined event data type.
+> In this patch the event data types are defined for Exynos PPMU.
+> The patch also updates the MAINTAINERS file accordingly and
+> adds the header file to devfreq event subsystem.
+> 
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  MAINTAINERS                           |  1 +
+>  include/dt-bindings/pmu/exynos_ppmu.h | 26 ++++++++++++++++++++++++++
+>  2 files changed, 27 insertions(+)
+>  create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
+> 
 
 Reviewed-by: Rob Herring <robh@kernel.org>
-
-> > +- interrupt-names	: A list of interrupt names. Should contain (if
-> > +			  present):
-> > +			  - "a_det" for line connected to A_DET# pin
-> > +			  - "alert" for line connected to ALERT# pin
-> > +			  Both are expected to be IRQ_TYPE_EDGE_BOTH
-> > +Example:
-> > +
-> > +&i2c3 {
-> > +	charger@32 {
-> > +		compatible = "microchip,ucs1002";
-> > +		pinctrl-names = "default";
-> > +		pinctrl-0 = <&pinctrl_ucs1002_pins>;
-> 
-> Document the above ? Or is that optional ?
-
-I would have said to document this, but recently we had some discussion 
-about allowing this to be implied when there's only a 'default' entry. 
-We'll add it automatically for schemas.
-
-Rob
