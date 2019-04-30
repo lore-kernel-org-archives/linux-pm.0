@@ -1,97 +1,212 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: Re: [PATCH v3 2/3] power: supply: Add driver for Microchip UCS1002
-Date: Mon, 29 Apr 2019 18:16:19 -0700
-Message-ID: <CAHQ1cqGnvyWxrqA2Bq92UEpo+OR-HSo-hwp6sh8P9x-YbTZZWQ@mail.gmail.com>
-References: <20190429195349.20335-1-andrew.smirnov@gmail.com>
- <20190429195349.20335-3-andrew.smirnov@gmail.com> <20190429203601.GA22613@roeck-us.net>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 12/16] PM / devfreq: tegra: Reconfigure hardware on
+ governor's restart
+Date: Tue, 30 Apr 2019 10:19:22 +0900
+Message-ID: <2bcf8ece-c744-bf18-0b7b-177cbb09c174@samsung.com>
+References: <20190417222925.5815-1-digetx@gmail.com>
+        <CGME20190417224236epcas1p15d8c9b1b75ce29ac06d1ecbae46a572b@epcas1p1.samsung.com>
+        <20190417222925.5815-13-digetx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190429203601.GA22613@roeck-us.net>
+In-Reply-To: <20190417222925.5815-13-digetx@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 29, 2019 at 1:36 PM Guenter Roeck <linux@roeck-us.net> wrote:
->
-> On Mon, Apr 29, 2019 at 12:53:48PM -0700, Andrey Smirnov wrote:
-> > Add driver for Microchip UCS1002 Programmable USB Port Power
-> > Controller with Charger Emulation. The driver exposed a power supply
-> > device to control/monitor various parameter of the device as well as a
-> > regulator to allow controlling VBUS line.
-> >
-> > Signed-off-by: Enric Balletbo Serra <enric.balletbo@collabora.com>
-> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> > Cc: Chris Healy <cphealy@gmail.com>
-> > Cc: Lucas Stach <l.stach@pengutronix.de>
-> > Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> > Cc: Guenter Roeck <linux@roeck-us.net>
-> > Cc: Sebastian Reichel <sre@kernel.org>
-> > Cc: linux-kernel@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> > ---
-> >  drivers/power/supply/Kconfig         |   9 +
-> >  drivers/power/supply/Makefile        |   1 +
-> >  drivers/power/supply/ucs1002_power.c | 646 +++++++++++++++++++++++++++
-> >  3 files changed, 656 insertions(+)
-> >  create mode 100644 drivers/power/supply/ucs1002_power.c
-> >
-> > diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> > index e901b9879e7e..c614c8a196f3 100644
-> > --- a/drivers/power/supply/Kconfig
-> > +++ b/drivers/power/supply/Kconfig
-> > @@ -660,4 +660,13 @@ config FUEL_GAUGE_SC27XX
-> >        Say Y here to enable support for fuel gauge with SC27XX
-> >        PMIC chips.
-> >
-> > +config CHARGER_UCS1002
-> > +        tristate "Microchip UCS1002 USB Port Power Controller"
-> > +     depends on I2C
-> > +     depends on OF
-> > +     select REGMAP_I2C
-> > +     help
-> > +       Say Y to enable support for Microchip UCS1002 Programmable
-> > +       USB Port Power Controller with Charger Emulation.
-> > +
-> >  endif # POWER_SUPPLY
-> > diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> > index b731c2a9b695..c56803a9e4fe 100644
-> > --- a/drivers/power/supply/Makefile
-> > +++ b/drivers/power/supply/Makefile
-> > @@ -87,3 +87,4 @@ obj-$(CONFIG_AXP288_CHARGER)        += axp288_charger.o
-> >  obj-$(CONFIG_CHARGER_CROS_USBPD)     += cros_usbpd-charger.o
-> >  obj-$(CONFIG_CHARGER_SC2731) += sc2731_charger.o
-> >  obj-$(CONFIG_FUEL_GAUGE_SC27XX)      += sc27xx_fuel_gauge.o
-> > +obj-$(CONFIG_CHARGER_UCS1002)        += ucs1002_power.o
-> > diff --git a/drivers/power/supply/ucs1002_power.c b/drivers/power/supply/ucs1002_power.c
-> > new file mode 100644
-> > index 000000000000..677f20a4d76f
-> > --- /dev/null
-> > +++ b/drivers/power/supply/ucs1002_power.c
-> > @@ -0,0 +1,646 @@
-> ...
-> > +
-> > +static enum power_supply_usb_type ucs1002_usb_types[] = {
-> > +     POWER_SUPPLY_USB_TYPE_PD,
-> > +     POWER_SUPPLY_USB_TYPE_SDP,
-> > +     POWER_SUPPLY_USB_TYPE_DCP,
-> > +     POWER_SUPPLY_USB_TYPE_CDP,
-> > +     POWER_SUPPLY_USB_TYPE_UNKNOWN,
-> > +};
-> > +
-> > +static int ucs1002_set_usb_type(struct ucs1002_info *info, int val)
-> > +{
-> > +     unsigned int mode;
-> > +
-> > +     if (val >= ARRAY_SIZE(ucs1002_usb_types))
-> > +             return -EINVAL;
-> > +
-> I hate to bring it up that late, but I don't see a check
-> against val being negative anywhere in the calling code.
->
+Hi,
 
-Sure, I'll add it in v4
+On 19. 4. 18. 오전 7:29, Dmitry Osipenko wrote:
+> Move hardware configuration to governor's start/resume methods.
+> This allows to re-initialize hardware counters and reconfigure
+> cleanly if governor was stopped/paused. That is needed because we
+> are not aware of all hardware changes that happened while governor
+> was stopped and the paused state may get out of sync with reality,
+> hence it's better to start with a clean slate after the pause. In
+> a result there is no memory bandwidth starvation after resume from
+> suspend-to-ram that results in display controller underflowing that
+> happens on resume because of improper decision made by devfreq about
+> the required memory frequency. This change also cleans up code a tad
+> by moving hardware-configuration code into a single location.
+> 
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/devfreq/tegra-devfreq.c | 98 ++++++++++++++-------------------
+>  1 file changed, 40 insertions(+), 58 deletions(-)
+> 
+> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+> index 62f35e818122..e9ab49394d35 100644
+> --- a/drivers/devfreq/tegra-devfreq.c
+> +++ b/drivers/devfreq/tegra-devfreq.c
+> @@ -392,55 +392,6 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
+>  	return NOTIFY_OK;
+>  }
+>  
+> -static void tegra_actmon_enable_interrupts(struct tegra_devfreq *tegra)
+> -{
+> -	struct tegra_devfreq_device *dev;
+> -	u32 val;
+> -	unsigned int i;
+> -
+> -	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
+> -		dev = &tegra->devices[i];
+> -
+> -		val = device_readl(dev, ACTMON_DEV_CTRL);
+> -		val |= ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
+> -		val |= ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
+> -		val |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
+> -		val |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
+> -
+> -		device_writel(dev, val, ACTMON_DEV_CTRL);
+> -	}
+> -
+> -	actmon_write_barrier(tegra);
+> -}
+> -
+> -static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
+> -{
+> -	struct tegra_devfreq_device *dev;
+> -	u32 val;
+> -	unsigned int i;
+> -
+> -	disable_irq(tegra->irq);
+> -
+> -	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
+> -		dev = &tegra->devices[i];
+> -
+> -		val = device_readl(dev, ACTMON_DEV_CTRL);
+> -		val &= ~ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
+> -		val &= ~ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
+> -		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
+> -		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
+> -
+> -		device_writel(dev, val, ACTMON_DEV_CTRL);
+> -
+> -		device_writel(dev, ACTMON_INTR_STATUS_CLEAR,
+> -			      ACTMON_DEV_INTR_STATUS);
+> -	}
+> -
+> -	actmon_write_barrier(tegra);
+> -
+> -	enable_irq(tegra->irq);
+> -}
+> -
+>  static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+>  					  struct tegra_devfreq_device *dev)
+>  {
+> @@ -464,11 +415,47 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+>  		<< ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_NUM_SHIFT;
+>  	val |= (ACTMON_ABOVE_WMARK_WINDOW - 1)
+>  		<< ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_NUM_SHIFT;
+> +	val |= ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
+> +	val |= ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
+> +	val |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
+> +	val |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
+>  	val |= ACTMON_DEV_CTRL_ENB;
+>  
+>  	device_writel(dev, val, ACTMON_DEV_CTRL);
+> +}
+> +
+> +static void tegra_actmon_start(struct tegra_devfreq *tegra)
+> +{
+> +	unsigned int i;
+> +
+> +	disable_irq(tegra->irq);
+> +
+> +	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
+> +		      ACTMON_GLB_PERIOD_CTRL);
+> +
+> +	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
+> +		tegra_actmon_configure_device(tegra, &tegra->devices[i]);
 
-Thanks,
-Andrey Smirnov
+nitpick.
+I agree this patch.
+
+In order to make it more simple, I think that you can remove
+tegra_actmon_configure() function and then just do some opertion
+under the for loop in the tegra_actmon_start() to keep
+similar style with tegra_actmon_stop(). But there is perfect solution.
+If you agree, edit it on next patch. If you think that it is not necessary,
+just keep this code.
+
+> +
+> +	actmon_write_barrier(tegra);
+> +
+> +	enable_irq(tegra->irq);
+> +}
+> +
+> +static void tegra_actmon_stop(struct tegra_devfreq *tegra)
+> +{
+> +	unsigned int i;
+> +
+> +	disable_irq(tegra->irq);
+> +
+> +	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
+> +		device_writel(&tegra->devices[i], 0x00000000, ACTMON_DEV_CTRL);
+> +		device_writel(&tegra->devices[i], ACTMON_INTR_STATUS_CLEAR,
+> +			      ACTMON_DEV_INTR_STATUS);
+> +	}
+>  
+>  	actmon_write_barrier(tegra);
+> +
+> +	enable_irq(tegra->irq);
+>  }
+>  
+>  static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+> @@ -580,22 +567,22 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
+>  	switch (event) {
+>  	case DEVFREQ_GOV_START:
+>  		devfreq_monitor_start(devfreq);
+> -		tegra_actmon_enable_interrupts(tegra);
+> +		tegra_actmon_start(tegra);
+>  		break;
+>  
+>  	case DEVFREQ_GOV_STOP:
+> -		tegra_actmon_disable_interrupts(tegra);
+> +		tegra_actmon_stop(tegra);
+>  		devfreq_monitor_stop(devfreq);
+>  		break;
+>  
+>  	case DEVFREQ_GOV_SUSPEND:
+> -		tegra_actmon_disable_interrupts(tegra);
+> +		tegra_actmon_stop(tegra);
+>  		devfreq_monitor_suspend(devfreq);
+>  		break;
+>  
+>  	case DEVFREQ_GOV_RESUME:
+>  		devfreq_monitor_resume(devfreq);
+> -		tegra_actmon_enable_interrupts(tegra);
+> +		tegra_actmon_start(tegra);
+>  		break;
+>  	}
+>  
+> @@ -664,15 +651,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  	tegra->max_freq = clk_round_rate(tegra->emc_clock, ULONG_MAX) / KHZ;
+>  	tegra->cur_freq = clk_get_rate(tegra->emc_clock) / KHZ;
+>  
+> -	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
+> -		      ACTMON_GLB_PERIOD_CTRL);
+> -
+>  	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
+>  		dev = tegra->devices + i;
+>  		dev->config = actmon_device_configs + i;
+>  		dev->regs = tegra->regs + dev->config->offset;
+> -
+> -		tegra_actmon_configure_device(tegra, dev);
+>  	}
+>  
+>  	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
+> 
+
+I agree to always initialize the device when START or RESUME
+and also to reset the device when STOP or SUSPEND.
+
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
