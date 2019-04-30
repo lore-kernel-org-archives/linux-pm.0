@@ -1,105 +1,84 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [RFC v1 1/3] dt-bindings: soc: add mtk svs dt-bindings
-Date: Tue, 30 Apr 2019 13:31:32 -0700
-Message-ID: <155665629219.168659.8221738507474891604@swboyd.mtv.corp.google.com>
-References: <20190430112012.4514-1-roger.lu@mediatek.com> <20190430112012.4514-2-roger.lu@mediatek.com>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: Re: [PATCH v3 1/4] include: dt-bindings: add Performance Monitoring
+ Unit for Exynos
+Date: Tue, 30 Apr 2019 22:36:23 +0200
+Message-ID: <d07544be-50c8-4520-4637-b0938701df1e@partner.samsung.com>
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419134820eucas1p154e839769af0e1b8bae17ce3efa0ba93@eucas1p1.samsung.com>
+        <1555681688-19643-2-git-send-email-l.luba@partner.samsung.com>
+        <a1ff3566-6117-b670-a2f3-b60a2bbec14a@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190430112012.4514-2-roger.lu@mediatek.com>
+In-Reply-To: <a1ff3566-6117-b670-a2f3-b60a2bbec14a@samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <vireshk@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@kernel.org>, Roger Lu <roger.lu@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Roger Lu (2019-04-30 04:20:10)
-> Document the binding for enabling mtk svs on MediaTek SoC.
->=20
-> Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-> ---
->  .../devicetree/bindings/power/mtk-svs.txt     | 70 +++++++++++++++++++
->  1 file changed, 70 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/mtk-svs.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/power/mtk-svs.txt b/Docume=
-ntation/devicetree/bindings/power/mtk-svs.txt
-> new file mode 100644
-> index 000000000000..355329db74ba
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/mtk-svs.txt
-> @@ -0,0 +1,70 @@
-> +* Mediatek Smart Voltage Scaling (MTK SVS)
-> +
-> +This describes the device tree binding for the MTK SVS controller
-> +which helps provide the optimized CPU/GPU/CCI voltages. This device also
-> +needs thermal data to calculate thermal slope for accurately compensate
-> +the voltages when temperature change.
-> +
-> +Required properties:
-> +- compatible:
-> +  - "mediatek,mt8183-svs" : For MT8183 family of SoCs
-> +- reg: Address range of the MTK SVS controller.
-> +- interrupts: IRQ for the MTK SVS controller.
-> +- clocks, clock-names: Clocks needed for the svs controller. required
-> +                       clocks are:
-> +                      "main_clk": Main clock needed for register access
-> +- nvmem-cells: Phandle to the calibration data provided by a nvmem devic=
-e.
-> +- nvmem-cell-names: Should be "svs-calibration-data" and "calibration-da=
-ta"
-> +- svs_xxx: Phandle of svs_bank device for controlling corresponding opp
 
-Properties shouldn't have underscores in them. Use dashes?
 
-> +           table and power-domains.
-> +- vxxx-supply: Phandle to each regulator. vxxx can be "vcpu_little",
-> +              "vcpu_big", "vcci" and "vgpu".
-> +
-> +Example:
-> +
-> +       svs: svs@1100b000 {
-> +               compatible =3D "mediatek,mt8183-svs";
-> +               reg =3D <0 0x1100b000 0 0x1000>;
-> +               interrupts =3D <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW 0>;
-> +               clocks =3D <&infracfg CLK_INFRA_THERM>;
-> +               clock-names =3D "main_clk";
-> +               nvmem-cells =3D <&svs_calibration>, <&thermal_calibration=
->;
-> +               nvmem-cell-names =3D "svs-calibration-data", "calibration=
--data";
-> +
-> +               svs_cpu_little: svs_cpu_little {
-> +                       compatible =3D "mediatek,mt8183-svs-cpu-little";
-> +                       operating-points-v2 =3D <&cluster0_opp>;
-> +               };
-> +
-> +               svs_cpu_big: svs_cpu_big {
-> +                       compatible =3D "mediatek,mt8183-svs-cpu-big";
-> +                       operating-points-v2 =3D <&cluster1_opp>;
-> +               };
-> +
-> +               svs_cci: svs_cci {
-> +                       compatible =3D "mediatek,mt8183-svs-cci";
-> +                       operating-points-v2 =3D <&cluster2_opp>;
-> +               };
-> +
-> +               svs_gpu: svs_gpu {
-> +                       compatible =3D "mediatek,mt8183-svs-gpu";
-> +                       power-domains =3D <&scpsys MT8183_POWER_DOMAIN_MF=
-G_2D>;
-> +                       operating-points-v2 =3D <&gpu_opp_table>;
-> +               };
+On 4/30/19 6:56 AM, Chanwoo Choi wrote:
+> Hi,
+> 
+> I agree of this patch. But, I add the minor comments.
+> 
+> If you edit them according to my comment, feel free to add my following tag:
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> 
+> On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
+>> This patch add support of a new feature which can be used in DT:
+>> Performance Monitoring Unit with defined event data type.
+>> In this patch the event data types are defined for Exynos PPMU.
+>> The patch also updates the MAINTAINERS file accordingly and
+>> adds the header file to devfreq event subsystem.
+>>
+>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>> ---
+>>   MAINTAINERS                           |  1 +
+>>   include/dt-bindings/pmu/exynos_ppmu.h | 26 ++++++++++++++++++++++++++
+>>   2 files changed, 27 insertions(+)
+>>   create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
+>>
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index 3671fde..1ba4b9b 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -4560,6 +4560,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
+>>   S:	Supported
+>>   F:	drivers/devfreq/event/
+>>   F:	drivers/devfreq/devfreq-event.c
+>> +F:	include/dt-bindings/pmu/exynos_ppmu.h
+>>   F:	include/linux/devfreq-event.h
+>>   F:	Documentation/devicetree/bindings/devfreq/event/
+>>   
+>> diff --git a/include/dt-bindings/pmu/exynos_ppmu.h b/include/dt-bindings/pmu/exynos_ppmu.h
+>> new file mode 100644
+>> index 0000000..08fdce9
+>> --- /dev/null
+>> +++ b/include/dt-bindings/pmu/exynos_ppmu.h
+>> @@ -0,0 +1,26 @@
+>> +/* SPDX-License-Identifier: GPL-2.0 */
+>> +/*
+>> + * Samsung Exynos PPMU event types for counting in regs
+>> + *
+>> + * Copyright (c) 2019, Samsung
+> 
+> Mabye, "Samsung Electronics" instead of 'Samsung'.
+ACK
+> 
+>> + * Author: Lukasz Luba <l.luba@partner.samsung.com>
+>> + */
+>> +
+>> +#ifndef __DT_BINDINGS_PMU_EXYNOS_PPMU_H
+>> +#define __DT_BINDINGS_PMU_EXYNOS_PPMU_H
+>> +
+>> +
+> 
+> Remove unneeded blank line.
+OK done. I will add your 'Acked-by' in the next version.
 
-It looks like you need multiple OPPs for a single device, because it has
-different independent power supplies it wants to associate the OPP
-tables with? Why can't these OPP tables be attached to the devices that
-use them, i.e. CPU, GPU, CCI, etc.? Seems odd that those devices don't
-have OPP tables that this hardware block can look up somehow. Similarly,
-the power domains should probably be part of the devices that are using
-them and not these sub-nodes that are mirroring the other hardware
-blocks in the system?
-
-> +       };
-> +
-> +       &svs_cpu_little {
+Regards,
+Lukasz
