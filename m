@@ -1,86 +1,110 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/4] dt-bindings: interconnect: Add Qualcomm QCS404 DT
- bindings
-Date: Mon, 29 Apr 2019 17:16:56 -0500
-Message-ID: <20190429221656.GA1843@bogus>
-References: <20190415104357.5305-1-georgi.djakov@linaro.org>
- <20190415104357.5305-2-georgi.djakov@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 07/16] PM / devfreq: tegra: Properly disable
+ interrupts
+Date: Tue, 30 Apr 2019 09:05:45 +0900
+Message-ID: <87b5a3df-a0c2-3a6e-7e93-f1c89b0a789e@samsung.com>
+References: <20190417222925.5815-1-digetx@gmail.com>
+        <CGME20190417224252epcas5p43248bf8dbebdf687c466d6985233c4e8@epcas5p4.samsung.com>
+        <20190417222925.5815-8-digetx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190415104357.5305-2-georgi.djakov@linaro.org>
+In-Reply-To: <20190417222925.5815-8-digetx@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: bjorn.andersson@linaro.org, vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 15, 2019 at 01:43:54PM +0300, Georgi Djakov wrote:
-> The Qualcomm QCS404 platform has several buses that could be controlled
-> and tuned according to the bandwidth demand.
+On 19. 4. 18. 오전 7:29, Dmitry Osipenko wrote:
+> There is no guarantee that interrupt handling isn't running in parallel
+> with tegra_actmon_disable_interrupts(), hence it is necessary to protect
+> DEV_CTRL register accesses and clear IRQ status with ACTMON's IRQ being
+> disabled in the Interrupt Controller in order to ensure that device
+> interrupt is indeed being disabled.
 > 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
+>  drivers/devfreq/tegra-devfreq.c | 21 +++++++++++++++------
+>  1 file changed, 15 insertions(+), 6 deletions(-)
 > 
-> v2:
-> - No changes.
+> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+> index b65313fe3c2e..ce1eb97a2090 100644
+> --- a/drivers/devfreq/tegra-devfreq.c
+> +++ b/drivers/devfreq/tegra-devfreq.c
+> @@ -171,6 +171,8 @@ struct tegra_devfreq {
+>  	struct notifier_block	rate_change_nb;
+>  
+>  	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
+> +
+> +	int irq;
+>  };
+>  
+>  struct tegra_actmon_emc_ratio {
+> @@ -417,6 +419,8 @@ static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
+>  	u32 val;
+>  	unsigned int i;
+>  
+> +	disable_irq(tegra->irq);
+> +
+>  	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
+>  		dev = &tegra->devices[i];
+>  
+> @@ -427,9 +431,14 @@ static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
+>  		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
+>  
+>  		device_writel(dev, val, ACTMON_DEV_CTRL);
+> +
+> +		device_writel(dev, ACTMON_INTR_STATUS_CLEAR,
+> +			      ACTMON_DEV_INTR_STATUS);
+>  	}
+>  
+>  	actmon_write_barrier(tegra);
+> +
+> +	enable_irq(tegra->irq);
+>  }
+>  
+>  static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+> @@ -604,7 +613,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  	struct resource *res;
+>  	unsigned int i;
+>  	unsigned long rate;
+> -	int irq;
+>  	int err;
+>  
+>  	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+> @@ -673,15 +681,16 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  		dev_pm_opp_add(&pdev->dev, rate, 0);
+>  	}
+>  
+> -	irq = platform_get_irq(pdev, 0);
+> -	if (irq < 0) {
+> -		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", irq);
+> -		return irq;
+> +	tegra->irq = platform_get_irq(pdev, 0);
+> +	if (tegra->irq < 0) {
+> +		err = tegra->irq;
+> +		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
+> +		return err;
+>  	}
+>  
+>  	platform_set_drvdata(pdev, tegra);
+>  
+> -	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+> +	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
+>  					actmon_thread_isr, IRQF_ONESHOT,
+>  					"tegra-devfreq", tegra);
+>  	if (err) {
 > 
->  .../bindings/interconnect/qcom,qcs404.txt     | 45 +++++++++++++++++++
->  1 file changed, 45 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> new file mode 100644
-> index 000000000000..9befcd14a5b5
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/interconnect/qcom,qcs404.txt
-> @@ -0,0 +1,45 @@
-> +Qualcomm QCS404 Network-On-Chip interconnect driver binding
-> +-----------------------------------------------------------
-> +
-> +Required properties :
-> +- compatible : shall contain only one of the following:
-> +			"qcom,qcs404-bimc"
-> +			"qcom,qcs404-pcnoc"
-> +			"qcom,qcs404-snoc"
-> +- #interconnect-cells : should contain 1
-> +
-> +Optional properties :
-> +clocks : list of phandles and specifiers to all interconnect bus clocks
-> +clock-names : clock names should include both "bus_clk" and "bus_a_clk"
-> +
-> +Example:
-> +
-> +rpm-glink {
-> +	...
-> +	rpm_requests: glink-channel {
-> +		...
-> +		bimc: interconnect@0 {
 
-Unit-address needs a 'reg' property. dtc should give you a warning 
-(maybe W=1 is still needed).
+It is ok to disable the hardware interrupt line
+before completing the some operation about registers
+in order to protect the interrupt occur.
 
-> +			compatible = "qcom,qcs404-bimc";
-> +			#interconnect-cells = <1>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
-> +				<&rpmcc RPM_SMD_BIMC_A_CLK>;
-> +		};
-> +
-> +		pnoc: interconnect@1 {
-> +			compatible = "qcom,qcs404-pcnoc";
-> +			#interconnect-cells = <1>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
-> +				<&rpmcc RPM_SMD_PNOC_A_CLK>;
-> +		};
-> +
-> +		snoc: interconnect@2 {
-> +			compatible = "qcom,qcs404-snoc";
-> +			#interconnect-cells = <1>;
-> +			clock-names = "bus_clk", "bus_a_clk";
-> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-> +				<&rpmcc RPM_SMD_SNOC_A_CLK>;
-> +		};
-> +	};
-> +};
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
