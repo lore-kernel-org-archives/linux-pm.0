@@ -1,81 +1,87 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 2/2] dt-bindings: power: reset: add document for NVMEM
- based reboot-mode
-Date: Tue, 30 Apr 2019 17:47:31 -0500
-Message-ID: <20190430224731.GA31760@bogus>
-References: <fc60b885f1b447ce55950184c7921cfc1c96ade6>
- <20190421190913.1478-3-nandor.han@vaisala.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v4 3/3] dt-bindings: power: supply: Add bindings for
+ Microchip UCS1002
+Date: Tue, 30 Apr 2019 16:28:57 -0700
+Message-ID: <8e4fa5ae-9547-83b3-d2f6-3a7b7ad32cbf@roeck-us.net>
+References: <20190430064557.28469-1-andrew.smirnov@gmail.com>
+ <20190430064557.28469-4-andrew.smirnov@gmail.com>
+ <20190430161542.GB731@roeck-us.net> <20190430223236.GA10236@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190421190913.1478-3-nandor.han@vaisala.com>
+In-Reply-To: <20190430223236.GA10236@bogus>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Han Nandor <nandor.han@vaisala.com>
-Cc: "sre@kernel.org" <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, linux-pm@vger.kernel.org, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Apr 21, 2019 at 07:09:30PM +0000, Han Nandor wrote:
-> Add the device tree bindings document for the NVMEM based reboot-mode
-> driver.
+On 4/30/19 3:32 PM, Rob Herring wrote:
+> On Tue, Apr 30, 2019 at 09:15:42AM -0700, Guenter Roeck wrote:
+>> On Mon, Apr 29, 2019 at 11:45:57PM -0700, Andrey Smirnov wrote:
+>>> Add bindings for Microchip UCS1002 Programmable USB Port Power
+>>> Controller with Charger Emulation.
+>>>
+>>> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+>>> Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
+>>> Cc: Chris Healy <cphealy@gmail.com>
+>>> Cc: Lucas Stach <l.stach@pengutronix.de>
+>>> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+>>> Cc: Guenter Roeck <linux@roeck-us.net>
+>>> Cc: Rob Herring <robh+dt@kernel.org>
+>>> Cc: devicetree@vger.kernel.org
+>>> Cc: Sebastian Reichel <sre@kernel.org>
+>>> Cc: linux-kernel@vger.kernel.org
+>>> Cc: linux-pm@vger.kernel.org
+>>> ---
+>>>   .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
+>>>   1 file changed, 27 insertions(+)
+>>>   create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+>>> new file mode 100644
+>>> index 000000000000..021fd7aba75e
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+>>> @@ -0,0 +1,27 @@
+>>> +Microchip UCS1002 USB Port Power Controller
+>>> +
+>>> +Required properties:
+>>> +- compatible		: Should be "microchip,ucs1002";
+>>> +- reg			: I2C slave address
+>>> +
+>>> +Optional properties:
+>>> +- interrupts-extended	: A list of interrupts lines present (could be either
+>>> +			  corresponding to A_DET# pin, ALERT# pin, or both)
 > 
-> Signed-off-by: Nandor Han <nandor.han@vaisala.com>
-> ---
->  .../power/reset/nvmem-reboot-mode.txt         | 32 +++++++++++++++++++
->  1 file changed, 32 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.txt
+> Just make this 'interrupts'. Support for 'interrupts-extended' is
+> implied.
 > 
-> diff --git a/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.txt
-> new file mode 100644
-> index 000000000000..2e1b86c31cb3
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/reset/nvmem-reboot-mode.txt
-> @@ -0,0 +1,32 @@
-> +NVMEM reboot mode driver
-> +
-> +This driver gets reboot mode magic value from reboot-mode driver
-> +and stores it in a NVMEM cell named "reboot-mode". Then the bootloader
-> +can read it and take different action according to the magic
-> +value stored.
-
-This is also assuming the nvmem is writeable which is more often not the 
-case.
-
-Is your usecase a platform that supports pstore? Adding on to that 
-binding might be a better fit.
-
-> +
-> +This DT node should be represented as a sub-node of a "simple-mfd"
-> +node.
-> +
-> +Required properties:
-> +- compatible: should be "nvmem-reboot-mode".
-> +- nvmem-cells: A phandle to the reboot mode provided by a nvmem device.
-> +- nvmem-cell-names: Should be "reboot-mode".
-> +
-> +The rest of the properties should follow the generic reboot-mode description
-> +found in reboot-mode.txt
-> +
-> +Example:
-> +	reboot-mode-nvmem@0 {
-
-What's this node for?
-
-> +		compatible = "simple-mfd";
-
-I only see 1 function.
-
-> +		reboot-mode {
-> +			compatible = "nvmem-reboot-mode";
-> +			nvmem-cells = <&reboot_mode>;
-> +			nvmem-cell-names = "reboot-mode";
-> +
-> +			mode-normal     = <0xAAAA5501>;
-> +			mode-bootloader = <0xBBBB5500>;
-> +			mode-recovery   = <0xCCCC5502>;
-> +			mode-test       = <0xDDDD5503>;
-> +		};
-> +	};
-> -- 
-> 2.17.2
+> With that,
 > 
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> 
+>>> +- interrupt-names	: A list of interrupt names. Should contain (if
+>>> +			  present):
+>>> +			  - "a_det" for line connected to A_DET# pin
+>>> +			  - "alert" for line connected to ALERT# pin
+>>> +			  Both are expected to be IRQ_TYPE_EDGE_BOTH
+>>> +Example:
+>>> +
+>>> +&i2c3 {
+>>> +	charger@32 {
+>>> +		compatible = "microchip,ucs1002";
+>>> +		pinctrl-names = "default";
+>>> +		pinctrl-0 = <&pinctrl_ucs1002_pins>;
+>>
+>> Document the above ? Or is that optional ?
+> 
+> I would have said to document this, but recently we had some discussion
+> about allowing this to be implied when there's only a 'default' entry.
+> We'll add it automatically for schemas.
+> 
+
+Good to know. Thanks for the information!
+
+Guenter
