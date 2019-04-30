@@ -1,56 +1,96 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 1/3] thermal: rockchip: fix up the tsadc pinctrl
- setting error
-Date: Tue, 30 Apr 2019 11:44:49 +0200
-Message-ID: <70cc3a91-8f5d-da48-a815-eaf2670f9a93@linaro.org>
-References: <1556187154-22632-1-git-send-email-zhangqing@rock-chips.com>
- <1556187154-22632-2-git-send-email-zhangqing@rock-chips.com>
- <be0170d7-64dc-896d-b847-5be192304791@linaro.org>
- <8d41ea98-e0e8-60c8-3237-ade5d0d169bf@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Elaine Zhang <zhangqing@rock-chips.com>
+Subject: [PATCH v3 3/3] thermal: rockchip: Support the PX30 SoC in thermal driver
+Date: Tue, 30 Apr 2019 18:09:46 +0800
+Message-ID: <1556618986-18923-4-git-send-email-zhangqing@rock-chips.com>
+References: <1556618986-18923-1-git-send-email-zhangqing@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8d41ea98-e0e8-60c8-3237-ade5d0d169bf@rock-chips.com>
-Content-Language: en-US
+In-Reply-To: <1556618986-18923-1-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "elaine.zhang" <zhangqing@rock-chips.com>, heiko@sntech.de
-Cc: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com
+To: heiko@sntech.de
+Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, xxx@rock-chips.com, xf@rock-chips.com, huangtao@rock-chips.com, Elaine Zhang <zhangqing@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 29/04/2019 11:51, elaine.zhang wrote:
+PX30 SOC has two Temperature Sensors for CPU and GPU.
 
-[ ... ]
+Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+---
+ drivers/thermal/rockchip_thermal.c | 38 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-> pinctrl select to gpio mode when tsadc suspend and shutdown.
-> 
-> When suspend, tsadc is disabled, the otp_pin should revert to the
-> default gpio state.
-> 
->>
->>>         return 0;
->>>   }
->>> @@ -1383,7 +1413,8 @@ static int __maybe_unused
->>> rockchip_thermal_resume(struct device *dev)
->>>       for (i = 0; i < thermal->chip->chn_num; i++)
->>>           rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
->>>   -    pinctrl_pm_select_default_state(dev);
->>> +    if (thermal->tshut_mode == TSHUT_MODE_GPIO)
->>> +        pinctrl_select_state(thermal->pinctrl, thermal->otp_state);
->> And then
->>     pinctrl_select_state(thermal->pinctrl, thermal->pinctrl_state);
-> 
-> pinctrl select to otp mode when tsadc resume.
-
-Ok, thanks for clarifying.
-
-  -- Daniel
-
-
-
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 6dc7fc516abf..bda1ca199abd 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -225,11 +225,15 @@ struct rockchip_thermal_data {
+ #define GRF_TSADC_TESTBIT_L			0x0e648
+ #define GRF_TSADC_TESTBIT_H			0x0e64c
+ 
++#define PX30_GRF_SOC_CON2			0x0408
++
+ #define GRF_SARADC_TESTBIT_ON			(0x10001 << 2)
+ #define GRF_TSADC_TESTBIT_H_ON			(0x10001 << 2)
+ #define GRF_TSADC_VCM_EN_L			(0x10001 << 7)
+ #define GRF_TSADC_VCM_EN_H			(0x10001 << 7)
+ 
++#define GRF_CON_TSADC_CH_INV			(0x10001 << 1)
++
+ /**
+  * struct tsadc_table - code to temperature conversion table
+  * @code: the value of adc channel
+@@ -692,6 +696,13 @@ static void rk_tsadcv3_initialize(struct regmap *grf, void __iomem *regs,
+ 			       regs + TSADCV2_AUTO_CON);
+ }
+ 
++static void rk_tsadcv4_initialize(struct regmap *grf, void __iomem *regs,
++				  enum tshut_polarity tshut_polarity)
++{
++	rk_tsadcv2_initialize(grf, regs, tshut_polarity);
++	regmap_write(grf, PX30_GRF_SOC_CON2, GRF_CON_TSADC_CH_INV);
++}
++
+ static void rk_tsadcv2_irq_ack(void __iomem *regs)
+ {
+ 	u32 val;
+@@ -821,6 +832,30 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+ 	writel_relaxed(val, regs + TSADCV2_INT_EN);
+ }
+ 
++static const struct rockchip_tsadc_chip px30_tsadc_data = {
++	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
++	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
++	.chn_num = 2, /* 2 channels for tsadc */
++
++	.tshut_mode = TSHUT_MODE_CRU, /* default TSHUT via CRU */
++	.tshut_temp = 95000,
++
++	.initialize = rk_tsadcv4_initialize,
++	.irq_ack = rk_tsadcv3_irq_ack,
++	.control = rk_tsadcv3_control,
++	.get_temp = rk_tsadcv2_get_temp,
++	.set_alarm_temp = rk_tsadcv2_alarm_temp,
++	.set_tshut_temp = rk_tsadcv2_tshut_temp,
++	.set_tshut_mode = rk_tsadcv2_tshut_mode,
++
++	.table = {
++		.id = rk3328_code_table,
++		.length = ARRAY_SIZE(rk3328_code_table),
++		.data_mask = TSADCV2_DATA_MASK,
++		.mode = ADC_INCREMENT,
++	},
++};
++
+ static const struct rockchip_tsadc_chip rv1108_tsadc_data = {
+ 	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
+ 	.chn_num = 1, /* one channel for tsadc */
+@@ -993,6 +1028,9 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+ };
+ 
+ static const struct of_device_id of_rockchip_thermal_match[] = {
++	{	.compatible = "rockchip,px30-tsadc",
++		.data = (void *)&px30_tsadc_data,
++	},
+ 	{
+ 		.compatible = "rockchip,rv1108-tsadc",
+ 		.data = (void *)&rv1108_tsadc_data,
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+1.9.1
