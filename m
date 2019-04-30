@@ -1,128 +1,105 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v6 06/10] dt-bindings: memory-controllers: add
- Exynos5422 DMC device description
-Date: Tue, 30 Apr 2019 22:30:47 +0200
-Message-ID: <32dfc887-5f67-3d61-08c9-0397d6852811@partner.samsung.com>
-References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419141947eucas1p13a27605e04169ab528ef5bfb385eddbc@eucas1p1.samsung.com>
-        <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
-        <babae08b-3ea6-30f4-6a46-85dea0eacd86@samsung.com>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [RFC v1 1/3] dt-bindings: soc: add mtk svs dt-bindings
+Date: Tue, 30 Apr 2019 13:31:32 -0700
+Message-ID: <155665629219.168659.8221738507474891604@swboyd.mtv.corp.google.com>
+References: <20190430112012.4514-1-roger.lu@mediatek.com> <20190430112012.4514-2-roger.lu@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <babae08b-3ea6-30f4-6a46-85dea0eacd86@samsung.com>
-Content-Language: en-US
+In-Reply-To: <20190430112012.4514-2-roger.lu@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <vireshk@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@kernel.org>, Roger Lu <roger.lu@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+Quoting Roger Lu (2019-04-30 04:20:10)
+> Document the binding for enabling mtk svs on MediaTek SoC.
+>=20
+> Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+> ---
+>  .../devicetree/bindings/power/mtk-svs.txt     | 70 +++++++++++++++++++
+>  1 file changed, 70 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/mtk-svs.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/mtk-svs.txt b/Docume=
+ntation/devicetree/bindings/power/mtk-svs.txt
+> new file mode 100644
+> index 000000000000..355329db74ba
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/mtk-svs.txt
+> @@ -0,0 +1,70 @@
+> +* Mediatek Smart Voltage Scaling (MTK SVS)
+> +
+> +This describes the device tree binding for the MTK SVS controller
+> +which helps provide the optimized CPU/GPU/CCI voltages. This device also
+> +needs thermal data to calculate thermal slope for accurately compensate
+> +the voltages when temperature change.
+> +
+> +Required properties:
+> +- compatible:
+> +  - "mediatek,mt8183-svs" : For MT8183 family of SoCs
+> +- reg: Address range of the MTK SVS controller.
+> +- interrupts: IRQ for the MTK SVS controller.
+> +- clocks, clock-names: Clocks needed for the svs controller. required
+> +                       clocks are:
+> +                      "main_clk": Main clock needed for register access
+> +- nvmem-cells: Phandle to the calibration data provided by a nvmem devic=
+e.
+> +- nvmem-cell-names: Should be "svs-calibration-data" and "calibration-da=
+ta"
+> +- svs_xxx: Phandle of svs_bank device for controlling corresponding opp
 
-On 4/30/19 6:46 AM, Chanwoo Choi wrote:
-> On 19. 4. 19. 오후 11:19, Lukasz Luba wrote:
->> The patch adds description for DT binding for a new Exynos5422 Dynamic
->> Memory Controller device.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   .../bindings/memory-controllers/exynos5422-dmc.txt | 73 ++++++++++++++++++++++
->>   1 file changed, 73 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
->>
->> diff --git a/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
->> new file mode 100644
->> index 0000000..133b3cc
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
->> @@ -0,0 +1,73 @@
->> +* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
->> +
->> +The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
->> +memory chips are connected. The driver is to monitor the controller in runtime
->> +and switch frequency and voltage. To monitor the usage of the controller in
->> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
->> +is able to measure the current load of the memory.
->> +When 'userspace' governor is used for the driver, an application is able to
->> +switch the DMC and memory frequency.
->> +
->> +Required properties for DMC device for Exynos5422:
->> +- compatible: Should be "samsung,exynos5422-bus".
-> 
-> As I already mentioned on many times, it is not fixed.
-> You have to fix it as following:
-> - exynos5422-bus -> exynos5422-dmc
-I don't know how I missed it on my list. My apologies.
-> 
->> +- clock-names : the name of clock used by the bus, "bus".
-> 
-> The below examples doesn't contain the 'bus' clock name.
-True. Thank you for pointing this out. I will it.
+Properties shouldn't have underscores in them. Use dashes?
 
-Regards,
-Lukasz
-> 
->> +- clocks : phandles for clock specified in "clock-names" property.
->> +- devfreq-events : phandles for PPMU devices connected to this DMC.
->> +- vdd-supply : phandle for voltage regulator which is connected.
->> +- reg : registers of two CDREX controllers, chip information, clocks subsystem.
->> +- operating-points-v2 : phandle for OPPs described in v2 definition.
->> +- device-handle : phandle of the connected DRAM memory device. For more
->> +	information please refer to Documentation
->> +- devfreq-events : phandles of the PPMU events used by the controller.
->> +
->> +Example:
->> +
->> +	ppmu_dmc0_0: ppmu@10d00000 {
->> +		compatible = "samsung,exynos-ppmu";
->> +		reg = <0x10d00000 0x2000>;
->> +		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
->> +		clock-names = "ppmu";
->> +		status = "okay";
->> +		events {
->> +			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
->> +				event-name = "ppmu-event3-dmc0_0";
->> +			};
->> +		};
->> +	};
->> +
->> +	dmc: memory-controller@10c20000 {
->> +		compatible = "samsung,exynos5422-dmc";
->> +		reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
->> +			<0x10000000 0x1000>, <0x10030000 0x1000>;
->> +		clocks = 	<&clock CLK_FOUT_SPLL>,
->> +				<&clock CLK_MOUT_SCLK_SPLL>,
->> +				<&clock CLK_FF_DOUT_SPLL2>,
->> +				<&clock CLK_FOUT_BPLL>,
->> +				<&clock CLK_MOUT_BPLL>,
->> +				<&clock CLK_SCLK_BPLL>,
->> +				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
->> +				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
->> +				<&clock CLK_MOUT_MCLK_CDREX>,
->> +				<&clock CLK_DOUT_CLK2X_PHY0>,
->> +				<&clock CLK_CLKM_PHY0>,
->> +				<&clock CLK_CLKM_PHY1>;
->> +		clock-names =	"fout_spll",
->> +				"mout_sclk_spll",
->> +				"ff_dout_spll2",
->> +				"fout_bpll",
->> +				"mout_bpll",
->> +				"sclk_bpll",
->> +				"mout_mx_mspll_ccore",
->> +				"mout_mx_mspll_ccore_phy",
->> +				"mout_mclk_cdrex",
->> +				"dout_clk2x_phy0",
->> +				"clkm_phy0",
->> +			        "clkm_phy1";
->> +		status = "okay";
->> +		operating-points-v2 = <&dmc_opp_table>;
->> +		devfreq-events = <&ppmu_event3_dmc0_0>,	<&ppmu_event3_dmc0_1>,
->> +				<&ppmu_event3_dmc1_0>, <&ppmu_event3_dmc1_1>;
->> +		operating-points-v2 = <&dmc_opp_table>;
->> +		device-handle = <&samsung_K3QF2F20DB>;
->> +		vdd-supply = <&buck1_reg>;
->> +	};
->>
-> 
-> 
+> +           table and power-domains.
+> +- vxxx-supply: Phandle to each regulator. vxxx can be "vcpu_little",
+> +              "vcpu_big", "vcci" and "vgpu".
+> +
+> +Example:
+> +
+> +       svs: svs@1100b000 {
+> +               compatible =3D "mediatek,mt8183-svs";
+> +               reg =3D <0 0x1100b000 0 0x1000>;
+> +               interrupts =3D <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW 0>;
+> +               clocks =3D <&infracfg CLK_INFRA_THERM>;
+> +               clock-names =3D "main_clk";
+> +               nvmem-cells =3D <&svs_calibration>, <&thermal_calibration=
+>;
+> +               nvmem-cell-names =3D "svs-calibration-data", "calibration=
+-data";
+> +
+> +               svs_cpu_little: svs_cpu_little {
+> +                       compatible =3D "mediatek,mt8183-svs-cpu-little";
+> +                       operating-points-v2 =3D <&cluster0_opp>;
+> +               };
+> +
+> +               svs_cpu_big: svs_cpu_big {
+> +                       compatible =3D "mediatek,mt8183-svs-cpu-big";
+> +                       operating-points-v2 =3D <&cluster1_opp>;
+> +               };
+> +
+> +               svs_cci: svs_cci {
+> +                       compatible =3D "mediatek,mt8183-svs-cci";
+> +                       operating-points-v2 =3D <&cluster2_opp>;
+> +               };
+> +
+> +               svs_gpu: svs_gpu {
+> +                       compatible =3D "mediatek,mt8183-svs-gpu";
+> +                       power-domains =3D <&scpsys MT8183_POWER_DOMAIN_MF=
+G_2D>;
+> +                       operating-points-v2 =3D <&gpu_opp_table>;
+> +               };
+
+It looks like you need multiple OPPs for a single device, because it has
+different independent power supplies it wants to associate the OPP
+tables with? Why can't these OPP tables be attached to the devices that
+use them, i.e. CPU, GPU, CCI, etc.? Seems odd that those devices don't
+have OPP tables that this hardware block can look up somehow. Similarly,
+the power domains should probably be part of the devices that are using
+them and not these sub-nodes that are mirroring the other hardware
+blocks in the system?
+
+> +       };
+> +
+> +       &svs_cpu_little {
