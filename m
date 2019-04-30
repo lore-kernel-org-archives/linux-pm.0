@@ -1,17 +1,17 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v3 3/4] Documentation: devicetree: add PPMU events
- description
-Date: Tue, 30 Apr 2019 23:23:36 +0200
-Message-ID: <03805022-f086-c83c-7481-cad9cccfa6f5@partner.samsung.com>
+Subject: Re: [PATCH v3 4/4] DT: arm: exynos4412: add event data type which
+ is monitored
+Date: Tue, 30 Apr 2019 23:24:27 +0200
+Message-ID: <f8873863-9524-1ef0-9633-868edc3b56d3@partner.samsung.com>
 References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0@eucas1p2.samsung.com>
-        <1555681688-19643-4-git-send-email-l.luba@partner.samsung.com>
-        <52204c4b-80fa-1a87-2e00-1cfb774478f6@samsung.com>
+        <CGME20190419134823eucas1p1ff852194b1db655ed2dbce72b5f7f3a6@eucas1p1.samsung.com>
+        <1555681688-19643-5-git-send-email-l.luba@partner.samsung.com>
+        <cee7b5a2-377e-59d6-7c6e-b6f9b3140d4f@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52204c4b-80fa-1a87-2e00-1cfb774478f6@samsung.com>
+In-Reply-To: <cee7b5a2-377e-59d6-7c6e-b6f9b3140d4f@samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
@@ -20,95 +20,73 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On 4/30/19 8:16 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
+On 4/30/19 8:10 AM, Chanwoo Choi wrote:
+> Hi,
 > 
 > On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
->> Extend the documenation by events description with new 'event-data-type'
->> field. Add example how the event might be defined in DT.
+>> The patch adds new field in the PPMU event which shows explicitly
+>> what kind of data the event is monitoring. It is possible to change it
+>> using defined values in exynos_ppmu.h file.
 >>
 >> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 >> ---
->>   .../devicetree/bindings/devfreq/event/exynos-ppmu.txt  | 18 ++++++++++++++++++
->>   1 file changed, 18 insertions(+)
+>>   arch/arm/boot/dts/exynos4412-ppmu-common.dtsi | 10 ++++++++++
+>>   1 file changed, 10 insertions(+)
 >>
->> diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> index 3e36c1d..47feb5f 100644
->> --- a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> +++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> @@ -145,3 +145,21 @@ Example3 : PPMUv2 nodes in exynos5433.dtsi are listed below.
->>   			reg = <0x104d0000 0x2000>;
->>   			status = "disabled";
->>   		};
+>> diff --git a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+>> index 3a3b2fa..549faba 100644
+>> --- a/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+>> +++ b/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+>> @@ -6,12 +6,16 @@
+>>    * Author: Chanwoo Choi <cw00.choi@samsung.com>
+>>    */
+>>   
+>> +#include <dt-bindings/pmu/exynos_ppmu.h>
 >> +
->> +The 'event' type specified in the PPMU node defines 'event-name'
->> +which also contains 'id' number and optionally 'event-data-type'.
->> +
->> +Example:
->> +
->> +		events {
->> +			ppmu_leftbus_0: ppmu-event0-leftbus {
->> +				event-name = "ppmu-event0-leftbus";
->> +				event-data-type = <PPMU_RO_DATA_CNT>;
->> +			};
->> +		};
->> +
->> +The 'event-data-type' defines the type of data which shell be counted
->> +by the counter. You can check include/dt-bindings/pmu/exynos_ppmu.h for
->> +all possible type, i.e. count read requests, count write data in bytes,
->> +etc. This field is optional and when it is missing, the driver code will
->> +use default data type.
+>>   &ppmu_dmc0 {
+>>          status = "okay";
+>>   
+>>          events {
+>>   	       ppmu_dmc0_3: ppmu-event3-dmc0 {
+>>   		       event-name = "ppmu-event3-dmc0";
+>> +		       event-data-type = <(PPMU_RO_DATA_CNT |
+>> +					   PPMU_WO_DATA_CNT)>;
+>>   	       };
+>>          };
+>>   };
+>> @@ -22,6 +26,8 @@
+>>          events {
+>>   	       ppmu_dmc1_3: ppmu-event3-dmc1 {
+>>   		       event-name = "ppmu-event3-dmc1";
+>> +		       event-data-type = <(PPMU_RO_DATA_CNT |
+>> +					   PPMU_WO_DATA_CNT)>;
+>>   	       };
+>>          };
+>>   };
+>> @@ -32,6 +38,8 @@
+>>          events {
+>>   	       ppmu_leftbus_3: ppmu-event3-leftbus {
+>>   		       event-name = "ppmu-event3-leftbus";
+>> +		       event-data-type = <(PPMU_RO_DATA_CNT |
+>> +					   PPMU_WO_DATA_CNT)>;
+>>   	       };
+>>          };
+>>   };
+>> @@ -42,6 +50,8 @@
+>>          events {
+>>   	       ppmu_rightbus_3: ppmu-event3-rightbus {
+>>   		       event-name = "ppmu-event3-rightbus";
+>> +		       event-data-type = <(PPMU_RO_DATA_CNT |
+>> +					   PPMU_WO_DATA_CNT)>;
+>>   	       };
+>>          };
+>>   };
 >>
 > 
-> How about editing it as following?
-> 
-> --- a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
-> +++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
-> @@ -10,14 +10,23 @@ The Exynos PPMU driver uses the devfreq-event class to provide event data
->   to various devfreq devices. The devfreq devices would use the event data when
->   derterming the current state of each IP.
->   
-> -Required properties:
-> +Required properties for PPMU device:
->   - compatible: Should be "samsung,exynos-ppmu" or "samsung,exynos-ppmu-v2.
->   - reg: physical base address of each PPMU and length of memory mapped region.
->   
-> -Optional properties:
-> +Optional properties for PPMU device:
->   - clock-names : the name of clock used by the PPMU, "ppmu"
->   - clocks : phandles for clock specified in "clock-names" property
->   
-> +Required properties for 'events' child node of PPMU device:
-> +- event-name : the unique event name among PPMU device
-> +Optional properties for 'events' child node of PPMU device:
-> +- event-data-type : Define the type of data which shell be counted
-> +by the counter. You can check include/dt-bindings/pmu/exynos_ppmu.h for
-> +all possible type, i.e. count read requests, count write data in bytes,
-> +etc. This field is optional and when it is missing, the driver code
-> +will use default data type.
-> +
->   Example1 : PPMUv1 nodes in exynos3250.dtsi are listed below.
->   
->                  ppmu_dmc0: ppmu_dmc0@106a0000 {
-> @@ -145,3 +154,16 @@ Example3 : PPMUv2 nodes in exynos5433.dtsi are listed below.
->                          reg = <0x104d0000 0x2000>;
->                          status = "disabled";
->                  };
-> +
-> +Example4 : 'event-data-type' in exynos4412-ppmu-common.dtsi are listed below.
-> +
-> +       &ppmu_dmc0 {
-> +               status = "okay";
-> +               events {
-> +                       ppmu_dmc0_3: ppmu-event3-dmc0 {
-> +                               event-name = "ppmu-event3-dmc0";
-> +                               event-data-type = <(PPMU_RO_DATA_CNT |
-> +                                               PPMU_WO_DATA_CNT)>;
-> +                       };
-> +               };
-> +       };
-> 
-> I agree. It will be changed in the next version.
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Thank you, added to the patch.
 
 Regards,
 Lukasz
+> 
+> 
