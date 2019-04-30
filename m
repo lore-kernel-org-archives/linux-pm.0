@@ -1,52 +1,100 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 1/2] PM / Domains: Add GENPD_FLAG_NO_RUNTIME_OFF flag
-Date: Tue, 30 Apr 2019 13:15:07 +0200
-Message-ID: <CAPDyKFr_CsHBTjAXC+g7Oxnz9WhhyhyW3BGJkr=dqkJECvsyRw@mail.gmail.com>
-References: <cover.1556313614.git.leonard.crestez@nxp.com>
- <68ccb5a90d1d2a596e7ed94ba3245171f013c781.1556313614.git.leonard.crestez@nxp.com>
- <CAPDyKFpCCapBfNbsR1Q+nyg8aenVJWxj9qmTCCCfmONZR3t1sg@mail.gmail.com>
- <AM0PR04MB6434B2BBECCA6B2644CDF044EE390@AM0PR04MB6434.eurprd04.prod.outlook.com>
+From: Roger Lu <roger.lu@mediatek.com>
+Subject: [RFC v1 1/3] dt-bindings: soc: add mtk svs dt-bindings
+Date: Tue, 30 Apr 2019 19:20:10 +0800
+Message-ID: <20190430112012.4514-2-roger.lu@mediatek.com>
+References: <20190430112012.4514-1-roger.lu@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <AM0PR04MB6434B2BBECCA6B2644CDF044EE390@AM0PR04MB6434.eurprd04.prod.outlook.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Aisheng Dong <aisheng.dong@nxp.com>, Anson Huang <anson.huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, Arulpandiyan Vadivel <Arulpandiyan_Vadivel@mentor.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190430112012.4514-1-roger.lu@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Matthias Brugger <matthias.bgg@gmail.com>, Viresh Kumar <vireshk@kernel.org>, Stephen Boyd <sboyd@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@kernel.org>, Roger Lu <roger.lu@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 29 Apr 2019 at 16:39, Leonard Crestez <leonard.crestez@nxp.com> wrote:
->
-> On 4/29/2019 12:11 PM, Ulf Hansson wrote:
-> > On Fri, 26 Apr 2019 at 23:38, Leonard Crestez <leonard.crestez@nxp.com> wrote:
-> >>
-> >> This is for power domains which can only be powered off for suspend but
-> >> not as part of runtime PM.
-> >>
-> >> @@ -126,10 +126,11 @@ static const struct genpd_lock_ops genpd_spin_ops = {
-> >>   #define genpd_status_on(genpd)         (genpd->status == GPD_STATE_ACTIVE)
-> >>   #define genpd_is_irq_safe(genpd)       (genpd->flags & GENPD_FLAG_IRQ_SAFE)
-> >>   #define genpd_is_always_on(genpd)      (genpd->flags & GENPD_FLAG_ALWAYS_ON)
-> >>   #define genpd_is_active_wakeup(genpd)  (genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
-> >>   #define genpd_is_cpu_domain(genpd)     (genpd->flags & GENPD_FLAG_CPU_DOMAIN)
-> >> +#define genpd_is_no_runtime_off(genpd) (genpd->flags & GENPD_FLAG_NO_RUNTIME_OFF) >
-> > May I suggest to switch the name to, GENPD_FLAG_RUNTIME_ON.
-> >
-> > Other than that, this looks good to me!
->
-> Then it's easy to confuse genpd_status_on with genpd_is_runtime_on. How
-> about genpd_is_rpm_always_on?
+Document the binding for enabling mtk svs on MediaTek SoC.
 
-Even better, let's take that.
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+---
+ .../devicetree/bindings/power/mtk-svs.txt     | 70 +++++++++++++++++++
+ 1 file changed, 70 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/mtk-svs.txt
 
-Kind regards
-Uffe
+diff --git a/Documentation/devicetree/bindings/power/mtk-svs.txt b/Documentation/devicetree/bindings/power/mtk-svs.txt
+new file mode 100644
+index 000000000000..355329db74ba
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/mtk-svs.txt
+@@ -0,0 +1,70 @@
++* Mediatek Smart Voltage Scaling (MTK SVS)
++
++This describes the device tree binding for the MTK SVS controller
++which helps provide the optimized CPU/GPU/CCI voltages. This device also
++needs thermal data to calculate thermal slope for accurately compensate
++the voltages when temperature change.
++
++Required properties:
++- compatible:
++  - "mediatek,mt8183-svs" : For MT8183 family of SoCs
++- reg: Address range of the MTK SVS controller.
++- interrupts: IRQ for the MTK SVS controller.
++- clocks, clock-names: Clocks needed for the svs controller. required
++                       clocks are:
++		       "main_clk": Main clock needed for register access
++- nvmem-cells: Phandle to the calibration data provided by a nvmem device.
++- nvmem-cell-names: Should be "svs-calibration-data" and "calibration-data"
++- svs_xxx: Phandle of svs_bank device for controlling corresponding opp
++           table and power-domains.
++- vxxx-supply: Phandle to each regulator. vxxx can be "vcpu_little",
++	       "vcpu_big", "vcci" and "vgpu".
++
++Example:
++
++	svs: svs@1100b000 {
++		compatible = "mediatek,mt8183-svs";
++		reg = <0 0x1100b000 0 0x1000>;
++		interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW 0>;
++		clocks = <&infracfg CLK_INFRA_THERM>;
++		clock-names = "main_clk";
++		nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
++		nvmem-cell-names = "svs-calibration-data", "calibration-data";
++
++		svs_cpu_little: svs_cpu_little {
++			compatible = "mediatek,mt8183-svs-cpu-little";
++			operating-points-v2 = <&cluster0_opp>;
++		};
++
++		svs_cpu_big: svs_cpu_big {
++			compatible = "mediatek,mt8183-svs-cpu-big";
++			operating-points-v2 = <&cluster1_opp>;
++		};
++
++		svs_cci: svs_cci {
++			compatible = "mediatek,mt8183-svs-cci";
++			operating-points-v2 = <&cluster2_opp>;
++		};
++
++		svs_gpu: svs_gpu {
++			compatible = "mediatek,mt8183-svs-gpu";
++			power-domains = <&scpsys MT8183_POWER_DOMAIN_MFG_2D>;
++			operating-points-v2 = <&gpu_opp_table>;
++		};
++	};
++
++	&svs_cpu_little {
++		vcpu_little-supply = <&mt6358_vproc12_reg>;
++	};
++
++	&svs_cpu_big {
++		vcpu_big-supply = <&mt6358_vproc11_reg>;
++	};
++
++	&svs_cci {
++		vcci-supply = <&mt6358_vproc12_reg>;
++	};
++
++	&svs_gpu {
++		vgpu-spply = <&mt6358_vgpu_reg>;
++	};
+-- 
+2.18.0
