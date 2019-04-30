@@ -1,108 +1,185 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 07/16] PM / devfreq: tegra: Properly disable
- interrupts
-Date: Tue, 30 Apr 2019 09:05:45 +0900
-Message-ID: <87b5a3df-a0c2-3a6e-7e93-f1c89b0a789e@samsung.com>
+Subject: Re: [PATCH v3 08/16] PM / devfreq: tegra: Clean up driver's probe /
+ remove
+Date: Tue, 30 Apr 2019 09:16:03 +0900
+Message-ID: <236a553b-ccb5-f8fd-d404-af78f04d6985@samsung.com>
 References: <20190417222925.5815-1-digetx@gmail.com>
-        <CGME20190417224252epcas5p43248bf8dbebdf687c466d6985233c4e8@epcas5p4.samsung.com>
-        <20190417222925.5815-8-digetx@gmail.com>
+        <CGME20190417224114epcas4p14b20e269f10a3e3bfea4c8ec4c3300b3@epcas4p1.samsung.com>
+        <20190417222925.5815-9-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190417222925.5815-8-digetx@gmail.com>
+In-Reply-To: <20190417222925.5815-9-digetx@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc: linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
+
 On 19. 4. 18. 오전 7:29, Dmitry Osipenko wrote:
-> There is no guarantee that interrupt handling isn't running in parallel
-> with tegra_actmon_disable_interrupts(), hence it is necessary to protect
-> DEV_CTRL register accesses and clear IRQ status with ACTMON's IRQ being
-> disabled in the Interrupt Controller in order to ensure that device
-> interrupt is indeed being disabled.
+> Reset hardware, disable ACTMON clock, release OPP's and handle all
+> possible error cases correctly, maintaining the correct tear down
+> order. Also use devm_platform_ioremap_resource() which is now available
+> in the kernel.
 > 
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  drivers/devfreq/tegra-devfreq.c | 21 +++++++++++++++------
->  1 file changed, 15 insertions(+), 6 deletions(-)
+>  drivers/devfreq/tegra-devfreq.c | 83 +++++++++++++++++++--------------
+>  1 file changed, 47 insertions(+), 36 deletions(-)
 > 
 > diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-> index b65313fe3c2e..ce1eb97a2090 100644
+> index ce1eb97a2090..70946e432d3c 100644
 > --- a/drivers/devfreq/tegra-devfreq.c
 > +++ b/drivers/devfreq/tegra-devfreq.c
-> @@ -171,6 +171,8 @@ struct tegra_devfreq {
->  	struct notifier_block	rate_change_nb;
->  
->  	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
-> +
-> +	int irq;
->  };
->  
->  struct tegra_actmon_emc_ratio {
-> @@ -417,6 +419,8 @@ static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
->  	u32 val;
->  	unsigned int i;
->  
-> +	disable_irq(tegra->irq);
-> +
->  	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
->  		dev = &tegra->devices[i];
->  
-> @@ -427,9 +431,14 @@ static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
->  		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
->  
->  		device_writel(dev, val, ACTMON_DEV_CTRL);
-> +
-> +		device_writel(dev, ACTMON_INTR_STATUS_CLEAR,
-> +			      ACTMON_DEV_INTR_STATUS);
->  	}
->  
->  	actmon_write_barrier(tegra);
-> +
-> +	enable_irq(tegra->irq);
->  }
->  
->  static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
-> @@ -604,7 +613,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  	struct resource *res;
+> @@ -610,7 +610,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  {
+>  	struct tegra_devfreq *tegra;
+>  	struct tegra_devfreq_device *dev;
+> -	struct resource *res;
 >  	unsigned int i;
 >  	unsigned long rate;
-> -	int irq;
 >  	int err;
+> @@ -619,9 +618,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  	if (!tegra)
+>  		return -ENOMEM;
 >  
->  	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
-> @@ -673,15 +681,16 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  		dev_pm_opp_add(&pdev->dev, rate, 0);
+> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -
+> -	tegra->regs = devm_ioremap_resource(&pdev->dev, res);
+> +	tegra->regs = devm_platform_ioremap_resource(pdev, 0);
+>  	if (IS_ERR(tegra->regs))
+>  		return PTR_ERR(tegra->regs);
+>  
+> @@ -643,11 +640,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  		return PTR_ERR(tegra->emc_clock);
 >  	}
 >  
-> -	irq = platform_get_irq(pdev, 0);
-> -	if (irq < 0) {
-> -		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", irq);
-> -		return irq;
+> -	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
+> -	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+> -	if (err) {
+> -		dev_err(&pdev->dev,
+> -			"Failed to register rate change notifier\n");
 > +	tegra->irq = platform_get_irq(pdev, 0);
 > +	if (tegra->irq < 0) {
 > +		err = tegra->irq;
 > +		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
-> +		return err;
+>  		return err;
+>  	}
+>  
+> @@ -678,54 +674,69 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  
+>  	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
+>  		rate = clk_round_rate(tegra->emc_clock, rate);
+> -		dev_pm_opp_add(&pdev->dev, rate, 0);
+> -	}
+>  
+> -	tegra->irq = platform_get_irq(pdev, 0);
+> -	if (tegra->irq < 0) {
+> -		err = tegra->irq;
+> -		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
+> -		return err;
+> +		err = dev_pm_opp_add(&pdev->dev, rate, 0);
+> +		if (err) {
+> +			dev_err(&pdev->dev, "Failed to add OPP: %d\n", err);
+> +			goto remove_opps;
+> +		}
 >  	}
 >  
 >  	platform_set_drvdata(pdev, tegra);
 >  
-> -	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-> +	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
+> +	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
+> +	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+> +	if (err) {
+> +		dev_err(&pdev->dev,
+> +			"Failed to register rate change notifier\n");
+> +		goto remove_opps;
+> +	}
+> +
+> +	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
+> +	tegra->devfreq = devfreq_add_device(&pdev->dev,
+> +					    &tegra_devfreq_profile,
+> +					    "tegra_actmon",
+> +					    NULL);
+> +	if (IS_ERR(tegra->devfreq)) {
+> +		err = PTR_ERR(tegra->devfreq);
+> +		goto unreg_notifier;
+> +	}
+> +
+>  	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
 >  					actmon_thread_isr, IRQF_ONESHOT,
 >  					"tegra-devfreq", tegra);
 >  	if (err) {
+> -		dev_err(&pdev->dev, "Interrupt request failed\n");
+> -		return err;
+> +		dev_err(&pdev->dev, "Interrupt request failed: %d\n", err);
+> +		goto remove_devfreq;
+>  	}
+>  
+> -	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
+> -	tegra->devfreq = devm_devfreq_add_device(&pdev->dev,
+> -						 &tegra_devfreq_profile,
+> -						 "tegra_actmon",
+> -						 NULL);
+> -
+>  	return 0;
+> +
+> +remove_devfreq:
+> +	devfreq_remove_device(tegra->devfreq);
+> +
+> +unreg_notifier:
+> +	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
+> +
+> +remove_opps:
+> +	dev_pm_opp_remove_all_dynamic(&pdev->dev);
+> +
+> +	reset_control_reset(tegra->reset);
+> +	clk_disable_unprepare(tegra->clock);
+> +
+> +	return err;
+>  }
+>  
+>  static int tegra_devfreq_remove(struct platform_device *pdev)
+>  {
+>  	struct tegra_devfreq *tegra = platform_get_drvdata(pdev);
+> -	int irq = platform_get_irq(pdev, 0);
+> -	u32 val;
+> -	unsigned int i;
+> -
+> -	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
+> -		val = device_readl(&tegra->devices[i], ACTMON_DEV_CTRL);
+> -		val &= ~ACTMON_DEV_CTRL_ENB;
+> -		device_writel(&tegra->devices[i], val, ACTMON_DEV_CTRL);
+> -	}
+> -
+> -	actmon_write_barrier(tegra);
+>  
+> -	devm_free_irq(&pdev->dev, irq, tegra);
+> +	devfreq_remove_device(tegra->devfreq);
+> +	dev_pm_opp_remove_all_dynamic(&pdev->dev);
+>  
+>  	clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
+
+nitpick: the probe function  has following call sequence if error case,
+First, clk_notifier_unregister()
+Second, dev_pm_opp_remove_all_dynamic()
+
+If possible, you better to keep the same sequence
+in the tegra_devfreq_remove(). But, it is just opinion.
+If you think that it doesn't break the routine of device removal,
+jut keep this code.
+
+>  
+> +	reset_control_reset(tegra->reset);
+>  	clk_disable_unprepare(tegra->clock);
+>  
+>  	return 0;
 > 
 
-It is ok to disable the hardware interrupt line
-before completing the some operation about registers
-in order to protect the interrupt occur.
-
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
 
 -- 
 Best Regards,
