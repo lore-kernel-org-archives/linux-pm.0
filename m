@@ -1,84 +1,57 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v3 1/4] include: dt-bindings: add Performance Monitoring
- Unit for Exynos
-Date: Tue, 30 Apr 2019 22:36:23 +0200
-Message-ID: <d07544be-50c8-4520-4637-b0938701df1e@partner.samsung.com>
-References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419134820eucas1p154e839769af0e1b8bae17ce3efa0ba93@eucas1p1.samsung.com>
-        <1555681688-19643-2-git-send-email-l.luba@partner.samsung.com>
-        <a1ff3566-6117-b670-a2f3-b60a2bbec14a@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 09/14] powercap/intel_rapl: Support multi-die/package
+Date: Tue, 30 Apr 2019 16:55:54 -0400
+Message-ID: <62505b44d2610872542b6602fda9273815db595d.1553624867.git.len.brown@intel.com>
+References: <75386dff62ee869eb7357dff1e60dfd9b3e68023.1553624867.git.len.brown@intel.com>
+Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a1ff3566-6117-b670-a2f3-b60a2bbec14a@samsung.com>
-Content-Language: en-US
+In-Reply-To: <75386dff62ee869eb7357dff1e60dfd9b3e68023.1553624867.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, willy.mh.wolff.ml@gmail.com
+To: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+From: Zhang Rui <rui.zhang@intel.com>
 
+On the new dual-die/package systems, the RAPL MSR becomes die-scope.
+Thus instead of one powercap device per physical package, now there
+should be one powercap device for each unique die on these systems.
 
-On 4/30/19 6:56 AM, Chanwoo Choi wrote:
-> Hi,
-> 
-> I agree of this patch. But, I add the minor comments.
-> 
-> If you edit them according to my comment, feel free to add my following tag:
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> 
-> On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
->> This patch add support of a new feature which can be used in DT:
->> Performance Monitoring Unit with defined event data type.
->> In this patch the event data types are defined for Exynos PPMU.
->> The patch also updates the MAINTAINERS file accordingly and
->> adds the header file to devfreq event subsystem.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   MAINTAINERS                           |  1 +
->>   include/dt-bindings/pmu/exynos_ppmu.h | 26 ++++++++++++++++++++++++++
->>   2 files changed, 27 insertions(+)
->>   create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index 3671fde..1ba4b9b 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -4560,6 +4560,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
->>   S:	Supported
->>   F:	drivers/devfreq/event/
->>   F:	drivers/devfreq/devfreq-event.c
->> +F:	include/dt-bindings/pmu/exynos_ppmu.h
->>   F:	include/linux/devfreq-event.h
->>   F:	Documentation/devicetree/bindings/devfreq/event/
->>   
->> diff --git a/include/dt-bindings/pmu/exynos_ppmu.h b/include/dt-bindings/pmu/exynos_ppmu.h
->> new file mode 100644
->> index 0000000..08fdce9
->> --- /dev/null
->> +++ b/include/dt-bindings/pmu/exynos_ppmu.h
->> @@ -0,0 +1,26 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +/*
->> + * Samsung Exynos PPMU event types for counting in regs
->> + *
->> + * Copyright (c) 2019, Samsung
-> 
-> Mabye, "Samsung Electronics" instead of 'Samsung'.
-ACK
-> 
->> + * Author: Lukasz Luba <l.luba@partner.samsung.com>
->> + */
->> +
->> +#ifndef __DT_BINDINGS_PMU_EXYNOS_PPMU_H
->> +#define __DT_BINDINGS_PMU_EXYNOS_PPMU_H
->> +
->> +
-> 
-> Remove unneeded blank line.
-OK done. I will add your 'Acked-by' in the next version.
+This patch introduces intel_rapl driver support for new
+dual-die/package systems.
 
-Regards,
-Lukasz
+On the hardwares that do not have multi-die, topology_logical_die_id()
+equals topology_physical_package_id(), thus there is no functional change.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/powercap/intel_rapl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 8b2f3631aba6..38c89db15150 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+ /* caller to ensure CPU hotplug lock is held */
+ static struct rapl_package *rapl_find_package_domain(int cpu)
+ {
+-	int id = topology_physical_package_id(cpu);
++	int id = topology_logical_die_id(cpu);
+ 	struct rapl_package *rp;
+ 
+ 	list_for_each_entry(rp, &rapl_packages, plist) {
+@@ -1457,7 +1457,7 @@ static void rapl_remove_package(struct rapl_package *rp)
+ /* called from CPU hotplug notifier, hotplug lock held */
+ static struct rapl_package *rapl_add_package(int cpu)
+ {
+-	int id = topology_physical_package_id(cpu);
++	int id = topology_logical_die_id(cpu);
+ 	struct rapl_package *rp;
+ 	int ret;
+ 
+-- 
+2.18.0-rc0
