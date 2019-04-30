@@ -1,717 +1,228 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v4 2/3] power: supply: Add driver for Microchip UCS1002
-Date: Mon, 29 Apr 2019 23:45:56 -0700
-Message-ID: <20190430064557.28469-3-andrew.smirnov@gmail.com>
-References: <20190430064557.28469-1-andrew.smirnov@gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3 2/4] drivers: devfreq: events: extend events by type
+ of counted data
+Date: Tue, 30 Apr 2019 16:34:30 +0900
+Message-ID: <3557d507-0463-89de-4025-fbeaaef78bed@samsung.com>
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419134821eucas1p2461a27e28387ff2b87c149f09582d2a0@eucas1p2.samsung.com>
+        <1555681688-19643-3-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190430064557.28469-1-andrew.smirnov@gmail.com>
+In-Reply-To: <1555681688-19643-3-git-send-email-l.luba@partner.samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Add driver for Microchip UCS1002 Programmable USB Port Power
-Controller with Charger Emulation. The driver exposed a power supply
-device to control/monitor various parameter of the device as well as a
-regulator to allow controlling VBUS line.
+Hi Lukasz,
 
-Signed-off-by: Enric Balletbo Serra <enric.balletbo@collabora.com>
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- drivers/power/supply/Kconfig         |   9 +
- drivers/power/supply/Makefile        |   1 +
- drivers/power/supply/ucs1002_power.c | 646 +++++++++++++++++++++++++++
- 3 files changed, 656 insertions(+)
- create mode 100644 drivers/power/supply/ucs1002_power.c
+On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
+> This patch adds posibility to choose what type of data should be counted
+> by the PPMU counter. Now the type comes from DT where the event has been
+> defined. When there is no 'event-data-type' the default value is used,
+> which is 'read data in bytes'.
+> It is needed when you want to know not only read+write data bytes but
+> i.e. only write data in byte, or number of read requests, etc.
+> 
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  drivers/devfreq/event/exynos-ppmu.c | 61 +++++++++++++++++++++++++------------
+>  include/linux/devfreq-event.h       |  6 ++++
+>  2 files changed, 48 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+> index c61de0b..073bf2c 100644
+> --- a/drivers/devfreq/event/exynos-ppmu.c
+> +++ b/drivers/devfreq/event/exynos-ppmu.c
+> @@ -154,9 +154,9 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>  	if (ret < 0)
+>  		return ret;
+>  
+> -	/* Set the event of Read/Write data count  */
+> +	/* Set the event of proper data type monitoring */
+>  	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
+> -				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
+> +			   edev->desc->data_type);
+>  	if (ret < 0)
+>  		return ret;
+>  
+> @@ -368,23 +368,11 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>  	if (ret < 0)
+>  		return ret;
+>  
+> -	/* Set the event of Read/Write data count  */
+> -	switch (id) {
+> -	case PPMU_PMNCNT0:
+> -	case PPMU_PMNCNT1:
+> -	case PPMU_PMNCNT2:
+> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> -				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
+> -		if (ret < 0)
+> -			return ret;
+> -		break;
+> -	case PPMU_PMNCNT3:
+> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> -				PPMU_V2_EVT3_RW_DATA_CNT);
+> -		if (ret < 0)
+> -			return ret;
+> -		break;
+> -	}
+> +	/* Set the event of proper data type monitoring */
+> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> +			   edev->desc->data_type);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	/* Reset cycle counter/performance counter and enable PPMU */
+>  	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+> @@ -508,6 +496,7 @@ static int of_get_devfreq_events(struct device_node *np,
+>  	struct device *dev = info->dev;
+>  	struct device_node *events_np, *node;
+>  	int i, j, count;
+> +	int ret;
+>  
+>  	events_np = of_get_child_by_name(np, "events");
+>  	if (!events_np) {
+> @@ -544,6 +533,40 @@ static int of_get_devfreq_events(struct device_node *np,
+>  		desc[j].driver_data = info;
+>  
+>  		of_property_read_string(node, "event-name", &desc[j].name);
+> +		ret = of_property_read_u32(node, "event-data-type",
+> +					   &desc[j].data_type);
+> +		if (ret) {
+> +			/* Set the event of proper data type counting.
+> +			 * Check if the data type has been defined in DT,
+> +			 * use default if not.
+> +			 */
+> +			if (of_device_is_compatible(np,
+> +					"samsung,exynos-ppmu-v2")) {
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index e901b9879e7e..c614c8a196f3 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -660,4 +660,13 @@ config FUEL_GAUGE_SC27XX
- 	 Say Y here to enable support for fuel gauge with SC27XX
- 	 PMIC chips.
+It is not proper to compare the compatible string again
+in the device driver. Instead, you can define the ppmu device type
+as following and then use 'struct of_device_id' in order to
+identify the device type.
+
+	enum exynos_ppmu_type {
+		EXYNOS_TYPE_PPMU,
+		EXYNOS_TYPE_PPMU_V2,
+	};
+
+ static const struct of_device_id exynos_ppmu_id_match[] = {
+        {
+                .compatible = "samsung,exynos-ppmu",
+-               .data = (void *)&exynos_ppmu_ops,
++               .data = (void *)EXYNOS_TYPE_PPMU,
+        }, {
+                .compatible = "samsung,exynos-ppmu-v2",
+-               .data = (void *)&exynos_ppmu_v2_ops,
++               .data = (void *)EXYNOS_TYPE_PPMU_V2,
+        },
+
+
+The many device drivers in the mainline uses this code
+in order to get the device type. You can refer the example
+in the drivers/mfd/max14577.c.
+
+(snip)
+
+
+Example, I add the example. but it is not tested. 
+
+--- a/drivers/devfreq/event/exynos-ppmu.c
++++ b/drivers/devfreq/event/exynos-ppmu.c
+@@ -16,6 +16,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of_address.h>
++#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/suspend.h>
+@@ -23,6 +24,11 @@
  
-+config CHARGER_UCS1002
-+        tristate "Microchip UCS1002 USB Port Power Controller"
-+	depends on I2C
-+	depends on OF
-+	select REGMAP_I2C
-+	help
-+	  Say Y to enable support for Microchip UCS1002 Programmable
-+	  USB Port Power Controller with Charger Emulation.
-+
- endif # POWER_SUPPLY
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index b731c2a9b695..c56803a9e4fe 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -87,3 +87,4 @@ obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
- obj-$(CONFIG_CHARGER_CROS_USBPD)	+= cros_usbpd-charger.o
- obj-$(CONFIG_CHARGER_SC2731)	+= sc2731_charger.o
- obj-$(CONFIG_FUEL_GAUGE_SC27XX)	+= sc27xx_fuel_gauge.o
-+obj-$(CONFIG_CHARGER_UCS1002)	+= ucs1002_power.o
-diff --git a/drivers/power/supply/ucs1002_power.c b/drivers/power/supply/ucs1002_power.c
-new file mode 100644
-index 000000000000..d66b4eff9b7a
---- /dev/null
-+++ b/drivers/power/supply/ucs1002_power.c
-@@ -0,0 +1,646 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Driver for UCS1002 Programmable USB Port Power Controller
-+ *
-+ * Copyright (C) 2019 Zodiac Inflight Innovations
-+ */
-+#include <linux/bits.h>
-+#include <linux/freezer.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/i2c.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/kthread.h>
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_irq.h>
-+#include <linux/power_supply.h>
-+#include <linux/regmap.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/regulator/of_regulator.h>
-+
-+/* UCS1002 Registers */
-+#define UCS1002_REG_CURRENT_MEASUREMENT	0x00
-+
-+/*
-+ * The Total Accumulated Charge registers store the total accumulated
-+ * charge delivered from the VS source to a portable device. The total
-+ * value is calculated using four registers, from 01h to 04h. The bit
-+ * weighting of the registers is given in mA/hrs.
-+ */
-+#define UCS1002_REG_TOTAL_ACC_CHARGE	0x01
-+
-+/* Other Status Register */
-+#define UCS1002_REG_OTHER_STATUS	0x0f
-+#  define F_ADET_PIN			BIT(4)
-+#  define F_CHG_ACT			BIT(3)
-+
-+/* Interrupt Status */
-+#define UCS1002_REG_INTERRUPT_STATUS	0x10
-+#  define F_DISCHARGE_ERR		BIT(6)
-+#  define F_RESET			BIT(5)
-+#  define F_MIN_KEEP_OUT		BIT(4)
-+#  define F_TSD				BIT(3)
-+#  define F_OVER_VOLT			BIT(2)
-+#  define F_BACK_VOLT			BIT(1)
-+#  define F_OVER_ILIM			BIT(0)
-+
-+/* Pin Status Register */
-+#define UCS1002_REG_PIN_STATUS		0x14
-+#  define UCS1002_PWR_STATE_MASK	0x03
-+#  define F_PWR_EN_PIN			BIT(6)
-+#  define F_M2_PIN			BIT(5)
-+#  define F_M1_PIN			BIT(4)
-+#  define F_EM_EN_PIN			BIT(3)
-+#  define F_SEL_PIN			BIT(2)
-+#  define F_ACTIVE_MODE_MASK		GENMASK(5, 3)
-+#  define F_ACTIVE_MODE_PASSTHROUGH	F_M2_PIN
-+#  define F_ACTIVE_MODE_DEDICATED	F_EM_EN_PIN
-+#  define F_ACTIVE_MODE_BC12_DCP	(F_M2_PIN | F_EM_EN_PIN)
-+#  define F_ACTIVE_MODE_BC12_SDP	F_M1_PIN
-+#  define F_ACTIVE_MODE_BC12_CDP	(F_M1_PIN | F_M2_PIN | F_EM_EN_PIN)
-+
-+/* General Configuration Register */
-+#define UCS1002_REG_GENERAL_CFG		0x15
-+#  define F_RATION_EN			BIT(3)
-+
-+/* Emulation Configuration Register */
-+#define UCS1002_REG_EMU_CFG		0x16
-+
-+/* Switch Configuration Register */
-+#define UCS1002_REG_SWITCH_CFG		0x17
-+#  define F_PIN_IGNORE			BIT(7)
-+#  define F_EM_EN_SET			BIT(5)
-+#  define F_M2_SET			BIT(4)
-+#  define F_M1_SET			BIT(3)
-+#  define F_S0_SET			BIT(2)
-+#  define F_PWR_EN_SET			BIT(1)
-+#  define F_LATCH_SET			BIT(0)
-+#  define V_SET_ACTIVE_MODE_MASK	GENMASK(5, 3)
-+#  define V_SET_ACTIVE_MODE_PASSTHROUGH	F_M2_SET
-+#  define V_SET_ACTIVE_MODE_DEDICATED	F_EM_EN_SET
-+#  define V_SET_ACTIVE_MODE_BC12_DCP	(F_M2_SET | F_EM_EN_SET)
-+#  define V_SET_ACTIVE_MODE_BC12_SDP	F_M1_SET
-+#  define V_SET_ACTIVE_MODE_BC12_CDP	(F_M1_SET | F_M2_SET | F_EM_EN_SET)
-+
-+/* Current Limit Register */
-+#define UCS1002_REG_ILIMIT		0x19
-+#  define UCS1002_ILIM_SW_MASK		GENMASK(3, 0)
-+
-+/* Product ID */
-+#define UCS1002_REG_PRODUCT_ID		0xfd
-+#  define UCS1002_PRODUCT_ID		0x4e
-+
-+/* Manufacture name */
-+#define UCS1002_MANUFACTURER		"SMSC"
-+
-+struct ucs1002_info {
-+	struct power_supply *charger;
-+	struct i2c_client *client;
-+	struct regmap *regmap;
-+	struct regulator_desc *regulator_descriptor;
-+	bool present;
+ #include "exynos-ppmu.h"
+ 
++enum exynos_ppmu_type {
++       EXYNOS_TYPE_PPMU,
++       EXYNOS_TYPE_PPMU_V2,
 +};
 +
-+static enum power_supply_property ucs1002_props[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_PRESENT, /* the presence of PED */
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_USB_TYPE,
-+	POWER_SUPPLY_PROP_HEALTH,
-+};
-+
-+static int ucs1002_get_online(struct ucs1002_info *info,
-+			      union power_supply_propval *val)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(info->regmap, UCS1002_REG_OTHER_STATUS, &reg);
-+	if (ret)
-+		return ret;
-+
-+	val->intval = !!(reg & F_CHG_ACT);
-+
-+	return 0;
-+}
-+
-+static int ucs1002_get_charge(struct ucs1002_info *info,
-+			      union power_supply_propval *val)
-+{
-+	/*
-+	 * To fit within 32 bits some values are rounded (uA/h)
-+	 *
-+	 * For Total Accumulated Charge Middle Low Byte register, addr
-+	 * 03h, byte 2
-+	 *
-+	 *   B0: 0.01084 mA/h rounded to 11 uA/h
-+	 *   B1: 0.02169 mA/h rounded to 22 uA/h
-+	 *   B2: 0.04340 mA/h rounded to 43 uA/h
-+	 *   B3: 0.08676 mA/h rounded to 87 uA/h
-+	 *   B4: 0.17350 mA/h rounded to 173 uÁ/h
-+	 *
-+	 * For Total Accumulated Charge Low Byte register, addr 04h,
-+	 * byte 3
-+	 *
-+	 *   B6: 0.00271 mA/h rounded to 3 uA/h
-+	 *   B7: 0.005422 mA/h rounded to 5 uA/h
-+	 */
-+	static const int bit_weights_uAh[BITS_PER_TYPE(u32)] = {
-+		/*
-+		 * Bit corresponding to low byte (offset 0x04)
-+		 * B0 B1 B2 B3 B4 B5 B6 B7
-+		 */
-+		0, 0, 0, 0, 0, 0, 3, 5,
-+		/*
-+		 * Bit corresponding to middle low byte (offset 0x03)
-+		 * B0 B1 B2 B3 B4 B5 B6 B7
-+		 */
-+		11, 22, 43, 87, 173, 347, 694, 1388,
-+		/*
-+		 * Bit corresponding to middle high byte (offset 0x02)
-+		 * B0 B1 B2 B3 B4 B5 B6 B7
-+		 */
-+		2776, 5552, 11105, 22210, 44420, 88840, 177700, 355400,
-+		/*
-+		 * Bit corresponding to high byte (offset 0x01)
-+		 * B0 B1 B2 B3 B4 B5 B6 B7
-+		 */
-+		710700, 1421000, 2843000, 5685000, 11371000, 22742000,
-+		45484000, 90968000,
-+	};
-+	unsigned long total_acc_charger;
-+	unsigned int reg;
-+	int i, ret;
-+
-+	ret = regmap_bulk_read(info->regmap, UCS1002_REG_TOTAL_ACC_CHARGE,
-+			       &reg, sizeof(u32));
-+	if (ret)
-+		return ret;
-+
-+	total_acc_charger = be32_to_cpu(reg); /* BE as per offsets above */
-+	val->intval = 0;
-+
-+	for_each_set_bit(i, &total_acc_charger, ARRAY_SIZE(bit_weights_uAh))
-+		val->intval += bit_weights_uAh[i];
-+
-+	return 0;
-+}
-+
-+static int ucs1002_get_current(struct ucs1002_info *info,
-+			       union power_supply_propval *val)
-+{
-+	/*
-+	 * The Current Measurement register stores the measured
-+	 * current value delivered to the portable device. The range
-+	 * is from 9.76 mA to 2.5 A.
-+	 */
-+	static const int bit_weights_uA[BITS_PER_TYPE(u8)] = {
-+		9760, 19500, 39000, 78100, 156200, 312300, 624600, 1249300,
-+	};
-+	unsigned long current_measurement;
-+	unsigned int reg;
-+	int i, ret;
-+
-+	ret = regmap_read(info->regmap, UCS1002_REG_CURRENT_MEASUREMENT, &reg);
-+	if (ret)
-+		return ret;
-+
-+	current_measurement = reg;
-+	val->intval = 0;
-+
-+	for_each_set_bit(i, &current_measurement, ARRAY_SIZE(bit_weights_uA))
-+		val->intval += bit_weights_uA[i];
-+
-+	return 0;
-+}
-+
-+/*
-+ * The Current Limit register stores the maximum current used by the
-+ * port switch. The range is from 500mA to 2.5 A.
-+ */
-+static const u32 ucs1002_current_limit_uA[] = {
-+	500000, 900000, 1000000, 1200000, 1500000, 1800000, 2000000, 2500000,
-+};
-+
-+static int ucs1002_get_max_current(struct ucs1002_info *info,
-+				   union power_supply_propval *val)
-+{
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(info->regmap, UCS1002_REG_ILIMIT, &reg);
-+	if (ret)
-+		return ret;
-+
-+	val->intval = ucs1002_current_limit_uA[reg & UCS1002_ILIM_SW_MASK];
-+
-+	return 0;
-+}
-+
-+static int ucs1002_set_max_current(struct ucs1002_info *info, u32 val)
-+{
-+	unsigned int reg;
-+	int ret, idx;
-+
-+	for (idx = 0; idx < ARRAY_SIZE(ucs1002_current_limit_uA); idx++) {
-+		if (val == ucs1002_current_limit_uA[idx])
-+			break;
-+	}
-+
-+	if (idx == ARRAY_SIZE(ucs1002_current_limit_uA))
-+		return -EINVAL;
-+
-+	ret = regmap_write(info->regmap, UCS1002_REG_ILIMIT, idx);
-+	if (ret)
-+		return ret;
-+	/*
-+	 * Any current limit setting exceeding the one set via ILIM
-+	 * pin will be rejected, so we read out freshly changed limit
-+	 * to make sure that it took effect.
-+	 */
-+	ret = regmap_read(info->regmap, UCS1002_REG_ILIMIT, &reg);
-+	if (ret)
-+		return ret;
-+
-+	if (reg != idx)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static enum power_supply_usb_type ucs1002_usb_types[] = {
-+	POWER_SUPPLY_USB_TYPE_PD,
-+	POWER_SUPPLY_USB_TYPE_SDP,
-+	POWER_SUPPLY_USB_TYPE_DCP,
-+	POWER_SUPPLY_USB_TYPE_CDP,
-+	POWER_SUPPLY_USB_TYPE_UNKNOWN,
-+};
-+
-+static int ucs1002_set_usb_type(struct ucs1002_info *info, int val)
-+{
-+	unsigned int mode;
-+
-+	if (val < 0 || val >= ARRAY_SIZE(ucs1002_usb_types))
-+		return -EINVAL;
-+
-+	switch (ucs1002_usb_types[val]) {
-+	case POWER_SUPPLY_USB_TYPE_PD:
-+		mode = V_SET_ACTIVE_MODE_DEDICATED;
-+		break;
-+	case POWER_SUPPLY_USB_TYPE_SDP:
-+		mode = V_SET_ACTIVE_MODE_BC12_SDP;
-+		break;
-+	case POWER_SUPPLY_USB_TYPE_DCP:
-+		mode = V_SET_ACTIVE_MODE_BC12_DCP;
-+		break;
-+	case POWER_SUPPLY_USB_TYPE_CDP:
-+		mode = V_SET_ACTIVE_MODE_BC12_CDP;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
-+				  V_SET_ACTIVE_MODE_MASK, mode);
-+}
-+
-+static int ucs1002_get_usb_type(struct ucs1002_info *info,
-+				union power_supply_propval *val)
-+{
-+	enum power_supply_usb_type type;
-+	unsigned int reg;
-+	int ret;
-+
-+	ret = regmap_read(info->regmap, UCS1002_REG_PIN_STATUS, &reg);
-+	if (ret)
-+		return ret;
-+
-+	switch (reg & F_ACTIVE_MODE_MASK) {
-+	default:
-+		type = POWER_SUPPLY_USB_TYPE_UNKNOWN;
-+		break;
-+	case F_ACTIVE_MODE_DEDICATED:
-+		type = POWER_SUPPLY_USB_TYPE_PD;
-+		break;
-+	case F_ACTIVE_MODE_BC12_SDP:
-+		type = POWER_SUPPLY_USB_TYPE_SDP;
-+		break;
-+	case F_ACTIVE_MODE_BC12_DCP:
-+		type = POWER_SUPPLY_USB_TYPE_DCP;
-+		break;
-+	case F_ACTIVE_MODE_BC12_CDP:
-+		type = POWER_SUPPLY_USB_TYPE_CDP;
-+		break;
-+	};
-+
-+	val->intval = type;
-+
-+	return 0;
-+}
-+
-+static int ucs1002_get_health(struct ucs1002_info *info,
-+			      union power_supply_propval *val)
-+{
-+	unsigned int reg;
-+	int ret, health;
-+
-+	ret = regmap_read(info->regmap, UCS1002_REG_INTERRUPT_STATUS, &reg);
-+	if (ret)
-+		return ret;
-+
-+	if (reg & F_TSD)
-+		health = POWER_SUPPLY_HEALTH_OVERHEAT;
-+	else if (reg & (F_OVER_VOLT | F_BACK_VOLT))
-+		health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+	else if (reg & F_OVER_ILIM)
-+		health = POWER_SUPPLY_HEALTH_OVERCURRENT;
-+	else if (reg & (F_DISCHARGE_ERR | F_MIN_KEEP_OUT))
-+		health = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
-+	else
-+		health = POWER_SUPPLY_HEALTH_GOOD;
-+
-+	val->intval = health;
-+
-+	return 0;
-+}
-+
-+static int ucs1002_get_property(struct power_supply *psy,
-+				enum power_supply_property psp,
-+				union power_supply_propval *val)
-+{
-+	struct ucs1002_info *info = power_supply_get_drvdata(psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		return ucs1002_get_online(info, val);
-+	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+		return ucs1002_get_charge(info, val);
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		return ucs1002_get_current(info, val);
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return ucs1002_get_max_current(info, val);
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		return ucs1002_get_usb_type(info, val);
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		return ucs1002_get_health(info, val);
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = info->present;
-+		return 0;
-+	case POWER_SUPPLY_PROP_MANUFACTURER:
-+		val->strval = UCS1002_MANUFACTURER;
-+		return 0;
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int ucs1002_set_property(struct power_supply *psy,
-+				enum power_supply_property psp,
-+				const union power_supply_propval *val)
-+{
-+	struct ucs1002_info *info = power_supply_get_drvdata(psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		return ucs1002_set_max_current(info, val->intval);
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		return ucs1002_set_usb_type(info, val->intval);
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
-+static int ucs1002_property_is_writeable(struct power_supply *psy,
-+					 enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+	case POWER_SUPPLY_PROP_USB_TYPE:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static const struct power_supply_desc ucs1002_charger_desc = {
-+	.name			= "ucs1002",
-+	.type			= POWER_SUPPLY_TYPE_USB,
-+	.usb_types		= ucs1002_usb_types,
-+	.num_usb_types		= ARRAY_SIZE(ucs1002_usb_types),
-+	.get_property		= ucs1002_get_property,
-+	.set_property		= ucs1002_set_property,
-+	.property_is_writeable	= ucs1002_property_is_writeable,
-+	.properties		= ucs1002_props,
-+	.num_properties		= ARRAY_SIZE(ucs1002_props),
-+};
-+
-+static irqreturn_t ucs1002_charger_irq(int irq, void *data)
-+{
-+	int ret, regval;
-+	bool present;
-+	struct ucs1002_info *info = data;
-+
-+	present = info->present;
-+
-+	ret = regmap_read(info->regmap, UCS1002_REG_OTHER_STATUS, &regval);
-+	if (ret)
-+		return IRQ_HANDLED;
-+
-+	/* update attached status */
-+	info->present = regval & F_ADET_PIN;
-+
-+	/* notify the change */
-+	if (present != info->present)
-+		power_supply_changed(info->charger);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t ucs1002_alert_irq(int irq, void *data)
-+{
-+	struct ucs1002_info *info = data;
-+
-+	power_supply_changed(info->charger);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static const struct regulator_ops ucs1002_regulator_ops = {
-+	.is_enabled	= regulator_is_enabled_regmap,
-+	.enable		= regulator_enable_regmap,
-+	.disable	= regulator_disable_regmap,
-+};
-+
-+static const struct regulator_desc ucs1002_regulator_descriptor = {
-+	.name		= "ucs1002-vbus",
-+	.ops		= &ucs1002_regulator_ops,
-+	.type		= REGULATOR_VOLTAGE,
-+	.owner		= THIS_MODULE,
-+	.enable_reg	= UCS1002_REG_SWITCH_CFG,
-+	.enable_mask	= F_PWR_EN_SET,
-+	.enable_val	= F_PWR_EN_SET,
-+	.fixed_uV	= 5000000,
-+	.n_voltages	= 1,
-+};
-+
-+static int ucs1002_probe(struct i2c_client *client,
-+			 const struct i2c_device_id *dev_id)
-+{
-+	struct device *dev = &client->dev;
-+	struct power_supply_config charger_config = {};
-+	const struct regmap_config regmap_config = {
-+		.reg_bits = 8,
-+		.val_bits = 8,
-+	};
-+	struct regulator_config regulator_config = {};
-+	int irq_a_det, irq_alert, ret;
-+	struct regulator_dev *rdev;
-+	struct ucs1002_info *info;
-+	unsigned int regval;
-+
-+	info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	info->regmap = devm_regmap_init_i2c(client, &regmap_config);
-+	ret = PTR_ERR_OR_ZERO(info->charger);
-+	if (ret) {
-+		dev_err(dev, "Regmap initialization failed: %d\n", ret);
-+		return ret;
-+	}
-+
-+	info->client = client;
-+
-+	irq_a_det = of_irq_get_byname(dev->of_node, "a_det");
-+	irq_alert = of_irq_get_byname(dev->of_node, "alert");
-+
-+	charger_config.of_node = dev->of_node;
-+	charger_config.drv_data = info;
-+
-+	ret = regmap_read(info->regmap, UCS1002_REG_PRODUCT_ID, &regval);
-+	if (ret) {
-+		dev_err(dev, "Failed to read product ID: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (regval != UCS1002_PRODUCT_ID) {
-+		dev_err(dev,
-+			"Product ID does not match (0x%02x != 0x%02x)\n",
-+			regval, UCS1002_PRODUCT_ID);
-+		return -ENODEV;
-+	}
-+
-+	/* Enable charge rationing by default */
-+	ret = regmap_update_bits(info->regmap, UCS1002_REG_GENERAL_CFG,
-+				 F_RATION_EN, F_RATION_EN);
-+	if (ret) {
-+		dev_err(dev, "Failed to read general config: %d\n", ret);
-+		return ret;
-+	}
-+
-+	/*
-+	 * Ignore the M1, M2, PWR_EN, and EM_EN pin states. Set active
-+	 * mode selection to BC1.2 CDP.
-+	 */
-+	ret = regmap_update_bits(info->regmap, UCS1002_REG_SWITCH_CFG,
-+				 V_SET_ACTIVE_MODE_MASK | F_PIN_IGNORE,
-+				 V_SET_ACTIVE_MODE_BC12_CDP | F_PIN_IGNORE);
-+	if (ret) {
-+		dev_err(dev, "Failed to configure default mode: %d\n", ret);
-+		return ret;
-+	}
-+	/*
-+	 * Be safe and set initial current limit to 500mA
-+	 */
-+	ret = ucs1002_set_max_current(info, 500000);
-+	if (ret) {
-+		dev_err(dev, "Failed to set max current default: %d\n", ret);
-+		return ret;
-+	}
-+
-+	info->charger = devm_power_supply_register(dev, &ucs1002_charger_desc,
-+						   &charger_config);
-+	ret = PTR_ERR_OR_ZERO(info->charger);
-+	if (ret) {
-+		dev_err(dev, "Failed to register power supply: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = regmap_read(info->regmap, UCS1002_REG_PIN_STATUS, &regval);
-+	if (ret) {
-+		dev_err(dev, "Failed to read pin status: %d\n", ret);
-+		return ret;
-+	}
-+
-+	info->regulator_descriptor =
-+		devm_kmemdup(dev, &ucs1002_regulator_descriptor,
-+			     sizeof(ucs1002_regulator_descriptor),
-+			     GFP_KERNEL);
-+	if (!info->regulator_descriptor)
-+		return -ENOMEM;
-+
-+	info->regulator_descriptor->enable_is_inverted = !(regval & F_SEL_PIN);
-+
-+	regulator_config.dev = dev;
-+	regulator_config.of_node = dev->of_node;
-+	regulator_config.regmap = info->regmap;
-+
-+	rdev = devm_regulator_register(dev, info->regulator_descriptor,
-+				       &regulator_config);
-+	ret = PTR_ERR_OR_ZERO(info->charger);
-+	if (ret) {
-+		dev_err(dev, "Failed to register VBUS regulator: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (irq_a_det > 0) {
-+		ret = devm_request_threaded_irq(dev, irq_a_det, NULL,
-+						ucs1002_charger_irq,
-+						IRQF_ONESHOT,
-+						"ucs1002-a_det", info);
-+		if (ret) {
-+			dev_err(dev, "Failed to request A_DET threaded irq: %d\n",
-+				ret);
-+			return ret;
-+		}
-+	}
-+
-+	if (irq_alert > 0) {
-+		ret = devm_request_threaded_irq(dev, irq_alert, NULL,
-+						ucs1002_alert_irq,
-+						IRQF_ONESHOT,
-+						"ucs1002-alert", info);
-+		if (ret) {
-+			dev_err(dev, "Failed to request ALERT threaded irq: %d\n",
-+				ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id ucs1002_of_match[] = {
-+	{ .compatible = "microchip,ucs1002", },
-+	{ /* sentinel */ },
-+};
-+MODULE_DEVICE_TABLE(of, ucs1002_of_match);
-+
-+static struct i2c_driver ucs1002_driver = {
-+	.driver = {
-+		   .name = "ucs1002",
-+		   .of_match_table = ucs1002_of_match,
-+	},
-+	.probe = ucs1002_probe,
-+};
-+module_i2c_driver(ucs1002_driver);
-+
-+MODULE_DESCRIPTION("Microchip UCS1002 Programmable USB Port Power Controller");
-+MODULE_AUTHOR("Enric Balletbo Serra <enric.balletbo@collabora.com>");
-+MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
-+MODULE_LICENSE("GPL");
+ struct exynos_ppmu_data {
+        struct clk *clk;
+ };
+@@ -36,6 +42,7 @@ struct exynos_ppmu {
+        struct regmap *regmap;
+ 
+        struct exynos_ppmu_data ppmu;
++       enum exynos_ppmu_type ppmu_type;
+ };
+ 
+ #define PPMU_EVENT(name)                       \
+ 
+        /* Reset cycle counter/performance counter and enable PPMU */
+        ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+@@ -483,31 +476,23 @@ static const struct devfreq_event_ops exynos_ppmu_v2_ops = {
+ static const struct of_device_id exynos_ppmu_id_match[] = {
+        {
+                .compatible = "samsung,exynos-ppmu",
+-               .data = (void *)&exynos_ppmu_ops,
++               .data = (void *)EXYNOS_TYPE_PPMU,
+        }, {
+                .compatible = "samsung,exynos-ppmu-v2",
+-               .data = (void *)&exynos_ppmu_v2_ops,
++               .data = (void *)EXYNOS_TYPE_PPMU_V2,
+        },
+        { /* sentinel */ },
+ };
+ MODULE_DEVICE_TABLE(of, exynos_ppmu_id_match);
+ 
+-static struct devfreq_event_ops *exynos_bus_get_ops(struct device_node *np)
+-{
+-       const struct of_device_id *match;
+-
+-       match = of_match_node(exynos_ppmu_id_match, np);
+-       return (struct devfreq_event_ops *)match->data;
+-}
+-
+ static int of_get_devfreq_events(struct device_node *np,
+                                 struct exynos_ppmu *info)
+ {
+        struct devfreq_event_desc *desc;
+-       struct devfreq_event_ops *event_ops;
+        struct device *dev = info->dev;
+        struct device_node *events_np, *node;
+        int i, j, count;
+ 
+        events_np = of_get_child_by_name(np, "events");
+        if (!events_np) {
+@@ -515,7 +500,6 @@ static int of_get_devfreq_events(struct device_node *np,
+                        "failed to get child node of devfreq-event devices\n");
+                return -EINVAL;
+        }
+-       event_ops = exynos_bus_get_ops(np);
+ 
+        count = of_get_child_count(events_np);
+        desc = devm_kcalloc(dev, count, sizeof(*desc), GFP_KERNEL);
+@@ -540,11 +524,38 @@ static int of_get_devfreq_events(struct device_node *np,
+                        continue;
+                }
+ 
+-               desc[j].ops = event_ops;
++               switch (info->ppmu_type) {
++               case EXYNOS_TYPE_PPMU:
++                       desc[j].ops = &exynos_ppmu_ops;
++                       break;
++               case EXYNOS_TYPE_PPMU_V2:
++                       desc[j].ops = &exynos_ppmu_v2_ops;
++                       break;
++               }
++
+
+
 -- 
-2.20.1
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
