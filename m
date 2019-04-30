@@ -1,31 +1,52 @@
-From: Ido Schimmel <idosch@mellanox.com>
-Subject: Re: [PATCH -next] mlxsw: Remove obsolete dependency on THERMAL=m
-Date: Tue, 30 Apr 2019 10:16:10 +0000
-Message-ID: <20190430101608.GB6343@splinter>
-References: <20190430092832.7376-1-geert+renesas@glider.be>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v4 1/2] PM / Domains: Add GENPD_FLAG_NO_RUNTIME_OFF flag
+Date: Tue, 30 Apr 2019 13:15:07 +0200
+Message-ID: <CAPDyKFr_CsHBTjAXC+g7Oxnz9WhhyhyW3BGJkr=dqkJECvsyRw@mail.gmail.com>
+References: <cover.1556313614.git.leonard.crestez@nxp.com>
+ <68ccb5a90d1d2a596e7ed94ba3245171f013c781.1556313614.git.leonard.crestez@nxp.com>
+ <CAPDyKFpCCapBfNbsR1Q+nyg8aenVJWxj9qmTCCCfmONZR3t1sg@mail.gmail.com>
+ <AM0PR04MB6434B2BBECCA6B2644CDF044EE390@AM0PR04MB6434.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190430092832.7376-1-geert+renesas@glider.be>
-Content-Language: en-US
-Content-ID: <323BFEDD0C772C4F9395BE241D4B9385@eurprd05.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Jiri Pirko <jiri@mellanox.com>, "David S . Miller" <davem@davemloft.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <AM0PR04MB6434B2BBECCA6B2644CDF044EE390@AM0PR04MB6434.eurprd04.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, Anson Huang <anson.huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, Arulpandiyan Vadivel <Arulpandiyan_Vadivel@mentor.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 30, 2019 at 11:28:32AM +0200, Geert Uytterhoeven wrote:
-> The THERMAL configuration option was changed from tristate to bool, but
-> a dependency on THERMAL=3Dm was forgotten, leading to a warning when
-> running "make savedefconfig":
->=20
->     boolean symbol THERMAL tested for 'm'? test forced to 'n'
->=20
-> Fixes: be33e4fbbea581ea ("thermal/drivers/core: Remove the module Kconfig=
-'s option")
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+On Mon, 29 Apr 2019 at 16:39, Leonard Crestez <leonard.crestez@nxp.com> wrote:
+>
+> On 4/29/2019 12:11 PM, Ulf Hansson wrote:
+> > On Fri, 26 Apr 2019 at 23:38, Leonard Crestez <leonard.crestez@nxp.com> wrote:
+> >>
+> >> This is for power domains which can only be powered off for suspend but
+> >> not as part of runtime PM.
+> >>
+> >> @@ -126,10 +126,11 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+> >>   #define genpd_status_on(genpd)         (genpd->status == GPD_STATE_ACTIVE)
+> >>   #define genpd_is_irq_safe(genpd)       (genpd->flags & GENPD_FLAG_IRQ_SAFE)
+> >>   #define genpd_is_always_on(genpd)      (genpd->flags & GENPD_FLAG_ALWAYS_ON)
+> >>   #define genpd_is_active_wakeup(genpd)  (genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
+> >>   #define genpd_is_cpu_domain(genpd)     (genpd->flags & GENPD_FLAG_CPU_DOMAIN)
+> >> +#define genpd_is_no_runtime_off(genpd) (genpd->flags & GENPD_FLAG_NO_RUNTIME_OFF) >
+> > May I suggest to switch the name to, GENPD_FLAG_RUNTIME_ON.
+> >
+> > Other than that, this looks good to me!
+>
+> Then it's easy to confuse genpd_status_on with genpd_is_runtime_on. How
+> about genpd_is_rpm_always_on?
 
-Reviewed-by: Ido Schimmel <idosch@mellanox.com>
+Even better, let's take that.
 
-I assume this will be applied to the thermal tree?
+Kind regards
+Uffe
