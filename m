@@ -1,97 +1,54 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 1/4] include: dt-bindings: add Performance Monitoring
- Unit for Exynos
-Date: Tue, 30 Apr 2019 13:56:23 +0900
-Message-ID: <a1ff3566-6117-b670-a2f3-b60a2bbec14a@samsung.com>
-References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419134820eucas1p154e839769af0e1b8bae17ce3efa0ba93@eucas1p1.samsung.com>
-        <1555681688-19643-2-git-send-email-l.luba@partner.samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Fix kobject memleak
+Date: Tue, 30 Apr 2019 11:35:52 +0530
+Message-ID: <815f7c7cea02e05c90d5bf678ea8717f01cc9f63.1556604312.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1555681688-19643-2-git-send-email-l.luba@partner.samsung.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, willy.mh.wolff.ml@gmail.com
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, tobin@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Currently the error return path from kobject_init_and_add() is not
+followed by a call to kobject_put() - which means we are leaking the
+kobject.
 
-I agree of this patch. But, I add the minor comments.
+Fix it by adding a call to kobject_put() in the error path of
+kobject_init_and_add().
 
-If you edit them according to my comment, feel free to add my following tag:
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Tobin fixed this for schedutil already.
 
-On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
-> This patch add support of a new feature which can be used in DT:
-> Performance Monitoring Unit with defined event data type.
-> In this patch the event data types are defined for Exynos PPMU.
-> The patch also updates the MAINTAINERS file accordingly and
-> adds the header file to devfreq event subsystem.
-> 
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  MAINTAINERS                           |  1 +
->  include/dt-bindings/pmu/exynos_ppmu.h | 26 ++++++++++++++++++++++++++
->  2 files changed, 27 insertions(+)
->  create mode 100644 include/dt-bindings/pmu/exynos_ppmu.h
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 3671fde..1ba4b9b 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4560,6 +4560,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
->  S:	Supported
->  F:	drivers/devfreq/event/
->  F:	drivers/devfreq/devfreq-event.c
-> +F:	include/dt-bindings/pmu/exynos_ppmu.h
->  F:	include/linux/devfreq-event.h
->  F:	Documentation/devicetree/bindings/devfreq/event/
->  
-> diff --git a/include/dt-bindings/pmu/exynos_ppmu.h b/include/dt-bindings/pmu/exynos_ppmu.h
-> new file mode 100644
-> index 0000000..08fdce9
-> --- /dev/null
-> +++ b/include/dt-bindings/pmu/exynos_ppmu.h
-> @@ -0,0 +1,26 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/*
-> + * Samsung Exynos PPMU event types for counting in regs
-> + *
-> + * Copyright (c) 2019, Samsung
+ drivers/cpufreq/cpufreq.c          | 1 +
+ drivers/cpufreq/cpufreq_governor.c | 2 ++
+ 2 files changed, 3 insertions(+)
 
-Mabye, "Samsung Electronics" instead of 'Samsung'.
-
-> + * Author: Lukasz Luba <l.luba@partner.samsung.com>
-> + */
-> +
-> +#ifndef __DT_BINDINGS_PMU_EXYNOS_PPMU_H
-> +#define __DT_BINDINGS_PMU_EXYNOS_PPMU_H
-> +
-> +
-
-Remove unneeded blank line.
-
-> +#define PPMU_RO_BUSY_CYCLE_CNT		0x0
-> +#define PPMU_WO_BUSY_CYCLE_CNT		0x1
-> +#define PPMU_RW_BUSY_CYCLE_CNT		0x2
-> +#define PPMU_RO_REQUEST_CNT		0x3
-> +#define PPMU_WO_REQUEST_CNT		0x4
-> +#define PPMU_RO_DATA_CNT		0x5
-> +#define PPMU_WO_DATA_CNT		0x6
-> +#define PPMU_RO_LATENCY			0x12
-> +#define PPMU_WO_LATENCY			0x16
-> +#define PPMU_V2_RO_DATA_CNT		0x4
-> +#define PPMU_V2_WO_DATA_CNT		0x5
-> +#define PPMU_V2_EVT3_RW_DATA_CNT	0x22
-> +
-> +#endif
-> 
-
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e10922709d13..bbf79544d0ad 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1098,6 +1098,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+ 				   cpufreq_global_kobject, "policy%u", cpu);
+ 	if (ret) {
+ 		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
++		kobject_put(&policy->kobj);
+ 		goto err_free_real_cpus;
+ 	}
+ 
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index ffa9adeaba31..9d1d9bf02710 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -459,6 +459,8 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
+ 	/* Failure, so roll back. */
+ 	pr_err("initialization failed (dbs_data kobject init error %d)\n", ret);
+ 
++	kobject_put(&dbs_data->attr_set.kobj);
++
+ 	policy->governor_data = NULL;
+ 
+ 	if (!have_governor_per_policy())
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.21.0.rc0.269.g1a574e7a288b
