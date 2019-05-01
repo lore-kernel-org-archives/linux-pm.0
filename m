@@ -2,171 +2,93 @@ Return-Path: <SRS0=2C7a=TB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BCEAC43219
-	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 04:25:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 864D6C43219
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 08:39:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5BF292177B
-	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 04:25:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4C20721734
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 08:39:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1556684741;
-	bh=rbRSlBaGvBjOPSRIuk56q4yLHY/ha2qXJW+fAlZWskg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:List-ID:
-	 From;
-	b=e1FWbnMB6dBf7f8QuzAZb7McDKa4aleFCZSj0e3j0W5EJZpgO0bZSCgz9DGHimCh8
-	 DcJ51oAjmvR3Kdaqit1hGkB5Te5v83Jj+bm1qucFadammeBIiuMTUUB5RvxhgQxHLm
-	 HwxI3EzQOBWSyH/j0PKOh11OXOxyKecjK/FAbeAM=
+	s=default; t=1556699972;
+	bh=hsL6LTXn/4787Cieov8fFQD8yF7YnmKHX2pZJWiOiGE=;
+	h=From:Date:Subject:To:Cc:List-ID:From;
+	b=ZZHhD9NtRGDCvsCEVvTsC6rMenNfYRNy0HhLtmsiL8HDKnDAekOO7m9NWCqZVblq5
+	 JWhLd2dXKUNjPCaw7/RX6GnY+zPHUtwV7UcRE8L0PEWLdrgwb00J6VvwGU5oIQy5zs
+	 4CHJGAbU//XcPCCJGf1NcYTU0HhEdYA1eZ8JEsKU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726451AbfEAEZg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 May 2019 00:25:36 -0400
-Received: from mail-it1-f196.google.com ([209.85.166.196]:50873 "EHLO
-        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726245AbfEAEYp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2019 00:24:45 -0400
-Received: by mail-it1-f196.google.com with SMTP id q14so8375519itk.0;
-        Tue, 30 Apr 2019 21:24:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
-         :reply-to:organization;
-        bh=ovDsv1zygxqsz+aM2MZ2wBAE8qWaN9gCYdGAVIqjCpQ=;
-        b=OraoV+8GUOkNSgX84+Q8zD9nlTMzPGH3E8/IryUIAt+Y2MMkRywldq77T122sv6aAb
-         7QiiLd0/8qUfgN1SEZDfH0AOI0ooTe5Go59O8EujRVF3vteCkeqtoXCQ0G6Kmc3kO8zI
-         t24N9kyAhQDL9t8nUR9nCCy0k+wc7aF3u7gsIQUeqZZqHK5cozaqVM9kcZ3S/4jYWjnV
-         GkGZ9e+E5Q7W1KK61E7vQKyMOafy+I3FcCoddQrNlHbVqtWj8R7XpN0eA3daeH3wXy0+
-         d2JXCj/85DXVukB5pPA5ePft+2uHphvd7EofnAMd8eXqUtRRwcRJv7/yTl8jVFFDXiEO
-         gqNA==
+        id S1726101AbfEAIjb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 May 2019 04:39:31 -0400
+Received: from mail-oi1-f196.google.com ([209.85.167.196]:39409 "EHLO
+        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726014AbfEAIjb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2019 04:39:31 -0400
+Received: by mail-oi1-f196.google.com with SMTP id n187so13379533oih.6;
+        Wed, 01 May 2019 01:39:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
-         :in-reply-to:references:reply-to:organization;
-        bh=ovDsv1zygxqsz+aM2MZ2wBAE8qWaN9gCYdGAVIqjCpQ=;
-        b=TV1EQYp0GdNqEvM2/5AMmWCN26D6mkanMbtyFKdKciBLLxreJsQYg4pj9IVPqHpghO
-         +RGbiFrkSv1ZDys8tTjc3RIp1Gd0jQjBGIV56UkOYqN8MdoxNN/IixPo9hHN3b26AT07
-         g/oizWlC7174J/hp2rr+rVW6/PIjIsS8dLUO36zx3vuWShAi13lSo56Be2bHzouxEbdJ
-         S6G+BdOXugf8x+laOS1cBOG+hJv05L7irkqc9Hhw05O8JzNItCEnpMwMMVJhy/ivb4io
-         LTcOT7ii5dkEBOiFNlARr6BjUMhGi3rFJHkYIbwoNuroM71nGCHZZQpQagZ88iQdFWl2
-         ZxFQ==
-X-Gm-Message-State: APjAAAUv5R46+VeOQVesVpmV+u2HWbLJXCAGA7JkmCfAvb2QWuKm0xjg
-        r49cc/LJcOJbGOWhwOfZTg4=
-X-Google-Smtp-Source: APXvYqzfQqSMdvhgAbICOZbG7illtwnkA1ltAuo7YpHuAsWy0ALADXLXHvwGf4zsxF+vcNGzLRQLyQ==
-X-Received: by 2002:a24:f8c7:: with SMTP id a190mr6256531ith.72.1556684684994;
-        Tue, 30 Apr 2019 21:24:44 -0700 (PDT)
-Received: from nuc8.lan (h69-131-112-51.cntcnh.dsl.dynamic.tds.net. [69.131.112.51])
-        by smtp.gmail.com with ESMTPSA id b8sm2569728itb.20.2019.04.30.21.24.43
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Apr 2019 21:24:44 -0700 (PDT)
-From:   Len Brown <lenb@kernel.org>
-To:     x86@kernel.org
-Cc:     linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
-Subject: [PATCH 09/18] powercap/intel_rapl: Simplify rapl_find_package()
-Date:   Wed,  1 May 2019 00:24:18 -0400
-Message-Id:
- <b7a7b6e72e76510dc8dedb3e1b8b20de7cdca432.1556657368.git.len.brown@intel.com>
-X-Mailer: git-send-email 2.18.0-rc0
-In-Reply-To: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1556657368.git.len.brown@intel.com>
-References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1556657368.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=8LW2GhzSCuZKTF5GZRiwaIj0ovgzsQ1pCVkKzVY4yMY=;
+        b=lO1wGanIlG6VaeqZLFDO/b6cWLmAHpd2nGsmm6Jnnak9lsIZijTA8U8I9Fmqu8/iY4
+         y528p80pKNOsFx85lYDCUJOUu73Ky1ocsBBn/P49noTCufRars7b+qgZGog5xkDvPp/w
+         ZOL9HdzzvjAkFS5vunY3hu48eu6PKhWAhBWuXTPHui9y51nCu+VQUrHGa3ELOQb4Dv90
+         9ITpIbc2cqYJWzIVk3DQOpjeob7xPb1bdGaCSECtCcVUluAu51xv04hQeEicnR4qe2l8
+         xfS9+DzT1MuwSqKuv1iL0eDWZ8hdY84BFmIGDSvW9kd/b0cwPOUoZjB+q8YEnTes8O1f
+         Tkuw==
+X-Gm-Message-State: APjAAAV73UFUMuR0DhoePgRPegm1P8fqkpX53+dxcYHHMc1YhEIIyLqw
+        pnEqpjFrY/1V5w/eITPGNnvX2dAcKzF0uKhPlL9JoDUi
+X-Google-Smtp-Source: APXvYqwB3CY8o7/otJ306S5xVVYxPA2bfkoDWPHdOGqpRorGe2vrXXRZ1LYrHjOAPHcqL/M+FC5P9HaGcMXgFj3EVhg=
+X-Received: by 2002:aca:5304:: with SMTP id h4mr5666284oib.115.1556699970277;
+ Wed, 01 May 2019 01:39:30 -0700 (PDT)
+MIME-Version: 1.0
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 1 May 2019 10:39:19 +0200
+Message-ID:
+ <CAJZ5v0i73At_cTv2FJEgSzcqnWUuVnDY-cyX5XWDGFw1f9fnQA@mail.gmail.com>
+Subject: [GIT PULL] ACPI fix for v5.1-rc8
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190501042418.ZyuS5aswBwte6ciu9evJE8iijgJ9qcowj8ZuDHkQ-5A@z>
+Message-ID: <20190501083919.LKi2DsG-AjHKhrT3HHANySVHa_cP8SwsZ9wUBZc5Ksk@z>
 
-From: Zhang Rui <rui.zhang@intel.com>
+Hi Linus,
 
-Syntax only, no functional or semantic change.
+Please pull from the tag
 
-Simplify how the code to discover a package is called.
-Rename find_package_by_id() to rapl_find_package_domain()
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-5.1-rc8
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: linux-pm@vger.kernel.org
----
- drivers/powercap/intel_rapl.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+with top-most commit 2c2a2fb1e2a9256714338875bede6b7cbd4b9542
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 4347f15165f8..3c3c0c23180b 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
- static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
- 
- /* caller to ensure CPU hotplug lock is held */
--static struct rapl_package *find_package_by_id(int id)
-+static struct rapl_package *rapl_find_package_domain(int cpu)
- {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
- 	list_for_each_entry(rp, &rapl_packages, plist) {
-@@ -1300,7 +1301,7 @@ static int __init rapl_register_psys(void)
- 	rd->rpl[0].name = pl1_name;
- 	rd->rpl[1].prim_id = PL2_ENABLE;
- 	rd->rpl[1].name = pl2_name;
--	rd->rp = find_package_by_id(0);
-+	rd->rp = rapl_find_package_domain(0);
- 
- 	power_zone = powercap_register_zone(&rd->power_zone, control_type,
- 					    "psys", NULL,
-@@ -1456,8 +1457,9 @@ static void rapl_remove_package(struct rapl_package *rp)
- }
- 
- /* called from CPU hotplug notifier, hotplug lock held */
--static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-+static struct rapl_package *rapl_add_package(int cpu)
- {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int ret;
- 
-@@ -1466,7 +1468,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
- 		return ERR_PTR(-ENOMEM);
- 
- 	/* add the new package to the list */
--	rp->id = pkgid;
-+	rp->id = id;
- 	rp->lead_cpu = cpu;
- 
- 	/* check if the package contains valid domains */
-@@ -1497,12 +1499,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-  */
- static int rapl_cpu_online(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package_domain(cpu);
- 	if (!rp) {
--		rp = rapl_add_package(cpu, pkgid);
-+		rp = rapl_add_package(cpu);
- 		if (IS_ERR(rp))
- 			return PTR_ERR(rp);
- 	}
-@@ -1512,11 +1513,10 @@ static int rapl_cpu_online(unsigned int cpu)
- 
- static int rapl_cpu_down_prep(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int lead_cpu;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package_domain(cpu);
- 	if (!rp)
- 		return 0;
- 
--- 
-2.18.0-rc0
+ Revert "ACPICA: Clear status of GPEs before enabling them"
 
+on top of commit 37624b58542fb9f2d9a70e6ea006ef8a5f66c30b
+
+ Linux 5.1-rc7
+
+to receive an ACPI fix for 5.1-rc8 (or final 5.1).
+
+This reverts a recent ACPICA change that caused initialization to
+fail on systems with Thunderbolt docking stations connected at the
+init time.
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (1):
+      Revert "ACPICA: Clear status of GPEs before enabling them"
+
+---------------
+
+ drivers/acpi/acpica/evgpe.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
