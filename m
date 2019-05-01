@@ -1,60 +1,108 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH v5 0/3] Driver for UCS1002
-Date: Thu, 2 May 2019 00:43:02 +0200
-Message-ID: <20190501224302.o5ydj253synve6wl@earth.universe>
-References: <20190501033434.18548-1-andrew.smirnov@gmail.com>
+Subject: Re: [PATCH] power: supply: axp288_fuel_gauge: Add ACEPC T8 and T11
+ mini PCs to the blacklist
+Date: Thu, 2 May 2019 00:57:36 +0200
+Message-ID: <20190501225736.jhbyklotrtndux5v@earth.universe>
+References: <20190422204301.6233-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="n44xbk2hl33sq6zz"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="4pxoyuqearsvopnh"
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190501033434.18548-1-andrew.smirnov@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Guenter Roeck <linux@roeck-us.net>, Enric Balletbo Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20190422204301.6233-1-hdegoede@redhat.com>
+Sender: stable-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---n44xbk2hl33sq6zz
-Content-Type: text/plain; charset=us-ascii
+--4pxoyuqearsvopnh
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Apr 30, 2019 at 08:34:31PM -0700, Andrey Smirnov wrote:
-> This small series adds a driver for UCS1002 Programmable USB Port
-> Power Controller with Charger Emulation. See [page] for product page
-> and [datasheet] for device dataseet. Hopefully each individual patch
-> is self explanatory.
+On Mon, Apr 22, 2019 at 10:43:01PM +0200, Hans de Goede wrote:
+> The ACEPC T8 and T11 Cherry Trail Z8350 mini PCs use an AXP288 and as PCs,
+> rather then portables, they does not have a battery. Still for some
+> reason the AXP288 not only thinks there is a battery, it actually
+> thinks it is discharging while the PC is running, slowly going to
+> 0% full, causing userspace to shutdown the system due to the battery
+> being critically low after a while.
+>
+> This commit adds the ACEPC T8 and T11 to the axp288 fuel-gauge driver
+> blacklist, so that we stop reporting bogus battery readings on this devic=
+e.
 >=20
-> Note that this series is a revival of the upstreaming effort by Enric
-> Balletbo Serra last version of which can be found at [original-effort]
->=20
-> Feedback is welcome!
+> BugLink: https://bugzilla.redhat.com/show_bug.cgi?id=3D1690852
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
 
-Patchset looks good to me (except for the indention issue).
+Thanks, you made my day =F0=9F=98=82. Queued to power-supply's for-next bra=
+nch.
 
 -- Sebastian
 
---n44xbk2hl33sq6zz
+>  drivers/power/supply/axp288_fuel_gauge.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+>=20
+> diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/sup=
+ply/axp288_fuel_gauge.c
+> index 9ff2461820d8..368281bc0d2b 100644
+> --- a/drivers/power/supply/axp288_fuel_gauge.c
+> +++ b/drivers/power/supply/axp288_fuel_gauge.c
+> @@ -685,6 +685,26 @@ static void fuel_gauge_init_irq(struct axp288_fg_inf=
+o *info)
+>   * detection reports one despite it not being there.
+>   */
+>  static const struct dmi_system_id axp288_fuel_gauge_blacklist[] =3D {
+> +	{
+> +		/* ACEPC T8 Cherry Trail Z8350 mini PC */
+> +		.matches =3D {
+> +			DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "To be filled by O.E.M."),
+> +			DMI_EXACT_MATCH(DMI_BOARD_NAME, "Cherry Trail CR"),
+> +			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "T8"),
+> +			/* also match on somewhat unique bios-version */
+> +			DMI_EXACT_MATCH(DMI_BIOS_VERSION, "1.000"),
+> +		},
+> +	},
+> +	{
+> +		/* ACEPC T11 Cherry Trail Z8350 mini PC */
+> +		.matches =3D {
+> +			DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "To be filled by O.E.M."),
+> +			DMI_EXACT_MATCH(DMI_BOARD_NAME, "Cherry Trail CR"),
+> +			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "T11"),
+> +			/* also match on somewhat unique bios-version */
+> +			DMI_EXACT_MATCH(DMI_BIOS_VERSION, "1.000"),
+> +		},
+> +	},
+>  	{
+>  		/* Intel Cherry Trail Compute Stick, Windows version */
+>  		.matches =3D {
+> --=20
+> 2.21.0
+>=20
+
+--4pxoyuqearsvopnh
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzKIPYACgkQ2O7X88g7
-+pqNLRAAkY95bhDG6g1qJtAYZ8gFvVWHVckBHUobqlNSl+pR5I5+oCvDOJXRb8Uk
-N1P4dm2/4uVdzrpM5JGYsLS8iOYjkhmZSbBJEMTqW44sp6dm6hr8zIITjHzJvCA6
-rnV1BjjjOb8fK/ORZYKzU4Y0o+GSPJnbjR9dPTkL+el5Ny0T5H4Iq++fc1lJTGNl
-hN1R8tLp4kN4B8Ku/nFIcbivIOS2P9RdOh6nq28oyCVKLgSu/45QNPzG55bH+KzG
-9BuNoSNwpHygY1qXLB8CWOBteeCfO+5E5GKyWFOrZqdGMSrLJ2UavKdV7WZ0uUNd
-GGncWjbIf6UARekeK7vaT59QFbPoRwBwwPI4dVJJM+Zt18V/sxzTbI68xGzOAsWe
-NK6chymww6w64aXd+c07BKke9+uQyj5nY/fYe2i4xjdfJ5IW2R2u3sILZLSU+dqd
-pYprce94mdoZausZVxYaRoFo0GFM5zSfLDOYj1sigqip/8C1gAMAtPO33D4MLOp0
-p9dcVZOGyrJ0uTnxBrWuP4nSkc0Shh8G+1m6qpoVJ9ilhf+YCp1PW7VNaVyWJOcs
-pjmER4uRJv5OYZ6RCqAJj1LesY9RTXzfm7nWWe+ZRF5m6e+cn+XOBBhVJEiLQFkN
-J8q+NHLHl8ankKkbZ3kMK0BxVItHQfI0PB3ixlgraf+75TkIk8M=
-=JQiP
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzKJF0ACgkQ2O7X88g7
++pqOAA/+OYV/kWE96sNXL8NC8HBO1UDZCTL5+6c0WPit1ocVRYXw8Zl2bBD9UeGG
++qWPTgzJrlxv4WIv420x99yjJNYoCJTyZsLjpLAGxuIJ37vRMOYOgd6eh/qsiown
+T45XYWVTtdznhpeciJxW+FkqxfKGriZgD7aaV4tzAoXjb/nGvYwy4MSTnL+fpwzi
+yVkEJvBbIGyp2S+gHNotPXvZ6g7mKd9uEO8kBUi4OlPjD44ZtE8cVx1t2lNAqJQv
+8yRHFaQSJM99aRVdtQ6DoEYft3A35FkSuWAW741h8K/GSH93yFfNEw4GE1lBOPoW
+Y4Yn4XoISo5RIwWjUJafpOuEnEQF+SKaFuDP62wwUpJOpLN8gF/BJS/WhmZSaizx
+dE9764X7AfylMlj2v//tAS0jfPrsMeafZdGfnwZuAOyy8y2IJ3j7pPOqIZLLD9LR
+T1iNAADQU0An0HX60tewCxzEUMrnf+2miret0l5g25s3uWCOlBcNImUuG3sgfZRA
+PTQJdsIdsqVpqBGm1MbbKIcuJ222MqtWt7d9BW45xtLoecGKHHLtvjZBdo5gDxqY
+W5vtZr7ZAwT9bqPqHCqouurW+AADa7d1SZiGo/blIklO3K0uJ+27lKWNXEtCHwm+
+yyerIOhx4wiq9uFtaHrAjOosfe0gZ8VIfgaJfYgvU97efGypTgk=
+=91c6
 -----END PGP SIGNATURE-----
 
---n44xbk2hl33sq6zz--
+--4pxoyuqearsvopnh--
