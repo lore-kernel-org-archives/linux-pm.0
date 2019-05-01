@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v4 05/16] PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
-Date: Thu,  2 May 2019 02:38:04 +0300
-Message-ID: <20190501233815.32643-6-digetx@gmail.com>
+Subject: [PATCH v4 02/16] PM / devfreq: tegra: Replace readl-writel with relaxed versions
+Date: Thu,  2 May 2019 02:38:01 +0300
+Message-ID: <20190501233815.32643-3-digetx@gmail.com>
 References: <20190501233815.32643-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,27 +12,46 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There is no real benefit from doing so, hence let's drop that rate setting
-for consistency.
+There is no need to insert memory barrier on each readl/writel
+invocation, hence use the relaxed versions.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index c7428c5eee23..24ec65556c39 100644
+index 43cd1233f87b..f7378a42d184 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -653,8 +653,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->emc_clock);
- 	}
+@@ -191,23 +191,23 @@ static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
  
--	clk_set_rate(tegra->emc_clock, ULONG_MAX);
--
- 	tegra->rate_change_nb.notifier_call = tegra_actmon_rate_notify_cb;
- 	err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
- 	if (err) {
+ static u32 actmon_readl(struct tegra_devfreq *tegra, u32 offset)
+ {
+-	return readl(tegra->regs + offset);
++	return readl_relaxed(tegra->regs + offset);
+ }
+ 
+ static void actmon_writel(struct tegra_devfreq *tegra, u32 val, u32 offset)
+ {
+-	writel(val, tegra->regs + offset);
++	writel_relaxed(val, tegra->regs + offset);
+ }
+ 
+ static u32 device_readl(struct tegra_devfreq_device *dev, u32 offset)
+ {
+-	return readl(dev->regs + offset);
++	return readl_relaxed(dev->regs + offset);
+ }
+ 
+ static void device_writel(struct tegra_devfreq_device *dev, u32 val,
+ 			  u32 offset)
+ {
+-	writel(val, dev->regs + offset);
++	writel_relaxed(val, dev->regs + offset);
+ }
+ 
+ static unsigned long do_percent(unsigned long val, unsigned int pct)
 -- 
 2.21.0
