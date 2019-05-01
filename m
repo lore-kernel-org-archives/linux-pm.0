@@ -2,99 +2,150 @@ Return-Path: <SRS0=2C7a=TB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C2D4C43219
-	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 04:22:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1AFDC43219
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 04:25:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5F74620866
-	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 04:22:51 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NmcLEQXl"
+	by mail.kernel.org (Postfix) with ESMTP id 704BD21783
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 04:25:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556684723;
+	bh=VFmF4WS6JtISMVf5yHfToITGVLcDpVuw1ddtxVJMEmE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:List-ID:
+	 From;
+	b=QnVvGbhKcQQrkXe2R48fNWTN2i4+pPLUXZ5r+cFhpV3XFkPV/NbvNFAULOQKxochz
+	 iXhmJRaViIoCBGSnj/nXIN/0s/ygeHXS5rK5r1FFUBqV9djDLhieQsQhqLP27/8qum
+	 jEJEHEkXsHfSUQCOQLSZyHn4bvKxPHNmez3oKzTw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725535AbfEAEWu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 May 2019 00:22:50 -0400
-Received: from mail-it1-f194.google.com ([209.85.166.194]:38536 "EHLO
-        mail-it1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725298AbfEAEWu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2019 00:22:50 -0400
-Received: by mail-it1-f194.google.com with SMTP id q19so8382841itk.3;
-        Tue, 30 Apr 2019 21:22:50 -0700 (PDT)
+        id S1726423AbfEAEZR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 May 2019 00:25:17 -0400
+Received: from mail-it1-f193.google.com ([209.85.166.193]:35560 "EHLO
+        mail-it1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726304AbfEAEYu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2019 00:24:50 -0400
+Received: by mail-it1-f193.google.com with SMTP id l140so7128867itb.0;
+        Tue, 30 Apr 2019 21:24:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=xLNLpr9McoqnZqM8qeAGoxcDpyWL0pd5yB3wHBmNQm0=;
-        b=NmcLEQXlPhSFJDrg69XhaztQv9FwpJDoR3ICozL6BnfDa6JUamP72xKNEx/p3r2p1V
-         Gp5r1ZL5TOKJsIELli3PI9U8zy01eMq4sLwrQbV3g0z9+xX/EebtoEH4fce6bBmnY0dr
-         +3d0Az6GreLoBDM+9CK8lLRTxIepWhGuKvRcVgtfuJkeMd0oIvyXUPZgmcntHCTr9VJY
-         XyS+lNGjz/DrxOCMiTo4b4XYfWYTOX9C7I7zr3srwgikzTicwM+azzDxKfhE4KFMd5YQ
-         dcHc09zTm9WBcwywOLewvs2YuDOi3lwFFrfG5SOpQwesXt5uzRqTCQQJaTnsOz/0ngBD
-         Bs3A==
+        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
+         :reply-to:organization;
+        bh=rda4g5SmmmtmdoeM7SRiTHesp2r+cZMc+xc7m73KM/g=;
+        b=mL7EYPtl3eTw0zWsEq89GUs8m6iX0v6/eMe1c9ucZxVMJi6TnXJlR33EzsHbMeV1eX
+         7hEaLIX9v2VFXl1ZXIjPnrQFe7WVelc4403n6BocqoTYjZ+dMI9XFu+SQYDTqJzpM0c/
+         EAvoLg5PyPsPBdIuOcBycVWZW8XAliPhF/ivvl4YqPfwX0CoXsFnjD1l8c9JH8vq2yz3
+         8t09jb+rlsrPLy0GZVz1kiiOMvuog0k+kgdFC87OtcKCJjdUIMaDrIv+kE7BKhisN4s6
+         6io5eNh4YFPwhHK4zdyN1QY+MUWxViMUJm+xhlMnXyV+pcfHo4mSdjLeXZkzbk7eF8DZ
+         CJeA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=xLNLpr9McoqnZqM8qeAGoxcDpyWL0pd5yB3wHBmNQm0=;
-        b=lmyq/udZGBTQ8zlLOAZow9EJqO+7i6o16PnMwunyCSBbD7qtst2kF21Z1buCvRp2a2
-         UipbqTQhvskaysfXNUT93kFTxoObCid8Cj56TW7U+es6wcNw/uECcLwOxuwkmpq571Sb
-         oUh8OFdonD7XKWFNtPw0A2tZALRtD2VkheJMpGF6NKJfK+ZhwzlaYAuowfBZGxYC8r2E
-         7Au4JNG6ndKJO1nVIgvvlp3j5HC1GK+W6CKZHI4j+tEPqMv79/74u9Bw7TrJwKL1aMvn
-         ZU8kH/W28+ga4i1xm2ps64v7mHzWEAVXHVLtRADTZb4f9kundgaQLKNMHCGuFnQjNHWF
-         3IyQ==
-X-Gm-Message-State: APjAAAXiAoPoDw2RMbVVU2M2j6/1idKR9PXPBl67q/ZnUSIlaRgp0cya
-        WvyoD8OSsq7jSA98HhFz0V2lAs94n3N0Ju8p/8Q=
-X-Google-Smtp-Source: APXvYqxzb+WfoWfhy9nmR7qVPjfUguVHUWr1/2N/LZbAHqn+R00pTq8JbjmDBb1oH3gYFLQoydzOFrzrc++N9aTNUwE=
-X-Received: by 2002:a05:660c:2c5:: with SMTP id j5mr6925933itd.154.1556684569670;
- Tue, 30 Apr 2019 21:22:49 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190501033434.18548-1-andrew.smirnov@gmail.com>
- <20190501033434.18548-3-andrew.smirnov@gmail.com> <7002fe8e-7686-fe84-374f-766f99f8317d@infradead.org>
-In-Reply-To: <7002fe8e-7686-fe84-374f-766f99f8317d@infradead.org>
-From:   Andrey Smirnov <andrew.smirnov@gmail.com>
-Date:   Tue, 30 Apr 2019 21:22:38 -0700
-Message-ID:
- <CAHQ1cqHnAS4kb76cTNfLX=YJsRT+dOJhwONGLCAdErh0KBTWyw@mail.gmail.com>
-Subject: Re: [PATCH v5 2/3] power: supply: Add driver for Microchip UCS1002
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
-        Enric Balletbo Serra <enric.balletbo@collabora.com>,
-        Chris Healy <cphealy@gmail.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+         :in-reply-to:references:reply-to:organization;
+        bh=rda4g5SmmmtmdoeM7SRiTHesp2r+cZMc+xc7m73KM/g=;
+        b=s8Os9ODyWVxvAT3IRxrZgDdboAArt6m+XWgtU1Xr1unjwHvusHrTHwI0EIoHtKCAeM
+         P/KrF21AGhyCIfjCQC5MZJl47ghs9kchBU9alChSwvgeacfppAhYpnNVt1c9fMU7J2a4
+         43htAVuHsUZ5jLvhwOU9uM+k86cDlfZwfmXtnZl/KDxVX5iFCxG6fUiTNMl4W9EWQRGV
+         93Yjtni3QdYK00iRq3hCwMpNqpZAShlfBqLzIDQ84y08/3rrZ3it3e8tHQ/rCG1ZQag5
+         +KEI3HkBgPk8NMeiGbQNNXPF1g5F+1OEDCMaDZyN7psrG9aVhN1i5aN+Y0CbrZgklGog
+         HLfg==
+X-Gm-Message-State: APjAAAUoyJGQ3xFP9Kf7OsqCIM8J2t7TRiIx3YNQQaGfSQqBLxbUMO8T
+        Av9/VGrrrd0ev2ItMSrka2k=
+X-Google-Smtp-Source: APXvYqxtknx15Ai4EZE+A1SO2kwRfSyjNAMumcbNMpd4xCSYGb+tRb8REcvXdgZA4YrHD8LzfrhczQ==
+X-Received: by 2002:a02:c807:: with SMTP id p7mr5228568jao.38.1556684689712;
+        Tue, 30 Apr 2019 21:24:49 -0700 (PDT)
+Received: from nuc8.lan (h69-131-112-51.cntcnh.dsl.dynamic.tds.net. [69.131.112.51])
+        by smtp.gmail.com with ESMTPSA id b8sm2569728itb.20.2019.04.30.21.24.48
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 30 Apr 2019 21:24:49 -0700 (PDT)
+From:   Len Brown <lenb@kernel.org>
+To:     x86@kernel.org
+Cc:     linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org,
+        linux-hwmon@vger.kernel.org
+Subject: [PATCH 13/18] hwmon/coretemp: Support multi-die/package
+Date:   Wed,  1 May 2019 00:24:22 -0400
+Message-Id:
+ <10af238e4f996ccfc0ecf8baedca04df0c65c7c1.1556657368.git.len.brown@intel.com>
+X-Mailer: git-send-email 2.18.0-rc0
+In-Reply-To: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1556657368.git.len.brown@intel.com>
+References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1556657368.git.len.brown@intel.com>
+Reply-To: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190501042238.4JZfhf9C6prJlbUkxPLqHq53NsWHsCk6gZHzwLIl2ow@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190501042422.DoeNZM05cUe6ll1BrDk8FrIr25XDyAlWhtQCJOsTI_g@z>
 
-On Tue, Apr 30, 2019 at 8:43 PM Randy Dunlap <rdunlap@infradead.org> wrote:
->
-> Hi,
->
-> On 4/30/19 8:34 PM, Andrey Smirnov wrote:
-> > diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> > index e901b9879e7e..c614c8a196f3 100644
-> > --- a/drivers/power/supply/Kconfig
-> > +++ b/drivers/power/supply/Kconfig
-> > @@ -660,4 +660,13 @@ config FUEL_GAUGE_SC27XX
-> >        Say Y here to enable support for fuel gauge with SC27XX
-> >        PMIC chips.
-> >
-> > +config CHARGER_UCS1002
-> > +        tristate "Microchip UCS1002 USB Port Power Controller"
->
-> Please indent the tristate line with a tab instead of spaces.
->
+From: Zhang Rui <rui.zhang@intel.com>
 
-OK, will do.
+Package temperature sensors are actually implemented in hardware per-die.
 
-Thanks,
-Andrey Smirnov
+Update coretemp to be "die-aware", so it can expose mulitple sensors
+per package, instead of just one.  No change to single-die/package
+systems.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Acked-by: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-hwmon@vger.kernel.org
+---
+ drivers/hwmon/coretemp.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+index 5d34f7271e67..23a2d90534c7 100644
+--- a/drivers/hwmon/coretemp.c
++++ b/drivers/hwmon/coretemp.c
+@@ -435,7 +435,7 @@ static int chk_ucode_version(unsigned int cpu)
+ 
+ static struct platform_device *coretemp_get_pdev(unsigned int cpu)
+ {
+-	int pkgid = topology_logical_package_id(cpu);
++	int pkgid = topology_logical_die_id(cpu);
+ 
+ 	if (pkgid >= 0 && pkgid < max_packages)
+ 		return pkg_devices[pkgid];
+@@ -579,7 +579,7 @@ static struct platform_driver coretemp_driver = {
+ 
+ static struct platform_device *coretemp_device_add(unsigned int cpu)
+ {
+-	int err, pkgid = topology_logical_package_id(cpu);
++	int err, pkgid = topology_logical_die_id(cpu);
+ 	struct platform_device *pdev;
+ 
+ 	if (pkgid < 0)
+@@ -703,7 +703,7 @@ static int coretemp_cpu_offline(unsigned int cpu)
+ 	 * the rest.
+ 	 */
+ 	if (cpumask_empty(&pd->cpumask)) {
+-		pkg_devices[topology_logical_package_id(cpu)] = NULL;
++		pkg_devices[topology_logical_die_id(cpu)] = NULL;
+ 		platform_device_unregister(pdev);
+ 		return 0;
+ 	}
+@@ -732,6 +732,7 @@ static enum cpuhp_state coretemp_hp_online;
+ static int __init coretemp_init(void)
+ {
+ 	int err;
++	struct cpuinfo_x86 *c = &cpu_data(0);
+ 
+ 	/*
+ 	 * CPUID.06H.EAX[0] indicates whether the CPU has thermal
+@@ -741,7 +742,7 @@ static int __init coretemp_init(void)
+ 	if (!x86_match_cpu(coretemp_ids))
+ 		return -ENODEV;
+ 
+-	max_packages = topology_max_packages();
++	max_packages = topology_max_packages() * topology_max_die_per_package();
+ 	pkg_devices = kcalloc(max_packages, sizeof(struct platform_device *),
+ 			      GFP_KERNEL);
+ 	if (!pkg_devices)
+-- 
+2.18.0-rc0
+
