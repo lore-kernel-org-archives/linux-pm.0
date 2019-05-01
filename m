@@ -2,97 +2,72 @@ Return-Path: <SRS0=2C7a=TB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.9 required=3.0 tests=FROM_EXCESS_BASE64,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D13F3C43219
-	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 19:43:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8826C004C9
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 20:45:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A42542089E
-	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 19:43:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 765F420656
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 20:45:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1556743514;
+	bh=aOsUiEEydAYsE1AYWCufYPpPeb8VXTYGHy3HcEo8+NM=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
+	b=zPbxbL1ytSGsNmovl0SGzhINAcVygHBeSFZn34k99Pggl7i8qv7mpx/+Mn6xgTo57
+	 lJG3bwnTyIlAsmFJ1JVABh5x6KVHdbXANtUCEa0wKyfI8IJN/sujWofe4o7efuivH8
+	 CS6jHOY9lXutkDp5mfogzn19SxL+HBe2RrhgVatI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726114AbfEATn2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 May 2019 15:43:28 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:36966 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726004AbfEATn1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2019 15:43:27 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: gportay)
-        with ESMTPSA id C5023263971
-Date:   Wed, 1 May 2019 15:43:41 -0400
-From:   =?utf-8?B?R2HDq2w=?= PORTAY <gael.portay@collabora.com>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
-        Derek Basehore <dbasehore@chromium.org>,
-        Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org,
-        Brian Norris <briannorris@chromium.org>,
-        Douglas Anderson <dianders@chromium.org>,
-        linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Klaus Goger <klaus.goger@theobroma-systems.com>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        linux-rockchip@lists.infradead.org, Randy Li <ayaka@soulik.info>,
-        linux-arm-kernel@lists.infradead.org, Lin Huang <hl@rock-chips.com>
-Subject: Re: [PATCH v4 5/5] arm64: dts: rockchip: Enable dmc and dfi nodes on
- gru.
-Message-ID: <20190501194341.tdmv5cg2ajoebwyx@archlinux.localdomain>
-References: <20190415212948.7736-1-gael.portay@collabora.com>
- <20190415212948.7736-6-gael.portay@collabora.com>
- <20190426184559.GA29242@bogus>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190426184559.GA29242@bogus>
-User-Agent: NeoMutt/20180716
+        id S1726138AbfEAUpE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 May 2019 16:45:04 -0400
+Received: from mail.kernel.org ([198.145.29.99]:45946 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726096AbfEAUpE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 1 May 2019 16:45:04 -0400
+Subject: Re: [GIT PULL] ACPI fix for v5.1-rc8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1556743503;
+        bh=aOsUiEEydAYsE1AYWCufYPpPeb8VXTYGHy3HcEo8+NM=;
+        h=From:In-Reply-To:References:Date:To:Cc:From;
+        b=QfSASIQGYVcO3+D3aq/U1o9JEICuFlNrHGhW42Go0pHhYaKeEwrfFEonF0T+ERuZh
+         gNZ6u6dPiGUlZpRL7AdJpV/9uj+jl379KmIfd0SQTf5YKlhKf6fJAO9NRzG8WD+hUT
+         +yITCyYupa9oYfB22vfzG5Ue/WgkmkWzKOgt7HrU=
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0i73At_cTv2FJEgSzcqnWUuVnDY-cyX5XWDGFw1f9fnQA@mail.gmail.com>
+References: <CAJZ5v0i73At_cTv2FJEgSzcqnWUuVnDY-cyX5XWDGFw1f9fnQA@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0i73At_cTv2FJEgSzcqnWUuVnDY-cyX5XWDGFw1f9fnQA@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+ acpi-5.1-rc8
+X-PR-Tracked-Commit-Id: 2c2a2fb1e2a9256714338875bede6b7cbd4b9542
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: fb0af61d3afe0b8f8b7bd2ed7c9fcaae670ced4a
+Message-Id:
+ <155674350366.10978.11321440204270892451.pr-tracker-bot@kernel.org>
+Date:   Wed, 01 May 2019 20:45:03 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190501194341.Wtf551pmAN0RS7874CZYHQyVtWLraadlhsgahiG7o-k@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190501204503._yY-4qngmUtvj4R0SIhh8YPk1rIdkH3IlyYj92Olk1E@z>
 
-Rob,
+The pull request you sent on Wed, 1 May 2019 10:39:19 +0200:
 
-On Fri, Apr 26, 2019 at 01:45:59PM -0500, Rob Herring wrote:
-> On Mon, Apr 15, 2019 at 05:29:48PM -0400, Gaël PORTAY wrote:
-> > diff --git a/include/dt-bindings/power/rk3399-dram.h b/include/dt-bindings/power/rk3399-dram.h
-> > new file mode 100644
-> > index 000000000000..4b3d4a79923b
-> > --- /dev/null
-> > +++ b/include/dt-bindings/power/rk3399-dram.h
-> > @@ -0,0 +1,73 @@
-> > +/* SPDX-License-Identifier: (GPL-2.0+ OR X11) */
-> > +/*
-> > + * Copyright (c) 2016-2018, Fuzhou Rockchip Electronics Co., Ltd
-> > + *
-> > + * Author: Lin Huang <hl@rock-chips.com>
-> > + */
-> > +
-> > +#ifndef _DTS_DRAM_ROCKCHIP_RK3399_H
-> > +#define _DTS_DRAM_ROCKCHIP_RK3399_H
-> > +
-> > +#define DDR3_DS_34ohm		34
-> > +#define DDR3_DS_40ohm		40
-> > +
-> > +#define DDR3_ODT_DIS		0
-> > +#define DDR3_ODT_40ohm		40
-> > +#define DDR3_ODT_60ohm		60
-> > +#define DDR3_ODT_120ohm		120
-> 
-> I don't think these defines add much value given the value is in the 
-> define itself.
-> 
-> Do these get used by the driver? If not, then the header can go with the 
-> dts file. But I'd just get rid of the header.
-> 
-> Rob
->
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.1-rc8
 
-Indeed, I will remove that header and update the documentation file.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/fb0af61d3afe0b8f8b7bd2ed7c9fcaae670ced4a
 
-Regards,
-Gaël
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
