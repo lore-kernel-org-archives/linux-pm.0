@@ -1,31 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] PM / Domains: Improve support for multi PM domains
-Date: Wed, 01 May 2019 12:25:46 +0200
-Message-ID: <2833844.V0R6nlsLIU@kreacher>
-References: <20190418102757.1246-1-ulf.hansson@linaro.org>
+Subject: Re: [PATCH] cpufreq: qoriq: Add ls1028a chip support
+Date: Wed, 01 May 2019 12:41:08 +0200
+Message-ID: <2243345.ebHGfCmnM5@kreacher>
+References: <20190424023223.29614-1-andy.tang@nxp.com> <20190424090252.7cmwzxf4t5lwjat6@vireshk-i7> <CAJZ5v0jOOKW92X8iGPZD8Dfye4K9seXgiYaTLURby9Y3BbMYpg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190418102757.1246-1-ulf.hansson@linaro.org>
+In-Reply-To: <CAJZ5v0jOOKW92X8iGPZD8Dfye4K9seXgiYaTLURby9Y3BbMYpg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jon Hunter <jonathanh@nvidia.com>, Rajendra Nayak <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Andy Tang <andy.tang@nxp.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, April 18, 2019 12:27:54 PM CEST Ulf Hansson wrote:
-> It's been a while since the introduction for the support for multi PM domains
-> per device in genpd. In this small series, a couple of different improvement
-> are being made to this code in genpd.
+On Wednesday, April 24, 2019 11:25:07 AM CEST Rafael J. Wysocki wrote:
+> On Wed, Apr 24, 2019 at 11:02 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > On 24-04-19, 09:24, Rafael J. Wysocki wrote:
+> > > On Wed, Apr 24, 2019 at 6:01 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > > >
+> > > > On 24-04-19, 10:32, andy.tang@nxp.com wrote:
+> > > > > From: Yuantian Tang <andy.tang@nxp.com>
+> > > > >
+> > > > > Enable cpufreq feature on ls1028a chip by adding its compatible
+> > > > > string.
+> > > > >
+> > > > > Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+> > > > > ---
+> > > > >  drivers/cpufreq/qoriq-cpufreq.c |    1 +
+> > > > >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > > > >
+> > > > > diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+> > > > > index 4295e54..d308c4d 100644
+> > > > > --- a/drivers/cpufreq/qoriq-cpufreq.c
+> > > > > +++ b/drivers/cpufreq/qoriq-cpufreq.c
+> > > > > @@ -280,6 +280,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+> > > > >
+> > > > >       { .compatible = "fsl,ls1012a-clockgen", },
+> > > > >       { .compatible = "fsl,ls1021a-clockgen", },
+> > > > > +     { .compatible = "fsl,ls1028a-clockgen", },
+> > > > >       { .compatible = "fsl,ls1043a-clockgen", },
+> > > > >       { .compatible = "fsl,ls1046a-clockgen", },
+> > > > >       { .compatible = "fsl,ls1088a-clockgen", },
+> > > >
+> > > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > >
+> > > So do you want me to take this one directly?
+> >
+> > I actually applied it and then realized it is powerpc and so dropped
+> > it. You want me to apply it ?
 > 
-> Ulf Hansson (3):
->   PM / Domains: Don't kfree() the virtual device in the error path
->   PM / Domains: Allow OF lookup for multi PM domain case from
->     ->attach_dev()
->   PM / Domains: Enable genpd_dev_pm_attach_by_id|name() for single PM
->     domain
+> No, I can do that, thanks!
 > 
->  drivers/base/power/domain.c | 18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
 
-All [1-3/3] applied, thanks!
+Applied, thanks!
