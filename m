@@ -1,80 +1,55 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 13/18] hwmon/coretemp: Support multi-die/package
-Date: Wed,  1 May 2019 00:24:22 -0400
-Message-ID: <10af238e4f996ccfc0ecf8baedca04df0c65c7c1.1556657368.git.len.brown@intel.com>
+Subject: [PATCH 10/18] powercap/intel_rapl: Support multi-die/package
+Date: Wed,  1 May 2019 00:24:19 -0400
+Message-ID: <9f6958c231347e639e322de8d8c3de6859559345.1556657368.git.len.brown@intel.com>
 References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1556657368.git.len.brown@intel.com>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1556657368.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Zhang Rui <rui.zhang@intel.com>
 
-Package temperature sensors are actually implemented in hardware per-die.
+RAPL "package" domains are actually implemented in hardware per-die.
+Thus, the new multi-die/package systems have mulitple domains
+within each physical package.
 
-Update coretemp to be "die-aware", so it can expose mulitple sensors
-per package, instead of just one.  No change to single-die/package
-systems.
+Update the intel_rapl driver to be "die aware" -- exporting multiple
+domains within a single package, when present.
+No change on single die/package systems.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Guenter Roeck <linux@roeck-us.net>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Cc: linux-pm@vger.kernel.org
-Cc: linux-hwmon@vger.kernel.org
 ---
- drivers/hwmon/coretemp.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/powercap/intel_rapl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
-index 5d34f7271e67..23a2d90534c7 100644
---- a/drivers/hwmon/coretemp.c
-+++ b/drivers/hwmon/coretemp.c
-@@ -435,7 +435,7 @@ static int chk_ucode_version(unsigned int cpu)
- 
- static struct platform_device *coretemp_get_pdev(unsigned int cpu)
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 3c3c0c23180b..9202dbcef96d 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+ /* caller to ensure CPU hotplug lock is held */
+ static struct rapl_package *rapl_find_package_domain(int cpu)
  {
--	int pkgid = topology_logical_package_id(cpu);
-+	int pkgid = topology_logical_die_id(cpu);
+-	int id = topology_physical_package_id(cpu);
++	int id = topology_logical_die_id(cpu);
+ 	struct rapl_package *rp;
  
- 	if (pkgid >= 0 && pkgid < max_packages)
- 		return pkg_devices[pkgid];
-@@ -579,7 +579,7 @@ static struct platform_driver coretemp_driver = {
- 
- static struct platform_device *coretemp_device_add(unsigned int cpu)
+ 	list_for_each_entry(rp, &rapl_packages, plist) {
+@@ -1459,7 +1459,7 @@ static void rapl_remove_package(struct rapl_package *rp)
+ /* called from CPU hotplug notifier, hotplug lock held */
+ static struct rapl_package *rapl_add_package(int cpu)
  {
--	int err, pkgid = topology_logical_package_id(cpu);
-+	int err, pkgid = topology_logical_die_id(cpu);
- 	struct platform_device *pdev;
+-	int id = topology_physical_package_id(cpu);
++	int id = topology_logical_die_id(cpu);
+ 	struct rapl_package *rp;
+ 	int ret;
  
- 	if (pkgid < 0)
-@@ -703,7 +703,7 @@ static int coretemp_cpu_offline(unsigned int cpu)
- 	 * the rest.
- 	 */
- 	if (cpumask_empty(&pd->cpumask)) {
--		pkg_devices[topology_logical_package_id(cpu)] = NULL;
-+		pkg_devices[topology_logical_die_id(cpu)] = NULL;
- 		platform_device_unregister(pdev);
- 		return 0;
- 	}
-@@ -732,6 +732,7 @@ static enum cpuhp_state coretemp_hp_online;
- static int __init coretemp_init(void)
- {
- 	int err;
-+	struct cpuinfo_x86 *c = &cpu_data(0);
- 
- 	/*
- 	 * CPUID.06H.EAX[0] indicates whether the CPU has thermal
-@@ -741,7 +742,7 @@ static int __init coretemp_init(void)
- 	if (!x86_match_cpu(coretemp_ids))
- 		return -ENODEV;
- 
--	max_packages = topology_max_packages();
-+	max_packages = topology_max_packages() * topology_max_die_per_package();
- 	pkg_devices = kcalloc(max_packages, sizeof(struct platform_device *),
- 			      GFP_KERNEL);
- 	if (!pkg_devices)
 -- 
 2.18.0-rc0
