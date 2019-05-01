@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v4 07/16] PM / devfreq: tegra: Properly disable interrupts
-Date: Thu,  2 May 2019 02:38:06 +0300
-Message-ID: <20190501233815.32643-8-digetx@gmail.com>
+Subject: [PATCH v4 09/16] PM / devfreq: tegra: Avoid inconsistency of current frequency value
+Date: Thu,  2 May 2019 02:38:08 +0300
+Message-ID: <20190501233815.32643-10-digetx@gmail.com>
 References: <20190501233815.32643-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,84 +12,45 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There is no guarantee that interrupt handling isn't running in parallel
-with tegra_actmon_disable_interrupts(), hence it is necessary to protect
-DEV_CTRL register accesses and clear IRQ status with ACTMON's IRQ being
-disabled in the Interrupt Controller in order to ensure that device
-interrupt is indeed being disabled.
+The frequency value potentially could change in-between. It doesn't
+cause any real problem at all right now, but that could change in the
+future. Hence let's avoid the inconsistency.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index b65313fe3c2e..ce1eb97a2090 100644
+index ea0da05cd7f2..5265d735419f 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -171,6 +171,8 @@ struct tegra_devfreq {
- 	struct notifier_block	rate_change_nb;
+@@ -509,13 +509,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ {
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+ 	struct tegra_devfreq_device *actmon_dev;
++	unsigned long cur_freq;
  
- 	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
-+
-+	int irq;
- };
+-	stat->current_frequency = tegra->cur_freq * KHZ;
++	cur_freq = READ_ONCE(tegra->cur_freq);
  
- struct tegra_actmon_emc_ratio {
-@@ -417,6 +419,8 @@ static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
- 	u32 val;
- 	unsigned int i;
+ 	/* To be used by the tegra governor */
+ 	stat->private_data = tegra;
  
-+	disable_irq(tegra->irq);
-+
- 	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
- 		dev = &tegra->devices[i];
+ 	/* The below are to be used by the other governors */
++	stat->current_frequency = cur_freq * KHZ;
  
-@@ -427,9 +431,14 @@ static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
- 		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
+ 	actmon_dev = &tegra->devices[MCALL];
  
- 		device_writel(dev, val, ACTMON_DEV_CTRL);
-+
-+		device_writel(dev, ACTMON_INTR_STATUS_CLEAR,
-+			      ACTMON_DEV_INTR_STATUS);
- 	}
+@@ -526,7 +528,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ 	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
  
- 	actmon_write_barrier(tegra);
-+
-+	enable_irq(tegra->irq);
- }
+ 	/* Number of cycles in a sampling period */
+-	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
++	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
  
- static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
-@@ -604,7 +613,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 	struct resource *res;
- 	unsigned int i;
- 	unsigned long rate;
--	int irq;
- 	int err;
+ 	stat->busy_time = min(stat->busy_time, stat->total_time);
  
- 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
-@@ -673,15 +681,16 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		dev_pm_opp_add(&pdev->dev, rate, 0);
- 	}
- 
--	irq = platform_get_irq(pdev, 0);
--	if (irq < 0) {
--		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", irq);
--		return irq;
-+	tegra->irq = platform_get_irq(pdev, 0);
-+	if (tegra->irq < 0) {
-+		err = tegra->irq;
-+		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
-+		return err;
- 	}
- 
- 	platform_set_drvdata(pdev, tegra);
- 
--	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-+	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
- 					actmon_thread_isr, IRQF_ONESHOT,
- 					"tegra-devfreq", tegra);
- 	if (err) {
 -- 
 2.21.0
