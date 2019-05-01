@@ -1,70 +1,80 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v4 00/16] NVIDIA Tegra devfreq improvements and Tegra20/30 support
-Date: Thu,  2 May 2019 02:37:59 +0300
-Message-ID: <20190501233815.32643-1-digetx@gmail.com>
+Subject: [PATCH v4 01/16] PM / devfreq: tegra: Fix kHz to Hz conversion
+Date: Thu,  2 May 2019 02:38:00 +0300
+Message-ID: <20190501233815.32643-2-digetx@gmail.com>
+References: <20190501233815.32643-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190501233815.32643-1-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Changelog:
+The kHz to Hz is incorrectly converted in a few places in the code,
+this results in a wrong frequency being calculated because devfreq core
+uses OPP frequencies that are given in Hz to clamp the rate, while
+tegra-devfreq gives to the core value in kHz and then it also expects to
+receive value in kHz from the core. In a result memory freq is always set
+to a value which is close to ULONG_MAX because of the bug. Hence the EMC
+frequency is always capped to the maximum and the driver doesn't do
+anything useful. This patch was tested on Tegra30 and Tegra124 SoC's, EMC
+frequency scaling works properly now.
 
-v4: Addressed all review comments that were made by Chanwoo Choi to v3:
+Cc: <stable@vger.kernel.org> # 4.14+
+Tested-by: Steev Klimaszewski <steev@kali.org>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra-devfreq.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-    - changed the driver removal order to match the probe exactly
-    - added clarifying comment for 1/8 ratio to the Tegra20 driver
-
-    Chanwoo, please also note that the clk patch that should fix
-    compilation problem that was reported the kbuild-test-robot is already
-    applied and available in the recent linux-next.
-
-v3: Addressed all review comments that were made by Chanwoo Choi to v2.
-
-    Patch "Synchronize IRQ after masking it in hardware" morphed into
-    "Properly disable interrupts", which disables interrupts more solidly.
-
-    Added new minor patch: "Rename tegra-devfreq.c to tegra30-devfreq.c".
-
-    Added missed error handlings for dev_pm_opp_add().
-
-v2: The patchset was quite heavily reworked since v1, few patches we
-    dropped or squashed into the new ones and more patches we added.
-    In a result more bugs and potential problems are fixed now, driver's
-    code got more clean up.
-
-    The Tegra20 driver-addition patch is now a part of this series, it has
-    no changes since v1.
-
-Dmitry Osipenko (16):
-  PM / devfreq: tegra: Fix kHz to Hz conversion
-  PM / devfreq: tegra: Replace readl-writel with relaxed versions
-  PM / devfreq: tegra: Replace write memory barrier with the read
-    barrier
-  PM / devfreq: tegra: Don't ignore clk errors
-  PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
-  PM / devfreq: tegra: Drop primary interrupt handler
-  PM / devfreq: tegra: Properly disable interrupts
-  PM / devfreq: tegra: Clean up driver's probe / remove
-  PM / devfreq: tegra: Avoid inconsistency of current frequency value
-  PM / devfreq: tegra: Mark ACTMON's governor as immutable
-  PM / devfreq: tegra: Move governor registration to driver's probe
-  PM / devfreq: tegra: Reconfigure hardware on governor's restart
-  PM / devfreq: tegra: Support Tegra30
-  PM / devfreq: tegra: Enable COMPILE_TEST for the driver
-  PM / devfreq: tegra: Rename tegra-devfreq.c to tegra30-devfreq.c
-  PM / devfreq: Introduce driver for NVIDIA Tegra20
-
- MAINTAINERS                                   |   8 +
- drivers/devfreq/Kconfig                       |  15 +-
- drivers/devfreq/Makefile                      |   3 +-
- drivers/devfreq/tegra20-devfreq.c             | 212 ++++++++++++
- .../{tegra-devfreq.c => tegra30-devfreq.c}    | 315 ++++++++----------
- 5 files changed, 379 insertions(+), 174 deletions(-)
- create mode 100644 drivers/devfreq/tegra20-devfreq.c
- rename drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} (81%)
-
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index c89ba7b834ff..43cd1233f87b 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -486,11 +486,11 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ {
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+ 	struct dev_pm_opp *opp;
+-	unsigned long rate = *freq * KHZ;
++	unsigned long rate;
+ 
+-	opp = devfreq_recommended_opp(dev, &rate, flags);
++	opp = devfreq_recommended_opp(dev, freq, flags);
+ 	if (IS_ERR(opp)) {
+-		dev_err(dev, "Failed to find opp for %lu KHz\n", *freq);
++		dev_err(dev, "Failed to find opp for %lu Hz\n", *freq);
+ 		return PTR_ERR(opp);
+ 	}
+ 	rate = dev_pm_opp_get_freq(opp);
+@@ -499,8 +499,6 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 	clk_set_min_rate(tegra->emc_clock, rate);
+ 	clk_set_rate(tegra->emc_clock, 0);
+ 
+-	*freq = rate;
+-
+ 	return 0;
+ }
+ 
+@@ -510,7 +508,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+ 	struct tegra_devfreq_device *actmon_dev;
+ 
+-	stat->current_frequency = tegra->cur_freq;
++	stat->current_frequency = tegra->cur_freq * KHZ;
+ 
+ 	/* To be used by the tegra governor */
+ 	stat->private_data = tegra;
+@@ -565,7 +563,7 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
+ 		target_freq = max(target_freq, dev->target_freq);
+ 	}
+ 
+-	*freq = target_freq;
++	*freq = target_freq * KHZ;
+ 
+ 	return 0;
+ }
 -- 
 2.21.0
