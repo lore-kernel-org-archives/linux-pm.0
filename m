@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v4 09/16] PM / devfreq: tegra: Avoid inconsistency of current frequency value
-Date: Thu,  2 May 2019 02:38:08 +0300
-Message-ID: <20190501233815.32643-10-digetx@gmail.com>
+Subject: [PATCH v4 10/16] PM / devfreq: tegra: Mark ACTMON's governor as immutable
+Date: Thu,  2 May 2019 02:38:09 +0300
+Message-ID: <20190501233815.32643-11-digetx@gmail.com>
 References: <20190501233815.32643-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,45 +12,40 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The frequency value potentially could change in-between. It doesn't
-cause any real problem at all right now, but that could change in the
-future. Hence let's avoid the inconsistency.
+The ACTMON's governor supports only the Tegra's devfreq device and there
+is no need to use any other governor, hence let's mark Tegra governor as
+immutable to permanently stick it with Tegra's devfreq device.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/devfreq/Kconfig         | 1 -
+ drivers/devfreq/tegra-devfreq.c | 1 +
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 6a172d338f6d..a78dffe603c1 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -94,7 +94,6 @@ config ARM_EXYNOS_BUS_DEVFREQ
+ config ARM_TEGRA_DEVFREQ
+ 	tristate "Tegra DEVFREQ Driver"
+ 	depends on ARCH_TEGRA_124_SOC
+-	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+ 	select PM_OPP
+ 	help
+ 	  This adds the DEVFREQ driver for the Tegra family of SoCs.
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index ea0da05cd7f2..5265d735419f 100644
+index 5265d735419f..65b3a7c72293 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -509,13 +509,15 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- {
- 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
- 	struct tegra_devfreq_device *actmon_dev;
-+	unsigned long cur_freq;
+@@ -606,6 +606,7 @@ static struct devfreq_governor tegra_devfreq_governor = {
+ 	.name = "tegra_actmon",
+ 	.get_target_freq = tegra_governor_get_target,
+ 	.event_handler = tegra_governor_event_handler,
++	.immutable = true,
+ };
  
--	stat->current_frequency = tegra->cur_freq * KHZ;
-+	cur_freq = READ_ONCE(tegra->cur_freq);
- 
- 	/* To be used by the tegra governor */
- 	stat->private_data = tegra;
- 
- 	/* The below are to be used by the other governors */
-+	stat->current_frequency = cur_freq * KHZ;
- 
- 	actmon_dev = &tegra->devices[MCALL];
- 
-@@ -526,7 +528,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- 	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
- 
- 	/* Number of cycles in a sampling period */
--	stat->total_time = ACTMON_SAMPLING_PERIOD * tegra->cur_freq;
-+	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
- 
- 	stat->busy_time = min(stat->busy_time, stat->total_time);
- 
+ static int tegra_devfreq_probe(struct platform_device *pdev)
 -- 
 2.21.0
