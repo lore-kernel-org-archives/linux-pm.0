@@ -1,155 +1,128 @@
-Return-Path: <SRS0=BPTh=TA=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=2C7a=TB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1706CC43219
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 23:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED1C8C43219
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 03:34:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D23762087B
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Apr 2019 23:29:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B6323217F9
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 03:34:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pK5kLEoN"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fQmey3bD"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726105AbfD3X3B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Apr 2019 19:29:01 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:43590 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726086AbfD3X3B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2019 19:29:01 -0400
-Received: by mail-pf1-f194.google.com with SMTP id e67so7813261pfe.10;
-        Tue, 30 Apr 2019 16:29:00 -0700 (PDT)
+        id S1726152AbfEADex (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Apr 2019 23:34:53 -0400
+Received: from mail-pl1-f195.google.com ([209.85.214.195]:44531 "EHLO
+        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725973AbfEADex (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2019 23:34:53 -0400
+Received: by mail-pl1-f195.google.com with SMTP id l2so4912099plt.11;
+        Tue, 30 Apr 2019 20:34:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=sender:subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=pyMMSM+fgLxcULxr3o3ubN2tbBmzJbfDcFZgE1qRVpM=;
-        b=pK5kLEoN76oBaCrVQaxWTbbivV84cg7cfUG/G8dHO9NvOFRYJiM5FTnMLEKOf3jIrB
-         EAIYIOwKT8cpzIzUvx8mZtPxWcKL4g0DpruOl1fo8bv3mUeZZivLSj20e4DBUiFRyiK6
-         Vh9/fkx78iy/iCpSx1EeXfNqGNgHMKBhnlPgXxyz1JUGX+ckmea3Ln1y4BTcGq0Tw3Kw
-         E0eJWK+rhh8KJf5ScvMpAsTaaY1bOSXn901djE5EXUBUmHHIgJ5LxvXDBkginF2z7Nmj
-         53XBeIWbI7/p4OGS3n13VkUyyHhJDeV//Mg7L3zOKxtN6baB+1x4RpmU7gcNpTiwE6R4
-         muTw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=NvLp8pJfiLCObrociBr60wf6IDx1C/miZORcSamDQ60=;
+        b=fQmey3bDrYXE9IXRFsyoZhjpaI93CML5FdVu+esAqlEX8anq/XS0R53fOzqN6KRAO4
+         H+5xxApFJaMTdLdMjUIB5hA3nAlwu2LOM7MZwxsrDFAWP9E/NesS+bR2VgYpopPByHJp
+         ype3HhOC0p6jhQAy6k7qIJIxLGZ1Q2oqSnCmBZJPX7VkxwG+3Svj1tNAHZmOwdVSanV3
+         By8ksYA/i6AD5uOvwsWyWHki9bp3yJQCkXftQHcT0xhoOtXUlhmcrqrmdoJVHDZvxuzO
+         Z4PAhtaqnbEmB43Ka6MRxGPCM26uxN2dRmQnQ1RXrNiPkoNFj9aIJyHueoeOAjaRB1ua
+         f88g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:subject:to:cc:references:from:message-id
-         :date:user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=pyMMSM+fgLxcULxr3o3ubN2tbBmzJbfDcFZgE1qRVpM=;
-        b=ki8g1w3uASYVYxhbpKwRhk6fV3v0RWA9t7dRMgiNk5p0Bbe8lyg3jtvoHezrde7PZV
-         y0zoituy96LhzkWI8AGuWylINex+e2s2+hx4SdWZ/HMAfa7CZgv/ikYScvWcI2FW5u+q
-         q5lUCqZBIuqemuchnyCcCG5ZMRvnSqkq4zEP7WKJkgMk/FEJBts6IIVwOxU+Io2obcI8
-         Yz43cuoK15PUuj8UeVSeChNW17hHhwRTdvqjQC+OHKGY5mNiWExjfh77fMFMPkQR/lB4
-         a+J5skcs4e3l7K8mH13YV5pO3nH+BVk/iHJNIT104MoVaJp0meVkYVsOnhdhAwk19m9I
-         mGBw==
-X-Gm-Message-State: APjAAAVSiqlVzzwc4lyzoG03rCaVto4Wh6bFaucSC2TK/idVbxZwdtBs
-        1giBbMQvJ4PbT6IcPT82DE1u9nwY
-X-Google-Smtp-Source: APXvYqx7y6GOjqZLNyaIYGc+H3Attof7wOD6qPcJ54YeQp4/Jzyu1VslMgO7P2qeteEZd8aJu3vmTg==
-X-Received: by 2002:a62:2587:: with SMTP id l129mr35576226pfl.151.1556666939953;
-        Tue, 30 Apr 2019 16:28:59 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id g32sm2635151pgl.16.2019.04.30.16.28.57
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Apr 2019 16:28:58 -0700 (PDT)
-Subject: Re: [PATCH v4 3/3] dt-bindings: power: supply: Add bindings for
- Microchip UCS1002
-To:     Rob Herring <robh@kernel.org>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=NvLp8pJfiLCObrociBr60wf6IDx1C/miZORcSamDQ60=;
+        b=mA9cyifxTSfmKN9tyijTOS4lIDmc+Fbw76NBiGRxDUZE1v/RLeoExQAfQxvWkmeiMH
+         8T8i5cwqYy5pDFIpfa/C+Z5aaLtEJjZCFeVwzTvyeNT4eEqvqlQOQDShdi3pjtbLMHNQ
+         pTB0NLy6PfywZRN0HgYGJbka6T4bEZQnVE83gXSxnq9cboQtdJh8i0xHzqNq5wkkA/uW
+         mLuNFXaDFic5upTsd9PpvbUz4nd1xpw/lUg1qmJf7nFGeKnGL6bvabfXbfzleVcmgW6k
+         vqf0sAkewCRtzGDyFOUWMNimB0eZlYQyUTR/CMhoBXDg7F8Z042cBZCRjyCOwj25e9Hg
+         cKYw==
+X-Gm-Message-State: APjAAAU8U8Xfuy3e7wFAn2lozvD3htO6VSPY7m0xtbg7KkXT+kqAoTfC
+        6jF2nOqPensMbOyMG62+uktsfTfNKDw=
+X-Google-Smtp-Source: APXvYqwsDGpSUFgm4b31SzmKvLWUhxQgccsudPOFyJ8pGQSo66j7FwXJdWJPRDPnO1KMEYW/cOuOHA==
+X-Received: by 2002:a17:902:8609:: with SMTP id f9mr7760658plo.32.1556681692012;
+        Tue, 30 Apr 2019 20:34:52 -0700 (PDT)
+Received: from squirtle.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
+        by smtp.gmail.com with ESMTPSA id r11sm47421067pga.87.2019.04.30.20.34.49
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Tue, 30 Apr 2019 20:34:50 -0700 (PDT)
+From:   Andrey Smirnov <andrew.smirnov@gmail.com>
+To:     linux-pm@vger.kernel.org
 Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        linux-pm@vger.kernel.org,
+        Guenter Roeck <linux@roeck-us.net>,
         Enric Balletbo Serra <enric.balletbo@collabora.com>,
         Chris Healy <cphealy@gmail.com>,
         Lucas Stach <l.stach@pengutronix.de>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+        Fabio Estevam <festevam@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
         linux-kernel@vger.kernel.org
-References: <20190430064557.28469-1-andrew.smirnov@gmail.com>
- <20190430064557.28469-4-andrew.smirnov@gmail.com>
- <20190430161542.GB731@roeck-us.net> <20190430223236.GA10236@bogus>
-From:   Guenter Roeck <linux@roeck-us.net>
-Message-ID: <8e4fa5ae-9547-83b3-d2f6-3a7b7ad32cbf@roeck-us.net>
-Date:   Tue, 30 Apr 2019 16:28:57 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+Subject: [PATCH v5 1/3] power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
+Date:   Tue, 30 Apr 2019 20:34:32 -0700
+Message-Id: <20190501033434.18548-2-andrew.smirnov@gmail.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190501033434.18548-1-andrew.smirnov@gmail.com>
+References: <20190501033434.18548-1-andrew.smirnov@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20190430223236.GA10236@bogus>
-Content-Type: text/plain; charset="UTF-8"; format="flowed"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190430232857.cLZBfL49Qqd9vh5SaAMaD_M_-4hLg0xSBY7zfuXbXY8@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190501033432.cg5YJvC_iIhB3LIlSQIoV8HIgKSfF8zmf11ah0D8liY@z>
 
-On 4/30/19 3:32 PM, Rob Herring wrote:
-> On Tue, Apr 30, 2019 at 09:15:42AM -0700, Guenter Roeck wrote:
->> On Mon, Apr 29, 2019 at 11:45:57PM -0700, Andrey Smirnov wrote:
->>> Add bindings for Microchip UCS1002 Programmable USB Port Power
->>> Controller with Charger Emulation.
->>>
->>> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
->>> Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
->>> Cc: Chris Healy <cphealy@gmail.com>
->>> Cc: Lucas Stach <l.stach@pengutronix.de>
->>> Cc: Fabio Estevam <fabio.estevam@nxp.com>
->>> Cc: Guenter Roeck <linux@roeck-us.net>
->>> Cc: Rob Herring <robh+dt@kernel.org>
->>> Cc: devicetree@vger.kernel.org
->>> Cc: Sebastian Reichel <sre@kernel.org>
->>> Cc: linux-kernel@vger.kernel.org
->>> Cc: linux-pm@vger.kernel.org
->>> ---
->>>   .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
->>>   1 file changed, 27 insertions(+)
->>>   create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
->>> new file mode 100644
->>> index 000000000000..021fd7aba75e
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
->>> @@ -0,0 +1,27 @@
->>> +Microchip UCS1002 USB Port Power Controller
->>> +
->>> +Required properties:
->>> +- compatible		: Should be "microchip,ucs1002";
->>> +- reg			: I2C slave address
->>> +
->>> +Optional properties:
->>> +- interrupts-extended	: A list of interrupts lines present (could be either
->>> +			  corresponding to A_DET# pin, ALERT# pin, or both)
-> 
-> Just make this 'interrupts'. Support for 'interrupts-extended' is
-> implied.
-> 
-> With that,
-> 
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> 
->>> +- interrupt-names	: A list of interrupt names. Should contain (if
->>> +			  present):
->>> +			  - "a_det" for line connected to A_DET# pin
->>> +			  - "alert" for line connected to ALERT# pin
->>> +			  Both are expected to be IRQ_TYPE_EDGE_BOTH
->>> +Example:
->>> +
->>> +&i2c3 {
->>> +	charger@32 {
->>> +		compatible = "microchip,ucs1002";
->>> +		pinctrl-names = "default";
->>> +		pinctrl-0 = <&pinctrl_ucs1002_pins>;
->>
->> Document the above ? Or is that optional ?
-> 
-> I would have said to document this, but recently we had some discussion
-> about allowing this to be implied when there's only a 'default' entry.
-> We'll add it automatically for schemas.
-> 
+Add POWER_SUPPLY_HEALTH_OVERCURRENT constant in order to allow
+singalling overcurrent condition via power supply health information.
 
-Good to know. Thanks for the information!
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/power/supply/power_supply_sysfs.c | 2 +-
+ include/linux/power_supply.h              | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-Guenter
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 5358a80d854f..153f4a6ca57c 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -62,7 +62,7 @@ static const char * const power_supply_charge_type_text[] = {
+ static const char * const power_supply_health_text[] = {
+ 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
+ 	"Unspecified failure", "Cold", "Watchdog timer expire",
+-	"Safety timer expire"
++	"Safety timer expire", "Over current"
+ };
+ 
+ static const char * const power_supply_technology_text[] = {
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 2f9c201a54d1..bdab14c7ca4d 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -57,6 +57,7 @@ enum {
+ 	POWER_SUPPLY_HEALTH_COLD,
+ 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
+ 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
++	POWER_SUPPLY_HEALTH_OVERCURRENT,
+ };
+ 
+ enum {
+-- 
+2.20.1
+
