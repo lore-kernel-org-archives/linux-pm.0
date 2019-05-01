@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v4 14/16] PM / devfreq: tegra: Enable COMPILE_TEST for the driver
-Date: Thu,  2 May 2019 02:38:13 +0300
-Message-ID: <20190501233815.32643-15-digetx@gmail.com>
+Subject: [PATCH v4 15/16] PM / devfreq: tegra: Rename tegra-devfreq.c to tegra30-devfreq.c
+Date: Thu,  2 May 2019 02:38:14 +0300
+Message-ID: <20190501233815.32643-16-digetx@gmail.com>
 References: <20190501233815.32643-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,27 +12,35 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The driver's compilation doesn't have any specific dependencies, hence
-the COMPILE_TEST option can be supported in Kconfig.
+In order to reflect that driver serves NVIDIA Tegra30 and later SoC
+generations, let's rename the driver's source file to "tegra30-devfreq.c".
+This will make driver files to look more consistent after addition of a
+driver for Tegra20.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/devfreq/Makefile                               | 2 +-
+ drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ rename drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} (100%)
 
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 56db9dc05edb..a6bba6e1e7d9 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -93,7 +93,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+index 32b8d4d3f12c..47e5aeeebfd1 100644
+--- a/drivers/devfreq/Makefile
++++ b/drivers/devfreq/Makefile
+@@ -10,7 +10,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+ # DEVFREQ Drivers
+ obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+ obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+-obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
++obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra30-devfreq.o
  
- config ARM_TEGRA_DEVFREQ
- 	tristate "NVIDIA Tegra30/114/124/210 DEVFREQ Driver"
--	depends on ARCH_TEGRA
-+	depends on ARCH_TEGRA || COMPILE_TEST
- 	select PM_OPP
- 	help
- 	  This adds the DEVFREQ driver for the Tegra family of SoCs.
+ # DEVFREQ Event Drivers
+ obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+similarity index 100%
+rename from drivers/devfreq/tegra-devfreq.c
+rename to drivers/devfreq/tegra30-devfreq.c
 -- 
 2.21.0
