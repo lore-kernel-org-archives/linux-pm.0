@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v4 02/16] PM / devfreq: tegra: Replace readl-writel with relaxed versions
-Date: Thu,  2 May 2019 02:38:01 +0300
-Message-ID: <20190501233815.32643-3-digetx@gmail.com>
+Subject: [PATCH v4 04/16] PM / devfreq: tegra: Don't ignore clk errors
+Date: Thu,  2 May 2019 02:38:03 +0300
+Message-ID: <20190501233815.32643-5-digetx@gmail.com>
 References: <20190501233815.32643-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,46 +12,53 @@ To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia
 Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There is no need to insert memory barrier on each readl/writel
-invocation, hence use the relaxed versions.
+The clk_set_min_rate() could fail and in this case clk_set_rate() sets
+rate to 0, which may drop EMC rate to minimum and make machine very
+difficult to use.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra-devfreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 43cd1233f87b..f7378a42d184 100644
+index 7d7b9a5895b2..c7428c5eee23 100644
 --- a/drivers/devfreq/tegra-devfreq.c
 +++ b/drivers/devfreq/tegra-devfreq.c
-@@ -191,23 +191,23 @@ static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
- 
- static u32 actmon_readl(struct tegra_devfreq *tegra, u32 offset)
+@@ -484,8 +484,10 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 				u32 flags)
  {
--	return readl(tegra->regs + offset);
-+	return readl_relaxed(tegra->regs + offset);
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
++	struct devfreq *devfreq = tegra->devfreq;
+ 	struct dev_pm_opp *opp;
+ 	unsigned long rate;
++	int err;
+ 
+ 	opp = devfreq_recommended_opp(dev, freq, flags);
+ 	if (IS_ERR(opp)) {
+@@ -495,10 +497,20 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 	rate = dev_pm_opp_get_freq(opp);
+ 	dev_pm_opp_put(opp);
+ 
+-	clk_set_min_rate(tegra->emc_clock, rate);
+-	clk_set_rate(tegra->emc_clock, 0);
++	err = clk_set_min_rate(tegra->emc_clock, rate);
++	if (err)
++		return err;
++
++	err = clk_set_rate(tegra->emc_clock, 0);
++	if (err)
++		goto restore_min_rate;
+ 
+ 	return 0;
++
++restore_min_rate:
++	clk_set_min_rate(tegra->emc_clock, devfreq->previous_freq);
++
++	return err;
  }
  
- static void actmon_writel(struct tegra_devfreq *tegra, u32 val, u32 offset)
- {
--	writel(val, tegra->regs + offset);
-+	writel_relaxed(val, tegra->regs + offset);
- }
- 
- static u32 device_readl(struct tegra_devfreq_device *dev, u32 offset)
- {
--	return readl(dev->regs + offset);
-+	return readl_relaxed(dev->regs + offset);
- }
- 
- static void device_writel(struct tegra_devfreq_device *dev, u32 val,
- 			  u32 offset)
- {
--	writel(val, dev->regs + offset);
-+	writel_relaxed(val, dev->regs + offset);
- }
- 
- static unsigned long do_percent(unsigned long val, unsigned int pct)
+ static int tegra_devfreq_get_dev_status(struct device *dev,
 -- 
 2.21.0
