@@ -2,58 +2,59 @@ Return-Path: <SRS0=2C7a=TB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F66BC43219
-	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 23:41:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 210DDC43219
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 23:42:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1B6192085A
-	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 23:41:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DF68C2089E
+	for <linux-pm@archiver.kernel.org>; Wed,  1 May 2019 23:42:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Lqv1YbTq"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Rz9S0GfF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726175AbfEAXlm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 May 2019 19:41:42 -0400
-Received: from mail-it1-f195.google.com ([209.85.166.195]:50785 "EHLO
-        mail-it1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726126AbfEAXlm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2019 19:41:42 -0400
-Received: by mail-it1-f195.google.com with SMTP id q14so362090itk.0;
-        Wed, 01 May 2019 16:41:41 -0700 (PDT)
+        id S1726402AbfEAXmA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 May 2019 19:42:00 -0400
+Received: from mail-it1-f194.google.com ([209.85.166.194]:36585 "EHLO
+        mail-it1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726371AbfEAXl7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2019 19:41:59 -0400
+Received: by mail-it1-f194.google.com with SMTP id v143so368681itc.1;
+        Wed, 01 May 2019 16:41:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=jnT0HZUrSkPAf62Nq5Lp+ecgHqDHRXVjUFxnFCahDOY=;
-        b=Lqv1YbTqvom86+7/lE6U9SACKtF0F/Qq7zpHyaavTiVV9Wp28vzbpuUS0L1rSB6AGG
-         2UmY3Kf7Vu9ylvEYyjVcifFOp6hIj3ev8keSdTLh9FTqvrqO7tIuPGXAW6BOTG15x69X
-         B94wg7SzkS5IpUhWkqcWXq0zty2zQN0A0TBRxAMuKBlxsV2+s/GsmKpVo1WPejfWq5FM
-         PLgZkq5IxzlhFLW4usrsM2eTnCmFtW2aOawfk8VjZfnYbAaSJxTEWhu7TnqgxBQk0TOH
-         H33Gsc10TqfHZtXEof12XS0kLNwd06roWkyDzMPnBW88au5xFRfCUuQObqaEmzCn9MAF
-         bd+g==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=9QwYS9bQr6zIIDqya7O/hmsOjlwL0wV6gZaAMteb584=;
+        b=Rz9S0GfFzc4A8XwKvKPWK6NWM+Fk4CbRC4AjmdPpebD+IyRoyUNo8UtMP3eud+Gmd+
+         0LDLFW+zPi79Qhx0IsMKsm6N/r/kMUkAMWk+q9xvzb1Wk9a4oYRKQdTFSxZUxUwgZFgw
+         A8WUnIo4QskgtncNIWH/o/ccSNsfenYWLniVnSfoyeseiBtqm0E+OME3u2fGCkfM74h6
+         PK43lbzQwsRXWszK0zpVQCoDHr0BgB5n1Hg5aSDJMNN42m/HCJoymqOf8AKzc696Kfcz
+         7iGli+QVjl1mb+HR7hE3PODcOeDlOS51YsKsw4FasBsgT3THaFPV2DoBI8ACGd6GhPRH
+         dyCA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=jnT0HZUrSkPAf62Nq5Lp+ecgHqDHRXVjUFxnFCahDOY=;
-        b=jMiIvgejnpVI9au7S6uc1dc7NOlV0OUCozNndh35pv1zpAxUNqsmwG64SG4ZfE/hGv
-         Gy1Jjpg57SBekh9FEII9Qb/8Heoz7STeVVMEFtMXCxAMWlhoWaNdH1MDYa3oHj1oFQS2
-         sTcnRIusCyPtErly17L1/2z1YDcA3s41ilsVU7SCE3G7i8cbyC25xQLwSzv4NeXSddha
-         i3zCe4ktysNLLSCs4GH3rLsJi6lNOn2GN5pDJn2xK9NoE8/iaQX1Gff0LYf7Zd8xKtUQ
-         0WWaHpJ06vL8c0+UFlXP8iCitmFVmAsm5z9NpraAfkaaUVjLSb40naOuidsigQwoy33a
-         FvuA==
-X-Gm-Message-State: APjAAAXhnopsU4as135epmhq3KaMrxjpEbX5yX6K/dHRlBSLc0jlmixJ
-        b20AJ5e+9Jhw4thSjCoP+kosAshh
-X-Google-Smtp-Source: APXvYqzhe09Pgdh3StOglufr1LW3DFH5RNgtkgWKazS/LM4NepZXI3XSVojE4IpPjSiczaWFPlZvpg==
-X-Received: by 2002:a24:3755:: with SMTP id r82mr244747itr.60.1556754101322;
-        Wed, 01 May 2019 16:41:41 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=9QwYS9bQr6zIIDqya7O/hmsOjlwL0wV6gZaAMteb584=;
+        b=VHRydZdE9g09bewRdJN6zDt03UASCshxHCx/M3XBG2N/jzPGYfmN8xoMRGLr6Y1gQ4
+         7wEQSvxvbGTYrf4dBjEQfWi47cQRjrO8UoDBK7TfWfRnp1BwVCwKAGSVv9j7d8GkcvmE
+         1Xpxx7DdTerdxs254+zVAxu1MeNIEWvbKUz0++ZtiK6OpGA2YorJG9cjDoBEo+CSQ0Ug
+         QPYor4xMd/bHiFPzCfWdHictgjwZwPh6qtJ7CAkKo6lueLFSB+SWflON07aaw69AHdvk
+         axllYJRyMvhQ8rUA7QizYh708zhJEDcTHies3mIJT8hMnfg5Mf1oMEKk6n+dYMmfiS2V
+         YJgw==
+X-Gm-Message-State: APjAAAUdu/1MrtMHZ0W7461pXNYwv7YWOO0yOiveGWC4yfTo0kF8Cufr
+        D6JAqOjrTIzr7t6bRQbsDxte20fx
+X-Google-Smtp-Source: APXvYqzUOhe67dmWZblJCILuzz0Q+Hxn0lkadBy1Jtd2JFyAMJSq9relHK3Vbaj5fue+xqd7U1jFBw==
+X-Received: by 2002:a02:4482:: with SMTP id o124mr305454jaa.121.1556754118389;
+        Wed, 01 May 2019 16:41:58 -0700 (PDT)
 Received: from localhost.localdomain (ppp94-29-35-107.pppoe.spdop.ru. [94.29.35.107])
-        by smtp.gmail.com with ESMTPSA id m3sm2392507ion.69.2019.05.01.16.41.37
+        by smtp.gmail.com with ESMTPSA id m3sm2392507ion.69.2019.05.01.16.41.56
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 01 May 2019 16:41:39 -0700 (PDT)
+        Wed, 01 May 2019 16:41:57 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -63,10 +64,12 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v4 00/16] NVIDIA Tegra devfreq improvements and Tegra20/30 support
-Date:   Thu,  2 May 2019 02:37:59 +0300
-Message-Id: <20190501233815.32643-1-digetx@gmail.com>
+Subject: [PATCH v4 07/16] PM / devfreq: tegra: Properly disable interrupts
+Date:   Thu,  2 May 2019 02:38:06 +0300
+Message-Id: <20190501233815.32643-8-digetx@gmail.com>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190501233815.32643-1-digetx@gmail.com>
+References: <20190501233815.32643-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -74,64 +77,87 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190501233759.9joTL5EU7IPjcxzVmhaiN04JZw62bydxOVfrvDQFlyk@z>
+Message-ID: <20190501233806.60pRZhhIVBNAzqOOw0gmvUilOlLR69iCNxim49KG7zQ@z>
 
-Changelog:
+There is no guarantee that interrupt handling isn't running in parallel
+with tegra_actmon_disable_interrupts(), hence it is necessary to protect
+DEV_CTRL register accesses and clear IRQ status with ACTMON's IRQ being
+disabled in the Interrupt Controller in order to ensure that device
+interrupt is indeed being disabled.
 
-v4: Addressed all review comments that were made by Chanwoo Choi to v3:
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra-devfreq.c | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-    - changed the driver removal order to match the probe exactly
-    - added clarifying comment for 1/8 ratio to the Tegra20 driver
-
-    Chanwoo, please also note that the clk patch that should fix
-    compilation problem that was reported the kbuild-test-robot is already
-    applied and available in the recent linux-next.
-
-v3: Addressed all review comments that were made by Chanwoo Choi to v2.
-
-    Patch "Synchronize IRQ after masking it in hardware" morphed into
-    "Properly disable interrupts", which disables interrupts more solidly.
-
-    Added new minor patch: "Rename tegra-devfreq.c to tegra30-devfreq.c".
-
-    Added missed error handlings for dev_pm_opp_add().
-
-v2: The patchset was quite heavily reworked since v1, few patches we
-    dropped or squashed into the new ones and more patches we added.
-    In a result more bugs and potential problems are fixed now, driver's
-    code got more clean up.
-
-    The Tegra20 driver-addition patch is now a part of this series, it has
-    no changes since v1.
-
-Dmitry Osipenko (16):
-  PM / devfreq: tegra: Fix kHz to Hz conversion
-  PM / devfreq: tegra: Replace readl-writel with relaxed versions
-  PM / devfreq: tegra: Replace write memory barrier with the read
-    barrier
-  PM / devfreq: tegra: Don't ignore clk errors
-  PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
-  PM / devfreq: tegra: Drop primary interrupt handler
-  PM / devfreq: tegra: Properly disable interrupts
-  PM / devfreq: tegra: Clean up driver's probe / remove
-  PM / devfreq: tegra: Avoid inconsistency of current frequency value
-  PM / devfreq: tegra: Mark ACTMON's governor as immutable
-  PM / devfreq: tegra: Move governor registration to driver's probe
-  PM / devfreq: tegra: Reconfigure hardware on governor's restart
-  PM / devfreq: tegra: Support Tegra30
-  PM / devfreq: tegra: Enable COMPILE_TEST for the driver
-  PM / devfreq: tegra: Rename tegra-devfreq.c to tegra30-devfreq.c
-  PM / devfreq: Introduce driver for NVIDIA Tegra20
-
- MAINTAINERS                                   |   8 +
- drivers/devfreq/Kconfig                       |  15 +-
- drivers/devfreq/Makefile                      |   3 +-
- drivers/devfreq/tegra20-devfreq.c             | 212 ++++++++++++
- .../{tegra-devfreq.c => tegra30-devfreq.c}    | 315 ++++++++----------
- 5 files changed, 379 insertions(+), 174 deletions(-)
- create mode 100644 drivers/devfreq/tegra20-devfreq.c
- rename drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} (81%)
-
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index b65313fe3c2e..ce1eb97a2090 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -171,6 +171,8 @@ struct tegra_devfreq {
+ 	struct notifier_block	rate_change_nb;
+ 
+ 	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
++
++	int irq;
+ };
+ 
+ struct tegra_actmon_emc_ratio {
+@@ -417,6 +419,8 @@ static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
+ 	u32 val;
+ 	unsigned int i;
+ 
++	disable_irq(tegra->irq);
++
+ 	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
+ 		dev = &tegra->devices[i];
+ 
+@@ -427,9 +431,14 @@ static void tegra_actmon_disable_interrupts(struct tegra_devfreq *tegra)
+ 		val &= ~ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
+ 
+ 		device_writel(dev, val, ACTMON_DEV_CTRL);
++
++		device_writel(dev, ACTMON_INTR_STATUS_CLEAR,
++			      ACTMON_DEV_INTR_STATUS);
+ 	}
+ 
+ 	actmon_write_barrier(tegra);
++
++	enable_irq(tegra->irq);
+ }
+ 
+ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+@@ -604,7 +613,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	struct resource *res;
+ 	unsigned int i;
+ 	unsigned long rate;
+-	int irq;
+ 	int err;
+ 
+ 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+@@ -673,15 +681,16 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 		dev_pm_opp_add(&pdev->dev, rate, 0);
+ 	}
+ 
+-	irq = platform_get_irq(pdev, 0);
+-	if (irq < 0) {
+-		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", irq);
+-		return irq;
++	tegra->irq = platform_get_irq(pdev, 0);
++	if (tegra->irq < 0) {
++		err = tegra->irq;
++		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
++		return err;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, tegra);
+ 
+-	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
++	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
+ 					actmon_thread_isr, IRQF_ONESHOT,
+ 					"tegra-devfreq", tegra);
+ 	if (err) {
 -- 
 2.21.0
 
