@@ -2,202 +2,241 @@ Return-Path: <SRS0=Sohe=TC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7437FC43219
-	for <linux-pm@archiver.kernel.org>; Thu,  2 May 2019 14:23:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D72E0C04AA9
+	for <linux-pm@archiver.kernel.org>; Thu,  2 May 2019 17:58:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3D7C120652
-	for <linux-pm@archiver.kernel.org>; Thu,  2 May 2019 14:23:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="pxlqr/ea"
+	by mail.kernel.org (Postfix) with ESMTP id ABC6D20C01
+	for <linux-pm@archiver.kernel.org>; Thu,  2 May 2019 17:58:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726399AbfEBOXK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 May 2019 10:23:10 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:48527 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726403AbfEBOXK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2019 10:23:10 -0400
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190502142308euoutp013b922c9ea86c55f630c033bacba7687e~a47UYodUU1465114651euoutp01w
-        for <linux-pm@vger.kernel.org>; Thu,  2 May 2019 14:23:08 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190502142308euoutp013b922c9ea86c55f630c033bacba7687e~a47UYodUU1465114651euoutp01w
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1556806988;
-        bh=zbCRIGD19ZlsyDoT0AKDehhi/Wr3SiotaHEs37U/hi4=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=pxlqr/eayAkL3DFBVNm7Eu6kVJ1x8suad/kFq94PQaIqvMyykl/xSh9pr2NuMsP1/
-         SX41QxPaB/L7KB/Q3wlbdxNQS6TS/6KvJpiLfpXF3+0x85CgYGlCkIqwyP3Zu1btIU
-         0eyHqLZ1k0ouw6ZSfST5p0L4AAGzZ2neIvOVCUdQ=
-Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190502142307eucas1p220f5c18851319ebded0db97e40cf96fe~a47TqdRt_0832308323eucas1p29;
-        Thu,  2 May 2019 14:23:07 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id 4D.14.04377.B4DFACC5; Thu,  2
-        May 2019 15:23:07 +0100 (BST)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20190502142306eucas1p2c83555417d2dd37e99be73214c89d46c~a47S3b_3V0982609826eucas1p2O;
-        Thu,  2 May 2019 14:23:06 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190502142306eusmtrp19fba09dedcf9fd9fcc251b0687b2734f~a47SpOs9e1828518285eusmtrp1B;
-        Thu,  2 May 2019 14:23:06 +0000 (GMT)
-X-AuditID: cbfec7f4-113ff70000001119-f9-5ccafd4ba11c
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id AF.F3.04146.A4DFACC5; Thu,  2
-        May 2019 15:23:06 +0100 (BST)
-Received: from [106.120.51.20] (unknown [106.120.51.20]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190502142305eusmtip20d0ef38e186a88ee355fa6941290bb73~a47R9fk-41443114431eusmtip2k;
-        Thu,  2 May 2019 14:23:05 +0000 (GMT)
-Subject: Re: [PATCH v6 03/10] clk: samsung: add BPLL rate table for Exynos
- 5422 SoC
-To:     Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
-        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
-        s.nawrocki@samsung.com, myungjoo.ham@samsung.com,
-        keescook@chromium.org, tony@atomide.com, jroedel@suse.de,
-        treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-Message-ID: <e280645a-3a7a-5bec-6372-5b46996a7a47@partner.samsung.com>
-Date:   Thu, 2 May 2019 16:23:04 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
-        Thunderbird/60.6.1
+        id S1726452AbfEBR63 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 May 2019 13:58:29 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:41862 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726144AbfEBR61 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2019 13:58:27 -0400
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: gportay)
+        with ESMTPSA id 13200283428
+From:   =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
+To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
+        Lin Huang <hl@rock-chips.com>,
+        Brian Norris <briannorris@chromium.org>,
+        Douglas Anderson <dianders@chromium.org>,
+        Klaus Goger <klaus.goger@theobroma-systems.com>,
+        Derek Basehore <dbasehore@chromium.org>,
+        Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-rockchip@lists.infradead.org
+Cc:     Mark Rutland <mark.rutland@arm.com>, kernel@collabora.com,
+        =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
+Subject: [PATCH v5 3/6] devfreq: rk3399_dmc: Pass ODT and auto power down parameters to TF-A.
+Date:   Thu,  2 May 2019 13:58:17 -0400
+Message-Id: <20190502175820.25382-4-gael.portay@collabora.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190502175820.25382-1-gael.portay@collabora.com>
+References: <20190502175820.25382-1-gael.portay@collabora.com>
 MIME-Version: 1.0
-In-Reply-To: <62f85c18-d3ac-3425-8ee3-538f8c677603@samsung.com>
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA02SfUhTYRTGfXfv7q7S7HWanuwLVkQWmZbQW0YfFDUqpH+CUKlWXrVyU3e1
-        MkOWy8zKVUamUzOJmC4tMy2/yFDJ1NRWitKyJNenGYTTCk1yu5P87/c85znvOQdelpINiX3Z
-        I+oETqNWxsgZN/rRsz+dK3f9bQsPKHvKkAc598Wk1/ZZTAqbO8Xk7s9BRK61FYjIi4sqcnlw
-        iCJdXeUS0pH6XUJe1+YzZCSzGZGcriciUtbcLyGWM8UMafqeLiYN3TuJZdydjD3/gDbLFGOj
-        WbQiT2umFTWGfomiwpTBKDJ1PxiFvtKEFA/bkxUjFQv3sKFuGyK4mCPHOc2qjQfdoruzfzNx
-        +vkns4w1lBaZvS8gVxZwENRczaYuIDdWhosRDL9tpAVhQ5BdP+QUIwhaLXpquuXrx2GJUDAi
-        6C06LxbEMAJbzy+xPeWJ90JaQYvIXvDCtxFcLxl3CArfFcHEaNlUimUZ7A/Vpng7SvF2sAyE
-        2ntpvASKrUWOaXPwPnj/rNzxphR7QGuulbazK94EZRetjgyFfeCNtVAk8CLQVeU5N81l4WqT
-        n8DboCq9CAnsCd9aKiUCz4f2a5dogXnQZk5nTsPg5QJnJhiaWsyOjSnsB/drVwn2FrhXV0rZ
-        bcDu0DfsIWzgDlmPbjhtKZw/JxPSy6Dy0kuRwN5gLM2WXEFyw4y7DDNuMcy4xfB/7i1Em5AP
-        l8irojh+tZo74c8rVXyiOsr/cKyqAk19wfbJFls1qp041Igwi+SzpPCuLVwmVh7nk1SNCFhK
-        7iXd/3PKkkYok05xmtgDmsQYjm9E81ha7iNNdhkIk+EoZQJ3jOPiOM10VcS6+mrRjZ6t+pL9
-        o5KjtZ87dIaG+E9PV5TXqxbvTu0PZ6J2LggLqq+wtj42zmUm16T3j/cEWX8Fr62LDrEFl/hG
-        9nYZO/xdDPms+WzSl74BHBGUFnLlRcomrAvwjaVL7yTodmToMwKq/V6ljFS5zIt8bvr9Z+nN
-        2fHbi9b3BCYnqNd9cY2U03y0MnA5peGV/wDNIQgDfgMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrHIsWRmVeSWpSXmKPExsVy+t/xe7pef0/FGMz9xm+xccZ6VovrX56z
-        Wsw/co7VYvXHx4wWk0/NZbI4051r0f/4NbPF+fMb2C3ONr1ht7i8aw6bxefeI4wWM87vY7JY
-        e+Quu8XtxhVsFofftLNa7L/iZXH7N5/FtxOPGB2EPL59ncTiMbvhIovHzll32T02repk8+ht
-        fsfm0bdlFaPH5tPVHp83yQVwROnZFOWXlqQqZOQXl9gqRRtaGOkZWlroGZlY6hkam8daGZkq
-        6dvZpKTmZJalFunbJehlXJn2g62gT6Zi0vKdzA2MF8W6GDk5JARMJF4+fcvexcjFISSwlFFi
-        8r5pzBAJMYlJ+7azQ9jCEn+udbGB2EICrxklFjZWg9jCAqESrXOPM4HYIgKLGSW+tlaDDGIW
-        WM0kMenjFjaIqVOYJG4+esDSxcjBwSagJ7FjVSGIySvgJnH7QRRIL4uAisSKJwvB9ooKREic
-        eb+CBcTmFRCUODnzCZjNKWAvsbb7CVgNs4CZxLzND6FscYlbT+YzQdjyEs1bZzNPYBSahaR9
-        FpKWWUhaZiFpWcDIsopRJLW0ODc9t9hQrzgxt7g0L10vOT93EyMw7rcd+7l5B+OljcGHGAU4
-        GJV4eCXunYoRYk0sK67MPcQowcGsJMIb9xEoxJuSWFmVWpQfX1Sak1p8iNEU6LmJzFKiyfnA
-        lJRXEm9oamhuYWlobmxubGahJM7bIXAwRkggPbEkNTs1tSC1CKaPiYNTqoFRYaHTza7+UK7d
-        G2aYF+qkWNY9rCn/OPee0ORfFgmbD14VcU6Z8Cs/Um7G3dXVrAxJkbuOVb09G7AvRKefYbrn
-        8crpR9hXNUr8dhB6dEvBsZWFgfeHX5T/9+TXFWdzGpZ/rspa070i+UlYxM176tEnJ2jsviS/
-        qz2W1zm0cdkvpfnb2CbV/RBWYinOSDTUYi4qTgQArQP2YxEDAAA=
-X-CMS-MailID: 20190502142306eucas1p2c83555417d2dd37e99be73214c89d46c
-X-Msg-Generator: CA
 Content-Type: text/plain; charset="UTF-8"
-X-RootMTR: 20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d
-References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d@eucas1p2.samsung.com>
-        <1555683568-20882-4-git-send-email-l.luba@partner.samsung.com>
-        <62f85c18-d3ac-3425-8ee3-538f8c677603@samsung.com>
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190502142304.065yLN7Hgdbff2cbwHw9yu8tZdcVS3vptwi5C7uy5PQ@z>
+Message-ID: <20190502175817.yAp84ubGlwc_WgGcq4fy0sm83z-ouaPPb1RHWDD3mx8@z>
 
-Hi Chanwoo,
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-On 5/2/19 7:15 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
-> 
-> On 19. 4. 19. 오후 11:19, Lukasz Luba wrote:
->> Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
->> Controller frequencies for driver's DRAM timings.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   drivers/clk/samsung/clk-exynos5420.c | 13 ++++++++++++-
->>   1 file changed, 12 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
->> index d9e6653..ddee8bd 100644
->> --- a/drivers/clk/samsung/clk-exynos5420.c
->> +++ b/drivers/clk/samsung/clk-exynos5420.c
->> @@ -1323,6 +1323,17 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
->>   	PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
->>   };
->>   
->> +static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
->> +	PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
->> +	PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
->> +	PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
->> +	PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
->> +	PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
->> +};
->> +
->>   static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
->>   	PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
->>   	PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
->> @@ -1465,7 +1476,7 @@ static void __init exynos5x_clk_init(struct device_node *np,
->>   		exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->>   		exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
->>   		exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->> -		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->> +		exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
-> 
-> According to your previous reply, the released odroid-xu3 board by hardkernel
-> might be only CONFIG_SOC_EXYNOS5422_REV_0. Because the kernel configurattion
-> from hardkernel has 'CONFIG_SOC_EXYNOS5422_REV_0=y'. I'm ok about adding bpll rate_table.
-> 
-> But, just I have one question. I think that this bpll rate_table is for
-> only Exynos5422 series. Because the kernel of hardkernel used
-> driver/clk/samsung/clk-exynos5422.c instead of clk-exynos5420.c commonn driver.
-> It means that the clk-exynos5422.c of hardkernel's kernel support only Exynos5422
-> without any considering the Exynos5420 series.
-> 
-> I think that it might need to check the soc version to use
-> bpll rate_table as following:
-Fair enough.
-> 
-> --- a/drivers/clk/samsung/clk-exynos5420.c
-> +++ b/drivers/clk/samsung/clk-exynos5420.c
-> @@ -1438,7 +1438,10 @@ static void __init exynos5x_clk_init(struct device_node *np,
->                  exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->                  exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
->                  exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
-> -               exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
-> +
-> +               if (soc == EXYNOS5800)
-> +                       exynos5x_plls[bpll].rate_table
-> +                               = exynos5422_bpll_rate_table;
->          }
-> 
-I will add this check. Thank you.
+Trusted Firmware-A (TF-A) for rk3399 implements a SiP call to get the
+on-die termination (ODT) and auto power down parameters from kernel,
+this patch adds the functionality to do this. Also, if DDR clock
+frequency is lower than the on-die termination (ODT) disable frequency
+this driver should disable the DDR ODT.
 
-Regards,
-Lukasz
-> 
->>   	}
->>   
->>   	samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
->>
-> 
-> 
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+
+Changes in v5: None
+
+Changes in v4:
+- [PATCH v3 3/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
+
+Changes in v3:
+- [PATCH v2 3/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
+		 Remove comments.
+		 Move pmu dt parsing after dt-parsing of timings to fix
+		  data->odt_dis_freq value.
+
+Changes in v2: None
+
+Changes in v1:
+- [RFC 3/10] Add an explanation for platform SIP calls.
+- [RFC 3/10] Change if statement for a switch.
+- [RFC 3/10] Rename ddr_flag to odt_enable to be more clear.
+
+ drivers/devfreq/rk3399_dmc.c        | 71 ++++++++++++++++++++++++++++-
+ include/soc/rockchip/rockchip_sip.h |  1 +
+ 2 files changed, 71 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index e795ad2b3f6b..daf19e121c99 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -18,14 +18,17 @@
+ #include <linux/devfreq.h>
+ #include <linux/devfreq-event.h>
+ #include <linux/interrupt.h>
++#include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
++#include <linux/regmap.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/rwsem.h>
+ #include <linux/suspend.h>
+ 
++#include <soc/rockchip/rk3399_grf.h>
+ #include <soc/rockchip/rockchip_sip.h>
+ 
+ struct dram_timing {
+@@ -69,8 +72,11 @@ struct rk3399_dmcfreq {
+ 	struct mutex lock;
+ 	struct dram_timing timing;
+ 	struct regulator *vdd_center;
++	struct regmap *regmap_pmu;
+ 	unsigned long rate, target_rate;
+ 	unsigned long volt, target_volt;
++	unsigned int odt_dis_freq;
++	int odt_pd_arg0, odt_pd_arg1;
+ };
+ 
+ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+@@ -80,6 +86,8 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 	struct dev_pm_opp *opp;
+ 	unsigned long old_clk_rate = dmcfreq->rate;
+ 	unsigned long target_volt, target_rate;
++	struct arm_smccc_res res;
++	bool odt_enable = false;
+ 	int err;
+ 
+ 	opp = devfreq_recommended_opp(dev, freq, flags);
+@@ -95,6 +103,19 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 
+ 	mutex_lock(&dmcfreq->lock);
+ 
++	if (target_rate >= dmcfreq->odt_dis_freq)
++		odt_enable = true;
++
++	/*
++	 * This makes a SMC call to the TF-A to set the DDR PD (power-down)
++	 * timings and to enable or disable the ODT (on-die termination)
++	 * resistors.
++	 */
++	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, dmcfreq->odt_pd_arg0,
++		      dmcfreq->odt_pd_arg1,
++		      ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD,
++		      odt_enable, 0, 0, 0, &res);
++
+ 	/*
+ 	 * If frequency scaling from low to high, adjust voltage first.
+ 	 * If frequency scaling from high to low, adjust frequency first.
+@@ -294,11 +315,13 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ {
+ 	struct arm_smccc_res res;
+ 	struct device *dev = &pdev->dev;
+-	struct device_node *np = pdev->dev.of_node;
++	struct device_node *np = pdev->dev.of_node, *node;
+ 	struct rk3399_dmcfreq *data;
+ 	int ret, index, size;
+ 	uint32_t *timing;
+ 	struct dev_pm_opp *opp;
++	u32 ddr_type;
++	u32 val;
+ 
+ 	data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
+ 	if (!data)
+@@ -354,10 +377,56 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	node = of_parse_phandle(np, "rockchip,pmu", 0);
++	if (node) {
++		data->regmap_pmu = syscon_node_to_regmap(node);
++		if (IS_ERR(data->regmap_pmu))
++			return PTR_ERR(data->regmap_pmu);
++	}
++
++	regmap_read(data->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
++	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
++		    RK3399_PMUGRF_DDRTYPE_MASK;
++
++	switch (ddr_type) {
++	case RK3399_PMUGRF_DDRTYPE_DDR3:
++		data->odt_dis_freq = data->timing.ddr3_odt_dis_freq;
++		break;
++	case RK3399_PMUGRF_DDRTYPE_LPDDR3:
++		data->odt_dis_freq = data->timing.lpddr3_odt_dis_freq;
++		break;
++	case RK3399_PMUGRF_DDRTYPE_LPDDR4:
++		data->odt_dis_freq = data->timing.lpddr4_odt_dis_freq;
++		break;
++	default:
++		return -EINVAL;
++	};
++
+ 	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, 0, 0,
+ 		      ROCKCHIP_SIP_CONFIG_DRAM_INIT,
+ 		      0, 0, 0, 0, &res);
+ 
++	/*
++	 * In TF-A there is a platform SIP call to set the PD (power-down)
++	 * timings and to enable or disable the ODT (on-die termination).
++	 * This call needs three arguments as follows:
++	 *
++	 * arg0:
++	 *     bit[0-7]   : sr_idle
++	 *     bit[8-15]  : sr_mc_gate_idle
++	 *     bit[16-31] : standby idle
++	 * arg1:
++	 *     bit[0-11]  : pd_idle
++	 *     bit[16-27] : srpd_lite_idle
++	 * arg2:
++	 *     bit[0]     : odt enable
++	 */
++	data->odt_pd_arg0 = (data->timing.sr_idle & 0xff) |
++			    ((data->timing.sr_mc_gate_idle & 0xff) << 8) |
++			    ((data->timing.standby_idle & 0xffff) << 16);
++	data->odt_pd_arg1 = (data->timing.pd_idle & 0xfff) |
++			    ((data->timing.srpd_lite_idle & 0xfff) << 16);
++
+ 	/*
+ 	 * We add a devfreq driver to our parent since it has a device tree node
+ 	 * with operating points.
+diff --git a/include/soc/rockchip/rockchip_sip.h b/include/soc/rockchip/rockchip_sip.h
+index 7e28092c4d3d..ad9482c56797 100644
+--- a/include/soc/rockchip/rockchip_sip.h
++++ b/include/soc/rockchip/rockchip_sip.h
+@@ -23,5 +23,6 @@
+ #define ROCKCHIP_SIP_CONFIG_DRAM_GET_RATE	0x05
+ #define ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ	0x06
+ #define ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM	0x07
++#define ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD	0x08
+ 
+ #endif
+-- 
+2.21.0
+
