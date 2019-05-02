@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
-Subject: [PATCH v5 1/6] devfreq: rockchip-dfi: Move GRF definitions to a common place.
-Date: Thu,  2 May 2019 13:58:15 -0400
-Message-ID: <20190502175820.25382-2-gael.portay@collabora.com>
+Subject: [PATCH v5 4/6] arm64: dts: rk3399: Add dfi and dmc nodes.
+Date: Thu,  2 May 2019 13:58:18 -0400
+Message-ID: <20190502175820.25382-5-gael.portay@collabora.com>
 References: <20190502175820.25382-1-gael.portay@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -13,120 +13,63 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsun
 Cc: Mark Rutland <mark.rutland@arm.com>, kernel@collabora.com, =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+From: Lin Huang <hl@rock-chips.com>
 
-Some rk3399 GRF (Generic Register Files) definitions can be used for
-different drivers. Move these definitions to a common include so we
-don't need to duplicate these definitions.
+These are required to support DDR DVFS on rk3399 platform.
 
+Signed-off-by: Lin Huang <hl@rock-chips.com>
 Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
 
 Changes in v5: None
 
 Changes in v4:
-- [PATCH v3 1/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
+- [PATCH v3 4/5] Remove board related DDR settings.
 
-Changes in v3:
-- [PATCH v2 1/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
+Changes in v3: None
 
 Changes in v2:
-- [PATCH 1/8] Really add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>.
+- [PATCH 7/8] Reword the commit message to reflect the removal of
+              rk3390-dram-default-timing.dts in v1.
 
 Changes in v1:
-- [RFC 1/10] Add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-- [RFC 1/10] s/Generic/General/ (Robin Murphy)
-- [RFC 4/10] Removed from the series. I did not found a use case where not holding the mutex causes the issue.
-- [RFC 7/10] Removed from the series. I did not found a use case where this matters.
+- [RFC 8/10] Move rk3399-dram.h to dt-includes.
+- [RFC 8/10] Put sdram default values under the dmc node.
+- [RFC 8/10] Removed rk3399-dram-default-timing.dts
 
- drivers/devfreq/event/rockchip-dfi.c | 23 +++++++----------------
- include/soc/rockchip/rk3399_grf.h    | 21 +++++++++++++++++++++
- 2 files changed, 28 insertions(+), 16 deletions(-)
- create mode 100644 include/soc/rockchip/rk3399_grf.h
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 22b113363ffc..2fbbcbeb644f 100644
---- a/drivers/devfreq/event/rockchip-dfi.c
-+++ b/drivers/devfreq/event/rockchip-dfi.c
-@@ -26,6 +26,8 @@
- #include <linux/list.h>
- #include <linux/of.h>
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+index db9d948c0b03..87ee084fac89 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
+@@ -1885,6 +1885,25 @@
+ 		status = "disabled";
+ 	};
  
-+#include <soc/rockchip/rk3399_grf.h>
++	dfi: dfi@ff630000 {
++		reg = <0x00 0xff630000 0x00 0x4000>;
++		compatible = "rockchip,rk3399-dfi";
++		rockchip,pmu = <&pmugrf>;
++		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
++		clocks = <&cru PCLK_DDR_MON>;
++		clock-names = "pclk_ddr_mon";
++		status = "disabled";
++	};
 +
- #define RK3399_DMC_NUM_CH	2
- 
- /* DDRMON_CTRL */
-@@ -43,18 +45,6 @@
- #define DDRMON_CH1_COUNT_NUM		0x3c
- #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
- 
--/* pmu grf */
--#define PMUGRF_OS_REG2	0x308
--#define DDRTYPE_SHIFT	13
--#define DDRTYPE_MASK	7
--
--enum {
--	DDR3 = 3,
--	LPDDR3 = 6,
--	LPDDR4 = 7,
--	UNUSED = 0xFF
--};
--
- struct dmc_usage {
- 	u32 access;
- 	u32 total;
-@@ -83,16 +73,17 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
- 	u32 ddr_type;
- 
- 	/* get ddr type */
--	regmap_read(info->regmap_pmu, PMUGRF_OS_REG2, &val);
--	ddr_type = (val >> DDRTYPE_SHIFT) & DDRTYPE_MASK;
-+	regmap_read(info->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
-+	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
-+		    RK3399_PMUGRF_DDRTYPE_MASK;
- 
- 	/* clear DDRMON_CTRL setting */
- 	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
- 
- 	/* set ddr type to dfi */
--	if (ddr_type == LPDDR3)
-+	if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR3)
- 		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
--	else if (ddr_type == LPDDR4)
-+	else if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR4)
- 		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
- 
- 	/* enable count, use software mode */
-diff --git a/include/soc/rockchip/rk3399_grf.h b/include/soc/rockchip/rk3399_grf.h
-new file mode 100644
-index 000000000000..3eebabcb2812
---- /dev/null
-+++ b/include/soc/rockchip/rk3399_grf.h
-@@ -0,0 +1,21 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Rockchip General Register Files definitions
-+ *
-+ * Copyright (c) 2018, Collabora Ltd.
-+ * Author: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-+ */
++	dmc: dmc {
++		compatible = "rockchip,rk3399-dmc";
++		rockchip,pmu = <&pmugrf>;
++		devfreq-events = <&dfi>;
++		clocks = <&cru SCLK_DDRC>;
++		clock-names = "dmc_clk";
++		status = "disabled";
++	};
 +
-+#ifndef __SOC_RK3399_GRF_H
-+#define __SOC_RK3399_GRF_H
-+
-+/* PMU GRF Registers */
-+#define RK3399_PMUGRF_OS_REG2		0x308
-+#define RK3399_PMUGRF_DDRTYPE_SHIFT	13
-+#define RK3399_PMUGRF_DDRTYPE_MASK	7
-+#define RK3399_PMUGRF_DDRTYPE_DDR3	3
-+#define RK3399_PMUGRF_DDRTYPE_LPDDR2	5
-+#define RK3399_PMUGRF_DDRTYPE_LPDDR3	6
-+#define RK3399_PMUGRF_DDRTYPE_LPDDR4	7
-+
-+#endif
+ 	pinctrl: pinctrl {
+ 		compatible = "rockchip,rk3399-pinctrl";
+ 		rockchip,grf = <&grf>;
 -- 
 2.21.0
