@@ -1,101 +1,124 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v6 03/10] clk: samsung: add BPLL rate table for Exynos
- 5422 SoC
-Date: Thu, 2 May 2019 16:23:04 +0200
-Message-ID: <e280645a-3a7a-5bec-6372-5b46996a7a47@partner.samsung.com>
-References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419141943eucas1p220d77bacfc4fcba8ec6a10f540e1a27d@eucas1p2.samsung.com>
-        <1555683568-20882-4-git-send-email-l.luba@partner.samsung.com>
-        <62f85c18-d3ac-3425-8ee3-538f8c677603@samsung.com>
+From: =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
+Subject: [PATCH v5 0/5] Add support for drm/rockchip to dynamically control the DDR frequency.
+Date: Thu,  2 May 2019 13:58:14 -0400
+Message-ID: <20190502175820.25382-1-gael.portay@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <62f85c18-d3ac-3425-8ee3-538f8c677603@samsung.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lin Huang <hl@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Derek Basehore <dbasehore@chromium.org>, Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
+Cc: Mark Rutland <mark.rutland@arm.com>, kernel@collabora.com, =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+Dear all,
 
-On 5/2/19 7:15 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
-> 
-> On 19. 4. 19. 오후 11:19, Lukasz Luba wrote:
->> Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
->> Controller frequencies for driver's DRAM timings.
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   drivers/clk/samsung/clk-exynos5420.c | 13 ++++++++++++-
->>   1 file changed, 12 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
->> index d9e6653..ddee8bd 100644
->> --- a/drivers/clk/samsung/clk-exynos5420.c
->> +++ b/drivers/clk/samsung/clk-exynos5420.c
->> @@ -1323,6 +1323,17 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
->>   	PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
->>   };
->>   
->> +static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
->> +	PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
->> +	PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
->> +	PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
->> +	PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
->> +	PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
->> +};
->> +
->>   static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
->>   	PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
->>   	PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
->> @@ -1465,7 +1476,7 @@ static void __init exynos5x_clk_init(struct device_node *np,
->>   		exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->>   		exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
->>   		exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->> -		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->> +		exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
-> 
-> According to your previous reply, the released odroid-xu3 board by hardkernel
-> might be only CONFIG_SOC_EXYNOS5422_REV_0. Because the kernel configurattion
-> from hardkernel has 'CONFIG_SOC_EXYNOS5422_REV_0=y'. I'm ok about adding bpll rate_table.
-> 
-> But, just I have one question. I think that this bpll rate_table is for
-> only Exynos5422 series. Because the kernel of hardkernel used
-> driver/clk/samsung/clk-exynos5422.c instead of clk-exynos5420.c commonn driver.
-> It means that the clk-exynos5422.c of hardkernel's kernel support only Exynos5422
-> without any considering the Exynos5420 series.
-> 
-> I think that it might need to check the soc version to use
-> bpll rate_table as following:
-Fair enough.
-> 
-> --- a/drivers/clk/samsung/clk-exynos5420.c
-> +++ b/drivers/clk/samsung/clk-exynos5420.c
-> @@ -1438,7 +1438,10 @@ static void __init exynos5x_clk_init(struct device_node *np,
->                  exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->                  exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
->                  exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
-> -               exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
-> +
-> +               if (soc == EXYNOS5800)
-> +                       exynos5x_plls[bpll].rate_table
-> +                               = exynos5422_bpll_rate_table;
->          }
-> 
-I will add this check. Thank you.
+The rk3399 platform has a DFI controller that can monitor DDR load and a
+DMC driver that talks with the TF-A (Trusted Firmware-A) to dynamically
+set the DDR frequency with following flow.
 
-Regards,
-Lukasz
-> 
->>   	}
->>   
->>   	samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
->>
-> 
-> 
+             kernel                          Trusted Firmware-A
+                                                  (bl31)
+        monitor ddr load
+                |
+                |
+        get_target_rate
+                |
+                |           pass rate to TF-A
+        clk_set_rate(ddr) --------------------->run ddr dvs flow
+                                                    |
+                                                    |
+                 <------------------------------end ddr dvs flow
+                |
+                |
+              return
+
+These patches add support for devfreq to dynamically control the DDR
+frequency for the gru chromebooks. By default it uses the
+'simple_ondemand' governor which can adjust the frequency based on the
+DDR load.
+
+Waiting for your feedback.
+
+Best regards,
+Gaël
+
+Note: The RFC and the first patchset contained three patches to sync the
+DDR frequency change within the vblank. These patches was submitted
+separatly in a dedicated RFC[1].
+
+[1]: https://lkml.org/lkml/2019/4/30/1066
+
+Changes in v5:
+- [PATCH v4 5/5] Remove use of DRAM setting defines.
+		 Remove new DRAM setting header.
+- [PATCH v5 6/6] Remove references of unexistant defines in documentation (new
+                 patch).
+
+Changes in v4:
+- [PATCH v3 1/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
+- [PATCH v3 2/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
+- [PATCH v3 3/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
+- [PATCH v3 4/5] Remove board related DDR settings (moved to 5/5).
+- [PATCH v3 5/5] Add board related DDR settings (moved from 5/5).
+
+Changes in v3:
+- [PATCH v2 1/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
+- [PATCH v2 2/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
+- [PATCH v2 3/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
+		 Remove comments.
+		 Move pmu dt parsing after dt-parsing of timings to fix
+		  data->odt_dis_freq value.
+- [PATCH v2 5/5] Remove display_subsystem nodes.
+
+Changes in v2:
+- [PATCH 1/8] Really add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>.
+- [PATCH 4/8] Removed from patchset.
+- [PATCH 5/8] Removed from patchset.
+- [PATCH 6/8] Removed from patchset.
+- [PATCH 7/8] Reword the commit message to reflect the removal of
+              rk3390-dram-default-timing.dts in v1.
+- [PATCH 8/8] Move center-supply attribute of dmc node in file
+              rk3399-gru-chromebook.dtsi (where ppvar_centerlogic is
+	      defined).
+
+Changes in v1:
+- [RFC 1/10] Add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+- [RFC 1/10] s/Generic/General/ (Robin Murphy)
+- [RFC 2/10] Add reviewed and acked tags from Chanwoo Choi and Rob Herring
+- [RFC 3/10] Add an explanation for platform SIP calls.
+- [RFC 3/10] Change if statement for a switch.
+- [RFC 3/10] Rename ddr_flag to odt_enable to be more clear.
+- [RFC 4/10] Removed from the series. I did not found a use case where not holding the mutex causes the issue.
+- [RFC 7/10] Removed from the series. I did not found a use case where this matters.
+- [RFC 8/10] Move rk3399-dram.h to dt-includes.
+- [RFC 8/10] Put sdram default values under the dmc node.
+- [RFC 8/10] Removed rk3399-dram-default-timing.dts
+
+Enric Balletbo i Serra (3):
+  devfreq: rockchip-dfi: Move GRF definitions to a common place.
+  dt-bindings: devfreq: rk3399_dmc: Add rockchip,pmu phandle.
+  devfreq: rk3399_dmc: Pass ODT and auto power down parameters to TF-A.
+
+Gaël PORTAY (1):
+  dt-bindings: devfreq: rk3399_dmc: Remove references of unexistant
+    defines
+
+Lin Huang (2):
+  arm64: dts: rk3399: Add dfi and dmc nodes.
+  arm64: dts: rockchip: Enable dmc and dfi nodes on gru.
+
+ .../bindings/devfreq/rk3399_dmc.txt           | 75 +++++++++----------
+ .../dts/rockchip/rk3399-gru-chromebook.dtsi   |  4 +
+ arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi  | 45 +++++++++++
+ .../boot/dts/rockchip/rk3399-op1-opp.dtsi     | 29 +++++++
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi      | 19 +++++
+ drivers/devfreq/event/rockchip-dfi.c          | 23 ++----
+ drivers/devfreq/rk3399_dmc.c                  | 71 +++++++++++++++++-
+ include/soc/rockchip/rk3399_grf.h             | 21 ++++++
+ include/soc/rockchip/rockchip_sip.h           |  1 +
+ 9 files changed, 232 insertions(+), 56 deletions(-)
+ create mode 100644 include/soc/rockchip/rk3399_grf.h
+
+-- 
+2.21.0
