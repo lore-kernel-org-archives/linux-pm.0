@@ -1,79 +1,55 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] power/poweroff.c: mark variables with __initdata and
- __maybe_unused
-Date: Thu, 2 May 2019 20:22:50 +0200
-Message-ID: <20190502182250.GA4845@amd>
-References: <20190502074305.GA6039@vostro>
- <20190502101500.GA23980@amd>
- <20190502175958.GA14955@vostro>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH] thermal: cpu_cooling: Actually trace CPU load in thermal_power_cpu_get_power
+Date: Thu,  2 May 2019 11:32:38 -0700
+Message-ID: <20190502183238.182058-1-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190502175958.GA14955@vostro>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nikitas Angelinas <nikitas.angelinas@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
+The CPU load values passed to the thermal_power_cpu_get_power
+tracepoint are zero for all CPUs, unless, unless the
+thermal_power_cpu_limit tracepoint is enabled too:
 
---OgqxwSJOaUobr8KG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+  irq/41-rockchip-98    [000] ....   290.972410: thermal_power_cpu_get_power:
+  cpus=0000000f freq=1800000 load={{0x0,0x0,0x0,0x0}} dynamic_power=4815
 
-On Thu 2019-05-02 10:59:58, Nikitas Angelinas wrote:
-> On Thu, May 02, 2019 at 12:15:00PM +0200, Pavel Machek wrote:
-> > On Thu 2019-05-02 00:43:05, Nikitas Angelinas wrote:
-> > > There is no need to keep sysrq_poweroff_op after initialization, so m=
-ark
-> > > it with __initdata.
-> >=20
-> > Are you sure?
-> >=20
-> > pavel@duo:/data/l/k$ grep -ri sysrq_key_op . | grep initdata
-> > pavel@duo:/data/l/k$
-> >=20
-> >=20
-> > 									Pavel
-> >=20
-> I am sorry about this. I completely missed the point of registering this
-> structure. Please ignore this patch.
->=20
+vs
 
-Yup. You can have Acked-by: for the other parts.
+  irq/41-rockchip-96    [000] ....    95.773585: thermal_power_cpu_get_power:
+  cpus=0000000f freq=1800000 load={{0x56,0x64,0x64,0x5e}} dynamic_power=4959
+  irq/41-rockchip-96    [000] ....    95.773596: thermal_power_cpu_limit:
+  cpus=0000000f freq=408000 cdev_state=10 power=416
 
-									Pavel
+There seems to be no good reason for omitting the CPU load information
+depending on another tracepoint. My guess is that the intention was to
+check whether thermal_power_cpu_get_power is (still) enabled, however
+'load_cpu != NULL' already indicates that it was at least enabled when
+cpufreq_get_requested_power() was entered, there seems little gain
+from omitting the assignment if the tracepoint was just disabled, so
+just remove the check.
 
-> > > =20
-> > > -static struct sysrq_key_op	sysrq_poweroff_op =3D {
-> > > +static struct sysrq_key_op sysrq_poweroff_op __initdata =3D {
-> > >  	.handler        =3D handle_poweroff,
-> > >  	.help_msg       =3D "poweroff(o)",
-> > >  	.action_msg     =3D "Power Off",
-> >=20
-> > --=20
-> > (english) http://www.livejournal.com/~pavelmachek
-> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
->=20
+Fixes: 6828a4711f99 ("thermal: add trace events to the power allocator governor")
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ drivers/thermal/cpu_cooling.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---OgqxwSJOaUobr8KG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlzLNXoACgkQMOfwapXb+vKmjgCgnFC4NkPKTlbkBpxuDlHQPYfp
-TToAoKbW6WSTatCwlvhlp9pUbt/Obi4P
-=kXiy
------END PGP SIGNATURE-----
-
---OgqxwSJOaUobr8KG--
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index f7c1f49ec87f..b437804e099b 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -458,7 +458,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+ 			load = 0;
+ 
+ 		total_load += load;
+-		if (trace_thermal_power_cpu_limit_enabled() && load_cpu)
++		if (load_cpu)
+ 			load_cpu[i] = load;
+ 
+ 		i++;
+-- 
+2.21.0.593.g511ec345e18-goog
