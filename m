@@ -1,11 +1,11 @@
 From: michael.kao <michael.kao@mediatek.com>
-Subject: [PATCH 4/8] arm64: dts: mt8183: Configure CPU cooling
-Date: Thu, 2 May 2019 18:43:11 +0800
-Message-ID: <1556793795-25204-5-git-send-email-michael.kao@mediatek.com>
+Subject: [PATCH 8/8] thermal: mediatek: use spinlock to protect PTPCORESEL
+Date: Thu, 2 May 2019 18:43:15 +0800
+Message-ID: <1556793795-25204-9-git-send-email-michael.kao@mediatek.com>
 References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
@@ -18,42 +18,65 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: michael.kao@mediatek.com, fan.chen@mediatek.com, jamesjj.liao@mediatek.com, dawei.chien@mediatek.com, louis.yu@mediatek.com, roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Matthias Kaehlcke <mka@chromium.org>, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogTWF0dGhpYXMgS2FlaGxja2UgPG1rYUBjaHJvbWl1bS5vcmc+CgpBZGQgdHdvIHBhc3Np
-dmUgdHJpcCBwb2ludHMgYXQgNjjCsEMgYW5kIDg1wrBDIGZvciB0aGUgQ1BVIHRlbXBlcmF0dXJl
-LgoKU2lnbmVkLW9mZi1ieTogTWF0dGhpYXMgS2FlaGxja2UgPG1rYUBjaHJvbWl1bS5vcmc+ClNp
-Z25lZC1vZmYtYnk6IE1pY2hhZWwgS2FvIDxtaWNoYWVsLmthb0BtZWRpYXRlay5jb20+Ci0tLQog
-YXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaSB8IDU1ICsrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrCiAxIGZpbGUgY2hhbmdlZCwgNTUgaW5zZXJ0aW9ucygrKQoK
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0c2kgYi9h
-cmNoL2FybTY0L2Jvb3QvZHRzL21lZGlhdGVrL210ODE4My5kdHNpCmluZGV4IDk1ZjFkN2IuLjBi
-MzI5NGIgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0
-c2kKKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaQpAQCAtMzc1
-LDYgKzM3NSw2MSBAQAogCiAJCQkJdGhlcm1hbC1zZW5zb3JzID0gPCZ0aGVybWFsIDA+OwogCQkJ
-CXN1c3RhaW5hYmxlLXBvd2VyID0gPDE1MDA+OworCisJCQkJdHJpcHMgeworCQkJCQl0aHJlc2hv
-bGQ6IHRyaXAtcG9pbnRAMCB7CisJCQkJCQl0ZW1wZXJhdHVyZSA9IDw2ODAwMD47CisJCQkJCQlo
-eXN0ZXJlc2lzID0gPDIwMDA+OworCQkJCQkJdHlwZSA9ICJwYXNzaXZlIjsKKwkJCQkJfTsKKwor
-CQkJCQl0YXJnZXQ6IHRyaXAtcG9pbnRAMSB7CisJCQkJCQl0ZW1wZXJhdHVyZSA9IDw4NTAwMD47
-CisJCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+OworCQkJCQkJdHlwZSA9ICJwYXNzaXZlIjsKKwkJ
-CQkJfTsKKworCQkJCQljcHVfY3JpdDogY3B1LWNyaXQgeworCQkJCQkJdGVtcGVyYXR1cmUgPSA8
-MTE1MDAwPjsKKwkJCQkJCWh5c3RlcmVzaXMgPSA8MjAwMD47CisJCQkJCQl0eXBlID0gImNyaXRp
-Y2FsIjsKKwkJCQkJfTsKKwkJCQl9OworCisJCQkJY29vbGluZy1tYXBzIHsKKwkJCQkJbWFwMCB7
-CisJCQkJCQl0cmlwID0gPCZ0YXJnZXQ+OworCQkJCQkJY29vbGluZy1kZXZpY2UgPSA8JmNwdTAK
-KwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD4sCisJCQkJ
-CQkJCSA8JmNwdTEKKwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19M
-SU1JVD4sCisJCQkJCQkJCSA8JmNwdTIKKwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJ
-VEhFUk1BTF9OT19MSU1JVD4sCisJCQkJCQkJCSA8JmNwdTMKKwkJCQkJCQlUSEVSTUFMX05PX0xJ
-TUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD47CisJCQkJCQljb250cmlidXRpb24gPSA8MzA3
-Mj47CisJCQkJCX07CisJCQkJCW1hcDEgeworCQkJCQkJdHJpcCA9IDwmdGFyZ2V0PjsKKwkJCQkJ
-CWNvb2xpbmctZGV2aWNlID0gPCZjcHU0CisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVAorCQkJCQkJ
-CVRIRVJNQUxfTk9fTElNSVQ+LAorCQkJCQkJCQkgPCZjcHU1CisJCQkJCQkJVEhFUk1BTF9OT19M
-SU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+LAorCQkJCQkJCQkgPCZjcHU2CisJCQkJCQkJ
-VEhFUk1BTF9OT19MSU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+LAorCQkJCQkJCQkgPCZj
-cHU3CisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+Owor
-CQkJCQkJY29udHJpYnV0aW9uID0gPDEwMjQ+OworCQkJCQl9OworCQkJCX07CiAJCQl9OwogCiAJ
-CQl0enRzMTogdHp0czEgewotLSAKMS45LjEKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1h
-cm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+The driver of thermal and svs will use the
+same register for the project which should select
+bank before reading sensor value.
+
+Signed-off-by: Michael.Kao <michael.kao@mediatek.com>
+---
+ drivers/thermal/mtk_thermal.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index d5c78b0..6d7e839 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -30,6 +30,7 @@
+ #include <linux/thermal.h>
+ #include <linux/reset.h>
+ #include <linux/types.h>
++#include <linux/power/mtk_svs.h>
+ 
+ /* AUXADC Registers */
+ #define AUXADC_CON1_SET_V	0x008
+@@ -267,7 +268,7 @@ struct mtk_thermal {
+ 	struct clk *clk_peri_therm;
+ 	struct clk *clk_auxadc;
+ 	/* lock: for getting and putting banks */
+-	struct mutex lock;
++	unsigned long flags;
+ 
+ 	/* Calibration values */
+ 	s32 adc_ge;
+@@ -566,7 +567,7 @@ static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
+ 	u32 val;
+ 
+ 	if (mt->conf->need_switch_bank) {
+-		mutex_lock(&mt->lock);
++		mt->flags = claim_mtk_svs_lock();
+ 
+ 		val = readl(mt->thermal_base + PTPCORESEL);
+ 		val &= ~0xf;
+@@ -586,7 +587,7 @@ static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
+ 	struct mtk_thermal *mt = bank->mt;
+ 
+ 	if (mt->conf->need_switch_bank)
+-		mutex_unlock(&mt->lock);
++		release_mtk_svs_lock(mt->flags);
+ }
+ 
+ /**
+@@ -941,8 +942,6 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	mutex_init(&mt->lock);
+-
+ 	mt->dev = &pdev->dev;
+ 
+ 	auxadc = of_parse_phandle(np, "mediatek,auxadc", 0);
+-- 
+1.9.1
