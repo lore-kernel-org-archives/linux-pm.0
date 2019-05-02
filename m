@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
-Subject: [PATCH v5 4/6] arm64: dts: rk3399: Add dfi and dmc nodes.
-Date: Thu,  2 May 2019 13:58:18 -0400
-Message-ID: <20190502175820.25382-5-gael.portay@collabora.com>
+Subject: [PATCH v5 6/6] dt-bindings: devfreq: rk3399_dmc: Remove references of unexistant defines
+Date: Thu,  2 May 2019 13:58:20 -0400
+Message-ID: <20190502175820.25382-7-gael.portay@collabora.com>
 References: <20190502175820.25382-1-gael.portay@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -10,66 +10,165 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20190502175820.25382-1-gael.portay@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lin Huang <hl@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Derek Basehore <dbasehore@chromium.org>, Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
-Cc: Mark Rutland <mark.rutland@arm.com>, kernel@collabora.com, =?UTF-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, kernel@collabora.com, =?utf-8?q?Ga=C3=ABl=20PORTAY?= <gael.portay@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Lin Huang <hl@rock-chips.com>
+Those DDR related defines do not exist. Replace their references with
+their numerical constant.
 
-These are required to support DDR DVFS on rk3399 platform.
-
-Signed-off-by: Lin Huang <hl@rock-chips.com>
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
 ---
 
-Changes in v5: None
+Changes in v5: New
 
-Changes in v4:
-- [PATCH v3 4/5] Remove board related DDR settings.
+ .../bindings/devfreq/rk3399_dmc.txt           | 73 +++++++++----------
+ 1 file changed, 34 insertions(+), 39 deletions(-)
 
-Changes in v3: None
-
-Changes in v2:
-- [PATCH 7/8] Reword the commit message to reflect the removal of
-              rk3390-dram-default-timing.dts in v1.
-
-Changes in v1:
-- [RFC 8/10] Move rk3399-dram.h to dt-includes.
-- [RFC 8/10] Put sdram default values under the dmc node.
-- [RFC 8/10] Removed rk3399-dram-default-timing.dts
-
- arch/arm64/boot/dts/rockchip/rk3399.dtsi | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399.dtsi b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-index db9d948c0b03..87ee084fac89 100644
---- a/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3399.dtsi
-@@ -1885,6 +1885,25 @@
- 		status = "disabled";
- 	};
+diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+index 951789c0cdd6..3ea856970e46 100644
+--- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
++++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+@@ -77,24 +77,23 @@ Following properties relate to DDR timing:
  
-+	dfi: dfi@ff630000 {
-+		reg = <0x00 0xff630000 0x00 0x4000>;
-+		compatible = "rockchip,rk3399-dfi";
-+		rockchip,pmu = <&pmugrf>;
-+		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH 0>;
-+		clocks = <&cru PCLK_DDR_MON>;
-+		clock-names = "pclk_ddr_mon";
-+		status = "disabled";
-+	};
-+
-+	dmc: dmc {
-+		compatible = "rockchip,rk3399-dmc";
-+		rockchip,pmu = <&pmugrf>;
-+		devfreq-events = <&dfi>;
-+		clocks = <&cru SCLK_DDRC>;
-+		clock-names = "dmc_clk";
-+		status = "disabled";
-+	};
-+
- 	pinctrl: pinctrl {
- 		compatible = "rockchip,rk3399-pinctrl";
- 		rockchip,grf = <&grf>;
+ - rockchip,ddr3_drv :		  When the DRAM type is DDR3, this parameter defines
+ 				  the DRAM side driver strength in ohms. Default
+-				  value is DDR3_DS_40ohm.
++				  value is 40.
+ 
+ - rockchip,ddr3_odt :		  When the DRAM type is DDR3, this parameter defines
+ 				  the DRAM side ODT strength in ohms. Default value
+-				  is DDR3_ODT_120ohm.
++				  is 120.
+ 
+ - rockchip,phy_ddr3_ca_drv :	  When the DRAM type is DDR3, this parameter defines
+ 				  the phy side CA line (incluing command line,
+ 				  address line and clock line) driver strength.
+-				  Default value is PHY_DRV_ODT_40.
++				  Default value is 40.
+ 
+ - rockchip,phy_ddr3_dq_drv :	  When the DRAM type is DDR3, this parameter defines
+ 				  the PHY side DQ line (including DQS/DQ/DM line)
+-				  driver strength. Default value is PHY_DRV_ODT_40.
++				  driver strength. Default value is 40.
+ 
+ - rockchip,phy_ddr3_odt : 	  When the DRAM type is DDR3, this parameter defines
+-				  the PHY side ODT strength. Default value is
+-				  PHY_DRV_ODT_240.
++				  the PHY side ODT strength. Default value is 240.
+ 
+ - rockchip,lpddr3_odt_dis_freq : When the DRAM type is LPDDR3, this parameter defines
+ 				  then ODT disable frequency in MHz (Mega Hz).
+@@ -104,25 +103,23 @@ Following properties relate to DDR timing:
+ 
+ - rockchip,lpddr3_drv :		  When the DRAM type is LPDDR3, this parameter defines
+ 				  the DRAM side driver strength in ohms. Default
+-				  value is LP3_DS_34ohm.
++				  value is 34.
+ 
+ - rockchip,lpddr3_odt :		  When the DRAM type is LPDDR3, this parameter defines
+ 				  the DRAM side ODT strength in ohms. Default value
+-				  is LP3_ODT_240ohm.
++				  is 240.
+ 
+ - rockchip,phy_lpddr3_ca_drv :	  When the DRAM type is LPDDR3, this parameter defines
+ 				  the PHY side CA line (including command line,
+ 				  address line and clock line) driver strength.
+-				  Default value is PHY_DRV_ODT_40.
++				  Default value is 40.
+ 
+ - rockchip,phy_lpddr3_dq_drv :	  When the DRAM type is LPDDR3, this parameter defines
+ 				  the PHY side DQ line (including DQS/DQ/DM line)
+-				  driver strength. Default value is
+-				  PHY_DRV_ODT_40.
++				  driver strength. Default value is 40.
+ 
+ - rockchip,phy_lpddr3_odt : 	  When dram type is LPDDR3, this parameter define
+-				  the phy side odt strength, default value is
+-				  PHY_DRV_ODT_240.
++				  the phy side odt strength, default value is 240.
+ 
+ - rockchip,lpddr4_odt_dis_freq : When the DRAM type is LPDDR4, this parameter
+ 				  defines the ODT disable frequency in
+@@ -132,32 +129,30 @@ Following properties relate to DDR timing:
+ 
+ - rockchip,lpddr4_drv :		  When the DRAM type is LPDDR4, this parameter defines
+ 				  the DRAM side driver strength in ohms. Default
+-				  value is LP4_PDDS_60ohm.
++				  value is 60.
+ 
+ - rockchip,lpddr4_dq_odt : 	  When the DRAM type is LPDDR4, this parameter defines
+ 				  the DRAM side ODT on DQS/DQ line strength in ohms.
+-				  Default value is LP4_DQ_ODT_40ohm.
++				  Default value is 40.
+ 
+ - rockchip,lpddr4_ca_odt :	  When the DRAM type is LPDDR4, this parameter defines
+ 				  the DRAM side ODT on CA line strength in ohms.
+-				  Default value is LP4_CA_ODT_40ohm.
++				  Default value is 40.
+ 
+ - rockchip,phy_lpddr4_ca_drv :	  When the DRAM type is LPDDR4, this parameter defines
+ 				  the PHY side CA line (including command address
+-				  line) driver strength. Default value is
+-				  PHY_DRV_ODT_40.
++				  line) driver strength. Default value is 40.
+ 
+ - rockchip,phy_lpddr4_ck_cs_drv : When the DRAM type is LPDDR4, this parameter defines
+ 				  the PHY side clock line and CS line driver
+-				  strength. Default value is PHY_DRV_ODT_80.
++				  strength. Default value is 80.
+ 
+ - rockchip,phy_lpddr4_dq_drv :	  When the DRAM type is LPDDR4, this parameter defines
+ 				  the PHY side DQ line (including DQS/DQ/DM line)
+-				  driver strength. Default value is PHY_DRV_ODT_80.
++				  driver strength. Default value is 80.
+ 
+ - rockchip,phy_lpddr4_odt :	  When the DRAM type is LPDDR4, this parameter defines
+-				  the PHY side ODT strength. Default value is
+-				  PHY_DRV_ODT_60.
++				  the PHY side ODT strength. Default value is 60.  
+ 
+ Example:
+ 	dmc_opp_table: dmc_opp_table {
+@@ -193,23 +188,23 @@ Example:
+ 		rockchip,phy_dll_dis_freq = <125>;
+ 		rockchip,auto_pd_dis_freq = <666>;
+ 		rockchip,ddr3_odt_dis_freq = <333>;
+-		rockchip,ddr3_drv = <DDR3_DS_40ohm>;
+-		rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
+-		rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
+-		rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
+-		rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
++		rockchip,ddr3_drv = <40>;
++		rockchip,ddr3_odt = <120>;
++		rockchip,phy_ddr3_ca_drv = <40>;
++		rockchip,phy_ddr3_dq_drv = <40>;
++		rockchip,phy_ddr3_odt = <240>;
+ 		rockchip,lpddr3_odt_dis_freq = <333>;
+-		rockchip,lpddr3_drv = <LP3_DS_34ohm>;
+-		rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
+-		rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
+-		rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
+-		rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
++		rockchip,lpddr3_drv = <34>;
++		rockchip,lpddr3_odt = <240>;
++		rockchip,phy_lpddr3_ca_drv = <40>;
++		rockchip,phy_lpddr3_dq_drv = <40>;
++		rockchip,phy_lpddr3_odt = <240>;
+ 		rockchip,lpddr4_odt_dis_freq = <333>;
+-		rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
+-		rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
+-		rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
+-		rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
+-		rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
+-		rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
+-		rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
++		rockchip,lpddr4_drv = <60>;
++		rockchip,lpddr4_dq_odt = <40>;
++		rockchip,lpddr4_ca_odt = <40>;
++		rockchip,phy_lpddr4_ca_drv = <40>;
++		rockchip,phy_lpddr4_ck_cs_drv = <80>;
++		rockchip,phy_lpddr4_dq_drv = <80>;
++		rockchip,phy_lpddr4_odt = <60>;
+ 	};
 -- 
 2.21.0
