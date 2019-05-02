@@ -2,110 +2,105 @@ Return-Path: <SRS0=Sohe=TC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0DF1C43219
-	for <linux-pm@archiver.kernel.org>; Thu,  2 May 2019 18:00:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3C98C43219
+	for <linux-pm@archiver.kernel.org>; Thu,  2 May 2019 18:22:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6FBA7208CB
-	for <linux-pm@archiver.kernel.org>; Thu,  2 May 2019 18:00:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="kB8V7nP2"
+	by mail.kernel.org (Postfix) with ESMTP id 6EAE020B7C
+	for <linux-pm@archiver.kernel.org>; Thu,  2 May 2019 18:22:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726369AbfEBSAo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 May 2019 14:00:44 -0400
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:33694 "EHLO
-        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725962AbfEBSAo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2019 14:00:44 -0400
-Received: by mail-pg1-f193.google.com with SMTP id k19so1418918pgh.0
-        for <linux-pm@vger.kernel.org>; Thu, 02 May 2019 11:00:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=2XutM+a4B1cTgtM8Oyf7PhtREcBkoDSqmSV445n5cH4=;
-        b=kB8V7nP22PD998/feuY9UzOFmpJ7UAbHNiTTYXYJGGrXknfWxvC5wm3jcp527g6dqg
-         vPwukvTEtSLSM4Re9vSOaevZgA+nAFupngUU3QSMO64i0DG5lBhYrbTDHw5Ja/c1nWJe
-         7Vz3dI2w0yVEs3a2V4bjf/9x5enw6/qMg1T3yg0OVtUyhCbYCbYE+t06+ha6kA4kluuV
-         dyc5yBwxLsegaPHQsdzCKpfN2fd6Rg8BSTCT3A2tWNZRVIGf8v0UhRSDTZfAbeEkC98Y
-         cUGythjf86x4KURf/jEwXSh//oTq8+BTGgykp8dL0JuXg3IOcK7HfmOp+bRLVTeZeDGs
-         aOmw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=2XutM+a4B1cTgtM8Oyf7PhtREcBkoDSqmSV445n5cH4=;
-        b=NQmFmhCEDybgtbCIARoB0XY1wE3crblKgoUVCnRpV3KfSueBq0kqw5DQKFQ7KGheo9
-         8NnGj+E3oShHdK6t+Hr8nAQ8lvXBwVDYIE9oWpjKKy16YDyIkoqnIWYbLh5XPQvu8Mit
-         JZXJ5fK2tZOuc0rmw8MFAYYMVxWMht9g5JxdcqdAAfTa6fW30Nn1ufEZRd6BA3tB3FaA
-         FIvs1qbn9DnCvziozVNXUo/OPTrFaJ5YjfuVqiJJAPEEWmTwKX6dyAa06ml8mrczC6Vb
-         W3EBB3oaG5Xb6WXVaYEaZQS49nqekqT38Ligz1TO/9J8J5Kcla3hra3RvUXtcyohdKwM
-         ELyQ==
-X-Gm-Message-State: APjAAAXtiMZQQ7w3OndKDJbbhIXfa9VLPJvKarAZC0tV7sDdy92lx8d8
-        tHkJcmX1U+FjaX/V4tFiKz8NPQ5JbAa03G3MswEpVA==
-X-Google-Smtp-Source: APXvYqy2aT1zx7H01JMua9f8FBMTCv1LesxIlrStO1znoW3IHNAKAIZD+vqXY8DC4ti4UJ5EfvzTNuXjNxWaI41tPgw=
-X-Received: by 2002:a63:d713:: with SMTP id d19mr5406995pgg.145.1556820043227;
- Thu, 02 May 2019 11:00:43 -0700 (PDT)
+        id S1725962AbfEBSWw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 May 2019 14:22:52 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57862 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726114AbfEBSWw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2019 14:22:52 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id A790E802ED; Thu,  2 May 2019 20:22:40 +0200 (CEST)
+Date:   Thu, 2 May 2019 20:22:50 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Nikitas Angelinas <nikitas.angelinas@gmail.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power/poweroff.c: mark variables with __initdata and
+ __maybe_unused
+Message-ID: <20190502182250.GA4845@amd>
+References: <20190502074305.GA6039@vostro>
+ <20190502101500.GA23980@amd>
+ <20190502175958.GA14955@vostro>
 MIME-Version: 1.0
-References: <20190502012704.12505-1-tranmanphong@gmail.com>
-In-Reply-To: <20190502012704.12505-1-tranmanphong@gmail.com>
-From:   Nick Desaulniers <ndesaulniers@google.com>
-Date:   Thu, 2 May 2019 11:00:31 -0700
-Message-ID:
- <CAKwvOdkCesLHCFy5vD3=KUCRALe-u_TKMa3NGZBn=HuA1R_95g@mail.gmail.com>
-Subject: Re: [PATCH] power: supply: core: fix clang -Wunsequenced
-To:     Phong Tran <tranmanphong@gmail.com>
-Cc:     sre@kernel.org, Nathan Chancellor <natechancellor@gmail.com>,
-        linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        clang-built-linux <clang-built-linux@googlegroups.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
+Content-Disposition: inline
+In-Reply-To: <20190502175958.GA14955@vostro>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190502180031.yAaQh2FmcDjz3aSZFXuY7m0t7OREhUZ2kT1QNH-3mxo@z>
+Message-ID: <20190502182250.lP3wMg48x_EoIhcJ-9pf9Trv0V906l9nhXh83teyzRk@z>
 
-On Wed, May 1, 2019 at 6:28 PM Phong Tran <tranmanphong@gmail.com> wrote:
->
-> The increment operator of  pointer in be32_to_cpu() is not explicitly.
-> It made the warning from clang:
->
-> drivers/power/supply/power_supply_core.c:674:36: error: multiple
-> unsequenced modifications to 'list' [-Werror,-Wunsequenced]
-> drivers/power/supply/power_supply_core.c:675:41: error: multiple
-> unsequenced modifications to 'list' [-Werror,-Wunsequenced]
->
-> Link: https://github.com/ClangBuiltLinux/linux/issues/460
->
-> Signed-off-by: Phong Tran <tranmanphong@gmail.com>
-> ---
->  drivers/power/supply/power_supply_core.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-> index c917a8b43b2b..7cc6f5fac0d0 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -665,8 +665,10 @@ int power_supply_get_battery_info(struct power_supply *psy,
->                 }
->
->                 for (i = 0; i < tab_len; i++) {
-> -                       table[i].ocv = be32_to_cpu(*list++);
-> -                       table[i].capacity = be32_to_cpu(*list++);
-> +                       table[i].ocv = be32_to_cpu(*list);
-> +                       list++;
-> +                       table[i].capacity = be32_to_cpu(*list);
-> +                       list++;
 
-I prefer preincrement/predecrement to postincrement/postdecrement
-unless absolutely necessary, but it really doesn't matter in this
-case.  Thanks for the patch.
-Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Thanks,
-~Nick Desaulniers
+On Thu 2019-05-02 10:59:58, Nikitas Angelinas wrote:
+> On Thu, May 02, 2019 at 12:15:00PM +0200, Pavel Machek wrote:
+> > On Thu 2019-05-02 00:43:05, Nikitas Angelinas wrote:
+> > > There is no need to keep sysrq_poweroff_op after initialization, so m=
+ark
+> > > it with __initdata.
+> >=20
+> > Are you sure?
+> >=20
+> > pavel@duo:/data/l/k$ grep -ri sysrq_key_op . | grep initdata
+> > pavel@duo:/data/l/k$
+> >=20
+> >=20
+> > 									Pavel
+> >=20
+> I am sorry about this. I completely missed the point of registering this
+> structure. Please ignore this patch.
+>=20
+
+Yup. You can have Acked-by: for the other parts.
+
+									Pavel
+
+> > > =20
+> > > -static struct sysrq_key_op	sysrq_poweroff_op =3D {
+> > > +static struct sysrq_key_op sysrq_poweroff_op __initdata =3D {
+> > >  	.handler        =3D handle_poweroff,
+> > >  	.help_msg       =3D "poweroff(o)",
+> > >  	.action_msg     =3D "Power Off",
+> >=20
+> > --=20
+> > (english) http://www.livejournal.com/~pavelmachek
+> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
+>=20
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--OgqxwSJOaUobr8KG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlzLNXoACgkQMOfwapXb+vKmjgCgnFC4NkPKTlbkBpxuDlHQPYfp
+TToAoKbW6WSTatCwlvhlp9pUbt/Obi4P
+=kXiy
+-----END PGP SIGNATURE-----
+
+--OgqxwSJOaUobr8KG--
