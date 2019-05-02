@@ -1,89 +1,42 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH] power: supply: core: fix clang -Wunsequenced
-Date: Thu, 2 May 2019 22:15:54 +0200
-Message-ID: <20190502201554.qvuunxprepxhvzbm@earth.universe>
-References: <20190502012704.12505-1-tranmanphong@gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 3/4] Documentation: devicetree: add PPMU events description
+Date: Thu, 2 May 2019 15:24:20 -0500
+Message-ID: <CAL_JsqJcm9Z6vYFHGyAZ+h3-kmSv6e=3NtO-fjJn3-QT0JoX+w@mail.gmail.com>
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+ <CGME20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0@eucas1p2.samsung.com>
+ <1555681688-19643-4-git-send-email-l.luba@partner.samsung.com>
+ <20190430223629.GA22317@bogus> <1fd44623-4a59-f014-1ae9-a7cc605ad30f@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fryypaezrgitn536"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190502012704.12505-1-tranmanphong@gmail.com>
+In-Reply-To: <1fd44623-4a59-f014-1ae9-a7cc605ad30f@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Phong Tran <tranmanphong@gmail.com>
-Cc: ndesaulniers@google.com, natechancellor@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com
+To: Lukasz Luba <l.luba@partner.samsung.com>
+Cc: devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, May 2, 2019 at 3:52 AM Lukasz Luba <l.luba@partner.samsung.com> wrote:
+>
+> Hi Rob,
+>
+> On 5/1/19 12:36 AM, Rob Herring wrote:
+> > On Fri, Apr 19, 2019 at 03:48:07PM +0200, Lukasz Luba wrote:
+> >> Extend the documenation by events description with new 'event-data-type'
+> >> field. Add example how the event might be defined in DT.
+> >
+> > Why do we need event types in DT? We don't do this for other h/w such as
+> > ARM PMU.
+> In ARM PMU all the events are hard-coded into the driver code i.e. in v7
+> arch/arm/kernel/perf_event_v7.c
+> and are seen from perf. They are different type and for different
+> purpose. The Ecynos PPMU events are not seen in perf, they are
+> for internal monitoring and must not be reset by other actors like perf.
+> They are used by the 'bus drivers' to made some heuristics and tune the
+> internal settings, like frequency.
+>
+> Chanwoo has written PPMU driver which relies on DT definition.
+> The DT events are used by other DT devices by phandle.
 
---fryypaezrgitn536
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+How is that done? I don't see anything in the binding for that.
 
-Hi,
-
-On Thu, May 02, 2019 at 08:27:06AM +0700, Phong Tran wrote:
-> The increment operator of  pointer in be32_to_cpu() is not explicitly.
-> It made the warning from clang:
->=20
-> drivers/power/supply/power_supply_core.c:674:36: error: multiple
-> unsequenced modifications to 'list' [-Werror,-Wunsequenced]
-> drivers/power/supply/power_supply_core.c:675:41: error: multiple
-> unsequenced modifications to 'list' [-Werror,-Wunsequenced]
->=20
-> Link: https://github.com/ClangBuiltLinux/linux/issues/460
->=20
-> Signed-off-by: Phong Tran <tranmanphong@gmail.com>
-> ---
-
-Thanks, queued to power-supply's for-next branch.
-
--- Sebastian
-
->  drivers/power/supply/power_supply_core.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
-ply/power_supply_core.c
-> index c917a8b43b2b..7cc6f5fac0d0 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -665,8 +665,10 @@ int power_supply_get_battery_info(struct power_suppl=
-y *psy,
->  		}
-> =20
->  		for (i =3D 0; i < tab_len; i++) {
-> -			table[i].ocv =3D be32_to_cpu(*list++);
-> -			table[i].capacity =3D be32_to_cpu(*list++);
-> +			table[i].ocv =3D be32_to_cpu(*list);
-> +			list++;
-> +			table[i].capacity =3D be32_to_cpu(*list);
-> +			list++;
->  		}
->  	}
-> =20
-> --=20
-> 2.21.0
->=20
-
---fryypaezrgitn536
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzLT/IACgkQ2O7X88g7
-+ppo8g//S3Llctg446+FE7ffQ++R08/UBFsJPdxlsna5xwxbicUoYy2AC1vbXEai
-6N4ptFzxGtatqXBD8XqweeMIERjrIL9O0mS35mO3eQ74AUEMkTfyCacOkx1OsAq/
-9nRj/BxHtHwYRRI6Uv3RTIw/wi58HTS83DhIPBnumMKSawdq1oRqgRKsOJrlsVum
-EU1jB1Cq7m68mzg2Ypzh0JwJVEWRnxRBKmZn9zKvYB3kT0yL/5MLDjyF0HbzjZDC
-dycMrKNSuu4G03278veQWH/k0mvejiYzKBQoEyCYuPkJ7SXiTXyin6aPDY+3vfTK
-DqtSJAvm5UZ5cM5YU74hpIs/zuhLl7ORx3hR8Idx7KuXBT/Ls4LQCCz4lRJLtEuP
-tPGqHoeJQxpjQlFIgLAgplAHJf70zDrjpJ2ZO2n9dZShkM1lGPMvLidazVAXWz70
-xD9rkl8aW5lgqm+ccKvCOKl5GQf+3EJYmUQXIlxfGqUa3uEXqVDGMULgghDuy24B
-dzinRcFgk4MiVBGWBH1klrCHcO1g8BgkdBLftiz8UwqwfAXlXZQqkmcWgzRTCr8+
-gxNzt4o4yPu+9549VeVbrYq7MoPDZPlLeIR+0/tn5jW/aFW1qo08VhQHbNTGKdFL
-OULL6mDn5NlQkjumD2LaEs0XCH+xPW6VMeKwjRg/oQCrEnc3klg=
-=0jkf
------END PGP SIGNATURE-----
-
---fryypaezrgitn536--
+Rob
