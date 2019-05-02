@@ -1,99 +1,113 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [RESEND PATCH v3 1/2] power: supply: add input voltage limit
- property
-Date: Thu, 2 May 2019 23:01:38 +0200
-Message-ID: <20190502210138.ekrjvg4jex5x2tbo@earth.universe>
-References: <20190415220049.14924-1-enric.balletbo@collabora.com>
- <20190416071941.GB14538@amd>
- <8d1f70a7-46d6-f278-f58c-6a7e7a644d46@collabora.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [RFC v1 1/3] dt-bindings: soc: add mtk svs dt-bindings
+Date: Thu, 2 May 2019 16:06:47 -0500
+Message-ID: <20190502210647.GA32209@bogus>
+References: <20190430112012.4514-1-roger.lu@mediatek.com>
+ <20190430112012.4514-2-roger.lu@mediatek.com>
+ <155665629219.168659.8221738507474891604@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="vwdv5qwmkpp26lsd"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <8d1f70a7-46d6-f278-f58c-6a7e7a644d46@collabora.com>
+In-Reply-To: <155665629219.168659.8221738507474891604@swboyd.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Sameer Nanda <snanda@chromium.org>, bleung@chromium.org, rjw@rjwysocki.net, gwendal@chromium.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com
+To: Stephen Boyd <sboyd@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, Roger Lu <roger.lu@mediatek.com>, Viresh Kumar <vireshk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Apr 30, 2019 at 01:31:32PM -0700, Stephen Boyd wrote:
+> Quoting Roger Lu (2019-04-30 04:20:10)
+> > Document the binding for enabling mtk svs on MediaTek SoC.
+> > 
+> > Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+> > ---
+> >  .../devicetree/bindings/power/mtk-svs.txt     | 70 +++++++++++++++++++
+> >  1 file changed, 70 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/mtk-svs.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/power/mtk-svs.txt b/Documentation/devicetree/bindings/power/mtk-svs.txt
+> > new file mode 100644
+> > index 000000000000..355329db74ba
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/mtk-svs.txt
+> > @@ -0,0 +1,70 @@
+> > +* Mediatek Smart Voltage Scaling (MTK SVS)
+> > +
+> > +This describes the device tree binding for the MTK SVS controller
+> > +which helps provide the optimized CPU/GPU/CCI voltages. This device also
+> > +needs thermal data to calculate thermal slope for accurately compensate
+> > +the voltages when temperature change.
+> > +
+> > +Required properties:
+> > +- compatible:
+> > +  - "mediatek,mt8183-svs" : For MT8183 family of SoCs
+> > +- reg: Address range of the MTK SVS controller.
+> > +- interrupts: IRQ for the MTK SVS controller.
+> > +- clocks, clock-names: Clocks needed for the svs controller. required
+> > +                       clocks are:
+> > +                      "main_clk": Main clock needed for register access
+> > +- nvmem-cells: Phandle to the calibration data provided by a nvmem device.
+> > +- nvmem-cell-names: Should be "svs-calibration-data" and "calibration-data"
+> > +- svs_xxx: Phandle of svs_bank device for controlling corresponding opp
+> 
+> Properties shouldn't have underscores in them. Use dashes?
 
---vwdv5qwmkpp26lsd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It's also a node, not a property.
 
-Hi,
+> 
+> > +           table and power-domains.
+> > +- vxxx-supply: Phandle to each regulator. vxxx can be "vcpu_little",
+> > +              "vcpu_big", "vcci" and "vgpu".
 
-On Tue, Apr 16, 2019 at 10:42:30AM +0200, Enric Balletbo i Serra wrote:
-> On 16/4/19 9:19, Pavel Machek wrote:
-> >> This patch exposes a new property, similar to input current limit, to
-> >> re-configure the maximum voltage from the external supply at runtime
-> >> based on system-level knowledge or user input.
-> >=20
-> > Well, and I suspect it should expose input power limit, not input
-> > voltage limit.
->=20
-> Oh, ok, I thought we were agree that input voltage had sense after had so=
-me
-> discussion in v3. Seems that no, let me try to give you another example...
->=20
-> > DC-DC convertor efficiency normally does not much depend on input
-> > voltage....
->=20
-> As we said we have a heat "problem" due the internal voltage conversions.
->=20
-> Lets assume you have a linear regulator instead with a Vin range from 5V =
-to 9V
-> and we want an output of 3.3V/1A
->
-> For 9V:
->  Input power : P(in) =3D 9V x 1A =3D 9W
->  Output power: P(out) =3D 3.3V x 1A =3D 3.3W
->  Regulator power dissipated: P(reg) =3D P(in) - P(out) =3D 9W - 3.3W =3D =
-5.7W
->=20
-> For 5V:
->  Input power : P(in) =3D 5V x 1A =3D 5W
->  Output power: P(out) =3D 3.3V x 1A =3D 3.3W
->  Regulator power dissipated: P(reg) =3D P(in) - P(out) =3D 5W - 3.3W =3D =
-1,7W
->=20
-> In the first case the regulator needs to dissipate more power, hence the
-> temperature is greater than the second case.
+Just list each property instead of the indirection with 'xxx'. Though 
+here to, these should be in the nodes actually getting the power.
 
-I would be surprised, if a linear regulator is being used in this
-place :) That would basically render functionality of higher voltage
-completley useless and a good reason to always limit to 5V. For the
-generic case I agree with Pavel, that control over the power (voltage
-* current) is the better choice. Still I believe it makes sense to
-have a control knob for the voltage available, since some hardware
-designs suck.
+> > +
+> > +Example:
+> > +
+> > +       svs: svs@1100b000 {
+> > +               compatible = "mediatek,mt8183-svs";
+> > +               reg = <0 0x1100b000 0 0x1000>;
+> > +               interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW 0>;
+> > +               clocks = <&infracfg CLK_INFRA_THERM>;
+> > +               clock-names = "main_clk";
+> > +               nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
+> > +               nvmem-cell-names = "svs-calibration-data", "calibration-data";
+> > +
+> > +               svs_cpu_little: svs_cpu_little {
+> > +                       compatible = "mediatek,mt8183-svs-cpu-little";
 
-For example the bad hardware design might be the remote side,
-that has issues providing some voltages and this would make it
-possible to debug that.
+Not documented. Though I think the child nodes should be removed if you 
+do as Stephen suggests below.
 
--- Sebastian
-
---vwdv5qwmkpp26lsd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzLWq0ACgkQ2O7X88g7
-+pqzKhAAk5VXBCW5KI1uBgScQTbWw/6eWgTGX9m/vUX5YVUhvRBfVg0h4l6HmOJl
-bbg71lCAGtp0xS0h9YPxuU1MrrLW/HlnbSdz69/WB6zPeKbYx3Wn4v/3M1UnbcCf
-HE0svSdJhyFY0Iyo7g3VMiJRjDesw1ceUoVHDSD092o/H4PECMuFFqqFnCes4j3X
-Fgaztk2H6EEpuJ7cmov/266hmL59SsDBx05O0Zk2ezVku1eoYh4BHS1stt3jMOZj
-xbTo7Meq0oIra6EpB1jdKh7DAkwRNkaChlLuXJdZZ6VkmULCQtQ6K91/mG3qg9rR
-MEbPJDGuzbB+zqYoCLVHEc7ykhgxiAuWoXTe9NB9rR9JfQATtworXuUg3M715/Id
-D52e7xbLMR1CGxPKeybUmg+oJE6dUDnGSwRHnTFOL222hmE5hvEXI8i0dNUV0dqQ
-s2aqeMaagd10jWmdDazKYGC6xGj616XqNABKwo0QzKaWprhhtF6qE5/EyBtywECX
-4V3KoF3H9a/47hj9dXEy3BHsqHE4j9vfUuT5GxTHtDaEYiR+ZmOamixd6m3jrkL6
-zc6dNZV5Sa1I39Ofi4F/Wu+ds2kP3Akm8HlvAzic4i7CjeYbcTuP9WuPvtZ5Lt/U
-x6zMXiOOMlghHzwmbrFkn9DRSot0Pk00QBFFU5F4HEm89utFRHE=
-=wEeJ
------END PGP SIGNATURE-----
-
---vwdv5qwmkpp26lsd--
+> > +                       operating-points-v2 = <&cluster0_opp>;
+> > +               };
+> > +
+> > +               svs_cpu_big: svs_cpu_big {
+> > +                       compatible = "mediatek,mt8183-svs-cpu-big";
+> > +                       operating-points-v2 = <&cluster1_opp>;
+> > +               };
+> > +
+> > +               svs_cci: svs_cci {
+> > +                       compatible = "mediatek,mt8183-svs-cci";
+> > +                       operating-points-v2 = <&cluster2_opp>;
+> > +               };
+> > +
+> > +               svs_gpu: svs_gpu {
+> > +                       compatible = "mediatek,mt8183-svs-gpu";
+> > +                       power-domains = <&scpsys MT8183_POWER_DOMAIN_MFG_2D>;
+> > +                       operating-points-v2 = <&gpu_opp_table>;
+> > +               };
+> 
+> It looks like you need multiple OPPs for a single device, because it has
+> different independent power supplies it wants to associate the OPP
+> tables with? Why can't these OPP tables be attached to the devices that
+> use them, i.e. CPU, GPU, CCI, etc.? Seems odd that those devices don't
+> have OPP tables that this hardware block can look up somehow. Similarly,
+> the power domains should probably be part of the devices that are using
+> them and not these sub-nodes that are mirroring the other hardware
+> blocks in the system?
+> 
+> > +       };
+> > +
+> > +       &svs_cpu_little {
