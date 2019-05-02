@@ -1,156 +1,96 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v6 06/10] dt-bindings: memory-controllers: add
- Exynos5422 DMC device description
-Date: Thu, 2 May 2019 20:56:18 +0200
-Message-ID: <b2992f0e-3b46-66a6-f1e4-326fb4b0501f@partner.samsung.com>
-References: <1555683568-20882-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419141947eucas1p13a27605e04169ab528ef5bfb385eddbc@eucas1p1.samsung.com>
-        <1555683568-20882-7-git-send-email-l.luba@partner.samsung.com>
-        <babae08b-3ea6-30f4-6a46-85dea0eacd86@samsung.com>
-        <32dfc887-5f67-3d61-08c9-0397d6852811@partner.samsung.com>
-        <ed07af9b-2d17-23c2-2f3a-dc832570480d@samsung.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH v14 7/8] power: supply: Initial support for ROHM BD70528
+ PMIC charger block
+Date: Thu, 2 May 2019 21:50:49 +0200
+Message-ID: <20190502195049.brysexbyyq7khtr4@earth.universe>
+References: <cover.1556787930.git.matti.vaittinen@fi.rohmeurope.com>
+ <eece016c86483d55befab1a06fb299c9d6d17134.1556787930.git.matti.vaittinen@fi.rohmeurope.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bhukgbujt2wxql42"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ed07af9b-2d17-23c2-2f3a-dc832570480d@samsung.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <eece016c86483d55befab1a06fb299c9d6d17134.1556787930.git.matti.vaittinen@fi.rohmeurope.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
+To: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+Cc: mazziesaccount@gmail.com, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Wim Van Sebroeck <wim@linux-watchdog.org>, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org, linux-watchdog@vger.kernel.org, heikki.haikola@fi.rohmeurope.
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
 
-On 5/2/19 3:35 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
-> 
-> On 19. 5. 1. 오전 5:30, Lukasz Luba wrote:
->> Hi Chanwoo,
->>
->> On 4/30/19 6:46 AM, Chanwoo Choi wrote:
->>> On 19. 4. 19. 오후 11:19, Lukasz Luba wrote:
->>>> The patch adds description for DT binding for a new Exynos5422 Dynamic
->>>> Memory Controller device.
->>>>
->>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->>>> ---
->>>>    .../bindings/memory-controllers/exynos5422-dmc.txt | 73 ++++++++++++++++++++++
->>>>    1 file changed, 73 insertions(+)
->>>>    create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
->>>> new file mode 100644
->>>> index 0000000..133b3cc
->>>> --- /dev/null
->>>> +++ b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
->>>> @@ -0,0 +1,73 @@
->>>> +* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
->>>> +
->>>> +The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
->>>> +memory chips are connected. The driver is to monitor the controller in runtime
->>>> +and switch frequency and voltage. To monitor the usage of the controller in
->>>> +runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
->>>> +is able to measure the current load of the memory.
->>>> +When 'userspace' governor is used for the driver, an application is able to
->>>> +switch the DMC and memory frequency.
->>>> +
->>>> +Required properties for DMC device for Exynos5422:
->>>> +- compatible: Should be "samsung,exynos5422-bus".
->>>
->>> As I already mentioned on many times, it is not fixed.
->>> You have to fix it as following:
->>> - exynos5422-bus -> exynos5422-dmc
->> I don't know how I missed it on my list. My apologies.
->>>
->>>> +- clock-names : the name of clock used by the bus, "bus".
->>>
->>> The below examples doesn't contain the 'bus' clock name.
->> True. Thank you for pointing this out. I will it.
->>
->> Regards,
->> Lukasz
->>>
->>>> +- clocks : phandles for clock specified in "clock-names" property.
->>>> +- devfreq-events : phandles for PPMU devices connected to this DMC.
->>>> +- vdd-supply : phandle for voltage regulator which is connected.
->>>> +- reg : registers of two CDREX controllers, chip information, clocks subsystem.
->>>> +- operating-points-v2 : phandle for OPPs described in v2 definition.
->>>> +- device-handle : phandle of the connected DRAM memory device. For more
->>>> +	information please refer to Documentation
->>>> +- devfreq-events : phandles of the PPMU events used by the controller.
->>>> +
->>>> +Example:
->>>> +
->>>> +	ppmu_dmc0_0: ppmu@10d00000 {
->>>> +		compatible = "samsung,exynos-ppmu";
->>>> +		reg = <0x10d00000 0x2000>;
->>>> +		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
->>>> +		clock-names = "ppmu";
->>>> +		status = "okay";
->>>> +		events {
->>>> +			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
->>>> +				event-name = "ppmu-event3-dmc0_0";
->>>> +			};
->>>> +		};
->>>> +	};
->>>> +
->>>> +	dmc: memory-controller@10c20000 {
->>>> +		compatible = "samsung,exynos5422-dmc";
->>>> +		reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>,
->>>> +			<0x10000000 0x1000>, <0x10030000 0x1000>;
-> 
-> As I discussed about the register region of clock subsystem
-> with Sylwester on patch[1], I expected that you used the regmap
-> interface to control the register region of clock subsystem.
-> 
-> But, this dt-binding documents doesn't include any information
-> about regmap interface.
-Right. I will update the doc since the clock and chipid regs will use
-phandle in DT and syscon_regmap in the driver code in the v7 patch set.
+--bhukgbujt2wxql42
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Lukasz
+Hi,
 
-> 
-> [1] https://lkml.org/lkml/2019/3/6/878
-> 
->>>> +		clocks = 	<&clock CLK_FOUT_SPLL>,
->>>> +				<&clock CLK_MOUT_SCLK_SPLL>,
->>>> +				<&clock CLK_FF_DOUT_SPLL2>,
->>>> +				<&clock CLK_FOUT_BPLL>,
->>>> +				<&clock CLK_MOUT_BPLL>,
->>>> +				<&clock CLK_SCLK_BPLL>,
->>>> +				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
->>>> +				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
->>>> +				<&clock CLK_MOUT_MCLK_CDREX>,
->>>> +				<&clock CLK_DOUT_CLK2X_PHY0>,
->>>> +				<&clock CLK_CLKM_PHY0>,
->>>> +				<&clock CLK_CLKM_PHY1>;
->>>> +		clock-names =	"fout_spll",
->>>> +				"mout_sclk_spll",
->>>> +				"ff_dout_spll2",
->>>> +				"fout_bpll",
->>>> +				"mout_bpll",
->>>> +				"sclk_bpll",
->>>> +				"mout_mx_mspll_ccore",
->>>> +				"mout_mx_mspll_ccore_phy",
->>>> +				"mout_mclk_cdrex",
->>>> +				"dout_clk2x_phy0",
->>>> +				"clkm_phy0",
->>>> +			        "clkm_phy1";
->>>> +		status = "okay";
->>>> +		operating-points-v2 = <&dmc_opp_table>;
->>>> +		devfreq-events = <&ppmu_event3_dmc0_0>,	<&ppmu_event3_dmc0_1>,
->>>> +				<&ppmu_event3_dmc1_0>, <&ppmu_event3_dmc1_1>;
->>>> +		operating-points-v2 = <&dmc_opp_table>;
->>>> +		device-handle = <&samsung_K3QF2F20DB>;
->>>> +		vdd-supply = <&buck1_reg>;
->>>> +	};
->>>>
->>>
->>>
->>
->>
-> 
-> 
+On Thu, May 02, 2019 at 12:17:12PM +0300, Matti Vaittinen wrote:
+> ROHM BD70528 PMIC includes battery charger block. Support charger
+> staus queries and doing few basic settings like input current limit
+> and charging current.
+>=20
+> Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+> Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+
+Please only add Acked-by when you receive one, especially when you
+do not implement all requested changes :)
+
+[...]
+
+> +static int bd70528_get_irqs(struct platform_device *pdev,
+> +			    struct bd70528_psy *bdpsy)
+> +{
+> +	int irq, i, ret;
+> +	unsigned int mask;
+> +	const struct irq_name_pair bd70528_chg_irqs[] =3D {
+> +		{ .n =3D "bd70528-bat-ov-res", .h =3D BD_IRQ_HND(BAT_OV_RES) },
+> +		{ .n =3D "bd70528-bat-ov-det", .h =3D BD_IRQ_HND(BAT_OV_DET) },
+> +		{ .n =3D "bd70528-bat-dead", .h =3D BD_IRQ_HND(DBAT_DET) },
+> +		{ .n =3D "bd70528-bat-warmed", .h =3D BD_IRQ_HND(COLD_RES) },
+> +		{ .n =3D "bd70528-bat-cold", .h =3D BD_IRQ_HND(COLD_DET) },
+> +		{ .n =3D "bd70528-bat-cooled", .h =3D BD_IRQ_HND(HOT_RES) },
+> +		{ .n =3D "bd70528-bat-hot", .h =3D BD_IRQ_HND(HOT_DET) },
+> +		{ .n =3D "bd70528-chg-tshd", .h =3D BD_IRQ_HND(CHG_TSD) },
+> +		{ .n =3D "bd70528-bat-removed", .h =3D BD_IRQ_HND(BAT_RMV) },
+> +		{ .n =3D "bd70528-bat-detected", .h =3D BD_IRQ_HND(BAT_DET) },
+> +		{ .n =3D "bd70528-dcin2-ov-res", .h =3D BD_IRQ_HND(DCIN2_OV_RES) },
+> +		{ .n =3D "bd70528-dcin2-ov-det", .h =3D BD_IRQ_HND(DCIN2_OV_DET) },
+> +		{ .n =3D "bd70528-dcin2-removed", .h =3D BD_IRQ_HND(DCIN2_RMV) },
+> +		{ .n =3D "bd70528-dcin2-detected", .h =3D BD_IRQ_HND(DCIN2_DET) },
+> +		{ .n =3D "bd70528-dcin1-removed", .h =3D BD_IRQ_HND(DCIN1_RMV) },
+> +		{ .n =3D "bd70528-dcin1-detected", .h =3D BD_IRQ_HND(DCIN1_DET) },
+> +	};
+
+Please also make it static. That will move the whole thing to
+read-only (because of const) data section. This improves the
+security and the required cpu time at the same time (no need
+to copy values to the stack).
+
+But this can be changed later, so no need to block the whole
+patchset just because of this. If Lee wants to merge this for
+5.2, that would be fine with me. But please add it directly in
+a new patch revision if the patch does not make it into 5.2.
+
+-- Sebastian
+
+--bhukgbujt2wxql42
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzLShUACgkQ2O7X88g7
++pqErhAAgZNXEYhrDHkaaYDwxjL4Ch28ycvgjE9+HjCig5co2F2nW25/cQPj3IeQ
+KLwc3hAAy0RzDKTc72fMtg//7b8L21Dzj4Qz4pHmQ3vhOETyAvwt3mOK8kiCSh9F
+MlrJ7vtUSnOo3S/QGiBCQ6gjTzrkyYWYtJAK3UabGbwagf9t8bKAUquWNbwFbvuu
+0Q2L++Z8eX4O0b8sbLJ5YxCx9eib2j3W6C2CNHUFG+WLjLom4IskqYq3Y7KELQ4U
+1YQbFUI5p+WFnxZU0uklYPEBfMCRBXd4iG2XBc8c/KBMkeQKOlXkURqUl7lmNT9u
+jgdqBpp0qgOlmJE7YsJTFjgyuwWR/BWLpE9QMKxBR1Ua94G6HRnoNiveq2qty18b
+s6G53YnvJsjI2y0cnP0+wACEKBATa33dUCLDABsKlyXl1jSdeE8csDM3XZ/SMNxZ
+CWayrYggYz3nk9y1bnJK3bkyVNAKaDRlNOA+kezZGAPUdcojFJOWin45Vkm5CFma
+t9SNRSBFArbG/9x/iOcETTVE+Hb7w5czGr+D41vJd/OUM/oE+sCt4ylIi4PA6a/y
+IF5fC7XzuTspKeoLuUo7WWght3JjD5+aGZ5OF6GKOSn7sdn0N2D53CdXp482U+jv
+a3ojwbXAqujhOIZhw5WYMfXjMyfKvhoPjjSIbk+NNRt8ksWKMc8=
+=CJv+
+-----END PGP SIGNATURE-----
+
+--bhukgbujt2wxql42--
