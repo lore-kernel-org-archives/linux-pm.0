@@ -1,59 +1,59 @@
-From: michael.kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH 6/8] thermal: mediatek: mt8183: fix bank number settings
-Date: Thu, 2 May 2019 18:43:13 +0800
-Message-ID: <1556793795-25204-7-git-send-email-michael.kao@mediatek.com>
+From: michael.kao <michael.kao@mediatek.com>
+Subject: [PATCH 4/8] arm64: dts: mt8183: Configure CPU cooling
+Date: Thu, 2 May 2019 18:43:11 +0800
+Message-ID: <1556793795-25204-5-git-send-email-michael.kao@mediatek.com>
 References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1556793795-25204-1-git-send-email-michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, louis.yu-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, roger.lu-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: michael.kao@mediatek.com, fan.chen@mediatek.com, jamesjj.liao@mediatek.com, dawei.chien@mediatek.com, louis.yu@mediatek.com, roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Matthias Kaehlcke <mka@chromium.org>, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Michael Kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-
-MT8183_NUM_ZONES should be set to 1
-because MT8183 doesn't have multiple banks.
-
-Fixes: a4ffe6b52d27 ("thermal: mediatek: add support for MT8183")
-Signed-off-by: Michael Kao <Michael.Kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
----
- drivers/thermal/mtk_thermal.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index 5c07a61..cb41e46 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -216,6 +216,9 @@ enum {
- /* The total number of temperature sensors in the MT8183 */
- #define MT8183_NUM_SENSORS	6
- 
-+/* The number of banks in the MT8183 */
-+#define MT8183_NUM_ZONES               1
-+
- /* The number of sensing points per bank */
- #define MT8183_NUM_SENSORS_PER_ZONE	 6
- 
-@@ -503,7 +506,7 @@ struct mtk_thermal {
- 
- static const struct mtk_thermal_data mt8183_thermal_data = {
- 	.auxadc_channel = MT8183_TEMP_AUXADC_CHANNEL,
--	.num_banks = MT8183_NUM_SENSORS_PER_ZONE,
-+	.num_banks = MT8183_NUM_ZONES,
- 	.num_sensors = MT8183_NUM_SENSORS,
- 	.vts_index = mt8183_vts_index,
- 	.cali_val = MT8183_CALIBRATION,
--- 
-1.9.1
+RnJvbTogTWF0dGhpYXMgS2FlaGxja2UgPG1rYUBjaHJvbWl1bS5vcmc+CgpBZGQgdHdvIHBhc3Np
+dmUgdHJpcCBwb2ludHMgYXQgNjjCsEMgYW5kIDg1wrBDIGZvciB0aGUgQ1BVIHRlbXBlcmF0dXJl
+LgoKU2lnbmVkLW9mZi1ieTogTWF0dGhpYXMgS2FlaGxja2UgPG1rYUBjaHJvbWl1bS5vcmc+ClNp
+Z25lZC1vZmYtYnk6IE1pY2hhZWwgS2FvIDxtaWNoYWVsLmthb0BtZWRpYXRlay5jb20+Ci0tLQog
+YXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaSB8IDU1ICsrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrCiAxIGZpbGUgY2hhbmdlZCwgNTUgaW5zZXJ0aW9ucygrKQoK
+ZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0c2kgYi9h
+cmNoL2FybTY0L2Jvb3QvZHRzL21lZGlhdGVrL210ODE4My5kdHNpCmluZGV4IDk1ZjFkN2IuLjBi
+MzI5NGIgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0
+c2kKKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaQpAQCAtMzc1
+LDYgKzM3NSw2MSBAQAogCiAJCQkJdGhlcm1hbC1zZW5zb3JzID0gPCZ0aGVybWFsIDA+OwogCQkJ
+CXN1c3RhaW5hYmxlLXBvd2VyID0gPDE1MDA+OworCisJCQkJdHJpcHMgeworCQkJCQl0aHJlc2hv
+bGQ6IHRyaXAtcG9pbnRAMCB7CisJCQkJCQl0ZW1wZXJhdHVyZSA9IDw2ODAwMD47CisJCQkJCQlo
+eXN0ZXJlc2lzID0gPDIwMDA+OworCQkJCQkJdHlwZSA9ICJwYXNzaXZlIjsKKwkJCQkJfTsKKwor
+CQkJCQl0YXJnZXQ6IHRyaXAtcG9pbnRAMSB7CisJCQkJCQl0ZW1wZXJhdHVyZSA9IDw4NTAwMD47
+CisJCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+OworCQkJCQkJdHlwZSA9ICJwYXNzaXZlIjsKKwkJ
+CQkJfTsKKworCQkJCQljcHVfY3JpdDogY3B1LWNyaXQgeworCQkJCQkJdGVtcGVyYXR1cmUgPSA8
+MTE1MDAwPjsKKwkJCQkJCWh5c3RlcmVzaXMgPSA8MjAwMD47CisJCQkJCQl0eXBlID0gImNyaXRp
+Y2FsIjsKKwkJCQkJfTsKKwkJCQl9OworCisJCQkJY29vbGluZy1tYXBzIHsKKwkJCQkJbWFwMCB7
+CisJCQkJCQl0cmlwID0gPCZ0YXJnZXQ+OworCQkJCQkJY29vbGluZy1kZXZpY2UgPSA8JmNwdTAK
+KwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD4sCisJCQkJ
+CQkJCSA8JmNwdTEKKwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19M
+SU1JVD4sCisJCQkJCQkJCSA8JmNwdTIKKwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJ
+VEhFUk1BTF9OT19MSU1JVD4sCisJCQkJCQkJCSA8JmNwdTMKKwkJCQkJCQlUSEVSTUFMX05PX0xJ
+TUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD47CisJCQkJCQljb250cmlidXRpb24gPSA8MzA3
+Mj47CisJCQkJCX07CisJCQkJCW1hcDEgeworCQkJCQkJdHJpcCA9IDwmdGFyZ2V0PjsKKwkJCQkJ
+CWNvb2xpbmctZGV2aWNlID0gPCZjcHU0CisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVAorCQkJCQkJ
+CVRIRVJNQUxfTk9fTElNSVQ+LAorCQkJCQkJCQkgPCZjcHU1CisJCQkJCQkJVEhFUk1BTF9OT19M
+SU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+LAorCQkJCQkJCQkgPCZjcHU2CisJCQkJCQkJ
+VEhFUk1BTF9OT19MSU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+LAorCQkJCQkJCQkgPCZj
+cHU3CisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+Owor
+CQkJCQkJY29udHJpYnV0aW9uID0gPDEwMjQ+OworCQkJCQl9OworCQkJCX07CiAJCQl9OwogCiAJ
+CQl0enRzMTogdHp0czEgewotLSAKMS45LjEKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1h
+cm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
