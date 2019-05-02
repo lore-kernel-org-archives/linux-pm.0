@@ -1,125 +1,129 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v3 3/4] Documentation: devicetree: add PPMU events
- description
-Date: Thu, 2 May 2019 10:52:25 +0200
-Message-ID: <1fd44623-4a59-f014-1ae9-a7cc605ad30f@partner.samsung.com>
+Subject: Re: [PATCH v3 2/4] drivers: devfreq: events: extend events by type
+ of counted data
+Date: Thu, 2 May 2019 11:07:43 +0200
+Message-ID: <4cd7b7a3-7458-2166-a784-1a94830f5507@partner.samsung.com>
 References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0@eucas1p2.samsung.com>
-        <1555681688-19643-4-git-send-email-l.luba@partner.samsung.com>
-        <20190430223629.GA22317@bogus>
+        <CGME20190419134821eucas1p2461a27e28387ff2b87c149f09582d2a0@eucas1p2.samsung.com>
+        <1555681688-19643-3-git-send-email-l.luba@partner.samsung.com>
+        <3557d507-0463-89de-4025-fbeaaef78bed@samsung.com>
+        <adb6e86a-880e-f9b7-76b2-777a531895d2@partner.samsung.com>
+        <be9dfa71-b6fd-ebe3-e8be-a7ea28765225@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190430223629.GA22317@bogus>
+In-Reply-To: <be9dfa71-b6fd-ebe3-e8be-a7ea28765225@samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, b.zolnierkie@samsung.com, krzk@kernel.org, mark.rutland@arm.com, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, willy.mh.wolff.ml@gmail.com
+To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
 
-On 5/1/19 12:36 AM, Rob Herring wrote:
-> On Fri, Apr 19, 2019 at 03:48:07PM +0200, Lukasz Luba wrote:
->> Extend the documenation by events description with new 'event-data-type'
->> field. Add example how the event might be defined in DT.
+
+On 5/2/19 3:25 AM, Chanwoo Choi wrote:
+> Hi Lukasz,
 > 
-> Why do we need event types in DT? We don't do this for other h/w such as
-> ARM PMU.
-In ARM PMU all the events are hard-coded into the driver code i.e. in v7
-arch/arm/kernel/perf_event_v7.c
-and are seen from perf. They are different type and for different
-purpose. The Ecynos PPMU events are not seen in perf, they are
-for internal monitoring and must not be reset by other actors like perf.
-They are used by the 'bus drivers' to made some heuristics and tune the
-internal settings, like frequency.
-
-Chanwoo has written PPMU driver which relies on DT definition.
-The DT events are used by other DT devices by phandle.
-In Exynos 5x SoCs we have many 'bus devices' which use events to
-monitor their usage and react accordingly.
----------------8<------------------------
-[    4.140923] exynos-bus: new bus device registered: soc:bus_wcore ( 
-84000 KHz ~ 400000 KHz)
-[    4.149179] exynos-bus: new bus device registered: soc:bus_noc ( 
-67000 KHz ~ 100000 KHz)
-[    4.156825] exynos-bus: new bus device registered: soc:bus_fsys_apb 
-(100000 KHz ~ 200000 KHz)
-[    4.165071] exynos-bus: new bus device registered: soc:bus_fsys 
-(100000 KHz ~ 200000 KHz)
-[    4.173577] exynos-bus: new bus device registered: soc:bus_fsys2 ( 
-75000 KHz ~ 150000 KHz)
-[    4.182141] exynos-bus: new bus device registered: soc:bus_mfc ( 
-96000 KHz ~ 333000 KHz)
-[    4.190099] exynos-bus: new bus device registered: soc:bus_gen ( 
-89000 KHz ~ 267000 KHz)
-[    4.197953] exynos-bus: new bus device registered: soc:bus_peri ( 
-67000 KHz ~  67000 KHz)
-[    4.206523] exynos-bus: new bus device registered: soc:bus_g2d ( 
-84000 KHz ~ 333000 KHz)
-[    4.214516] exynos-bus: new bus device registered: soc:bus_g2d_acp ( 
-67000 KHz ~ 267000 KHz)
-[    4.222850] exynos-bus: new bus device registered: soc:bus_jpeg ( 
-75000 KHz ~ 300000 KHz)
-[    4.231052] exynos-bus: new bus device registered: soc:bus_jpeg_apb ( 
-84000 KHz ~ 167000 KHz)
-[    4.239202] exynos-bus: new bus device registered: soc:bus_disp1_fimd 
-(120000 KHz ~ 200000 KHz)
-[    4.248033] exynos-bus: new bus device registered: soc:bus_disp1 
-(120000 KHz ~ 300000 KHz)
-[    4.256304] exynos-bus: new bus device registered: 
-soc:bus_gscl_scaler (150000 KHz ~ 300000 KHz)
-[    4.265397] exynos-bus: new bus device registered: soc:bus_mscl ( 
-84000 KHz ~ 400000 KHz)
--------------------------->8----------------------------------------
-The PPMU driver made some assumption, though. It always monitors only
-'read+write data bytes' as an event data type.
-Thus, it is not possible to monitor other stuff and maybe improve the
-heuristics.
-
-This simple modification allows to define different data type, which is
-acquired by the counter, still being compatible with all the Exynos
-drivers in the existing implementation.
+> On 19. 5. 1. 오전 6:19, Lukasz Luba wrote:
+>> Hi Chanwoo,
+>>
+>> On 4/30/19 9:34 AM, Chanwoo Choi wrote:
+>>> Hi Lukasz,
+>>>
+>>> On 19. 4. 19. 오후 10:48, Lukasz Luba wrote:
+>>>> This patch adds posibility to choose what type of data should be counted
+>>>> by the PPMU counter. Now the type comes from DT where the event has been
+>>>> defined. When there is no 'event-data-type' the default value is used,
+>>>> which is 'read data in bytes'.
+>>>> It is needed when you want to know not only read+write data bytes but
+>>>> i.e. only write data in byte, or number of read requests, etc.
+>>>>
+>>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>>>> ---
+>>>>    drivers/devfreq/event/exynos-ppmu.c | 61 +++++++++++++++++++++++++------------
+>>>>    include/linux/devfreq-event.h       |  6 ++++
+>>>>    2 files changed, 48 insertions(+), 19 deletions(-)
+>>>>
+>>>> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+>>>> index c61de0b..073bf2c 100644
+>>>> --- a/drivers/devfreq/event/exynos-ppmu.c
+>>>> +++ b/drivers/devfreq/event/exynos-ppmu.c
+>>>> @@ -154,9 +154,9 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>>>>    	if (ret < 0)
+>>>>    		return ret;
+>>>>    
+>>>> -	/* Set the event of Read/Write data count  */
+>>>> +	/* Set the event of proper data type monitoring */
+>>>>    	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
+>>>> -				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
+>>>> +			   edev->desc->data_type);
+>>>>    	if (ret < 0)
+>>>>    		return ret;
+>>>>    
+>>>> @@ -368,23 +368,11 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>>>>    	if (ret < 0)
+>>>>    		return ret;
+>>>>    
+>>>> -	/* Set the event of Read/Write data count  */
+>>>> -	switch (id) {
+>>>> -	case PPMU_PMNCNT0:
+>>>> -	case PPMU_PMNCNT1:
+>>>> -	case PPMU_PMNCNT2:
+>>>> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+>>>> -				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
+>>>> -		if (ret < 0)
+>>>> -			return ret;
+>>>> -		break;
+>>>> -	case PPMU_PMNCNT3:
+>>>> -		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+>>>> -				PPMU_V2_EVT3_RW_DATA_CNT);
+>>>> -		if (ret < 0)
+>>>> -			return ret;
+>>>> -		break;
+>>>> -	}
+>>>> +	/* Set the event of proper data type monitoring */
+>>>> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+>>>> +			   edev->desc->data_type);
+>>>> +	if (ret < 0)
+>>>> +		return ret;
+>>>>    
+>>>>    	/* Reset cycle counter/performance counter and enable PPMU */
+>>>>    	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+>>>> @@ -508,6 +496,7 @@ static int of_get_devfreq_events(struct device_node *np,
+>>>>    	struct device *dev = info->dev;
+>>>>    	struct device_node *events_np, *node;
+>>>>    	int i, j, count;
+>>>> +	int ret;
+>>>>    
+>>>>    	events_np = of_get_child_by_name(np, "events");
+>>>>    	if (!events_np) {
+>>>> @@ -544,6 +533,40 @@ static int of_get_devfreq_events(struct device_node *np,
+>>>>    		desc[j].driver_data = info;
+>>>>    
+>>>>    		of_property_read_string(node, "event-name", &desc[j].name);
+>>>> +		ret = of_property_read_u32(node, "event-data-type",
+>>>> +					   &desc[j].data_type);
+>>>> +		if (ret) {
+>>>> +			/* Set the event of proper data type counting.
+>>>> +			 * Check if the data type has been defined in DT,
+>>>> +			 * use default if not.
+>>>> +			 */
+>>>> +			if (of_device_is_compatible(np,
+>>>> +					"samsung,exynos-ppmu-v2")) {
+>>>
+>>> It is not proper to compare the compatible string again
+>>> in the device driver. Instead, you can define the ppmu device type
+>>> as following and then use 'struct of_device_id' in order to
+>>> identify the device type.
+>> I have been thinking about modifying the code in similar fashion as you
+>> did. Good to see similar approach. I'll take your changes with a small
+>> additional code, which sets the 'info->ppmu_type' before the for
+>> loop, as an additional patch. Would it be OK if I add you as an author
+>> and add Sign-off-by: Chanwoo Choi <cw00.choi@samsung.com>?
+> 
+> If you agree, just add the my signed-off-by on second line.
+OK
 
 Regards,
 Lukasz
-
-> 
->>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   .../devicetree/bindings/devfreq/event/exynos-ppmu.txt  | 18 ++++++++++++++++++
->>   1 file changed, 18 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> index 3e36c1d..47feb5f 100644
->> --- a/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> +++ b/Documentation/devicetree/bindings/devfreq/event/exynos-ppmu.txt
->> @@ -145,3 +145,21 @@ Example3 : PPMUv2 nodes in exynos5433.dtsi are listed below.
->>   			reg = <0x104d0000 0x2000>;
->>   			status = "disabled";
->>   		};
->> +
->> +The 'event' type specified in the PPMU node defines 'event-name'
->> +which also contains 'id' number and optionally 'event-data-type'.
->> +
->> +Example:
->> +
->> +		events {
->> +			ppmu_leftbus_0: ppmu-event0-leftbus {
->> +				event-name = "ppmu-event0-leftbus";
->> +				event-data-type = <PPMU_RO_DATA_CNT>;
->> +			};
->> +		};
->> +
->> +The 'event-data-type' defines the type of data which shell be counted
->> +by the counter. You can check include/dt-bindings/pmu/exynos_ppmu.h for
->> +all possible type, i.e. count read requests, count write data in bytes,
->> +etc. This field is optional and when it is missing, the driver code will
->> +use default data type.
->> -- 
->> 2.7.4
->>
-> 
-> 
