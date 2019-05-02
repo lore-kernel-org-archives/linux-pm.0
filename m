@@ -1,11 +1,13 @@
 From: michael.kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH 0/8] Add Mediatek thermal dirver and dtsi
-Date: Thu, 2 May 2019 18:43:07 +0800
-Message-ID: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
+Subject: [PATCH 6/8] thermal: mediatek: mt8183: fix bank number settings
+Date: Thu, 2 May 2019 18:43:13 +0800
+Message-ID: <1556793795-25204-7-git-send-email-michael.kao@mediatek.com>
+References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1556793795-25204-1-git-send-email-michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
  <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
@@ -19,30 +21,39 @@ To: michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, fan.chen-NuS5LvNUpcJWk0
 Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This patchset supports for MT8183 chip to mtk_thermal.c.
-Add thermal zone of all the thermal sensor in SoC for
-another get temperatrue. And we add thermal zone nodes
-and bind coolers.
+From: Michael Kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-This patch series base on these patches [1][2][3][4].
+MT8183_NUM_ZONES should be set to 1
+because MT8183 doesn't have multiple banks.
 
-[1]support for reading chip ID and efuse (https://patchwork.kernel.org/patch/10902131/)
-[2]arm64: dts: mt8183: Add reset-cells in infracfg (https://patchwork.kernel.org/patch/10908653/)
-[3]clk: reset: Modify reset-controller driver (https://patchwork.kernel.org/patch/10908657/)
-[4]PM / AVS: SVS: Introduce SVS engine (https://patchwork.kernel.org/patch/10923289/)
+Fixes: a4ffe6b52d27 ("thermal: mediatek: add support for MT8183")
+Signed-off-by: Michael Kao <Michael.Kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+---
+ drivers/thermal/mtk_thermal.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Matthias Kaehlcke (2):
-	arm64: dts: mt8183: Configure CPU cooling
-	arm64: dts: mt8183: Increase polling frequency for CPU thermal zone
-
-Michael Kao (6):
-	arm64: dts: mt8183: add thermal zone node
-	arm64: dts: mt8183: add/update dynamic power coefficients
-	arm64: dts: mt8183: Add #cooling-cells to CPU nodes
-	thermal: mediatek: mt8183: fix bank number settings
-	thermal: mediatek: add another get_temp ops for thermal sensors
-	thermal: mediatek: use spinlock to protect PTPCORESEL
-
- arch/arm64/boot/dts/mediatek/mt8183.dtsi | 137 +++++++++++++++++++++++++++++++
- drivers/thermal/mtk_thermal.c            |  82 ++++++++++++++----
- 2 files changed, 205 insertions(+), 14 deletions(-)
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index 5c07a61..cb41e46 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -216,6 +216,9 @@ enum {
+ /* The total number of temperature sensors in the MT8183 */
+ #define MT8183_NUM_SENSORS	6
+ 
++/* The number of banks in the MT8183 */
++#define MT8183_NUM_ZONES               1
++
+ /* The number of sensing points per bank */
+ #define MT8183_NUM_SENSORS_PER_ZONE	 6
+ 
+@@ -503,7 +506,7 @@ struct mtk_thermal {
+ 
+ static const struct mtk_thermal_data mt8183_thermal_data = {
+ 	.auxadc_channel = MT8183_TEMP_AUXADC_CHANNEL,
+-	.num_banks = MT8183_NUM_SENSORS_PER_ZONE,
++	.num_banks = MT8183_NUM_ZONES,
+ 	.num_sensors = MT8183_NUM_SENSORS,
+ 	.vts_index = mt8183_vts_index,
+ 	.cali_val = MT8183_CALIBRATION,
+-- 
+1.9.1
