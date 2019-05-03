@@ -1,48 +1,34 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v3 1/3] arm64: defconfig: Enable CONFIG_ENERGY_MODEL
-Date: Fri,  3 May 2019 10:44:07 +0100
-Message-ID: <20190503094409.3499-2-quentin.perret@arm.com>
-References: <20190503094409.3499-1-quentin.perret@arm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH -next] mlxsw: Remove obsolete dependency on THERMAL=m
+Date: Fri, 3 May 2019 20:37:39 +0200
+Message-ID: <CAJKOXPd5EK2L89roSOMRoH6qtXSjHebnYTAu3KYwsP4dSLO3hA@mail.gmail.com>
+References: <20190430092832.7376-1-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190503094409.3499-1-quentin.perret@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com
-Cc: daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, quentin.perret@arm.com, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <20190430092832.7376-1-geert+renesas@glider.be>
+Sender: netdev-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Jiri Pirko <jiri@mellanox.com>, Ido Schimmel <idosch@mellanox.com>, "David S . Miller" <davem@davemloft.net>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The recently introduced Energy Model (EM) framework manages power cost
-tables for the CPUs of the system. Its only user right now is the
-scheduler, in the context of Energy Aware Scheduling (EAS).
+On Tue, 30 Apr 2019 at 11:29, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+>
+> The THERMAL configuration option was changed from tristate to bool, but
+> a dependency on THERMAL=m was forgotten, leading to a warning when
+> running "make savedefconfig":
+>
+>     boolean symbol THERMAL tested for 'm'? test forced to 'n'
+>
+> Fixes: be33e4fbbea581ea ("thermal/drivers/core: Remove the module Kconfig's option")
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/net/ethernet/mellanox/mlxsw/Kconfig | 1 -
+>  1 file changed, 1 deletion(-)
 
-However, the EM framework also offers a generic infrastructure that
-could replace subsystem-specific implementations of the same concepts,
-as this is the case in the thermal framework.
+This also fixes olddefconfig, image_name and other targets:
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-So, in order to prepare the migration of the thermal subsystem to use
-the EM framework, enable it in the default arm64 defconfig, which is the
-most commonly used architecture for IPA. This will also compile-in all
-of the EAS code, although it won't be enabled by default -- EAS requires
-to use the 'schedutil' CPUFreq governor while arm64 defaults to
-'performance'.
-
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- arch/arm64/configs/defconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 418d4c0dbc47..a0fd68cb9bd6 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -97,6 +97,7 @@ CONFIG_XEN=y
- CONFIG_COMPAT=y
- CONFIG_HIBERNATION=y
- CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
-+CONFIG_ENERGY_MODEL=y
- CONFIG_ARM_CPUIDLE=y
- CONFIG_CPU_FREQ=y
- CONFIG_CPU_FREQ_STAT=y
--- 
-2.21.0
+Best regards,
+Krzysztof
