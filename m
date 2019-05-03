@@ -1,103 +1,63 @@
-From: Hsin-Yi Wang <hsinyi@chromium.org>
-Subject: Re: [PATCH 2/8] arm64: dts: mt8183: add/update dynamic power coefficients
-Date: Fri, 3 May 2019 15:16:29 +0800
-Message-ID: <CAJMQK-jujDXt18M8610G4GpHdrikTD0ZZG_=C2YTt63UfxuHuQ@mail.gmail.com>
-References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com> <1556793795-25204-3-git-send-email-michael.kao@mediatek.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] thermal: cpu_cooling: Actually trace CPU load in
+ thermal_power_cpu_get_power
+Date: Fri, 3 May 2019 12:51:20 +0530
+Message-ID: <20190503072120.bm7xtvxc6k4s2kyc@vireshk-i7>
+References: <20190502183238.182058-1-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1556793795-25204-3-git-send-email-michael.kao@mediatek.com>
+Content-Disposition: inline
+In-Reply-To: <20190502183238.182058-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "michael.kao" <michael.kao@mediatek.com>
-Cc: fan.chen@mediatek.com, jamesjj.liao@mediatek.com, dawei.chien@mediatek.com, louis.yu@mediatek.com, roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 2, 2019 at 10:43 AM michael.kao <michael.kao@mediatek.com> wrote:
->
-> Add dynamic power coefficients for all cores and update those of
-> CPU0 and CPU4.
->
-> Signed-off-by: Michael.Kao <michael.kao@mediatek.com>
+On 02-05-19, 11:32, Matthias Kaehlcke wrote:
+> The CPU load values passed to the thermal_power_cpu_get_power
+> tracepoint are zero for all CPUs, unless, unless the
+> thermal_power_cpu_limit tracepoint is enabled too:
+> 
+>   irq/41-rockchip-98    [000] ....   290.972410: thermal_power_cpu_get_power:
+>   cpus=0000000f freq=1800000 load={{0x0,0x0,0x0,0x0}} dynamic_power=4815
+> 
+> vs
+> 
+>   irq/41-rockchip-96    [000] ....    95.773585: thermal_power_cpu_get_power:
+>   cpus=0000000f freq=1800000 load={{0x56,0x64,0x64,0x5e}} dynamic_power=4959
+>   irq/41-rockchip-96    [000] ....    95.773596: thermal_power_cpu_limit:
+>   cpus=0000000f freq=408000 cdev_state=10 power=416
+> 
+> There seems to be no good reason for omitting the CPU load information
+> depending on another tracepoint. My guess is that the intention was to
+> check whether thermal_power_cpu_get_power is (still) enabled, however
+> 'load_cpu != NULL' already indicates that it was at least enabled when
+> cpufreq_get_requested_power() was entered, there seems little gain
+> from omitting the assignment if the tracepoint was just disabled, so
+> just remove the check.
+> 
+> Fixes: 6828a4711f99 ("thermal: add trace events to the power allocator governor")
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
 > ---
->  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
->
-> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> index b92116f..5668fb8 100644
-> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> @@ -58,6 +58,8 @@
->                         compatible = "arm,cortex-a53";
->                         reg = <0x000>;
->                         enable-method = "psci";
-> +                       dynamic-power-coefficient = <84>;
-> +                       #cooling-cells = <2>;
-Should this line be in [3/8] arm64: dts: mt8183: Add #cooling-cells to
-CPU nodes?
+>  drivers/thermal/cpu_cooling.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index f7c1f49ec87f..b437804e099b 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -458,7 +458,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+>  			load = 0;
+>  
+>  		total_load += load;
+> -		if (trace_thermal_power_cpu_limit_enabled() && load_cpu)
+> +		if (load_cpu)
+>  			load_cpu[i] = load;
+>  
+>  		i++;
 
->                 };
->
->                 cpu1: cpu@1 {
-> @@ -65,6 +67,8 @@
->                         compatible = "arm,cortex-a53";
->                         reg = <0x001>;
->                         enable-method = "psci";
-> +                       dynamic-power-coefficient = <84>;
-> +                       #cooling-cells = <2>;
->                 };
->
->                 cpu2: cpu@2 {
-> @@ -72,6 +76,8 @@
->                         compatible = "arm,cortex-a53";
->                         reg = <0x002>;
->                         enable-method = "psci";
-> +                       dynamic-power-coefficient = <84>;
-> +                       #cooling-cells = <2>;
->                 };
->
->                 cpu3: cpu@3 {
-> @@ -79,6 +85,8 @@
->                         compatible = "arm,cortex-a53";
->                         reg = <0x003>;
->                         enable-method = "psci";
-> +                       dynamic-power-coefficient = <84>;
-> +                       #cooling-cells = <2>;
->                 };
->
->                 cpu4: cpu@100 {
-> @@ -86,6 +94,8 @@
->                         compatible = "arm,cortex-a73";
->                         reg = <0x100>;
->                         enable-method = "psci";
-> +                       dynamic-power-coefficient = <211>;
-> +                       #cooling-cells = <2>;
->                 };
->
->                 cpu5: cpu@101 {
-> @@ -93,6 +103,8 @@
->                         compatible = "arm,cortex-a73";
->                         reg = <0x101>;
->                         enable-method = "psci";
-> +                       dynamic-power-coefficient = <211>;
-> +                       #cooling-cells = <2>;
->                 };
->
->                 cpu6: cpu@102 {
-> @@ -100,6 +112,8 @@
->                         compatible = "arm,cortex-a73";
->                         reg = <0x102>;
->                         enable-method = "psci";
-> +                       dynamic-power-coefficient = <211>;
-> +                       #cooling-cells = <2>;
->                 };
->
->                 cpu7: cpu@103 {
-> @@ -107,6 +121,8 @@
->                         compatible = "arm,cortex-a73";
->                         reg = <0x103>;
->                         enable-method = "psci";
-> +                       dynamic-power-coefficient = <211>;
-> +                       #cooling-cells = <2>;
->                 };
->         };
->
+@Javi: I find this change to be fine, do you have any comments on this ?
+
+-- 
+viresh
