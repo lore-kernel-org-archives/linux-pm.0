@@ -1,106 +1,252 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH 1/8] arm64: dts: mt8183: add thermal zone node
-Date: Fri, 3 May 2019 09:46:51 -0700
-Message-ID: <20190503164651.GB40515@google.com>
-References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
- <1556793795-25204-2-git-send-email-michael.kao@mediatek.com>
- <CAJMQK-isJf6f+OubbCdoXs8L2cup=rm3Z8Mr7Q26QshMP-0wxA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 1/3] cpufreq: Add imx-cpufreq-dt driver
+Date: Fri, 3 May 2019 12:22:27 +0530
+Message-ID: <20190503065227.afqgmylbjwhg2mc3@vireshk-i7>
+References: <cover.1556836868.git.leonard.crestez@nxp.com>
+ <df3a41d8bf57b8dd8f8c17599eeca98d6e43962c.1556836868.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <CAJMQK-isJf6f+OubbCdoXs8L2cup=rm3Z8Mr7Q26QshMP-0wxA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Hsin-Yi Wang <hsinyi@chromium.org>
-Cc: "michael.kao" <michael.kao@mediatek.com>, fan.chen@mediatek.com, jamesjj.liao@mediatek.com, dawei.chien@mediatek.com, louis.yu@mediatek.com, roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+In-Reply-To: <df3a41d8bf57b8dd8f8c17599eeca98d6e43962c.1556836868.git.leonard.crestez@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, Abel Vesa <abel.vesa@nxp.com>, Anson Huang <anson.huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jacky Bai <ping.bai@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 02-05-19, 22:44, Leonard Crestez wrote:
+> Right now in upstream imx8m cpufreq support just lists a common subset
+> of OPPs because the higher ones should only be attempted after checking
+> speed grading in fuses.
+> 
+> Add a small driver which checks speed grading from nvmem cells before
+> registering cpufreq-dt.
+> 
+> This allows unlocking all frequencies for imx8mm and imx8mq.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> 
+> ---
+>  drivers/cpufreq/Kconfig.arm          | 10 +++
+>  drivers/cpufreq/Makefile             |  1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c |  3 +
+>  drivers/cpufreq/imx-cpufreq-dt.c     | 99 ++++++++++++++++++++++++++++
+>  drivers/soc/imx/soc-imx8.c           |  3 +
+>  5 files changed, 116 insertions(+)
+>  create mode 100644 drivers/cpufreq/imx-cpufreq-dt.c
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 179a1d302f48..f8e40429e290 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -90,10 +90,20 @@ config ARM_IMX6Q_CPUFREQ
+>  	help
+>  	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
+>  
+>  	  If in doubt, say N.
+>  
+> +config ARM_IMX_CPUFREQ_DT
+> +	tristate "Freescale i.MX8M cpufreq support"
+> +	depends on ARCH_MXC && CPUFREQ_DT
+> +	default m if (ARCH_MXC && CPUFREQ_DT)
 
-On Fri, May 03, 2019 at 04:03:58PM +0800, Hsin-Yi Wang wrote:
-> On Thu, May 2, 2019 at 10:43 AM michael.kao <michael.kao@mediatek.com> wrote:
-> >
-> > Add thermal zone node to Mediatek MT8183 dts file.
-> >
-> > Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-> > ---
-> >  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 64 ++++++++++++++++++++++++++++++++
-> >  1 file changed, 64 insertions(+)
-> >
-> > diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > index 926df75..b92116f 100644
-> > --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > @@ -334,6 +334,67 @@
-> >                         status = "disabled";
-> >                 };
-> >
-> > +               thermal: thermal@1100b000 {
-> > +                       #thermal-sensor-cells = <1>;
-> > +                       compatible = "mediatek,mt8183-thermal";
-> > +                       reg = <0 0x1100b000 0 0x1000>;
-> > +                       interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>;
-> > +                       clocks = <&infracfg CLK_INFRA_THERM>,
-> > +                                <&infracfg CLK_INFRA_AUXADC>;
-> > +                       clock-names = "therm", "auxadc";
-> > +                       resets = <&infracfg  MT8183_INFRACFG_AO_THERM_SW_RST>;
-> > +                       mediatek,auxadc = <&auxadc>;
-> > +                       mediatek,apmixedsys = <&apmixedsys>;
-> > +                       mediatek,hw-reset-temp = <117000>;
-> > +                       nvmem-cells = <&thermal_calibration>;
-> > +                       nvmem-cell-names = "calibration-data";
-> > +               };
-> > +
-> > +               thermal-zones {
-> > +                       cpu_thermal: cpu_thermal {
-> > +                               polling-delay-passive = <1000>;
-> > +                               polling-delay = <1000>;
-> > +
-> > +                               thermal-sensors = <&thermal 0>;
-> > +                               sustainable-power = <1500>;
-> > +                       };
-> > +
-> > +                       tzts1: tzts1 {
-> > +                               polling-delay-passive = <1000>;
-> > +                               polling-delay = <1000>;
-> > +                               thermal-sensors = <&thermal 1>;
-> Is sustainable-power required for tzts? Though it's an optional
-> property, kernel would have warning:
-> [    0.631556] thermal thermal_zone1: power_allocator:
-> sustainable_power will be estimated
-> [    0.639586] thermal thermal_zone2: power_allocator:
-> sustainable_power will be estimated
-> [    0.647611] thermal thermal_zone3: power_allocator:
-> sustainable_power will be estimated
-> [    0.655635] thermal thermal_zone4: power_allocator:
-> sustainable_power will be estimated
-> [    0.663658] thermal thermal_zone5: power_allocator:
-> sustainable_power will be estimated
-> if no sustainable-power assigned.
+The if () part looks redundant here, why do you need it ?
 
-The property is indeed optional, if it isn't specified IPA will use
-the sum of the minimum power of all 'power actors' of the zone as
-estimate (see estimate_sustainable_power()). This may lead to overly
-agressive throttling, since the nominal sustainable power will always
-be <= the requested power.
+> +	help
+> +	  This adds cpufreq driver support for newer Freescale i.MX series
 
-In my understanding the sustainable power may varies between devices,
-even for the same SoC. One could have all the hardware crammed into a
-tiny plastic enclosure (e.g. ASUS Chromebit), another might have a
-laptop form factor and a metal enclosure (e.g. ASUS C201). Both
-examples are based on an Rockchip rk3288, but they have completely
-different thermal behavior, and would likely have different values for
-'sustainable-power'.
+"newer" is a relative thing, it won't be newer an year or two later. Just drop
+it.
 
-In this sense I tend to consider 'sustainable-power' more a device,
-than a SoC property. You could specify a 'reasonable' value as a
-starting point, but it will likely not be optimal for all or even most
-devices. The warning might even be useful for device makers by
-indicating them that there is room for tweaking.
+> +	  SoCs, based on cpufreq-dt
 
-I'm not an expert in the matter though, just happend to look into this
-recently :)
+Full stop (.) missing.
 
-Cheers
+> +
+> +	  If in doubt, say N.
+> +
+>  config ARM_KIRKWOOD_CPUFREQ
+>  	def_bool MACH_KIRKWOOD
+>  	help
+>  	  This adds the CPUFreq driver for Marvell Kirkwood
+>  	  SoCs.
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index 689b26c6f949..7bcda2273d0c 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -54,10 +54,11 @@ obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
+>  obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
+>  obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
+>  obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
+>  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
+>  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+> +obj-$(CONFIG_ARM_IMX_CPUFREQ_DT)	+= imx-cpufreq-dt.o
+>  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+>  obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
+>  obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
+>  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+>  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 47729a22c159..19c1aad57e26 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -106,10 +106,13 @@ static const struct of_device_id whitelist[] __initconst = {
+>   */
+>  static const struct of_device_id blacklist[] __initconst = {
+>  	{ .compatible = "calxeda,highbank", },
+>  	{ .compatible = "calxeda,ecx-2000", },
+>  
+> +	{ .compatible = "fsl,imx8mq", },
+> +	{ .compatible = "fsl,imx8mm", },
+> +
+>  	{ .compatible = "marvell,armadaxp", },
+>  
+>  	{ .compatible = "mediatek,mt2701", },
+>  	{ .compatible = "mediatek,mt2712", },
+>  	{ .compatible = "mediatek,mt7622", },
+> diff --git a/drivers/cpufreq/imx-cpufreq-dt.c b/drivers/cpufreq/imx-cpufreq-dt.c
+> new file mode 100644
+> index 000000000000..9b2ee96c9213
+> --- /dev/null
+> +++ b/drivers/cpufreq/imx-cpufreq-dt.c
+> @@ -0,0 +1,99 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright 2019 NXP
+> + */
+> +
+> +#include <linux/cpu.h>
+> +#include <linux/err.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/nvmem-consumer.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_opp.h>
+> +#include <linux/slab.h>
+> +
+> +#define OCOTP_CFG3_SPEED_GRADE_SHIFT	8
+> +#define OCOTP_CFG3_SPEED_GRADE_MASK	(0x3 << 8)
+> +
+> +static const struct of_device_id imx_cpufreq_dt_match_list[] = {
+> +	{ .compatible = "fsl,imx8mm" },
+> +	{ .compatible = "fsl,imx8mq" },
+> +	{}
+> +};
+> +
+> +static const struct of_device_id *imx_cpufreq_dt_match_node(void)
+> +{
+> +	struct device_node *np;
+> +	const struct of_device_id *match;
+> +
+> +	np = of_find_node_by_path("/");
+> +	match = of_match_node(imx_cpufreq_dt_match_list, np);
+> +	of_node_put(np);
+> +
+> +	return match;
+> +}
+> +
+> +/* cpufreq-dt device registered by imx-cpufreq-dt */
+> +static struct platform_device *cpufreq_dt_pdev;
+> +static struct opp_table *cpufreq_opp_table;
+> +
+> +static int imx_cpufreq_dt_probe(struct platform_device *pdev)
+> +{
+> +	struct device *cpu_dev = get_cpu_device(0);
+> +	const struct of_device_id *match;
+> +	u32 speed_grade;
+> +	int ret;
+> +
+> +	match = imx_cpufreq_dt_match_node();
 
-Matthias
+Just open code it here.
+
+> +	if (!match)
+> +		return -ENODEV;
+> +
+> +	ret = nvmem_cell_read_u32(cpu_dev, "speed_grade", &speed_grade);
+> +	if (ret)
+> +		return ret;
+> +
+> +	speed_grade = (speed_grade & OCOTP_CFG3_SPEED_GRADE_MASK) >> OCOTP_CFG3_SPEED_GRADE_SHIFT;
+> +	dev_info(&pdev->dev, "cpu speed grade %d\n", speed_grade);
+> +	speed_grade = 1 << speed_grade;
+> +
+> +	cpufreq_opp_table = dev_pm_opp_set_supported_hw(cpu_dev, &speed_grade, 1);
+> +	if (IS_ERR(cpufreq_opp_table)) {
+> +		ret = PTR_ERR(cpufreq_opp_table);
+> +		dev_err(&pdev->dev, "Failed to set supported opp: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	cpufreq_dt_pdev = platform_device_register_data(
+> +			&pdev->dev, "cpufreq-dt", -1, NULL, 0);
+> +	if (IS_ERR(cpufreq_dt_pdev)) {
+> +		dev_pm_opp_put_supported_hw(cpufreq_opp_table);
+> +		ret = PTR_ERR(cpufreq_dt_pdev);
+> +		dev_err(&pdev->dev, "Failed to register cpufreq-dt: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_cpufreq_dt_remove(struct platform_device *pdev)
+> +{
+> +	platform_device_unregister(cpufreq_dt_pdev);
+> +	dev_pm_opp_put_supported_hw(cpufreq_opp_table);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver imx_cpufreq_dt_driver = {
+> +	.probe = imx_cpufreq_dt_probe,
+> +	.remove = imx_cpufreq_dt_remove,
+> +	.driver = {
+> +		.name = "imx-cpufreq-dt",
+> +	},
+> +};
+> +module_platform_driver(imx_cpufreq_dt_driver);
+
+Why add another virtual device-driver pair here? The only reason why we have
+been adding it was to get deferred probe to work which doesn't look like the
+case for this driver. Why not do everything from the init() routine ?
+
+> +
+> +MODULE_ALIAS("platform:imx-cpufreq-dt");
+> +MODULE_DESCRIPTION("Freescale i.MX cpufreq speed grading driver");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/drivers/soc/imx/soc-imx8.c b/drivers/soc/imx/soc-imx8.c
+> index cd10726e64e4..02988bdfbb73 100644
+> --- a/drivers/soc/imx/soc-imx8.c
+> +++ b/drivers/soc/imx/soc-imx8.c
+> @@ -130,10 +130,13 @@ static int __init imx8_soc_init(void)
+>  
+>  	soc_dev = soc_device_register(soc_dev_attr);
+>  	if (IS_ERR(soc_dev))
+>  		goto free_rev;
+>  
+> +	if (IS_ENABLED(CONFIG_ARM_IMX_CPUFREQ_DT))
+> +		platform_device_register_simple("imx-cpufreq-dt", -1, NULL, 0);
+> +
+>  	return 0;
+>  
+>  free_rev:
+>  	kfree(soc_dev_attr->revision);
+>  free_soc:
+> -- 
+> 2.17.1
+> 
+
+-- 
+viresh
