@@ -1,58 +1,91 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v6 0/3] Driver for UCS1002
-Date: Fri, 3 May 2019 22:38:46 +0200
-Message-ID: <20190503203846.b2zux6cvtkjkrbco@earth.universe>
-References: <20190503170042.19334-1-andrew.smirnov@gmail.com>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [RFC v1 1/3] dt-bindings: soc: add mtk svs dt-bindings
+Date: Fri, 03 May 2019 14:08:20 -0700
+Message-ID: <155691770027.200842.16164651681407381397@swboyd.mtv.corp.google.com>
+References: <20190430112012.4514-1-roger.lu@mediatek.com>
+ <20190430112012.4514-2-roger.lu@mediatek.com>
+ <155665629219.168659.8221738507474891604@swboyd.mtv.corp.google.com>
+ <1556777971.12123.35.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="u5o4vj3mu6vvwt2c"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190503170042.19334-1-andrew.smirnov@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Guenter Roeck <linux@roeck-us.net>, Enric Balletbo Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1556777971.12123.35.camel@mtksdaap41>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Roger Lu <roger.lu@mediatek.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Angus.Lin@mediatek.com, devicetree@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Andy-YT.Liu@mediatek.com, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Quoting Roger Lu (2019-05-01 23:19:31)
+> On Tue, 2019-04-30 at 13:31 -0700, Stephen Boyd wrote:
+> > Quoting Roger Lu (2019-04-30 04:20:10)
+> > > diff --git a/Documentation/devicetree/bindings/power/mtk-svs.txt b/Documentation/devicetree/bindings/power/mtk-svs.txt
+> > > new file mode 100644
+> > > index 000000000000..355329db74ba
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/power/mtk-svs.txt
+[..]
+> > > +
+> > > +               svs_gpu: svs_gpu {
+> > > +                       compatible = "mediatek,mt8183-svs-gpu";
+> > > +                       power-domains = <&scpsys MT8183_POWER_DOMAIN_MFG_2D>;
+> > > +                       operating-points-v2 = <&gpu_opp_table>;
+> > > +               };
+> > 
+> > It looks like you need multiple OPPs for a single device, because it has
+> > different independent power supplies it wants to associate the OPP
+> > tables with?
+> Yes. SVS has different controllers inside the hardware in order to
+> calculate and optimize different OPP table voltage part.
 
---u5o4vj3mu6vvwt2c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+So is there more than one SVS register region that needs certain devices
+to be powered on or at least have their power domain enabled so that the
+SVS hardware can read the voltage and adjust accordingly? I should read
+the driver I suppose.
 
-Hi,
+> 
+> > Why can't these OPP tables be attached to the devices that
+> > use them, i.e. CPU, GPU, CCI, etc.? Seems odd that those devices don't
+> > have OPP tables that this hardware block can look up somehow.
+> Those OPP tables are attached by our DVFS node (please refers below
+> patch). SVS just shares with their OPP table and help optimize these OPP
+> tables' voltage part.
+> 
+> Add cpufreq DTS node to the mt8183 and mt8183-evb
+> https://patchwork.kernel.org/patch/10921675/
 
-On Fri, May 03, 2019 at 12:00:39PM -0500, Andrey Smirnov wrote:
-> This small series adds a driver for UCS1002 Programmable USB Port
-> Power Controller with Charger Emulation. See [page] for product page
-> and [datasheet] for device dataseet. Hopefully each individual patch
-> is self explanatory.
->=20
-> Note that this series is a revival of the upstreaming effort by Enric
-> Balletbo Serra last version of which can be found at [original-effort]
+Cool thanks for the pointer.
 
-Thanks, queued (whole series).
+> 
+> 
+> > Similarly,
+> > the power domains should probably be part of the devices that are using
+> > them and not these sub-nodes that are mirroring the other hardware
+> > blocks in the system?
+> Oh. There is a svs controller in GPU power-domain. We need to turn on
+> GPU power so that svs controller can work functionally. Therefore, we
+> add GPU power-domains in our svs_gpu sub-node.
+> 
+> 
 
--- Sebastian
+Sorry, I'm not really following what you're saying too closely. I think
+I get it but it sounds complicated.
 
---u5o4vj3mu6vvwt2c
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzMptMACgkQ2O7X88g7
-+poQRxAAp9+Y711kaPHlNkdyeJWm2AYbOrE+13EZKJu4y1raee9aAnee4IT+Zunz
-i5l3uyL4mmeood3UMwxg/NYM1XAev9ak66glNG/7Ue9z/RIUnfck4/hG9cMLeXk9
-3atE1yX5ZT1Cq8LyHyWhu4sUj080A+ynPkqgjWj493tHhBJyc+5MbmDPrcgWoYUf
-EGIn3szz/AKe7PwvDZnj7dQv0js87rKExXRwuJOjTLgw2tGdRlP+PjT2a5+Ya+sY
-L3/ICu3izAADNo4zRdrdDHzE1CkLs4cCupymDTW7R58DdzzViIGAp5On5RTfb9Cc
-rUltoZgyLCqfNkDbSWdtoouuMpJn7wZgnf1sKOTXDopz5L6Sh8YJbTrXTs++bkSg
-AnKZHzIQrPxarue/HJoQEnoLvIm2kvaToHUSclmsB0ApYYbrpnprtxcSFXat9nZe
-q5Fgwm7Ba0Z0EEQVEL7Q/lcxebmhy+A6CLQgW1ERqNWtP5do9AeTIhKfrSB/a5BL
-RFvjZuoRtYb1xcTt4txqHHIc1+zaKFgh417ltuRo6cp8dYXvwasIV8tjstziQLCD
-+xCp/JMq5oJ0gUZ9HHiobTvRjY+mlUUhj718CtVzJHrhBON+TBhuQsbSf0e4MKx1
-t+hsd+3LxnkYb2wEM1OMwca7MqaWmky+jUfzA/KQyqX8faqcDuk=
-=Hklu
------END PGP SIGNATURE-----
-
---u5o4vj3mu6vvwt2c--
+I'm mostly wondering if having properties like svs-gpu = <&gpu_node>,
+and svs-cci = <&cci_node> would work for you. The idea would be to link
+this hardware block to the nodes that it's going to adjust the OPPs of.
+Once you have the node, use some sort of OPP API to get the OPP table
+for a device_node and adjust it at runtime for the current OPP. It
+sounds like it might be a little more complicated if the hardware goes
+haywire when the device like GPU is powered down and the power domain is
+shut off. Hopefully it isn't though, so that the driver can mostly sit
+on top of the SVS hardware and poke OPP every once and a while when the
+voltage needs to change, regardless of the power state of the device.
