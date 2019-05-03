@@ -2,312 +2,164 @@ Return-Path: <SRS0=KcDj=TD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3340FC43219
-	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 07:04:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CFFBC43219
+	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 07:16:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E53DE2089E
-	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 07:04:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 432ED2075C
+	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 07:16:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uo+h42O9"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="hEJ22Rh6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726514AbfECHEY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 May 2019 03:04:24 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:41622 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725806AbfECHEY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 May 2019 03:04:24 -0400
-Received: by mail-pf1-f196.google.com with SMTP id 188so2429971pfd.8
-        for <linux-pm@vger.kernel.org>; Fri, 03 May 2019 00:04:22 -0700 (PDT)
+        id S1726585AbfECHQl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 May 2019 03:16:41 -0400
+Received: from mail-qt1-f193.google.com ([209.85.160.193]:34510 "EHLO
+        mail-qt1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726583AbfECHQl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 May 2019 03:16:41 -0400
+Received: by mail-qt1-f193.google.com with SMTP id j6so5654287qtq.1
+        for <linux-pm@vger.kernel.org>; Fri, 03 May 2019 00:16:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=sP8K2rwhgioNfprlsl68GS4+W1lr75AnIVu2khwc9zQ=;
-        b=uo+h42O9yXPWVWPNllbKRivh7IWoMPi96NvsHVd6/zWjvp5rEex2cMPCl1u8nH5kHF
-         5kuF8H8v9bc3tZzptS5uAarSe4v1v2icpCenINxIBMOB9RbHb0X4PKVjYcz5NAZ15tAr
-         +5/XICjeM90tBXRA8f2dxIMMBVxLCXmLSh92m2gsBoqv69Xml3kLlZ12zW6A+/ArdSrD
-         6RjxKHSUb1CjEsvNGW/aJT7lwvnBaC58+r7pMgKUlnWtwVO4yvOVzC2KC05I00aZndoz
-         rueYmwGowgtaC/QLUXa/xmSlRpOYbgl9p45Sg/TYzXTHOFwUcmkEvPAGXCK+9UAP7CEl
-         GxUA==
+        d=chromium.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=KlnuPNTSqAOsReFStbtqUTb18X37z9g45qyDj7kddRA=;
+        b=hEJ22Rh6lnEcmSMaMMuUlZdfXJ7KCYTX3AM2srreiE8Sf6OAnRXfVnZRnjcSn4jHPY
+         3p24HRD5HVSh44RxdFmCpqu/1sYnULlRTl0XRo2uF6K5RVegrPF0550505OwkW0+qT+m
+         5FmONnZuEwLBqfg9dGyH0yJSkdmST31cbhVaE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=sP8K2rwhgioNfprlsl68GS4+W1lr75AnIVu2khwc9zQ=;
-        b=ePrsFcBLXyTgHh0HNO2eeuy23hetDXHAVKvuJspMEXZTQnJ6pNrHJk6OzDM044IFbA
-         8PMPujW4vs9F9XpAAF488QSu3Wzn26+Z1LB1aceJ3bQYxqXge2/kBQPkvhfvlwkcs74+
-         SpIpoVXcEpTqjAa23Ac1mD+WzhVqnbPoMQ4hhHoNSLnExMhHee+QewHAUzhqpuyC2VmX
-         8sRiin6hInWiRySdRHGhT7HFV7b+YQkLWQl65TQ/w1gFNmogIUr52SRAL0ezrycLf5Ps
-         tIKVN1lcIMxzB+bAq0fzEHiC++/jN5qIIJYgjPtw1K7m5N37xBT9EppEEWq66v9et+eA
-         DTuw==
-X-Gm-Message-State: APjAAAVKxMi+MlBAtJnE1O0DfDaP1tgTutYEt6omJnQin1WhjAh+g+8c
-        keRJ4NgorhFU69+uE8TuYwH+JA==
-X-Google-Smtp-Source: APXvYqwrZbq3iwPcPzTV7fCgCqPQSxKxlJPMKIj7p/fAqcFI8p+JjI3eziskAlBKTLbUtdFd7lx6xw==
-X-Received: by 2002:a63:f448:: with SMTP id p8mr8440846pgk.50.1556866350530;
-        Thu, 02 May 2019 23:52:30 -0700 (PDT)
-Received: from localhost ([171.61.121.242])
-        by smtp.gmail.com with ESMTPSA id 14sm1721547pfx.13.2019.05.02.23.52.29
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 02 May 2019 23:52:29 -0700 (PDT)
-Date:   Fri, 3 May 2019 12:22:27 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Leonard Crestez <leonard.crestez@nxp.com>
-Cc:     Lucas Stach <l.stach@pengutronix.de>,
-        Shawn Guo <shawnguo@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Anson Huang <anson.huang@nxp.com>,
-        Jacky Bai <ping.bai@nxp.com>, Abel Vesa <abel.vesa@nxp.com>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH v2 1/3] cpufreq: Add imx-cpufreq-dt driver
-Message-ID: <20190503065227.afqgmylbjwhg2mc3@vireshk-i7>
-References: <cover.1556836868.git.leonard.crestez@nxp.com>
- <df3a41d8bf57b8dd8f8c17599eeca98d6e43962c.1556836868.git.leonard.crestez@nxp.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=KlnuPNTSqAOsReFStbtqUTb18X37z9g45qyDj7kddRA=;
+        b=COpvPYkYBjFp/UlmQ47czQCzyFzENjHtuFFF+6ayWpMMT54pmItOg82QDsyxB8m4gg
+         zKqhcD6LHQ0mUJp6IvD9LxilSxC1h/s/2xqcA5a2XcJ10n6IK/L0rATjGSMlFd5Oi/Ra
+         cLSgEFjR9iA3dGmaNDltORJf0BPVSiqHrIRMEoS+1w6qF5+Rpi86DPx0bxaw7k3RzqJD
+         rdF5xE7ennHOe6fyaWLXfMkHQL85pCS3fb64bdNjCbJbke7YA9erFFWgJYf13k4G7+BF
+         PVzsQqiH/eIflN5ohRVR/BpHH2Ci/P2CKqUocfhQSI2AZYeHHU5uWYlSFcZq/8zdKUuu
+         95mw==
+X-Gm-Message-State: APjAAAUiy/AXtPZ+XvYOHGUWrxrpv0ojJ5HqiPimdhaTI5G4VtEBHLkI
+        p1YjoSyWjGxwyBN3iFePFuB90V+iytJQjXIu7L7RkA==
+X-Google-Smtp-Source: APXvYqwhRV3TvOuByNuwZ+DDBwx1hJ5Ye6qvgO/XvXATKgGv9cIvbe0igodjrM3jyeRk2df7QWBovKlHBg7m9FObZ4Q=
+X-Received: by 2002:ad4:534b:: with SMTP id v11mr6824906qvs.31.1556867800383;
+ Fri, 03 May 2019 00:16:40 -0700 (PDT)
 MIME-Version: 1.0
+References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com> <1556793795-25204-3-git-send-email-michael.kao@mediatek.com>
+In-Reply-To: <1556793795-25204-3-git-send-email-michael.kao@mediatek.com>
+From:   Hsin-Yi Wang <hsinyi@chromium.org>
+Date:   Fri, 3 May 2019 15:16:29 +0800
+Message-ID:
+ <CAJMQK-jujDXt18M8610G4GpHdrikTD0ZZG_=C2YTt63UfxuHuQ@mail.gmail.com>
+Subject: Re: [PATCH 2/8] arm64: dts: mt8183: add/update dynamic power coefficients
+To:     "michael.kao" <michael.kao@mediatek.com>
+Cc:     fan.chen@mediatek.com, jamesjj.liao@mediatek.com,
+        dawei.chien@mediatek.com, louis.yu@mediatek.com,
+        roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Disposition: inline
-In-Reply-To: <df3a41d8bf57b8dd8f8c17599eeca98d6e43962c.1556836868.git.leonard.crestez@nxp.com>
-User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190503065227.DmhPK2Wq7a3fKBJda-09AjtopZNip1R3d3cqSlX__nc@z>
+Message-ID: <20190503071629.plGp5sfAC_jEsunvDLZaesVTVO7OLgHHGKQhsr1urK0@z>
 
-On 02-05-19, 22:44, Leonard Crestez wrote:
-> Right now in upstream imx8m cpufreq support just lists a common subset
-> of OPPs because the higher ones should only be attempted after checking
-> speed grading in fuses.
-> 
-> Add a small driver which checks speed grading from nvmem cells before
-> registering cpufreq-dt.
-> 
-> This allows unlocking all frequencies for imx8mm and imx8mq.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> 
+On Thu, May 2, 2019 at 10:43 AM michael.kao <michael.kao@mediatek.com> wrote:
+>
+> Add dynamic power coefficients for all cores and update those of
+> CPU0 and CPU4.
+>
+> Signed-off-by: Michael.Kao <michael.kao@mediatek.com>
 > ---
->  drivers/cpufreq/Kconfig.arm          | 10 +++
->  drivers/cpufreq/Makefile             |  1 +
->  drivers/cpufreq/cpufreq-dt-platdev.c |  3 +
->  drivers/cpufreq/imx-cpufreq-dt.c     | 99 ++++++++++++++++++++++++++++
->  drivers/soc/imx/soc-imx8.c           |  3 +
->  5 files changed, 116 insertions(+)
->  create mode 100644 drivers/cpufreq/imx-cpufreq-dt.c
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 179a1d302f48..f8e40429e290 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -90,10 +90,20 @@ config ARM_IMX6Q_CPUFREQ
->  	help
->  	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
->  
->  	  If in doubt, say N.
->  
-> +config ARM_IMX_CPUFREQ_DT
-> +	tristate "Freescale i.MX8M cpufreq support"
-> +	depends on ARCH_MXC && CPUFREQ_DT
-> +	default m if (ARCH_MXC && CPUFREQ_DT)
+>  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+>
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> index b92116f..5668fb8 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> @@ -58,6 +58,8 @@
+>                         compatible = "arm,cortex-a53";
+>                         reg = <0x000>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <84>;
+> +                       #cooling-cells = <2>;
+Should this line be in [3/8] arm64: dts: mt8183: Add #cooling-cells to
+CPU nodes?
 
-The if () part looks redundant here, why do you need it ?
-
-> +	help
-> +	  This adds cpufreq driver support for newer Freescale i.MX series
-
-"newer" is a relative thing, it won't be newer an year or two later. Just drop
-it.
-
-> +	  SoCs, based on cpufreq-dt
-
-Full stop (.) missing.
-
-> +
-> +	  If in doubt, say N.
-> +
->  config ARM_KIRKWOOD_CPUFREQ
->  	def_bool MACH_KIRKWOOD
->  	help
->  	  This adds the CPUFreq driver for Marvell Kirkwood
->  	  SoCs.
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 689b26c6f949..7bcda2273d0c 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -54,10 +54,11 @@ obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
->  obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
->  obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
->  obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
->  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
->  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
-> +obj-$(CONFIG_ARM_IMX_CPUFREQ_DT)	+= imx-cpufreq-dt.o
->  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
->  obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
->  obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
->  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
->  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 47729a22c159..19c1aad57e26 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -106,10 +106,13 @@ static const struct of_device_id whitelist[] __initconst = {
->   */
->  static const struct of_device_id blacklist[] __initconst = {
->  	{ .compatible = "calxeda,highbank", },
->  	{ .compatible = "calxeda,ecx-2000", },
->  
-> +	{ .compatible = "fsl,imx8mq", },
-> +	{ .compatible = "fsl,imx8mm", },
-> +
->  	{ .compatible = "marvell,armadaxp", },
->  
->  	{ .compatible = "mediatek,mt2701", },
->  	{ .compatible = "mediatek,mt2712", },
->  	{ .compatible = "mediatek,mt7622", },
-> diff --git a/drivers/cpufreq/imx-cpufreq-dt.c b/drivers/cpufreq/imx-cpufreq-dt.c
-> new file mode 100644
-> index 000000000000..9b2ee96c9213
-> --- /dev/null
-> +++ b/drivers/cpufreq/imx-cpufreq-dt.c
-> @@ -0,0 +1,99 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright 2019 NXP
-> + */
-> +
-> +#include <linux/cpu.h>
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/nvmem-consumer.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/slab.h>
-> +
-> +#define OCOTP_CFG3_SPEED_GRADE_SHIFT	8
-> +#define OCOTP_CFG3_SPEED_GRADE_MASK	(0x3 << 8)
-> +
-> +static const struct of_device_id imx_cpufreq_dt_match_list[] = {
-> +	{ .compatible = "fsl,imx8mm" },
-> +	{ .compatible = "fsl,imx8mq" },
-> +	{}
-> +};
-> +
-> +static const struct of_device_id *imx_cpufreq_dt_match_node(void)
-> +{
-> +	struct device_node *np;
-> +	const struct of_device_id *match;
-> +
-> +	np = of_find_node_by_path("/");
-> +	match = of_match_node(imx_cpufreq_dt_match_list, np);
-> +	of_node_put(np);
-> +
-> +	return match;
-> +}
-> +
-> +/* cpufreq-dt device registered by imx-cpufreq-dt */
-> +static struct platform_device *cpufreq_dt_pdev;
-> +static struct opp_table *cpufreq_opp_table;
-> +
-> +static int imx_cpufreq_dt_probe(struct platform_device *pdev)
-> +{
-> +	struct device *cpu_dev = get_cpu_device(0);
-> +	const struct of_device_id *match;
-> +	u32 speed_grade;
-> +	int ret;
-> +
-> +	match = imx_cpufreq_dt_match_node();
-
-Just open code it here.
-
-> +	if (!match)
-> +		return -ENODEV;
-> +
-> +	ret = nvmem_cell_read_u32(cpu_dev, "speed_grade", &speed_grade);
-> +	if (ret)
-> +		return ret;
-> +
-> +	speed_grade = (speed_grade & OCOTP_CFG3_SPEED_GRADE_MASK) >> OCOTP_CFG3_SPEED_GRADE_SHIFT;
-> +	dev_info(&pdev->dev, "cpu speed grade %d\n", speed_grade);
-> +	speed_grade = 1 << speed_grade;
-> +
-> +	cpufreq_opp_table = dev_pm_opp_set_supported_hw(cpu_dev, &speed_grade, 1);
-> +	if (IS_ERR(cpufreq_opp_table)) {
-> +		ret = PTR_ERR(cpufreq_opp_table);
-> +		dev_err(&pdev->dev, "Failed to set supported opp: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	cpufreq_dt_pdev = platform_device_register_data(
-> +			&pdev->dev, "cpufreq-dt", -1, NULL, 0);
-> +	if (IS_ERR(cpufreq_dt_pdev)) {
-> +		dev_pm_opp_put_supported_hw(cpufreq_opp_table);
-> +		ret = PTR_ERR(cpufreq_dt_pdev);
-> +		dev_err(&pdev->dev, "Failed to register cpufreq-dt: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx_cpufreq_dt_remove(struct platform_device *pdev)
-> +{
-> +	platform_device_unregister(cpufreq_dt_pdev);
-> +	dev_pm_opp_put_supported_hw(cpufreq_opp_table);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver imx_cpufreq_dt_driver = {
-> +	.probe = imx_cpufreq_dt_probe,
-> +	.remove = imx_cpufreq_dt_remove,
-> +	.driver = {
-> +		.name = "imx-cpufreq-dt",
-> +	},
-> +};
-> +module_platform_driver(imx_cpufreq_dt_driver);
-
-Why add another virtual device-driver pair here? The only reason why we have
-been adding it was to get deferred probe to work which doesn't look like the
-case for this driver. Why not do everything from the init() routine ?
-
-> +
-> +MODULE_ALIAS("platform:imx-cpufreq-dt");
-> +MODULE_DESCRIPTION("Freescale i.MX cpufreq speed grading driver");
-> +MODULE_LICENSE("GPL v2");
-> diff --git a/drivers/soc/imx/soc-imx8.c b/drivers/soc/imx/soc-imx8.c
-> index cd10726e64e4..02988bdfbb73 100644
-> --- a/drivers/soc/imx/soc-imx8.c
-> +++ b/drivers/soc/imx/soc-imx8.c
-> @@ -130,10 +130,13 @@ static int __init imx8_soc_init(void)
->  
->  	soc_dev = soc_device_register(soc_dev_attr);
->  	if (IS_ERR(soc_dev))
->  		goto free_rev;
->  
-> +	if (IS_ENABLED(CONFIG_ARM_IMX_CPUFREQ_DT))
-> +		platform_device_register_simple("imx-cpufreq-dt", -1, NULL, 0);
-> +
->  	return 0;
->  
->  free_rev:
->  	kfree(soc_dev_attr->revision);
->  free_soc:
-> -- 
-> 2.17.1
-> 
-
--- 
-viresh
+>                 };
+>
+>                 cpu1: cpu@1 {
+> @@ -65,6 +67,8 @@
+>                         compatible = "arm,cortex-a53";
+>                         reg = <0x001>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <84>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu2: cpu@2 {
+> @@ -72,6 +76,8 @@
+>                         compatible = "arm,cortex-a53";
+>                         reg = <0x002>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <84>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu3: cpu@3 {
+> @@ -79,6 +85,8 @@
+>                         compatible = "arm,cortex-a53";
+>                         reg = <0x003>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <84>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu4: cpu@100 {
+> @@ -86,6 +94,8 @@
+>                         compatible = "arm,cortex-a73";
+>                         reg = <0x100>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <211>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu5: cpu@101 {
+> @@ -93,6 +103,8 @@
+>                         compatible = "arm,cortex-a73";
+>                         reg = <0x101>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <211>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu6: cpu@102 {
+> @@ -100,6 +112,8 @@
+>                         compatible = "arm,cortex-a73";
+>                         reg = <0x102>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <211>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu7: cpu@103 {
+> @@ -107,6 +121,8 @@
+>                         compatible = "arm,cortex-a73";
+>                         reg = <0x103>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <211>;
+> +                       #cooling-cells = <2>;
+>                 };
+>         };
+>
