@@ -1,50 +1,48 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/6] thermal: Introduce
- devm_thermal_of_cooling_device_register
-Date: Fri, 3 May 2019 10:04:39 +0200
-Message-ID: <c8a26b7d-2775-e13f-21b7-dbc901ea3b0b@linaro.org>
-References: <1555617500-10862-1-git-send-email-linux@roeck-us.net>
- <1555617500-10862-2-git-send-email-linux@roeck-us.net>
- <20190501164843.GA16333@roeck-us.net>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH v3 1/3] arm64: defconfig: Enable CONFIG_ENERGY_MODEL
+Date: Fri,  3 May 2019 10:44:07 +0100
+Message-ID: <20190503094409.3499-2-quentin.perret@arm.com>
+References: <20190503094409.3499-1-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190501164843.GA16333@roeck-us.net>
-Content-Language: en-US
+In-Reply-To: <20190503094409.3499-1-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, linux-hwmon@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org, linux-pm@vger.kernel.org
-Cc: Jean Delvare <jdelvare@suse.com>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>, Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, Kamil Debski <kamil@wypas.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com
+Cc: daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, quentin.perret@arm.com, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 01/05/2019 18:48, Guenter Roeck wrote:
-> On Thu, Apr 18, 2019 at 12:58:15PM -0700, Guenter Roeck wrote:
->> thermal_of_cooling_device_register() and thermal_cooling_device_register()
->> are typically called from driver probe functions, and
->> thermal_cooling_device_unregister() is called from remove functions. This
->> makes both a perfect candidate for device managed functions.
->>
->> Introduce devm_thermal_of_cooling_device_register(). This function can
->> also be used to replace thermal_cooling_device_register() by passing a NULL
->> pointer as device node. The new function requires both struct device *
->> and struct device_node * as parameters since the struct device_node *
->> parameter is not always identical to dev->of_node.
->>
->> Don't introduce a device managed remove function since it is not needed
->> at this point.
->>
-> 
-> Any feedback / thoughts / comments ?
+The recently introduced Energy Model (EM) framework manages power cost
+tables for the CPUs of the system. Its only user right now is the
+scheduler, in the context of Energy Aware Scheduling (EAS).
 
-Hi Guenter,
+However, the EM framework also offers a generic infrastructure that
+could replace subsystem-specific implementations of the same concepts,
+as this is the case in the thermal framework.
 
-I have comments about your patch but I need some time to double check in
-the current code how the 'of' and 'devm' are implemented.
+So, in order to prepare the migration of the thermal subsystem to use
+the EM framework, enable it in the default arm64 defconfig, which is the
+most commonly used architecture for IPA. This will also compile-in all
+of the EAS code, although it won't be enabled by default -- EAS requires
+to use the 'schedutil' CPUFreq governor while arm64 defaults to
+'performance'.
 
+Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 418d4c0dbc47..a0fd68cb9bd6 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -97,6 +97,7 @@ CONFIG_XEN=y
+ CONFIG_COMPAT=y
+ CONFIG_HIBERNATION=y
+ CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
++CONFIG_ENERGY_MODEL=y
+ CONFIG_ARM_CPUIDLE=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_STAT=y
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.21.0
