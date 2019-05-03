@@ -1,82 +1,146 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v4 00/16] NVIDIA Tegra devfreq improvements and
- Tegra20/30 support
-Date: Fri, 3 May 2019 09:31:57 +0900
-Message-ID: <60ef6e47-e61b-3a92-e90d-90debedfcfc4@samsung.com>
-References: <CGME20190501234148epcas5p1cc9a8dafa9ee6d8d046d1292b8270727@epcas5p1.samsung.com>
-        <20190501233815.32643-1-digetx@gmail.com>
+Subject: Re: [PATCH v5 1/6] devfreq: rockchip-dfi: Move GRF definitions to a
+ common place.
+Date: Fri, 3 May 2019 09:36:44 +0900
+Message-ID: <1f5cbebb-811d-d181-6d7f-83be6954514f@samsung.com>
+References: <20190502175820.25382-1-gael.portay@collabora.com>
+        <CGME20190502175826epcas1p43c82151e13a9d7708d46ad78c113ba76@epcas1p4.samsung.com>
+        <20190502175820.25382-2-gael.portay@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190501233815.32643-1-digetx@gmail.com>
+In-Reply-To: <20190502175820.25382-2-gael.portay@collabora.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: =?UTF-8?Q?Ga=c3=abl_PORTAY?= <gael.portay@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lin Huang <hl@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Derek Basehore <dbasehore@chromium.org>, Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
+Cc: Mark Rutland <mark.rutland@arm.com>, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Dmitry,
+Hi Gaël,
 
-On 19. 5. 2. 오전 8:37, Dmitry Osipenko wrote:
-> Changelog:
-> 
-> v4: Addressed all review comments that were made by Chanwoo Choi to v3:
-> 
->     - changed the driver removal order to match the probe exactly
->     - added clarifying comment for 1/8 ratio to the Tegra20 driver
-> 
->     Chanwoo, please also note that the clk patch that should fix
->     compilation problem that was reported the kbuild-test-robot is already
->     applied and available in the recent linux-next.
+The patch1 was already applied to devfreq.git
+and then it was applied to linux-pm.git through
+pull request of devfreq.
 
-I knew that Stephen picked up your path about clock.
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?h=bleeding-edge&id=adfe3b76608ffe547af5a74415f15499b798f32a
 
+On 19. 5. 3. 오전 2:58, Gaël PORTAY wrote:
+> From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > 
-> v3: Addressed all review comments that were made by Chanwoo Choi to v2.
+> Some rk3399 GRF (Generic Register Files) definitions can be used for
+> different drivers. Move these definitions to a common include so we
+> don't need to duplicate these definitions.
 > 
->     Patch "Synchronize IRQ after masking it in hardware" morphed into
->     "Properly disable interrupts", which disables interrupts more solidly.
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>
+> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> ---
 > 
->     Added new minor patch: "Rename tegra-devfreq.c to tegra30-devfreq.c".
+> Changes in v5: None
 > 
->     Added missed error handlings for dev_pm_opp_add().
+> Changes in v4:
+> - [PATCH v3 1/5] Add Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>.
 > 
-> v2: The patchset was quite heavily reworked since v1, few patches we
->     dropped or squashed into the new ones and more patches we added.
->     In a result more bugs and potential problems are fixed now, driver's
->     code got more clean up.
+> Changes in v3:
+> - [PATCH v2 1/5] Add Signed-off-by: Gaël PORTAY <gael.portay@collabora.com>.
 > 
->     The Tegra20 driver-addition patch is now a part of this series, it has
->     no changes since v1.
+> Changes in v2:
+> - [PATCH 1/8] Really add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>.
 > 
-> Dmitry Osipenko (16):
->   PM / devfreq: tegra: Fix kHz to Hz conversion
->   PM / devfreq: tegra: Replace readl-writel with relaxed versions
->   PM / devfreq: tegra: Replace write memory barrier with the read
->     barrier
->   PM / devfreq: tegra: Don't ignore clk errors
->   PM / devfreq: tegra: Don't set EMC clock rate to maximum on probe
->   PM / devfreq: tegra: Drop primary interrupt handler
->   PM / devfreq: tegra: Properly disable interrupts
->   PM / devfreq: tegra: Clean up driver's probe / remove
->   PM / devfreq: tegra: Avoid inconsistency of current frequency value
->   PM / devfreq: tegra: Mark ACTMON's governor as immutable
->   PM / devfreq: tegra: Move governor registration to driver's probe
->   PM / devfreq: tegra: Reconfigure hardware on governor's restart
->   PM / devfreq: tegra: Support Tegra30
->   PM / devfreq: tegra: Enable COMPILE_TEST for the driver
->   PM / devfreq: tegra: Rename tegra-devfreq.c to tegra30-devfreq.c
->   PM / devfreq: Introduce driver for NVIDIA Tegra20
+> Changes in v1:
+> - [RFC 1/10] Add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> - [RFC 1/10] s/Generic/General/ (Robin Murphy)
+> - [RFC 4/10] Removed from the series. I did not found a use case where not holding the mutex causes the issue.
+> - [RFC 7/10] Removed from the series. I did not found a use case where this matters.
 > 
->  MAINTAINERS                                   |   8 +
->  drivers/devfreq/Kconfig                       |  15 +-
->  drivers/devfreq/Makefile                      |   3 +-
->  drivers/devfreq/tegra20-devfreq.c             | 212 ++++++++++++
->  .../{tegra-devfreq.c => tegra30-devfreq.c}    | 315 ++++++++----------
->  5 files changed, 379 insertions(+), 174 deletions(-)
->  create mode 100644 drivers/devfreq/tegra20-devfreq.c
->  rename drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} (81%)
+>  drivers/devfreq/event/rockchip-dfi.c | 23 +++++++----------------
+>  include/soc/rockchip/rk3399_grf.h    | 21 +++++++++++++++++++++
+>  2 files changed, 28 insertions(+), 16 deletions(-)
+>  create mode 100644 include/soc/rockchip/rk3399_grf.h
+> 
+> diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+> index 22b113363ffc..2fbbcbeb644f 100644
+> --- a/drivers/devfreq/event/rockchip-dfi.c
+> +++ b/drivers/devfreq/event/rockchip-dfi.c
+> @@ -26,6 +26,8 @@
+>  #include <linux/list.h>
+>  #include <linux/of.h>
+>  
+> +#include <soc/rockchip/rk3399_grf.h>
+> +
+>  #define RK3399_DMC_NUM_CH	2
+>  
+>  /* DDRMON_CTRL */
+> @@ -43,18 +45,6 @@
+>  #define DDRMON_CH1_COUNT_NUM		0x3c
+>  #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
+>  
+> -/* pmu grf */
+> -#define PMUGRF_OS_REG2	0x308
+> -#define DDRTYPE_SHIFT	13
+> -#define DDRTYPE_MASK	7
+> -
+> -enum {
+> -	DDR3 = 3,
+> -	LPDDR3 = 6,
+> -	LPDDR4 = 7,
+> -	UNUSED = 0xFF
+> -};
+> -
+>  struct dmc_usage {
+>  	u32 access;
+>  	u32 total;
+> @@ -83,16 +73,17 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
+>  	u32 ddr_type;
+>  
+>  	/* get ddr type */
+> -	regmap_read(info->regmap_pmu, PMUGRF_OS_REG2, &val);
+> -	ddr_type = (val >> DDRTYPE_SHIFT) & DDRTYPE_MASK;
+> +	regmap_read(info->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
+> +	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
+> +		    RK3399_PMUGRF_DDRTYPE_MASK;
+>  
+>  	/* clear DDRMON_CTRL setting */
+>  	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
+>  
+>  	/* set ddr type to dfi */
+> -	if (ddr_type == LPDDR3)
+> +	if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR3)
+>  		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
+> -	else if (ddr_type == LPDDR4)
+> +	else if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR4)
+>  		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
+>  
+>  	/* enable count, use software mode */
+> diff --git a/include/soc/rockchip/rk3399_grf.h b/include/soc/rockchip/rk3399_grf.h
+> new file mode 100644
+> index 000000000000..3eebabcb2812
+> --- /dev/null
+> +++ b/include/soc/rockchip/rk3399_grf.h
+> @@ -0,0 +1,21 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Rockchip General Register Files definitions
+> + *
+> + * Copyright (c) 2018, Collabora Ltd.
+> + * Author: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> + */
+> +
+> +#ifndef __SOC_RK3399_GRF_H
+> +#define __SOC_RK3399_GRF_H
+> +
+> +/* PMU GRF Registers */
+> +#define RK3399_PMUGRF_OS_REG2		0x308
+> +#define RK3399_PMUGRF_DDRTYPE_SHIFT	13
+> +#define RK3399_PMUGRF_DDRTYPE_MASK	7
+> +#define RK3399_PMUGRF_DDRTYPE_DDR3	3
+> +#define RK3399_PMUGRF_DDRTYPE_LPDDR2	5
+> +#define RK3399_PMUGRF_DDRTYPE_LPDDR3	6
+> +#define RK3399_PMUGRF_DDRTYPE_LPDDR4	7
+> +
+> +#endif
 > 
 
 
