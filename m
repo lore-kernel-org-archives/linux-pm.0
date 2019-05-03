@@ -1,34 +1,59 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH -next] mlxsw: Remove obsolete dependency on THERMAL=m
-Date: Fri, 3 May 2019 20:37:39 +0200
-Message-ID: <CAJKOXPd5EK2L89roSOMRoH6qtXSjHebnYTAu3KYwsP4dSLO3hA@mail.gmail.com>
-References: <20190430092832.7376-1-geert+renesas@glider.be>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: [PATCH v6 1/3] power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
+Date: Fri,  3 May 2019 10:00:40 -0700
+Message-ID: <20190503170042.19334-2-andrew.smirnov@gmail.com>
+References: <20190503170042.19334-1-andrew.smirnov@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <20190430092832.7376-1-geert+renesas@glider.be>
-Sender: netdev-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Jiri Pirko <jiri@mellanox.com>, Ido Schimmel <idosch@mellanox.com>, "David S . Miller" <davem@davemloft.net>, linux-pm@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190503170042.19334-1-andrew.smirnov@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 30 Apr 2019 at 11:29, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
->
-> The THERMAL configuration option was changed from tristate to bool, but
-> a dependency on THERMAL=m was forgotten, leading to a warning when
-> running "make savedefconfig":
->
->     boolean symbol THERMAL tested for 'm'? test forced to 'n'
->
-> Fixes: be33e4fbbea581ea ("thermal/drivers/core: Remove the module Kconfig's option")
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/net/ethernet/mellanox/mlxsw/Kconfig | 1 -
->  1 file changed, 1 deletion(-)
+Add POWER_SUPPLY_HEALTH_OVERCURRENT constant in order to allow
+singalling overcurrent condition via power supply health information.
 
-This also fixes olddefconfig, image_name and other targets:
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/power/supply/power_supply_sysfs.c | 2 +-
+ include/linux/power_supply.h              | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-Best regards,
-Krzysztof
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 5358a80d854f..153f4a6ca57c 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -62,7 +62,7 @@ static const char * const power_supply_charge_type_text[] = {
+ static const char * const power_supply_health_text[] = {
+ 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
+ 	"Unspecified failure", "Cold", "Watchdog timer expire",
+-	"Safety timer expire"
++	"Safety timer expire", "Over current"
+ };
+ 
+ static const char * const power_supply_technology_text[] = {
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 2f9c201a54d1..bdab14c7ca4d 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -57,6 +57,7 @@ enum {
+ 	POWER_SUPPLY_HEALTH_COLD,
+ 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
+ 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
++	POWER_SUPPLY_HEALTH_OVERCURRENT,
+ };
+ 
+ enum {
+-- 
+2.21.0
