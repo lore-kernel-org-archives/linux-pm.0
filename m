@@ -2,159 +2,84 @@ Return-Path: <SRS0=KcDj=TD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10521C43219
-	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 09:44:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6277C004C9
+	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 09:44:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D508820B7C
-	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 09:44:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="sY8KpSTv"
+	by mail.kernel.org (Postfix) with ESMTP id 7BE772075C
+	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 09:44:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726726AbfECJox (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 May 2019 05:44:53 -0400
-Received: from mail-eopbgr10066.outbound.protection.outlook.com ([40.107.1.66]:33601
-        "EHLO EUR02-HE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726047AbfECJox (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 3 May 2019 05:44:53 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GgjsFt9CS2wYblioVnW9GXVgsBc7Lxls5TP+tJdMSTg=;
- b=sY8KpSTvAH+KsyJjtsSLHvWgKlVYbYdgjOKkIUddQbWvK4OuaZUQG1ppEgdjPcndRTJ4j5hNm/07/y54CtrZpFkz9iiJsA5UvZqsW920N56EsXi7WymjKnSnZh3nTJPlQshfDVBJ8NdjodaoezXEDfmNeskblwmksBQpTS+aLJc=
-Received: from AM0PR04MB6434.eurprd04.prod.outlook.com (20.179.252.215) by
- AM0PR04MB5026.eurprd04.prod.outlook.com (20.177.40.143) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1835.16; Fri, 3 May 2019 09:44:48 +0000
-Received: from AM0PR04MB6434.eurprd04.prod.outlook.com
- ([fe80::19be:75a:9fe:7cec]) by AM0PR04MB6434.eurprd04.prod.outlook.com
- ([fe80::19be:75a:9fe:7cec%7]) with mapi id 15.20.1856.008; Fri, 3 May 2019
- 09:44:48 +0000
-From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-CC:     Lucas Stach <l.stach@pengutronix.de>,
-        Shawn Guo <shawnguo@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Anson Huang <anson.huang@nxp.com>,
-        Jacky Bai <ping.bai@nxp.com>, Abel Vesa <abel.vesa@nxp.com>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH v2 1/3] cpufreq: Add imx-cpufreq-dt driver
-Thread-Topic: [PATCH v2 1/3] cpufreq: Add imx-cpufreq-dt driver
-Thread-Index: AQHVATiRBI3TxTCIzUmxtrShT8luGA==
-Date:   Fri, 3 May 2019 09:44:48 +0000
-Message-ID:
- <AM0PR04MB64345196835732B019F1D885EE350@AM0PR04MB6434.eurprd04.prod.outlook.com>
-References: <cover.1556836868.git.leonard.crestez@nxp.com>
- <df3a41d8bf57b8dd8f8c17599eeca98d6e43962c.1556836868.git.leonard.crestez@nxp.com>
- <20190503065227.afqgmylbjwhg2mc3@vireshk-i7>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=leonard.crestez@nxp.com; 
-x-originating-ip: [89.37.124.34]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 02c6117b-65d7-47bf-3a3f-08d6cfabfb72
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:AM0PR04MB5026;
-x-ms-traffictypediagnostic: AM0PR04MB5026:
-x-microsoft-antispam-prvs: <AM0PR04MB502644CF3D3FD5305C9C076BEE350@AM0PR04MB5026.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:9508;
-x-forefront-prvs: 0026334A56
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(366004)(136003)(39860400002)(376002)(346002)(396003)(199004)(189003)(102836004)(6506007)(81166006)(186003)(229853002)(446003)(3846002)(81156014)(71190400001)(7736002)(476003)(53546011)(486006)(5660300002)(6116002)(71200400001)(8936002)(14454004)(66556008)(66066001)(64756008)(44832011)(73956011)(66446008)(66946007)(6436002)(66476007)(76176011)(7696005)(6916009)(8676002)(99286004)(55016002)(478600001)(305945005)(91956017)(316002)(26005)(6246003)(52536014)(86362001)(4326008)(76116006)(68736007)(53936002)(256004)(9686003)(14444005)(33656002)(54906003)(74316002)(2906002)(25786009);DIR:OUT;SFP:1101;SCL:1;SRVR:AM0PR04MB5026;H:AM0PR04MB6434.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: +3SbIyqczB4WcVuMTIx7eEqlwDW7paAcWNyhRKdjgHVfhIHl1BNQW2ujWUqcRAyy12ipAxyujYyGzCGyUq26zgFGQymSWu1Fe10zAJFYKFOaEzM2FZFSSB1WfyUJWs+OBbyI5a4lTBMo+Hh9A3w7cjsbJxpmsMHgzB8gFRBMQWnLvEXfln0Bk8K43ByVkxyyVakAiHcQQ8MBo47RSU7WmYosv05L/pcnqaESoV97pJvTuODz9rMlCwtk663zrIbY1p/6sMKgzH9H1ZAF44zJ9swN4oljmzFOy+ZWfSze/x1xz+5iFPYPBiII4DWQ4SvnJxE8myGkMqYeJZilQ5QsRNE979bo4okNJ6o0Tmmeep+UPSe9KfI76412DIA1V/6RM+SCpgA9QNzdQ5hbWOGLP/7qhdaquxvWuERv9q8Sncw=
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        id S1727012AbfECJol (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 May 2019 05:44:41 -0400
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:57372 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726047AbfECJok (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 May 2019 05:44:40 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 252E380D;
+        Fri,  3 May 2019 02:44:40 -0700 (PDT)
+Received: from queper01-lin.cambridge.arm.com (queper01-lin.cambridge.arm.com [10.1.195.48])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 582333F557;
+        Fri,  3 May 2019 02:44:37 -0700 (PDT)
+From:   Quentin Perret <quentin.perret@arm.com>
+To:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
+        viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net,
+        will.deacon@arm.com, catalin.marinas@arm.com
+Cc:     daniel.lezcano@linaro.org, dietmar.eggemann@arm.com,
+        ionela.voinescu@arm.com, quentin.perret@arm.com, mka@chromium.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v3 1/3] arm64: defconfig: Enable CONFIG_ENERGY_MODEL
+Date:   Fri,  3 May 2019 10:44:07 +0100
+Message-Id: <20190503094409.3499-2-quentin.perret@arm.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190503094409.3499-1-quentin.perret@arm.com>
+References: <20190503094409.3499-1-quentin.perret@arm.com>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 02c6117b-65d7-47bf-3a3f-08d6cfabfb72
-X-MS-Exchange-CrossTenant-originalarrivaltime: 03 May 2019 09:44:48.3069
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB5026
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190503094448.OA5uLOU605o1EMuYJgVrd9Tr4OgDQsDosPRUvSABD24@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190503094407.IAQ_Ii7y9gAvU5nb9kZ1lQthtoUxcGyCqNixPlquSwg@z>
 
-On 03.05.2019 09:52, Viresh Kumar wrote:=0A=
-> On 02-05-19, 22:44, Leonard Crestez wrote:=0A=
->> Right now in upstream imx8m cpufreq support just lists a common subset=
-=0A=
->> of OPPs because the higher ones should only be attempted after checking=
-=0A=
->> speed grading in fuses.=0A=
->>=0A=
->> Add a small driver which checks speed grading from nvmem cells before=0A=
->> registering cpufreq-dt.=0A=
->>=0A=
->> This allows unlocking all frequencies for imx8mm and imx8mq.=0A=
->>=0A=
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm=
-=0A=
->> @@ -90,10 +90,20 @@ config ARM_IMX6Q_CPUFREQ=0A=
->>   	help=0A=
->>   	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.=
-=0A=
->>   =0A=
->>   	  If in doubt, say N.=0A=
->>   =0A=
->> +config ARM_IMX_CPUFREQ_DT=0A=
->> +	tristate "Freescale i.MX8M cpufreq support"=0A=
->> +	depends on ARCH_MXC && CPUFREQ_DT=0A=
->> +	default m if (ARCH_MXC && CPUFREQ_DT)=0A=
->> +	help=0A=
->> +	  This adds cpufreq driver support for newer Freescale i.MX series=0A=
-> =0A=
-> "newer" is a relative thing, it won't be newer an year or two later. Just=
- drop=0A=
-> it.=0A=
-=0A=
-I meant "newer than i.MX6". Various attempts at adding explicit cpufreq =0A=
-drivers for newer SOCs were rejected in favor of cpufreq-dt.=0A=
-=0A=
-I'll change to mention i.MX8M explicitly and update if 7 is added.=0A=
-=0A=
->> +static struct platform_driver imx_cpufreq_dt_driver =3D {=0A=
->> +	.probe =3D imx_cpufreq_dt_probe,=0A=
->> +	.remove =3D imx_cpufreq_dt_remove,=0A=
->> +	.driver =3D {=0A=
->> +		.name =3D "imx-cpufreq-dt",=0A=
->> +	},=0A=
->> +};=0A=
->> +module_platform_driver(imx_cpufreq_dt_driver);=0A=
-> =0A=
-> Why add another virtual device-driver pair here? The only reason why we h=
-ave=0A=
-> been adding it was to get deferred probe to work which doesn't look like =
-the=0A=
-> case for this driver. Why not do everything from the init() routine ?=0A=
-=0A=
-The imx-cpufreq-dt platform_driver reads from fuses (nvmem/imx-ocotp) =0A=
-which can be theoretically be built as a module and also has clock =0A=
-requirements. No sure we should rely that the call to read from nvmem =0A=
-never returns EPROBE_DEFER.=0A=
-=0A=
-I'm not sure which "init()" you mean, the registration code is inside =0A=
-soc driver and at that point the fuse driver might not be available.=0A=
-=0A=
---=0A=
-Regards,=0A=
-Leonard=0A=
+The recently introduced Energy Model (EM) framework manages power cost
+tables for the CPUs of the system. Its only user right now is the
+scheduler, in the context of Energy Aware Scheduling (EAS).
+
+However, the EM framework also offers a generic infrastructure that
+could replace subsystem-specific implementations of the same concepts,
+as this is the case in the thermal framework.
+
+So, in order to prepare the migration of the thermal subsystem to use
+the EM framework, enable it in the default arm64 defconfig, which is the
+most commonly used architecture for IPA. This will also compile-in all
+of the EAS code, although it won't be enabled by default -- EAS requires
+to use the 'schedutil' CPUFreq governor while arm64 defaults to
+'performance'.
+
+Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 418d4c0dbc47..a0fd68cb9bd6 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -97,6 +97,7 @@ CONFIG_XEN=y
+ CONFIG_COMPAT=y
+ CONFIG_HIBERNATION=y
+ CONFIG_WQ_POWER_EFFICIENT_DEFAULT=y
++CONFIG_ENERGY_MODEL=y
+ CONFIG_ARM_CPUIDLE=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_STAT=y
+-- 
+2.21.0
+
