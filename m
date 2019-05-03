@@ -1,89 +1,80 @@
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v6 0/3] Driver for UCS1002
-Date: Fri,  3 May 2019 12:00:39 -0500
-Message-ID: <20190503170042.19334-1-andrew.smirnov@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v6 3/3] dt-bindings: power: supply: Add bindings for
+ Microchip UCS1002
+Date: Fri, 3 May 2019 11:17:03 -0700
+Message-ID: <20190503181703.GA5088@roeck-us.net>
+References: <20190503170042.19334-1-andrew.smirnov@gmail.com>
+ <20190503170042.19334-4-andrew.smirnov@gmail.com>
+ <20190503170326.GB32529@roeck-us.net>
+ <CAHQ1cqGkcOHnW1S8QGGcgY3qV6ErCq5gbYgGwspVeoEt_ce6tg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAHQ1cqGkcOHnW1S8QGGcgY3qV6ErCq5gbYgGwspVeoEt_ce6tg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Enric Balletbo Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
+To: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Everyone:
+On Fri, May 03, 2019 at 12:33:40PM -0500, Andrey Smirnov wrote:
+> On Fri, May 3, 2019 at 12:03 PM Guenter Roeck <linux@roeck-us.net> wrote:
+> >
+> > On Fri, May 03, 2019 at 10:00:42AM -0700, Andrey Smirnov wrote:
+> > > Add bindings for Microchip UCS1002 Programmable USB Port Power
+> > > Controller with Charger Emulation.
+> > >
+> > > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> > > Reviewed-by: Rob Herring <robh+dt@kernel.org>
+> > > Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
+> > > Cc: Chris Healy <cphealy@gmail.com>
+> > > Cc: Lucas Stach <l.stach@pengutronix.de>
+> > > Cc: Fabio Estevam <festevam@gmail.com>
+> > > Cc: Guenter Roeck <linux@roeck-us.net>
+> > > Cc: Sebastian Reichel <sre@kernel.org>
+> > > Cc: linux-kernel@vger.kernel.org
+> > > Cc: linux-pm@vger.kernel.org
+> > > ---
+> > >  .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
+> > >  1 file changed, 27 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> > > new file mode 100644
+> > > index 000000000000..1d284ad816bf
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> > > @@ -0,0 +1,27 @@
+> > > +Microchip UCS1002 USB Port Power Controller
+> > > +
+> > > +Required properties:
+> > > +- compatible         : Should be "microchip,ucs1002";
+> > > +- reg                        : I2C slave address
+> > > +
+> > > +Optional properties:
+> > > +- interrupts         : A list of interrupts lines present (could be either
+> > > +                       corresponding to A_DET# pin, ALERT# pin, or both)
+> > > +- interrupt-names    : A list of interrupt names. Should contain (if
+> > > +                       present):
+> > > +                       - "a_det" for line connected to A_DET# pin
+> > > +                       - "alert" for line connected to ALERT# pin
+> > > +                       Both are expected to be IRQ_TYPE_EDGE_BOTH
+> > > +Example:
+> > > +
+> > > +&i2c3 {
+> > > +     charger@32 {
+> > > +             compatible = "microchip,ucs1002";
+> > > +             pinctrl-names = "default";
+> > > +             pinctrl-0 = <&pinctrl_ucs1002_pins>;
+> > > +             reg = <0x32>;
+> > > +             interrupts-extended = <&gpio5 2 IRQ_TYPE_EDGE_BOTH>,
+> > > +                                   <&gpio3 21 IRQ_TYPE_EDGE_BOTH>;
+> >
+> > interrupts ?
+> 
+> Can't really use it here since it assumes single "interrupt-parent"
+> (we have gpio5 and gpio3 as parents above)
+> 
+Ah, ok. Thanks for the clarification.
 
-This small series adds a driver for UCS1002 Programmable USB Port
-Power Controller with Charger Emulation. See [page] for product page
-and [datasheet] for device dataseet. Hopefully each individual patch
-is self explanatory.
-
-Note that this series is a revival of the upstreaming effort by Enric
-Balletbo Serra last version of which can be found at [original-effort]
-
-Feedback is welcome!
-
-Thanks,
-Andrey Smirnov
-
-Changes since [v5]:
-
-    - Collected Reviewed-by for "power: supply: Add driver for
-      Microchip UCS1002" from Guenter
-    
-    - Fixed Kconfig indentation issue
-
-Changes since [v4]:
-
-    - Chagned "interrupts-extended" -> "interrupts" in DT bindings description
-
-    - Collected Reviewed-by from Rob
-
-Changes since [v3]:
-
-    - Added a check for negative values to ucs1002_set_usb_type()
-
-Changes since [v2]:
-
-    - Fixed a bug pointed out by Lucas
-
-Changes since [v1]:
-
-    - Moved IRQ trigger specification to DT
-
-    - Fixed silent error paths in probe()
-    
-    - Dropped error message in ucs1002_set_max_current()
-
-    - Fixed license mismatch
-
-    - Changed the driver to configure the chip to BC1.2 CDP by default
-
-    - Made other small fixes as per feedback for v1
-
-[v5] https://lore.kernel.org/lkml/20190501033434.18548-1-andrew.smirnov@gmail.com
-[v4] https://lore.kernel.org/lkml/20190430064557.28469-1-andrew.smirnov@gmail.com
-[v3] https://lore.kernel.org/lkml/20190429195349.20335-1-andrew.smirnov@gmail.com
-[v2] https://lore.kernel.org/lkml/20190429054741.7286-1-andrew.smirnov@gmail.com
-[v1] https://lore.kernel.org/lkml/20190417084457.28747-1-andrew.smirnov@gmail.com/
-[page] https://www.microchip.com/wwwproducts/en/UCS1002-2
-[datasheet] https://ww1.microchip.com/downloads/en/DeviceDoc/UCS1002-2%20Data%20Sheet.pdf
-[original-effort] https://lore.kernel.org/lkml/1460705181-10493-1-git-send-email-enric.balletbo@collabora.com/
-
-
-Andrey Smirnov (3):
-  power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
-  power: supply: Add driver for Microchip UCS1002
-  dt-bindings: power: supply: Add bindings for Microchip UCS1002
-
- .../power/supply/microchip,ucs1002.txt        |  27 +
- drivers/power/supply/Kconfig                  |   9 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/power_supply_sysfs.c     |   2 +-
- drivers/power/supply/ucs1002_power.c          | 646 ++++++++++++++++++
- include/linux/power_supply.h                  |   1 +
- 6 files changed, 685 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
- create mode 100644 drivers/power/supply/ucs1002_power.c
-
--- 
-2.21.0
+Guenter
