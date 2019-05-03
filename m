@@ -2,59 +2,59 @@ Return-Path: <SRS0=KcDj=TD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=ham
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65F37C43219
-	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 06:53:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3340FC43219
+	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 07:04:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 37F40205F4
-	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 06:53:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E53DE2089E
+	for <linux-pm@archiver.kernel.org>; Fri,  3 May 2019 07:04:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="b5GBuW8j"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uo+h42O9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726517AbfECGx3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 May 2019 02:53:29 -0400
-Received: from mail-pg1-f196.google.com ([209.85.215.196]:39845 "EHLO
-        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726182AbfECGx3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 May 2019 02:53:29 -0400
-Received: by mail-pg1-f196.google.com with SMTP id w22so956402pgi.6
-        for <linux-pm@vger.kernel.org>; Thu, 02 May 2019 23:53:29 -0700 (PDT)
+        id S1726514AbfECHEY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 May 2019 03:04:24 -0400
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:41622 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725806AbfECHEY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 May 2019 03:04:24 -0400
+Received: by mail-pf1-f196.google.com with SMTP id 188so2429971pfd.8
+        for <linux-pm@vger.kernel.org>; Fri, 03 May 2019 00:04:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=mrZORLKQrD0+dA9tzmgTZsIYZ2E2nmGSbLpObi4k/no=;
-        b=b5GBuW8j0AOo084lBENajV86iGsi8yHS3gw33fr5OLy+n/GiN3k4Fa3b5zQHJoRscd
-         E/TcH04HbvzS5TqfMxXoiGJZOuIwjeiKNRagV2fdLFVJp8Py8Awf0ZNPn0DODo2LsbrO
-         01SdIHQ1qoo5FlRlnw5IaO+rYXkIbt2aVU9DLs6l1T1ba3iTac1F0wmGAxSZQ8NPlQKE
-         T+RfCX+fX6fjrZ+EY/phUmSkzV1YOSWQRqA+7+I7QOWqZNvEtePl4POhlMLW/aZkp+dk
-         FzP7REC1ZikawPLuvyOtkA96qxN4jYxOpgRA0W+iNPcZ7j/3aMfWy+zluHST0m02Jvg4
-         T5OQ==
+        bh=sP8K2rwhgioNfprlsl68GS4+W1lr75AnIVu2khwc9zQ=;
+        b=uo+h42O9yXPWVWPNllbKRivh7IWoMPi96NvsHVd6/zWjvp5rEex2cMPCl1u8nH5kHF
+         5kuF8H8v9bc3tZzptS5uAarSe4v1v2icpCenINxIBMOB9RbHb0X4PKVjYcz5NAZ15tAr
+         +5/XICjeM90tBXRA8f2dxIMMBVxLCXmLSh92m2gsBoqv69Xml3kLlZ12zW6A+/ArdSrD
+         6RjxKHSUb1CjEsvNGW/aJT7lwvnBaC58+r7pMgKUlnWtwVO4yvOVzC2KC05I00aZndoz
+         rueYmwGowgtaC/QLUXa/xmSlRpOYbgl9p45Sg/TYzXTHOFwUcmkEvPAGXCK+9UAP7CEl
+         GxUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=mrZORLKQrD0+dA9tzmgTZsIYZ2E2nmGSbLpObi4k/no=;
-        b=B1uqbOxaGo4FyzuVHHq5n+s8+cZi9deWyh9OASUYiqiKcEBRVKXngVzS5HUcHvinKw
-         j56jmzNNixtpmM5YeApB7GZUnQdUyGHCn6snmag5JJaFG3Yhrmnwt30HnkN3XUbuOugF
-         1VZXsqGkhr8G5C/ImdHfAP8w3y+54lKvDT3Nu3eU4ZWPABZappzbLYowJvy//mRvHHQx
-         I4gXzcW3JAb5caPJlC80Q8elsqFHhgmZZpm1nny1+OBAfMmdQtlltp0Da7/r4rozkE4S
-         SK9XOFzmoxBAWcddt8SonUa4xNpCaaO0dQyhLW6vOjW5cxKBvGOqrNKvMK35xXvOv8Iz
-         YrFg==
-X-Gm-Message-State: APjAAAXWiTSbLaWJ1C4g6IsKs5Ujx1UZpyzxaPIS226phiSim07F/oBi
-        5wvashVjrCJ5SWJEpGCigrA+aoXG8h4=
-X-Google-Smtp-Source: APXvYqy4Bp3FMEGX6Ci1dt3HcOdM4s0sFs1cVaN1t6Nuk43F5Ep6L09TGrGiIjjKOrxmQjmvzfasew==
-X-Received: by 2002:a62:448d:: with SMTP id m13mr9024302pfi.182.1556866408984;
-        Thu, 02 May 2019 23:53:28 -0700 (PDT)
+        bh=sP8K2rwhgioNfprlsl68GS4+W1lr75AnIVu2khwc9zQ=;
+        b=ePrsFcBLXyTgHh0HNO2eeuy23hetDXHAVKvuJspMEXZTQnJ6pNrHJk6OzDM044IFbA
+         8PMPujW4vs9F9XpAAF488QSu3Wzn26+Z1LB1aceJ3bQYxqXge2/kBQPkvhfvlwkcs74+
+         SpIpoVXcEpTqjAa23Ac1mD+WzhVqnbPoMQ4hhHoNSLnExMhHee+QewHAUzhqpuyC2VmX
+         8sRiin6hInWiRySdRHGhT7HFV7b+YQkLWQl65TQ/w1gFNmogIUr52SRAL0ezrycLf5Ps
+         tIKVN1lcIMxzB+bAq0fzEHiC++/jN5qIIJYgjPtw1K7m5N37xBT9EppEEWq66v9et+eA
+         DTuw==
+X-Gm-Message-State: APjAAAVKxMi+MlBAtJnE1O0DfDaP1tgTutYEt6omJnQin1WhjAh+g+8c
+        keRJ4NgorhFU69+uE8TuYwH+JA==
+X-Google-Smtp-Source: APXvYqwrZbq3iwPcPzTV7fCgCqPQSxKxlJPMKIj7p/fAqcFI8p+JjI3eziskAlBKTLbUtdFd7lx6xw==
+X-Received: by 2002:a63:f448:: with SMTP id p8mr8440846pgk.50.1556866350530;
+        Thu, 02 May 2019 23:52:30 -0700 (PDT)
 Received: from localhost ([171.61.121.242])
-        by smtp.gmail.com with ESMTPSA id s85sm2357007pfa.23.2019.05.02.23.53.27
+        by smtp.gmail.com with ESMTPSA id 14sm1721547pfx.13.2019.05.02.23.52.29
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 02 May 2019 23:53:28 -0700 (PDT)
-Date:   Fri, 3 May 2019 12:23:26 +0530
+        Thu, 02 May 2019 23:52:29 -0700 (PDT)
+Date:   Fri, 3 May 2019 12:22:27 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Leonard Crestez <leonard.crestez@nxp.com>
 Cc:     Lucas Stach <l.stach@pengutronix.de>,
@@ -69,32 +69,245 @@ Cc:     Lucas Stach <l.stach@pengutronix.de>,
         dl-linux-imx <linux-imx@nxp.com>,
         "linux-arm-kernel@lists.infradead.org" 
         <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH v2 3/3] arm64: dts: imx8mq: Add cpu speed grading and all
- OPPs
-Message-ID: <20190503065326.cdammgpkykikencu@vireshk-i7>
+Subject: Re: [PATCH v2 1/3] cpufreq: Add imx-cpufreq-dt driver
+Message-ID: <20190503065227.afqgmylbjwhg2mc3@vireshk-i7>
 References: <cover.1556836868.git.leonard.crestez@nxp.com>
- <59286bf8fcdca332df4004c3d141727f0188ad6f.1556836868.git.leonard.crestez@nxp.com>
+ <df3a41d8bf57b8dd8f8c17599eeca98d6e43962c.1556836868.git.leonard.crestez@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <59286bf8fcdca332df4004c3d141727f0188ad6f.1556836868.git.leonard.crestez@nxp.com>
+In-Reply-To: <df3a41d8bf57b8dd8f8c17599eeca98d6e43962c.1556836868.git.leonard.crestez@nxp.com>
 User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190503065326.3cgv29RM2y8v_bgPcdsBfdGA6Y3CUmjKS3haF_FdMRE@z>
+Message-ID: <20190503065227.DmhPK2Wq7a3fKBJda-09AjtopZNip1R3d3cqSlX__nc@z>
 
 On 02-05-19, 22:44, Leonard Crestez wrote:
-> Add nvmem-cells reference to cpu and fill the OPP table with all known
-> OPPs.
+> Right now in upstream imx8m cpufreq support just lists a common subset
+> of OPPs because the higher ones should only be attempted after checking
+> speed grading in fuses.
+> 
+> Add a small driver which checks speed grading from nvmem cells before
+> registering cpufreq-dt.
+> 
+> This allows unlocking all frequencies for imx8mm and imx8mq.
 > 
 > Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> 
 > ---
->  arch/arm64/boot/dts/freescale/imx8mq.dtsi | 23 ++++++++++++++++++++++-
->  1 file changed, 22 insertions(+), 1 deletion(-)
+>  drivers/cpufreq/Kconfig.arm          | 10 +++
+>  drivers/cpufreq/Makefile             |  1 +
+>  drivers/cpufreq/cpufreq-dt-platdev.c |  3 +
+>  drivers/cpufreq/imx-cpufreq-dt.c     | 99 ++++++++++++++++++++++++++++
+>  drivers/soc/imx/soc-imx8.c           |  3 +
+>  5 files changed, 116 insertions(+)
+>  create mode 100644 drivers/cpufreq/imx-cpufreq-dt.c
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 179a1d302f48..f8e40429e290 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -90,10 +90,20 @@ config ARM_IMX6Q_CPUFREQ
+>  	help
+>  	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
+>  
+>  	  If in doubt, say N.
+>  
+> +config ARM_IMX_CPUFREQ_DT
+> +	tristate "Freescale i.MX8M cpufreq support"
+> +	depends on ARCH_MXC && CPUFREQ_DT
+> +	default m if (ARCH_MXC && CPUFREQ_DT)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+The if () part looks redundant here, why do you need it ?
+
+> +	help
+> +	  This adds cpufreq driver support for newer Freescale i.MX series
+
+"newer" is a relative thing, it won't be newer an year or two later. Just drop
+it.
+
+> +	  SoCs, based on cpufreq-dt
+
+Full stop (.) missing.
+
+> +
+> +	  If in doubt, say N.
+> +
+>  config ARM_KIRKWOOD_CPUFREQ
+>  	def_bool MACH_KIRKWOOD
+>  	help
+>  	  This adds the CPUFreq driver for Marvell Kirkwood
+>  	  SoCs.
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index 689b26c6f949..7bcda2273d0c 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -54,10 +54,11 @@ obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
+>  obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
+>  obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
+>  obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
+>  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
+>  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+> +obj-$(CONFIG_ARM_IMX_CPUFREQ_DT)	+= imx-cpufreq-dt.o
+>  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+>  obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
+>  obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
+>  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+>  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 47729a22c159..19c1aad57e26 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -106,10 +106,13 @@ static const struct of_device_id whitelist[] __initconst = {
+>   */
+>  static const struct of_device_id blacklist[] __initconst = {
+>  	{ .compatible = "calxeda,highbank", },
+>  	{ .compatible = "calxeda,ecx-2000", },
+>  
+> +	{ .compatible = "fsl,imx8mq", },
+> +	{ .compatible = "fsl,imx8mm", },
+> +
+>  	{ .compatible = "marvell,armadaxp", },
+>  
+>  	{ .compatible = "mediatek,mt2701", },
+>  	{ .compatible = "mediatek,mt2712", },
+>  	{ .compatible = "mediatek,mt7622", },
+> diff --git a/drivers/cpufreq/imx-cpufreq-dt.c b/drivers/cpufreq/imx-cpufreq-dt.c
+> new file mode 100644
+> index 000000000000..9b2ee96c9213
+> --- /dev/null
+> +++ b/drivers/cpufreq/imx-cpufreq-dt.c
+> @@ -0,0 +1,99 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright 2019 NXP
+> + */
+> +
+> +#include <linux/cpu.h>
+> +#include <linux/err.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/nvmem-consumer.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_opp.h>
+> +#include <linux/slab.h>
+> +
+> +#define OCOTP_CFG3_SPEED_GRADE_SHIFT	8
+> +#define OCOTP_CFG3_SPEED_GRADE_MASK	(0x3 << 8)
+> +
+> +static const struct of_device_id imx_cpufreq_dt_match_list[] = {
+> +	{ .compatible = "fsl,imx8mm" },
+> +	{ .compatible = "fsl,imx8mq" },
+> +	{}
+> +};
+> +
+> +static const struct of_device_id *imx_cpufreq_dt_match_node(void)
+> +{
+> +	struct device_node *np;
+> +	const struct of_device_id *match;
+> +
+> +	np = of_find_node_by_path("/");
+> +	match = of_match_node(imx_cpufreq_dt_match_list, np);
+> +	of_node_put(np);
+> +
+> +	return match;
+> +}
+> +
+> +/* cpufreq-dt device registered by imx-cpufreq-dt */
+> +static struct platform_device *cpufreq_dt_pdev;
+> +static struct opp_table *cpufreq_opp_table;
+> +
+> +static int imx_cpufreq_dt_probe(struct platform_device *pdev)
+> +{
+> +	struct device *cpu_dev = get_cpu_device(0);
+> +	const struct of_device_id *match;
+> +	u32 speed_grade;
+> +	int ret;
+> +
+> +	match = imx_cpufreq_dt_match_node();
+
+Just open code it here.
+
+> +	if (!match)
+> +		return -ENODEV;
+> +
+> +	ret = nvmem_cell_read_u32(cpu_dev, "speed_grade", &speed_grade);
+> +	if (ret)
+> +		return ret;
+> +
+> +	speed_grade = (speed_grade & OCOTP_CFG3_SPEED_GRADE_MASK) >> OCOTP_CFG3_SPEED_GRADE_SHIFT;
+> +	dev_info(&pdev->dev, "cpu speed grade %d\n", speed_grade);
+> +	speed_grade = 1 << speed_grade;
+> +
+> +	cpufreq_opp_table = dev_pm_opp_set_supported_hw(cpu_dev, &speed_grade, 1);
+> +	if (IS_ERR(cpufreq_opp_table)) {
+> +		ret = PTR_ERR(cpufreq_opp_table);
+> +		dev_err(&pdev->dev, "Failed to set supported opp: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	cpufreq_dt_pdev = platform_device_register_data(
+> +			&pdev->dev, "cpufreq-dt", -1, NULL, 0);
+> +	if (IS_ERR(cpufreq_dt_pdev)) {
+> +		dev_pm_opp_put_supported_hw(cpufreq_opp_table);
+> +		ret = PTR_ERR(cpufreq_dt_pdev);
+> +		dev_err(&pdev->dev, "Failed to register cpufreq-dt: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_cpufreq_dt_remove(struct platform_device *pdev)
+> +{
+> +	platform_device_unregister(cpufreq_dt_pdev);
+> +	dev_pm_opp_put_supported_hw(cpufreq_opp_table);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver imx_cpufreq_dt_driver = {
+> +	.probe = imx_cpufreq_dt_probe,
+> +	.remove = imx_cpufreq_dt_remove,
+> +	.driver = {
+> +		.name = "imx-cpufreq-dt",
+> +	},
+> +};
+> +module_platform_driver(imx_cpufreq_dt_driver);
+
+Why add another virtual device-driver pair here? The only reason why we have
+been adding it was to get deferred probe to work which doesn't look like the
+case for this driver. Why not do everything from the init() routine ?
+
+> +
+> +MODULE_ALIAS("platform:imx-cpufreq-dt");
+> +MODULE_DESCRIPTION("Freescale i.MX cpufreq speed grading driver");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/drivers/soc/imx/soc-imx8.c b/drivers/soc/imx/soc-imx8.c
+> index cd10726e64e4..02988bdfbb73 100644
+> --- a/drivers/soc/imx/soc-imx8.c
+> +++ b/drivers/soc/imx/soc-imx8.c
+> @@ -130,10 +130,13 @@ static int __init imx8_soc_init(void)
+>  
+>  	soc_dev = soc_device_register(soc_dev_attr);
+>  	if (IS_ERR(soc_dev))
+>  		goto free_rev;
+>  
+> +	if (IS_ENABLED(CONFIG_ARM_IMX_CPUFREQ_DT))
+> +		platform_device_register_simple("imx-cpufreq-dt", -1, NULL, 0);
+> +
+>  	return 0;
+>  
+>  free_rev:
+>  	kfree(soc_dev_attr->revision);
+>  free_soc:
+> -- 
+> 2.17.1
+> 
 
 -- 
 viresh
