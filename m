@@ -1,56 +1,103 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v3 2/3] PM / EM: Expose perf domain struct
-Date: Fri,  3 May 2019 10:44:08 +0100
-Message-ID: <20190503094409.3499-3-quentin.perret@arm.com>
-References: <20190503094409.3499-1-quentin.perret@arm.com>
+From: Hsin-Yi Wang <hsinyi@chromium.org>
+Subject: Re: [PATCH 2/8] arm64: dts: mt8183: add/update dynamic power coefficients
+Date: Fri, 3 May 2019 15:16:29 +0800
+Message-ID: <CAJMQK-jujDXt18M8610G4GpHdrikTD0ZZG_=C2YTt63UfxuHuQ@mail.gmail.com>
+References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com> <1556793795-25204-3-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190503094409.3499-1-quentin.perret@arm.com>
+In-Reply-To: <1556793795-25204-3-git-send-email-michael.kao@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com
-Cc: daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, quentin.perret@arm.com, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "michael.kao" <michael.kao@mediatek.com>
+Cc: fan.chen@mediatek.com, jamesjj.liao@mediatek.com, dawei.chien@mediatek.com, louis.yu@mediatek.com, roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In the current state, the perf_domain struct is fully defined only when
-CONFIG_ENERGY_MODEL=y. Since we need to write code that compiles both
-with or without that option in the thermal framework, make sure to
-actually define the struct regardless of the config option. That allows
-to avoid using stubbed accessor functions all the time in code paths
-that use the EM.
+On Thu, May 2, 2019 at 10:43 AM michael.kao <michael.kao@mediatek.com> wrote:
+>
+> Add dynamic power coefficients for all cores and update those of
+> CPU0 and CPU4.
+>
+> Signed-off-by: Michael.Kao <michael.kao@mediatek.com>
+> ---
+>  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+>
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> index b92116f..5668fb8 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> @@ -58,6 +58,8 @@
+>                         compatible = "arm,cortex-a53";
+>                         reg = <0x000>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <84>;
+> +                       #cooling-cells = <2>;
+Should this line be in [3/8] arm64: dts: mt8183: Add #cooling-cells to
+CPU nodes?
 
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- include/linux/energy_model.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-index aa027f7bcb3e..fb32b86a467d 100644
---- a/include/linux/energy_model.h
-+++ b/include/linux/energy_model.h
-@@ -9,7 +9,6 @@
- #include <linux/sched/topology.h>
- #include <linux/types.h>
- 
--#ifdef CONFIG_ENERGY_MODEL
- /**
-  * em_cap_state - Capacity state of a performance domain
-  * @frequency:	The CPU frequency in KHz, for consistency with CPUFreq
-@@ -40,6 +39,7 @@ struct em_perf_domain {
- 	unsigned long cpus[0];
- };
- 
-+#ifdef CONFIG_ENERGY_MODEL
- #define EM_CPU_MAX_POWER 0xFFFF
- 
- struct em_data_callback {
-@@ -160,7 +160,6 @@ static inline int em_pd_nr_cap_states(struct em_perf_domain *pd)
- }
- 
- #else
--struct em_perf_domain {};
- struct em_data_callback {};
- #define EM_DATA_CB(_active_power_cb) { }
- 
--- 
-2.21.0
+>                 };
+>
+>                 cpu1: cpu@1 {
+> @@ -65,6 +67,8 @@
+>                         compatible = "arm,cortex-a53";
+>                         reg = <0x001>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <84>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu2: cpu@2 {
+> @@ -72,6 +76,8 @@
+>                         compatible = "arm,cortex-a53";
+>                         reg = <0x002>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <84>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu3: cpu@3 {
+> @@ -79,6 +85,8 @@
+>                         compatible = "arm,cortex-a53";
+>                         reg = <0x003>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <84>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu4: cpu@100 {
+> @@ -86,6 +94,8 @@
+>                         compatible = "arm,cortex-a73";
+>                         reg = <0x100>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <211>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu5: cpu@101 {
+> @@ -93,6 +103,8 @@
+>                         compatible = "arm,cortex-a73";
+>                         reg = <0x101>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <211>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu6: cpu@102 {
+> @@ -100,6 +112,8 @@
+>                         compatible = "arm,cortex-a73";
+>                         reg = <0x102>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <211>;
+> +                       #cooling-cells = <2>;
+>                 };
+>
+>                 cpu7: cpu@103 {
+> @@ -107,6 +121,8 @@
+>                         compatible = "arm,cortex-a73";
+>                         reg = <0x103>;
+>                         enable-method = "psci";
+> +                       dynamic-power-coefficient = <211>;
+> +                       #cooling-cells = <2>;
+>                 };
+>         };
+>
