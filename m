@@ -1,59 +1,75 @@
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Subject: [PATCH v6 1/3] power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
-Date: Fri,  3 May 2019 10:00:40 -0700
-Message-ID: <20190503170042.19334-2-andrew.smirnov@gmail.com>
+Subject: Re: [PATCH v6 3/3] dt-bindings: power: supply: Add bindings for
+ Microchip UCS1002
+Date: Fri, 3 May 2019 12:33:40 -0500
+Message-ID: <CAHQ1cqGkcOHnW1S8QGGcgY3qV6ErCq5gbYgGwspVeoEt_ce6tg@mail.gmail.com>
 References: <20190503170042.19334-1-andrew.smirnov@gmail.com>
+ <20190503170042.19334-4-andrew.smirnov@gmail.com> <20190503170326.GB32529@roeck-us.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190503170042.19334-1-andrew.smirnov@gmail.com>
+In-Reply-To: <20190503170326.GB32529@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Enric Balletbo Serra <enric.balletbo@collabora.com>, Chris Healy <cphealy@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add POWER_SUPPLY_HEALTH_OVERCURRENT constant in order to allow
-singalling overcurrent condition via power supply health information.
+On Fri, May 3, 2019 at 12:03 PM Guenter Roeck <linux@roeck-us.net> wrote:
+>
+> On Fri, May 03, 2019 at 10:00:42AM -0700, Andrey Smirnov wrote:
+> > Add bindings for Microchip UCS1002 Programmable USB Port Power
+> > Controller with Charger Emulation.
+> >
+> > Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> > Reviewed-by: Rob Herring <robh+dt@kernel.org>
+> > Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
+> > Cc: Chris Healy <cphealy@gmail.com>
+> > Cc: Lucas Stach <l.stach@pengutronix.de>
+> > Cc: Fabio Estevam <festevam@gmail.com>
+> > Cc: Guenter Roeck <linux@roeck-us.net>
+> > Cc: Sebastian Reichel <sre@kernel.org>
+> > Cc: linux-kernel@vger.kernel.org
+> > Cc: linux-pm@vger.kernel.org
+> > ---
+> >  .../power/supply/microchip,ucs1002.txt        | 27 +++++++++++++++++++
+> >  1 file changed, 27 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> >
+> > diff --git a/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> > new file mode 100644
+> > index 000000000000..1d284ad816bf
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+> > @@ -0,0 +1,27 @@
+> > +Microchip UCS1002 USB Port Power Controller
+> > +
+> > +Required properties:
+> > +- compatible         : Should be "microchip,ucs1002";
+> > +- reg                        : I2C slave address
+> > +
+> > +Optional properties:
+> > +- interrupts         : A list of interrupts lines present (could be either
+> > +                       corresponding to A_DET# pin, ALERT# pin, or both)
+> > +- interrupt-names    : A list of interrupt names. Should contain (if
+> > +                       present):
+> > +                       - "a_det" for line connected to A_DET# pin
+> > +                       - "alert" for line connected to ALERT# pin
+> > +                       Both are expected to be IRQ_TYPE_EDGE_BOTH
+> > +Example:
+> > +
+> > +&i2c3 {
+> > +     charger@32 {
+> > +             compatible = "microchip,ucs1002";
+> > +             pinctrl-names = "default";
+> > +             pinctrl-0 = <&pinctrl_ucs1002_pins>;
+> > +             reg = <0x32>;
+> > +             interrupts-extended = <&gpio5 2 IRQ_TYPE_EDGE_BOTH>,
+> > +                                   <&gpio3 21 IRQ_TYPE_EDGE_BOTH>;
+>
+> interrupts ?
 
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-Cc: Enric Balletbo Serra <enric.balletbo@collabora.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Fabio Estevam <festevam@gmail.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- drivers/power/supply/power_supply_sysfs.c | 2 +-
- include/linux/power_supply.h              | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+Can't really use it here since it assumes single "interrupt-parent"
+(we have gpio5 and gpio3 as parents above)
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 5358a80d854f..153f4a6ca57c 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -62,7 +62,7 @@ static const char * const power_supply_charge_type_text[] = {
- static const char * const power_supply_health_text[] = {
- 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
- 	"Unspecified failure", "Cold", "Watchdog timer expire",
--	"Safety timer expire"
-+	"Safety timer expire", "Over current"
- };
- 
- static const char * const power_supply_technology_text[] = {
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 2f9c201a54d1..bdab14c7ca4d 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -57,6 +57,7 @@ enum {
- 	POWER_SUPPLY_HEALTH_COLD,
- 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
- 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
-+	POWER_SUPPLY_HEALTH_OVERCURRENT,
- };
- 
- enum {
--- 
-2.21.0
+Thanks,
+Andrey Smirnov
