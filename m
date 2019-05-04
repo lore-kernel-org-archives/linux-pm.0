@@ -1,55 +1,36 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: cpu_cooling: Actually trace CPU load in
- thermal_power_cpu_get_power
-Date: Fri, 3 May 2019 23:11:23 +0200
-Message-ID: <85246ec5-2dd7-f7fb-535f-0268af399480@linaro.org>
-References: <20190502183238.182058-1-mka@chromium.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 13/18] hwmon/coretemp: Support multi-die/package
+Date: Fri, 3 May 2019 22:58:23 -0400
+Message-ID: <CAJvTdKk8n3EVZ2WKZHsUvyyvw1cF1tD4GPjqqGxueFbCvAsZ5A@mail.gmail.com>
+References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1556657368.git.len.brown@intel.com>
+ <10af238e4f996ccfc0ecf8baedca04df0c65c7c1.1556657368.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190502183238.182058-1-mka@chromium.org>
-Content-Language: en-US
+In-Reply-To: <10af238e4f996ccfc0ecf8baedca04df0c65c7c1.1556657368.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>
+To: X86 ML <x86@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-hwmon@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/05/2019 20:32, Matthias Kaehlcke wrote:
-> The CPU load values passed to the thermal_power_cpu_get_power
-> tracepoint are zero for all CPUs, unless, unless the
-> thermal_power_cpu_limit tracepoint is enabled too:
-> 
->   irq/41-rockchip-98    [000] ....   290.972410: thermal_power_cpu_get_power:
->   cpus=0000000f freq=1800000 load={{0x0,0x0,0x0,0x0}} dynamic_power=4815
-> 
-> vs
-> 
->   irq/41-rockchip-96    [000] ....    95.773585: thermal_power_cpu_get_power:
->   cpus=0000000f freq=1800000 load={{0x56,0x64,0x64,0x5e}} dynamic_power=4959
->   irq/41-rockchip-96    [000] ....    95.773596: thermal_power_cpu_limit:
->   cpus=0000000f freq=408000 cdev_state=10 power=416
-> 
-> There seems to be no good reason for omitting the CPU load information
-> depending on another tracepoint. My guess is that the intention was to
-> check whether thermal_power_cpu_get_power is (still) enabled, however
-> 'load_cpu != NULL' already indicates that it was at least enabled when
-> cpufreq_get_requested_power() was entered, there seems little gain
-> from omitting the assignment if the tracepoint was just disabled, so
-> just remove the check.
-> 
-> Fixes: 6828a4711f99 ("thermal: add trace events to the power allocator governor")
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
+On Wed, May 1, 2019 at 12:24 AM Len Brown <lenb@kernel.org> wrote:
+>
+> From: Zhang Rui <rui.zhang@intel.com>
 
-Yes, load_cpu is needed in any case for both traces. The change makes sense.
+> @@ -732,6 +732,7 @@ static enum cpuhp_state coretemp_hp_online;
+>  static int __init coretemp_init(void)
+>  {
+>         int err;
+> +       struct cpuinfo_x86 *c = &cpu_data(0);
+>
+>         /*
+>          * CPUID.06H.EAX[0] indicates whether the CPU has thermal
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+FYI, the hunk above was errantly left over from v2 and included in this e-mail.
 
+It is removed in git.
+And that is the only difference between this e-mailed series and my
+latest git tree.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+thanks,
+-Len
