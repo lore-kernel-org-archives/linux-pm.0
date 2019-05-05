@@ -1,36 +1,68 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 13/18] hwmon/coretemp: Support multi-die/package
-Date: Fri, 3 May 2019 22:58:23 -0400
-Message-ID: <CAJvTdKk8n3EVZ2WKZHsUvyyvw1cF1tD4GPjqqGxueFbCvAsZ5A@mail.gmail.com>
-References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1556657368.git.len.brown@intel.com>
- <10af238e4f996ccfc0ecf8baedca04df0c65c7c1.1556657368.git.len.brown@intel.com>
+From: Jacky Bai <ping.bai@nxp.com>
+Subject: [PATCH] cpufreq: imx6q: Fix the resource leak caused by incorrect
+ error return
+Date: Sun, 5 May 2019 04:34:43 +0000
+Message-ID: <20190505043929.19071-1-ping.bai@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <10af238e4f996ccfc0ecf8baedca04df0c65c7c1.1556657368.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: X86 ML <x86@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-hwmon@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "festevam@gmail.com" <festevam@gmail.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 1, 2019 at 12:24 AM Len Brown <lenb@kernel.org> wrote:
->
-> From: Zhang Rui <rui.zhang@intel.com>
+Previous goto only handled the node reference, the opp table,
+regulator & clk resource also need to be free before error return.
 
-> @@ -732,6 +732,7 @@ static enum cpuhp_state coretemp_hp_online;
->  static int __init coretemp_init(void)
->  {
->         int err;
-> +       struct cpuinfo_x86 *c = &cpu_data(0);
->
->         /*
->          * CPUID.06H.EAX[0] indicates whether the CPU has thermal
+Signed-off-by: Jacky Bai <ping.bai@nxp.com>
+---
+ drivers/cpufreq/imx6q-cpufreq.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-FYI, the hunk above was errantly left over from v2 and included in this e-mail.
-
-It is removed in git.
-And that is the only difference between this e-mailed series and my
-latest git tree.
-
-thanks,
--Len
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index 3e17560b1efe..1d4ecefaabc6 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -383,23 +383,22 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		goto put_reg;
+ 	}
+ 
++	/* Because we have added the OPPs here, we must free them */
++	free_opp = true;
++
+ 	if (of_machine_is_compatible("fsl,imx6ul") ||
+ 	    of_machine_is_compatible("fsl,imx6ull")) {
+ 		ret = imx6ul_opp_check_speed_grading(cpu_dev);
+ 		if (ret) {
+-			if (ret == -EPROBE_DEFER)
+-				goto put_node;
+-
+-			dev_err(cpu_dev, "failed to read ocotp: %d\n",
+-				ret);
+-			goto put_node;
++			if (ret != -EPROBE_DEFER)
++				dev_err(cpu_dev, "failed to read ocotp: %d\n",
++					ret);
++			goto out_free_opp;
+ 		}
+ 	} else {
+ 		imx6q_opp_check_speed_grading(cpu_dev);
+ 	}
+ 
+-	/* Because we have added the OPPs here, we must free them */
+-	free_opp = true;
+ 	num = dev_pm_opp_get_opp_count(cpu_dev);
+ 	if (num < 0) {
+ 		ret = num;
+-- 
+2.21.0
