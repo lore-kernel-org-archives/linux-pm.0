@@ -1,12 +1,14 @@
-From: Jacky Bai <ping.bai@nxp.com>
-Subject: [PATCH] cpufreq: imx6q: Fix the resource leak caused by incorrect
+From: Aisheng Dong <aisheng.dong@nxp.com>
+Subject: RE: [PATCH] cpufreq: imx6q: Fix the resource leak caused by incorrect
  error return
-Date: Sun, 5 May 2019 04:34:43 +0000
-Message-ID: <20190505043929.19071-1-ping.bai@nxp.com>
+Date: Sun, 5 May 2019 07:30:25 +0000
+Message-ID: <AM0PR04MB42116F910886537F4C35AC8A80370@AM0PR04MB4211.eurprd04.prod.outlook.com>
+References: <20190505043929.19071-1-ping.bai@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190505043929.19071-1-ping.bai@nxp.com>
 Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -17,52 +19,64 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "festevam@gmail.com" <festevam@gmail.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>
+To: Jacky Bai <ping.bai@nxp.com>, "festevam@gmail.com" <festevam@gmail.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>
 Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Previous goto only handled the node reference, the opp table,
-regulator & clk resource also need to be free before error return.
+> From: Jacky Bai
+> Sent: Sunday, May 5, 2019 12:35 PM
+> 
+> Previous goto only handled the node reference, the opp table, regulator & clk
+> resource also need to be free before error return.
+> 
+> Signed-off-by: Jacky Bai <ping.bai@nxp.com>
 
-Signed-off-by: Jacky Bai <ping.bai@nxp.com>
----
- drivers/cpufreq/imx6q-cpufreq.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+Better to have a 'Fixes:' tag.
+Otherwise:
+Reviewed-by: Dong Aisheng <aisheng.dong@nxp.com>
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 3e17560b1efe..1d4ecefaabc6 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -383,23 +383,22 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		goto put_reg;
- 	}
- 
-+	/* Because we have added the OPPs here, we must free them */
-+	free_opp = true;
-+
- 	if (of_machine_is_compatible("fsl,imx6ul") ||
- 	    of_machine_is_compatible("fsl,imx6ull")) {
- 		ret = imx6ul_opp_check_speed_grading(cpu_dev);
- 		if (ret) {
--			if (ret == -EPROBE_DEFER)
--				goto put_node;
--
--			dev_err(cpu_dev, "failed to read ocotp: %d\n",
--				ret);
--			goto put_node;
-+			if (ret != -EPROBE_DEFER)
-+				dev_err(cpu_dev, "failed to read ocotp: %d\n",
-+					ret);
-+			goto out_free_opp;
- 		}
- 	} else {
- 		imx6q_opp_check_speed_grading(cpu_dev);
- 	}
- 
--	/* Because we have added the OPPs here, we must free them */
--	free_opp = true;
- 	num = dev_pm_opp_get_opp_count(cpu_dev);
- 	if (num < 0) {
- 		ret = num;
--- 
-2.21.0
+Regards
+Dong Aisheng
+
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 15 +++++++--------
+>  1 file changed, 7 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index 3e17560b1efe..1d4ecefaabc6 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -383,23 +383,22 @@ static int imx6q_cpufreq_probe(struct
+> platform_device *pdev)
+>  		goto put_reg;
+>  	}
+> 
+> +	/* Because we have added the OPPs here, we must free them */
+> +	free_opp = true;
+> +
+>  	if (of_machine_is_compatible("fsl,imx6ul") ||
+>  	    of_machine_is_compatible("fsl,imx6ull")) {
+>  		ret = imx6ul_opp_check_speed_grading(cpu_dev);
+>  		if (ret) {
+> -			if (ret == -EPROBE_DEFER)
+> -				goto put_node;
+> -
+> -			dev_err(cpu_dev, "failed to read ocotp: %d\n",
+> -				ret);
+> -			goto put_node;
+> +			if (ret != -EPROBE_DEFER)
+> +				dev_err(cpu_dev, "failed to read ocotp: %d\n",
+> +					ret);
+> +			goto out_free_opp;
+>  		}
+>  	} else {
+>  		imx6q_opp_check_speed_grading(cpu_dev);
+>  	}
+> 
+> -	/* Because we have added the OPPs here, we must free them */
+> -	free_opp = true;
+>  	num = dev_pm_opp_get_opp_count(cpu_dev);
+>  	if (num < 0) {
+>  		ret = num;
+> --
+> 2.21.0
