@@ -1,10 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v7 07/13] dt-bindings: memory-controllers: add Exynos5422
- DMC device description
-Date: Mon,  6 May 2019 17:11:55 +0200
-Message-ID: <1557155521-30949-8-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v7 01/13] clk: samsung: add needed IDs for DMC clocks in
+ Exynos5420
+Date: Mon,  6 May 2019 17:11:49 +0200
+Message-ID: <1557155521-30949-2-git-send-email-l.luba@partner.samsung.com>
 References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190506151215eucas1p2c57147edac5671c5ec9a223efb6b4adc@eucas1p2.samsung.com>
+        <CGME20190506151210eucas1p13c2a4b86a6f987ff34fbe1e2d705fbbf@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
@@ -13,94 +13,75 @@ To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kern
 Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-The patch adds description for DT binding for a new Exynos5422 Dynamic
-Memory Controller device.
+Define new IDs for clocks used by Dynamic Memory Controller in
+Exynos5422 SoC.
 
+Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- .../bindings/memory-controllers/exynos5422-dmc.txt | 74 ++++++++++++++++++++++
- 1 file changed, 74 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
+ include/dt-bindings/clock/exynos5420.h | 28 ++++++++++++++++++++++------
+ 1 file changed, 22 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
-new file mode 100644
-index 0000000..be602a9
---- /dev/null
-+++ b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
-@@ -0,0 +1,74 @@
-+* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
-+
-+The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
-+memory chips are connected. The driver is to monitor the controller in runtime
-+and switch frequency and voltage. To monitor the usage of the controller in
-+runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
-+is able to measure the current load of the memory.
-+When 'userspace' governor is used for the driver, an application is able to
-+switch the DMC and memory frequency.
-+
-+Required properties for DMC device for Exynos5422:
-+- compatible: Should be "samsung,exynos5422-dmc".
-+- clock-names : the name of clock used by the controller.
-+- clocks : phandles for clock specified in "clock-names" property.
-+- devfreq-events : phandles for PPMU devices connected to this DMC.
-+- vdd-supply : phandle for voltage regulator which is connected.
-+- reg : registers of two CDREX controllers.
-+- operating-points-v2 : phandle for OPPs described in v2 definition.
-+- device-handle : phandle of the connected DRAM memory device. For more
-+	information please refer to Documentation
-+- devfreq-events : phandles of the PPMU events used by the controller.
-+- samsung,syscon-chipid : phandle of the ChipID used by the controller.
-+- samsung,syscon-clk : phandle of the clock register set used by the controller.
-+
-+Example:
-+
-+	ppmu_dmc0_0: ppmu@10d00000 {
-+		compatible = "samsung,exynos-ppmu";
-+		reg = <0x10d00000 0x2000>;
-+		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
-+		clock-names = "ppmu";
-+		events {
-+			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
-+				event-name = "ppmu-event3-dmc0_0";
-+			};
-+		};
-+	};
-+
-+	dmc: memory-controller@10c20000 {
-+		compatible = "samsung,exynos5422-dmc";
-+		reg = <0x10c20000 0x100>, <0x10c30000 0x100>,
-+		clocks = 	<&clock CLK_FOUT_SPLL>,
-+				<&clock CLK_MOUT_SCLK_SPLL>,
-+				<&clock CLK_FF_DOUT_SPLL2>,
-+				<&clock CLK_FOUT_BPLL>,
-+				<&clock CLK_MOUT_BPLL>,
-+				<&clock CLK_SCLK_BPLL>,
-+				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
-+				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
-+				<&clock CLK_MOUT_MCLK_CDREX>,
-+				<&clock CLK_DOUT_CLK2X_PHY0>,
-+				<&clock CLK_CLKM_PHY0>,
-+				<&clock CLK_CLKM_PHY1>;
-+		clock-names =	"fout_spll",
-+				"mout_sclk_spll",
-+				"ff_dout_spll2",
-+				"fout_bpll",
-+				"mout_bpll",
-+				"sclk_bpll",
-+				"mout_mx_mspll_ccore",
-+				"mout_mx_mspll_ccore_phy",
-+				"mout_mclk_cdrex",
-+				"dout_clk2x_phy0",
-+				"clkm_phy0",
-+			        "clkm_phy1";
-+		operating-points-v2 = <&dmc_opp_table>;
-+		devfreq-events = <&ppmu_event3_dmc0_0>,	<&ppmu_event3_dmc0_1>,
-+				<&ppmu_event3_dmc1_0>, <&ppmu_event3_dmc1_1>;
-+		operating-points-v2 = <&dmc_opp_table>;
-+		device-handle = <&samsung_K3QF2F20DB>;
-+		vdd-supply = <&buck1_reg>;
-+		samsung,syscon-clk = <&clock>;
-+		samsung,syscon-chipid = <&chipid>;
-+	};
+diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
+index 355f469..bf50d8a 100644
+--- a/include/dt-bindings/clock/exynos5420.h
++++ b/include/dt-bindings/clock/exynos5420.h
+@@ -60,6 +60,7 @@
+ #define CLK_MAU_EPLL		159
+ #define CLK_SCLK_HSIC_12M	160
+ #define CLK_SCLK_MPHY_IXTAL24	161
++#define CLK_SCLK_BPLL		162
+ 
+ /* gate clocks */
+ #define CLK_UART0		257
+@@ -195,6 +196,16 @@
+ #define CLK_ACLK432_CAM		518
+ #define CLK_ACLK_FL1550_CAM	519
+ #define CLK_ACLK550_CAM		520
++#define CLK_CLKM_PHY0		521
++#define CLK_CLKM_PHY1		522
++#define CLK_ACLK_PPMU_DREX0_0	523
++#define CLK_ACLK_PPMU_DREX0_1	524
++#define CLK_ACLK_PPMU_DREX1_0	525
++#define CLK_ACLK_PPMU_DREX1_1	526
++#define CLK_PCLK_PPMU_DREX0_0	527
++#define CLK_PCLK_PPMU_DREX0_1	528
++#define CLK_PCLK_PPMU_DREX1_0	529
++#define CLK_PCLK_PPMU_DREX1_1	530
+ 
+ /* mux clocks */
+ #define CLK_MOUT_HDMI		640
+@@ -217,6 +228,8 @@
+ #define CLK_MOUT_EPLL		657
+ #define CLK_MOUT_MAU_EPLL	658
+ #define CLK_MOUT_USER_MAU_EPLL	659
++#define CLK_MOUT_SCLK_SPLL	660
++#define CLK_MOUT_MX_MSPLL_CCORE_PHY	661
+ 
+ /* divider clocks */
+ #define CLK_DOUT_PIXEL		768
+@@ -243,13 +256,16 @@
+ #define CLK_DOUT_ACLK300_GSCL	789
+ #define CLK_DOUT_ACLK400_DISP1	790
+ #define CLK_DOUT_PCLK_CDREX	791
+-#define CLK_DOUT_SCLK_CDREX	792
+-#define CLK_DOUT_ACLK_CDREX1	793
+-#define CLK_DOUT_CCLK_DREX0	794
+-#define CLK_DOUT_CLK2X_PHY0	795
+-#define CLK_DOUT_PCLK_CORE_MEM	796
++#define CLK_DOUT_PCLK_DREX0	792
++#define CLK_DOUT_PCLK_DREX1	793
++#define CLK_DOUT_SCLK_CDREX	794
++#define CLK_DOUT_ACLK_CDREX1	795
++#define CLK_DOUT_CCLK_DREX0	796
++#define CLK_DOUT_CLK2X_PHY0	797
++#define CLK_DOUT_PCLK_CORE_MEM	798
++#define CLK_FF_DOUT_SPLL2	799
+ 
+ /* must be greater than maximal clock id */
+-#define CLK_NR_CLKS		797
++#define CLK_NR_CLKS		800
+ 
+ #endif /* _DT_BINDINGS_CLOCK_EXYNOS_5420_H */
 -- 
 2.7.4
