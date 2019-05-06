@@ -1,125 +1,63 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/8] arm64: dts: mt8183: add thermal zone node
-Date: Mon, 6 May 2019 11:43:00 +0200
-Message-ID: <8e0fad21-57d1-923c-fd8b-f5f2c47a5c94@linaro.org>
-References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
- <1556793795-25204-2-git-send-email-michael.kao@mediatek.com>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: Re: [PATCH v3 3/4] Documentation: devicetree: add PPMU events
+ description
+Date: Mon, 6 May 2019 12:29:38 +0200
+Message-ID: <97277857-666d-7720-9d85-19120c977682@partner.samsung.com>
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0@eucas1p2.samsung.com>
+        <1555681688-19643-4-git-send-email-l.luba@partner.samsung.com>
+        <20190430223629.GA22317@bogus>
+        <1fd44623-4a59-f014-1ae9-a7cc605ad30f@partner.samsung.com>
+        <CAL_JsqJcm9Z6vYFHGyAZ+h3-kmSv6e=3NtO-fjJn3-QT0JoX+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1556793795-25204-2-git-send-email-michael.kao@mediatek.com>
+In-Reply-To: <CAL_JsqJcm9Z6vYFHGyAZ+h3-kmSv6e=3NtO-fjJn3-QT0JoX+w@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "michael.kao" <michael.kao@mediatek.com>, fan.chen@mediatek.com, jamesjj.liao@mediatek.com, dawei.chien@mediatek.com, louis.yu@mediatek.com, roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On 02/05/2019 12:43, michael.kao wrote:
-> Add thermal zone node to Mediatek MT8183 dts file.
+Hi Rob,
+
+On 5/2/19 10:24 PM, Rob Herring wrote:
+> On Thu, May 2, 2019 at 3:52 AM Lukasz Luba <l.luba@partner.samsung.com> wrote:
+>>
+>> Hi Rob,
+>>
+>> On 5/1/19 12:36 AM, Rob Herring wrote:
+>>> On Fri, Apr 19, 2019 at 03:48:07PM +0200, Lukasz Luba wrote:
+>>>> Extend the documenation by events description with new 'event-data-type'
+>>>> field. Add example how the event might be defined in DT.
+>>>
+>>> Why do we need event types in DT? We don't do this for other h/w such as
+>>> ARM PMU.
+>> In ARM PMU all the events are hard-coded into the driver code i.e. in v7
+>> arch/arm/kernel/perf_event_v7.c
+>> and are seen from perf. They are different type and for different
+>> purpose. The Ecynos PPMU events are not seen in perf, they are
+>> for internal monitoring and must not be reset by other actors like perf.
+>> They are used by the 'bus drivers' to made some heuristics and tune the
+>> internal settings, like frequency.
+>>
+>> Chanwoo has written PPMU driver which relies on DT definition.
+>> The DT events are used by other DT devices by phandle.
 > 
-> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-> ---
+> How is that done? I don't see anything in the binding for that.
+Here are the DT devices and how they are pinned together:
+- declared devfreq events:
+https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+- devfreq events pinned to the bus device:
+https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412-odroid-common.dtsi#L107
+- the bus device itself:
+https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412.dtsi#L457
 
-Hi Michael,
+Regards,
+Lukasz
 
-the device tree binding for thermal specifies the thermal zone must
-define a cooling-maps (it is a required field).
-
-All the thermal zones below tzts1, tzts2, etc ... do not have it.
-
-
->  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 64 ++++++++++++++++++++++++++++++++
->  1 file changed, 64 insertions(+)
 > 
-> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> index 926df75..b92116f 100644
-> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> @@ -334,6 +334,67 @@
->  			status = "disabled";
->  		};
->  
-> +		thermal: thermal@1100b000 {
-> +			#thermal-sensor-cells = <1>;
-> +			compatible = "mediatek,mt8183-thermal";
-> +			reg = <0 0x1100b000 0 0x1000>;
-> +			interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>;
-> +			clocks = <&infracfg CLK_INFRA_THERM>,
-> +				 <&infracfg CLK_INFRA_AUXADC>;
-> +			clock-names = "therm", "auxadc";
-> +			resets = <&infracfg  MT8183_INFRACFG_AO_THERM_SW_RST>;
-> +			mediatek,auxadc = <&auxadc>;
-> +			mediatek,apmixedsys = <&apmixedsys>;
-> +			mediatek,hw-reset-temp = <117000>;
-> +			nvmem-cells = <&thermal_calibration>;
-> +			nvmem-cell-names = "calibration-data";
-> +		};
-> +
-> +		thermal-zones {
-> +			cpu_thermal: cpu_thermal {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +
-> +				thermal-sensors = <&thermal 0>;
-> +				sustainable-power = <1500>;
-> +			};
-> +
-> +			tzts1: tzts1 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 1>;
-> +			};
-> +
-> +			tzts2: tzts2 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 2>;
-> +			};
-> +
-> +			tzts3: tzts3 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 3>;
-> +			};
-> +
-> +			tzts4: tzts4 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 4>;
-> +			};
-> +
-> +			tzts5: tzts5 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 5>;
-> +			};
-> +
-> +			tztsABB: tztsABB {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 6>;
-> +			};
-> +		};
->  		audiosys: syscon@11220000 {
->  			compatible = "mediatek,mt8183-audiosys", "syscon";
->  			reg = <0 0x11220000 0 0x1000>;
-> @@ -368,6 +429,9 @@
->  			compatible = "mediatek,mt8183-efuse",
->  				     "mediatek,efuse";
->  			reg = <0 0x11f10000 0 0x1000>;
-> +			thermal_calibration: calib@180 {
-> +				reg = <0x180 0xc>;
-> +			};
->  		};
->  
->  		mfgcfg: syscon@13000000 {
+> Rob
 > 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> 
