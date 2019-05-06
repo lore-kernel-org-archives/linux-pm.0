@@ -1,10 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v7 06/13] drivers: memory: extend of_memory by LPDDR3
- support
-Date: Mon,  6 May 2019 17:11:54 +0200
-Message-ID: <1557155521-30949-7-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v7 07/13] dt-bindings: memory-controllers: add Exynos5422
+ DMC device description
+Date: Mon,  6 May 2019 17:11:55 +0200
+Message-ID: <1557155521-30949-8-git-send-email-l.luba@partner.samsung.com>
 References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190506151214eucas1p2e87194b1ce66f7184d6770818d02814d@eucas1p2.samsung.com>
+        <CGME20190506151215eucas1p2c57147edac5671c5ec9a223efb6b4adc@eucas1p2.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
@@ -13,295 +13,94 @@ To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kern
 Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-The patch adds AC timings information needed to support LPDDR3 and memory
-controllers. The structure is used in of_memory and currently in Exynos
-5422 DMC. Add parsing data needed for LPDDR3 support.
-It is currently used in Exynos5422 Dynamic Memory Controller.
+The patch adds description for DT binding for a new Exynos5422 Dynamic
+Memory Controller device.
 
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- drivers/memory/of_memory.c | 148 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/memory/of_memory.h |  20 +++++-
- include/memory/jedec_ddr.h |  62 +++++++++++++++++++
- 3 files changed, 229 insertions(+), 1 deletion(-)
+ .../bindings/memory-controllers/exynos5422-dmc.txt | 74 ++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
 
-diff --git a/drivers/memory/of_memory.c b/drivers/memory/of_memory.c
-index 2f5ed73..19fbbcd 100644
---- a/drivers/memory/of_memory.c
-+++ b/drivers/memory/of_memory.c
-@@ -2,6 +2,7 @@
-  * OpenFirmware helpers for memory drivers
-  *
-  * Copyright (C) 2012 Texas Instruments, Inc.
-+ * Copyright (C) 2019 Samsung Electronics Co., Ltd.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -152,3 +153,150 @@ const struct lpddr2_timings *of_get_ddr_timings(struct device_node *np_ddr,
- 	return lpddr2_jedec_timings;
- }
- EXPORT_SYMBOL(of_get_ddr_timings);
+diff --git a/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
+new file mode 100644
+index 0000000..be602a9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
+@@ -0,0 +1,74 @@
++* Exynos5422 frequency and voltage scaling for Dynamic Memory Controller device
 +
-+/**
-+ * of_lpddr3_get_min_tck() - extract min timing values for lpddr3
-+ * @np: pointer to ddr device tree node
-+ * @device: device requesting for min timing values
-+ *
-+ * Populates the lpddr3_min_tck structure by extracting data
-+ * from device tree node. Returns a pointer to the populated
-+ * structure. If any error in populating the structure, returns NULL.
-+ */
-+const struct lpddr3_min_tck *of_lpddr3_get_min_tck(struct device_node *np,
-+						   struct device *dev)
-+{
-+	int			ret = 0;
-+	struct lpddr3_min_tck	*min;
++The Samsung Exynos5422 SoC has DMC (Dynamic Memory Controller) to which the DRAM
++memory chips are connected. The driver is to monitor the controller in runtime
++and switch frequency and voltage. To monitor the usage of the controller in
++runtime, the driver uses the PPMU (Platform Performance Monitoring Unit), which
++is able to measure the current load of the memory.
++When 'userspace' governor is used for the driver, an application is able to
++switch the DMC and memory frequency.
 +
-+	min = devm_kzalloc(dev, sizeof(*min), GFP_KERNEL);
-+	if (!min)
-+		goto default_min_tck;
++Required properties for DMC device for Exynos5422:
++- compatible: Should be "samsung,exynos5422-dmc".
++- clock-names : the name of clock used by the controller.
++- clocks : phandles for clock specified in "clock-names" property.
++- devfreq-events : phandles for PPMU devices connected to this DMC.
++- vdd-supply : phandle for voltage regulator which is connected.
++- reg : registers of two CDREX controllers.
++- operating-points-v2 : phandle for OPPs described in v2 definition.
++- device-handle : phandle of the connected DRAM memory device. For more
++	information please refer to Documentation
++- devfreq-events : phandles of the PPMU events used by the controller.
++- samsung,syscon-chipid : phandle of the ChipID used by the controller.
++- samsung,syscon-clk : phandle of the clock register set used by the controller.
 +
-+	ret |= of_property_read_u32(np, "tRFC-min-tck", &min->tRFC);
-+	ret |= of_property_read_u32(np, "tRRD-min-tck", &min->tRRD);
-+	ret |= of_property_read_u32(np, "tRPab-min-tck", &min->tRPab);
-+	ret |= of_property_read_u32(np, "tRPpb-min-tck", &min->tRPpb);
-+	ret |= of_property_read_u32(np, "tRCD-min-tck", &min->tRCD);
-+	ret |= of_property_read_u32(np, "tRC-min-tck", &min->tRC);
-+	ret |= of_property_read_u32(np, "tRAS-min-tck", &min->tRAS);
-+	ret |= of_property_read_u32(np, "tWTR-min-tck", &min->tWTR);
-+	ret |= of_property_read_u32(np, "tWR-min-tck", &min->tWR);
-+	ret |= of_property_read_u32(np, "tRTP-min-tck", &min->tRTP);
-+	ret |= of_property_read_u32(np, "tW2W-C2C-min-tck", &min->tW2W_C2C);
-+	ret |= of_property_read_u32(np, "tR2R-C2C-min-tck", &min->tR2R_C2C);
-+	ret |= of_property_read_u32(np, "tWL-min-tck", &min->tWL);
-+	ret |= of_property_read_u32(np, "tDQSCK-min-tck", &min->tDQSCK);
-+	ret |= of_property_read_u32(np, "tRL-min-tck", &min->tRL);
-+	ret |= of_property_read_u32(np, "tFAW-min-tck", &min->tFAW);
-+	ret |= of_property_read_u32(np, "tXSR-min-tck", &min->tXSR);
-+	ret |= of_property_read_u32(np, "tXP-min-tck", &min->tXP);
-+	ret |= of_property_read_u32(np, "tCKE-min-tck", &min->tCKE);
-+	ret |= of_property_read_u32(np, "tCKESR-min-tck", &min->tCKESR);
-+	ret |= of_property_read_u32(np, "tMRD-min-tck", &min->tMRD);
++Example:
 +
-+	if (ret) {
-+		dev_warn(dev, "%s: errors while parsing min-tck values\n",
-+			 __func__);
-+		devm_kfree(dev, min);
-+		goto default_min_tck;
-+	}
++	ppmu_dmc0_0: ppmu@10d00000 {
++		compatible = "samsung,exynos-ppmu";
++		reg = <0x10d00000 0x2000>;
++		clocks = <&clock CLK_PCLK_PPMU_DREX0_0>;
++		clock-names = "ppmu";
++		events {
++			ppmu_event_dmc0_0: ppmu-event3-dmc0_0 {
++				event-name = "ppmu-event3-dmc0_0";
++			};
++		};
++	};
 +
-+	return min;
-+
-+default_min_tck:
-+	dev_warn(dev, "%s: using default min-tck values\n", __func__);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(of_lpddr3_get_min_tck);
-+
-+static int of_lpddr3_do_get_timings(struct device_node *np,
-+				    struct lpddr3_timings *tim)
-+{
-+	int ret;
-+
-+	/* The 'reg' param required since DT has changed, used as 'max-freq' */
-+	ret = of_property_read_u32(np, "reg", &tim->max_freq);
-+	ret |= of_property_read_u32(np, "min-freq", &tim->min_freq);
-+	ret |= of_property_read_u32(np, "tRFC", &tim->tRFC);
-+	ret |= of_property_read_u32(np, "tRRD", &tim->tRRD);
-+	ret |= of_property_read_u32(np, "tRPab", &tim->tRPab);
-+	ret |= of_property_read_u32(np, "tRPpb", &tim->tRPpb);
-+	ret |= of_property_read_u32(np, "tRCD", &tim->tRCD);
-+	ret |= of_property_read_u32(np, "tRC", &tim->tRC);
-+	ret |= of_property_read_u32(np, "tRAS", &tim->tRAS);
-+	ret |= of_property_read_u32(np, "tWTR", &tim->tWTR);
-+	ret |= of_property_read_u32(np, "tWR", &tim->tWR);
-+	ret |= of_property_read_u32(np, "tRTP", &tim->tRTP);
-+	ret |= of_property_read_u32(np, "tW2W-C2C", &tim->tW2W_C2C);
-+	ret |= of_property_read_u32(np, "tR2R-C2C", &tim->tR2R_C2C);
-+	ret |= of_property_read_u32(np, "tFAW", &tim->tFAW);
-+	ret |= of_property_read_u32(np, "tXSR", &tim->tXSR);
-+	ret |= of_property_read_u32(np, "tXP", &tim->tXP);
-+	ret |= of_property_read_u32(np, "tCKE", &tim->tCKE);
-+	ret |= of_property_read_u32(np, "tCKESR", &tim->tCKESR);
-+	ret |= of_property_read_u32(np, "tMRD", &tim->tMRD);
-+
-+	return ret;
-+}
-+
-+/**
-+ * of_lpddr3_get_ddr_timings() - extracts the lpddr3 timings and updates no of
-+ * frequencies available.
-+ * @np_ddr: Pointer to ddr device tree node
-+ * @dev: Device requesting for ddr timings
-+ * @device_type: Type of ddr
-+ * @nr_frequencies: No of frequencies available for ddr
-+ * (updated by this function)
-+ *
-+ * Populates lpddr3_timings structure by extracting data from device
-+ * tree node. Returns pointer to populated structure. If any error
-+ * while populating, returns NULL.
-+ */
-+const struct lpddr3_timings *of_lpddr3_get_ddr_timings(struct device_node *np_ddr,
-+		struct device *dev, u32 device_type, u32 *nr_frequencies)
-+{
-+	struct lpddr3_timings	*timings = NULL;
-+	u32			arr_sz = 0, i = 0;
-+	struct device_node	*np_tim;
-+	char			*tim_compat = NULL;
-+
-+	switch (device_type) {
-+	case DDR_TYPE_LPDDR3:
-+		tim_compat = "jedec,lpddr3-timings";
-+		break;
-+	default:
-+		dev_warn(dev, "%s: un-supported memory type\n", __func__);
-+	}
-+
-+	for_each_child_of_node(np_ddr, np_tim)
-+		if (of_device_is_compatible(np_tim, tim_compat))
-+			arr_sz++;
-+
-+	if (arr_sz)
-+		timings = devm_kcalloc(dev, arr_sz, sizeof(*timings),
-+				       GFP_KERNEL);
-+
-+	if (!timings)
-+		goto default_timings;
-+
-+	for_each_child_of_node(np_ddr, np_tim) {
-+		if (of_device_is_compatible(np_tim, tim_compat)) {
-+			if (of_lpddr3_do_get_timings(np_tim, &timings[i])) {
-+				devm_kfree(dev, timings);
-+				goto default_timings;
-+			}
-+			i++;
-+		}
-+	}
-+
-+	*nr_frequencies = arr_sz;
-+
-+	return timings;
-+
-+default_timings:
-+	dev_warn(dev, "%s: using default timings\n", __func__);
-+	*nr_frequencies = 0;
-+	return NULL;
-+}
-+EXPORT_SYMBOL(of_lpddr3_get_ddr_timings);
-diff --git a/drivers/memory/of_memory.h b/drivers/memory/of_memory.h
-index ef2514f..8cf2ce6 100644
---- a/drivers/memory/of_memory.h
-+++ b/drivers/memory/of_memory.h
-@@ -18,6 +18,11 @@ extern const struct lpddr2_min_tck *of_get_min_tck(struct device_node *np,
- extern const struct lpddr2_timings
- 	*of_get_ddr_timings(struct device_node *np_ddr, struct device *dev,
- 	u32 device_type, u32 *nr_frequencies);
-+extern const struct lpddr3_min_tck
-+	*of_lpddr3_get_min_tck(struct device_node *np, struct device *dev);
-+extern const struct lpddr3_timings
-+	*of_lpddr3_get_ddr_timings(struct device_node *np_ddr,
-+	struct device *dev, u32 device_type, u32 *nr_frequencies);
- #else
- static inline const struct lpddr2_min_tck
- 	*of_get_min_tck(struct device_node *np, struct device *dev)
-@@ -31,6 +36,19 @@ static inline const struct lpddr2_timings
- {
- 	return NULL;
- }
--#endif /* CONFIG_OF && CONFIG_DDR */
-+
-+static inline const struct lpddr3_min_tck
-+	*of_lpddr3_get_min_tck(struct device_node *np, struct device *dev)
-+{
-+	return NULL;
-+}
-+
-+static inline const struct lpddr3_timings
-+	*of_lpddr3_get_ddr_timings(struct device_node *np_ddr,
-+	struct device *dev, u32 device_type, u32 *nr_frequencies)
-+{
-+	return NULL;
-+}
-+#endif
- 
- #endif /* __LINUX_MEMORY_OF_REG_ */
-diff --git a/include/memory/jedec_ddr.h b/include/memory/jedec_ddr.h
-index ddad0f8..3601825 100644
---- a/include/memory/jedec_ddr.h
-+++ b/include/memory/jedec_ddr.h
-@@ -32,6 +32,7 @@
- #define DDR_TYPE_LPDDR2_S4	3
- #define DDR_TYPE_LPDDR2_S2	4
- #define DDR_TYPE_LPDDR2_NVM	5
-+#define DDR_TYPE_LPDDR3		6
- 
- /* DDR IO width */
- #define DDR_IO_WIDTH_4		1
-@@ -172,4 +173,65 @@ extern const struct lpddr2_timings
- 	lpddr2_jedec_timings[NUM_DDR_TIMING_TABLE_ENTRIES];
- extern const struct lpddr2_min_tck lpddr2_jedec_min_tck;
- 
-+
-+/*
-+ * Structure for timings for LPDDR3 based on LPDDR2 plus additional fields.
-+ * All parameters are in pico seconds(ps) unless explicitly indicated
-+ * with a suffix like tRAS_max_ns below
-+ */
-+struct lpddr3_timings {
-+	u32 max_freq;
-+	u32 min_freq;
-+	u32 tRFC;
-+	u32 tRRD;
-+	u32 tRPab;
-+	u32 tRPpb;
-+	u32 tRCD;
-+	u32 tRC;
-+	u32 tRAS;
-+	u32 tWTR;
-+	u32 tWR;
-+	u32 tRTP;
-+	u32 tW2W_C2C;
-+	u32 tR2R_C2C;
-+	u32 tWL;
-+	u32 tDQSCK;
-+	u32 tRL;
-+	u32 tFAW;
-+	u32 tXSR;
-+	u32 tXP;
-+	u32 tCKE;
-+	u32 tCKESR;
-+	u32 tMRD;
-+};
-+
-+/*
-+ * Min value for some parameters in terms of number of tCK cycles(nCK)
-+ * Please set to zero parameters that are not valid for a given memory
-+ * type
-+ */
-+struct lpddr3_min_tck {
-+	u32 tRFC;
-+	u32 tRRD;
-+	u32 tRPab;
-+	u32 tRPpb;
-+	u32 tRCD;
-+	u32 tRC;
-+	u32 tRAS;
-+	u32 tWTR;
-+	u32 tWR;
-+	u32 tRTP;
-+	u32 tW2W_C2C;
-+	u32 tR2R_C2C;
-+	u32 tWL;
-+	u32 tDQSCK;
-+	u32 tRL;
-+	u32 tFAW;
-+	u32 tXSR;
-+	u32 tXP;
-+	u32 tCKE;
-+	u32 tCKESR;
-+	u32 tMRD;
-+};
-+
- #endif /* __LINUX_JEDEC_DDR_H */
++	dmc: memory-controller@10c20000 {
++		compatible = "samsung,exynos5422-dmc";
++		reg = <0x10c20000 0x100>, <0x10c30000 0x100>,
++		clocks = 	<&clock CLK_FOUT_SPLL>,
++				<&clock CLK_MOUT_SCLK_SPLL>,
++				<&clock CLK_FF_DOUT_SPLL2>,
++				<&clock CLK_FOUT_BPLL>,
++				<&clock CLK_MOUT_BPLL>,
++				<&clock CLK_SCLK_BPLL>,
++				<&clock CLK_MOUT_MX_MSPLL_CCORE>,
++				<&clock CLK_MOUT_MX_MSPLL_CCORE_PHY>,
++				<&clock CLK_MOUT_MCLK_CDREX>,
++				<&clock CLK_DOUT_CLK2X_PHY0>,
++				<&clock CLK_CLKM_PHY0>,
++				<&clock CLK_CLKM_PHY1>;
++		clock-names =	"fout_spll",
++				"mout_sclk_spll",
++				"ff_dout_spll2",
++				"fout_bpll",
++				"mout_bpll",
++				"sclk_bpll",
++				"mout_mx_mspll_ccore",
++				"mout_mx_mspll_ccore_phy",
++				"mout_mclk_cdrex",
++				"dout_clk2x_phy0",
++				"clkm_phy0",
++			        "clkm_phy1";
++		operating-points-v2 = <&dmc_opp_table>;
++		devfreq-events = <&ppmu_event3_dmc0_0>,	<&ppmu_event3_dmc0_1>,
++				<&ppmu_event3_dmc1_0>, <&ppmu_event3_dmc1_1>;
++		operating-points-v2 = <&dmc_opp_table>;
++		device-handle = <&samsung_K3QF2F20DB>;
++		vdd-supply = <&buck1_reg>;
++		samsung,syscon-clk = <&clock>;
++		samsung,syscon-chipid = <&chipid>;
++	};
 -- 
 2.7.4
