@@ -1,51 +1,125 @@
-From: Eddie Huang <eddie.huang@mediatek.com>
-Subject: Re: [PATCH 3/8] arm64: dts: mt8183: Add #cooling-cells to CPU nodes
-Date: Mon, 6 May 2019 13:25:32 +0800
-Message-ID: <1557120332.13225.2.camel@mtksdaap41>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/8] arm64: dts: mt8183: add thermal zone node
+Date: Mon, 6 May 2019 11:43:00 +0200
+Message-ID: <8e0fad21-57d1-923c-fd8b-f5f2c47a5c94@linaro.org>
 References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
- <1556793795-25204-4-git-send-email-michael.kao@mediatek.com>
+ <1556793795-25204-2-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1556793795-25204-4-git-send-email-michael.kao@mediatek.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "michael.kao" <michael.kao@mediatek.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, JamesJJ Liao =?UTF-8?Q?=28=E5=BB=96=E5=BB=BA=E6=99=BA=29?= <jamesjj.liao@mediatek.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Louis Yu =?UTF-8?Q?=28=E6=B8=B8=E6=94=BF=E9=8C=95=29?= <louis.yu@mediatek.com>, Dawei Chien =?UTF-8?Q?=28=E9=8C=A2=E5=A4=A7=E8=A1=9B=29?= <Dawei.Chien@mediatek.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Roger Lu =?UTF-8?Q?=28=E9=99=B8=E7=91=9E=E5=82=91=29?= <Roger.Lu@mediatek.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Fan Chen =?UTF-8?Q?=28=E9=99=B3=E5=87=A1=29?= <fan.chen@mediatek.com>, Rob Herring <robh+dt@kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1556793795-25204-2-git-send-email-michael.kao@mediatek.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "michael.kao" <michael.kao@mediatek.com>, fan.chen@mediatek.com, jamesjj.liao@mediatek.com, dawei.chien@mediatek.com, louis.yu@mediatek.com, roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
+
+On 02/05/2019 12:43, michael.kao wrote:
+> Add thermal zone node to Mediatek MT8183 dts file.
+> 
+> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+> ---
 
 Hi Michael,
 
-On Thu, 2019-05-02 at 18:43 +0800, michael.kao wrote:
-> The #cooling-cells property needs to be specified to allow a CPU
-> to be used as cooling device.
-> 
-> Signed-off-by: michael.kao <Michael.Kao@mediatek.com>
-> ---
->  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 2 ++
->  1 file changed, 2 insertions(+)
+the device tree binding for thermal specifies the thermal zone must
+define a cooling-maps (it is a required field).
+
+All the thermal zones below tzts1, tzts2, etc ... do not have it.
+
+
+>  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 64 ++++++++++++++++++++++++++++++++
+>  1 file changed, 64 insertions(+)
 > 
 > diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> index 5668fb8..95f1d7b 100644
+> index 926df75..b92116f 100644
 > --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
 > +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> @@ -11,6 +11,8 @@
->  #include <dt-bindings/power/mt8183-power.h>
->  #include <dt-bindings/reset-controller/mt8183-resets.h>
->  #include "mt8183-pinfunc.h"
-> +#include <dt-bindings/thermal/thermal.h>
+> @@ -334,6 +334,67 @@
+>  			status = "disabled";
+>  		};
+>  
+> +		thermal: thermal@1100b000 {
+> +			#thermal-sensor-cells = <1>;
+> +			compatible = "mediatek,mt8183-thermal";
+> +			reg = <0 0x1100b000 0 0x1000>;
+> +			interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>;
+> +			clocks = <&infracfg CLK_INFRA_THERM>,
+> +				 <&infracfg CLK_INFRA_AUXADC>;
+> +			clock-names = "therm", "auxadc";
+> +			resets = <&infracfg  MT8183_INFRACFG_AO_THERM_SW_RST>;
+> +			mediatek,auxadc = <&auxadc>;
+> +			mediatek,apmixedsys = <&apmixedsys>;
+> +			mediatek,hw-reset-temp = <117000>;
+> +			nvmem-cells = <&thermal_calibration>;
+> +			nvmem-cell-names = "calibration-data";
+> +		};
 > +
->  / {
->  	compatible = "mediatek,mt8183";
->  	interrupt-parent = <&sysirq>;
+> +		thermal-zones {
+> +			cpu_thermal: cpu_thermal {
+> +				polling-delay-passive = <1000>;
+> +				polling-delay = <1000>;
+> +
+> +				thermal-sensors = <&thermal 0>;
+> +				sustainable-power = <1500>;
+> +			};
+> +
+> +			tzts1: tzts1 {
+> +				polling-delay-passive = <1000>;
+> +				polling-delay = <1000>;
+> +				thermal-sensors = <&thermal 1>;
+> +			};
+> +
+> +			tzts2: tzts2 {
+> +				polling-delay-passive = <1000>;
+> +				polling-delay = <1000>;
+> +				thermal-sensors = <&thermal 2>;
+> +			};
+> +
+> +			tzts3: tzts3 {
+> +				polling-delay-passive = <1000>;
+> +				polling-delay = <1000>;
+> +				thermal-sensors = <&thermal 3>;
+> +			};
+> +
+> +			tzts4: tzts4 {
+> +				polling-delay-passive = <1000>;
+> +				polling-delay = <1000>;
+> +				thermal-sensors = <&thermal 4>;
+> +			};
+> +
+> +			tzts5: tzts5 {
+> +				polling-delay-passive = <1000>;
+> +				polling-delay = <1000>;
+> +				thermal-sensors = <&thermal 5>;
+> +			};
+> +
+> +			tztsABB: tztsABB {
+> +				polling-delay-passive = <1000>;
+> +				polling-delay = <1000>;
+> +				thermal-sensors = <&thermal 6>;
+> +			};
+> +		};
+>  		audiosys: syscon@11220000 {
+>  			compatible = "mediatek,mt8183-audiosys", "syscon";
+>  			reg = <0 0x11220000 0 0x1000>;
+> @@ -368,6 +429,9 @@
+>  			compatible = "mediatek,mt8183-efuse",
+>  				     "mediatek,efuse";
+>  			reg = <0 0x11f10000 0 0x1000>;
+> +			thermal_calibration: calib@180 {
+> +				reg = <0x180 0xc>;
+> +			};
+>  		};
+>  
+>  		mfgcfg: syscon@13000000 {
+> 
 
-It seems this patch don't have #cooling-cells but in your 2/8 patch in
-this series
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
