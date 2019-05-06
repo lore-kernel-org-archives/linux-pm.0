@@ -2,87 +2,274 @@ Return-Path: <SRS0=K0se=TG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E0C2C04A6B
-	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 17:27:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23015C04AAB
+	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 21:26:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 237202087F
-	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 17:27:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DkeyWD7R"
+	by mail.kernel.org (Postfix) with ESMTP id D711F21530
+	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 21:26:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1557178003;
+	bh=CJNN3CImdez765ALcbxyKx3ccs91hAGS/vspbXpFebM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:List-ID:
+	 From;
+	b=j8j9LRBbPjrF9euYVIVVJ1vsHhs/qjIIjSY7JC30DF5aY885KU14bHK3Xxp3yNlDz
+	 bXUcFhVfsoHRqOEmCA5ARMZLhL5hh6apX+Z84dGqdBefv4PF60dglPWXK77TOX1o/d
+	 +Dmex2wLYJdAEaHxFPBVMIrEl5GFvfPt51B/vBm4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726418AbfEFR1t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 May 2019 13:27:49 -0400
-Received: from mail-it1-f193.google.com ([209.85.166.193]:32813 "EHLO
+        id S1726409AbfEFV0l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 May 2019 17:26:41 -0400
+Received: from mail-it1-f193.google.com ([209.85.166.193]:36810 "EHLO
         mail-it1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726296AbfEFR1t (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2019 13:27:49 -0400
-Received: by mail-it1-f193.google.com with SMTP id u16so10067255itc.0;
-        Mon, 06 May 2019 10:27:48 -0700 (PDT)
+        with ESMTP id S1726949AbfEFV0l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2019 17:26:41 -0400
+Received: by mail-it1-f193.google.com with SMTP id o190so5226535itc.1;
+        Mon, 06 May 2019 14:26:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=hrn4nDHLtIMhzMGRLfGe5OwhTlrLcnKtSdjsnoP6xiM=;
-        b=DkeyWD7RBFpR9tT6CP4d99Vm+FIBqsrtXbFyfCEIPIzWYYg9bbTURlXAU8G/p6U9w2
-         GziT77do1ZGEqVTuzqStaSYxaynb3jE/5CRgWR+6HsUnK9wpDg9WoUmqleUe+7x9SmZ9
-         KMN3fF4itf4zL0p6O8w5nwPtvotWnbJiPWTlES8b9AJiNShEel/YDJ+E3smvvFHgH2hD
-         NYDI5nFzZArpKH0MyxzorQff6KMSg8JYschfAlDcc8RdBrh+12kZWEz9+Lcw8w2VqcMO
-         /AYw0i9RgHqNlneApOcM/7Vs3X8OBziWx+ka5+cBzM/B79yWieEyYBuYoXqCqPo2tkLA
-         QtkQ==
+        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
+         :reply-to:organization;
+        bh=7fof8gmlqFrlN3tjmdJFzcPdOK3UTzw80TgmMMhQvqE=;
+        b=gTH/lEGh82vXO1uYay+5xgNbMYVx5HCMYqBEkggsBNHT8HXvSdCQo6sGPM5ao9DP8d
+         qAAgQUStLDOn9UdX9WyzUGYla5zZY6GKdLs5L05isArmxmBCdL2rzazavrBHS8LAEq/A
+         uEUXQlPf5H5oRHz9F6Japx5hK94TaQRUYf5RDXwYy8bErXKaU4uvUVFjusW5cw/umNWE
+         WH2/YClU0KZHRrtrxlgk/HOnVNi+Z7rwF+wRasDlGvD6hXsKz6rOwIERLw7vZNdbC7+z
+         1qrddGory7uQtPeerY+JIOIQVsHk11xUkjbPAANU0ASBPLsZKFZ8Fb9HjuZbf3yP7oor
+         HhIw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=hrn4nDHLtIMhzMGRLfGe5OwhTlrLcnKtSdjsnoP6xiM=;
-        b=ibPdwpBZvEq7xvuFM02v/0OQdIL8Ce9O2f4B3qLaz9rREQYx2euUlrMJNXoozMA0q6
-         FjjxN5eWt5WubTnkhFXWftLl1dXBFUIqQQWvGEbB2eDf7lr1zZZRhpq0cJAAwqQq/Qjn
-         WPZ1QuP8fHM9oIxWBvOCdfV7tHbQLrpwPmZTRyCHRmDJxSfY/PLK+nJ6YKOMBOkiZ9yV
-         QLhGDQr+Nl0IcTd0dQdEdB6OkNXwvBBg+U054CO9b3ZYU7wmVn/jciBM5bAHqvkkNkoE
-         W8+J5zJv9EPGW3kq2V8WadmXQTUh+kiYXGPW3seVebkeZnUbuM3SJCI7znOimcZ+vMSn
-         m3YQ==
-X-Gm-Message-State: APjAAAX7wxep1D3AQG7vJjhThm2dNLNqi+MOhLn+j7+0dyVrZ6jdvAQ7
-        /bkx3dUyDvDGhoXFTW6JmLKhEI9MObTY1hyIUes=
-X-Google-Smtp-Source: APXvYqypzmeE+Qzmq7cAlI69wXa0fQ7lASmzZADHAmtTVDFoQy6R0N49XZu+0BmBEs+grTENfcg1LgcH5YN+XV/QXYg=
-X-Received: by 2002:a24:6c54:: with SMTP id w81mr18770409itb.78.1557163668187;
- Mon, 06 May 2019 10:27:48 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190410174139.20012-1-tiny.windzz@gmail.com> <20190410174139.20012-3-tiny.windzz@gmail.com>
- <20190426211540.GA890@bogus> <CAEExFWs2UwPLzgyO0apMOZf56um5isdZmf+7-wj_TqMozxZJQg@mail.gmail.com>
- <CAL_Jsq+0mQYyAqfY3nmF-oFx2X4qHU567chQ1s8p-rgD2GEFnw@mail.gmail.com>
- <20190430044245.s4viduudej6q2eq6@vireshk-i7> <CAEExFWsAQ3b42YqfW-b8vuq_NZgfDe+0D5TzP09ber0Ljvv43g@mail.gmail.com>
-In-Reply-To: <CAEExFWsAQ3b42YqfW-b8vuq_NZgfDe+0D5TzP09ber0Ljvv43g@mail.gmail.com>
-From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Tue, 7 May 2019 01:27:36 +0800
-Message-ID:
- <CAEExFWsVgAV=br1kAfgMTLnS6ELfMjFegiusUYPK6A3k7Nq9Mg@mail.gmail.com>
-Subject: Re: [PATCH v3 2/2] dt-bindings: cpufreq: Document allwinner,cpu-operating-points-v2
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Rob Herring <robh@kernel.org>, Viresh Kumar <vireshk@kernel.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Maxime Ripard <maxime.ripard@bootlin.com>,
-        Chen-Yu Tsai <wens@csie.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        David Miller <davem@davemloft.net>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        devicetree@vger.kernel.org,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+         :in-reply-to:references:reply-to:organization;
+        bh=7fof8gmlqFrlN3tjmdJFzcPdOK3UTzw80TgmMMhQvqE=;
+        b=j8mXikygT1TGygZKlcjDmctbwmlx+BpP5P9dYWvWCF3l8oqUCM1uTanrlR1psUK2Ro
+         3J2uK8Hn7OzjIf6eA7euTtyqUzE1IjqmkquGTsipJNWcqLoNzTTgo+VPcn4zi4+R6WKt
+         7K5FpweZfebyv50Rsrb7bHYaubnycRKmv9ABab1fOxtC8l4tINMjAIV1xAyXxxZfCvUX
+         jm6D9uf8GX1G3ugNAzd+PLNS1WlO1sctOEC9K50wT0s13iTlO1mMhgRqDmgw7BdpERPX
+         7kQqU8FTTZKzFyq7eC7/wS180URFJ77+daY9uB2HXkURZ522Z4JhZMSY4S1N5sFGC3/u
+         OL0g==
+X-Gm-Message-State: APjAAAW+WQER9LI758g3ksgmWXVejFcMab0pltg9pmxxnGW4YV26xmlI
+        SvOG97Kga/zOMl8MID2atx8eHDMd
+X-Google-Smtp-Source: APXvYqwkEuAZA85xkUvd4cRsMsyo4MPtvYYgbRKu1IWXws4weWTH6BL7ZXOzEavwOHhTVGYWFSQdxA==
+X-Received: by 2002:a02:52c9:: with SMTP id d192mr20648795jab.53.1557178000303;
+        Mon, 06 May 2019 14:26:40 -0700 (PDT)
+Received: from nuc8.lan (h69-131-112-51.cntcnh.dsl.dynamic.tds.net. [69.131.112.51])
+        by smtp.gmail.com with ESMTPSA id v25sm4268009ioh.81.2019.05.06.14.26.39
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 06 May 2019 14:26:39 -0700 (PDT)
+From:   Len Brown <lenb@kernel.org>
+To:     x86@kernel.org
+Cc:     linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+Subject: [PATCH 12/22] powercap/intel_rapl: update rapl domain name and debug messages
+Date:   Mon,  6 May 2019 17:26:07 -0400
+Message-Id:
+ <0274c268be3c15d5e6e199b1de46e83a550247bc.1557177585.git.len.brown@intel.com>
+X-Mailer: git-send-email 2.18.0-rc0
+In-Reply-To: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1557177585.git.len.brown@intel.com>
+References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1557177585.git.len.brown@intel.com>
+Reply-To: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190506172736.RhyycNloo3v8QpasJ2s3cavliglnqan5HQxn5mplEbE@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190506212607.N2_OQgoHCLC6bzG83ZBxZ8r___AXxaEhkxPkDj9WYZo@z>
 
-Hi Rob,
+From: Zhang Rui <rui.zhang@intel.com>
 
-PING...
+The RAPL domain "name" attribute contains "Package-N",
+which is ambiguous on multi-die per-package systems.
+
+Update the name to "package-X-die-Y" on those systems.
+
+No change on systems without multi-die/package.
+
+Update driver debug messages.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/powercap/intel_rapl.c | 57 ++++++++++++++++++++---------------
+ 1 file changed, 32 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 9202dbcef96d..ad78c1d08260 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -178,12 +178,15 @@ struct rapl_domain {
+ #define power_zone_to_rapl_domain(_zone) \
+ 	container_of(_zone, struct rapl_domain, power_zone)
+ 
++/* maximum rapl package domain name: package-%d-die-%d */
++#define PACKAGE_DOMAIN_NAME_LENGTH 30
+ 
+-/* Each physical package contains multiple domains, these are the common
++
++/* Each rapl package contains multiple domains, these are the common
+  * data across RAPL domains within a package.
+  */
+ struct rapl_package {
+-	unsigned int id; /* physical package/socket id */
++	unsigned int id; /* logical die id, equals physical 1-die systems */
+ 	unsigned int nr_domains;
+ 	unsigned long domain_map; /* bit map of active domains */
+ 	unsigned int power_unit;
+@@ -198,6 +201,7 @@ struct rapl_package {
+ 	int lead_cpu; /* one active cpu per package for access */
+ 	/* Track active cpus */
+ 	struct cpumask cpumask;
++	char name[PACKAGE_DOMAIN_NAME_LENGTH];
+ };
+ 
+ struct rapl_defaults {
+@@ -926,8 +930,8 @@ static int rapl_check_unit_core(struct rapl_package *rp, int cpu)
+ 	value = (msr_val & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
+ 	rp->time_unit = 1000000 / (1 << value);
+ 
+-	pr_debug("Core CPU package %d energy=%dpJ, time=%dus, power=%duW\n",
+-		rp->id, rp->energy_unit, rp->time_unit, rp->power_unit);
++	pr_debug("Core CPU %s energy=%dpJ, time=%dus, power=%duW\n",
++		rp->name, rp->energy_unit, rp->time_unit, rp->power_unit);
+ 
+ 	return 0;
+ }
+@@ -951,8 +955,8 @@ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
+ 	value = (msr_val & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
+ 	rp->time_unit = 1000000 / (1 << value);
+ 
+-	pr_debug("Atom package %d energy=%dpJ, time=%dus, power=%duW\n",
+-		rp->id, rp->energy_unit, rp->time_unit, rp->power_unit);
++	pr_debug("Atom %s energy=%dpJ, time=%dus, power=%duW\n",
++		rp->name, rp->energy_unit, rp->time_unit, rp->power_unit);
+ 
+ 	return 0;
+ }
+@@ -1181,7 +1185,7 @@ static void rapl_update_domain_data(struct rapl_package *rp)
+ 	u64 val;
+ 
+ 	for (dmn = 0; dmn < rp->nr_domains; dmn++) {
+-		pr_debug("update package %d domain %s data\n", rp->id,
++		pr_debug("update %s domain %s data\n", rp->name,
+ 			 rp->domains[dmn].name);
+ 		/* exclude non-raw primitives */
+ 		for (prim = 0; prim < NR_RAW_PRIMITIVES; prim++) {
+@@ -1206,7 +1210,6 @@ static void rapl_unregister_powercap(void)
+ static int rapl_package_register_powercap(struct rapl_package *rp)
+ {
+ 	struct rapl_domain *rd;
+-	char dev_name[17]; /* max domain name = 7 + 1 + 8 for int + 1 for null*/
+ 	struct powercap_zone *power_zone = NULL;
+ 	int nr_pl, ret;
+ 
+@@ -1217,20 +1220,16 @@ static int rapl_package_register_powercap(struct rapl_package *rp)
+ 	for (rd = rp->domains; rd < rp->domains + rp->nr_domains; rd++) {
+ 		if (rd->id == RAPL_DOMAIN_PACKAGE) {
+ 			nr_pl = find_nr_power_limit(rd);
+-			pr_debug("register socket %d package domain %s\n",
+-				rp->id, rd->name);
+-			memset(dev_name, 0, sizeof(dev_name));
+-			snprintf(dev_name, sizeof(dev_name), "%s-%d",
+-				rd->name, rp->id);
++			pr_debug("register package domain %s\n", rp->name);
+ 			power_zone = powercap_register_zone(&rd->power_zone,
+ 							control_type,
+-							dev_name, NULL,
++							rp->name, NULL,
+ 							&zone_ops[rd->id],
+ 							nr_pl,
+ 							&constraint_ops);
+ 			if (IS_ERR(power_zone)) {
+-				pr_debug("failed to register package, %d\n",
+-					rp->id);
++				pr_debug("failed to register power zone %s\n",
++					rp->name);
+ 				return PTR_ERR(power_zone);
+ 			}
+ 			/* track parent zone in per package/socket data */
+@@ -1256,8 +1255,8 @@ static int rapl_package_register_powercap(struct rapl_package *rp)
+ 						&constraint_ops);
+ 
+ 		if (IS_ERR(power_zone)) {
+-			pr_debug("failed to register power_zone, %d:%s:%s\n",
+-				rp->id, rd->name, dev_name);
++			pr_debug("failed to register power_zone, %s:%s\n",
++				rp->name, rd->name);
+ 			ret = PTR_ERR(power_zone);
+ 			goto err_cleanup;
+ 		}
+@@ -1270,7 +1269,7 @@ static int rapl_package_register_powercap(struct rapl_package *rp)
+ 	 * failed after the first domain setup.
+ 	 */
+ 	while (--rd >= rp->domains) {
+-		pr_debug("unregister package %d domain %s\n", rp->id, rd->name);
++		pr_debug("unregister %s domain %s\n", rp->name, rd->name);
+ 		powercap_unregister_zone(control_type, &rd->power_zone);
+ 	}
+ 
+@@ -1380,8 +1379,8 @@ static void rapl_detect_powerlimit(struct rapl_domain *rd)
+ 	/* check if the domain is locked by BIOS, ignore if MSR doesn't exist */
+ 	if (!rapl_read_data_raw(rd, FW_LOCK, false, &val64)) {
+ 		if (val64) {
+-			pr_info("RAPL package %d domain %s locked by BIOS\n",
+-				rd->rp->id, rd->name);
++			pr_info("RAPL %s domain %s locked by BIOS\n",
++				rd->rp->name, rd->name);
+ 			rd->state |= DOMAIN_STATE_BIOS_LOCKED;
+ 		}
+ 	}
+@@ -1410,10 +1409,10 @@ static int rapl_detect_domains(struct rapl_package *rp, int cpu)
+ 	}
+ 	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
+ 	if (!rp->nr_domains) {
+-		pr_debug("no valid rapl domains found in package %d\n", rp->id);
++		pr_debug("no valid rapl domains found in %s\n", rp->name);
+ 		return -ENODEV;
+ 	}
+-	pr_debug("found %d domains on package %d\n", rp->nr_domains, rp->id);
++	pr_debug("found %d domains on %s\n", rp->nr_domains, rp->name);
+ 
+ 	rp->domains = kcalloc(rp->nr_domains + 1, sizeof(struct rapl_domain),
+ 			GFP_KERNEL);
+@@ -1446,8 +1445,8 @@ static void rapl_remove_package(struct rapl_package *rp)
+ 			rd_package = rd;
+ 			continue;
+ 		}
+-		pr_debug("remove package, undo power limit on %d: %s\n",
+-			 rp->id, rd->name);
++		pr_debug("remove package, undo power limit on %s: %s\n",
++			 rp->name, rd->name);
+ 		powercap_unregister_zone(control_type, &rd->power_zone);
+ 	}
+ 	/* do parent zone last */
+@@ -1461,6 +1460,7 @@ static struct rapl_package *rapl_add_package(int cpu)
+ {
+ 	int id = topology_logical_die_id(cpu);
+ 	struct rapl_package *rp;
++	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 	int ret;
+ 
+ 	rp = kzalloc(sizeof(struct rapl_package), GFP_KERNEL);
+@@ -1471,6 +1471,13 @@ static struct rapl_package *rapl_add_package(int cpu)
+ 	rp->id = id;
+ 	rp->lead_cpu = cpu;
+ 
++	if (topology_max_die_per_package() > 1)
++		snprintf(rp->name, PACKAGE_DOMAIN_NAME_LENGTH,
++			"package-%d-die-%d", c->phys_proc_id, c->cpu_die_id);
++	else
++		snprintf(rp->name, PACKAGE_DOMAIN_NAME_LENGTH, "package-%d",
++			c->phys_proc_id);
++
+ 	/* check if the package contains valid domains */
+ 	if (rapl_detect_domains(rp, cpu) ||
+ 		rapl_defaults->check_unit(rp, cpu)) {
+-- 
+2.18.0-rc0
+
