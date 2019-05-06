@@ -1,13 +1,14 @@
-From: Jacky Bai <ping.bai@nxp.com>
-Subject: [PATCH v2] cpufreq: imx6q: Fix the resource leak caused by incorrect
- error return
-Date: Sun, 5 May 2019 08:02:48 +0000
-Message-ID: <20190505080736.27970-1-ping.bai@nxp.com>
+From: Eddie Huang <eddie.huang@mediatek.com>
+Subject: Re: [PATCH 3/8] arm64: dts: mt8183: Add #cooling-cells to CPU nodes
+Date: Mon, 6 May 2019 13:25:32 +0800
+Message-ID: <1557120332.13225.2.camel@mtksdaap41>
+References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
+ <1556793795-25204-4-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Language: en-US
+In-Reply-To: <1556793795-25204-4-git-send-email-michael.kao@mediatek.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -17,54 +18,34 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "festevam@gmail.com" <festevam@gmail.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "michael.kao" <michael.kao@mediatek.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, JamesJJ Liao =?UTF-8?Q?=28=E5=BB=96=E5=BB=BA=E6=99=BA=29?= <jamesjj.liao@mediatek.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Louis Yu =?UTF-8?Q?=28=E6=B8=B8=E6=94=BF=E9=8C=95=29?= <louis.yu@mediatek.com>, Dawei Chien =?UTF-8?Q?=28=E9=8C=A2=E5=A4=A7=E8=A1=9B=29?= <Dawei.Chien@mediatek.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Roger Lu =?UTF-8?Q?=28=E9=99=B8=E7=91=9E=E5=82=91=29?= <Roger.Lu@mediatek.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Fan Chen =?UTF-8?Q?=28=E9=99=B3=E5=87=A1=29?= <fan.chen@mediatek.com>, Rob Herring <robh+dt@kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel>
 List-Id: linux-pm@vger.kernel.org
 
-Previous goto only handled the node reference, the opp table,
-regulator & clk resource also need to be free before error return.
+Hi Michael,
 
-Fixes: ddb64c5db3c (cpufreq: imx6q: fix possible object reference leak).
-Signed-off-by: Jacky Bai <ping.bai@nxp.com>
-Reviewed-by: Dong Aisheng <aisheng.dong@nxp.com>
----
- drivers/cpufreq/imx6q-cpufreq.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+On Thu, 2019-05-02 at 18:43 +0800, michael.kao wrote:
+> The #cooling-cells property needs to be specified to allow a CPU
+> to be used as cooling device.
+> 
+> Signed-off-by: michael.kao <Michael.Kao@mediatek.com>
+> ---
+>  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> index 5668fb8..95f1d7b 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+> @@ -11,6 +11,8 @@
+>  #include <dt-bindings/power/mt8183-power.h>
+>  #include <dt-bindings/reset-controller/mt8183-resets.h>
+>  #include "mt8183-pinfunc.h"
+> +#include <dt-bindings/thermal/thermal.h>
+> +
+>  / {
+>  	compatible = "mediatek,mt8183";
+>  	interrupt-parent = <&sysirq>;
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 3e17560b1efe..1d4ecefaabc6 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -383,23 +383,22 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		goto put_reg;
- 	}
- 
-+	/* Because we have added the OPPs here, we must free them */
-+	free_opp = true;
-+
- 	if (of_machine_is_compatible("fsl,imx6ul") ||
- 	    of_machine_is_compatible("fsl,imx6ull")) {
- 		ret = imx6ul_opp_check_speed_grading(cpu_dev);
- 		if (ret) {
--			if (ret == -EPROBE_DEFER)
--				goto put_node;
--
--			dev_err(cpu_dev, "failed to read ocotp: %d\n",
--				ret);
--			goto put_node;
-+			if (ret != -EPROBE_DEFER)
-+				dev_err(cpu_dev, "failed to read ocotp: %d\n",
-+					ret);
-+			goto out_free_opp;
- 		}
- 	} else {
- 		imx6q_opp_check_speed_grading(cpu_dev);
- 	}
- 
--	/* Because we have added the OPPs here, we must free them */
--	free_opp = true;
- 	num = dev_pm_opp_get_opp_count(cpu_dev);
- 	if (num < 0) {
- 		ret = num;
--- 
-2.21.0
+It seems this patch don't have #cooling-cells but in your 2/8 patch in
+this series
