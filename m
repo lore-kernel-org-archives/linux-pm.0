@@ -2,195 +2,171 @@ Return-Path: <SRS0=K0se=TG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2D7FC04AAA
-	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 09:43:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0832C04A6B
+	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 10:29:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B2BE6208C2
-	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 09:43:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 939F520C01
+	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 10:29:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HEXOulif"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="Gb958JLS"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726312AbfEFJnF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 May 2019 05:43:05 -0400
-Received: from mail-wr1-f67.google.com ([209.85.221.67]:38095 "EHLO
-        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726279AbfEFJnE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2019 05:43:04 -0400
-Received: by mail-wr1-f67.google.com with SMTP id k16so16388650wrn.5
-        for <linux-pm@vger.kernel.org>; Mon, 06 May 2019 02:43:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=oBRW4mzs2+gSuRgFKtSlAc3IAdXzqU5G7UW4zze+fv0=;
-        b=HEXOulifYSD9r6cpc+favVP51KND98+0UEUwidmOZ+pPyUdRR5WR3JUzUuNSX2pxIF
-         T/4MnQbM7IHWrbQVqbXyzeEWQWGuf3EgNQOiQp/8Hhvp87nNMZBMdlV3CVOrD3DaAn6J
-         ZdKkCGrKwiobSJZASqPNEgw9E5TFxcOHKf66XxLgdMHFQYwNe8iDCqox9IVWvZoNcB3R
-         FN2m2fG3G0pbWqFeWwBLoz1aFFCi45zvEnREThevLqPoiMMy5GOyH3B7zHm8YY1gtEn5
-         Ry2lclt2WVw6oBz33J9/YxM6oK8O/HlZ7HC/kNFgEoBuDij+/bD2XuaJ0yzc006uQg8S
-         zdIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=oBRW4mzs2+gSuRgFKtSlAc3IAdXzqU5G7UW4zze+fv0=;
-        b=SllenOGidFnLBRoZwotrncIwxKRCGxbIA1WDu6UBxwS1uO/qDqtLT42NMo9MYJCWBA
-         gZVfmzv0gvE+kKJ6SNMUiOPfbXV6t2gvW2WrtUKWrUTY3PGzZ08J0DwnwgHrE0BYyCMc
-         ci5/1ZT4igg7Mx/wCl5rxBRYMZgozlwjShrfPwtjnHtBC8SCAjJQd7j6CTK0Ds5tASuq
-         2CTFuDJvSQ5buLITkk4YdFsHkkFk07et4XhbmeiKH65mmbiZBy+U4fAPq9ImIRU1PoL3
-         VYOwyOtlIkPQpC1Bc9Lm+SgtmBgwV3aY6RcxzSDbQ0zcKY+6AY9Ytc7AW9qtEfSaq02h
-         RjYA==
-X-Gm-Message-State: APjAAAXULjaqhD/vWvAflC7Clojwrs+lTjpb3jvtp2Vms6otifQJ95FZ
-        W+hXSuUgm7KVm0PFvBbm79ykcg==
-X-Google-Smtp-Source: APXvYqzERXrD9dfIppanGsG4vczgC5yAuidlgdRE0rB9x9uiRwmebaGhxtIZTRMTsNGX8g/83N2t8g==
-X-Received: by 2002:a5d:52c6:: with SMTP id r6mr18035560wrv.131.1557135782760;
-        Mon, 06 May 2019 02:43:02 -0700 (PDT)
-Received: from [192.168.0.41] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
-        by smtp.googlemail.com with ESMTPSA id g5sm10623857wrh.44.2019.05.06.02.43.01
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 06 May 2019 02:43:02 -0700 (PDT)
-Subject: Re: [PATCH 1/8] arm64: dts: mt8183: add thermal zone node
-To:     "michael.kao" <michael.kao@mediatek.com>, fan.chen@mediatek.com,
-        jamesjj.liao@mediatek.com, dawei.chien@mediatek.com,
-        louis.yu@mediatek.com, roger.lu@mediatek.com,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
+        id S1726229AbfEFK3o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 May 2019 06:29:44 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:36746 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726181AbfEFK3o (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2019 06:29:44 -0400
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190506102942euoutp023e33d27d6f42722eca34ccf0bd3f175e~cEUp90h160600706007euoutp02Y
+        for <linux-pm@vger.kernel.org>; Mon,  6 May 2019 10:29:42 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190506102942euoutp023e33d27d6f42722eca34ccf0bd3f175e~cEUp90h160600706007euoutp02Y
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1557138582;
+        bh=1Zxj4PqvwivxAPF6w95dS0sI9tHHMuUsGPtKoed7y/0=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=Gb958JLSKuhMoy6HkhEyV7Mk01thn6AleP6oKBL4N+STSSvS7jwSQOM7bbrbGkiAd
+         x6n6/Wvfg2z5A029EoR1LFALbIacRjHSO8Vw4YuzZ7ekiF5MYj8zHuki/Q4xbchSZI
+         8aGT53rbUCrNhT5jA3umZ7BFD8OjJNzngvq78aJw=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190506102941eucas1p13c11436a32f3a0770ad3be1a982a263b~cEUpIJWCm1056610566eucas1p1U;
+        Mon,  6 May 2019 10:29:41 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges2new.samsung.com (EUCPMTA) with SMTP id 73.4D.04377.59C00DC5; Mon,  6
+        May 2019 11:29:41 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20190506102940eucas1p1ee62c58e1fc8ffa155cf1710baa82548~cEUoQxyBK0861308613eucas1p1x;
+        Mon,  6 May 2019 10:29:40 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190506102940eusmtrp112e35268797a7148d8ca48cce4162727~cEUoCo97o2720527205eusmtrp1N;
+        Mon,  6 May 2019 10:29:40 +0000 (GMT)
+X-AuditID: cbfec7f4-12dff70000001119-95-5cd00c95580a
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+        eusmgms2.samsung.com (EUCPMTA) with SMTP id D6.57.04140.49C00DC5; Mon,  6
+        May 2019 11:29:40 +0100 (BST)
+Received: from [106.120.51.20] (unknown [106.120.51.20]) by
+        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190506102939eusmtip166c1968f0a5a51232c34544383386cf3~cEUnP8XUo0073300733eusmtip1L;
+        Mon,  6 May 2019 10:29:39 +0000 (GMT)
+Subject: Re: [PATCH v3 3/4] Documentation: devicetree: add PPMU events
+ description
+To:     Rob Herring <robh@kernel.org>
+Cc:     devicetree@vger.kernel.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
- <1556793795-25204-2-git-send-email-michael.kao@mediatek.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <8e0fad21-57d1-923c-fd8b-f5f2c47a5c94@linaro.org>
-Date:   Mon, 6 May 2019 11:43:00 +0200
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Sylwester Nawrocki <s.nawrocki@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kukjin Kim <kgene@kernel.org>, willy.mh.wolff.ml@gmail.com
+From:   Lukasz Luba <l.luba@partner.samsung.com>
+Message-ID: <97277857-666d-7720-9d85-19120c977682@partner.samsung.com>
+Date:   Mon, 6 May 2019 12:29:38 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <1556793795-25204-2-git-send-email-michael.kao@mediatek.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CAL_JsqJcm9Z6vYFHGyAZ+h3-kmSv6e=3NtO-fjJn3-QT0JoX+w@mail.gmail.com>
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SbUyNYRjHu8/z2lknd4d0iWkefaBNaD7cphkmzjeahtFw6FmikvOU900y
+        p6S3Fac6S2Veau3k5JRU3iu9rHJCq5QwpUYdTLEsSU9Ppm+/+7p//93/a7t5StvFePJhkdGi
+        IVIfLrBqurzul33ZFZfW4BWmpMXkTpaVIR0jAwzJq33OkNTeQYrY7SUcaYkb4oitt50hr6py
+        WDKcXItIlv2RihTX9nDkZscLFek+V8iSiQcVHKkZimfIz4YPaB3WWXItSFdp7uF0tqKLrK70
+        xlldSlkR0g3bFm5ld6n9Q8TwsGOiYfnafeqD1oEGOqrT5cSjpy+pWGRTJyJnHvAqmOj+xiUi
+        Na/FhQjSU5pp5TCC4ElsMSVbWjyM4OWtkH+JrxktjCIVIGhr/jGdcCC4bMpiZWs2DoLbb9s5
+        mefgRTBmNE0lKNzMQKs5fjLB8yz2hYqio7KjwZvAktbIyExjb0i8mzDF7ngnvKsrYRTHDRqz
+        +2iZnXEgpA1dmGpHYQ/o6stTKewF9xw5lPwW4HEOno3WskrtjdB56Q+n8Gz4XF82zQugKSOJ
+        VliC2ORrSOEz0Jt6ddpZAzX1Lxi5M4WXgrVquTJeD6WF40geA3aFToebUsEV0sszKWWsgQSj
+        VrGXQFlSq0rhuVBgMXFpSDDPWMw8YxnzjGXM/9/NR3QR8hBjpIhQUfKLFI/7SvoIKSYy1PfA
+        kQgbmvxxTX/qRypQ1e/91QjzSHDR5Hvbg7WM/ph0MqIaAU8JczT6/ufBWk2I/uQp0XBkryEm
+        XJSq0XyeFjw0p53e79biUH20eFgUo0TDv1sV7+wZi5LzjQ1xeYOPT7w9uyTzixDSV7fSmGAX
+        3Dnrho9Bhype33aQtQ91zYPbP/tVVg3mdp5v7y/v+bq+8c3cluptPWxKVDgN7r0lJu11o1d2
+        sXXP6JNPD5qGt5jrAvz9HS73db935AbM89m82jQWyKdqhFctTkGzMrOEdfELPJIenv/eJtDS
+        Qf1KH8og6f8CTulMDW0DAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrPIsWRmVeSWpSXmKPExsVy+t/xu7pTeC7EGJyfqmWxccZ6VovrX56z
+        Wsw/co7Vov/xa2aL8+c3sFucbXrDbrHp8TVWi8u75rBZfO49wmgx4/w+Jou1R+6yWyy9fpHJ
+        4nbjCjaL/3t2sFscftPOavHtxCNGBwGPNfPWMHrsnHWX3WPTqk42j81L6j36tqxi9Pi8SS6A
+        LUrPpii/tCRVISO/uMRWKdrQwkjP0NJCz8jEUs/Q2DzWyshUSd/OJiU1J7MstUjfLkEvY/3z
+        EywFN3gq9h28xNzAuImri5GTQ0LAROL95LOsXYxcHEICSxklJl67yA6REJOYtG87lC0s8eda
+        FxtE0WtGiRfHVoAlhAVCJNbduwZmiwgoSvxumwY2iVngEqvE1m1NUGNbmCWmNhxk7GLk4GAT
+        0JPYsaoQpIFXwE1izYSTrCA2i4CKRNfWDjBbVCBC4sz7FSwQNYISJ2c+AbM5BQIlJrxpZQax
+        mQXMJOZtfghli0vcejKfCcKWl9j+dg7zBEahWUjaZyFpmYWkZRaSlgWMLKsYRVJLi3PTc4uN
+        9IoTc4tL89L1kvNzNzECI3vbsZ9bdjB2vQs+xCjAwajEw+uhdD5GiDWxrLgy9xCjBAezkghv
+        4rNzMUK8KYmVValF+fFFpTmpxYcYTYGem8gsJZqcD0w6eSXxhqaG5haWhubG5sZmFkrivB0C
+        B2OEBNITS1KzU1MLUotg+pg4OKUaGDeoRlxTe3Xhna9yipRq42r5gzyPJ6gXTHI/vzBq4s0z
+        LO/dDNcGsiyL5w72XpAq7FazRbG/7x/7lDLFZx4mlXPn7PhfYH7++7Hdn00mn43mVhe7PX/L
+        ba17Gt/3Tll347BZxO1nWUvNFCsYbvo9mFvJKHjjbrhFvaN25l1v1rSK7WGXZj05wqXEUpyR
+        aKjFXFScCACXdFxBAgMAAA==
+X-CMS-MailID: 20190506102940eucas1p1ee62c58e1fc8ffa155cf1710baa82548
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="UTF-8"
+X-RootMTR: 20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0@eucas1p2.samsung.com>
+        <1555681688-19643-4-git-send-email-l.luba@partner.samsung.com>
+        <20190430223629.GA22317@bogus>
+        <1fd44623-4a59-f014-1ae9-a7cc605ad30f@partner.samsung.com>
+        <CAL_JsqJcm9Z6vYFHGyAZ+h3-kmSv6e=3NtO-fjJn3-QT0JoX+w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190506094300.-tT6KySvcR_CpITk3QTaEdM4ICJLIfxIbgb2IrplD-U@z>
+Message-ID: <20190506102938.FBUy_jlh_O-d06L99FI_o9RuO75JuiM4nXFwlFZi_Zs@z>
 
-On 02/05/2019 12:43, michael.kao wrote:
-> Add thermal zone node to Mediatek MT8183 dts file.
+Hi Rob,
+
+On 5/2/19 10:24 PM, Rob Herring wrote:
+> On Thu, May 2, 2019 at 3:52 AM Lukasz Luba <l.luba@partner.samsung.com> wrote:
+>>
+>> Hi Rob,
+>>
+>> On 5/1/19 12:36 AM, Rob Herring wrote:
+>>> On Fri, Apr 19, 2019 at 03:48:07PM +0200, Lukasz Luba wrote:
+>>>> Extend the documenation by events description with new 'event-data-type'
+>>>> field. Add example how the event might be defined in DT.
+>>>
+>>> Why do we need event types in DT? We don't do this for other h/w such as
+>>> ARM PMU.
+>> In ARM PMU all the events are hard-coded into the driver code i.e. in v7
+>> arch/arm/kernel/perf_event_v7.c
+>> and are seen from perf. They are different type and for different
+>> purpose. The Ecynos PPMU events are not seen in perf, they are
+>> for internal monitoring and must not be reset by other actors like perf.
+>> They are used by the 'bus drivers' to made some heuristics and tune the
+>> internal settings, like frequency.
+>>
+>> Chanwoo has written PPMU driver which relies on DT definition.
+>> The DT events are used by other DT devices by phandle.
 > 
-> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-> ---
+> How is that done? I don't see anything in the binding for that.
+Here are the DT devices and how they are pinned together:
+- declared devfreq events:
+https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+- devfreq events pinned to the bus device:
+https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412-odroid-common.dtsi#L107
+- the bus device itself:
+https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412.dtsi#L457
 
-Hi Michael,
+Regards,
+Lukasz
 
-the device tree binding for thermal specifies the thermal zone must
-define a cooling-maps (it is a required field).
-
-All the thermal zones below tzts1, tzts2, etc ... do not have it.
-
-
->  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 64 ++++++++++++++++++++++++++++++++
->  1 file changed, 64 insertions(+)
 > 
-> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> index 926df75..b92116f 100644
-> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> @@ -334,6 +334,67 @@
->  			status = "disabled";
->  		};
->  
-> +		thermal: thermal@1100b000 {
-> +			#thermal-sensor-cells = <1>;
-> +			compatible = "mediatek,mt8183-thermal";
-> +			reg = <0 0x1100b000 0 0x1000>;
-> +			interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>;
-> +			clocks = <&infracfg CLK_INFRA_THERM>,
-> +				 <&infracfg CLK_INFRA_AUXADC>;
-> +			clock-names = "therm", "auxadc";
-> +			resets = <&infracfg  MT8183_INFRACFG_AO_THERM_SW_RST>;
-> +			mediatek,auxadc = <&auxadc>;
-> +			mediatek,apmixedsys = <&apmixedsys>;
-> +			mediatek,hw-reset-temp = <117000>;
-> +			nvmem-cells = <&thermal_calibration>;
-> +			nvmem-cell-names = "calibration-data";
-> +		};
-> +
-> +		thermal-zones {
-> +			cpu_thermal: cpu_thermal {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +
-> +				thermal-sensors = <&thermal 0>;
-> +				sustainable-power = <1500>;
-> +			};
-> +
-> +			tzts1: tzts1 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 1>;
-> +			};
-> +
-> +			tzts2: tzts2 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 2>;
-> +			};
-> +
-> +			tzts3: tzts3 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 3>;
-> +			};
-> +
-> +			tzts4: tzts4 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 4>;
-> +			};
-> +
-> +			tzts5: tzts5 {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 5>;
-> +			};
-> +
-> +			tztsABB: tztsABB {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 6>;
-> +			};
-> +		};
->  		audiosys: syscon@11220000 {
->  			compatible = "mediatek,mt8183-audiosys", "syscon";
->  			reg = <0 0x11220000 0 0x1000>;
-> @@ -368,6 +429,9 @@
->  			compatible = "mediatek,mt8183-efuse",
->  				     "mediatek,efuse";
->  			reg = <0 0x11f10000 0 0x1000>;
-> +			thermal_calibration: calib@180 {
-> +				reg = <0x180 0xc>;
-> +			};
->  		};
->  
->  		mfgcfg: syscon@13000000 {
+> Rob
 > 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+> 
