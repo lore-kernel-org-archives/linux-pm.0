@@ -1,242 +1,152 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v8 12/16] sched/core: uclamp: Extend CPU's cgroup
- controller
-Date: Tue, 7 May 2019 12:42:32 +0100
-Message-ID: <20190507114232.npsvba4itex5qpvl@e110439-lin>
-References: <20190402104153.25404-1-patrick.bellasi@arm.com>
- <20190402104153.25404-13-patrick.bellasi@arm.com>
- <CAJuCfpFFSgRUFb9pyckpXWxr-z+mrrhcsLjZiVN5fZMvYC5XxQ@mail.gmail.com>
+From: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH v2 08/13] PCI/portdrv: Simplify PCIe feature permission
+ checking
+Date: Tue, 07 May 2019 13:00:03 +0100
+Message-ID: <0c7ed46e4a8cf4cea544a7e62c32428b31cdea4e.camel@infradead.org>
+References: <152062141493.77693.9630397416694091342.stgit@bhelgaas-glaptop.roam.corp.google.com>
+         <152062203293.77693.8159909590216160503.stgit@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg="sha-256";
+        protocol="application/x-pkcs7-signature";
+        boundary="=-sgXhRV0woNZePEBcgZ9l"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJuCfpFFSgRUFb9pyckpXWxr-z+mrrhcsLjZiVN5fZMvYC5XxQ@mail.gmail.com>
+In-Reply-To: <152062203293.77693.8159909590216160503.stgit@bhelgaas-glaptop.roam.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, "Chocron, Jonathan" <jonnyc@amazon.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keith Busch <keith.busch@intel.com>, Sinan Kaya <okaya@codeaurora.org>, Lukas Wunner <lukas@wunner.de>, Frederick Lawler <fred@fredlawl.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 17-Apr 17:12, Suren Baghdasaryan wrote:
-> On Tue, Apr 2, 2019 at 3:43 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> >
-> > The cgroup CPU bandwidth controller allows to assign a specified
-> > (maximum) bandwidth to the tasks of a group. However this bandwidth is
-> > defined and enforced only on a temporal base, without considering the
-> > actual frequency a CPU is running on. Thus, the amount of computation
-> > completed by a task within an allocated bandwidth can be very different
-> > depending on the actual frequency the CPU is running that task.
-> > The amount of computation can be affected also by the specific CPU a
-> > task is running on, especially when running on asymmetric capacity
-> > systems like Arm's big.LITTLE.
-> >
-> > With the availability of schedutil, the scheduler is now able
-> > to drive frequency selections based on actual task utilization.
-> > Moreover, the utilization clamping support provides a mechanism to
-> > bias the frequency selection operated by schedutil depending on
-> > constraints assigned to the tasks currently RUNNABLE on a CPU.
-> >
-> > Giving the mechanisms described above, it is now possible to extend the
-> > cpu controller to specify the minimum (or maximum) utilization which
-> > should be considered for tasks RUNNABLE on a cpu.
-> > This makes it possible to better defined the actual computational
-> > power assigned to task groups, thus improving the cgroup CPU bandwidth
-> > controller which is currently based just on time constraints.
-> >
-> > Extend the CPU controller with a couple of new attributes util.{min,max}
-> > which allows to enforce utilization boosting and capping for all the
-> > tasks in a group. Specifically:
-> >
-> > - util.min: defines the minimum utilization which should be considered
-> >             i.e. the RUNNABLE tasks of this group will run at least at a
-> >                  minimum frequency which corresponds to the util.min
-> >                  utilization
-> >
-> > - util.max: defines the maximum utilization which should be considered
-> >             i.e. the RUNNABLE tasks of this group will run up to a
-> >                  maximum frequency which corresponds to the util.max
-> >                  utilization
-> >
-> > These attributes:
-> >
-> > a) are available only for non-root nodes, both on default and legacy
-> >    hierarchies, while system wide clamps are defined by a generic
-> >    interface which does not depends on cgroups. This system wide
-> >    interface enforces constraints on tasks in the root node.
-> >
-> > b) enforce effective constraints at each level of the hierarchy which
-> >    are a restriction of the group requests considering its parent's
-> >    effective constraints. Root group effective constraints are defined
-> >    by the system wide interface.
-> >    This mechanism allows each (non-root) level of the hierarchy to:
-> >    - request whatever clamp values it would like to get
-> >    - effectively get only up to the maximum amount allowed by its parent
-> >
-> > c) have higher priority than task-specific clamps, defined via
-> >    sched_setattr(), thus allowing to control and restrict task requests
-> >
-> > Add two new attributes to the cpu controller to collect "requested"
-> > clamp values. Allow that at each non-root level of the hierarchy.
-> > Validate local consistency by enforcing util.min < util.max.
-> > Keep it simple by do not caring now about "effective" values computation
-> > and propagation along the hierarchy.
-> >
-> > Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Tejun Heo <tj@kernel.org>
-> >
-> > --
-> > Changes in v8:
-> >  Message-ID: <20190214154817.GN50184@devbig004.ftw2.facebook.com>
-> >  - update changelog description for points b), c) and following paragraph
-> > ---
-> >  Documentation/admin-guide/cgroup-v2.rst |  27 +++++
-> >  init/Kconfig                            |  22 ++++
-> >  kernel/sched/core.c                     | 142 +++++++++++++++++++++++-
-> >  kernel/sched/sched.h                    |   6 +
-> >  4 files changed, 196 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
-> > index 7bf3f129c68b..47710a77f4fa 100644
-> > --- a/Documentation/admin-guide/cgroup-v2.rst
-> > +++ b/Documentation/admin-guide/cgroup-v2.rst
-> > @@ -909,6 +909,12 @@ controller implements weight and absolute bandwidth limit models for
-> >  normal scheduling policy and absolute bandwidth allocation model for
-> >  realtime scheduling policy.
-> >
-> > +Cycles distribution is based, by default, on a temporal base and it
-> > +does not account for the frequency at which tasks are executed.
-> > +The (optional) utilization clamping support allows to enforce a minimum
-> > +bandwidth, which should always be provided by a CPU, and a maximum bandwidth,
-> > +which should never be exceeded by a CPU.
-> > +
-> >  WARNING: cgroup2 doesn't yet support control of realtime processes and
-> >  the cpu controller can only be enabled when all RT processes are in
-> >  the root cgroup.  Be aware that system management software may already
-> > @@ -974,6 +980,27 @@ All time durations are in microseconds.
-> >         Shows pressure stall information for CPU. See
-> >         Documentation/accounting/psi.txt for details.
-> >
-> > +  cpu.util.min
-> > +        A read-write single value file which exists on non-root cgroups.
-> > +        The default is "0", i.e. no utilization boosting.
-> > +
-> > +        The requested minimum utilization in the range [0, 1024].
-> > +
-> > +        This interface allows reading and setting minimum utilization clamp
-> > +        values similar to the sched_setattr(2). This minimum utilization
-> > +        value is used to clamp the task specific minimum utilization clamp.
-> > +
-> > +  cpu.util.max
-> > +        A read-write single value file which exists on non-root cgroups.
-> > +        The default is "1024". i.e. no utilization capping
-> > +
-> > +        The requested maximum utilization in the range [0, 1024].
-> > +
-> > +        This interface allows reading and setting maximum utilization clamp
-> > +        values similar to the sched_setattr(2). This maximum utilization
-> > +        value is used to clamp the task specific maximum utilization clamp.
-> > +
-> > +
-> >
-> >  Memory
-> >  ------
-> > diff --git a/init/Kconfig b/init/Kconfig
-> > index 7439cbf4d02e..33006e8de996 100644
-> > --- a/init/Kconfig
-> > +++ b/init/Kconfig
-> > @@ -877,6 +877,28 @@ config RT_GROUP_SCHED
-> >
-> >  endif #CGROUP_SCHED
-> >
-> > +config UCLAMP_TASK_GROUP
-> > +       bool "Utilization clamping per group of tasks"
-> > +       depends on CGROUP_SCHED
-> > +       depends on UCLAMP_TASK
-> > +       default n
-> > +       help
-> > +         This feature enables the scheduler to track the clamped utilization
-> > +         of each CPU based on RUNNABLE tasks currently scheduled on that CPU.
-> > +
-> > +         When this option is enabled, the user can specify a min and max
-> > +         CPU bandwidth which is allowed for each single task in a group.
-> > +         The max bandwidth allows to clamp the maximum frequency a task
-> > +         can use, while the min bandwidth allows to define a minimum
-> > +         frequency a task will always use.
-> > +
-> > +         When task group based utilization clamping is enabled, an eventually
-> > +         specified task-specific clamp value is constrained by the cgroup
-> > +         specified clamp value. Both minimum and maximum task clamping cannot
-> > +         be bigger than the corresponding clamping defined at task group level.
-> > +
-> > +         If in doubt, say N.
-> > +
-> >  config CGROUP_PIDS
-> >         bool "PIDs controller"
-> >         help
-> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > index 71c9dd6487b1..aeed2dd315cc 100644
-> > --- a/kernel/sched/core.c
-> > +++ b/kernel/sched/core.c
-> > @@ -1130,8 +1130,12 @@ static void __init init_uclamp(void)
-> >         /* System defaults allow max clamp values for both indexes */
-> >         uc_max.value = uclamp_none(UCLAMP_MAX);
-> >         uc_max.bucket_id = uclamp_bucket_id(uc_max.value);
-> > -       for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id)
-> > +       for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> >                 uclamp_default[clamp_id] = uc_max;
-> > +#ifdef CONFIG_UCLAMP_TASK_GROUP
-> > +               root_task_group.uclamp_req[clamp_id] = uc_max;
-> > +#endif
-> > +       }
-> >  }
-> >
-> >  #else /* CONFIG_UCLAMP_TASK */
-> > @@ -6720,6 +6724,19 @@ void ia64_set_curr_task(int cpu, struct task_struct *p)
-> >  /* task_group_lock serializes the addition/removal of task groups */
-> >  static DEFINE_SPINLOCK(task_group_lock);
-> >
-> > +static inline int alloc_uclamp_sched_group(struct task_group *tg,
-> > +                                          struct task_group *parent)
-> > +{
-> > +#ifdef CONFIG_UCLAMP_TASK_GROUP
-> > +       int clamp_id;
-> > +
-> > +       for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id)
-> > +               tg->uclamp_req[clamp_id] = parent->uclamp_req[clamp_id];
-> > +#endif
-> > +
-> > +       return 1;
-> 
-> Looks like you never return anything else neither here nor in the
-> following patches I think...
 
-That's right, I just preferred to keep the same structure in the
-callsite below...
+--=-sgXhRV0woNZePEBcgZ9l
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> > +}
-> > +
-> >  static void sched_free_group(struct task_group *tg)
-> >  {
-> >         free_fair_sched_group(tg);
-> > @@ -6743,6 +6760,9 @@ struct task_group *sched_create_group(struct task_group *parent)
-> >         if (!alloc_rt_sched_group(tg, parent))
-> >                 goto err;
-> >
-> > +       if (!alloc_uclamp_sched_group(tg, parent))
-> > +               goto err;
-> > +
+On Fri, 2018-03-09 at 13:00 -0600, Bjorn Helgaas wrote:
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -540,6 +540,16 @@ struct pci_host_bridge *pci_alloc_host_bridge(size_t=
+ priv)
+>         INIT_LIST_HEAD(&bridge->windows);
+>         bridge->dev.release =3D pci_release_host_bridge_dev;
+> =20
+> +       /*
+> +        * We assume we can manage these PCIe features.  Some systems may
+> +        * reserve these for use by the platform itself, e.g., an ACPI BI=
+OS
+> +        * may implement its own AER handling and use _OSC to prevent the
+> +        * OS from interfering.
+> +        */
+> +       bridge->use_aer =3D 1;
+> +       bridge->use_hotplug =3D 1;
+> +       bridge->use_pme =3D 1;
+> +
+>         return bridge;
+>  }
+>  EXPORT_SYMBOL(pci_alloc_host_bridge);
 
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Is there a good reason why you've done this only for
+pci_alloc_host_bridge() and not also for devm_pci_alloc_host_bridge()?=20
 
-... under the assumption the compiler is smart enough to optimized that.
+In fact, perhaps the devm version should actually call
+pci_alloc_host_bridge() and then just override the release method?
 
-But perhaps  it's less confusing to just use void, will update in v9.
 
-> >         return tg;
-> >
-> >  err:
--- 
-#include <best/regards.h>
+--=-sgXhRV0woNZePEBcgZ9l
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Transfer-Encoding: base64
 
-Patrick Bellasi
+MIAGCSqGSIb3DQEHAqCAMIACAQExDzANBglghkgBZQMEAgEFADCABgkqhkiG9w0BBwEAAKCCECow
+ggUcMIIEBKADAgECAhEA4rtJSHkq7AnpxKUY8ZlYZjANBgkqhkiG9w0BAQsFADCBlzELMAkGA1UE
+BhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgG
+A1UEChMRQ09NT0RPIENBIExpbWl0ZWQxPTA7BgNVBAMTNENPTU9ETyBSU0EgQ2xpZW50IEF1dGhl
+bnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0EwHhcNMTkwMTAyMDAwMDAwWhcNMjIwMTAxMjM1
+OTU5WjAkMSIwIAYJKoZIhvcNAQkBFhNkd213MkBpbmZyYWRlYWQub3JnMIIBIjANBgkqhkiG9w0B
+AQEFAAOCAQ8AMIIBCgKCAQEAsv3wObLTCbUA7GJqKj9vHGf+Fa+tpkO+ZRVve9EpNsMsfXhvFpb8
+RgL8vD+L133wK6csYoDU7zKiAo92FMUWaY1Hy6HqvVr9oevfTV3xhB5rQO1RHJoAfkvhy+wpjo7Q
+cXuzkOpibq2YurVStHAiGqAOMGMXhcVGqPuGhcVcVzVUjsvEzAV9Po9K2rpZ52FE4rDkpDK1pBK+
+uOAyOkgIg/cD8Kugav5tyapydeWMZRJQH1vMQ6OVT24CyAn2yXm2NgTQMS1mpzStP2ioPtTnszIQ
+Ih7ASVzhV6csHb8Yrkx8mgllOyrt9Y2kWRRJFm/FPRNEurOeNV6lnYAXOymVJwIDAQABo4IB0zCC
+Ac8wHwYDVR0jBBgwFoAUgq9sjPjF/pZhfOgfPStxSF7Ei8AwHQYDVR0OBBYEFLfuNf820LvaT4AK
+xrGK3EKx1DE7MA4GA1UdDwEB/wQEAwIFoDAMBgNVHRMBAf8EAjAAMB0GA1UdJQQWMBQGCCsGAQUF
+BwMEBggrBgEFBQcDAjBGBgNVHSAEPzA9MDsGDCsGAQQBsjEBAgEDBTArMCkGCCsGAQUFBwIBFh1o
+dHRwczovL3NlY3VyZS5jb21vZG8ubmV0L0NQUzBaBgNVHR8EUzBRME+gTaBLhklodHRwOi8vY3Js
+LmNvbW9kb2NhLmNvbS9DT01PRE9SU0FDbGllbnRBdXRoZW50aWNhdGlvbmFuZFNlY3VyZUVtYWls
+Q0EuY3JsMIGLBggrBgEFBQcBAQR/MH0wVQYIKwYBBQUHMAKGSWh0dHA6Ly9jcnQuY29tb2RvY2Eu
+Y29tL0NPTU9ET1JTQUNsaWVudEF1dGhlbnRpY2F0aW9uYW5kU2VjdXJlRW1haWxDQS5jcnQwJAYI
+KwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmNvbW9kb2NhLmNvbTAeBgNVHREEFzAVgRNkd213MkBpbmZy
+YWRlYWQub3JnMA0GCSqGSIb3DQEBCwUAA4IBAQALbSykFusvvVkSIWttcEeifOGGKs7Wx2f5f45b
+nv2ghcxK5URjUvCnJhg+soxOMoQLG6+nbhzzb2rLTdRVGbvjZH0fOOzq0LShq0EXsqnJbbuwJhK+
+PnBtqX5O23PMHutP1l88AtVN+Rb72oSvnD+dK6708JqqUx2MAFLMevrhJRXLjKb2Mm+/8XBpEw+B
+7DisN4TMlLB/d55WnT9UPNHmQ+3KFL7QrTO8hYExkU849g58Dn3Nw3oCbMUgny81ocrLlB2Z5fFG
+Qu1AdNiBA+kg/UxzyJZpFbKfCITd5yX49bOriL692aMVDyqUvh8fP+T99PqorH4cIJP6OxSTdxKM
+MIIFHDCCBASgAwIBAgIRAOK7SUh5KuwJ6cSlGPGZWGYwDQYJKoZIhvcNAQELBQAwgZcxCzAJBgNV
+BAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGjAY
+BgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMT0wOwYDVQQDEzRDT01PRE8gUlNBIENsaWVudCBBdXRo
+ZW50aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBMB4XDTE5MDEwMjAwMDAwMFoXDTIyMDEwMTIz
+NTk1OVowJDEiMCAGCSqGSIb3DQEJARYTZHdtdzJAaW5mcmFkZWFkLm9yZzCCASIwDQYJKoZIhvcN
+AQEBBQADggEPADCCAQoCggEBALL98Dmy0wm1AOxiaio/bxxn/hWvraZDvmUVb3vRKTbDLH14bxaW
+/EYC/Lw/i9d98CunLGKA1O8yogKPdhTFFmmNR8uh6r1a/aHr301d8YQea0DtURyaAH5L4cvsKY6O
+0HF7s5DqYm6tmLq1UrRwIhqgDjBjF4XFRqj7hoXFXFc1VI7LxMwFfT6PStq6WedhROKw5KQytaQS
+vrjgMjpICIP3A/CroGr+bcmqcnXljGUSUB9bzEOjlU9uAsgJ9sl5tjYE0DEtZqc0rT9oqD7U57My
+ECIewElc4VenLB2/GK5MfJoJZTsq7fWNpFkUSRZvxT0TRLqznjVepZ2AFzsplScCAwEAAaOCAdMw
+ggHPMB8GA1UdIwQYMBaAFIKvbIz4xf6WYXzoHz0rcUhexIvAMB0GA1UdDgQWBBS37jX/NtC72k+A
+CsaxitxCsdQxOzAOBgNVHQ8BAf8EBAMCBaAwDAYDVR0TAQH/BAIwADAdBgNVHSUEFjAUBggrBgEF
+BQcDBAYIKwYBBQUHAwIwRgYDVR0gBD8wPTA7BgwrBgEEAbIxAQIBAwUwKzApBggrBgEFBQcCARYd
+aHR0cHM6Ly9zZWN1cmUuY29tb2RvLm5ldC9DUFMwWgYDVR0fBFMwUTBPoE2gS4ZJaHR0cDovL2Ny
+bC5jb21vZG9jYS5jb20vQ09NT0RPUlNBQ2xpZW50QXV0aGVudGljYXRpb25hbmRTZWN1cmVFbWFp
+bENBLmNybDCBiwYIKwYBBQUHAQEEfzB9MFUGCCsGAQUFBzAChklodHRwOi8vY3J0LmNvbW9kb2Nh
+LmNvbS9DT01PRE9SU0FDbGllbnRBdXRoZW50aWNhdGlvbmFuZFNlY3VyZUVtYWlsQ0EuY3J0MCQG
+CCsGAQUFBzABhhhodHRwOi8vb2NzcC5jb21vZG9jYS5jb20wHgYDVR0RBBcwFYETZHdtdzJAaW5m
+cmFkZWFkLm9yZzANBgkqhkiG9w0BAQsFAAOCAQEAC20spBbrL71ZEiFrbXBHonzhhirO1sdn+X+O
+W579oIXMSuVEY1LwpyYYPrKMTjKECxuvp24c829qy03UVRm742R9Hzjs6tC0oatBF7KpyW27sCYS
+vj5wbal+TttzzB7rT9ZfPALVTfkW+9qEr5w/nSuu9PCaqlMdjABSzHr64SUVy4ym9jJvv/FwaRMP
+gew4rDeEzJSwf3eeVp0/VDzR5kPtyhS+0K0zvIWBMZFPOPYOfA59zcN6AmzFIJ8vNaHKy5QdmeXx
+RkLtQHTYgQPpIP1Mc8iWaRWynwiE3ecl+PWzq4i+vdmjFQ8qlL4fHz/k/fT6qKx+HCCT+jsUk3cS
+jDCCBeYwggPOoAMCAQICEGqb4Tg7/ytrnwHV2binUlYwDQYJKoZIhvcNAQEMBQAwgYUxCzAJBgNV
+BAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGjAY
+BgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMSswKQYDVQQDEyJDT01PRE8gUlNBIENlcnRpZmljYXRp
+b24gQXV0aG9yaXR5MB4XDTEzMDExMDAwMDAwMFoXDTI4MDEwOTIzNTk1OVowgZcxCzAJBgNVBAYT
+AkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGjAYBgNV
+BAoTEUNPTU9ETyBDQSBMaW1pdGVkMT0wOwYDVQQDEzRDT01PRE8gUlNBIENsaWVudCBBdXRoZW50
+aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC
+AQEAvrOeV6wodnVAFsc4A5jTxhh2IVDzJXkLTLWg0X06WD6cpzEup/Y0dtmEatrQPTRI5Or1u6zf
++bGBSyD9aH95dDSmeny1nxdlYCeXIoymMv6pQHJGNcIDpFDIMypVpVSRsivlJTRENf+RKwrB6vcf
+WlP8dSsE3Rfywq09N0ZfxcBa39V0wsGtkGWC+eQKiz4pBZYKjrc5NOpG9qrxpZxyb4o4yNNwTqza
+aPpGRqXB7IMjtf7tTmU2jqPMLxFNe1VXj9XB1rHvbRikw8lBoNoSWY66nJN/VCJv5ym6Q0mdCbDK
+CMPybTjoNCQuelc0IAaO4nLUXk0BOSxSxt8kCvsUtQIDAQABo4IBPDCCATgwHwYDVR0jBBgwFoAU
+u69+Aj36pvE8hI6t7jiY7NkyMtQwHQYDVR0OBBYEFIKvbIz4xf6WYXzoHz0rcUhexIvAMA4GA1Ud
+DwEB/wQEAwIBhjASBgNVHRMBAf8ECDAGAQH/AgEAMBEGA1UdIAQKMAgwBgYEVR0gADBMBgNVHR8E
+RTBDMEGgP6A9hjtodHRwOi8vY3JsLmNvbW9kb2NhLmNvbS9DT01PRE9SU0FDZXJ0aWZpY2F0aW9u
+QXV0aG9yaXR5LmNybDBxBggrBgEFBQcBAQRlMGMwOwYIKwYBBQUHMAKGL2h0dHA6Ly9jcnQuY29t
+b2RvY2EuY29tL0NPTU9ET1JTQUFkZFRydXN0Q0EuY3J0MCQGCCsGAQUFBzABhhhodHRwOi8vb2Nz
+cC5jb21vZG9jYS5jb20wDQYJKoZIhvcNAQEMBQADggIBAHhcsoEoNE887l9Wzp+XVuyPomsX9vP2
+SQgG1NgvNc3fQP7TcePo7EIMERoh42awGGsma65u/ITse2hKZHzT0CBxhuhb6txM1n/y78e/4ZOs
+0j8CGpfb+SJA3GaBQ+394k+z3ZByWPQedXLL1OdK8aRINTsjk/H5Ns77zwbjOKkDamxlpZ4TKSDM
+KVmU/PUWNMKSTvtlenlxBhh7ETrN543j/Q6qqgCWgWuMAXijnRglp9fyadqGOncjZjaaSOGTTFB+
+E2pvOUtY+hPebuPtTbq7vODqzCM6ryEhNhzf+enm0zlpXK7q332nXttNtjv7VFNYG+I31gnMrwfH
+M5tdhYF/8v5UY5g2xANPECTQdu9vWPoqNSGDt87b3gXb1AiGGaI06vzgkejL580ul+9hz9D0S0U4
+jkhJiA7EuTecP/CFtR72uYRBcunwwH3fciPjviDDAI9SnC/2aPY8ydehzuZutLbZdRJ5PDEJM/1t
+yZR2niOYihZ+FCbtf3D9mB12D4ln9icgc7CwaxpNSCPt8i/GqK2HsOgkL3VYnwtx7cJUmpvVdZ4o
+gnzgXtgtdk3ShrtOS1iAN2ZBXFiRmjVzmehoMof06r1xub+85hFQzVxZx5/bRaTKTlL8YXLI8nAb
+R9HWdFqzcOoB/hxfEyIQpx9/s81rgzdEZOofSlZHynoSMYIDyjCCA8YCAQEwga0wgZcxCzAJBgNV
+BAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGjAY
+BgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMT0wOwYDVQQDEzRDT01PRE8gUlNBIENsaWVudCBBdXRo
+ZW50aWNhdGlvbiBhbmQgU2VjdXJlIEVtYWlsIENBAhEA4rtJSHkq7AnpxKUY8ZlYZjANBglghkgB
+ZQMEAgEFAKCCAe0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTkw
+NTA3MTIwMDAzWjAvBgkqhkiG9w0BCQQxIgQgvJ7VIgAXGDio+JF5R8kQlPrdQFrQClRH9xk/nR5Z
+ItUwgb4GCSsGAQQBgjcQBDGBsDCBrTCBlzELMAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIg
+TWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQx
+PTA7BgNVBAMTNENPTU9ETyBSU0EgQ2xpZW50IEF1dGhlbnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1h
+aWwgQ0ECEQDiu0lIeSrsCenEpRjxmVhmMIHABgsqhkiG9w0BCRACCzGBsKCBrTCBlzELMAkGA1UE
+BhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgG
+A1UEChMRQ09NT0RPIENBIExpbWl0ZWQxPTA7BgNVBAMTNENPTU9ETyBSU0EgQ2xpZW50IEF1dGhl
+bnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0ECEQDiu0lIeSrsCenEpRjxmVhmMA0GCSqGSIb3
+DQEBAQUABIIBABUHlDf+YFOzWz+YB1fKBh1hlgU5b7dZzvygIINMopBMt90x7ZAqjNhSn5wSv0EQ
+OwsSfLk5j5+IAKSgAYzj3bB5pbNfEe9O8no+WkKiW1twYdT2wFdT4AsnKWRAC4m16Nxq3+EJS4AF
+DsuV8xcH5TD708TclBgHhYpYPSQBgOt2dVMxRd8xO99r3HJzWMQUKN/Y7/MDKU8Z+VLLMfAcGzk4
+96kgUklgniPPBWunmpXM8b7JoetXY/7XDR2OQ0jX7uPZGh7FtC61e+0iq6b7tAU3YyIp54xt+g5k
+axXjpK2Kof5v7Tz0foQcM27PE3QtEZmVQUjhdzK/18MdAgPXYC4AAAAAAAA=
+
+
+--=-sgXhRV0woNZePEBcgZ9l--
