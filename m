@@ -1,7 +1,7 @@
 From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH v3 3/4] arm64: dts: imx8mm: Add cpu speed grading and all OPPs
-Date: Tue, 7 May 2019 13:52:25 +0000
-Message-ID: <5f2172c5e676d570b51ba66ff1ea9dd42b3e09fd.1557236799.git.leonard.crestez@nxp.com>
+Subject: [PATCH v3 4/4] arm64: dts: imx8mq: Add cpu speed grading and all OPPs
+Date: Tue, 7 May 2019 13:52:26 +0000
+Message-ID: <7effdee3820aa0408ba0c8a5267b5b9b4cee2fe7.1557236799.git.leonard.crestez@nxp.com>
 References: <cover.1557236799.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,25 +23,25 @@ Cc: Aisheng Dong <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Ja
  J. Wysocki" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Abel Vesa <abel.vesa@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add a nvmem cell on cpu node referencing speed grade and the 1.8 Ghz
-cpufreq opp.
+Add nvmem-cells reference to cpu and fill the OPP table with all known
+OPPs.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm64/boot/dts/freescale/imx8mm.dtsi | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/freescale/imx8mq.dtsi | 26 ++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-index 0b2a585c5844..7eea47584f31 100644
---- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-@@ -51,10 +51,12 @@
- 			clock-latency = <61036>; /* two CLK32 periods */
- 			clocks = <&clk IMX8MM_CLK_ARM>;
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+index 6d635ba0904c..729376919d08 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+@@ -93,10 +93,12 @@
+ 			clocks = <&clk IMX8MQ_CLK_ARM>;
  			enable-method = "psci";
  			next-level-cache = <&A53_L2>;
  			operating-points-v2 = <&a53_opp_table>;
+ 			#cooling-cells = <2>;
 +			nvmem-cells = <&cpu_speed_grade>;
 +			nvmem-cell-names = "speed_grade";
  		};
@@ -49,25 +49,34 @@ index 0b2a585c5844..7eea47584f31 100644
  		A53_1: cpu@1 {
  			device_type = "cpu";
  			compatible = "arm,cortex-a53";
-@@ -98,18 +100,27 @@
+@@ -143,18 +145,36 @@
  		opp-shared;
  
- 		opp-1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
- 			opp-microvolt = <850000>;
-+			opp-supported-hw = <0xe>, <0x7>;
+ 		opp-800000000 {
+ 			opp-hz = /bits/ 64 <800000000>;
+ 			opp-microvolt = <900000>;
++			/* Industrial only */
++			opp-supported-hw = <0xf>, <0x4>;
++			clock-latency-ns = <150000>;
++		};
++
++		opp-1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			opp-microvolt = <900000>;
++			/* Consumer only */
++			opp-supported-hw = <0xe>, <0x3>;
  			clock-latency-ns = <150000>;
  		};
  
- 		opp-1600000000 {
- 			opp-hz = /bits/ 64 <1600000000>;
- 			opp-microvolt = <900000>;
+ 		opp-1300000000 {
+ 			opp-hz = /bits/ 64 <1300000000>;
+ 			opp-microvolt = <1000000>;
 +			opp-supported-hw = <0xc>, <0x7>;
 +			clock-latency-ns = <150000>;
 +		};
 +
-+		opp-1800000000 {
-+			opp-hz = /bits/ 64 <1800000000>;
++		opp-1500000000 {
++			opp-hz = /bits/ 64 <1500000000>;
 +			opp-microvolt = <1000000>;
 +			/* Consumer only but rely on speed grading */
 +			opp-supported-hw = <0x8>, <0x7>;
@@ -76,12 +85,12 @@ index 0b2a585c5844..7eea47584f31 100644
  		};
  	};
  
- 	memory@40000000 {
- 		device_type = "memory";
-@@ -317,10 +328,14 @@
+ 	pmu {
+ 		compatible = "arm,cortex-a53-pmu";
+@@ -413,10 +433,14 @@
+ 				compatible = "fsl,imx8mq-ocotp", "syscon";
  				reg = <0x30350000 0x10000>;
- 				clocks = <&clk IMX8MM_CLK_OCOTP_ROOT>;
- 				/* For nvmem subnodes */
+ 				clocks = <&clk IMX8MQ_CLK_OCOTP_ROOT>;
  				#address-cells = <1>;
  				#size-cells = <1>;
 +
@@ -90,8 +99,8 @@ index 0b2a585c5844..7eea47584f31 100644
 +				};
  			};
  
- 			anatop: anatop@30360000 {
- 				compatible = "fsl,imx8mm-anatop", "syscon", "simple-bus";
+ 			anatop: syscon@30360000 {
+ 				compatible = "fsl,imx8mq-anatop", "syscon";
  				reg = <0x30360000 0x10000>;
 -- 
 2.17.1
