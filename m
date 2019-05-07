@@ -1,146 +1,59 @@
-From: Sibi Sankar <sibis@codeaurora.org>
-Subject: Re: [PATCH v2 2/5] interconnect: Add of_icc_get_by_index() helper
- function
-Date: Tue, 7 May 2019 17:29:40 +0530
-Message-ID: <e6469e3b-3653-d20b-b27d-242547a777df@codeaurora.org>
-References: <20190423132823.7915-1-georgi.djakov@linaro.org>
- <20190423132823.7915-3-georgi.djakov@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 10/22] powercap/intel_rapl: Support multi-die/package
+Date: Tue, 7 May 2019 14:14:59 +0200
+Message-ID: <20190507121459.GL2623@hirez.programming.kicks-ass.net>
+References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1557177585.git.len.brown@intel.com>
+ <9f6958c231347e639e322de8d8c3de6859559345.1557177585.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190423132823.7915-3-georgi.djakov@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <9f6958c231347e639e322de8d8c3de6859559345.1557177585.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org, sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net
-Cc: jcrouse@codeaurora.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hey Georgi,
-
-On 4/23/19 6:58 PM, Georgi Djakov wrote:
-> This is the same as the traditional of_icc_get() function, but the
-> difference is that it takes index as an argument, instead of name.
+On Mon, May 06, 2019 at 05:26:05PM -0400, Len Brown wrote:
+> From: Zhang Rui <rui.zhang@intel.com>
 > 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> RAPL "package" domains are actually implemented in hardware per-die.
+> Thus, the new multi-die/package systems have mulitple domains
+> within each physical package.
+> 
+> Update the intel_rapl driver to be "die aware" -- exporting multiple
+> domains within a single package, when present.
+> No change on single die/package systems.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: linux-pm@vger.kernel.org
 > ---
->   drivers/interconnect/core.c  | 45 ++++++++++++++++++++++++++++--------
->   include/linux/interconnect.h |  6 +++++
->   2 files changed, 41 insertions(+), 10 deletions(-)
+>  drivers/powercap/intel_rapl.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-> index 871eb4bc4efc..a7c3c262c974 100644
-> --- a/drivers/interconnect/core.c
-> +++ b/drivers/interconnect/core.c
-> @@ -295,9 +295,9 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
->   }
->   
->   /**
-> - * of_icc_get() - get a path handle from a DT node based on name
-> + * of_icc_get_by_index() - get a path handle from a DT node based on index
->    * @dev: device pointer for the consumer device
-> - * @name: interconnect path name
-> + * @idx: interconnect path index
->    *
->    * This function will search for a path between two endpoints and return an
->    * icc_path handle on success. Use icc_put() to release constraints when they
-> @@ -309,13 +309,12 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
->    * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
->    * when the API is disabled or the "interconnects" DT property is missing.
->    */
-> -struct icc_path *of_icc_get(struct device *dev, const char *name)
-> +struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
->   {
->   	struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
->   	struct icc_node *src_node, *dst_node;
->   	struct device_node *np = NULL;
->   	struct of_phandle_args src_args, dst_args;
-> -	int idx = 0;
->   	int ret;
->   
->   	if (!dev || !dev->of_node)
-> @@ -335,12 +334,6 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
->   	 * lets support only global ids and extend this in the future if needed
->   	 * without breaking DT compatibility.
->   	 */
-> -	if (name) {
-> -		idx = of_property_match_string(np, "interconnect-names", name);
-> -		if (idx < 0)
-> -			return ERR_PTR(idx);
-> -	}
-> -
->   	ret = of_parse_phandle_with_args(np, "interconnects",
->   					 "#interconnect-cells", idx * 2,
->   					 &src_args);
-> @@ -383,6 +376,38 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
->   
->   	return path;
->   }
-> +
-> +/**
-> + * of_icc_get() - get a path handle from a DT node based on name
-> + * @dev: device pointer for the consumer device
-> + * @name: interconnect path name
-> + *
-> + * This function will search for a path between two endpoints and return an
-> + * icc_path handle on success. Use icc_put() to release constraints when they
-> + * are not needed anymore.
-> + * If the interconnect API is disabled, NULL is returned and the consumer
-> + * drivers will still build. Drivers are free to handle this specifically,
-> + * but they don't have to.
-> + *
-> + * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
-> + * when the API is disabled or the "interconnects" DT property is missing.
-> + */
-> +struct icc_path *of_icc_get(struct device *dev, const char *name)
-> +{
-> +	int idx = 0;
-> +
-> +	if (!dev || !dev->of_node)
-> +		return ERR_PTR(-ENODEV);
-> +
-> +	if (name) {
-> +		idx = of_property_match_string(dev->of_node,
-> +					       "interconnect-names", name);
-> +		if (idx < 0)
-> +			return ERR_PTR(idx);
-> +	}
-> +
-> +	return of_icc_get_by_index(dev, idx);
-> +}
->   EXPORT_SYMBOL_GPL(of_icc_get);
->   
->   /**
-> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-> index dc25864755ba..0e430b3b6519 100644
-> --- a/include/linux/interconnect.h
-> +++ b/include/linux/interconnect.h
-> @@ -28,6 +28,7 @@ struct device;
->   struct icc_path *icc_get(struct device *dev, const int src_id,
->   			 const int dst_id);
->   struct icc_path *of_icc_get(struct device *dev, const char *name);
-> +struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
->   void icc_put(struct icc_path *path);
->   int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw);
->   
-> @@ -45,6 +46,11 @@ static inline struct icc_path *of_icc_get(struct device *dev,
->   	return NULL;
->   }
->   
-> +struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 3c3c0c23180b..9202dbcef96d 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+>  /* caller to ensure CPU hotplug lock is held */
+>  static struct rapl_package *rapl_find_package_domain(int cpu)
+>  {
+> -	int id = topology_physical_package_id(cpu);
+> +	int id = topology_logical_die_id(cpu);
+>  	struct rapl_package *rp;
+>  
+>  	list_for_each_entry(rp, &rapl_packages, plist) {
+> @@ -1459,7 +1459,7 @@ static void rapl_remove_package(struct rapl_package *rp)
+>  /* called from CPU hotplug notifier, hotplug lock held */
+>  static struct rapl_package *rapl_add_package(int cpu)
+>  {
+> -	int id = topology_physical_package_id(cpu);
+> +	int id = topology_logical_die_id(cpu);
+>  	struct rapl_package *rp;
+>  	int ret;
 
-This should be static inline instead
-
-> +{
-> +	return NULL;
-> +}
-> +
->   static inline void icc_put(struct icc_path *path)
->   {
->   }
-> 
-
--- 
-Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Both functions are still misnomers. rapl_find_package_domain() does in
+fact now do rapl_find_die_domain(), right? Same for rapl_add_package()
