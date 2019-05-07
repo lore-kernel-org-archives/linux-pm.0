@@ -1,127 +1,160 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v7 01/13] clk: samsung: add needed IDs for DMC clocks in
- Exynos5420
-Date: Tue, 7 May 2019 11:25:24 +0200
-Message-ID: <eab8fd90-7075-3f7b-5634-553fdf32f546@partner.samsung.com>
-References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190506151210eucas1p13c2a4b86a6f987ff34fbe1e2d705fbbf@eucas1p1.samsung.com>
-        <1557155521-30949-2-git-send-email-l.luba@partner.samsung.com>
-        <8b063f30-1a4d-3292-2e57-6e33e94d57ae@samsung.com>
-        <55e89fc7-6f22-b384-adbf-40c68618bdac@partner.samsung.com>
-        <e808eb3a-9fbe-897d-ce25-cab732581391@samsung.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [PATCH v4 1/2] power: supply: add input power and voltage limit properties
+Date: Tue,  7 May 2019 11:52:47 +0200
+Message-ID: <20190507095248.17915-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e808eb3a-9fbe-897d-ce25-cab732581391@samsung.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
+To: linux-pm@vger.kernel.org, sre@kernel.org
+Cc: Sameer Nanda <snanda@chromium.org>, bleung@chromium.org, rjw@rjwysocki.net, gwendal@chromium.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
+For thermal management strategy you might be interested on limit the
+input power for a power supply. We already have current limit but
+basically what we probably want is to limit power. So, introduce the
+input_power_limit property.
 
+Although the common use case is limit the input power, in some
+specific cases it is the voltage that is problematic (i.e some regulators
+have different efficiencies at higher voltage resulting in more heat).
+So introduce also the input_voltage_limit property.
 
-On 5/7/19 11:17 AM, Chanwoo Choi wrote:
-> On 19. 5. 7. 오후 5:51, Lukasz Luba wrote:
->> Hi Chanwoo,
->>
->> On 5/7/19 9:33 AM, Chanwoo Choi wrote:
->>> Hi Lukasz,
->>>
->>> On 19. 5. 7. 오전 12:11, Lukasz Luba wrote:
->>>> Define new IDs for clocks used by Dynamic Memory Controller in
->>>> Exynos5422 SoC.
->>>>
->>>> Acked-by: Rob Herring <robh@kernel.org>
->>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->>>> ---
->>>>    include/dt-bindings/clock/exynos5420.h | 28 ++++++++++++++++++++++------
->>>>    1 file changed, 22 insertions(+), 6 deletions(-)
->>>>
->>>> diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
->>>> index 355f469..bf50d8a 100644
->>>> --- a/include/dt-bindings/clock/exynos5420.h
->>>> +++ b/include/dt-bindings/clock/exynos5420.h
->>>> @@ -60,6 +60,7 @@
->>>>    #define CLK_MAU_EPLL		159
->>>>    #define CLK_SCLK_HSIC_12M	160
->>>>    #define CLK_SCLK_MPHY_IXTAL24	161
->>>> +#define CLK_SCLK_BPLL		162
->>>>    
->>>>    /* gate clocks */
->>>>    #define CLK_UART0		257
->>>> @@ -195,6 +196,16 @@
->>>>    #define CLK_ACLK432_CAM		518
->>>>    #define CLK_ACLK_FL1550_CAM	519
->>>>    #define CLK_ACLK550_CAM		520
->>>> +#define CLK_CLKM_PHY0		521
->>>> +#define CLK_CLKM_PHY1		522
->>>> +#define CLK_ACLK_PPMU_DREX0_0	523
->>>> +#define CLK_ACLK_PPMU_DREX0_1	524
->>>> +#define CLK_ACLK_PPMU_DREX1_0	525
->>>> +#define CLK_ACLK_PPMU_DREX1_1	526
->>>> +#define CLK_PCLK_PPMU_DREX0_0	527
->>>> +#define CLK_PCLK_PPMU_DREX0_1	528
->>>> +#define CLK_PCLK_PPMU_DREX1_0	529
->>>> +#define CLK_PCLK_PPMU_DREX1_1	530
->>>>    
->>>>    /* mux clocks */
->>>>    #define CLK_MOUT_HDMI		640
->>>> @@ -217,6 +228,8 @@
->>>>    #define CLK_MOUT_EPLL		657
->>>>    #define CLK_MOUT_MAU_EPLL	658
->>>>    #define CLK_MOUT_USER_MAU_EPLL	659
->>>> +#define CLK_MOUT_SCLK_SPLL	660
->>>> +#define CLK_MOUT_MX_MSPLL_CCORE_PHY	661
->>>>    
->>>>    /* divider clocks */
->>>>    #define CLK_DOUT_PIXEL		768
->>>> @@ -243,13 +256,16 @@
->>>>    #define CLK_DOUT_ACLK300_GSCL	789
->>>>    #define CLK_DOUT_ACLK400_DISP1	790
->>>>    #define CLK_DOUT_PCLK_CDREX	791
->>>> -#define CLK_DOUT_SCLK_CDREX	792
->>>> -#define CLK_DOUT_ACLK_CDREX1	793
->>>> -#define CLK_DOUT_CCLK_DREX0	794
->>>> -#define CLK_DOUT_CLK2X_PHY0	795
->>>> -#define CLK_DOUT_PCLK_CORE_MEM	796
->>>
->>> The your previous patch didn't change the id number
->>> of already exiting clocks. It cause the fault.
->>> In order to keep the compatibility, you keep
->>> the original id number without modification.
->> True, the previous patch didn't change these IDs.
->> I have not seen any faults during builds and stress tests, though.
-> 
-> If you use the built dtb file before modification, it cause the fault.
-> It is advantage of device-tree style to split out
-> the dependency between kernel image and dtb.
-Good point.
-> 
->>>
->>> Please don't change the id number of the existing clocks
->>> and then just add the new clocks.
->> OK, I will add CLK_DOUT_PCLK_DREX0	and CLK_DOUT_PCLK_DREX1
->> at the end:
->> ------------------>8--------------------------
->> @@ -248,8 +261,11 @@
->>    #define CLK_DOUT_CCLK_DREX0    794
->>    #define CLK_DOUT_CLK2X_PHY0    795
->>    #define CLK_DOUT_PCLK_CORE_MEM 796
->> +#define CLK_FF_DOUT_SPLL2      797
->> +#define CLK_DOUT_PCLK_DREX0    798
->> +#define CLK_DOUT_PCLK_DREX1    799
->>
->>    /* must be greater than maximal clock id */
->> -#define CLK_NR_CLKS            797
->> +#define CLK_NR_CLKS            800
->> -----------------8<---------------------------
->>
->> Can I add your ack in the modified version?
-> 
-> I agree.
-Thank you.
+This happens in one Chromebook and is used on the Pixel C's thermal
+management strategy to effectively limit the input power to 5V 3A when
+the screen is on. When the screen is on, the display, the CPU, and the GPU
+all contribute more heat to the system than while the screen is off, and
+we made a tradeoff to throttle the charger in order to give more of the
+thermal budget to those other components.
 
-Regards,
-Lukasz
+So there's nothing fundamentally broken about the hardware that would
+cause the Pixel C to malfunction if we were charging at 9V or 12V instead
+of 5V when the screen is on, i.e. if userspace doesn't change this.
+
+What would happen is that you wouldn't meet Google's skin temperature
+targets on the system if the charger was allowed to run at 9V or 12V with
+the screen on.
+
+For folks hacking on Pixel Cs (which is now outside of Google's official
+support window for Android) and customizing their own kernel and userspace
+this would be acceptable, but we wanted to expose this feature in the
+power supply properties because the feature does exist in the Emedded
+Controller firmware of the Pixel C and all of Google's Chromebooks with
+USB-C made since 2015 in case someone running an up to date kernel wanted
+to limit the charging power for thermal or other reasons.
+
+This patch exposes a new property, similar to input current limit, to
+re-configure the maximum voltage from the external supply at runtime
+based on system-level knowledge or user input.
+
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Reviewed-by: Guenter Roeck <groeck@chromium.org>
+Acked-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+---
+
+Changes in v4:
+- Add also input_power_limit.
+
+Changes in v3:
+- Improve commit log and documentation with Benson comments.
+
+Changes in v2:
+- Document the new property in ABI/testing/sysfs-class-power.
+- Add the Reviewed-by Guenter Roeck tag.
+
+ Documentation/ABI/testing/sysfs-class-power | 32 +++++++++++++++++++++
+ Documentation/power/power_supply_class.txt  |  4 +++
+ drivers/power/supply/power_supply_sysfs.c   |  2 ++
+ include/linux/power_supply.h                |  2 ++
+ 4 files changed, 40 insertions(+)
+
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 5e23e22dce1b..962a27a1daf8 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -331,10 +331,42 @@ Description:
+ 		supply. Normally this is configured based on the type of
+ 		connection made (e.g. A configured SDP should output a maximum
+ 		of 500mA so the input current limit is set to the same value).
++		Use preferably input_power_limit, and for problems that can be
++		solved using power limit use input_current_limit.
+ 
+ 		Access: Read, Write
+ 		Valid values: Represented in microamps
+ 
++What:		/sys/class/power_supply/<supply_name>/input_voltage_limit
++Date:		May 2019
++Contact:	linux-pm@vger.kernel.org
++Description:
++		This entry configures the incoming VBUS voltage limit currently
++		set in the supply. Normally this is configured based on
++		system-level knowledge or user input (e.g. This is part of the
++		Pixel C's thermal management strategy to effectively limit the
++		input power to 5V when the screen is on to meet Google's skin
++		temperature targets). Note that this feature should not be
++		used for safety critical things.
++		Use preferably input_power_limit, and for problems that can be
++		solved using power limit use input_voltage_limit.
++
++		Access: Read, Write
++		Valid values: Represented in microvolts
++
++What:		/sys/class/power_supply/<supply_name>/input_power_limit
++Date:		May 2019
++Contact:	linux-pm@vger.kernel.org
++Description:
++		This entry configures the incoming power limit currently set
++		in the supply. Normally this is configured based on
++		system-level knowledge or user input. Use preferably this
++		feature to limit the incoming power and use current/voltage
++		limit only for problems that can be solved using power limit.
++
++		Access: Read, Write
++		Valid values: Represented in microwatts
++
+ What:		/sys/class/power_supply/<supply_name>/online,
+ Date:		May 2007
+ Contact:	linux-pm@vger.kernel.org
+diff --git a/Documentation/power/power_supply_class.txt b/Documentation/power/power_supply_class.txt
+index 300d37896e51..1e3c705111db 100644
+--- a/Documentation/power/power_supply_class.txt
++++ b/Documentation/power/power_supply_class.txt
+@@ -137,6 +137,10 @@ power supply object.
+ 
+ INPUT_CURRENT_LIMIT - input current limit programmed by charger. Indicates
+ the current drawn from a charging source.
++INPUT_VOLTAGE_LIMIT - input voltage limit programmed by charger. Indicates
++the voltage limit from a charging source.
++INPUT_POWER_LIMIT - input power limit programmed by charger. Indicates
++the power limit from a charging source.
+ 
+ CHARGE_CONTROL_LIMIT - current charge control limit setting
+ CHARGE_CONTROL_LIMIT_MAX - maximum charge control limit setting
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 5358a80d854f..860db617d241 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -275,6 +275,8 @@ static struct device_attribute power_supply_attrs[] = {
+ 	POWER_SUPPLY_ATTR(charge_control_limit),
+ 	POWER_SUPPLY_ATTR(charge_control_limit_max),
+ 	POWER_SUPPLY_ATTR(input_current_limit),
++	POWER_SUPPLY_ATTR(input_voltage_limit),
++	POWER_SUPPLY_ATTR(input_power_limit),
+ 	POWER_SUPPLY_ATTR(energy_full_design),
+ 	POWER_SUPPLY_ATTR(energy_empty_design),
+ 	POWER_SUPPLY_ATTR(energy_full),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 2f9c201a54d1..ba135a5d8996 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -122,6 +122,8 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
+ 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
++	POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
++	POWER_SUPPLY_PROP_INPUT_POWER_LIMIT,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL,
+-- 
+2.20.1
