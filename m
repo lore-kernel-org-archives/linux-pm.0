@@ -2,204 +2,103 @@ Return-Path: <SRS0=VliY=TH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8DACC004C9
-	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 12:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72BC8C004C9
+	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 12:15:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 66B872087F
-	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 12:00:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 32CB02087F
+	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 12:15:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="d4OL75wR";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="gHRJChjd"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="DNftd0hd"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726491AbfEGMAp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 May 2019 08:00:45 -0400
-Received: from smtp.codeaurora.org ([198.145.29.96]:36890 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726322AbfEGMAp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 May 2019 08:00:45 -0400
-Received: by smtp.codeaurora.org (Postfix, from userid 1000)
-        id ED58A608FC; Tue,  7 May 2019 12:00:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1557230443;
-        bh=7LyD1gBqN0kjp5dHRT6VDikLnE48o7JdS1Yn4I9ZtHY=;
-        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
-        b=d4OL75wRoVSb6M9pN0nitiKBWtK+cjDuY3gAHX69Gqc+Gq1NUgq5TA2NVEtd07Dbu
-         6c9W7iBlO7Zpg4SXTf8DLGn9wtKfB8sxbUwCe5hPLVJn0of9yUlPVVnhhOQtwzk6JB
-         /w+hp3Pc2venHHUnAJrglUin98Llgz5yshHngaAc=
-Received: from [10.79.40.96] (blr-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.18.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: sibis@smtp.codeaurora.org)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 107FA60128;
-        Tue,  7 May 2019 12:00:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1557230442;
-        bh=7LyD1gBqN0kjp5dHRT6VDikLnE48o7JdS1Yn4I9ZtHY=;
-        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
-        b=gHRJChjdfN2YS9cDmAfJRoj+16Rw/SmlOOa+CHLl13za3Qz2xq54rb6VIp8hihMnq
-         vEed2Js/FrFMbKcW3iyIcHITAfhCh8WqxLDdMIzcVBgTm/v5vGRdo0OOD44ZNz2GL5
-         QB08MqmFXUmSvpn0nPV2T9HsBbBAUFm5N+sXpGQA=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 107FA60128
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=sibis@codeaurora.org
-Subject: Re: [PATCH v2 2/5] interconnect: Add of_icc_get_by_index() helper
- function
-To:     Georgi Djakov <georgi.djakov@linaro.org>, vireshk@kernel.org,
-        sboyd@kernel.org, nm@ti.com, robh+dt@kernel.org,
-        mark.rutland@arm.com, rjw@rjwysocki.net
-Cc:     jcrouse@codeaurora.org, vincent.guittot@linaro.org,
-        bjorn.andersson@linaro.org, amit.kucheria@linaro.org,
-        seansw@qti.qualcomm.com, daidavid1@codeaurora.org,
-        evgreen@chromium.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-References: <20190423132823.7915-1-georgi.djakov@linaro.org>
- <20190423132823.7915-3-georgi.djakov@linaro.org>
-From:   Sibi Sankar <sibis@codeaurora.org>
-Message-ID: <e6469e3b-3653-d20b-b27d-242547a777df@codeaurora.org>
-Date:   Tue, 7 May 2019 17:29:40 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        id S1726538AbfEGMPD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 May 2019 08:15:03 -0400
+Received: from merlin.infradead.org ([205.233.59.134]:38688 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726276AbfEGMPD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 May 2019 08:15:03 -0400
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+         bh=2f8uLRl8GMvPK9du+Y2zBV1bq1EpSh3gX/EwGd6390U=; b=DNftd0hd7CIq6B/3/BjfTB7f0
+        E6GTEB51f7SpbiXzih2qPiGrPXNDD4fr1Fpckv4UBhjLd8vSfucwuoQ0NdGsEwQNd1Dvijq4hi55e
+        KdXmm6bnNS730A4Mb2liyRn07qsvuPYZoeq7YWCJ41dDl5kanjpfAonbchJT7nOYzpEZJF++byy8T
+        MC4jlpctVv3kqytX865R1dFPf9VGu4hgU/FSpv1bgRMf7eyUdeq9TQNtVDXXxritIPiGJ8PB7MJq+
+        Ec7JUpj0Jlljqi29JjtD0P/C6XR8/IWk/PFatC6O62SXFb5C+lpqecQBLS3LyzQuXGXlTcYhoGrYK
+        lrN/xWTaQ==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=hirez.programming.kicks-ass.net)
+        by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+        id 1hNyzt-0006wY-64; Tue, 07 May 2019 12:15:01 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id C03542023ADB5; Tue,  7 May 2019 14:14:59 +0200 (CEST)
+Date:   Tue, 7 May 2019 14:14:59 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Len Brown <lenb@kernel.org>
+Cc:     x86@kernel.org, linux-kernel@vger.kernel.org,
+        Zhang Rui <rui.zhang@intel.com>,
+        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 10/22] powercap/intel_rapl: Support multi-die/package
+Message-ID: <20190507121459.GL2623@hirez.programming.kicks-ass.net>
+References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1557177585.git.len.brown@intel.com>
+ <9f6958c231347e639e322de8d8c3de6859559345.1557177585.git.len.brown@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20190423132823.7915-3-georgi.djakov@linaro.org>
-Content-Type: text/plain; charset="UTF-8"; format="flowed"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <9f6958c231347e639e322de8d8c3de6859559345.1557177585.git.len.brown@intel.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190507115940.PlHWmAETi4gYWh-A9UUNVMOGzl50ZeZ4Yitij-0NLbY@z>
+Message-ID: <20190507121459.DktB7fzjURgn1u5ZIY-oPn1k66zMAZR-9xNQLAPO1aI@z>
 
-Hey Georgi,
-
-On 4/23/19 6:58 PM, Georgi Djakov wrote:
-> This is the same as the traditional of_icc_get() function, but the
-> difference is that it takes index as an argument, instead of name.
+On Mon, May 06, 2019 at 05:26:05PM -0400, Len Brown wrote:
+> From: Zhang Rui <rui.zhang@intel.com>
 > 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> RAPL "package" domains are actually implemented in hardware per-die.
+> Thus, the new multi-die/package systems have mulitple domains
+> within each physical package.
+> 
+> Update the intel_rapl driver to be "die aware" -- exporting multiple
+> domains within a single package, when present.
+> No change on single die/package systems.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: linux-pm@vger.kernel.org
 > ---
->   drivers/interconnect/core.c  | 45 ++++++++++++++++++++++++++++--------
->   include/linux/interconnect.h |  6 +++++
->   2 files changed, 41 insertions(+), 10 deletions(-)
+>  drivers/powercap/intel_rapl.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-> index 871eb4bc4efc..a7c3c262c974 100644
-> --- a/drivers/interconnect/core.c
-> +++ b/drivers/interconnect/core.c
-> @@ -295,9 +295,9 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
->   }
->   
->   /**
-> - * of_icc_get() - get a path handle from a DT node based on name
-> + * of_icc_get_by_index() - get a path handle from a DT node based on index
->    * @dev: device pointer for the consumer device
-> - * @name: interconnect path name
-> + * @idx: interconnect path index
->    *
->    * This function will search for a path between two endpoints and return an
->    * icc_path handle on success. Use icc_put() to release constraints when they
-> @@ -309,13 +309,12 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
->    * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
->    * when the API is disabled or the "interconnects" DT property is missing.
->    */
-> -struct icc_path *of_icc_get(struct device *dev, const char *name)
-> +struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
->   {
->   	struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
->   	struct icc_node *src_node, *dst_node;
->   	struct device_node *np = NULL;
->   	struct of_phandle_args src_args, dst_args;
-> -	int idx = 0;
->   	int ret;
->   
->   	if (!dev || !dev->of_node)
-> @@ -335,12 +334,6 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
->   	 * lets support only global ids and extend this in the future if needed
->   	 * without breaking DT compatibility.
->   	 */
-> -	if (name) {
-> -		idx = of_property_match_string(np, "interconnect-names", name);
-> -		if (idx < 0)
-> -			return ERR_PTR(idx);
-> -	}
-> -
->   	ret = of_parse_phandle_with_args(np, "interconnects",
->   					 "#interconnect-cells", idx * 2,
->   					 &src_args);
-> @@ -383,6 +376,38 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
->   
->   	return path;
->   }
-> +
-> +/**
-> + * of_icc_get() - get a path handle from a DT node based on name
-> + * @dev: device pointer for the consumer device
-> + * @name: interconnect path name
-> + *
-> + * This function will search for a path between two endpoints and return an
-> + * icc_path handle on success. Use icc_put() to release constraints when they
-> + * are not needed anymore.
-> + * If the interconnect API is disabled, NULL is returned and the consumer
-> + * drivers will still build. Drivers are free to handle this specifically,
-> + * but they don't have to.
-> + *
-> + * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
-> + * when the API is disabled or the "interconnects" DT property is missing.
-> + */
-> +struct icc_path *of_icc_get(struct device *dev, const char *name)
-> +{
-> +	int idx = 0;
-> +
-> +	if (!dev || !dev->of_node)
-> +		return ERR_PTR(-ENODEV);
-> +
-> +	if (name) {
-> +		idx = of_property_match_string(dev->of_node,
-> +					       "interconnect-names", name);
-> +		if (idx < 0)
-> +			return ERR_PTR(idx);
-> +	}
-> +
-> +	return of_icc_get_by_index(dev, idx);
-> +}
->   EXPORT_SYMBOL_GPL(of_icc_get);
->   
->   /**
-> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-> index dc25864755ba..0e430b3b6519 100644
-> --- a/include/linux/interconnect.h
-> +++ b/include/linux/interconnect.h
-> @@ -28,6 +28,7 @@ struct device;
->   struct icc_path *icc_get(struct device *dev, const int src_id,
->   			 const int dst_id);
->   struct icc_path *of_icc_get(struct device *dev, const char *name);
-> +struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
->   void icc_put(struct icc_path *path);
->   int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw);
->   
-> @@ -45,6 +46,11 @@ static inline struct icc_path *of_icc_get(struct device *dev,
->   	return NULL;
->   }
->   
-> +struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 3c3c0c23180b..9202dbcef96d 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+>  /* caller to ensure CPU hotplug lock is held */
+>  static struct rapl_package *rapl_find_package_domain(int cpu)
+>  {
+> -	int id = topology_physical_package_id(cpu);
+> +	int id = topology_logical_die_id(cpu);
+>  	struct rapl_package *rp;
+>  
+>  	list_for_each_entry(rp, &rapl_packages, plist) {
+> @@ -1459,7 +1459,7 @@ static void rapl_remove_package(struct rapl_package *rp)
+>  /* called from CPU hotplug notifier, hotplug lock held */
+>  static struct rapl_package *rapl_add_package(int cpu)
+>  {
+> -	int id = topology_physical_package_id(cpu);
+> +	int id = topology_logical_die_id(cpu);
+>  	struct rapl_package *rp;
+>  	int ret;
 
-This should be static inline instead
-
-> +{
-> +	return NULL;
-> +}
-> +
->   static inline void icc_put(struct icc_path *path)
->   {
->   }
-> 
-
--- 
-Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Both functions are still misnomers. rapl_find_package_domain() does in
+fact now do rapl_find_die_domain(), right? Same for rapl_add_package()
