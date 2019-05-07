@@ -1,78 +1,148 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v3 3/4] Documentation: devicetree: add PPMU events
- description
-Date: Tue, 7 May 2019 11:05:33 +0200
-Message-ID: <3d221027-292b-7d0d-2510-f230a81f4b52@partner.samsung.com>
-References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0@eucas1p2.samsung.com>
-        <1555681688-19643-4-git-send-email-l.luba@partner.samsung.com>
-        <20190430223629.GA22317@bogus>
-        <1fd44623-4a59-f014-1ae9-a7cc605ad30f@partner.samsung.com>
-        <CAL_JsqJcm9Z6vYFHGyAZ+h3-kmSv6e=3NtO-fjJn3-QT0JoX+w@mail.gmail.com>
-        <97277857-666d-7720-9d85-19120c977682@partner.samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v7 01/13] clk: samsung: add needed IDs for DMC clocks in
+ Exynos5420
+Date: Tue, 7 May 2019 18:17:45 +0900
+Message-ID: <e808eb3a-9fbe-897d-ce25-cab732581391@samsung.com>
+References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190506151210eucas1p13c2a4b86a6f987ff34fbe1e2d705fbbf@eucas1p1.samsung.com>
+        <1557155521-30949-2-git-send-email-l.luba@partner.samsung.com>
+        <8b063f30-1a4d-3292-2e57-6e33e94d57ae@samsung.com>
+        <55e89fc7-6f22-b384-adbf-40c68618bdac@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <97277857-666d-7720-9d85-19120c977682@partner.samsung.com>
+In-Reply-To: <55e89fc7-6f22-b384-adbf-40c68618bdac@partner.samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, willy.mh.wolff.ml@gmail.com
+To: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
-
-On 5/6/19 12:29 PM, Lukasz Luba wrote:
-> Hi Rob,
+On 19. 5. 7. 오후 5:51, Lukasz Luba wrote:
+> Hi Chanwoo,
 > 
-> On 5/2/19 10:24 PM, Rob Herring wrote:
->> On Thu, May 2, 2019 at 3:52 AM Lukasz Luba 
->> <l.luba@partner.samsung.com> wrote:
->>>
->>> Hi Rob,
->>>
->>> On 5/1/19 12:36 AM, Rob Herring wrote:
->>>> On Fri, Apr 19, 2019 at 03:48:07PM +0200, Lukasz Luba wrote:
->>>>> Extend the documenation by events description with new 
->>>>> 'event-data-type'
->>>>> field. Add example how the event might be defined in DT.
->>>>
->>>> Why do we need event types in DT? We don't do this for other h/w 
->>>> such as
->>>> ARM PMU.
->>> In ARM PMU all the events are hard-coded into the driver code i.e. in v7
->>> arch/arm/kernel/perf_event_v7.c
->>> and are seen from perf. They are different type and for different
->>> purpose. The Ecynos PPMU events are not seen in perf, they are
->>> for internal monitoring and must not be reset by other actors like perf.
->>> They are used by the 'bus drivers' to made some heuristics and tune the
->>> internal settings, like frequency.
->>>
->>> Chanwoo has written PPMU driver which relies on DT definition.
->>> The DT events are used by other DT devices by phandle.
+> On 5/7/19 9:33 AM, Chanwoo Choi wrote:
+>> Hi Lukasz,
 >>
->> How is that done? I don't see anything in the binding for that.
-> Here are the DT devices and how they are pinned together:
-> - declared devfreq events:
-> https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi 
+>> On 19. 5. 7. 오전 12:11, Lukasz Luba wrote:
+>>> Define new IDs for clocks used by Dynamic Memory Controller in
+>>> Exynos5422 SoC.
+>>>
+>>> Acked-by: Rob Herring <robh@kernel.org>
+>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>>> ---
+>>>   include/dt-bindings/clock/exynos5420.h | 28 ++++++++++++++++++++++------
+>>>   1 file changed, 22 insertions(+), 6 deletions(-)
+>>>
+>>> diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
+>>> index 355f469..bf50d8a 100644
+>>> --- a/include/dt-bindings/clock/exynos5420.h
+>>> +++ b/include/dt-bindings/clock/exynos5420.h
+>>> @@ -60,6 +60,7 @@
+>>>   #define CLK_MAU_EPLL		159
+>>>   #define CLK_SCLK_HSIC_12M	160
+>>>   #define CLK_SCLK_MPHY_IXTAL24	161
+>>> +#define CLK_SCLK_BPLL		162
+>>>   
+>>>   /* gate clocks */
+>>>   #define CLK_UART0		257
+>>> @@ -195,6 +196,16 @@
+>>>   #define CLK_ACLK432_CAM		518
+>>>   #define CLK_ACLK_FL1550_CAM	519
+>>>   #define CLK_ACLK550_CAM		520
+>>> +#define CLK_CLKM_PHY0		521
+>>> +#define CLK_CLKM_PHY1		522
+>>> +#define CLK_ACLK_PPMU_DREX0_0	523
+>>> +#define CLK_ACLK_PPMU_DREX0_1	524
+>>> +#define CLK_ACLK_PPMU_DREX1_0	525
+>>> +#define CLK_ACLK_PPMU_DREX1_1	526
+>>> +#define CLK_PCLK_PPMU_DREX0_0	527
+>>> +#define CLK_PCLK_PPMU_DREX0_1	528
+>>> +#define CLK_PCLK_PPMU_DREX1_0	529
+>>> +#define CLK_PCLK_PPMU_DREX1_1	530
+>>>   
+>>>   /* mux clocks */
+>>>   #define CLK_MOUT_HDMI		640
+>>> @@ -217,6 +228,8 @@
+>>>   #define CLK_MOUT_EPLL		657
+>>>   #define CLK_MOUT_MAU_EPLL	658
+>>>   #define CLK_MOUT_USER_MAU_EPLL	659
+>>> +#define CLK_MOUT_SCLK_SPLL	660
+>>> +#define CLK_MOUT_MX_MSPLL_CCORE_PHY	661
+>>>   
+>>>   /* divider clocks */
+>>>   #define CLK_DOUT_PIXEL		768
+>>> @@ -243,13 +256,16 @@
+>>>   #define CLK_DOUT_ACLK300_GSCL	789
+>>>   #define CLK_DOUT_ACLK400_DISP1	790
+>>>   #define CLK_DOUT_PCLK_CDREX	791
+>>> -#define CLK_DOUT_SCLK_CDREX	792
+>>> -#define CLK_DOUT_ACLK_CDREX1	793
+>>> -#define CLK_DOUT_CCLK_DREX0	794
+>>> -#define CLK_DOUT_CLK2X_PHY0	795
+>>> -#define CLK_DOUT_PCLK_CORE_MEM	796
+>>
+>> The your previous patch didn't change the id number
+>> of already exiting clocks. It cause the fault.
+>> In order to keep the compatibility, you keep
+>> the original id number without modification.
+> True, the previous patch didn't change these IDs.
+> I have not seen any faults during builds and stress tests, though.
+
+If you use the built dtb file before modification, it cause the fault.
+It is advantage of device-tree style to split out
+the dependency between kernel image and dtb.
+
+>>
+>> Please don't change the id number of the existing clocks
+>> and then just add the new clocks.
+> OK, I will add CLK_DOUT_PCLK_DREX0	and CLK_DOUT_PCLK_DREX1
+> at the end:
+> ------------------>8--------------------------
+> @@ -248,8 +261,11 @@
+>   #define CLK_DOUT_CCLK_DREX0    794
+>   #define CLK_DOUT_CLK2X_PHY0    795
+>   #define CLK_DOUT_PCLK_CORE_MEM 796
+> +#define CLK_FF_DOUT_SPLL2      797
+> +#define CLK_DOUT_PCLK_DREX0    798
+> +#define CLK_DOUT_PCLK_DREX1    799
 > 
-> - devfreq events pinned to the bus device:
-> https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412-odroid-common.dtsi#L107 
+>   /* must be greater than maximal clock id */
+> -#define CLK_NR_CLKS            797
+> +#define CLK_NR_CLKS            800
+> -----------------8<---------------------------
 > 
-> - the bus device itself:
-> https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412.dtsi#L457 
-> 
+> Can I add your ack in the modified version?
+
+I agree.
+
 > 
 > Regards,
 > Lukasz
+>>
+>>
+>>> +#define CLK_DOUT_PCLK_DREX0	792
+>>> +#define CLK_DOUT_PCLK_DREX1	793
+>>> +#define CLK_DOUT_SCLK_CDREX	794
+>>> +#define CLK_DOUT_ACLK_CDREX1	795
+>>> +#define CLK_DOUT_CCLK_DREX0	796
+>>> +#define CLK_DOUT_CLK2X_PHY0	797
+>>> +#define CLK_DOUT_PCLK_CORE_MEM	798
+>>> +#define CLK_FF_DOUT_SPLL2	799
+>>>   
+>>>   /* must be greater than maximal clock id */
+>>> -#define CLK_NR_CLKS		797
+>>> +#define CLK_NR_CLKS		800
+>>>   
+>>>   #endif /* _DT_BINDINGS_CLOCK_EXYNOS_5420_H */
+>>>
+>>
 > 
->>
->> Rob
->>
->>
-Can I send the next version of the patch set, which has Chanwoo's
-suggestions, or do you have some objections to this PPMU entries?
+> 
 
-Regards,
-Lukasz
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
