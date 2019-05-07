@@ -1,125 +1,106 @@
-Return-Path: <SRS0=K0se=TG=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=VliY=TH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADD8EC04AAB
-	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 21:28:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E71F5C04A6B
+	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 00:24:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 808282053B
-	for <linux-pm@archiver.kernel.org>; Mon,  6 May 2019 21:28:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1557178083;
-	bh=XuaQ0a38qQz8223tKzOSnVGpCJkmvC7y0Ob4M0PsLD8=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:List-ID:
-	 From;
-	b=uPUuUeOPIXXCpVNojR7IijvShEgrM4pHLCQ1MP26YryEyRZM5SdRH8s0KQpbMw08u
-	 VU87W7Us3DrsanOg9QO8ROhPElzpA0eX2E3tSVGEkBN44q+fsK/DbeLFv8RbJALus3
-	 d4szlzZ6WVXvBK5cOoewvipE2FA1Bzim1rnY9ros=
+	by mail.kernel.org (Postfix) with ESMTP id C3D88206A3
+	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 00:24:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726593AbfEFV14 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 May 2019 17:27:56 -0400
-Received: from mail-it1-f196.google.com ([209.85.166.196]:38409 "EHLO
-        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726927AbfEFV0i (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2019 17:26:38 -0400
-Received: by mail-it1-f196.google.com with SMTP id q19so22338597itk.3;
-        Mon, 06 May 2019 14:26:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
-         :reply-to:organization;
-        bh=qcB7eahk6uost1tJIP3FkNXq29ur/hHJU+gIkVwerH0=;
-        b=q5OWpwQmt3ihZwn6+0+iOR3Ozwna/GEu5ONUl36Mg3W0TrTRlt2nD+dY8xrLQnOMFP
-         j3DC6j4uOsTZPuk0nWTQ1J4i5dY3uY0y3Ch64y+lS4ky/44Dg+1GokaWRwEOwBajTIsh
-         DFBRdOu9Ta4rUK5bXtla6z7UKR8TXuPP9xzr9t7+FfnvMd8gp3WShLGRJ91XWMRlDnuO
-         SnJcdt6J455s/DJ2rNjOf6mZNUqMz/XR9EKa3RO8Gr+nOK65fYxfRnQ8zQjqrS6WHR65
-         p9icqkCpHSTaNRTqCZF3uRj8Yp4COX8/y4kTnnnXRElHfuv/tvh5yGGiqNvdR4EkCJjs
-         zGdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
-         :in-reply-to:references:reply-to:organization;
-        bh=qcB7eahk6uost1tJIP3FkNXq29ur/hHJU+gIkVwerH0=;
-        b=sZ9F0aF2K45PP2uTBe3Xi+5BoYVBAkznK+M54cU2lsndvTit1P7AWReyJwOeaezHuA
-         Hog38rCApS6hSJJr5sw10KgvFTuYR4l25RMePEa+ZS9tVQk4/tNZlkdWLmSRzlCHJI4Y
-         cjgvIG1MqwN0SNpedysfq/T4moa+EU8KmIWS+Dg081Vq/naFSBEMHDg2r7fPGlcOlIL7
-         hBe+u4RrdT2v8TNZRPLZCVs5EDYOX+ejM04JYN0qFO+ZhBi0gUTh3+7TF5v1Mk9MTqZa
-         5nHkkaX8i8JVVPyIOlpLFYYE265W6cflfknv+KGxY2hmsCeWCI9vaW1m0MzPS8efHMsT
-         0CDg==
-X-Gm-Message-State: APjAAAWZnCEecH2juL250fs7qESTCXkNO+5laWbBsLohUUAPg8kbL1Mw
-        b72MdAK8XwLcRVn+vISpMZw=
-X-Google-Smtp-Source: APXvYqwXCwaaGWP0hjS8QE8jdCYc7Jd5NQVzaYKFOrFORKOOkYH0yuev6xBl8cFoijSYhx9qffd3ZA==
-X-Received: by 2002:a24:2901:: with SMTP id p1mr10418138itp.54.1557177997999;
-        Mon, 06 May 2019 14:26:37 -0700 (PDT)
-Received: from nuc8.lan (h69-131-112-51.cntcnh.dsl.dynamic.tds.net. [69.131.112.51])
-        by smtp.gmail.com with ESMTPSA id v25sm4268009ioh.81.2019.05.06.14.26.36
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 06 May 2019 14:26:37 -0700 (PDT)
-From:   Len Brown <lenb@kernel.org>
-To:     x86@kernel.org
-Cc:     linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
-Subject: [PATCH 10/22] powercap/intel_rapl: Support multi-die/package
-Date:   Mon,  6 May 2019 17:26:05 -0400
-Message-Id:
- <9f6958c231347e639e322de8d8c3de6859559345.1557177585.git.len.brown@intel.com>
-X-Mailer: git-send-email 2.18.0-rc0
-In-Reply-To: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1557177585.git.len.brown@intel.com>
-References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1557177585.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
+        id S1726160AbfEGAYZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 May 2019 20:24:25 -0400
+Received: from mga03.intel.com ([134.134.136.65]:13209 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726073AbfEGAYZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 6 May 2019 20:24:25 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 06 May 2019 17:24:24 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,439,1549958400"; 
+   d="scan'208";a="171510161"
+Received: from unknown (HELO [10.255.29.152]) ([10.255.29.152])
+  by fmsmga001.fm.intel.com with ESMTP; 06 May 2019 17:24:23 -0700
+Message-ID: <1557188662.5080.1.camel@intel.com>
+Subject: Re: Missing patches for thermal for 5.2
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Eduardo Valentin <edubezval@gmail.com>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM mailing list <linux-pm@vger.kernel.org>
+Date:   Tue, 07 May 2019 08:24:22 +0800
+In-Reply-To: <b3fbf910-d073-1dd9-649c-eea370ae71f7@linaro.org>
+References: <b3fbf910-d073-1dd9-649c-eea370ae71f7@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.18.5.2-0ubuntu3.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190506212605.bXiSBAvfz340raBxd55QZ6OEC0zn9sHgZTcJsmrynRA@z>
+Message-ID: <20190507002422.kitsUc20NAuH0pMC4kEI1c4EgjB-AZY8X5a89v3mD98@z>
 
-From: Zhang Rui <rui.zhang@intel.com>
+On 一, 2019-05-06 at 15:17 +0200, Daniel Lezcano wrote:
+> Hi Eduardo, Zhang,
+> 
+> AFAICS, the following patches are missing for 5.2:
+> 
+> 
+> [PATCH -next] mlxsw: Remove obsolete dependency on THERMAL=m
+> 
+This one is already in my tree.
+https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git/commit
+/?h=next&id=980d43f24d59491aa1c5552171454ac25fb86ea2
 
-RAPL "package" domains are actually implemented in hardware per-die.
-Thus, the new multi-die/package systems have mulitple domains
-within each physical package.
+And I think the below patches should go through Eduardo' tree.
 
-Update the intel_rapl driver to be "die aware" -- exporting multiple
-domains within a single package, when present.
-No change on single die/package systems.
+thanks,
+rui
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: linux-pm@vger.kernel.org
----
- drivers/powercap/intel_rapl.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 3c3c0c23180b..9202dbcef96d 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
- /* caller to ensure CPU hotplug lock is held */
- static struct rapl_package *rapl_find_package_domain(int cpu)
- {
--	int id = topology_physical_package_id(cpu);
-+	int id = topology_logical_die_id(cpu);
- 	struct rapl_package *rp;
- 
- 	list_for_each_entry(rp, &rapl_packages, plist) {
-@@ -1459,7 +1459,7 @@ static void rapl_remove_package(struct rapl_package *rp)
- /* called from CPU hotplug notifier, hotplug lock held */
- static struct rapl_package *rapl_add_package(int cpu)
- {
--	int id = topology_physical_package_id(cpu);
-+	int id = topology_logical_die_id(cpu);
- 	struct rapl_package *rp;
- 	int ret;
- 
--- 
-2.18.0-rc0
-
+> [PATCH v3 1/3] thermal: rockchip: fix up the tsadc pinctrl setting
+> error
+> 
+> [PATCH v3 2/3] dt-bindings: rockchip-thermal: Support the PX30 SoC
+> compatible
+> 
+> [PATCH v3 3/3] thermal: rockchip: Support the PX30 SoC in thermal
+> driver
+> 
+> [PATCH] thermal: cpu_cooling: Actually trace CPU load in
+> thermal_power_cpu_get_power
+> 
+> [PATCH] thermal/drivers/cpu_cooling: Remove pointless test in
+> power2state()
+> 
+> [PATCH - resend] thermal/drivers/cpu_cooling: Fixup the header and
+> copyright
+> 
+> [PATCH - resend 2/3] thermal/drivers/cpu_cooling: Add Software
+> Package
+> Data Exchange (SPDX)
+> 
+> [PATCH - resend 3/3] thermal/drivers/cpu_cooling: Remove pointless
+> field
+> 
+> 
+> 
+> This one is pending:
+> 
+> [PATCH] thermal/drivers/of: Add a get_temp_id callback function
+> 
+> The series [PATCH v3 00/13] QorIQ TMU multi-sensor and HWMON support
+> depends on it.
+> 
+> Hope that helps.
+> 
+>   -- Daniel
+> 
+> 
+> 
