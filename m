@@ -2,102 +2,129 @@ Return-Path: <SRS0=VliY=TH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F602C004C9
-	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 10:29:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B4CCC004C9
+	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 10:38:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DF8D9206A3
-	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 10:29:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YljmO1hQ"
+	by mail.kernel.org (Postfix) with ESMTP id 031E62054F
+	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 10:38:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726612AbfEGK3q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 May 2019 06:29:46 -0400
-Received: from mail-qk1-f195.google.com ([209.85.222.195]:42604 "EHLO
-        mail-qk1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726505AbfEGK3q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 May 2019 06:29:46 -0400
-Received: by mail-qk1-f195.google.com with SMTP id d4so346291qkc.9
-        for <linux-pm@vger.kernel.org>; Tue, 07 May 2019 03:29:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=3A7k4qEvSKxMLHdGDRgdP5qu7WvzNwyk4XvgJKmxOyY=;
-        b=YljmO1hQAmfgxVa2ZUDLvw+LWUoenamWGX9FvKc0/CQi/mda9c5hckx5IqKGMfyIhA
-         68Y6Z/EvYOrO3PMVQOhS5LXIf3q8fOhSWPKatCt1jBLF58PQI+qUnk5arfSWDKKp15yr
-         ICKPLDh8Z+0LduEL2m9TwR/Q6brnUC0x+OTTN0cZulJwoehI2TVGPnZDh8Ql6urlKCvW
-         v9eVhoOFdC2skGYESQYpuFZyd81f2gnxS5/tXc77ztmQ47bF+rlkPNP20sAr6tXxCPiL
-         rJeA5onePXsvQ7cDmUxJ2FM+S7p2ksMgnRmLaSRidCsnGxCBkqBZYUyMItk5uDDmBHb5
-         MbUw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=3A7k4qEvSKxMLHdGDRgdP5qu7WvzNwyk4XvgJKmxOyY=;
-        b=HJOw4xRzxlG9uFngs3TkKqBugvbwgROFq0MYfAl/qszHVEll6qTPVoK1SCxDPMV7my
-         8rNF6cQ5hXKr9SECyIAStAGdSIJCpjWnUBhByNAgK3/Xlph5Y5wiCYSCju0H8QFNc377
-         Mf4pRfMZuZ2QXd7msYxPWU5TA5ZHA0U8G39nQCav+nbBmoAH4E0xjVHUR6E6Cdn7SWhW
-         8YHM+gAccIgOChxpYPiKZ/Im+ccFI0HgDiNhH8Kkgm3olO6dBIw8/M+u4MngvJ1EA9Uy
-         cXE78iVgZevcYqUVygRxhxMBhyvjOjGivJifP2xllJ47Pi1JcpoL9k/cchY1aGmsduCJ
-         RD4A==
-X-Gm-Message-State: APjAAAUITmbaFOS2MCrPkt5VyY67g7jOzPseX4dIZ3Dv9gwUuFnzhGOs
-        ldBEwD8L+3sxo040rG83GjG74WUrTEJSf1Mz5t6Ctg==
-X-Google-Smtp-Source: APXvYqyXgcpt8A0cccehzPV4og78sWjY13s34rY5v1SbtEaR/NJl59h6j0jhqilhYO9sG7mL9ZF9J8JwBZuqEe/y/98=
-X-Received: by 2002:a37:508a:: with SMTP id e132mr23910887qkb.281.1557224985254;
- Tue, 07 May 2019 03:29:45 -0700 (PDT)
+        id S1726543AbfEGKiv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 May 2019 06:38:51 -0400
+Received: from foss.arm.com ([217.140.101.70]:49674 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726473AbfEGKiv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 7 May 2019 06:38:51 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9B637374;
+        Tue,  7 May 2019 03:38:50 -0700 (PDT)
+Received: from e110439-lin (e110439-lin.cambridge.arm.com [10.1.194.43])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A21333F5AF;
+        Tue,  7 May 2019 03:38:47 -0700 (PDT)
+Date:   Tue, 7 May 2019 11:38:45 +0100
+From:   Patrick Bellasi <patrick.bellasi@arm.com>
+To:     Suren Baghdasaryan <surenb@google.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org,
+        linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Tejun Heo <tj@kernel.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Paul Turner <pjt@google.com>,
+        Quentin Perret <quentin.perret@arm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Todd Kjos <tkjos@google.com>,
+        Joel Fernandes <joelaf@google.com>,
+        Steve Muckle <smuckle@google.com>
+Subject: Re: [PATCH v8 04/16] sched/core: uclamp: Add system default clamps
+Message-ID: <20190507103845.tejg55wfsu3l3jwh@e110439-lin>
+References: <20190402104153.25404-1-patrick.bellasi@arm.com>
+ <20190402104153.25404-5-patrick.bellasi@arm.com>
+ <CAJuCfpGcN-CWCoo16_xKzohUbBTCY3W5D1E8izhA8wtEjCtF+Q@mail.gmail.com>
 MIME-Version: 1.0
-References: <DB7PR08MB3801953BFC1A48BC8F9F83679C310@DB7PR08MB3801.eurprd08.prod.outlook.com>
-In-Reply-To: <DB7PR08MB3801953BFC1A48BC8F9F83679C310@DB7PR08MB3801.eurprd08.prod.outlook.com>
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-Date:   Tue, 7 May 2019 15:59:34 +0530
-Message-ID:
- <CAP245DXfm-1U34UOsFio7ZQwoiEaecW9cC4ghmXrzTJPVbs0dA@mail.gmail.com>
-Subject: Re: linux-5.1/drivers/thermal/qcom/tsens-v2.c:54]: bad assignment ?
-To:     David Binderman <dcb314@hotmail.com>
-Cc:     "andy.gross@linaro.org" <andy.gross@linaro.org>,
-        "david.brown@linaro.org" <david.brown@linaro.org>,
-        "rui.zhang@intel.com" <rui.zhang@intel.com>,
-        "edubezval@gmail.com" <edubezval@gmail.com>,
-        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
-        "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <CAJuCfpGcN-CWCoo16_xKzohUbBTCY3W5D1E8izhA8wtEjCtF+Q@mail.gmail.com>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190507102934.M7jcSHXnRe6Mpz3DS5RxlVBBNClf00AqNheajUB4u2I@z>
+Message-ID: <20190507103845.4d36qcFDQkhCbrvnM9RjH-W1T3L2mZs7dJwVmFCPtM0@z>
 
-On Tue, May 7, 2019 at 3:40 PM David Binderman <dcb314@hotmail.com> wrote:
->
-> Hello there,
->
->
-> linux-5.1/drivers/thermal/qcom/tsens-v2.c:54]: (style) Assignment 'last_temp=last_temp2' is redundant with condition 'last_temp==last_temp2'.
->
-> Source code is
->
->
->         if (last_temp == last_temp2)
->                 last_temp = last_temp2;
->
-> Suggest code rework.
->
-> Regards
->
-> David Binderman
+On 17-Apr 17:51, Suren Baghdasaryan wrote:
+> On Tue, Apr 2, 2019 at 3:42 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
 
-Hi David,
+[...]
 
-Thanks for the report. That was an old version of the function from
-downstream. I've now refactored it and resubmitted it here:
+> > +/*
+> > + * The effective clamp bucket index of a task depends on, by increasing
+> > + * priority:
+> > + * - the task specific clamp value, when explicitly requested from userspace
+> > + * - the system default clamp value, defined by the sysadmin
+> > + */
+> > +static inline struct uclamp_se
+> > +uclamp_eff_get(struct task_struct *p, unsigned int clamp_id)
+> > +{
+> > +       struct uclamp_se uc_req = p->uclamp_req[clamp_id];
+> > +       struct uclamp_se uc_max = uclamp_default[clamp_id];
+> > +
+> > +       /* System default restrictions always apply */
+> > +       if (unlikely(uc_req.value > uc_max.value))
+> > +               return uc_max;
+> > +
+> > +       return uc_req;
+> > +}
+> > +
+> > +static inline unsigned int
+> > +uclamp_eff_bucket_id(struct task_struct *p, unsigned int clamp_id)
+> 
+> This function is not used anywhere AFAIKT.
 
-https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1922871.html
+Right, this is the dual of uclamp_eff_value() but, since we don't
+actually use it in the corrent code, let's remove it and keep only the
+latter.
 
-Regards,
-Amit
+> uclamp_eff_bucket_id() and
+> uclamp_eff_value() look very similar, maybe they can be combined into
+> one function returning struct uclamp_se?
+
+I would prefer not since at the callsites of uclamp_eff_value() we
+actually need just the value.
+
+> > +{
+> > +       struct uclamp_se uc_eff;
+> > +
+> > +       /* Task currently refcounted: use back-annotated (effective) bucket */
+> > +       if (p->uclamp[clamp_id].active)
+> > +               return p->uclamp[clamp_id].bucket_id;
+> > +
+> > +       uc_eff = uclamp_eff_get(p, clamp_id);
+> > +
+> > +       return uc_eff.bucket_id;
+> > +}
+> > +
+> > +unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id)
+> > +{
+> > +       struct uclamp_se uc_eff;
+> > +
+> > +       /* Task currently refcounted: use back-annotated (effective) value */
+> > +       if (p->uclamp[clamp_id].active)
+> > +               return p->uclamp[clamp_id].value;
+> > +
+> > +       uc_eff = uclamp_eff_get(p, clamp_id);
+> > +
+> > +       return uc_eff.value;
+> > +}
+> > +
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
