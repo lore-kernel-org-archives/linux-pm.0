@@ -1,42 +1,87 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: linux-5.1/drivers/thermal/qcom/tsens-v2.c:54]: bad assignment ?
-Date: Tue, 7 May 2019 15:59:34 +0530
-Message-ID: <CAP245DXfm-1U34UOsFio7ZQwoiEaecW9cC4ghmXrzTJPVbs0dA@mail.gmail.com>
-References: <DB7PR08MB3801953BFC1A48BC8F9F83679C310@DB7PR08MB3801.eurprd08.prod.outlook.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v8 04/16] sched/core: uclamp: Add system default clamps
+Date: Tue, 7 May 2019 11:38:45 +0100
+Message-ID: <20190507103845.tejg55wfsu3l3jwh@e110439-lin>
+References: <20190402104153.25404-1-patrick.bellasi@arm.com>
+ <20190402104153.25404-5-patrick.bellasi@arm.com>
+ <CAJuCfpGcN-CWCoo16_xKzohUbBTCY3W5D1E8izhA8wtEjCtF+Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <DB7PR08MB3801953BFC1A48BC8F9F83679C310@DB7PR08MB3801.eurprd08.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <CAJuCfpGcN-CWCoo16_xKzohUbBTCY3W5D1E8izhA8wtEjCtF+Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Binderman <dcb314@hotmail.com>
-Cc: "andy.gross@linaro.org" <andy.gross@linaro.org>, "david.brown@linaro.org" <david.brown@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 7, 2019 at 3:40 PM David Binderman <dcb314@hotmail.com> wrote:
->
-> Hello there,
->
->
-> linux-5.1/drivers/thermal/qcom/tsens-v2.c:54]: (style) Assignment 'last_temp=last_temp2' is redundant with condition 'last_temp==last_temp2'.
->
-> Source code is
->
->
->         if (last_temp == last_temp2)
->                 last_temp = last_temp2;
->
-> Suggest code rework.
->
-> Regards
->
-> David Binderman
+On 17-Apr 17:51, Suren Baghdasaryan wrote:
+> On Tue, Apr 2, 2019 at 3:42 AM Patrick Bellasi <patrick.bellasi@arm.com> wrote:
 
-Hi David,
+[...]
 
-Thanks for the report. That was an old version of the function from
-downstream. I've now refactored it and resubmitted it here:
+> > +/*
+> > + * The effective clamp bucket index of a task depends on, by increasing
+> > + * priority:
+> > + * - the task specific clamp value, when explicitly requested from userspace
+> > + * - the system default clamp value, defined by the sysadmin
+> > + */
+> > +static inline struct uclamp_se
+> > +uclamp_eff_get(struct task_struct *p, unsigned int clamp_id)
+> > +{
+> > +       struct uclamp_se uc_req = p->uclamp_req[clamp_id];
+> > +       struct uclamp_se uc_max = uclamp_default[clamp_id];
+> > +
+> > +       /* System default restrictions always apply */
+> > +       if (unlikely(uc_req.value > uc_max.value))
+> > +               return uc_max;
+> > +
+> > +       return uc_req;
+> > +}
+> > +
+> > +static inline unsigned int
+> > +uclamp_eff_bucket_id(struct task_struct *p, unsigned int clamp_id)
+> 
+> This function is not used anywhere AFAIKT.
 
-https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1922871.html
+Right, this is the dual of uclamp_eff_value() but, since we don't
+actually use it in the corrent code, let's remove it and keep only the
+latter.
 
-Regards,
-Amit
+> uclamp_eff_bucket_id() and
+> uclamp_eff_value() look very similar, maybe they can be combined into
+> one function returning struct uclamp_se?
+
+I would prefer not since at the callsites of uclamp_eff_value() we
+actually need just the value.
+
+> > +{
+> > +       struct uclamp_se uc_eff;
+> > +
+> > +       /* Task currently refcounted: use back-annotated (effective) bucket */
+> > +       if (p->uclamp[clamp_id].active)
+> > +               return p->uclamp[clamp_id].bucket_id;
+> > +
+> > +       uc_eff = uclamp_eff_get(p, clamp_id);
+> > +
+> > +       return uc_eff.bucket_id;
+> > +}
+> > +
+> > +unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id)
+> > +{
+> > +       struct uclamp_se uc_eff;
+> > +
+> > +       /* Task currently refcounted: use back-annotated (effective) value */
+> > +       if (p->uclamp[clamp_id].active)
+> > +               return p->uclamp[clamp_id].value;
+> > +
+> > +       uc_eff = uclamp_eff_get(p, clamp_id);
+> > +
+> > +       return uc_eff.value;
+> > +}
+> > +
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
