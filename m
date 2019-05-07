@@ -1,166 +1,194 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [RFC v1 1/3] dt-bindings: soc: add mtk svs dt-bindings
-Date: Tue, 07 May 2019 13:49:03 -0700
-Message-ID: <155726214346.14659.17800352563837760252@swboyd.mtv.corp.google.com>
-References: <20190430112012.4514-1-roger.lu@mediatek.com> <20190430112012.4514-2-roger.lu@mediatek.com> <155665629219.168659.8221738507474891604@swboyd.mtv.corp.google.com> <1556777971.12123.35.camel@mtksdaap41> <155691770027.200842.16164651681407381397@swboyd.mtv.corp.google.com> <1557215457.2147.90.camel@mtksdaap41>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Wed, 8 May 2019 03:50:40 +0530
+Message-ID: <CAHLCerPi4Fd1eoPY=Gvo=FkVTGOt=ummAqHfWBi645Yb0O5-sg@mail.gmail.com>
+References: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1557215457.2147.90.camel@mtksdaap41>
+In-Reply-To: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Roger Lu <roger.lu@mediatek.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>, Angus.Lin@mediatek.com, devicetree@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Andy-YT.Liu@mediatek.com, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org, HenryC.Chen@mediatek.com
+To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, evgreen@chromium.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, ilina@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Roger Lu (2019-05-07 00:50:57)
-> Dear Stephen,
->=20
-> Sorry for the late reply.
->=20
-> On Fri, 2019-05-03 at 14:08 -0700, Stephen Boyd wrote:
-> > Quoting Roger Lu (2019-05-01 23:19:31)
-> > > On Tue, 2019-04-30 at 13:31 -0700, Stephen Boyd wrote:
-> > > > Quoting Roger Lu (2019-04-30 04:20:10)
-> > > > > diff --git a/Documentation/devicetree/bindings/power/mtk-svs.txt =
-b/Documentation/devicetree/bindings/power/mtk-svs.txt
-> > > > > new file mode 100644
-> > > > > index 000000000000..355329db74ba
-> > > > > --- /dev/null
-> > > > > +++ b/Documentation/devicetree/bindings/power/mtk-svs.txt
-> > [..]
-> > > > > +
-> > > > > +               svs_gpu: svs_gpu {
-> > > > > +                       compatible =3D "mediatek,mt8183-svs-gpu";
-> > > > > +                       power-domains =3D <&scpsys MT8183_POWER_D=
-OMAIN_MFG_2D>;
-> > > > > +                       operating-points-v2 =3D <&gpu_opp_table>;
-> > > > > +               };
-> > > >=20
-> > > > It looks like you need multiple OPPs for a single device, because i=
-t has
-> > > > different independent power supplies it wants to associate the OPP
-> > > > tables with?
-> > > Yes. SVS has different controllers inside the hardware in order to
-> > > calculate and optimize different OPP table voltage part.
-> >=20
-> > So is there more than one SVS register region that needs certain devices
-> > to be powered on or at least have their power domain enabled so that the
-> > SVS hardware can read the voltage and adjust accordingly? I should read
-> > the driver I suppose.
-> No, basically, each SVS controller (aka SVS bank) only has one SVS
-> register region that needs to be powered on for the init.
-> In MT8183 SVS case, SVS has four controllers (banks). Each SVS bank
-> needs corresponding power domain to be on for its init.
->=20
-> #SVS bank corresponding power domain
-> svs_cpu_little: Needs CPU-A53 power on for init
-> svs_cpu_big: Needs CPU-A73 power on for init
-> svs_cci: Needs CPU-A53 power on for init
-> svs_gpu: Needs MFG_2D power on for init
->=20
-> P.S SVS driver will use pm_runtime_get_sync() to turn on power before
-> svs bank init and pm_runtime_put_sync() to turn off power power after
-> svs bank init.
+On Tue, Oct 30, 2018 at 10:53 PM Raju P.L.S.S.S.N
+<rplsssn@codeaurora.org> wrote:
+>
+> Add device bindings for cpuidle states for cpu devices.
 
-Ok. How are you making sure that certain CPUs are powered on?
+Raju: Did this patch fall through the cracks? It would be nice to land
+this while Lina works on setting up the infrastructure to do
+hierarchical power domains.
 
->=20
-> >=20
-> > >=20
-> > > > Why can't these OPP tables be attached to the devices that
-> > > > use them, i.e. CPU, GPU, CCI, etc.? Seems odd that those devices do=
-n't
-> > > > have OPP tables that this hardware block can look up somehow.
-> > > Those OPP tables are attached by our DVFS node (please refers below
-> > > patch). SVS just shares with their OPP table and help optimize these =
-OPP
-> > > tables' voltage part.
-> > >=20
-> > > Add cpufreq DTS node to the mt8183 and mt8183-evb
-> > > https://patchwork.kernel.org/patch/10921675/
-> >=20
-> > Cool thanks for the pointer.
-> >=20
-> > >=20
-> > >=20
-> > > > Similarly,
-> > > > the power domains should probably be part of the devices that are u=
-sing
-> > > > them and not these sub-nodes that are mirroring the other hardware
-> > > > blocks in the system?
-> > > Oh. There is a svs controller in GPU power-domain. We need to turn on
-> > > GPU power so that svs controller can work functionally. Therefore, we
-> > > add GPU power-domains in our svs_gpu sub-node.
-> > >=20
-> > >=20
-> >=20
-> > Sorry, I'm not really following what you're saying too closely. I think
-> > I get it but it sounds complicated.
-> >=20
-> > I'm mostly wondering if having properties like svs-gpu =3D <&gpu_node>,
-> > and svs-cci =3D <&cci_node> would work for you. The idea would be to li=
-nk
-> > this hardware block to the nodes that it's going to adjust the OPPs of.
-> > Once you have the node, use some sort of OPP API to get the OPP table
-> > for a device_node and adjust it at runtime for the current OPP.
-> Yes, I understand your idea. Thank you. I share my design purpose and
-> the troubles I encountered when linking other hardware block.
->=20
-> #my design purpose
-> 1. SVS bank doesn't need all the resources in other device node like
-> cci_node. Therefore, I model SVS sub-nodes to declare what svs bank
-> needs.
+> Cc: <devicetree@vger.kernel.org>
+> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+> ---
+> Changes in v2
+>  - Address comments from Doug
+> ---
+> ---
+>  arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
+>  1 file changed, 62 insertions(+)
+>
+> diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> index 0c9a2aa..3a8381e 100644
+> --- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> @@ -96,6 +96,7 @@
+>                         reg = <0x0 0x0>;
+>                         enable-method = "psci";
+>                         next-level-cache = <&L2_0>;
+> +                       cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
 
-Do you mean that there are other properties in the cci_node that the SVS
-hardware block doesn't use? That doesn't sound like a problem to me. I
-view nodes in the SoC bus as all memory mapped IO devices and it sounds
-like SVS is a hardware IP core that's off to the side in the system that
-has some sensors that goes into various other IP blocks in the system.
-It's correct to model the registers and interrupts, etc. as one node for
-the one hardware block that's delivered by the hardware engineers.
+May I suggest using more generic names here instead of C0_CPU_PD and
+move the QC-specific description to the idle-state-name property? C0
+and C4 isn't easy to understand at a glance. Neither is PD and RPD.
 
->=20
-> #troubles - linking other hardware block
-> 1. I don't know how to get cpu devcie after we link CPU node
-> (svs_cpu_little =3D <cpu0>). I use "get_cpu_device(unsigned cpu)" in Linux
-> driver to attain cpuX device generally.
+Something like big_cpu_retention, big_cpu_sleep, little_cpu_retention,
+little_cpu_sleep, cluster_sleep?
+Or big_cpu_idle_0, big_cpu_idle_1, big_cpu_idle_2 for states with
+increasing breakeven times.
 
-This should probably be some sort of list property that points to all
-the CPUs in the little and big clusters. Then the code can iterate
-through the node pointers and look for an OPP table in any of them by
-combining of_cpu_node_to_id() with get_cpu_device()?
+I've commented below on what it might look like.
 
-> 2. Our MT8183 has three gpu-related node as below, svs_gpu need the
-> reference of gpu (OPP table) & gpu_core2 (power-domain MFG_2D) to make
-> sure svs_gpu can init and update gpu OPP table. I don't know how to
-> refer two nodes by one property. Therefore, I model a svs_gpu to declare
-> what it needs.
->=20
-> gpu: mali@13040000 {
->         ...
->         power-domains =3D <&scpsys MT8183_POWER_DOMAIN_MFG_CORE0>;
->         operating-points-v2 =3D <&gpu_opp_table>;
->         ...
-> }
->=20
-> gpu_core1: mali_gpu_core1 {
->         ...
->         power-domains =3D <&scpsys MT8183_POWER_DOMAIN_MFG_CORE1>;
-> };
->=20
-> gpu_core2: mali_gpu_core2 {
->         ...
->         power-domains =3D <&scpsys MT8183_POWER_DOMAIN_MFG_2D>;
-> };
+>                         L2_0: l2-cache {
+>                                 compatible = "cache";
+>                                 next-level-cache = <&L3_0>;
+> @@ -111,6 +112,7 @@
+>                         reg = <0x0 0x100>;
+>                         enable-method = "psci";
+>                         next-level-cache = <&L2_100>;
+> +                       cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+>                         L2_100: l2-cache {
+>                                 compatible = "cache";
+>                                 next-level-cache = <&L3_0>;
+> @@ -123,6 +125,7 @@
+>                         reg = <0x0 0x200>;
+>                         enable-method = "psci";
+>                         next-level-cache = <&L2_200>;
+> +                       cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+>                         L2_200: l2-cache {
+>                                 compatible = "cache";
+>                                 next-level-cache = <&L3_0>;
+> @@ -135,6 +138,7 @@
+>                         reg = <0x0 0x300>;
+>                         enable-method = "psci";
+>                         next-level-cache = <&L2_300>;
+> +                       cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+>                         L2_300: l2-cache {
+>                                 compatible = "cache";
+>                                 next-level-cache = <&L3_0>;
+> @@ -147,6 +151,7 @@
+>                         reg = <0x0 0x400>;
+>                         enable-method = "psci";
+>                         next-level-cache = <&L2_400>;
+> +                       cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+>                         L2_400: l2-cache {
+>                                 compatible = "cache";
+>                                 next-level-cache = <&L3_0>;
+> @@ -159,6 +164,7 @@
+>                         reg = <0x0 0x500>;
+>                         enable-method = "psci";
+>                         next-level-cache = <&L2_500>;
+> +                       cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+>                         L2_500: l2-cache {
+>                                 compatible = "cache";
+>                                 next-level-cache = <&L3_0>;
+> @@ -171,6 +177,7 @@
+>                         reg = <0x0 0x600>;
+>                         enable-method = "psci";
+>                         next-level-cache = <&L2_600>;
+> +                       cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+>                         L2_600: l2-cache {
+>                                 compatible = "cache";
+>                                 next-level-cache = <&L3_0>;
+> @@ -183,11 +190,66 @@
+>                         reg = <0x0 0x700>;
+>                         enable-method = "psci";
+>                         next-level-cache = <&L2_700>;
+> +                       cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+>                         L2_700: l2-cache {
+>                                 compatible = "cache";
+>                                 next-level-cache = <&L3_0>;
+>                         };
+>                 };
+> +
+> +               idle-states {
+> +                       entry-method = "psci";
+> +
+> +                       C0_CPU_PD: c0-power-down {
 
-These three nodes should be combined into one node for the GPU. The
-power domains will need to be referred to by name. Luckily we have
-support for multiple power domains in the kernel now so this should
-work. Let us know if it doesn't work for some reason.
+big_cpu_retention: big-cpu-retention
 
->=20
-> P.S MT8183 GPU won't do upstream. So, there is no patchwork weblink to
-> refer.
+> +                               compatible = "arm,idle-state";
+> +                               arm,psci-suspend-param = <0x40000003>;
+> +                               entry-latency-us = <350>;
+> +                               exit-latency-us = <461>;
+> +                               min-residency-us = <1890>;
+> +                               local-timer-stop;
+> +                               idle-state-name = "power-down";
 
-Sure.
+"big-cpu-power-down"
+
+> +                       };
+> +
+> +                       C0_CPU_RPD: c0-rail-power-down {
+
+big_cpu_sleep: big-cpu-sleep
+
+> +                               compatible = "arm,idle-state";
+> +                               arm,psci-suspend-param = <0x40000004>;
+> +                               entry-latency-us = <360>;
+> +                               exit-latency-us = <531>;
+> +                               min-residency-us = <3934>;
+> +                               local-timer-stop;
+> +                               idle-state-name = "rail-power-down";
+
+"big-cpu-rail-power-down"
+
+> +                       };
+> +
+> +                       C4_CPU_PD: c4-power-down {
+
+little_cpu_retention: little-cpu-retention
+
+> +                               compatible = "arm,idle-state";
+> +                               arm,psci-suspend-param = <0x40000003>;
+> +                               entry-latency-us = <264>;
+> +                               exit-latency-us = <621>;
+> +                               min-residency-us = <952>;
+> +                               local-timer-stop;
+> +                               idle-state-name = "power-down";
+
+"little-cpu-power-down" and so and so forth. You get the idea.
+
+> +                       };
+> +
+> +                       C4_CPU_RPD: c4-rail-power-down {
+> +                               compatible = "arm,idle-state";
+> +                               arm,psci-suspend-param = <0x40000004>;
+> +                               entry-latency-us = <702>;
+> +                               exit-latency-us = <1061>;
+> +                               min-residency-us = <4488>;
+> +                               local-timer-stop;
+> +                               idle-state-name = "rail-power-down";
+> +                       };
+> +
+> +                       CLUSTER_PD: cluster-power-down {
+> +                               compatible = "arm,idle-state";
+> +                               arm,psci-suspend-param = <0x400000F4>;
+> +                               entry-latency-us = <3263>;
+> +                               exit-latency-us = <6562>;
+> +                               min-residency-us = <9987>;
+> +                               local-timer-stop;
+> +                               idle-state-name = "cluster-power-down";
+> +                       };
+> +               };
+>         };
+>
+>         pmu {
+> --
+> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+> of the Code Aurora Forum, hosted by The Linux Foundation.
+>
