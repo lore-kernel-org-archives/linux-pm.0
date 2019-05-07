@@ -1,78 +1,78 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v7 03/13] clk: samsung: add BPLL rate table for Exynos
- 5422 SoC
-Date: Tue, 7 May 2019 11:02:08 +0200
-Message-ID: <6346e0e4-adaa-4eed-d0ae-f62b853c151e@partner.samsung.com>
-References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190506151212eucas1p24110f75fa6ed945f9ae7614fbb8aa13d@eucas1p2.samsung.com>
-        <1557155521-30949-4-git-send-email-l.luba@partner.samsung.com>
-        <1db8ffb8-1038-edbc-81b5-689f8a4c3c6b@samsung.com>
+Subject: Re: [PATCH v3 3/4] Documentation: devicetree: add PPMU events
+ description
+Date: Tue, 7 May 2019 11:05:33 +0200
+Message-ID: <3d221027-292b-7d0d-2510-f230a81f4b52@partner.samsung.com>
+References: <1555681688-19643-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20190419134822eucas1p29c6eff0f500311749b33c4f556123cf0@eucas1p2.samsung.com>
+        <1555681688-19643-4-git-send-email-l.luba@partner.samsung.com>
+        <20190430223629.GA22317@bogus>
+        <1fd44623-4a59-f014-1ae9-a7cc605ad30f@partner.samsung.com>
+        <CAL_JsqJcm9Z6vYFHGyAZ+h3-kmSv6e=3NtO-fjJn3-QT0JoX+w@mail.gmail.com>
+        <97277857-666d-7720-9d85-19120c977682@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1db8ffb8-1038-edbc-81b5-689f8a4c3c6b@samsung.com>
+In-Reply-To: <97277857-666d-7720-9d85-19120c977682@partner.samsung.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org, kyungmin.park@samsung.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rob,
 
-
-On 5/7/19 9:36 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
+On 5/6/19 12:29 PM, Lukasz Luba wrote:
+> Hi Rob,
 > 
-> On 19. 5. 7. 오전 12:11, Lukasz Luba wrote:
->> Add new table rate for BPLL for Exynos5422 SoC supporting Dynamic Memory
->> Controller frequencies for driver's DRAM timings.
+> On 5/2/19 10:24 PM, Rob Herring wrote:
+>> On Thu, May 2, 2019 at 3:52 AM Lukasz Luba 
+>> <l.luba@partner.samsung.com> wrote:
+>>>
+>>> Hi Rob,
+>>>
+>>> On 5/1/19 12:36 AM, Rob Herring wrote:
+>>>> On Fri, Apr 19, 2019 at 03:48:07PM +0200, Lukasz Luba wrote:
+>>>>> Extend the documenation by events description with new 
+>>>>> 'event-data-type'
+>>>>> field. Add example how the event might be defined in DT.
+>>>>
+>>>> Why do we need event types in DT? We don't do this for other h/w 
+>>>> such as
+>>>> ARM PMU.
+>>> In ARM PMU all the events are hard-coded into the driver code i.e. in v7
+>>> arch/arm/kernel/perf_event_v7.c
+>>> and are seen from perf. They are different type and for different
+>>> purpose. The Ecynos PPMU events are not seen in perf, they are
+>>> for internal monitoring and must not be reset by other actors like perf.
+>>> They are used by the 'bus drivers' to made some heuristics and tune the
+>>> internal settings, like frequency.
+>>>
+>>> Chanwoo has written PPMU driver which relies on DT definition.
+>>> The DT events are used by other DT devices by phandle.
 >>
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   drivers/clk/samsung/clk-exynos5420.c | 17 ++++++++++++++++-
->>   1 file changed, 16 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
->> index af62b6d..23c60a5 100644
->> --- a/drivers/clk/samsung/clk-exynos5420.c
->> +++ b/drivers/clk/samsung/clk-exynos5420.c
->> @@ -1335,6 +1335,17 @@ static const struct samsung_pll_rate_table exynos5420_pll2550x_24mhz_tbl[] __ini
->>   	PLL_35XX_RATE(24 * MHZ, 200000000,  200, 3, 3),
->>   };
->>   
->> +static const struct samsung_pll_rate_table exynos5422_bpll_rate_table[] = {
->> +	PLL_35XX_RATE(24 * MHZ, 825000000, 275, 4, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 728000000, 182, 3, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 633000000, 211, 4, 1),
->> +	PLL_35XX_RATE(24 * MHZ, 543000000, 181, 2, 2),
->> +	PLL_35XX_RATE(24 * MHZ, 413000000, 413, 6, 2),
->> +	PLL_35XX_RATE(24 * MHZ, 275000000, 275, 3, 3),
->> +	PLL_35XX_RATE(24 * MHZ, 206000000, 206, 3, 3),
->> +	PLL_35XX_RATE(24 * MHZ, 165000000, 110, 2, 3),
->> +};
->> +
->>   static const struct samsung_pll_rate_table exynos5420_epll_24mhz_tbl[] = {
->>   	PLL_36XX_RATE(24 * MHZ, 600000000U, 100, 2, 1, 0),
->>   	PLL_36XX_RATE(24 * MHZ, 400000000U, 200, 3, 2, 0),
->> @@ -1477,9 +1488,13 @@ static void __init exynos5x_clk_init(struct device_node *np,
->>   		exynos5x_plls[apll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->>   		exynos5x_plls[epll].rate_table = exynos5420_epll_24mhz_tbl;
->>   		exynos5x_plls[kpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->> -		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->>   	}
->>   
->> +	if (soc == EXYNOS5420)
->> +		exynos5x_plls[bpll].rate_table = exynos5420_pll2550x_24mhz_tbl;
->> +	else
->> +		exynos5x_plls[bpll].rate_table = exynos5422_bpll_rate_table;
->> +
->>   	samsung_clk_register_pll(ctx, exynos5x_plls, ARRAY_SIZE(exynos5x_plls),
->>   					reg_base);
->>   	samsung_clk_register_fixed_rate(ctx, exynos5x_fixed_rate_clks,
->>
+>> How is that done? I don't see anything in the binding for that.
+> Here are the DT devices and how they are pinned together:
+> - declared devfreq events:
+> https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412-ppmu-common.dtsi 
 > 
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-Thank you, added to the patch.
+> - devfreq events pinned to the bus device:
+> https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412-odroid-common.dtsi#L107 
+> 
+> - the bus device itself:
+> https://elixir.bootlin.com/linux/latest/source/arch/arm/boot/dts/exynos4412.dtsi#L457 
+> 
+> 
+> Regards,
+> Lukasz
+> 
+>>
+>> Rob
+>>
+>>
+Can I send the next version of the patch set, which has Chanwoo's
+suggestions, or do you have some objections to this PPMU entries?
 
 Regards,
 Lukasz
