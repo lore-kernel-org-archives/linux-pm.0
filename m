@@ -2,105 +2,73 @@ Return-Path: <SRS0=VliY=TH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E71F5C04A6B
-	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 00:24:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9799DC04A6B
+	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 02:55:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C3D88206A3
-	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 00:24:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B66E20835
+	for <linux-pm@archiver.kernel.org>; Tue,  7 May 2019 02:55:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1557197714;
+	bh=Y2FkhGgE1w4YteJRJs4vtHEcnFdDaNELYViYROZqNiw=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
+	b=WuQMatM9WjF3u+gY9+aIwuUVpdgeSco4y5fW1ex+f475eEFe/SoMLUyIXa96jWBzi
+	 fFuz+fL5JsWhFJAznS0Iyn/opO1STm8W2sQyiMUo7SfsZ6S+KQfHNW6oKQXvv+h56u
+	 y4X9YSXaR7iTsqZ/Oly2YtGDzCHS6GwPbV6kB8fI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726160AbfEGAYZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 May 2019 20:24:25 -0400
-Received: from mga03.intel.com ([134.134.136.65]:13209 "EHLO mga03.intel.com"
+        id S1726860AbfEGCzE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 May 2019 22:55:04 -0400
+Received: from mail.kernel.org ([198.145.29.99]:46850 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726073AbfEGAYZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 6 May 2019 20:24:25 -0400
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 06 May 2019 17:24:24 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,439,1549958400"; 
-   d="scan'208";a="171510161"
-Received: from unknown (HELO [10.255.29.152]) ([10.255.29.152])
-  by fmsmga001.fm.intel.com with ESMTP; 06 May 2019 17:24:23 -0700
-Message-ID: <1557188662.5080.1.camel@intel.com>
-Subject: Re: Missing patches for thermal for 5.2
-From:   Zhang Rui <rui.zhang@intel.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Eduardo Valentin <edubezval@gmail.com>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM mailing list <linux-pm@vger.kernel.org>
-Date:   Tue, 07 May 2019 08:24:22 +0800
-In-Reply-To: <b3fbf910-d073-1dd9-649c-eea370ae71f7@linaro.org>
-References: <b3fbf910-d073-1dd9-649c-eea370ae71f7@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.18.5.2-0ubuntu3.2 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1726844AbfEGCzD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 6 May 2019 22:55:03 -0400
+Subject: Re: [GIT PULL] ACPI updates for v5.2-rc1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1557197703;
+        bh=Y2FkhGgE1w4YteJRJs4vtHEcnFdDaNELYViYROZqNiw=;
+        h=From:In-Reply-To:References:Date:To:Cc:From;
+        b=0TjEVvomeTnpg8d5Nsr5cAwdkkH5xJMd4q2y0mGXiv3nVekyULtJMZKcSDf49YWsx
+         0PG35EDqCmDjZCmns8hBcP1Xk2g5uv9QlUBVm6Y7M0ePvMNFldXy64ViU7BFWugzpP
+         Jfmt8ZAYxxsZkwbQXDhAZSuApBwkD92g3d2COe4U=
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0hW+jd7r5J5=XyMM2rk5oHQrrP70_LBEVdSMTGsd=zxNw@mail.gmail.com>
+References: <CAJZ5v0hW+jd7r5J5=XyMM2rk5oHQrrP70_LBEVdSMTGsd=zxNw@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0hW+jd7r5J5=XyMM2rk5oHQrrP70_LBEVdSMTGsd=zxNw@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+ acpi-5.2-rc1
+X-PR-Tracked-Commit-Id: 10b4768b27a0b8f9459570723ecb1809f4d707e0
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 59df1c2bdecb0d1aaadfb8533df4bea528ee4952
+Message-Id:
+ <155719770324.24898.13259466001772450447.pr-tracker-bot@kernel.org>
+Date:   Tue, 07 May 2019 02:55:03 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190507002422.kitsUc20NAuH0pMC4kEI1c4EgjB-AZY8X5a89v3mD98@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190507025503.Gao063olFvWdvA7BIlAKLVyg5GQLr4UL1wuMk-NW6gs@z>
 
-On 一, 2019-05-06 at 15:17 +0200, Daniel Lezcano wrote:
-> Hi Eduardo, Zhang,
-> 
-> AFAICS, the following patches are missing for 5.2:
-> 
-> 
-> [PATCH -next] mlxsw: Remove obsolete dependency on THERMAL=m
-> 
-This one is already in my tree.
-https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git/commit
-/?h=next&id=980d43f24d59491aa1c5552171454ac25fb86ea2
+The pull request you sent on Mon, 6 May 2019 13:12:01 +0200:
 
-And I think the below patches should go through Eduardo' tree.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.2-rc1
 
-thanks,
-rui
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/59df1c2bdecb0d1aaadfb8533df4bea528ee4952
 
-> [PATCH v3 1/3] thermal: rockchip: fix up the tsadc pinctrl setting
-> error
-> 
-> [PATCH v3 2/3] dt-bindings: rockchip-thermal: Support the PX30 SoC
-> compatible
-> 
-> [PATCH v3 3/3] thermal: rockchip: Support the PX30 SoC in thermal
-> driver
-> 
-> [PATCH] thermal: cpu_cooling: Actually trace CPU load in
-> thermal_power_cpu_get_power
-> 
-> [PATCH] thermal/drivers/cpu_cooling: Remove pointless test in
-> power2state()
-> 
-> [PATCH - resend] thermal/drivers/cpu_cooling: Fixup the header and
-> copyright
-> 
-> [PATCH - resend 2/3] thermal/drivers/cpu_cooling: Add Software
-> Package
-> Data Exchange (SPDX)
-> 
-> [PATCH - resend 3/3] thermal/drivers/cpu_cooling: Remove pointless
-> field
-> 
-> 
-> 
-> This one is pending:
-> 
-> [PATCH] thermal/drivers/of: Add a get_temp_id callback function
-> 
-> The series [PATCH v3 00/13] QorIQ TMU multi-sensor and HWMON support
-> depends on it.
-> 
-> Hope that helps.
-> 
->   -- Daniel
-> 
-> 
-> 
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
