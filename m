@@ -1,216 +1,119 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] cpuidle-powernv : forced wakeup for stop lite states
-Date: Wed, 8 May 2019 09:25:50 +0530
-Message-ID: <20190508035550.GA8066@in.ibm.com>
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH 0/1] Forced-wakeup for stop lite states on Powernv
+Date: Wed, 08 May 2019 14:59:07 +1000
+Message-ID: <1557291178.ow4spjzq5t.astroid@bobo.none>
 References: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
- <20190422063231.51043-2-huntbag@linux.vnet.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190422063231.51043-2-huntbag@linux.vnet.ibm.com>
+In-Reply-To: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au, ego@linux.vnet.ibm.com, dja@axtens.net
+To: Abhishek Goel <huntbag@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: daniel.lezcano@linaro.org, dja@axtens.net, ego@linux.vnet.ibm.com, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi Abhishek,
-
-Apologies for this delayed review.
-
-On Mon, Apr 22, 2019 at 01:32:31AM -0500, Abhishek Goel wrote:
+Abhishek Goel's on April 22, 2019 4:32 pm:
 > Currently, the cpuidle governors determine what idle state a idling CPU
 > should enter into based on heuristics that depend on the idle history on
 > that CPU. Given that no predictive heuristic is perfect, there are cases
-> where the governor predicts a shallow idle state, hoping that the CPU will
+> where the governor predicts a shallow idle state, hoping that the CPU wil=
+l
 > be busy soon. However, if no new workload is scheduled on that CPU in the
 > near future, the CPU will end up in the shallow state.
-> 
+>=20
+> Motivation
+> ----------
 > In case of POWER, this is problematic, when the predicted state in the
 > aforementioned scenario is a lite stop state, as such lite states will
 > inhibit SMT folding, thereby depriving the other threads in the core from
 > using the core resources.
-> 
+>=20
 > So we do not want to get stucked in such states for longer duration. To
-
-s/stucked/stuck
-
 > address this, the cpuidle-core can queue timer to correspond with the
-
-Actually we are queuing the timer in the driver and not the core!
-
 > residency value of the next available state. This timer will forcefully
-> wakeup the cpu. Few such iterations will essentially train the governor to
+> wakeup the cpu. Few such iterations will essentially train the governor t=
+o
 > select a deeper state for that cpu, as the timer here corresponds to the
-> next available cpuidle state residency. Cpu will be kicked out of the lite
+> next available cpuidle state residency. Cpu will be kicked out of the lit=
+e
 > state and end up in a non-lite state.
+>=20
+> Experiment
+> ----------
+> I performed experiments for three scenarios to collect some data.
+>=20
+> case 1 :
+> Without this patch and without tick retained, i.e. in a upstream kernel,
+> It would spend more than even a second to get out of stop0_lite.
+>=20
+> case 2 : With tick retained in a upstream kernel -
+>=20
+> Generally, we have a sched tick at 4ms(CONF_HZ =3D 250). Ideally I expect=
+ed
+> it to take 8 sched tick to get out of stop0_lite. Experimentally,
+> observation was
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+> sample          min            max           99percentile
+> 20              4ms            12ms          4ms
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> It would take atleast one sched tick to get out of stop0_lite.
+>=20
+> case 2 :  With this patch (not stopping tick, but explicitly queuing a
+>           timer)
+>=20
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> sample          min             max             99percentile
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> 20              144us           192us           144us
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>=20
+> In this patch, we queue a timer just before entering into a stop0_lite
+> state. The timer fires at (residency of next available state + exit laten=
+cy
+> of next available state * 2). Let's say if next state(stop0) is available
+> which has residency of 20us, it should get out in as low as (20+2*2)*8
+> [Based on the forumla (residency + 2xlatency)*history length] microsecond=
+s
+> =3D 192us. Ideally we would expect 8 iterations, it was observed to get o=
+ut
+> in 6-7 iterations. Even if let's say stop2 is next available state(stop0
+> and stop1 both are unavailable), it would take (100+2*10)*8 =3D 960us to =
+get
+> into stop2.
+>=20
+> So, We are able to get out of stop0_lite generally in 150us(with this
+> patch) as compared to 4ms(with tick retained). As stated earlier, we do n=
+ot
+> want to get stuck into stop0_lite as it inhibits SMT folding for other
+> sibling threads, depriving them of core resources. Current patch is using
+> forced-wakeup only for stop0_lite, as it gives performance benefit(primar=
+y
+> reason) along with lowering down power consumption. We may extend this
+> model for other states in future.
 
+I still have to wonder, between our snooze loop and stop0, what does
+stop0_lite buy us.
 
-Coming to think of it, this is also the probelm that we have solved
-for the snooze state. So, perhaps we can reuse that code to determine
-what the timeout value should be for these idle states in which the
-CPU shouldn't be remaining for a long time.
+That said, the problem you're solving here is a generic one that all
+stop states have, I think. Doesn't the same thing apply going from
+stop0 to stop5? You might under estimate the sleep time and lose power
+savings and therefore performance there too. Shouldn't we make it
+generic for all stop states?
 
+Thanks,
+Nick
 
-> 
-> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/opal-api.h |  1 +
->  drivers/cpuidle/cpuidle-powernv.c   | 71 ++++++++++++++++++++++++++++-
->  2 files changed, 71 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index 870fb7b23..735dec731 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -226,6 +226,7 @@
->   */
-> 
->  #define OPAL_PM_TIMEBASE_STOP		0x00000002
-> +#define OPAL_PM_LOSE_USER_CONTEXT	0x00001000
->  #define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
->  #define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
->  #define OPAL_PM_NAP_ENABLED		0x00010000
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 84b1ebe21..30b877962 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -15,6 +15,7 @@
->  #include <linux/clockchips.h>
->  #include <linux/of.h>
->  #include <linux/slab.h>
-> +#include <linux/hrtimer.h>
-> 
->  #include <asm/machdep.h>
->  #include <asm/firmware.h>
-> @@ -43,6 +44,40 @@ struct stop_psscr_table {
-> 
->  static struct stop_psscr_table stop_psscr_table[CPUIDLE_STATE_MAX] __read_mostly;
-> 
-> +DEFINE_PER_CPU(struct hrtimer, forced_wakeup_timer);
-> +
-> +static int forced_wakeup_time_compute(struct cpuidle_device *dev,
-> +				      struct cpuidle_driver *drv,
-> +				      int index)
-> +{
-> +	int i, timeout_us = 0;
-> +
-> +	for (i = index + 1; i < drv->state_count; i++) {
-> +		if (drv->states[i].disabled || dev->states_usage[i].disable)
-> +			continue;
-> +		timeout_us = drv->states[i].target_residency +
-> +				2 * drv->states[i].exit_latency;
-> +		break;
-> +	}
-> +
-
-This code is similar to the one in get_snooze_timeout(), except for
-the inclusion of exit_latency in the timeout. What will we miss if we
-won't consider exit_latency?
-
-Could you try to see if you can club the two ?
-
-
-> +	return timeout_us;
-> +}
-> +
-> +enum hrtimer_restart forced_wakeup_hrtimer_callback(struct hrtimer *hrtimer)
-> +{
-> +	return HRTIMER_NORESTART;
-> +}
-> +
-> +static void forced_wakeup_timer_init(int cpu, struct cpuidle_driver *drv)
-> +{
-> +	struct hrtimer *cpu_forced_wakeup_timer = &per_cpu(forced_wakeup_timer,
-> +								cpu);
-> +
-> +	hrtimer_init(cpu_forced_wakeup_timer, CLOCK_MONOTONIC,
-> +			HRTIMER_MODE_REL);
-> +	cpu_forced_wakeup_timer->function = forced_wakeup_hrtimer_callback;
-> +}
-> +
->  static u64 default_snooze_timeout __read_mostly;
->  static bool snooze_timeout_en __read_mostly;
-> 
-> @@ -103,6 +138,28 @@ static int snooze_loop(struct cpuidle_device *dev,
->  	return index;
->  }
-> 
-> +static int stop_lite_loop(struct cpuidle_device *dev,
-> +			  struct cpuidle_driver *drv,
-> +			  int index)
-> +{
-> +	int timeout_us;
-> +	struct hrtimer *this_timer = &per_cpu(forced_wakeup_timer, dev->cpu);
-> +
-> +	timeout_us = forced_wakeup_time_compute(dev, drv, index);
-> +
-> +	if (timeout_us > 0)
-> +		hrtimer_start(this_timer, ns_to_ktime(timeout_us * 1000),
-> +						HRTIMER_MODE_REL_PINNED);
-> +
-> +	power9_idle_type(stop_psscr_table[index].val,
-> +			 stop_psscr_table[index].mask);
-> +
-> +	if (unlikely(hrtimer_is_queued(this_timer)))
-> +		hrtimer_cancel(this_timer);
-> +
-> +	return index;
-> +}
-> +
->  static int nap_loop(struct cpuidle_device *dev,
->  			struct cpuidle_driver *drv,
->  			int index)
-> @@ -190,7 +247,7 @@ static int powernv_cpuidle_cpu_dead(unsigned int cpu)
->   */
->  static int powernv_cpuidle_driver_init(void)
->  {
-> -	int idle_state;
-> +	int idle_state, cpu;
->  	struct cpuidle_driver *drv = &powernv_idle_driver;
-> 
->  	drv->state_count = 0;
-> @@ -224,6 +281,9 @@ static int powernv_cpuidle_driver_init(void)
-> 
->  	drv->cpumask = (struct cpumask *)cpu_present_mask;
-> 
-> +	for_each_cpu(cpu, drv->cpumask)
-> +		forced_wakeup_timer_init(cpu, drv);
-> +
->  	return 0;
->  }
-> 
-> @@ -299,6 +359,7 @@ static int powernv_add_idle_states(void)
->  	for (i = 0; i < dt_idle_states; i++) {
->  		unsigned int exit_latency, target_residency;
->  		bool stops_timebase = false;
-> +		bool lose_user_context = false;
->  		struct pnv_idle_states_t *state = &pnv_idle_states[i];
-> 
->  		/*
-> @@ -324,6 +385,9 @@ static int powernv_add_idle_states(void)
->  		if (has_stop_states && !(state->valid))
->  				continue;
-> 
-> +		if (state->flags & OPAL_PM_LOSE_USER_CONTEXT)
-> +			lose_user_context = true;
-> +
->  		if (state->flags & OPAL_PM_TIMEBASE_STOP)
->  			stops_timebase = true;
-> 
-> @@ -332,6 +396,11 @@ static int powernv_add_idle_states(void)
->  			add_powernv_state(nr_idle_states, "Nap",
->  					  CPUIDLE_FLAG_NONE, nap_loop,
->  					  target_residency, exit_latency, 0, 0);
-> +		} else if (has_stop_states && !lose_user_context) {
-> +			add_powernv_state(nr_idle_states, state->name,
-> +					  CPUIDLE_FLAG_NONE, stop_lite_loop,
-> +					  target_residency, exit_latency,
-> +					  state->psscr_val, state->psscr_mask);
->  		} else if (has_stop_states && !stops_timebase) {
->  			add_powernv_state(nr_idle_states, state->name,
->  					  CPUIDLE_FLAG_NONE, stop_loop,
-> -- 
-> 2.17.1
-> 
+=
