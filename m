@@ -1,52 +1,91 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v7 07/13] dt-bindings: memory-controllers: add
- Exynos5422 DMC device description
-Date: Wed, 8 May 2019 11:45:29 +0200
-Message-ID: <ab489925-040c-815c-2aef-50ed0ee6cd6c@partner.samsung.com>
-References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190506151215eucas1p2c57147edac5671c5ec9a223efb6b4adc@eucas1p2.samsung.com>
-        <1557155521-30949-8-git-send-email-l.luba@partner.samsung.com>
-        <20190507170422.GA25179@bogus>
-        <CAJKOXPdacKBrKeCyCaE7VS8-NOR4Oo27XY7rx20P2ORY2vBBSg@mail.gmail.com>
+Subject: Re: [PATCH v7 11/13] ARM: dts: exynos: add syscon to clock
+ compatible
+Date: Wed, 8 May 2019 11:50:33 +0200
+Message-ID: <8d02ef2c-c5dd-6a72-9638-d858df3ea16d@partner.samsung.com>
+References: <CGME20190506151219eucas1p2feab00f7b7c1c5fdd5614423fb38eae2@eucas1p2.samsung.com>
+        <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
+        <1557155521-30949-12-git-send-email-l.luba@partner.samsung.com>
+        <CAJKOXPd6GKVPixMiG37SoHiswaih-3S+o7QJn=WbuqdZzu-s_w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPdacKBrKeCyCaE7VS8-NOR4Oo27XY7rx20P2ORY2vBBSg@mail.gmail.com>
+In-Reply-To: <CAJKOXPd6GKVPixMiG37SoHiswaih-3S+o7QJn=WbuqdZzu-s_w@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= <b.zolnierkie@samsung.com>, kgene@kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, kyungmin.park@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
 
-On 5/8/19 9:19 AM, Krzysztof Kozlowski wrote:
-> On Tue, 7 May 2019 at 19:04, Rob Herring <robh@kernel.org> wrote:
->>> +- devfreq-events : phandles of the PPMU events used by the controller.
->>> +- samsung,syscon-chipid : phandle of the ChipID used by the controller.
->>> +- samsung,syscon-clk : phandle of the clock register set used by the controller.
+On 5/8/19 9:22 AM, Krzysztof Kozlowski wrote:
+> On Mon, 6 May 2019 at 17:12, Lukasz Luba <l.luba@partner.samsung.com> wrote:
 >>
->> Looks like a hack. Can't you get this from the clocks property? What is
->> this for?
+>> In order get the clock by phandle and use it with regmap it needs to be
+>> compatible with syscon. The DMC driver uses two registers from clock
+>> register set and needs the regmap of them.
+>>
+>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>> ---
+>>   arch/arm/boot/dts/exynos5800.dtsi | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm/boot/dts/exynos5800.dtsi b/arch/arm/boot/dts/exynos5800.dtsi
+>> index 57d3b31..0a2b328 100644
+>> --- a/arch/arm/boot/dts/exynos5800.dtsi
+>> +++ b/arch/arm/boot/dts/exynos5800.dtsi
+>> @@ -17,7 +17,7 @@
+>>   };
+>>
+>>   &clock {
+>> -       compatible = "samsung,exynos5800-clock";
+>> +       compatible = "samsung,exynos5800-clock", "syscon";
 > 
-> Hi Rob,
-> 
-> Lukasz uses these two syscon regmaps to read certain registers. For
-> chipid he reads it to check the size of attached memory (only 2 GB
-> version is supported). This indeed looks like a hack. However the
-> second regmap (clk) is needed to get the timing data from registers
-> from DMC clock driver address space. These are registers with memory
-> timing so their data is not exposed anyway in common clk framework.
-> 
-> Best regards,
-> Krzysztof
+> What about Exynos5420 DTSI?
+OK, I will also add it to 5420 dtsi.
+--------------------------8<------------------------------------------
+diff --git a/arch/arm/boot/dts/exynos5420.dtsi 
+b/arch/arm/boot/dts/exynos5420.dtsi
+index aaff158..d9203f0 100644
+--- a/arch/arm/boot/dts/exynos5420.dtsi
++++ b/arch/arm/boot/dts/exynos5420.dtsi
+@@ -173,7 +173,7 @@
+                 };
 
-Thank you Krzysztof for a fast response. I have also responded to Rob.
-I wouldn't call accessing chipid registers as a hack, though. The DMC
-registers do not contain information about the memory chip since it is
-in phase of production the board not the chip. Thus, chipid regs (which
-loads from e-fuses) are best place to put information about memory
-type/size.
+                 clock: clock-controller@10010000 {
+-                       compatible = "samsung,exynos5420-clock";
++                       compatible = "samsung,exynos5420-clock", "syscon";
+                         reg = <0x10010000 0x30000>;
+                         #clock-cells = <1>;
+                 };
+diff --git a/arch/arm/boot/dts/exynos5800.dtsi 
+b/arch/arm/boot/dts/exynos5800.dtsi
+index 57d3b31..0a2b328 100644
+--- a/arch/arm/boot/dts/exynos5800.dtsi
++++ b/arch/arm/boot/dts/exynos5800.dtsi
+@@ -17,7 +17,7 @@
+  };
+
+  &clock {
+-       compatible = "samsung,exynos5800-clock";
++       compatible = "samsung,exynos5800-clock", "syscon";
+  };
+----------------------------->8-----------------------------------
+
+Can I add your ack after that?
 
 Regards,
 Lukasz
+> 
+> Best regards,
+> Krzysztof
+> 
+>>   };
+>>
+>>   &cluster_a15_opp_table {
+>> --
+>> 2.7.4
+>>
+> 
+> 
