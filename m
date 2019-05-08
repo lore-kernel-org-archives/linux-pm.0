@@ -1,114 +1,56 @@
 From: Michael Kao <michael.kao@mediatek.com>
-Subject: Re: [PATCH 2/8] arm64: dts: mt8183: add/update dynamic power
- coefficients
-Date: Wed, 8 May 2019 20:27:07 +0800
-Message-ID: <1557318427.29634.8.camel@mtksdccf07>
+Subject: Re: [PATCH 3/8] arm64: dts: mt8183: Add #cooling-cells to CPU nodes
+Date: Wed, 8 May 2019 20:29:57 +0800
+Message-ID: <1557318597.29634.9.camel@mtksdccf07>
 References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
-         <1556793795-25204-3-git-send-email-michael.kao@mediatek.com>
-         <CAJMQK-jujDXt18M8610G4GpHdrikTD0ZZG_=C2YTt63UfxuHuQ@mail.gmail.com>
+ <1556793795-25204-4-git-send-email-michael.kao@mediatek.com>
+ <1557120332.13225.2.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJMQK-jujDXt18M8610G4GpHdrikTD0ZZG_=C2YTt63UfxuHuQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Hsin-Yi Wang <hsinyi@chromium.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, jamesjj.liao@mediatek.com, devicetree@vger.kernel.org, louis.yu@mediatek.com, dawei.chien@mediatek.com, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, roger.lu@mediatek.com, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, fan.chen@mediatek.com, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1557120332.13225.2.camel@mtksdaap41>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eddie Huang <eddie.huang@mediatek.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, JamesJJ Liao =?UTF-8?Q?=28=E5=BB=96=E5=BB=BA=E6=99=BA=29?= <jamesjj.liao@mediatek.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Louis Yu =?UTF-8?Q?=28=E6=B8=B8=E6=94=BF=E9=8C=95=29?= <louis.yu@mediatek.com>, Dawei Chien =?UTF-8?Q?=28=E9=8C=A2=E5=A4=A7=E8=A1=9B=29?= <Dawei.Chien@mediatek.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Roger Lu =?UTF-8?Q?=28=E9=99=B8=E7=91=9E=E5=82=91=29?= <Roger.Lu@mediatek.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Fan Chen =?UTF-8?Q?=28=E9=99=B3=E5=87=A1=29?= <fan.chen@mediatek.com>, Rob Herring <robh+dt@kernel.org>, "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2019-05-03 at 15:16 +0800, Hsin-Yi Wang wrote:
-> On Thu, May 2, 2019 at 10:43 AM michael.kao <michael.kao@mediatek.com> wrote:
-> >
-> > Add dynamic power coefficients for all cores and update those of
-> > CPU0 and CPU4.
-> >
-> > Signed-off-by: Michael.Kao <michael.kao@mediatek.com>
+On Mon, 2019-05-06 at 13:25 +0800, Eddie Huang wrote:
+> Hi Michael,
+> 
+> On Thu, 2019-05-02 at 18:43 +0800, michael.kao wrote:
+> > The #cooling-cells property needs to be specified to allow a CPU
+> > to be used as cooling device.
+> > 
+> > Signed-off-by: michael.kao <Michael.Kao@mediatek.com>
 > > ---
-> >  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 16 ++++++++++++++++
-> >  1 file changed, 16 insertions(+)
-> >
+> >  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
 > > diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > index b92116f..5668fb8 100644
+> > index 5668fb8..95f1d7b 100644
 > > --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
 > > +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> > @@ -58,6 +58,8 @@
-> >                         compatible = "arm,cortex-a53";
-> >                         reg = <0x000>;
-> >                         enable-method = "psci";
-> > +                       dynamic-power-coefficient = <84>;
-> > +                       #cooling-cells = <2>;
-> Should this line be in [3/8] arm64: dts: mt8183: Add #cooling-cells to
-> CPU nodes?
+> > @@ -11,6 +11,8 @@
+> >  #include <dt-bindings/power/mt8183-power.h>
+> >  #include <dt-bindings/reset-controller/mt8183-resets.h>
+> >  #include "mt8183-pinfunc.h"
+> > +#include <dt-bindings/thermal/thermal.h>
+> > +
+> >  / {
+> >  	compatible = "mediatek,mt8183";
+> >  	interrupt-parent = <&sysirq>;
 > 
-I will fix the mistake at v2 patch list.
-> >                 };
-> >
-> >                 cpu1: cpu@1 {
-> > @@ -65,6 +67,8 @@
-> >                         compatible = "arm,cortex-a53";
-> >                         reg = <0x001>;
-> >                         enable-method = "psci";
-> > +                       dynamic-power-coefficient = <84>;
-> > +                       #cooling-cells = <2>;
-> >                 };
-> >
-> >                 cpu2: cpu@2 {
-> > @@ -72,6 +76,8 @@
-> >                         compatible = "arm,cortex-a53";
-> >                         reg = <0x002>;
-> >                         enable-method = "psci";
-> > +                       dynamic-power-coefficient = <84>;
-> > +                       #cooling-cells = <2>;
-> >                 };
-> >
-> >                 cpu3: cpu@3 {
-> > @@ -79,6 +85,8 @@
-> >                         compatible = "arm,cortex-a53";
-> >                         reg = <0x003>;
-> >                         enable-method = "psci";
-> > +                       dynamic-power-coefficient = <84>;
-> > +                       #cooling-cells = <2>;
-> >                 };
-> >
-> >                 cpu4: cpu@100 {
-> > @@ -86,6 +94,8 @@
-> >                         compatible = "arm,cortex-a73";
-> >                         reg = <0x100>;
-> >                         enable-method = "psci";
-> > +                       dynamic-power-coefficient = <211>;
-> > +                       #cooling-cells = <2>;
-> >                 };
-> >
-> >                 cpu5: cpu@101 {
-> > @@ -93,6 +103,8 @@
-> >                         compatible = "arm,cortex-a73";
-> >                         reg = <0x101>;
-> >                         enable-method = "psci";
-> > +                       dynamic-power-coefficient = <211>;
-> > +                       #cooling-cells = <2>;
-> >                 };
-> >
-> >                 cpu6: cpu@102 {
-> > @@ -100,6 +112,8 @@
-> >                         compatible = "arm,cortex-a73";
-> >                         reg = <0x102>;
-> >                         enable-method = "psci";
-> > +                       dynamic-power-coefficient = <211>;
-> > +                       #cooling-cells = <2>;
-> >                 };
-> >
-> >                 cpu7: cpu@103 {
-> > @@ -107,6 +121,8 @@
-> >                         compatible = "arm,cortex-a73";
-> >                         reg = <0x103>;
-> >                         enable-method = "psci";
-> > +                       dynamic-power-coefficient = <211>;
-> > +                       #cooling-cells = <2>;
-> >                 };
-> >         };
-> >
+> It seems this patch don't have #cooling-cells but in your 2/8 patch in
+> this series
 > 
-> _______________________________________________
-> Linux-mediatek mailing list
-> Linux-mediatek@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-mediatek
+> 
+I will fix the mistake at v2 patch list. 
