@@ -1,74 +1,57 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 10/22] powercap/intel_rapl: Support multi-die/package
-Date: Wed, 8 May 2019 15:45:24 -0400
-Message-ID: <CAJvTdKndWcuq+hbJS+ksnUeqqzt-tgXxUYikgLqWeUYG1PuuRA@mail.gmail.com>
-References: <6f53f0e494d743c79e18f6e3a98085711e6ddd0c.1557177585.git.len.brown@intel.com>
- <9f6958c231347e639e322de8d8c3de6859559345.1557177585.git.len.brown@intel.com> <20190507121459.GL2623@hirez.programming.kicks-ass.net>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v7 07/13] dt-bindings: memory-controllers: add Exynos5422
+ DMC device description
+Date: Wed, 8 May 2019 15:35:15 -0500
+Message-ID: <CAL_JsqJSbi5jNZSRhiE-h74DdbsgM7O+tqP9HOf037pyN7TbFA@mail.gmail.com>
+References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
+ <CGME20190506151215eucas1p2c57147edac5671c5ec9a223efb6b4adc@eucas1p2.samsung.com>
+ <1557155521-30949-8-git-send-email-l.luba@partner.samsung.com>
+ <20190507170422.GA25179@bogus> <CAJKOXPdacKBrKeCyCaE7VS8-NOR4Oo27XY7rx20P2ORY2vBBSg@mail.gmail.com>
+ <ab489925-040c-815c-2aef-50ed0ee6cd6c@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190507121459.GL2623@hirez.programming.kicks-ass.net>
+In-Reply-To: <ab489925-040c-815c-2aef-50ed0ee6cd6c@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: X86 ML <x86@kernel.org>, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Lukasz Luba <l.luba@partner.samsung.com>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kees Cook <keescook@chromium.org>, Tony Lindgren <tony@atomide.com>, Joerg Roedel <jroedel@suse.de>, Thierry Reding <treding@nvidia.com>, Dmitry Osipenko <digetx@gmail.com>, willy.mh.wolff.ml
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 7, 2019 at 8:15 AM Peter Zijlstra <peterz@infradead.org> wrote:
+On Wed, May 8, 2019 at 4:45 AM Lukasz Luba <l.luba@partner.samsung.com> wrote:
 >
-> On Mon, May 06, 2019 at 05:26:05PM -0400, Len Brown wrote:
-> > From: Zhang Rui <rui.zhang@intel.com>
+>
+> On 5/8/19 9:19 AM, Krzysztof Kozlowski wrote:
+> > On Tue, 7 May 2019 at 19:04, Rob Herring <robh@kernel.org> wrote:
+> >>> +- devfreq-events : phandles of the PPMU events used by the controller.
+> >>> +- samsung,syscon-chipid : phandle of the ChipID used by the controller.
+> >>> +- samsung,syscon-clk : phandle of the clock register set used by the controller.
+> >>
+> >> Looks like a hack. Can't you get this from the clocks property? What is
+> >> this for?
 > >
-> > RAPL "package" domains are actually implemented in hardware per-die.
-> > Thus, the new multi-die/package systems have mulitple domains
-> > within each physical package.
+> > Hi Rob,
 > >
-> > Update the intel_rapl driver to be "die aware" -- exporting multiple
-> > domains within a single package, when present.
-> > No change on single die/package systems.
+> > Lukasz uses these two syscon regmaps to read certain registers. For
+> > chipid he reads it to check the size of attached memory (only 2 GB
+> > version is supported). This indeed looks like a hack. However the
+> > second regmap (clk) is needed to get the timing data from registers
+> > from DMC clock driver address space. These are registers with memory
+> > timing so their data is not exposed anyway in common clk framework.
+
+Okay, please just explain what your accessing. Consider adding the
+offset as a cell in case stuff moves around on another chip.
+
 > >
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > Signed-off-by: Len Brown <len.brown@intel.com>
-> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: linux-pm@vger.kernel.org
-> > ---
-> >  drivers/powercap/intel_rapl.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> > index 3c3c0c23180b..9202dbcef96d 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
-> >  /* caller to ensure CPU hotplug lock is held */
-> >  static struct rapl_package *rapl_find_package_domain(int cpu)
-> >  {
-> > -     int id = topology_physical_package_id(cpu);
-> > +     int id = topology_logical_die_id(cpu);
-> >       struct rapl_package *rp;
+> > Best regards,
+> > Krzysztof
+>
+> Thank you Krzysztof for a fast response. I have also responded to Rob.
+> I wouldn't call accessing chipid registers as a hack, though. The DMC
+> registers do not contain information about the memory chip since it is
+> in phase of production the board not the chip. Thus, chipid regs (which
+> loads from e-fuses) are best place to put information about memory
+> type/size.
 
-> Both functions are still misnomers. rapl_find_package_domain() does in
-> fact now do rapl_find_die_domain(), right? Same for rapl_add_package()
+For efuses, we have a binding (nvmem). Maybe you should use it.
 
-A "RAPL Package Domain" (rapl_package, above) is a known proper noun --
-it is a known documented capability.
-
-When there could be just 1 die in a package, the name of this capability
-also always matched the scope of a physical package.
-
-Now that some products have two die in the same package, there
-can be two of these inside a package, and they are associated with
-each die.
-
-There are no plans to re-name the Package RAPL Domain capability
-in the hardware documentation.
-
-Similarly, there are no plans to re-name any of the other "PACKAGE"
-scoped MSRs to have "DIE" in their name instead.  The ship with
-those names sailed long ago.
-
-I think the code above reflects its function, and that somebody maintaining
-it will be clear on this.  That is important, because in the future, there will
-be a concept of PACKAGE scoped MSRs that span multiple DIE...
-
-cheers,
-Len Brown, Intel Open Source Technology Center
+Rob
