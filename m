@@ -1,36 +1,48 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v7 07/13] dt-bindings: memory-controllers: add Exynos5422
- DMC device description
-Date: Wed, 8 May 2019 09:19:40 +0200
-Message-ID: <CAJKOXPdacKBrKeCyCaE7VS8-NOR4Oo27XY7rx20P2ORY2vBBSg@mail.gmail.com>
-References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
- <CGME20190506151215eucas1p2c57147edac5671c5ec9a223efb6b4adc@eucas1p2.samsung.com>
- <1557155521-30949-8-git-send-email-l.luba@partner.samsung.com> <20190507170422.GA25179@bogus>
+Subject: Re: [PATCH v7 11/13] ARM: dts: exynos: add syscon to clock compatible
+Date: Wed, 8 May 2019 09:22:11 +0200
+Message-ID: <CAJKOXPd6GKVPixMiG37SoHiswaih-3S+o7QJn=WbuqdZzu-s_w@mail.gmail.com>
+References: <CGME20190506151219eucas1p2feab00f7b7c1c5fdd5614423fb38eae2@eucas1p2.samsung.com>
+ <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com> <1557155521-30949-12-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190507170422.GA25179@bogus>
+In-Reply-To: <1557155521-30949-12-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Lukasz Luba <l.luba@partner.samsung.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, kgene@kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, kyungmin.park@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
+To: Lukasz Luba <l.luba@partner.samsung.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, kgene@kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, kyungmin.park@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>, s.nawrocki@samsung.com, myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com, jroedel@suse.de, treding@nvidia.com, digetx@gmail.com, willy.mh.wolff.ml@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 7 May 2019 at 19:04, Rob Herring <robh@kernel.org> wrote:
-> > +- devfreq-events : phandles of the PPMU events used by the controller.
-> > +- samsung,syscon-chipid : phandle of the ChipID used by the controller.
-> > +- samsung,syscon-clk : phandle of the clock register set used by the controller.
+On Mon, 6 May 2019 at 17:12, Lukasz Luba <l.luba@partner.samsung.com> wrote:
 >
-> Looks like a hack. Can't you get this from the clocks property? What is
-> this for?
+> In order get the clock by phandle and use it with regmap it needs to be
+> compatible with syscon. The DMC driver uses two registers from clock
+> register set and needs the regmap of them.
+>
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  arch/arm/boot/dts/exynos5800.dtsi | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/boot/dts/exynos5800.dtsi b/arch/arm/boot/dts/exynos5800.dtsi
+> index 57d3b31..0a2b328 100644
+> --- a/arch/arm/boot/dts/exynos5800.dtsi
+> +++ b/arch/arm/boot/dts/exynos5800.dtsi
+> @@ -17,7 +17,7 @@
+>  };
+>
+>  &clock {
+> -       compatible = "samsung,exynos5800-clock";
+> +       compatible = "samsung,exynos5800-clock", "syscon";
 
-Hi Rob,
-
-Lukasz uses these two syscon regmaps to read certain registers. For
-chipid he reads it to check the size of attached memory (only 2 GB
-version is supported). This indeed looks like a hack. However the
-second regmap (clk) is needed to get the timing data from registers
-from DMC clock driver address space. These are registers with memory
-timing so their data is not exposed anyway in common clk framework.
+What about Exynos5420 DTSI?
 
 Best regards,
 Krzysztof
+
+>  };
+>
+>  &cluster_a15_opp_table {
+> --
+> 2.7.4
+>
