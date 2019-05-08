@@ -1,77 +1,86 @@
-From: "Ardelean, Alexandru" <alexandru.Ardelean@analog.com>
-Subject: Re: [PATCH 09/16] mmc: sdhci-xenon: use new match_string()
- helper/macro
-Date: Wed, 8 May 2019 13:26:29 +0000
-Message-ID: <2ec6812d6bf2f33860c7c816c641167a31eb2ed6.camel@analog.com>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
- <20190508112842.11654-11-alexandru.ardelean@analog.com>
- <20190508122010.GC21059@kadam>
+From: douglas.raillard@arm.com
+Subject: [RFC PATCH 0/7] sched/cpufreq: Make schedutil energy aware
+Date: Wed,  8 May 2019 18:42:54 +0100
+Message-ID: <20190508174301.4828-1-douglas.raillard@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <20190508122010.GC21059@kadam>
-Content-Language: en-US
-Content-ID: <6166AD703C20264A8933E29F0D6472FA@analog.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>
-Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, linux-gpio@vger.kernel.or
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, quentin.perret@arm.com, douglas.raillard@arm.com, patrick.bellasi@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2019-05-08 at 15:20 +0300, Dan Carpenter wrote:
-> 
-> 
-> On Wed, May 08, 2019 at 02:28:35PM +0300, Alexandru Ardelean wrote:
-> > -static const char * const phy_types[] = {
-> > -     "emmc 5.0 phy",
-> > -     "emmc 5.1 phy"
-> > -};
-> > -
-> >  enum xenon_phy_type_enum {
-> >       EMMC_5_0_PHY,
-> >       EMMC_5_1_PHY,
-> >       NR_PHY_TYPES
-> 
-> There is no need for NR_PHY_TYPES now so you could remove that as well.
-> 
+From: Douglas RAILLARD <douglas.raillard@arm.com>
 
-I thought the same.
-The only reason to keep NR_PHY_TYPES, is for potential future patches,
-where it would be just 1 addition
+Make schedutil cpufreq governor energy-aware.
 
- enum xenon_phy_type_enum {
-      EMMC_5_0_PHY,
-      EMMC_5_1_PHY,
-+      EMMC_5_2_PHY,
-      NR_PHY_TYPES
-  }
+- patch 1 introduces a function to retrieve a frequency given a base
+  frequency and an energy cost margin.
+- patch 2 links Energy Model perf_domain to sugov_policy.
+- patch 3 updates get_next_freq() to make use of the Energy Model.
+- patch 4 moves a static function around in cpufreq_schedutil.c to make
+  it available for subsequent patch.
+- patch 5 updates sugov_cpu_is_busy() to make it useable for shared
+  cpufreq policies.
+- patch 6 improves sugov_cpu_is_busy() to avoid some pitfalls when used
+  from shared policies.
+- patch 7 makes use of sugov_cpu_is_busy() for frequency selection of
+  shared cpufreq policies.
 
-Depending on style/preference of how to do enums (allow comma on last enum
-or not allow comma on last enum value), adding new enum values woudl be 2
-additions + 1 deletion lines.
+The benefits of using the EM in schedutil are twofold:
 
- enum xenon_phy_type_enum {
-      EMMC_5_0_PHY,
--      EMMC_5_1_PHY
-+      EMM
-C_5_1_PHY,
-+      EMMC_5_2_PHY
- }
+1) Selecting the highest possible frequency for a given cost. Some
+   platforms can have lower frequencies that are less efficient than
+   higher ones, in which case they should be skipped for most purposes.
+   They can still be useful to give more freedom to thermal throttling
+   mechanisms, but not under normal circumstances.
+   note: the EM framework will warn about such OPPs "hertz/watts ratio
+   non-monotonically decreasing"
 
-Either way (leave NR_PHY_TYPES or remove NR_PHY_TYPES) is fine from my
-side.
+2) Drive the frequency selection with power in mind, in addition to
+   maximizing the utilization of the non-idle CPUs in the system.
 
-Thanks
-Alex
+Point 1) is implemented in "PM: Introduce em_pd_get_higher_freq()" and
+enabled in schedutil by
+"sched/cpufreq: Hook em_pd_get_higher_power() into get_next_freq()".
 
-> regards,
-> dan carpenter
-> 
+Point 2) is enabled in
+"sched/cpufreq: Boost schedutil frequency ramp up". It allows using
+higher frequencies when a CPU is "busy" in the policy, reusing the
+existing sugov_cpu_is_busy() schedutil heuristic.  "busy" is defined
+here as not having any idle time since the last increase in frequency.
+The benefits of that are:
+
+* Boosting the frequency when it (seems) needed by a CPU to finish its
+  allocated work. That shortens the frequency ramp up duration, which in
+  turns allows the utilization signal to reach stable values quicker.
+  Since the allowed frequency boost is bounded in energy, it will behave
+  consistently across platforms, regardless of the OPP cost range.
+
+* The boost is only transient, and should not impact a lot the energy
+  consumed of workloads with very stable utilization signals.
+
+
+This has been ligthly tested with a rtapp task ramping from 10% to 75%
+utilisation on a big core. Improvements in frequency ramp-up time are
+somehow diminished by the shape of the utilisation signal, which gives a
+big oscillation to the signal after a fast ramp up with idle time. It
+however improves the time it takes to reach the final frequency, but
+some activations are still missed due to strong frequency decrease right
+after ramping up.
+
+Douglas RAILLARD (7):
+  PM: Introduce em_pd_get_higher_freq()
+  sched/cpufreq: Attach perf domain to sugov policy
+  sched/cpufreq: Hook em_pd_get_higher_power() into get_next_freq()
+  sched/cpufreq: Move up sugov_cpu_is_busy()
+  sched/cpufreq: sugov_cpu_is_busy for shared policy
+  sched/cpufreq: Improve sugov_cpu_is_busy accuracy
+  sched/cpufreq: Boost schedutil frequency ramp up
+
+ include/linux/energy_model.h     |  48 +++++++++++
+ kernel/sched/cpufreq_schedutil.c | 136 +++++++++++++++++++++++++++----
+ 2 files changed, 166 insertions(+), 18 deletions(-)
+
+-- 
+2.21.0
