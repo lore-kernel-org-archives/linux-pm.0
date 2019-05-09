@@ -1,12 +1,9 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: [PATCH] nvme-pci: Use non-operational power state instead of D3
+From: Keith Busch <kbusch@kernel.org>
+Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of D3
  on Suspend-to-Idle
-Date: Thu, 9 May 2019 18:57:34 +0000
-Message-ID: <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
-References: <3CDA9F13-B17C-456F-8CE1-3A63C6E0DC8F@canonical.com>
- <f8a043b00909418bad6adcdb62d16e6e@AUSX13MPC105.AMER.DELL.COM>
- <20190508195159.GA1530@lst.de>
- <b43f2c0078f245398101fa9a40cfc2dc@AUSX13MPC105.AMER.DELL.COM>
+Date: Thu, 9 May 2019 13:28:08 -0600
+Message-ID: <20190509192807.GB9675@localhost.localdomain>
+References: <b43f2c0078f245398101fa9a40cfc2dc@AUSX13MPC105.AMER.DELL.COM>
  <20190509061237.GA15229@lst.de>
  <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
  <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
@@ -15,49 +12,99 @@ References: <3CDA9F13-B17C-456F-8CE1-3A63C6E0DC8F@canonical.com>
  <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
  <20190509103142.GA19550@lst.de>
  <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
+ <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
 Sender: linux-kernel-owner@vger.kernel.org
-To: kai.heng.feng@canonical.com, hch@lst.de
-Cc: rafael@kernel.org, rafael.j.wysocki@intel.com, kbusch@kernel.org, keith.busch@intel.com, axboe@fb.com, sagi@grimberg.me, linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Mario.Limonciello@dell.com
+Cc: kai.heng.feng@canonical.com, hch@lst.de, axboe@fb.com, sagi@grimberg.me, rafael@kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org, keith.busch@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-PiA+DQo+ID4+PiBPdGhlcndpc2UgSSB0aGluayB3ZSBzaG91bGQgdXNlIGEgIm5vLW9wIiBzdXNw
-ZW5kLCBqdXN0IGxlYXZpbmcgdGhlDQo+ID4+PiBwb3dlciBtYW5hZ2VtZW50IHRvIHRoZSBkZXZp
-Y2UsIG9yIGEgc2ltcGxlIHNldHRpbmcgdGhlIGRldmljZSB0byB0aGUNCj4gPj4+IGRlZXBlc3Qg
-cG93ZXIgc3RhdGUgZm9yIGV2ZXJ5dGhpbmcgZWxzZSwgd2hlcmUgZXZlcnl0aGluZyBlbHNlIGlz
-DQo+ID4+PiBzdXNwZW5kLCBvciBzdXNwZW5kIHRvIGlkbGUuDQo+ID4+DQo+ID4+IEkgYW0gbm90
-IHN1cmUgSSBnZXQgeW91ciBpZGVhLiBEb2VzIHRoaXMg4oCcbm8tb3DigJ0gc3VzcGVuZCBoYXBw
-ZW4gaW4gTlZNZQ0KPiA+PiBkcml2ZXIgb3IgUE0gY29yZT8NCj4gPg0KPiA+IG5vLW9wIG1lYW5z
-IHdlIGRvbid0IHdhbnQgdG8gZG8gYW55dGhpbmcgaW4gbnZtZS4gIElmIHRoYXQgaGFwcGVucw0K
-PiA+IGJ5IG5vdCBjYWxsaW5nIG52bWUgb3Igc3R1YmJpbmcgb3V0IHRoZSBtZXRob2QgZm9yIHRo
-YXQgcGFydGljdWxhcg0KPiA+IGNhc2UgZG9lcyBub3QgbWF0dGVyLg0KPiANCj4gT2ssIGJ1dCB3
-ZSBzdGlsbCBuZWVkIHRvIGZpZ3VyZSBvdXQgaG93IHRvIHByZXZlbnQgdGhlIGRldmljZSBkZXZp
-Y2UgZnJvbQ0KPiB0cmFkaXRpb24gdG8gRDMuDQoNClRoaXMgc28tY2FsbGVkIG5vLW9wIHdhcyBz
-b21ldGhpbmcgdGhhdCB3ZSBoYWQgZXhwZXJpbWVudGVkIHdpdGggd2hpbGUgZGV2ZWxvcGluZw0K
-dGhpcyBwYXRjaCwgYnV0IGZvdW5kIHRoYXQgaXQgd291bGQgbm90IGhlbHAgcG93ZXIgY29uc3Vt
-cHRpb24gb24gYWxsIGRyaXZlcy4NCg0KVGhhdCdzIHdoeSB3ZSBoYXZlIGV4cGxpY2l0IGNhbGwg
-dG8gZ28gaW50byBkZWVwZXN0IHBvd2VyIHN0YXRlIGluIGN1cnJlbnQgcGF0Y2guDQoNCj4gDQo+
-ID4NCj4gPj4+IEFuZCBvZiBjb3Vyc2UgdGhhbiB3ZSBoYXZlIHdpbmRvd3MgbW9kZXJuIHN0YW5k
-YnkgYWN0dWFsbHkgbWFuZGF0aW5nDQo+ID4+PiBydW50aW1lIEQzIGluIHNvbWUgY2FzZSwgYW5k
-IHZhZ3VlIGhhbmR3YXZpbmcgbWVudGlvbnMgb2YgdGhpcyBiZWluZw0KPiA+Pj4gZm9yY2VkIG9u
-IHRoZSBwbGF0Zm9ybXMsIHdoaWNoIEknbSBub3QgZW50aXJlbHkgc3VyZSBob3cgdGhleSBmaXQN
-Cj4gPj4+IGludG8gdGhlIGFib3ZlIHBpY3R1cmUuDQo+ID4+DQo+ID4+IEkgd2FzIHRvbGQgdGhh
-dCBXaW5kb3dzIGRvZXNu4oCZdCB1c2UgcnVudGltZSBEMywgQVBTVCBpcyB1c2VkIGV4Y2x1c2l2
-ZWx5Lg0KPiA+DQo+ID4gQXMgZmFyIGFzIEkga25vdyB0aGUgZGVmYXVsdCBwb3dlciBtYW5hZ2Vt
-ZW50IG1vZGVzIGluIHRoZSBNaWNyb3NvZnQNCj4gPiBOVk1lIGRyaXZlciBpcyBleHBsaWNpdCBw
-b3dlciBtYW5hZ2VtZW50IHRyYW5zaXRpb25zLCBhbmQgaW4gdGhlIEludGVsDQo+ID4gUlNUIGRy
-aXZlciB0aGF0IGlzIGNvbW1vbmx5IHVzZWQgaXQgaXMgQVBTVC4gIEJ1dCBib3RoIGNvdWxkIHN0
-aWxsDQo+ID4gYmUgY29taW5lZCB3aXRoIHJ1bnRpbWUgRDMgaW4gdGhlb3J5LCBJJ20ganVzdCBu
-b3Qgc3VyZSBpZiB0aGV5IGFyZS4NCj4gPg0KPiA+IE1pY3Jvc29mdCBoYXMgYmVlbiBwdXNoaW5n
-IGZvciBhZ2dyZXNzaXZlIHJ1bnRpbWUgRDMgZm9yIGEgd2hpbGUsIGJ1dA0KPiA+IEkgZG9uJ3Qg
-a25vdyBpZiB0aGF0IGluY2x1ZGVzIE5WTWUgZGV2aWNlcy4NCj4gDQo+IE9rLCBJ4oCZbGwgY2hl
-Y2sgd2l0aCB2ZW5kb3JzIGFib3V0IHRoaXMuDQo+IA0KDQpObywgY3VycmVudCBXaW5kb3dzIHZl
-cnNpb25zIGRvbid0IHRyYW5zaXRpb24gdG8gRDMgd2l0aCBpbmJveCBOVk1FIGRyaXZlci4NCllv
-dSdyZSBjb3JyZWN0LCBpdCdzIGV4cGxpY2l0IHN0YXRlIHRyYW5zaXRpb25zIGV2ZW4gaWYgQVBT
-VCB3YXMgZW5hYmxlZA0KKGFzIHRoaXMgcGF0Y2ggaXMgY3VycmVudGx5IGRvaW5nIGFzIHdlbGwp
-Lg0KDQoNCg==
+On Thu, May 09, 2019 at 06:57:34PM +0000, Mario.Limonciello@dell.com wrote:
+> No, current Windows versions don't transition to D3 with inbox NVME driver.
+> You're correct, it's explicit state transitions even if APST was enabled
+> (as this patch is currently doing as well).
+
+The proposed patch does too much, and your resume latency will be worse
+off for doing an unnecessary controller reset.
+
+The following should be all that's needed if the device is spec
+compliant. The resume part isn't necessary if npss is non-operational, but
+we're not saving that info, and it shouldn't hurt to be explicit anyway.
+
+I don't have any PS capable devices, so this is just compile tested.
+
+---
+diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
+index 6265d9225ec8..ce8b9bc949b9 100644
+--- a/drivers/nvme/host/core.c
++++ b/drivers/nvme/host/core.c
+@@ -1132,6 +1132,22 @@ static int nvme_set_features(struct nvme_ctrl *dev, unsigned fid, unsigned dword
+ 	return ret;
+ }
+ 
++int nvme_set_power(struct nvme_ctrl *ctrl, unsigned npss)
++{
++	int ret;
++
++	mutex_lock(&ctrl->scan_lock);
++	nvme_start_freeze(ctrl);
++	nvme_wait_freeze(ctrl);
++	ret = nvme_set_features(ctrl, NVME_FEAT_POWER_MGMT, npss, NULL, 0,
++				NULL);
++	nvme_unfreeze(ctrl);
++	mutex_unlock(&ctrl->scan_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(nvme_set_power);
++
+ int nvme_set_queue_count(struct nvme_ctrl *ctrl, int *count)
+ {
+ 	u32 q_count = (*count - 1) | ((*count - 1) << 16);
+diff --git a/drivers/nvme/host/nvme.h b/drivers/nvme/host/nvme.h
+index 527d64545023..f2be6aad9804 100644
+--- a/drivers/nvme/host/nvme.h
++++ b/drivers/nvme/host/nvme.h
+@@ -459,6 +459,7 @@ int __nvme_submit_sync_cmd(struct request_queue *q, struct nvme_command *cmd,
+ 		unsigned timeout, int qid, int at_head,
+ 		blk_mq_req_flags_t flags, bool poll);
+ int nvme_set_queue_count(struct nvme_ctrl *ctrl, int *count);
++int nvme_set_power(struct nvme_ctrl *ctrl, unsigned npss);
+ void nvme_stop_keep_alive(struct nvme_ctrl *ctrl);
+ int nvme_reset_ctrl(struct nvme_ctrl *ctrl);
+ int nvme_reset_ctrl_sync(struct nvme_ctrl *ctrl);
+diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
+index a90cf5d63aac..2c4154cb4e79 100644
+--- a/drivers/nvme/host/pci.c
++++ b/drivers/nvme/host/pci.c
+@@ -18,6 +18,7 @@
+ #include <linux/mutex.h>
+ #include <linux/once.h>
+ #include <linux/pci.h>
++#include <linux/suspend.h>
+ #include <linux/t10-pi.h>
+ #include <linux/types.h>
+ #include <linux/io-64-nonatomic-lo-hi.h>
+@@ -2851,6 +2852,8 @@ static int nvme_suspend(struct device *dev)
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct nvme_dev *ndev = pci_get_drvdata(pdev);
+ 
++	if (!pm_suspend_via_firmware())
++		return nvme_set_power(&ndev->ctrl, ndev->ctrl.npss);
+ 	nvme_dev_disable(ndev, true);
+ 	return 0;
+ }
+@@ -2860,6 +2863,8 @@ static int nvme_resume(struct device *dev)
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct nvme_dev *ndev = pci_get_drvdata(pdev);
+ 
++	if (!pm_suspend_via_firmware())
++		return nvme_set_power(&ndev->ctrl, 0);
+ 	nvme_reset_ctrl(&ndev->ctrl);
+ 	return 0;
+ }
+--
