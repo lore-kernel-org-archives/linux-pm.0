@@ -2,38 +2,38 @@ Return-Path: <SRS0=Wbju=TJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62A50C04AB1
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F46AC46470
 	for <linux-pm@archiver.kernel.org>; Thu,  9 May 2019 21:19:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3D3FC21744
-	for <linux-pm@archiver.kernel.org>; Thu,  9 May 2019 21:19:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5FB9E217F4
+	for <linux-pm@archiver.kernel.org>; Thu,  9 May 2019 21:19:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726686AbfEIVTd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726682AbfEIVTd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 9 May 2019 17:19:33 -0400
-Received: from shell.v3.sk ([90.176.6.54]:45793 "EHLO shell.v3.sk"
+Received: from shell.v3.sk ([90.176.6.54]:45801 "EHLO shell.v3.sk"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726682AbfEIVTd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1727024AbfEIVTd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Thu, 9 May 2019 17:19:33 -0400
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 87AC157F2F;
-        Thu,  9 May 2019 23:19:29 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 22EA2104036;
+        Thu,  9 May 2019 23:19:31 +0200 (CEST)
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
-        with ESMTP id WNVEbJpypCNC; Thu,  9 May 2019 23:19:19 +0200 (CEST)
+        with ESMTP id tVSJ4BL4c0AJ; Thu,  9 May 2019 23:19:21 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 2356210402A;
-        Thu,  9 May 2019 23:19:18 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 53AC310402F;
+        Thu,  9 May 2019 23:19:20 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at zimbra.v3.sk
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id vX4J2-G93UxT; Thu,  9 May 2019 23:19:16 +0200 (CEST)
+        with ESMTP id Q5kk3_USBzoz; Thu,  9 May 2019 23:19:17 +0200 (CEST)
 Received: from furthur.local (g-server-2.ign.cz [91.219.240.2])
-        by zimbra.v3.sk (Postfix) with ESMTPSA id 54F1857F2F;
-        Thu,  9 May 2019 23:19:16 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTPSA id 3192E104025;
+        Thu,  9 May 2019 23:19:17 +0200 (CEST)
 From:   Lubomir Rintel <lkundrak@v3.sk>
 To:     linux-pm@vger.kernel.org
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
@@ -41,11 +41,14 @@ Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         James Cameron <quozl@laptop.org>,
         Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Subject: [PATCH RFC] Enable the GPU on MMP2
-Date:   Thu,  9 May 2019 23:19:04 +0200
-Message-Id: <20190509211911.17998-1-lkundrak@v3.sk>
+        Stephen Boyd <sboyd@kernel.org>,
+        Lubomir Rintel <lkundrak@v3.sk>
+Subject: [PATCH RFC 2/7] dt-bindings: marvell,mmp2: Add clock ids for the GPU clocks
+Date:   Thu,  9 May 2019 23:19:06 +0200
+Message-Id: <20190509211911.17998-3-lkundrak@v3.sk>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190509211911.17998-1-lkundrak@v3.sk>
+References: <20190509211911.17998-1-lkundrak@v3.sk>
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
@@ -53,27 +56,30 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+The GC860 GPU uses two distinct clocks for the graphics core, and the AXI
+bus interface, along with respective parent clock multiplexers.
 
-This patch makes the Vivante GC860 GPU work on MMP2 based platforms,
-such as the OLPC XO-1.75 laptop.
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+---
+ include/dt-bindings/clock/marvell,mmp2.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-The reason I'm sending this out as and RFC is to get the opinions on the
-power domain use and in particular the patch [5/7] that implements one:
-
-Apart from just enabling the power bits, the power_on() procedure also
-turns the clocks on and disables isolation -- if this is not done in
-this particular order with the delays in between all sorts of mayhem
-ensue. Is this sort of thing acceptable? Is there a better way the
-isolation bit is turned off once both of the clocks are running?
-
-Also, it doesn't seem to be possible to turn off the block once it has
-been turned on. I guess this is not too cool; but I don't see better
-options. Not turning the block on util the GPU driver asks for it still
-seems like a better idea than unconditionally enabling it in platform
-code, even if it can't be turned off afterwards.
-
-Thanks
-Lubo
-
+diff --git a/include/dt-bindings/clock/marvell,mmp2.h b/include/dt-bindin=
+gs/clock/marvell,mmp2.h
+index e785c6eb3561..4b31abd998f1 100644
+--- a/include/dt-bindings/clock/marvell,mmp2.h
++++ b/include/dt-bindings/clock/marvell,mmp2.h
+@@ -72,6 +72,10 @@
+ #define MMP2_CLK_CCIC1_PHY		118
+ #define MMP2_CLK_CCIC1_SPHY		119
+ #define MMP2_CLK_DISP0_LCDC		120
++#define MMP2_CLK_GPU_GC_MUX		121
++#define MMP2_CLK_GPU_GC			122
++#define MMP2_CLK_GPU_BUS_MUX		123
++#define MMP2_CLK_GPU_BUS		124
+=20
+ #define MMP2_NR_CLKS			200
+ #endif
+--=20
+2.21.0
 
