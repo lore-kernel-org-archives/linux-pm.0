@@ -1,25 +1,63 @@
-From: Ido Schimmel <idosch@idosch.org>
-Subject: Re: [PATCH 2/2] PM / arch: x86: MSR_IA32_ENERGY_PERF_BIAS sysfs
- interface
-Date: Thu, 9 May 2019 20:43:38 +0300
-Message-ID: <20190509174338.GA24432@splinter>
-References: <1637073.gl2OfxWTjI@aspire.rjw.lan>
- <1762575.ER2xjzr9E1@aspire.rjw.lan>
- <20190509102315.GA31824@splinter>
- <1627338.1fd8ofggM8@kreacher>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: [PATCH] nvme-pci: Use non-operational power state instead of D3
+ on Suspend-to-Idle
+Date: Thu, 9 May 2019 18:57:34 +0000
+Message-ID: <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
+References: <3CDA9F13-B17C-456F-8CE1-3A63C6E0DC8F@canonical.com>
+ <f8a043b00909418bad6adcdb62d16e6e@AUSX13MPC105.AMER.DELL.COM>
+ <20190508195159.GA1530@lst.de>
+ <b43f2c0078f245398101fa9a40cfc2dc@AUSX13MPC105.AMER.DELL.COM>
+ <20190509061237.GA15229@lst.de>
+ <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
+ <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
+ <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com>
+ <20190509095601.GA19041@lst.de>
+ <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+ <20190509103142.GA19550@lst.de>
+ <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1627338.1fd8ofggM8@kreacher>
+In-Reply-To: <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>, Hannes Reinecke <hare@suse.de>
+To: kai.heng.feng@canonical.com, hch@lst.de
+Cc: rafael@kernel.org, rafael.j.wysocki@intel.com, kbusch@kernel.org, keith.busch@intel.com, axboe@fb.com, sagi@grimberg.me, linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 09, 2019 at 07:18:28PM +0200, Rafael J. Wysocki wrote:
-> So does the patch below fix it for you?
-
-Yes. Thanks for the fix. Feel free to add my tag:
-
-Tested-by: Ido Schimmel <idosch@mellanox.com>
+PiA+DQo+ID4+PiBPdGhlcndpc2UgSSB0aGluayB3ZSBzaG91bGQgdXNlIGEgIm5vLW9wIiBzdXNw
+ZW5kLCBqdXN0IGxlYXZpbmcgdGhlDQo+ID4+PiBwb3dlciBtYW5hZ2VtZW50IHRvIHRoZSBkZXZp
+Y2UsIG9yIGEgc2ltcGxlIHNldHRpbmcgdGhlIGRldmljZSB0byB0aGUNCj4gPj4+IGRlZXBlc3Qg
+cG93ZXIgc3RhdGUgZm9yIGV2ZXJ5dGhpbmcgZWxzZSwgd2hlcmUgZXZlcnl0aGluZyBlbHNlIGlz
+DQo+ID4+PiBzdXNwZW5kLCBvciBzdXNwZW5kIHRvIGlkbGUuDQo+ID4+DQo+ID4+IEkgYW0gbm90
+IHN1cmUgSSBnZXQgeW91ciBpZGVhLiBEb2VzIHRoaXMg4oCcbm8tb3DigJ0gc3VzcGVuZCBoYXBw
+ZW4gaW4gTlZNZQ0KPiA+PiBkcml2ZXIgb3IgUE0gY29yZT8NCj4gPg0KPiA+IG5vLW9wIG1lYW5z
+IHdlIGRvbid0IHdhbnQgdG8gZG8gYW55dGhpbmcgaW4gbnZtZS4gIElmIHRoYXQgaGFwcGVucw0K
+PiA+IGJ5IG5vdCBjYWxsaW5nIG52bWUgb3Igc3R1YmJpbmcgb3V0IHRoZSBtZXRob2QgZm9yIHRo
+YXQgcGFydGljdWxhcg0KPiA+IGNhc2UgZG9lcyBub3QgbWF0dGVyLg0KPiANCj4gT2ssIGJ1dCB3
+ZSBzdGlsbCBuZWVkIHRvIGZpZ3VyZSBvdXQgaG93IHRvIHByZXZlbnQgdGhlIGRldmljZSBkZXZp
+Y2UgZnJvbQ0KPiB0cmFkaXRpb24gdG8gRDMuDQoNClRoaXMgc28tY2FsbGVkIG5vLW9wIHdhcyBz
+b21ldGhpbmcgdGhhdCB3ZSBoYWQgZXhwZXJpbWVudGVkIHdpdGggd2hpbGUgZGV2ZWxvcGluZw0K
+dGhpcyBwYXRjaCwgYnV0IGZvdW5kIHRoYXQgaXQgd291bGQgbm90IGhlbHAgcG93ZXIgY29uc3Vt
+cHRpb24gb24gYWxsIGRyaXZlcy4NCg0KVGhhdCdzIHdoeSB3ZSBoYXZlIGV4cGxpY2l0IGNhbGwg
+dG8gZ28gaW50byBkZWVwZXN0IHBvd2VyIHN0YXRlIGluIGN1cnJlbnQgcGF0Y2guDQoNCj4gDQo+
+ID4NCj4gPj4+IEFuZCBvZiBjb3Vyc2UgdGhhbiB3ZSBoYXZlIHdpbmRvd3MgbW9kZXJuIHN0YW5k
+YnkgYWN0dWFsbHkgbWFuZGF0aW5nDQo+ID4+PiBydW50aW1lIEQzIGluIHNvbWUgY2FzZSwgYW5k
+IHZhZ3VlIGhhbmR3YXZpbmcgbWVudGlvbnMgb2YgdGhpcyBiZWluZw0KPiA+Pj4gZm9yY2VkIG9u
+IHRoZSBwbGF0Zm9ybXMsIHdoaWNoIEknbSBub3QgZW50aXJlbHkgc3VyZSBob3cgdGhleSBmaXQN
+Cj4gPj4+IGludG8gdGhlIGFib3ZlIHBpY3R1cmUuDQo+ID4+DQo+ID4+IEkgd2FzIHRvbGQgdGhh
+dCBXaW5kb3dzIGRvZXNu4oCZdCB1c2UgcnVudGltZSBEMywgQVBTVCBpcyB1c2VkIGV4Y2x1c2l2
+ZWx5Lg0KPiA+DQo+ID4gQXMgZmFyIGFzIEkga25vdyB0aGUgZGVmYXVsdCBwb3dlciBtYW5hZ2Vt
+ZW50IG1vZGVzIGluIHRoZSBNaWNyb3NvZnQNCj4gPiBOVk1lIGRyaXZlciBpcyBleHBsaWNpdCBw
+b3dlciBtYW5hZ2VtZW50IHRyYW5zaXRpb25zLCBhbmQgaW4gdGhlIEludGVsDQo+ID4gUlNUIGRy
+aXZlciB0aGF0IGlzIGNvbW1vbmx5IHVzZWQgaXQgaXMgQVBTVC4gIEJ1dCBib3RoIGNvdWxkIHN0
+aWxsDQo+ID4gYmUgY29taW5lZCB3aXRoIHJ1bnRpbWUgRDMgaW4gdGhlb3J5LCBJJ20ganVzdCBu
+b3Qgc3VyZSBpZiB0aGV5IGFyZS4NCj4gPg0KPiA+IE1pY3Jvc29mdCBoYXMgYmVlbiBwdXNoaW5n
+IGZvciBhZ2dyZXNzaXZlIHJ1bnRpbWUgRDMgZm9yIGEgd2hpbGUsIGJ1dA0KPiA+IEkgZG9uJ3Qg
+a25vdyBpZiB0aGF0IGluY2x1ZGVzIE5WTWUgZGV2aWNlcy4NCj4gDQo+IE9rLCBJ4oCZbGwgY2hl
+Y2sgd2l0aCB2ZW5kb3JzIGFib3V0IHRoaXMuDQo+IA0KDQpObywgY3VycmVudCBXaW5kb3dzIHZl
+cnNpb25zIGRvbid0IHRyYW5zaXRpb24gdG8gRDMgd2l0aCBpbmJveCBOVk1FIGRyaXZlci4NCllv
+dSdyZSBjb3JyZWN0LCBpdCdzIGV4cGxpY2l0IHN0YXRlIHRyYW5zaXRpb25zIGV2ZW4gaWYgQVBT
+VCB3YXMgZW5hYmxlZA0KKGFzIHRoaXMgcGF0Y2ggaXMgY3VycmVudGx5IGRvaW5nIGFzIHdlbGwp
+Lg0KDQoNCg==
