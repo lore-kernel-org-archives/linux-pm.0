@@ -2,227 +2,106 @@ Return-Path: <SRS0=Wbju=TJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F11EC04AB1
-	for <linux-pm@archiver.kernel.org>; Thu,  9 May 2019 21:19:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8231AC04AB2
+	for <linux-pm@archiver.kernel.org>; Thu,  9 May 2019 21:21:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 29B7F21744
-	for <linux-pm@archiver.kernel.org>; Thu,  9 May 2019 21:19:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3A04C217D7
+	for <linux-pm@archiver.kernel.org>; Thu,  9 May 2019 21:21:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1557436911;
+	bh=MtZGwZ/kepZ6jRVe08ecLLJkq/Gpq0bHIgh9dELdpOw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=Xjs+scJHsbyJXmuqrQhvnm3wV+vgPtpbFg3BTRJJwJ/7dE9ty1pGrmo91dMTlLA39
+	 yJTVDE+NzuIzooaDNjy3JDXCVE+0weIqQ8snOHB8tGkvB63O15RGIGlj/ykDpK456j
+	 66qVCyj76+lVz3xCke4lySKMm8nWJ/2IOTwVVdUE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726817AbfEIVTp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 May 2019 17:19:45 -0400
-Received: from shell.v3.sk ([90.176.6.54]:45844 "EHLO shell.v3.sk"
+        id S1726764AbfEIVVk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 May 2019 17:21:40 -0400
+Received: from mga04.intel.com ([192.55.52.120]:14670 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726806AbfEIVTp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 9 May 2019 17:19:45 -0400
-Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 7E614104024;
-        Thu,  9 May 2019 23:19:42 +0200 (CEST)
-Received: from shell.v3.sk ([127.0.0.1])
-        by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
-        with ESMTP id iluzY6wj_yDR; Thu,  9 May 2019 23:19:30 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 53433104026;
-        Thu,  9 May 2019 23:19:23 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at zimbra.v3.sk
-Received: from shell.v3.sk ([127.0.0.1])
-        by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id ekLLkc6jHzlj; Thu,  9 May 2019 23:19:19 +0200 (CEST)
-Received: from furthur.local (g-server-2.ign.cz [91.219.240.2])
-        by zimbra.v3.sk (Postfix) with ESMTPSA id 6330C10402B;
-        Thu,  9 May 2019 23:19:18 +0200 (CEST)
-From:   Lubomir Rintel <lkundrak@v3.sk>
-To:     linux-pm@vger.kernel.org
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        James Cameron <quozl@laptop.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH RFC 5/7] clk: mmp2: create a power domain for the GPU core
-Date:   Thu,  9 May 2019 23:19:09 +0200
-Message-Id: <20190509211911.17998-6-lkundrak@v3.sk>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190509211911.17998-1-lkundrak@v3.sk>
-References: <20190509211911.17998-1-lkundrak@v3.sk>
+        id S1726686AbfEIVVk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 9 May 2019 17:21:40 -0400
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 09 May 2019 14:21:39 -0700
+X-ExtLoop1: 1
+Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
+  by orsmga005.jf.intel.com with ESMTP; 09 May 2019 14:21:38 -0700
+Date:   Thu, 9 May 2019 15:16:09 -0600
+From:   Keith Busch <kbusch@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Mario Limonciello <Mario.Limonciello@dell.com>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@fb.com>,
+        Sagi Grimberg <sagi@grimberg.me>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Rafael Wysocki <rafael.j.wysocki@intel.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-nvme <linux-nvme@lists.infradead.org>,
+        Keith Busch <keith.busch@intel.com>
+Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of D3
+ on Suspend-to-Idle
+Message-ID: <20190509211608.GC9675@localhost.localdomain>
+References: <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
+ <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
+ <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com>
+ <20190509095601.GA19041@lst.de>
+ <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+ <20190509103142.GA19550@lst.de>
+ <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
+ <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
+ <20190509192807.GB9675@localhost.localdomain>
+ <CAJZ5v0ivyByegTMzqdvxqRM2kyjcWmg-LktuwpQJETjMCzGJiw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0ivyByegTMzqdvxqRM2kyjcWmg-LktuwpQJETjMCzGJiw@mail.gmail.com>
+User-Agent: Mutt/1.9.1 (2017-09-22)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190509211609.jyGqysj8MMnUpKZMKWOn5QWHUj-BgdUNuoViCzmzqw0@z>
 
-The power management unit on MMP2 is able to gate clock for the GC860 GPU=
-.
+On Thu, May 09, 2019 at 10:54:04PM +0200, Rafael J. Wysocki wrote:
+> On Thu, May 9, 2019 at 9:33 PM Keith Busch <kbusch@kernel.org> wrote:
+> >  #include <linux/io-64-nonatomic-lo-hi.h>
+> > @@ -2851,6 +2852,8 @@ static int nvme_suspend(struct device *dev)
+> >         struct pci_dev *pdev = to_pci_dev(dev);
+> >         struct nvme_dev *ndev = pci_get_drvdata(pdev);
+> >
+> > +       if (!pm_suspend_via_firmware())
+> > +               return nvme_set_power(&ndev->ctrl, ndev->ctrl.npss);
+> 
+> You probably want to call pci_save_state(pdev) in the branch above to
+> prevent pci_pm_suspend_noirq() from calling pci_prepare_to_sleep()
+> going forward, so I would write this routine as
+> 
+> if (pm_suspend_via_firmware()) {
+>         nvme_dev_disable(ndev, true);
+>         return 0;
+> }
+> 
+> pci_save_state(pdev)
+> return nvme_set_power(&ndev->ctrl, ndev->ctrl.npss);
 
-There's some special dance required to initialize the unit after the powe=
-r
-has been enabled. If not followed, either the GPU's memory interface or t=
-he
-GPU core doesn't work or the SoC just hangs.
+Ah, good point. I'll make sure that's added and will wait to see hear if
+there's any other feedback.
 
-Once the power has been applied to the GPU block, it doesn't seem
-possible to turn it off entirely and initialize again.
+I am trying to test the paths by faking out PS capabilities, and have
+a question on how to force each:
 
-As the data sheet is missing, neither the details about initialization, n=
-or
-the reason why it can't be reinitialized are understood. The meaning of
-most bits in the APMU_GPU register are partially described in [1].
+Running "rtcwake -m freeze ...", that takes the !pm_suspend_via_firmware()
+path as I expected.
 
-[1] http://lists.laptop.org/pipermail/devel/2019-April/039053.html
+But trying to test the original path, I thought using "-m mem" would
+have been a suspend via firmware, but that is still returning false.
 
-Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
----
- arch/arm/mach-mmp/Kconfig     |  2 +
- drivers/clk/mmp/clk-of-mmp2.c | 91 +++++++++++++++++++++++++++++++++++
- 2 files changed, 93 insertions(+)
-
-diff --git a/arch/arm/mach-mmp/Kconfig b/arch/arm/mach-mmp/Kconfig
-index 94500bed56ab..a0efaefbfc74 100644
---- a/arch/arm/mach-mmp/Kconfig
-+++ b/arch/arm/mach-mmp/Kconfig
-@@ -124,6 +124,8 @@ config MACH_MMP2_DT
- 	select PINCTRL_SINGLE
- 	select ARCH_HAS_RESET_CONTROLLER
- 	select CPU_PJ4
-+	select PM_GENERIC_DOMAINS if PM
-+	select PM_GENERIC_DOMAINS_OF if PM && OF
- 	help
- 	  Include support for Marvell MMP2 based platforms using
- 	  the device tree.
-diff --git a/drivers/clk/mmp/clk-of-mmp2.c b/drivers/clk/mmp/clk-of-mmp2.=
-c
-index 45f94c89cdc1..7bbf70b2ccd2 100644
---- a/drivers/clk/mmp/clk-of-mmp2.c
-+++ b/drivers/clk/mmp/clk-of-mmp2.c
-@@ -16,8 +16,11 @@
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/of_address.h>
-+#include <linux/pm_domain.h>
-+#include <linux/clk.h>
-=20
- #include <dt-bindings/clock/marvell,mmp2.h>
-+#include <dt-bindings/power/marvell,mmp2.h>
-=20
- #include "clk.h"
- #include "reset.h"
-@@ -58,6 +61,8 @@
-=20
- struct mmp2_clk_unit {
- 	struct mmp_clk_unit unit;
-+	struct genpd_onecell_data pd_data;
-+	struct generic_pm_domain gpu_pm_domain;
- 	void __iomem *mpmu_base;
- 	void __iomem *apmu_base;
- 	void __iomem *apbc_base;
-@@ -325,6 +330,90 @@ static void mmp2_clk_reset_init(struct device_node *=
-np,
- 	mmp_clk_reset_register(np, cells, nr_resets);
- }
-=20
-+static int mmp2_gpu_pm_domain_power_on(struct generic_pm_domain *genpd)
-+{
-+	struct mmp2_clk_unit *pxa_unit =3D container_of(genpd,
-+			struct mmp2_clk_unit, gpu_pm_domain);
-+	struct mmp_clk_unit *unit =3D &pxa_unit->unit;
-+	void __iomem *reg =3D pxa_unit->apmu_base + APMU_GPU;
-+	unsigned long flags =3D 0;
-+	u32 tmp;
-+	int ret;
-+
-+	spin_lock_irqsave(&gpu_lock, flags);
-+
-+	/* Power up the module. */
-+	tmp =3D readl(reg);
-+	tmp &=3D ~0x8700;
-+	tmp |=3D 0x8600;
-+	writel(tmp, reg);
-+
-+	ret =3D clk_prepare_enable(unit->clk_table[MMP2_CLK_GPU_GC]);
-+	if (ret)
-+		return ret;
-+
-+	ret =3D clk_prepare_enable(unit->clk_table[MMP2_CLK_GPU_BUS]);
-+	if (ret) {
-+		clk_disable_unprepare(unit->clk_table[MMP2_CLK_GPU_GC]);
-+		return ret;
-+	}
-+
-+	/* Disable isolation now that clocks are running. */
-+	tmp =3D readl(reg);
-+	tmp |=3D 0x100;
-+	writel(tmp, reg);
-+	udelay(1);
-+
-+	spin_unlock_irqrestore(&gpu_lock, flags);
-+
-+	return 0;
-+}
-+
-+static int mmp2_gpu_pm_domain_power_off(struct generic_pm_domain *genpd)
-+{
-+	struct mmp2_clk_unit *pxa_unit =3D container_of(genpd,
-+			struct mmp2_clk_unit, gpu_pm_domain);
-+	struct mmp_clk_unit *unit =3D &pxa_unit->unit;
-+	void __iomem *reg =3D pxa_unit->apmu_base + APMU_GPU;
-+	unsigned long flags =3D 0;
-+	u32 tmp;
-+
-+	spin_lock_irqsave(&gpu_lock, flags);
-+
-+	/*
-+	 * Re-enable isolation. We must not touch the other bits,
-+	 * otherwise the * GPU hangs without a known way to recover.
-+	 */
-+	tmp =3D readl(reg);
-+	tmp &=3D ~0x100;
-+	writel(tmp, reg);
-+	udelay(1);
-+
-+	clk_disable_unprepare(unit->clk_table[MMP2_CLK_GPU_BUS]);
-+	clk_disable_unprepare(unit->clk_table[MMP2_CLK_GPU_GC]);
-+
-+	spin_unlock_irqrestore(&gpu_lock, flags);
-+
-+	return 0;
-+}
-+
-+static struct generic_pm_domain *mmp2_pm_onecell_domains[MMP2_NR_POWER_D=
-OMAINS];
-+
-+static void mmp2_pm_domain_init(struct device_node *np,
-+			struct mmp2_clk_unit *pxa_unit)
-+{
-+	pm_genpd_init(&pxa_unit->gpu_pm_domain, NULL, true);
-+	pxa_unit->gpu_pm_domain.name =3D "GPU";
-+	pxa_unit->gpu_pm_domain.power_on =3D mmp2_gpu_pm_domain_power_on;
-+	pxa_unit->gpu_pm_domain.power_off =3D mmp2_gpu_pm_domain_power_off;
-+	mmp2_pm_onecell_domains[MMP2_POWER_DOMAIN_GPU]
-+				=3D &pxa_unit->gpu_pm_domain;
-+
-+	pxa_unit->pd_data.domains =3D mmp2_pm_onecell_domains;
-+	pxa_unit->pd_data.num_domains =3D ARRAY_SIZE(mmp2_pm_onecell_domains);
-+	of_genpd_add_provider_onecell(np, &pxa_unit->pd_data);
-+}
-+
- static void __init mmp2_clk_init(struct device_node *np)
- {
- 	struct mmp2_clk_unit *pxa_unit;
-@@ -351,6 +440,8 @@ static void __init mmp2_clk_init(struct device_node *=
-np)
- 		goto unmap_apmu_region;
- 	}
-=20
-+	mmp2_pm_domain_init(np, pxa_unit);
-+
- 	mmp_clk_init(np, &pxa_unit->unit, MMP2_NR_CLKS);
-=20
- 	mmp2_pll_init(pxa_unit);
---=20
-2.21.0
-
+Is that expected? I've only tried this on one platform so far, so might
+just be this particular one is missing a firmware capability. 
