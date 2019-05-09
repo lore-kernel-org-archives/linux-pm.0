@@ -1,82 +1,129 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] x86: intel_epb: Take CONFIG_PM into account
-Date: Thu, 09 May 2019 23:28:41 +0200
-Message-ID: <3431308.1mSSVdqTRr@kreacher>
-References: <1637073.gl2OfxWTjI@aspire.rjw.lan> <1627338.1fd8ofggM8@kreacher> <20190509174338.GA24432@splinter>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: [PATCH] nvme-pci: Use non-operational power state instead of D3
+ on Suspend-to-Idle
+Date: Thu, 9 May 2019 21:37:58 +0000
+Message-ID: <7a002851c435481593f8629ec9193e40@AUSX13MPC101.AMER.DELL.COM>
+References: <b43f2c0078f245398101fa9a40cfc2dc@AUSX13MPC105.AMER.DELL.COM>
+ <20190509061237.GA15229@lst.de>
+ <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
+ <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
+ <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com>
+ <20190509095601.GA19041@lst.de>
+ <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+ <20190509103142.GA19550@lst.de>
+ <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
+ <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
+ <20190509192807.GB9675@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190509174338.GA24432@splinter>
+In-Reply-To: <20190509192807.GB9675@localhost.localdomain>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Ido Schimmel <idosch@idosch.org>, x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>, Hannes Reinecke <hare@suse.de>
+To: kbusch@kernel.org
+Cc: kai.heng.feng@canonical.com, hch@lst.de, axboe@fb.com, sagi@grimberg.me, rafael@kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org, keith.busch@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> On Thu, May 09, 2019 at 06:57:34PM +0000, Mario.Limonciello@dell.com wrot=
+e:
+> > No, current Windows versions don't transition to D3 with inbox NVME dri=
+ver.
+> > You're correct, it's explicit state transitions even if APST was enable=
+d
+> > (as this patch is currently doing as well).
+>=20
+> The proposed patch does too much, and your resume latency will be worse
+> off for doing an unnecessary controller reset.
+>=20
+> The following should be all that's needed if the device is spec
+> compliant. The resume part isn't necessary if npss is non-operational, bu=
+t
+> we're not saving that info, and it shouldn't hurt to be explicit anyway.
+>=20
+> I don't have any PS capable devices, so this is just compile tested.
+>=20
+> ---
+> diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
+> index 6265d9225ec8..ce8b9bc949b9 100644
+> --- a/drivers/nvme/host/core.c
+> +++ b/drivers/nvme/host/core.c
+> @@ -1132,6 +1132,22 @@ static int nvme_set_features(struct nvme_ctrl *dev=
+,
+> unsigned fid, unsigned dword
+>  	return ret;
+>  }
+>=20
+> +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned npss)
+> +{
+> +	int ret;
+> +
+> +	mutex_lock(&ctrl->scan_lock);
+> +	nvme_start_freeze(ctrl);
+> +	nvme_wait_freeze(ctrl);
+> +	ret =3D nvme_set_features(ctrl, NVME_FEAT_POWER_MGMT, npss, NULL, 0,
+> +				NULL);
+> +	nvme_unfreeze(ctrl);
+> +	mutex_unlock(&ctrl->scan_lock);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(nvme_set_power);
 
-Commit b9c273babce7 (PM / arch: x86: MSR_IA32_ENERGY_PERF_BIAS sysfs
-interface) caused kernels built with CONFIG_PM unset to crash on
-systems supporting the Performance and Energy Bias Hint (EPB),
-because it attempts to add files to sysfs directories that don't
-exist on those systems.
+I believe without memory barriers at the end disks with HMB this will
+still kernel panic (Such as Toshiba BG3).
 
-Prevent that from happening by taking CONFIG_PM into account so
-that the code depending on it is not compiled at all when it is
-not set.
+This still allows D3 which we found at least failed to go into deepest stat=
+e and blocked
+platform s0ix for the following SSDs (maybe others):
+Hynix PC601
+LiteOn CL1
 
-Fixes: b9c273babce7 (PM / arch: x86: MSR_IA32_ENERGY_PERF_BIAS sysfs interface)
-Reported-by: Ido Schimmel <idosch@mellanox.com>
-Tested-by: Ido Schimmel <idosch@mellanox.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- arch/x86/kernel/cpu/intel_epb.c |   22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
-
-Index: linux-pm/arch/x86/kernel/cpu/intel_epb.c
-===================================================================
---- linux-pm.orig/arch/x86/kernel/cpu/intel_epb.c
-+++ linux-pm/arch/x86/kernel/cpu/intel_epb.c
-@@ -97,6 +97,7 @@ static void intel_epb_restore(void)
- 	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, (epb & ~EPB_MASK) | val);
- }
- 
-+#ifdef CONFIG_PM
- static struct syscore_ops intel_epb_syscore_ops = {
- 	.suspend = intel_epb_save,
- 	.resume = intel_epb_restore,
-@@ -193,6 +194,25 @@ static int intel_epb_offline(unsigned in
- 	return 0;
- }
- 
-+static inline void register_intel_ebp_syscore_ops(void)
-+{
-+	register_syscore_ops(&intel_epb_syscore_ops);
-+}
-+#else /* !CONFIG_PM */
-+static int intel_epb_online(unsigned int cpu)
-+{
-+	intel_epb_restore();
-+	return 0;
-+}
-+
-+static int intel_epb_offline(unsigned int cpu)
-+{
-+	return intel_epb_save();
-+}
-+
-+static inline void register_intel_ebp_syscore_ops(void) {}
-+#endif
-+
- static __init int intel_epb_init(void)
- {
- 	int ret;
-@@ -206,7 +226,7 @@ static __init int intel_epb_init(void)
- 	if (ret < 0)
- 		goto err_out_online;
- 
--	register_syscore_ops(&intel_epb_syscore_ops);
-+	register_intel_ebp_syscore_ops();
- 	return 0;
- 
- err_out_online:
+> +
+>  int nvme_set_queue_count(struct nvme_ctrl *ctrl, int *count)
+>  {
+>  	u32 q_count =3D (*count - 1) | ((*count - 1) << 16);
+> diff --git a/drivers/nvme/host/nvme.h b/drivers/nvme/host/nvme.h
+> index 527d64545023..f2be6aad9804 100644
+> --- a/drivers/nvme/host/nvme.h
+> +++ b/drivers/nvme/host/nvme.h
+> @@ -459,6 +459,7 @@ int __nvme_submit_sync_cmd(struct request_queue *q,
+> struct nvme_command *cmd,
+>  		unsigned timeout, int qid, int at_head,
+>  		blk_mq_req_flags_t flags, bool poll);
+>  int nvme_set_queue_count(struct nvme_ctrl *ctrl, int *count);
+> +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned npss);
+>  void nvme_stop_keep_alive(struct nvme_ctrl *ctrl);
+>  int nvme_reset_ctrl(struct nvme_ctrl *ctrl);
+>  int nvme_reset_ctrl_sync(struct nvme_ctrl *ctrl);
+> diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
+> index a90cf5d63aac..2c4154cb4e79 100644
+> --- a/drivers/nvme/host/pci.c
+> +++ b/drivers/nvme/host/pci.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/once.h>
+>  #include <linux/pci.h>
+> +#include <linux/suspend.h>
+>  #include <linux/t10-pi.h>
+>  #include <linux/types.h>
+>  #include <linux/io-64-nonatomic-lo-hi.h>
+> @@ -2851,6 +2852,8 @@ static int nvme_suspend(struct device *dev)
+>  	struct pci_dev *pdev =3D to_pci_dev(dev);
+>  	struct nvme_dev *ndev =3D pci_get_drvdata(pdev);
+>=20
+> +	if (!pm_suspend_via_firmware())
+> +		return nvme_set_power(&ndev->ctrl, ndev->ctrl.npss);
+>  	nvme_dev_disable(ndev, true);
+>  	return 0;
+>  }
+> @@ -2860,6 +2863,8 @@ static int nvme_resume(struct device *dev)
+>  	struct pci_dev *pdev =3D to_pci_dev(dev);
+>  	struct nvme_dev *ndev =3D pci_get_drvdata(pdev);
+>=20
+> +	if (!pm_suspend_via_firmware())
+> +		return nvme_set_power(&ndev->ctrl, 0);
+>  	nvme_reset_ctrl(&ndev->ctrl);
+>  	return 0;
+>  }
+> --
