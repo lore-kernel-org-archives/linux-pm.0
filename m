@@ -1,48 +1,113 @@
-From: Keith Busch <kbusch@kernel.org>
-Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of D3
- on Suspend-to-Idle
-Date: Thu, 9 May 2019 10:20:38 -0600
-Message-ID: <20190509162038.GC9548@localhost.localdomain>
-References: <3CDA9F13-B17C-456F-8CE1-3A63C6E0DC8F@canonical.com>
- <f8a043b00909418bad6adcdb62d16e6e@AUSX13MPC105.AMER.DELL.COM>
- <20190508195159.GA1530@lst.de>
- <b43f2c0078f245398101fa9a40cfc2dc@AUSX13MPC105.AMER.DELL.COM>
- <20190509061237.GA15229@lst.de>
- <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
- <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
- <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com>
- <20190509095601.GA19041@lst.de>
- <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] PM / arch: x86: MSR_IA32_ENERGY_PERF_BIAS sysfs interface
+Date: Thu, 09 May 2019 19:18:28 +0200
+Message-ID: <1627338.1fd8ofggM8@kreacher>
+References: <1637073.gl2OfxWTjI@aspire.rjw.lan> <1762575.ER2xjzr9E1@aspire.rjw.lan> <20190509102315.GA31824@splinter>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+In-Reply-To: <20190509102315.GA31824@splinter>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc: Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rafael@kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mario Limonciello <Mario.Limonciello@dell.com>, "Busch, Keith" <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, Sagi Grimberg <sagi@grimberg.me>, linux-nvme <linux-nvme@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Ido Schimmel <idosch@idosch.org>
+Cc: x86 <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Simon Schricker <sschricker@suse.de>, Borislav Petkov <bp@suse.de>, Hannes Reinecke <hare@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 09, 2019 at 03:28:32AM -0700, Kai-Heng Feng wrote:
-> at 17:56, Christoph Hellwig <hch@lst.de> wrote:
-> > The we have the sequence in your patch.  This seems to be related to
-> > some of the MS wording, but I'm not sure what for example tearing down
-> > the queues buys us.  Can you explain a bit more where those bits
-> > make a difference?
+On Thursday, May 9, 2019 12:23:15 PM CEST Ido Schimmel wrote:
+> On Thu, Mar 21, 2019 at 11:20:17PM +0100, Rafael J. Wysocki wrote:
+> > +static struct attribute *intel_epb_attrs[] = {
+> > +	&dev_attr_energy_perf_bias.attr,
+> > +	NULL
+> > +};
+> > +
+> > +static const struct attribute_group intel_epb_attr_group = {
+> > +	.name = power_group_name,
+> > +	.attrs =  intel_epb_attrs
+> > +};
+> > +
+> >  static int intel_epb_online(unsigned int cpu)
+> >  {
+> > +	struct device *cpu_dev = get_cpu_device(cpu);
+> > +
+> >  	intel_epb_restore();
+> > +	if (!cpuhp_tasks_frozen)
+> > +		sysfs_merge_group(&cpu_dev->kobj, &intel_epb_attr_group);
+> > +
+> >  	return 0;
+> >  }
+> >  
+> >  static int intel_epb_offline(unsigned int cpu)
+> >  {
+> > -	return intel_epb_save();
+> > +	struct device *cpu_dev = get_cpu_device(cpu);
+> > +
+> > +	if (!cpuhp_tasks_frozen)
+> > +		sysfs_unmerge_group(&cpu_dev->kobj, &intel_epb_attr_group);
+> > +
+> > +	intel_epb_save();
+> > +	return 0;
+> >  }
 > 
-> Based on my testing if queues (IRQ) are not disabled, NVMe controller won’t  
-> be quiesced.
-> Symptoms can be high power drain or system freeze.
+> Hi,
 > 
-> I can check with vendors whether this also necessary under Windows.
+> I just booted net-next and got the following NULL pointer dereference
+> [1] during boot. I believe it is caused by this patch.
 
-Hm, that doesn't sound right based on the spec's description of how this
-feature works. We should not need to tear down IO queues for entering
-low power, nor reset the controller to exit it.
+I think you're right, sorry about this.
 
-The sequence for entering non-operational low power should just be freeze
-request queues, set the power feature, then unfreeze request queues.
+> CONFIG_PM is disabled in my config which means 'power_group_name' is
+> defined as NULL. When I enable CONFIG_PM the issue is not reproduced.
 
-We shouldn't have to do anything to exit the state as the spec requires
-devices autonomously return to operational when an IO doorbell is written.
+So does the patch below fix it for you?
+
+---
+ arch/x86/kernel/cpu/intel_epb.c |   22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+Index: linux-pm/arch/x86/kernel/cpu/intel_epb.c
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/cpu/intel_epb.c
++++ linux-pm/arch/x86/kernel/cpu/intel_epb.c
+@@ -97,6 +97,7 @@ static void intel_epb_restore(void)
+ 	wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, (epb & ~EPB_MASK) | val);
+ }
+ 
++#ifdef CONFIG_PM
+ static struct syscore_ops intel_epb_syscore_ops = {
+ 	.suspend = intel_epb_save,
+ 	.resume = intel_epb_restore,
+@@ -193,6 +194,25 @@ static int intel_epb_offline(unsigned in
+ 	return 0;
+ }
+ 
++static inline void register_intel_ebp_syscore_ops(void)
++{
++	register_syscore_ops(&intel_epb_syscore_ops);
++}
++#else /* !CONFIG_PM */
++static int intel_epb_online(unsigned int cpu)
++{
++	intel_epb_restore();
++	return 0;
++}
++
++static int intel_epb_offline(unsigned int cpu)
++{
++	return intel_epb_save();
++}
++
++static inline void register_intel_ebp_syscore_ops(void) {}
++#endif
++
+ static __init int intel_epb_init(void)
+ {
+ 	int ret;
+@@ -206,7 +226,7 @@ static __init int intel_epb_init(void)
+ 	if (ret < 0)
+ 		goto err_out_online;
+ 
+-	register_syscore_ops(&intel_epb_syscore_ops);
++	register_intel_ebp_syscore_ops();
+ 	return 0;
+ 
+ err_out_online:
