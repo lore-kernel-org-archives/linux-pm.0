@@ -1,49 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/4] cpufreq: Add imx-cpufreq-dt driver
-Date: Thu, 9 May 2019 14:53:36 +0530
-Message-ID: <20190509092336.jw54pzq7i7gzcuky@vireshk-i7>
-References: <cover.1557236799.git.leonard.crestez@nxp.com>
- <607242a278a4532d0b4285e0fb56abfd5767fdd1.1557236799.git.leonard.crestez@nxp.com>
- <20190508035402.7pbikzpkzxxesmlw@vireshk-i7>
- <AM0PR04MB64349B11B2A914F705B6D302EE330@AM0PR04MB6434.eurprd04.prod.outlook.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v8 06/16] sched/core: uclamp: Extend sched_setattr() to
+ support utilization clamping
+Date: Thu, 9 May 2019 10:23:47 +0100
+Message-ID: <20190509092347.2ny2kb74hrea323v@e110439-lin>
+References: <20190402104153.25404-1-patrick.bellasi@arm.com>
+ <20190402104153.25404-7-patrick.bellasi@arm.com>
+ <20190508194107.GE32547@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <AM0PR04MB64349B11B2A914F705B6D302EE330@AM0PR04MB6434.eurprd04.prod.outlook.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Aisheng Dong <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Abel Vesa <abel.vesa@nxp.com>, Anson Huang <anson.huang@nxp.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jacky Bai <ping.bai@nxp.com>
+In-Reply-To: <20190508194107.GE32547@worktop.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09-05-19, 09:03, Leonard Crestez wrote:
-> On 5/8/2019 6:54 AM, Viresh Kumar wrote:
-> > On 07-05-19, 13:52, Leonard Crestez wrote:
+On 08-May 21:41, Peter Zijlstra wrote:
+> On Tue, Apr 02, 2019 at 11:41:42AM +0100, Patrick Bellasi wrote:
+> > @@ -1056,6 +1100,13 @@ static void __init init_uclamp(void)
+> >  #else /* CONFIG_UCLAMP_TASK */
+> >  static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p) { }
+> >  static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p) { }
+> > +static inline int uclamp_validate(struct task_struct *p,
+> > +				  const struct sched_attr *attr)
+> > +{
+> > +	return -ENODEV;
 > 
-> >> +config ARM_IMX_CPUFREQ_DT
-> >> +	tristate "Freescale i.MX8M cpufreq support"
-> >> +	depends on ARCH_MXC && CPUFREQ_DT
-> >> +	default m if ARCH_MXC && CPUFREQ_DT
-> > 
-> > As I said in the previous version, the if block above is redundant and
-> > not required.
-> 
-> Sorry, I misread and thought you were referring to () rather than what's 
-> inside.
-> 
-> Is "default m" otherwise OK? It's a reasonable implication of ARCH_MXC
+> Does that maybe want to be -EOPNOTSUPP ?
 
-I think it would be better to keep it disabled by default and so
-removing the line all together would be a good option.
+Suren propose ENOSYS for another similar case, i.e.
+!CONFIG_UCLAMP_TASK definitions.
+
+But EOPNOTSUPP seems more appropriate to me too.
 
 -- 
-viresh
+#include <best/regards.h>
+
+Patrick Bellasi
