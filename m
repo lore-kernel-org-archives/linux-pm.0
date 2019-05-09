@@ -1,49 +1,38 @@
-From: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of
- D3 on Suspend-to-Idle
-Date: Thu, 9 May 2019 08:52:23 +0200
-Message-ID: <20190509065223.GA15984@lst.de>
-References: <20190508185955.11406-1-kai.heng.feng@canonical.com> <20190508191624.GA8365@localhost.localdomain> <3CDA9F13-B17C-456F-8CE1-3A63C6E0DC8F@canonical.com> <f8a043b00909418bad6adcdb62d16e6e@AUSX13MPC105.AMER.DELL.COM> <20190508195159.GA1530@lst.de> <b43f2c0078f245398101fa9a40cfc2dc@AUSX13MPC105.AMER.DELL.COM> <20190509061237.GA15229@lst.de> <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v8 04/16] sched/core: uclamp: Add system default clamps
+Date: Thu, 9 May 2019 09:43:11 +0100
+Message-ID: <20190509084311.clpvno6am7bxo5wz@e110439-lin>
+References: <20190402104153.25404-1-patrick.bellasi@arm.com>
+ <20190402104153.25404-5-patrick.bellasi@arm.com>
+ <20190508184202.GA32547@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
+In-Reply-To: <20190508184202.GA32547@worktop.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc: Christoph Hellwig <hch@lst.de>, rafael.j.wysocki@intel.com, Mario.Limonciello@dell.com, Keith Busch <kbusch@kernel.org>, Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, Sagi Grimberg <sagi@grimberg.me>, linux-nvme <linux-nvme@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 09, 2019 at 02:48:59PM +0800, Kai-Heng Feng wrote:
-> Not really, for hibernation pm_suspend_via_s2idle() evaluates to false so 
-> the old code path will be taken.
->
->>
->> And more to the points - if these "modern MS standby" systems are
->> becoming common, which it looks they are, we need support in the PM core
->> for those instead of working around the decisions in low-level drivers.
->
-> Rafael, what do you think about this?
-> Including this patch, there are five drivers that use 
-> pm_suspend_via_{firmware,s2idle}() to differentiate between S2I and S3.
-> So I think maybe it’s time to introduce a new suspend callback for S2I?
+On 08-May 20:42, Peter Zijlstra wrote:
+> On Tue, Apr 02, 2019 at 11:41:40AM +0100, Patrick Bellasi wrote:
+> > Add a privileged interface to define a system default configuration via:
+> > 
+> >   /proc/sys/kernel/sched_uclamp_util_{min,max}
+> 
+> Isn't the 'u' in "uclamp" already for util?
 
-We also really need something like that to avoid the PCI_DEV_FLAGS_NO_D3
-abuse - that flag is a quirk statically set on a device at probe time
-to prevent any entering of D3 state.
+Yes, right... I've just wanted to keep the same "uclamp" prefix used
+by all related kernel symbols. But, since that's user-space API we can
+certainly drop it and go for either:
 
->> per definition, although they might not be too useful.  I suspect checking
->> APSTA might be safer, but if we don't want to rely on APST we should
->> check for a power state supporting the condition that the MS document
->> quoted in the original document supports.
->
-> If Modern Standby or Connected Standby is not supported by servers, I 
-> don’t think the design documents mean much here.
-> We probably should check if the platform firmware really supports S2I 
-> instead.
+      /proc/sys/kernel/sched_clamp_util_{min,max}
+      /proc/sys/kernel/sched_util_clamp_{min,max}
 
-That too.  As said this really is a platform decision, and needs to
-be managed by the platform code through the PM core.  Individual drivers
-like nvme can just implement the behavior, but are the absolute wrong
-place to make decisions on what kinds of suspend to enter.
+Preference?
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
