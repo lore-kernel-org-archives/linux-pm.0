@@ -1,60 +1,123 @@
-From: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of
- D3 on Suspend-to-Idle
-Date: Thu, 9 May 2019 12:31:42 +0200
-Message-ID: <20190509103142.GA19550@lst.de>
-References: <3CDA9F13-B17C-456F-8CE1-3A63C6E0DC8F@canonical.com> <f8a043b00909418bad6adcdb62d16e6e@AUSX13MPC105.AMER.DELL.COM> <20190508195159.GA1530@lst.de> <b43f2c0078f245398101fa9a40cfc2dc@AUSX13MPC105.AMER.DELL.COM> <20190509061237.GA15229@lst.de> <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com> <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com> <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com> <20190509095601.GA19041@lst.de> <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v8 04/16] sched/core: uclamp: Add system default clamps
+Date: Thu, 9 May 2019 13:53:07 +0200
+Message-ID: <20190509115307.GS2623@hirez.programming.kicks-ass.net>
+References: <20190402104153.25404-1-patrick.bellasi@arm.com>
+ <20190402104153.25404-5-patrick.bellasi@arm.com>
+ <20190508190733.GC32547@worktop.programming.kicks-ass.net>
+ <20190508191529.GA26813@worktop.programming.kicks-ass.net>
+ <20190509091057.ckef2ley4eswyzds@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+In-Reply-To: <20190509091057.ckef2ley4eswyzds@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc: Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Mario Limonciello <Mario.Limonciello@dell.com>, Keith Busch <kbusch@kernel.org>, Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, Sagi Grimberg <sagi@grimberg.me>, linux-nvme <linux-nvme@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 09, 2019 at 06:28:32PM +0800, Kai-Heng Feng wrote:
-> Based on my testing if queues (IRQ) are not disabled, NVMe controller 
-> won’t be quiesced.
-> Symptoms can be high power drain or system freeze.
->
-> I can check with vendors whether this also necessary under Windows.
+On Thu, May 09, 2019 at 10:10:57AM +0100, Patrick Bellasi wrote:
+> On 08-May 21:15, Peter Zijlstra wrote:
+> > On Wed, May 08, 2019 at 09:07:33PM +0200, Peter Zijlstra wrote:
+> > > On Tue, Apr 02, 2019 at 11:41:40AM +0100, Patrick Bellasi wrote:
+> > > > +static inline struct uclamp_se
+> > > > +uclamp_eff_get(struct task_struct *p, unsigned int clamp_id)
+> > > > +{
+> > > > +	struct uclamp_se uc_req = p->uclamp_req[clamp_id];
+> > > > +	struct uclamp_se uc_max = uclamp_default[clamp_id];
+> > > > +
+> > > > +	/* System default restrictions always apply */
+> > > > +	if (unlikely(uc_req.value > uc_max.value))
+> > > > +		return uc_max;
+> > > > +
+> > > > +	return uc_req;
+> > > > +}
+> > > > +
+> > > > +static inline unsigned int
+> > > > +uclamp_eff_bucket_id(struct task_struct *p, unsigned int clamp_id)
+> > > > +{
+> > > > +	struct uclamp_se uc_eff;
+> > > > +
+> > > > +	/* Task currently refcounted: use back-annotated (effective) bucket */
+> > > > +	if (p->uclamp[clamp_id].active)
+> > > > +		return p->uclamp[clamp_id].bucket_id;
+> > > > +
+> > > > +	uc_eff = uclamp_eff_get(p, clamp_id);
+> > > > +
+> > > > +	return uc_eff.bucket_id;
+> > > > +}
+> > > > +
+> > > > +unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id)
+> > > > +{
+> > > > +	struct uclamp_se uc_eff;
+> > > > +
+> > > > +	/* Task currently refcounted: use back-annotated (effective) value */
+> > > > +	if (p->uclamp[clamp_id].active)
+> > > > +		return p->uclamp[clamp_id].value;
+> > > > +
+> > > > +	uc_eff = uclamp_eff_get(p, clamp_id);
+> > > > +
+> > > > +	return uc_eff.value;
+> > > > +}
+> > > 
+> > > This is 'wrong' because:
+> > > 
+> > >   uclamp_eff_value(p,id) := uclamp_eff(p,id).value
+> > 
+> > Clearly I means to say the above does not hold with the given
+> > implementation, while the naming would suggest it does.
+> 
+> Not sure to completely get your point...
 
-System freeze sounds odd.  And we had a patch from a person on the
-Cc list here that was handed to me through a few indirections that
-just skipps the suspend entirely for some cases, which seemd to
-work fine with the controllers in question.
+the point is that uclamp_eff_get() doesn't do the back annotate thing
+and therefore returns something entirely different from
+uclamp_eff_{bucket_id,value}(), where the naming would suggest it in
+fact returns the same thing.
 
->> Otherwise I think we should use a "no-op" suspend, just leaving the
->> power management to the device, or a simple setting the device to the
->> deepest power state for everything else, where everything else is
->> suspend, or suspend to idle.
->
-> I am not sure I get your idea. Does this “no-op” suspend happen in NVMe 
-> driver or PM core?
+> > > Which seems to suggest the uclamp_eff_*() functions want another name.
+> 
+> That function returns the effective value of a task, which is either:
+>  1. the back annotated value for a RUNNABLE task
+> or
+>  2. the aggregation of task-specific, system-default and cgroup values
+>     for a non RUNNABLE task.
 
-no-op means we don't want to do anything in nvme.  If that happens
-by not calling nvme or stubbing out the method for that particular
-case does not matter.
+Right, but uclamp_eff_get() doesn't do 1, while the other two do do it.
+And that is confusing.
 
->> And of course than we have windows modern standby actually mandating
->> runtime D3 in some case, and vague handwaving mentions of this being
->> forced on the platforms, which I'm not entirely sure how they fit
->> into the above picture.
->
-> I was told that Windows doesn’t use runtime D3, APST is used exclusively.
+> > > Also, suppose the above would be true; does GCC really generate better
+> > > code for the LHS compared to the RHS?
+> 
+> It generate "sane" code which implements the above logic and allows
+> to know that whenever we call uclamp_eff_value(p,id) we get the most
+> updated effective value for a task, independently from its {!}RUNNABLE
+> state.
+> 
+> I would keep the function but, since Suren also complained also about
+> the name... perhaps I should come up with a better name? Proposals?
 
-As far as I know the default power management modes in the Microsoft
-NVMe driver is explicit power management transitions, and in the Intel
-RST driver that is commonly used it is APST.  But both could still
-be comined with runtime D3 in theory, I'm just not sure if they are.
+Right, so they should move to the patch where they're needed, but I was
+wondering why you'd not written something like:
 
-Microsoft has been pushing for aggressive runtime D3 for a while, but
-I don't know if that includes NVMe devices.
+static inline
+struct uclamp_se uclamp_active(struct task_struct *p, unsigned int clamp_id)
+{
+	if (p->uclamp[clamp_id].active)
+		return p->uclamp[clamp_id];
 
->
-> Kai-Heng
->
----end quoted text---
+	return uclamp_eff(p, clamp_id);
+}
+
+And then used:
+
+	uclamp_active(p, id).{value,bucket_id}
+
+- OR -
+
+have uclamp_eff() include the active thing, afaict the callsite in
+uclamp_rq_inc_id() guarantees !active.
+
+In any case, I'm thinking the foo().member notation saves us from having
+to have two almost identical functions and the 'inline' part should get
+GCC to generate sane code.
