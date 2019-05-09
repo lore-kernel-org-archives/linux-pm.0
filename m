@@ -1,74 +1,49 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of D3
- on Suspend-to-Idle
-Date: Thu, 9 May 2019 11:19:37 +0200
-Message-ID: <CAJZ5v0h51nMCte4yL76nMWaYrrXDPrOK=CeUpc50=r2Pp_icPw@mail.gmail.com>
-References: <20190508185955.11406-1-kai.heng.feng@canonical.com>
- <20190508191624.GA8365@localhost.localdomain> <3CDA9F13-B17C-456F-8CE1-3A63C6E0DC8F@canonical.com>
- <f8a043b00909418bad6adcdb62d16e6e@AUSX13MPC105.AMER.DELL.COM>
- <20190508195159.GA1530@lst.de> <b43f2c0078f245398101fa9a40cfc2dc@AUSX13MPC105.AMER.DELL.COM>
- <20190509061237.GA15229@lst.de> <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
- <20190509065223.GA15984@lst.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/4] cpufreq: Add imx-cpufreq-dt driver
+Date: Thu, 9 May 2019 14:53:36 +0530
+Message-ID: <20190509092336.jw54pzq7i7gzcuky@vireshk-i7>
+References: <cover.1557236799.git.leonard.crestez@nxp.com>
+ <607242a278a4532d0b4285e0fb56abfd5767fdd1.1557236799.git.leonard.crestez@nxp.com>
+ <20190508035402.7pbikzpkzxxesmlw@vireshk-i7>
+ <AM0PR04MB64349B11B2A914F705B6D302EE330@AM0PR04MB6434.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190509065223.GA15984@lst.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Christoph Hellwig <hch@lst.de>
-Cc: Kai-Heng Feng <kai.heng.feng@canonical.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Mario Limonciello <Mario.Limonciello@dell.com>, Keith Busch <kbusch@kernel.org>, Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, Sagi Grimberg <sagi@grimberg.me>, linux-nvme <linux-nvme@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <AM0PR04MB64349B11B2A914F705B6D302EE330@AM0PR04MB6434.eurprd04.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Aisheng Dong <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Abel Vesa <abel.vesa@nxp.com>, Anson Huang <anson.huang@nxp.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jacky Bai <ping.bai@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 9, 2019 at 8:52 AM Christoph Hellwig <hch@lst.de> wrote:
->
-> On Thu, May 09, 2019 at 02:48:59PM +0800, Kai-Heng Feng wrote:
-> > Not really, for hibernation pm_suspend_via_s2idle() evaluates to false so
-> > the old code path will be taken.
-> >
-> >>
-> >> And more to the points - if these "modern MS standby" systems are
-> >> becoming common, which it looks they are, we need support in the PM core
-> >> for those instead of working around the decisions in low-level drivers.
-> >
-> > Rafael, what do you think about this?
-> > Including this patch, there are five drivers that use
-> > pm_suspend_via_{firmware,s2idle}() to differentiate between S2I and S3.
-> > So I think maybe it’s time to introduce a new suspend callback for S2I?
->
-> We also really need something like that to avoid the PCI_DEV_FLAGS_NO_D3
-> abuse - that flag is a quirk statically set on a device at probe time
-> to prevent any entering of D3 state.
+On 09-05-19, 09:03, Leonard Crestez wrote:
+> On 5/8/2019 6:54 AM, Viresh Kumar wrote:
+> > On 07-05-19, 13:52, Leonard Crestez wrote:
+> 
+> >> +config ARM_IMX_CPUFREQ_DT
+> >> +	tristate "Freescale i.MX8M cpufreq support"
+> >> +	depends on ARCH_MXC && CPUFREQ_DT
+> >> +	default m if ARCH_MXC && CPUFREQ_DT
+> > 
+> > As I said in the previous version, the if block above is redundant and
+> > not required.
+> 
+> Sorry, I misread and thought you were referring to () rather than what's 
+> inside.
+> 
+> Is "default m" otherwise OK? It's a reasonable implication of ARCH_MXC
 
-I agree that PCI_DEV_FLAGS_NO_D3 has to be avoided.
+I think it would be better to keep it disabled by default and so
+removing the line all together would be a good option.
 
-However, IMO introducing a new set of suspend (and resume) callbacks
-for S2I would not be practical, because
-
-(a) the only difference between S2I and S2R from a driver perspective
-is that it may be expected to do something "special" about setting the
-device power state in the S2I case (the rest of what needs to be done
-during system-wide suspend/resume remains the same in both cases),
-
-(b) the new callbacks would only be really useful for a handful of drivers.
-
-> >> per definition, although they might not be too useful.  I suspect checking
-> >> APSTA might be safer, but if we don't want to rely on APST we should
-> >> check for a power state supporting the condition that the MS document
-> >> quoted in the original document supports.
-> >
-> > If Modern Standby or Connected Standby is not supported by servers, I
-> > don’t think the design documents mean much here.
-> > We probably should check if the platform firmware really supports S2I
-> > instead.
->
-> That too.  As said this really is a platform decision, and needs to
-> be managed by the platform code through the PM core.
-
-I'm not what you mean by "platform decision" here.
-
->  Individual drivers like nvme can just implement the behavior, but are the absolute wrong
-> place to make decisions on what kinds of suspend to enter.
-
-Right, the choice of the target system state has already been made
-when their callbacks get invoked (and it has been made by user space,
-not by the platform).
+-- 
+viresh
