@@ -1,74 +1,48 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v7 07/13] dt-bindings: memory-controllers: add
- Exynos5422 DMC device description
-Date: Fri, 10 May 2019 15:12:52 +0200
-Message-ID: <c9b4759e-e15b-9c5d-63d0-9db06a4c361a@partner.samsung.com>
-References: <1557155521-30949-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20190506151215eucas1p2c57147edac5671c5ec9a223efb6b4adc@eucas1p2.samsung.com>
-        <1557155521-30949-8-git-send-email-l.luba@partner.samsung.com>
-        <20190507170422.GA25179@bogus>
-        <CAJKOXPdacKBrKeCyCaE7VS8-NOR4Oo27XY7rx20P2ORY2vBBSg@mail.gmail.com>
-        <ab489925-040c-815c-2aef-50ed0ee6cd6c@partner.samsung.com>
-        <CAL_JsqJSbi5jNZSRhiE-h74DdbsgM7O+tqP9HOf037pyN7TbFA@mail.gmail.com>
+From: michael.kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v2 0/8] Add Mediatek thermal dirver and dtsi
+Date: Fri, 10 May 2019 21:26:58 +0800
+Message-ID: <1557494826-6044-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqJSbi5jNZSRhiE-h74DdbsgM7O+tqP9HOf037pyN7TbFA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= <b.zolnierkie@samsung.com>, Kukjin Kim <kgene@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kees Cook <keescook@chromium.org>, Tony Lindgren <tony@atomide.com>, Joerg Roedel <jroedel@suse.de>, Thierry Reding <treding@nvidia.com>, Dmitry Osipenko <digetx@gmail.com>, willy.mh.wolff.ml
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, hsinyi-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+This patchset supports for MT8183 chip to mtk_thermal.c.
+Add thermal zone of all the thermal sensor in SoC for
+another get temperatrue. They don't need to thermal throttle.
+And we bind coolers for thermal zone nodes of cpu_thermal.
 
-On 5/8/19 10:35 PM, Rob Herring wrote:
-> On Wed, May 8, 2019 at 4:45 AM Lukasz Luba <l.luba@partner.samsung.com> wrote:
->>
->>
->> On 5/8/19 9:19 AM, Krzysztof Kozlowski wrote:
->>> On Tue, 7 May 2019 at 19:04, Rob Herring <robh@kernel.org> wrote:
->>>>> +- devfreq-events : phandles of the PPMU events used by the controller.
->>>>> +- samsung,syscon-chipid : phandle of the ChipID used by the controller.
->>>>> +- samsung,syscon-clk : phandle of the clock register set used by the controller.
->>>>
->>>> Looks like a hack. Can't you get this from the clocks property? What is
->>>> this for?
->>>
->>> Hi Rob,
->>>
->>> Lukasz uses these two syscon regmaps to read certain registers. For
->>> chipid he reads it to check the size of attached memory (only 2 GB
->>> version is supported). This indeed looks like a hack. However the
->>> second regmap (clk) is needed to get the timing data from registers
->>> from DMC clock driver address space. These are registers with memory
->>> timing so their data is not exposed anyway in common clk framework.
-> 
-> Okay, please just explain what your accessing. Consider adding the
-> offset as a cell in case stuff moves around on another chip.
-Good point. I will also have to regmap the registers and not take from
-'clock' device.
-> 
->>>
->>> Best regards,
->>> Krzysztof
->>
->> Thank you Krzysztof for a fast response. I have also responded to Rob.
->> I wouldn't call accessing chipid registers as a hack, though. The DMC
->> registers do not contain information about the memory chip since it is
->> in phase of production the board not the chip. Thus, chipid regs (which
->> loads from e-fuses) are best place to put information about memory
->> type/size.
-> 
-> For efuses, we have a binding (nvmem). Maybe you should use it.
-I don't know about the design of a planned 'chipid' driver, which going
-to be sent to LKML in near future. Thank you for this information,
-I will talk with Bartek.
+This patch series base on these patches [1][2][3][4].
 
-Regards,
-Lukasz
-> 
-> Rob
-> 
-> 
+[1]support for reading chip ID and efuse (https://patchwork.kernel.org/patch/10902131/)
+[2]arm64: dts: mt8183: Add reset-cells in infracfg (https://patchwork.kernel.org/patch/10908653/)
+[3]clk: reset: Modify reset-controller driver (https://patchwork.kernel.org/patch/10908657/)
+[4]PM / AVS: SVS: Introduce SVS engine (https://patchwork.kernel.org/patch/10923289/)
+
+Matthias Kaehlcke (2):
+	arm64: dts: mt8183: Configure CPU cooling
+	arm64: dts: mt8183: Increase polling frequency for CPU thermal zone
+
+Michael Kao (6):
+	arm64: dts: mt8183: add thermal zone node
+	arm64: dts: mt8183: add/update dynamic power coefficients
+	arm64: dts: mt8183: Add #cooling-cells to CPU nodes
+	thermal: mediatek: mt8183: fix bank number settings
+	thermal: mediatek: add another get_temp ops for thermal sensors
+	thermal: mediatek: use spinlock to protect PTPCORESEL
+
+arch/arm64/boot/dts/mediatek/mt8183.dtsi | 158 +++++++++++++++++++++++++++++++
+drivers/thermal/mtk_thermal.c            |  82 +++++++++++++---
+2 files changed, 226 insertions(+), 14 deletions(-)
