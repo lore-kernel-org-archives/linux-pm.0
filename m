@@ -6,48 +6,49 @@ X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCB3EC04A6B
-	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 13:58:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0052C04A6B
+	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 14:07:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A2161216C4
-	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 13:58:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 713E12175B
+	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 14:07:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1557496684;
-	bh=wi9DrMR6mkrZM1IxX0zmeg7ZN7IjGhBRej4ymYmI7tY=;
+	s=default; t=1557497259;
+	bh=5p097pVLcDjCzTKIh2UDmbz2TvM3KsyTCxiFEEUGYX8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=pqiWMQxFOcL1bqDmbJpz/e5rhJJN920sTFE/fjwCTOx05b9kjFZy86IRU+WxHL3HJ
-	 mq3oCR/UvWB42st21X5jsHidsPTwoR6f2t6PZg2O5ONdfIJ0zxA2+tsJdS9hIaepc3
-	 B0lh1J4KiGnhkuEuFVTi9pz5aZPNQWWlFjs/YjP4=
+	b=Wcs47FrsBx3wx3gYJRo8fVRsBTUU/BHnptq82lwZ8xRKAk94Cn681Z0ltzOp0wqYu
+	 V9OcWJAIhyflZM3QT3Ugm/iNPZfPN78Mc/I3DkFLARaQNhgaLyCCRKf0UIEeKYlHjB
+	 HCyXTYIrJoyDfoWQy8yc/UPhpb1VVnat7zNQLdpY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727501AbfEJN6E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 May 2019 09:58:04 -0400
-Received: from mga06.intel.com ([134.134.136.31]:18693 "EHLO mga06.intel.com"
+        id S1727708AbfEJOHi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 May 2019 10:07:38 -0400
+Received: from mga03.intel.com ([134.134.136.65]:32011 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727425AbfEJN6D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 10 May 2019 09:58:03 -0400
+        id S1727572AbfEJOHi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 May 2019 10:07:38 -0400
 X-Amp-Result: UNSCANNABLE
 X-Amp-File-Uploaded: False
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 10 May 2019 06:58:03 -0700
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 10 May 2019 07:07:38 -0700
 X-ExtLoop1: 1
 Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
-  by orsmga001.jf.intel.com with ESMTP; 10 May 2019 06:58:02 -0700
-Date:   Fri, 10 May 2019 07:52:34 -0600
+  by orsmga007.jf.intel.com with ESMTP; 10 May 2019 07:07:37 -0700
+Date:   Fri, 10 May 2019 08:02:09 -0600
 From:   Keith Busch <kbusch@kernel.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Mario Limonciello <Mario.Limonciello@dell.com>,
-        Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@fb.com>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        Linux PM <linux-pm@vger.kernel.org>,
+To:     Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc:     "Mario.Limonciello@dell.com" <Mario.Limonciello@dell.com>,
+        "hch@lst.de" <hch@lst.de>, "axboe@fb.com" <axboe@fb.com>,
+        "sagi@grimberg.me" <sagi@grimberg.me>,
+        "rafael@kernel.org" <rafael@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
         "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-nvme <linux-nvme@lists.infradead.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
         "Busch, Keith" <keith.busch@intel.com>
 Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of D3
  on Suspend-to-Idle
-Message-ID: <20190510135234.GF9675@localhost.localdomain>
-References: <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+Message-ID: <20190510140209.GG9675@localhost.localdomain>
+References: <20190509095601.GA19041@lst.de>
+ <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
  <20190509103142.GA19550@lst.de>
  <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
  <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
@@ -56,28 +57,25 @@ References: <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
  <20190509215409.GD9675@localhost.localdomain>
  <495d76c66aec41a8bfbbf527820f8eb9@AUSX13MPC101.AMER.DELL.COM>
  <BC5EB1D0-8718-48B3-ACAB-F7E5571D821D@canonical.com>
- <CAJZ5v0jAcX-Q2twygKoKvmx2H6tneHWimmH+c2GsYitHK5-knw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jAcX-Q2twygKoKvmx2H6tneHWimmH+c2GsYitHK5-knw@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <BC5EB1D0-8718-48B3-ACAB-F7E5571D821D@canonical.com>
 User-Agent: Mutt/1.9.1 (2017-09-22)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190510135234.z5kSpy3yT53lOxHyYsmWmBxx0Fod_H3c_sGDy0qUxEg@z>
+Message-ID: <20190510140209.xLSWRH4ylb6_CD_Nt-K4NQSuip4gGENvcvjY3Ke46Xw@z>
 
-On Fri, May 10, 2019 at 01:23:11AM -0700, Rafael J. Wysocki wrote:
-> On Fri, May 10, 2019 at 8:08 AM Kai-Heng Feng
-> > I tested the patch from Keith and it has two issues just as simply skipping
-> > nvme_dev_disable():
-> > 1) It consumes more power in S2I
-> > 2) System freeze after resume
-> 
-> Well, the Keith's patch doesn't prevent pci_pm_suspend_noirq() from
-> asking for D3 and both of the symptoms above may be consequences of
-> that in principle.
+On Thu, May 09, 2019 at 11:05:42PM -0700, Kai-Heng Feng wrote:
+> Yes, that’ what I was told by the NVMe vendor, so all I know is to impose a  
+> memory barrier.
+> If mb() shouldn’t be used here, what’s the correct variant to use in this  
+> context?
 
-Right, I'll fix up the kernel's PCI D3 control and resend for
-consideration.
+I'm afraid the requirement is still not clear to me. AFAIK, all our
+barriers routines ensure data is visible either between CPUs, or between
+CPU and devices. The CPU never accesses HMB memory, so there must be some
+other reasoning if this barrier is a real requirement for this device.
