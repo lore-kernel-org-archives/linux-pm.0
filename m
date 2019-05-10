@@ -1,123 +1,108 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of D3
- on Suspend-to-Idle
-Date: Fri, 10 May 2019 10:23:11 +0200
-Message-ID: <CAJZ5v0jAcX-Q2twygKoKvmx2H6tneHWimmH+c2GsYitHK5-knw@mail.gmail.com>
-References: <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
- <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
- <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com> <20190509095601.GA19041@lst.de>
- <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com> <20190509103142.GA19550@lst.de>
- <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com> <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
- <20190509192807.GB9675@localhost.localdomain> <7a002851c435481593f8629ec9193e40@AUSX13MPC101.AMER.DELL.COM>
- <20190509215409.GD9675@localhost.localdomain> <495d76c66aec41a8bfbbf527820f8eb9@AUSX13MPC101.AMER.DELL.COM>
- <BC5EB1D0-8718-48B3-ACAB-F7E5571D821D@canonical.com>
+From: Andy Tang <andy.tang@nxp.com>
+Subject: RE: [EXT] Re: [PATCH v6] arm64: dts: ls1088a: add one more thermal
+ zone node
+Date: Fri, 10 May 2019 08:47:36 +0000
+Message-ID: <VI1PR04MB4333372C1DABD0E4C9DD7FE8F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+References: <20190423022507.34969-1-andy.tang@nxp.com>
+ <20190510031335.GD15856@dragon>
+ <VI1PR04MB4333D24227603D1497BA3CB9F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+ <9fb2e306-38c7-2af7-5470-ff5bc4e23370@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <BC5EB1D0-8718-48B3-ACAB-F7E5571D821D@canonical.com>
+In-Reply-To: <9fb2e306-38c7-2af7-5470-ff5bc4e23370@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc: Mario Limonciello <Mario.Limonciello@dell.com>, Keith Busch <kbusch@kernel.org>, Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@fb.com>, Sagi Grimberg <sagi@grimberg.me>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-nvme <linux-nvme@lists.infradead.org>, Keith Busch <keith.busch@intel.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Shawn Guo <shawnguo@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: Leo Li <leoyang.li@nxp.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 10, 2019 at 8:08 AM Kai-Heng Feng
-<kai.heng.feng@canonical.com> wrote:
->
-> at 06:19, <Mario.Limonciello@dell.com> <Mario.Limonciello@dell.com> wrote:
->
-> >> -----Original Message-----
-> >> From: Keith Busch <kbusch@kernel.org>
-> >> Sent: Thursday, May 9, 2019 4:54 PM
-> >> To: Limonciello, Mario
-> >> Cc: kai.heng.feng@canonical.com; hch@lst.de; axboe@fb.com;
-> >> sagi@grimberg.me; rafael@kernel.org; linux-pm@vger.kernel.org;
-> >> rafael.j.wysocki@intel.com; linux-kernel@vger.kernel.org; linux-
-> >> nvme@lists.infradead.org; keith.busch@intel.com
-> >> Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead
-> >> of D3 on
-> >> Suspend-to-Idle
-> >>
-> >>
-> >> [EXTERNAL EMAIL]
-> >>
-> >> On Thu, May 09, 2019 at 09:37:58PM +0000, Mario.Limonciello@dell.com
-> >> wrote:
-> >>>> +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned npss)
-> >>>> +{
-> >>>> +  int ret;
-> >>>> +
-> >>>> +  mutex_lock(&ctrl->scan_lock);
-> >>>> +  nvme_start_freeze(ctrl);
-> >>>> +  nvme_wait_freeze(ctrl);
-> >>>> +  ret = nvme_set_features(ctrl, NVME_FEAT_POWER_MGMT, npss, NULL, 0,
-> >>>> +                          NULL);
-> >>>> +  nvme_unfreeze(ctrl);
-> >>>> +  mutex_unlock(&ctrl->scan_lock);
-> >>>> +
-> >>>> +  return ret;
-> >>>> +}
-> >>>> +EXPORT_SYMBOL_GPL(nvme_set_power);
-> >>>
-> >>> I believe without memory barriers at the end disks with HMB this will
-> >>> still kernel panic (Such as Toshiba BG3).
-> >>
-> >> Well, the mutex has an implied memory barrier, but your HMB explanation
-> >> doesn't make much sense to me anyway. The "mb()" in this thread's original
-> >> patch is a CPU memory barrier, and the CPU had better not be accessing
-> >> HMB memory. Is there something else going on here?
-> >
-> > Kai Heng will need to speak up a bit in his time zone as he has this disk
-> > on hand,
-> > but what I recall from our discussion was that DMA operation MemRd after
-> > resume was the source of the hang.
->
-> Yes, that’ what I was told by the NVMe vendor, so all I know is to impose a
-> memory barrier.
-> If mb() shouldn’t be used here, what’s the correct variant to use in this
-> context?
->
-> >
-> >>> This still allows D3 which we found at least failed to go into deepest
-> >>> state and
-> >> blocked
-> >>> platform s0ix for the following SSDs (maybe others):
-> >>> Hynix PC601
-> >>> LiteOn CL1
-> >>
-> >> We usually write features to spec first, then quirk non-compliant
-> >> devices after.
-> >
-> > NVME spec doesn't talk about a relationship between SetFeatures w/
-> > NVME_FEAT_POWER_MGMGT and D3 support, nor order of events.
-> >
-> > This is why we opened a dialog with storage vendors, including
-> > contrasting the behavior
-> > of Microsoft Windows inbox NVME driver and Intel's Windows RST driver.
-> >
-> > Those two I mention that come to mind immediately because they were most
-> > recently
-> > tested to fail.  Our discussion with storage vendors overwhelmingly
-> > requested
-> > that we don't use D3 under S2I because their current firmware
-> > architecture won't
-> > support it.
-> >
-> > For example one vendor told us with current implementation that receiving
-> > D3hot
-> > after NVME shutdown will prevent being able to enter L1.2.  D3hot entry
-> > was supported
-> > by an IRQ handler that isn't serviced in NVME shutdown state.
-> >
-> > Another vendor told us that with current implementation it's impossible
-> > to transition
-> > to PS4 (at least via APST) while L1.2 D3hot is active.
->
-> I tested the patch from Keith and it has two issues just as simply skipping
-> nvme_dev_disable():
-> 1) It consumes more power in S2I
-> 2) System freeze after resume
-
-Well, the Keith's patch doesn't prevent pci_pm_suspend_noirq() from
-asking for D3 and both of the symptoms above may be consequences of
-that in principle.
+KyBWaXJlc2ggZm9yIGhlbHAuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJv
+bTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIw
+MTnE6jXUwjEwyNUgMTU6MTcNCj4gVG86IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+OyBT
+aGF3biBHdW8gPHNoYXduZ3VvQGtlcm5lbC5vcmc+DQo+IENjOiBMZW8gTGkgPGxlb3lhbmcubGlA
+bnhwLmNvbT47IHJvYmgrZHRAa2VybmVsLm9yZzsNCj4gbWFyay5ydXRsYW5kQGFybS5jb207IGxp
+bnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj4gZGV2aWNldHJlZUB2Z2VyLmtl
+cm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4LXBtQHZnZXIu
+a2VybmVsLm9yZzsgcnVpLnpoYW5nQGludGVsLmNvbTsgZWR1YmV6dmFsQGdtYWlsLmNvbQ0KPiBT
+dWJqZWN0OiBSZTogW0VYVF0gUmU6IFtQQVRDSCB2Nl0gYXJtNjQ6IGR0czogbHMxMDg4YTogYWRk
+IG9uZSBtb3JlIHRoZXJtYWwNCj4gem9uZSBub2RlDQo+IA0KPiBDYXV0aW9uOiBFWFQgRW1haWwN
+Cj4gDQo+IE9uIDEwLzA1LzIwMTkgMDU6NDAsIEFuZHkgVGFuZyB3cm90ZToNCj4gPj4gLS0tLS1P
+cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogU2hhd24gR3VvIDxzaGF3bmd1b0BrZXJu
+ZWwub3JnPg0KPiA+PiBTZW50OiAyMDE5xOo11MIxMMjVIDExOjE0DQo+ID4+IFRvOiBBbmR5IFRh
+bmcgPGFuZHkudGFuZ0BueHAuY29tPg0KPiA+PiBDYzogTGVvIExpIDxsZW95YW5nLmxpQG54cC5j
+b20+OyByb2JoK2R0QGtlcm5lbC5vcmc7DQo+ID4+IG1hcmsucnV0bGFuZEBhcm0uY29tOyBsaW51
+eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+ID4+IGRldmljZXRyZWVAdmdlci5r
+ZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+PiBsaW51eC1wbUB2
+Z2VyLmtlcm5lbC5vcmc7IGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc7DQo+ID4+IHJ1aS56aGFu
+Z0BpbnRlbC5jb207IGVkdWJlenZhbEBnbWFpbC5jb20NCj4gPj4gU3ViamVjdDogW0VYVF0gUmU6
+IFtQQVRDSCB2Nl0gYXJtNjQ6IGR0czogbHMxMDg4YTogYWRkIG9uZSBtb3JlDQo+ID4+IHRoZXJt
+YWwgem9uZSBub2RlDQo+ID4+DQo+ID4+IENhdXRpb246IEVYVCBFbWFpbA0KPiA+Pg0KPiA+PiBP
+biBUdWUsIEFwciAyMywgMjAxOSBhdCAxMDoyNTowN0FNICswODAwLCBZdWFudGlhbiBUYW5nIHdy
+b3RlOg0KPiA+Pj4gTHMxMDg4YSBoYXMgMiB0aGVybWFsIHNlbnNvcnMsIGNvcmUgY2x1c3RlciBh
+bmQgU29DIHBsYXRmb3JtLiBDb3JlDQo+ID4+PiBjbHVzdGVyIHNlbnNvciBpcyB1c2VkIHRvIG1v
+bml0b3IgdGhlIHRlbXBlcmF0dXJlIG9mIGNvcmUgYW5kIFNvQw0KPiA+Pj4gcGxhdGZvcm0gaXMg
+Zm9yIHBsYXRmb3JtLiBUaGUgY3VycmVudCBkdHMgb25seSBzdXBwb3J0IHRoZSBmaXJzdCBzZW5z
+b3IuDQo+ID4+PiBUaGlzIHBhdGNoIGFkZHMgdGhlIHNlY29uZCBzZW5zb3Igbm9kZSB0byBkdHMg
+dG8gZW5hYmxlIGl0Lg0KPiA+Pj4NCj4gPj4+IFNpZ25lZC1vZmYtYnk6IFl1YW50aWFuIFRhbmcg
+PGFuZHkudGFuZ0BueHAuY29tPg0KPiA+Pj4gLS0tDQo+ID4+PiB2NjoNCj4gPj4+ICAgICAgICAg
+LSBhZGQgY29vbGluZyBkZXZpY2UgbWFwIHRvIGNwdTAtNyBpbiBwbGF0Zm9ybSBub2RlLg0KPiA+
+IEkgbGlrZSB0byBleHBsYWluIGEgbGl0dGxlLiBJIHRoaW5rIGl0IG1ha2VzIHNlbnNlIHRoYXQg
+bXVsdGlwbGUgdGhlcm1hbCB6b25lDQo+IG1hcCB0byBzYW1lIGNvb2xpbmcgZGV2aWNlLg0KPiA+
+IEluIHRoaXMgd2F5LCBubyBtYXR0ZXIgd2hpY2ggdGhlcm1hbCB6b25lIHJhaXNlcyBhIHRlbXAg
+YWxhcm0sIGl0IGNhbiBjYWxsDQo+IGNvb2xpbmcgZGV2aWNlIHRvIGNoaWxsIG91dC4NCj4gPiBJ
+IGFsc28gYXNrZWQgY3B1ZnJlcSBtYWludGFpbmVyIGFib3V0IHRoZSBjb29saW5nIG1hcCBpc3N1
+ZSwgaGUgdGhpbmsgaXQNCj4gd291bGQgYmUgZmluZS4NCj4gPiBJIGhhdmUgdGVzdGVkIGFuZCBu
+byBpc3N1ZSBmb3VuZC4NCj4gPg0KPiA+IERhbmllbCwgd2hhdCdzIHlvdXIgdGhvdWdodD8NCj4g
+DQo+IElmIHRoZXJlIGFyZSBtdWx0aXBsZSB0aGVybWFsIHpvbmVzLCB0aGV5IHdpbGwgYmUgbWFu
+YWdlZCBieSBkaWZmZXJlbnQNCj4gaW5zdGFuY2VzIG9mIGEgdGhlcm1hbCBnb3Zlcm5vci4gRWFj
+aCBpbnN0YW5jZXMgd2lsbCBhY3Qgb24gdGhlIHNoYXJlZCBjb29saW5nDQo+IGRldmljZSBhbmQg
+d2lsbCBjb2xsaWRlIGluIHRoZWlyIGRlY2lzaW9uczoNCj4gDQo+ICAtIElmIHRoZSBzZW5zb3Jz
+IGFyZSBjbG9zZWQsIHRoZWlyIGJlaGF2aW9yIHdpbGwgYmUgc2ltaWxhciByZWdhcmRpbmcgdGhl
+DQo+IHRlbXBlcmF0dXJlLiBUaGUgZ292ZXJub3JzIG1heSB0YWtlIHRoZSBzYW1lIGRlY2lzaW9u
+IGZvciB0aGUgY29vbGluZw0KPiBkZXZpY2UuIEJ1dCBpbiBzdWNoIGNhc2UgaGF2aW5nIGp1c3Qg
+b25lIHRoZXJtYWwgem9uZSBtYW5hZ2VkIGlzIGVub3VnaC4NCj4gDQo+ICAtIElmIHRoZSBzZW5z
+b3JzIGFyZSBub3QgY2xvc2VkLCB0aGVpciBiZWhhdmlvciB3aWxsIGJlIGRpZmZlcmVudCByZWdh
+cmRpbmcgdGhlDQo+IHRlbXBlcmF0dXJlLiBUaGUgZ292ZXJub3JzIHdpbGwgdGFrZSBkaWZmZXJl
+bnQgZGVjaXNpb24gcmVnYXJkaW5nIHRoZSBjb29saW5nDQo+IGRldmljZSAob25lIHdpbGwgZGVj
+cmVhc2UgdGhlIGZyZXEsIG90aGVyIHdpbGwgaW5jcmVhc2UgdGhlIGZyZXEpLg0KPiANCj4gQXMg
+dGhlIHRoZXJtYWwgZ292ZXJub3JzIGFyZSBub3QgYWJsZSB0byBtYW5hZ2Ugc2V2ZXJhbCB0aGVy
+bWFsIHpvbmVzIGFuZA0KPiB0aGVyZSBpcyBvbmUgY29vbGluZyBkZXZpY2UgKHRoZSBjcHUgY29v
+bGluZyBkZXZpY2UpLCB0aGlzIHNldHVwIHdvbid0IHdvcmsgYXMNCj4gZXhwZWN0ZWQgSU1PLg0K
+PiANCj4gVGhlIHNldHVwIG1ha2luZyBzZW5zZSBpcyBoYXZpbmcgYSB0aGVybWFsIHpvbmUgcGVy
+ICdjbHVzdGVyJyBhbmQgYSBjb29saW5nDQo+IGRldmljZSBwZXIgJ2NsdXN0ZXInLiBUaGF0IG1l
+YW5zIHRoZSBwbGF0Zm9ybSBoYXMgb25lIGNsb2NrIGxpbmUgcGVyICdjbHVzdGVyJy4NCj4gVGhl
+IHRoZXJtYWwgbWFuYWdlbWVudCBoYXBwZW5zIGluIGEgc2VsZi1jb250YWluZWQgdGhlcm1hbCB6
+b25lIChvbmUNCj4gY29vbGluZyBkZXZpY2UgLSBvbmUgZ292ZXJub3IgLSBvbmUgdGhlcm1hbCB6
+b25lKS4NCj4gDQo+IEluIHRoZSBjYXNlIG9mIEhNUCwgb3RoZXIgY29tYmluYXRpb25zIGFyZSBw
+b3NzaWJsZSB0byBiZSBvcHRpbWFsLg0KSGkgVmlyZXNoLA0KDQpJIHdhbnQgdG8gbWFwIG11bHRp
+cGxlIHRoZXJtYWwgem9uZXMgdG8gdGhlIHNhbWUgY29vbGluZyBkZXZpY2UuIFRoZSBhYm92ZSBp
+cyB0aGUgZGlzY3Vzc2lvbiBhYm91dCBpdC4NCkl0IHNlZW1zIHJlYXNvbmFibGUuIEJ1dCBJIGFt
+IG5vdCBleHBlcnQgb24gdGhpcy4gQ291bGQgeW91IHBsZWFzZSBwcm92aWRlIHNvbWUgdGhvdWdo
+dHM/IFRoYW5rcy4NCg0KQlIsDQpBbmR5DQo+IA0KPiANCj4gDQo+IC0tDQo+IA0KPiA8aHR0cHM6
+Ly9ldXIwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYl
+MkZ3d3cuDQo+IGxpbmFyby5vcmclMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54
+cC5jb20lN0M5MzViN2EwOA0KPiAzMWNjNDY2ZGE0MDgwOGQ2ZDUxNzZmOGUlN0M2ODZlYTFkM2Jj
+MmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3QzANCj4gJTdDMCU3QzYzNjkzMDY5Mzk2NTU0MDE4OSZh
+bXA7c2RhdGE9V0s5TkRCVnd6aENDOVdNa21qTE9iSg0KPiBPQlF3UkclMkZib2VkJTJGS3gxOHhp
+Qk5RJTNEJmFtcDtyZXNlcnZlZD0wPiBMaW5hcm8ub3JnIKmmIE9wZW4NCj4gc291cmNlIHNvZnR3
+YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzoNCj4gPGh0dHBzOi8vZXVyMDEu
+c2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3Lg0K
+PiBmYWNlYm9vay5jb20lMkZwYWdlcyUyRkxpbmFybyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5keS50
+YW5nJTQwbngNCj4gcC5jb20lN0M5MzViN2EwODMxY2M0NjZkYTQwODA4ZDZkNTE3NmY4ZSU3QzY4
+NmVhMWQzYmMyYjRjNmZhOTJjDQo+IGQ5OWM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2OTMwNjkzOTY1
+NTUwMjAyJmFtcDtzZGF0YT1PMG1XTzc2DQo+IDlzSzJaTUdYOUF4Z0xHWU5WZmtGSEJENFpJR0Nj
+bHR0dnlQSSUzRCZhbXA7cmVzZXJ2ZWQ9MD4NCj4gRmFjZWJvb2sgfA0KPiA8aHR0cHM6Ly9ldXIw
+MS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ0d2l0
+dGUNCj4gci5jb20lMkYlMjMhJTJGbGluYXJvb3JnJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRh
+bmclNDBueHAuY29tDQo+ICU3QzkzNWI3YTA4MzFjYzQ2NmRhNDA4MDhkNmQ1MTc2ZjhlJTdDNjg2
+ZWExZDNiYzJiNGM2ZmE5MmNkOTljNQ0KPiBjMzAxNjM1JTdDMCU3QzAlN0M2MzY5MzA2OTM5NjU1
+NTAyMDImYW1wO3NkYXRhPXRWJTJCaThCazNPcU8NCj4gaCUyRlpIcEJyMk5RREFDVnZ0R2k4S05H
+UXQ1ZFphVGV5ZyUzRCZhbXA7cmVzZXJ2ZWQ9MD4gVHdpdHRlciB8DQo+IDxodHRwczovL2V1cjAx
+LnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dy4N
+Cj4gbGluYXJvLm9yZyUyRmxpbmFyby1ibG9nJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRh
+bmclNDBueHAuY28NCj4gbSU3QzkzNWI3YTA4MzFjYzQ2NmRhNDA4MDhkNmQ1MTc2ZjhlJTdDNjg2
+ZWExZDNiYzJiNGM2ZmE5MmNkOTkNCj4gYzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY5MzA2OTM5NjU1
+NTAyMDImYW1wO3NkYXRhPTBFOGE5Mzh4RXQ3bDINCj4gTUJMbk1FVHNDUUtmaEpNZ216Rk50dUNL
+UFhmNVNZJTNEJmFtcDtyZXNlcnZlZD0wPiBCbG9nDQoNCg==
