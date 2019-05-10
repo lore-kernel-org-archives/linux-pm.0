@@ -1,20 +1,20 @@
-From: Javi Merino <javi.merino@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] thermal: cpu_cooling: Actually trace CPU load in
  thermal_power_cpu_get_power
-Date: Fri, 10 May 2019 07:38:54 +0100
-Message-ID: <20190510063854.GA20477@tesla>
+Date: Fri, 10 May 2019 12:12:46 +0530
+Message-ID: <20190510064246.fanpmhdlbtpngzor@vireshk-i7>
 References: <20190502183238.182058-1-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
 In-Reply-To: <20190502183238.182058-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Matthias Kaehlcke <mka@chromium.org>
-Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>
+Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 02, 2019 at 11:32:38AM -0700, Matthias Kaehlcke wrote:
+On 02-05-19, 11:32, Matthias Kaehlcke wrote:
 > The CPU load values passed to the thermal_power_cpu_get_power
 > tracepoint are zero for all CPUs, unless, unless the
 > thermal_power_cpu_limit tracepoint is enabled too:
@@ -39,11 +39,6 @@ On Thu, May 02, 2019 at 11:32:38AM -0700, Matthias Kaehlcke wrote:
 > 
 > Fixes: 6828a4711f99 ("thermal: add trace events to the power allocator governor")
 > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-
-Yep, looks good to me.
-
-Acked-by: Javi Merino <javi.merino@kernel.org>
-
 > ---
 >  drivers/thermal/cpu_cooling.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
@@ -61,6 +56,8 @@ Acked-by: Javi Merino <javi.merino@kernel.org>
 >  			load_cpu[i] = load;
 >  
 >  		i++;
-> -- 
-> 2.21.0.593.g511ec345e18-goog
-> 
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
