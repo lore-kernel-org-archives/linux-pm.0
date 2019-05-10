@@ -2,119 +2,84 @@ Return-Path: <SRS0=xbvJ=TK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.5 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DD6DC04A6B
-	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 16:22:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF728C04A6B
+	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 18:04:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6EAC9217D6
-	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 16:22:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1557505363;
-	bh=Qxgie+HcP1ND9knwIbqtVtE4AKwUMSq+SKuD9/60Jg4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=OvnuuOiWfcx4J1jqP0MOIxlo/fHt4zuPUS7qI+gekZW0yMs+fv66NLeFgHjfiRk7a
-	 59ZczJrUeYNqh9PQ2HACN81yko5FZcn1UGMHYqTypri/8PiRcKJSlH8UVs2GrOx8R2
-	 xTVsU0k4yNbExKx0jqfCM3w3WHYcgecpamzpiunw=
+	by mail.kernel.org (Postfix) with ESMTP id C49252175B
+	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 18:04:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727763AbfEJQWm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 May 2019 12:22:42 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45580 "EHLO mail.kernel.org"
+        id S1727909AbfEJSEO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 May 2019 14:04:14 -0400
+Received: from mga09.intel.com ([134.134.136.24]:58470 "EHLO mga09.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727647AbfEJQWm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 10 May 2019 12:22:42 -0400
-Received: from earth.universe (host-091-097-177-147.ewe-ip-backbone.de [91.97.177.147])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id AFE1320882;
-        Fri, 10 May 2019 16:22:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1557505361;
-        bh=Qxgie+HcP1ND9knwIbqtVtE4AKwUMSq+SKuD9/60Jg4=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=xiRQDMh9VZirl24MsjXjDn4qwHYDWKOsyh5LjVakEvW8ge3kTbSbPPpn5atCAdkqP
-         4Arj9sxp/+l/1jmg+vNmqHB7lbMEDVyas+w4Jc27tZ4NPx8RSkrFGLc0wmrlrtgIjt
-         dFD6GK90sLx9SaJCSd7Bza7Ut+cNtI4rGAFWRiLs=
-Received: by earth.universe (Postfix, from userid 1000)
-        id BB3A33C0CBC; Fri, 10 May 2019 18:22:39 +0200 (CEST)
-Date:   Fri, 10 May 2019 18:22:39 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Guenter Roeck <linux@roeck-us.net>
-Cc:     YueHaibing <yuehaibing@huawei.com>, andrew.smirnov@gmail.com,
-        enric.balletbo@collabora.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH] power: supply: ucs1002: Fix build error without
- CONFIG_REGULATOR
-Message-ID: <20190510162239.qbnmtw7fxszwbwiw@earth.universe>
-References: <20190510071823.2984-1-yuehaibing@huawei.com>
- <9b37be09-c323-94c6-8bba-44e854597e95@roeck-us.net>
+        id S1727762AbfEJSEO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 May 2019 14:04:14 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by orsmga102.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 10 May 2019 11:04:13 -0700
+X-ExtLoop1: 1
+Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
+  by fmsmga006.fm.intel.com with ESMTP; 10 May 2019 11:04:09 -0700
+Received: from kbuild by lkp-server01 with local (Exim 4.89)
+        (envelope-from <lkp@intel.com>)
+        id 1hP9sP-0005o5-GU; Sat, 11 May 2019 02:04:09 +0800
+Date:   Sat, 11 May 2019 02:03:47 +0800
+From:   kbuild test robot <lkp@intel.com>
+To:     Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc:     kbuild-all@01.org, Sebastian Reichel <sre@kernel.org>,
+        Enric Balletbo Serra <enric.balletbo@collabora.com>,
+        Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] power: supply: fix semicolon.cocci warnings
+Message-ID: <20190510180347.GA130528@lkp-kbuild21>
+References: <201905110244.kMA51f4E%lkp@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="abf7t6ubodig5fry"
+Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <9b37be09-c323-94c6-8bba-44e854597e95@roeck-us.net>
-User-Agent: NeoMutt/20180716
+In-Reply-To: <201905110244.kMA51f4E%lkp@intel.com>
+X-Patchwork-Hint: ignore
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190510162239.j6GU0jogZQrNoBVLu2GoKlwVPCvAfREm_McFXLmx88w@z>
+Message-ID: <20190510180347.h7HrGUsSab2e2VRucsLI9ciUUNk3LMLeEtYM06iI5TE@z>
+
+From: kbuild test robot <lkp@intel.com>
+
+drivers/power/supply/ucs1002_power.c:339:2-3: Unneeded semicolon
 
 
---abf7t6ubodig5fry
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ Remove unneeded semicolon.
 
-Hi,
+Generated by: scripts/coccinelle/misc/semicolon.cocci
 
-On Fri, May 10, 2019 at 06:05:06AM -0700, Guenter Roeck wrote:
-> On 5/10/19 12:18 AM, YueHaibing wrote:
-> > Fix gcc build error while CONFIG_REGULATOR is not set
-> >=20
-> > drivers/power/supply/ucs1002_power.o: In function `ucs1002_probe':
-> > drivers/power/supply/ucs1002_power.c:593: undefined reference to `devm_=
-regulator_register'
-> > drivers/power/supply/ucs1002_power.o:(.rodata+0x3b8): undefined referen=
-ce to `regulator_enable_regmap'
-> > drivers/power/supply/ucs1002_power.o:(.rodata+0x3c0): undefined referen=
-ce to `regulator_disable_regmap'
-> > drivers/power/supply/ucs1002_power.o:(.rodata+0x3c8): undefined referen=
-ce to `regulator_is_enabled_regmap'
-> >=20
-> > Add Kconfig dependency to CONFIG_REGULATOR.
-> >=20
-> > Reported-by: Hulk Robot <hulkci@huawei.com>
-> > Fixes: 9a2688e42638 ("power: supply: Add driver for Microchip UCS1002")
-> > Signed-off-by: YueHaibing <yuehaibing@huawei.com>
->=20
-> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Fixes: 9a2688e42638 ("power: supply: Add driver for Microchip UCS1002")
+CC: Andrey Smirnov <andrew.smirnov@gmail.com>
+Signed-off-by: kbuild test robot <lkp@intel.com>
+---
 
-Thanks, queued.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git for-next
+head:   c8f3c9fe83cafc94679007b9c0083ee25d5735e0
+commit: 9a2688e42638f2e057dbdfce82e221b38bfba0a7 [42/44] power: supply: Add driver for Microchip UCS1002
 
--- Sebastian
+ ucs1002_power.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---abf7t6ubodig5fry
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzVpUwACgkQ2O7X88g7
-+poDGRAAnJb/Jvso2KCVfj7f63PFAscr2hzeDdrgKWpbl+flff18pOOhwCMHNi7I
-rpv6dZMohdH2/Vaae06lyp/LAgXudeZwsObVLwvgX6qQPtC9kaDq80dLQmEdQINv
-SPMxH+spTNq5sIaVftSvex+vByNe6gzKf4fMOfa8JGuBgoMTJM0pAjbvqOVr3RET
-v57J5yumNT1+zIKEaA3MQD2NJDRsE7bgJoLP+3SJkXSC/jnvDLC8F6OqmSF8cfv7
-zbjiivy/HndJr/tzAgD0zIkoFvNG4Gey7C1OoZPdc4Qzijh9caUjfr3vjbF4Af0b
-2Cl69ar/e1l/Dh1hIG4tl7K2oOOK6EKMDlq3IUxYKIVSxY06hX5vaCm0EJBg1Wc2
-MAcHDQ3Rnyxdx8y9qcv/qdVmh9Rfrj8x6SmEgwgDQLKxu9LS1r7UI23SVKRzF2O/
-7cgJ6jSpa41Dz1Gn2VKmysSHFMpdYNBAkKcsVjPlQX5gFDpnxNv5xphKXLzGG1cC
-AojhO6WPAgUU1vb7Yc70EIaMJkzEzryQQ4ul37T+l/4oSiuxnwd/cQy8eDTWQYfh
-0f/3LGYEKXQxwdnj+1EonBxOIojGcfjTTnmj8PqW6ZDnFTkbxpifig/RXcf+AQSb
-64+vkH5yDbuPL7m776g/QVIeJ6aKQCfdC3li+1J+W75xqhuxzVQ=
-=1NGs
------END PGP SIGNATURE-----
-
---abf7t6ubodig5fry--
+--- a/drivers/power/supply/ucs1002_power.c
++++ b/drivers/power/supply/ucs1002_power.c
+@@ -336,7 +336,7 @@ static int ucs1002_get_usb_type(struct u
+ 	case F_ACTIVE_MODE_BC12_CDP:
+ 		type = POWER_SUPPLY_USB_TYPE_CDP;
+ 		break;
+-	};
++	}
+ 
+ 	val->intval = type;
+ 
