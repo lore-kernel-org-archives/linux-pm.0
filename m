@@ -1,12 +1,11 @@
 From: michael.kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v2 2/8] arm64: dts: mt8183: add/update dynamic power
- coefficients
-Date: Fri, 10 May 2019 21:27:00 +0800
-Message-ID: <1557494826-6044-3-git-send-email-michael.kao@mediatek.com>
+Subject: [PATCH v2 4/8] arm64: dts: mt8183: Configure CPU cooling
+Date: Fri, 10 May 2019 21:27:02 +0800
+Message-ID: <1557494826-6044-5-git-send-email-michael.kao@mediatek.com>
 References: <1557494826-6044-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 In-Reply-To: <1557494826-6044-1-git-send-email-michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
@@ -19,84 +18,43 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
 Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, hsinyi-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "michael.kao" <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Add dynamic power coefficients for all cores and update those of
-CPU0 and CPU4.
-
-Signed-off-by: Michael.Kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
----
- arch/arm64/boot/dts/mediatek/mt8183.dtsi | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-index 52ad47e..8f9fd9a 100644
---- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-@@ -58,6 +58,7 @@
- 			compatible = "arm,cortex-a53";
- 			reg = <0x000>;
- 			enable-method = "psci";
-+			dynamic-power-coefficient = <84>;
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -65,6 +66,7 @@
- 			compatible = "arm,cortex-a53";
- 			reg = <0x001>;
- 			enable-method = "psci";
-+			dynamic-power-coefficient = <84>;
- 		};
- 
- 		cpu2: cpu@2 {
-@@ -72,6 +74,7 @@
- 			compatible = "arm,cortex-a53";
- 			reg = <0x002>;
- 			enable-method = "psci";
-+			dynamic-power-coefficient = <84>;
- 		};
- 
- 		cpu3: cpu@3 {
-@@ -79,6 +82,7 @@
- 			compatible = "arm,cortex-a53";
- 			reg = <0x003>;
- 			enable-method = "psci";
-+			dynamic-power-coefficient = <84>;
- 		};
- 
- 		cpu4: cpu@100 {
-@@ -86,6 +90,7 @@
- 			compatible = "arm,cortex-a73";
- 			reg = <0x100>;
- 			enable-method = "psci";
-+			dynamic-power-coefficient = <211>;
- 		};
- 
- 		cpu5: cpu@101 {
-@@ -93,6 +98,7 @@
- 			compatible = "arm,cortex-a73";
- 			reg = <0x101>;
- 			enable-method = "psci";
-+			dynamic-power-coefficient = <211>;
- 		};
- 
- 		cpu6: cpu@102 {
-@@ -100,6 +106,7 @@
- 			compatible = "arm,cortex-a73";
- 			reg = <0x102>;
- 			enable-method = "psci";
-+			dynamic-power-coefficient = <211>;
- 		};
- 
- 		cpu7: cpu@103 {
-@@ -107,6 +114,7 @@
- 			compatible = "arm,cortex-a73";
- 			reg = <0x103>;
- 			enable-method = "psci";
-+			dynamic-power-coefficient = <211>;
- 		};
- 	};
- 
--- 
-2.6.4
+RnJvbTogTWF0dGhpYXMgS2FlaGxja2UgPG1rYUBjaHJvbWl1bS5vcmc+CgpBZGQgdHdvIHBhc3Np
+dmUgdHJpcCBwb2ludHMgYXQgNjjCsEMgYW5kIDg1wrBDIGZvciB0aGUgQ1BVIHRlbXBlcmF0dXJl
+LgoKU2lnbmVkLW9mZi1ieTogTWF0dGhpYXMgS2FlaGxja2UgPG1rYUBjaHJvbWl1bS5vcmc+ClNp
+Z25lZC1vZmYtYnk6IE1pY2hhZWwgS2FvIDxtaWNoYWVsLmthb0BtZWRpYXRlay5jb20+Ci0tLQog
+YXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaSB8IDU1ICsrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrCiAxIGZpbGUgY2hhbmdlZCwgNTUgaW5zZXJ0aW9ucygrKQoK
+ZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0c2kgYi9h
+cmNoL2FybTY0L2Jvb3QvZHRzL21lZGlhdGVrL210ODE4My5kdHNpCmluZGV4IGJmOGIwYTguLjI5
+YWQ2NjAgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0
+c2kKKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaQpAQCAtMzc0
+LDYgKzM3NCw2MSBAQAogCQkJCXBvbGxpbmctZGVsYXkgPSA8MTAwMD47CiAJCQkJdGhlcm1hbC1z
+ZW5zb3JzID0gPCZ0aGVybWFsIDA+OwogCQkJCXN1c3RhaW5hYmxlLXBvd2VyID0gPDE1MDA+Owor
+CisJCQkJdHJpcHMgeworCQkJCQl0aHJlc2hvbGQ6IHRyaXAtcG9pbnRAMCB7CisJCQkJCQl0ZW1w
+ZXJhdHVyZSA9IDw2ODAwMD47CisJCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+OworCQkJCQkJdHlw
+ZSA9ICJwYXNzaXZlIjsKKwkJCQkJfTsKKworCQkJCQl0YXJnZXQ6IHRyaXAtcG9pbnRAMSB7CisJ
+CQkJCQl0ZW1wZXJhdHVyZSA9IDw4NTAwMD47CisJCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Owor
+CQkJCQkJdHlwZSA9ICJwYXNzaXZlIjsKKwkJCQkJfTsKKworCQkJCQljcHVfY3JpdDogY3B1LWNy
+aXQgeworCQkJCQkJdGVtcGVyYXR1cmUgPSA8MTE1MDAwPjsKKwkJCQkJCWh5c3RlcmVzaXMgPSA8
+MjAwMD47CisJCQkJCQl0eXBlID0gImNyaXRpY2FsIjsKKwkJCQkJfTsKKwkJCQl9OworCisJCQkJ
+Y29vbGluZy1tYXBzIHsKKwkJCQkJbWFwMCB7CisJCQkJCQl0cmlwID0gPCZ0YXJnZXQ+OworCQkJ
+CQkJY29vbGluZy1kZXZpY2UgPSA8JmNwdTAKKwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUCisJCQkJ
+CQkJVEhFUk1BTF9OT19MSU1JVD4sCisJCQkJCQkJCSA8JmNwdTEKKwkJCQkJCQlUSEVSTUFMX05P
+X0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD4sCisJCQkJCQkJCSA8JmNwdTIKKwkJCQkJ
+CQlUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD4sCisJCQkJCQkJCSA8
+JmNwdTMKKwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD47
+CisJCQkJCQljb250cmlidXRpb24gPSA8MzA3Mj47CisJCQkJCX07CisJCQkJCW1hcDEgeworCQkJ
+CQkJdHJpcCA9IDwmdGFyZ2V0PjsKKwkJCQkJCWNvb2xpbmctZGV2aWNlID0gPCZjcHU0CisJCQkJ
+CQkJVEhFUk1BTF9OT19MSU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+LAorCQkJCQkJCQkg
+PCZjcHU1CisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+
+LAorCQkJCQkJCQkgPCZjcHU2CisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVAorCQkJCQkJCVRIRVJN
+QUxfTk9fTElNSVQ+LAorCQkJCQkJCQkgPCZjcHU3CisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVAor
+CQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+OworCQkJCQkJY29udHJpYnV0aW9uID0gPDEwMjQ+Owor
+CQkJCQl9OworCQkJCX07CiAJCQl9OwogCiAJCQkvKiBUaGUgdHp0czEgfiB0enRzNiBkb24ndCBu
+ZWVkIHRvIHBvbGxpbmcgKi8KLS0gCjIuNi40CgoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX18KTGludXgtbWVkaWF0ZWsgbWFpbGluZyBsaXN0CkxpbnV4LW1l
+ZGlhdGVrQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFp
+bG1hbi9saXN0aW5mby9saW51eC1tZWRpYXRlawo=
