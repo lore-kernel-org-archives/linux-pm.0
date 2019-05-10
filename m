@@ -1,66 +1,57 @@
-From: Niklas =?iso-8859-1?Q?S=F6derlund?=
-        <niklas.soderlund@ragnatech.se>
-Subject: Re: [PATCH v4 0/2] thermal: rcar_gen3_thermal: fix IRQ issues
-Date: Fri, 10 May 2019 13:36:08 +0200
-Message-ID: <20190510113608.GD28561@bigcity.dyn.berto.se>
-References: <20190424051145.23072-1-jiada_wang@mentor.com>
- <20190507235403.GA24112@bigcity.dyn.berto.se>
- <20190510104231.GA15836@vmlxhi-102.adit-jv.com>
+From: Nandor Han <nandor.han@vaisala.com>
+Subject: Re: [PATCH v3 2/2] dt-bindings: power: reset: add document for NVMEM
+ based reboot-mode
+Date: Fri, 10 May 2019 15:49:36 +0300
+Message-ID: <0134c853-f5eb-8d6f-6523-61688607b367@vaisala.com>
+References: <fc60b885f1b447ce55950184c7921cfc1c96ade6>
+ <20190421190913.1478-3-nandor.han@vaisala.com> <20190430224731.GA31760@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190510104231.GA15836@vmlxhi-102.adit-jv.com>
+In-Reply-To: <20190430224731.GA31760@bogus>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eugeniu Rosca <erosca@de.adit-jv.com>
-Cc: Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms+renesas@verge.net.au, geert+renesas@glider.be, sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com, kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com, fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com, biju.das@bp.renesas.com, george_davis@mentor.com, joshua_frkuska@mentor.com, Eugeniu Rosca <roscaeugeniu@gmail.com>
+To: Rob Herring <robh@kernel.org>
+Cc: "sre@kernel.org" <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eugeniu,
+On 5/1/19 1:47 AM, Rob Herring wrote:
 
-On 2019-05-10 12:42:31 +0200, Eugeniu Rosca wrote:
-> Hi Niklas,
+Hi Rob,
+   Thanks for review.
+
+>> @@ -0,0 +1,32 @@
+>> +NVMEM reboot mode driver
+>> +
+>> +This driver gets reboot mode magic value from reboot-mode driver
+>> +and stores it in a NVMEM cell named "reboot-mode". Then the bootloader
+>> +can read it and take different action according to the magic
+>> +value stored.
 > 
-> On Wed, May 08, 2019 at 01:54:03AM +0200, Niklas Söderlund wrote:
-> > Hi Jiada,
-> [..]
-> > I really like this series, nice work.
-> > 
-> > Tested-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> > Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> This is also assuming the nvmem is writeable which is more often not the
+> case.
 > 
-> Is there anything off-the-shelf available for testing the rcar3
-> thermal driver, to avoid reinventing the wheel via
-> https://patchwork.kernel.org/cover/10913163/#22602335
+> Is your usecase a platform that supports pstore? Adding on to that
+> binding might be a better fit.
+> 
 
-Not that I know of, unfortunately :-(
+I'm using an RTC persistent memory for storing this data. The available
+memory is low and don't think pstore will fit in this case.
 
-I have a private home hacked testing framework (don't we all?) based on 
-tcl+expect where I have two basic tests for rcar_gen3_thermal. I'm 
-willing to share the tests if you by chance want them, but be warned 
-that they are highly specialised for my needs and I'm reluctant to 
-publish my whole hack tool as it just a ugly hack ;-)
+>> +The rest of the properties should follow the generic reboot-mode description
+>> +found in reboot-mode.txt
+>> +
+>> +Example:
+>> +	reboot-mode-nvmem@0 {
+> 
+> What's this node for?
+> 
+>> +		compatible = "simple-mfd";
+> 
+> I only see 1 function.
+> 
 
-On a high level the tests I have are
+No need to this. Will remove
 
-1. thermal-load
-    Generates load on target and observes the temperature is increased 
-    using the /sys/class/thermal/thermal_zone*/temp" interface. This 
-    seems similar to the test case your reference using stress-ng.
-
-2. thermal-cooling
-    Emulate the passive trip point temperatures using the 
-    /sys/class/thermal/*/emul_temp interface and observe that the 
-    specified cooling state is achieved.
-
-I should add a third test to make sure IRQ fires but this is just a pet 
-project for me so maybe I will get around to it sometime...
-
-If you know of anything around to test thermal drivers or if you create 
-something please let me know so I can add it to my tests. And let me 
-know if you want my hacks for inspiration for your own testing.
-
--- 
-Regards,
-Niklas Söderlund
+Nandor
