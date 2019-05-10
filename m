@@ -1,57 +1,51 @@
-From: Nandor Han <nandor.han@vaisala.com>
-Subject: Re: [PATCH v3 2/2] dt-bindings: power: reset: add document for NVMEM
- based reboot-mode
-Date: Fri, 10 May 2019 15:49:36 +0300
-Message-ID: <0134c853-f5eb-8d6f-6523-61688607b367@vaisala.com>
-References: <fc60b885f1b447ce55950184c7921cfc1c96ade6>
- <20190421190913.1478-3-nandor.han@vaisala.com> <20190430224731.GA31760@bogus>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] power: supply: ucs1002: Fix build error without
+ CONFIG_REGULATOR
+Date: Fri, 10 May 2019 06:05:06 -0700
+Message-ID: <9b37be09-c323-94c6-8bba-44e854597e95@roeck-us.net>
+References: <20190510071823.2984-1-yuehaibing@huawei.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190430224731.GA31760@bogus>
+In-Reply-To: <20190510071823.2984-1-yuehaibing@huawei.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: "sre@kernel.org" <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: YueHaibing <yuehaibing@huawei.com>, sre@kernel.org, andrew.smirnov@gmail.com, sebastian.reichel@collabora.com, enric.balletbo@collabora.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 5/1/19 1:47 AM, Rob Herring wrote:
+On 5/10/19 12:18 AM, YueHaibing wrote:
+> Fix gcc build error while CONFIG_REGULATOR is not set
+> 
+> drivers/power/supply/ucs1002_power.o: In function `ucs1002_probe':
+> drivers/power/supply/ucs1002_power.c:593: undefined reference to `devm_regulator_register'
+> drivers/power/supply/ucs1002_power.o:(.rodata+0x3b8): undefined reference to `regulator_enable_regmap'
+> drivers/power/supply/ucs1002_power.o:(.rodata+0x3c0): undefined reference to `regulator_disable_regmap'
+> drivers/power/supply/ucs1002_power.o:(.rodata+0x3c8): undefined reference to `regulator_is_enabled_regmap'
+> 
+> Add Kconfig dependency to CONFIG_REGULATOR.
+> 
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Fixes: 9a2688e42638 ("power: supply: Add driver for Microchip UCS1002")
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 
-Hi Rob,
-   Thanks for review.
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
->> @@ -0,0 +1,32 @@
->> +NVMEM reboot mode driver
->> +
->> +This driver gets reboot mode magic value from reboot-mode driver
->> +and stores it in a NVMEM cell named "reboot-mode". Then the bootloader
->> +can read it and take different action according to the magic
->> +value stored.
+> ---
+>   drivers/power/supply/Kconfig | 1 +
+>   1 file changed, 1 insertion(+)
 > 
-> This is also assuming the nvmem is writeable which is more often not the
-> case.
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index ef36bd2..26dacda 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -682,6 +682,7 @@ config CHARGER_UCS1002
+>   	tristate "Microchip UCS1002 USB Port Power Controller"
+>   	depends on I2C
+>   	depends on OF
+> +	depends on REGULATOR
+>   	select REGMAP_I2C
+>   	help
+>   	  Say Y to enable support for Microchip UCS1002 Programmable
 > 
-> Is your usecase a platform that supports pstore? Adding on to that
-> binding might be a better fit.
-> 
-
-I'm using an RTC persistent memory for storing this data. The available
-memory is low and don't think pstore will fit in this case.
-
->> +The rest of the properties should follow the generic reboot-mode description
->> +found in reboot-mode.txt
->> +
->> +Example:
->> +	reboot-mode-nvmem@0 {
-> 
-> What's this node for?
-> 
->> +		compatible = "simple-mfd";
-> 
-> I only see 1 function.
-> 
-
-No need to this. Will remove
-
-Nandor
