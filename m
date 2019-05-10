@@ -1,63 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] thermal: cpu_cooling: Actually trace CPU load in
- thermal_power_cpu_get_power
-Date: Fri, 10 May 2019 12:12:46 +0530
-Message-ID: <20190510064246.fanpmhdlbtpngzor@vireshk-i7>
-References: <20190502183238.182058-1-mka@chromium.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [EXT] Re: [PATCH v6] arm64: dts: ls1088a: add one more thermal
+ zone node
+Date: Fri, 10 May 2019 09:16:32 +0200
+Message-ID: <9fb2e306-38c7-2af7-5470-ff5bc4e23370@linaro.org>
+References: <20190423022507.34969-1-andy.tang@nxp.com>
+ <20190510031335.GD15856@dragon>
+ <VI1PR04MB4333D24227603D1497BA3CB9F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=gbk
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190502183238.182058-1-mka@chromium.org>
+In-Reply-To: <VI1PR04MB4333D24227603D1497BA3CB9F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>
+To: Andy Tang <andy.tang@nxp.com>, Shawn Guo <shawnguo@kernel.org>
+Cc: Leo Li <leoyang.li@nxp.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 02-05-19, 11:32, Matthias Kaehlcke wrote:
-> The CPU load values passed to the thermal_power_cpu_get_power
-> tracepoint are zero for all CPUs, unless, unless the
-> thermal_power_cpu_limit tracepoint is enabled too:
+On 10/05/2019 05:40, Andy Tang wrote:
+>> -----Original Message-----
+>> From: Shawn Guo <shawnguo@kernel.org>
+>> Sent: 2019Äê5ÔÂ10ÈÕ 11:14
+>> To: Andy Tang <andy.tang@nxp.com>
+>> Cc: Leo Li <leoyang.li@nxp.com>; robh+dt@kernel.org;
+>> mark.rutland@arm.com; linux-arm-kernel@lists.infradead.org;
+>> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org;
+>> linux-pm@vger.kernel.org; daniel.lezcano@linaro.org; rui.zhang@intel.com;
+>> edubezval@gmail.com
+>> Subject: [EXT] Re: [PATCH v6] arm64: dts: ls1088a: add one more thermal
+>> zone node
+>>
+>> Caution: EXT Email
+>>
+>> On Tue, Apr 23, 2019 at 10:25:07AM +0800, Yuantian Tang wrote:
+>>> Ls1088a has 2 thermal sensors, core cluster and SoC platform. Core
+>>> cluster sensor is used to monitor the temperature of core and SoC
+>>> platform is for platform. The current dts only support the first sensor.
+>>> This patch adds the second sensor node to dts to enable it.
+>>>
+>>> Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+>>> ---
+>>> v6:
+>>>         - add cooling device map to cpu0-7 in platform node.
+> I like to explain a little. I think it makes sense that multiple thermal zone map to same cooling device. 
+> In this way, no matter which thermal zone raises a temp alarm, it can call cooling device to chill out.
+> I also asked cpufreq maintainer about the cooling map issue, he think it would be fine.
+> I have tested and no issue found. 
 > 
->   irq/41-rockchip-98    [000] ....   290.972410: thermal_power_cpu_get_power:
->   cpus=0000000f freq=1800000 load={{0x0,0x0,0x0,0x0}} dynamic_power=4815
-> 
-> vs
-> 
->   irq/41-rockchip-96    [000] ....    95.773585: thermal_power_cpu_get_power:
->   cpus=0000000f freq=1800000 load={{0x56,0x64,0x64,0x5e}} dynamic_power=4959
->   irq/41-rockchip-96    [000] ....    95.773596: thermal_power_cpu_limit:
->   cpus=0000000f freq=408000 cdev_state=10 power=416
-> 
-> There seems to be no good reason for omitting the CPU load information
-> depending on another tracepoint. My guess is that the intention was to
-> check whether thermal_power_cpu_get_power is (still) enabled, however
-> 'load_cpu != NULL' already indicates that it was at least enabled when
-> cpufreq_get_requested_power() was entered, there seems little gain
-> from omitting the assignment if the tracepoint was just disabled, so
-> just remove the check.
-> 
-> Fixes: 6828a4711f99 ("thermal: add trace events to the power allocator governor")
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
->  drivers/thermal/cpu_cooling.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index f7c1f49ec87f..b437804e099b 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -458,7 +458,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
->  			load = 0;
->  
->  		total_load += load;
-> -		if (trace_thermal_power_cpu_limit_enabled() && load_cpu)
-> +		if (load_cpu)
->  			load_cpu[i] = load;
->  
->  		i++;
+> Daniel, what's your thought?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+If there are multiple thermal zones, they will be managed by different
+instances of a thermal governor. Each instances will act on the shared
+cooling device and will collide in their decisions:
+
+ - If the sensors are closed, their behavior will be similar regarding
+the temperature. The governors may take the same decision for the
+cooling device. But in such case having just one thermal zone managed is
+enough.
+
+ - If the sensors are not closed, their behavior will be different
+regarding the temperature. The governors will take different decision
+regarding the cooling device (one will decrease the freq, other will
+increase the freq).
+
+As the thermal governors are not able to manage several thermal zones
+and there is one cooling device (the cpu cooling device), this setup
+won't work as expected IMO.
+
+The setup making sense is having a thermal zone per 'cluster' and a
+cooling device per 'cluster'. That means the platform has one clock line
+per 'cluster'. The thermal management happens in a self-contained
+thermal zone (one cooling device - one governor - one thermal zone).
+
+In the case of HMP, other combinations are possible to be optimal.
+
+
 
 -- 
-viresh
+ <http://www.linaro.org/> Linaro.org ©¦ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
