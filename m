@@ -1,203 +1,123 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/8] arm64: dts: mt8183: add thermal zone node
-Date: Fri, 10 May 2019 10:14:14 +0200
-Message-ID: <12a0f86c-d6ee-6abf-8b2e-c901934dd1ae@linaro.org>
-References: <1556793795-25204-1-git-send-email-michael.kao@mediatek.com>
- <1556793795-25204-2-git-send-email-michael.kao@mediatek.com>
- <CAJMQK-isJf6f+OubbCdoXs8L2cup=rm3Z8Mr7Q26QshMP-0wxA@mail.gmail.com>
- <20190503164651.GB40515@google.com>
- <c6cf6170-331d-8ffc-d272-e5d8ee648eda@linaro.org>
- <1557318215.29634.7.camel@mtksdccf07>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of D3
+ on Suspend-to-Idle
+Date: Fri, 10 May 2019 10:23:11 +0200
+Message-ID: <CAJZ5v0jAcX-Q2twygKoKvmx2H6tneHWimmH+c2GsYitHK5-knw@mail.gmail.com>
+References: <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
+ <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
+ <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com> <20190509095601.GA19041@lst.de>
+ <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com> <20190509103142.GA19550@lst.de>
+ <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com> <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
+ <20190509192807.GB9675@localhost.localdomain> <7a002851c435481593f8629ec9193e40@AUSX13MPC101.AMER.DELL.COM>
+ <20190509215409.GD9675@localhost.localdomain> <495d76c66aec41a8bfbbf527820f8eb9@AUSX13MPC101.AMER.DELL.COM>
+ <BC5EB1D0-8718-48B3-ACAB-F7E5571D821D@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1557318215.29634.7.camel@mtksdccf07>
-Content-Language: en-US
+In-Reply-To: <BC5EB1D0-8718-48B3-ACAB-F7E5571D821D@canonical.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Kao <michael.kao@mediatek.com>
-Cc: Matthias Kaehlcke <mka@chromium.org>, Hsin-Yi Wang <hsinyi@chromium.org>, fan.chen@mediatek.com, jamesjj.liao@mediatek.com, dawei.chien@mediatek.com, louis.yu@mediatek.com, roger.lu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc: Mario Limonciello <Mario.Limonciello@dell.com>, Keith Busch <kbusch@kernel.org>, Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@fb.com>, Sagi Grimberg <sagi@grimberg.me>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-nvme <linux-nvme@lists.infradead.org>, Keith Busch <keith.busch@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/05/2019 14:23, Michael Kao wrote:
-> On Mon, 2019-05-06 at 12:43 +0200, Daniel Lezcano wrote:
->> On 03/05/2019 18:46, Matthias Kaehlcke wrote:
->>> Hi,
->>> 
->>> On Fri, May 03, 2019 at 04:03:58PM +0800, Hsin-Yi Wang wrote:
->>>> On Thu, May 2, 2019 at 10:43 AM michael.kao 
->>>> <michael.kao@mediatek.com> wrote:
->>>>> 
->>>>> Add thermal zone node to Mediatek MT8183 dts file.
->>>>> 
->>>>> Signed-off-by: Michael Kao <michael.kao@mediatek.com> --- 
->>>>> arch/arm64/boot/dts/mediatek/mt8183.dtsi | 64 
->>>>> ++++++++++++++++++++++++++++++++ 1 file changed, 64 
->>>>> insertions(+)
->>>>> 
->>>>> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi 
->>>>> b/arch/arm64/boot/dts/mediatek/mt8183.dtsi index 
->>>>> 926df75..b92116f 100644 --- 
->>>>> a/arch/arm64/boot/dts/mediatek/mt8183.dtsi +++ 
->>>>> b/arch/arm64/boot/dts/mediatek/mt8183.dtsi @@ -334,6 +334,67 
->>>>> @@ status = "disabled"; };
->>>>> 
->>>>> +               thermal: thermal@1100b000 { + 
->>>>> #thermal-sensor-cells = <1>; + compatible =
->>>>> "mediatek,mt8183-thermal"; + reg = <0 0x1100b000 0 0x1000>;
->>>>> + interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>; + clocks =
->>>>> <&infracfg CLK_INFRA_THERM>, + <&infracfg CLK_INFRA_AUXADC>;
->>>>> + clock-names = "therm", "auxadc"; + resets = <&infracfg
->>>>> MT8183_INFRACFG_AO_THERM_SW_RST>; + mediatek,auxadc =
->>>>> <&auxadc>; + mediatek,apmixedsys = <&apmixedsys>; + 
->>>>> mediatek,hw-reset-temp = <117000>; + nvmem-cells =
->>>>> <&thermal_calibration>; + nvmem-cell-names =
->>>>> "calibration-data"; +               }; + + thermal-zones { +
->>>>> cpu_thermal: cpu_thermal { + polling-delay-passive = <1000>;
->>>>> + polling-delay = <1000>; + + thermal-sensors = <&thermal 0>;
->>>>> + sustainable-power = <1500>; +                       }; + + 
->>>>> tzts1: tzts1 { + polling-delay-passive = <1000>; + 
->>>>> polling-delay = <1000>; + thermal-sensors = <&thermal 1>;
->>>> Is sustainable-power required for tzts? Though it's an optional
->>>> property, kernel would have warning: [    0.631556] thermal
->>>> thermal_zone1: power_allocator: sustainable_power will be
->>>> estimated [    0.639586] thermal thermal_zone2: 
->>>> power_allocator: sustainable_power will be estimated [ 
->>>> 0.647611] thermal thermal_zone3: power_allocator: 
->>>> sustainable_power will be estimated [    0.655635] thermal 
->>>> thermal_zone4: power_allocator: sustainable_power will be 
->>>> estimated [    0.663658] thermal thermal_zone5: 
->>>> power_allocator: sustainable_power will be estimated if no 
->>>> sustainable-power assigned.
->>> 
->>> The property is indeed optional, if it isn't specified IPA will 
->>> use the sum of the minimum power of all 'power actors' of the 
->>> zone as estimate (see estimate_sustainable_power()). This may 
->>> lead to overly agressive throttling, since the nominal 
->>> sustainable power will always be <= the requested power.
->>> 
->>> In my understanding the sustainable power may varies between 
->>> devices, even for the same SoC. One could have all the hardware 
->>> crammed into a tiny plastic enclosure (e.g. ASUS Chromebit), 
->>> another might have a laptop form factor and a metal enclosure 
->>> (e.g. ASUS C201). Both examples are based on an Rockchip rk3288, 
->>> but they have completely different thermal behavior, and would 
->>> likely have different values for 'sustainable-power'.
->>> 
->>> In this sense I tend to consider 'sustainable-power' more a 
->>> device, than a SoC property. You could specify a 'reasonable' 
->>> value as a starting point, but it will likely not be optimal for 
->>> all or even most devices. The warning might even be useful for 
->>> device makers by indicating them that there is room for 
->>> tweaking.
->> 
->> 
->> The sustainable power is the power dissipated by the devices 
->> belonging to the thermal zone at the given trip temperature.
->> 
->> With the power numbers and the cooling devices, the IPA will
->> change the states of the cooling devices to leverage the dissipated
->> power to the sustainable power.
->> 
->> The contribution is the cooling effect of the cooling device.
->> 
->> However, the IPA is limited to one thermal zone and the cooling 
->> device is the cpu cooling device. There is the devfreq cooling 
->> device but as the graphic driver is not upstream, it is found in 
->> the android tree only for the moment.
->> 
->> As you mentioned the sustainable power can vary depending on the 
->> form factor and the production process for the same SoC (they can 
->> go to higher frequencies thus dissipate more power). That is the 
->> reason why we split the DT per SoC and we override the values on a 
->> per SoC version basis.
->> 
->> You can have a look the rk3399.dtsi and their variant for 
->> experimental board (*-rock960.dts) and the chromebook version 
->> (*-gru-kevin.dts).
->> 
->> Do you want a empiric procedure to find out the sustainable power 
->> ?
->> 
->> 
->> 
-> OK, I will add the cooling map. But the tzts1 ~ tzts6 don't need to 
-> binding cooler. The "cpu_thermal" is max value of tzts1 ~tzts6. And 
-> cpu_thermal bind cooler with IPA. tzts1~6 don't need to add cooler. 
-> So, do I just add cooling map without any binding any cooling-cell?
+On Fri, May 10, 2019 at 8:08 AM Kai-Heng Feng
+<kai.heng.feng@canonical.com> wrote:
+>
+> at 06:19, <Mario.Limonciello@dell.com> <Mario.Limonciello@dell.com> wrote:
+>
+> >> -----Original Message-----
+> >> From: Keith Busch <kbusch@kernel.org>
+> >> Sent: Thursday, May 9, 2019 4:54 PM
+> >> To: Limonciello, Mario
+> >> Cc: kai.heng.feng@canonical.com; hch@lst.de; axboe@fb.com;
+> >> sagi@grimberg.me; rafael@kernel.org; linux-pm@vger.kernel.org;
+> >> rafael.j.wysocki@intel.com; linux-kernel@vger.kernel.org; linux-
+> >> nvme@lists.infradead.org; keith.busch@intel.com
+> >> Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead
+> >> of D3 on
+> >> Suspend-to-Idle
+> >>
+> >>
+> >> [EXTERNAL EMAIL]
+> >>
+> >> On Thu, May 09, 2019 at 09:37:58PM +0000, Mario.Limonciello@dell.com
+> >> wrote:
+> >>>> +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned npss)
+> >>>> +{
+> >>>> +  int ret;
+> >>>> +
+> >>>> +  mutex_lock(&ctrl->scan_lock);
+> >>>> +  nvme_start_freeze(ctrl);
+> >>>> +  nvme_wait_freeze(ctrl);
+> >>>> +  ret = nvme_set_features(ctrl, NVME_FEAT_POWER_MGMT, npss, NULL, 0,
+> >>>> +                          NULL);
+> >>>> +  nvme_unfreeze(ctrl);
+> >>>> +  mutex_unlock(&ctrl->scan_lock);
+> >>>> +
+> >>>> +  return ret;
+> >>>> +}
+> >>>> +EXPORT_SYMBOL_GPL(nvme_set_power);
+> >>>
+> >>> I believe without memory barriers at the end disks with HMB this will
+> >>> still kernel panic (Such as Toshiba BG3).
+> >>
+> >> Well, the mutex has an implied memory barrier, but your HMB explanation
+> >> doesn't make much sense to me anyway. The "mb()" in this thread's original
+> >> patch is a CPU memory barrier, and the CPU had better not be accessing
+> >> HMB memory. Is there something else going on here?
+> >
+> > Kai Heng will need to speak up a bit in his time zone as he has this disk
+> > on hand,
+> > but what I recall from our discussion was that DMA operation MemRd after
+> > resume was the source of the hang.
+>
+> Yes, that’ what I was told by the NVMe vendor, so all I know is to impose a
+> memory barrier.
+> If mb() shouldn’t be used here, what’s the correct variant to use in this
+> context?
+>
+> >
+> >>> This still allows D3 which we found at least failed to go into deepest
+> >>> state and
+> >> blocked
+> >>> platform s0ix for the following SSDs (maybe others):
+> >>> Hynix PC601
+> >>> LiteOn CL1
+> >>
+> >> We usually write features to spec first, then quirk non-compliant
+> >> devices after.
+> >
+> > NVME spec doesn't talk about a relationship between SetFeatures w/
+> > NVME_FEAT_POWER_MGMGT and D3 support, nor order of events.
+> >
+> > This is why we opened a dialog with storage vendors, including
+> > contrasting the behavior
+> > of Microsoft Windows inbox NVME driver and Intel's Windows RST driver.
+> >
+> > Those two I mention that come to mind immediately because they were most
+> > recently
+> > tested to fail.  Our discussion with storage vendors overwhelmingly
+> > requested
+> > that we don't use D3 under S2I because their current firmware
+> > architecture won't
+> > support it.
+> >
+> > For example one vendor told us with current implementation that receiving
+> > D3hot
+> > after NVME shutdown will prevent being able to enter L1.2.  D3hot entry
+> > was supported
+> > by an IRQ handler that isn't serviced in NVME shutdown state.
+> >
+> > Another vendor told us that with current implementation it's impossible
+> > to transition
+> > to PS4 (at least via APST) while L1.2 D3hot is active.
+>
+> I tested the patch from Keith and it has two issues just as simply skipping
+> nvme_dev_disable():
+> 1) It consumes more power in S2I
+> 2) System freeze after resume
 
-For the moment, I suggest to drop the tzts1..tzts6 thermal zones
-definition, so you save the discussion with required-optional field for
-the cooling maps and you save multiple wake up on the system to poll
-thermal zones to do nothing on them.
-
-When multiple thermal zones or multiple sensors will be supported then
-you can re-add them if that makes sense.
-
-A side note, the 'max' approach will drop the performances of the board.
-If there is one core overheating because it is 100% busy, the frequency
-will be capped impacting the performances on all other cores.
-
-> I think thermal framework will add estimated sustainable power.
-> Maybe I should add by myself. What's procedure do you recommend to
-> find sustainable power?
-
-So the following assumes the values for the dynamic power coefficient
-are correct as well as the resulting computed power per OPP.
-
-Let's take the example there is one thermal zone with a cluster of 4
-cores and the cpufreq driver acting on this cluster as a cooling device.
-
-First step:
-
- - Use the stepwise governor
-
- - Run dhrystone on all cores for a long time
-
- - When the mitigation begins and the temperature stabilizes on the
-desired trip point, capture the cpufreq transitions for, let's say a
-period of 30 seconds.
-
- - Compute the total duration for each cpu freq state during this period
-
- - Compute the total energy for each cpu freq state
-
- - Compute the average energy for this period
-
- - Divide the average energy by the period, you have the sustainable power
-
-Second step:
-
-Nothing is perfect, so the value found above may need to be tweaked.
-
- - Add the sustainable power in the DT
-
- - Switch to the IPA
-
- - Run dhrystone on all cores for a long time
-
- - Read the temperature and verify it stabilizes at the desired trip
-point and readjust the sustainable power if needed.
-
-Please note, as the IPA is based on a open loop regulation P-I-D, it
-should begin to acquire temperature before reaching the mitigation trip
-point, so it is a good idea to add a trip point 5 or 10 degrees under
-the mitigation trip point. The purpose of this 'pre-mitigate' trip point
-is to force the IPA to read temperature in advance.
-
-Hope that helps.
-
-  -- Daniel
-
-
-
-
-
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Well, the Keith's patch doesn't prevent pci_pm_suspend_noirq() from
+asking for D3 and both of the symptoms above may be consequences of
+that in principle.
