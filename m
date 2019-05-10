@@ -6,95 +6,78 @@ X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F2F6C04A6B
-	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 13:57:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCB3EC04A6B
+	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 13:58:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5936F21479
-	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 13:57:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A2161216C4
+	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 13:58:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1557496635;
-	bh=+JF/C+v5DF2Ak8Qn38Vr9azoy4MQ8wlVCRHtFBtQKEg=;
+	s=default; t=1557496684;
+	bh=wi9DrMR6mkrZM1IxX0zmeg7ZN7IjGhBRej4ymYmI7tY=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=FaeB1lW3Hg43MpIPNr+r598aPALFaYhFe+m74jNQz8tcjXDqA3aQn9kEYU1tYhn81
-	 8i0lia6MDB/xAaMkNUxwU/0J6KklH2IkU55SrcF28hlseJJ8/8mbHQhllHM/6Im4S8
-	 FdMGQMG/o/nc5m1equMHQNkII22g0hdt1UnQf2oA=
+	b=pqiWMQxFOcL1bqDmbJpz/e5rhJJN920sTFE/fjwCTOx05b9kjFZy86IRU+WxHL3HJ
+	 mq3oCR/UvWB42st21X5jsHidsPTwoR6f2t6PZg2O5ONdfIJ0zxA2+tsJdS9hIaepc3
+	 B0lh1J4KiGnhkuEuFVTi9pz5aZPNQWWlFjs/YjP4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727780AbfEJN5K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 May 2019 09:57:10 -0400
-Received: from mga17.intel.com ([192.55.52.151]:52402 "EHLO mga17.intel.com"
+        id S1727501AbfEJN6E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 May 2019 09:58:04 -0400
+Received: from mga06.intel.com ([134.134.136.31]:18693 "EHLO mga06.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727425AbfEJN5I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 10 May 2019 09:57:08 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
+        id S1727425AbfEJN6D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 May 2019 09:58:03 -0400
+X-Amp-Result: UNSCANNABLE
 X-Amp-File-Uploaded: False
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 10 May 2019 06:57:08 -0700
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 10 May 2019 06:58:03 -0700
 X-ExtLoop1: 1
 Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
-  by fmsmga007.fm.intel.com with ESMTP; 10 May 2019 06:57:07 -0700
-Date:   Fri, 10 May 2019 07:51:39 -0600
+  by orsmga001.jf.intel.com with ESMTP; 10 May 2019 06:58:02 -0700
+Date:   Fri, 10 May 2019 07:52:34 -0600
 From:   Keith Busch <kbusch@kernel.org>
-To:     Christoph Hellwig <hch@lst.de>
-Cc:     "Mario.Limonciello@dell.com" <Mario.Limonciello@dell.com>,
-        "kai.heng.feng@canonical.com" <kai.heng.feng@canonical.com>,
-        "axboe@fb.com" <axboe@fb.com>,
-        "sagi@grimberg.me" <sagi@grimberg.me>,
-        "rafael@kernel.org" <rafael@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        Mario Limonciello <Mario.Limonciello@dell.com>,
+        Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@fb.com>,
+        Sagi Grimberg <sagi@grimberg.me>,
+        Linux PM <linux-pm@vger.kernel.org>,
         "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-nvme <linux-nvme@lists.infradead.org>,
         "Busch, Keith" <keith.busch@intel.com>
 Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of D3
  on Suspend-to-Idle
-Message-ID: <20190510135139.GE9675@localhost.localdomain>
-References: <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
- <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
- <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com>
- <20190509095601.GA19041@lst.de>
- <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
+Message-ID: <20190510135234.GF9675@localhost.localdomain>
+References: <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
  <20190509103142.GA19550@lst.de>
  <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
  <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
  <20190509192807.GB9675@localhost.localdomain>
- <20190510053052.GB3654@lst.de>
+ <7a002851c435481593f8629ec9193e40@AUSX13MPC101.AMER.DELL.COM>
+ <20190509215409.GD9675@localhost.localdomain>
+ <495d76c66aec41a8bfbbf527820f8eb9@AUSX13MPC101.AMER.DELL.COM>
+ <BC5EB1D0-8718-48B3-ACAB-F7E5571D821D@canonical.com>
+ <CAJZ5v0jAcX-Q2twygKoKvmx2H6tneHWimmH+c2GsYitHK5-knw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <20190510053052.GB3654@lst.de>
+In-Reply-To: <CAJZ5v0jAcX-Q2twygKoKvmx2H6tneHWimmH+c2GsYitHK5-knw@mail.gmail.com>
 User-Agent: Mutt/1.9.1 (2017-09-22)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190510135139.gQhZJPSpI36TGDVTT50VzrnI5ay4Uw9As9857WNuNdI@z>
+Message-ID: <20190510135234.z5kSpy3yT53lOxHyYsmWmBxx0Fod_H3c_sGDy0qUxEg@z>
 
-On Thu, May 09, 2019 at 10:30:52PM -0700, Christoph Hellwig wrote:
-> Also I don't see any reason why we'd need to do the freeze game on
-> resume.  
-
-Right, definitely no reason for resume.
-
-> Even on suspend it looks a little odd to me, as in theory
-> the PM core should have already put the system into a quiescent state.
-> But maybe we actually need it there, in which case a comment would
-> be helpful.
-
-I wasn't sure if suspend prevents a kthread or work queue from
-running. For example, if the device sends a namespace notify AEN during
-S2I, does the nvme scan_work run?
-
-Since I wasn't sure, I took a paranoid approach to ensure nothing was
-in flight, but I'd be happy if this is unnecessary.
-
-> > +     if (!pm_suspend_via_firmware())
-> > +             return nvme_set_power(&ndev->ctrl, 0);
+On Fri, May 10, 2019 at 01:23:11AM -0700, Rafael J. Wysocki wrote:
+> On Fri, May 10, 2019 at 8:08 AM Kai-Heng Feng
+> > I tested the patch from Keith and it has two issues just as simply skipping
+> > nvme_dev_disable():
+> > 1) It consumes more power in S2I
+> > 2) System freeze after resume
 > 
-> Don't we need to save the previous power state here and restore that?
-> For example if someone set a specific state through nvme-cli?
+> Well, the Keith's patch doesn't prevent pci_pm_suspend_noirq() from
+> asking for D3 and both of the symptoms above may be consequences of
+> that in principle.
 
-Sure, we can do that. It would have been super if the spec had this
-set feature command's CQE DW0 return the previous power state so we
-could set the new and save the old in a single command, but two commands
-is just a minor inconvenience.
+Right, I'll fix up the kernel's PCI D3 control and resend for
+consideration.
