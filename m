@@ -1,99 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [EXT] Re: [PATCH v6] arm64: dts: ls1088a: add one more thermal
- zone node
-Date: Fri, 10 May 2019 15:42:19 +0530
-Message-ID: <20190510101219.oruzvzlk7mm6iahw@vireshk-i7>
-References: <20190423022507.34969-1-andy.tang@nxp.com>
- <20190510031335.GD15856@dragon>
- <VI1PR04MB4333D24227603D1497BA3CB9F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <9fb2e306-38c7-2af7-5470-ff5bc4e23370@linaro.org>
- <VI1PR04MB4333372C1DABD0E4C9DD7FE8F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: Explain the kobject_put() in cpufreq_policy_alloc()
+Date: Fri, 10 May 2019 12:35:53 +0200
+Message-ID: <2270903.5qkiGuZaYc@kreacher>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <VI1PR04MB4333372C1DABD0E4C9DD7FE8F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andy Tang <andy.tang@nxp.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTAtMDUtMTksIDA4OjQ3LCBBbmR5IFRhbmcgd3JvdGU6Cj4gKyBWaXJlc2ggZm9yIGhlbHAu
-Cj4gCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+ID4gRnJvbTogRGFuaWVsIExlemNh
-bm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+Cj4gPiBTZW50OiAyMDE55bm0NeaciDEw5pel
-IDE1OjE3Cj4gPiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFNoYXduIEd1byA8
-c2hhd25ndW9Aa2VybmVsLm9yZz4KPiA+IENjOiBMZW8gTGkgPGxlb3lhbmcubGlAbnhwLmNvbT47
-IHJvYmgrZHRAa2VybmVsLm9yZzsKPiA+IG1hcmsucnV0bGFuZEBhcm0uY29tOyBsaW51eC1hcm0t
-a2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7Cj4gPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9y
-ZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsKPiA+IGxpbnV4LXBtQHZnZXIua2VybmVs
-Lm9yZzsgcnVpLnpoYW5nQGludGVsLmNvbTsgZWR1YmV6dmFsQGdtYWlsLmNvbQo+ID4gU3ViamVj
-dDogUmU6IFtFWFRdIFJlOiBbUEFUQ0ggdjZdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUg
-bW9yZSB0aGVybWFsCj4gPiB6b25lIG5vZGUKPiA+IAo+ID4gQ2F1dGlvbjogRVhUIEVtYWlsCj4g
-PiAKPiA+IE9uIDEwLzA1LzIwMTkgMDU6NDAsIEFuZHkgVGFuZyB3cm90ZToKPiA+ID4+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tCj4gPiA+PiBGcm9tOiBTaGF3biBHdW8gPHNoYXduZ3VvQGtl
-cm5lbC5vcmc+Cj4gPiA+PiBTZW50OiAyMDE55bm0NeaciDEw5pelIDExOjE0Cj4gPiA+PiBUbzog
-QW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4KPiA+ID4+IENjOiBMZW8gTGkgPGxlb3lhbmcu
-bGlAbnhwLmNvbT47IHJvYmgrZHRAa2VybmVsLm9yZzsKPiA+ID4+IG1hcmsucnV0bGFuZEBhcm0u
-Y29tOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7Cj4gPiA+PiBkZXZpY2V0
-cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsKPiA+ID4+
-IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZzsKPiA+
-ID4+IHJ1aS56aGFuZ0BpbnRlbC5jb207IGVkdWJlenZhbEBnbWFpbC5jb20KPiA+ID4+IFN1Ympl
-Y3Q6IFtFWFRdIFJlOiBbUEFUQ0ggdjZdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9y
-ZQo+ID4gPj4gdGhlcm1hbCB6b25lIG5vZGUKPiA+ID4+Cj4gPiA+PiBDYXV0aW9uOiBFWFQgRW1h
-aWwKPiA+ID4+Cj4gPiA+PiBPbiBUdWUsIEFwciAyMywgMjAxOSBhdCAxMDoyNTowN0FNICswODAw
-LCBZdWFudGlhbiBUYW5nIHdyb3RlOgo+ID4gPj4+IExzMTA4OGEgaGFzIDIgdGhlcm1hbCBzZW5z
-b3JzLCBjb3JlIGNsdXN0ZXIgYW5kIFNvQyBwbGF0Zm9ybS4gQ29yZQo+ID4gPj4+IGNsdXN0ZXIg
-c2Vuc29yIGlzIHVzZWQgdG8gbW9uaXRvciB0aGUgdGVtcGVyYXR1cmUgb2YgY29yZSBhbmQgU29D
-Cj4gPiA+Pj4gcGxhdGZvcm0gaXMgZm9yIHBsYXRmb3JtLiBUaGUgY3VycmVudCBkdHMgb25seSBz
-dXBwb3J0IHRoZSBmaXJzdCBzZW5zb3IuCj4gPiA+Pj4gVGhpcyBwYXRjaCBhZGRzIHRoZSBzZWNv
-bmQgc2Vuc29yIG5vZGUgdG8gZHRzIHRvIGVuYWJsZSBpdC4KPiA+ID4+Pgo+ID4gPj4+IFNpZ25l
-ZC1vZmYtYnk6IFl1YW50aWFuIFRhbmcgPGFuZHkudGFuZ0BueHAuY29tPgo+ID4gPj4+IC0tLQo+
-ID4gPj4+IHY2Ogo+ID4gPj4+ICAgICAgICAgLSBhZGQgY29vbGluZyBkZXZpY2UgbWFwIHRvIGNw
-dTAtNyBpbiBwbGF0Zm9ybSBub2RlLgo+ID4gPiBJIGxpa2UgdG8gZXhwbGFpbiBhIGxpdHRsZS4g
-SSB0aGluayBpdCBtYWtlcyBzZW5zZSB0aGF0IG11bHRpcGxlIHRoZXJtYWwgem9uZQo+ID4gbWFw
-IHRvIHNhbWUgY29vbGluZyBkZXZpY2UuCj4gPiA+IEluIHRoaXMgd2F5LCBubyBtYXR0ZXIgd2hp
-Y2ggdGhlcm1hbCB6b25lIHJhaXNlcyBhIHRlbXAgYWxhcm0sIGl0IGNhbiBjYWxsCj4gPiBjb29s
-aW5nIGRldmljZSB0byBjaGlsbCBvdXQuCj4gPiA+IEkgYWxzbyBhc2tlZCBjcHVmcmVxIG1haW50
-YWluZXIgYWJvdXQgdGhlIGNvb2xpbmcgbWFwIGlzc3VlLCBoZSB0aGluayBpdAo+ID4gd291bGQg
-YmUgZmluZS4KClllcywgeW91IGFza2VkIG1lIGFuZCBJIHNhaWQgaXQgc2hvdWxkIGJlIG9rYXku
-Cgo+ID4gPiBJIGhhdmUgdGVzdGVkIGFuZCBubyBpc3N1ZSBmb3VuZC4KPiA+ID4KPiA+ID4gRGFu
-aWVsLCB3aGF0J3MgeW91ciB0aG91Z2h0Pwo+ID4gCj4gPiBJZiB0aGVyZSBhcmUgbXVsdGlwbGUg
-dGhlcm1hbCB6b25lcywgdGhleSB3aWxsIGJlIG1hbmFnZWQgYnkgZGlmZmVyZW50Cj4gPiBpbnN0
-YW5jZXMgb2YgYSB0aGVybWFsIGdvdmVybm9yLiBFYWNoIGluc3RhbmNlcyB3aWxsIGFjdCBvbiB0
-aGUgc2hhcmVkIGNvb2xpbmcKPiA+IGRldmljZSBhbmQgd2lsbCBjb2xsaWRlIGluIHRoZWlyIGRl
-Y2lzaW9uczoKPiA+IAo+ID4gIC0gSWYgdGhlIHNlbnNvcnMgYXJlIGNsb3NlZCwgdGhlaXIgYmVo
-YXZpb3Igd2lsbCBiZSBzaW1pbGFyIHJlZ2FyZGluZyB0aGUKPiA+IHRlbXBlcmF0dXJlLiBUaGUg
-Z292ZXJub3JzIG1heSB0YWtlIHRoZSBzYW1lIGRlY2lzaW9uIGZvciB0aGUgY29vbGluZwo+ID4g
-ZGV2aWNlLiBCdXQgaW4gc3VjaCBjYXNlIGhhdmluZyBqdXN0IG9uZSB0aGVybWFsIHpvbmUgbWFu
-YWdlZCBpcyBlbm91Z2guCj4gPiAKPiA+ICAtIElmIHRoZSBzZW5zb3JzIGFyZSBub3QgY2xvc2Vk
-LCB0aGVpciBiZWhhdmlvciB3aWxsIGJlIGRpZmZlcmVudCByZWdhcmRpbmcgdGhlCj4gPiB0ZW1w
-ZXJhdHVyZS4gVGhlIGdvdmVybm9ycyB3aWxsIHRha2UgZGlmZmVyZW50IGRlY2lzaW9uIHJlZ2Fy
-ZGluZyB0aGUgY29vbGluZwo+ID4gZGV2aWNlIChvbmUgd2lsbCBkZWNyZWFzZSB0aGUgZnJlcSwg
-b3RoZXIgd2lsbCBpbmNyZWFzZSB0aGUgZnJlcSkuCj4gPiAKPiA+IEFzIHRoZSB0aGVybWFsIGdv
-dmVybm9ycyBhcmUgbm90IGFibGUgdG8gbWFuYWdlIHNldmVyYWwgdGhlcm1hbCB6b25lcyBhbmQK
-PiA+IHRoZXJlIGlzIG9uZSBjb29saW5nIGRldmljZSAodGhlIGNwdSBjb29saW5nIGRldmljZSks
-IHRoaXMgc2V0dXAgd29uJ3Qgd29yayBhcwo+ID4gZXhwZWN0ZWQgSU1PLgo+ID4gCj4gPiBUaGUg
-c2V0dXAgbWFraW5nIHNlbnNlIGlzIGhhdmluZyBhIHRoZXJtYWwgem9uZSBwZXIgJ2NsdXN0ZXIn
-IGFuZCBhIGNvb2xpbmcKPiA+IGRldmljZSBwZXIgJ2NsdXN0ZXInLiBUaGF0IG1lYW5zIHRoZSBw
-bGF0Zm9ybSBoYXMgb25lIGNsb2NrIGxpbmUgcGVyICdjbHVzdGVyJy4KPiA+IFRoZSB0aGVybWFs
-IG1hbmFnZW1lbnQgaGFwcGVucyBpbiBhIHNlbGYtY29udGFpbmVkIHRoZXJtYWwgem9uZSAob25l
-Cj4gPiBjb29saW5nIGRldmljZSAtIG9uZSBnb3Zlcm5vciAtIG9uZSB0aGVybWFsIHpvbmUpLgo+
-ID4gCj4gPiBJbiB0aGUgY2FzZSBvZiBITVAsIG90aGVyIGNvbWJpbmF0aW9ucyBhcmUgcG9zc2li
-bGUgdG8gYmUgb3B0aW1hbC4KCkJ1dCBub3Qgc3VyZSBob3cgSSBtaXNzZWQgdGhlIG9idmlvdXMs
-IHRob3VnaCBJIGRvIHJlbWVtYmVyIHRoaW5raW5nIGFib3V0IHRoaXMuCgpTbyB0aGUgcHJvYmxl
-bSBpcyB0aGF0IHRoZSBjcHVfY29vbGluZyBkcml2ZXIgd2lsbCBnZXQgcmVxdWVzdHMgaW4gcGFy
-YWxsZWwgdG8Kc2V0IGRpZmZlcmVudCBtYXggZnJlcXVlbmNpZXMgYW5kIHRoZSBsYXN0IGNhbGwg
-d2lsbCBhbHdheXMgd2luIGFuZCBtYXkgcmVzdWx0CmluIHVuZGVzaXJlZCBvdXRjb21lLgoKU29y
-cnkgYWJvdXQgY3JlYXRpbmcgdGhlIGNvbmZ1c2lvbi4KCi0tIAp2aXJlc2gKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFp
-bGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlz
-dHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+It may not be particularly clear why the kobject_put() after
+failing kobject_init_and_add() in cpufreq_policy_alloc() is not
+redundant, so add a comment to explain that.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -1133,6 +1133,11 @@ static struct cpufreq_policy *cpufreq_po
+ 				   cpufreq_global_kobject, "policy%u", cpu);
+ 	if (ret) {
+ 		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
++		/*
++		 * The entire policy object will be freed below, but the extra
++		 * memory allocated for the kobject name needs to be freed by
++		 * releasing the kobject.
++		 */
+ 		kobject_put(&policy->kobj);
+ 		goto err_free_real_cpus;
+ 	}
