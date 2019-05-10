@@ -1,108 +1,89 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [EXT] Re: [PATCH v6] arm64: dts: ls1088a: add one more thermal
- zone node
-Date: Fri, 10 May 2019 08:47:36 +0000
-Message-ID: <VI1PR04MB4333372C1DABD0E4C9DD7FE8F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
-References: <20190423022507.34969-1-andy.tang@nxp.com>
- <20190510031335.GD15856@dragon>
- <VI1PR04MB4333D24227603D1497BA3CB9F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <9fb2e306-38c7-2af7-5470-ff5bc4e23370@linaro.org>
+From: "Ardelean, Alexandru" <alexandru.Ardelean@analog.com>
+Subject: Re: [PATCH 09/16] mmc: sdhci-xenon: use new match_string()
+ helper/macro
+Date: Fri, 10 May 2019 09:13:26 +0000
+Message-ID: <31be52eb1a1abbc99a24729f5c65619235cb201f.camel@analog.com>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+ <20190508112842.11654-11-alexandru.ardelean@analog.com>
+ <20190508122010.GC21059@kadam>
+ <2ec6812d6bf2f33860c7c816c641167a31eb2ed6.camel@analog.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9fb2e306-38c7-2af7-5470-ff5bc4e23370@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <2ec6812d6bf2f33860c7c816c641167a31eb2ed6.camel@analog.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Shawn Guo <shawnguo@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
-Cc: Leo Li <leoyang.li@nxp.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+Content-ID: <BB59C46108248B4E9B7153CD2DF23B7C@analog.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, linux-gpio@vger.kernel.or
 List-Id: linux-pm@vger.kernel.org
 
-KyBWaXJlc2ggZm9yIGhlbHAuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJv
-bTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIw
-MTnE6jXUwjEwyNUgMTU6MTcNCj4gVG86IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+OyBT
-aGF3biBHdW8gPHNoYXduZ3VvQGtlcm5lbC5vcmc+DQo+IENjOiBMZW8gTGkgPGxlb3lhbmcubGlA
-bnhwLmNvbT47IHJvYmgrZHRAa2VybmVsLm9yZzsNCj4gbWFyay5ydXRsYW5kQGFybS5jb207IGxp
-bnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj4gZGV2aWNldHJlZUB2Z2VyLmtl
-cm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4LXBtQHZnZXIu
-a2VybmVsLm9yZzsgcnVpLnpoYW5nQGludGVsLmNvbTsgZWR1YmV6dmFsQGdtYWlsLmNvbQ0KPiBT
-dWJqZWN0OiBSZTogW0VYVF0gUmU6IFtQQVRDSCB2Nl0gYXJtNjQ6IGR0czogbHMxMDg4YTogYWRk
-IG9uZSBtb3JlIHRoZXJtYWwNCj4gem9uZSBub2RlDQo+IA0KPiBDYXV0aW9uOiBFWFQgRW1haWwN
-Cj4gDQo+IE9uIDEwLzA1LzIwMTkgMDU6NDAsIEFuZHkgVGFuZyB3cm90ZToNCj4gPj4gLS0tLS1P
-cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogU2hhd24gR3VvIDxzaGF3bmd1b0BrZXJu
-ZWwub3JnPg0KPiA+PiBTZW50OiAyMDE5xOo11MIxMMjVIDExOjE0DQo+ID4+IFRvOiBBbmR5IFRh
-bmcgPGFuZHkudGFuZ0BueHAuY29tPg0KPiA+PiBDYzogTGVvIExpIDxsZW95YW5nLmxpQG54cC5j
-b20+OyByb2JoK2R0QGtlcm5lbC5vcmc7DQo+ID4+IG1hcmsucnV0bGFuZEBhcm0uY29tOyBsaW51
-eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+ID4+IGRldmljZXRyZWVAdmdlci5r
-ZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+PiBsaW51eC1wbUB2
-Z2VyLmtlcm5lbC5vcmc7IGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc7DQo+ID4+IHJ1aS56aGFu
-Z0BpbnRlbC5jb207IGVkdWJlenZhbEBnbWFpbC5jb20NCj4gPj4gU3ViamVjdDogW0VYVF0gUmU6
-IFtQQVRDSCB2Nl0gYXJtNjQ6IGR0czogbHMxMDg4YTogYWRkIG9uZSBtb3JlDQo+ID4+IHRoZXJt
-YWwgem9uZSBub2RlDQo+ID4+DQo+ID4+IENhdXRpb246IEVYVCBFbWFpbA0KPiA+Pg0KPiA+PiBP
-biBUdWUsIEFwciAyMywgMjAxOSBhdCAxMDoyNTowN0FNICswODAwLCBZdWFudGlhbiBUYW5nIHdy
-b3RlOg0KPiA+Pj4gTHMxMDg4YSBoYXMgMiB0aGVybWFsIHNlbnNvcnMsIGNvcmUgY2x1c3RlciBh
-bmQgU29DIHBsYXRmb3JtLiBDb3JlDQo+ID4+PiBjbHVzdGVyIHNlbnNvciBpcyB1c2VkIHRvIG1v
-bml0b3IgdGhlIHRlbXBlcmF0dXJlIG9mIGNvcmUgYW5kIFNvQw0KPiA+Pj4gcGxhdGZvcm0gaXMg
-Zm9yIHBsYXRmb3JtLiBUaGUgY3VycmVudCBkdHMgb25seSBzdXBwb3J0IHRoZSBmaXJzdCBzZW5z
-b3IuDQo+ID4+PiBUaGlzIHBhdGNoIGFkZHMgdGhlIHNlY29uZCBzZW5zb3Igbm9kZSB0byBkdHMg
-dG8gZW5hYmxlIGl0Lg0KPiA+Pj4NCj4gPj4+IFNpZ25lZC1vZmYtYnk6IFl1YW50aWFuIFRhbmcg
-PGFuZHkudGFuZ0BueHAuY29tPg0KPiA+Pj4gLS0tDQo+ID4+PiB2NjoNCj4gPj4+ICAgICAgICAg
-LSBhZGQgY29vbGluZyBkZXZpY2UgbWFwIHRvIGNwdTAtNyBpbiBwbGF0Zm9ybSBub2RlLg0KPiA+
-IEkgbGlrZSB0byBleHBsYWluIGEgbGl0dGxlLiBJIHRoaW5rIGl0IG1ha2VzIHNlbnNlIHRoYXQg
-bXVsdGlwbGUgdGhlcm1hbCB6b25lDQo+IG1hcCB0byBzYW1lIGNvb2xpbmcgZGV2aWNlLg0KPiA+
-IEluIHRoaXMgd2F5LCBubyBtYXR0ZXIgd2hpY2ggdGhlcm1hbCB6b25lIHJhaXNlcyBhIHRlbXAg
-YWxhcm0sIGl0IGNhbiBjYWxsDQo+IGNvb2xpbmcgZGV2aWNlIHRvIGNoaWxsIG91dC4NCj4gPiBJ
-IGFsc28gYXNrZWQgY3B1ZnJlcSBtYWludGFpbmVyIGFib3V0IHRoZSBjb29saW5nIG1hcCBpc3N1
-ZSwgaGUgdGhpbmsgaXQNCj4gd291bGQgYmUgZmluZS4NCj4gPiBJIGhhdmUgdGVzdGVkIGFuZCBu
-byBpc3N1ZSBmb3VuZC4NCj4gPg0KPiA+IERhbmllbCwgd2hhdCdzIHlvdXIgdGhvdWdodD8NCj4g
-DQo+IElmIHRoZXJlIGFyZSBtdWx0aXBsZSB0aGVybWFsIHpvbmVzLCB0aGV5IHdpbGwgYmUgbWFu
-YWdlZCBieSBkaWZmZXJlbnQNCj4gaW5zdGFuY2VzIG9mIGEgdGhlcm1hbCBnb3Zlcm5vci4gRWFj
-aCBpbnN0YW5jZXMgd2lsbCBhY3Qgb24gdGhlIHNoYXJlZCBjb29saW5nDQo+IGRldmljZSBhbmQg
-d2lsbCBjb2xsaWRlIGluIHRoZWlyIGRlY2lzaW9uczoNCj4gDQo+ICAtIElmIHRoZSBzZW5zb3Jz
-IGFyZSBjbG9zZWQsIHRoZWlyIGJlaGF2aW9yIHdpbGwgYmUgc2ltaWxhciByZWdhcmRpbmcgdGhl
-DQo+IHRlbXBlcmF0dXJlLiBUaGUgZ292ZXJub3JzIG1heSB0YWtlIHRoZSBzYW1lIGRlY2lzaW9u
-IGZvciB0aGUgY29vbGluZw0KPiBkZXZpY2UuIEJ1dCBpbiBzdWNoIGNhc2UgaGF2aW5nIGp1c3Qg
-b25lIHRoZXJtYWwgem9uZSBtYW5hZ2VkIGlzIGVub3VnaC4NCj4gDQo+ICAtIElmIHRoZSBzZW5z
-b3JzIGFyZSBub3QgY2xvc2VkLCB0aGVpciBiZWhhdmlvciB3aWxsIGJlIGRpZmZlcmVudCByZWdh
-cmRpbmcgdGhlDQo+IHRlbXBlcmF0dXJlLiBUaGUgZ292ZXJub3JzIHdpbGwgdGFrZSBkaWZmZXJl
-bnQgZGVjaXNpb24gcmVnYXJkaW5nIHRoZSBjb29saW5nDQo+IGRldmljZSAob25lIHdpbGwgZGVj
-cmVhc2UgdGhlIGZyZXEsIG90aGVyIHdpbGwgaW5jcmVhc2UgdGhlIGZyZXEpLg0KPiANCj4gQXMg
-dGhlIHRoZXJtYWwgZ292ZXJub3JzIGFyZSBub3QgYWJsZSB0byBtYW5hZ2Ugc2V2ZXJhbCB0aGVy
-bWFsIHpvbmVzIGFuZA0KPiB0aGVyZSBpcyBvbmUgY29vbGluZyBkZXZpY2UgKHRoZSBjcHUgY29v
-bGluZyBkZXZpY2UpLCB0aGlzIHNldHVwIHdvbid0IHdvcmsgYXMNCj4gZXhwZWN0ZWQgSU1PLg0K
-PiANCj4gVGhlIHNldHVwIG1ha2luZyBzZW5zZSBpcyBoYXZpbmcgYSB0aGVybWFsIHpvbmUgcGVy
-ICdjbHVzdGVyJyBhbmQgYSBjb29saW5nDQo+IGRldmljZSBwZXIgJ2NsdXN0ZXInLiBUaGF0IG1l
-YW5zIHRoZSBwbGF0Zm9ybSBoYXMgb25lIGNsb2NrIGxpbmUgcGVyICdjbHVzdGVyJy4NCj4gVGhl
-IHRoZXJtYWwgbWFuYWdlbWVudCBoYXBwZW5zIGluIGEgc2VsZi1jb250YWluZWQgdGhlcm1hbCB6
-b25lIChvbmUNCj4gY29vbGluZyBkZXZpY2UgLSBvbmUgZ292ZXJub3IgLSBvbmUgdGhlcm1hbCB6
-b25lKS4NCj4gDQo+IEluIHRoZSBjYXNlIG9mIEhNUCwgb3RoZXIgY29tYmluYXRpb25zIGFyZSBw
-b3NzaWJsZSB0byBiZSBvcHRpbWFsLg0KSGkgVmlyZXNoLA0KDQpJIHdhbnQgdG8gbWFwIG11bHRp
-cGxlIHRoZXJtYWwgem9uZXMgdG8gdGhlIHNhbWUgY29vbGluZyBkZXZpY2UuIFRoZSBhYm92ZSBp
-cyB0aGUgZGlzY3Vzc2lvbiBhYm91dCBpdC4NCkl0IHNlZW1zIHJlYXNvbmFibGUuIEJ1dCBJIGFt
-IG5vdCBleHBlcnQgb24gdGhpcy4gQ291bGQgeW91IHBsZWFzZSBwcm92aWRlIHNvbWUgdGhvdWdo
-dHM/IFRoYW5rcy4NCg0KQlIsDQpBbmR5DQo+IA0KPiANCj4gDQo+IC0tDQo+IA0KPiA8aHR0cHM6
-Ly9ldXIwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYl
-MkZ3d3cuDQo+IGxpbmFyby5vcmclMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG54
-cC5jb20lN0M5MzViN2EwOA0KPiAzMWNjNDY2ZGE0MDgwOGQ2ZDUxNzZmOGUlN0M2ODZlYTFkM2Jj
-MmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3QzANCj4gJTdDMCU3QzYzNjkzMDY5Mzk2NTU0MDE4OSZh
-bXA7c2RhdGE9V0s5TkRCVnd6aENDOVdNa21qTE9iSg0KPiBPQlF3UkclMkZib2VkJTJGS3gxOHhp
-Qk5RJTNEJmFtcDtyZXNlcnZlZD0wPiBMaW5hcm8ub3JnIKmmIE9wZW4NCj4gc291cmNlIHNvZnR3
-YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzoNCj4gPGh0dHBzOi8vZXVyMDEu
-c2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3Lg0K
-PiBmYWNlYm9vay5jb20lMkZwYWdlcyUyRkxpbmFybyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5keS50
-YW5nJTQwbngNCj4gcC5jb20lN0M5MzViN2EwODMxY2M0NjZkYTQwODA4ZDZkNTE3NmY4ZSU3QzY4
-NmVhMWQzYmMyYjRjNmZhOTJjDQo+IGQ5OWM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2OTMwNjkzOTY1
-NTUwMjAyJmFtcDtzZGF0YT1PMG1XTzc2DQo+IDlzSzJaTUdYOUF4Z0xHWU5WZmtGSEJENFpJR0Nj
-bHR0dnlQSSUzRCZhbXA7cmVzZXJ2ZWQ9MD4NCj4gRmFjZWJvb2sgfA0KPiA8aHR0cHM6Ly9ldXIw
-MS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ0d2l0
-dGUNCj4gci5jb20lMkYlMjMhJTJGbGluYXJvb3JnJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRh
-bmclNDBueHAuY29tDQo+ICU3QzkzNWI3YTA4MzFjYzQ2NmRhNDA4MDhkNmQ1MTc2ZjhlJTdDNjg2
-ZWExZDNiYzJiNGM2ZmE5MmNkOTljNQ0KPiBjMzAxNjM1JTdDMCU3QzAlN0M2MzY5MzA2OTM5NjU1
-NTAyMDImYW1wO3NkYXRhPXRWJTJCaThCazNPcU8NCj4gaCUyRlpIcEJyMk5RREFDVnZ0R2k4S05H
-UXQ1ZFphVGV5ZyUzRCZhbXA7cmVzZXJ2ZWQ9MD4gVHdpdHRlciB8DQo+IDxodHRwczovL2V1cjAx
-LnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dy4N
-Cj4gbGluYXJvLm9yZyUyRmxpbmFyby1ibG9nJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRh
-bmclNDBueHAuY28NCj4gbSU3QzkzNWI3YTA4MzFjYzQ2NmRhNDA4MDhkNmQ1MTc2ZjhlJTdDNjg2
-ZWExZDNiYzJiNGM2ZmE5MmNkOTkNCj4gYzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY5MzA2OTM5NjU1
-NTAyMDImYW1wO3NkYXRhPTBFOGE5Mzh4RXQ3bDINCj4gTUJMbk1FVHNDUUtmaEpNZ216Rk50dUNL
-UFhmNVNZJTNEJmFtcDtyZXNlcnZlZD0wPiBCbG9nDQoNCg==
+On Wed, 2019-05-08 at 16:26 +0300, Alexandru Ardelean wrote:
+> On Wed, 2019-05-08 at 15:20 +0300, Dan Carpenter wrote:
+> > 
+> > 
+> > On Wed, May 08, 2019 at 02:28:35PM +0300, Alexandru Ardelean wrote:
+> > > -static const char * const phy_types[] = {
+> > > -     "emmc 5.0 phy",
+> > > -     "emmc 5.1 phy"
+> > > -};
+> > > -
+> > >  enum xenon_phy_type_enum {
+> > >       EMMC_5_0_PHY,
+> > >       EMMC_5_1_PHY,
+> > >       NR_PHY_TYPES
+> > 
+> > There is no need for NR_PHY_TYPES now so you could remove that as well.
+> > 
+> 
+> I thought the same.
+> The only reason to keep NR_PHY_TYPES, is for potential future patches,
+> where it would be just 1 addition
+> 
+>  enum xenon_phy_type_enum {
+>       EMMC_5_0_PHY,
+>       EMMC_5_1_PHY,
+> +      EMMC_5_2_PHY,
+>       NR_PHY_TYPES
+>   }
+> 
+> Depending on style/preference of how to do enums (allow comma on last
+> enum
+> or not allow comma on last enum value), adding new enum values woudl be 2
+> additions + 1 deletion lines.
+> 
+>  enum xenon_phy_type_enum {
+>       EMMC_5_0_PHY,
+> -      EMMC_5_1_PHY
+> +      EMM
+> C_5_1_PHY,
+> +      EMMC_5_2_PHY
+>  }
+> 
+> Either way (leave NR_PHY_TYPES or remove NR_PHY_TYPES) is fine from my
+> side.
+> 
+
+Preference on this ?
+If no objection [nobody insists] I would keep.
+
+I don't feel strongly about it [dropping NR_PHY_TYPES or not].
+
+Thanks
+Alex
+
+> Thanks
+> Alex
+> 
+> > regards,
+> > dan carpenter
+> > 
