@@ -1,59 +1,135 @@
-From: michael.kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v2 6/8] thermal: mediatek: mt8183: fix bank number settings
-Date: Fri, 10 May 2019 21:27:04 +0800
-Message-ID: <1557494826-6044-7-git-send-email-michael.kao@mediatek.com>
+From: michael.kao <michael.kao@mediatek.com>
+Subject: [PATCH v2 1/8] arm64: dts: mt8183: add thermal zone node
+Date: Fri, 10 May 2019 21:26:59 +0800
+Message-ID: <1557494826-6044-2-git-send-email-michael.kao@mediatek.com>
 References: <1557494826-6044-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1557494826-6044-1-git-send-email-michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, hsinyi-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Michael Kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1557494826-6044-1-git-send-email-michael.kao@mediatek.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, hsinyi@chromium.org
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "michael.kao" <michael.kao@mediatek.com>, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Michael Kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Add thermal zone node to Mediatek MT8183 dts file.
 
-MT8183_NUM_ZONES should be set to 1
-because MT8183 doesn't have multiple banks.
-
-Fixes: a4ffe6b52d27 ("thermal: mediatek: add support for MT8183")
-Signed-off-by: Michael Kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Signed-off-by: Michael Kao <michael.kao@mediatek.com>
 ---
- drivers/thermal/mtk_thermal.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/mediatek/mt8183.dtsi | 85 ++++++++++++++++++++++++++++++++
+ 1 file changed, 85 insertions(+)
 
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index 5c07a61..cb41e46 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -216,6 +216,9 @@ enum {
- /* The total number of temperature sensors in the MT8183 */
- #define MT8183_NUM_SENSORS	6
+diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+index 926df75..52ad47e 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
+@@ -334,6 +334,88 @@
+ 			status = "disabled";
+ 		};
  
-+/* The number of banks in the MT8183 */
-+#define MT8183_NUM_ZONES               1
++		thermal: thermal@1100b000 {
++			#thermal-sensor-cells = <1>;
++			compatible = "mediatek,mt8183-thermal";
++			reg = <0 0x1100b000 0 0x1000>;
++			interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>;
++			clocks = <&infracfg CLK_INFRA_THERM>,
++				 <&infracfg CLK_INFRA_AUXADC>;
++			clock-names = "therm", "auxadc";
++			resets = <&infracfg  MT8183_INFRACFG_AO_THERM_SW_RST>;
++			mediatek,auxadc = <&auxadc>;
++			mediatek,apmixedsys = <&apmixedsys>;
++			mediatek,hw-reset-temp = <117000>;
++			nvmem-cells = <&thermal_calibration>;
++			nvmem-cell-names = "calibration-data";
++		};
 +
- /* The number of sensing points per bank */
- #define MT8183_NUM_SENSORS_PER_ZONE	 6
++		thermal-zones {
++			cpu_thermal: cpu_thermal {
++				polling-delay-passive = <1000>;
++				polling-delay = <1000>;
++				thermal-sensors = <&thermal 0>;
++				sustainable-power = <1500>;
++			};
++
++			/* The tzts1 ~ tzts6 don't need to polling */
++			/* The tzts1 ~ tzts6 don't need to thermal throttle */
++
++			tzts1: tzts1 {
++				polling-delay-passive = <0>;
++				polling-delay = <0>;
++				thermal-sensors = <&thermal 1>;
++				sustainable-power = <0>;
++				trips {};
++				cooling-maps {};
++			};
++
++			tzts2: tzts2 {
++				polling-delay-passive = <0>;
++				polling-delay = <0>;
++				thermal-sensors = <&thermal 2>;
++				sustainable-power = <0>;
++				trips {};
++				cooling-maps {};
++			};
++
++			tzts3: tzts3 {
++				polling-delay-passive = <0>;
++				polling-delay = <0>;
++				thermal-sensors = <&thermal 3>;
++				sustainable-power = <0>;
++				trips {};
++				cooling-maps {};
++			};
++
++			tzts4: tzts4 {
++				polling-delay-passive = <0>;
++				polling-delay = <0>;
++				thermal-sensors = <&thermal 4>;
++				sustainable-power = <0>;
++				trips {};
++				cooling-maps {};
++			};
++
++			tzts5: tzts5 {
++				polling-delay-passive = <0>;
++				polling-delay = <0>;
++				thermal-sensors = <&thermal 5>;
++				sustainable-power = <0>;
++				trips {};
++				cooling-maps {};
++			};
++
++			tztsABB: tztsABB {
++				polling-delay-passive = <0>;
++				polling-delay = <0>;
++				thermal-sensors = <&thermal 6>;
++				sustainable-power = <0>;
++				trips {};
++				cooling-maps {};
++			};
++		};
++
+ 		audiosys: syscon@11220000 {
+ 			compatible = "mediatek,mt8183-audiosys", "syscon";
+ 			reg = <0 0x11220000 0 0x1000>;
+@@ -368,6 +450,9 @@
+ 			compatible = "mediatek,mt8183-efuse",
+ 				     "mediatek,efuse";
+ 			reg = <0 0x11f10000 0 0x1000>;
++			thermal_calibration: calib@180 {
++				reg = <0x180 0xc>;
++			};
+ 		};
  
-@@ -503,7 +506,7 @@ static const struct mtk_thermal_data mt7622_thermal_data = {
- 
- static const struct mtk_thermal_data mt8183_thermal_data = {
- 	.auxadc_channel = MT8183_TEMP_AUXADC_CHANNEL,
--	.num_banks = MT8183_NUM_SENSORS_PER_ZONE,
-+	.num_banks = MT8183_NUM_ZONES,
- 	.num_sensors = MT8183_NUM_SENSORS,
- 	.vts_index = mt8183_vts_index,
- 	.cali_val = MT8183_CALIBRATION,
+ 		mfgcfg: syscon@13000000 {
 -- 
 2.6.4
