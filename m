@@ -1,110 +1,82 @@
-From: michael.kao <michael.kao@mediatek.com>
-Subject: [PATCH v2 3/8] arm64: dts: mt8183: Add #cooling-cells to CPU nodes
-Date: Fri, 10 May 2019 21:27:01 +0800
-Message-ID: <1557494826-6044-4-git-send-email-michael.kao@mediatek.com>
+From: michael.kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v2 8/8] thermal: mediatek: use spinlock to protect PTPCORESEL
+Date: Fri, 10 May 2019 21:27:06 +0800
+Message-ID: <1557494826-6044-9-git-send-email-michael.kao@mediatek.com>
 References: <1557494826-6044-1-git-send-email-michael.kao@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1557494826-6044-1-git-send-email-michael.kao@mediatek.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, hsinyi@chromium.org
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "michael.kao" <michael.kao@mediatek.com>, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1557494826-6044-1-git-send-email-michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, hsinyi-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "michael.kao" <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The #cooling-cells property needs to be specified to allow a CPU
-to be used as cooling device.
+The driver of thermal and svs will use the
+same register for the project which should select
+bank before reading sensor value.
 
-Signed-off-by: Michael.Kao <michael.kao@mediatek.com>
+Signed-off-by: Michael.Kao <michael.kao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 ---
- arch/arm64/boot/dts/mediatek/mt8183.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/thermal/mtk_thermal.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-index 8f9fd9a..bf8b0a8 100644
---- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-@@ -11,6 +11,8 @@
- #include <dt-bindings/power/mt8183-power.h>
- #include <dt-bindings/reset-controller/mt8183-resets.h>
- #include "mt8183-pinfunc.h"
-+#include <dt-bindings/thermal/thermal.h>
-+
- / {
- 	compatible = "mediatek,mt8183";
- 	interrupt-parent = <&sysirq>;
-@@ -59,6 +61,7 @@
- 			reg = <0x000>;
- 			enable-method = "psci";
- 			dynamic-power-coefficient = <84>;
-+			#cooling-cells = <2>;
- 		};
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index d5c78b0..6d7e839 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -30,6 +30,7 @@
+ #include <linux/thermal.h>
+ #include <linux/reset.h>
+ #include <linux/types.h>
++#include <linux/power/mtk_svs.h>
  
- 		cpu1: cpu@1 {
-@@ -67,6 +70,7 @@
- 			reg = <0x001>;
- 			enable-method = "psci";
- 			dynamic-power-coefficient = <84>;
-+			#cooling-cells = <2>;
- 		};
+ /* AUXADC Registers */
+ #define AUXADC_CON1_SET_V	0x008
+@@ -267,7 +268,7 @@ struct mtk_thermal {
+ 	struct clk *clk_peri_therm;
+ 	struct clk *clk_auxadc;
+ 	/* lock: for getting and putting banks */
+-	struct mutex lock;
++	unsigned long flags;
  
- 		cpu2: cpu@2 {
-@@ -75,6 +79,7 @@
- 			reg = <0x002>;
- 			enable-method = "psci";
- 			dynamic-power-coefficient = <84>;
-+			#cooling-cells = <2>;
- 		};
+ 	/* Calibration values */
+ 	s32 adc_ge;
+@@ -566,7 +567,7 @@ static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
+ 	u32 val;
  
- 		cpu3: cpu@3 {
-@@ -83,6 +88,7 @@
- 			reg = <0x003>;
- 			enable-method = "psci";
- 			dynamic-power-coefficient = <84>;
-+			#cooling-cells = <2>;
- 		};
+ 	if (mt->conf->need_switch_bank) {
+-		mutex_lock(&mt->lock);
++		mt->flags = claim_mtk_svs_lock();
  
- 		cpu4: cpu@100 {
-@@ -91,6 +97,7 @@
- 			reg = <0x100>;
- 			enable-method = "psci";
- 			dynamic-power-coefficient = <211>;
-+			#cooling-cells = <2>;
- 		};
+ 		val = readl(mt->thermal_base + PTPCORESEL);
+ 		val &= ~0xf;
+@@ -586,7 +587,7 @@ static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
+ 	struct mtk_thermal *mt = bank->mt;
  
- 		cpu5: cpu@101 {
-@@ -99,6 +106,7 @@
- 			reg = <0x101>;
- 			enable-method = "psci";
- 			dynamic-power-coefficient = <211>;
-+			#cooling-cells = <2>;
- 		};
+ 	if (mt->conf->need_switch_bank)
+-		mutex_unlock(&mt->lock);
++		release_mtk_svs_lock(mt->flags);
+ }
  
- 		cpu6: cpu@102 {
-@@ -107,6 +115,7 @@
- 			reg = <0x102>;
- 			enable-method = "psci";
- 			dynamic-power-coefficient = <211>;
-+			#cooling-cells = <2>;
- 		};
+ /**
+@@ -941,8 +942,6 @@ static int mtk_thermal_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
- 		cpu7: cpu@103 {
-@@ -115,6 +124,7 @@
- 			reg = <0x103>;
- 			enable-method = "psci";
- 			dynamic-power-coefficient = <211>;
-+			#cooling-cells = <2>;
- 		};
- 	};
+-	mutex_init(&mt->lock);
+-
+ 	mt->dev = &pdev->dev;
  
+ 	auxadc = of_parse_phandle(np, "mediatek,auxadc", 0);
 -- 
 2.6.4
