@@ -1,103 +1,200 @@
-From: "Ardelean, Alexandru" <alexandru.Ardelean@analog.com>
-Subject: Re: [PATCH 09/16] mmc: sdhci-xenon: use new match_string()
- helper/macro
-Date: Fri, 10 May 2019 11:04:53 +0000
-Message-ID: <d320a13ad06bba87fcb0c04c4143e911723684ea.camel@analog.com>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
- <20190508112842.11654-11-alexandru.ardelean@analog.com>
- <20190508122010.GC21059@kadam>
- <2ec6812d6bf2f33860c7c816c641167a31eb2ed6.camel@analog.com>
- <31be52eb1a1abbc99a24729f5c65619235cb201f.camel@analog.com>
- <20190510110116.GB18105@kadam>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Fri, 10 May 2019 17:02:34 +0530
+Message-ID: <CAHLCerOsQVHhFfkDX-+dJ9SZjUzW64+B85S6cLMHjqhRBoW1vw@mail.gmail.com>
+References: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org> <CAHLCerPi4Fd1eoPY=Gvo=FkVTGOt=ummAqHfWBi645Yb0O5-sg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <20190510110116.GB18105@kadam>
-Content-Language: en-US
-Content-ID: <134D0B85CEA25646B3EBD898406EC02C@analog.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>
-Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, linux-gpio@vger.kernel.or
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAHLCerPi4Fd1eoPY=Gvo=FkVTGOt=ummAqHfWBi645Yb0O5-sg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, mkshah@codeaurora.org
+Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, evgreen@chromium.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, ilina@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2019-05-10 at 14:01 +0300, Dan Carpenter wrote:
-> [External]
-> 
-> 
-> On Fri, May 10, 2019 at 09:13:26AM +0000, Ardelean, Alexandru wrote:
-> > On Wed, 2019-05-08 at 16:26 +0300, Alexandru Ardelean wrote:
-> > > On Wed, 2019-05-08 at 15:20 +0300, Dan Carpenter wrote:
-> > > > 
-> > > > 
-> > > > On Wed, May 08, 2019 at 02:28:35PM +0300, Alexandru Ardelean wrote:
-> > > > > -static const char * const phy_types[] = {
-> > > > > -     "emmc 5.0 phy",
-> > > > > -     "emmc 5.1 phy"
-> > > > > -};
-> > > > > -
-> > > > >  enum xenon_phy_type_enum {
-> > > > >       EMMC_5_0_PHY,
-> > > > >       EMMC_5_1_PHY,
-> > > > >       NR_PHY_TYPES
-> > > > 
-> > > > There is no need for NR_PHY_TYPES now so you could remove that as
-> > > > well.
-> > > > 
-> > > 
-> > > I thought the same.
-> > > The only reason to keep NR_PHY_TYPES, is for potential future
-> > > patches,
-> > > where it would be just 1 addition
-> > > 
-> > >  enum xenon_phy_type_enum {
-> > >       EMMC_5_0_PHY,
-> > >       EMMC_5_1_PHY,
-> > > +      EMMC_5_2_PHY,
-> > >       NR_PHY_TYPES
-> > >   }
-> > > 
-> > > Depending on style/preference of how to do enums (allow comma on last
-> > > enum
-> > > or not allow comma on last enum value), adding new enum values woudl
-> > > be 2
-> > > additions + 1 deletion lines.
-> > > 
-> > >  enum xenon_phy_type_enum {
-> > >       EMMC_5_0_PHY,
-> > > -      EMMC_5_1_PHY
-> > > +      EMM
-> > > C_5_1_PHY,
-> > > +      EMMC_5_2_PHY
-> > >  }
-> > > 
-> > > Either way (leave NR_PHY_TYPES or remove NR_PHY_TYPES) is fine from
-> > > my
-> > > side.
-> > > 
-> > 
-> > Preference on this ?
-> > If no objection [nobody insists] I would keep.
-> > 
-> > I don't feel strongly about it [dropping NR_PHY_TYPES or not].
-> 
-> If you end up resending the series could you remove it, but if not then
-> it's not worth it.
+On Wed, May 8, 2019 at 3:50 AM Amit Kucheria
+<amit.kucheria@verdurent.com> wrote:
+>
+> On Tue, Oct 30, 2018 at 10:53 PM Raju P.L.S.S.S.N
+> <rplsssn@codeaurora.org> wrote:
+> >
+> > Add device bindings for cpuidle states for cpu devices.
+>
+> Raju: Did this patch fall through the cracks? It would be nice to land
+> this while Lina works on setting up the infrastructure to do
+> hierarchical power domains.
 
-ack
+After talking offline with Raju, I've added this patch with some
+cleanups to my qcom cpuidle series.
 
-thanks
-Alex
-
-> 
-> regards,
-> dan carpenter
-> 
+> > Cc: <devicetree@vger.kernel.org>
+> > Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+> > ---
+> > Changes in v2
+> >  - Address comments from Doug
+> > ---
+> > ---
+> >  arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 62 insertions(+)
+> >
+> > diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> > index 0c9a2aa..3a8381e 100644
+> > --- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> > +++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> > @@ -96,6 +96,7 @@
+> >                         reg = <0x0 0x0>;
+> >                         enable-method = "psci";
+> >                         next-level-cache = <&L2_0>;
+> > +                       cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+>
+> May I suggest using more generic names here instead of C0_CPU_PD and
+> move the QC-specific description to the idle-state-name property? C0
+> and C4 isn't easy to understand at a glance. Neither is PD and RPD.
+>
+> Something like big_cpu_retention, big_cpu_sleep, little_cpu_retention,
+> little_cpu_sleep, cluster_sleep?
+> Or big_cpu_idle_0, big_cpu_idle_1, big_cpu_idle_2 for states with
+> increasing breakeven times.
+>
+> I've commented below on what it might look like.
+>
+> >                         L2_0: l2-cache {
+> >                                 compatible = "cache";
+> >                                 next-level-cache = <&L3_0>;
+> > @@ -111,6 +112,7 @@
+> >                         reg = <0x0 0x100>;
+> >                         enable-method = "psci";
+> >                         next-level-cache = <&L2_100>;
+> > +                       cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+> >                         L2_100: l2-cache {
+> >                                 compatible = "cache";
+> >                                 next-level-cache = <&L3_0>;
+> > @@ -123,6 +125,7 @@
+> >                         reg = <0x0 0x200>;
+> >                         enable-method = "psci";
+> >                         next-level-cache = <&L2_200>;
+> > +                       cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+> >                         L2_200: l2-cache {
+> >                                 compatible = "cache";
+> >                                 next-level-cache = <&L3_0>;
+> > @@ -135,6 +138,7 @@
+> >                         reg = <0x0 0x300>;
+> >                         enable-method = "psci";
+> >                         next-level-cache = <&L2_300>;
+> > +                       cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+> >                         L2_300: l2-cache {
+> >                                 compatible = "cache";
+> >                                 next-level-cache = <&L3_0>;
+> > @@ -147,6 +151,7 @@
+> >                         reg = <0x0 0x400>;
+> >                         enable-method = "psci";
+> >                         next-level-cache = <&L2_400>;
+> > +                       cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+> >                         L2_400: l2-cache {
+> >                                 compatible = "cache";
+> >                                 next-level-cache = <&L3_0>;
+> > @@ -159,6 +164,7 @@
+> >                         reg = <0x0 0x500>;
+> >                         enable-method = "psci";
+> >                         next-level-cache = <&L2_500>;
+> > +                       cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+> >                         L2_500: l2-cache {
+> >                                 compatible = "cache";
+> >                                 next-level-cache = <&L3_0>;
+> > @@ -171,6 +177,7 @@
+> >                         reg = <0x0 0x600>;
+> >                         enable-method = "psci";
+> >                         next-level-cache = <&L2_600>;
+> > +                       cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+> >                         L2_600: l2-cache {
+> >                                 compatible = "cache";
+> >                                 next-level-cache = <&L3_0>;
+> > @@ -183,11 +190,66 @@
+> >                         reg = <0x0 0x700>;
+> >                         enable-method = "psci";
+> >                         next-level-cache = <&L2_700>;
+> > +                       cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+> >                         L2_700: l2-cache {
+> >                                 compatible = "cache";
+> >                                 next-level-cache = <&L3_0>;
+> >                         };
+> >                 };
+> > +
+> > +               idle-states {
+> > +                       entry-method = "psci";
+> > +
+> > +                       C0_CPU_PD: c0-power-down {
+>
+> big_cpu_retention: big-cpu-retention
+>
+> > +                               compatible = "arm,idle-state";
+> > +                               arm,psci-suspend-param = <0x40000003>;
+> > +                               entry-latency-us = <350>;
+> > +                               exit-latency-us = <461>;
+> > +                               min-residency-us = <1890>;
+> > +                               local-timer-stop;
+> > +                               idle-state-name = "power-down";
+>
+> "big-cpu-power-down"
+>
+> > +                       };
+> > +
+> > +                       C0_CPU_RPD: c0-rail-power-down {
+>
+> big_cpu_sleep: big-cpu-sleep
+>
+> > +                               compatible = "arm,idle-state";
+> > +                               arm,psci-suspend-param = <0x40000004>;
+> > +                               entry-latency-us = <360>;
+> > +                               exit-latency-us = <531>;
+> > +                               min-residency-us = <3934>;
+> > +                               local-timer-stop;
+> > +                               idle-state-name = "rail-power-down";
+>
+> "big-cpu-rail-power-down"
+>
+> > +                       };
+> > +
+> > +                       C4_CPU_PD: c4-power-down {
+>
+> little_cpu_retention: little-cpu-retention
+>
+> > +                               compatible = "arm,idle-state";
+> > +                               arm,psci-suspend-param = <0x40000003>;
+> > +                               entry-latency-us = <264>;
+> > +                               exit-latency-us = <621>;
+> > +                               min-residency-us = <952>;
+> > +                               local-timer-stop;
+> > +                               idle-state-name = "power-down";
+>
+> "little-cpu-power-down" and so and so forth. You get the idea.
+>
+> > +                       };
+> > +
+> > +                       C4_CPU_RPD: c4-rail-power-down {
+> > +                               compatible = "arm,idle-state";
+> > +                               arm,psci-suspend-param = <0x40000004>;
+> > +                               entry-latency-us = <702>;
+> > +                               exit-latency-us = <1061>;
+> > +                               min-residency-us = <4488>;
+> > +                               local-timer-stop;
+> > +                               idle-state-name = "rail-power-down";
+> > +                       };
+> > +
+> > +                       CLUSTER_PD: cluster-power-down {
+> > +                               compatible = "arm,idle-state";
+> > +                               arm,psci-suspend-param = <0x400000F4>;
+> > +                               entry-latency-us = <3263>;
+> > +                               exit-latency-us = <6562>;
+> > +                               min-residency-us = <9987>;
+> > +                               local-timer-stop;
+> > +                               idle-state-name = "cluster-power-down";
+> > +                       };
+> > +               };
+> >         };
+> >
+> >         pmu {
+> > --
+> > QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+> > of the Code Aurora Forum, hosted by The Linux Foundation.
+> >
