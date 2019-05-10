@@ -2,185 +2,133 @@ Return-Path: <SRS0=xbvJ=TK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A00C04A6B
-	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 11:33:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95B61C04AB2
+	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 11:36:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 37FDB2175B
-	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 11:33:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6A72E217F5
+	for <linux-pm@archiver.kernel.org>; Fri, 10 May 2019 11:36:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=dell.com header.i=@dell.com header.b="datqtN+7"
+	dkim=pass (2048-bit key) header.d=ragnatech-se.20150623.gappssmtp.com header.i=@ragnatech-se.20150623.gappssmtp.com header.b="X23lUBqB"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727175AbfEJLdl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 May 2019 07:33:41 -0400
-Received: from mx0b-00154904.pphosted.com ([148.163.137.20]:41910 "EHLO
-        mx0b-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727170AbfEJLdl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 May 2019 07:33:41 -0400
-X-Greylist: delayed 47622 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 May 2019 07:33:40 EDT
-Received: from pps.filterd (m0170397.ppops.net [127.0.0.1])
-        by mx0b-00154904.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x49MErZa025743;
-        Thu, 9 May 2019 18:19:56 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dell.com; h=from : to : cc :
- subject : date : message-id : references : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=smtpout1;
- bh=K9cqzmRV2uaZUgOsZ4hzM/AFUcjgV9eO8YboIz/FZao=;
- b=datqtN+7mHmjm2u/DNkcoS6M4f7iV6b470ZMKWB4R5Rlli1AW0370VH0PTy13r+qPuTY
- TS7+u6ORwUnqZMumJtLLAjvWLsLRNvDeulY5Z6nzh3TKhp+R4Jqs/Z5SUcxDIhVWc2lL
- wytlaq3LFh3kwUItxVGMcIdiM1bApslPymeBTJoPCL+2jaDhXSTCNopPPJOAFo3fLYN/
- Dembf2xp9omP8sDcViGg5HN44lk1iA0Qj/+YIpjGHaSRHYSetsyErc0FVUZ91zQNUoOn
- 1VIIOe4rr4vhnqnTgkc9qSkQIUSfbCGiqx8eUdOz+RIzHLX2giuCqlGukPqYa9+VUBgI RQ== 
-Received: from mx0b-00154901.pphosted.com (mx0b-00154901.pphosted.com [67.231.157.37])
-        by mx0b-00154904.pphosted.com with ESMTP id 2sc9gvbyxk-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Thu, 09 May 2019 18:19:56 -0400
-Received: from pps.filterd (m0089483.ppops.net [127.0.0.1])
-        by mx0b-00154901.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x49MI0PL067949;
-        Thu, 9 May 2019 18:19:56 -0400
-Received: from ausxippc101.us.dell.com (ausxippc101.us.dell.com [143.166.85.207])
-        by mx0b-00154901.pphosted.com with ESMTP id 2scp1dex7b-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 09 May 2019 18:19:56 -0400
-X-LoopCount0: from 10.166.132.127
-X-IronPort-AV: E=Sophos;i="5.60,346,1549951200"; 
-   d="scan'208";a="1233931848"
-From:   <Mario.Limonciello@dell.com>
-To:     <kbusch@kernel.org>
-CC:     <kai.heng.feng@canonical.com>, <hch@lst.de>, <axboe@fb.com>,
-        <sagi@grimberg.me>, <rafael@kernel.org>,
-        <linux-pm@vger.kernel.org>, <rafael.j.wysocki@intel.com>,
-        <linux-kernel@vger.kernel.org>, <linux-nvme@lists.infradead.org>,
-        <keith.busch@intel.com>
-Subject: RE: [PATCH] nvme-pci: Use non-operational power state instead of D3
- on Suspend-to-Idle
-Thread-Topic: [PATCH] nvme-pci: Use non-operational power state instead of D3
- on Suspend-to-Idle
-Thread-Index: AQHVBdBS/xizqbOjGUOY5SKUREVH6KZh7T4AgAAD4gD//6zksIAAWSuA//+yBvCAAPthgIAACiqAgAAmlACAAAnmAIAAA8eAgAAJFgCAAADiAIAAGKaA///lboAAEvm1AAAGPtNA///21YCAAFIOcA==
-Date:   Thu, 9 May 2019 22:19:53 +0000
-Message-ID: <495d76c66aec41a8bfbbf527820f8eb9@AUSX13MPC101.AMER.DELL.COM>
-References: <064701C3-2BD4-4D93-891D-B7FBB5040FC4@canonical.com>
- <CAJZ5v0ggMwpJt=XWXu4gU51o8y4BpJ4KZ5RKzfk3+v8GGb-QbQ@mail.gmail.com>
- <A4DD2E9F-054E-4D4B-9F77-D69040EBE120@canonical.com>
- <20190509095601.GA19041@lst.de>
- <225CF4F7-C8E1-4C66-B362-97E84596A54E@canonical.com>
- <20190509103142.GA19550@lst.de>
- <AB325926-0D77-4851-8E8A-A10599756BF9@canonical.com>
- <31b7d7959bf94c15a04bab0ced518444@AUSX13MPC101.AMER.DELL.COM>
- <20190509192807.GB9675@localhost.localdomain>
- <7a002851c435481593f8629ec9193e40@AUSX13MPC101.AMER.DELL.COM>
- <20190509215409.GD9675@localhost.localdomain>
-In-Reply-To: <20190509215409.GD9675@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.143.242.75]
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        id S1727170AbfEJLgM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 May 2019 07:36:12 -0400
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:46940 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727186AbfEJLgM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 May 2019 07:36:12 -0400
+Received: by mail-lj1-f195.google.com with SMTP id h21so3049256ljk.13
+        for <linux-pm@vger.kernel.org>; Fri, 10 May 2019 04:36:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ragnatech-se.20150623.gappssmtp.com; s=20150623;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to
+         :user-agent;
+        bh=DdK4VYsZIEbSLXJrQyG/7TUuBmyrq0ldZxl+dNKDJZA=;
+        b=X23lUBqBIEgNeorB4mnEnDE7MwsA9SPWbadECvHxxzNEwVHcv+yI9LVgl9Mkq1gD/7
+         RF0yENOo/07CgAv3VKhdKsNAIqPFNImkpKKGRApwJWNZ6OHeXRKNQwIfRI5M57XWFs91
+         5dbSikFnoIxdfRA6ZWaWKJk7908n0PF8i6RHksKCprP5oRvro35LbC4FzaO1Hw1Kak3F
+         zb9Di/XPYPZ3oAaDeP7DNLWWF1+j7nQt5isR1TraspDfXbn1jJIislBjcLp0Ka5HPAxt
+         qA4AV6b6Mf7bAkFpRuJyR9kkTffAA+8u+1IGFcqmpebxxDML4ELXw6WKnG+PmMTVgKqR
+         PNvA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        bh=DdK4VYsZIEbSLXJrQyG/7TUuBmyrq0ldZxl+dNKDJZA=;
+        b=Aajyf61zp2qKVMhYZMoJnf+tPniWEaGE5sh4eYPL2qP7Wg1LnJzSiKHKQhf2prBVQR
+         YaDf3kjNG0jOQtu2sLyveMiRd5gN9uM9ycSZHHmloljQTguKcumbO8angPMBoUKHqeHE
+         I/9HJtot5vt1pzHikOza3g/eaSQe9OFgEOT0/D+dA7bYLJ+pqCucec5WeWn34/b/7bO5
+         mpUazNRyhH2SnVily3y4IL8Dq43/IjKGKrGA31CMCX5uRXyxpYKK0hjc8IE39STj7TTH
+         rJxD85cflQlw7dgmOHkLRZfDri69R11b5McPb2WLQXhwH5+d/IvDBefF9Ks//dKHu4y0
+         8qPg==
+X-Gm-Message-State: APjAAAVNgY9Fe5Ed2n/Sw0rpr69BszOIBrNrjGJyTIznGkBWPBl2Mw15
+        tpmWXplhdyUgkpXrAvlFNC52vg==
+X-Google-Smtp-Source: APXvYqytRoPGUINyB2n2hrYqrUC6Gj/kWGleaoeIUXRYMCsMbem2vuxJg1IEcmMmlAZiaPXGkfQk1g==
+X-Received: by 2002:a2e:568d:: with SMTP id k13mr5567860lje.194.1557488169880;
+        Fri, 10 May 2019 04:36:09 -0700 (PDT)
+Received: from localhost (89-233-230-99.cust.bredband2.com. [89.233.230.99])
+        by smtp.gmail.com with ESMTPSA id m5sm1193093ljc.65.2019.05.10.04.36.08
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Fri, 10 May 2019 04:36:08 -0700 (PDT)
+Date:   Fri, 10 May 2019 13:36:08 +0200
+From:   Niklas =?iso-8859-1?Q?S=F6derlund?= 
+        <niklas.soderlund@ragnatech.se>
+To:     Eugeniu Rosca <erosca@de.adit-jv.com>
+Cc:     Jiada Wang <jiada_wang@mentor.com>, rui.zhang@intel.com,
+        edubezval@gmail.com, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        horms+renesas@verge.net.au, geert+renesas@glider.be,
+        sergei.shtylyov@cogentembedded.com, marek.vasut+renesas@gmail.com,
+        kuninori.morimoto.gx@renesas.com, hien.dang.eb@renesas.com,
+        fabrizio.castro@bp.renesas.com, dien.pham.ry@renesas.com,
+        biju.das@bp.renesas.com, george_davis@mentor.com,
+        joshua_frkuska@mentor.com, Eugeniu Rosca <roscaeugeniu@gmail.com>
+Subject: Re: [PATCH v4 0/2] thermal: rcar_gen3_thermal: fix IRQ issues
+Message-ID: <20190510113608.GD28561@bigcity.dyn.berto.se>
+References: <20190424051145.23072-1-jiada_wang@mentor.com>
+ <20190507235403.GA24112@bigcity.dyn.berto.se>
+ <20190510104231.GA15836@vmlxhi-102.adit-jv.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-09_02:,,
- signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905090127
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1905090127
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190510104231.GA15836@vmlxhi-102.adit-jv.com>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190509221953.9GhCcxYllyK1QAcad8GA59uZroPdb_M-aBe0wjGncCc@z>
+Message-ID: <20190510113608.6nkrAMt_Xksrm5vhTxx5DmY5fnqDD6L5eMdhmlOBNAQ@z>
 
-> -----Original Message-----
-> From: Keith Busch <kbusch@kernel.org>
-> Sent: Thursday, May 9, 2019 4:54 PM
-> To: Limonciello, Mario
-> Cc: kai.heng.feng@canonical.com; hch@lst.de; axboe@fb.com;
-> sagi@grimberg.me; rafael@kernel.org; linux-pm@vger.kernel.org;
-> rafael.j.wysocki@intel.com; linux-kernel@vger.kernel.org; linux-
-> nvme@lists.infradead.org; keith.busch@intel.com
-> Subject: Re: [PATCH] nvme-pci: Use non-operational power state instead of=
- D3 on
-> Suspend-to-Idle
->=20
->=20
-> [EXTERNAL EMAIL]
->=20
-> On Thu, May 09, 2019 at 09:37:58PM +0000, Mario.Limonciello@dell.com wrot=
-e:
-> > > +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned npss)
-> > > +{
-> > > +	int ret;
-> > > +
-> > > +	mutex_lock(&ctrl->scan_lock);
-> > > +	nvme_start_freeze(ctrl);
-> > > +	nvme_wait_freeze(ctrl);
-> > > +	ret =3D nvme_set_features(ctrl, NVME_FEAT_POWER_MGMT, npss, NULL, 0=
-,
-> > > +				NULL);
-> > > +	nvme_unfreeze(ctrl);
-> > > +	mutex_unlock(&ctrl->scan_lock);
-> > > +
-> > > +	return ret;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(nvme_set_power);
-> >
-> > I believe without memory barriers at the end disks with HMB this will
-> > still kernel panic (Such as Toshiba BG3).
->=20
-> Well, the mutex has an implied memory barrier, but your HMB explanation
-> doesn't make much sense to me anyway. The "mb()" in this thread's origina=
-l
-> patch is a CPU memory barrier, and the CPU had better not be accessing
-> HMB memory. Is there something else going on here?
+Hi Eugeniu,
 
-Kai Heng will need to speak up a bit in his time zone as he has this disk o=
-n hand,
-but what I recall from our discussion was that DMA operation MemRd after
-resume was the source of the hang.
+On 2019-05-10 12:42:31 +0200, Eugeniu Rosca wrote:
+> Hi Niklas,
+> 
+> On Wed, May 08, 2019 at 01:54:03AM +0200, Niklas Söderlund wrote:
+> > Hi Jiada,
+> [..]
+> > I really like this series, nice work.
+> > 
+> > Tested-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> > Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> 
+> Is there anything off-the-shelf available for testing the rcar3
+> thermal driver, to avoid reinventing the wheel via
+> https://patchwork.kernel.org/cover/10913163/#22602335
 
->=20
-> > This still allows D3 which we found at least failed to go into deepest =
-state and
-> blocked
-> > platform s0ix for the following SSDs (maybe others):
-> > Hynix PC601
-> > LiteOn CL1
->=20
-> We usually write features to spec first, then quirk non-compliant
-> devices after.
+Not that I know of, unfortunately :-(
 
-NVME spec doesn't talk about a relationship between SetFeatures w/
-NVME_FEAT_POWER_MGMGT and D3 support, nor order of events.
+I have a private home hacked testing framework (don't we all?) based on 
+tcl+expect where I have two basic tests for rcar_gen3_thermal. I'm 
+willing to share the tests if you by chance want them, but be warned 
+that they are highly specialised for my needs and I'm reluctant to 
+publish my whole hack tool as it just a ugly hack ;-)
 
-This is why we opened a dialog with storage vendors, including contrasting =
-the behavior
-of Microsoft Windows inbox NVME driver and Intel's Windows RST driver.
+On a high level the tests I have are
 
-Those two I mention that come to mind immediately because they were most re=
-cently
-tested to fail.  Our discussion with storage vendors overwhelmingly request=
-ed
-that we don't use D3 under S2I because their current firmware architecture =
-won't
-support it.
+1. thermal-load
+    Generates load on target and observes the temperature is increased 
+    using the /sys/class/thermal/thermal_zone*/temp" interface. This 
+    seems similar to the test case your reference using stress-ng.
 
-For example one vendor told us with current implementation that receiving D=
-3hot
-after NVME shutdown will prevent being able to enter L1.2.  D3hot entry was=
- supported
-by an IRQ handler that isn't serviced in NVME shutdown state.
+2. thermal-cooling
+    Emulate the passive trip point temperatures using the 
+    /sys/class/thermal/*/emul_temp interface and observe that the 
+    specified cooling state is achieved.
 
-Another vendor told us that with current implementation it's impossible to =
-transition
-to PS4 (at least via APST) while L1.2 D3hot is active.
+I should add a third test to make sure IRQ fires but this is just a pet 
+project for me so maybe I will get around to it sometime...
+
+If you know of anything around to test thermal drivers or if you create 
+something please let me know so I can add it to my tests. And let me 
+know if you want my hacks for inspiration for your own testing.
+
+-- 
+Regards,
+Niklas Söderlund
