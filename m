@@ -1,106 +1,73 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [EXT] Re: [PATCH v6] arm64: dts: ls1088a: add one more thermal
- zone node
-Date: Sat, 11 May 2019 04:04:48 +0000
-Message-ID: <VI1PR04MB43330D9FC454AEF3F96E7CEAF30D0@VI1PR04MB4333.eurprd04.prod.outlook.com>
-References: <20190423022507.34969-1-andy.tang@nxp.com>
- <20190510031335.GD15856@dragon>
- <VI1PR04MB4333D24227603D1497BA3CB9F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <9fb2e306-38c7-2af7-5470-ff5bc4e23370@linaro.org>
- <VI1PR04MB4333372C1DABD0E4C9DD7FE8F30C0@VI1PR04MB4333.eurprd04.prod.outlook.com>
- <20190510101219.oruzvzlk7mm6iahw@vireshk-i7>
+From: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
+Date: Sat, 11 May 2019 09:22:58 +0200
+Message-ID: <20190511072258.GB14764@lst.de>
+References: <20190510212937.11661-1-keith.busch@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190510101219.oruzvzlk7mm6iahw@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190510212937.11661-1-keith.busch@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Leo Li <leoyang.li@nxp.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+To: Keith Busch <keith.busch@intel.com>
+Cc: Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>, linux-nvme@lists.infradead.org, Rafael Wysocki <rafael@kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, Mario Limonciello <Mario.Limonciello@dell.com>, Kai Heng Feng <kai.heng.feng@canonical.com>
 List-Id: linux-pm@vger.kernel.org
 
-VGhhbmtzIFZpcmVzaCBmb3IgeW91ciBleHBsYW5hdGlvbi4NCg0KQlIsDQpBbmR5DQo+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFZpcmVzaCBLdW1hciA8dmlyZXNoLmt1bWFy
-QGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIwMTnlubQ15pyIMTDml6UgMTg6MTINCj4gVG86IEFuZHkg
-VGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+IENjOiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxl
-emNhbm9AbGluYXJvLm9yZz47IFNoYXduIEd1bw0KPiA8c2hhd25ndW9Aa2VybmVsLm9yZz47IExl
-byBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtkdEBrZXJuZWwub3JnOw0KPiBtYXJrLnJ1
-dGxhbmRAYXJtLmNvbTsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0KPiBk
-ZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsN
-Cj4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBydWkuemhhbmdAaW50ZWwuY29tOyBlZHViZXp2
-YWxAZ21haWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbRVhUXSBSZTogW1BBVENIIHY2XSBhcm02NDog
-ZHRzOiBsczEwODhhOiBhZGQgb25lIG1vcmUgdGhlcm1hbA0KPiB6b25lIG5vZGUNCj4gDQo+IENh
-dXRpb246IEVYVCBFbWFpbA0KPiANCj4gT24gMTAtMDUtMTksIDA4OjQ3LCBBbmR5IFRhbmcgd3Jv
-dGU6DQo+ID4gKyBWaXJlc2ggZm9yIGhlbHAuDQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVz
-c2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGlu
-YXJvLm9yZz4NCj4gPiA+IFNlbnQ6IDIwMTnlubQ15pyIMTDml6UgMTU6MTcNCj4gPiA+IFRvOiBB
-bmR5IFRhbmcgPGFuZHkudGFuZ0BueHAuY29tPjsgU2hhd24gR3VvDQo+IDxzaGF3bmd1b0BrZXJu
-ZWwub3JnPg0KPiA+ID4gQ2M6IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgcm9iaCtkdEBr
-ZXJuZWwub3JnOw0KPiA+ID4gbWFyay5ydXRsYW5kQGFybS5jb207IGxpbnV4LWFybS1rZXJuZWxA
-bGlzdHMuaW5mcmFkZWFkLm9yZzsNCj4gPiA+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBs
-aW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gbGludXgtcG1Admdlci5rZXJuZWwu
-b3JnOyBydWkuemhhbmdAaW50ZWwuY29tOyBlZHViZXp2YWxAZ21haWwuY29tDQo+ID4gPiBTdWJq
-ZWN0OiBSZTogW0VYVF0gUmU6IFtQQVRDSCB2Nl0gYXJtNjQ6IGR0czogbHMxMDg4YTogYWRkIG9u
-ZSBtb3JlDQo+ID4gPiB0aGVybWFsIHpvbmUgbm9kZQ0KPiA+ID4NCj4gPiA+IENhdXRpb246IEVY
-VCBFbWFpbA0KPiA+ID4NCj4gPiA+IE9uIDEwLzA1LzIwMTkgMDU6NDAsIEFuZHkgVGFuZyB3cm90
-ZToNCj4gPiA+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+PiBGcm9tOiBT
-aGF3biBHdW8gPHNoYXduZ3VvQGtlcm5lbC5vcmc+DQo+ID4gPiA+PiBTZW50OiAyMDE55bm0Neac
-iDEw5pelIDExOjE0DQo+ID4gPiA+PiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4N
-Cj4gPiA+ID4+IENjOiBMZW8gTGkgPGxlb3lhbmcubGlAbnhwLmNvbT47IHJvYmgrZHRAa2VybmVs
-Lm9yZzsNCj4gPiA+ID4+IG1hcmsucnV0bGFuZEBhcm0uY29tOyBsaW51eC1hcm0ta2VybmVsQGxp
-c3RzLmluZnJhZGVhZC5vcmc7DQo+ID4gPiA+PiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsg
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+ID4+IGxpbnV4LXBtQHZnZXIua2Vy
-bmVsLm9yZzsgZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZzsNCj4gPiA+ID4+IHJ1aS56aGFuZ0Bp
-bnRlbC5jb207IGVkdWJlenZhbEBnbWFpbC5jb20NCj4gPiA+ID4+IFN1YmplY3Q6IFtFWFRdIFJl
-OiBbUEFUQ0ggdjZdIGFybTY0OiBkdHM6IGxzMTA4OGE6IGFkZCBvbmUgbW9yZQ0KPiA+ID4gPj4g
-dGhlcm1hbCB6b25lIG5vZGUNCj4gPiA+ID4+DQo+ID4gPiA+PiBDYXV0aW9uOiBFWFQgRW1haWwN
-Cj4gPiA+ID4+DQo+ID4gPiA+PiBPbiBUdWUsIEFwciAyMywgMjAxOSBhdCAxMDoyNTowN0FNICsw
-ODAwLCBZdWFudGlhbiBUYW5nIHdyb3RlOg0KPiA+ID4gPj4+IExzMTA4OGEgaGFzIDIgdGhlcm1h
-bCBzZW5zb3JzLCBjb3JlIGNsdXN0ZXIgYW5kIFNvQyBwbGF0Zm9ybS4NCj4gPiA+ID4+PiBDb3Jl
-IGNsdXN0ZXIgc2Vuc29yIGlzIHVzZWQgdG8gbW9uaXRvciB0aGUgdGVtcGVyYXR1cmUgb2YgY29y
-ZQ0KPiA+ID4gPj4+IGFuZCBTb0MgcGxhdGZvcm0gaXMgZm9yIHBsYXRmb3JtLiBUaGUgY3VycmVu
-dCBkdHMgb25seSBzdXBwb3J0IHRoZSBmaXJzdA0KPiBzZW5zb3IuDQo+ID4gPiA+Pj4gVGhpcyBw
-YXRjaCBhZGRzIHRoZSBzZWNvbmQgc2Vuc29yIG5vZGUgdG8gZHRzIHRvIGVuYWJsZSBpdC4NCj4g
-PiA+ID4+Pg0KPiA+ID4gPj4+IFNpZ25lZC1vZmYtYnk6IFl1YW50aWFuIFRhbmcgPGFuZHkudGFu
-Z0BueHAuY29tPg0KPiA+ID4gPj4+IC0tLQ0KPiA+ID4gPj4+IHY2Og0KPiA+ID4gPj4+ICAgICAg
-ICAgLSBhZGQgY29vbGluZyBkZXZpY2UgbWFwIHRvIGNwdTAtNyBpbiBwbGF0Zm9ybSBub2RlLg0K
-PiA+ID4gPiBJIGxpa2UgdG8gZXhwbGFpbiBhIGxpdHRsZS4gSSB0aGluayBpdCBtYWtlcyBzZW5z
-ZSB0aGF0IG11bHRpcGxlDQo+ID4gPiA+IHRoZXJtYWwgem9uZQ0KPiA+ID4gbWFwIHRvIHNhbWUg
-Y29vbGluZyBkZXZpY2UuDQo+ID4gPiA+IEluIHRoaXMgd2F5LCBubyBtYXR0ZXIgd2hpY2ggdGhl
-cm1hbCB6b25lIHJhaXNlcyBhIHRlbXAgYWxhcm0sIGl0DQo+ID4gPiA+IGNhbiBjYWxsDQo+ID4g
-PiBjb29saW5nIGRldmljZSB0byBjaGlsbCBvdXQuDQo+ID4gPiA+IEkgYWxzbyBhc2tlZCBjcHVm
-cmVxIG1haW50YWluZXIgYWJvdXQgdGhlIGNvb2xpbmcgbWFwIGlzc3VlLCBoZQ0KPiA+ID4gPiB0
-aGluayBpdA0KPiA+ID4gd291bGQgYmUgZmluZS4NCj4gDQo+IFllcywgeW91IGFza2VkIG1lIGFu
-ZCBJIHNhaWQgaXQgc2hvdWxkIGJlIG9rYXkuDQo+IA0KPiA+ID4gPiBJIGhhdmUgdGVzdGVkIGFu
-ZCBubyBpc3N1ZSBmb3VuZC4NCj4gPiA+ID4NCj4gPiA+ID4gRGFuaWVsLCB3aGF0J3MgeW91ciB0
-aG91Z2h0Pw0KPiA+ID4NCj4gPiA+IElmIHRoZXJlIGFyZSBtdWx0aXBsZSB0aGVybWFsIHpvbmVz
-LCB0aGV5IHdpbGwgYmUgbWFuYWdlZCBieQ0KPiA+ID4gZGlmZmVyZW50IGluc3RhbmNlcyBvZiBh
-IHRoZXJtYWwgZ292ZXJub3IuIEVhY2ggaW5zdGFuY2VzIHdpbGwgYWN0DQo+ID4gPiBvbiB0aGUg
-c2hhcmVkIGNvb2xpbmcgZGV2aWNlIGFuZCB3aWxsIGNvbGxpZGUgaW4gdGhlaXIgZGVjaXNpb25z
-Og0KPiA+ID4NCj4gPiA+ICAtIElmIHRoZSBzZW5zb3JzIGFyZSBjbG9zZWQsIHRoZWlyIGJlaGF2
-aW9yIHdpbGwgYmUgc2ltaWxhcg0KPiA+ID4gcmVnYXJkaW5nIHRoZSB0ZW1wZXJhdHVyZS4gVGhl
-IGdvdmVybm9ycyBtYXkgdGFrZSB0aGUgc2FtZSBkZWNpc2lvbg0KPiA+ID4gZm9yIHRoZSBjb29s
-aW5nIGRldmljZS4gQnV0IGluIHN1Y2ggY2FzZSBoYXZpbmcganVzdCBvbmUgdGhlcm1hbCB6b25l
-DQo+IG1hbmFnZWQgaXMgZW5vdWdoLg0KPiA+ID4NCj4gPiA+ICAtIElmIHRoZSBzZW5zb3JzIGFy
-ZSBub3QgY2xvc2VkLCB0aGVpciBiZWhhdmlvciB3aWxsIGJlIGRpZmZlcmVudA0KPiA+ID4gcmVn
-YXJkaW5nIHRoZSB0ZW1wZXJhdHVyZS4gVGhlIGdvdmVybm9ycyB3aWxsIHRha2UgZGlmZmVyZW50
-DQo+ID4gPiBkZWNpc2lvbiByZWdhcmRpbmcgdGhlIGNvb2xpbmcgZGV2aWNlIChvbmUgd2lsbCBk
-ZWNyZWFzZSB0aGUgZnJlcSwgb3RoZXINCj4gd2lsbCBpbmNyZWFzZSB0aGUgZnJlcSkuDQo+ID4g
-Pg0KPiA+ID4gQXMgdGhlIHRoZXJtYWwgZ292ZXJub3JzIGFyZSBub3QgYWJsZSB0byBtYW5hZ2Ug
-c2V2ZXJhbCB0aGVybWFsDQo+ID4gPiB6b25lcyBhbmQgdGhlcmUgaXMgb25lIGNvb2xpbmcgZGV2
-aWNlICh0aGUgY3B1IGNvb2xpbmcgZGV2aWNlKSwgdGhpcw0KPiA+ID4gc2V0dXAgd29uJ3Qgd29y
-ayBhcyBleHBlY3RlZCBJTU8uDQo+ID4gPg0KPiA+ID4gVGhlIHNldHVwIG1ha2luZyBzZW5zZSBp
-cyBoYXZpbmcgYSB0aGVybWFsIHpvbmUgcGVyICdjbHVzdGVyJyBhbmQgYQ0KPiA+ID4gY29vbGlu
-ZyBkZXZpY2UgcGVyICdjbHVzdGVyJy4gVGhhdCBtZWFucyB0aGUgcGxhdGZvcm0gaGFzIG9uZSBj
-bG9jayBsaW5lDQo+IHBlciAnY2x1c3RlcicuDQo+ID4gPiBUaGUgdGhlcm1hbCBtYW5hZ2VtZW50
-IGhhcHBlbnMgaW4gYSBzZWxmLWNvbnRhaW5lZCB0aGVybWFsIHpvbmUgKG9uZQ0KPiA+ID4gY29v
-bGluZyBkZXZpY2UgLSBvbmUgZ292ZXJub3IgLSBvbmUgdGhlcm1hbCB6b25lKS4NCj4gPiA+DQo+
-ID4gPiBJbiB0aGUgY2FzZSBvZiBITVAsIG90aGVyIGNvbWJpbmF0aW9ucyBhcmUgcG9zc2libGUg
-dG8gYmUgb3B0aW1hbC4NCj4gDQo+IEJ1dCBub3Qgc3VyZSBob3cgSSBtaXNzZWQgdGhlIG9idmlv
-dXMsIHRob3VnaCBJIGRvIHJlbWVtYmVyIHRoaW5raW5nIGFib3V0DQo+IHRoaXMuDQo+IA0KPiBT
-byB0aGUgcHJvYmxlbSBpcyB0aGF0IHRoZSBjcHVfY29vbGluZyBkcml2ZXIgd2lsbCBnZXQgcmVx
-dWVzdHMgaW4gcGFyYWxsZWwgdG8NCj4gc2V0IGRpZmZlcmVudCBtYXggZnJlcXVlbmNpZXMgYW5k
-IHRoZSBsYXN0IGNhbGwgd2lsbCBhbHdheXMgd2luIGFuZCBtYXkgcmVzdWx0DQo+IGluIHVuZGVz
-aXJlZCBvdXRjb21lLg0KPiANCj4gU29ycnkgYWJvdXQgY3JlYXRpbmcgdGhlIGNvbmZ1c2lvbi4N
-Cj4gDQo+IC0tDQo+IHZpcmVzaA0K
+A couple nitpicks, mostly leftover from the previous iteration
+(I didn't see replies to those comments from you, despite seeing
+a reply to my mail, assuming it didn't get lost):
+
+> +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned ps)
+> +{
+> +	return nvme_set_features(ctrl, NVME_FEAT_POWER_MGMT, ps, NULL, 0, NULL);
+> +}
+> +EXPORT_SYMBOL_GPL(nvme_set_power);
+> +
+> +int nvme_get_power(struct nvme_ctrl *ctrl, u32 *result)
+> +{
+> +	struct nvme_command c;
+> +	union nvme_result res;
+> +	int ret;
+> +
+> +	if (!result)
+> +		return -EINVAL;
+> +
+> +	memset(&c, 0, sizeof(c));
+> +	c.features.opcode = nvme_admin_get_features;
+> +	c.features.fid = cpu_to_le32(NVME_FEAT_POWER_MGMT);
+> +
+> +	ret = __nvme_submit_sync_cmd(ctrl->admin_q, &c, &res,
+> +			NULL, 0, 0, NVME_QID_ANY, 0, 0, false);
+> +	if (ret >= 0)
+> +		*result = le32_to_cpu(res.u32);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(nvme_get_power);
+
+At this point I'd rather see those in the PCIe driver.  While the
+power state feature is generic in the spec I don't see it actually
+being used anytime anywhere else any time soon.
+
+But maybe we can add a nvme_get_features helper ala nvme_set_features
+in the core to avoid a little boilerplate code for the future?
+
+> +	ret = nvme_set_power(&dev->ctrl, dev->ctrl.npss);
+> +	if (ret < 0)
+> +		return ret;
+
+I can't find any wording in the spec that guarantees the highest
+numerical power state is the deepest.  But maybe I'm just missing
+something as such an ordering would be really helpful?
+
+>  static int nvme_suspend(struct device *dev)
+>  {
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+>  	struct nvme_dev *ndev = pci_get_drvdata(pdev);
+>  
+> +	/*
+> +	 * Try to use nvme if the device supports host managed power settings
+> +	 * and platform firmware is not involved.
+> +	 */
+
+This just comments that what, but I think we need a why here as the
+what is fairly obvious..
