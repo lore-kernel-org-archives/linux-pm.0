@@ -1,73 +1,55 @@
-From: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
-Date: Sat, 11 May 2019 09:22:58 +0200
-Message-ID: <20190511072258.GB14764@lst.de>
-References: <20190510212937.11661-1-keith.busch@intel.com>
+From: Lubomir Rintel <lkundrak@v3.sk>
+Subject: [PATCH] power: supply: olpc_battery: force the le/be casts
+Date: Sat, 11 May 2019 10:56:14 +0200
+Message-ID: <20190511085614.29677-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190510212937.11661-1-keith.busch@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Keith Busch <keith.busch@intel.com>
-Cc: Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>, linux-nvme@lists.infradead.org, Rafael Wysocki <rafael@kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, Mario Limonciello <Mario.Limonciello@dell.com>, Kai Heng Feng <kai.heng.feng@canonical.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, kbuild test robot <lkp@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-A couple nitpicks, mostly leftover from the previous iteration
-(I didn't see replies to those comments from you, despite seeing
-a reply to my mail, assuming it didn't get lost):
+The endianness of data returned from the EC depends on the particular EC
+version determined at run time. Cast from little/big endian explicitey
+in the routine that flips endianness to the native one to make sparse
+happy.
 
-> +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned ps)
-> +{
-> +	return nvme_set_features(ctrl, NVME_FEAT_POWER_MGMT, ps, NULL, 0, NULL);
-> +}
-> +EXPORT_SYMBOL_GPL(nvme_set_power);
-> +
-> +int nvme_get_power(struct nvme_ctrl *ctrl, u32 *result)
-> +{
-> +	struct nvme_command c;
-> +	union nvme_result res;
-> +	int ret;
-> +
-> +	if (!result)
-> +		return -EINVAL;
-> +
-> +	memset(&c, 0, sizeof(c));
-> +	c.features.opcode = nvme_admin_get_features;
-> +	c.features.fid = cpu_to_le32(NVME_FEAT_POWER_MGMT);
-> +
-> +	ret = __nvme_submit_sync_cmd(ctrl->admin_q, &c, &res,
-> +			NULL, 0, 0, NVME_QID_ANY, 0, 0, false);
-> +	if (ret >= 0)
-> +		*result = le32_to_cpu(res.u32);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(nvme_get_power);
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Reported-by: kbuild test robot <lkp@intel.com>
+Fixes: 76311b9a3295 ("power: supply: olpc_battery: Add OLPC XO 1.75 suppo=
+rt")
+---
+ drivers/power/supply/olpc_battery.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-At this point I'd rather see those in the PCIe driver.  While the
-power state feature is generic in the spec I don't see it actually
-being used anytime anywhere else any time soon.
-
-But maybe we can add a nvme_get_features helper ala nvme_set_features
-in the core to avoid a little boilerplate code for the future?
-
-> +	ret = nvme_set_power(&dev->ctrl, dev->ctrl.npss);
-> +	if (ret < 0)
-> +		return ret;
-
-I can't find any wording in the spec that guarantees the highest
-numerical power state is the deepest.  But maybe I'm just missing
-something as such an ordering would be really helpful?
-
->  static int nvme_suspend(struct device *dev)
->  {
->  	struct pci_dev *pdev = to_pci_dev(dev);
->  	struct nvme_dev *ndev = pci_get_drvdata(pdev);
->  
-> +	/*
-> +	 * Try to use nvme if the device supports host managed power settings
-> +	 * and platform firmware is not involved.
-> +	 */
-
-This just comments that what, but I think we need a why here as the
-what is fairly obvious..
+diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
+lpc_battery.c
+index 4ccd242fcf72..066ec9a11153 100644
+--- a/drivers/power/supply/olpc_battery.c
++++ b/drivers/power/supply/olpc_battery.c
+@@ -326,9 +326,9 @@ static int olpc_bat_get_voltage_max_design(union powe=
+r_supply_propval *val)
+ static u16 ecword_to_cpu(struct olpc_battery_data *data, u16 ec_word)
+ {
+ 	if (data->little_endian)
+-		return le16_to_cpu(ec_word);
++		return le16_to_cpu((__force __le16)ec_word);
+ 	else
+-		return be16_to_cpu(ec_word);
++		return be16_to_cpu((__force __be16)ec_word);
+ }
+=20
+ /*********************************************************************
+@@ -340,7 +340,7 @@ static int olpc_bat_get_property(struct power_supply =
+*psy,
+ {
+ 	struct olpc_battery_data *data =3D power_supply_get_drvdata(psy);
+ 	int ret =3D 0;
+-	__be16 ec_word;
++	u16 ec_word;
+ 	uint8_t ec_byte;
+ 	__be64 ser_buf;
+=20
+--=20
+2.21.0
