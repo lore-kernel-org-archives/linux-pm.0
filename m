@@ -1,139 +1,249 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] opp: Allocate genpd_virt_devs from dev_pm_opp_attach_genpd()
-Date: Mon, 13 May 2019 15:54:11 +0530
-Message-ID: <9f22d5954319fc315bc98e347e69839931648ecc.1557742920.git.viresh.kumar@linaro.org>
-References: <1bc9053f5c41a10832b58a2a81decbad7f1aded9.1557742920.git.viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] opp: Attach genpds to devices from within OPP core
+Date: Mon, 13 May 2019 15:54:10 +0530
+Message-ID: <1bc9053f5c41a10832b58a2a81decbad7f1aded9.1557742920.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1bc9053f5c41a10832b58a2a81decbad7f1aded9.1557742920.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, niklas.cassel@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently the space for the array of virtual devices is allocated along
-with the OPP table, but that isn't going to work well from now onwards.
-For single power domain case, a driver can either use the original
-device structure for setting the performance state (if genpd attached
-with dev_pm_domain_attach()) or use the virtual device structure (if
-genpd attached with dev_pm_domain_attach_by_name(), which returns the
-virtual device) and so we can't know in advance if we are going to need
-genpd_virt_devs array or not.
+The OPP core requires the virtual device pointers to set performance
+state on behalf of the device, for the multiple power domain case. The
+genpd API (dev_pm_domain_attach_by_name()) has evolved now to support
+even the single power domain case and that lets us add common code for
+handling both the cases more efficiently.
 
-Lets delay the allocation a bit and do it along with
-dev_pm_opp_attach_genpd() rather. The deallocation is done from
-dev_pm_opp_detach_genpd().
+The virtual device structure returned by dev_pm_domain_attach_by_name()
+isn't normally used by the cpufreq drivers as they don't manage power
+on/off of the domains and so is only useful for the OPP core.
+
+This patch moves all the complexity into the OPP core to make the end
+drivers simple. The earlier APIs dev_pm_opp_{set|put}_genpd_virt_dev()
+are reworked into dev_pm_opp_{attach|detach}_genpd(). The new helper
+dev_pm_opp_attach_genpd() accepts a NULL terminated array of strings
+which contains names of all the genpd's to attach. It then attaches all
+the domains and saves the pointers to the virtual devices. The other
+helper undo the work done by this helper.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 10 ++++++++++
- drivers/opp/of.c   | 30 ++----------------------------
- 2 files changed, 12 insertions(+), 28 deletions(-)
+@Niklas: Can you please try these patches and confirm they solve the
+issues you were facing ?
+
+ drivers/opp/core.c     | 128 ++++++++++++++++++++++++++---------------
+ include/linux/pm_opp.h |   8 +--
+ 2 files changed, 86 insertions(+), 50 deletions(-)
 
 diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 67d6b0caeab1..764e05a2fa66 100644
+index 0e7703fe733f..67d6b0caeab1 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -1755,6 +1755,9 @@ static void _opp_detach_genpd(struct opp_table *opp_table)
- 		dev_pm_domain_detach(opp_table->genpd_virt_devs[index], false);
- 		opp_table->genpd_virt_devs[index] = NULL;
- 	}
-+
-+	kfree(opp_table->genpd_virt_devs);
-+	opp_table->genpd_virt_devs = NULL;
+@@ -1744,91 +1744,127 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
  }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_set_opp_helper);
  
++static void _opp_detach_genpd(struct opp_table *opp_table)
++{
++	int index;
++
++	for (index = 0; index < opp_table->required_opp_count; index++) {
++		if (!opp_table->genpd_virt_devs[index])
++			continue;
++
++		dev_pm_domain_detach(opp_table->genpd_virt_devs[index], false);
++		opp_table->genpd_virt_devs[index] = NULL;
++	}
++}
++
  /**
-@@ -1798,6 +1801,12 @@ struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names
+- * dev_pm_opp_set_genpd_virt_dev - Set virtual genpd device for an index
+- * @dev: Consumer device for which the genpd device is getting set.
+- * @virt_dev: virtual genpd device.
+- * @index: index.
++ * dev_pm_opp_attach_genpd - Attach genpd(s) for the device and save virtual device pointer
++ * @dev: Consumer device for which the genpd is getting attached.
++ * @names: Null terminated array of pointers containing names of genpd to attach.
+  *
+  * Multiple generic power domains for a device are supported with the help of
+  * virtual genpd devices, which are created for each consumer device - genpd
+  * pair. These are the device structures which are attached to the power domain
+  * and are required by the OPP core to set the performance state of the genpd.
++ * The same API also works for the case where single genpd is available and so
++ * we don't need to support that separately.
+  *
+  * This helper will normally be called by the consumer driver of the device
+- * "dev", as only that has details of the genpd devices.
++ * "dev", as only that has details of the genpd names.
+  *
+- * This helper needs to be called once for each of those virtual devices, but
+- * only if multiple domains are available for a device. Otherwise the original
+- * device structure will be used instead by the OPP core.
++ * This helper needs to be called once with a list of all genpd to attach.
++ * Otherwise the original device structure will be used instead by the OPP core.
+  */
+-struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev,
+-						struct device *virt_dev,
+-						int index)
++struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names)
+ {
+ 	struct opp_table *opp_table;
++	struct device *virt_dev;
++	int index, ret = -EINVAL;
++	const char **name = names;
  
+ 	opp_table = dev_pm_opp_get_opp_table(dev);
+ 	if (!opp_table)
+ 		return ERR_PTR(-ENOMEM);
+ 
++	/*
++	 * If the genpd's OPP table isn't already initialized, parsing of the
++	 * required-opps fail for dev. We should retry this after genpd's OPP
++	 * table is added.
++	 */
++	if (!opp_table->required_opp_count) {
++		ret = -EPROBE_DEFER;
++		goto put_table;
++	}
++
  	mutex_lock(&opp_table->genpd_virt_dev_lock);
  
-+	opp_table->genpd_virt_devs = kcalloc(opp_table->required_opp_count,
-+					     sizeof(*opp_table->genpd_virt_devs),
-+					     GFP_KERNEL);
-+	if (!opp_table->genpd_virt_devs)
-+		goto unlock;
+-	if (unlikely(!opp_table->genpd_virt_devs ||
+-		     index >= opp_table->required_opp_count ||
+-		     opp_table->genpd_virt_devs[index])) {
++	while (*name) {
++		index = of_property_match_string(dev->of_node,
++						 "power-domain-names", *name);
++		if (index < 0) {
++			dev_err(dev, "Failed to find power domain: %s (%d)\n",
++				*name, index);
++			goto err;
++		}
+ 
+-		dev_err(dev, "Invalid request to set required device\n");
+-		dev_pm_opp_put_opp_table(opp_table);
+-		mutex_unlock(&opp_table->genpd_virt_dev_lock);
++		if (index >= opp_table->required_opp_count) {
++			dev_err(dev, "Index can't be greater than required-opp-count - 1, %s (%d : %d)\n",
++				*name, opp_table->required_opp_count, index);
++			goto err;
++		}
+ 
+-		return ERR_PTR(-EINVAL);
++		if (opp_table->genpd_virt_devs[index]) {
++			dev_err(dev, "Genpd virtual device already set %s\n",
++				*name);
++			goto err;
++		}
 +
- 	while (*name) {
- 		index = of_property_match_string(dev->of_node,
- 						 "power-domain-names", *name);
-@@ -1836,6 +1845,7 @@ struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names
- 
- err:
- 	_opp_detach_genpd(opp_table);
-+unlock:
- 	mutex_unlock(&opp_table->genpd_virt_dev_lock);
- 
- put_table:
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index c10c782d15aa..a637f30552a3 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -141,7 +141,6 @@ static struct opp_table *_find_table_of_opp_np(struct device_node *opp_np)
- static void _opp_table_free_required_tables(struct opp_table *opp_table)
- {
- 	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
--	struct device **genpd_virt_devs = opp_table->genpd_virt_devs;
- 	int i;
- 
- 	if (!required_opp_tables)
-@@ -155,10 +154,8 @@ static void _opp_table_free_required_tables(struct opp_table *opp_table)
++		virt_dev = dev_pm_domain_attach_by_name(dev, *name);
++		if (IS_ERR(virt_dev)) {
++			ret = PTR_ERR(virt_dev);
++			dev_err(dev, "Couldn't attach to pm_domain: %d\n", ret);
++			goto err;
++		}
++
++		opp_table->genpd_virt_devs[index] = virt_dev;
++		name++;
  	}
  
- 	kfree(required_opp_tables);
--	kfree(genpd_virt_devs);
+-	opp_table->genpd_virt_devs[index] = virt_dev;
+ 	mutex_unlock(&opp_table->genpd_virt_dev_lock);
  
- 	opp_table->required_opp_count = 0;
--	opp_table->genpd_virt_devs = NULL;
- 	opp_table->required_opp_tables = NULL;
+ 	return opp_table;
++
++err:
++	_opp_detach_genpd(opp_table);
++	mutex_unlock(&opp_table->genpd_virt_dev_lock);
++
++put_table:
++	dev_pm_opp_put_opp_table(opp_table);
++
++	return ERR_PTR(ret);
+ }
++EXPORT_SYMBOL_GPL(dev_pm_opp_attach_genpd);
+ 
+ /**
+- * dev_pm_opp_put_genpd_virt_dev() - Releases resources blocked for genpd device.
+- * @opp_table: OPP table returned by dev_pm_opp_set_genpd_virt_dev().
+- * @virt_dev: virtual genpd device.
+- *
+- * This releases the resource previously acquired with a call to
+- * dev_pm_opp_set_genpd_virt_dev(). The consumer driver shall call this helper
+- * if it doesn't want OPP core to update performance state of a power domain
+- * anymore.
++ * dev_pm_opp_detach_genpd() - Detach genpd(s) from the device.
++ * @opp_table: OPP table returned by dev_pm_opp_attach_genpd().
++ *
++ * This detaches the genpd(s), resets the virtual device pointers, and puts the
++ * OPP table.
+  */
+-void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table,
+-				   struct device *virt_dev)
++void dev_pm_opp_detach_genpd(struct opp_table *opp_table)
+ {
+-	int i;
+-
+ 	/*
+ 	 * Acquire genpd_virt_dev_lock to make sure virt_dev isn't getting
+ 	 * used in parallel.
+ 	 */
+ 	mutex_lock(&opp_table->genpd_virt_dev_lock);
+-
+-	for (i = 0; i < opp_table->required_opp_count; i++) {
+-		if (opp_table->genpd_virt_devs[i] != virt_dev)
+-			continue;
+-
+-		opp_table->genpd_virt_devs[i] = NULL;
+-		dev_pm_opp_put_opp_table(opp_table);
+-
+-		/* Drop the vote */
+-		dev_pm_genpd_set_performance_state(virt_dev, 0);
+-		break;
+-	}
+-
++	_opp_detach_genpd(opp_table);
+ 	mutex_unlock(&opp_table->genpd_virt_dev_lock);
+ 
+-	if (unlikely(i == opp_table->required_opp_count))
+-		dev_err(virt_dev, "Failed to find required device entry\n");
++	dev_pm_opp_put_opp_table(opp_table);
+ }
++EXPORT_SYMBOL_GPL(dev_pm_opp_detach_genpd);
+ 
+ /**
+  * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index b150fe97ce5a..be570761b77a 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -131,8 +131,8 @@ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char * name);
+ void dev_pm_opp_put_clkname(struct opp_table *opp_table);
+ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
+ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
+-struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index);
+-void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev);
++struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names);
++void dev_pm_opp_detach_genpd(struct opp_table *opp_table);
+ int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+@@ -295,12 +295,12 @@ static inline struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const
+ 
+ static inline void dev_pm_opp_put_clkname(struct opp_table *opp_table) {}
+ 
+-static inline struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index)
++static inline struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names)
+ {
+ 	return ERR_PTR(-ENOTSUPP);
  }
  
-@@ -171,9 +168,8 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 					     struct device_node *opp_np)
+-static inline void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev) {}
++static inline void dev_pm_opp_detach_genpd(struct opp_table *opp_table) {}
+ 
+ static inline int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate)
  {
- 	struct opp_table **required_opp_tables;
--	struct device **genpd_virt_devs = NULL;
- 	struct device_node *required_np, *np;
--	int count, count_pd, i;
-+	int count, i;
- 
- 	/* Traversing the first OPP node is all we need */
- 	np = of_get_next_available_child(opp_np, NULL);
-@@ -186,33 +182,11 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 	if (!count)
- 		goto put_np;
- 
--	/*
--	 * Check the number of power-domains to know if we need to deal
--	 * with virtual devices. In some cases we have devices with multiple
--	 * power domains but with only one of them being scalable, hence
--	 * 'count' could be 1, but we still have to deal with multiple genpds
--	 * and virtual devices.
--	 */
--	count_pd = of_count_phandle_with_args(dev->of_node, "power-domains",
--					      "#power-domain-cells");
--	if (!count_pd)
--		goto put_np;
--
--	if (count_pd > 1) {
--		genpd_virt_devs = kcalloc(count, sizeof(*genpd_virt_devs),
--					GFP_KERNEL);
--		if (!genpd_virt_devs)
--			goto put_np;
--	}
--
- 	required_opp_tables = kcalloc(count, sizeof(*required_opp_tables),
- 				      GFP_KERNEL);
--	if (!required_opp_tables) {
--		kfree(genpd_virt_devs);
-+	if (!required_opp_tables)
- 		goto put_np;
--	}
- 
--	opp_table->genpd_virt_devs = genpd_virt_devs;
- 	opp_table->required_opp_tables = required_opp_tables;
- 	opp_table->required_opp_count = count;
- 
 -- 
 2.21.0.rc0.269.g1a574e7a288b
