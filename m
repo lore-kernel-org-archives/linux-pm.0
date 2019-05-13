@@ -2,63 +2,78 @@ Return-Path: <SRS0=BJcq=TN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56903C04AAA
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 14:57:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E85E5C04AA7
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 15:00:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 328492133F
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 14:57:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B99A32133F
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 15:00:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1557759648;
+	bh=ILmhQ2QK/WxmPdkHQISBgY8FQ9Ydm+VpcAwCfLiiOd0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=ggiN576kOrvVfKLyEl1FCxdP6luH8XGHduxvmNVEy/VmyVDAMwrW6nDS+qvX1GxyC
+	 UoCg+mF7XHj2N5ITQAxiGPQ9ySuEPV3SYGoMdYbHYb6UwpokdURpA1h82/k2fYOP/f
+	 lBLOpR33FZwuniszp0139AoI7aAU5Xn1cKGwhLJ0=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730417AbfEMO5a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 May 2019 10:57:30 -0400
-Received: from verein.lst.de ([213.95.11.211]:39834 "EHLO newverein.lst.de"
+        id S1728381AbfEMPAs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 May 2019 11:00:48 -0400
+Received: from mga18.intel.com ([134.134.136.126]:42469 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729602AbfEMO53 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 May 2019 10:57:29 -0400
-Received: by newverein.lst.de (Postfix, from userid 2407)
-        id 4F4D368AFE; Mon, 13 May 2019 16:57:08 +0200 (CEST)
-Date:   Mon, 13 May 2019 16:57:08 +0200
-From:   Christoph Hellwig <hch@lst.de>
+        id S1726738AbfEMPAs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 May 2019 11:00:48 -0400
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 13 May 2019 08:00:47 -0700
+X-ExtLoop1: 1
+Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
+  by orsmga006.jf.intel.com with ESMTP; 13 May 2019 08:00:46 -0700
+Date:   Mon, 13 May 2019 08:55:24 -0600
+From:   Keith Busch <kbusch@kernel.org>
 To:     Mario.Limonciello@dell.com
-Cc:     kbusch@kernel.org, keith.busch@intel.com, hch@lst.de,
-        sagi@grimberg.me, linux-nvme@lists.infradead.org,
-        rafael@kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, kai.heng.feng@canonical.com
+Cc:     hch@lst.de, keith.busch@intel.com, sagi@grimberg.me,
+        linux-nvme@lists.infradead.org, rafael@kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        kai.heng.feng@canonical.com
 Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
-Message-ID: <20190513145708.GA25897@lst.de>
-References: <20190510212937.11661-1-keith.busch@intel.com> <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM> <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM> <20190513143754.GE15318@localhost.localdomain> <7ab8274ef1ce46fcae54a50abc76ae4a@AUSX13MPC105.AMER.DELL.COM>
+Message-ID: <20190513145522.GA15421@localhost.localdomain>
+References: <20190510212937.11661-1-keith.busch@intel.com>
+ <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM>
+ <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM>
+ <20190513143741.GA25500@lst.de>
+ <b12ff66f8c224e4199ff1b90ed6bc393@AUSX13MPC105.AMER.DELL.COM>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <7ab8274ef1ce46fcae54a50abc76ae4a@AUSX13MPC105.AMER.DELL.COM>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <b12ff66f8c224e4199ff1b90ed6bc393@AUSX13MPC105.AMER.DELL.COM>
+User-Agent: Mutt/1.9.1 (2017-09-22)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190513145708.Rsm4bR_W6Iwz3RTQ4fTEnC1xy0AjgSPVmAcKZRw8IXI@z>
+Message-ID: <20190513145524.cgB50OStjpsgpG9fd44K_9uopkaZb2ULZAothXWMqKw@z>
 
-On Mon, May 13, 2019 at 02:54:49PM +0000, Mario.Limonciello@dell.com wrote:
-> The Intel DMA controller suspend callbacks in drivers/dma/idma64.c look to me to
-> turn off the controller.
-
-How is that relevant?  That thing is neither a NVMe controller, nor
-even an PCIe device..
-
-> And NVME spec made it sound to me that while in a low power state it shouldn't
-> be available if the memory isn't available.
+On Mon, May 13, 2019 at 02:43:43PM +0000, Mario.Limonciello@dell.com wrote:
+> > Well, it sounds like your partners device does not work properly in this
+> > case.  There is nothing in the NVMe spec that says queues should be
+> > torn down for deep power states, and that whole idea seems rather
+> > counter productive to low-latency suspend/resume cycles.
 > 
-> NVME spec in 8.9:
+> Well I've got a thought, quoting the NVME spec:
+> "After a successful completion of a Set Features command for this feature, the controller shall be in the
+> Power State specified. If enabled, autonomous power state transitions continue to occur from the new state."
 > 
-> "Host software should request that the controller release the
-> assigned ranges prior to a shutdown event, a Runtime D3 event, or any other event
-> that requires host software to reclaim the assigned ranges."
+> If APST is enabled on this disk, what is to stop an autonomous  reverse
+> transition from queue activity on the way down?
 
-The last part of the quoted text is the key - if the assigned range
-is reclaimed, that is the memory is going to be used for something else,
-we need to release the ranges.  But we do not release the ranges,
-as we want to keep the memory in use so that we can quickly use it
-again.
+Regardless of whether APST is enabled or not, the controller may
+autonomously transition out of a host requested low power state in
+response to host activity. Exiting a low power state should mean some
+other task is actively using the device, and if that's the case, why are
+you trying to enter a low power state in the first place? Alternatively,
+if host activity really is idle, then why is the device autonomously
+leaving the requested state?
