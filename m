@@ -6,34 +6,34 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA7C4C04AB1
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 07:57:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60153C04AB4
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 07:57:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C361B2086A
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 07:57:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3478321479
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 07:57:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728234AbfEMH5J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 May 2019 03:57:09 -0400
-Received: from shell.v3.sk ([90.176.6.54]:58993 "EHLO shell.v3.sk"
+        id S1728239AbfEMH5L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 May 2019 03:57:11 -0400
+Received: from shell.v3.sk ([90.176.6.54]:59002 "EHLO shell.v3.sk"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725980AbfEMH5J (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 May 2019 03:57:09 -0400
+        id S1725980AbfEMH5L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 May 2019 03:57:11 -0400
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id CB9A21041DB;
-        Mon, 13 May 2019 09:57:04 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 735111041D2;
+        Mon, 13 May 2019 09:57:08 +0200 (CEST)
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
-        with ESMTP id ysa7hHY_hNZr; Mon, 13 May 2019 09:56:48 +0200 (CEST)
+        with ESMTP id h-SHzykcv-0t; Mon, 13 May 2019 09:56:52 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 06B041041D6;
-        Mon, 13 May 2019 09:56:46 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 92D581041C5;
+        Mon, 13 May 2019 09:56:47 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at zimbra.v3.sk
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id 7Jrp7e8gP8Vf; Mon, 13 May 2019 09:56:43 +0200 (CEST)
+        with ESMTP id phhuVDy39QgN; Mon, 13 May 2019 09:56:44 +0200 (CEST)
 Received: from belphegor.brq.redhat.com (nat-pool-brq-t.redhat.com [213.175.37.10])
-        by zimbra.v3.sk (Postfix) with ESMTPSA id 463491041C5;
-        Mon, 13 May 2019 09:56:43 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTPSA id 0FE7B1041C9;
+        Mon, 13 May 2019 09:56:44 +0200 (CEST)
 From:   Lubomir Rintel <lkundrak@v3.sk>
 To:     Andy Shevchenko <andy@infradead.org>,
         Darren Hart <dvhart@infradead.org>
@@ -42,11 +42,10 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
         platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>,
-        Rob Herring <robh@kernel.org>
-Subject: [PATCH v7 01/10] dt-bindings: olpc,xo1.75-ec: Add OLPC XO-1.75 EC bindings
-Date:   Mon, 13 May 2019 09:56:32 +0200
-Message-Id: <20190513075641.1277716-2-lkundrak@v3.sk>
+        Lubomir Rintel <lkundrak@v3.sk>, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH v7 04/10] Platform: OLPC: Avoid a warning if the EC didn't register yet
+Date:   Mon, 13 May 2019 09:56:35 +0200
+Message-Id: <20190513075641.1277716-5-lkundrak@v3.sk>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190513075641.1277716-1-lkundrak@v3.sk>
 References: <20190513075641.1277716-1-lkundrak@v3.sk>
@@ -57,63 +56,43 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The OLPC XO-1.75 Embedded Controller is a SPI master that uses extra
-signals for handshaking. It needs to know when is the slave (Linux)
-side's TX FIFO ready for transfer (the ready-gpio signal on the SPI
-controller node) and when does it wish to respond with a command (the
-cmd-gpio property).
+Just return EPROBE_DEFER, so that whoever attempted to use the EC call ca=
+n
+defer their work.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 Acked-by: Pavel Machek <pavel@ucw.cz>
-Reviewed-by: Rob Herring <robh@kernel.org>
 
 ---
-Changes since v5:
-- Added Rob Herring's Reviewed-by tag
+Changes since v2:
+- Adjust the commit message for the s/ENODEV/EPROBE_DEFER/ change
 
 Changes since v1:
-- s/cmd-gpio/cmd-gpios/
-- s/ready-gpio/ready-gpios/ in the documentation paragraph
-- Remove status =3D "okay" from the example
+- EPROBE_DEFER instead of ENODEV
 
- .../bindings/misc/olpc,xo1.75-ec.txt          | 23 +++++++++++++++++++
- 1 file changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/misc/olpc,xo1.75-ec=
-.txt
+ drivers/platform/olpc/olpc-ec.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt b/=
-Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
-new file mode 100644
-index 000000000000..8c4d649cdd8f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
-@@ -0,0 +1,23 @@
-+OLPC XO-1.75 Embedded Controller
+diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc=
+-ec.c
+index 2a647455a368..a91f78245f5e 100644
+--- a/drivers/platform/olpc/olpc-ec.c
++++ b/drivers/platform/olpc/olpc-ec.c
+@@ -125,8 +125,11 @@ int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 =
+*outbuf, size_t outlen)
+ 	struct olpc_ec_priv *ec =3D ec_priv;
+ 	struct ec_cmd_desc desc;
+=20
+-	/* Ensure a driver and ec hook have been registered */
+-	if (WARN_ON(!ec_driver || !ec_driver->ec_cmd))
++	/* Driver not yet registered. */
++	if (!ec_driver)
++		return -EPROBE_DEFER;
 +
-+Required properties:
-+- compatible: Should be "olpc,xo1.75-ec".
-+- cmd-gpios: gpio specifier of the CMD pin
-+
-+The embedded controller requires the SPI controller driver to signal rea=
-diness
-+to receive a transfer (that is, when TX FIFO contains the response data)=
- by
-+strobing the ACK pin with the ready signal. See the "ready-gpios" proper=
-ty of the
-+SSP binding as documented in:
-+<Documentation/devicetree/bindings/spi/spi-pxa2xx.txt>.
-+
-+Example:
-+	&ssp3 {
-+		spi-slave;
-+		ready-gpios =3D <&gpio 125 GPIO_ACTIVE_HIGH>;
-+
-+		slave {
-+			compatible =3D "olpc,xo1.75-ec";
-+			spi-cpha;
-+			cmd-gpios =3D <&gpio 155 GPIO_ACTIVE_HIGH>;
-+		};
-+	};
++	if (WARN_ON(!ec_driver->ec_cmd))
+ 		return -ENODEV;
+=20
+ 	if (!ec)
 --=20
 2.21.0
 
