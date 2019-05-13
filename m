@@ -2,171 +2,144 @@ Return-Path: <SRS0=BJcq=TN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E9D7C04AAA
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 18:00:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30C4CC04AA7
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 18:01:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DD5542147A
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 18:00:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1557770438;
-	bh=rbRSlBaGvBjOPSRIuk56q4yLHY/ha2qXJW+fAlZWskg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:List-ID:
-	 From;
-	b=epRBsLU5pojoIGJxGBLHlHpL8L03A4DAoFGSSWqyHZt91bRsCbV0VJlyUSsRzaFkY
-	 o1WWA8gS83My4AeN+A7lMbbzgqhn/lqStgWVyy5eJ0r132yXC6UP670mFh38h/w8L8
-	 8BZ56LrQql7c8YvEd4rJ4qYmfX5RrMlh06Q7g4ng=
+	by mail.kernel.org (Postfix) with ESMTP id 06905208CA
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 18:01:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=dell.com header.i=@dell.com header.b="r+teCQ/g"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732053AbfEMR70 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 May 2019 13:59:26 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:36147 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732048AbfEMR7Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2019 13:59:24 -0400
-Received: by mail-pf1-f194.google.com with SMTP id v80so7609387pfa.3;
-        Mon, 13 May 2019 10:59:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
-         :reply-to:organization;
-        bh=ovDsv1zygxqsz+aM2MZ2wBAE8qWaN9gCYdGAVIqjCpQ=;
-        b=QNeE54Ljz+isHJVE/JHbAL+WLEN0ye1u610MEXOQz6f66daMfycotH/bU68yrEiPcG
-         16iMXo8nUANl/rAvNfm4AglA67J8OMl5JllgITqKvyS6ZER50uT/8P+RhJNEbUm+rB/S
-         mCEMG9H6CCZny5OMDT23ut6BUy6DZg2Fv9e7+YhOMijicl5cTuUfvq3zb2GZbZ5yWwLQ
-         Hix+ex8IFcbPNs11B2PgDBxA4Zu6doij2rZYIj9APdb1AonpDH+MFCvNZMSilVSILtZc
-         qDs7Uwm7mTctYPvOV0mBu1zUJQn8PDkLZVnXDdgSlDEcVk2/yaa/bHxcmal+0Ew3xMVX
-         F1oA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
-         :in-reply-to:references:reply-to:organization;
-        bh=ovDsv1zygxqsz+aM2MZ2wBAE8qWaN9gCYdGAVIqjCpQ=;
-        b=MGk1pD2Jo0em8Z0t1Ri4T1w1ywQ7ToNnyNlke6lZuaSalx5HL206qymY4G+eOTf1AK
-         zjAFLsxXc/diSAQrB7Ick9gjBBZfsdmT6NV9NRdH02WCpWqU2l+sYXrDAUmv+HVhA14I
-         5enGrpbr7GYr4VvaQF33K/OJGEAJ1JkNsmVSqhl6uoc5dr4b90rsKBWfKxMnSdKBDhLg
-         AZFxiJLIPQLtqPVfnfGTrz5F0Hr0K1fpBQpAzOrKCDPEb1rWYocY8gnt6XAg3ENWZuG+
-         ThDth9vW+7gZ2auRpMykukg6UMqXhPyMZvvrTs3rd9pa0jFYka6OtSG65crgP3j+a3WF
-         jZUg==
-X-Gm-Message-State: APjAAAXJ350VlWHz80sozqRjnLaL9kF6o6EFYLuPXNB5lKtC1mqIy/nj
-        5EphmLc66vYJWmnOJte+rqSjQAn2
-X-Google-Smtp-Source: APXvYqyZNocR8ryG2muTB/QpXA+4pRlqu4mtpMXXUrdEYNYZXXlywn0SVz4x3LAa5ISchaxsjQByCA==
-X-Received: by 2002:a65:62d2:: with SMTP id m18mr32867359pgv.122.1557770364058;
-        Mon, 13 May 2019 10:59:24 -0700 (PDT)
-Received: from localhost.localdomain ([96.79.124.202])
-        by smtp.gmail.com with ESMTPSA id s12sm9536266pfd.152.2019.05.13.10.59.22
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 13 May 2019 10:59:23 -0700 (PDT)
-From:   Len Brown <lenb@kernel.org>
-To:     x86@kernel.org
-Cc:     linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
-Subject: [PATCH 06/19] powercap/intel_rapl: Simplify rapl_find_package()
-Date:   Mon, 13 May 2019 13:58:50 -0400
-Message-Id:
- <ae3d1903407fd6e3684234b674f4f0e62c2ab54c.1557769318.git.len.brown@intel.com>
-X-Mailer: git-send-email 2.18.0-rc0
-In-Reply-To: <7b23d2d26d717b8e14ba137c94b70943f1ae4b5c.1557769318.git.len.brown@intel.com>
-References: <7b23d2d26d717b8e14ba137c94b70943f1ae4b5c.1557769318.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
+        id S1728725AbfEMSBq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 May 2019 14:01:46 -0400
+Received: from mx0b-00154904.pphosted.com ([148.163.137.20]:45806 "EHLO
+        mx0b-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1727668AbfEMSBq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2019 14:01:46 -0400
+Received: from pps.filterd (m0170397.ppops.net [127.0.0.1])
+        by mx0b-00154904.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4DHxhpx002178;
+        Mon, 13 May 2019 14:01:44 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dell.com; h=from : to : cc :
+ subject : date : message-id : references : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=smtpout1;
+ bh=7RQwiZOU3P8AwjFWtnYhWR2+zaHJysmliJcO7wy13CY=;
+ b=r+teCQ/g7haRS7P0Yv5+MKvoTeZ+p3BR12R9BX+7nXGrAHYDAZ2NxYvLKf/vK/12uY/9
+ Xl6Y8y3lMuMdkTOluMSz753mDRG9/IxDEPlMB6LegYPWdMQUCbJmCxHHzetnpw+OC8Fc
+ 1UsiFt1YnS5F3owHEenLoY3KiLprfcS428dyfeVKFImm1FDrTGRyWNgQ/n+XvN0fYZMi
+ ze9kbv0C+XAWanAqOa7d2xLKJdyFPkxUywUkO6VWYgpX7ed7VaswHI06O+1RPeZAQ8rE
+ PJtYAiuNzcFpD+sdhdgdFZx222vUSiqlEYJ0IB3KbCWsk77D2Q+0dS5l96TSUWL8VjVG iQ== 
+Received: from mx0b-00154901.pphosted.com (mx0a-00154901.pphosted.com [67.231.149.39])
+        by mx0b-00154904.pphosted.com with ESMTP id 2sdqfsnx66-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 13 May 2019 14:01:44 -0400
+Received: from pps.filterd (m0090350.ppops.net [127.0.0.1])
+        by mx0b-00154901.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4DHwdoN042639;
+        Mon, 13 May 2019 14:01:43 -0400
+Received: from ausc60ps301.us.dell.com (ausc60ps301.us.dell.com [143.166.148.206])
+        by mx0b-00154901.pphosted.com with ESMTP id 2sf9xpbpbe-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 13 May 2019 14:01:42 -0400
+X-LoopCount0: from 10.166.132.134
+X-IronPort-AV: E=Sophos;i="5.60,349,1549951200"; 
+   d="scan'208";a="1293478792"
+From:   <Mario.Limonciello@dell.com>
+To:     <hch@lst.de>
+CC:     <kbusch@kernel.org>, <keith.busch@intel.com>, <sagi@grimberg.me>,
+        <linux-nvme@lists.infradead.org>, <rafael@kernel.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <kai.heng.feng@canonical.com>
+Subject: RE: [PATCH] nvme/pci: Use host managed power state for suspend
+Thread-Topic: [PATCH] nvme/pci: Use host managed power state for suspend
+Thread-Index: AQHVB3g9crBQ5iluoUuygL0xp1WIm6ZlFnpAgAQIfyCAAFjOAP//rwFAgABWXgD//93q8A==
+Date:   Mon, 13 May 2019 18:01:39 +0000
+Message-ID: <df020e90e8b54244b37910a2a7965671@AUSX13MPC105.AMER.DELL.COM>
+References: <20190510212937.11661-1-keith.busch@intel.com>
+ <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM>
+ <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM>
+ <20190513143754.GE15318@localhost.localdomain>
+ <7ab8274ef1ce46fcae54a50abc76ae4a@AUSX13MPC105.AMER.DELL.COM>
+ <20190513145708.GA25897@lst.de>
+In-Reply-To: <20190513145708.GA25897@lst.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.143.18.86]
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-13_10:,,
+ signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=893 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905130123
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
+ suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=990 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1905130123
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190513175850.NL5C3ujZrrpSLSALLmCieeKQkUrustUNze8CQW9t7Ck@z>
+Message-ID: <20190513180139.PxsRUGqojpr9bfnjnBpTSD5ArodWXmgk6lgrk-6QvMM@z>
 
-From: Zhang Rui <rui.zhang@intel.com>
 
-Syntax only, no functional or semantic change.
 
-Simplify how the code to discover a package is called.
-Rename find_package_by_id() to rapl_find_package_domain()
+> -----Original Message-----
+> From: Christoph Hellwig <hch@lst.de>
+> Sent: Monday, May 13, 2019 9:57 AM
+> To: Limonciello, Mario
+> Cc: kbusch@kernel.org; keith.busch@intel.com; hch@lst.de; sagi@grimberg.m=
+e;
+> linux-nvme@lists.infradead.org; rafael@kernel.org; linux-kernel@vger.kern=
+el.org;
+> linux-pm@vger.kernel.org; kai.heng.feng@canonical.com
+> Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
+>=20
+>=20
+> [EXTERNAL EMAIL]
+>=20
+> On Mon, May 13, 2019 at 02:54:49PM +0000, Mario.Limonciello@dell.com wrot=
+e:
+> > The Intel DMA controller suspend callbacks in drivers/dma/idma64.c look=
+ to me
+> to
+> > turn off the controller.
+>=20
+> How is that relevant?  That thing is neither a NVMe controller, nor
+> even an PCIe device..
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: linux-pm@vger.kernel.org
----
- drivers/powercap/intel_rapl.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+When using HMB the SSD will be writing to some memory mapped region.  Writi=
+ng to
+that region would use DMA to access host memory, no?
+If the DMA controller is not functional writing to that region won't work p=
+roperly as=20
+it can't access that memory.
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 4347f15165f8..3c3c0c23180b 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
- static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
- 
- /* caller to ensure CPU hotplug lock is held */
--static struct rapl_package *find_package_by_id(int id)
-+static struct rapl_package *rapl_find_package_domain(int cpu)
- {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
- 	list_for_each_entry(rp, &rapl_packages, plist) {
-@@ -1300,7 +1301,7 @@ static int __init rapl_register_psys(void)
- 	rd->rpl[0].name = pl1_name;
- 	rd->rpl[1].prim_id = PL2_ENABLE;
- 	rd->rpl[1].name = pl2_name;
--	rd->rp = find_package_by_id(0);
-+	rd->rp = rapl_find_package_domain(0);
- 
- 	power_zone = powercap_register_zone(&rd->power_zone, control_type,
- 					    "psys", NULL,
-@@ -1456,8 +1457,9 @@ static void rapl_remove_package(struct rapl_package *rp)
- }
- 
- /* called from CPU hotplug notifier, hotplug lock held */
--static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-+static struct rapl_package *rapl_add_package(int cpu)
- {
-+	int id = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int ret;
- 
-@@ -1466,7 +1468,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
- 		return ERR_PTR(-ENOMEM);
- 
- 	/* add the new package to the list */
--	rp->id = pkgid;
-+	rp->id = id;
- 	rp->lead_cpu = cpu;
- 
- 	/* check if the package contains valid domains */
-@@ -1497,12 +1499,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-  */
- static int rapl_cpu_online(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package_domain(cpu);
- 	if (!rp) {
--		rp = rapl_add_package(cpu, pkgid);
-+		rp = rapl_add_package(cpu);
- 		if (IS_ERR(rp))
- 			return PTR_ERR(rp);
- 	}
-@@ -1512,11 +1513,10 @@ static int rapl_cpu_online(unsigned int cpu)
- 
- static int rapl_cpu_down_prep(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int lead_cpu;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package_domain(cpu);
- 	if (!rp)
- 		return 0;
- 
--- 
-2.18.0-rc0
-
+>=20
+> > And NVME spec made it sound to me that while in a low power state it sh=
+ouldn't
+> > be available if the memory isn't available.
+> >
+> > NVME spec in 8.9:
+> >
+> > "Host software should request that the controller release the
+> > assigned ranges prior to a shutdown event, a Runtime D3 event, or any o=
+ther
+> event
+> > that requires host software to reclaim the assigned ranges."
+>=20
+> The last part of the quoted text is the key - if the assigned range
+> is reclaimed, that is the memory is going to be used for something else,
+> we need to release the ranges.  But we do not release the ranges,
+> as we want to keep the memory in use so that we can quickly use it
+> again.
