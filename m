@@ -1,58 +1,44 @@
-From: Keith Busch <kbusch@kernel.org>
-Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
-Date: Mon, 13 May 2019 07:47:08 -0600
-Message-ID: <20190513134708.GB15318@localhost.localdomain>
-References: <20190510212937.11661-1-keith.busch@intel.com>
- <SN6PR04MB452735778FD952AA838E78C9860E0@SN6PR04MB4527.namprd04.prod.outlook.com>
+From: Douglas Raillard <douglas.raillard@arm.com>
+Subject: Re: [RFC PATCH 0/7] sched/cpufreq: Make schedutil energy aware
+Date: Mon, 13 May 2019 14:52:49 +0100
+Message-ID: <054f34d5-1b88-9337-501f-321519f5d27c@arm.com>
+References: <20190508174301.4828-1-douglas.raillard@arm.com>
+ <CAOh2x=k23D_FefOnmLjExj1d+UiothgOmyUk=1mqFknpHNwWGg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <SN6PR04MB452735778FD952AA838E78C9860E0@SN6PR04MB4527.namprd04.prod.outlook.com>
+In-Reply-To: <CAOh2x=k23D_FefOnmLjExj1d+UiothgOmyUk=1mqFknpHNwWGg@mail.gmail.com>
+Content-Language: en-GB-large
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-Cc: "Busch, Keith" <keith.busch@intel.com>, Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>, "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>, linux-pm <linux-pm@vger.kernel.org>, Mario Limonciello <Mario.Limonciello@dell.com>, lkml <linux-kernel@vger.kernel.org>, Kai Heng Feng <kai.heng.feng@canonical.com>, Rafael Wysocki <rafael@kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, quentin.perret@arm.com, patrick.bellasi@arm.com, Dietmar Eggemann <dietmar.eggemann@arm.com>, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 11, 2019 at 11:06:35PM -0700, Chaitanya Kulkarni wrote:
-> On 5/10/19 2:35 PM, Keith Busch wrote:
-> >   
-> > +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned ps)
+Hi Viresh, Rafael,
 
-> dev->ctrl.npss is u8 can we use same data type here ?
-> If this is due to last_ps we use as a result and then call set_power may 
-> be we can change the type of last_ps ?
-> OR
-> can we please use unsigned int to avoid possible warnings ?
-
-Right, the feature uses a 32-bit value even though only the first byte
-is defined at the moment. It's just for foward compatibility. Will make
-this a u32.
-
-> > +int nvme_get_power(struct nvme_ctrl *ctrl, u32 *result)
-> > +{
-> > +	struct nvme_command c;
-> May be use struct nvme_command c {} so we can get rid of the memset() call.
-
-Good point.
-
-> > +	union nvme_result res;
-> > +	int ret;
-> > +
-> > +	if (!result)
-> > +		return -EINVAL;
-> > +
-> > +	memset(&c, 0, sizeof(c));
-> > +	c.features.opcode = nvme_admin_get_features;
-> > +	c.features.fid = cpu_to_le32(NVME_FEAT_POWER_MGMT);
-> > +
-> > +	ret = __nvme_submit_sync_cmd(ctrl->admin_q, &c, &res,
-> > +			NULL, 0, 0, NVME_QID_ANY, 0, 0, false);
-> > +	if (ret >= 0)
-> > +		*result = le32_to_cpu(res.u32);
+On 5/13/19 8:12 AM, Viresh Kumar wrote:
+> On Wed, May 8, 2019 at 11:57 PM <douglas.raillard@arm.com> wrote:
+>>
+>> From: Douglas RAILLARD <douglas.raillard@arm.com>
+>>
+>> Make schedutil cpufreq governor energy-aware.
+> 
+> Hi Douglas,
+> 
+> I was wondering on why the cpufreq maintainers weren't cc'd for this set and
+> then I noticed that get_maintainers doesn't report us at all for schedutil :(
 >
-> May be add a check for result here in above if before deref pointer :-
-> 	if (ret >= 0 && result)
+> I have sent a patch to fix that, but please include us as well in the
+> future even
+> if get_maintainers doesn't report us :)
 
-I have it checked at the top of the function since it doesn't make much
-sense to call this without a way to return the result.
+Looks like it was a mix of me not checking my checklist and get_maintainers
+not catching it, I'll make sure both of you are in CC next time :)
+
+> 
+> --
+> viresh
+
+Thanks,
+Douglas
