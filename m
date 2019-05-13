@@ -6,66 +6,76 @@ X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4347C04AA7
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 15:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02CDBC04AA7
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 15:22:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A2064208C3
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 15:10:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C77482084A
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 15:22:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1557760221;
-	bh=dIt/4Y8eQ1NLKeViEN/VABRn8TZR/smeBqN1WTYGPJc=;
+	s=default; t=1557760937;
+	bh=9+UsjQpwyDy1tj3CGP56pEdTyFHY73ZlBK305NAVzoA=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=VzTRTaW2ZpOfw42TTYXz/+2G90bWf92l4bnMiL2ftLnCVoSfoVR1tOxfcCm4Ffqgx
-	 1xaxsQTwG1Pvo6/Hk/ega5VxmOQWXsBZIm2tydblvdqm+qMYcNq5jVqsJPzvRIgvNI
-	 TzMJuPR/LJTYQ0Z3FUt2shPRGqesvU7Z8eBtMDpw=
+	b=saOFArIIe7RpFIDt/+ONWoFVMVi6qjj+LfpCS3cXokBnQyaVRN5yn6AJhpnb8wYBf
+	 2GScI7HhDS8wM0nFp0+rIroxw6sbsCA+yfvS9NStYHE5WpDAohmyJEkEp3KnLiGRX8
+	 yOeDQ/OcHL5zVZi+rLKE0E2Pc29O6yI5TNUOHgMs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727903AbfEMPKV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 May 2019 11:10:21 -0400
-Received: from mga01.intel.com ([192.55.52.88]:60387 "EHLO mga01.intel.com"
+        id S1728420AbfEMPWR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 May 2019 11:22:17 -0400
+Received: from mga04.intel.com ([192.55.52.120]:7085 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727339AbfEMPKV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 May 2019 11:10:21 -0400
+        id S1727458AbfEMPWQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 May 2019 11:22:16 -0400
 X-Amp-Result: UNKNOWN
 X-Amp-Original-Verdict: FILE UNKNOWN
 X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 13 May 2019 08:10:20 -0700
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 13 May 2019 08:22:14 -0700
 X-ExtLoop1: 1
 Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
-  by fmsmga008.fm.intel.com with ESMTP; 13 May 2019 08:10:20 -0700
-Date:   Mon, 13 May 2019 09:04:58 -0600
+  by orsmga002.jf.intel.com with ESMTP; 13 May 2019 08:22:13 -0700
+Date:   Mon, 13 May 2019 09:16:52 -0600
 From:   Keith Busch <kbusch@kernel.org>
-To:     Mario.Limonciello@dell.com
-Cc:     hch@lst.de, keith.busch@intel.com, sagi@grimberg.me,
-        linux-nvme@lists.infradead.org, rafael@kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        kai.heng.feng@canonical.com
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Mario.Limonciello@dell.com, keith.busch@intel.com,
+        sagi@grimberg.me, linux-nvme@lists.infradead.org,
+        rafael@kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, kai.heng.feng@canonical.com
 Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
-Message-ID: <20190513150458.GA15437@localhost.localdomain>
+Message-ID: <20190513151652.GB15437@localhost.localdomain>
 References: <20190510212937.11661-1-keith.busch@intel.com>
  <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM>
  <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM>
- <20190513143741.GA25500@lst.de>
- <b12ff66f8c224e4199ff1b90ed6bc393@AUSX13MPC105.AMER.DELL.COM>
- <20190513145522.GA15421@localhost.localdomain>
- <d69ff7154191492eaa8f55535a7effa5@AUSX13MPC105.AMER.DELL.COM>
+ <20190513143754.GE15318@localhost.localdomain>
+ <7ab8274ef1ce46fcae54a50abc76ae4a@AUSX13MPC105.AMER.DELL.COM>
+ <20190513145708.GA25897@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <d69ff7154191492eaa8f55535a7effa5@AUSX13MPC105.AMER.DELL.COM>
+In-Reply-To: <20190513145708.GA25897@lst.de>
 User-Agent: Mutt/1.9.1 (2017-09-22)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190513150458.D1EkUsx4QOscv24VAreWNK72fGUe3ZNHKP02Ab9iv8k@z>
+Message-ID: <20190513151652.-6vDZinV6m2DfCtETuy08Gcb8KENgbHXaQ_kOnteOcU@z>
 
-On Mon, May 13, 2019 at 03:05:42PM +0000, Mario.Limonciello@dell.com wrote:
-> This system power state - suspend to idle is going to freeze threads.
-> But we're talking a multi threaded kernel.  Can't there be a timing problem going
-> on then too?  With a disk flush being active in one task and the other task trying
-> to put the disk into the deepest power state.  If you don't freeze the queues how
-> can you guarantee that didn't happen?
+On Mon, May 13, 2019 at 04:57:08PM +0200, Christoph Hellwig wrote:
+> On Mon, May 13, 2019 at 02:54:49PM +0000, Mario.Limonciello@dell.com wrote:
+> > And NVME spec made it sound to me that while in a low power state it shouldn't
+> > be available if the memory isn't available.
+> > 
+> > NVME spec in 8.9:
+> > 
+> > "Host software should request that the controller release the
+> > assigned ranges prior to a shutdown event, a Runtime D3 event, or any other event
+> > that requires host software to reclaim the assigned ranges."
+> 
+> The last part of the quoted text is the key - if the assigned range
+> is reclaimed, that is the memory is going to be used for something else,
+> we need to release the ranges.  But we do not release the ranges,
+> as we want to keep the memory in use so that we can quickly use it
+> again.
 
-But if an active data flush task is running, then we're not idle and
-shouldn't go to low power.
+Yes, this. As far as I know, the host memory range is still accessible in
+the idle suspend state. If there are states in which host memory is not
+accessible, a reference explaining the requirement will be most helpful.
