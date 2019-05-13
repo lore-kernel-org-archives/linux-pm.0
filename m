@@ -1,121 +1,59 @@
-From: Abhishek <huntbag@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/1] Forced-wakeup for stop lite states on Powernv
-Date: Mon, 13 May 2019 15:19:34 +0530
-Message-ID: <b2fcf69a-aecd-ea81-b497-737642354736@linux.vnet.ibm.com>
-References: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
- <1557291178.ow4spjzq5t.astroid@bobo.none>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Subject: Re: [PATCH 2/3] thermal: sun50i: add thermal driver for h6
+Date: Mon, 13 May 2019 12:01:49 +0200
+Message-ID: <20190513100149.w3uvpnuqql4eqwid@flea>
+References: <20190512082614.9045-1-tiny.windzz@gmail.com>
+ <20190512082614.9045-3-tiny.windzz@gmail.com>
+ <20190512223955.6lhclj6jr2akmsdx@core.my.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1557291178.ow4spjzq5t.astroid@bobo.none>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20190512223955.6lhclj6jr2akmsdx@core.my.home>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: daniel.lezcano@linaro.org, dja@axtens.net, ego@linux.vnet.ibm.com, rjw@rjwysocki.net
+To: Yangtao Li <tiny.windzz@gmail.com>, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, catalin.marinas@arm.com, will.deacon@arm.com, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, Jonathan.Cameron@huawei.com, nicolas.ferre@microchip.com, paulmck@linux.ibm.com, andy.gross@linaro.org, olof@lixom.net, bjorn.andersson@linaro.org, jagan@amarulasolutions.com, marc.w.gonzalez@free.fr, stefan.wahren@i2se.com, enric.balletbo@collabora.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05/08/2019 10:29 AM, Nicholas Piggin wrote:
-> Abhishek Goel's on April 22, 2019 4:32 pm:
->> Currently, the cpuidle governors determine what idle state a idling CPU
->> should enter into based on heuristics that depend on the idle history on
->> that CPU. Given that no predictive heuristic is perfect, there are cases
->> where the governor predicts a shallow idle state, hoping that the CPU will
->> be busy soon. However, if no new workload is scheduled on that CPU in the
->> near future, the CPU will end up in the shallow state.
->>
->> Motivation
->> ----------
->> In case of POWER, this is problematic, when the predicted state in the
->> aforementioned scenario is a lite stop state, as such lite states will
->> inhibit SMT folding, thereby depriving the other threads in the core from
->> using the core resources.
->>
->> So we do not want to get stucked in such states for longer duration. To
->> address this, the cpuidle-core can queue timer to correspond with the
->> residency value of the next available state. This timer will forcefully
->> wakeup the cpu. Few such iterations will essentially train the governor to
->> select a deeper state for that cpu, as the timer here corresponds to the
->> next available cpuidle state residency. Cpu will be kicked out of the lite
->> state and end up in a non-lite state.
->>
->> Experiment
->> ----------
->> I performed experiments for three scenarios to collect some data.
->>
->> case 1 :
->> Without this patch and without tick retained, i.e. in a upstream kernel,
->> It would spend more than even a second to get out of stop0_lite.
->>
->> case 2 : With tick retained in a upstream kernel -
->>
->> Generally, we have a sched tick at 4ms(CONF_HZ = 250). Ideally I expected
->> it to take 8 sched tick to get out of stop0_lite. Experimentally,
->> observation was
->>
->> =========================================================
->> sample          min            max           99percentile
->> 20              4ms            12ms          4ms
->> =========================================================
->>
->> It would take atleast one sched tick to get out of stop0_lite.
->>
->> case 2 :  With this patch (not stopping tick, but explicitly queuing a
->>            timer)
->>
->> ============================================================
->> sample          min             max             99percentile
->> ============================================================
->> 20              144us           192us           144us
->> ============================================================
->>
->> In this patch, we queue a timer just before entering into a stop0_lite
->> state. The timer fires at (residency of next available state + exit latency
->> of next available state * 2). Let's say if next state(stop0) is available
->> which has residency of 20us, it should get out in as low as (20+2*2)*8
->> [Based on the forumla (residency + 2xlatency)*history length] microseconds
->> = 192us. Ideally we would expect 8 iterations, it was observed to get out
->> in 6-7 iterations. Even if let's say stop2 is next available state(stop0
->> and stop1 both are unavailable), it would take (100+2*10)*8 = 960us to get
->> into stop2.
->>
->> So, We are able to get out of stop0_lite generally in 150us(with this
->> patch) as compared to 4ms(with tick retained). As stated earlier, we do not
->> want to get stuck into stop0_lite as it inhibits SMT folding for other
->> sibling threads, depriving them of core resources. Current patch is using
->> forced-wakeup only for stop0_lite, as it gives performance benefit(primary
->> reason) along with lowering down power consumption. We may extend this
->> model for other states in future.
-> I still have to wonder, between our snooze loop and stop0, what does
-> stop0_lite buy us.
+On Mon, May 13, 2019 at 12:39:55AM +0200, Ondřej Jirman wrote:
+> > +	/*
+> > +	 * clkin = 24MHz
+> > +	 * T acquire = clkin / (SUN50I_THS_CTRL0_T_ACQ + 1)
+> > +	 *           = 20us
+> > +	 */
+> > +	regmap_write(tmdev->regmap, SUN50I_THS_CTRL0,
+> > +		     SUN50I_THS_CTRL0_T_ACQ(479));
+> > +	/* average over 4 samples */
+> > +	regmap_write(tmdev->regmap, SUN50I_H6_THS_MFC,
+> > +		     SUN50I_THS_FILTER_EN |
+> > +		     SUN50I_THS_FILTER_TYPE(1));
+> > +	/* period = (SUN50I_H6_THS_PC_TEMP_PERIOD + 1) * 4096 / clkin; ~10ms */
+> > +	regmap_write(tmdev->regmap, SUN50I_H6_THS_PC,
+> > +		     SUN50I_H6_THS_PC_TEMP_PERIOD(58));
 >
-> That said, the problem you're solving here is a generic one that all
-> stop states have, I think. Doesn't the same thing apply going from
-> stop0 to stop5? You might under estimate the sleep time and lose power
-> savings and therefore performance there too. Shouldn't we make it
-> generic for all stop states?
+> Also this math is not all that clear:
 >
-> Thanks,
-> Nick
+>   period = (SUN50I_H6_THS_PC_TEMP_PERIOD + 1) * 4096 / clkin; ~10ms
 >
+> SUN50I_H6_THS_PC_TEMP_PERIOD is a macro with an argument. So how does
+> this work?
 >
-When a cpu is in snooze, it takes both space and time of core. When in 
-stop0_lite,
-it free up time but it still takes space. When it is in stop0 or deeper, 
-it free up both
-space and time slice of core.
-In stop0_lite, cpu doesn't free up the core resources and thus inhibits 
-thread
-folding. When a cpu goes to stop0, it will free up the core resources 
-thus increasing
-the single thread performance of other sibling thread.
-Hence, we do not want to get stuck in stop0_lite for long duration, and 
-want to quickly
-move onto the next state.
-If we get stuck in any other state we would possibly be losing on to 
-power saving,
-but will still be able to gain the performance benefits for other 
-sibling threads.
+> Also, related to this, I've noticed that you removed the interrupt
+> processing from the original driver. Without that you have to make sure
+> that OF contains non-zero polling-delay and polling-delay-passive.
+>
+> Nonzero values are necessary for enabling polling mode of the tz core,
+> otherwise tz core will not read values periodically from your driver.
+>
+> You should documment it in the DT bindings, too. Or keep the interrupt
+> handling for THS.
 
-Thanks,
-Abhishek
+If there's interrupts for this in the H6, yeah we should use them over
+polling.
+
+Maxime
+
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
