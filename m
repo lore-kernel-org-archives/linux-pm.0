@@ -1,13 +1,15 @@
 From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH v4 0/5] cpufreq: Add imx-cpufreq-dt driver for speed grading
-Date: Mon, 13 May 2019 11:01:37 +0000
-Message-ID: <cover.1557742902.git.leonard.crestez@nxp.com>
+Subject: [PATCH v4 1/5] cpufreq: Add imx-cpufreq-dt driver
+Date: Mon, 13 May 2019 11:01:38 +0000
+Message-ID: <6e0f1b05c6e294ecd448b2cdcf2f8f7bcde2336e.1557742902.git.leonard.crestez@nxp.com>
+References: <cover.1557742902.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <cover.1557742902.git.leonard.crestez@nxp.com>
 Content-Language: en-US
-Content-ID: <13C41D9609273F49A77AE0DA0AB8AA6B@eurprd04.prod.outlook.com>
+Content-ID: <13F248F9ABD2714A9970AFF7C2146595@eurprd04.prod.outlook.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,49 +27,200 @@ Right now in upstream imx8m cpufreq support just lists a common subset
 of OPPs because the higher ones should only be attempted after checking
 speed grading in fuses.
 
-Driver reads from nvmem and calls dev_pm_opp_set_supported_hw before
+Add a small driver which checks speed grading from nvmem cells before
 registering cpufreq-dt.
 
-Changes since v3:
- * Drop default m entirely (Viresh)
-Link to v3: https://patchwork.kernel.org/project/linux-arm-kernel/list/?series=114685
+This driver allows unlocking all frequencies for imx8mm and imx8mq and
+could be applied to other chips like imx7d
 
-Changes since v2:
- * Minor reformatting in Kconfig (Viresh)
- * Open-code imx_cpufreq_dt_match_node (Viresh)
- * Add mkt_segment bits to supported_hw and update .dtsi to match after
-reviewing latest datasheets.
- * Add devicetree list (keep forgetting dts needs to be reviewed)
-Link to v2: https://patchwork.kernel.org/project/linux-arm-kernel/list/?series=113163
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 
-Link to v1 (RFC): https://patchwork.kernel.org/patch/10916769/
-
-Driver is built as a module. It depends on nvmem-imx which can also be a
-module.
-
-I never noticed anything wrong with going above the fused speed grading
-however it's technically unsafe so the cpufreq code changes should go in
-before DT changes.
-
-Leonard Crestez (5):
-  cpufreq: Add imx-cpufreq-dt driver
-  dt-bindings: imx-cpufreq-dt: Document opp-supported-hw usage
-  arm64: dts: imx8mm: Add cpu speed grading and all OPPs
-  arm64: dts: imx8mq: Add cpu speed grading and all OPPs
-  arm64: defconfig: ARM_IMX_CPUFREQ_DT=m
-
- .../bindings/cpufreq/imx-cpufreq-dt.txt       | 37 +++++++
- arch/arm64/boot/dts/freescale/imx8mm.dtsi     | 17 +++-
- arch/arm64/boot/dts/freescale/imx8mq.dtsi     | 26 ++++-
- arch/arm64/configs/defconfig                  |  1 +
- drivers/cpufreq/Kconfig.arm                   |  9 ++
- drivers/cpufreq/Makefile                      |  1 +
- drivers/cpufreq/cpufreq-dt-platdev.c          |  3 +
- drivers/cpufreq/imx-cpufreq-dt.c              | 96 +++++++++++++++++++
- drivers/soc/imx/soc-imx8.c                    |  3 +
- 9 files changed, 191 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/imx-cpufreq-dt.txt
+---
+ drivers/cpufreq/Kconfig.arm          |  9 +++
+ drivers/cpufreq/Makefile             |  1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c |  3 +
+ drivers/cpufreq/imx-cpufreq-dt.c     | 96 ++++++++++++++++++++++++++++
+ drivers/soc/imx/soc-imx8.c           |  3 +
+ 5 files changed, 112 insertions(+)
  create mode 100644 drivers/cpufreq/imx-cpufreq-dt.c
 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 179a1d302f48..982efdf9c7e5 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -90,10 +90,19 @@ config ARM_IMX6Q_CPUFREQ
+ 	help
+ 	  This adds cpufreq driver support for Freescale i.MX6 series SoCs.
+ 
+ 	  If in doubt, say N.
+ 
++config ARM_IMX_CPUFREQ_DT
++	tristate "Freescale i.MX8M cpufreq support"
++	depends on ARCH_MXC && CPUFREQ_DT
++	help
++	  This adds cpufreq driver support for Freescale i.MX8M series SoCs,
++	  based on cpufreq-dt.
++
++	  If in doubt, say N.
++
+ config ARM_KIRKWOOD_CPUFREQ
+ 	def_bool MACH_KIRKWOOD
+ 	help
+ 	  This adds the CPUFreq driver for Marvell Kirkwood
+ 	  SoCs.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 689b26c6f949..7bcda2273d0c 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -54,10 +54,11 @@ obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
+ obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
+ obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
+ obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
+ obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
+ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
++obj-$(CONFIG_ARM_IMX_CPUFREQ_DT)	+= imx-cpufreq-dt.o
+ obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+ obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
+ obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 47729a22c159..19c1aad57e26 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -106,10 +106,13 @@ static const struct of_device_id whitelist[] __initconst = {
+  */
+ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "calxeda,highbank", },
+ 	{ .compatible = "calxeda,ecx-2000", },
+ 
++	{ .compatible = "fsl,imx8mq", },
++	{ .compatible = "fsl,imx8mm", },
++
+ 	{ .compatible = "marvell,armadaxp", },
+ 
+ 	{ .compatible = "mediatek,mt2701", },
+ 	{ .compatible = "mediatek,mt2712", },
+ 	{ .compatible = "mediatek,mt7622", },
+diff --git a/drivers/cpufreq/imx-cpufreq-dt.c b/drivers/cpufreq/imx-cpufreq-dt.c
+new file mode 100644
+index 000000000000..e1aa346efa10
+--- /dev/null
++++ b/drivers/cpufreq/imx-cpufreq-dt.c
+@@ -0,0 +1,96 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright 2019 NXP
++ */
++
++#include <linux/cpu.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/nvmem-consumer.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
++
++#define OCOTP_CFG3_SPEED_GRADE_SHIFT	8
++#define OCOTP_CFG3_SPEED_GRADE_MASK	(0x3 << 8)
++#define OCOTP_CFG3_MKT_SEGMENT_SHIFT    6
++#define OCOTP_CFG3_MKT_SEGMENT_MASK     (0x3 << 6)
++
++static const struct of_device_id imx_cpufreq_dt_match_list[] = {
++	{ .compatible = "fsl,imx8mm" },
++	{ .compatible = "fsl,imx8mq" },
++	{}
++};
++
++/* cpufreq-dt device registered by imx-cpufreq-dt */
++static struct platform_device *cpufreq_dt_pdev;
++static struct opp_table *cpufreq_opp_table;
++
++static int imx_cpufreq_dt_probe(struct platform_device *pdev)
++{
++	struct device *cpu_dev = get_cpu_device(0);
++	struct device_node *np;
++	const struct of_device_id *match;
++	u32 cell_value, supported_hw[2];
++	int speed_grade, mkt_segment;
++	int ret;
++
++	np = of_find_node_by_path("/");
++	match = of_match_node(imx_cpufreq_dt_match_list, np);
++	of_node_put(np);
++	if (!match)
++		return -ENODEV;
++
++	ret = nvmem_cell_read_u32(cpu_dev, "speed_grade", &cell_value);
++	if (ret)
++		return ret;
++
++	speed_grade = (cell_value & OCOTP_CFG3_SPEED_GRADE_MASK) >> OCOTP_CFG3_SPEED_GRADE_SHIFT;
++	mkt_segment = (cell_value & OCOTP_CFG3_MKT_SEGMENT_MASK) >> OCOTP_CFG3_MKT_SEGMENT_SHIFT;
++	supported_hw[0] = BIT(speed_grade);
++	supported_hw[1] = BIT(mkt_segment);
++	dev_info(&pdev->dev, "cpu speed grade %d mkt segment %d supported-hw %#x %#x\n",
++			speed_grade, mkt_segment, supported_hw[0], supported_hw[1]);
++
++	cpufreq_opp_table = dev_pm_opp_set_supported_hw(cpu_dev, supported_hw, 2);
++	if (IS_ERR(cpufreq_opp_table)) {
++		ret = PTR_ERR(cpufreq_opp_table);
++		dev_err(&pdev->dev, "Failed to set supported opp: %d\n", ret);
++		return ret;
++	}
++
++	cpufreq_dt_pdev = platform_device_register_data(
++			&pdev->dev, "cpufreq-dt", -1, NULL, 0);
++	if (IS_ERR(cpufreq_dt_pdev)) {
++		dev_pm_opp_put_supported_hw(cpufreq_opp_table);
++		ret = PTR_ERR(cpufreq_dt_pdev);
++		dev_err(&pdev->dev, "Failed to register cpufreq-dt: %d\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int imx_cpufreq_dt_remove(struct platform_device *pdev)
++{
++	platform_device_unregister(cpufreq_dt_pdev);
++	dev_pm_opp_put_supported_hw(cpufreq_opp_table);
++
++	return 0;
++}
++
++static struct platform_driver imx_cpufreq_dt_driver = {
++	.probe = imx_cpufreq_dt_probe,
++	.remove = imx_cpufreq_dt_remove,
++	.driver = {
++		.name = "imx-cpufreq-dt",
++	},
++};
++module_platform_driver(imx_cpufreq_dt_driver);
++
++MODULE_ALIAS("platform:imx-cpufreq-dt");
++MODULE_DESCRIPTION("Freescale i.MX cpufreq speed grading driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/soc/imx/soc-imx8.c b/drivers/soc/imx/soc-imx8.c
+index cd10726e64e4..02988bdfbb73 100644
+--- a/drivers/soc/imx/soc-imx8.c
++++ b/drivers/soc/imx/soc-imx8.c
+@@ -130,10 +130,13 @@ static int __init imx8_soc_init(void)
+ 
+ 	soc_dev = soc_device_register(soc_dev_attr);
+ 	if (IS_ERR(soc_dev))
+ 		goto free_rev;
+ 
++	if (IS_ENABLED(CONFIG_ARM_IMX_CPUFREQ_DT))
++		platform_device_register_simple("imx-cpufreq-dt", -1, NULL, 0);
++
+ 	return 0;
+ 
+ free_rev:
+ 	kfree(soc_dev_attr->revision);
+ free_soc:
 -- 
 2.17.1
