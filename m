@@ -2,192 +2,103 @@ Return-Path: <SRS0=BJcq=TN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AE40C04AA7
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 19:31:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BC75C04AB1
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 20:04:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3E64120850
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 19:31:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6112C208CA
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 20:04:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xNwX3XNe"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nOZpGpq3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726599AbfEMTbo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 May 2019 15:31:44 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:37910 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726290AbfEMTbo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2019 15:31:44 -0400
-Received: by mail-lf1-f65.google.com with SMTP id y19so9946248lfy.5
-        for <linux-pm@vger.kernel.org>; Mon, 13 May 2019 12:31:43 -0700 (PDT)
+        id S1725970AbfEMUEI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 May 2019 16:04:08 -0400
+Received: from mail-pg1-f193.google.com ([209.85.215.193]:43439 "EHLO
+        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725928AbfEMUEI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2019 16:04:08 -0400
+Received: by mail-pg1-f193.google.com with SMTP id t22so7307253pgi.10;
+        Mon, 13 May 2019 13:04:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=XTy06JPjF+Flbr9WT5p68Fa18r9/HEAcUQNjh0fiSxI=;
-        b=xNwX3XNe/fEpvPHbUQrZ5x+LqEpdA/RH0mdOzfdRzVQASPFEcNy/mFD0OfHWCToaZ0
-         PrLL4rnH27RSud7LIy378Wj4Wj8Hh9/Xt0I8VfOlVZRAh/O3hbwv62GHEi7+LF8SOLO2
-         tt3BCSJoO1lX0RHEpuYlTM6SspGottirXeynSYFliz9YP8Y+Zzt7m+A613Qa7wbd7vf9
-         9Bq4pR31rg1WKJVhfAuJ5QPRwmYRPdi4ueAQ4ADAi0B9GO8o48sWaERmDbLHwHzGEjEy
-         1VAPQLLEoIZKP/kHIeO1MNUF7XhwAH5ChUeHgtbVhjw8ggkBEECcBqw/N9bFX+WErUR/
-         8B/Q==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=FCX+3mB/YRhT5Txkq/+vTAXr74I/DRaeAJEWUAtSVeA=;
+        b=nOZpGpq3KZZ5EHYSvows9Xj+60EQgeruNQIjWxTJmxEe3GYdspbxPIR3K6fo/sRW5S
+         5nvGfYXcbNKi8//wYPgKLrPqMXmjBx2k5g4T69eJrHp9+dCeaxTCX/gHo1kg2hUPq85u
+         VibcARNDu1igrCDQ1GOvxC6Zgx50pMvs/npXjnnWum1C7b2uuiiBbL4+/YuYZO9YGIlz
+         XnkFIyrKez5hT2oYR9hXNSUAN3uLc37G8o/shgYm82GorG8XVUOoZiKzP9VToR9NMF9K
+         Pn0Z4MHA5ggbCKcTMP5/1Sp3aDASPu3Qpe1TaB3weFyZwnD/BXROJX9Wlg0rbUp82mCo
+         A2Hw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=XTy06JPjF+Flbr9WT5p68Fa18r9/HEAcUQNjh0fiSxI=;
-        b=ZewOZWSCLaMxyDYAMHz4H6/3BD4o459KjT+NSA3tDttFWHEVDpstCARZBF10SrAP8g
-         8Wl0d/84yEu3rbn+AbtaxgmeZ8UEtc7RxNRdmNaXLeNz+Ged186kDFuPmlb5sLxjqakD
-         8BLwwAS3l6hdKdjhhtx/YT6UtMjjbDekUfHJ4tYgdzlY8hyouKXToXjUhUNBgs8gsWGr
-         brXx3BnQnHNrt3ZkOD+8DlxftnXpa1Z6JjqLBadWRHgQfdVLLN2tUh9AdQOCoG7EXmo7
-         HYqa4QWsOGSJADRCqxJbZ0GOc3kE8gWn/5zVbLFdMccN5LZuMM88SJSw7KGPN0apJlTO
-         iPUw==
-X-Gm-Message-State: APjAAAVmHl0VrBjwE+ut1eo9Q1U6RyvF+2sTLKYgdpyybhyV/LwTi4PV
-        ujfgmlpCMk7L/FoUX4NsP17plw==
-X-Google-Smtp-Source: APXvYqy6lylq/7RbTmCodW9mEbVCUkckcxopczjrEblxG06MxFPhpTcYSizZjnHDtDbPl63l4lZbOw==
-X-Received: by 2002:ac2:410e:: with SMTP id b14mr7738149lfi.100.1557775406156;
-        Mon, 13 May 2019 12:23:26 -0700 (PDT)
-Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id q21sm3449365lfa.84.2019.05.13.12.23.24
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 13 May 2019 12:23:25 -0700 (PDT)
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-To:     Sudeep Holla <sudeep.holla@arm.com>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        linux-arm-kernel@lists.infradead.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Niklas Cassel <niklas.cassel@linaro.org>,
-        Tony Lindgren <tony@atomide.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Souvik Chakravarty <souvik.chakravarty@arm.com>,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
-        Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 11/18] drivers: firmware: psci: Introduce psci_dt_topology_init()
-Date:   Mon, 13 May 2019 21:22:53 +0200
-Message-Id: <20190513192300.653-12-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190513192300.653-1-ulf.hansson@linaro.org>
-References: <20190513192300.653-1-ulf.hansson@linaro.org>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=FCX+3mB/YRhT5Txkq/+vTAXr74I/DRaeAJEWUAtSVeA=;
+        b=ZfTzKEYNEHE3z2wd1ZhiyPXDn5Yhykf9swB2BCXb4e7pnMDNw/QxR8rgzmG4lWcbII
+         PaHct2RVL8bIxFZlW+ofwFHf+U6NW92HQPqH3qNHYTHX2EQWUsIyC0v/bxnCiTgoce0W
+         hLscebkeEpfnHPok6v0oDC++ITKTmg/p+yMdpH+kMaQG6HYDrQTLb/m7o0c51QDfKrse
+         bSEvsp3Pp/WgA7YPLMSWJ8w3BjQOpv0gTtX1vZERJcaYmvebep66CaDXQvSOaKXmFFBo
+         YsL4SA1MN8WtzvDHy0GOiDKi3U79iJ+5Hp4C6PzPG4s3j+cUhgAKA1ZmHv9W0oboxCkr
+         pTJw==
+X-Gm-Message-State: APjAAAUNbR7qgK6xB4rtY7akqSAcKDJLhiD0/3PSZ3TlWRalbX2KCZ74
+        /Bcs9dwNDD+ei7THqHg/5QgA4q29
+X-Google-Smtp-Source: APXvYqyZV6ybo1VVP5ctLbknniFMM7PH3nA4meYMldAwcz49ykSytRnOUwv8TbMfVv0Q/0u77DEDBg==
+X-Received: by 2002:a63:8449:: with SMTP id k70mr33268681pgd.53.1557777847892;
+        Mon, 13 May 2019 13:04:07 -0700 (PDT)
+Received: from localhost.localdomain (KD118155013174.ppp-bb.dion.ne.jp. [118.155.13.174])
+        by smtp.gmail.com with ESMTPSA id y3sm19167506pfe.9.2019.05.13.13.04.03
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Mon, 13 May 2019 13:04:04 -0700 (PDT)
+From:   Yoshihiro Kaneko <ykaneko0929@gmail.com>
+To:     linux-pm@vger.kernel.org
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Simon Horman <horms@verge.net.au>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        linux-renesas-soc@vger.kernel.org
+Subject: [PATCH/RFT v3 0/3] thermal: rcar_gen3_thermal: Update calculation formula due to HW evaluation 
+Date:   Tue, 14 May 2019 05:03:52 +0900
+Message-Id: <1557777835-19454-1-git-send-email-ykaneko0929@gmail.com>
+X-Mailer: git-send-email 1.9.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190513192253.AIaeiQYEzmQGSHD1b-vsSQjHxezH5kTAONc2si_6KeY@z>
 
-To be able to initiate the PM domain data structures for PSCI at a specific
-point during boot, let's export a new init function,
-psci_dt_topology_init(). If CONFIG_CPU_IDLE is set, it calls
-psci_dt_init_pm_domains(), which performs the actual initialization.
+This series was inspired by a patch in the BSP by Dien Pham <dien.pham.ry@renesas.com>.
 
-Note that, it may seem like feasible idea to hook into the existing
-psci_dt_init() function, rather than adding a new separate init function.
-However, this doesn't work because psci_dt_init() is called early in the
-boot sequence, when allocating dynamic data structures isn't yet possible.
+This series is based on the master branch of Linus Torvalds's linux tree.
 
-Subsequent changes calls this new init function.
+v3 [Yoshihiro Kaneko]
+* As suggested by Simon Horman
+- Patch 1/3: change the types of ths_tj_1 to int
+* As suggested by Niklas Söderlund
+- Patch 2/3: rename tj_2 into tj_t to accord with the datasheet
 
-Finally, following changes on top needs to know whether the hierarchical PM
-domain topology is used or not. Therefore, let's store this information in
-an internal PSCI flag.
+v2 [Yoshihiro Kaneko]
+* As suggested by Simon Horman
+- split into three patches
+- avoid global variables
+- marked thcode const
 
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+Yoshihiro Kaneko (3):
+  thermal: rcar_gen3_thermal: Update value of Tj_1
+  thermal: rcar_gen3_thermal: Update calculation formula of IRQTEMP
+  thermal: rcar_gen3_thermal: Update temperature conversion method
 
-Changes:
-	- Moved some code inside "#ifdef CONFIG_CPU_IDLE".
-	- Updated changelog.
+ drivers/thermal/rcar_gen3_thermal.c | 92 ++++++++++++++++++++++++-------------
+ 1 file changed, 60 insertions(+), 32 deletions(-)
 
----
- drivers/firmware/psci/psci.c | 30 ++++++++++++++++++++++++++++++
- include/linux/psci.h         |  2 ++
- 2 files changed, 32 insertions(+)
-
-diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index bfef300b7ebe..28745234b53f 100644
---- a/drivers/firmware/psci/psci.c
-+++ b/drivers/firmware/psci/psci.c
-@@ -297,6 +297,7 @@ static int __init psci_features(u32 psci_func_id)
- #ifdef CONFIG_CPU_IDLE
- static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
- static DEFINE_PER_CPU(u32, domain_state);
-+static bool psci_dt_topology;
- 
- static inline u32 psci_get_domain_state(void)
- {
-@@ -480,6 +481,19 @@ static const struct cpuidle_ops psci_cpuidle_ops __initconst = {
- 
- CPUIDLE_METHOD_OF_DECLARE(psci, "psci", &psci_cpuidle_ops);
- #endif
-+
-+static int __init _psci_dt_topology_init(struct device_node *np)
-+{
-+	int ret;
-+
-+	/* Initialize the CPU PM domains based on topology described in DT. */
-+	ret = psci_dt_init_pm_domains(np);
-+	psci_dt_topology = ret > 0;
-+
-+	return ret;
-+}
-+#else
-+static inline int _psci_dt_topology_init(struct device_node *np) { return 0; }
- #endif
- 
- static int psci_system_suspend(unsigned long unused)
-@@ -758,6 +772,22 @@ int __init psci_dt_init(void)
- 	return ret;
- }
- 
-+int __init psci_dt_topology_init(void)
-+{
-+	struct device_node *np;
-+	int ret;
-+
-+	np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
-+	if (!np)
-+		return -ENODEV;
-+
-+	/* Initialize the topology described in DT. */
-+	ret = _psci_dt_topology_init(np);
-+
-+	of_node_put(np);
-+	return ret;
-+}
-+
- #ifdef CONFIG_ACPI
- /*
-  * We use PSCI 0.2+ when ACPI is deployed on ARM64 and it's
-diff --git a/include/linux/psci.h b/include/linux/psci.h
-index 4f29a3bff379..16beccccbbcc 100644
---- a/include/linux/psci.h
-+++ b/include/linux/psci.h
-@@ -55,8 +55,10 @@ extern struct psci_operations psci_ops;
- 
- #if defined(CONFIG_ARM_PSCI_FW)
- int __init psci_dt_init(void);
-+int __init psci_dt_topology_init(void);
- #else
- static inline int psci_dt_init(void) { return 0; }
-+static inline int psci_dt_topology_init(void) { return 0; }
- #endif
- 
- #if defined(CONFIG_ARM_PSCI_FW) && defined(CONFIG_ACPI)
 -- 
-2.17.1
+1.9.1
 
