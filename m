@@ -1,57 +1,102 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
-Date: Tue, 14 May 2019 01:16:22 +0800
-Message-ID: <9AE4A3E7-CDB8-4730-8B4E-43C93FC0C47F@canonical.com>
-References: <20190510212937.11661-1-keith.busch@intel.com>
- <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM>
- <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM>
- <20190513143754.GE15318@localhost.localdomain>
- <7ab8274ef1ce46fcae54a50abc76ae4a@AUSX13MPC105.AMER.DELL.COM>
- <20190513145708.GA25897@lst.de>
- <20190513151652.GB15437@localhost.localdomain>
-Mime-Version: 1.0 (Mac OS X Mail 12.4 \(3445.104.8\))
-Content-Type: text/plain;
-        charset=us-ascii;
-        delsp=yes;
-        format=flowed
-Content-Transfer-Encoding: 7bit
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 06/19] powercap/intel_rapl: Simplify rapl_find_package()
+Date: Mon, 13 May 2019 13:58:50 -0400
+Message-ID: <ae3d1903407fd6e3684234b674f4f0e62c2ab54c.1557769318.git.len.brown@intel.com>
+References: <7b23d2d26d717b8e14ba137c94b70943f1ae4b5c.1557769318.git.len.brown@intel.com>
+Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190513151652.GB15437@localhost.localdomain>
+In-Reply-To: <7b23d2d26d717b8e14ba137c94b70943f1ae4b5c.1557769318.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Keith Busch <kbusch@kernel.org>
-Cc: Christoph Hellwig <hch@lst.de>, Mario.Limonciello@dell.com, keith.busch@intel.com, sagi@grimberg.me, linux-nvme@lists.infradead.org, rafael@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-at 23:16, Keith Busch <kbusch@kernel.org> wrote:
+From: Zhang Rui <rui.zhang@intel.com>
 
-> On Mon, May 13, 2019 at 04:57:08PM +0200, Christoph Hellwig wrote:
->> On Mon, May 13, 2019 at 02:54:49PM +0000, Mario.Limonciello@dell.com  
->> wrote:
->>> And NVME spec made it sound to me that while in a low power state it  
->>> shouldn't
->>> be available if the memory isn't available.
->>>
->>> NVME spec in 8.9:
->>>
->>> "Host software should request that the controller release the
->>> assigned ranges prior to a shutdown event, a Runtime D3 event, or any  
->>> other event
->>> that requires host software to reclaim the assigned ranges."
->>
->> The last part of the quoted text is the key - if the assigned range
->> is reclaimed, that is the memory is going to be used for something else,
->> we need to release the ranges.  But we do not release the ranges,
->> as we want to keep the memory in use so that we can quickly use it
->> again.
->
-> Yes, this. As far as I know, the host memory range is still accessible in
-> the idle suspend state. If there are states in which host memory is not
-> accessible, a reference explaining the requirement will be most helpful.
+Syntax only, no functional or semantic change.
 
-Disabling HMB prior suspend makes my original patch work without memory  
-barrier.
+Simplify how the code to discover a package is called.
+Rename find_package_by_id() to rapl_find_package_domain()
 
-However, using the same trick on this patch still freezes the system during  
-S2I.
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/powercap/intel_rapl.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Kai-Heng
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 4347f15165f8..3c3c0c23180b 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
+ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
+ 
+ /* caller to ensure CPU hotplug lock is held */
+-static struct rapl_package *find_package_by_id(int id)
++static struct rapl_package *rapl_find_package_domain(int cpu)
+ {
++	int id = topology_physical_package_id(cpu);
+ 	struct rapl_package *rp;
+ 
+ 	list_for_each_entry(rp, &rapl_packages, plist) {
+@@ -1300,7 +1301,7 @@ static int __init rapl_register_psys(void)
+ 	rd->rpl[0].name = pl1_name;
+ 	rd->rpl[1].prim_id = PL2_ENABLE;
+ 	rd->rpl[1].name = pl2_name;
+-	rd->rp = find_package_by_id(0);
++	rd->rp = rapl_find_package_domain(0);
+ 
+ 	power_zone = powercap_register_zone(&rd->power_zone, control_type,
+ 					    "psys", NULL,
+@@ -1456,8 +1457,9 @@ static void rapl_remove_package(struct rapl_package *rp)
+ }
+ 
+ /* called from CPU hotplug notifier, hotplug lock held */
+-static struct rapl_package *rapl_add_package(int cpu, int pkgid)
++static struct rapl_package *rapl_add_package(int cpu)
+ {
++	int id = topology_physical_package_id(cpu);
+ 	struct rapl_package *rp;
+ 	int ret;
+ 
+@@ -1466,7 +1468,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	/* add the new package to the list */
+-	rp->id = pkgid;
++	rp->id = id;
+ 	rp->lead_cpu = cpu;
+ 
+ 	/* check if the package contains valid domains */
+@@ -1497,12 +1499,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
+  */
+ static int rapl_cpu_online(unsigned int cpu)
+ {
+-	int pkgid = topology_physical_package_id(cpu);
+ 	struct rapl_package *rp;
+ 
+-	rp = find_package_by_id(pkgid);
++	rp = rapl_find_package_domain(cpu);
+ 	if (!rp) {
+-		rp = rapl_add_package(cpu, pkgid);
++		rp = rapl_add_package(cpu);
+ 		if (IS_ERR(rp))
+ 			return PTR_ERR(rp);
+ 	}
+@@ -1512,11 +1513,10 @@ static int rapl_cpu_online(unsigned int cpu)
+ 
+ static int rapl_cpu_down_prep(unsigned int cpu)
+ {
+-	int pkgid = topology_physical_package_id(cpu);
+ 	struct rapl_package *rp;
+ 	int lead_cpu;
+ 
+-	rp = find_package_by_id(pkgid);
++	rp = rapl_find_package_domain(cpu);
+ 	if (!rp)
+ 		return 0;
+ 
+-- 
+2.18.0-rc0
