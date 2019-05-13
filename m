@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 06/19] powercap/intel_rapl: Simplify rapl_find_package()
-Date: Mon, 13 May 2019 13:58:50 -0400
-Message-ID: <ae3d1903407fd6e3684234b674f4f0e62c2ab54c.1557769318.git.len.brown@intel.com>
+Subject: [PATCH 07/19] powercap/intel_rapl: Support multi-die/package
+Date: Mon, 13 May 2019 13:58:51 -0400
+Message-ID: <9fcb4719aeb7efccf3bc75ed8dd559e46121649f.1557769318.git.len.brown@intel.com>
 References: <7b23d2d26d717b8e14ba137c94b70943f1ae4b5c.1557769318.git.len.brown@intel.com>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -13,90 +13,43 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Zhang Rui <rui.zhang@intel.com>
 
-Syntax only, no functional or semantic change.
+RAPL "package" domains are actually implemented in hardware per-die.
+Thus, the new multi-die/package systems have mulitple domains
+within each physical package.
 
-Simplify how the code to discover a package is called.
-Rename find_package_by_id() to rapl_find_package_domain()
+Update the intel_rapl driver to be "die aware" -- exporting multiple
+domains within a single package, when present.
+No change on single die/package systems.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Cc: linux-pm@vger.kernel.org
 ---
- drivers/powercap/intel_rapl.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/powercap/intel_rapl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 4347f15165f8..3c3c0c23180b 100644
+index 3c3c0c23180b..9202dbcef96d 100644
 --- a/drivers/powercap/intel_rapl.c
 +++ b/drivers/powercap/intel_rapl.c
-@@ -264,8 +264,9 @@ static struct powercap_control_type *control_type; /* PowerCap Controller */
- static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
- 
+@@ -266,7 +266,7 @@ static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
  /* caller to ensure CPU hotplug lock is held */
--static struct rapl_package *find_package_by_id(int id)
-+static struct rapl_package *rapl_find_package_domain(int cpu)
+ static struct rapl_package *rapl_find_package_domain(int cpu)
  {
-+	int id = topology_physical_package_id(cpu);
+-	int id = topology_physical_package_id(cpu);
++	int id = topology_logical_die_id(cpu);
  	struct rapl_package *rp;
  
  	list_for_each_entry(rp, &rapl_packages, plist) {
-@@ -1300,7 +1301,7 @@ static int __init rapl_register_psys(void)
- 	rd->rpl[0].name = pl1_name;
- 	rd->rpl[1].prim_id = PL2_ENABLE;
- 	rd->rpl[1].name = pl2_name;
--	rd->rp = find_package_by_id(0);
-+	rd->rp = rapl_find_package_domain(0);
- 
- 	power_zone = powercap_register_zone(&rd->power_zone, control_type,
- 					    "psys", NULL,
-@@ -1456,8 +1457,9 @@ static void rapl_remove_package(struct rapl_package *rp)
- }
- 
+@@ -1459,7 +1459,7 @@ static void rapl_remove_package(struct rapl_package *rp)
  /* called from CPU hotplug notifier, hotplug lock held */
--static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-+static struct rapl_package *rapl_add_package(int cpu)
+ static struct rapl_package *rapl_add_package(int cpu)
  {
-+	int id = topology_physical_package_id(cpu);
+-	int id = topology_physical_package_id(cpu);
++	int id = topology_logical_die_id(cpu);
  	struct rapl_package *rp;
  	int ret;
- 
-@@ -1466,7 +1468,7 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
- 		return ERR_PTR(-ENOMEM);
- 
- 	/* add the new package to the list */
--	rp->id = pkgid;
-+	rp->id = id;
- 	rp->lead_cpu = cpu;
- 
- 	/* check if the package contains valid domains */
-@@ -1497,12 +1499,11 @@ static struct rapl_package *rapl_add_package(int cpu, int pkgid)
-  */
- static int rapl_cpu_online(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package_domain(cpu);
- 	if (!rp) {
--		rp = rapl_add_package(cpu, pkgid);
-+		rp = rapl_add_package(cpu);
- 		if (IS_ERR(rp))
- 			return PTR_ERR(rp);
- 	}
-@@ -1512,11 +1513,10 @@ static int rapl_cpu_online(unsigned int cpu)
- 
- static int rapl_cpu_down_prep(unsigned int cpu)
- {
--	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int lead_cpu;
- 
--	rp = find_package_by_id(pkgid);
-+	rp = rapl_find_package_domain(cpu);
- 	if (!rp)
- 		return 0;
  
 -- 
 2.18.0-rc0
