@@ -1,37 +1,41 @@
 From: Keith Busch <kbusch@kernel.org>
 Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
-Date: Mon, 13 May 2019 07:36:11 -0600
-Message-ID: <20190513133611.GA15318@localhost.localdomain>
+Date: Mon, 13 May 2019 07:47:08 -0600
+Message-ID: <20190513134708.GB15318@localhost.localdomain>
 References: <20190510212937.11661-1-keith.busch@intel.com>
- <20190511072258.GB14764@lst.de>
+ <SN6PR04MB452735778FD952AA838E78C9860E0@SN6PR04MB4527.namprd04.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190511072258.GB14764@lst.de>
+In-Reply-To: <SN6PR04MB452735778FD952AA838E78C9860E0@SN6PR04MB4527.namprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Christoph Hellwig <hch@lst.de>
-Cc: "Busch, Keith" <keith.busch@intel.com>, Sagi Grimberg <sagi@grimberg.me>, "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>, Rafael Wysocki <rafael@kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, Mario Limonciello <Mario.Limonciello@dell.com>, Kai Heng Feng <kai.heng.feng@canonical.com>
+To: Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
+Cc: "Busch, Keith" <keith.busch@intel.com>, Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>, "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>, linux-pm <linux-pm@vger.kernel.org>, Mario Limonciello <Mario.Limonciello@dell.com>, lkml <linux-kernel@vger.kernel.org>, Kai Heng Feng <kai.heng.feng@canonical.com>, Rafael Wysocki <rafael@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 11, 2019 at 12:22:58AM -0700, Christoph Hellwig wrote:
-> A couple nitpicks, mostly leftover from the previous iteration
-> (I didn't see replies to those comments from you, despite seeing
-> a reply to my mail, assuming it didn't get lost):
-
-I thought you just meant the freeze/unfreeze sequence. I removed that
-part entirely, but yes, I can move all of this from the core. I will
-just need to export 'nvme_set_features'
- 
+On Sat, May 11, 2019 at 11:06:35PM -0700, Chaitanya Kulkarni wrote:
+> On 5/10/19 2:35 PM, Keith Busch wrote:
+> >   
 > > +int nvme_set_power(struct nvme_ctrl *ctrl, unsigned ps)
-> > +{
-> > +	return nvme_set_features(ctrl, NVME_FEAT_POWER_MGMT, ps, NULL, 0, NULL);
-> > +}
-> > +EXPORT_SYMBOL_GPL(nvme_set_power);
-> > +
+
+> dev->ctrl.npss is u8 can we use same data type here ?
+> If this is due to last_ps we use as a result and then call set_power may 
+> be we can change the type of last_ps ?
+> OR
+> can we please use unsigned int to avoid possible warnings ?
+
+Right, the feature uses a 32-bit value even though only the first byte
+is defined at the moment. It's just for foward compatibility. Will make
+this a u32.
+
 > > +int nvme_get_power(struct nvme_ctrl *ctrl, u32 *result)
 > > +{
 > > +	struct nvme_command c;
+> May be use struct nvme_command c {} so we can get rid of the memset() call.
+
+Good point.
+
 > > +	union nvme_result res;
 > > +	int ret;
 > > +
@@ -46,45 +50,9 @@ just need to export 'nvme_set_features'
 > > +			NULL, 0, 0, NVME_QID_ANY, 0, 0, false);
 > > +	if (ret >= 0)
 > > +		*result = le32_to_cpu(res.u32);
-> > +	return ret;
-> > +}
-> > +EXPORT_SYMBOL_GPL(nvme_get_power);
-> 
-> At this point I'd rather see those in the PCIe driver.  While the
-> power state feature is generic in the spec I don't see it actually
-> being used anytime anywhere else any time soon.
-> 
-> But maybe we can add a nvme_get_features helper ala nvme_set_features
-> in the core to avoid a little boilerplate code for the future?
+>
+> May be add a check for result here in above if before deref pointer :-
+> 	if (ret >= 0 && result)
 
-Sounds good.
- 
-> > +	ret = nvme_set_power(&dev->ctrl, dev->ctrl.npss);
-> > +	if (ret < 0)
-> > +		return ret;
-> 
-> I can't find any wording in the spec that guarantees the highest
-> numerical power state is the deepest.  But maybe I'm just missing
-> something as such an ordering would be really helpful?
-
-I actually only noticed APST made this assumption, and I had to search
-the spec to see where it calls this out. It is in section 8.4:
-
-  Power states are contiguously numbered starting with zero such that
-  each subsequent power state consumes less than or equal to the maximum
-  power consumed in the previous state.
-
-> >  static int nvme_suspend(struct device *dev)
-> >  {
-> >  	struct pci_dev *pdev = to_pci_dev(dev);
-> >  	struct nvme_dev *ndev = pci_get_drvdata(pdev);
-> >  
-> > +	/*
-> > +	 * Try to use nvme if the device supports host managed power settings
-> > +	 * and platform firmware is not involved.
-> > +	 */
-> 
-> This just comments that what, but I think we need a why here as the
-> what is fairly obvious..
-
-Sounds good.
+I have it checked at the top of the function since it doesn't make much
+sense to call this without a way to return the result.
