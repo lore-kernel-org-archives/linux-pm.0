@@ -1,59 +1,139 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH 2/3] thermal: sun50i: add thermal driver for h6
-Date: Mon, 13 May 2019 12:01:49 +0200
-Message-ID: <20190513100149.w3uvpnuqql4eqwid@flea>
-References: <20190512082614.9045-1-tiny.windzz@gmail.com>
- <20190512082614.9045-3-tiny.windzz@gmail.com>
- <20190512223955.6lhclj6jr2akmsdx@core.my.home>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 2/2] opp: Allocate genpd_virt_devs from dev_pm_opp_attach_genpd()
+Date: Mon, 13 May 2019 15:54:11 +0530
+Message-ID: <9f22d5954319fc315bc98e347e69839931648ecc.1557742920.git.viresh.kumar@linaro.org>
+References: <1bc9053f5c41a10832b58a2a81decbad7f1aded9.1557742920.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190512223955.6lhclj6jr2akmsdx@core.my.home>
+In-Reply-To: <1bc9053f5c41a10832b58a2a81decbad7f1aded9.1557742920.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, catalin.marinas@arm.com, will.deacon@arm.com, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, Jonathan.Cameron@huawei.com, nicolas.ferre@microchip.com, paulmck@linux.ibm.com, andy.gross@linaro.org, olof@lixom.net, bjorn.andersson@linaro.org, jagan@amarulasolutions.com, marc.w.gonzalez@free.fr, stefan.wahren@i2se.com, enric.balletbo@collabora.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, niklas.cassel@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 13, 2019 at 12:39:55AM +0200, Ondřej Jirman wrote:
-> > +	/*
-> > +	 * clkin = 24MHz
-> > +	 * T acquire = clkin / (SUN50I_THS_CTRL0_T_ACQ + 1)
-> > +	 *           = 20us
-> > +	 */
-> > +	regmap_write(tmdev->regmap, SUN50I_THS_CTRL0,
-> > +		     SUN50I_THS_CTRL0_T_ACQ(479));
-> > +	/* average over 4 samples */
-> > +	regmap_write(tmdev->regmap, SUN50I_H6_THS_MFC,
-> > +		     SUN50I_THS_FILTER_EN |
-> > +		     SUN50I_THS_FILTER_TYPE(1));
-> > +	/* period = (SUN50I_H6_THS_PC_TEMP_PERIOD + 1) * 4096 / clkin; ~10ms */
-> > +	regmap_write(tmdev->regmap, SUN50I_H6_THS_PC,
-> > +		     SUN50I_H6_THS_PC_TEMP_PERIOD(58));
->
-> Also this math is not all that clear:
->
->   period = (SUN50I_H6_THS_PC_TEMP_PERIOD + 1) * 4096 / clkin; ~10ms
->
-> SUN50I_H6_THS_PC_TEMP_PERIOD is a macro with an argument. So how does
-> this work?
->
-> Also, related to this, I've noticed that you removed the interrupt
-> processing from the original driver. Without that you have to make sure
-> that OF contains non-zero polling-delay and polling-delay-passive.
->
-> Nonzero values are necessary for enabling polling mode of the tz core,
-> otherwise tz core will not read values periodically from your driver.
->
-> You should documment it in the DT bindings, too. Or keep the interrupt
-> handling for THS.
+Currently the space for the array of virtual devices is allocated along
+with the OPP table, but that isn't going to work well from now onwards.
+For single power domain case, a driver can either use the original
+device structure for setting the performance state (if genpd attached
+with dev_pm_domain_attach()) or use the virtual device structure (if
+genpd attached with dev_pm_domain_attach_by_name(), which returns the
+virtual device) and so we can't know in advance if we are going to need
+genpd_virt_devs array or not.
 
-If there's interrupts for this in the H6, yeah we should use them over
-polling.
+Lets delay the allocation a bit and do it along with
+dev_pm_opp_attach_genpd() rather. The deallocation is done from
+dev_pm_opp_detach_genpd().
 
-Maxime
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/core.c | 10 ++++++++++
+ drivers/opp/of.c   | 30 ++----------------------------
+ 2 files changed, 12 insertions(+), 28 deletions(-)
 
---
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 67d6b0caeab1..764e05a2fa66 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1755,6 +1755,9 @@ static void _opp_detach_genpd(struct opp_table *opp_table)
+ 		dev_pm_domain_detach(opp_table->genpd_virt_devs[index], false);
+ 		opp_table->genpd_virt_devs[index] = NULL;
+ 	}
++
++	kfree(opp_table->genpd_virt_devs);
++	opp_table->genpd_virt_devs = NULL;
+ }
+ 
+ /**
+@@ -1798,6 +1801,12 @@ struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names
+ 
+ 	mutex_lock(&opp_table->genpd_virt_dev_lock);
+ 
++	opp_table->genpd_virt_devs = kcalloc(opp_table->required_opp_count,
++					     sizeof(*opp_table->genpd_virt_devs),
++					     GFP_KERNEL);
++	if (!opp_table->genpd_virt_devs)
++		goto unlock;
++
+ 	while (*name) {
+ 		index = of_property_match_string(dev->of_node,
+ 						 "power-domain-names", *name);
+@@ -1836,6 +1845,7 @@ struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names
+ 
+ err:
+ 	_opp_detach_genpd(opp_table);
++unlock:
+ 	mutex_unlock(&opp_table->genpd_virt_dev_lock);
+ 
+ put_table:
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index c10c782d15aa..a637f30552a3 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -141,7 +141,6 @@ static struct opp_table *_find_table_of_opp_np(struct device_node *opp_np)
+ static void _opp_table_free_required_tables(struct opp_table *opp_table)
+ {
+ 	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
+-	struct device **genpd_virt_devs = opp_table->genpd_virt_devs;
+ 	int i;
+ 
+ 	if (!required_opp_tables)
+@@ -155,10 +154,8 @@ static void _opp_table_free_required_tables(struct opp_table *opp_table)
+ 	}
+ 
+ 	kfree(required_opp_tables);
+-	kfree(genpd_virt_devs);
+ 
+ 	opp_table->required_opp_count = 0;
+-	opp_table->genpd_virt_devs = NULL;
+ 	opp_table->required_opp_tables = NULL;
+ }
+ 
+@@ -171,9 +168,8 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
+ 					     struct device_node *opp_np)
+ {
+ 	struct opp_table **required_opp_tables;
+-	struct device **genpd_virt_devs = NULL;
+ 	struct device_node *required_np, *np;
+-	int count, count_pd, i;
++	int count, i;
+ 
+ 	/* Traversing the first OPP node is all we need */
+ 	np = of_get_next_available_child(opp_np, NULL);
+@@ -186,33 +182,11 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
+ 	if (!count)
+ 		goto put_np;
+ 
+-	/*
+-	 * Check the number of power-domains to know if we need to deal
+-	 * with virtual devices. In some cases we have devices with multiple
+-	 * power domains but with only one of them being scalable, hence
+-	 * 'count' could be 1, but we still have to deal with multiple genpds
+-	 * and virtual devices.
+-	 */
+-	count_pd = of_count_phandle_with_args(dev->of_node, "power-domains",
+-					      "#power-domain-cells");
+-	if (!count_pd)
+-		goto put_np;
+-
+-	if (count_pd > 1) {
+-		genpd_virt_devs = kcalloc(count, sizeof(*genpd_virt_devs),
+-					GFP_KERNEL);
+-		if (!genpd_virt_devs)
+-			goto put_np;
+-	}
+-
+ 	required_opp_tables = kcalloc(count, sizeof(*required_opp_tables),
+ 				      GFP_KERNEL);
+-	if (!required_opp_tables) {
+-		kfree(genpd_virt_devs);
++	if (!required_opp_tables)
+ 		goto put_np;
+-	}
+ 
+-	opp_table->genpd_virt_devs = genpd_virt_devs;
+ 	opp_table->required_opp_tables = required_opp_tables;
+ 	opp_table->required_opp_count = count;
+ 
+-- 
+2.21.0.rc0.269.g1a574e7a288b
