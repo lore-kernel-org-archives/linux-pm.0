@@ -6,34 +6,34 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09E2FC04AB1
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BD65C04AB1
 	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 07:57:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D0D31206A3
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 07:57:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7719A206A3
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 07:57:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728247AbfEMH5Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728248AbfEMH5Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 13 May 2019 03:57:25 -0400
-Received: from shell.v3.sk ([90.176.6.54]:59038 "EHLO shell.v3.sk"
+Received: from shell.v3.sk ([90.176.6.54]:59027 "EHLO shell.v3.sk"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725980AbfEMH5Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1728243AbfEMH5Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Mon, 13 May 2019 03:57:25 -0400
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 8D9CB1041D2;
-        Mon, 13 May 2019 09:57:23 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 981DC1041BC;
+        Mon, 13 May 2019 09:57:22 +0200 (CEST)
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
-        with ESMTP id UL3Ptrx24LmP; Mon, 13 May 2019 09:57:06 +0200 (CEST)
+        with ESMTP id uYwm9noTadyR; Mon, 13 May 2019 09:57:02 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 774321041CB;
-        Mon, 13 May 2019 09:56:52 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTP id 935DD1041C9;
+        Mon, 13 May 2019 09:56:51 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at zimbra.v3.sk
 Received: from shell.v3.sk ([127.0.0.1])
         by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id x1n_lFdbhsqQ; Mon, 13 May 2019 09:56:47 +0200 (CEST)
+        with ESMTP id ZgpmFMjcmnCY; Mon, 13 May 2019 09:56:46 +0200 (CEST)
 Received: from belphegor.brq.redhat.com (nat-pool-brq-t.redhat.com [213.175.37.10])
-        by zimbra.v3.sk (Postfix) with ESMTPSA id 0FB1E1041D0;
-        Mon, 13 May 2019 09:56:45 +0200 (CEST)
+        by zimbra.v3.sk (Postfix) with ESMTPSA id 4BD341041CB;
+        Mon, 13 May 2019 09:56:44 +0200 (CEST)
 From:   Lubomir Rintel <lkundrak@v3.sk>
 To:     Andy Shevchenko <andy@infradead.org>,
         Darren Hart <dvhart@infradead.org>
@@ -42,10 +42,11 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
         platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v7 08/10] power: supply: olpc_battery: Allow building the driver on non-x86
-Date:   Mon, 13 May 2019 09:56:39 +0200
-Message-Id: <20190513075641.1277716-9-lkundrak@v3.sk>
+        Lubomir Rintel <lkundrak@v3.sk>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: [PATCH v7 05/10] Platform: OLPC: Use BIT() and GENMASK() for event masks
+Date:   Mon, 13 May 2019 09:56:36 +0200
+Message-Id: <20190513075641.1277716-6-lkundrak@v3.sk>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190513075641.1277716-1-lkundrak@v3.sk>
 References: <20190513075641.1277716-1-lkundrak@v3.sk>
@@ -56,28 +57,61 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-With the recent changes to the driver and addition of OLPC XO-1.75 EC
-driver it is possible to use this driver on ARM-based XO laptops as
-well.
+Just a cosmetic tidy-up.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 
 ---
- drivers/power/supply/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes since v5:
+- Added Andy Shevchenko's Reviewed-by tag
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index e901b9879e7e..66e4d1958de3 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -151,7 +151,7 @@ config BATTERY_PMU
+Changes since v1:
+- This patch was added to the set.
+
+ include/linux/olpc-ec.h | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/include/linux/olpc-ec.h b/include/linux/olpc-ec.h
+index 7fa3d27f7fee..f7b6a7eda232 100644
+--- a/include/linux/olpc-ec.h
++++ b/include/linux/olpc-ec.h
+@@ -2,6 +2,8 @@
+ #ifndef _LINUX_OLPC_EC_H
+ #define _LINUX_OLPC_EC_H
 =20
- config BATTERY_OLPC
- 	tristate "One Laptop Per Child battery"
--	depends on X86_32 && OLPC
-+	depends on OLPC_EC
- 	help
- 	  Say Y to enable support for the battery on the OLPC laptop.
++#include <linux/bits.h>
++
+ /* XO-1 EC commands */
+ #define EC_FIRMWARE_REV			0x08
+ #define EC_WRITE_SCI_MASK		0x1b
+@@ -17,17 +19,16 @@
+ #define EC_EXT_SCI_QUERY		0x85
+=20
+ /* SCI source values */
+-#define EC_SCI_SRC_EMPTY        0x00
+-#define EC_SCI_SRC_GAME         0x01
+-#define EC_SCI_SRC_BATTERY      0x02
+-#define EC_SCI_SRC_BATSOC       0x04
+-#define EC_SCI_SRC_BATERR       0x08
+-#define EC_SCI_SRC_EBOOK        0x10    /* XO-1 only */
+-#define EC_SCI_SRC_WLAN         0x20    /* XO-1 only */
+-#define EC_SCI_SRC_ACPWR        0x40
+-#define EC_SCI_SRC_BATCRIT      0x80
+-#define EC_SCI_SRC_GPWAKE       0x100   /* XO-1.5 only */
+-#define EC_SCI_SRC_ALL          0x1FF
++#define EC_SCI_SRC_GAME         BIT(0)
++#define EC_SCI_SRC_BATTERY      BIT(1)
++#define EC_SCI_SRC_BATSOC       BIT(2)
++#define EC_SCI_SRC_BATERR       BIT(3)
++#define EC_SCI_SRC_EBOOK        BIT(4)    /* XO-1 only */
++#define EC_SCI_SRC_WLAN         BIT(5)    /* XO-1 only */
++#define EC_SCI_SRC_ACPWR        BIT(6)
++#define EC_SCI_SRC_BATCRIT      BIT(7)
++#define EC_SCI_SRC_GPWAKE       BIT(8)   /* XO-1.5 only */
++#define EC_SCI_SRC_ALL          GENMASK(8, 0)
+=20
+ struct platform_device;
 =20
 --=20
 2.21.0
