@@ -1,8 +1,8 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 18/18] arm64: dts: hikey: Convert to the hierarchical CPU
- topology layout
-Date: Mon, 13 May 2019 21:23:00 +0200
-Message-ID: <20190513192300.653-19-ulf.hansson@linaro.org>
+Subject: [PATCH 15/18] drivers: firmware: psci: Support CPU hotplug for the
+ hierarchical model
+Date: Mon, 13 May 2019 21:22:57 +0200
+Message-ID: <20190513192300.653-16-ulf.hansson@linaro.org>
 References: <20190513192300.653-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,200 +19,122 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-arm-kernel@lists.infradead.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Tony Lindgren <tony@atomide.com>, Lina Iyer <ilina@codeaurora.org>, linux-arm-msm@vger.kernel.org, Niklas Cassel <niklas.cassel@linaro.org>, Souvik Chakravarty <souvik.chakravarty@arm.com>, Wei Xu <xuwei5@hisilicon.com>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Tony Lindgren <tony@atomide.com>, Lina Iyer <ilina@codeaurora.org>, linux-arm-msm@vger.kernel.org, Niklas Cassel <niklas.cassel@linaro.org>, Souvik Chakravarty <souvik.chakravarty@arm.com>, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-To enable the OS to manage last-man standing activities for a CPU, while an
-idle state for a group of CPUs is selected, let's convert the Hikey
-platform into using the hierarchical CPU topology layout.
+When the hierarchical CPU topology is used and when a CPU has been put
+offline (hotplug), that same CPU prevents its PM domain and thus also
+potential master PM domains, from being powered off. This is because genpd
+observes the CPU's attached device as being active from a runtime PM point
+of view.
 
-Cc: Wei Xu <xuwei5@hisilicon.com>
+To deal with this, let's decrease the runtime PM usage count by calling
+pm_runtime_put_sync_suspend() of the attached struct device when putting
+the CPU offline. Consequentially, we must then increase the runtime PM
+usage count, while putting the CPU online again.
+
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes:
-	- None.
+	- Use get_logical_index() to find the CPU number.
+	- Verify that a corresponding struct device* has been attached to the
+	  PM domain before doing runtime PM refrence counting.
+	- Clear the domain state when the CPU goes offline, to start fresh.
+	- Move code to internal helper functions and move them inside
+	  "ifdef CONFIG_CPU_IDLE.
 
 ---
- arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 87 ++++++++++++++++++++---
- 1 file changed, 76 insertions(+), 11 deletions(-)
+ drivers/firmware/psci/psci.c | 47 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 46 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-index 108e2a4227f6..36ff460f428f 100644
---- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-+++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-@@ -20,6 +20,64 @@
- 	psci {
- 		compatible = "arm,psci-0.2";
- 		method = "smc";
-+
-+		CPU_PD0: cpu-pd0 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD0>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD1: cpu-pd1 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD0>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD2: cpu-pd2 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD0>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD3: cpu-pd3 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD0>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD4: cpu-pd4 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD1>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD5: cpu-pd5 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD1>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD6: cpu-pd6 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD1>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD7: cpu-pd7 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD1>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CLUSTER_PD0: cluster-pd0 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_SLEEP>;
-+		};
-+
-+		CLUSTER_PD1: cluster-pd1 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_SLEEP>;
-+		};
- 	};
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index 2c4157d3a616..5ad93c3694b5 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -15,6 +15,7 @@
  
- 	cpus {
-@@ -70,9 +128,8 @@
- 			};
+ #include <linux/acpi.h>
+ #include <linux/arm-smccc.h>
++#include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/errno.h>
+ #include <linux/linkage.h>
+@@ -93,6 +94,9 @@ static u32 psci_function_id[PSCI_FN_MAX];
+ static u32 psci_cpu_suspend_feature;
+ static bool psci_system_reset2_supported;
  
- 			CLUSTER_SLEEP: cluster-sleep {
--				compatible = "arm,idle-state";
--				local-timer-stop;
--				arm,psci-suspend-param = <0x1010000>;
-+				compatible = "domain-idle-state";
-+				arm,psci-suspend-param = <0x1000000>;
- 				entry-latency-us = <1000>;
- 				exit-latency-us = <700>;
- 				min-residency-us = <2700>;
-@@ -88,9 +145,10 @@
- 			next-level-cache = <&CLUSTER0_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD0>;
-+			power-domain-names = "psci";
- 		};
++static void psci_cpuidle_cpu_off(void);
++static void psci_cpuidle_cpu_on(unsigned long cpuid);
++
+ static inline bool psci_has_ext_power_state(void)
+ {
+ 	return psci_cpu_suspend_feature &
+@@ -188,6 +192,8 @@ static int psci_cpu_off(u32 state)
+ 	int err;
+ 	u32 fn;
  
- 		cpu1: cpu@1 {
-@@ -101,9 +159,10 @@
- 			next-level-cache = <&CLUSTER0_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD1>;
-+			power-domain-names = "psci";
- 		};
++	psci_cpuidle_cpu_off();
++
+ 	fn = psci_function_id[PSCI_FN_CPU_OFF];
+ 	err = invoke_psci_fn(fn, state, 0, 0);
+ 	return psci_to_linux_errno(err);
+@@ -200,7 +206,13 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
  
- 		cpu2: cpu@2 {
-@@ -114,9 +173,10 @@
- 			next-level-cache = <&CLUSTER0_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD2>;
-+			power-domain-names = "psci";
- 		};
+ 	fn = psci_function_id[PSCI_FN_CPU_ON];
+ 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
+-	return psci_to_linux_errno(err);
++	err = psci_to_linux_errno(err);
++	if (err)
++		return err;
++
++	psci_cpuidle_cpu_on(cpuid);
++
++	return 0;
+ }
  
- 		cpu3: cpu@3 {
-@@ -127,9 +187,10 @@
- 			next-level-cache = <&CLUSTER0_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD3>;
-+			power-domain-names = "psci";
- 		};
+ static int psci_migrate(unsigned long cpuid)
+@@ -540,8 +552,41 @@ static int __init _psci_dt_topology_init(struct device_node *np)
  
- 		cpu4: cpu@100 {
-@@ -140,9 +201,10 @@
- 			next-level-cache = <&CLUSTER1_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD4>;
-+			power-domain-names = "psci";
- 		};
+ 	return ret;
+ }
++
++static void psci_cpuidle_cpu_off(void)
++{
++	struct device *dev = __this_cpu_read(psci_cpuidle_data.dev);
++
++	/*
++	 * Drop the runtime PM usage count if the CPU has been attached to a
++	 * CPU PM domain. This is needed to, for example, not prevent other
++	 * master domains in the hierarchy to remain powered on.
++	 */
++	if (dev)
++		pm_runtime_put_sync_suspend(dev);
++}
++
++static void psci_cpuidle_cpu_on(unsigned long cpuid)
++{
++	struct device *dev;
++	int cpu;
++
++	if (!psci_dt_topology)
++		return;
++
++	cpu = get_logical_index(cpuid);
++	if (cpu < 0)
++		return;
++
++	dev = per_cpu(psci_cpuidle_data.dev, cpu);
++	if (dev)
++		pm_runtime_get_sync(dev);
++}
++
+ #else
+ static inline int _psci_dt_topology_init(struct device_node *np) { return 0; }
++static void psci_cpuidle_cpu_off(void) {}
++static void psci_cpuidle_cpu_on(unsigned long cpuid) {}
+ #endif
  
- 		cpu5: cpu@101 {
-@@ -153,9 +215,10 @@
- 			next-level-cache = <&CLUSTER1_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD5>;
-+			power-domain-names = "psci";
- 		};
- 
- 		cpu6: cpu@102 {
-@@ -166,9 +229,10 @@
- 			next-level-cache = <&CLUSTER1_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD6>;
-+			power-domain-names = "psci";
- 		};
- 
- 		cpu7: cpu@103 {
-@@ -179,9 +243,10 @@
- 			next-level-cache = <&CLUSTER1_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD7>;
-+			power-domain-names = "psci";
- 		};
- 
- 		CLUSTER0_L2: l2-cache0 {
+ static int psci_system_suspend(unsigned long unused)
 -- 
 2.17.1
