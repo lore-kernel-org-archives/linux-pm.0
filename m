@@ -1,116 +1,40 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] thermal: tsens: Make some symbols static
-Date: Mon, 13 May 2019 19:36:14 +0530
-Message-ID: <CAP245DXAjc1Ozg7HYRumJ7_Ys4pBry8O0Y5rj1hRsQeXqjX1sQ@mail.gmail.com>
-References: <20190513135216.23540-1-yuehaibing@huawei.com>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: [PATCH] nvme/pci: Use host managed power state for suspend
+Date: Mon, 13 May 2019 14:24:41 +0000
+Message-ID: <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM>
+References: <20190510212937.11661-1-keith.busch@intel.com>
+ <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190513135216.23540-1-yuehaibing@huawei.com>
+In-Reply-To: <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: YueHaibing <yuehaibing@huawei.com>
-Cc: Andy Gross <agross@kernel.org>, David Brown <david.brown@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: keith.busch@intel.com, hch@lst.de, sagi@grimberg.me, linux-nvme@lists.infradead.org
+Cc: rafael@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kai.heng.feng@canonical.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 13, 2019 at 7:31 PM YueHaibing <yuehaibing@huawei.com> wrote:
->
-> Fix sparse warnings:
->
-> drivers/thermal/qcom/tsens-v0_1.c:322:29: warning: symbol 'tsens_v0_1_feat' was not declared. Should it be static?
-> drivers/thermal/qcom/tsens-v0_1.c:330:24: warning: symbol 'tsens_v0_1_regfields' was not declared. Should it be static?
-> drivers/thermal/qcom/tsens-v1.c:147:29: warning: symbol 'tsens_v1_feat' was not declared. Should it be static?
-> drivers/thermal/qcom/tsens-v1.c:155:24: warning: symbol 'tsens_v1_regfields' was not declared. Should it be static?
-> drivers/thermal/qcom/tsens-v2.c:30:29: warning: symbol 'tsens_v2_feat' was not declared. Should it be static?
-> drivers/thermal/qcom/tsens-v2.c:38:24: warning: symbol 'tsens_v2_regfields' was not declared. Should it be static?
->
-> Reported-by: Hulk Robot <hulkci@huawei.com>
+> > Cc: Mario Limonciello <Mario.Limonciello@dell.com>
+> > Cc: Kai Heng Feng <kai.heng.feng@canonical.com>
+> > Signed-off-by: Keith Busch <keith.busch@intel.com>
+> > ---
+> > Disclaimer: I've tested only on emulation faking support for the featur=
+e.
+>=20
+> Thanks for sharing.  I'll arrange some testing with this with storage par=
+tners early
+> next week.
+>=20
 
-Hi Hulk Robot,
+I've received the result that from one of my partners this patch doesn't wo=
+rk properly
+and the platform doesn't go into a lower power state.  (The patch submitted=
+ by KH/me
+did work on said system to get it into a lower power state for them).
 
-Thanks for the report. kbuild test robot beat you to catching these
-warnings (see email from 30th April). :-)
-
-Good to see you're becoming bigger and look forward to you beating the
-kbuild test robot someday.
-
-Regards,
-Amit
-
-
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> ---
->  drivers/thermal/qcom/tsens-v0_1.c | 4 ++--
->  drivers/thermal/qcom/tsens-v1.c   | 4 ++--
->  drivers/thermal/qcom/tsens-v2.c   | 4 ++--
->  3 files changed, 6 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-> index b3a63d7..a319283 100644
-> --- a/drivers/thermal/qcom/tsens-v0_1.c
-> +++ b/drivers/thermal/qcom/tsens-v0_1.c
-> @@ -319,7 +319,7 @@ static int calibrate_8974(struct tsens_priv *priv)
->
->  /* v0.1: 8916, 8974 */
->
-> -const struct tsens_features tsens_v0_1_feat = {
-> +static const struct tsens_features tsens_v0_1_feat = {
->         .ver_major      = VER_0_1,
->         .crit_int       = 0,
->         .adc            = 1,
-> @@ -327,7 +327,7 @@ const struct tsens_features tsens_v0_1_feat = {
->         .max_sensors    = 11,
->  };
->
-> -const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
-> +static const struct reg_field tsens_v0_1_regfields[MAX_REGFIELDS] = {
->         /* ----- SROT ------ */
->         /* No VERSION information */
->
-> diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
-> index a1221ef..10b595d 100644
-> --- a/drivers/thermal/qcom/tsens-v1.c
-> +++ b/drivers/thermal/qcom/tsens-v1.c
-> @@ -144,7 +144,7 @@ static int calibrate_v1(struct tsens_priv *priv)
->
->  /* v1.x: qcs404,405 */
->
-> -const struct tsens_features tsens_v1_feat = {
-> +static const struct tsens_features tsens_v1_feat = {
->         .ver_major      = VER_1_X,
->         .crit_int       = 0,
->         .adc            = 1,
-> @@ -152,7 +152,7 @@ const struct tsens_features tsens_v1_feat = {
->         .max_sensors    = 11,
->  };
->
-> -const struct reg_field tsens_v1_regfields[MAX_REGFIELDS] = {
-> +static const struct reg_field tsens_v1_regfields[MAX_REGFIELDS] = {
->         /* ----- SROT ------ */
->         /* VERSION */
->         [VER_MAJOR] = REG_FIELD(SROT_HW_VER_OFF, 28, 31),
-> diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-> index 36fbfa6..1099069 100644
-> --- a/drivers/thermal/qcom/tsens-v2.c
-> +++ b/drivers/thermal/qcom/tsens-v2.c
-> @@ -27,7 +27,7 @@
->
->  /* v2.x: 8996, 8998, sdm845 */
->
-> -const struct tsens_features tsens_v2_feat = {
-> +static const struct tsens_features tsens_v2_feat = {
->         .ver_major      = VER_2_X,
->         .crit_int       = 1,
->         .adc            = 0,
-> @@ -35,7 +35,7 @@ const struct tsens_features tsens_v2_feat = {
->         .max_sensors    = 16,
->  };
->
-> -const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
-> +static const struct reg_field tsens_v2_regfields[MAX_REGFIELDS] = {
->         /* ----- SROT ------ */
->         /* VERSION */
->         [VER_MAJOR] = REG_FIELD(SROT_HW_VER_OFF, 28, 31),
-> --
-> 2.7.4
->
->
+This was not a disk with HMB, but with regard to the HMB I believe it needs=
+ to be
+removed during s0ix so that there isn't any mistake that SSD thinks it can =
+access HMB
+memory in s0ix.
