@@ -1,40 +1,57 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 2/5] dt-bindings: imx-cpufreq-dt: Document
- opp-supported-hw  usage
-Date: Mon, 13 May 2019 12:16:07 -0500
-Message-ID: <20190513171607.GA24874@bogus>
-References: <cover.1557742902.git.leonard.crestez@nxp.com>
- <7948ab63fe5c92da280542a9a372349486d40c65.1557742902.git.leonard.crestez@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
+Date: Tue, 14 May 2019 01:16:22 +0800
+Message-ID: <9AE4A3E7-CDB8-4730-8B4E-43C93FC0C47F@canonical.com>
+References: <20190510212937.11661-1-keith.busch@intel.com>
+ <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM>
+ <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM>
+ <20190513143754.GE15318@localhost.localdomain>
+ <7ab8274ef1ce46fcae54a50abc76ae4a@AUSX13MPC105.AMER.DELL.COM>
+ <20190513145708.GA25897@lst.de>
+ <20190513151652.GB15437@localhost.localdomain>
+Mime-Version: 1.0 (Mac OS X Mail 12.4 \(3445.104.8\))
+Content-Type: text/plain;
+        charset=us-ascii;
+        delsp=yes;
+        format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <7948ab63fe5c92da280542a9a372349486d40c65.1557742902.git.leonard.crestez@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Aisheng Dong <aisheng.dong@nxp.com>, Abel Vesa <abel.vesa@nxp.com>, Anson Huang <anson.huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jacky Bai <ping.bai@nxp.com>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190513151652.GB15437@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Keith Busch <kbusch@kernel.org>
+Cc: Christoph Hellwig <hch@lst.de>, Mario.Limonciello@dell.com, keith.busch@intel.com, sagi@grimberg.me, linux-nvme@lists.infradead.org, rafael@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 13 May 2019 11:01:39 +0000, Leonard Crestez wrote:
-> The interpretation of opp-supported-hw bits for imx-cpufreq-dt driver is
-> not very obvious so attempt to explain it.
-> 
-> There is no OF compat string associated.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> ---
->  .../bindings/cpufreq/imx-cpufreq-dt.txt       | 37 +++++++++++++++++++
->  1 file changed, 37 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/imx-cpufreq-dt.txt
-> 
+at 23:16, Keith Busch <kbusch@kernel.org> wrote:
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+> On Mon, May 13, 2019 at 04:57:08PM +0200, Christoph Hellwig wrote:
+>> On Mon, May 13, 2019 at 02:54:49PM +0000, Mario.Limonciello@dell.com  
+>> wrote:
+>>> And NVME spec made it sound to me that while in a low power state it  
+>>> shouldn't
+>>> be available if the memory isn't available.
+>>>
+>>> NVME spec in 8.9:
+>>>
+>>> "Host software should request that the controller release the
+>>> assigned ranges prior to a shutdown event, a Runtime D3 event, or any  
+>>> other event
+>>> that requires host software to reclaim the assigned ranges."
+>>
+>> The last part of the quoted text is the key - if the assigned range
+>> is reclaimed, that is the memory is going to be used for something else,
+>> we need to release the ranges.  But we do not release the ranges,
+>> as we want to keep the memory in use so that we can quickly use it
+>> again.
+>
+> Yes, this. As far as I know, the host memory range is still accessible in
+> the idle suspend state. If there are states in which host memory is not
+> accessible, a reference explaining the requirement will be most helpful.
+
+Disabling HMB prior suspend makes my original patch work without memory  
+barrier.
+
+However, using the same trick on this patch still freezes the system during  
+S2I.
+
+Kai-Heng
