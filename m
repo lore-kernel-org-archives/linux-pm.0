@@ -1,249 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/2] opp: Attach genpds to devices from within OPP core
-Date: Mon, 13 May 2019 15:54:10 +0530
-Message-ID: <1bc9053f5c41a10832b58a2a81decbad7f1aded9.1557742920.git.viresh.kumar@linaro.org>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH v4 0/5] cpufreq: Add imx-cpufreq-dt driver for speed grading
+Date: Mon, 13 May 2019 11:01:37 +0000
+Message-ID: <cover.1557742902.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, niklas.cassel@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Language: en-US
+Content-ID: <13C41D9609273F49A77AE0DA0AB8AA6B@eurprd04.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Rob Herring <robh+dt@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Aisheng Dong <aisheng.dong@nxp.com>, Jacky Bai <ping.bai@nxp.com>, Anson Huang <anson.huang@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Abel Vesa <abel.vesa@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-The OPP core requires the virtual device pointers to set performance
-state on behalf of the device, for the multiple power domain case. The
-genpd API (dev_pm_domain_attach_by_name()) has evolved now to support
-even the single power domain case and that lets us add common code for
-handling both the cases more efficiently.
+Right now in upstream imx8m cpufreq support just lists a common subset
+of OPPs because the higher ones should only be attempted after checking
+speed grading in fuses.
 
-The virtual device structure returned by dev_pm_domain_attach_by_name()
-isn't normally used by the cpufreq drivers as they don't manage power
-on/off of the domains and so is only useful for the OPP core.
+Driver reads from nvmem and calls dev_pm_opp_set_supported_hw before
+registering cpufreq-dt.
 
-This patch moves all the complexity into the OPP core to make the end
-drivers simple. The earlier APIs dev_pm_opp_{set|put}_genpd_virt_dev()
-are reworked into dev_pm_opp_{attach|detach}_genpd(). The new helper
-dev_pm_opp_attach_genpd() accepts a NULL terminated array of strings
-which contains names of all the genpd's to attach. It then attaches all
-the domains and saves the pointers to the virtual devices. The other
-helper undo the work done by this helper.
+Changes since v3:
+ * Drop default m entirely (Viresh)
+Link to v3: https://patchwork.kernel.org/project/linux-arm-kernel/list/?series=114685
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-@Niklas: Can you please try these patches and confirm they solve the
-issues you were facing ?
+Changes since v2:
+ * Minor reformatting in Kconfig (Viresh)
+ * Open-code imx_cpufreq_dt_match_node (Viresh)
+ * Add mkt_segment bits to supported_hw and update .dtsi to match after
+reviewing latest datasheets.
+ * Add devicetree list (keep forgetting dts needs to be reviewed)
+Link to v2: https://patchwork.kernel.org/project/linux-arm-kernel/list/?series=113163
 
- drivers/opp/core.c     | 128 ++++++++++++++++++++++++++---------------
- include/linux/pm_opp.h |   8 +--
- 2 files changed, 86 insertions(+), 50 deletions(-)
+Link to v1 (RFC): https://patchwork.kernel.org/patch/10916769/
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 0e7703fe733f..67d6b0caeab1 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1744,91 +1744,127 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_set_opp_helper);
- 
-+static void _opp_detach_genpd(struct opp_table *opp_table)
-+{
-+	int index;
-+
-+	for (index = 0; index < opp_table->required_opp_count; index++) {
-+		if (!opp_table->genpd_virt_devs[index])
-+			continue;
-+
-+		dev_pm_domain_detach(opp_table->genpd_virt_devs[index], false);
-+		opp_table->genpd_virt_devs[index] = NULL;
-+	}
-+}
-+
- /**
-- * dev_pm_opp_set_genpd_virt_dev - Set virtual genpd device for an index
-- * @dev: Consumer device for which the genpd device is getting set.
-- * @virt_dev: virtual genpd device.
-- * @index: index.
-+ * dev_pm_opp_attach_genpd - Attach genpd(s) for the device and save virtual device pointer
-+ * @dev: Consumer device for which the genpd is getting attached.
-+ * @names: Null terminated array of pointers containing names of genpd to attach.
-  *
-  * Multiple generic power domains for a device are supported with the help of
-  * virtual genpd devices, which are created for each consumer device - genpd
-  * pair. These are the device structures which are attached to the power domain
-  * and are required by the OPP core to set the performance state of the genpd.
-+ * The same API also works for the case where single genpd is available and so
-+ * we don't need to support that separately.
-  *
-  * This helper will normally be called by the consumer driver of the device
-- * "dev", as only that has details of the genpd devices.
-+ * "dev", as only that has details of the genpd names.
-  *
-- * This helper needs to be called once for each of those virtual devices, but
-- * only if multiple domains are available for a device. Otherwise the original
-- * device structure will be used instead by the OPP core.
-+ * This helper needs to be called once with a list of all genpd to attach.
-+ * Otherwise the original device structure will be used instead by the OPP core.
-  */
--struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev,
--						struct device *virt_dev,
--						int index)
-+struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names)
- {
- 	struct opp_table *opp_table;
-+	struct device *virt_dev;
-+	int index, ret = -EINVAL;
-+	const char **name = names;
- 
- 	opp_table = dev_pm_opp_get_opp_table(dev);
- 	if (!opp_table)
- 		return ERR_PTR(-ENOMEM);
- 
-+	/*
-+	 * If the genpd's OPP table isn't already initialized, parsing of the
-+	 * required-opps fail for dev. We should retry this after genpd's OPP
-+	 * table is added.
-+	 */
-+	if (!opp_table->required_opp_count) {
-+		ret = -EPROBE_DEFER;
-+		goto put_table;
-+	}
-+
- 	mutex_lock(&opp_table->genpd_virt_dev_lock);
- 
--	if (unlikely(!opp_table->genpd_virt_devs ||
--		     index >= opp_table->required_opp_count ||
--		     opp_table->genpd_virt_devs[index])) {
-+	while (*name) {
-+		index = of_property_match_string(dev->of_node,
-+						 "power-domain-names", *name);
-+		if (index < 0) {
-+			dev_err(dev, "Failed to find power domain: %s (%d)\n",
-+				*name, index);
-+			goto err;
-+		}
- 
--		dev_err(dev, "Invalid request to set required device\n");
--		dev_pm_opp_put_opp_table(opp_table);
--		mutex_unlock(&opp_table->genpd_virt_dev_lock);
-+		if (index >= opp_table->required_opp_count) {
-+			dev_err(dev, "Index can't be greater than required-opp-count - 1, %s (%d : %d)\n",
-+				*name, opp_table->required_opp_count, index);
-+			goto err;
-+		}
- 
--		return ERR_PTR(-EINVAL);
-+		if (opp_table->genpd_virt_devs[index]) {
-+			dev_err(dev, "Genpd virtual device already set %s\n",
-+				*name);
-+			goto err;
-+		}
-+
-+		virt_dev = dev_pm_domain_attach_by_name(dev, *name);
-+		if (IS_ERR(virt_dev)) {
-+			ret = PTR_ERR(virt_dev);
-+			dev_err(dev, "Couldn't attach to pm_domain: %d\n", ret);
-+			goto err;
-+		}
-+
-+		opp_table->genpd_virt_devs[index] = virt_dev;
-+		name++;
- 	}
- 
--	opp_table->genpd_virt_devs[index] = virt_dev;
- 	mutex_unlock(&opp_table->genpd_virt_dev_lock);
- 
- 	return opp_table;
-+
-+err:
-+	_opp_detach_genpd(opp_table);
-+	mutex_unlock(&opp_table->genpd_virt_dev_lock);
-+
-+put_table:
-+	dev_pm_opp_put_opp_table(opp_table);
-+
-+	return ERR_PTR(ret);
- }
-+EXPORT_SYMBOL_GPL(dev_pm_opp_attach_genpd);
- 
- /**
-- * dev_pm_opp_put_genpd_virt_dev() - Releases resources blocked for genpd device.
-- * @opp_table: OPP table returned by dev_pm_opp_set_genpd_virt_dev().
-- * @virt_dev: virtual genpd device.
-- *
-- * This releases the resource previously acquired with a call to
-- * dev_pm_opp_set_genpd_virt_dev(). The consumer driver shall call this helper
-- * if it doesn't want OPP core to update performance state of a power domain
-- * anymore.
-+ * dev_pm_opp_detach_genpd() - Detach genpd(s) from the device.
-+ * @opp_table: OPP table returned by dev_pm_opp_attach_genpd().
-+ *
-+ * This detaches the genpd(s), resets the virtual device pointers, and puts the
-+ * OPP table.
-  */
--void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table,
--				   struct device *virt_dev)
-+void dev_pm_opp_detach_genpd(struct opp_table *opp_table)
- {
--	int i;
--
- 	/*
- 	 * Acquire genpd_virt_dev_lock to make sure virt_dev isn't getting
- 	 * used in parallel.
- 	 */
- 	mutex_lock(&opp_table->genpd_virt_dev_lock);
--
--	for (i = 0; i < opp_table->required_opp_count; i++) {
--		if (opp_table->genpd_virt_devs[i] != virt_dev)
--			continue;
--
--		opp_table->genpd_virt_devs[i] = NULL;
--		dev_pm_opp_put_opp_table(opp_table);
--
--		/* Drop the vote */
--		dev_pm_genpd_set_performance_state(virt_dev, 0);
--		break;
--	}
--
-+	_opp_detach_genpd(opp_table);
- 	mutex_unlock(&opp_table->genpd_virt_dev_lock);
- 
--	if (unlikely(i == opp_table->required_opp_count))
--		dev_err(virt_dev, "Failed to find required device entry\n");
-+	dev_pm_opp_put_opp_table(opp_table);
- }
-+EXPORT_SYMBOL_GPL(dev_pm_opp_detach_genpd);
- 
- /**
-  * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index b150fe97ce5a..be570761b77a 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -131,8 +131,8 @@ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char * name);
- void dev_pm_opp_put_clkname(struct opp_table *opp_table);
- struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
- void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
--struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index);
--void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev);
-+struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names);
-+void dev_pm_opp_detach_genpd(struct opp_table *opp_table);
- int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
- int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
- int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
-@@ -295,12 +295,12 @@ static inline struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const
- 
- static inline void dev_pm_opp_put_clkname(struct opp_table *opp_table) {}
- 
--static inline struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index)
-+static inline struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names)
- {
- 	return ERR_PTR(-ENOTSUPP);
- }
- 
--static inline void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev) {}
-+static inline void dev_pm_opp_detach_genpd(struct opp_table *opp_table) {}
- 
- static inline int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate)
- {
+Driver is built as a module. It depends on nvmem-imx which can also be a
+module.
+
+I never noticed anything wrong with going above the fused speed grading
+however it's technically unsafe so the cpufreq code changes should go in
+before DT changes.
+
+Leonard Crestez (5):
+  cpufreq: Add imx-cpufreq-dt driver
+  dt-bindings: imx-cpufreq-dt: Document opp-supported-hw usage
+  arm64: dts: imx8mm: Add cpu speed grading and all OPPs
+  arm64: dts: imx8mq: Add cpu speed grading and all OPPs
+  arm64: defconfig: ARM_IMX_CPUFREQ_DT=m
+
+ .../bindings/cpufreq/imx-cpufreq-dt.txt       | 37 +++++++
+ arch/arm64/boot/dts/freescale/imx8mm.dtsi     | 17 +++-
+ arch/arm64/boot/dts/freescale/imx8mq.dtsi     | 26 ++++-
+ arch/arm64/configs/defconfig                  |  1 +
+ drivers/cpufreq/Kconfig.arm                   |  9 ++
+ drivers/cpufreq/Makefile                      |  1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c          |  3 +
+ drivers/cpufreq/imx-cpufreq-dt.c              | 96 +++++++++++++++++++
+ drivers/soc/imx/soc-imx8.c                    |  3 +
+ 9 files changed, 191 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/imx-cpufreq-dt.txt
+ create mode 100644 drivers/cpufreq/imx-cpufreq-dt.c
+
 -- 
-2.21.0.rc0.269.g1a574e7a288b
+2.17.1
