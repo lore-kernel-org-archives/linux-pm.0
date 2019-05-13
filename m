@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EEDFC04AB7
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 19:25:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 445EAC04AA7
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 19:25:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DED072070D
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 19:25:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 196BA2070D
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 19:25:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="z1qwoOxf"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ihwtaKGH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726909AbfEMTZP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 May 2019 15:25:15 -0400
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:41124 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729600AbfEMTXR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2019 15:23:17 -0400
-Received: by mail-lj1-f195.google.com with SMTP id k8so12053886lja.8
-        for <linux-pm@vger.kernel.org>; Mon, 13 May 2019 12:23:15 -0700 (PDT)
+        id S1726920AbfEMTZj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 May 2019 15:25:39 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:36452 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729511AbfEMTXN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2019 15:23:13 -0400
+Received: by mail-lj1-f194.google.com with SMTP id z1so12079230ljb.3
+        for <linux-pm@vger.kernel.org>; Mon, 13 May 2019 12:23:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=h+mBrphGE8r6kKGvHPN2hwwjlulIBItsLgwHs6HK8tw=;
-        b=z1qwoOxfxP8ws6K0eXeqsi0M8rg4AiA8aC+/rjIVQbuJPoKSAquEg4iySw4L3cN5x8
-         jjlTDZuSJciHj+R09dPL+gALzrtUwcXOVPCSnr1zV5JjUxXC+jTH/bs1uFkycg9wYG8L
-         3ilSYwaJ4Q/40soKA1mrFGCJYk6E1a5pkxpihVokTsS7TPrP5nTxTdm7Jw+QAnCFWTxO
-         uSmb50ZRpi0pFqGue364kuAdvMUhtO582nHQ8c2OptpkJde/IrOfk1AUVO3SIIewRV7N
-         vt3h/dJVN+5qmhzobmOPYqBY1Id026c5O41E9qZf/leKI1FYytDGLpKNJm1MNCm4XpMm
-         8yxg==
+        bh=F5AEltUKfed5w7dHNisHSX8S1wBzU63rf2dZ2cHwfSs=;
+        b=ihwtaKGHm5HWQDkvQkty6/m7be/aDE2Ue2EF8h2aUL7J5q3dbOjBQl/7riCd7391Bk
+         6mt4yavZncehbr1dqBkKzd5+XE6F5UVYInUI/aMbhArbPszaqyttf3MVOOEailuYdP3R
+         fucpydZkU9Xe7taVXR0KfQZCmk+WPepu9Fz5czOMEkZzxq0cyv/O9xzdwPbelTwhxiAt
+         AgLFcBQz4OuHsSIHPRYM79Mx2eXRaijBK738WDXPRnaM8wcxzwaXGNHAtjVqh3N6NVfn
+         PALPweQK2a7Hw+qtF1599CtdwmhaZJP3Loxm6jMlG87c2/LPW1b4sxzN22fBdrGhOVkv
+         xgGA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=h+mBrphGE8r6kKGvHPN2hwwjlulIBItsLgwHs6HK8tw=;
-        b=eMze0PYJKGhDG/B2nmPy0A293jnXP2R9V145JNDP2B5BAse8AbASUYjwpzQMy+kDHL
-         EuU+nnSffA55Nkt17u3aUYl6WNYbqRuwxYzsMFRpA2rIanBYDmhZJTYHn/S8XqV5Gjgt
-         b0ewaL+KXnnurSj9xOVU0e8ZD6ZZwMtJOdtL9OE0qqRKG3BT+VhKdi7/ZXv7Ztg18MpA
-         wAM2g/SVy+8bI3X2LEU4GBqepcZzf2rkjRjs33z+pAGtlT6LoSjhL8T242xNEtC+0cnh
-         sFEX7la3NFPtFRHHWZ9SWxyTcibVpMTNlQcc/fiBlbL+niA8EKCb1697h8HnjC+I15J6
-         Gxvw==
-X-Gm-Message-State: APjAAAWCerxhqhC9aIxA7EZdHEI5RZwzJ3o8jVUPzX2CyVMo1ZmgCm5v
-        1sdW/ta/rU/ttuC0aGdz00WySg==
-X-Google-Smtp-Source: APXvYqyeVfJKdGokU/doivXzmlRxtYYG8D4KXKrSzXVVKA9wCQvIkwAm3xVkfpldRQZcHwdKpXbyIA==
-X-Received: by 2002:a2e:9241:: with SMTP id v1mr14737256ljg.6.1557775395160;
-        Mon, 13 May 2019 12:23:15 -0700 (PDT)
+        bh=F5AEltUKfed5w7dHNisHSX8S1wBzU63rf2dZ2cHwfSs=;
+        b=m9uhttdmhB2sNCM0Z1+PIMDXh4lY/bH+AhCGyz+iDaZ8Fa84ezsQYjoIRyDqkaQHT1
+         03mQs9B37wda2gUO9LMdhAvMrw5OoQjZUjBLnoZR+KMD3gXSVlPm98YIUHzB6332q1qs
+         uIt2UQ6xs/ZslyPTk80bHkDhYQTuqyAPfVVHli4orkQdxvraextgweNrS8DYSaFS4b7V
+         elgvfAQGYM+qiyOuYd/ClW2Wb+JxeM+Oto1Pf6OuLjApX9V4j4zPlz1yDBEvGg+gIVVJ
+         fUQiSF3NnzVWscjs0kXGFxk7t0b5AhJTW2ASO26X6JFBI1cpszTSTmyiQ8H8VDPhO8je
+         JHAg==
+X-Gm-Message-State: APjAAAUEEMN8e+mg3oYdJQX0CcXxGnzCfNsvD2birf0c2BTN5aR8fS8G
+        DoHNHug/EPCRaEDbBXenL4Dkxw==
+X-Google-Smtp-Source: APXvYqxS293Cibnm8BvM4OA/7mePaZMMHGVjPn5T9aLCXEe34R5mqSI/nCjgK/Ib9ssZWuTZNP1Trw==
+X-Received: by 2002:a2e:c41:: with SMTP id o1mr8693546ljd.23.1557775391156;
+        Mon, 13 May 2019 12:23:11 -0700 (PDT)
 Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id q21sm3449365lfa.84.2019.05.13.12.23.13
+        by smtp.gmail.com with ESMTPSA id q21sm3449365lfa.84.2019.05.13.12.23.09
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 13 May 2019 12:23:14 -0700 (PDT)
+        Mon, 13 May 2019 12:23:10 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
@@ -73,10 +73,11 @@ Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Geert Uytterhoeven <geert+renesas@glider.be>,
         Souvik Chakravarty <souvik.chakravarty@arm.com>,
         linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 05/18] drivers: firmware: psci: Simplify state node parsing
-Date:   Mon, 13 May 2019 21:22:47 +0200
-Message-Id: <20190513192300.653-6-ulf.hansson@linaro.org>
+        linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 03/18] cpuidle: dt: Support hierarchical CPU idle states
+Date:   Mon, 13 May 2019 21:22:45 +0200
+Message-Id: <20190513192300.653-4-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190513192300.653-1-ulf.hansson@linaro.org>
 References: <20190513192300.653-1-ulf.hansson@linaro.org>
@@ -85,73 +86,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190513192247.BWYvhH9x_BFdOVNMehJBNCnoW4glVKLg97LVpQvqe9U@z>
+Message-ID: <20190513192245.Kj0Mq8frzJIH503g1hFUcaP5S3HXo1nGEm5Ec-maslQ@z>
 
-Instead of iterating through all the state nodes in DT, to find out how
-many states that needs to be allocated, let's use the number already known
-by the cpuidle driver. In this way we can drop the iteration altogether.
+From: Lina Iyer <lina.iyer@linaro.org>
 
+Currently CPU's idle states are represented in a flattened model, via the
+"cpu-idle-states" binding from within the CPU's device nodes.
+
+Support the hierarchical layout during parsing and validating of the CPU's
+idle states. This is simply done by calling the new OF helper,
+of_get_cpu_state_node().
+
+Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
 
 Changes:
 	- None.
 
 ---
- drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+ drivers/cpuidle/dt_idle_states.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 88e90e0f06b9..9c2180bcee4c 100644
---- a/drivers/firmware/psci/psci.c
-+++ b/drivers/firmware/psci/psci.c
-@@ -306,26 +306,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
- static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
- 			struct device_node *cpu_node, int cpu)
- {
--	int i, ret = 0, count = 0;
-+	int i, ret = 0, num_state_nodes = drv->state_count - 1;
- 	u32 *psci_states;
- 	struct device_node *state_node;
+diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
+index add9569636b5..97ad25399ca8 100644
+--- a/drivers/cpuidle/dt_idle_states.c
++++ b/drivers/cpuidle/dt_idle_states.c
+@@ -114,8 +114,7 @@ static bool idle_state_valid(struct device_node *state_node, unsigned int idx,
+ 	for (cpu = cpumask_next(cpumask_first(cpumask), cpumask);
+ 	     cpu < nr_cpu_ids; cpu = cpumask_next(cpu, cpumask)) {
+ 		cpu_node = of_cpu_device_node_get(cpu);
+-		curr_state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+-						   idx);
++		curr_state_node = of_get_cpu_state_node(cpu_node, idx);
+ 		if (state_node != curr_state_node)
+ 			valid = false;
  
--	/* Count idle states */
--	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
--					      count))) {
--		count++;
--		of_node_put(state_node);
--	}
--
--	if (!count)
--		return -ENODEV;
--
--	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
-+	psci_states = kcalloc(num_state_nodes, sizeof(*psci_states),
-+			GFP_KERNEL);
- 	if (!psci_states)
- 		return -ENOMEM;
+@@ -173,7 +172,7 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
+ 	cpu_node = of_cpu_device_node_get(cpumask_first(cpumask));
  
--	for (i = 0; i < count; i++) {
-+	for (i = 0; i < num_state_nodes; i++) {
- 		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		if (!state_node)
-+			break;
-+
- 		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
- 		of_node_put(state_node);
+ 	for (i = 0; ; i++) {
+-		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
++		state_node = of_get_cpu_state_node(cpu_node, i);
+ 		if (!state_node)
+ 			break;
  
-@@ -335,6 +329,11 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
- 		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
- 	}
- 
-+	if (i != num_state_nodes) {
-+		ret = -ENODEV;
-+		goto free_mem;
-+	}
-+
- 	/* Idle states parsed correctly, initialize per-cpu pointer */
- 	per_cpu(psci_power_state, cpu) = psci_states;
- 	return 0;
 -- 
 2.17.1
 
