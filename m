@@ -4,36 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABE82C04AA7
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 11:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E34E3C04AA7
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 11:01:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7E6132147A
-	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 11:01:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AC3B121019
+	for <linux-pm@archiver.kernel.org>; Mon, 13 May 2019 11:01:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="SFOgF7sB"
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="YZSQY/2O"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729210AbfEMLBq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 May 2019 07:01:46 -0400
-Received: from mail-eopbgr50048.outbound.protection.outlook.com ([40.107.5.48]:59894
-        "EHLO EUR03-VE1-obe.outbound.protection.outlook.com"
+        id S1729208AbfEMLBr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 May 2019 07:01:47 -0400
+Received: from mail-eopbgr130075.outbound.protection.outlook.com ([40.107.13.75]:52997
+        "EHLO EUR01-HE1-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1729208AbfEMLBp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 May 2019 07:01:45 -0400
+        id S1729209AbfEMLBq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 May 2019 07:01:46 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=0HLsto6RypR9wpu4UvLd3TTLZClxjB7pGoFCvtXVU4c=;
- b=SFOgF7sBtQBK53o4LPfMsqwxjaPbkdPy0vMtXfC2U1d5DYVy9pUJZBEa7RYJJJXD8Vp3C7kwn6pS3gLTPFgeaFWGSc5Vk9YLhPUDhPw+/almg2yLFXKwaD3VaRNbtM/QwmmSGbSC7iz6pu/5M5AEpM+MJdvncfUhmC/tiaBE5g8=
+ bh=+1BmecdrXv1MoezlT25LTE5+VLmEkv7wtV5DH2U8rZI=;
+ b=YZSQY/2OIv0gntqLY5wY0o1fV3RXFtzFdZhwOEOukE7L1/hjC6wEsUjhfNykCPVNhsSC4tpOts4QhMYaDdd1LrEoXPT5m4Xho1OiFeLUcesjiOannMzjIa+D8VGfTslE3ZGnuQI/fVqs29LxV+PdgK3B5ISReVhI1pmOTFhrWos=
 Received: from AM0PR04MB6434.eurprd04.prod.outlook.com (20.179.252.215) by
- AM0PR04MB5138.eurprd04.prod.outlook.com (52.134.89.95) with Microsoft SMTP
+ AM0PR04MB4706.eurprd04.prod.outlook.com (20.177.40.78) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1878.24; Mon, 13 May 2019 11:01:40 +0000
+ 15.20.1878.22; Mon, 13 May 2019 11:01:43 +0000
 Received: from AM0PR04MB6434.eurprd04.prod.outlook.com
  ([fe80::19be:75a:9fe:7cec]) by AM0PR04MB6434.eurprd04.prod.outlook.com
  ([fe80::19be:75a:9fe:7cec%7]) with mapi id 15.20.1878.024; Mon, 13 May 2019
- 11:01:40 +0000
+ 11:01:43 +0000
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     Viresh Kumar <viresh.kumar@linaro.org>,
         Shawn Guo <shawnguo@kernel.org>,
@@ -51,14 +51,13 @@ CC:     Lucas Stach <l.stach@pengutronix.de>,
         <linux-arm-kernel@lists.infradead.org>,
         "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
         "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Subject: [PATCH v4 2/5] dt-bindings: imx-cpufreq-dt: Document opp-supported-hw
- usage
-Thread-Topic: [PATCH v4 2/5] dt-bindings: imx-cpufreq-dt: Document
- opp-supported-hw usage
-Thread-Index: AQHVCXs9inARAVSFcUWhxp3Op/Tu/Q==
-Date:   Mon, 13 May 2019 11:01:39 +0000
+Subject: [PATCH v4 4/5] arm64: dts: imx8mq: Add cpu speed grading and all OPPs
+Thread-Topic: [PATCH v4 4/5] arm64: dts: imx8mq: Add cpu speed grading and all
+ OPPs
+Thread-Index: AQHVCXs/Sykf0GkfNUmaD90+g2Ayew==
+Date:   Mon, 13 May 2019 11:01:43 +0000
 Message-ID:
- <7948ab63fe5c92da280542a9a372349486d40c65.1557742902.git.leonard.crestez@nxp.com>
+ <d88a9088074e521aa0ee57a07e2b99f5c7cb4f06.1557742902.git.leonard.crestez@nxp.com>
 References: <cover.1557742902.git.leonard.crestez@nxp.com>
 In-Reply-To: <cover.1557742902.git.leonard.crestez@nxp.com>
 Accept-Language: en-US
@@ -74,95 +73,116 @@ authentication-results: spf=none (sender IP is )
  smtp.mailfrom=leonard.crestez@nxp.com; 
 x-ms-exchange-messagesentrepresentingtype: 1
 x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 0ffd7468-d9b4-4faa-14c3-08d6d7926016
+x-ms-office365-filtering-correlation-id: 894ff19a-35da-4e51-bb2a-08d6d79261f1
 x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:AM0PR04MB5138;
-x-ms-traffictypediagnostic: AM0PR04MB5138:
-x-microsoft-antispam-prvs: <AM0PR04MB51386384DC3CA370378AADFDEE0F0@AM0PR04MB5138.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:3631;
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600141)(711020)(4605104)(4618075)(2017052603328)(7193020);SRVR:AM0PR04MB4706;
+x-ms-traffictypediagnostic: AM0PR04MB4706:
+x-microsoft-antispam-prvs: <AM0PR04MB47069EF9E0AF800FD7C824A8EE0F0@AM0PR04MB4706.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:1824;
 x-forefront-prvs: 0036736630
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(39860400002)(396003)(346002)(376002)(366004)(136003)(189003)(199004)(7736002)(2906002)(44832011)(99286004)(36756003)(6512007)(53936002)(54906003)(110136005)(476003)(2616005)(4326008)(52116002)(446003)(256004)(486006)(6116002)(3846002)(76176011)(11346002)(66066001)(8676002)(81156014)(81166006)(478600001)(118296001)(102836004)(7416002)(14454004)(68736007)(5660300002)(50226002)(8936002)(6486002)(25786009)(66446008)(64756008)(66556008)(66476007)(71190400001)(71200400001)(86362001)(6436002)(6506007)(386003)(66946007)(73956011)(316002)(26005)(305945005)(186003);DIR:OUT;SFP:1101;SCL:1;SRVR:AM0PR04MB5138;H:AM0PR04MB6434.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(346002)(136003)(39860400002)(366004)(396003)(376002)(199004)(189003)(2616005)(52116002)(76176011)(476003)(6436002)(446003)(11346002)(25786009)(68736007)(26005)(316002)(71190400001)(71200400001)(386003)(6506007)(4326008)(14444005)(7736002)(256004)(486006)(66476007)(66556008)(6116002)(73956011)(44832011)(66446008)(3846002)(64756008)(86362001)(186003)(102836004)(66946007)(99286004)(118296001)(36756003)(81166006)(81156014)(478600001)(5660300002)(305945005)(53936002)(2906002)(8676002)(66066001)(7416002)(14454004)(54906003)(6512007)(8936002)(50226002)(6486002)(110136005)(32563001);DIR:OUT;SFP:1101;SCL:1;SRVR:AM0PR04MB4706;H:AM0PR04MB6434.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
 received-spf: None (protection.outlook.com: nxp.com does not designate
  permitted sender hosts)
 x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: Gv2/HoUT8RCeTA4yBgbY0F4VG7/Xq+pAxqaTPXQWqcWuvDtQ9aI9q8w+vXbJWbfNoDBuOak3IVfzpW0rL4hwgpmqZmNeAVEIL4Y2VPoVHkCr9rz0znDZ0lphhmTtT/mJEWSgUnzbK3dbiyRFnxOF0YdEcRc8lsL0WkPHE+MC6R8sp5QPxkgdsm+6I0SK2gn516l9gDEvJ6QG1BKzwRxwaRhjH6aGi4ihVQyT0uA8CqkSCN8QsPfdwNgQREQMsJGJNSn/Sp8wdJSgjtEujgxoVWxv3syUuFUsaDslAn4repg8y6YUkArKq2GR32PALWDArHEu17878tGdzhIQQoIeAXFKUI09CT0/MaZRCdMxXCbHyCiwXd9ZerQm+VNEqytOqnp7vSAdEP60G/U7zYcZ5bmV0vswaLYYeMdgS6iud54=
+x-microsoft-antispam-message-info: LnGvSUdkTOrHSXuScbGUs7KbrCv3Ie3wv04WLFoVQSCdx2l5wvYtiE8jgVZA7uPMWmlE+ZEV/nJFQTs+3kB7fOwZ4e1BAy2pD0RuXY2Xcfi9fjxHF3brb/J2StvQn+wSkYOp7jzdx41Eh+/xSIaHUBrsasB9zKbU+Je8IgYxPc56arv/nZLF2cykdUX0+RFDlIoXueKpszfr1v/G5bv8nvzzMuN9RWrFDAkmjf0azP14ppgrP/rDz0BwazqMHvlBK38f5b7XAGOsv71Cr+aSjMlAti2eNbG8PfpN8n5imzb2k2EFI0FXJXX8r0XibNp9Fw4DkukM+B5f25WrDjbLUDYsYaT0uGYCfb7H4kXNO79hsoFJkPYJpZUPubh1h+6riP/A4mMJtvA4DQ8KNTz6V27WqpPplyALWnJY9I/fVsk=
 Content-Type: text/plain; charset="UTF-8"
-Content-ID: <1609FAC9533FF0449E0A30AD2B339619@eurprd04.prod.outlook.com>
+Content-ID: <5BB1732BC0BBA841A0B5113F9899AF5D@eurprd04.prod.outlook.com>
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0ffd7468-d9b4-4faa-14c3-08d6d7926016
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 May 2019 11:01:39.9489
+X-MS-Exchange-CrossTenant-Network-Message-Id: 894ff19a-35da-4e51-bb2a-08d6d79261f1
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 May 2019 11:01:43.0801
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB5138
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB4706
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190513110139.Suav8Fls3kZpIptADat_GIGQXAlifkABpFNvsYWU2Qs@z>
+Message-ID: <20190513110143.LwTtY5YKdV1EtmkFEGfU2fGr6Y1GMkkbfbzk_uP6QAQ@z>
 
-The interpretation of opp-supported-hw bits for imx-cpufreq-dt driver is
-not very obvious so attempt to explain it.
-
-There is no OF compat string associated.
+Add nvmem-cells reference to cpu and fill the OPP table with all known
+OPPs.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- .../bindings/cpufreq/imx-cpufreq-dt.txt       | 37 +++++++++++++++++++
- 1 file changed, 37 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/imx-cpufreq-d=
-t.txt
+ arch/arm64/boot/dts/freescale/imx8mq.dtsi | 26 ++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/imx-cpufreq-dt.txt b=
-/Documentation/devicetree/bindings/cpufreq/imx-cpufreq-dt.txt
-new file mode 100644
-index 000000000000..87bff5add3f9
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/imx-cpufreq-dt.txt
-@@ -0,0 +1,37 @@
-+i.MX CPUFreq-DT OPP bindings
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dt=
+s/freescale/imx8mq.dtsi
+index 6d635ba0904c..729376919d08 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+@@ -93,10 +93,12 @@
+ 			clocks =3D <&clk IMX8MQ_CLK_ARM>;
+ 			enable-method =3D "psci";
+ 			next-level-cache =3D <&A53_L2>;
+ 			operating-points-v2 =3D <&a53_opp_table>;
+ 			#cooling-cells =3D <2>;
++			nvmem-cells =3D <&cpu_speed_grade>;
++			nvmem-cell-names =3D "speed_grade";
+ 		};
+=20
+ 		A53_1: cpu@1 {
+ 			device_type =3D "cpu";
+ 			compatible =3D "arm,cortex-a53";
+@@ -143,18 +145,36 @@
+ 		opp-shared;
+=20
+ 		opp-800000000 {
+ 			opp-hz =3D /bits/ 64 <800000000>;
+ 			opp-microvolt =3D <900000>;
++			/* Industrial only */
++			opp-supported-hw =3D <0xf>, <0x4>;
++			clock-latency-ns =3D <150000>;
++		};
 +
-+Certain i.MX SoCs support different OPPs depending on the "market segment"=
- and
-+"speed grading" value which are written in fuses. These bits are combined =
-with
-+the opp-supported-hw values for each OPP to check if the OPP is allowed.
++		opp-1000000000 {
++			opp-hz =3D /bits/ 64 <1000000000>;
++			opp-microvolt =3D <900000>;
++			/* Consumer only */
++			opp-supported-hw =3D <0xe>, <0x3>;
+ 			clock-latency-ns =3D <150000>;
+ 		};
+=20
+ 		opp-1300000000 {
+ 			opp-hz =3D /bits/ 64 <1300000000>;
+ 			opp-microvolt =3D <1000000>;
++			opp-supported-hw =3D <0xc>, <0x7>;
++			clock-latency-ns =3D <150000>;
++		};
 +
-+Required properties:
-+--------------------
++		opp-1500000000 {
++			opp-hz =3D /bits/ 64 <1500000000>;
++			opp-microvolt =3D <1000000>;
++			/* Consumer only but rely on speed grading */
++			opp-supported-hw =3D <0x8>, <0x7>;
+ 			clock-latency-ns =3D <150000>;
+-			opp-suspend;
+ 		};
+ 	};
+=20
+ 	pmu {
+ 		compatible =3D "arm,cortex-a53-pmu";
+@@ -413,10 +433,14 @@
+ 				compatible =3D "fsl,imx8mq-ocotp", "syscon";
+ 				reg =3D <0x30350000 0x10000>;
+ 				clocks =3D <&clk IMX8MQ_CLK_OCOTP_ROOT>;
+ 				#address-cells =3D <1>;
+ 				#size-cells =3D <1>;
 +
-+For each opp entry in 'operating-points-v2' table:
-+- opp-supported-hw: Two bitmaps indicating:
-+  - Supported speed grade mask
-+  - Supported market segment mask
-+    0: Consumer
-+    1: Extended Consumer
-+    2: Industrial
-+    3: Automotive
-+
-+Example:
-+--------
-+
-+opp_table {
-+	compatible =3D "operating-points-v2";
-+	opp-1000000000 {
-+		opp-hz =3D /bits/ 64 <1000000000>;
-+		/* grade >=3D 0, consumer only */
-+		opp-supported-hw =3D <0xf>, <0x3>;
-+	};
-+
-+	opp-1300000000 {
-+		opp-hz =3D /bits/ 64 <1300000000>;
-+		opp-microvolt =3D <1000000>;
-+		/* grade >=3D 1, all segments */
-+		opp-supported-hw =3D <0xe>, <0x7>;
-+	};
-+}
++				cpu_speed_grade: speed-grade@10 {
++					reg =3D <0x10 4>;
++				};
+ 			};
+=20
+ 			anatop: syscon@30360000 {
+ 				compatible =3D "fsl,imx8mq-anatop", "syscon";
+ 				reg =3D <0x30360000 0x10000>;
 --=20
 2.17.1
 
