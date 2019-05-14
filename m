@@ -1,126 +1,66 @@
-From: Lecopzer Chen <lecopzer.chen@mediatek.com>
-Subject: [PATCH] test_power: Add CURRENT and CHARGE_COUNTER properties
-Date: Tue, 14 May 2019 18:04:58 +0800
-Message-ID: <1557828298-16591-1-git-send-email-lecopzer.chen@mediatek.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 3/3] thermal: cpu_cooling: Migrate to using the EM
+ framework
+Date: Tue, 14 May 2019 07:17:37 -0700
+Message-ID: <20190514141736.GB16968@localhost.localdomain>
+References: <20190503094409.3499-1-quentin.perret@arm.com>
+ <20190503094409.3499-4-quentin.perret@arm.com>
+ <20190514034056.GA5621@localhost.localdomain>
+ <20190514071506.ykjg67elsydaehlz@queper01-ThinkPad-T460s>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20190514071506.ykjg67elsydaehlz@queper01-ThinkPad-T460s>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lecopzer.chen@mediatek.com
-Cc: srv_heupstream@mediatek.com, yj.chiang@mediatek.com, linux-mediatek@lists.infradead.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: "Lecopzer Chen" <lecopzer.chen@mediatek.com>
+Hey Quentin,
 
-Emulate battery current (variable) and battery CHARGE_COUNTER
-(same as battery_capacity) properties.
+On Tue, May 14, 2019 at 08:15:08AM +0100, Quentin Perret wrote:
+> Hi Eduardo,
+> 
+> On Monday 13 May 2019 at 20:40:59 (-0700), Eduardo Valentin wrote:
+> > On Fri, May 03, 2019 at 10:44:09AM +0100, Quentin Perret wrote:
+> > > The newly introduced Energy Model framework manages power cost tables in
+> > > a generic way. Moreover, it supports a several types of models since the
+> > > tables can come from DT or firmware (through SCMI) for example. On the
+> > > other hand, the cpu_cooling subsystem manages its own power cost tables
+> > > using only DT data.
+> > > 
+> > > In order to avoid the duplication of data in the kernel, and in order to
+> > > enable IPA with EMs coming from more than just DT, remove the private
+> > > tables from cpu_cooling.c and migrate it to using the centralized EM
+> > > framework.
+> > > 
+> > > The case where the thermal subsystem is used without an Energy Model
+> > > (cpufreq_cooling_ops) is handled by looking directly at CPUFreq's
+> > > frequency table which is already a dependency for cpu_cooling.c anyway.
+> > > Since the thermal framework expects the cooling states in a particular
+> > > order, bail out whenever the CPUFreq table is unsorted, since that is
+> > > fairly uncommon in general, and there are currently no users of
+> > > cpu_cooling for this use-case.
+> > 
+> > Will this break DT in any way? After this change, are the existing DTs
+> > still compatible with this cpu cooling?
+> 
+> Yes, all existing DTs stay compatible with this CPU cooling. The EM can
+> still be built using the 'dynamic-power-coefficient' DT property thanks
+> to the recently introduced dev_pm_opp_of_register_em() helper, see
+> a4f342b9607d ("PM / OPP: Introduce a power estimation helper"). And all
+> relevant cpufreq drivers have already been updated to use that function.
 
-Signed-off-by: Lecopzer Chen <lecopzer.chen@mediatek.com>
-Cc: YJ Chiang <yj.chiang@mediatek.com>
+I see..
 
----
- drivers/power/supply/test_power.c | 33 +++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+> 
+> So, this patch should cause no functional change for all existing users.
+> It's really just plumbing. I can probably explain that better in this
+> commit message rather than the cover letter if you feel it is necessary.
+> 
 
-diff --git a/drivers/power/supply/test_power.c b/drivers/power/supply/test_power.c
-index 57246cdbd042..9f85060c84de 100644
---- a/drivers/power/supply/test_power.c
-+++ b/drivers/power/supply/test_power.c
-@@ -36,6 +36,7 @@ static int battery_present		= 1; /* true */
- static int battery_technology		= POWER_SUPPLY_TECHNOLOGY_LION;
- static int battery_capacity		= 50;
- static int battery_voltage		= 3300;
-+static int battery_current		= 1600;
- 
- static bool module_initialized;
- 
-@@ -101,6 +102,7 @@ static int test_power_get_battery_property(struct power_supply *psy,
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
- 		val->intval = battery_capacity;
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-@@ -117,6 +119,10 @@ static int test_power_get_battery_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
- 		val->intval = battery_voltage;
- 		break;
-+	case POWER_SUPPLY_PROP_CURRENT_AVG:
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		val->intval = battery_current;
-+		break;
- 	default:
- 		pr_info("%s: some properties deliberately report errors.\n",
- 			__func__);
-@@ -138,6 +144,7 @@ static enum power_supply_property test_power_battery_props[] = {
- 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
- 	POWER_SUPPLY_PROP_CHARGE_FULL,
- 	POWER_SUPPLY_PROP_CHARGE_NOW,
-+	POWER_SUPPLY_PROP_CHARGE_COUNTER,
- 	POWER_SUPPLY_PROP_CAPACITY,
- 	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
- 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
-@@ -147,6 +154,8 @@ static enum power_supply_property test_power_battery_props[] = {
- 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
- 	POWER_SUPPLY_PROP_TEMP,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_AVG,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
- };
- 
- static char *test_power_ac_supplied_to[] = {
-@@ -450,6 +459,21 @@ static int param_set_battery_voltage(const char *key,
- 
- #define param_get_battery_voltage param_get_int
- 
-+static int param_set_battery_current(const char *key,
-+					const struct kernel_param *kp)
-+{
-+	int tmp;
-+
-+	if (1 != sscanf(key, "%d", &tmp))
-+		return -EINVAL;
-+
-+	battery_current = tmp;
-+	signal_power_supply_changed(test_power_supplies[TEST_BATTERY]);
-+	return 0;
-+}
-+
-+#define param_get_battery_current param_get_int
-+
- static const struct kernel_param_ops param_ops_ac_online = {
- 	.set = param_set_ac_online,
- 	.get = param_get_ac_online,
-@@ -490,6 +514,11 @@ static const struct kernel_param_ops param_ops_battery_voltage = {
- 	.get = param_get_battery_voltage,
- };
- 
-+static const struct kernel_param_ops param_ops_battery_current = {
-+	.set = param_set_battery_current,
-+	.get = param_get_battery_current,
-+};
-+
- #define param_check_ac_online(name, p) __param_check(name, p, void);
- #define param_check_usb_online(name, p) __param_check(name, p, void);
- #define param_check_battery_status(name, p) __param_check(name, p, void);
-@@ -498,6 +527,7 @@ static const struct kernel_param_ops param_ops_battery_voltage = {
- #define param_check_battery_health(name, p) __param_check(name, p, void);
- #define param_check_battery_capacity(name, p) __param_check(name, p, void);
- #define param_check_battery_voltage(name, p) __param_check(name, p, void);
-+#define param_check_battery_current(name, p) __param_check(name, p, void);
- 
- 
- module_param(ac_online, ac_online, 0644);
-@@ -528,6 +558,9 @@ MODULE_PARM_DESC(battery_capacity, "battery capacity (percentage)");
- module_param(battery_voltage, battery_voltage, 0644);
- MODULE_PARM_DESC(battery_voltage, "battery voltage (millivolts)");
- 
-+module_param(battery_current, battery_current, 0644);
-+MODULE_PARM_DESC(battery_current, "battery current (milliampere)");
-+
- MODULE_DESCRIPTION("Power supply driver for testing");
- MODULE_AUTHOR("Anton Vorontsov <cbouatmailru@gmail.com>");
- MODULE_LICENSE("GPL");
--- 
-2.18.0
+Yes I would prefer if this info goes into the commit message.
+
+> Thanks,
+> Quentin
