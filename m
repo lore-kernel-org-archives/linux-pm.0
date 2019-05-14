@@ -1,56 +1,64 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v3 3/3] thermal: cpu_cooling: Migrate to using the EM
- framework
-Date: Tue, 14 May 2019 08:15:08 +0100
-Message-ID: <20190514071506.ykjg67elsydaehlz@queper01-ThinkPad-T460s>
-References: <20190503094409.3499-1-quentin.perret@arm.com>
- <20190503094409.3499-4-quentin.perret@arm.com>
- <20190514034056.GA5621@localhost.localdomain>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC v2 08/11] arm64: dts: sdm845: Add ufs opps and power-domains
+Date: Tue, 14 May 2019 09:53:34 +0200
+Message-ID: <CAPDyKFppirfM7B9TB=jZzo67E=rdMnfVKEjdv0wn1zBAUoY_HA@mail.gmail.com>
+References: <20190320094918.20234-1-rnayak@codeaurora.org> <20190320094918.20234-9-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190514034056.GA5621@localhost.localdomain>
+In-Reply-To: <20190320094918.20234-9-rnayak@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-scsi <linux-scsi@vger.kernel.org>, Stephen Boyd <swboyd@chromium.org>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Anderson <dianders@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
+On Wed, 20 Mar 2019 at 10:50, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+>
+> Add the additional power domain and the OPP table for ufs on sdm845
+> so the driver can set the appropriate performance state of the
+> power domain while setting the clock rate.
+>
+> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+> ---
+>  arch/arm64/boot/dts/qcom/sdm845.dtsi | 20 +++++++++++++++++++-
+>  1 file changed, 19 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> index 027ffe6e93e8..a3af4a1757b4 100644
+> --- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+> @@ -1140,6 +1140,21 @@
+>                         };
+>                 };
+>
+> +               ufs_opp_table: ufs-opp-table {
+> +                       compatible = "operating-points-v2";
+> +
+> +                       opp-50000000 {
+> +                               opp-hz = /bits/ 64 <50000000>;
+> +                               required-opps = <&rpmhpd_opp_min_svs>;
+> +                       };
+> +
+> +                       opp-200000000 {
+> +                               opp-hz = /bits/ 64 <200000000>;
+> +                               required-opps = <&rpmhpd_opp_nom>;
+> +
+> +                       };
+> +               };
+> +
+>                 ufs_mem_hc: ufshc@1d84000 {
+>                         compatible = "qcom,sdm845-ufshc", "qcom,ufshc",
+>                                      "jedec,ufs-2.0";
+> @@ -1148,7 +1163,7 @@
+>                         phys = <&ufs_mem_phy_lanes>;
+>                         phy-names = "ufsphy";
+>                         lanes-per-direction = <2>;
+> -                       power-domains = <&gcc UFS_PHY_GDSC>;
+> +                       power-domains = <&gcc UFS_PHY_GDSC>, <&rpmhpd SDM845_CX>;
 
-On Monday 13 May 2019 at 20:40:59 (-0700), Eduardo Valentin wrote:
-> On Fri, May 03, 2019 at 10:44:09AM +0100, Quentin Perret wrote:
-> > The newly introduced Energy Model framework manages power cost tables in
-> > a generic way. Moreover, it supports a several types of models since the
-> > tables can come from DT or firmware (through SCMI) for example. On the
-> > other hand, the cpu_cooling subsystem manages its own power cost tables
-> > using only DT data.
-> > 
-> > In order to avoid the duplication of data in the kernel, and in order to
-> > enable IPA with EMs coming from more than just DT, remove the private
-> > tables from cpu_cooling.c and migrate it to using the centralized EM
-> > framework.
-> > 
-> > The case where the thermal subsystem is used without an Energy Model
-> > (cpufreq_cooling_ops) is handled by looking directly at CPUFreq's
-> > frequency table which is already a dependency for cpu_cooling.c anyway.
-> > Since the thermal framework expects the cooling states in a particular
-> > order, bail out whenever the CPUFreq table is unsorted, since that is
-> > fairly uncommon in general, and there are currently no users of
-> > cpu_cooling for this use-case.
-> 
-> Will this break DT in any way? After this change, are the existing DTs
-> still compatible with this cpu cooling?
+You probably want to use "power-domain-names" as well.
 
-Yes, all existing DTs stay compatible with this CPU cooling. The EM can
-still be built using the 'dynamic-power-coefficient' DT property thanks
-to the recently introduced dev_pm_opp_of_register_em() helper, see
-a4f342b9607d ("PM / OPP: Introduce a power estimation helper"). And all
-relevant cpufreq drivers have already been updated to use that function.
+[...]
 
-So, this patch should cause no functional change for all existing users.
-It's really just plumbing. I can probably explain that better in this
-commit message rather than the cover letter if you feel it is necessary.
-
-Thanks,
-Quentin
+Kind regards
+Uffe
