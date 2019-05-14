@@ -1,113 +1,69 @@
-From: Wei Wang <wvw@google.com>
-Subject: [PATCH] thermal: make thermal_cooling_device_register accepts const string
-Date: Tue, 14 May 2019 10:33:03 -0700
-Message-ID: <20190514173304.213692-1-wvw@google.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [RFC PATCH 0/3] Add support of busfreq
+Date: Tue, 14 May 2019 19:34:10 +0000
+Message-ID: <AM0PR04MB643434FB6A26B4D70F52F350EE080@AM0PR04MB6434.eurprd04.prod.outlook.com>
+References: <20190313193408.23740-1-abailon@baylibre.com>
+ <CAEG3pNA+U1tw4sWq9i2cTni6QKQkLyd3qyZXd2i8M7WFDF4ZsQ@mail.gmail.com>
+ <8af96425-a6f5-0114-7abb-c2a67b952e1b@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: wei.vince.wang@gmail.com, Wei Wang <wvw@google.com>, Jonathan Corbet <corbet@lwn.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Guenter Roeck <linux@roeck-us.net>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Alexandre Bailon <abailon@baylibre.com>, Jacky Bai <ping.bai@nxp.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>, Georgi Djakov <georgi.djakov@linaro.org>, Patrick Titiano <ptitiano@baylibre.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Emilio Lopez <emilio@elopez.com.ar>, Hans de Goede <hdegoede@redhat.com>, linux-clk <linux-clk@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Zening Wang <zening.wang@nxp.com>, Aisheng Dong <aisheng.dong@nxp.com>, Kevin Hilman <khilman@baylibre.com>, Carlo Caione <ccaione@baylibre.com>, dl-linux-imx <linux-imx@nxp.com>, Anson Huang <anson.huang@nxp.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Change the argument similarly to thermal_zone_device_register. This will
-help register names get from of_property_read_string during probe.
-
-Signed-off-by: Wei Wang <wvw@google.com>
----
- Documentation/thermal/sysfs-api.txt |  7 ++++---
- drivers/thermal/thermal_core.c      |  6 +++---
- include/linux/thermal.h             | 12 ++++++------
- 3 files changed, 13 insertions(+), 12 deletions(-)
-
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index c3fa500df92c..0c26c05197ad 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -31,7 +31,7 @@ temperature) and throttle appropriate devices.
- 1. thermal sysfs driver interface functions
- 
- 1.1 thermal zone device interface
--1.1.1 struct thermal_zone_device *thermal_zone_device_register(char *type,
-+1.1.1 struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 		int trips, int mask, void *devdata,
- 		struct thermal_zone_device_ops *ops,
- 		const struct thermal_zone_params *tzp,
-@@ -160,8 +160,9 @@ temperature) and throttle appropriate devices.
- 	drivers for temperature calculations.
- 
- 1.2 thermal cooling device interface
--1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(char *name,
--		void *devdata, struct thermal_cooling_device_ops *)
-+1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(
-+		const char *name, void *devdata,
-+		struct thermal_cooling_device_ops *ops)
- 
-     This interface function adds a new thermal cooling device (fan/processor/...)
-     to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6590bb5cb688..b708b66fef94 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -941,7 +941,7 @@ static void bind_cdev(struct thermal_cooling_device *cdev)
-  */
- static struct thermal_cooling_device *
- __thermal_cooling_device_register(struct device_node *np,
--				  char *type, void *devdata,
-+				  const char *type, void *devdata,
- 				  const struct thermal_cooling_device_ops *ops)
- {
- 	struct thermal_cooling_device *cdev;
-@@ -1015,7 +1015,7 @@ __thermal_cooling_device_register(struct device_node *np,
-  * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
-  */
- struct thermal_cooling_device *
--thermal_cooling_device_register(char *type, void *devdata,
-+thermal_cooling_device_register(const char *type, void *devdata,
- 				const struct thermal_cooling_device_ops *ops)
- {
- 	return __thermal_cooling_device_register(NULL, type, devdata, ops);
-@@ -1039,7 +1039,7 @@ EXPORT_SYMBOL_GPL(thermal_cooling_device_register);
-  */
- struct thermal_cooling_device *
- thermal_of_cooling_device_register(struct device_node *np,
--				   char *type, void *devdata,
-+				   const char *type, void *devdata,
- 				   const struct thermal_cooling_device_ops *ops)
- {
- 	return __thermal_cooling_device_register(np, type, devdata, ops);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5f4705f46c2f..0f58fffee9a8 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -442,10 +442,10 @@ void thermal_zone_device_update(struct thermal_zone_device *,
- 				enum thermal_notify_event);
- void thermal_zone_set_trips(struct thermal_zone_device *);
- 
--struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
--		const struct thermal_cooling_device_ops *);
-+struct thermal_cooling_device *thermal_cooling_device_register(const char *,
-+		void *, const struct thermal_cooling_device_ops *);
- struct thermal_cooling_device *
--thermal_of_cooling_device_register(struct device_node *np, char *, void *,
-+thermal_of_cooling_device_register(struct device_node *np, const char *, void *,
- 				   const struct thermal_cooling_device_ops *);
- void thermal_cooling_device_unregister(struct thermal_cooling_device *);
- struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
-@@ -496,12 +496,12 @@ static inline void thermal_zone_device_update(struct thermal_zone_device *tz,
- static inline void thermal_zone_set_trips(struct thermal_zone_device *tz)
- { }
- static inline struct thermal_cooling_device *
--thermal_cooling_device_register(char *type, void *devdata,
-+thermal_cooling_device_register(const char *type, void *devdata,
- 	const struct thermal_cooling_device_ops *ops)
- { return ERR_PTR(-ENODEV); }
- static inline struct thermal_cooling_device *
--thermal_of_cooling_device_register(struct device_node *np,
--	char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
-+thermal_of_cooling_device_register(struct device_node *np, const char *type,
-+	void *devdata, const struct thermal_cooling_device_ops *ops)
- { return ERR_PTR(-ENODEV); }
- static inline void thermal_cooling_device_unregister(
- 	struct thermal_cooling_device *cdev)
--- 
-2.21.0.1020.gf2820cf01a-goog
+On 15.03.2019 18:55, Alexandre Bailon wrote:=0A=
+>> On Wed, Mar 13, 2019 at 12:33 PM Alexandre Bailon <abailon@baylibre.com>=
+ wrote:=0A=
+=0A=
+>>> As exemple, this series implements busfreq for i.MX8MM whose=0A=
+>>> upstreaming is in progress. Because this relies on ATF to=0A=
+>>> do the frequency scaling, it won't be hard make it work.=0A=
+>>=0A=
+>> It's not clear to me whether this series actual scales the dram=0A=
+>> frequency based on what you said above. Is it just theoretical or do=0A=
+>> you have it working with a pile of out-of-tree patches? Would be good=0A=
+>> to include that pile of patches in your integration branch that I=0A=
+>> suggested above.=0A=
+=0A=
+> The current series only introduce busfreq generic driver, and the=0A=
+> busfreq driver for the imx8mm.=0A=
+> As is, the imx8mm driver will just be loaded, but do nothing because=0A=
+> none of the drivers have been updated to request bandwidth using the=0A=
+> interconnect framework.=0A=
+> =0A=
+> My intent was to sent a first draft o busfreq, to get some feedback,=0A=
+> before to send a more complete, and fully functional series.=0A=
+=0A=
+It's been a while since this was first posted and imx8mm now boots fine =0A=
+in linux-next. Is there a more up-to-date WIP branch somewhere? =0A=
+Otherwise I can try to hack this series into a bootable form.=0A=
+=0A=
+ > In addition, the current clock driver of imx8mm doesn't allow dram=0A=
+ > frequency scaling, so if busfreq driver tries, it will fail (should be=
+=0A=
+ > harmless because any other clocks should restored to their previous=0A=
+ > rate).=0A=
+=0A=
+I'm confused about this. In NXP tree the actual DRAM switch is done =0A=
+inside ATF via SIP calls and involves corralling all CPUs. Do you want =0A=
+an "dram" clk which wraps the SIP calls required to changing dram =0A=
+frequency and root switching etc?=0A=
+=0A=
+I've been looking at the busfreq implementation in the NXP tree and =0A=
+refactoring just the "dram freq switch" behind a clk might work nicely.=0A=
+=0A=
+This would be similar to the imx_cpu clk used for cpufreq-dt and it =0A=
+might even be possible to upstream this separately from the rest of =0A=
+busfreq logic dealing with device requests.=0A=
+=0A=
+=0A=
+I haven't done a very careful review but I noticed you're not using the =0A=
+OPP framework and instead redefined everything? It's not clear why.=0A=
+=0A=
+--=0A=
+Regards,=0A=
+Leonard=0A=
