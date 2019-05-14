@@ -1,29 +1,69 @@
-From: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
-Date: Tue, 14 May 2019 08:11:41 +0200
-Message-ID: <20190514061141.GA7059@lst.de>
-References: <20190510212937.11661-1-keith.busch@intel.com> <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM> <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM> <20190513143754.GE15318@localhost.localdomain> <7ab8274ef1ce46fcae54a50abc76ae4a@AUSX13MPC105.AMER.DELL.COM> <20190513145708.GA25897@lst.de> <df020e90e8b54244b37910a2a7965671@AUSX13MPC105.AMER.DELL.COM>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [RFC PATCH 0/3] Add support of busfreq
+Date: Tue, 14 May 2019 09:33:32 +0300
+Message-ID: <8f757d89-5df2-04e4-b1cf-e6d8971a8881@linaro.org>
+References: <20190313193408.23740-1-abailon@baylibre.com>
+ <CAJKOXPeOnrgnX=onMeX1izS2kYKAkD8TvFVykYTyW-v4NOv3vA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <df020e90e8b54244b37910a2a7965671@AUSX13MPC105.AMER.DELL.COM>
+In-Reply-To: <CAJKOXPeOnrgnX=onMeX1izS2kYKAkD8TvFVykYTyW-v4NOv3vA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: hch@lst.de, kbusch@kernel.org, keith.busch@intel.com, sagi@grimberg.me, linux-nvme@lists.infradead.org, rafael@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kai.heng.feng@canonical.com
+To: Krzysztof Kozlowski <krzk@kernel.org>, Alexandre Bailon <abailon@baylibre.com>
+Cc: linux-pm@vger.kernel.org, mturquette@baylibre.com, ptitiano@baylibre.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, zening.wang@nxp.com, aisheng.dong@nxp.com, khilman@baylibre.com, ccaione@baylibre.com, Viresh Kumar <viresh.kumar@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 13, 2019 at 06:01:39PM +0000, Mario.Limonciello@dell.com wrote:
-> When using HMB the SSD will be writing to some memory mapped region.
-> Writing to
-> that region would use DMA to access host memory, no?
+On 5/3/19 14:19, Krzysztof Kozlowski wrote:
+> On Wed, 13 Mar 2019 at 20:35, Alexandre Bailon <abailon@baylibre.com> wrote:
+>>
+>> This series implements busfreq, a framework used in MXP's
+>> tree to scale the interconnect and dram frequencies.
+>> In the vendor tree, device's driver request for a
+>> performance level, which is used to scale the frequencies.
+>> This series implements it using the interconnect framework.
+>> Devices' driver request for bandwidth which is use by busfreq
+>> to determine a performance level, and then scale the frequency.
+>>
+>> Busfreq is quite generic. It could be used for any i.MX SoC.
+>> A busfreq platform driver just have to define a list of
+>> interconnect nodes, and some OPPs.
+>>
+>> This series is sent as RFC mostly because the current support
+>> of i.MX SoC won't benefit of busfreq framework, because the
+>> clocks' driver don't support interconnect / dram frequency
+>> scaling.
+>> As exemple, this series implements busfreq for i.MX8MM whose
+>> upstreaming is in progress. Because this relies on ATF to
+>> do the frequency scaling, it won't be hard make it work.
+>>
+>> As exemple, this series implements busfreq for
+>> Alexandre Bailon (3):
+>>   drivers: interconnect: Add a driver for i.MX SoC
+>>   drivers: interconnect: imx: Add support of i.MX8MM
+>>   dt-bindings: interconnect: Document fsl,busfreq-imx8mm bindings
+> 
+> Hi Alexandre,
+> 
+> I am quite late but I just found your email.
+> 
+> This looks very similar to existing framework - devfreq, which purpose
+> is to scale the system busses based on performance counters/events. It
+> would be nice if we could avoid duplication of existing subsystems.
 
-Memory mapped region?  It will use the devices DMA engine to write
-host memory, which we explicitly allowed it.
+Hi Krzysztof,
 
-> If the DMA controller is not functional writing to that region won't work properly as 
-> it can't access that memory.
+Scaling buses based on performance counters is suboptimal and sometimes might
+not work well. In contrast with devfreq, the interconnect API is allowing
+drivers to express their needs in advance and be proactive. It is also designed
+to deal with multi-tiered bus topologies and to aggregate the requests from the
+different consumer drivers.
 
-The DMA controller is in the device.  External DMA controllers are only
-used on very low-end periphals, usually cheap IP blocks like SPI
-controllers or similar.
+Thanks,
+Georgi
+
+> 
+> Best regards,
+> Krzysztof
+> 
