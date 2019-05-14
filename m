@@ -1,64 +1,59 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC v2 08/11] arm64: dts: sdm845: Add ufs opps and power-domains
-Date: Tue, 14 May 2019 09:53:34 +0200
-Message-ID: <CAPDyKFppirfM7B9TB=jZzo67E=rdMnfVKEjdv0wn1zBAUoY_HA@mail.gmail.com>
-References: <20190320094918.20234-1-rnayak@codeaurora.org> <20190320094918.20234-9-rnayak@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] nvme/pci: Use host managed power state for suspend
+Date: Tue, 14 May 2019 10:04:22 +0200
+Message-ID: <CAJZ5v0g3cCYK3rAQn09pCr7LMrRr=zQy_ceaEB5AKhVx604YgA@mail.gmail.com>
+References: <20190510212937.11661-1-keith.busch@intel.com> <0080aaff18e5445dabca509d4113eca8@AUSX13MPC105.AMER.DELL.COM>
+ <955722d8fc16425dbba0698c4806f8fd@AUSX13MPC105.AMER.DELL.COM>
+ <20190513143741.GA25500@lst.de> <b12ff66f8c224e4199ff1b90ed6bc393@AUSX13MPC105.AMER.DELL.COM>
+ <20190513145522.GA15421@localhost.localdomain> <d69ff7154191492eaa8f55535a7effa5@AUSX13MPC105.AMER.DELL.COM>
+ <20190513150458.GA15437@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190320094918.20234-9-rnayak@codeaurora.org>
+In-Reply-To: <20190513150458.GA15437@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-scsi <linux-scsi@vger.kernel.org>, Stephen Boyd <swboyd@chromium.org>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Anderson <dianders@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+To: Keith Busch <kbusch@kernel.org>
+Cc: Mario Limonciello <Mario.Limonciello@dell.com>, Christoph Hellwig <hch@lst.de>, Keith Busch <keith.busch@intel.com>, Sagi Grimberg <sagi@grimberg.me>, linux-nvme <linux-nvme@lists.infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kai-Heng Feng <kai.heng.feng@canonical.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 20 Mar 2019 at 10:50, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+On Mon, May 13, 2019 at 5:10 PM Keith Busch <kbusch@kernel.org> wrote:
 >
-> Add the additional power domain and the OPP table for ufs on sdm845
-> so the driver can set the appropriate performance state of the
-> power domain while setting the clock rate.
+> On Mon, May 13, 2019 at 03:05:42PM +0000, Mario.Limonciello@dell.com wrote:
+> > This system power state - suspend to idle is going to freeze threads.
+> > But we're talking a multi threaded kernel.  Can't there be a timing problem going
+> > on then too?  With a disk flush being active in one task and the other task trying
+> > to put the disk into the deepest power state.  If you don't freeze the queues how
+> > can you guarantee that didn't happen?
 >
-> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-> ---
->  arch/arm64/boot/dts/qcom/sdm845.dtsi | 20 +++++++++++++++++++-
->  1 file changed, 19 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> index 027ffe6e93e8..a3af4a1757b4 100644
-> --- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> +++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-> @@ -1140,6 +1140,21 @@
->                         };
->                 };
->
-> +               ufs_opp_table: ufs-opp-table {
-> +                       compatible = "operating-points-v2";
-> +
-> +                       opp-50000000 {
-> +                               opp-hz = /bits/ 64 <50000000>;
-> +                               required-opps = <&rpmhpd_opp_min_svs>;
-> +                       };
-> +
-> +                       opp-200000000 {
-> +                               opp-hz = /bits/ 64 <200000000>;
-> +                               required-opps = <&rpmhpd_opp_nom>;
-> +
-> +                       };
-> +               };
-> +
->                 ufs_mem_hc: ufshc@1d84000 {
->                         compatible = "qcom,sdm845-ufshc", "qcom,ufshc",
->                                      "jedec,ufs-2.0";
-> @@ -1148,7 +1163,7 @@
->                         phys = <&ufs_mem_phy_lanes>;
->                         phy-names = "ufsphy";
->                         lanes-per-direction = <2>;
-> -                       power-domains = <&gcc UFS_PHY_GDSC>;
-> +                       power-domains = <&gcc UFS_PHY_GDSC>, <&rpmhpd SDM845_CX>;
+> But if an active data flush task is running, then we're not idle and
+> shouldn't go to low power.
 
-You probably want to use "power-domain-names" as well.
+To be entirely precise, system suspend prevents user space from
+running while it is in progress.  It doesn't do that to kernel
+threads, at least not by default, though, so if there is a kernel
+thread flushing the data, it needs to be stopped or suspended somehow
+directly in the system suspend path.  [And yes, system suspend (or
+hibernation) may take place at any time so long as all user space can
+be prevented from running then (by means of the tasks freezer).]
 
-[...]
+However, freezing the queues from a driver ->suspend callback doesn't
+help in general and the reason why is hibernation.  Roughly speaking,
+hibernation works in two steps, the first of which creates a snapshot
+image of system memory and the second one writes that image to
+persistent storage.  Devices are resumed between the two steps in
+order to make it possible to do the write, but that would unfreeze the
+queues and let the data flusher run.  If it runs, it may cause the
+memory snapshot image that has just been created to become outdated
+and restoring the system memory contents from that image going forward
+may cause corruption to occur.
 
-Kind regards
-Uffe
+Thus freezing the queues from a driver ->suspend callback should not
+be relied on for correctness if the same callback is used for system
+suspend and hibernation, which is the case here.  If doing that
+prevents the system from crashing, it is critical to find out why IMO,
+as that may very well indicate a broader issue, not necessarily in the
+driver itself.
+
+But note that even if the device turns out to behave oddly, it still
+needs to be handled, unless it may be prevented from shipping to users
+in that shape.  If it ships, users will face the odd behavior anyway.
