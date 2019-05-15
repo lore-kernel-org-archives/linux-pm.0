@@ -1,98 +1,322 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
-Date: Wed, 15 May 2019 13:07:36 +0200
-Message-ID: <a4c0ab68-f8d0-a70d-58e5-b8de55199000@linaro.org>
-References: <20190515082318.7993-3-quentin.perret@arm.com>
- <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
- <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
- <698400c0-e0a4-4a86-b9df-cdb9bd683c0f@linaro.org>
- <20190515100748.q3t4kt72h2akdpcs@queper01-lin>
- <cf1474cb-7e31-7070-b988-a0c4d3f6f081@linaro.org>
- <20190515102200.s6uq63qnwea6xtpl@vireshk-i7>
- <20190515104043.vogspxgkapp6qsny@queper01-lin>
- <20190515104651.tv5odug7ce4zlupc@queper01-lin>
- <5b55e432-f8b0-91ae-a7de-fe02e0cad322@linaro.org>
- <20190515110156.ru2wxqvwffqgq3t3@queper01-lin>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: Re: [PATCH v8 1/2] platform/chrome: wilco_ec: Add property helper
+ library
+Date: Wed, 15 May 2019 14:54:57 +0200
+Message-ID: <d5bf4678-e5d1-c01d-4701-5d81e24986a1@collabora.com>
+References: <20190424165651.236391-1-ncrews@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190515110156.ru2wxqvwffqgq3t3@queper01-lin>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, amit.kachhap@gmail.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, edubezval@gmail.com, mka@chromium.org, catalin.marinas@arm.com, rui.zhang@intel.com, javi.merino@kernel.org, ionela.voinescu@arm.com, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190424165651.236391-1-ncrews@chromium.org>
+Content-Language: en-GB
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nick Crews <ncrews@chromium.org>, bleung@chromium.org, sre@kernel.org, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dlaurie@chromium.org, lamzin@google.com, bartfab@google.com, derat@google.com, dtor@google.com, sjg@chromium.org, jchwong@chromium.org, tbroch@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTUvMDUvMjAxOSAxMzowMSwgUXVlbnRpbiBQZXJyZXQgd3JvdGU6Cj4gT24gV2VkbmVzZGF5
-IDE1IE1heSAyMDE5IGF0IDEyOjUxOjU3ICgrMDIwMCksIERhbmllbCBMZXpjYW5vIHdyb3RlOgo+
-PiBPbiAxNS8wNS8yMDE5IDEyOjQ2LCBRdWVudGluIFBlcnJldCB3cm90ZToKPj4+IE9uIFdlZG5l
-c2RheSAxNSBNYXkgMjAxOSBhdCAxMTo0MDo0NCAoKzAxMDApLCBRdWVudGluIFBlcnJldCB3cm90
-ZToKPj4KPj4gWyAuLi4gXQo+Pgo+Pj4+ICsjaWZkZWYgQ09ORklHX1RIRVJNQUxfR09WX1BPV0VS
-X0FMTE9DQVRPUgo+Pj4+ICAgICAgICAgaWYgKGNhcGFjaXRhbmNlKSB7Cj4+Pj4gICAgICAgICAg
-ICAgICAgIHJldCA9IHVwZGF0ZV9mcmVxX3RhYmxlKGNwdWZyZXFfY2RldiwgY2FwYWNpdGFuY2Up
-Owo+Pj4+ICAgICAgICAgICAgICAgICBpZiAocmV0KSB7Cj4+Pj4gICAgICAgICAgICAgICAgICAg
-ICAgICAgY2RldiA9IEVSUl9QVFIocmV0KTsKPj4+PiAgICAgICAgICAgICAgICAgICAgICAgICBn
-b3RvIHJlbW92ZV9pZGE7Cj4+Pj4gICAgICAgICAgICAgICAgIH0KPj4+PiAtCj4+Pj4gLSAgICAg
-ICAgICAgICAgIGNvb2xpbmdfb3BzID0gJmNwdWZyZXFfcG93ZXJfY29vbGluZ19vcHM7Cj4+Pj4g
-LSAgICAgICB9IGVsc2Ugewo+Pj4+IC0gICAgICAgICAgICAgICBjb29saW5nX29wcyA9ICZjcHVm
-cmVxX2Nvb2xpbmdfb3BzOwo+Pj4+ICAgICAgICAgfQo+Pj4+ICsjZW5kaWYKPj4+PiArICAgICAg
-IGNvb2xpbmdfb3BzID0gJmNwdWZyZXFfY29vbGluZ19vcHM7Cj4+Pgo+Pj4gQXJnaCwgdGhhdCBp
-cyBhY3R1YWxseSBicm9rZW4gd2l0aCAhY2FwYWNpdGFuY2UgYW5kCj4+PiBUSEVSTUFMX0dPVl9Q
-T1dFUl9BTExPQ0FUT1I9eSAuLi4gUGVyaGFwcyBpdCdzIGJlc3QgdG8ga2VlcCB0aGUgdHdvCj4+
-PiB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX29wcyBzdHJ1Y3Qgc2VwYXJhdGVkIGluIHRoZSBlbmQu
-Cj4+Cj4+IE9yIGFsdGVybmF0aXZlbHkgeW91IGNhbiBrZWVwIG9uZSBzdHJ1Y3R1cmUgYnV0IGlu
-c3RlYWQgb2YgZmlsbGluZyB0aGUKPj4gc3RhdGUycG93ZXIscG93ZXIyc3RhdGUgYW5kIGdldHJl
-cXVlc3RlZHBvd2VyIGZpZWxkcyBpbiB0aGUgZGVjbGFyYXRpb24sCj4+IHlvdSBmaWxsIHRoZW0g
-aW4gdGhlIGlmIChjYXBhY2l0YW5jZSkgYmxvY2ssIG5vPwo+IAo+IFNvbWV0aGluZyBsaWtlIHRo
-ZSBiZWxvdyA/IFllcywgdGhhdCB3b3JrcyB0b28uIEknbGwgd3JpdGUgYSBwcm9wZXIKPiBwYXRj
-aCBhbmQgc2VuZCB0aGF0IG5leHQgd2VlayBvciBzby4KClllcywgZXhhY3RseS4gQW5kIElNSE8s
-IHRoYXQgaGVscHMgZm9yIHRoZSB1bmRlcnN0YW5kaW5nIG9mIGNvZGUgYWxzby4KCj4gLS0tPjgt
-LS0KPiAKPiAgLyogQmluZCBjcHVmcmVxIGNhbGxiYWNrcyB0byB0aGVybWFsIGNvb2xpbmcgZGV2
-aWNlIG9wcyAqLwo+IAo+ICBzdGF0aWMgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2Vfb3Bz
-IGNwdWZyZXFfY29vbGluZ19vcHMgPSB7Cj4gLSAgICAgICAuZ2V0X21heF9zdGF0ZSA9IGNwdWZy
-ZXFfZ2V0X21heF9zdGF0ZSwKPiAtICAgICAgIC5nZXRfY3VyX3N0YXRlID0gY3B1ZnJlcV9nZXRf
-Y3VyX3N0YXRlLAo+IC0gICAgICAgLnNldF9jdXJfc3RhdGUgPSBjcHVmcmVxX3NldF9jdXJfc3Rh
-dGUsCj4gLX07Cj4gLQo+IC1zdGF0aWMgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2Vfb3Bz
-IGNwdWZyZXFfcG93ZXJfY29vbGluZ19vcHMgPSB7Cj4gICAgICAgICAuZ2V0X21heF9zdGF0ZSAg
-ICAgICAgICA9IGNwdWZyZXFfZ2V0X21heF9zdGF0ZSwKPiAgICAgICAgIC5nZXRfY3VyX3N0YXRl
-ICAgICAgICAgID0gY3B1ZnJlcV9nZXRfY3VyX3N0YXRlLAo+ICAgICAgICAgLnNldF9jdXJfc3Rh
-dGUgICAgICAgICAgPSBjcHVmcmVxX3NldF9jdXJfc3RhdGUsCj4gLSAgICAgICAuZ2V0X3JlcXVl
-c3RlZF9wb3dlciAgICA9IGNwdWZyZXFfZ2V0X3JlcXVlc3RlZF9wb3dlciwKPiAtICAgICAgIC5z
-dGF0ZTJwb3dlciAgICAgICAgICAgID0gY3B1ZnJlcV9zdGF0ZTJwb3dlciwKPiAtICAgICAgIC5w
-b3dlcjJzdGF0ZSAgICAgICAgICAgID0gY3B1ZnJlcV9wb3dlcjJzdGF0ZSwKPiAgfTsKPiAKPiAg
-LyogTm90aWZpZXIgZm9yIGNwdWZyZXEgcG9saWN5IGNoYW5nZSAqLwo+IEBAIC02NzQsMTggKzY2
-NywxOSBAQCBfX2NwdWZyZXFfY29vbGluZ19yZWdpc3RlcihzdHJ1Y3QgZGV2aWNlX25vZGUgKm5w
-LAo+ICAgICAgICAgICAgICAgICAgICAgICAgIHByX2RlYnVnKCIlczogZnJlcToldSBLSHpcbiIs
-IF9fZnVuY19fLCBmcmVxKTsKPiAgICAgICAgIH0KPiAKPiArICAgICAgIGNvb2xpbmdfb3BzID0g
-JmNwdWZyZXFfY29vbGluZ19vcHM7Cj4gKyNpZmRlZiBDT05GSUdfVEhFUk1BTF9HT1ZfUE9XRVJf
-QUxMT0NBVE9SCj4gICAgICAgICBpZiAoY2FwYWNpdGFuY2UpIHsKPiAgICAgICAgICAgICAgICAg
-cmV0ID0gdXBkYXRlX2ZyZXFfdGFibGUoY3B1ZnJlcV9jZGV2LCBjYXBhY2l0YW5jZSk7Cj4gICAg
-ICAgICAgICAgICAgIGlmIChyZXQpIHsKPiAgICAgICAgICAgICAgICAgICAgICAgICBjZGV2ID0g
-RVJSX1BUUihyZXQpOwo+ICAgICAgICAgICAgICAgICAgICAgICAgIGdvdG8gcmVtb3ZlX2lkYTsK
-PiAgICAgICAgICAgICAgICAgfQo+IC0KPiAtICAgICAgICAgICAgICAgY29vbGluZ19vcHMgPSAm
-Y3B1ZnJlcV9wb3dlcl9jb29saW5nX29wczsKPiAtICAgICAgIH0gZWxzZSB7Cj4gLSAgICAgICAg
-ICAgICAgIGNvb2xpbmdfb3BzID0gJmNwdWZyZXFfY29vbGluZ19vcHM7Cj4gKyAgICAgICAgICAg
-ICAgIGNvb2xpbmdfb3BzLT5nZXRfcmVxdWVzdGVkX3Bvd2VyID0gY3B1ZnJlcV9nZXRfcmVxdWVz
-dGVkX3Bvd2VyOwo+ICsgICAgICAgICAgICAgICBjb29saW5nX29wcy0+c3RhdGUycG93ZXIgPSBj
-cHVmcmVxX3N0YXRlMnBvd2VyOwo+ICsgICAgICAgICAgICAgICBjb29saW5nX29wcy0+cG93ZXIy
-c3RhdGUgPSBjcHVmcmVxX3Bvd2VyMnN0YXRlOwo+ICAgICAgICAgfQo+IC0KPiArI2VuZGlmCj4g
-ICAgICAgICBjZGV2ID0gdGhlcm1hbF9vZl9jb29saW5nX2RldmljZV9yZWdpc3RlcihucCwgZGV2
-X25hbWUsIGNwdWZyZXFfY2RldiwKPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIGNvb2xpbmdfb3BzKTsKPiAgICAgICAgIGlmIChJU19FUlIoY2Rldikp
-Cj4gCgoKLS0gCiA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBz
-b3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cu
-ZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29t
-LyMhL2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJs
-b2cvPiBCbG9nCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5p
-bmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8v
-bGludXgtYXJtLWtlcm5lbAo=
+Hi,
+
+On 24/4/19 18:56, Nick Crews wrote:
+> A Property is typically a data item that is stored to NVRAM
+> by the EC. Each of these data items has an index associated
+> with it, known as the Property ID (PID). Properties may have
+> variable lengths, up to a max of WILCO_EC_PROPERTY_MAX_SIZE
+> bytes. Properties can be simple integers, or they may be more
+> complex binary data.
+> 
+> This patch adds support for getting and setting properties.
+> This will be useful for setting the charge algorithm and charge
+> schedules, which all use properties.
+> 
+> Signed-off-by: Nick Crews <ncrews@chromium.org>
+
+The following patch is queued to the for-next branch for the autobuilders to
+play with, if all goes well I'll add the patch for 5.3 when current merge window
+closes.
+
+Thanks,
+ Enric
+
+> ---
+> v7 changes:
+> -Remove bogus gerrit FROMLIST tag in commit title
+> v6 changes:
+> -Add EC_* prefix to enum property_ops so they are more unique.
+> -Split up the commit so properties are added in a first commit
+> v5 changes:
+> -Remove OP_SYNC, it has no immediate use case.
+> -Merge properties.h into wilco-ec.h
+> -Remove enum get_set_sync_op from the public interface,
+>  since without OP_SYNC they are irrelevant.
+> -Fix Kconfigs and Makefiles so they actually work
+>  with the v4 changes
+> -Tweak some formatting, spacing, and comments
+> -Fix validation of charge_type so illegal values
+>  can't be set. Before negative error codes were
+>  accidentally getting casted to positive numbers
+> -Remove more unneeded parentheses.
+> v4 changes:
+> -Use put_unaligned_le32() to store PID in request.
+> -Move implementation from
+>  drivers/platform/chrome/wilco_ec/charge_config.c to
+>  drivers/power/supply/wilco_charger.c
+> -Move drivers/platform/chrome/wilco_ec/properties.h to
+>  include/linux/platform_data/wilco-ec-properties.h
+> -Remove parentheses in switch statement in psp_val_to_charge_mode()
+> -Check for any negatvie return code from psp_val_to_charge_mode()
+>  instead of just -EINVAL so its less brittle
+> -Tweak comments in wilco-ec-properties.h
+> v3 changes:
+> -Add this changelog
+> -Fix commit message tags
+> v2 changes:
+> -Update Documentation to say KernelVersion 5.2
+> -Update Documentation to explain Trickle mode better.
+> -rename things from using *PCC* to *CHARGE*
+> -Split up conversions between POWER_SUPPLY_PROP_CHARGE_TYPE values
+> and Wilco EC codes
+> -Use devm_ flavor of power_supply_register(), which simplifies things
+> -Add extra error checking on property messages received from the EC
+> -Fix bug in memcpy() calls in properties.c
+> -Refactor fill_property_id()
+> -Add valid input checks to charge_type
+> -Properly convert charge_type when get()ting
+> 
+>  drivers/platform/chrome/wilco_ec/Makefile     |   2 +-
+>  drivers/platform/chrome/wilco_ec/properties.c | 132 ++++++++++++++++++
+>  include/linux/platform_data/wilco-ec.h        |  71 ++++++++++
+>  3 files changed, 204 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/platform/chrome/wilco_ec/properties.c
+> 
+> diff --git a/drivers/platform/chrome/wilco_ec/Makefile b/drivers/platform/chrome/wilco_ec/Makefile
+> index 063e7fb4ea17..29b734137786 100644
+> --- a/drivers/platform/chrome/wilco_ec/Makefile
+> +++ b/drivers/platform/chrome/wilco_ec/Makefile
+> @@ -1,6 +1,6 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  
+> -wilco_ec-objs				:= core.o mailbox.o
+> +wilco_ec-objs				:= core.o mailbox.o properties.o
+>  obj-$(CONFIG_WILCO_EC)			+= wilco_ec.o
+>  wilco_ec_debugfs-objs			:= debugfs.o
+>  obj-$(CONFIG_WILCO_EC_DEBUGFS)		+= wilco_ec_debugfs.o
+> diff --git a/drivers/platform/chrome/wilco_ec/properties.c b/drivers/platform/chrome/wilco_ec/properties.c
+> new file mode 100644
+> index 000000000000..e69682c95ea2
+> --- /dev/null
+> +++ b/drivers/platform/chrome/wilco_ec/properties.c
+> @@ -0,0 +1,132 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright 2019 Google LLC
+> + */
+> +
+> +#include <linux/platform_data/wilco-ec.h>
+> +#include <linux/string.h>
+> +#include <linux/unaligned/le_memmove.h>
+> +
+> +/* Operation code; what the EC should do with the property */
+> +enum ec_property_op {
+> +	EC_OP_GET = 0,
+> +	EC_OP_SET = 1,
+> +};
+> +
+> +struct ec_property_request {
+> +	u8 op; /* One of enum ec_property_op */
+> +	u8 property_id[4]; /* The 32 bit PID is stored Little Endian */
+> +	u8 length;
+> +	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
+> +} __packed;
+> +
+> +struct ec_property_response {
+> +	u8 reserved[2];
+> +	u8 op; /* One of enum ec_property_op */
+> +	u8 property_id[4]; /* The 32 bit PID is stored Little Endian */
+> +	u8 length;
+> +	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
+> +} __packed;
+> +
+> +static int send_property_msg(struct wilco_ec_device *ec,
+> +			     struct ec_property_request *rq,
+> +			     struct ec_property_response *rs)
+> +{
+> +	struct wilco_ec_message ec_msg;
+> +	int ret;
+> +
+> +	memset(&ec_msg, 0, sizeof(ec_msg));
+> +	ec_msg.type = WILCO_EC_MSG_PROPERTY;
+> +	ec_msg.request_data = rq;
+> +	ec_msg.request_size = sizeof(*rq);
+> +	ec_msg.response_data = rs;
+> +	ec_msg.response_size = sizeof(*rs);
+> +
+> +	ret = wilco_ec_mailbox(ec, &ec_msg);
+> +	if (ret < 0)
+> +		return ret;
+> +	if (rs->op != rq->op)
+> +		return -EBADMSG;
+> +	if (memcmp(rq->property_id, rs->property_id, sizeof(rs->property_id)))
+> +		return -EBADMSG;
+> +
+> +	return 0;
+> +}
+> +
+> +int wilco_ec_get_property(struct wilco_ec_device *ec,
+> +			  struct wilco_ec_property_msg *prop_msg)
+> +{
+> +	struct ec_property_request rq;
+> +	struct ec_property_response rs;
+> +	int ret;
+> +
+> +	memset(&rq, 0, sizeof(rq));
+> +	rq.op = EC_OP_GET;
+> +	put_unaligned_le32(prop_msg->property_id, rq.property_id);
+> +
+> +	ret = send_property_msg(ec, &rq, &rs);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	prop_msg->length = rs.length;
+> +	memcpy(prop_msg->data, rs.data, rs.length);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(wilco_ec_get_property);
+> +
+> +int wilco_ec_set_property(struct wilco_ec_device *ec,
+> +			  struct wilco_ec_property_msg *prop_msg)
+> +{
+> +	struct ec_property_request rq;
+> +	struct ec_property_response rs;
+> +	int ret;
+> +
+> +	memset(&rq, 0, sizeof(rq));
+> +	rq.op = EC_OP_SET;
+> +	put_unaligned_le32(prop_msg->property_id, rq.property_id);
+> +	rq.length = prop_msg->length;
+> +	memcpy(rq.data, prop_msg->data, prop_msg->length);
+> +
+> +	ret = send_property_msg(ec, &rq, &rs);
+> +	if (ret < 0)
+> +		return ret;
+> +	if (rs.length != prop_msg->length)
+> +		return -EBADMSG;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(wilco_ec_set_property);
+> +
+> +int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
+> +			       u8 *val)
+> +{
+> +	struct wilco_ec_property_msg msg;
+> +	int ret;
+> +
+> +	msg.property_id = property_id;
+> +
+> +	ret = wilco_ec_get_property(ec, &msg);
+> +	if (ret < 0)
+> +		return ret;
+> +	if (msg.length != 1)
+> +		return -EBADMSG;
+> +
+> +	*val = msg.data[0];
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(wilco_ec_get_byte_property);
+> +
+> +int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
+> +			       u8 val)
+> +{
+> +	struct wilco_ec_property_msg msg;
+> +
+> +	msg.property_id = property_id;
+> +	msg.data[0] = val;
+> +	msg.length = 1;
+> +
+> +	return wilco_ec_set_property(ec, &msg);
+> +}
+> +EXPORT_SYMBOL_GPL(wilco_ec_set_byte_property);
+> diff --git a/include/linux/platform_data/wilco-ec.h b/include/linux/platform_data/wilco-ec.h
+> index 1ff224793c99..50a21bd5fd44 100644
+> --- a/include/linux/platform_data/wilco-ec.h
+> +++ b/include/linux/platform_data/wilco-ec.h
+> @@ -123,4 +123,75 @@ struct wilco_ec_message {
+>   */
+>  int wilco_ec_mailbox(struct wilco_ec_device *ec, struct wilco_ec_message *msg);
+>  
+> +/*
+> + * A Property is typically a data item that is stored to NVRAM
+> + * by the EC. Each of these data items has an index associated
+> + * with it, known as the Property ID (PID). Properties may have
+> + * variable lengths, up to a max of WILCO_EC_PROPERTY_MAX_SIZE
+> + * bytes. Properties can be simple integers, or they may be more
+> + * complex binary data.
+> + */
+> +
+> +#define WILCO_EC_PROPERTY_MAX_SIZE	4
+> +
+> +/**
+> + * struct ec_property_set_msg - Message to get or set a property.
+> + * @property_id: Which property to get or set.
+> + * @length: Number of bytes of |data| that are used.
+> + * @data: Actual property data.
+> + */
+> +struct wilco_ec_property_msg {
+> +	u32 property_id;
+> +	int length;
+> +	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
+> +};
+> +
+> +/**
+> + * wilco_ec_get_property() - Retrieve a property from the EC.
+> + * @ec: Embedded Controller device.
+> + * @prop_msg: Message for request and response.
+> + *
+> + * The property_id field of |prop_msg| should be filled before calling this
+> + * function. The result will be stored in the data and length fields.
+> + *
+> + * Return: 0 on success, negative error code on failure.
+> + */
+> +int wilco_ec_get_property(struct wilco_ec_device *ec,
+> +			  struct wilco_ec_property_msg *prop_msg);
+> +
+> +/**
+> + * wilco_ec_set_property() - Store a property on the EC.
+> + * @ec: Embedded Controller device.
+> + * @prop_msg: Message for request and response.
+> + *
+> + * The property_id, length, and data fields of |prop_msg| should be
+> + * filled before calling this function.
+> + *
+> + * Return: 0 on success, negative error code on failure.
+> + */
+> +int wilco_ec_set_property(struct wilco_ec_device *ec,
+> +			  struct wilco_ec_property_msg *prop_msg);
+> +
+> +/**
+> + * wilco_ec_get_byte_property() - Retrieve a byte-size property from the EC.
+> + * @ec: Embedded Controller device.
+> + * @property_id: Which property to retrieve.
+> + * @val: The result value, will be filled by this function.
+> + *
+> + * Return: 0 on success, negative error code on failure.
+> + */
+> +int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
+> +			       u8 *val);
+> +
+> +/**
+> + * wilco_ec_get_byte_property() - Store a byte-size property on the EC.
+> + * @ec: Embedded Controller device.
+> + * @property_id: Which property to store.
+> + * @val: Value to store.
+> + *
+> + * Return: 0 on success, negative error code on failure.
+> + */
+> +int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
+> +			       u8 val);
+> +
+>  #endif /* WILCO_EC_H */
+> 
