@@ -2,61 +2,59 @@ Return-Path: <SRS0=mZbj=TP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+X-Spam-Status: No, score=-8.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55CC8C04E53
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:54:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A802C04E53
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:54:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 31D8620873
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:54:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 517CB20873
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:54:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728030AbfEONyQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 May 2019 09:54:16 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:51312 "EHLO
+        id S1726622AbfEONyY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 May 2019 09:54:24 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:33138 "EHLO
         mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1725953AbfEONxt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 09:53:49 -0400
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4FDrJo8140871
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:53:48 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2sgm2101en-1
+        by vger.kernel.org with ESMTP id S1725953AbfEONyY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 09:54:24 -0400
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4FDsApq171151
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:54:23 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2sgjn3dbr2-1
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:53:48 -0400
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:54:18 -0400
 Received: from localhost
-        by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
         for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
-        Wed, 15 May 2019 14:53:46 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
-        by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        Wed, 15 May 2019 14:53:36 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+        by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
         (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Wed, 15 May 2019 14:53:43 +0100
+        Wed, 15 May 2019 14:53:34 +0100
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-        by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4FDrglP49479868
+        by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4FDrXMd59899980
         (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 15 May 2019 13:53:42 GMT
+        Wed, 15 May 2019 13:53:33 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 639B552051;
-        Wed, 15 May 2019 13:53:42 +0000 (GMT)
+        by IMSVA (Postfix) with ESMTP id 8D2A452052;
+        Wed, 15 May 2019 13:53:33 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.102.18.182])
-        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id D37EB52050;
-        Wed, 15 May 2019 13:53:39 +0000 (GMT)
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1919552051;
+        Wed, 15 May 2019 13:53:30 +0000 (GMT)
 From:   Parth Shah <parth@linux.ibm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     mingo@redhat.com, peterz@infradead.org, dietmar.eggemann@arm.com,
         dsmythies@telus.net
-Subject: [RFCv2 3/6] sched/core: Update turbo_sched count only when required
-Date:   Wed, 15 May 2019 19:23:19 +0530
+Subject: [RFCv2 0/6] TurboSched: A scheduler for sustaining Turbo Frequencies for longer durations
+Date:   Wed, 15 May 2019 19:23:16 +0530
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190515135322.19393-1-parth@linux.ibm.com>
-References: <20190515135322.19393-1-parth@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19051513-0020-0000-0000-0000033CFC9C
+x-cbid: 19051513-0016-0000-0000-0000027C0337
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19051513-0021-0000-0000-0000218FBF2B
-Message-Id: <20190515135322.19393-4-parth@linux.ibm.com>
+x-cbparentid: 19051513-0017-0000-0000-000032D8D3F5
+Message-Id: <20190515135322.19393-1-parth@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-15_08:,,
  signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
@@ -69,36 +67,192 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190515135319.7gVhwTcOGAWo1SeqGX3U6DLLFBkDBr3UX_eNhf93If0@z>
+Message-ID: <20190515135316.5Px9oBv9cf0glNElueC-ubaxnvO2z7e5RXpzP4gGHs8@z>
 
-Use the get/put methods to add/remove the use of TurboSched support from
-the cgroup.
+Abstract
+========
 
-Signed-off-by: Parth Shah <parth@linux.ibm.com>
----
- kernel/sched/core.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+The modern servers allows multiple cores to run at range of
+frequencies higher than rated range of frequencies. But the power budget
+of the system inhibits sustaining these higher frequencies for
+longer durations.
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index facbedd2554e..4c55b5399985 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -7216,10 +7216,13 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
- 	 * Classify the tasks belonging to the last bucket of MAX UCLAMP as
- 	 * jitters
- 	 */
--	if (uclamp_bucket_id(max_value) == 0)
-+	if (uclamp_bucket_id(max_value) == 0) {
- 		tg->turbo_sched_enabled = 1;
--	else if (tg->turbo_sched_enabled)
-+		turbo_sched_get();
-+	} else if (tg->turbo_sched_enabled) {
- 		tg->turbo_sched_enabled = 0;
-+		turbo_sched_put();
-+	}
- 
- 	/* Update effective clamps to track the most restrictive value */
- 	cpu_util_update_eff(css, UCLAMP_MAX);
+However when certain cores are put to idle states, the power can be
+effectively channelled to other busy cores, allowing them to sustain
+the higher frequency.
+
+One way to achieve this is to pack tasks onto fewer cores keeping others idle,
+but it may lead to performance penalty for such tasks and sustaining higher
+frequencies proves to be of no benefit. But if one can identify unimportant low
+utilization tasks which can be packed on the already active cores then waking up
+of new cores can be avoided. Such tasks are short and/or bursty "jitter tasks"
+and waking up new core is expensive for such case.
+
+Current CFS algorithm in kernel scheduler is performance oriented and hence
+tries to assign any idle CPU first for the waking up of new tasks. This policy
+is perfect for major categories of the workload, but for jitter tasks, one
+can save energy by packing it onto active cores and allow other cores to run at
+higher frequencies.
+
+These patch-set tunes the task wake up logic in scheduler to pack exclusively
+classified jitter tasks onto busy cores. The work involves the use of additional
+attributes inside "cpu" cgroup controller to manually classify tasks as jitter. 
+
+
+Implementation
+==============
+
+These patches uses UCLAMP mechanism from "cpu" cgroup controller which
+can be used to classify the jitter tasks. The task wakeup logic uses
+this information to pack such tasks onto cores which are busy running
+other workloads. The task packing is done at `select_task_rq_fair` only
+so that in case of wrong decision load balancer may pull the classified
+jitter tasks to performance giving CPU.
+
+Any tasks added to the "cpu" cgroup tagged with cpu.util.max=1 are
+classified as jitter. We define a core to be non-idle if it is over
+12.5% utilized; the jitters are packed over these cores using First-fit
+approach.
+
+To demonstrate/benchmark, one can use a synthetic workload generator
+`turbo_bench.c` available at
+https://github.com/parthsl/tools/blob/master/benchmarks/turbo_bench.c
+
+Following snippet demonstrates the use of TurboSched feature:
+```
+mkdir -p /sys/fs/cgroup/cpu/jitter
+echo 0 > /proc/sys/kernel/sched_uclamp_util_min;
+echo 0 > /sys/fs/cgroup/cpu/jitter/cpu.util.min;
+echo 0 > /sys/fs/cgroup/cpu/jitter/cpu.util.max;
+i=8;
+./turbo_bench -t 30 -h $i -n $i &
+./turbo_bench -t 30 -h 0 -n $i &
+echo $! > /sys/fs/cgroup/cpu/jitter/cgroup.procs
+```
+
+Current implementation uses only jitter classified tasks to be packed on any
+busy cores, but can be further optimized by getting userspace input of
+important tasks and keeping track of such tasks. This leads to optimized
+searching of non idle cores and also more accurate as userspace hints
+are safer than auto classified busy cores/tasks.
+
+
+Result
+======
+
+The patch-set proves to be useful for the system and the workload where
+frequency boost is found to be useful than packing tasks into cores. IBM POWER 9
+system shows the benefit for a workload can be up to 13%.
+
+                   Performance benefit of TurboSched over CFS                  
+     +-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+   
+     | + + + +  + + + + + + + +  + + + + + + + +  + + + + + + + +  + + + + |   
+  15 +-+                                  Performance benefit in %       +-+   
+     |                    **                                               |   
+     |                    **                                               |   
+  10 +-+                ********                                         +-+   
+     |                  ********                                           |   
+     |              ************   *                                       |   
+   5 +-+            ************   *                                     +-+   
+     |            * ************   * ****                                  |   
+     |       ** * * ************ * * ******                                |   
+     |       ** * * ************ * * ************ *                        |   
+   0 +-******** * * ************ * * ************ * * * ********** * * * **+   
+     |     **                                           ****               |   
+     |     **                                                              |   
+  -5 +-+   **                                                            +-+   
+     | + + + +  + + + + + + + +  + + + + + + + +  + + + + + + + +  + + + + |   
+     +-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+   
+       1 2 3 4  5 6 7 8 9101112 1314151617181920 2122232425262728 29303132     
+                             Workload threads count                            
+
+
+                     Frequency benefit of TurboSched over CFS                   
+  20 +-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+   
+     | + + + +  + + + + + + + +  + + + + + + + +  + + + + + + + +  + + + + |   
+     |                                      Frequency benefit in %         |   
+  15 +-+                  **                                             +-+   
+     |                    **                                               |   
+     |              ********                                               |   
+  10 +-+          * ************                                         +-+   
+     |            * ************                                           |   
+     |            * ************                                           |   
+   5 +-+        * * ************   *                                     +-+   
+     |       ** * * ************ * *                                       |   
+     |     **** * * ************ * * ******                 **             |   
+   0 +-******** * * ************ * * ************ * * * ********** * * * **+   
+     |   **                                                                |   
+     |   **                                                                |   
+  -5 +-+ **                                                              +-+   
+     | + + + +  + + + + + + + +  + + + + + + + +  + + + + + + + +  + + + + |   
+     +-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+-+-+-+--+-+-+-+-+   
+       1 2 3 4  5 6 7 8 9101112 1314151617181920 2122232425262728 29303132     
+                             Workload threads count                            
+
+These numbers are w.r.t. `turbo_bench.c` test benchmark which spawns multiple
+threads of a mix of High Utilization and Low Utilization(jitters). X-axis
+represents the count of both the categories of tasks spawned.
+
+
+Series organization
+==============
+- Patches [01-03]: Cgroup based jitter tasks classification
+- Patches [04]: Defines Core Capacity to limit task packing
+- Patches [05-06]: Tune CFS task wakeup logic to pack tasks onto busy
+  cores
+
+Series can be applied on top of Patrick Bellasi's UCLAMP RFCv8[3]
+patches with branch on tip/sched/core and UCLAMP_TASK_GROUP config
+options enabled.
+
+
+Changelogs
+=========
+This patch set is a respin of TurboSched RFCv1
+https://lwn.net/Articles/783959/
+which includes the following main changes
+
+- No WOF tasks classification, only jitter tasks are classified from
+  the cpu cgroup controller
+- Use of Spinlock rather than mutex to count number of jitters in the
+  system classified from cgroup
+- Architecture specific implementation of Core capacity multiplication
+  factor changes dynamically based on the number of active threads in
+  the core
+- Selection of non idle core in the system is bounded by DIE domain
+- Use of UCLAMP mechanism to classify jitter tasks
+- Removed "highutil_cpu_mask", and rather uses sd for DIE domain to find
+  better fit
+
+
+References
+==========
+
+[1] "TurboSched : A scheduler for sustaining Turbo frequency for longer
+durations" https://lwn.net/Articles/783959/
+
+[2] "Turbo_bench: Synthetic workload generator"
+https://github.com/parthsl/tools/blob/master/benchmarks/turbo_bench.c
+
+[3] "Patrick Bellasi, Add utilization clamping support"
+https://lore.kernel.org/lkml/20190402104153.25404-1-patrick.bellasi@arm.com/
+
+
+Parth Shah (6):
+  sched/core: Add manual jitter classification from cgroup interface
+  sched: Introduce switch to enable TurboSched mode
+  sched/core: Update turbo_sched count only when required
+  sched/fair: Define core capacity to limit task packing
+  sched/fair: Tune task wake-up logic to pack jitter tasks
+  sched/fair: Bound non idle core search by DIE domain
+
+ arch/powerpc/include/asm/topology.h |   7 ++
+ arch/powerpc/kernel/smp.c           |  37 ++++++++
+ kernel/sched/core.c                 |  32 +++++++
+ kernel/sched/fair.c                 | 127 +++++++++++++++++++++++++++-
+ kernel/sched/sched.h                |   8 ++
+ 5 files changed, 210 insertions(+), 1 deletion(-)
+
 -- 
 2.17.1
 
