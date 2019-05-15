@@ -2,79 +2,71 @@ Return-Path: <SRS0=mZbj=TP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27855C04E53
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 15:22:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4CEAC46460
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 16:10:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EE7D020862
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 15:22:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 773882089E
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 16:10:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1557936634;
+	bh=IaS8SR4msxQ33KhgErr361vWjOFHO3roJYspVJGIp78=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
+	b=ZmvlOcv8xtJfAKS4i8SdGf8xd5HyZeeq+9evcdXbJ8gQBaTQT1T2Oe2qvUk0Y1VAV
+	 AY+XDu/st92vhJzR28SP+rrQezFpS9awCA1Mu6S1bA1C3f0Z8hteFpRf9ZbWjqCluB
+	 3tqRMUQUVnRRDjf0wAg0DofKybcIreY83z3qm93o=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727350AbfEOPWc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 May 2019 11:22:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45044 "EHLO mx1.redhat.com"
+        id S1727431AbfEOQKT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 May 2019 12:10:19 -0400
+Received: from mail.kernel.org ([198.145.29.99]:52646 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727341AbfEOPWc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 May 2019 11:22:32 -0400
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mx1.redhat.com (Postfix) with ESMTPS id 521E7308620D;
-        Wed, 15 May 2019 15:22:32 +0000 (UTC)
-Received: from prarit.bos.redhat.com (prarit-guest.khw1.lab.eng.bos.redhat.com [10.16.200.63])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 0CC48608A6;
-        Wed, 15 May 2019 15:22:31 +0000 (UTC)
-Subject: Re: [PATCH] tools/power turbostat: Increase default buffer size
-To:     linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>
-References: <20190514174621.12227-1-prarit@redhat.com>
-From:   Prarit Bhargava <prarit@redhat.com>
-Message-ID: <711c305c-4811-d2c0-7791-102d42d6a2c4@redhat.com>
-Date:   Wed, 15 May 2019 11:22:31 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <20190514174621.12227-1-prarit@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.42]); Wed, 15 May 2019 15:22:32 +0000 (UTC)
+        id S1727383AbfEOQKS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 May 2019 12:10:18 -0400
+Subject: Re: [GIT PULL] More ACPI updates for v5.2-rc1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1557936617;
+        bh=IaS8SR4msxQ33KhgErr361vWjOFHO3roJYspVJGIp78=;
+        h=From:In-Reply-To:References:Date:To:Cc:From;
+        b=mTIuRhR/4ousfpQhbsLvP0zGTJOdB3Hf8LkRedlEDPOXnT9iMaaNV0pduFOr8L8xA
+         5cPVtNGJAXWoPMkWD/5x0zoicODAqxPRzbl0jGsjlnlx8NjVeSkGV8pQ0MvAB9fn6l
+         r4ycikdv9Q96APtQEf98FYVGC5eWyEau53y1Uh94=
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0j3pD8rqiQoR7e3FbQx3JjaBh32f4+bHjxza00RsYBmcQ@mail.gmail.com>
+References: <CAJZ5v0j3pD8rqiQoR7e3FbQx3JjaBh32f4+bHjxza00RsYBmcQ@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0j3pD8rqiQoR7e3FbQx3JjaBh32f4+bHjxza00RsYBmcQ@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+ acpi-5.2-rc1-2
+X-PR-Tracked-Commit-Id: e3e28670bb28ad52d0d0224e86ec11c3f31ff1ff
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: fcdec14365ec96f490cf1c8d9b618643ec88a95e
+Message-Id: <155793661754.5377.8436869417444896027.pr-tracker-bot@kernel.org>
+Date:   Wed, 15 May 2019 16:10:17 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190515161017.qva_5ZO9KZQqBu8ic_KPz4BIB5CkY0gf_nGvmJTCQg4@z>
 
+The pull request you sent on Wed, 15 May 2019 12:14:39 +0200:
 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.2-rc1-2
 
-On 5/14/19 1:46 PM, Prarit Bhargava wrote:
-> 'turbostat -D' fails on INTEL_FAM6_KABYLAKE_DESKTOP systems with a
-> segfault because the default buffer size is too small.
-> 
-> Increase the default to 1536.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/fcdec14365ec96f490cf1c8d9b618643ec88a95e
 
-Self-Nak.  I will post a dynamic allocation solution in a few minutes.
+Thank you!
 
-P.
-
-> 
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-> ---
->  tools/power/x86/turbostat/turbostat.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-> index c7727be9719f..b401d1aec394 100644
-> --- a/tools/power/x86/turbostat/turbostat.c
-> +++ b/tools/power/x86/turbostat/turbostat.c
-> @@ -5135,7 +5135,7 @@ int initialize_counters(int cpu_id)
->  
->  void allocate_output_buffer()
->  {
-> -	output_buffer = calloc(1, (1 + topo.num_cpus) * 1024);
-> +	output_buffer = calloc(1, (1 + topo.num_cpus) * 1536);
->  	outp = output_buffer;
->  	if (outp == NULL)
->  		err(-1, "calloc output buffer");
-> 
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
