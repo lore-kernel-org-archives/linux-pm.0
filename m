@@ -1,54 +1,41 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
-Date: Wed, 15 May 2019 10:17:01 +0100
-Message-ID: <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
+Subject: Re: [PATCH v4 1/3] arm64: defconfig: Enable CONFIG_ENERGY_MODEL
+Date: Wed, 15 May 2019 10:22:44 +0100
+Message-ID: <20190515092242.azcracudtdnruwnz@queper01-lin>
 References: <20190515082318.7993-1-quentin.perret@arm.com>
- <20190515082318.7993-3-quentin.perret@arm.com>
- <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
+ <20190515082318.7993-2-quentin.perret@arm.com>
+ <2f598ea3-752d-0f1d-fd33-f07cda3b7bd0@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
+In-Reply-To: <2f598ea3-752d-0f1d-fd33-f07cda3b7bd0@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
-
-On Wednesday 15 May 2019 at 11:06:18 (+0200), Daniel Lezcano wrote:
+On Wednesday 15 May 2019 at 10:46:09 (+0200), Daniel Lezcano wrote:
 > On 15/05/2019 10:23, Quentin Perret wrote:
-> > In the current state, the perf_domain struct is fully defined only when
-> > CONFIG_ENERGY_MODEL=y. Since we need to write code that compiles both
-> > with or without that option in the thermal framework, make sure to
-> > actually define the struct regardless of the config option. That allows
-> > to avoid using stubbed accessor functions all the time in code paths
-> > that use the EM.
+> > The recently introduced Energy Model (EM) framework manages power cost
+> > tables for the CPUs of the system. Its only user right now is the
+> > scheduler, in the context of Energy Aware Scheduling (EAS).
+> > 
+> > However, the EM framework also offers a generic infrastructure that
+> > could replace subsystem-specific implementations of the same concepts,
+> > as this is the case in the thermal framework.
+> > 
+> > So, in order to prepare the migration of the thermal subsystem to use
+> > the EM framework, enable it in the default arm64 defconfig, which is the
+> > most commonly used architecture for IPA. This will also compile-in all
+> > of the EAS code, although it won't be enabled by default -- EAS requires
+> > to use the 'schedutil' CPUFreq governor while arm64 defaults to
+> > 'performance'.
 > > 
 > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 > 
-> This patch implies the cpu cooling device can be set without the energy
-> model.
-> 
-> Isn't it possible to make a strong dependency for the cpu cooling device
-> on the energy model option, add the energy model as default on arm arch
-> and drop this patch?
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Right, that should work too.
-
-> After all, the cpu cooling is using the em framework.
-
-The reason I did it that way is simply to keep things flexible. If you
-don't compile in THERMAL_GOV_POWER_ALLOCATOR, you will never use the EM
-for CPU thermal. So I thought it would be good to not mandate compiling
-in ENERGY_MODEL in this case -- that should save a bit of space.
-
-But TBH I don't have a strong opinion on this one, so if everybody
-agrees it's fine to just make CPU_THERMAL depend on ENERGY_MODEL, I'm
-happy to drop this patch and fix patch 3/3. That would indeed simplify
-things a bit.
-
-Thanks,
+Thanks !
 Quentin
