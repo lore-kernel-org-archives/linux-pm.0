@@ -2,191 +2,100 @@ Return-Path: <SRS0=mZbj=TP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F025C04E53
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:55:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 892E5C04E53
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 15:17:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EE18E20873
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:55:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5469F2084E
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 15:17:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tPsgOk71"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726392AbfEONzW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 May 2019 09:55:22 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:56060 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1726646AbfEONzW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 09:55:22 -0400
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4FDtCe8132225
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:55:20 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2sgk3ukvw9-1
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:55:16 -0400
-Received: from localhost
-        by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
-        Wed, 15 May 2019 14:53:48 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
-        by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
-        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Wed, 15 May 2019 14:53:46 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-        by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4FDrjOD49414252
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 15 May 2019 13:53:45 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 21FEB52052;
-        Wed, 15 May 2019 13:53:45 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.102.18.182])
-        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id B9D8E52050;
-        Wed, 15 May 2019 13:53:42 +0000 (GMT)
-From:   Parth Shah <parth@linux.ibm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     mingo@redhat.com, peterz@infradead.org, dietmar.eggemann@arm.com,
-        dsmythies@telus.net
-Subject: [RFCv2 4/6] sched/fair: Define core capacity to limit task packing
-Date:   Wed, 15 May 2019 19:23:20 +0530
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190515135322.19393-1-parth@linux.ibm.com>
-References: <20190515135322.19393-1-parth@linux.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19051513-0016-0000-0000-0000027C033A
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19051513-0017-0000-0000-000032D8D3F7
-Message-Id: <20190515135322.19393-5-parth@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-15_08:,,
- signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1905150087
+        id S1727108AbfEOPRu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 May 2019 11:17:50 -0400
+Received: from mail-pf1-f171.google.com ([209.85.210.171]:32781 "EHLO
+        mail-pf1-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726567AbfEOPRu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 11:17:50 -0400
+Received: by mail-pf1-f171.google.com with SMTP id z28so155098pfk.0
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 08:17:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=tJrsEwTh6VOB02i4tRZ48loA1l+OFahBfphYUwfCgro=;
+        b=tPsgOk71tnB8xagO6PUFhXjz3i9qZNiAXfBCL5MYt0mXGBkMALJe1RzJ4Hd2j8irsy
+         mTz+a3Y4ADvFdd3+h7Gnl34SabrZUgv+j0TJkvZW8kq0hN5ISlqTFCJ+l3dVZ/tBOhwg
+         RGx4ThGXFosH52Uk4NGvRcty0i6ZITB0N6ZTGHb1vpPj5lNTeCDyqRGTpVQWPzrsHSo/
+         XOfUcGxRTxSULZWzCa1y6RQ+5JgWaGs4ZzAGquPzCeXTtYwA5eNVkQJrGMLtCV7fSMdA
+         AbVJOHZ87SjTEXMP3VXN++xAcTkGW1JTM1dgolZaEsrpx5jG7NmHk/AVJF2OVcZ6ehuL
+         MdNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=tJrsEwTh6VOB02i4tRZ48loA1l+OFahBfphYUwfCgro=;
+        b=dgpjTebx2BcLsZiDoItdyRW3K+Q4CBUUM1zTikCPqhiJzeAConUje5DTdXuxLlTJpE
+         zIiRjenwoOzYKRFBfIjuHMilxcOvGZBh5Zfto18TV7LANTXeanwt3vBWvAlfW84kQIoY
+         rs3czum1Ggz3qX0IE6QJRscem021ZhvWgHgLTUAEuAqRbr8+tw51RWooc9Jy0wsiVr5O
+         tYd4izP6dYcIokV8bQH8bPPSPJwF3u9ILab2pMiP8i1ZIMFnSfDjIAUnj6g1y5vHxKP7
+         NdM2caEDYUDdyRp5VI5DAL31k75czadeVGRfyVxAeXs7Mp2WY6zIvI44+JNpA4DHwwtm
+         55XA==
+X-Gm-Message-State: APjAAAVr3n7KspeGh4yGsiF/y11L26SnzRifMWN3K4MiBJWK+5RXXP9j
+        DWudly5KVvdld+PnjId541o=
+X-Google-Smtp-Source: APXvYqxRbyYBXB4Zw73wrOyVJ2+L9aw93QKTrYM++mNstEXwa3i3xJ4zz4BRtr7zUTmCFkzui03Jrw==
+X-Received: by 2002:a62:38cc:: with SMTP id f195mr48138547pfa.15.1557933469671;
+        Wed, 15 May 2019 08:17:49 -0700 (PDT)
+Received: from mita-MS-7A45.lan ([240f:34:212d:1:b16d:d4:d5a2:4dca])
+        by smtp.gmail.com with ESMTPSA id 85sm5544888pgb.52.2019.05.15.08.17.46
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Wed, 15 May 2019 08:17:48 -0700 (PDT)
+From:   Akinobu Mita <akinobu.mita@gmail.com>
+To:     linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org
+Cc:     Akinobu Mita <akinobu.mita@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>,
+        Christoph Hellwig <hch@lst.de>,
+        Sagi Grimberg <sagi@grimberg.me>
+Subject: [PATCH 0/2] nvme: add thermal zone devices
+Date:   Thu, 16 May 2019 00:17:15 +0900
+Message-Id: <1557933437-4693-1-git-send-email-akinobu.mita@gmail.com>
+X-Mailer: git-send-email 2.7.4
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190515135320.z9DXf1tqLeIdrl8PMtAxEtQPcyHPxkVx-Bplr4TvLhs@z>
 
-The task packing on a core needs to be bounded based on its capacity. This
-patch defines a new method which acts as a tipping point for task packing.
+The NVMe controller reports up to nine temperature values in the SMART /
+Health log page (the composite temperature and temperature sensor 1 through
+temperature sensor 8).
+The temperature threshold feature (Feature Identifier 04h) configures the
+asynchronous event request command to complete when the temperature is
+crossed its correspoinding temperature threshold.
 
-The Core capacity is the method which limits task packing above certain
-point. In general, the capacity of a core is defined to be the aggregated
-sum of all the CPUs in the Core.
+This provide these temperatures and thresholds via thermal zone devices.
 
-Some architectures does not have core capacity linearly increasing with the
-number of threads( or CPUs) in the core. For such cases, architecture
-specific calculations needs to be done to find core capacity.
+Akinobu Mita (2):
+  nvme: add thermal zone infrastructure
+  nvme-pci: support thermal zone
 
-The `arch_scale_core_capacity` is currently tuned for `powerpc` arch by
-scaling capacity w.r.t to the number of online SMT in the core.
+ drivers/nvme/host/core.c | 368 ++++++++++++++++++++++++++++++++++++++++++++++-
+ drivers/nvme/host/nvme.h |  24 ++++
+ drivers/nvme/host/pci.c  |   5 +
+ include/linux/nvme.h     |   4 +
+ 4 files changed, 397 insertions(+), 4 deletions(-)
 
-The patch provides default handler for other architecture by scaling core
-capacity w.r.t. to the capacity of all the threads in the core.
-
-ToDo: SMT mode is calculated each time a jitter task wakes up leading to
-redundant decision time which can be eliminated by keeping track of online
-CPUs during hotplug task.
-
-Signed-off-by: Parth Shah <parth@linux.ibm.com>
----
- arch/powerpc/include/asm/topology.h |  4 ++++
- arch/powerpc/kernel/smp.c           | 32 +++++++++++++++++++++++++++++
- kernel/sched/fair.c                 | 19 +++++++++++++++++
- 3 files changed, 55 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index f85e2b01c3df..1c777ee67180 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -132,6 +132,10 @@ static inline void shared_proc_topology_init(void) {}
- #define topology_sibling_cpumask(cpu)	(per_cpu(cpu_sibling_map, cpu))
- #define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
- #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
-+#define arch_scale_core_capacity	powerpc_scale_core_capacity
-+
-+unsigned long powerpc_scale_core_capacity(int first_smt,
-+					  unsigned long smt_cap);
- 
- int dlpar_cpu_readd(int cpu);
- #endif
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index e784342bdaa1..256ab2a50f6e 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1173,6 +1173,38 @@ static void remove_cpu_from_masks(int cpu)
- }
- #endif
- 
-+#ifdef CONFIG_SCHED_SMT
-+/*
-+ * Calculate capacity of a core based on the active threads in the core
-+ * Scale the capacity of first SM-thread based on total number of
-+ * active threads in the respective smt_mask.
-+ *
-+ * The scaling is done such that for
-+ * SMT-4, core_capacity = 1.5x first_cpu_capacity
-+ * and for SMT-8, core_capacity multiplication factor is 2x
-+ *
-+ * So, core_capacity multiplication factor = (1 + smt_mode*0.125)
-+ *
-+ * @first_cpu: First/any CPU id in the core
-+ * @cap: Capacity of the first_cpu
-+ */
-+inline unsigned long powerpc_scale_core_capacity(int first_cpu,
-+		unsigned long cap) {
-+	struct cpumask select_idles;
-+	struct cpumask *cpus = &select_idles;
-+	int cpu, smt_mode = 0;
-+
-+	cpumask_and(cpus, cpu_smt_mask(first_cpu), cpu_online_mask);
-+
-+	/* Find SMT mode from active SM-threads */
-+	for_each_cpu(cpu, cpus)
-+		smt_mode++;
-+
-+	/* Scale core capacity based on smt mode */
-+	return smt_mode == 1 ? cap : ((cap * smt_mode) >> 3) + cap;
-+}
-+#endif
-+
- static inline void add_cpu_to_smallcore_masks(int cpu)
- {
- 	struct cpumask *this_l1_cache_map = per_cpu(cpu_l1_cache_map, cpu);
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index b7eea9dc4644..2578e6bdf85b 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -6231,6 +6231,25 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, int t
- 	return cpu;
- }
- 
-+#ifdef CONFIG_SCHED_SMT
-+
-+#ifndef arch_scale_core_capacity
-+static inline unsigned long arch_scale_core_capacity(int first_thread,
-+						     unsigned long smt_cap)
-+{
-+	/* Default capacity of core is sum of cap of all the threads */
-+	unsigned long ret = 0;
-+	int sibling;
-+
-+	for_each_cpu(sibling, cpu_smt_mask(first_thread))
-+		ret += cpu_rq(sibling)->cpu_capacity;
-+
-+	return ret;
-+}
-+#endif
-+
-+#endif
-+
- /*
-  * Try and locate an idle core/thread in the LLC cache domain.
-  */
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Keith Busch <keith.busch@intel.com>
+Cc: Jens Axboe <axboe@fb.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Sagi Grimberg <sagi@grimberg.me>
 -- 
-2.17.1
+2.7.4
 
