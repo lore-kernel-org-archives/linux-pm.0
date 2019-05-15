@@ -1,52 +1,233 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFCv2 0/6] TurboSched: A scheduler for sustaining Turbo
- Frequencies for longer durations
-Date: Wed, 15 May 2019 18:48:54 +0200
-Message-ID: <20190515164854.GZ2589@hirez.programming.kicks-ass.net>
-References: <20190515135322.19393-1-parth@linux.ibm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [GIT PULL] power-supply changes for 5.2
+Date: Wed, 15 May 2019 21:35:00 +0200
+Message-ID: <20190515193500.6wpstcuacfuwt6ty@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="lar6j6naw6ub2ikt"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190515135322.19393-1-parth@linux.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Parth Shah <parth@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, dsmythies@telus.net
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 15, 2019 at 07:23:16PM +0530, Parth Shah wrote:
-> Abstract
-> ========
-> 
-> The modern servers allows multiple cores to run at range of
-> frequencies higher than rated range of frequencies. But the power budget
-> of the system inhibits sustaining these higher frequencies for
-> longer durations.
-> 
-> However when certain cores are put to idle states, the power can be
-> effectively channelled to other busy cores, allowing them to sustain
-> the higher frequency.
-> 
-> One way to achieve this is to pack tasks onto fewer cores keeping others idle,
-> but it may lead to performance penalty for such tasks and sustaining higher
-> frequencies proves to be of no benefit. But if one can identify unimportant low
-> utilization tasks which can be packed on the already active cores then waking up
-> of new cores can be avoided. Such tasks are short and/or bursty "jitter tasks"
-> and waking up new core is expensive for such case.
-> 
-> Current CFS algorithm in kernel scheduler is performance oriented and hence
-> tries to assign any idle CPU first for the waking up of new tasks. This policy
-> is perfect for major categories of the workload, but for jitter tasks, one
-> can save energy by packing it onto active cores and allow other cores to run at
-> higher frequencies.
-> 
-> These patch-set tunes the task wake up logic in scheduler to pack exclusively
-> classified jitter tasks onto busy cores. The work involves the use of additional
-> attributes inside "cpu" cgroup controller to manually classify tasks as jitter. 
 
-Why does this make sense? Don't these higher freq bins burn power like
-stupid? That is, it makes sense to use turbo-bins for single threaded
-workloads that are CPU-bound and need performance.
+--lar6j6naw6ub2ikt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-But why pack a bunch of 'crap' tasks onto a core and give it turbo;
-that's just burning power without getting anything back for it.
+Hi Linus,
+
+Here is the power-supply pull request for the 5.2 merge window.
+Everything except for a few small fixes have been in linux-next
+for > 10 days. The pull request is touching some bits in x86 for
+the OLPC changes and some bits in IIO for the new Ingenic JZ47xx
+battery driver, that have been Acked by the respective maintainers
+and no merge issues have been reported by Stephen.
+
+-- Sebastian
+
+The following changes since commit 9e98c678c2d6ae3a17cb2de55d17f69dddaa231b:
+
+  Linux 5.1-rc1 (2019-03-17 14:22:26 -0700)
+
+are available in the Git repository at:
+
+  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v5.2
+
+for you to fetch changes up to baf5964ecfe19a0109fe2e497e72840ce0f488e6:
+
+  power: supply: olpc_battery: force the le/be casts (2019-05-14 23:17:56 +0200)
+
+----------------------------------------------------------------
+power supply and reset changes for the v5.2 series
+
+Core:
+ * Add over-current health state
+ * Add standard, adaptive and custom charge types
+ * Add new properties for start/end charge threshold
+
+New Drivers / Hardware:
+ * UCS1002 Programmable USB Port Power Controller
+ * Ingenic JZ47xx Battery Fuel Gauge
+ * AXP20x USB Power: Add AXP813 support
+ * AT91 poweroff: Add SAM9X60 support
+ * OLPC battery: Add XO-1.5 and XO-1.75 support
+
+Misc. Changes:
+ * syscon-reboot: support mask property
+ * AXP288 fuel gauge: Blacklist ACEPC T8/T11
+  - Looks like some vendor thought it's a good idea to
+    build a desktop system with a fuel gauge, that slowly
+    "discharges"...
+ * cpcap-battery: Fix calculation errors
+ * misc. fixes
+
+----------------------------------------------------------------
+Andrey Smirnov (3):
+      power: supply: core: Add POWER_SUPPLY_HEALTH_OVERCURRENT constant
+      dt-bindings: power: supply: Add bindings for Microchip UCS1002
+      power: supply: Add driver for Microchip UCS1002
+
+Artur Rojek (6):
+      iio: inkern: API for reading available iio channel attribute values
+      iio: inkern: Convert iio_read_avail_channel_raw into a wrapper
+      dt-bindings: power: supply: Add charge-status-gpios property
+      power: supply: gpio-charger: Add support for charger status.
+      dt-bindings: power: supply: Add docs for Ingenic JZ47xx SoCs battery.
+      power: supply: add Ingenic JZ47xx battery driver.
+
+Axel Lin (1):
+      power: supply: ucs1002: Fix wrong return value checking
+
+Chen-Yu Tsai (3):
+      dt-bindings: power: supply: axp20x_usb_power: add axp813 compatible
+      power: supply: axp20x_usb_power: Fix typo in VBUS current limit macros
+      power: supply: axp20x_usb_power: use polling to detect vbus status change
+
+Claudiu Beznea (3):
+      power: reset: at91-poweroff: add RTT wakeup capability
+      power: reset: at91-poweroff: add support for SAM9X60
+      dt-bindings: arm: atmel: add binding for SAM9X60 shutdown controller
+
+Enric Balletbo i Serra (1):
+      power: supply: core: fix typo in function to get current charge control limit
+
+Gustavo A. R. Silva (1):
+      power: supply: axp288_charger: Fix unchecked return value
+
+Hans de Goede (1):
+      power: supply: axp288_fuel_gauge: Add ACEPC T8 and T11 mini PCs to the blacklist
+
+Kangjie Lu (1):
+      power: charger-manager: fix a potential NULL pointer dereference
+
+Krzysztof Kozlowski (1):
+      power: supply: bq27xxx_battery: Notify also about status changes
+
+Lubomir Rintel (11):
+      dt-bindings: olpc_battery: Add XO-1.5 battery
+      x86/platform/olpc: Don't split string literals when fixing up the DT
+      x86/platform/olpc: Trivial code move in DT fixup
+      x86/platform/olpc: Use a correct version when making up a battery node
+      power: supply: olpc_battery: Use DT to get battery version
+      power: supply: olpc_battery: Move priv data to a struct
+      power: supply: olpc_battery: Use devm_power_supply_register()
+      power: supply: olpc_battery: Avoid using platform_info
+      power: supply: olpc_battery: Add OLPC XO 1.75 support
+      power: supply: olpc_battery: Have the framework register sysfs files for us
+      power: supply: olpc_battery: force the le/be casts
+
+Martin Schiller (1):
+      power: reset: syscon-reboot: add a mask property
+
+Maxime Ripard (1):
+      power: supply: Fix the simple battery property names
+
+Michael Hennerich (2):
+      power: supply: ltc3651-charger: Fix device name
+      power: supply: ltc3651-charger: Fix device name (rename files)
+
+Nick Crews (3):
+      power: supply: core: Add Standard, Adaptive, and Custom charge types
+      power: supply: core: Add CHARGE_CONTROL_{START_THRESHOLD,END_THRESHOLD} properties
+      power: supply: core: Add missing documentation for CHARGE_CONTROL_* properties
+
+Phong Tran (1):
+      power: supply: core: fix clang -Wunsequenced
+
+Quentin Schulz (2):
+      power: supply: axp20x_usb_power: add function to get max current
+      power: supply: axp20x_usb_power: add support for AXP813
+
+Sebastian Reichel (3):
+      Merge branch 'psy-fixes' into psy-next
+      Merge 'ib-jz47xx-battery-prereq' into psy-next
+      Merge tag 'psy-olpc-1.75-battery-signed' into psy-next
+
+Sebastien Bourdelin (1):
+      dt-bindings: power: supply: gpio-charger: add missing semi-colon in example
+
+Sven Van Asbroeck (2):
+      power: supply: max14656: fix potential use-before-alloc
+      power: supply: max14656: fix potential use-after-free
+
+Tony Lindgren (7):
+      power: supply: cpcap-battery: Fix division by zero
+      power: supply: cpcap-battery: Fix low battery check
+      power: supply: cpcap-battery: Fix signed counter sample register
+      power: supply: cpcap-battery: Fix coulomb counter calibration register use
+      power: supply: cpcap-battery: Use accumulator for current and power average
+      power: supply: cpcap-battery: Fix pointless EPROBE_DEFER warnings
+      power: supply: cpcap-charger: Fix pointless EPROBE_DEFER warnings
+
+Wen Yang (2):
+      power: supply: ab8500: fix leaked of_node refs in ab8500_bm_of_probe
+      power: supply: core: fix leaked of_node refs in power_supply_get_battery_info
+
+YueHaibing (1):
+      power: supply: ucs1002: Fix build error without CONFIG_REGULATOR
+
+ Documentation/ABI/testing/sysfs-class-power        |  51 +-
+ .../devicetree/bindings/arm/atmel-sysregs.txt      |   5 +-
+ .../bindings/power/reset/syscon-reboot.txt         |  11 +-
+ .../bindings/power/supply/axp20x_usb_power.txt     |   1 +
+ .../bindings/power/supply/gpio-charger.txt         |   8 +-
+ .../bindings/power/supply/ingenic,battery.txt      |  31 +
+ .../{ltc3651-charger.txt => lt3651-charger.txt}    |  10 +-
+ .../bindings/power/supply/microchip,ucs1002.txt    |  27 +
+ .../bindings/power/supply/olpc_battery.txt         |   2 +-
+ arch/x86/platform/olpc/olpc_dt.c                   | 101 +++-
+ drivers/iio/inkern.c                               |  22 +-
+ drivers/power/reset/at91-sama5d2_shdwc.c           |  25 +
+ drivers/power/reset/syscon-reboot.c                |  19 +-
+ drivers/power/supply/Kconfig                       |  29 +-
+ drivers/power/supply/Makefile                      |   4 +-
+ drivers/power/supply/ab8500_bmdata.c               |   1 +
+ drivers/power/supply/axp20x_usb_power.c            | 179 +++++-
+ drivers/power/supply/axp288_charger.c              |   4 +
+ drivers/power/supply/axp288_fuel_gauge.c           |  20 +
+ drivers/power/supply/bq27xxx_battery.c             |   3 +-
+ drivers/power/supply/charger-manager.c             |   3 +
+ drivers/power/supply/cpcap-battery.c               |  45 +-
+ drivers/power/supply/cpcap-charger.c               |   5 +-
+ drivers/power/supply/gpio-charger.c                |  57 +-
+ drivers/power/supply/ingenic-battery.c             | 184 ++++++
+ .../supply/{ltc3651-charger.c => lt3651-charger.c} | 123 ++--
+ drivers/power/supply/max14656_charger_detector.c   |  27 +-
+ drivers/power/supply/olpc_battery.c                | 171 +++---
+ drivers/power/supply/power_supply_core.c           |  38 +-
+ drivers/power/supply/power_supply_sysfs.c          |   6 +-
+ drivers/power/supply/ucs1002_power.c               | 646 +++++++++++++++++++++
+ include/linux/iio/consumer.h                       |  14 +
+ include/linux/power_supply.h                       |  11 +-
+ 33 files changed, 1613 insertions(+), 270 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
+ rename Documentation/devicetree/bindings/power/supply/{ltc3651-charger.txt => lt3651-charger.txt} (71%)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/microchip,ucs1002.txt
+ create mode 100644 drivers/power/supply/ingenic-battery.c
+ rename drivers/power/supply/{ltc3651-charger.c => lt3651-charger.c} (50%)
+ create mode 100644 drivers/power/supply/ucs1002_power.c
+
+--lar6j6naw6ub2ikt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlzcad8ACgkQ2O7X88g7
++poi0xAApnCY691TqGx8LZEyLlBely8pPsOVnchJierfz18QXB0oQdnsMTTRS22P
+wsPELGWqr+s5sOGAfKdQ9qZcKIpZfHc1J3ibU97wANefNA8uNV/mMOD73/Y5DDUF
+ptSkkEJ1yEx07yrMOUeGFCrpcOOajUDBVrKqIjc9Zab+u016/8UDiMUQA8XQD4wa
+BZZHFMtCzRlyVCQPxumZxW18qjMjNzaGOXprPgl690++0YRpd1+VZN8VLt/d5Weu
+BGrp1gblE5lX+vjt+CliGWGUzQHotSk0ioMmyvbiL8UQesMCpTiGKXNOxI3rVWrQ
+Aq+HT1qAQnlxdR+1qB+YdZuqubyvDMEaJR13gKU6A220glBdqhteKDbzMSFBH7Iz
+UR1aZesbB8RWyAhjDshrYqhvWbInQ0otCegn8nNn4s9NQw4KtW2JhpyF/yyyexh2
+kSP8zhaif9HhfnQG8C/C7toehdPiuD4tuSicehpr55jL26M5GNR6xh8K8eiCmjnz
+1sO1q2Q3cK/1Ufgj5MeOFd7gP/r1sUZRfN/kIxT3tr6Yq4KQwzZa/rL1ld7xvpHi
+WeFtau0pb4GJ62U/3g7zpQN6sf5xYCL/GkiXKvQkM+PuFDBgDwjOkXL1GekQEB1K
+OOsJK/HqQdwkvc2NZScbqAoFD4VZb4GJuijv9trCv5eKKREFO1c=
+=Dmon
+-----END PGP SIGNATURE-----
+
+--lar6j6naw6ub2ikt--
