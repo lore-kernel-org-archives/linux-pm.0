@@ -6,25 +6,25 @@ X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B950C04E53
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 09:17:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D99D8C04E53
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 09:22:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 596EC2084A
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 09:17:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 980BA2089E
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 09:22:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725929AbfEOJRF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 May 2019 05:17:05 -0400
-Received: from foss.arm.com ([217.140.101.70]:38820 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725912AbfEOJRF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 May 2019 05:17:05 -0400
+        id S1725902AbfEOJWt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 May 2019 05:22:49 -0400
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:38912 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725871AbfEOJWs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 May 2019 05:22:48 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4B06D341;
-        Wed, 15 May 2019 02:17:05 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6C126341;
+        Wed, 15 May 2019 02:22:48 -0700 (PDT)
 Received: from queper01-lin (queper01-lin.cambridge.arm.com [10.1.195.48])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BA3A53F703;
-        Wed, 15 May 2019 02:17:02 -0700 (PDT)
-Date:   Wed, 15 May 2019 10:17:01 +0100
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DBFCF3F703;
+        Wed, 15 May 2019 02:22:45 -0700 (PDT)
+Date:   Wed, 15 May 2019 10:22:44 +0100
 From:   Quentin Perret <quentin.perret@arm.com>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
@@ -33,56 +33,43 @@ Cc:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
         dietmar.eggemann@arm.com, ionela.voinescu@arm.com,
         mka@chromium.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
-Message-ID: <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
+Subject: Re: [PATCH v4 1/3] arm64: defconfig: Enable CONFIG_ENERGY_MODEL
+Message-ID: <20190515092242.azcracudtdnruwnz@queper01-lin>
 References: <20190515082318.7993-1-quentin.perret@arm.com>
- <20190515082318.7993-3-quentin.perret@arm.com>
- <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
+ <20190515082318.7993-2-quentin.perret@arm.com>
+ <2f598ea3-752d-0f1d-fd33-f07cda3b7bd0@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Disposition: inline
-In-Reply-To: <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
+In-Reply-To: <2f598ea3-752d-0f1d-fd33-f07cda3b7bd0@linaro.org>
 User-Agent: NeoMutt/20171215
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190515091701.c5GPYJ_kunOiobH_1lohMNAjO_Wx5qga7ujlHl4uMGI@z>
+Message-ID: <20190515092244.nf40FXDPDrtF4P6-nJyF5jTWIPKY-evWcnWUqtp1qqI@z>
 
-Hi Daniel,
-
-On Wednesday 15 May 2019 at 11:06:18 (+0200), Daniel Lezcano wrote:
+On Wednesday 15 May 2019 at 10:46:09 (+0200), Daniel Lezcano wrote:
 > On 15/05/2019 10:23, Quentin Perret wrote:
-> > In the current state, the perf_domain struct is fully defined only when
-> > CONFIG_ENERGY_MODEL=y. Since we need to write code that compiles both
-> > with or without that option in the thermal framework, make sure to
-> > actually define the struct regardless of the config option. That allows
-> > to avoid using stubbed accessor functions all the time in code paths
-> > that use the EM.
+> > The recently introduced Energy Model (EM) framework manages power cost
+> > tables for the CPUs of the system. Its only user right now is the
+> > scheduler, in the context of Energy Aware Scheduling (EAS).
+> > 
+> > However, the EM framework also offers a generic infrastructure that
+> > could replace subsystem-specific implementations of the same concepts,
+> > as this is the case in the thermal framework.
+> > 
+> > So, in order to prepare the migration of the thermal subsystem to use
+> > the EM framework, enable it in the default arm64 defconfig, which is the
+> > most commonly used architecture for IPA. This will also compile-in all
+> > of the EAS code, although it won't be enabled by default -- EAS requires
+> > to use the 'schedutil' CPUFreq governor while arm64 defaults to
+> > 'performance'.
 > > 
 > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 > 
-> This patch implies the cpu cooling device can be set without the energy
-> model.
-> 
-> Isn't it possible to make a strong dependency for the cpu cooling device
-> on the energy model option, add the energy model as default on arm arch
-> and drop this patch?
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Right, that should work too.
-
-> After all, the cpu cooling is using the em framework.
-
-The reason I did it that way is simply to keep things flexible. If you
-don't compile in THERMAL_GOV_POWER_ALLOCATOR, you will never use the EM
-for CPU thermal. So I thought it would be good to not mandate compiling
-in ENERGY_MODEL in this case -- that should save a bit of space.
-
-But TBH I don't have a strong opinion on this one, so if everybody
-agrees it's fine to just make CPU_THERMAL depend on ENERGY_MODEL, I'm
-happy to drop this patch and fix patch 3/3. That would indeed simplify
-things a bit.
-
-Thanks,
+Thanks !
 Quentin
