@@ -1,44 +1,62 @@
-From: Han Nandor <nandor.han@vaisala.com>
-Subject: [PATCH v4 2/2] dt-bindings: power: reset: add document for NVMEM
- based reboot-mode
-Date: Wed, 15 May 2019 10:47:15 +0000
-Message-ID: <20190515104658.25535-3-nandor.han@vaisala.com>
-References: <20190515104658.25535-1-nandor.han@vaisala.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
+Date: Wed, 15 May 2019 12:51:57 +0200
+Message-ID: <5b55e432-f8b0-91ae-a7de-fe02e0cad322@linaro.org>
+References: <20190515082318.7993-1-quentin.perret@arm.com>
+ <20190515082318.7993-3-quentin.perret@arm.com>
+ <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
+ <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
+ <698400c0-e0a4-4a86-b9df-cdb9bd683c0f@linaro.org>
+ <20190515100748.q3t4kt72h2akdpcs@queper01-lin>
+ <cf1474cb-7e31-7070-b988-a0c4d3f6f081@linaro.org>
+ <20190515102200.s6uq63qnwea6xtpl@vireshk-i7>
+ <20190515104043.vogspxgkapp6qsny@queper01-lin>
+ <20190515104651.tv5odug7ce4zlupc@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190515104658.25535-1-nandor.han@vaisala.com>
+In-Reply-To: <20190515104651.tv5odug7ce4zlupc@queper01-lin>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "sre@kernel.org" <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Cc: Han Nandor <nandor.han@vaisala.com>
+To: Quentin Perret <quentin.perret@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-QWRkIHRoZSBkZXZpY2UgdHJlZSBiaW5kaW5ncyBkb2N1bWVudCBmb3IgdGhlIE5WTUVNIGJhc2Vk
-IHJlYm9vdC1tb2RlDQpkcml2ZXIuDQoNClNpZ25lZC1vZmYtYnk6IE5hbmRvciBIYW4gPG5hbmRv
-ci5oYW5AdmFpc2FsYS5jb20+DQotLS0NCiAuLi4vcG93ZXIvcmVzZXQvbnZtZW0tcmVib290LW1v
-ZGUudHh0ICAgICAgICAgfCAyNiArKysrKysrKysrKysrKysrKysrDQogMSBmaWxlIGNoYW5nZWQs
-IDI2IGluc2VydGlvbnMoKykNCiBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3Jlc2V0L252bWVtLXJlYm9vdC1tb2RlLnR4dA0KDQpkaWZm
-IC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3Jlc2V0L252
-bWVtLXJlYm9vdC1tb2RlLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9w
-b3dlci9yZXNldC9udm1lbS1yZWJvb3QtbW9kZS50eHQNCm5ldyBmaWxlIG1vZGUgMTAwNjQ0DQpp
-bmRleCAwMDAwMDAwMDAwMDAuLjc1MmQ2MTI2ZDVkYQ0KLS0tIC9kZXYvbnVsbA0KKysrIGIvRG9j
-dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3Jlc2V0L252bWVtLXJlYm9vdC1t
-b2RlLnR4dA0KQEAgLTAsMCArMSwyNiBAQA0KK05WTUVNIHJlYm9vdCBtb2RlIGRyaXZlcg0KKw0K
-K1RoaXMgZHJpdmVyIGdldHMgcmVib290IG1vZGUgbWFnaWMgdmFsdWUgZnJvbSByZWJvb3QtbW9k
-ZSBkcml2ZXINCithbmQgc3RvcmVzIGl0IGluIGEgTlZNRU0gY2VsbCBuYW1lZCAicmVib290LW1v
-ZGUiLiBUaGVuIHRoZSBib290bG9hZGVyDQorY2FuIHJlYWQgaXQgYW5kIHRha2UgZGlmZmVyZW50
-IGFjdGlvbiBhY2NvcmRpbmcgdG8gdGhlIG1hZ2ljDQordmFsdWUgc3RvcmVkLg0KKw0KK1JlcXVp
-cmVkIHByb3BlcnRpZXM6DQorLSBjb21wYXRpYmxlOiBzaG91bGQgYmUgIm52bWVtLXJlYm9vdC1t
-b2RlIi4NCistIG52bWVtLWNlbGxzOiBBIHBoYW5kbGUgdG8gdGhlIHJlYm9vdCBtb2RlIHByb3Zp
-ZGVkIGJ5IGEgbnZtZW0gZGV2aWNlLg0KKy0gbnZtZW0tY2VsbC1uYW1lczogU2hvdWxkIGJlICJy
-ZWJvb3QtbW9kZSIuDQorDQorVGhlIHJlc3Qgb2YgdGhlIHByb3BlcnRpZXMgc2hvdWxkIGZvbGxv
-dyB0aGUgZ2VuZXJpYyByZWJvb3QtbW9kZSBkZXNjcmlwdGlvbg0KK2ZvdW5kIGluIHJlYm9vdC1t
-b2RlLnR4dA0KKw0KK0V4YW1wbGU6DQorCXJlYm9vdC1tb2RlIHsNCisJCWNvbXBhdGlibGUgPSAi
-bnZtZW0tcmVib290LW1vZGUiOw0KKwkJbnZtZW0tY2VsbHMgPSA8JnJlYm9vdF9tb2RlPjsNCisJ
-CW52bWVtLWNlbGwtbmFtZXMgPSAicmVib290LW1vZGUiOw0KKw0KKwkJbW9kZS1ub3JtYWwgICAg
-ID0gPDB4QUFBQTU1MDE+Ow0KKwkJbW9kZS1ib290bG9hZGVyID0gPDB4QkJCQjU1MDA+Ow0KKwkJ
-bW9kZS1yZWNvdmVyeSAgID0gPDB4Q0NDQzU1MDI+Ow0KKwkJbW9kZS10ZXN0ICAgICAgID0gPDB4
-RERERDU1MDM+Ow0KKwl9Ow0KLS0gDQoyLjE3LjINCg0K
+On 15/05/2019 12:46, Quentin Perret wrote:
+> On Wednesday 15 May 2019 at 11:40:44 (+0100), Quentin Perret wrote:
+
+[ ... ]
+
+>> +#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+>>         if (capacitance) {
+>>                 ret = update_freq_table(cpufreq_cdev, capacitance);
+>>                 if (ret) {
+>>                         cdev = ERR_PTR(ret);
+>>                         goto remove_ida;
+>>                 }
+>> -
+>> -               cooling_ops = &cpufreq_power_cooling_ops;
+>> -       } else {
+>> -               cooling_ops = &cpufreq_cooling_ops;
+>>         }
+>> +#endif
+>> +       cooling_ops = &cpufreq_cooling_ops;
+> 
+> Argh, that is actually broken with !capacitance and
+> THERMAL_GOV_POWER_ALLOCATOR=y ... Perhaps it's best to keep the two
+> thermal_cooling_device_ops struct separated in the end.
+
+Or alternatively you can keep one structure but instead of filling the
+state2power,power2state and getrequestedpower fields in the declaration,
+you fill them in the if (capacitance) block, no?
+
+
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
