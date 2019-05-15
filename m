@@ -1,7 +1,7 @@
-From: Quentin Perret <quentin.perret@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
-Date: Wed, 15 May 2019 12:01:58 +0100
-Message-ID: <20190515110156.ru2wxqvwffqgq3t3@queper01-lin>
+Date: Wed, 15 May 2019 13:07:36 +0200
+Message-ID: <a4c0ab68-f8d0-a70d-58e5-b8de55199000@linaro.org>
 References: <20190515082318.7993-3-quentin.perret@arm.com>
  <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
  <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
@@ -12,12 +12,13 @@ References: <20190515082318.7993-3-quentin.perret@arm.com>
  <20190515104043.vogspxgkapp6qsny@queper01-lin>
  <20190515104651.tv5odug7ce4zlupc@queper01-lin>
  <5b55e432-f8b0-91ae-a7de-fe02e0cad322@linaro.org>
+ <20190515110156.ru2wxqvwffqgq3t3@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <5b55e432-f8b0-91ae-a7de-fe02e0cad322@linaro.org>
+In-Reply-To: <20190515110156.ru2wxqvwffqgq3t3@queper01-lin>
+Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -27,87 +28,71 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Quentin Perret <quentin.perret@arm.com>
 Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, amit.kachhap@gmail.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, edubezval@gmail.com, mka@chromium.org, catalin.marinas@arm.com, rui.zhang@intel.com, javi.merino@kernel.org, ionela.voinescu@arm.com, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 15 May 2019 at 12:51:57 (+0200), Daniel Lezcano wrote:
-> On 15/05/2019 12:46, Quentin Perret wrote:
-> > On Wednesday 15 May 2019 at 11:40:44 (+0100), Quentin Perret wrote:
-> 
-> [ ... ]
-> 
-> >> +#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
-> >>         if (capacitance) {
-> >>                 ret = update_freq_table(cpufreq_cdev, capacitance);
-> >>                 if (ret) {
-> >>                         cdev = ERR_PTR(ret);
-> >>                         goto remove_ida;
-> >>                 }
-> >> -
-> >> -               cooling_ops = &cpufreq_power_cooling_ops;
-> >> -       } else {
-> >> -               cooling_ops = &cpufreq_cooling_ops;
-> >>         }
-> >> +#endif
-> >> +       cooling_ops = &cpufreq_cooling_ops;
-> > 
-> > Argh, that is actually broken with !capacitance and
-> > THERMAL_GOV_POWER_ALLOCATOR=y ... Perhaps it's best to keep the two
-> > thermal_cooling_device_ops struct separated in the end.
-> 
-> Or alternatively you can keep one structure but instead of filling the
-> state2power,power2state and getrequestedpower fields in the declaration,
-> you fill them in the if (capacitance) block, no?
-
-Something like the below ? Yes, that works too. I'll write a proper
-patch and send that next week or so.
-
-Thanks,
-Quentin
-
---->8---
-
- /* Bind cpufreq callbacks to thermal cooling device ops */
-
- static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
--       .get_max_state = cpufreq_get_max_state,
--       .get_cur_state = cpufreq_get_cur_state,
--       .set_cur_state = cpufreq_set_cur_state,
--};
--
--static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
-        .get_max_state          = cpufreq_get_max_state,
-        .get_cur_state          = cpufreq_get_cur_state,
-        .set_cur_state          = cpufreq_set_cur_state,
--       .get_requested_power    = cpufreq_get_requested_power,
--       .state2power            = cpufreq_state2power,
--       .power2state            = cpufreq_power2state,
- };
-
- /* Notifier for cpufreq policy change */
-@@ -674,18 +667,19 @@ __cpufreq_cooling_register(struct device_node *np,
-                        pr_debug("%s: freq:%u KHz\n", __func__, freq);
-        }
-
-+       cooling_ops = &cpufreq_cooling_ops;
-+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
-        if (capacitance) {
-                ret = update_freq_table(cpufreq_cdev, capacitance);
-                if (ret) {
-                        cdev = ERR_PTR(ret);
-                        goto remove_ida;
-                }
--
--               cooling_ops = &cpufreq_power_cooling_ops;
--       } else {
--               cooling_ops = &cpufreq_cooling_ops;
-+               cooling_ops->get_requested_power = cpufreq_get_requested_power;
-+               cooling_ops->state2power = cpufreq_state2power;
-+               cooling_ops->power2state = cpufreq_power2state;
-        }
--
-+#endif
-        cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
-                                                  cooling_ops);
-        if (IS_ERR(cdev))
+T24gMTUvMDUvMjAxOSAxMzowMSwgUXVlbnRpbiBQZXJyZXQgd3JvdGU6Cj4gT24gV2VkbmVzZGF5
+IDE1IE1heSAyMDE5IGF0IDEyOjUxOjU3ICgrMDIwMCksIERhbmllbCBMZXpjYW5vIHdyb3RlOgo+
+PiBPbiAxNS8wNS8yMDE5IDEyOjQ2LCBRdWVudGluIFBlcnJldCB3cm90ZToKPj4+IE9uIFdlZG5l
+c2RheSAxNSBNYXkgMjAxOSBhdCAxMTo0MDo0NCAoKzAxMDApLCBRdWVudGluIFBlcnJldCB3cm90
+ZToKPj4KPj4gWyAuLi4gXQo+Pgo+Pj4+ICsjaWZkZWYgQ09ORklHX1RIRVJNQUxfR09WX1BPV0VS
+X0FMTE9DQVRPUgo+Pj4+ICAgICAgICAgaWYgKGNhcGFjaXRhbmNlKSB7Cj4+Pj4gICAgICAgICAg
+ICAgICAgIHJldCA9IHVwZGF0ZV9mcmVxX3RhYmxlKGNwdWZyZXFfY2RldiwgY2FwYWNpdGFuY2Up
+Owo+Pj4+ICAgICAgICAgICAgICAgICBpZiAocmV0KSB7Cj4+Pj4gICAgICAgICAgICAgICAgICAg
+ICAgICAgY2RldiA9IEVSUl9QVFIocmV0KTsKPj4+PiAgICAgICAgICAgICAgICAgICAgICAgICBn
+b3RvIHJlbW92ZV9pZGE7Cj4+Pj4gICAgICAgICAgICAgICAgIH0KPj4+PiAtCj4+Pj4gLSAgICAg
+ICAgICAgICAgIGNvb2xpbmdfb3BzID0gJmNwdWZyZXFfcG93ZXJfY29vbGluZ19vcHM7Cj4+Pj4g
+LSAgICAgICB9IGVsc2Ugewo+Pj4+IC0gICAgICAgICAgICAgICBjb29saW5nX29wcyA9ICZjcHVm
+cmVxX2Nvb2xpbmdfb3BzOwo+Pj4+ICAgICAgICAgfQo+Pj4+ICsjZW5kaWYKPj4+PiArICAgICAg
+IGNvb2xpbmdfb3BzID0gJmNwdWZyZXFfY29vbGluZ19vcHM7Cj4+Pgo+Pj4gQXJnaCwgdGhhdCBp
+cyBhY3R1YWxseSBicm9rZW4gd2l0aCAhY2FwYWNpdGFuY2UgYW5kCj4+PiBUSEVSTUFMX0dPVl9Q
+T1dFUl9BTExPQ0FUT1I9eSAuLi4gUGVyaGFwcyBpdCdzIGJlc3QgdG8ga2VlcCB0aGUgdHdvCj4+
+PiB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX29wcyBzdHJ1Y3Qgc2VwYXJhdGVkIGluIHRoZSBlbmQu
+Cj4+Cj4+IE9yIGFsdGVybmF0aXZlbHkgeW91IGNhbiBrZWVwIG9uZSBzdHJ1Y3R1cmUgYnV0IGlu
+c3RlYWQgb2YgZmlsbGluZyB0aGUKPj4gc3RhdGUycG93ZXIscG93ZXIyc3RhdGUgYW5kIGdldHJl
+cXVlc3RlZHBvd2VyIGZpZWxkcyBpbiB0aGUgZGVjbGFyYXRpb24sCj4+IHlvdSBmaWxsIHRoZW0g
+aW4gdGhlIGlmIChjYXBhY2l0YW5jZSkgYmxvY2ssIG5vPwo+IAo+IFNvbWV0aGluZyBsaWtlIHRo
+ZSBiZWxvdyA/IFllcywgdGhhdCB3b3JrcyB0b28uIEknbGwgd3JpdGUgYSBwcm9wZXIKPiBwYXRj
+aCBhbmQgc2VuZCB0aGF0IG5leHQgd2VlayBvciBzby4KClllcywgZXhhY3RseS4gQW5kIElNSE8s
+IHRoYXQgaGVscHMgZm9yIHRoZSB1bmRlcnN0YW5kaW5nIG9mIGNvZGUgYWxzby4KCj4gLS0tPjgt
+LS0KPiAKPiAgLyogQmluZCBjcHVmcmVxIGNhbGxiYWNrcyB0byB0aGVybWFsIGNvb2xpbmcgZGV2
+aWNlIG9wcyAqLwo+IAo+ICBzdGF0aWMgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2Vfb3Bz
+IGNwdWZyZXFfY29vbGluZ19vcHMgPSB7Cj4gLSAgICAgICAuZ2V0X21heF9zdGF0ZSA9IGNwdWZy
+ZXFfZ2V0X21heF9zdGF0ZSwKPiAtICAgICAgIC5nZXRfY3VyX3N0YXRlID0gY3B1ZnJlcV9nZXRf
+Y3VyX3N0YXRlLAo+IC0gICAgICAgLnNldF9jdXJfc3RhdGUgPSBjcHVmcmVxX3NldF9jdXJfc3Rh
+dGUsCj4gLX07Cj4gLQo+IC1zdGF0aWMgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2Vfb3Bz
+IGNwdWZyZXFfcG93ZXJfY29vbGluZ19vcHMgPSB7Cj4gICAgICAgICAuZ2V0X21heF9zdGF0ZSAg
+ICAgICAgICA9IGNwdWZyZXFfZ2V0X21heF9zdGF0ZSwKPiAgICAgICAgIC5nZXRfY3VyX3N0YXRl
+ICAgICAgICAgID0gY3B1ZnJlcV9nZXRfY3VyX3N0YXRlLAo+ICAgICAgICAgLnNldF9jdXJfc3Rh
+dGUgICAgICAgICAgPSBjcHVmcmVxX3NldF9jdXJfc3RhdGUsCj4gLSAgICAgICAuZ2V0X3JlcXVl
+c3RlZF9wb3dlciAgICA9IGNwdWZyZXFfZ2V0X3JlcXVlc3RlZF9wb3dlciwKPiAtICAgICAgIC5z
+dGF0ZTJwb3dlciAgICAgICAgICAgID0gY3B1ZnJlcV9zdGF0ZTJwb3dlciwKPiAtICAgICAgIC5w
+b3dlcjJzdGF0ZSAgICAgICAgICAgID0gY3B1ZnJlcV9wb3dlcjJzdGF0ZSwKPiAgfTsKPiAKPiAg
+LyogTm90aWZpZXIgZm9yIGNwdWZyZXEgcG9saWN5IGNoYW5nZSAqLwo+IEBAIC02NzQsMTggKzY2
+NywxOSBAQCBfX2NwdWZyZXFfY29vbGluZ19yZWdpc3RlcihzdHJ1Y3QgZGV2aWNlX25vZGUgKm5w
+LAo+ICAgICAgICAgICAgICAgICAgICAgICAgIHByX2RlYnVnKCIlczogZnJlcToldSBLSHpcbiIs
+IF9fZnVuY19fLCBmcmVxKTsKPiAgICAgICAgIH0KPiAKPiArICAgICAgIGNvb2xpbmdfb3BzID0g
+JmNwdWZyZXFfY29vbGluZ19vcHM7Cj4gKyNpZmRlZiBDT05GSUdfVEhFUk1BTF9HT1ZfUE9XRVJf
+QUxMT0NBVE9SCj4gICAgICAgICBpZiAoY2FwYWNpdGFuY2UpIHsKPiAgICAgICAgICAgICAgICAg
+cmV0ID0gdXBkYXRlX2ZyZXFfdGFibGUoY3B1ZnJlcV9jZGV2LCBjYXBhY2l0YW5jZSk7Cj4gICAg
+ICAgICAgICAgICAgIGlmIChyZXQpIHsKPiAgICAgICAgICAgICAgICAgICAgICAgICBjZGV2ID0g
+RVJSX1BUUihyZXQpOwo+ICAgICAgICAgICAgICAgICAgICAgICAgIGdvdG8gcmVtb3ZlX2lkYTsK
+PiAgICAgICAgICAgICAgICAgfQo+IC0KPiAtICAgICAgICAgICAgICAgY29vbGluZ19vcHMgPSAm
+Y3B1ZnJlcV9wb3dlcl9jb29saW5nX29wczsKPiAtICAgICAgIH0gZWxzZSB7Cj4gLSAgICAgICAg
+ICAgICAgIGNvb2xpbmdfb3BzID0gJmNwdWZyZXFfY29vbGluZ19vcHM7Cj4gKyAgICAgICAgICAg
+ICAgIGNvb2xpbmdfb3BzLT5nZXRfcmVxdWVzdGVkX3Bvd2VyID0gY3B1ZnJlcV9nZXRfcmVxdWVz
+dGVkX3Bvd2VyOwo+ICsgICAgICAgICAgICAgICBjb29saW5nX29wcy0+c3RhdGUycG93ZXIgPSBj
+cHVmcmVxX3N0YXRlMnBvd2VyOwo+ICsgICAgICAgICAgICAgICBjb29saW5nX29wcy0+cG93ZXIy
+c3RhdGUgPSBjcHVmcmVxX3Bvd2VyMnN0YXRlOwo+ICAgICAgICAgfQo+IC0KPiArI2VuZGlmCj4g
+ICAgICAgICBjZGV2ID0gdGhlcm1hbF9vZl9jb29saW5nX2RldmljZV9yZWdpc3RlcihucCwgZGV2
+X25hbWUsIGNwdWZyZXFfY2RldiwKPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIGNvb2xpbmdfb3BzKTsKPiAgICAgICAgIGlmIChJU19FUlIoY2Rldikp
+Cj4gCgoKLS0gCiA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBz
+b3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cu
+ZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29t
+LyMhL2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJs
+b2cvPiBCbG9nCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5p
+bmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8v
+bGludXgtYXJtLWtlcm5lbAo=
