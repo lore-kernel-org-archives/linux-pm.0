@@ -2,188 +2,164 @@ Return-Path: <SRS0=mZbj=TP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BEE2C04E53
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 09:47:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A9D6C04E53
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 09:56:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 783DD2084F
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 09:47:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6CAF2084A
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 09:56:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gBB5sus/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726511AbfEOJpj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 May 2019 05:45:39 -0400
-Received: from foss.arm.com ([217.140.101.70]:39246 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726501AbfEOJpi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 May 2019 05:45:38 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 26915A78;
-        Wed, 15 May 2019 02:45:38 -0700 (PDT)
-Received: from e110439-lin.cambridge.arm.com (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id E4F9C3F703;
-        Wed, 15 May 2019 02:45:34 -0700 (PDT)
-From:   Patrick Bellasi <patrick.bellasi@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-api@vger.kernel.org
-Cc:     Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Tejun Heo <tj@kernel.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Paul Turner <pjt@google.com>,
-        Quentin Perret <quentin.perret@arm.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Morten Rasmussen <morten.rasmussen@arm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Todd Kjos <tkjos@google.com>,
-        Joel Fernandes <joelaf@google.com>,
-        Steve Muckle <smuckle@google.com>,
-        Suren Baghdasaryan <surenb@google.com>
-Subject: [PATCH v9 02/16] sched/core: uclamp: Add bucket local max tracking
-Date:   Wed, 15 May 2019 10:44:45 +0100
-Message-Id: <20190515094459.10317-3-patrick.bellasi@arm.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190515094459.10317-1-patrick.bellasi@arm.com>
-References: <20190515094459.10317-1-patrick.bellasi@arm.com>
+        id S1726410AbfEOJ4e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 May 2019 05:56:34 -0400
+Received: from mail-wr1-f66.google.com ([209.85.221.66]:39579 "EHLO
+        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726302AbfEOJ4d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 05:56:33 -0400
+Received: by mail-wr1-f66.google.com with SMTP id w8so1939106wrl.6
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 02:56:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=5JYhbd/vO4XoD/CtHSzLTiUyvf3UwZx+Y3JbyqMKmfs=;
+        b=gBB5sus/t6TCjIaVANYvetAi+rVR0U8RlHgIDuV/jFgGLO+E1mCWhtrSTMhXNFruCm
+         oPrKOEGbTeOD1NtJi1vidX6vzkumsEJOBrlGTQnk8hrfl1chmz5IH8f9cRpeQRJsdiaR
+         YY4qKKN1F0c3u1J9yFL/C5SX10FLE0/hxCSwJYrZ6Hl0aeJ22yn9zSx3wRh5puqiTPyR
+         Kk9DCJ71sIF1+eThGf3kvQ2mzTptKwPEdKUL6Lj4wJ08VOl+Lsw4LOR4suWgQntD8A5+
+         5/DLw2QsC6AceztCAROjPZPOBJNb88rLyqNCJFD2VqR6wwI4RdqabmfoXRyqZkfptEus
+         tDpA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=5JYhbd/vO4XoD/CtHSzLTiUyvf3UwZx+Y3JbyqMKmfs=;
+        b=uT9BsMLNb7jwqAH9rpVz0Y6UK7/fHe/mcFZG1WZrRKpk+UpiI/Sb2eMipQrjMZ4UPR
+         71vpQya7/pEpU6bj1CNRrPjyhTRiT95stJQRSggDVT1+Tel7Yh5tHwXQIVbG2PIbY3V+
+         /QAzqA8HQcAKOQPRdkZObPEEBdOorHIdMHTL7+0G8e0P+392j+pdJU+TW0lke/AxwHrb
+         lDcXHKn7rs9WRVOshIvZCMbcATFRVzgToj/zzL2Waz0KGOUzslMOvrnIJJi2HfWjJgLr
+         smqVevZX3vdIHR+KNFTvRxnmysUK8c45itfTJC2yBt4+O6Q2UpyijU4/xea4W6T9kkX4
+         IvTQ==
+X-Gm-Message-State: APjAAAV3korKTCo2SmYxIWG9Ez7hB6LbZOlTy31fH9eVe14j478ixRUV
+        +BcQwUDeoOVoN1vRZv+lgATgTg==
+X-Google-Smtp-Source: APXvYqxozk+6bk7th/l8gbao/9YhKjUJ5EJNO5OynkqEGlmWbYZkWun7AiVJeD9feyohHwCreEO9hQ==
+X-Received: by 2002:adf:b3d1:: with SMTP id x17mr24575739wrd.31.1557914191908;
+        Wed, 15 May 2019 02:56:31 -0700 (PDT)
+Received: from [192.168.0.41] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
+        by smtp.googlemail.com with ESMTPSA id j13sm1096094wru.78.2019.05.15.02.56.30
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 15 May 2019 02:56:31 -0700 (PDT)
+Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
+To:     Quentin Perret <quentin.perret@arm.com>
+Cc:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
+        viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net,
+        will.deacon@arm.com, catalin.marinas@arm.com,
+        dietmar.eggemann@arm.com, ionela.voinescu@arm.com,
+        mka@chromium.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20190515082318.7993-1-quentin.perret@arm.com>
+ <20190515082318.7993-3-quentin.perret@arm.com>
+ <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
+ <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <698400c0-e0a4-4a86-b9df-cdb9bd683c0f@linaro.org>
+Date:   Wed, 15 May 2019 11:56:30 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190515094445.kUsHfZA_4V2IOR84grDa9sMB2OaNPc9nSgS01ZXVv0Q@z>
+Message-ID: <20190515095630.mvwJyWUOQOONWr9xiCygO-nOtx1l1YdRimu-GYc-iwU@z>
 
-Because of bucketization, different task-specific clamp values are
-tracked in the same bucket.  For example, with 20% bucket size and
-assuming to have:
-  Task1: util_min=25%
-  Task2: util_min=35%
-both tasks will be refcounted in the [20..39]% bucket and always boosted
-only up to 20% thus implementing a simple floor aggregation normally
-used in histograms.
+On 15/05/2019 11:17, Quentin Perret wrote:
+> Hi Daniel,
+> 
+> On Wednesday 15 May 2019 at 11:06:18 (+0200), Daniel Lezcano wrote:
+>> On 15/05/2019 10:23, Quentin Perret wrote:
+>>> In the current state, the perf_domain struct is fully defined only when
+>>> CONFIG_ENERGY_MODEL=y. Since we need to write code that compiles both
+>>> with or without that option in the thermal framework, make sure to
+>>> actually define the struct regardless of the config option. That allows
+>>> to avoid using stubbed accessor functions all the time in code paths
+>>> that use the EM.
+>>>
+>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+>>
+>> This patch implies the cpu cooling device can be set without the energy
+>> model.
+>>
+>> Isn't it possible to make a strong dependency for the cpu cooling device
+>> on the energy model option, add the energy model as default on arm arch
+>> and drop this patch?
+> 
+> Right, that should work too.
+> 
+>> After all, the cpu cooling is using the em framework.
+> 
+> The reason I did it that way is simply to keep things flexible. If you
+> don't compile in THERMAL_GOV_POWER_ALLOCATOR, you will never use the EM
+> for CPU thermal. So I thought it would be good to not mandate compiling
+> in ENERGY_MODEL in this case -- that should save a bit of space.
+> 
+> But TBH I don't have a strong opinion on this one, so if everybody
+> agrees it's fine to just make CPU_THERMAL depend on ENERGY_MODEL, I'm
+> happy to drop this patch and fix patch 3/3. That would indeed simplify
+> things a bit.
 
-In systems with only few and well-defined clamp values, it would be
-useful to track the exact clamp value required by a task whenever
-possible. For example, if a system requires only 23% and 47% boost
-values then it's possible to track the exact boost required by each
-task using only 3 buckets of ~33% size each.
+Ok in this case it will be better to drop the 2/3 and add a small series
+doing for the cpu_cooling.c
 
-Introduce a mechanism to max aggregate the requested clamp values of
-RUNNABLE tasks in the same bucket. Keep it simple by resetting the
-bucket value to its base value only when a bucket becomes inactive.
-Allow a limited and controlled overboosting margin for tasks recounted
-in the same bucket.
+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
 
-In systems where the boost values are not known in advance, it is still
-possible to control the maximum acceptable overboosting margin by tuning
-the number of clamp groups. For example, 20 groups ensure a 5% maximum
-overboost.
+/* structure freq */
 
-Remove the rq bucket initialization code since a correct bucket value
-is now computed when a task is refcounted into a CPU's rq.
+/* power2state */
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+/* state2power*/
 
----
-Changes in v9
- Message-ID: <20190415144930.pntid6evu6r67l4o@e110439-lin>
- - fix "max local update" by moving into uclamp_rq_inc_id()
----
- kernel/sched/core.c | 43 +++++++++++++++++++++++++------------------
- 1 file changed, 25 insertions(+), 18 deletions(-)
+/* getrequestedpower */
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 29c0d465fd9e..79b57cbbe032 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -773,6 +773,11 @@ static inline unsigned int uclamp_bucket_id(unsigned int clamp_value)
- 	return clamp_value / UCLAMP_BUCKET_DELTA;
- }
- 
-+static inline unsigned int uclamp_bucket_base_value(unsigned int clamp_value)
-+{
-+	return UCLAMP_BUCKET_DELTA * uclamp_bucket_id(clamp_value);
-+}
-+
- static inline unsigned int uclamp_none(int clamp_id)
- {
- 	if (clamp_id == UCLAMP_MIN)
-@@ -810,6 +815,11 @@ unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id)
-  * When a task is enqueued on a rq, the clamp bucket currently defined by the
-  * task's uclamp::bucket_id is refcounted on that rq. This also immediately
-  * updates the rq's clamp value if required.
-+ *
-+ * Tasks can have a task-specific value requested from user-space, track
-+ * within each bucket the maximum value for tasks refcounted in it.
-+ * This "local max aggregation" allows to track the exact "requested" value
-+ * for each bucket when all its RUNNABLE tasks require the same clamp.
-  */
- static inline void uclamp_rq_inc_id(struct rq *rq, struct task_struct *p,
- 				    unsigned int clamp_id)
-@@ -823,8 +833,15 @@ static inline void uclamp_rq_inc_id(struct rq *rq, struct task_struct *p,
- 	bucket = &uc_rq->bucket[uc_se->bucket_id];
- 	bucket->tasks++;
- 
-+	/*
-+	 * Local max aggregation: rq buckets always track the max
-+	 * "requested" clamp value of its RUNNABLE tasks.
-+	 */
-+	if (bucket->tasks == 1 || uc_se->value > bucket->value)
-+		bucket->value = uc_se->value;
-+
- 	if (uc_se->value > READ_ONCE(uc_rq->value))
--		WRITE_ONCE(uc_rq->value, bucket->value);
-+		WRITE_ONCE(uc_rq->value, uc_se->value);
- }
- 
- /*
-@@ -851,6 +868,12 @@ static inline void uclamp_rq_dec_id(struct rq *rq, struct task_struct *p,
- 	if (likely(bucket->tasks))
- 		bucket->tasks--;
- 
-+	/*
-+	 * Keep "local max aggregation" simple and accept to (possibly)
-+	 * overboost some RUNNABLE tasks in the same bucket.
-+	 * The rq clamp bucket value is reset to its base value whenever
-+	 * there are no more RUNNABLE tasks refcounting it.
-+	 */
- 	if (likely(bucket->tasks))
- 		return;
- 
-@@ -891,25 +914,9 @@ static void __init init_uclamp(void)
- 	unsigned int clamp_id;
- 	int cpu;
- 
--	for_each_possible_cpu(cpu) {
--		struct uclamp_bucket *bucket;
--		struct uclamp_rq *uc_rq;
--		unsigned int bucket_id;
--
-+	for_each_possible_cpu(cpu)
- 		memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
- 
--		for_each_clamp_id(clamp_id) {
--			uc_rq = &cpu_rq(cpu)->uclamp[clamp_id];
--
--			bucket_id = 1;
--			while (bucket_id < UCLAMP_BUCKETS) {
--				bucket = &uc_rq->bucket[bucket_id];
--				bucket->value = bucket_id * UCLAMP_BUCKET_DELTA;
--				++bucket_id;
--			}
--		}
--	}
--
- 	for_each_clamp_id(clamp_id) {
- 		uclamp_se_set(&init_task.uclamp[clamp_id],
- 			      uclamp_none(clamp_id));
+/* All functions needed for the above */
+
+#endif
+
+static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+        .get_max_state          = cpufreq_get_max_state,
+        .get_cur_state          = cpufreq_get_cur_state,
+        .set_cur_state          = cpufreq_set_cur_state,
+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+        .get_requested_power    = cpufreq_get_requested_power,
+        .state2power            = cpufreq_state2power,
+        .power2state            = cpufreq_power2state,
+#endif
+};
+
+So you don't have to care about ENERGY_MODEL to be set as
+THERMAL_GOV_POWER_ALLOCATOR depends on it.
+
+I think the result for cpu_cooling.c will be even more cleaner with the
+em change.
+
+
+
+
 -- 
-2.21.0
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
