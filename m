@@ -6,57 +6,57 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C090C04E84
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:53:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8E38C04E53
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:54:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 665B520873
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:53:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B58C520873
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:54:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727917AbfEONxv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 May 2019 09:53:51 -0400
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:39870 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727890AbfEONxu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 09:53:50 -0400
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4FDrRtS140463
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:53:50 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2sgkpdsg3n-1
+        id S1728159AbfEONyA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 May 2019 09:54:00 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:58606 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1728030AbfEONx7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 09:53:59 -0400
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4FDqusH123679
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:53:58 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2sgjv0csjd-1
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:53:47 -0400
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:53:57 -0400
 Received: from localhost
-        by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
         for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
-        Wed, 15 May 2019 14:53:40 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
-        by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        Wed, 15 May 2019 14:53:55 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+        by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
         (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Wed, 15 May 2019 14:53:38 +0100
+        Wed, 15 May 2019 14:53:51 +0100
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-        by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4FDrb6851642486
+        by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4FDroQ025100530
         (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 15 May 2019 13:53:37 GMT
+        Wed, 15 May 2019 13:53:50 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id DF54252050;
-        Wed, 15 May 2019 13:53:36 +0000 (GMT)
+        by IMSVA (Postfix) with ESMTP id 9C32252050;
+        Wed, 15 May 2019 13:53:50 +0000 (GMT)
 Received: from localhost.localdomain.com (unknown [9.102.18.182])
-        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 18FF85204E;
-        Wed, 15 May 2019 13:53:33 +0000 (GMT)
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 79C345204F;
+        Wed, 15 May 2019 13:53:48 +0000 (GMT)
 From:   Parth Shah <parth@linux.ibm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     mingo@redhat.com, peterz@infradead.org, dietmar.eggemann@arm.com,
         dsmythies@telus.net
-Subject: [RFCv2 1/6] sched/core: Add manual jitter classification from cgroup interface
-Date:   Wed, 15 May 2019 19:23:17 +0530
+Subject: [RFCv2 6/6] sched/fair: Bound non idle core search by DIE domain
+Date:   Wed, 15 May 2019 19:23:22 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190515135322.19393-1-parth@linux.ibm.com>
 References: <20190515135322.19393-1-parth@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19051513-4275-0000-0000-000003351565
+x-cbid: 19051513-0020-0000-0000-0000033CFCA2
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19051513-4276-0000-0000-0000384499A3
-Message-Id: <20190515135322.19393-2-parth@linux.ibm.com>
+x-cbparentid: 19051513-0021-0000-0000-0000218FBF30
+Message-Id: <20190515135322.19393-7-parth@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-15_08:,,
  signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
@@ -69,76 +69,87 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190515135317.oCHOIkVFa6YJC4sgJCDDwU4WTcR55By36Gak2R_FJ3Q@z>
+Message-ID: <20190515135322.PmYajEhcKD5IBkZb2mHMh1BXQmi2tepi5QKne8R2k0s@z>
 
-Jitter tasks are usually of less important in terms of performance
-and are short/bursty in characteristics. TurboSched uses this jitter
-classification to pack jitters into the already running busy cores to
-keep the total idle core count high.
+This patch specifies the sched domain to search for a non idle core.
 
-The patch describes the use of UCLAMP mechanism to classify tasks. Patrick
-Bellasi came up with a mechanism to classify tasks from the userspace
-https://lore.kernel.org/lkml/20190402104153.25404-1-patrick.bellasi@arm.com/
+The select_non_idle_core searches for the non idle cores across whole
+system. But in the systems with multiple NUMA domains, the Turbo frequency
+can be sustained within the NUMA domain without being affected from other
+NUMA.
 
-This UCLAMP mechanism can be useful in classifying tasks as jitter. Jitters
-can be classified for the cgroup by keeping util.max of the tasks as the
-least(=0). This also provides benefit of giving the least frequency to
-those jitter tasks, which is useful if all jitters are packed onto a
-separate core.
-
-Use Case with UCLAMP
-===================
-To create a cgroup with all the tasks classified as jitters;
-
-```
-mkdir -p /sys/fs/cgroup/cpu/jitter
-echo 0 > /proc/sys/kernel/sched_uclamp_util_min;
-echo 0 > /sys/fs/cgroup/cpu/jitter/cpu.util.min;
-echo 0 > /sys/fs/cgroup/cpu/jitter/cpu.util.max;
-i=8;
-./turbo_bench -t 30 -h $i -n $i &
-./turbo_bench -t 30 -h 0 -n $i &
-echo $! > /sys/fs/cgroup/cpu/jitter/cgroup.procs;
-```
+This patch provides an architecture specific implementation for defining
+the turbo domain to make searching of the core to be bound within the NUMA.
 
 Signed-off-by: Parth Shah <parth@linux.ibm.com>
 ---
- kernel/sched/core.c  | 9 +++++++++
- kernel/sched/sched.h | 1 +
- 2 files changed, 10 insertions(+)
+ arch/powerpc/include/asm/topology.h |  3 +++
+ arch/powerpc/kernel/smp.c           |  5 +++++
+ kernel/sched/fair.c                 | 10 +++++++++-
+ 3 files changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index d42c0f5eefa9..77aa4aee4478 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -7192,6 +7192,15 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
- 	tg->uclamp_req[UCLAMP_MAX].value = max_value;
- 	tg->uclamp_req[UCLAMP_MAX].bucket_id = uclamp_bucket_id(max_value);
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 1c777ee67180..410b94c9e1a2 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -133,10 +133,13 @@ static inline void shared_proc_topology_init(void) {}
+ #define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
+ #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
+ #define arch_scale_core_capacity	powerpc_scale_core_capacity
++#define arch_turbo_domain		powerpc_turbo_domain
  
-+	/*
-+	 * Classify the tasks belonging to the last bucket of MAX UCLAMP as
-+	 * jitters
-+	 */
-+	if (uclamp_bucket_id(max_value) == 0)
-+		tg->turbo_sched_enabled = 1;
-+	else if (tg->turbo_sched_enabled)
-+		tg->turbo_sched_enabled = 0;
+ unsigned long powerpc_scale_core_capacity(int first_smt,
+ 					  unsigned long smt_cap);
+ 
++struct cpumask *powerpc_turbo_domain(int cpu);
 +
- 	/* Update effective clamps to track the most restrictive value */
- 	cpu_util_update_eff(css, UCLAMP_MAX);
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index b4019012d84b..e75ffaf3ff34 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -407,6 +407,7 @@ struct task_group {
- 	struct uclamp_se	uclamp[UCLAMP_CNT];
+ int dlpar_cpu_readd(int cpu);
+ #endif
+ #endif
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 256ab2a50f6e..e13ba3981891 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1203,6 +1203,11 @@ inline unsigned long powerpc_scale_core_capacity(int first_cpu,
+ 	/* Scale core capacity based on smt mode */
+ 	return smt_mode == 1 ? cap : ((cap * smt_mode) >> 3) + cap;
+ }
++
++inline struct cpumask *powerpc_turbo_domain(int cpu)
++{
++	return cpumask_of_node(cpu_to_node(cpu));
++}
  #endif
  
-+	bool			turbo_sched_enabled;
- };
+ static inline void add_cpu_to_smallcore_masks(int cpu)
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index d2d556eb6d0f..bd9985775db4 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -6260,6 +6260,13 @@ static inline bool core_underutilized(unsigned long core_util,
+ 	return core_util < (core_capacity >> 3);
+ }
  
- #ifdef CONFIG_FAIR_GROUP_SCHED
++#ifndef arch_turbo_domain
++static __always_inline struct cpumask *arch_turbo_domain(int cpu)
++{
++	return sched_domain_span(rcu_dereference(per_cpu(sd_llc, cpu)));
++}
++#endif
++
+ /*
+  * Try to find a non idle core in the system  with spare capacity
+  * available for task packing, thereby keeping minimal cores active.
+@@ -6270,7 +6277,8 @@ static int select_non_idle_core(struct task_struct *p, int prev_cpu)
+ 	struct cpumask *cpus = this_cpu_cpumask_var_ptr(turbo_sched_mask);
+ 	int iter_cpu, sibling;
+ 
+-	cpumask_and(cpus, cpu_online_mask, &p->cpus_allowed);
++	cpumask_and(cpus, cpu_online_mask, arch_turbo_domain(prev_cpu));
++	cpumask_and(cpus, cpus, &p->cpus_allowed);
+ 
+ 	for_each_cpu_wrap(iter_cpu, cpus, prev_cpu) {
+ 		unsigned long core_util = 0;
 -- 
 2.17.1
 
