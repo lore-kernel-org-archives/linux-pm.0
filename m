@@ -1,322 +1,78 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v9 13/16] sched/core: uclamp: Propagate parent clamps
-Date: Wed, 15 May 2019 10:44:56 +0100
-Message-ID: <20190515094459.10317-14-patrick.bellasi@arm.com>
-References: <20190515094459.10317-1-patrick.bellasi@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
+Date: Wed, 15 May 2019 11:56:30 +0200
+Message-ID: <698400c0-e0a4-4a86-b9df-cdb9bd683c0f@linaro.org>
+References: <20190515082318.7993-1-quentin.perret@arm.com>
+ <20190515082318.7993-3-quentin.perret@arm.com>
+ <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
+ <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190515094459.10317-1-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-api@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, edubezval@gmail.com, mka@chromium.org, catalin.marinas@arm.com, rui.zhang@intel.com, javi.merino@kernel.org, ionela.voinescu@arm.com, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-In order to properly support hierarchical resources control, the cgroup
-delegation model requires that attribute writes from a child group never
-fail but still are (potentially) constrained based on parent's assigned
-resources. This requires to properly propagate and aggregate parent
-attributes down to its descendants.
-
-Let's implement this mechanism by adding a new "effective" clamp value
-for each task group. The effective clamp value is defined as the smaller
-value between the clamp value of a group and the effective clamp value
-of its parent. This is the actual clamp value enforced on tasks in a
-task group.
-
-Since it can be interesting for userspace, e.g. system management
-software, to know exactly what the currently propagated/enforced
-configuration is, the effective clamp values are exposed to user-space
-by means of a new pair of read-only attributes
-cpu.util.{min,max}.effective.
-
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>
----
- Documentation/admin-guide/cgroup-v2.rst |  19 +++++
- kernel/sched/core.c                     | 108 ++++++++++++++++++++++--
- kernel/sched/sched.h                    |   2 +
- 3 files changed, 124 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
-index 3a940bfe4e8c..4d13f88bfe25 100644
---- a/Documentation/admin-guide/cgroup-v2.rst
-+++ b/Documentation/admin-guide/cgroup-v2.rst
-@@ -990,6 +990,16 @@ All time durations are in microseconds.
-         values similar to the sched_setattr(2). This minimum utilization
-         value is used to clamp the task specific minimum utilization clamp.
- 
-+  cpu.util.min.effective
-+        A read-only single value file which exists on non-root cgroups and
-+        reports minimum utilization clamp value currently enforced on a task
-+        group.
-+
-+        The actual minimum utilization in the range [0, 1024].
-+
-+        This value can be lower then cpu.util.min in case a parent cgroup
-+        allows only smaller minimum utilization values.
-+
-   cpu.util.max
-         A read-write single value file which exists on non-root cgroups.
-         The default is "1024". i.e. no utilization capping
-@@ -1000,6 +1010,15 @@ All time durations are in microseconds.
-         values similar to the sched_setattr(2). This maximum utilization
-         value is used to clamp the task specific maximum utilization clamp.
- 
-+  cpu.util.max.effective
-+        A read-only single value file which exists on non-root cgroups and
-+        reports maximum utilization clamp value currently enforced on a task
-+        group.
-+
-+        The actual maximum utilization in the range [0, 1024].
-+
-+        This value can be lower then cpu.util.max in case a parent cgroup
-+        is enforcing a more restrictive clamping on max utilization.
- 
- 
- Memory
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 19437257a08d..efedbd3a0ce6 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -761,6 +761,18 @@ static void set_load_weight(struct task_struct *p, bool update_load)
- }
- 
- #ifdef CONFIG_UCLAMP_TASK
-+/*
-+ * Serializes updates of utilization clamp values
-+ *
-+ * The (slow-path) user-space triggers utilization clamp value updates which
-+ * can require updates on (fast-path) scheduler's data structures used to
-+ * support enqueue/dequeue operations.
-+ * While the per-CPU rq lock protects fast-path update operations, user-space
-+ * requests are serialized using a mutex to reduce the risk of conflicting
-+ * updates or API abuses.
-+ */
-+static DEFINE_MUTEX(uclamp_mutex);
-+
- /* Max allowed minimum utilization */
- unsigned int sysctl_sched_uclamp_util_min = SCHED_CAPACITY_SCALE;
- 
-@@ -1125,6 +1137,8 @@ static void __init init_uclamp(void)
- 	unsigned int clamp_id;
- 	int cpu;
- 
-+	mutex_init(&uclamp_mutex);
-+
- 	for_each_possible_cpu(cpu) {
- 		memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
- 		cpu_rq(cpu)->uclamp_flags = 0;
-@@ -1141,6 +1155,7 @@ static void __init init_uclamp(void)
- 		uclamp_default[clamp_id] = uc_max;
- #ifdef CONFIG_UCLAMP_TASK_GROUP
- 		root_task_group.uclamp_req[clamp_id] = uc_max;
-+		root_task_group.uclamp[clamp_id] = uc_max;
- #endif
- 	}
- }
-@@ -6705,8 +6720,10 @@ static inline void alloc_uclamp_sched_group(struct task_group *tg,
- #ifdef CONFIG_UCLAMP_TASK_GROUP
- 	int clamp_id;
- 
--	for_each_clamp_id(clamp_id)
-+	for_each_clamp_id(clamp_id) {
- 		tg->uclamp_req[clamp_id] = parent->uclamp_req[clamp_id];
-+		tg->uclamp[clamp_id] = parent->uclamp[clamp_id];
-+	}
- #endif
- }
- 
-@@ -6956,6 +6973,44 @@ static void cpu_cgroup_attach(struct cgroup_taskset *tset)
- }
- 
- #ifdef CONFIG_UCLAMP_TASK_GROUP
-+static void cpu_util_update_eff(struct cgroup_subsys_state *css,
-+				unsigned int clamp_id)
-+{
-+	struct cgroup_subsys_state *top_css = css;
-+	struct uclamp_se *uc_se, *uc_parent;
-+	unsigned int value;
-+
-+	css_for_each_descendant_pre(css, top_css) {
-+		value = css_tg(css)->uclamp_req[clamp_id].value;
-+
-+		uc_parent = NULL;
-+		if (css_tg(css)->parent)
-+			uc_parent = &css_tg(css)->parent->uclamp[clamp_id];
-+
-+		/*
-+		 * Skip the whole subtrees if the current effective clamp is
-+		 * already matching the TG's clamp value.
-+		 * In this case, all the subtrees already have top_value, or a
-+		 * more restrictive value, as effective clamp.
-+		 */
-+		uc_se = &css_tg(css)->uclamp[clamp_id];
-+		if (uc_se->value == value &&
-+		    uc_parent && uc_parent->value >= value) {
-+			css = css_rightmost_descendant(css);
-+			continue;
-+		}
-+
-+		/* Propagate the most restrictive effective value */
-+		if (uc_parent && uc_parent->value < value)
-+			value = uc_parent->value;
-+		if (uc_se->value == value)
-+			continue;
-+
-+		uc_se->value = value;
-+		uc_se->bucket_id = uclamp_bucket_id(value);
-+	}
-+}
-+
- static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
- 				  struct cftype *cftype, u64 min_value)
- {
-@@ -6965,6 +7020,7 @@ static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
- 	if (min_value > SCHED_CAPACITY_SCALE)
- 		return -ERANGE;
- 
-+	mutex_lock(&uclamp_mutex);
- 	rcu_read_lock();
- 
- 	tg = css_tg(css);
-@@ -6981,8 +7037,12 @@ static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
- 
- 	uclamp_se_set(&tg->uclamp_req[UCLAMP_MIN], min_value, false);
- 
-+	/* Update effective clamps to track the most restrictive value */
-+	cpu_util_update_eff(css, UCLAMP_MIN);
-+
- out:
- 	rcu_read_unlock();
-+	mutex_unlock(&uclamp_mutex);
- 
- 	return ret;
- }
-@@ -6996,6 +7056,7 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
- 	if (max_value > SCHED_CAPACITY_SCALE)
- 		return -ERANGE;
- 
-+	mutex_lock(&uclamp_mutex);
- 	rcu_read_lock();
- 
- 	tg = css_tg(css);
-@@ -7012,21 +7073,28 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
- 
- 	uclamp_se_set(&tg->uclamp_req[UCLAMP_MAX], max_value, false);
- 
-+	/* Update effective clamps to track the most restrictive value */
-+	cpu_util_update_eff(css, UCLAMP_MAX);
-+
- out:
- 	rcu_read_unlock();
-+	mutex_unlock(&uclamp_mutex);
- 
- 	return ret;
- }
- 
- static inline u64 cpu_uclamp_read(struct cgroup_subsys_state *css,
--				  enum uclamp_id clamp_id)
-+				  enum uclamp_id clamp_id,
-+				  bool effective)
- {
- 	struct task_group *tg;
- 	u64 util_clamp;
- 
- 	rcu_read_lock();
- 	tg = css_tg(css);
--	util_clamp = tg->uclamp_req[clamp_id].value;
-+	util_clamp = effective
-+		? tg->uclamp[clamp_id].value
-+		: tg->uclamp_req[clamp_id].value;
- 	rcu_read_unlock();
- 
- 	return util_clamp;
-@@ -7035,13 +7103,25 @@ static inline u64 cpu_uclamp_read(struct cgroup_subsys_state *css,
- static u64 cpu_util_min_read_u64(struct cgroup_subsys_state *css,
- 				 struct cftype *cft)
- {
--	return cpu_uclamp_read(css, UCLAMP_MIN);
-+	return cpu_uclamp_read(css, UCLAMP_MIN, false);
- }
- 
- static u64 cpu_util_max_read_u64(struct cgroup_subsys_state *css,
- 				 struct cftype *cft)
- {
--	return cpu_uclamp_read(css, UCLAMP_MAX);
-+	return cpu_uclamp_read(css, UCLAMP_MAX, false);
-+}
-+
-+static u64 cpu_util_min_effective_read_u64(struct cgroup_subsys_state *css,
-+					   struct cftype *cft)
-+{
-+	return cpu_uclamp_read(css, UCLAMP_MIN, true);
-+}
-+
-+static u64 cpu_util_max_effective_read_u64(struct cgroup_subsys_state *css,
-+					   struct cftype *cft)
-+{
-+	return cpu_uclamp_read(css, UCLAMP_MAX, true);
- }
- #endif /* CONFIG_UCLAMP_TASK_GROUP */
- 
-@@ -7396,11 +7476,19 @@ static struct cftype cpu_legacy_files[] = {
- 		.read_u64 = cpu_util_min_read_u64,
- 		.write_u64 = cpu_util_min_write_u64,
- 	},
-+	{
-+		.name = "util.min.effective",
-+		.read_u64 = cpu_util_min_effective_read_u64,
-+	},
- 	{
- 		.name = "util.max",
- 		.read_u64 = cpu_util_max_read_u64,
- 		.write_u64 = cpu_util_max_write_u64,
- 	},
-+	{
-+		.name = "util.max.effective",
-+		.read_u64 = cpu_util_max_effective_read_u64,
-+	},
- #endif
- 	{ }	/* Terminate */
- };
-@@ -7576,12 +7664,22 @@ static struct cftype cpu_files[] = {
- 		.read_u64 = cpu_util_min_read_u64,
- 		.write_u64 = cpu_util_min_write_u64,
- 	},
-+	{
-+		.name = "util.min.effective",
-+		.flags = CFTYPE_NOT_ON_ROOT,
-+		.read_u64 = cpu_util_min_effective_read_u64,
-+	},
- 	{
- 		.name = "util.max",
- 		.flags = CFTYPE_NOT_ON_ROOT,
- 		.read_u64 = cpu_util_max_read_u64,
- 		.write_u64 = cpu_util_max_write_u64,
- 	},
-+	{
-+		.name = "util.max.effective",
-+		.flags = CFTYPE_NOT_ON_ROOT,
-+		.read_u64 = cpu_util_max_effective_read_u64,
-+	},
- #endif
- 	{ }	/* terminate */
- };
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index fd31527fdcc8..f3c65af96756 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -403,6 +403,8 @@ struct task_group {
- #ifdef CONFIG_UCLAMP_TASK_GROUP
- 	/* Clamp values requested for a task group */
- 	struct uclamp_se	uclamp_req[UCLAMP_CNT];
-+	/* Effective clamp values used for a task group */
-+	struct uclamp_se	uclamp[UCLAMP_CNT];
- #endif
- 
- };
--- 
-2.21.0
+T24gMTUvMDUvMjAxOSAxMToxNywgUXVlbnRpbiBQZXJyZXQgd3JvdGU6Cj4gSGkgRGFuaWVsLAo+
+IAo+IE9uIFdlZG5lc2RheSAxNSBNYXkgMjAxOSBhdCAxMTowNjoxOCAoKzAyMDApLCBEYW5pZWwg
+TGV6Y2FubyB3cm90ZToKPj4gT24gMTUvMDUvMjAxOSAxMDoyMywgUXVlbnRpbiBQZXJyZXQgd3Jv
+dGU6Cj4+PiBJbiB0aGUgY3VycmVudCBzdGF0ZSwgdGhlIHBlcmZfZG9tYWluIHN0cnVjdCBpcyBm
+dWxseSBkZWZpbmVkIG9ubHkgd2hlbgo+Pj4gQ09ORklHX0VORVJHWV9NT0RFTD15LiBTaW5jZSB3
+ZSBuZWVkIHRvIHdyaXRlIGNvZGUgdGhhdCBjb21waWxlcyBib3RoCj4+PiB3aXRoIG9yIHdpdGhv
+dXQgdGhhdCBvcHRpb24gaW4gdGhlIHRoZXJtYWwgZnJhbWV3b3JrLCBtYWtlIHN1cmUgdG8KPj4+
+IGFjdHVhbGx5IGRlZmluZSB0aGUgc3RydWN0IHJlZ2FyZGxlc3Mgb2YgdGhlIGNvbmZpZyBvcHRp
+b24uIFRoYXQgYWxsb3dzCj4+PiB0byBhdm9pZCB1c2luZyBzdHViYmVkIGFjY2Vzc29yIGZ1bmN0
+aW9ucyBhbGwgdGhlIHRpbWUgaW4gY29kZSBwYXRocwo+Pj4gdGhhdCB1c2UgdGhlIEVNLgo+Pj4K
+Pj4+IEFja2VkLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgo+Pj4g
+U2lnbmVkLW9mZi1ieTogUXVlbnRpbiBQZXJyZXQgPHF1ZW50aW4ucGVycmV0QGFybS5jb20+Cj4+
+Cj4+IFRoaXMgcGF0Y2ggaW1wbGllcyB0aGUgY3B1IGNvb2xpbmcgZGV2aWNlIGNhbiBiZSBzZXQg
+d2l0aG91dCB0aGUgZW5lcmd5Cj4+IG1vZGVsLgo+Pgo+PiBJc24ndCBpdCBwb3NzaWJsZSB0byBt
+YWtlIGEgc3Ryb25nIGRlcGVuZGVuY3kgZm9yIHRoZSBjcHUgY29vbGluZyBkZXZpY2UKPj4gb24g
+dGhlIGVuZXJneSBtb2RlbCBvcHRpb24sIGFkZCB0aGUgZW5lcmd5IG1vZGVsIGFzIGRlZmF1bHQg
+b24gYXJtIGFyY2gKPj4gYW5kIGRyb3AgdGhpcyBwYXRjaD8KPiAKPiBSaWdodCwgdGhhdCBzaG91
+bGQgd29yayB0b28uCj4gCj4+IEFmdGVyIGFsbCwgdGhlIGNwdSBjb29saW5nIGlzIHVzaW5nIHRo
+ZSBlbSBmcmFtZXdvcmsuCj4gCj4gVGhlIHJlYXNvbiBJIGRpZCBpdCB0aGF0IHdheSBpcyBzaW1w
+bHkgdG8ga2VlcCB0aGluZ3MgZmxleGlibGUuIElmIHlvdQo+IGRvbid0IGNvbXBpbGUgaW4gVEhF
+Uk1BTF9HT1ZfUE9XRVJfQUxMT0NBVE9SLCB5b3Ugd2lsbCBuZXZlciB1c2UgdGhlIEVNCj4gZm9y
+IENQVSB0aGVybWFsLiBTbyBJIHRob3VnaHQgaXQgd291bGQgYmUgZ29vZCB0byBub3QgbWFuZGF0
+ZSBjb21waWxpbmcKPiBpbiBFTkVSR1lfTU9ERUwgaW4gdGhpcyBjYXNlIC0tIHRoYXQgc2hvdWxk
+IHNhdmUgYSBiaXQgb2Ygc3BhY2UuCj4gCj4gQnV0IFRCSCBJIGRvbid0IGhhdmUgYSBzdHJvbmcg
+b3BpbmlvbiBvbiB0aGlzIG9uZSwgc28gaWYgZXZlcnlib2R5Cj4gYWdyZWVzIGl0J3MgZmluZSB0
+byBqdXN0IG1ha2UgQ1BVX1RIRVJNQUwgZGVwZW5kIG9uIEVORVJHWV9NT0RFTCwgSSdtCj4gaGFw
+cHkgdG8gZHJvcCB0aGlzIHBhdGNoIGFuZCBmaXggcGF0Y2ggMy8zLiBUaGF0IHdvdWxkIGluZGVl
+ZCBzaW1wbGlmeQo+IHRoaW5ncyBhIGJpdC4KCk9rIGluIHRoaXMgY2FzZSBpdCB3aWxsIGJlIGJl
+dHRlciB0byBkcm9wIHRoZSAyLzMgYW5kIGFkZCBhIHNtYWxsIHNlcmllcwpkb2luZyBmb3IgdGhl
+IGNwdV9jb29saW5nLmMKCiNpZmRlZiBDT05GSUdfVEhFUk1BTF9HT1ZfUE9XRVJfQUxMT0NBVE9S
+CgovKiBzdHJ1Y3R1cmUgZnJlcSAqLwoKLyogcG93ZXIyc3RhdGUgKi8KCi8qIHN0YXRlMnBvd2Vy
+Ki8KCi8qIGdldHJlcXVlc3RlZHBvd2VyICovCgovKiBBbGwgZnVuY3Rpb25zIG5lZWRlZCBmb3Ig
+dGhlIGFib3ZlICovCgojZW5kaWYKCnN0YXRpYyBzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2Rldmlj
+ZV9vcHMgY3B1ZnJlcV9jb29saW5nX29wcyA9IHsKICAgICAgICAuZ2V0X21heF9zdGF0ZSAgICAg
+ICAgICA9IGNwdWZyZXFfZ2V0X21heF9zdGF0ZSwKICAgICAgICAuZ2V0X2N1cl9zdGF0ZSAgICAg
+ICAgICA9IGNwdWZyZXFfZ2V0X2N1cl9zdGF0ZSwKICAgICAgICAuc2V0X2N1cl9zdGF0ZSAgICAg
+ICAgICA9IGNwdWZyZXFfc2V0X2N1cl9zdGF0ZSwKI2lmZGVmIENPTkZJR19USEVSTUFMX0dPVl9Q
+T1dFUl9BTExPQ0FUT1IKICAgICAgICAuZ2V0X3JlcXVlc3RlZF9wb3dlciAgICA9IGNwdWZyZXFf
+Z2V0X3JlcXVlc3RlZF9wb3dlciwKICAgICAgICAuc3RhdGUycG93ZXIgICAgICAgICAgICA9IGNw
+dWZyZXFfc3RhdGUycG93ZXIsCiAgICAgICAgLnBvd2VyMnN0YXRlICAgICAgICAgICAgPSBjcHVm
+cmVxX3Bvd2VyMnN0YXRlLAojZW5kaWYKfTsKClNvIHlvdSBkb24ndCBoYXZlIHRvIGNhcmUgYWJv
+dXQgRU5FUkdZX01PREVMIHRvIGJlIHNldCBhcwpUSEVSTUFMX0dPVl9QT1dFUl9BTExPQ0FUT1Ig
+ZGVwZW5kcyBvbiBpdC4KCkkgdGhpbmsgdGhlIHJlc3VsdCBmb3IgY3B1X2Nvb2xpbmcuYyB3aWxs
+IGJlIGV2ZW4gbW9yZSBjbGVhbmVyIHdpdGggdGhlCmVtIGNoYW5nZS4KCgoKCi0tIAogPGh0dHA6
+Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZv
+ciBBUk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdl
+cy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3
+aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJu
+ZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRw
+Oi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
