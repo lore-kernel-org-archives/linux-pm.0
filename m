@@ -2,60 +2,31 @@ Return-Path: <SRS0=mZbj=TP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02235C04E53
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 12:09:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA30DC04E53
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 12:17:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BAC3820657
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 12:09:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="euq/YjOx"
+	by mail.kernel.org (Postfix) with ESMTP id B54642089E
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 12:17:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729005AbfEOMJs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 May 2019 08:09:48 -0400
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:39879 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728953AbfEOLHl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 07:07:41 -0400
-Received: by mail-wm1-f65.google.com with SMTP id n25so2037563wmk.4
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 04:07:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=WLYROLqwvq+iq4Tg13SMOpkpNE1f0nENSLKE//G0bsk=;
-        b=euq/YjOxetpfM+ZIRd16tqOJMUNMAQ639aAlV8Z7Ibig9LpEwqAJTeSnRJZv9QFR0A
-         n3DaSssaT4KUsdSZYEJF2jvAGai5fUuS8T0WPRkz4o4p20gpJt7tecOOpF/0sXYuCt4c
-         +gkH9sxfIb3PHS15GjRWakzRNBq90imKo8mOxdUlQBch12slcyqyLT1bNw+kIeI5Y2BK
-         hqlOAm4od8MxLkFSusv/wFPi/FAd6Jl5afhpMqIgF782USJg1GQqr6rRATkZmQKNyr4T
-         Reyohk2YroZHi9UP9N4sj4WdzXhQOZgyYey7kYxrPMDf/koP7KIAwgEvhf/7CifOKhnp
-         mmaw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=WLYROLqwvq+iq4Tg13SMOpkpNE1f0nENSLKE//G0bsk=;
-        b=Fuiigog1OOZVPOrzYzznp8f7Z9imioNfAVnZmCaxXREbzcXZCOv9RCvD5oVGNPfYYU
-         QJfPhr0JeX4oqwRe5zedRaQZcKDj0Uxgtg5uSNK32qYPFRkFlLfPGF1fbNR1tNaDOGI1
-         pWh4pjI4Sa0Wt8Sqy4quYNZnLLm/OAtZ7lw7nmbOw1NfpsMKRdJEsllJk6ebK0oUTxRq
-         xumquFVlzUMvhN+FoVbvrO/ALEplajfq+6TuK5I2wpxWxHEYcSOWBfoGC4bVTjJPdRrJ
-         Yru6Zs/2cwtAzarlLBP483NS2EoQ56aDgmeOJi3T/FEd+JdkQ/0w15WbINcXKq+qLNrA
-         EiGA==
-X-Gm-Message-State: APjAAAXFDCxIsuI03sJoVm0spP1Chr9sHn9usJsj8ZG+eisMR9U/UWcD
-        u8AlkTjPe6++L74I44leyV8mhA==
-X-Google-Smtp-Source: APXvYqyk+jOEfdcEqATmFYCA0jxw/O5gBV5d9uEck/eUQUqWql3DtCIln4vAuhSqj4YJxAvSRHH8IQ==
-X-Received: by 2002:a1c:f407:: with SMTP id z7mr22070590wma.34.1557918459197;
-        Wed, 15 May 2019 04:07:39 -0700 (PDT)
-Received: from [192.168.0.41] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
-        by smtp.googlemail.com with ESMTPSA id 130sm1924399wmd.15.2019.05.15.04.07.36
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 15 May 2019 04:07:38 -0700 (PDT)
-Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
-To:     Quentin Perret <quentin.perret@arm.com>
+        id S1727840AbfEOLCF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 May 2019 07:02:05 -0400
+Received: from foss.arm.com ([217.140.101.70]:40818 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727836AbfEOLCD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 May 2019 07:02:03 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DF55080D;
+        Wed, 15 May 2019 04:02:02 -0700 (PDT)
+Received: from queper01-lin (queper01-lin.cambridge.arm.com [10.1.195.48])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 60A463F703;
+        Wed, 15 May 2019 04:02:00 -0700 (PDT)
+Date:   Wed, 15 May 2019 12:01:58 +0100
+From:   Quentin Perret <quentin.perret@arm.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, edubezval@gmail.com,
         rui.zhang@intel.com, javi.merino@kernel.org,
         amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com,
@@ -63,6 +34,8 @@ Cc:     Viresh Kumar <viresh.kumar@linaro.org>, edubezval@gmail.com,
         ionela.voinescu@arm.com, mka@chromium.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
+Message-ID: <20190515110156.ru2wxqvwffqgq3t3@queper01-lin>
 References: <20190515082318.7993-3-quentin.perret@arm.com>
  <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
  <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
@@ -73,110 +46,94 @@ References: <20190515082318.7993-3-quentin.perret@arm.com>
  <20190515104043.vogspxgkapp6qsny@queper01-lin>
  <20190515104651.tv5odug7ce4zlupc@queper01-lin>
  <5b55e432-f8b0-91ae-a7de-fe02e0cad322@linaro.org>
- <20190515110156.ru2wxqvwffqgq3t3@queper01-lin>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <a4c0ab68-f8d0-a70d-58e5-b8de55199000@linaro.org>
-Date:   Wed, 15 May 2019 13:07:36 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
 MIME-Version: 1.0
-In-Reply-To: <20190515110156.ru2wxqvwffqgq3t3@queper01-lin>
 Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+In-Reply-To: <5b55e432-f8b0-91ae-a7de-fe02e0cad322@linaro.org>
+User-Agent: NeoMutt/20171215
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190515110736.ivcgQ9yiyg_btstrWFPSE2QigqcfXjtYcPHl3Lpc99g@z>
+Message-ID: <20190515110158.atsyw0QpZbJMlaBLu4ZDD9ntQYdb7HRg8Vxee9rpldc@z>
 
-On 15/05/2019 13:01, Quentin Perret wrote:
-> On Wednesday 15 May 2019 at 12:51:57 (+0200), Daniel Lezcano wrote:
->> On 15/05/2019 12:46, Quentin Perret wrote:
->>> On Wednesday 15 May 2019 at 11:40:44 (+0100), Quentin Perret wrote:
->>
->> [ ... ]
->>
->>>> +#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
->>>>         if (capacitance) {
->>>>                 ret = update_freq_table(cpufreq_cdev, capacitance);
->>>>                 if (ret) {
->>>>                         cdev = ERR_PTR(ret);
->>>>                         goto remove_ida;
->>>>                 }
->>>> -
->>>> -               cooling_ops = &cpufreq_power_cooling_ops;
->>>> -       } else {
->>>> -               cooling_ops = &cpufreq_cooling_ops;
->>>>         }
->>>> +#endif
->>>> +       cooling_ops = &cpufreq_cooling_ops;
->>>
->>> Argh, that is actually broken with !capacitance and
->>> THERMAL_GOV_POWER_ALLOCATOR=y ... Perhaps it's best to keep the two
->>> thermal_cooling_device_ops struct separated in the end.
->>
->> Or alternatively you can keep one structure but instead of filling the
->> state2power,power2state and getrequestedpower fields in the declaration,
->> you fill them in the if (capacitance) block, no?
+On Wednesday 15 May 2019 at 12:51:57 (+0200), Daniel Lezcano wrote:
+> On 15/05/2019 12:46, Quentin Perret wrote:
+> > On Wednesday 15 May 2019 at 11:40:44 (+0100), Quentin Perret wrote:
 > 
-> Something like the below ? Yes, that works too. I'll write a proper
-> patch and send that next week or so.
-
-Yes, exactly. And IMHO, that helps for the understanding of code also.
-
-> --->8---
+> [ ... ]
 > 
->  /* Bind cpufreq callbacks to thermal cooling device ops */
+> >> +#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+> >>         if (capacitance) {
+> >>                 ret = update_freq_table(cpufreq_cdev, capacitance);
+> >>                 if (ret) {
+> >>                         cdev = ERR_PTR(ret);
+> >>                         goto remove_ida;
+> >>                 }
+> >> -
+> >> -               cooling_ops = &cpufreq_power_cooling_ops;
+> >> -       } else {
+> >> -               cooling_ops = &cpufreq_cooling_ops;
+> >>         }
+> >> +#endif
+> >> +       cooling_ops = &cpufreq_cooling_ops;
+> > 
+> > Argh, that is actually broken with !capacitance and
+> > THERMAL_GOV_POWER_ALLOCATOR=y ... Perhaps it's best to keep the two
+> > thermal_cooling_device_ops struct separated in the end.
 > 
->  static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
-> -       .get_max_state = cpufreq_get_max_state,
-> -       .get_cur_state = cpufreq_get_cur_state,
-> -       .set_cur_state = cpufreq_set_cur_state,
-> -};
-> -
-> -static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
->         .get_max_state          = cpufreq_get_max_state,
->         .get_cur_state          = cpufreq_get_cur_state,
->         .set_cur_state          = cpufreq_set_cur_state,
-> -       .get_requested_power    = cpufreq_get_requested_power,
-> -       .state2power            = cpufreq_state2power,
-> -       .power2state            = cpufreq_power2state,
->  };
-> 
->  /* Notifier for cpufreq policy change */
-> @@ -674,18 +667,19 @@ __cpufreq_cooling_register(struct device_node *np,
->                         pr_debug("%s: freq:%u KHz\n", __func__, freq);
->         }
-> 
-> +       cooling_ops = &cpufreq_cooling_ops;
-> +#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
->         if (capacitance) {
->                 ret = update_freq_table(cpufreq_cdev, capacitance);
->                 if (ret) {
->                         cdev = ERR_PTR(ret);
->                         goto remove_ida;
->                 }
-> -
-> -               cooling_ops = &cpufreq_power_cooling_ops;
-> -       } else {
-> -               cooling_ops = &cpufreq_cooling_ops;
-> +               cooling_ops->get_requested_power = cpufreq_get_requested_power;
-> +               cooling_ops->state2power = cpufreq_state2power;
-> +               cooling_ops->power2state = cpufreq_power2state;
->         }
-> -
-> +#endif
->         cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
->                                                   cooling_ops);
->         if (IS_ERR(cdev))
-> 
+> Or alternatively you can keep one structure but instead of filling the
+> state2power,power2state and getrequestedpower fields in the declaration,
+> you fill them in the if (capacitance) block, no?
 
+Something like the below ? Yes, that works too. I'll write a proper
+patch and send that next week or so.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Thanks,
+Quentin
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+--->8---
 
+ /* Bind cpufreq callbacks to thermal cooling device ops */
+
+ static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+-       .get_max_state = cpufreq_get_max_state,
+-       .get_cur_state = cpufreq_get_cur_state,
+-       .set_cur_state = cpufreq_set_cur_state,
+-};
+-
+-static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
+        .get_max_state          = cpufreq_get_max_state,
+        .get_cur_state          = cpufreq_get_cur_state,
+        .set_cur_state          = cpufreq_set_cur_state,
+-       .get_requested_power    = cpufreq_get_requested_power,
+-       .state2power            = cpufreq_state2power,
+-       .power2state            = cpufreq_power2state,
+ };
+
+ /* Notifier for cpufreq policy change */
+@@ -674,18 +667,19 @@ __cpufreq_cooling_register(struct device_node *np,
+                        pr_debug("%s: freq:%u KHz\n", __func__, freq);
+        }
+
++       cooling_ops = &cpufreq_cooling_ops;
++#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+        if (capacitance) {
+                ret = update_freq_table(cpufreq_cdev, capacitance);
+                if (ret) {
+                        cdev = ERR_PTR(ret);
+                        goto remove_ida;
+                }
+-
+-               cooling_ops = &cpufreq_power_cooling_ops;
+-       } else {
+-               cooling_ops = &cpufreq_cooling_ops;
++               cooling_ops->get_requested_power = cpufreq_get_requested_power;
++               cooling_ops->state2power = cpufreq_state2power;
++               cooling_ops->power2state = cpufreq_power2state;
+        }
+-
++#endif
+        cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
+                                                  cooling_ops);
+        if (IS_ERR(cdev))
