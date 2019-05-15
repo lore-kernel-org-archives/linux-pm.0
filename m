@@ -1,78 +1,94 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+From: Quentin Perret <quentin.perret@arm.com>
 Subject: Re: [PATCH v4 2/3] PM / EM: Expose perf domain struct
-Date: Wed, 15 May 2019 11:56:30 +0200
-Message-ID: <698400c0-e0a4-4a86-b9df-cdb9bd683c0f@linaro.org>
+Date: Wed, 15 May 2019 11:07:50 +0100
+Message-ID: <20190515100748.q3t4kt72h2akdpcs@queper01-lin>
 References: <20190515082318.7993-1-quentin.perret@arm.com>
  <20190515082318.7993-3-quentin.perret@arm.com>
  <0ced18eb-e424-fe6b-b11e-165a3c108170@linaro.org>
  <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
+ <698400c0-e0a4-4a86-b9df-cdb9bd683c0f@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20190515091658.sbpg6qiovhtblqyr@queper01-lin>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, edubezval@gmail.com, mka@chromium.org, catalin.marinas@arm.com, rui.zhang@intel.com, javi.merino@kernel.org, ionela.voinescu@arm.com, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <698400c0-e0a4-4a86-b9df-cdb9bd683c0f@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, dietmar.eggemann@arm.com, ionela.voinescu@arm.com, mka@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTUvMDUvMjAxOSAxMToxNywgUXVlbnRpbiBQZXJyZXQgd3JvdGU6Cj4gSGkgRGFuaWVsLAo+
-IAo+IE9uIFdlZG5lc2RheSAxNSBNYXkgMjAxOSBhdCAxMTowNjoxOCAoKzAyMDApLCBEYW5pZWwg
-TGV6Y2FubyB3cm90ZToKPj4gT24gMTUvMDUvMjAxOSAxMDoyMywgUXVlbnRpbiBQZXJyZXQgd3Jv
-dGU6Cj4+PiBJbiB0aGUgY3VycmVudCBzdGF0ZSwgdGhlIHBlcmZfZG9tYWluIHN0cnVjdCBpcyBm
-dWxseSBkZWZpbmVkIG9ubHkgd2hlbgo+Pj4gQ09ORklHX0VORVJHWV9NT0RFTD15LiBTaW5jZSB3
-ZSBuZWVkIHRvIHdyaXRlIGNvZGUgdGhhdCBjb21waWxlcyBib3RoCj4+PiB3aXRoIG9yIHdpdGhv
-dXQgdGhhdCBvcHRpb24gaW4gdGhlIHRoZXJtYWwgZnJhbWV3b3JrLCBtYWtlIHN1cmUgdG8KPj4+
-IGFjdHVhbGx5IGRlZmluZSB0aGUgc3RydWN0IHJlZ2FyZGxlc3Mgb2YgdGhlIGNvbmZpZyBvcHRp
-b24uIFRoYXQgYWxsb3dzCj4+PiB0byBhdm9pZCB1c2luZyBzdHViYmVkIGFjY2Vzc29yIGZ1bmN0
-aW9ucyBhbGwgdGhlIHRpbWUgaW4gY29kZSBwYXRocwo+Pj4gdGhhdCB1c2UgdGhlIEVNLgo+Pj4K
-Pj4+IEFja2VkLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgo+Pj4g
-U2lnbmVkLW9mZi1ieTogUXVlbnRpbiBQZXJyZXQgPHF1ZW50aW4ucGVycmV0QGFybS5jb20+Cj4+
-Cj4+IFRoaXMgcGF0Y2ggaW1wbGllcyB0aGUgY3B1IGNvb2xpbmcgZGV2aWNlIGNhbiBiZSBzZXQg
-d2l0aG91dCB0aGUgZW5lcmd5Cj4+IG1vZGVsLgo+Pgo+PiBJc24ndCBpdCBwb3NzaWJsZSB0byBt
-YWtlIGEgc3Ryb25nIGRlcGVuZGVuY3kgZm9yIHRoZSBjcHUgY29vbGluZyBkZXZpY2UKPj4gb24g
-dGhlIGVuZXJneSBtb2RlbCBvcHRpb24sIGFkZCB0aGUgZW5lcmd5IG1vZGVsIGFzIGRlZmF1bHQg
-b24gYXJtIGFyY2gKPj4gYW5kIGRyb3AgdGhpcyBwYXRjaD8KPiAKPiBSaWdodCwgdGhhdCBzaG91
-bGQgd29yayB0b28uCj4gCj4+IEFmdGVyIGFsbCwgdGhlIGNwdSBjb29saW5nIGlzIHVzaW5nIHRo
-ZSBlbSBmcmFtZXdvcmsuCj4gCj4gVGhlIHJlYXNvbiBJIGRpZCBpdCB0aGF0IHdheSBpcyBzaW1w
-bHkgdG8ga2VlcCB0aGluZ3MgZmxleGlibGUuIElmIHlvdQo+IGRvbid0IGNvbXBpbGUgaW4gVEhF
-Uk1BTF9HT1ZfUE9XRVJfQUxMT0NBVE9SLCB5b3Ugd2lsbCBuZXZlciB1c2UgdGhlIEVNCj4gZm9y
-IENQVSB0aGVybWFsLiBTbyBJIHRob3VnaHQgaXQgd291bGQgYmUgZ29vZCB0byBub3QgbWFuZGF0
-ZSBjb21waWxpbmcKPiBpbiBFTkVSR1lfTU9ERUwgaW4gdGhpcyBjYXNlIC0tIHRoYXQgc2hvdWxk
-IHNhdmUgYSBiaXQgb2Ygc3BhY2UuCj4gCj4gQnV0IFRCSCBJIGRvbid0IGhhdmUgYSBzdHJvbmcg
-b3BpbmlvbiBvbiB0aGlzIG9uZSwgc28gaWYgZXZlcnlib2R5Cj4gYWdyZWVzIGl0J3MgZmluZSB0
-byBqdXN0IG1ha2UgQ1BVX1RIRVJNQUwgZGVwZW5kIG9uIEVORVJHWV9NT0RFTCwgSSdtCj4gaGFw
-cHkgdG8gZHJvcCB0aGlzIHBhdGNoIGFuZCBmaXggcGF0Y2ggMy8zLiBUaGF0IHdvdWxkIGluZGVl
-ZCBzaW1wbGlmeQo+IHRoaW5ncyBhIGJpdC4KCk9rIGluIHRoaXMgY2FzZSBpdCB3aWxsIGJlIGJl
-dHRlciB0byBkcm9wIHRoZSAyLzMgYW5kIGFkZCBhIHNtYWxsIHNlcmllcwpkb2luZyBmb3IgdGhl
-IGNwdV9jb29saW5nLmMKCiNpZmRlZiBDT05GSUdfVEhFUk1BTF9HT1ZfUE9XRVJfQUxMT0NBVE9S
-CgovKiBzdHJ1Y3R1cmUgZnJlcSAqLwoKLyogcG93ZXIyc3RhdGUgKi8KCi8qIHN0YXRlMnBvd2Vy
-Ki8KCi8qIGdldHJlcXVlc3RlZHBvd2VyICovCgovKiBBbGwgZnVuY3Rpb25zIG5lZWRlZCBmb3Ig
-dGhlIGFib3ZlICovCgojZW5kaWYKCnN0YXRpYyBzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2Rldmlj
-ZV9vcHMgY3B1ZnJlcV9jb29saW5nX29wcyA9IHsKICAgICAgICAuZ2V0X21heF9zdGF0ZSAgICAg
-ICAgICA9IGNwdWZyZXFfZ2V0X21heF9zdGF0ZSwKICAgICAgICAuZ2V0X2N1cl9zdGF0ZSAgICAg
-ICAgICA9IGNwdWZyZXFfZ2V0X2N1cl9zdGF0ZSwKICAgICAgICAuc2V0X2N1cl9zdGF0ZSAgICAg
-ICAgICA9IGNwdWZyZXFfc2V0X2N1cl9zdGF0ZSwKI2lmZGVmIENPTkZJR19USEVSTUFMX0dPVl9Q
-T1dFUl9BTExPQ0FUT1IKICAgICAgICAuZ2V0X3JlcXVlc3RlZF9wb3dlciAgICA9IGNwdWZyZXFf
-Z2V0X3JlcXVlc3RlZF9wb3dlciwKICAgICAgICAuc3RhdGUycG93ZXIgICAgICAgICAgICA9IGNw
-dWZyZXFfc3RhdGUycG93ZXIsCiAgICAgICAgLnBvd2VyMnN0YXRlICAgICAgICAgICAgPSBjcHVm
-cmVxX3Bvd2VyMnN0YXRlLAojZW5kaWYKfTsKClNvIHlvdSBkb24ndCBoYXZlIHRvIGNhcmUgYWJv
-dXQgRU5FUkdZX01PREVMIHRvIGJlIHNldCBhcwpUSEVSTUFMX0dPVl9QT1dFUl9BTExPQ0FUT1Ig
-ZGVwZW5kcyBvbiBpdC4KCkkgdGhpbmsgdGhlIHJlc3VsdCBmb3IgY3B1X2Nvb2xpbmcuYyB3aWxs
-IGJlIGV2ZW4gbW9yZSBjbGVhbmVyIHdpdGggdGhlCmVtIGNoYW5nZS4KCgoKCi0tIAogPGh0dHA6
-Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZv
-ciBBUk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdl
-cy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3
-aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJu
-ZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRw
-Oi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On Wednesday 15 May 2019 at 11:56:30 (+0200), Daniel Lezcano wrote:
+> On 15/05/2019 11:17, Quentin Perret wrote:
+> > Hi Daniel,
+> > 
+> > On Wednesday 15 May 2019 at 11:06:18 (+0200), Daniel Lezcano wrote:
+> >> On 15/05/2019 10:23, Quentin Perret wrote:
+> >>> In the current state, the perf_domain struct is fully defined only when
+> >>> CONFIG_ENERGY_MODEL=y. Since we need to write code that compiles both
+> >>> with or without that option in the thermal framework, make sure to
+> >>> actually define the struct regardless of the config option. That allows
+> >>> to avoid using stubbed accessor functions all the time in code paths
+> >>> that use the EM.
+> >>>
+> >>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >>> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> >>
+> >> This patch implies the cpu cooling device can be set without the energy
+> >> model.
+> >>
+> >> Isn't it possible to make a strong dependency for the cpu cooling device
+> >> on the energy model option, add the energy model as default on arm arch
+> >> and drop this patch?
+> > 
+> > Right, that should work too.
+> > 
+> >> After all, the cpu cooling is using the em framework.
+> > 
+> > The reason I did it that way is simply to keep things flexible. If you
+> > don't compile in THERMAL_GOV_POWER_ALLOCATOR, you will never use the EM
+> > for CPU thermal. So I thought it would be good to not mandate compiling
+> > in ENERGY_MODEL in this case -- that should save a bit of space.
+> > 
+> > But TBH I don't have a strong opinion on this one, so if everybody
+> > agrees it's fine to just make CPU_THERMAL depend on ENERGY_MODEL, I'm
+> > happy to drop this patch and fix patch 3/3. That would indeed simplify
+> > things a bit.
+> 
+> Ok in this case it will be better to drop the 2/3 and add a small series
+> doing for the cpu_cooling.c
+> 
+> #ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+> 
+> /* structure freq */
+> 
+> /* power2state */
+> 
+> /* state2power*/
+> 
+> /* getrequestedpower */
+> 
+> /* All functions needed for the above */
+> 
+> #endif
+> 
+> static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+>         .get_max_state          = cpufreq_get_max_state,
+>         .get_cur_state          = cpufreq_get_cur_state,
+>         .set_cur_state          = cpufreq_set_cur_state,
+> #ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+>         .get_requested_power    = cpufreq_get_requested_power,
+>         .state2power            = cpufreq_state2power,
+>         .power2state            = cpufreq_power2state,
+> #endif
+> };
+> 
+> So you don't have to care about ENERGY_MODEL to be set as
+> THERMAL_GOV_POWER_ALLOCATOR depends on it.
+> 
+> I think the result for cpu_cooling.c will be even more cleaner with the
+> em change.
+
+OK, that works for me. I'll give it a go in v5.
+
+Thanks !
+Quentin
