@@ -2,353 +2,139 @@ Return-Path: <SRS0=mZbj=TP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6C49C04E53
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 12:55:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E69C6C04E53
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:53:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B91D12082E
-	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 12:55:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B957920873
+	for <linux-pm@archiver.kernel.org>; Wed, 15 May 2019 13:53:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727207AbfEOMzD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 May 2019 08:55:03 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:59366 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726923AbfEOMzD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 08:55:03 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: eballetbo)
-        with ESMTPSA id CF0C1281ED8
-Subject: Re: [PATCH v8 1/2] platform/chrome: wilco_ec: Add property helper
- library
-To:     Nick Crews <ncrews@chromium.org>, bleung@chromium.org,
-        sre@kernel.org, linux-pm@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org, dlaurie@chromium.org,
-        lamzin@google.com, bartfab@google.com, derat@google.com,
-        dtor@google.com, sjg@chromium.org, jchwong@chromium.org,
-        tbroch@chromium.org
-References: <20190424165651.236391-1-ncrews@chromium.org>
-From:   Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Message-ID: <d5bf4678-e5d1-c01d-4701-5d81e24986a1@collabora.com>
-Date:   Wed, 15 May 2019 14:54:57 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
-MIME-Version: 1.0
-In-Reply-To: <20190424165651.236391-1-ncrews@chromium.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
+        id S1727776AbfEONxs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 May 2019 09:53:48 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:53844 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1725953AbfEONxr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2019 09:53:47 -0400
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4FDqgWZ118681
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:53:47 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2sgj7mptuh-1
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2019 09:53:46 -0400
+Received: from localhost
+        by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
+        Wed, 15 May 2019 14:53:43 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+        by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+        Wed, 15 May 2019 14:53:40 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+        by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4FDrdda49479760
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 15 May 2019 13:53:39 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 4DAF852051;
+        Wed, 15 May 2019 13:53:39 +0000 (GMT)
+Received: from localhost.localdomain.com (unknown [9.102.18.182])
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 50DC65204E;
+        Wed, 15 May 2019 13:53:37 +0000 (GMT)
+From:   Parth Shah <parth@linux.ibm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc:     mingo@redhat.com, peterz@infradead.org, dietmar.eggemann@arm.com,
+        dsmythies@telus.net
+Subject: [RFCv2 2/6] sched: Introduce switch to enable TurboSched mode
+Date:   Wed, 15 May 2019 19:23:18 +0530
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190515135322.19393-1-parth@linux.ibm.com>
+References: <20190515135322.19393-1-parth@linux.ibm.com>
+X-TM-AS-GCONF: 00
+x-cbid: 19051513-0020-0000-0000-0000033CFC9B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19051513-0021-0000-0000-0000218FBF2A
+Message-Id: <20190515135322.19393-3-parth@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-15_08:,,
+ signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905150087
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190515125457.0nkmZMXFrDzI1cDAn3uhgY-P4lznMxk4V5wILhFgSk0@z>
+Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20190515135318.jToie4tSmT7fSu7Ej7FhLUaPVD-3toFf6O6DsAdr2Og@z>
 
-Hi,
+This patch creates a static key which allows to enable or disable
+TurboSched feature at runtime.
 
-On 24/4/19 18:56, Nick Crews wrote:
-> A Property is typically a data item that is stored to NVRAM
-> by the EC. Each of these data items has an index associated
-> with it, known as the Property ID (PID). Properties may have
-> variable lengths, up to a max of WILCO_EC_PROPERTY_MAX_SIZE
-> bytes. Properties can be simple integers, or they may be more
-> complex binary data.
-> 
-> This patch adds support for getting and setting properties.
-> This will be useful for setting the charge algorithm and charge
-> schedules, which all use properties.
-> 
-> Signed-off-by: Nick Crews <ncrews@chromium.org>
+This key is added in order to enable the TurboSched feature. The static key
+helps in optimizing the scheduler fast-path when the TurboSched feature is
+disabled.
 
-The following patch is queued to the for-next branch for the autobuilders to
-play with, if all goes well I'll add the patch for 5.3 when current merge window
-closes.
+The patch also provides get/put methods to keep track of the cgroups using
+the TurboSched feature. This allows to enable the feature on adding first
+cgroup classified as jitter, similarly disable the feature on removal of
+such last cgroup.
 
-Thanks,
- Enric
+Signed-off-by: Parth Shah <parth@linux.ibm.com>
+---
+ kernel/sched/core.c  | 20 ++++++++++++++++++++
+ kernel/sched/sched.h |  7 +++++++
+ 2 files changed, 27 insertions(+)
 
-> ---
-> v7 changes:
-> -Remove bogus gerrit FROMLIST tag in commit title
-> v6 changes:
-> -Add EC_* prefix to enum property_ops so they are more unique.
-> -Split up the commit so properties are added in a first commit
-> v5 changes:
-> -Remove OP_SYNC, it has no immediate use case.
-> -Merge properties.h into wilco-ec.h
-> -Remove enum get_set_sync_op from the public interface,
->  since without OP_SYNC they are irrelevant.
-> -Fix Kconfigs and Makefiles so they actually work
->  with the v4 changes
-> -Tweak some formatting, spacing, and comments
-> -Fix validation of charge_type so illegal values
->  can't be set. Before negative error codes were
->  accidentally getting casted to positive numbers
-> -Remove more unneeded parentheses.
-> v4 changes:
-> -Use put_unaligned_le32() to store PID in request.
-> -Move implementation from
->  drivers/platform/chrome/wilco_ec/charge_config.c to
->  drivers/power/supply/wilco_charger.c
-> -Move drivers/platform/chrome/wilco_ec/properties.h to
->  include/linux/platform_data/wilco-ec-properties.h
-> -Remove parentheses in switch statement in psp_val_to_charge_mode()
-> -Check for any negatvie return code from psp_val_to_charge_mode()
->  instead of just -EINVAL so its less brittle
-> -Tweak comments in wilco-ec-properties.h
-> v3 changes:
-> -Add this changelog
-> -Fix commit message tags
-> v2 changes:
-> -Update Documentation to say KernelVersion 5.2
-> -Update Documentation to explain Trickle mode better.
-> -rename things from using *PCC* to *CHARGE*
-> -Split up conversions between POWER_SUPPLY_PROP_CHARGE_TYPE values
-> and Wilco EC codes
-> -Use devm_ flavor of power_supply_register(), which simplifies things
-> -Add extra error checking on property messages received from the EC
-> -Fix bug in memcpy() calls in properties.c
-> -Refactor fill_property_id()
-> -Add valid input checks to charge_type
-> -Properly convert charge_type when get()ting
-> 
->  drivers/platform/chrome/wilco_ec/Makefile     |   2 +-
->  drivers/platform/chrome/wilco_ec/properties.c | 132 ++++++++++++++++++
->  include/linux/platform_data/wilco-ec.h        |  71 ++++++++++
->  3 files changed, 204 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/platform/chrome/wilco_ec/properties.c
-> 
-> diff --git a/drivers/platform/chrome/wilco_ec/Makefile b/drivers/platform/chrome/wilco_ec/Makefile
-> index 063e7fb4ea17..29b734137786 100644
-> --- a/drivers/platform/chrome/wilco_ec/Makefile
-> +++ b/drivers/platform/chrome/wilco_ec/Makefile
-> @@ -1,6 +1,6 @@
->  # SPDX-License-Identifier: GPL-2.0
->  
-> -wilco_ec-objs				:= core.o mailbox.o
-> +wilco_ec-objs				:= core.o mailbox.o properties.o
->  obj-$(CONFIG_WILCO_EC)			+= wilco_ec.o
->  wilco_ec_debugfs-objs			:= debugfs.o
->  obj-$(CONFIG_WILCO_EC_DEBUGFS)		+= wilco_ec_debugfs.o
-> diff --git a/drivers/platform/chrome/wilco_ec/properties.c b/drivers/platform/chrome/wilco_ec/properties.c
-> new file mode 100644
-> index 000000000000..e69682c95ea2
-> --- /dev/null
-> +++ b/drivers/platform/chrome/wilco_ec/properties.c
-> @@ -0,0 +1,132 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright 2019 Google LLC
-> + */
-> +
-> +#include <linux/platform_data/wilco-ec.h>
-> +#include <linux/string.h>
-> +#include <linux/unaligned/le_memmove.h>
-> +
-> +/* Operation code; what the EC should do with the property */
-> +enum ec_property_op {
-> +	EC_OP_GET = 0,
-> +	EC_OP_SET = 1,
-> +};
-> +
-> +struct ec_property_request {
-> +	u8 op; /* One of enum ec_property_op */
-> +	u8 property_id[4]; /* The 32 bit PID is stored Little Endian */
-> +	u8 length;
-> +	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-> +} __packed;
-> +
-> +struct ec_property_response {
-> +	u8 reserved[2];
-> +	u8 op; /* One of enum ec_property_op */
-> +	u8 property_id[4]; /* The 32 bit PID is stored Little Endian */
-> +	u8 length;
-> +	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-> +} __packed;
-> +
-> +static int send_property_msg(struct wilco_ec_device *ec,
-> +			     struct ec_property_request *rq,
-> +			     struct ec_property_response *rs)
-> +{
-> +	struct wilco_ec_message ec_msg;
-> +	int ret;
-> +
-> +	memset(&ec_msg, 0, sizeof(ec_msg));
-> +	ec_msg.type = WILCO_EC_MSG_PROPERTY;
-> +	ec_msg.request_data = rq;
-> +	ec_msg.request_size = sizeof(*rq);
-> +	ec_msg.response_data = rs;
-> +	ec_msg.response_size = sizeof(*rs);
-> +
-> +	ret = wilco_ec_mailbox(ec, &ec_msg);
-> +	if (ret < 0)
-> +		return ret;
-> +	if (rs->op != rq->op)
-> +		return -EBADMSG;
-> +	if (memcmp(rq->property_id, rs->property_id, sizeof(rs->property_id)))
-> +		return -EBADMSG;
-> +
-> +	return 0;
-> +}
-> +
-> +int wilco_ec_get_property(struct wilco_ec_device *ec,
-> +			  struct wilco_ec_property_msg *prop_msg)
-> +{
-> +	struct ec_property_request rq;
-> +	struct ec_property_response rs;
-> +	int ret;
-> +
-> +	memset(&rq, 0, sizeof(rq));
-> +	rq.op = EC_OP_GET;
-> +	put_unaligned_le32(prop_msg->property_id, rq.property_id);
-> +
-> +	ret = send_property_msg(ec, &rq, &rs);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	prop_msg->length = rs.length;
-> +	memcpy(prop_msg->data, rs.data, rs.length);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(wilco_ec_get_property);
-> +
-> +int wilco_ec_set_property(struct wilco_ec_device *ec,
-> +			  struct wilco_ec_property_msg *prop_msg)
-> +{
-> +	struct ec_property_request rq;
-> +	struct ec_property_response rs;
-> +	int ret;
-> +
-> +	memset(&rq, 0, sizeof(rq));
-> +	rq.op = EC_OP_SET;
-> +	put_unaligned_le32(prop_msg->property_id, rq.property_id);
-> +	rq.length = prop_msg->length;
-> +	memcpy(rq.data, prop_msg->data, prop_msg->length);
-> +
-> +	ret = send_property_msg(ec, &rq, &rs);
-> +	if (ret < 0)
-> +		return ret;
-> +	if (rs.length != prop_msg->length)
-> +		return -EBADMSG;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(wilco_ec_set_property);
-> +
-> +int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
-> +			       u8 *val)
-> +{
-> +	struct wilco_ec_property_msg msg;
-> +	int ret;
-> +
-> +	msg.property_id = property_id;
-> +
-> +	ret = wilco_ec_get_property(ec, &msg);
-> +	if (ret < 0)
-> +		return ret;
-> +	if (msg.length != 1)
-> +		return -EBADMSG;
-> +
-> +	*val = msg.data[0];
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(wilco_ec_get_byte_property);
-> +
-> +int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
-> +			       u8 val)
-> +{
-> +	struct wilco_ec_property_msg msg;
-> +
-> +	msg.property_id = property_id;
-> +	msg.data[0] = val;
-> +	msg.length = 1;
-> +
-> +	return wilco_ec_set_property(ec, &msg);
-> +}
-> +EXPORT_SYMBOL_GPL(wilco_ec_set_byte_property);
-> diff --git a/include/linux/platform_data/wilco-ec.h b/include/linux/platform_data/wilco-ec.h
-> index 1ff224793c99..50a21bd5fd44 100644
-> --- a/include/linux/platform_data/wilco-ec.h
-> +++ b/include/linux/platform_data/wilco-ec.h
-> @@ -123,4 +123,75 @@ struct wilco_ec_message {
->   */
->  int wilco_ec_mailbox(struct wilco_ec_device *ec, struct wilco_ec_message *msg);
->  
-> +/*
-> + * A Property is typically a data item that is stored to NVRAM
-> + * by the EC. Each of these data items has an index associated
-> + * with it, known as the Property ID (PID). Properties may have
-> + * variable lengths, up to a max of WILCO_EC_PROPERTY_MAX_SIZE
-> + * bytes. Properties can be simple integers, or they may be more
-> + * complex binary data.
-> + */
-> +
-> +#define WILCO_EC_PROPERTY_MAX_SIZE	4
-> +
-> +/**
-> + * struct ec_property_set_msg - Message to get or set a property.
-> + * @property_id: Which property to get or set.
-> + * @length: Number of bytes of |data| that are used.
-> + * @data: Actual property data.
-> + */
-> +struct wilco_ec_property_msg {
-> +	u32 property_id;
-> +	int length;
-> +	u8 data[WILCO_EC_PROPERTY_MAX_SIZE];
-> +};
-> +
-> +/**
-> + * wilco_ec_get_property() - Retrieve a property from the EC.
-> + * @ec: Embedded Controller device.
-> + * @prop_msg: Message for request and response.
-> + *
-> + * The property_id field of |prop_msg| should be filled before calling this
-> + * function. The result will be stored in the data and length fields.
-> + *
-> + * Return: 0 on success, negative error code on failure.
-> + */
-> +int wilco_ec_get_property(struct wilco_ec_device *ec,
-> +			  struct wilco_ec_property_msg *prop_msg);
-> +
-> +/**
-> + * wilco_ec_set_property() - Store a property on the EC.
-> + * @ec: Embedded Controller device.
-> + * @prop_msg: Message for request and response.
-> + *
-> + * The property_id, length, and data fields of |prop_msg| should be
-> + * filled before calling this function.
-> + *
-> + * Return: 0 on success, negative error code on failure.
-> + */
-> +int wilco_ec_set_property(struct wilco_ec_device *ec,
-> +			  struct wilco_ec_property_msg *prop_msg);
-> +
-> +/**
-> + * wilco_ec_get_byte_property() - Retrieve a byte-size property from the EC.
-> + * @ec: Embedded Controller device.
-> + * @property_id: Which property to retrieve.
-> + * @val: The result value, will be filled by this function.
-> + *
-> + * Return: 0 on success, negative error code on failure.
-> + */
-> +int wilco_ec_get_byte_property(struct wilco_ec_device *ec, u32 property_id,
-> +			       u8 *val);
-> +
-> +/**
-> + * wilco_ec_get_byte_property() - Store a byte-size property on the EC.
-> + * @ec: Embedded Controller device.
-> + * @property_id: Which property to store.
-> + * @val: Value to store.
-> + *
-> + * Return: 0 on success, negative error code on failure.
-> + */
-> +int wilco_ec_set_byte_property(struct wilco_ec_device *ec, u32 property_id,
-> +			       u8 val);
-> +
->  #endif /* WILCO_EC_H */
-> 
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 77aa4aee4478..facbedd2554e 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -60,6 +60,26 @@ __read_mostly int scheduler_running;
+  */
+ int sysctl_sched_rt_runtime = 950000;
+ 
++DEFINE_STATIC_KEY_FALSE(__turbo_sched_enabled);
++static DEFINE_SPINLOCK(turbo_sched_lock);
++static int turbo_sched_count;
++
++void turbo_sched_get(void)
++{
++	spin_lock(&turbo_sched_lock);
++	if (!turbo_sched_count++)
++		static_branch_enable(&__turbo_sched_enabled);
++	spin_unlock(&turbo_sched_lock);
++}
++
++void turbo_sched_put(void)
++{
++	spin_lock(&turbo_sched_lock);
++	if (!--turbo_sched_count)
++		static_branch_disable(&__turbo_sched_enabled);
++	spin_unlock(&turbo_sched_lock);
++}
++
+ /*
+  * __task_rq_lock - lock the rq @p resides on.
+  */
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index e75ffaf3ff34..0339964cdf43 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -2437,3 +2437,10 @@ static inline bool sched_energy_enabled(void)
+ static inline bool sched_energy_enabled(void) { return false; }
+ 
+ #endif /* CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
++
++DECLARE_STATIC_KEY_FALSE(__turbo_sched_enabled);
++
++static inline bool is_turbosched_enabled(void)
++{
++	return static_branch_unlikely(&__turbo_sched_enabled);
++}
+-- 
+2.17.1
+
