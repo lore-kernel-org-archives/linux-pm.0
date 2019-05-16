@@ -2,127 +2,119 @@ Return-Path: <SRS0=ThCx=TQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8D25C04E84
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 15:23:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38DEEC04AAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 15:29:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BACEE20657
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 15:23:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="k6skFBX8"
+	by mail.kernel.org (Postfix) with ESMTP id 16A9720657
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 15:29:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726801AbfEPPXD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 May 2019 11:23:03 -0400
-Received: from mail-pf1-f195.google.com ([209.85.210.195]:41076 "EHLO
-        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727568AbfEPPXD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2019 11:23:03 -0400
-Received: by mail-pf1-f195.google.com with SMTP id q17so2018085pfq.8
-        for <linux-pm@vger.kernel.org>; Thu, 16 May 2019 08:23:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=RatfLeFW1W1PAQOYZjHmZ1EvB3m/ZFWDsSmlE4eB5TA=;
-        b=k6skFBX8Cz5Py454S2p2l8dOkOmY/q+Csr4dBPw3M35zGWyLwJSvFgS11iKH3C6V3M
-         MTr9CqQc6IhCwwA1J4q3YTUqxBSJZThn4yBYEPQfnL4ytBBRnCdovLJikDvx/Ndkm2b2
-         8ej1YfDXFyLJVuw22aUHlaM4ctgPSA88mKGNLjlzmLan1Q7uT0Ez/76NkSJ3ZURJCyq8
-         38IxfMxxFLQkE4ydHQHz0l49uxgbicTUjRU2WyKIOBZqqZzKsx1cB9a6+iqyDXW4rSvI
-         Nsz4VpwQozesX4/tBzIB0pJIaqKZv/cM8jDxKUHbSB7ks60/IXbzrxv58RfRQkF62Tes
-         Kh0w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=RatfLeFW1W1PAQOYZjHmZ1EvB3m/ZFWDsSmlE4eB5TA=;
-        b=fD5t224QMvl9OafCJMCW/iRfJ681/o36l9xX/19FoJHXzovCrl6D9dLvRb4nFWBXG1
-         BERu2Jg8bqCI/wKoqzmgZZv7GxNxnF5D5qSYw/p/LAHUP8QIuOwKqxKwj9b9Y2SUeD9e
-         k0a9vjZaY/OgVgVycInmd90lgVMg0HVEdFa5lQywAyb1cS/HWaO0sQ40KW+RB3UzymLa
-         ZdttedxokIcO+MzbgcgioiqrC63LXeATslD5VRLqVR+AfbwkKVMIMp0yO3pom/2RaFsu
-         m8CI/WYpJ/o8GFgFUcmpSR0n4C1q4rwtEAJGA1wrG6WO0WCE2VFUzx+Kr9pj/HkmozL7
-         9kHg==
-X-Gm-Message-State: APjAAAVeAoueM53WoNNyebpwZCApbBGjGsq9/+Qi7ASjZ7E1sgBV5uoD
-        Eq57uEpVuhawMhodWFwxIZHjo87UJJVCiBlHGc8=
-X-Google-Smtp-Source: APXvYqxeNr+MdDWiWuHTWTqqy3z5Ly9hhk2u0giMF6RLyo/pDNLlpteGewSk5DyowpxZ2mKTpmRyXPff/IrbrkKM7No=
-X-Received: by 2002:a62:1a51:: with SMTP id a78mr53460390pfa.133.1558020182082;
- Thu, 16 May 2019 08:23:02 -0700 (PDT)
-MIME-Version: 1.0
-References: <1557933437-4693-1-git-send-email-akinobu.mita@gmail.com>
- <1557933437-4693-2-git-send-email-akinobu.mita@gmail.com> <20190515191518.GA21916@localhost.localdomain>
-In-Reply-To: <20190515191518.GA21916@localhost.localdomain>
-From:   Akinobu Mita <akinobu.mita@gmail.com>
-Date:   Fri, 17 May 2019 00:22:51 +0900
-Message-ID: <CAC5umyhh7eNHa4D9sndsoB7EgTJZTEL9OTd=a+7x817XvPZ_eQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] nvme: add thermal zone infrastructure
-To:     Keith Busch <keith.busch@intel.com>
-Cc:     linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Jens Axboe <axboe@fb.com>, Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>
+        id S1727495AbfEPP3B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 May 2019 11:29:01 -0400
+Received: from mga06.intel.com ([134.134.136.31]:48288 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727434AbfEPP3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 May 2019 11:29:01 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 16 May 2019 08:29:00 -0700
+X-ExtLoop1: 1
+Received: from jzhan56-mobl.ccr.corp.intel.com ([10.249.170.73])
+  by fmsmga005.fm.intel.com with ESMTP; 16 May 2019 08:28:59 -0700
+Message-ID: <1558020541.12827.25.camel@intel.com>
+Subject: [GIT PULL] Thermal management updates for v5.2-rc1
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Eduardo Valentin <edubezval@gmail.com>
+Date:   Thu, 16 May 2019 23:29:01 +0800
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Mailer: Evolution 3.18.5.2-0ubuntu3.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190516152901.6DDm2tMSvY1H1gU49w1n2kZ5l7twOt0a3aSyrGNolL0@z>
 
-2019=E5=B9=B45=E6=9C=8816=E6=97=A5(=E6=9C=A8) 4:20 Keith Busch <keith.busch=
-@intel.com>:
->
-> On Thu, May 16, 2019 at 12:17:16AM +0900, Akinobu Mita wrote:
-> > +int nvme_thermal_zones_register(struct nvme_ctrl *ctrl)
-> > +{
-> > +     struct nvme_smart_log *log;
-> > +     int ret;
-> > +     int i;
-> > +
-> > +     log =3D kzalloc(sizeof(*log), GFP_KERNEL);
-> > +     if (!log)
-> > +             return -ENOMEM;
-> > +
-> > +     ret =3D nvme_get_log(ctrl, NVME_NSID_ALL, NVME_LOG_SMART, 0,
-> > +                        log, sizeof(*log), 0);
-> > +     if (ret) {
-> > +             ret =3D ret > 0 ? -EINVAL : ret;
-> > +             goto free_log;
-> > +     }
-> > +
-> > +     for (i =3D 0; i < ARRAY_SIZE(ctrl->tzdev); i++) {
-> > +             struct thermal_zone_device *tzdev;
-> > +
-> > +             if (i && !le16_to_cpu(log->temp_sensor[i - 1]))
-> > +                     continue;
-> > +             if (ctrl->tzdev[i])
-> > +                     continue;
-> > +
-> > +             tzdev =3D nvme_thermal_zone_register(ctrl, i);
-> > +             if (!IS_ERR(tzdev))
-> > +                     ctrl->tzdev[i] =3D tzdev;
-> > +     }
-> > +
-> > +free_log:
-> > +     kfree(log);
-> > +
-> > +     return ret;
-> > +}
->
-> Since this routine is intended for use in the device initialization path,
-> the error returns are extra important. We have used < 0 to indicate we
-> need to abandon initialization because we won't be able communicate with
-> the device if we proceed. Since thermal reporting is not mandatory to
-> manage our controllers, out-of-memory or a device that doesn't support
-> SMART should just return 0. We should only halt init if the controller
-> is unresponsive here.
+Hi, Linus,
 
-Make sense.  I'll change the return type to void, and print warning in
-case of some errors as Minwoo said in other reply.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-> In general, I'm okay with this feature.
+to receive the latest Thermal management updates for v5.2-rc1 with
+top-most commit 6df24c3e81b9ba9c5e8d815e593826c169e3f366:
 
-OK.  I'll prepare the next version.
+  Merge branches 'thermal-core', 'thermal-built-it' and 'thermal-intel' 
+into next (2019-05-07 21:54:11 +0800)
+
+on top of commit dc4060a5dc2557e6b5aa813bf5b73677299d62d2:
+
+  Linux 5.1-rc5 (2019-04-14 15:17:41 -0700)
+
+Specifics:
+
+- Remove the 'module' Kconfig option for thermal subsystem framework
+because the thermal framework are required to be ready as early as
+possible to avoid overheat at boot time. (Daniel Lezcano)
+
+- Fix a bug that thermal framework pokes disabled thermal zones upon
+resume. (Wei Wang)
+
+- A couple of cleanups and trivial fixes on int340x thermal drivers.
+(Srinivas Pandruvada, Zhang Rui, Sumeet Pawnikar)
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Daniel Lezcano (5):
+      thermal/drivers/core: Remove the module Kconfig's option
+      thermal/drivers/core: Remove module unload code
+      thermal/drivers/core: Remove depends on THERMAL in Kconfig
+      thermal/drivers/core: Fix typo in the option name
+      hwmon/drivers/core: Simplify complex dependency
+
+Geert Uytterhoeven (1):
+      mlxsw: Remove obsolete dependency on THERMAL=m
+
+Jean-Francois Dagenais (1):
+      thermal: make device_register's type argument const
+
+Srinivas Pandruvada (1):
+      drivers: thermal: processor_thermal: Downgrade error message
+
+Sumeet Pawnikar (1):
+      thermal: intel: int340x: processor_thermal_device: simplify to
+get driver data
+
+Wei Wang (1):
+      thermal: core: skip update disabled thermal zones after suspend
+
+Zhang Rui (2):
+      thermal/int3403_thermal: favor _TMP instead of PTYP
+      Merge branches 'thermal-core', 'thermal-built-it' and 'thermal-
+intel' into next
+
+ arch/arm/configs/mini2440_defconfig                |  2 +-
+ arch/arm/configs/pxa_defconfig                     |  2 +-
+ arch/mips/configs/ip22_defconfig                   |  2 +-
+ arch/mips/configs/ip27_defconfig                   |  2 +-
+ arch/unicore32/configs/unicore32_defconfig         |  2 +-
+ drivers/hwmon/hwmon.c                              |  4 +--
+ drivers/net/ethernet/mellanox/mlxsw/Kconfig        |  1 -
+ drivers/thermal/Kconfig                            |  8 +++---
+ drivers/thermal/intel/Kconfig                      |  1 -
+ .../intel/int340x_thermal/int3403_thermal.c        | 16 +++++------
+ .../int340x_thermal/processor_thermal_device.c     | 13 ++-------
+ drivers/thermal/qcom/Kconfig                       |  1 -
+ drivers/thermal/thermal_core.c                     | 31 +++++++++-----
+--------
+ include/linux/thermal.h                            |  6 ++---
+ 14 files changed, 34 insertions(+), 57 deletions(-)
