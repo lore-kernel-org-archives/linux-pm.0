@@ -6,90 +6,94 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA0BFC04AAF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 16:11:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B89EC04AAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 16:15:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AEFF2206BF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 16:11:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 77BED20815
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 16:15:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726510AbfEPQL7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 May 2019 12:11:59 -0400
-Received: from mout.kundenserver.de ([212.227.126.130]:51275 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726464AbfEPQL6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2019 12:11:58 -0400
-Received: from [192.168.178.167] ([109.104.36.193]) by
- mrelayeu.kundenserver.de (mreue009 [212.227.15.167]) with ESMTPSA (Nemesis)
- id 1MiJhW-1gn2TT1ffC-00fP2t; Thu, 16 May 2019 18:11:33 +0200
-Subject: Re: [GIT PULL] Thermal-SoC management changes for v5.2-rc1
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Guenter Roeck <linux@roeck-us.net>
-Cc:     Rui Zhang <rui.zhang@intel.com>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-References: <20190516044313.GA17751@localhost.localdomain>
- <CAHk-=wiaO_8SiEB9QM3vOTniiT67K6CBH0uHJ82-Dp_+6kxH3g@mail.gmail.com>
-From:   Stefan Wahren <stefan.wahren@i2se.com>
-Message-ID: <4803994d-f519-a6b6-f5bb-a2f50d91ecd7@i2se.com>
-Date:   Thu, 16 May 2019 18:11:32 +0200
+        id S1726635AbfEPQPx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 May 2019 12:15:53 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:35304 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1726510AbfEPQPx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2019 12:15:53 -0400
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4GGCVEw189484
+        for <linux-pm@vger.kernel.org>; Thu, 16 May 2019 12:15:52 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2sha08kv8n-1
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Thu, 16 May 2019 12:15:52 -0400
+Received: from localhost
+        by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
+        Thu, 16 May 2019 17:15:50 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+        by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+        Thu, 16 May 2019 17:15:47 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+        by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4GGFkDY58785998
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 16 May 2019 16:15:47 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id C73D15269F;
+        Thu, 16 May 2019 16:15:46 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.91.88])
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 87AA852692;
+        Thu, 16 May 2019 16:15:44 +0000 (GMT)
+Subject: Re: [RFCv2 2/6] sched: Introduce switch to enable TurboSched mode
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        mingo@redhat.com, dietmar.eggemann@arm.com, dsmythies@telus.net
+References: <20190515135322.19393-1-parth@linux.ibm.com>
+ <20190515135322.19393-3-parth@linux.ibm.com>
+ <20190515163032.GU2589@hirez.programming.kicks-ass.net>
+From:   Parth Shah <parth@linux.ibm.com>
+Date:   Thu, 16 May 2019 21:45:42 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ Thunderbird/60.0
 MIME-Version: 1.0
-In-Reply-To: <CAHk-=wiaO_8SiEB9QM3vOTniiT67K6CBH0uHJ82-Dp_+6kxH3g@mail.gmail.com>
+In-Reply-To: <20190515163032.GU2589@hirez.programming.kicks-ass.net>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
 Content-Language: en-US
-X-Provags-ID: V03:K1:HfXg+VerHg3XpZ/wJRmyjEJyPoEOVangfVhRYd6re0+8tLoYnmn
- oW1tto1qS1QQOe7GOCE7EoevUdRqBEDQ///1l974DU6oDx8+IabIbaeHwU/cfjP4DjKA6Br
- iX868FUXz7c1nOxAIHoyQKpsGy9mRzS1My2eaC6up74sSVDaK/QmuAXrROr7bb8NTBl3wqX
- WwVEm4CNLpPMKwjYQor6A==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:xkwv5xkBN+U=:bwfz0IV+WlLUs6KTbOUP5F
- m86RxkHI2Kj0QzfcXKAjfZ5U5Tv7ptnKNtgLYdvqIaRk+mynEvOkxWqy/MzaMhk2DxJ8qmr1i
- FBBq9iBvmcz6A0jmH8HHgyLkeFMI4b1ivawHRk9zA+MuopGSHO7SdkTaytpD95zlyhTHG7ZDQ
- ucuLHN5pnxVV68A4Nmp9c0lUFiAVLgEK+i/F2C3PPpQ0XCvarGXzmUjPrxOHJqU2QX6PvWsGX
- 7Q9b4MC3s9hQr7h6v0tAOK3o6Rmu+Uhgbp2eEQrGQ8hdzl6K99Bznt7mBbvxE1z2aXy5hPFUb
- OV9sLFfI8Kx69V1noe0ltzTDcdPaH2a+ggeMHMgiSZZ9xquruK+FaGafE4VQTIudsJH48+EIl
- rSt1kfKbUf/shkzxbsBa/sbVRmRUl1D+AK66qqyVbU/BiLoaN6Qynfy/xLAcuVSILSJOY4dbR
- 7JdgG3YikQQCtVEL1l6/s9BDOO7LESCW0XUCY5LGG+iLrAm3N4R0kYfYfuwW78nhncv8jtp0m
- sr0lIxldMQxoJvNbROex1vVUYSmoQEQq79zvls/eFyz56tPHv1DY/EovlT4wMNQR251Wjy0dG
- T1UGNyfAZBE26//8UjJj16wsHH76ZeD17CE+X5ynrrYrtdL0Z6By2LMrwezH072eTf80EEZWU
- rBOygeHEXUARE33jk7VUERqnLNl4Jm54LKIwbG4Djr1MUF7bzT0Q+/QXFtbrCrW1zLGjwZy74
- f9Pte2LM5Iz96JyVVZepWzFQnZb4JJPFlHnxWCJVjG0cTnXW3KZNh+p2ZO8=
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19051616-0020-0000-0000-0000033D66A2
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19051616-0021-0000-0000-000021902F38
+Message-Id: <fd7bd5e7-8d89-2c0b-1f3d-d229b7af5757@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-16_14:,,
+ signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905160103
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190516161132.GWirmONoIC1XS9NoMj1wnPgKbZP8wkqdBIB92sQx0VQ@z>
+Message-ID: <20190516161542.KBAkZgi7d9oXhaEqwBOGVvN4UaW7Q6_0nnYTlYW5Ex8@z>
 
-Hi Linus,
 
-On 16.05.19 17:07, Linus Torvalds wrote:
-> On Wed, May 15, 2019 at 9:43 PM Eduardo Valentin <edubezval@gmail.com> wrote:
->> - thermal core has a new devm_* API for registering cooling devices, thanks to Guenter R.
->>   I took the entire series, that is why you see changes on drivers/hwmon in this pull.
-> This clashed badly with commit 6b1ec4789fb1 ("hwmon: (pwm-fan) Add RPM
-> support via external interrupt"), which added a timer to the pwm-fan
-> handling.
->
-> In particular, that timer now needed the same kind of cleanup changes,
-> and I'd like you guys (particularly Guenther, who was involved on both
-> sides) to double-check my merge.
->
-> The way I solved it was to just make the pwm_fan_pwm_disable()
-> callback do both the pwm_diable() _and_ the del_timer_sync() on the
-> new timer. That seemed to be the simplest solution that meshed with
-> the new devm cleanup model, but while I build-tested the result, I
-> obviously did no actual use testing. And maybe there's some reason why
-> that approach is flawed.
 
-i will try to test on our custom i.MX6 board. Unfortunately this take
-some time since it isn't mainline yet (at least until tomorrow).
+On 5/15/19 10:00 PM, Peter Zijlstra wrote:
+> On Wed, May 15, 2019 at 07:23:18PM +0530, Parth Shah wrote:
+>> +void turbo_sched_get(void)
+>> +{
+>> +	spin_lock(&turbo_sched_lock);
+>> +	if (!turbo_sched_count++)
+>> +		static_branch_enable(&__turbo_sched_enabled);
+>> +	spin_unlock(&turbo_sched_lock);
+>> +}
+> 
+> Muwhahaha, you didn't test this code, did you?
+> 
 
-Stefan
+yeah, I didn't see task-sleep problem coming in.
+I will change to mutex.
 
->
-> Guenther?
->
->                     Linus
+Thanks for pointing out.
+
