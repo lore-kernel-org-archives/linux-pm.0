@@ -1,491 +1,272 @@
 From: Frank Lee <tiny.windzz@gmail.com>
 Subject: Re: [PATCH 2/3] thermal: sun50i: add thermal driver for h6
-Date: Fri, 17 May 2019 01:51:56 +0800
-Message-ID: <CAEExFWvcMbiCJ4HD0UAtv1P6AuBJ=oUdmhu886BNZhrRz483Ug@mail.gmail.com>
-References: <20190512082614.9045-1-tiny.windzz@gmail.com> <20190512082614.9045-3-tiny.windzz@gmail.com>
- <20190512133930.t5txssl7mou2gljt@flea>
+Date: Fri, 17 May 2019 02:06:53 +0800
+Message-ID: <CAEExFWv5A5mhpV7afQT=AaYx2ko5QnfbM6HvfuTgT1Na=ssOcw__18391.3234084443$1558030041$gmane$org@mail.gmail.com>
+References: <20190512082614.9045-1-tiny.windzz@gmail.com>
+ <20190512082614.9045-3-tiny.windzz@gmail.com>
+ <20190512221612.ubmknvim4utnqpl4@core.my.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190512133930.t5txssl7mou2gljt@flea>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, catalin.marinas@arm.com, will.deacon@arm.com, David Miller <davem@davemloft.net>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan.Cameron@huawei.com, Nicolas Ferre <nicolas.ferre@microchip.com>, paulmck@linux.ibm.com, Andy Gross <andy.gross@linaro.org>, olof@lixom.net, bjorn.andersson@linaro.org, Jagan Teki <jagan@amarulasolutions.com>, marc.w.gonzalez@free.fr, stefan.wahren@i2se.com, enric.balletbo@collabora.com, Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infra>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20190512221612.ubmknvim4utnqpl4@core.my.home>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Yangtao Li <tiny.windzz@gmail.com>, rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Chen-Yu Tsai <wens@csie.org>, catalin.marinas@arm.com, will.deacon@arm.com, David Miller <davem@davemloft.net>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan.Cameron@huawei.com, Nicolas Ferre <nicolas.ferre@microchip.com>, paulmck@linux.ibm.com, Andy Gross <andy.gross@linaro.org>, olof@lixom.net, bjorn.andersson@linaro.org, Jagan Teki <jagan@amarulasolutions.com>, marc.w.gonzalez@free.fr, stefan.wahren@i2se.com, enric.balletbo@collabora.com, devicetree@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.i>
 List-Id: linux-pm@vger.kernel.org
 
-HI Maxime,
-
-On Sun, May 12, 2019 at 9:39 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
->
-> Hi,
->
-> Thanks a lot for working on this!
->
-> On Sun, May 12, 2019 at 04:26:13AM -0400, Yangtao Li wrote:
-> > This patch adds the support for allwinner thermal sensor, within
-> > allwinner SoC. It will register sensors for thermal framework
-> > and use device tree to bind cooling device.
-> >
-> > Based on driver code found here:
-> > https://megous.com/git/linux and https://github.com/Allwinner-Homlet/H6-BSP4.9-linux
->
-> I wouldn't place the URL in the commit log. The commit log stays
-> forever in the linux history. Git repos and branches are going away
-> over time.
-Removed.
->
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > ---
-> >  MAINTAINERS                      |   7 +
-> >  drivers/thermal/Kconfig          |  14 ++
-> >  drivers/thermal/Makefile         |   1 +
-> >  drivers/thermal/sun50i_thermal.c | 357 +++++++++++++++++++++++++++++++
->
-> The long term goal is to support all the thermal sensors, not just the
-> H6. Since that controller was introduced with the sun8i family, it
-> makes more sense to use that prefix for the driver and the functions.
-Done.
->
-> >  4 files changed, 379 insertions(+)
-> >  create mode 100644 drivers/thermal/sun50i_thermal.c
-> >
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 3c65228e93c5..8da56582e72a 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -674,6 +674,13 @@ L:       linux-crypto@vger.kernel.org
-> >  S:   Maintained
-> >  F:   drivers/crypto/sunxi-ss/
-> >
-> > +ALLWINNER THERMAL DRIVER
-> > +M:   Yangtao Li <tiny.windzz@gmail.com>
-> > +L:   linux-pm@vger.kernel.org
-> > +S:   Maintained
-> > +F:   Documentation/devicetree/bindings/thermal/sun50i-thermal.txt
-> > +F:   drivers/thermal/sun50i_thermal.c
-> > +
-> >  ALLWINNER VPU DRIVER
-> >  M:   Maxime Ripard <maxime.ripard@bootlin.com>
-> >  M:   Paul Kocialkowski <paul.kocialkowski@bootlin.com>
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index 653aa27a25a4..2a8d1c98c6ca 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -252,6 +252,20 @@ config SPEAR_THERMAL
-> >         Enable this to plug the SPEAr thermal sensor driver into the Linux
-> >         thermal framework.
-> >
-> > +config SUN50I_THERMAL
-> > +     tristate "Allwinner sun50i thermal driver"
-> > +     depends on ARCH_SUNXI || COMPILE_TEST
-> > +     depends on HAS_IOMEM
-> > +     depends on NVMEM
-> > +     depends on OF
-> > +     depends on RESET_CONTROLLER
-> > +     help
-> > +       Support for the sun50i thermal sensor driver into the Linux thermal
-> > +       framework.
-> > +
-> > +       To compile this driver as a module, choose M here: the
-> > +       module will be called sun50i-thermal.
-> > +
-> >  config ROCKCHIP_THERMAL
-> >       tristate "Rockchip thermal driver"
-> >       depends on ARCH_ROCKCHIP || COMPILE_TEST
-> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> > index 486d682be047..a09b30b90003 100644
-> > --- a/drivers/thermal/Makefile
-> > +++ b/drivers/thermal/Makefile
-> > @@ -30,6 +30,7 @@ thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
-> >  # platform thermal drivers
-> >  obj-y                                += broadcom/
-> >  obj-$(CONFIG_SPEAR_THERMAL)  += spear_thermal.o
-> > +obj-$(CONFIG_SUN50I_THERMAL) += sun50i_thermal.o
-> >  obj-$(CONFIG_ROCKCHIP_THERMAL)       += rockchip_thermal.o
-> >  obj-$(CONFIG_RCAR_THERMAL)   += rcar_thermal.o
-> >  obj-$(CONFIG_RCAR_GEN3_THERMAL)      += rcar_gen3_thermal.o
-> > diff --git a/drivers/thermal/sun50i_thermal.c b/drivers/thermal/sun50i_thermal.c
-> > new file mode 100644
-> > index 000000000000..3bdb3677b3d4
-> > --- /dev/null
-> > +++ b/drivers/thermal/sun50i_thermal.c
-> > @@ -0,0 +1,357 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +/*
-> > + * Thermal sensor driver for Allwinner SOC
-> > + * Copyright (C) 2019 Yangtao Li
-> > + *
-> > + * Based on the work of Icenowy Zheng <icenowy@aosc.io>
-> > + * Based on the work of Ondrej Jirman <megous@megous.com>
-> > + * Based on the work of Josef Gajdusek <atx@atx.name>
-> > + */
-> > +
-> > +#include <linux/clk.h>
-> > +#include <linux/device.h>
-> > +#include <linux/module.h>
-> > +#include <linux/nvmem-consumer.h>
-> > +#include <linux/of_device.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/regmap.h>
-> > +#include <linux/reset.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/thermal.h>
-> > +
-> > +#define MAX_SENSOR_NUM       4
-> > +
-> > +#define FT_TEMP_MASK                         GENMASK(11, 0)
-> > +#define TEMP_CALIB_MASK                              GENMASK(11, 0)
-> > +#define TEMP_TO_REG                          672
-> > +#define CALIBRATE_DEFAULT                    0x800
-> > +
-> > +#define SUN50I_THS_CTRL0                     0x00
-> > +#define SUN50I_H6_THS_ENABLE                 0x04
-> > +#define SUN50I_H6_THS_PC                     0x08
-> > +#define SUN50I_H6_THS_MFC                    0x30
-> > +#define SUN50I_H6_TEMP_CALIB                 0xa0
-> > +#define SUN50I_H6_TEMP_DATA                  0xc0
-> > +
-> > +#define SUN50I_THS_CTRL0_T_ACQ(x)            ((GENMASK(15, 0) & (x)) << 16)
-> > +#define SUN50I_THS_FILTER_EN                 BIT(2)
-> > +#define SUN50I_THS_FILTER_TYPE(x)            (GENMASK(1, 0) & (x))
-> > +#define SUN50I_H6_THS_PC_TEMP_PERIOD(x)              ((GENMASK(19, 0) & (x)) << 12)
-> > +
-> > +/* millidegree celsius */
-> > +#define SUN50I_H6_FT_DEVIATION                       7000
-> > +
-> > +struct tsens_device;
-> > +
-> > +struct tsensor {
-> > +     struct tsens_device             *tmdev;
-> > +     struct thermal_zone_device      *tzd;
-> > +     int                             id;
-> > +};
-> > +
-> > +struct sun50i_thermal_chip {
-> > +     int     sensor_num;
-> > +     int     offset;
-> > +     int     scale;
-> > +     int     ft_deviation;
-> > +     int     temp_calib_base;
-> > +     int     temp_data_base;
-> > +     int     (*enable)(struct tsens_device *tmdev);
-> > +     int     (*disable)(struct tsens_device *tmdev);
-> > +};
->
-> I'm not super fond of having a lot of quirks that are not needed. If
-> we ever need those quirks when adding support for a new SoC, then
-> yeah, we should totally have some, but only when and if it's needed.
->
-> Otherwise, the driver is more complicated for no particular reason.
-This is unavoidable because of the difference in soc.
->
-> > +
-> > +struct tsens_device {
->
-> IIRC the acronym used by allwinner is THS, maybe we can just use that
-> as a prefix?
-Done.
->
-> > +     const struct sun50i_thermal_chip        *chip;
-> > +     struct device                           *dev;
-> > +     struct regmap                           *regmap;
-> > +     struct reset_control                    *reset;
-> > +     struct clk                              *bus_clk;
-> > +     struct tsensor                          sensor[MAX_SENSOR_NUM];
-> > +};
-> > +
-> > +/* Temp Unit: millidegree Celsius */
-> > +static int tsens_reg2temp(struct tsens_device *tmdev,
-> > +                           int reg)
-> > +{
-> > +     return (reg + tmdev->chip->offset) * tmdev->chip->scale;
-> > +}
-> > +
-> > +static int tsens_get_temp(void *data, int *temp)
-> > +{
-> > +     struct tsensor *s = data;
-> > +     struct tsens_device *tmdev = s->tmdev;
-> > +     int val;
-> > +
-> > +     regmap_read(tmdev->regmap, tmdev->chip->temp_data_base +
-> > +                 0x4 * s->id, &val);
-> > +
-> > +     if (unlikely(val == 0))
-> > +             return -EBUSY;
->
-> I'm not sure why a val equals to 0 would be associated with EBUSY?
->
-> Also, it's not in a fast path, so you can drop the unlikely. Chances
-> are it's not that unlikely anyway.
->
-BUSY:  Ths have no data yet.
-> > +     *temp = tsens_reg2temp(tmdev, val);
-> > +     if (tmdev->chip->ft_deviation)
-> > +             *temp += tmdev->chip->ft_deviation;
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static const struct thermal_zone_of_device_ops tsens_ops = {
-> > +     .get_temp = tsens_get_temp,
-> > +};
-> > +
-> > +static const struct regmap_config config = {
-> > +     .reg_bits = 32,
-> > +     .val_bits = 32,
-> > +     .reg_stride = 4,
-> > +     .fast_io = true,
-> > +};
-> > +
-> > +static int tsens_init(struct tsens_device *tmdev)
-> > +{
-> > +     struct device *dev = tmdev->dev;
-> > +     struct platform_device *pdev = to_platform_device(dev);
-> > +     struct resource *mem;
-> > +     void __iomem *base;
-> > +
-> > +     mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > +     base = devm_ioremap_resource(dev, mem);
-> > +     if (IS_ERR(base))
-> > +             return PTR_ERR(base);
-> > +
-> > +     tmdev->regmap = devm_regmap_init_mmio_clk(dev, "bus",
-> > +                                               base,
-> > +                                               &config);
-> > +     if (IS_ERR(tmdev->regmap))
-> > +             return PTR_ERR(tmdev->regmap);
-> > +
-> > +     tmdev->reset = devm_reset_control_get(dev, "bus");
-> > +     if (IS_ERR(tmdev->reset))
-> > +             return PTR_ERR(tmdev->reset);
-> > +
-> > +     tmdev->bus_clk = devm_clk_get(&pdev->dev, "bus");
-> > +     if (IS_ERR(tmdev->bus_clk))
-> > +             return PTR_ERR(tmdev->bus_clk);
->
-> You don't need to get that clock if regmap has it already.
-It seems that clk init should be after reset reset_control_deassert.
-So I convert devm_regmap_init_mmio_clk to devm_regmap_init_mmio.
->
-> > +     return 0;
-> > +}
-> > +
-> > +/*
-> > + * Even if the external calibration data stored in sid is not accessible,
-> > + * the THS hardware can still work, although the data won't be so accurate.
-> > + * The default value of calibration register is 0x800 for every sensor,
-> > + * and the calibration value is usually 0x7xx or 0x8xx, so they won't be
-> > + * away from the default value for a lot.
-> > + *
-> > + * So here we do not return error if the calibartion data is
-> > + * not available, except the probe needs deferring.
-> > + */
-> > +static int tsens_calibrate(struct tsens_device *tmdev)
-> > +{
-> > +     struct nvmem_cell *calcell;
-> > +     struct device *dev = tmdev->dev;
-> > +     u16 *caldata;
-> > +     size_t callen;
-> > +     int ft_temp;
-> > +     int i = 0;
-> > +
-> > +     calcell = devm_nvmem_cell_get(dev, "calib");
-> > +     if (IS_ERR(calcell)) {
-> > +             if (PTR_ERR(calcell) == -EPROBE_DEFER)
-> > +                     return -EPROBE_DEFER;
-> > +
-> > +             goto out;
-> > +     }
-> > +
-> > +     caldata = nvmem_cell_read(calcell, &callen);
-> > +     if (IS_ERR(caldata))
-> > +             goto out;
-> > +
-> > +     if (!caldata[0] || callen < 2 + 2 * tmdev->chip->sensor_num)
-> > +             goto out_free;
->
-> The first part of your or isn't obvious and should have a comment.
->
-> The second part shouldn't return 0 but an error
-Done.
->
-> > +
-> > +     /*
-> > +      * The calbration data on H6 is stored as temperature-value
-> > +      * pair when being filled at factory test stage.
-> > +      * The unit of stored FT temperature is 0.1 degreee celusis.
-> > +      */
-> > +     ft_temp = caldata[0] & FT_TEMP_MASK;
-> > +
-> > +     for (; i < tmdev->chip->sensor_num; i++) {
->
-> Usually you would initialize i here, and not when declared.
-Done.
->
-> > +             int reg = (int)caldata[i + 1];
-> > +             int sensor_temp = tsens_reg2temp(tmdev, reg);
-> > +             int delta, cdata, calib_offest;
-> > +
-> > +             /*
-> > +              * To calculate the calibration value:
-> > +              *
-> > +              * X(in Celsius) = Ts - ft_temp
-> > +              * delta = X * 10000 / TEMP_TO_REG
-> > +              * cdata = CALIBRATE_DEFAULT - delta
-> > +              *
-> > +              * cdata: calibration value
-> > +              */
-> > +             delta = (sensor_temp - ft_temp * 100) * 10 / TEMP_TO_REG;
-> > +             cdata = CALIBRATE_DEFAULT - delta;
-> > +             if (cdata & ~TEMP_CALIB_MASK) {
-> > +                     dev_warn(dev, "sensor%d calibration value error", i);
-> > +
-> > +                     continue;
-> > +             }
-> > +
-> > +             calib_offest = tmdev->chip->temp_calib_base + (i / 2) * 0x4;
-> > +
-> > +             if (i % 2) {
-> > +                     int val;
-> > +
-> > +                     regmap_read(tmdev->regmap, calib_offest, &val);
-> > +                     val = (val & TEMP_CALIB_MASK) | (cdata << 16);
-> > +                     regmap_write(tmdev->regmap, calib_offest, val);
-> > +             } else
-> > +                     regmap_write(tmdev->regmap, calib_offest, cdata);
->
-> This should have brackets as well
-Done.
->
-> > +     }
-> > +
-> > +out_free:
-> > +     kfree(caldata);
-> > +out:
-> > +     return 0;
-> > +}
-> > +
-> > +static int tsens_register(struct tsens_device *tmdev)
-> > +{
-> > +     struct thermal_zone_device *tzd;
-> > +     int i = 0;
-> > +
-> > +     for (; i < tmdev->chip->sensor_num; i++) {
->
-> Ditto
-Done.
->
-> > +             tmdev->sensor[i].tmdev = tmdev;
-> > +             tmdev->sensor[i].id = i;
-> > +             tmdev->sensor[i].tzd = devm_thermal_zone_of_sensor_register(
-> > +                                     tmdev->dev, i, &tmdev->sensor[i],
-> > +                                     &tsens_ops);
-> > +             if (IS_ERR(tmdev->sensor[i].tzd))
-> > +                     return PTR_ERR(tzd);
-> > +     }
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static int tsens_probe(struct platform_device *pdev)
-> > +{
-> > +     struct tsens_device *tmdev;
-> > +     struct device *dev = &pdev->dev;
-> > +     int ret;
-> > +
-> > +     tmdev = devm_kzalloc(dev, sizeof(*tmdev), GFP_KERNEL);
-> > +     if (!tmdev)
-> > +             return -ENOMEM;
-> > +
-> > +     tmdev->dev = dev;
-> > +     tmdev->chip = of_device_get_match_data(&pdev->dev);
-> > +     if (!tmdev->chip)
-> > +             return -EINVAL;
-> > +
-> > +     ret = tsens_init(tmdev);
-> > +     if (ret)
-> > +             return ret;
-> > +
-> > +     ret = tsens_register(tmdev);
-> > +     if (ret)
-> > +             return ret;
-> > +
-> > +     ret = tmdev->chip->enable(tmdev);
-> > +     if (ret)
-> > +             return ret;
-> >
-> > +     platform_set_drvdata(pdev, tmdev);
->
-> Your registration should be the very last thing you do. Otherwise, you
-> have a small window where the get_temp callback can be called, but the
-> driver will not be functional yet.
-No. Anyway, ths data qcquisition is ms level.
->
-> > +     return ret;
-> > +}
-> > +
-> > +static int tsens_remove(struct platform_device *pdev)
-> > +{
-> > +     struct tsens_device *tmdev = platform_get_drvdata(pdev);
-> > +
-> > +     tmdev->chip->disable(tmdev);
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static int sun50i_thermal_enable(struct tsens_device *tmdev)
-> > +{
-> > +     int ret, val;
-> > +
-> > +     ret = reset_control_deassert(tmdev->reset);
-> > +     if (ret)
-> > +             return ret;
-> > +
-> > +     ret = clk_prepare_enable(tmdev->bus_clk);
-> > +     if (ret)
-> > +             goto assert_reset;
->
-> This is done by regmap as well
->
-> > +     ret = tsens_calibrate(tmdev);
-> > +     if (ret)
-> > +             return ret;
-> > +
-> > +     /*
-> > +      * clkin = 24MHz
-> > +      * T acquire = clkin / (SUN50I_THS_CTRL0_T_ACQ + 1)
-> > +      *           = 20us
-> > +      */
-> > +     regmap_write(tmdev->regmap, SUN50I_THS_CTRL0,
-> > +                  SUN50I_THS_CTRL0_T_ACQ(479));
-> > +     /* average over 4 samples */
-> > +     regmap_write(tmdev->regmap, SUN50I_H6_THS_MFC,
-> > +                  SUN50I_THS_FILTER_EN |
-> > +                  SUN50I_THS_FILTER_TYPE(1));
-> > +     /* period = (SUN50I_H6_THS_PC_TEMP_PERIOD + 1) * 4096 / clkin; ~10ms */
-> > +     regmap_write(tmdev->regmap, SUN50I_H6_THS_PC,
-> > +                  SUN50I_H6_THS_PC_TEMP_PERIOD(58));
-> > +     /* enable sensor */
-> > +     val = GENMASK(tmdev->chip->sensor_num - 1, 0);
-> > +     regmap_write(tmdev->regmap, SUN50I_H6_THS_ENABLE, val);
-> > +
-> > +     return 0;
-> > +
-> > +assert_reset:
-> > +     reset_control_assert(tmdev->reset);
-> > +
-> > +     return ret;
->
-> Can't we do that with runtime_pm?
->
-Saving energy doesn't make much sense compared to system security.
-
-thx,
-Yangtao
-> Thanks!
-> Maxime
->
-> --
-> Maxime Ripard, Bootlin
-> Embedded Linux and Kernel engineering
-> https://bootlin.com
+SEkgT25kxZllaiwKCk9uIE1vbiwgTWF5IDEzLCAyMDE5IGF0IDY6MTYgQU0gT25kxZllaiBKaXJt
+YW4gPG1lZ291c0BtZWdvdXMuY29tPiB3cm90ZToKPgo+IEhlbGxvIFlhbmd0YW8sCj4KPiBPbiBT
+dW4sIE1heSAxMiwgMjAxOSBhdCAwNDoyNjoxM0FNIC0wNDAwLCBZYW5ndGFvIExpIHdyb3RlOgo+
+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9zdW41MGlfdGhlcm1hbC5jIGIvZHJpdmVy
+cy90aGVybWFsL3N1bjUwaV90aGVybWFsLmMKPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4gPiBp
+bmRleCAwMDAwMDAwMDAwMDAuLjNiZGIzNjc3YjNkNAo+ID4gLS0tIC9kZXYvbnVsbAo+ID4gKysr
+IGIvZHJpdmVycy90aGVybWFsL3N1bjUwaV90aGVybWFsLmMKPiA+IEBAIC0wLDAgKzEsMzU3IEBA
+Cj4gPiArLy8gU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0yLjAKPiA+ICsvKgo+ID4gKyAq
+IFRoZXJtYWwgc2Vuc29yIGRyaXZlciBmb3IgQWxsd2lubmVyIFNPQwo+ID4gKyAqIENvcHlyaWdo
+dCAoQykgMjAxOSBZYW5ndGFvIExpCj4gPiArICoKPiA+ICsgKiBCYXNlZCBvbiB0aGUgd29yayBv
+ZiBJY2Vub3d5IFpoZW5nIDxpY2Vub3d5QGFvc2MuaW8+Cj4gPiArICogQmFzZWQgb24gdGhlIHdv
+cmsgb2YgT25kcmVqIEppcm1hbiA8bWVnb3VzQG1lZ291cy5jb20+Cj4gPiArICogQmFzZWQgb24g
+dGhlIHdvcmsgb2YgSm9zZWYgR2FqZHVzZWsgPGF0eEBhdHgubmFtZT4KPiA+ICsgKi8KPiA+ICsK
+PiA+ICsjaW5jbHVkZSA8bGludXgvY2xrLmg+Cj4gPiArI2luY2x1ZGUgPGxpbnV4L2RldmljZS5o
+Pgo+ID4gKyNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4KPiA+ICsjaW5jbHVkZSA8bGludXgvbnZt
+ZW0tY29uc3VtZXIuaD4KPiA+ICsjaW5jbHVkZSA8bGludXgvb2ZfZGV2aWNlLmg+Cj4gPiArI2lu
+Y2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPgo+ID4gKyNpbmNsdWRlIDxsaW51eC9yZWdt
+YXAuaD4KPiA+ICsjaW5jbHVkZSA8bGludXgvcmVzZXQuaD4KPiA+ICsjaW5jbHVkZSA8bGludXgv
+c2xhYi5oPgo+ID4gKyNpbmNsdWRlIDxsaW51eC90aGVybWFsLmg+Cj4gPiArCj4gPiArI2RlZmlu
+ZSBNQVhfU0VOU09SX05VTSAgICAgICA0Cj4gPiArCj4gPiArI2RlZmluZSBGVF9URU1QX01BU0sg
+ICAgICAgICAgICAgICAgICAgICAgICAgR0VOTUFTSygxMSwgMCkKPiA+ICsjZGVmaW5lIFRFTVBf
+Q0FMSUJfTUFTSyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIEdFTk1BU0soMTEsIDApCj4g
+PiArI2RlZmluZSBURU1QX1RPX1JFRyAgICAgICAgICAgICAgICAgICAgICAgICAgNjcyCj4gPiAr
+I2RlZmluZSBDQUxJQlJBVEVfREVGQVVMVCAgICAgICAgICAgICAgICAgICAgMHg4MDAKPiA+ICsK
+PiA+ICsjZGVmaW5lIFNVTjUwSV9USFNfQ1RSTDAgICAgICAgICAgICAgICAgICAgICAweDAwCj4g
+PiArI2RlZmluZSBTVU41MElfSDZfVEhTX0VOQUJMRSAgICAgICAgICAgICAgICAgMHgwNAo+ID4g
+KyNkZWZpbmUgU1VONTBJX0g2X1RIU19QQyAgICAgICAgICAgICAgICAgICAgIDB4MDgKPiA+ICsj
+ZGVmaW5lIFNVTjUwSV9INl9USFNfTUZDICAgICAgICAgICAgICAgICAgICAweDMwCj4gPiArI2Rl
+ZmluZSBTVU41MElfSDZfVEVNUF9DQUxJQiAgICAgICAgICAgICAgICAgMHhhMAo+ID4gKyNkZWZp
+bmUgU1VONTBJX0g2X1RFTVBfREFUQSAgICAgICAgICAgICAgICAgIDB4YzAKPiA+ICsKPiA+ICsj
+ZGVmaW5lIFNVTjUwSV9USFNfQ1RSTDBfVF9BQ1EoeCkgICAgICAgICAgICAoKEdFTk1BU0soMTUs
+IDApICYgKHgpKSA8PCAxNikKPiA+ICsjZGVmaW5lIFNVTjUwSV9USFNfRklMVEVSX0VOICAgICAg
+ICAgICAgICAgICBCSVQoMikKPiA+ICsjZGVmaW5lIFNVTjUwSV9USFNfRklMVEVSX1RZUEUoeCkg
+ICAgICAgICAgICAoR0VOTUFTSygxLCAwKSAmICh4KSkKPiA+ICsjZGVmaW5lIFNVTjUwSV9INl9U
+SFNfUENfVEVNUF9QRVJJT0QoeCkgICAgICAgICAgICAgICgoR0VOTUFTSygxOSwgMCkgJiAoeCkp
+IDw8IDEyKQo+ID4gKwo+ID4gKy8qIG1pbGxpZGVncmVlIGNlbHNpdXMgKi8KPiA+ICsjZGVmaW5l
+IFNVTjUwSV9INl9GVF9ERVZJQVRJT04gICAgICAgICAgICAgICAgICAgICAgIDcwMDAKPiA+ICsK
+PiA+ICtzdHJ1Y3QgdHNlbnNfZGV2aWNlOwo+ID4gKwo+ID4gK3N0cnVjdCB0c2Vuc29yIHsKPiA+
+ICsgICAgIHN0cnVjdCB0c2Vuc19kZXZpY2UgICAgICAgICAgICAgKnRtZGV2Owo+ID4gKyAgICAg
+c3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgICAgICAqdHpkOwo+ID4gKyAgICAgaW50ICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICBpZDsKPiA+ICt9Owo+ID4gKwo+ID4gK3N0cnVjdCBzdW41
+MGlfdGhlcm1hbF9jaGlwIHsKPiA+ICsgICAgIGludCAgICAgc2Vuc29yX251bTsKPiA+ICsgICAg
+IGludCAgICAgb2Zmc2V0Owo+ID4gKyAgICAgaW50ICAgICBzY2FsZTsKPiA+ICsgICAgIGludCAg
+ICAgZnRfZGV2aWF0aW9uOwo+ID4gKyAgICAgaW50ICAgICB0ZW1wX2NhbGliX2Jhc2U7Cj4gPiAr
+ICAgICBpbnQgICAgIHRlbXBfZGF0YV9iYXNlOwo+ID4gKyAgICAgaW50ICAgICAoKmVuYWJsZSko
+c3RydWN0IHRzZW5zX2RldmljZSAqdG1kZXYpOwo+ID4gKyAgICAgaW50ICAgICAoKmRpc2FibGUp
+KHN0cnVjdCB0c2Vuc19kZXZpY2UgKnRtZGV2KTsKPiA+ICt9Owo+ID4gKwo+ID4gKwo+ID4gK3N0
+cnVjdCB0c2Vuc19kZXZpY2Ugewo+ID4gKyAgICAgY29uc3Qgc3RydWN0IHN1bjUwaV90aGVybWFs
+X2NoaXAgICAgICAgICpjaGlwOwo+ID4gKyAgICAgc3RydWN0IGRldmljZSAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICpkZXY7Cj4gPiArICAgICBzdHJ1Y3QgcmVnbWFwICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgKnJlZ21hcDsKPiA+ICsgICAgIHN0cnVjdCByZXNldF9jb250cm9sICAgICAg
+ICAgICAgICAgICAgICAqcmVzZXQ7Cj4gPiArICAgICBzdHJ1Y3QgY2xrICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgKmJ1c19jbGs7Cj4gPiArICAgICBzdHJ1Y3QgdHNlbnNvciAgICAgICAg
+ICAgICAgICAgICAgICAgICAgc2Vuc29yW01BWF9TRU5TT1JfTlVNXTsKPiA+ICt9Owo+ID4gKwo+
+ID4gKy8qIFRlbXAgVW5pdDogbWlsbGlkZWdyZWUgQ2Vsc2l1cyAqLwo+ID4gK3N0YXRpYyBpbnQg
+dHNlbnNfcmVnMnRlbXAoc3RydWN0IHRzZW5zX2RldmljZSAqdG1kZXYsCj4gPiArICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgaW50IHJlZykKPgo+IFBsZWFzZSBuYW1lIGFsbCBmdW5jdGlvbnMg
+c28gdGhhdCB0aGV5IGFyZSBtb3JlIGNsZWFybHkgaWRlbnRpZmlhYmxlCj4gaW4gc3RhY2sgdHJh
+Y2VzIGFzIGJlbG9uZ2luZyB0byB0aGlzIGRyaXZlci4gRm9yIGV4YW1wbGU6Cj4KPiAgIHN1bjhp
+X3Roc19yZWcydGVtcAo+Cj4gVGhlIHNhbWUgYXBwbGllcyBmb3IgYWxsIHRzZW5zXyogZnVuY3Rp
+b25zIGJlbG93LiB0c2Vuc18qIGlzIHRvbwo+IGdlbmVyaWMuCgpEb25lIGJ1dCBubyBzdW44aV90
+aHNfcmVnMnRlbXAuCgp0aHNfcmVnMnRlbSgpIHNob3VsZCBiZSBhIGdlbmVyaWMgZnVuYy4KSSB0
+aGluayBpdCBzaG91bGQgYmUgc3VpdGFibGUgZm9yIGFsbCBwbGF0Zm9ybXPvvIwgc28gbm8gcGxh
+dGZvcm0gcHJlZml4LgoKPgo+ID4gK3sKPiA+ICsgICAgIHJldHVybiAocmVnICsgdG1kZXYtPmNo
+aXAtPm9mZnNldCkgKiB0bWRldi0+Y2hpcC0+c2NhbGU7Cj4gPiArfQo+ID4gKwo+ID4gK3N0YXRp
+YyBpbnQgdHNlbnNfZ2V0X3RlbXAodm9pZCAqZGF0YSwgaW50ICp0ZW1wKQo+ID4gK3sKPiA+ICsg
+ICAgIHN0cnVjdCB0c2Vuc29yICpzID0gZGF0YTsKPiA+ICsgICAgIHN0cnVjdCB0c2Vuc19kZXZp
+Y2UgKnRtZGV2ID0gcy0+dG1kZXY7Cj4gPiArICAgICBpbnQgdmFsOwo+ID4gKwo+ID4gKyAgICAg
+cmVnbWFwX3JlYWQodG1kZXYtPnJlZ21hcCwgdG1kZXYtPmNoaXAtPnRlbXBfZGF0YV9iYXNlICsK
+PiA+ICsgICAgICAgICAgICAgICAgIDB4NCAqIHMtPmlkLCAmdmFsKTsKPiA+ICsKPiA+ICsgICAg
+IGlmICh1bmxpa2VseSh2YWwgPT0gMCkpCj4gPiArICAgICAgICAgICAgIHJldHVybiAtRUJVU1k7
+Cj4gPiArCj4gPiArICAgICAqdGVtcCA9IHRzZW5zX3JlZzJ0ZW1wKHRtZGV2LCB2YWwpOwo+ID4g
+KyAgICAgaWYgKHRtZGV2LT5jaGlwLT5mdF9kZXZpYXRpb24pCj4gPiArICAgICAgICAgICAgICp0
+ZW1wICs9IHRtZGV2LT5jaGlwLT5mdF9kZXZpYXRpb247Cj4gPiArCj4gPiArICAgICByZXR1cm4g
+MDsKPiA+ICt9Cj4gPiArCj4gPiArc3RhdGljIGNvbnN0IHN0cnVjdCB0aGVybWFsX3pvbmVfb2Zf
+ZGV2aWNlX29wcyB0c2Vuc19vcHMgPSB7Cj4gPiArICAgICAuZ2V0X3RlbXAgPSB0c2Vuc19nZXRf
+dGVtcCwKPiA+ICt9Owo+ID4gKwo+ID4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgcmVnbWFwX2NvbmZp
+ZyBjb25maWcgPSB7Cj4gPiArICAgICAucmVnX2JpdHMgPSAzMiwKPiA+ICsgICAgIC52YWxfYml0
+cyA9IDMyLAo+ID4gKyAgICAgLnJlZ19zdHJpZGUgPSA0LAo+ID4gKyAgICAgLmZhc3RfaW8gPSB0
+cnVlLAo+ID4gK307Cj4gPiArCj4gPiArc3RhdGljIGludCB0c2Vuc19pbml0KHN0cnVjdCB0c2Vu
+c19kZXZpY2UgKnRtZGV2KQo+ID4gK3sKPiA+ICsgICAgIHN0cnVjdCBkZXZpY2UgKmRldiA9IHRt
+ZGV2LT5kZXY7Cj4gPiArICAgICBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2ID0gdG9fcGxh
+dGZvcm1fZGV2aWNlKGRldik7Cj4gPiArICAgICBzdHJ1Y3QgcmVzb3VyY2UgKm1lbTsKPiA+ICsg
+ICAgIHZvaWQgX19pb21lbSAqYmFzZTsKPiA+ICsKPiA+ICsgICAgIG1lbSA9IHBsYXRmb3JtX2dl
+dF9yZXNvdXJjZShwZGV2LCBJT1JFU09VUkNFX01FTSwgMCk7Cj4gPiArICAgICBiYXNlID0gZGV2
+bV9pb3JlbWFwX3Jlc291cmNlKGRldiwgbWVtKTsKPiA+ICsgICAgIGlmIChJU19FUlIoYmFzZSkp
+Cj4gPiArICAgICAgICAgICAgIHJldHVybiBQVFJfRVJSKGJhc2UpOwo+ID4gKwo+ID4gKyAgICAg
+dG1kZXYtPnJlZ21hcCA9IGRldm1fcmVnbWFwX2luaXRfbW1pb19jbGsoZGV2LCAiYnVzIiwKPiA+
+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJhc2UsCj4g
+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAmY29uZmln
+KTsKPiA+ICsgICAgIGlmIChJU19FUlIodG1kZXYtPnJlZ21hcCkpCj4gPiArICAgICAgICAgICAg
+IHJldHVybiBQVFJfRVJSKHRtZGV2LT5yZWdtYXApOwo+ID4gKwo+ID4gKyAgICAgdG1kZXYtPnJl
+c2V0ID0gZGV2bV9yZXNldF9jb250cm9sX2dldChkZXYsICJidXMiKTsKPiA+ICsgICAgIGlmIChJ
+U19FUlIodG1kZXYtPnJlc2V0KSkKPiA+ICsgICAgICAgICAgICAgcmV0dXJuIFBUUl9FUlIodG1k
+ZXYtPnJlc2V0KTsKPiA+ICsKPiA+ICsgICAgIHRtZGV2LT5idXNfY2xrID0gZGV2bV9jbGtfZ2V0
+KCZwZGV2LT5kZXYsICJidXMiKTsKPiA+ICsgICAgIGlmIChJU19FUlIodG1kZXYtPmJ1c19jbGsp
+KQo+ID4gKyAgICAgICAgICAgICByZXR1cm4gUFRSX0VSUih0bWRldi0+YnVzX2Nsayk7Cj4gPiAr
+Cj4gPiArICAgICByZXR1cm4gMDsKPiA+ICt9Cj4gPiArCj4gPiArLyoKPiA+ICsgKiBFdmVuIGlm
+IHRoZSBleHRlcm5hbCBjYWxpYnJhdGlvbiBkYXRhIHN0b3JlZCBpbiBzaWQgaXMgbm90IGFjY2Vz
+c2libGUsCj4gPiArICogdGhlIFRIUyBoYXJkd2FyZSBjYW4gc3RpbGwgd29yaywgYWx0aG91Z2gg
+dGhlIGRhdGEgd29uJ3QgYmUgc28gYWNjdXJhdGUuCj4gPiArICogVGhlIGRlZmF1bHQgdmFsdWUg
+b2YgY2FsaWJyYXRpb24gcmVnaXN0ZXIgaXMgMHg4MDAgZm9yIGV2ZXJ5IHNlbnNvciwKPiA+ICsg
+KiBhbmQgdGhlIGNhbGlicmF0aW9uIHZhbHVlIGlzIHVzdWFsbHkgMHg3eHggb3IgMHg4eHgsIHNv
+IHRoZXkgd29uJ3QgYmUKPiA+ICsgKiBhd2F5IGZyb20gdGhlIGRlZmF1bHQgdmFsdWUgZm9yIGEg
+bG90Lgo+ID4gKyAqCj4gPiArICogU28gaGVyZSB3ZSBkbyBub3QgcmV0dXJuIGVycm9yIGlmIHRo
+ZSBjYWxpYmFydGlvbiBkYXRhIGlzCj4gPiArICogbm90IGF2YWlsYWJsZSwgZXhjZXB0IHRoZSBw
+cm9iZSBuZWVkcyBkZWZlcnJpbmcuCj4gPiArICovCj4gPiArc3RhdGljIGludCB0c2Vuc19jYWxp
+YnJhdGUoc3RydWN0IHRzZW5zX2RldmljZSAqdG1kZXYpCj4gPiArewo+ID4gKyAgICAgc3RydWN0
+IG52bWVtX2NlbGwgKmNhbGNlbGw7Cj4gPiArICAgICBzdHJ1Y3QgZGV2aWNlICpkZXYgPSB0bWRl
+di0+ZGV2Owo+ID4gKyAgICAgdTE2ICpjYWxkYXRhOwo+ID4gKyAgICAgc2l6ZV90IGNhbGxlbjsK
+PiA+ICsgICAgIGludCBmdF90ZW1wOwo+ID4gKyAgICAgaW50IGkgPSAwOwo+ID4gKwo+ID4gKyAg
+ICAgY2FsY2VsbCA9IGRldm1fbnZtZW1fY2VsbF9nZXQoZGV2LCAiY2FsaWIiKTsKPiA+ICsgICAg
+IGlmIChJU19FUlIoY2FsY2VsbCkpIHsKPiA+ICsgICAgICAgICAgICAgaWYgKFBUUl9FUlIoY2Fs
+Y2VsbCkgPT0gLUVQUk9CRV9ERUZFUikKPiA+ICsgICAgICAgICAgICAgICAgICAgICByZXR1cm4g
+LUVQUk9CRV9ERUZFUjsKPiA+ICsKPiA+ICsgICAgICAgICAgICAgZ290byBvdXQ7Cj4gPiArICAg
+ICB9Cj4gPiArCj4gPiArICAgICBjYWxkYXRhID0gbnZtZW1fY2VsbF9yZWFkKGNhbGNlbGwsICZj
+YWxsZW4pOwo+ID4gKyAgICAgaWYgKElTX0VSUihjYWxkYXRhKSkKPiA+ICsgICAgICAgICAgICAg
+Z290byBvdXQ7Cj4gPiArCj4gPiArICAgICBpZiAoIWNhbGRhdGFbMF0gfHwgY2FsbGVuIDwgMiAr
+IDIgKiB0bWRldi0+Y2hpcC0+c2Vuc29yX251bSkKPiA+ICsgICAgICAgICAgICAgZ290byBvdXRf
+ZnJlZTsKPiA+ICsKPiA+ICsgICAgIC8qCj4gPiArICAgICAgKiBUaGUgY2FsYnJhdGlvbiBkYXRh
+IG9uIEg2IGlzIHN0b3JlZCBhcyB0ZW1wZXJhdHVyZS12YWx1ZQo+ID4gKyAgICAgICogcGFpciB3
+aGVuIGJlaW5nIGZpbGxlZCBhdCBmYWN0b3J5IHRlc3Qgc3RhZ2UuCj4gPiArICAgICAgKiBUaGUg
+dW5pdCBvZiBzdG9yZWQgRlQgdGVtcGVyYXR1cmUgaXMgMC4xIGRlZ3JlZWUgY2VsdXNpcy4KPiA+
+ICsgICAgICAqLwo+Cj4gUGxlYXNlIGRlc2NyaWJlIHRoZSBjYWxpYnJhdGlvbiBkYXRhIGxheW91
+dCBtb3JlIGNsZWFybHkuCkRvbmUuCj4KPiA+ICsgICAgIGZ0X3RlbXAgPSBjYWxkYXRhWzBdICYg
+RlRfVEVNUF9NQVNLOwo+ID4gKwo+ID4gKyAgICAgZm9yICg7IGkgPCB0bWRldi0+Y2hpcC0+c2Vu
+c29yX251bTsgaSsrKSB7Cj4gPiArICAgICAgICAgICAgIGludCByZWcgPSAoaW50KWNhbGRhdGFb
+aSArIDFdOwo+ID4gKyAgICAgICAgICAgICBpbnQgc2Vuc29yX3RlbXAgPSB0c2Vuc19yZWcydGVt
+cCh0bWRldiwgcmVnKTsKPiA+ICsgICAgICAgICAgICAgaW50IGRlbHRhLCBjZGF0YSwgY2FsaWJf
+b2ZmZXN0Owo+ID4gKwo+ID4gKyAgICAgICAgICAgICAvKgo+ID4gKyAgICAgICAgICAgICAgKiBU
+byBjYWxjdWxhdGUgdGhlIGNhbGlicmF0aW9uIHZhbHVlOgo+ID4gKyAgICAgICAgICAgICAgKgo+
+ID4gKyAgICAgICAgICAgICAgKiBYKGluIENlbHNpdXMpID0gVHMgLSBmdF90ZW1wCj4gPiArICAg
+ICAgICAgICAgICAqIGRlbHRhID0gWCAqIDEwMDAwIC8gVEVNUF9UT19SRUcKPiA+ICsgICAgICAg
+ICAgICAgICogY2RhdGEgPSBDQUxJQlJBVEVfREVGQVVMVCAtIGRlbHRhCj4gPiArICAgICAgICAg
+ICAgICAqCj4gPiArICAgICAgICAgICAgICAqIGNkYXRhOiBjYWxpYnJhdGlvbiB2YWx1ZQo+ID4g
+KyAgICAgICAgICAgICAgKi8KPiA+ICsgICAgICAgICAgICAgZGVsdGEgPSAoc2Vuc29yX3RlbXAg
+LSBmdF90ZW1wICogMTAwKSAqIDEwIC8gVEVNUF9UT19SRUc7Cj4gPiArICAgICAgICAgICAgIGNk
+YXRhID0gQ0FMSUJSQVRFX0RFRkFVTFQgLSBkZWx0YTsKPiA+ICsgICAgICAgICAgICAgaWYgKGNk
+YXRhICYgflRFTVBfQ0FMSUJfTUFTSykgewo+ID4gKyAgICAgICAgICAgICAgICAgICAgIGRldl93
+YXJuKGRldiwgInNlbnNvciVkIGNhbGlicmF0aW9uIHZhbHVlIGVycm9yIiwgaSk7Cj4KPiBQbGVh
+c2UgdXNlIGEgbW9yZSBkZXNjcmlwdGl2ZSBlcnJvciBtZXNzYWdlLiBXaGF0IGVycm9yIGlzIHRo
+aXM/CgpTZWUgY29tbW50IGluIHYyLgoKPgo+ID4gKyAgICAgICAgICAgICAgICAgICAgIGNvbnRp
+bnVlOwo+ID4gKyAgICAgICAgICAgICB9Cj4gPiArCj4gPiArICAgICAgICAgICAgIGNhbGliX29m
+ZmVzdCA9IHRtZGV2LT5jaGlwLT50ZW1wX2NhbGliX2Jhc2UgKyAoaSAvIDIpICogMHg0Owo+ID4g
+KyAgICAgICAgICAgICBpZiAoaSAlIDIpIHsKPiA+ICsgICAgICAgICAgICAgICAgICAgICBpbnQg
+dmFsOwo+ID4gKwo+ID4gKyAgICAgICAgICAgICAgICAgICAgIHJlZ21hcF9yZWFkKHRtZGV2LT5y
+ZWdtYXAsIGNhbGliX29mZmVzdCwgJnZhbCk7Cj4gPiArICAgICAgICAgICAgICAgICAgICAgdmFs
+ID0gKHZhbCAmIFRFTVBfQ0FMSUJfTUFTSykgfCAoY2RhdGEgPDwgMTYpOwo+ID4gKyAgICAgICAg
+ICAgICAgICAgICAgIHJlZ21hcF93cml0ZSh0bWRldi0+cmVnbWFwLCBjYWxpYl9vZmZlc3QsIHZh
+bCk7Cj4gPiArICAgICAgICAgICAgIH0gZWxzZQo+ID4gKyAgICAgICAgICAgICAgICAgICAgIHJl
+Z21hcF93cml0ZSh0bWRldi0+cmVnbWFwLCBjYWxpYl9vZmZlc3QsIGNkYXRhKTsKPiA+ICsgICAg
+IH0KPiA+ICsKPiA+ICtvdXRfZnJlZToKPiA+ICsgICAgIGtmcmVlKGNhbGRhdGEpOwo+ID4gK291
+dDoKPiA+ICsgICAgIHJldHVybiAwOwo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMgaW50IHRzZW5z
+X3JlZ2lzdGVyKHN0cnVjdCB0c2Vuc19kZXZpY2UgKnRtZGV2KQo+ID4gK3sKPiA+ICsgICAgIHN0
+cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0emQ7Cj4gPiArICAgICBpbnQgaSA9IDA7Cj4gPiAr
+Cj4gPiArICAgICBmb3IgKDsgaSA8IHRtZGV2LT5jaGlwLT5zZW5zb3JfbnVtOyBpKyspIHsKPiA+
+ICsgICAgICAgICAgICAgdG1kZXYtPnNlbnNvcltpXS50bWRldiA9IHRtZGV2Owo+ID4gKyAgICAg
+ICAgICAgICB0bWRldi0+c2Vuc29yW2ldLmlkID0gaTsKPiA+ICsgICAgICAgICAgICAgdG1kZXYt
+PnNlbnNvcltpXS50emQgPSBkZXZtX3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIoCj4g
+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRtZGV2LT5kZXYsIGksICZ0
+bWRldi0+c2Vuc29yW2ldLAo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAmdHNlbnNfb3BzKTsKPiA+ICsgICAgICAgICAgICAgaWYgKElTX0VSUih0bWRldi0+c2Vuc29y
+W2ldLnR6ZCkpCj4gPiArICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIFBUUl9FUlIodHpkKTsK
+PiA+ICsgICAgIH0KPiA+ICsKPiA+ICsgICAgIHJldHVybiAwOwo+ID4gK30KPiA+ICsKPiA+ICtz
+dGF0aWMgaW50IHRzZW5zX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4gPiAr
+ewo+ID4gKyAgICAgc3RydWN0IHRzZW5zX2RldmljZSAqdG1kZXY7Cj4gPiArICAgICBzdHJ1Y3Qg
+ZGV2aWNlICpkZXYgPSAmcGRldi0+ZGV2Owo+ID4gKyAgICAgaW50IHJldDsKPiA+ICsKPiA+ICsg
+ICAgIHRtZGV2ID0gZGV2bV9remFsbG9jKGRldiwgc2l6ZW9mKCp0bWRldiksIEdGUF9LRVJORUwp
+Owo+ID4gKyAgICAgaWYgKCF0bWRldikKPiA+ICsgICAgICAgICAgICAgcmV0dXJuIC1FTk9NRU07
+Cj4gPiArCj4gPiArICAgICB0bWRldi0+ZGV2ID0gZGV2Owo+ID4gKyAgICAgdG1kZXYtPmNoaXAg
+PSBvZl9kZXZpY2VfZ2V0X21hdGNoX2RhdGEoJnBkZXYtPmRldik7Cj4gPiArICAgICBpZiAoIXRt
+ZGV2LT5jaGlwKQo+ID4gKyAgICAgICAgICAgICByZXR1cm4gLUVJTlZBTDsKPiA+ICsKPiA+ICsg
+ICAgIHJldCA9IHRzZW5zX2luaXQodG1kZXYpOwo+ID4gKyAgICAgaWYgKHJldCkKPiA+ICsgICAg
+ICAgICAgICAgcmV0dXJuIHJldDsKPiA+ICsKPiA+ICsgICAgIHJldCA9IHRzZW5zX3JlZ2lzdGVy
+KHRtZGV2KTsKPiA+ICsgICAgIGlmIChyZXQpCj4gPiArICAgICAgICAgICAgIHJldHVybiByZXQ7
+Cj4KPiBXaHkgc3BsaXQgdGhpcyBvdXQgb2YgcHJvYmUgaW50byBzZXBhcmF0ZSBmdW5jdGlvbnM/
+Cj4KPiA+ICsgICAgIHJldCA9IHRtZGV2LT5jaGlwLT5lbmFibGUodG1kZXYpOwo+ID4gKyAgICAg
+aWYgKHJldCkKPiA+ICsgICAgICAgICAgICAgcmV0dXJuIHJldDsKPiA+ICsKPiA+ICsgICAgIHBs
+YXRmb3JtX3NldF9kcnZkYXRhKHBkZXYsIHRtZGV2KTsKPiA+ICsKPiA+ICsgICAgIHJldHVybiBy
+ZXQ7Cj4gPiArfQo+ID4gKwo+ID4gK3N0YXRpYyBpbnQgdHNlbnNfcmVtb3ZlKHN0cnVjdCBwbGF0
+Zm9ybV9kZXZpY2UgKnBkZXYpCj4gPiArewo+ID4gKyAgICAgc3RydWN0IHRzZW5zX2RldmljZSAq
+dG1kZXYgPSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsKPiA+ICsKPiA+ICsgICAgIHRtZGV2
+LT5jaGlwLT5kaXNhYmxlKHRtZGV2KTsKPiA+ICsKPiA+ICsgICAgIHJldHVybiAwOwo+ID4gK30K
+PiA+ICsKPiA+ICtzdGF0aWMgaW50IHN1bjUwaV90aGVybWFsX2VuYWJsZShzdHJ1Y3QgdHNlbnNf
+ZGV2aWNlICp0bWRldikKPiA+ICt7Cj4gPiArICAgICBpbnQgcmV0LCB2YWw7Cj4gPiArCj4gPiAr
+ICAgICByZXQgPSByZXNldF9jb250cm9sX2RlYXNzZXJ0KHRtZGV2LT5yZXNldCk7Cj4gPiArICAg
+ICBpZiAocmV0KQo+ID4gKyAgICAgICAgICAgICByZXR1cm4gcmV0Owo+ID4gKwo+ID4gKyAgICAg
+cmV0ID0gY2xrX3ByZXBhcmVfZW5hYmxlKHRtZGV2LT5idXNfY2xrKTsKPiA+ICsgICAgIGlmIChy
+ZXQpCj4gPiArICAgICAgICAgICAgIGdvdG8gYXNzZXJ0X3Jlc2V0Owo+ID4gKwo+ID4gKyAgICAg
+cmV0ID0gdHNlbnNfY2FsaWJyYXRlKHRtZGV2KTsKPiA+ICsgICAgIGlmIChyZXQpCj4gPiArICAg
+ICAgICAgICAgIHJldHVybiByZXQ7Cj4KPiBJZiB0aGlzIGZhaWxzIChpdCBtYXkgbGlrZWx5IGZh
+aWwgd2l0aCBFUFJPQkVfREVGRVIpIHlvdSBhcmUgbGVhdmluZyByZXNldAo+IGRlYXNzZXJ0ZWQs
+IGFuZCBjbG9jayBlbmFibGVkLgo+Cj4gT3ZlcmFsbCwgSSB0aGluaywgcmVzZXQvY2xvY2sgbWFu
+YWdlbWVudCBhbmQgbnZtZW0gcmVhZGluZyB3aWxsIGJlIGNvbW1vbgo+IHRvIGFsbCB0aGUgSFcg
+dmFyaWFudHMsIHNvIGl0IGRvZXNuJ3QgbWFrZSBtdWNoIHNlbnNlIHNwbGl0dGluZyBpdCBvdXQK
+PiBvZiBwcm9iZSBpbnRvIHNlcGFyYXRlIGZ1bmN0aW9ucywgYW5kIG1ha2VzIGl0IG1vcmUgZXJy
+b3IgcHJvbmUuCgpPdXIgbG9uZy10ZXJtIGdvYWwgaXMgdG8gc3VwcG9ydCBhbGwgcGxhdGZvcm1z
+LgpCYWNpY2FsbHQgdGhlcmUgaXMgYSBkaWZmZXJlbmNyIGJldHdlZW4gZWFjaCBnZW5lcmF0aW9u
+LgpTbyBJIGZlZWwgaXQgbmVjZXNzYXJ5IHRvIGlzb2xhdGUgdGhlc2UgZGlmZmVyZW5jZXMuCgpN
+YXliZToKQXQgc29tZSBwb2ludCwgd2UgY2FuIGRyYXcgYSBwYXJ0IG9mIHRoZSBwdWJsaWMgcGFy
+dCBhbmQgcGxhdGZvcm0KZGlmZmVyZW5jZSBpbnRvIGRpZmZlcmVudApmaWxlcy4gc29tZXRoaW5n
+IGxpa2UgcWNvbSB0aGVybWFsIGRyaXZlci4KClJlZ2FyZHMsCllhbmd0YW8KPgo+IHRoYW5rIHlv
+dSBhbmQgcmVnYXJkcywKPiAgICAgICAgIG8uCj4KPiA+ICsgICAgIC8qCj4gPiArICAgICAgKiBj
+bGtpbiA9IDI0TUh6Cj4gPiArICAgICAgKiBUIGFjcXVpcmUgPSBjbGtpbiAvIChTVU41MElfVEhT
+X0NUUkwwX1RfQUNRICsgMSkKPiA+ICsgICAgICAqICAgICAgICAgICA9IDIwdXMKPiA+ICsgICAg
+ICAqLwo+ID4gKyAgICAgcmVnbWFwX3dyaXRlKHRtZGV2LT5yZWdtYXAsIFNVTjUwSV9USFNfQ1RS
+TDAsCj4gPiArICAgICAgICAgICAgICAgICAgU1VONTBJX1RIU19DVFJMMF9UX0FDUSg0NzkpKTsK
+PiA+ICsgICAgIC8qIGF2ZXJhZ2Ugb3ZlciA0IHNhbXBsZXMgKi8KPiA+ICsgICAgIHJlZ21hcF93
+cml0ZSh0bWRldi0+cmVnbWFwLCBTVU41MElfSDZfVEhTX01GQywKPiA+ICsgICAgICAgICAgICAg
+ICAgICBTVU41MElfVEhTX0ZJTFRFUl9FTiB8Cj4gPiArICAgICAgICAgICAgICAgICAgU1VONTBJ
+X1RIU19GSUxURVJfVFlQRSgxKSk7Cj4gPiArICAgICAvKiBwZXJpb2QgPSAoU1VONTBJX0g2X1RI
+U19QQ19URU1QX1BFUklPRCArIDEpICogNDA5NiAvIGNsa2luOyB+MTBtcyAqLwo+ID4gKyAgICAg
+cmVnbWFwX3dyaXRlKHRtZGV2LT5yZWdtYXAsIFNVTjUwSV9INl9USFNfUEMsCj4gPiArICAgICAg
+ICAgICAgICAgICAgU1VONTBJX0g2X1RIU19QQ19URU1QX1BFUklPRCg1OCkpOwo+ID4gKyAgICAg
+LyogZW5hYmxlIHNlbnNvciAqLwo+ID4gKyAgICAgdmFsID0gR0VOTUFTSyh0bWRldi0+Y2hpcC0+
+c2Vuc29yX251bSAtIDEsIDApOwo+ID4gKyAgICAgcmVnbWFwX3dyaXRlKHRtZGV2LT5yZWdtYXAs
+IFNVTjUwSV9INl9USFNfRU5BQkxFLCB2YWwpOwo+ID4gKwo+ID4gKyAgICAgcmV0dXJuIDA7Cj4g
+PiArCj4gPiArYXNzZXJ0X3Jlc2V0Ogo+ID4gKyAgICAgcmVzZXRfY29udHJvbF9hc3NlcnQodG1k
+ZXYtPnJlc2V0KTsKPiA+ICsKPiA+ICsgICAgIHJldHVybiByZXQ7Cj4gPiArfQo+ID4gKwo+ID4g
+K3N0YXRpYyBpbnQgc3VuNTBpX3RoZXJtYWxfZGlzYWJsZShzdHJ1Y3QgdHNlbnNfZGV2aWNlICp0
+bWRldikKPiA+ICt7Cj4gPiArICAgICBjbGtfZGlzYWJsZV91bnByZXBhcmUodG1kZXYtPmJ1c19j
+bGspOwo+ID4gKyAgICAgcmVzZXRfY29udHJvbF9hc3NlcnQodG1kZXYtPnJlc2V0KTsKPiA+ICsK
+PiA+ICsgICAgIHJldHVybiAwOwo+ID4gK30KPiA+ICsKPiA+ICtzdGF0aWMgY29uc3Qgc3RydWN0
+IHN1bjUwaV90aGVybWFsX2NoaXAgc3VuNTBpX2g2X3RocyA9IHsKPiA+ICsgICAgIC5zZW5zb3Jf
+bnVtID0gMiwKPiA+ICsgICAgIC5vZmZzZXQgPSAtMjc5NCwKPiA+ICsgICAgIC5zY2FsZSA9IC02
+NywKPiA+ICsgICAgIC5mdF9kZXZpYXRpb24gPSBTVU41MElfSDZfRlRfREVWSUFUSU9OLAo+ID4g
+KyAgICAgLnRlbXBfY2FsaWJfYmFzZSA9IFNVTjUwSV9INl9URU1QX0NBTElCLAo+ID4gKyAgICAg
+LnRlbXBfZGF0YV9iYXNlID0gU1VONTBJX0g2X1RFTVBfREFUQSwKPiA+ICsgICAgIC5lbmFibGUg
+PSBzdW41MGlfdGhlcm1hbF9lbmFibGUsCj4gPiArICAgICAuZGlzYWJsZSA9IHN1bjUwaV90aGVy
+bWFsX2Rpc2FibGUsCj4gPiArfTsKPiA+ICsKPiA+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2Rl
+dmljZV9pZCBvZl90c2Vuc19tYXRjaFtdID0gewo+ID4gKyAgICAgeyAuY29tcGF0aWJsZSA9ICJh
+bGx3aW5uZXIsc3VuNTBpLWg2LXRocyIsIC5kYXRhID0gJnN1bjUwaV9oNl90aHMgfSwKPiA+ICsg
+ICAgIHsgLyogc2VudGluZWwgKi8gfSwKPiA+ICt9Owo+ID4gK01PRFVMRV9ERVZJQ0VfVEFCTEUo
+b2YsIG9mX3RzZW5zX21hdGNoKTsKPiA+ICsKPiA+ICtzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2Ry
+aXZlciB0c2Vuc19kcml2ZXIgPSB7Cj4gPiArICAgICAucHJvYmUgPSB0c2Vuc19wcm9iZSwKPiA+
+ICsgICAgIC5yZW1vdmUgPSB0c2Vuc19yZW1vdmUsCj4gPiArICAgICAuZHJpdmVyID0gewo+ID4g
+KyAgICAgICAgICAgICAubmFtZSA9ICJzdW41MGktdGhlcm1hbCIsCj4gPiArICAgICAgICAgICAg
+IC5vZl9tYXRjaF90YWJsZSA9IG9mX3RzZW5zX21hdGNoLAo+ID4gKyAgICAgfSwKPiA+ICt9Owo+
+ID4gK21vZHVsZV9wbGF0Zm9ybV9kcml2ZXIodHNlbnNfZHJpdmVyKTsKPiA+ICsKPiA+ICtNT0RV
+TEVfREVTQ1JJUFRJT04oIlRoZXJtYWwgc2Vuc29yIGRyaXZlciBmb3IgQWxsd2lubmVyIFNPQyIp
+Owo+ID4gK01PRFVMRV9MSUNFTlNFKCJHUEwgdjIiKTsKPiA+IC0tCj4gPiAyLjE3LjAKPiA+Cj4g
+Pgo+ID4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiA+
+IGxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0Cj4gPiBsaW51eC1hcm0ta2VybmVsQGxpc3Rz
+LmluZnJhZGVhZC5vcmcKPiA+IGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlz
+dGluZm8vbGludXgtYXJtLWtlcm5lbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtl
+cm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxt
+YW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
