@@ -1,59 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/8] Add cpufreq and cci devfreq for mt8183, and SVS
- support
-Date: Thu, 16 May 2019 14:53:28 +0530
-Message-ID: <20190516092328.4n7kuqw7bxokhdjp@vireshk-i7>
-References: <1557997725-12178-1-git-send-email-andrew-sh.cheng@mediatek.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPI/PCI: PM: Add missing wakeup.flags.valid checks
+Date: Thu, 16 May 2019 12:42:20 +0200
+Message-ID: <2091978.9z20bSIm3T@kreacher>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1557997725-12178-1-git-send-email-andrew-sh.cheng@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, srv_heupstream@mediatek.com, fan.chen@mediatek.com
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 16-05-19, 17:08, Andrew-sh.Cheng wrote:
-> From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
-> 
-> MT8183 supports CPU DVFS and CCI DVFS, and LITTLE cpus and CCI are in the same voltage domain.
-> So, this series is to add drivers to handle the voltage coupling between CPU and CCI DVFS.
-> 
-> For SVS support, add OPP_EVENT_ADJUST_VOLTAGE and corresponding reaction.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-No version information here or what has changed. That doesn't help.
+Both acpi_pci_need_resume() and acpi_dev_needs_resume() check if the
+current ACPI wakeup configuration of the device matches what is
+expected as far as system wakeup from sleep states is concerned, as
+reflected by the device_may_wakeup() return value for the device.
 
-I believe this is V3.
+However, they only should do that if wakeup.flags.valid is set for
+the device's ACPI companion, because otherwise the wakeup.prepare_count
+value for it is meaningless.
 
-Don't resend it but please mention the changes in reply now. Thanks.
+Add the missing wakeup.flags.valid checks to these functions.
 
-> Andrew-sh.Cheng (7):
->   cpufreq: mediatek: change to regulator_get_optional
->   cpufreq: mediatek: add clock enable for intermediate clock
->   cpufreq: mediatek: Add support for mt8183
->   dt-bindings: devfreq: add compatible for mt8183 cci devfreq
->   devfreq: add mediatek cci devfreq
->   cpufreq: mediatek: add opp notification for SVS support
->   devfreq: cci devfreq register opp notification for SVS support
-> 
-> Stephen Boyd (1):
->   PM / OPP: Support adjusting OPP voltages at runtime
-> 
->  .../bindings/devfreq/mt8183-cci-devfreq.txt        |  20 ++
->  drivers/cpufreq/cpufreq-dt-platdev.c               |   1 +
->  drivers/cpufreq/mediatek-cpufreq.c                 |  88 +++++-
->  drivers/devfreq/Kconfig                            |  10 +
->  drivers/devfreq/Makefile                           |   1 +
->  drivers/devfreq/mt8183-cci-devfreq.c               | 310 +++++++++++++++++++++
->  drivers/opp/core.c                                 |  78 ++++++
->  include/linux/pm_opp.h                             |  11 +
->  8 files changed, 517 insertions(+), 2 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
->  create mode 100644 drivers/devfreq/mt8183-cci-devfreq.c
-> 
-> -- 
-> 2.12.5
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/device_pm.c |    4 ++--
+ drivers/pci/pci-acpi.c   |    3 ++-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
--- 
-viresh
+Index: linux-pm/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-acpi.c
++++ linux-pm/drivers/pci/pci-acpi.c
+@@ -666,7 +666,8 @@ static bool acpi_pci_need_resume(struct
+ 	if (!adev || !acpi_device_power_manageable(adev))
+ 		return false;
+ 
+-	if (device_may_wakeup(&dev->dev) != !!adev->wakeup.prepare_count)
++	if (adev->wakeup.flags.valid &&
++	    device_may_wakeup(&dev->dev) != !!adev->wakeup.prepare_count)
+ 		return true;
+ 
+ 	if (acpi_target_system_state() == ACPI_STATE_S0)
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -952,8 +952,8 @@ static bool acpi_dev_needs_resume(struct
+ 	u32 sys_target = acpi_target_system_state();
+ 	int ret, state;
+ 
+-	if (!pm_runtime_suspended(dev) || !adev ||
+-	    device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
++	if (!pm_runtime_suspended(dev) || !adev || (adev->wakeup.flags.valid &&
++	    device_may_wakeup(dev) != !!adev->wakeup.prepare_count))
+ 		return true;
+ 
+ 	if (sys_target == ACPI_STATE_S0)
