@@ -1,47 +1,37 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [GIT PULL] Thermal-SoC management changes for v5.2-rc1
-Date: Thu, 16 May 2019 18:11:32 +0200
-Message-ID: <4803994d-f519-a6b6-f5bb-a2f50d91ecd7@i2se.com>
-References: <20190516044313.GA17751@localhost.localdomain>
- <CAHk-=wiaO_8SiEB9QM3vOTniiT67K6CBH0uHJ82-Dp_+6kxH3g@mail.gmail.com>
+From: Parth Shah <parth@linux.ibm.com>
+Subject: Re: [RFCv2 2/6] sched: Introduce switch to enable TurboSched mode
+Date: Thu, 16 May 2019 21:45:42 +0530
+Message-ID: <fd7bd5e7-8d89-2c0b-1f3d-d229b7af5757@linux.ibm.com>
+References: <20190515135322.19393-1-parth@linux.ibm.com>
+ <20190515135322.19393-3-parth@linux.ibm.com>
+ <20190515163032.GU2589@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHk-=wiaO_8SiEB9QM3vOTniiT67K6CBH0uHJ82-Dp_+6kxH3g@mail.gmail.com>
+In-Reply-To: <20190515163032.GU2589@hirez.programming.kicks-ass.net>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>
-Cc: Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, dsmythies@telus.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
 
-On 16.05.19 17:07, Linus Torvalds wrote:
-> On Wed, May 15, 2019 at 9:43 PM Eduardo Valentin <edubezval@gmail.com> wrote:
->> - thermal core has a new devm_* API for registering cooling devices, thanks to Guenter R.
->>   I took the entire series, that is why you see changes on drivers/hwmon in this pull.
-> This clashed badly with commit 6b1ec4789fb1 ("hwmon: (pwm-fan) Add RPM
-> support via external interrupt"), which added a timer to the pwm-fan
-> handling.
->
-> In particular, that timer now needed the same kind of cleanup changes,
-> and I'd like you guys (particularly Guenther, who was involved on both
-> sides) to double-check my merge.
->
-> The way I solved it was to just make the pwm_fan_pwm_disable()
-> callback do both the pwm_diable() _and_ the del_timer_sync() on the
-> new timer. That seemed to be the simplest solution that meshed with
-> the new devm cleanup model, but while I build-tested the result, I
-> obviously did no actual use testing. And maybe there's some reason why
-> that approach is flawed.
 
-i will try to test on our custom i.MX6 board. Unfortunately this take
-some time since it isn't mainline yet (at least until tomorrow).
+On 5/15/19 10:00 PM, Peter Zijlstra wrote:
+> On Wed, May 15, 2019 at 07:23:18PM +0530, Parth Shah wrote:
+>> +void turbo_sched_get(void)
+>> +{
+>> +	spin_lock(&turbo_sched_lock);
+>> +	if (!turbo_sched_count++)
+>> +		static_branch_enable(&__turbo_sched_enabled);
+>> +	spin_unlock(&turbo_sched_lock);
+>> +}
+> 
+> Muwhahaha, you didn't test this code, did you?
+> 
 
-Stefan
+yeah, I didn't see task-sleep problem coming in.
+I will change to mutex.
 
->
-> Guenther?
->
->                     Linus
+Thanks for pointing out.
