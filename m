@@ -1,145 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI: PM: Call pm_set_suspend_via_firmware() during hibernation
-Date: Thu, 16 May 2019 12:43:19 +0200
-Message-ID: <3247013.1dn1YOOxyY@kreacher>
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 21/34] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
+Date: Thu, 16 May 2019 07:39:18 -0400
+Message-ID: <20190516113932.8348-21-sashal@kernel.org>
+References: <20190516113932.8348-1-sashal@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190516113932.8348-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.com>, Sasha Levin <sashal@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
 
-On systems with ACPI platform firmware the last stage of hibernation
-is analogous to system suspend to S3 (suspend-to-RAM), so it should
-be handled analogously.  In particular, pm_suspend_via_firmware()
-should return 'true' in that stage to let the callers of it know that
-control will be passed to the platform firmware going forward, so
-pm_set_suspend_via_firmware() needs to be called then in analogy with
-acpi_suspend_begin().
+[ Upstream commit 349ced9984ff540ce74ca8a0b2e9b03dc434b9dd ]
 
-However, the platform hibernation ->begin() callback is invoked
-during the "freeze" transition (before creating a snapshot image of
-system memory) as well as during the "hibernate" transition which is
-the last stage of it and pm_set_suspend_via_firmware() should be
-invoked by that callback in the latter stage only.
+Fix a similar endless event loop as was done in commit
+8dcf32175b4e ("i2c: prevent endless uevent loop with
+CONFIG_I2C_DEBUG_CORE"):
 
-In order to implement that redefine the hibernation ->begin()
-callback to take a pm_message_t argument to indicate which stage
-of hibernation is taking place and rework acpi_hibernation_begin()
-and acpi_hibernation_begin_old() to take it into account as needed.
+  The culprit is the dev_dbg printk in the i2c uevent handler. If
+  this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
+  in an endless loop with systemd-journald.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+  This happens if user-space scans the system log and reads the uevent
+  file to get information about a newly created device, which seems
+  fair use to me. Unfortunately reading the "uevent" file uses the
+  same function that runs for creating the uevent for a new device,
+  generating the next syslog entry
+
+Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
+in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
+seems to have been fixed. Drop debug prints as it was done in I2C
+subsystem to resolve the issue.
+
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/acpi/sleep.c     |   39 ++++++++++++++++++++++++---------------
- include/linux/suspend.h  |    2 +-
- kernel/power/hibernate.c |    4 ++--
- 3 files changed, 27 insertions(+), 18 deletions(-)
+ drivers/power/supply/power_supply_sysfs.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-Index: linux-pm/include/linux/suspend.h
-===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -359,7 +359,7 @@ extern void mark_free_pages(struct zone
-  *	platforms which require special recovery actions in that situation.
-  */
- struct platform_hibernation_ops {
--	int (*begin)(void);
-+	int (*begin)(pm_message_t stage);
- 	void (*end)(void);
- 	int (*pre_snapshot)(void);
- 	void (*finish)(void);
-Index: linux-pm/kernel/power/hibernate.c
-===================================================================
---- linux-pm.orig/kernel/power/hibernate.c
-+++ linux-pm/kernel/power/hibernate.c
-@@ -129,7 +129,7 @@ static int hibernation_test(int level) {
- static int platform_begin(int platform_mode)
- {
- 	return (platform_mode && hibernation_ops) ?
--		hibernation_ops->begin() : 0;
-+		hibernation_ops->begin(PMSG_FREEZE) : 0;
- }
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index dce24f5961609..5358a80d854f9 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -383,15 +383,11 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	char *prop_buf;
+ 	char *attrname;
  
- /**
-@@ -542,7 +542,7 @@ int hibernation_platform_enter(void)
- 	 * hibernation_ops->finish() before saving the image, so we should let
- 	 * the firmware know that we're going to enter the sleep state after all
- 	 */
--	error = hibernation_ops->begin();
-+	error = hibernation_ops->begin(PMSG_HIBERNATE);
- 	if (error)
- 		goto Close;
- 
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -1128,15 +1128,19 @@ void __init acpi_no_s4_hw_signature(void
- 	nosigcheck = true;
- }
- 
--static int acpi_hibernation_begin(void)
-+static int acpi_hibernation_begin(pm_message_t stage)
- {
--	int error;
-+	if (!nvs_nosave) {
-+		int error = suspend_nvs_alloc();
-+		if (error)
-+			return error;
-+	}
- 
--	error = nvs_nosave ? 0 : suspend_nvs_alloc();
--	if (!error)
--		acpi_pm_start(ACPI_STATE_S4);
-+	if (stage.event == PM_EVENT_HIBERNATE)
-+		pm_set_suspend_via_firmware();
- 
--	return error;
-+	acpi_pm_start(ACPI_STATE_S4);
-+	return 0;
- }
- 
- static int acpi_hibernation_enter(void)
-@@ -1196,7 +1200,7 @@ static const struct platform_hibernation
-  *		function is used if the pre-ACPI 2.0 suspend ordering has been
-  *		requested.
-  */
--static int acpi_hibernation_begin_old(void)
-+static int acpi_hibernation_begin_old(pm_message_t stage)
- {
- 	int error;
- 	/*
-@@ -1207,16 +1211,21 @@ static int acpi_hibernation_begin_old(vo
- 	acpi_sleep_tts_switch(ACPI_STATE_S4);
- 
- 	error = acpi_sleep_prepare(ACPI_STATE_S4);
-+	if (error)
-+		return error;
- 
--	if (!error) {
--		if (!nvs_nosave)
--			error = suspend_nvs_alloc();
--		if (!error) {
--			acpi_target_sleep_state = ACPI_STATE_S4;
--			acpi_scan_lock_acquire();
--		}
-+	if (!nvs_nosave) {
-+		error = suspend_nvs_alloc();
-+		if (error)
-+			return error;
+-	dev_dbg(dev, "uevent\n");
+-
+ 	if (!psy || !psy->desc) {
+ 		dev_dbg(dev, "No power supply yet\n");
+ 		return ret;
  	}
--	return error;
-+
-+	if (stage.event == PM_EVENT_HIBERNATE)
-+		pm_set_suspend_via_firmware();
-+
-+	acpi_target_sleep_state = ACPI_STATE_S4;
-+	acpi_scan_lock_acquire();
-+	return 0;
- }
  
- /*
+-	dev_dbg(dev, "POWER_SUPPLY_NAME=%s\n", psy->desc->name);
+-
+ 	ret = add_uevent_var(env, "POWER_SUPPLY_NAME=%s", psy->desc->name);
+ 	if (ret)
+ 		return ret;
+@@ -427,8 +423,6 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 			goto out;
+ 		}
+ 
+-		dev_dbg(dev, "prop %s=%s\n", attrname, prop_buf);
+-
+ 		ret = add_uevent_var(env, "POWER_SUPPLY_%s=%s", attrname, prop_buf);
+ 		kfree(attrname);
+ 		if (ret)
+-- 
+2.20.1
