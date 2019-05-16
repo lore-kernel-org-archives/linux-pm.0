@@ -1,88 +1,74 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for v5.2-rc1
-Date: Thu, 16 May 2019 23:29:01 +0800
-Message-ID: <1558020541.12827.25.camel@intel.com>
+From: Parth Shah <parth@linux.ibm.com>
+Subject: Re: [RFCv2 0/6] TurboSched: A scheduler for sustaining Turbo
+ Frequencies for longer durations
+Date: Thu, 16 May 2019 21:35:30 +0530
+Message-ID: <82883320-fb98-ec7b-ad1a-0c4248a0225b@linux.ibm.com>
+References: <20190515135322.19393-1-parth@linux.ibm.com>
+ <20190515164854.GZ2589@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20190515164854.GZ2589@hirez.programming.kicks-ass.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, dsmythies@telus.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Linus,
 
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-to receive the latest Thermal management updates for v5.2-rc1 with
-top-most commit 6df24c3e81b9ba9c5e8d815e593826c169e3f366:
+On 5/15/19 10:18 PM, Peter Zijlstra wrote:
+> On Wed, May 15, 2019 at 07:23:16PM +0530, Parth Shah wrote:
+>> Abstract
+>> ========
+>>
+>> The modern servers allows multiple cores to run at range of
+>> frequencies higher than rated range of frequencies. But the power budget
+>> of the system inhibits sustaining these higher frequencies for
+>> longer durations.
+>>
+>> However when certain cores are put to idle states, the power can be
+>> effectively channelled to other busy cores, allowing them to sustain
+>> the higher frequency.
+>>
+>> One way to achieve this is to pack tasks onto fewer cores keeping others idle,
+>> but it may lead to performance penalty for such tasks and sustaining higher
+>> frequencies proves to be of no benefit. But if one can identify unimportant low
+>> utilization tasks which can be packed on the already active cores then waking up
+>> of new cores can be avoided. Such tasks are short and/or bursty "jitter tasks"
+>> and waking up new core is expensive for such case.
+>>
+>> Current CFS algorithm in kernel scheduler is performance oriented and hence
+>> tries to assign any idle CPU first for the waking up of new tasks. This policy
+>> is perfect for major categories of the workload, but for jitter tasks, one
+>> can save energy by packing it onto active cores and allow other cores to run at
+>> higher frequencies.
+>>
+>> These patch-set tunes the task wake up logic in scheduler to pack exclusively
+>> classified jitter tasks onto busy cores. The work involves the use of additional
+>> attributes inside "cpu" cgroup controller to manually classify tasks as jitter. 
+> 
+> Why does this make sense? Don't these higher freq bins burn power like
+> stupid? That is, it makes sense to use turbo-bins for single threaded
+> workloads that are CPU-bound and need performance.
+> 
+> But why pack a bunch of 'crap' tasks onto a core and give it turbo;
+> that's just burning power without getting anything back for it.
+> 
 
-  Merge branches 'thermal-core', 'thermal-built-it' and 'thermal-intel' 
-into next (2019-05-07 21:54:11 +0800)
+Thanks for taking interest in my patch series.
+I will try my best to answer your question.
 
-on top of commit dc4060a5dc2557e6b5aa813bf5b73677299d62d2:
+This patch series tries to pack jitter tasks on the busier cores to avoid waking
+up any idle core as long as possible. This approach is supposed to give more
+performance to the CPU bound tasks by sustaining Turbo for a longer duration.
 
-  Linux 5.1-rc5 (2019-04-14 15:17:41 -0700)
+Current implementation for task wake up is biased towards waking an idle CPU first,
+which in turn consumes power as the CPU leaves idle domain.
+For the system supporting Turbo frequencies, power budget is fixed and hence to
+maintain this budget the system may throttle the frequency.
 
-Specifics:
-
-- Remove the 'module' Kconfig option for thermal subsystem framework
-because the thermal framework are required to be ready as early as
-possible to avoid overheat at boot time. (Daniel Lezcano)
-
-- Fix a bug that thermal framework pokes disabled thermal zones upon
-resume. (Wei Wang)
-
-- A couple of cleanups and trivial fixes on int340x thermal drivers.
-(Srinivas Pandruvada, Zhang Rui, Sumeet Pawnikar)
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Daniel Lezcano (5):
-      thermal/drivers/core: Remove the module Kconfig's option
-      thermal/drivers/core: Remove module unload code
-      thermal/drivers/core: Remove depends on THERMAL in Kconfig
-      thermal/drivers/core: Fix typo in the option name
-      hwmon/drivers/core: Simplify complex dependency
-
-Geert Uytterhoeven (1):
-      mlxsw: Remove obsolete dependency on THERMAL=m
-
-Jean-Francois Dagenais (1):
-      thermal: make device_register's type argument const
-
-Srinivas Pandruvada (1):
-      drivers: thermal: processor_thermal: Downgrade error message
-
-Sumeet Pawnikar (1):
-      thermal: intel: int340x: processor_thermal_device: simplify to
-get driver data
-
-Wei Wang (1):
-      thermal: core: skip update disabled thermal zones after suspend
-
-Zhang Rui (2):
-      thermal/int3403_thermal: favor _TMP instead of PTYP
-      Merge branches 'thermal-core', 'thermal-built-it' and 'thermal-
-intel' into next
-
- arch/arm/configs/mini2440_defconfig                |  2 +-
- arch/arm/configs/pxa_defconfig                     |  2 +-
- arch/mips/configs/ip22_defconfig                   |  2 +-
- arch/mips/configs/ip27_defconfig                   |  2 +-
- arch/unicore32/configs/unicore32_defconfig         |  2 +-
- drivers/hwmon/hwmon.c                              |  4 +--
- drivers/net/ethernet/mellanox/mlxsw/Kconfig        |  1 -
- drivers/thermal/Kconfig                            |  8 +++---
- drivers/thermal/intel/Kconfig                      |  1 -
- .../intel/int340x_thermal/int3403_thermal.c        | 16 +++++------
- .../int340x_thermal/processor_thermal_device.c     | 13 ++-------
- drivers/thermal/qcom/Kconfig                       |  1 -
- drivers/thermal/thermal_core.c                     | 31 +++++++++-----
---------
- include/linux/thermal.h                            |  6 ++---
- 14 files changed, 34 insertions(+), 57 deletions(-)
+So the idea is, if we can pack the jitter tasks on already running cores, then we
+can avoid waking up new cores and save power thereby sustaining Turbo for longer
+duration.
