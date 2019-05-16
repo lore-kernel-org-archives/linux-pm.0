@@ -2,75 +2,135 @@ Return-Path: <SRS0=ThCx=TQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E17D8C04AAF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 15:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AF21C04AAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 16:06:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A86B820657
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 15:31:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1558020699;
-	bh=r6v9Q8NQd+LDmhIN2riRe64hhFe788ER4+ZxrvjIC60=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=HfJ/+6C3xj7gr+A8gHefXb6HDl+9QKGJ/ySZBcnmCCRw8830Y13bT9sQ6Sj0xEWtD
-	 MszcGCmiT9RjOOffWhwtL5japxuNlwUx6t2+QCGUfvqHLbpE4PGCooj/Ir+VzGYu/r
-	 7gSYZiZq9oK6EOF+2hZLq5UFDgzRllhxxBMfW74o=
+	by mail.kernel.org (Postfix) with ESMTP id 05EA120815
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 16:06:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726838AbfEPPbj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 May 2019 11:31:39 -0400
-Received: from mga05.intel.com ([192.55.52.43]:63398 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726692AbfEPPbj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 May 2019 11:31:39 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 16 May 2019 08:31:38 -0700
-X-ExtLoop1: 1
-Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
-  by fmsmga004.fm.intel.com with ESMTP; 16 May 2019 08:31:38 -0700
-Date:   Thu, 16 May 2019 09:26:23 -0600
-From:   Keith Busch <kbusch@kernel.org>
-To:     Akinobu Mita <akinobu.mita@gmail.com>
-Cc:     Keith Busch <keith.busch@intel.com>,
-        linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Jens Axboe <axboe@fb.com>, Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>
-Subject: Re: [PATCH 1/2] nvme: add thermal zone infrastructure
-Message-ID: <20190516152622.GC23416@localhost.localdomain>
-References: <1557933437-4693-1-git-send-email-akinobu.mita@gmail.com>
- <1557933437-4693-2-git-send-email-akinobu.mita@gmail.com>
- <20190515191518.GA21916@localhost.localdomain>
- <CAC5umyhh7eNHa4D9sndsoB7EgTJZTEL9OTd=a+7x817XvPZ_eQ@mail.gmail.com>
+        id S1726951AbfEPQGC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 May 2019 12:06:02 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:46552 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726336AbfEPQGC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2019 12:06:02 -0400
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4GG56OR033609
+        for <linux-pm@vger.kernel.org>; Thu, 16 May 2019 12:06:01 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2sh9auwawn-1
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Thu, 16 May 2019 12:06:01 -0400
+Received: from localhost
+        by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
+        Thu, 16 May 2019 17:05:38 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+        by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+        Thu, 16 May 2019 17:05:35 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+        by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4GG5Yv948365702
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 16 May 2019 16:05:34 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id E85DB5204E;
+        Thu, 16 May 2019 16:05:33 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.91.88])
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0BEC65205A;
+        Thu, 16 May 2019 16:05:31 +0000 (GMT)
+Subject: Re: [RFCv2 0/6] TurboSched: A scheduler for sustaining Turbo
+ Frequencies for longer durations
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        mingo@redhat.com, dietmar.eggemann@arm.com, dsmythies@telus.net
+References: <20190515135322.19393-1-parth@linux.ibm.com>
+ <20190515164854.GZ2589@hirez.programming.kicks-ass.net>
+From:   Parth Shah <parth@linux.ibm.com>
+Date:   Thu, 16 May 2019 21:35:30 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAC5umyhh7eNHa4D9sndsoB7EgTJZTEL9OTd=a+7x817XvPZ_eQ@mail.gmail.com>
-User-Agent: Mutt/1.9.1 (2017-09-22)
+In-Reply-To: <20190515164854.GZ2589@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19051616-0012-0000-0000-0000031C671D
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19051616-0013-0000-0000-000021550957
+Message-Id: <82883320-fb98-ec7b-ad1a-0c4248a0225b@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-16_14:,,
+ signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905160102
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+Message-ID: <20190516160530.3EgS22utaHoKZFLijk8y8qn3sS1j_VO0U0U9DCw2a9M@z>
 
-On Fri, May 17, 2019 at 12:22:51AM +0900, Akinobu Mita wrote:
-> > Since this routine is intended for use in the device initialization path,
-> > the error returns are extra important. We have used < 0 to indicate we
-> > need to abandon initialization because we won't be able communicate with
-> > the device if we proceed. Since thermal reporting is not mandatory to
-> > manage our controllers, out-of-memory or a device that doesn't support
-> > SMART should just return 0. We should only halt init if the controller
-> > is unresponsive here.
+
+
+On 5/15/19 10:18 PM, Peter Zijlstra wrote:
+> On Wed, May 15, 2019 at 07:23:16PM +0530, Parth Shah wrote:
+>> Abstract
+>> ========
+>>
+>> The modern servers allows multiple cores to run at range of
+>> frequencies higher than rated range of frequencies. But the power budget
+>> of the system inhibits sustaining these higher frequencies for
+>> longer durations.
+>>
+>> However when certain cores are put to idle states, the power can be
+>> effectively channelled to other busy cores, allowing them to sustain
+>> the higher frequency.
+>>
+>> One way to achieve this is to pack tasks onto fewer cores keeping others idle,
+>> but it may lead to performance penalty for such tasks and sustaining higher
+>> frequencies proves to be of no benefit. But if one can identify unimportant low
+>> utilization tasks which can be packed on the already active cores then waking up
+>> of new cores can be avoided. Such tasks are short and/or bursty "jitter tasks"
+>> and waking up new core is expensive for such case.
+>>
+>> Current CFS algorithm in kernel scheduler is performance oriented and hence
+>> tries to assign any idle CPU first for the waking up of new tasks. This policy
+>> is perfect for major categories of the workload, but for jitter tasks, one
+>> can save energy by packing it onto active cores and allow other cores to run at
+>> higher frequencies.
+>>
+>> These patch-set tunes the task wake up logic in scheduler to pack exclusively
+>> classified jitter tasks onto busy cores. The work involves the use of additional
+>> attributes inside "cpu" cgroup controller to manually classify tasks as jitter. 
 > 
-> Make sense.  I'll change the return type to void, and print warning in
-> case of some errors as Minwoo said in other reply.
+> Why does this make sense? Don't these higher freq bins burn power like
+> stupid? That is, it makes sense to use turbo-bins for single threaded
+> workloads that are CPU-bound and need performance.
+> 
+> But why pack a bunch of 'crap' tasks onto a core and give it turbo;
+> that's just burning power without getting anything back for it.
+> 
 
-Oh, still needs to be an 'int' return, but just suppress non-fatal
-errors by returning 0. If the 'nvme_get_log' times out, though, we need
-to return that error since the caller will need to abort initialization.
+Thanks for taking interest in my patch series.
+I will try my best to answer your question.
+
+This patch series tries to pack jitter tasks on the busier cores to avoid waking
+up any idle core as long as possible. This approach is supposed to give more
+performance to the CPU bound tasks by sustaining Turbo for a longer duration.
+
+Current implementation for task wake up is biased towards waking an idle CPU first,
+which in turn consumes power as the CPU leaves idle domain.
+For the system supporting Turbo frequencies, power budget is fixed and hence to
+maintain this budget the system may throttle the frequency.
+
+So the idea is, if we can pack the jitter tasks on already running cores, then we
+can avoid waking up new cores and save power thereby sustaining Turbo for longer
+duration.
+
