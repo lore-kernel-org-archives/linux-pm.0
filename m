@@ -1,91 +1,60 @@
-From: Douglas Raillard <douglas.raillard@arm.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [RFC PATCH 1/7] PM: Introduce em_pd_get_higher_freq()
-Date: Thu, 16 May 2019 14:06:08 +0100
-Message-ID: <046bfab7-bf28-bbfe-2bff-09881d537fb1@arm.com>
+Date: Thu, 16 May 2019 14:22:50 +0100
+Message-ID: <20190516132250.hedtianse7rnk3wq@e110439-lin>
 References: <20190508174301.4828-1-douglas.raillard@arm.com>
  <20190508174301.4828-2-douglas.raillard@arm.com>
  <20190516124200.opxczohjelhvrzmo@e110439-lin>
+ <20190516130148.uhq55ptut47usnae@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190516124200.opxczohjelhvrzmo@e110439-lin>
-Content-Language: en-GB-large
+Content-Disposition: inline
+In-Reply-To: <20190516130148.uhq55ptut47usnae@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, quentin.perret@arm.com, dietmar.eggemann@arm.com, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: douglas.raillard@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Patrick,
-
-On 5/16/19 1:42 PM, Patrick Bellasi wrote:
-> On 08-May 18:42, douglas.raillard@arm.com wrote:
->> From: Douglas RAILLARD <douglas.raillard@arm.com>
->>
->> em_pd_get_higher_freq() returns a frequency greater or equal to the
->> provided one while taking into account a given cost margin. It also
->> skips inefficient OPPs that have a higher cost than another one with a
->> higher frequency.
+On 16-May 14:01, Quentin Perret wrote:
+> On Thursday 16 May 2019 at 13:42:00 (+0100), Patrick Bellasi wrote:
+> > > +static inline unsigned long em_pd_get_higher_freq(struct em_perf_domain *pd,
+> > > +	unsigned long min_freq, unsigned long cost_margin)
+> > > +{
+> > > +	unsigned long max_cost = 0;
+> > > +	struct em_cap_state *cs;
+> > > +	int i;
+> > > +
+> > > +	if (!pd)
+> > > +		return min_freq;
+> > > +
+> > > +	/* Compute the maximum allowed cost */
+> > > +	for (i = 0; i < pd->nr_cap_states; i++) {
+> > > +		cs = &pd->table[i];
+> > > +		if (cs->frequency >= min_freq) {
+> > > +			max_cost = cs->cost + (cs->cost * cost_margin) / 1024;
+> >                                                                          ^^^^
+> > ... end here we should probably better use SCHED_CAPACITY_SCALE
+> > instead of hard-coding in values, isn't it?
 > 
-> It's worth to add a small description and definition of what we mean by
-> "OPP efficiency". Despite being just an RFC, it could help to better
-> understand what we are after.
+> I'm not sure to agree. This isn't part of the scheduler per se, and the
+> cost thing isn't in units of capacity, but in units of power, so I don't
+> think SCHED_CAPACITY_SCALE is correct here.
 
-Right, here efficiency=capacity/power.
+Right, I get the units do not match and it would not be elegant to use
+it here...
 
-> 
-> [...]
-> 
->> +/** + * em_pd_get_higher_freq() - Get the highest frequency that
->> does not exceed the
->> + * given cost margin compared to min_freq
->> + * @pd		: performance domain for which this must be done
->> + * @min_freq	: minimum frequency to return
->> + * @cost_margin	: allowed margin compared to min_freq, as a per-1024 value.
->                                                                      ^^^^^^^^
-> here...
-> 
->> + *
->> + * Return: the chosen frequency, guaranteed to be at least as high as min_freq.
->> + */
->> +static inline unsigned long em_pd_get_higher_freq(struct em_perf_domain *pd,
->> +	unsigned long min_freq, unsigned long cost_margin)
->> +{
->> +	unsigned long max_cost = 0;
->> +	struct em_cap_state *cs;
->> +	int i;
->> +
->> +	if (!pd)
->> +		return min_freq;
->> +
->> +	/* Compute the maximum allowed cost */
->> +	for (i = 0; i < pd->nr_cap_states; i++) {
->> +		cs = &pd->table[i];
->> +		if (cs->frequency >= min_freq) {
->> +			max_cost = cs->cost + (cs->cost * cost_margin) / 1024;
->                                                                           ^^^^
-> ... end here we should probably better use SCHED_CAPACITY_SCALE
-> instead of hard-coding in values, isn't it?
+> But I agree these hard coded values (that one, and the 512 in one of the
+> following patches) could use some motivation :-)
 
-"cs->cost*cost_margin/1024" is not a capacity, it's a cost as defined here:
-https://elixir.bootlin.com/linux/latest/source/include/linux/energy_model.h#L17
+... ultimately SCHED_CAPACITY_SCALE is just SCHED_FIXEDPOINT_SCALE,
+which is adimensional. Perhaps we should use that or yet another alias
+for the same.
 
-Actually, it's in milliwatts, but it's not better the better way to look at
-it to understand it IMHO.
+> Thanks,
+> Quentin
 
-The margin is expressed as a "per-1024" value just like we use percents'
-in everyday life, so it has no unit. If we want to avoid hard-coded values
-here, I can introduce an ENERGY_COST_MARGIN_SCALE macro.
+-- 
+#include <best/regards.h>
 
->> +			break;
->> +		}
->> +	}
->> +
-> 
-> [...]
-> 
-> Best,
-> Patrick
-
-Thanks,
-Douglas
+Patrick Bellasi
