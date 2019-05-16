@@ -2,114 +2,191 @@ Return-Path: <SRS0=ThCx=TQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A958C04AAF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 16:55:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB483C04AAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 17:02:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EFBC620815
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 16:55:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Mde2YlhG"
+	by mail.kernel.org (Postfix) with ESMTP id C710620815
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 17:02:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726856AbfEPQzh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 May 2019 12:55:37 -0400
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:34997 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726317AbfEPQzh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2019 12:55:37 -0400
-Received: by mail-pf1-f193.google.com with SMTP id t87so2164322pfa.2;
-        Thu, 16 May 2019 09:55:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=EAZuaSOFLPgJxOfkuE/RETBPBEFS9w8pXwe5DKxj3jc=;
-        b=Mde2YlhG7yTq8WVVRYWPZKNPot9dDb1OTgQhm/zFDYDcGEXigQoKN8OkBi46VzNrKy
-         gT8PkyM45K9GvYcErJxIbJkUQsREpqAEMDj41efjuvc61FT9Wrjsd/H4MK92+pP6BMh9
-         B0tUFeM9aobU6BIvdQ7aHU1X7fWv0IAqZ49YslhHpHWtaJ+FTEaf4oZIiWRi72CZsoVT
-         cwh5V3MK1XSDSxl5WkV2VLLWAxKJgGux2ejDUj9pqErha4IcqJvlYEEYZK5BpKnAgKKR
-         1bBPXp3j6A9xe2efxc6Pk/wQJayXvE2cTBHRycki3fUIWSXrN0+Xv0c8rJpuiX8xcSPL
-         qKog==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:subject:to:cc:references:from:message-id
-         :date:user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=EAZuaSOFLPgJxOfkuE/RETBPBEFS9w8pXwe5DKxj3jc=;
-        b=ay38/lMsIKoRs6LQ4o60o2G1Z2f7MjY8RQMrkb66e/GvR16EiaaWz0zcN0LtFQKcKd
-         VJTATk9K5a0spwjLben19PMiHQ0YZUhdicDMzOSI7iylQ7Zk90SZ44NlUZSYRWtFoLg0
-         zYwqAEJiZpfeyry0x3ylw+s9VZy9ySGkgRPzhJL8lKhnC33n5HPBntDoiwhXoF++cs2Y
-         DBaLP98ObfCb99Wxc1EcThIJy9nhIlUzz6VJ4tLXrwOPTcQKXh8Hb3UdmPZSdDWGLYui
-         RjVGHXCaMu0ouifwTdQmauFmdNqC4apKqibnyfF/cSfnNQch7veK+ERTykYd5l5bYaD2
-         F2yw==
-X-Gm-Message-State: APjAAAXm5oMji4yZcjZguEGyfXMv3NdhUNCFQBF36VUztVljF+QhHEXG
-        CdDp1fHy04d0pWGTJokaJ0Tr9cTl
-X-Google-Smtp-Source: APXvYqx7/fR+YFTBealEB1eVL6PMrU8y84ftgQoiHQ9J3my7pDkqFDmJGluga/cEErBpiNrRP8iZSA==
-X-Received: by 2002:a62:164f:: with SMTP id 76mr56070014pfw.172.1558025736036;
-        Thu, 16 May 2019 09:55:36 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id q142sm2615058pfc.27.2019.05.16.09.55.34
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 16 May 2019 09:55:34 -0700 (PDT)
-Subject: Re: [GIT PULL] Thermal-SoC management changes for v5.2-rc1
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Stefan Wahren <stefan.wahren@i2se.com>
-Cc:     Rui Zhang <rui.zhang@intel.com>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-References: <20190516044313.GA17751@localhost.localdomain>
- <CAHk-=wiaO_8SiEB9QM3vOTniiT67K6CBH0uHJ82-Dp_+6kxH3g@mail.gmail.com>
-From:   Guenter Roeck <linux@roeck-us.net>
-Message-ID: <cd06dc28-1076-259a-ba94-bad116771da8@roeck-us.net>
-Date:   Thu, 16 May 2019 09:55:33 -0700
+        id S1727505AbfEPRCP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 May 2019 13:02:15 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:59384 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1727354AbfEPRCP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2019 13:02:15 -0400
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x4GH20ZK098386
+        for <linux-pm@vger.kernel.org>; Thu, 16 May 2019 13:02:13 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2shahrbv2a-1
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Thu, 16 May 2019 13:02:13 -0400
+Received: from localhost
+        by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
+        Thu, 16 May 2019 18:02:11 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+        by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+        Thu, 16 May 2019 18:02:08 +0100
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+        by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x4GH26Md22413422
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 16 May 2019 17:02:07 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id C7B5C5247B;
+        Thu, 16 May 2019 16:12:39 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.85.91.88])
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id B8D895246D;
+        Thu, 16 May 2019 16:12:36 +0000 (GMT)
+Subject: Re: [RFCv2 1/6] sched/core: Add manual jitter classification from
+ cgroup interface
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        mingo@redhat.com, dietmar.eggemann@arm.com, dsmythies@telus.net
+References: <20190515135322.19393-1-parth@linux.ibm.com>
+ <20190515135322.19393-2-parth@linux.ibm.com>
+ <20190515162924.GT2589@hirez.programming.kicks-ass.net>
+From:   Parth Shah <parth@linux.ibm.com>
+Date:   Thu, 16 May 2019 21:42:35 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+ Thunderbird/60.0
 MIME-Version: 1.0
-In-Reply-To: <CAHk-=wiaO_8SiEB9QM3vOTniiT67K6CBH0uHJ82-Dp_+6kxH3g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format="flowed"
+In-Reply-To: <20190515162924.GT2589@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19051617-0016-0000-0000-0000027C7239
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19051617-0017-0000-0000-000032D94A6B
+Message-Id: <00950713-f386-a91e-d1e2-17db26e8e487@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-05-16_14:,,
+ signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1905160108
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Message-ID: <20190516165533.bFKbf_3zjwKYtV3ytttV6rbEoVxkVt2vqXJpn3pRlTM@z>
+Message-ID: <20190516161235.5yBA2Vzte7BhXdB8Q0oxAAHGwrOeFUHNYzmtlwOwej4@z>
 
-On 5/16/19 8:07 AM, Linus Torvalds wrote:
-> On Wed, May 15, 2019 at 9:43 PM Eduardo Valentin <edubezval@gmail.com> wrote:
+
+
+On 5/15/19 9:59 PM, Peter Zijlstra wrote:
+> On Wed, May 15, 2019 at 07:23:17PM +0530, Parth Shah wrote:
+> 
+>> Subject: [RFCv2 1/6] sched/core: Add manual jitter classification from cgroup interface
+> 
+> How can this be v2 ?! I've never seen v1.
+> 
+
+Actually, I sent out v1 on linux-pm@vger.kernel.org mailing list. This patch set
+is then refined and re-organized to get better comments from larger audience.
+You can find v1 at https://lwn.net/Articles/783959/
+
+>> Jitter tasks are usually of less important in terms of performance
+>> and are short/bursty in characteristics. TurboSched uses this jitter
+>> classification to pack jitters into the already running busy cores to
+>> keep the total idle core count high.
 >>
->> - thermal core has a new devm_* API for registering cooling devices, thanks to Guenter R.
->>    I took the entire series, that is why you see changes on drivers/hwmon in this pull.
+>> The patch describes the use of UCLAMP mechanism to classify tasks. Patrick
+>> Bellasi came up with a mechanism to classify tasks from the userspace
+>> https://lore.kernel.org/lkml/20190402104153.25404-1-patrick.bellasi@arm.com/
 > 
-> This clashed badly with commit 6b1ec4789fb1 ("hwmon: (pwm-fan) Add RPM
-> support via external interrupt"), which added a timer to the pwm-fan
-> handling.
+> The canonical form is:
 > 
-> In particular, that timer now needed the same kind of cleanup changes,
-> and I'd like you guys (particularly Guenther, who was involved on both
-> sides) to double-check my merge.
+> 	https://lkml.kernel.org/r/$MSGID
 > 
-> The way I solved it was to just make the pwm_fan_pwm_disable()
-> callback do both the pwm_diable() _and_ the del_timer_sync() on the
-> new timer. That seemed to be the simplest solution that meshed with
-> the new devm cleanup model, but while I build-tested the result, I
-> obviously did no actual use testing. And maybe there's some reason why
-> that approach is flawed.
+
+Thanks for pointing out. I will use the above form from next time onwards
+
+>> This UCLAMP mechanism can be useful in classifying tasks as jitter. Jitters
+>> can be classified for the cgroup by keeping util.max of the tasks as the
+>> least(=0). This also provides benefit of giving the least frequency to
+>> those jitter tasks, which is useful if all jitters are packed onto a
+>> separate core.
+>>
+>> Use Case with UCLAMP
+>> ===================
+>> To create a cgroup with all the tasks classified as jitters;
+>>
+>> ```
+>> mkdir -p /sys/fs/cgroup/cpu/jitter
+>> echo 0 > /proc/sys/kernel/sched_uclamp_util_min;
+>> echo 0 > /sys/fs/cgroup/cpu/jitter/cpu.util.min;
+>> echo 0 > /sys/fs/cgroup/cpu/jitter/cpu.util.max;
+>> i=8;
+>> ./turbo_bench -t 30 -h $i -n $i &
+>> ./turbo_bench -t 30 -h 0 -n $i &
+>> echo $! > /sys/fs/cgroup/cpu/jitter/cgroup.procs;
+>> ```
+>>
+>> Signed-off-by: Parth Shah <parth@linux.ibm.com>
+>> ---
+>>  kernel/sched/core.c  | 9 +++++++++
+>>  kernel/sched/sched.h | 1 +
+>>  2 files changed, 10 insertions(+)
+>>
+>> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+>> index d42c0f5eefa9..77aa4aee4478 100644
+>> --- a/kernel/sched/core.c
+>> +++ b/kernel/sched/core.c
+>> @@ -7192,6 +7192,15 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
+>>  	tg->uclamp_req[UCLAMP_MAX].value = max_value;
+>>  	tg->uclamp_req[UCLAMP_MAX].bucket_id = uclamp_bucket_id(max_value);
+>>  
+>> +	/*
+>> +	 * Classify the tasks belonging to the last bucket of MAX UCLAMP as
+>> +	 * jitters
+>> +	 */
+>> +	if (uclamp_bucket_id(max_value) == 0)
+>> +		tg->turbo_sched_enabled = 1;
+>> +	else if (tg->turbo_sched_enabled)
+>> +		tg->turbo_sched_enabled = 0;
+>> +
+>>  	/* Update effective clamps to track the most restrictive value */
+>>  	cpu_util_update_eff(css, UCLAMP_MAX);
+>>  
+>> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+>> index b4019012d84b..e75ffaf3ff34 100644
+>> --- a/kernel/sched/sched.h
+>> +++ b/kernel/sched/sched.h
+>> @@ -407,6 +407,7 @@ struct task_group {
+>>  	struct uclamp_se	uclamp[UCLAMP_CNT];
+>>  #endif
+>>  
+>> +	bool			turbo_sched_enabled;
+>>  };
 > 
-> Guenther?
+> Your simple patch has 3 problems:
+> 
+>  - it limits itself; for no apparent reason; to the cgroup interface.
 
-Sorry for the trouble. Looks like I did too much cleanup this time around.
+Maybe I can add other interfaces like syscall to allow per-entity classification.
 
-Looks ok. I'll have to send a follow-up patch - we should check the
-return value of devm_add_action_or_reset(). No idea why I didn't do that
-in this series. I'll do that after the commit window closes (and after
-I am back from vacation).
+> 
+>  - it is inconsistent in the terminology; pick either jitter or
+>    turbo-sched, and I think the latter is a horrid name, it wants to be
+>    'pack' or something similar. Also, jitter really doesn't make sense
+>    given the classification.
+> 
 
-Thanks a lot for sorting this out.
+Yes, I will be happy to re-name any variables/function to enhance readability.
 
-Guenter
+>  - you use '_Bool' in a composite type.
+> 
+
+Maybe I can switch to int.
+
+
+Thanks,
+Parth
+
