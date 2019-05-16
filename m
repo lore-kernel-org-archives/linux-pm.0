@@ -1,7 +1,8 @@
 From: Andrew-sh.Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH 1/8] cpufreq: mediatek: change to regulator_get_optional
-Date: Thu, 16 May 2019 17:08:38 +0800
-Message-ID: <1557997725-12178-2-git-send-email-andrew-sh.cheng@mediatek.com>
+Subject: [PATCH 4/8] dt-bindings: devfreq: add compatible for mt8183 cci
+ devfreq
+Date: Thu, 16 May 2019 17:08:41 +0800
+Message-ID: <1557997725-12178-5-git-send-email-andrew-sh.cheng@mediatek.com>
 References: <1557997725-12178-1-git-send-email-andrew-sh.cheng@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,27 +27,41 @@ List-Id: linux-pm@vger.kernel.org
 
 From: "Andrew-sh.Cheng" <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-For new mediatek chip mt8183,
-cci and little cluster share the same buck,
-so need to modify the attribute of regulator from exclusive to optional
+This adds dt-binding documentation of cci devfreq
+for Mediatek MT8183 SoC platform.
 
 Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 ---
- drivers/cpufreq/mediatek-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../bindings/devfreq/mt8183-cci-devfreq.txt          | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
 
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index 48e9829274c6..f2464c1ff17c 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -346,7 +346,7 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
- 		goto out_free_resources;
- 	}
- 
--	proc_reg = regulator_get_exclusive(cpu_dev, "proc");
-+	proc_reg = regulator_get_optional(cpu_dev, "proc");
- 	if (IS_ERR(proc_reg)) {
- 		if (PTR_ERR(proc_reg) == -EPROBE_DEFER)
- 			pr_warn("proc regulator for cpu%d not ready, retry.\n",
+diff --git a/Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt b/Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
+new file mode 100644
+index 000000000000..3189902902e0
+--- /dev/null
++++ b/Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
+@@ -0,0 +1,20 @@
++* Mediatek Cache Coherent Interconnect(CCI) frequency device
++
++Required properties:
++- compatible: should contain "mediatek,mt8183-cci" for frequency scaling of CCI
++- clocks: for frequency scaling of CCI
++- clock-names: for frequency scaling of CCI driver to reference
++- regulator: for voltage scaling of CCI
++- operating-points-v2: for frequency scaling of CCI opp table
++
++Example:
++	cci: cci {
++		compatible = "mediatek,cci";
++		clocks = <&apmixedsys CLK_APMIXED_CCIPLL>;
++		clock-names = "cci_clock";
++		operating-points-v2 = <&cci_opp>;
++	};
++
++	&cci {
++		proc-supply = <&mt6358_vproc12_reg>;
++	};
+\ No newline at end of file
 -- 
 2.12.5
