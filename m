@@ -1,115 +1,57 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/1] Forced-wakeup for stop lite states on Powernv
-Date: Thu, 16 May 2019 13:52:38 +0530
-Message-ID: <20190516082238.GB20396@in.ibm.com>
-References: <20190422063231.51043-1-huntbag@linux.vnet.ibm.com>
- <1557291178.ow4spjzq5t.astroid@bobo.none>
- <b2fcf69a-aecd-ea81-b497-737642354736@linux.vnet.ibm.com>
- <1557981860.eltms77ctp.astroid@bobo.none>
- <20190516053659.GA20396@in.ibm.com>
- <1557986956.6pmjz10b9z.astroid@bobo.none>
-Reply-To: ego@linux.vnet.ibm.com
+From: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
+Subject: [PATCH 0/8] Add cpufreq and cci devfreq for mt8183, and SVS support
+Date: Thu, 16 May 2019 17:08:37 +0800
+Message-ID: <1557997725-12178-1-git-send-email-andrew-sh.cheng@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1557986956.6pmjz10b9z.astroid@bobo.none>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: ego@linux.vnet.ibm.com, daniel.lezcano@linaro.org, dja@axtens.net, Abhishek <huntbag@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob
+ Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Matthias
+ Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Stephen
+ Boyd <sboyd@kernel.org>
+Cc: devicetree@vger.kernel.org, "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>, srv_heupstream@mediatek.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, fan.chen@mediatek.com, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Nicholas,
+From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
 
-On Thu, May 16, 2019 at 04:13:17PM +1000, Nicholas Piggin wrote:
+MT8183 supports CPU DVFS and CCI DVFS, and LITTLE cpus and CCI are in the same voltage domain.
+So, this series is to add drivers to handle the voltage coupling between CPU and CCI DVFS.
 
-> 
-> > The motivation behind this patch was a HPC customer issue where they
-> > were observing some CPUs in the core getting stuck at stop0_lite
-> > state, thereby lowering the performance on the other CPUs of the core
-> > which were running the application.
-> > 
-> > Disabling stop0_lite via sysfs didn't help since we would fallback to
-> > snooze and it would make matters worse.
-> 
-> snooze has the timeout though, so it should kick into stop0 properly
-> (and if it doesn't that's another issue that should be fixed in this
-> series).
->
-> I'm not questioning the patch for stop0_lite, to be clear. I think
-> the logic is sound. I just raise one urelated issue that happens to
-> be for stop0_lite as well (should we even enable it on P9?), and one
-> peripheral issue (should we make a similar fix for deeper stop states?)
->
+For SVS support, add OPP_EVENT_ADJUST_VOLTAGE and corresponding reaction.
 
-I think it makes sense to generalize this from the point of view of
-CPUs remaining in shallower idle states for long durations on tickless
-kernels.
+Andrew-sh.Cheng (7):
+  cpufreq: mediatek: change to regulator_get_optional
+  cpufreq: mediatek: add clock enable for intermediate clock
+  cpufreq: mediatek: Add support for mt8183
+  dt-bindings: devfreq: add compatible for mt8183 cci devfreq
+  devfreq: add mediatek cci devfreq
+  cpufreq: mediatek: add opp notification for SVS support
+  devfreq: cci devfreq register opp notification for SVS support
 
-> > 
-> >> 
-> >> We should always have fewer states unless proven otherwise.
-> > 
-> > I agree.
-> > 
-> >> 
-> >> That said, we enable it today so I don't want to argue this point
-> >> here, because it is a different issue from your patch.
-> >> 
-> >> > When it is in stop0 or deeper, 
-> >> > it free up both
-> >> > space and time slice of core.
-> >> > In stop0_lite, cpu doesn't free up the core resources and thus inhibits 
-> >> > thread
-> >> > folding. When a cpu goes to stop0, it will free up the core resources 
-> >> > thus increasing
-> >> > the single thread performance of other sibling thread.
-> >> > Hence, we do not want to get stuck in stop0_lite for long duration, and 
-> >> > want to quickly
-> >> > move onto the next state.
-> >> > If we get stuck in any other state we would possibly be losing on to 
-> >> > power saving,
-> >> > but will still be able to gain the performance benefits for other 
-> >> > sibling threads.
-> >> 
-> >> That's true, but stop0 -> deeper stop is also a benefit (for
-> >> performance if we have some power/thermal constraints, and/or for power
-> >> usage).
-> >> 
-> >> Sure it may not be so noticable as the SMT switch, but I just wonder
-> >> if the infrastructure should be there for the same reason.
-> >> 
-> >> I was testing interrupt frequency on some tickless workloads configs,
-> >> and without too much trouble you can get CPUs to sleep with no
-> >> interrupts for many minutes. Hours even. We wouldn't want the CPU to
-> >> stay in stop0 for that long.
-> > 
-> > If it stays in stop0 or even stop2 for that long, we would want to
-> > "promote" it to a deeper state, such as say STOP5 which allows the
-> > other cores to run at higher frequencies.
-> 
-> So we would want this same logic for all but the deepest runtime
-> stop state?
+Stephen Boyd (1):
+  PM / OPP: Support adjusting OPP voltages at runtime
 
-Yes. We can, in steps, promote individual threads of the core to
-eventually request a deeper state such as stop4/5. On a completely
-idle tickless system, eventually we should see the core go to the
-deeper idle state.
+ .../bindings/devfreq/mt8183-cci-devfreq.txt        |  20 ++
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   1 +
+ drivers/cpufreq/mediatek-cpufreq.c                 |  88 +++++-
+ drivers/devfreq/Kconfig                            |  10 +
+ drivers/devfreq/Makefile                           |   1 +
+ drivers/devfreq/mt8183-cci-devfreq.c               | 310 +++++++++++++++++++++
+ drivers/opp/core.c                                 |  78 ++++++
+ include/linux/pm_opp.h                             |  11 +
+ 8 files changed, 517 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
+ create mode 100644 drivers/devfreq/mt8183-cci-devfreq.c
 
-> 
-> >> Just thinking about the patch itself, I wonder do you need a full
-> >> kernel timer, or could we just set the decrementer? Is there much 
-> >> performance cost here?
-> >>
-> > 
-> > Good point. A decrementer would do actually.
-> 
-> That would be good if it does, might save a few cycles.
-> 
-> Thanks,
-> Nick
->
-
---
-Thanks and Regards
-gautham.
+-- 
+2.12.5
