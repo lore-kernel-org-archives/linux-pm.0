@@ -1,12 +1,12 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.4 6/8] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
-Date: Thu, 16 May 2019 07:41:44 -0400
-Message-ID: <20190516114146.9267-6-sashal@kernel.org>
-References: <20190516114146.9267-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 7/9] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
+Date: Thu, 16 May 2019 07:41:31 -0400
+Message-ID: <20190516114134.9146-7-sashal@kernel.org>
+References: <20190516114134.9146-1-sashal@kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20190516114146.9267-1-sashal@kernel.org>
+In-Reply-To: <20190516114134.9146-1-sashal@kernel.org>
 Sender: stable-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Chris Healy <cphealy@gmail.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.com>, Sasha Levin <sashal@kernel.org>
@@ -41,14 +41,14 @@ Cc: linux-pm@vger.kernel.org
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/power_supply_sysfs.c | 6 ------
+ drivers/power/supply/power_supply_sysfs.c | 6 ------
  1 file changed, 6 deletions(-)
 
-diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-index ed2d7fd0c734d..488dd7eb0aeb7 100644
---- a/drivers/power/power_supply_sysfs.c
-+++ b/drivers/power/power_supply_sysfs.c
-@@ -277,15 +277,11 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index bcde8d13476af..c0fc98e03c912 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -278,15 +278,11 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
  	char *prop_buf;
  	char *attrname;
  
@@ -64,7 +64,7 @@ index ed2d7fd0c734d..488dd7eb0aeb7 100644
  	ret = add_uevent_var(env, "POWER_SUPPLY_NAME=%s", psy->desc->name);
  	if (ret)
  		return ret;
-@@ -321,8 +317,6 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+@@ -322,8 +318,6 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
  			goto out;
  		}
  
