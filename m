@@ -1,60 +1,78 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC PATCH 1/7] PM: Introduce em_pd_get_higher_freq()
-Date: Thu, 16 May 2019 14:22:50 +0100
-Message-ID: <20190516132250.hedtianse7rnk3wq@e110439-lin>
-References: <20190508174301.4828-1-douglas.raillard@arm.com>
- <20190508174301.4828-2-douglas.raillard@arm.com>
- <20190516124200.opxczohjelhvrzmo@e110439-lin>
- <20190516130148.uhq55ptut47usnae@queper01-lin>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Subject: Re: [PATCH 2/3] thermal: sun50i: add thermal driver for h6
+Date: Thu, 16 May 2019 17:02:52 +0200
+Message-ID: <20190516150252.hf4u3bloo37chy6q@flea>
+References: <20190512082614.9045-1-tiny.windzz@gmail.com>
+ <20190512082614.9045-3-tiny.windzz@gmail.com>
+ <20190512133930.t5txssl7mou2gljt@flea>
+ <20190512214128.qjyys3vfpwdiacib@core.my.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="7vj27y3kfhi2ktlo"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190516130148.uhq55ptut47usnae@queper01-lin>
+In-Reply-To: <20190512214128.qjyys3vfpwdiacib@core.my.home>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: douglas.raillard@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, dietmar.eggemann@arm.com
+To: Yangtao Li <tiny.windzz@gmail.com>, mark.rutland@arm.com, daniel.lezcano@linaro.org, catalin.marinas@arm.com, will.deacon@arm.com, bjorn.andersson@linaro.org, mchehab+samsung@kernel.org, paulmck@linux.ibm.com, stefan.wahren@i2se.com, linux-pm@vger.kernel.org, wens@csie.org, jagan@amarulasolutions.com, andy.gross@linaro.org, rui.zhang@intel.com, devicetree@vger.kernel.org, marc.w.gonzalez@free.fr, edubezval@gmail.com, enric.balletbo@collabora.com, robh+dt@kernel.org, Jonathan.Cameron@huawei.com, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, olof@lixom.net, davem@davemloft.net
 List-Id: linux-pm@vger.kernel.org
 
-On 16-May 14:01, Quentin Perret wrote:
-> On Thursday 16 May 2019 at 13:42:00 (+0100), Patrick Bellasi wrote:
-> > > +static inline unsigned long em_pd_get_higher_freq(struct em_perf_domain *pd,
-> > > +	unsigned long min_freq, unsigned long cost_margin)
+
+--7vj27y3kfhi2ktlo
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Sun, May 12, 2019 at 11:41:28PM +0200, Ond=C5=99ej Jirman wrote:
+> > > +static int tsens_get_temp(void *data, int *temp)
 > > > +{
-> > > +	unsigned long max_cost = 0;
-> > > +	struct em_cap_state *cs;
-> > > +	int i;
+> > > +	struct tsensor *s =3D data;
+> > > +	struct tsens_device *tmdev =3D s->tmdev;
+> > > +	int val;
 > > > +
-> > > +	if (!pd)
-> > > +		return min_freq;
+> > > +	regmap_read(tmdev->regmap, tmdev->chip->temp_data_base +
+> > > +		    0x4 * s->id, &val);
 > > > +
-> > > +	/* Compute the maximum allowed cost */
-> > > +	for (i = 0; i < pd->nr_cap_states; i++) {
-> > > +		cs = &pd->table[i];
-> > > +		if (cs->frequency >= min_freq) {
-> > > +			max_cost = cs->cost + (cs->cost * cost_margin) / 1024;
-> >                                                                          ^^^^
-> > ... end here we should probably better use SCHED_CAPACITY_SCALE
-> > instead of hard-coding in values, isn't it?
-> 
-> I'm not sure to agree. This isn't part of the scheduler per se, and the
-> cost thing isn't in units of capacity, but in units of power, so I don't
-> think SCHED_CAPACITY_SCALE is correct here.
+> > > +	if (unlikely(val =3D=3D 0))
+> > > +		return -EBUSY;
+> >
+> > I'm not sure why a val equals to 0 would be associated with EBUSY?
+>
+> Thermal zone driver can (will) call get_temp before we got the
+> first interrupt and the thermal data. In that case val will be 0.
+>
+> Resulting in:
+>
+>  (val + offset) * scale =3D (-2794) * -67 =3D 187198
+>
+> 187=C2=B0C and immediate shutdown during boot - based on cirtical
+> temperature being reached.
+>
+> Busy here means, get_temp does not yet have data. Thermal zone
+> driver just reports any error to dmesg output.
 
-Right, I get the units do not match and it would not be elegant to use
-it here...
+Ah, that makes sense.
 
-> But I agree these hard coded values (that one, and the 512 in one of the
-> following patches) could use some motivation :-)
+I guess if we're switching to an interrupt-based driver, then we can
+just use a waitqueue, or is get_temp supposed to be atomic?
 
-... ultimately SCHED_CAPACITY_SCALE is just SCHED_FIXEDPOINT_SCALE,
-which is adimensional. Perhaps we should use that or yet another alias
-for the same.
+Maxime
 
-> Thanks,
-> Quentin
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
 
--- 
-#include <best/regards.h>
+--7vj27y3kfhi2ktlo
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Patrick Bellasi
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXN17nAAKCRDj7w1vZxhR
+xZVgAQDEhhE/FQspXxx58VLtzI/e0Kz9gZa92QnGGjDbVWxBTwEA1iAzA+XGbDtR
+1TM7/Hc1lwDV+qLHJYnbwcFfq+6XBAg=
+=qzgC
+-----END PGP SIGNATURE-----
+
+--7vj27y3kfhi2ktlo--
