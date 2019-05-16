@@ -1,74 +1,47 @@
-From: Parth Shah <parth@linux.ibm.com>
-Subject: Re: [RFCv2 0/6] TurboSched: A scheduler for sustaining Turbo
- Frequencies for longer durations
-Date: Thu, 16 May 2019 21:35:30 +0530
-Message-ID: <82883320-fb98-ec7b-ad1a-0c4248a0225b@linux.ibm.com>
-References: <20190515135322.19393-1-parth@linux.ibm.com>
- <20190515164854.GZ2589@hirez.programming.kicks-ass.net>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [GIT PULL] Thermal-SoC management changes for v5.2-rc1
+Date: Thu, 16 May 2019 18:11:32 +0200
+Message-ID: <4803994d-f519-a6b6-f5bb-a2f50d91ecd7@i2se.com>
+References: <20190516044313.GA17751@localhost.localdomain>
+ <CAHk-=wiaO_8SiEB9QM3vOTniiT67K6CBH0uHJ82-Dp_+6kxH3g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20190515164854.GZ2589@hirez.programming.kicks-ass.net>
+In-Reply-To: <CAHk-=wiaO_8SiEB9QM3vOTniiT67K6CBH0uHJ82-Dp_+6kxH3g@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, dietmar.eggemann@arm.com, dsmythies@telus.net
+To: Linus Torvalds <torvalds@linux-foundation.org>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>
+Cc: Rui Zhang <rui.zhang@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Linus,
 
+On 16.05.19 17:07, Linus Torvalds wrote:
+> On Wed, May 15, 2019 at 9:43 PM Eduardo Valentin <edubezval@gmail.com> wrote:
+>> - thermal core has a new devm_* API for registering cooling devices, thanks to Guenter R.
+>>   I took the entire series, that is why you see changes on drivers/hwmon in this pull.
+> This clashed badly with commit 6b1ec4789fb1 ("hwmon: (pwm-fan) Add RPM
+> support via external interrupt"), which added a timer to the pwm-fan
+> handling.
+>
+> In particular, that timer now needed the same kind of cleanup changes,
+> and I'd like you guys (particularly Guenther, who was involved on both
+> sides) to double-check my merge.
+>
+> The way I solved it was to just make the pwm_fan_pwm_disable()
+> callback do both the pwm_diable() _and_ the del_timer_sync() on the
+> new timer. That seemed to be the simplest solution that meshed with
+> the new devm cleanup model, but while I build-tested the result, I
+> obviously did no actual use testing. And maybe there's some reason why
+> that approach is flawed.
 
-On 5/15/19 10:18 PM, Peter Zijlstra wrote:
-> On Wed, May 15, 2019 at 07:23:16PM +0530, Parth Shah wrote:
->> Abstract
->> ========
->>
->> The modern servers allows multiple cores to run at range of
->> frequencies higher than rated range of frequencies. But the power budget
->> of the system inhibits sustaining these higher frequencies for
->> longer durations.
->>
->> However when certain cores are put to idle states, the power can be
->> effectively channelled to other busy cores, allowing them to sustain
->> the higher frequency.
->>
->> One way to achieve this is to pack tasks onto fewer cores keeping others idle,
->> but it may lead to performance penalty for such tasks and sustaining higher
->> frequencies proves to be of no benefit. But if one can identify unimportant low
->> utilization tasks which can be packed on the already active cores then waking up
->> of new cores can be avoided. Such tasks are short and/or bursty "jitter tasks"
->> and waking up new core is expensive for such case.
->>
->> Current CFS algorithm in kernel scheduler is performance oriented and hence
->> tries to assign any idle CPU first for the waking up of new tasks. This policy
->> is perfect for major categories of the workload, but for jitter tasks, one
->> can save energy by packing it onto active cores and allow other cores to run at
->> higher frequencies.
->>
->> These patch-set tunes the task wake up logic in scheduler to pack exclusively
->> classified jitter tasks onto busy cores. The work involves the use of additional
->> attributes inside "cpu" cgroup controller to manually classify tasks as jitter. 
-> 
-> Why does this make sense? Don't these higher freq bins burn power like
-> stupid? That is, it makes sense to use turbo-bins for single threaded
-> workloads that are CPU-bound and need performance.
-> 
-> But why pack a bunch of 'crap' tasks onto a core and give it turbo;
-> that's just burning power without getting anything back for it.
-> 
+i will try to test on our custom i.MX6 board. Unfortunately this take
+some time since it isn't mainline yet (at least until tomorrow).
 
-Thanks for taking interest in my patch series.
-I will try my best to answer your question.
+Stefan
 
-This patch series tries to pack jitter tasks on the busier cores to avoid waking
-up any idle core as long as possible. This approach is supposed to give more
-performance to the CPU bound tasks by sustaining Turbo for a longer duration.
-
-Current implementation for task wake up is biased towards waking an idle CPU first,
-which in turn consumes power as the CPU leaves idle domain.
-For the system supporting Turbo frequencies, power budget is fixed and hence to
-maintain this budget the system may throttle the frequency.
-
-So the idea is, if we can pack the jitter tasks on already running cores, then we
-can avoid waking up new cores and save power thereby sustaining Turbo for longer
-duration.
+>
+> Guenther?
+>
+>                     Linus
