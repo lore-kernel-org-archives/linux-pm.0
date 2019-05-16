@@ -2,56 +2,58 @@ Return-Path: <SRS0=ThCx=TQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8BE4C04AAF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 17:26:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B99AFC04AAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 17:26:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B317520833
-	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 17:26:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 91B882082E
+	for <linux-pm@archiver.kernel.org>; Thu, 16 May 2019 17:26:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZaA34fQY"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kmjzUz3G"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727766AbfEPR0k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 May 2019 13:26:40 -0400
-Received: from mail-pl1-f179.google.com ([209.85.214.179]:46099 "EHLO
-        mail-pl1-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726696AbfEPR0k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2019 13:26:40 -0400
-Received: by mail-pl1-f179.google.com with SMTP id r18so1935424pls.13;
-        Thu, 16 May 2019 10:26:39 -0700 (PDT)
+        id S1728788AbfEPR0p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 May 2019 13:26:45 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:39725 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726696AbfEPR0o (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2019 13:26:44 -0400
+Received: by mail-pg1-f194.google.com with SMTP id w22so1888929pgi.6;
+        Thu, 16 May 2019 10:26:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=YUfsEJ8lhieJ+G+ZEu//a+N3R5RIXxHhMK0cXmz6bgs=;
-        b=ZaA34fQYW8y+vLCZGpBDoaYOqUEAr2LIlZmaQbAM1wgyRPnUL9LnJ6EyfewjiUsJPr
-         J5sapg0djxcI6RM5ntfCQvsbuRrXFZ+Wrs1l7hC/snGqdMTSP0wG1hru5vxMDlh37qFp
-         Eg2AtuwoZkSqXt1AcXlMkatujdHzvn79OF62DLOksmkB7THX6eO2fSj3tRJLWkDDwlyE
-         vYYOm5DLTVhpfK2jEB2j2JQSQuQ8PHVWpBmkl4g3S3vJh3H2/62ZLdkPxii89f0+m63L
-         PmqECPCryHfV+5mBF4rF9wABUYlz+xzw7+07ypj2KYhVi6X4VGRu6u5pbBz+UKdBIoJc
-         n9Ig==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=IlWeur6t+kwpySn24VqBEqPmtDVwsekAH2F04m0wTVs=;
+        b=kmjzUz3GIXj8W64WIGM6+ZbI2+dQj9d4/0V7occ3VNHHmSGZx+WJbW4ov8IlbOpc/Q
+         H06J4n6ZaSwGd7m/zNkCZ9brpjtsO2VyItzHeZv76NCFPvMkRDKroHSdbOFS86s2oaX3
+         4ENJ7aXVpwPqGZZP6sEuEJDitLli+kY6sS2YgtkdKDb33mMc0H5niZSwvwWoq8cE25es
+         z1n5KkU7sY3BayPkuPe3wNxlR7eqmuf7UOfxNRGzeyh3XGQCGFgjGJy6QZ0ZK86TBhSF
+         MkLcU9S8HW74a4Sz25uQLuACZAbr6wfsMD/3Kk6VY55w+awNLxFQhazriM2XTAoBknRT
+         GOwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=YUfsEJ8lhieJ+G+ZEu//a+N3R5RIXxHhMK0cXmz6bgs=;
-        b=NXmXBH9xzeDXc8HjJH5GKDRCloNokLlnXXTXHugYi4ZJ0d9lDEl70C4vq6gQm4tk1j
-         qWlxa5jjMjOv1/kkwYj8cGJ1GmlQfiKcpH54erO1eSVgQeq5R6x8eG9HaDLfj6iLfudu
-         mqdN3ZBS/f1lWdJ4GwWfdRMEnUssY34pZqJVjBR05YwiilrvEdWGWFs+Z5pXxWHLciEP
-         zzp8xjEBe7z0TJBoNsD1IE7pB4s+R8H1IuxbaMXBgfajzclo0S9NrRWL18M20tkJUQ1k
-         B2Mx/QbGjxzwv5UaxJDSELFLvqPQgwujrIv7m+Adh2Yf4vDipMuTTUz/iYj1655cULpZ
-         J99Q==
-X-Gm-Message-State: APjAAAWeKwHWBKZWK4qiOlRg8AmjpARltWyeeQCkAnyEOG+1MnK1O0P3
-        yCDWRtN1htwpAaeMaedlo+g=
-X-Google-Smtp-Source: APXvYqwdkXSaxriT5ImPSSSj0Bxh+baskm7Ggglk+Ycbodr6SCw+bWqm6L/qc+2VAxhG3zek3J3hyQ==
-X-Received: by 2002:a17:902:b094:: with SMTP id p20mr29478865plr.164.1558027599264;
-        Thu, 16 May 2019 10:26:39 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=IlWeur6t+kwpySn24VqBEqPmtDVwsekAH2F04m0wTVs=;
+        b=cANxjfEYUPFy9j4JP2hMVfideVfCaFDTlTT6GHykju+46VqYUcQ99dLFjmDFFbtm59
+         CeT/zd19YuD9nsCgg5wGYri/90y+fqIQpI2Nh3EVU7IuWC9Ty6sSXPMaeUSkkUgVd3q6
+         o33WHJZBSPR0LrbT//2y/7bUrvKpATtFD3sI18bWm3+pbYEVz0JoSgny3kBs8E2nTAnm
+         xU+uSfHVIKToy4YL/QrkmDQCgHMelNrC8hIW9kloERPN4skIWcbS9Xu7KD4FTtmyfGWt
+         uV3kQoJBEe6aVMW28BRRVZa6ulugGhz+Reo3Z9VHVqo4JCYl1DWXsrgs2xYMuSpgfVMa
+         Cxgw==
+X-Gm-Message-State: APjAAAU8T2sgVHO2C0GRBnUHgZlIyy4Y4Afh+crC8y4OktAcxbGCXinl
+        CGDnwZhA65voc87nODJgWC4=
+X-Google-Smtp-Source: APXvYqxvISxdB727dwDNTOKXmKUrUn9+Kd3oUXSQ3tEcgfKkDjc40yubFAx2AFYNL5X0JTxXM4yK/A==
+X-Received: by 2002:aa7:8f22:: with SMTP id y2mr44011586pfr.22.1558027604243;
+        Thu, 16 May 2019 10:26:44 -0700 (PDT)
 Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
-        by smtp.gmail.com with ESMTPSA id q193sm9970130pfc.52.2019.05.16.10.26.37
+        by smtp.gmail.com with ESMTPSA id r18sm16175557pfg.141.2019.05.16.10.26.43
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Thu, 16 May 2019 10:26:38 -0700 (PDT)
+        Thu, 16 May 2019 10:26:43 -0700 (PDT)
 From:   Yangtao Li <tiny.windzz@gmail.com>
 To:     rui.zhang@intel.com, edubezval@gmail.com,
         daniel.lezcano@linaro.org, robh+dt@kernel.org,
@@ -63,37 +65,67 @@ To:     rui.zhang@intel.com, edubezval@gmail.com,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH v2 0/2] add thermal driver for h6
-Date:   Thu, 16 May 2019 13:26:31 -0400
-Message-Id: <20190516172633.12607-1-tiny.windzz@gmail.com>
+Subject: [PATCH v2 2/2] dt-bindings: thermal: add binding document for h6 thermal controller
+Date:   Thu, 16 May 2019 13:26:33 -0400
+Message-Id: <20190516172633.12607-3-tiny.windzz@gmail.com>
 X-Mailer: git-send-email 2.17.0
+In-Reply-To: <20190516172633.12607-1-tiny.windzz@gmail.com>
+References: <20190516172633.12607-1-tiny.windzz@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190516172631.ALvvfuMw8FFm7YMz_ounZ8e3oK44xedgnR5uPNTCFM8@z>
+Message-ID: <20190516172633.o5D0K4wYyndmQN7Ll0QVuJI6l1lqVIjNFdpJ4T1ugEg@z>
 
-This patchset supprt H6 thermal controller.
+This patch adds binding document for allwinner h6 thermal controller.
 
-Yangtao Li (2):
-  thermal: sun8i: add thermal driver for h6
-  dt-bindings: thermal: add binding document for h6 thermal controller
-
- .../bindings/thermal/sun8i-thermal.txt        |  34 ++
- MAINTAINERS                                   |   7 +
- drivers/thermal/Kconfig                       |  14 +
- drivers/thermal/Makefile                      |   1 +
- drivers/thermal/sun8i_thermal.c               | 422 ++++++++++++++++++
- 5 files changed, 478 insertions(+)
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ .../bindings/thermal/sun8i-thermal.txt        | 34 +++++++++++++++++++
+ 1 file changed, 34 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-thermal.txt
- create mode 100644 drivers/thermal/sun8i_thermal.c
 
----
-v2:
--Additions and deletions of some comments
--Change some function prefix to "ths_"
--Support interrupt
----
+diff --git a/Documentation/devicetree/bindings/thermal/sun8i-thermal.txt b/Documentation/devicetree/bindings/thermal/sun8i-thermal.txt
+new file mode 100644
+index 000000000000..bd417260501f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/sun8i-thermal.txt
+@@ -0,0 +1,34 @@
++* Allwinner Thermal
++
++This describes the device tree binding for the Allwinner thermal controller
++which measures the on-SoC temperatures.
++
++Required properties:
++- compatible:
++  - "allwinner,sun50i-h6-ths" : For H6
++- reg: Address range of the thermal controller
++- clocks, clock-names: Clocks needed for the thermal controller.
++		       The required clocks for h6 are: "bus".
++- resets: Reference to the reset controller controlling the thermal controller.
++- interrupts: IRQ for the thermal controller
++- #thermal-sensor-cells : For H6 Should be 1.
++			  See ./thermal.txt for a description.
++
++Optional properties:
++- nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
++	       unspecified default values shall be used.
++- nvmem-cell-names: Should be "calib".
++
++Example:
++
++	ths: ths@1c25000 {
++		compatible = "allwinner,sun50i-h6-ths";
++		reg = <0x05070400 0x100>;
++		clocks = <&ccu CLK_BUS_THS>;
++		clock-names = "bus";
++		resets = <&ccu RST_BUS_THS>;
++		interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
++		nvmem-cells = <&tsen_calib>;
++		nvmem-cell-names = "calib";
++		#thermal-sensor-cells = <1>;
++	};
+-- 
 2.17.0
 
