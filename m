@@ -1,118 +1,38 @@
-From: Jack Mitchell <ml@embed.me.uk>
-Subject: Re: next/master boot bisection: next-20190514 on rk3288-veyron-jaq
-Date: Fri, 17 May 2019 10:17:02 +0100
-Message-ID: <a9767b82-9b3c-fc05-5f33-fb79c8fc8507@embed.me.uk>
-References: <5cdae78b.1c69fb81.a32a9.870f@mx.google.com>
- <CAD=FV=WDjUBvwoAaWNOmXPaLpZCccpAgRWDzRSnvsQ62TFwVmQ@mail.gmail.com>
+From: Dennis Wassenberg <dennis.wassenberg@secunet.com>
+Subject: Question regarding intel_pstate in case of disabled smt
+Date: Fri, 17 May 2019 12:24:11 +0200
+Message-ID: <8d859cb0-0646-4f52-b060-3816d689aade@secunet.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAD=FV=WDjUBvwoAaWNOmXPaLpZCccpAgRWDzRSnvsQ62TFwVmQ@mail.gmail.com>
-Content-Language: en-BW
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Doug Anderson <dianders@chromium.org>, "kernelci.org bot" <bot@kernelci.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM <linux-pm@vger.kernel.org>, Guillaume Tucker <guillaume.tucker@collabora.com>, Matthias Kaehlcke <mka@chromium.org>, Elaine Zhang <zhangqing@rock-chips.com>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Mark Brown <broonie@kernel.org>, matthew.hart@linaro.org, mgalka@collabora.com, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Zhang Rui <rui.zhang@intel.com>, Kevin Hilman <khilman@baylibre.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kernel development list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 16/05/2019 22:38, Doug Anderson wrote:
-> Hi,
-> 
-> From: kernelci.org bot <bot@kernelci.org>
-> Date: Tue, May 14, 2019 at 9:06 AM
-> To: <tomeu.vizoso@collabora.com>, <guillaume.tucker@collabora.com>,
-> <mgalka@collabora.com>, <broonie@kernel.org>,
-> <matthew.hart@linaro.org>, <khilman@baylibre.com>,
-> <enric.balletbo@collabora.com>, Elaine Zhang, Eduardo Valentin, Daniel
-> Lezcano
-> Cc: Heiko Stuebner, <linux-pm@vger.kernel.org>,
-> <linux-kernel@vger.kernel.org>, <linux-rockchip@lists.infradead.org>,
-> Zhang Rui, <linux-arm-kernel@lists.infradead.org>
-> 
->> * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
->> * This automated bisection report was sent to you on the basis  *
->> * that you may be involved with the breaking commit it has      *
->> * found.  No manual investigation has been done to verify it,   *
->> * and the root cause of the problem may be somewhere else.      *
->> * Hope this helps!                                              *
->> * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
->>
->> next/master boot bisection: next-20190514 on rk3288-veyron-jaq
->>
->> Summary:
->>   Start:      0a13f187b16a Add linux-next specific files for 20190514
->>   Details:    https://kernelci.org/boot/id/5cda7f2259b514876d7a3628
->>   Plain log:  https://storage.kernelci.org//next/master/next-20190514/arm/multi_v7_defconfig+CONFIG_EFI=y+CONFIG_ARM_LPAE=y/gcc-8/lab-collabora/boot-rk3288-veyron-jaq.txt
->>   HTML log:   https://storage.kernelci.org//next/master/next-20190514/arm/multi_v7_defconfig+CONFIG_EFI=y+CONFIG_ARM_LPAE=y/gcc-8/lab-collabora/boot-rk3288-veyron-jaq.html
->>   Result:     691d4947face thermal: rockchip: fix up the tsadc pinctrl setting error
->>
->> Checks:
->>   revert:     PASS
->>   verify:     PASS
->>
->> Parameters:
->>   Tree:       next
->>   URL:        git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
->>   Branch:     master
->>   Target:     rk3288-veyron-jaq
->>   CPU arch:   arm
->>   Lab:        lab-collabora
->>   Compiler:   gcc-8
->>   Config:     multi_v7_defconfig+CONFIG_EFI=y+CONFIG_ARM_LPAE=y
->>   Test suite: boot
->>
->> Breaking commit found:
->>
->> -------------------------------------------------------------------------------
->> commit 691d4947faceb8bd841900049e07c81c95ca4b0d
->> Author: Elaine Zhang <zhangqing@rock-chips.com>
->> Date:   Tue Apr 30 18:09:44 2019 +0800
->>
->>     thermal: rockchip: fix up the tsadc pinctrl setting error
->>
->>     Explicitly use the pinctrl to set/unset the right mode
->>     instead of relying on the pinctrl init mode.
->>     And it requires setting the tshut polarity before select pinctrl.
->>
->>     When the temperature sensor mode is set to 0, it will automatically
->>     reset the board via the Clock-Reset-Unit (CRU) if the over temperature
->>     threshold is reached. However, when the pinctrl initializes, it does a
->>     transition to "otp_out" which may lead the SoC restart all the time.
->>
->>     "otp_out" IO may be connected to the RESET circuit on the hardware.
->>     If the IO is in the wrong state, it will trigger RESET.
->>     (similar to the effect of pressing the RESET button)
->>     which will cause the soc to restart all the time.
->>
->>     Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
->>     Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>     Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> 
-> I can confirm that the above commit breaks my jerry, though I haven't
-> dug into the details.  :(  Is anyone fixing?  For now I'm just booting
-> with the revert.
-> 
-> 
-> -Doug
+Hi all,
 
-I can also confirm that this breaks boot on our custom board which is
-very similar to the rk3288-Firefly. In my scenario the processor just
-seems to "hang", no reset occurs if that helps debug matters.
+I would like to ask a question regarding cpu frequency scaling / cpu performance using intel_pstate with activated HWP.
+I think the special CPU doesn't matter. I checked it with i7-8550U and i7-8565U. Currently I am not sure if this is a
+bug. Thats why I am asking...
 
-Regards,
-Jack.
+Using intel_pstate default settings (min_perf_pct=10, max_perf_pct=100, no_turbo=0) everything behaves as expected. If I
+change max_perf_pct and/or no_turbo i can observe that the cpu frequency doesn't increase that much compared to the
+default settings under load.
 
-> 
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
-> 
+But if I disable smt, the settings of the pstate driver does not seem to change anything. If I set no_turbo and/or
+max_perf_pct to a lower value than 100 I can not notice that there is a change at the cpu frequency scaling. For
+example: If I set min_perf_pct=max_perf_pct=5 the cpu frequency of the 4 online cpus will be above 4 GHz in case of smt
+is disabled. If smt is enabled the cpu frequency of the 8 cpus is 400 MHz. The same occurred if I disable turbo by
+setting no_turbo to 1. If smt is disbaled the frequency will be above 4 GHz in load situations. If smt is enabled the
+cpu frequency is 1,80 GHz.
+
+If I use intel_pstate with disabled HWP it behaves the same if smt is enabled or disabled. So, it makes no difference if
+smt is enabled or disabled . The cpu frequency will adapt exactly to the configured settings.
+
+So, is this intended that HWP does not consider the pstate settings if smt is disabled?
+
+Thank you & best regards,
+
+Dennis
