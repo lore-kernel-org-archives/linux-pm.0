@@ -1,49 +1,33 @@
 From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH 3/3] dt-bindings: thermal: add binding document for h6
- thermal controller
-Date: Fri, 17 May 2019 09:38:15 +0200
-Message-ID: <20190517073815.e5h7obnzyaljj4xn@flea>
-References: <20190512082614.9045-1-tiny.windzz@gmail.com>
- <20190512082614.9045-4-tiny.windzz@gmail.com>
- <20190512134152.yrletgtiglxncyo4@flea>
- <CAEExFWvkM86ajB4io8yopkKEOfRE3UObRpqoi=Sq0RtDnuaRWA@mail.gmail.com>
+Subject: Re: [PATCH v2 0/2] add thermal driver for h6
+Date: Fri, 17 May 2019 09:43:50 +0200
+Message-ID: <20190517074350.m4wtxn5rgiqkjgnz@flea>
+References: <20190516172633.12607-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="fxtyg6m4voydyy57"
+        protocol="application/pgp-signature"; boundary="uiqnaa7feozmkfnb"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAEExFWvkM86ajB4io8yopkKEOfRE3UObRpqoi=Sq0RtDnuaRWA@mail.gmail.com>
+In-Reply-To: <20190516172633.12607-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Frank Lee <tiny.windzz@gmail.com>
-Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, robh+dt@kernel.org, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, catalin.marinas@arm.com, will.deacon@arm.com, David Miller <davem@davemloft.net>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan.Cameron@huawei.com, Nicolas Ferre <nicolas.ferre@microchip.com>, paulmck@linux.ibm.com, Andy Gross <andy.gross@linaro.org>, olof@lixom.net, bjorn.andersson@linaro.org, Jagan Teki <jagan@amarulasolutions.com>, marc.w.gonzalez@free.fr, stefan.wahren@i2se.com, enric.balletbo@collabora.com, Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infra>
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, linus.walleij@linaro.org, Jonathan.Cameron@huawei.com, nicolas.ferre@microchip.com, paulmck@linux.ibm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---fxtyg6m4voydyy57
+--uiqnaa7feozmkfnb
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, May 17, 2019 at 02:13:58AM +0800, Frank Lee wrote:
-> On Sun, May 12, 2019 at 9:41 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> >
-> > Hi,
-> >
-> > On Sun, May 12, 2019 at 04:26:14AM -0400, Yangtao Li wrote:
-> > > This patch adds binding document for allwinner h6 thermal controller.
-> > >
-> > > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > > ---
-> > >  .../bindings/thermal/sun50i-thermal.txt       | 32 +++++++++++++++++++
-> > >  1 file changed, 32 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/thermal/sun50i-thermal.txt
-> >
-> > We're starting to convert to YAML for binding descriptions that will
-> > allow to validate that all DT are properly using the binding. It would
-> > be great if you could use it as well.
->
-> What have been changed to this now?
+Hi,
 
-This needs a YAML file instead of the text file you introduced.
+On Thu, May 16, 2019 at 01:26:31PM -0400, Yangtao Li wrote:
+> This patchset supprt H6 thermal controller.
+
+The discussion is still ongoing on the v1, it would have been better
+to wait a bit on it to settle before sending a new version.
+
+Anyway, some comment made there still apply.
 
 Maxime
 
@@ -52,15 +36,15 @@ Maxime Ripard, Bootlin
 Embedded Linux and Kernel engineering
 https://bootlin.com
 
---fxtyg6m4voydyy57
+--uiqnaa7feozmkfnb
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXN5k5wAKCRDj7w1vZxhR
-xVi+AQDjoz3LrnnFNDvlVcYVt1sSrswPkuViJuQuLmCuUtaAxAD/elWxrmZ+1PF9
-BqQU0LtypLWGmBgeF++P6OPWQT10YQQ=
-=3mNs
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXN5mNgAKCRDj7w1vZxhR
+xdGaAQDw2HatyDwe99md5xjAb+SPPeYer/Zb4obBMYGlhQuO9AEAkn/HI2qNYsxw
+/7OQTPnikOxNibnfTB1JZq1yrq3HeAs=
+=fhoH
 -----END PGP SIGNATURE-----
 
---fxtyg6m4voydyy57--
+--uiqnaa7feozmkfnb--
