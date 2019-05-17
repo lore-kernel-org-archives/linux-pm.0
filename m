@@ -1,50 +1,89 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH v2 0/2] add thermal driver for h6
-Date: Fri, 17 May 2019 09:43:50 +0200
-Message-ID: <20190517074350.m4wtxn5rgiqkjgnz@flea>
-References: <20190516172633.12607-1-tiny.windzz@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PCI: PM: Avoid possible suspend-to-idle issue
+Date: Fri, 17 May 2019 11:08:50 +0200
+Message-ID: <2315917.ZGeXE6pBFC@kreacher>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="uiqnaa7feozmkfnb"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190516172633.12607-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, davem@davemloft.net, mchehab+samsung@kernel.org, gregkh@linuxfoundation.org, linus.walleij@linaro.org, Jonathan.Cameron@huawei.com, nicolas.ferre@microchip.com, paulmck@linux.ibm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Linux PCI <linux-pci@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Keith Busch <kbusch@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---uiqnaa7feozmkfnb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+If a PCI driver leaves the device handled by it in D0 and calls
+pci_save_state() on the device in its ->suspend() or ->suspend_late()
+callback, it can expect the device to stay in D0 over the whole
+s2idle cycle.  However, that may not be the case if there is a
+spurious wakeup while the system is suspended, because in that case
+pci_pm_suspend_noirq() will run again after pci_pm_resume_noirq()
+which calls pci_restore_state(), via pci_pm_default_resume_early(),
+so state_saved is cleared and the second iteration of
+pci_pm_suspend_noirq() will invoke pci_prepare_to_sleep() which
+may change the power state of the device.
 
-Hi,
+To avoid that, add a new internal flag, skip_bus_pm, that will be set
+by pci_pm_suspend_noirq() when it runs for the first time during the
+given system suspend-resume cycle if the state of the device has
+been saved already and the device is still in D0.  Setting that flag
+will cause the next iterations of pci_pm_suspend_noirq() to set
+state_saved for pci_pm_resume_noirq(), so that it always restores the
+device state from the originally saved data, and avoid calling
+pci_prepare_to_sleep() for the device.
 
-On Thu, May 16, 2019 at 01:26:31PM -0400, Yangtao Li wrote:
-> This patchset supprt H6 thermal controller.
+Fixes: 33e4f80ee69b ("ACPI / PM: Ignore spurious SCI wakeups from suspend-to-idle")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pci-driver.c |   17 ++++++++++++++++-
+ include/linux/pci.h      |    1 +
+ 2 files changed, 17 insertions(+), 1 deletion(-)
 
-The discussion is still ongoing on the v1, it would have been better
-to wait a bit on it to settle before sending a new version.
-
-Anyway, some comment made there still apply.
-
-Maxime
-
---
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---uiqnaa7feozmkfnb
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXN5mNgAKCRDj7w1vZxhR
-xdGaAQDw2HatyDwe99md5xjAb+SPPeYer/Zb4obBMYGlhQuO9AEAkn/HI2qNYsxw
-/7OQTPnikOxNibnfTB1JZq1yrq3HeAs=
-=fhoH
------END PGP SIGNATURE-----
-
---uiqnaa7feozmkfnb--
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -734,6 +734,8 @@ static int pci_pm_suspend(struct device
+ 	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 
++	pci_dev->skip_bus_pm = false;
++
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
+ 
+@@ -827,7 +829,20 @@ static int pci_pm_suspend_noirq(struct d
+ 		}
+ 	}
+ 
+-	if (!pci_dev->state_saved) {
++	if (pci_dev->skip_bus_pm) {
++		/*
++		 * The function is running for the second time in a row without
++		 * going through full resume, which is possible only during
++		 * suspend-to-idle in a spurious wakeup case.  Moreover, the
++		 * device was originally left in D0, so its power state should
++		 * not be changed here and the device register values saved
++		 * originally should be restored on resume again.
++		 */
++		pci_dev->state_saved = true;
++	} else if (pci_dev->state_saved) {
++		if (pci_dev->current_state == PCI_D0)
++			pci_dev->skip_bus_pm = true;
++	} else {
+ 		pci_save_state(pci_dev);
+ 		if (pci_power_manageable(pci_dev))
+ 			pci_prepare_to_sleep(pci_dev);
+Index: linux-pm/include/linux/pci.h
+===================================================================
+--- linux-pm.orig/include/linux/pci.h
++++ linux-pm/include/linux/pci.h
+@@ -344,6 +344,7 @@ struct pci_dev {
+ 						   D3cold, not set for devices
+ 						   powered on/off by the
+ 						   corresponding bridge */
++	unsigned int	skip_bus_pm:1;	/* Internal: Skip bus-level PM */
+ 	unsigned int	ignore_hotplug:1;	/* Ignore hotplug events */
+ 	unsigned int	hotplug_user_indicators:1; /* SlotCtl indicators
+ 						      controlled exclusively by
