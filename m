@@ -1,84 +1,32 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH 2/3] thermal: sun50i: add thermal driver for h6
-Date: Fri, 17 May 2019 09:31:51 +0200
-Message-ID: <20190517073151.mz6hcmzubk7iqfre@flea>
-References: <20190512082614.9045-1-tiny.windzz@gmail.com>
- <20190512082614.9045-3-tiny.windzz@gmail.com>
- <20190512133930.t5txssl7mou2gljt@flea>
- <20190512214128.qjyys3vfpwdiacib@core.my.home>
- <20190516150252.hf4u3bloo37chy6q@flea>
- <CAEExFWu-T2mGQ9Teo7TQOcJsEzXi_dB=S8CFv7MiwHyu5z4-ow@mail.gmail.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] ACPI/PCI: PM: Add missing wakeup.flags.valid checks
+Date: Fri, 17 May 2019 10:32:14 +0300
+Message-ID: <20190517073214.GA2781@lahna.fi.intel.com>
+References: <2091978.9z20bSIm3T@kreacher>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="lfvwzxrwqixjwfma"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAEExFWu-T2mGQ9Teo7TQOcJsEzXi_dB=S8CFv7MiwHyu5z4-ow@mail.gmail.com>
+In-Reply-To: <2091978.9z20bSIm3T@kreacher>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Frank Lee <tiny.windzz@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, catalin.marinas@arm.com, will.deacon@arm.com, bjorn.andersson@linaro.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, paulmck@linux.ibm.com, stefan.wahren@i2se.com, Linux PM <linux-pm@vger.kernel.org>, Chen-Yu Tsai <wens@csie.org>, Jagan Teki <jagan@amarulasolutions.com>, Andy Gross <andy.gross@linaro.org>, rui.zhang@intel.com, devicetree@vger.kernel.org, marc.w.gonzalez@free.fr, Eduardo Valentin <edubezval@gmail.com>, enric.balletbo@collabora.com, robh+dt@kernel.org, Jonathan.Cameron@huawei.com, Linux ARM <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, olof@lixom.n
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, May 16, 2019 at 12:42:20PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Both acpi_pci_need_resume() and acpi_dev_needs_resume() check if the
+> current ACPI wakeup configuration of the device matches what is
+> expected as far as system wakeup from sleep states is concerned, as
+> reflected by the device_may_wakeup() return value for the device.
+> 
+> However, they only should do that if wakeup.flags.valid is set for
+> the device's ACPI companion, because otherwise the wakeup.prepare_count
+> value for it is meaningless.
+> 
+> Add the missing wakeup.flags.valid checks to these functions.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---lfvwzxrwqixjwfma
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, May 17, 2019 at 02:10:47AM +0800, Frank Lee wrote:
-> > On Sun, May 12, 2019 at 11:41:28PM +0200, Ond=C5=99ej Jirman wrote:
-> > > > > +static int tsens_get_temp(void *data, int *temp)
-> > > > > +{
-> > > > > + struct tsensor *s =3D data;
-> > > > > + struct tsens_device *tmdev =3D s->tmdev;
-> > > > > + int val;
-> > > > > +
-> > > > > + regmap_read(tmdev->regmap, tmdev->chip->temp_data_base +
-> > > > > +             0x4 * s->id, &val);
-> > > > > +
-> > > > > + if (unlikely(val =3D=3D 0))
-> > > > > +         return -EBUSY;
-> > > >
-> > > > I'm not sure why a val equals to 0 would be associated with EBUSY?
-> > >
-> > > Thermal zone driver can (will) call get_temp before we got the
-> > > first interrupt and the thermal data. In that case val will be 0.
-> > >
-> > > Resulting in:
-> > >
-> > >  (val + offset) * scale =3D (-2794) * -67 =3D 187198
-> > >
-> > > 187=C2=B0C and immediate shutdown during boot - based on cirtical
-> > > temperature being reached.
-> > >
-> > > Busy here means, get_temp does not yet have data. Thermal zone
-> > > driver just reports any error to dmesg output.
-> >
-> > Ah, that makes sense.
-> >
-> > I guess if we're switching to an interrupt-based driver, then we can
-> > just use a waitqueue, or is get_temp supposed to be atomic?
->
-> I think get_temp should not be bloacked.
-
-Why not?
-
-Maxime
-
---
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---lfvwzxrwqixjwfma
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXN5jZwAKCRDj7w1vZxhR
-xRjwAQCF+RoytL/Gdpf15Jq+KQoPxEwYs/XaBIKW6ehF38tr0QD/T1i40/vfptIH
-f1vUZGQCwcHvI4eTbggzXinFNG1BsAM=
-=UQjS
------END PGP SIGNATURE-----
-
---lfvwzxrwqixjwfma--
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
