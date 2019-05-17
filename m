@@ -1,38 +1,78 @@
-From: Dennis Wassenberg <dennis.wassenberg@secunet.com>
-Subject: Question regarding intel_pstate in case of disabled smt
-Date: Fri, 17 May 2019 12:24:11 +0200
-Message-ID: <8d859cb0-0646-4f52-b060-3816d689aade@secunet.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM: sleep: Add kerneldoc comments to some functions
+Date: Fri, 17 May 2019 12:56:01 +0200
+Message-ID: <11319987.O9o76ZdvQC@kreacher>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kernel development list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Keith Busch <kbusch@kernel.org>, Christoph Hellwig <hch@lst.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I would like to ask a question regarding cpu frequency scaling / cpu performance using intel_pstate with activated HWP.
-I think the special CPU doesn't matter. I checked it with i7-8550U and i7-8565U. Currently I am not sure if this is a
-bug. Thats why I am asking...
+Add kerneldoc comments to pm_suspend_via_firmware(),
+pm_resume_via_firmware() and pm_suspend_via_s2idle() to explain
+what they do.
 
-Using intel_pstate default settings (min_perf_pct=10, max_perf_pct=100, no_turbo=0) everything behaves as expected. If I
-change max_perf_pct and/or no_turbo i can observe that the cpu frequency doesn't increase that much compared to the
-default settings under load.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/suspend.h |   20 ++++++++++++++++++++
+ kernel/power/suspend.c  |    6 ++++++
+ 2 files changed, 26 insertions(+)
 
-But if I disable smt, the settings of the pstate driver does not seem to change anything. If I set no_turbo and/or
-max_perf_pct to a lower value than 100 I can not notice that there is a change at the cpu frequency scaling. For
-example: If I set min_perf_pct=max_perf_pct=5 the cpu frequency of the 4 online cpus will be above 4 GHz in case of smt
-is disabled. If smt is enabled the cpu frequency of the 8 cpus is 400 MHz. The same occurred if I disable turbo by
-setting no_turbo to 1. If smt is disbaled the frequency will be above 4 GHz in load situations. If smt is enabled the
-cpu frequency is 1,80 GHz.
-
-If I use intel_pstate with disabled HWP it behaves the same if smt is enabled or disabled. So, it makes no difference if
-smt is enabled or disabled . The cpu frequency will adapt exactly to the configured settings.
-
-So, is this intended that HWP does not consider the pstate settings if smt is disabled?
-
-Thank you & best regards,
-
-Dennis
+Index: linux-pm/include/linux/suspend.h
+===================================================================
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -227,11 +227,31 @@ static inline void pm_set_resume_via_fir
+ 	pm_suspend_global_flags |= PM_SUSPEND_FLAG_FW_RESUME;
+ }
+ 
++/**
++ * pm_suspend_via_firmware - Check if platform firmware will suspend the system.
++ *
++ * To be called during system-wide power management transitions to sleep states.
++ *
++ * Return 'true' if the platform firmware is going to be invoked at the end of
++ * the system-wide power management transition in progress in order to complete
++ * it.
++ */
+ static inline bool pm_suspend_via_firmware(void)
+ {
+ 	return !!(pm_suspend_global_flags & PM_SUSPEND_FLAG_FW_SUSPEND);
+ }
+ 
++/**
++ * pm_resume_via_firmware - Check if platform firmware has woken up the system.
++ *
++ * To be called during system-wide power management transitions from sleep
++ * states.
++ *
++ * Return 'true' if the platform firmware has passed control to the kernel at
++ * the beginning of the system-wide power management transition in progress, so
++ * the event that woke up the system from sleep has been handled by the platform
++ * firmware.
++ */
+ static inline bool pm_resume_via_firmware(void)
+ {
+ 	return !!(pm_suspend_global_flags & PM_SUSPEND_FLAG_FW_RESUME);
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -62,6 +62,12 @@ static DECLARE_SWAIT_QUEUE_HEAD(s2idle_w
+ enum s2idle_states __read_mostly s2idle_state;
+ static DEFINE_RAW_SPINLOCK(s2idle_lock);
+ 
++/**
++ * pm_suspend_via_s2idle - Check if suspend-to-idle is the default suspend.
++ *
++ * Return 'true' if suspend-to-idle has been selected as the default system
++ * suspend method.
++ */
+ bool pm_suspend_via_s2idle(void)
+ {
+ 	return mem_sleep_current == PM_SUSPEND_TO_IDLE;
