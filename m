@@ -1,46 +1,72 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [ANNOUNCE][CFP] Power Management and Scheduling in the Linux
- Kernel III edition (OSPM-summit 2019)
-Date: Fri, 17 May 2019 14:53:13 +0200
-Message-ID: <20190517125313.GJ14991@localhost.localdomain>
-References: <20190114161910.GB5581@localhost.localdomain>
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [RFC 0/5] cpufreq support for the Raspberry Pi
+Date: Fri, 17 May 2019 17:35:02 +0200
+Message-ID: <20190517153508.18314-1-nsaenzjulienne@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20190114161910.GB5581@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+To: stefan.wahren@i2se.com, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: mbrugger@suse.de, viresh.kumar@linaro.org, rjw@rjwysocki.net, sboyd@kernel.org, eric@anholt.net, f.fainelli@gmail.com, bcm-kernel-feedback-list@broadcom.com, ptesarik@suse.com, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi all,
+as some of you may recall I've been spending some time looking into
+providing 'cpufreq' support for the Raspberry Pi platform[1]. I think
+I'm close to something workable, so I'd love for you to comment on it.
 
-On 14/01/19 17:19, Juri Lelli wrote:
-> Power Management and Scheduling in the Linux Kernel (OSPM-summit) III edition
-> May 20-22, 2019
-> Scuola Superiore Sant'Anna
-> Pisa, Italy
-> 
-> ---
-> 
-> .:: FOCUS
-> 
-> The III edition of the Power Management and Scheduling in the Linux
-> Kernel (OSPM) summit aims at fostering discussions on power management
-> and (real-time) scheduling techniques. Summit will be held in Pisa
-> (Italy) on May 20-22, 2019.
+There has been some design changes since the last version. Namely the
+fact that I now make sure *only* the CPU frequency is updated. The
+firmware API we use has two modes, with or without turbo. Enabling turbo
+implies not only scaling the CPU clock but also the VPU and other
+peripheral related clocks.  This is problematic as some of them are not
+prepared for this kind frequency changes. I spent some time adapting the
+peripheral drivers, but the result was disappointing as they poorly
+support live frequency changes (which most other chips accept, think for
+instance I2C and clock stretching) but also turned out hard to integrate
+into the kernel. As we were planning to use 'clk_notifiers' which turns
+out not to be such a good idea as it's prone to deadlocks and not
+recommended by the clock maintainers[2]. It's also worth mentioning that
+the foundation kernel doesn't support VPU frequency scaling either.
 
-Next week!
+With this in mind, and as suggested by clock maintainers[2], I've
+decided to integrate the firmware clock interface into the bcm2835 clock
+driver. This, in my opinion, provides the least friction with the
+firmware and lets us write very simple and portable higher level
+drivers. As I did with the 'cpufreq' driver which simply queries the max
+and min frequencies available, which are configurable in the firmware,
+to then trigger the generic 'cpufreq-dt'.
 
-FYI, final schedule is online (Italy (GMT+2)):
+In the future we could further integrate other firmware dependent clocks
+into the main driver. For instance to be able to scale the VPU clock,
+which should be operated through a 'devfreq' driver.
 
-http://retis.sssup.it/ospm-summit/program.html
+This was tested on a RPi3b+ and if the series is well received I'll test
+it further on all platforms I own.
 
-Live streaming events have been created and are accessible both from the
-summit schedule ("live streaming" links) and at:
+That's all,
+kind regards,
+Nicolas
 
-https://bit.ly/2Vz3yKg
+[1] https://lists.infradead.org/pipermail/linux-rpi-kernel/2019-April/008634.html
+[2] https://www.spinics.net/lists/linux-clk/msg36937.html
 
-Best,
+---
 
-- Juri
+Nicolas Saenz Julienne (5):
+  clk: bcm2835: set CLK_GET_RATE_NOCACHE on CPU clocks
+  clk: bcm2835: set pllb_arm divisor as readonly
+  clk: bcm2835: use firmware interface to update pllb
+  dts: bcm2837: add per-cpu clock devices
+  cpufreq: add driver for Raspbery Pi
+
+ arch/arm/boot/dts/bcm2837.dtsi        |   8 +
+ drivers/clk/bcm/clk-bcm2835.c         | 284 ++++++++++++++++++++++++--
+ drivers/cpufreq/Kconfig.arm           |   8 +
+ drivers/cpufreq/Makefile              |   1 +
+ drivers/cpufreq/raspberrypi-cpufreq.c |  79 +++++++
+ 5 files changed, 362 insertions(+), 18 deletions(-)
+ create mode 100644 drivers/cpufreq/raspberrypi-cpufreq.c
+
+-- 
+2.21.0
