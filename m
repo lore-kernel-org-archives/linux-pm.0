@@ -1,70 +1,56 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH AUTOSEL 4.14 06/16] power: supply: cpcap-battery: Fix
- division by zero
-Date: Sun, 19 May 2019 23:31:24 +0200
-Message-ID: <20190519213124.GE31403@amd>
-References: <20190516114107.8963-1-sashal@kernel.org>
- <20190516114107.8963-6-sashal@kernel.org>
+From: Pavel Machek <pavel@denx.de>
+Subject: Re: [PATCH V2 1/3] PM: wakeup: Add routine to help fetch wakeup
+ source object.
+Date: Sun, 19 May 2019 23:34:57 +0200
+Message-ID: <20190519213457.GG31403@amd>
+References: <20190517033946.30763-1-ran.wang_1@nxp.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="orO6xySwJI16pVnm"
+        protocol="application/pgp-signature"; boundary="sLx0z+5FKKtIVDwd"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20190516114107.8963-6-sashal@kernel.org>
+In-Reply-To: <20190517033946.30763-1-ran.wang_1@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sasha Levin <sashal@kernel.org>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sebastian.reichel@collabora.com>, linux-pm@vger.kernel.org
+To: Ran Wang <ran.wang_1@nxp.com>
+Cc: Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---orO6xySwJI16pVnm
+--sLx0z+5FKKtIVDwd
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu 2019-05-16 07:40:57, Sasha Levin wrote:
-> From: Tony Lindgren <tony@atomide.com>
->=20
-> [ Upstream commit dbe7208c6c4aec083571f2ec742870a0d0edbea3 ]
->=20
-> If called fast enough so samples do not increment, we can get
-> division by zero in kernel:
->=20
-> __div0
-> cpcap_battery_cc_raw_div
-> cpcap_battery_get_property
-> power_supply_get_property.part.1
-> power_supply_get_property
-> power_supply_show_property
-> power_supply_uevent
->=20
-> Fixes: 874b2adbed12 ("power: supply: cpcap-battery: Add a battery driver")
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> Signed-off-by: Sasha Levin <sashal@kernel.org>
 
-Yup, this one makes sense for stable
+> --- a/include/linux/pm_wakeup.h
 
- Acked-for-stable-by: Pavel Machek <pavel@ucw.cz>
+> @@ -70,6 +71,7 @@ struct wakeup_source {
+>  	unsigned long		wakeup_count;
+>  	bool			active:1;
+>  	bool			autosleep_enabled:1;
+> +	struct device	*attached_dev;
+>  };
+> =20
+>  #ifdef CONFIG_PM_SLEEP
 
-Thanks,
+You might want to format this similary to the rest...
 									Pavel
+
 --=20
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
 g.html
 
---orO6xySwJI16pVnm
+--sLx0z+5FKKtIVDwd
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iEYEARECAAYFAlzhyywACgkQMOfwapXb+vI0cgCgqDdY05iCOme5tsF19qlUHEJ/
-kHAAnRDH7KmcqMhj3Z7HyS8NRGoTAv1L
-=NXfl
+iEYEARECAAYFAlzhzAEACgkQMOfwapXb+vJFYwCfWepB4p66NbXEV3e8W5ZictQ/
+Es8AmgKZXmLs30UjIBYDFKic2DbgBegF
+=KZ5b
 -----END PGP SIGNATURE-----
 
---orO6xySwJI16pVnm--
+--sLx0z+5FKKtIVDwd--
