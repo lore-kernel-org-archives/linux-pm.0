@@ -2,102 +2,106 @@ Return-Path: <SRS0=Qt2W=TU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70897C072AF
-	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 09:51:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A51DC04AAC
+	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:13:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 47F8820675
-	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 09:51:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0068820856
+	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:13:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="JRFd3PDn"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732333AbfETJvF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 May 2019 05:51:05 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:38404 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730435AbfETJvE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 20 May 2019 05:51:04 -0400
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5B08F20017C;
-        Mon, 20 May 2019 11:51:02 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 8BD2D20016E;
-        Mon, 20 May 2019 11:50:56 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 35546402DF;
-        Mon, 20 May 2019 17:50:49 +0800 (SGT)
-From:   Ran Wang <ran.wang_1@nxp.com>
-To:     Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+        id S1730263AbfETKNz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 May 2019 06:13:55 -0400
+Received: from mail-pg1-f195.google.com ([209.85.215.195]:46099 "EHLO
+        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727108AbfETKNz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 May 2019 06:13:55 -0400
+Received: by mail-pg1-f195.google.com with SMTP id t187so6554597pgb.13
+        for <linux-pm@vger.kernel.org>; Mon, 20 May 2019 03:13:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=gSl0hdak9nrx3AjRA/ypcoIYXLtCzaU4jnEbvPcvNt8=;
+        b=JRFd3PDnga0E3LWtPoEqEV/39WriE8SzZ1OaF7n/NU7nJdlpwBoLgwLmjKEJpAvjPX
+         XZ1SmHbXXZ193KXruJGSbPsK93YJQfC5wXGkZOU3cIdhtTLLZLncciU/VgFYv4ypoWcA
+         UiHM6mh2RtiZrTevU5N3B6/lVDmfAWk6wlP9NRY324hi0FxwNsGhi9wdsu0rHb0Vhx/n
+         MGClOrhlg89rFShwBGqLaf99mD6KezVo7RAEdSWVDA5RW2t3yQjpL46CSYkkwWwS81n8
+         YTa9BrWd0ZSm0L2gZBK3heWtESBBTKDrSRGtSF/T6+IdbseVqzVpkKLX6PPaHhg3PXvH
+         S4cA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=gSl0hdak9nrx3AjRA/ypcoIYXLtCzaU4jnEbvPcvNt8=;
+        b=ha62jHxUzF0p4EhfqGsylRZ44LrxNvZOYKbKBuVjal+tgQNRtIyYR97SfuVe12ZN6z
+         4v9YTfv4NDnpVxSS1+RjOugE3gYWB4XuUjU+XQlx0ur64maKGUEeluywoo+T79xqYUuc
+         tNpXt4B1gHoyBYmdwhAxQhSGY89asXmmJjpeya/rZRmIsTLedXLwikP+T//nt3lIsBe2
+         bQIYC2QvDLQG4F0chE5DnyaYc/rI8ETWpGP1jv4JFnMqits8Fuj332uYpCtEm188dOdX
+         8iOu7AolH+CC2TQTmZft7BBV3j0K3p76BYCURboKEoauNCI7nCUVNVAVZxgDdnljQFNG
+         O5kA==
+X-Gm-Message-State: APjAAAWD/v2rHJFagsoBtuQDqXb4GlDAZTT5uJiQ9EowtkpZ548+PeYU
+        R85sp1V1Dros4AOnlxcaSkV2WA==
+X-Google-Smtp-Source: APXvYqyOW0QZtrH8O3rgAfo54rMSqrN3OZdfxdsodXTr+NokNvxXkGxPwDt1wmWe8pWIuVP0SPHygA==
+X-Received: by 2002:a62:1ec3:: with SMTP id e186mr33157231pfe.197.1558347234346;
+        Mon, 20 May 2019 03:13:54 -0700 (PDT)
+Received: from localhost ([122.172.118.99])
+        by smtp.gmail.com with ESMTPSA id i17sm22287324pfo.103.2019.05.20.03.13.52
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 20 May 2019 03:13:52 -0700 (PDT)
+Date:   Mon, 20 May 2019 15:43:51 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Shawn Guo <shawnguo@kernel.org>
+Cc:     Leonard Crestez <leonard.crestez@nxp.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Lucas Stach <l.stach@pengutronix.de>,
         Mark Rutland <mark.rutland@arm.com>,
-        Pavel Machek <pavel@ucw.cz>
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linuxppc-dev@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Ran Wang <ran.wang_1@nxp.com>
-Subject: [PATCH v4 2/3] Documentation: dt: binding: fsl: Add 'little-endian' and update Chassis define
-Date:   Mon, 20 May 2019 17:52:37 +0800
-Message-Id: <20190520095238.29210-2-ran.wang_1@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190520095238.29210-1-ran.wang_1@nxp.com>
-References: <20190520095238.29210-1-ran.wang_1@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
+        Anson Huang <anson.huang@nxp.com>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Subject: Re: [PATCH v4 0/5] cpufreq: Add imx-cpufreq-dt driver for speed
+ grading
+Message-ID: <20190520101351.huda4rmpdzaegnj7@vireshk-i7>
+References: <cover.1557742902.git.leonard.crestez@nxp.com>
+ <20190514071322.avosfk4fzz2hzzx6@vireshk-i7>
+ <20190520071417.GU15856@dragon>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190520071417.GU15856@dragon>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-By default, QorIQ SoC's RCPM register block is Big Endian. But
-there are some exceptions, such as LS1088A and LS2088A, are Little
-Endian. So add this optional property to help identify them.
+On 20-05-19, 15:14, Shawn Guo wrote:
+> On Tue, May 14, 2019 at 12:43:22PM +0530, Viresh Kumar wrote:
+> > On 13-05-19, 11:01, Leonard Crestez wrote:
+> > > Right now in upstream imx8m cpufreq support just lists a common subset
+> > > of OPPs because the higher ones should only be attempted after checking
+> > > speed grading in fuses.
+> > > 
+> > > Driver reads from nvmem and calls dev_pm_opp_set_supported_hw before
+> > > registering cpufreq-dt.
+> > 
+> > Who will apply patches 3-5 ?
+> 
+> Me.  Will apply them after the first two get applied.
 
-Actually LS2021A and other Layerscapes won't totally follow Chassis
-2.1, so separate them from powerpc SoC.
+Applied just now.
 
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
----
-Change in v4:
-	- Adjust indectation of 'ls1021a, ls1012a, ls1043a, ls1046a'.
-
-Change in v3:
-	- None.
-
-Change in v2:
-	- None.
-
- Documentation/devicetree/bindings/soc/fsl/rcpm.txt |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-index e284e4e..058154c 100644
---- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-+++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-@@ -20,6 +20,7 @@ Required properites:
- 	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
- 	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
- 	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
-+	* "fsl,qoriq-rcpm-2.1+": for chassis 2.1+ rcpm
- 
- All references to "1.0" and "2.0" refer to the QorIQ chassis version to
- which the chip complies.
-@@ -27,7 +28,12 @@ Chassis Version		Example Chips
- ---------------		-------------------------------
- 1.0				p4080, p5020, p5040, p2041, p3041
- 2.0				t4240, b4860, b4420
--2.1				t1040, ls1021
-+2.1				t1040,
-+2.1+				ls1021a, ls1012a, ls1043a, ls1046a
-+
-+Optional properties:
-+ - little-endian : RCPM register block is Little Endian. Without it RCPM
-+   will be Big Endian (default case).
- 
- Example:
- The RCPM node for T4240:
 -- 
-1.7.1
-
+viresh
