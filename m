@@ -2,99 +2,157 @@ Return-Path: <SRS0=Qt2W=TU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46383C04AAC
-	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:48:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F167C04E87
+	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:51:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1A67020856
-	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:48:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 361AF2081C
+	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:51:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nwKyM/IE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731436AbfETKrh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 May 2019 06:47:37 -0400
-Received: from mx2.suse.de ([195.135.220.15]:55316 "EHLO mx1.suse.de"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1730323AbfETKrh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 20 May 2019 06:47:37 -0400
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
-        by mx1.suse.de (Postfix) with ESMTP id 91BADAFD2;
-        Mon, 20 May 2019 10:47:35 +0000 (UTC)
-From:   Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-To:     stefan.wahren@i2se.com, Florian Fainelli <f.fainelli@gmail.com>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        bcm-kernel-feedback-list@broadcom.com,
-        Eric Anholt <eric@anholt.net>
-Cc:     mbrugger@suse.de, viresh.kumar@linaro.org, rjw@rjwysocki.net,
-        sboyd@kernel.org, ptesarik@suse.com,
-        linux-rpi-kernel@lists.infradead.org, ssuloev@orpaltech.com,
-        linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        mturquette@baylibre.com, linux-pm@vger.kernel.org,
-        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
-        linux-kernel@vger.kernel.org
-Subject: [RFC v2 1/5] clk: bcm2835: set CLK_GET_RATE_NOCACHE on CPU clocks
-Date:   Mon, 20 May 2019 12:47:03 +0200
-Message-Id: <20190520104708.11980-2-nsaenzjulienne@suse.de>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190520104708.11980-1-nsaenzjulienne@suse.de>
+        id S1731204AbfETKvE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 May 2019 06:51:04 -0400
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:46236 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730437AbfETKvE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 May 2019 06:51:04 -0400
+Received: by mail-pl1-f194.google.com with SMTP id r18so6537532pls.13
+        for <linux-pm@vger.kernel.org>; Mon, 20 May 2019 03:51:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=YW9HGM19uXsoCoTdRY5JIfYDHKn9S6uoZXsNTuG/dJI=;
+        b=nwKyM/IEfq5ctjmYY2jYx0QaToWYb1YEuO/QgxBA8FfWHLb8CsKObYDEvzR49aMFbv
+         +oCYec9BmqEYalYo6wUQNHs7NdIb1s+BWbibEgPSe9CFiJGZ4EnF9Ze+cz3e34PXLu0Z
+         Go6tkBaHkP6bJEkNUalms35nw8zGwJ2+hihxeooKztv5hmF4OIS+gPeX2oceCcAy+Q4u
+         G6iAB3C7xRw07Jb/+F1MEC0tjWHjS29c2NSQhCOIEQcvF9TjNmzN/J2P5WzstB/HuOJz
+         D6hwHrVl3td8rIgJIFKzxV/iAjMFTAiJo3fBbK2T9R78xEwU0jkt1bBYhv+P95sZ/cQ5
+         ueaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=YW9HGM19uXsoCoTdRY5JIfYDHKn9S6uoZXsNTuG/dJI=;
+        b=gbiR9obQibYLgWRyAi5pC1n9je5z4IgB0EWpvSwuQbwR1y7AEXnQKHsBNPNgJnnA9k
+         la7Kuc47/SVQRYq9Zn6Z3/7T9v4voteDTTT85kL7ngpN5GLARw1pbOb2mtU22QRCj1b2
+         2nl+cDNbBjvzDRRCjhjNKnGKaQzuB7frnnO8AxjoH0CMCPlRNOFsjZ/ooUVF0vQ82Bgc
+         /VWTr3Bno/Fx697tEv8/S2EvoMRK1qFlpBzanphj1VgkX1U8D9GFUtEpOXywiLftPAl3
+         +q7Aesazw0/YuFUVANEGoSLW7ZWLrf7eoimjwaQy4ScDtdlAw+skuf0Phv6XXpvDYWKq
+         A0TA==
+X-Gm-Message-State: APjAAAXKexHZsShWMqDxU7wfhdEreNA7QVsqCyFj1powRpfRXK3LM8Ff
+        QMX3orp2QT+7Jh1qHHOG7BJUjw==
+X-Google-Smtp-Source: APXvYqwLPnoz4Sab1bFclPQh5T547o374DXWd3I8Z4Z2RFohtUgkOKBd841X9Qsjl4Wl44THZDVQjQ==
+X-Received: by 2002:a17:902:b20f:: with SMTP id t15mr54482368plr.220.1558349463660;
+        Mon, 20 May 2019 03:51:03 -0700 (PDT)
+Received: from localhost ([122.172.118.99])
+        by smtp.gmail.com with ESMTPSA id 63sm24202008pfu.95.2019.05.20.03.51.02
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 20 May 2019 03:51:02 -0700 (PDT)
+Date:   Mon, 20 May 2019 16:21:00 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Cc:     stefan.wahren@i2se.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        mbrugger@suse.de, sboyd@kernel.org, eric@anholt.net,
+        f.fainelli@gmail.com, bcm-kernel-feedback-list@broadcom.com,
+        ptesarik@suse.com, linux-rpi-kernel@lists.infradead.org,
+        ssuloev@orpaltech.com, linux-clk@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC v2 5/5] cpufreq: add driver for Raspbery Pi
+Message-ID: <20190520105100.hol6cmvnsf3exzes@vireshk-i7>
 References: <20190520104708.11980-1-nsaenzjulienne@suse.de>
+ <20190520104708.11980-6-nsaenzjulienne@suse.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190520104708.11980-6-nsaenzjulienne@suse.de>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Raspberry Pi's firmware is responsible for updating the cpu clocks and
-pll. This makes sure we get the right rates anytime.
+On 20-05-19, 12:47, Nicolas Saenz Julienne wrote:
+> Raspberry Pi's firmware offers and interface though which update it's
+> performance requirements. It allows us to request for specific runtime
+> frequencies, which the firmware might or might not respect, depending on
+> the firmware configuration and thermals.
+> 
+> As the maximum and minimum frequencies are configurable in the firmware
+> there is no way to know in advance their values. So the Raspberry Pi
+> cpufreq driver queries them, builds an opp frequency table to then
+> launch cpufreq-dt.
+> 
+> Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+> ---
+>  drivers/cpufreq/Kconfig.arm           |  8 +++
+>  drivers/cpufreq/Makefile              |  1 +
+>  drivers/cpufreq/raspberrypi-cpufreq.c | 83 +++++++++++++++++++++++++++
+>  3 files changed, 92 insertions(+)
+>  create mode 100644 drivers/cpufreq/raspberrypi-cpufreq.c
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 179a1d302f48..f6eba7ae50d0 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -308,3 +308,11 @@ config ARM_PXA2xx_CPUFREQ
+>  	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+>  
+>  	  If in doubt, say N.
+> +
+> +config ARM_RASPBERRYPI_CPUFREQ
+> +	tristate "Raspberry Pi cpufreq support"
+> +	depends on RASPBERRYPI_FIRMWARE || COMPILE_TEST
+> +	help
+> +	  This adds the CPUFreq driver for Raspberry Pi
+> +
+> +	  If in doubt, say N.
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index 689b26c6f949..02678e9b2ff5 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -84,6 +84,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+>  obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+> +obj-$(CONFIG_ARM_RASPBERRYPI_CPUFREQ) 	+= raspberrypi-cpufreq.o
 
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
- drivers/clk/bcm/clk-bcm2835.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+My bad sorry, I noticed this earlier and forgot to comment. The above
+two files are maintained in alphabetical order, please add the entries
+at relevant places.
+  
+>  ##################################################################################
+> diff --git a/drivers/cpufreq/raspberrypi-cpufreq.c b/drivers/cpufreq/raspberrypi-cpufreq.c
+> new file mode 100644
+> index 000000000000..a85988867d56
+> --- /dev/null
+> +++ b/drivers/cpufreq/raspberrypi-cpufreq.c
+> @@ -0,0 +1,83 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Raspberry Pi cpufreq driver
+> + *
+> + * Copyright (C) 2019, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+> + */
+> +
+> +#include <linux/of.h>
+> +#include <linux/clk.h>
+> +#include <linux/cpu.h>
+> +#include <linux/module.h>
+> +#include <linux/pm_opp.h>
+> +#include <linux/cpufreq.h>
+> +#include <linux/platform_device.h>
 
-diff --git a/drivers/clk/bcm/clk-bcm2835.c b/drivers/clk/bcm/clk-bcm2835.c
-index 770bb01f523e..c2772dfb155a 100644
---- a/drivers/clk/bcm/clk-bcm2835.c
-+++ b/drivers/clk/bcm/clk-bcm2835.c
-@@ -411,6 +411,7 @@ struct bcm2835_pll_data {
- 	u32 reference_enable_mask;
- 	/* Bit in CM_LOCK to indicate when the PLL has locked. */
- 	u32 lock_mask;
-+	u32 flags;
- 
- 	const struct bcm2835_pll_ana_bits *ana;
- 
-@@ -1299,7 +1300,7 @@ static struct clk_hw *bcm2835_register_pll(struct bcm2835_cprman *cprman,
- 	init.num_parents = 1;
- 	init.name = data->name;
- 	init.ops = &bcm2835_pll_clk_ops;
--	init.flags = CLK_IGNORE_UNUSED;
-+	init.flags = data->flags | CLK_IGNORE_UNUSED;
- 
- 	pll = kzalloc(sizeof(*pll), GFP_KERNEL);
- 	if (!pll)
-@@ -1660,6 +1661,7 @@ static const struct bcm2835_clk_desc clk_desc_array[] = {
- 		.ana_reg_base = A2W_PLLB_ANA0,
- 		.reference_enable_mask = A2W_XOSC_CTRL_PLLB_ENABLE,
- 		.lock_mask = CM_LOCK_FLOCKB,
-+		.flags = CLK_GET_RATE_NOCACHE,
- 
- 		.ana = &bcm2835_ana_default,
- 
-@@ -1674,7 +1676,7 @@ static const struct bcm2835_clk_desc clk_desc_array[] = {
- 		.load_mask = CM_PLLB_LOADARM,
- 		.hold_mask = CM_PLLB_HOLDARM,
- 		.fixed_divider = 1,
--		.flags = CLK_SET_RATE_PARENT),
-+		.flags = CLK_SET_RATE_PARENT | CLK_GET_RATE_NOCACHE),
- 
- 	/*
- 	 * PLLC is the core PLL, used to drive the core VPU clock.
+Would be better to keep above in alphabetical order as well.
+
+Please don't send another version now and wait for comments on the
+other patches.
+
 -- 
-2.21.0
-
+viresh
