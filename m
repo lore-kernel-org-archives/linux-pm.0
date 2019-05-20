@@ -2,78 +2,186 @@ Return-Path: <SRS0=Qt2W=TU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42885C04AAC
-	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:40:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70540C04AAC
+	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:47:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 21EEE20863
-	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:40:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4BED820856
+	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 10:47:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731045AbfETKkB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 May 2019 06:40:01 -0400
-Received: from mga01.intel.com ([192.55.52.88]:54204 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728551AbfETKkB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 20 May 2019 06:40:01 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 20 May 2019 03:40:00 -0700
-X-ExtLoop1: 1
-Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.157])
-  by fmsmga001.fm.intel.com with SMTP; 20 May 2019 03:39:58 -0700
-Received: by lahna (sSMTP sendmail emulation); Mon, 20 May 2019 13:39:57 +0300
-Date:   Mon, 20 May 2019 13:39:57 +0300
-From:   Mika Westerberg <mika.westerberg@linux.intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Keith Busch <kbusch@kernel.org>
-Subject: Re: [PATCH] PCI: PM: Avoid possible suspend-to-idle issue
-Message-ID: <20190520103957.GL2781@lahna.fi.intel.com>
-References: <2315917.ZGeXE6pBFC@kreacher>
+        id S1730260AbfETKrn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 May 2019 06:47:43 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55392 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1732046AbfETKrm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 20 May 2019 06:47:42 -0400
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+        by mx1.suse.de (Postfix) with ESMTP id B410AAFDD;
+        Mon, 20 May 2019 10:47:40 +0000 (UTC)
+From:   Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To:     stefan.wahren@i2se.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     mbrugger@suse.de, sboyd@kernel.org, eric@anholt.net,
+        f.fainelli@gmail.com, bcm-kernel-feedback-list@broadcom.com,
+        ptesarik@suse.com, linux-rpi-kernel@lists.infradead.org,
+        ssuloev@orpaltech.com, linux-clk@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com,
+        linux-pm@vger.kernel.org,
+        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+        linux-kernel@vger.kernel.org
+Subject: [RFC v2 5/5] cpufreq: add driver for Raspbery Pi
+Date:   Mon, 20 May 2019 12:47:07 +0200
+Message-Id: <20190520104708.11980-6-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190520104708.11980-1-nsaenzjulienne@suse.de>
+References: <20190520104708.11980-1-nsaenzjulienne@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2315917.ZGeXE6pBFC@kreacher>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-User-Agent: Mutt/1.11.4 (2019-03-13)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, May 17, 2019 at 11:08:50AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If a PCI driver leaves the device handled by it in D0 and calls
-> pci_save_state() on the device in its ->suspend() or ->suspend_late()
-> callback, it can expect the device to stay in D0 over the whole
-> s2idle cycle.  However, that may not be the case if there is a
-> spurious wakeup while the system is suspended, because in that case
-> pci_pm_suspend_noirq() will run again after pci_pm_resume_noirq()
-> which calls pci_restore_state(), via pci_pm_default_resume_early(),
-> so state_saved is cleared and the second iteration of
-> pci_pm_suspend_noirq() will invoke pci_prepare_to_sleep() which
-> may change the power state of the device.
-> 
-> To avoid that, add a new internal flag, skip_bus_pm, that will be set
-> by pci_pm_suspend_noirq() when it runs for the first time during the
-> given system suspend-resume cycle if the state of the device has
-> been saved already and the device is still in D0.  Setting that flag
-> will cause the next iterations of pci_pm_suspend_noirq() to set
-> state_saved for pci_pm_resume_noirq(), so that it always restores the
-> device state from the originally saved data, and avoid calling
-> pci_prepare_to_sleep() for the device.
-> 
-> Fixes: 33e4f80ee69b ("ACPI / PM: Ignore spurious SCI wakeups from suspend-to-idle")
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Raspberry Pi's firmware offers and interface though which update it's
+performance requirements. It allows us to request for specific runtime
+frequencies, which the firmware might or might not respect, depending on
+the firmware configuration and thermals.
 
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+As the maximum and minimum frequencies are configurable in the firmware
+there is no way to know in advance their values. So the Raspberry Pi
+cpufreq driver queries them, builds an opp frequency table to then
+launch cpufreq-dt.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ drivers/cpufreq/Kconfig.arm           |  8 +++
+ drivers/cpufreq/Makefile              |  1 +
+ drivers/cpufreq/raspberrypi-cpufreq.c | 83 +++++++++++++++++++++++++++
+ 3 files changed, 92 insertions(+)
+ create mode 100644 drivers/cpufreq/raspberrypi-cpufreq.c
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 179a1d302f48..f6eba7ae50d0 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -308,3 +308,11 @@ config ARM_PXA2xx_CPUFREQ
+ 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+ 
+ 	  If in doubt, say N.
++
++config ARM_RASPBERRYPI_CPUFREQ
++	tristate "Raspberry Pi cpufreq support"
++	depends on RASPBERRYPI_FIRMWARE || COMPILE_TEST
++	help
++	  This adds the CPUFreq driver for Raspberry Pi
++
++	  If in doubt, say N.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 689b26c6f949..02678e9b2ff5 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -84,6 +84,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+ obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
++obj-$(CONFIG_ARM_RASPBERRYPI_CPUFREQ) 	+= raspberrypi-cpufreq.o
+ 
+ 
+ ##################################################################################
+diff --git a/drivers/cpufreq/raspberrypi-cpufreq.c b/drivers/cpufreq/raspberrypi-cpufreq.c
+new file mode 100644
+index 000000000000..a85988867d56
+--- /dev/null
++++ b/drivers/cpufreq/raspberrypi-cpufreq.c
+@@ -0,0 +1,83 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Raspberry Pi cpufreq driver
++ *
++ * Copyright (C) 2019, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
++ */
++
++#include <linux/of.h>
++#include <linux/clk.h>
++#include <linux/cpu.h>
++#include <linux/module.h>
++#include <linux/pm_opp.h>
++#include <linux/cpufreq.h>
++#include <linux/platform_device.h>
++
++static const struct of_device_id machines[] __initconst = {
++	{ .compatible = "raspberrypi,3-model-b-plus" },
++	{ .compatible = "raspberrypi,3-model-b" },
++	{ /* sentinel */ }
++};
++
++static int __init raspberrypi_cpufreq_driver_init(void)
++{
++	struct platform_device *pdev;
++	struct device *cpu_dev;
++	struct clk *clk;
++	long min, max;
++	long rate;
++	int ret;
++
++	if (!of_match_node(machines, of_root))
++		return -ENODEV;
++
++	cpu_dev = get_cpu_device(0);
++	if (!cpu_dev) {
++		pr_err("Cannot get CPU for cpufreq driver\n");
++		return -ENODEV;
++	}
++
++	clk = clk_get(cpu_dev, 0);
++	if (IS_ERR(clk)) {
++		dev_err(cpu_dev, "Cannot get clock for CPU0\n");
++		return PTR_ERR(clk);
++	}
++
++	/*
++	 * The max and min frequencies are configurable in the Raspberry Pi
++	 * firmware, so we query them at runtime
++	 */
++	min = clk_round_rate(clk, 0);
++	max = clk_round_rate(clk, ULONG_MAX);
++	clk_put(clk);
++
++	for (rate = min; rate < max; rate += 100000000) {
++		ret = dev_pm_opp_add(cpu_dev, rate, 0);
++		if (ret)
++			goto remove_opp;
++	}
++
++	ret = dev_pm_opp_add(cpu_dev, max, 0);
++	if (ret)
++		goto remove_opp;
++
++	pdev = platform_device_register_data(NULL, "cpufreq-dt", -1, NULL, 0);
++	ret = PTR_ERR_OR_ZERO(pdev);
++	if (ret) {
++		dev_err(cpu_dev, "Failed to create platform device, %d\n", ret);
++		goto remove_opp;
++	}
++
++	return 0;
++
++remove_opp:
++	dev_pm_opp_remove_all_dynamic(cpu_dev);
++
++	return ret;
++}
++
++late_initcall(raspberrypi_cpufreq_driver_init);
++
++MODULE_AUTHOR("Nicolas Saenz Julienne <nsaenzjulienne@suse.de");
++MODULE_DESCRIPTION("Raspberry Pi cpufreq driver");
++MODULE_LICENSE("GPL v2");
+-- 
+2.21.0
+
