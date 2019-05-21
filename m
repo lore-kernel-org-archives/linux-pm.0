@@ -1,168 +1,103 @@
-Return-Path: <SRS0=Qt2W=TU=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=3na1=TV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 723BEC04AAF
-	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 23:20:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8E9EC04AAF
+	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 06:22:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3AB92217F9
-	for <linux-pm@archiver.kernel.org>; Mon, 20 May 2019 23:20:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ABAB32173C
+	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 06:22:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="CSmbns2X"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="l9FHorTu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726879AbfETXUR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 May 2019 19:20:17 -0400
-Received: from mail-pl1-f196.google.com ([209.85.214.196]:37547 "EHLO
-        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727390AbfETXUR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 May 2019 19:20:17 -0400
-Received: by mail-pl1-f196.google.com with SMTP id p15so7428136pll.4
-        for <linux-pm@vger.kernel.org>; Mon, 20 May 2019 16:20:16 -0700 (PDT)
+        id S1726668AbfEUGWw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 May 2019 02:22:52 -0400
+Received: from mail-pl1-f193.google.com ([209.85.214.193]:32775 "EHLO
+        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725835AbfEUGWv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2019 02:22:51 -0400
+Received: by mail-pl1-f193.google.com with SMTP id y3so7940556plp.0
+        for <linux-pm@vger.kernel.org>; Mon, 20 May 2019 23:22:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=YRvbySHDI9m79O10tEqKVbu0RDekXOTbO/NzB7rAlEs=;
-        b=CSmbns2X94WFkKq63CfNfv64datLbczpyGYxten2MqFzl49yU9bBmWzG/njavZRAwJ
-         0ptKNku1Fb/sEofgaG4sshjeJnGMSSLIxHORCS7RiYtPv3XAuNZQJR5AVladjzb5vItU
-         DtHVyuGOLOroVp/jhzFq4ol6wGf8brRUd2fK0=
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=y2m5dpNz16ZybgYk5tQ8GutOzZqz8vAuz2rdBiTBnjw=;
+        b=l9FHorTul2Tyg2dOrb6zBPnqrZNmerYqH7eUWz8QrYYH0IhCHHLfh32l4hP3eIA/X7
+         vAjYlCEuZb1wqfD9LentK6vgUI8A/1mrqJ9S052A1vrO93c315n4VxO7f9kRYZ/dwhpt
+         a2aJmXtu4Ef1cIkwGn8dhSCJPXp5lNBa9khww/rmBXfha/2d2tEcDNaiPXcmM3XDnEaQ
+         mx1DNLV+4klz/BgBK87ZGo3hmiGMX2Wio0auyYuss6yzMBipwqekj/2uRHVRH1p/MxLn
+         /xGx4aZ9zZwmOx4XOBcEUeoMV+xdaLp+hhXsm7XNYpMPkIwBvPkWXUbq5Wi0Owu0YWlS
+         uo5w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=YRvbySHDI9m79O10tEqKVbu0RDekXOTbO/NzB7rAlEs=;
-        b=Sxm4zOEBgVXw2KGHbD4ChWLH/p/EX1Yjuw3nwlMDFgMaD2MyF/cQ3Sh3+MO/QN+Zw+
-         uqYGOyRAJYEQWKqJvVbnBbRvSpVdlaD/cYUPSEcL70o/JYzyk1/Oh61N+KPxkyp3LRZh
-         MmnOdoWyr/CnolbB1pls4G01zgIjXZ8R6of7R9ZawuKfTsxCiYwZlPGjmxe6jMeTtHCk
-         5Q0NhM9ea1IZYQFDiK7A7o0Tkis/fUC8Iw8DZqbjjlQq4jQZ0IbKSm4LlzfvOjjNazXq
-         l5dkgoPhdA+4ZmKAG0jvG/bmD8keuQ6CK2lypSEWCQzxeXroAg87+wCdKhwT6q/09cVb
-         p/Vw==
-X-Gm-Message-State: APjAAAV9kkBPOODTNtpSn6B3nIRq0NvirxIuAwRpLjQMJFRoV5D+ryjz
-        K6fFPLxO7SeCtl2FidDjGex19g==
-X-Google-Smtp-Source: APXvYqy24KzqCuoCNaR5XV9MVxMB4poHoGqwCpe+ByXG7wLsxEczPxh3xQpdXoqp2nLas6twp7+gtg==
-X-Received: by 2002:a17:902:9693:: with SMTP id n19mr78284329plp.92.1558394416511;
-        Mon, 20 May 2019 16:20:16 -0700 (PDT)
-Received: from skynet.sea.corp.google.com ([2620:0:1008:1100:c4b5:ec23:d87b:d6d3])
-        by smtp.gmail.com with ESMTPSA id h13sm19350861pgk.55.2019.05.20.16.20.15
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=y2m5dpNz16ZybgYk5tQ8GutOzZqz8vAuz2rdBiTBnjw=;
+        b=eOl99EPsXENhtIjuWKESOtM79Tn+iYiHIEI+qJTogxjme5a11QgIAxOT/uAdhheAAI
+         UxSZbk9mB/siCIzw7Mj9SEl0BiYI02FlCR99Dj2FVMwVSXs9bTp2yVECP6OlE6/z9AP2
+         FbAhHclyL4VuMuyfWpRvZt7RpQk+1zqCJvWvRUD1eLVCw2z+Y7HV0n9BAdtyM5o1wl3s
+         kBoBYpS/a/i1wKnfkYHW0j7luBef/TqgdjY53sUcpOhu1WdhEAFvemBYrsJnOdDRGvmI
+         l1hU7b5bASgoW81bCw1BxlqQEY5yEU5QZCPWIznUA6cnVHT67kffefPlnrPfpjSWgedM
+         4Qrg==
+X-Gm-Message-State: APjAAAUeATN2YCKhk4b9V25ybpy36EGKq3KvQM9t4PALb0b3dLjU3oBS
+        EVL1YUWC53p5qNKfk3XSJgL8IGverMQ=
+X-Google-Smtp-Source: APXvYqz2YMCSRvKN2MJ+jWniKEVRU5sQ/FMpg7ookR4wjHFWBAIZ3T0Rpg+BvD1LhysbsKdoQyBKgQ==
+X-Received: by 2002:a17:902:8d96:: with SMTP id v22mr5073943plo.282.1558419770837;
+        Mon, 20 May 2019 23:22:50 -0700 (PDT)
+Received: from localhost ([122.172.118.99])
+        by smtp.gmail.com with ESMTPSA id n27sm42589245pfb.129.2019.05.20.23.22.49
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 20 May 2019 16:20:16 -0700 (PDT)
-From:   Thomas Garnier <thgarnie@chromium.org>
-To:     kernel-hardening@lists.openwall.com
-Cc:     kristen@linux.intel.com, Thomas Garnier <thgarnie@google.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v7 08/12] x86/acpi: Adapt assembly for PIE support
-Date:   Mon, 20 May 2019 16:19:33 -0700
-Message-Id: <20190520231948.49693-9-thgarnie@chromium.org>
-X-Mailer: git-send-email 2.21.0.1020.gf2820cf01a-goog
-In-Reply-To: <20190520231948.49693-1-thgarnie@chromium.org>
-References: <20190520231948.49693-1-thgarnie@chromium.org>
+        Mon, 20 May 2019 23:22:50 -0700 (PDT)
+Date:   Tue, 21 May 2019 11:52:48 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Rajendra Nayak <rnayak@codeaurora.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-scsi@vger.kernel.org, swboyd@chromium.org,
+        ulf.hansson@linaro.org, dianders@chromium.org, rafael@kernel.org,
+        vincent.guittot@linaro.org
+Subject: Re: [RFC v2 00/11] DVFS in the OPP core
+Message-ID: <20190521062248.ogjetb2rwtqekflx@vireshk-i7>
+References: <20190320094918.20234-1-rnayak@codeaurora.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190320094918.20234-1-rnayak@codeaurora.org>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Thomas Garnier <thgarnie@google.com>
+On 20-03-19, 15:19, Rajendra Nayak wrote:
+> This is a v2 of the RFC posted earlier by Stephen Boyd [1]
+> 
+> As part of v2 I still follow the same approach of dev_pm_opp_set_rate()
+> API using clk framework to round the frequency passed and making it
+> accept 0 as a valid frequency indicating the frequency isn't required
+> anymore. It just has a few more drivers converted to use this approach
+> like dsi/dpu and ufs.
+> ufs demonstrates the case of having to handle multiple power domains, one
+> of which is scalable.
+> 
+> The patches are based on 5.1-rc1 and depend on some ufs fixes I posted
+> earlier [2] and a DT patch to include the rpmpd header [3]
+> 
+> [1] https://lkml.org/lkml/2019/1/28/2086
+> [2] https://lkml.org/lkml/2019/3/8/70
+> [3] https://lkml.org/lkml/2019/3/20/120
 
-Change the assembly code to use only relative references of symbols for the
-kernel to be PIE compatible.
+Hi Rajendra,
 
-Position Independent Executable (PIE) support will allow to extend the
-KASLR randomization range below 0xffffffff80000000.
+I am inclined to apply/push this series for 5.3-rc1, will it be
+possible for you to spend some time on this at priority ?
 
-Signed-off-by: Thomas Garnier <thgarnie@google.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- arch/x86/kernel/acpi/wakeup_64.S | 31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
-
-diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-index 510fa12aab73..e080e943e295 100644
---- a/arch/x86/kernel/acpi/wakeup_64.S
-+++ b/arch/x86/kernel/acpi/wakeup_64.S
-@@ -14,7 +14,7 @@
- 	 * Hooray, we are in Long 64-bit mode (but still running in low memory)
- 	 */
- ENTRY(wakeup_long64)
--	movq	saved_magic, %rax
-+	movq	saved_magic(%rip), %rax
- 	movq	$0x123456789abcdef0, %rdx
- 	cmpq	%rdx, %rax
- 	jne	bogus_64_magic
-@@ -25,14 +25,14 @@ ENTRY(wakeup_long64)
- 	movw	%ax, %es
- 	movw	%ax, %fs
- 	movw	%ax, %gs
--	movq	saved_rsp, %rsp
-+	movq	saved_rsp(%rip), %rsp
- 
--	movq	saved_rbx, %rbx
--	movq	saved_rdi, %rdi
--	movq	saved_rsi, %rsi
--	movq	saved_rbp, %rbp
-+	movq	saved_rbx(%rip), %rbx
-+	movq	saved_rdi(%rip), %rdi
-+	movq	saved_rsi(%rip), %rsi
-+	movq	saved_rbp(%rip), %rbp
- 
--	movq	saved_rip, %rax
-+	movq	saved_rip(%rip), %rax
- 	jmp	*%rax
- ENDPROC(wakeup_long64)
- 
-@@ -45,7 +45,7 @@ ENTRY(do_suspend_lowlevel)
- 	xorl	%eax, %eax
- 	call	save_processor_state
- 
--	movq	$saved_context, %rax
-+	leaq	saved_context(%rip), %rax
- 	movq	%rsp, pt_regs_sp(%rax)
- 	movq	%rbp, pt_regs_bp(%rax)
- 	movq	%rsi, pt_regs_si(%rax)
-@@ -64,13 +64,14 @@ ENTRY(do_suspend_lowlevel)
- 	pushfq
- 	popq	pt_regs_flags(%rax)
- 
--	movq	$.Lresume_point, saved_rip(%rip)
-+	leaq	.Lresume_point(%rip), %rax
-+	movq	%rax, saved_rip(%rip)
- 
--	movq	%rsp, saved_rsp
--	movq	%rbp, saved_rbp
--	movq	%rbx, saved_rbx
--	movq	%rdi, saved_rdi
--	movq	%rsi, saved_rsi
-+	movq	%rsp, saved_rsp(%rip)
-+	movq	%rbp, saved_rbp(%rip)
-+	movq	%rbx, saved_rbx(%rip)
-+	movq	%rdi, saved_rdi(%rip)
-+	movq	%rsi, saved_rsi(%rip)
- 
- 	addq	$8, %rsp
- 	movl	$3, %edi
-@@ -82,7 +83,7 @@ ENTRY(do_suspend_lowlevel)
- 	.align 4
- .Lresume_point:
- 	/* We don't restore %rax, it must be 0 anyway */
--	movq	$saved_context, %rax
-+	leaq	saved_context(%rip), %rax
- 	movq	saved_context_cr4(%rax), %rbx
- 	movq	%rbx, %cr4
- 	movq	saved_context_cr3(%rax), %rbx
 -- 
-2.21.0.1020.gf2820cf01a-goog
-
+viresh
