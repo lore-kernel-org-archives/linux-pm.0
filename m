@@ -2,126 +2,179 @@ Return-Path: <SRS0=3na1=TV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74036C04AAF
-	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 16:04:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81991C04AAF
+	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 16:05:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 499CD2173E
-	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 16:04:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vcQdl09Q"
+	by mail.kernel.org (Postfix) with ESMTP id 60F1121743
+	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 16:05:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728608AbfEUQEp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 May 2019 12:04:45 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:41715 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726900AbfEUQEp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2019 12:04:45 -0400
-Received: by mail-pg1-f195.google.com with SMTP id z3so8807063pgp.8
-        for <linux-pm@vger.kernel.org>; Tue, 21 May 2019 09:04:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=il/JXoP4aW4WFFHOxr0Tpp4Ev1osrOA1IE5f6L08DkI=;
-        b=vcQdl09QHQy5NCYrsBFsiiAUnQpK6sJjCqv3YPoyJcfJnHY6edGZLWqmsdMWoE5qpC
-         FUtKaDv9Qm3MYF+cwwS2rQUr3eEzqSZCSalIBV/qrebvVtSiwpRL5G+WrxJ9SyGMGeT2
-         LEXiDMuzONxJ1irNpO+YU/6RsdTtjrFTwvD4p0gUKWZXIB3+C2UzPELQNvmguuxVIhKS
-         PEEq1+gxJP/kAPD8sOPPT2FptzjD8+vR9pwo7x2HU0nnVui6gedrIZR3FiekjYJ6XFUR
-         zYGHyGFS1Y7JAdD8BcuyU0Vj8RKoaP9iWAk6vCX6Hn9/54J6VY7mUZ5rYKFjzHIyKkWr
-         D7LA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=il/JXoP4aW4WFFHOxr0Tpp4Ev1osrOA1IE5f6L08DkI=;
-        b=XiCkg65EKmvYy34iPCV7PjnubASzzomhApXWSpt1kSQjzfzzO2HlRydzo60l1O/va3
-         z16AZrCxO1KFUxbbEvvWXgKrGxCf+TVSTtN3bkAPQ8WGmV8nDhV7AHtp4YJIN4iTL+SA
-         9/0HAimrMbvuLcsA86YZhE9O7Z6K0rOtmlt1oRgPNF6sQ88xKt7J7VsS3/iwK2GFQkY5
-         eRV7dWnDLlw3yvZXyUjkKfVNC60HfTsMuMu/bHq+88ww3Y3CU7PWxwBVOUTGRJ3PITHW
-         xGD77KhJzLRb3OrBu8+lkAP0Q+lvBuk/HFgyPfTwTdM7Uj7p4oywi+HlILAZnbXf63As
-         3C1Q==
-X-Gm-Message-State: APjAAAWZPhr6dCuLfQiXIBNIQe1UVDb08tOK8Xa43KCdAAc673zbT1Mt
-        kcoqmapignZhDbn7hwHXeq8=
-X-Google-Smtp-Source: APXvYqwX1tzSTRG+WCXtNpV2F+N566SicxZ0ovg2pY8O3qxjQzcztQeDDyBKAexFfbKzwzd7zWXzlA==
-X-Received: by 2002:a63:ee0a:: with SMTP id e10mr69278554pgi.28.1558454684956;
-        Tue, 21 May 2019 09:04:44 -0700 (PDT)
-Received: from mita-MS-7A45.lan ([240f:34:212d:1:9cd0:73e8:b74a:624e])
-        by smtp.gmail.com with ESMTPSA id j5sm28954786pfa.15.2019.05.21.09.04.39
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Tue, 21 May 2019 09:04:44 -0700 (PDT)
-From:   Akinobu Mita <akinobu.mita@gmail.com>
-To:     linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org
-Cc:     Akinobu Mita <akinobu.mita@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        Minwoo Im <minwoo.im.dev@gmail.com>,
-        Kenneth Heitke <kenneth.heitke@intel.com>,
-        Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-Subject: [PATCH v2 4/4] nvme-pci: support thermal zone
-Date:   Wed, 22 May 2019 01:04:09 +0900
-Message-Id: <1558454649-28783-5-git-send-email-akinobu.mita@gmail.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1558454649-28783-1-git-send-email-akinobu.mita@gmail.com>
-References: <1558454649-28783-1-git-send-email-akinobu.mita@gmail.com>
+        id S1728176AbfEUQFH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 May 2019 12:05:07 -0400
+Received: from mailgate2.uni-hannover.de ([130.75.2.114]:53604 "EHLO
+        mailgate2.uni-hannover.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728067AbfEUQFG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2019 12:05:06 -0400
+X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 May 2019 12:05:03 EDT
+Received: from kolab.sra.uni-hannover.de (kolab.sra.uni-hannover.de [130.75.33.6])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mailgate2.uni-hannover.de (Postfix) with ESMTPS id 6426A2087;
+        Tue, 21 May 2019 17:55:43 +0200 (CEST)
+X-Virus-Scanned: Debian amavisd-new at sra.uni-hannover.de
+Received: from lab.sra.uni-hannover.de (aerobus.sra.uni-hannover.de
+ [130.75.33.87])
+ by kolab.sra.uni-hannover.de (Postfix) with SMTP id 1984B3E027C;
+ Tue, 21 May 2019 17:55:22 +0200 (CEST)
+Received: (nullmailer pid 14993 invoked by uid 20151);
+ Tue, 21 May 2019 15:55:41 -0000
+From:   Lukas Prause <langspielplatte@black-mesa.xyz>
+To:     lizefan@huawei.com, tj@kernel.org, hannes@cmpxchg.org,
+        peterz@infradead.org, mingo@redhat.com, will.deacon@arm.com,
+        rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
+        rostedt@goodmis.org
+Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        cgroups@vger.kernel.org, linux-pm@vger.kernel.org,
+        Lukas Prause <langspielplatte@black-mesa.xyz>,
+        Lennart Glauer <mail@lennart-glauer.de>
+Subject: [PATCH] Fix comments with paths pointing to renamed or moved files.
+Date:   Tue, 21 May 2019 17:54:30 +0200
+Message-Id: <20190521155430.14941-1-langspielplatte@black-mesa.xyz>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This enables to use thermal zone interfaces for NVMe
-temperature sensors.
+This patch corrects renamed or moved paths in comments.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Keith Busch <keith.busch@intel.com>
-Cc: Jens Axboe <axboe@fb.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Sagi Grimberg <sagi@grimberg.me>
-Cc: Minwoo Im <minwoo.im.dev@gmail.com>
-Cc: Kenneth Heitke <kenneth.heitke@intel.com>
-Cc: Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Signed-off-by: Lukas Prause <langspielplatte@black-mesa.xyz>
+Signed-off-by: Lennart Glauer <mail@lennart-glauer.de>
 ---
-* v2
-- Call nvme_thermal_zones_unregister() earlier than the last reference
-  release
+ kernel/cgroup/cpuset.c       |  2 +-
+ kernel/locking/mutex-debug.h |  2 +-
+ kernel/power/power.h         |  2 +-
+ kernel/sched/core.c          |  2 +-
+ kernel/trace/trace.h         | 14 +++++++-------
+ 5 files changed, 11 insertions(+), 11 deletions(-)
 
- drivers/nvme/host/pci.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
-index 04084b9..108b022 100644
---- a/drivers/nvme/host/pci.c
-+++ b/drivers/nvme/host/pci.c
-@@ -2555,6 +2555,10 @@ static void nvme_reset_work(struct work_struct *work)
- 		dev->ctrl.opal_dev = NULL;
- 	}
+diff --git a/kernel/cgroup/cpuset.c b/kernel/cgroup/cpuset.c
+index 6a1942ed781c..6381622e2f2f 100644
+--- a/kernel/cgroup/cpuset.c
++++ b/kernel/cgroup/cpuset.c
+@@ -329,7 +329,7 @@ static struct cpuset top_cpuset = {
+  * cpumasks and nodemasks.
+  *
+  * Accessing a task's cpuset should be done in accordance with the
+- * guidelines for accessing subsystem state in kernel/cgroup.c
++ * guidelines for accessing subsystem state in kernel/cgroup/cgroup.c
+  */
  
-+	result = nvme_thermal_zones_register(&dev->ctrl);
-+	if (result < 0)
-+		goto out;
-+
- 	if (dev->ctrl.oacs & NVME_CTRL_OACS_DBBUF_SUPP) {
- 		result = nvme_dbbuf_dma_alloc(dev);
- 		if (result)
-@@ -2833,6 +2837,7 @@ static void nvme_remove(struct pci_dev *pdev)
- 	flush_work(&dev->ctrl.reset_work);
- 	nvme_stop_ctrl(&dev->ctrl);
- 	nvme_remove_namespaces(&dev->ctrl);
-+	nvme_thermal_zones_unregister(&dev->ctrl);
- 	nvme_dev_disable(dev, true, false);
- 	nvme_release_cmb(dev);
- 	nvme_free_host_mem(dev);
+ static DEFINE_MUTEX(cpuset_mutex);
+diff --git a/kernel/locking/mutex-debug.h b/kernel/locking/mutex-debug.h
+index 1edd3f45a4ec..0dee0a07cd4c 100644
+--- a/kernel/locking/mutex-debug.h
++++ b/kernel/locking/mutex-debug.h
+@@ -8,7 +8,7 @@
+  *
+  * This file contains mutex debugging related internal declarations,
+  * prototypes and inline functions, for the CONFIG_DEBUG_MUTEXES case.
+- * More details are in kernel/mutex-debug.c.
++ * More details are in kernel/locking/mutex-debug.c.
+  */
+ 
+ /*
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 9e58bdc8a562..5de8b0c7f657 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -182,7 +182,7 @@ extern int swsusp_unmark(void);
+ #endif
+ 
+ struct timeval;
+-/* kernel/power/swsusp.c */
++/* kernel/power/hibernate.c */
+ extern void swsusp_show_speed(ktime_t, ktime_t, unsigned int, char *);
+ 
+ #ifdef CONFIG_SUSPEND
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 102dfcf0a29a..0ce0dc44ffc3 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -3334,7 +3334,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+  *   1. Explicit blocking: mutex, semaphore, waitqueue, etc.
+  *
+  *   2. TIF_NEED_RESCHED flag is checked on interrupt and userspace return
+- *      paths. For example, see arch/x86/entry_64.S.
++ *      paths. For example, see arch/x86/entry/entry_64.S.
+  *
+  *      To drive preemption between tasks, the scheduler sets the flag in timer
+  *      interrupt handler scheduler_tick().
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 1974ce818ddb..0c304d6f5b31 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -1684,7 +1684,7 @@ extern int register_trigger_hist_enable_disable_cmds(void);
+  *	initialization such as incrementing a per-trigger reference
+  *	count, for instance.  This is usually implemented by the
+  *	generic utility function @event_trigger_init() (see
+- *	trace_event_triggers.c).
++ *	trace_events_trigger.c).
+  *
+  * @free: An optional de-initialization function called for the
+  *	trigger when the trigger is unregistered (via the
+@@ -1693,12 +1693,12 @@ extern int register_trigger_hist_enable_disable_cmds(void);
+  *	per-trigger reference count and freeing corresponding trigger
+  *	data, for instance.  This is usually implemented by the
+  *	generic utility function @event_trigger_free() (see
+- *	trace_event_triggers.c).
++ *	trace_events_trigger.c).
+  *
+  * @print: The callback function invoked to have the trigger print
+  *	itself.  This is usually implemented by a wrapper function
+  *	that calls the generic utility function @event_trigger_print()
+- *	(see trace_event_triggers.c).
++ *	(see trace_events_trigger.c).
+  */
+ struct event_trigger_ops {
+ 	void			(*func)(struct event_trigger_data *data,
+@@ -1758,7 +1758,7 @@ struct event_trigger_ops {
+  *	the appropriate trace event.  It makes use of the other
+  *	event_command callback functions to orchestrate this, and is
+  *	usually implemented by the generic utility function
+- *	@event_trigger_callback() (see trace_event_triggers.c).
++ *	@event_trigger_callback() (see trace_events_trigger.c).
+  *
+  * @reg: Adds the trigger to the list of triggers associated with the
+  *	event, and enables the event trigger itself, after
+@@ -1767,13 +1767,13 @@ struct event_trigger_ops {
+  *	make the decision as to whether or not multiple instances of
+  *	the trigger should be allowed.  This is usually implemented by
+  *	the generic utility function @register_trigger() (see
+- *	trace_event_triggers.c).
++ *	trace_events_trigger.c).
+  *
+  * @unreg: Removes the trigger from the list of triggers associated
+  *	with the event, and disables the event trigger itself, after
+  *	initializing it (via the event_trigger_ops @free() function).
+  *	This is usually implemented by the generic utility function
+- *	@unregister_trigger() (see trace_event_triggers.c).
++ *	@unregister_trigger() (see trace_events_trigger.c).
+  *
+  * @unreg_all: An optional function called to remove all the triggers
+  *	from the list of triggers associated with the event.  Called
+@@ -1783,7 +1783,7 @@ struct event_trigger_ops {
+  *	for the trigger.  If no @set_filter() method is set for the
+  *	event command, filters set by the user for the command will be
+  *	ignored.  This is usually implemented by the generic utility
+- *	function @set_trigger_filter() (see trace_event_triggers.c).
++ *	function @set_trigger_filter() (see trace_events_trigger.c).
+  *
+  * @get_trigger_ops: The callback function invoked to retrieve the
+  *	event_trigger_ops implementation associated with the command.
 -- 
-2.7.4
-
+2.17.1
