@@ -2,179 +2,80 @@ Return-Path: <SRS0=3na1=TV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81991C04AAF
-	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 16:05:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9584C04AAF
+	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 16:20:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 60F1121743
-	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 16:05:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8F8DB217D8
+	for <linux-pm@archiver.kernel.org>; Tue, 21 May 2019 16:20:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1558455639;
+	bh=PkTk4yFcGYfVUq9d4rdhM8wxrhZBpOhmH8sea8b9YTE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=nD+jh2Y/TG9OK3KzLG3zeEXQ8+POUhVwDCk/hbMBEr2lvyYoQyl4P0K4ogcAN0Xeu
+	 KqN9VGiDsMYwSB4nRropzpZD5+a/6kBeLL8xQ/9pdb7ICp8Lo9Q85TN8+azLgEn+rP
+	 cV533kQE5KS4fCqoqi2R9cbUNiTYGBi/8E5fYLBM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728176AbfEUQFH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 May 2019 12:05:07 -0400
-Received: from mailgate2.uni-hannover.de ([130.75.2.114]:53604 "EHLO
-        mailgate2.uni-hannover.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728067AbfEUQFG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2019 12:05:06 -0400
-X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 May 2019 12:05:03 EDT
-Received: from kolab.sra.uni-hannover.de (kolab.sra.uni-hannover.de [130.75.33.6])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mailgate2.uni-hannover.de (Postfix) with ESMTPS id 6426A2087;
-        Tue, 21 May 2019 17:55:43 +0200 (CEST)
-X-Virus-Scanned: Debian amavisd-new at sra.uni-hannover.de
-Received: from lab.sra.uni-hannover.de (aerobus.sra.uni-hannover.de
- [130.75.33.87])
- by kolab.sra.uni-hannover.de (Postfix) with SMTP id 1984B3E027C;
- Tue, 21 May 2019 17:55:22 +0200 (CEST)
-Received: (nullmailer pid 14993 invoked by uid 20151);
- Tue, 21 May 2019 15:55:41 -0000
-From:   Lukas Prause <langspielplatte@black-mesa.xyz>
-To:     lizefan@huawei.com, tj@kernel.org, hannes@cmpxchg.org,
-        peterz@infradead.org, mingo@redhat.com, will.deacon@arm.com,
-        rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
-        rostedt@goodmis.org
-Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        cgroups@vger.kernel.org, linux-pm@vger.kernel.org,
-        Lukas Prause <langspielplatte@black-mesa.xyz>,
-        Lennart Glauer <mail@lennart-glauer.de>
-Subject: [PATCH] Fix comments with paths pointing to renamed or moved files.
-Date:   Tue, 21 May 2019 17:54:30 +0200
-Message-Id: <20190521155430.14941-1-langspielplatte@black-mesa.xyz>
-X-Mailer: git-send-email 2.17.1
+        id S1727817AbfEUQUj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 May 2019 12:20:39 -0400
+Received: from mga03.intel.com ([134.134.136.65]:12243 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726900AbfEUQUj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 21 May 2019 12:20:39 -0400
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 21 May 2019 09:20:38 -0700
+X-ExtLoop1: 1
+Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
+  by orsmga001.jf.intel.com with ESMTP; 21 May 2019 09:20:37 -0700
+Date:   Tue, 21 May 2019 10:15:32 -0600
+From:   Keith Busch <kbusch@kernel.org>
+To:     Akinobu Mita <akinobu.mita@gmail.com>
+Cc:     linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org,
+        Keith Busch <keith.busch@intel.com>,
+        Sagi Grimberg <sagi@grimberg.me>,
+        Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>,
+        Jens Axboe <axboe@fb.com>,
+        Kenneth Heitke <kenneth.heitke@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Minwoo Im <minwoo.im.dev@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH v2 2/4] nvme: add thermal zone infrastructure
+Message-ID: <20190521161532.GD1639@localhost.localdomain>
+References: <1558454649-28783-1-git-send-email-akinobu.mita@gmail.com>
+ <1558454649-28783-3-git-send-email-akinobu.mita@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1558454649-28783-3-git-send-email-akinobu.mita@gmail.com>
+User-Agent: Mutt/1.9.1 (2017-09-22)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch corrects renamed or moved paths in comments.
+On Wed, May 22, 2019 at 01:04:07AM +0900, Akinobu Mita wrote:
+> +int nvme_thermal_zones_register(struct nvme_ctrl *ctrl)
+> +{
+> +	struct nvme_smart_log *log;
+> +	int ret;
+> +	int i;
+> +
+> +	log = kzalloc(sizeof(*log), GFP_KERNEL);
+> +	if (!log)
+> +		return 0; /* non-fatal error */
+> +
+> +	ret = nvme_get_log(ctrl, NVME_NSID_ALL, NVME_LOG_SMART, 0,
+> +			   log, sizeof(*log), 0);
+> +	if (ret) {
+> +		dev_err(ctrl->device, "Failed to get SMART log: %d\n", ret);
+> +		ret = ret > 0 ? -EINVAL : ret;
 
-Signed-off-by: Lukas Prause <langspielplatte@black-mesa.xyz>
-Signed-off-by: Lennart Glauer <mail@lennart-glauer.de>
----
- kernel/cgroup/cpuset.c       |  2 +-
- kernel/locking/mutex-debug.h |  2 +-
- kernel/power/power.h         |  2 +-
- kernel/sched/core.c          |  2 +-
- kernel/trace/trace.h         | 14 +++++++-------
- 5 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/kernel/cgroup/cpuset.c b/kernel/cgroup/cpuset.c
-index 6a1942ed781c..6381622e2f2f 100644
---- a/kernel/cgroup/cpuset.c
-+++ b/kernel/cgroup/cpuset.c
-@@ -329,7 +329,7 @@ static struct cpuset top_cpuset = {
-  * cpumasks and nodemasks.
-  *
-  * Accessing a task's cpuset should be done in accordance with the
-- * guidelines for accessing subsystem state in kernel/cgroup.c
-+ * guidelines for accessing subsystem state in kernel/cgroup/cgroup.c
-  */
- 
- static DEFINE_MUTEX(cpuset_mutex);
-diff --git a/kernel/locking/mutex-debug.h b/kernel/locking/mutex-debug.h
-index 1edd3f45a4ec..0dee0a07cd4c 100644
---- a/kernel/locking/mutex-debug.h
-+++ b/kernel/locking/mutex-debug.h
-@@ -8,7 +8,7 @@
-  *
-  * This file contains mutex debugging related internal declarations,
-  * prototypes and inline functions, for the CONFIG_DEBUG_MUTEXES case.
-- * More details are in kernel/mutex-debug.c.
-+ * More details are in kernel/locking/mutex-debug.c.
-  */
- 
- /*
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 9e58bdc8a562..5de8b0c7f657 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -182,7 +182,7 @@ extern int swsusp_unmark(void);
- #endif
- 
- struct timeval;
--/* kernel/power/swsusp.c */
-+/* kernel/power/hibernate.c */
- extern void swsusp_show_speed(ktime_t, ktime_t, unsigned int, char *);
- 
- #ifdef CONFIG_SUSPEND
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 102dfcf0a29a..0ce0dc44ffc3 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -3334,7 +3334,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
-  *   1. Explicit blocking: mutex, semaphore, waitqueue, etc.
-  *
-  *   2. TIF_NEED_RESCHED flag is checked on interrupt and userspace return
-- *      paths. For example, see arch/x86/entry_64.S.
-+ *      paths. For example, see arch/x86/entry/entry_64.S.
-  *
-  *      To drive preemption between tasks, the scheduler sets the flag in timer
-  *      interrupt handler scheduler_tick().
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 1974ce818ddb..0c304d6f5b31 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -1684,7 +1684,7 @@ extern int register_trigger_hist_enable_disable_cmds(void);
-  *	initialization such as incrementing a per-trigger reference
-  *	count, for instance.  This is usually implemented by the
-  *	generic utility function @event_trigger_init() (see
-- *	trace_event_triggers.c).
-+ *	trace_events_trigger.c).
-  *
-  * @free: An optional de-initialization function called for the
-  *	trigger when the trigger is unregistered (via the
-@@ -1693,12 +1693,12 @@ extern int register_trigger_hist_enable_disable_cmds(void);
-  *	per-trigger reference count and freeing corresponding trigger
-  *	data, for instance.  This is usually implemented by the
-  *	generic utility function @event_trigger_free() (see
-- *	trace_event_triggers.c).
-+ *	trace_events_trigger.c).
-  *
-  * @print: The callback function invoked to have the trigger print
-  *	itself.  This is usually implemented by a wrapper function
-  *	that calls the generic utility function @event_trigger_print()
-- *	(see trace_event_triggers.c).
-+ *	(see trace_events_trigger.c).
-  */
- struct event_trigger_ops {
- 	void			(*func)(struct event_trigger_data *data,
-@@ -1758,7 +1758,7 @@ struct event_trigger_ops {
-  *	the appropriate trace event.  It makes use of the other
-  *	event_command callback functions to orchestrate this, and is
-  *	usually implemented by the generic utility function
-- *	@event_trigger_callback() (see trace_event_triggers.c).
-+ *	@event_trigger_callback() (see trace_events_trigger.c).
-  *
-  * @reg: Adds the trigger to the list of triggers associated with the
-  *	event, and enables the event trigger itself, after
-@@ -1767,13 +1767,13 @@ struct event_trigger_ops {
-  *	make the decision as to whether or not multiple instances of
-  *	the trigger should be allowed.  This is usually implemented by
-  *	the generic utility function @register_trigger() (see
-- *	trace_event_triggers.c).
-+ *	trace_events_trigger.c).
-  *
-  * @unreg: Removes the trigger from the list of triggers associated
-  *	with the event, and disables the event trigger itself, after
-  *	initializing it (via the event_trigger_ops @free() function).
-  *	This is usually implemented by the generic utility function
-- *	@unregister_trigger() (see trace_event_triggers.c).
-+ *	@unregister_trigger() (see trace_events_trigger.c).
-  *
-  * @unreg_all: An optional function called to remove all the triggers
-  *	from the list of triggers associated with the event.  Called
-@@ -1783,7 +1783,7 @@ struct event_trigger_ops {
-  *	for the trigger.  If no @set_filter() method is set for the
-  *	event command, filters set by the user for the command will be
-  *	ignored.  This is usually implemented by the generic utility
-- *	function @set_trigger_filter() (see trace_event_triggers.c).
-+ *	function @set_trigger_filter() (see trace_events_trigger.c).
-  *
-  * @get_trigger_ops: The callback function invoked to retrieve the
-  *	event_trigger_ops implementation associated with the command.
--- 
-2.17.1
+A ret > 0 means the device provided a response, so don't return a
+negative for that condition, please. That's just going to break
+controllers that don't provide smart data, like qemu.
