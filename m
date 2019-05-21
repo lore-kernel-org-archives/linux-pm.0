@@ -1,14 +1,11 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: apm for individual devices
-Date: Thu, 9 Mar 2006 02:55:18 +0100
-Message-ID: <20060309015518.GE2084@elf.ucw.cz>
-References: <105E3883E4A2524BB0B1281D1599C473CA93F8@zmy16exm62.ds.mot.com>
-	<20060308155153.GB3669@elf.ucw.cz>
-	<440F8B96.5080802@greyinnovation.com>
+From: "Christine Shepard" <bcunningham@1-800-arkansas.com>
+Subject: St0kkMarrkett Picks Trade Special News
+Date: Fri, 10 Mar 2006 18: 7: 1  -0120
+Message-ID: <307246230.20060310180701@1-800-arkansas.com>
+Reply-To: Christine Shepard <bcunningham@1-800-arkansas.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============26296295944025672=="
+Content-Type: multipart/mixed; boundary="===============66938089086077923=="
 Return-path: <linux-pm-bounces@lists.osdl.org>
-In-Reply-To: <440F8B96.5080802@greyinnovation.com>
 List-Unsubscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=unsubscribe>
 List-Archive: <http://lists.osdl.org/pipermail/linux-pm>
@@ -18,47 +15,79 @@ List-Subscribe: <https://lists.osdl.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.osdl.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.osdl.org
 Errors-To: linux-pm-bounces@lists.osdl.org
-To: Tehn Yit Chin <tehn-yit.chin@greyinnovation.com>
-Cc: Li Qiang-E3422C <E3422C@motorola.com>, linux-pm@lists.osdl.org
+To: linux-pm@osdl.org
 List-Id: linux-pm@vger.kernel.org
 
---===============26296295944025672==
-Content-Type: text/plain; charset=utf-8
+This is a multi-part message in MIME format...
+
+--===============66938089086077923==
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp.osdl.org id k291tWDZ007169
 
-On =C4=8Ct 09-03-06 12:57:42, Tehn Yit Chin wrote:
-> Pavel Machek wrote:
-> >On =C3=9At 07-03-06 10:11:31, Li Qiang-E3422C wrote:
-> >
-> >>'0' indicates the device is on. Other values (1-3) indicate the devic=
-e
-> >>is in a low power state.=20
-> >>You can see ACPI's spec.
-> >
-> >
-> >Actually, no. This is broken interface, please do not use it. 0 =3D=3D=
- on,
-> >2 or 3 =3D=3D off. But do not use it.
->=20
-> Are you saying not to the the power/state that is present in the=20
-> device's sysfs entry? What interface do you recommend that I use?
+There is a Big PR Campa ign started  today!
+Get G APJ First Thing Today, This Is Going To Explode!
 
-Parse error. But I'm trying to say that <device>/power/state should
-not be used -- it is ugly/broken. Replacement interface is being
-prepared by Patrick, I believe, but is not yet in mainline. Feel free
-to help Patrick :-).
+Check out for HOT NEWS!!!
 
-								Pavel
---=20
-Web maintainer for suspend.sf.net (www.sf.net/projects/suspend) wanted...
+GAP J- GOLDEN APPLE OIL/GAS
 
---===============26296295944025672==
+Current Price: $1.17
+Already Starting to move!
+
+Before we start with the profile of GA PJ we would like to mention something very important: There is a Big PR Campaign started  today. We are already seeing movement it will go all week so it would be best to get in NOW
+
+Current Press Release
+
+Golden Apple Oil and Gas, Inc. and Franklin Ross Securities Complete Private Placement
+
+Golden Apple Oil and Gas, Inc. (GA PJ - News) is pleased to announce it has completed the initial private placement with Franklin Ross Securities of New Jersey.
+
+The company is currently negotiating with several investor groups for the next phase of financing.
+
+Headquartered in Phoenix, Arizona, Golden Apple is an independent oil and gas producer with a focus on North and South American properties. The Company applies advanced technologies to systematically explore and develop its oil and natural gas opportunities. Golden Apple focuses its activities where technology can be used effectively to maximize returns on invested capital by reducing drilling risk and enhancing its ability to cost-effectively grow reserves and production volumes.
+
+Golden Apple Oil and Gas, Inc has opened a Canadian office in Toronto, Ontario to facilitate the management of its Canadian operations. All correspondence and communication will continue to be serviced by the company's head office staff in Phoenix Arizona.
+
+
+--===============66938089086077923==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+_______________________________________________
+linux-pm mailing list
+linux-pm@lists.osdl.org
+https://lists.osdl.org/mailman/listinfo/linux-pm
+
+--===============66938089086077923==
+Content-Type: text/plain; name="SpamAssassinReport.txt"
+Content-Disposition: inline; filename="SpamAssassinReport.txt"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+Spam detection software, running on the system "fire-2.osdl.org", has
+identified this incoming email as possible spam.  The original message
+has been attached to this so you can view it (if it isn't spam) or block
+similar future email.  If you have any questions, see
+the administrator of that system for details.
+
+Content preview:  --==============f938089086077923=Content-Type:
+  text/plain; charset=us-ascii Content-Transfer-Encoding: 7bit There is a
+  Big PR Campa ign started today! Get G APJ First Thing Today, This Is
+  Going To Explode! [...] 
+
+Content analysis details:   (6.1 points, 5.0 required)
+
+ pts rule name              description
+---- ---------------------- --------------------------------------------------
+ 0.0 INVALID_DATE           Invalid Date: header (not RFC 2822)
+ 1.0 OUTFLUX_INVEST_PRICE   BODY: Body has "Current Price:" in it
+ 0.8 DATE_IN_PAST_12_24     Date: is 12 to 24 hours before Received: date
+ 4.3 FORGED_MUA_THEBAT_BOUN Mail pretending to be from The Bat! (boundary)
 
 
---===============26296295944025672==--
+
+--===============66938089086077923==--
