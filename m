@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D302DC282DD
-	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 19:40:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04CCFC282DD
+	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 19:47:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A70F120675
-	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 19:40:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C93092081C
+	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 19:47:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1558554050;
-	bh=marLfl6E2Vvvg0201mP1qVHGUomZsSlOW9WP/DtMf9M=;
+	s=default; t=1558554437;
+	bh=2Ej++43+0ra7hQ2n3/xZ3y5xmW7GGAxykRpfXfRSlHM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=UNNZXS2kEbY5KRZ16AbNOPnr/b2Z/dppw2IX2F6JCPvS/aPCfql7mJpaA/FQwj8ZH
-	 SV+fm/w2jnO0FCDi6Lnae68jEgwPEno4zeQxfum7sSSLo8+OVSciAvoRCaxY2aJhSo
-	 SwCRYJTrlTto0l3ofQk3Bf0IqAraGbPUX/Sd/dnM=
+	b=qX2tvm1IKjc/jvhoBT3UNciCEHTr8DkUQKd6I1uiHvRtbvkZUP+JvY4aPLOaqKfpN
+	 Fx/69dArA9Ff5Rh5lHUqWRoCZUp2aXRxlA307y56x3yvhrapFNqSP0KHtqc3SHNzRw
+	 ewvq76+3cXxxQPFeeVBtBGycJFKWZuDDs4hXrRmc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732824AbfEVT3U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 May 2019 15:29:20 -0400
-Received: from mail.kernel.org ([198.145.29.99]:52324 "EHLO mail.kernel.org"
+        id S1731768AbfEVTrM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 May 2019 15:47:12 -0400
+Received: from mail.kernel.org ([198.145.29.99]:49732 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732820AbfEVT3U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 May 2019 15:29:20 -0400
+        id S1731164AbfEVT1b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 May 2019 15:27:31 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 65FF82173C;
-        Wed, 22 May 2019 19:29:18 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 364B420879;
+        Wed, 22 May 2019 19:27:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1558553359;
-        bh=marLfl6E2Vvvg0201mP1qVHGUomZsSlOW9WP/DtMf9M=;
+        s=default; t=1558553250;
+        bh=2Ej++43+0ra7hQ2n3/xZ3y5xmW7GGAxykRpfXfRSlHM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=xYJnc8Jnx4k3KO1oPYzoqQZ0wPslUiBPV20ra1P9Lo2Y+tidvj0STyTsPBqnr9r8o
-         C8cz6x2CjDk+3GublSDu86GF8zF4ZV80Jgrb+KDhvF2RUTUjYDgfMF0PEOYZjIWPyM
-         3f9GGUCkiqvO+sp8gqq8Xh+hw08v8xmN2Rpfufm0=
+        b=fhCH2P8DMvjHxDnDk2ufsO8fpCfk3fSdxtSZJP0+dhLAG+xfT0KwmQk45p9EJ1+cL
+         aT3XEYBBiR8k8fYERumt/me7GoQfxIeyq6C5Y+E1Vfq2r+8PxrZt5sL0Oii2LK8sQt
+         EnHdGL88XU2BK5xHNohUlrbBfUqq1+3v97e6iooU=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
@@ -50,12 +50,12 @@ Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Ingo Molnar <mingo@kernel.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 022/167] sched/cpufreq: Fix kobject memleak
-Date:   Wed, 22 May 2019 15:26:17 -0400
-Message-Id: <20190522192842.25858-22-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 034/244] sched/cpufreq: Fix kobject memleak
+Date:   Wed, 22 May 2019 15:23:00 -0400
+Message-Id: <20190522192630.24917-34-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190522192842.25858-1-sashal@kernel.org>
-References: <20190522192842.25858-1-sashal@kernel.org>
+In-Reply-To: <20190522192630.24917-1-sashal@kernel.org>
+References: <20190522192630.24917-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -94,10 +94,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 3 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9f5c51cd67ad9..fceb18d26db8e 100644
+index 505c9a55d5551..d3213594d1a7a 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1101,6 +1101,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+@@ -1103,6 +1103,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
  				   cpufreq_global_kobject, "policy%u", cpu);
  	if (ret) {
  		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
@@ -106,7 +106,7 @@ index 9f5c51cd67ad9..fceb18d26db8e 100644
  	}
  
 diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 6a16d22bc6043..146237aab395d 100644
+index 6d53f7d9fc7a9..69fc5cf4782fb 100644
 --- a/drivers/cpufreq/cpufreq_governor.c
 +++ b/drivers/cpufreq/cpufreq_governor.c
 @@ -459,6 +459,8 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
