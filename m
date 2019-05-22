@@ -2,63 +2,31 @@ Return-Path: <SRS0=xSzh=TW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D943DC282DD
-	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 12:30:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97802C282CE
+	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 12:35:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AF8B6217F9
-	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 12:30:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="g96lwHJ1"
+	by mail.kernel.org (Postfix) with ESMTP id 766982173C
+	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 12:35:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729238AbfEVMaU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 May 2019 08:30:20 -0400
-Received: from mail-wm1-f67.google.com ([209.85.128.67]:35737 "EHLO
-        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728703AbfEVMaU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 May 2019 08:30:20 -0400
-Received: by mail-wm1-f67.google.com with SMTP id q15so2030972wmj.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 May 2019 05:30:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=bWFk7Dku220BSIRMzb9u9QC4G1aGkz5eeVURI5VAO6k=;
-        b=g96lwHJ1ode6GDHOpCNuIGXm9CyJMyL30+7sF/XHZsGNh83VKrt4oHQElsVQcq3Px6
-         BOLZCXg2OkSQeBvD3hxSeV4p2mhTpmNUGC5+Hk9dDKEZ2kCwnFtdO3vkgr14OreE2lST
-         el4z4ZbLjBnZDmCh9cbIxr5CVw4rtQtIgsScMOQB7jjEHWklwSnumvckNFx9JoklMZdT
-         Pagwhsw3cJsXOGpV22J+QEU5RyEKqs5w/+Nmh5uFkwv9vQ5LGI2FSuj3qYd/u0u6rlVC
-         9YVaMPU1e9ul/YO63BYEVxcUJFXVRQjaOAlw1VdSX/bIM/KVJjpW9PCFv7aHz6XbHE2Z
-         EysA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=bWFk7Dku220BSIRMzb9u9QC4G1aGkz5eeVURI5VAO6k=;
-        b=KO98eifmFiP4qMqDQYKjrYUZNaPxVD50ffvVE+tqxX60sav+rblMBxSpI9Mf/9euYP
-         JYxsBaLd/5F79vmRLH4prJxOELNvN2BRT+5yLDr+/W6u3pLZ8sVmkx3Pk0jwekzBjdAX
-         Kg7zavjPSv5a4GaHI9d/cqco3hxVLitH+FIfPXR0vVFrgB4zO//1HNtDxvJeghz73G4v
-         EHSYjIuc2uJVFqn9T15HUzMF0EACK1R/v/4BoPoW50GDH9ekZXqiOsRZCxXnAOev1lor
-         81Lr8WvcoGJ+e0DCZT+1Vfo5xwI/fBiSQIpI9NYDO5pveqekOfOyoyK2gyVDMCW3vnKR
-         O5/A==
-X-Gm-Message-State: APjAAAX41GbevwOskwl0a6Q23Z7dG0y7MDwetQUEJePjaFf5iCRCrsOm
-        AGf4Q+H8BTh09HATWTKm3Wnt2w==
-X-Google-Smtp-Source: APXvYqwcEWVPtTAR2IKfdlPTMN56ztuBh3i4KBntxk3eiRbthNztynbpp3p0eM5amjYVUHiszLA3qQ==
-X-Received: by 2002:a1c:eb18:: with SMTP id j24mr7077335wmh.32.1558528218123;
-        Wed, 22 May 2019 05:30:18 -0700 (PDT)
-Received: from [10.1.203.87] (nat-wifi.sssup.it. [193.205.81.22])
-        by smtp.googlemail.com with ESMTPSA id y4sm3952952wmj.20.2019.05.22.05.30.16
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 22 May 2019 05:30:17 -0700 (PDT)
-Subject: Re: [PATCH v3 1/3] thermal: rockchip: fix up the tsadc pinctrl
- setting error
-To:     Heiko Stuebner <heiko@sntech.de>,
-        Enric Balletbo Serra <eballetbo@gmail.com>
-Cc:     Elaine Zhang <zhangqing@rock-chips.com>,
+        id S1728794AbfEVMfD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 May 2019 08:35:03 -0400
+Received: from gloria.sntech.de ([185.11.138.130]:45732 "EHLO gloria.sntech.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728438AbfEVMfC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 May 2019 08:35:02 -0400
+Received: from we0524.dip.tu-dresden.de ([141.76.178.12] helo=phil.localnet)
+        by gloria.sntech.de with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.89)
+        (envelope-from <heiko@sntech.de>)
+        id 1hTQSR-0000lq-OK; Wed, 22 May 2019 14:34:59 +0200
+From:   Heiko Stuebner <heiko@sntech.de>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Enric Balletbo Serra <eballetbo@gmail.com>,
+        Elaine Zhang <zhangqing@rock-chips.com>,
         Mark Rutland <mark.rutland@arm.com>,
         "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
         huangtao@rock-chips.com, Linux PM list <linux-pm@vger.kernel.org>,
@@ -70,49 +38,42 @@ Cc:     Elaine Zhang <zhangqing@rock-chips.com>,
         Zhang Rui <rui.zhang@intel.com>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         Doug Anderson <dianders@chromium.org>, vicencb@gmail.com
-References: <1556618986-18923-1-git-send-email-zhangqing@rock-chips.com>
- <785392a0-282a-1e51-a4d6-a6d5ca478949@linaro.org>
- <CAFqH_53nbiwzQKctNa7MBzgCcsRFn1p8g31Xgvo3E9k6eA8AKw@mail.gmail.com>
- <2174314.1vfUlvne1O@phil>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <f0581341-126a-5733-3c4b-8e6f67bfc32e@linaro.org>
-Date:   Wed, 22 May 2019 14:30:16 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+Subject: Re: [PATCH v3 1/3] thermal: rockchip: fix up the tsadc pinctrl setting error
+Date:   Wed, 22 May 2019 14:34:58 +0200
+Message-ID: <1805430.MCm2xJzUXA@phil>
+In-Reply-To: <f0581341-126a-5733-3c4b-8e6f67bfc32e@linaro.org>
+References: <1556618986-18923-1-git-send-email-zhangqing@rock-chips.com> <2174314.1vfUlvne1O@phil> <f0581341-126a-5733-3c4b-8e6f67bfc32e@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <2174314.1vfUlvne1O@phil>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 22/05/2019 14:27, Heiko Stuebner wrote:
-
-[ ... ]
-
->> As this change is now in mainline and is causing veyron to hang I'd
->> suggest reverting this change for now. Even fixing the root cause
->> (maybe the one I pointed above) after this patch we will have the
->> thermal driver to fail because "gpio" and "otpout" states are not
->> defined nor documented (a change on this will need some reviews and
->> acks and time I guess).
+Am Mittwoch, 22. Mai 2019, 14:30:16 CEST schrieb Daniel Lezcano:
+> On 22/05/2019 14:27, Heiko Stuebner wrote:
 > 
-> I definitly agree here. Handling + checking the binding change
-> as well as needed fallback code is definitly not material for -rc-kernels
-> so we should just revert for now and let Elaine fix the issues for 5.3.
+> [ ... ]
 > 
-> Anyone volunteering for sending a revert-patch to Eduardo? :-)
+> >> As this change is now in mainline and is causing veyron to hang I'd
+> >> suggest reverting this change for now. Even fixing the root cause
+> >> (maybe the one I pointed above) after this patch we will have the
+> >> thermal driver to fail because "gpio" and "otpout" states are not
+> >> defined nor documented (a change on this will need some reviews and
+> >> acks and time I guess).
+> > 
+> > I definitly agree here. Handling + checking the binding change
+> > as well as needed fallback code is definitly not material for -rc-kernels
+> > so we should just revert for now and let Elaine fix the issues for 5.3.
+> > 
+> > Anyone volunteering for sending a revert-patch to Eduardo? :-)
+> 
+> I can't right now :/
 
-I can't right now :/
+ok, I'll do the revert patch then, so that we get this sorted.
 
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Heiko
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
