@@ -2,192 +2,122 @@ Return-Path: <SRS0=xSzh=TW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E613EC282CE
-	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 19:10:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 836E0C282CE
+	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 19:36:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BBBE820868
-	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 19:10:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 570C82081C
+	for <linux-pm@archiver.kernel.org>; Wed, 22 May 2019 19:36:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1558553793;
+	bh=shTTSno3Vmfm+DSV2fIEsrskFZGxkjejRLHNEOTct/w=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=UkGDsfQJzXOP6E4AN2jckmnVRitzlVOp5w9mkRZzyOTQk0Yeo9KFdTS8US59eRb82
+	 q2THZRGCsIr0+me2EbkDpJqWWBJTK9oWqGlleChmnlb3NrWQqG91dTzqDZ3gU0gewd
+	 os5FGD/Ohf7tztla7O6B7kXdic8JQHOOLXPf94iY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729506AbfEVTKf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 May 2019 15:10:35 -0400
-Received: from smtprelay0186.hostedemail.com ([216.40.44.186]:36296 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729018AbfEVTKf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 May 2019 15:10:35 -0400
-X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 May 2019 15:10:34 EDT
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com [10.5.19.251])
-        by smtpgrave02.hostedemail.com (Postfix) with ESMTP id 90D6E18024508;
-        Wed, 22 May 2019 18:54:36 +0000 (UTC)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
-        by smtprelay06.hostedemail.com (Postfix) with ESMTP id 60240182251DF;
-        Wed, 22 May 2019 18:54:36 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: beds74_27dc26fe10b2d
-X-Filterd-Recvd-Size: 5469
-Received: from XPS-9350 (cpe-23-242-196-136.socal.res.rr.com [23.242.196.136])
-        (Authenticated sender: joe@perches.com)
-        by omf20.hostedemail.com (Postfix) with ESMTPA;
-        Wed, 22 May 2019 18:54:33 +0000 (UTC)
-Message-ID: <8ae488765c8d441dbb444adaf89e59a2afa81298.camel@perches.com>
-Subject: Re: [PATCH] Fix comments with paths pointing to renamed or moved
- files.
-From:   Joe Perches <joe@perches.com>
-To:     Pavel Machek <pavel@ucw.cz>,
-        Lukas Prause <langspielplatte@black-mesa.xyz>
-Cc:     lizefan@huawei.com, tj@kernel.org, hannes@cmpxchg.org,
-        peterz@infradead.org, mingo@redhat.com, will.deacon@arm.com,
-        rjw@rjwysocki.net, len.brown@intel.com, rostedt@goodmis.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        cgroups@vger.kernel.org, linux-pm@vger.kernel.org,
-        Lennart Glauer <mail@lennart-glauer.de>
-Date:   Wed, 22 May 2019 11:54:31 -0700
-In-Reply-To: <20190522183614.GD10003@amd>
-References: <20190521155430.14941-1-langspielplatte@black-mesa.xyz>
-         <20190522183614.GD10003@amd>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.30.1-1build1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+        id S1733299AbfEVTap (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 May 2019 15:30:45 -0400
+Received: from mail.kernel.org ([198.145.29.99]:54168 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1733290AbfEVTan (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 May 2019 15:30:43 -0400
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id BBDCA204FD;
+        Wed, 22 May 2019 19:30:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1558553443;
+        bh=shTTSno3Vmfm+DSV2fIEsrskFZGxkjejRLHNEOTct/w=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=lx8ITbMUV1l7359/9KIvpqM6g5JapaF5DbHJ2L3cLZZKCO1akoewoCBjfZjrz5j+q
+         KmdZX9Z7hhT1MeiOf29HFWQARk3TeuUc4ZEm3Rrzuxn7bgPdCRhNNNEtHGRU2rN0vb
+         O9+kGdohmNxPCZbw+IbOAWGerN9ZPzXWEZnPtB3M=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        "Tobin C . Harding" <tobin@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.9 014/114] sched/cpufreq: Fix kobject memleak
+Date:   Wed, 22 May 2019 15:28:37 -0400
+Message-Id: <20190522193017.26567-14-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190522193017.26567-1-sashal@kernel.org>
+References: <20190522193017.26567-1-sashal@kernel.org>
+MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 2019-05-22 at 20:36 +0200, Pavel Machek wrote:
-> On Tue 2019-05-21 17:54:30, Lukas Prause wrote:
-> > This patch corrects renamed or moved paths in comments.
-> > 
-> > Signed-off-by: Lukas Prause <langspielplatte@black-mesa.xyz>
-> > Signed-off-by: Lennart Glauer <mail@lennart-glauer.de>
-> 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> 
-> > diff --git a/kernel/power/power.h b/kernel/power/power.h
-> > index 9e58bdc8a562..5de8b0c7f657 100644
-> > --- a/kernel/power/power.h
-> > +++ b/kernel/power/power.h
-> > @@ -182,7 +182,7 @@ extern int swsusp_unmark(void);
-> >  #endif
-> >  
-> >  struct timeval;
-> > -/* kernel/power/swsusp.c */
-> > +/* kernel/power/hibernate.c */
-> >  extern void swsusp_show_speed(ktime_t, ktime_t, unsigned int, char *);
-> >  
-> >  #ifdef CONFIG_SUSPEND
+From: Viresh Kumar <viresh.kumar@linaro.org>
 
-I think all of these markings should be removed instead.
-Why are these useful?
-It seems many of these filenames in power.h aren't correct anyway.
+[ Upstream commit 9a4f26cc98d81b67ecc23b890c28e2df324e29f3 ]
 
-For instance power.h has:
+Currently the error return path from kobject_init_and_add() is not
+followed by a call to kobject_put() - which means we are leaking
+the kobject.
 
-   /* kernel/power/hibernate.c */
-   extern int swsusp_check(void);
-   extern void swsusp_free(void);
-   extern int swsusp_read(unsigned int *flags_p);
-   extern int swsusp_write(unsigned int flags);
-   extern void swsusp_close(fmode_t);
-   #ifdef CONFIG_SUSPEND
-   extern int swsusp_unmark(void);
-   #endif
+Fix it by adding a call to kobject_put() in the error path of
+kobject_init_and_add().
 
-but:
-
-swsusp_check is in swap.c
-swsusp_free is in snapshot.c
-swsusp_read is in swap.c
-
-etc...
-
-Perhaps:
+Signed-off-by: Tobin C. Harding <tobin@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tobin C. Harding <tobin@kernel.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Link: http://lkml.kernel.org/r/20190430001144.24890-1-tobin@kernel.org
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- kernel/power/power.h | 10 ----------
- 1 file changed, 10 deletions(-)
+ drivers/cpufreq/cpufreq.c          | 1 +
+ drivers/cpufreq/cpufreq_governor.c | 2 ++
+ 2 files changed, 3 insertions(+)
 
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 9e58bdc8a562..52bcb72564e5 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -16,7 +16,6 @@ struct swsusp_info {
- } __aligned(PAGE_SIZE);
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a38a23f0b3f41..e917521a3ef9b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1065,6 +1065,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+ 				   cpufreq_global_kobject, "policy%u", cpu);
+ 	if (ret) {
+ 		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
++		kobject_put(&policy->kobj);
+ 		goto err_free_real_cpus;
+ 	}
  
- #ifdef CONFIG_HIBERNATION
--/* kernel/power/snapshot.c */
- extern void __init hibernate_reserved_size_init(void);
- extern void __init hibernate_image_size_init(void);
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 38d1a8216084c..32c9524a6ec54 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -449,6 +449,8 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
+ 	/* Failure, so roll back. */
+ 	pr_err("initialization failed (dbs_data kobject init error %d)\n", ret);
  
-@@ -55,7 +54,6 @@ extern int hibernate_resume_nonboot_cpu_disable(void);
++	kobject_put(&dbs_data->attr_set.kobj);
++
+ 	policy->governor_data = NULL;
  
- asmlinkage int swsusp_save(void);
- 
--/* kernel/power/hibernate.c */
- extern bool freezer_test_done;
- 
- extern int hibernation_snapshot(int platform_mode);
-@@ -63,7 +61,6 @@ extern int hibernation_restore(int platform_mode);
- extern int hibernation_platform_enter(void);
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
--/* kernel/power/snapshot.c */
- extern void enable_restore_image_protection(void);
- #else
- static inline void enable_restore_image_protection(void) {}
-@@ -171,7 +168,6 @@ extern int swsusp_swap_in_use(void);
- #define SF_NOCOMPRESS_MODE	2
- #define SF_CRC32_MODE	        4
- 
--/* kernel/power/hibernate.c */
- extern int swsusp_check(void);
- extern void swsusp_free(void);
- extern int swsusp_read(unsigned int *flags_p);
-@@ -182,11 +178,9 @@ extern int swsusp_unmark(void);
- #endif
- 
- struct timeval;
--/* kernel/power/swsusp.c */
- extern void swsusp_show_speed(ktime_t, ktime_t, unsigned int, char *);
- 
- #ifdef CONFIG_SUSPEND
--/* kernel/power/suspend.c */
- extern const char * const pm_labels[];
- extern const char *pm_states[];
- extern const char *mem_sleep_states[];
-@@ -202,7 +196,6 @@ static inline int suspend_devices_and_enter(suspend_state_t state)
- #endif /* !CONFIG_SUSPEND */
- 
- #ifdef CONFIG_PM_TEST_SUSPEND
--/* kernel/power/suspend_test.c */
- extern void suspend_test_start(void);
- extern void suspend_test_finish(const char *label);
- #else /* !CONFIG_PM_TEST_SUSPEND */
-@@ -211,7 +204,6 @@ static inline void suspend_test_finish(const char *label) {}
- #endif /* !CONFIG_PM_TEST_SUSPEND */
- 
- #ifdef CONFIG_PM_SLEEP
--/* kernel/power/main.c */
- extern int __pm_notifier_call_chain(unsigned long val, int nr_to_call,
- 				    int *nr_calls);
- extern int pm_notifier_call_chain(unsigned long val);
-@@ -289,7 +281,6 @@ static inline void suspend_thaw_processes(void)
- 
- #ifdef CONFIG_PM_AUTOSLEEP
- 
--/* kernel/power/autosleep.c */
- extern int pm_autosleep_init(void);
- extern int pm_autosleep_lock(void);
- extern void pm_autosleep_unlock(void);
-@@ -307,7 +298,6 @@ static inline suspend_state_t pm_autosleep_state(void) { return PM_SUSPEND_ON; }
- 
- #ifdef CONFIG_PM_WAKELOCKS
- 
--/* kernel/power/wakelock.c */
- extern ssize_t pm_show_wakelocks(char *buf, bool show_active);
- extern int pm_wake_lock(const char *buf);
- extern int pm_wake_unlock(const char *buf);
-
+ 	if (!have_governor_per_policy())
+-- 
+2.20.1
 
