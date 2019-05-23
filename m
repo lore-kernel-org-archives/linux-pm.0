@@ -2,67 +2,125 @@ Return-Path: <SRS0=VXio=TX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99286C282DE
-	for <linux-pm@archiver.kernel.org>; Thu, 23 May 2019 18:35:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18C58C282DD
+	for <linux-pm@archiver.kernel.org>; Thu, 23 May 2019 19:37:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7A1C02133D
-	for <linux-pm@archiver.kernel.org>; Thu, 23 May 2019 18:35:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E02542075E
+	for <linux-pm@archiver.kernel.org>; Thu, 23 May 2019 19:37:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1558640247;
+	bh=VZ/qY7gzPf8BKoH4JDs2wBXDuVtj0bdbFzN0l2GOsww=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=0cUN7H6UXK6LKXOR9AOVypjvB0famyYavxlljMOe6nJAXF+8U/UKMjgfJB5EE5YpG
+	 dToQEiv1rqP/PAX6RqreWHQ6n/sZ4+efvsLA6uk4IpNMKHe4vzwguPOParXum+N7wG
+	 AmLtbCrvYVOC20o+6ChaSSPhYbU/IYwN8bHx/oSY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731516AbfEWSff (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 May 2019 14:35:35 -0400
-Received: from mail.kernel.org ([198.145.29.99]:35746 "EHLO mail.kernel.org"
+        id S2388028AbfEWThO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 May 2019 15:37:14 -0400
+Received: from mail.kernel.org ([198.145.29.99]:35696 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731261AbfEWSff (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 May 2019 14:35:35 -0400
-Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com [66.24.58.225])
+        id S2390942AbfEWTYj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 May 2019 15:24:39 -0400
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B5F8321019;
-        Thu, 23 May 2019 18:35:33 +0000 (UTC)
-Date:   Thu, 23 May 2019 14:35:32 -0400
-From:   Steven Rostedt <rostedt@goodmis.org>
-To:     Lukas Prause <langspielplatte@black-mesa.xyz>
-Cc:     lizefan@huawei.com, tj@kernel.org, hannes@cmpxchg.org,
-        peterz@infradead.org, mingo@redhat.com, will.deacon@arm.com,
-        rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        cgroups@vger.kernel.org, linux-pm@vger.kernel.org,
-        Lennart Glauer <mail@lennart-glauer.de>
-Subject: Re: [PATCH] Fix comments with paths pointing to renamed or moved
- files.
-Message-ID: <20190523143532.0319e253@gandalf.local.home>
-In-Reply-To: <20190521155430.14941-1-langspielplatte@black-mesa.xyz>
-References: <20190521155430.14941-1-langspielplatte@black-mesa.xyz>
-X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+        by mail.kernel.org (Postfix) with ESMTPSA id 3885F2133D;
+        Thu, 23 May 2019 19:24:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1558639478;
+        bh=VZ/qY7gzPf8BKoH4JDs2wBXDuVtj0bdbFzN0l2GOsww=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=ALagHLDuXcXD4IDgsc8KvWdkRDt7UJsqNYVbD74us2kJ0jA66IpXD4trqw/LDCaTD
+         I6Z3HhNtp9Ks8rb/eJCqyvg06rWnpDOFs2MYdoDwjQp/HmYbzx3N1XxTZ+ZBzwI0/r
+         eJL4+qD8yEpRZhXWERLjNwzJWOGO4U9ggn46X0QE=
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        stable@vger.kernel.org, Andrey Smirnov <andrew.smirnov@gmail.com>,
+        Chris Healy <cphealy@gmail.com>, linux-pm@vger.kernel.org,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 5.0 120/139] power: supply: sysfs: prevent endless uevent loop with CONFIG_POWER_SUPPLY_DEBUG
+Date:   Thu, 23 May 2019 21:06:48 +0200
+Message-Id: <20190523181735.241791265@linuxfoundation.org>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190523181720.120897565@linuxfoundation.org>
+References: <20190523181720.120897565@linuxfoundation.org>
+User-Agent: quilt/0.66
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 21 May 2019 17:54:30 +0200
-Lukas Prause <langspielplatte@black-mesa.xyz> wrote:
+[ Upstream commit 349ced9984ff540ce74ca8a0b2e9b03dc434b9dd ]
 
-> This patch corrects renamed or moved paths in comments.
-> 
-> Signed-off-by: Lukas Prause <langspielplatte@black-mesa.xyz>
-> Signed-off-by: Lennart Glauer <mail@lennart-glauer.de>
-> ---
->  kernel/cgroup/cpuset.c       |  2 +-
->  kernel/locking/mutex-debug.h |  2 +-
->  kernel/power/power.h         |  2 +-
->  kernel/sched/core.c          |  2 +-
->  kernel/trace/trace.h         | 14 +++++++-------
+Fix a similar endless event loop as was done in commit
+8dcf32175b4e ("i2c: prevent endless uevent loop with
+CONFIG_I2C_DEBUG_CORE"):
 
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+  The culprit is the dev_dbg printk in the i2c uevent handler. If
+  this is activated (for instance by CONFIG_I2C_DEBUG_CORE) it results
+  in an endless loop with systemd-journald.
 
--- Steve
+  This happens if user-space scans the system log and reads the uevent
+  file to get information about a newly created device, which seems
+  fair use to me. Unfortunately reading the "uevent" file uses the
+  same function that runs for creating the uevent for a new device,
+  generating the next syslog entry
 
->  5 files changed, 11 insertions(+), 11 deletions(-)
+Both CONFIG_I2C_DEBUG_CORE and CONFIG_POWER_SUPPLY_DEBUG were reported
+in https://bugs.freedesktop.org/show_bug.cgi?id=76886 but only former
+seems to have been fixed. Drop debug prints as it was done in I2C
+subsystem to resolve the issue.
+
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/power/supply/power_supply_sysfs.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index dce24f5961609..5358a80d854f9 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -383,15 +383,11 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	char *prop_buf;
+ 	char *attrname;
+ 
+-	dev_dbg(dev, "uevent\n");
+-
+ 	if (!psy || !psy->desc) {
+ 		dev_dbg(dev, "No power supply yet\n");
+ 		return ret;
+ 	}
+ 
+-	dev_dbg(dev, "POWER_SUPPLY_NAME=%s\n", psy->desc->name);
+-
+ 	ret = add_uevent_var(env, "POWER_SUPPLY_NAME=%s", psy->desc->name);
+ 	if (ret)
+ 		return ret;
+@@ -427,8 +423,6 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 			goto out;
+ 		}
+ 
+-		dev_dbg(dev, "prop %s=%s\n", attrname, prop_buf);
+-
+ 		ret = add_uevent_var(env, "POWER_SUPPLY_%s=%s", attrname, prop_buf);
+ 		kfree(attrname);
+ 		if (ret)
+-- 
+2.20.1
+
+
 
