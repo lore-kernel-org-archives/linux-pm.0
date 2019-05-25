@@ -2,100 +2,318 @@ Return-Path: <SRS0=L3T5=TZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 086DEC07542
-	for <linux-pm@archiver.kernel.org>; Sat, 25 May 2019 18:13:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C55DDC282E5
+	for <linux-pm@archiver.kernel.org>; Sat, 25 May 2019 18:48:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D823B216E3
-	for <linux-pm@archiver.kernel.org>; Sat, 25 May 2019 18:13:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8B44B20862
+	for <linux-pm@archiver.kernel.org>; Sat, 25 May 2019 18:48:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lYsmCkkV"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="g0VlUeJT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727317AbfEYSNd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 25 May 2019 14:13:33 -0400
-Received: from mail-pl1-f195.google.com ([209.85.214.195]:46509 "EHLO
-        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727126AbfEYSNd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 May 2019 14:13:33 -0400
-Received: by mail-pl1-f195.google.com with SMTP id r18so5426145pls.13;
-        Sat, 25 May 2019 11:13:32 -0700 (PDT)
+        id S1727551AbfEYSs1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 25 May 2019 14:48:27 -0400
+Received: from mail-it1-f196.google.com ([209.85.166.196]:50648 "EHLO
+        mail-it1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727252AbfEYSs0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 May 2019 14:48:26 -0400
+Received: by mail-it1-f196.google.com with SMTP id a186so11131043itg.0;
+        Sat, 25 May 2019 11:48:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=HRYu8PaHsPuH7ZyD14nhDXouGF0HQ0zAn0UWWEnt2PY=;
-        b=lYsmCkkVrUO+2GVeYbd8F9i/q2/xfvb5RQaKK7m/KL/+kIXt518Vp9x9T9rPXbou5j
-         CbzxHipr4SspD1HHGyqpABcxJr/VMf/28A3DfaK1PbeeLhARtdml0Wut3luUm92nvkIw
-         cjWtZywhhDlQGNDrW/efMSGGNoPw8pEtxmUvar8w+zrp8oHuvVDjbBQ6FqQRvzpW4V/B
-         YZeqAuddyhDNArChQY2SGnpeUK+RwQ93lhLu0BPQto4WCMzMcJ/tqPCR+fBsTaMECK+X
-         7TpooFstkZ6bfWNtAx6v9hp98L600rHvqcKHuYfhtYC2o6vRnoy0zv/U0PRzLfXB4oBs
-         IblA==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :content-transfer-encoding;
+        bh=sZoCbpozx2WzELJxdxaEDmEhop+Xro7Vi+HBCV+TS1o=;
+        b=g0VlUeJTLjDj5kTn6r0gK/cmgEqbLqLXv/SixD12M7rAecVh4wyIoDyB1RIZZX1bNq
+         XLZzlKhjoNlZTRqsXwAiyjiSA8j+2YKfYWaGWwMHigj9naufogTW+W09t2VTXJ1IgVop
+         ezhiQ5R7WL0pj3/99Xxt9Xgl7KrlCfyKwKRsarGozt2fCLtwNeCf/6awYLoIDQBDZzar
+         dnYzUd+rKaezLtLUlWf8Pr/7+zWAYQAuCCHGB3rScQ7vrjmbvBgAM3bwpApjMyjOEkxL
+         kw7joZYoRDgo2uXv6tTjCNhrVmCo4XowRbYPNsw/IBGiiH8rtAktmYkE0c05OP3LFx0b
+         U8XQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=HRYu8PaHsPuH7ZyD14nhDXouGF0HQ0zAn0UWWEnt2PY=;
-        b=SJ7z51fFCwqbT3Hikpr4OZJEgQ3JsTDqNPLI2dztaJHRYWjLAAeZJiTiFh7Mt68QcX
-         TElLUMc2Q5v3arO6sY+0D8sMvg8gqrfHNhIUkhAo5jWjTX0lPU7p92oLERiU3O1TCh/B
-         pKSbE7yp6SCXeX8Os3nlasspM2ZWMl0GvHjKKBgrW7q0NX78kn9dORzN4m9qFOsH1z8U
-         HJRBGgqPvqB0MJtKSxvvoIcU9/Zw+z7x7GGYPaSfh+qo5VwclrcLXRJr+Qt1+2cscMOa
-         tJd0hqJKC8d1S6mbo6OOP1VlDd09zTufihBrWh3qwauvQ/u2dFZmH6ApFk5CSqasabE9
-         vuPw==
-X-Gm-Message-State: APjAAAWg1BplXiSB3myUslL6qYRTNKNmGTRXvR107tgdi/ItGcEw2ses
-        jsetfXjrX061WawWAqlEPx0=
-X-Google-Smtp-Source: APXvYqwgce5AQBttT/IsT2xQ37eli2VMim3NEhCJnvjdhjhv2dmB0Yci4JaHaLapKWGYuKBBm/Lyqw==
-X-Received: by 2002:a17:902:1029:: with SMTP id b38mr74079371pla.72.1558808012389;
-        Sat, 25 May 2019 11:13:32 -0700 (PDT)
-Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
-        by smtp.gmail.com with ESMTPSA id z125sm8011552pfb.75.2019.05.25.11.13.31
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Sat, 25 May 2019 11:13:31 -0700 (PDT)
-From:   Yangtao Li <tiny.windzz@gmail.com>
-To:     rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org,
-        davem@davemloft.net, mchehab+samsung@kernel.org,
-        gregkh@linuxfoundation.org, linus.walleij@linaro.org,
-        nicolas.ferre@microchip.com, paulmck@linux.ibm.com
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH v3 0/3] add thermal driver for h6 
-Date:   Sat, 25 May 2019 14:13:26 -0400
-Message-Id: <20190525181329.18657-1-tiny.windzz@gmail.com>
-X-Mailer: git-send-email 2.17.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:content-transfer-encoding;
+        bh=sZoCbpozx2WzELJxdxaEDmEhop+Xro7Vi+HBCV+TS1o=;
+        b=feoLV4YXWsjf/PuyU5PkcbQNSNAvvNhgNLQMB8upPMtErRiqISMgIKa6Tdxxv8VFSF
+         wDwBOoX90Iclhf0OF12cH4+cqf88BbpEwvz/1Xppzo44Nriy5PbLp2O+FSRcPTzQlkx3
+         D9J6WNEPWxUWebrKspIx73UW/haC52GZc1Zk6kr3sSmkmgV6p9/pYbM8y+0MxaWc134i
+         gLTTw7fKys3UFKJQZs4f2PFKeaRBnU8LjKvGHGU1YzxIIdJ1vPrjSpP10oYDxuzE3ToH
+         hQkxorIRbmiz3KxTD4azKLZdEOAdA0HdcHR2JocVG147h4W3UhdzSyoFVpQVYl9xTD2Y
+         CUAQ==
+X-Gm-Message-State: APjAAAUbSMhfaye96EPiK+j6F4pPTVqRFl13fVmzEafUhjDDbtWzvfYZ
+        ez0G1HN8ZuH83RLO/H2pkaybfIrC9rX1JWN8S6A=
+X-Google-Smtp-Source: APXvYqztVIy2Z3QZqJKHiF6I+2B4HprXc4s8f7rIl/bjVuS8V9KQ9z4GtrTMWDdHlIylrt/2fcxNBjuSxvgr6pbHjE4=
+X-Received: by 2002:a02:cabb:: with SMTP id e27mr19684986jap.12.1558810105828;
+ Sat, 25 May 2019 11:48:25 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190512082614.9045-1-tiny.windzz@gmail.com> <20190512082614.9045-3-tiny.windzz@gmail.com>
+ <20190512221612.ubmknvim4utnqpl4@core.my.home> <CAEExFWv5A5mhpV7afQT=AaYx2ko5QnfbM6HvfuTgT1Na=ssOcw@mail.gmail.com>
+ <20190516182936.h6xdzp3gtg4ikave@core.my.home> <CAEExFWvDO3wJd6wp1hFudf3EGF0NixgKAwAd5-b1=VLF+7-jCw@mail.gmail.com>
+ <20190519142239.eolisexp5mrdyafz@core.my.home>
+In-Reply-To: <20190519142239.eolisexp5mrdyafz@core.my.home>
+From:   Frank Lee <tiny.windzz@gmail.com>
+Date:   Sun, 26 May 2019 02:48:13 +0800
+Message-ID: <CAEExFWsc_YB8NORW4ULfuoicL=xr_oAdtHSaxz4ELv53qvCAsQ@mail.gmail.com>
+Subject: Re: [PATCH 2/3] thermal: sun50i: add thermal driver for h6
+To:     Frank Lee <tiny.windzz@gmail.com>, rui.zhang@intel.com,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>, robh+dt@kernel.org,
+        Mark Rutland <mark.rutland@arm.com>,
+        Maxime Ripard <maxime.ripard@bootlin.com>,
+        Chen-Yu Tsai <wens@csie.org>, catalin.marinas@arm.com,
+        will.deacon@arm.com, David Miller <davem@davemloft.net>,
+        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan.Cameron@huawei.com,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        paulmck@linux.ibm.com, Andy Gross <andy.gross@linaro.org>,
+        olof@lixom.net, bjorn.andersson@linaro.org,
+        Jagan Teki <jagan@amarulasolutions.com>,
+        marc.w.gonzalez@free.fr, stefan.wahren@i2se.com,
+        enric.balletbo@collabora.com, devicetree@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset add support for H6 thermal sensor.
+HI Ond=C5=99ej,
 
-BWY, do a cleanup in thermal makfile.
+On Sun, May 19, 2019 at 10:22 PM Ond=C5=99ej Jirman <megous@megous.com> wro=
+te:
+>
+> Hello Yangtao,
+>
+> On Sat, May 18, 2019 at 12:34:57AM +0800, Frank Lee wrote:
+> > HI,
+> >
+> > On Fri, May 17, 2019 at 2:29 AM Ond=C5=99ej Jirman <megous@megous.com> =
+wrote:
+> > >
+> > > Hi Yangtao,
+> > >
+> > > thank you for work on this driver.
+> > >
+> > > On Fri, May 17, 2019 at 02:06:53AM +0800, Frank Lee wrote:
+> > > > HI Ond=C5=99ej,
+> > > >
+> > > > On Mon, May 13, 2019 at 6:16 AM Ond=C5=99ej Jirman <megous@megous.c=
+om> wrote:
+> > > > > > +
+> > > > > > +/* Temp Unit: millidegree Celsius */
+> > > > > > +static int tsens_reg2temp(struct tsens_device *tmdev,
+> > > > > > +                           int reg)
+> > > > >
+> > > > > Please name all functions so that they are more clearly identifia=
+ble
+> > > > > in stack traces as belonging to this driver. For example:
+> > > > >
+> > > > >   sun8i_ths_reg2temp
+> > > > >
+> > > > > The same applies for all tsens_* functions below. tsens_* is too
+> > > > > generic.
+> > > >
+> > > > Done but no sun8i_ths_reg2temp.
+> > > >
+> > > > ths_reg2tem() should be a generic func.
+> > > > I think it should be suitable for all platforms=EF=BC=8C so no plat=
+form prefix.
+> > >
+> > > You've missed my point. The driver name is sun8i_thermal and if you g=
+et
+> > > and oops from the kernel you'll get a stack trace where there are jus=
+t function
+> > > names. If you use too generic function names, it will not be clear wh=
+ich
+> > > driver is oopsing.
+> > >
+> > >   - sun8i_ths_reg2temp will tell you much more clearly where to searc=
+h than
+> > >   - ths_reg2temp
+> > >
+> > > Of course you can always grep, but most thermal drivers are thermal s=
+ensor (ths)
+> > > drivers, and if multiple of them used this too-generic naming scheme =
+you'd
+> > > have hard time debugging.
+> > >
+> > > Look at other thermal drivers. They usually encode driver name in the=
+ function
+> > > names to help with identification (even if these are static driver-lo=
+cal
+> > > functions).
+> > >
+> >
+> > Can we change to sunxi_ths_ prefix?
+>
+> It should probably match the driver name, but yes, that's better.
+>
+> > > > > > +static int tsens_probe(struct platform_device *pdev)
+> > > > > > +{
+> > > > > > +     struct tsens_device *tmdev;
+> > > > > > +     struct device *dev =3D &pdev->dev;
+> > > > > > +     int ret;
+> > > > > > +
+> > > > > > +     tmdev =3D devm_kzalloc(dev, sizeof(*tmdev), GFP_KERNEL);
+> > > > > > +     if (!tmdev)
+> > > > > > +             return -ENOMEM;
+> > > > > > +
+> > > > > > +     tmdev->dev =3D dev;
+> > > > > > +     tmdev->chip =3D of_device_get_match_data(&pdev->dev);
+> > > > > > +     if (!tmdev->chip)
+> > > > > > +             return -EINVAL;
+> > > > > > +
+> > > > > > +     ret =3D tsens_init(tmdev);
+> > > > > > +     if (ret)
+> > > > > > +             return ret;
+> > > > > > +
+> > > > > > +     ret =3D tsens_register(tmdev);
+> > > > > > +     if (ret)
+> > > > > > +             return ret;
+> > > > >
+> > > > > Why split this out of probe into separate functions?
+> > > > >
+> > > > > > +     ret =3D tmdev->chip->enable(tmdev);
+> > > > > > +     if (ret)
+> > > > > > +             return ret;
+> > > > > > +
+> > > > > > +     platform_set_drvdata(pdev, tmdev);
+> > > > > > +
+> > > > > > +     return ret;
+> > > > > > +}
+> > > > > > +
+> > > > > > +static int tsens_remove(struct platform_device *pdev)
+> > > > > > +{
+> > > > > > +     struct tsens_device *tmdev =3D platform_get_drvdata(pdev)=
+;
+> > > > > > +
+> > > > > > +     tmdev->chip->disable(tmdev);
+> > > > > > +
+> > > > > > +     return 0;
+> > > > > > +}
+> > > > > > +
+> > > > > > +static int sun50i_thermal_enable(struct tsens_device *tmdev)
+> > > > > > +{
+> > > > > > +     int ret, val;
+> > > > > > +
+> > > > > > +     ret =3D reset_control_deassert(tmdev->reset);
+> > > > > > +     if (ret)
+> > > > > > +             return ret;
+> > > > > > +
+> > > > > > +     ret =3D clk_prepare_enable(tmdev->bus_clk);
+> > > > > > +     if (ret)
+> > > > > > +             goto assert_reset;
+> > > > > > +
+> > > > > > +     ret =3D tsens_calibrate(tmdev);
+> > > > > > +     if (ret)
+> > > > > > +             return ret;
+> > > > >
+> > > > > If this fails (it may likely fail with EPROBE_DEFER) you are leav=
+ing reset
+> > > > > deasserted, and clock enabled.
+> > > > >
+> > > > > Overall, I think, reset/clock management and nvmem reading will b=
+e common
+> > > > > to all the HW variants, so it doesn't make much sense splitting i=
+t out
+> > > > > of probe into separate functions, and makes it more error prone.
+> > > >
+> > > > Our long-term goal is to support all platforms.
+> > > > Bacicallt there is a differencr between each generation.
+> > > > So I feel it necessary to isolate these differences.
+> > > >
+> > > > Maybe:
+> > > > At some point, we can draw a part of the public part and platform
+> > > > difference into different
+> > > > files. something like qcom thermal driver.
+> > >
+> > > I understand, but I wrote ths drivers for H3/H5/A83T and it so far it=
+ looks like
+> > > all of them would share these 3 calls.
+> > >
+> > > You'll be enabling clock/reset and callibrating everywhere. So puttin=
+g this to
+> > > per-SoC function seems premature.
+> >
+> > In fact, enalbe and disable are the suspend and resume functions.(PM
+> > callback will be added in the future)
+> > When exiting from s2ram, the register will become the initial value.
+> > We need to do all the work, enabling reset/clk ,calibrating and
+> > initializing other reg.
+> >
+> > So I think it is no need to put enabling reset/clk and calibrating to
+> > probe func, and I'd like
+> > to keep enable and disable func.
+>
+> I know, I don't think it needs to be per-soc. These actions are all share=
+d by
+> all SoCs. Maybe with an exception that some SoCs may need one more clock,=
+ but
+> that can be made optionally-required by some flag in struct sunxi_thermal=
+_chip.
+>
+> Only highly SoC specific thing is configuring the THS registers for sampl=
+ing
+> frequency/averaging/enabling interrupts. The reset/clock enable is generi=
+c, and
+> already abstracted by the clock/reset framework.
+>
+> So what I suggest is having:
+>
+> sunxi_ths_enable()
+>         reset deassert
+>         bus clock prepare enable
+>         optionally module clock prepare enable (in the future)
+>         call per-soc calibration
+>         call per-soc setup callback
+>
+> sunxi_ths_disable()
+>         reset assert
+>         bus clock unprepare disable
+>         optionally module clock unprepare disable
+>
+> And if you could move devm_nvmem_cell_get to probe that should make per-S=
+oC
+> calibration callback also less repetitive and could avoid undoing the ena=
+ble
+> in case it returns EPROBE_DEFER (which is possible).
+>
+> All this should make it easier to support PM in the future and add less
+> cumbersome to add support for A83T and H3/H5.
+>
+> BTW, what are your plans for more SoC support? I'd like to add support fo=
+r
+> A83T and H3/H5, maybe even during the 5.3 cycle if this driver happens to=
+ land
+> early enough. If you don't have any plans I'll take it on.
+>
 
-Yangtao Li (3):
-  thermal: sun8i: add thermal driver for h6
-  dt-bindings: thermal: add binding document for h6 thermal controller
-  thermal: fix indentation in makefile
+I plan to support h3 and a33 later.
+Can you support other platforms?
 
- .../bindings/thermal/sun8i-thermal.yaml       |  71 +++
- MAINTAINERS                                   |   7 +
- drivers/thermal/Kconfig                       |  14 +
- drivers/thermal/Makefile                      |   9 +-
- drivers/thermal/sun8i_thermal.c               | 437 ++++++++++++++++++
- 5 files changed, 534 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-thermal.yaml
- create mode 100644 drivers/thermal/sun8i_thermal.c
+Cheers,
+Yangtao
 
----
-v3:
--Add a sun8i prefix to some function
--Remove disable callback and rename enable to init
--Remove clock enable, calibration from init callback
--Convert driver to interrupt based
--Convert doc to yaml file
----
-2.17.0
-
+> thank you and regards,
+>         o.
+>
+> > >
+> > > thank you and regards,
+> > >         o.
+> > >
+> > > > Regards,
+> > > > Yangtao
+> >
+> > _______________________________________________
+> > linux-arm-kernel mailing list
+> > linux-arm-kernel@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
