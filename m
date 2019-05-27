@@ -2,91 +2,133 @@ Return-Path: <SRS0=fYoc=T3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3B3BC28CC0
-	for <linux-pm@archiver.kernel.org>; Mon, 27 May 2019 12:33:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8091C04AB3
+	for <linux-pm@archiver.kernel.org>; Mon, 27 May 2019 13:46:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CDEF22075E
-	for <linux-pm@archiver.kernel.org>; Mon, 27 May 2019 12:33:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B958E2081C
+	for <linux-pm@archiver.kernel.org>; Mon, 27 May 2019 13:46:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727341AbfE0MdZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 May 2019 08:33:25 -0400
-Received: from michel.telenet-ops.be ([195.130.137.88]:37444 "EHLO
-        michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726106AbfE0MdZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 May 2019 08:33:25 -0400
-Received: from ramsan ([84.194.111.163])
-        by michel.telenet-ops.be with bizsmtp
-        id HQZQ2000R3XaVaC06QZQlf; Mon, 27 May 2019 14:33:24 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan with esmtp (Exim 4.90_1)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1hVEoe-0001VO-Di; Mon, 27 May 2019 14:33:24 +0200
-Received: from geert by rox.of.borg with local (Exim 4.90_1)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1hVEoe-0001oD-CK; Mon, 27 May 2019 14:33:24 +0200
-From:   Geert Uytterhoeven <geert+renesas@glider.be>
-To:     Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] clk: renesas: cpg-mssr: Use genpd of_node instead of local copy
-Date:   Mon, 27 May 2019 14:33:23 +0200
-Message-Id: <20190527123323.6912-1-geert+renesas@glider.be>
-X-Mailer: git-send-email 2.17.1
+        id S1726353AbfE0NqS convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 May 2019 09:46:18 -0400
+Received: from relay9-d.mail.gandi.net ([217.70.183.199]:35667 "EHLO
+        relay9-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726302AbfE0NqS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 May 2019 09:46:18 -0400
+X-Originating-IP: 90.88.147.134
+Received: from xps13 (aaubervilliers-681-1-27-134.w90-88.abo.wanadoo.fr [90.88.147.134])
+        (Authenticated sender: miquel.raynal@bootlin.com)
+        by relay9-d.mail.gandi.net (Postfix) with ESMTPSA id 00172FF80A;
+        Mon, 27 May 2019 13:46:10 +0000 (UTC)
+Date:   Mon, 27 May 2019 15:46:10 +0200
+From:   Miquel Raynal <miquel.raynal@bootlin.com>
+To:     Bjorn Helgaas <bhelgaas@google.com>
+Cc:     Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+        Antoine Tenart <antoine.tenart@bootlin.com>,
+        Gregory Clement <gregory.clement@bootlin.com>,
+        Maxime Chevallier <maxime.chevallier@bootlin.com>,
+        Nadav Haklai <nadavh@marvell.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v2 2/4] clk: mvebu: armada-37xx-periph: change
+ suspend/resume time
+Message-ID: <20190527154610.6d4d5eff@xps13>
+In-Reply-To: <CAErSpo5i3y4CxZXV7E4tUR66uXaUa3B_-YT2+zfzZUGMmge7Ow@mail.gmail.com>
+References: <20190521130357.20803-1-miquel.raynal@bootlin.com>
+        <20190521130357.20803-3-miquel.raynal@bootlin.com>
+        <CAErSpo5i3y4CxZXV7E4tUR66uXaUa3B_-YT2+zfzZUGMmge7Ow@mail.gmail.com>
+Organization: Bootlin
+X-Mailer: Claws Mail 3.17.1 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since commit 6a0ae73d95956f7e ("PM / Domain: Add support to parse
-domain's OPP table"), of_genpd_add_provider_simple() fills in
-the dev.of_node field in the generic_pm_domain structure.
+Hi Bjorn,
 
-Hence cpg_mssr_is_pm_clk() can use that instead of its own copy in the
-driver-private cpg_mssr_clk_domain structure.
+Thanks for the feedback.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-To be queued in clk-renesas-for-v5.3.
+Bjorn Helgaas <bhelgaas@google.com> wrote on Tue, 21 May 2019 17:43:05
+-0500:
 
- drivers/clk/renesas/renesas-cpg-mssr.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+> From: Miquel Raynal <miquel.raynal@bootlin.com>
+> Date: Tue, May 21, 2019 at 8:04 AM
+> To: Michael Turquette, Stephen Boyd, Rob Herring, Mark Rutland
+> Cc: <linux-clk@vger.kernel.org>, <devicetree@vger.kernel.org>, Thomas
+> Petazzoni, Antoine Tenart, Gregory Clement, Maxime Chevallier, Nadav
+> Haklai, Bjorn Helgaas, Rafael J . Wysocki, <linux-pm@vger.kernel.org>,
+> Miquel Raynal
+> 
+> > Armada 3700 PCIe IP relies on the PCIe clock managed by this
+> > driver. For reasons related to the PCI core's organization when
+> > suspending/resuming, PCI host controller drivers must reconfigure
+> > their register at suspend_noirq()/resume_noirq() which happens after
+> > suspend()/suspend_late() and before resume_early()/resume().
+> 
+> "For reasons related to the PCI core's organization" manages to
+> suggest that this change wouldn't be needed if only the PCI core did
+> something differently, without actually being specific about what it
+> would need to do differently.
+> 
+> Is there something the PCI core could do better to make this easier?
+> Or is it just something like "the PCI core needs to access registers
+> after suspend_late()"?  You mention the host controller, but of course
+> that's not itself a PCI device, so the PCI core doesn't have much to
+> do with it directly.
 
-diff --git a/drivers/clk/renesas/renesas-cpg-mssr.c b/drivers/clk/renesas/renesas-cpg-mssr.c
-index 0201809bbd377df4..d1054204f3a75022 100644
---- a/drivers/clk/renesas/renesas-cpg-mssr.c
-+++ b/drivers/clk/renesas/renesas-cpg-mssr.c
-@@ -447,7 +447,6 @@ static void __init cpg_mssr_register_mod_clk(const struct mssr_mod_clk *mod,
- 
- struct cpg_mssr_clk_domain {
- 	struct generic_pm_domain genpd;
--	struct device_node *np;
- 	unsigned int num_core_pm_clks;
- 	unsigned int core_pm_clks[0];
- };
-@@ -459,7 +458,7 @@ static bool cpg_mssr_is_pm_clk(const struct of_phandle_args *clkspec,
- {
- 	unsigned int i;
- 
--	if (clkspec->np != pd->np || clkspec->args_count != 2)
-+	if (clkspec->np != pd->genpd.dev.of_node || clkspec->args_count != 2)
- 		return false;
- 
- 	switch (clkspec->args[0]) {
-@@ -549,7 +548,6 @@ static int __init cpg_mssr_add_clk_domain(struct device *dev,
- 	if (!pd)
- 		return -ENOMEM;
- 
--	pd->np = np;
- 	pd->num_core_pm_clks = num_core_pm_clks;
- 	memcpy(pd->core_pm_clks, core_pm_clks, pm_size);
- 
--- 
-2.17.1
+Actually, if I understand correctly the below commit [1] and the core
+[2] & [3], PCI device fixups can happen at any time, including at the
+_noirq phase where, obviously, the PCI controller must be already
+setup.
 
+I don't think changing this behavior is a viable solution and I would
+not see it as a "PCI core could do better" alternative.
+
+---8<---
+
+[1]
+commit ab14d45ea58eae67c739e4ba01871cae7b6c4586
+Author: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Date:   Tue Mar 17 15:55:45 2015 +0100
+
+    PCI: mvebu: Add suspend/resume support
+
+    Add suspend/resume support for the mvebu PCIe host driver.  Without
+    this commit, the system will panic at resume time when PCIe devices
+    are connected.
+
+    Note that we have to use the ->suspend_noirq() and ->resume_noirq()
+    hooks, because at resume time, the PCI fixups are done at
+    ->resume_noirq() time, so the PCIe controller has to be ready at
+    this point.
+
+    Signed-off-by: Thomas Petazzoni
+    <thomas.petazzoni@free-electrons.com> Signed-off-by: Bjorn Helgaas
+    <bhelgaas@google.com> Acked-by: Jason Cooper <jason@lakedaemon.net>
+
+[2] https://elixir.bootlin.com/linux/v5.2-rc1/source/drivers/pci/pci-driver.c#L1181
+[3] https://elixir.bootlin.com/linux/v5.2-rc1/source/drivers/pci/pci-driver.c#L522
+
+--->8---
+
+> 
+> s/register/registers/ ?
+
+Indeed. I would like to sort out the above technical point before
+sending a v3 with this typo corrected.
+
+
+Thanks,
+Miquèl
