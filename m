@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 892D8C282E3
-	for <linux-pm@archiver.kernel.org>; Mon, 27 May 2019 02:44:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED244C282E3
+	for <linux-pm@archiver.kernel.org>; Mon, 27 May 2019 02:46:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5B9A22075E
-	for <linux-pm@archiver.kernel.org>; Mon, 27 May 2019 02:44:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BE7E72075E
+	for <linux-pm@archiver.kernel.org>; Mon, 27 May 2019 02:46:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="FyAcASTc"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="pBZkokzn"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726133AbfE0Cn5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 May 2019 22:43:57 -0400
-Received: from gateway33.websitewelcome.com ([192.185.146.82]:29606 "EHLO
-        gateway33.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725923AbfE0Cn5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 May 2019 22:43:57 -0400
-X-Greylist: delayed 1246 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 May 2019 22:43:56 EDT
-Received: from cm10.websitewelcome.com (cm10.websitewelcome.com [100.42.49.4])
-        by gateway33.websitewelcome.com (Postfix) with ESMTP id AC4D6EDA1
-        for <linux-pm@vger.kernel.org>; Sun, 26 May 2019 21:23:10 -0500 (CDT)
+        id S1726189AbfE0CqS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 May 2019 22:46:18 -0400
+Received: from gateway22.websitewelcome.com ([192.185.47.48]:20243 "EHLO
+        gateway22.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1725923AbfE0CqS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 May 2019 22:46:18 -0400
+X-Greylist: delayed 1380 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 May 2019 22:46:17 EDT
+Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
+        by gateway22.websitewelcome.com (Postfix) with ESMTP id 761AA10C3
+        for <linux-pm@vger.kernel.org>; Sun, 26 May 2019 21:23:20 -0500 (CDT)
 Received: from br164.hostgator.com.br ([192.185.176.180])
         by cmsmtp with SMTP
-        id V5I6hvNz82PzOV5I6hIMje; Sun, 26 May 2019 21:23:10 -0500
+        id V5IGh1m2t4FKpV5IGhNUXL; Sun, 26 May 2019 21:23:20 -0500
 X-Authority-Reason: nr=8
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=castello.eng.br; s=default; h=Content-Transfer-Encoding:MIME-Version:
@@ -35,17 +35,17 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
         Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
         List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=Q9wzu2z66xV8hNsYy9Tl/WdfQLnoLjLyOCfi2Mjhmp0=; b=FyAcASTcz5S8Hi3o4EHI58cqs0
-        m/aieVAekaj3cBKLKDO6Q/AG7zyZ0w6Y7LmsjV/nQmCjA9aK2hAr05AUHvzY6koU+sE0i7yWo9kIp
-        WNFC2N00gFQdRH9mNoe36jElNSBIzYEmt91BrUxfH25IaJCHg+81+/JUE5NWzQOJSuWATL/hKUWDX
-        8U/mhnqlJfQzI/Idx7jBOKeGlJZMxbgBz6IYPMCKrLms52Er4yPBB3v11O1lcJp8U7QsdlRiSgkAb
-        vahNJHhIGEM9FQyXHN012lEnOJ3TaVhbkJG5z2smmYkBAjT69ukJzWGhjYaW8KDmsAobl/Kq+PD2M
-        oCU5M0mg==;
+        bh=I4VLnKJzdba2/tICr5vHEXDmUjBljIV86QHf5FlXteA=; b=pBZkokznjDxJn5J0nEp/+icHZt
+        YZukC0iqe8exicoGyoaaPdEHgzTPBSFsvRBwQ89W562CdIfWzRdc7i//G/aHpxbjSyDNfngXNx92V
+        pfKxPUwOuA0QrX8G9IBsO9vUXnw0Yx/E38IDVfhR39v0BWtKG7+FDfLGfBRz8kRPY7fVZ+PxCSdsL
+        e/f4tRW4IjuOOOaXY8YLrzuuOS7nJew6b+4S6Js6+n1X0gtq8zz9oIRBVUYCZCWoUHPGCG2wA3V/J
+        7QtxE1xobhSWBtwmx838KEf0O+VtjqKv2A09qHUhqiG9QU9k/W7YzG+OONtVXCIXDdgh4MKh3km7R
+        XrqP/Utg==;
 Received: from [177.34.20.96] (port=57660 helo=castello.castello.in)
         by br164.hostgator.com.br with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
         (Exim 4.91)
         (envelope-from <matheus@castello.eng.br>)
-        id 1hV5I5-003JNX-QL; Sun, 26 May 2019 23:23:10 -0300
+        id 1hV5IF-003JNX-JQ; Sun, 26 May 2019 23:23:20 -0300
 From:   Matheus Castello <matheus@castello.eng.br>
 To:     sre@kernel.org, krzk@kernel.org, robh+dt@kernel.org
 Cc:     mark.rutland@arm.com, cw00.choi@samsung.com,
@@ -53,9 +53,9 @@ Cc:     mark.rutland@arm.com, cw00.choi@samsung.com,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Matheus Castello <matheus@castello.eng.br>
-Subject: [PATCH v3 2/5] dt-bindings: power: supply: Max17040: Add low level SOC alert threshold
-Date:   Sun, 26 May 2019 23:22:55 -0300
-Message-Id: <20190527022258.32748-3-matheus@castello.eng.br>
+Subject: [PATCH v3 5/5] power: supply: max17040: Send uevent in SOC and status change
+Date:   Sun, 26 May 2019 23:22:58 -0300
+Message-Id: <20190527022258.32748-6-matheus@castello.eng.br>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190527022258.32748-1-matheus@castello.eng.br>
 References: <CAJKOXPf=nPrmw6Vzi_=LmO=dVsV4Gvoc-q75XP2FBEgm9Gxv0A@mail.gmail.com>
@@ -70,13 +70,13 @@ X-AntiAbuse: Sender Address Domain - castello.eng.br
 X-BWhitelist: no
 X-Source-IP: 177.34.20.96
 X-Source-L: No
-X-Exim-ID: 1hV5I5-003JNX-QL
+X-Exim-ID: 1hV5IF-003JNX-JQ
 X-Source: 
 X-Source-Args: 
 X-Source-Dir: 
 X-Source-Sender: (castello.castello.in) [177.34.20.96]:57660
 X-Source-Auth: matheus@castello.eng.br
-X-Email-Count: 37
+X-Email-Count: 70
 X-Source-Cap: Y2FzdGUyNDg7Y2FzdGUyNDg7YnIxNjQuaG9zdGdhdG9yLmNvbS5icg==
 X-Local-Domain: yes
 Sender: linux-pm-owner@vger.kernel.org
@@ -84,49 +84,58 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For configure low level state of charge threshold alert signaled from
-max17040 we add "maxim,alert-low-soc-level" property.
+Notify core through power_supply_changed() in case of changes in state
+of charge and power supply status. This is useful for user-space to
+efficiently update current battery level.
 
 Signed-off-by: Matheus Castello <matheus@castello.eng.br>
 ---
- .../power/supply/max17040_battery.txt         | 28 +++++++++++++++++++
- 1 file changed, 28 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+ drivers/power/supply/max17040_battery.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-new file mode 100644
-index 000000000000..a13e8d50ff7b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-@@ -0,0 +1,28 @@
-+max17040_battery
-+~~~~~~~~~~~~~~~~
+diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+index 61e6fcfea8a1..34278845cfe5 100644
+--- a/drivers/power/supply/max17040_battery.c
++++ b/drivers/power/supply/max17040_battery.c
+@@ -176,6 +176,9 @@ static void max17040_get_online(struct i2c_client *client)
+ static void max17040_get_status(struct i2c_client *client)
+ {
+ 	struct max17040_chip *chip = i2c_get_clientdata(client);
++	int last_status;
 +
-+Required properties :
-+ - compatible : "maxim,max17040" or "maxim,max77836-battery"
++	last_status = chip->status;
+
+ 	if (!chip->pdata || !chip->pdata->charger_online
+ 			|| !chip->pdata->charger_enable) {
+@@ -194,6 +197,9 @@ static void max17040_get_status(struct i2c_client *client)
+
+ 	if (chip->soc > MAX17040_BATTERY_FULL)
+ 		chip->status = POWER_SUPPLY_STATUS_FULL;
 +
-+Optional properties :
-+- maxim,alert-low-soc-level :	The alert threshold that sets the state of
-+ 				charge level (%) where an interrupt is
-+				generated. Can be configured from 1 up to 32
-+				(%). If skipped the power up default value of
-+				4 (%) will be used.
-+- interrupts : 			Interrupt line see Documentation/devicetree/
-+				bindings/interrupt-controller/interrupts.txt
-+- wakeup-source :		This device has wakeup capabilities. Use this
-+				property to use alert low SOC level interrupt
-+				as wake up source.
++	if (last_status != chip->status)
++		power_supply_changed(chip->battery);
+ }
+
+ static void max17040_get_of_data(struct max17040_chip *chip)
+@@ -217,10 +223,18 @@ static void max17040_check_changes(struct i2c_client *client)
+ static void max17040_work(struct work_struct *work)
+ {
+ 	struct max17040_chip *chip;
++	int last_soc;
+
+ 	chip = container_of(work, struct max17040_chip, work.work);
 +
-+Example:
++	/* store SOC for check change */
++	last_soc = chip->soc;
+ 	max17040_check_changes(chip->client);
+
++	/* check changes and send uevent */
++	if (chip->soc >= 0 && last_soc != chip->soc)
++		power_supply_changed(chip->battery);
 +
-+	battery-fuel-gauge@36 {
-+		compatible = "maxim,max17040";
-+		reg = <0x36>;
-+		maxim,alert-low-soc-level = <10>;
-+		interrupt-parent = <&gpio7>;
-+		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
-+		wakeup-source;
-+	};
+ 	queue_delayed_work(system_power_efficient_wq, &chip->work,
+ 			   MAX17040_DELAY);
+ }
 --
 2.20.1
 
