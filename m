@@ -1,62 +1,120 @@
 Return-Path: <SRS0=GZoR=T4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: **
-X-Spam-Status: No, score=2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AB99C04AB6
-	for <linux-pm@archiver.kernel.org>; Tue, 28 May 2019 08:39:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C39FBC04AB6
+	for <linux-pm@archiver.kernel.org>; Tue, 28 May 2019 08:42:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6FB442075B
-	for <linux-pm@archiver.kernel.org>; Tue, 28 May 2019 08:39:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=tastiess.eu header.i=@tastiess.eu header.b="RKqKTIB0"
+	by mail.kernel.org (Postfix) with ESMTP id A15BD2075B
+	for <linux-pm@archiver.kernel.org>; Tue, 28 May 2019 08:42:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726538AbfE1Ijf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 May 2019 04:39:35 -0400
-Received: from mail.tastiess.eu ([194.182.86.235]:52224 "EHLO mail.tastiess.eu"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726371AbfE1Ije (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 28 May 2019 04:39:34 -0400
-X-Greylist: delayed 465 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 May 2019 04:39:34 EDT
-Received: by mail.tastiess.eu (Postfix, from userid 1001)
-        id 1EACA88271; Tue, 28 May 2019 10:31:10 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=tastiess.eu; s=mail;
-        t=1559032308; bh=I9Ue03WK1DGltuFRFxeBc6SZHKWkq/f13b7q3CFLQVk=;
-        h=Date:From:To:Subject:From;
-        b=RKqKTIB0HQKnJDy4PVwjlNm9YMnBu2HnBhMq037t3kg6OW3OAznTzyVOeRfXAzMIZ
-         RsSMTX53uHX/4EzWH3/bC01cT3DYxEKJo80DwIOaYuXOIP7AdbOjnv6Kw/Z3xcl1jt
-         UTSYXEyWRjvPRvh6oI62FydMuEPiNoq8dQfTxPsc=
-Received: by mail.tastiess.eu for <linux-pm@vger.kernel.org>; Tue, 28 May 2019 08:31:03 GMT
-Message-ID: <20190528103018-0.1.13.f0h.0.rlu05qbe8h@tastiess.eu>
-Date:   Tue, 28 May 2019 08:31:03 GMT
-From:   =?UTF-8?Q? "Kapolcs_M=C3=A1ty=C3=A1s" ?= 
-        <kapolcs.matyas@tastiess.eu>
-To:     <linux-pm@vger.kernel.org>
-Subject: =?UTF-8?Q?Dolgoz=C3=B3i_juttat=C3=A1sok?=
-X-Mailer: mail.tastiess.eu
+        id S1726394AbfE1ImD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 May 2019 04:42:03 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:43152 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725943AbfE1ImC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2019 04:42:02 -0400
+Received: by mail-lj1-f196.google.com with SMTP id z5so16854211lji.10;
+        Tue, 28 May 2019 01:42:01 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ygkFSrOUs2wAQrj519Ns5GvdxA1S7D4YiKeP8FBGjUc=;
+        b=io1OvXIkx7t+fFIgPEQR1LWZpcHU//FxMoIA1CHkmrvMyfCuy+Dd8qNCTP6K6VQsbq
+         Xnegy97eNHvCjNEoN5fa3JWkdKUODIhUVnKB8JDr1V4bo+e9c57B7kGi2wJ5gRuzO4Hl
+         8dl3reJTRBm81ahfZNlJxkqi6xe3uhKwpEyjPonwx8SizWtZxeptMX1G9jeXq8j+wDxM
+         KlkFzD2YAKUldahDdilc9W2cauTFJyM1cSX4d3IPRLuCYjFcnyhenHDsW9KT+FHS12S0
+         nBTx2qeSnsu2YlRLxD1k03OQ67xtOubPudB3g7CQZNSjQdA5RNh63XWVC8UOu1jMuD54
+         Bd/A==
+X-Gm-Message-State: APjAAAVJQ/+bjo6yRObS1AHTop4Ia82G3DIVmR2JXv9dtkKdmk16y/eR
+        MoKxN+V193ChPb04ydkGbZYn50CKk2hvrjhpqR4=
+X-Google-Smtp-Source: APXvYqzZOuoB7xeUwboMimv2YSMlSWfGHoyt2S/rx8pW4inWIs7Uyh9nphOHLevt3f4ts4P2YOKp0CLg7C99oF1gcQ4=
+X-Received: by 2002:a05:651c:150:: with SMTP id c16mr64013182ljd.65.1559032920568;
+ Tue, 28 May 2019 01:42:00 -0700 (PDT)
 MIME-Version: 1.0
+References: <5cec74e8.1c69fb81.37335.9d7b@mx.google.com> <0edab48f-06e5-9ed8-09be-7c9976ae1afb@collabora.com>
+ <CAMuHMdUF1Csi1ZMccOj=kurijMLcA6G+TP_spsE+fnMvZR71Vw@mail.gmail.com> <de92e3bd-70e8-fcba-3c88-c04170704e7b@collabora.com>
+In-Reply-To: <de92e3bd-70e8-fcba-3c88-c04170704e7b@collabora.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 28 May 2019 10:41:48 +0200
+Message-ID: <CAMuHMdW9Rz=ZQ=wWg=vGJAzzM85+UnN1otKfJzVvbkTkPQ2g2g@mail.gmail.com>
+Subject: Re: linusw/for-next boot bisection: v5.2-rc1-8-g73a790c68d7e on rk3288-veyron-jaq
+To:     Guillaume Tucker <guillaume.tucker@collabora.com>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Elaine Zhang <zhangqing@rock-chips.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>,
+        Mark Brown <broonie@kernel.org>,
+        Matt Hart <matthew.hart@linaro.org>, mgalka@collabora.com,
+        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-=C3=9Cdv=C3=B6zl=C3=B6m!
+Hi Guillaume,
 
-2019 janu=C3=A1rj=C3=A1t=C3=B3l megsz=C5=B1nt az Erzs=C3=A9bet utalv=C3=A1=
-nyok =C3=A9s k=C3=A1rty=C3=A1k forgalmaz=C3=A1sa.
+On Tue, May 28, 2019 at 10:36 AM Guillaume Tucker
+<guillaume.tucker@collabora.com> wrote:
+> On 28/05/2019 08:45, Geert Uytterhoeven wrote:
+> > On Tue, May 28, 2019 at 9:13 AM Guillaume Tucker
+> > <guillaume.tucker@collabora.com> wrote:
+> >> This commit has now been reverted in mainline.  Would it be OK
+> >> for you to rebase your for-next branch on v5.2-rc2 or cherry-pick
+> >> the revert to avoid recurring bisections?
+> >>
+> >> Ideally this should have been fixed or reverted in mainline
+> >> before v5.2-rc1 was released, or even earlier when this was first
+> >> found in -next on 13th May.  Unfortunately it was overlooked and
+> >> then spread to other branches like yours.
+> >
+> > I'm afraid it's gonna spread to even more for-next branches, as most
+> > subsystem maintainers base their for-next branch on the previous rc1
+> > release.  Typically maintainers do not rebase their for-next branches,
+> > and do not cherry-pick fixes, unless they are critical for their
+> > subsystem.  So you can expect this to show up in e.g. the m68k for-next
+> > branch soon...
+>
+> That is what I feared, thanks for confirming.
+>
+> > Can't you mark this as a known issue, to prevent spending cycles on the
+> > same bisection, and sending out more bisection reports for the same
+> > issue?
+>
+> Not really, so I've disabled bisections in the linux-gpio tree
+> and a few other maintainers' trees for now.  I'll see if we can
+> come up with a more systematic way of suppressing bisections in
+> similar cases (i.e. the issue has been fixed in mainline later
+> than the base commit for the branch being tested).
 
-Ismerje meg juttat=C3=A1si k=C3=A1rty=C3=A1inkat =C3=A9s utalv=C3=A1nyain=
-kat, melyekkel egyszer=C5=B1en helyettes=C3=ADtheti a kor=C3=A1bbi Erzs=C3=
-=A9betes juttat=C3=A1sokat.
+Having a systematic way would be good, else you will have to disable
+most other maintainers' trees soon, severely limiting test coverage,
+or fall back to linux-next testing only, as linux-next will always include\
+latest mainline.
 
-Amennyiben =C3=96n is a legegyszer=C5=B1bb =C3=A1t=C3=A1ll=C3=A1st szeret=
-n=C3=A9, sz=C3=ADvesen bemutatom =C3=96nnek megold=C3=A1sainkat!
+Thanks!
 
+Gr{oetje,eeting}s,
 
-Kapolcs M=C3=A1ty=C3=A1s
-Hungary Team Leader =20
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
