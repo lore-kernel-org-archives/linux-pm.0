@@ -2,107 +2,106 @@ Return-Path: <SRS0=GZoR=T4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EB47C04AB6
-	for <linux-pm@archiver.kernel.org>; Tue, 28 May 2019 06:05:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65945C04AB6
+	for <linux-pm@archiver.kernel.org>; Tue, 28 May 2019 07:13:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2D4E3208CB
-	for <linux-pm@archiver.kernel.org>; Tue, 28 May 2019 06:05:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4367B20883
+	for <linux-pm@archiver.kernel.org>; Tue, 28 May 2019 07:13:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726866AbfE1GEx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 May 2019 02:04:53 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:55444 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725904AbfE1GEx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 28 May 2019 02:04:53 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0B99F1A0D8A;
-        Tue, 28 May 2019 08:04:51 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 586321A0D9D;
-        Tue, 28 May 2019 08:04:38 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id EA14E402C9;
-        Tue, 28 May 2019 14:04:24 +0800 (SGT)
-From:   Anson.Huang@nxp.com
-To:     robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
-        s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
-        catalin.marinas@arm.com, will.deacon@arm.com, rui.zhang@intel.com,
-        edubezval@gmail.com, daniel.lezcano@linaro.org,
-        aisheng.dong@nxp.com, ulf.hansson@linaro.org, peng.fan@nxp.com,
-        daniel.baluta@nxp.com, maxime.ripard@bootlin.com, olof@lixom.net,
-        jagan@amarulasolutions.com, horms+renesas@verge.net.au,
-        leonard.crestez@nxp.com, bjorn.andersson@linaro.org,
-        dinguyen@kernel.org, enric.balletbo@collabora.com,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH RESEND V13 1/5] dt-bindings: fsl: scu: add thermal binding
-Date:   Tue, 28 May 2019 14:06:17 +0800
-Message-Id: <20190528060621.47342-1-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1726305AbfE1HNb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 May 2019 03:13:31 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:42212 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726866AbfE1HNb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2019 03:13:31 -0400
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: gtucker)
+        with ESMTPSA id 318052804FE
+Subject: Re: linusw/for-next boot bisection: v5.2-rc1-8-g73a790c68d7e on
+ rk3288-veyron-jaq
+To:     Elaine Zhang <zhangqing@rock-chips.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Linus Walleij <linus.walleij@linaro.org>
+Cc:     tomeu.vizoso@collabora.com, mgalka@collabora.com,
+        broonie@kernel.org, matthew.hart@linaro.org, khilman@baylibre.com,
+        enric.balletbo@collabora.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org,
+        Zhang Rui <rui.zhang@intel.com>,
+        linux-arm-kernel@lists.infradead.org
+References: <5cec74e8.1c69fb81.37335.9d7b@mx.google.com>
+From:   Guillaume Tucker <guillaume.tucker@collabora.com>
+Message-ID: <0edab48f-06e5-9ed8-09be-7c9976ae1afb@collabora.com>
+Date:   Tue, 28 May 2019 08:13:25 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
+MIME-Version: 1.0
+In-Reply-To: <5cec74e8.1c69fb81.37335.9d7b@mx.google.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Anson Huang <Anson.Huang@nxp.com>
+Hi Linus,
 
-NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as
-system controller, the system controller is in charge of system
-power, clock and thermal sensors etc. management, Linux kernel
-has to communicate with system controller via MU (message unit)
-IPC to get temperature from thermal sensors, this patch adds
-binding doc for i.MX system controller thermal driver.
+On 28/05/2019 00:38, kernelci.org bot wrote:
+> * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+> * This automated bisection report was sent to you on the basis  *
+> * that you may be involved with the breaking commit it has      *
+> * found.  No manual investigation has been done to verify it,   *
+> * and the root cause of the problem may be somewhere else.      *
+> * Hope this helps!                                              *
+> * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+> 
+> linusw/for-next boot bisection: v5.2-rc1-8-g73a790c68d7e on rk3288-veyron-jaq
+> 
+> Summary:
+>   Start:      73a790c68d7e Merge branch 'devel' into for-next
+>   Details:    https://kernelci.org/boot/id/5cebf03d59b514dd627a3629
+>   Plain log:  https://storage.kernelci.org//linusw/for-next/v5.2-rc1-8-g73a790c68d7e/arm/multi_v7_defconfig/gcc-8/lab-collabora/boot-rk3288-veyron-jaq.txt
+>   HTML log:   https://storage.kernelci.org//linusw/for-next/v5.2-rc1-8-g73a790c68d7e/arm/multi_v7_defconfig/gcc-8/lab-collabora/boot-rk3288-veyron-jaq.html
+>   Result:     28694e009e51 thermal: rockchip: fix up the tsadc pinctrl setting error
+> 
+> Checks:
+>   revert:     PASS
+>   verify:     PASS
+> 
+> Parameters:
+>   Tree:       linusw
+>   URL:        https://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-gpio.git/
+>   Branch:     for-next
+>   Target:     rk3288-veyron-jaq
+>   CPU arch:   arm
+>   Lab:        lab-collabora
+>   Compiler:   gcc-8
+>   Config:     multi_v7_defconfig
+>   Test suite: boot
+> 
+> Breaking commit found:
+> 
+> -------------------------------------------------------------------------------
+> commit 28694e009e512451ead5519dd801f9869acb1f60
+> Author: Elaine Zhang <zhangqing@rock-chips.com>
+> Date:   Tue Apr 30 18:09:44 2019 +0800
+> 
+>     thermal: rockchip: fix up the tsadc pinctrl setting error
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
-No change, just rebase the patch to top of linux-next and based on my watchdog patch:
-https://patchwork.kernel.org/patch/10962183/
----
- .../devicetree/bindings/arm/freescale/fsl,scu.txt        | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+This commit has now been reverted in mainline.  Would it be OK
+for you to rebase your for-next branch on v5.2-rc2 or cherry-pick
+the revert to avoid recurring bisections?
 
-diff --git a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-index a575e42..fc3844e 100644
---- a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-+++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
-@@ -155,6 +155,17 @@ Required properties:
- Optional properties:
- - timeout-sec: contains the watchdog timeout in seconds.
- 
-+Thermal bindings based on SCU Message Protocol
-+------------------------------------------------------------
-+
-+Required properties:
-+- compatible:			Should be :
-+				  "fsl,imx8qxp-sc-thermal"
-+				followed by "fsl,imx-sc-thermal";
-+
-+- #thermal-sensor-cells:	See Documentation/devicetree/bindings/thermal/thermal.txt
-+				for a description.
-+
- Example (imx8qxp):
- -------------
- aliases {
-@@ -222,6 +233,11 @@ firmware {
- 			compatible = "fsl,imx8qxp-sc-wdt", "fsl,imx-sc-wdt";
- 			timeout-sec = <60>;
- 		};
-+
-+		tsens: thermal-sensor {
-+			compatible = "fsl,imx8qxp-sc-thermal", "fsl,imx-sc-thermal";
-+			#thermal-sensor-cells = <1>;
-+		};
- 	};
- };
- 
--- 
-2.7.4
+Ideally this should have been fixed or reverted in mainline
+before v5.2-rc1 was released, or even earlier when this was first
+found in -next on 13th May.  Unfortunately it was overlooked and
+then spread to other branches like yours.
 
+Thanks,
+Guillaume
