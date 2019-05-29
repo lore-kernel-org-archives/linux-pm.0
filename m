@@ -2,265 +2,201 @@ Return-Path: <SRS0=r+Q9=T5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C5C3C28CC0
-	for <linux-pm@archiver.kernel.org>; Wed, 29 May 2019 22:09:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A72B9C28CC1
+	for <linux-pm@archiver.kernel.org>; Wed, 29 May 2019 23:24:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 178192425F
-	for <linux-pm@archiver.kernel.org>; Wed, 29 May 2019 22:09:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7659E2433F
+	for <linux-pm@archiver.kernel.org>; Wed, 29 May 2019 23:24:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559167786;
-	bh=3OmN7Ed90J/s26tvuNKReiDT2xMzEGrBWFHugyhQnlw=;
-	h=Date:From:To:cc:Subject:In-Reply-To:References:List-ID:From;
-	b=gjHUCLsA8pH/J7tNymAN/LeyzD6LtgHCVVNR//YTcglFVXyZtFsU0rjuFXGcyv9q3
-	 r/GnXuCbbKOqDjCBUde6poLuPRAW0vMu8PKigg4v3zMzi2FGo9sOKsYsNeZsC8O1U9
-	 xIkaRpWJCby3Xao5NwXB3sYFzLsZO/O9A2FxKIYA=
+	s=default; t=1559172279;
+	bh=N/MK8d5OwfB7eOrfUINQIf+KPUGEYonI6XQQYVsXhjo=;
+	h=From:To:Cc:Subject:Date:List-ID:From;
+	b=YrUbX2jIAZdxpSW053ot0nLiXxyX53xzF+46pJPGRkxFOjh44qApcL6o2fjdtmGsF
+	 cFOYHhGn9Im16WhlXoeA0y7uDopOBUrTUy4uzAfQ+gbcwJLkpvyDM7kRdMeTe3VM48
+	 ecpbDefa+gGT85YSR2CHs2XSGkKlmyBHbvXxjjco=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726250AbfE2WJp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 May 2019 18:09:45 -0400
-Received: from mail.kernel.org ([198.145.29.99]:49784 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726054AbfE2WJp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 May 2019 18:09:45 -0400
-Received: from pobox.suse.cz (prg-ext-pat.suse.com [213.151.95.130])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 868B52075B;
-        Wed, 29 May 2019 22:09:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559167783;
-        bh=3OmN7Ed90J/s26tvuNKReiDT2xMzEGrBWFHugyhQnlw=;
-        h=Date:From:To:cc:Subject:In-Reply-To:References:From;
-        b=KOURBKUuflSIr5s09riZllLv7PKMiQLqDJ0Oo9erxssyCTq3o5sECTB1wgLBYwKlZ
-         +ogdHnO2mk+N9E7MlnbOcV6E2Lnc7Wx4f1I/oiVi6VnRgIqsxE9YF8q26C2VVlVFD+
-         9uizhhYHeemF5ttAD5zLnh0u/i7MsnAnqyd8Wp6Y=
-Date:   Thu, 30 May 2019 00:09:39 +0200 (CEST)
-From:   Jiri Kosina <jikos@kernel.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Pavel Machek <pavel@ucw.cz>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Josh Poimboeuf <jpoimboe@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>
-cc:     x86@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v4] x86/power: Fix 'nosmt' vs. hibernation triple fault during
- resume
-In-Reply-To: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm>
-Message-ID: <nycvar.YFH.7.76.1905300007470.1962@cbobk.fhfr.pm>
-References: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm>
-User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
+        id S1726856AbfE2XYZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 May 2019 19:24:25 -0400
+Received: from bombadil.infradead.org ([198.137.202.133]:49236 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726689AbfE2XYD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2019 19:24:03 -0400
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-Type:
+        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+        Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+         bh=StJ6LM8sQHkYI5UThzShneAjra5wi5bo/RYRsdxPQsA=; b=V2B9Vgs83dRLjIuQnd2C2vgYZ
+        +JgyOXeO1GKHOK9c4tRnNUqThik6tzysID2WPnKRr+36Nqy1H2ECRX9ShWnHkjcDarRRE36sMjLp8
+        rMBiNxdP14bOP1wi/jaweQN4P3parh4up8rfOPsYIJGMzClSMcNhqm2YUZ7FfQaCciCjPJlpLJJ9c
+        aeXT61eHnnOWKaxRn+HXRc3LwC2Y8Shpt7KozKcXuJxu6PITTqtbQgKa7rv4JBRtqJqIYr0SPtFcn
+        /5RDAzsKEfsB7oXgNPBlX7TDbPq/0Xg+hPhZkg4J+5oeanlc8QNxz2G9sF0j0yZAp7oTlogcPh66P
+        SAaTMxt+g==;
+Received: from 177.132.232.81.dynamic.adsl.gvt.net.br ([177.132.232.81] helo=bombadil.infradead.org)
+        by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+        id 1hW7vL-0005Rx-II; Wed, 29 May 2019 23:23:59 +0000
+Received: from mchehab by bombadil.infradead.org with local (Exim 4.92)
+        (envelope-from <mchehab@bombadil.infradead.org>)
+        id 1hW7vI-0007wg-Fn; Wed, 29 May 2019 20:23:56 -0300
+From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+        Mauro Carvalho Chehab <mchehab@infradead.org>,
+        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        xen-devel@lists.xenproject.org, linux-kselftest@vger.kernel.org,
+        linux-amlogic@lists.infradead.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org, devel@driverdev.osuosl.org,
+        keyrings@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        linux-integrity@vger.kernel.org, linux-mtd@lists.infradead.org,
+        patches@opensource.cirrus.com, devicetree@vger.kernel.org,
+        netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+        devel@acpica.org, virtualization@lists.linux-foundation.org,
+        linux-mm@kvack.org, linux-pci@vger.kernel.org,
+        linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-security-module@vger.kernel.org, linux-i2c@vger.kernel.org,
+        kvm@vger.kernel.org, bpf@vger.kernel.org, x86@kernel.org
+Subject: [PATCH 00/22] Some documentation fixes
+Date:   Wed, 29 May 2019 20:23:31 -0300
+Message-Id: <cover.1559171394.git.mchehab+samsung@kernel.org>
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Jiri Kosina <jkosina@suse.cz>
+Fix several warnings and broken links.
 
-As explained in
+This series was generated against linux-next, but was rebased to be applied at
+docs-next. It should apply cleanly on either tree.
 
-	0cc3cd21657b ("cpu/hotplug: Boot HT siblings at least once")
+There's a git tree with all of them applied on the top of docs/docs-next
+at:
 
-we always, no matter what, have to bring up x86 HT siblings during boot at
-least once in order to avoid first MCE bringing the system to its knees.
+https://git.linuxtv.org/mchehab/experimental.git/log/?h=fix_doc_links_v2
 
-That means that whenever 'nosmt' is supplied on the kernel command-line,
-all the HT siblings are as a result sitting in mwait or cpudile after
-going through the online-offline cycle at least once.
 
-This causes a serious issue though when a kernel, which saw 'nosmt' on its
-commandline, is going to perform resume from hibernation: if the resume
-from the hibernated image is successful, cr3 is flipped in order to point
-to the address space of the kernel that is being resumed, which in turn
-means that all the HT siblings are all of a sudden mwaiting on address
-which is no longer valid.
+Mauro Carvalho Chehab (21):
+  ABI: sysfs-devices-system-cpu: point to the right docs
+  isdn: mISDN: remove a bogus reference to a non-existing doc
+  dt: fix broken references to nand.txt
+  docs: zh_CN: get rid of basic_profiling.txt
+  doc: it_IT: fix reference to magic-number.rst
+  docs: mm: numaperf.rst: get rid of a build warning
+  docs: bpf: get rid of two warnings
+  docs: mark orphan documents as such
+  docs: amd-memory-encryption.rst get rid of warnings
+  gpu: amdgpu: fix broken amdgpu_dma_buf.c references
+  gpu: i915.rst: Fix references to renamed files
+  docs: zh_CN: avoid duplicate citation references
+  docs: vm: hmm.rst: fix some warnings
+  docs: it: license-rules.rst: get rid of warnings
+  docs: gpio: driver.rst: fix a bad tag
+  docs: soundwire: locking: fix tags for a code-block
+  docs: security: trusted-encrypted.rst: fix code-block tag
+  docs: security: core.rst: Fix several warnings
+  docs: net: dpio-driver.rst: fix two codeblock warnings
+  docs: net: sja1105.rst: fix table format
+  docs: fix broken documentation links
 
-That results in triple fault shortly after cr3 is switched, and machine
-reboots.
+Otto Sabart (1):
+  mfd: madera: Fix bad reference to pinctrl.txt file
 
-Fix this by always waking up all the SMT siblings before initiating the
-'restore from hibernation' process; this guarantees that all the HT
-siblings will be properly carried over to the resumed kernel waiting in
-resume_play_dead(), and acted upon accordingly afterwards, based on the
-target kernel configuration.
-Symmetricaly, the resumed kernel has to push the SMT siblings to mwait
-again in case it has SMT disabled; this means it has to online all
-the siblings when resuming (so that they come out of hlt) and offline
-them again to let them reach mwait.
-
-Cc: stable@vger.kernel.org # v4.19+
-Debugged-by: Thomas Gleixner <tglx@linutronix.de>
-Fixes: 0cc3cd21657b ("cpu/hotplug: Boot HT siblings at least once")
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
----
-
-v1 -> v2:
-        - restructure error handling as suggested by peterz
-        - add Rafael's ack
-
-v2 -> v3:
-        - added extra online/offline dance for nosmt case during
-          resume, as we want the siblings to be in mwait, not hlt
-        - dropped peterz's and Rafael's acks for now due to the above
-
-v3 -> v4:
-	- fix undefined return value from arch_resume_nosmt() in case
-	  it's not overriden by arch
-
- arch/x86/power/cpu.c       | 10 ++++++++++
- arch/x86/power/hibernate.c | 33 +++++++++++++++++++++++++++++++++
- include/linux/cpu.h        |  4 ++++
- kernel/cpu.c               |  4 ++--
- kernel/power/hibernate.c   |  9 +++++++++
- 5 files changed, 58 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-index a7d966964c6f..513ce09e9950 100644
---- a/arch/x86/power/cpu.c
-+++ b/arch/x86/power/cpu.c
-@@ -299,7 +299,17 @@ int hibernate_resume_nonboot_cpu_disable(void)
- 	 * address in its instruction pointer may not be possible to resolve
- 	 * any more at that point (the page tables used by it previously may
- 	 * have been overwritten by hibernate image data).
-+	 *
-+	 * First, make sure that we wake up all the potentially disabled SMT
-+	 * threads which have been initially brought up and then put into
-+	 * mwait/cpuidle sleep.
-+	 * Those will be put to proper (not interfering with hibernation
-+	 * resume) sleep afterwards, and the resumed kernel will decide itself
-+	 * what to do with them.
- 	 */
-+	ret = cpuhp_smt_enable();
-+	if (ret)
-+		return ret;
- 	smp_ops.play_dead = resume_play_dead;
- 	ret = disable_nonboot_cpus();
- 	smp_ops.play_dead = play_dead;
-diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
-index 4845b8c7be7f..fc413717a45f 100644
---- a/arch/x86/power/hibernate.c
-+++ b/arch/x86/power/hibernate.c
-@@ -11,6 +11,7 @@
- #include <linux/suspend.h>
- #include <linux/scatterlist.h>
- #include <linux/kdebug.h>
-+#include <linux/cpu.h>
- 
- #include <crypto/hash.h>
- 
-@@ -245,3 +246,35 @@ int relocate_restore_code(void)
- 	__flush_tlb_all();
- 	return 0;
- }
-+
-+int arch_resume_nosmt(void)
-+{
-+	int ret = 0;
-+	/*
-+	 * We reached this while coming out of hibernation. This means
-+	 * that SMT siblings are sleeping in hlt, as mwait is not safe
-+	 * against control transition during resume (see comment in
-+	 * hibernate_resume_nonboot_cpu_disable()).
-+	 *
-+	 * If the resumed kernel has SMT disabled, we have to take all the
-+	 * SMT siblings out of hlt, and offline them again so that they
-+	 * end up in mwait proper.
-+	 *
-+	 * Called with hotplug disabled.
-+	 */
-+	cpu_hotplug_enable();
-+	if (cpu_smt_control == CPU_SMT_DISABLED ||
-+			cpu_smt_control == CPU_SMT_FORCE_DISABLED) {
-+		enum cpuhp_smt_control old = cpu_smt_control;
-+
-+		ret = cpuhp_smt_enable();
-+		if (ret)
-+			goto out;
-+		ret = cpuhp_smt_disable(old);
-+		if (ret)
-+			goto out;
-+	}
-+out:
-+	cpu_hotplug_disable();
-+	return ret;
-+}
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index 3813fe45effd..fcb1386bb0d4 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -201,10 +201,14 @@ enum cpuhp_smt_control {
- extern enum cpuhp_smt_control cpu_smt_control;
- extern void cpu_smt_disable(bool force);
- extern void cpu_smt_check_topology(void);
-+extern int cpuhp_smt_enable(void);
-+extern int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval);
- #else
- # define cpu_smt_control		(CPU_SMT_NOT_IMPLEMENTED)
- static inline void cpu_smt_disable(bool force) { }
- static inline void cpu_smt_check_topology(void) { }
-+static inline int cpuhp_smt_enable(void) { return 0; }
-+static inline int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval) { return 0; }
- #endif
- 
- /*
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index f2ef10460698..077fde6fb953 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -2061,7 +2061,7 @@ static void cpuhp_online_cpu_device(unsigned int cpu)
- 	kobject_uevent(&dev->kobj, KOBJ_ONLINE);
- }
- 
--static int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval)
-+int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval)
- {
- 	int cpu, ret = 0;
- 
-@@ -2093,7 +2093,7 @@ static int cpuhp_smt_disable(enum cpuhp_smt_control ctrlval)
- 	return ret;
- }
- 
--static int cpuhp_smt_enable(void)
-+int cpuhp_smt_enable(void)
- {
- 	int cpu, ret = 0;
- 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index c8c272df7154..b65635753e8e 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -257,6 +257,11 @@ void swsusp_show_speed(ktime_t start, ktime_t stop,
- 		(kps % 1000) / 10);
- }
- 
-+__weak int arch_resume_nosmt(void)
-+{
-+	return 0;
-+}
-+
- /**
-  * create_image - Create a hibernation image.
-  * @platform_mode: Whether or not to use the platform driver.
-@@ -324,6 +329,10 @@ static int create_image(int platform_mode)
-  Enable_cpus:
- 	suspend_enable_secondary_cpus();
- 
-+	/* Allow architectures to do nosmt-specific post-resume dances */
-+	if (!in_suspend)
-+		error = arch_resume_nosmt();
-+
-  Platform_finish:
- 	platform_finish(platform_mode);
- 
+ .../ABI/testing/sysfs-devices-system-cpu      |  3 +-
+ Documentation/accelerators/ocxl.rst           |  2 +
+ Documentation/acpi/dsd/leds.txt               |  2 +-
+ .../admin-guide/kernel-parameters.rst         |  6 +-
+ .../admin-guide/kernel-parameters.txt         | 16 ++---
+ Documentation/admin-guide/mm/numaperf.rst     |  5 +-
+ Documentation/admin-guide/ras.rst             |  2 +-
+ Documentation/arm/stm32/overview.rst          |  2 +
+ .../arm/stm32/stm32f429-overview.rst          |  2 +
+ .../arm/stm32/stm32f746-overview.rst          |  2 +
+ .../arm/stm32/stm32f769-overview.rst          |  2 +
+ .../arm/stm32/stm32h743-overview.rst          |  2 +
+ .../arm/stm32/stm32mp157-overview.rst         |  2 +
+ Documentation/bpf/btf.rst                     |  2 +
+ .../bindings/mtd/amlogic,meson-nand.txt       |  2 +-
+ .../devicetree/bindings/mtd/gpmc-nand.txt     |  2 +-
+ .../devicetree/bindings/mtd/marvell-nand.txt  |  2 +-
+ .../devicetree/bindings/mtd/tango-nand.txt    |  2 +-
+ .../devicetree/bindings/net/fsl-enetc.txt     |  7 +-
+ .../bindings/pci/amlogic,meson-pcie.txt       |  2 +-
+ .../regulator/qcom,rpmh-regulator.txt         |  2 +-
+ .../devicetree/booting-without-of.txt         |  2 +-
+ Documentation/driver-api/gpio/board.rst       |  2 +-
+ Documentation/driver-api/gpio/consumer.rst    |  2 +-
+ Documentation/driver-api/gpio/driver.rst      |  2 +-
+ .../driver-api/soundwire/locking.rst          |  4 +-
+ .../firmware-guide/acpi/enumeration.rst       |  2 +-
+ .../firmware-guide/acpi/method-tracing.rst    |  2 +-
+ Documentation/gpu/amdgpu.rst                  |  4 +-
+ Documentation/gpu/i915.rst                    |  6 +-
+ Documentation/gpu/msm-crash-dump.rst          |  2 +
+ Documentation/i2c/instantiating-devices       |  2 +-
+ Documentation/interconnect/interconnect.rst   |  2 +
+ Documentation/laptops/lg-laptop.rst           |  2 +
+ .../freescale/dpaa2/dpio-driver.rst           |  4 +-
+ Documentation/networking/dsa/sja1105.rst      |  6 +-
+ Documentation/powerpc/isa-versions.rst        |  2 +
+ Documentation/security/keys/core.rst          | 16 +++--
+ .../security/keys/trusted-encrypted.rst       |  4 +-
+ Documentation/sysctl/kernel.txt               |  4 +-
+ .../translations/it_IT/process/howto.rst      |  2 +-
+ .../it_IT/process/license-rules.rst           | 28 ++++----
+ .../it_IT/process/magic-number.rst            |  2 +-
+ .../it_IT/process/stable-kernel-rules.rst     |  4 +-
+ .../translations/zh_CN/basic_profiling.txt    | 71 -------------------
+ .../translations/zh_CN/process/4.Coding.rst   |  2 +-
+ .../zh_CN/process/management-style.rst        |  4 +-
+ .../zh_CN/process/programming-language.rst    | 28 ++++----
+ .../virtual/kvm/amd-memory-encryption.rst     |  5 ++
+ Documentation/virtual/kvm/vcpu-requests.rst   |  2 +
+ Documentation/vm/hmm.rst                      |  9 ++-
+ Documentation/x86/x86_64/5level-paging.rst    |  2 +-
+ Documentation/x86/x86_64/boot-options.rst     |  4 +-
+ .../x86/x86_64/fake-numa-for-cpusets.rst      |  2 +-
+ MAINTAINERS                                   |  6 +-
+ arch/arm/Kconfig                              |  2 +-
+ arch/arm64/kernel/kexec_image.c               |  2 +-
+ arch/powerpc/Kconfig                          |  2 +-
+ arch/x86/Kconfig                              | 16 ++---
+ arch/x86/Kconfig.debug                        |  2 +-
+ arch/x86/boot/header.S                        |  2 +-
+ arch/x86/entry/entry_64.S                     |  2 +-
+ arch/x86/include/asm/bootparam_utils.h        |  2 +-
+ arch/x86/include/asm/page_64_types.h          |  2 +-
+ arch/x86/include/asm/pgtable_64_types.h       |  2 +-
+ arch/x86/kernel/cpu/microcode/amd.c           |  2 +-
+ arch/x86/kernel/kexec-bzimage64.c             |  2 +-
+ arch/x86/kernel/pci-dma.c                     |  2 +-
+ arch/x86/mm/tlb.c                             |  2 +-
+ arch/x86/platform/pvh/enlighten.c             |  2 +-
+ drivers/acpi/Kconfig                          | 10 +--
+ drivers/isdn/mISDN/dsp_core.c                 |  2 -
+ drivers/net/ethernet/faraday/ftgmac100.c      |  2 +-
+ .../fieldbus/Documentation/fieldbus_dev.txt   |  4 +-
+ drivers/vhost/vhost.c                         |  2 +-
+ include/acpi/acpi_drivers.h                   |  2 +-
+ include/linux/fs_context.h                    |  2 +-
+ include/linux/lsm_hooks.h                     |  2 +-
+ include/linux/mfd/madera/pdata.h              |  3 +-
+ mm/Kconfig                                    |  2 +-
+ security/Kconfig                              |  2 +-
+ tools/include/linux/err.h                     |  2 +-
+ .../Documentation/stack-validation.txt        |  4 +-
+ tools/testing/selftests/x86/protection_keys.c |  2 +-
+ 84 files changed, 183 insertions(+), 212 deletions(-)
+ delete mode 100644 Documentation/translations/zh_CN/basic_profiling.txt
 
 -- 
-Jiri Kosina
-SUSE Labs
+2.21.0
+
 
