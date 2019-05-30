@@ -2,28 +2,28 @@ Return-Path: <SRS0=Pa4x=T6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB8F4C28CC0
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 09:20:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA8A8C28CC0
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 09:20:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BBFE0253F7
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 09:20:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6A2972543A
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 09:20:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726819AbfE3JUs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 May 2019 05:20:48 -0400
-Received: from foss.arm.com ([217.140.101.70]:32998 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726903AbfE3JUr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 30 May 2019 05:20:47 -0400
+        id S1727404AbfE3JUy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 May 2019 05:20:54 -0400
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:33038 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726903AbfE3JUx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 May 2019 05:20:53 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1FD60A78;
-        Thu, 30 May 2019 02:20:47 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 19674A78;
+        Thu, 30 May 2019 02:20:53 -0700 (PDT)
 Received: from queper01-lin.cambridge.arm.com (queper01-lin.cambridge.arm.com [10.1.195.48])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6FED33F59C;
-        Thu, 30 May 2019 02:20:44 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 479803F59C;
+        Thu, 30 May 2019 02:20:50 -0700 (PDT)
 From:   Quentin Perret <quentin.perret@arm.com>
 To:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
         viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net,
@@ -32,10 +32,12 @@ To:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
         ionela.voinescu@arm.com, mka@chromium.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, quentin.perret@arm.com
-Subject: [PATCH v5 0/3] Make IPA use PM_EM
-Date:   Thu, 30 May 2019 10:20:35 +0100
-Message-Id: <20190530092038.12020-1-quentin.perret@arm.com>
+Subject: [PATCH v5 2/3] thermal: cpu_cooling: Make the power-related code depend on IPA
+Date:   Thu, 30 May 2019 10:20:37 +0100
+Message-Id: <20190530092038.12020-3-quentin.perret@arm.com>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190530092038.12020-1-quentin.perret@arm.com>
+References: <20190530092038.12020-1-quentin.perret@arm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -43,103 +45,293 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes in v5:
-**************
- - Changed patch 02 to guard IPA-specific code in cpu_cooling.c with
-   appropriate ifdefery (Daniel)
- - Rebased on 5.2-rc2
+The core CPU cooling infrastructure has power-related functions
+that have only one client: IPA. Since there can be no user of those
+functions if IPA is not compiled in, make sure to guard them with
+checks on CONFIG_THERMAL_GOV_POWER_ALLOCATOR to not waste space
+unnecessarily.
 
-Changes in v4:
-**************
- - Added Viresh's Acked-by to all 3 patches
- - Improved commit message of patch 3/3 to explain how it has no
-   functional impact on existing users (Eduardo)
+Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+---
+ drivers/thermal/cpu_cooling.c | 214 +++++++++++++++++-----------------
+ 1 file changed, 104 insertions(+), 110 deletions(-)
 
-Changes in v3:
-**************
- - Changed warning message for unordered tables to something more
-   explicit (Viresh)
- - Changed WARN() into a pr_err() for consistency
-
-Changes in v2:
-**************
- - Fixed patch 01/03 to actually enable CONFIG_ENERGY_MODEL
- - Added "depends on ENERGY_MODEL" to IPA (Daniel)
- - Added check to bail out if the freq table is unsorted (Viresh)
-
-Cover letter:
-*************
-
-The Intelligent Power Allocator (IPA) thermal governor uses an Energy
-Model (or EM) of the CPUs to re-distribute the power budget. To do so,
-it builds a table of <frequency, power> tuples where the power values
-are computed using the 'dynamic-power-coefficient' DT property. All of
-this is done in and only for the thermal subsystem, and more
-specifically for CPUs -- the power of other types of devices is obtained
-differently.
-
-Recently, the CPU scheduler has seen the introduction of Energy Aware
-Scheduling (EAS) patches, which also rely on an EM of the CPUs. This EM,
-however, is managed by an independent framework, called PM_EM, aimed to
-be used by all kernel subsystems interested in the power consumed by
-CPUs, and not only the scheduler.
-
-This patch series follows this logic and removes the (now redundant)
-thermal-specific EM computation code to migrate IPA to use PM_EM
-instead.
-
-Doing so should have no visible functional impact for existing users of
-IPA since:
-
- - during the 5.1 development cycle, a series of patches [1] introduced
-   in PM_OPP some infrastructure (dev_pm_opp_of_register_em()) enabling
-   the registration of EMs in PM_EM using the DT property used by IPA;
-
- - the existing upstream cpufreq drivers marked with the
-   'CPUFREQ_IS_COOLING_DEV' flag all call dev_pm_opp_of_register_em(),
-   which means they all support PM_EM (the only two exceptions are
-   qoriq-cpufreq which doesn't in fact use an EM and scmi-cpufreq which
-   already supports PM_EM without using the PM_OPP infrastructurei
-   because it read power costs directly from firmware);
-
-So, migrating IPA to using PM_EM should effectively be just plumbing
-since for the existing IPA users the PM_EM tables will contain the
-exact same power values that IPA used to compute on its own until now.
-The only new dependency is to compile in CONFIG_ENERGY_MODEL.
-
-Why is this migration still a good thing ? For three main reasons.
-
- 1. it removes redundant code;
-
- 2. it introduces an abstraction layer between IPA and the EM
-    computation. PM_EM offers to EAS and IPA (and potentially other
-    clients) standardized EM tables and hides 'how' these tables have
-    been obtained. PM_EM as of now supports power values either coming
-    from the 'dynamic-power-coefficient' DT property or obtained
-    directly from firmware using SCMI. The latter is a new feature for
-    IPA and that comes 'for free' with the migration. This will also be
-    true in the future every time PM_EM gets support for other ways of
-    loading the EM. Moreover, PM_EM is documented and has a debugfs
-    interface which should help adding support for new platforms.
-
- 3. it builds a consistent view of the EM of CPUs across kernel
-    subsystems, which is a pre-requisite for any kind of future work
-    aiming at a smarter power allocation using scheduler knowledge about
-    the system for example.
-
-[1] https://lore.kernel.org/lkml/20190204110952.16025-1-quentin.perret@arm.com/
-
-
-Quentin Perret (3):
-  arm64: defconfig: Enable CONFIG_ENERGY_MODEL
-  thermal: cpu_cooling: Make the power-related code depend on IPA
-  thermal: cpu_cooling: Migrate to using the EM framework
-
- arch/arm64/configs/defconfig  |   1 +
- drivers/thermal/Kconfig       |   1 +
- drivers/thermal/cpu_cooling.c | 428 ++++++++++++++--------------------
- 3 files changed, 178 insertions(+), 252 deletions(-)
-
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 4c5db59a619b..498f59ab64b2 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -46,7 +46,9 @@
+  */
+ struct freq_table {
+ 	u32 frequency;
++#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+ 	u32 power;
++#endif
+ };
+ 
+ /**
+@@ -96,28 +98,6 @@ static DEFINE_IDA(cpufreq_ida);
+ static DEFINE_MUTEX(cooling_list_lock);
+ static LIST_HEAD(cpufreq_cdev_list);
+ 
+-/* Below code defines functions to be used for cpufreq as cooling device */
+-
+-/**
+- * get_level: Find the level for a particular frequency
+- * @cpufreq_cdev: cpufreq_cdev for which the property is required
+- * @freq: Frequency
+- *
+- * Return: level corresponding to the frequency.
+- */
+-static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
+-			       unsigned int freq)
+-{
+-	struct freq_table *freq_table = cpufreq_cdev->freq_table;
+-	unsigned long level;
+-
+-	for (level = 1; level <= cpufreq_cdev->max_level; level++)
+-		if (freq > freq_table[level].frequency)
+-			break;
+-
+-	return level - 1;
+-}
+-
+ /**
+  * cpufreq_thermal_notifier - notifier callback for cpufreq policy change.
+  * @nb:	struct notifier_block * with callback info.
+@@ -171,6 +151,27 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 	return NOTIFY_OK;
+ }
+ 
++#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
++/**
++ * get_level: Find the level for a particular frequency
++ * @cpufreq_cdev: cpufreq_cdev for which the property is required
++ * @freq: Frequency
++ *
++ * Return: level corresponding to the frequency.
++ */
++static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
++			       unsigned int freq)
++{
++	struct freq_table *freq_table = cpufreq_cdev->freq_table;
++	unsigned long level;
++
++	for (level = 1; level <= cpufreq_cdev->max_level; level++)
++		if (freq > freq_table[level].frequency)
++			break;
++
++	return level - 1;
++}
++
+ /**
+  * update_freq_table() - Update the freq table with power numbers
+  * @cpufreq_cdev:	the cpufreq cooling device in which to update the table
+@@ -319,80 +320,6 @@ static u32 get_dynamic_power(struct cpufreq_cooling_device *cpufreq_cdev,
+ 	return (raw_cpu_power * cpufreq_cdev->last_load) / 100;
+ }
+ 
+-/* cpufreq cooling device callback functions are defined below */
+-
+-/**
+- * cpufreq_get_max_state - callback function to get the max cooling state.
+- * @cdev: thermal cooling device pointer.
+- * @state: fill this variable with the max cooling state.
+- *
+- * Callback for the thermal cooling device to return the cpufreq
+- * max cooling state.
+- *
+- * Return: 0 on success, an error code otherwise.
+- */
+-static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+-				 unsigned long *state)
+-{
+-	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+-
+-	*state = cpufreq_cdev->max_level;
+-	return 0;
+-}
+-
+-/**
+- * cpufreq_get_cur_state - callback function to get the current cooling state.
+- * @cdev: thermal cooling device pointer.
+- * @state: fill this variable with the current cooling state.
+- *
+- * Callback for the thermal cooling device to return the cpufreq
+- * current cooling state.
+- *
+- * Return: 0 on success, an error code otherwise.
+- */
+-static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
+-				 unsigned long *state)
+-{
+-	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+-
+-	*state = cpufreq_cdev->cpufreq_state;
+-
+-	return 0;
+-}
+-
+-/**
+- * cpufreq_set_cur_state - callback function to set the current cooling state.
+- * @cdev: thermal cooling device pointer.
+- * @state: set this variable to the current cooling state.
+- *
+- * Callback for the thermal cooling device to change the cpufreq
+- * current cooling state.
+- *
+- * Return: 0 on success, an error code otherwise.
+- */
+-static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+-				 unsigned long state)
+-{
+-	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+-	unsigned int clip_freq;
+-
+-	/* Request state should be less than max_level */
+-	if (WARN_ON(state > cpufreq_cdev->max_level))
+-		return -EINVAL;
+-
+-	/* Check if the old cooling action is same as new cooling action */
+-	if (cpufreq_cdev->cpufreq_state == state)
+-		return 0;
+-
+-	clip_freq = cpufreq_cdev->freq_table[state].frequency;
+-	cpufreq_cdev->cpufreq_state = state;
+-	cpufreq_cdev->clipped_freq = clip_freq;
+-
+-	cpufreq_update_policy(cpufreq_cdev->policy->cpu);
+-
+-	return 0;
+-}
+-
+ /**
+  * cpufreq_get_requested_power() - get the current power
+  * @cdev:	&thermal_cooling_device pointer
+@@ -536,22 +463,88 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+ 				      power);
+ 	return 0;
+ }
++#endif /* CONFIG_THERMAL_GOV_POWER_ALLOCATOR */
++
++/* cpufreq cooling device callback functions are defined below */
++
++/**
++ * cpufreq_get_max_state - callback function to get the max cooling state.
++ * @cdev: thermal cooling device pointer.
++ * @state: fill this variable with the max cooling state.
++ *
++ * Callback for the thermal cooling device to return the cpufreq
++ * max cooling state.
++ *
++ * Return: 0 on success, an error code otherwise.
++ */
++static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
++
++	*state = cpufreq_cdev->max_level;
++	return 0;
++}
++
++/**
++ * cpufreq_get_cur_state - callback function to get the current cooling state.
++ * @cdev: thermal cooling device pointer.
++ * @state: fill this variable with the current cooling state.
++ *
++ * Callback for the thermal cooling device to return the cpufreq
++ * current cooling state.
++ *
++ * Return: 0 on success, an error code otherwise.
++ */
++static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
++				 unsigned long *state)
++{
++	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
++
++	*state = cpufreq_cdev->cpufreq_state;
++
++	return 0;
++}
++
++/**
++ * cpufreq_set_cur_state - callback function to set the current cooling state.
++ * @cdev: thermal cooling device pointer.
++ * @state: set this variable to the current cooling state.
++ *
++ * Callback for the thermal cooling device to change the cpufreq
++ * current cooling state.
++ *
++ * Return: 0 on success, an error code otherwise.
++ */
++static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
++				 unsigned long state)
++{
++	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
++	unsigned int clip_freq;
++
++	/* Request state should be less than max_level */
++	if (WARN_ON(state > cpufreq_cdev->max_level))
++		return -EINVAL;
++
++	/* Check if the old cooling action is same as new cooling action */
++	if (cpufreq_cdev->cpufreq_state == state)
++		return 0;
++
++	clip_freq = cpufreq_cdev->freq_table[state].frequency;
++	cpufreq_cdev->cpufreq_state = state;
++	cpufreq_cdev->clipped_freq = clip_freq;
++
++	cpufreq_update_policy(cpufreq_cdev->policy->cpu);
++
++	return 0;
++}
+ 
+ /* Bind cpufreq callbacks to thermal cooling device ops */
+ 
+ static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+-	.get_max_state = cpufreq_get_max_state,
+-	.get_cur_state = cpufreq_get_cur_state,
+-	.set_cur_state = cpufreq_set_cur_state,
+-};
+-
+-static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
+ 	.get_max_state		= cpufreq_get_max_state,
+ 	.get_cur_state		= cpufreq_get_cur_state,
+ 	.set_cur_state		= cpufreq_set_cur_state,
+-	.get_requested_power	= cpufreq_get_requested_power,
+-	.state2power		= cpufreq_state2power,
+-	.power2state		= cpufreq_power2state,
+ };
+ 
+ /* Notifier for cpufreq policy change */
+@@ -659,18 +652,19 @@ __cpufreq_cooling_register(struct device_node *np,
+ 			pr_debug("%s: freq:%u KHz\n", __func__, freq);
+ 	}
+ 
++	cooling_ops = &cpufreq_cooling_ops;
++#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
+ 	if (capacitance) {
+ 		ret = update_freq_table(cpufreq_cdev, capacitance);
+ 		if (ret) {
+ 			cdev = ERR_PTR(ret);
+ 			goto remove_ida;
+ 		}
+-
+-		cooling_ops = &cpufreq_power_cooling_ops;
+-	} else {
+-		cooling_ops = &cpufreq_cooling_ops;
++		cooling_ops->get_requested_power = cpufreq_get_requested_power;
++		cooling_ops->state2power = cpufreq_state2power;
++		cooling_ops->power2state = cpufreq_power2state;
+ 	}
+-
++#endif
+ 	cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
+ 						  cooling_ops);
+ 	if (IS_ERR(cdev))
 -- 
 2.21.0
 
