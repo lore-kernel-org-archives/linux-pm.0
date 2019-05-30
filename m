@@ -1,257 +1,117 @@
-Return-Path: <SRS0=r+Q9=T5=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=Pa4x=T6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,T_DKIMWL_WL_HIGH,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 638CEC28CC2
-	for <linux-pm@archiver.kernel.org>; Wed, 29 May 2019 23:24:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 706A5C46460
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:40:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 32E0D24344
-	for <linux-pm@archiver.kernel.org>; Wed, 29 May 2019 23:24:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4ACCD24BDA
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:40:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559172282;
-	bh=51yZ6RZgtKOlKFc0Vy80gFuoiQWZbbSDlf2HBM/XHrs=;
+	s=default; t=1559187648;
+	bh=VJkP1uPKZV04dqxxoe5F7J+u19z62vXuWKURf8fiC+Y=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=YjxArQ7JvuCB+AA9ZatAV4MqZ7lkb/kuTj0Ol4DyWTWJiwx+1IpJilx5t6gL1pN+C
-	 T20ARP0ctMlAabDYridlLy5hZxftSBZKOJcjKr3xcwhsMailnkC/xPZQr+YEyMPeV2
-	 7MB6J/CunfaJEcXBUe8Hwp8NOce1beFi/xwvjYS4=
+	b=HiW3BBjN4TcRkE4x0zxh3PM4U8MJmt0zI330Lr2YsHdeowxmEvhTGSPE2IYIpbSWC
+	 +gWpw3fFIcMwtz6drVcOaLJYbkeD1pxB4cDwUFf70WoHlkZ8uoN11dYcZEdHj/focx
+	 i+LMlDZmF0OupAX2xckfRpNX31/H9bj3661sVF0M=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726823AbfE2XYZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 May 2019 19:24:25 -0400
-Received: from bombadil.infradead.org ([198.137.202.133]:49264 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726240AbfE2XYD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2019 19:24:03 -0400
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
-        Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=pLa6QBXDUlkvKl0F9KmB92FN1yBU20l3+fc3LLX9/Ow=; b=TUTbNEI2sFRqzFdX8mAEDw+ZKk
-        XtHS4RpAgwYG5mZM22U1r6M0vo9yBLzdpBWxLG+Wua96AfW4fGlJvlNU4cwOADtGPiZmrkKWvTbCA
-        +YlWRB5YJuvFtbYIZXOusbPxpxpK7XsazwynFvbwvZf9cNf3WTWLfqLh+qA00YXjPTsZuDlOCdtga
-        duJk804hRhhdM7AAVrd8q+J05abzsvq5dJZOHHiK+GjqJam/lkUK4JruIWmnniYsXhPKSyxV8wube
-        cTsvAcSBdajn4t+NWdFdqsXfNt6brPC/m0bcxjACGqdLnz+bast5CItihyQj2txojtCoXFRwIv9JW
-        P1hLrtIA==;
-Received: from 177.132.232.81.dynamic.adsl.gvt.net.br ([177.132.232.81] helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
-        id 1hW7vL-0005Rw-HW; Wed, 29 May 2019 23:23:59 +0000
-Received: from mchehab by bombadil.infradead.org with local (Exim 4.92)
-        (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1hW7vI-0007xI-NZ; Wed, 29 May 2019 20:23:56 -0300
-From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@infradead.org>,
-        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        Frederic Barrat <fbarrat@linux.ibm.com>,
-        Andrew Donnellan <ajd@linux.ibm.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <maxime.ripard@bootlin.com>,
-        Sean Paul <sean@poorly.run>, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Matan Ziv-Av <matan@svgalib.org>,
+        id S1729288AbfE3Dkg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 May 2019 23:40:36 -0400
+Received: from mail.kernel.org ([198.145.29.99]:34838 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1731428AbfE3DV1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 May 2019 23:21:27 -0400
+Received: from localhost (ip67-88-213-2.z213-88-67.customer.algx.net [67.88.213.2])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 2707B249FC;
+        Thu, 30 May 2019 03:21:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1559186487;
+        bh=VJkP1uPKZV04dqxxoe5F7J+u19z62vXuWKURf8fiC+Y=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=jCf721i2BKK+2IUcSdSjPwhIe2kC1l/iX7HtkbeqyI6JazOCH66GgZydEFNG3zUiF
+         Jf4yyDh1AFEUjA08jaJRraJViyyBd6gkGlaH5Kh6VVTQh+feMs8oNR4OomoCD4fUDh
+         GZX86/neXbBipiV0MT/Rq2N/Ln3QVBEuZ2Ehca34=
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        stable@vger.kernel.org, Wen Yang <wen.yang99@zte.com.cn>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
         Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Paul Mackerras <paulus@samba.org>,
         Michael Ellerman <mpe@ellerman.id.au>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
-        linuxppc-dev@lists.ozlabs.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org, kvm@vger.kernel.org
-Subject: [PATCH 09/22] docs: mark orphan documents as such
-Date:   Wed, 29 May 2019 20:23:40 -0300
-Message-Id: <e0bf4e767dd5de9189e5993fbec2f4b1bafd2064.1559171394.git.mchehab+samsung@kernel.org>
+        linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 4.9 087/128] cpufreq: pmac32: fix possible object reference leak
+Date:   Wed, 29 May 2019 20:06:59 -0700
+Message-Id: <20190530030450.494881621@linuxfoundation.org>
 X-Mailer: git-send-email 2.21.0
-In-Reply-To: <cover.1559171394.git.mchehab+samsung@kernel.org>
-References: <cover.1559171394.git.mchehab+samsung@kernel.org>
+In-Reply-To: <20190530030432.977908967@linuxfoundation.org>
+References: <20190530030432.977908967@linuxfoundation.org>
+User-Agent: quilt/0.66
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Sphinx doesn't like orphan documents:
+[ Upstream commit 8d10dc28a9ea6e8c02e825dab28699f3c72b02d9 ]
 
-    Documentation/accelerators/ocxl.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32f429-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32f746-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32f769-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32h743-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32mp157-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/gpu/msm-crash-dump.rst: WARNING: document isn't included in any toctree
-    Documentation/interconnect/interconnect.rst: WARNING: document isn't included in any toctree
-    Documentation/laptops/lg-laptop.rst: WARNING: document isn't included in any toctree
-    Documentation/powerpc/isa-versions.rst: WARNING: document isn't included in any toctree
-    Documentation/virtual/kvm/amd-memory-encryption.rst: WARNING: document isn't included in any toctree
-    Documentation/virtual/kvm/vcpu-requests.rst: WARNING: document isn't included in any toctree
+The call to of_find_node_by_name returns a node pointer with refcount
+incremented thus it must be explicitly decremented after the last
+usage.
 
-So, while they aren't on any toctree, add :orphan: to them, in order
-to silent this warning.
+Detected by coccinelle with the following warnings:
+./drivers/cpufreq/pmac32-cpufreq.c:557:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 552, but without a corresponding object release within this function.
+./drivers/cpufreq/pmac32-cpufreq.c:569:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 552, but without a corresponding object release within this function.
+./drivers/cpufreq/pmac32-cpufreq.c:598:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 587, but without a corresponding object release within this function.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- Documentation/accelerators/ocxl.rst                 | 2 ++
- Documentation/arm/stm32/overview.rst                | 2 ++
- Documentation/arm/stm32/stm32f429-overview.rst      | 2 ++
- Documentation/arm/stm32/stm32f746-overview.rst      | 2 ++
- Documentation/arm/stm32/stm32f769-overview.rst      | 2 ++
- Documentation/arm/stm32/stm32h743-overview.rst      | 2 ++
- Documentation/arm/stm32/stm32mp157-overview.rst     | 2 ++
- Documentation/gpu/msm-crash-dump.rst                | 2 ++
- Documentation/interconnect/interconnect.rst         | 2 ++
- Documentation/laptops/lg-laptop.rst                 | 2 ++
- Documentation/powerpc/isa-versions.rst              | 2 ++
- Documentation/virtual/kvm/amd-memory-encryption.rst | 2 ++
- Documentation/virtual/kvm/vcpu-requests.rst         | 2 ++
- 13 files changed, 26 insertions(+)
+ drivers/cpufreq/pmac32-cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accelerators/ocxl.rst
-index 14cefc020e2d..b1cea19a90f5 100644
---- a/Documentation/accelerators/ocxl.rst
-+++ b/Documentation/accelerators/ocxl.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- ========================================================
- OpenCAPI (Open Coherent Accelerator Processor Interface)
- ========================================================
-diff --git a/Documentation/arm/stm32/overview.rst b/Documentation/arm/stm32/overview.rst
-index 85cfc8410798..f7e734153860 100644
---- a/Documentation/arm/stm32/overview.rst
-+++ b/Documentation/arm/stm32/overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- ========================
- STM32 ARM Linux Overview
- ========================
-diff --git a/Documentation/arm/stm32/stm32f429-overview.rst b/Documentation/arm/stm32/stm32f429-overview.rst
-index 18feda97f483..65bbb1c3b423 100644
---- a/Documentation/arm/stm32/stm32f429-overview.rst
-+++ b/Documentation/arm/stm32/stm32f429-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32F429 Overview
- ==================
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index ff44016ea0312..641f8021855a7 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -551,6 +551,7 @@ static int pmac_cpufreq_init_7447A(struct device_node *cpunode)
+ 	volt_gpio_np = of_find_node_by_name(NULL, "cpu-vcore-select");
+ 	if (volt_gpio_np)
+ 		voltage_gpio = read_gpio(volt_gpio_np);
++	of_node_put(volt_gpio_np);
+ 	if (!voltage_gpio){
+ 		pr_err("missing cpu-vcore-select gpio\n");
+ 		return 1;
+@@ -587,6 +588,7 @@ static int pmac_cpufreq_init_750FX(struct device_node *cpunode)
+ 	if (volt_gpio_np)
+ 		voltage_gpio = read_gpio(volt_gpio_np);
  
-diff --git a/Documentation/arm/stm32/stm32f746-overview.rst b/Documentation/arm/stm32/stm32f746-overview.rst
-index b5f4b6ce7656..42d593085015 100644
---- a/Documentation/arm/stm32/stm32f746-overview.rst
-+++ b/Documentation/arm/stm32/stm32f746-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32F746 Overview
- ==================
++	of_node_put(volt_gpio_np);
+ 	pvr = mfspr(SPRN_PVR);
+ 	has_cpu_l2lve = !((pvr & 0xf00) == 0x100);
  
-diff --git a/Documentation/arm/stm32/stm32f769-overview.rst b/Documentation/arm/stm32/stm32f769-overview.rst
-index 228656ced2fe..f6adac862b17 100644
---- a/Documentation/arm/stm32/stm32f769-overview.rst
-+++ b/Documentation/arm/stm32/stm32f769-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32F769 Overview
- ==================
- 
-diff --git a/Documentation/arm/stm32/stm32h743-overview.rst b/Documentation/arm/stm32/stm32h743-overview.rst
-index 3458dc00095d..c525835e7473 100644
---- a/Documentation/arm/stm32/stm32h743-overview.rst
-+++ b/Documentation/arm/stm32/stm32h743-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32H743 Overview
- ==================
- 
-diff --git a/Documentation/arm/stm32/stm32mp157-overview.rst b/Documentation/arm/stm32/stm32mp157-overview.rst
-index 62e176d47ca7..2c52cd020601 100644
---- a/Documentation/arm/stm32/stm32mp157-overview.rst
-+++ b/Documentation/arm/stm32/stm32mp157-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32MP157 Overview
- ===================
- 
-diff --git a/Documentation/gpu/msm-crash-dump.rst b/Documentation/gpu/msm-crash-dump.rst
-index 757cd257e0d8..240ef200f76c 100644
---- a/Documentation/gpu/msm-crash-dump.rst
-+++ b/Documentation/gpu/msm-crash-dump.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- =====================
- MSM Crash Dump Format
- =====================
-diff --git a/Documentation/interconnect/interconnect.rst b/Documentation/interconnect/interconnect.rst
-index c3e004893796..56e331dab70e 100644
---- a/Documentation/interconnect/interconnect.rst
-+++ b/Documentation/interconnect/interconnect.rst
-@@ -1,5 +1,7 @@
- .. SPDX-License-Identifier: GPL-2.0
- 
-+:orphan:
-+
- =====================================
- GENERIC SYSTEM INTERCONNECT SUBSYSTEM
- =====================================
-diff --git a/Documentation/laptops/lg-laptop.rst b/Documentation/laptops/lg-laptop.rst
-index aa503ee9b3bc..f2c2ffe31101 100644
---- a/Documentation/laptops/lg-laptop.rst
-+++ b/Documentation/laptops/lg-laptop.rst
-@@ -1,5 +1,7 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+:orphan:
-+
- LG Gram laptop extra features
- =============================
- 
-diff --git a/Documentation/powerpc/isa-versions.rst b/Documentation/powerpc/isa-versions.rst
-index 812e20cc898c..66c24140ebf1 100644
---- a/Documentation/powerpc/isa-versions.rst
-+++ b/Documentation/powerpc/isa-versions.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- CPU to ISA Version Mapping
- ==========================
- 
-diff --git a/Documentation/virtual/kvm/amd-memory-encryption.rst b/Documentation/virtual/kvm/amd-memory-encryption.rst
-index 659bbc093b52..33d697ab8a58 100644
---- a/Documentation/virtual/kvm/amd-memory-encryption.rst
-+++ b/Documentation/virtual/kvm/amd-memory-encryption.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- ======================================
- Secure Encrypted Virtualization (SEV)
- ======================================
-diff --git a/Documentation/virtual/kvm/vcpu-requests.rst b/Documentation/virtual/kvm/vcpu-requests.rst
-index 5feb3706a7ae..c1807a1b92e6 100644
---- a/Documentation/virtual/kvm/vcpu-requests.rst
-+++ b/Documentation/virtual/kvm/vcpu-requests.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- =================
- KVM VCPU Requests
- =================
 -- 
-2.21.0
+2.20.1
+
+
 
