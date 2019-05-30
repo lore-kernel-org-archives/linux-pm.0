@@ -7,51 +7,47 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A74FC28CC3
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01758C072B1
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:53:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 04D9124DE4
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:52:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D00AD24658
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:53:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559188374;
-	bh=k8XCWb3nVGyoshzNZpVRJe/i8quHXBLiNB8Xg/6kpDo=;
+	s=default; t=1559188388;
+	bh=/9gO1owKbVSEM1J1l/p0XqI3NOncT/RkO+xEAx1EsGc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=XgFSEJn/reDLKlhIH+5gMeXApfHjtnzNAxSZurD0pEh0a5zIYrtG4HuS689Q2+Ya6
-	 0n+cPDzS47gWxe6po9GuTEtIpD0CILwPKHTjHqkeEoq8u6Np2dpC6vhMiWVXEl6BIV
-	 zsp/Rc2MS+bqYvX1NV0oeteXsT2O+JCQmz9MQPgY=
+	b=pGwlS3JAUhcgQMa7wJNxjs735SeybLtGvK8FrPnO/h6zOKR/8fwxY5HL1kQFVOrKM
+	 IpEcrspDoe4Dt74n/PkcIsVl9KQTLJKk4WgslcepOwdz5NsQxlQ3fLlbpCkCQgH2nJ
+	 SDDZ8JkffUxCV0+fE48Df0CNFZnPV1zk4RFqT8HI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730550AbfE3Dww (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 May 2019 23:52:52 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55742 "EHLO mail.kernel.org"
+        id S1732497AbfE3Dw7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 May 2019 23:52:59 -0400
+Received: from mail.kernel.org ([198.145.29.99]:55652 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730594AbfE3DTe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 May 2019 23:19:34 -0400
+        id S1731932AbfE3DTd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 May 2019 23:19:33 -0400
 Received: from localhost (ip67-88-213-2.z213-88-67.customer.algx.net [67.88.213.2])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id AB19124879;
-        Thu, 30 May 2019 03:19:33 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id A3C6E24820;
+        Thu, 30 May 2019 03:19:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559186373;
-        bh=k8XCWb3nVGyoshzNZpVRJe/i8quHXBLiNB8Xg/6kpDo=;
+        s=default; t=1559186372;
+        bh=/9gO1owKbVSEM1J1l/p0XqI3NOncT/RkO+xEAx1EsGc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=uH82h4yPgMpMkBurhOMiV6jh6o5A8eXUa2VxSTu9ZuugLZg2uwuckXqXlWEPbPd/6
-         vPuf44+UZ95nTBVSl55BLfR3xHqe/cRwB22wPtkHbWedp+J8Y6Pb9fzIfE0M6/zy0Q
-         +2+GtyCmyqISjYLoZWN6LUD+nnf2j7z0psqlXMiA=
+        b=Jw+mLu1NQMYQ8LmX/NMQYBjb4hathAmsul7rNDgO2YzDUAmiB89fqjmsdsv1TItc4
+         YPzN/Hg+I3FQQqvTBgHqhziKYd9pcUGdq4Q971DdU6yDmTzqtL2uEvK1+TQyufTWiC
+         B/lK6kCK4h4MNmiWC4gAJqaabUhfvYN8emZ9hkeg=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         stable@vger.kernel.org, Wen Yang <wen.yang99@zte.com.cn>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 4.14 132/193] cpufreq: pmac32: fix possible object reference leak
-Date:   Wed, 29 May 2019 20:06:26 -0700
-Message-Id: <20190530030506.796645818@linuxfoundation.org>
+        linux-pm@vger.kernel.org, Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 4.14 130/193] cpufreq: ppc_cbe: fix possible object reference leak
+Date:   Wed, 29 May 2019 20:06:24 -0700
+Message-Id: <20190530030506.541854823@linuxfoundation.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190530030446.953835040@linuxfoundation.org>
 References: <20190530030446.953835040@linuxfoundation.org>
@@ -64,51 +60,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-[ Upstream commit 8d10dc28a9ea6e8c02e825dab28699f3c72b02d9 ]
+[ Upstream commit 233298032803f2802fe99892d0de4ab653bfece4 ]
 
-The call to of_find_node_by_name returns a node pointer with refcount
+The call to of_get_cpu_node returns a node pointer with refcount
 incremented thus it must be explicitly decremented after the last
 usage.
 
 Detected by coccinelle with the following warnings:
-./drivers/cpufreq/pmac32-cpufreq.c:557:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 552, but without a corresponding object release within this function.
-./drivers/cpufreq/pmac32-cpufreq.c:569:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 552, but without a corresponding object release within this function.
-./drivers/cpufreq/pmac32-cpufreq.c:598:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 587, but without a corresponding object release within this function.
+./drivers/cpufreq/ppc_cbe_cpufreq.c:89:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 76, but without a corresponding object release within this function.
+./drivers/cpufreq/ppc_cbe_cpufreq.c:89:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 76, but without a corresponding object release within this function.
 
 Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/pmac32-cpufreq.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/cpufreq/ppc_cbe_cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-index 61ae06ca008e7..e225edb5c3593 100644
---- a/drivers/cpufreq/pmac32-cpufreq.c
-+++ b/drivers/cpufreq/pmac32-cpufreq.c
-@@ -552,6 +552,7 @@ static int pmac_cpufreq_init_7447A(struct device_node *cpunode)
- 	volt_gpio_np = of_find_node_by_name(NULL, "cpu-vcore-select");
- 	if (volt_gpio_np)
- 		voltage_gpio = read_gpio(volt_gpio_np);
-+	of_node_put(volt_gpio_np);
- 	if (!voltage_gpio){
- 		pr_err("missing cpu-vcore-select gpio\n");
- 		return 1;
-@@ -588,6 +589,7 @@ static int pmac_cpufreq_init_750FX(struct device_node *cpunode)
- 	if (volt_gpio_np)
- 		voltage_gpio = read_gpio(volt_gpio_np);
- 
-+	of_node_put(volt_gpio_np);
- 	pvr = mfspr(SPRN_PVR);
- 	has_cpu_l2lve = !((pvr & 0xf00) == 0x100);
+diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
+index 5a4c5a639f618..2eaeebcc93afe 100644
+--- a/drivers/cpufreq/ppc_cbe_cpufreq.c
++++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
+@@ -86,6 +86,7 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	if (!cbe_get_cpu_pmd_regs(policy->cpu) ||
+ 	    !cbe_get_cpu_mic_tm_regs(policy->cpu)) {
+ 		pr_info("invalid CBE regs pointers for cpufreq\n");
++		of_node_put(cpu);
+ 		return -EINVAL;
+ 	}
  
 -- 
 2.20.1
