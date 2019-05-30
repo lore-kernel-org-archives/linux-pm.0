@@ -2,99 +2,93 @@ Return-Path: <SRS0=Pa4x=T6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 151B8C28CC0
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 04:48:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B691C072B1
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 06:27:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D9C8B25C5B
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 04:48:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559191726;
-	bh=wu2UiETOHpDMk85zi6HmzdGCjZjRP7IcwSTkCaWKgdI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=mU84LVxqeKhgY/fgGipZL1wFtF/snB0upBxdf+yNQjb2SjkFLE3EuTEEfpa1/V4da
-	 ZxHkW0CugLhaf9BNrH4PH6mkcpfDV2fmYoWYYFIMDojLBTFxjM57a1hKZafRCCg154
-	 22ASyshmfL9E3jv8P/Tq61FQl1cvXloQMNl5mJ2g=
+	by mail.kernel.org (Postfix) with ESMTP id 054F2259D8
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 06:27:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="TeMX9NEY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728475AbfE3DLT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 May 2019 23:11:19 -0400
-Received: from mail.kernel.org ([198.145.29.99]:49964 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728462AbfE3DLS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 May 2019 23:11:18 -0400
-Received: from localhost (ip67-88-213-2.z213-88-67.customer.algx.net [67.88.213.2])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 989A3244D6;
-        Thu, 30 May 2019 03:11:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559185877;
-        bh=wu2UiETOHpDMk85zi6HmzdGCjZjRP7IcwSTkCaWKgdI=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=xb1MjkWyWctclSsE5YnyTlLWciPVyX9ZQ6Kku33Dy2E2PoV23KNaessB+l2dV7Pqu
-         cuguJR/keTYc3iZdpU/2KlLPYGtrYgBU5q5WlnodJ7fKOFD2Ja0r0GrLpMCo244d44
-         2X5Cfk7oa7CyBQOc5kA45N10FURDgXgjILhT32tA=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        stable@vger.kernel.org, Wen Yang <wen.yang99@zte.com.cn>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org, Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.1 225/405] cpufreq: ppc_cbe: fix possible object reference leak
-Date:   Wed, 29 May 2019 20:03:43 -0700
-Message-Id: <20190530030552.436666425@linuxfoundation.org>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190530030540.291644921@linuxfoundation.org>
-References: <20190530030540.291644921@linuxfoundation.org>
-User-Agent: quilt/0.66
+        id S1727269AbfE3G1z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 May 2019 02:27:55 -0400
+Received: from mail-qt1-f194.google.com ([209.85.160.194]:39690 "EHLO
+        mail-qt1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725961AbfE3G1z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 May 2019 02:27:55 -0400
+Received: by mail-qt1-f194.google.com with SMTP id i34so5663811qta.6
+        for <linux-pm@vger.kernel.org>; Wed, 29 May 2019 23:27:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=EDB9NEzcrpM7vrzDugTKwabI3NuPP3IyLOyki6rb9uw=;
+        b=TeMX9NEYaD2Qb/D8oQumCOS5CTT5UUG3au1rn0yH9MGA8q2jHPcpr5bZd7JUPdwRha
+         m5ZvqEa54g94x1DtzRPQXWKXAZdSvFoMgS4B1EAeBL+A2iVZ3Rdip21Yh6WWJhg1s3dc
+         r2HUIPMkLO6PQjVZQzMZFNnBB2IZuUatc64XY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=EDB9NEzcrpM7vrzDugTKwabI3NuPP3IyLOyki6rb9uw=;
+        b=sk7/hNMK1u0XmT+woWk0LEeQNUJa6efWS5Y01sGD+f0twjfn9GJvCNFEC2kKN4OVVm
+         b8J2LVKMe/k1Ys8mxnxSAtDyuEz7CVGluvrUpexA0OLe6vxTyl98J4USDCLvOHVdHxhD
+         Z1lBIrjvOEMdKnac1YtRk5aGewZdhyZSqGnmRJckBIkolAo+b4f8dDBZQLOAeM2UMxoY
+         nhfUKK7vjXLxoMvoq4hdZwNAHLk7fM8yamXSYJh+0vFNYjUvO1Nztb2FRyCh2mjCcBde
+         E0ZbkiY+IPvy4ZJUQ5uahWj2ni/U4C4tEQ4myB9jtHEROGUu6VZxg71fyShVoXKz+ePJ
+         zvYA==
+X-Gm-Message-State: APjAAAVM1mMQgWwVpetBulu2oRhJnnOPYXwFi9iZ/SAODl1kS0aIrwLf
+        ER3/sNBNlSDDtcW1BI0qYSgqqij6+k7/WfdAyxwf4A==
+X-Google-Smtp-Source: APXvYqzHDlQemfhL+uQX+PxIu9PwWEguqnHq/qbjiPCrDdlMTXx+BXHgxPzV/YR2FBce1yN3dYhDwycDzH8cXlXCGsc=
+X-Received: by 2002:ac8:ecc:: with SMTP id w12mr1935044qti.344.1559197674339;
+ Wed, 29 May 2019 23:27:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <1557494826-6044-1-git-send-email-michael.kao@mediatek.com> <1557494826-6044-2-git-send-email-michael.kao@mediatek.com>
+In-Reply-To: <1557494826-6044-2-git-send-email-michael.kao@mediatek.com>
+From:   Hsin-Yi Wang <hsinyi@chromium.org>
+Date:   Thu, 30 May 2019 14:27:28 +0800
+Message-ID: <CAJMQK-giJTeERnqjxoSMjF-JXxW9SPmeARWf3f9ZyRgBsYN5fg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/8] arm64: dts: mt8183: add thermal zone node
+To:     "michael.kao" <michael.kao@mediatek.com>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        lkml <linux-kernel@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        linux-mediatek@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-[ Upstream commit 233298032803f2802fe99892d0de4ab653bfece4 ]
+On Fri, May 10, 2019 at 9:27 PM michael.kao <michael.kao@mediatek.com> wrote:
 
-The call to of_get_cpu_node returns a node pointer with refcount
-incremented thus it must be explicitly decremented after the last
-usage.
+> +
+> +                       tzts1: tzts1 {
+> +                               polling-delay-passive = <0>;
+> +                               polling-delay = <0>;
+> +                               thermal-sensors = <&thermal 1>;
+> +                               sustainable-power = <0>;
+> +                               trips {};
+> +                               cooling-maps {};
+> +                       };
+> +
+Is 0 a valid initial sustainable-power setting? Since we'll still get
+warning[1] about this, though it might not be harmful.
 
-Detected by coccinelle with the following warnings:
-./drivers/cpufreq/ppc_cbe_cpufreq.c:89:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 76, but without a corresponding object release within this function.
-./drivers/cpufreq/ppc_cbe_cpufreq.c:89:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 76, but without a corresponding object release within this function.
+If 0 is a valid setting, maybe we should consider showing the warning
+of not setting this property in [2]?
 
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpufreq/ppc_cbe_cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index 41a0f0be3f9ff..8414c3a4ea08c 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -86,6 +86,7 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	if (!cbe_get_cpu_pmd_regs(policy->cpu) ||
- 	    !cbe_get_cpu_mic_tm_regs(policy->cpu)) {
- 		pr_info("invalid CBE regs pointers for cpufreq\n");
-+		of_node_put(cpu);
- 		return -EINVAL;
- 	}
- 
--- 
-2.20.1
-
-
-
+[1] https://elixir.bootlin.com/linux/latest/source/drivers/thermal/power_allocator.c#L570
+[2] https://elixir.bootlin.com/linux/latest/source/drivers/thermal/of-thermal.c#L1049
