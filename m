@@ -2,35 +2,46 @@ Return-Path: <SRS0=Pa4x=T6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 517CAC28CC0
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 23:38:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FA0AC28CC0
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 23:42:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 290C62630B
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 23:38:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 24C032632A
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 23:42:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1559259728;
+	bh=7YYCFKd7B2wsWdoExXGWhul/2UFex3PfcEkHVhp7QmM=;
+	h=Date:From:To:cc:Subject:In-Reply-To:References:List-ID:From;
+	b=PPFDbunYkdwjz9t3D64U9vUkz2MsRpWj03/ib3OJEWerPR+a5lg+fFicZfLPyj6O1
+	 5WKwZrlalsqHGZYDVmIM1/yiAdjGLHiwWbqS8TicylSVpNSWrZFW9QoJo2Nw7lebv0
+	 6iAREu5M4ar2RWVu5odDu2JMnBOOSov7OcZoLorQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726128AbfE3XiM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 May 2019 19:38:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:47194 "EHLO mx1.redhat.com"
+        id S1726128AbfE3XmH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 May 2019 19:42:07 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40138 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726029AbfE3XiM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 30 May 2019 19:38:12 -0400
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        id S1726029AbfE3XmH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 May 2019 19:42:07 -0400
+Received: from pobox.suse.cz (prg-ext-pat.suse.com [213.151.95.130])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mx1.redhat.com (Postfix) with ESMTPS id 0818F3082A9A;
-        Thu, 30 May 2019 23:38:12 +0000 (UTC)
-Received: from treble (ovpn-124-142.rdu2.redhat.com [10.10.124.142])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 98C437A462;
-        Thu, 30 May 2019 23:38:07 +0000 (UTC)
-Date:   Thu, 30 May 2019 18:38:04 -0500
-From:   Josh Poimboeuf <jpoimboe@redhat.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
-        Jiri Kosina <jikos@kernel.org>,
+        by mail.kernel.org (Postfix) with ESMTPSA id C1D1D26326;
+        Thu, 30 May 2019 23:42:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1559259726;
+        bh=7YYCFKd7B2wsWdoExXGWhul/2UFex3PfcEkHVhp7QmM=;
+        h=Date:From:To:cc:Subject:In-Reply-To:References:From;
+        b=iCCQvAeEk4ar0WlA2Eh6zNCuaHx2ypdtJd5QMrpKQVCvc4tNANhzTCjVF166QH0H3
+         h0cCWQrsc1YOgFu/flWMGFw981pZMu2iNpAW/Ztokzs6c8zqqh4N2fgKxEwzu+vSTs
+         n6slvQREgUtD+Lzlz4+yT58HOQa43deSSdrE+iJA=
+Date:   Fri, 31 May 2019 01:42:02 +0200 (CEST)
+From:   Jiri Kosina <jikos@kernel.org>
+To:     Josh Poimboeuf <jpoimboe@redhat.com>
+cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
         the arch/x86 maintainers <x86@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
@@ -41,51 +52,37 @@ Cc:     Thomas Gleixner <tglx@linutronix.de>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH v4] x86/power: Fix 'nosmt' vs. hibernation triple fault
  during resume
-Message-ID: <20190530233804.syv4brpe3ndslyvo@treble>
-References: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm>
- <nycvar.YFH.7.76.1905300007470.1962@cbobk.fhfr.pm>
- <CAJZ5v0ja5sQ73zMvUtV+w79LC_d+g6UdomL36rV-EpVDxEzbhA@mail.gmail.com>
- <alpine.DEB.2.21.1905301425330.2265@nanos.tec.linutronix.de>
- <CAJZ5v0go1g9KhE=mc19VCFrBuEERzFZCoRD4xt=tF=EnMjfH=A@mail.gmail.com>
+In-Reply-To: <20190530233804.syv4brpe3ndslyvo@treble>
+Message-ID: <nycvar.YFH.7.76.1905310139380.1962@cbobk.fhfr.pm>
+References: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm> <nycvar.YFH.7.76.1905300007470.1962@cbobk.fhfr.pm> <CAJZ5v0ja5sQ73zMvUtV+w79LC_d+g6UdomL36rV-EpVDxEzbhA@mail.gmail.com> <alpine.DEB.2.21.1905301425330.2265@nanos.tec.linutronix.de>
+ <CAJZ5v0go1g9KhE=mc19VCFrBuEERzFZCoRD4xt=tF=EnMjfH=A@mail.gmail.com> <20190530233804.syv4brpe3ndslyvo@treble>
+User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0go1g9KhE=mc19VCFrBuEERzFZCoRD4xt=tF=EnMjfH=A@mail.gmail.com>
-User-Agent: NeoMutt/20180716
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.45]); Thu, 30 May 2019 23:38:12 +0000 (UTC)
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, May 30, 2019 at 11:38:51PM +0200, Rafael J. Wysocki wrote:
-> On Thu, May 30, 2019 at 11:27 PM Thomas Gleixner <tglx@linutronix.de> wrote:
-> >
-> > On Thu, 30 May 2019, Rafael J. Wysocki wrote:
-> > > >
-> > > > Cc: stable@vger.kernel.org # v4.19+
-> > > > Debugged-by: Thomas Gleixner <tglx@linutronix.de>
-> > > > Fixes: 0cc3cd21657b ("cpu/hotplug: Boot HT siblings at least once")
-> > > > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> > >
-> > > LGTM
-> > >
-> > > And I would prefer this one to go in through the PM tree due to the
-> > > hibernate core changes,
-> >
-> > Ok.
-> >
-> > > so can I get an ACK from the x86 arch side here, please?
-> >
-> > No. Is the following good enough?
-> >
-> >     Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> Yes, it is, thanks!
+On Thu, 30 May 2019, Josh Poimboeuf wrote:
 
-I still think changing monitor/mwait to use a fixmap address would be a
-much cleaner way to fix this.  I can try to work up a patch tomorrow.
+> > >     Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+> > 
+> > Yes, it is, thanks!
+> 
+> I still think changing monitor/mwait to use a fixmap address would be a
+> much cleaner way to fix this.  I can try to work up a patch tomorrow.
+
+I disagree with that from the backwards compatibility point of view.
+
+I personally am quite frequently using differnet combinations of 
+resumer/resumee kernels, and I've never been biten by it so far. I'd guess 
+I am not the only one.
+Fixmap sort of breaks that invariant.
+
+Thanks,
 
 -- 
-Josh
+Jiri Kosina
+SUSE Labs
+
