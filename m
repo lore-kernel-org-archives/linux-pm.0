@@ -5,39 +5,39 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDF60C072B1
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:41:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFDFBC072B1
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:52:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BB38624C0F
-	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:41:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C55FA24CA7
+	for <linux-pm@archiver.kernel.org>; Thu, 30 May 2019 03:52:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559187700;
-	bh=/9gO1owKbVSEM1J1l/p0XqI3NOncT/RkO+xEAx1EsGc=;
+	s=default; t=1559188372;
+	bh=KFjWdcM0j1PIjGo1SD5vVsinYegNqV/OwabGD7l4Pfo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=glQ6TwmlyzLw01Et+o7iiN3WlklEvJJHdAOw3LWHJLx9g1hIadrquOsBz7w9pwDtb
-	 3yo8sZ8+fOLVHU04yq/DCu/gN/mtbtw+DcdNzOShNPUFoh0PBt1fGwaWwqE6S4uYlZ
-	 Il5dRXdorN50h0e7s887Ty3Vvljy3BXT4tYiTqzk=
+	b=gNCheTkdoYeKlcnlhlLaMoaDFRNqCzoBsNHg4Zeq7v7N4ceptFyAt1Butej02150D
+	 rj3ZQLxpZN0p3+DzKe6HqjBaWeUls4DMpDLh6OXTnPiA2HTTZrojgfiyP4Akx36vgp
+	 LY+8dXoVYP5P38aSvC4AyZq1015n8JXnZJwcs4sI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732593AbfE3Dlj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 May 2019 23:41:39 -0400
-Received: from mail.kernel.org ([198.145.29.99]:34060 "EHLO mail.kernel.org"
+        id S1728129AbfE3Dwr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 May 2019 23:52:47 -0400
+Received: from mail.kernel.org ([198.145.29.99]:55780 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732510AbfE3DVS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 May 2019 23:21:18 -0400
+        id S1731090AbfE3DTf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 May 2019 23:19:35 -0400
 Received: from localhost (ip67-88-213-2.z213-88-67.customer.algx.net [67.88.213.2])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id EE451249F3;
-        Thu, 30 May 2019 03:21:17 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 5435E248A8;
+        Thu, 30 May 2019 03:19:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559186478;
-        bh=/9gO1owKbVSEM1J1l/p0XqI3NOncT/RkO+xEAx1EsGc=;
+        s=default; t=1559186374;
+        bh=KFjWdcM0j1PIjGo1SD5vVsinYegNqV/OwabGD7l4Pfo=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=wwuaWOmxzENEUpXKR3lido7JPqhYt1jHyYmNXIrv+Gcj3AhQ4NTzSgTMmZiwoBM/q
-         JJhGAZHZhwahFop7mRt06pEWPuXCcX78cMVbA6+LRZES5MJ5KicL90bG5AQYgev2r+
-         21sYWr1uML63F4xsNZ8N8nG7GeWZhipmFyNMEow0=
+        b=XXAifGjZO0pl1hazm1o7GOOcvyiImdClKr28eowRJdrUViT4TBoJ+oopMuN6l3yJS
+         u1C7nhNbPO82dJ1sCkH2gngrisQRQuDIkxzHMsXS4X5ZAAQbZ1p953tYYrWFu+2s6o
+         sQa0BcYp+Y6flVNWIJNWMur0H6nc5OE5dzSh4SJQ=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -45,12 +45,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         linux-pm@vger.kernel.org, Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 4.9 085/128] cpufreq: ppc_cbe: fix possible object reference leak
-Date:   Wed, 29 May 2019 20:06:57 -0700
-Message-Id: <20190530030450.106887084@linuxfoundation.org>
+Subject: [PATCH 4.14 133/193] cpufreq: kirkwood: fix possible object reference leak
+Date:   Wed, 29 May 2019 20:06:27 -0700
+Message-Id: <20190530030506.915815320@linuxfoundation.org>
 X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190530030432.977908967@linuxfoundation.org>
-References: <20190530030432.977908967@linuxfoundation.org>
+In-Reply-To: <20190530030446.953835040@linuxfoundation.org>
+References: <20190530030446.953835040@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -60,15 +60,21 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-[ Upstream commit 233298032803f2802fe99892d0de4ab653bfece4 ]
+[ Upstream commit 7c468966f05ac9c17bb5948275283d34e6fe0660 ]
 
-The call to of_get_cpu_node returns a node pointer with refcount
+The call to of_get_child_by_name returns a node pointer with refcount
 incremented thus it must be explicitly decremented after the last
 usage.
 
 Detected by coccinelle with the following warnings:
-./drivers/cpufreq/ppc_cbe_cpufreq.c:89:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 76, but without a corresponding object release within this function.
-./drivers/cpufreq/ppc_cbe_cpufreq.c:89:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 76, but without a corresponding object release within this function.
+./drivers/cpufreq/kirkwood-cpufreq.c:127:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 118, but without a corresponding object release within this function.
+./drivers/cpufreq/kirkwood-cpufreq.c:133:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 118, but without a corresponding object release within this function.
+
+and also do some cleanup:
+- of_node_put(np);
+- np = NULL;
+...
+of_node_put(np);
 
 Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
@@ -78,21 +84,59 @@ Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/ppc_cbe_cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/kirkwood-cpufreq.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index 5a4c5a639f618..2eaeebcc93afe 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -86,6 +86,7 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	if (!cbe_get_cpu_pmd_regs(policy->cpu) ||
- 	    !cbe_get_cpu_mic_tm_regs(policy->cpu)) {
- 		pr_info("invalid CBE regs pointers for cpufreq\n");
-+		of_node_put(cpu);
- 		return -EINVAL;
+diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+index c2dd43f3f5d8a..8d63a6dc8383c 100644
+--- a/drivers/cpufreq/kirkwood-cpufreq.c
++++ b/drivers/cpufreq/kirkwood-cpufreq.c
+@@ -124,13 +124,14 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+ 	priv.cpu_clk = of_clk_get_by_name(np, "cpu_clk");
+ 	if (IS_ERR(priv.cpu_clk)) {
+ 		dev_err(priv.dev, "Unable to get cpuclk\n");
+-		return PTR_ERR(priv.cpu_clk);
++		err = PTR_ERR(priv.cpu_clk);
++		goto out_node;
  	}
  
+ 	err = clk_prepare_enable(priv.cpu_clk);
+ 	if (err) {
+ 		dev_err(priv.dev, "Unable to prepare cpuclk\n");
+-		return err;
++		goto out_node;
+ 	}
+ 
+ 	kirkwood_freq_table[0].frequency = clk_get_rate(priv.cpu_clk) / 1000;
+@@ -161,20 +162,22 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_ddr;
+ 	}
+ 
+-	of_node_put(np);
+-	np = NULL;
+-
+ 	err = cpufreq_register_driver(&kirkwood_cpufreq_driver);
+-	if (!err)
+-		return 0;
++	if (err) {
++		dev_err(priv.dev, "Failed to register cpufreq driver\n");
++		goto out_powersave;
++	}
+ 
+-	dev_err(priv.dev, "Failed to register cpufreq driver\n");
++	of_node_put(np);
++	return 0;
+ 
++out_powersave:
+ 	clk_disable_unprepare(priv.powersave_clk);
+ out_ddr:
+ 	clk_disable_unprepare(priv.ddr_clk);
+ out_cpu:
+ 	clk_disable_unprepare(priv.cpu_clk);
++out_node:
+ 	of_node_put(np);
+ 
+ 	return err;
 -- 
 2.20.1
 
