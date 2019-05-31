@@ -2,61 +2,62 @@ Return-Path: <SRS0=W2LS=T7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	T_DKIMWL_WL_HIGH autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82020C04AB6
-	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 14:51:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D4D3C04AB6
+	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 14:54:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 48E4E26B06
-	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 14:51:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19C7F26B15
+	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 14:54:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559314289;
-	bh=791bm7XMFp0foBsIcF2oS0fUFQH8SYTCapQ5fJHir8M=;
+	s=default; t=1559314466;
+	bh=ut6HGUXoVdKpKxWkBmLKfiQdl1KWbFSfImiaNPxTLes=;
 	h=Date:From:To:cc:Subject:In-Reply-To:References:List-ID:From;
-	b=eCEZ7/v66/CaKt/dm5ajAYEDdiVCu1U2orIxPnBOSDKMIbHS3Zju/KofSjSJjfK2N
-	 ld+Xiqt92p6fj9KtjUPv/y31aTh512+ANZqClN7X7vlhLeAAECNT1hFGPSRIKY+bPp
-	 jFvdtTdzNVI8z54qCD5mDlVYtN7M1oYDPTXTF8FM=
+	b=cH9ccG/rlqY7HCpey0gZA8jMsrMikflRoi4o9Q/vOnHGmznv9+zYfz9wHOT1mGuTZ
+	 a5HbB4QylT1Lj6Nim74EJNetLRG3D+WAQfrinE0M1RLCYXp/P5ph1Mu2lzqneXO262
+	 B4iVJvuw5VK6oXJMNM/YPD9JmYRGNPkr9D61U6eA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726418AbfEaOv2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 May 2019 10:51:28 -0400
-Received: from mail.kernel.org ([198.145.29.99]:41590 "EHLO mail.kernel.org"
+        id S1726547AbfEaOyZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 May 2019 10:54:25 -0400
+Received: from mail.kernel.org ([198.145.29.99]:45414 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726037AbfEaOv2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 May 2019 10:51:28 -0400
+        id S1726418AbfEaOyZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 31 May 2019 10:54:25 -0400
 Received: from pobox.suse.cz (prg-ext-pat.suse.com [213.151.95.130])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 6E75D26B05;
-        Fri, 31 May 2019 14:51:25 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 78D9326B11;
+        Fri, 31 May 2019 14:54:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559314287;
-        bh=791bm7XMFp0foBsIcF2oS0fUFQH8SYTCapQ5fJHir8M=;
+        s=default; t=1559314464;
+        bh=ut6HGUXoVdKpKxWkBmLKfiQdl1KWbFSfImiaNPxTLes=;
         h=Date:From:To:cc:Subject:In-Reply-To:References:From;
-        b=yFRwOxGvBGlmhGuP2+vkqqBtPsDlqWg0tpQzAjtqdWOVG0Y4nOG7oEZHTvMmqyR4q
-         z2J+ImwfhOWxQ78VBiLkH0S8trvEYBg2qeT/9rhOgvLCpjR7jAG0+/zrpsGZFGRH2w
-         14m3+Ni1d4eTHO6rECYj7oodMhErf5+nk6UJ3CWY=
-Date:   Fri, 31 May 2019 16:51:23 +0200 (CEST)
+        b=dtMoYgEbe/Pum8dAabX3qtFT9mAjn3HZSFuHy0mwILYh9Ui1Y+W/JhgzAE4Nfq2ku
+         YOvaYRm/5M9b6O9Is8whzrh2+SS0zwG6yLEfcalSeD/TRsG11SNpvMlN8vsuoAVFPZ
+         g4pOv/CJ07M/7HJItd7xbthrqoy0BCAmv7KHlC7Q=
+Date:   Fri, 31 May 2019 16:54:20 +0200 (CEST)
 From:   Jiri Kosina <jikos@kernel.org>
-To:     Josh Poimboeuf <jpoimboe@redhat.com>
-cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+To:     Andy Lutomirski <luto@amacapital.net>
+cc:     Andy Lutomirski <luto@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Josh Poimboeuf <jpoimboe@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         the arch/x86 maintainers <x86@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
         Borislav Petkov <bp@alien8.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Andy Lutomirski <luto@kernel.org>
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH v4] x86/power: Fix 'nosmt' vs. hibernation triple fault
  during resume
-In-Reply-To: <20190531051456.fzkvn62qlkf6wqra@treble>
-Message-ID: <nycvar.YFH.7.76.1905311644550.1962@cbobk.fhfr.pm>
-References: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm> <nycvar.YFH.7.76.1905300007470.1962@cbobk.fhfr.pm> <CAJZ5v0ja5sQ73zMvUtV+w79LC_d+g6UdomL36rV-EpVDxEzbhA@mail.gmail.com> <alpine.DEB.2.21.1905301425330.2265@nanos.tec.linutronix.de>
- <CAJZ5v0go1g9KhE=mc19VCFrBuEERzFZCoRD4xt=tF=EnMjfH=A@mail.gmail.com> <20190530233804.syv4brpe3ndslyvo@treble> <nycvar.YFH.7.76.1905310139380.1962@cbobk.fhfr.pm> <20190531051456.fzkvn62qlkf6wqra@treble>
+In-Reply-To: <B7AC83ED-3F11-42B9-8506-C842A5937B50@amacapital.net>
+Message-ID: <nycvar.YFH.7.76.1905311651450.1962@cbobk.fhfr.pm>
+References: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm> <20190531051456.fzkvn62qlkf6wqra@treble> <nycvar.YFH.7.76.1905311045240.1962@cbobk.fhfr.pm> <5564116.e9OFvgDRbB@kreacher> <CALCETrUpseta+NrhVwzzVFTe-BkBHtDUJBO22ci3mAsVR+XOog@mail.gmail.com>
+ <nycvar.YFH.7.76.1905311628330.1962@cbobk.fhfr.pm> <B7AC83ED-3F11-42B9-8506-C842A5937B50@amacapital.net>
 User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -65,62 +66,20 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 31 May 2019, Josh Poimboeuf wrote:
+On Fri, 31 May 2019, Andy Lutomirski wrote:
 
-> > I personally am quite frequently using differnet combinations of 
-> > resumer/resumee kernels, and I've never been biten by it so far. I'd guess 
-> > I am not the only one.
-> > Fixmap sort of breaks that invariant.
-> 
-> Right now there is no backwards compatibility because nosmt resume is
-> already broken.
-> 
-> For "future" backwards compatibility we could just define a hard-coded
-> reserved fixmap page address, adjacent to the vsyscall reserved address.
-> 
-> Something like this (not yet tested)?  Maybe we could also remove the
-> resume_play_dead() hack?
+> For that matter, what actually happens if we get an SMI while halted?  
+> Does RSM go directly to sleep or does it re-fetch the HLT?
 
-Looking into SDM:
+Our mails just crossed, I replied to Josh's mwait() proposal patch a 
+minute ago.
 
-=====
-A store to the address range armed by the MONITOR instruction, an 
-interrupt, an NMI or SMI, a debug exception, a machine check exception, 
-the BINIT# signal, the INIT# signal, or the RESET# signal will exit the 
-implementation-dependent-optimized state.
-=====
+HLT is guaranteed to be re-entered if SMM interrupted it, while MWAIT is 
+not.
 
-And mwait doesn't have the 'auto-restart on SMM exit' like hlt does. So I 
-guess that's why I am seeing the triple faults even with your (fixed, see 
-below) patch as well.
-
-So I don't think we can safely use this aproach.
-
-> 
-> diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-> index 9da8cccdf3fb..1c328624162c 100644
-> --- a/arch/x86/include/asm/fixmap.h
-> +++ b/arch/x86/include/asm/fixmap.h
-> @@ -80,6 +80,7 @@ enum fixed_addresses {
->  #ifdef CONFIG_X86_VSYSCALL_EMULATION
->  	VSYSCALL_PAGE = (FIXADDR_TOP - VSYSCALL_ADDR) >> PAGE_SHIFT,
->  #endif
-> +	FIX_MWAIT = (FIXADDR_TOP - VSYSCALL_ADDR - 1) >> PAGE_SHIFT,
->  #endif
->  	FIX_DBGP_BASE,
->  	FIX_EARLYCON_MEM_BASE,
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index 73e69aaaa117..9804fbe25d03 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -108,6 +108,8 @@ int __read_mostly __max_smt_threads = 1;
->  /* Flag to indicate if a complete sched domain rebuild is required */
->  bool x86_topology_update;
->  
-> +static char __mwait_page[PAGE_SIZE];
-
-This needs to be __align(PAGE_SIZE) in order for the fixmap to work 
-properly.
+So as a short-term fix for 5.2, I still believe in v4 of my patch that 
+does the mwait->hlt->mwait transition across hibernate/resume, and for 5.3 
+I can look into forcing it to wait-for-SIPI proper.
 
 -- 
 Jiri Kosina
