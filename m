@@ -2,86 +2,107 @@ Return-Path: <SRS0=W2LS=T7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D4D3C04AB6
-	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 14:54:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECE8DC04AB6
+	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 15:09:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 19C7F26B15
-	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 14:54:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559314466;
-	bh=ut6HGUXoVdKpKxWkBmLKfiQdl1KWbFSfImiaNPxTLes=;
-	h=Date:From:To:cc:Subject:In-Reply-To:References:List-ID:From;
-	b=cH9ccG/rlqY7HCpey0gZA8jMsrMikflRoi4o9Q/vOnHGmznv9+zYfz9wHOT1mGuTZ
-	 a5HbB4QylT1Lj6Nim74EJNetLRG3D+WAQfrinE0M1RLCYXp/P5ph1Mu2lzqneXO262
-	 B4iVJvuw5VK6oXJMNM/YPD9JmYRGNPkr9D61U6eA=
+	by mail.kernel.org (Postfix) with ESMTP id CCA9A26B53
+	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 15:09:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726547AbfEaOyZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 May 2019 10:54:25 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45414 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726418AbfEaOyZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 May 2019 10:54:25 -0400
-Received: from pobox.suse.cz (prg-ext-pat.suse.com [213.151.95.130])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 78D9326B11;
-        Fri, 31 May 2019 14:54:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559314464;
-        bh=ut6HGUXoVdKpKxWkBmLKfiQdl1KWbFSfImiaNPxTLes=;
-        h=Date:From:To:cc:Subject:In-Reply-To:References:From;
-        b=dtMoYgEbe/Pum8dAabX3qtFT9mAjn3HZSFuHy0mwILYh9Ui1Y+W/JhgzAE4Nfq2ku
-         YOvaYRm/5M9b6O9Is8whzrh2+SS0zwG6yLEfcalSeD/TRsG11SNpvMlN8vsuoAVFPZ
-         g4pOv/CJ07M/7HJItd7xbthrqoy0BCAmv7KHlC7Q=
-Date:   Fri, 31 May 2019 16:54:20 +0200 (CEST)
-From:   Jiri Kosina <jikos@kernel.org>
-To:     Andy Lutomirski <luto@amacapital.net>
-cc:     Andy Lutomirski <luto@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Josh Poimboeuf <jpoimboe@redhat.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        the arch/x86 maintainers <x86@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
-        Borislav Petkov <bp@alien8.de>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v4] x86/power: Fix 'nosmt' vs. hibernation triple fault
- during resume
-In-Reply-To: <B7AC83ED-3F11-42B9-8506-C842A5937B50@amacapital.net>
-Message-ID: <nycvar.YFH.7.76.1905311651450.1962@cbobk.fhfr.pm>
-References: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm> <20190531051456.fzkvn62qlkf6wqra@treble> <nycvar.YFH.7.76.1905311045240.1962@cbobk.fhfr.pm> <5564116.e9OFvgDRbB@kreacher> <CALCETrUpseta+NrhVwzzVFTe-BkBHtDUJBO22ci3mAsVR+XOog@mail.gmail.com>
- <nycvar.YFH.7.76.1905311628330.1962@cbobk.fhfr.pm> <B7AC83ED-3F11-42B9-8506-C842A5937B50@amacapital.net>
-User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        id S1726421AbfEaPJu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 May 2019 11:09:50 -0400
+Received: from mout.kundenserver.de ([212.227.17.10]:53487 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726037AbfEaPJu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2019 11:09:50 -0400
+Received: from orion.localdomain ([77.7.63.28]) by mrelayeu.kundenserver.de
+ (mreue109 [212.227.15.183]) with ESMTPSA (Nemesis) id
+ 1N2V8T-1gaooq2QRD-013vOa; Fri, 31 May 2019 17:09:11 +0200
+From:   "Enrico Weigelt, metux IT consult" <info@metux.net>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, viresh.kumar@linaro.org, jdelvare@suse.com,
+        linux@roeck-us.net, khalid@gonehiking.org, jejb@linux.ibm.com,
+        martin.petersen@oracle.com, aacraid@microsemi.com,
+        linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org,
+        linux-scsi@vger.kernel.org
+Subject: [PATCH 2/3] drivers: scsci: remove unnecessary #ifdef MODULE
+Date:   Fri, 31 May 2019 17:09:03 +0200
+Message-Id: <1559315344-10384-3-git-send-email-info@metux.net>
+X-Mailer: git-send-email 1.9.1
+In-Reply-To: <1559315344-10384-1-git-send-email-info@metux.net>
+References: <1559315344-10384-1-git-send-email-info@metux.net>
+X-Provags-ID: V03:K1:vRieALr69N/p9CGP2TmTdjYIaR7yt8zI1oJIboQVelsLO9ZBK4b
+ 7+fLJ+7X4tp6PmW/HUQ3cXeovgj8VOqyN5fHrvXiqj2TvHm/tnl7ZT9fX4Ufhj8Eljw4E87
+ kAnB0ARfOLeJoyoe8xdU7bJg2gJ7EuilpTuLbQBSqBtupjMOlZq0BazVnffUrUVtup3SGgF
+ 1bdYZyK7ePS8Gu7h7l5Bw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:8iWc5OqMQLo=:SAi3pINLsLrKq8qqkf5y4X
+ hSVd4KQuUvvD3aMzTkHaaY8+SFKLu4gYZUQb4UiDYlimTtQYK6I7AoTb/zvR6G9kpWlcXeQSD
+ clMop8KQ4IAb/8+B5vPZ7iSxkdHeBqYu0LTqpLvUljw35yGz9VoLrfHTt3/9OaWMlXg/q6Uet
+ T+72o8Swkm9nDHfvWsAExTUbPnmOkDgN7i7LV5dHq6IsQfzx2+lnXDLeGI2fICPql9his15JD
+ qTC7R+Hix4Zw0OWYyUVAA5b3QdDNs6kNreNaMbZp4TiFjyHlvu1aRIeqU74zAj3VrhxExyPQG
+ Wz2C2A2gNdCIBY5JQEqwBzbxpLzX9bWRW+DKD1WBYESMXBBpBbd205rAnvcEvyMLun9NwBLAy
+ HiAVX2gvg2nxURxZEYEbhR1v8LQsCYt4A4AZ5IBUg3hvNkXq/q9MeNbN2yWy7mmpsh2FPlnJB
+ qrl2mZxhjqcT3ykoQF2XZHmttU1b45Nj4z/vxpVg0GfFScIW4k/aNrVe0lg5j7S/Yv8qIZsn/
+ JDEjgngwo4FSENa93fGtkniZ9YtDJCAtiRBWZnWZeE9T69SVvg26PuxWooZ7AUkXFm+2etFa0
+ M+Zr0s1PvXhsPJuWcxzrteuqz/3M2FtZDUBzPeGzjjeW6N/qwyC5/otRGKw6E7gUc2260KHRY
+ bLxZmH9ia9sEPntik7KptcGpkoYqpjf1WhGt9iRo8S3j6Ey2mu/2+0HwTSQHhhcMpEQgpudDi
+ 11gE65yfBOXMl3a168kbyuVucUmivPdMdfqZ3w==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 31 May 2019, Andy Lutomirski wrote:
+The MODULE_DEVICE_TABLE() macro already checks for MODULE defined,
+so the extra check here is not necessary.
 
-> For that matter, what actually happens if we get an SMI while halted?  
-> Does RSM go directly to sleep or does it re-fetch the HLT?
+Signed-off-by: Enrico Weigelt <info@metux.net>
+---
+ drivers/scsi/BusLogic.c | 2 --
+ drivers/scsi/dpt_i2o.c  | 3 ---
+ 2 files changed, 5 deletions(-)
 
-Our mails just crossed, I replied to Josh's mwait() proposal patch a 
-minute ago.
-
-HLT is guaranteed to be re-entered if SMM interrupted it, while MWAIT is 
-not.
-
-So as a short-term fix for 5.2, I still believe in v4 of my patch that 
-does the mwait->hlt->mwait transition across hibernate/resume, and for 5.3 
-I can look into forcing it to wait-for-SIPI proper.
-
+diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
+index e41e51f..68cc68b 100644
+--- a/drivers/scsi/BusLogic.c
++++ b/drivers/scsi/BusLogic.c
+@@ -3893,7 +3893,6 @@ static void __exit blogic_exit(void)
+ 
+ __setup("BusLogic=", blogic_setup);
+ 
+-#ifdef MODULE
+ /*static struct pci_device_id blogic_pci_tbl[] = {
+ 	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+@@ -3909,7 +3908,6 @@ static void __exit blogic_exit(void)
+ 	{PCI_DEVICE(PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_FLASHPOINT)},
+ 	{0, },
+ };
+-#endif
+ MODULE_DEVICE_TABLE(pci, blogic_pci_tbl);
+ 
+ module_init(blogic_init);
+diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
+index a3afd14..eb5cfe8 100644
+--- a/drivers/scsi/dpt_i2o.c
++++ b/drivers/scsi/dpt_i2o.c
+@@ -180,14 +180,11 @@ static u8 adpt_read_blink_led(adpt_hba* host)
+  *============================================================================
+  */
+ 
+-#ifdef MODULE
+ static struct pci_device_id dptids[] = {
+ 	{ PCI_DPT_VENDOR_ID, PCI_DPT_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID,},
+ 	{ PCI_DPT_VENDOR_ID, PCI_DPT_RAPTOR_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID,},
+ 	{ 0, }
+ };
+-#endif
+-
+ MODULE_DEVICE_TABLE(pci,dptids);
+ 
+ static int adpt_detect(struct scsi_host_template* sht)
 -- 
-Jiri Kosina
-SUSE Labs
+1.9.1
 
