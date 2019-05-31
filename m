@@ -2,118 +2,64 @@ Return-Path: <SRS0=W2LS=T7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	T_DKIMWL_WL_HIGH autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75FEAC04AB6
-	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 09:22:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC232C04AB6
+	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 09:27:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4A22F266AC
-	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 09:22:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559294534;
-	bh=mhjdw66KiObyfwVqEl4q+8P2X37x62yzrXv5UF0h8Q8=;
-	h=From:Date:Subject:To:Cc:List-ID:From;
-	b=kzb7/6q6OULONNdR2fl+2N9QOqSci36y17yJG3VXpeopkRczipVJmTW29e9aftcQx
-	 /oUjrELjfYqaKsVMAAN6ni8yqtNCU8KYpsVH4O9hS7P01f5ncEYs4i1VeUBfH7kne9
-	 ogITCJ1qQeL4Ot+LjZy58qxMworBzpP2BsoN+190=
+	by mail.kernel.org (Postfix) with ESMTP id C1BC525973
+	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 09:27:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726593AbfEaJWJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 May 2019 05:22:09 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:37781 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726158AbfEaJWJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2019 05:22:09 -0400
-Received: by mail-ot1-f68.google.com with SMTP id r10so8520248otd.4;
-        Fri, 31 May 2019 02:22:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=ZmrjcTQQbB0JQZLmh1TVPDsN8UglFZ3+RMTJhU5OjIc=;
-        b=QS/DLuCASwSPZDty8XIYWQRqBRNHUOz9crdECIR7GqAcL3ApTSdp/nUyrid7aJsvb1
-         2F/FhjS82VQKHIJSHrXNkf/y2I6tF2Ijc+qwRzdVaa6JAyq2ZN9tVFioCGG06enmM2pF
-         /ebWRgoX0Xy//gaySdaqExgrXiNcCmyRRu78/wMDQ+IfpUlPpYjOEE/sD8wQyIUeVabt
-         5onxC9pXF2O8xkEd7L4fKLbm8bws5JeFc3WSGYHdRrwMiqHGVTSS/5bMav5QiUIuHjAy
-         yBTKOctmwCkU0LS6SklyPLzNL/pFjno1hPR97oDQdi6Hi/0/Q5Q0z66fxQAlYj7YcGwG
-         oWIQ==
-X-Gm-Message-State: APjAAAXj814XAp7dIYnRMeFM0otBNJbKGYXWvSFvril3BTf5uxQHHIZL
-        6kSHrmiBIdEh4cYuGZsqCc+E4saGJAtzFtZ8feAe57c1
-X-Google-Smtp-Source: APXvYqzqfwl9QjluHmd3fDEh8DMTSFn24beKN/U0UmB9vwHpTF6jfEYs6fPDtDfvsiuZobYbtmpwlolHi83/lykF9Wk=
-X-Received: by 2002:a9d:6b98:: with SMTP id b24mr971451otq.189.1559294528593;
- Fri, 31 May 2019 02:22:08 -0700 (PDT)
+        id S1727068AbfEaJ1m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 May 2019 05:27:42 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:48084 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726240AbfEaJ1m (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2019 05:27:42 -0400
+Received: from 79.184.255.225.ipv4.supernova.orange.pl (79.184.255.225) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.213)
+ id d5641f8fb15585b2; Fri, 31 May 2019 11:27:40 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Todd Brandt <todd.e.brandt@linux.intel.com>
+Cc:     linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com,
+        todd.e.brandt@intel.com
+Subject: Re: [PATCH 0/3] pm-graph 5.4
+Date:   Fri, 31 May 2019 11:27:39 +0200
+Message-ID: <3397449.Zp8aqk8sBs@kreacher>
+In-Reply-To: <cover.1557855894.git.todd.e.brandt@linux.intel.com>
+References: <cover.1557855894.git.todd.e.brandt@linux.intel.com>
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 31 May 2019 11:21:57 +0200
-Message-ID: <CAJZ5v0j_uQxWZRjJ_=S1b=NRpLfyf_0KHfyPwSj30SRWr9RzHg@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for v5.2-rc3
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Tuesday, May 14, 2019 7:53:56 PM CEST Todd Brandt wrote:
+> Considerable upgrades to the summary functionality, as well as
+> new sources of data from turbostat and mcelog. ACPI methods are now
+> traceable in the timeline as well in dev mode.
+> 
+> Todd Brandt (3):
+>   Update to pm-graph 5.3
+>   Update to pm-graph 5.4
+>   pm-graph 5.4 config and other files
+> 
+>  tools/power/pm-graph/README             | 552 ++++++++++++++++++++
+>  tools/power/pm-graph/bootgraph.py       |   8 +-
+>  tools/power/pm-graph/config/example.cfg |  26 +
+>  tools/power/pm-graph/sleepgraph.8       |  16 +-
+>  tools/power/pm-graph/sleepgraph.py      | 857 ++++++++++++++++++++++++--------
+>  5 files changed, 1253 insertions(+), 206 deletions(-)
+>  create mode 100644 tools/power/pm-graph/README
+> 
+> 
 
-Please pull from the tag
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.2-rc3
-
-with top-most commit d491f2b75237ef37d8867830ab7fad8d9659e853
-
- PCI: PM: Avoid possible suspend-to-idle issue
-
-on top of commit cd6c84d8f0cdc911df435bb075ba22ce3c605b07
-
- Linux 5.2-rc2
-
-to receive power management fixes for 5.2-rc3.
-
-These fix three issues in the system-wide suspend and hibernation
-area related to PCI device PM handling by suspend-to-idle, device
-wakeup optimizations and arbitrary differences between suspend and
-hiberantion.
-
-Specifics:
-
- - Modify the PCI bus type's PM code to avoid putting devices left
-   by their drivers in D0 on purpose during suspend to idle into
-   low-power states as doing that may confuse the system resume
-   callbacks of the drivers in question (Rafael Wysocki).
-
- - Avoid checking ACPI wakeup configuration during system-wide
-   suspend for suspended devices that do not use ACPI-based wakeup
-   to allow them to stay in suspend more often (Rafael Wysocki).
-
- - The last phase of hibernation is analogous to system-wide suspend
-   also because on platforms with ACPI it passes control to the
-   platform firmware to complete the transision, so make it indicate
-   that by calling pm_set_suspend_via_firmware() to allow the drivers
-   that care about this to do the right thing (Rafael Wysocki).
-
-Thanks!
+All three applied, thanks!
 
 
----------------
 
-Rafael J. Wysocki (3):
-      ACPI/PCI: PM: Add missing wakeup.flags.valid checks
-      ACPI: PM: Call pm_set_suspend_via_firmware() during hibernation
-      PCI: PM: Avoid possible suspend-to-idle issue
 
----------------
-
- drivers/acpi/device_pm.c |  4 ++--
- drivers/acpi/sleep.c     | 39 ++++++++++++++++++++++++---------------
- drivers/pci/pci-acpi.c   |  3 ++-
- drivers/pci/pci-driver.c | 17 ++++++++++++++++-
- include/linux/pci.h      |  1 +
- include/linux/suspend.h  |  2 +-
- kernel/power/hibernate.c |  4 ++--
- 7 files changed, 48 insertions(+), 22 deletions(-)
