@@ -2,97 +2,99 @@ Return-Path: <SRS0=W2LS=T7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	T_DKIMWL_WL_HIGH autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD61FC04AB6
-	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 12:10:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF54FC04AB6
+	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 12:18:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9AB2226893
-	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 12:10:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559304655;
-	bh=clAIEBmajpiQKktOEKSBKpbFw41J7aLzihGd1Cq4U9g=;
-	h=Date:From:To:cc:Subject:In-Reply-To:References:List-ID:From;
-	b=DpPMELT8gwKGxjiw5Rs8kh1GnCyssAwovLB0qLpH1l4t4nYFrl0M56aiZQGtmb3iG
-	 Udbrq60hvFvmLfh9+L6dj6W2dhOdI5I7PFIv6TQBeZrpufSixZ4j9cWyOV3NfwA9lf
-	 FW+BbFy5Eu9lyWOZZBC2+Q/1nAtLhiPe9Bz2sS3U=
+	by mail.kernel.org (Postfix) with ESMTP id 93B6A268AC
+	for <linux-pm@archiver.kernel.org>; Fri, 31 May 2019 12:18:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727438AbfEaMKr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 May 2019 08:10:47 -0400
-Received: from mail.kernel.org ([198.145.29.99]:39472 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727327AbfEaMK0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 May 2019 08:10:26 -0400
-Received: from pobox.suse.cz (prg-ext-pat.suse.com [213.151.95.130])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 2D4BB2685F;
-        Fri, 31 May 2019 12:10:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559304625;
-        bh=clAIEBmajpiQKktOEKSBKpbFw41J7aLzihGd1Cq4U9g=;
-        h=Date:From:To:cc:Subject:In-Reply-To:References:From;
-        b=LJUT1u8nmKrWqTtqdGX7cDrBNk1X4cVcD5sgVhwJBPzSXBLNYDyOVx4lk82YnTS4B
-         gFRwuZPOQwBm61NZd47QschHiuMnsQ2SatbFHoeGGLkwD1Z7+DXQI7HDiQmSl3PKjJ
-         bchq8b9ilYkT2a+lkmhzedx7jr//JvmCaF+eAbkY=
-Date:   Fri, 31 May 2019 14:09:57 +0200 (CEST)
-From:   Jiri Kosina <jikos@kernel.org>
-To:     Josh Poimboeuf <jpoimboe@redhat.com>
-cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        id S1726442AbfEaMSX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 May 2019 08:18:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55288 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726331AbfEaMSX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2019 08:18:23 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id 74D2B802E6; Fri, 31 May 2019 14:18:10 +0200 (CEST)
+Date:   Fri, 31 May 2019 14:18:20 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Jiri Kosina <jikos@kernel.org>
+Cc:     Josh Poimboeuf <jpoimboe@redhat.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         the arch/x86 maintainers <x86@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>,
-        Borislav Petkov <bp@alien8.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
         "H. Peter Anvin" <hpa@zytor.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Andy Lutomirski <luto@kernel.org>
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH v4] x86/power: Fix 'nosmt' vs. hibernation triple fault
  during resume
-In-Reply-To: <20190531051456.fzkvn62qlkf6wqra@treble>
-Message-ID: <nycvar.YFH.7.76.1905311401050.1962@cbobk.fhfr.pm>
-References: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm> <nycvar.YFH.7.76.1905300007470.1962@cbobk.fhfr.pm> <CAJZ5v0ja5sQ73zMvUtV+w79LC_d+g6UdomL36rV-EpVDxEzbhA@mail.gmail.com> <alpine.DEB.2.21.1905301425330.2265@nanos.tec.linutronix.de>
- <CAJZ5v0go1g9KhE=mc19VCFrBuEERzFZCoRD4xt=tF=EnMjfH=A@mail.gmail.com> <20190530233804.syv4brpe3ndslyvo@treble> <nycvar.YFH.7.76.1905310139380.1962@cbobk.fhfr.pm> <20190531051456.fzkvn62qlkf6wqra@treble>
-User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
+Message-ID: <20190531121820.GA3722@amd>
+References: <nycvar.YFH.7.76.1905282326360.1962@cbobk.fhfr.pm>
+ <nycvar.YFH.7.76.1905300007470.1962@cbobk.fhfr.pm>
+ <CAJZ5v0ja5sQ73zMvUtV+w79LC_d+g6UdomL36rV-EpVDxEzbhA@mail.gmail.com>
+ <alpine.DEB.2.21.1905301425330.2265@nanos.tec.linutronix.de>
+ <CAJZ5v0go1g9KhE=mc19VCFrBuEERzFZCoRD4xt=tF=EnMjfH=A@mail.gmail.com>
+ <20190530233804.syv4brpe3ndslyvo@treble>
+ <nycvar.YFH.7.76.1905310139380.1962@cbobk.fhfr.pm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
+Content-Disposition: inline
+In-Reply-To: <nycvar.YFH.7.76.1905310139380.1962@cbobk.fhfr.pm>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 31 May 2019, Josh Poimboeuf wrote:
 
-> Something like this (not yet tested)?  Maybe we could also remove the
-> resume_play_dead() hack?
+--r5Pyd7+fXNt84Ff3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I tried to test this, but the resumed kernel doesn't seem to be healthy 
-for reason I don't understand yet. 
-Symptoms I've seen so far -- 'dazed and confused NMI', spontaneous reboot, 
-userspace segfault.
+On Fri 2019-05-31 01:42:02, Jiri Kosina wrote:
+> On Thu, 30 May 2019, Josh Poimboeuf wrote:
+>=20
+> > > >     Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+> > >=20
+> > > Yes, it is, thanks!
+> >=20
+> > I still think changing monitor/mwait to use a fixmap address would be a
+> > much cleaner way to fix this.  I can try to work up a patch tomorrow.
+>=20
+> I disagree with that from the backwards compatibility point of view.
+>=20
+> I personally am quite frequently using differnet combinations of=20
+> resumer/resumee kernels, and I've never been biten by it so far. I'd gues=
+s=20
+> I am not the only one.
+> Fixmap sort of breaks that invariant.
 
-> diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-> index 9da8cccdf3fb..1c328624162c 100644
-> --- a/arch/x86/include/asm/fixmap.h
-> +++ b/arch/x86/include/asm/fixmap.h
-> @@ -80,6 +80,7 @@ enum fixed_addresses {
->  #ifdef CONFIG_X86_VSYSCALL_EMULATION
->  	VSYSCALL_PAGE = (FIXADDR_TOP - VSYSCALL_ADDR) >> PAGE_SHIFT,
->  #endif
-> +	FIX_MWAIT = (FIXADDR_TOP - VSYSCALL_ADDR - 1) >> PAGE_SHIFT,
+If we get less tricky code, it may be worth it...
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-Two things to this:
+--r5Pyd7+fXNt84Ff3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-- you don't seem to fix x86_32
-- shouldn't it rather be FIXADDR_TOP - VSYSCALL_ADDR + 1 instead?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Thanks,
+iEYEARECAAYFAlzxG4wACgkQMOfwapXb+vL4dwCgtSpSgpdvZHaImr55/SbbOMad
+9MQAoK0rb5nzJTsI242mfK7pEZ/i4Xmy
+=bqKz
+-----END PGP SIGNATURE-----
 
--- 
-Jiri Kosina
-SUSE Labs
-
+--r5Pyd7+fXNt84Ff3--
