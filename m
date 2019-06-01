@@ -2,144 +2,111 @@ Return-Path: <SRS0=Yl30=UA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 980B6C28CC1
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 15:40:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA035C28CC3
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 22:27:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 769CE274A5
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 15:40:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9D51E27740
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 22:27:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="gHAEz0W9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726179AbfFAPkm convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Jun 2019 11:40:42 -0400
-Received: from mx0b-002e3701.pphosted.com ([148.163.143.35]:45556 "EHLO
-        mx0b-002e3701.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725980AbfFAPkl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Jun 2019 11:40:41 -0400
-Received: from pps.filterd (m0134423.ppops.net [127.0.0.1])
-        by mx0b-002e3701.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x51FajkG009810;
-        Sat, 1 Jun 2019 15:40:12 GMT
-Received: from g9t5008.houston.hpe.com (g9t5008.houston.hpe.com [15.241.48.72])
-        by mx0b-002e3701.pphosted.com with ESMTP id 2sunkf9ftg-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Sat, 01 Jun 2019 15:40:11 +0000
-Received: from G4W9120.americas.hpqcorp.net (exchangepmrr1.us.hpecorp.net [16.210.21.15])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by g9t5008.houston.hpe.com (Postfix) with ESMTPS id CC7C553;
-        Sat,  1 Jun 2019 15:40:10 +0000 (UTC)
-Received: from G4W9120.americas.hpqcorp.net (2002:10d2:150f::10d2:150f) by
- G4W9120.americas.hpqcorp.net (2002:10d2:150f::10d2:150f) with Microsoft SMTP
- Server (TLS) id 15.0.1367.3; Sat, 1 Jun 2019 15:40:10 +0000
-Received: from NAM05-DM3-obe.outbound.protection.outlook.com (15.241.52.11) by
- G4W9120.americas.hpqcorp.net (16.210.21.15) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3 via Frontend Transport; Sat, 1 Jun 2019 15:40:10 +0000
-Received: from AT5PR8401MB1169.NAMPRD84.PROD.OUTLOOK.COM (10.169.7.147) by
- AT5PR8401MB0868.NAMPRD84.PROD.OUTLOOK.COM (10.169.7.16) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1943.17; Sat, 1 Jun 2019 15:40:07 +0000
-Received: from AT5PR8401MB1169.NAMPRD84.PROD.OUTLOOK.COM
- ([fe80::207d:29e:1463:8c27]) by AT5PR8401MB1169.NAMPRD84.PROD.OUTLOOK.COM
- ([fe80::207d:29e:1463:8c27%9]) with mapi id 15.20.1943.016; Sat, 1 Jun 2019
- 15:40:07 +0000
-From:   "Elliott, Robert (Servers)" <elliott@hpe.com>
-To:     "Enrico Weigelt, metux IT consult" <info@metux.net>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC:     "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
-        "jdelvare@suse.com" <jdelvare@suse.com>,
-        "linux@roeck-us.net" <linux@roeck-us.net>,
-        "khalid@gonehiking.org" <khalid@gonehiking.org>,
-        "jejb@linux.ibm.com" <jejb@linux.ibm.com>,
-        "martin.petersen@oracle.com" <martin.petersen@oracle.com>,
-        "aacraid@microsemi.com" <aacraid@microsemi.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-hwmon@vger.kernel.org" <linux-hwmon@vger.kernel.org>,
-        "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Subject: RE: [PATCH 2/3] drivers: scsi: remove unnecessary #ifdef MODULE
-Thread-Topic: [PATCH 2/3] drivers: scsi: remove unnecessary #ifdef MODULE
-Thread-Index: AQHVGIKwDGRd9/ojF029uE3ZhMxagaaG7YPg
-Date:   Sat, 1 Jun 2019 15:40:07 +0000
-Message-ID: <AT5PR8401MB1169E817136F8B8587C7A716AB1A0@AT5PR8401MB1169.NAMPRD84.PROD.OUTLOOK.COM>
-References: <1559397700-15585-1-git-send-email-info@metux.net>
- <1559397700-15585-3-git-send-email-info@metux.net>
-In-Reply-To: <1559397700-15585-3-git-send-email-info@metux.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [2601:2c3:877f:e23c:fddd:5eac:59cb:6dc3]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 2955e4e2-78df-4b3f-1873-08d6e6a76c7c
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(4618075)(2017052603328)(7193020);SRVR:AT5PR8401MB0868;
-x-ms-traffictypediagnostic: AT5PR8401MB0868:
-x-microsoft-antispam-prvs: <AT5PR8401MB086894FDA4FA54C0937C570AAB1A0@AT5PR8401MB0868.NAMPRD84.PROD.OUTLOOK.COM>
-x-ms-oob-tlc-oobclassifiers: OLM:3631;
-x-forefront-prvs: 00550ABE1F
-x-forefront-antispam-report: SFV:NSPM;SFS:(10019020)(39860400002)(396003)(366004)(346002)(136003)(376002)(189003)(199004)(13464003)(14444005)(256004)(86362001)(76176011)(4326008)(6116002)(14454004)(33656002)(2906002)(7416002)(68736007)(71200400001)(55016002)(54906003)(316002)(6436002)(110136005)(9686003)(4744005)(71190400001)(53936002)(6246003)(1250700005)(25786009)(64756008)(66476007)(66556008)(73956011)(76116006)(7736002)(66946007)(99286004)(478600001)(102836004)(52536014)(81156014)(476003)(229853002)(7696005)(5660300002)(6506007)(53546011)(186003)(305945005)(46003)(486006)(8676002)(66446008)(74316002)(81166006)(446003)(11346002)(2501003)(8936002);DIR:OUT;SFP:1102;SCL:1;SRVR:AT5PR8401MB0868;H:AT5PR8401MB1169.NAMPRD84.PROD.OUTLOOK.COM;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
-received-spf: None (protection.outlook.com: hpe.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: cUe5XGW5Vx0es10ssp/xT+psm28KyuBqDYZTpifpOtZ7R/00HOfBonHjWC40gsCmxtx3x+te2ZNTz0CXoXTurt7SIOLgxKe9zAYtSdSQ1QhaXwFdJzzJJSDRG5RbVlOVmx/bM8YkBw83FphIqsKu1cqZwk9wJ4+AansW9fmjHBJ1krFB+RkcDEKuyTfS6v1ySkNaX/nTfAOtz8f+KR9sNdoQhxlFLw2y+BVgmgye9RG+mGat+2EKkupV3KJ35K9neJAcbzXLkPNDtvqEMnjH1Amc/boOzE7wG3THSopjPsaW7pSFc5eo93vOEATr3r+6c/qFB472ZRSSN5MpLaIZ7b5qKcA5ZYEeov+PCbsGMKmaq0ya1C9Jv/sJZVq8ECWLJkjRUx0bCrw/XgW/UvXXGck40o4+lP/m8puYoAWsewg=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+        id S1726807AbfFAW1y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Jun 2019 18:27:54 -0400
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:44251 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726531AbfFAW1y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Jun 2019 18:27:54 -0400
+Received: by mail-pf1-f196.google.com with SMTP id x3so2825169pff.11
+        for <linux-pm@vger.kernel.org>; Sat, 01 Jun 2019 15:27:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=joelfernandes.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=D3sdCrSta+1LinDxkJqXRJ9YdXWa10ctUItDBKvA25M=;
+        b=gHAEz0W9Uu6qrM4ChuzLYGhD2n+4olfOU6qtJoOTBMe07a7Pc4Kg4feW7OCrB0FNOD
+         pQJX/g4h2kdJiFQw/ZIM4s5GiPaQM2j5/cGGfHCrCR2g/GZ5h0YzW+8SpyH7GWKKIGYX
+         JsyoEKMQELkCHYwUEweS6UvTXF7q7XQ+nsWJs=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=D3sdCrSta+1LinDxkJqXRJ9YdXWa10ctUItDBKvA25M=;
+        b=j25aQT9+tT5HZnrswkog0FBPl+KNCvH3JNqKcZInH1+leL1PTgwLeNLPIulm63g+5i
+         HpWkU68b3c6bVCyzQ/Nk7ULa49DEgZ+9riJAKl6maLg1ZSFuS15OvzFGuxHJ5R90xwKa
+         BX5IXPXfR/NGiN36h7dptrnhW8/g2+mNfNpTpqFnBmeZMHP/BHO+6rblqYtKHzcHnRhk
+         B/P6XybTiPS+BCCrH/7ixAZNQ0aVoCYEDf/AsWGHaRuzfH+Xg+rMmr0rVoiZ3oARDUQa
+         FTDulFYly5LDY5hXLBeoNx2sRhpUtVVxGsSoW/7TvnmUJDQuWgB3W1uQ8oucKmNPk2Qn
+         Cmzg==
+X-Gm-Message-State: APjAAAX57hkmuOk4KJkhY1lw4qsJeIaq1vngn7cZrRrzBHq7kSp8qnuD
+        ti/YppUMFhFYSvnT5wA7vwzGpg==
+X-Google-Smtp-Source: APXvYqyzFAgWiq9Zmv6qgFmEjp82uhykmH3iEDVhVPdvKHGIbsKdjW+zFeDMBpdGsYU3yEg7JY6LEQ==
+X-Received: by 2002:a62:a511:: with SMTP id v17mr19913167pfm.129.1559428073227;
+        Sat, 01 Jun 2019 15:27:53 -0700 (PDT)
+Received: from joelaf.cam.corp.google.com ([2620:15c:6:12:9c46:e0da:efbf:69cc])
+        by smtp.gmail.com with ESMTPSA id t33sm9908018pjb.1.2019.06.01.15.27.49
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Sat, 01 Jun 2019 15:27:52 -0700 (PDT)
+From:   "Joel Fernandes (Google)" <joel@joelfernandes.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
+        Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Borislav Petkov <bp@alien8.de>,
+        "David S. Miller" <davem@davemloft.net>, edumazet@google.com,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+        Josh Triplett <josh@joshtriplett.org>, keescook@chromium.org,
+        kernel-hardening@lists.openwall.com,
+        Lai Jiangshan <jiangshanlai@gmail.com>,
+        Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+        neilb@suse.com, netdev@vger.kernel.org, oleg@redhat.com,
+        "Paul E. McKenney" <paulmck@linux.ibm.com>,
+        Pavel Machek <pavel@ucw.cz>, peterz@infradead.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, rcu@vger.kernel.org,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Tejun Heo <tj@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        x86@kernel.org (maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT))
+Subject: [RFC 2/6] ipv4: add lockdep condition to fix for_each_entry
+Date:   Sat,  1 Jun 2019 18:27:34 -0400
+Message-Id: <20190601222738.6856-3-joel@joelfernandes.org>
+X-Mailer: git-send-email 2.22.0.rc1.311.g5d7573a151-goog
+In-Reply-To: <20190601222738.6856-1-joel@joelfernandes.org>
+References: <20190601222738.6856-1-joel@joelfernandes.org>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2955e4e2-78df-4b3f-1873-08d6e6a76c7c
-X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Jun 2019 15:40:07.2652
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 105b2061-b669-4b31-92ac-24d304d195dc
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: elliott@hpe.com
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AT5PR8401MB0868
-X-OriginatorOrg: hpe.com
-X-HPE-SCL: -1
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-06-01_10:,,
- signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=907 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906010112
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+---
+ net/ipv4/fib_frontend.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org <linux-kernel-
-> owner@vger.kernel.org> On Behalf Of Enrico Weigelt, metux IT consult
-> Sent: Saturday, June 01, 2019 9:02 AM
-> Subject: [PATCH 2/3] drivers: scsi: remove unnecessary #ifdef MODULE
-> 
-> The MODULE_DEVICE_TABLE() macro already checks for MODULE defined,
-> so the extra check here is not necessary.
-> 
-...
-> diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
-...
-> 
-> -#ifdef MODULE
->  static struct pci_device_id dptids[] = {
->  	{ PCI_DPT_VENDOR_ID, PCI_DPT_DEVICE_ID, PCI_ANY_ID,
-> PCI_ANY_ID,},
->  	{ PCI_DPT_VENDOR_ID, PCI_DPT_RAPTOR_DEVICE_ID, PCI_ANY_ID,
-> PCI_ANY_ID,},
->  	{ 0, }
->  };
-> -#endif
-> -
->  MODULE_DEVICE_TABLE(pci,dptids);
-
-I don't see any reply to James' comment that these changes result in
-static struct definitions that are unused, which should result in
-complaints by the compiler like:
-    warning: 'dptids' defined by not used [-Wunused-variable]
-
+diff --git a/net/ipv4/fib_frontend.c b/net/ipv4/fib_frontend.c
+index b298255f6fdb..ef7c9f8e8682 100644
+--- a/net/ipv4/fib_frontend.c
++++ b/net/ipv4/fib_frontend.c
+@@ -127,7 +127,8 @@ struct fib_table *fib_get_table(struct net *net, u32 id)
+ 	h = id & (FIB_TABLE_HASHSZ - 1);
+ 
+ 	head = &net->ipv4.fib_table_hash[h];
+-	hlist_for_each_entry_rcu(tb, head, tb_hlist) {
++	hlist_for_each_entry_rcu(tb, head, tb_hlist,
++				 lockdep_rtnl_is_held()) {
+ 		if (tb->tb_id == id)
+ 			return tb;
+ 	}
+-- 
+2.22.0.rc1.311.g5d7573a151-goog
 
