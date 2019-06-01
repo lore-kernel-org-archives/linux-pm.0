@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F15DC28CC1
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:33:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56DA4C28CC1
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:36:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1C20C2750D
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:33:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 26E522759A
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:36:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559396022;
-	bh=dre30RdEQXy41bPIIowne0S263PWWWGLIDPuhU17HJQ=;
+	s=default; t=1559396192;
+	bh=5CqsTJS7jORbwm1nqZp556uZdW+xunUj/9IAFszrH6I=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=Ycfi4AVzKk6m95MBR0Y+Z4gCWszNwRnerkkNZhJbOxzePQvf1iZOYNEJBiBvghS48
-	 7pTfnQaqg9qc7U3qGGRlldeqRxjmFpBWXg6BqDEYFeP+wnWVV67dJ66AWdvW7lxgQx
-	 4sZRMNNPF5ptyrBqjlNBXK4+yAqbG9Q1KOMv/WCU=
+	b=chC1rr3f5mchXCksLGntA5v+VOrSArjIqb2GDwOHtkKzPq6ovT79BSTZDTfoAi93Y
+	 SEVXl5goYcVEIlAMgo48ZG0wvRdM5584T3jkE0soKkn9LCEj5VSJ7dBZ196UpspbW4
+	 wgxWlDy8I+kCTZ0POvd+Udr7tXU4TZ/kVyd3qU84=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728564AbfFANY0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Jun 2019 09:24:26 -0400
-Received: from mail.kernel.org ([198.145.29.99]:54468 "EHLO mail.kernel.org"
+        id S1728803AbfFANWp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Jun 2019 09:22:45 -0400
+Received: from mail.kernel.org ([198.145.29.99]:52400 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729209AbfFANY0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 1 Jun 2019 09:24:26 -0400
+        id S1728797AbfFANWp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 1 Jun 2019 09:22:45 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 60D3F27355;
-        Sat,  1 Jun 2019 13:24:24 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 9907C2613B;
+        Sat,  1 Jun 2019 13:22:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559395465;
-        bh=dre30RdEQXy41bPIIowne0S263PWWWGLIDPuhU17HJQ=;
+        s=default; t=1559395364;
+        bh=5CqsTJS7jORbwm1nqZp556uZdW+xunUj/9IAFszrH6I=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=c9RmorXG4qA6JqrabuNUOG1FGznLnxNgr4UWb+PdrEQGEK0b8CvfkekIwGW62Fbes
-         7wFSk9fQKaNEmqxYuKqYJWCqemOBrnZuVhkAkkOgo3yII0NzflU4eSj1K7F50JOqMa
-         CM4+3uTH/1WveTzbWhHczJ8VU6OZbiXbclAEL8nk=
+        b=VkJdnsVOi2L4SMIOmtADer9KYdMw1mAiM64gXOXTHG5P6R71k96pPhBn2KzB0jdcf
+         Wf7qTDA0n9slTavifzLgC8I47AGGD6aZzAva7G5QI56Qsk0tDO9q0/YuKURnXeEufM
+         F8lK7zMrbyyXPr8OWnOorhnN4wiTCNSNJkw9bfSE=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Amit Kucheria <amit.kucheria@linaro.org>,
         Eduardo Valentin <edubezval@gmail.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 15/99] drivers: thermal: tsens: Don't print error message on -EPROBE_DEFER
-Date:   Sat,  1 Jun 2019 09:22:22 -0400
-Message-Id: <20190601132346.26558-15-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 018/141] drivers: thermal: tsens: Don't print error message on -EPROBE_DEFER
+Date:   Sat,  1 Jun 2019 09:19:54 -0400
+Message-Id: <20190601132158.25821-18-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190601132346.26558-1-sashal@kernel.org>
-References: <20190601132346.26558-1-sashal@kernel.org>
+In-Reply-To: <20190601132158.25821-1-sashal@kernel.org>
+References: <20190601132158.25821-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -81,10 +81,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 3f9fe6aa51ccc..ebbe1ec7b9e83 100644
+index a2c9bfae3d867..b139713289a42 100644
 --- a/drivers/thermal/qcom/tsens.c
 +++ b/drivers/thermal/qcom/tsens.c
-@@ -162,7 +162,8 @@ static int tsens_probe(struct platform_device *pdev)
+@@ -171,7 +171,8 @@ static int tsens_probe(struct platform_device *pdev)
  	if (tmdev->ops->calibrate) {
  		ret = tmdev->ops->calibrate(tmdev);
  		if (ret < 0) {
