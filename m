@@ -2,98 +2,86 @@ Return-Path: <SRS0=Yl30=UA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0681C28CC1
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:43:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D61F4C28CC1
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 14:02:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6B36E276E4
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:43:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559396625;
-	bh=53ok0bYmTt809hAnpG8NrkQv7x3hj2dYv3pMJurUqMg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=COcYwtAPDrBqr/dVECr354pTcf34d3kb/XEAScDdUBXUOYeK6F2b0OoE72nW1ZsID
-	 S5uYVamYFZZ/bPvYVj1ta8Kr9nY7+VucwCvOr9X50hhPtsHByojoXMRTOlq5EkJAy8
-	 Dp2m0WiTl/SnPi6cO5c7U5VZOCEF9X+gDqreTCmw=
+	by mail.kernel.org (Postfix) with ESMTP id B69A4248E4
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 14:02:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727677AbfFANnk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Jun 2019 09:43:40 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45026 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727628AbfFANSF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 1 Jun 2019 09:18:05 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 7E92C2727A;
-        Sat,  1 Jun 2019 13:18:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559395084;
-        bh=53ok0bYmTt809hAnpG8NrkQv7x3hj2dYv3pMJurUqMg=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=z4p/Y5OqqSrQI45vYd/4inQqOCw4c/X/6i8zulwYslQYEptCrjVFeOIdG3+xA3Y7m
-         HM4i7ufNLyan7qX+wLSLkG4QaCQDcnVYNJf2OuyLDiiSs3N/huOXxQlkYBMyt/1Xma
-         1hSz2G6MyOzSKefdvOZvSLu7nyfvHKLF+YzfQU5o=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Jiada Wang <jiada_wang@mentor.com>,
-        Simon Horman <horms+renesas@verge.net.au>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.1 024/186] thermal: rcar_gen3_thermal: disable interrupt in .remove
-Date:   Sat,  1 Jun 2019 09:14:00 -0400
-Message-Id: <20190601131653.24205-24-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190601131653.24205-1-sashal@kernel.org>
-References: <20190601131653.24205-1-sashal@kernel.org>
-MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+        id S1726174AbfFAOCY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Jun 2019 10:02:24 -0400
+Received: from mout.kundenserver.de ([217.72.192.73]:45583 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726013AbfFAOCY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Jun 2019 10:02:24 -0400
+Received: from orion.localdomain ([95.114.112.19]) by mrelayeu.kundenserver.de
+ (mreue108 [212.227.15.183]) with ESMTPSA (Nemesis) id
+ 1MRTIx-1hCWtT12Ht-00NOdl; Sat, 01 Jun 2019 16:01:46 +0200
+From:   "Enrico Weigelt, metux IT consult" <info@metux.net>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, viresh.kumar@linaro.org, jdelvare@suse.com,
+        linux@roeck-us.net, khalid@gonehiking.org, jejb@linux.ibm.com,
+        martin.petersen@oracle.com, aacraid@microsemi.com,
+        linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org,
+        linux-scsi@vger.kernel.org
+Subject: [PATCH 1/3] drivers: cpufreq: cpufreq-nforce2: remove unnecessary #ifdef MODULE
+Date:   Sat,  1 Jun 2019 16:01:38 +0200
+Message-Id: <1559397700-15585-2-git-send-email-info@metux.net>
+X-Mailer: git-send-email 1.9.1
+In-Reply-To: <1559397700-15585-1-git-send-email-info@metux.net>
+References: <1559397700-15585-1-git-send-email-info@metux.net>
+X-Provags-ID: V03:K1:nfIs3M5FOuPpOWeQmPLfkL+4Fg523wZ6xXAuALO2Ha+N5bjyhpn
+ uUy//sej4pWYzh7safog17YAfo6BFsqZu2oQMDwpZkE6gxge5M1dzE5tAHCM8r08n4yFAeE
+ +ewXaFzvHuLhvjvMSElD3Qrig+e4VkqZZW4lKJAVVQnW7tb+IbDXvDLhu2Tyv/3ZFEVRyq+
+ B/pdXEKL0jOQJYcBEQZYw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:SCLzH4zfWGo=:Vk9WwMr7sIqImVhrbQY8mv
+ zHoKpUip1zBm7pMLwu4Z+MReUFmhqjWHpTnJH9kwzpHh+muLpEUwJTMQORWCBnO83qaJ2OgNP
+ kDCNW/fvwDy2/gjtpqYx4C+Y35P8AM7PWcNZHhoXFfvdtIeSJ/kyfvkg1IdDucg4moNvp84OI
+ HUkIcJobLjZqNNuXQwOX1szm5NO8zFRsPjkAsP9NoRZabTWss8xSWCrKHHP8MFqM+UiJ0zYqz
+ MaiNAa63CVkuR5CktqYfWaEicH8s7JClXBjKDakQLzgca3vKFoTtNPh9tuCn8ch0QIHY03jOb
+ 3T3W6oM5Ns/UxIDbnBxb/h+b0WzNeH8OkjzazzWgMureftYMzErd0SoICjQ56LklbZY9Nlk5N
+ 4Ted9GC0cAfKbfp7xsv5fqD3WDf2CbY08nGN3RYmycsv/dY3fYqRU23gYV0A51O/qDN0Xyzec
+ +dMcHnZ3mgi+9LY6yWEPGzSSOTSQV5YbqITj/8lKkOdOsFdnIrIu4VVSZU/usMXPyU0u7F+QV
+ FLOJTfALYwFlLgvnNx9oG4Tjw6ZR/+oBpW48QWPVzjE9oacVJR2kKhuvyM04wz/ojBEIaEkjx
+ fOoiuOhS0xgndIjHtgNcRx5A1K5JkOx1oy1liIvi3pchy9HVpqrtKTGBy/bRMi0mqq2AqMvV+
+ Z9/Kn53nk6vLgEZ20t3q9k4e3EhRzqYQByJYiRSE0F248w10ypI+Wny3tvqenLdz4ot+6EXq4
+ 0cc1VD1kZBFTPIbsn4iiVAcTBmGpkFgh7Ba2cg==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Jiada Wang <jiada_wang@mentor.com>
+The MODULE_DEVICE_TABLE() macro already checks for MODULE defined,
+so the extra check here is not necessary.
 
-[ Upstream commit 63f55fcea50c25ae5ad45af92d08dae3b84534c2 ]
-
-Currently IRQ remains enabled after .remove, later if device is probed,
-IRQ is requested before .thermal_init, this may cause IRQ function be
-called before device is initialized.
-
-this patch disables interrupt in .remove, to ensure irq function
-only be called after device is fully initialized.
-
-Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Enrico Weigelt <info@metux.net>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/cpufreq/cpufreq-nforce2.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 88fa41cf16e83..0c9e7a5bacdf1 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -331,6 +331,9 @@ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
- static int rcar_gen3_thermal_remove(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-+	struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
-+
-+	rcar_thermal_irq_set(priv, false);
+diff --git a/drivers/cpufreq/cpufreq-nforce2.c b/drivers/cpufreq/cpufreq-nforce2.c
+index cd53272..6dd1827 100644
+--- a/drivers/cpufreq/cpufreq-nforce2.c
++++ b/drivers/cpufreq/cpufreq-nforce2.c
+@@ -374,13 +374,11 @@ static int nforce2_cpu_exit(struct cpufreq_policy *policy)
+ 	.exit = nforce2_cpu_exit,
+ };
  
- 	pm_runtime_put(dev);
- 	pm_runtime_disable(dev);
+-#ifdef MODULE
+ static const struct pci_device_id nforce2_ids[] = {
+ 	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE2 },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(pci, nforce2_ids);
+-#endif
+ 
+ /**
+  * nforce2_detect_chipset - detect the Southbridge which contains FSB PLL logic
 -- 
-2.20.1
+1.9.1
 
