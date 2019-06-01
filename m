@@ -7,49 +7,50 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6524CC28CC1
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:32:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8389C28CC1
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:33:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 30EC82339E
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:32:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 786A62750B
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 13:33:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559395963;
-	bh=dre30RdEQXy41bPIIowne0S263PWWWGLIDPuhU17HJQ=;
+	s=default; t=1559396015;
+	bh=SovqSDY+tOTcIoKxLNZu5AMwUZmBZoOg3wouGlrx9zM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=Aj0PL0zIUD4FSK8SjFs35xRwRseFmGinAtTd2LIzHOmCHvpoyxcjeqvhMZW7LFe3V
-	 LgYKPrjM69apncZ6zXyvF1nZ3nd1zC/mIqxCyD7o+Js6vxbQstwOYyEKN7VWuI2fun
-	 Dmp02gYiT7SpQxSP8PbWJoPZOv3M4yiXNhoYit/A=
+	b=2YkhZ14BufAeRV7GPa9tcQ3ZpBNq/e0Glq2PYUxkqw/C6fset9YCc4C7vJ2CuU8Sa
+	 8SbcavMaQEoVP6BZzC+8VHt3A7QpMLZzA4qL3IYn7VoCtzr41B7KhqN9VBIwIvokgF
+	 X5PD7XMtfmAqbr6/nvbQkEIMBzdV+CxTrY9qbDZk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729496AbfFANZd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Jun 2019 09:25:33 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55892 "EHLO mail.kernel.org"
+        id S1729215AbfFANY1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Jun 2019 09:24:27 -0400
+Received: from mail.kernel.org ([198.145.29.99]:54454 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729494AbfFANZd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 1 Jun 2019 09:25:33 -0400
+        id S1729207AbfFANYY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 1 Jun 2019 09:24:24 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id EB71527385;
-        Sat,  1 Jun 2019 13:25:31 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 301E727378;
+        Sat,  1 Jun 2019 13:24:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1559395532;
-        bh=dre30RdEQXy41bPIIowne0S263PWWWGLIDPuhU17HJQ=;
+        s=default; t=1559395464;
+        bh=SovqSDY+tOTcIoKxLNZu5AMwUZmBZoOg3wouGlrx9zM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=2oH2IBtG7+n5FLDgBySCsUEPzVGyMY6NCw/1Kar0ZDpjPIN8jWl4+FVlE40Eh40Uq
-         qbDg7WQr8zUtmGqxaKlbjWA3ZFDMswVHSUZf176HppVccioBQ89Akvyb0ToUFjFLEx
-         gvaKl7lbcZeN7QyNMAAGxZk2z+M3C02XnlNN93V4=
+        b=XquYsvpS3fAkPlI0R8Fa+QlV6ebIvtTWOMPOYSbOBo9+AJT5Rf312DcSWd5iAm6ge
+         aZCnM2OvZz6meQHR0ylhBnLVuV+eSSOhDW26MeQdiR17+oMGjGXms1KqYksr0mvefI
+         nUOPospiXvOBSG+Nlf9D9eQj+MdTbhv+kKrIm0WE=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Amit Kucheria <amit.kucheria@linaro.org>,
+Cc:     Jiada Wang <jiada_wang@mentor.com>,
+        Simon Horman <horms+renesas@verge.net.au>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Eduardo Valentin <edubezval@gmail.com>,
-        Sasha Levin <sashal@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 12/74] drivers: thermal: tsens: Don't print error message on -EPROBE_DEFER
-Date:   Sat,  1 Jun 2019 09:23:59 -0400
-Message-Id: <20190601132501.27021-12-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.14 14/99] thermal: rcar_gen3_thermal: disable interrupt in .remove
+Date:   Sat,  1 Jun 2019 09:22:21 -0400
+Message-Id: <20190601132346.26558-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190601132501.27021-1-sashal@kernel.org>
-References: <20190601132501.27021-1-sashal@kernel.org>
+In-Reply-To: <20190601132346.26558-1-sashal@kernel.org>
+References: <20190601132346.26558-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -59,41 +60,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Amit Kucheria <amit.kucheria@linaro.org>
+From: Jiada Wang <jiada_wang@mentor.com>
 
-[ Upstream commit fc7d18cf6a923cde7f5e7ba2c1105bb106d3e29a ]
+[ Upstream commit 63f55fcea50c25ae5ad45af92d08dae3b84534c2 ]
 
-We print a calibration failure message on -EPROBE_DEFER from
-nvmem/qfprom as follows:
-[    3.003090] qcom-tsens 4a9000.thermal-sensor: version: 1.4
-[    3.005376] qcom-tsens 4a9000.thermal-sensor: tsens calibration failed
-[    3.113248] qcom-tsens 4a9000.thermal-sensor: version: 1.4
+Currently IRQ remains enabled after .remove, later if device is probed,
+IRQ is requested before .thermal_init, this may cause IRQ function be
+called before device is initialized.
 
-This confuses people when, in fact, calibration succeeds later when
-nvmem/qfprom device is available. Don't print this message on a
--EPROBE_DEFER.
+this patch disables interrupt in .remove, to ensure irq function
+only be called after device is fully initialized.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/qcom/tsens.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/thermal/rcar_gen3_thermal.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 3f9fe6aa51ccc..ebbe1ec7b9e83 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -162,7 +162,8 @@ static int tsens_probe(struct platform_device *pdev)
- 	if (tmdev->ops->calibrate) {
- 		ret = tmdev->ops->calibrate(tmdev);
- 		if (ret < 0) {
--			dev_err(dev, "tsens calibration failed\n");
-+			if (ret != -EPROBE_DEFER)
-+				dev_err(dev, "tsens calibration failed\n");
- 			return ret;
- 		}
- 	}
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+index 203aca44a2bb4..0afdda2db3a07 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -342,6 +342,9 @@ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
+ static int rcar_gen3_thermal_remove(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
++	struct rcar_gen3_thermal_priv *priv = dev_get_drvdata(dev);
++
++	rcar_thermal_irq_set(priv, false);
+ 
+ 	pm_runtime_put(dev);
+ 	pm_runtime_disable(dev);
 -- 
 2.20.1
 
