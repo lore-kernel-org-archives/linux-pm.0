@@ -7,50 +7,50 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48C91C28CC6
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 22:28:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BFDCC28CC3
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 22:28:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 208FF277D2
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 22:28:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C68A7277E2
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Jun 2019 22:28:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="cAGodZzS"
+	dkim=pass (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="aVaF2GlW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726942AbfFAW2I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Jun 2019 18:28:08 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:40721 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726917AbfFAW2F (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Jun 2019 18:28:05 -0400
-Received: by mail-pf1-f196.google.com with SMTP id u17so8347983pfn.7
-        for <linux-pm@vger.kernel.org>; Sat, 01 Jun 2019 15:28:04 -0700 (PDT)
+        id S1726824AbfFAW2g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Jun 2019 18:28:36 -0400
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:33984 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726708AbfFAW1u (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Jun 2019 18:27:50 -0400
+Received: by mail-pl1-f194.google.com with SMTP id i2so1110564plt.1
+        for <linux-pm@vger.kernel.org>; Sat, 01 Jun 2019 15:27:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=joelfernandes.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=rPaZRgyzQF7DCy2Q79gveolqcRd2gZR4xnQeESxSxI8=;
-        b=cAGodZzSRsQMt/+agP3IVTRjmy7GJn9PFgRKDBVOfndMOmU790nOh6r8RDl2NSEttn
-         ozggt0Vl0AEPviZREUImDWgpoB8D77NfGsskgK/Bj9R0lxq+Xa1zB1Rz3dBJYKQUD7bL
-         uSS2mFmHddK5rTGvh+vSHZuyEX0sX9MRSOJjg=
+        bh=xNWJR7+avVxp+XBc8qsFVmrbJq3BMouQd4JZAqdSMow=;
+        b=aVaF2GlW0FbGYqbnk+GkXXLXef8ob7VZcUv1mDRtpZokHqSbR/AfW0i5FF1EyuLrcV
+         fSC3v83WjuKWB89npwonNL0dTnqzhxBECvUTF7JchE/W1TyukM3SvtT487WrCa5Rm53A
+         tRE961dlDJAiauiC7XdxF81iiMXqC3ahSZSgk=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=rPaZRgyzQF7DCy2Q79gveolqcRd2gZR4xnQeESxSxI8=;
-        b=OxceKX1TUQOAPTTLaW/QynItpyHng5jn1a1diabbyaFk0h2nqKy71xtZraZ2Ui5IV+
-         GavHvcx9hECnmSX0gPawyO2dpPwSJKe49hfK1ZXx5lCIh/bYKjUWiTuKw+KurfAhwlUI
-         /1cjIbg9tQPYmY5970B2Nj33pgk67PKi3B7kPl6MVNVS17Dgvu/U/50D0WYa64TEuRE1
-         PHNw0djN5miooPhG9bq393Oh9Ybw1c5/aeNdFuGiz87GML6USySabT3lwpHS4DwcTWGl
-         ACvjLeDYixF03Krcq/ZbJ8WsibS2hCdgn0FLd0aeZleNipLuHX/2I6mpMbI1JkzAtUom
-         a4+w==
-X-Gm-Message-State: APjAAAUY6E5NgW+K3xraP3JZEPyqYhGVU8n6bOiMjcJvLd3gkF1jOR3M
-        6c4RjyptwFPl1lE/7AFeV2jAjA==
-X-Google-Smtp-Source: APXvYqx/DSML7hGGCdUoQbZcef6z1i2E+ZJBXAJvbUYli+Bo+0PJ9dMusQpxsqpBr79TPzH4e5AIzA==
-X-Received: by 2002:a65:5206:: with SMTP id o6mr18823746pgp.248.1559428084316;
-        Sat, 01 Jun 2019 15:28:04 -0700 (PDT)
+        bh=xNWJR7+avVxp+XBc8qsFVmrbJq3BMouQd4JZAqdSMow=;
+        b=Ddfx+8kxr8PmfUnhkKDawrWKPQbqNJ+33oNc3zua6cyp2ytouriDRzSLhXkQiBSXOp
+         bvJxnI7v395kw0AdiuEefwZ8bFyG5XA06qT/hHl1Q8M7Ld4HK4TeS27AP3RFXL2ff2B4
+         wrNHVbLpnBXjCz0iyrHMCeSaoEn0LR5Q3fPXY71mqEvRgReIloV+vA55yQVIPPIvc1o4
+         3BFXg4nEfxfJgppWCFk2UJ/1Hg5ZROj65tOMwKoeHqFekrYWTJnGePMASzUbFfzyeoMa
+         MmMOTjkg3H65eA68k55B1pO59jR7KznEvPzJFcDj13/hOdl7DiwvYh8vYMGzGKwx8ThH
+         I6cg==
+X-Gm-Message-State: APjAAAXEuZ+vR2HU59kE/iRQtthWshf/TnWFOczxXwdK+D8e0HmBnU8N
+        nGxKnYW/n5NVGvrd4h/k2HDXKA==
+X-Google-Smtp-Source: APXvYqz9O+K+W6jtVg6G5tx9Z1mr8Mbm6dSmWqpCUZgyNKqrd7q7+MLczqhNtk36EjwSD2D8Bei5lA==
+X-Received: by 2002:a17:902:aa93:: with SMTP id d19mr18498979plr.341.1559428069350;
+        Sat, 01 Jun 2019 15:27:49 -0700 (PDT)
 Received: from joelaf.cam.corp.google.com ([2620:15c:6:12:9c46:e0da:efbf:69cc])
-        by smtp.gmail.com with ESMTPSA id t33sm9908018pjb.1.2019.06.01.15.28.00
+        by smtp.gmail.com with ESMTPSA id t33sm9908018pjb.1.2019.06.01.15.27.45
         (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Sat, 01 Jun 2019 15:28:03 -0700 (PDT)
+        Sat, 01 Jun 2019 15:27:48 -0700 (PDT)
 From:   "Joel Fernandes (Google)" <joel@joelfernandes.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
@@ -75,9 +75,9 @@ Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
         Tejun Heo <tj@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         x86@kernel.org (maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT))
-Subject: [RFC 5/6] x86/pci: Pass lockdep condition to pcm_mmcfg_list iterator
-Date:   Sat,  1 Jun 2019 18:27:37 -0400
-Message-Id: <20190601222738.6856-6-joel@joelfernandes.org>
+Subject: [RFC 1/6] rcu: Add support for consolidated-RCU reader checking
+Date:   Sat,  1 Jun 2019 18:27:33 -0400
+Message-Id: <20190601222738.6856-2-joel@joelfernandes.org>
 X-Mailer: git-send-email 2.22.0.rc1.311.g5d7573a151-goog
 In-Reply-To: <20190601222738.6856-1-joel@joelfernandes.org>
 References: <20190601222738.6856-1-joel@joelfernandes.org>
@@ -88,46 +88,156 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pcm_mmcfg_list is traversed with list_for_each_entry_rcu without a
-reader-lock held, because the pci_mmcfg_lock is already held. Make this
-known to the list macro so that it fixes new lockdep warnings that
-trigger due to lockdep checks added to list_for_each_entry_rcu().
+This patch adds support for checking RCU reader sections in list
+traversal macros. Optionally, if the list macro is called under SRCU or
+other lock/mutex protection, then appropriate lockdep expressions can be
+passed to make the checks pass.
+
+Existing list_for_each_entry_rcu() invocations don't need to pass the
+optional fourth argument (cond) unless they are under some non-RCU
+protection and needs to make lockdep check pass.
 
 Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 ---
- arch/x86/pci/mmconfig-shared.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ include/linux/rculist.h  | 40 ++++++++++++++++++++++++++++++++++++----
+ include/linux/rcupdate.h |  7 +++++++
+ kernel/rcu/update.c      | 26 ++++++++++++++++++++++++++
+ 3 files changed, 69 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
-index 7389db538c30..6fa42e9c4e6f 100644
---- a/arch/x86/pci/mmconfig-shared.c
-+++ b/arch/x86/pci/mmconfig-shared.c
-@@ -29,6 +29,7 @@
- static bool pci_mmcfg_running_state;
- static bool pci_mmcfg_arch_init_failed;
- static DEFINE_MUTEX(pci_mmcfg_lock);
-+#define pci_mmcfg_lock_held() lock_is_held(&(pci_mmcfg_lock).dep_map)
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index e91ec9ddcd30..b641fdd9f1a2 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -40,6 +40,25 @@ static inline void INIT_LIST_HEAD_RCU(struct list_head *list)
+  */
+ #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
  
- LIST_HEAD(pci_mmcfg_list);
++/*
++ * Check during list traversal that we are within an RCU reader
++ */
++#define __list_check_rcu()						\
++	RCU_LOCKDEP_WARN(!rcu_read_lock_any_held(),			\
++			 "RCU-list traversed in non-reader section!")
++
++static inline void __list_check_rcu_cond(int dummy, ...)
++{
++	va_list ap;
++	int cond;
++
++	va_start(ap, dummy);
++	cond = va_arg(ap, int);
++	va_end(ap);
++
++	RCU_LOCKDEP_WARN(!cond && !rcu_read_lock_any_held(),
++			 "RCU-list traversed in non-reader section!");
++}
+ /*
+  * Insert a new entry between two known consecutive entries.
+  *
+@@ -338,6 +357,9 @@ static inline void list_splice_tail_init_rcu(struct list_head *list,
+ 						  member) : NULL; \
+ })
  
-@@ -54,7 +55,7 @@ static void list_add_sorted(struct pci_mmcfg_region *new)
- 	struct pci_mmcfg_region *cfg;
++#define SIXTH_ARG(a1, a2, a3, a4, a5, a6, ...) a6
++#define COUNT_VARGS(...) SIXTH_ARG(dummy, ## __VA_ARGS__, 4, 3, 2, 1, 0)
++
+ /**
+  * list_for_each_entry_rcu	-	iterate over rcu list of given type
+  * @pos:	the type * to use as a loop cursor.
+@@ -348,9 +370,14 @@ static inline void list_splice_tail_init_rcu(struct list_head *list,
+  * the _rcu list-mutation primitives such as list_add_rcu()
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+-#define list_for_each_entry_rcu(pos, head, member) \
+-	for (pos = list_entry_rcu((head)->next, typeof(*pos), member); \
+-		&pos->member != (head); \
++#define list_for_each_entry_rcu(pos, head, member, cond...)		\
++	if (COUNT_VARGS(cond) != 0) {					\
++		__list_check_rcu_cond(0, ## cond);			\
++	} else {							\
++		__list_check_rcu();					\
++	}								\
++	for (pos = list_entry_rcu((head)->next, typeof(*pos), member);	\
++		&pos->member != (head);					\
+ 		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
  
- 	/* keep list sorted by segment and starting bus number */
--	list_for_each_entry_rcu(cfg, &pci_mmcfg_list, list) {
-+	list_for_each_entry_rcu(cfg, &pci_mmcfg_list, list, pci_mmcfg_lock_held()) {
- 		if (cfg->segment > new->segment ||
- 		    (cfg->segment == new->segment &&
- 		     cfg->start_bus >= new->start_bus)) {
-@@ -118,7 +119,7 @@ struct pci_mmcfg_region *pci_mmconfig_lookup(int segment, int bus)
+ /**
+@@ -621,7 +648,12 @@ static inline void hlist_add_behind_rcu(struct hlist_node *n,
+  * the _rcu list-mutation primitives such as hlist_add_head_rcu()
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+-#define hlist_for_each_entry_rcu(pos, head, member)			\
++#define hlist_for_each_entry_rcu(pos, head, member, cond...)		\
++	if (COUNT_VARGS(cond) != 0) {					\
++		__list_check_rcu_cond(0, ## cond);			\
++	} else {							\
++		__list_check_rcu();					\
++	}								\
+ 	for (pos = hlist_entry_safe (rcu_dereference_raw(hlist_first_rcu(head)),\
+ 			typeof(*(pos)), member);			\
+ 		pos;							\
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 922bb6848813..712b464ab960 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -223,6 +223,7 @@ int debug_lockdep_rcu_enabled(void);
+ int rcu_read_lock_held(void);
+ int rcu_read_lock_bh_held(void);
+ int rcu_read_lock_sched_held(void);
++int rcu_read_lock_any_held(void);
+ 
+ #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+@@ -243,6 +244,12 @@ static inline int rcu_read_lock_sched_held(void)
  {
- 	struct pci_mmcfg_region *cfg;
+ 	return !preemptible();
+ }
++
++static inline int rcu_read_lock_any_held(void)
++{
++	return !preemptible();
++}
++
+ #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
  
--	list_for_each_entry_rcu(cfg, &pci_mmcfg_list, list)
-+	list_for_each_entry_rcu(cfg, &pci_mmcfg_list, list, pci_mmcfg_lock_held())
- 		if (cfg->segment == segment &&
- 		    cfg->start_bus <= bus && bus <= cfg->end_bus)
- 			return cfg;
+ #ifdef CONFIG_PROVE_RCU
+diff --git a/kernel/rcu/update.c b/kernel/rcu/update.c
+index c3bf44ba42e5..9cb30006a5e1 100644
+--- a/kernel/rcu/update.c
++++ b/kernel/rcu/update.c
+@@ -298,6 +298,32 @@ int rcu_read_lock_bh_held(void)
+ }
+ EXPORT_SYMBOL_GPL(rcu_read_lock_bh_held);
+ 
++int rcu_read_lock_any_held(void)
++{
++	int lockdep_opinion = 0;
++
++	if (!debug_lockdep_rcu_enabled())
++		return 1;
++	if (!rcu_is_watching())
++		return 0;
++	if (!rcu_lockdep_current_cpu_online())
++		return 0;
++
++	/* Preemptible RCU flavor */
++	if (lock_is_held(&rcu_lock_map))
++		return 1;
++
++	/* BH flavor */
++	if (in_softirq() || irqs_disabled())
++		return 1;
++
++	/* Sched flavor */
++	if (debug_locks)
++		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
++	return lockdep_opinion || !preemptible();
++}
++EXPORT_SYMBOL_GPL(rcu_read_lock_any_held);
++
+ #endif /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+ /**
 -- 
 2.22.0.rc1.311.g5d7573a151-goog
 
