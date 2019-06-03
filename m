@@ -2,154 +2,520 @@ Return-Path: <SRS0=id55=UC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA456C04AB5
-	for <linux-pm@archiver.kernel.org>; Mon,  3 Jun 2019 16:53:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1B7DC282CE
+	for <linux-pm@archiver.kernel.org>; Mon,  3 Jun 2019 17:29:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AD3A0251FA
-	for <linux-pm@archiver.kernel.org>; Mon,  3 Jun 2019 16:53:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 941AA26539
+	for <linux-pm@archiver.kernel.org>; Mon,  3 Jun 2019 17:29:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J6TIHuj/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727272AbfFCQxB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 3 Jun 2019 12:53:01 -0400
-Received: from mailout.easymail.ca ([64.68.200.34]:49798 "EHLO
-        mailout.easymail.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726690AbfFCQxB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2019 12:53:01 -0400
-X-Greylist: delayed 346 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Jun 2019 12:52:59 EDT
-Received: from localhost (localhost [127.0.0.1])
-        by mailout.easymail.ca (Postfix) with ESMTP id EF47524BF4;
-        Mon,  3 Jun 2019 16:47:12 +0000 (UTC)
-Received: from mailout.easymail.ca ([127.0.0.1])
-        by localhost (emo06-pco.easydns.vpn [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id IRw2Rh0RPLAH; Mon,  3 Jun 2019 16:47:12 +0000 (UTC)
-Received: from mail.gonehiking.org (c-24-9-64-241.hsd1.co.comcast.net [24.9.64.241])
-        by mailout.easymail.ca (Postfix) with ESMTPA id C5989241ED;
-        Mon,  3 Jun 2019 16:46:57 +0000 (UTC)
-Received: from [192.168.1.4] (rhapsody.internal [192.168.1.4])
-        by mail.gonehiking.org (Postfix) with ESMTP id DF56C9F2FA;
-        Mon,  3 Jun 2019 10:46:56 -0600 (MDT)
-Subject: Re: [PATCH 2/3] drivers: scsi: remove unnecessary #ifdef MODULE
-To:     "Enrico Weigelt, metux IT consult" <info@metux.net>,
+        id S1727769AbfFCR35 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 3 Jun 2019 13:29:57 -0400
+Received: from mail-pg1-f193.google.com ([209.85.215.193]:41567 "EHLO
+        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726784AbfFCR34 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2019 13:29:56 -0400
+Received: by mail-pg1-f193.google.com with SMTP id 83so1851533pgg.8;
+        Mon, 03 Jun 2019 10:29:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=m0QyZT1gcRzimHAxp9Z1A2+frwgrpaXDm49S7w8Trfw=;
+        b=J6TIHuj/Z82THR0hwj+ay10xDIZaDvPqw6VLPET/Pxw1v/e458NrfdHkOBfV3PfDyC
+         L9rxHwVz4yclfVIgmYastnfKw4FhUOv8L327whk2Pqnfg/4zpCFNNQVXp/Id1RekFYaM
+         kRLOh+pzsOFCg95iYM4MoElNreEooktKUMrG1wlesZnVpz0AG3d8M0bFcdSKFdpJceMr
+         OzFz//fWq3Ai5YMdSce+rjKZrwWJEw2v7TJMjZkX797IUy3T2oyL4Q0U6CYjbkk9YxeN
+         wjTImFLQivKEneiCsdJbX15M9MfIPXrk+QMKoRUI9f8y7PxicDHqhSJSlWDqAIZU9pes
+         EilQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
+         :references:mime-version:content-disposition:in-reply-to:user-agent;
+        bh=m0QyZT1gcRzimHAxp9Z1A2+frwgrpaXDm49S7w8Trfw=;
+        b=XioqCjJIaF2Ce5u4tXFXXwcPvKfBgKIUlHhf3pZA0uBytXZ0xDIeiIzDciM0fzR8R7
+         b8yOe/iJkW3ix3VF2ctAsrvr1ElnJxJOWvQQhhlVCwnPsyw1amnJzR8nVj1GgpVmtNy8
+         yajMYa3njiBkuWr5oCdZVLAcEnwoGEnHD2PKFrrkjSo8zrC5Ga7Xa7pnY21PPJ64xW8f
+         Qs1ckL/iQYSjntrIIesfoyN0bXS4Bd/MrhEVhkfpQzoHdaIXbRYoNuZuPI/UsCUO8APd
+         O245CVO0s6dRLc8erS2veeEebyP6XhoccNXXRjgSDqgKGlISQ3IoC2QecZRZL/oEbRbe
+         UXhA==
+X-Gm-Message-State: APjAAAUC1JrXsQCvCLyRLNJRev5E0VnwnBCxn1QiKCL+uXPVQAVg1zzn
+        lduGYDHbAjFdYQsIdHHY7oTz2Gee
+X-Google-Smtp-Source: APXvYqyoP1YjXvvQJc++kiDsxeOT/Tl2/YlCELrEPyERi/tn9osi3fIIciQTurt3TkqF9eJHdufEYg==
+X-Received: by 2002:a62:5c84:: with SMTP id q126mr6573388pfb.247.1559582996156;
+        Mon, 03 Jun 2019 10:29:56 -0700 (PDT)
+Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id g18sm3063192pfo.136.2019.06.03.10.29.55
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 03 Jun 2019 10:29:55 -0700 (PDT)
+Date:   Mon, 3 Jun 2019 10:29:54 -0700
+From:   Guenter Roeck <linux@roeck-us.net>
+To:     Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc:     linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        Sebastian Reichel <sre@kernel.org>,
         linux-kernel@vger.kernel.org
-Cc:     rjw@rjwysocki.net, viresh.kumar@linaro.org, jdelvare@suse.com,
-        linux@roeck-us.net, jejb@linux.ibm.com, martin.petersen@oracle.com,
-        aacraid@microsemi.com, linux-pm@vger.kernel.org,
-        linux-hwmon@vger.kernel.org, linux-scsi@vger.kernel.org
-References: <1559397700-15585-1-git-send-email-info@metux.net>
- <1559397700-15585-3-git-send-email-info@metux.net>
-From:   Khalid Aziz <khalid@gonehiking.org>
-Openpgp: preference=signencrypt
-Autocrypt: addr=khalid@gonehiking.org; prefer-encrypt=mutual; keydata=
- mQINBFA5V58BEADa1EDo4fqJ3PMxVmv0ZkyezncGLKX6N7Dy16P6J0XlysqHZANmLR98yUk4
- 1rpAY/Sj/+dhHy4AeMWT/E+f/5vZeUc4PXN2xqOlkpANPuFjQ/0I1KI2csPdD0ZHMhsXRKeN
- v32eOBivxyV0ZHUzO6wLie/VZHeem2r35mRrpOBsMLVvcQpmlkIByStXGpV4uiBgUfwE9zgo
- OSZ6m3sQnbqE7oSGJaFdqhusrtWesH5QK5gVmsQoIrkOt3Al5MvwnTPKNX5++Hbi+SaavCrO
- DBoJolWd5R+H8aRpBh5B5R2XbIS8ELGJZfqV+bb1BRKeo0kvCi7G6G4X//YNsgLv7Xl0+Aiw
- Iu/ybxI1d4AtBE9yZlyG21q4LnO93lCMJz/XqpcyG7DtrWTVfAFaF5Xl1GT+BKPEJcI2NnYn
- GIXydyh7glBjI8GAZA/8aJ+Y3OCQtVxEub5gyx/6oKcM12lpbztVFnB8+S/+WLbHLxm/t8l+
- Rg+Y4jCNm3zB60Vzlz8sj1NQbjqZYBtBbmpy7DzYTAbE3P7P+pmvWC2AevljxepR42hToIY0
- sxPAX00K+UzTUwXb2Fxvw37ibC5wk3t7d/IC0OLV+X29vyhmuwZ0K1+oKeI34ESlyU9Nk7sy
- c1WJmk71XIoxJhObOiXmZIvWaOJkUM2yZ2onXtDM45YZ8kyYTwARAQABtCNLaGFsaWQgQXpp
- eiA8a2hhbGlkQGdvbmVoaWtpbmcub3JnPokCOgQTAQgAJAIbAwULCQgHAwUVCgkICwUWAgMB
- AAIeAQIXgAUCUDlYcgIZAQAKCRDNWKGxftAz+mCdD/4s/LpQAYcoZ7TwwQnZFNHNZmVQ2+li
- 3sht1MnFNndcCzVXHSWd/fh00z2du3ccPl51fXU4lHbiG3ZyrjX2Umx48C20Xg8gbmdUBzq4
- 9+s12COrgwgsLyWZAXzCMWYXOn9ijPHeSQSq1XYj8p2w4oVjMa/QfGueKiJ5a14yhCwye2AM
- f5o8uDLf+UNPgJIYAGJ46fT6k5OzXGVIgIGmMZCbYPhhSAvLKBfLaIFd5Bu6sPjp0tJDXJd8
- pG831Kalbqxk7e08FZ76opzWF9x/ZjLPfTtr4xiVvx+f9g/5E83/A5SvgKyYHdb3Nevz0nvn
- MqQIVfZFPUAQfGxdWgRsFCudl6i9wEGYTcOGe00t7JPbYolLlvdn+tA+BCE5jW+4cFg3HmIf
- YFchQtp+AGxDXG3lwJcNwk0/x+Py3vwlZIVXbdxXqYc7raaO/+us8GSlnsO+hzC3TQE2E/Hy
- n45FDXgl51rV6euNcDRFUWGE0d/25oKBXGNHm+l/MRvV8mAdg3iTiy2+tAKMYmg0PykiNsjD
- b3P5sMtqeDxr3epMO+dO6+GYzZsWU2YplWGGzEKI8sn1CrPsJzcMJDoWUv6v3YL+YKnwSyl1
- Q1Dlo+K9FeALqBE5FTDlwWPh2SSIlRtHEf8EynUqLSCjOtRhykmqAn+mzIQk+hIy6a0to9iX
- uLRdVbkCDQRQOVefARAAsdGTEi98RDUGFrxK5ai2R2t9XukLLRbRmwyYYx7sc7eYp7W4zbnI
- W6J+hKv3aQsk0C0Em4QCHf9vXOH7dGrgkfpvG6aQlTMRWnmiVY99V9jTZGwK619fpmFXgdAt
- WFPMeNKVGkYzyMMjGQ4YbfDcy04BSH2fEok0jx7Jjjm0U+LtSJL8fU4tWhlkKHtO1oQ9Y9HH
- Uie/D/90TYm1nh7TBlEn0I347zoFHw1YwRO13xcTCh4SL6XaQuggofvlim4rhwSN/I19wK3i
- YwAm3BTBzvJGXbauW0HiLygOvrvXiuUbyugMksKFI9DMPRbDiVgCqe0lpUVW3/0ynpFwFKeR
- FyDouBc2gOx8UTbcFRceOEew9eNMhzKJ2cvIDqXqIIvwEBrA+o92VkFmRG78PleBr0E8WH2/
- /H/MI3yrHD4F4vTRiPwpJ1sO/JUKjOdfZonDF6Hu/Beb0U5coW6u7ENKBmaQ/nO1pHrsqZp+
- 2ErG02yOHF5wDWxxgbd4jgcNTKJiY9F1cdKP+NbWW/rnJgem8qYI3a4VkIkFT5BE2eYLvZlR
- cIzWc/ve/RoQh6jzXD0T08whoajZ1Y3yFQ8oyLSFt8ybxF0b5XryL2RVeHQTkE8NKwoGVYTn
- ER+o7x2sUGbIkjHrE4Gq2cooEl9lMv6I5TEkvP1E5hiZFJWYYnrXa/cAEQEAAYkCHwQYAQgA
- CQUCUDlXnwIbDAAKCRDNWKGxftAz+reUEACQ+rz2AlVZZcUdMxWoiHqJTb5JnaF7RBIBt6Ia
- LB9triebZ7GGW+dVPnLW0ZR1X3gTaswo0pSFU9ofHkG2WKoYM8FbzSR031k2NNk/CR0lw5Bh
- whAUZ0w2jgF4Lr+u8u6zU7Qc2dKEIa5rpINPYDYrJpRrRvNne7sj5ZoWNp5ctl8NBory6s3b
- bXvQ8zlMxx42oF4ouCcWtrm0mg3Zk3SQQSVn/MIGCafk8HdwtYsHpGmNEVn0hJKvUP6lAGGS
- uDDmwP+Q+ThOq6b6uIDPKZzYSaa9TmL4YIUY8OTjONJ0FLOQl7DsCVY9UIHF61AKOSrdgCJm
- N3d5lXevKWeYa+v6U7QXxM53e1L+6h1CSABlICA09WJP0Fy7ZOTvVjlJ3ApO0Oqsi8iArScp
- fbUuQYfPdk/QjyIzqvzklDfeH95HXLYEq8g+u7nf9jzRgff5230YW7BW0Xa94FPLXyHSc85T
- E1CNnmSCtgX15U67Grz03Hp9O29Dlg2XFGr9rK46Caph3seP5dBFjvPXIEC2lmyRDFPmw4yw
- KQczTkg+QRkC4j/CEFXw0EkwR8tDAPW/NVnWr/KSnR/qzdA4RRuevLSK0SYSouLQr4IoxAuj
- nniu8LClUU5YxbF57rmw5bPlMrBNhO5arD8/b/XxLx/4jGQrcYM+VrMKALwKvPfj20mB6A==
-Message-ID: <ae7d15b0-f513-ab1f-6101-201099df7eef@gonehiking.org>
-Date:   Mon, 3 Jun 2019 10:46:56 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+Subject: Re: [PATCH v2 1/2] power: supply: Add HWMON compatibility layer
+Message-ID: <20190603172954.GA5220@roeck-us.net>
+References: <20190531011620.9383-1-andrew.smirnov@gmail.com>
+ <20190531011620.9383-2-andrew.smirnov@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1559397700-15585-3-git-send-email-info@metux.net>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190531011620.9383-2-andrew.smirnov@gmail.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 6/1/19 8:01 AM, Enrico Weigelt, metux IT consult wrote:
-> The MODULE_DEVICE_TABLE() macro already checks for MODULE defined,
-> so the extra check here is not necessary.
+On Thu, May 30, 2019 at 06:16:19PM -0700, Andrey Smirnov wrote:
+> Add code implementing HWMON adapter/compatibility layer to allow
+> expositing various sensors present on power supply devices via HWMON
+> subsystem. This is done in order to allow userspace to use single
+> ABI/library(libsensors) to access/manipulate all of the sensors of the
+> system.
 > 
-> Signed-off-by: Enrico Weigelt <info@metux.net>
+> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> Cc: Chris Healy <cphealy@gmail.com>
+> Cc: Lucas Stach <l.stach@pengutronix.de>
+> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
 > ---
->  drivers/scsi/BusLogic.c | 2 --
->  drivers/scsi/dpt_i2o.c  | 3 ---
->  2 files changed, 5 deletions(-)
+>  drivers/power/supply/Kconfig              |  14 +
+>  drivers/power/supply/Makefile             |   1 +
+>  drivers/power/supply/power_supply_hwmon.c | 349 ++++++++++++++++++++++
+>  include/linux/power_supply.h              |   9 +
+>  4 files changed, 373 insertions(+)
+>  create mode 100644 drivers/power/supply/power_supply_hwmon.c
 > 
-> diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
-> index e41e51f..68cc68b 100644
-> --- a/drivers/scsi/BusLogic.c
-> +++ b/drivers/scsi/BusLogic.c
-> @@ -3893,7 +3893,6 @@ static void __exit blogic_exit(void)
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index 26dacdab03cc..1f2252cb95fd 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -14,6 +14,20 @@ config POWER_SUPPLY_DEBUG
+>  	  Say Y here to enable debugging messages for power supply class
+>  	  and drivers.
 >  
->  __setup("BusLogic=", blogic_setup);
+> +config POWER_SUPPLY_HWMON
+> +	bool
+> +	prompt "Expose power supply sensors as hwmon device"
+> +	depends on HWMON=y || HWMON=POWER_SUPPLY
+> +	default y
+> +	help
+> +	  This options enables API that allows sensors found on a
+> +	  power supply device (current, voltage, temperature) to be
+> +	  exposed as a hwmon device.
+> +
+> +	  Say 'Y' here if you want power supplies to
+> +	  have hwmon sysfs interface too.
+> +
+> +
+>  config PDA_POWER
+>  	tristate "Generic PDA/phone power driver"
+>  	depends on !S390
+> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+> index f208273f9686..c47e88ba16b9 100644
+> --- a/drivers/power/supply/Makefile
+> +++ b/drivers/power/supply/Makefile
+> @@ -6,6 +6,7 @@ power_supply-$(CONFIG_SYSFS)		+= power_supply_sysfs.o
+>  power_supply-$(CONFIG_LEDS_TRIGGERS)	+= power_supply_leds.o
 >  
-> -#ifdef MODULE
->  /*static struct pci_device_id blogic_pci_tbl[] = {
->  	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER,
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-> @@ -3909,7 +3908,6 @@ static void __exit blogic_exit(void)
->  	{PCI_DEVICE(PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_FLASHPOINT)},
->  	{0, },
->  };
-> -#endif
->  MODULE_DEVICE_TABLE(pci, blogic_pci_tbl);
+>  obj-$(CONFIG_POWER_SUPPLY)	+= power_supply.o
+> +obj-$(CONFIG_POWER_SUPPLY_HWMON) += power_supply_hwmon.o
+>  obj-$(CONFIG_GENERIC_ADC_BATTERY)	+= generic-adc-battery.o
 >  
->  module_init(blogic_init);> diff --git a/drivers/scsi/dpt_i2o.c b/drivers/scsi/dpt_i2o.c
-> index abc74fd..9b28f9f 100644
-> --- a/drivers/scsi/dpt_i2o.c
-> +++ b/drivers/scsi/dpt_i2o.c
-> @@ -177,14 +177,11 @@ static u8 adpt_read_blink_led(adpt_hba* host)
->   *============================================================================
->   */
+>  obj-$(CONFIG_PDA_POWER)		+= pda_power.o
+> diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
+> new file mode 100644
+> index 000000000000..3451b997367d
+> --- /dev/null
+> +++ b/drivers/power/supply/power_supply_hwmon.c
+> @@ -0,0 +1,349 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + *  power_supply_hwmon.c - power supply hwmon support.
+> + */
+> +
+> +#include <linux/err.h>
+> +#include <linux/hwmon.h>
+> +#include <linux/power_supply.h>
+> +#include <linux/slab.h>
+> +
+> +struct power_supply_hwmon {
+> +	struct power_supply *psy;
+> +	unsigned long *props;
+> +};
+> +
+> +static int power_supply_hwmon_in_to_property(u32 attr)
+> +{
+> +	switch (attr) {
+> +	case hwmon_in_average:
+> +		return POWER_SUPPLY_PROP_VOLTAGE_AVG;
+> +	case hwmon_in_min:
+> +		return POWER_SUPPLY_PROP_VOLTAGE_MIN;
+> +	case hwmon_in_max:
+> +		return POWER_SUPPLY_PROP_VOLTAGE_MAX;
+> +	case hwmon_in_input:
+> +		return POWER_SUPPLY_PROP_VOLTAGE_NOW;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int power_supply_hwmon_curr_to_property(u32 attr)
+> +{
+> +	switch (attr) {
+> +	case hwmon_curr_average:
+> +		return POWER_SUPPLY_PROP_CURRENT_AVG;
+> +	case hwmon_curr_max:
+> +		return POWER_SUPPLY_PROP_CURRENT_MAX;
+> +	case hwmon_curr_input:
+> +		return POWER_SUPPLY_PROP_CURRENT_NOW;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int power_supply_hwmon_temp_to_property(u32 attr, int channel)
+> +{
+> +	if (channel) {
+> +		switch (attr) {
+> +		case hwmon_temp_input:
+> +			return POWER_SUPPLY_PROP_TEMP_AMBIENT;
+> +		case hwmon_temp_min_alarm:
+> +			return POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN;
+> +		case hwmon_temp_max_alarm:
+> +			return POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX;
+> +		default:
+> +			break;
+> +		}
+> +	} else {
+> +		switch (attr) {
+> +		case hwmon_temp_input:
+> +			return POWER_SUPPLY_PROP_TEMP;
+> +		case hwmon_temp_max:
+> +			return POWER_SUPPLY_PROP_TEMP_MAX;
+> +		case hwmon_temp_min:
+> +			return POWER_SUPPLY_PROP_TEMP_MIN;
+> +		case hwmon_temp_min_alarm:
+> +			return POWER_SUPPLY_PROP_TEMP_ALERT_MIN;
+> +		case hwmon_temp_max_alarm:
+> +			return POWER_SUPPLY_PROP_TEMP_ALERT_MAX;
+> +		default:
+> +			break;
+> +		}
+> +	}
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +static int
+> +power_supply_hwmon_to_property(enum hwmon_sensor_types type,
+> +			       u32 attr, int channel)
+> +{
+> +	switch (type) {
+> +	case hwmon_in:
+> +		return power_supply_hwmon_in_to_property(attr);
+> +	case hwmon_curr:
+> +		return power_supply_hwmon_curr_to_property(attr);
+> +	case hwmon_temp:
+> +		return power_supply_hwmon_temp_to_property(attr, channel);
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static bool power_supply_hwmon_is_a_label(enum hwmon_sensor_types type,
+> +					   u32 attr)
+> +{
+> +	return type == hwmon_temp && attr == hwmon_temp_label;
+> +}
+> +
+> +static bool power_supply_hwmon_is_writable(enum hwmon_sensor_types type,
+> +					   u32 attr)
+> +{
+> +	switch (type) {
+> +	case hwmon_in:
+> +		return attr == hwmon_in_min ||
+> +		       attr == hwmon_in_max;
+> +	case hwmon_curr:
+> +		return attr == hwmon_curr_max;
+> +	case hwmon_temp:
+> +		return attr == hwmon_temp_max ||
+> +		       attr == hwmon_temp_min ||
+> +		       attr == hwmon_temp_min_alarm ||
+> +		       attr == hwmon_temp_max_alarm;
+> +	default:
+> +		return false;
+> +	}
+> +}
+> +
+> +static umode_t power_supply_hwmon_is_visible(const void *data,
+> +					     enum hwmon_sensor_types type,
+> +					     u32 attr, int channel)
+> +{
+> +	const struct power_supply_hwmon *psyhw = data;
+> +	int prop;
+> +
+> +
+> +	if (power_supply_hwmon_is_a_label(type, attr))
+> +		return 0444;
+> +
+> +	prop = power_supply_hwmon_to_property(type, attr, channel);
+> +	if (prop < 0 || !test_bit(prop, psyhw->props))
+> +		return 0;
+> +
+> +	if (power_supply_property_is_writeable(psyhw->psy, prop) > 0 &&
+> +	    power_supply_hwmon_is_writable(type, attr))
+> +		return 0644;
+> +
+> +	return 0444;
+> +}
+> +
+> +static int power_supply_hwmon_read_string(struct device *dev,
+> +					  enum hwmon_sensor_types type,
+> +					  u32 attr, int channel,
+> +					  const char **str)
+> +{
+> +	*str = channel ? "temp" : "temp ambient";
+> +	return 0;
+> +}
+> +
+> +static int
+> +power_supply_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
+> +			u32 attr, int channel, long *val)
+> +{
+> +	struct power_supply_hwmon *psyhw = dev_get_drvdata(dev);
+> +	struct power_supply *psy = psyhw->psy;
+> +	union power_supply_propval pspval;
+> +	int ret, prop;
+> +
+> +	prop = power_supply_hwmon_to_property(type, attr, channel);
+> +	if (prop < 0)
+> +		return prop;
+> +
+> +	ret  = power_supply_get_property(psy, prop, &pspval);
+> +	if (ret)
+> +		return ret;
+> +
+> +	switch (type) {
+> +	/*
+> +	 * Both voltage and current is reported in units of
+> +	 * microvolts/microamps, so we need to adjust it to
+> +	 * milliamps(volts)
+> +	 */
+> +	case hwmon_curr:
+> +	case hwmon_in:
+> +		pspval.intval = DIV_ROUND_CLOSEST(pspval.intval, 1000);
+> +		break;
+> +	/*
+> +	 * Temp needs to be converted from 1/10 C to milli-C
+> +	 */
+> +	case hwmon_temp:
+> +		if (check_mul_overflow(pspval.intval, 100,
+> +				       &pspval.intval))
+> +			return -EOVERFLOW;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	*val = pspval.intval;
+> +
+> +	return 0;
+> +}
+> +
+> +static int
+> +power_supply_hwmon_write(struct device *dev, enum hwmon_sensor_types type,
+> +			 u32 attr, int channel, long val)
+> +{
+> +	struct power_supply_hwmon *psyhw = dev_get_drvdata(dev);
+> +	struct power_supply *psy = psyhw->psy;
+> +	union power_supply_propval pspval;
+> +	int prop;
+> +
+> +	prop = power_supply_hwmon_to_property(type, attr, channel);
+> +	if (prop < 0)
+> +		return prop;
+> +
+> +	pspval.intval = val;
+> +
+> +	switch (type) {
+> +	/*
+> +	 * Both voltage and current is reported in units of
+> +	 * microvolts/microamps, so we need to adjust it to
+> +	 * milliamps(volts)
+> +	 */
+> +	case hwmon_curr:
+> +	case hwmon_in:
+> +		if (check_mul_overflow(pspval.intval, 1000,
+> +				       &pspval.intval))
+> +			return -EOVERFLOW;
+> +		break;
+> +	/*
+> +	 * Temp needs to be converted from 1/10 C to milli-C
+> +	 */
+> +	case hwmon_temp:
+> +		pspval.intval = DIV_ROUND_CLOSEST(pspval.intval, 100);
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return power_supply_set_property(psy, prop, &pspval);
+> +}
+> +
+> +static const struct hwmon_ops power_supply_hwmon_ops = {
+> +	.is_visible	= power_supply_hwmon_is_visible,
+> +	.read		= power_supply_hwmon_read,
+> +	.write		= power_supply_hwmon_write,
+> +	.read_string	= power_supply_hwmon_read_string,
+> +};
+> +
+> +static const struct hwmon_channel_info *power_supply_hwmon_info[] = {
+> +	HWMON_CHANNEL_INFO(temp,
+> +			   HWMON_T_LABEL     |
+> +			   HWMON_T_INPUT     |
+> +			   HWMON_T_MAX       |
+> +			   HWMON_T_MIN       |
+> +			   HWMON_T_MIN_ALARM |
+> +			   HWMON_T_MIN_ALARM,
+> +
+> +			   HWMON_T_LABEL     |
+> +			   HWMON_T_INPUT     |
+> +			   HWMON_T_MIN_ALARM |
+> +			   HWMON_T_LABEL     |
+> +			   HWMON_T_MAX_ALARM),
+> +
+> +	HWMON_CHANNEL_INFO(curr,
+> +			   HWMON_C_AVERAGE |
+> +			   HWMON_C_MAX     |
+> +			   HWMON_C_INPUT),
+> +
+> +	HWMON_CHANNEL_INFO(in,
+> +			   HWMON_I_AVERAGE |
+> +			   HWMON_I_MIN     |
+> +			   HWMON_I_MAX     |
+> +			   HWMON_I_INPUT),
+> +	NULL
+> +};
+> +
+> +static const struct hwmon_chip_info power_supply_hwmon_chip_info = {
+> +	.ops = &power_supply_hwmon_ops,
+> +	.info = power_supply_hwmon_info,
+> +};
+> +
+> +static void power_supply_hwmon_bitmap_free(void *data)
+> +{
+> +	bitmap_free(data);
+> +}
+> +
+> +int devm_power_supply_add_hwmon_sysfs(struct power_supply *psy)
+> +{
+> +	const struct power_supply_desc *desc = psy->desc;
+> +	struct power_supply_hwmon *psyhw;
+> +	struct device *dev = &psy->dev;
+> +	struct device *hwmon;
+> +	int ret, i;
+> +
+> +	if (!devres_open_group(dev, NULL, GFP_KERNEL))
+> +		return -ENOMEM;
+> +
+> +	psyhw = devm_kzalloc(dev, sizeof(*psyhw), GFP_KERNEL);
+> +	if (!psyhw) {
+> +		ret = -ENOMEM;
+> +		goto error;
+> +	}
+> +
+> +	psyhw->psy = psy;
+> +	psyhw->props = bitmap_zalloc(POWER_SUPPLY_PROP_TIME_TO_FULL_AVG + 1,
+> +				     GFP_KERNEL);
+> +	if (!psyhw->props) {
+> +		ret = -ENOMEM;
+> +		goto error;
+> +	}
+> +
+> +	ret = devm_add_action(dev, power_supply_hwmon_bitmap_free,
+> +			      psyhw->props);
+> +	if (ret)
+> +		goto error;
+> +
+> +	for (i = 0; i < desc->num_properties; i++) {
+> +		const enum power_supply_property prop = desc->properties[i];
+> +
+> +		switch (prop) {
+> +		case POWER_SUPPLY_PROP_CURRENT_AVG:
+> +		case POWER_SUPPLY_PROP_CURRENT_MAX:
+> +		case POWER_SUPPLY_PROP_CURRENT_NOW:
+> +		case POWER_SUPPLY_PROP_TEMP:
+> +		case POWER_SUPPLY_PROP_TEMP_MAX:
+> +		case POWER_SUPPLY_PROP_TEMP_MIN:
+> +		case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
+> +		case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+> +		case POWER_SUPPLY_PROP_TEMP_AMBIENT:
+> +		case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN:
+> +		case POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX:
+> +		case POWER_SUPPLY_PROP_VOLTAGE_AVG:
+> +		case POWER_SUPPLY_PROP_VOLTAGE_MIN:
+> +		case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+> +		case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> +			set_bit(prop, psyhw->props);
+> +			break;
+> +		default:
+> +			break;
+> +		}
+> +	}
+> +
+> +	hwmon = devm_hwmon_device_register_with_info(dev, psy->desc->name,
+> +						psyhw,
+> +						&power_supply_hwmon_chip_info,
+> +						NULL);
+> +	ret = PTR_ERR_OR_ZERO(hwmon);
+> +	if (ret)
+> +		goto error;
+> +
+> +	devres_remove_group(dev, NULL);
+> +	return 0;
+> +error:
+> +	devres_release_group(dev, NULL);
+> +	return ret;
+> +}
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index d9c0c094f8a0..e94cdfa797e3 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -481,4 +481,13 @@ static inline bool power_supply_is_watt_property(enum power_supply_property psp)
+>  	return 0;
+>  }
 >  
-> -#ifdef MODULE
->  static struct pci_device_id dptids[] = {
->  	{ PCI_DPT_VENDOR_ID, PCI_DPT_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID,},
->  	{ PCI_DPT_VENDOR_ID, PCI_DPT_RAPTOR_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID,},
->  	{ 0, }
->  };
-> -#endif
-> -
->  MODULE_DEVICE_TABLE(pci,dptids);
->  
->  static int adpt_detect(struct scsi_host_template* sht)
+> +#ifdef CONFIG_POWER_SUPPLY_HWMON
+> +int devm_power_supply_add_hwmon_sysfs(struct power_supply *psy);
+> +#else
+> +int devm_power_supply_add_hwmon_sysfs(struct power_supply *psy)
+
+That needs to be static inline int to avoid duplicate symbols.
+
+Otherwise
+
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+
+> +{
+> +	return 0;
+> +}
+> +#endif
+> +
+>  #endif /* __LINUX_POWER_SUPPLY_H__ */
+> -- 
+> 2.21.0
 > 
-
-As James pointed out, this will result in warning from compiler about
-unused variable. Please address that first.
-
---
-Khalid
