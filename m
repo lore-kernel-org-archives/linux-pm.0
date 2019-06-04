@@ -2,232 +2,127 @@ Return-Path: <SRS0=519e=UD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,T_DKIMWL_WL_HIGH,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C01AC282CE
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jun 2019 14:18:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 709F2C282CE
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jun 2019 14:35:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D07BA2473C
-	for <linux-pm@archiver.kernel.org>; Tue,  4 Jun 2019 14:18:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1559657933;
-	bh=8eMBRwayjWqUUqiQlJ7vkQ9Y6Iu0YEQ61LWuwgzmncQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=bzS/JqERrdNX215+oFKlQI97XnW0FYQzzTeHh+WW82VYEhNw1VD/K54D+I2vZtkz2
-	 HDk8GjliGd2jN1nni52sNodtEoucTMakss10OeyJbKvVrVr7u4DvvkW/JnOLUIcQNV
-	 jhBmuoqzdtBMP+l0UV4TASKByxOMf2E5ALx2650M=
+	by mail.kernel.org (Postfix) with ESMTP id 41C2524A38
+	for <linux-pm@archiver.kernel.org>; Tue,  4 Jun 2019 14:35:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A3TkCEZ1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727783AbfFDOSE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 4 Jun 2019 10:18:04 -0400
-Received: from bombadil.infradead.org ([198.137.202.133]:52618 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727732AbfFDOSD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2019 10:18:03 -0400
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
-        Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=dqaD3wghyI6IWFrArZRMjNM4vtEr+hqHLagvjFWdfkg=; b=Zs3KQXTOPjmcHFgUgxG5qH+gKO
-        o8BJz6y3IPantgcA/Voyx6kH/hrE9ccQ3FZi6STf8TVmNX3mkcfsoh0ZxT3ZI3w1tG56iFWPGuiay
-        fHK+QOmvCUpgAVnSPhpqFd56jlL0V6NoAZHlFCbPi8/Ejej/f3oBNuy1f6sslmGARdoNvQfDBV2Da
-        h+mmNSzuadqqucttR9O4Ayry8wEzO+MptxTN7giKFVJvtiAXHfibZ5j1TmziUWXZ5eJ0O3mTu3oE0
-        BcBjLpRasxpfI2PClkJKdwUgtAW+p0SZt3CqGsdTKTJzh139ngqBGbIlL6s77zCzADuP5DTAD5j8B
-        OoIbhHLQ==;
-Received: from [179.182.172.34] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
-        id 1hYAGH-0001Rw-UE; Tue, 04 Jun 2019 14:18:01 +0000
-Received: from mchehab by bombadil.infradead.org with local (Exim 4.92)
-        (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1hYAGE-0002kz-LE; Tue, 04 Jun 2019 11:17:58 -0300
-From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Mauro Carvalho Chehab <mchehab@infradead.org>,
-        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        Frederic Barrat <fbarrat@linux.ibm.com>,
-        Andrew Donnellan <ajd@linux.ibm.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-        Maxime Ripard <maxime.ripard@bootlin.com>,
-        Sean Paul <sean@poorly.run>, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Matan Ziv-Av <matan@svgalib.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        linuxppc-dev@lists.ozlabs.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org
-Subject: [PATCH v2 06/22] docs: mark orphan documents as such
-Date:   Tue,  4 Jun 2019 11:17:40 -0300
-Message-Id: <4afa83787acec906c383978dc01f286940e28616.1559656538.git.mchehab+samsung@kernel.org>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <cover.1559656538.git.mchehab+samsung@kernel.org>
-References: <cover.1559656538.git.mchehab+samsung@kernel.org>
+        id S1727550AbfFDOff (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 4 Jun 2019 10:35:35 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:42305 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727470AbfFDOff (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2019 10:35:35 -0400
+Received: by mail-lj1-f194.google.com with SMTP id t28so8801002lje.9;
+        Tue, 04 Jun 2019 07:35:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=tqJBuqEPpW0/G/35TiXjjTPFxqh2poe5DD3UV/6cHjQ=;
+        b=A3TkCEZ1/wrrjxbM6ojxs2I7Y6JlyxMVz24B3dz7fTrWqFDyNE5coXTSPmLbda7n0V
+         hnA5dJeVw9fGH9kVPopJ+/imzouwPANdzmPrdXU4XbyiD9kMFEfuNviZhh01Ag6euVS5
+         d7oy0ZwVgilDk8KxpDiIFrEqFIkdeLaUHmiWK8tQ7/TrOBjKMkoJWscGKQYVstlLPD9e
+         TWpwop0muFEDS0yKqmxFdwv+KLAwoQEuKGDr/kvn8v+a1ck4K4B0iuc+6hdrItFZR5AA
+         HAsrXpJSqQY2SXCcWUVVbpUSlGLEIc1zsZulM6OkI9cpmoryD5vkFwYvwKWu5Ll6r1jB
+         o33Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=tqJBuqEPpW0/G/35TiXjjTPFxqh2poe5DD3UV/6cHjQ=;
+        b=omy1l0v6pxLjDAAwhOed2XGf2x8fBhtq0ldjTK+BkhK3agaBspAQ2U2s/leM5FLM9u
+         dYznRK2nTVlx1LA4KlDLSqs8wAI9/u2epuptG6OQPrfaEb4WtQqQOPjzO7rg65udAouR
+         vXx57E+g1LtJFg9LWHBwpDLTHv81E++XVfu4fv6jczPslpL34HzpN4nmAMrsmQNLkuYP
+         1WNeMu9rDLfhj7pKIfGh+H4kzZEmtwwYcjYWUo7Yh/JDHMB11GFNNXTCauxxHJP3z7iE
+         HNoutS0jCQb8Qy84JUCqV7Kk357V4NMvPRU+ZfPf8MkDPzsLZPyUeDYtDBp4pVvNTn9f
+         z2mg==
+X-Gm-Message-State: APjAAAW+t29QPFy9s+YaPY6MLai9LYGXetsJ1nhmsFNpXz5+ZJTVxRDh
+        oli8o35e8MWWk/vl1FoLar0s06Pe
+X-Google-Smtp-Source: APXvYqxNnkAa+XVdvuRuE4JkklgBcKCEczDGSWjqykwVTZIbQnnwH8TF9WyZitk3FfAOh4H1CUDHjw==
+X-Received: by 2002:a2e:9a19:: with SMTP id o25mr4677921lji.63.1559658933190;
+        Tue, 04 Jun 2019 07:35:33 -0700 (PDT)
+Received: from [192.168.2.145] ([94.29.35.141])
+        by smtp.googlemail.com with ESMTPSA id c4sm3190976ljj.22.2019.06.04.07.35.31
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 04 Jun 2019 07:35:32 -0700 (PDT)
+Subject: Re: [PATCH v4 15/16] PM / devfreq: tegra: Rename tegra-devfreq.c to
+ tegra30-devfreq.c
+To:     Thierry Reding <thierry.reding@gmail.com>
+Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20190501233815.32643-1-digetx@gmail.com>
+ <20190501233815.32643-16-digetx@gmail.com> <20190604112323.GO16519@ulmo>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <f96a88fd-5d99-12e8-abbd-82c32d60fab8@gmail.com>
+Date:   Tue, 4 Jun 2019 17:35:31 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
+In-Reply-To: <20190604112323.GO16519@ulmo>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Sphinx doesn't like orphan documents:
+04.06.2019 14:23, Thierry Reding пишет:
+> On Thu, May 02, 2019 at 02:38:14AM +0300, Dmitry Osipenko wrote:
+>> In order to reflect that driver serves NVIDIA Tegra30 and later SoC
+>> generations, let's rename the driver's source file to "tegra30-devfreq.c".
+>> This will make driver files to look more consistent after addition of a
+>> driver for Tegra20.
+>>
+>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  drivers/devfreq/Makefile                               | 2 +-
+>>  drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} | 0
+>>  2 files changed, 1 insertion(+), 1 deletion(-)
+>>  rename drivers/devfreq/{tegra-devfreq.c => tegra30-devfreq.c} (100%)
+>>
+>> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+>> index 32b8d4d3f12c..47e5aeeebfd1 100644
+>> --- a/drivers/devfreq/Makefile
+>> +++ b/drivers/devfreq/Makefile
+>> @@ -10,7 +10,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+>>  # DEVFREQ Drivers
+>>  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+>>  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+>> -obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
+>> +obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra30-devfreq.o
+> 
+> Technically this changes the name of the driver. Sometimes boot or other
+> scripts rely on those names. Perhaps a better way of keeping backwards-
+> compatibility would be to do:
+> 
+> 	obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
+> 	tegra-devfreq-y				+= tegra30-devfreq.o
+> 
+> That way you can later on just add the tegra20-devfreq.o to that driver
+> as well and have them both ship in one .ko.
 
-    Documentation/accelerators/ocxl.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32f429-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32f746-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32f769-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32h743-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/arm/stm32/stm32mp157-overview.rst: WARNING: document isn't included in any toctree
-    Documentation/gpu/msm-crash-dump.rst: WARNING: document isn't included in any toctree
-    Documentation/interconnect/interconnect.rst: WARNING: document isn't included in any toctree
-    Documentation/laptops/lg-laptop.rst: WARNING: document isn't included in any toctree
-    Documentation/powerpc/isa-versions.rst: WARNING: document isn't included in any toctree
-    Documentation/virtual/kvm/amd-memory-encryption.rst: WARNING: document isn't included in any toctree
-    Documentation/virtual/kvm/vcpu-requests.rst: WARNING: document isn't included in any toctree
+Combining two drivers into a single kernel object certainly doesn't work
+("multiple definition of `init_module'" error, etc).
 
-So, while they aren't on any toctree, add :orphan: to them, in order
-to silent this warning.
-
-Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
----
- Documentation/accelerators/ocxl.rst             | 2 ++
- Documentation/arm/stm32/overview.rst            | 2 ++
- Documentation/arm/stm32/stm32f429-overview.rst  | 2 ++
- Documentation/arm/stm32/stm32f746-overview.rst  | 2 ++
- Documentation/arm/stm32/stm32f769-overview.rst  | 2 ++
- Documentation/arm/stm32/stm32h743-overview.rst  | 2 ++
- Documentation/arm/stm32/stm32mp157-overview.rst | 2 ++
- Documentation/gpu/msm-crash-dump.rst            | 2 ++
- Documentation/interconnect/interconnect.rst     | 2 ++
- Documentation/laptops/lg-laptop.rst             | 2 ++
- Documentation/powerpc/isa-versions.rst          | 2 ++
- 11 files changed, 22 insertions(+)
-
-diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accelerators/ocxl.rst
-index 14cefc020e2d..b1cea19a90f5 100644
---- a/Documentation/accelerators/ocxl.rst
-+++ b/Documentation/accelerators/ocxl.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- ========================================================
- OpenCAPI (Open Coherent Accelerator Processor Interface)
- ========================================================
-diff --git a/Documentation/arm/stm32/overview.rst b/Documentation/arm/stm32/overview.rst
-index 85cfc8410798..f7e734153860 100644
---- a/Documentation/arm/stm32/overview.rst
-+++ b/Documentation/arm/stm32/overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- ========================
- STM32 ARM Linux Overview
- ========================
-diff --git a/Documentation/arm/stm32/stm32f429-overview.rst b/Documentation/arm/stm32/stm32f429-overview.rst
-index 18feda97f483..65bbb1c3b423 100644
---- a/Documentation/arm/stm32/stm32f429-overview.rst
-+++ b/Documentation/arm/stm32/stm32f429-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32F429 Overview
- ==================
- 
-diff --git a/Documentation/arm/stm32/stm32f746-overview.rst b/Documentation/arm/stm32/stm32f746-overview.rst
-index b5f4b6ce7656..42d593085015 100644
---- a/Documentation/arm/stm32/stm32f746-overview.rst
-+++ b/Documentation/arm/stm32/stm32f746-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32F746 Overview
- ==================
- 
-diff --git a/Documentation/arm/stm32/stm32f769-overview.rst b/Documentation/arm/stm32/stm32f769-overview.rst
-index 228656ced2fe..f6adac862b17 100644
---- a/Documentation/arm/stm32/stm32f769-overview.rst
-+++ b/Documentation/arm/stm32/stm32f769-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32F769 Overview
- ==================
- 
-diff --git a/Documentation/arm/stm32/stm32h743-overview.rst b/Documentation/arm/stm32/stm32h743-overview.rst
-index 3458dc00095d..c525835e7473 100644
---- a/Documentation/arm/stm32/stm32h743-overview.rst
-+++ b/Documentation/arm/stm32/stm32h743-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32H743 Overview
- ==================
- 
-diff --git a/Documentation/arm/stm32/stm32mp157-overview.rst b/Documentation/arm/stm32/stm32mp157-overview.rst
-index 62e176d47ca7..2c52cd020601 100644
---- a/Documentation/arm/stm32/stm32mp157-overview.rst
-+++ b/Documentation/arm/stm32/stm32mp157-overview.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- STM32MP157 Overview
- ===================
- 
-diff --git a/Documentation/gpu/msm-crash-dump.rst b/Documentation/gpu/msm-crash-dump.rst
-index 757cd257e0d8..240ef200f76c 100644
---- a/Documentation/gpu/msm-crash-dump.rst
-+++ b/Documentation/gpu/msm-crash-dump.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- =====================
- MSM Crash Dump Format
- =====================
-diff --git a/Documentation/interconnect/interconnect.rst b/Documentation/interconnect/interconnect.rst
-index c3e004893796..56e331dab70e 100644
---- a/Documentation/interconnect/interconnect.rst
-+++ b/Documentation/interconnect/interconnect.rst
-@@ -1,5 +1,7 @@
- .. SPDX-License-Identifier: GPL-2.0
- 
-+:orphan:
-+
- =====================================
- GENERIC SYSTEM INTERCONNECT SUBSYSTEM
- =====================================
-diff --git a/Documentation/laptops/lg-laptop.rst b/Documentation/laptops/lg-laptop.rst
-index aa503ee9b3bc..f2c2ffe31101 100644
---- a/Documentation/laptops/lg-laptop.rst
-+++ b/Documentation/laptops/lg-laptop.rst
-@@ -1,5 +1,7 @@
- .. SPDX-License-Identifier: GPL-2.0+
- 
-+:orphan:
-+
- LG Gram laptop extra features
- =============================
- 
-diff --git a/Documentation/powerpc/isa-versions.rst b/Documentation/powerpc/isa-versions.rst
-index 812e20cc898c..66c24140ebf1 100644
---- a/Documentation/powerpc/isa-versions.rst
-+++ b/Documentation/powerpc/isa-versions.rst
-@@ -1,3 +1,5 @@
-+:orphan:
-+
- CPU to ISA Version Mapping
- ==========================
- 
--- 
-2.21.0
-
+Indeed, this changes the name of the driver. It should be fine as long
+as it doesn't hurt anybody, so what about to keep this change as-is for
+now and wait for complains? I promise to make a revert if this will
+cause real problems for anyone. Let's be realistic, there should be a
+very little chance that somebody will notice this change. ACK?
