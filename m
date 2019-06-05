@@ -2,31 +2,31 @@ Return-Path: <SRS0=jn4m=UE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E56BDC28CC5
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 10:37:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CA18C28D19
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 10:37:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C0D2C20866
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 10:37:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 80F8520717
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 10:37:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727083AbfFEKhQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Jun 2019 06:37:16 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:60636 "EHLO inva021.nxp.com"
+        id S1727192AbfFEKhS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Jun 2019 06:37:18 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:60812 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727171AbfFEKhQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 5 Jun 2019 06:37:16 -0400
+        id S1727176AbfFEKhR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jun 2019 06:37:17 -0400
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id F19A3200782;
-        Wed,  5 Jun 2019 12:37:12 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4437820077E;
+        Wed,  5 Jun 2019 12:37:15 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id E4AF320077F;
-        Wed,  5 Jun 2019 12:37:12 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 37A56200787;
+        Wed,  5 Jun 2019 12:37:15 +0200 (CEST)
 Received: from jana.ea.freescale.net (gw_auto.ea.freescale.net [10.171.94.100])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 642AD205FA;
-        Wed,  5 Jun 2019 12:37:12 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id B478A205FA;
+        Wed,  5 Jun 2019 12:37:14 +0200 (CEST)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     Viresh Kumar <viresh.kumar@linaro.org>,
         Shawn Guo <shawnguo@kernel.org>
@@ -36,36 +36,107 @@ Cc:     Jacky Bai <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>,
         Fabio Estevam <fabio.estevam@nxp.com>, kernel@pengutronix.de,
         linux-imx@nxp.com, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 0/5] Add imx7d speed grading and higher OPPs
-Date:   Wed,  5 Jun 2019 13:37:04 +0300
-Message-Id: <cover.1559730963.git.leonard.crestez@nxp.com>
+Subject: [PATCH v2 4/5] ARM: dts: imx7d: Update cpufreq OPP table
+Date:   Wed,  5 Jun 2019 13:37:08 +0300
+Message-Id: <be47ecfba98b4adacd39e4a6a85897cd4ee0ec88.1559730963.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1559730963.git.leonard.crestez@nxp.com>
+References: <cover.1559730963.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1559730963.git.leonard.crestez@nxp.com>
+References: <cover.1559730963.git.leonard.crestez@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes since v1:
- * Remove the match list from imx-cpufreq-dt
- * Split arch and cpufreq changes
-Link to v1: https://patchwork.kernel.org/project/linux-arm-kernel/list/?series=124427
+According to latest docs imx7d chips can go from 800 to 1200 mhz.
+Maximum frequency is determined from two speed grading bits present in
+OCOTP fuses at same location as other imx chips.
 
-Leonard Crestez (5):
-  cpufreq: imx-cpufreq-dt: Remove global platform match list
-  cpufreq: Switch imx7d to imx-cpufreq-dt for speed grading
-  ARM: imx: Switch imx7d to imx-cpufreq-dt for speed-grading
-  ARM: dts: imx7d: Update cpufreq OPP table
-  ARM: imx_v6_v7_defconfig: Enable CONFIG_ARM_IMX_CPUFREQ_DT
+Also update to "typical" voltages from latest datasheet, 25mv higher
+than current dts.
 
- arch/arm/boot/dts/imx7d.dtsi         | 16 +++++++++++++---
- arch/arm/boot/dts/imx7s.dtsi         |  4 ++++
- arch/arm/configs/imx_v6_v7_defconfig |  1 +
- arch/arm/mach-imx/mach-imx7d.c       |  7 +++++++
- drivers/cpufreq/cpufreq-dt-platdev.c |  2 +-
- drivers/cpufreq/imx-cpufreq-dt.c     | 18 ++----------------
- 6 files changed, 28 insertions(+), 20 deletions(-)
+All imx7s parts are still fixed at 800mhz
 
+Based on:
+* IMX7DCEC Rev. 6, 03/2019
+* IMX7SCEC Rev. 6, 03/2019
+* IMX7DRM Rev. 1, 01/2018 Page 1102
+
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ arch/arm/boot/dts/imx7d.dtsi | 16 +++++++++++++---
+ arch/arm/boot/dts/imx7s.dtsi |  4 ++++
+ 2 files changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/boot/dts/imx7d.dtsi b/arch/arm/boot/dts/imx7d.dtsi
+index f33b560821b8..42528d2812a2 100644
+--- a/arch/arm/boot/dts/imx7d.dtsi
++++ b/arch/arm/boot/dts/imx7d.dtsi
+@@ -10,10 +10,12 @@
+ 	cpus {
+ 		cpu0: cpu@0 {
+ 			clock-frequency = <996000000>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 			#cooling-cells = <2>;
++			nvmem-cells = <&cpu_speed_grade>;
++			nvmem-cell-names = "speed_grade";
+ 		};
+ 
+ 		cpu1: cpu@1 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+@@ -37,19 +39,27 @@
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+ 		opp-792000000 {
+ 			opp-hz = /bits/ 64 <792000000>;
+-			opp-microvolt = <975000>;
++			opp-microvolt = <1000000>;
+ 			clock-latency-ns = <150000>;
++			opp-supported-hw = <0xf>, <0xf>;
+ 		};
+ 
+ 		opp-996000000 {
+ 			opp-hz = /bits/ 64 <996000000>;
+-			opp-microvolt = <1075000>;
++			opp-microvolt = <1100000>;
+ 			clock-latency-ns = <150000>;
+-			opp-suspend;
++			opp-supported-hw = <0xc>, <0xf>;
++		};
++
++		opp-1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			opp-microvolt = <1225000>;
++			clock-latency-ns = <150000>;
++			opp-supported-hw = <0x8>, <0xf>;
+ 		};
+ 	};
+ 
+ 	usbphynop2: usbphynop2 {
+ 		compatible = "usb-nop-xceiv";
+diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
+index d8b4eb67146d..5b8292670b4b 100644
+--- a/arch/arm/boot/dts/imx7s.dtsi
++++ b/arch/arm/boot/dts/imx7s.dtsi
+@@ -549,10 +549,14 @@
+ 				};
+ 
+ 				tempmon_temp_grade: temp-grade@10 {
+ 					reg = <0x10 0x4>;
+ 				};
++
++				cpu_speed_grade: speed-grade@10 {
++					reg = <0x10 0x4>;
++				};
+ 			};
+ 
+ 			anatop: anatop@30360000 {
+ 				compatible = "fsl,imx7d-anatop", "fsl,imx6q-anatop",
+ 					"syscon", "simple-bus";
 -- 
 2.7.4
 
