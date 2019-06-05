@@ -2,178 +2,131 @@ Return-Path: <SRS0=jn4m=UE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_GIT
+	SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04C82C28CC5
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 16:55:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 707CBC28D18
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 17:36:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C9AD520883
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 16:55:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="BSZ2M707"
+	by mail.kernel.org (Postfix) with ESMTP id 4E5C020866
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 17:36:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1559756178;
+	bh=f9NghZSrRd84WnvqePdJTbqihcTlrKdRTvbApOR66MM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=xZbwOFCKSk0J9MwUorkLkeUgkFNfS7QsWQHNBC6TbvoSLOO8S6xeVWRpFw9h7u8aK
+	 BkuP74NEW/Nskv6iOJtczLfzr92UcDqBziaR50r/upXuasUYxmTg+okJq988cKlcfi
+	 H0OBs2IgqBg0csP5J8OSfuGNR/REvt6i1SV74I1w=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728806AbfFEQyb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Jun 2019 12:54:31 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:51443 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728792AbfFEQya (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jun 2019 12:54:30 -0400
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190605165429euoutp028055bfc5eb4f47c3837592a2dd1bf98a~lW7LNXkXm2954929549euoutp02U
-        for <linux-pm@vger.kernel.org>; Wed,  5 Jun 2019 16:54:29 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190605165429euoutp028055bfc5eb4f47c3837592a2dd1bf98a~lW7LNXkXm2954929549euoutp02U
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1559753669;
-        bh=IGYofIBATDN+X5Dc/eq1dCD1wJIxNFiKOKZcqDAf4DE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=BSZ2M707uKovLeniyAKqcU6PQnnxP1KhxbRfTRAc3CM/NlCFAdryrKAL9bgVZCLhE
-         ygjLDnw95aVanNuqvEhddVYv8zyPtKA/srxSc01Z/DOtHidbrWkdAfJeyddmAtRS56
-         IrxzgsJd1aXINfBy9bmuAkwcPMb1Eaxykqy4otno=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190605165428eucas1p15664a654f2ef502887e664ef282fd71a~lW7KQmDAu0348203482eucas1p1S;
-        Wed,  5 Jun 2019 16:54:28 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id 97.A9.04298.4C3F7FC5; Wed,  5
-        Jun 2019 17:54:28 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20190605165427eucas1p27610c38c96313dd80ab445472735a242~lW7JXJD130083500835eucas1p2Y;
-        Wed,  5 Jun 2019 16:54:27 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190605165427eusmtrp20e1a2f4fe7fdf71c5c732c8c14d04a60~lW7JHYMya2868028680eusmtrp2G;
-        Wed,  5 Jun 2019 16:54:27 +0000 (GMT)
-X-AuditID: cbfec7f2-f13ff700000010ca-02-5cf7f3c4dfdc
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 21.B2.04146.3C3F7FC5; Wed,  5
-        Jun 2019 17:54:27 +0100 (BST)
-Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
-        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20190605165425eusmtip1e7748028fe9bb0175fff5383e2ef85c4~lW7H_Hgvp0289902899eusmtip1P;
-        Wed,  5 Jun 2019 16:54:25 +0000 (GMT)
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
-        cw00.choi@samsung.com, kyungmin.park@samsung.com,
-        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
-        myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com,
-        jroedel@suse.de, treding@nvidia.com, digetx@gmail.com,
-        willy.mh.wolff.ml@gmail.com,
-        Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v8 01/13] clk: samsung: add needed IDs for DMC clocks in
- Exynos5420
-Date:   Wed,  5 Jun 2019 18:53:58 +0200
-Message-Id: <20190605165410.14606-2-l.luba@partner.samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190605165410.14606-1-l.luba@partner.samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA0WSa0gUURiGOzOzM6O0Na2hHyUJS0EFmZXYASNNgoagyx//1EZONajkrrXj
-        /RKbQpaXVjSstJtIum5XXYkKS1Nzw602MytaNyxD0czK9dpFa5qV/j3nfd/vew+Hw5Kax6ol
-        bLwhSTQahAQt7UvdaZ92rmnzTOpCqlwsrjt3S4XfjA2o8OW25yp87XsfwqUdFwn8tECPzX2f
-        Sex03mbws5xhBr8zBeKu+xdo7ClqQ/ic8yGBb7S5Gew6bqFx63CeCje92o5dPxfgiScfUaQf
-        PzFeQvEVpk6Kv1fuZvh66ymaL8odoflHI40Ef7rBinibI5P31C/b7bPHd9MhMSE+RTSu3Rzj
-        G9fyq4s+UrAw7aq5iTAh9/x85MMCFwqPis8w+ciX1XAWBMebbxLKYQxBaX+t1/Eg6De/QnMj
-        RZ4Or1GD4Pu3of8jnZeKVfmIZWkuGO5aj8oDi7lM6HnTRMoZkhsm4NmPKUo2/LhoKJnKpWWm
-        uBVgqitnZFZzEZCT5/C2BcG1282kzD5cJJTZbZS8CLj3DHSPzJJKaCuYR34zCvvBkL3By4Ew
-        e+8yobAEpqJK79Is6DNf9GbCodXe+e/SJLcKbt1fq8hbwFI9SMkycAvg7ZdFskz+xZI7Z0lF
-        VsPJExolvRIaCl94i/yh5noZo0R4KPiQpLxOKYKG2iayGAWV/++6gpAVBYjJkj5WlNYZxNRg
-        SdBLyYbY4IOJ+nr093M5Zuyjd9H4ywMtiGORdr4a6iZ1GpWQIqXrWxCwpHaxWnCN6TTqQ0J6
-        hmhM3G9MThClFrSUpbQB6sx5vXs1XKyQJB4WxSOicc4lWJ8lJhTXvj7lWMe2iKxRlGobSHxq
-        iUoLI7t7K/y7o622r/WzjpmjuKxw19Yr4faqmzkhr3cu/1Ghyy6bHBLC1yB9RvB0clAMsTf7
-        U4/OQNfEPOiuiNpROVRdOKpfmcsnCGTMwCBxPsPltoVs3OOs3NC4InQ0qmqf+5KlUY+qpTBH
-        tJaS4oR1q0mjJPwB1rJHhVgDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrBIsWRmVeSWpSXmKPExsVy+t/xu7qHP3+PMZjXz22xccZ6VovrX56z
-        Wsw/co7VYvXHx4wWk0/NZbI4051r0f/4NbPF+fMb2C3ONr1ht7jVIGNxedccNovPvUcYLWac
-        38dksfbIXXaL240r2CwOv2lntdh/xcvi9m8+i28nHjE6CHt8+zqJxWN2w0UWj52z7rJ7bFrV
-        yebR2/yOzePguz1MHn1bVjF6bD5d7fF5k1wAZ5SeTVF+aUmqQkZ+cYmtUrShhZGeoaWFnpGJ
-        pZ6hsXmslZGpkr6dTUpqTmZZapG+XYJexqE/l9kKuvkrlvbvZ2pgvMvTxcjJISFgItH7+RR7
-        FyMXh5DAUkaJJ82rWCASYhKT9m1nh7CFJf5c62KDKPrEKDHz3xUgh4ODTUBPYseqQpAaEYF6
-        if43l8BqmAUamCXWbL/KCpIQFgiWmPDsLhOIzSKgKtGwcRbYUF4Be4mm9tOMEAvkJVZvOMAM
-        YnMKOEhMO74Z7AghoJpL138zT2DkW8DIsIpRJLW0ODc9t9hQrzgxt7g0L10vOT93EyMwlrYd
-        +7l5B+OljcGHGAU4GJV4eCU2fo8RYk0sK67MPcQowcGsJMKbePtLjBBvSmJlVWpRfnxRaU5q
-        8SFGU6CjJjJLiSbnA+M8ryTe0NTQ3MLS0NzY3NjMQkmct0PgYIyQQHpiSWp2ampBahFMHxMH
-        p1QDo5DW6z7pW76ir5YJtkn/PZXFEt3oLdj6ad6MtzUezluCBWdv63mwY7bExMndhQ02OSI8
-        M6srGR/0hq/cltvfeUjHvCcg8CXbstBvf1YpLi59f0H4ROXTe36Gq7dbxEyRyspMeNX73ylw
-        d/BzE51/5svZTuxz8Mtg/xgoqS47f9LDAxfl1coWKrEUZyQaajEXFScCAGkjAT27AgAA
-X-CMS-MailID: 20190605165427eucas1p27610c38c96313dd80ab445472735a242
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190605165427eucas1p27610c38c96313dd80ab445472735a242
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190605165427eucas1p27610c38c96313dd80ab445472735a242
-References: <20190605165410.14606-1-l.luba@partner.samsung.com>
-        <CGME20190605165427eucas1p27610c38c96313dd80ab445472735a242@eucas1p2.samsung.com>
+        id S1726305AbfFERgR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Jun 2019 13:36:17 -0400
+Received: from mail.kernel.org ([198.145.29.99]:56282 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726240AbfFERgR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jun 2019 13:36:17 -0400
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id B43C420717;
+        Wed,  5 Jun 2019 17:36:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1559756176;
+        bh=f9NghZSrRd84WnvqePdJTbqihcTlrKdRTvbApOR66MM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Pl7N7Ngq0jBLiU77CCBuTQuGdITFzCAYXtsahILz8VNRCUU/PoY6R2aw8gvCtOTlN
+         Ij3OOkU4KO4BFERevp0S/pFBlW4liaT5yNjjd2A4DFB3hpH9pmLaS4Rk6Xfb374BJ6
+         d4SrzGH9IkREaGu0+RSBi5V0uLW5Y6J1qkztsBLs=
+Date:   Wed, 5 Jun 2019 19:36:13 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Thierry Reding <thierry.reding@gmail.com>
+Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Joerg Roedel <joro@8bytes.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org,
+        iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver: core: Allow subsystems to continue deferring
+ probe
+Message-ID: <20190605173613.GD27700@kroah.com>
+References: <20190605142312.6072-1-thierry.reding@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190605142312.6072-1-thierry.reding@gmail.com>
+User-Agent: Mutt/1.12.0 (2019-05-25)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Define new IDs for clocks used by Dynamic Memory Controller in
-Exynos5422 SoC.
+On Wed, Jun 05, 2019 at 04:23:12PM +0200, Thierry Reding wrote:
+> From: Thierry Reding <treding@nvidia.com>
+> 
+> Some subsystems, such as pinctrl, allow continuing to defer probe
+> indefinitely. This is useful for devices that depend on resources
+> provided by devices that are only probed after the init stage.
+> 
+> One example of this can be seen on Tegra, where the DPAUX hardware
+> contains pinmuxing controls for pins that it shares with an I2C
+> controller. The I2C controller is typically used for communication
+> with a monitor over HDMI (DDC). However, other instances of the I2C
+> controller are used to access system critical components, such as a
+> PMIC. The I2C controller driver will therefore usually be a builtin
+> driver, whereas the DPAUX driver is part of the display driver that
+> is loaded from a module to avoid bloating the kernel image with all
+> of the DRM/KMS subsystem.
+> 
+> In this particular case the pins used by this I2C/DDC controller
+> become accessible very late in the boot process. However, since the
+> controller is only used in conjunction with display, that's not an
+> issue.
+> 
+> Unfortunately the driver core currently outputs a warning message
+> when a device fails to get the pinctrl before the end of the init
+> stage. That can be confusing for the user because it may sound like
+> an unwanted error occurred, whereas it's really an expected and
+> harmless situation.
+> 
+> In order to eliminate this warning, this patch allows callers of the
+> driver_deferred_probe_check_state() helper to specify that they want
+> to continue deferring probe, regardless of whether we're past the
+> init stage or not. All of the callers of that function are updated
+> for the new signature, but only the pinctrl subsystem passes a true
+> value in the new persist parameter if appropriate.
+> 
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
+> ---
+>  drivers/base/dd.c            | 17 ++++++++++++-----
+>  drivers/base/power/domain.c  |  2 +-
+>  drivers/iommu/of_iommu.c     |  2 +-
+>  drivers/pinctrl/devicetree.c | 10 ++++++----
+>  include/linux/device.h       |  2 +-
+>  5 files changed, 21 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 0df9b4461766..25ffbadf4187 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -238,23 +238,30 @@ __setup("deferred_probe_timeout=", deferred_probe_timeout_setup);
+>  /**
+>   * driver_deferred_probe_check_state() - Check deferred probe state
+>   * @dev: device to check
+> + * @persist: Boolean flag indicating whether drivers should keep trying to
+> + *   probe after built-in drivers have had a chance to probe. This is useful
+> + *   for built-in drivers that rely on resources provided by modular drivers.
 
-Acked-by: Rob Herring <robh@kernel.org>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- include/dt-bindings/clock/exynos5420.h | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+Functionality aside, having random boolean flags in a function parameter
+list is a horrid way to have an api.  Now when you see a call to this
+function with either "true" or "false" as an option, you have no idea
+what that means.  So you need to go look up this definition and then
+work backwards.
 
-diff --git a/include/dt-bindings/clock/exynos5420.h b/include/dt-bindings/clock/exynos5420.h
-index 355f469943f1..02d5ac469a3d 100644
---- a/include/dt-bindings/clock/exynos5420.h
-+++ b/include/dt-bindings/clock/exynos5420.h
-@@ -60,6 +60,7 @@
- #define CLK_MAU_EPLL		159
- #define CLK_SCLK_HSIC_12M	160
- #define CLK_SCLK_MPHY_IXTAL24	161
-+#define CLK_SCLK_BPLL		162
- 
- /* gate clocks */
- #define CLK_UART0		257
-@@ -195,6 +196,16 @@
- #define CLK_ACLK432_CAM		518
- #define CLK_ACLK_FL1550_CAM	519
- #define CLK_ACLK550_CAM		520
-+#define CLK_CLKM_PHY0		521
-+#define CLK_CLKM_PHY1		522
-+#define CLK_ACLK_PPMU_DREX0_0	523
-+#define CLK_ACLK_PPMU_DREX0_1	524
-+#define CLK_ACLK_PPMU_DREX1_0	525
-+#define CLK_ACLK_PPMU_DREX1_1	526
-+#define CLK_PCLK_PPMU_DREX0_0	527
-+#define CLK_PCLK_PPMU_DREX0_1	528
-+#define CLK_PCLK_PPMU_DREX1_0	529
-+#define CLK_PCLK_PPMU_DREX1_1	530
- 
- /* mux clocks */
- #define CLK_MOUT_HDMI		640
-@@ -217,6 +228,8 @@
- #define CLK_MOUT_EPLL		657
- #define CLK_MOUT_MAU_EPLL	658
- #define CLK_MOUT_USER_MAU_EPLL	659
-+#define CLK_MOUT_SCLK_SPLL	660
-+#define CLK_MOUT_MX_MSPLL_CCORE_PHY	661
- 
- /* divider clocks */
- #define CLK_DOUT_PIXEL		768
-@@ -248,8 +261,11 @@
- #define CLK_DOUT_CCLK_DREX0	794
- #define CLK_DOUT_CLK2X_PHY0	795
- #define CLK_DOUT_PCLK_CORE_MEM	796
-+#define CLK_FF_DOUT_SPLL2	797
-+#define CLK_DOUT_PCLK_DREX0	798
-+#define CLK_DOUT_PCLK_DREX1	799
- 
- /* must be greater than maximal clock id */
--#define CLK_NR_CLKS		797
-+#define CLK_NR_CLKS		800
- 
- #endif /* _DT_BINDINGS_CLOCK_EXYNOS_5420_H */
--- 
-2.17.1
+So even if the idea is sane (I'm not saying that), this implementation
+is not acceptable at all.
 
+thanks,
+
+greg k-h
