@@ -2,79 +2,92 @@ Return-Path: <SRS0=jn4m=UE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E782DC282DE
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 10:32:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FF85C282DE
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 10:37:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BB0E22075C
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 10:32:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7E280208E3
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 10:37:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727083AbfFEKcs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Jun 2019 06:32:48 -0400
-Received: from mga07.intel.com ([134.134.136.100]:12403 "EHLO mga07.intel.com"
+        id S1727207AbfFEKhQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Jun 2019 06:37:16 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:56614 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726502AbfFEKcr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 5 Jun 2019 06:32:47 -0400
-X-Amp-Result: UNSCANNABLE
-X-Amp-File-Uploaded: False
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by orsmga105.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 05 Jun 2019 03:32:46 -0700
-X-ExtLoop1: 1
-Received: from smile.fi.intel.com (HELO smile) ([10.237.68.145])
-  by fmsmga005.fm.intel.com with ESMTP; 05 Jun 2019 03:32:42 -0700
-Received: from andy by smile with local (Exim 4.92)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1hYTDm-0001RK-5f; Wed, 05 Jun 2019 13:32:42 +0300
-Date:   Wed, 5 Jun 2019 13:32:42 +0300
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     "Bhardwaj, Rajneesh" <rajneesh.bhardwaj@linux.intel.com>
-Cc:     linux-kernel@vger.kernel.org, x86@kernel.org, bp@suse.de,
-        Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-        Kan Liang <kan.liang@linux.intel.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        platform-driver-x86@vger.kernel.org,
-        Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH] x86/cpu: Add Icelake-NNPI to Intel family
-Message-ID: <20190605103242.GU9224@smile.fi.intel.com>
-References: <20190530123827.8218-1-rajneesh.bhardwaj@linux.intel.com>
- <20190604160914.GN9224@smile.fi.intel.com>
- <79e33a93-6180-5a58-0d8c-b34276e710f3@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <79e33a93-6180-5a58-0d8c-b34276e710f3@linux.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-User-Agent: Mutt/1.10.1 (2018-07-13)
+        id S1727148AbfFEKhQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jun 2019 06:37:16 -0400
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B10B41A0838;
+        Wed,  5 Jun 2019 12:37:14 +0200 (CEST)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A46D51A00EA;
+        Wed,  5 Jun 2019 12:37:14 +0200 (CEST)
+Received: from jana.ea.freescale.net (gw_auto.ea.freescale.net [10.171.94.100])
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 245E8205FA;
+        Wed,  5 Jun 2019 12:37:14 +0200 (CEST)
+From:   Leonard Crestez <leonard.crestez@nxp.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Shawn Guo <shawnguo@kernel.org>
+Cc:     Jacky Bai <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Dong Aisheng <aisheng.dong@nxp.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>, kernel@pengutronix.de,
+        linux-imx@nxp.com, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v2 3/5] ARM: imx: Switch imx7d to imx-cpufreq-dt for speed-grading
+Date:   Wed,  5 Jun 2019 13:37:07 +0300
+Message-Id: <12e267d1515b5c2cb9a07af4fd2598c4db94951a.1559730963.git.leonard.crestez@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <cover.1559730963.git.leonard.crestez@nxp.com>
+References: <cover.1559730963.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1559730963.git.leonard.crestez@nxp.com>
+References: <cover.1559730963.git.leonard.crestez@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jun 05, 2019 at 12:54:12AM +0530, Bhardwaj, Rajneesh wrote:
-> Hi Andy
-> 
-> On 04-Jun-19 9:39 PM, Andy Shevchenko wrote:
-> > On Thu, May 30, 2019 at 06:08:27PM +0530, Rajneesh Bhardwaj wrote:
-> > > Add the CPUID model number of Icelake Neural Network Processor for Deep
-> > I believe we spell "Ice Lake".
-> 
-> I referred to https://patchwork.kernel.org/patch/10812551/ , https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=6e394376ee89233508fa21d006546357f8efee31
-> and many others where it mentioned Icelake. I am fine to change it the way
-> you are suggesting, please confirm if its still needed and i will send a v2.
+The imx-cpufreq-dt driver can handle speed grading bits on imx7d just
+like on imx8mq and imx8mm.
 
-I think the references have a mistake as well.
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ arch/arm/mach-imx/mach-imx7d.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
+diff --git a/arch/arm/mach-imx/mach-imx7d.c b/arch/arm/mach-imx/mach-imx7d.c
+index 26ca744d3e2b..0b77412795c9 100644
+--- a/arch/arm/mach-imx/mach-imx7d.c
++++ b/arch/arm/mach-imx/mach-imx7d.c
+@@ -95,10 +95,16 @@ static void __init imx7d_init_machine(void)
+ 
+ 	imx_anatop_init();
+ 	imx7d_enet_init();
+ }
+ 
++static void __init imx7d_init_late(void)
++{
++	if (IS_ENABLED(CONFIG_ARM_IMX_CPUFREQ_DT))
++		platform_device_register_simple("imx-cpufreq-dt", -1, NULL, 0);
++}
++
+ static void __init imx7d_init_irq(void)
+ {
+ 	imx_init_revision_from_anatop();
+ 	imx_src_init();
+ 	irqchip_init();
+@@ -111,7 +117,8 @@ static const char *const imx7d_dt_compat[] __initconst = {
+ };
+ 
+ DT_MACHINE_START(IMX7D, "Freescale i.MX7 Dual (Device Tree)")
+ 	.init_irq	= imx7d_init_irq,
+ 	.init_machine	= imx7d_init_machine,
++	.init_late      = imx7d_init_late,
+ 	.dt_compat	= imx7d_dt_compat,
+ MACHINE_END
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.7.4
 
