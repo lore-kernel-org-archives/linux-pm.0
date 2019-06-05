@@ -2,101 +2,74 @@ Return-Path: <SRS0=jn4m=UE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE07CC28CC5
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 13:13:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF31AC28CC5
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 13:58:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B42C02075C
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 13:13:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="WM1pOGDd"
+	by mail.kernel.org (Postfix) with ESMTP id AF56C20693
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Jun 2019 13:58:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727858AbfFENNE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Jun 2019 09:13:04 -0400
-Received: from mout.gmx.net ([212.227.15.19]:39985 "EHLO mout.gmx.net"
+        id S1727956AbfFEN6k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Jun 2019 09:58:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57098 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727740AbfFENND (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 5 Jun 2019 09:13:03 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1559740362;
-        bh=CsyA08ei/fkFPEU+VZzXBGyaujNAU5Gy3eeVl2SOv88=;
-        h=X-UI-Sender-Class:Subject:To:Cc:References:From:Date:In-Reply-To;
-        b=WM1pOGDdgKHjwYyxlipNYIbaCQQ5xTbCWZCxgoWIqcZYbm64B6+KNH/rzHN6GbbcY
-         /0ExKmctWc3eClmLB5jdsIo7/uAydaoxAkNx7p/pRjw8IN0mWSnX08BdEiDX21ROHI
-         4cbr+XBnZSPzu8DFU50iyy134g8nwkS2pfEOLI2E=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [192.168.1.162] ([37.4.249.160]) by mail.gmx.com (mrgmx003
- [212.227.17.190]) with ESMTPSA (Nemesis) id 0LfSyv-1gnq6q3VcX-00p0wD; Wed, 05
- Jun 2019 15:12:41 +0200
-Subject: Re: [PATCH 0/4] cpufreq support for the Raspberry Pi
-To:     Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
-        linux-rpi-kernel@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc:     f.fainelli@gmail.com, ptesarik@suse.com, sboyd@kernel.org,
-        viresh.kumar@linaro.org, mturquette@baylibre.com,
-        rjw@rjwysocki.net, linux-kernel@vger.kernel.org, eric@anholt.net,
-        bcm-kernel-feedback-list@broadcom.com, linux-clk@vger.kernel.org,
-        mbrugger@suse.de, ssuloev@orpaltech.com
-References: <20190604173223.4229-1-nsaenzjulienne@suse.de>
- <2ece3f20-ef8c-c39e-941c-76635ddbe185@gmx.net>
- <1a86637dad1d2f33450950143a82016beb91bdb6.camel@suse.de>
- <1c9708c9-a3c9-8a8f-4693-8f29d3e60634@gmx.net>
- <8d6eb920ebcaec2ede413439a7080ae030b7e44e.camel@suse.de>
-From:   Stefan Wahren <wahrenst@gmx.net>
-Message-ID: <755148da-60f5-2925-b6b3-1ac452e13d9e@gmx.net>
-Date:   Wed, 5 Jun 2019 15:12:31 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+        id S1727883AbfFEN6k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Jun 2019 09:58:40 -0400
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com [10.5.11.16])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mx1.redhat.com (Postfix) with ESMTPS id C07553107B05;
+        Wed,  5 Jun 2019 13:58:35 +0000 (UTC)
+Received: from prarit.khw1.lab.eng.bos.redhat.com (prarit-guest.khw1.lab.eng.bos.redhat.com [10.16.200.63])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 564175C22B;
+        Wed,  5 Jun 2019 13:58:35 +0000 (UTC)
+From:   Prarit Bhargava <prarit@redhat.com>
+To:     linux-pm@vger.kernel.org
+Cc:     Prarit Bhargava <prarit@redhat.com>,
+        Len Brown <len.brown@intel.com>
+Subject: [PATCH] turbostat: Fix Haswell Core systems
+Date:   Wed,  5 Jun 2019 09:58:30 -0400
+Message-Id: <20190605135830.23941-1-prarit@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <8d6eb920ebcaec2ede413439a7080ae030b7e44e.camel@suse.de>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Content-Language: en-US
-X-Provags-ID: V03:K1:T2nRa6wC5hotv0MUYJECymggpzwZZkIP8CPzeYgz+zuUDoRadhn
- e/xr55USxwJa/QCDfYDHD9QP0j5JnINKIzfgCakveqoO2DKlJ4XFLR2AjJnD+0fJUpdK7sl
- XN6RnM+AKMlQqvqZV4sSPKB2yLdldF2uN0EEw039KFt8pVb3BrJSB7WmYhjeqw1EXcdRPfX
- 7Yx2jOQ+/wTUd9pzxjR1g==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:C+5z9L5eeVA=:PWHJAJrDPJ+7s+qj4HLNvg
- ut19EjEacdchwt67zVwnnPj87yAgk259phrB8MrOsEXEN3pEv7GCtMPfftUmUvu3I6rhW0MD/
- ikmpbWLyr0UMbrtl4tnGfOGqkel0tciLSwoNPfZvEjJ5F10fiHCfgraCG0bvDpYegudUByfh1
- 1Z5p2cg1WKQQ2aji1T6uZBbS7PcauPkA6n5r1xOoGYcSxVckM7A5NQi4koi1l2EvyjjTwkTX1
- KXj9I00PaYFDuiBBvlv3+hviqUNHdA1qpqimcSODtpK3ybQm7yGhQ7o8sdE74ckCuBX2Lsahx
- dFfLBFVrgy/wfCZMozE2AuFPuUDZ13/26ShDYSTT/PY6s28L7qdFej6gMs4P0GqKKo3bhRRrD
- M1pVqxD2S61v44gWdasb4GsoF3c9z1AEpM7WVv3wVw1a85LxpuUrB3jn09AKewmGgrVIHfOxs
- ap0nG1pKEXUDd4V1YMktqWyZ0pEIFT9tCCPJBBspoMsIVwkeuTFmJbcI7UzV7ZXnr+5I9cUla
- n5VkVOygZR1oxuVv8y7Yt1WVE3KALOqLl+zLAT8ta2qaiiINBlCX0t29hJkMtRtH8e5DZ0obV
- ZZETEBpL/qkkwmDe3XvNTOWXEdT43gUkSPa6j7yFW3pbmx6uoARXGvtGQXq0uHTX0BknIx8zJ
- mFbtHsbwTP/YnRSi/14RvBj73wUqRl3inY7+fs1K959A5pvmOw2+zEokSQg8f+erT7P8b0+m5
- heShF8P/T3GLkOrWAQqQCqCv67srOHgqaa54sqr26Btjl7ohsDMWKsq3x2s2xlonVlhyQqHPb
- 8iUhigE6zx8IwafY8MQYWOBeQzYr+vUbr6caawMAMvlJBiGna1LKffzb3h+u8Vm+w62rrx6MA
- l/tVQcOMkgXJCDwb3b6v8rzHRM9wkaKkMk40cSIFeLHcwD6GZVuOw/cYQG4kJ84rxuD0dMKRt
- 0htCukKkImfDp3aWdR2LsamZmUouaahHenfmKsFFgUYAGJUVqn+nM
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.47]); Wed, 05 Jun 2019 13:58:40 +0000 (UTC)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Am 05.06.19 um 14:27 schrieb Nicolas Saenz Julienne:
-> Ok, this looks more more like my fault, probably an overflow error somew=
-here. I
-> saw something similar while testing it on RPI2b. Which board & config wa=
-s this
-> run with?
-It's an RPi 3B+ with multi_v7_defconfig
-> Could you confirm the clk-raspberrypi.c message verifying the max and
-> min frequencies showed up and was correct.
-[=C2=A0=C2=A0=C2=A0 4.253294] raspberrypi-firmware soc:firmware: Attached =
-to firmware
-from 2019-03-27 15:45
-[=C2=A0=C2=A0=C2=A0 4.269727] mmcblk0: mmc0:0007 SDCIT 14.6 GiB
-[=C2=A0=C2=A0=C2=A0 4.282464] raspberrypi-clk raspberrypi-clk: CPU frequen=
-cy range: min
-600000000, max 1400000000
->
-> Regards,
-> Nicolas
->
+On Haswell (model 0x3C) turbostat fails with
+
+turbostat: cpu0: msr offset 0x630 read failed: Input/output error
+
+because Haswell Core does not have C8-C10.
+
+Output C8-C10 only on Haswell ULT.
+
+Fixes: f5a4c76ad7de ("tools/power turbostat: consolidate duplicate model
+numbers")
+Cc: Len Brown <len.brown@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index c7727be9719f..ec8797005731 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -4296,7 +4296,7 @@ int has_hsw_msrs(unsigned int family, unsigned int model)
+ 		return 0;
+ 
+ 	switch (model) {
+-	case INTEL_FAM6_HASWELL_CORE:
++	case INTEL_FAM6_HASWELL_ULT:
+ 	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
+ 	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
+ 	case INTEL_FAM6_CANNONLAKE_MOBILE:	/* CNL */
+-- 
+2.21.0
+
