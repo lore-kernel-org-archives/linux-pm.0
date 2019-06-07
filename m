@@ -2,97 +2,101 @@ Return-Path: <SRS0=hXsv=UG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 701B4C2BCA1
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Jun 2019 15:59:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FE56C2BCA1
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Jun 2019 16:20:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 535CE20657
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Jun 2019 15:59:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 740902089E
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Jun 2019 16:20:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729825AbfFGPmR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 7 Jun 2019 11:42:17 -0400
-Received: from foss.arm.com ([217.140.110.172]:43020 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730460AbfFGPmQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Jun 2019 11:42:16 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 813E6337;
-        Fri,  7 Jun 2019 08:42:15 -0700 (PDT)
-Received: from e107155-lin (e107155-lin.cambridge.arm.com [10.1.196.42])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B64CD3F718;
-        Fri,  7 Jun 2019 08:42:12 -0700 (PDT)
-Date:   Fri, 7 Jun 2019 16:42:10 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Niklas Cassel <niklas.cassel@linaro.org>,
-        Tony Lindgren <tony@atomide.com>,
-        Kevin Hilman <khilman@kernel.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Souvik Chakravarty <souvik.chakravarty@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/18] ARM/ARM64: Support hierarchical CPU arrangement
- for PSCI
-Message-ID: <20190607154210.GJ15577@e107155-lin>
-References: <20190513192300.653-1-ulf.hansson@linaro.org>
- <CAJZ5v0gbK3AFCVC1b9LyXeMOM8fKR1=ECXZwaeSYRSqcK0UgYA@mail.gmail.com>
- <CAPDyKFpU3u248Gi+FnrVdY-EWXJQuu14uNV9d3Xs0W-K-EMEhg@mail.gmail.com>
+        id S1729127AbfFGQUp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 7 Jun 2019 12:20:45 -0400
+Received: from 19.mo4.mail-out.ovh.net ([87.98.179.66]:37586 "EHLO
+        19.mo4.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728797AbfFGQUo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jun 2019 12:20:44 -0400
+X-Greylist: delayed 2393 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Jun 2019 12:20:43 EDT
+Received: from player755.ha.ovh.net (unknown [10.109.146.5])
+        by mo4.mail-out.ovh.net (Postfix) with ESMTP id EB81A1F6393
+        for <linux-pm@vger.kernel.org>; Fri,  7 Jun 2019 17:03:03 +0200 (CEST)
+Received: from armadeus.com (lfbn-1-7591-179.w90-126.abo.wanadoo.fr [90.126.248.179])
+        (Authenticated sender: sebastien.szymanski@armadeus.com)
+        by player755.ha.ovh.net (Postfix) with ESMTPSA id 6C3396B5D8F9;
+        Fri,  7 Jun 2019 15:03:00 +0000 (UTC)
+From:   =?UTF-8?q?S=C3=A9bastien=20Szymanski?= 
+        <sebastien.szymanski@armadeus.com>
+To:     linux-pm@vger.kernel.org, Shuah Khan <shuah@kernel.org>,
+        Thomas Renninger <trenn@suse.com>
+Cc:     =?UTF-8?q?S=C3=A9bastien=20Szymanski?= 
+        <sebastien.szymanski@armadeus.com>
+Subject: [PATCH 1/1] tools/power/cpupower: fix 64bit detection when cross-compiling
+Date:   Fri,  7 Jun 2019 17:02:55 +0200
+Message-Id: <20190607150255.2536-1-sebastien.szymanski@armadeus.com>
+X-Mailer: git-send-email 2.19.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFpU3u248Gi+FnrVdY-EWXJQuu14uNV9d3Xs0W-K-EMEhg@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 8982147983291798707
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgeduuddrudegiedgkeefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, May 14, 2019 at 10:58:04AM +0200, Ulf Hansson wrote:
-> On Tue, 14 May 2019 at 10:08, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Mon, May 13, 2019 at 9:23 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >
-> > > This series enables support for hierarchical CPU arrangement, managed by PSCI
-> > > for ARM/ARM64. It's based on using the generic PM domain (genpd), which
-> > > recently was extended to manage devices belonging to CPUs.
-> >
-> > ACK for the patches touching cpuidle in this series (from the
-> > framework perspective), but I'm assuming it to be taken care of by
-> > ARM/ARM64 maintainers.
->
-> Thanks for the ack! Yes, this is for PSCI/ARM maintainers.
->
-> BTW, apologize for sending this in the merge window, but wanted to
-> take the opportunity for people to have a look before OSPM Pisa next
-> week.
->
+When cross-compiling cpupower, 64bit detection is done with the host
+compiler instead of the cross-compiler and libcpupower.so.0 ends up in
+/usr/lib64 instead of /usr/lib for 32bit target.  Fix this by moving
+64bit detection after CC is defined.
 
-I will start looking at this series. But I would request PSCI/other
-maintainers to wait until we see some comparison data before we merge.
-If they are fine to merge w/o that, I am fine. As of now we have just
-1-2 platforms to test(that too not so simple to get started) and the
-long term support for them are questionable. Also with SDM845 supporting
-PC, we have excellent opportunity to compare and conclude the results
-found.
+Signed-off-by: Sébastien Szymanski <sebastien.szymanski@armadeus.com>
+---
+ tools/power/cpupower/Makefile | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
---
-Regards,
-Sudeep
+diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
+index 9063fca480b3..c8622497ef23 100644
+--- a/tools/power/cpupower/Makefile
++++ b/tools/power/cpupower/Makefile
+@@ -18,7 +18,6 @@ OUTDIR := $(shell cd $(OUTPUT) && pwd)
+ $(if $(OUTDIR),, $(error output directory "$(OUTPUT)" does not exist))
+ endif
+ 
+-include ../../scripts/Makefile.arch
+ 
+ # --- CONFIGURATION BEGIN ---
+ 
+@@ -69,11 +68,6 @@ bindir ?=	/usr/bin
+ sbindir ?=	/usr/sbin
+ mandir ?=	/usr/man
+ includedir ?=	/usr/include
+-ifeq ($(IS_64_BIT), 1)
+-libdir ?=	/usr/lib64
+-else
+-libdir ?=	/usr/lib
+-endif
+ localedir ?=	/usr/share/locale
+ docdir ?=       /usr/share/doc/packages/cpupower
+ confdir ?=      /etc/
+@@ -100,6 +94,14 @@ RANLIB = $(CROSS)ranlib
+ HOSTCC = gcc
+ MKDIR = mkdir
+ 
++# 64bit library detection
++include ../../scripts/Makefile.arch
++
++ifeq ($(IS_64_BIT), 1)
++libdir ?=	/usr/lib64
++else
++libdir ?=	/usr/lib
++endif
+ 
+ # Now we set up the build system
+ #
+-- 
+2.19.2
+
