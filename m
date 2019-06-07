@@ -1,94 +1,83 @@
 Return-Path: <SRS0=hXsv=UG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Level: **
+X-Spam-Status: No, score=2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1298C28CC3
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Jun 2019 03:09:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCCA7C28CC3
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Jun 2019 08:14:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id ABA96207E0
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Jun 2019 03:09:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9FAD92089E
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Jun 2019 08:14:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jO3oZfMy"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=velocard.eu header.i=@velocard.eu header.b="osxpvRHO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726294AbfFGDJF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 6 Jun 2019 23:09:05 -0400
-Received: from mail-pl1-f196.google.com ([209.85.214.196]:34900 "EHLO
-        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726286AbfFGDJF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jun 2019 23:09:05 -0400
-Received: by mail-pl1-f196.google.com with SMTP id p1so250711plo.2
-        for <linux-pm@vger.kernel.org>; Thu, 06 Jun 2019 20:09:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=l+eyft39Sxn5qe5vMNB20kZPpijDjrsF0Bx6tS0M+aU=;
-        b=jO3oZfMykEb2BKY03jwz+kXsoHKQu8zpBv3e9ZNS7BXIyYR/sEGVEFW9rSU68Zy1ot
-         IX0rtILNEioETVtdCXdqCOjaXhQ6/V04I0kMZnyT9uAFkUnJlsbn/FwJrqnKB2Os2ksT
-         R53jyDqUcEUCKxZhGJVubTxckdzTThcfvDdIz0S8HBVqukvgRLaV1siEQry2y5iZQAbl
-         vKBALUpv+YBPbjHlLhxwTRYoMGVBCwfChg8Ho7hryobzfamryOk1Du0IIkzBOZY3dsTX
-         JnQdwsgJ42i3qYhLFbv5re2YKfUGqR+mUm+ao0AZQrauGRw39/y/oWs7VXh57ppBrbIX
-         Wb7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=l+eyft39Sxn5qe5vMNB20kZPpijDjrsF0Bx6tS0M+aU=;
-        b=BwzqqkvxxmJlwNzwyHr9oZht8IwA49TPdVGif/BoIeNr4b6ZV+GJQuj435NUbevJ62
-         DW6Ytk4rAPGeKJLY8rx3gjKMtWmhgij7mlOXEtoI0u6XG3akdp92zf2kuW8OTSPQznYK
-         L3Cz3Q3vUvlLh3oKrHRfrHAdgn8ceQdJDTMyrqFly5dZzxTAiwsIQSJ+lYXHD7tygJrf
-         6h/z3anXAGAG1e65BmUqPebA7emlAXimJKwZ38pTDYPK/M752SwxJYAvFbXQH8T1Rkwh
-         8WrCT5XE2vvG5rJTz9/dvameDDf9uKrwbl6MAP0pfKuXC0dpvvg89aD/q40qRlUuRRKF
-         OdMg==
-X-Gm-Message-State: APjAAAUlctFlKCYk6kQhoXXA70+mdlb3E1oxcrWW0CWTfzMMc5lSqqdW
-        P+AbAidyWc7QV1Qn25qX5YCSQQ==
-X-Google-Smtp-Source: APXvYqxSqWXpBXwjcMAABVRmHPcPaj26pGvwVZ6X1iptlArZMPbZRpUwdAHAy4afbL5j8QWqG+Rk4Q==
-X-Received: by 2002:a17:902:15c5:: with SMTP id a5mr54260265plh.39.1559876944294;
-        Thu, 06 Jun 2019 20:09:04 -0700 (PDT)
-Received: from localhost ([122.172.66.84])
-        by smtp.gmail.com with ESMTPSA id e184sm537134pfa.169.2019.06.06.20.09.03
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 06 Jun 2019 20:09:03 -0700 (PDT)
-Date:   Fri, 7 Jun 2019 08:39:01 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Stephen Boyd <sboyd@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
-        stefan.wahren@i2se.com, linux-arm-kernel@lists.infradead.org,
-        f.fainelli@gmail.com, ptesarik@suse.com, mturquette@baylibre.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        eric@anholt.net, bcm-kernel-feedback-list@broadcom.com,
-        linux-rpi-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
-        mbrugger@suse.de, ssuloev@orpaltech.com
-Subject: Re: [PATCH v2 4/7] cpufreq: add driver for Raspbery Pi
-Message-ID: <20190607030901.qdnjj7udw7ky3sfx@vireshk-i7>
-References: <20190606142255.29454-1-nsaenzjulienne@suse.de>
- <20190606142255.29454-5-nsaenzjulienne@suse.de>
- <20190606170949.4A46720652@mail.kernel.org>
- <eb72a26b55cf17c29df6a7fd3c5def08182e00af.camel@suse.de>
- <20190606173609.2C3952083D@mail.kernel.org>
- <153579ddd7e6bd1e5c860a7a01115e47c78a1442.camel@suse.de>
- <20190606182335.1D15F20872@mail.kernel.org>
+        id S1726671AbfFGIOM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 7 Jun 2019 04:14:12 -0400
+Received: from mail.velocard.eu ([80.211.74.207]:35410 "EHLO mail.velocard.eu"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725978AbfFGIOM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 Jun 2019 04:14:12 -0400
+X-Greylist: delayed 489 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Jun 2019 04:14:12 EDT
+Received: by mail.velocard.eu (Postfix, from userid 1001)
+        id 009EA87697; Fri,  7 Jun 2019 10:05:52 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=velocard.eu; s=mail;
+        t=1559894763; bh=28mexHLKqDk2ixxtw16xz45K8l/dWN7qZL8I5V4XNxg=;
+        h=Date:From:To:Subject:From;
+        b=osxpvRHOGJMs2lcWaE1TnGI2C2s9J+GbQ04to89Qad9HnOX6Tc77mD76qNLDxSiOC
+         +faMf/KSjGmM0s5Z+TS0Yqs+UPfJC0pYW6MVx92SdM+PYpVGbQJw9JUqcs1pvL1KQm
+         fY4pqNgWPtltgxBDbsIMf1dvdd8ym3/BkN9WLfJU=
+Received: by mail.velocard.eu for <linux-pm@vger.kernel.org>; Fri,  7 Jun 2019 08:05:49 GMT
+Message-ID: <20190607084500-0.1.j.1chr.0.46xb3mgf82@velocard.eu>
+Date:   Fri,  7 Jun 2019 08:05:49 GMT
+From:   =?UTF-8?Q? "Kapolcs_M=C3=A1ty=C3=A1s" ?= 
+        <kapolcs.matyas@velocard.eu>
+To:     <linux-pm@vger.kernel.org>
+Subject: =?UTF-8?Q?B=C3=A9ren_fel=C3=BCli_juttat=C3=A1sok?=
+X-Mailer: mail.velocard.eu
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190606182335.1D15F20872@mail.kernel.org>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 06-06-19, 11:23, Stephen Boyd wrote:
-> Yes, thanks. I see that largely follows the commit description so it
-> looks OK to me.
+Kedves H=C3=B6lgyem/Uram!
 
-Do you want to provide your Reviewed/Acked-by tag before I apply it ?
+2019 janu=C3=A1rj=C3=A1t=C3=B3l szinte minden b=C3=A9ren k=C3=ADv=C3=BCli=
+ juttat=C3=A1s j=C3=B6vedelemk=C3=A9nt fog ad=C3=B3zni (kiv=C3=A9telt k=C3=
+=A9pez ez al=C3=B3l a SZ=C3=89P k=C3=A1rtya). A v=C3=A1ltoz=C3=A1sok elle=
+n=C3=A9re a v=C3=A1llalatok t=C3=B6bb mint 55%-a meg k=C3=ADv=C3=A1nja ta=
+rtani a dolgoz=C3=B3i juttat=C3=A1sok nett=C3=B3 =C3=B6sszeg=C3=A9t, mag=C3=
+=A1ra v=C3=A1llalva ezzel a megemelkedett ad=C3=B3terheket.=20
 
--- 
-viresh
+Juttat=C3=A1si k=C3=A1rty=C3=A1ink seg=C3=ADts=C3=A9g=C3=A9vel 2019-ben a=
+ munk=C3=A1ltat=C3=B3k lefedhetik szinte az =C3=B6sszes jelenleg haszn=C3=
+=A1lt b=C3=A9ren k=C3=ADv=C3=BCli juttat=C3=A1st, mik=C3=B6zben munkav=C3=
+=A1llal=C3=B3ik =C3=A9lvezhetik az ak=C3=A1r korl=C3=A1tlan felhaszn=C3=A1=
+l=C3=A1s lehet=C5=91s=C3=A9g=C3=A9t.  A SZ=C3=89P k=C3=A1rty=C3=A1t=C3=B3=
+l elt=C3=A9r=C5=91en a mi k=C3=A1rty=C3=A1inkkal olyan mindennapos k=C3=B6=
+lts=C3=A9gek fedezhet=C5=91ek mint p=C3=A9ld=C3=A1ul =C3=A9lelmiszer v=C3=
+=A1s=C3=A1rl=C3=A1s, eg=C3=A9szs=C3=A9g=C3=BCgyi ell=C3=A1t=C3=A1s, ruh=C3=
+=A1zat, elektronika, =C3=BCzemanyagk=C3=B6lts=C3=A9g, k=C3=B6zm=C5=B1d=C3=
+=ADj, s=C5=91t, ak=C3=A1r m=C3=A9g k=C3=A9szp=C3=A9nzfelv=C3=A9telre is a=
+lkalmasak.=20
+
+Ez az egyetlen olyan juttat=C3=A1si k=C3=A1rtya a magyar piacon, melyet m=
+inden hazai POS termin=C3=A1l elfogad, ezzel biztos=C3=ADtva a k=C3=A1rty=
+a sz=C3=A9les k=C3=B6r=C5=B1 felhaszn=C3=A1lhat=C3=B3s=C3=A1g=C3=A1t.=20
+
+Sz=C3=ADvesen bemutatom =C3=96nnek, milyen tov=C3=A1bbi el=C5=91ny=C3=B6k=
+kel j=C3=A1r k=C3=A1rty=C3=A1ink dolgoz=C3=B3i juttat=C3=A1sk=C3=A9nt t=C3=
+=B6rt=C3=A9n=C5=91 alkalmaz=C3=A1sa, =C3=A9s r=C3=A9szletes t=C3=A1j=C3=A9=
+koztat=C3=A1st adok a k=C3=A1rty=C3=A1k felhaszn=C3=A1l=C3=A1si lehet=C5=91=
+s=C3=A9geir=C5=91l =E2=80=93 k=C3=A9rem jelezze ez ir=C3=A1nti ig=C3=A9ny=
+=C3=A9t.=20
+
+
+Kapolcs M=C3=A1ty=C3=A1s
+Hungary Team Leader =20
+
