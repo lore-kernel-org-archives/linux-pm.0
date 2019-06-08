@@ -7,57 +7,56 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_MED,USER_AGENT_GIT,
 	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52555C468CC
-	for <linux-pm@archiver.kernel.org>; Sat,  8 Jun 2019 04:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E29FC468CD
+	for <linux-pm@archiver.kernel.org>; Sat,  8 Jun 2019 04:44:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1DD51214AF
-	for <linux-pm@archiver.kernel.org>; Sat,  8 Jun 2019 04:44:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 77E7C21479
+	for <linux-pm@archiver.kernel.org>; Sat,  8 Jun 2019 04:44:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="rCSnOT9k"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="dMmIR9zP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731142AbfFHEo2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 8 Jun 2019 00:44:28 -0400
-Received: from mail-qt1-f201.google.com ([209.85.160.201]:54342 "EHLO
-        mail-qt1-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730823AbfFHEoI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jun 2019 00:44:08 -0400
-Received: by mail-qt1-f201.google.com with SMTP id r57so3664761qtj.21
-        for <linux-pm@vger.kernel.org>; Fri, 07 Jun 2019 21:44:08 -0700 (PDT)
+        id S1730819AbfFHEof (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 8 Jun 2019 00:44:35 -0400
+Received: from mail-vk1-f202.google.com ([209.85.221.202]:47440 "EHLO
+        mail-vk1-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730542AbfFHEoC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jun 2019 00:44:02 -0400
+Received: by mail-vk1-f202.google.com with SMTP id a2so256495vkg.14
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jun 2019 21:44:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=date:in-reply-to:message-id:mime-version:references:subject:from:to
          :cc;
-        bh=l7frD8AwQb/664vV6b+eE1fM0p32UKK11iOjCpsV3ZE=;
-        b=rCSnOT9kVTQ4zHlkjz/xjtzstPLwTuZJEpaaMJS61bIu3uWnlOAh8wLABGTIsTwBFg
-         xm7pMtTt0ypdAcPWZrlIfxGY0FfWBGVRMBwf3jrEwOWI1/JN/wTnSTlN5i1cd56sRXsm
-         KAWvWRqDo9/WfmsLrTKeS95TdKlXcGsZ07leJWoYaQiQ/2BftBUQW1pxZhCPELKiQmuO
-         2Fm7TvoK3DNvdkM7JRvRZ9dDxlFbZ47rMp3+MReBwsfI/rWbwYCOlkcPWCOuvJCY6fxw
-         l+4DTin711JaMkrgqfd0/DsaXe1oWQsh5t0rFqsbtM52XkGYDnq8DSzsuiSHApUJK/KB
-         C1iQ==
+        bh=nYfthp2AfyfO7B9ZHl8Ammgshm5FNB69pWC4uzGdWTs=;
+        b=dMmIR9zPNKZhyMj3vydkxUzXcQ5Wm+QYdCizczZFkIvzDmfPxqciSkaELIvEK5Uxih
+         os7R+Bfrvx8ppB4h9Lehrkkyr2hNrBpZKz6KUgLW7eikgchAjWmW4brCbz0GESrD4gUr
+         KOAldARNoWDFkH7M/X3DYcnyEkQPOyyDbzaEWpozSS9vPYGmeMVbHWJLv8MS6mZ9vYZT
+         8xkMnreKVikDXYWgfZ17GA+fWtZb03Hvs75yvGestNhmk5AGCRmflDoCC7BqhIYAtYS8
+         dwkJlIxMDIjq8xH6AY1NCud6bFT+S6W56c3l8qUPrOnJpQKyKa/GjyD+LZjJ5UP8C01A
+         wuIw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=l7frD8AwQb/664vV6b+eE1fM0p32UKK11iOjCpsV3ZE=;
-        b=qNEoHHs1Y8F9KID08y9ALD1k0us5vDdD7Hg6Yxizg44aIiilt3c+lFniCbf4TRXui7
-         pSSzICW1rx/gLZ23b2Q3BAYrsld+mKn1bUf/6WgN3QhUVJFjVok+S8GI9vxvnT9PZ0NC
-         ROaBzcbDchhlK0Znbwyd5ro2rAjnk9ZEPlYDdT6Rc1wqLhUiMmU9SBNRxY6wB3GzvPXT
-         aSQvUfDs2pMPr0aoayADNPgtWJNHGqjUBOrjBWTEI/lHO8V22wFGPN0zWnRrgz5OLVFH
-         XFScB/jlTyVDSmnqRw3KNMt1E5VQ6Oq24rQrvLNGpu2g343bI5vVFrsQHmHpXXX0vQz0
-         nO4w==
-X-Gm-Message-State: APjAAAWnkrmaI4tNuvpzatUj2Mbg0zjsLEVHKnBjnBRw9ZqimR/0X4Uo
-        S08gZgk5Y1NNjdE+u7vwlQ3LahXA6ICiXvE=
-X-Google-Smtp-Source: APXvYqwud8Aypv8gLILj91JHYUlSsreuVUJCq0h7diIstQL9qUtPn0pHHpuSFkdUqf0cnEy7NX6jcTlT8ggl5z8=
-X-Received: by 2002:ac8:7c7:: with SMTP id m7mr45776276qth.28.1559969047755;
- Fri, 07 Jun 2019 21:44:07 -0700 (PDT)
-Date:   Fri,  7 Jun 2019 21:43:37 -0700
+        bh=nYfthp2AfyfO7B9ZHl8Ammgshm5FNB69pWC4uzGdWTs=;
+        b=lHhgTr2FBFybeacPPq7qo/wutnqpCEN40wHZBJZXF46Rs2ESLQ/xcb2s21URqg7qZR
+         JTkRBfpo4UaRAkvwocCUweF+WTvLmahSOr0HnoF5w+Am5/Urmr4AGpkAU5HmPQj4IBy+
+         skZzbK4Gd78tENIMGN2K4tCm/AFqMruIOGONWofoNNOmiv+w0ZVrXxy/MsO0NgqO9Dz9
+         WmQoNOOiyQo09XNir559UrX28NWlKgE7DmL3IW+n0OBwy8K/6hkA4076/ouaeP+6dTZ9
+         zCIb/oIEKqMRYXSjYcqwys5xtBtL76rNKI3NYPGvFQh8EFga8JUv4ZBkn9jRhRLxSOeS
+         NBHA==
+X-Gm-Message-State: APjAAAW/KI+pPCwPnJu8xe2f85J/Yv96KLSjeJ6U1TA5K04cJxbP23xK
+        KPFKqht131SQPhRjpahtFYqVuQX4chzBUh8=
+X-Google-Smtp-Source: APXvYqwiuDqsREIBPM5HcBRZmU9ocdAtwS9Xwtx0WfII9zeKP5yslJnw2HWFvQ3SRyhjeXZMrdRFC3gLD1HglW4=
+X-Received: by 2002:ab0:30a3:: with SMTP id b3mr571866uam.3.1559969041487;
+ Fri, 07 Jun 2019 21:44:01 -0700 (PDT)
+Date:   Fri,  7 Jun 2019 21:43:35 -0700
 In-Reply-To: <20190608044339.115026-1-saravanak@google.com>
-Message-Id: <20190608044339.115026-8-saravanak@google.com>
+Message-Id: <20190608044339.115026-6-saravanak@google.com>
 Mime-Version: 1.0
 References: <20190608044339.115026-1-saravanak@google.com>
 X-Mailer: git-send-email 2.22.0.rc2.383.gf4fbbf30c2-goog
-Subject: [PATCH v1 7/9] OPP: Add function to look up required OPP's for a
- given OPP
+Subject: [PATCH v1 5/9] dt-bindings: interconnect: Add interconnect-opp-table property
 From:   Saravana Kannan <saravanak@google.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -80,105 +79,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a function that allows looking up required OPPs given a source OPP
-table, destination OPP table and the source OPP.
+Add support for listing bandwidth OPP tables for each interconnect path
+listed using the interconnects property.
 
 Signed-off-by: Saravana Kannan <saravanak@google.com>
 ---
- drivers/opp/core.c     | 50 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h | 11 ++++++++++
- 2 files changed, 61 insertions(+)
+ .../devicetree/bindings/interconnect/interconnect.txt     | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 89a2ece88480..d96d5746eb47 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1881,6 +1881,56 @@ void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table,
- 		dev_err(virt_dev, "Failed to find required device entry\n");
- }
+diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+index 6f5d23a605b7..fc5b75b76a2c 100644
+--- a/Documentation/devicetree/bindings/interconnect/interconnect.txt
++++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+@@ -55,10 +55,18 @@ interconnect-names : List of interconnect path name strings sorted in the same
+ 			 * dma-mem: Path from the device to the main memory of
+ 			            the system
  
-+/**
-+ * dev_pm_opp_xlate_opp() - Find required OPP for src_table OPP.
-+ * @src_table: OPP table which has dst_table as one of its required OPP table.
-+ * @dst_table: Required OPP table of the src_table.
-+ * @pstate: OPP of the src_table.
-+ *
-+ * This function returns the OPP (present in @dst_table) pointed out by the
-+ * "required-opps" property of the OPP (present in @src_table).
-+ *
-+ * Return: destination table OPP on success, otherwise NULL on errors.
-+ */
-+struct dev_pm_opp *dev_pm_opp_xlate_opp(struct opp_table *src_table,
-+					struct opp_table *dst_table,
-+					struct dev_pm_opp *src_opp)
-+{
-+	struct dev_pm_opp *opp, *dest_opp = NULL;
-+	int i;
++interconnect-opp-table: List of phandles to OPP tables (bandwidth OPP tables)
++			that specify the OPPs for the interconnect paths listed
++			in the interconnects property. This property can only
++			point to OPP tables that belong to the device and are
++			listed in the device's operating-points-v2 property.
 +
-+	if (!src_table || !dst_table || !src_opp)
-+		return NULL;
-+
-+	for (i = 0; i < src_table->required_opp_count; i++) {
-+		if (src_table->required_opp_tables[i]->np == dst_table->np)
-+			break;
-+	}
-+
-+	if (unlikely(i == src_table->required_opp_count)) {
-+		pr_err("%s: Couldn't find matching OPP table (%p: %p)\n",
-+		       __func__, src_table, dst_table);
-+		return NULL;
-+	}
-+
-+	mutex_lock(&src_table->lock);
-+
-+	list_for_each_entry(opp, &src_table->opp_list, node) {
-+		if (opp == src_opp) {
-+			dest_opp = opp->required_opps[i];
-+			goto unlock;
-+		}
-+	}
-+
-+	pr_err("%s: Couldn't find matching OPP (%p: %p)\n", __func__, src_table,
-+	       dst_table);
-+
-+unlock:
-+	mutex_unlock(&src_table->lock);
-+
-+	return dest_opp;
-+}
-+
- /**
-  * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
-  * @src_table: OPP table which has dst_table as one of its required OPP table.
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 3f30ce55e8eb..13381dc3dd39 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -137,6 +137,9 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
- struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index);
- void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev);
- int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
-+struct dev_pm_opp *dev_pm_opp_xlate_opp(struct opp_table *src_table,
-+					struct opp_table *dst_table,
-+					struct dev_pm_opp *src_opp);
- int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
- int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
- int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
-@@ -321,6 +324,14 @@ static inline int dev_pm_opp_xlate_performance_state(struct opp_table *src_table
- 	return -ENOTSUPP;
- }
+ Example:
  
-+static inline struct dev_pm_opp *dev_pm_opp_xlate_opp(
-+						struct opp_table *src_table,
-+						struct opp_table *dst_table,
-+						struct dev_pm_opp *src_opp)
-+{
-+	return NULL;
-+}
-+
- static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- {
- 	return -ENOTSUPP;
+ 	sdhci@7864000 {
++		operating-points-v2 = <&sdhc_opp_table>, <&sdhc_mem_opp_table>;
+ 		...
+ 		interconnects = <&pnoc MASTER_SDCC_1 &bimc SLAVE_EBI_CH0>;
+ 		interconnect-names = "sdhc-mem";
++		interconnect-opp-table = <&sdhc_mem_opp_table>;
+ 	};
 -- 
 2.22.0.rc2.383.gf4fbbf30c2-goog
 
