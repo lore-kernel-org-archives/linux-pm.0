@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-16.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_MED,USER_AGENT_GIT,
 	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E29FC468CD
-	for <linux-pm@archiver.kernel.org>; Sat,  8 Jun 2019 04:44:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D59BC468CB
+	for <linux-pm@archiver.kernel.org>; Sat,  8 Jun 2019 04:44:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 77E7C21479
-	for <linux-pm@archiver.kernel.org>; Sat,  8 Jun 2019 04:44:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 23F6E2146E
+	for <linux-pm@archiver.kernel.org>; Sat,  8 Jun 2019 04:44:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="dMmIR9zP"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="p3N7H7bH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730819AbfFHEof (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 8 Jun 2019 00:44:35 -0400
-Received: from mail-vk1-f202.google.com ([209.85.221.202]:47440 "EHLO
-        mail-vk1-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730542AbfFHEoC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jun 2019 00:44:02 -0400
-Received: by mail-vk1-f202.google.com with SMTP id a2so256495vkg.14
-        for <linux-pm@vger.kernel.org>; Fri, 07 Jun 2019 21:44:02 -0700 (PDT)
+        id S1728051AbfFHEnx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 8 Jun 2019 00:43:53 -0400
+Received: from mail-qk1-f201.google.com ([209.85.222.201]:47964 "EHLO
+        mail-qk1-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728045AbfFHEnx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jun 2019 00:43:53 -0400
+Received: by mail-qk1-f201.google.com with SMTP id l185so3387734qkd.14
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jun 2019 21:43:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=date:in-reply-to:message-id:mime-version:references:subject:from:to
          :cc;
-        bh=nYfthp2AfyfO7B9ZHl8Ammgshm5FNB69pWC4uzGdWTs=;
-        b=dMmIR9zPNKZhyMj3vydkxUzXcQ5Wm+QYdCizczZFkIvzDmfPxqciSkaELIvEK5Uxih
-         os7R+Bfrvx8ppB4h9Lehrkkyr2hNrBpZKz6KUgLW7eikgchAjWmW4brCbz0GESrD4gUr
-         KOAldARNoWDFkH7M/X3DYcnyEkQPOyyDbzaEWpozSS9vPYGmeMVbHWJLv8MS6mZ9vYZT
-         8xkMnreKVikDXYWgfZ17GA+fWtZb03Hvs75yvGestNhmk5AGCRmflDoCC7BqhIYAtYS8
-         dwkJlIxMDIjq8xH6AY1NCud6bFT+S6W56c3l8qUPrOnJpQKyKa/GjyD+LZjJ5UP8C01A
-         wuIw==
+        bh=VsGMjkGOZPFGkhCwCfPMuPNJvsOcLeFFhKH7B9SWhJo=;
+        b=p3N7H7bH0nuAEuJTu/oq9x4clbJ/yyYk/4oia3UFTq0FSnZKiXsRnP55OG528RX6ae
+         3btwG3ecPZludSJG38saLdVAO3lzqWB4ZMTBoZdb8NFnD90Evo0eKLGU7qi+DS4a3Uy9
+         GNg7bYSnq0mhVOfnvqloXrHxZY+0wtD5Xv1JE4+mNM9gBtN2YSrULrqdad4VvML8YGfq
+         Rnb3KzQlsTkYhJ+UWqrPVviuA2wMotbsq4hTaUP2yGRisweIID2Qmvcge8SYAskIgr54
+         sVgQrmYeDXzRM6YS+03hZQsEIm2eAWCKQ0gVQsGk586guRd+ud8wsc1H6y/nVEQ9eFiC
+         IKpA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=nYfthp2AfyfO7B9ZHl8Ammgshm5FNB69pWC4uzGdWTs=;
-        b=lHhgTr2FBFybeacPPq7qo/wutnqpCEN40wHZBJZXF46Rs2ESLQ/xcb2s21URqg7qZR
-         JTkRBfpo4UaRAkvwocCUweF+WTvLmahSOr0HnoF5w+Am5/Urmr4AGpkAU5HmPQj4IBy+
-         skZzbK4Gd78tENIMGN2K4tCm/AFqMruIOGONWofoNNOmiv+w0ZVrXxy/MsO0NgqO9Dz9
-         WmQoNOOiyQo09XNir559UrX28NWlKgE7DmL3IW+n0OBwy8K/6hkA4076/ouaeP+6dTZ9
-         zCIb/oIEKqMRYXSjYcqwys5xtBtL76rNKI3NYPGvFQh8EFga8JUv4ZBkn9jRhRLxSOeS
-         NBHA==
-X-Gm-Message-State: APjAAAW/KI+pPCwPnJu8xe2f85J/Yv96KLSjeJ6U1TA5K04cJxbP23xK
-        KPFKqht131SQPhRjpahtFYqVuQX4chzBUh8=
-X-Google-Smtp-Source: APXvYqwiuDqsREIBPM5HcBRZmU9ocdAtwS9Xwtx0WfII9zeKP5yslJnw2HWFvQ3SRyhjeXZMrdRFC3gLD1HglW4=
-X-Received: by 2002:ab0:30a3:: with SMTP id b3mr571866uam.3.1559969041487;
- Fri, 07 Jun 2019 21:44:01 -0700 (PDT)
-Date:   Fri,  7 Jun 2019 21:43:35 -0700
+        bh=VsGMjkGOZPFGkhCwCfPMuPNJvsOcLeFFhKH7B9SWhJo=;
+        b=eikIY+row4l1wb2ktT3lxb+n63InUOlIJsLlSt01mBq2Dd8/60b3zPqDbsmWvWLQq8
+         Fc6/Df/GYmoxtJfmqui34tStobnX1hil72dL9XnyYAwXRyxr5GXXVyqyXbueWVECYPnh
+         ew2bO4QLqEvW1ALTmZfE6gFtckjk0atUKvzaWe/g8bVL767PNW9ljdTT+6O9XQDFqP5t
+         HF/6jmtkLlYLpOCUVSNPCgqHNHRzOVsJ8fqgb8JkFsYj6exTF4sciEWilWUQu7AIggL4
+         +gADprn+xuYH1caMxaooSLd+6bS6gKvVIhndIq474Lx2gcVGYkQD9sywMotqnQfQZnWO
+         La0A==
+X-Gm-Message-State: APjAAAV8mYYNv7FP7L+zvVU7Xs0edSieAlVMNHU51EPX3fcq/Uyt0HY2
+        2LA6/xPo/0GmfZK+P5YncVKu6YvoRAJCiLI=
+X-Google-Smtp-Source: APXvYqxowEVj/16yFHu5u5M+Hh+OsPObpHW4eaANvRfQI2X4XmPpgTOnRXKsjSiYUE5FMSOmVTkt55wGBlGC8bE=
+X-Received: by 2002:ac8:2c17:: with SMTP id d23mr17659580qta.385.1559969032137;
+ Fri, 07 Jun 2019 21:43:52 -0700 (PDT)
+Date:   Fri,  7 Jun 2019 21:43:32 -0700
 In-Reply-To: <20190608044339.115026-1-saravanak@google.com>
-Message-Id: <20190608044339.115026-6-saravanak@google.com>
+Message-Id: <20190608044339.115026-3-saravanak@google.com>
 Mime-Version: 1.0
 References: <20190608044339.115026-1-saravanak@google.com>
 X-Mailer: git-send-email 2.22.0.rc2.383.gf4fbbf30c2-goog
-Subject: [PATCH v1 5/9] dt-bindings: interconnect: Add interconnect-opp-table property
+Subject: [PATCH v1 2/9] OPP: Add support for bandwidth OPP tables
 From:   Saravana Kannan <saravanak@google.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -79,37 +79,94 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for listing bandwidth OPP tables for each interconnect path
-listed using the interconnects property.
+Not all devices quantify their performance points in terms of frequency.
+Devices like interconnects quantify their performance points in terms of
+bandwidth. We need a way to represent these bandwidth levels in OPP. So,
+add support for parsing bandwidth OPPs from DT.
 
 Signed-off-by: Saravana Kannan <saravanak@google.com>
 ---
- .../devicetree/bindings/interconnect/interconnect.txt     | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/opp/of.c  | 34 ++++++++++++++++++++++++++++++++--
+ drivers/opp/opp.h |  4 +++-
+ 2 files changed, 35 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-index 6f5d23a605b7..fc5b75b76a2c 100644
---- a/Documentation/devicetree/bindings/interconnect/interconnect.txt
-+++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
-@@ -55,10 +55,18 @@ interconnect-names : List of interconnect path name strings sorted in the same
- 			 * dma-mem: Path from the device to the main memory of
- 			            the system
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index c10c782d15aa..54fa70ed2adc 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -552,6 +552,35 @@ void dev_pm_opp_of_remove_table(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
  
-+interconnect-opp-table: List of phandles to OPP tables (bandwidth OPP tables)
-+			that specify the OPPs for the interconnect paths listed
-+			in the interconnects property. This property can only
-+			point to OPP tables that belong to the device and are
-+			listed in the device's operating-points-v2 property.
++static int _read_opp_key(struct dev_pm_opp *new_opp, struct device_node *np)
++{
++	int ret;
++	u64 rate;
++	u32 bw;
 +
- Example:
++	ret = of_property_read_u64(np, "opp-hz", &rate);
++	if (!ret) {
++		/*
++		 * Rate is defined as an unsigned long in clk API, and so
++		 * casting explicitly to its type. Must be fixed once rate is 64
++		 * bit guaranteed in clk API.
++		 */
++		new_opp->rate = (unsigned long)rate;
++		return 0;
++	}
++
++	ret = of_property_read_u32(np, "opp-peak-KBps", &bw);
++	if (ret)
++		return ret;
++	new_opp->rate = (unsigned long) &bw;
++
++	ret = of_property_read_u32(np, "opp-avg-KBps", &bw);
++	if (!ret)
++		new_opp->avg_bw = (unsigned long) &bw;
++
++	return 0;
++}
++
+ /**
+  * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
+  * @opp_table:	OPP table
+@@ -589,11 +618,12 @@ static struct dev_pm_opp *_opp_add_static_v2(struct opp_table *opp_table,
+ 	if (!new_opp)
+ 		return ERR_PTR(-ENOMEM);
  
- 	sdhci@7864000 {
-+		operating-points-v2 = <&sdhc_opp_table>, <&sdhc_mem_opp_table>;
- 		...
- 		interconnects = <&pnoc MASTER_SDCC_1 &bimc SLAVE_EBI_CH0>;
- 		interconnect-names = "sdhc-mem";
-+		interconnect-opp-table = <&sdhc_mem_opp_table>;
- 	};
+-	ret = of_property_read_u64(np, "opp-hz", &rate);
++	ret = _read_opp_key(new_opp, np);
+ 	if (ret < 0) {
+ 		/* "opp-hz" is optional for devices like power domains. */
+ 		if (!opp_table->is_genpd) {
+-			dev_err(dev, "%s: opp-hz not found\n", __func__);
++			dev_err(dev, "%s: opp-hz or opp-peak-bw not found\n",
++				__func__);
+ 			goto free_opp;
+ 		}
+ 
+diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+index 569b3525aa67..ead2cdafe957 100644
+--- a/drivers/opp/opp.h
++++ b/drivers/opp/opp.h
+@@ -59,7 +59,8 @@ extern struct list_head opp_tables;
+  * @turbo:	true if turbo (boost) OPP
+  * @suspend:	true if suspend OPP
+  * @pstate: Device's power domain's performance state.
+- * @rate:	Frequency in hertz
++ * @rate:	Frequency in hertz OR Peak bandwidth in kilobytes per second
++ * @avg_bw:	Average bandwidth in kilobytes per second
+  * @level:	Performance level
+  * @supplies:	Power supplies voltage/current values
+  * @clock_latency_ns: Latency (in nanoseconds) of switching to this OPP's
+@@ -81,6 +82,7 @@ struct dev_pm_opp {
+ 	bool suspend;
+ 	unsigned int pstate;
+ 	unsigned long rate;
++	unsigned long avg_bw;
+ 	unsigned int level;
+ 
+ 	struct dev_pm_opp_supply *supplies;
 -- 
 2.22.0.rc2.383.gf4fbbf30c2-goog
 
