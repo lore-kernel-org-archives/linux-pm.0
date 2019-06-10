@@ -2,223 +2,167 @@ Return-Path: <SRS0=pV5J=UJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D69CC28EBD
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Jun 2019 02:52:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 508ADC468BE
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Jun 2019 03:14:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 12DC520843
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Jun 2019 02:52:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2C7712067C
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Jun 2019 03:14:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730413AbfFJCvn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 9 Jun 2019 22:51:43 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:44742 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726566AbfFJCvm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 9 Jun 2019 22:51:42 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id EBC421A0740;
-        Mon, 10 Jun 2019 04:51:39 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 2DBFD1A029E;
-        Mon, 10 Jun 2019 04:51:24 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 773EC4029A;
-        Mon, 10 Jun 2019 10:51:10 +0800 (SGT)
-From:   Anson.Huang@nxp.com
-To:     robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
-        festevam@gmail.com, catalin.marinas@arm.com, will.deacon@arm.com,
-        rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, aisheng.dong@nxp.com,
-        ulf.hansson@linaro.org, peng.fan@nxp.com,
-        mchehab+samsung@kernel.org, linux@roeck-us.net,
-        daniel.baluta@nxp.com, maxime.ripard@bootlin.com, olof@lixom.net,
-        jagan@amarulasolutions.com, horms+renesas@verge.net.au,
-        leonard.crestez@nxp.com, bjorn.andersson@linaro.org,
-        dinguyen@kernel.org, enric.balletbo@collabora.com,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH V14 2/5] thermal: of-thermal: add API for getting sensor ID from DT
-Date:   Mon, 10 Jun 2019 10:52:51 +0800
-Message-Id: <20190610025254.23940-2-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190610025254.23940-1-Anson.Huang@nxp.com>
-References: <20190610025254.23940-1-Anson.Huang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S2387420AbfFJDOq convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 9 Jun 2019 23:14:46 -0400
+Received: from tyo161.gate.nec.co.jp ([114.179.232.161]:47244 "EHLO
+        tyo161.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387400AbfFJDOq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 9 Jun 2019 23:14:46 -0400
+Received: from mailgate01.nec.co.jp ([114.179.233.122])
+        by tyo161.gate.nec.co.jp (8.15.1/8.15.1) with ESMTPS id x5A3ES3v025320
+        (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+        Mon, 10 Jun 2019 12:14:28 +0900
+Received: from mailsv01.nec.co.jp (mailgate-v.nec.co.jp [10.204.236.94])
+        by mailgate01.nec.co.jp (8.15.1/8.15.1) with ESMTP id x5A3ESX2013887;
+        Mon, 10 Jun 2019 12:14:28 +0900
+Received: from mail01b.kamome.nec.co.jp (mail01b.kamome.nec.co.jp [10.25.43.2])
+        by mailsv01.nec.co.jp (8.15.1/8.15.1) with ESMTP id x5A3DBGX022181;
+        Mon, 10 Jun 2019 12:14:28 +0900
+Received: from bpxc99gp.gisp.nec.co.jp ([10.38.151.137] [10.38.151.137]) by mail03.kamome.nec.co.jp with ESMTP id BT-MMP-1144291; Mon, 10 Jun 2019 12:14:07 +0900
+Received: from BPXM09GP.gisp.nec.co.jp ([10.38.151.201]) by
+ BPXC09GP.gisp.nec.co.jp ([10.38.151.137]) with mapi id 14.03.0319.002; Mon,
+ 10 Jun 2019 12:14:07 +0900
+From:   Kosuke Tatsukawa <tatsu@ab.jp.nec.com>
+To:     Prarit Bhargava <prarit@redhat.com>
+CC:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] turbostat: Fix Haswell Core systems 
+Thread-Topic: [PATCH] turbostat: Fix Haswell Core systems 
+Thread-Index: AdUfOpCHielU6xFoSDOKwDdYkf3/KQ==
+Date:   Mon, 10 Jun 2019 03:14:07 +0000
+Message-ID: <17EC94B0A072C34B8DCF0D30AD16044A02A66DD0@BPXM09GP.gisp.nec.co.jp>
+In-Reply-To: <20190605135830.23941-1-prarit@redhat.com>
+Accept-Language: ja-JP, en-US
+Content-Language: ja-JP
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [10.34.125.78]
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-TM-AS-MML: disable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Anson Huang <Anson.Huang@nxp.com>
+Hi,
 
-On some platforms like i.MX8QXP, the thermal driver needs a
-real HW sensor ID from DT thermal zone, the HW sensor ID is
-used to get temperature from SCU firmware, and the virtual
-sensor ID starting from 0 to N is NOT used at all, this patch
-adds new API thermal_zone_of_get_sensor_id() to provide the
-feature of getting sensor ID from DT thermal zone's node.
+> On Haswell (model 0x3C) turbostat fails with
+>
+> turbostat: cpu0: msr offset 0x630 read failed: Input/output error
+>
+> because Haswell Core does not have C8-C10.
+>
+> Output C8-C10 only on Haswell ULT.
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-Changes since V13:
-	- add new API into the thermal API doc.
----
- Documentation/thermal/sysfs-api.txt |  8 +++++
- drivers/thermal/of-thermal.c        | 66 ++++++++++++++++++++++++++++---------
- include/linux/thermal.h             | 10 ++++++
- 3 files changed, 68 insertions(+), 16 deletions(-)
+has_hsw_msrs() uses the model number returned by intel_model_duplicates(),
+but commit f5a4c76ad7de added code to return INTEL_FAM6_HASWELL_CORE for
+INTEL_FAM6_HASWELL_ULT there.  So I think Haswell UTL also doesn't
+output C8-C10 with your patch.
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index c3fa500..8d7f1b1 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -159,6 +159,14 @@ temperature) and throttle appropriate devices.
- 	for the thermal zone device, which might be useful for platform
- 	drivers for temperature calculations.
+Something similar to the below patch is needed to differentiate between
+INTEL_FAM6_HASWELL_CORE and INTEL_FAM6_HASWELL_ULT.  I don't have a
+Haswell-ULT machine, so I've only tested it on a Haswell-DT CPU.
+
+Best regards.
+
+> Fixes: f5a4c76ad7de ("tools/power turbostat: consolidate duplicate model
+> numbers")
+> Cc: Len Brown <len.brown@intel.com>
+> ---
+>  tools/power/x86/turbostat/turbostat.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index c7727be9719f..ec8797005731 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -4296,7 +4296,7 @@ int has_hsw_msrs(unsigned int family, unsigned int model)
+> 		return 0;
+> 
+> 	switch (model) {
+> -	case INTEL_FAM6_HASWELL_CORE:
+> +	case INTEL_FAM6_HASWELL_ULT:
+> 	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
+> 	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
+> 	case INTEL_FAM6_CANNONLAKE_MOBILE:	/* CNL */
+> -- 
+> 2.21.0
+
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 75fc4fb..5830552 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -3209,6 +3209,7 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
+ 		break;
+ 	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
+ 	case INTEL_FAM6_HASWELL_X:	/* HSX */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
+ 	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
+ 	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
+ 	case INTEL_FAM6_BROADWELL_GT3E:	/* BDW */
+@@ -3405,6 +3406,7 @@ int has_config_tdp(unsigned int family, unsigned int model)
+ 	case INTEL_FAM6_IVYBRIDGE:	/* IVB */
+ 	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
+ 	case INTEL_FAM6_HASWELL_X:	/* HSX */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
+ 	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
+ 	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
+ 	case INTEL_FAM6_BROADWELL_GT3E:	/* BDW */
+@@ -3841,6 +3843,7 @@ void rapl_probe_intel(unsigned int family, unsigned int model)
+ 	case INTEL_FAM6_SANDYBRIDGE:
+ 	case INTEL_FAM6_IVYBRIDGE:
+ 	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
+ 	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
+ 	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
+ 	case INTEL_FAM6_BROADWELL_GT3E:	/* BDW */
+@@ -4032,6 +4035,7 @@ void perf_limit_reasons_probe(unsigned int family, unsigned int model)
  
-+1.1.9 int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+		struct device_node *sensor_np,
-+		u32 *id)
-+
-+	This interface is used to get the sensor id from thermal sensor's
-+	phandle argument, it might be necessary for some platforms which
-+	have specific sensor ID rather than virtual ID from 0 - N.
-+
- 1.2 thermal cooling device interface
- 1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(char *name,
- 		void *devdata, struct thermal_cooling_device_ops *)
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index dc5093b..a53792b 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -449,6 +449,54 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- }
+ 	switch (model) {
+ 	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
+ 	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
+ 		do_gfx_perf_limit_reasons = 1;
+ 	case INTEL_FAM6_HASWELL_X:	/* HSX */
+@@ -4251,6 +4255,7 @@ int has_snb_msrs(unsigned int family, unsigned int model)
+ 	case INTEL_FAM6_IVYBRIDGE_X:	/* IVB Xeon */
+ 	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
+ 	case INTEL_FAM6_HASWELL_X:	/* HSW */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
+ 	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
+ 	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
+ 	case INTEL_FAM6_BROADWELL_GT3E:	/* BDW */
+@@ -4284,7 +4289,7 @@ int has_hsw_msrs(unsigned int family, unsigned int model)
+ 		return 0;
  
- /**
-+ * thermal_zone_of_get_sensor_id - get sensor ID from a DT thermal zone
-+ * @tz_np: a valid thermal zone device node.
-+ * @sensor_np: a sensor node of a valid sensor device.
-+ * @id: a sensor ID pointer will be passed back.
-+ *
-+ * This function will get sensor ID from a given thermal zone node, use
-+ * "thermal-sensors" as list name, and get sensor ID from first phandle's
-+ * argument.
-+ *
-+ * Return: 0 on success, proper error code otherwise.
-+ */
-+
-+int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+				  struct device_node *sensor_np,
-+				  u32 *id)
-+{
-+	struct of_phandle_args sensor_specs;
-+	int ret;
-+
-+	ret = of_parse_phandle_with_args(tz_np,
-+					 "thermal-sensors",
-+					 "#thermal-sensor-cells",
-+					 0,
-+					 &sensor_specs);
-+	if (ret)
-+		return ret;
-+
-+	if (sensor_specs.np != sensor_np) {
-+		of_node_put(sensor_specs.np);
-+		return -ENODEV;
-+	}
-+
-+	if (sensor_specs.args_count >= 1) {
-+		*id = sensor_specs.args[0];
-+		WARN(sensor_specs.args_count > 1,
-+		     "%pOFn: too many cells in sensor specifier %d\n",
-+		     sensor_specs.np, sensor_specs.args_count);
-+	} else {
-+		*id = 0;
-+	}
-+
-+	of_node_put(sensor_specs.np);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(thermal_zone_of_get_sensor_id);
-+
-+/**
-  * thermal_zone_of_sensor_register - registers a sensor to a DT thermal zone
-  * @dev: a valid struct device pointer of a sensor device. Must contain
-  *       a valid .of_node, for the sensor node.
-@@ -499,36 +547,22 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
- 	sensor_np = of_node_get(dev->of_node);
+ 	switch (model) {
+-	case INTEL_FAM6_HASWELL_CORE:
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
+ 	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
+ 	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
+ 	case INTEL_FAM6_CANNONLAKE_MOBILE:	/* CNL */
+@@ -4568,9 +4573,6 @@ unsigned int intel_model_duplicates(unsigned int model)
+ 	case INTEL_FAM6_XEON_PHI_KNM:
+ 		return INTEL_FAM6_XEON_PHI_KNL;
  
- 	for_each_available_child_of_node(np, child) {
--		struct of_phandle_args sensor_specs;
- 		int ret, id;
- 
- 		/* For now, thermal framework supports only 1 sensor per zone */
--		ret = of_parse_phandle_with_args(child, "thermal-sensors",
--						 "#thermal-sensor-cells",
--						 0, &sensor_specs);
-+		ret = thermal_zone_of_get_sensor_id(child, sensor_np, &id);
- 		if (ret)
- 			continue;
- 
--		if (sensor_specs.args_count >= 1) {
--			id = sensor_specs.args[0];
--			WARN(sensor_specs.args_count > 1,
--			     "%pOFn: too many cells in sensor specifier %d\n",
--			     sensor_specs.np, sensor_specs.args_count);
--		} else {
--			id = 0;
--		}
+-	case INTEL_FAM6_HASWELL_ULT:
+-		return INTEL_FAM6_HASWELL_CORE;
 -
--		if (sensor_specs.np == sensor_np && id == sensor_id) {
-+		if (id == sensor_id) {
- 			tzd = thermal_zone_of_add_sensor(child, sensor_np,
- 							 data, ops);
- 			if (!IS_ERR(tzd))
- 				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
- 
--			of_node_put(sensor_specs.np);
- 			of_node_put(child);
- 			goto exit;
- 		}
--		of_node_put(sensor_specs.np);
- 	}
- exit:
- 	of_node_put(sensor_np);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 15a4ca5..5edffe6 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -375,6 +375,9 @@ struct thermal_trip {
- 
- /* Function declarations */
- #ifdef CONFIG_THERMAL_OF
-+int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+				  struct device_node *sensor_np,
-+				  u32 *id);
- struct thermal_zone_device *
- thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
- 				const struct thermal_zone_of_device_ops *ops);
-@@ -386,6 +389,13 @@ struct thermal_zone_device *devm_thermal_zone_of_sensor_register(
- void devm_thermal_zone_of_sensor_unregister(struct device *dev,
- 					    struct thermal_zone_device *tz);
- #else
-+
-+static int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+					 struct device_node *sensor_np,
-+					 u32 *id)
-+{
-+	return -ENOENT;
-+}
- static inline struct thermal_zone_device *
- thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
- 				const struct thermal_zone_of_device_ops *ops)
--- 
-2.7.4
+ 	case INTEL_FAM6_BROADWELL_X:
+ 	case INTEL_FAM6_BROADWELL_XEON_D:	/* BDX-DE */
+ 		return INTEL_FAM6_BROADWELL_X;
 
