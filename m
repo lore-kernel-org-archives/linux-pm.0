@@ -2,141 +2,110 @@ Return-Path: <SRS0=ZhbC=UK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,T_DKIMWL_WL_HIGH,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A2FCC4321A
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jun 2019 18:05:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37278C4321A
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jun 2019 18:06:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 455AA20896
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jun 2019 18:05:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1560276351;
-	bh=pUQrrrTa5WLl5Wa6xrkyfgXRj0jTEMVmm2ENa77fXlc=;
-	h=Date:From:To:Cc:Subject:List-ID:From;
-	b=PxOsePWNulUZ0SSDA7MAdnOR0t4NDt5f9MdKkj0/l2TpTa/c08gsaWg2b8z+7NJty
-	 Kvg9yfH63d5rgxQJanXlI54vThZOmh7AuH0D78Femz1bl4ns4pMJ2Ypxn/e9XS/MMI
-	 Bjk18ScSBxIiUlQM9pgKdEFyU6JZAz8SvypZ01JQ=
+	by mail.kernel.org (Postfix) with ESMTP id 0F59320874
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jun 2019 18:06:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406806AbfFKSFu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jun 2019 14:05:50 -0400
-Received: from mail.kernel.org ([198.145.29.99]:51534 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2406751AbfFKSFu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Jun 2019 14:05:50 -0400
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 4D8FF20874;
-        Tue, 11 Jun 2019 18:05:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1560276349;
-        bh=pUQrrrTa5WLl5Wa6xrkyfgXRj0jTEMVmm2ENa77fXlc=;
-        h=Date:From:To:Cc:Subject:From;
-        b=QKVcW6wqE84DdHUQo3qpUtrgp9MmHCbzMN06jLmT+LAXNrXlCdM+aJ/bF1zROAz0A
-         942jP4y1tzj0XefryYanlDWNeQXkkEdqxx+0QWTOrpY9eceKQGDfcrCGGYM4w5cGwM
-         k2hUHzCej/95tpWuTPgcLn/1CbD5rpryzdToCT+8=
-Date:   Tue, 11 Jun 2019 20:05:47 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>
-Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH] power: avs: smartreflex: no need to check return value of
- debugfs_create functions
-Message-ID: <20190611180547.GA13520@kroah.com>
+        id S2406780AbfFKSGR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jun 2019 14:06:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33726 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S2406731AbfFKSGR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Jun 2019 14:06:17 -0400
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+        by mx1.suse.de (Postfix) with ESMTP id 05FE2AD51;
+        Tue, 11 Jun 2019 18:06:16 +0000 (UTC)
+From:   Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To:     stefan.wahren@i2se.com, linux-kernel@vger.kernel.org
+Cc:     mbrugger@suse.de, viresh.kumar@linaro.org, rjw@rjwysocki.net,
+        sboyd@kernel.org, eric@anholt.net, f.fainelli@gmail.com,
+        bcm-kernel-feedback-list@broadcom.com, ptesarik@suse.com,
+        linux-rpi-kernel@lists.infradead.org, ssuloev@orpaltech.com,
+        linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        mturquette@baylibre.com, linux-pm@vger.kernel.org,
+        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH v3 5/7] clk: raspberrypi: register platform device for raspberrypi-cpufreq
+Date:   Tue, 11 Jun 2019 19:58:42 +0200
+Message-Id: <20190611175839.28351-6-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190611175839.28351-1-nsaenzjulienne@suse.de>
+References: <20190611175839.28351-1-nsaenzjulienne@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.12.0 (2019-05-25)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When calling debugfs functions, there is no need to ever check the
-return value.  The function can work or not, but the code logic should
-never do something different based on this.
+As 'clk-raspberrypi' depends on RPi's firmware interface, which might be
+configured as a module, the cpu clock might not be available for the
+cpufreq driver during it's init process. So we register the
+'raspberrypi-cpufreq' platform device after the probe sequence succeeds.
 
-And even when not checking the return value, no need to cast away the
-call to (void), as these functions were never a "must check" type of a
-function, so remove that odd cast.
-
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Acked-by: Eric Anholt <eric@anholt.net>
 ---
- drivers/power/avs/smartreflex.c | 41 +++++++++------------------------
- 1 file changed, 11 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-index c96c01e09740..4684e7df833a 100644
---- a/drivers/power/avs/smartreflex.c
-+++ b/drivers/power/avs/smartreflex.c
-@@ -899,38 +899,19 @@ static int omap_sr_probe(struct platform_device *pdev)
- 	}
+Changes since v2:
+  - Use raspberrypi_clk struct to store cpufreq platform_device
+
+ drivers/clk/bcm/clk-raspberrypi.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/drivers/clk/bcm/clk-raspberrypi.c b/drivers/clk/bcm/clk-raspberrypi.c
+index 467933767106..7f9b001f8d70 100644
+--- a/drivers/clk/bcm/clk-raspberrypi.c
++++ b/drivers/clk/bcm/clk-raspberrypi.c
+@@ -34,6 +34,7 @@
+ struct raspberrypi_clk {
+ 	struct device *dev;
+ 	struct rpi_firmware *firmware;
++	struct platform_device *cpufreq;
  
- 	dev_info(&pdev->dev, "%s: SmartReflex driver initialized\n", __func__);
--	if (!sr_dbg_dir) {
-+	if (!sr_dbg_dir)
- 		sr_dbg_dir = debugfs_create_dir("smartreflex", NULL);
--		if (IS_ERR_OR_NULL(sr_dbg_dir)) {
--			ret = PTR_ERR(sr_dbg_dir);
--			pr_err("%s:sr debugfs dir creation failed(%d)\n",
--			       __func__, ret);
--			goto err_list_del;
--		}
--	}
+ 	unsigned long min_rate;
+ 	unsigned long max_rate;
+@@ -272,6 +273,7 @@ static int raspberrypi_clk_probe(struct platform_device *pdev)
  
- 	sr_info->dbg_dir = debugfs_create_dir(sr_info->name, sr_dbg_dir);
--	if (IS_ERR_OR_NULL(sr_info->dbg_dir)) {
--		dev_err(&pdev->dev, "%s: Unable to create debugfs directory\n",
--			__func__);
--		ret = PTR_ERR(sr_info->dbg_dir);
--		goto err_debugfs;
--	}
+ 	rpi->dev = dev;
+ 	rpi->firmware = firmware;
++	platform_set_drvdata(pdev, rpi);
  
--	(void) debugfs_create_file("autocomp", S_IRUGO | S_IWUSR,
--			sr_info->dbg_dir, (void *)sr_info, &pm_sr_fops);
--	(void) debugfs_create_x32("errweight", S_IRUGO, sr_info->dbg_dir,
--			&sr_info->err_weight);
--	(void) debugfs_create_x32("errmaxlimit", S_IRUGO, sr_info->dbg_dir,
--			&sr_info->err_maxlimit);
-+	debugfs_create_file("autocomp", S_IRUGO | S_IWUSR, sr_info->dbg_dir,
-+			    (void *)sr_info, &pm_sr_fops);
-+	debugfs_create_x32("errweight", S_IRUGO, sr_info->dbg_dir,
-+			   &sr_info->err_weight);
-+	debugfs_create_x32("errmaxlimit", S_IRUGO, sr_info->dbg_dir,
-+			   &sr_info->err_maxlimit);
+ 	ret = raspberrypi_register_pllb(rpi);
+ 	if (ret) {
+@@ -283,6 +285,18 @@ static int raspberrypi_clk_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
- 	nvalue_dir = debugfs_create_dir("nvalue", sr_info->dbg_dir);
--	if (IS_ERR_OR_NULL(nvalue_dir)) {
--		dev_err(&pdev->dev, "%s: Unable to create debugfs directory for n-values\n",
--			__func__);
--		ret = PTR_ERR(nvalue_dir);
--		goto err_debugfs;
--	}
++	rpi->cpufreq = platform_device_register_data(dev, "raspberrypi-cpufreq",
++						     -1, NULL, 0);
++
++	return 0;
++}
++
++static int raspberrypi_clk_remove(struct platform_device *pdev)
++{
++	struct raspberrypi_clk *rpi = platform_get_drvdata(pdev);
++
++	platform_device_unregister(rpi->cpufreq);
++
+ 	return 0;
+ }
  
- 	if (sr_info->nvalue_count == 0 || !sr_info->nvalue_table) {
- 		dev_warn(&pdev->dev, "%s: %s: No Voltage table for the corresponding vdd. Cannot create debugfs entries for n-values\n",
-@@ -945,12 +926,12 @@ static int omap_sr_probe(struct platform_device *pdev)
- 
- 		snprintf(name, sizeof(name), "volt_%lu",
- 				sr_info->nvalue_table[i].volt_nominal);
--		(void) debugfs_create_x32(name, S_IRUGO | S_IWUSR, nvalue_dir,
--				&(sr_info->nvalue_table[i].nvalue));
-+		debugfs_create_x32(name, S_IRUGO | S_IWUSR, nvalue_dir,
-+				   &(sr_info->nvalue_table[i].nvalue));
- 		snprintf(name, sizeof(name), "errminlimit_%lu",
- 			 sr_info->nvalue_table[i].volt_nominal);
--		(void) debugfs_create_x32(name, S_IRUGO | S_IWUSR, nvalue_dir,
--				&(sr_info->nvalue_table[i].errminlimit));
-+		debugfs_create_x32(name, S_IRUGO | S_IWUSR, nvalue_dir,
-+				   &(sr_info->nvalue_table[i].errminlimit));
- 
- 	}
+@@ -291,6 +305,7 @@ static struct platform_driver raspberrypi_clk_driver = {
+ 		.name = "raspberrypi-clk",
+ 	},
+ 	.probe          = raspberrypi_clk_probe,
++	.remove		= raspberrypi_clk_remove,
+ };
+ module_platform_driver(raspberrypi_clk_driver);
  
 -- 
-2.22.0
+2.21.0
 
