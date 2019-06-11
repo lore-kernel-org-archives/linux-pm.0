@@ -2,33 +2,33 @@ Return-Path: <SRS0=ZhbC=UK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D190C06508
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jun 2019 18:08:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 220AFC0650E
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jun 2019 18:08:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2C73B20883
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Jun 2019 18:08:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 015CC20874
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Jun 2019 18:08:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b="MFYmu7nM"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b="aywADk+h"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406859AbfFKSIJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Jun 2019 14:08:09 -0400
-Received: from outils.crapouillou.net ([89.234.176.41]:60230 "EHLO
+        id S2406829AbfFKSIL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Jun 2019 14:08:11 -0400
+Received: from outils.crapouillou.net ([89.234.176.41]:60280 "EHLO
         crapouillou.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2406739AbfFKSIJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jun 2019 14:08:09 -0400
+        with ESMTP id S2406861AbfFKSIL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jun 2019 14:08:11 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
-        s=mail; t=1560276483; h=from:from:sender:reply-to:subject:subject:date:date:
+        s=mail; t=1560276488; h=from:from:sender:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:references; bh=F92Hgvhl4FW1kSKmvn0gmYzIQd65L6N4f7rKJUGKlLY=;
-        b=MFYmu7nMhGPBRi2lqewJHzgo4uCKPVKDPAJ2IbRdcv3xvqrH6HVC5rEoiygSPWVspfSDWg
-        dIY3wMpsk1tB4ZTywq5TD9PHRlqDMjkTlkR5OP8S7Tf9ECcXy6pdxGj7rArW+wplLhUASP
-        pJfiOFRo5tQAHHVP6aTXHB/XTHtZgAs=
+         in-reply-to:in-reply-to:references:references;
+        bh=mxguP54LGk1LDDmHZ+LTxj1W+hmJy/VMSDmPzHC2W88=;
+        b=aywADk+hxDpBBFft8+10XyUbQRWOiHGjl23uw3oFuaKJxkXjeuWaXskKTIRbMaaR3JCY8L
+        Ke1xODBKLCtKbtv0UHh85kIcboviI2QZaUPPT5fLgNqcAv0FpGJrRH74wrhfVOaeXzI5+p
+        Pd/wB9sIZsRtldtihvI4RT5b6DPV4FE=
 From:   Paul Cercueil <paul@crapouillou.net>
 To:     Ralf Baechle <ralf@linux-mips.org>,
         Paul Burton <paul.burton@mips.com>,
@@ -38,9 +38,11 @@ To:     Ralf Baechle <ralf@linux-mips.org>,
 Cc:     od@zcrc.me, linux-mips@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
         Paul Cercueil <paul@crapouillou.net>
-Subject: [PATCH v2 1/5] clk: ingenic: Add missing header in cgu.h
-Date:   Tue, 11 Jun 2019 20:07:53 +0200
-Message-Id: <20190611180757.32299-1-paul@crapouillou.net>
+Subject: [PATCH v2 3/5] MIPS: jz4740: PM: Let CGU driver suspend clocks and set sleep mode
+Date:   Tue, 11 Jun 2019 20:07:55 +0200
+Message-Id: <20190611180757.32299-3-paul@crapouillou.net>
+In-Reply-To: <20190611180757.32299-1-paul@crapouillou.net>
+References: <20190611180757.32299-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -48,9 +50,12 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cgu.h has structures that contain 'clk_onecell_data' and 'clk_hw'
-structures (no pointers), so the <linux/clk-provider.h> header should be
-included.
+Instead of forcing the jz4740 clocks to suspend here, we let the CGU
+driver handle it.
+We also let the CGU driver set the "sleep mode" bit.
+
+This has the added benefit that now it is possible to build a kernel on
+SoCs newer than the JZ4740 with CONFIG_PM.
 
 Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
@@ -58,73 +63,35 @@ Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 Notes:
     v2: Rebase on v5.2-rc4
 
- drivers/clk/ingenic/cgu.h         | 1 +
- drivers/clk/ingenic/jz4725b-cgu.c | 1 -
- drivers/clk/ingenic/jz4740-cgu.c  | 1 -
- drivers/clk/ingenic/jz4770-cgu.c  | 1 -
- drivers/clk/ingenic/jz4780-cgu.c  | 1 -
- 5 files changed, 1 insertion(+), 4 deletions(-)
+ arch/mips/jz4740/pm.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-diff --git a/drivers/clk/ingenic/cgu.h b/drivers/clk/ingenic/cgu.h
-index bfbcf6db437d..ef2db1e26e58 100644
---- a/drivers/clk/ingenic/cgu.h
-+++ b/drivers/clk/ingenic/cgu.h
-@@ -10,6 +10,7 @@
- #define __DRIVERS_CLK_INGENIC_CGU_H__
- 
- #include <linux/bitops.h>
-+#include <linux/clk-provider.h>
- #include <linux/of.h>
- #include <linux/spinlock.h>
- 
-diff --git a/drivers/clk/ingenic/jz4725b-cgu.c b/drivers/clk/ingenic/jz4725b-cgu.c
-index 8901ea0295b7..6e8bbf620c76 100644
---- a/drivers/clk/ingenic/jz4725b-cgu.c
-+++ b/drivers/clk/ingenic/jz4725b-cgu.c
-@@ -6,7 +6,6 @@
-  * Author: Paul Cercueil <paul@crapouillou.net>
-  */
- 
--#include <linux/clk-provider.h>
+diff --git a/arch/mips/jz4740/pm.c b/arch/mips/jz4740/pm.c
+index bbdd2b801e6e..f9b551f01f42 100644
+--- a/arch/mips/jz4740/pm.c
++++ b/arch/mips/jz4740/pm.c
+@@ -9,21 +9,13 @@
  #include <linux/delay.h>
- #include <linux/of.h>
- #include <dt-bindings/clock/jz4725b-cgu.h>
-diff --git a/drivers/clk/ingenic/jz4740-cgu.c b/drivers/clk/ingenic/jz4740-cgu.c
-index c77f4e1506dc..2deac19a8d04 100644
---- a/drivers/clk/ingenic/jz4740-cgu.c
-+++ b/drivers/clk/ingenic/jz4740-cgu.c
-@@ -6,7 +6,6 @@
-  * Author: Paul Burton <paul.burton@mips.com>
-  */
+ #include <linux/suspend.h>
  
--#include <linux/clk-provider.h>
- #include <linux/delay.h>
- #include <linux/io.h>
- #include <linux/of.h>
-diff --git a/drivers/clk/ingenic/jz4770-cgu.c b/drivers/clk/ingenic/jz4770-cgu.c
-index dfce740c25a8..42b2ee121642 100644
---- a/drivers/clk/ingenic/jz4770-cgu.c
-+++ b/drivers/clk/ingenic/jz4770-cgu.c
-@@ -5,7 +5,6 @@
-  */
+-#include <asm/mach-jz4740/clock.h>
+-
+ static int jz4740_pm_enter(suspend_state_t state)
+ {
+-	jz4740_clock_suspend();
+-
+-	jz4740_clock_set_wait_mode(JZ4740_WAIT_MODE_SLEEP);
+-
+ 	__asm__(".set\tmips3\n\t"
+ 		"wait\n\t"
+ 		".set\tmips0");
  
- #include <linux/bitops.h>
--#include <linux/clk-provider.h>
- #include <linux/delay.h>
- #include <linux/io.h>
- #include <linux/of.h>
-diff --git a/drivers/clk/ingenic/jz4780-cgu.c b/drivers/clk/ingenic/jz4780-cgu.c
-index 2464fc4032af..6d524e760180 100644
---- a/drivers/clk/ingenic/jz4780-cgu.c
-+++ b/drivers/clk/ingenic/jz4780-cgu.c
-@@ -6,7 +6,6 @@
-  * Author: Paul Burton <paul.burton@mips.com>
-  */
+-	jz4740_clock_set_wait_mode(JZ4740_WAIT_MODE_IDLE);
  
--#include <linux/clk-provider.h>
- #include <linux/delay.h>
- #include <linux/io.h>
- #include <linux/of.h>
+-	jz4740_clock_resume();
+ 
+ 	return 0;
+ }
 -- 
 2.21.0.593.g511ec345e18
 
