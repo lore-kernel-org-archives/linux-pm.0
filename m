@@ -2,121 +2,162 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5B30C31E45
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:11:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA689C468B0
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:12:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 89D712063F
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:11:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1560445888;
-	bh=zXxn0DZZzDqw7OoZuqRBZa3+NRFbt9j4/8PtEklx0ks=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=Zf+95PGbylE+PhZL6+NL1lQ6AseWrUhDXKkkgrThLtNiTlL4ejalIye30f7mheURp
-	 e8bDgsUcHOFr6MrR7Gz6/cg5KAKe1QgqK9fBhQJ9ePZ518lHrCoQTx3Vca/dSPlyZx
-	 N+6vhbVqhTanwRGsi4bUKlvmRJu2zSsYiFvV4/mw=
+	by mail.kernel.org (Postfix) with ESMTP id BC98E205ED
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:12:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729126AbfFMRL1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 13:11:27 -0400
-Received: from mail.kernel.org ([198.145.29.99]:54514 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729166AbfFMRLY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Jun 2019 13:11:24 -0400
-Received: from mail-qt1-f169.google.com (mail-qt1-f169.google.com [209.85.160.169])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B3C3C217D9;
-        Thu, 13 Jun 2019 17:11:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1560445883;
-        bh=zXxn0DZZzDqw7OoZuqRBZa3+NRFbt9j4/8PtEklx0ks=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=z6QX77MEL+lVTwICJFn4lx/RYfLqUuktVzenVzi/xypIH3UcvaG4r71l7+wQ0UtEQ
-         77w8cr+DCRXNO+kGefwibUjePyZcggjFxjb/OyjvBNs0qX/ZCCaagbGAGepZh82Fb8
-         78Fi+KGZAlC2CadDDN6Mv/Pcqz8geGb2RALiMIUU=
-Received: by mail-qt1-f169.google.com with SMTP id 33so15260222qtr.8;
-        Thu, 13 Jun 2019 10:11:23 -0700 (PDT)
-X-Gm-Message-State: APjAAAUea2kZ2y2Pe/A/Yq8z9AOb7fC+1WMXG/ZEO/VDzH0I8ocpYILl
-        xoJTY2WsKz+H+srGn/wBhHZNmdWE/pr7QTwUPA==
-X-Google-Smtp-Source: APXvYqxPx+RzHImrfYff7rhrQ4nBX3av55NJRHWJ45TzZYNcBbf30JPqZBJ3v2N/ISXb3erZEUw1S75dSeXuFTMiFz8=
-X-Received: by 2002:aed:3b33:: with SMTP id p48mr69738055qte.143.1560445882940;
- Thu, 13 Jun 2019 10:11:22 -0700 (PDT)
+        id S1729686AbfFMRME (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 13:12:04 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:60540 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729076AbfFLWOG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2019 18:14:06 -0400
+Received: from 79.184.253.190.ipv4.supernova.orange.pl (79.184.253.190) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.267)
+ id 991125ee90f9fcfa; Thu, 13 Jun 2019 00:14:02 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PCI <linux-pci@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Keith Busch <kbusch@kernel.org>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: [PATCH] PCI: PM: Skip devices in D0 for suspend-to-idle
+Date:   Thu, 13 Jun 2019 00:14:02 +0200
+Message-ID: <2513600.jR9RdVMSR0@kreacher>
 MIME-Version: 1.0
-References: <20190613170011.9647-1-thierry.reding@gmail.com>
-In-Reply-To: <20190613170011.9647-1-thierry.reding@gmail.com>
-From:   Rob Herring <robh@kernel.org>
-Date:   Thu, 13 Jun 2019 11:11:10 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqKiFzED-YaBFQ-PBnBBbDaC5yeri+pLG-PX=-wpaFfb=A@mail.gmail.com>
-Message-ID: <CAL_JsqKiFzED-YaBFQ-PBnBBbDaC5yeri+pLG-PX=-wpaFfb=A@mail.gmail.com>
-Subject: Re: [PATCH v2] driver: core: Allow subsystems to continue deferring probe
-To:     Thierry Reding <thierry.reding@gmail.com>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Joerg Roedel <joro@8bytes.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        Linux IOMMU <iommu@lists.linux-foundation.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 13, 2019 at 11:00 AM Thierry Reding
-<thierry.reding@gmail.com> wrote:
->
-> From: Thierry Reding <treding@nvidia.com>
->
-> Some subsystems, such as pinctrl, allow continuing to defer probe
-> indefinitely. This is useful for devices that depend on resources
-> provided by devices that are only probed after the init stage.
->
-> One example of this can be seen on Tegra, where the DPAUX hardware
-> contains pinmuxing controls for pins that it shares with an I2C
-> controller. The I2C controller is typically used for communication
-> with a monitor over HDMI (DDC). However, other instances of the I2C
-> controller are used to access system critical components, such as a
-> PMIC. The I2C controller driver will therefore usually be a builtin
-> driver, whereas the DPAUX driver is part of the display driver that
-> is loaded from a module to avoid bloating the kernel image with all
-> of the DRM/KMS subsystem.
->
-> In this particular case the pins used by this I2C/DDC controller
-> become accessible very late in the boot process. However, since the
-> controller is only used in conjunction with display, that's not an
-> issue.
->
-> Unfortunately the driver core currently outputs a warning message
-> when a device fails to get the pinctrl before the end of the init
-> stage. That can be confusing for the user because it may sound like
-> an unwanted error occurred, whereas it's really an expected and
-> harmless situation.
->
-> In order to eliminate this warning, this patch allows callers of the
-> driver_deferred_probe_check_state() helper to specify that they want
-> to continue deferring probe, regardless of whether we're past the
-> init stage or not. All of the callers of that function are updated
-> for the new signature, but only the pinctrl subsystem passes a true
-> value in the new persist parameter if appropriate.
->
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
-> ---
-> Changes in v2:
-> - pass persist flag via flags parameter to make the function call easier
->   to understand
->
->  drivers/base/dd.c            | 19 ++++++++++++++-----
->  drivers/base/power/domain.c  |  2 +-
->  drivers/iommu/of_iommu.c     |  2 +-
->  drivers/pinctrl/devicetree.c |  9 +++++----
->  include/linux/device.h       | 18 +++++++++++++++++-
->  5 files changed, 38 insertions(+), 12 deletions(-)
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Rob Herring <robh@kernel.org>
+Commit d491f2b75237 ("PCI: PM: Avoid possible suspend-to-idle issue")
+attempted to avoid a problem with devices whose drivers want them to
+stay in D0 over suspend-to-idle and resume, but it did not go as far
+as it should with that.
+
+Namely, first of all, it is questionable to change the power state
+of a PCI bridge with a device in D0 under it, but that is not
+actively prevented from happening during system-wide PM transitions,
+so use the skip_bus_pm flag introduced by commit d491f2b75237 for
+that.
+
+Second, the configuration of devices left in D0 (whatever the reason)
+during suspend-to-idle need not be changed and attempting to put them
+into D0 again by force may confuse some firmware, so explicitly avoid
+doing that.
+
+Fixes: d491f2b75237 ("PCI: PM: Avoid possible suspend-to-idle issue")
+Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+Tested on Dell XPS13 9360 with no issues.
+
+---
+ drivers/pci/pci-driver.c |   47 +++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 35 insertions(+), 12 deletions(-)
+
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -524,7 +524,6 @@ static void pci_pm_default_resume_early(
+ 	pci_power_up(pci_dev);
+ 	pci_restore_state(pci_dev);
+ 	pci_pme_restore(pci_dev);
+-	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+ }
+ 
+ /*
+@@ -842,18 +841,16 @@ static int pci_pm_suspend_noirq(struct d
+ 
+ 	if (pci_dev->skip_bus_pm) {
+ 		/*
+-		 * The function is running for the second time in a row without
++		 * Either the device is a bridge with a child in D0 below it, or
++		 * the function is running for the second time in a row without
+ 		 * going through full resume, which is possible only during
+-		 * suspend-to-idle in a spurious wakeup case.  Moreover, the
+-		 * device was originally left in D0, so its power state should
+-		 * not be changed here and the device register values saved
+-		 * originally should be restored on resume again.
++		 * suspend-to-idle in a spurious wakeup case.  The device should
++		 * be in D0 at this point, but if it is a bridge, it may be
++		 * necessary to save its state.
+ 		 */
+-		pci_dev->state_saved = true;
+-	} else if (pci_dev->state_saved) {
+-		if (pci_dev->current_state == PCI_D0)
+-			pci_dev->skip_bus_pm = true;
+-	} else {
++		if (!pci_dev->state_saved)
++			pci_save_state(pci_dev);
++	} else if (!pci_dev->state_saved) {
+ 		pci_save_state(pci_dev);
+ 		if (pci_power_manageable(pci_dev))
+ 			pci_prepare_to_sleep(pci_dev);
+@@ -862,6 +859,22 @@ static int pci_pm_suspend_noirq(struct d
+ 	dev_dbg(dev, "PCI PM: Suspend power state: %s\n",
+ 		pci_power_name(pci_dev->current_state));
+ 
++	if (pci_dev->current_state == PCI_D0) {
++		pci_dev->skip_bus_pm = true;
++		/*
++		 * Changing the power state of a PCI bridge with a device in D0
++		 * below it is questionable, so avoid doing that by setting the
++		 * skip_bus_pm flag for the parent bridge.
++		 */
++		if (pci_dev->bus->self)
++			pci_dev->bus->self->skip_bus_pm = true;
++	}
++
++	if (pci_dev->skip_bus_pm && !pm_suspend_via_firmware()) {
++		dev_dbg(dev, "PCI PM: Skipped\n");
++		goto Fixup;
++	}
++
+ 	pci_pm_set_unknown_state(pci_dev);
+ 
+ 	/*
+@@ -909,7 +922,16 @@ static int pci_pm_resume_noirq(struct de
+ 	if (dev_pm_smart_suspend_and_suspended(dev))
+ 		pm_runtime_set_active(dev);
+ 
+-	pci_pm_default_resume_early(pci_dev);
++	/*
++	 * In the suspend-to-idle case, devices left in D0 during suspend will
++	 * stay in D0, so it is not necessary to restore or update their
++	 * configuration here and attempting to put them into D0 again may
++	 * confuse some firmware, so avoid doing that.
++	 */
++	if (!pci_dev->skip_bus_pm || pm_suspend_via_firmware())
++		pci_pm_default_resume_early(pci_dev);
++
++	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+ 
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_resume_early(dev);
+@@ -1200,6 +1222,7 @@ static int pci_pm_restore_noirq(struct d
+ 	}
+ 
+ 	pci_pm_default_resume_early(pci_dev);
++	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+ 
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_resume_early(dev);
+
+
+
