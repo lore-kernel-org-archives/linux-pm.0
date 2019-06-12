@@ -4,40 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FD98C31E47
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Jun 2019 18:25:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DCE2C31E48
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Jun 2019 18:25:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 81A2520B7C
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Jun 2019 18:25:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5D24120896
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Jun 2019 18:25:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725497AbfFLSZR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Jun 2019 14:25:17 -0400
-Received: from mx2.suse.de ([195.135.220.15]:35276 "EHLO mx1.suse.de"
+        id S1727473AbfFLSZZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 Jun 2019 14:25:25 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35478 "EHLO mx1.suse.de"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726023AbfFLSZR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 Jun 2019 14:25:17 -0400
+        id S1727388AbfFLSZZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Jun 2019 14:25:25 -0400
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
-        by mx1.suse.de (Postfix) with ESMTP id AC8BAB00A;
-        Wed, 12 Jun 2019 18:25:15 +0000 (UTC)
+        by mx1.suse.de (Postfix) with ESMTP id C1618B00B;
+        Wed, 12 Jun 2019 18:25:23 +0000 (UTC)
 From:   Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-To:     stefan.wahren@i2se.com, Eric Anholt <eric@anholt.net>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Ray Jui <rjui@broadcom.com>,
-        Scott Branden <sbranden@broadcom.com>,
-        bcm-kernel-feedback-list@broadcom.com
+To:     stefan.wahren@i2se.com, linux-kernel@vger.kernel.org
 Cc:     mbrugger@suse.de, viresh.kumar@linaro.org, rjw@rjwysocki.net,
-        sboyd@kernel.org, ptesarik@suse.com,
+        sboyd@kernel.org, eric@anholt.net, f.fainelli@gmail.com,
+        bcm-kernel-feedback-list@broadcom.com, ptesarik@suse.com,
         linux-rpi-kernel@lists.infradead.org, ssuloev@orpaltech.com,
         linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         mturquette@baylibre.com, linux-pm@vger.kernel.org,
         Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v4 1/7] clk: bcm2835: remove pllb
-Date:   Wed, 12 Jun 2019 20:24:53 +0200
-Message-Id: <20190612182500.4097-2-nsaenzjulienne@suse.de>
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will.deacon@arm.com>
+Subject: [PATCH v4 7/7] arm64: defconfig: enable cpufreq support for RPi3
+Date:   Wed, 12 Jun 2019 20:24:59 +0200
+Message-Id: <20190612182500.4097-8-nsaenzjulienne@suse.de>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190612182500.4097-1-nsaenzjulienne@suse.de>
 References: <20190612182500.4097-1-nsaenzjulienne@suse.de>
@@ -48,58 +46,39 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Raspberry Pi's firmware controls this pll, we should use the firmware
-interface to access it.
+This enables both the new firmware clock driver and cpufreq driver
+available for the RPi3 family of boards.
 
 Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Acked-by: Eric Anholt <eric@anholt.net>
+Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
 ---
 
-Changes since v1:
-  - Add comment to explain why pllb isn't there anymore
+Changes since v2:
+  - Build both drivers as modules
 
- drivers/clk/bcm/clk-bcm2835.c | 28 ++++------------------------
- 1 file changed, 4 insertions(+), 24 deletions(-)
+ arch/arm64/configs/defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/clk/bcm/clk-bcm2835.c b/drivers/clk/bcm/clk-bcm2835.c
-index 770bb01f523e..867ae3c20041 100644
---- a/drivers/clk/bcm/clk-bcm2835.c
-+++ b/drivers/clk/bcm/clk-bcm2835.c
-@@ -1651,30 +1651,10 @@ static const struct bcm2835_clk_desc clk_desc_array[] = {
- 		.fixed_divider = 1,
- 		.flags = CLK_SET_RATE_PARENT),
- 
--	/* PLLB is used for the ARM's clock. */
--	[BCM2835_PLLB]		= REGISTER_PLL(
--		.name = "pllb",
--		.cm_ctrl_reg = CM_PLLB,
--		.a2w_ctrl_reg = A2W_PLLB_CTRL,
--		.frac_reg = A2W_PLLB_FRAC,
--		.ana_reg_base = A2W_PLLB_ANA0,
--		.reference_enable_mask = A2W_XOSC_CTRL_PLLB_ENABLE,
--		.lock_mask = CM_LOCK_FLOCKB,
--
--		.ana = &bcm2835_ana_default,
--
--		.min_rate = 600000000u,
--		.max_rate = 3000000000u,
--		.max_fb_rate = BCM2835_MAX_FB_RATE),
--	[BCM2835_PLLB_ARM]	= REGISTER_PLL_DIV(
--		.name = "pllb_arm",
--		.source_pll = "pllb",
--		.cm_reg = CM_PLLB,
--		.a2w_reg = A2W_PLLB_ARM,
--		.load_mask = CM_PLLB_LOADARM,
--		.hold_mask = CM_PLLB_HOLDARM,
--		.fixed_divider = 1,
--		.flags = CLK_SET_RATE_PARENT),
-+	/*
-+	 * PLLB is used for the ARM's clock. Controlled by firmware, see
-+	 * clk-raspberrypi.c.
-+	 */
- 
- 	/*
- 	 * PLLC is the core PLL, used to drive the core VPU clock.
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 5a8e853833cf..5e322e61b101 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -83,6 +83,7 @@ CONFIG_ACPI_CPPC_CPUFREQ=m
+ CONFIG_ARM_ARMADA_37XX_CPUFREQ=y
+ CONFIG_ARM_SCPI_CPUFREQ=y
+ CONFIG_ARM_IMX_CPUFREQ_DT=m
++CONFIG_ARM_RASPBERRYPI_CPUFREQ=m
+ CONFIG_ARM_TEGRA186_CPUFREQ=y
+ CONFIG_ARM_SCPI_PROTOCOL=y
+ CONFIG_RASPBERRYPI_FIRMWARE=y
+@@ -653,6 +654,7 @@ CONFIG_COMMON_CLK_CS2000_CP=y
+ CONFIG_COMMON_CLK_S2MPS11=y
+ CONFIG_CLK_QORIQ=y
+ CONFIG_COMMON_CLK_PWM=y
++CONFIG_CLK_RASPBERRYPI=m
+ CONFIG_CLK_IMX8MM=y
+ CONFIG_CLK_IMX8MQ=y
+ CONFIG_CLK_IMX8QXP=y
 -- 
 2.21.0
 
