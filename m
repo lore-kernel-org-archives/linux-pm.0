@@ -2,247 +2,140 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E43A4C31E49
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:00:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6659BC31E4A
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:01:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B244D20665
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:00:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3EA8B20665
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:01:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hXq0/pK2"
+	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="tHU6jHIt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727725AbfFMRAf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 13:00:35 -0400
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:53356 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729075AbfFMRAR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 13:00:17 -0400
-Received: by mail-wm1-f65.google.com with SMTP id x15so10982203wmj.3;
-        Thu, 13 Jun 2019 10:00:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=3Ke2PcNpMKdQyf5iH4DjOeFjzYLX1u7eL3b0acZ61kc=;
-        b=hXq0/pK2h7R3bcBV6Xp/+Xt6pV7CUx/cq/JspzC4TlkWiv62tTxAv+r7Z76IR1NFSX
-         aa/swXxCp6sN6ZeK142FCfiW0UcVnpwMSCKiv8VeTVOKUR3frYnKc9QaiGkFN+4450I7
-         h62/JzZI5339rjqoeQfn3oLMSs67aGVroxuI9xA5HTKlz3O5VYVi3p3r08tCa2U/lzDi
-         NsecWORtpLTMIss4M72J73P7LL9aROJAzweFy2HHhU/T5dtzvJoFadvLS5m3X+xSkyO+
-         r4BAqNe4oiHZ08d27gHXcQd+J2Qi7o7lIV/Z36XrsLCoV4LSHiGyBN2k+BTOyCHFVWyV
-         FRLw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=3Ke2PcNpMKdQyf5iH4DjOeFjzYLX1u7eL3b0acZ61kc=;
-        b=gvDCVYEVuV72oXgUJD8T5Wy26+QxPRr/KxLH1k17w/fBdD3ddwqPAz0WqDlhH757oP
-         SiMhxA3yHPPumRhQrR25b2FjaeI/I+3hxO26FWQnzBqK6iODjjL/fjxKhFn09seod0UR
-         otNfxBrWSFIkGDNxdH9X2b2qYeQLO1wII4/YJvx1ZXa/UNnLZDNBg8+4ezNn5nY8A2Dr
-         evNvUbq75Ewm4yrHEXkb4HM71im38ve+vRGQTJ4ICS8xn8yFeuDKTqE6sTGwa+MHUNhz
-         Ex9//GlhzR1Bk/3CixuRydbfxXPw+YMhohMNN8aM/qqu0hCTAA8hpdGtwDWXIdj/id3b
-         BQHw==
-X-Gm-Message-State: APjAAAWTQdZlxtEDg6WFVCeabhWBunDI+trfEox9DUbLSgIJ1psmc7xB
-        AI46dCjcia7CUs1rttA32/GskmdU
-X-Google-Smtp-Source: APXvYqy66jM0+WZcaVOd83NWcqoVLopT1hGCGUmaFIIHKvurJEGUGEJICIcI5ORKjAzHYDz3y2+WVQ==
-X-Received: by 2002:a1c:448b:: with SMTP id r133mr4746705wma.114.1560445213643;
-        Thu, 13 Jun 2019 10:00:13 -0700 (PDT)
-Received: from localhost (p2E5BEF36.dip0.t-ipconnect.de. [46.91.239.54])
-        by smtp.gmail.com with ESMTPSA id x6sm425324wru.0.2019.06.13.10.00.12
-        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Thu, 13 Jun 2019 10:00:12 -0700 (PDT)
-From:   Thierry Reding <thierry.reding@gmail.com>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     "Rafael J . Wysocki" <rafael@kernel.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Joerg Roedel <joro@8bytes.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org,
-        linux-gpio@vger.kernel.org, iommu@lists.linux-foundation.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2] driver: core: Allow subsystems to continue deferring probe
-Date:   Thu, 13 Jun 2019 19:00:11 +0200
-Message-Id: <20190613170011.9647-1-thierry.reding@gmail.com>
-X-Mailer: git-send-email 2.21.0
+        id S1729693AbfFMRB2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 13:01:28 -0400
+Received: from cmta20.telus.net ([209.171.16.93]:56993 "EHLO cmta20.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729675AbfFLXjL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Jun 2019 19:39:11 -0400
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id bCpdho1tDmIDxbCpehR4ah; Wed, 12 Jun 2019 17:39:09 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1560382749; bh=NkAlskxzscdeR1udzQK+9g7a0lj1WFYO+VNUmciFeO4=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=tHU6jHIt+tCyctkDgAHnArmS1uz4tVBejGFyZPfMGlqs9DqZuUjM1MrL9gm6D9R0/
+         bf5GIZizNGLn2SWaPC6bgClvtMsyTrdrnTqA012+jg7sWWWeHU7lEES0KPujAfTSmX
+         4yyG3pEeteDkKwCr45rBMmhxxiI8rKe8XmJujCOoqXB4MDMx5gwhN4z/u7sSj0Xyle
+         LZ2SKPIrbf8f+2ns+L/NviuKaxpOo2DZ0ih9VJADkE5MfgzZfElL84mWdjZRizg/dx
+         Sgmk3mT6Im7p19dxWTgynq0YNpxaI1SegIe+PciWzKICIre/U4zcKXyRPOLmLy8OIT
+         ZyhiCjIMmlvMQ==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.3 cv=Tq+Yewfh c=1 sm=1 tr=0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=jpOVt7BSZ2e4Z31A5e1TngXxSK0=:19
+ a=IkcTkHD0fZMA:10 a=aatUQebYAAAA:8 a=M5e_aTnQhfenkqaycmAA:9 a=QEXdDO2ut3YA:10
+ a=7715FyvI7WU-l6oqrZBK:22
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Rafael J. Wysocki'" <rafael@kernel.org>,
+        "'Pavel Machek'" <pavel@ucw.cz>
+Cc:     "'kernel list'" <linux-kernel@vger.kernel.org>,
+        "'ACPI Devel Maling List'" <linux-acpi@vger.kernel.org>,
+        "'Zhang, Rui'" <rui.zhang@intel.com>,
+        "'Rafael J. Wysocki'" <rjw@rjwysocki.net>,
+        "'Viresh Kumar'" <viresh.kumar@linaro.org>,
+        "'Linux PM'" <linux-pm@vger.kernel.org>,
+        "'Thomas Gleixner'" <tglx@linutronix.de>,
+        "'Ingo Molnar'" <mingo@redhat.com>,
+        "'Borislav Petkov'" <bp@alien8.de>,
+        "'H. Peter Anvin'" <hpa@zytor.com>,
+        "'the arch/x86 maintainers'" <x86@kernel.org>,
+        "Doug Smythies" <dsmythies@telus.net>
+References: <20190609111732.GA2885@amd> <007701d520c7$c397bda0$4ac738e0$@net> <CAJZ5v0j2pb2WxSA+S44Mr-6bpOx-P9A_T2-sDG3CiWSqLMg3sA@mail.gmail.com>
+In-Reply-To: <CAJZ5v0j2pb2WxSA+S44Mr-6bpOx-P9A_T2-sDG3CiWSqLMg3sA@mail.gmail.com>
+Subject: RE: 5.2-rc2: low framerate in flightgear, cpu not running at full speed, thermal related?
+Date:   Wed, 12 Jun 2019 16:39:04 -0700
+Message-ID: <008f01d52178$07b3be70$171b3b50$@net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AdUhaAyoVaNrS0lJQFeu7feFwtatGwABXsmg
+Content-Language: en-ca
+X-CMAE-Envelope: MS4wfKWWA2PE6GCEhygvHrMKC5TKX76lYBBxCksFr6o5c317Qh9TFUY9Xd0FqOf0Muz+2eh0pg8epTL8td+N3EUJlV8I5UlZgoxHwHX5mwwiungH3c4N7ufj
+ DlhTMMdkXIf8BS8tEwY+yYvKFNFyH1P6VZ6POpMqXHo/SpgKpEmoPDJbQA9LallEmq5kasHdpJ37sFl9L+dADFzRrmjA+7IBtFr/jyoYKALMiAscfRIKlscV
+ G+Wu138uliJPRo0u4EeUs8uZlEekJ0LVyn/XAsW71YACasP3M+vmHl3szCD9E7KF5E1IMaBo8L7yoLi3dSOSS1O2Uaw6Q1VPanb3oEOAC2BKKwUOYzNsV2Y+
+ pb2liYm2oqji1wiYWQhbeDgu2HcOEu5G1ECPSmioO5GO9aRbMZxlSI4L9sFS4iO+Jkzlr6kWzGgTsiWmdDhiXHOV7sL/oLNe6L3foJxYXnFq/Z0fcuY0W6gS
+ 0qfQWEZnBQg6AtcwKTKCcn6i2Cov7N5du79o3tZXWAuxdPD/dsnwtRL3d7NdlwOLGRVk3adAdPRy8dIm
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Thierry Reding <treding@nvidia.com>
+On 2019.06.12 14:25 Rafael J. Wysocki wrote:
+> On Wed, Jun 12, 2019 at 4:45 AM Doug Smythies <dsmythies@telus.net> wrote:
+>>
+>> So, currently there seems to be 3 issues in this thread
+>> (and I am guessing a little, without definitive data):
+>>
+>> 1.) On your system Kernel 5.4-rc2 (or 4) defaults to the intel_pstate CPU frequency
+>> scaling driver and the powersave governor, but kernel 4.6 defaults to the
+>> acpi-cpufreq CPU frequency scaling driver and the ondemand governor.
+>
+> Which means that intel_pstate works in the active mode by default and
+> so it uses its internal governor.
 
-Some subsystems, such as pinctrl, allow continuing to defer probe
-indefinitely. This is useful for devices that depend on resources
-provided by devices that are only probed after the init stage.
+Note sure what you mean by "internal governor"?
+If you meant HWP (Hardware P-state), Pavel's processor doesn't have it.
+If you meant the active powersave governor code within the driver, then agreed.
 
-One example of this can be seen on Tegra, where the DPAUX hardware
-contains pinmuxing controls for pins that it shares with an I2C
-controller. The I2C controller is typically used for communication
-with a monitor over HDMI (DDC). However, other instances of the I2C
-controller are used to access system critical components, such as a
-PMIC. The I2C controller driver will therefore usually be a builtin
-driver, whereas the DPAUX driver is part of the display driver that
-is loaded from a module to avoid bloating the kernel image with all
-of the DRM/KMS subsystem.
+> That governor is more performance-oriented than ondemand and it very
+> well may cause more power to be allocated for the processor - at the
+> expense of the GPU.
 
-In this particular case the pins used by this I2C/DDC controller
-become accessible very late in the boot process. However, since the
-controller is only used in conjunction with display, that's not an
-issue.
+O.K. I mainly use servers and so have no experience with possible GPU
+verses CPU tradeoffs.
 
-Unfortunately the driver core currently outputs a warning message
-when a device fails to get the pinctrl before the end of the init
-stage. That can be confusing for the user because it may sound like
-an unwanted error occurred, whereas it's really an expected and
-harmless situation.
+However, I did re-do my tests measuring energy instead of CPU frequency
+and found very little difference between the acpi-cpufreq/ondemand verses
+intel_pstate/powersave as a function of single threaded load. Actually,
+I did the test twice, one at 20 hertz work/sleep frequency and also
+at 67 hertz work/sleep frequency. (Of course, Pavel's processor might
+well have a different curve, but it is a similar vintage to mine
+i5-2520M verses i7-2600K.) The worst difference was approximately
+1.1 extra processor package watts (an extra 5.5%) in the 80% to 85%
+single threaded load range at 67 hertz work/sleep frequency for
+the intel-pstate/powersave driver/governor. 
 
-In order to eliminate this warning, this patch allows callers of the
-driver_deferred_probe_check_state() helper to specify that they want
-to continue deferring probe, regardless of whether we're past the
-init stage or not. All of the callers of that function are updated
-for the new signature, but only the pinctrl subsystem passes a true
-value in the new persist parameter if appropriate.
+What am I saying? For a fixed amount of work to do per work/sleep cycle
+(i.e. maybe per video frame related type work) while the CPU frequency Verses load
+curves might differ, the resulting processor energy curve differs much less.
+(i.e. the extra power for higher CPU frequency is for less time because it gets
+the job done faster.) So, myself, I don't yet understand why only the one method
+would have hit thermal throttling, but not the other (if indeed it doesn't).
+Other differences between kernel 4.6 and 5.2-rc? might explain it. I did all
+my tests on kernel 5.2-rc3, except that one example from kernel 4.4 on my
+earlier reply, so that were not other variables than CPU scaling driver and
+governor changes.
 
-Signed-off-by: Thierry Reding <treding@nvidia.com>
----
-Changes in v2:
-- pass persist flag via flags parameter to make the function call easier
-  to understand
+> The lower-than-expected frame rate may result from that, in principle.
 
- drivers/base/dd.c            | 19 ++++++++++++++-----
- drivers/base/power/domain.c  |  2 +-
- drivers/iommu/of_iommu.c     |  2 +-
- drivers/pinctrl/devicetree.c |  9 +++++----
- include/linux/device.h       | 18 +++++++++++++++++-
- 5 files changed, 38 insertions(+), 12 deletions(-)
+> One way to mitigate that might be to use intel_pstate in the passive
+> mode (pass intel_pstate=passive to the kernel in the command line)
+> along with either ondemand or schedutil as the governor.
 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 0df9b4461766..0399a6f6c479 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -238,23 +238,32 @@ __setup("deferred_probe_timeout=", deferred_probe_timeout_setup);
- /**
-  * driver_deferred_probe_check_state() - Check deferred probe state
-  * @dev: device to check
-+ * @flags: Flags used to control the behavior of this function. Drivers can
-+ *   set the DRIVER_DEFER_PROBE_PERSIST flag to indicate that they want to
-+ *   keep trying to probe after built-in drivers have had a chance to probe.
-+ *   This is useful for built-in drivers that rely on resources provided by
-+ *   modular drivers.
-  *
-  * Returns -ENODEV if init is done and all built-in drivers have had a chance
-- * to probe (i.e. initcalls are done), -ETIMEDOUT if deferred probe debug
-- * timeout has expired, or -EPROBE_DEFER if none of those conditions are met.
-+ * to probe (i.e. initcalls are done) and unless the DRIVER_DEFER_PROBE_PERSIST
-+ * flag is set, -ETIMEDOUT if deferred probe debug timeout has expired, or
-+ * -EPROBE_DEFER if none of those conditions are met.
-  *
-  * Drivers or subsystems can opt-in to calling this function instead of directly
-  * returning -EPROBE_DEFER.
-  */
--int driver_deferred_probe_check_state(struct device *dev)
-+int driver_deferred_probe_check_state(struct device *dev, unsigned long flags)
- {
- 	if (initcalls_done) {
- 		if (!deferred_probe_timeout) {
- 			dev_WARN(dev, "deferred probe timeout, ignoring dependency");
- 			return -ETIMEDOUT;
- 		}
--		dev_warn(dev, "ignoring dependency for device, assuming no driver");
--		return -ENODEV;
-+
-+		if ((flags & DRIVER_DEFER_PROBE_PERSIST) == 0) {
-+			dev_warn(dev, "ignoring dependency for device, assuming no driver");
-+			return -ENODEV;
-+		}
- 	}
- 	return -EPROBE_DEFER;
- }
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 33c30c1e6a30..6198c6a30fe2 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2423,7 +2423,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device *base_dev,
- 		mutex_unlock(&gpd_list_lock);
- 		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
- 			__func__, PTR_ERR(pd));
--		return driver_deferred_probe_check_state(base_dev);
-+		return driver_deferred_probe_check_state(base_dev, 0);
- 	}
- 
- 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
-diff --git a/drivers/iommu/of_iommu.c b/drivers/iommu/of_iommu.c
-index 614a93aa5305..b95d4342e414 100644
---- a/drivers/iommu/of_iommu.c
-+++ b/drivers/iommu/of_iommu.c
-@@ -105,7 +105,7 @@ static int of_iommu_xlate(struct device *dev,
- 	 * a proper probe-ordering dependency mechanism in future.
- 	 */
- 	if (!ops)
--		return driver_deferred_probe_check_state(dev);
-+		return driver_deferred_probe_check_state(dev, 0);
- 
- 	return ops->of_xlate(dev, iommu_spec);
- }
-diff --git a/drivers/pinctrl/devicetree.c b/drivers/pinctrl/devicetree.c
-index f7e354f85518..43c0183fa23f 100644
---- a/drivers/pinctrl/devicetree.c
-+++ b/drivers/pinctrl/devicetree.c
-@@ -111,13 +111,14 @@ static int dt_to_map_one_config(struct pinctrl *p,
- 
- 		np_pctldev = of_get_next_parent(np_pctldev);
- 		if (!np_pctldev || of_node_is_root(np_pctldev)) {
-+			unsigned long flags = 0;
-+
- 			of_node_put(np_pctldev);
--			ret = driver_deferred_probe_check_state(p->dev);
- 			/* keep deferring if modules are enabled unless we've timed out */
--			if (IS_ENABLED(CONFIG_MODULES) && !allow_default && ret == -ENODEV)
--				ret = -EPROBE_DEFER;
-+			if (IS_ENABLED(CONFIG_MODULES) && !allow_default)
-+				flags |= DRIVER_DEFER_PROBE_PERSIST;
- 
--			return ret;
-+			return driver_deferred_probe_check_state(p->dev, flags);
- 		}
- 		/* If we're creating a hog we can use the passed pctldev */
- 		if (hog_pctldev && (np_pctldev == p->dev->of_node)) {
-diff --git a/include/linux/device.h b/include/linux/device.h
-index e0649f6adf2e..d364656a920c 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -340,7 +340,23 @@ struct device *driver_find_device(struct device_driver *drv,
- 				  int (*match)(struct device *dev, void *data));
- 
- void driver_deferred_probe_add(struct device *dev);
--int driver_deferred_probe_check_state(struct device *dev);
-+
-+/*
-+ * This can be use to continue to defer probe after the init stage and after
-+ * all the built-in drivers have had a chance to probe. This is useful if a
-+ * built-in driver requires resources provided by a modular driver.
-+ *
-+ * One such example is the pinctrl subsystem, where for example the DPAUX
-+ * hardware on Tegra provides pinmuxing controls for pins shared between DPAUX
-+ * and I2C controllers. Only a subset of I2C controllers need the DPAUX
-+ * pinmuxing, and some I2C controllers are used during early boot for critical
-+ * tasks (such as communicating with the system PMIC). The I2C controllers
-+ * that don't share pins with a DPAUX block will want to be driven by a built-
-+ * in driver to make sure they are available early on.
-+ */
-+#define DRIVER_DEFER_PROBE_PERSIST (1 << 0)
-+
-+int driver_deferred_probe_check_state(struct device *dev, unsigned long flags);
- 
- /**
-  * struct subsys_interface - interfaces to device functions
--- 
-2.21.0
+The CPU frequency verses load curves for this those two governors are very similar
+for both the acpi_cpufreq and intel_cpufreq (which is the intel_pstate driver
+in passive mode) drivers.
+
+Just for information: CPU frequency verses single threaded load curves
+for the conservative governor is quite different between the two drivers.
+(tests done in February, perhaps I should re-do and also look at energy
+at the same time, or instead of CPU frequency.)
+
+... Doug
+
 
