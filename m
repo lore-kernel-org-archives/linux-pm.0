@@ -2,92 +2,90 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA3ABC31E4C
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:16:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7E12C31E4A
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 18:27:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8AA882175B
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 17:16:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1560446177;
-	bh=6/4G9x4zsQuQK8+ToSt6QVbv5k7TYmTi2yAsofevHsY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=Q3BYx3Am8NhZf3NUNBOlh1XMniwI87ud0xrHArISuj89uE1PhaNmTRk0wJFog4FW8
-	 5PtlHH1zgRU435i++UTsFVRTPuAFtdgRuh87PyxT/f7Y89SyKYhIFE/dENm5+Jy8zf
-	 8XPRUvU7ZxINYvk41E8EEB/Jdl7Uayhh4B7sv2YA=
+	by mail.kernel.org (Postfix) with ESMTP id B635721743
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 18:27:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729403AbfFMRQE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 13:16:04 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:47002 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728698AbfFLVon (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2019 17:44:43 -0400
-Received: by mail-ot1-f67.google.com with SMTP id z23so16924778ote.13;
-        Wed, 12 Jun 2019 14:44:43 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=6/4G9x4zsQuQK8+ToSt6QVbv5k7TYmTi2yAsofevHsY=;
-        b=YpKmT0+C2griVMmGw+n8I8gmxAGOjAW393yFX50SzCt8ExJDah1r2ImJwJOnIyxpHH
-         z/enpeUDMhm3A1q80aj1qAJ+A1zWd0Uj3ZRQ2ltJz6LWbgAW1H9VaeRmcpq2Y0RdJ9nt
-         xNyQTrv+ICjrVYBkrAdGvLuvRfeEowzaMV1EcNyrGSnvUyId+g+S2PUIf7JSMlWZnDur
-         YXKN6b1gD6vceR//bU9kH3tmJLPeOTewGz4q8J+LdwMSHyoiqrgx4Uoguwt0JyCvKW2b
-         ZriYTfGZNiCjft+toKKp7HkSd7IKKDEPrK8Uo8wGGuBZmU7LhTm7mFr3wKnGSUvV30Ik
-         OQRA==
-X-Gm-Message-State: APjAAAWMxxdwGKVK6aCOc8sa8MFXbfr3IPYTvFMA32cqOavCZ4yGB3qd
-        VEejyqgoHm77v6FlCoCSKFFCoHnT/vyBoUnde/8=
-X-Google-Smtp-Source: APXvYqxN1bHJmkJ+vh40QbfdXCtjCs4vHEb7WPek5QJRj8zdUZWlSjKRNzigkiS5uP3LHGJ4wWz6y073BK1+jYoNW44=
-X-Received: by 2002:a9d:6959:: with SMTP id p25mr18511958oto.118.1560375882780;
- Wed, 12 Jun 2019 14:44:42 -0700 (PDT)
+        id S1727234AbfFMS1S convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 14:27:18 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:44339 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727179AbfFMS1R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 14:27:17 -0400
+Received: from 79.184.253.190.ipv4.supernova.orange.pl (79.184.253.190) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.267)
+ id ff7a96cd0fcda06d; Thu, 13 Jun 2019 20:27:15 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Randy Dunlap <rdunlap@infradead.org>
+Cc:     Stephen Rothwell <sfr@canb.auug.org.au>,
+        Linux Next Mailing List <linux-next@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: linux-next: Tree for Jun 13 (drivers/base/power/domain.c)
+Date:   Thu, 13 Jun 2019 20:27:15 +0200
+Message-ID: <2480052.F5ZUPELBQ8@kreacher>
+In-Reply-To: <00d6da06-1316-6560-5541-0caf8ea5084b@infradead.org>
+References: <20190613193054.37bde7fa@canb.auug.org.au> <00d6da06-1316-6560-5541-0caf8ea5084b@infradead.org>
 MIME-Version: 1.0
-References: <20190609111732.GA2885@amd> <007701d520c7$c397bda0$4ac738e0$@net>
-In-Reply-To: <007701d520c7$c397bda0$4ac738e0$@net>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 12 Jun 2019 23:44:30 +0200
-Message-ID: <CAJZ5v0j2pb2WxSA+S44Mr-6bpOx-P9A_T2-sDG3CiWSqLMg3sA@mail.gmail.com>
-Subject: Re: 5.2-rc2: low framerate in flightgear, cpu not running at full
- speed, thermal related?
-To:     Doug Smythies <dsmythies@telus.net>, Pavel Machek <pavel@ucw.cz>
-Cc:     kernel list <linux-kernel@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        "Zhang, Rui" <rui.zhang@intel.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        "the arch/x86 maintainers" <x86@kernel.org>
+Content-Transfer-Encoding: 8BIT
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jun 12, 2019 at 4:45 AM Doug Smythies <dsmythies@telus.net> wrote:
->
-> Hi,
->
-> So, currently there seems to be 3 issues in this thread
-> (and I am guessing a little, without definitive data):
->
-> 1.) On your system Kernel 5.4-rc2 (or 4) defaults to the intel_pstate CPU frequency
-> scaling driver and the powersave governor, but kernel 4.6 defaults to the
-> acpi-cpufreq CPU frequency scaling driver and the ondemand governor.
+On Thursday, June 13, 2019 6:12:43 PM CEST Randy Dunlap wrote:
+>  This is a multi-part message in MIME format.
+> --------------D4992319A3EA7FFA5EF515C6
+> Content-Type: text/plain; charset=windows-1252
+> Content-Transfer-Encoding: 8bit
+> 
+> On 6/13/19 2:30 AM, Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20190612:
+> > 
+> 
+> 
+> on x86_64:
+> 
+> ../drivers/base/power/domain.c: In function �genpd_queue_power_off_work�:
+> ../drivers/base/power/domain.c:485:13: error: �pm_wq� undeclared (first use in this function)
+>   queue_work(pm_wq, &genpd->power_off_work);
+>              ^
+> ../drivers/base/power/domain.c:485:13: note: each undeclared identifier is reported only once for each function it appears in
+> ../drivers/base/power/domain.c: In function �genpd_dev_pm_qos_notifier�:
+> ../drivers/base/power/domain.c:675:25: error: �struct dev_pm_info� has no member named �ignore_children�
+>    if (!dev || dev->power.ignore_children)
+>                          ^
+> ../drivers/base/power/domain.c: In function �rtpm_status_str�:
+> ../drivers/base/power/domain.c:2754:16: error: �struct dev_pm_info� has no member named �runtime_error�
+>   if (dev->power.runtime_error)
+>                 ^
+> ../drivers/base/power/domain.c:2756:21: error: �struct dev_pm_info� has no member named �disable_depth�
+>   else if (dev->power.disable_depth)
+>                      ^
+> ../drivers/base/power/domain.c:2758:21: error: �struct dev_pm_info� has no member named �runtime_status�
+>   else if (dev->power.runtime_status < ARRAY_SIZE(status_lookup))
+>                      ^
+> ../drivers/base/power/domain.c:2759:31: error: �struct dev_pm_info� has no member named �runtime_status�
+>    p = status_lookup[dev->power.runtime_status];
+>                                ^
+> 
+> 
+> Full randconfig file is attached.
 
-Which means that intel_pstate works in the active mode by default and
-so it uses its internal governor.
+PM_GENERIC_DOMAINS, which is set, depend on PM, which is not set.
 
-That governor is more performance-oriented than ondemand and it very
-well may cause more power to be allocated for the processor - at the
-expense of the GPU.
+Looks like an impossible configuration to me.
 
-The lower-than-expected frame rate may result from that, in principle.
 
-One way to mitigate that might be to use intel_pstate in the passive
-mode (pass intel_pstate=passive to the kernel in the command line)
-along with either ondemand or schedutil as the governor.
+
