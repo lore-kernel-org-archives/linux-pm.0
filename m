@@ -2,160 +2,132 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D04EC31E49
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:21:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47DAEC31E45
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:36:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1661F2054F
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:21:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 20A40217D6
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:36:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GYA4QfzJ"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YFFG03IL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732046AbfFMPVS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 11:21:18 -0400
-Received: from mail-pg1-f180.google.com ([209.85.215.180]:43103 "EHLO
-        mail-pg1-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726976AbfFMPUx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 11:20:53 -0400
-Received: by mail-pg1-f180.google.com with SMTP id f25so11139678pgv.10
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2019 08:20:53 -0700 (PDT)
+        id S1726993AbfFMPgF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 11:36:05 -0400
+Received: from mail-io1-f68.google.com ([209.85.166.68]:34691 "EHLO
+        mail-io1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731971AbfFMPf2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 11:35:28 -0400
+Received: by mail-io1-f68.google.com with SMTP id k8so17886380iot.1;
+        Thu, 13 Jun 2019 08:35:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=cbSuT3oGjvIR+sARU/EqP3cMk9NkxTMi+chkMo+Xgd8=;
-        b=GYA4QfzJ31sVC8bg4WMlTmsKR3+wJ8uwWET9uagjisTWVAClgEliYyv/f2O3o0eRvg
-         bymAHZqdaqAG1CDba+CVbJatnn7I0gWpnRbLaJNmLXpX+7+RPJ9ZDP5b4NxW3S9KJcf1
-         8DGvndPgDdrJgVO/10D/XQpe9XfV1UTEU/I5G3TVyZDMDjWrR3zT/tQsJ3ZloGsOMEk7
-         DMqeeVHCXVtIdzuFl7ZoIk4XbyVuO4NcieAkx0Z82icsqTQHZCIt7YsDt2khWN66Do0y
-         zKi8hGs3OIzZ5yzNsqexf1HO58Yrn1h3YpfFD+pEdlee3Luwj7YNbtARGnD6NhvM6atw
-         7VEw==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=aF7WfJBqic6Edz88lRv/0CL+oI9ZSIdnX+8VgBOn3LM=;
+        b=YFFG03ILxrBxA6EZc7HJyHTcZQG8lYtS0piFG6RoKFTL9WaRyzxFvfEfAYIJhj/ftv
+         9ExuTCWv50qCckQUHlJWT2UsUYTEATiFrwqXse8mop93NQaSCaMjFPtYLHL53CS1iBdu
+         FSSVPGtnBTxP4GW8ocS4dqqaF8GUvpBrzW2/4wt80dCCxcvClhxqJh5SbP92pc3pYdQl
+         jlJmooBJcmedVvhBjo+Q5iscUzsWXs4DECS3/+7zXE3IHqrut20IQRp4C0HcFKIYAcT7
+         4RLMs3kfUprhpOWBGSDxx6PuB5IH+dkxMni5cJQm3aX/POi0LH+cq45V7JYf6aWa4T1L
+         TnxQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=cbSuT3oGjvIR+sARU/EqP3cMk9NkxTMi+chkMo+Xgd8=;
-        b=HOrCAFJ6E8jFPPgyPgUJcDP/k1ZYWbuj3JbXfHGgPO98JEPzD4bTG/7AfGkVqP45cd
-         aPiIY7CzLizt6+4XsqwSOQWVb4icPlblfXlNbO8GVenY6ZJ4W6UuCcNWfQlOByerhr2P
-         N+JMexMk4NjyrlZ2eok0Ov6d0YMljYibRKqhVDgIuR3PPxh/nr9caShP31dofOvcRsU2
-         9QbyYge7Y2V30OPbJvzaP2R8ohgSmylR2o/90Cd+ryv/GMmAe2TLq0hDvgTt9X4gRmqE
-         ck1EISvGhpt0SqavDKfmu8ANmiUve3gwpN+gxI5q7+s9eO/ZlN4X8lOQXQaPUyfgOcyD
-         UJPQ==
-X-Gm-Message-State: APjAAAV6gzY3lW20HduhzgwIzhIRUdD2Vpq5rSlU5m7hMkkIiAyW94Ic
-        o47ItvK//yE9HGglmCtoxPw=
-X-Google-Smtp-Source: APXvYqzNOnMaVi7qOjPVkmsbyB3V+/+fmz5KZPffUlYIhLBfW2iLsgeeqzSSiSki2WpfBGDP/uOrcQ==
-X-Received: by 2002:a17:90a:2ec1:: with SMTP id h1mr6177041pjs.101.1560439253201;
-        Thu, 13 Jun 2019 08:20:53 -0700 (PDT)
-Received: from mita-MS-7A45.lan ([240f:34:212d:1:1b24:991b:df50:ea3f])
-        by smtp.gmail.com with ESMTPSA id n66sm40988pfn.52.2019.06.13.08.20.49
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Thu, 13 Jun 2019 08:20:52 -0700 (PDT)
-From:   Akinobu Mita <akinobu.mita@gmail.com>
-To:     linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org
-Cc:     Akinobu Mita <akinobu.mita@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=aF7WfJBqic6Edz88lRv/0CL+oI9ZSIdnX+8VgBOn3LM=;
+        b=cwC3Bk0V8cUVTlb5qC7wk5kq7I3t9CVr4PqsCr8WSUiLGBZ/8WL/kMB4qdyIKVzRdH
+         buJk1mKOFiQE6rRZFCCqpaPDj3OvnID4rpzBnr8aQ/WhlTk7rAouXapnq0psqZVA3dI6
+         s69WzM4VGxKNAnjXKZBOrI3R1QjfFFdzhCc0zyFVrci/GhM0kWzCgai47baHISfAB5hu
+         C2MoXb5GmagXRFwL7t9WkcwxMrVuUFpv5UQmEHS+clEkEOVNTy8fgcl9Hr2EMdKeUR4p
+         F243oO+9HFJzBpmgeIBaowsoc8vsm5TIJb9+YfhiwuEWyw6dqtOsUOTHz4hRwnQ5icaL
+         sNNw==
+X-Gm-Message-State: APjAAAVljhOXp1qUwGhi/DMT7gFGRuHPtw4DlJ+98KZ/RWtwyTPuT8mk
+        6uLnARmf8hUPjByjS0T7cC9rr6wVLiMAECQhkNs=
+X-Google-Smtp-Source: APXvYqzEXd8Sr1aUseL+zTWDc5Ak4NVxezALw+LIg0QIm0xSXFjXqsm8USdWkhi9CiqHsaqRen64MfMyW8gnwFYF5X4=
+X-Received: by 2002:a5d:9047:: with SMTP id v7mr36860549ioq.18.1560440127125;
+ Thu, 13 Jun 2019 08:35:27 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190525181329.18657-1-tiny.windzz@gmail.com> <20190525181329.18657-2-tiny.windzz@gmail.com>
+ <20190527122752.uc7q6zkjti3zag4q@flea> <CAEExFWtxEB67Pv-8x4ry=tZcJjOD6Kxydq_YB73Gox25VmQn7A@mail.gmail.com>
+ <20190612154325.m6z7xsxlpdq4wkxv@flea>
+In-Reply-To: <20190612154325.m6z7xsxlpdq4wkxv@flea>
+From:   Frank Lee <tiny.windzz@gmail.com>
+Date:   Thu, 13 Jun 2019 23:35:15 +0800
+Message-ID: <CAEExFWskAsNquULKBLtBFUOosNpks8L6aUhw-+cF=oZ0aghAtQ@mail.gmail.com>
+Subject: Re: [PATCH v3 1/3] thermal: sun8i: add thermal driver for h6
+To:     Maxime Ripard <maxime.ripard@bootlin.com>
+Cc:     rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@fb.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        Minwoo Im <minwoo.im.dev@gmail.com>,
-        Kenneth Heitke <kenneth.heitke@intel.com>,
-        Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-Subject: [PATCH v4 0/3] nvme: add thermal zone devices
-Date:   Fri, 14 Jun 2019 00:20:35 +0900
-Message-Id: <1560439238-4054-1-git-send-email-akinobu.mita@gmail.com>
-X-Mailer: git-send-email 2.7.4
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        David Miller <davem@davemloft.net>,
+        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        paulmck@linux.ibm.com, Linux PM <linux-pm@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The NVMe controller reports up to nine temperature values in the SMART /
-Health log page (the composite temperature and temperature sensor 1 through
-temperature sensor 8).
-The temperature threshold feature (Feature Identifier 04h) configures the
-asynchronous event request command to complete when the temperature is
-crossed its corresponding temperature threshold.
+On Thu, Jun 13, 2019 at 9:26 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
+>
+> On Fri, Jun 07, 2019 at 09:34:44PM +0800, Frank Lee wrote:
+> > On Mon, May 27, 2019 at 8:27 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
+> > > > +     ret = devm_request_threaded_irq(dev, irq, NULL,
+> > > > +                                     tmdev->chip->irq_thread,
+> > > > +                                     IRQF_ONESHOT, "ths", tmdev);
+> > > > +     if (ret)
+> > > > +             return ret;
+> > >
+> > > Is there any particular reason to use a threaded interrupt?
+> >
+> > Just to improve real-time.
+>
+> What do you mean by real-time here? If anything, that will increase
+> the latency of the interrupts here.
+>
+> And in preempt-rt, regular top-half interrupts will be forced into a
+> threaded interrupt anyway.
+>
+> > > > +static int sun8i_ths_remove(struct platform_device *pdev)
+> > > > +{
+> > > > +     struct ths_device *tmdev = platform_get_drvdata(pdev);
+> > > > +
+> > > > +     clk_disable_unprepare(tmdev->bus_clk);
+> > >
+> > > I know that we discussed that already, but I'm not sure why you switch
+> > > back to a regular call to regmap_init_mmio, while regmap_init_mmio_clk
+> > > will take care of enabling and disabling the bus clock for you?
+> >
+> > It seems that regmap_init_mmio_clk just get clk and prepare clk
+> > but no enable.
+>
+> At init time, yes. But it will enable it only when you access the
+> registers, which is what you want anyway.
 
-This provides these temperatures and thresholds via thermal zone devices.
+But after accessing the register, it turns the clock off, which
+affects the ad conversion and the occurrence of the interrupt.
 
-The main purpose of this is to turn on a fan when overheated without
-polling the device for the smart log that could prevent the lower power
-state transitions.
+In addition, when resuming from suspend, we need to enable
+the clock, so I think it is necessary to have a clock pointer.
 
-In addition to the standard thermal zone device, this also adds support for
-registering the DT thermal zone device. (This is currently untested, but
-I plan to get a SBC with PCIe to test with DT)
+Yangtao
 
-* v4
-- add thermal.c to hold thermal zone related code
-- add 'use_thermal_zone' module parameter
-- add CONFIG_THERMAL_WRITABLE_TRIPS dependency
-- add comment about the return value of nvme_thermal_zones_register()
-- support DT thermal zone device.
-- use bitmap to iterate over implemented sensors
-
-* v3
-- Change the type name of thermal zone devices from 'nvme_temp<sensor>' to
-  'nvme<instance>_temp<sensor>'
-- Pass a NULL to the status argument of nvme_set_feature()
-- Change the name of symbolic link from 'nvme_temp<sensor>' to 'temp<sensor>'
-- Don't make it fatal error if the device provides a response
-- Don't register thermal zone for composite temperature if smart log reports
-  zero value
-- Move the thermal zones registration and unregistration into the core module.
-
-* v2
-- s/correspoinding/corresponding/ typo in commit log
-- Borrowed nvme_get_features() from Keith's patch
-- Temperature threshold notification is splitted into another patch
-- Change the data type of 'sensor' to unsigned
-- Add BUILD_BUG_ON for the array size of tzdev member in nvme_ctrl
-- Add WARN_ON_ONCE for paranoid checks
-- Fix off-by-one error in nvme_get_temp
-- Validate 'sensor' where the value is actually used
-- Define and utilize two enums related to the temperature threshold feature
-- Remove hysteresis value for this trip point and don't utilize the under
-  temperature threshold
-- Print error message for thermal_zone_device_register() failure
-- Add function comments for nvme_thermal_zones_{,un}register
-- Suppress non-fatal errors from nvme_thermal_zones_register()
-- Add comment about implemented temperature sensors 
-- Instead of creating a new 'thermal_work', append async smart event's
-  action to the existing async_event_work
-- Add comment for tzdev member in nvme_ctrl
-- Call nvme_thermal_zones_unregister() earlier than the last reference
-  release
-
-Akinobu Mita (2):
-  nvme: add thermal zone devices
-  nvme: notify thermal framework when temperature threshold events occur
-
-Keith Busch (1):
-  nvme: Export get and set features
-
- drivers/nvme/host/Kconfig   |   1 +
- drivers/nvme/host/Makefile  |   1 +
- drivers/nvme/host/core.c    |  43 +++++-
- drivers/nvme/host/nvme.h    |  46 +++++++
- drivers/nvme/host/thermal.c | 323 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/nvme.h        |  12 ++
- 6 files changed, 423 insertions(+), 3 deletions(-)
- create mode 100644 drivers/nvme/host/thermal.c
-
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Keith Busch <kbusch@kernel.org>
-Cc: Jens Axboe <axboe@fb.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Sagi Grimberg <sagi@grimberg.me>
-Cc: Minwoo Im <minwoo.im.dev@gmail.com>
-Cc: Kenneth Heitke <kenneth.heitke@intel.com>
-Cc: Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
--- 
-2.7.4
-
+>
+> Maxime
+>
+> --
+> Maxime Ripard, Bootlin
+> Embedded Linux and Kernel engineering
+> https://bootlin.com
