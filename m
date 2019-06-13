@@ -5,64 +5,64 @@ X-Spam-Level:
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A008C31E49
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:13:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02C32C31E45
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:13:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E652820B7C
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:13:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D05C020449
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:13:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eEpipQxF"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lw9r6PmY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732317AbfFMPNr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 11:13:47 -0400
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:44794 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388387AbfFMPNh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 11:13:37 -0400
-Received: by mail-lj1-f195.google.com with SMTP id k18so18891832ljc.11
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2019 08:13:36 -0700 (PDT)
+        id S2387732AbfFMPNx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 11:13:53 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:38105 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388323AbfFMPNc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 11:13:32 -0400
+Received: by mail-lj1-f196.google.com with SMTP id r9so1806803ljg.5
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2019 08:13:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=3sc3DlT2aHgDUBPzbdNbG/lF95Cth+rPWMq4ZM26quY=;
-        b=eEpipQxFUi5JXVuC+9r5W5Dtcce8K9zV/fB94gGq3bd6eQw119DSEiWZNKIRc9Ggbg
-         9YkACR96hRoi/t4EMMWKn59rKmzvTqlvEGtS/hoKOX4346Z8QFShpMQOGKLF15Qym6vi
-         RFbjxmk+c7eGQa9IcwTKduCmZe3IZ0+aZ+Y0ucR3sVrEoZFQEHBsVHN0wSo34QRnnFJz
-         XPar90/oJgWgoN3g3Bspp5lDSu3Sojz64UcSqw+lp8UtjB7cgP2b/Su4IlxjwHfzCDGz
-         S4ndeRvLm8bl9KXUvsw6o/S0aqWezgDQzusmXWAbrmR6lWHEQzLMayKxfh/zMR2HyjuP
-         +EtA==
+        bh=dRI8LDhDHsCIBwRwhlloOvstxSjM1RSSiRjkI92mIwE=;
+        b=lw9r6PmYqD6Hr6/QsZ4lrEvBdxFID2BWPlv5zGEqC2q4tn0gcugk6NoiBpWGanvPSk
+         JkLHblUCjamoh6ksDlc984j2B6BDqfQ62H0JM9arLAsy9IIViFWbT/xECmmmy2alFall
+         x+ShbQD3H7qXdZkMtsqyj2MY+2b9hf7Ad3Ep9jW870noVKVx3yHf50fh/SvWbhCQn7Iq
+         +x1+BlINFAKM2Vvpyb/Mvt9QHbMxUkcF/ttPxEZvAdyITyuqa2D+zIfBI3HyOwUhdAjg
+         hKSmxJfgGojr5ptDsyaVWbNBDI4ULaWEj9XEGiItVLe6CGL9YXfbjNAfw2CzCB94Oiuf
+         o0PQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=3sc3DlT2aHgDUBPzbdNbG/lF95Cth+rPWMq4ZM26quY=;
-        b=ErGkbPvunprCcC0kHvPD9T3ieRgTb/XSyaE7tzTzuvQgnllukubVWYBkWKvl/GaYwI
-         0Q50Qb3NbfT9jrrJvLky67mxADoRkGd/kme9ztFw9N5tg3nbOxTye9hscGJg5lDVvh/d
-         ZvkFeDDk9s+qmRLLyddlhiQFpbSlFLXpQeOmX41cc42VddMayxaRud9S6z674Q53E3Dq
-         M0bnGtAOxq5fFF/WeDnVLLgr4rYVSRgV72loYdNYneHRj8kEFORlGPkMLx+3HksZlfUH
-         HO/ca9Mmcm8WcgVpOs7x/UC9qzvckCweLNE/vJNyLA6BR4jGDmtfCCZHjOBFEGsonmm+
-         m26Q==
-X-Gm-Message-State: APjAAAWfUCMJlhIZtXXHFUqKZ5eMLf0Xwj1cpKdePPQktrpssj+J4rhL
-        HFBnG+Q2Is00oKsDPQ46xY+tNg==
-X-Google-Smtp-Source: APXvYqzusDCujmFK4AzstrHu0895D+ENcdhXdXlWYYdL7SR9aGRx+EF4RNcKjHie1X+EbB9DngrWRQ==
-X-Received: by 2002:a2e:5b5b:: with SMTP id p88mr38323127ljb.192.1560438815349;
-        Thu, 13 Jun 2019 08:13:35 -0700 (PDT)
+        bh=dRI8LDhDHsCIBwRwhlloOvstxSjM1RSSiRjkI92mIwE=;
+        b=CXOqM7QD50FG/k4u0NCN7clUzc9f8yvaRUKjD0Uxs+JhB0cxy5hLXaQySI9TJ+I8GV
+         z9v9i04r2Rv20r2tdqARHdyfPFFULaOx7Is7frENGb8dUzMrhmu9ysM/8goK56YoLHeA
+         vq9x1CQnpOvN79ZUzM7l0vPApvuAZZ1G0oF7pSBzfFTCm2H9o4CcvyWnynFM/bSzsjKq
+         BGwnC4kqNt0Eg4GfSHSPOLsBDfvhOoUp3Pphus3Y4u6DSUhohYk4RhWq+j89A8J/V3uO
+         hSk98VdDiBLMpd8XFtyEAmN5DlvWbE/jAA7OGAzUeubv0KlLmCIoQEEXKFnpVesusmX9
+         RspQ==
+X-Gm-Message-State: APjAAAUR6/R5j0X2Y0A9jbeLkh/OJXJ2EKFil1WY5G6hzYwNHzt0KGhD
+        6GTOUsogMBPon+5wFLoYKXLzfA==
+X-Google-Smtp-Source: APXvYqx7wNrLFi0m5/Yi88xJohB5YbNMobsiwsr84qXDiMDYAXa4ox+tC8tybloJNYCW32CsHQpBMQ==
+X-Received: by 2002:a2e:91c5:: with SMTP id u5mr8390657ljg.65.1560438810181;
+        Thu, 13 Jun 2019 08:13:30 -0700 (PDT)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id k4sm42923ljj.41.2019.06.13.08.13.33
+        by smtp.googlemail.com with ESMTPSA id k4sm42923ljj.41.2019.06.13.08.13.28
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Thu, 13 Jun 2019 08:13:34 -0700 (PDT)
+        Thu, 13 Jun 2019 08:13:29 -0700 (PDT)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     robh+dt@kernel.org, bjorn.andersson@linaro.org, agross@kernel.org,
         georgi.djakov@linaro.org
 Cc:     vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: [PATCH v4 5/5] arm64: dts: qcs404: Add interconnect provider DT nodes
-Date:   Thu, 13 Jun 2019 18:13:23 +0300
-Message-Id: <20190613151323.10850-6-georgi.djakov@linaro.org>
+Subject: [PATCH v4 2/5] soc: qcom: smd-rpm: Create RPM interconnect proxy child device
+Date:   Thu, 13 Jun 2019 18:13:20 +0300
+Message-Id: <20190613151323.10850-3-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190613151323.10850-1-georgi.djakov@linaro.org>
 References: <20190613151323.10850-1-georgi.djakov@linaro.org>
@@ -73,67 +73,74 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the DT nodes for the network-on-chip interconnect buses found
-on qcs404-based platforms.
+Register a platform device to handle the communication of bus bandwidth
+requests with the remote processor. The interconnect proxy device is part
+of this remote processor (RPM) hardware. Let's create a icc-smd-rpm proxy
+child device to represent the bus throughput functionality that is provided
+by the RPM.
 
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
 
 v4:
-- Insert the NoC DT nodes after rng@ to keep the nodes sorted by address.
-- Pick Bjorn's r-b.
+- Return error if platform_device_register_data() fails
+- Remove platform_set_drvdata() on the child device.
 
 v3:
-- Update according to the new binding: add reg property and moved under the
-  "soc" node.
+- New patch.
 
- arch/arm64/boot/dts/qcom/qcs404.dtsi | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ drivers/soc/qcom/smd-rpm.c | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/qcs404.dtsi b/arch/arm64/boot/dts/qcom/qcs404.dtsi
-index ffedf9640af7..da1dbf515bd9 100644
---- a/arch/arm64/boot/dts/qcom/qcs404.dtsi
-+++ b/arch/arm64/boot/dts/qcom/qcs404.dtsi
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- // Copyright (c) 2018, Linaro Limited
+diff --git a/drivers/soc/qcom/smd-rpm.c b/drivers/soc/qcom/smd-rpm.c
+index fa9dd12b5e39..34cdd638a6c1 100644
+--- a/drivers/soc/qcom/smd-rpm.c
++++ b/drivers/soc/qcom/smd-rpm.c
+@@ -19,12 +19,14 @@
+ /**
+  * struct qcom_smd_rpm - state of the rpm device driver
+  * @rpm_channel:	reference to the smd channel
++ * @icc:		interconnect proxy device
+  * @ack:		completion for acks
+  * @lock:		mutual exclusion around the send/complete pair
+  * @ack_status:		result of the rpm request
+  */
+ struct qcom_smd_rpm {
+ 	struct rpmsg_endpoint *rpm_channel;
++	struct platform_device *icc;
+ 	struct device *dev;
  
-+#include <dt-bindings/interconnect/qcom,qcs404.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/clock/qcom,gcc-qcs404.h>
- #include <dt-bindings/clock/qcom,rpmcc.h>
-@@ -266,6 +267,33 @@
- 			clock-names = "core";
- 		};
+ 	struct completion ack;
+@@ -193,6 +195,7 @@ static int qcom_smd_rpm_callback(struct rpmsg_device *rpdev,
+ static int qcom_smd_rpm_probe(struct rpmsg_device *rpdev)
+ {
+ 	struct qcom_smd_rpm *rpm;
++	int ret;
  
-+		bimc: interconnect@400000 {
-+			reg = <0x00400000 0x80000>;
-+			compatible = "qcom,qcs404-bimc";
-+			#interconnect-cells = <1>;
-+			clock-names = "bus_clk", "bus_a_clk";
-+			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
-+				<&rpmcc RPM_SMD_BIMC_A_CLK>;
-+		};
+ 	rpm = devm_kzalloc(&rpdev->dev, sizeof(*rpm), GFP_KERNEL);
+ 	if (!rpm)
+@@ -205,11 +208,23 @@ static int qcom_smd_rpm_probe(struct rpmsg_device *rpdev)
+ 	rpm->rpm_channel = rpdev->ept;
+ 	dev_set_drvdata(&rpdev->dev, rpm);
+ 
+-	return of_platform_populate(rpdev->dev.of_node, NULL, NULL, &rpdev->dev);
++	rpm->icc = platform_device_register_data(&rpdev->dev, "icc_smd_rpm", -1,
++						 NULL, 0);
++	if (IS_ERR(rpm->icc))
++		return PTR_ERR(rpm->icc);
 +
-+		pcnoc: interconnect@500000 {
-+			reg = <0x00500000 0x15080>;
-+			compatible = "qcom,qcs404-pcnoc";
-+			#interconnect-cells = <1>;
-+			clock-names = "bus_clk", "bus_a_clk";
-+			clocks = <&rpmcc RPM_SMD_PNOC_CLK>,
-+				<&rpmcc RPM_SMD_PNOC_A_CLK>;
-+		};
++	ret = of_platform_populate(rpdev->dev.of_node, NULL, NULL, &rpdev->dev);
++	if (ret)
++		platform_device_unregister(rpm->icc);
 +
-+		snoc: interconnect@580000 {
-+			reg = <0x00580000 0x23080>;
-+			compatible = "qcom,qcs404-snoc";
-+			#interconnect-cells = <1>;
-+			clock-names = "bus_clk", "bus_a_clk";
-+			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
-+				<&rpmcc RPM_SMD_SNOC_A_CLK>;
-+		};
++	return ret;
+ }
+ 
+ static void qcom_smd_rpm_remove(struct rpmsg_device *rpdev)
+ {
++	struct qcom_smd_rpm *rpm = dev_get_drvdata(&rpdev->dev);
 +
- 		tlmm: pinctrl@1000000 {
- 			compatible = "qcom,qcs404-pinctrl";
- 			reg = <0x01000000 0x200000>,
++	platform_device_unregister(rpm->icc);
+ 	of_platform_depopulate(&rpdev->dev);
+ }
+ 
