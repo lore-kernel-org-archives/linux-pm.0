@@ -2,132 +2,173 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47DAEC31E45
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:36:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F4F6C31E45
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:38:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 20A40217D6
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:36:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YFFG03IL"
+	by mail.kernel.org (Postfix) with ESMTP id 55781206BB
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:38:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1560440336;
+	bh=7tB+nRJfT6VbD+qZcFdAEwikDakVeejgKwyU7T3Sl2A=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
+	b=0CWFYBTH7W72Gt+x8+R4dN5xzytc99iVQsYEwt2mrei6xQmag3m+Ry5FOk172fuRg
+	 oaLlg1bMMGfVrXTi2mW2A+gnx5BX+GcnRHcil5PKEVLf1lz59Ed+iRpNHVMHS5fKGJ
+	 nFOe/UP5zGBXt2B67o3e6ZLYxzyat3jWRM24NpLQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726993AbfFMPgF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 11:36:05 -0400
-Received: from mail-io1-f68.google.com ([209.85.166.68]:34691 "EHLO
-        mail-io1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731971AbfFMPf2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 11:35:28 -0400
-Received: by mail-io1-f68.google.com with SMTP id k8so17886380iot.1;
-        Thu, 13 Jun 2019 08:35:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=aF7WfJBqic6Edz88lRv/0CL+oI9ZSIdnX+8VgBOn3LM=;
-        b=YFFG03ILxrBxA6EZc7HJyHTcZQG8lYtS0piFG6RoKFTL9WaRyzxFvfEfAYIJhj/ftv
-         9ExuTCWv50qCckQUHlJWT2UsUYTEATiFrwqXse8mop93NQaSCaMjFPtYLHL53CS1iBdu
-         FSSVPGtnBTxP4GW8ocS4dqqaF8GUvpBrzW2/4wt80dCCxcvClhxqJh5SbP92pc3pYdQl
-         jlJmooBJcmedVvhBjo+Q5iscUzsWXs4DECS3/+7zXE3IHqrut20IQRp4C0HcFKIYAcT7
-         4RLMs3kfUprhpOWBGSDxx6PuB5IH+dkxMni5cJQm3aX/POi0LH+cq45V7JYf6aWa4T1L
-         TnxQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=aF7WfJBqic6Edz88lRv/0CL+oI9ZSIdnX+8VgBOn3LM=;
-        b=cwC3Bk0V8cUVTlb5qC7wk5kq7I3t9CVr4PqsCr8WSUiLGBZ/8WL/kMB4qdyIKVzRdH
-         buJk1mKOFiQE6rRZFCCqpaPDj3OvnID4rpzBnr8aQ/WhlTk7rAouXapnq0psqZVA3dI6
-         s69WzM4VGxKNAnjXKZBOrI3R1QjfFFdzhCc0zyFVrci/GhM0kWzCgai47baHISfAB5hu
-         C2MoXb5GmagXRFwL7t9WkcwxMrVuUFpv5UQmEHS+clEkEOVNTy8fgcl9Hr2EMdKeUR4p
-         F243oO+9HFJzBpmgeIBaowsoc8vsm5TIJb9+YfhiwuEWyw6dqtOsUOTHz4hRwnQ5icaL
-         sNNw==
-X-Gm-Message-State: APjAAAVljhOXp1qUwGhi/DMT7gFGRuHPtw4DlJ+98KZ/RWtwyTPuT8mk
-        6uLnARmf8hUPjByjS0T7cC9rr6wVLiMAECQhkNs=
-X-Google-Smtp-Source: APXvYqzEXd8Sr1aUseL+zTWDc5Ak4NVxezALw+LIg0QIm0xSXFjXqsm8USdWkhi9CiqHsaqRen64MfMyW8gnwFYF5X4=
-X-Received: by 2002:a5d:9047:: with SMTP id v7mr36860549ioq.18.1560440127125;
- Thu, 13 Jun 2019 08:35:27 -0700 (PDT)
+        id S1729939AbfFMPic (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 11:38:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33510 "EHLO
+        casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731947AbfFMJ7G (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 05:59:06 -0400
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+        MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
+        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=X6go1h+qBvd8UqStxDka25oSP1lwn219vXM1njzftqM=; b=st/cCkCW17JvfhPcMMlIiWlWs7
+        IjzbMHLeCgNGoALijV6IG+3mBu2hWh+zDF/ixgeztGRJFvKYWEb/k1hwDtOuJEM+LaN5VPyeL2Nyt
+        pUW3p7YE7JRXzR5AqF9H3+IiwxYWckQCRps/QFoMco8bS1sS+v518UWrrJXO7ml5NcscdFDSXeQVX
+        ZKduv2MoYrDVAMjIkypzrzv1fDu9De18EdqyKnVmVA/jtlt3lbqFtvB/kKq3/UdhRk448WORt2zGk
+        vyVeBQhaltTvjNhKaj4bDz1fJNL7g5eIVBQzyzZatNVk3zR46pfOQJ6fi4X1Ul2gzhVbF7Xgp5Fcx
+        8jdm6Tow==;
+Received: from 201.86.169.251.dynamic.adsl.gvt.net.br ([201.86.169.251] helo=coco.lan)
+        by casper.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
+        id 1hbMVS-0000iN-9Z; Thu, 13 Jun 2019 09:58:54 +0000
+Date:   Thu, 13 Jun 2019 06:58:43 -0300
+From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To:     "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        Mauro Carvalho Chehab <mchehab@infradead.org>,
+        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        Sebastian Reichel <sre@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Harry Wei <harryxiyou@gmail.com>,
+        Alex Shi <alex.shi@linux.alibaba.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+        Jani Nikula <jani.nikula@linux.intel.com>,
+        Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
+        Rodrigo Vivi <rodrigo.vivi@intel.com>,
+        David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        "David S. Miller" <davem@davemloft.net>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        linux-pci@vger.kernel.org, linux-wireless@vger.kernel.org,
+        netdev@vger.kernel.org
+Subject: Re: [PATCH v4 18/28] docs: convert docs to ReST and rename to *.rst
+Message-ID: <20190613065843.100f72dd@coco.lan>
+In-Reply-To: <7dc94cb4-ebf1-22ab-29c9-fcb2b875a9ac@csail.mit.edu>
+References: <cover.1560361364.git.mchehab+samsung@kernel.org>
+        <fac44e1fbab5ea755a93601a4fdfa34fcc57ae9e.1560361364.git.mchehab+samsung@kernel.org>
+        <7dc94cb4-ebf1-22ab-29c9-fcb2b875a9ac@csail.mit.edu>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-References: <20190525181329.18657-1-tiny.windzz@gmail.com> <20190525181329.18657-2-tiny.windzz@gmail.com>
- <20190527122752.uc7q6zkjti3zag4q@flea> <CAEExFWtxEB67Pv-8x4ry=tZcJjOD6Kxydq_YB73Gox25VmQn7A@mail.gmail.com>
- <20190612154325.m6z7xsxlpdq4wkxv@flea>
-In-Reply-To: <20190612154325.m6z7xsxlpdq4wkxv@flea>
-From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Thu, 13 Jun 2019 23:35:15 +0800
-Message-ID: <CAEExFWskAsNquULKBLtBFUOosNpks8L6aUhw-+cF=oZ0aghAtQ@mail.gmail.com>
-Subject: Re: [PATCH v3 1/3] thermal: sun8i: add thermal driver for h6
-To:     Maxime Ripard <maxime.ripard@bootlin.com>
-Cc:     rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Chen-Yu Tsai <wens@csie.org>,
-        David Miller <davem@davemloft.net>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        paulmck@linux.ibm.com, Linux PM <linux-pm@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 13, 2019 at 9:26 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
->
-> On Fri, Jun 07, 2019 at 09:34:44PM +0800, Frank Lee wrote:
-> > On Mon, May 27, 2019 at 8:27 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> > > > +     ret = devm_request_threaded_irq(dev, irq, NULL,
-> > > > +                                     tmdev->chip->irq_thread,
-> > > > +                                     IRQF_ONESHOT, "ths", tmdev);
-> > > > +     if (ret)
-> > > > +             return ret;
-> > >
-> > > Is there any particular reason to use a threaded interrupt?
-> >
-> > Just to improve real-time.
->
-> What do you mean by real-time here? If anything, that will increase
-> the latency of the interrupts here.
->
-> And in preempt-rt, regular top-half interrupts will be forced into a
-> threaded interrupt anyway.
->
-> > > > +static int sun8i_ths_remove(struct platform_device *pdev)
-> > > > +{
-> > > > +     struct ths_device *tmdev = platform_get_drvdata(pdev);
-> > > > +
-> > > > +     clk_disable_unprepare(tmdev->bus_clk);
-> > >
-> > > I know that we discussed that already, but I'm not sure why you switch
-> > > back to a regular call to regmap_init_mmio, while regmap_init_mmio_clk
-> > > will take care of enabling and disabling the bus clock for you?
-> >
-> > It seems that regmap_init_mmio_clk just get clk and prepare clk
-> > but no enable.
->
-> At init time, yes. But it will enable it only when you access the
-> registers, which is what you want anyway.
+Em Wed, 12 Jun 2019 17:25:39 -0700
+"Srivatsa S. Bhat" <srivatsa@csail.mit.edu> escreveu:
 
-But after accessing the register, it turns the clock off, which
-affects the ad conversion and the occurrence of the interrupt.
+> On 6/12/19 10:52 AM, Mauro Carvalho Chehab wrote:
+> > Convert the PM documents to ReST, in order to allow them to
+> > build with Sphinx.
+> > 
+> > The conversion is actually:
+> >   - add blank lines and identation in order to identify paragraphs;
+> >   - fix tables markups;
+> >   - add some lists markups;
+> >   - mark literal blocks;
+> >   - adjust title markups.
+> > 
+> > At its new index.rst, let's add a :orphan: while this is not linked to
+> > the main index.rst file, in order to avoid build warnings.
+> > 
+> > Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+> > Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> > Acked-by: Mark Brown <broonie@kernel.org>
+> > ---  
+> 
+> [...]
+> 
+> > diff --git a/Documentation/power/suspend-and-cpuhotplug.txt b/Documentation/power/suspend-and-cpuhotplug.rst
+> > similarity index 90%
+> > rename from Documentation/power/suspend-and-cpuhotplug.txt
+> > rename to Documentation/power/suspend-and-cpuhotplug.rst
+> > index a8751b8df10e..9df664f5423a 100644
+> > --- a/Documentation/power/suspend-and-cpuhotplug.txt
+> > +++ b/Documentation/power/suspend-and-cpuhotplug.rst
+> > @@ -1,10 +1,15 @@
+> > +====================================================================
+> >  Interaction of Suspend code (S3) with the CPU hotplug infrastructure
+> > +====================================================================
+> >  
+> > -     (C) 2011 - 2014 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> > +(C) 2011 - 2014 Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> >  
+> >  
+> > -I. How does the regular CPU hotplug code differ from how the Suspend-to-RAM
+> > -   infrastructure uses it internally? And where do they share common code?
+> > +I. Differences between CPU hotplug and Suspend-to-RAM
+> > +======================================================
+> > +
+> > +How does the regular CPU hotplug code differ from how the Suspend-to-RAM
+> > +infrastructure uses it internally? And where do they share common code?
+> >  
+> >  Well, a picture is worth a thousand words... So ASCII art follows :-)
+> >    
+> 
+> [...]
+> 
+> > @@ -101,7 +108,7 @@ execution during resume):
+> >  
+> >  It is to be noted here that the system_transition_mutex lock is acquired at the very
+> >  beginning, when we are just starting out to suspend, and then released only
+> > -after the entire cycle is complete (i.e., suspend + resume).
+> > +after the entire cycle is complete (i.e., suspend + resume)::
+> >    
+> 
+> I think that should be a period, not a colon, because it is clarifying
+> the text above it (as opposed to referring to the example below it).
+> 
+> Other than that, for suspend-and-cpuhotplug.txt:
+> 
+> Acked-by: Srivatsa S. Bhat (VMware) <srivatsa@csail.mit.edu>
 
-In addition, when resuming from suspend, we need to enable
-the clock, so I think it is necessary to have a clock pointer.
+Ah, ok. I'll change it to:
 
-Yangtao
+	after the entire cycle is complete (i.e., suspend + resume).
 
->
-> Maxime
->
-> --
-> Maxime Ripard, Bootlin
-> Embedded Linux and Kernel engineering
-> https://bootlin.com
+	::
+
+and add your acked-by.
+
+>  
+> Regards,
+> Srivatsa
+> VMware Photon OS
+
+
+
+Thanks,
+Mauro
