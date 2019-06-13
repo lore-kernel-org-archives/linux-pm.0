@@ -2,143 +2,195 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5360CC31E45
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 16:46:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34C08C31E45
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 16:49:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B2E9B2175B
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 16:46:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="i+5hfE2B"
+	by mail.kernel.org (Postfix) with ESMTP id 09AE12082C
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 16:49:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731950AbfFMQqv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 12:46:51 -0400
-Received: from mail.andi.de1.cc ([85.214.239.24]:49434 "EHLO mail.andi.de1.cc"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2404168AbfFMQqt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Jun 2019 12:46:49 -0400
-X-Greylist: delayed 1124 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Jun 2019 12:46:47 EDT
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=kemnade.info; s=20180802; h=Content-Type:MIME-Version:Message-ID:Subject:To
-        :From:Date:Sender:Reply-To:Cc:Content-Transfer-Encoding:Content-ID:
-        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-        :Resent-Message-ID:In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=1I3y8nqcJVpxthG73yLJqt3fM1GjciDgS30mgpzyGos=; b=i+5hfE2B0oerl7ASbQfCQ9Ckpu
-        NAD8hrilFOX0+AkKTEAiXKhYzkYZ+HYcfEJiwgdIIqSHP9KAY63nD2ajs05yT6mCfecjlZNDWg3vo
-        VFiK/OsEtD8diKZTdcFaaRatrvKu3Gfzd1Q+S+jciRacE0tKZIWwSEWQYfcezjTCsOSY=;
-Received: from p5dcc3dfb.dip0.t-ipconnect.de ([93.204.61.251] helo=eeepc)
-        by mail.andi.de1.cc with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.89)
-        (envelope-from <andreas@kemnade.info>)
-        id 1hbSa2-0005j7-2T; Thu, 13 Jun 2019 18:28:02 +0200
-Received: from [::1] (helo=localhost)
-        by localhost with esmtp (Exim 4.89)
-        (envelope-from <andreas@kemnade.info>)
-        id 1hbSIz-0002wp-Cw; Thu, 13 Jun 2019 18:10:25 +0200
-Date:   Thu, 13 Jun 2019 18:09:58 +0200
-From:   Andreas Kemnade <andreas@kemnade.info>
-To:     Discussions about the Letux Kernel <letux-kernel@openphoenux.org>,
-        linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
-Subject: BUG: no cpufreq on gta04 (omap dm3730) in 5.2-rc4
-Message-ID: <20190613180958.48e04530@kemnade.info>
-X-Mailer: Claws Mail 3.14.1 (GTK+ 2.24.31; i686-pc-linux-gnu)
+        id S1729973AbfFMQtb convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 12:49:31 -0400
+Received: from mout.kundenserver.de ([217.72.192.74]:56337 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727637AbfFMEcW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 00:32:22 -0400
+Received: from [192.168.1.162] ([37.4.249.160]) by mrelayeu.kundenserver.de
+ (mreue108 [212.227.15.183]) with ESMTPSA (Nemesis) id
+ 1MZl1l-1i7PGS1Jwd-00WmSh; Thu, 13 Jun 2019 06:31:59 +0200
+Subject: Re: [PATCH v4 0/7] cpufreq support for Raspberry Pi
+To:     Florian Fainelli <f.fainelli@gmail.com>,
+        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+        linux-kernel@vger.kernel.org
+Cc:     mbrugger@suse.de, viresh.kumar@linaro.org, rjw@rjwysocki.net,
+        sboyd@kernel.org, eric@anholt.net,
+        bcm-kernel-feedback-list@broadcom.com, ptesarik@suse.com,
+        linux-rpi-kernel@lists.infradead.org, ssuloev@orpaltech.com,
+        linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        mturquette@baylibre.com, linux-pm@vger.kernel.org
+References: <20190612182500.4097-1-nsaenzjulienne@suse.de>
+ <6a9e1450-80ad-a13c-59d2-d0b39f25f67e@gmail.com>
+From:   Stefan Wahren <stefan.wahren@i2se.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=stefan.wahren@i2se.com; keydata=
+ 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 AQ==
+Message-ID: <7acfd967-0a82-5429-4eed-8b802e6620f5@i2se.com>
+Date:   Thu, 13 Jun 2019 06:31:56 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/phLSzGZi9/nM=tEb3SaLRWC"; protocol="application/pgp-signature"
+In-Reply-To: <6a9e1450-80ad-a13c-59d2-d0b39f25f67e@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Content-Language: en-US
+X-Provags-ID: V03:K1:JVQIgpWCtEazzL5rYiYN0IJEAR5Tb9mY8miRG4xc6XNEwCRWInY
+ TBwHbJFIaEUrGyLOdt+lXcrTaziNHMDMs64ofG55owRH1Hd/pEOrQrkqoSTEKiQjrw3qqMT
+ PGjkYDSvB+3PNpnSt/fsfWOKgiKhM8yfyq8E4iBNUJab5rhepnrj4VioMJI95IQYvgQsocg
+ ukaDas5WPpS6ZzzEt5xgQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:qTId+nsNh3Q=:i8CAXhIIDdMqRAoBpJ9bt2
+ ElRxq5FvcgqdFuSs46Gehl0C5YDmpEC4nUw0cXizSVc+cWPR4aDgNyt5MPdUasAcqCukaufE0
+ A7rpfAf14PYX14/UuixSC8G6rwBWtySYTocpCMRNmuRIYvd/1IF1sc5EzGLAv3XPnQDORdHeL
+ FHFY0elcDduUGr00RxgyLZUa52To9/aHr0Jy+BzdK2szuPoTyPClXcwRZWx2CoOQY2jiAQwAz
+ VEhOgJ/NwhZ+nh18bkePYiEyoN1Et5gjqHD0vpa3a3BPC3XpGJbtTbuBeRsRlYe0hFyDjCXZj
+ a4hxDc4qiuzX4hIRjsZUkKVyyHKngdQWTY4199PaN16W8r3siQLEBtoTFOeO0zeSGLqnvebAv
+ e91JVWr0VJc/D7LOEr8ZAl+AgA9PGOq+tG4vaV1XKof8TU37n4eGKOFxIR8JrQ5KHC1cKyiHL
+ 0Plpno2LtvUS5UOjEfuMGSbLuMdsZHcyd0TxhmnQw5Wk71nHTwOunWsosug8d+btZr1JWHTE2
+ 2+a+C/kaaWlfoi7FInYZxLiYPCiCCwNkuWfwgiss98//YWHRwvEQCs9JbUC9Lv2BvCUHrpYHi
+ d8edz+iAQZ1HWZv5zZ/nAG6S8LXQM+jRAO4DNxlesBvt/RBD4nqViubNWwCk8zPu+U2X5dflG
+ M3hUe7u2xoBMl81wdQrWiXhYgk2o+pp2G8+E+KUd61+6gVOEOUSn0pHXeLQWn1TnEG73iTKBZ
+ 5eCFdS73IJl8M4suuTFS2oS17r+uowBuhkjRzVPTW60WV8bJZrvzTk78XUc=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
---Sig_/phLSzGZi9/nM=tEb3SaLRWC
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Florian,
+hi Stephen,
 
-Hi,
+Am 13.06.19 um 05:31 schrieb Florian Fainelli:
+>
+> On 6/12/2019 11:24 AM, Nicolas Saenz Julienne wrote:
+>> Hi all,
+>> this aims at adding cpufreq support to the Raspberry Pi family of
+>> boards.
+>>
+>> The series first factors out 'pllb' from clk-bcm2385 and creates a new
+>> clk driver that operates it over RPi's firmware interface[1]. We are
+>> forced to do so as the firmware 'owns' the pll and we're not allowed to
+>> change through the register interface directly as we might race with the
+>> over-temperature and under-voltage protections provided by the firmware.
+>>
+>> Next it creates a minimal cpufreq driver that populates the CPU's opp
+>> table, and registers cpufreq-dt. Which is needed as the firmware
+>> controls the max and min frequencies available.
+>>
+>> This was tested on a RPi3b+ and RPI2b, both using multi_v7_defconfig and
+>> arm64's defconfig.
+> How do we go about merging this? Stefan, will you pick up patch 3, 6 and
+> 7 and submit them for 5.3/5.4? Viresh has already picked up patch 4.
 
-On the gta04 (dm3730 cpu), cpufreq does not work properly with above-mentio=
-ned
-kernel.
-cpufreq-info just shows
-analyzing CPU 0:
-  no or unknown cpufreq driver is active on this CPU
-  maximum transition latency: 0.00 ms.
+is it possible to let patches 1,2, 3 and 5 go via clk-tree?
 
-dmesg log shows these interesting lines.
+I would take care of 6 and 7.
 
-[    3.140655] core: _opp_supported_by_regulators: OPP minuV: 1012500 maxuV=
-: 1012500, not supported by regulator
-[    3.152709] cpu cpu0: _opp_add: OPP not supported by regulators (3000000=
-00)
-[    3.160278] core: _opp_supported_by_regulators: OPP minuV: 1200000 maxuV=
-: 1200000, not supported by regulator
-[    3.171142] cpu cpu0: _opp_add: OPP not supported by regulators (6000000=
-00)
-[    3.178710] core: _opp_supported_by_regulators: OPP minuV: 1325000 maxuV=
-: 1325000, not supported by regulator
-[    3.189483] cpu cpu0: _opp_add: OPP not supported by regulators
-(800000000)
+Stefan
 
-looking through logs shows that these lines first appeared in
-next-20190506. They were not present in next-20190503. If I understand that
-correcly it is about vdd1.
-Analysis reveals:
+>
+>> That's all,
+>> kind regards,
+>> Nicolas
+>>
+>> [1] https://github.com/raspberrypi/firmware/wiki/Mailbox-property-interface
+>>
+>> ---
+>>
+>> Changes since v3:
+>>   - Fix sparse warnings in clk-raspberrypi.c
+>>   - Minor cleanups
+>>
+>> Changes since v2:
+>>   - Fixed configs to match Stefan's comments
+>>   - Round OPP frequencies
+>>   - Rebase onto linux-next
+>>   - Minor cleanups & checkpatch.pl
+>>
+>> Changes since v1:
+>>   - Enabled by default on the whole family of devices
+>>   - Added/Fixed module support
+>>   - clk device now registered by firmware driver
+>>   - raspberrypi-cpufreq device now registered by clk driver
+>>   - Reimplemented clk rounding unsing determine_rate()
+>>   - Enabled in configs for arm and arm64
+>>
+>> Changes since RFC:
+>>   - Move firmware clk device into own driver
+>>
+>> Nicolas Saenz Julienne (7):
+>>   clk: bcm2835: remove pllb
+>>   clk: bcm283x: add driver interfacing with Raspberry Pi's firmware
+>>   firmware: raspberrypi: register clk device
+>>   cpufreq: add driver for Raspberry Pi
+>>   clk: raspberrypi: register platform device for raspberrypi-cpufreq
+>>   ARM: defconfig: enable cpufreq driver for RPi
+>>   arm64: defconfig: enable cpufreq support for RPi3
+>>
+>>  arch/arm/configs/bcm2835_defconfig    |   9 +
+>>  arch/arm/configs/multi_v7_defconfig   |   2 +
+>>  arch/arm64/configs/defconfig          |   2 +
+>>  drivers/clk/bcm/Kconfig               |   7 +
+>>  drivers/clk/bcm/Makefile              |   1 +
+>>  drivers/clk/bcm/clk-bcm2835.c         |  28 +--
+>>  drivers/clk/bcm/clk-raspberrypi.c     | 315 ++++++++++++++++++++++++++
+>>  drivers/cpufreq/Kconfig.arm           |   8 +
+>>  drivers/cpufreq/Makefile              |   1 +
+>>  drivers/cpufreq/raspberrypi-cpufreq.c |  97 ++++++++
+>>  drivers/firmware/raspberrypi.c        |  10 +
+>>  11 files changed, 456 insertions(+), 24 deletions(-)
+>>  create mode 100644 drivers/clk/bcm/clk-raspberrypi.c
+>>  create mode 100644 drivers/cpufreq/raspberrypi-cpufreq.c
+>>
 
-in
-int regulator_is_supported_voltage(struct regulator *regulator,
-                                   int min_uV, int max_uV)
-
-the following if fails:
-     /* Any voltage within constrains range is fine? */
-        if (rdev->desc->continuous_voltage_range) {
-
-The following hack did the trick
-
-diff --git a/drivers/regulator/twl-regulator.c b/drivers/regulator/twl-regu=
-lator.c
-index 6fa15b2d6fb3..f7bfdf53701d 100644
---- a/drivers/regulator/twl-regulator.c
-+++ b/drivers/regulator/twl-regulator.c
-@@ -478,6 +478,7 @@ static const struct twlreg_info TWL4030_INFO_##label =
-=3D { \
- 		.type =3D REGULATOR_VOLTAGE, \
- 		.owner =3D THIS_MODULE, \
- 		.enable_time =3D turnon_delay, \
-+		.continuous_voltage_range =3D true, \
- 		.of_map_mode =3D twl4030reg_map_mode, \
- 		}, \
- 	}
-
-
-not sure whether it is correct, whether these things are continuous enough.
-If that all is ok, I will of course submit a formal patch.
-
-Regards
-Andreas
-
---Sig_/phLSzGZi9/nM=tEb3SaLRWC
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEPIWxmAFyOaBcwCpFl4jFM1s/ye8FAl0CdVYACgkQl4jFM1s/
-ye+K2g//QGXv4imVjMS+bJhxOxvePnHgA9xkT3GXJjB1my/12HiWIXt7lsqr67mQ
-K8UmKN1ZazgBCDk77d8s8pLIZXPQOCwNgmQq6OXqeeSKVeR23VLh7q+FAIw62d+G
-p8GGkrh5qPjWncXnzdnAvXSl0qDe5vCvnlTjxwJ4H0H1S/+yBEb8FP6CkJa7Q2yJ
-2eXi1MM308zn2be24+WT7BFFkSWRbsLrOk1d1Tlxofgb4aejN1dymB5xi/VjSj3B
-OWFLvnal5wKnktWjpRhTy+hozzgJN/OQsz8tbkQh73ty68X6DIxXhJLNlcu0uO0n
-oBg2ebKnybEwEDlMhTxWfW9eG5Fk7opiDMUEWpQoj9HSitSzgfDH5M544UzfLeBu
-EVaMMcHxpHLVYKpSJtEfKW+Po6JmnT7ckV4r8i4qzyKUEIkVp5EPryZdX2JPgexn
-83HOiHdkf91I4KpLncAXzcSpoWxe7VJZOWNIudSgF32/tkoopq7hkmaeKCF0ukPi
-WfDtry1onnbfKwxaOpZ+LL5kqq0w99oKgx+jwZseCO/X9+7R5qnvk3NBMM1ado/Q
-RIYPl94GnEDz481cGBsuO/AT3B+MUMi9IchLb4bclHTKNxvllszVoq9Rl+t8mI/J
-L3YtP4UQL9a20qFHyFfE1NvyymW0bsYiWHzsh077OpebgPBepwY=
-=8loG
------END PGP SIGNATURE-----
-
---Sig_/phLSzGZi9/nM=tEb3SaLRWC--
