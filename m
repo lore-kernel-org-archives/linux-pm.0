@@ -2,202 +2,143 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABAC8C31E49
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 16:45:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5360CC31E45
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 16:46:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 84A6D215EA
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 16:45:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B2E9B2175B
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 16:46:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="i+5hfE2B"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2392720AbfFMQpG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 12:45:06 -0400
-Received: from youngberry.canonical.com ([91.189.89.112]:39089 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730399AbfFMGNf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 02:13:35 -0400
-Received: from mail-pl1-f197.google.com ([209.85.214.197])
-        by youngberry.canonical.com with esmtps (TLS1.0:RSA_AES_128_CBC_SHA1:16)
-        (Exim 4.76)
-        (envelope-from <kai.heng.feng@canonical.com>)
-        id 1hbIzN-0005Za-0K
-        for linux-pm@vger.kernel.org; Thu, 13 Jun 2019 06:13:33 +0000
-Received: by mail-pl1-f197.google.com with SMTP id q2so11286053plr.19
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2019 23:13:32 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
-         :content-transfer-encoding:message-id:references:to;
-        bh=xZMnfNxiIJQHgk6DTR2b96lSjKM+Cv557iMAiHl0otE=;
-        b=RumxGnO7aptO1ak3YNXi4NUHD/uoAxKxRKZq6eDFPTg/2H0JbeRJMTk9gr5N/MvVVS
-         NWDMDQ0eNxtFJ0sYD5kosTzhrwPdbbK4VSWvtT6XGnI5pOWOGdTl4EZpror8t+8d/8cq
-         fkaeW/PqXLpzj0DqPXIjT9K0qCE+mJljhnL+pIVfLSTJPt2uP3c/f7uejgGRgqVN/eg6
-         sdTpu3RELTGsVn6iLo/TavrxH69kWmWjjdCw9BOFp2X2/CIKVQNFsY2N1hf53WA2PuKP
-         YViYEZ6lRo6nI1BJINbNNjCPNTBK6kOdf/blEqbxTymEvXzfLR0FKMlbWOeuYVJlOHpF
-         xOOQ==
-X-Gm-Message-State: APjAAAVCtxe3K2dFJRH8+e90Ry1c3LWqWzfXm4saJ6Y6zkQE8ALI97S/
-        iRCZZm+qF1anLz/g7+UUtQZUPSQ7qIlwyGlGUtGt1HJwB3FykhW7c+qK0ghh87LTW5xeRaFzhkG
-        yD13NpbJYxFpzCBMo7T6U6PZej4/CEoHh9pOp
-X-Received: by 2002:aa7:9407:: with SMTP id x7mr48714682pfo.163.1560406411622;
-        Wed, 12 Jun 2019 23:13:31 -0700 (PDT)
-X-Google-Smtp-Source: APXvYqy/M4KOk8anUvleYe4Z0kHfP1YyeHtJEQFqJQMyjw20cPWdlOiaKzI0TiyHxZ0ofVL/cTvhMw==
-X-Received: by 2002:aa7:9407:: with SMTP id x7mr48714652pfo.163.1560406411293;
-        Wed, 12 Jun 2019 23:13:31 -0700 (PDT)
-Received: from [172.20.10.4] (223-136-183-91.emome-ip.hinet.net. [223.136.183.91])
-        by smtp.gmail.com with ESMTPSA id u123sm1554074pfu.67.2019.06.12.23.13.29
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 12 Jun 2019 23:13:30 -0700 (PDT)
-Content-Type: text/plain;
-        charset=us-ascii;
-        delsp=yes;
-        format=flowed
-Mime-Version: 1.0 (Mac OS X Mail 12.4 \(3445.104.11\))
-Subject: Re: [PATCH] PCI: PM: Skip devices in D0 for suspend-to-idle
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-In-Reply-To: <2513600.jR9RdVMSR0@kreacher>
-Date:   Thu, 13 Jun 2019 14:13:26 +0800
-Cc:     Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Bjorn Helgaas <helgaas@kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Keith Busch <kbusch@kernel.org>
-Content-Transfer-Encoding: 7bit
-Message-Id: <A0D09537-12D3-4466-945A-7D7F889A5472@canonical.com>
-References: <2513600.jR9RdVMSR0@kreacher>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-X-Mailer: Apple Mail (2.3445.104.11)
+        id S1731950AbfFMQqv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 12:46:51 -0400
+Received: from mail.andi.de1.cc ([85.214.239.24]:49434 "EHLO mail.andi.de1.cc"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2404168AbfFMQqt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Jun 2019 12:46:49 -0400
+X-Greylist: delayed 1124 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Jun 2019 12:46:47 EDT
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=kemnade.info; s=20180802; h=Content-Type:MIME-Version:Message-ID:Subject:To
+        :From:Date:Sender:Reply-To:Cc:Content-Transfer-Encoding:Content-ID:
+        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+        :Resent-Message-ID:In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=1I3y8nqcJVpxthG73yLJqt3fM1GjciDgS30mgpzyGos=; b=i+5hfE2B0oerl7ASbQfCQ9Ckpu
+        NAD8hrilFOX0+AkKTEAiXKhYzkYZ+HYcfEJiwgdIIqSHP9KAY63nD2ajs05yT6mCfecjlZNDWg3vo
+        VFiK/OsEtD8diKZTdcFaaRatrvKu3Gfzd1Q+S+jciRacE0tKZIWwSEWQYfcezjTCsOSY=;
+Received: from p5dcc3dfb.dip0.t-ipconnect.de ([93.204.61.251] helo=eeepc)
+        by mail.andi.de1.cc with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.89)
+        (envelope-from <andreas@kemnade.info>)
+        id 1hbSa2-0005j7-2T; Thu, 13 Jun 2019 18:28:02 +0200
+Received: from [::1] (helo=localhost)
+        by localhost with esmtp (Exim 4.89)
+        (envelope-from <andreas@kemnade.info>)
+        id 1hbSIz-0002wp-Cw; Thu, 13 Jun 2019 18:10:25 +0200
+Date:   Thu, 13 Jun 2019 18:09:58 +0200
+From:   Andreas Kemnade <andreas@kemnade.info>
+To:     Discussions about the Letux Kernel <letux-kernel@openphoenux.org>,
+        linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+Subject: BUG: no cpufreq on gta04 (omap dm3730) in 5.2-rc4
+Message-ID: <20190613180958.48e04530@kemnade.info>
+X-Mailer: Claws Mail 3.14.1 (GTK+ 2.24.31; i686-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/phLSzGZi9/nM=tEb3SaLRWC"; protocol="application/pgp-signature"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-at 06:14, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+--Sig_/phLSzGZi9/nM=tEb3SaLRWC
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Commit d491f2b75237 ("PCI: PM: Avoid possible suspend-to-idle issue")
-> attempted to avoid a problem with devices whose drivers want them to
-> stay in D0 over suspend-to-idle and resume, but it did not go as far
-> as it should with that.
->
-> Namely, first of all, it is questionable to change the power state
-> of a PCI bridge with a device in D0 under it, but that is not
-> actively prevented from happening during system-wide PM transitions,
-> so use the skip_bus_pm flag introduced by commit d491f2b75237 for
-> that.
->
-> Second, the configuration of devices left in D0 (whatever the reason)
-> during suspend-to-idle need not be changed and attempting to put them
-> into D0 again by force may confuse some firmware, so explicitly avoid
-> doing that.
->
-> Fixes: d491f2b75237 ("PCI: PM: Avoid possible suspend-to-idle issue")
-> Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-Thanks! This patch solves the issue I reported earlier.
+On the gta04 (dm3730 cpu), cpufreq does not work properly with above-mentio=
+ned
+kernel.
+cpufreq-info just shows
+analyzing CPU 0:
+  no or unknown cpufreq driver is active on this CPU
+  maximum transition latency: 0.00 ms.
 
-Tested-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+dmesg log shows these interesting lines.
 
-> ---
->
-> Tested on Dell XPS13 9360 with no issues.
->
-> ---
->  drivers/pci/pci-driver.c |   47 +++++++++++++++++++++++++++++++++++------------
->  1 file changed, 35 insertions(+), 12 deletions(-)
->
-> Index: linux-pm/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -524,7 +524,6 @@ static void pci_pm_default_resume_early(
->  	pci_power_up(pci_dev);
->  	pci_restore_state(pci_dev);
->  	pci_pme_restore(pci_dev);
-> -	pci_fixup_device(pci_fixup_resume_early, pci_dev);
->  }
->
->  /*
-> @@ -842,18 +841,16 @@ static int pci_pm_suspend_noirq(struct d
->
->  	if (pci_dev->skip_bus_pm) {
->  		/*
-> -		 * The function is running for the second time in a row without
-> +		 * Either the device is a bridge with a child in D0 below it, or
-> +		 * the function is running for the second time in a row without
->  		 * going through full resume, which is possible only during
-> -		 * suspend-to-idle in a spurious wakeup case.  Moreover, the
-> -		 * device was originally left in D0, so its power state should
-> -		 * not be changed here and the device register values saved
-> -		 * originally should be restored on resume again.
-> +		 * suspend-to-idle in a spurious wakeup case.  The device should
-> +		 * be in D0 at this point, but if it is a bridge, it may be
-> +		 * necessary to save its state.
->  		 */
-> -		pci_dev->state_saved = true;
-> -	} else if (pci_dev->state_saved) {
-> -		if (pci_dev->current_state == PCI_D0)
-> -			pci_dev->skip_bus_pm = true;
-> -	} else {
-> +		if (!pci_dev->state_saved)
-> +			pci_save_state(pci_dev);
-> +	} else if (!pci_dev->state_saved) {
->  		pci_save_state(pci_dev);
->  		if (pci_power_manageable(pci_dev))
->  			pci_prepare_to_sleep(pci_dev);
-> @@ -862,6 +859,22 @@ static int pci_pm_suspend_noirq(struct d
->  	dev_dbg(dev, "PCI PM: Suspend power state: %s\n",
->  		pci_power_name(pci_dev->current_state));
->
-> +	if (pci_dev->current_state == PCI_D0) {
-> +		pci_dev->skip_bus_pm = true;
-> +		/*
-> +		 * Changing the power state of a PCI bridge with a device in D0
-> +		 * below it is questionable, so avoid doing that by setting the
-> +		 * skip_bus_pm flag for the parent bridge.
-> +		 */
-> +		if (pci_dev->bus->self)
-> +			pci_dev->bus->self->skip_bus_pm = true;
-> +	}
-> +
-> +	if (pci_dev->skip_bus_pm && !pm_suspend_via_firmware()) {
-> +		dev_dbg(dev, "PCI PM: Skipped\n");
-> +		goto Fixup;
-> +	}
-> +
->  	pci_pm_set_unknown_state(pci_dev);
->
->  	/*
-> @@ -909,7 +922,16 @@ static int pci_pm_resume_noirq(struct de
->  	if (dev_pm_smart_suspend_and_suspended(dev))
->  		pm_runtime_set_active(dev);
->
-> -	pci_pm_default_resume_early(pci_dev);
-> +	/*
-> +	 * In the suspend-to-idle case, devices left in D0 during suspend will
-> +	 * stay in D0, so it is not necessary to restore or update their
-> +	 * configuration here and attempting to put them into D0 again may
-> +	 * confuse some firmware, so avoid doing that.
-> +	 */
-> +	if (!pci_dev->skip_bus_pm || pm_suspend_via_firmware())
-> +		pci_pm_default_resume_early(pci_dev);
-> +
-> +	pci_fixup_device(pci_fixup_resume_early, pci_dev);
->
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume_early(dev);
-> @@ -1200,6 +1222,7 @@ static int pci_pm_restore_noirq(struct d
->  	}
->
->  	pci_pm_default_resume_early(pci_dev);
-> +	pci_fixup_device(pci_fixup_resume_early, pci_dev);
->
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume_early(dev);
+[    3.140655] core: _opp_supported_by_regulators: OPP minuV: 1012500 maxuV=
+: 1012500, not supported by regulator
+[    3.152709] cpu cpu0: _opp_add: OPP not supported by regulators (3000000=
+00)
+[    3.160278] core: _opp_supported_by_regulators: OPP minuV: 1200000 maxuV=
+: 1200000, not supported by regulator
+[    3.171142] cpu cpu0: _opp_add: OPP not supported by regulators (6000000=
+00)
+[    3.178710] core: _opp_supported_by_regulators: OPP minuV: 1325000 maxuV=
+: 1325000, not supported by regulator
+[    3.189483] cpu cpu0: _opp_add: OPP not supported by regulators
+(800000000)
+
+looking through logs shows that these lines first appeared in
+next-20190506. They were not present in next-20190503. If I understand that
+correcly it is about vdd1.
+Analysis reveals:
+
+in
+int regulator_is_supported_voltage(struct regulator *regulator,
+                                   int min_uV, int max_uV)
+
+the following if fails:
+     /* Any voltage within constrains range is fine? */
+        if (rdev->desc->continuous_voltage_range) {
+
+The following hack did the trick
+
+diff --git a/drivers/regulator/twl-regulator.c b/drivers/regulator/twl-regu=
+lator.c
+index 6fa15b2d6fb3..f7bfdf53701d 100644
+--- a/drivers/regulator/twl-regulator.c
++++ b/drivers/regulator/twl-regulator.c
+@@ -478,6 +478,7 @@ static const struct twlreg_info TWL4030_INFO_##label =
+=3D { \
+ 		.type =3D REGULATOR_VOLTAGE, \
+ 		.owner =3D THIS_MODULE, \
+ 		.enable_time =3D turnon_delay, \
++		.continuous_voltage_range =3D true, \
+ 		.of_map_mode =3D twl4030reg_map_mode, \
+ 		}, \
+ 	}
 
 
+not sure whether it is correct, whether these things are continuous enough.
+If that all is ok, I will of course submit a formal patch.
+
+Regards
+Andreas
+
+--Sig_/phLSzGZi9/nM=tEb3SaLRWC
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEPIWxmAFyOaBcwCpFl4jFM1s/ye8FAl0CdVYACgkQl4jFM1s/
+ye+K2g//QGXv4imVjMS+bJhxOxvePnHgA9xkT3GXJjB1my/12HiWIXt7lsqr67mQ
+K8UmKN1ZazgBCDk77d8s8pLIZXPQOCwNgmQq6OXqeeSKVeR23VLh7q+FAIw62d+G
+p8GGkrh5qPjWncXnzdnAvXSl0qDe5vCvnlTjxwJ4H0H1S/+yBEb8FP6CkJa7Q2yJ
+2eXi1MM308zn2be24+WT7BFFkSWRbsLrOk1d1Tlxofgb4aejN1dymB5xi/VjSj3B
+OWFLvnal5wKnktWjpRhTy+hozzgJN/OQsz8tbkQh73ty68X6DIxXhJLNlcu0uO0n
+oBg2ebKnybEwEDlMhTxWfW9eG5Fk7opiDMUEWpQoj9HSitSzgfDH5M544UzfLeBu
+EVaMMcHxpHLVYKpSJtEfKW+Po6JmnT7ckV4r8i4qzyKUEIkVp5EPryZdX2JPgexn
+83HOiHdkf91I4KpLncAXzcSpoWxe7VJZOWNIudSgF32/tkoopq7hkmaeKCF0ukPi
+WfDtry1onnbfKwxaOpZ+LL5kqq0w99oKgx+jwZseCO/X9+7R5qnvk3NBMM1ado/Q
+RIYPl94GnEDz481cGBsuO/AT3B+MUMi9IchLb4bclHTKNxvllszVoq9Rl+t8mI/J
+L3YtP4UQL9a20qFHyFfE1NvyymW0bsYiWHzsh077OpebgPBepwY=
+=8loG
+-----END PGP SIGNATURE-----
+
+--Sig_/phLSzGZi9/nM=tEb3SaLRWC--
