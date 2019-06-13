@@ -2,55 +2,69 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.9 required=3.0 tests=DATE_IN_PAST_12_24,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05402C31E45
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:15:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25CF9C31E45
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:18:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DD52E20B7C
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:15:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F2F19217F9
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:18:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1560439130;
+	bh=9nw7s7Y1QRBTXFeeD1F8tOL9Kaizm2l7e3Ph/Xz+h50=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=c5Vb3mGijeshn0PXIN7xjeu3XnNp3GGMAnOXQNIMkII6JVfNbWlDLZfdEcWb2Ok+L
+	 WZpSHVuRjLvB7Sr8f8Knmm02JwoQyFlQUHDfZ77fkF/J8hnv6hVkEg3j5YPxXnu+zx
+	 3/VJLIWzZma7QnlXhWdTYajR7DXqtp5Gz8COrzU0=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732531AbfFMPPI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 11:15:08 -0400
-Received: from relay2-d.mail.gandi.net ([217.70.183.194]:44047 "EHLO
-        relay2-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732233AbfFMN0K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 09:26:10 -0400
-X-Originating-IP: 90.88.159.246
-Received: from localhost (aaubervilliers-681-1-40-246.w90-88.abo.wanadoo.fr [90.88.159.246])
-        (Authenticated sender: maxime.ripard@bootlin.com)
-        by relay2-d.mail.gandi.net (Postfix) with ESMTPSA id 48DD74000A;
-        Thu, 13 Jun 2019 13:26:04 +0000 (UTC)
-Date:   Wed, 12 Jun 2019 17:43:25 +0200
-From:   Maxime Ripard <maxime.ripard@bootlin.com>
-To:     Frank Lee <tiny.windzz@gmail.com>
-Cc:     rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>, robh+dt@kernel.org,
+        id S1732323AbfFMPSj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 11:18:39 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38886 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1732155AbfFMNFd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Jun 2019 09:05:33 -0400
+Received: from earth.universe (dyndsl-095-033-011-189.ewe-ip-backbone.de [95.33.11.189])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 67C3B205ED;
+        Thu, 13 Jun 2019 13:05:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1560431132;
+        bh=9nw7s7Y1QRBTXFeeD1F8tOL9Kaizm2l7e3Ph/Xz+h50=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=wzRm/x10/pYWTJzw5naJiqba5efR9LYMIKMLRdFAtvkvh4JkXIQ56p6+ZjI0kXE0E
+         4jpE1a6LzXszIazL6ARJUwzldZdqylsrebyOpqTNJ5qL7VHd/4wQCvVTMNCCqflaAB
+         cl/R3NEOjn2v+4zgAZE6fn0tBF9DEiTradMT58MI=
+Received: by earth.universe (Postfix, from userid 1000)
+        id 0F2303C0C77; Thu, 13 Jun 2019 15:05:30 +0200 (CEST)
+Date:   Thu, 13 Jun 2019 15:05:29 +0200
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     mazziesaccount@gmail.com, Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
-        Chen-Yu Tsai <wens@csie.org>,
-        David Miller <davem@davemloft.net>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
         Linus Walleij <linus.walleij@linaro.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        paulmck@linux.ibm.com, Linux PM <linux-pm@vger.kernel.org>,
-        devicetree@vger.kernel.org,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 1/3] thermal: sun8i: add thermal driver for h6
-Message-ID: <20190612154325.m6z7xsxlpdq4wkxv@flea>
-References: <20190525181329.18657-1-tiny.windzz@gmail.com>
- <20190525181329.18657-2-tiny.windzz@gmail.com>
- <20190527122752.uc7q6zkjti3zag4q@flea>
- <CAEExFWtxEB67Pv-8x4ry=tZcJjOD6Kxydq_YB73Gox25VmQn7A@mail.gmail.com>
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org
+Subject: Re: [PATCH v15 0/7] support ROHM BD70528 PMIC
+Message-ID: <20190613130529.kgswgbuszb24itxz@earth.universe>
+References: <cover.1559546139.git.matti.vaittinen@fi.rohmeurope.com>
+ <20190611200043.eib3g3acc7ilawsx@earth.universe>
+ <20190612060328.GQ4797@dell>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="oy7r5ps7iphlasam"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="z7gwwmvwfgzls6v6"
 Content-Disposition: inline
-In-Reply-To: <CAEExFWtxEB67Pv-8x4ry=tZcJjOD6Kxydq_YB73Gox25VmQn7A@mail.gmail.com>
+In-Reply-To: <20190612060328.GQ4797@dell>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -58,60 +72,55 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---oy7r5ps7iphlasam
+--z7gwwmvwfgzls6v6
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jun 07, 2019 at 09:34:44PM +0800, Frank Lee wrote:
-> On Mon, May 27, 2019 at 8:27 PM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> > > +     ret = devm_request_threaded_irq(dev, irq, NULL,
-> > > +                                     tmdev->chip->irq_thread,
-> > > +                                     IRQF_ONESHOT, "ths", tmdev);
-> > > +     if (ret)
-> > > +             return ret;
-> >
-> > Is there any particular reason to use a threaded interrupt?
->
-> Just to improve real-time.
+Hi,
 
-What do you mean by real-time here? If anything, that will increase
-the latency of the interrupts here.
+On Wed, Jun 12, 2019 at 07:03:28AM +0100, Lee Jones wrote:
+> On Tue, 11 Jun 2019, Sebastian Reichel wrote:
+> > On Mon, Jun 03, 2019 at 10:23:37AM +0300, Matti Vaittinen wrote:
+> > > Patch series introducing support for ROHM BD70528 PMIC
+> > > [...]
+> >=20
+> > I think all patches have been reviewed by the respective subsystem
+> > maintainers. Lee, can you provide an immutable branch with the MFD
+> > patches (1, 2, 4)? Looks like the other patches only depend on those
+> > and can go through their respective subsystems.
+>=20
+> Yes.  It's on my TODO list.
 
-And in preempt-rt, regular top-half interrupts will be forced into a
-threaded interrupt anyway.
+Thanks.
 
-> > > +static int sun8i_ths_remove(struct platform_device *pdev)
-> > > +{
-> > > +     struct ths_device *tmdev = platform_get_drvdata(pdev);
-> > > +
-> > > +     clk_disable_unprepare(tmdev->bus_clk);
-> >
-> > I know that we discussed that already, but I'm not sure why you switch
-> > back to a regular call to regmap_init_mmio, while regmap_init_mmio_clk
-> > will take care of enabling and disabling the bus clock for you?
->
-> It seems that regmap_init_mmio_clk just get clk and prepare clk
-> but no enable.
+> Would you prefer this method over me just taking them all and sending
+> out a PR?  The latter is my usual flow, but I'm happy with either.
 
-At init time, yes. But it will enable it only when you access the
-registers, which is what you want anyway.
+Both methods are fine with me. I usually go with "my" method, since
+that results in less shared commits. It simplifies potential
+follow-up bug fixes, since there is only one tree to fix.
 
-Maxime
+-- Sebastian
 
---
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---oy7r5ps7iphlasam
+--z7gwwmvwfgzls6v6
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXQEdnQAKCRDj7w1vZxhR
-xXCpAQCYtE67+V1lgKQJZxd7NFi0spq61ecHzscNxJ/t6H+OXQD/ZYw/N1ST4pg3
-MGrcJRd4vnNOs5alaAicdNFepVsmQQQ=
-=g51D
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl0CShYACgkQ2O7X88g7
++pr+dQ//UKZYRSKZHKIkw81U/LPaGmkXOWyyYGwVfxHDYeMyeHur/klljg+mU4bW
+gMCGCns23SP/L4c9lOc3aY/Ovkjuq2gjonKtMFo66fY9slf6MdnC4L9FNXXUqsPK
+oa8Fir0ful7FdJ4HxsxLqkiTT1wWDNRgchMI/iNEhcjMt14rlzwIM7wyktT8O/Zr
+9Om2Cx282JEE5hGbl2D98VPrR67vqNRqOwIhZ+lQBNgXiOUgvlh2UDqpXziOjdwX
+vxgmoxUB1v72itnyz0qf46L+ayqnPmBH6MSEdTYs5vYz4l64c4jIXoyyJ/pPr+ck
+rb6eygO0LkADnW6zab11yWn1HH/CYJG1TUNMNOw8a4RFPpCyDW17U5ksICi55hhx
+HrG1YXCPgpiGV2d0MawLwLhEbv3FXIYDPPt6xEne0FXUHg53apOQjmyPoGP404RN
+M7jJJlpkGyHd5N2iskFU79NBES64aHkc/uvmEZw56xHUVg0SZ9e/V7zLKWwxMYeM
+C0kaTjsN86xnoNwsMoVx94RiIjk38xDz1anaAafOtpkUxdFb2xL9qpGWiUlwZKVJ
+ALa7k8jleI0Mzv/fOFHGBZzkGoPCdqURkANKyCLHBA8Pi++nGR4RHF2Om/goK/mb
+pLme4LVfDKswR8HYUbrfCBLsG/uBNX1GfoEH9/CQ2gNKSphUZ90=
+=ScGm
 -----END PGP SIGNATURE-----
 
---oy7r5ps7iphlasam--
+--z7gwwmvwfgzls6v6--
