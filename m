@@ -2,77 +2,240 @@ Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8127C31E45
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:41:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A441C31E45
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:42:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A88CE207E0
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:41:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 690FE206BB
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:42:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rpvHv/fB"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728488AbfFMPli (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Jun 2019 11:41:38 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:40652 "EHLO
-        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731883AbfFMJuS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 05:50:18 -0400
-Received: from reginn.horms.nl (watermunt.horms.nl [80.127.179.77])
-        by kirsty.vergenet.net (Postfix) with ESMTPA id B64A525BE33;
-        Thu, 13 Jun 2019 19:50:15 +1000 (AEST)
-Received: by reginn.horms.nl (Postfix, from userid 7100)
-        id BB7C7940483; Thu, 13 Jun 2019 11:50:13 +0200 (CEST)
-Date:   Thu, 13 Jun 2019 11:50:13 +0200
-From:   Simon Horman <horms@verge.net.au>
-To:     Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc:     linux-i2c@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/34] power: supply: bq24190_charger: simplify getting
- the adapter of a client
-Message-ID: <20190613095013.b2ylxys3yjtwy24v@verge.net.au>
-References: <20190608105619.593-1-wsa+renesas@sang-engineering.com>
- <20190608105619.593-17-wsa+renesas@sang-engineering.com>
+        id S2388185AbfFMPmS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 11:42:18 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:42366 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388244AbfFMPmS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 11:42:18 -0400
+Received: by mail-pg1-f194.google.com with SMTP id l19so8571035pgh.9
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2019 08:42:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=VoBG7EvsIVm5+yftt03AuO+h2ih774Rur7eHPugMCPE=;
+        b=rpvHv/fBzd4sMNXyIgGYerZQOpsD9jAG/DOme7ThtwnqDI9UXAsAfUHozuiAg5od3U
+         J/aNPDRSbdveut1aCJ3Ik+kt+dJbzM47IGKByZtujQYJQJfR2NswYMdFBQfZDuKAqtjK
+         MvnnfFKzqoySJLfmupAR1cRKEnSfDNOtaRsEKWeM8fCHfTFZxMB/DPUMxiOrqut2RIzB
+         2T51dHcW3ABriXZnWIN87pnzFUrrWns4xwsOrvRN9ur1EhiBlAfzyIY5QHKJZuIqyLWN
+         prJQG4rTJxPahMUYuALhyrXG0beDMjSe6JDgBp7UI08bzmyJCGgKNQtB70vzx1uz+jlj
+         Cd+A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=VoBG7EvsIVm5+yftt03AuO+h2ih774Rur7eHPugMCPE=;
+        b=Z9/2wx3x8hTB1VoagOHJ3rUkCy2vYSYmi0WvjZMWSjdkOehEAPRnWetQDg1ywdQ03A
+         /W6dwf2QS3AkLGyRj8jRD2DnzQtiZ0BH0dcdaguM1XMoTE/40INvCQjSQtOkM5LhkWj8
+         NtLhbDBC5WMlN5CxwRKI9qVC8QGMwNcha8baJKbNroRJgSY1mZdI9W906nx9DYNKjlsS
+         UifV/H11Kh11XBvpqW1LXQkPOzlg1+qiu9Nen2kaWeb9LKaFrGHZOpAq2Dbpuz+cCmPV
+         3crLj4tKSAlzC+EG1BkIEWoyyu0ohnu7BmM6P93FOg/XK/v2tAxdEbqR5GAxGy5dBju6
+         CpJQ==
+X-Gm-Message-State: APjAAAVDS5zN/tACT7yQvlINyTnbJJEypzjIO8KjWJSar9r5/Ubx9wia
+        Ae1OLd7oG2jPSOSsSe9UJRzAiw==
+X-Google-Smtp-Source: APXvYqwvE+odGG2bln3nrcnepEbyxebL00NHFK12JuNezcpaBNkl5y20OvUBwxdcRA3V29N+WHJQSw==
+X-Received: by 2002:a63:26c6:: with SMTP id m189mr7797730pgm.2.1560440537098;
+        Thu, 13 Jun 2019 08:42:17 -0700 (PDT)
+Received: from builder (104-188-17-28.lightspeed.sndgca.sbcglobal.net. [104.188.17.28])
+        by smtp.gmail.com with ESMTPSA id g8sm194210pgd.29.2019.06.13.08.42.16
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Thu, 13 Jun 2019 08:42:16 -0700 (PDT)
+Date:   Thu, 13 Jun 2019 08:42:14 -0700
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Georgi Djakov <georgi.djakov@linaro.org>
+Cc:     robh+dt@kernel.org, agross@kernel.org, vkoul@kernel.org,
+        evgreen@chromium.org, daidavid1@codeaurora.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH v4 3/5] interconnect: qcom: Add interconnect SMD over SMD
+ driver
+Message-ID: <20190613154214.GI6792@builder>
+References: <20190613151323.10850-1-georgi.djakov@linaro.org>
+ <20190613151323.10850-4-georgi.djakov@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190608105619.593-17-wsa+renesas@sang-engineering.com>
-Organisation: Horms Solutions BV
-User-Agent: NeoMutt/20170113 (1.7.2)
+In-Reply-To: <20190613151323.10850-4-georgi.djakov@linaro.org>
+User-Agent: Mutt/1.10.0 (2018-05-17)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Jun 08, 2019 at 12:55:55PM +0200, Wolfram Sang wrote:
-> We have a dedicated pointer for that, so use it. Much easier to read and
-> less computation involved.
+On Thu 13 Jun 08:13 PDT 2019, Georgi Djakov wrote:
+
+> On some Qualcomm SoCs, there is a remote processor, which controls some of
+> the Network-On-Chip interconnect resources. Other CPUs express their needs
+> by communicating with this processor. Add a driver to handle communication
+> with this remote processor.
 > 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
-
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 > ---
 > 
-> Please apply to your subsystem tree.
+> v4:
+> - Hide the driver from config menu. It will be selected by other driver.
+> - Add remove() function to zero out the rpm handle.
 > 
->  drivers/power/supply/bq24190_charger.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> v3:
+> - New patch.
 > 
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index cc0dfdc9e85a..ec03521c46d1 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1700,7 +1700,7 @@ static int bq24190_get_config(struct bq24190_dev_info *bdi)
->  static int bq24190_probe(struct i2c_client *client,
->  		const struct i2c_device_id *id)
->  {
-> -	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-> +	struct i2c_adapter *adapter = client->adapter;
->  	struct device *dev = &client->dev;
->  	struct power_supply_config charger_cfg = {}, battery_cfg = {};
->  	struct bq24190_dev_info *bdi;
-> -- 
-> 2.19.1
+>  drivers/interconnect/qcom/Kconfig   |  3 ++
+>  drivers/interconnect/qcom/Makefile  |  2 +
+>  drivers/interconnect/qcom/smd-rpm.c | 80 +++++++++++++++++++++++++++++
+>  drivers/interconnect/qcom/smd-rpm.h | 15 ++++++
+>  4 files changed, 100 insertions(+)
+>  create mode 100644 drivers/interconnect/qcom/smd-rpm.c
+>  create mode 100644 drivers/interconnect/qcom/smd-rpm.h
 > 
+> diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
+> index d5e70ebc2410..03fd67173494 100644
+> --- a/drivers/interconnect/qcom/Kconfig
+> +++ b/drivers/interconnect/qcom/Kconfig
+> @@ -12,3 +12,6 @@ config INTERCONNECT_QCOM_SDM845
+>  	help
+>  	  This is a driver for the Qualcomm Network-on-Chip on sdm845-based
+>  	  platforms.
+> +
+> +config INTERCONNECT_QCOM_SMD_RPM
+> +	tristate
+> diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
+> index 1c1cea690f92..a600cf6cc272 100644
+> --- a/drivers/interconnect/qcom/Makefile
+> +++ b/drivers/interconnect/qcom/Makefile
+> @@ -1,5 +1,7 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  
+>  qnoc-sdm845-objs			:= sdm845.o
+> +icc-smd-rpm-objs			:= smd-rpm.o
+>  
+>  obj-$(CONFIG_INTERCONNECT_QCOM_SDM845) += qnoc-sdm845.o
+> +obj-$(CONFIG_INTERCONNECT_QCOM_SMD_RPM) += icc-smd-rpm.o
+> diff --git a/drivers/interconnect/qcom/smd-rpm.c b/drivers/interconnect/qcom/smd-rpm.c
+> new file mode 100644
+> index 000000000000..0a8c9547bd29
+> --- /dev/null
+> +++ b/drivers/interconnect/qcom/smd-rpm.c
+> @@ -0,0 +1,80 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * RPM over SMD communication wrapper for interconnects
+> + *
+> + * Copyright (C) 2019 Linaro Ltd
+> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
+> + */
+> +
+> +#include <linux/interconnect-provider.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/soc/qcom/smd-rpm.h>
+> +
+> +#include "smd-rpm.h"
+> +
+> +#define RPM_KEY_BW		0x00007762
+> +
+> +static struct qcom_smd_rpm *icc_smd_rpm;
+> +
+> +struct icc_rpm_smd_req {
+> +	__le32 key;
+> +	__le32 nbytes;
+> +	__le32 value;
+> +};
+> +
+> +bool qcom_icc_rpm_smd_available(void)
+> +{
+> +	if (!icc_smd_rpm)
+> +		return false;
+> +
+> +	return true;
+
+A more succinct form would have been:
+
+	return !!icc_smd_rpm;
+
+
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+
+> +}
+> +EXPORT_SYMBOL_GPL(qcom_icc_rpm_smd_available);
+> +
+> +int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val)
+> +{
+> +	struct icc_rpm_smd_req req = {
+> +		.key = cpu_to_le32(RPM_KEY_BW),
+> +		.nbytes = cpu_to_le32(sizeof(u32)),
+> +		.value = cpu_to_le32(val),
+> +	};
+> +
+> +	return qcom_rpm_smd_write(icc_smd_rpm, ctx, rsc_type, id, &req,
+> +				  sizeof(req));
+> +}
+> +EXPORT_SYMBOL_GPL(qcom_icc_rpm_smd_send);
+> +
+> +static int qcom_icc_rpm_smd_remove(struct platform_device *pdev)
+> +{
+> +	icc_smd_rpm = NULL;
+> +
+> +	return 0;
+> +}
+> +
+> +static int qcom_icc_rpm_smd_probe(struct platform_device *pdev)
+> +{
+> +	icc_smd_rpm = dev_get_drvdata(pdev->dev.parent);
+> +
+> +	if (!icc_smd_rpm) {
+> +		dev_err(&pdev->dev, "unable to retrieve handle to RPM\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver qcom_interconnect_rpm_smd_driver = {
+> +	.driver = {
+> +		.name		= "icc_smd_rpm",
+> +	},
+> +	.probe = qcom_icc_rpm_smd_probe,
+> +	.remove = qcom_icc_rpm_smd_remove,
+> +};
+> +module_platform_driver(qcom_interconnect_rpm_smd_driver);
+> +MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org>");
+> +MODULE_DESCRIPTION("Qualcomm SMD RPM interconnect proxy driver");
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_ALIAS("platform:icc_smd_rpm");
+> diff --git a/drivers/interconnect/qcom/smd-rpm.h b/drivers/interconnect/qcom/smd-rpm.h
+> new file mode 100644
+> index 000000000000..ca9d0327b8ac
+> --- /dev/null
+> +++ b/drivers/interconnect/qcom/smd-rpm.h
+> @@ -0,0 +1,15 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (c) 2019, Linaro Ltd.
+> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
+> + */
+> +
+> +#ifndef __DRIVERS_INTERCONNECT_QCOM_SMD_RPM_H
+> +#define __DRIVERS_INTERCONNECT_QCOM_SMD_RPM_H
+> +
+> +#include <linux/soc/qcom/smd-rpm.h>
+> +
+> +bool qcom_icc_rpm_smd_available(void);
+> +int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val);
+> +
+> +#endif
