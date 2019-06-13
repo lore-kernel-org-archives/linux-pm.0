@@ -1,236 +1,228 @@
-Return-Path: <SRS0=77RQ=UL=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=Pn1r=UM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CE8EC31E46
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Jun 2019 20:27:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 583CDC31E4A
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:13:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5E26220866
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Jun 2019 20:27:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1560371227;
-	bh=RBQpqmPN1eB+w8KVq3eTNkgh7136KTd34ZIGXDIkM1w=;
-	h=To:Cc:From:Subject:Date:List-ID:From;
-	b=yA8yYAY/93VTOYtcD19bDnZBM0VWcHq9IXRpysWJy0c5uhQ3RVByK8rOAXXkJxfB2
-	 Hz7yUurH32lcsjYWGDriqT5TZnMQmkhy1/svUJ7p2/Ty3WrBz5bLkg5UOEE4DuDszr
-	 OY5s7WxnOfqxlU8dvc/nU4xTyDtRj5zwCPIEngO0=
+	by mail.kernel.org (Postfix) with ESMTP id 3192B2175B
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Jun 2019 15:13:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZxZA2Gtu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388389AbfFLU1G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Jun 2019 16:27:06 -0400
-Received: from mail-io1-f50.google.com ([209.85.166.50]:33515 "EHLO
-        mail-io1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387844AbfFLU1G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2019 16:27:06 -0400
-Received: by mail-io1-f50.google.com with SMTP id u13so14129772iop.0
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2019 13:27:06 -0700 (PDT)
+        id S2388359AbfFMPNe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Jun 2019 11:13:34 -0400
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:35447 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388337AbfFMPNd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2019 11:13:33 -0400
+Received: by mail-lj1-f193.google.com with SMTP id x25so14323299ljh.2
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2019 08:13:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google;
-        h=to:cc:from:subject:message-id:date:user-agent:mime-version
-         :content-language;
-        bh=n01BMcs7fBxk+Su0IaHbrT19JaQ+6dWso0UN0D7p0L8=;
-        b=Lvgxfgrce6L8U858gDsUewPeiuZ+4j5QPRyin0guF5MFBp3T2S+UOXod7OOaIQptoL
-         0LKTT1Umw80y7bPLj7H3KyU8ISMb1+QAkHR9nm/pEYdmvYAALzD0MAtx2o6SSvaoy7dW
-         kM3jzBFy7YCQsATpSGFHx9LUaIdxDC81OdeKU=
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=xzGXjB+KGlEcxHUIsQo7AmMnVkgFM9AD0lQLEt/BIAo=;
+        b=ZxZA2GtuR3iHlk8oEqUTtvufwpuN67TEuVqep78QMQ+eGad3VpYKvlN4nQh+G/wiuS
+         LcBaEsoe3E5XzZ2mhTknfCSYgJju41TLNSR9fCrOYFFNzuBUXiIqJFW+5nj8uDk8FSNK
+         iUfE1ATQyldwO7IRI2gpOgySaImmjmI7Q55qcRy+YuJ425aT83RRCraQI8JbrdvAvDTB
+         Iwx6JE5wEXbbYVi9dZbYfYtUgzvVFDM6sMIiwBdHgfrCdD8adGbh/dD6kOV1mU3UuF5z
+         rFCJU1u6e1MrrCSpK0NRJwBYoggD7cSQzMk38Zc2vpMh9mMr33fC4OWYvKW6P1J4UWMH
+         7x4A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:to:cc:from:subject:message-id:date:user-agent
-         :mime-version:content-language;
-        bh=n01BMcs7fBxk+Su0IaHbrT19JaQ+6dWso0UN0D7p0L8=;
-        b=RyDIgr4Ln/1dMMF2Vxvr3PK0aIgJeSnDfaQ/9PGLLfHkDYWS17RlilAKizbM6vV6AZ
-         Hx7bI2wwm/F6hHjnCgkA02nvaQTSfgJymbsDND0pxTZOUcVD9hyOFMhSKqrb4kjQBxvU
-         +pVw7CewhaX34mgwYfevNmINZyJBEy4uJo6Pdj9wxCsEsmgGp48SwPzPkdirnKuTjtFL
-         UxX+ysL+LpF1vc+cXRZvUFAMpObduL6bMdwka4QgaDCxaJMDeXBHPhea7L9loWKP62fL
-         3t5BxRejsFtqWo7q/COg60iS3iBfw1cMWD2p0TRUYxTwJO16DFQJDsD0qXFeQ9BRXsqQ
-         WeEA==
-X-Gm-Message-State: APjAAAUW4u9QxnxfbCDMxwTQ7gtBhiesRVcuJnMUe+Zbw2ZpD+lFSUxj
-        fQmJ/4jgb9iei40/Ql74YnN0mQ==
-X-Google-Smtp-Source: APXvYqyty9FFYerV5/56wDhSV6er5CSIOrKYh1N5f8wp3wX/W7O7t9rWjPxfLbqkiV7U+XUOXa0gmw==
-X-Received: by 2002:a6b:e60b:: with SMTP id g11mr53543825ioh.9.1560371225622;
-        Wed, 12 Jun 2019 13:27:05 -0700 (PDT)
-Received: from [192.168.1.112] (c-24-9-64-241.hsd1.co.comcast.net. [24.9.64.241])
-        by smtp.gmail.com with ESMTPSA id a130sm413349itb.14.2019.06.12.13.27.04
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 12 Jun 2019 13:27:04 -0700 (PDT)
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Thomas Renninger <trenn@suse.de>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-From:   Shuah Khan <skhan@linuxfoundation.org>
-Subject: [GIT PULL] cpupower update for Linux 5.2-rc6
-Message-ID: <376ea5d7-110a-71fe-7b02-efe1b0aed88e@linuxfoundation.org>
-Date:   Wed, 12 Jun 2019 14:27:03 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=xzGXjB+KGlEcxHUIsQo7AmMnVkgFM9AD0lQLEt/BIAo=;
+        b=Rpzk04Zbo6Zh/X3BPaq3u7oefma5LO4TnXy0SfP3ZcPxVsl0eJWcr19lSv+Oiavab3
+         e2LuS4oj11KTJWOpena4A0HQHmY4T3FegxXAXTEU3HDr5fSz9S/ij9qedbABZmRNbt97
+         NkKaRJQYrq6sXDsQboRzTkx1EkiESXHuxLVwj4BJiQA88JJHBKURWk9Ml6MWaMQhUmlA
+         pxRtsUUmlWhwIIG8EKIycNupe+I9ROHjtYNhjZ+NnMHMGEYtCDcYcTCBRER+RUe/kMzH
+         M4Q/5NooLd422fqirqUQIyINvnwrBwPe0AbB2tfOGzAkkwYXgbhaxaeuEgMYYnqKmckM
+         VnfA==
+X-Gm-Message-State: APjAAAVBCSJCKvyujH19PHs6sSgZbpGWbhp3KTA1UMTltAy1C/IDklJT
+        SGaVnf2k3GnwvVpWzgfocTqjYcxtFgU=
+X-Google-Smtp-Source: APXvYqyYk5KJZbHLEbwbc6WkGVmWsU6p/dKFY2GUCNaeeQl4n6oZS5J/7Ok6MErVgTRtRzHuwVunhA==
+X-Received: by 2002:a2e:9e58:: with SMTP id g24mr3911625ljk.1.1560438811844;
+        Thu, 13 Jun 2019 08:13:31 -0700 (PDT)
+Received: from localhost.localdomain ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id k4sm42923ljj.41.2019.06.13.08.13.30
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Thu, 13 Jun 2019 08:13:31 -0700 (PDT)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     robh+dt@kernel.org, bjorn.andersson@linaro.org, agross@kernel.org,
+        georgi.djakov@linaro.org
+Cc:     vkoul@kernel.org, evgreen@chromium.org, daidavid1@codeaurora.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+Subject: [PATCH v4 3/5] interconnect: qcom: Add interconnect SMD over SMD driver
+Date:   Thu, 13 Jun 2019 18:13:21 +0300
+Message-Id: <20190613151323.10850-4-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20190613151323.10850-1-georgi.djakov@linaro.org>
+References: <20190613151323.10850-1-georgi.djakov@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------DA1BC82BAC95C219E9AB2661"
-Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------DA1BC82BAC95C219E9AB2661
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On some Qualcomm SoCs, there is a remote processor, which controls some of
+the Network-On-Chip interconnect resources. Other CPUs express their needs
+by communicating with this processor. Add a driver to handle communication
+with this remote processor.
 
-Hi Rafael,
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+---
 
-Please pull the following update for Linux 5.2-rc6 or 5.3 depending on
-your pull request schedule for Linus.
+v4:
+- Hide the driver from config menu. It will be selected by other driver.
+- Add remove() function to zero out the rpm handle.
 
-This cpupower update for Linux 5.2-rc6 consists of a fix and a minor
-spelling correction.
+v3:
+- New patch.
 
-diff is attached.
+ drivers/interconnect/qcom/Kconfig   |  3 ++
+ drivers/interconnect/qcom/Makefile  |  2 +
+ drivers/interconnect/qcom/smd-rpm.c | 80 +++++++++++++++++++++++++++++
+ drivers/interconnect/qcom/smd-rpm.h | 15 ++++++
+ 4 files changed, 100 insertions(+)
+ create mode 100644 drivers/interconnect/qcom/smd-rpm.c
+ create mode 100644 drivers/interconnect/qcom/smd-rpm.h
 
-thanks,
--- Shuah
-
-----------------------------------------------------------------
-The following changes since commit f2c7c76c5d0a443053e94adb9f0918fa2fb85c3a:
-
-   Linux 5.2-rc3 (2019-06-02 13:55:33 -0700)
-
-are available in the Git repository at:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux 
-tags/linux-cpupower-5.2-rc6
-
-for you to fetch changes up to 04507c0a9385cc8280f794a36bfff567c8cc1042:
-
-   cpupower : frequency-set -r option misses the last cpu in related cpu 
-list (2019-06-04 09:06:50 -0600)
-
-----------------------------------------------------------------
-linux-cpupower-5.2-rc6
-
-This cpupower update for Linux 5.2-rc6 consists of a fix and a minor
-spelling correction.
-
-----------------------------------------------------------------
-Abhishek Goel (1):
-       cpupower : frequency-set -r option misses the last cpu in related 
-cpu list
-
-Nick Black (1):
-       cpupower: correct spelling of interval
-
-  tools/power/cpupower/man/cpupower-monitor.1 | 2 +-
-  tools/power/cpupower/po/cs.po               | 2 +-
-  tools/power/cpupower/po/de.po               | 2 +-
-  tools/power/cpupower/po/fr.po               | 2 +-
-  tools/power/cpupower/po/it.po               | 2 +-
-  tools/power/cpupower/po/pt.po               | 2 +-
-  tools/power/cpupower/utils/cpufreq-set.c    | 2 ++
-  7 files changed, 8 insertions(+), 6 deletions(-)
-
-----------------------------------------------------------------
-
---------------DA1BC82BAC95C219E9AB2661
-Content-Type: text/x-patch;
- name="linux-cpupower-5.2-rc6.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="linux-cpupower-5.2-rc6.diff"
-
-diff --git a/tools/power/cpupower/man/cpupower-monitor.1 b/tools/power/cpupower/man/cpupower-monitor.1
-index 914cbb9d9cd0..70a56476f4b0 100644
---- a/tools/power/cpupower/man/cpupower-monitor.1
-+++ b/tools/power/cpupower/man/cpupower-monitor.1
-@@ -61,7 +61,7 @@ Only display specific monitors. Use the monitor string(s) provided by \-l option
- .PP
- \-i seconds
- .RS 4
--Measure intervall.
-+Measure interval.
- .RE
- .PP
- \-c
-diff --git a/tools/power/cpupower/po/cs.po b/tools/power/cpupower/po/cs.po
-index cb22c45c5069..bfc7e1702ec9 100644
---- a/tools/power/cpupower/po/cs.po
-+++ b/tools/power/cpupower/po/cs.po
-@@ -98,7 +98,7 @@ msgstr ""
+diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
+index d5e70ebc2410..03fd67173494 100644
+--- a/drivers/interconnect/qcom/Kconfig
++++ b/drivers/interconnect/qcom/Kconfig
+@@ -12,3 +12,6 @@ config INTERCONNECT_QCOM_SDM845
+ 	help
+ 	  This is a driver for the Qualcomm Network-on-Chip on sdm845-based
+ 	  platforms.
++
++config INTERCONNECT_QCOM_SMD_RPM
++	tristate
+diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
+index 1c1cea690f92..a600cf6cc272 100644
+--- a/drivers/interconnect/qcom/Makefile
++++ b/drivers/interconnect/qcom/Makefile
+@@ -1,5 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
  
- #: utils/idle_monitor/cpupower-monitor.c:74
- #, c-format
--msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
-+msgid "\t -i: time interval to measure for in seconds (default 1)\n"
- msgstr ""
+ qnoc-sdm845-objs			:= sdm845.o
++icc-smd-rpm-objs			:= smd-rpm.o
  
- #: utils/idle_monitor/cpupower-monitor.c:75
-diff --git a/tools/power/cpupower/po/de.po b/tools/power/cpupower/po/de.po
-index 840c17cc450a..70887bb8ba95 100644
---- a/tools/power/cpupower/po/de.po
-+++ b/tools/power/cpupower/po/de.po
-@@ -95,7 +95,7 @@ msgstr ""
- 
- #: utils/idle_monitor/cpupower-monitor.c:74
- #, c-format
--msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
-+msgid "\t -i: time interval to measure for in seconds (default 1)\n"
- msgstr ""
- 
- #: utils/idle_monitor/cpupower-monitor.c:75
-diff --git a/tools/power/cpupower/po/fr.po b/tools/power/cpupower/po/fr.po
-index b46ca2548f86..b6e505b34e4a 100644
---- a/tools/power/cpupower/po/fr.po
-+++ b/tools/power/cpupower/po/fr.po
-@@ -95,7 +95,7 @@ msgstr ""
- 
- #: utils/idle_monitor/cpupower-monitor.c:74
- #, c-format
--msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
-+msgid "\t -i: time interval to measure for in seconds (default 1)\n"
- msgstr ""
- 
- #: utils/idle_monitor/cpupower-monitor.c:75
-diff --git a/tools/power/cpupower/po/it.po b/tools/power/cpupower/po/it.po
-index f80c4ddb9bda..a1deeb52c9e0 100644
---- a/tools/power/cpupower/po/it.po
-+++ b/tools/power/cpupower/po/it.po
-@@ -95,7 +95,7 @@ msgstr ""
- 
- #: utils/idle_monitor/cpupower-monitor.c:74
- #, c-format
--msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
-+msgid "\t -i: time interval to measure for in seconds (default 1)\n"
- msgstr ""
- 
- #: utils/idle_monitor/cpupower-monitor.c:75
-diff --git a/tools/power/cpupower/po/pt.po b/tools/power/cpupower/po/pt.po
-index 990f5267ffe8..902186585bb9 100644
---- a/tools/power/cpupower/po/pt.po
-+++ b/tools/power/cpupower/po/pt.po
-@@ -93,7 +93,7 @@ msgstr ""
- 
- #: utils/idle_monitor/cpupower-monitor.c:74
- #, c-format
--msgid "\t -i: time intervall to measure for in seconds (default 1)\n"
-+msgid "\t -i: time interval to measure for in seconds (default 1)\n"
- msgstr ""
- 
- #: utils/idle_monitor/cpupower-monitor.c:75
-diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
-index f49bc4aa2a08..6ed82fba5aaa 100644
---- a/tools/power/cpupower/utils/cpufreq-set.c
-+++ b/tools/power/cpupower/utils/cpufreq-set.c
-@@ -305,6 +305,8 @@ int cmd_freq_set(int argc, char **argv)
- 				bitmask_setbit(cpus_chosen, cpus->cpu);
- 				cpus = cpus->next;
- 			}
-+			/* Set the last cpu in related cpus list */
-+			bitmask_setbit(cpus_chosen, cpus->cpu);
- 			cpufreq_put_related_cpus(cpus);
- 		}
- 	}
-
---------------DA1BC82BAC95C219E9AB2661--
+ obj-$(CONFIG_INTERCONNECT_QCOM_SDM845) += qnoc-sdm845.o
++obj-$(CONFIG_INTERCONNECT_QCOM_SMD_RPM) += icc-smd-rpm.o
+diff --git a/drivers/interconnect/qcom/smd-rpm.c b/drivers/interconnect/qcom/smd-rpm.c
+new file mode 100644
+index 000000000000..0a8c9547bd29
+--- /dev/null
++++ b/drivers/interconnect/qcom/smd-rpm.c
+@@ -0,0 +1,80 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * RPM over SMD communication wrapper for interconnects
++ *
++ * Copyright (C) 2019 Linaro Ltd
++ * Author: Georgi Djakov <georgi.djakov@linaro.org>
++ */
++
++#include <linux/interconnect-provider.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/platform_device.h>
++#include <linux/soc/qcom/smd-rpm.h>
++
++#include "smd-rpm.h"
++
++#define RPM_KEY_BW		0x00007762
++
++static struct qcom_smd_rpm *icc_smd_rpm;
++
++struct icc_rpm_smd_req {
++	__le32 key;
++	__le32 nbytes;
++	__le32 value;
++};
++
++bool qcom_icc_rpm_smd_available(void)
++{
++	if (!icc_smd_rpm)
++		return false;
++
++	return true;
++}
++EXPORT_SYMBOL_GPL(qcom_icc_rpm_smd_available);
++
++int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val)
++{
++	struct icc_rpm_smd_req req = {
++		.key = cpu_to_le32(RPM_KEY_BW),
++		.nbytes = cpu_to_le32(sizeof(u32)),
++		.value = cpu_to_le32(val),
++	};
++
++	return qcom_rpm_smd_write(icc_smd_rpm, ctx, rsc_type, id, &req,
++				  sizeof(req));
++}
++EXPORT_SYMBOL_GPL(qcom_icc_rpm_smd_send);
++
++static int qcom_icc_rpm_smd_remove(struct platform_device *pdev)
++{
++	icc_smd_rpm = NULL;
++
++	return 0;
++}
++
++static int qcom_icc_rpm_smd_probe(struct platform_device *pdev)
++{
++	icc_smd_rpm = dev_get_drvdata(pdev->dev.parent);
++
++	if (!icc_smd_rpm) {
++		dev_err(&pdev->dev, "unable to retrieve handle to RPM\n");
++		return -ENODEV;
++	}
++
++	return 0;
++}
++
++static struct platform_driver qcom_interconnect_rpm_smd_driver = {
++	.driver = {
++		.name		= "icc_smd_rpm",
++	},
++	.probe = qcom_icc_rpm_smd_probe,
++	.remove = qcom_icc_rpm_smd_remove,
++};
++module_platform_driver(qcom_interconnect_rpm_smd_driver);
++MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org>");
++MODULE_DESCRIPTION("Qualcomm SMD RPM interconnect proxy driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:icc_smd_rpm");
+diff --git a/drivers/interconnect/qcom/smd-rpm.h b/drivers/interconnect/qcom/smd-rpm.h
+new file mode 100644
+index 000000000000..ca9d0327b8ac
+--- /dev/null
++++ b/drivers/interconnect/qcom/smd-rpm.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2019, Linaro Ltd.
++ * Author: Georgi Djakov <georgi.djakov@linaro.org>
++ */
++
++#ifndef __DRIVERS_INTERCONNECT_QCOM_SMD_RPM_H
++#define __DRIVERS_INTERCONNECT_QCOM_SMD_RPM_H
++
++#include <linux/soc/qcom/smd-rpm.h>
++
++bool qcom_icc_rpm_smd_available(void);
++int qcom_icc_rpm_smd_send(int ctx, int rsc_type, int id, u32 val);
++
++#endif
