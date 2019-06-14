@@ -2,299 +2,194 @@ Return-Path: <SRS0=avRG=UN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F05F1C31E4B
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 09:54:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ED6EC31E44
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 10:07:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BC6A821773
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 09:54:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E5E8F217D9
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 10:07:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="dEOLBdoS"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tzBsJdgP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726900AbfFNJyf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jun 2019 05:54:35 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:35829 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727168AbfFNJxY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2019 05:53:24 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190614095322euoutp018d0817b876018d5754d8f4edd94c8be8~oB-DggPmy0765507655euoutp01O
-        for <linux-pm@vger.kernel.org>; Fri, 14 Jun 2019 09:53:22 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190614095322euoutp018d0817b876018d5754d8f4edd94c8be8~oB-DggPmy0765507655euoutp01O
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1560506002;
-        bh=EEMK9w78j87lqfuJPFFkSqyrL66eM2GM9eUBmO4lepk=;
-        h=From:To:Cc:Subject:Date:References:From;
-        b=dEOLBdoS18n708nGalFN3ghUZ11mTkSeWxqGOsCNkmAwAGoVgVgL5nFqilqPTjNOu
-         i6lDeEkwZxeLXGo670xmpJRF7u43E4oaCQOLCoJ5sQL/dSwBcHA1X7y655gTq9CSQb
-         bXCypuIl3e04hjChJxMrv6I8o8eqHe+PLaL+dzr8=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190614095320eucas1p2fea6165f3ed3de7aebde889109cf3918~oB-CiOaWC0479404794eucas1p2u;
-        Fri, 14 Jun 2019 09:53:20 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id 93.A5.04298.09E630D5; Fri, 14
-        Jun 2019 10:53:20 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20190614095319eucas1p2d47b6bd9179c7e4190972d6b22092ad7~oB-BlPv7b0478804788eucas1p2x;
-        Fri, 14 Jun 2019 09:53:19 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190614095319eusmtrp29bd6568298fc6558df18414be8ac76e7~oB-BkgF552148521485eusmtrp2u;
-        Fri, 14 Jun 2019 09:53:19 +0000 (GMT)
-X-AuditID: cbfec7f2-f2dff700000010ca-21-5d036e90ace9
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id 4C.DA.04140.F8E630D5; Fri, 14
-        Jun 2019 10:53:19 +0100 (BST)
-Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190614095318eusmtip26364febb82ab420463e490505771c7d1~oB-AlQsky2320823208eusmtip2M;
-        Fri, 14 Jun 2019 09:53:18 +0000 (GMT)
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-clk@vger.kernel.org
-Cc:     mturquette@baylibre.com, sboyd@kernel.org,
-        b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
-        cw00.choi@samsung.com, kyungmin.park@samsung.com,
-        m.szyprowski@samsung.com, s.nawrocki@samsung.com,
-        myungjoo.ham@samsung.com, keescook@chromium.org, tony@atomide.com,
-        jroedel@suse.de, treding@nvidia.com, digetx@gmail.com,
-        gregkh@linuxfoundation.org, willy.mh.wolff.ml@gmail.com,
-        Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v10 00/13] Exynos5 Dynamic Memory Controller driver
-Date:   Fri, 14 Jun 2019 11:52:56 +0200
-Message-Id: <20190614095309.24100-1-l.luba@partner.samsung.com>
-X-Mailer: git-send-email 2.17.1
-X-Brightmail-Tracker: H4sIAAAAAAAAA0VSWUwTQRh2uqdoyVqJjBdqE1FIOEx8mAjxJtnAAyT44lGx6gpGWrULAmKk
-        QlSsYA2oEK5qPCkgpRBUlIJQqAGl4q2gEJsgyH0aIBUpW/XtO+f7H4bGJB+IZfRRZQynUsqj
-        paQLXtk42eJzVYnJ/Bu7vFBZdimBPo79IJDO3EKgomEbQCm3S0mU2ZQvQi8vK5DW1oshq9VA
-        oVfJfRT6ol6BhtO+EehtVR6JRtPNAGVbTSJUYv5KodamINR27gGJ6vsuEuj3hzIc1bwLRm3T
-        rmjixXew1Z2dGM/A2cFP5yk2V92Ks09yvlKsUX+JZGvyiyk2PWWAZJ8PPBOxVyr0gC1vTmRH
-        jR5hC/a4BB7moo+e4lR+mw+4RHWZBkUntMHxRZpnuBpcD9CA+TRkNsJ7mkygAS60hHkAoKE/
-        kxLIGIDlhnZCIKMAGnOuif5WMsd7nJX7AA5MZIF/lV+6rllC0yTjCx/rTzoKbkw2gLnd4Y4M
-        xjzCYH9bO3AYi5kdcLy6kHJgnFkLr9msc1jMbIHl+oeksLYKFhlqMUcZMsMULC7vA4KxE5ZU
-        f8YEvBj+tFRQAl4BZ57onKfyUJ1+y5k/A23afGcmANZbWgnHoRjjBUur/AR5G7S/N83JkHGF
-        n/oXOWRsFmZUZmGCLIapFyRCej2sSHvtHFoC7xffcD7OwpreoTldwsjgxyE9eRV45PzfugmA
-        HrhzsbwikuM3KLk4X16u4GOVkb6HjiuMYPa3Nf+2jDwG428O1gGGBtKF4tpNIpmEkJ/iExR1
-        ANKY1E1cEIDJJOLD8oTTnOp4hCo2muPrwHIal7qLE+d17pUwkfIY7hjHneBUf10RPX+ZGqwJ
-        XxonQqYCuf+ObouqfcwnSZcTareyIUEt+yb276K6g/h6V9fVCQAPuZ46Ythd+NS7x7I9T+vZ
-        GXSuwb72btiRkItKlGQ/Y9fNNJsor8Cm6YjklVOe3T9LZr7dqY1PNdp8z67z0pIa8+S9mIY3
-        zzt6Qtebps0eUxsTdB1xZinOR8k3eGMqXv4HgC+7D2kDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrHIsWRmVeSWpSXmKPExsVy+t/xe7r9ecyxBv9mGllsnLGe1eL6l+es
-        FvOPnGO1WP3xMaNF8+L1bBaTT81lsjjTnWvR//g1s8X58xvYLc42vWG3uNUgY/Gx5x6rxeVd
-        c9gsPvceYbSYcX4fk8XaI3fZLS6ecrW43biCzeLwm3ZWi3/XNrJY7L/iZXH7N5/FtxOPGB3E
-        Pb59ncTi8f5GK7vH7IaLLB47Z91l99i0qpPNY//cNewevc3v2DwOvtvD5NG3ZRWjx+bT1R6f
-        N8kFcEfp2RTll5akKmTkF5fYKkUbWhjpGVpa6BmZWOoZGpvHWhmZKunb2aSk5mSWpRbp2yXo
-        ZTzb956poN+rYnXXHpYGxqnWXYycHBICJhKTv75k7GLk4hASWMoosbb/HhtEQkxi0r7t7BC2
-        sMSfa11sEEWfGCU2b/zO1MXIwcEmoCexY1UhSFxEYA6jxM+ubWCTmAXOMkvsXvGGCaRbWMBZ
-        4uvelWCTWARUJaY8Pg9m8wrYS2xetQ5qm7zE6g0HmCcw8ixgZFjFKJJaWpybnltspFecmFtc
-        mpeul5yfu4kRGFfbjv3csoOx613wIUYBDkYlHt4DVkyxQqyJZcWVuYcYJTiYlUR451kzxwrx
-        piRWVqUW5ccXleakFh9iNAVaPpFZSjQ5HxjzeSXxhqaG5haWhubG5sZmFkrivB0CB2OEBNIT
-        S1KzU1MLUotg+pg4OKUaGPV2Je7boJmiUtIQ8CUupWOR37uNluLBHhp/Qg/Kyx95xTrj+9rT
-        yaI5y+8atU5TWNV1ocjbe2F0hnqny40/s+/knF7gd+lRgGfF41M5+eIFJtbvglMeblm90Hju
-        rDydd50dryNUc+o9nIxXLqy8Zi4qLC10yFtnS4luteMehq2dGfFC/bWzlViKMxINtZiLihMB
-        Z1fwpsECAAA=
-X-CMS-MailID: 20190614095319eucas1p2d47b6bd9179c7e4190972d6b22092ad7
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190614095319eucas1p2d47b6bd9179c7e4190972d6b22092ad7
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190614095319eucas1p2d47b6bd9179c7e4190972d6b22092ad7
-References: <CGME20190614095319eucas1p2d47b6bd9179c7e4190972d6b22092ad7@eucas1p2.samsung.com>
+        id S1727216AbfFNKHJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jun 2019 06:07:09 -0400
+Received: from mail-wm1-f66.google.com ([209.85.128.66]:39675 "EHLO
+        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726370AbfFNKHJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2019 06:07:09 -0400
+Received: by mail-wm1-f66.google.com with SMTP id z23so1696897wma.4
+        for <linux-pm@vger.kernel.org>; Fri, 14 Jun 2019 03:07:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=GsTtAsCq4R5Z92oGsDOOrh6i3Sgqb8yVNynnSGvQ8Zk=;
+        b=tzBsJdgPSCo3wV60n/kZVWQkDFexrRdrZ7tpdRPaSClpJn/pstPq/2q2uMg80/Uxz/
+         H9uml+4jyi9DEMKyre9u9C8s2DkxmdQs9LhhSo93Erm4tdrnquNZ5q3sRKnqpwK8vq2b
+         voVhB+FlRkPxg3R0yeWatZazJH1vucgp4zi8wSaMI43/cR5naKqaQAEY5kMKqMAK3jE9
+         RCbNLMp6z5zy6/8p9f/eSoPrsE8zbVPwJD6+c6lcxKgu+yqNl33sZ3/L5pUnENB9l2vU
+         xmHD53Cn6da7qWDQnrfUeuqhlJSx+1k4W/NqxrgJFvumrFbLNK4DLQHap4OBaBOHmf2H
+         cDXg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+         :message-id:date:user-agent:mime-version:in-reply-to
+         :content-language:content-transfer-encoding;
+        bh=GsTtAsCq4R5Z92oGsDOOrh6i3Sgqb8yVNynnSGvQ8Zk=;
+        b=H6mguYcIC/+8q1VTLk3M8Bd1P7GcYs5Z9nZc9axN0om7iPdAehYuy7Acy//6SF+3yu
+         yoYPfYfB6ZuIRZcXfymodRQ34YXJh0znovne3QqKvLBF48bOScWBkffrWGC1IKShd8Us
+         JXndgoYDj6bhZi98jQlVjx3NRwUwUxkEr1WQXsT3FaIl8/ZtWD+AdUdaHiLmDhZ106Yj
+         fwUmjnvcdOVxS6LDY6PxznnMAK/gor029BuIrXzegi0ne7qB7JP4bqg3/FZzwdgH4pKa
+         dQGNUq9aCgmZP/6G/7xNBWzJTc2MfwClx99aJvlQE1qu1srgKvZ49z/x1x59qll5ymkN
+         FGZQ==
+X-Gm-Message-State: APjAAAWsKpA+aOj7sm3NbupHl89L2M1gPkW5nJOIBOlNRo//uAD25rGY
+        JbbOoKIG+wMNmba9XzSBwR5mOIZrd2s=
+X-Google-Smtp-Source: APXvYqzhkXcjIZzNAd2Q89oJnL6n5jOiusMTqIk4KH0e08Yfnr22YU27W4jZqTcTFIY0/7XhBnZNAg==
+X-Received: by 2002:a1c:9ecd:: with SMTP id h196mr2339251wme.98.1560506826832;
+        Fri, 14 Jun 2019 03:07:06 -0700 (PDT)
+Received: from [192.168.0.41] (sju31-1-78-210-255-2.fbx.proxad.net. [78.210.255.2])
+        by smtp.googlemail.com with ESMTPSA id t140sm9099020wmt.0.2019.06.14.03.07.05
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 14 Jun 2019 03:07:06 -0700 (PDT)
+Subject: Re: [PATCH] thermal: intel_powerclamp: no need to check return value
+ of debugfs_create functions
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Finn Thain <fthain@telegraphics.com.au>
+Cc:     linux-pm@vger.kernel.org
+References: <20190613183810.GC32085@kroah.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Openpgp: preference=signencrypt
+Autocrypt: addr=daniel.lezcano@linaro.org; prefer-encrypt=mutual; keydata=
+ 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
+Message-ID: <9101a88b-9e11-772b-582c-f54017f5e6b7@linaro.org>
+Date:   Fri, 14 Jun 2019 12:07:05 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.0
+MIME-Version: 1.0
+In-Reply-To: <20190613183810.GC32085@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
+On 13/06/2019 20:38, Greg Kroah-Hartman wrote:
+> When calling debugfs functions, there is no need to ever check the
+> return value.  The function can work or not, but the code logic should
+> never do something different based on this.
+> 
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Finn Thain <fthain@telegraphics.com.au>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-This is v10 which introduces minor changes. The patch set adds support of
-Dynamic Memory Controller for Exynos5422 SoC.
-The driver supports Dynamic Voltage and Frequency Scaling
-for the DMC and DRAM. It also provides needed timings for different
-speed operations of the DRAM memory.
-There is also new generic code in of_memory and headers which allows to parse
-LPDDR3 memories defined in device-tree.
-
-The patch set has been cut to land mainline quickly and the dependency
-on PPMU patches are removed (which was in v7). It implies that the debugging
-code which was presenting details about traffic on the AXI slots has been
-removed. It will be added when this driver got mainline and the PPMU code
-got mainline. Also DT dependency of PPMU header has been removed.
-
-changes:
-v10:
-- added disabling counters and cleaning clocks in probe when it fails
-- added Reviewed-by for dt-bindings: memory-controllers from Rob
-- based on v5.2-rc4 tag
-v9 [4]:
-- disable bpll instead of spll clocks in the remove path
-- safely disable 'bypass' clocks when error was captured
-- removed unused clocks and related code
-- changed code to make 'if' statement clean as Krzysztof sugested
-- removed cloks from dt-binding and DT
-- minor fix for clocks to read the state for DIV with NOCACHE
-- removed spaces in #define and put tabs
-- removed duplicated entry for OPPs phandle in dt-binding
-- collected ACKs
-- based on v5.2-rc3 tag
-v8 [3]:
-- removed chipID dependency, as Krzysztof suggested and drop the whole checking
-  code in the driver (which also Marek suggested offline) (it might be needed
-  in future when other configuration would be supported). It also avoids
-  a misunderstandings and simplifies the documentation.
-- reordered clock IDs in 1st patch to keep the old IDs and add the new clocks
-  at the end as Chanwoo suggested (added also his ACK there)
-- in patch 6 (dt-bindings) added explicit clocks and names in the right order
-  needed for the driver
-- added proper address for the memory node in the documentation and in the DT
-  (lpddr3-timings@0 -> @80000000)
-- fixed wrong reg offset for pause feature
-- removed debug code which shows AXI slots traffic and removed DT ppmu events
-- in the driver code usage of 'dev', 'pdev->dev' has been aligned
-- manipulating clocks has been aligned as Krzysztof suggested, now it enables
-  only two clocks (and disables) and enables/disables the 'bypass' clocks
-  on demand
-- added comments in the documentation why there is a need of clock registers
-  to be accessed via syscon regmap
-- added proper link to Documentation/devicetree/bindings/ddr/lpddr3.txt
-  in dt-bindings for memory controller doc
-- removed unneeded prints when there was a deferred probe or during remove
-- added 'syscon' also to exynos5420-clock node as Krzysztof suggested
-- from 2nd patch removed blank line and added Acked-by: Chanwoo Choi
-- collecting ACKs, which makes the clock related 3 patches
-  ready to be merged (4 ACKs),
-- patches 4,5 got 'Reviewed-by' from Rob
-- it is now based on v5.2-rc3 tag
-v7 [2]:
-- added using regmap in chipid registers and clock registers
-- in DT added "syscon" to compatible field in clock and chipid
-- added two addition clocks in clocks definition file which were there
-  in first implementation but now are grouped and commented properly
-  (CLK_DOUT_PCLK_DREX0, CLK_DOUT_PCLK_DREX1)
-- the BPLL ratio table now is set for Exynos 5422 and 5800 and not for 5420
-- in DMC driver, changed code macro which generates functions for setup events
-  into normal three functions as Krzysztof suggested
-- moved 'clock_prepare_enable()' calls into the same function where 'disable'
-  were called
-- changed 'timing_reg' static variables into static const
-- in DMC driver: the proper device_node *np_ddr is now put correctly
-- in DMC driver: removed code related to counters_enabled
-- mapped only 0x100 from DREX registers
-- in DT memory node there is now 'reg' as Rob suggested instead of 'max-freq'
-- in Documentation/devicetree/bindings/lpddr2 renamed into 'ddr' and the lpdd3*
-  files landed there.
-- cleaned the commit subject and message as Rob suggested for the patch 4/10 in v6
-- added doxygen comments to exported functions in of_memory file
-- cleaned minor issues like: missing space, 2 empty lines, in the doc JESD209-2 ->
-  JESD209-3C, removed 'status = "okay"' from the doc file, etc
-- based on v5.1 (+ PPMU patches from [1])
-v6:
-- driver code has been converted to use generic code which parses DT memory
-  definition in drivers/memory/of_memory.c
-- extended of_memory by LPDDR3 support (there was LPDDR2 made by TI)
-- extended jedec_lpddr.h by the needed structures for LPDDR3 (AC timings)
-- driver file moved to proper directory, where other memory controllers
-  live, which is in this case drivers/memory/samsung/
-- driver code now uses regmap_{read|write} to access registers for pausing
-  and changing timings set, as suggested by Chanwoo
-- DT contains simple definition of memory device, similar to LPDDR2 made by TI
-- driver code generates the needed timings for registered OPPs, based on
-  memory description in DT
-- patch 1 contains Rob's ACK,
-- simplified memory bandwidth calculation
-- added debug information files with timings, raw counters and statistics
-- updated dt-bindings files accordingly
-- based on v5.1-rc5 (+ PPMU patches from [1])
-v5:
-- removed unneeded wrapper functions i.e. for regulator_set_voltage
-- removed unused defines
-- removed direct access to clock register base and used CCF for
-  pause and timing set usage
-- switched to OPP comming from DT according to Chanowoo's comments
-- switched to timings comming from DT, added parsing function
-- extended dt-binding with description of OPPs and timings
-- according to Rob Herring comment, moved dt-binding file before driver code
-  in the patch set.
-- rebased on top of v5.0
-v4:
-- removed unneeded DPLL and G3D clocks IDs
-- changed names of parent clocks for mout_mx_mspll_ccore_phy_p
-  and added one more parent: mout_sclk_epll
-- removed 933Mhz and 138MHz from the BPLL ratio table
-v3:
-- in DTS align to proper indent the clocks and clock-names entries
-v2:
-- changed file name exynos5-dmc.c -> exynos5422-dmc.c
-  and related entries in other files
-- changed dt-binding file name
-- changed config entry to CONFIG_ARM_EXYNOS5422_DMC_DEVFREQ
-- removed sysfs and print info messages (print only one line)
-- removed function exynos5_read_chip_info and compact code
-- changed dt-binding patch and move it up in the patch set
-- new entries in MAINTAINERS are added with the driver c code
-- clean-up in DTS file: renamed nodes to 'ppmu' and 'memory-controller',
-  entries moved to suggested location (before nocp nodes or after),
-  moved according to alfabetical order, compacted clocks names with right indent.
-
-Regards,
-Lukasz Luba
-
-[1] https://lkml.org/lkml/2019/4/19/158
-[2] https://lkml.org/lkml/2019/5/6/829
-[3] https://lkml.org/lkml/2019/6/5/687
-[4] https://lkml.org/lkml/2019/6/7/488
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 
-Lukasz Luba (13):
-  clk: samsung: add needed IDs for DMC clocks in Exynos5420
-  clk: samsung: add new clocks for DMC for Exynos5422 SoC
-  clk: samsung: add BPLL rate table for Exynos 5422 SoC
-  dt-bindings: ddr: rename lpddr2 directory
-  dt-bindings: ddr: add LPDDR3 memories
-  drivers: memory: extend of_memory by LPDDR3 support
-  dt-bindings: memory-controllers: add Exynos5422 DMC device description
-  drivers: memory: add DMC driver for Exynos5422
-  drivers: devfreq: events: add Exynos PPMU new events
-  ARM: dts: exynos: add chipid label and syscon compatible
-  ARM: dts: exynos: add syscon to clock compatible
-  ARM: dts: exynos: add DMC device for exynos5422
-  ARM: exynos_defconfig: enable DMC driver
+> ---
+>  drivers/thermal/intel/intel_powerclamp.c | 12 ++----------
+>  1 file changed, 2 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
+> index ac7256b5f020..39c6b589f2ed 100644
+> --- a/drivers/thermal/intel/intel_powerclamp.c
+> +++ b/drivers/thermal/intel/intel_powerclamp.c
+> @@ -713,17 +713,9 @@ DEFINE_SHOW_ATTRIBUTE(powerclamp_debug);
+>  static inline void powerclamp_create_debug_files(void)
+>  {
+>  	debug_dir = debugfs_create_dir("intel_powerclamp", NULL);
+> -	if (!debug_dir)
+> -		return;
+> -
+> -	if (!debugfs_create_file("powerclamp_calib", S_IRUGO, debug_dir,
+> -					cal_data, &powerclamp_debug_fops))
+> -		goto file_error;
+>  
+> -	return;
+> -
+> -file_error:
+> -	debugfs_remove_recursive(debug_dir);
+> +	debugfs_create_file("powerclamp_calib", S_IRUGO, debug_dir, cal_data,
+> +			    &powerclamp_debug_fops);
+>  }
+>  
+>  static enum cpuhp_state hp_state;
+> 
 
- .../{lpddr2 => ddr}/lpddr2-timings.txt        |    0
- .../bindings/{lpddr2 => ddr}/lpddr2.txt       |    2 +-
- .../bindings/ddr/lpddr3-timings.txt           |   58 +
- .../devicetree/bindings/ddr/lpddr3.txt        |   97 ++
- .../memory-controllers/exynos5422-dmc.txt     |   75 +
- MAINTAINERS                                   |    8 +
- arch/arm/boot/dts/exynos5.dtsi                |    4 +-
- arch/arm/boot/dts/exynos5420.dtsi             |   75 +-
- arch/arm/boot/dts/exynos5422-odroid-core.dtsi |  116 ++
- arch/arm/boot/dts/exynos5800.dtsi             |    2 +-
- arch/arm/configs/exynos_defconfig             |    1 +
- drivers/clk/samsung/clk-exynos5420.c          |   78 +-
- drivers/devfreq/event/exynos-ppmu.c           |    6 +
- drivers/memory/of_memory.c                    |  154 ++
- drivers/memory/of_memory.h                    |   18 +
- drivers/memory/samsung/Kconfig                |   17 +
- drivers/memory/samsung/Makefile               |    1 +
- drivers/memory/samsung/exynos5422-dmc.c       | 1262 +++++++++++++++++
- include/dt-bindings/clock/exynos5420.h        |   18 +-
- include/memory/jedec_ddr.h                    |   62 +
- 20 files changed, 2041 insertions(+), 13 deletions(-)
- rename Documentation/devicetree/bindings/{lpddr2 => ddr}/lpddr2-timings.txt (100%)
- rename Documentation/devicetree/bindings/{lpddr2 => ddr}/lpddr2.txt (96%)
- create mode 100644 Documentation/devicetree/bindings/ddr/lpddr3-timings.txt
- create mode 100644 Documentation/devicetree/bindings/ddr/lpddr3.txt
- create mode 100644 Documentation/devicetree/bindings/memory-controllers/exynos5422-dmc.txt
- create mode 100644 drivers/memory/samsung/exynos5422-dmc.c
 
 -- 
-2.17.1
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
