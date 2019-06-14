@@ -2,116 +2,114 @@ Return-Path: <SRS0=avRG=UN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FF4DC31E44
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 07:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC777C31E4B
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 07:42:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E322E2173C
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 07:20:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B05222084E
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 07:42:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Tx3zTdrZ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726140AbfFNHUp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jun 2019 03:20:45 -0400
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:36492 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725858AbfFNHUp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2019 03:20:45 -0400
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x5E7HerN095394
-        for <linux-pm@vger.kernel.org>; Fri, 14 Jun 2019 03:20:44 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2t469d9uws-1
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Fri, 14 Jun 2019 03:20:43 -0400
-Received: from localhost
-        by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ajd@linux.ibm.com>;
-        Fri, 14 Jun 2019 08:20:41 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
-        by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
-        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Fri, 14 Jun 2019 08:20:35 +0100
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-        by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x5E7KYOd52428980
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 14 Jun 2019 07:20:34 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id AAD5D52054;
-        Fri, 14 Jun 2019 07:20:34 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5972E52051;
-        Fri, 14 Jun 2019 07:20:34 +0000 (GMT)
-Received: from [9.81.220.157] (unknown [9.81.220.157])
-        (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
-        (No client certificate requested)
-        by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 1C95CA00A5;
-        Fri, 14 Jun 2019 17:20:30 +1000 (AEST)
-Subject: Re: [PATCH 01/14] ABI: fix some syntax issues at the ABI database
-To:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Mauro Carvalho Chehab <mchehab@s-opensource.com>,
-        Mauro Carvalho Chehab <mchehab@infradead.org>,
-        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        Andreas Klinger <ak@it-klinger.de>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        Frederic Barrat <fbarrat@linux.ibm.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Kees Cook <keescook@chromium.org>,
-        Anton Vorontsov <anton@enomsg.org>,
-        Colin Cross <ccross@android.com>,
-        Tony Luck <tony.luck@intel.com>, linux-iio@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
-References: <cover.1560477540.git.mchehab+samsung@kernel.org>
- <b908fc6555df8cae3e4c734b2d5f6284c46a5f14.1560477540.git.mchehab+samsung@kernel.org>
-From:   Andrew Donnellan <ajd@linux.ibm.com>
-Date:   Fri, 14 Jun 2019 17:20:29 +1000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.0
+        id S1726218AbfFNHl5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jun 2019 03:41:57 -0400
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:44392 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725775AbfFNHl4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2019 03:41:56 -0400
+Received: by mail-pl1-f194.google.com with SMTP id t7so648771plr.11;
+        Fri, 14 Jun 2019 00:41:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=qTN8zccKrdobWI38/ip/wwPCXH3X8VyP8EgQGu6WwT4=;
+        b=Tx3zTdrZxlmZBygvwuVbgkil59kuAuDEE9UD/o9yXNf7z+83BF5msXsFToFYmZYp4E
+         XQNHmim9ZBjucKmzzcSeHbwSWyreHdMPlMOEanVzlkX78CwPSYCOsE8/m3p5jc56JiSD
+         bqk0LJyD4L28EhEOAJoXAJwXrYikXA1UQnWIFOFhd46PbySme9DU402xNwtgUMvOSqQ/
+         I827m25SPAHWqj1C/AdTSO4O39CqR9R0nk6mmFTDkAGS/Bp72RWn/UNarsZfSSd7Y/dd
+         Yx1xXLEIaOvVSUkS7evJYxbttwD/KV7HRyR5gFCW3oYFzUiGwkid6CiY38OPJCFA5EW3
+         yHoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=qTN8zccKrdobWI38/ip/wwPCXH3X8VyP8EgQGu6WwT4=;
+        b=cE1cY9Dz/hxc+Upm5hjSyho6ivM8ZjsWaHC511ReRJCkmryp4Z2kDVsNID/R3wkGcf
+         kMiCwfxPSTAI46I59FwTKk1CBMWrMDLmw3S27XBe1ZUzA4yjFGgSfUEbYEEYxkL/OAhc
+         WEVCkOFd/rNTonqXoSJaRb3FxgP4FSEH8iFU7lJklxJwqxm2CSe6MmOh63mxptSJQzwy
+         ugARzlH7GaE+YZRy/iq2NLUFKwnjw4R8+8+TevKSQ2Kt0pIROOJh+3srk5gUKBfc2JEU
+         WMhevfl02WCBZFV+8UYuMLy1Dso1UZ7q6w5CUqRXkcN9Ncc7ZZ9yYgQz4tFNA/vNPjhQ
+         8EzA==
+X-Gm-Message-State: APjAAAVw6lm51mwYk9Fstlx4Nqga9RHiS61pk6f2o0JTkZ4wepFPDO8a
+        mWRJ+QnO3QoZfQBrv3Kd9R8=
+X-Google-Smtp-Source: APXvYqz1ezUgFwUfWTWpyFtqN1r3FJLRHBwqWF1tKFIH7v0Hytm+7RntCcWvpExkwSaYKI3rEoBEyA==
+X-Received: by 2002:a17:902:8696:: with SMTP id g22mr66319599plo.249.1560498115397;
+        Fri, 14 Jun 2019 00:41:55 -0700 (PDT)
+Received: from localhost.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
+        by smtp.gmail.com with ESMTPSA id c6sm1979398pfm.163.2019.06.14.00.41.54
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Fri, 14 Jun 2019 00:41:54 -0700 (PDT)
+From:   Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
+        Chris Healy <cphealy@gmail.com>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] thermal: imx: skip registering legacy cooling on i.MX7
+Date:   Fri, 14 Jun 2019 00:41:40 -0700
+Message-Id: <20190614074140.15276-1-andrew.smirnov@gmail.com>
+X-Mailer: git-send-email 2.21.0
 MIME-Version: 1.0
-In-Reply-To: <b908fc6555df8cae3e4c734b2d5f6284c46a5f14.1560477540.git.mchehab+samsung@kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-AU
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19061407-0028-0000-0000-0000037A350D
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19061407-0029-0000-0000-0000243A3096
-Message-Id: <1ef7b765-da34-c65b-a226-f17969935ce2@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-06-14_04:,,
- signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1906140057
+Content-Transfer-Encoding: 8bit
+To:     unlisted-recipients:; (no To-header on input)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 14/6/19 12:04 pm, Mauro Carvalho Chehab wrote:
-> diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-> index bbbabffc682a..fc7c6f7c21b3 100644
-> --- a/Documentation/ABI/testing/sysfs-class-cxl
-> +++ b/Documentation/ABI/testing/sysfs-class-cxl
-> @@ -1,6 +1,6 @@
-> -Note: Attributes that are shared between devices are stored in the directory
-> -pointed to by the symlink device/.
-> -Example: The real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
-> +Please notice that attributes that are shared between devices are stored in
+i.MX7 doesn't have a mainline cpufreq driver, so
+imx_thermal_register_legacy_cooling() will always return -EPROBE_DEFER
+preventing the driver probe from finishing. No-op
+imx_thermal_register_legacy_cooling() on i.MX7 to avoid that problem.
 
-Would prefer "Please note" over "Please notice".
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: Chris Healy <cphealy@gmail.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/thermal/imx_thermal.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Acked-by: Andrew Donnellan <ajd@linux.ibm.com>  # cxl
-
-
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index bb6754a5342c..bfc9c6d57916 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -658,6 +658,9 @@ static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *data)
+ 	struct device_node *np;
+ 	int ret;
+ 
++	if (data->socdata->version == TEMPMON_IMX7D)
++		return 0;
++
+ 	data->policy = cpufreq_cpu_get(0);
+ 	if (!data->policy) {
+ 		pr_debug("%s: CPUFreq policy not found\n", __func__);
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-ajd@linux.ibm.com             IBM Australia Limited
+2.21.0
 
