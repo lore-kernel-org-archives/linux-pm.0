@@ -7,57 +7,56 @@ X-Spam-Status: No, score=-16.3 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
 	USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 119A1C31E4C
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 04:17:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01EE8C31E4F
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 04:17:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D306A208CA
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 04:17:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C325B208CA
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 04:17:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="n5yi/fsS"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="hghN2IFd"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725908AbfFNERm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jun 2019 00:17:42 -0400
-Received: from mail-qt1-f201.google.com ([209.85.160.201]:51119 "EHLO
-        mail-qt1-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725906AbfFNERm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2019 00:17:42 -0400
-Received: by mail-qt1-f201.google.com with SMTP id g30so1044582qtm.17
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2019 21:17:42 -0700 (PDT)
+        id S1726114AbfFNERs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jun 2019 00:17:48 -0400
+Received: from mail-qk1-f202.google.com ([209.85.222.202]:57237 "EHLO
+        mail-qk1-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726105AbfFNERs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2019 00:17:48 -0400
+Received: by mail-qk1-f202.google.com with SMTP id j128so976564qkd.23
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2019 21:17:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=date:in-reply-to:message-id:mime-version:references:subject:from:to
          :cc;
-        bh=nT/RN++hgSEY1oFXDZU2+2vA7A3kNiWfnEI7MgbZhNk=;
-        b=n5yi/fsSkLPZsXmOhD6VaVWd4K75Sp6QVYZWyYN4AtitTODNfEvka82I6ouh9pIllG
-         dByhWETJ+8aEVnytSO/6g5UZ468kBNbvHIY8phwEkAWG2tZrVyIT0IsUTnuJQzR3aN5e
-         XLV3Bp8RtbiNIhG4M2j+89d4S8rQhOaXxXhPxrP4R3GuFvA3KrIT2TCwKcbf5jWgDRdY
-         hXKGsyRZDlYUqE42uRR1Cxv/vlIoapqsipres07YeHegPtQ6LxBQwOSWtvBOezOpgD3I
-         Qu28AYiZTS3TgBTeUizjfUrhu0yM3b2DuiIp11SST0LVUveEP+ZUo3ggXGNYrpastq/N
-         2/jA==
+        bh=SJIMb+Ux62XaD1zvTN7sgB8J991Gr80Gygm6D6H4n5w=;
+        b=hghN2IFdVV5jQWGPzPZfj8N0Ul84C8eBuXKbdeQmfXQzCGBY5ZqbUuqpImEdmhWmIo
+         9qOU//XwKxDBz8ELfcENjG8S6e3Ef6obgwIFjcQgIaBIbwIV0iUk4hQVUaxc1E0RPs6j
+         4B9xobeLA/t4xbUsX/xYRsjJB8sXtHhWHikl9LulTCv4m1ziaHGzx7wSNqwwdsMQVOsn
+         j/b1oMDv0cECZqjkMZPJEigAkUMZOeXATrxQNeFFMVyFcRcHLLw8tE9H0sS3z62rtfxV
+         uZcH/amHURKnUuYj0dXECYNQ4NhskYS+atKwxbBeRUvUo72AlN2cAxa/+7QeaY1t/7NI
+         aiUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=nT/RN++hgSEY1oFXDZU2+2vA7A3kNiWfnEI7MgbZhNk=;
-        b=JHeFzjd/sjCZST7lZ3ZVMaPP3XNOIxZyQeyugdzqikBOqhF93lITQ6+Hitov2dl8Gh
-         IhUBZEMLsDcBkG4v9lNQXBSKLW9TWA4JipUc2vnq1x9g8KY/Qe4BrdFfA70+KPsr1ZAo
-         yGMoDMYYrSvRuW4zHE+DWJOWZ0urEnSW50pXKyJyWmA2SKqI2qknIyV92GR+vBUchOHo
-         4Q0DOqggd1EiSX+TrUYV5EH6GNmH42wFoJcH49FTMiX0jXhwCo+1SaL1CWpTvJcV7wx3
-         qLgnhrUCKx1FEJ1FJ7REfc/ip24uTywo3ewgspYF9dSjVB1uhmwku7Tr0vNN1EqHuQaE
-         l15Q==
-X-Gm-Message-State: APjAAAXlTuMoV+71FwZm18NLSXRBp1foz+nnFuxJyKJefwIwg8Jb5Y/i
-        CYr0MeYk3zZy4WLDaQ8Dy/aX+RWbcqt61wM=
-X-Google-Smtp-Source: APXvYqyNMF63uMGGdRuluuVrT4/Cbxxxf47Mr3fg6agQhouB8jIcIqFEqN0r4I8WQRbVaepWXMQu0HlCnhutkjM=
-X-Received: by 2002:ac8:1a9d:: with SMTP id x29mr79446143qtj.128.1560485861512;
- Thu, 13 Jun 2019 21:17:41 -0700 (PDT)
-Date:   Thu, 13 Jun 2019 21:17:23 -0700
+        bh=SJIMb+Ux62XaD1zvTN7sgB8J991Gr80Gygm6D6H4n5w=;
+        b=TJ3HK4KCWWScV25XLzwMmgMKOJU2car/+oLL7hcMj92R7ndAG0J32dIFM/bfnALz+2
+         PhUOQfBlZet51iYO3GjF01u6bsAKY3ID+rfsAybGOymz7//i3qZZt4WsVsiJUkiYFuxb
+         fPx8bAHv+Ti5VBQwcDE5fIRiR6J3K3bwRvYQqh2ZeTiYbbJjlTbaV1wzTy+On+ewnuiv
+         qMBgWX/E7z089xZkg69k+5g65c/srAWQUvmp0Vwlzjs8fMa+fv8EqnLiZhl3ODUSO9UN
+         wSPY5Dq8qAL/47rYIgSN97bm5wB7UC46RbaQUQLxljiTiu1SpgK47yhfZDtM1y3jNfhC
+         pKuw==
+X-Gm-Message-State: APjAAAUhiPonUcN3HVDWQvV3x8bGClfY6pspmUIcsOMy64vJsOm7TIYE
+        0LutfxdXUKrOQq11l6h17SFEXuXvWuyVXLk=
+X-Google-Smtp-Source: APXvYqy6txRryyUL2ABcJNZLNr6zXIbMUWDWOiEgQN6cFXelIVr9k5cMguvNDbpVLT6bi0d9sMNRQIXaJZ3YMfo=
+X-Received: by 2002:ac8:685:: with SMTP id f5mr4388547qth.9.1560485867363;
+ Thu, 13 Jun 2019 21:17:47 -0700 (PDT)
+Date:   Thu, 13 Jun 2019 21:17:25 -0700
 In-Reply-To: <20190614041733.120807-1-saravanak@google.com>
-Message-Id: <20190614041733.120807-2-saravanak@google.com>
+Message-Id: <20190614041733.120807-4-saravanak@google.com>
 Mime-Version: 1.0
 References: <20190614041733.120807-1-saravanak@google.com>
 X-Mailer: git-send-email 2.22.0.rc2.383.gf4fbbf30c2-goog
-Subject: [PATCH v2 01/11] OPP: Allow required-opps even if the device doesn't
- have power-domains
+Subject: [PATCH v2 03/11] PM / devfreq: Add required OPPs support to passive governor
 From:   Saravana Kannan <saravanak@google.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -83,66 +82,67 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-A Device-A can have a (minimum) performance requirement on another
-Device-B to be able to function correctly. This performance requirement
-on Device-B can also change based on the current performance level of
-Device-A.
-
-The existing required-opps feature fits well to describe this need. So,
-instead of limiting required-opps to point to only PM-domain devices,
-allow it to point to any device.
+Look at the required OPPs of the "parent" device to determine the OPP that
+is required from the slave device managed by the passive governor. This
+allows having mappings between a parent device and a slave device even when
+they don't have the same number of OPPs.
 
 Signed-off-by: Saravana Kannan <saravanak@google.com>
 ---
- drivers/opp/core.c |  2 +-
- drivers/opp/of.c   | 14 --------------
- 2 files changed, 1 insertion(+), 15 deletions(-)
+ drivers/devfreq/governor_passive.c | 25 +++++++++++++++++++++++--
+ 1 file changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 0e7703fe733f..74c7bdc6f463 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -710,7 +710,7 @@ static int _set_required_opps(struct device *dev,
- 		return 0;
+diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+index 3bc29acbd54e..bd4a98bb15b1 100644
+--- a/drivers/devfreq/governor_passive.c
++++ b/drivers/devfreq/governor_passive.c
+@@ -21,8 +21,9 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 	struct devfreq_passive_data *p_data
+ 			= (struct devfreq_passive_data *)devfreq->data;
+ 	struct devfreq *parent_devfreq = (struct devfreq *)p_data->parent;
++	struct opp_table *opp_table = NULL, *c_opp_table = NULL;
+ 	unsigned long child_freq = ULONG_MAX;
+-	struct dev_pm_opp *opp;
++	struct dev_pm_opp *opp = NULL, *c_opp = NULL;
+ 	int i, count, ret = 0;
  
- 	/* Single genpd case */
--	if (!genpd_virt_devs) {
-+	if (!genpd_virt_devs && required_opp_tables[0]->is_genpd) {
- 		pstate = opp->required_opps[0]->pstate;
- 		ret = dev_pm_genpd_set_performance_state(dev, pstate);
- 		if (ret) {
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index c10c782d15aa..7c8336e94aff 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -195,9 +195,6 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 	 */
- 	count_pd = of_count_phandle_with_args(dev->of_node, "power-domains",
- 					      "#power-domain-cells");
--	if (!count_pd)
--		goto put_np;
--
- 	if (count_pd > 1) {
- 		genpd_virt_devs = kcalloc(count, sizeof(*genpd_virt_devs),
- 					GFP_KERNEL);
-@@ -226,17 +223,6 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 
- 		if (IS_ERR(required_opp_tables[i]))
- 			goto free_required_tables;
--
--		/*
--		 * We only support genpd's OPPs in the "required-opps" for now,
--		 * as we don't know how much about other cases. Error out if the
--		 * required OPP doesn't belong to a genpd.
--		 */
--		if (!required_opp_tables[i]->is_genpd) {
--			dev_err(dev, "required-opp doesn't belong to genpd: %pOF\n",
--				required_np);
--			goto free_required_tables;
--		}
+ 	/*
+@@ -65,7 +66,20 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 		goto out;
  	}
  
- 	goto put_np;
+-	dev_pm_opp_put(opp);
++	opp_table = dev_pm_opp_get_opp_table(parent_devfreq->dev.parent);
++	if (IS_ERR_OR_NULL(opp_table)) {
++		ret = PTR_ERR(opp_table);
++		goto out;
++	}
++
++	c_opp_table = dev_pm_opp_get_opp_table(devfreq->dev.parent);
++	if (!IS_ERR_OR_NULL(c_opp_table))
++		c_opp = dev_pm_opp_xlate_opp(opp_table, c_opp_table, opp);
++	if (c_opp) {
++		*freq = dev_pm_opp_get_freq(c_opp);
++		dev_pm_opp_put(c_opp);
++		goto out;
++	}
+ 
+ 	/*
+ 	 * Get the OPP table's index of decided freqeuncy by governor
+@@ -92,6 +106,13 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 	*freq = child_freq;
+ 
+ out:
++	if (!IS_ERR_OR_NULL(opp_table))
++		dev_pm_opp_put_opp_table(opp_table);
++	if (!IS_ERR_OR_NULL(c_opp_table))
++		dev_pm_opp_put_opp_table(c_opp_table);
++	if (!IS_ERR_OR_NULL(opp))
++		dev_pm_opp_put(opp);
++
+ 	return ret;
+ }
+ 
 -- 
 2.22.0.rc2.383.gf4fbbf30c2-goog
 
