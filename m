@@ -2,114 +2,66 @@ Return-Path: <SRS0=avRG=UN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC777C31E4B
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 07:42:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC18EC31E44
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 07:44:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B05222084E
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 07:42:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Tx3zTdrZ"
+	by mail.kernel.org (Postfix) with ESMTP id BBB1621473
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Jun 2019 07:44:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726218AbfFNHl5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Jun 2019 03:41:57 -0400
-Received: from mail-pl1-f194.google.com ([209.85.214.194]:44392 "EHLO
-        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725775AbfFNHl4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2019 03:41:56 -0400
-Received: by mail-pl1-f194.google.com with SMTP id t7so648771plr.11;
-        Fri, 14 Jun 2019 00:41:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=qTN8zccKrdobWI38/ip/wwPCXH3X8VyP8EgQGu6WwT4=;
-        b=Tx3zTdrZxlmZBygvwuVbgkil59kuAuDEE9UD/o9yXNf7z+83BF5msXsFToFYmZYp4E
-         XQNHmim9ZBjucKmzzcSeHbwSWyreHdMPlMOEanVzlkX78CwPSYCOsE8/m3p5jc56JiSD
-         bqk0LJyD4L28EhEOAJoXAJwXrYikXA1UQnWIFOFhd46PbySme9DU402xNwtgUMvOSqQ/
-         I827m25SPAHWqj1C/AdTSO4O39CqR9R0nk6mmFTDkAGS/Bp72RWn/UNarsZfSSd7Y/dd
-         Yx1xXLEIaOvVSUkS7evJYxbttwD/KV7HRyR5gFCW3oYFzUiGwkid6CiY38OPJCFA5EW3
-         yHoA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=qTN8zccKrdobWI38/ip/wwPCXH3X8VyP8EgQGu6WwT4=;
-        b=cE1cY9Dz/hxc+Upm5hjSyho6ivM8ZjsWaHC511ReRJCkmryp4Z2kDVsNID/R3wkGcf
-         kMiCwfxPSTAI46I59FwTKk1CBMWrMDLmw3S27XBe1ZUzA4yjFGgSfUEbYEEYxkL/OAhc
-         WEVCkOFd/rNTonqXoSJaRb3FxgP4FSEH8iFU7lJklxJwqxm2CSe6MmOh63mxptSJQzwy
-         ugARzlH7GaE+YZRy/iq2NLUFKwnjw4R8+8+TevKSQ2Kt0pIROOJh+3srk5gUKBfc2JEU
-         WMhevfl02WCBZFV+8UYuMLy1Dso1UZ7q6w5CUqRXkcN9Ncc7ZZ9yYgQz4tFNA/vNPjhQ
-         8EzA==
-X-Gm-Message-State: APjAAAVw6lm51mwYk9Fstlx4Nqga9RHiS61pk6f2o0JTkZ4wepFPDO8a
-        mWRJ+QnO3QoZfQBrv3Kd9R8=
-X-Google-Smtp-Source: APXvYqz1ezUgFwUfWTWpyFtqN1r3FJLRHBwqWF1tKFIH7v0Hytm+7RntCcWvpExkwSaYKI3rEoBEyA==
-X-Received: by 2002:a17:902:8696:: with SMTP id g22mr66319599plo.249.1560498115397;
-        Fri, 14 Jun 2019 00:41:55 -0700 (PDT)
-Received: from localhost.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id c6sm1979398pfm.163.2019.06.14.00.41.54
-        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Fri, 14 Jun 2019 00:41:54 -0700 (PDT)
-From:   Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Chris Healy <cphealy@gmail.com>,
-        Lucas Stach <l.stach@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] thermal: imx: skip registering legacy cooling on i.MX7
-Date:   Fri, 14 Jun 2019 00:41:40 -0700
-Message-Id: <20190614074140.15276-1-andrew.smirnov@gmail.com>
-X-Mailer: git-send-email 2.21.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+        id S1725812AbfFNHoi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Jun 2019 03:44:38 -0400
+Received: from mga09.intel.com ([134.134.136.24]:49698 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725775AbfFNHoi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Jun 2019 03:44:38 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga102.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 14 Jun 2019 00:44:37 -0700
+X-ExtLoop1: 1
+Received: from rajneesh-desk.iind.intel.com ([10.66.234.53])
+  by orsmga003.jf.intel.com with ESMTP; 14 Jun 2019 00:44:35 -0700
+From:   Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>
+To:     rjw@rjwysocki.net, linux-kernel@vger.kernel.org
+Cc:     len.brown@intel.com, rafael.j.wysocki@intel.com,
+        Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Subject: [PATCH 1/2] tools/power turbostat: Add Ice Lake NNPI support
+Date:   Fri, 14 Jun 2019 13:09:46 +0530
+Message-Id: <20190614073947.12270-1-rajneesh.bhardwaj@linux.intel.com>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-i.MX7 doesn't have a mainline cpufreq driver, so
-imx_thermal_register_legacy_cooling() will always return -EPROBE_DEFER
-preventing the driver probe from finishing. No-op
-imx_thermal_register_legacy_cooling() on i.MX7 to avoid that problem.
+This enables turbostat utility on Ice Lake NNPI SoC.
 
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: Chris Healy <cphealy@gmail.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Fabio Estevam <festevam@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: NXP Linux Team <linux-imx@nxp.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Cc: Len Brown <lenb@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>
+Link: https://lkml.org/lkml/2019/6/5/1034
+Signed-off-by: Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>
 ---
- drivers/thermal/imx_thermal.c | 3 +++
- 1 file changed, 3 insertions(+)
+ tools/power/x86/turbostat/turbostat.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index bb6754a5342c..bfc9c6d57916 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -658,6 +658,9 @@ static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *data)
- 	struct device_node *np;
- 	int ret;
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index c7727be9719f..d225cd373966 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -4594,6 +4594,7 @@ unsigned int intel_model_duplicates(unsigned int model)
+ 		return INTEL_FAM6_SKYLAKE_MOBILE;
  
-+	if (data->socdata->version == TEMPMON_IMX7D)
-+		return 0;
-+
- 	data->policy = cpufreq_cpu_get(0);
- 	if (!data->policy) {
- 		pr_debug("%s: CPUFreq policy not found\n", __func__);
+ 	case INTEL_FAM6_ICELAKE_MOBILE:
++	case INTEL_FAM6_ICELAKE_NNPI:
+ 		return INTEL_FAM6_CANNONLAKE_MOBILE;
+ 	}
+ 	return model;
 -- 
-2.21.0
+2.17.1
 
