@@ -2,104 +2,239 @@ Return-Path: <SRS0=tZ58=UQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61621C31E44
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jun 2019 04:26:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C657DC31E57
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jun 2019 09:23:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 34F3E2189F
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jun 2019 04:26:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 90EB020657
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jun 2019 09:23:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="T1bv07G6"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Pkm8OoUC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725813AbfFQE05 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jun 2019 00:26:57 -0400
-Received: from mail-pg1-f175.google.com ([209.85.215.175]:45447 "EHLO
-        mail-pg1-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725863AbfFQE05 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2019 00:26:57 -0400
-Received: by mail-pg1-f175.google.com with SMTP id s21so5006779pga.12
-        for <linux-pm@vger.kernel.org>; Sun, 16 Jun 2019 21:26:57 -0700 (PDT)
+        id S1728030AbfFQJX5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jun 2019 05:23:57 -0400
+Received: from mail-vs1-f68.google.com ([209.85.217.68]:39517 "EHLO
+        mail-vs1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726286AbfFQJX4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2019 05:23:56 -0400
+Received: by mail-vs1-f68.google.com with SMTP id n2so5681951vso.6
+        for <linux-pm@vger.kernel.org>; Mon, 17 Jun 2019 02:23:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=PmqFguwW3dYc7xJhH5/ZTk/3G85fwsIEI5IZBeTVbMI=;
-        b=T1bv07G606y22acLgdMZkhaLJx08RUHyZBX7NdaHMzsC4fMzVPcJ02aU7u5IykZhqg
-         SlAfQR0uFoGC+bPxUEGOXI6tFFYfoZLFmk1py+M7f9MftwDzqJCzY/6BvQ/k10SbjYt1
-         Sg1ky4ojNLm9kyNOa+3B56ibkdrvgeDgx55vLLfg6TT86hDy2fCvMyIViyZ5nFPI/4lW
-         8RDCU91bKDgJHKygUFl6M+7lyW6y3JosmhS2sCekPqqmfPvshQ/fh9FJsbXHh/LF1BcH
-         bCzZn5g4twxBZ7Rsn0H8SegEmRp47yDF57icq13SQvZfGTFfOwW9xlLbgilfbDOsQkQI
-         LETQ==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=/cJsdUbTg52BU1sHp4mMC2Qx85mUTaA7lh4cOcSR1MI=;
+        b=Pkm8OoUC8CSPsobb9vleTt1tZGqnjtzFYFO9two55tNU0DfMf/4X2hwuWrxMr3fV6Z
+         FCRVMyrdWh6f5e4A1qxsqhq5QGbgNTS+89ZPm8BcioRnOlCtwbUxMnYMvnKJIMdcmoBO
+         XvCk9HikcZD/Upl0u60Sm2JiZt7c+4xdDgtFnS+0tnUPpJjt7BjWS3NP7JA750mdVHxA
+         a6e3mqF90lOxvl5LQUPA/hWP2HMg4Tk5FvLu1YKvRu5lNYBMleg+gPII6awd31UGnAs3
+         2uSWKseBT+kWfiFFsDuCCpt9Mgftwml0HCaC7ZvL6lyOQAogMLM9w6Ms5uMqt20SDlY4
+         oNag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=PmqFguwW3dYc7xJhH5/ZTk/3G85fwsIEI5IZBeTVbMI=;
-        b=Rlrhnczk3/dF6dchZUWcuS6yRzSICSLKjHBrlAlqnLXwjY0Fh4hlMfBI5g8CcykrAc
-         BAaR2aXCVAHRNXyAszXnJ91NcX4z023wUJ29dU5SxZMOqzj2ZnkxiNIUFitb7U9DKvM1
-         dMQl4c0fv9ofcDtZ9GJmZ6syCGeoRqZbRpakwHLvUKeiB+WqKCag8/5IYP+jxb3WBJ88
-         CYQ7+2eQyUzbpT73NBWPUKxZJ5FMKOHfgIaxuM+bgTxyY/mrbqmcr85CI6VLAxJ2hZNg
-         +U0/nsI15ESrJH88SzpnHh1P6VaKxWNpMMPLZxqt6MdCsCWoT1zlAOso1ksx+CDfLOCF
-         FBxg==
-X-Gm-Message-State: APjAAAW4a7YiKyUi+VeBvuRJoLhlM9MFeAXc+cExPc0Tpdx8/OCRZDC8
-        bERcEeKt7Atle6WQs3CcZ/RsrQ==
-X-Google-Smtp-Source: APXvYqzqf2rvVzZQ9jtplmCuuCEzv3tRRPzxsJ+P8Z5XBfMDeAYsYxpXV5gZplXN6I0Z9Bp2k24iCA==
-X-Received: by 2002:a63:246:: with SMTP id 67mr48365918pgc.145.1560745616533;
-        Sun, 16 Jun 2019 21:26:56 -0700 (PDT)
-Received: from localhost ([122.172.66.84])
-        by smtp.gmail.com with ESMTPSA id s64sm10266562pfb.160.2019.06.16.21.26.55
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 16 Jun 2019 21:26:55 -0700 (PDT)
-Date:   Mon, 17 Jun 2019 09:56:54 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rajendra Nayak <rnayak@codeaurora.org>
-Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-scsi@vger.kernel.org, swboyd@chromium.org,
-        ulf.hansson@linaro.org, dianders@chromium.org, rafael@kernel.org
-Subject: Re: [RFC v2 00/11] DVFS in the OPP core
-Message-ID: <20190617042654.xdqx5naxo3lq7kv6@vireshk-i7>
-References: <20190320094918.20234-1-rnayak@codeaurora.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=/cJsdUbTg52BU1sHp4mMC2Qx85mUTaA7lh4cOcSR1MI=;
+        b=Nh+qTRxr1fFgWMcc+QxAjcJ9pkFd7cN3M5dT09aBkb7K9iUkTmKFmCXnObGND91Sk8
+         M00tWb5ErGR2pw7QX3D+ZBunQXKhCM8T9VFYeqvdoIOXcv7HGuyNd6RKLLPzSyNi6//j
+         +AnGKxjLeZ5s3jvCA/C+JrY+xs+nWp6dt6MFsiaWT69N6aRR78vHsWdW1WYYH08kWvCY
+         rscHdD1Wq9ECfXfZC0gl8rbCAeoJMdKkzHR+BkkaLNafC4OUDo6nbwbIvxW5VY43BCDN
+         C57F/6yRQ05t7eD2ATvjY/wMW+TSuUhwQdPCH5DuTj5QOruc/7zxEMNgfhhax+HA+ROG
+         Q9cA==
+X-Gm-Message-State: APjAAAXCvKni7XFTf2Tv3cNyGf/2nsXTvntgcshwi0BIbutYa/nCbQev
+        1GoApXPHQSDqBoBattMYez+e6qWbqF0u3uoS0M5R3w==
+X-Google-Smtp-Source: APXvYqwReTfX7h8azAwmNimt5ZvymCwl6dptR340BiX83vjWhUBkT72xFhsrtNPRVyVXBVJTHx2P0r9zOWHnkB9jPqo=
+X-Received: by 2002:a67:ee5b:: with SMTP id g27mr25855640vsp.165.1560763435517;
+ Mon, 17 Jun 2019 02:23:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190320094918.20234-1-rnayak@codeaurora.org>
-User-Agent: NeoMutt/20180716-391-311a52
+References: <cover.1560163748.git.viresh.kumar@linaro.org> <c263629a53dba33f9e7190b82172a88cc79654d1.1560163748.git.viresh.kumar@linaro.org>
+In-Reply-To: <c263629a53dba33f9e7190b82172a88cc79654d1.1560163748.git.viresh.kumar@linaro.org>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Mon, 17 Jun 2019 11:23:19 +0200
+Message-ID: <CAPDyKFqiwVbmbnOZzpT-yokwwWrRTYXgmBtuUsdawEd3D0ySqQ@mail.gmail.com>
+Subject: Re: [PATCH V3 1/5] PM / QOS: Pass request type to dev_pm_qos_{add|remove}_notifier()
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Kevin Hilman <khilman@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Qais.Yousef@arm.com, Matthias Kaehlcke <mka@chromium.org>,
+        juri.lelli@gmail.com,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 20-03-19, 15:19, Rajendra Nayak wrote:
-> This is a v2 of the RFC posted earlier by Stephen Boyd [1]
-> 
-> As part of v2 I still follow the same approach of dev_pm_opp_set_rate()
-> API using clk framework to round the frequency passed and making it
-> accept 0 as a valid frequency indicating the frequency isn't required
-> anymore. It just has a few more drivers converted to use this approach
-> like dsi/dpu and ufs.
-> ufs demonstrates the case of having to handle multiple power domains, one
-> of which is scalable.
-> 
-> The patches are based on 5.1-rc1 and depend on some ufs fixes I posted
-> earlier [2] and a DT patch to include the rpmpd header [3]
-> 
-> [1] https://lkml.org/lkml/2019/1/28/2086
-> [2] https://lkml.org/lkml/2019/3/8/70
-> [3] https://lkml.org/lkml/2019/3/20/120
-> 
-> Rajendra Nayak (10):
->   OPP: Make dev_pm_opp_set_rate() with freq=0 as valid
-> 
-> Stephen Boyd (1):
->   OPP: Don't overwrite rounded clk rate
+On Mon, 10 Jun 2019 at 12:51, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> In order to use the same set of routines to register notifiers for
+> different request types, update the existing
+> dev_pm_qos_{add|remove}_notifier() routines with an additional
+> parameter: request-type.
+>
+> For now, it only supports resume-latency request type.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I have applied modified version of these two patches to the OPP tree now.
-Thanks.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
--- 
-viresh
+Kind regards
+Uffe
+
+
+> ---
+>  Documentation/power/pm_qos_interface.txt | 10 ++++++----
+>  drivers/base/power/domain.c              |  8 +++++---
+>  drivers/base/power/qos.c                 | 14 ++++++++++++--
+>  include/linux/pm_qos.h                   | 12 ++++++++----
+>  4 files changed, 31 insertions(+), 13 deletions(-)
+>
+> diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
+> index 19c5f7b1a7ba..ec7d662d1707 100644
+> --- a/Documentation/power/pm_qos_interface.txt
+> +++ b/Documentation/power/pm_qos_interface.txt
+> @@ -164,12 +164,14 @@ directory.
+>  Notification mechanisms:
+>  The per-device PM QoS framework has a per-device notification tree.
+>
+> -int dev_pm_qos_add_notifier(device, notifier):
+> -Adds a notification callback function for the device.
+> +int dev_pm_qos_add_notifier(device, notifier, type):
+> +Adds a notification callback function for the device for a particular request
+> +type.
+> +
+>  The callback is called when the aggregated value of the device constraints list
+> -is changed (for resume latency device PM QoS only).
+> +is changed.
+>
+> -int dev_pm_qos_remove_notifier(device, notifier):
+> +int dev_pm_qos_remove_notifier(device, notifier, type):
+>  Removes the notification callback function for the device.
+>
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 33c30c1e6a30..b063bc41b0a9 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1536,7 +1536,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>         if (ret)
+>                 genpd_free_dev_data(dev, gpd_data);
+>         else
+> -               dev_pm_qos_add_notifier(dev, &gpd_data->nb);
+> +               dev_pm_qos_add_notifier(dev, &gpd_data->nb,
+> +                                       DEV_PM_QOS_RESUME_LATENCY);
+>
+>         return ret;
+>  }
+> @@ -1569,7 +1570,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+>
+>         pdd = dev->power.subsys_data->domain_data;
+>         gpd_data = to_gpd_data(pdd);
+> -       dev_pm_qos_remove_notifier(dev, &gpd_data->nb);
+> +       dev_pm_qos_remove_notifier(dev, &gpd_data->nb,
+> +                                  DEV_PM_QOS_RESUME_LATENCY);
+>
+>         genpd_lock(genpd);
+>
+> @@ -1597,7 +1599,7 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+>
+>   out:
+>         genpd_unlock(genpd);
+> -       dev_pm_qos_add_notifier(dev, &gpd_data->nb);
+> +       dev_pm_qos_add_notifier(dev, &gpd_data->nb, DEV_PM_QOS_RESUME_LATENCY);
+>
+>         return ret;
+>  }
+> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+> index 6c91f8df1d59..cfd463212513 100644
+> --- a/drivers/base/power/qos.c
+> +++ b/drivers/base/power/qos.c
+> @@ -467,6 +467,7 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
+>   *
+>   * @dev: target device for the constraint
+>   * @notifier: notifier block managed by caller.
+> + * @type: request type.
+>   *
+>   * Will register the notifier into a notification chain that gets called
+>   * upon changes to the target value for the device.
+> @@ -474,10 +475,14 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
+>   * If the device's constraints object doesn't exist when this routine is called,
+>   * it will be created (or error code will be returned if that fails).
+>   */
+> -int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
+> +int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
+> +                           enum dev_pm_qos_req_type type)
+>  {
+>         int ret = 0;
+>
+> +       if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
+> +               return -EINVAL;
+> +
+>         mutex_lock(&dev_pm_qos_mtx);
+>
+>         if (IS_ERR(dev->power.qos))
+> @@ -500,15 +505,20 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_add_notifier);
+>   *
+>   * @dev: target device for the constraint
+>   * @notifier: notifier block to be removed.
+> + * @type: request type.
+>   *
+>   * Will remove the notifier from the notification chain that gets called
+>   * upon changes to the target value.
+>   */
+>  int dev_pm_qos_remove_notifier(struct device *dev,
+> -                              struct notifier_block *notifier)
+> +                              struct notifier_block *notifier,
+> +                              enum dev_pm_qos_req_type type)
+>  {
+>         int retval = 0;
+>
+> +       if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
+> +               return -EINVAL;
+> +
+>         mutex_lock(&dev_pm_qos_mtx);
+>
+>         /* Silently return if the constraints object is not present. */
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index 6ea1ae373d77..1f4d456e8fff 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -146,9 +146,11 @@ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+>  int dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value);
+>  int dev_pm_qos_remove_request(struct dev_pm_qos_request *req);
+>  int dev_pm_qos_add_notifier(struct device *dev,
+> -                           struct notifier_block *notifier);
+> +                           struct notifier_block *notifier,
+> +                           enum dev_pm_qos_req_type type);
+>  int dev_pm_qos_remove_notifier(struct device *dev,
+> -                              struct notifier_block *notifier);
+> +                              struct notifier_block *notifier,
+> +                              enum dev_pm_qos_req_type type);
+>  void dev_pm_qos_constraints_init(struct device *dev);
+>  void dev_pm_qos_constraints_destroy(struct device *dev);
+>  int dev_pm_qos_add_ancestor_request(struct device *dev,
+> @@ -202,10 +204,12 @@ static inline int dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+>  static inline int dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
+>                         { return 0; }
+>  static inline int dev_pm_qos_add_notifier(struct device *dev,
+> -                                         struct notifier_block *notifier)
+> +                                         struct notifier_block *notifier,
+> +                                         enum dev_pm_qos_req_type type);
+>                         { return 0; }
+>  static inline int dev_pm_qos_remove_notifier(struct device *dev,
+> -                                            struct notifier_block *notifier)
+> +                                            struct notifier_block *notifier,
+> +                                            enum dev_pm_qos_req_type type)
+>                         { return 0; }
+>  static inline void dev_pm_qos_constraints_init(struct device *dev)
+>  {
+> --
+> 2.21.0.rc0.269.g1a574e7a288b
+>
