@@ -8,65 +8,65 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC2A6C31E5B
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jun 2019 16:15:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95AB4C31E5B
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jun 2019 16:15:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B5D07208C0
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Jun 2019 16:15:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6FAB2208C0
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Jun 2019 16:15:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nOM2+Mr4"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VuBYWDak"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727783AbfFQQPa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jun 2019 12:15:30 -0400
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:46090 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728467AbfFQQPZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2019 12:15:25 -0400
-Received: by mail-pf1-f193.google.com with SMTP id 81so5934454pfy.13;
-        Mon, 17 Jun 2019 09:15:24 -0700 (PDT)
+        id S1728596AbfFQQPV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Jun 2019 12:15:21 -0400
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:38128 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728467AbfFQQPV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2019 12:15:21 -0400
+Received: by mail-pg1-f196.google.com with SMTP id v11so6087151pgl.5;
+        Mon, 17 Jun 2019 09:15:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=k6eoJ9xcXnsJZd+Hemm7niOXBdFUm/UTEBKSRrxNhkU=;
-        b=nOM2+Mr4/ZWdg9YLUFi1vUmPa+NnhrsZBduzKwbOTXEsdvw4j1+q85sN1qxqpfb4yM
-         v3ZKRy8804fzS61vcXWFxLqSGuntUv8vh1ElSkoUAjDuRdiemi+PmBeyuUZidWJrGzby
-         2fACc7vVKio97GA6w0Iufr/JR49rw79iObREJMDpASb+X1s5BgYlZPcGDMsfyjgMl+Cv
-         /H1VBH72hz3M0KkC6RBsP+ihQD3DAP6/4GDibCoHZbXbmOJYZK90+7n9BCsX6+VlJJET
-         xhbNkMY0XWbQdxgZiH79M7WmXwPrknfOsL54XRmaGasZ7KfUiFR0941QPACJNW3VRz2T
-         2qfA==
+        bh=hTprmL6/4DTxYUWRYFqPS6Khlk6NQD+J3yhldvbHj+M=;
+        b=VuBYWDakvVdIntrhmddfKScqKlnj/dVBtTgB3jmRysYMdKY5AA6Vrp8fU2oSrxuG06
+         0YfPVbc6jq1P5ARQoasYOgtEaRDUQCoe/D30dncysXP+QDsjvbQ30kdyAKZHG2yJcC1m
+         lq88NNBNJFUoGBI7pkG6w18WfoIoPnxIrjfsoiSqDaKvShv0Prfpt/ALbEepEWx04SpQ
+         aJW2JywGZro9s82kvgcNYChITLq9TglMOCuMnwfV9q5NwADAhbBtl8JOEgoWQQwT4jJ1
+         Mi7sd5g2opVQewGmWArFnnMJ2wj0OSVn+6fpV+O37Hz6CJnujYA9UtDN+CJRpEHR9tQI
+         EX6g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=k6eoJ9xcXnsJZd+Hemm7niOXBdFUm/UTEBKSRrxNhkU=;
-        b=JxCBkgC7jfQE3XDV38hLJZUhZpe61+mX9vs/vkHDlH3OZq1fxzMNkljNM2KQLOvKuE
-         TFREpDcxoDqutV7i7jTxjxL1YPjBTLx8eaxEFEKfvKgvD3DNxo0cL6R2HzB/pjqoWAHH
-         6n7FqtlRgnDDpJIVjcwKDjat+Z3DUjBWlAH3jdQ59+xSdZFVTcgFLLG/j2fhjxUOkZei
-         p3OUw1noW4iPjCT8r5lBRPZ66uR2GLDL9fknjqkZw0/NV8QSeMuLDo2nPAd/McJ0w3Hq
-         mqkQl6Sw6eOlxoIccXfr26RQNBDrhbDHk/7Z1bUoUt4i3C1MZdFV8Ts2f3DVvGMc68ks
-         nggA==
-X-Gm-Message-State: APjAAAVW8UJI29NMgOppaFDKWrM2j3/9VCAqYwm86o1q1nsuDQeRjCIh
-        XFE8/IDUsM1zXwN8epkdlBcT8+j9vIQ=
-X-Google-Smtp-Source: APXvYqzWenjwHPZKTCUVtWeHTsrf7J75/gEJwqgz+joeNQO3l8GrHK1sc1q2Yx7Noe2d4V7UPCHljg==
-X-Received: by 2002:a62:8643:: with SMTP id x64mr80128030pfd.7.1560788124067;
-        Mon, 17 Jun 2019 09:15:24 -0700 (PDT)
+        bh=hTprmL6/4DTxYUWRYFqPS6Khlk6NQD+J3yhldvbHj+M=;
+        b=DArGfNR6IkKrcehJhmjMPrD11MNZ5T/bd7PS50687UiPYqh0TLUrjA6eqAH/7Mww8p
+         ehtmWnPh10qfJzXleh3IpG7PffdqXhXSWf6gamcILv1z7ploqxergBgMEELV7gtsweFJ
+         5KeAim+OS2IDRcSC9X/DiGejbTShPXEnQpYUua1At38AF/pD5qzX6WSXyx/XXB/MLwkV
+         d1Thgzv4LFcAf3kweN2fN8fZ69BsxaOGMIkCFF/Vrj4yd/+IPiZNzrZ3/WrbP43VtPTS
+         xN3a+oPygHvdNARl/Sxh8IyGGs/AP2ZwG6oUkgBdvTN8hfxlBsZ/0MUOOUWrL+FJhuwb
+         y+ug==
+X-Gm-Message-State: APjAAAW4pyUdVT1n296ZZRXuUlOHG8izyFcNscqhmUsdvQwJpAHHNoB8
+        q5plzhz6bbsbvFW8rcIFWr40xpccns4=
+X-Google-Smtp-Source: APXvYqyulHJRXkyrEaDR8++8h0CIP2/GegUPthY80RE9qmp0V8disDoNVojmtGTWG6HMiaKlKE0reg==
+X-Received: by 2002:a63:1243:: with SMTP id 3mr25796813pgs.235.1560788120209;
+        Mon, 17 Jun 2019 09:15:20 -0700 (PDT)
 Received: from localhost.lan (c-24-22-235-96.hsd1.wa.comcast.net. [24.22.235.96])
-        by smtp.gmail.com with ESMTPSA id c9sm14791953pfn.3.2019.06.17.09.15.22
+        by smtp.gmail.com with ESMTPSA id c9sm14791953pfn.3.2019.06.17.09.15.18
         (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Mon, 17 Jun 2019 09:15:23 -0700 (PDT)
+        Mon, 17 Jun 2019 09:15:19 -0700 (PDT)
 From:   Andrey Smirnov <andrew.smirnov@gmail.com>
 To:     linux-pm@vger.kernel.org
 Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Lucas Stach <l.stach@pengutronix.de>,
         Chris Healy <cphealy@gmail.com>,
         Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v6 12/12] thermal: qoriq: Add hwmon support
-Date:   Mon, 17 Jun 2019 09:14:58 -0700
-Message-Id: <20190617161458.3754-13-andrew.smirnov@gmail.com>
+Subject: [PATCH v6 09/12] thermal: qoriq: Enable all sensors before registering them
+Date:   Mon, 17 Jun 2019 09:14:55 -0700
+Message-Id: <20190617161458.3754-10-andrew.smirnov@gmail.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190617161458.3754-1-andrew.smirnov@gmail.com>
 References: <20190617161458.3754-1-andrew.smirnov@gmail.com>
@@ -77,11 +77,14 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Expose thermal readings as a HWMON device, so that it could be
-accessed using lm-sensors.
+Tmu_get_temp will get called as a part of sensor registration via
+devm_thermal_zone_of_sensor_register(). To prevent it from retruning
+bogus data we need to enable sensor monitoring before that. Looking at
+the datasheet (i.MX8MQ RM) there doesn't seem to be any harm in
+enabling them all, so, for the sake of simplicity, change the code to
+do just that.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Tested-by: Lucas Stach <l.stach@pengutronix.de>
 Cc: Chris Healy <cphealy@gmail.com>
 Cc: Lucas Stach <l.stach@pengutronix.de>
@@ -92,33 +95,61 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/thermal/qoriq_thermal.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 2f8c5feb1a25..56f9927cf63c 100644
+index 08167ebe6060..5f964f806187 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -12,6 +12,7 @@
- #include <linux/thermal.h>
+@@ -23,6 +23,7 @@
+ #define TMR_DISABLE	0x0
+ #define TMR_ME		0x80000000
+ #define TMR_ALPF	0x0c000000
++#define TMR_MSITE_ALL	GENMASK(15, 0)
  
- #include "thermal_core.h"
-+#include "thermal_hwmon.h"
- 
- #define SITES_MAX	16
- 
-@@ -115,6 +116,11 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
- 			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
- 			return ret;
- 		}
+ #define REGS_TMTMIR	0x008	/* Temperature measurement interval Register */
+ #define TMTMIR_DEFAULT	0x0000000f
+@@ -75,7 +76,10 @@ static const struct thermal_zone_of_device_ops tmu_tz_ops = {
+ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+ 				       struct qoriq_tmu_data *qdata)
+ {
+-	int id, sites = 0;
++	int id, ret;
 +
-+		if (devm_thermal_add_hwmon_sysfs(tzd))
-+			dev_warn(dev,
-+				 "Failed to add hwmon sysfs attributes\n");
-+
++	regmap_write(qdata->regmap, REGS_TMR,
++		     TMR_MSITE_ALL | TMR_ME | TMR_ALPF);
+ 
+ 	for (id = 0; id < SITES_MAX; id++) {
+ 		struct thermal_zone_device *tzd;
+@@ -86,21 +90,16 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+ 		tzd = devm_thermal_zone_of_sensor_register(dev, id,
+ 							   sensor,
+ 							   &tmu_tz_ops);
+-		if (IS_ERR(tzd)) {
+-			if (PTR_ERR(tzd) == -ENODEV)
++		ret = PTR_ERR_OR_ZERO(tzd);
++		if (ret) {
++			if (ret == -ENODEV)
+ 				continue;
+-			else
+-				return PTR_ERR(tzd);
+-		}
+ 
+-		sites |= 0x1 << (15 - id);
++			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
++			return ret;
++		}
  	}
  
+-	/* Enable monitoring */
+-	if (sites != 0)
+-		regmap_write(qdata->regmap, REGS_TMR,
+-			     sites | TMR_ME | TMR_ALPF);
+-
  	return 0;
+ }
+ 
 -- 
 2.21.0
 
