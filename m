@@ -2,222 +2,96 @@ Return-Path: <SRS0=IxOQ=UR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39B0CC31E5C
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Jun 2019 02:17:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EE21C31E51
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Jun 2019 04:14:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1A3D220833
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Jun 2019 02:17:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D139E21019
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Jun 2019 04:14:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="k5ib5yz5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728008AbfFRCRB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Jun 2019 22:17:01 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:46996 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726047AbfFRCRB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 17 Jun 2019 22:17:01 -0400
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 654DF2002F1;
-        Tue, 18 Jun 2019 04:16:58 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3365120020A;
-        Tue, 18 Jun 2019 04:16:42 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 2DA2F402F0;
-        Tue, 18 Jun 2019 10:16:29 +0800 (SGT)
-From:   Anson.Huang@nxp.com
-To:     robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
-        festevam@gmail.com, catalin.marinas@arm.com, will.deacon@arm.com,
-        rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, aisheng.dong@nxp.com,
-        ulf.hansson@linaro.org, peng.fan@nxp.com,
-        mchehab+samsung@kernel.org, linux@roeck-us.net,
-        daniel.baluta@nxp.com, maxime.ripard@bootlin.com,
-        horms+renesas@verge.net.au, olof@lixom.net,
-        jagan@amarulasolutions.com, bjorn.andersson@linaro.org,
-        leonard.crestez@nxp.com, dinguyen@kernel.org,
-        enric.balletbo@collabora.com, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH V15 2/5] thermal: of-thermal: add API for getting sensor ID from DT
-Date:   Tue, 18 Jun 2019 10:18:17 +0800
-Message-Id: <20190618021820.14885-2-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190618021820.14885-1-Anson.Huang@nxp.com>
-References: <20190618021820.14885-1-Anson.Huang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1726095AbfFREOv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Jun 2019 00:14:51 -0400
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:40300 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725826AbfFREOv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2019 00:14:51 -0400
+Received: by mail-pf1-f196.google.com with SMTP id p184so6841033pfp.7
+        for <linux-pm@vger.kernel.org>; Mon, 17 Jun 2019 21:14:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=jcFyPwPNKq29ytAFd305q8rwNyzYsZ7B9zTaK8mx6W4=;
+        b=k5ib5yz5jpa3Ba1wvKnJflDfqnsh3w7oWfVsHcIR29wlU3SHF2pEifWYxqhLA97FMe
+         7xvOKFA9uwpxaZqS+FNvKvWuh9RiMfbc52D7g62n13fFs3PXWb0iNZ91gU7ikLXDDxcY
+         H4K8xc9rKyACph6YvMZ5WoQzAKvhs/sKx3KlQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=jcFyPwPNKq29ytAFd305q8rwNyzYsZ7B9zTaK8mx6W4=;
+        b=X1l0JmkZ6uN0yRUGGoDRHPR/zQ+VNTpt10XzV2OeRViHZSeGrfU5uZXgM7XYpkO/+R
+         kI6edtSSJySBIDRQoTJoVVF2M8IZ7eNSVQW9x8FnIJPisWfwbRsTi4nyswVxrdA2SsqV
+         0/FJdguWmA9D59lugiFWDUjRx3aS8T+jA34gbzLaXnyvNnUWGf0A5YysRxmWGTIqQwi1
+         jC4WowiWG3ZVr0NDi1Uv0Y2GuBvJYkY9g8QcGqa162zhn6qwJWDN0imrov8oIPexS7jR
+         EIT9IOdUS1tj1Ve5fpPPa/JCVF2D4Lz3dHQamTWinCyZGZp23VVvUfMX4FIhtElaYYeQ
+         /Aaw==
+X-Gm-Message-State: APjAAAWldsv865b3VaqrzE9Ns6nijqP7NIABKB8sqOv/X6vLQY3AmQAK
+        E1fjusRXruEYSgsYVZ4L9I/K8Q==
+X-Google-Smtp-Source: APXvYqxGfG3zg+MvrVoA7HRSbr/Kl/ngYm8xn6JzKxClD9kGWk3bbE+WQ/dp1ZzdPxo78Q5ajjWSWg==
+X-Received: by 2002:a17:90a:2562:: with SMTP id j89mr2781411pje.123.1560831290393;
+        Mon, 17 Jun 2019 21:14:50 -0700 (PDT)
+Received: from hsinyi-z840.tpe.corp.google.com ([2401:fa00:1:10:b852:bd51:9305:4261])
+        by smtp.gmail.com with ESMTPSA id 25sm13590685pfp.76.2019.06.17.21.14.47
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Mon, 17 Jun 2019 21:14:49 -0700 (PDT)
+From:   Hsin-Yi Wang <hsinyi@chromium.org>
+To:     linux-arm-kernel@lists.infradead.org
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-kernel@vger.kernel.org,
+        Saravana Kannan <skannan@codeaurora.org>,
+        "Andrew-sh . Cheng" <andrew-sh.cheng@mediatek.com>
+Subject: [PATCH RFC 0/2] Use cpufreq-map governor for MT8183 CCI
+Date:   Tue, 18 Jun 2019 12:14:32 +0800
+Message-Id: <20190618041433.245629-1-hsinyi@chromium.org>
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Anson Huang <Anson.Huang@nxp.com>
+From: Hsin-Yi Wang <hsinyi@chromium.org>
 
-This patch adds new API thermal_zone_of_get_sensor_id() to
-provide the feature of getting sensor ID from DT thermal
-zone's node. It's useful for thermal driver to register the
-specific thermal zone devices from DT in a common way.
+This series uses cpufreq-map governor for mt8183-cci to improve performance.
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Reviewed-by: Dong Aisheng <aisheng.dong@nxp.com>
----
-Changes since V14:
-	- improve the commit message, document and comment, no code change.
----
- Documentation/thermal/sysfs-api.txt |  8 +++++
- drivers/thermal/of-thermal.c        | 65 ++++++++++++++++++++++++++++---------
- include/linux/thermal.h             | 10 ++++++
- 3 files changed, 67 insertions(+), 16 deletions(-)
+Hsin-Yi Wang (1):
+  devfreq: mt8183-cci: using cpufreq-map governor in cci dvfs driver
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index c3fa500..5d3f84e 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -159,6 +159,14 @@ temperature) and throttle appropriate devices.
- 	for the thermal zone device, which might be useful for platform
- 	drivers for temperature calculations.
- 
-+1.1.9 int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+		struct device_node *sensor_np,
-+		u32 *id)
-+
-+	This interface is used to get the sensor id from the given thermal
-+	zone in DT, which might be useful for thermal drivers to register
-+	specific thermal zone device in a common way.
-+
- 1.2 thermal cooling device interface
- 1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(char *name,
- 		void *devdata, struct thermal_cooling_device_ops *)
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index dc5093b..2422cc4 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -449,6 +449,53 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- }
- 
- /**
-+ * thermal_zone_of_get_sensor_id - get sensor ID from a DT thermal zone
-+ * @tz_np: a valid thermal zone device node.
-+ * @sensor_np: a sensor node of a valid sensor device.
-+ * @id: the sensor ID returned if success.
-+ *
-+ * This function will get sensor ID from a given thermal zone node and
-+ * the sensor node must match the temperature provider @sensor_np.
-+ *
-+ * Return: 0 on success, proper error code otherwise.
-+ */
-+
-+int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+				  struct device_node *sensor_np,
-+				  u32 *id)
-+{
-+	struct of_phandle_args sensor_specs;
-+	int ret;
-+
-+	ret = of_parse_phandle_with_args(tz_np,
-+					 "thermal-sensors",
-+					 "#thermal-sensor-cells",
-+					 0,
-+					 &sensor_specs);
-+	if (ret)
-+		return ret;
-+
-+	if (sensor_specs.np != sensor_np) {
-+		of_node_put(sensor_specs.np);
-+		return -ENODEV;
-+	}
-+
-+	if (sensor_specs.args_count >= 1) {
-+		*id = sensor_specs.args[0];
-+		WARN(sensor_specs.args_count > 1,
-+		     "%pOFn: too many cells in sensor specifier %d\n",
-+		     sensor_specs.np, sensor_specs.args_count);
-+	} else {
-+		*id = 0;
-+	}
-+
-+	of_node_put(sensor_specs.np);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(thermal_zone_of_get_sensor_id);
-+
-+/**
-  * thermal_zone_of_sensor_register - registers a sensor to a DT thermal zone
-  * @dev: a valid struct device pointer of a sensor device. Must contain
-  *       a valid .of_node, for the sensor node.
-@@ -499,36 +546,22 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
- 	sensor_np = of_node_get(dev->of_node);
- 
- 	for_each_available_child_of_node(np, child) {
--		struct of_phandle_args sensor_specs;
- 		int ret, id;
- 
- 		/* For now, thermal framework supports only 1 sensor per zone */
--		ret = of_parse_phandle_with_args(child, "thermal-sensors",
--						 "#thermal-sensor-cells",
--						 0, &sensor_specs);
-+		ret = thermal_zone_of_get_sensor_id(child, sensor_np, &id);
- 		if (ret)
- 			continue;
- 
--		if (sensor_specs.args_count >= 1) {
--			id = sensor_specs.args[0];
--			WARN(sensor_specs.args_count > 1,
--			     "%pOFn: too many cells in sensor specifier %d\n",
--			     sensor_specs.np, sensor_specs.args_count);
--		} else {
--			id = 0;
--		}
--
--		if (sensor_specs.np == sensor_np && id == sensor_id) {
-+		if (id == sensor_id) {
- 			tzd = thermal_zone_of_add_sensor(child, sensor_np,
- 							 data, ops);
- 			if (!IS_ERR(tzd))
- 				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
- 
--			of_node_put(sensor_specs.np);
- 			of_node_put(child);
- 			goto exit;
- 		}
--		of_node_put(sensor_specs.np);
- 	}
- exit:
- 	of_node_put(sensor_np);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 15a4ca5..5edffe6 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -375,6 +375,9 @@ struct thermal_trip {
- 
- /* Function declarations */
- #ifdef CONFIG_THERMAL_OF
-+int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+				  struct device_node *sensor_np,
-+				  u32 *id);
- struct thermal_zone_device *
- thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
- 				const struct thermal_zone_of_device_ops *ops);
-@@ -386,6 +389,13 @@ struct thermal_zone_device *devm_thermal_zone_of_sensor_register(
- void devm_thermal_zone_of_sensor_unregister(struct device *dev,
- 					    struct thermal_zone_device *tz);
- #else
-+
-+static int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+					 struct device_node *sensor_np,
-+					 u32 *id)
-+{
-+	return -ENOENT;
-+}
- static inline struct thermal_zone_device *
- thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
- 				const struct thermal_zone_of_device_ops *ops)
+Saravana Kannan (1):
+  PM / devfreq: Generic CPU frequency to device frequency mapping
+    governor
+
+ .../bindings/devfreq/devfreq-cpufreq-map.txt  |  53 ++
+ drivers/devfreq/Kconfig                       |   8 +
+ drivers/devfreq/Makefile                      |   1 +
+ drivers/devfreq/governor_cpufreq_map.c        | 583 ++++++++++++++++++
+ drivers/devfreq/mt8183-cci-devfreq.c          | 194 +-----
+ 5 files changed, 649 insertions(+), 190 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
+ create mode 100644 drivers/devfreq/governor_cpufreq_map.c
+
 -- 
-2.7.4
+2.20.1
 
