@@ -2,109 +2,101 @@ Return-Path: <SRS0=IxOQ=UR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7919AC31E51
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Jun 2019 09:17:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A02F1C31E51
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Jun 2019 09:26:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 52726206BA
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Jun 2019 09:17:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 770312085A
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Jun 2019 09:26:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="RiJtJdWo"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sc0E/8iB"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729286AbfFRJR3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Jun 2019 05:17:29 -0400
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:46750 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729225AbfFRJR3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2019 05:17:29 -0400
-Received: by mail-lf1-f68.google.com with SMTP id z15so8652211lfh.13
-        for <linux-pm@vger.kernel.org>; Tue, 18 Jun 2019 02:17:28 -0700 (PDT)
+        id S1729323AbfFRJ0G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Jun 2019 05:26:06 -0400
+Received: from mail-pg1-f193.google.com ([209.85.215.193]:46070 "EHLO
+        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728810AbfFRJ0F (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2019 05:26:05 -0400
+Received: by mail-pg1-f193.google.com with SMTP id s21so7336320pga.12
+        for <linux-pm@vger.kernel.org>; Tue, 18 Jun 2019 02:26:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=rJanYe36yi/CmGKqaCrG1otgHpkv5KX5H3hS1IRh33g=;
-        b=RiJtJdWoPD8zAWLrRuFlXYtFDm2X0N6/21V3ItMvPDDbdX9jIMVD2NDDE50Evpd7c5
-         NP91pnFt1FTIfxm71pG+sw/GLrffxSGkjN5FKLqFCZzFnGDzFCMG19dHtlagjO53JVr/
-         80CRzxaL1cN4BtODGKh0tEiNCVJAKGD2hlezCr0t0JeIi0cngbJDXFeAYYfVdH4xapR0
-         1nFQQDgIcTIQ1+QHAOYncbIigzuTHyGJIGn5wK5x+yFT1HBY5GkQFMYtVVGMYtPf8zk4
-         6jr/zmJsnunS/onnUn73MCCqmxxeoLyyYlMOV/H4O9N6tMze7daUZL+ggyMfqPaVWAIO
-         OQZg==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=ACmcdqOP2gSGSso0d/MiQ00IgAVGq25vQtNqguYCF5w=;
+        b=sc0E/8iB4qaqHn9Zp1WR0OtM9S8b0KYzP6oOnRw5yROW6enOifvofAeCtv31AqOYo/
+         a8y5opv8HfdW6eTBEHVj7aAJilzMPTo9rmEpF8/79ZrG7Tz2xvc18qbElUHHCqtdm++F
+         cgWe47VNKw5H6+E+VSZV3v4mL57BeVLM4cSW1rbq3QY48kquBQpPf519wgWpEDuFkeI9
+         5wKIrFfJbP5sEaQHHdDzIqqTxj4DFbsBHbg91ivq5Y8LquUvB4OHHLku8qEeQXj74meE
+         PCPfSLjxdUCAjl0Rk7VQUyPz7sORJR8qPHvNW/rQ7KMTGcpfH5kNpXt8S7IeJz4qC5jr
+         wmhQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=rJanYe36yi/CmGKqaCrG1otgHpkv5KX5H3hS1IRh33g=;
-        b=CrsmqFKUTtGqyPnofouwmASApisJkYL/dQyGrccz+Rq7A7gKhO/TBsd9XMoeHONzy7
-         YB0QOG6y7UVKRbK4zm1NMvCh5jCQJOVHITNFvZL1b4sG1SUNFhELJhZpDd0ToVD9okD3
-         XOw7ou5QPVMv7U2q5AJp7aecuF+9n7erYkG7TPUzSXhK/yXe7uc4IXA4rGARORoyh+ku
-         dKf5WiJsgWj7bFEh0cNBp3aNJG2DBfpPDe8Bv/ZB6ISo3CUVU+jINn8dKfMzSV0rhLxQ
-         To2HxP5UNi+WH0Y5fnmeBDBrkPN5XEY6B9a/NjUWjWHfcxt9WBDDjs1LQCQ2MIXVZK4Y
-         fi0Q==
-X-Gm-Message-State: APjAAAVzRWJzZ+ENxjp5+bQQd77lIk55t7n9Y2pHnDxSNtHYS2LULikZ
-        6KSbVF5pzPObIBEtNMAD8m/bEDM9o2s=
-X-Google-Smtp-Source: APXvYqzZIY8KYRJ7T3S77TJbee+KXLTlqzbOJRplLldZUlUxRX5u3jYNnsAy45fO6GHH7GsxDOvD1w==
-X-Received: by 2002:ac2:482d:: with SMTP id 13mr14129676lft.132.1560849447214;
-        Tue, 18 Jun 2019 02:17:27 -0700 (PDT)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id b9sm2497444ljj.92.2019.06.18.02.17.25
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Tue, 18 Jun 2019 02:17:26 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org
-Cc:     daidavid1@codeaurora.org, vincent.guittot@linaro.org,
-        bjorn.andersson@linaro.org, amit.kucheria@linaro.org,
-        evgreen@chromium.org, dianders@chromium.org,
-        seansw@qti.qualcomm.com, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
-Subject: [PATCH v2 0/2] interconnect: Add path tagging support
-Date:   Tue, 18 Jun 2019 12:17:22 +0300
-Message-Id: <20190618091724.28232-1-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.21.0
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=ACmcdqOP2gSGSso0d/MiQ00IgAVGq25vQtNqguYCF5w=;
+        b=kCl3NL1DBLrZaV/q3+Lyq9QpLpw/XL+stlyX3EAyToqVQ/cZ9kJv90uWwy0bj/S4w4
+         y+D1PJ0xMMA1uwqgzNT64otbBKw5WQlJYoP/joOMMsZBh/njCG3fQI4rowE1gTWs+dZR
+         YdOLTQHcM4bwIBAplPfh+HjZCyF7dRr6hnCmD+uoI0Z/UhPfz5e50CLZRg2yiHyAh4Nb
+         szLbzSaFpO7t/uSu7TJ9cXaNVd1276bNwk0gyORsX9pFVJbeoR59gaubk4hc7c1zHKiL
+         PD31VGLzXeG+OApoUD0m8UL7B9CeaLKXlt1KG3dntvW53ijBR9QBTNJN2+erieT+ZETH
+         momA==
+X-Gm-Message-State: APjAAAW3qGB+pnxCS0IlsvibZlNEmD4dHk97ahjRnvkBacq8o5AjGjkK
+        CDR7DESUQqWaOg26Df57cmyUQg==
+X-Google-Smtp-Source: APXvYqw7S7g+LxxyGBTPUPd97vZx4Wcl8CWA1Ovr31OCsPH4/P6Iao8SMp+SLw9BjAv0mLfR5zA/5A==
+X-Received: by 2002:a63:ce08:: with SMTP id y8mr1732002pgf.38.1560849964851;
+        Tue, 18 Jun 2019 02:26:04 -0700 (PDT)
+Received: from localhost ([122.172.66.84])
+        by smtp.gmail.com with ESMTPSA id ci15sm4292839pjb.12.2019.06.18.02.26.03
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 18 Jun 2019 02:26:04 -0700 (PDT)
+Date:   Tue, 18 Jun 2019 14:56:01 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Vincent Guittot <vincent.guittot@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux@armlinux.org.uk,
+        gregkh@linuxfoundation.org, rafael@kernel.org, mingo@redhat.com,
+        peterz@infradead.org, quentin.perret@arm.com
+Subject: Re: [PATCH] sched/topology: remove unused sd param from
+ arch_scale_cpu_capacity()
+Message-ID: <20190618092601.2aws7kujvk2pulwt@vireshk-i7>
+References: <1560783617-5827-1-git-send-email-vincent.guittot@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1560783617-5827-1-git-send-email-vincent.guittot@linaro.org>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SoCs that have multiple coexisting CPUs and DSPs, may have shared
-interconnect buses between them. In such cases, each CPU/DSP may have
-different bandwidth needs, depending on whether it is active or sleeping.
-This means that we have to keep different bandwidth configurations for
-the CPU (active/sleep). In such systems, usually there is a way to
-communicate and synchronize this information with some firmware or pass
-it to another processor responsible for monitoring and switching the
-interconnect configurations based on the state of each CPU/DSP.
+On 17-06-19, 17:00, Vincent Guittot wrote:
+> struct sched_domain *sd parameter is not used anymore in
+> arch_scale_cpu_capacity() so we can remove it.
+> 
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+>  arch/arm/kernel/topology.c       |  2 +-
+>  drivers/base/arch_topology.c     |  6 +++---
+>  include/linux/arch_topology.h    |  2 +-
+>  include/linux/energy_model.h     |  2 +-
+>  include/linux/sched/topology.h   | 14 +++-----------
+>  kernel/power/energy_model.c      |  2 +-
+>  kernel/sched/cpufreq_schedutil.c |  2 +-
+>  kernel/sched/deadline.c          |  2 +-
+>  kernel/sched/fair.c              |  6 +++---
+>  kernel/sched/pelt.c              |  2 +-
+>  kernel/sched/pelt.h              |  2 +-
+>  kernel/sched/sched.h             |  2 +-
+>  kernel/sched/topology.c          |  8 ++++----
+>  13 files changed, 22 insertions(+), 30 deletions(-)
 
-The above problem can be solved by introducing the path tagging concept,
-that allows consumers to optionally attach a tag to each path they use.
-This tag is used to differentiate between the aggregated bandwidth values
-for each state. The tag is generic and how it's handled is up to the
-platform specific interconnect provider drivers.
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-v2:
-- Store tag with the request. (Evan)
-- Reorganize the code to save bandwidth values into buckets and use the
-  tag as a bitfield. (Evan)
-- Clear the aggregated values after icc_set().
-
-v1: https://lore.kernel.org/lkml/20190208172152.1807-1-georgi.djakov@linaro.org/
-
-
-David Dai (1):
-  interconnect: qcom: Add tagging and wake/sleep support for sdm845
-
-Georgi Djakov (1):
-  interconnect: Add support for path tags
-
- drivers/interconnect/core.c           |  24 ++++-
- drivers/interconnect/qcom/sdm845.c    | 131 +++++++++++++++++++-------
- include/linux/interconnect-provider.h |   4 +-
- include/linux/interconnect.h          |   5 +
- 4 files changed, 129 insertions(+), 35 deletions(-)
-
+-- 
+viresh
