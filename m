@@ -2,84 +2,92 @@ Return-Path: <SRS0=UY+e=US=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B04CFC31E5D
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 09:44:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF9D9C31E5E
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 09:51:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8A17F214AF
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 09:44:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7EF532084A
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 09:51:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1560937892;
+	bh=y81htG23/zea4+r52l2Dj13/eAQOi9j+uffXOS4ooAU=;
+	h=From:Date:Subject:To:Cc:List-ID:From;
+	b=IGjouMRkwYwmdL+tA/OR2r0fgg5Gc+I4jNYL3Z77hBcza/TvzY5/CWuUMKxbqmm0j
+	 O7+LHJ1spCFSJJEetIMDJMZYEeRSoiQacqHeZjDt99TjUYscucuMAD4kj5w8TTbFW4
+	 4+UveX5nZpQs1mvafL5V55t1GP5osQ+Kup3dHPQA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731347AbfFSJoP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Jun 2019 05:44:15 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:60887 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726958AbfFSJoO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2019 05:44:14 -0400
-Received: from 79.184.254.20.ipv4.supernova.orange.pl (79.184.254.20) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.267)
- id 83e5fff914495b75; Wed, 19 Jun 2019 11:44:12 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH] drivers: base: power: remove wakeup_sources_stats_dentry variable
-Date:   Wed, 19 Jun 2019 11:44:11 +0200
-Message-ID: <2312584.5JG36tZHQ9@kreacher>
-In-Reply-To: <20190618153416.6786-1-gregkh@linuxfoundation.org>
-References: <20190618153416.6786-1-gregkh@linuxfoundation.org>
+        id S1726999AbfFSJvc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Jun 2019 05:51:32 -0400
+Received: from mail-oi1-f196.google.com ([209.85.167.196]:45502 "EHLO
+        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726826AbfFSJvb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2019 05:51:31 -0400
+Received: by mail-oi1-f196.google.com with SMTP id m206so10033258oib.12;
+        Wed, 19 Jun 2019 02:51:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=UJbr7/phPEcDTZVXC/bckou8HWl+paGsMx0R3z/uC48=;
+        b=WMQwHRcgQPWB1zx7OT6b+skLoBy5W0ZZMLpjIO0Wd9twQf8f/YXUavJtbmwv4QSmVu
+         QodO/unqjBefGWY3lb30y99ObXkSGi+sXyxO+iN7gJlx3RVqN7jxrc85OU4TN4i5UAwQ
+         YJTn7WU3ofsSzBdMy7jHjffldzzybzLHr/eURqWqFpAgr4dzG0JqXj+g9VsMtzhTNEHf
+         cy+r2VlSazqM+zKFRWoiLj8hrEAA56WTiUL1/cQZr29T295fD131iwlVwiBN4Mknmuxx
+         ZZCntw7iJU/zut8egcCigWzZodqtyhwr3HNYl1HAgqbiRxTR8DMrDwwJbtGTru/EcCxZ
+         4R6Q==
+X-Gm-Message-State: APjAAAUe5i7YnfnhBu2RIHFSsDb9I3StVdS2IzC3F/8jz038UfxE/WWw
+        +0UKMoLivtujSdEHukFv1zp1eUM5PG303kGrkhbZTm7X
+X-Google-Smtp-Source: APXvYqxJhL4UK1SJOJA0owPbeMrKSSBECfxygU6EJI2tzL6c266q3fjJDmh+UqXmzv/u+42BIG9yb+pEnyNP8TziDDw=
+X-Received: by 2002:aca:4e89:: with SMTP id c131mr2241000oib.57.1560937890890;
+ Wed, 19 Jun 2019 02:51:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 19 Jun 2019 11:51:19 +0200
+Message-ID: <CAJZ5v0hbF4i-mJ6thnu8HRNcAXBrw4=vqQG+ikufB2z3q82F4g@mail.gmail.com>
+Subject: [GIT PULL] Power management fix for v5.2-rc6
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tuesday, June 18, 2019 5:34:16 PM CEST Greg Kroah-Hartman wrote:
-> wakeup_sources_stats_dentry is assigned when the debugfs file is
-> created, but then never used ever again.  So no need for it at all, just
-> remove it and call debugfs_create_file() on its own.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> ---
->  drivers/base/power/wakeup.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index 5b2b6a05a4f3..ee31d4f8d856 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -968,8 +968,6 @@ void pm_wakep_autosleep_enabled(bool set)
->  }
->  #endif /* CONFIG_PM_AUTOSLEEP */
->  
-> -static struct dentry *wakeup_sources_stats_dentry;
-> -
->  /**
->   * print_wakeup_source_stats - Print wakeup source statistics information.
->   * @m: seq_file to print the statistics into.
-> @@ -1099,8 +1097,8 @@ static const struct file_operations wakeup_sources_stats_fops = {
->  
->  static int __init wakeup_sources_debugfs_init(void)
->  {
-> -	wakeup_sources_stats_dentry = debugfs_create_file("wakeup_sources",
-> -			S_IRUGO, NULL, NULL, &wakeup_sources_stats_fops);
-> +	debugfs_create_file("wakeup_sources", S_IRUGO, NULL, NULL,
-> +			    &wakeup_sources_stats_fops);
->  	return 0;
->  }
->  
-> 
+Hi Linus,
 
-Queued for 5.3, thanks!
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-5.2-rc6
+
+with top-most commit 3e26c5feed2add218046ecf91bab3cfa9bf762a6
+
+ PCI: PM: Skip devices in D0 for suspend-to-idle
+
+on top of commit d1fdb6d8f6a4109a4263176c84b899076a5f8008
+
+ Linux 5.2-rc4
+
+to receive a power management fix for 5.2-rc6.
+
+This prevents PCI bridges in general (and PCIe ports in particular)
+from being put into low-power states during system-wide suspend
+transitions if there are any devices in D0 below them and refines
+the handling of PCI devices in D0 during suspend-to-idle cycles.
+
+Thanks!
 
 
+---------------
 
+Rafael J. Wysocki (1):
+      PCI: PM: Skip devices in D0 for suspend-to-idle
 
+---------------
+
+ drivers/pci/pci-driver.c | 47 +++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 35 insertions(+), 12 deletions(-)
