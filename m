@@ -2,126 +2,121 @@ Return-Path: <SRS0=UY+e=US=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCD3FC31E5D
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 11:36:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFC34C31E49
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 12:20:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A617D215EA
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 11:36:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OiuBJyYM"
+	by mail.kernel.org (Postfix) with ESMTP id 81E762084A
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 12:20:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1560946831;
+	bh=Uf8A3/Iso2Kw6Gzr9x1aZ+HogFONrLv22r2lsGJMGmE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=R6gR5U4KxpLx8wngYFpdB9k1Wl0g0liBBjsQVjVo4OLM6Gmx0ycwfJkOqj+8GaEJ1
+	 8WeJFWQ9hrvQNFlYypdEzKbX+Qp/FljXNw0X3QrsQ0cFTykDbC6xb+1ERgQ5ymX2Hc
+	 jZ5ctQeg+EzTdqiHwKAt1iTM14U2be9nnSa+p/OE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731692AbfFSLf5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Jun 2019 07:35:57 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:35942 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731691AbfFSLfy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2019 07:35:54 -0400
-Received: by mail-pf1-f196.google.com with SMTP id r7so9591233pfl.3
-        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2019 04:35:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=WHo+CK98Hk560A324w9NgmPfYqiucAAoOc1YvZRRmoc=;
-        b=OiuBJyYMUwp7Feymf81ldAOyO51jCbmcCR+ngPCLcmMfJHERBLuEK/NtPFeN8+K+6T
-         5/0SjsluzJJsesg4+W5STJStN4hWNLIcBT1aCRImcHUGxT3RG/6WbQ5aLsJR13ptzBpD
-         p+QEtCFBEOATUSVe2ryWCzsoIeDaI39Bm7GB0aMEfN6LG2nFoW2+vjpRABHRvUTCdlQy
-         UYrE3MLG4Oosu0hnZIIBU8BwsjW479JrJxmnoQZ2dcvYeSFh2hoGcACQ4peHEKnfsiTW
-         FXNHd+kydKJOwYyrxFX8yxTIV+2HiZ/7KSpYEGXw8jhg6+fMMEtFImqU237wWKj+1wQN
-         N+IA==
+        id S1727591AbfFSMUb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Jun 2019 08:20:31 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:35811 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727076AbfFSMUa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2019 08:20:30 -0400
+Received: by mail-ot1-f65.google.com with SMTP id j19so19065814otq.2;
+        Wed, 19 Jun 2019 05:20:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=WHo+CK98Hk560A324w9NgmPfYqiucAAoOc1YvZRRmoc=;
-        b=mFXLd1jLRNtAirCRJPYgcsJSwoPnNXs+0I3K0wLiT3CCDF+Rl507DexLqQR7fHDksG
-         0/ovkF5Y8eEEZJvGj5Vr0jvQ4np6WHoZXzLCD6yMSl+hlUqDUo/ne45CmS9lnpzf/GgN
-         0s0V5GFv6JVR2Lkg95uOp1LW+F6comuEr3cJizJC8v0/EQLYYZmw27/10KJYJbUmhfmc
-         3i2AuJGkRdaC5x6rK2/D0JTLuE4pe+JVPZmnPGCdm7WZ1zoYuxP62JLL4SE6BiY2pcRP
-         ZKefmypGQfvmSxv5j2H+wNoE2fHPqrp5JW70tX/gv0iYmJ7K2orBt8wzNk9f0TLVZTgH
-         E4NA==
-X-Gm-Message-State: APjAAAUt9XVH6hb9xJo8TJUeCx0BXuL0Ag+bMRkLJHfEPHCwnEyKIgIT
-        3+lYsIe1iNT6Y755V606lO9Y6HYPcjo=
-X-Google-Smtp-Source: APXvYqxDL5o/8GAGOXNmziNNKY5OxiV9QQF3uCMMooHoEQ3XZDdUhEVFVVkwYjmDlXX4/XN6VXw8eQ==
-X-Received: by 2002:a63:6f47:: with SMTP id k68mr7245648pgc.327.1560944154053;
-        Wed, 19 Jun 2019 04:35:54 -0700 (PDT)
-Received: from localhost ([122.172.66.84])
-        by smtp.gmail.com with ESMTPSA id d9sm19205662pgj.34.2019.06.19.04.35.53
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 19 Jun 2019 04:35:53 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] cpufreq: Replace few CPUFREQ_CONST_LOOPS checks with has_target()
-Date:   Wed, 19 Jun 2019 17:05:38 +0530
-Message-Id: <0660b023a0d80c63ec7a1f7fcb692de9a9f4d604.1560944014.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
-In-Reply-To: <cover.1560944014.git.viresh.kumar@linaro.org>
-References: <cover.1560944014.git.viresh.kumar@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=11N2FHKz5axww920Vj/09PmaE8usnGFHqN7+I0skSBM=;
+        b=SQ3QPDxBYRS9wibNzOuyW1hCWzRYlF0tRrdB8y9MoiLo52fNbprB75FmvZ5Sgb8yNU
+         JcOL/aQ9zc2/uvbaYtCuJAGtXU9GCfEcJOY5NFIGuQPVv7izA/BYDfwDWOC+Ek5YCi+8
+         t20okbpV0ee59Pk6qf8OWYlY5sXox0GsVXx+aHy46t9+rgzntHhQamdQjO81zB8fObRe
+         ZENUEwAQmWLSA5/gpj3oPcYDVBp30+bFd+x7W5CTaKLgRQphgofX7pQ5LzcL2V0pC7kP
+         c1plEWCPyQe4C+QbDo33GsLMQ0C3WrF/8/b5Jl+b/PSxpScYSB09Z5DOJShB4JCV7ael
+         T5mA==
+X-Gm-Message-State: APjAAAVqOw7mI2gAQglWNj9eeOWQVj704Z2vD9ertPjnio4KVAHjY1ae
+        mkw+xZEvXQQLBnWpnAUv0o1UU+EA722acWlMBNG8moh8
+X-Google-Smtp-Source: APXvYqzibyJQU6vCsaCq5ik9iC3Ck2M8DmeFFXiQIMjcIiCKyU8IuWtRcMSJC3MuoPKBPlihMP0ib07yX9DwXndLP5o=
+X-Received: by 2002:a9d:6959:: with SMTP id p25mr45196743oto.118.1560946829999;
+ Wed, 19 Jun 2019 05:20:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <cover.1560944014.git.viresh.kumar@linaro.org> <0660b023a0d80c63ec7a1f7fcb692de9a9f4d604.1560944014.git.viresh.kumar@linaro.org>
+In-Reply-To: <0660b023a0d80c63ec7a1f7fcb692de9a9f4d604.1560944014.git.viresh.kumar@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 19 Jun 2019 14:20:18 +0200
+Message-ID: <CAJZ5v0g1avBwjezWpMimGbs1NHOchib9pmTKoxaixKtpw_CGJw@mail.gmail.com>
+Subject: Re: [PATCH 2/6] cpufreq: Replace few CPUFREQ_CONST_LOOPS checks with has_target()
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CPUFREQ_CONST_LOOPS was introduced in a very old commit from pre-2.6
-kernel release commit 6a4a93f9c0d5 ("[CPUFREQ] Fix 'out of sync'
-issue").
+On Wed, Jun 19, 2019 at 1:36 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> CPUFREQ_CONST_LOOPS was introduced in a very old commit from pre-2.6
+> kernel release commit 6a4a93f9c0d5 ("[CPUFREQ] Fix 'out of sync'
+> issue").
+>
+> Probably the initial idea was to just avoid these checks for set_policy
+> type drivers and then things got changed over the years. And it is very
+> unclear why these checks are there at all.
+>
+> Replace the CPUFREQ_CONST_LOOPS check with has_target(), which makes
+> more sense now.
+>
+> Also remove () around freq comparison statement as they aren't required
+> and checkpatch also warns for them.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 13 +++++--------
+>  1 file changed, 5 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 54befd775bd6..e59194c2c613 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -359,12 +359,10 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
+>                  * which is not equal to what the cpufreq core thinks is
+>                  * "old frequency".
+>                  */
+> -               if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+> -                       if (policy->cur && (policy->cur != freqs->old)) {
+> -                               pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n",
+> -                                        freqs->old, policy->cur);
+> -                               freqs->old = policy->cur;
+> -                       }
+> +               if (has_target() && policy->cur && policy->cur != freqs->old) {
+> +                       pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n",
+> +                                freqs->old, policy->cur);
+> +                       freqs->old = policy->cur;
 
-Probably the initial idea was to just avoid these checks for set_policy
-type drivers and then things got changed over the years. And it is very
-unclear why these checks are there at all.
+Is cpufreq_notify_transition() ever called if ->setpolicy drivers are in use?
 
-Replace the CPUFREQ_CONST_LOOPS check with has_target(), which makes
-more sense now.
-
-Also remove () around freq comparison statement as they aren't required
-and checkpatch also warns for them.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 54befd775bd6..e59194c2c613 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -359,12 +359,10 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		 * which is not equal to what the cpufreq core thinks is
- 		 * "old frequency".
- 		 */
--		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
--			if (policy->cur && (policy->cur != freqs->old)) {
--				pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n",
--					 freqs->old, policy->cur);
--				freqs->old = policy->cur;
--			}
-+		if (has_target() && policy->cur && policy->cur != freqs->old) {
-+			pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n",
-+				 freqs->old, policy->cur);
-+			freqs->old = policy->cur;
- 		}
- 
- 		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
-@@ -1618,8 +1616,7 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
- 	if (policy->fast_switch_enabled)
- 		return ret_freq;
- 
--	if (ret_freq && policy->cur &&
--		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
-+	if (has_target() && ret_freq && policy->cur) {
- 		/* verify no discrepancy between actual and
- 					saved value exists */
- 		if (unlikely(ret_freq != policy->cur)) {
--- 
-2.21.0.rc0.269.g1a574e7a288b
-
+>                 }
+>
+>                 srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
+> @@ -1618,8 +1616,7 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
+>         if (policy->fast_switch_enabled)
+>                 return ret_freq;
+>
+> -       if (ret_freq && policy->cur &&
+> -               !(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+> +       if (has_target() && ret_freq && policy->cur) {
+>                 /* verify no discrepancy between actual and
+>                                         saved value exists */
+>                 if (unlikely(ret_freq != policy->cur)) {
+> --
+> 2.21.0.rc0.269.g1a574e7a288b
+>
