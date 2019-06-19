@@ -2,90 +2,100 @@ Return-Path: <SRS0=UY+e=US=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DC26C31E5F
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 14:31:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1FC4C31E5B
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 15:04:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 57E842182B
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 14:31:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 954F421874
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Jun 2019 15:04:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="oAFnIERq";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="KhgbnI6H"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729916AbfFSObW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Jun 2019 10:31:22 -0400
-Received: from relay7-d.mail.gandi.net ([217.70.183.200]:52483 "EHLO
-        relay7-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725899AbfFSObW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2019 10:31:22 -0400
-X-Originating-IP: 92.137.69.152
-Received: from localhost (alyon-656-1-672-152.w92-137.abo.wanadoo.fr [92.137.69.152])
-        (Authenticated sender: alexandre.belloni@bootlin.com)
-        by relay7-d.mail.gandi.net (Postfix) with ESMTPSA id 5EA3620016;
-        Wed, 19 Jun 2019 14:31:14 +0000 (UTC)
-Date:   Wed, 19 Jun 2019 16:31:12 +0200
-From:   Alexandre Belloni <alexandre.belloni@bootlin.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Lee Jones <lee.jones@linaro.org>, mazziesaccount@gmail.com,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org
-Subject: Re: [PATCH v15 0/7] support ROHM BD70528 PMIC
-Message-ID: <20190619143112.GO23549@piout.net>
-References: <cover.1559546139.git.matti.vaittinen@fi.rohmeurope.com>
- <20190611200043.eib3g3acc7ilawsx@earth.universe>
- <20190612060328.GQ4797@dell>
- <20190613130529.kgswgbuszb24itxz@earth.universe>
+        id S1729706AbfFSPEL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Jun 2019 11:04:11 -0400
+Received: from out2-smtp.messagingengine.com ([66.111.4.26]:56789 "EHLO
+        out2-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1729670AbfFSPEL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2019 11:04:11 -0400
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+        by mailout.nyi.internal (Postfix) with ESMTP id BCB6B21FDF;
+        Wed, 19 Jun 2019 11:04:09 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+  by compute6.internal (MEProxy); Wed, 19 Jun 2019 11:04:09 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=
+        date:from:to:cc:subject:message-id:references:mime-version
+        :content-type:in-reply-to; s=fm1; bh=bByssVIB1EYoVBDtjxIgtcfTwUo
+        glLh/NnUiLiEfkX0=; b=oAFnIERq3L6VDbDxgRBBWjQ3xY8j90qhh8vJHUTGZLB
+        CDK1/u6VgadXtYMWVQPAYl3Quw/McWO8vaTywD5voBB4W8OWaAo0H7BxugSmHeJV
+        RDvBpDn/SctaSD/bTizzqKdmjh37q1c7WJVUYZc1ylKPWkOQEcGUQxbbdgXgB5kF
+        77rjm6vwX6TfTsX51Y3o+j8R446XRr7/jJpZ+MvXr5DE+6LDnqOE3vCd7uncKb8B
+        UH7oFOdRCsolueXNhohrcxqJvDZCSufOHt9zPJwSH4UPu3XJhU0dojb1GvUExo4S
+        +pSFxGcEIUdYxAJNKx5W01lQbMZdk7mb0jdHbzJKMMg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:content-type:date:from:in-reply-to
+        :message-id:mime-version:references:subject:to:x-me-proxy
+        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=bByssV
+        IB1EYoVBDtjxIgtcfTwUoglLh/NnUiLiEfkX0=; b=KhgbnI6HfVWgDdDXLGSBZu
+        97dInziUuc/uOJvVd4riwn0K1f+viDCRp2UVytIwUbJhYRdv5z+QkO5VC2f4GXYq
+        vhGnKUsASfQ3bJuKMi6jN2/Wnad+VViEIpC7HH58eezowtjLjYJa69ovdUa/Frvq
+        RY2KriZeJiiiY/wB9qXkA7JTzUk3MiHWb2sMAY912YrjaXFDXvjcWA8niiYcfLDh
+        bZSsLuJZIdxZfsY6ra8cL9tz0e3VYUsm1z87IJYnj5xB/r6v6d0SB4yeSis7wxUO
+        rXf2bjH43FJbrEHHYpqSKWJX4iRrVZ7Cc3xqL4+3D+puoIUP9hBavWxpdLOwiwKA
+        ==
+X-ME-Sender: <xms:6U4KXXAPRUrSpmonf1WRmD5QzscjnUFx_TWVM9csytjNyxeYVTvcSA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduvddrtddvgdehkecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpeffhffvuffkfhggtggujggfsehttdertddtredvnecuhfhrohhmpefirhgvghcu
+    mffjuceoghhrvghgsehkrhhorghhrdgtohhmqeenucfkphepkeefrdekiedrkeelrddutd
+    ejnecurfgrrhgrmhepmhgrihhlfhhrohhmpehgrhgvgheskhhrohgrhhdrtghomhenucev
+    lhhushhtvghrufhiiigvpedt
+X-ME-Proxy: <xmx:6U4KXb7Nnl0Ge13Rmi0udpXmPHguTqGX_flvhiLe9SKd07EGtpn-Hw>
+    <xmx:6U4KXapZrks3Q3sdLyQXcrwqCJI7hAF28FnXPW-1UfmDav6hWdRY7g>
+    <xmx:6U4KXe9pZOoKj8fQ9ccN7c5oHzMFR6HfCHcoFe5Qpfi5V44Gbp-KIA>
+    <xmx:6U4KXU5Z0zlnbhiGMIx1it26ccBG8_Dqki0dDwlmNt-4-9YFHV0G4g>
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        by mail.messagingengine.com (Postfix) with ESMTPA id E37AE380085;
+        Wed, 19 Jun 2019 11:04:08 -0400 (EDT)
+Date:   Wed, 19 Jun 2019 17:04:06 +0200
+From:   Greg KH <greg@kroah.com>
+To:     Pintu Agarwal <pintu.ping@gmail.com>
+Cc:     Fabio Estevam <festevam@gmail.com>, linux-pm@vger.kernel.org,
+        open list <linux-kernel@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        Kernelnewbies <kernelnewbies@kernelnewbies.org>
+Subject: Re: [IMX] [DRM]: suspend/resume support
+Message-ID: <20190619150406.GB19346@kroah.com>
+References: <CAOuPNLiBA9VjEoG_D2y2O5mKiqsDNW1VZXOk1eWXpGY+h86acg@mail.gmail.com>
+ <CAOMZO5BcLaS0gXUPi6oN6vjqagS5yf+rHh+EUjmi-Wi1OX7vqQ@mail.gmail.com>
+ <CAOuPNLgEEfDca4aeT1+q8GfUfGzbJ4x6JwGf-ROB1pgpXUBHSw@mail.gmail.com>
+ <CAOMZO5BY8JcLNMCRCC_d=emy8HR6kE=dB9f5qfZ=ci_c+Jak0w@mail.gmail.com>
+ <CAOuPNLjYhkP_kL+q-ZpiDZMMpOHrU88BFBc2agtnCzXt8dihOg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190613130529.kgswgbuszb24itxz@earth.universe>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+In-Reply-To: <CAOuPNLjYhkP_kL+q-ZpiDZMMpOHrU88BFBc2agtnCzXt8dihOg@mail.gmail.com>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 13/06/2019 15:05:29+0200, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Wed, Jun 12, 2019 at 07:03:28AM +0100, Lee Jones wrote:
-> > On Tue, 11 Jun 2019, Sebastian Reichel wrote:
-> > > On Mon, Jun 03, 2019 at 10:23:37AM +0300, Matti Vaittinen wrote:
-> > > > Patch series introducing support for ROHM BD70528 PMIC
-> > > > [...]
-> > > 
-> > > I think all patches have been reviewed by the respective subsystem
-> > > maintainers. Lee, can you provide an immutable branch with the MFD
-> > > patches (1, 2, 4)? Looks like the other patches only depend on those
-> > > and can go through their respective subsystems.
-> > 
-> > Yes.  It's on my TODO list.
-> 
-> Thanks.
-> 
-> > Would you prefer this method over me just taking them all and sending
-> > out a PR?  The latter is my usual flow, but I'm happy with either.
-> 
-> Both methods are fine with me. I usually go with "my" method, since
-> that results in less shared commits. It simplifies potential
-> follow-up bug fixes, since there is only one tree to fix.
-> 
+On Wed, Jun 19, 2019 at 07:03:39PM +0530, Pintu Agarwal wrote:
+> You can think that the version I am using right now is almost 4.9 itself.
+> Upgrading again to higher kernel version is again difficult, also
+> customer does not want it.
 
-Personally, I'm fine with Lee taking everything in his tree as it is
-very unlikely to require follow up patches this cycle (i.e before rc1).
+They don't want a secure and supported kernel over the lifetime of their
+device?  That sounds really odd.  Never create a new device using the
+4.9.y kernel tree unless you have someone else doing the support for it
+(i.e. a SoC vendor that you are paying support from).
 
+good luck!
 
--- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+greg k-h
