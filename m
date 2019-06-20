@@ -7,61 +7,61 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0FEAC4646C
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Jun 2019 03:06:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F093C48BDF
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Jun 2019 03:06:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 77D9521537
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Jun 2019 03:06:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6C05E214AF
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Jun 2019 03:06:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pi9g95KX"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZNUy2MON"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731363AbfFTDG2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Jun 2019 23:06:28 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:40184 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726370AbfFTDG1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2019 23:06:27 -0400
-Received: by mail-pg1-f195.google.com with SMTP id w10so757264pgj.7
-        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2019 20:06:27 -0700 (PDT)
+        id S1731493AbfFTDGe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Jun 2019 23:06:34 -0400
+Received: from mail-pl1-f196.google.com ([209.85.214.196]:46730 "EHLO
+        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731356AbfFTDGd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2019 23:06:33 -0400
+Received: by mail-pl1-f196.google.com with SMTP id e5so741670pls.13
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2019 20:06:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=p8q7duu3NM5D7B0/JJEPNRH7AiTiNoUPeRHE8XCCFpc=;
-        b=pi9g95KXO8T2J62vjV8PPB7VJfoSs9c6QwY71RXsD9brl+T2e/1eGRO3sjle2j1XQ+
-         79PG7kurlPGO8rSAzq+FCPPsyvxIXduSBxqvxKch5MjoumOWdYsue+oY+ontfPUIRE1d
-         td/3JGqWefy6RUFofSUzIWdRy2ez/S2fkFPNcADiit7knMzt6PmgtaoNaaXHswygLFh3
-         xCOw1TPLwojNrUEmXwXhclxKxHVYcEaKfCm9aynndRo6HjwdInS2IDrK/FIcUaYaY67J
-         I04Cyu4DqdjbMZI1OZHzFjYUY00KZPKff4relP1bI6YkZ+bB1pnDUaljewOnVXX5gZ7Z
-         gJAQ==
+        bh=TMflq8N+0gjwZQm7aaR4fEWjevpmJ2Km/I3/aGC/zcs=;
+        b=ZNUy2MONhgLF1lafsmoV82IjMwCDRyO67e6vU6uxmW8r8mR9TMabEg8rxq+V2PPMoF
+         BNhUteqN7mXp+M0efsJ5FV5HmzazwLknBYJZHwGjEeMWx/NgEuVSEM5e0UPMgTeZUdJI
+         +trRM8DLhvF9TNqIB66tlgWzAvnPgpQ0R6RkP7C7Vi7FeuwBhop9Fzty0WCAIHZ7UeJd
+         lY/kj4RpQ1LjllGKuzXvi8+8tmvjzLlabA7bEXcaEZPlaTQpSyfm1y1d1ydy026YP5Wi
+         O1DSLajERamfdYeYivu9LH/caoZIbU0uvn+2/MaLe6ChED57WXGHaKDR+ycoT0JPLxHB
+         AIqA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=p8q7duu3NM5D7B0/JJEPNRH7AiTiNoUPeRHE8XCCFpc=;
-        b=bUj6C1FihLIZs+kjzJrjlRjuzPPzpNOJTl576c1ciT4CwgHyl1Ytqo/vdTLcRBTP/W
-         k5X7RKnuZM6UrajSFxi2oa5MWUZ7yDOEJUBrcRl8n7d6lwnJe7JfiJgkcl5AEsUYjDid
-         eV1QHM2Dwo94T5VZOXgci0M4Si1G7F1J1niUm9IVIYFazI33F+D69z6gwTiv2OGUNfRP
-         QbevJeSKwglK8gXJ0bqaeHV/x/pQlVQVDeuFw3Z0FuzVkAPbAysZI42WbOQYyQZQVBrB
-         2lMTE8CcnqgqipLMdVgdDrXr4hJ3JnWZ3bLVZSeLWsTsmfVkRF2y9aW+M38cRCSk/jMb
-         1Q8A==
-X-Gm-Message-State: APjAAAWe2st3OguR36CNzb79dRPgPNrJJ10BwWNreEFHsI/dVem/cGkd
-        lzF1WQx7lxxQOZZDvyTCKOJjPg==
-X-Google-Smtp-Source: APXvYqxFAhFFPNFzp204E1IW8iP5ZxzaHvAie5ju+82McHT0juXkxxe5Mzqm7beuZ+WBswCm00XCxg==
-X-Received: by 2002:a62:82c2:: with SMTP id w185mr109064201pfd.202.1560999986860;
-        Wed, 19 Jun 2019 20:06:26 -0700 (PDT)
+        bh=TMflq8N+0gjwZQm7aaR4fEWjevpmJ2Km/I3/aGC/zcs=;
+        b=C44Qae2W4XmhidF8uTqHem+VWoOaWqEBwHLtTB2EmcbycdEFiuUHnsBl/aF3FsAky9
+         qQ8JH53hCo9xTn+8aJ04rzhi9/uNxu05pVxl3CkdUbFBLfxHyf8WBxlmUMj2ePAfeBzj
+         OTXwJE4WAHQB9eaktAEfxlebNBgvVtxhy12ZM47iuabCVb/by5crP3tY0fl8ggaUO2es
+         fCi4j198/kTyVpSbZ5vxr10HnsZ2fkZ1YvFegZ5IoElxH2PGKfamx8b9WiV1PnpN9bUK
+         qpzy3s3HHkPBLeGAJdCFzba6De9kqXkb3VxmbN/YNkV20Ugxa2k3jlngeMmBp6IWUVpl
+         Mcrw==
+X-Gm-Message-State: APjAAAVonoM9k4hvodbQ1yCvk0qma4fhV+W/3dkb1w11NuhsZU78ycih
+        IuOuTWZ80HaPYVQ+/JvI+dUzNaKVeO0=
+X-Google-Smtp-Source: APXvYqzyolSilGn5mAiks5SpWxy27bF6gE3/LacDC38aiGw0cn3KR5TcrhZh5r96Dj41PBvC5QYvsQ==
+X-Received: by 2002:a17:902:9689:: with SMTP id n9mr26502959plp.241.1560999992550;
+        Wed, 19 Jun 2019 20:06:32 -0700 (PDT)
 Received: from localhost ([122.172.66.84])
-        by smtp.gmail.com with ESMTPSA id g8sm19236053pfi.8.2019.06.19.20.06.25
+        by smtp.gmail.com with ESMTPSA id f14sm26149488pfn.53.2019.06.19.20.06.31
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 19 Jun 2019 20:06:26 -0700 (PDT)
+        Wed, 19 Jun 2019 20:06:32 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Rafael Wysocki <rjw@rjwysocki.net>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         linux-kernel@vger.kernel.org
-Subject: [PATCH V2 2/5] cpufreq: Replace few CPUFREQ_CONST_LOOPS checks with has_target()
-Date:   Thu, 20 Jun 2019 08:35:47 +0530
-Message-Id: <88da7cfabad5e19a361fe2843e5ef547d50fd221.1560999838.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 4/5] cpufreq: Reuse cpufreq_update_current_freq() in __cpufreq_get()
+Date:   Thu, 20 Jun 2019 08:35:49 +0530
+Message-Id: <ca50bfa4160ca26b2c6d9c4edf7aae1dcf3fae1e.1560999838.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
 In-Reply-To: <cover.1560999838.git.viresh.kumar@linaro.org>
 References: <cover.1560999838.git.viresh.kumar@linaro.org>
@@ -72,60 +72,128 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CPUFREQ_CONST_LOOPS was introduced in a very old commit from pre-2.6
-kernel release commit 6a4a93f9c0d5 ("[CPUFREQ] Fix 'out of sync'
-issue").
+Their implementations are quite similar, lets modify
+cpufreq_update_current_freq() a little and use it from __cpufreq_get().
 
-Probably the initial idea was to just avoid these checks for set_policy
-type drivers and then things got changed over the years. And it is very
-unclear why these checks are there at all.
-
-Replace the CPUFREQ_CONST_LOOPS check with has_target(), which makes
-more sense now.
-
-cpufreq_notify_transition() is only called for has_target() type driver
-and not for set_policy type, and the check is simply redundant. Remove
-it as well.
-
-Also remove () around freq comparison statement as they aren't required
-and checkpatch also warns for them.
+Also rename cpufreq_update_current_freq() to
+cpufreq_verify_current_freq(), as that's what it is doing.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ drivers/cpufreq/cpufreq.c | 70 ++++++++++++++++-----------------------
+ 1 file changed, 28 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 54befd775bd6..41ac701e324f 100644
+index 5f5c7a516c74..4556a53fc764 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -359,12 +359,10 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		 * which is not equal to what the cpufreq core thinks is
- 		 * "old frequency".
- 		 */
--		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
--			if (policy->cur && (policy->cur != freqs->old)) {
--				pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n",
--					 freqs->old, policy->cur);
--				freqs->old = policy->cur;
--			}
-+		if (policy->cur && policy->cur != freqs->old) {
-+			pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n",
-+				 freqs->old, policy->cur);
-+			freqs->old = policy->cur;
- 		}
+@@ -1547,6 +1547,30 @@ static void cpufreq_out_of_sync(struct cpufreq_policy *policy,
+ 	cpufreq_freq_transition_end(policy, &freqs, 0);
+ }
  
- 		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
-@@ -1618,8 +1616,7 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
- 	if (policy->fast_switch_enabled)
- 		return ret_freq;
++static unsigned int cpufreq_verify_current_freq(struct cpufreq_policy *policy, bool update)
++{
++	unsigned int new_freq;
++
++	new_freq = cpufreq_driver->get(policy->cpu);
++	if (!new_freq)
++		return 0;
++
++	/*
++	 * If fast frequency switching is used with the given policy, the check
++	 * against policy->cur is pointless, so skip it in that case.
++	 */
++	if (policy->fast_switch_enabled || !has_target())
++		return new_freq;
++
++	if (policy->cur != new_freq) {
++		cpufreq_out_of_sync(policy, new_freq);
++		if (update)
++			schedule_work(&policy->update);
++	}
++
++	return new_freq;
++}
++
+ /**
+  * cpufreq_quick_get - get the CPU frequency (in kHz) from policy->cur
+  * @cpu: CPU number
+@@ -1602,30 +1626,10 @@ EXPORT_SYMBOL(cpufreq_quick_get_max);
  
--	if (ret_freq && policy->cur &&
--		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
-+	if (has_target() && ret_freq && policy->cur) {
- 		/* verify no discrepancy between actual and
- 					saved value exists */
- 		if (unlikely(ret_freq != policy->cur)) {
+ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
+ {
+-	unsigned int ret_freq = 0;
+-
+ 	if (unlikely(policy_is_inactive(policy)))
+-		return ret_freq;
+-
+-	ret_freq = cpufreq_driver->get(policy->cpu);
+-
+-	/*
+-	 * If fast frequency switching is used with the given policy, the check
+-	 * against policy->cur is pointless, so skip it in that case too.
+-	 */
+-	if (policy->fast_switch_enabled)
+-		return ret_freq;
+-
+-	if (has_target() && ret_freq && policy->cur) {
+-		/* verify no discrepancy between actual and
+-					saved value exists */
+-		if (unlikely(ret_freq != policy->cur)) {
+-			cpufreq_out_of_sync(policy, ret_freq);
+-			schedule_work(&policy->update);
+-		}
+-	}
++		return 0;
+ 
+-	return ret_freq;
++	return cpufreq_verify_current_freq(policy, true);
+ }
+ 
+ /**
+@@ -1652,24 +1656,6 @@ unsigned int cpufreq_get(unsigned int cpu)
+ }
+ EXPORT_SYMBOL(cpufreq_get);
+ 
+-static unsigned int cpufreq_update_current_freq(struct cpufreq_policy *policy)
+-{
+-	unsigned int new_freq;
+-
+-	new_freq = cpufreq_driver->get(policy->cpu);
+-	if (!new_freq)
+-		return 0;
+-
+-	if (!policy->cur) {
+-		pr_debug("cpufreq: Driver did not initialize current freq\n");
+-		policy->cur = new_freq;
+-	} else if (policy->cur != new_freq && has_target()) {
+-		cpufreq_out_of_sync(policy, new_freq);
+-	}
+-
+-	return new_freq;
+-}
+-
+ static struct subsys_interface cpufreq_interface = {
+ 	.name		= "cpufreq",
+ 	.subsys		= &cpu_subsys,
+@@ -2151,7 +2137,7 @@ static int cpufreq_start_governor(struct cpufreq_policy *policy)
+ 	pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
+ 
+ 	if (cpufreq_driver->get)
+-		cpufreq_update_current_freq(policy);
++		cpufreq_verify_current_freq(policy, false);
+ 
+ 	if (policy->governor->start) {
+ 		ret = policy->governor->start(policy);
+@@ -2402,7 +2388,7 @@ void cpufreq_update_policy(unsigned int cpu)
+ 	 * -> ask driver for current freq and notify governors about a change
+ 	 */
+ 	if (cpufreq_driver->get && has_target() &&
+-	    (cpufreq_suspended || WARN_ON(!cpufreq_update_current_freq(policy))))
++	    (cpufreq_suspended || WARN_ON(!cpufreq_verify_current_freq(policy, false))))
+ 		goto unlock;
+ 
+ 	pr_debug("updating policy for CPU %u\n", cpu);
 -- 
 2.21.0.rc0.269.g1a574e7a288b
 
