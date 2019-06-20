@@ -2,237 +2,197 @@ Return-Path: <SRS0=IUcY=UT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ABA4BC43613
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Jun 2019 07:36:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC808C43613
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Jun 2019 07:57:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7A359208CB
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Jun 2019 07:36:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5CEF32084A
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Jun 2019 07:57:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cD8fnPFb"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="nZlQ8/Im"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726485AbfFTHfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Jun 2019 03:35:45 -0400
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:42459 "EHLO
-        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726480AbfFTHfp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2019 03:35:45 -0400
-Received: by mail-pg1-f194.google.com with SMTP id l19so1106649pgh.9
-        for <linux-pm@vger.kernel.org>; Thu, 20 Jun 2019 00:35:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=+ZHoXqHDnWQNNxjeBIgVIp/1BFcAyIjpzOAOe/B47LU=;
-        b=cD8fnPFbjnlUcmEq/d+FBOHDffPKPfMy/d2kvSq77Vua582eT8LCrDSAp9hlwJR4AZ
-         zxa/VGNkp8W6/Fv0ozb6t67/DDp9dxYR6iKdRYrPBXk6XEXrsjIHRiLR9Qm89e5xCwyC
-         rBWVsWZa6QIkZI9Y3wbB8eTA0L/6ae9JTUvD0z0ZITIoGdFrarDXGlifMpUloS++VWUA
-         8WLizucE8MFI11UUaA4AQSxQY8oVCqzjpEXLQ9bva2fz68lsZlySzdiORYrTa8jHtGmr
-         atfb4z2VakxSUBV7ui7f7s/yVx0gHQDc00Q2i2PivUwJd+63wd+lnSaHsI9oMYVkY4pe
-         br3g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=+ZHoXqHDnWQNNxjeBIgVIp/1BFcAyIjpzOAOe/B47LU=;
-        b=GT96OURAQ9ryhGBAET/hWu8e3ixUpBtQqXtEkT0CW2DPwyuIbFD6vFwWayDNcFPmeY
-         22rSNLOA5maEJmdSNyhk92iKgbjlTkaVMbBVNJZ2xRYEUYgLqzoPmX0ILJpLuGaJ33ej
-         cMahbdWYgwZSbslY5G5Q2ucGticsFZWvQfItuwChJGuAT16t5iaYBTSmSWyoKIXPMLOs
-         nWttxgL0KhKOmqlt6qr8WRHlTq3qGhV97HnMLqP2SePPMp2Lettwq42+2h66XB47C0eV
-         GvvRIgdvmOPlFZAQiD8EHOCLQumgAjSsA1Zj7zh9TcP4E7GBlJTUNqh4b15vDF3+D7vi
-         3fBQ==
-X-Gm-Message-State: APjAAAV2VIWxWf1RnzTjVKl9siZA+C+W+cEIcI1IIUKF0Juj9Id09P8Y
-        Uv4NP9cVMYTzwyodm4jgzzW5fg==
-X-Google-Smtp-Source: APXvYqwCnN7Uk12c574/LNHUAEvJfUF2vqiU6LIXnK4FoPCBeBWpKs7QeB9fQv7Dfo56ZjQJapUeHQ==
-X-Received: by 2002:a63:8ac3:: with SMTP id y186mr5976672pgd.198.1561016144144;
-        Thu, 20 Jun 2019 00:35:44 -0700 (PDT)
-Received: from localhost ([122.172.66.84])
-        by smtp.gmail.com with ESMTPSA id c129sm23187235pfa.106.2019.06.20.00.35.43
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 20 Jun 2019 00:35:43 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Qais.Yousef@arm.com, mka@chromium.org, juri.lelli@gmail.com,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH V4 1/6] PM / QOS: Pass request type to dev_pm_qos_{add|remove}_notifier()
-Date:   Thu, 20 Jun 2019 13:05:24 +0530
-Message-Id: <9c6f189e4853b332ac3e28d40d7ef6e310501e9e.1561014965.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
-In-Reply-To: <cover.1561014965.git.viresh.kumar@linaro.org>
-References: <cover.1561014965.git.viresh.kumar@linaro.org>
+        id S1725912AbfFTH53 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Jun 2019 03:57:29 -0400
+Received: from mailout4.samsung.com ([203.254.224.34]:43621 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725877AbfFTH53 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2019 03:57:29 -0400
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20190620075724epoutp04e327e89c6fa0f7b6382eb26f60d06289~p2Rhyg7j40850708507epoutp040
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jun 2019 07:57:24 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20190620075724epoutp04e327e89c6fa0f7b6382eb26f60d06289~p2Rhyg7j40850708507epoutp040
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1561017444;
+        bh=dT369zs5ebt7Kyv1+tgYLEciD3HJB/5DKDdaLoYzZkM=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=nZlQ8/Im0TSiZJHkcbGDNTsK8uzWyerQgm/kqTcrVxO4vKnQnQQSTfXK4A932tPd3
+         GW1I/yTue4+m5BwHArFLWGGeDsqHNV4wnv/ZwiaY4YqWAQmhvmK1izphZ1fDdtyKab
+         fKI6TEgBmGMMZVxedrbFqJYcYKvIXE3BNfIj7gMs=
+Received: from epsmges1p3.samsung.com (unknown [182.195.40.156]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190620075722epcas1p116261fe361ce2d2268508b1a454a28f1~p2Rfio4oh0456904569epcas1p1-;
+        Thu, 20 Jun 2019 07:57:22 +0000 (GMT)
+Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
+        epsmges1p3.samsung.com (Symantec Messaging Gateway) with SMTP id
+        34.65.04143.16C3B0D5; Thu, 20 Jun 2019 16:57:21 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20190620075721epcas1p1840eedd5b8de12668c011e4eb6afbc57~p2ReLYcRU0241602416epcas1p1-;
+        Thu, 20 Jun 2019 07:57:21 +0000 (GMT)
+Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20190620075720epsmtrp258a487f55b4cd0248c53840c1347048a~p2ReKpRB42058820588epsmtrp2D;
+        Thu, 20 Jun 2019 07:57:20 +0000 (GMT)
+X-AuditID: b6c32a37-f19ff7000000102f-6f-5d0b3c6106de
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        E9.36.03662.06C3B0D5; Thu, 20 Jun 2019 16:57:20 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190620075720epsmtip1eebbc02681cd3d3b53b0b3bd46e23123~p2Rd-UNoh2365723657epsmtip1P;
+        Thu, 20 Jun 2019 07:57:20 +0000 (GMT)
+Subject: Re: [PATCH 1/2] PM / devfreq: Fix governor module load failure
+To:     Ezequiel Garcia <ezequiel@collabora.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc:     kernel@collabora.com, linux-pm@vger.kernel.org,
+        Enric Balletbo i Serra <enric.balletbo@collabora.com>
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <7320aa6c-4a49-aae2-4db5-5c1f0d6ce76e@samsung.com>
+Date:   Thu, 20 Jun 2019 16:59:51 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.7.0
 MIME-Version: 1.0
+In-Reply-To: <20190605190053.19177-1-ezequiel@collabora.com>
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SWUwTURSGvZ12OizFa0E5VqM46AONLGOtVAXUiNpETBBfjAHrBEbArum0
+        BsQHwEQWK9EoEguiBlQEEwmgAQ02onELIGpcETfQEENwKSoJuHQYiLx955z/3P+cey9FKE+Q
+        Kirb4uDsFtZEk/7Sq7cioiLZuIC0mDuFq3WXejuQrq1xRK5r7nbJdF2FQ3Kd9/BtpOstqCPX
+        kvrWvlqkL2upR3pv04JkYocxLotjMzh7GGdJt2ZkWzLj6c3bDOsN2hUxTCSzUhdLh1lYMxdP
+        JyYlR27MNvl86bC9rMnpSyWzPE9HJ8TZrU4HF5Zl5R3xNGfLMNlW2qJ41sw7LZlR6VbzKiYm
+        ZpnWJ9xlzKr7eoawVc7JcQ8PEPloeFYp8qMAL4eChoeSUuRPKXErgod1XkIMviNovzYoF4Of
+        CN6VlxNTLTU9x6VioR1Bf0//pOoLguujnTJBFYw3QW1VvUwohOBCBENDDRMFAhuh6m61XGAS
+        q8Ez+IIUeCZeBE9H+1EpoigFToBbN7VCWoqXQPeJzgnn2Xg7jLQ1IYEVeBbcPzkgFdgPx8Gf
+        4guEeHwovBo4LRF5IRy4Ujk59VsSHt1QiZwIZb2v5SIHw+e7LZOsAu9wOylyHly8f5sU5gdc
+        jKDF0yMTCxrwnDsmEeYkcARcvhYtphdB29gpJPoGwfAPl0yQAFZA8UGlKAmHJ+/6JCLPhZqi
+        EvIIot3TtnFP28A9bQP3f7MzSFqP5nA23pzJ8YxNM/21m9DEn1THtqLG7qQOhClEByruqf3T
+        lDJ2L59r7kBAEXSI4iMKSFMqMtjcfZzdarA7TRzfgbS+yz5KqGanW30/3OIwMNplGo1Gt5xZ
+        oWUYOlRhCHiZqsSZrIMzcpyNs0/1SSg/VT7SZ5vLE2Unox+keoITPpie9Hs/Be3evD9h2/xf
+        nhnPBpOSI77sdK4K/J3z8406r2lLkbUm8Ffe1gpXa/imlvFq8/OCUGODO+RVV++G1HX551/+
+        zdcvTVkztge5xmv3V+K16TcPHcUpx065WFdu++LuvrH3VovybEX142/zTv+OjWwuoaV8Fsuo
+        CTvP/gPudj9/qQMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFmpkkeLIzCtJLcpLzFFi42LZdlhJTjfBhjvW4Ngcc4s1tw8xWuzc8IXd
+        YvO5HlaLs01v2C0+9x5htLjduILNgc1jx90ljB59W1YxenzeJBfAHMVlk5Kak1mWWqRvl8CV
+        seLDAuaC2WIVs949YW5gfCfYxcjJISFgIrH4whSWLkYuDiGB3YwSd5s/MEEkJCWmXTzK3MXI
+        AWQLSxw+XAxR85ZR4snvHhaQGmEBd4klc1axgiREBFoYJR6fmskGkmAWyJZ4vnUtE0RHP6PE
+        w2c72UESbAJaEvtf3AAr4hdQlLj64zEjyAZeATuJwwdNQcIsAqoS56adYQaxRQUiJGbvagBb
+        xisgKHFy5hMwm1PARuJfx3JmiF3qEn/mXYKyxSVuPZnPBGHLSzRvnc08gVF4FpL2WUhaZiFp
+        mYWkZQEjyypGydSC4tz03GLDAqO81HK94sTc4tK8dL3k/NxNjOCI0dLawXjiRPwhRgEORiUe
+        3hNaXLFCrIllxZW5hxglOJiVRHifMnLHCvGmJFZWpRblxxeV5qQWH2KU5mBREueVzz8WKSSQ
+        nliSmp2aWpBaBJNl4uCUamCMeH9f8p/ne53FTnvTznyfXRcUzHva0GppRuSBlEmn2yI0w/61
+        xit2HVXjM2cR2rz+g6Idq+Eh296ny/7sevgjXK137+PDOme2/eaYfaWSkamm1NVg8uFn+y64
+        MX756F97x6LVOq666iHHoRdrzry2v1jqYVd5SH1xt4XLFrecql7bOctvLpBWYinOSDTUYi4q
+        TgQAAl5PG5QCAAA=
+X-CMS-MailID: 20190620075721epcas1p1840eedd5b8de12668c011e4eb6afbc57
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20190605190147epcas1p3e74fba524dfcfc87f7ce3c9569ffaa3f
+References: <CGME20190605190147epcas1p3e74fba524dfcfc87f7ce3c9569ffaa3f@epcas1p3.samsung.com>
+        <20190605190053.19177-1-ezequiel@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In order to use the same set of routines to register notifiers for
-different request types, update the existing
-dev_pm_qos_{add|remove}_notifier() routines with an additional
-parameter: request-type.
+Hi,
 
-For now, it only supports resume-latency request type but will be
-extended to frequency limit (min/max) constraints later on.
+On 19. 6. 6. 오전 4:00, Ezequiel Garcia wrote:
+> A bit unexpectedly (but still documented), request_module may
+> return a positive value, in case of a modprobe error.
+> This is currently causing issues in the devfreq framework.
+> 
+> When a request_module exits with a positive value, we currently
+> return that via ERR_PTR. However, because the value is positive,
+> it's not a ERR_VALUE proper, and is therefore treated as a
+> valid struct devfreq_governor pointer, leading to a kernel oops.
+> 
+> The right way to fix this is hinted in __request_module documentation:
+> 
+> """
+> [snip] The function returns
+> zero on success or a negative errno code or positive exit code from
+> "modprobe" on failure. Note that a successful module load does not mean
+> the module did not then unload and exit on an error of its own. Callers
+> must check that the service they requested is now available not blindly
+> invoke it.
+> """
+> 
+> Therefore, drop the return value check, which is not useful, and instead
+> just re-try to find the (hopefully now loaded) governor.
+> 
+> Fixes: 23c7b54ca1cd1 ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
+> Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+> ---
+>  drivers/devfreq/devfreq.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 6b6991f0e873..8868ad9472d2 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -236,7 +236,6 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
+>  static struct devfreq_governor *try_then_request_governor(const char *name)
+>  {
+>  	struct devfreq_governor *governor;
+> -	int err = 0;
+>  
+>  	if (IS_ERR_OR_NULL(name)) {
+>  		pr_err("DEVFREQ: %s: Invalid parameters\n", __func__);
+> @@ -251,13 +250,10 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
+>  
+>  		if (!strncmp(name, DEVFREQ_GOV_SIMPLE_ONDEMAND,
+>  			     DEVFREQ_NAME_LEN))
+> -			err = request_module("governor_%s", "simpleondemand");
+> +			request_module("governor_%s", "simpleondemand");
 
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/power/pm_qos_interface.txt | 10 ++++++----
- drivers/base/power/domain.c              |  8 +++++---
- drivers/base/power/qos.c                 | 14 ++++++++++++--
- include/linux/pm_qos.h                   | 12 ++++++++----
- 4 files changed, 31 insertions(+), 13 deletions(-)
+I don't agree to remove the exception handling. Even if request_module()
+returns positive value, it have to be handled the negative code for error case.
 
-diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index 19c5f7b1a7ba..ec7d662d1707 100644
---- a/Documentation/power/pm_qos_interface.txt
-+++ b/Documentation/power/pm_qos_interface.txt
-@@ -164,12 +164,14 @@ directory.
- Notification mechanisms:
- The per-device PM QoS framework has a per-device notification tree.
- 
--int dev_pm_qos_add_notifier(device, notifier):
--Adds a notification callback function for the device.
-+int dev_pm_qos_add_notifier(device, notifier, type):
-+Adds a notification callback function for the device for a particular request
-+type.
-+
- The callback is called when the aggregated value of the device constraints list
--is changed (for resume latency device PM QoS only).
-+is changed.
- 
--int dev_pm_qos_remove_notifier(device, notifier):
-+int dev_pm_qos_remove_notifier(device, notifier, type):
- Removes the notification callback function for the device.
- 
- 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 33c30c1e6a30..b063bc41b0a9 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1536,7 +1536,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 	if (ret)
- 		genpd_free_dev_data(dev, gpd_data);
- 	else
--		dev_pm_qos_add_notifier(dev, &gpd_data->nb);
-+		dev_pm_qos_add_notifier(dev, &gpd_data->nb,
-+					DEV_PM_QOS_RESUME_LATENCY);
- 
- 	return ret;
- }
-@@ -1569,7 +1570,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
- 
- 	pdd = dev->power.subsys_data->domain_data;
- 	gpd_data = to_gpd_data(pdd);
--	dev_pm_qos_remove_notifier(dev, &gpd_data->nb);
-+	dev_pm_qos_remove_notifier(dev, &gpd_data->nb,
-+				   DEV_PM_QOS_RESUME_LATENCY);
- 
- 	genpd_lock(genpd);
- 
-@@ -1597,7 +1599,7 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
- 
-  out:
- 	genpd_unlock(genpd);
--	dev_pm_qos_add_notifier(dev, &gpd_data->nb);
-+	dev_pm_qos_add_notifier(dev, &gpd_data->nb, DEV_PM_QOS_RESUME_LATENCY);
- 
- 	return ret;
- }
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 6c91f8df1d59..cfd463212513 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -467,6 +467,7 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
-  *
-  * @dev: target device for the constraint
-  * @notifier: notifier block managed by caller.
-+ * @type: request type.
-  *
-  * Will register the notifier into a notification chain that gets called
-  * upon changes to the target value for the device.
-@@ -474,10 +475,14 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
-  * If the device's constraints object doesn't exist when this routine is called,
-  * it will be created (or error code will be returned if that fails).
-  */
--int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
-+int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
-+			    enum dev_pm_qos_req_type type)
- {
- 	int ret = 0;
- 
-+	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
-+		return -EINVAL;
-+
- 	mutex_lock(&dev_pm_qos_mtx);
- 
- 	if (IS_ERR(dev->power.qos))
-@@ -500,15 +505,20 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_add_notifier);
-  *
-  * @dev: target device for the constraint
-  * @notifier: notifier block to be removed.
-+ * @type: request type.
-  *
-  * Will remove the notifier from the notification chain that gets called
-  * upon changes to the target value.
-  */
- int dev_pm_qos_remove_notifier(struct device *dev,
--			       struct notifier_block *notifier)
-+			       struct notifier_block *notifier,
-+			       enum dev_pm_qos_req_type type)
- {
- 	int retval = 0;
- 
-+	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
-+		return -EINVAL;
-+
- 	mutex_lock(&dev_pm_qos_mtx);
- 
- 	/* Silently return if the constraints object is not present. */
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 6ea1ae373d77..1f4d456e8fff 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -146,9 +146,11 @@ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
- int dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value);
- int dev_pm_qos_remove_request(struct dev_pm_qos_request *req);
- int dev_pm_qos_add_notifier(struct device *dev,
--			    struct notifier_block *notifier);
-+			    struct notifier_block *notifier,
-+			    enum dev_pm_qos_req_type type);
- int dev_pm_qos_remove_notifier(struct device *dev,
--			       struct notifier_block *notifier);
-+			       struct notifier_block *notifier,
-+			       enum dev_pm_qos_req_type type);
- void dev_pm_qos_constraints_init(struct device *dev);
- void dev_pm_qos_constraints_destroy(struct device *dev);
- int dev_pm_qos_add_ancestor_request(struct device *dev,
-@@ -202,10 +204,12 @@ static inline int dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- static inline int dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
- 			{ return 0; }
- static inline int dev_pm_qos_add_notifier(struct device *dev,
--					  struct notifier_block *notifier)
-+					  struct notifier_block *notifier,
-+					  enum dev_pm_qos_req_type type);
- 			{ return 0; }
- static inline int dev_pm_qos_remove_notifier(struct device *dev,
--					     struct notifier_block *notifier)
-+					     struct notifier_block *notifier,
-+					     enum dev_pm_qos_req_type type)
- 			{ return 0; }
- static inline void dev_pm_qos_constraints_init(struct device *dev)
- {
+>  		else
+> -			err = request_module("governor_%s", name);
+> -		/* Restore previous state before return */
+> +			request_module("governor_%s", name);
+
+ditto.
+
+>  		mutex_lock(&devfreq_list_lock);
+> -		if (err)> -			return ERR_PTR(err);
+
+You better to modify it as following:
+
+if (err < 0)
+	return ERR_PTR(err);
+else if (err > 0)
+	return ERR_PTR(-EINVAL);
+
+
+>  
+>  		governor = find_devfreq_governor(name);
+>  	}
+> 
+
+
 -- 
-2.21.0.rc0.269.g1a574e7a288b
-
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
