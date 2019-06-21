@@ -2,119 +2,124 @@ Return-Path: <SRS0=jp2V=UU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74B7BC43613
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 13:23:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93E0FC43613
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 14:02:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4ECC221530
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 13:23:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6D7A52075E
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 14:02:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vnSjkkzG"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="wxqCPnHb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726080AbfFUNXb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jun 2019 09:23:31 -0400
-Received: from mail-wm1-f68.google.com ([209.85.128.68]:55856 "EHLO
-        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726178AbfFUNXb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2019 09:23:31 -0400
-Received: by mail-wm1-f68.google.com with SMTP id a15so6312011wmj.5
-        for <linux-pm@vger.kernel.org>; Fri, 21 Jun 2019 06:23:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=itavUBs0pQG90hF8Ul+O9AcFp2XCaZzaOwg7vCeN/0A=;
-        b=vnSjkkzGXYJoAmji3G64EnrivvmyKX5pc2X95lo9QzAAgL8upU5N1WyB698nF0MFRR
-         E3pkrmYCBw/SvK92cAJ2nHa64tCNLEdNVj8+Vq1IGkBAl2GvIhRoLbHlSA8YvsZufYYQ
-         BZIDxH8CWfmE5KDcskbgVUkjjDLFd15N66hpzawEBvupyGca3i4WcgXnBEV0w9p21DHg
-         iZ0cY4fqZlG+g8A5xWvRmsIigz/ayyG02xih2N7ZsqoDsjFK1yzujTUGGJFrTpRMMqPT
-         Go2rkLFgfvTWK0/0R3Rk9mLsLdwUMr0/chbQYKJ8CKqlYO6B1Ak8dpaGokWqqazrrhfW
-         5y9w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=itavUBs0pQG90hF8Ul+O9AcFp2XCaZzaOwg7vCeN/0A=;
-        b=FB4iIZmqRSPl2/kthUs+gT9Ixy38PgKB6XbfM0NmSC1ZkGQV7oI8eSkMQOXvJelqx1
-         Lhzi4Ae/Q7quqLcAcazY5VeMK8VZFbFNQMzggphXDan879zLI3xphjnebSuY6VKsEVJR
-         xSi78WwoD7MTJIrCmBTm9J1uZulMukgCtuuh/7bnyEWdedtU26PtINSzpxDpvWzx4IBe
-         Rix6uBshHXCnT42TwAH6GBN+Lil8VAqfze+B8Vvr12JArNGaLi9cSKDKur6jDEgqMQW3
-         ajAhyimbtIviDcmfr92hjWIUW4v61650ntXw1sLR9U+GY5jfPdmPMSX/tmLSzF7rl0LM
-         AEZQ==
-X-Gm-Message-State: APjAAAXmwj2ogQ7nqh/aRppqg74DXr1f6wQ5nXpXhdDI7N9ZvdSCmCoi
-        w4NwTLrktvhYHAEKCrmhX8q/L4+kpt8=
-X-Google-Smtp-Source: APXvYqwylvO41dcA3hzPGzxlbOBxIYi/KVk5+6iHYZ8tQ3exIyCxj8u3Ztxz0DIzSZeI11nMcuuNFA==
-X-Received: by 2002:a1c:1947:: with SMTP id 68mr4147601wmz.171.1561123409214;
-        Fri, 21 Jun 2019 06:23:29 -0700 (PDT)
-Received: from clegane.local (206.105.129.77.rev.sfr.net. [77.129.105.206])
-        by smtp.gmail.com with ESMTPSA id s188sm1981234wmf.40.2019.06.21.06.23.28
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 21 Jun 2019 06:23:28 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     viresh.kumar@linaro.org
-Cc:     edubezval@gmail.com, linux-kernel@vger.kernel.org,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        linux-pm@vger.kernel.org (open list:CPU FREQUENCY DRIVERS - ARM BIG
-        LITTLE)
-Subject: [PATCH 3/6] cpufreq/drivers/arm_big_little: Remove cooling device usage
-Date:   Fri, 21 Jun 2019 15:22:59 +0200
-Message-Id: <20190621132302.30414-3-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190621132302.30414-1-daniel.lezcano@linaro.org>
-References: <20190621132302.30414-1-daniel.lezcano@linaro.org>
+        id S1726045AbfFUOCD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jun 2019 10:02:03 -0400
+Received: from merlin.infradead.org ([205.233.59.134]:54072 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725985AbfFUOCC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2019 10:02:02 -0400
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+         bh=V+UWa912wmx+/lMg7vn6RvLW3wLYid8k0rOU2aGJZBs=; b=wxqCPnHbDdrC9+hqfs4NEmJdx
+        +j9KcH7tz9gtLXN73MaDBjZnoD5mx9da/M1SCKtyaQ7I2FUG8G70w0pRMJGBy62FRlV5HrL2R1h6+
+        54Y3jp3Exx/Xwdohye7bE8Y3aLr4BAOVgU4dnRZzFOPr01yNq7GsPZvQgSX24SrzTthlCMDDuzMP6
+        68ocd/yR8yaTtJuDH2arGa5ZzrGZ2wYP1q4Ev8FxSQVXDtoGNYn7Cnpl+aLOC9RRR8juBThWnQIbu
+        s4TYCk62xvzcVRr3jOt04yrv4KqHTDTzNK0e3SkJ6Vyz+XurnLtwWa7wE+zNKS+kLDHI5JEiINw51
+        2bi7etQ2Q==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=hirez.programming.kicks-ass.net)
+        by merlin.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
+        id 1heK6d-0000tt-Gi; Fri, 21 Jun 2019 14:01:31 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id C4D90209FCA1F; Fri, 21 Jun 2019 16:01:28 +0200 (CEST)
+Date:   Fri, 21 Jun 2019 16:01:28 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Patrick Bellasi <patrick.bellasi@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Paul Turner <pjt@google.com>,
+        Quentin Perret <quentin.perret@arm.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Todd Kjos <tkjos@google.com>,
+        Joel Fernandes <joelaf@google.com>,
+        Steve Muckle <smuckle@google.com>,
+        Suren Baghdasaryan <surenb@google.com>,
+        Alessio Balsini <balsini@android.com>
+Subject: Re: [PATCH v10 11/16] sched/fair: uclamp: Add uclamp support to
+ energy_compute()
+Message-ID: <20190621140128.GL3436@hirez.programming.kicks-ass.net>
+References: <20190621084217.8167-1-patrick.bellasi@arm.com>
+ <20190621084217.8167-12-patrick.bellasi@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190621084217.8167-12-patrick.bellasi@arm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cpufreq_cooling_unregister() function uses now the policy to
-unregister itself. The only purpose of the cooling device pointer is
-to unregister the cpu cooling device.
+On Fri, Jun 21, 2019 at 09:42:12AM +0100, Patrick Bellasi wrote:
 
-As there is no more need of this pointer, remove it.
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index ce2da8b9ff8c..f81e8930ff19 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -2322,7 +2322,6 @@ static inline unsigned long capacity_orig_of(int cpu)
+>  }
+>  #endif
+>  
+> -#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+>  /**
+>   * enum schedutil_type - CPU utilization type
+>   * @FREQUENCY_UTIL:	Utilization used to select frequency
+> @@ -2338,15 +2337,11 @@ enum schedutil_type {
+>  	ENERGY_UTIL,
+>  };
+>  
+> -unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+> -				  unsigned long max, enum schedutil_type type);
+> -
+> -static inline unsigned long schedutil_energy_util(int cpu, unsigned long cfs)
+> -{
+> -	unsigned long max = arch_scale_cpu_capacity(NULL, cpu);
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpufreq/arm_big_little.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+That conflicts with the patch I have removing that NULL argument, fixed
+it up.
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 6b243202caa9..718c63231e66 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -56,7 +56,6 @@ static bool bL_switching_enabled;
- #define ACTUAL_FREQ(cluster, freq)  ((cluster == A7_CLUSTER) ? freq << 1 : freq)
- #define VIRT_FREQ(cluster, freq)    ((cluster == A7_CLUSTER) ? freq >> 1 : freq)
- 
--static struct thermal_cooling_device *cdev[MAX_CLUSTERS];
- static const struct cpufreq_arm_bL_ops *arm_bL_ops;
- static struct clk *clk[MAX_CLUSTERS];
- static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS + 1];
-@@ -501,10 +500,8 @@ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
- 	struct device *cpu_dev;
- 	int cur_cluster = cpu_to_cluster(policy->cpu);
- 
--	if (cur_cluster < MAX_CLUSTERS) {
-+	if (cur_cluster < MAX_CLUSTERS)
- 		cpufreq_cooling_unregister(policy);
--		cdev[cur_cluster] = NULL;
--	}
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
-@@ -527,7 +524,7 @@ static void bL_cpufreq_ready(struct cpufreq_policy *policy)
- 	if (cur_cluster >= MAX_CLUSTERS)
- 		return;
- 
--	cdev[cur_cluster] = of_cpufreq_cooling_register(policy);
-+	of_cpufreq_cooling_register(policy);
- }
- 
- static struct cpufreq_driver bL_cpufreq_driver = {
--- 
-2.17.1
+> +#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+>  
+> -	return schedutil_freq_util(cpu, cfs, max, ENERGY_UTIL);
+> -}
+> +unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
+> +				 unsigned long max, enum schedutil_type type,
+> +				 struct task_struct *p);
+>  
+>  static inline unsigned long cpu_bw_dl(struct rq *rq)
+>  {
+> @@ -2375,11 +2370,8 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
+>  	return READ_ONCE(rq->avg_rt.util_avg);
+>  }
+>  #else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
+> -static inline unsigned long schedutil_energy_util(int cpu, unsigned long cfs)
+> -{
+> -	return cfs;
+> -}
+> -#endif
+> +#define schedutil_cpu_util(cpu, util_cfs, max, type, p) 0
 
+Was there a good reason for this to be a macro and not an inline
+function? I've changed it, if it explodes in 0day, it's all my fault ;-)
+
+> +#endif /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
