@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F8EFC48BE3
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39A92C48BE0
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 82DC52089E
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1D7352089E
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726696AbfFUInC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jun 2019 04:43:02 -0400
-Received: from foss.arm.com ([217.140.110.172]:51018 "EHLO foss.arm.com"
+        id S1726282AbfFUIm4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jun 2019 04:42:56 -0400
+Received: from foss.arm.com ([217.140.110.172]:50986 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726657AbfFUInB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Jun 2019 04:43:01 -0400
+        id S1726657AbfFUIm4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Jun 2019 04:42:56 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B051A152D;
-        Fri, 21 Jun 2019 01:43:00 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 92C171516;
+        Fri, 21 Jun 2019 01:42:55 -0700 (PDT)
 Received: from e110439-lin.cambridge.arm.com (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5D94F3F246;
-        Fri, 21 Jun 2019 01:42:58 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 3FEFB3F246;
+        Fri, 21 Jun 2019 01:42:53 -0700 (PDT)
 From:   Patrick Bellasi <patrick.bellasi@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     Ingo Molnar <mingo@redhat.com>,
@@ -43,9 +43,9 @@ Cc:     Ingo Molnar <mingo@redhat.com>,
         Steve Muckle <smuckle@google.com>,
         Suren Baghdasaryan <surenb@google.com>,
         Alessio Balsini <balsini@android.com>
-Subject: [PATCH v10 10/16] sched/core: uclamp: Add uclamp_util_with()
-Date:   Fri, 21 Jun 2019 09:42:11 +0100
-Message-Id: <20190621084217.8167-11-patrick.bellasi@arm.com>
+Subject: [PATCH v10 08/16] sched/core: uclamp: Set default clamps for RT tasks
+Date:   Fri, 21 Jun 2019 09:42:09 +0100
+Message-Id: <20190621084217.8167-9-patrick.bellasi@arm.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190621084217.8167-1-patrick.bellasi@arm.com>
 References: <20190621084217.8167-1-patrick.bellasi@arm.com>
@@ -56,93 +56,79 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-So far uclamp_util() allows to clamp a specified utilization considering
-the clamp values requested by RUNNABLE tasks in a CPU. For the Energy
-Aware Scheduler (EAS) it is interesting to test how clamp values will
-change when a task is becoming RUNNABLE on a given CPU.
-For example, EAS is interested in comparing the energy impact of
-different scheduling decisions and the clamp values can play a role on
-that.
+By default FAIR tasks start without clamps, i.e. neither boosted nor
+capped, and they run at the best frequency matching their utilization
+demand.  This default behavior does not fit RT tasks which instead are
+expected to run at the maximum available frequency, if not otherwise
+required by explicitly capping them.
 
-Add uclamp_util_with() which allows to clamp a given utilization by
-considering the possible impact on CPU clamp values of a specified task.
+Enforce the correct behavior for RT tasks by setting util_min to max
+whenever:
+
+ 1. the task is switched to the RT class and it does not already have a
+    user-defined clamp value assigned.
+
+ 2. an RT task is forked from a parent with RESET_ON_FORK set.
+
+NOTE: utilization clamp values are cross scheduling class attributes and
+thus they are never changed/reset once a value has been explicitly
+defined from user-space.
 
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 ---
- kernel/sched/core.c  | 13 +++++++++++++
- kernel/sched/sched.h | 21 ++++++++++++++++++++-
- 2 files changed, 33 insertions(+), 1 deletion(-)
+ kernel/sched/core.c | 30 ++++++++++++++++++++++++++++--
+ 1 file changed, 28 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index ab75e874fdcc..2226ddd1de04 100644
+index 2c49b23efc87..ab75e874fdcc 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -869,6 +869,19 @@ uclamp_eff_get(struct task_struct *p, unsigned int clamp_id)
- 	return uc_req;
- }
- 
-+unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id)
-+{
-+	struct uclamp_se uc_eff;
-+
-+	/* Task currently refcounted: use back-annotated (effective) value */
-+	if (p->uclamp[clamp_id].active)
-+		return p->uclamp[clamp_id].value;
-+
-+	uc_eff = uclamp_eff_get(p, clamp_id);
-+
-+	return uc_eff.value;
-+}
-+
- /*
-  * When a task is enqueued on a rq, the clamp bucket currently defined by the
-  * task's uclamp::bucket_id is refcounted on that rq. This also immediately
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index c33a57f14743..ce2da8b9ff8c 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -2266,11 +2266,20 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
- #endif /* CONFIG_CPU_FREQ */
- 
- #ifdef CONFIG_UCLAMP_TASK
--static inline unsigned int uclamp_util(struct rq *rq, unsigned int util)
-+unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id);
-+
-+static __always_inline
-+unsigned int uclamp_util_with(struct rq *rq, unsigned int util,
-+			      struct task_struct *p)
+@@ -1051,6 +1051,27 @@ static int uclamp_validate(struct task_struct *p,
+ static void __setscheduler_uclamp(struct task_struct *p,
+ 				  const struct sched_attr *attr)
  {
- 	unsigned int min_util = READ_ONCE(rq->uclamp[UCLAMP_MIN].value);
- 	unsigned int max_util = READ_ONCE(rq->uclamp[UCLAMP_MAX].value);
- 
-+	if (p) {
-+		min_util = max(min_util, uclamp_eff_value(p, UCLAMP_MIN));
-+		max_util = max(max_util, uclamp_eff_value(p, UCLAMP_MAX));
++	unsigned int clamp_id;
++
++	/*
++	 * On scheduling class change, reset to default clamps for tasks
++	 * without a task-specific value.
++	 */
++	for_each_clamp_id(clamp_id) {
++		struct uclamp_se *uc_se = &p->uclamp_req[clamp_id];
++		unsigned int clamp_value = uclamp_none(clamp_id);
++
++		/* Keep using defined clamps across class changes */
++		if (uc_se->user_defined)
++			continue;
++
++		/* By default, RT tasks always get 100% boost */
++		if (unlikely(rt_task(p) && clamp_id == UCLAMP_MIN))
++			clamp_value = uclamp_none(UCLAMP_MAX);
++
++		uclamp_se_set(uc_se, clamp_value, false);
 +	}
 +
- 	/*
- 	 * Since CPU's {min,max}_util clamps are MAX aggregated considering
- 	 * RUNNABLE tasks with _different_ clamps, we can end up with an
-@@ -2281,7 +2290,17 @@ static inline unsigned int uclamp_util(struct rq *rq, unsigned int util)
+ 	if (likely(!(attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)))
+ 		return;
  
- 	return clamp(util, min_util, max_util);
- }
+@@ -1076,8 +1097,13 @@ static void uclamp_fork(struct task_struct *p)
+ 		return;
+ 
+ 	for_each_clamp_id(clamp_id) {
+-		uclamp_se_set(&p->uclamp_req[clamp_id],
+-			      uclamp_none(clamp_id), false);
++		unsigned int clamp_value = uclamp_none(clamp_id);
 +
-+static inline unsigned int uclamp_util(struct rq *rq, unsigned int util)
-+{
-+	return uclamp_util_with(rq, util, NULL);
-+}
- #else /* CONFIG_UCLAMP_TASK */
-+static inline unsigned int uclamp_util_with(struct rq *rq, unsigned int util,
-+					    struct task_struct *p)
-+{
-+	return util;
-+}
- static inline unsigned int uclamp_util(struct rq *rq, unsigned int util)
- {
- 	return util;
++		/* By default, RT tasks always get 100% boost */
++		if (unlikely(rt_task(p) && clamp_id == UCLAMP_MIN))
++			clamp_value = uclamp_none(UCLAMP_MAX);
++
++		uclamp_se_set(&p->uclamp_req[clamp_id], clamp_value, false);
+ 	}
+ }
+ 
 -- 
 2.21.0
 
