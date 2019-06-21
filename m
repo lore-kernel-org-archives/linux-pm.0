@@ -7,61 +7,60 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 439BFC43613
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 13:23:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3C2CC48BE0
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 13:23:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1B7B121537
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 13:23:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE2C021530
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 13:23:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="c36ZpSew"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cdA8J+bs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726339AbfFUNXh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jun 2019 09:23:37 -0400
-Received: from mail-wm1-f67.google.com ([209.85.128.67]:39049 "EHLO
-        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726336AbfFUNXg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2019 09:23:36 -0400
-Received: by mail-wm1-f67.google.com with SMTP id z23so6606360wma.4
-        for <linux-pm@vger.kernel.org>; Fri, 21 Jun 2019 06:23:35 -0700 (PDT)
+        id S1726278AbfFUNXd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jun 2019 09:23:33 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:54896 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726186AbfFUNXc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2019 09:23:32 -0400
+Received: by mail-wm1-f68.google.com with SMTP id g135so6305992wme.4
+        for <linux-pm@vger.kernel.org>; Fri, 21 Jun 2019 06:23:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=hWOyvG8gK3Yd2gZuZPX+zS+OzCMre8gWSxnhV9rJDR4=;
-        b=c36ZpSewLyxdsNlrsvfl54dP1d3jg1M3kR6dJKnAlk5Kh6PlPsU1RM1YhgbelAsiB8
-         KpDVG6V6mFy2Emmx9iXwPq8EIC6KiyewIFRtn7C86MwlueFkplHP1GF74Vi4K12kxjIB
-         x2I3j7ScntkAxx19yk6Z339XPBZ1fQkRdWTGiUJ3xsUlU79u9TGcvn2+CrijnwNf2JiF
-         u9o421T2miZQiLckihrPw66oLEHr1elWqUNNCGt020T49WC32Jsb5xkOQTHBdFQpYeTU
-         G3D+d7LeI1PWxZ2zpYpm8PnS4+UsS0KRK3B6tZGx66Xw5HHqzyGTQbJbQjUz6uvy0yvh
-         rIRA==
+        bh=abmrRJIbn15CKe4jAYwpNznA72/AKAAATV1fQchJZq8=;
+        b=cdA8J+bs/MRPvemLKcO6rzSy1aIFncfOfsoPbv9tLkihvL9mR4vUHXGqZNRGWY8WeV
+         1n9+lWedZTxuMsje160UJwcaqNftcjDQp4mxgB7FHoYZI4CSc75WEBKTHuQic248qlmi
+         pazm4zf7Y1Pgjm+nUkUA77Wu2YaqCgurF5nI35cHs15xD75THN46ZKDrj/7QSBboJzk+
+         PLvf9reZ/A4i9sggeYiNObhNmqpgzzWYJIbaPZtAjwEiIqVz/KeRzHpp93W4+GOZwRpV
+         SA3x+XMTA0QvUIedkoGk4pc4pvnMUVXuzwvE9uMOKHkU/KGf94zZkX0uI9wdWxlDbz9L
+         ky8A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=hWOyvG8gK3Yd2gZuZPX+zS+OzCMre8gWSxnhV9rJDR4=;
-        b=AarZOqBh4q70jjJtLLXUaOy332NIMbOZwqzdhYqeT+QAkCJopXcarj9Ay7/31bEDuo
-         A74NLNtiVAunQTfjyOxAdYf4PTdAXplws36Qsrpm9wu2qAaqc5RZsDPMw6vFxLmkiVbk
-         gmBKIj1pQ7YMEgvz7eWGuLiVKmjO6dlDXxqO2FE1nrme+26SlSxPNbDXdldOHoihrFwE
-         TMNfabo9mJvynHjB4u+g0dYxW0RmciO3sVS2yfWelqNu6yvV0qaqc3xo1DnjtdYPy05T
-         Lt28tdbAXFuGK97uT3QqWwZAhu0WbYr7yQO9+yHEQ+05gFwxpa0G55Ur3awebQvxH0dg
-         TXRQ==
-X-Gm-Message-State: APjAAAU5ZWJDvPe04WFB9oY7iXb1PZ1YLZr9g3Ph3hL35kPYHNB62SrF
-        pRyihVlAbHywDVp08Kd9eha0Pg==
-X-Google-Smtp-Source: APXvYqy3Q4/KfwLZiWac+IHlKAnk7Sl69mV+esSGzR2nnxIARsD/wBgEhPqG7TrBrUdnQkcJUBT6jw==
-X-Received: by 2002:a1c:730d:: with SMTP id d13mr4066497wmb.88.1561123414277;
-        Fri, 21 Jun 2019 06:23:34 -0700 (PDT)
+        bh=abmrRJIbn15CKe4jAYwpNznA72/AKAAATV1fQchJZq8=;
+        b=jhMd3pYiW8ywqnbQV6eXKc9/dsZ7JKCEBZ5XFOJwGL0I1TUJjycZ9dv4KdbF7wyzYY
+         T3PkxTrWisHHFwG9btjvxZ7oriQ3mFqzx6gaymBSN+NYpKrKMNtnat4+8bgFj679NTnd
+         XSY67n10337VXsgmd3J5BvmK7zjpqVgplXeUfqVHSP/NSkyfqIMWAkrX1A4uwiuvpINa
+         bmZ21E9oBA3X04UfLkkn/EFwEAPbk36NKDAmi9P4aF0YI2C4eFWgADh/3TILPRyov1Mt
+         EBPj0MrY+NDU+WwpRMepAkLRT07CGi3wxFxDrlv/iu9PIWwB0xtK96+1VVzo+sOf5ed2
+         XqOw==
+X-Gm-Message-State: APjAAAXl1tNDgdzNhmVtLaGjYel5Ch257p+7QAKWpWhPsBUta+zw9Ocv
+        ZGB/x0LyrMuVUzMLzmmN9RXZig==
+X-Google-Smtp-Source: APXvYqx15WC+pGOYPsxUjY6M0s5AxON7z4GMohrz0VtpXz087dwRWRTMtDN6uRHy9tTaPz2oKaVQAA==
+X-Received: by 2002:a1c:8a:: with SMTP id 132mr4159361wma.44.1561123410813;
+        Fri, 21 Jun 2019 06:23:30 -0700 (PDT)
 Received: from clegane.local (206.105.129.77.rev.sfr.net. [77.129.105.206])
-        by smtp.gmail.com with ESMTPSA id s188sm1981234wmf.40.2019.06.21.06.23.33
+        by smtp.gmail.com with ESMTPSA id s188sm1981234wmf.40.2019.06.21.06.23.29
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 21 Jun 2019 06:23:33 -0700 (PDT)
+        Fri, 21 Jun 2019 06:23:30 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     viresh.kumar@linaro.org
 Cc:     edubezval@gmail.com, linux-kernel@vger.kernel.org,
-        Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>,
-        linux-pm@vger.kernel.org (open list:TI BANDGAP AND THERMAL DRIVER),
-        linux-omap@vger.kernel.org (open list:TI BANDGAP AND THERMAL DRIVER)
-Subject: [PATCH 6/6] thermal/drivers/ti: Remove cooling device usage
-Date:   Fri, 21 Jun 2019 15:23:02 +0200
-Message-Id: <20190621132302.30414-6-daniel.lezcano@linaro.org>
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        linux-pm@vger.kernel.org (open list:CPU FREQUENCY SCALING FRAMEWORK)
+Subject: [PATCH 4/6] cpufreq:  Remove cooling device usage
+Date:   Fri, 21 Jun 2019 15:23:00 +0200
+Message-Id: <20190621132302.30414-4-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190621132302.30414-1-daniel.lezcano@linaro.org>
 References: <20190621132302.30414-1-daniel.lezcano@linaro.org>
@@ -78,42 +77,49 @@ As there is no more need of this pointer, remove it.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/cpufreq/cpufreq.c | 6 ++----
+ include/linux/cpufreq.h   | 3 ---
+ 2 files changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 217b1aae8b4f..170b70b6ec61 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -41,7 +41,6 @@ struct ti_thermal_data {
- 	struct cpufreq_policy *policy;
- 	struct thermal_zone_device *ti_thermal;
- 	struct thermal_zone_device *pcb_tz;
--	struct thermal_cooling_device *cool_dev;
- 	struct ti_bandgap *bgp;
- 	enum thermal_device_mode mode;
- 	struct work_struct thermal_wq;
-@@ -233,6 +232,7 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
- {
- 	struct ti_thermal_data *data;
- 	struct device_node *np = bgp->dev->of_node;
-+	struct thermal_cooling_device *cdev;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index dfbc9bea606c..1d8f85faeaca 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1379,7 +1379,7 @@ static int cpufreq_online(unsigned int cpu)
+ 		cpufreq_driver->ready(policy);
  
- 	/*
- 	 * We are assuming here that if one deploys the zone
-@@ -256,9 +256,9 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
+ 	if (cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV)
+-		policy->cdev = of_cpufreq_cooling_register(policy);
++		of_cpufreq_cooling_register(policy);
+ 
+ 	pr_debug("initialization complete\n");
+ 
+@@ -1468,10 +1468,8 @@ static int cpufreq_offline(unsigned int cpu)
+ 		goto unlock;
  	}
  
- 	/* Register cooling device */
--	data->cool_dev = cpufreq_cooling_register(data->policy);
--	if (IS_ERR(data->cool_dev)) {
--		int ret = PTR_ERR(data->cool_dev);
-+	cdev = cpufreq_cooling_register(data->policy);
-+	if (IS_ERR(cdev)) {
-+		int ret = PTR_ERR(cdev);
- 		dev_err(bgp->dev, "Failed to register cpu cooling device %d\n",
- 			ret);
- 		cpufreq_cpu_put(data->policy);
+-	if (cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV) {
++	if (cpufreq_driver->flags & CPUFREQ_IS_COOLING_DEV)
+ 		cpufreq_cooling_unregister(policy);
+-		policy->cdev = NULL;
+-	}
+ 
+ 	if (cpufreq_driver->stop_cpu)
+ 		cpufreq_driver->stop_cpu(policy);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index d01a74fbc4db..9a42711f338b 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -144,9 +144,6 @@ struct cpufreq_policy {
+ 
+ 	/* For cpufreq driver's internal use */
+ 	void			*driver_data;
+-
+-	/* Pointer to the cooling device if used for thermal mitigation */
+-	struct thermal_cooling_device *cdev;
+ };
+ 
+ struct cpufreq_freqs {
 -- 
 2.17.1
 
