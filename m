@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA545C43613
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3EAEC43613
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 88CF621537
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A6E7021537
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726584AbfFUImv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jun 2019 04:42:51 -0400
-Received: from foss.arm.com ([217.140.110.172]:50942 "EHLO foss.arm.com"
+        id S1726497AbfFUIml (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jun 2019 04:42:41 -0400
+Received: from foss.arm.com ([217.140.110.172]:50884 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726551AbfFUIms (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Jun 2019 04:42:48 -0400
+        id S1726390AbfFUImk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Jun 2019 04:42:40 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D71AC1500;
-        Fri, 21 Jun 2019 01:42:47 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 30A12147A;
+        Fri, 21 Jun 2019 01:42:40 -0700 (PDT)
 Received: from e110439-lin.cambridge.arm.com (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 843B23F246;
-        Fri, 21 Jun 2019 01:42:45 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id D1EB23F246;
+        Fri, 21 Jun 2019 01:42:37 -0700 (PDT)
 From:   Patrick Bellasi <patrick.bellasi@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     Ingo Molnar <mingo@redhat.com>,
@@ -43,9 +43,9 @@ Cc:     Ingo Molnar <mingo@redhat.com>,
         Steve Muckle <smuckle@google.com>,
         Suren Baghdasaryan <surenb@google.com>,
         Alessio Balsini <balsini@android.com>
-Subject: [PATCH v10 05/16] sched/core: Allow sched_setattr() to use the current policy
-Date:   Fri, 21 Jun 2019 09:42:06 +0100
-Message-Id: <20190621084217.8167-6-patrick.bellasi@arm.com>
+Subject: [PATCH v10 02/16] sched/core: uclamp: Add bucket local max tracking
+Date:   Fri, 21 Jun 2019 09:42:03 +0100
+Message-Id: <20190621084217.8167-3-patrick.bellasi@arm.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190621084217.8167-1-patrick.bellasi@arm.com>
 References: <20190621084217.8167-1-patrick.bellasi@arm.com>
@@ -56,59 +56,127 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The sched_setattr() syscall mandates that a policy is always specified.
-This requires to always know which policy a task will have when
-attributes are configured and this makes it impossible to add more
-generic task attributes valid across different scheduling policies.
-Reading the policy before setting generic tasks attributes is racy since
-we cannot be sure it is not changed concurrently.
+Because of bucketization, different task-specific clamp values are
+tracked in the same bucket.  For example, with 20% bucket size and
+assuming to have:
+  Task1: util_min=25%
+  Task2: util_min=35%
+both tasks will be refcounted in the [20..39]% bucket and always boosted
+only up to 20% thus implementing a simple floor aggregation normally
+used in histograms.
 
-Introduce the required support to change generic task attributes without
-affecting the current task policy. This is done by adding an attribute flag
-(SCHED_FLAG_KEEP_POLICY) to enforce the usage of the current policy.
+In systems with only few and well-defined clamp values, it would be
+useful to track the exact clamp value required by a task whenever
+possible. For example, if a system requires only 23% and 47% boost
+values then it's possible to track the exact boost required by each
+task using only 3 buckets of ~33% size each.
 
-Add support for the SETPARAM_POLICY policy, which is already used by the
-sched_setparam() POSIX syscall, to the sched_setattr() non-POSIX
-syscall.
+Introduce a mechanism to max aggregate the requested clamp values of
+RUNNABLE tasks in the same bucket. Keep it simple by resetting the
+bucket value to its base value only when a bucket becomes inactive.
+Allow a limited and controlled overboosting margin for tasks recounted
+in the same bucket.
+
+In systems where the boost values are not known in advance, it is still
+possible to control the maximum acceptable overboosting margin by tuning
+the number of clamp groups. For example, 20 groups ensure a 5% maximum
+overboost.
+
+Remove the rq bucket initialization code since a correct bucket value
+is now computed when a task is refcounted into a CPU's rq.
 
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 ---
- include/uapi/linux/sched.h | 4 +++-
- kernel/sched/core.c        | 2 ++
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ kernel/sched/core.c | 43 +++++++++++++++++++++++++------------------
+ 1 file changed, 25 insertions(+), 18 deletions(-)
 
-diff --git a/include/uapi/linux/sched.h b/include/uapi/linux/sched.h
-index ed4ee170bee2..58b2368d3634 100644
---- a/include/uapi/linux/sched.h
-+++ b/include/uapi/linux/sched.h
-@@ -51,9 +51,11 @@
- #define SCHED_FLAG_RESET_ON_FORK	0x01
- #define SCHED_FLAG_RECLAIM		0x02
- #define SCHED_FLAG_DL_OVERRUN		0x04
-+#define SCHED_FLAG_KEEP_POLICY		0x08
- 
- #define SCHED_FLAG_ALL	(SCHED_FLAG_RESET_ON_FORK	| \
- 			 SCHED_FLAG_RECLAIM		| \
--			 SCHED_FLAG_DL_OVERRUN)
-+			 SCHED_FLAG_DL_OVERRUN		| \
-+			 SCHED_FLAG_KEEP_POLICY)
- 
- #endif /* _UAPI_LINUX_SCHED_H */
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 4b8bb6678f16..0cf6d9270868 100644
+index bc0389d3e77d..9c805b83cb36 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -4886,6 +4886,8 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
+@@ -774,6 +774,11 @@ static inline unsigned int uclamp_bucket_id(unsigned int clamp_value)
+ 	return clamp_value / UCLAMP_BUCKET_DELTA;
+ }
  
- 	if ((int)attr.sched_policy < 0)
- 		return -EINVAL;
-+	if (attr.sched_flags & SCHED_FLAG_KEEP_POLICY)
-+		attr.sched_policy = SETPARAM_POLICY;
++static inline unsigned int uclamp_bucket_base_value(unsigned int clamp_value)
++{
++	return UCLAMP_BUCKET_DELTA * uclamp_bucket_id(clamp_value);
++}
++
+ static inline unsigned int uclamp_none(int clamp_id)
+ {
+ 	if (clamp_id == UCLAMP_MIN)
+@@ -811,6 +816,11 @@ unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id)
+  * When a task is enqueued on a rq, the clamp bucket currently defined by the
+  * task's uclamp::bucket_id is refcounted on that rq. This also immediately
+  * updates the rq's clamp value if required.
++ *
++ * Tasks can have a task-specific value requested from user-space, track
++ * within each bucket the maximum value for tasks refcounted in it.
++ * This "local max aggregation" allows to track the exact "requested" value
++ * for each bucket when all its RUNNABLE tasks require the same clamp.
+  */
+ static inline void uclamp_rq_inc_id(struct rq *rq, struct task_struct *p,
+ 				    unsigned int clamp_id)
+@@ -824,8 +834,15 @@ static inline void uclamp_rq_inc_id(struct rq *rq, struct task_struct *p,
+ 	bucket = &uc_rq->bucket[uc_se->bucket_id];
+ 	bucket->tasks++;
  
- 	rcu_read_lock();
- 	retval = -ESRCH;
++	/*
++	 * Local max aggregation: rq buckets always track the max
++	 * "requested" clamp value of its RUNNABLE tasks.
++	 */
++	if (bucket->tasks == 1 || uc_se->value > bucket->value)
++		bucket->value = uc_se->value;
++
+ 	if (uc_se->value > READ_ONCE(uc_rq->value))
+-		WRITE_ONCE(uc_rq->value, bucket->value);
++		WRITE_ONCE(uc_rq->value, uc_se->value);
+ }
+ 
+ /*
+@@ -852,6 +869,12 @@ static inline void uclamp_rq_dec_id(struct rq *rq, struct task_struct *p,
+ 	if (likely(bucket->tasks))
+ 		bucket->tasks--;
+ 
++	/*
++	 * Keep "local max aggregation" simple and accept to (possibly)
++	 * overboost some RUNNABLE tasks in the same bucket.
++	 * The rq clamp bucket value is reset to its base value whenever
++	 * there are no more RUNNABLE tasks refcounting it.
++	 */
+ 	if (likely(bucket->tasks))
+ 		return;
+ 
+@@ -892,25 +915,9 @@ static void __init init_uclamp(void)
+ 	unsigned int clamp_id;
+ 	int cpu;
+ 
+-	for_each_possible_cpu(cpu) {
+-		struct uclamp_bucket *bucket;
+-		struct uclamp_rq *uc_rq;
+-		unsigned int bucket_id;
+-
++	for_each_possible_cpu(cpu)
+ 		memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
+ 
+-		for_each_clamp_id(clamp_id) {
+-			uc_rq = &cpu_rq(cpu)->uclamp[clamp_id];
+-
+-			bucket_id = 1;
+-			while (bucket_id < UCLAMP_BUCKETS) {
+-				bucket = &uc_rq->bucket[bucket_id];
+-				bucket->value = bucket_id * UCLAMP_BUCKET_DELTA;
+-				++bucket_id;
+-			}
+-		}
+-	}
+-
+ 	for_each_clamp_id(clamp_id) {
+ 		uclamp_se_set(&init_task.uclamp[clamp_id],
+ 			      uclamp_none(clamp_id));
 -- 
 2.21.0
 
