@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 242A2C48BE3
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C465C48BE5
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 00E0921537
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2F6D221537
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Jun 2019 08:43:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726381AbfFUInW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jun 2019 04:43:22 -0400
-Received: from foss.arm.com ([217.140.110.172]:51108 "EHLO foss.arm.com"
+        id S1726717AbfFUInG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jun 2019 04:43:06 -0400
+Received: from foss.arm.com ([217.140.110.172]:51040 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726740AbfFUInO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Jun 2019 04:43:14 -0400
+        id S1726397AbfFUInE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Jun 2019 04:43:04 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8493D1595;
-        Fri, 21 Jun 2019 01:43:13 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 46C66152F;
+        Fri, 21 Jun 2019 01:43:03 -0700 (PDT)
 Received: from e110439-lin.cambridge.arm.com (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 31D673F246;
-        Fri, 21 Jun 2019 01:43:11 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id E6C533F246;
+        Fri, 21 Jun 2019 01:43:00 -0700 (PDT)
 From:   Patrick Bellasi <patrick.bellasi@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     Ingo Molnar <mingo@redhat.com>,
@@ -43,9 +43,9 @@ Cc:     Ingo Molnar <mingo@redhat.com>,
         Steve Muckle <smuckle@google.com>,
         Suren Baghdasaryan <surenb@google.com>,
         Alessio Balsini <balsini@android.com>
-Subject: [PATCH v10 15/16] sched/core: uclamp: Use TG's clamps to restrict TASK's clamps
-Date:   Fri, 21 Jun 2019 09:42:16 +0100
-Message-Id: <20190621084217.8167-16-patrick.bellasi@arm.com>
+Subject: [PATCH v10 11/16] sched/fair: uclamp: Add uclamp support to energy_compute()
+Date:   Fri, 21 Jun 2019 09:42:12 +0100
+Message-Id: <20190621084217.8167-12-patrick.bellasi@arm.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20190621084217.8167-1-patrick.bellasi@arm.com>
 References: <20190621084217.8167-1-patrick.bellasi@arm.com>
@@ -56,91 +56,199 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When a task specific clamp value is configured via sched_setattr(2),
-this value is accounted in the corresponding clamp bucket every time the
-task is {en,de}qeued. However, when cgroups are also in use, the task
-specific clamp values could be restricted by the task_group (TG)
-clamp values.
+The Energy Aware Scheduler (EAS) estimates the energy impact of waking
+up a task on a given CPU. This estimation is based on:
+ a) an (active) power consumption defined for each CPU frequency
+ b) an estimation of which frequency will be used on each CPU
+ c) an estimation of the busy time (utilization) of each CPU
 
-Update uclamp_cpu_inc() to aggregate task and TG clamp values. Every
-time a task is enqueued, it's accounted in the clamp_bucket defining the
-smaller clamp between the task specific value and its TG effective
-value. This allows to:
+Utilization clamping can affect both b) and c).
+A CPU is expected to run:
+ - on an higher than required frequency, but for a shorter time, in case
+   its estimated utilization will be smaller than the minimum utilization
+   enforced by uclamp
+ - on a smaller than required frequency, but for a longer time, in case
+   its estimated utilization is bigger than the maximum utilization
+   enforced by uclamp
 
-1. ensure cgroup clamps are always used to restrict task specific
-   requests, i.e. boosted only up to the effective granted value or
-   clamped at least to a certain value
+While compute_energy() already accounts clamping effects on busy time,
+the clamping effects on frequency selection are currently ignored.
 
-2. implement a "nice-like" policy, where tasks are still allowed to
-   request less then what enforced by their current TG
+Fix it by considering how CPU clamp values will be affected by a
+task waking up and being RUNNABLE on that CPU.
 
-This mimics what already happens for a task's CPU affinity mask when the
-task is also in a cpuset, i.e. cgroup attributes are always used to
-restrict per-task attributes.
+Do that by refactoring schedutil_freq_util() to take an additional
+task_struct* which allows EAS to evaluate the impact on clamp values of
+a task being eventually queued in a CPU. Clamp values are applied to the
+RT+CFS utilization only when a FREQUENCY_UTIL is required by
+compute_energy().
 
-Do this by exploiting the concept of "effective" clamp, which is already
-used by a TG to track parent enforced restrictions.
+Do note that switching from ENERGY_UTIL to FREQUENCY_UTIL in the
+computation of the cpu_util signal implies that we are more likely to
+estimate the highest OPP when a RT task is running in another CPU of
+the same performance domain. This can have an impact on energy
+estimation but:
+ - it's not easy to say which approach is better, since it depends on
+   the use case
+ - the original approach could still be obtained by setting a smaller
+   task-specific util_min whenever required
 
-Apply task group clamp restrictions only to tasks belonging to a child
-group. While, for tasks in the root group or in an autogroup, only
-system defaults are enforced.
+Since we are at that:
+ - rename schedutil_freq_util() into schedutil_cpu_util(),
+   since it's not only used for frequency selection.
 
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/sched/core.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+ kernel/sched/cpufreq_schedutil.c |  9 +++----
+ kernel/sched/fair.c              | 40 +++++++++++++++++++++++++++-----
+ kernel/sched/sched.h             | 20 +++++-----------
+ 3 files changed, 45 insertions(+), 24 deletions(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index f09712f65017..8070e11cafa0 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -862,16 +862,42 @@ unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id,
- 	return uclamp_idle_value(rq, clamp_id, clamp_value);
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 35cdb4a4d802..9c0419087260 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -196,8 +196,9 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+  * based on the task model parameters and gives the minimal utilization
+  * required to meet deadlines.
+  */
+-unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+-				  unsigned long max, enum schedutil_type type)
++unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
++				 unsigned long max, enum schedutil_type type,
++				 struct task_struct *p)
+ {
+ 	unsigned long dl_util, util, irq;
+ 	struct rq *rq = cpu_rq(cpu);
+@@ -230,7 +231,7 @@ unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+ 	 */
+ 	util = util_cfs + cpu_util_rt(rq);
+ 	if (type == FREQUENCY_UTIL)
+-		util = uclamp_util(rq, util);
++		util = uclamp_util_with(rq, util, p);
+ 
+ 	dl_util = cpu_util_dl(rq);
+ 
+@@ -290,7 +291,7 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+ 	sg_cpu->max = max;
+ 	sg_cpu->bw_dl = cpu_bw_dl(rq);
+ 
+-	return schedutil_freq_util(sg_cpu->cpu, util, max, FREQUENCY_UTIL);
++	return schedutil_cpu_util(sg_cpu->cpu, util, max, FREQUENCY_UTIL, NULL);
  }
  
-+static inline struct uclamp_se
-+uclamp_tg_restrict(struct task_struct *p, unsigned int clamp_id)
-+{
-+	struct uclamp_se uc_req = p->uclamp_req[clamp_id];
-+#ifdef CONFIG_UCLAMP_TASK_GROUP
-+	struct uclamp_se uc_max;
-+
-+	/*
-+	 * Tasks in autogroups or root task group will be
-+	 * restricted by system defaults.
-+	 */
-+	if (task_group_is_autogroup(task_group(p)))
-+		return uc_req;
-+	if (task_group(p) == &root_task_group)
-+		return uc_req;
-+
-+	uc_max = task_group(p)->uclamp[clamp_id];
-+	if (uc_req.value > uc_max.value || !uc_req.user_defined)
-+		return uc_max;
-+#endif
-+
-+	return uc_req;
-+}
-+
- /*
-  * The effective clamp bucket index of a task depends on, by increasing
-  * priority:
-  * - the task specific clamp value, when explicitly requested from userspace
-+ * - the task group effective clamp value, for tasks not either in the root
-+ *   group or in an autogroup
-  * - the system default clamp value, defined by the sysadmin
-  */
- static inline struct uclamp_se
- uclamp_eff_get(struct task_struct *p, unsigned int clamp_id)
+ /**
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 6de1547c2c13..964ebab863a6 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -6203,11 +6203,21 @@ static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
+ static long
+ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
  {
--	struct uclamp_se uc_req = p->uclamp_req[clamp_id];
-+	struct uclamp_se uc_req = uclamp_tg_restrict(p, clamp_id);
- 	struct uclamp_se uc_max = uclamp_default[clamp_id];
+-	long util, max_util, sum_util, energy = 0;
++	unsigned int max_util, util_cfs, cpu_util, cpu_cap;
++	unsigned long sum_util, energy = 0;
++	struct task_struct *tsk;
+ 	int cpu;
  
- 	/* System default restrictions always apply */
+ 	for (; pd; pd = pd->next) {
++		struct cpumask *pd_mask = perf_domain_span(pd);
++
++		/*
++		 * The energy model mandates all the CPUs of a performance
++		 * domain have the same capacity.
++		 */
++		cpu_cap = arch_scale_cpu_capacity(NULL, cpumask_first(pd_mask));
+ 		max_util = sum_util = 0;
++
+ 		/*
+ 		 * The capacity state of CPUs of the current rd can be driven by
+ 		 * CPUs of another rd if they belong to the same performance
+@@ -6218,11 +6228,29 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+ 		 * it will not appear in its pd list and will not be accounted
+ 		 * by compute_energy().
+ 		 */
+-		for_each_cpu_and(cpu, perf_domain_span(pd), cpu_online_mask) {
+-			util = cpu_util_next(cpu, p, dst_cpu);
+-			util = schedutil_energy_util(cpu, util);
+-			max_util = max(util, max_util);
+-			sum_util += util;
++		for_each_cpu_and(cpu, pd_mask, cpu_online_mask) {
++			util_cfs = cpu_util_next(cpu, p, dst_cpu);
++
++			/*
++			 * Busy time computation: utilization clamping is not
++			 * required since the ratio (sum_util / cpu_capacity)
++			 * is already enough to scale the EM reported power
++			 * consumption at the (eventually clamped) cpu_capacity.
++			 */
++			sum_util += schedutil_cpu_util(cpu, util_cfs, cpu_cap,
++						       ENERGY_UTIL, NULL);
++
++			/*
++			 * Performance domain frequency: utilization clamping
++			 * must be considered since it affects the selection
++			 * of the performance domain frequency.
++			 * NOTE: in case RT tasks are running, by default the
++			 * FREQUENCY_UTIL's utilization can be max OPP.
++			 */
++			tsk = cpu == dst_cpu ? p : NULL;
++			cpu_util = schedutil_cpu_util(cpu, util_cfs, cpu_cap,
++						      FREQUENCY_UTIL, tsk);
++			max_util = max(max_util, cpu_util);
+ 		}
+ 
+ 		energy += em_pd_energy(pd->em_pd, max_util, sum_util);
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index ce2da8b9ff8c..f81e8930ff19 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -2322,7 +2322,6 @@ static inline unsigned long capacity_orig_of(int cpu)
+ }
+ #endif
+ 
+-#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+ /**
+  * enum schedutil_type - CPU utilization type
+  * @FREQUENCY_UTIL:	Utilization used to select frequency
+@@ -2338,15 +2337,11 @@ enum schedutil_type {
+ 	ENERGY_UTIL,
+ };
+ 
+-unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+-				  unsigned long max, enum schedutil_type type);
+-
+-static inline unsigned long schedutil_energy_util(int cpu, unsigned long cfs)
+-{
+-	unsigned long max = arch_scale_cpu_capacity(NULL, cpu);
++#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+ 
+-	return schedutil_freq_util(cpu, cfs, max, ENERGY_UTIL);
+-}
++unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
++				 unsigned long max, enum schedutil_type type,
++				 struct task_struct *p);
+ 
+ static inline unsigned long cpu_bw_dl(struct rq *rq)
+ {
+@@ -2375,11 +2370,8 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
+ 	return READ_ONCE(rq->avg_rt.util_avg);
+ }
+ #else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
+-static inline unsigned long schedutil_energy_util(int cpu, unsigned long cfs)
+-{
+-	return cfs;
+-}
+-#endif
++#define schedutil_cpu_util(cpu, util_cfs, max, type, p) 0
++#endif /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
+ 
+ #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
+ static inline unsigned long cpu_util_irq(struct rq *rq)
 -- 
 2.21.0
 
