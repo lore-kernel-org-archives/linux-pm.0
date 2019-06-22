@@ -2,137 +2,212 @@ Return-Path: <SRS0=PG0e=UV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6285AC48BE0
-	for <linux-pm@archiver.kernel.org>; Sat, 22 Jun 2019 00:35:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDAFDC48BE5
+	for <linux-pm@archiver.kernel.org>; Sat, 22 Jun 2019 03:52:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 38C2320645
-	for <linux-pm@archiver.kernel.org>; Sat, 22 Jun 2019 00:35:09 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="gwulcSEH"
+	by mail.kernel.org (Postfix) with ESMTP id BB4C921537
+	for <linux-pm@archiver.kernel.org>; Sat, 22 Jun 2019 03:52:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726307AbfFVAe6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Jun 2019 20:34:58 -0400
-Received: from mail-vs1-f74.google.com ([209.85.217.74]:32790 "EHLO
-        mail-vs1-f74.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726045AbfFVAe5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2019 20:34:57 -0400
-Received: by mail-vs1-f74.google.com with SMTP id x140so2878400vsc.0
-        for <linux-pm@vger.kernel.org>; Fri, 21 Jun 2019 17:34:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
-         :cc;
-        bh=diT5j67eq/c/BsDoIxqIkGMzy6KvSDn7bQJLbufPm+c=;
-        b=gwulcSEH8dOdXkARw/cWbDR+p8ks9AaHOrso90YTxOcu3ZhBY6OTJ2q8Qgjkx6F2pU
-         aKXt7HBMIMq2v9JgCWAMJfcSzqcYaMSimcOOybm2+PzXjoTN3S6V8vweB1K+VrNVuQnq
-         HOT5/C0X51K+41Mfm+DJ+AA0N0fg1MKDuTPsJ+akOv+eaRlKlmo2XDUOKZAhOndwo//U
-         HHBviqAW/VRLrmHPTR2qPjmB2NiFKIG+sAuk2m5uSwxuGg9+q2wUDicraebKvydsSyGj
-         HV4szT6Eo/vIQIjrZugzSdJPIh/BZLCM9j6MFYqdHiGNjRHKJHdlvkNIMH4JsoUoL17f
-         SkmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=diT5j67eq/c/BsDoIxqIkGMzy6KvSDn7bQJLbufPm+c=;
-        b=ZO/alkMJGlraZJxweGniwsPkGmvgXqmq1Rj9AmtUyPRoGPK5leC3JpE3bKwV5hci6x
-         Mfk9ezRSHUmCSl6o3TaYUq1v0ONskvl5HZTihc+j1ld1T+rqhTZThw8IX9mnanOviHvU
-         M46H4lcZXm+PemgXCDLb+0cOyjfRqk2ZR/no/KHHbwa+I7JhpB/DxfUsd6guPZoUpeva
-         cjymk3Hn64IIJF6Zx8XmnEFQe1W8l/zev8SovUEcdlS012Bwf99HD1LMlqsSEljH1Aws
-         bGccdCOaKHaP+Se1rq4czDUXqSEQrsbJPrUF4bBfioop8gOp1zZgcPX9nC1BNmIVsEK0
-         nqBw==
-X-Gm-Message-State: APjAAAVvdOpOpK7lMpVWOxNshhnK7al4k1fR18lcy8ZsdspJQRAusOzG
-        vmDeHUp8v9wE27XlQqTwMWjLtEqnQGF1Scc=
-X-Google-Smtp-Source: APXvYqwyrBBBbzxUpFGw4I6kygyR7FpMpsJ6pewvPbKv6gEArXJ7XqY7SOep1hfkAGVXj+jU0V7vS+0IQWgjhJo=
-X-Received: by 2002:a1f:b20d:: with SMTP id b13mr10556131vkf.75.1561163696586;
- Fri, 21 Jun 2019 17:34:56 -0700 (PDT)
-Date:   Fri, 21 Jun 2019 17:34:46 -0700
-In-Reply-To: <20190622003449.33707-1-saravanak@google.com>
-Message-Id: <20190622003449.33707-2-saravanak@google.com>
-Mime-Version: 1.0
-References: <20190622003449.33707-1-saravanak@google.com>
-X-Mailer: git-send-email 2.22.0.410.gd8fdbe21b5-goog
-Subject: [PATCH v1 1/3] OPP: Allow required-opps even if the device doesn't
- have power-domains
-From:   Saravana Kannan <saravanak@google.com>
-To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Saravana Kannan <saravanak@google.com>, kernel-team@android.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        id S1726066AbfFVDwP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Jun 2019 23:52:15 -0400
+Received: from mga11.intel.com ([192.55.52.93]:17287 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726049AbfFVDwP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Jun 2019 23:52:15 -0400
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 21 Jun 2019 20:52:14 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.63,403,1557212400"; 
+   d="scan'208";a="154663951"
+Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
+  by orsmga008.jf.intel.com with ESMTP; 21 Jun 2019 20:52:12 -0700
+Received: from kbuild by lkp-server01 with local (Exim 4.89)
+        (envelope-from <lkp@intel.com>)
+        id 1heX4V-0002Sl-Io; Sat, 22 Jun 2019 11:52:11 +0800
+Date:   Sat, 22 Jun 2019 11:52:09 +0800
+From:   kbuild test robot <lkp@intel.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     kbuild-all@01.org, rafael@kernel.org, linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "open list:CPU IDLE TIME MANAGEMENT FRAMEWORK" 
+        <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH] cpuidle/drivers/mobile: Add new governor for
+ mobile/embedded systems
+Message-ID: <201906221104.YRaP3P6c%lkp@intel.com>
+References: <20190620115826.4897-1-daniel.lezcano@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190620115826.4897-1-daniel.lezcano@linaro.org>
+X-Patchwork-Hint: ignore
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-A Device-A can have a (minimum) performance requirement on another
-Device-B to be able to function correctly. This performance requirement
-on Device-B can also change based on the current performance level of
-Device-A.
+Hi Daniel,
 
-The existing required-opps feature fits well to describe this need. So,
-instead of limiting required-opps to point to only PM-domain devices,
-allow it to point to any device.
+I love your patch! Perhaps something to improve:
 
-Signed-off-by: Saravana Kannan <saravanak@google.com>
+[auto build test WARNING on pm/linux-next]
+[also build test WARNING on v5.2-rc5 next-20190621]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+url:    https://github.com/0day-ci/linux/commits/Daniel-Lezcano/cpuidle-drivers-mobile-Add-new-governor-for-mobile-embedded-systems/20190622-064303
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+reproduce:
+        # apt-get install sparse
+        # sparse version: v0.6.1-rc1-7-g2b96cd8-dirty
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
+
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
+
+
+sparse warnings: (new ones prefixed by >>)
+
+
+vim +502 kernel/irq/timings.c
+
+bbba0e7c Daniel Lezcano      2019-03-28  437  
+e1c92149 Daniel Lezcano      2017-06-23  438  /**
+e1c92149 Daniel Lezcano      2017-06-23  439   * irq_timings_next_event - Return when the next event is supposed to arrive
+e1c92149 Daniel Lezcano      2017-06-23  440   *
+e1c92149 Daniel Lezcano      2017-06-23  441   * During the last busy cycle, the number of interrupts is incremented
+e1c92149 Daniel Lezcano      2017-06-23  442   * and stored in the irq_timings structure. This information is
+e1c92149 Daniel Lezcano      2017-06-23  443   * necessary to:
+e1c92149 Daniel Lezcano      2017-06-23  444   *
+e1c92149 Daniel Lezcano      2017-06-23  445   * - know if the index in the table wrapped up:
+e1c92149 Daniel Lezcano      2017-06-23  446   *
+e1c92149 Daniel Lezcano      2017-06-23  447   *      If more than the array size interrupts happened during the
+e1c92149 Daniel Lezcano      2017-06-23  448   *      last busy/idle cycle, the index wrapped up and we have to
+e1c92149 Daniel Lezcano      2017-06-23  449   *      begin with the next element in the array which is the last one
+e1c92149 Daniel Lezcano      2017-06-23  450   *      in the sequence, otherwise it is a the index 0.
+e1c92149 Daniel Lezcano      2017-06-23  451   *
+e1c92149 Daniel Lezcano      2017-06-23  452   * - have an indication of the interrupts activity on this CPU
+e1c92149 Daniel Lezcano      2017-06-23  453   *   (eg. irq/sec)
+e1c92149 Daniel Lezcano      2017-06-23  454   *
+e1c92149 Daniel Lezcano      2017-06-23  455   * The values are 'consumed' after inserting in the statistical model,
+e1c92149 Daniel Lezcano      2017-06-23  456   * thus the count is reinitialized.
+e1c92149 Daniel Lezcano      2017-06-23  457   *
+e1c92149 Daniel Lezcano      2017-06-23  458   * The array of values **must** be browsed in the time direction, the
+e1c92149 Daniel Lezcano      2017-06-23  459   * timestamp must increase between an element and the next one.
+e1c92149 Daniel Lezcano      2017-06-23  460   *
+e1c92149 Daniel Lezcano      2017-06-23  461   * Returns a nanosec time based estimation of the earliest interrupt,
+e1c92149 Daniel Lezcano      2017-06-23  462   * U64_MAX otherwise.
+e1c92149 Daniel Lezcano      2017-06-23  463   */
+e1c92149 Daniel Lezcano      2017-06-23  464  u64 irq_timings_next_event(u64 now)
+e1c92149 Daniel Lezcano      2017-06-23  465  {
+bbba0e7c Daniel Lezcano      2019-03-28  466  	struct irq_timings *irqts = this_cpu_ptr(&irq_timings);
+bbba0e7c Daniel Lezcano      2019-03-28  467  	struct irqt_stat *irqs;
+bbba0e7c Daniel Lezcano      2019-03-28  468  	struct irqt_stat __percpu *s;
+bbba0e7c Daniel Lezcano      2019-03-28  469  	u64 ts, next_evt = U64_MAX;
+bbba0e7c Daniel Lezcano      2019-03-28  470  	int i, irq = 0;
+bbba0e7c Daniel Lezcano      2019-03-28  471  
+e1c92149 Daniel Lezcano      2017-06-23  472  	/*
+e1c92149 Daniel Lezcano      2017-06-23  473  	 * This function must be called with the local irq disabled in
+e1c92149 Daniel Lezcano      2017-06-23  474  	 * order to prevent the timings circular buffer to be updated
+e1c92149 Daniel Lezcano      2017-06-23  475  	 * while we are reading it.
+e1c92149 Daniel Lezcano      2017-06-23  476  	 */
+a934d4d1 Frederic Weisbecker 2017-11-06  477  	lockdep_assert_irqs_disabled();
+e1c92149 Daniel Lezcano      2017-06-23  478  
+bbba0e7c Daniel Lezcano      2019-03-28  479  	if (!irqts->count)
+bbba0e7c Daniel Lezcano      2019-03-28  480  		return next_evt;
+bbba0e7c Daniel Lezcano      2019-03-28  481  
+bbba0e7c Daniel Lezcano      2019-03-28  482  	/*
+bbba0e7c Daniel Lezcano      2019-03-28  483  	 * Number of elements in the circular buffer: If it happens it
+bbba0e7c Daniel Lezcano      2019-03-28  484  	 * was flushed before, then the number of elements could be
+bbba0e7c Daniel Lezcano      2019-03-28  485  	 * smaller than IRQ_TIMINGS_SIZE, so the count is used,
+bbba0e7c Daniel Lezcano      2019-03-28  486  	 * otherwise the array size is used as we wrapped. The index
+bbba0e7c Daniel Lezcano      2019-03-28  487  	 * begins from zero when we did not wrap. That could be done
+bbba0e7c Daniel Lezcano      2019-03-28  488  	 * in a nicer way with the proper circular array structure
+bbba0e7c Daniel Lezcano      2019-03-28  489  	 * type but with the cost of extra computation in the
+bbba0e7c Daniel Lezcano      2019-03-28  490  	 * interrupt handler hot path. We choose efficiency.
+bbba0e7c Daniel Lezcano      2019-03-28  491  	 *
+bbba0e7c Daniel Lezcano      2019-03-28  492  	 * Inject measured irq/timestamp to the pattern prediction
+bbba0e7c Daniel Lezcano      2019-03-28  493  	 * model while decrementing the counter because we consume the
+bbba0e7c Daniel Lezcano      2019-03-28  494  	 * data from our circular buffer.
+bbba0e7c Daniel Lezcano      2019-03-28  495  	 */
+bbba0e7c Daniel Lezcano      2019-03-28  496  
+bbba0e7c Daniel Lezcano      2019-03-28  497  	i = (irqts->count & IRQ_TIMINGS_MASK) - 1;
+bbba0e7c Daniel Lezcano      2019-03-28  498  	irqts->count = min(IRQ_TIMINGS_SIZE, irqts->count);
+bbba0e7c Daniel Lezcano      2019-03-28  499  
+bbba0e7c Daniel Lezcano      2019-03-28  500  	for (; irqts->count > 0; irqts->count--, i = (i + 1) & IRQ_TIMINGS_MASK) {
+bbba0e7c Daniel Lezcano      2019-03-28  501  		irq = irq_timing_decode(irqts->values[i], &ts);
+bbba0e7c Daniel Lezcano      2019-03-28 @502  		s = idr_find(&irqt_stats, irq);
+bbba0e7c Daniel Lezcano      2019-03-28  503  		if (s)
+bbba0e7c Daniel Lezcano      2019-03-28  504  			irq_timings_store(irq, this_cpu_ptr(s), ts);
+bbba0e7c Daniel Lezcano      2019-03-28  505  	}
+bbba0e7c Daniel Lezcano      2019-03-28  506  
+bbba0e7c Daniel Lezcano      2019-03-28  507  	/*
+bbba0e7c Daniel Lezcano      2019-03-28  508  	 * Look in the list of interrupts' statistics, the earliest
+bbba0e7c Daniel Lezcano      2019-03-28  509  	 * next event.
+bbba0e7c Daniel Lezcano      2019-03-28  510  	 */
+bbba0e7c Daniel Lezcano      2019-03-28 @511  	idr_for_each_entry(&irqt_stats, s, i) {
+bbba0e7c Daniel Lezcano      2019-03-28  512  
+bbba0e7c Daniel Lezcano      2019-03-28  513  		irqs = this_cpu_ptr(s);
+bbba0e7c Daniel Lezcano      2019-03-28  514  
+bbba0e7c Daniel Lezcano      2019-03-28  515  		ts = __irq_timings_next_event(irqs, i, now);
+bbba0e7c Daniel Lezcano      2019-03-28  516  		if (ts <= now)
+bbba0e7c Daniel Lezcano      2019-03-28  517  			return now;
+bbba0e7c Daniel Lezcano      2019-03-28  518  
+bbba0e7c Daniel Lezcano      2019-03-28  519  		if (ts < next_evt)
+bbba0e7c Daniel Lezcano      2019-03-28  520  			next_evt = ts;
+bbba0e7c Daniel Lezcano      2019-03-28  521  	}
+bbba0e7c Daniel Lezcano      2019-03-28  522  
+bbba0e7c Daniel Lezcano      2019-03-28  523  	return next_evt;
+e1c92149 Daniel Lezcano      2017-06-23  524  }
+e1c92149 Daniel Lezcano      2017-06-23  525  
+e1c92149 Daniel Lezcano      2017-06-23  526  void irq_timings_free(int irq)
+e1c92149 Daniel Lezcano      2017-06-23  527  {
+e1c92149 Daniel Lezcano      2017-06-23  528  	struct irqt_stat __percpu *s;
+e1c92149 Daniel Lezcano      2017-06-23  529  
+e1c92149 Daniel Lezcano      2017-06-23  530  	s = idr_find(&irqt_stats, irq);
+e1c92149 Daniel Lezcano      2017-06-23  531  	if (s) {
+e1c92149 Daniel Lezcano      2017-06-23  532  		free_percpu(s);
+e1c92149 Daniel Lezcano      2017-06-23  533  		idr_remove(&irqt_stats, irq);
+e1c92149 Daniel Lezcano      2017-06-23  534  	}
+e1c92149 Daniel Lezcano      2017-06-23  535  }
+e1c92149 Daniel Lezcano      2017-06-23  536  
+e1c92149 Daniel Lezcano      2017-06-23  537  int irq_timings_alloc(int irq)
+e1c92149 Daniel Lezcano      2017-06-23  538  {
+e1c92149 Daniel Lezcano      2017-06-23  539  	struct irqt_stat __percpu *s;
+e1c92149 Daniel Lezcano      2017-06-23  540  	int id;
+e1c92149 Daniel Lezcano      2017-06-23  541  
+e1c92149 Daniel Lezcano      2017-06-23  542  	/*
+e1c92149 Daniel Lezcano      2017-06-23  543  	 * Some platforms can have the same private interrupt per cpu,
+e1c92149 Daniel Lezcano      2017-06-23  544  	 * so this function may be be called several times with the
+e1c92149 Daniel Lezcano      2017-06-23  545  	 * same interrupt number. Just bail out in case the per cpu
+e1c92149 Daniel Lezcano      2017-06-23  546  	 * stat structure is already allocated.
+e1c92149 Daniel Lezcano      2017-06-23  547  	 */
+e1c92149 Daniel Lezcano      2017-06-23  548  	s = idr_find(&irqt_stats, irq);
+e1c92149 Daniel Lezcano      2017-06-23  549  	if (s)
+e1c92149 Daniel Lezcano      2017-06-23  550  		return 0;
+e1c92149 Daniel Lezcano      2017-06-23  551  
+e1c92149 Daniel Lezcano      2017-06-23  552  	s = alloc_percpu(*s);
+e1c92149 Daniel Lezcano      2017-06-23  553  	if (!s)
+e1c92149 Daniel Lezcano      2017-06-23  554  		return -ENOMEM;
+e1c92149 Daniel Lezcano      2017-06-23  555  
+e1c92149 Daniel Lezcano      2017-06-23  556  	idr_preload(GFP_KERNEL);
+e1c92149 Daniel Lezcano      2017-06-23 @557  	id = idr_alloc(&irqt_stats, s, irq, irq + 1, GFP_NOWAIT);
+
+:::::: The code at line 502 was first introduced by commit
+:::::: bbba0e7c5cdadb47a91edea1d5cd0caadbbb016f genirq/timings: Add array suffix computation code
+
+:::::: TO: Daniel Lezcano <daniel.lezcano@linaro.org>
+:::::: CC: Thomas Gleixner <tglx@linutronix.de>
+
 ---
- drivers/opp/core.c |  2 +-
- drivers/opp/of.c   | 14 --------------
- 2 files changed, 1 insertion(+), 15 deletions(-)
-
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 0e7703fe733f..74c7bdc6f463 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -710,7 +710,7 @@ static int _set_required_opps(struct device *dev,
- 		return 0;
- 
- 	/* Single genpd case */
--	if (!genpd_virt_devs) {
-+	if (!genpd_virt_devs && required_opp_tables[0]->is_genpd) {
- 		pstate = opp->required_opps[0]->pstate;
- 		ret = dev_pm_genpd_set_performance_state(dev, pstate);
- 		if (ret) {
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index c10c782d15aa..7c8336e94aff 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -195,9 +195,6 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 	 */
- 	count_pd = of_count_phandle_with_args(dev->of_node, "power-domains",
- 					      "#power-domain-cells");
--	if (!count_pd)
--		goto put_np;
--
- 	if (count_pd > 1) {
- 		genpd_virt_devs = kcalloc(count, sizeof(*genpd_virt_devs),
- 					GFP_KERNEL);
-@@ -226,17 +223,6 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 
- 		if (IS_ERR(required_opp_tables[i]))
- 			goto free_required_tables;
--
--		/*
--		 * We only support genpd's OPPs in the "required-opps" for now,
--		 * as we don't know how much about other cases. Error out if the
--		 * required OPP doesn't belong to a genpd.
--		 */
--		if (!required_opp_tables[i]->is_genpd) {
--			dev_err(dev, "required-opp doesn't belong to genpd: %pOF\n",
--				required_np);
--			goto free_required_tables;
--		}
- 	}
- 
- 	goto put_np;
--- 
-2.22.0.410.gd8fdbe21b5-goog
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
