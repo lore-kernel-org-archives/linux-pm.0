@@ -2,108 +2,211 @@ Return-Path: <SRS0=M8Ta=UX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-5.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F40A5C43613
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 02:13:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44A07C43613
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 02:16:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 649262089F
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 02:13:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0E7092089F
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 02:16:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="hzjpX5+9"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="ZROOufct"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726875AbfFXCNJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 Jun 2019 22:13:09 -0400
-Received: from mailout1.samsung.com ([203.254.224.24]:53128 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726320AbfFXCNI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 22:13:08 -0400
+        id S1726974AbfFXCQl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 Jun 2019 22:16:41 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:22531 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726525AbfFXCQl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 22:16:41 -0400
 Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
-        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20190624021306epoutp01a677634a608ad041a583bb056a3a523c~rAKDHUwim0818608186epoutp01g
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jun 2019 02:13:06 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20190624021306epoutp01a677634a608ad041a583bb056a3a523c~rAKDHUwim0818608186epoutp01g
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20190623234831epoutp03f8d6e375f058c64f51ea10fc1d23646a~q_L0Y5VVL0095200952epoutp030
+        for <linux-pm@vger.kernel.org>; Sun, 23 Jun 2019 23:48:31 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20190623234831epoutp03f8d6e375f058c64f51ea10fc1d23646a~q_L0Y5VVL0095200952epoutp030
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1561342386;
-        bh=Bjxv0RRUWPDBM+vlsvLdx6BQWrwtvpQPL5LR7DGLxjw=;
-        h=Subject:Reply-To:From:To:CC:In-Reply-To:Date:References:From;
-        b=hzjpX5+9hx/a1tdVMF8nJlqTy4AoOattbUJB3gjjl2g9E4cDDgyE9EZSCiKyYCk+j
-         AAxsgbzscgkEwuqqh8zB5aSwmHq5Hbw1hY7hQdcmF4cgc1m7EqhAuZDv3vU7K8i5Lx
-         O9AvXL2KfXmItk6fZhNotQzX4qzE3540oCxuNXuo=
-Received: from epsmges1p4.samsung.com (unknown [182.195.40.155]) by
-        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
-        20190624021301epcas1p32614991eb0c0533de1d556cbf4945e11~rAJ_vt4kw0385803858epcas1p3A;
-        Mon, 24 Jun 2019 02:13:01 +0000 (GMT)
-X-AuditID: b6c32a38-5cbff700000010a1-02-5d10319df346
-Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
+        s=mail20170921; t=1561333711;
+        bh=y5JFwrOZq4d42qzJPkw+Zg+TcIER/Wk/VIKyGC4xXtM=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=ZROOufcthysiq9fS5Ltd8c6Dx5aWt+gIVm844JI6QoJpm/HScuN0loVoZU9aW1Put
+         +uHq2Ab/UTYaNPfVOjKy+8rYxbN+J3ehT7mR+gyN9IpPjKGcBURZp3mEIMNXtwPd/p
+         5BW7lWaXJOrD3/n0+45cQP8GNsUCSdFRFcxViUgg=
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.158]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190623234827epcas1p13e2ecfb1ca561a0b2c3a901536393930~q_Lv3tEc_0191701917epcas1p1O;
+        Sun, 23 Jun 2019 23:48:27 +0000 (GMT)
+Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
         epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
-        D9.4A.04257.D91301D5; Mon, 24 Jun 2019 11:12:45 +0900 (KST)
-Mime-Version: 1.0
-Subject: RE: [PATCH v1 01/11] PM / devfreq: tegra30: Change irq type to
- unsigned int
-Reply-To: myungjoo.ham@samsung.com
-From:   MyungJoo Ham <myungjoo.ham@samsung.com>
+        4D.7E.04257.2CF001D5; Mon, 24 Jun 2019 08:48:18 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
+        20190623234817epcas1p394d0ec7c278969f0b2e3d73c45df407a~q_LnCE6ds0503705037epcas1p3f;
+        Sun, 23 Jun 2019 23:48:17 +0000 (GMT)
+Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190623234817epsmtrp10e6374e407264530a6ab2f883a9634cb~q_LnBOmNw2617626176epsmtrp1E;
+        Sun, 23 Jun 2019 23:48:17 +0000 (GMT)
+X-AuditID: b6c32a38-5e3ff700000010a1-1f-5d100fc2f8bf
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        2C.AF.03662.1CF001D5; Mon, 24 Jun 2019 08:48:17 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190623234817epsmtip1264e7902c17275a3cf2cc2e0c14370f0~q_Lm5JBod0344203442epsmtip1y;
+        Sun, 23 Jun 2019 23:48:17 +0000 (GMT)
+Subject: Re: [PATCH v4 00/16] NVIDIA Tegra devfreq improvements and
+ Tegra20/30 support
 To:     Dmitry Osipenko <digetx@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-CC:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-X-Priority: 3
-X-Content-Kind-Code: NORMAL
-In-Reply-To: <20190623214658.11680-2-digetx@gmail.com>
-X-Drm-Type: N,general
-X-Msg-Generator: Mail
-X-Msg-Type: PERSONAL
-X-Reply-Demand: N
-Message-ID: <20190624021245epcms1p5366dd98904dac95625dc2deb4b649cb1@epcms1p5>
-Date:   Mon, 24 Jun 2019 11:12:45 +0900
-X-CMS-MailID: 20190624021245epcms1p5366dd98904dac95625dc2deb4b649cb1
-Content-Transfer-Encoding: 7bit
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <31fc1430-5a3b-cccb-06bb-7b46081edb68@samsung.com>
+Date:   Mon, 24 Jun 2019 08:50:53 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.7.1
+MIME-Version: 1.0
+In-Reply-To: <389cc71d-8f0b-fa39-1325-433d27c75dc8@gmail.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrIJsWRmVeSWpSXmKPExsWy7bCmvu4hfoFYg2f/NS1Wf3zMaNEyaxGL
+        xdmmN+wWl3fNYbP43HuE0aLzyyw2i9uNK9gsfu6ax2LRt/YSmwOnx467Sxg9ds66y+7R2/yO
+        zaNvyypGj8+b5AJYo7JtMlITU1KLFFLzkvNTMvPSbZW8g+Od403NDAx1DS0tzJUU8hJzU22V
+        XHwCdN0yc4AOUlIoS8wpBQoFJBYXK+nb2RTll5akKmTkF5fYKqUWpOQUWBboFSfmFpfmpesl
+        5+daGRoYGJkCFSZkZyx6sJqp4IFkRdOHWYwNjEdFuhg5OSQETCR23bvH3sXIxSEksINRYsm0
+        xUwQzidGiQ1n30E53xglTp/+ygbT8nP/V2aIxF5Gic7OB1D97xkljn84D1YlLBAh8WrROmYQ
+        W0QgUOLds31gHcwCbUwS7Rf/MoEk2AS0JPa/uAHWwC+gKHH1x2NGEJtXwE7ief8nVhCbRUBV
+        ovntBLAaUaChl7fsgqoRlDg58wkLiM0pYCsx/8txsGXMAuISt57MZ4Kw5SWat84GWywh8J9N
+        YmLnR6gfXCR2fO9mgbCFJV4d38IOYUtJvOxvg7KrJVaePMIG0dzBKLFl/wVWiISxxP6lk4E2
+        cABt0JRYv0sfIqwosfP3XEaIxXwS7772sIKUSAjwSnS0CUGUKEtcfnCXCcKWlFjc3sk2gVFp
+        FpJ3ZiF5YRaSF2YhLFvAyLKKUSy1oDg3PbXYsMAEOb43MYKTq5bFDsY953wOMQpwMCrx8Aps
+        4I8VYk0sK67MPcQowcGsJMLLk8MTK8SbklhZlVqUH19UmpNafIjRFBjaE5mlRJPzgYk/ryTe
+        0NTI2NjYwsTQzNTQUEmcN577ZoyQQHpiSWp2ampBahFMHxMHp1QDo+fzoN2zf6ZtuhYdz3jY
+        JbWtoTgl+seu/gStxoQIcQF1rx3nzN6sDNz/4MoMtg2K5U+uWQud/fkwLY43aG/Y2jdZbomW
+        x/u9n2noJ8w7+jI8fq9F2uOE2DPdh1XaUqaVneLuXR6Y8WHryen5Md7VTovj+b6z7FW8WaEd
+        M8NkzhoFfUHBfO8uJZbijERDLeai4kQAQ/dOV8QDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprFIsWRmVeSWpSXmKPExsWy7bCSnO5BfoFYg4uv5CxWf3zMaNEyaxGL
+        xdmmN+wWl3fNYbP43HuE0aLzyyw2i9uNK9gsfu6ax2LRt/YSmwOnx467Sxg9ds66y+7R2/yO
+        zaNvyypGj8+b5AJYo7hsUlJzMstSi/TtErgyFj1YzVTwQLKi6cMsxgbGoyJdjJwcEgImEj/3
+        f2UGsYUEdjNKnF+UDBGXlJh28ShQnAPIFpY4fLi4i5ELqOQto8TSiRvYQGqEBSIk5l+4xARi
+        iwgESpx+sJURpIhZoINJ4sn6n4wQHfuZJbZ3fWUBqWIT0JLY/+IGWDe/gKLE1R+PGUFsXgE7
+        ief9n1hBbBYBVYnmtxPAakSBNvS1zWaDqBGUODnzCdgcTgFbiflfjoNdzSygLvFn3iUoW1zi
+        1pP5TBC2vETz1tnMExiFZyFpn4WkZRaSlllIWhYwsqxilEwtKM5Nzy02LDDKSy3XK07MLS7N
+        S9dLzs/dxAiOMS2tHYwnTsQfYhTgYFTi4RXYwB8rxJpYVlyZe4hRgoNZSYSXJ4cnVog3JbGy
+        KrUoP76oNCe1+BCjNAeLkjivfP6xSCGB9MSS1OzU1ILUIpgsEwenVANj/+8vs1ifhtToZJkH
+        CDx7PdFDblXhXgf7EuV6x6nfo1abMnqyFmv++TtntYssR5LKQdOw78cc5ir5tYkfXrNyYqar
+        VefF5ztzA4zLOx9uWvt1WVu2n0b0p30zJ3q9WahrJDmH8ZqG0GcOR5Wltcqnrn15ZXb50iMW
+        dp2Md28n3VhnerJKPnCGEktxRqKhFnNRcSIAPNA1Pa0CAAA=
+X-CMS-MailID: 20190623234817epcas1p394d0ec7c278969f0b2e3d73c45df407a
+X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
 X-Sendblock-Type: SVC_REQ_APPROVE
 CMS-TYPE: 101P
-X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0hTYRj285ydHZfLz2n1YWXrQBeFpUedHStDSGJQghFUWDIPeprD3diZ
-        KytIUqk0zUIr5qUsI9PCC16ms5QZRZlFiYWEJd3MUrtohFjUtjOxf8/38Lzv87zv95KY7DIR
-        QmoNFs5sYHUUIcHb+8IUiioapkaOl9PMy5kxEdPw/R1g8m1XcWbgxISYGeyqJJjp4nuAOT1j
-        I5jZrmqcKbn9nEjwU9lHaoGq0zYiVhXnTRGqktZ6oJpuCU0WpWRtyeTYDM4s5wzpxgytQRNP
-        7dit3qZWxkbSCjqO2UjJDayei6cSdyYrtmt1rkCU3Mrqsl1UMsvzVMTWLWZjtoWTZxp5SzzF
-        mTJ0pjjTBp7V89kGzYZ0o34THRkZpXQJ07Iyx2YLRKZx38ODde+JXNDoWwj8SARjUF7BW8KN
-        ZdAO0IXRfYWAJKUwEP2xB7npILgHnSmxAUFCodzhu5jAR6BTo+0enoAK1NY0ghcCCRkM5wC6
-        0/lO5H5gsBOgqdY3YsFMii6d/IALeDnquNHmqfaDsejRi1PeQEvQcMOkeB5/vX8ZCDgYFbwe
-        wAQciEZnHWC+z6Wyv96eR9GLi9fEbmME8wEqbijziiLQ46qHnimlMAl9cvzyYByuQd+c173F
-        iej0UJHIjTG4CnVMVmLuTWAwDDV2RQiS1ahzrgoIksVo6ucZ0fxc9ur33vxrkdNR682/AvVf
-        rPFmVqGzM+WYsMWbAHU046VAblvYte0/Y9uC8RWA1YOlnInXazieNsX8/7stwHOc4YwddD/Z
-        6QSQBJS/FDYFpMpErJXP0TsBIjEqWOqv80+VSTPYnCOc2ag2Z+s43gmUrvnPYSFL0o2uUzdY
-        1LQyKjo6momhY5U0TS2TqhcNH5BBDWvhsjjOxJnn63xJv5BcEBy0SSKRfbM23uofqa7T3teG
-        Nj/tt35pOb+4rHZ2fXivpXSiyOiYHIxS1ZT77F33O+djwLFDnxVvQ7ldn5Z2/6ocL5qx90w/
-        S8Ff6VoqHMPyvocpuWUXjgds7H/c8yCh4od9haYmxzDUdnK5JDVtQmrVjoUm1Ww+mNTb7uMT
-        s3L/KgrnM1k6HDPz7D9DtmwasgMAAA==
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20190623214841epcas5p161cceab51cb10d5146e57d49a696d5e5
-References: <20190623214658.11680-2-digetx@gmail.com>
-        <20190623214658.11680-1-digetx@gmail.com>
-        <CGME20190623214841epcas5p161cceab51cb10d5146e57d49a696d5e5@epcms1p5>
+X-CMS-RootMailID: 20190501234148epcas5p1cc9a8dafa9ee6d8d046d1292b8270727
+References: <CGME20190501234148epcas5p1cc9a8dafa9ee6d8d046d1292b8270727@epcas5p1.samsung.com>
+        <20190501233815.32643-1-digetx@gmail.com>
+        <60ef6e47-e61b-3a92-e90d-90debedfcfc4@samsung.com>
+        <fa061a65-f108-6c5e-1f87-950a9a8caafc@gmail.com>
+        <0fb50eb1-a173-1756-6889-2526a10ac707@gmail.com>
+        <683b343a-e64f-8345-ac44-10f5c00521bd@samsung.com>
+        <5c2a7c32-a98c-3930-14ae-beb0241908d0@gmail.com>
+        <389cc71d-8f0b-fa39-1325-433d27c75dc8@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
->IRQ numbers are always positive, hence the corresponding variable should
->be unsigned to keep types consistent. This is a minor change that cleans
->up code a tad more.
->
->Suggested-by: Thierry Reding <thierry.reding@gmail.com>
->Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Hi Dmitry,
 
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+On 19. 6. 24. 오전 2:17, Dmitry Osipenko wrote:
+> 05.06.2019 2:09, Dmitry Osipenko пишет:
+>> 04.06.2019 3:49, Chanwoo Choi пишет:
+>>> On 19. 6. 4. 오전 1:52, Dmitry Osipenko wrote:
+>>>> 03.05.2019 3:52, Dmitry Osipenko пишет:
+>>>>> 03.05.2019 3:31, Chanwoo Choi пишет:
+>>>>>> Hi Dmitry,
+>>>>>>
+>>>>>> On 19. 5. 2. 오전 8:37, Dmitry Osipenko wrote:
+>>>>>>> Changelog:
+>>>>>>>
+>>>>>>> v4: Addressed all review comments that were made by Chanwoo Choi to v3:
+>>>>>>>
+>>>>>>>     - changed the driver removal order to match the probe exactly
+>>>>>>>     - added clarifying comment for 1/8 ratio to the Tegra20 driver
+>>>>>>>
+>>>>>>>     Chanwoo, please also note that the clk patch that should fix
+>>>>>>>     compilation problem that was reported the kbuild-test-robot is already
+>>>>>>>     applied and available in the recent linux-next.
+>>>>>>
+>>>>>> I knew that Stephen picked up your path about clock.
+>>>>>
+>>>>> Hi Chanwoo,
+>>>>>
+>>>>> Okay, good. Thank you very much for reviewing this series! I assume it's
+>>>>> too late now for v5.2, but it should be good to go for v5.3.
+>>>>>
+>>>>
+>>>> Hello Chanwoo,
+>>>>
+>>>> Will be nice to see the patches in the linux-next before they'll hit mainline. We have tested that
+>>>> everything works fine on a selective devices, but won't hurt to get some extra testing beforehand.
+>>>> AFAIK, at least NVIDIA people are regularly testing -next on theirs dev boards. Please note that
+>>>> this not very important, so don't bother if there is some hurdle with pushing to the tracking branch
+>>>> for now. Also please let me know if you're expecting to see some ACK's on the patches, I'm sure
+>>>> we'll be able to work out that with Thierry and Jon if necessary.
+>>>>
+>>>>
+>>>
+>>> Hi Dmitry,
+>>> I think that it is enough for applying to mainline branch.
+>>> The devfreq.git is maintained by Myungjoo. He will be merged or
+>>> reviewed if there are th remained review point.
+>>
+>> Thank you very much!
+>>
+>>>
+>>> Hi Myungjoo,
+>>> I reviewed the Dmitry's patches from v1 to v4 patches.
+>>> And then I tested them on my testing branch[1] for catching
+>>> the build warning and error. In result, it is clean.
+>>> [1] https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/log/?h=devfreq-testing
+>>>
+>>> Please review or apply these patches for v5.3.
+>>>
+>>
+>> Hello Myungjoo,
+>>
+>> I think this patchset should be completed now. Thierry has some extra
+>> comments to the patches, but seems nothing critical so far and all the
+>> concerns could be addressed in a follow-up series. Please let me know if
+>> you're fine with this, I can re-spin v5 as well if necessary.
+>>
+> 
+> Hello Chanwoo,
+> 
+> It looks like Myungjoo is inactive at the moment. Do you know if he'll
+> be back to the time of the merge window opening or you'll be curating
+> the pull request for 5.3 this time?
+
+Myungoo works in the same place. I'll talk with him.
+
+> 
+> Secondly, I'll send a few more patches on top of this series, addressing
+> Thierry's comments and making more improvements. Please let me know if
+> this causes any problems and I should re-spin the whole series.
+
+OK. I'll review them.
 
 
-Cheers,
-MyungJoo
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
