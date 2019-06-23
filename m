@@ -2,105 +2,160 @@ Return-Path: <SRS0=pOSF=UW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B41ACC43613
-	for <linux-pm@archiver.kernel.org>; Sun, 23 Jun 2019 16:43:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92CC8C43613
+	for <linux-pm@archiver.kernel.org>; Sun, 23 Jun 2019 17:17:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8E0842146F
-	for <linux-pm@archiver.kernel.org>; Sun, 23 Jun 2019 16:43:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 61B4C20840
+	for <linux-pm@archiver.kernel.org>; Sun, 23 Jun 2019 17:17:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Mz2oXdfc"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YagS2PXc"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726867AbfFWQmO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 Jun 2019 12:42:14 -0400
-Received: from mail-pf1-f171.google.com ([209.85.210.171]:37873 "EHLO
-        mail-pf1-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726399AbfFWQmM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 12:42:12 -0400
-Received: by mail-pf1-f171.google.com with SMTP id 19so6116946pfa.4;
-        Sun, 23 Jun 2019 09:42:11 -0700 (PDT)
+        id S1726483AbfFWRR5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 Jun 2019 13:17:57 -0400
+Received: from mail-qk1-f195.google.com ([209.85.222.195]:36100 "EHLO
+        mail-qk1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726399AbfFWRR5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 13:17:57 -0400
+Received: by mail-qk1-f195.google.com with SMTP id g18so8121186qkl.3;
+        Sun, 23 Jun 2019 10:17:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=guN3ScMcBAl3EdBUUBqxZnez+QFG6VTe2Us/ZifbIac=;
-        b=Mz2oXdfcHCl/AjLIwcbhOTvV4DP6dKb58+chvGV34eLndltGe35g/temtiD24fRjEN
-         yO1BCIoo8bh5zc6/o2VRRFRtjsovwC8cLmA+1lVCHOhT0SFjZk5L3YCig71oXdx65Ay6
-         IJlxs0Y3LoduHUNd8+DrFVCawb+VjTlRPH+zQU6SuvJBEefpifliMWnFp2zbWLm0slwC
-         tjDZURjLb8nicaltlMwIObu0WLqBfV7PR3AUoucywPMLq9ER8zdNaIil71f0+MqSRy0j
-         wXrslvoMOx9iyv0PhWNIJXmZaRM0w/a81eNMSJFXw/zoQqBitfzFru9jbmphDrk+v/qm
-         F7FA==
+        h=subject:from:to:cc:references:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=oTQJHiQOFJX9TMuzD6eUCrwJJpcVrl2yW+goXQfQCj8=;
+        b=YagS2PXc8FqOqNX+u/fWdMCITgu5lEhgaubB8vuu7uzFL0gXqZagiKIZKs075Bf/xm
+         UHpjfEf41FZ8dknsiecZ79jJeMoFBiROnJHZYhKwdUoh1iVHiwxiZU2QgyWmNTCw4BB+
+         AgzsP/ZA8K3p9NnzDJtG0nCHUxj9YdooaiInEB3skusuIqQV+tDcLsY/pU97SeAFFM/q
+         MscnELUrEvzYMnj4gkr3gSTqr+jUwjE1dwAxknAEmnAyvmQgR+UD+e/eLzPmFieM/uJr
+         gQVWp86juxDTV78xq7Seil+VANoXj2A4vXNtra5tasImp5I+qJQL0JXco9ozFZCbkvPw
+         wISw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=guN3ScMcBAl3EdBUUBqxZnez+QFG6VTe2Us/ZifbIac=;
-        b=GF/SriaDlAKpY4xJdZ6htSDpTTEuzJCLiVaQit2yjx06aqZbxpWSJzIZxUoUDqNG//
-         0ffrpaIgBahg3BWNES4rTzAcFl3/KvAmk90sipbMuoSjI/q+4A0SmvjcsS5QweER0BIp
-         BQlQ9wEbrbjE8BOJWefQB00Y5TyUfQIccogEb9+b4xABBBtAaAbnMEIKePvd2WCfu81N
-         0wlbJvAuNkqhLf70adnmcdRKfWojzP5Nskyhr5idQmcoN/Ua93OUUu60TBSt7ToMc97V
-         xVvb3OmYE9zsr1EY7s3LVJyVrmEpEKW8zxv4Oo9rSU6Tf4sKVFp1qbZ/YWeTPLou4nzo
-         Txsg==
-X-Gm-Message-State: APjAAAVC5m/U1qmVdou9OAUoUzZbxbuQIgx6ze+iMU1Gq1LUAwN8KGkt
-        KoO4YZHIFv0003iwLl7U8xk=
-X-Google-Smtp-Source: APXvYqzuNeNzlJfb0O2anqXdpR3fq7SW1y1TKzsXPcMSAaI/+wflpHzkgSycjT+gG4vxsg6zpZE3fg==
-X-Received: by 2002:a17:90a:a404:: with SMTP id y4mr20304680pjp.58.1561308131121;
-        Sun, 23 Jun 2019 09:42:11 -0700 (PDT)
-Received: from localhost (68.168.130.77.16clouds.com. [68.168.130.77])
-        by smtp.gmail.com with ESMTPSA id v138sm9644465pfc.15.2019.06.23.09.42.10
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Sun, 23 Jun 2019 09:42:10 -0700 (PDT)
-From:   Yangtao Li <tiny.windzz@gmail.com>
-To:     rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org,
-        davem@davemloft.net, gregkh@linuxfoundation.org,
-        mchehab+samsung@kernel.org, linus.walleij@linaro.org,
-        nicolas.ferre@microchip.com, paulmck@linux.ibm.com
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH v4 00/11] add thermal driver for h6
-Date:   Sun, 23 Jun 2019 12:41:55 -0400
-Message-Id: <20190623164206.7467-1-tiny.windzz@gmail.com>
-X-Mailer: git-send-email 2.17.0
+        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=oTQJHiQOFJX9TMuzD6eUCrwJJpcVrl2yW+goXQfQCj8=;
+        b=p165nftV5SLY3PwwV5Nb2gQOgEu+O5kRoG6hbiioqdckIY3hc+Wne93q9aFyfQ+GEp
+         GjbsfdBrukx/Ef204nsaAxzSss00vqKuLRrVlnjVwNQBxgSf6A1jYYNFCnrVrsqn+d//
+         g5zqDdhpYhPb0eGFEIvXdRsMWAsSKinMAQf+Ia+/jtIDAqYThs/+hb65wiQgAVGXssS5
+         xGh5lHfWl82ITvzGS9UXKfR/uoN28axv2W6nWL8P0RzAruFJOucifHE7nq/LDISd839Z
+         fA/wwF9ou45Mo2l7G/dJ5CwAGkK+0Wbd2S2zkK7okNP25kv0IDwLeXasm3yOn2slqLj+
+         55JA==
+X-Gm-Message-State: APjAAAWCygLvcdOa1yLDiCsFViQelmnHZ9IYV+ziOIO4Ascy75il1o8R
+        tzN9HrqTbq06MFigrHdStYzOOaru
+X-Google-Smtp-Source: APXvYqyJTClxclnIYTcifSFy9E8UhzxwdPcRWT3uKf1e8+ma/aVZZm2fuvEjrIt4gaiVaAwmgwk2Cw==
+X-Received: by 2002:a37:4e8f:: with SMTP id c137mr82739150qkb.127.1561310276502;
+        Sun, 23 Jun 2019 10:17:56 -0700 (PDT)
+Received: from [192.168.2.145] (ppp91-79-162-197.pppoe.mtu-net.ru. [91.79.162.197])
+        by smtp.googlemail.com with ESMTPSA id g5sm5631799qta.77.2019.06.23.10.17.54
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 23 Jun 2019 10:17:55 -0700 (PDT)
+Subject: Re: [PATCH v4 00/16] NVIDIA Tegra devfreq improvements and Tegra20/30
+ support
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <CGME20190501234148epcas5p1cc9a8dafa9ee6d8d046d1292b8270727@epcas5p1.samsung.com>
+ <20190501233815.32643-1-digetx@gmail.com>
+ <60ef6e47-e61b-3a92-e90d-90debedfcfc4@samsung.com>
+ <fa061a65-f108-6c5e-1f87-950a9a8caafc@gmail.com>
+ <0fb50eb1-a173-1756-6889-2526a10ac707@gmail.com>
+ <683b343a-e64f-8345-ac44-10f5c00521bd@samsung.com>
+ <5c2a7c32-a98c-3930-14ae-beb0241908d0@gmail.com>
+Message-ID: <389cc71d-8f0b-fa39-1325-433d27c75dc8@gmail.com>
+Date:   Sun, 23 Jun 2019 20:17:53 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.1
+MIME-Version: 1.0
+In-Reply-To: <5c2a7c32-a98c-3930-14ae-beb0241908d0@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset add support for H3 and H6 thermal sensor.
+05.06.2019 2:09, Dmitry Osipenko пишет:
+> 04.06.2019 3:49, Chanwoo Choi пишет:
+>> On 19. 6. 4. 오전 1:52, Dmitry Osipenko wrote:
+>>> 03.05.2019 3:52, Dmitry Osipenko пишет:
+>>>> 03.05.2019 3:31, Chanwoo Choi пишет:
+>>>>> Hi Dmitry,
+>>>>>
+>>>>> On 19. 5. 2. 오전 8:37, Dmitry Osipenko wrote:
+>>>>>> Changelog:
+>>>>>>
+>>>>>> v4: Addressed all review comments that were made by Chanwoo Choi to v3:
+>>>>>>
+>>>>>>     - changed the driver removal order to match the probe exactly
+>>>>>>     - added clarifying comment for 1/8 ratio to the Tegra20 driver
+>>>>>>
+>>>>>>     Chanwoo, please also note that the clk patch that should fix
+>>>>>>     compilation problem that was reported the kbuild-test-robot is already
+>>>>>>     applied and available in the recent linux-next.
+>>>>>
+>>>>> I knew that Stephen picked up your path about clock.
+>>>>
+>>>> Hi Chanwoo,
+>>>>
+>>>> Okay, good. Thank you very much for reviewing this series! I assume it's
+>>>> too late now for v5.2, but it should be good to go for v5.3.
+>>>>
+>>>
+>>> Hello Chanwoo,
+>>>
+>>> Will be nice to see the patches in the linux-next before they'll hit mainline. We have tested that
+>>> everything works fine on a selective devices, but won't hurt to get some extra testing beforehand.
+>>> AFAIK, at least NVIDIA people are regularly testing -next on theirs dev boards. Please note that
+>>> this not very important, so don't bother if there is some hurdle with pushing to the tracking branch
+>>> for now. Also please let me know if you're expecting to see some ACK's on the patches, I'm sure
+>>> we'll be able to work out that with Thierry and Jon if necessary.
+>>>
+>>>
+>>
+>> Hi Dmitry,
+>> I think that it is enough for applying to mainline branch.
+>> The devfreq.git is maintained by Myungjoo. He will be merged or
+>> reviewed if there are th remained review point.
+> 
+> Thank you very much!
+> 
+>>
+>> Hi Myungjoo,
+>> I reviewed the Dmitry's patches from v1 to v4 patches.
+>> And then I tested them on my testing branch[1] for catching
+>> the build warning and error. In result, it is clean.
+>> [1] https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/log/?h=devfreq-testing
+>>
+>> Please review or apply these patches for v5.3.
+>>
+> 
+> Hello Myungjoo,
+> 
+> I think this patchset should be completed now. Thierry has some extra
+> comments to the patches, but seems nothing critical so far and all the
+> concerns could be addressed in a follow-up series. Please let me know if
+> you're fine with this, I can re-spin v5 as well if necessary.
+> 
 
-BTY, do a cleanup in thermal makfile.
+Hello Chanwoo,
 
-Yangtao Li (11):
-  thermal: sun8i: add thermal driver for h6
-  dt-bindings: thermal: add binding document for h6 thermal controller
-  thermal: fix indentation in makefile
-  thermal: sun8i: get ths sensor number from device compatible
-  thermal: sun8i: rework for sun8i_ths_get_temp()
-  thermal: sun8i: get ths init func from device compatible
-  thermal: sun8i: rework for ths irq handler func
-  thermal: sun8i: support ahb clocks
-  thermal: sun8i: rework for ths calibrate func
-  dt-bindings: thermal: add binding document for h3 thermal controller
-  thermal: sun8i: add thermal driver for h3
+It looks like Myungjoo is inactive at the moment. Do you know if he'll
+be back to the time of the merge window opening or you'll be curating
+the pull request for 5.3 this time?
 
- .../bindings/thermal/sun8i-thermal.yaml       |  94 +++
- MAINTAINERS                                   |   7 +
- drivers/thermal/Kconfig                       |  14 +
- drivers/thermal/Makefile                      |   9 +-
- drivers/thermal/sun8i_thermal.c               | 534 ++++++++++++++++++
- 5 files changed, 654 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-thermal.yaml
- create mode 100644 drivers/thermal/sun8i_thermal.c
-
----
-v4:
--add h3 support
--fix yaml file
----
-2.17.1
-
+Secondly, I'll send a few more patches on top of this series, addressing
+Thierry's comments and making more improvements. Please let me know if
+this causes any problems and I should re-spin the whole series.
