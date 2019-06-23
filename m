@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29997C43613
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 01:51:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1490DC43613
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 01:56:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id ECD152133F
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 01:51:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E1B7B205C9
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 01:56:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DCITDwuX"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="L0ZP1Du4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726339AbfFXBv1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 Jun 2019 21:51:27 -0400
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:39180 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726304AbfFXBv1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 21:51:27 -0400
-Received: by mail-lj1-f195.google.com with SMTP id v18so10906114ljh.6;
-        Sun, 23 Jun 2019 18:51:25 -0700 (PDT)
+        id S1726341AbfFXBz4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 Jun 2019 21:55:56 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:34341 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726304AbfFXBz4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 21:55:56 -0400
+Received: by mail-lj1-f196.google.com with SMTP id p17so10955507ljg.1;
+        Sun, 23 Jun 2019 18:55:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=nYRS9MdYmFFWPAiEhPZWw0w+9h3W9S26RozsmwY92Y0=;
-        b=DCITDwuX98eZYywKaF/pbpnW5bIW/EDVriGnq9GO16ZrW41YmdlOJSlLQgdnbVUjld
-         4eBdf/qjEQiyJZd0xJDSx2mwt4AsJd9zC8rXoXQ1e/R/raissCfOloEeT6T0ocmTuGle
-         ZeekxnpMbt64xoey0x4v2IIlT9ZMRHrIeKKk2dVIT2uk7y/OTrOFVMGfK1er5ANXlmhJ
-         6sHLDaoLEz1bMOg/BrmnDbtQykqZ8ythYr2Wji9UN0WMf5pBgfW69mkudbswaHTgjPRU
-         D1zAkQBpWTEUkokbCv7npcIZgB0g5qB1uMeRYzNHbC/Xed7eelrW9tikjrs1O1Nr10Y0
-         P/bg==
+        bh=d/7wNA8MAMSp7e/mZW/Vod5RtNn1ZWLvCZTV21PmCFE=;
+        b=L0ZP1Du4UJarUZc83p78D1vv5rbMa++Zecy9gf2C/sEmE38z1CUDYNZtbdqay4oXjv
+         wtksAbW8ZJBl1zkRqiyZxBgkX8zxclNP3TDtki7UUCskO8f0x8dF/zo+PGkI3o1Wnqi/
+         i6i1VOtCbFLD/F3Q2v741iVE01LGiwX1OIlGCx2rdKdMxEs8UUvQzcLOIZkHeFzPEMmf
+         O+7ntMgJr7LbUvO4wcmhMT1Nfm4+tdl01l7NalOAjFOQbmQ3xeWcBteQdGUGixM2iFP7
+         l+1oKfaS1UXi747QDN2CI6R7McQFdu+ARuSVc4sAmUOw+bz4W9mIzlxY4kcIkY8+Jjrs
+         6Vlg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=nYRS9MdYmFFWPAiEhPZWw0w+9h3W9S26RozsmwY92Y0=;
-        b=O8plqKYa6l3EszuZPaKos7QxYuH12R3fpx/sA0hbL9zylX5z/UCKQEud3NYwTJYt5S
-         jCGF8I9db2xQ9g1l1ey7Gvei3BQz7PQEy7J6W+XDlfy+G/qz0A1KmB5dT69+L6e2gVQC
-         a2QLySgertTXBfB2j2CVnMKXi4TOuM0o0bLqQViM3MvyoBPkr1/d4MvxLmi15yuOHenI
-         a/xq6ZnavD18kA0/ogpdm01fpJMfNjtTYdzqqhlfD0xAQnMdJqbHmdZ0M75K2XJRop1+
-         Lna33DXunrLIhd82Q7cjW4Mz9rmEAcm+wPUOTK5ZCGSe3w6NTobniGc0eKIAdN5KAxBR
-         Dygw==
-X-Gm-Message-State: APjAAAXQ4XRHMYROF/CG3IR5vecugS0wLho7rPntPlEqDgnDYDwi4R3H
-        sQt1iq7JfTEnEfIc6u2eKXewq2fv
-X-Google-Smtp-Source: APXvYqyc6zd1A7+jfFcgBuyYeoPiDicRsI/iIka3Ng3nzxm60bZJocNHEwfvzNCFK6/5dhzUzmW0fQ==
-X-Received: by 2002:a2e:3c1a:: with SMTP id j26mr33315913lja.230.1561326525033;
-        Sun, 23 Jun 2019 14:48:45 -0700 (PDT)
+        bh=d/7wNA8MAMSp7e/mZW/Vod5RtNn1ZWLvCZTV21PmCFE=;
+        b=eZjr3sCktWJDTIrLc0rBRoTeZ2d4QbmRI0P8IOZS4UWqt0pyU7djDWyxHsPV5GzsX6
+         hNmivaXrFz4nAeKJPTaXuq1Clf4clmwglvAVRV8Sk65jSZmK/3f0iCPM5N99byduvUxJ
+         MXJ+v7GClFYjNnsk8Qaz2MstWrI0+K2oPDlJhbe0rKuix/UNYJ11wC6LZsQp7RUX/mjG
+         Jjwnfh9nU0PIrtBj9RCzlvl54rU24ksnLFg6V0KVAx1CTZbyzVibh/C4cS+Hyg72/K42
+         23PL4duwgJV2EP3q8EkneumOPjY/YXUqxCGsSlU0eypzBPqAG7DM4COCV2hPY4B0roOZ
+         899Q==
+X-Gm-Message-State: APjAAAXoLoDZTga7CEoJJVbpDBKKf1vaRNHci3Uu1OT1WN8bUkecRpUX
+        F9tanAbAj0UVRlXDcElpZvD3LiDZ
+X-Google-Smtp-Source: APXvYqye4V5QSFOGkNtJMg/FAidBFWD3G9IlC1/a8d7S+Cona5FygRmeQ/8Dbd9tuc2t39l5UnZS1w==
+X-Received: by 2002:a2e:9250:: with SMTP id v16mr30382163ljg.89.1561326518772;
+        Sun, 23 Jun 2019 14:48:38 -0700 (PDT)
 Received: from localhost.localdomain (ppp91-79-162-197.pppoe.mtu-net.ru. [91.79.162.197])
-        by smtp.gmail.com with ESMTPSA id m17sm1460029lfb.9.2019.06.23.14.48.44
+        by smtp.gmail.com with ESMTPSA id m17sm1460029lfb.9.2019.06.23.14.48.37
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 23 Jun 2019 14:48:44 -0700 (PDT)
+        Sun, 23 Jun 2019 14:48:38 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v1 10/11] PM / devfreq: tegra30: Add debug messages
-Date:   Mon, 24 Jun 2019 00:46:57 +0300
-Message-Id: <20190623214658.11680-11-digetx@gmail.com>
+Subject: [PATCH v1 04/11] PM / devfreq: tegra30: Drop write-barrier
+Date:   Mon, 24 Jun 2019 00:46:51 +0300
+Message-Id: <20190623214658.11680-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190623214658.11680-1-digetx@gmail.com>
 References: <20190623214658.11680-1-digetx@gmail.com>
@@ -77,99 +77,70 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add debug messages to know about what's happening in hardware and how
-driver reacts.
+There is no need in a write-barrier now, given that interrupt masking is
+handled by CPU's GIC now. Hence we know exactly that interrupt won't fire
+after stopping the devfreq's governor. In other cases we don't care about
+potential buffering of the writes to hardware and thus there is no need to
+stall CPU.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 33 +++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ drivers/devfreq/tegra30-devfreq.c | 14 --------------
+ 1 file changed, 14 deletions(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 168bfe78e525..452bc10d2d72 100644
+index 5e606ae3f238..4be7858c33bc 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -277,6 +277,8 @@ static void tegra_actmon_get_lower_upper(struct tegra_devfreq *tegra,
- 					 unsigned long *lower,
- 					 unsigned long *upper)
- {
-+	struct device *ddev = tegra->devfreq->dev.parent;
-+	u32 offset = dev->config->offset;
- 	unsigned long target_freq, min;
- 
- 	target_freq = count / ACTMON_SAMPLING_PERIOD * KHZ;
-@@ -312,6 +314,9 @@ static void tegra_actmon_get_lower_upper(struct tegra_devfreq *tegra,
- 	else
- 		*upper = tegra_actmon_upper_freq(tegra, target_freq);
- 
-+	dev_dbg(ddev, "%03x: target_freq %lu lower freq %lu upper freq %lu\n",
-+		offset, target_freq, *lower, *upper);
-+
- 	*lower /= KHZ;
- 	*upper /= KHZ;
- 
-@@ -384,12 +389,32 @@ static void tegra_devfreq_update_wmark(struct tegra_devfreq *tegra,
- 	device_writel(dev, count + delta, ACTMON_DEV_UPPER_WMARK);
+@@ -230,12 +230,6 @@ static void tegra_devfreq_update_wmark(struct tegra_devfreq *tegra,
+ 		      ACTMON_DEV_LOWER_WMARK);
  }
  
-+static void actmon_device_debug(struct tegra_devfreq *tegra,
-+				struct tegra_devfreq_device *dev,
-+				const char *prefix)
-+{
-+	dev_dbg(tegra->devfreq->dev.parent,
-+		"%03x: %s: 0x%08x 0x%08x a %u %u %u c %u %u %u b %lu cpu %u\n",
-+		dev->config->offset, prefix,
-+		device_readl(dev, ACTMON_DEV_INTR_STATUS),
-+		device_readl(dev, ACTMON_DEV_CTRL),
-+		device_readl(dev, ACTMON_DEV_AVG_COUNT),
-+		device_readl(dev, ACTMON_DEV_AVG_LOWER_WMARK),
-+		device_readl(dev, ACTMON_DEV_AVG_UPPER_WMARK),
-+		device_readl(dev, ACTMON_DEV_COUNT),
-+		device_readl(dev, ACTMON_DEV_LOWER_WMARK),
-+		device_readl(dev, ACTMON_DEV_UPPER_WMARK),
-+		dev->boost_freq, cpufreq_get(0));
-+}
-+
+-static void actmon_write_barrier(struct tegra_devfreq *tegra)
+-{
+-	/* ensure the update has reached the ACTMON */
+-	readl(tegra->regs + ACTMON_GLB_STATUS);
+-}
+-
  static void actmon_isr_device(struct tegra_devfreq *tegra,
  			      struct tegra_devfreq_device *dev)
  {
- 	u32 intr_status, dev_ctrl, avg_intr_mask;
- 	bool low_activity = true;
- 
-+	actmon_device_debug(tegra, dev, "isr+");
-+
- 	dev->avg_count = device_readl(dev, ACTMON_DEV_AVG_COUNT);
- 	intr_status = device_readl(dev, ACTMON_DEV_INTR_STATUS);
- 	dev_ctrl = device_readl(dev, ACTMON_DEV_CTRL);
-@@ -451,6 +476,8 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
+@@ -287,8 +281,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
  	device_writel(dev, dev_ctrl, ACTMON_DEV_CTRL);
  
  	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
-+
-+	actmon_device_debug(tegra, dev, "isr-");
+-
+-	actmon_write_barrier(tegra);
  }
  
- static unsigned long actmon_update_target(struct tegra_devfreq *tegra,
-@@ -737,6 +764,7 @@ static struct devfreq_dev_profile tegra_devfreq_profile = {
- static int tegra_governor_get_target(struct devfreq *devfreq,
- 				     unsigned long *freq)
- {
-+	struct device *ddev = devfreq->dev.parent;
- 	struct devfreq_dev_status *stat;
- 	struct tegra_devfreq *tegra;
- 	struct tegra_devfreq_device *dev;
-@@ -759,6 +787,11 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
- 		dev_target_freq = actmon_update_target(tegra, dev);
- 
- 		target_freq = max(target_freq, dev_target_freq);
-+
-+		dev_dbg(ddev, "%03x: upd: dev_target_freq %lu\n",
-+			dev->config->offset, dev_target_freq);
-+
-+		actmon_device_debug(tegra, dev, "upd");
+ static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra,
+@@ -376,8 +368,6 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
+ 		tegra_devfreq_update_wmark(tegra, dev);
  	}
  
- 	*freq = target_freq * KHZ;
+-	actmon_write_barrier(tegra);
+-
+ 	return NOTIFY_OK;
+ }
+ 
+@@ -423,8 +413,6 @@ static void tegra_actmon_start(struct tegra_devfreq *tegra)
+ 	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
+ 		tegra_actmon_configure_device(tegra, &tegra->devices[i]);
+ 
+-	actmon_write_barrier(tegra);
+-
+ 	enable_irq(tegra->irq);
+ }
+ 
+@@ -439,8 +427,6 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
+ 		device_writel(&tegra->devices[i], ACTMON_INTR_STATUS_CLEAR,
+ 			      ACTMON_DEV_INTR_STATUS);
+ 	}
+-
+-	actmon_write_barrier(tegra);
+ }
+ 
+ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
 -- 
 2.22.0
 
