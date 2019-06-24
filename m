@@ -2,103 +2,108 @@ Return-Path: <SRS0=M8Ta=UX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85AE5C43613
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 02:07:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F40A5C43613
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 02:13:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5B0CE208C3
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 02:07:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 649262089F
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 02:13:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dt+IpZnL"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="hzjpX5+9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726663AbfFXCHg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 Jun 2019 22:07:36 -0400
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:39240 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726360AbfFXCHg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 22:07:36 -0400
-Received: by mail-lj1-f193.google.com with SMTP id v18so10929677ljh.6;
-        Sun, 23 Jun 2019 19:07:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=YUoP/TwInzxAmI5FyuGeNL3uUUuvUmrAozelA40npDc=;
-        b=dt+IpZnL/XkzkPQ85iZLZb0U4PuL4OW2ARGM6x5a/ce/Z9BAiTRuRC791zCzc7ohtC
-         hfBSDLl0bFhdPH9bYXaIMBNZp9+qd9XYbK8ewIEO22/NanxYiIxnSoNmDHEXL+UFNyoP
-         ROPtppJ+CYqYfoJ/GVNBD1JoE68W8lpaEFqaqxzTR94N/tLJVk8o2JKrQU0MnRm/Bs9N
-         NIJOn10u61/rk6jDxcbcvTF3gbPgXIhgokbjjzZdARjOGum0ubklpt1AjLFO1wyYA8vS
-         jh0Hyg3ti5uGjKL0YfnMFhM0+kEE6JktQ2cXEgDAi2mOtkULLqJtKUyjaOAGcWVfQ6zv
-         ebRw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=YUoP/TwInzxAmI5FyuGeNL3uUUuvUmrAozelA40npDc=;
-        b=mAbtexs2GWvjJuT2VkEY9uEILOCy9UCSYFqxmRXtPYlHwXY36hK1pS/xxbD6RvvY0R
-         c6tDeTcIZGQYD8/teuauUnEC4m6Y9C95GYFLw2ZvrQ8ienZGQuZ8SqMLmZyDi4aJ2CJe
-         /x0CYP7R2W27ij2Ob/Skdxn286L7DyRHvCX8JuikzaJWRBqzQHR6ZTbjAYOn/u4iSb+M
-         Ji0ki4Z37LHI+b4yNLjSOUc6K8blUOw1tVrwI9M5ABNp7ELekdzeP28ezkks/otsFaSp
-         8zKNkesHvnjywd82Y/HF2b7pWS5QVZXQVLB4/4V8cAR33/dGVXCi4VI+Z/aJ167+FWhB
-         UE2A==
-X-Gm-Message-State: APjAAAUuRgOrNubbfcVSvqZQ5OQLuoXdgofW7eAmO0OkN96AHRNAtMmq
-        4msEnLtySqcyb6DeLnKIZqsYtN/B
-X-Google-Smtp-Source: APXvYqxFy4zg5sP10Iafd/jsNiR3o5hlxirUmF1MYJHuLe2fXY8cSySzySVjvsOXYv6vKN52CUHDUg==
-X-Received: by 2002:a2e:8793:: with SMTP id n19mr37244573lji.174.1561326524110;
-        Sun, 23 Jun 2019 14:48:44 -0700 (PDT)
-Received: from localhost.localdomain (ppp91-79-162-197.pppoe.mtu-net.ru. [91.79.162.197])
-        by smtp.gmail.com with ESMTPSA id m17sm1460029lfb.9.2019.06.23.14.48.43
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 23 Jun 2019 14:48:43 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        id S1726875AbfFXCNJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 Jun 2019 22:13:09 -0400
+Received: from mailout1.samsung.com ([203.254.224.24]:53128 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726320AbfFXCNI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 22:13:08 -0400
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20190624021306epoutp01a677634a608ad041a583bb056a3a523c~rAKDHUwim0818608186epoutp01g
+        for <linux-pm@vger.kernel.org>; Mon, 24 Jun 2019 02:13:06 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20190624021306epoutp01a677634a608ad041a583bb056a3a523c~rAKDHUwim0818608186epoutp01g
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1561342386;
+        bh=Bjxv0RRUWPDBM+vlsvLdx6BQWrwtvpQPL5LR7DGLxjw=;
+        h=Subject:Reply-To:From:To:CC:In-Reply-To:Date:References:From;
+        b=hzjpX5+9hx/a1tdVMF8nJlqTy4AoOattbUJB3gjjl2g9E4cDDgyE9EZSCiKyYCk+j
+         AAxsgbzscgkEwuqqh8zB5aSwmHq5Hbw1hY7hQdcmF4cgc1m7EqhAuZDv3vU7K8i5Lx
+         O9AvXL2KfXmItk6fZhNotQzX4qzE3540oCxuNXuo=
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.155]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
+        20190624021301epcas1p32614991eb0c0533de1d556cbf4945e11~rAJ_vt4kw0385803858epcas1p3A;
+        Mon, 24 Jun 2019 02:13:01 +0000 (GMT)
+X-AuditID: b6c32a38-5cbff700000010a1-02-5d10319df346
+Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
+        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
+        D9.4A.04257.D91301D5; Mon, 24 Jun 2019 11:12:45 +0900 (KST)
+Mime-Version: 1.0
+Subject: RE: [PATCH v1 01/11] PM / devfreq: tegra30: Change irq type to
+ unsigned int
+Reply-To: myungjoo.ham@samsung.com
+From:   MyungJoo Ham <myungjoo.ham@samsung.com>
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
         Chanwoo Choi <cw00.choi@samsung.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v1 09/11] PM / devfreq: tegra30: Don't enable consecutive-down interrupt on startup
-Date:   Mon, 24 Jun 2019 00:46:56 +0300
-Message-Id: <20190623214658.11680-10-digetx@gmail.com>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190623214658.11680-1-digetx@gmail.com>
-References: <20190623214658.11680-1-digetx@gmail.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+CC:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+X-Priority: 3
+X-Content-Kind-Code: NORMAL
+In-Reply-To: <20190623214658.11680-2-digetx@gmail.com>
+X-Drm-Type: N,general
+X-Msg-Generator: Mail
+X-Msg-Type: PERSONAL
+X-Reply-Demand: N
+Message-ID: <20190624021245epcms1p5366dd98904dac95625dc2deb4b649cb1@epcms1p5>
+Date:   Mon, 24 Jun 2019 11:12:45 +0900
+X-CMS-MailID: 20190624021245epcms1p5366dd98904dac95625dc2deb4b649cb1
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0hTYRj285ydHZfLz2n1YWXrQBeFpUedHStDSGJQghFUWDIPeprD3diZ
+        KytIUqk0zUIr5qUsI9PCC16ms5QZRZlFiYWEJd3MUrtohFjUtjOxf8/38Lzv87zv95KY7DIR
+        QmoNFs5sYHUUIcHb+8IUiioapkaOl9PMy5kxEdPw/R1g8m1XcWbgxISYGeyqJJjp4nuAOT1j
+        I5jZrmqcKbn9nEjwU9lHaoGq0zYiVhXnTRGqktZ6oJpuCU0WpWRtyeTYDM4s5wzpxgytQRNP
+        7dit3qZWxkbSCjqO2UjJDayei6cSdyYrtmt1rkCU3Mrqsl1UMsvzVMTWLWZjtoWTZxp5SzzF
+        mTJ0pjjTBp7V89kGzYZ0o34THRkZpXQJ07Iyx2YLRKZx38ODde+JXNDoWwj8SARjUF7BW8KN
+        ZdAO0IXRfYWAJKUwEP2xB7npILgHnSmxAUFCodzhu5jAR6BTo+0enoAK1NY0ghcCCRkM5wC6
+        0/lO5H5gsBOgqdY3YsFMii6d/IALeDnquNHmqfaDsejRi1PeQEvQcMOkeB5/vX8ZCDgYFbwe
+        wAQciEZnHWC+z6Wyv96eR9GLi9fEbmME8wEqbijziiLQ46qHnimlMAl9cvzyYByuQd+c173F
+        iej0UJHIjTG4CnVMVmLuTWAwDDV2RQiS1ahzrgoIksVo6ucZ0fxc9ur33vxrkdNR682/AvVf
+        rPFmVqGzM+WYsMWbAHU046VAblvYte0/Y9uC8RWA1YOlnInXazieNsX8/7stwHOc4YwddD/Z
+        6QSQBJS/FDYFpMpErJXP0TsBIjEqWOqv80+VSTPYnCOc2ag2Z+s43gmUrvnPYSFL0o2uUzdY
+        1LQyKjo6momhY5U0TS2TqhcNH5BBDWvhsjjOxJnn63xJv5BcEBy0SSKRfbM23uofqa7T3teG
+        Nj/tt35pOb+4rHZ2fXivpXSiyOiYHIxS1ZT77F33O+djwLFDnxVvQ7ldn5Z2/6ocL5qx90w/
+        S8Ff6VoqHMPyvocpuWUXjgds7H/c8yCh4od9haYmxzDUdnK5JDVtQmrVjoUm1Ww+mNTb7uMT
+        s3L/KgrnM1k6HDPz7D9DtmwasgMAAA==
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20190623214841epcas5p161cceab51cb10d5146e57d49a696d5e5
+References: <20190623214658.11680-2-digetx@gmail.com>
+        <20190623214658.11680-1-digetx@gmail.com>
+        <CGME20190623214841epcas5p161cceab51cb10d5146e57d49a696d5e5@epcms1p5>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The consecutive-down event tells that we should perform frequency
-de-boosting, but boosting is in a reset state on start and hence the
-event won't do anything useful for us and it will be just a dummy
-interrupt request.
+>IRQ numbers are always positive, hence the corresponding variable should
+>be unsigned to keep types consistent. This is a minor change that cleans
+>up code a tad more.
+>
+>Suggested-by: Thierry Reding <thierry.reding@gmail.com>
+>Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/devfreq/tegra30-devfreq.c | 1 -
- 1 file changed, 1 deletion(-)
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 81449cc1392b..168bfe78e525 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -572,7 +572,6 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
- 		<< ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_NUM_SHIFT;
- 	val |= ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
- 	val |= ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
--	val |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
- 	val |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
- 	val |= ACTMON_DEV_CTRL_ENB;
- 
--- 
-2.22.0
 
+Cheers,
+MyungJoo
