@@ -2,106 +2,153 @@ Return-Path: <SRS0=M8Ta=UX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A8B1C43613
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 01:42:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39111C43613
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 01:48:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E35EC208E4
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 01:42:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0E1CB2063F
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 01:48:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EMmpJ10h"
+	dkim=pass (2048-bit key) header.d=android.com header.i=@android.com header.b="aYkg+TE3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727082AbfFXBmn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 Jun 2019 21:42:43 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:39699 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727063AbfFXBmm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 21:42:42 -0400
-Received: by mail-lf1-f65.google.com with SMTP id p24so8753082lfo.6;
-        Sun, 23 Jun 2019 18:42:40 -0700 (PDT)
+        id S1726341AbfFXBs4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 Jun 2019 21:48:56 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:35452 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726312AbfFXBs4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2019 21:48:56 -0400
+Received: by mail-ot1-f65.google.com with SMTP id j19so11930289otq.2
+        for <linux-pm@vger.kernel.org>; Sun, 23 Jun 2019 18:48:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JAaIEeaw8b+tY17bCMux1o12jOT0tbHuJNxXmYk7btg=;
-        b=EMmpJ10h7+wKElBzLrjlEBB/rQw2Nl+GeGTINx61aCAEC0ZpoFg+705EZD1WZjIYHu
-         zNfXrXk+PLTkGVrTBb0SVWD/ssoh+QE1UwLznGToNGHFzfv5wLRUiEpny+K2+xUgpVgf
-         ZvzusBsUn6MM0zIY0c96JtsgF9JaqdXJ2oAJYvt6UDIdYOY+dBcC7XYnfDgkjGlerV0A
-         nR1lFMtGu+b5CdWMVsGG2397JN3NF1Djea2Ra/pA+rdgF1TZzO9fQBjAhlEjJ9TZCbg9
-         4pnEGJM8SbOKZgzg4mFwEeh7XTEBP9fKLFp6Blu/xDeqcp09AAVjMV72hIxmZP79mvWw
-         eqzw==
+        d=android.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=KoQYiQrMBAoPwcouH5zLkPtiukwZNYdGgxBPjr/sF88=;
+        b=aYkg+TE39brESepUpYvudC15qXREldRUSMU/512F+I3btn18W+Xyfqt6LgqaLTPCkh
+         vCiVE2NlKC1hkzVZQPazcAnCKBWcQ56W8WagWpEk5ys8BlKUE8Tti5E4ZaCMNNgKYpGM
+         MsJCrSidc4ZdUr0WbczMxSGC8q3qfuxN9gHvUsNU/IRlKcdg7NcG/cBP9kWp0ZZM4AQd
+         4ix6Wuk06EKbD7SsXf7AWQrjeWS/JMdohdjDev0BJ5XI/c1gmGhRnKg2GmyCbWj0FLzb
+         02XeKxEDDNRRW0+Xg44AIg6KcDbGzWU1YaXJnupcpQ18Kg5Ez8NhzflUYscbN98fUctm
+         UGOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JAaIEeaw8b+tY17bCMux1o12jOT0tbHuJNxXmYk7btg=;
-        b=jciRtljG1kqscdh1U4A0FZu32h9ja2KsHtKeOGA/chQHtagqZyIxTEPlG29pXhZ4e7
-         TvOhAgUGbdknQsnBbAF8DV0rMx0PmQmiHeA++JyVwhbig9hLx5VYe6pDTF4vqgijOLB/
-         67wtCE6MyfJMOjXCuxjHCUuOgRUKnKqN2EmPlzoejOGpthX3gmPc9JnJsplJh4qGPYgg
-         cMVzNde9PPjFDs+gU67+0LAU25r8jdO1Fo0J5YUOmUtX5BaKwDXIKawR2yDuZ8H2O4gB
-         ckU0Iw1cgN5fBu8bNO3pAfXh3wHDHI9BmkB7ilzf0/iARUcQf04itxzVk7UCA9JJPfZ3
-         gJaQ==
-X-Gm-Message-State: APjAAAUdCGJ0dUG8vqdngvo1pU28cNixETAw8XQ08IxvMf0Nhs1z/jkw
-        ugGDhSCR7T2AJtIYg+Ayl3Twkmgv
-X-Google-Smtp-Source: APXvYqx7UhsnviQCljugSLWiGQv8kuKLpTeqI0FJYxjd4xmBH3rA38rb5eTdQDvEU/jYvRxlH9cS4w==
-X-Received: by 2002:ac2:5636:: with SMTP id b22mr44686440lff.2.1561326515040;
-        Sun, 23 Jun 2019 14:48:35 -0700 (PDT)
-Received: from localhost.localdomain (ppp91-79-162-197.pppoe.mtu-net.ru. [91.79.162.197])
-        by smtp.gmail.com with ESMTPSA id m17sm1460029lfb.9.2019.06.23.14.48.34
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 23 Jun 2019 14:48:34 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v1 00/11] More improvements for Tegra30 devfreq driver
-Date:   Mon, 24 Jun 2019 00:46:47 +0300
-Message-Id: <20190623214658.11680-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.22.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=KoQYiQrMBAoPwcouH5zLkPtiukwZNYdGgxBPjr/sF88=;
+        b=DTg1mlfBCBeVffPyLo5o1EPR4TTN3XurOLIilcqleXIFQWbJeM//BsySIJIoCRsd6a
+         PyjcnEig63HhFkm4SR/9YSoQw6ISYbRqmH0cGlIDzL1Q87LgPy1rmsIrlqptz/hL7yd3
+         BWlD0gD8w2R9cSbl8R1WtjaGbxytJ9gmvjGgZN9diZm3OsVf30AKE3W2kQBciODLzkcm
+         aB4KQC9i7Z+pqfakfZIAlKUaKukYwA7nc6eC0ZvchTV5xcL9yJrHQsPiB04qNcO0cFhb
+         x9Vm6zaTTli/EgscP/TbC8JJCILF9oqwDNZ6K7eHLbhBBKlmQRPicMPNP4yejIy8riHU
+         X1jQ==
+X-Gm-Message-State: APjAAAWVbdf6eR0EYcQqMa7VRmkKgooAiDVUuxnBf5VrodHGC2ORurEL
+        RRH4jiP0mYjWzJfrxtaBMPcmVzYKyWd7rqazbOmiWw==
+X-Google-Smtp-Source: APXvYqyu3RIcWBRJLSScwP9CuXO3dOu2zHqFIr87b56yxDl/RFshM7fhRGX07M5Ok8/ypr/fYnAwbIpE31qvkI24V9g=
+X-Received: by 2002:a9d:450a:: with SMTP id w10mr43913762ote.148.1561340935025;
+ Sun, 23 Jun 2019 18:48:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <CANA+-vCThdRivg7nrMK5QoFu8SGUzEVSvSyp0H2CPyy9==Tqog@mail.gmail.com>
+ <CANA+-vARQ9Ao=W1oEArrAQ0sqh757orq=-=kytdVPhstm-3E9w@mail.gmail.com>
+ <20190618182502.GC203031@google.com> <4587569.x9DSL43cXO@kreacher>
+ <CANA+-vCMK6u1n9gXf2+v5dFn_tGfr1PT8d7W4d2BCzw+B-HvYw@mail.gmail.com>
+ <CAJWu+oo7kwmEyMXQN0yfswV2=J-Fa9QybhAUx-SOGG_ipsBErQ@mail.gmail.com> <CAJZ5v0gvzCx-7qS9qkxB=sGKjQJKMR7yCc21f=_vqrbZxMSWNg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gvzCx-7qS9qkxB=sGKjQJKMR7yCc21f=_vqrbZxMSWNg@mail.gmail.com>
+From:   Tri Vo <trong@android.com>
+Date:   Sun, 23 Jun 2019 18:48:43 -0700
+Message-ID: <CANA+-vCBW=P=dpJGfcKTt7SoNKzWcpP5pwZHSDMU6MkwBKoC9A@mail.gmail.com>
+Subject: Re: Alternatives to /sys/kernel/debug/wakeup_sources
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Joel Fernandes <joelaf@google.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Sandeep Patil <sspatil@android.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Hridya Valsaraju <hridya@google.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "Cc: Android Kernel" <kernel-team@android.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On Wed, Jun 19, 2019 at 1:35 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Wed, Jun 19, 2019 at 1:52 AM Joel Fernandes <joelaf@google.com> wrote:
+> >
+> > On Tue, Jun 18, 2019 at 7:15 PM Tri Vo <trong@android.com> wrote:
+> > [snip]
+> > > > > > >
+> > > > > > > Android userspace reading wakeup_sources is not ideal because:
+> > > > > > > - Debugfs API is not stable, i.e. Android tools built on top of it are
+> > > > > > > not guaranteed to be backward/forward compatible.
+> > > > > > > - This file requires debugfs to be mounted, which itself is
+> > > > > > > undesirable for security reasons.
+> > > > > > >
+> > > > > > > To address these problems, we want to contribute a way to expose these
+> > > > > > > statistics that doesn't depend on debugfs.
+> > > > > > >
+> > > > > > > Some initial thoughts/questions: Should we expose the stats in sysfs?
+> > > > > > > Or maybe implement eBPF-based solution? What do you think?
+> > > > >
+> > > > > We are going through Android's out-of-tree kernel dependencies along with
+> > > > > userspace APIs that are not necessarily considered "stable and forever
+> > > > > supported" upstream. The debugfs dependencies showed up on our radar as a
+> > > > > result and so we are wondering if we should worry about changes in debugfs
+> > > > > interface and hence the question(s) below.
+> > > > >
+> > > > > So, can we rely on /d/wakeup_sources to be considered a userspace API and
+> > > > > hence maintained stable as we do for other /proc and /sys entries?
+> > > > >
+> > > > > If yes, then we will go ahead and add tests for this in LTP or
+> > > > > somewhere else suitable.
+> > > >
+> > > > No, debugfs is not ABI.
+> > > >
+> > > > > If no, then we would love to hear suggestions for any changes that need to be
+> > > > > made or we simply just move the debugfs entry into somewhere like
+> > > > > /sys/power/ ?
+> > > >
+> > > > No, moving that entire file from debugfs into sysfs is not an option either.
+> > > >
+> > > > The statistics for the wakeup sources associated with devices are already there
+> > > > under /sys/devices/.../power/ , but I guess you want all wakeup sources?
+> > > >
+> > > > That would require adding a kobject to struct wakeup_source and exposing
+> > > > all of the statistics as separate attributes under it.  In which case it would be
+> > > > good to replace the existing wakeup statistics under /sys/devices/.../power/
+> > > > with symbolic links to the attributes under the wakeup_source kobject.
+> > >
+> > > Thanks for your input, Rafael! Your suggestion makes sense. I'll work
+> > > on a patch for this.
+> >
+> > Does that entail making each wake up source, a new sysfs node under a
+> > particular device, and then adding stats under that new node?
+>
+> Not under a device, because there are wakeup source objects without
+> associated devices.
+>
+> It is conceivable to have a "wakeup_sources" directory under
+> /sys/power/ and sysfs nodes for all wakeup sources in there.
+>
+> Then, instead of exposing wakeup statistics directly under
+> /sys/devices/.../power/, there can be symbolic links from there to the
+> new wakeup source nodes under "wakeup_sources" (so as to avoid
+> exposing the same data in two different places in sysfs, which may be
+> confusing).
 
-This series is a followup to [1] which addresses some additional review
-comments that were made by Thierry Reding to [1] and makes several
-important changes to the driver, fixing excessive interrupts activity.
-In the end I'm proposing myself as a maintainer for the driver.
+This may be a dumb question. Is it appropriate to make symbolic links
+in sysfs from one attribute to another attribute? For example,
+/sys/devices/.../power/wakeup_count ->
+/sys/power/wakeup_sources/.../wakeup_count.
 
-[1] https://lore.kernel.org/lkml/0fb50eb1-a173-1756-6889-2526a10ac707@gmail.com/T/
+I only see kobject to kobject symlinks around. And I don't think we
+can make /sys/devices/.../power/ directory a symlink to where our new
+wakeup stats will be, since the former contains attributes other than
+wakeup ones.
 
-Dmitry Osipenko (11):
-  PM / devfreq: tegra30: Change irq type to unsigned int
-  PM / devfreq: tegra30: Keep interrupt disabled while governor is
-    stopped
-  PM / devfreq: tegra30: Handle possible round-rate error
-  PM / devfreq: tegra30: Drop write-barrier
-  PM / devfreq: tegra30: Rework frequency management logic
-  PM / devfreq: tegra30: Reset boosting on startup
-  PM / devfreq: tegra30: Reset boosting if clock rate changed
-  PM / devfreq: tegra30: Stop de-boosting once it's finished
-  PM / devfreq: tegra30: Don't enable consecutive-down interrupt on
-    startup
-  PM / devfreq: tegra30: Add debug messages
-  PM / devfreq: tegra30: Add Dmitry as maintainer
-
- MAINTAINERS                       |   8 +
- drivers/devfreq/tegra30-devfreq.c | 542 ++++++++++++++++++++++--------
- 2 files changed, 409 insertions(+), 141 deletions(-)
-
--- 
-2.22.0
-
+Thanks!
