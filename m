@@ -2,154 +2,125 @@ Return-Path: <SRS0=M8Ta=UX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 900F7C43613
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 07:37:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58C00C43613
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 07:37:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5C31C208E4
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 07:37:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1561361836;
-	bh=x3aCy3cw4nqUw/E68KNlHb4J1hBjM6xKiEFbJNmuLeg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=QjeCuIwI0ycgfK0e2cys7RHqsmOdXLZi2NoKOQfOxw+9HCswyTmsJ4hgg5lt846Mf
-	 Ge3qy+DgRztcTNV3F4SaARNn30a3ElAX9hooxfTgWNYeqGMfT7k2+6LJhBzr8xu6hC
-	 EISm7jJC+Cx1S3/n7uSOcUkbA+dDKaHoVUGlh7qs=
+	by mail.kernel.org (Postfix) with ESMTP id 30BC5208E4
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Jun 2019 07:37:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="PHqSc71V"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726787AbfFXHhP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Jun 2019 03:37:15 -0400
-Received: from mail.kernel.org ([198.145.29.99]:39106 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726077AbfFXHhP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 24 Jun 2019 03:37:15 -0400
-Received: from localhost (li1825-44.members.linode.com [172.104.248.44])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id EA3AE2089F;
-        Mon, 24 Jun 2019 07:37:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1561361834;
-        bh=x3aCy3cw4nqUw/E68KNlHb4J1hBjM6xKiEFbJNmuLeg=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=VH4pN3Hg6X32GIipweiPjWQNXUNkTYG4LTH0myZFrICQznUQrnUJ9AMyi/6/KegHw
-         P3YrhHNxl6k6p/c1XwHdQ95ue6PqTYEsp6sNJDhoQzC7XD7Qdw/fh4IH/CkF03d+ql
-         pjsiCmcyZVPhNivMoWtKR/+VH/uzTJiuhwMydzEk=
-Date:   Mon, 24 Jun 2019 15:36:59 +0800
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Tri Vo <trong@android.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Joel Fernandes <joelaf@google.com>,
+        id S1727042AbfFXHh5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Jun 2019 03:37:57 -0400
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:46582 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726623AbfFXHhu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jun 2019 03:37:50 -0400
+Received: by mail-pg1-f196.google.com with SMTP id v9so6617477pgr.13
+        for <linux-pm@vger.kernel.org>; Mon, 24 Jun 2019 00:37:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=OeWUAdnx0L1hjDpfMtx2IyzWmQaeGBQ1LmUUqXpZp+s=;
+        b=PHqSc71VmMVb7KzIIyYV1T/rvk/8ZXT5M79sW38Oa+4BxNZzqQK7Oi0R77jVv26b76
+         63BIhZgKTVFXcVezHgdv6UwSjVmbWNkZ1FfAnm35FwEGQQbdMT3wktAWIZ+PC1V/VVm8
+         9f3fzUcUScUB8epezz9gDsL0uZarFESR+Ok8KG1nPjNNez82ZecAytvGDqUFH5wbvqsl
+         gayGuluLt0jT6JxztAX2UtwGMpwDn1gB4m0ZXnySZ8BRnQCsWW7fKB3ljQ8A/nS3cSjg
+         pAKz2Zqwvcp3OqCjOA8s6yP90bcE2RdDO5r91AW5GtVnWUP4FRuQIXomlIcHhIB6UlLx
+         FKmw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=OeWUAdnx0L1hjDpfMtx2IyzWmQaeGBQ1LmUUqXpZp+s=;
+        b=ZjqgIdAdnvGsUB+ONTogEnQtGdWPmZox6pwxGezOXxUeGODOniFxil2rCDNNBZbC5Z
+         T7GshfClA35KaILWTXJhjtDDtk9WcVJX2ki8zOWnbYmvT8sgXBTyLhHXtFBP8iBT/NVt
+         8kOUESj96fCSCpC6L6HucnW7kTkUeDQEUF0ioHvDnI7WOEgQJu2xTfSlP80uBufAAX6f
+         YUI2FJl3rFAeDLn/WW4Z4LOnjuXCcAoDPrk3Vm1BneXeKBPVWn9OOiA91sNG6VRNWPeU
+         ClVUoPLkyGLo2yC0VwBwRNItic4+ex6Oew4GgluP27sOVlPlOgIb2B/3mBX7O9kfiP0G
+         I4Lw==
+X-Gm-Message-State: APjAAAXtXYWSaaW89UL+nOI4WN0ZcAfTNtIh1NNYNmYHBPmheFhBBh1t
+        j0MYm342+911aMpUp0JZa3LXIw==
+X-Google-Smtp-Source: APXvYqzw6cAd7oVJ4Rd/hA/i0R7A5vczq5bhj7cIdGgVJjVtof9rhhMbhMIYeGn+Iziy3CzvAYc/pQ==
+X-Received: by 2002:a17:90a:f488:: with SMTP id bx8mr22856976pjb.91.1561361869345;
+        Mon, 24 Jun 2019 00:37:49 -0700 (PDT)
+Received: from localhost ([122.172.211.128])
+        by smtp.gmail.com with ESMTPSA id f14sm11537304pfn.53.2019.06.24.00.37.48
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 24 Jun 2019 00:37:48 -0700 (PDT)
+Date:   Mon, 24 Jun 2019 13:07:47 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     edubezval@gmail.com, linux-kernel@vger.kernel.org,
+        Sudeep Holla <sudeep.holla@arm.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Sandeep Patil <sspatil@android.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Hridya Valsaraju <hridya@google.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Cc: Android Kernel" <kernel-team@android.com>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Alternatives to /sys/kernel/debug/wakeup_sources
-Message-ID: <20190624073659.GA13957@kroah.com>
-References: <CANA+-vCThdRivg7nrMK5QoFu8SGUzEVSvSyp0H2CPyy9==Tqog@mail.gmail.com>
- <CANA+-vARQ9Ao=W1oEArrAQ0sqh757orq=-=kytdVPhstm-3E9w@mail.gmail.com>
- <20190618182502.GC203031@google.com>
- <4587569.x9DSL43cXO@kreacher>
- <CANA+-vCMK6u1n9gXf2+v5dFn_tGfr1PT8d7W4d2BCzw+B-HvYw@mail.gmail.com>
- <CAJWu+oo7kwmEyMXQN0yfswV2=J-Fa9QybhAUx-SOGG_ipsBErQ@mail.gmail.com>
- <CAJZ5v0gvzCx-7qS9qkxB=sGKjQJKMR7yCc21f=_vqrbZxMSWNg@mail.gmail.com>
- <CANA+-vCBW=P=dpJGfcKTt7SoNKzWcpP5pwZHSDMU6MkwBKoC9A@mail.gmail.com>
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Javi Merino <javi.merino@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Keerthy <j-keerthy@ti.com>,
+        "open list:CPU FREQUENCY DRIVERS - ARM BIG LITTLE" 
+        <linux-pm@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "open list:TI BANDGAP AND THERMAL DRIVER" 
+        <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH 2/6] thermal/drivers/cpu_cooling: Unregister with the
+ policy
+Message-ID: <20190624073747.hf7jd6ulkmebbxtm@vireshk-i7>
+References: <20190621132302.30414-1-daniel.lezcano@linaro.org>
+ <20190621132302.30414-2-daniel.lezcano@linaro.org>
+ <20190624060334.kak2mjuou4napi4x@vireshk-i7>
+ <3f324189-aa1e-ae78-1d69-61e00c5d033a@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CANA+-vCBW=P=dpJGfcKTt7SoNKzWcpP5pwZHSDMU6MkwBKoC9A@mail.gmail.com>
-User-Agent: Mutt/1.12.1 (2019-06-15)
+In-Reply-To: <3f324189-aa1e-ae78-1d69-61e00c5d033a@linaro.org>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Jun 23, 2019 at 06:48:43PM -0700, Tri Vo wrote:
-> On Wed, Jun 19, 2019 at 1:35 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Wed, Jun 19, 2019 at 1:52 AM Joel Fernandes <joelaf@google.com> wrote:
-> > >
-> > > On Tue, Jun 18, 2019 at 7:15 PM Tri Vo <trong@android.com> wrote:
-> > > [snip]
-> > > > > > > >
-> > > > > > > > Android userspace reading wakeup_sources is not ideal because:
-> > > > > > > > - Debugfs API is not stable, i.e. Android tools built on top of it are
-> > > > > > > > not guaranteed to be backward/forward compatible.
-> > > > > > > > - This file requires debugfs to be mounted, which itself is
-> > > > > > > > undesirable for security reasons.
-> > > > > > > >
-> > > > > > > > To address these problems, we want to contribute a way to expose these
-> > > > > > > > statistics that doesn't depend on debugfs.
-> > > > > > > >
-> > > > > > > > Some initial thoughts/questions: Should we expose the stats in sysfs?
-> > > > > > > > Or maybe implement eBPF-based solution? What do you think?
-> > > > > >
-> > > > > > We are going through Android's out-of-tree kernel dependencies along with
-> > > > > > userspace APIs that are not necessarily considered "stable and forever
-> > > > > > supported" upstream. The debugfs dependencies showed up on our radar as a
-> > > > > > result and so we are wondering if we should worry about changes in debugfs
-> > > > > > interface and hence the question(s) below.
-> > > > > >
-> > > > > > So, can we rely on /d/wakeup_sources to be considered a userspace API and
-> > > > > > hence maintained stable as we do for other /proc and /sys entries?
-> > > > > >
-> > > > > > If yes, then we will go ahead and add tests for this in LTP or
-> > > > > > somewhere else suitable.
-> > > > >
-> > > > > No, debugfs is not ABI.
-> > > > >
-> > > > > > If no, then we would love to hear suggestions for any changes that need to be
-> > > > > > made or we simply just move the debugfs entry into somewhere like
-> > > > > > /sys/power/ ?
-> > > > >
-> > > > > No, moving that entire file from debugfs into sysfs is not an option either.
-> > > > >
-> > > > > The statistics for the wakeup sources associated with devices are already there
-> > > > > under /sys/devices/.../power/ , but I guess you want all wakeup sources?
-> > > > >
-> > > > > That would require adding a kobject to struct wakeup_source and exposing
-> > > > > all of the statistics as separate attributes under it.  In which case it would be
-> > > > > good to replace the existing wakeup statistics under /sys/devices/.../power/
-> > > > > with symbolic links to the attributes under the wakeup_source kobject.
-> > > >
-> > > > Thanks for your input, Rafael! Your suggestion makes sense. I'll work
-> > > > on a patch for this.
-> > >
-> > > Does that entail making each wake up source, a new sysfs node under a
-> > > particular device, and then adding stats under that new node?
-> >
-> > Not under a device, because there are wakeup source objects without
-> > associated devices.
-> >
-> > It is conceivable to have a "wakeup_sources" directory under
-> > /sys/power/ and sysfs nodes for all wakeup sources in there.
-> >
-> > Then, instead of exposing wakeup statistics directly under
-> > /sys/devices/.../power/, there can be symbolic links from there to the
-> > new wakeup source nodes under "wakeup_sources" (so as to avoid
-> > exposing the same data in two different places in sysfs, which may be
-> > confusing).
+On 24-06-19, 09:30, Daniel Lezcano wrote:
+> On 24/06/2019 08:03, Viresh Kumar wrote:
+> > On 21-06-19, 15:22, Daniel Lezcano wrote:
+> >> Currently the function cpufreq_cooling_register() returns a cooling
+> >> device pointer which is used back as a pointer to call the function
+> >> cpufreq_cooling_unregister(). Even if it is correct, it would make
+> >> sense to not leak the structure inside a cpufreq driver and keep the
+> >> code thermal code self-encapsulate. Moreover, that forces to add an
+> >> extra variable in each driver using this function.
+> >>
+> >> Instead of passing the cooling device to unregister, pass the policy.
+> >>
+> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >> ---
+> >>  drivers/cpufreq/arm_big_little.c               |  2 +-
+> >>  drivers/cpufreq/cpufreq.c                      |  2 +-
+> >>  drivers/thermal/cpu_cooling.c                  | 18 ++++++++++--------
+> >>  drivers/thermal/imx_thermal.c                  |  4 ++--
+> >>  .../thermal/ti-soc-thermal/ti-thermal-common.c |  2 +-
+> >>  include/linux/cpu_cooling.h                    |  6 +++---
+> >>  6 files changed, 18 insertions(+), 16 deletions(-)
+> > 
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> This may be a dumb question. Is it appropriate to make symbolic links
-> in sysfs from one attribute to another attribute? For example,
-> /sys/devices/.../power/wakeup_count ->
-> /sys/power/wakeup_sources/.../wakeup_count.
+> Just a side note, does it make sense to have the function called from
+> imx_thermal.c and ti-thermal-common.c? Sounds like also a leakage from
+> cpufreq to thermal drivers, no?
 
-Why? would you want that?
+I am not sure what you are proposing here :)
 
-> I only see kobject to kobject symlinks around. And I don't think we
-> can make /sys/devices/.../power/ directory a symlink to where our new
-> wakeup stats will be, since the former contains attributes other than
-> wakeup ones.
-
-No, don't link attributes, they refer to the kobject that created them.
-I really doubt that this is the same kobject in both places :)
-
-thanks,
-
-greg k-h
+-- 
+viresh
