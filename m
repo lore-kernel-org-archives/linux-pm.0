@@ -6,70 +6,72 @@ X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1ADCC48BD6
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 22:48:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C921C48BD7
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 23:00:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B5B1420645
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 22:48:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2357F2133F
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 23:00:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1561502933;
-	bh=xEOhnZFYPU0kl7vlwY6b72T7LtUSnI7LyCrwDMJeNQc=;
+	s=default; t=1561503631;
+	bh=OiRgHQVCK0aJruQnFZlnQ07mB4zCWuTaaeqmpvenoRU=;
 	h=In-Reply-To:References:To:From:Subject:Cc:Date:List-ID:From;
-	b=UVU3enOTExSqIbEtrBOpK376Me02PtO4lVLFg2Zr9AsCZaH72/3+TbprN5ej3OSGx
-	 IsWRdYT0xze3uej6CDhmTfalnJjMdbZV1hpUcnJmr6jE4SZjGdQH5cbrgCkKaaF1OL
-	 AutVoviCw6sXQRFhII0RZfIvU4ECU0pYyeCOhCog=
+	b=fM2Llo8boyLWv3vIZSOmOBC5CvXAnOwYvraNpkrqgnmDqVNm/7jGIXHRrN0I8XiSE
+	 JZNkZKtYweARELDoBY467XIy20DZMSyEvg3PPIVXBHt4i5KxUwTQQhgq2n3TurETpc
+	 DGGKgoZisHdya/SeOdoDhbFkDOSxvuyCxP1qt+xc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726307AbfFYWsk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Jun 2019 18:48:40 -0400
-Received: from mail.kernel.org ([198.145.29.99]:44944 "EHLO mail.kernel.org"
+        id S1726037AbfFYXAa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Jun 2019 19:00:30 -0400
+Received: from mail.kernel.org ([198.145.29.99]:49210 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726077AbfFYWsi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 25 Jun 2019 18:48:38 -0400
+        id S1725782AbfFYXAa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Jun 2019 19:00:30 -0400
 Received: from kernel.org (unknown [104.132.0.74])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 58B2C208CA;
-        Tue, 25 Jun 2019 22:48:37 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 7F30A2084B;
+        Tue, 25 Jun 2019 23:00:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1561502917;
-        bh=xEOhnZFYPU0kl7vlwY6b72T7LtUSnI7LyCrwDMJeNQc=;
+        s=default; t=1561503629;
+        bh=OiRgHQVCK0aJruQnFZlnQ07mB4zCWuTaaeqmpvenoRU=;
         h=In-Reply-To:References:To:From:Subject:Cc:Date:From;
-        b=FAG/FBASb4pUoMWvnBeMVJZ0REWyiW3tGGOSCkbCnRUnarXch2LSrsVmXloLOpinJ
-         fS3ZQRp87jP/VRVGWCaNuQVecJpKRt1HAn1h8eJiEwsgHafPZJbEU9j5b0nXTVR3II
-         3I8MKcBLA3DogQTMnLF/uRJLsR4dwoMZ8tHFxCCA=
+        b=TrmwA+mqozRXokIEWHlviY+tGcQ39hyLt2tHGlMC3t9RaL93fkOaCln1h/MehKf15
+         C10sfoSJfjcCUaNI6+U4ga+up+7ftJOe6NJjg7+B/jRzAPM0vMeMRe+rVRu15Zn6Lp
+         KAOIlszTwED9E8TaE4ODxLkjQ8KPG317s37iSsCU=
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20190611180757.32299-3-paul@crapouillou.net>
-References: <20190611180757.32299-1-paul@crapouillou.net> <20190611180757.32299-3-paul@crapouillou.net>
-To:     James Hogan <jhogan@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Paul Burton <paul.burton@mips.com>,
-        Paul Cercueil <paul@crapouillou.net>,
-        Ralf Baechle <ralf@linux-mips.org>
+In-Reply-To: <20190611175839.28351-2-nsaenzjulienne@suse.de>
+References: <20190611175839.28351-1-nsaenzjulienne@suse.de> <20190611175839.28351-2-nsaenzjulienne@suse.de>
+To:     Eric Anholt <eric@anholt.net>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        bcm-kernel-feedback-list@broadcom.com, stefan.wahren@i2se.com
 From:   Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v2 3/5] MIPS: jz4740: PM: Let CGU driver suspend clocks and set sleep mode
-Cc:     od@zcrc.me, linux-mips@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Paul Cercueil <paul@crapouillou.net>
+Subject: Re: [PATCH v3 1/7] clk: bcm2835: remove pllb
+Cc:     mbrugger@suse.de, viresh.kumar@linaro.org, rjw@rjwysocki.net,
+        ptesarik@suse.com, linux-rpi-kernel@lists.infradead.org,
+        ssuloev@orpaltech.com, linux-clk@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com,
+        linux-pm@vger.kernel.org,
+        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+        linux-kernel@vger.kernel.org
 User-Agent: alot/0.8.1
-Date:   Tue, 25 Jun 2019 15:48:36 -0700
-Message-Id: <20190625224837.58B2C208CA@mail.kernel.org>
+Date:   Tue, 25 Jun 2019 16:00:28 -0700
+Message-Id: <20190625230029.7F30A2084B@mail.kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Paul Cercueil (2019-06-11 11:07:55)
-> Instead of forcing the jz4740 clocks to suspend here, we let the CGU
-> driver handle it.
-> We also let the CGU driver set the "sleep mode" bit.
+Quoting Nicolas Saenz Julienne (2019-06-11 10:58:34)
+> Raspberry Pi's firmware controls this pll, we should use the firmware
+> interface to access it.
 >=20
-> This has the added benefit that now it is possible to build a kernel on
-> SoCs newer than the JZ4740 with CONFIG_PM.
->=20
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+> Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+> Acked-by: Eric Anholt <eric@anholt.net>
 > ---
 
-Applied to clk-next
+Reviewed-by: Stephen Boyd <sboyd@kernel.org>
 
