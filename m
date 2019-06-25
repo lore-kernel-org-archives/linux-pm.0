@@ -2,137 +2,206 @@ Return-Path: <SRS0=B09i=UY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AEFEC48BD6
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 21:34:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 956EEC48BD5
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 21:50:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DF5B72085A
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 21:34:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Qt2GyuTO"
+	by mail.kernel.org (Postfix) with ESMTP id 6259D2085A
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 21:50:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1561499418;
+	bh=AfelVii1d9O3tR5AlGr7VB6RnhhFxFc8u5RMumC2OnQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=VC6PO2Bp+tGA3HYlQqnpHdXlOjj/eUqMEIqt4xkIOlLcJpWSpmL7j3DIPetjxW7BE
+	 U76aGdXOg1wYoGRZG2eNxh2HgjbPvkjl1/zc+AEIQn7QecbHYUruqeivHT4eVBodcj
+	 wiZK8/fS7L8JmLtVqnvCcWJEe8fZQWiACJF42+ic=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726334AbfFYVdq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Jun 2019 17:33:46 -0400
-Received: from mail-pl1-f202.google.com ([209.85.214.202]:49715 "EHLO
-        mail-pl1-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725914AbfFYVdq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jun 2019 17:33:46 -0400
-Received: by mail-pl1-f202.google.com with SMTP id 65so8659plf.16
-        for <linux-pm@vger.kernel.org>; Tue, 25 Jun 2019 14:33:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
-         :cc;
-        bh=diT5j67eq/c/BsDoIxqIkGMzy6KvSDn7bQJLbufPm+c=;
-        b=Qt2GyuTO7pTaIYstjFLkJ4UcWzoUKoZj4qXob3li6BuGiuKeH50eLMmsx/LxWdsWLA
-         oecwexwecInCXpqVHrwJlB4oAOh+bGLiUQ7Ec4LJU+29OlER1pH1x3YVV0RvrcOgm7KW
-         vI2ZTO9GPmN98FDlAFxgVgIwLUitzndyN5zxbeY1PhbYfBoi8r0f8IIAtmRh6ywTaa76
-         UpVrAJkLoVqes/Tv9AOUt81P8QMCOlNI3ggTX7v9EgbJIuZiRmlDd1k+MnS3316TxoeS
-         gwcZxmG5mkTa+WNatLkSNvEXmvBi5LZgTzem7X7JYmp2q1tpK8W9NiJk7MDucsTcG70S
-         3ZwA==
+        id S1726329AbfFYVuS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Jun 2019 17:50:18 -0400
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:35994 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726037AbfFYVuR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jun 2019 17:50:17 -0400
+Received: by mail-oi1-f193.google.com with SMTP id w7so334975oic.3;
+        Tue, 25 Jun 2019 14:50:17 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=diT5j67eq/c/BsDoIxqIkGMzy6KvSDn7bQJLbufPm+c=;
-        b=Uctgs0J1xCB+lnHQc5bf/bxnPDcK7kyLMV/mCp/LorDF/iehhRUTgT0VIswgmj5/bV
-         M9fiOVUpmw/tR8QcbLOlRc26ylBm88Z4REdIBx9ocJ4U/fAlNcVXzkdd2eOL91Stw1Fe
-         Gs5le2+rMpWJbGlsWwe/GSZHE1tLg7v23rRLRiAwb2PM6H5diNx0qozgXLfcbUJjU0Us
-         YNv9JG5VMOzveTTPcqL2DwJMgeUaZoEK7NSXudPfILtSgJYaipQY6O29fHaKsnPo//YO
-         JXr4lElhw/8sFeJycH+G1aMXn69hn0UJA7gPKjL+fjZ9BiWnwHYq85IIwJYmX1iP9Oil
-         RlCg==
-X-Gm-Message-State: APjAAAVNiTfRbqt3a2DrbDcVXJs1j1byeqDjD87hNtxGhKMkc1OcsKPI
-        WYdX2Hsbhltp8Jo3fXq8ztRtIyiJwQSbSvc=
-X-Google-Smtp-Source: APXvYqzIHSXTSLsgydrPoSZc9EgXx53vFFhsfQ8jj9MTVHjjXWYgkmbSCbVTleIIJbzNNIH7BCg3E5ALTwZptWI=
-X-Received: by 2002:a63:231a:: with SMTP id j26mr40088869pgj.389.1561498425029;
- Tue, 25 Jun 2019 14:33:45 -0700 (PDT)
-Date:   Tue, 25 Jun 2019 14:33:34 -0700
-In-Reply-To: <20190625213337.157525-1-saravanak@google.com>
-Message-Id: <20190625213337.157525-2-saravanak@google.com>
-Mime-Version: 1.0
-References: <20190625213337.157525-1-saravanak@google.com>
-X-Mailer: git-send-email 2.22.0.410.gd8fdbe21b5-goog
-Subject: [PATCH v2 1/4] OPP: Allow required-opps even if the device doesn't
- have power-domains
-From:   Saravana Kannan <saravanak@google.com>
-To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Saravana Kannan <saravanak@google.com>, kernel-team@android.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=63ctMGJeD31+Btr223CgvRlIKazM5VvhjqXvwryVEig=;
+        b=sxW2SzfXVZdCfUJ6dP1VxPqxT54PN7T8VkPEIED/0ivtxcBTHf5NRSI7ojtrAa9bMo
+         mxpTBNW2lmfyTkYRCWqz43VZV//Z9nsDlm7r6uPEC3EgT7yLOpvw1GorkfK+JozIf+wu
+         tWKKSbBEEi7eTxK4CqCltPsi5Fu310zNapSyoplirosEB473mxgsNPFdlVfogTjZpidn
+         s37mi/TtK/Nx3VvZlRNTKAgXxvKbV91aP0wyg1FZVWZyNva1as64y6b3Dbyn6BETSgKg
+         p7if9RaQUoBEMBKJJuovIuJWYlXj9wonLcwp7P2vRmrIgXdnih8hQThCI7GIPF4ksgC9
+         kxaA==
+X-Gm-Message-State: APjAAAXnrhpTvJNZJrNPu9J806NyL8A7x+Jgbyqn85cfisacDlDx5El0
+        xwl7HSDv1ajuDj/LypmyI8m09aKQKt/oFuzdMPs=
+X-Google-Smtp-Source: APXvYqzsqA+FE6+lWUuUpexxRcYdb7lD8KSO5PSEpcfyNerv9/QsInosGAdM3VwbdytwHapnVmk+ntMisRa+M157GYk=
+X-Received: by 2002:aca:4e89:: with SMTP id c131mr15993167oib.57.1561499416532;
+ Tue, 25 Jun 2019 14:50:16 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190613224532.949768676@redhat.com> <20190613225022.932697232@redhat.com>
+In-Reply-To: <20190613225022.932697232@redhat.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 25 Jun 2019 23:50:04 +0200
+Message-ID: <CAJZ5v0g2ZnO2ykWXmP6HAcnMxQOsVj4jJkG9UooyU8sf+3UZ=g@mail.gmail.com>
+Subject: Re: [patch 1/5] drivers/cpuidle: add cpuidle-haltpoll driver
+To:     Marcelo Tosatti <mtosatti@redhat.com>
+Cc:     kvm-devel <kvm@vger.kernel.org>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Radim Krcmar <rkrcmar@redhat.com>,
+        Andrea Arcangeli <aarcange@redhat.com>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Wanpeng Li <kernellwp@gmail.com>,
+        Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+        Raslan KarimAllah <karahmed@amazon.de>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Ankur Arora <ankur.a.arora@oracle.com>,
+        Christian Borntraeger <borntraeger@de.ibm.com>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-A Device-A can have a (minimum) performance requirement on another
-Device-B to be able to function correctly. This performance requirement
-on Device-B can also change based on the current performance level of
-Device-A.
+On Fri, Jun 14, 2019 at 12:55 AM Marcelo Tosatti <mtosatti@redhat.com> wrote:
+>
+> Add a cpuidle driver that calls the architecture default_idle routine.
+>
+> To be used in conjunction with the haltpoll governor.
+>
+> Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+>
+> ---
+>  arch/x86/kernel/process.c          |    2 -
+>  drivers/cpuidle/Kconfig            |    9 +++++
+>  drivers/cpuidle/Makefile           |    1
+>  drivers/cpuidle/cpuidle-haltpoll.c |   65 +++++++++++++++++++++++++++++++++++++
+>  4 files changed, 76 insertions(+), 1 deletion(-)
+>
+> Index: linux-2.6.git/arch/x86/kernel/process.c
+> ===================================================================
+> --- linux-2.6.git.orig/arch/x86/kernel/process.c        2019-06-13 16:19:27.877064340 -0400
+> +++ linux-2.6.git/arch/x86/kernel/process.c     2019-06-13 16:19:48.795544892 -0400
+> @@ -580,7 +580,7 @@
+>         safe_halt();
+>         trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
+>  }
+> -#ifdef CONFIG_APM_MODULE
+> +#if defined(CONFIG_APM_MODULE) || defined(CONFIG_HALTPOLL_CPUIDLE_MODULE)
+>  EXPORT_SYMBOL(default_idle);
+>  #endif
+>
+> Index: linux-2.6.git/drivers/cpuidle/Kconfig
+> ===================================================================
+> --- linux-2.6.git.orig/drivers/cpuidle/Kconfig  2019-06-13 16:19:27.878064316 -0400
+> +++ linux-2.6.git/drivers/cpuidle/Kconfig       2019-06-13 18:41:40.599912671 -0400
+> @@ -51,6 +51,15 @@
+>  source "drivers/cpuidle/Kconfig.powerpc"
+>  endmenu
+>
+> +config HALTPOLL_CPUIDLE
+> +       tristate "Halt poll cpuidle driver"
+> +       depends on X86
+> +       default y
+> +       help
+> +         This option enables halt poll cpuidle driver, which allows to poll
+> +         before halting in the guest (more efficient than polling in the
+> +         host via halt_poll_ns for some scenarios).
+> +
+>  endif
+>
+>  config ARCH_NEEDS_CPU_IDLE_COUPLED
+> Index: linux-2.6.git/drivers/cpuidle/Makefile
+> ===================================================================
+> --- linux-2.6.git.orig/drivers/cpuidle/Makefile 2019-06-13 16:19:27.878064316 -0400
+> +++ linux-2.6.git/drivers/cpuidle/Makefile      2019-06-13 16:19:48.796544867 -0400
+> @@ -7,6 +7,7 @@
+>  obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
+>  obj-$(CONFIG_DT_IDLE_STATES)             += dt_idle_states.o
+>  obj-$(CONFIG_ARCH_HAS_CPU_RELAX)         += poll_state.o
+> +obj-$(CONFIG_HALTPOLL_CPUIDLE)           += cpuidle-haltpoll.o
+>
+>  ##################################################################################
+>  # ARM SoC drivers
+> Index: linux-2.6.git/drivers/cpuidle/cpuidle-haltpoll.c
+> ===================================================================
+> --- /dev/null   1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.git/drivers/cpuidle/cpuidle-haltpoll.c    2019-06-13 18:41:39.305933413 -0400
+> @@ -0,0 +1,65 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * cpuidle driver for haltpoll governor.
+> + *
+> + * Copyright 2019 Red Hat, Inc. and/or its affiliates.
+> + *
+> + * This work is licensed under the terms of the GNU GPL, version 2.  See
+> + * the COPYING file in the top-level directory.
+> + *
+> + * Authors: Marcelo Tosatti <mtosatti@redhat.com>
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/cpuidle.h>
+> +#include <linux/module.h>
+> +#include <linux/sched/idle.h>
+> +
+> +static int default_enter_idle(struct cpuidle_device *dev,
+> +                             struct cpuidle_driver *drv, int index)
+> +{
+> +       if (current_clr_polling_and_test()) {
+> +               local_irq_enable();
+> +               return index;
+> +       }
+> +       default_idle();
+> +       return index;
+> +}
+> +
+> +static struct cpuidle_driver haltpoll_driver = {
+> +       .name = "haltpoll",
+> +       .owner = THIS_MODULE,
+> +       .states = {
+> +               { /* entry 0 is for polling */ },
+> +               {
+> +                       .enter                  = default_enter_idle,
+> +                       .exit_latency           = 0,
+> +                       .target_residency       = 0,
+> +                       .power_usage            = -1,
+> +                       .name                   = "haltpoll idle",
+> +                       .desc                   = "default architecture idle",
+> +               },
+> +       },
+> +       .safe_state_index = 0,
+> +       .state_count = 2,
+> +};
+> +
+> +static int __init haltpoll_init(void)
+> +{
+> +       struct cpuidle_driver *drv = &haltpoll_driver;
+> +
+> +       cpuidle_poll_state_init(drv);
+> +
+> +       return cpuidle_register(&haltpoll_driver, NULL);
 
-The existing required-opps feature fits well to describe this need. So,
-instead of limiting required-opps to point to only PM-domain devices,
-allow it to point to any device.
+Would it be practical to prevent this driver from loading on non-virt?
 
-Signed-off-by: Saravana Kannan <saravanak@google.com>
----
- drivers/opp/core.c |  2 +-
- drivers/opp/of.c   | 14 --------------
- 2 files changed, 1 insertion(+), 15 deletions(-)
+> +}
+> +
+> +static void __exit haltpoll_exit(void)
+> +{
+> +       cpuidle_unregister(&haltpoll_driver);
+> +}
+> +
+> +module_init(haltpoll_init);
+> +module_exit(haltpoll_exit);
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Marcelo Tosatti <mtosatti@redhat.com>");
+> +
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 0e7703fe733f..74c7bdc6f463 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -710,7 +710,7 @@ static int _set_required_opps(struct device *dev,
- 		return 0;
- 
- 	/* Single genpd case */
--	if (!genpd_virt_devs) {
-+	if (!genpd_virt_devs && required_opp_tables[0]->is_genpd) {
- 		pstate = opp->required_opps[0]->pstate;
- 		ret = dev_pm_genpd_set_performance_state(dev, pstate);
- 		if (ret) {
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index c10c782d15aa..7c8336e94aff 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -195,9 +195,6 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 	 */
- 	count_pd = of_count_phandle_with_args(dev->of_node, "power-domains",
- 					      "#power-domain-cells");
--	if (!count_pd)
--		goto put_np;
--
- 	if (count_pd > 1) {
- 		genpd_virt_devs = kcalloc(count, sizeof(*genpd_virt_devs),
- 					GFP_KERNEL);
-@@ -226,17 +223,6 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 
- 		if (IS_ERR(required_opp_tables[i]))
- 			goto free_required_tables;
--
--		/*
--		 * We only support genpd's OPPs in the "required-opps" for now,
--		 * as we don't know how much about other cases. Error out if the
--		 * required OPP doesn't belong to a genpd.
--		 */
--		if (!required_opp_tables[i]->is_genpd) {
--			dev_err(dev, "required-opp doesn't belong to genpd: %pOF\n",
--				required_np);
--			goto free_required_tables;
--		}
- 	}
- 
- 	goto put_np;
--- 
-2.22.0.410.gd8fdbe21b5-goog
-
+Apart from the above it is simple enough.
