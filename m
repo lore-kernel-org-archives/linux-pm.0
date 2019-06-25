@@ -6,34 +6,34 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDC1BC48BD6
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 15:17:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B2E4C48BD4
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 15:17:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9DCC02133F
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 15:17:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1F5CC2133F
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Jun 2019 15:17:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732131AbfFYPRS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Jun 2019 11:17:18 -0400
-Received: from mga12.intel.com ([192.55.52.136]:15851 "EHLO mga12.intel.com"
+        id S1732135AbfFYPRT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Jun 2019 11:17:19 -0400
+Received: from mga11.intel.com ([192.55.52.93]:52557 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732128AbfFYPRS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 25 Jun 2019 11:17:18 -0400
+        id S1732134AbfFYPRT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Jun 2019 11:17:19 -0400
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 25 Jun 2019 08:17:17 -0700
+  by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 25 Jun 2019 08:17:19 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.63,416,1557212400"; 
-   d="scan'208";a="161946687"
+   d="scan'208";a="161946699"
 Received: from syhu-mobl.ccr.corp.intel.com (HELO rzhang-dell-9360.ccr.corp.intel.com) ([10.249.173.95])
-  by fmsmga008.fm.intel.com with ESMTP; 25 Jun 2019 08:17:14 -0700
+  by fmsmga008.fm.intel.com with ESMTP; 25 Jun 2019 08:17:17 -0700
 From:   Zhang Rui <rui.zhang@intel.com>
 To:     rjw@rjwysocki.net
 Cc:     linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com,
         rui.zhang@intel.com
-Subject: [PATCH 10/13] intel_rapl: support 64 bit register
-Date:   Tue, 25 Jun 2019 23:16:45 +0800
-Message-Id: <1561475808-24839-11-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 12/13] int340X/processor_thermal_device: add support for MMIO RAPL
+Date:   Tue, 25 Jun 2019 23:16:47 +0800
+Message-Id: <1561475808-24839-13-git-send-email-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1561475808-24839-1-git-send-email-rui.zhang@intel.com>
 References: <1561475808-24839-1-git-send-email-rui.zhang@intel.com>
@@ -42,117 +42,277 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-RAPL MMIO interface uses 64 bit registers, thus force use 64 bit register
-for all the RAPL code.
+Introduce MMIO RAPL support as Intel processor_thermal device exposes the
+capability to do RAPL control via MMIO registers.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/powercap/intel_rapl.c        | 11 +++++++----
- drivers/powercap/intel_rapl_common.c |  6 +++---
- include/linux/intel_rapl.h           |  8 ++++----
- 3 files changed, 14 insertions(+), 11 deletions(-)
+ drivers/thermal/intel/int340x_thermal/Kconfig      |   5 +
+ .../int340x_thermal/processor_thermal_device.c     | 174 ++++++++++++++++++++-
+ 2 files changed, 173 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 67130c4..8868624 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -83,8 +83,10 @@ static int rapl_cpu_down_prep(unsigned int cpu)
+diff --git a/drivers/thermal/intel/int340x_thermal/Kconfig b/drivers/thermal/intel/int340x_thermal/Kconfig
+index 5333e01..547a35f 100644
+--- a/drivers/thermal/intel/int340x_thermal/Kconfig
++++ b/drivers/thermal/intel/int340x_thermal/Kconfig
+@@ -40,4 +40,9 @@ config INT3406_THERMAL
+ 	  brightness in order to address a thermal condition or to reduce
+ 	  power consumed by display device.
  
- static int rapl_msr_read_raw(int cpu, struct reg_action *ra)
- {
--	if (rdmsrl_safe_on_cpu(cpu, ra->reg, &ra->value)) {
--		pr_debug("failed to read msr 0x%x on cpu %d\n", ra->reg, cpu);
-+	u32 msr = (u32)ra->reg;
++config PROC_THERMAL_MMIO_RAPL
++	bool
++	depends on 64BIT
++	select INTEL_RAPL_CORE
++	default y
+ endif
+diff --git a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+index 53c84fa..5410c07 100644
+--- a/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
++++ b/drivers/thermal/intel/int340x_thermal/processor_thermal_device.c
+@@ -11,6 +11,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/acpi.h>
+ #include <linux/thermal.h>
++#include <linux/cpuhotplug.h>
++#include <linux/intel_rapl.h>
+ #include "int340x_thermal_zone.h"
+ #include "../intel_soc_dts_iosf.h"
+ 
+@@ -37,6 +39,8 @@
+ /* GeminiLake thermal reporting device */
+ #define PCI_DEVICE_ID_PROC_GLK_THERMAL	0x318C
+ 
++#define DRV_NAME "proc_thermal"
 +
-+	if (rdmsrl_safe_on_cpu(cpu, msr, &ra->value)) {
-+		pr_debug("failed to read msr 0x%x on cpu %d\n", msr, cpu);
- 		return -EIO;
- 	}
- 	ra->value &= ra->mask;
-@@ -94,16 +96,17 @@ static int rapl_msr_read_raw(int cpu, struct reg_action *ra)
- static void rapl_msr_update_func(void *info)
- {
- 	struct reg_action *ra = info;
-+	u32 msr = (u32)ra->reg;
- 	u64 val;
- 
--	ra->err = rdmsrl_safe(ra->reg, &val);
-+	ra->err = rdmsrl_safe(msr, &val);
- 	if (ra->err)
- 		return;
- 
- 	val &= ~ra->mask;
- 	val |= ra->value;
- 
--	ra->err = wrmsrl_safe(ra->reg, val);
-+	ra->err = wrmsrl_safe(msr, val);
- }
- 
- static int rapl_msr_write_raw(int cpu, struct reg_action *ra)
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 8f589cf..f11bac7 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -689,7 +689,7 @@ static int rapl_read_data_raw(struct rapl_domain *rd,
- 	ra.mask = rp->mask;
- 
- 	if (rd->rp->priv->read_raw(cpu, &ra)) {
--		pr_debug("failed to read reg 0x%x on cpu %d\n", ra.reg, cpu);
-+		pr_debug("failed to read reg 0x%llx on cpu %d\n", ra.reg, cpu);
- 		return -EIO;
- 	}
- 
-@@ -749,7 +749,7 @@ static int rapl_check_unit_core(struct rapl_package *rp, int cpu)
- 	ra.reg = rp->priv->reg_unit;
- 	ra.mask = ~0;
- 	if (rp->priv->read_raw(cpu, &ra)) {
--		pr_err("Failed to read power unit REG 0x%x on CPU %d, exit.\n",
-+		pr_err("Failed to read power unit REG 0x%llx on CPU %d, exit.\n",
- 		       rp->priv->reg_unit, cpu);
- 		return -ENODEV;
- 	}
-@@ -777,7 +777,7 @@ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
- 	ra.reg = rp->priv->reg_unit;
- 	ra.mask = ~0;
- 	if (rp->priv->read_raw(cpu, &ra)) {
--		pr_err("Failed to read power unit REG 0x%x on CPU %d, exit.\n",
-+		pr_err("Failed to read power unit REG 0x%llx on CPU %d, exit.\n",
- 		       rp->priv->reg_unit, cpu);
- 		return -ENODEV;
- 	}
-diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
-index e83739f..1ca0f69 100644
---- a/include/linux/intel_rapl.h
-+++ b/include/linux/intel_rapl.h
-@@ -78,7 +78,7 @@ struct rapl_package;
- struct rapl_domain {
- 	const char *name;
- 	enum rapl_domain_type id;
--	int regs[RAPL_DOMAIN_REG_MAX];
-+	u64 regs[RAPL_DOMAIN_REG_MAX];
- 	struct powercap_zone power_zone;
- 	struct rapl_domain_data rdd;
- 	struct rapl_power_limit rpl[NR_POWER_LIMITS];
-@@ -89,7 +89,7 @@ struct rapl_domain {
+ struct power_config {
+ 	u32	index;
+ 	u32	min_uw;
+@@ -52,6 +56,7 @@ struct proc_thermal_device {
+ 	struct power_config power_limits[2];
+ 	struct int34x_thermal_zone *int340x_zone;
+ 	struct intel_soc_dts_sensors *soc_dts;
++	void __iomem *mmio_base;
  };
  
- struct reg_action {
--	u32 reg;
-+	u64 reg;
- 	u64 mask;
- 	u64 value;
- 	int err;
-@@ -99,8 +99,8 @@ struct rapl_priv {
- 	struct powercap_control_type *control_type;
- 	struct rapl_domain *platform_rapl_domain;
- 	enum cpuhp_state pcap_rapl_online;
--	u32 reg_unit;
--	u32 regs[RAPL_DOMAIN_MAX][RAPL_DOMAIN_REG_MAX];
+ enum proc_thermal_emum_mode_type {
+@@ -60,6 +65,12 @@ enum proc_thermal_emum_mode_type {
+ 	PROC_THERMAL_PLATFORM_DEV
+ };
+ 
++struct rapl_mmio_regs {
 +	u64 reg_unit;
 +	u64 regs[RAPL_DOMAIN_MAX][RAPL_DOMAIN_REG_MAX];
- 	int (*read_raw)(int cpu, struct reg_action *ra);
- 	int (*write_raw)(int cpu, struct reg_action *ra);
- };
++	int limits[RAPL_DOMAIN_MAX];
++};
++
+ /*
+  * We can have only one type of enumeration, PCI or Platform,
+  * not both. So we don't need instance specific data.
+@@ -367,8 +378,152 @@ static irqreturn_t proc_thermal_pci_msi_irq(int irq, void *devid)
+ 	return IRQ_HANDLED;
+ }
+ 
++#ifdef CONFIG_PROC_THERMAL_MMIO_RAPL
++
++#define MCHBAR 0
++
++/* RAPL Support via MMIO interface */
++static struct rapl_priv rapl_mmio_priv;
++
++static int rapl_mmio_cpu_online(unsigned int cpu)
++{
++	struct rapl_package *rp;
++
++	/* mmio rapl supports package 0 only for now */
++	if (topology_physical_package_id(cpu))
++		return 0;
++
++	rp = rapl_find_package_domain(cpu, &rapl_mmio_priv);
++	if (!rp) {
++		rp = rapl_add_package(cpu, &rapl_mmio_priv);
++		if (IS_ERR(rp))
++			return PTR_ERR(rp);
++	}
++	cpumask_set_cpu(cpu, &rp->cpumask);
++	return 0;
++}
++
++static int rapl_mmio_cpu_down_prep(unsigned int cpu)
++{
++	struct rapl_package *rp;
++	int lead_cpu;
++
++	rp = rapl_find_package_domain(cpu, &rapl_mmio_priv);
++	if (!rp)
++		return 0;
++
++	cpumask_clear_cpu(cpu, &rp->cpumask);
++	lead_cpu = cpumask_first(&rp->cpumask);
++	if (lead_cpu >= nr_cpu_ids)
++		rapl_remove_package(rp);
++	else if (rp->lead_cpu == cpu)
++		rp->lead_cpu = lead_cpu;
++	return 0;
++}
++
++static int rapl_mmio_read_raw(int cpu, struct reg_action *ra)
++{
++	if (!ra->reg)
++		return -EINVAL;
++
++	ra->value = readq((void *)ra->reg);
++	ra->value &= ra->mask;
++	return 0;
++}
++
++static int rapl_mmio_write_raw(int cpu, struct reg_action *ra)
++{
++	u64 val;
++
++	if (!ra->reg)
++		return -EINVAL;
++
++	val = readq((void *)ra->reg);
++	val &= ~ra->mask;
++	val |= ra->value;
++	writeq(val, (void *)ra->reg);
++	return 0;
++}
++
++static int proc_thermal_rapl_add(struct pci_dev *pdev,
++				 struct proc_thermal_device *proc_priv,
++				 struct rapl_mmio_regs *rapl_regs)
++{
++	enum rapl_domain_reg_id reg;
++	enum rapl_domain_type domain;
++	u64 resource_start, resource_len;
++	int ret;
++
++	if (!rapl_regs)
++		return 0;
++
++	ret = pcim_iomap_regions(pdev, 1 << MCHBAR, DRV_NAME);
++	if (ret) {
++		dev_err(&pdev->dev, "cannot reserve PCI memory region\n");
++		return -ENOMEM;
++	}
++
++	proc_priv->mmio_base = pcim_iomap_table(pdev)[MCHBAR];
++
++	for (domain = RAPL_DOMAIN_PACKAGE; domain < RAPL_DOMAIN_MAX; domain++) {
++		for (reg = RAPL_DOMAIN_REG_LIMIT; reg < RAPL_DOMAIN_REG_MAX; reg++)
++			if (rapl_regs->regs[domain][reg])
++				rapl_mmio_priv.regs[domain][reg] =
++						(u64)proc_priv->mmio_base +
++						rapl_regs->regs[domain][reg];
++		rapl_mmio_priv.limits[domain] = rapl_regs->limits[domain];
++	}
++	rapl_mmio_priv.reg_unit = (u64)proc_priv->mmio_base + rapl_regs->reg_unit;
++
++	rapl_mmio_priv.read_raw = rapl_mmio_read_raw;
++	rapl_mmio_priv.write_raw = rapl_mmio_write_raw;
++
++	rapl_mmio_priv.control_type = powercap_register_control_type(NULL, "intel-rapl-mmio", NULL);
++	if (IS_ERR(rapl_mmio_priv.control_type)) {
++		pr_debug("failed to register powercap control_type.\n");
++		return PTR_ERR(rapl_mmio_priv.control_type);
++	}
++
++	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "powercap/rapl:online",
++				rapl_mmio_cpu_online, rapl_mmio_cpu_down_prep);
++	if (ret < 0) {
++		powercap_unregister_control_type(rapl_mmio_priv.control_type);
++		return ret;
++	}
++	rapl_mmio_priv.pcap_rapl_online = ret;
++
++	return 0;
++}
++
++static void proc_thermal_rapl_remove(void)
++{
++	cpuhp_remove_state(rapl_mmio_priv.pcap_rapl_online);
++	powercap_unregister_control_type(rapl_mmio_priv.control_type);
++}
++
++static const struct rapl_mmio_regs rapl_mmio_hsw = {
++	.reg_unit = 0x5938,
++	.regs[RAPL_DOMAIN_PACKAGE] = { 0x59a0, 0x593c, 0x58f0, 0, 0x5930},
++	.regs[RAPL_DOMAIN_DRAM] = { 0x58e0, 0x58e8, 0x58ec, 0, 0},
++	.limits[RAPL_DOMAIN_PACKAGE] = 2,
++	.limits[RAPL_DOMAIN_DRAM] = 2,
++};
++
++#else
++
++static int proc_thermal_rapl_add(struct pci_dev *pdev,
++				 struct proc_thermal_device *proc_priv,
++				 struct rapl_mmio_regs *rapl_regs)
++{
++	return 0;
++}
++static void proc_thermal_rapl_remove(void) {}
++static const struct rapl_mmio_regs rapl_mmio_hsw;
++
++#endif /* CONFIG_MMIO_RAPL */
++
+ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
+-				   const struct pci_device_id *unused)
++				   const struct pci_device_id *id)
+ {
+ 	struct proc_thermal_device *proc_priv;
+ 	int ret;
+@@ -378,15 +533,21 @@ static int  proc_thermal_pci_probe(struct pci_dev *pdev,
+ 		return -ENODEV;
+ 	}
+ 
+-	ret = pci_enable_device(pdev);
++	ret = pcim_enable_device(pdev);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "error: could not enable device\n");
+ 		return ret;
+ 	}
+ 
+ 	ret = proc_thermal_add(&pdev->dev, &proc_priv);
++	if (ret)
++		return ret;
++
++	ret = proc_thermal_rapl_add(pdev, proc_priv,
++				(struct rapl_mmio_regs *)id->driver_data);
+ 	if (ret) {
+-		pci_disable_device(pdev);
++		dev_err(&pdev->dev, "failed to add RAPL MMIO interface\n");
++		proc_thermal_remove(proc_priv);
+ 		return ret;
+ 	}
+ 
+@@ -439,14 +600,15 @@ static void  proc_thermal_pci_remove(struct pci_dev *pdev)
+ 			pci_disable_msi(pdev);
+ 		}
+ 	}
++	proc_thermal_rapl_remove();
+ 	proc_thermal_remove(proc_priv);
+-	pci_disable_device(pdev);
+ }
+ 
+ static const struct pci_device_id proc_thermal_pci_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BDW_THERMAL)},
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_HSB_THERMAL)},
+-	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_SKL_THERMAL)},
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_SKL_THERMAL),
++		.driver_data = (kernel_ulong_t)&rapl_mmio_hsw, },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BSW_THERMAL)},
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BXT0_THERMAL)},
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BXT1_THERMAL)},
+@@ -461,7 +623,7 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
+ MODULE_DEVICE_TABLE(pci, proc_thermal_pci_ids);
+ 
+ static struct pci_driver proc_thermal_pci_driver = {
+-	.name		= "proc_thermal",
++	.name		= DRV_NAME,
+ 	.probe		= proc_thermal_pci_probe,
+ 	.remove		= proc_thermal_pci_remove,
+ 	.id_table	= proc_thermal_pci_ids,
 -- 
 2.7.4
 
