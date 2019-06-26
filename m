@@ -2,127 +2,103 @@ Return-Path: <SRS0=P6A+=UZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B8A7C48BD6
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Jun 2019 01:36:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08C57C48BD6
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Jun 2019 01:48:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 107082146E
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Jun 2019 01:36:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nWEUztQt"
+	by mail.kernel.org (Postfix) with ESMTP id CA1482133F
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Jun 2019 01:48:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1561513689;
+	bh=lhOKRprT7HVe0Z8Cz+OabL8qmzBmCh0WUg8YKiJg6kI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=YGZ+CK6scjvh2xDm4pml3890Nx/uNX9O0NrJDCuKiaf06jxJVgJrMmsPsxPden5z2
+	 FMCLJLOfqT1WQYljD3k6xuPioGpMC7cKpAELhD/t+7PsPh1BYEYTIObwJG7xY9IuGQ
+	 LsFNX97OCEshE+I24s/nmYEEDXw3wDK4kk51QOIE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726223AbfFZBe7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Jun 2019 21:34:59 -0400
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:40233 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726037AbfFZBe7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jun 2019 21:34:59 -0400
-Received: by mail-lf1-f68.google.com with SMTP id a9so358796lff.7;
-        Tue, 25 Jun 2019 18:34:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=HJ2vim5KZIApK8x3ewXLTeNdS/0vU4ME8rbQ/SI9AvY=;
-        b=nWEUztQtFeiRmi6ulmabtFA6qwg+mF9tIoEySdAet7Ac+qrU7fZRQLxTngA/zUte1O
-         XxffWdH8G+hHyfOXQ/zATYw31RGkA62NCazDi+TqsLL3H7XXnUuY+WeTkhBUKQJBMLlB
-         Z3zs9kOR6esRFPgMQ4uOsB3NAj8FYhK8/5mUoJq7eg4QcyHuWnZ8jIW+pe5Hj3iecmCq
-         6ZV0fWcp2ukcFxZULBnSAm8o7i+A7p8mkzXKYrgkHNwIy51o46m4geg/qaK6wU0q3Rs+
-         4xDwe5a8PdWZOb48arVLUHHAcVnvHLZhmSCNPLGumElB6Fb/25G7JPeArnnWg0XzmmFg
-         vBSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=HJ2vim5KZIApK8x3ewXLTeNdS/0vU4ME8rbQ/SI9AvY=;
-        b=t9n9JMvbG2X949tmzGBzqudoCRl61Odb7qHkwIR/eK01Kp4TnGzNGZOKBMm0714owI
-         SjiU5RxUNDLRgCeZqBNcv9v2VLHXLK3gUG5w7qcoXElxepVNC+Nb38IyH6K+Fx1/CzJT
-         a0hkkqME1dhxK0OXJGbcNaeWjGYScaYCsVj481FTiwpVh3O/GH3Ki0YTRuA9KAdj2rXv
-         zg9a6aLYevqVL0UwPKPPrcPglypfeWzmORKVa1EvQhx72e4iz9q7tEHMiVWTatpsOM9m
-         z04KOtqB0+294TydYH7vuL3k49GVw7GotAZjIaH2ly4oTTO6nYwJlYRzdLgpUOE7Pvv4
-         bCpg==
-X-Gm-Message-State: APjAAAU464u6j/X5zMb5XsQw3ASzI8qixWaq7yqkaRVzalWNY700hcyg
-        PnC7AUIdl/jF932+Us25GJU=
-X-Google-Smtp-Source: APXvYqzO3fEmmWcJPm56uMETxyIiZAVvFVgQYiK4xpd1n+RBoFRBQ36hLCCmQpLjPWFmtypqPCiucg==
-X-Received: by 2002:a19:6a07:: with SMTP id u7mr1004503lfu.74.1561512896931;
-        Tue, 25 Jun 2019 18:34:56 -0700 (PDT)
-Received: from localhost.localdomain (ppp91-79-162-197.pppoe.mtu-net.ru. [91.79.162.197])
-        by smtp.gmail.com with ESMTPSA id 199sm2549581ljf.44.2019.06.25.18.34.55
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 25 Jun 2019 18:34:55 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2 00/17] More improvements for Tegra30 devfreq driver
-Date:   Wed, 26 Jun 2019 04:32:34 +0300
-Message-Id: <20190626013252.30470-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.22.0
+        id S1726412AbfFZBsJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Jun 2019 21:48:09 -0400
+Received: from mail.kernel.org ([198.145.29.99]:49104 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726401AbfFZBsJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Jun 2019 21:48:09 -0400
+Received: from localhost (li1825-44.members.linode.com [172.104.248.44])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id BDC5C204EC;
+        Wed, 26 Jun 2019 01:48:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1561513688;
+        bh=lhOKRprT7HVe0Z8Cz+OabL8qmzBmCh0WUg8YKiJg6kI=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=BL8S8BzsOC1JOHpaxjj/CTatmCr1mGi07Q7JwyCKDT+4+v22IeNWUhCXfpmspHgxG
+         cUK/l3MuLXJTLFZSH+DOHSUmj+O8ZYqciueHRuR7ZoT3lqpr5xlAA+jyBRjKq7h60F
+         V9Ii3OEqVpE7rxOOnaIqsvmncQprx25jWE1XQuvA=
+Date:   Wed, 26 Jun 2019 09:46:33 +0800
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Tri Vo <trong@android.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Hridya Valsaraju <hridya@google.com>,
+        Sandeep Patil <sspatil@google.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "Cc: Android Kernel" <kernel-team@android.com>
+Subject: Re: [PATCH] PM / wakeup: show wakeup sources stats in sysfs
+Message-ID: <20190626014633.GA22610@kroah.com>
+References: <20190626005449.225796-1-trong@android.com>
+ <20190626011221.GB22454@kroah.com>
+ <CANA+-vBoabFTD=fMz+0d5Sbe9rPwnxcuxJxaMCT3KAwXYHSD7w@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANA+-vBoabFTD=fMz+0d5Sbe9rPwnxcuxJxaMCT3KAwXYHSD7w@mail.gmail.com>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On Tue, Jun 25, 2019 at 06:33:08PM -0700, Tri Vo wrote:
+> On Tue, Jun 25, 2019 at 6:12 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+> > > +static ssize_t wakeup_source_count_show(struct wakeup_source *ws,
+> > > +                                     struct wakeup_source_attribute *attr,
+> > > +                                     char *buf)
+> > > +{
+> > > +     unsigned long flags;
+> > > +     unsigned long var;
+> > > +
+> > > +     spin_lock_irqsave(&ws->lock, flags);
+> > > +     if (strcmp(attr->attr.name, "active_count") == 0)
+> > > +             var = ws->active_count;
+> > > +     else if (strcmp(attr->attr.name, "event_count") == 0)
+> > > +             var = ws->event_count;
+> > > +     else if (strcmp(attr->attr.name, "wakeup_count") == 0)
+> > > +             var = ws->wakeup_count;
+> > > +     else
+> > > +             var = ws->expire_count;
+> > > +     spin_unlock_irqrestore(&ws->lock, flags);
+> > > +
+> > > +     return sprintf(buf, "%lu\n", var);
+> > > +}
+> >
+> > Why is this lock always needed to be grabbed?  You are just reading a
+> > value, who cares if it changes inbetween reading it and returning the
+> > buffer string as it can change at that point in time anyway?
+> 
+> Right, we don't care if the value changes in between us reading and
+> printing it. However, IIUC not grabbing this lock results in a data
+> race, which is undefined behavior.
 
-This series addresses some additional review comments that were made by
-Thierry Reding to [1] and makes several important changes to the driver,
-fixing excessive interrupts activity. In the end I'm proposing myself as
-a maintainer for the Tegra devfreq drivers.
+A data race where?  Writing to the value?  How can that happen?  All you
+are doing is incrementing this variable elsewhere, what is the worst
+that can happen?
 
-[1] https://lore.kernel.org/lkml/0fb50eb1-a173-1756-6889-2526a10ac707@gmail.com/T/
+thanks,
 
-Changelog:
-
-v2:  Added more patches that are cleaning driver's code further and
-     squashing another kHz conversion bug.
-
-     The patch "Rework frequency management logic" of the v1 series is now
-     converted to "Set up watermarks properly" because I found some problems
-     in the original patch and then realized that there is no need to change
-     the logic much. So the logic mostly preserved and only got improvements.
-
-     The series is based on the today's linux-next (25 Jun) and takes into
-     account minor changes that MyungJoo Ham made to the already queued
-     patches from the first batch [1].
-
-Dmitry Osipenko (17):
-  PM / devfreq: tegra30: Change irq type to unsigned int
-  PM / devfreq: tegra30: Keep interrupt disabled while governor is
-    stopped
-  PM / devfreq: tegra30: Handle possible round-rate error
-  PM / devfreq: tegra30: Drop write-barrier
-  PM / devfreq: tegra30: Set up watermarks properly
-  PM / devfreq: tegra30: Tuneup boosting thresholds
-  PM / devfreq: tegra30: Use CPUFreq notifier
-  PM / devfreq: tegra30: Move clk-notifier's registration to governor's
-    start
-  PM / devfreq: tegra30: Reset boosting on startup
-  PM / devfreq: tegra30: Don't enable consecutive-down interrupt on
-    startup
-  PM / devfreq: tegra30: Add debug messages
-  PM / devfreq: tegra30: Inline all one-line functions
-  PM / devfreq: tegra30: Constify structs
-  PM / devfreq: tegra30: Ensure that target freq won't overflow
-  PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
-  PM / devfreq: tegra30: Use kHz units uniformly in the code
-  PM / devfreq: tegra20/30: Add Dmitry as a maintainer
-
- MAINTAINERS                       |   9 +
- drivers/devfreq/tegra30-devfreq.c | 562 +++++++++++++++++++++---------
- 2 files changed, 413 insertions(+), 158 deletions(-)
-
--- 
-2.22.0
-
+greg k-h
