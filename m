@@ -2,107 +2,105 @@ Return-Path: <SRS0=bqaS=U3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5137C5B57B
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Jun 2019 12:22:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C3F0C4321A
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Jun 2019 12:27:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A401E214AF
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Jun 2019 12:22:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6A2A82083B
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Jun 2019 12:27:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726852AbfF1MW3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Jun 2019 08:22:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45218 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727265AbfF1MW1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 28 Jun 2019 08:22:27 -0400
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mx1.redhat.com (Postfix) with ESMTPS id 9DBB7811A9;
-        Fri, 28 Jun 2019 12:22:22 +0000 (UTC)
-Received: from amt.cnet (ovpn-112-9.gru2.redhat.com [10.97.112.9])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 4C6F95D9CA;
-        Fri, 28 Jun 2019 12:22:22 +0000 (UTC)
-Received: from amt.cnet (localhost [127.0.0.1])
-        by amt.cnet (Postfix) with ESMTP id 7998610517E;
-        Thu, 27 Jun 2019 15:09:08 -0300 (BRT)
-Received: (from marcelo@localhost)
-        by amt.cnet (8.14.7/8.14.7/Submit) id x5RI94SM027978;
-        Thu, 27 Jun 2019 15:09:04 -0300
-Date:   Thu, 27 Jun 2019 15:08:59 -0300
-From:   Marcelo Tosatti <mtosatti@redhat.com>
-To:     Doug Smythies <dsmythies@telus.net>
-Cc:     "'Paolo Bonzini'" <pbonzini@redhat.com>,
-        "'Radim Krcmar'" <rkrcmar@redhat.com>,
-        "'Andrea Arcangeli'" <aarcange@redhat.com>,
-        "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>,
-        "'Peter Zijlstra'" <peterz@infradead.org>,
-        "'Wanpeng Li'" <kernellwp@gmail.com>,
-        "'Konrad Rzeszutek Wilk'" <konrad.wilk@oracle.com>,
-        "'Raslan KarimAllah'" <karahmed@amazon.de>,
-        "'Boris Ostrovsky'" <boris.ostrovsky@oracle.com>,
-        "'Ankur Arora'" <ankur.a.arora@oracle.com>,
-        "'Christian Borntraeger'" <borntraeger@de.ibm.com>,
-        linux-pm@vger.kernel.org, "'kvm-devel'" <kvm@vger.kernel.org>
-Subject: Re: [patch 3/5] cpuidle: add haltpoll governor
-Message-ID: <20190627180856.GA27865@amt.cnet>
-References: <20190613224532.949768676@redhat.com>
- <20190613225023.011025297@redhat.com>
- <002e01d527c9$23be6e10$6b3b4a30$@net>
+        id S1726566AbfF1M1h convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Jun 2019 08:27:37 -0400
+Received: from mail-qt1-f193.google.com ([209.85.160.193]:42742 "EHLO
+        mail-qt1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726558AbfF1M1h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jun 2019 08:27:37 -0400
+Received: by mail-qt1-f193.google.com with SMTP id s15so5976840qtk.9;
+        Fri, 28 Jun 2019 05:27:36 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=ppny6xJCt646j++LO33+1pCmnnu1zTgRuTHxRcFV+aw=;
+        b=O1Cln50Z8oUEsXbFW8v/llz6aXYOONKfB8+d0PANixefiFwI0sSRV0QcOh6q7Rr+K8
+         6Ak4kVdhgWGNO9cu+YpaRCbsKM8ogbsCkL9l+c25VMP/1JDcV3z34xGvCv0KAwW/WJkr
+         iDicKCKoQ3lvlloUda+OAzEcQZdpNvJ4jI1/P96hdzBUMra/yLWbSw2rVwTelKmNxkJs
+         cFpRHC9bg2lRSqbgAYbccn9vBpTRVC9+fopUEexJYj2So8hiPTrWAAZqnyI73kYPADfZ
+         kKOeyq3KnSxwRRZ1TZfuvkl7UpftPxgwY4baxW9KNAvmi6UpRiNlFNSe/6PZoGDjuFRi
+         k6lg==
+X-Gm-Message-State: APjAAAXktbNL6KGIpG71zG+cYNWygLQbFK+h2JXZmdaJq6l82OcPyXUV
+        MidGXvMRF3WbuFMe391DPpcLXaaMZMhTQgAe11E=
+X-Google-Smtp-Source: APXvYqwr2vwCpn2kRP+1zPIHVxHuPOzGXcvzYVsZ/3G+jveBzmpxiR6DdGaj+anvfnaGuYZJ/nq41D/Hp5JMS6dP3HM=
+X-Received: by 2002:ac8:3485:: with SMTP id w5mr7600258qtb.142.1561724856279;
+ Fri, 28 Jun 2019 05:27:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <002e01d527c9$23be6e10$6b3b4a30$@net>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.27]); Fri, 28 Jun 2019 12:22:27 +0000 (UTC)
+References: <20190628103232.2467959-1-arnd@arndb.de> <c2701295-0fd6-c5ec-59d4-6e6b3b3bdb8e@gmail.com>
+ <cbf6cff3-f5f5-66ea-9cca-86eb93f23c50@gmail.com>
+In-Reply-To: <cbf6cff3-f5f5-66ea-9cca-86eb93f23c50@gmail.com>
+From:   Arnd Bergmann <arnd@arndb.de>
+Date:   Fri, 28 Jun 2019 14:27:19 +0200
+Message-ID: <CAK8P3a1HOOk48G+-wZGWrM_fg5cn3ytH66qaEU6c7e0BjW+SNw@mail.gmail.com>
+Subject: Re: [PATCH] devfreq: tegra20: add COMMON_CLK dependency
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jun 20, 2019 at 05:34:46PM -0700, Doug Smythies wrote:
-> Hi,
-> 
-> I tried your patch set, but only to check
-> that they didn't cause any regression for situations
-> where idle state 0 (Poll) is used a lot (teo governor).
-> 
-> They didn't (my testing was not thorough).
-> 
-> I do not know if the below matters or not.
-> 
-> On 2019.06.13 15:46 Marcelo Tosatti wrote:
-> 
-> ... [snip] ...
-> 
-> > Index: linux-2.6.git/Documentation/virtual/guest-halt-polling.txt
-> > ===================================================================
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ linux-2.6.git/Documentation/virtual/guest-halt-polling.txt	2019-06-13 18:16:22.414262777 -0400
-> > @@ -0,0 +1,79 @@
-> > +Guest halt polling
-> > +==================
-> > +
-> > +The cpuidle_haltpoll driver, with the haltpoll governor, allows
-> > +the guest vcpus to poll for a specified amount of time before
-> > +halting.
-> > +This provides the following benefits to host side polling:
-> > +
-> > +	1) The POLL flag is set while polling is performed, which allows
-> > +	   a remote vCPU to avoid sending an IPI (and the associated
-> > + 	   cost of handling the IPI) when performing a wakeup.
->    ^
->    |_ While applying the patches, git complains about this space character before the TAB.
-> 
-> It also complains about a few patches with a blank line before EOF.
-> 
-> ... Doug
+On Fri, Jun 28, 2019 at 1:05 PM Dmitry Osipenko <digetx@gmail.com> wrote:
+> 28.06.2019 14:00, Dmitry Osipenko пишет:
 
-Hi Doug,
+> >
+> > How is it possible to happen? There is a stub for clk_set_min_rate() when COMMON_CLK
+> > is disabled .. Could you please show the kernel's config that causes the problem?
+> >
+> > Moreover that was me who added the missing stub for clk_set_min_rate() in [1] to fix [2].
+> >
+> > [1]
+> > https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/include/linux/clk.h?id=b88c9f4129dcec941e5a26508e991c08051ed1ac
+> >
+> > [2] https://lists.01.org/pipermail/kbuild-all/2019-April/060292.html
+> >
+> > So this patch looks wrong to me because apparently it fixes a non-existent problem.
+> >
+>
+> Oh, wait. That was "implicit declaration" and this one is "undefined reference"!
+> Still looks like something else need to be fixed..
 
-Will fix those, thanks.
+The stub takes care of the case where there is no CLK support at all, i.e.
+CONFIG_HAVE_CLK is disabled. However, some older ARM platforms
+still have a custom implementation of the API and lack clk_set_min_rate().
 
+$ git grep -l 'EXPORT_SYMBOL.*\<clk_set_rate\>'  | xargs grep -L
+clk_set_min_rate
+arch/arm/mach-ep93xx/clock.c
+arch/arm/mach-mmp/clock.c
+arch/arm/mach-omap1/clock.c
+arch/arm/mach-sa1100/clock.c
+arch/arm/mach-w90x900/clock.c
+arch/c6x/platforms/pll.c
+arch/m68k/coldfire/clk.c
+arch/mips/ar7/clock.c
+arch/mips/bcm63xx/clk.c
+arch/mips/lantiq/clk.c
+arch/mips/loongson64/lemote-2f/clock.c
+arch/mips/ralink/clk.c
+arch/unicore32/kernel/clock.c
+drivers/sh/clk/core.c
+
+We could in theory convert all of those to COMMON_CLK, or simply add
+a dummy clk_set_min_rate() for each one, but since there is only one user,
+my fix was simpler.
+
+       Arnd
