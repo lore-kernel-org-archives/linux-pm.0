@@ -2,184 +2,126 @@ Return-Path: <SRS0=jgQS=U6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4C2BC06511
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 18:57:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3ED17C0650E
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 18:58:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A059A20B7C
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 18:57:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 202AC20B7C
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 18:58:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KnI0hNv+"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726803AbfGAS5i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 1 Jul 2019 14:57:38 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:54390 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726563AbfGAS53 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 1 Jul 2019 14:57:29 -0400
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com [10.5.11.23])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mx1.redhat.com (Postfix) with ESMTPS id E8BAE3003A59;
-        Mon,  1 Jul 2019 18:57:27 +0000 (UTC)
-Received: from amt.cnet (ovpn-112-3.gru2.redhat.com [10.97.112.3])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 7178D19C6F;
-        Mon,  1 Jul 2019 18:57:27 +0000 (UTC)
-Received: from amt.cnet (localhost [127.0.0.1])
-        by amt.cnet (Postfix) with ESMTP id F0AEC105161;
-        Mon,  1 Jul 2019 15:56:50 -0300 (BRT)
-Received: (from marcelo@localhost)
-        by amt.cnet (8.14.7/8.14.7/Submit) id x61IuorT028556;
-        Mon, 1 Jul 2019 15:56:50 -0300
-Message-ID: <20190701185528.115106953@asus.localdomain>
-User-Agent: quilt/0.66
-Date:   Mon, 01 Jul 2019 15:53:12 -0300
-From:   Marcelo Tosatti <mtosatti@redhat.com>
-To:     kvm@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     Paolo Bonzini <pbonzini@redhat.com>,
-        Radim Krcmar <rkrcmar@redhat.com>,
-        Andrea Arcangeli <aarcange@redhat.com>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Wanpeng Li <kernellwp@gmail.com>,
-        Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
-        Raslan KarimAllah <karahmed@amazon.de>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Ankur Arora <ankur.a.arora@oracle.com>,
-        Christian Borntraeger <borntraeger@de.ibm.com>,
-        Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [patch 2/5] cpuidle: add get_poll_time callback
-References: <20190701185310.540706841@asus.localdomain>
+        id S1726879AbfGAS6d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 1 Jul 2019 14:58:33 -0400
+Received: from mail-ed1-f65.google.com ([209.85.208.65]:38649 "EHLO
+        mail-ed1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726652AbfGAS6d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jul 2019 14:58:33 -0400
+Received: by mail-ed1-f65.google.com with SMTP id r12so24799257edo.5;
+        Mon, 01 Jul 2019 11:58:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=pHrGNQ49AaGKJ3l+4A7hkHqbH10XRgFjiNEVRByexR0=;
+        b=KnI0hNv+Jm46TmYLlPKsmbOgIdkFU9NMS+sxpx73WzhyzihHn8mGQa6KhunsFLfIBp
+         5zCQKX5e9B7ggcGBQ0Zy4ZTX7E02YVQs25zw2xE3BhCZOoMWxtB4OEXaclCyDiyF8cio
+         9SyP7Sh22xPwcZ9IH1Bv7zEpU1Yq36dPnsqHZaq69dHddDoS3/5CLzEH2vul0Va9kU7h
+         28S1oRGwKughSArRM+yc7SXpbYuzxptwaUbrKZlybcH61HEYKYx7xR5S98Aidkd0U4U1
+         gcJqV+5YulFaz2eAE/DI58LLwVW7NN1Nv1z1lVNXwcyvTR03LFmrLTVlQ18dtGjOVJ2l
+         1bIw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=pHrGNQ49AaGKJ3l+4A7hkHqbH10XRgFjiNEVRByexR0=;
+        b=UsnxbttqtLncS/ZEe1Mhec0jW02EHvBOSVEHgir1+wMsDTPT6CmuYH9ZmQnTZYCZOD
+         R5Impga3eIMlg6f15+oLFhEp/LxY1mliW04ijkJg28L47xHtMOJBw/ZZ5cQUoawgC9OE
+         YxSrU4ctJiBYoUReeNgH9Q5YnJ00w2scSkURyGZzIvDnqiYDOXxHUQR7hq1pq4yMbYVL
+         nA/IVWSuDNRckQIzjwszDnb25BWD1pGa3RQlygfxg4VqW6K2yy1509xw4j5qUOVMNLa4
+         nbL6Ha07l6NzpNeJScL1qaj9Az1czPeZ0F39GACIYPjIcTxdBlnpzJ/H8qyKhEfo+jer
+         dAAw==
+X-Gm-Message-State: APjAAAX3h0TSCzgCknfqU2ozmDsrGvcT6l49cHSF297kcZFsKcv/ZxeD
+        3+x1kakmdvB2josJevSLEISqTnqiCDSLxoktHTo=
+X-Google-Smtp-Source: APXvYqzhC/tCEZRsc1qoqKg7EL/JrVWW6MNVjwUBvBb2XXRmNeXSLdtLZYZZI/uiz/r5f8hCOEQfk3YI7X84V9/1daE=
+X-Received: by 2002:a50:9468:: with SMTP id q37mr30780649eda.163.1562007510992;
+ Mon, 01 Jul 2019 11:58:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.42]); Mon, 01 Jul 2019 18:57:29 +0000 (UTC)
+References: <20190630150230.7878-1-robdclark@gmail.com> <20190630150230.7878-5-robdclark@gmail.com>
+ <75a2921d-bf1a-c4c1-6d9a-122474eface4@codeaurora.org>
+In-Reply-To: <75a2921d-bf1a-c4c1-6d9a-122474eface4@codeaurora.org>
+From:   Rob Clark <robdclark@gmail.com>
+Date:   Mon, 1 Jul 2019 11:58:15 -0700
+Message-ID: <CAF6AEGufiSU_sFZFdLH=KT5iCQGwccszURqAQCHd=dhuZafvZg@mail.gmail.com>
+Subject: Re: [PATCH 4/5] drm/msm/dsi: get the clocks into OFF state at init
+To:     Jeffrey Hugo <jhugo@codeaurora.org>
+Cc:     dri-devel <dri-devel@lists.freedesktop.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        freedreno <freedreno@lists.freedesktop.org>,
+        aarch64-laptops@lists.linaro.org,
+        linux-clk <linux-clk@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Rob Clark <robdclark@chromium.org>,
+        Sean Paul <sean@poorly.run>, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Jordan Crouse <jcrouse@codeaurora.org>,
+        Abhinav Kumar <abhinavk@codeaurora.org>,
+        Sibi Sankar <sibis@codeaurora.org>,
+        Mamta Shukla <mamtashukla555@gmail.com>,
+        Chandan Uddaraju <chandanu@codeaurora.org>,
+        Archit Taneja <architt@codeaurora.org>,
+        Rajesh Yadav <ryadav@codeaurora.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a "get_poll_time" callback to the cpuidle_governor structure,
-and change poll state to poll for that amount of time.
+On Mon, Jul 1, 2019 at 11:37 AM Jeffrey Hugo <jhugo@codeaurora.org> wrote:
+>
+> On 6/30/2019 9:01 AM, Rob Clark wrote:
+> > From: Rob Clark <robdclark@chromium.org>
+> >
+> > Do an extra enable/disable cycle at init, to get the clks into disabled
+> > state in case bootloader left them enabled.
+> >
+> > In case they were already enabled, the clk_prepare_enable() has no real
+> > effect, other than getting the enable_count/prepare_count into the right
+> > state so that we can disable clocks in the correct order.  This way we
+> > avoid having stuck clocks when we later want to do a modeset and set the
+> > clock rates.
+> >
+> > Signed-off-by: Rob Clark <robdclark@chromium.org>
+> > ---
+> >   drivers/gpu/drm/msm/dsi/dsi_host.c         | 18 +++++++++++++++---
+> >   drivers/gpu/drm/msm/dsi/pll/dsi_pll_10nm.c |  1 +
+> >   2 files changed, 16 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/gpu/drm/msm/dsi/pll/dsi_pll_10nm.c b/drivers/gpu/drm/msm/dsi/pll/dsi_pll_10nm.c
+> > index aabab6311043..d0172d8db882 100644
+> > --- a/drivers/gpu/drm/msm/dsi/pll/dsi_pll_10nm.c
+> > +++ b/drivers/gpu/drm/msm/dsi/pll/dsi_pll_10nm.c
+> > @@ -354,6 +354,7 @@ static int dsi_pll_10nm_lock_status(struct dsi_pll_10nm *pll)
+> >       if (rc)
+> >               pr_err("DSI PLL(%d) lock failed, status=0x%08x\n",
+> >                      pll->id, status);
+> > +rc = 0; // HACK, this will fail if PLL already running..
+>
+> Umm, why?  Is this intentional?
+>
 
-Provide a default method for it, while allowing individual governors
-to override it.
+I need to sort out a proper solution for this.. but PLL lock will fail
+if the clk is already running (which, in that case, is fine since it
+is already running and locked), which will cause the clk_enable to
+fail..
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+I guess there is some way that I can check that clk is already running
+and skip this check..
 
----
- drivers/cpuidle/cpuidle.c    |   40 ++++++++++++++++++++++++++++++++++++++++
- drivers/cpuidle/poll_state.c |   11 ++---------
- include/linux/cpuidle.h      |    8 ++++++++
- 3 files changed, 50 insertions(+), 9 deletions(-)
-
-Index: linux-2.6-newcpuidle.git/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-2.6-newcpuidle.git.orig/drivers/cpuidle/cpuidle.c
-+++ linux-2.6-newcpuidle.git/drivers/cpuidle/cpuidle.c
-@@ -362,6 +362,46 @@ void cpuidle_reflect(struct cpuidle_devi
- }
- 
- /**
-+ * cpuidle_default_poll_time - default routine used to return poll time
-+ * governors can override it if necessary
-+ *
-+ * @drv:   the cpuidle driver tied with the cpu
-+ * @dev:   the cpuidle device
-+ *
-+ */
-+static u64 cpuidle_default_poll_time(struct cpuidle_driver *drv,
-+				     struct cpuidle_device *dev)
-+{
-+	int i;
-+
-+	for (i = 1; i < drv->state_count; i++) {
-+		if (drv->states[i].disabled || dev->states_usage[i].disable)
-+			continue;
-+
-+		return (u64)drv->states[i].target_residency * NSEC_PER_USEC;
-+	}
-+
-+	return TICK_NSEC;
-+}
-+
-+/**
-+ * cpuidle_get_poll_time - tell the polling driver how much time to poll,
-+ *			   in nanoseconds.
-+ *
-+ * @drv: the cpuidle driver tied with the cpu
-+ * @dev: the cpuidle device
-+ *
-+ */
-+u64 cpuidle_get_poll_time(struct cpuidle_driver *drv,
-+			  struct cpuidle_device *dev)
-+{
-+	if (cpuidle_curr_governor->get_poll_time)
-+		return cpuidle_curr_governor->get_poll_time(drv, dev);
-+
-+	return cpuidle_default_poll_time(drv, dev);
-+}
-+
-+/**
-  * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
-  */
- void cpuidle_install_idle_handler(void)
-Index: linux-2.6-newcpuidle.git/drivers/cpuidle/poll_state.c
-===================================================================
---- linux-2.6-newcpuidle.git.orig/drivers/cpuidle/poll_state.c
-+++ linux-2.6-newcpuidle.git/drivers/cpuidle/poll_state.c
-@@ -20,16 +20,9 @@ static int __cpuidle poll_idle(struct cp
- 	local_irq_enable();
- 	if (!current_set_polling_and_test()) {
- 		unsigned int loop_count = 0;
--		u64 limit = TICK_NSEC;
--		int i;
-+		u64 limit;
- 
--		for (i = 1; i < drv->state_count; i++) {
--			if (drv->states[i].disabled || dev->states_usage[i].disable)
--				continue;
--
--			limit = (u64)drv->states[i].target_residency * NSEC_PER_USEC;
--			break;
--		}
-+		limit = cpuidle_get_poll_time(drv, dev);
- 
- 		while (!need_resched()) {
- 			cpu_relax();
-Index: linux-2.6-newcpuidle.git/include/linux/cpuidle.h
-===================================================================
---- linux-2.6-newcpuidle.git.orig/include/linux/cpuidle.h
-+++ linux-2.6-newcpuidle.git/include/linux/cpuidle.h
-@@ -132,6 +132,8 @@ extern int cpuidle_select(struct cpuidle
- extern int cpuidle_enter(struct cpuidle_driver *drv,
- 			 struct cpuidle_device *dev, int index);
- extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
-+extern u64 cpuidle_get_poll_time(struct cpuidle_driver *drv,
-+				 struct cpuidle_device *dev);
- 
- extern int cpuidle_register_driver(struct cpuidle_driver *drv);
- extern struct cpuidle_driver *cpuidle_get_driver(void);
-@@ -166,6 +168,9 @@ static inline int cpuidle_enter(struct c
- 				struct cpuidle_device *dev, int index)
- {return -ENODEV; }
- static inline void cpuidle_reflect(struct cpuidle_device *dev, int index) { }
-+extern u64 cpuidle_get_poll_time(struct cpuidle_driver *drv,
-+				 struct cpuidle_device *dev)
-+{return 0; }
- static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
- {return -ENODEV; }
- static inline struct cpuidle_driver *cpuidle_get_driver(void) {return NULL; }
-@@ -246,6 +251,9 @@ struct cpuidle_governor {
- 					struct cpuidle_device *dev,
- 					bool *stop_tick);
- 	void (*reflect)		(struct cpuidle_device *dev, int index);
-+
-+	u64 (*get_poll_time)	(struct cpuidle_driver *drv,
-+				 struct cpuidle_device *dev);
- };
- 
- #ifdef CONFIG_CPU_IDLE
-
-
+BR,
+-R
