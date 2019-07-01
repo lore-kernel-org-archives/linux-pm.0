@@ -2,39 +2,39 @@ Return-Path: <SRS0=jgQS=U6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A917C0650E
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 18:57:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 868EDC0650E
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 18:57:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5E49E20B7C
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 18:57:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 67FE420B7C
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 18:57:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726652AbfGAS53 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 1 Jul 2019 14:57:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:33666 "EHLO mx1.redhat.com"
+        id S1726830AbfGAS5c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 1 Jul 2019 14:57:32 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:60720 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726576AbfGAS53 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 1 Jul 2019 14:57:29 -0400
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
+        id S1726803AbfGAS5b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 1 Jul 2019 14:57:31 -0400
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com [10.5.11.11])
         (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
         (No client certificate requested)
-        by mx1.redhat.com (Postfix) with ESMTPS id C40178112C;
-        Mon,  1 Jul 2019 18:57:27 +0000 (UTC)
+        by mx1.redhat.com (Postfix) with ESMTPS id 5509387630;
+        Mon,  1 Jul 2019 18:57:31 +0000 (UTC)
 Received: from amt.cnet (ovpn-112-3.gru2.redhat.com [10.97.112.3])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 717C417108;
-        Mon,  1 Jul 2019 18:57:27 +0000 (UTC)
+        by smtp.corp.redhat.com (Postfix) with ESMTP id CE38287CF;
+        Mon,  1 Jul 2019 18:57:30 +0000 (UTC)
 Received: from amt.cnet (localhost [127.0.0.1])
-        by amt.cnet (Postfix) with ESMTP id A363E105141;
-        Mon,  1 Jul 2019 15:56:49 -0300 (BRT)
+        by amt.cnet (Postfix) with ESMTP id E9743105171;
+        Mon,  1 Jul 2019 15:56:52 -0300 (BRT)
 Received: (from marcelo@localhost)
-        by amt.cnet (8.14.7/8.14.7/Submit) id x61Iuf3Q028547;
-        Mon, 1 Jul 2019 15:56:41 -0300
-Message-ID: <20190701185310.540706841@asus.localdomain>
+        by amt.cnet (8.14.7/8.14.7/Submit) id x61IuqN4028559;
+        Mon, 1 Jul 2019 15:56:52 -0300
+Message-ID: <20190701185528.230754447@asus.localdomain>
 User-Agent: quilt/0.66
-Date:   Mon, 01 Jul 2019 15:53:10 -0300
+Date:   Mon, 01 Jul 2019 15:53:15 -0300
 From:   Marcelo Tosatti <mtosatti@redhat.com>
 To:     kvm@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     Paolo Bonzini <pbonzini@redhat.com>,
@@ -47,70 +47,181 @@ Cc:     Paolo Bonzini <pbonzini@redhat.com>,
         Raslan KarimAllah <karahmed@amazon.de>,
         Boris Ostrovsky <boris.ostrovsky@oracle.com>,
         Ankur Arora <ankur.a.arora@oracle.com>,
-        Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: [patch 0/5] cpuidle haltpoll driver and governor (v5)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.28]); Mon, 01 Jul 2019 18:57:29 +0000 (UTC)
+        Christian Borntraeger <borntraeger@de.ibm.com>,
+        Marcelo Tosatti <mtosatti@redhat.com>
+Subject: [patch 5/5] cpuidle-haltpoll: disable host side polling when kvm virtualized
+References: <20190701185310.540706841@asus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.26]); Mon, 01 Jul 2019 18:57:31 +0000 (UTC)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cpuidle-haltpoll driver with haltpoll governor allows the guest
-vcpus to poll for a specified amount of time before halting.
-This provides the following benefits to host side polling:
+When performing guest side polling, it is not necessary to 
+also perform host side polling. 
 
-         1) The POLL flag is set while polling is performed, which allows
-            a remote vCPU to avoid sending an IPI (and the associated
-            cost of handling the IPI) when performing a wakeup.
+So disable host side polling, via the new MSR interface, 
+when loading cpuidle-haltpoll driver.
 
-         2) The VM-exit cost can be avoided.
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 
-The downside of guest side polling is that polling is performed
-even with other runnable tasks in the host.
+---
+ arch/x86/Kconfig                        |    7 +++++
+ arch/x86/include/asm/cpuidle_haltpoll.h |    8 ++++++
+ arch/x86/kernel/kvm.c                   |   42 ++++++++++++++++++++++++++++++++
+ drivers/cpuidle/cpuidle-haltpoll.c      |   10 ++++++-
+ include/linux/cpuidle_haltpoll.h        |   16 ++++++++++++
+ 5 files changed, 82 insertions(+), 1 deletion(-)
 
-Results comparing halt_poll_ns and server/client application
-where a small packet is ping-ponged:
-
-host                                        --> 31.33
-halt_poll_ns=300000 / no guest busy spin    --> 33.40   (93.8%)
-halt_poll_ns=0 / guest_halt_poll_ns=300000  --> 32.73   (95.7%)
-
-For the SAP HANA benchmarks (where idle_spin is a parameter
-of the previous version of the patch, results should be the
-same):
-
-hpns == halt_poll_ns
-
-                           idle_spin=0/   idle_spin=800/    idle_spin=0/
-                           hpns=200000    hpns=0            hpns=800000
-DeleteC06T03 (100 thread) 1.76           1.71 (-3%)        1.78   (+1%)
-InsertC16T02 (100 thread) 2.14           2.07 (-3%)        2.18   (+1.8%)
-DeleteC00T01 (1 thread)   1.34           1.28 (-4.5%)	   1.29   (-3.7%)
-UpdateC00T03 (1 thread)   4.72           4.18 (-12%)	   4.53   (-5%)
-
-V2:
-
-- Move from x86 to generic code (Paolo/Christian)
-- Add auto-tuning logic (Paolo)
-- Add MSR to disable host side polling (Paolo)
-
-V3:
-
-- Do not be specific about HLT VM-exit in the documentation (Ankur Arora)
-- Mark tuning parameters static and __read_mostly (Andrea Arcangeli)
-- Add WARN_ON if host does not support poll control (Joao Martins)
-- Use sched_clock and cleanup haltpoll_enter_idle (Peter Zijlstra)
-- Mark certain functions in kvm.c as static (kernel test robot)
-- Remove tracepoints as they use RCU from extended quiescent state (kernel
-test robot)
-
-V4:
-- Use a haltpoll governor, use poll_state.c poll code (Rafael J. Wysocki)
-
-V5:
-- Take latency requirement into consideration (Rafael J. Wysocki)
-- Set target_residency/exit_latency to 1 (Rafael J. Wysocki)
-- Do not load cpuidle driver if not virtualized (Rafael J. Wysocki)
+Index: linux-2.6-newcpuidle.git/arch/x86/include/asm/cpuidle_haltpoll.h
+===================================================================
+--- /dev/null
++++ linux-2.6-newcpuidle.git/arch/x86/include/asm/cpuidle_haltpoll.h
+@@ -0,0 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _ARCH_HALTPOLL_H
++#define _ARCH_HALTPOLL_H
++
++void arch_haltpoll_enable(void);
++void arch_haltpoll_disable(void);
++
++#endif
+Index: linux-2.6-newcpuidle.git/drivers/cpuidle/cpuidle-haltpoll.c
+===================================================================
+--- linux-2.6-newcpuidle.git.orig/drivers/cpuidle/cpuidle-haltpoll.c
++++ linux-2.6-newcpuidle.git/drivers/cpuidle/cpuidle-haltpoll.c
+@@ -15,6 +15,7 @@
+ #include <linux/module.h>
+ #include <linux/sched/idle.h>
+ #include <linux/kvm_para.h>
++#include <linux/cpuidle_haltpoll.h>
+ 
+ static int default_enter_idle(struct cpuidle_device *dev,
+ 			      struct cpuidle_driver *drv, int index)
+@@ -47,6 +48,7 @@ static struct cpuidle_driver haltpoll_dr
+ 
+ static int __init haltpoll_init(void)
+ {
++	int ret;
+ 	struct cpuidle_driver *drv = &haltpoll_driver;
+ 
+ 	cpuidle_poll_state_init(drv);
+@@ -54,11 +56,16 @@ static int __init haltpoll_init(void)
+ 	if (!kvm_para_available())
+ 		return 0;
+ 
+-	return cpuidle_register(&haltpoll_driver, NULL);
++	ret = cpuidle_register(&haltpoll_driver, NULL);
++	if (ret == 0)
++		arch_haltpoll_enable();
++
++	return ret;
+ }
+ 
+ static void __exit haltpoll_exit(void)
+ {
++	arch_haltpoll_disable();
+ 	cpuidle_unregister(&haltpoll_driver);
+ }
+ 
+Index: linux-2.6-newcpuidle.git/include/linux/cpuidle_haltpoll.h
+===================================================================
+--- /dev/null
++++ linux-2.6-newcpuidle.git/include/linux/cpuidle_haltpoll.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef _CPUIDLE_HALTPOLL_H
++#define _CPUIDLE_HALTPOLL_H
++
++#ifdef CONFIG_ARCH_CPUIDLE_HALTPOLL
++#include <asm/cpuidle_haltpoll.h>
++#else
++static inline void arch_haltpoll_enable(void)
++{
++}
++
++static inline void arch_haltpoll_disable(void)
++{
++}
++#endif
++#endif
+Index: linux-2.6-newcpuidle.git/arch/x86/Kconfig
+===================================================================
+--- linux-2.6-newcpuidle.git.orig/arch/x86/Kconfig
++++ linux-2.6-newcpuidle.git/arch/x86/Kconfig
+@@ -787,6 +787,7 @@ config KVM_GUEST
+ 	bool "KVM Guest support (including kvmclock)"
+ 	depends on PARAVIRT
+ 	select PARAVIRT_CLOCK
++	select ARCH_CPUIDLE_HALTPOLL
+ 	default y
+ 	---help---
+ 	  This option enables various optimizations for running under the KVM
+@@ -795,6 +796,12 @@ config KVM_GUEST
+ 	  underlying device model, the host provides the guest with
+ 	  timing infrastructure such as time of day, and system time
+ 
++config ARCH_CPUIDLE_HALTPOLL
++        def_bool n
++        prompt "Disable host haltpoll when loading haltpoll driver"
++        help
++	  If virtualized under KVM, disable host haltpoll.
++
+ config PVH
+ 	bool "Support for running PVH guests"
+ 	---help---
+Index: linux-2.6-newcpuidle.git/arch/x86/kernel/kvm.c
+===================================================================
+--- linux-2.6-newcpuidle.git.orig/arch/x86/kernel/kvm.c
++++ linux-2.6-newcpuidle.git/arch/x86/kernel/kvm.c
+@@ -853,3 +853,45 @@ void __init kvm_spinlock_init(void)
+ }
+ 
+ #endif	/* CONFIG_PARAVIRT_SPINLOCKS */
++
++#ifdef CONFIG_ARCH_CPUIDLE_HALTPOLL
++
++static void kvm_disable_host_haltpoll(void *i)
++{
++	wrmsrl(MSR_KVM_POLL_CONTROL, 0);
++}
++
++static void kvm_enable_host_haltpoll(void *i)
++{
++	wrmsrl(MSR_KVM_POLL_CONTROL, 1);
++}
++
++void arch_haltpoll_enable(void)
++{
++	if (!kvm_para_has_feature(KVM_FEATURE_POLL_CONTROL)) {
++		printk(KERN_ERR "kvm: host does not support poll control\n");
++		printk(KERN_ERR "kvm: host upgrade recommended\n");
++		return;
++	}
++
++	preempt_disable();
++	/* Enable guest halt poll disables host halt poll */
++	kvm_disable_host_haltpoll(NULL);
++	smp_call_function(kvm_disable_host_haltpoll, NULL, 1);
++	preempt_enable();
++}
++EXPORT_SYMBOL_GPL(arch_haltpoll_enable);
++
++void arch_haltpoll_disable(void)
++{
++	if (!kvm_para_has_feature(KVM_FEATURE_POLL_CONTROL))
++		return;
++
++	preempt_disable();
++	/* Enable guest halt poll disables host halt poll */
++	kvm_enable_host_haltpoll(NULL);
++	smp_call_function(kvm_enable_host_haltpoll, NULL, 1);
++	preempt_enable();
++}
++EXPORT_SYMBOL_GPL(arch_haltpoll_disable);
++#endif
 
 
