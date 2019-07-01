@@ -2,72 +2,74 @@ Return-Path: <SRS0=jgQS=U6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 035C3C0650E
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 11:26:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A82CC06511
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 11:26:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CC522206A3
-	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 11:26:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D93F0208E4
+	for <linux-pm@archiver.kernel.org>; Mon,  1 Jul 2019 11:26:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CMuYzAoc"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XUamftty"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728219AbfGAL0Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 1 Jul 2019 07:26:24 -0400
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:38014 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727239AbfGAL0Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jul 2019 07:26:24 -0400
-Received: by mail-pf1-f193.google.com with SMTP id y15so6443595pfn.5
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jul 2019 04:26:23 -0700 (PDT)
+        id S1728473AbfGAL0a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 1 Jul 2019 07:26:30 -0400
+Received: from mail-pg1-f195.google.com ([209.85.215.195]:45632 "EHLO
+        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728441AbfGAL0a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jul 2019 07:26:30 -0400
+Received: by mail-pg1-f195.google.com with SMTP id o13so1414200pgp.12
+        for <linux-pm@vger.kernel.org>; Mon, 01 Jul 2019 04:26:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=ynBBs/NOZX3NzX0Q9+1BmT1OjndcQg2QjZPTWCNOFLQ=;
-        b=CMuYzAocf2wKTBA+GXQccgtp+dOADRGiyab8LzNK8mpqZGI8+ekJbNSqjuhfGczRbq
-         hIyzHyq/PiHMbripC+nQ6rGz1xIto5k8YmbZ/QToU1+wA38o0NOtwV3vN3FydQ4oJlJ6
-         DeZhtBv1ma2z613Udb89826z95GgCHsVy8x4RgAmIpmJhpBJLGz0pX00h/+sWQdBCx+w
-         3YIBy8CkySQxBodv1KAwNRBYE80ptRyiunQwNu6lrXoQgRyhzccdr1ApGHHHMeJp+Pav
-         Fa9gc2WB04WtnC4y4X8rGtcSZtpzJGVJMrUKnzxjWLd435YOtIXQjYJcMceDY3iumXWQ
-         /n7g==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=PlxocW5hWVYXfPkN8RZ8vxi1sxzrmOenQcvIcTZd5kM=;
+        b=XUamfttyP80qdspJgf1uIrYuYqNj/n0X1CzPBvPz4mMVT/y51sj6kZS6OMaVHEigV0
+         AWHBSQtCgD6fzdYqfjQ4vQ5+CSxugvayzemLhR5nad63DIF2NZptTU7b3vY/IAsf4Kqh
+         qaL7GgFhQfaCU/UQ6zPKAYk0JZpem/ygA+1PtSJumre9Jf0FyXphj6sUSAmM7jrpd8zo
+         ra/51juPWGNEtGpCyxWs4AggISzIwaTywOYJHN26VS+B4tS8k5b1ooEwWHnscsmtlpDN
+         zu3qVHaTP20si2JQVegs0PzPnBAsBoSoV1Jc12R516XJNpRs2qPPMmGz5lgMahUGQTas
+         8Q5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=ynBBs/NOZX3NzX0Q9+1BmT1OjndcQg2QjZPTWCNOFLQ=;
-        b=RdjATBBrqcwP+lXKyOHz0sznoFjlKXKd6LQltvYKK5wlkYgKUCgrCliKxDecVfnJnE
-         pIVzg56E2ScE2yCLLBucT/UZs3xN/U/CKpnBqUATzYh3yqvW/FCBI256elxONmViU+HW
-         Dy+uzhM25CIco59uWMeHjYvBFcvGGNMJZ+S35J4j36k5MVrYsytcUMiJLUCBplnss4Rk
-         sQqGBoanEpeSH37DHkyoMNT5zRRbYYgKhGQA6dHCWk5A4jqvk02kK7vdQ/mqlw3Y5rGh
-         KCrQJR8ckienQJCImzFZCTmDYxa+fFkj+FJw9iz4Dv48TvkOUgmXanxfXmABnPceux+e
-         127A==
-X-Gm-Message-State: APjAAAU2dBE0EoSupUbeqjl4jJkfz5qnpiPmpQ5RwKqsS++WsxEwiGZq
-        al4c5q3Iosx4YI1r/YxTYtDN9A==
-X-Google-Smtp-Source: APXvYqygZ3fAikMt9o/P/XbZtlOuA1YA0A6ZN7tJAAFjFS+dwZF9vKO/IVT+6FQ6twYmXoNi+aXWPQ==
-X-Received: by 2002:a17:90a:33c4:: with SMTP id n62mr31355142pjb.28.1561980383274;
-        Mon, 01 Jul 2019 04:26:23 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=PlxocW5hWVYXfPkN8RZ8vxi1sxzrmOenQcvIcTZd5kM=;
+        b=DXO7sGpTNOdbO84qKWKbBOC+NNpBNT/DagqZnxeW0Duv9mxUbL1fnRySK7oLcqV37m
+         4PHT04qaR+qML6kphwX6rDWg6QdILN7MiqG0b0o/5MiZ1Q/LHDRbBWUMsnN7423fyIa7
+         HUyESOeTdqD3X7CPYMK/kvdk0vQdYCwb/Wh+AHIU+7n4qi0kBgTli4NuW534btfROC86
+         sYObZ8B1wDo++3lWQm2l4Vv/95OMR2XHTAxST744NlhYvvPkG+3wRySMTf9N8Q1yw185
+         6u9t6g7c/orTNk4JBKlyxYSzjzzPMrItQS5tBoGAXhoxIZjnZM8A6uj2NlJZ6DJzv++v
+         WLnQ==
+X-Gm-Message-State: APjAAAWJtc2mI1WoMjRdDIJUkxyJGwbSlgsS2OkfrSoV/E7+mm0C3Onh
+        r3Mpu4s5dFOeBT2kuIsT9gsm5w==
+X-Google-Smtp-Source: APXvYqzzXuYchXR4bDT7E4DNJbEi3ftoJcE2aBG4RWQpZQX301aEkSUILM58p+g3QwsHC+9jXUPmdA==
+X-Received: by 2002:a65:62c2:: with SMTP id m2mr24639022pgv.413.1561980389387;
+        Mon, 01 Jul 2019 04:26:29 -0700 (PDT)
 Received: from localhost ([122.172.21.205])
-        by smtp.gmail.com with ESMTPSA id i9sm8248146pgo.46.2019.07.01.04.26.22
+        by smtp.gmail.com with ESMTPSA id m4sm19139569pff.108.2019.07.01.04.26.28
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 01 Jul 2019 04:26:22 -0700 (PDT)
+        Mon, 01 Jul 2019 04:26:28 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Kevin Hilman <khilman@kernel.org>, Len Brown <lenb@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
         Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>
+        Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Qais.Yousef@arm.com, mka@chromium.org, juri.lelli@gmail.com,
         linux-kernel@vger.kernel.org
-Subject: [PATCH V5 0/7] cpufreq: Use QoS layer to manage freq-constraints
-Date:   Mon,  1 Jul 2019 16:56:08 +0530
-Message-Id: <cover.1561979715.git.viresh.kumar@linaro.org>
+Subject: [PATCH V5 2/7] PM / QOS: Rename __dev_pm_qos_read_value() and dev_pm_qos_raw_read_value()
+Date:   Mon,  1 Jul 2019 16:56:10 +0530
+Message-Id: <5c38b4a94f5114bbc99f62d89d4c09f877194dc7.1561979715.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
+In-Reply-To: <cover.1561979715.git.viresh.kumar@linaro.org>
+References: <cover.1561979715.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -75,66 +77,145 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+dev_pm_qos_read_value() will soon need to support more constraint types
+(min/max frequency) and will have another argument to it, i.e. type of
+the constraint. While that is fine for the existing users of
+dev_pm_qos_read_value(), but not that optimal for the callers of
+__dev_pm_qos_read_value() and dev_pm_qos_raw_read_value() as all the
+callers of these two routines are only looking for resume latency
+constraint.
 
-This patchset attempts to manage CPU frequency constraints using the PM
-QoS framework. It only does the basic stuff right now and moves the
-userspace constraints to use the QoS infrastructure.
+Lets make these two routines care only about the resume latency
+constraint and rename them to __dev_pm_qos_resume_latency() and
+dev_pm_qos_raw_resume_latency().
 
-Todo:
-- Migrate all users to the QoS framework and get rid of cpufreq specific
-  notifiers.
-- Make PM QoS learn about the relation of CPUs in a policy, so a single
-  list of constraints is managed for all of them instead of per-cpu
-  constraints.
+Suggested-by: Rafael J. Wysocki <rjw@rjwysocki.net>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/domain_governor.c |  2 +-
+ drivers/base/power/qos.c             | 13 +++++++++----
+ drivers/base/power/runtime.c         |  2 +-
+ drivers/cpuidle/governor.c           |  2 +-
+ include/linux/pm_qos.h               |  8 ++++----
+ 5 files changed, 16 insertions(+), 11 deletions(-)
 
-V4->V5:
-- A new patch added, 6/7.
-
-V3->V4:
-- Few commit logs updated as suggested during reviews.
-- Separate commit (2/6) to create resume-latency specific routines
-- Reused earlier work ("update") for notifiers as well.
-- Kept Reviewed-by tags as is as the patches normally got better only.
-  Please take them back if you find any issues.
-
-V2->V3:
-- Add a comment in cpufreq.c as suggested by Qais.
-- Rebased on latest pm/linux-next.
-
-V1->V2:
-- The previous version introduced a completely new framework, this one
-  moves to PM QoS instead.
-- Lots of changes because of this.
-
---
-viresh
-
-[1] http://lore.kernel.org/lkml/cover.1560999838.git.viresh.kumar@linaro.org
-
-
-Viresh Kumar (7):
-  PM / QOS: Pass request type to dev_pm_qos_{add|remove}_notifier()
-  PM / QOS: Rename __dev_pm_qos_read_value() and
-    dev_pm_qos_raw_read_value()
-  PM / QOS: Pass request type to dev_pm_qos_read_value()
-  PM / QoS: Add support for MIN/MAX frequency constraints
-  cpufreq: Register notifiers with the PM QoS framework
-  cpufreq: intel_pstate: Reuse refresh_frequency_limits()
-  cpufreq: Add QoS requests for userspace constraints
-
- Documentation/power/pm_qos_interface.txt |  12 +-
- drivers/base/power/domain.c              |   8 +-
- drivers/base/power/domain_governor.c     |   4 +-
- drivers/base/power/qos.c                 | 135 +++++++++++++--
- drivers/base/power/runtime.c             |   2 +-
- drivers/cpufreq/cpufreq.c                | 201 ++++++++++++++++-------
- drivers/cpufreq/intel_pstate.c           |   7 +-
- drivers/cpuidle/governor.c               |   2 +-
- include/linux/cpufreq.h                  |  12 +-
- include/linux/pm_qos.h                   |  48 ++++--
- 10 files changed, 320 insertions(+), 111 deletions(-)
-
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 3838045c9277..20e56a5be01f 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -66,7 +66,7 @@ static bool default_suspend_ok(struct device *dev)
+ 	td->constraint_changed = false;
+ 	td->cached_suspend_ok = false;
+ 	td->effective_constraint_ns = 0;
+-	constraint_ns = __dev_pm_qos_read_value(dev);
++	constraint_ns = __dev_pm_qos_resume_latency(dev);
+ 
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ 
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index cfd463212513..7a0d197f0809 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -90,16 +90,16 @@ enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev, s32 mask)
+ EXPORT_SYMBOL_GPL(dev_pm_qos_flags);
+ 
+ /**
+- * __dev_pm_qos_read_value - Get PM QoS constraint for a given device.
++ * __dev_pm_qos_resume_latency - Get resume latency constraint for a given device.
+  * @dev: Device to get the PM QoS constraint value for.
+  *
+  * This routine must be called with dev->power.lock held.
+  */
+-s32 __dev_pm_qos_read_value(struct device *dev)
++s32 __dev_pm_qos_resume_latency(struct device *dev)
+ {
+ 	lockdep_assert_held(&dev->power.lock);
+ 
+-	return dev_pm_qos_raw_read_value(dev);
++	return dev_pm_qos_raw_resume_latency(dev);
+ }
+ 
+ /**
+@@ -112,7 +112,12 @@ s32 dev_pm_qos_read_value(struct device *dev)
+ 	s32 ret;
+ 
+ 	spin_lock_irqsave(&dev->power.lock, flags);
+-	ret = __dev_pm_qos_read_value(dev);
++
++	if (IS_ERR_OR_NULL(dev->power.qos))
++		ret = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
++	else
++		ret = pm_qos_read_value(&dev->power.qos->resume_latency);
++
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ 
+ 	return ret;
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 952a1e7057c7..b75335508d2c 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -275,7 +275,7 @@ static int rpm_check_suspend_allowed(struct device *dev)
+ 	    || (dev->power.request_pending
+ 			&& dev->power.request == RPM_REQ_RESUME))
+ 		retval = -EAGAIN;
+-	else if (__dev_pm_qos_read_value(dev) == 0)
++	else if (__dev_pm_qos_resume_latency(dev) == 0)
+ 		retval = -EPERM;
+ 	else if (dev->power.runtime_status == RPM_SUSPENDED)
+ 		retval = 1;
+diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+index 9fddf828a76f..2e3e14192bee 100644
+--- a/drivers/cpuidle/governor.c
++++ b/drivers/cpuidle/governor.c
+@@ -110,7 +110,7 @@ int cpuidle_governor_latency_req(unsigned int cpu)
+ {
+ 	int global_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	struct device *device = get_cpu_device(cpu);
+-	int device_req = dev_pm_qos_raw_read_value(device);
++	int device_req = dev_pm_qos_raw_resume_latency(device);
+ 
+ 	return device_req < global_req ? device_req : global_req;
+ }
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 1f4d456e8fff..06aa88496761 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -139,7 +139,7 @@ s32 pm_qos_read_value(struct pm_qos_constraints *c);
+ #ifdef CONFIG_PM
+ enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
+ enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev, s32 mask);
+-s32 __dev_pm_qos_read_value(struct device *dev);
++s32 __dev_pm_qos_resume_latency(struct device *dev);
+ s32 dev_pm_qos_read_value(struct device *dev);
+ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+ 			   enum dev_pm_qos_req_type type, s32 value);
+@@ -176,7 +176,7 @@ static inline s32 dev_pm_qos_requested_flags(struct device *dev)
+ 	return dev->power.qos->flags_req->data.flr.flags;
+ }
+ 
+-static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
++static inline s32 dev_pm_qos_raw_resume_latency(struct device *dev)
+ {
+ 	return IS_ERR_OR_NULL(dev->power.qos) ?
+ 		PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
+@@ -189,7 +189,7 @@ static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
+ static inline enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev,
+ 							s32 mask)
+ 			{ return PM_QOS_FLAGS_UNDEFINED; }
+-static inline s32 __dev_pm_qos_read_value(struct device *dev)
++static inline s32 __dev_pm_qos_resume_latency(struct device *dev)
+ 			{ return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT; }
+ static inline s32 dev_pm_qos_read_value(struct device *dev)
+ 			{ return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT; }
+@@ -245,7 +245,7 @@ static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev)
+ 	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+ }
+ static inline s32 dev_pm_qos_requested_flags(struct device *dev) { return 0; }
+-static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
++static inline s32 dev_pm_qos_raw_resume_latency(struct device *dev)
+ {
+ 	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+ }
 -- 
 2.21.0.rc0.269.g1a574e7a288b
 
