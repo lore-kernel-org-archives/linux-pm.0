@@ -2,191 +2,225 @@ Return-Path: <SRS0=aMKS=VA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32D29C06513
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 16:36:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DA92C0650E
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 16:49:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 13547218A0
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 16:36:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 32CB1218B0
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 16:49:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="dUAq2zu8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726924AbfGCQgR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Jul 2019 12:36:17 -0400
-Received: from foss.arm.com ([217.140.110.172]:52414 "EHLO foss.arm.com"
+        id S1726721AbfGCQtj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Jul 2019 12:49:39 -0400
+Received: from mout.gmx.net ([212.227.15.15]:48639 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726823AbfGCQgR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Jul 2019 12:36:17 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8189A1478;
-        Wed,  3 Jul 2019 09:36:16 -0700 (PDT)
-Received: from [10.1.195.43] (e107049-lin.cambridge.arm.com [10.1.195.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5D7C03F740;
-        Wed,  3 Jul 2019 09:36:15 -0700 (PDT)
-Subject: Re: [RFC PATCH v2 0/5] sched/cpufreq: Make schedutil energy aware
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        quentin.perret@arm.com, patrick.bellasi@arm.com,
-        dietmar.eggemann@arm.com
-References: <20190627171603.14767-1-douglas.raillard@arm.com>
- <20190702155115.GW3436@hirez.programming.kicks-ass.net>
-From:   Douglas Raillard <douglas.raillard@arm.com>
-Organization: ARM
-Message-ID: <5198292b-1874-9ff4-6a9f-826a5ea00466@arm.com>
-Date:   Wed, 3 Jul 2019 17:36:14 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.1
-MIME-Version: 1.0
-In-Reply-To: <20190702155115.GW3436@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB-large
-Content-Transfer-Encoding: 7bit
+        id S1726430AbfGCQtj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Jul 2019 12:49:39 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1562172515;
+        bh=Q4SNzBfUgmUaXEsp2/EkbHDrGPVnZzLCOAAZMoTbLHU=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=dUAq2zu8k0rxZvBIT5mcoE2t0sC3jCT+ju9g6JRkYtSp4RB6PavjpCfVuJ3uQRRag
+         PtBvoecXZuNbglZNIfhDtks5YMtnk0+OSSOMgQzm+6QDyPXudrub7GdWqXzZqIxp28
+         vaAJLRKY6+Bm2vyaA7kTXQhbVzwli2iBr3QLmayg=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from localhost.localdomain ([217.61.158.204]) by mail.gmx.com
+ (mrgmx004 [212.227.17.190]) with ESMTPSA (Nemesis) id
+ 1MbirE-1iF1363taI-00dD2d; Wed, 03 Jul 2019 18:48:35 +0200
+From:   Frank Wunderlich <frank-w@public-files.de>
+To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sean Wang <sean.wang@mediatek.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        Eddie Huang <eddie.huang@mediatek.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Richard Fontana <rfontana@redhat.com>,
+        Allison Randal <allison@lohutok.net>,
+        "David S . Miller" <davem@davemloft.net>,
+        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Rob Herring <robh@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        "Paul E . McKenney" <paulmck@linux.ibm.com>
+Cc:     Josef Friedl <josef.friedl@speed.at>,
+        Frank Wunderlich <frank-w@public-files.de>
+Subject: [PATCH v2 3/7] rtc: mt6397: improvements of rtc driver
+Date:   Wed,  3 Jul 2019 18:48:18 +0200
+Message-Id: <20190703164822.17924-4-frank-w@public-files.de>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190703164822.17924-1-frank-w@public-files.de>
+References: <20190703164822.17924-1-frank-w@public-files.de>
+X-Provags-ID: V03:K1:Doz5m2szHD54xebFCDZtFG1jkMhZkLcvMGXvCyriCBWcdSKa3Po
+ 9pNHVGegXnLoqrAeDO7HXgCEhNeUReGWchhh3UVvXcsL6dD65KFzYJ1tAzs8YKkI2gMYAJW
+ LC9Evz9eFQO1eF3akk3EL0bT7PfbiTi5oaw4VaP8f9vPXewf09C2JHPqAcdg9iEdYErjHpu
+ 1VcNABzfFOtmGkWQ3WBeA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:XzjbtNDDVBI=:6fPDOhc3ib1mIDPeODXkCM
+ sGi1yA24Th45Cti4r6Y/VVlK7UWP/BLhd4poItsbr+IxQhAowvs6NNYsbHW3GH455oJZvioNF
+ Iz9au5ndpJA27wKgIKRuGvhb+0p59VDjdfiVFTfduF+yiu4c+G+S7rrqVatiaGL1nAucT4yel
+ 1JiS4o0cD/oOP58flHAPTxmJkMw0e93hr94qBZRn9BCNdG69zTFZkd7xpHZsp5uNOq7L3uKIU
+ yHj60ZWItxffMb4qH/X7ERxbLhEQwIY02T+NQtnZg4v2259rR5do7Upvh1RRUcolMeM7vGTYH
+ mgCAy2IOu53hldt6Q3fRSXGaI3OqMbu3WeoBN/RK1DPRzEDEdIYwAYr9BOdAr5VoUSQhzOjvj
+ qSjwMlr4ryLFhTrnOEqtJ6X0Xop8NoGrWRlf1jnVB9CTiqe3716CRqhlsNdaEVhghXX3dQjol
+ CGpdKc6iw9xvxM0zJz9l6x7g7GxkistvOnle7SMPISNaZwZER8Rza8QR9K1ZEfCGrSgVwihbE
+ e9Czk22vy05sRHcKC5Ke8nYPvGyskoGRZREhurmrTgSJBvVVymfKkSVH+FRux18hLEN25W0zA
+ 47AKfruN7OYXdawFTDu43VqZgGSe9KllIEO3TbTgAS3Idocr9sBaBWxDj7Hh9ALIi0qpMnjIR
+ o48+7naGWINRsknUz/s/qsc7S3ZEObFHqWKMKE8PHSCCOWLskDGq9tnr111598PVD7bldVS4F
+ mAAuPrrA+wagXuvlmZ5ZlYv13TTbALqZkA7i6sn+Pd1AMWo+FJfdpIUs9LUWBhnn9Lhp0uDI9
+ zodNRadZvE4BtssJmsUzNk3dfiD9vJssjxxPSrRx9P3DYOxchAu6Q1MbvuSSuFRES+fw2bgrn
+ 7wzeLS0IVG4/PofxgGy6FXVLzjjhnWUXj32h+vCPDiLKKMz/xZKW8CpWawz/b61VF+RAmqcRg
+ MsZPvcSJ4LR/1YfWdlAh7cX9Gwv6OzpVyFO3ZpiPobgO76SIKO4GKVKkiqEywfTOsnfZ+TOhc
+ ICjiGClrvXeiYyaHpfKONdnWyaH04Bbd0pCM/LW68c68SC8JSKo/kekPE6uBRNiLMkzjrYJyS
+ sfAoazhD4roxRs=
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 7/2/19 4:51 PM, Peter Zijlstra wrote:
-> On Thu, Jun 27, 2019 at 06:15:58PM +0100, Douglas RAILLARD wrote:
->> Make schedutil cpufreq governor energy-aware.
->>
->> - patch 4 adds sugov_cpu_ramp_boost() function.
->> - patch 5 updates sugov_update_(single|shared)() to make use of
->>    sugov_cpu_ramp_boost().
->>
->> The benefits of using the EM in schedutil are twofold:
-> 
->> 2) Driving the frequency selection with power in mind, in addition to
->>     maximizing the utilization of the non-idle CPUs in the system.
-> 
->> Point 2) is enabled in
->> "sched/cpufreq: Boost schedutil frequency ramp up". It allows using
->> higher frequencies when it is known that the true utilization of
->> currently running tasks is exceeding their previous stable point.
->> The benefits are:
->>
->> * Boosting the frequency when the behavior of a runnable task changes,
->>    leading to an increase in utilization. That shortens the frequency
->>    ramp up duration, which in turns allows the utilization signal to
->>    reach stable values quicker.  Since the allowed frequency boost is
->>    bounded in energy, it will behave consistently across platforms,
->>    regardless of the OPP cost range.
->>
->> * The boost is only transient, and should not impact a lot the energy
->>    consumed of workloads with very stable utilization signals.
-> 
+From: Josef Friedl <josef.friedl@speed.at>
 
-[reordered original comments]
+- use regmap_read_poll_timeout to drop while-loop
+- use devm-api to drop remove-callback
+- add new compatible for mt6323
 
-> This then obviously has relation to Patrick's patch that makes the EWMA
-> asymmetric, but I'm thinking that the interaction is mostly favourable?
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+=2D--
+ drivers/rtc/rtc-mt6397.c | 55 ++++++++++++++++------------------------
+ 1 file changed, 22 insertions(+), 33 deletions(-)
 
-Making task_ue.ewma larger makes cpu_ue.enqueued larger, so Patrick's patch
-helps increasing the utilisation as seen by schedutil in that transient time.
-(see discussion on schedutil signals at the bottom). That goes in the same
-direction as this series.
+diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+index c08ee5edf865..e5ddf0d0b6f1 100644
+=2D-- a/drivers/rtc/rtc-mt6397.c
++++ b/drivers/rtc/rtc-mt6397.c
+@@ -4,16 +4,19 @@
+ * Author: Tianping.Fang <tianping.fang@mediatek.com>
+ */
 
-> So you're allowing a higher pick when the EWMA exceeds the enqueue
-> thing.
+-#include <linux/delay.h>
+-#include <linux/init.h>
++#include <linux/err.h>
++#include <linux/interrupt.h>
++#include <linux/mfd/mt6397/core.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
+ #include <linux/regmap.h>
+ #include <linux/rtc.h>
+ #include <linux/mfd/mt6397/rtc.h>
++#include <linux/mod_devicetable.h>
 
-TLDR: Schedutil ramp boost works on CPU rq signals, for which util est EWMA
-is not defined, but the idea is the same (replace util est EWMA by util_avg).
+ static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
+ {
+-	unsigned long timeout =3D jiffies + HZ;
+ 	int ret;
+ 	u32 data;
 
-The important point here is that when util_avg for the task becomes higher
-than task_ue.enqueued, it means the knowledge of the actual needs of the task
-is turned into a lower bound (=task_ue.enqueued) rather than an exact value.
-This means that selecting a higher frequency than that is:
-a) necessary, the task needs more computational power to do its job.
-b) a shot in the dark, as it's impossible to predict exactly how much it will
-    need without a crystal ball.
+@@ -21,19 +24,13 @@ static int mtk_rtc_write_trigger(struct mt6397_rtc *rt=
+c)
+ 	if (ret < 0)
+ 		return ret;
 
-When adding ramp boost, the bill is split: part of the "shot in the dark" comes from
-the growing CPU's util_avg (see schedutil_u definition at the bottom), and part of it
-comes from the ramp boost. We don't want to make the boost too costly either since
-it's a shot in the dark. Therefore, we make the boost proportional to a battery life
-cost rather than some guessed utilisation.
+-	while (1) {
+-		ret =3D regmap_read(rtc->regmap, rtc->addr_base + RTC_BBPU,
+-				  &data);
+-		if (ret < 0)
+-			break;
+-		if (!(data & RTC_BBPU_CBUSY))
+-			break;
+-		if (time_after(jiffies, timeout)) {
+-			ret =3D -ETIMEDOUT;
+-			break;
+-		}
+-		cpu_relax();
+-	}
++	ret =3D regmap_read_poll_timeout(rtc->regmap,
++					rtc->addr_base + RTC_BBPU, data,
++					!(data & RTC_BBPU_CBUSY),
++					MTK_RTC_POLL_DELAY_US,
++					MTK_RTC_POLL_TIMEOUT);
++	if (ret < 0)
++		dev_err(rtc->dev, "failed to write WRTGE: %d\n", ret);
 
-Now that I think about it, it may make sense to let this ramp-boost completely
-handle this "future util prediction" case, as it's not better or worse than
-util_avg at that (since it's based on it), but allows better control on
-the cost of a (mis)prediction.
+ 	return ret;
+ }
+@@ -271,14 +268,11 @@ static int mtk_rtc_probe(struct platform_device *pde=
+v)
 
-> 
-> I'm not immediately seeing how it is transient; that is, PELT has a
-> wobble in it's steady state, is that accounted for?
-> 
+ 	platform_set_drvdata(pdev, rtc);
 
-The transient-ness of the ramp boost I'm introducing comes from the fact that for a
-periodic task at steady state, task_ue.enqueued <= task_u when the task is executing.
-That is because task_ue.enqueued is sampled at dequeue time, precisely at the moment
-at which task_u is reaching its max for that task. Since we only take into account
-positive boosts, ramp boost will only have an impact in the "increase transients".
+-	rtc->rtc_dev =3D devm_rtc_allocate_device(rtc->dev);
+-	if (IS_ERR(rtc->rtc_dev))
+-		return PTR_ERR(rtc->rtc_dev);
++	ret =3D devm_request_threaded_irq(&pdev->dev, rtc->irq, NULL,
++					mtk_rtc_irq_handler_thread,
++					IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
++					"mt6397-rtc", rtc);
 
+-	ret =3D request_threaded_irq(rtc->irq, NULL,
+-				   mtk_rtc_irq_handler_thread,
+-				   IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
+-				   "mt6397-rtc", rtc);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
+ 			rtc->irq, ret);
+@@ -287,6 +281,10 @@ static int mtk_rtc_probe(struct platform_device *pdev=
+)
 
-About signals schedutil is based on
-===================================
+ 	device_init_wakeup(&pdev->dev, 1);
 
-Here is the state of signals used by schedutil to my knowledge to compute
-the final "chosen_freq":
++	rtc->rtc_dev =3D devm_rtc_allocate_device(&pdev->dev);
++	if (IS_ERR(rtc->rtc_dev))
++		return PTR_ERR(rtc->rtc_dev);
++
+ 	rtc->rtc_dev->ops =3D &mtk_rtc_ops;
 
-# let's define short names to talk about
-task_ue = se.avg.util_est
-task_u = se.avg.util_avg
+ 	ret =3D rtc_register_device(rtc->rtc_dev);
+@@ -302,15 +300,6 @@ static int mtk_rtc_probe(struct platform_device *pdev=
+)
+ 	return ret;
+ }
 
-cpu_ue = cfs_rq->avg.util_est
-cpu_u = cfs_rq->avg.util_avg
+-static int mtk_rtc_remove(struct platform_device *pdev)
+-{
+-	struct mt6397_rtc *rtc =3D platform_get_drvdata(pdev);
+-
+-	free_irq(rtc->irq, rtc);
+-
+-	return 0;
+-}
+-
+ #ifdef CONFIG_PM_SLEEP
+ static int mt6397_rtc_suspend(struct device *dev)
+ {
+@@ -337,6 +326,7 @@ static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_rtc_sus=
+pend,
+ 			mt6397_rtc_resume);
 
+ static const struct of_device_id mt6397_rtc_of_match[] =3D {
++	{ .compatible =3D "mediatek,mt6323-rtc", },
+ 	{ .compatible =3D "mediatek,mt6397-rtc", },
+ 	{ }
+ };
+@@ -349,7 +339,6 @@ static struct platform_driver mtk_rtc_driver =3D {
+ 		.pm =3D &mt6397_pm_ops,
+ 	},
+ 	.probe	=3D mtk_rtc_probe,
+-	.remove =3D mtk_rtc_remove,
+ };
 
-# How things are defined
-task_u ~= LOW_PASS_FILTER(task_activations)
-task_ue.enqueued = SAMPLE_AT_DEQUEUE_AND_HOLD(task_u)
-task_ue.ewma = LOW_PASS_FILTER(task_ue.enqueued)
+ module_platform_driver(mtk_rtc_driver);
+=2D-
+2.17.1
 
-# Patrick's patch amends task_ue.ewma definition this way:
-task_ue.ewma =
-	| task_ue.enqueued > task_ue.ewma: task_ue.enqueued
-	| otherwise			 : LOW_PASS_FILTER(task_ue.enqueued)
-
-
-cpu_ue.enqueued = SUM[MAX(task_ue.ewma, task_ue.enqueued) forall task_ue in enqueued_tasks]
-cpu_u = SUM[task_u forall task_ue in enqueued_tasks]
-
-# What schedutil considers when taking freq decisions
-
-non_cfs_u = util of deadline + rt + irq
-schedutil_u = non_cfs_u + APPLY_UCLAMP(MAX(cpu_ue.enqueued, cpu_u)) + iowait_boost
-schedutil_base_freq = MAP_UTIL_FREQ(schedutil_u)
-
-STABLE(signal) =
-	| signal equal to the last time it was sampled by caller: True
-	| otherwise				      		: False
-# A diff between two util signals is converted to a EM_COST_MARGIN_SCALE value.
-# They are different units, but the conversion factor is 1 in practice.
-ramp_boost =
-	| cpu_ue.enqueued > cpu_u && STABLE(cpu_ue.enqueued):
-		(cpu_ue.enqueued - cpu_u) * (EM_COST_MARGIN_SCALE/SCHED_CAPACITY_SCALE)
-	| otherwise: 0
-
-APPLY_RAMP_BOOST(boost, base_freq) = boosted_freq
-	with
-		acceptable_cost = ENERGY_MODEL_COST(base_freq) * (EM_COST_MARGIN_SCALE + boost)
-		boosted_freq = MAX[freq forall freqs if ENERGY_MODEL_COST(freq) < acceptable_cost]
-
-# ramp-boost is applied on a freq instead of a util (unlike iowait_boost), since
-# the function ENERGY_MODEL_COST(freq) is provided by the EM, and an equivalent
-# ENERGY_MODEL_COST(util) would need extra calls to MAP_UTIL_FREQ().
-schedutil_freq = APPLY_RAMP_BOOST(ramp_boost, schedutil_base_freq)
-
-REAL_FREQ(ideal_freq) = MIN[freq forall freqs if freq >= ideal_freq]
-POLICY_CLAMP(freq) =
-	| freq < policy_min_freq: policy_min_freq
-	| freq > policy_max_freq: policy_max_freq
-	| otherwise		: freq
-# Frequency finally used for the policy
-chosen_freq = POLICY_CLAMP(REAL_FREQ(schedutil_freq))
-
-
-Thanks,
-Douglas
