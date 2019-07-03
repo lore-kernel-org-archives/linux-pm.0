@@ -2,43 +2,43 @@ Return-Path: <SRS0=aMKS=VA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22589C06511
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 08:15:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E243C5B578
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 08:23:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F09FA218A6
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 08:14:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 436FB218A4
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 08:23:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727351AbfGCIOH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Jul 2019 04:14:07 -0400
-Received: from mga17.intel.com ([192.55.52.151]:64810 "EHLO mga17.intel.com"
+        id S1727052AbfGCIXW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Jul 2019 04:23:22 -0400
+Received: from mga04.intel.com ([192.55.52.120]:12513 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727347AbfGCIOH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Jul 2019 04:14:07 -0400
+        id S1727045AbfGCIXW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Jul 2019 04:23:22 -0400
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 03 Jul 2019 01:14:06 -0700
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 03 Jul 2019 01:23:21 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.63,446,1557212400"; 
-   d="scan'208";a="154679688"
+   d="scan'208";a="169055077"
 Received: from zhongyan-mobl.ccr.corp.intel.com ([10.249.170.124])
-  by orsmga007.jf.intel.com with ESMTP; 03 Jul 2019 01:14:04 -0700
-Message-ID: <1562141642.3256.6.camel@intel.com>
-Subject: Re: [PATCH 04/13] intel_rapl: introduce struct rapl_private
+  by orsmga006.jf.intel.com with ESMTP; 03 Jul 2019 01:23:19 -0700
+Message-ID: <1562142196.3256.15.camel@intel.com>
+Subject: Re: [PATCH 09/13] intel_rapl: abstract RAPL common code
 From:   Zhang Rui <rui.zhang@intel.com>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Linux PM <linux-pm@vger.kernel.org>,
         "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Date:   Wed, 03 Jul 2019 16:14:02 +0800
-In-Reply-To: <CAJZ5v0he3Qs_nZmTN9fcgVAnurwXOb+Dj+NnTvUqT8TCH3oNHQ@mail.gmail.com>
+Date:   Wed, 03 Jul 2019 16:23:16 +0800
+In-Reply-To: <CAJZ5v0gEW_9UaZDnJdz60e6baEYQOuG-SdZu54tswho6J+zYkQ@mail.gmail.com>
 References: <1561701029-3415-1-git-send-email-rui.zhang@intel.com>
-         <1561701029-3415-5-git-send-email-rui.zhang@intel.com>
-         <CAJZ5v0he3Qs_nZmTN9fcgVAnurwXOb+Dj+NnTvUqT8TCH3oNHQ@mail.gmail.com>
+         <1561701029-3415-10-git-send-email-rui.zhang@intel.com>
+         <CAJZ5v0gEW_9UaZDnJdz60e6baEYQOuG-SdZu54tswho6J+zYkQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailer: Evolution 3.18.5.2-0ubuntu3.2 
 Mime-Version: 1.0
@@ -48,67 +48,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 二, 2019-07-02 at 23:44 +0200, Rafael J. Wysocki wrote:
+On 二, 2019-07-02 at 23:59 +0200, Rafael J. Wysocki wrote:
 > On Fri, Jun 28, 2019 at 7:50 AM Zhang Rui <rui.zhang@intel.com>
 > wrote:
 > > 
 > > 
-> > Introduce a new structure, rapl_private, to save the private data
-> > for different RAPL Interface.
-> The new structure is called rapl_priv in the patch.
-> 
-> Besides, I would call it rapl_if_priv to indicate that this related
-> to
-> an interface.
-> 
-> Also, IMO there should be a kerneldoc comment for it.
-> 
-okay.
+> > Split intel_rapl.c to intel_rapl_common.c and intel_rapl.c, where
+> > intel_rapl_common.c contains the common code that can be used by
+> > both MSR
+> > and MMIO interface.
+> > intel_rapl.c still contains the implementation of RAPL MSR
+> > interface.
 > > 
 > > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 > > ---
-> >  drivers/powercap/intel_rapl.c | 58 +++++++++++++++++++++--------
-> > --------------
-> >  include/linux/intel_rapl.h    |  7 ++++++
-> >  2 files changed, 35 insertions(+), 30 deletions(-)
-> > 
-> > diff --git a/drivers/powercap/intel_rapl.c
-> > b/drivers/powercap/intel_rapl.c
-> > index adb35ec..a804370 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -75,6 +75,8 @@ enum unit_type {
-> >         TIME_UNIT,
-> >  };
-> > 
-> > +static struct rapl_priv rapl_msr_priv;
-> Please add a comment describing this variable and its role.
+> >  drivers/powercap/Kconfig             |   11 +-
+> >  drivers/powercap/Makefile            |    1 +
+> >  drivers/powercap/intel_rapl.c        | 1427 +---------------------
+> > -----------
+> >  drivers/powercap/intel_rapl_common.c | 1468
+> > ++++++++++++++++++++++++++++++++++
+> intel_rapl_common.c and intel_rapl_msr.c, please.
 > 
-> BTW, I'd rather call it rapl_if_msr.
-> 
-> > 
-> > +
-> >  /* per domain data, some are optional */
-> >  #define NR_RAW_PRIMITIVES (NR_RAPL_PRIMITIVES - 2)
-> > 
-> > @@ -155,17 +157,14 @@ static const char * const rapl_domain_names[]
-> > = {
-> >         "psys",
-> >  };
-> > 
-> > -static struct powercap_control_type *control_type; /* PowerCap
-> > Controller */
-> > -static struct rapl_domain *platform_rapl_domain; /* Platform
-> > (PSys) domain */
-> Why do these things need to go into rapl_priv?
-> 
-different RAPL interface may have its own control_type,
-"intel_rapl_msr" vs. "intel_rapl_mmio".
+I kept the MSR RAPL interface in intel_rapl.c for compatibility reason,
+and that was made when the module autoloading issue is not fixed, so
+people can still use "modprobe intel_rapl" manually to get the MSR RAPL
+interface.
 
-MMIO RAPL interface does not have platform rapl domain so far, but
-given that the current platform rapl domain uses
-MSR_PLATFORM_POWER_LIMIT and MSR_PLATFORM_ENERGY_STATUS.
-I made it part of MSR RAPL interface driver.
+Now given that the MSR RAPL interface driver can be autoloaded, I think
+it is okay to use intel_rapl_msr.c and intel_rapl_common.c.
+Srinivas, is there anything else prevents us from using a new module
+name for MSR RAPL interface?
 
 thanks,
 rui
