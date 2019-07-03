@@ -2,57 +2,61 @@ Return-Path: <SRS0=aMKS=VA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
+	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5870C5B57D
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 01:10:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DFB3C5B57D
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 01:10:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9F5AA20645
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 01:10:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6DBF7206E0
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 01:10:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="gD1H9uju"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="XwTMOg1R"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727066AbfGCBK0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Jul 2019 21:10:26 -0400
-Received: from mail-pg1-f202.google.com ([209.85.215.202]:33187 "EHLO
-        mail-pg1-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727354AbfGCBKZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jul 2019 21:10:25 -0400
-Received: by mail-pg1-f202.google.com with SMTP id k19so513402pgl.0
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jul 2019 18:10:25 -0700 (PDT)
+        id S1727065AbfGCBKg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Jul 2019 21:10:36 -0400
+Received: from mail-ot1-f73.google.com ([209.85.210.73]:34724 "EHLO
+        mail-ot1-f73.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727478AbfGCBKf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jul 2019 21:10:35 -0400
+Received: by mail-ot1-f73.google.com with SMTP id 20so457457otv.1
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jul 2019 18:10:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
-        h=date:message-id:mime-version:subject:from:to:cc;
-        bh=+/NgGwFACy34LZMNgdF6kK1NINvGCtP2Z/MvjjI7Ew8=;
-        b=gD1H9ujuBDHYxyQRM/QxbAM3l52LJlazN/k0bex99R3tQl+EKLtZtPVAAE3Y7PRS83
-         so+dRF8C5h0z3U2iTRMh+m0UC9PJQGeEpO4BN2p1AG2qg08y9u8qsKrA3a473FdvYzDQ
-         9o+1ImEqm49Ba4/rIxrNfFQ5a6gQtJ+MHqIL+IhQBci2U/KwaQwea/xCfZC4wGCQLv/A
-         sJtLlgV5jRHx+WJoNEd5sJJvcr1P38owycNXEwhnHsiAUfil7US4V3sb0+0GfyeU08PO
-         rlOg/95z7CY5CPeeNzBD6+wNSiJc9qFlzW/OXrkzUe8es9PaWmzgRcmL1CeX1BeGeC4Z
-         mCug==
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=BIB5A9ngYQ21e4UWwpxGoaLXwuW8tNl9DCFK747Sb4o=;
+        b=XwTMOg1R7C9eWoppaFTrTaFBZmQOj8k2Yscg00eIPwDaQoRQYl7ee8Qc2FlcNMASXT
+         1EitN34YZe7NVLEzs82LisWVDqKQy3jLsFxUO0uikI4SF6BZitqw2zXRhjS8YN2s+EEH
+         DTVmz86oZ+kv4UxmbIlgT741QhfKU3533HE0LDTdUjzqPbSSemPADj6FHkPjibGEOTqt
+         /wYNZe5Ce+ftw0C6V2HsMcbWTO7VQ4n0U7UXUpNm9tlzN5qVVmXxMeTAC/Fp/9poRVRq
+         PoFPVgzZpBoPlKdeDPtTWp5fpymHNxlMeTr1TRpDnaSrTCOSnEfxyYjpDwapfjanHwkb
+         5Ufw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
-        bh=+/NgGwFACy34LZMNgdF6kK1NINvGCtP2Z/MvjjI7Ew8=;
-        b=Vp8Y06hICBOitL2ieG8H7t7xtFC7v5LnYluhwEp6JzM++Cp0mMJW1GgrjdxP1qJbVg
-         kXL4/hiv5c1aK5YwofEhpcPJDyX/oCj5LKYULdKvby6gIzEyujNlgNMeZXE5YyLKcgY7
-         27CAaieI8I2eDRFR1g90SFrkQNf4UDDbHg+8UT3KZskgF5JSPjGaUhNo/58ROHkgKM66
-         FDFHj2RCu5TZMl4rbjE9IlZDr2jrDYVCYQ0YhXSV5ohJpTWrvakAtybKKQ1IA77Zwn+5
-         qTP44H/KAdNFaUbjn8UAiFJ0Tj47fSDZdH6f+OKxkZi9KqzRWOSB1wHYM/fNlmW+TxAR
-         FqAA==
-X-Gm-Message-State: APjAAAXICyXlmlRZP9AK3xtHwoBN/fg+vQyPOoHuASyjJ5Te0eoKjjjC
-        gLagHTdqAFvLIbrC+oN15QD+2zQKXKPtaJ4=
-X-Google-Smtp-Source: APXvYqxjLAm5FeB4krGVnJ8xrlNX//iGRKhBSPNoeTp221sbsHnxh0Xh8hiTM1YF3feQVjQjV1Qr19ueNgCNDpo=
-X-Received: by 2002:a63:7c0e:: with SMTP id x14mr33166685pgc.65.1562116224469;
- Tue, 02 Jul 2019 18:10:24 -0700 (PDT)
-Date:   Tue,  2 Jul 2019 18:10:14 -0700
-Message-Id: <20190703011020.151615-1-saravanak@google.com>
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=BIB5A9ngYQ21e4UWwpxGoaLXwuW8tNl9DCFK747Sb4o=;
+        b=oTfT4D9PljSiNoehFoMDwwfoya3bMfzo+8rsPvCBs1w/ebpvoMG2/IGJzFr7GBpZUD
+         VgFL+3nOwU8ohpFndin8kt6LN/MKUh01ZrW69H66qY7Q2yQRf78mf0dPYqY/owgIvNS8
+         m7da/6hdenmumGJdZPXyF9+JhNh4JEQFZxVq5szE2QOU1bmsYD1fslu6U0haa6Xv9+qw
+         naoStVZjHNFoLvmyYvmVDqr3ECB1pguVwNBvu3t/InEEmYnrkIAIsBSwt7YwbN7NVE0H
+         Un2RV9FY1M/kW8WVY0eesT1TT0s8Lg4KnKveZiZA+XaySjiiPnXEWXN9vOw7YMds/0KX
+         B6VQ==
+X-Gm-Message-State: APjAAAX3l3YPrzFeCv8cYguX9+Y6koFnLV5FEuRRxVNjj3MtgYeaVp15
+        kHaLyRDnf1o1CZlH2b9wrYIZeWEr3+hnrzQ=
+X-Google-Smtp-Source: APXvYqzPIXzYYdzVqfphJDXQq8xQWI4gZvxXm7m36ULqwEMX1J38/YQsNoWLJJCp7fu+IZQfcrZEqEkXz+SZMDQ=
+X-Received: by 2002:aca:6ccc:: with SMTP id h195mr4897756oic.163.1562116234188;
+ Tue, 02 Jul 2019 18:10:34 -0700 (PDT)
+Date:   Tue,  2 Jul 2019 18:10:17 -0700
+In-Reply-To: <20190703011020.151615-1-saravanak@google.com>
+Message-Id: <20190703011020.151615-4-saravanak@google.com>
 Mime-Version: 1.0
+References: <20190703011020.151615-1-saravanak@google.com>
 X-Mailer: git-send-email 2.22.0.410.gd8fdbe21b5-goog
-Subject: [PATCH v3 0/6] Introduce Bandwidth OPPs for interconnect paths
+Subject: [PATCH v3 3/6] OPP: Add helper function for bandwidth OPP tables
 From:   Saravana Kannan <saravanak@google.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -72,99 +76,147 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Interconnects and interconnect paths quantify their performance levels in
-terms of bandwidth and not in terms of frequency. So similar to how we have
-frequency based OPP tables in DT and in the OPP framework, we need
-bandwidth OPP table support in the OPP framework and in DT. Since there can
-be more than one interconnect path used by a device, we also need a way to
-assign a bandwidth OPP table to an interconnect path.
+The frequency OPP tables have helper functions to search for entries in the
+table based on frequency and get the frequency values for a given (or
+suspend) OPP entry.
 
-This patch series:
-- Adds opp-peak-KBps and opp-avg-KBps properties to OPP DT bindings
-- Adds interconnect-opp-table property to interconnect DT bindings
-- Adds OPP helper functions for bandwidth OPP tables
-- Adds icc_get_opp_table() to get the OPP table for an interconnect path
+Add similar helper functions for bandwidth OPP tables to search for entries
+in the table based on peak bandwidth and to get the peak and average
+bandwidth for a given (or suspend) OPP entry.
 
-So with the DT bindings added in this patch series, the DT for a GPU
-that does bandwidth voting from GPU to Cache and GPU to DDR would look
-something like this:
+Signed-off-by: Saravana Kannan <saravanak@google.com>
+---
+ drivers/opp/core.c     | 51 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h | 19 ++++++++++++++++
+ 2 files changed, 70 insertions(+)
 
-gpu_cache_opp_table: gpu_cache_opp_table {
-	compatible = "operating-points-v2";
-
-	gpu_cache_3000: opp-3000 {
-		opp-peak-KBps = <3000>;
-		opp-avg-KBps = <1000>;
-	};
-	gpu_cache_6000: opp-6000 {
-		opp-peak-KBps = <6000>;
-		opp-avg-KBps = <2000>;
-	};
-	gpu_cache_9000: opp-9000 {
-		opp-peak-KBps = <9000>;
-		opp-avg-KBps = <9000>;
-	};
-};
-
-gpu_ddr_opp_table: gpu_ddr_opp_table {
-	compatible = "operating-points-v2";
-
-	gpu_ddr_1525: opp-1525 {
-		opp-peak-KBps = <1525>;
-		opp-avg-KBps = <452>;
-	};
-	gpu_ddr_3051: opp-3051 {
-		opp-peak-KBps = <3051>;
-		opp-avg-KBps = <915>;
-	};
-	gpu_ddr_7500: opp-7500 {
-		opp-peak-KBps = <7500>;
-		opp-avg-KBps = <3000>;
-	};
-};
-
-gpu_opp_table: gpu_opp_table {
-	compatible = "operating-points-v2";
-	opp-shared;
-
-	opp-200000000 {
-		opp-hz = /bits/ 64 <200000000>;
-	};
-	opp-400000000 {
-		opp-hz = /bits/ 64 <400000000>;
-	};
-};
-
-gpu@7864000 {
-	...
-	operating-points-v2 = <&gpu_opp_table>, <&gpu_cache_opp_table>, <&gpu_ddr_opp_table>;
-	interconnects = <&mmnoc MASTER_GPU_1 &bimc SLAVE_SYSTEM_CACHE>,
-			<&mmnoc MASTER_GPU_1 &bimc SLAVE_DDR>;
-	interconnect-names = "gpu-cache", "gpu-mem";
-	interconnect-opp-table = <&gpu_cache_opp_table>, <&gpu_ddr_opp_table>
-};
-
-Cheers,
-Saravana
-
-Saravana Kannan (6):
-  dt-bindings: opp: Introduce opp-peak-KBps and opp-avg-KBps bindings
-  OPP: Add support for bandwidth OPP tables
-  OPP: Add helper function for bandwidth OPP tables
-  OPP: Add API to find an OPP table from its DT node
-  dt-bindings: interconnect: Add interconnect-opp-table property
-  interconnect: Add OPP table support for interconnects
-
- .../bindings/interconnect/interconnect.txt    |  8 ++
- Documentation/devicetree/bindings/opp/opp.txt | 15 +++-
- drivers/interconnect/core.c                   | 27 ++++++-
- drivers/opp/core.c                            | 51 +++++++++++++
- drivers/opp/of.c                              | 76 ++++++++++++++++---
- drivers/opp/opp.h                             |  4 +-
- include/linux/interconnect.h                  |  7 ++
- include/linux/pm_opp.h                        | 26 +++++++
- 8 files changed, 199 insertions(+), 15 deletions(-)
-
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 0e7703fe733f..0168862579f1 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -130,6 +130,29 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
+ 
++/**
++ * dev_pm_opp_get_bw() - Gets the bandwidth corresponding to an available opp
++ * @opp:	opp for which frequency has to be returned for
++ * @avg_bw:	Pointer where the corresponding average bandwidth is stored.
++ *		Can be NULL.
++ *
++ * Return: Peak bandwidth in KBps corresponding to the opp, else
++ * return 0
++ */
++unsigned long dev_pm_opp_get_bw(struct dev_pm_opp *opp, unsigned long *avg_bw)
++{
++	if (IS_ERR_OR_NULL(opp) || !opp->available) {
++		pr_err("%s: Invalid parameters\n", __func__);
++		return 0;
++	}
++
++	if (avg_bw)
++		*avg_bw = opp->avg_bw;
++
++	return opp->rate;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_get_bw);
++
+ /**
+  * dev_pm_opp_get_level() - Gets the level corresponding to an available opp
+  * @opp:	opp for which level value has to be returned for
+@@ -302,6 +325,34 @@ unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_suspend_opp_freq);
+ 
++/**
++ * dev_pm_opp_get_suspend_opp_bw() - Get peak bandwidth of suspend opp in KBps
++ * @dev:	device for which we do this operation
++ * @avg_bw:	Pointer where the corresponding average bandwidth is stored.
++ *		Can be NULL.
++ *
++ * Return: This function returns the peak bandwidth of the OPP marked as
++ * suspend_opp if one is available, else returns 0;
++ */
++unsigned long dev_pm_opp_get_suspend_opp_bw(struct device *dev,
++					    unsigned long *avg_bw)
++{
++	struct opp_table *opp_table;
++	unsigned long peak_bw = 0;
++
++	opp_table = _find_opp_table(dev);
++	if (IS_ERR(opp_table))
++		return 0;
++
++	if (opp_table->suspend_opp && opp_table->suspend_opp->available)
++		peak_bw = dev_pm_opp_get_bw(opp_table->suspend_opp, avg_bw);
++
++	dev_pm_opp_put_opp_table(opp_table);
++
++	return peak_bw;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_get_suspend_opp_bw);
++
+ int _get_opp_count(struct opp_table *opp_table)
+ {
+ 	struct dev_pm_opp *opp;
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index b150fe97ce5a..d4d79ac0b5b2 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -85,6 +85,7 @@ void dev_pm_opp_put_opp_table(struct opp_table *opp_table);
+ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp);
+ 
+ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp);
++unsigned long dev_pm_opp_get_bw(struct dev_pm_opp *opp, unsigned long *avg_bw);
+ 
+ unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp);
+ 
+@@ -95,6 +96,8 @@ unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev);
++unsigned long dev_pm_opp_get_suspend_opp_bw(struct device *dev,
++					    unsigned long *avg_bw);
+ 
+ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+ 					      unsigned long freq,
+@@ -161,6 +164,11 @@ static inline unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
+ {
+ 	return 0;
+ }
++static inline unsigned long dev_pm_opp_get_bw(struct dev_pm_opp *opp,
++					      unsigned long *avg_bw)
++{
++	return 0;
++}
+ 
+ static inline unsigned int dev_pm_opp_get_level(struct dev_pm_opp *opp)
+ {
+@@ -197,6 +205,12 @@ static inline unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev)
+ 	return 0;
+ }
+ 
++static inline unsigned long dev_pm_opp_get_suspend_opp_bw(struct device *dev,
++							  unsigned long *avg_bw)
++{
++	return 0;
++}
++
+ static inline struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+ 					unsigned long freq, bool available)
+ {
+@@ -332,6 +346,11 @@ static inline void dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask
+ 
+ #endif		/* CONFIG_PM_OPP */
+ 
++#define dev_pm_opp_find_peak_bw_exact	dev_pm_opp_find_freq_exact
++#define dev_pm_opp_find_peak_bw_floor	dev_pm_opp_find_freq_floor
++#define dev_pm_opp_find_peak_bw_ceil_by_volt dev_pm_opp_find_freq_ceil_by_volt
++#define dev_pm_opp_find_peak_bw_ceil	dev_pm_opp_find_freq_ceil
++
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+ int dev_pm_opp_of_add_table(struct device *dev);
+ int dev_pm_opp_of_add_table_indexed(struct device *dev, int index);
 -- 
 2.22.0.410.gd8fdbe21b5-goog
 
