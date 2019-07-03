@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-17.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
 	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BAC6C5B57D
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 01:10:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A0ACC06511
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 01:10:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E9AF721874
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 01:10:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 00DCA21882
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jul 2019 01:10:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="vwv84SdZ"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="C+5g3BYb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727501AbfGCBKk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Jul 2019 21:10:40 -0400
-Received: from mail-ot1-f73.google.com ([209.85.210.73]:46396 "EHLO
-        mail-ot1-f73.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727479AbfGCBKi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jul 2019 21:10:38 -0400
-Received: by mail-ot1-f73.google.com with SMTP id m16so436574otq.13
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jul 2019 18:10:37 -0700 (PDT)
+        id S1727436AbfGCBKc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Jul 2019 21:10:32 -0400
+Received: from mail-pg1-f202.google.com ([209.85.215.202]:52151 "EHLO
+        mail-pg1-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727395AbfGCBKb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jul 2019 21:10:31 -0400
+Received: by mail-pg1-f202.google.com with SMTP id o16so490197pgk.18
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jul 2019 18:10:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=date:in-reply-to:message-id:mime-version:references:subject:from:to
          :cc;
-        bh=yFXfbR6wa0Ur/jSZ6VNfgLJznw66VBn59W3yxqCW7NM=;
-        b=vwv84SdZLnvN4EmOeqy22YxzbmFmKouwa0nzBFOwmxta9hlsJT0H3QFXCuy5t777YN
-         FjNrPeaCRamOIDNLfHaCdvn+Cv7d4uzH2Xgtar+yJTKor7GRaURomcBbJN49yNiPSiTc
-         9aCQcC00dtNqUOnuB/4syiHqjno4Xb5t8LGnKcUtXKbhX1rGhy/S0MKjRtGJNWa28KUE
-         ZgoJGZZS0d0lI8qLSPBe1RoQyutcB2VLpy7YkvTV38IePnyBD3nl+3iaP3x7skzksJ1g
-         6HxhRqmBSesa8mVVinWZyyUJu22aSHoFC6GACyqtYa76BjBb33Q9mtiBfphneTFq0D4l
-         rReg==
+        bh=Dy7IdBEhW7jfMC6O06J1yeWm8DJoUAt+P2F38lOHIKQ=;
+        b=C+5g3BYbxc2d5v4pLP/1xtwd+gYW5qoY5iVHn3hvWw7WT8h7YVWVxHxfRmoJZQ+3s6
+         hffBFFZ4zf6A+TQkyNDSMed/hkUv/4u1jzgsPMyyvLb8hk0B2xE21Z86qEbY9tJHH5oR
+         GfYN6NWShZj/4lMx+s+3v/qGTLx+NmsrdLLR6Cdq1pKbrTdMgKnwRQDBVMM48asgS0+R
+         /AYTF6Nm7JTPNsl33trsxoyKPIqWP9Y2TgHdjTQKk54a5F0nlHR49OKuBTRcQ7BXh/+q
+         hSR7Y5Che5UPvZGgOcNebRoL4ySDoTiY3d1LLbAWX5xLnPfcS16Q2qDmzcKnrBnPNlKo
+         fcVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=yFXfbR6wa0Ur/jSZ6VNfgLJznw66VBn59W3yxqCW7NM=;
-        b=VnKBVdFtFH5Y1wTQrxbKo2zmP5AGCacUjl0EEW43OyEyOGOxZHZUmpWRcvNDwAHF16
-         I18ngFkJ1RzRIB8POz2kwN4Xd1Irnde7Kv7PnE4BJMSmMbp2WPToz0+9uz9vr/Ed6ZSe
-         Jb9EtQgz9R+JtMWt6PKMLfbLeCh6TlJK9fT3mTw0Tjxh2PUV4+h2Da9kUG0amRozx2qD
-         5RRx5GQXHhEBX1t4ZB3ndmeC2kNtrXeJ/YsBD+k9xEZbtWS5laUy8HgP3gr9ffujLGKL
-         HCI6KJIFI6X7RXeQVlBwDYtih0LLbs8rDiw2jEkRKG6kvYPBQSxqC33E92/F5VbDVuve
-         5xgA==
-X-Gm-Message-State: APjAAAXku/4kDSDIttJwPGA7isnzsHTpSMIj40BDv2aPum4I9TgmwnYR
-        3k+jL5zDfXyYRYrbsahy7Hr1oYERs+vKwD0=
-X-Google-Smtp-Source: APXvYqy/kO7fXs12HqbjkZVqApk+Z3KfTpViPx35W4gf2H71u487pYhcO8yqWOR8+YLawhr6iW9vzVIQEUtt+SM=
-X-Received: by 2002:a9d:6c17:: with SMTP id f23mr16508610otq.174.1562116237315;
- Tue, 02 Jul 2019 18:10:37 -0700 (PDT)
-Date:   Tue,  2 Jul 2019 18:10:18 -0700
+        bh=Dy7IdBEhW7jfMC6O06J1yeWm8DJoUAt+P2F38lOHIKQ=;
+        b=X7ZThSHNi3JISAQ13CimtFZdBGFfRE5U+B7Z9cMOe6gnUH0nrWU4Or0hErOLOJN2xJ
+         Ve/mMUpJLQ6lXT6OdROW6QFBEZzJn41Wxd9eDs9xmp9p13RjzDRurxTwUlQ91VooUomn
+         qteHx7NFvaf3ddTxvRG5Bj3an7QssKzsgC1J0vDUnisiKW/gllZHrpJKkZ8lGb1qkVRv
+         ik5+azD4z8lW8AwNX3qhO8/nUK75+JIQsxxhEpev93lZBs2bfobnTOzfe3mfjiSXcP7k
+         eXAA9WYU4DmGs3K0tyP47dtzhmM+hU/YtQiH5iARQNrzcQoy0vz/dL51d7eYzxXz6awo
+         aCWQ==
+X-Gm-Message-State: APjAAAXF/s0B59aXJylai/B3q4jXuYDzJO9ebGdMy0fey2B9YaDgwVN0
+        T/TH8ebDE92iS7GP1Kj5V53k8m48I97ks+o=
+X-Google-Smtp-Source: APXvYqyZ5SvXkZiJtN4AUVK0TG4NbXUnITz/8Rd9BjbL8Dw8vo+ZHuPMPIdAlkE6UzLY/jK4QL5YPQ5Wylc+8rU=
+X-Received: by 2002:a65:4786:: with SMTP id e6mr25216266pgs.448.1562116230898;
+ Tue, 02 Jul 2019 18:10:30 -0700 (PDT)
+Date:   Tue,  2 Jul 2019 18:10:16 -0700
 In-Reply-To: <20190703011020.151615-1-saravanak@google.com>
-Message-Id: <20190703011020.151615-5-saravanak@google.com>
+Message-Id: <20190703011020.151615-3-saravanak@google.com>
 Mime-Version: 1.0
 References: <20190703011020.151615-1-saravanak@google.com>
 X-Mailer: git-send-email 2.22.0.410.gd8fdbe21b5-goog
-Subject: [PATCH v3 4/6] OPP: Add API to find an OPP table from its DT node
+Subject: [PATCH v3 2/6] OPP: Add support for bandwidth OPP tables
 From:   Saravana Kannan <saravanak@google.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -76,105 +76,94 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This allows finding a device's OPP table (when it has multiple) from a
-phandle to the OPP table in DT.
+Not all devices quantify their performance points in terms of frequency.
+Devices like interconnects quantify their performance points in terms of
+bandwidth. We need a way to represent these bandwidth levels in OPP. So,
+add support for parsing bandwidth OPPs from DT.
 
 Signed-off-by: Saravana Kannan <saravanak@google.com>
 ---
- drivers/opp/of.c       | 42 ++++++++++++++++++++++++++++++++++--------
- include/linux/pm_opp.h |  7 +++++++
- 2 files changed, 41 insertions(+), 8 deletions(-)
+ drivers/opp/of.c  | 34 ++++++++++++++++++++++++++++++++--
+ drivers/opp/opp.h |  4 +++-
+ 2 files changed, 35 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 54fa70ed2adc..34c51905f56d 100644
+index c10c782d15aa..54fa70ed2adc 100644
 --- a/drivers/opp/of.c
 +++ b/drivers/opp/of.c
-@@ -42,14 +42,9 @@ struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
+@@ -552,6 +552,35 @@ void dev_pm_opp_of_remove_table(struct device *dev)
  }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
  
--struct opp_table *_managed_opp(struct device *dev, int index)
-+struct opp_table *_find_opp_table_from_node(struct device_node *np)
- {
- 	struct opp_table *opp_table, *managed_table = NULL;
--	struct device_node *np;
--
--	np = _opp_of_get_opp_desc_node(dev->of_node, index);
--	if (!np)
--		return NULL;
++static int _read_opp_key(struct dev_pm_opp *new_opp, struct device_node *np)
++{
++	int ret;
++	u64 rate;
++	u32 bw;
++
++	ret = of_property_read_u64(np, "opp-hz", &rate);
++	if (!ret) {
++		/*
++		 * Rate is defined as an unsigned long in clk API, and so
++		 * casting explicitly to its type. Must be fixed once rate is 64
++		 * bit guaranteed in clk API.
++		 */
++		new_opp->rate = (unsigned long)rate;
++		return 0;
++	}
++
++	ret = of_property_read_u32(np, "opp-peak-KBps", &bw);
++	if (ret)
++		return ret;
++	new_opp->rate = (unsigned long) &bw;
++
++	ret = of_property_read_u32(np, "opp-avg-KBps", &bw);
++	if (!ret)
++		new_opp->avg_bw = (unsigned long) &bw;
++
++	return 0;
++}
++
+ /**
+  * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
+  * @opp_table:	OPP table
+@@ -589,11 +618,12 @@ static struct dev_pm_opp *_opp_add_static_v2(struct opp_table *opp_table,
+ 	if (!new_opp)
+ 		return ERR_PTR(-ENOMEM);
  
- 	list_for_each_entry(opp_table, &opp_tables, node) {
- 		if (opp_table->np == np) {
-@@ -69,11 +64,42 @@ struct opp_table *_managed_opp(struct device *dev, int index)
+-	ret = of_property_read_u64(np, "opp-hz", &rate);
++	ret = _read_opp_key(new_opp, np);
+ 	if (ret < 0) {
+ 		/* "opp-hz" is optional for devices like power domains. */
+ 		if (!opp_table->is_genpd) {
+-			dev_err(dev, "%s: opp-hz not found\n", __func__);
++			dev_err(dev, "%s: opp-hz or opp-peak-bw not found\n",
++				__func__);
+ 			goto free_opp;
  		}
- 	}
  
--	of_node_put(np);
--
- 	return managed_table;
- }
+diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+index 569b3525aa67..ead2cdafe957 100644
+--- a/drivers/opp/opp.h
++++ b/drivers/opp/opp.h
+@@ -59,7 +59,8 @@ extern struct list_head opp_tables;
+  * @turbo:	true if turbo (boost) OPP
+  * @suspend:	true if suspend OPP
+  * @pstate: Device's power domain's performance state.
+- * @rate:	Frequency in hertz
++ * @rate:	Frequency in hertz OR Peak bandwidth in kilobytes per second
++ * @avg_bw:	Average bandwidth in kilobytes per second
+  * @level:	Performance level
+  * @supplies:	Power supplies voltage/current values
+  * @clock_latency_ns: Latency (in nanoseconds) of switching to this OPP's
+@@ -81,6 +82,7 @@ struct dev_pm_opp {
+ 	bool suspend;
+ 	unsigned int pstate;
+ 	unsigned long rate;
++	unsigned long avg_bw;
+ 	unsigned int level;
  
-+/**
-+ * dev_pm_opp_of_find_table_from_node() - Find OPP table from its DT node
-+ * @np: DT node used for finding the OPP table
-+ *
-+ * Return: OPP table corresponding to the DT node, else NULL on failure.
-+ *
-+ * The caller needs to put the node with of_node_put() after using it.
-+ */
-+struct opp_table *dev_pm_opp_of_find_table_from_node(struct device_node *np)
-+{
-+	struct opp_table *opp_table;
-+
-+	mutex_lock(&opp_table_lock);
-+	opp_table = _find_opp_table_from_node(np);
-+	mutex_unlock(&opp_table_lock);
-+	return opp_table;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_of_find_table_from_node);
-+
-+struct opp_table *_managed_opp(struct device *dev, int index)
-+{
-+	struct device_node *np;
-+	struct opp_table *opp_table;
-+
-+	np = _opp_of_get_opp_desc_node(dev->of_node, index);
-+	if (!np)
-+		return NULL;
-+
-+	opp_table = _find_opp_table_from_node(np);
-+	of_node_put(np);
-+	return opp_table;
-+}
-+
- /* The caller must call dev_pm_opp_put() after the OPP is used */
- static struct dev_pm_opp *_find_opp_of_np(struct opp_table *opp_table,
- 					  struct device_node *opp_np)
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index d4d79ac0b5b2..d80c59bcd50b 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -359,6 +359,7 @@ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
- void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
- int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
- struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
-+struct opp_table *dev_pm_opp_of_find_table_from_node(struct device_node *np);
- struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
- int of_get_required_opp_performance_state(struct device_node *np, int index);
- void dev_pm_opp_of_register_em(struct cpumask *cpus);
-@@ -396,6 +397,12 @@ static inline struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device
- 	return NULL;
- }
- 
-+static inline struct opp_table *dev_pm_opp_of_find_table_from_node(
-+							struct device_node *np)
-+{
-+	return NULL;
-+}
-+
- static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
- {
- 	return NULL;
+ 	struct dev_pm_opp_supply *supplies;
 -- 
 2.22.0.410.gd8fdbe21b5-goog
 
