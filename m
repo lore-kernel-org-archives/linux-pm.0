@@ -7,64 +7,66 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A417C06514
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 07:37:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 370A3C0650E
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 07:37:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 27C23218A6
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 07:37:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0630D218A4
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 07:37:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wG8etO7Y"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="d4qt1XA+"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727528AbfGDHgu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Jul 2019 03:36:50 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:34849 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727526AbfGDHgq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jul 2019 03:36:46 -0400
-Received: by mail-pf1-f194.google.com with SMTP id u14so1345192pfn.2
-        for <linux-pm@vger.kernel.org>; Thu, 04 Jul 2019 00:36:45 -0700 (PDT)
+        id S1726267AbfGDHgk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Jul 2019 03:36:40 -0400
+Received: from mail-pf1-f193.google.com ([209.85.210.193]:34843 "EHLO
+        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727503AbfGDHgj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jul 2019 03:36:39 -0400
+Received: by mail-pf1-f193.google.com with SMTP id u14so1345073pfn.2
+        for <linux-pm@vger.kernel.org>; Thu, 04 Jul 2019 00:36:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ucpldABbW8/3jH3u+faZEWtKvMNLILFWVMZ6DzJhvvI=;
-        b=wG8etO7Yt1bBZuwRtL6oYyKvU5eSay0J+oDqZ+r4qC14aa7P3aNMTqV2JQiccaxzyA
-         75vIiSj0uWHz+NcO50TBcru2hp0wGBe0aJXRI2gRXYYcS4XQM+CUuTgPWgDP2zYZTnG3
-         VHxGMj4unTfXFsFHJLAHrXYWp/cEciVO3y4P6Ol1vVxZhKyETemVIciuggIgmT4fBOnY
-         uCVb1q0Z1ld4NQhD7Cz38yWPsUjtZY8dcTISXE5GMt3AhLbkMSkHNzPvWOyAu5rJXUwj
-         2hmZMlBtt0RG4kEzaXQnvJQWvgtgO37N9qLKN/fdpSzC0fLaPSFeqreBZhRxdOcQcNl5
-         McmQ==
+        bh=LJkFEiuUysgePRh2tewcbbbkLJSBBfe9i4VtJ5ijDyo=;
+        b=d4qt1XA+TZ0H7KjnMMTnTK7yEZTN3p4mH+JlezdoFw4mNp36T34B90viSaqTLFE5Os
+         NDYwJum33XQE6+ppRoD5mxCIlCyik7E4LgMiGyJ7P2xkWiIxnSgd99sH8X2/jOn6FqDj
+         8BJLuDkZUWwNYn2njtKnzd3Sh7I5JnsWdbvkJizhVacBjOU2aBSWtRVV9aQxO4VH3wFw
+         +Cjv70onAne77oB217Y+/JxjTySb4wDgjhAO/LIXGZ7X013uWAxBj91DrE4flMxduMiJ
+         Kge89RKmcNoVXJaJBvrNNVHP+7JNy38hOxILtg/9nGbIXMD5K+6ZNPuwSo7zknI1iLGV
+         CHyg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ucpldABbW8/3jH3u+faZEWtKvMNLILFWVMZ6DzJhvvI=;
-        b=q3zC+hq/O5/2C5JR29FM1DyOAQti/J4GXQUQyoXYlEwsUFKJsrb/+xzVGuQNLo7Y2p
-         BtATyZTAgAAZUObVCY9VpHFhgFRFUgkKV7oCkSSXeJXKRqQ+5RvUqmCzd6Hazx4lJ8So
-         lM+wNK3Lf5sQXJaOlHw+H4XEVjmHKfmP4Dx5ufpLbPz3E8hhD1D7sZnE301uWV+eFPDI
-         YdcSA8G+E6Jmo+s7a7gHHPpj4M8pWysIX53qrwbTKoxy/uWdHAdiVPeBnKY2ARyQsHC8
-         4cwbmxq4s6T5uyx1p0VH9LQuioV+GMudLfVRt357LHrWfJZXbsRyIXyhDc67ERc3eOZU
-         3cGg==
-X-Gm-Message-State: APjAAAUh+UCNt4lAtC02zvsJmHiNvYZTwT8/lTfWEbEL9STorYg/vGf5
-        BHxZFt++BlCFQy0x7n6+TVXfNg==
-X-Google-Smtp-Source: APXvYqwGNzaow4yrRBjuAw1sIwc+zQYsGajrqQdSLeHRPC6lo6DSfqIXtciCbCnEz3qZ2/grfsYXZQ==
-X-Received: by 2002:a63:5964:: with SMTP id j36mr39448142pgm.428.1562225804520;
-        Thu, 04 Jul 2019 00:36:44 -0700 (PDT)
+        bh=LJkFEiuUysgePRh2tewcbbbkLJSBBfe9i4VtJ5ijDyo=;
+        b=Mp+w3SVTxkfj7s6pIDLjRDatwlYW9uLGc0QHSZKm2T9nClNuUL1E8fBec6rY/gNetW
+         gTn7DDpccHFkIc931sU0iEPmQLeQyv8TQdEdgBn372iHHMD6u3jxFqv9X58SOa8m7gZC
+         UnoQoM0KUj/OrHyOgA2m9CSHnqRKZITPfCDgqaPaALBKUD78AGaYQP2dYR2m1yC9w3IL
+         fitXGn0i2sSrw1UrHwohmp7jqj1u2TLuq4FUcJnnGJgm7hoTfx9S/zyTM8A/o3i+xaE9
+         QcN+BpBhZ3i5aG2UtaL9mvr7BmxVQtU+1dEp2PqptEE5dKWcRvnMKNrFNxfCB21B5TCB
+         nvHw==
+X-Gm-Message-State: APjAAAVKEZtBNOhqabShWW7QA8xPS/9QG2MIosKbcgpuyFjth7LxPuyr
+        DVQH+4kFx0RwJI4QWt2ZqrA+DQ==
+X-Google-Smtp-Source: APXvYqwTqBcbHSWz3rTrWk/N589UwsxjcrVCiCVfj9LdCc0Nzo1D/EP1XJqHnFUn+Bwu2VgmZ7Bvkw==
+X-Received: by 2002:a17:90a:1ae2:: with SMTP id p89mr17119525pjp.26.1562225798655;
+        Thu, 04 Jul 2019 00:36:38 -0700 (PDT)
 Received: from localhost ([122.172.21.205])
-        by smtp.gmail.com with ESMTPSA id x14sm5926822pfq.158.2019.07.04.00.36.43
+        by smtp.gmail.com with ESMTPSA id k22sm6872919pfg.77.2019.07.04.00.36.37
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 04 Jul 2019 00:36:44 -0700 (PDT)
+        Thu, 04 Jul 2019 00:36:38 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>
+To:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Matthias Kaehlcke <mka@chromium.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         linux-kernel@vger.kernel.org
-Subject: [PATCH V6 5/7] cpufreq: Register notifiers with the PM QoS framework
-Date:   Thu,  4 Jul 2019 13:06:21 +0530
-Message-Id: <5ad2624194baa2f53acc1f1e627eb7684c577a19.1562210705.git.viresh.kumar@linaro.org>
+Subject: [PATCH V6 3/7] PM / QOS: Pass request type to dev_pm_qos_read_value()
+Date:   Thu,  4 Jul 2019 13:06:19 +0530
+Message-Id: <8dfa21c3c99d677fdd04a2729acc00cdf4409818.1562210705.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
 In-Reply-To: <cover.1562210705.git.viresh.kumar@linaro.org>
 References: <cover.1562210705.git.viresh.kumar@linaro.org>
@@ -75,272 +77,118 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This registers the notifiers for min/max frequency constraints with the
-PM QoS framework. The constraints are also taken into consideration in
-cpufreq_set_policy().
+In order to allow dev_pm_qos_read_value() to read values for different
+QoS requests, pass request type as a parameter to these routines.
 
-This also relocates cpufreq_policy_put_kobj() as it is required to be
-called from cpufreq_policy_alloc() now.
-
-refresh_frequency_limits() is updated to have proper locking in place and
-avoid calling cpufreq_set_policy() for inactive policies.
-
-No constraints are added until now though.
+For now, it only supports resume-latency request type but will be
+extended to frequency limit (min/max) constraints later on.
 
 Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq.c | 135 ++++++++++++++++++++++++++++++--------
- include/linux/cpufreq.h   |   3 +
- 2 files changed, 109 insertions(+), 29 deletions(-)
+ Documentation/power/pm_qos_interface.txt |  2 +-
+ drivers/base/power/domain_governor.c     |  2 +-
+ drivers/base/power/qos.c                 | 17 ++++++++++++-----
+ include/linux/pm_qos.h                   | 16 +++++++++++++---
+ 4 files changed, 27 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index ceb57af15ca0..81117e4d43cc 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -26,6 +26,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/pm_qos.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
- #include <linux/syscore_ops.h>
-@@ -999,7 +1000,7 @@ static void add_cpu_dev_symlink(struct cpufreq_policy *policy, unsigned int cpu)
- {
- 	struct device *dev = get_cpu_device(cpu);
+diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
+index ec7d662d1707..cfcb1df39799 100644
+--- a/Documentation/power/pm_qos_interface.txt
++++ b/Documentation/power/pm_qos_interface.txt
+@@ -123,7 +123,7 @@ Will remove the element.  After removal it will update the aggregate target and
+ call the notification trees if the target was changed as a result of removing
+ the request.
  
--	if (!dev)
-+	if (unlikely(!dev))
- 		return;
+-s32 dev_pm_qos_read_value(device):
++s32 dev_pm_qos_read_value(device, type):
+ Returns the aggregated value for a given device's constraints list.
  
- 	if (cpumask_test_and_set_cpu(cpu, policy->real_cpus))
-@@ -1117,14 +1118,20 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cp
- 
- static void refresh_frequency_limits(struct cpufreq_policy *policy)
- {
--	struct cpufreq_policy new_policy = *policy;
-+	struct cpufreq_policy new_policy;
- 
--	pr_debug("updating policy for CPU %u\n", policy->cpu);
-+	down_write(&policy->rwsem);
-+
-+	if (!policy_is_inactive(policy)) {
-+		new_policy = *policy;
-+		pr_debug("updating policy for CPU %u\n", policy->cpu);
- 
--	new_policy.min = policy->user_policy.min;
--	new_policy.max = policy->user_policy.max;
-+		new_policy.min = policy->user_policy.min;
-+		new_policy.max = policy->user_policy.max;
-+		cpufreq_set_policy(policy, &new_policy);
-+	}
- 
--	cpufreq_set_policy(policy, &new_policy);
-+	up_write(&policy->rwsem);
- }
- 
- static void handle_update(struct work_struct *work)
-@@ -1136,11 +1143,55 @@ static void handle_update(struct work_struct *work)
- 	refresh_frequency_limits(policy);
- }
- 
-+static int cpufreq_notifier_min(struct notifier_block *nb, unsigned long freq,
-+				void *data)
-+{
-+	struct cpufreq_policy *policy = container_of(nb, struct cpufreq_policy, nb_min);
-+
-+	schedule_work(&policy->update);
-+	return 0;
-+}
-+
-+static int cpufreq_notifier_max(struct notifier_block *nb, unsigned long freq,
-+				void *data)
-+{
-+	struct cpufreq_policy *policy = container_of(nb, struct cpufreq_policy, nb_max);
-+
-+	schedule_work(&policy->update);
-+	return 0;
-+}
-+
-+static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
-+{
-+	struct kobject *kobj;
-+	struct completion *cmp;
-+
-+	down_write(&policy->rwsem);
-+	cpufreq_stats_free_table(policy);
-+	kobj = &policy->kobj;
-+	cmp = &policy->kobj_unregister;
-+	up_write(&policy->rwsem);
-+	kobject_put(kobj);
-+
-+	/*
-+	 * We need to make sure that the underlying kobj is
-+	 * actually not referenced anymore by anybody before we
-+	 * proceed with unloading.
-+	 */
-+	pr_debug("waiting for dropping of refcount\n");
-+	wait_for_completion(cmp);
-+	pr_debug("wait complete\n");
-+}
-+
- static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy;
-+	struct device *dev = get_cpu_device(cpu);
- 	int ret;
- 
-+	if (!dev)
-+		return NULL;
-+
- 	policy = kzalloc(sizeof(*policy), GFP_KERNEL);
- 	if (!policy)
- 		return NULL;
-@@ -1157,7 +1208,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
- 				   cpufreq_global_kobject, "policy%u", cpu);
- 	if (ret) {
--		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
-+		dev_err(dev, "%s: failed to init policy->kobj: %d\n", __func__, ret);
- 		/*
- 		 * The entire policy object will be freed below, but the extra
- 		 * memory allocated for the kobject name needs to be freed by
-@@ -1167,6 +1218,25 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 		goto err_free_real_cpus;
+ enum pm_qos_flags_status dev_pm_qos_flags(device, mask)
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 20e56a5be01f..daa8c7689f7e 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -33,7 +33,7 @@ static int dev_update_qos_constraint(struct device *dev, void *data)
+ 		 * take its current PM QoS constraint (that's the only thing
+ 		 * known at this point anyway).
+ 		 */
+-		constraint_ns = dev_pm_qos_read_value(dev);
++		constraint_ns = dev_pm_qos_read_value(dev, DEV_PM_QOS_RESUME_LATENCY);
+ 		constraint_ns *= NSEC_PER_USEC;
  	}
  
-+	policy->nb_min.notifier_call = cpufreq_notifier_min;
-+	policy->nb_max.notifier_call = cpufreq_notifier_max;
-+
-+	ret = dev_pm_qos_add_notifier(dev, &policy->nb_min,
-+				      DEV_PM_QOS_MIN_FREQUENCY);
-+	if (ret) {
-+		dev_err(dev, "Failed to register MIN QoS notifier: %d (%*pbl)\n",
-+			ret, cpumask_pr_args(policy->cpus));
-+		goto err_kobj_remove;
-+	}
-+
-+	ret = dev_pm_qos_add_notifier(dev, &policy->nb_max,
-+				      DEV_PM_QOS_MAX_FREQUENCY);
-+	if (ret) {
-+		dev_err(dev, "Failed to register MAX QoS notifier: %d (%*pbl)\n",
-+			ret, cpumask_pr_args(policy->cpus));
-+		goto err_min_qos_notifier;
-+	}
-+
- 	INIT_LIST_HEAD(&policy->policy_list);
- 	init_rwsem(&policy->rwsem);
- 	spin_lock_init(&policy->transition_lock);
-@@ -1177,6 +1247,11 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	policy->cpu = cpu;
- 	return policy;
- 
-+err_min_qos_notifier:
-+	dev_pm_qos_remove_notifier(dev, &policy->nb_min,
-+				   DEV_PM_QOS_MIN_FREQUENCY);
-+err_kobj_remove:
-+	cpufreq_policy_put_kobj(policy);
- err_free_real_cpus:
- 	free_cpumask_var(policy->real_cpus);
- err_free_rcpumask:
-@@ -1189,30 +1264,9 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	return NULL;
- }
- 
--static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
--{
--	struct kobject *kobj;
--	struct completion *cmp;
--
--	down_write(&policy->rwsem);
--	cpufreq_stats_free_table(policy);
--	kobj = &policy->kobj;
--	cmp = &policy->kobj_unregister;
--	up_write(&policy->rwsem);
--	kobject_put(kobj);
--
--	/*
--	 * We need to make sure that the underlying kobj is
--	 * actually not referenced anymore by anybody before we
--	 * proceed with unloading.
--	 */
--	pr_debug("waiting for dropping of refcount\n");
--	wait_for_completion(cmp);
--	pr_debug("wait complete\n");
--}
--
- static void cpufreq_policy_free(struct cpufreq_policy *policy)
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index 7a0d197f0809..2461fed0efa0 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -105,18 +105,25 @@ s32 __dev_pm_qos_resume_latency(struct device *dev)
+ /**
+  * dev_pm_qos_read_value - Get PM QoS constraint for a given device (locked).
+  * @dev: Device to get the PM QoS constraint value for.
++ * @type: QoS request type.
+  */
+-s32 dev_pm_qos_read_value(struct device *dev)
++s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type)
  {
-+	struct device *dev = get_cpu_device(policy->cpu);
++	struct dev_pm_qos *qos = dev->power.qos;
  	unsigned long flags;
- 	int cpu;
+ 	s32 ret;
  
-@@ -1224,6 +1278,11 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
- 		per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 	spin_lock_irqsave(&dev->power.lock, flags);
  
-+	dev_pm_qos_remove_notifier(dev, &policy->nb_max,
-+				   DEV_PM_QOS_MAX_FREQUENCY);
-+	dev_pm_qos_remove_notifier(dev, &policy->nb_min,
-+				   DEV_PM_QOS_MIN_FREQUENCY);
+-	if (IS_ERR_OR_NULL(dev->power.qos))
+-		ret = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+-	else
+-		ret = pm_qos_read_value(&dev->power.qos->resume_latency);
++	switch (type) {
++	case DEV_PM_QOS_RESUME_LATENCY:
++		ret = IS_ERR_OR_NULL(qos) ? PM_QOS_RESUME_LATENCY_NO_CONSTRAINT
++			: pm_qos_read_value(&qos->resume_latency);
++		break;
++	default:
++		WARN_ON(1);
++		ret = 0;
++	}
+ 
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ 
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 5e09d4980786..9a21b7ba72ae 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -140,7 +140,7 @@ s32 pm_qos_read_value(struct pm_qos_constraints *c);
+ enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
+ enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev, s32 mask);
+ s32 __dev_pm_qos_resume_latency(struct device *dev);
+-s32 dev_pm_qos_read_value(struct device *dev);
++s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type);
+ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+ 			   enum dev_pm_qos_req_type type, s32 value);
+ int dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value);
+@@ -191,8 +191,18 @@ static inline enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev,
+ 			{ return PM_QOS_FLAGS_UNDEFINED; }
+ static inline s32 __dev_pm_qos_resume_latency(struct device *dev)
+ 			{ return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT; }
+-static inline s32 dev_pm_qos_read_value(struct device *dev)
+-			{ return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT; }
++static inline s32 dev_pm_qos_read_value(struct device *dev,
++					enum dev_pm_qos_req_type type)
++{
++	switch (type) {
++	case DEV_PM_QOS_RESUME_LATENCY:
++		return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
++	default:
++		WARN_ON(1);
++		return 0;
++	}
++}
 +
- 	cpufreq_policy_put_kobj(policy);
- 	free_cpumask_var(policy->real_cpus);
- 	free_cpumask_var(policy->related_cpus);
-@@ -2283,6 +2342,8 @@ int cpufreq_set_policy(struct cpufreq_policy *policy,
- 		       struct cpufreq_policy *new_policy)
- {
- 	struct cpufreq_governor *old_gov;
-+	struct device *cpu_dev = get_cpu_device(policy->cpu);
-+	unsigned long min, max;
- 	int ret;
- 
- 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
-@@ -2297,11 +2358,27 @@ int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	if (new_policy->min > new_policy->max)
- 		return -EINVAL;
- 
-+	/*
-+	 * PM QoS framework collects all the requests from users and provide us
-+	 * the final aggregated value here.
-+	 */
-+	min = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MIN_FREQUENCY);
-+	max = dev_pm_qos_read_value(cpu_dev, DEV_PM_QOS_MAX_FREQUENCY);
-+
-+	if (min > new_policy->min)
-+		new_policy->min = min;
-+	if (max < new_policy->max)
-+		new_policy->max = max;
-+
- 	/* verify the cpu speed can be set within this limit */
- 	ret = cpufreq_driver->verify(new_policy);
- 	if (ret)
- 		return ret;
- 
-+	/*
-+	 * The notifier-chain shall be removed once all the users of
-+	 * CPUFREQ_ADJUST are moved to use the QoS framework.
-+	 */
- 	/* adjust if necessary - all reasons */
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 			CPUFREQ_ADJUST, new_policy);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index a1467aa7f58b..95425941f46d 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -147,6 +147,9 @@ struct cpufreq_policy {
- 
- 	/* Pointer to the cooling device if used for thermal mitigation */
- 	struct thermal_cooling_device *cdev;
-+
-+	struct notifier_block nb_min;
-+	struct notifier_block nb_max;
- };
- 
- struct cpufreq_freqs {
+ static inline int dev_pm_qos_add_request(struct device *dev,
+ 					 struct dev_pm_qos_request *req,
+ 					 enum dev_pm_qos_req_type type,
 -- 
 2.21.0.rc0.269.g1a574e7a288b
 
