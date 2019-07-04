@@ -2,88 +2,251 @@ Return-Path: <SRS0=YPYM=VB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
+X-Spam-Status: No, score=-13.5 required=3.0
 	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36349C0650E
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 09:22:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 295F8C06516
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 10:03:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 18487218AD
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 09:22:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C53C218A3
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 10:03:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727346AbfGDJWj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Jul 2019 05:22:39 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:47916 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727147AbfGDJWi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 4 Jul 2019 05:22:38 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 422891A0584;
-        Thu,  4 Jul 2019 11:22:36 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 224201A0580;
-        Thu,  4 Jul 2019 11:22:22 +0200 (CEST)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 51405402E1;
-        Thu,  4 Jul 2019 17:22:08 +0800 (SGT)
-From:   Anson.Huang@nxp.com
-To:     rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, shawnguo@kernel.org, s.hauer@pengutronix.de,
-        kernel@pengutronix.de, festevam@gmail.com, catalin.marinas@arm.com,
-        will@kernel.org, leonard.crestez@nxp.com, daniel.baluta@nxp.com,
-        ping.bai@nxp.com, olof@lixom.net, maxime.ripard@bootlin.com,
-        jagan@amarulasolutions.com, bjorn.andersson@linaro.org,
-        dinguyen@kernel.org, enric.balletbo@collabora.com,
-        marcin.juszkiewicz@linaro.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH 1/4] dt-bindings: thermal: imx8mm-thermal: Add binding doc for i.MX8MM
-Date:   Thu,  4 Jul 2019 17:13:10 +0800
-Message-Id: <20190704091313.9516-2-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.14.1
-In-Reply-To: <20190704091313.9516-1-Anson.Huang@nxp.com>
-References: <20190704091313.9516-1-Anson.Huang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1727559AbfGDKDg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Jul 2019 06:03:36 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:10679 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1727385AbfGDKDc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jul 2019 06:03:32 -0400
+X-UUID: e1d4251ec8204cbf9f1ee152e63b0ed9-20190704
+X-UUID: e1d4251ec8204cbf9f1ee152e63b0ed9-20190704
+Received: from mtkcas08.mediatek.inc [(172.21.101.126)] by mailgw02.mediatek.com
+        (envelope-from <ran.bi@mediatek.com>)
+        (mhqrelay.mediatek.com ESMTP with TLS)
+        with ESMTP id 924325187; Thu, 04 Jul 2019 18:03:17 +0800
+Received: from MTKCAS36.mediatek.inc (172.27.4.186) by mtkmbs08n2.mediatek.inc
+ (172.21.101.56) with Microsoft SMTP Server (TLS) id 15.0.1395.4; Thu, 4 Jul
+ 2019 18:03:12 +0800
+Received: from [10.17.3.153] (172.27.4.253) by MTKCAS36.mediatek.inc
+ (172.27.4.170) with Microsoft SMTP Server id 15.0.1395.4 via Frontend
+ Transport; Thu, 4 Jul 2019 18:03:09 +0800
+Message-ID: <1562234589.19751.16.camel@mhfsdcap03>
+Subject: Re: [PATCH v2 5/7] power: reset: add driver for mt6323 poweroff
+From:   Ran Bi <ran.bi@mediatek.com>
+To:     Frank Wunderlich <frank-w@public-files.de>
+CC:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        "Mark Rutland" <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sean Wang <sean.wang@mediatek.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-rtc@vger.kernel.org>,
+        Eddie Huang <eddie.huang@mediatek.com>,
+        "Thomas Gleixner" <tglx@linutronix.de>,
+        Richard Fontana <rfontana@redhat.com>,
+        Allison Randal <allison@lohutok.net>,
+        "David S . Miller" <davem@davemloft.net>,
+        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Rob Herring <robh@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        "Paul E . McKenney" <paulmck@linux.ibm.com>,
+        Josef Friedl <josef.friedl@speed.at>,
+        Yingjoe Chen <yingjoe.chen@mediatek.com>,
+        Sean Wang <sean.wang@mediatek.com>,
+        Ran Bi <ran.bi@mediatek.com>
+Date:   Thu, 4 Jul 2019 18:03:09 +0800
+In-Reply-To: <20190703164822.17924-6-frank-w@public-files.de>
+References: <20190703164822.17924-1-frank-w@public-files.de>
+         <20190703164822.17924-6-frank-w@public-files.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.10.4-0ubuntu2 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-TM-SNTS-SMTP: 5DE4835C1875B5950092AA7126EE354752A756CA69AC4641991F64CEFDA4E85A2000:8
+X-MTK:  N
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Anson Huang <Anson.Huang@nxp.com>
+On Wed, 2019-07-03 at 18:48 +0200, Frank Wunderlich wrote:
+> From: Josef Friedl <josef.friedl@speed.at>
+> 
+> Suggested-by: Frank Wunderlich <frank-w@public-files.de>
+> Signed-off-by: Josef Friedl <josef.friedl@speed.at>
+> Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+> ---
+>  drivers/power/reset/Kconfig           | 10 +++
+>  drivers/power/reset/Makefile          |  1 +
+>  drivers/power/reset/mt6323-poweroff.c | 97 +++++++++++++++++++++++++++
+>  include/linux/mfd/mt6397/core.h       |  2 +
+>  4 files changed, 110 insertions(+)
+>  create mode 100644 drivers/power/reset/mt6323-poweroff.c
+> 
+> --
+> 2.17.1
+> 
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index 980951dff834..492678e22088 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -140,6 +140,16 @@ config POWER_RESET_LTC2952
+>  	  This driver supports an external powerdown trigger and board power
+>  	  down via the LTC2952. Bindings are made in the device tree.
+> 
+> +config POWER_RESET_MT6323
+> +       bool "MediaTek MT6323 power-off driver"
+> +       depends on MFD_MT6397
+> +       help
+> +         The power-off driver is responsible for externally shutdown down
+> +         the power of a remote MediaTek SoC MT6323 is connected to through
+> +         controlling a tiny circuit BBPU inside MT6323 RTC.
+> +
+> +         Say Y if you have a board where MT6323 could be found.
+> +
+>  config POWER_RESET_QNAP
+>  	bool "QNAP power-off driver"
+>  	depends on OF_GPIO && PLAT_ORION
+> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> index 0aebee954ac1..94eaceb01d66 100644
+> --- a/drivers/power/reset/Makefile
+> +++ b/drivers/power/reset/Makefile
+> @@ -11,6 +11,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
+>  obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
+>  obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
+> +obj-$(CONFIG_POWER_RESET_MT6323) += mt6323-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_QCOM_PON) += qcom-pon.o
+>  obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
+>  obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
+> diff --git a/drivers/power/reset/mt6323-poweroff.c b/drivers/power/reset/mt6323-poweroff.c
+> new file mode 100644
+> index 000000000000..1caf43d9e46d
+> --- /dev/null
+> +++ b/drivers/power/reset/mt6323-poweroff.c
+> @@ -0,0 +1,97 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Power off through MediaTek PMIC
+> + *
+> + * Copyright (C) 2018 MediaTek Inc.
+> + *
+> + * Author: Sean Wang <sean.wang@mediatek.com>
+> + *
+> + */
+> +
+> +#include <linux/err.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/mfd/mt6397/core.h>
+> +#include <linux/mfd/mt6397/rtc.h>
+> +
+> +struct mt6323_pwrc {
+> +	struct device *dev;
+> +	struct regmap *regmap;
+> +	u32 base;
+> +};
+> +
+> +static struct mt6323_pwrc *mt_pwrc;
+> +
+> +static void mt6323_do_pwroff(void)
+> +{
+> +	struct mt6323_pwrc *pwrc = mt_pwrc;
+> +	unsigned int val;
+> +	int ret;
+> +
+> +	regmap_write(pwrc->regmap, pwrc->base + RTC_BBPU, RTC_BBPU_KEY);
+> +	regmap_write(pwrc->regmap, pwrc->base + RTC_WRTGR, 1);
+> +
+> +	ret = regmap_read_poll_timeout(pwrc->regmap,
+> +					pwrc->base + RTC_BBPU, val,
+> +					!(val & RTC_BBPU_CBUSY),
+> +					MTK_RTC_POLL_DELAY_US,
+> +					MTK_RTC_POLL_TIMEOUT);
+> +	if (ret)
+> +		dev_err(pwrc->dev, "failed to write BBPU: %d\n", ret);
+> +
+> +	/* Wait some time until system down, otherwise, notice with a warn */
+> +	mdelay(1000);
+> +
+> +	WARN_ONCE(1, "Unable to power off system\n");
+> +}
+> +
+> +static int mt6323_pwrc_probe(struct platform_device *pdev)
+> +{
+> +	struct mt6397_chip *mt6397_chip = dev_get_drvdata(pdev->dev.parent);
+> +	struct mt6323_pwrc *pwrc;
+> +	struct resource *res;
+> +
+> +	pwrc = devm_kzalloc(&pdev->dev, sizeof(*pwrc), GFP_KERNEL);
+> +	if (!pwrc)
+> +		return -ENOMEM;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	pwrc->base = res->start;
+> +	pwrc->regmap = mt6397_chip->regmap;
+> +	pwrc->dev = &pdev->dev;
+> +	mt_pwrc = pwrc;
+> +
+> +	pm_power_off = &mt6323_do_pwroff;
 
-Add thermal binding doc for Freescale's i.MX8MM Thermal Monitoring Unit.
+We had implement MT8173 poweroff function in arm-trusted-firmware's PSCI
+plat_system_off() function. MT8173 SoC is using PMIC MT6397. (Ref:
+https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/mediatek/mt8173/plat_pm.c and https://github.com/ARM-software/arm-trusted-firmware/blob/master/plat/mediatek/mt8173/drivers/rtc) Do you think it's better to implement poweroff function into arm-trusted-firmware compared to hijack pm_poweroff() function in Kernel? Right now, we are doing the upstream of other PMIC chip like MT6358's poweroff function in arm-trusted-firmware too.
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
- .../devicetree/bindings/thermal/imx8mm-thermal.txt        | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
+> +
+> +	return 0;
+> +}
+> +
+> +static int mt6323_pwrc_remove(struct platform_device *pdev)
+> +{
+> +	if (pm_power_off == &mt6323_do_pwroff)
+> +		pm_power_off = NULL;
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id mt6323_pwrc_dt_match[] = {
+> +	{ .compatible = "mediatek,mt6323-pwrc" },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, mt6323_pwrc_dt_match);
+> +
+> +static struct platform_driver mt6323_pwrc_driver = {
+> +	.probe          = mt6323_pwrc_probe,
+> +	.remove         = mt6323_pwrc_remove,
+> +	.driver         = {
+> +		.name   = "mt6323-pwrc",
+> +		.of_match_table = mt6323_pwrc_dt_match,
+> +	},
+> +};
+> +
+> +module_platform_driver(mt6323_pwrc_driver);
+> +
+> +MODULE_DESCRIPTION("Poweroff driver for MT6323 PMIC");
+> +MODULE_AUTHOR("Sean Wang <sean.wang@mediatek.com>");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/include/linux/mfd/mt6397/core.h b/include/linux/mfd/mt6397/core.h
+> index 25a95e72179b..652da61e3711 100644
+> --- a/include/linux/mfd/mt6397/core.h
+> +++ b/include/linux/mfd/mt6397/core.h
+> @@ -7,6 +7,8 @@
+>  #ifndef __MFD_MT6397_CORE_H__
+>  #define __MFD_MT6397_CORE_H__
+> 
+> +#include <linux/mutex.h>
+> +
+>  enum mt6397_irq_numbers {
+>  	MT6397_IRQ_SPKL_AB = 0,
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
-new file mode 100644
-index 0000000..d09ae82
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
-@@ -0,0 +1,15 @@
-+* Thermal Monitoring Unit (TMU) on Freescale i.MX8MM SoC
-+
-+Required properties:
-+- compatible : Must be "fsl,imx8mm-tmu".
-+- reg : Address range of TMU registers.
-+- clocks : TMU's clock source.
-+- #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
-+
-+Example:
-+tmu: tmu@30260000 {
-+	compatible = "fsl,imx8mm-tmu";
-+	reg = <0x30260000 0x10000>;
-+	clocks = <&clk IMX8MM_CLK_TMU_ROOT>;
-+	#thermal-sensor-cells = <0>;
-+};
--- 
-2.7.4
 
