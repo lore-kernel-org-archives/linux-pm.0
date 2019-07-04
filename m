@@ -2,121 +2,247 @@ Return-Path: <SRS0=YPYM=VB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UPPERCASE_50_75,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BAF3C06513
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 11:50:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BB43C46486
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 16:34:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6F91820693
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 11:50:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="knmHJll2"
+	by mail.kernel.org (Postfix) with ESMTP id 31859218D0
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jul 2019 16:34:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727566AbfGDLuT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 4 Jul 2019 07:50:19 -0400
-Received: from mout.gmx.net ([212.227.15.19]:44393 "EHLO mout.gmx.net"
+        id S1727416AbfGDQev (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 4 Jul 2019 12:34:51 -0400
+Received: from mga17.intel.com ([192.55.52.151]:33035 "EHLO mga17.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727548AbfGDLuT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 4 Jul 2019 07:50:19 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1562240946;
-        bh=3XgfK29g7vLa/3fkH4yqnV5cnFE1yxc49nWYpw/CAjE=;
-        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=knmHJll2oZI2vMmwAv/1ME4hVpqS0PWrF9Ii8PkJp7W5/sqfcY/qrsUAkKjVViwQn
-         3CxBSzc/FCwAmnBG2/JJ/9Qcs9UnGrsKgur1158+rpQ4xA/L8ZOOZucSZQ+H3zoH/H
-         r8/kl+3pUg6RVhZL4FTDAvNzcrsZD9G5hCVre2hI=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from [217.61.145.121] ([217.61.145.121]) by web-mail.gmx.net
- (3c-app-gmx-bs27.server.lan [172.19.170.79]) (via HTTP); Thu, 4 Jul 2019
- 13:49:06 +0200
-MIME-Version: 1.0
-Message-ID: <trinity-cc209a43-af34-4788-8b7a-8495052c8ca6-1562240946454@3c-app-gmx-bs27>
-From:   "Frank Wunderlich" <frank-w@public-files.de>
-To:     "Matthias Brugger" <matthias.bgg@gmail.com>
-Cc:     "Lee Jones" <lee.jones@linaro.org>,
-        "Rob Herring" <robh+dt@kernel.org>,
-        "Mark Rutland" <mark.rutland@arm.com>,
-        "Sean Wang" <sean.wang@mediatek.com>,
-        "Sebastian Reichel" <sre@kernel.org>,
-        "Alessandro Zummo" <a.zummo@towertech.it>,
-        "Alexandre Belloni" <alexandre.belloni@bootlin.com>,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        "Eddie Huang" <eddie.huang@mediatek.com>,
-        "Thomas Gleixner" <tglx@linutronix.de>,
-        "Richard Fontana" <rfontana@redhat.com>,
-        "Allison Randal" <allison@lohutok.net>,
-        "David S . Miller" <davem@davemloft.net>,
-        "Mauro Carvalho Chehab" <mchehab+samsung@kernel.org>,
-        "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
-        "Rob Herring" <robh@kernel.org>,
-        "Linus Walleij" <linus.walleij@linaro.org>,
-        "Nicolas Ferre" <nicolas.ferre@microchip.com>,
-        "Paul E . McKenney" <paulmck@linux.ibm.com>,
-        "Josef Friedl" <josef.friedl@speed.at>
-Subject: Aw: Re: [PATCH v2 2/7] rtc: mt6397: move some common definitions
- into rtc.h
-Content-Type: text/plain; charset=UTF-8
-Date:   Thu, 4 Jul 2019 13:49:06 +0200
-Importance: normal
-Sensitivity: Normal
-In-Reply-To: <62a4c4ce-7ab3-2f9d-a85e-be92340724a9@gmail.com>
-References: <20190703164822.17924-1-frank-w@public-files.de>
- <20190703164822.17924-3-frank-w@public-files.de>
- <62a4c4ce-7ab3-2f9d-a85e-be92340724a9@gmail.com>
-X-UI-Message-Type: mail
-X-Priority: 3
-X-Provags-ID: V03:K1:7WCJDoI4ExT7kJKMPI6fq7FNUW7pRNwLc1tUO/5cmP72zZnoBU2v1Y8uix/fw2i48d5FF
- Wd8wvTQJl1I2afIhS99OdBd4Iyh67OTcrpdbEQzhKKf6oNe+8evBVlNA3mdt3sLZ9EfauHTySxHm
- DPZWCXm6h5c0Phecn2JIbp8F6eSFLCyZzdI2+ijkEM1IUpZ0cT5dqCmnk8hPwd9Sd1EJDKwLDMdM
- fnT5RJ/tuLvBBpxa3bA56T8T1C/9SuiwHF1TDpcf69rvk2/9SvDHsBp3GT6hMIlCS4ZRbzcYD2dP
- 58=
-X-UI-Out-Filterresults: notjunk:1;V03:K0:mW1rCx44iLA=:/Gajeu7to3A6Ht4fEOGmOM
- VrVkYrIOaOWFbVz0dUB19QotgPqpUaNZ9s5JK+j8PjaEBomafj/raSFiwvRW1i7F+V8c1yXi3
- 7UJr7dAlUe5CK5xzgHEMiBNl7adKcmNKYRE/o0poTjKZAwuMVnHV9J+fkUdRrQDVrVkNZQDtY
- LHvQnas9brIhuezksYFzH9Pol+hd3YXpTP1J/k9Tep1e6ppE6zX3awixfJVVyPXj09b9iFFPP
- nPpETdXzqQspp2OaySgm9TbPNosj+TI6fbPcuIA9018AH3QcfASNas9uoobDSzUAKc7u2CYCl
- SmsdGV0F41hBk0LaPWMD5JmQE14GDfYBjsG1BP29GHify4oGtvVCBqrZwZKRCtbUz3G7i9KQG
- IknEjSp92+qsc71cN9DiVh3WD72v2MeCIqH32Vt5HLNfOb2hbBvkYRepx+55v6D+PY0s0xKDY
- ld9U5E2roDTiHXZ+GymN4caVOKAi3lsJT8kr9E3JCAEFOuqkGsPN8VrnmnDmvFOlxOumyBJki
- NqU8IwX2kaZfTf99CDBU5Ortk+6ZMl98egmxvVuWkpX9nml7w1lACPqpLuB1FFc0rFvC1MzXB
- wDNcELXrKOYz9pdcvEr6jUKFQoA9gQsQbd6KNaUd8V3CtnvF7ZGL1GdRH8I4RJ7AKDsyEeUsy
- Ekr8=
-Content-Transfer-Encoding: quoted-printable
+        id S1727588AbfGDQet (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 4 Jul 2019 12:34:49 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 04 Jul 2019 09:34:49 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.63,451,1557212400"; 
+   d="scan'208";a="169480462"
+Received: from conghuic-mobl.ccr.corp.intel.com (HELO rzhang-dell-9360.ccr.corp.intel.com) ([10.249.172.41])
+  by orsmga006.jf.intel.com with ESMTP; 04 Jul 2019 09:34:48 -0700
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     rjw@rjwysocki.net
+Cc:     linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com,
+        rui.zhang@intel.com
+Subject: [PATCH V2 01/13] intel_rapl: use reg instead of msr
+Date:   Fri,  5 Jul 2019 00:34:33 +0800
+Message-Id: <1562258085-3165-2-git-send-email-rui.zhang@intel.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1562258085-3165-1-git-send-email-rui.zhang@intel.com>
+References: <1562258085-3165-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-> Still missing commit message. Describe here why you need to do that.
+To support both MSR and MMIO Interface, use 'reg' to discribe RAPL
+registers instead of 'msr'.
 
-ok, added note that headers are reused in power-off-driver
+Reviewed-and-tested-by: Pandruvada, Srinivas <srinivas.pandruvada@intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/powercap/intel_rapl.c | 98 +++++++++++++++++++++----------------------
+ 1 file changed, 49 insertions(+), 49 deletions(-)
 
-https://github.com/frank-w/BPI-R2-4.14/commits/5.2-poweroff-mainline
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 8692f6b..45d5f22 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -83,13 +83,13 @@ enum rapl_domain_type {
+ 	RAPL_DOMAIN_MAX,
+ };
+ 
+-enum rapl_domain_msr_id {
+-	RAPL_DOMAIN_MSR_LIMIT,
+-	RAPL_DOMAIN_MSR_STATUS,
+-	RAPL_DOMAIN_MSR_PERF,
+-	RAPL_DOMAIN_MSR_POLICY,
+-	RAPL_DOMAIN_MSR_INFO,
+-	RAPL_DOMAIN_MSR_MAX,
++enum rapl_domain_reg_id {
++	RAPL_DOMAIN_REG_LIMIT,
++	RAPL_DOMAIN_REG_STATUS,
++	RAPL_DOMAIN_REG_PERF,
++	RAPL_DOMAIN_REG_POLICY,
++	RAPL_DOMAIN_REG_INFO,
++	RAPL_DOMAIN_REG_MAX,
+ };
+ 
+ /* per domain data, some are optional */
+@@ -154,7 +154,7 @@ struct rapl_package;
+ struct rapl_domain {
+ 	const char *name;
+ 	enum rapl_domain_type id;
+-	int msrs[RAPL_DOMAIN_MSR_MAX];
++	int regs[RAPL_DOMAIN_REG_MAX];
+ 	struct powercap_zone power_zone;
+ 	struct rapl_domain_data rdd;
+ 	struct rapl_power_limit rpl[NR_POWER_LIMITS];
+@@ -216,7 +216,7 @@ struct rapl_primitive_info {
+ 	const char *name;
+ 	u64 mask;
+ 	int shift;
+-	enum rapl_domain_msr_id id;
++	enum rapl_domain_reg_id id;
+ 	enum unit_type unit;
+ 	u32 flag;
+ };
+@@ -642,11 +642,11 @@ static void rapl_init_domains(struct rapl_package *rp)
+ 		case BIT(RAPL_DOMAIN_PACKAGE):
+ 			rd->name = rapl_domain_names[RAPL_DOMAIN_PACKAGE];
+ 			rd->id = RAPL_DOMAIN_PACKAGE;
+-			rd->msrs[0] = MSR_PKG_POWER_LIMIT;
+-			rd->msrs[1] = MSR_PKG_ENERGY_STATUS;
+-			rd->msrs[2] = MSR_PKG_PERF_STATUS;
+-			rd->msrs[3] = 0;
+-			rd->msrs[4] = MSR_PKG_POWER_INFO;
++			rd->regs[0] = MSR_PKG_POWER_LIMIT;
++			rd->regs[1] = MSR_PKG_ENERGY_STATUS;
++			rd->regs[2] = MSR_PKG_PERF_STATUS;
++			rd->regs[3] = 0;
++			rd->regs[4] = MSR_PKG_POWER_INFO;
+ 			rd->rpl[0].prim_id = PL1_ENABLE;
+ 			rd->rpl[0].name = pl1_name;
+ 			rd->rpl[1].prim_id = PL2_ENABLE;
+@@ -655,33 +655,33 @@ static void rapl_init_domains(struct rapl_package *rp)
+ 		case BIT(RAPL_DOMAIN_PP0):
+ 			rd->name = rapl_domain_names[RAPL_DOMAIN_PP0];
+ 			rd->id = RAPL_DOMAIN_PP0;
+-			rd->msrs[0] = MSR_PP0_POWER_LIMIT;
+-			rd->msrs[1] = MSR_PP0_ENERGY_STATUS;
+-			rd->msrs[2] = 0;
+-			rd->msrs[3] = MSR_PP0_POLICY;
+-			rd->msrs[4] = 0;
++			rd->regs[0] = MSR_PP0_POWER_LIMIT;
++			rd->regs[1] = MSR_PP0_ENERGY_STATUS;
++			rd->regs[2] = 0;
++			rd->regs[3] = MSR_PP0_POLICY;
++			rd->regs[4] = 0;
+ 			rd->rpl[0].prim_id = PL1_ENABLE;
+ 			rd->rpl[0].name = pl1_name;
+ 			break;
+ 		case BIT(RAPL_DOMAIN_PP1):
+ 			rd->name = rapl_domain_names[RAPL_DOMAIN_PP1];
+ 			rd->id = RAPL_DOMAIN_PP1;
+-			rd->msrs[0] = MSR_PP1_POWER_LIMIT;
+-			rd->msrs[1] = MSR_PP1_ENERGY_STATUS;
+-			rd->msrs[2] = 0;
+-			rd->msrs[3] = MSR_PP1_POLICY;
+-			rd->msrs[4] = 0;
++			rd->regs[0] = MSR_PP1_POWER_LIMIT;
++			rd->regs[1] = MSR_PP1_ENERGY_STATUS;
++			rd->regs[2] = 0;
++			rd->regs[3] = MSR_PP1_POLICY;
++			rd->regs[4] = 0;
+ 			rd->rpl[0].prim_id = PL1_ENABLE;
+ 			rd->rpl[0].name = pl1_name;
+ 			break;
+ 		case BIT(RAPL_DOMAIN_DRAM):
+ 			rd->name = rapl_domain_names[RAPL_DOMAIN_DRAM];
+ 			rd->id = RAPL_DOMAIN_DRAM;
+-			rd->msrs[0] = MSR_DRAM_POWER_LIMIT;
+-			rd->msrs[1] = MSR_DRAM_ENERGY_STATUS;
+-			rd->msrs[2] = MSR_DRAM_PERF_STATUS;
+-			rd->msrs[3] = 0;
+-			rd->msrs[4] = MSR_DRAM_POWER_INFO;
++			rd->regs[0] = MSR_DRAM_POWER_LIMIT;
++			rd->regs[1] = MSR_DRAM_ENERGY_STATUS;
++			rd->regs[2] = MSR_DRAM_PERF_STATUS;
++			rd->regs[3] = 0;
++			rd->regs[4] = MSR_DRAM_POWER_INFO;
+ 			rd->rpl[0].prim_id = PL1_ENABLE;
+ 			rd->rpl[0].name = pl1_name;
+ 			rd->domain_energy_unit =
+@@ -736,37 +736,37 @@ static u64 rapl_unit_xlate(struct rapl_domain *rd, enum unit_type type,
+ static struct rapl_primitive_info rpi[] = {
+ 	/* name, mask, shift, msr index, unit divisor */
+ 	PRIMITIVE_INFO_INIT(ENERGY_COUNTER, ENERGY_STATUS_MASK, 0,
+-				RAPL_DOMAIN_MSR_STATUS, ENERGY_UNIT, 0),
++				RAPL_DOMAIN_REG_STATUS, ENERGY_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(POWER_LIMIT1, POWER_LIMIT1_MASK, 0,
+-				RAPL_DOMAIN_MSR_LIMIT, POWER_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, POWER_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(POWER_LIMIT2, POWER_LIMIT2_MASK, 32,
+-				RAPL_DOMAIN_MSR_LIMIT, POWER_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, POWER_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(FW_LOCK, POWER_PP_LOCK, 31,
+-				RAPL_DOMAIN_MSR_LIMIT, ARBITRARY_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, ARBITRARY_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(PL1_ENABLE, POWER_LIMIT1_ENABLE, 15,
+-				RAPL_DOMAIN_MSR_LIMIT, ARBITRARY_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, ARBITRARY_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(PL1_CLAMP, POWER_LIMIT1_CLAMP, 16,
+-				RAPL_DOMAIN_MSR_LIMIT, ARBITRARY_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, ARBITRARY_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(PL2_ENABLE, POWER_LIMIT2_ENABLE, 47,
+-				RAPL_DOMAIN_MSR_LIMIT, ARBITRARY_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, ARBITRARY_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(PL2_CLAMP, POWER_LIMIT2_CLAMP, 48,
+-				RAPL_DOMAIN_MSR_LIMIT, ARBITRARY_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, ARBITRARY_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(TIME_WINDOW1, TIME_WINDOW1_MASK, 17,
+-				RAPL_DOMAIN_MSR_LIMIT, TIME_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, TIME_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(TIME_WINDOW2, TIME_WINDOW2_MASK, 49,
+-				RAPL_DOMAIN_MSR_LIMIT, TIME_UNIT, 0),
++				RAPL_DOMAIN_REG_LIMIT, TIME_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(THERMAL_SPEC_POWER, POWER_INFO_THERMAL_SPEC_MASK,
+-				0, RAPL_DOMAIN_MSR_INFO, POWER_UNIT, 0),
++				0, RAPL_DOMAIN_REG_INFO, POWER_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(MAX_POWER, POWER_INFO_MAX_MASK, 32,
+-				RAPL_DOMAIN_MSR_INFO, POWER_UNIT, 0),
++				RAPL_DOMAIN_REG_INFO, POWER_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(MIN_POWER, POWER_INFO_MIN_MASK, 16,
+-				RAPL_DOMAIN_MSR_INFO, POWER_UNIT, 0),
++				RAPL_DOMAIN_REG_INFO, POWER_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(MAX_TIME_WINDOW, POWER_INFO_MAX_TIME_WIN_MASK, 48,
+-				RAPL_DOMAIN_MSR_INFO, TIME_UNIT, 0),
++				RAPL_DOMAIN_REG_INFO, TIME_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(THROTTLED_TIME, PERF_STATUS_THROTTLE_TIME_MASK, 0,
+-				RAPL_DOMAIN_MSR_PERF, TIME_UNIT, 0),
++				RAPL_DOMAIN_REG_PERF, TIME_UNIT, 0),
+ 	PRIMITIVE_INFO_INIT(PRIORITY_LEVEL, PP_POLICY_MASK, 0,
+-				RAPL_DOMAIN_MSR_POLICY, ARBITRARY_UNIT, 0),
++				RAPL_DOMAIN_REG_POLICY, ARBITRARY_UNIT, 0),
+ 	/* non-hardware */
+ 	PRIMITIVE_INFO_INIT(AVERAGE_POWER, 0, 0, 0, POWER_UNIT,
+ 				RAPL_PRIMITIVE_DERIVED),
+@@ -798,7 +798,7 @@ static int rapl_read_data_raw(struct rapl_domain *rd,
+ 	if (!rp->name || rp->flag & RAPL_PRIMITIVE_DUMMY)
+ 		return -EINVAL;
+ 
+-	msr = rd->msrs[rp->id];
++	msr = rd->regs[rp->id];
+ 	if (!msr)
+ 		return -EINVAL;
+ 
+@@ -874,7 +874,7 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
+ 
+ 	memset(&ma, 0, sizeof(ma));
+ 
+-	ma.msr_no = rd->msrs[rp->id];
++	ma.msr_no = rd->regs[rp->id];
+ 	ma.clear_mask = rp->mask;
+ 	ma.set_mask = bits;
+ 
+@@ -1282,8 +1282,8 @@ static int __init rapl_register_psys(void)
+ 
+ 	rd->name = rapl_domain_names[RAPL_DOMAIN_PLATFORM];
+ 	rd->id = RAPL_DOMAIN_PLATFORM;
+-	rd->msrs[0] = MSR_PLATFORM_POWER_LIMIT;
+-	rd->msrs[1] = MSR_PLATFORM_ENERGY_STATUS;
++	rd->regs[0] = MSR_PLATFORM_POWER_LIMIT;
++	rd->regs[1] = MSR_PLATFORM_ENERGY_STATUS;
+ 	rd->rpl[0].prim_id = PL1_ENABLE;
+ 	rd->rpl[0].name = pl1_name;
+ 	rd->rpl[1].prim_id = PL2_ENABLE;
+-- 
+2.7.4
 
-> Please check your email setting as discussed offline. Otherwise your pat=
-ches
-> won't get accepted.
-
-tested with webmailer where it looks good :(
-
-seems the problem is only shown when imported to patchwork
-
-using only git sendemail in ubuntu 18.4 without any mta (have sendmail not=
- installed) and no changes made to git sendemail except authentication.
-
-i see that (except cover-letter which is quoted-printable) all is send wit=
-h
-Content-Type: text/plain; charset=3D"us-ascii"
-Content-Transfer-Encoding: 7bit
-
-so i have forced git sendemail now to
-sendemail.composeencoding UTF-8
-
-if this does not work i can try instead
-sendemail.transferEncoding 8bit
-
-regards Frank
