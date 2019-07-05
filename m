@@ -2,127 +2,146 @@ Return-Path: <SRS0=ZY5s=VC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6602CC46499
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jul 2019 11:38:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB404C46499
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jul 2019 13:37:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3C2B521850
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jul 2019 11:38:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BE947218C9
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jul 2019 13:37:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=akkea.ca header.i=@akkea.ca header.b="mfJTkIGi";
-	dkim=pass (1024-bit key) header.d=akkea.ca header.i=@akkea.ca header.b="GQ/H+cQR"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="STNcuqyr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728744AbfGELi3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Jul 2019 07:38:29 -0400
-Received: from node.akkea.ca ([192.155.83.177]:41794 "EHLO node.akkea.ca"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728741AbfGELi3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Jul 2019 07:38:29 -0400
-Received: from localhost (localhost [127.0.0.1])
-        by node.akkea.ca (Postfix) with ESMTP id 2131E4E2051;
-        Fri,  5 Jul 2019 11:38:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=akkea.ca; s=mail;
-        t=1562326708; bh=18P+AMytcx3lv76RTtEolvqR25huJYtRlXkpaF9f5yE=;
-        h=From:To:Cc:Subject:Date;
-        b=mfJTkIGivYuAi4DCALqY13+hqDe09cDBGciyJM5EwsH+Ha/iNCKEXUAOwO9FAUjzM
-         cLaRPELssKRLCF+LyPFzeDWOl3ALnaXYkmmXxKxPxtwPVh9cpJCvy+mBs4B2ULabj1
-         TCmIwW+Jvj6bCxv/esdptNJMXrl4H1tlQ/AVsaNU=
-X-Virus-Scanned: Debian amavisd-new at mail.akkea.ca
-Received: from node.akkea.ca ([127.0.0.1])
-        by localhost (mail.akkea.ca [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id 68gWECsqC91D; Fri,  5 Jul 2019 11:38:27 +0000 (UTC)
-Received: from media.hitronhub.home (S0106ac202e1e3ee3.cg.shawcable.net [96.51.227.121])
-        by node.akkea.ca (Postfix) with ESMTPSA id 7A70A4E204E;
-        Fri,  5 Jul 2019 11:38:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=akkea.ca; s=mail;
-        t=1562326707; bh=18P+AMytcx3lv76RTtEolvqR25huJYtRlXkpaF9f5yE=;
-        h=From:To:Cc:Subject:Date;
-        b=GQ/H+cQREUeTwBG7+qcyZMDRjUAVUI9784QoRD/mDpJuss9+bmJqLcMwveXscH9WL
-         2pTQcWnuMiDW+JjPkkKqXABLoqcpkDuZZPzKk7oFG+IXTVd4iBVXNKox68i5ObGyT2
-         h1J4frsHlDpoyCGRBZt70Gbhyp6lwxESagY4BPAY=
-From:   "Angus Ainslie (Purism)" <angus@akkea.ca>
-To:     angus.ainslie@puri.sm
-Cc:     krzk@kernel.org, Sebastian Reichel <sre@kernel.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Angus Ainslie (Purism)" <angus@akkea.ca>
-Subject: [PATCH] power: supply: bq25890_charger: Add the BQ25895 part
-Date:   Fri,  5 Jul 2019 05:37:51 -0600
-Message-Id: <20190705113751.18116-1-angus@akkea.ca>
-X-Mailer: git-send-email 2.17.1
+        id S1727295AbfGENhu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Jul 2019 09:37:50 -0400
+Received: from mail-wm1-f42.google.com ([209.85.128.42]:53805 "EHLO
+        mail-wm1-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726583AbfGENht (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jul 2019 09:37:49 -0400
+Received: by mail-wm1-f42.google.com with SMTP id x15so8904353wmj.3;
+        Fri, 05 Jul 2019 06:37:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-transfer-encoding:content-language;
+        bh=3zwEJgoSUmVe32byVQps8G3aTPiQXc6LZjBXABq8q44=;
+        b=STNcuqyr8wjN732QQ0JivchA5zRC+5J+onxTxiBuN7J+QzTvHanCgqQMz7SL4ebKBJ
+         nW+FcY4gANgnOt2uyCG2gpmNyaPMmKlcEaYQKdL8DCiBt/E56gISV9uj/9lhBzogXBdX
+         vP28nHvBi8ZZWpDn5VSVR+SbQ90gxCuDbBciGz0+Jxe2FL5V4SC6xADlE1qZvFtflqAD
+         ZrzFJ2d19yWB1BuhliMAgvgvyM8I9YOjNQx/5qejTZ39xb1FtjOSZKdu0L8DOo/bDPNR
+         3u6uVJPIOKPdonFoxLggidgGcwryaw0ZA9XmZwZLIs9Bobfm/6g4vfytqYor/ZGLUASC
+         +OJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding
+         :content-language;
+        bh=3zwEJgoSUmVe32byVQps8G3aTPiQXc6LZjBXABq8q44=;
+        b=WXZA4F3I6a1BUpcT5rwlHe1h6NsVWLkRlkK2vBZvz6LfeZwcIOzLxsApjJJ5tSJ13Y
+         ZIpJJ4Ab8aec+bweiqe9R8dkLGe8o8Jh1svtvX7NuBa8Qt2VS9f/4DMVUQCBcnm4eGgI
+         B+RyRRj4ZwaqKJIw87iUc8ZDO7MEv4m0zHt2NR1md/v96iTPnnp43joX7OSQPC8PDgwE
+         u2GcCLBTOIzx2DDhkJcWAtYIVu13gLi+CLlBl+GnvyYEYY1MTngXybBwgx6FNVCD17aG
+         ++qOyCvD+oPScEKaMjD9FJRvR+C0XcSyTqjGunKwNE+jT6D0aHxa6hhoqkcOg9I/ZZF+
+         eLow==
+X-Gm-Message-State: APjAAAVrlxNgFH0NdVqCI/1dPyDqWOd7b2KKAalJOiTXIe4MtF3opKGe
+        sLbyOYPd0MoD59dnWZE6MZPv9knc
+X-Google-Smtp-Source: APXvYqxwPvjEjuUDkC6y/r7CpVN0m1xZdHiGATz+YFalWzlBkPKAZZPnQEe4s/ybG6e4VkQaIHNfMA==
+X-Received: by 2002:a1c:2314:: with SMTP id j20mr3610354wmj.152.1562333867056;
+        Fri, 05 Jul 2019 06:37:47 -0700 (PDT)
+Received: from [172.16.8.139] (host-89-243-246-11.as13285.net. [89.243.246.11])
+        by smtp.gmail.com with ESMTPSA id z25sm9958744wmf.38.2019.07.05.06.37.45
+        (version=TLS1_3 cipher=AEAD-AES128-GCM-SHA256 bits=128/128);
+        Fri, 05 Jul 2019 06:37:45 -0700 (PDT)
+Subject: Re: iowait v.s. idle accounting is "inconsistent" - iowait is too low
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
+        Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org
+References: <2ff025f1-9a3e-3eae-452b-ef84824009b4@gmail.com>
+ <000001d531a8$8931b2a0$9b9517e0$@net>
+ <e82b9d7c-81e5-dd80-b9c0-f5f065344e2f@gmail.com>
+ <20190705113806.GP3402@hirez.programming.kicks-ass.net>
+From:   Alan Jenkins <alan.christopher.jenkins@gmail.com>
+Message-ID: <26e7faef-7223-3ef8-d09c-e382223ce4fa@gmail.com>
+Date:   Fri, 5 Jul 2019 14:37:44 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
+MIME-Version: 1.0
+In-Reply-To: <20190705113806.GP3402@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-GB
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The BQ25895 is almost identical to the BQ25890.
+On 05/07/2019 12:38, Peter Zijlstra wrote:
+> On Fri, Jul 05, 2019 at 12:25:46PM +0100, Alan Jenkins wrote:
+>> Hi, scheduler experts!
+>>
+>> My cpu "iowait" time appears to be reported incorrectly.  Do you know why
+>> this could happen?
+> Because iowait is a magic random number that has no sane meaning.
+> Personally I'd prefer to just delete the whole thing, except ABI :/
+>
+> Also see the comment near nr_iowait():
+>
+> /*
+>   * IO-wait accounting, and how its mostly bollocks (on SMP).
+>   *
+>   * The idea behind IO-wait account is to account the idle time that we could
+>   * have spend running if it were not for IO. That is, if we were to improve the
+>   * storage performance, we'd have a proportional reduction in IO-wait time.
+>   *
+>   * This all works nicely on UP, where, when a task blocks on IO, we account
+>   * idle time as IO-wait, because if the storage were faster, it could've been
+>   * running and we'd not be idle.
+>   *
+>   * This has been extended to SMP, by doing the same for each CPU. This however
+>   * is broken.
+>   *
+>   * Imagine for instance the case where two tasks block on one CPU, only the one
+>   * CPU will have IO-wait accounted, while the other has regular idle. Even
+>   * though, if the storage were faster, both could've ran at the same time,
+>   * utilising both CPUs.
+>   *
+>   * This means, that when looking globally, the current IO-wait accounting on
+>   * SMP is a lower bound, by reason of under accounting.
+>   *
+>   * Worse, since the numbers are provided per CPU, they are sometimes
+>   * interpreted per CPU, and that is nonsensical. A blocked task isn't strictly
+>   * associated with any one particular CPU, it can wake to another CPU than it
+>   * blocked on. This means the per CPU IO-wait number is meaningless.
+>   *
+>   * Task CPU affinities can make all that even more 'interesting'.
+>   */
 
-Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
----
- drivers/power/supply/bq25890_charger.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+Thanks. I take those as being different problems, but you mean there is 
+not much demand (or point) to "fix" my issue.
 
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index d333f2b321b9..9d1ec8d677de 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -22,6 +22,7 @@
- #define BQ25890_IRQ_PIN			"bq25890_irq"
- 
- #define BQ25890_ID			3
-+#define BQ25895_ID			7
- #define BQ25896_ID			0
- 
- enum bq25890_fields {
-@@ -171,7 +172,7 @@ static const struct reg_field bq25890_reg_fields[] = {
- 	[F_WD]			= REG_FIELD(0x07, 4, 5),
- 	[F_TMR_EN]		= REG_FIELD(0x07, 3, 3),
- 	[F_CHG_TMR]		= REG_FIELD(0x07, 1, 2),
--	[F_JEITA_ISET]		= REG_FIELD(0x07, 0, 0),
-+	[F_JEITA_ISET]		= REG_FIELD(0x07, 0, 0), // reserved on BQ25895
- 	/* REG08 */
- 	[F_BATCMP]		= REG_FIELD(0x08, 5, 7),
- 	[F_VCLAMP]		= REG_FIELD(0x08, 2, 4),
-@@ -180,7 +181,7 @@ static const struct reg_field bq25890_reg_fields[] = {
- 	[F_FORCE_ICO]		= REG_FIELD(0x09, 7, 7),
- 	[F_TMR2X_EN]		= REG_FIELD(0x09, 6, 6),
- 	[F_BATFET_DIS]		= REG_FIELD(0x09, 5, 5),
--	[F_JEITA_VSET]		= REG_FIELD(0x09, 4, 4),
-+	[F_JEITA_VSET]		= REG_FIELD(0x09, 4, 4), // reserved on BQ25895
- 	[F_BATFET_DLY]		= REG_FIELD(0x09, 3, 3),
- 	[F_BATFET_RST_EN]	= REG_FIELD(0x09, 2, 2),
- 	[F_PUMPX_UP]		= REG_FIELD(0x09, 1, 1),
-@@ -188,7 +189,7 @@ static const struct reg_field bq25890_reg_fields[] = {
- 	/* REG0A */
- 	[F_BOOSTV]		= REG_FIELD(0x0A, 4, 7),
- 	/* PFM_OTG_DIS 3 on BQ25896 */
--	[F_BOOSTI]		= REG_FIELD(0x0A, 0, 2),
-+	[F_BOOSTI]		= REG_FIELD(0x0A, 0, 2), // reserved on BQ25895
- 	/* REG0B */
- 	[F_VBUS_STAT]		= REG_FIELD(0x0B, 5, 7),
- 	[F_CHG_STAT]		= REG_FIELD(0x0B, 3, 4),
-@@ -392,6 +393,8 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		if (bq->chip_id == BQ25890_ID)
- 			val->strval = "BQ25890";
-+		else if (bq->chip_id == BQ25895_ID)
-+			val->strval = "BQ25895";
- 		else if (bq->chip_id == BQ25896_ID)
- 			val->strval = "BQ25896";
- 		else
-@@ -862,7 +865,8 @@ static int bq25890_probe(struct i2c_client *client,
- 		return bq->chip_id;
- 	}
- 
--	if ((bq->chip_id != BQ25890_ID) && (bq->chip_id != BQ25896_ID)) {
-+	if ((bq->chip_id != BQ25890_ID) && (bq->chip_id != BQ25895_ID)
-+			&& (bq->chip_id != BQ25896_ID)) {
- 		dev_err(dev, "Chip with ID=%d, not supported!\n", bq->chip_id);
- 		return -ENODEV;
- 	}
--- 
-2.17.1
+>  (2) Compare running "dd" with "taskset -c 1":
+>
+> %Cpu1  :  0.3 us,  3.0 sy,  0.0 ni, 83.7 id, 12.6 wa,  0.0 hi,  0.3 si,  0.0 st 
 
+                                       ^ non-zero idle time for Cpu1, despite the pinned IO hog.
+
+
+The block layer recently decided they could break "disk busy%" reporting 
+for slow devices (mechanical HDD), in order to reduce overheads for fast 
+devices.  This means the summary view in "atop" now lacks any reliable 
+indicator.
+
+I suppose I need to look in "iotop".
+
+The new /proc/pressure/io seems to have caveats related to the iowait 
+issues... it seems even more complex to interpret for this case, and it 
+does not seem to work how I think it does.[1]
+
+Regards
+Alan
+
+[1] 
+https://unix.stackexchange.com/questions/527342/why-does-the-new-linux-pressure-stall-information-for-io-not-show-as-100/
