@@ -2,84 +2,88 @@ Return-Path: <SRS0=ii3a=VD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F346BC5B578
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Jul 2019 07:58:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25AE3C5B578
+	for <linux-pm@archiver.kernel.org>; Sat,  6 Jul 2019 08:17:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BE0DE216B7
-	for <linux-pm@archiver.kernel.org>; Sat,  6 Jul 2019 07:58:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ED10621738
+	for <linux-pm@archiver.kernel.org>; Sat,  6 Jul 2019 08:17:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1562399934;
-	bh=6COQkh4U3VVQoN9CAk4HX81w+sKnxIMS3dtGDN2ojSg=;
+	s=default; t=1562401048;
+	bh=xT5/8HhtJWTdFqgpYLq3Whw//n88mTizA7vqoT4lgwU=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=AhAkdei0Ud5V0EXp5sIbf1izbaW0Ry4ugX9cFcre81YhgSuANsCObtOB3sOjKelWt
-	 QZ3OTpq5rfvP/b5gAgkHj9lsn4WxukpZmKf3/ZCdUTkBObO28GglX3e1RQ3Q1Mdm78
-	 H7niU6zQYUUOXG1CVQZ/nlFKRPFfNRJEeXlkSKvA=
+	b=zyHqtFxUYz2woIX/y10KM4nquVVUnCfRRKcOCtx1OfqcMztfjEkOb01lubgnusOCB
+	 aGP52+1Eio471kv+7PoJlqikh68psLn7u8sOo/iAYKHJZJLEix5tMinaBCCuCThrXC
+	 /tCCz64pWqdGtoo3pC7yS3LgyO5OW34RtRf5sQbM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725962AbfGFH6y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 6 Jul 2019 03:58:54 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:38346 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725900AbfGFH6y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 Jul 2019 03:58:54 -0400
-Received: by mail-ot1-f68.google.com with SMTP id d17so11213785oth.5;
-        Sat, 06 Jul 2019 00:58:53 -0700 (PDT)
+        id S1725934AbfGFIR1 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 6 Jul 2019 04:17:27 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:40286 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725900AbfGFIR1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 6 Jul 2019 04:17:27 -0400
+Received: by mail-ot1-f65.google.com with SMTP id e8so11214106otl.7;
+        Sat, 06 Jul 2019 01:17:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=6COQkh4U3VVQoN9CAk4HX81w+sKnxIMS3dtGDN2ojSg=;
-        b=HAm/hdwGGTZVcxch7AvFGw/12QWng1eb8dg7DWpzgXzbCgLHdNXi0FDTD1HTQK8Pmx
-         3crSy4c7sIDakBtQ9J77KOyb+JToPTJoTTm4SZi0Bp7Tw5dHN3AgOPFOrrJOo0FDxKmq
-         bBmatNDbZUBUHE7kwel43de3PbNY2w40CfdG6tTNp7UVKw4NyMoh6CjmUjvdu8oXQKJO
-         m7Evjj3Wk/4I0RxHJevPpkErvqAmFusVlzcp940IzUficF8hkF9aZ7RcJ7egJFZZE+iz
-         anxsFTXZwenTgzvO6nFfTWlJ59b0pqnCbCq+WS5bDzuWUfcKZrFomojJlnGCF244iF+Z
-         lOLg==
-X-Gm-Message-State: APjAAAWBoh5fCIfJBl04ou55wUEn11PTST4cZn5l8Z8bmNdOBkIwwczJ
-        4vuPAgzLaiAxXjNgOkyMlbqP5mBZiLhTPVuY+nc=
-X-Google-Smtp-Source: APXvYqxs3fkYFf33MB5x0z6dgHzIdnZjiX1d3PHTwjm1UPH9bFhoAYVt7Ku/aN9dAKvbh4TU03F/cBhIR4URNsMsFXw=
-X-Received: by 2002:a9d:6a4b:: with SMTP id h11mr3991551otn.266.1562399933246;
- Sat, 06 Jul 2019 00:58:53 -0700 (PDT)
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=BmjS73XlAr/xExYyGQ/UHQ+KTYtukJa8bAxRUnVmDcg=;
+        b=hr4kZONchUsldLXs4gsKEpLO43E+E2ZQ5ZWfVEKAhnA00j8JjAANZ3Lmhqp3Pbv3ZO
+         6MP/XY91biXb+/DIAgXGKNRNI7vrOj+R7LbcvSakusBroLzoPGGpxWW6cG/e+Ey24PH9
+         yQk2o+MMy2JVS64jDAerbmjYs9xYJjMTDk8j7N/Ak5aDHNmEQ7iOV+uRUui8fLNKuOd1
+         c6npUbiDurafKwM6bmE7HwX9Xa56ZNVfgkY/bZsR4JHmSWSr4WGFkrOW7EC01gOoheIY
+         VH/6i/sHIQYTVTgUnrB46WxgB3pJKqqVBoaKw3j/y6TUDZcnng5Ubl3ZGshFz46owNqs
+         geeQ==
+X-Gm-Message-State: APjAAAUH0M+pq1IF15jFbTqXH5lSYlPX7ISR8TyL2PScTXZlsxLwNRpg
+        PvVcZlplZBzEB+4meTaZ0JUsQ6E2NlVhJatAwg0=
+X-Google-Smtp-Source: APXvYqwpaq0rDzPcnpj3pFXRl4h+ABXahe/kTwqQ4V/E9YVuoErUBySOPi3W44AsrLPO0L5ONQSP22LLfEke6J2swjs=
+X-Received: by 2002:a9d:6a4b:: with SMTP id h11mr4036175otn.266.1562401046081;
+ Sat, 06 Jul 2019 01:17:26 -0700 (PDT)
 MIME-Version: 1.0
-References: <20190705210428.8039-1-shreeya.patel23498@gmail.com>
-In-Reply-To: <20190705210428.8039-1-shreeya.patel23498@gmail.com>
+References: <79b247b3-e056-610e-9a07-e685dfdaa6c9@gmail.com>
+In-Reply-To: <79b247b3-e056-610e-9a07-e685dfdaa6c9@gmail.com>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Sat, 6 Jul 2019 09:58:40 +0200
-Message-ID: <CAJZ5v0hovK+BY0kozGvkyCgR5CFHpZUu71BZRjUUdCYV8fM5Hg@mail.gmail.com>
-Subject: Re: [PATCH] Documentation: cpu-freq: Convert core.txt file to ReST format
-To:     Shreeya Patel <shreeya.patel23498@gmail.com>
-Cc:     skhan@linuxfoundation.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
+Date:   Sat, 6 Jul 2019 10:17:15 +0200
+Message-ID: <CAJZ5v0grOas+Wh0h09fKZmUnOJ3PRX2Fc=2fv7=zCFJiZ09-Bg@mail.gmail.com>
+Subject: Re: The tick is active on idle adaptive-tick CPUs when
+ /dev/cpu_dma_latency is used
+To:     Thomas Lindroth <thomas.lindroth@gmail.com>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        linux-kernel-mentees@lists.linuxfoundation.org
+        Peter Zijlstra <peterz@infradead.org>,
+        Frederic Weisbecker <frederic@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jul 5, 2019 at 11:04 PM Shreeya Patel
-<shreeya.patel23498@gmail.com> wrote:
+On Fri, Jul 5, 2019 at 7:22 PM Thomas Lindroth
+<thomas.lindroth@gmail.com> wrote:
 >
-> Convert core file to ReST format, in order to allow it to
-> be parsed by Sphinx. Make a minor change of correcting the wrong
-> function name cpufreq_put_cpu to cpufreq_cpu_put.
-> Also create an index.rst file in cpu-freq and add it's entry
-> in the main Documentation/index.rst file.
+> On recent kernels the tick remains active on idle adaptive-tick CPUs when a small value is written to /dev/cpu_dma_latency to restrict the highest C-state. Before the idle loop redesign in 4.17 idle CPUs had the tick disabled even when C-state were restricted. Is this change intentional or a regression?
+
+It was intentional, but this kind of is a gray area.
+
+At least for the menu governor you may argue that the decision on
+whether or not to stop the tick should be based on the predicted idle
+duration.
+
+> I use an x86_64 system built with CONFIG_NO_HZ_FULL that I recently upgraded to the 4.19 series from the 4.14 series. I noticed that adaptive-tick CPUs (nohz_full=1-7) still fire timer interrupts about 1000 times/s (CONFIG_HZ_1000=y) even when they are mostly idle. Some debugging showed that this only happens when a program is writing to /dev/cpu_dma_latency to restrict C-states. The old 4.14 kernel only have around 10 timer interrupts per second on idle adaptive-tick CPU even when C-states are restricted that way.
 >
-> Signed-off-by: Shreeya Patel <shreeya.patel23498@gmail.com>
+> I would expect an adaptive-tick CPU to turn off the tick when it has 0 or 1 processes to run and enable the tick for >2 processes. Kernels after 4.17 instead have the tick on when 0 or >2 processes are running and the tick off in the 1 process case. Since the tick is off when a single process is running that workload isn't directly harmed by the change but if the CPU use hyperthreading the constant wakeups on an idle HT sibling will reduce performance on the other sibling.
+>
+> They way I look for timer interrupts is by comparing the LOC line in /proc/interrupts or using the hrtimer_expire_entry tracepoint when function=tick_sched_timer. Both methods seem to give the same results.
+>
+> I can reproduce the problem using an i7-4790K CPU with /sys/devices/system/cpu/cpuidle/current_driver:intel_idle. I can also reproduce the problem on an old core2duo laptop with current_driver:acpi_idle but I can't reproduce the problem in a virtual machine where current_driver:none. I also can't reproduce the problem if C-states are restricted using the intel_idle.max_cstate=1 kernel argument instead of /dev/cpu_dma_latency.
+>
+> The commit that introduced the change is 554c8aa8ec "sched: idle: Select idle state before stopping the tick" in v4.17 and the problem exists at least up to kernel 5.1 using the menu cpuidle governor.
 
-I've said "no" no three previous attempts and this one is not different.
-
-I don't want to have anything .rst in Documentation/cpu-freq/.
-
-There is a *new* admin-guide doc for cpufreq already and what is
-missing is a *new* driver-api one.
-
-Thanks!
+Restoring the previous behavior in this case should be relatively
+straightforward.  I'll send you a patch to do that later.
