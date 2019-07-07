@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5257DC48BDB
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 22:36:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6280FC48BDB
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 22:36:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 28A472070D
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 22:36:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 36B952070D
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 22:36:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YYWFYuli"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HwiB+UzP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728308AbfGGWfh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Jul 2019 18:35:37 -0400
-Received: from mail-qk1-f194.google.com ([209.85.222.194]:37768 "EHLO
-        mail-qk1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728245AbfGGWfg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jul 2019 18:35:36 -0400
-Received: by mail-qk1-f194.google.com with SMTP id d15so11883282qkl.4;
-        Sun, 07 Jul 2019 15:35:35 -0700 (PDT)
+        id S1728231AbfGGWfa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Jul 2019 18:35:30 -0400
+Received: from mail-qt1-f196.google.com ([209.85.160.196]:43689 "EHLO
+        mail-qt1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728219AbfGGWfa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jul 2019 18:35:30 -0400
+Received: by mail-qt1-f196.google.com with SMTP id w17so13115029qto.10;
+        Sun, 07 Jul 2019 15:35:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=k9WSyPCB4rRAI9+QNTWdJTxNh0K8pTknWsVtmMdfXoE=;
-        b=YYWFYuliBA0TJafpCWYhmHq/ipz530A97NxM3WFJNFfsKoAxq5AIRXCvQbDGYaHo6o
-         AA3yi7pZ0KNDrop79OiD6XOrcu9Wb9HUjXdnbXH9c4GS2mBZoSRrDYJzJnrbJJoQik6O
-         WF8VsCWbl5RVdDKdcfse0CKrufD0BT7HjqfzEe5GQEywxuCbln2qYUYGVbXZ1/tZpIUc
-         9RwwPuSbZiMpTiI+Osl3deDosszvcvI29OmVDGHa4/Un/Qp4hZB2P5sHv88uWw2DOIfV
-         /J/G52M8M5mlLelP3vGHOFPb+9rjoX1y6h8/LNt+UWT2AohWUHNt5dUrPqPc/8rfY6eO
-         boPA==
+        bh=P8izkl+JagpZCrW+m67iAjkazRjM0cubMx9lc/bUK18=;
+        b=HwiB+UzPVrvwe/IGnv+dX3XmG0dFpPLYv8lCHgIayB86aToRKa0Lq1wcBxAAd2j/gy
+         nunisRtkI/Xh+AH72djQtS5l6TCNjOWpToy7vZokDQq0J+rVkOEtw1HKxqWfxNPh7adX
+         Vt/k/Zef+jUIuKfWNaiqKgE0x48MjMzAJXgT8Qhl6NFLGHQtWWQ40wDEJQJNfLQJj7pG
+         ljo8Pyei0rFregAgqqg+cxu6FT2CU6AjKlXyWdXxB4C73jfuXcMYxqPmnK+o8Il0VdQz
+         gnzFRALXW3s+EuuvE1JW703JyCGBSUBcSKzVWicaCsAr7HciL5agXsSdOgI7C/fxOjbQ
+         RmqQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=k9WSyPCB4rRAI9+QNTWdJTxNh0K8pTknWsVtmMdfXoE=;
-        b=i3FCEpnfL+zrGQc4Nv+L10R25C8HSuND7kU3zk0AlAl6uMGkDdySP5yhq2JPK7vhsU
-         DJjKv0dKZ7k6IHkzelyGFJuLwjypFBiT9CkM4fC5s2EMO/dVw4Se32yTQRkVhcNeU/Zn
-         y071+UDldSDLljHHSZCkPlb4BWg9zO5aOfYeh4/LL6axHAV7L2sAEaUM73ZWGDEQRdWN
-         l8m03gzoZP5q9lm3f/pUK5EwB+sAQ0levJocme28EcCChh/9ojRYTNt2BHkKAG1yoBx9
-         g+S10XkFAEi9XhR5QmM1cp+wuLoOQAbUigC6LAIQwsK5yp9Ex8Jpk2F3Xmz2OlJF9nn+
-         vofw==
-X-Gm-Message-State: APjAAAX+ZJrZqEhNDdAqMff+dqVkJZlFU0eJ9ONK6flZFltdONhBc2er
-        G/Xw8P9VaGYwd1iiO8dtyeg=
-X-Google-Smtp-Source: APXvYqyooYWHFit0xGZITwo452W8QmbToLSLJElLvtLZMWgL5u434Pm2LqkehQSBCt1Hu1C2+n3xNg==
-X-Received: by 2002:ae9:ee14:: with SMTP id i20mr10717529qkg.428.1562538935582;
-        Sun, 07 Jul 2019 15:35:35 -0700 (PDT)
+        bh=P8izkl+JagpZCrW+m67iAjkazRjM0cubMx9lc/bUK18=;
+        b=sgDTGp1NxM6zpzceoW7/4X/aMb/AhRW+KyQdWAGyR0qYU9aEKJgsk/kM4BHnqgg6WJ
+         ox5PMsf3fWaB5tZEoT7gJ0I+yMhG8B1VjBE6Asd2JOUmXQJoc3Ku/LA7xpxdmzYyvkws
+         ZNSGKelQYV/q2Mb48xaevLhO8A3qFTgg4X41DVHTTw2wuuKkGxG9g8dIRq1MX0iOxALr
+         7dU7v/P3qShIGQCPCEhG17OWjK+d8sTnyjTWnmTUbsEq9QrZY5ayRUJQh2ALwCjabJ1w
+         6yQxsGCREtpNCSWjjeK2EIkHIijfdWDIfUpzJXtgNbCeZLEKROodkm7OyIwfNiye5Xxk
+         a6QQ==
+X-Gm-Message-State: APjAAAVFnp5ig9W0jClw64QYzv/B/y+kkD3UeecM/aezIbFb0kNXZyjD
+        VcG7TeFQ8NkbxrLA4uMOz9o=
+X-Google-Smtp-Source: APXvYqyl44I8ZfXdzJs+BQw8s8lArwUi6Qv0H92jERiPmNbyCCL5xaoCWKhCtC/9bM5N8rJueum/Dg==
+X-Received: by 2002:ac8:2b10:: with SMTP id 16mr11404610qtu.351.1562538928979;
+        Sun, 07 Jul 2019 15:35:28 -0700 (PDT)
 Received: from localhost.localdomain (ppp79-139-233-208.pppoe.spdop.ru. [79.139.233.208])
-        by smtp.gmail.com with ESMTPSA id p4sm6998453qkb.84.2019.07.07.15.35.33
+        by smtp.gmail.com with ESMTPSA id p4sm6998453qkb.84.2019.07.07.15.35.26
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 07 Jul 2019 15:35:35 -0700 (PDT)
+        Sun, 07 Jul 2019 15:35:28 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v4 15/24] PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
-Date:   Mon,  8 Jul 2019 01:32:54 +0300
-Message-Id: <20190707223303.6755-16-digetx@gmail.com>
+Subject: [PATCH v4 12/24] PM / devfreq: tegra30: Inline all one-line functions
+Date:   Mon,  8 Jul 2019 01:32:51 +0300
+Message-Id: <20190707223303.6755-13-digetx@gmail.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190707223303.6755-1-digetx@gmail.com>
 References: <20190707223303.6755-1-digetx@gmail.com>
@@ -77,28 +77,55 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is another kHz-conversion bug in the code, resulting in integer
-overflow. Although, this time the resulting value is 4294966296 and it's
-close to ULONG_MAX, which is okay in this case.
+Depending on a kernel's configuration, a single line functions may not be
+inlined by compiler (like enabled ftracing for example). Let's inline such
+functions explicitly for consistency.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/devfreq/tegra30-devfreq.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 0de1efdaabf4..60ebf9c9cd86 100644
+index c6c4a07d3e07..1a10df5dbbed 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -172,7 +172,7 @@ struct tegra_actmon_emc_ratio {
+@@ -181,28 +181,29 @@ static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
+ 	{  250000,    100000 },
  };
  
- static const struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
--	{ 1400000, ULONG_MAX },
-+	{ 1400000, ULONG_MAX / KHZ },
- 	{ 1200000,    750000 },
- 	{ 1100000,    600000 },
- 	{ 1000000,    500000 },
+-static u32 actmon_readl(struct tegra_devfreq *tegra, u32 offset)
++static inline u32 actmon_readl(struct tegra_devfreq *tegra, u32 offset)
+ {
+ 	return readl_relaxed(tegra->regs + offset);
+ }
+ 
+-static void actmon_writel(struct tegra_devfreq *tegra, u32 val, u32 offset)
++static inline void actmon_writel(struct tegra_devfreq *tegra,
++				 u32 val, u32 offset)
+ {
+ 	writel_relaxed(val, tegra->regs + offset);
+ }
+ 
+-static u32 device_readl(struct tegra_devfreq_device *dev, u32 offset)
++static inline u32 device_readl(struct tegra_devfreq_device *dev, u32 offset)
+ {
+ 	return readl_relaxed(dev->regs + offset);
+ }
+ 
+-static void device_writel(struct tegra_devfreq_device *dev, u32 val,
+-			  u32 offset)
++static inline void device_writel(struct tegra_devfreq_device *dev,
++				 u32 val, u32 offset)
+ {
+ 	writel_relaxed(val, dev->regs + offset);
+ }
+ 
+-static unsigned long do_percent(unsigned long val, unsigned int pct)
++static inline unsigned long do_percent(unsigned long val, unsigned int pct)
+ {
+ 	return val * pct / 100;
+ }
 -- 
 2.22.0
 
