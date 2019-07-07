@@ -2,59 +2,59 @@ Return-Path: <SRS0=8cbD=VE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-15.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E89FDC48BDE
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 22:35:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05CACC48BDE
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 22:36:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B851B20838
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 22:35:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C83D02075B
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 22:36:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nv5M5gN5"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GeKeMHgn"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728262AbfGGWfc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Jul 2019 18:35:32 -0400
-Received: from mail-qt1-f194.google.com ([209.85.160.194]:39420 "EHLO
-        mail-qt1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728245AbfGGWfc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jul 2019 18:35:32 -0400
-Received: by mail-qt1-f194.google.com with SMTP id l9so7999965qtu.6;
-        Sun, 07 Jul 2019 15:35:31 -0700 (PDT)
+        id S1728536AbfGGWf4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Jul 2019 18:35:56 -0400
+Received: from mail-qt1-f196.google.com ([209.85.160.196]:34238 "EHLO
+        mail-qt1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728534AbfGGWf4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jul 2019 18:35:56 -0400
+Received: by mail-qt1-f196.google.com with SMTP id k10so8629540qtq.1;
+        Sun, 07 Jul 2019 15:35:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=12B/bt6SVgc5lffZlTQjWurlY0GI/nKmVUIlM0Zspto=;
-        b=nv5M5gN5WenSCeUsr4wlhXkUnYMrFcybWFVtxdBxx1xdIUU+TdmhKrgc0By4lwH/g0
-         DkjKsh5J0IchjYMG96JBD5pBsEE4VELim5G1qkLTl0P74ze4cr6zjf5MoZW/32X0JnzW
-         ci2Ng3jTuzyznnafE70gDgZMpGdPmgMCEq/fqxJvSObuSD1oxW3bWH6iCcYNT82NtfqS
-         Z1zJkfZ5WtdHcrzDChAkT5IAqPkutAfsi+HRqs7xHyksEEpoy9X/58BMP6S1K+xj3vyR
-         YW63Kt4e3quMev3r8fjMrBr4fQdM485nmb6QK2LykvHjcmhy2jlul6159aw3JrhJ30dR
-         heeQ==
+        bh=psggdP0XHbRkRY1WzuWDz0G+8Im8+M/iXzjUJQKn4ms=;
+        b=GeKeMHgn+BN+bjLHk6Em6ljyQs3xE1y8peI+qMnKGh+35HCX4lnwWzRgxaStRGdwI7
+         FU8X9k3tTny8ZVTf7CzkU1t2zGdxOumgLB0kXFD1H/kv1yQ5jI1m1S4Oi1Nk/sWH7U6B
+         PamCwZrWoVIzGUetOu3Q02lMhEFxxbROkESOY2SotktNXKRLATm8JCkAiUZtSXTUBVRo
+         T7TWi/sGxMANQKh5TOz7GVnxMWwkG+fzUZ2ESVR3bv6YDJm3jgavw9KDfU4brj8dvEKX
+         oO3fPIdiv4oAZ0cGEyIKXJGcn6rh+TZvsSdJCAAHqeLPaj+kEMcADs58RhERjfJwS3dx
+         N5iw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=12B/bt6SVgc5lffZlTQjWurlY0GI/nKmVUIlM0Zspto=;
-        b=SBlivrfXyF7kCgR8d1l9PhEkApRvQiirdfAv3SNCW6EYoM1c9pPiTUshHPqbIic5rn
-         kDqHFV109Ql2c/j1cv3Tnrtaa9Ne4Eq4bur+7mMkqEI4vcpKHQEKBAswZhmYC4Oxsxwy
-         JPbuvJ4GiQuTZTT8+aSBb0zYDiLCalcUs5t0+GKwyiD2s3ihtjKmJ4lI1HLkoANok1cs
-         tUmxoT6bZgEj0/fZG9DEx7H3AzTNb36+p5UeHvPW6z99b6fC7MYIBxN8DiwMlvyWFfrZ
-         uw0iMtAuOxU3LSO4f410trWxUH2YDcm/f8j25v0sOFZIQJ7CxE8iVtT8MzJMK/36bMP3
-         sjxA==
-X-Gm-Message-State: APjAAAXd9yIiPIHTnuDKuqQGvH3UWXpJ+LP80sM90AAFecNbz/h9B/Ur
-        bMO0aTEWqrCc3H+YjwiB/+0=
-X-Google-Smtp-Source: APXvYqwa2HyxP3kBjbyqrwpBs4ocftkBWbbxoaqsTk+w9KUcnbFVRdGSslt66cOd5ENj8kxkHDohCA==
-X-Received: by 2002:ac8:3637:: with SMTP id m52mr11485782qtb.238.1562538931176;
-        Sun, 07 Jul 2019 15:35:31 -0700 (PDT)
+        bh=psggdP0XHbRkRY1WzuWDz0G+8Im8+M/iXzjUJQKn4ms=;
+        b=s1eLI60f1onSQQsbarBRpapVTf3LrWMbbLi/AGY6LFzy8GvShwxdk5C+RGVf5nIvuk
+         1bFqNEw25n7ZddJ4p2+SvQ9reerXRC19zWnpUg/kyd1WCl+xBbU3W5OhfrvM/Iso2bPK
+         3Z9HU5z7W6ExAKxo89QupGpFIzwzfDCgxoQ+eNzLjtvZM5120Fb4B9FSSNj83Ev0iPNd
+         wSsWY/6W19JXY8PwFucWi31BhMaSKtpXa0SDwxGqGaN49xfDjtz9lfAurfnrNAtl/TxD
+         ELz2lQzfaGZX//m+z7kyABaP8cYZfOuyOIxd2EOCgwTdAle4CW8wsLSNBkGM76LcokEv
+         kAdg==
+X-Gm-Message-State: APjAAAX5DEFADmOh5Obz/VTY0GlIKn1+/8LLzT3b7619R//Hj9S5MKyD
+        zLyJsofTOCLh4Vou4tNOr913wXQz
+X-Google-Smtp-Source: APXvYqyia+mvy5wvluUBNfe0yc8nF2BZ6ACxB9rReiPkOqetTFiB3mb1yT58Ym+LlGmD3zNORGQdrQ==
+X-Received: by 2002:ac8:2e5d:: with SMTP id s29mr11599618qta.70.1562538955400;
+        Sun, 07 Jul 2019 15:35:55 -0700 (PDT)
 Received: from localhost.localdomain (ppp79-139-233-208.pppoe.spdop.ru. [79.139.233.208])
-        by smtp.gmail.com with ESMTPSA id p4sm6998453qkb.84.2019.07.07.15.35.29
+        by smtp.gmail.com with ESMTPSA id p4sm6998453qkb.84.2019.07.07.15.35.53
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 07 Jul 2019 15:35:30 -0700 (PDT)
+        Sun, 07 Jul 2019 15:35:55 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v4 13/24] PM / devfreq: tegra30: Constify structs
-Date:   Mon,  8 Jul 2019 01:32:52 +0300
-Message-Id: <20190707223303.6755-14-digetx@gmail.com>
+Subject: [PATCH v4 24/24] PM / devfreq: tegra20/30: Add Dmitry as a maintainer
+Date:   Mon,  8 Jul 2019 01:33:03 +0300
+Message-Id: <20190707223303.6755-25-digetx@gmail.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190707223303.6755-1-digetx@gmail.com>
 References: <20190707223303.6755-1-digetx@gmail.com>
@@ -77,44 +77,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Constify unmodifiable structs for consistency.
+I was contributing to the NVIDIA Tegra20+ devfreq drivers recently and
+want to help keep them working and evolving in the future.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 1a10df5dbbed..2f59c78930bd 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -106,7 +106,7 @@ enum tegra_actmon_device {
- 	MCCPU,
- };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 95d4bd85df44..4e47ce737376 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10356,6 +10356,15 @@ F:	include/linux/memblock.h
+ F:	mm/memblock.c
+ F:	Documentation/core-api/boot-time-mm.rst
  
--static struct tegra_devfreq_device_config actmon_device_configs[] = {
-+static const struct tegra_devfreq_device_config actmon_device_configs[] = {
- 	{
- 		/* MCALL: All memory accesses (including from the CPUs) */
- 		.offset = 0x1c0,
-@@ -171,7 +171,7 @@ struct tegra_actmon_emc_ratio {
- 	unsigned long emc_freq;
- };
- 
--static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
-+static const struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
- 	{ 1400000, ULONG_MAX },
- 	{ 1200000,    750000 },
- 	{ 1100000,    600000 },
-@@ -210,7 +210,7 @@ static inline unsigned long do_percent(unsigned long val, unsigned int pct)
- 
- static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra)
- {
--	struct tegra_actmon_emc_ratio *ratio = actmon_emc_ratios;
-+	const struct tegra_actmon_emc_ratio *ratio = actmon_emc_ratios;
- 	unsigned int cpu_freq = cpufreq_get(0);
- 	unsigned int i;
- 
++MEMORY FREQUENCY SCALING DRIVERS FOR NVIDIA TEGRA
++M:	Dmitry Osipenko <digetx@gmail.com>
++L:	linux-pm@vger.kernel.org
++L:	linux-tegra@vger.kernel.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
++S:	Maintained
++F:	drivers/devfreq/tegra20-devfreq.c
++F:	drivers/devfreq/tegra30-devfreq.c
++
+ MEMORY MANAGEMENT
+ L:	linux-mm@kvack.org
+ W:	http://www.linux-mm.org
 -- 
 2.22.0
 
