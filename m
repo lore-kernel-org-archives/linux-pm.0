@@ -2,213 +2,118 @@ Return-Path: <SRS0=ihIz=VF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CF1D4C48BE7
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 08:44:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D355CC48BE7
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 08:52:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A9B822084A
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 08:44:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B2F922064B
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 08:52:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729571AbfGHIoM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Jul 2019 04:44:12 -0400
-Received: from foss.arm.com ([217.140.110.172]:41924 "EHLO foss.arm.com"
+        id S1729037AbfGHIwC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Jul 2019 04:52:02 -0400
+Received: from mx7.zte.com.cn ([202.103.147.169]:36526 "EHLO mxct.zte.com.cn"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729564AbfGHIoL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 8 Jul 2019 04:44:11 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E9EAA360;
-        Mon,  8 Jul 2019 01:44:10 -0700 (PDT)
-Received: from e110439-lin.cambridge.arm.com (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 953E23F246;
-        Mon,  8 Jul 2019 01:44:08 -0700 (PDT)
-From:   Patrick Bellasi <patrick.bellasi@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Tejun Heo <tj@kernel.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
+        id S1728884AbfGHIwC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 8 Jul 2019 04:52:02 -0400
+Received: from mse-fl2.zte.com.cn (unknown [10.30.14.239])
+        by Forcepoint Email with ESMTPS id D496EBE0043BE622BB03;
+        Mon,  8 Jul 2019 16:51:58 +0800 (CST)
+Received: from notes_smtp.zte.com.cn ([10.30.1.239])
+        by mse-fl2.zte.com.cn with ESMTP id x688oVnj044240;
+        Mon, 8 Jul 2019 16:50:31 +0800 (GMT-8)
+        (envelope-from wen.yang99@zte.com.cn)
+Received: from fox-host8.localdomain ([10.74.120.8])
+          by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
+          with ESMTP id 2019070816503612-2168893 ;
+          Mon, 8 Jul 2019 16:50:36 +0800 
+From:   Wen Yang <wen.yang99@zte.com.cn>
+To:     linux-kernel@vger.kernel.org
+Cc:     xue.zhihong@zte.com.cn, wang.yi59@zte.com.cn,
+        cheng.shengyu@zte.com.cn, Wen Yang <wen.yang99@zte.com.cn>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        Paul Turner <pjt@google.com>,
-        Quentin Perret <quentin.perret@arm.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Morten Rasmussen <morten.rasmussen@arm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Todd Kjos <tkjos@google.com>,
-        Joel Fernandes <joelaf@google.com>,
-        Steve Muckle <smuckle@google.com>,
-        Suren Baghdasaryan <surenb@google.com>,
-        Alessio Balsini <balsini@android.com>
-Subject: [PATCH v11 0/5] Add utilization clamping support (CGroups API)
-Date:   Mon,  8 Jul 2019 09:43:52 +0100
-Message-Id: <20190708084357.12944-1-patrick.bellasi@arm.com>
-X-Mailer: git-send-email 2.21.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Subject: [PATCH v3] cpufreq/pasemi: fix an use-after-free in pas_cpufreq_cpu_init()
+Date:   Mon, 8 Jul 2019 16:48:46 +0800
+Message-Id: <1562575726-17438-1-git-send-email-wen.yang99@zte.com.cn>
+X-Mailer: git-send-email 1.8.3.1
+X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release 8.5.3FP6|November
+ 21, 2013) at 2019-07-08 16:50:36,
+        Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
+ 2019-07-08 16:50:33,
+        Serialize complete at 2019-07-08 16:50:33
+X-MAIL: mse-fl2.zte.com.cn x688oVnj044240
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all, this is a follow up of:
+The cpu variable is still being used in the of_get_property() call
+after the of_node_put() call, which may result in use-after-free.
 
-  https://lore.kernel.org/lkml/20190621084217.8167-1-patrick.bellasi@arm.com/
+Fixes: a9acc26b75f ("cpufreq/pasemi: fix possible object reference leak")
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+v3: fix a leaked reference.
+v2: clean up the code according to the advice of viresh.
 
-to respin all the bits not yet queued by PeterZ and addressing all Tejun's
-requests from previous review:
+ drivers/cpufreq/pasemi-cpufreq.c | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
- - remove checks for cpu_uclamp_{min,max}_write()s from root group
- - remove checks on "protections" being smaller then "limits"
- - rephrase uclamp extension description to avoid explicit
-   mentioning of the bandwidth concept
-
-the series is based on top of:
-
-   tj/cgroup.git	for-5.3
-   tip/tip.git		sched/core
-
-I hope this version covers all major details about the expected behavior
-and delegation model. The code however can still benefit from a better
-review, looking forward for any additional feedback.
-
-Cheers,
-Patrick
-
-
-Series Organization
-===================
-
-This series contains just the remaining bits of the original posting:
-
- - Patches [0-5]: Per task group (secondary) API
-
-and it is based on today's tj/cgroup/for-5.3 and tip/sched/core.
-
-The full tree is available here:
-
-   git://linux-arm.org/linux-pb.git   lkml/utilclamp_v11
-   http://www.linux-arm.org/git?p=linux-pb.git;a=shortlog;h=refs/heads/lkml/utilclamp_v11
-
-where you can also get the patches already queued in tip/sched/core
-
- - Patches [01-07]: Per task (primary) API
- - Patches [08-09]: Schedutil integration for FAIR and RT tasks
- - Patches [10-11]: Integration with EAS's energy_compute()
-
-
-Newcomer's Short Abstract
-=========================
-
-The Linux scheduler tracks a "utilization" signal for each scheduling entity
-(SE), e.g. tasks, to know how much CPU time they use. This signal allows the
-scheduler to know how "big" a task is and, in principle, it can support
-advanced task placement strategies by selecting the best CPU to run a task.
-Some of these strategies are represented by the Energy Aware Scheduler [1].
-
-When the schedutil cpufreq governor is in use, the utilization signal allows
-the Linux scheduler to also drive frequency selection. The CPU utilization
-signal, which represents the aggregated utilization of tasks scheduled on that
-CPU, is used to select the frequency which best fits the workload generated by
-the tasks.
-
-The current translation of utilization values into a frequency selection is
-simple: we go to max for RT tasks or to the minimum frequency which can
-accommodate the utilization of DL+FAIR tasks.
-However, utilization values by themselves cannot convey the desired
-power/performance behaviors of each task as intended by user-space.
-As such they are not ideally suited for task placement decisions.
-
-Task placement and frequency selection policies in the kernel can be improved
-by taking into consideration hints coming from authorized user-space elements,
-like for example the Android middleware or more generally any "System
-Management Software" (SMS) framework.
-
-Utilization clamping is a mechanism which allows to "clamp" (i.e. filter) the
-utilization generated by RT and FAIR tasks within a range defined by user-space.
-The clamped utilization value can then be used, for example, to enforce a
-minimum and/or maximum frequency depending on which tasks are active on a CPU.
-
-The main use-cases for utilization clamping are:
-
- - boosting: better interactive response for small tasks which
-   are affecting the user experience.
-
-   Consider for example the case of a small control thread for an external
-   accelerator (e.g. GPU, DSP, other devices). Here, from the task utilization
-   the scheduler does not have a complete view of what the task's requirements
-   are and, if it's a small utilization task, it keeps selecting a more energy
-   efficient CPU, with smaller capacity and lower frequency, thus negatively
-   impacting the overall time required to complete task activations.
-
- - capping: increase energy efficiency for background tasks not affecting the
-   user experience.
-
-   Since running on a lower capacity CPU at a lower frequency is more energy
-   efficient, when the completion time is not a main goal, then capping the
-   utilization considered for certain (maybe big) tasks can have positive
-   effects, both on energy consumption and thermal headroom.
-   This feature allows also to make RT tasks more energy friendly on mobile
-   systems where running them on high capacity CPUs and at the maximum
-   frequency is not required.
-
-From these two use-cases, it's worth noticing that frequency selection
-biasing, introduced by patches 9 and 10 of this series, is just one possible
-usage of utilization clamping. Another compelling extension of utilization
-clamping is in helping the scheduler in making tasks placement decisions.
-
-Utilization is (also) a task specific property the scheduler uses to know
-how much CPU bandwidth a task requires, at least as long as there is idle time.
-Thus, the utilization clamp values, defined either per-task or per-task_group,
-can represent tasks to the scheduler as being bigger (or smaller) than what
-they actually are.
-
-Utilization clamping thus enables interesting additional optimizations, for
-example on asymmetric capacity systems like Arm big.LITTLE and DynamIQ CPUs,
-where:
-
- - boosting: try to run small/foreground tasks on higher-capacity CPUs to
-   complete them faster despite being less energy efficient.
-
- - capping: try to run big/background tasks on low-capacity CPUs to save power
-   and thermal headroom for more important tasks
-
-This series does not present this additional usage of utilization clamping but
-it's an integral part of the EAS feature set, where [2] is one of its main
-components.
-
-Android kernels use SchedTune, a solution similar to utilization clamping, to
-bias both 'frequency selection' and 'task placement'. This series provides the
-foundation to add similar features to mainline while focusing, for the
-time being, just on schedutil integration.
-
-
-References
-==========
-
-[1] Energy Aware Scheduling
-    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/scheduler/sched-energy.txt?h=v5.1
-
-[2] Expressing per-task/per-cgroup performance hints
-    Linux Plumbers Conference 2018
-    https://linuxplumbersconf.org/event/2/contributions/128/
-
-
-Patrick Bellasi (5):
-  sched/core: uclamp: Extend CPU's cgroup controller
-  sched/core: uclamp: Propagate parent clamps
-  sched/core: uclamp: Propagate system defaults to root group
-  sched/core: uclamp: Use TG's clamps to restrict TASK's clamps
-  sched/core: uclamp: Update CPU's refcount on TG's clamp changes
-
- Documentation/admin-guide/cgroup-v2.rst |  30 +++
- init/Kconfig                            |  22 ++
- kernel/sched/core.c                     | 335 +++++++++++++++++++++++-
- kernel/sched/sched.h                    |   8 +
- 4 files changed, 392 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+index 6b1e4ab..9dc5163 100644
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -128,20 +128,20 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	int cur_astate, idx;
+ 	struct resource res;
+ 	struct device_node *cpu, *dn;
+-	int err = -ENODEV;
++	int err;
+ 
+ 	cpu = of_get_cpu_node(policy->cpu, NULL);
+-
+-	of_node_put(cpu);
+ 	if (!cpu)
+-		goto out;
++		return -ENODEV;
+ 
+ 	dn = of_find_compatible_node(NULL, NULL, "1682m-sdc");
+ 	if (!dn)
+ 		dn = of_find_compatible_node(NULL, NULL,
+ 					     "pasemi,pwrficient-sdc");
+-	if (!dn)
++	if (!dn) {
++		err = -ENODEV;
+ 		goto out;
++	}
+ 	err = of_address_to_resource(dn, 0, &res);
+ 	of_node_put(dn);
+ 	if (err)
+@@ -196,6 +196,7 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cur = pas_freqs[cur_astate].frequency;
+ 	ppc_proc_freq = policy->cur * 1000ul;
+ 
++	of_node_put(cpu);
+ 	return cpufreq_generic_init(policy, pas_freqs, get_gizmo_latency());
+ 
+ out_unmap_sdcpwr:
+@@ -204,6 +205,7 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ out_unmap_sdcasr:
+ 	iounmap(sdcasr_mapbase);
+ out:
++	of_node_put(cpu);
+ 	return err;
+ }
+ 
 -- 
-2.21.0
+2.9.5
 
