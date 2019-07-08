@@ -1,137 +1,125 @@
-Return-Path: <SRS0=8cbD=VE=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=ihIz=VF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79181C48BE3
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 23:39:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2235EC0650E
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 03:05:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 518222075C
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jul 2019 23:39:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E91D620665
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 03:05:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A7BbNw56"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VFq6tW5M"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727559AbfGGXi7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Jul 2019 19:38:59 -0400
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:37427 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726044AbfGGXi7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jul 2019 19:38:59 -0400
-Received: by mail-lf1-f68.google.com with SMTP id c9so7860334lfh.4;
-        Sun, 07 Jul 2019 16:38:58 -0700 (PDT)
+        id S1728048AbfGHDFJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Jul 2019 23:05:09 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:46894 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728046AbfGHDFJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jul 2019 23:05:09 -0400
+Received: by mail-pg1-f194.google.com with SMTP id i8so6869636pgm.13
+        for <linux-pm@vger.kernel.org>; Sun, 07 Jul 2019 20:05:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=g9nfwmFB7j0mJGrmDo+8GlD40u5rc6G1Lxi6W8DyoJY=;
-        b=A7BbNw56S9eDxSzIzXxI1Xat7yN7WYKZd0IpMSea7taX51wdd6QCewc86oGSXXCT1J
-         A/+fHwPW2uO+6xRiQ3Gpv3JdWDUJca+XaSGeTq6GENjtAwqfMpKOe/H3FntYkhnr47Ww
-         FlnNfNEQcQEknzzWyB1R0l4O1dOP6UZ3IKSP68A0jJmoN7Pk/Iv8Q1xdobkwrZrmTUWE
-         PqxQ4siS+HcqEgUXUfZOruHlSS4gx8trozi0LvAIVVyYktgR+tC5TpUoCRsYsVBEiKNR
-         fBGuMENCsusAawqtqRPDQv+hjirKWP+GrEAHGlYPYsZHK1FAi4yC3XpNyW+GlhInV9Ne
-         C/PQ==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=ca2tpIFl6yHQwbB5affH5Fg9gK6OeRUiXwj57Mj1vE0=;
+        b=VFq6tW5MKjQ1WiDZqY33YPW9/o5u43NaWJ6IKTbrnveSGtQoFvLT29BvqM79Pe23sV
+         RYki/wKkg1E7Y3Ph9PQGjlpn8X5BfZpG168nbD+ElpXW7bnPEBRH67FHu5YctashwgmD
+         pWq6N2lLf47ZA6dZ7VKVMtXJKgQvOdCeLzpgPf/l4A2HEgNQlCG64vxVd7ifagcD8Og2
+         uLulCQdg7Fb8Ojhe9Hn6o0CFQILq4Hv1+kTXHzzYmI+1hcZBDl71IqiSZFcP5NHG/J0U
+         kUyfaVrcL6h06TQACts7KRaaeV/FaN27IaqcKp/1IYC/43aHy37xq2rrabmK0k2V6dId
+         Tz6Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=g9nfwmFB7j0mJGrmDo+8GlD40u5rc6G1Lxi6W8DyoJY=;
-        b=GRtNpW6Evv3tub4OuYfyumDoFpUxAqJ6VJs+nloE7C7YHJkjCH7EHgQjCtU6YC/qf/
-         mpzmVZB/55dhfTuFlh6tMa/ToP1PlhCM9hhnfWdT6GYOw86WtSmyOvk+TQuQPt/eofug
-         psM/YO2k7KjnwqYjAzujwK9lglNKfXM0d4oHDc3a7sOaryJD+ngytLTh8+C5Tq8rTFYn
-         Tkn2/H0p1AmVqXYiW0Wk84OMp+a4+DqFJUyI65xNJw/+Sfx77Nf4k+Eh2aM/vQ2HrtQ3
-         DNosA5lWgxVVeSubWYTZN5/9y0ADagmTrNwPn+r9MYInLoWSXmNCvUt8NdtU/OSe3+8L
-         VinA==
-X-Gm-Message-State: APjAAAVv/F0EVsGHijOkSkcaN5NHyaJjQyT9u8FajncmDscEgsW8AnrY
-        iDG6bG123A/XwMdxa6U6p3k=
-X-Google-Smtp-Source: APXvYqwMMo5lmtV6pxPnZVt2woZLBwxsQSfmwtPeIXUrBb/DvSkAIebHKVfMeN0rPlDFWGEF45ezsg==
-X-Received: by 2002:a19:be03:: with SMTP id o3mr7010779lff.88.1562542737384;
-        Sun, 07 Jul 2019 16:38:57 -0700 (PDT)
-Received: from localhost.localdomain (ppp79-139-233-208.pppoe.spdop.ru. [79.139.233.208])
-        by smtp.gmail.com with ESMTPSA id y5sm3246520ljj.5.2019.07.07.16.38.56
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=ca2tpIFl6yHQwbB5affH5Fg9gK6OeRUiXwj57Mj1vE0=;
+        b=ovX0pbY8wICchKzalr+FaEqaFWs8bBU1KbIkMd5b7DdmS0MV6bat1gFw9qa4wM1fAc
+         3Ax4kHDtehAiy5zQMt3TMZYR5mGrmHAKzCvf4kxq0acUFGAPhozI6qkLQnfaolbwf8gi
+         10aw4nxFN4KJUfcRdt/jrS/jjZrPwXWwxrVNC1tvXroAnmPHNGIopjYUzsa+yfA0HtJ5
+         qgye9zzkbSnRdq4GnSNQLk1Kw29lK2mSBcxJQz/NJZW7MByzJxVOCOMOgoBhGDxWmgnx
+         6KJ77mXv4cLJzelUHejja5uoCW7sfkhuqDIyo61/ayzeT+u7/7ogyt5mjTRhuOHiwZG7
+         7ObA==
+X-Gm-Message-State: APjAAAWLF6jZTGG232gLnkhIMhZzU17T9ig2jCbyAsZnbe4DYSj6/PGH
+        TwYWfoCiFyCH4fdq5wHlYADeDw==
+X-Google-Smtp-Source: APXvYqzc1s7VmGIq2VxBLyML+3yvNdAWNOg6+sQcjG/qoVV+In5GR+guYWIUkKBapldiGjAkhDqZ0Q==
+X-Received: by 2002:a65:538d:: with SMTP id x13mr20493819pgq.190.1562555108255;
+        Sun, 07 Jul 2019 20:05:08 -0700 (PDT)
+Received: from localhost ([122.172.28.117])
+        by smtp.gmail.com with ESMTPSA id c98sm17123060pje.1.2019.07.07.20.05.07
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 07 Jul 2019 16:38:56 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v1 0/6] Consolidate and improve NVIDIA Tegra CPUIDLE driver(s)
-Date:   Mon,  8 Jul 2019 02:38:03 +0300
-Message-Id: <20190707233809.14400-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.22.0
+        Sun, 07 Jul 2019 20:05:07 -0700 (PDT)
+Date:   Mon, 8 Jul 2019 08:35:05 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Pavel Machek <pavel@ucw.cz>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>, mka@chromium.org,
+        ulf.hansson@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux-pm mailing list <linux-pm@vger.kernel.org>,
+        kernel list <linux-kernel@vger.kernel.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: cpufreq notifiers break suspend -- Re: suspend broken in
+ next-20190704 on Thinkpad X60
+Message-ID: <20190708030505.kvrg6sh6bd4xzzwa@vireshk-i7>
+References: <20190704192020.GA3771@amd>
+ <CAJZ5v0gn7FWpqW+WmCzj1=K-pjY=SjRNuEsMR3bRTSO8FzFG=Q@mail.gmail.com>
+ <20190705185001.GA4068@amd>
+ <CAJZ5v0irbn-Xd47KExw=h7On7KShCm6rThCo0q4-zn=o_x6_HQ@mail.gmail.com>
+ <20190706203032.GA26828@amd>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190706203032.GA26828@amd>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On 06-07-19, 22:30, Pavel Machek wrote:
+> Hi!
+> 
+> > Anyway, if 5.2-rc7 is OK, something in this branch causes the problem
+> > to happen for you.
+> > 
+> > I would try
+> > 
+> > https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=f012a132824fc870b90980540f727c76fc72e244
+> > 
+> > to narrow down the scope somewhat.
 
-I was spending quite some time recently trying to hunt down CPU-suspend
-bug on Tegra30 SoC and in the end it was nailed. During that time I
-realized that the CPU Idle drivers could get some polish and gain new
-features, thus that's what this series does:
+I couldn't find the original mail, what exactly is the problem with
+suspend in your case ?
 
-  1. Unifies Tegra20/30/114 drivers into a single driver and moves it out
-     into common drivers/cpuidle/ directory.
+> Bisect says:
+> 
+> 572542c81dec533b7dd3778ea9f5949a00595f68 is the first bad commit
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+>     cpufreq: Register notifiers with the PM QoS framework
+> 
+>     This registers the notifiers for min/max frequency constraints
+>     with the
+> 
+>  Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+>  Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+>  Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Unfortunately, it does not revert cleanly:
 
-  2. Enables CPU cluster power-down idling state on Tegra30.
+I tried following on my ARM board (both single policy and multiple
+policy configurations):
 
-  3. Removes CPUIDLE_FLAG_TIMER_STOP from all of the states since that
-     flag is not relevant anymore.
+rtcwake --seconds 5 -v -m mem
 
-In the end there is a quite nice clean up of the Terga CPUIDLE driver(s)
-and of the Tegra's arch code in general. Please review, thanks!
+And everything worked as expected. Please make sure the top commit of
+my series in pm/linux-next is, some issues were fixed on Friday:
 
-Dmitry Osipenko (6):
-  ARM: tegra: Remove cpuidle drivers
-  ARM: tegra: Expose functions required for cpuidle driver
-  cpuidle: Add unified driver for NVIDIA Tegra SoCs
-  cpuidle: tegra: Support CPU cluster power-down on Tegra30
-  cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from Tegra114/124
-    idle-state
-  cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from all states
-
- arch/arm/mach-tegra/Makefile           |  15 +-
- arch/arm/mach-tegra/cpuidle-tegra114.c |  89 ----------
- arch/arm/mach-tegra/cpuidle-tegra20.c  | 212 ----------------------
- arch/arm/mach-tegra/cpuidle-tegra30.c  | 132 --------------
- arch/arm/mach-tegra/cpuidle.c          |  50 ------
- arch/arm/mach-tegra/cpuidle.h          |  21 ---
- arch/arm/mach-tegra/irq.c              |  18 --
- arch/arm/mach-tegra/irq.h              |  11 --
- arch/arm/mach-tegra/platsmp.c          |   2 -
- arch/arm/mach-tegra/pm.c               |  27 +--
- arch/arm/mach-tegra/pm.h               |   4 -
- arch/arm/mach-tegra/reset-handler.S    |  11 --
- arch/arm/mach-tegra/reset.h            |   9 +-
- arch/arm/mach-tegra/sleep-tegra20.S    | 190 +-------------------
- arch/arm/mach-tegra/sleep.h            |  13 --
- arch/arm/mach-tegra/tegra.c            |   7 +-
- drivers/cpuidle/Kconfig.arm            |   8 +
- drivers/cpuidle/Makefile               |   1 +
- drivers/cpuidle/cpuidle-tegra.c        | 232 +++++++++++++++++++++++++
- drivers/soc/tegra/Kconfig              |   1 -
- include/linux/clk/tegra.h              |  13 ++
- include/soc/tegra/cpuidle.h            |   2 +-
- include/soc/tegra/pm.h                 |  28 +++
- 23 files changed, 302 insertions(+), 794 deletions(-)
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra114.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra20.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra30.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle.h
- delete mode 100644 arch/arm/mach-tegra/irq.h
- create mode 100644 drivers/cpuidle/cpuidle-tegra.c
+0a811974f3f7 cpufreq: Add QoS requests for userspace constraints
 
 -- 
-2.22.0
-
+viresh
