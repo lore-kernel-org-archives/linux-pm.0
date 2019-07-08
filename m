@@ -2,168 +2,150 @@ Return-Path: <SRS0=ihIz=VF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4E38C606BF
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 14:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FB17C606BA
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 14:13:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B3F6F21670
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 14:12:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="g6rvMLBA"
+	by mail.kernel.org (Postfix) with ESMTP id 5BBD92166E
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Jul 2019 14:13:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731699AbfGHOMD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Jul 2019 10:12:03 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:50875 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731691AbfGHOMC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jul 2019 10:12:02 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190708141200euoutp02549f78ddc18d6fcf97d82891098561e6~vc-vHs-iG2937229372euoutp02p
-        for <linux-pm@vger.kernel.org>; Mon,  8 Jul 2019 14:12:00 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190708141200euoutp02549f78ddc18d6fcf97d82891098561e6~vc-vHs-iG2937229372euoutp02p
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1562595120;
-        bh=os/t6E50bR1XYLSweFwdc4MuERNk7+i5wjswJXfr9q4=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=g6rvMLBAIG02GP0iXIZySEJ9Rna6j7fdGVt9fPIndh++TDnmZQ1e8xyZG3sgeBfn8
-         KXXDYagacqMS368ZaR0/pxs0khgHWjwZfpxOw37if1Phl//Z2d+iSTWfoxDY7Q7zvX
-         h/HdbhZkxjEdXdR8wW7QaIXCiFcVHOApqB9KFcAA=
-Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190708141200eucas1p25a0b91036cfceef1fd330224c2ac57cb~vc-uVUUTk1502515025eucas1p2T;
-        Mon,  8 Jul 2019 14:12:00 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id 92.A2.04377.F2F432D5; Mon,  8
-        Jul 2019 15:11:59 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190708141159eucas1p1751506975ff96a436e14940916623722~vc-tbV9W_0589605896eucas1p1e;
-        Mon,  8 Jul 2019 14:11:59 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190708141159eusmtrp2be6df2275f74fc9e54f0afa1b7e06dcb~vc-tal0f51954319543eusmtrp2Q;
-        Mon,  8 Jul 2019 14:11:59 +0000 (GMT)
-X-AuditID: cbfec7f4-113ff70000001119-4d-5d234f2fea98
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id E6.D4.04140.E2F432D5; Mon,  8
-        Jul 2019 15:11:59 +0100 (BST)
-Received: from AMDC3218.DIGITAL.local (unknown [106.120.51.18]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190708141158eusmtip2f27b39034436cb773a2fd293718d5259~vc-sprwv20438404384eusmtip2d;
-        Mon,  8 Jul 2019 14:11:58 +0000 (GMT)
-From:   k.konieczny@partner.samsung.com
-To:     k.konieczny@partner.samsung.com
-Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Kukjin Kim <kgene@kernel.org>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Subject: [PATCH 1/3] opp: core: add regulators enable and disable
-Date:   Mon,  8 Jul 2019 16:11:38 +0200
-Message-Id: <20190708141140.24379-2-k.konieczny@partner.samsung.com>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190708141140.24379-1-k.konieczny@partner.samsung.com>
+        id S1728961AbfGHONH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Jul 2019 10:13:07 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59782 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728941AbfGHONH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jul 2019 10:13:07 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id E417D804BC; Mon,  8 Jul 2019 16:12:51 +0200 (CEST)
+Date:   Mon, 8 Jul 2019 16:13:02 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux-pm mailing list <linux-pm@vger.kernel.org>,
+        kernel list <linux-kernel@vger.kernel.org>,
+        Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: cpufreq notifiers break suspend -- Re: suspend broken in
+ next-20190704 on Thinkpad X60
+Message-ID: <20190708141302.GA7436@amd>
+References: <20190704192020.GA3771@amd>
+ <CAJZ5v0gn7FWpqW+WmCzj1=K-pjY=SjRNuEsMR3bRTSO8FzFG=Q@mail.gmail.com>
+ <20190705185001.GA4068@amd>
+ <CAJZ5v0irbn-Xd47KExw=h7On7KShCm6rThCo0q4-zn=o_x6_HQ@mail.gmail.com>
+ <20190706203032.GA26828@amd>
+ <20190708030505.kvrg6sh6bd4xzzwa@vireshk-i7>
+ <CAJZ5v0hTXtjkatT4wVftPac-LgL1GSAbwLZ0mMDSpFn=8k9Ssg@mail.gmail.com>
+ <20190708092840.ynibtrntval6krc4@vireshk-i7>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA02SeyyVcRjH+72X877UsddheRa6HOsPmk5abb+tVIp1tta6/1MTb7yhnMPO
-        QdQKXYiNLhROjTRGKNeQyvXEGpFsSNNOncq6GaOhyem8563Vf5/n+zzf3/N8tx9LKkbpZWyE
-        NkbQaflIpcyequ+c6/VW7fEIXFfe5o2rcytpPDQ9RuMCYy+NM5stCF8xfyVxX18Vg1+c/8bg
-        GvMgjQeabsvwVIYR4dy+ZgLfN44yuHion8Bvkktl+NvsCwJfempk8MJgNYVrTZ2ybQp1RX4F
-        UteUpcnUtUWJ6rbxJ4Q6s64MqbuGGwj1VM3yvcxh+82hQmREnKBTbQm2D39f8oyIHlwcf2My
-        W5aE3tmlIzsWuA3QkzGJ0pE9q+BKEYzOfiKkYhpBQYWBkoopBN/7J2R/LfUZI0hkBVeC4O0v
-        XmKrozJFLrKMWw11uZ8ZkZ05D8h6m0OKD5HcHAVVA9W2hhPnB1lJT2mRKathNO+alVlWzvlD
-        +dXt0q4VkNb4mBLZjgsAoznftlfOOcLzvA82nbTOXHh4y/Y+cD8YeD07Q0pmf2gZavxztBN8
-        6apjJHYDy6MCQuJT8LEwk5HMFxGYUicpqbEJOrr6bQeRnCdUNqkk2Q/MaR2EKAPnAMPfHaUb
-        HOB6vZhRlOVwOUUhTXtDvqWHltgV0i0P/rAacqzJr6JVhv/SGP5LY/i39w4iy5CLEKvXhAn6
-        9Vrh1Fo9r9HHasPWhkRpapD103UvdE03oqb5Y+2IY5FyiZxdrgxU0HycPkHTjoAllc7y5p0e
-        gQp5KJ9wWtBFBeliIwV9O3JlKaWL/Mwi0xEFF8bHCCcFIVrQ/e0SrN2yJBTZqCo99N5PdffV
-        0nLH4pDE7KCgka1F+9PvPz5bW3LUtG/3idLEO72p5+d3z3nNlS0YfCHHrB2AgI9an9bgQneL
-        b86al+EtRR2qiZ/m7uID8VX33AJGLpncAgvjSvIT2maWjvvSTis1PzRbyeTWsZ3R7qG7DiZu
-        9GQbzDtuHj/HeyopfTjv40Xq9PxvirXbMnADAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrLIsWRmVeSWpSXmKPExsVy+t/xe7r6/sqxBvv2MVpsnLGe1eL6l+es
-        FvOPnGO16Nv3n9Gi//FrZovz5zewW5xtesNusenxNVaLy7vmsFl87j3CaDHj/D4mi7VH7rJb
-        LL1+kcniduMKNos3P84yWbTuPcJu8e/aRhaLzQ+OsTkIeayZt4bRY9OqTjaPzUvqPQ6+28Pk
-        0bdlFaPH8RvbmTw+b5ILYI/SsynKLy1JVcjILy6xVYo2tDDSM7S00DMysdQzNDaPtTIyVdK3
-        s0lJzcksSy3St0vQy3i0/ChTwTXuiqkfp7A1MD7k7GLk5JAQMJHY1nuLsYuRi0NIYCmjRMv6
-        V8wQCWmJxtOrmSBsYYk/17rYIIo+MUqc/72EBSTBJqAqsWXGS3YQW0RAWWLyvenMIEXMAp2s
-        EiueHGEDSQgLOEpMbtjLCmKzADXcnTkRyObg4BVwkVg9wQligbxE547dYDM5BVwljjyexwhi
-        CwGVrLs8BewIXgFBiZMzn4DVMAPVN2+dzTyBUWAWktQsJKkFjEyrGEVSS4tz03OLjfSKE3OL
-        S/PS9ZLzczcxAqNy27GfW3Ywdr0LPsQowMGoxMPLIacUK8SaWFZcmXuIUYKDWUmEd5+7cqwQ
-        b0piZVVqUX58UWlOavEhRlOgHyYyS4km5wMTRl5JvKGpobmFpaG5sbmxmYWSOG+HwMEYIYH0
-        xJLU7NTUgtQimD4mDk6pBsaqG6o+aov5H/eGOu2PPPffwPa3hV7shh+vqiy+R/ysfeEX/Clg
-        T2EBl3r0nG1HuXb//PLvcfULO/7lO/5nNjz+PDNS2GNffJytUzD79hdsJU5zP+42FNsfa+Xw
-        vPTImr8H+bwfvz3Y47w84sZ8FdPyAz9d7Case79XttfC7rfsBMGdzWIba+qVWIozEg21mIuK
-        EwGIHphj4AIAAA==
-X-CMS-MailID: 20190708141159eucas1p1751506975ff96a436e14940916623722
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190708141159eucas1p1751506975ff96a436e14940916623722
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190708141159eucas1p1751506975ff96a436e14940916623722
-References: <20190708141140.24379-1-k.konieczny@partner.samsung.com>
-        <CGME20190708141159eucas1p1751506975ff96a436e14940916623722@eucas1p1.samsung.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
+Content-Disposition: inline
+In-Reply-To: <20190708092840.ynibtrntval6krc4@vireshk-i7>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Kamil Konieczny <k.konieczny@partner.samsung.com>
 
-Add enable regulators to dev_pm_opp_set_regulators() and disable
-regulators to dev_pm_opp_put_regulators(). This prepares for
-converting exynos-bus devfreq driver to use dev_pm_opp_set_rate().
+--oyUTqETQ0mS9luUI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Kamil Konieczny <k.konieczny@partner.samsung.com>
----
- drivers/opp/core.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+On Mon 2019-07-08 14:58:40, Viresh Kumar wrote:
+> On 08-07-19, 10:28, Rafael J. Wysocki wrote:
+> > Pavel has tested the latest version of the patch series AFAICS.
+> >=20
+> > The locking added by the commit in question to
+> > refresh_frequency_limits() requires an update of
+> > cpufreq_update_policy(), or it will deadlock in there because of the
+> > lock acquired by cpufreq_cpu_get() if I haven't missed anything.
+>=20
+> Ah, looks quite straight forward.
+>=20
+> @Pavel: Can you please try this diff ?
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 0e7703fe733f..947cac452854 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1580,8 +1580,19 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 	if (ret)
- 		goto free_regulators;
- 
-+	for (i = 0; i < opp_table->regulator_count; i++) {
-+		ret = regulator_enable(opp_table->regulators[i]);
-+		if (ret < 0)
-+			goto disable;
-+	}
-+
- 	return opp_table;
- 
-+disable:
-+	while (i != 0)
-+		regulator_disable(opp_table->regulators[--i]);
-+
-+	i = opp_table->regulator_count;
- free_regulators:
- 	while (i != 0)
- 		regulator_put(opp_table->regulators[--i]);
-@@ -1609,6 +1620,8 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
- 
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
-+	for (i = opp_table->regulator_count - 1; i >= 0; i--)
-+		regulator_disable(opp_table->regulators[i]);
- 
- 	for (i = opp_table->regulator_count - 1; i >= 0; i--)
- 		regulator_put(opp_table->regulators[i]);
--- 
-2.22.0
+I tried to apply it on top of current next
+(d58b5ab90ee7528126fd5833df7fc5bda8331ce8, 20190708) and linux-pm-next
+(1e2a4c9019eb53f62790fadf86c14a54f4cf4888), but failed due to
+whitespace (?!).
 
+Yes, symptoms would be consistent with deadlock on resume.
+
+And yes, the patch seems to fix problem for me.
+
+Tested-by: Pavel Machek <pavel@ucw.cz>
+									Pavel
+
+> -------------------------8<-------------------------
+>=20
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 9f68d0f306b8..4d6043ee7834 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1109,16 +1109,12 @@ void refresh_frequency_limits(struct cpufreq_poli=
+cy *policy)
+>  {
+>         struct cpufreq_policy new_policy;
+> =20
+> -       down_write(&policy->rwsem);
+> -
+>         if (!policy_is_inactive(policy)) {
+>                 new_policy =3D *policy;
+>                 pr_debug("updating policy for CPU %u\n", policy->cpu);
+> =20
+>                 cpufreq_set_policy(policy, &new_policy);
+>         }
+> -
+> -       up_write(&policy->rwsem);
+>  }
+>  EXPORT_SYMBOL(refresh_frequency_limits);
+> =20
+> @@ -1128,7 +1124,9 @@ static void handle_update(struct work_struct *work)
+>                 container_of(work, struct cpufreq_policy, update);
+> =20
+>         pr_debug("handle_update for cpu %u called\n", policy->cpu);
+> +       down_write(&policy->rwsem);
+>         refresh_frequency_limits(policy);
+> +       up_write(&policy->rwsem);
+>  }
+> =20
+> -------------------------8<-------------------------
+>=20
+> Though it makes me wonder why I didn't hit this thing. I was using the
+> cpu_cooling device the other day, which calls cpufreq_update_policy()
+> very frequently on heat-up. And I had a hair dryer blowing over my
+> board to heat it up. Lemme check that again :)
+
+Can you test on some x86 ACPI? No dryers needed :-).
+
+> @Rafael: You want me to send a new diff patch with Fixes tag this time
+> if this works out fine ?
+
+
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--oyUTqETQ0mS9luUI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAl0jT24ACgkQMOfwapXb+vJHdwCgrvUmjj9YupNxGOvP7lJkGwE3
+gq8An0mWk7KXRuwmS4H/FqqOX3FQ4V8e
+=OO7t
+-----END PGP SIGNATURE-----
+
+--oyUTqETQ0mS9luUI--
