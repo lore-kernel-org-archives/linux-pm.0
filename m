@@ -4,29 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87A46C606B0
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Jul 2019 08:09:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBFBBC606B0
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Jul 2019 08:09:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5C6A2216C4
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Jul 2019 08:09:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B73A2216FD
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Jul 2019 08:09:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725951AbfGIIJm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Jul 2019 04:09:42 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:56376 "EHLO inva020.nxp.com"
+        id S1726658AbfGIIJu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Jul 2019 04:09:50 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:33672 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725886AbfGIIJm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Jul 2019 04:09:42 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 955721A053B;
-        Tue,  9 Jul 2019 10:09:40 +0200 (CEST)
+        id S1725886AbfGIIJs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Jul 2019 04:09:48 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id E1937200558;
+        Tue,  9 Jul 2019 10:09:46 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 666491A0DBF;
-        Tue,  9 Jul 2019 10:09:27 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3EA73200562;
+        Tue,  9 Jul 2019 10:09:33 +0200 (CEST)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id CBEE3402DF;
-        Tue,  9 Jul 2019 16:09:13 +0800 (SGT)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 236FD4030B;
+        Tue,  9 Jul 2019 16:09:20 +0800 (SGT)
 From:   Anson.Huang@nxp.com
 To:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
         robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
@@ -38,10 +39,12 @@ To:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
 Cc:     Linux-imx@nxp.com
-Subject: [PATCH V2 1/4] dt-bindings: opp: Support multiple opp-suspend properties
-Date:   Tue,  9 Jul 2019 16:00:12 +0800
-Message-Id: <20190709080015.43442-1-Anson.Huang@nxp.com>
+Subject: [PATCH V2 4/4] arm64: dts: imx8mm: Add opp-suspend property to OPP table
+Date:   Tue,  9 Jul 2019 16:00:15 +0800
+Message-Id: <20190709080015.43442-4-Anson.Huang@nxp.com>
 X-Mailer: git-send-email 2.9.5
+In-Reply-To: <20190709080015.43442-1-Anson.Huang@nxp.com>
+References: <20190709080015.43442-1-Anson.Huang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -50,32 +53,45 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Anson Huang <Anson.Huang@nxp.com>
 
-Update opp-suspend property's description to support multiple
-opp-suspend properties defined in DT, the OPP with highest opp-hz
-and with opp-suspend property present will be used as suspend opp.
+Add opp-suspend property to each OPP, the of opp core will
+select the OPP HW supported and with highest rate to be
+suspend opp, it will speed up the suspend/resume process.
 
 Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 ---
-New patch.
+No changes.
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/freescale/imx8mm.dtsi | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 76b6c79..6859227 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -140,8 +140,8 @@ Optional properties:
-   frequency for a short duration of time limited by the device's power, current
-   and thermal limits.
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
+index 398318b..973f457 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
+@@ -108,6 +108,7 @@
+ 			opp-microvolt = <850000>;
+ 			opp-supported-hw = <0xe>, <0x7>;
+ 			clock-latency-ns = <150000>;
++			opp-suspend;
+ 		};
  
--- opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
--  the table should have this.
-+- opp-suspend: Marks the OPP to be used during device suspend. If multiple OPPs
-+  in the table have this, the OPP with highest opp-hz will be used.
+ 		opp-1600000000 {
+@@ -115,6 +116,7 @@
+ 			opp-microvolt = <900000>;
+ 			opp-supported-hw = <0xc>, <0x7>;
+ 			clock-latency-ns = <150000>;
++			opp-suspend;
+ 		};
  
- - opp-supported-hw: This enables us to select only a subset of OPPs from the
-   larger OPP table, based on what version of the hardware we are running on. We
+ 		opp-1800000000 {
+@@ -122,6 +124,7 @@
+ 			opp-microvolt = <1000000>;
+ 			opp-supported-hw = <0x8>, <0x3>;
+ 			clock-latency-ns = <150000>;
++			opp-suspend;
+ 		};
+ 	};
+ 
 -- 
 2.7.4
 
