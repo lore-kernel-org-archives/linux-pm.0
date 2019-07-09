@@ -6,113 +6,76 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35C25C606B0
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Jul 2019 08:07:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87A46C606B0
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Jul 2019 08:09:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 14664216C4
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Jul 2019 08:07:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5C6A2216C4
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Jul 2019 08:09:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725886AbfGIIHS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Jul 2019 04:07:18 -0400
-Received: from mxhk.zte.com.cn ([63.217.80.70]:47140 "EHLO mxhk.zte.com.cn"
+        id S1725951AbfGIIJm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Jul 2019 04:09:42 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:56376 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725905AbfGIIHS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Jul 2019 04:07:18 -0400
-Received: from mse-fl2.zte.com.cn (unknown [10.30.14.239])
-        by Forcepoint Email with ESMTPS id BC8EBA91E0D4F0C49203;
-        Tue,  9 Jul 2019 16:07:15 +0800 (CST)
-Received: from notes_smtp.zte.com.cn ([10.30.1.239])
-        by mse-fl2.zte.com.cn with ESMTP id x6985tGw071272;
-        Tue, 9 Jul 2019 16:05:55 +0800 (GMT-8)
-        (envelope-from wen.yang99@zte.com.cn)
-Received: from fox-host8.localdomain ([10.74.120.8])
-          by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
-          with ESMTP id 2019070916060818-2196810 ;
-          Tue, 9 Jul 2019 16:06:08 +0800 
-From:   Wen Yang <wen.yang99@zte.com.cn>
-To:     linux-kernel@vger.kernel.org
-Cc:     xue.zhihong@zte.com.cn, wang.yi59@zte.com.cn,
-        cheng.shengyu@zte.com.cn, Wen Yang <wen.yang99@zte.com.cn>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
-Subject: [PATCH v5] cpufreq/pasemi: fix an use-after-free in pas_cpufreq_cpu_init()
-Date:   Tue, 9 Jul 2019 16:04:07 +0800
-Message-Id: <1562659447-39989-1-git-send-email-wen.yang99@zte.com.cn>
-X-Mailer: git-send-email 1.8.3.1
-X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release 8.5.3FP6|November
- 21, 2013) at 2019-07-09 16:06:08,
-        Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
- 2019-07-09 16:05:58,
-        Serialize complete at 2019-07-09 16:05:58
-X-MAIL: mse-fl2.zte.com.cn x6985tGw071272
+        id S1725886AbfGIIJm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Jul 2019 04:09:42 -0400
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 955721A053B;
+        Tue,  9 Jul 2019 10:09:40 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 666491A0DBF;
+        Tue,  9 Jul 2019 10:09:27 +0200 (CEST)
+Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id CBEE3402DF;
+        Tue,  9 Jul 2019 16:09:13 +0800 (SGT)
+From:   Anson.Huang@nxp.com
+To:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
+        s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
+        leonard.crestez@nxp.com, p.zabel@pengutronix.de, ping.bai@nxp.com,
+        daniel.baluta@nxp.com, l.stach@pengutronix.de, abel.vesa@nxp.com,
+        angus@akkea.ca, andrew.smirnov@gmail.com, ccaione@baylibre.com,
+        agx@sigxcpu.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     Linux-imx@nxp.com
+Subject: [PATCH V2 1/4] dt-bindings: opp: Support multiple opp-suspend properties
+Date:   Tue,  9 Jul 2019 16:00:12 +0800
+Message-Id: <20190709080015.43442-1-Anson.Huang@nxp.com>
+X-Mailer: git-send-email 2.9.5
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cpu variable is still being used in the of_get_property() call
-after the of_node_put() call, which may result in use-after-free.
+From: Anson Huang <Anson.Huang@nxp.com>
 
-Fixes: a9acc26b75f ("cpufreq/pasemi: fix possible object reference leak")
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Update opp-suspend property's description to support multiple
+opp-suspend properties defined in DT, the OPP with highest opp-hz
+and with opp-suspend property present will be used as suspend opp.
+
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 ---
-v5: put together the code to get, use, and release cpu device_node.
-v4: restore the blank line.
-v3: fix a leaked reference.
-v2: clean up the code according to the advice of viresh.
+New patch.
+---
+ Documentation/devicetree/bindings/opp/opp.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- drivers/cpufreq/pasemi-cpufreq.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 6b1e4ab..1f0beb7 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -131,10 +131,17 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	int err = -ENODEV;
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 76b6c79..6859227 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -140,8 +140,8 @@ Optional properties:
+   frequency for a short duration of time limited by the device's power, current
+   and thermal limits.
  
- 	cpu = of_get_cpu_node(policy->cpu, NULL);
--
--	of_node_put(cpu);
- 	if (!cpu)
- 		goto out;
-+	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
-+	of_node_put(cpu);
-+	if (!max_freqp) {
-+		err = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* we need the freq in kHz */
-+	max_freq = *max_freqp / 1000;
+-- opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
+-  the table should have this.
++- opp-suspend: Marks the OPP to be used during device suspend. If multiple OPPs
++  in the table have this, the OPP with highest opp-hz will be used.
  
- 	dn = of_find_compatible_node(NULL, NULL, "1682m-sdc");
- 	if (!dn)
-@@ -171,16 +178,6 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	}
- 
- 	pr_debug("init cpufreq on CPU %d\n", policy->cpu);
--
--	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
--	if (!max_freqp) {
--		err = -EINVAL;
--		goto out_unmap_sdcpwr;
--	}
--
--	/* we need the freq in kHz */
--	max_freq = *max_freqp / 1000;
--
- 	pr_debug("max clock-frequency is at %u kHz\n", max_freq);
- 	pr_debug("initializing frequency table\n");
- 
+ - opp-supported-hw: This enables us to select only a subset of OPPs from the
+   larger OPP table, based on what version of the hardware we are running on. We
 -- 
-2.9.5
+2.7.4
 
