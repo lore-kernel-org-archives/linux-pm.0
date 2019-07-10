@@ -2,278 +2,168 @@ Return-Path: <SRS0=sVk8=VH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D21DEC74A35
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 18:37:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2342C74A35
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 20:54:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A288F20844
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 18:37:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 91CAC20838
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 20:54:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="cla/rQ8C"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QJUKXbVp"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728279AbfGJShV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Jul 2019 14:37:21 -0400
-Received: from mail-eopbgr710073.outbound.protection.outlook.com ([40.107.71.73]:28282
-        "EHLO NAM05-BY2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728166AbfGJShT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Jul 2019 14:37:19 -0400
+        id S1727093AbfGJUyJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Jul 2019 16:54:09 -0400
+Received: from mail-wr1-f48.google.com ([209.85.221.48]:36902 "EHLO
+        mail-wr1-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725911AbfGJUyJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2019 16:54:09 -0400
+Received: by mail-wr1-f48.google.com with SMTP id n9so3895869wrr.4
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jul 2019 13:54:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amdcloud.onmicrosoft.com; s=selector1-amdcloud-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=4gyOZG+r1U2rG6K5YYAVtq1E2dodsASbALyGvprSxuQ=;
- b=cla/rQ8CxEL8ms3GGEiiRgp5wNSTUaozuGWaA1NKvbPY/YDLNE02UGPZ8wGsYAWSiWNzEdCPPwLegrfLZeIfXkG4c7ad2bqyLih0AD6ZCW302gEivD9qy2dY4cFurhp64aR0ReD9p3Sm8gP3GPZVU1DUi/o2VSiuC54XLWeKWrs=
-Received: from SN6PR12MB2736.namprd12.prod.outlook.com (52.135.107.27) by
- SN6PR12MB2621.namprd12.prod.outlook.com (52.135.103.10) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2052.18; Wed, 10 Jul 2019 18:37:16 +0000
-Received: from SN6PR12MB2736.namprd12.prod.outlook.com
- ([fe80::a475:e612:8e1e:ed28]) by SN6PR12MB2736.namprd12.prod.outlook.com
- ([fe80::a475:e612:8e1e:ed28%3]) with mapi id 15.20.2052.020; Wed, 10 Jul 2019
- 18:37:16 +0000
-From:   "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
-To:     "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "devel@acpica.org" <devel@acpica.org>
-CC:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Robert Moore <robert.moore@intel.com>,
-        Erik Schmauss <erik.schmauss@intel.com>,
-        "Ghannam, Yazen" <Yazen.Ghannam@amd.com>,
-        "Ghannam, Yazen" <Yazen.Ghannam@amd.com>,
-        "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
-Subject: [PATCHv3 3/6] acpi/cppc: Rework cppc_set_perf() to use cppc_regs
- index
-Thread-Topic: [PATCHv3 3/6] acpi/cppc: Rework cppc_set_perf() to use cppc_regs
- index
-Thread-Index: AQHVN05+ZGHRO/MraUWKit0+yoLPzQ==
-Date:   Wed, 10 Jul 2019 18:37:14 +0000
-Message-ID: <9bc091f450bea98454685e6118a37d0b32b7db96.1562781484.git.Janakarajan.Natarajan@amd.com>
-References: <cover.1562781484.git.Janakarajan.Natarajan@amd.com>
-In-Reply-To: <cover.1562781484.git.Janakarajan.Natarajan@amd.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: SN4PR0201CA0064.namprd02.prod.outlook.com
- (2603:10b6:803:20::26) To SN6PR12MB2736.namprd12.prod.outlook.com
- (2603:10b6:805:77::27)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=Janakarajan.Natarajan@amd.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-mailer: git-send-email 2.17.1
-x-originating-ip: [165.204.78.2]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 567b6f4d-c86d-4e51-aa56-08d70565a100
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(4618075)(2017052603328)(7193020);SRVR:SN6PR12MB2621;
-x-ms-traffictypediagnostic: SN6PR12MB2621:
-x-microsoft-antispam-prvs: <SN6PR12MB262162C315957AEE62B11E8EE7F00@SN6PR12MB2621.namprd12.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:8273;
-x-forefront-prvs: 0094E3478A
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(346002)(396003)(39860400002)(366004)(376002)(136003)(199004)(189003)(50226002)(4326008)(81156014)(81166006)(71200400001)(14454004)(71190400001)(476003)(11346002)(446003)(68736007)(2616005)(6116002)(3846002)(486006)(256004)(305945005)(7736002)(478600001)(14444005)(25786009)(5660300002)(36756003)(2906002)(76176011)(53936002)(66476007)(66556008)(64756008)(66066001)(66446008)(6512007)(2501003)(8936002)(118296001)(6436002)(6486002)(8676002)(66946007)(316002)(52116002)(102836004)(2201001)(6506007)(99286004)(26005)(386003)(86362001)(110136005)(54906003)(186003);DIR:OUT;SFP:1101;SCL:1;SRVR:SN6PR12MB2621;H:SN6PR12MB2736.namprd12.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
-received-spf: None (protection.outlook.com: amd.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: vfxzYu+k6u5t8q5E8xnFOoFbhQpwHoFvWKPeEN/xUuW/2NwFaR6SQxWgYmrkxNHJ3165vq6aSK/tcHwFNEaMIqAaWKkXvqto7oaMMqLx4nKVVHmPnfkqoSluM88OXBKmLsXKICHkwz8vKgnkVxiCaf2JEYZZ1H5BD8Oj0GVvro5yu2/x07vj2hxBt3Qyh+iZQXlZVUwXL6WngrIRVivIhHmwRuQ+ZWf/g92QGVqLxRz+rDKgQ9fg+KztIensggFV6JIX6v1IIXJmhoX6r/JrA0qbq57UK4O6Zr0n7Ng99U84f+3g5CTyELuicerKrEYPam5stmRRXOhKdIYyi74qCaQ3Q49KIp4wj8e4hpBjKDLFs8JFcK2jAsU2yfNEBochiH0l/KrSWUBsE1KBVWikLi82txsuPX/7mKh3otIYp0c=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+        d=gmail.com; s=20161025;
+        h=to:cc:from:subject:message-id:date:user-agent:mime-version
+         :content-language:content-transfer-encoding;
+        bh=Ps4kQfzGq5gpWNZxk/C1CFE6R6ZOY8VylpxaBfWoytU=;
+        b=QJUKXbVp0jU72Yc403EAJF2UhwXD8aqYcaIhJAeZkDfgOZZYySAlgl4Ow44xbSgOQ3
+         WmUJdY1iuhyMIBXA4pyNC6oAJL1AagdQQeFol2G95Nbeh8Zu//oOIXUlPFDgqzHBS13l
+         5bZHSQiTNlBns9g8TNlfZzKtmydeL4Sc3Xi4w1RbHedFRXOS385pXsFvBxLclbVUGlT0
+         U+ZxX9nEU/OtcbOtfFplrAaONSCMZg6PG979cSEFB4dHCC1zNH279TZ4F7MepZZehg0F
+         GkYhO/UKiNgxzuddyioC+PtRcIPUphKbHicO+jtFFxnt3viIimMQl8t9qC0C23pN9u6X
+         034A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:to:cc:from:subject:message-id:date:user-agent
+         :mime-version:content-language:content-transfer-encoding;
+        bh=Ps4kQfzGq5gpWNZxk/C1CFE6R6ZOY8VylpxaBfWoytU=;
+        b=PIAJuCZRQZynbZR+OlHF7XnzZ0IWE0tBKs80cRd/2yWAdlv7CvAe8P7H1vZAwXrp0w
+         EvEf0zKZVba+FuZA+5knpXq1K3L0YXQEWWY5Q84wpKtp1pssEjiQ/TZQaluW+tSVCbiY
+         pQX4THjC3+P8JESfYwxDMR/I6sdsOZxDTS+kOf3W3Qi1G+4cQnuP61IxXylDjTaIvrIS
+         9IFNNdFDT7pgcTXrQpXqS5wG1R0h74qb1cTUGqHgXCRfdajLcUQTChfN9tPVrfgq57wF
+         GrNJkgKQjSLyhGbsSXRWfWjRMRltv+YeWd02neuSJNqU59380R5QY6xgNizVLyyeDCTk
+         zmNw==
+X-Gm-Message-State: APjAAAWZNhhlCYziIXP2p40pY/4TdL5OrV6/wOQeVCoNQWUedLZwHfpU
+        Mz+KCoxowCv5726N/nNrZMsn4aqL
+X-Google-Smtp-Source: APXvYqxMqI8jmXX/j1f8n+oXy1gdXAhoeW2W3+alUeM2wKz65LyGboP6V4Y2Iy3GIwbszXdzpptqlQ==
+X-Received: by 2002:adf:8bd1:: with SMTP id w17mr12872490wra.50.1562792045692;
+        Wed, 10 Jul 2019 13:54:05 -0700 (PDT)
+Received: from ?IPv6:2003:ea:8bd6:c00:54ae:9c17:4aac:c628? (p200300EA8BD60C0054AE9C174AACC628.dip0.t-ipconnect.de. [2003:ea:8bd6:c00:54ae:9c17:4aac:c628])
+        by smtp.googlemail.com with ESMTPSA id y12sm1924189wrm.79.2019.07.10.13.54.03
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 10 Jul 2019 13:54:04 -0700 (PDT)
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>
+From:   Heiner Kallweit <hkallweit1@gmail.com>
+Subject: cpufreq-related deadlock warning on recent linux-next
+Message-ID: <6addb70f-6b21-4f09-e1a0-21476b55df14@gmail.com>
+Date:   Wed, 10 Jul 2019 22:53:55 +0200
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
 MIME-Version: 1.0
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 567b6f4d-c86d-4e51-aa56-08d70565a100
-X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Jul 2019 18:37:15.0034
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: jnataraj@amd.com
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR12MB2621
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Yazen Ghannam <Yazen.Ghannam@amd.com>
+I just got the following when manually suspending the system with
+"systemctl suspend" and waking it up with the power button.
 
-The cppc_set_perf() currently only works for DESIRED_PERF. To make it
-generic, pass in the index of the register being accessed.
 
-Also, rename cppc_set_perf() to cppc_set_reg(). This is in preparation
-for it to be used for more than just the DESIRED_PERF register.
+[  380.203172] Restarting tasks ... done.
 
-Signed-off-by: Yazen Ghannam <Yazen.Ghannam@amd.com>
-[ carved out into a patch, cleaned up, productized ]
-Signed-off-by: Janakarajan Natarajan <Janakarajan.Natarajan@amd.com>
----
- drivers/acpi/cppc_acpi.c       | 36 ++++++++++++++++++++++------------
- drivers/cpufreq/cppc_cpufreq.c |  6 +++---
- include/acpi/cppc_acpi.h       |  2 +-
- 3 files changed, 28 insertions(+), 16 deletions(-)
+[  380.211714] ============================================
+[  380.211719] WARNING: possible recursive locking detected
+[  380.211726] 5.2.0-rc7-next-20190704+ #2 Not tainted
+[  380.211731] --------------------------------------------
+[  380.211737] systemd-sleep/2367 is trying to acquire lock:
+[  380.211745] 0000000043cf69ce (&policy->rwsem){+.+.}, at: refresh_frequency_limits+0x36/0x90
+[  380.211761]
+               but task is already holding lock:
+[  380.211767] 0000000043cf69ce (&policy->rwsem){+.+.}, at: cpufreq_cpu_acquire+0x25/0x50
+[  380.211777]
+               other info that might help us debug this:
+[  380.211783]  Possible unsafe locking scenario:
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 53a9dc9960b6..c13dacea4a8b 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -56,7 +56,7 @@ struct cppc_pcc_data {
- 	/*
- 	 * Lock to provide controlled access to the PCC channel.
- 	 *
--	 * For performance critical usecases(currently cppc_set_perf)
-+	 * For performance-critical usecases(currently cppc_set_reg)
- 	 *	We need to take read_lock and check if channel belongs to OSPM
- 	 * before reading or writing to PCC subspace
- 	 *	We need to take write_lock before transferring the channel
-@@ -1341,26 +1341,38 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf=
-_fb_ctrs *perf_fb_ctrs)
- EXPORT_SYMBOL_GPL(cppc_get_perf_ctrs);
-=20
- /**
-- * cppc_set_perf - Set a CPU's performance controls.
-- * @cpu: CPU for which to set performance controls.
-+ * cppc_set_reg - Set the CPUs control register.
-+ * @cpu: CPU for which to set the register.
-  * @perf_ctrls: ptr to cppc_perf_ctrls. See cppc_acpi.h
-+ * @reg_idx: Index of the register being accessed
-  *
-  * Return: 0 for success, -ERRNO otherwise.
-  */
--int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
-+int cppc_set_reg(int cpu, struct cppc_perf_ctrls *perf_ctrls,
-+		 enum cppc_regs reg_idx)
- {
- 	struct cpc_desc *cpc_desc =3D per_cpu(cpc_desc_ptr, cpu);
--	struct cpc_register_resource *desired_reg;
- 	int pcc_ss_id =3D per_cpu(cpu_pcc_subspace_idx, cpu);
- 	struct cppc_pcc_data *pcc_ss_data =3D NULL;
-+	struct cpc_register_resource *reg;
- 	int ret =3D 0;
-+	u32 value;
-=20
- 	if (!cpc_desc) {
- 		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
- 		return -ENODEV;
- 	}
-=20
--	desired_reg =3D &cpc_desc->cpc_regs[DESIRED_PERF];
-+	switch (reg_idx) {
-+	case DESIRED_PERF:
-+		value =3D perf_ctrls->desired_perf;
-+		break;
-+	default:
-+		pr_debug("CPC register index #%d not writeable\n", reg_idx);
-+		return -EINVAL;
-+	}
-+
-+	reg =3D &cpc_desc->cpc_regs[reg_idx];
-=20
- 	/*
- 	 * This is Phase-I where we want to write to CPC registers
-@@ -1369,7 +1381,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *pe=
-rf_ctrls)
- 	 * Since read_lock can be acquired by multiple CPUs simultaneously we
- 	 * achieve that goal here
- 	 */
--	if (CPC_IN_PCC(desired_reg)) {
-+	if (CPC_IN_PCC(reg)) {
- 		if (pcc_ss_id < 0) {
- 			pr_debug("Invalid pcc_ss_id\n");
- 			return -ENODEV;
-@@ -1396,14 +1408,14 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *=
-perf_ctrls)
- 	 * Skip writing MIN/MAX until Linux knows how to come up with
- 	 * useful values.
- 	 */
--	cpc_write(cpu, desired_reg, perf_ctrls->desired_perf);
-+	cpc_write(cpu, reg, value);
-=20
--	if (CPC_IN_PCC(desired_reg))
-+	if (CPC_IN_PCC(reg))
- 		up_read(&pcc_ss_data->pcc_lock);	/* END Phase-I */
- 	/*
- 	 * This is Phase-II where we transfer the ownership of PCC to Platform
- 	 *
--	 * Short Summary: Basically if we think of a group of cppc_set_perf
-+	 * Short Summary: Basically if we think of a group of cppc_set_reg
- 	 * requests that happened in short overlapping interval. The last CPU to
- 	 * come out of Phase-I will enter Phase-II and ring the doorbell.
- 	 *
-@@ -1446,7 +1458,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *pe=
-rf_ctrls)
- 	 * case during a CMD_READ and if there are pending writes it delivers
- 	 * the write command before servicing the read command
- 	 */
--	if (CPC_IN_PCC(desired_reg)) {
-+	if (CPC_IN_PCC(reg)) {
- 		if (down_write_trylock(&pcc_ss_data->pcc_lock)) {/* BEGIN Phase-II */
- 			/* Update only if there are pending write commands */
- 			if (pcc_ss_data->pending_pcc_write_cmd)
-@@ -1462,7 +1474,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *pe=
-rf_ctrls)
- 	}
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(cppc_set_perf);
-+EXPORT_SYMBOL_GPL(cppc_set_reg);
-=20
- /**
-  * cppc_get_transition_latency - returns frequency transition latency in n=
-s
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.=
-c
-index 8d8da763adc5..81e9dff03c92 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -207,7 +207,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_polic=
-y *policy,
- 	freqs.new =3D target_freq;
-=20
- 	cpufreq_freq_transition_begin(policy, &freqs);
--	ret =3D cppc_set_perf(cpu->cpu, &cpu->perf_ctrls);
-+	ret =3D cppc_set_reg(cpu->cpu, &cpu->perf_ctrls, DESIRED_PERF);
- 	cpufreq_freq_transition_end(policy, &freqs, ret !=3D 0);
-=20
- 	if (ret)
-@@ -231,7 +231,7 @@ static void cppc_cpufreq_stop_cpu(struct cpufreq_policy=
- *policy)
-=20
- 	cpu->perf_ctrls.desired_perf =3D cpu->perf_caps.lowest_perf;
-=20
--	ret =3D cppc_set_perf(cpu_num, &cpu->perf_ctrls);
-+	ret =3D cppc_set_reg(cpu_num, &cpu->perf_ctrls, DESIRED_PERF);
- 	if (ret)
- 		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
- 				cpu->perf_caps.lowest_perf, cpu_num, ret);
-@@ -344,7 +344,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy =
-*policy)
- 					cpu->perf_caps.highest_perf);
- 	cpu->perf_ctrls.desired_perf =3D cpu->perf_caps.highest_perf;
-=20
--	ret =3D cppc_set_perf(cpu_num, &cpu->perf_ctrls);
-+	ret =3D cppc_set_reg(cpu_num, &cpu->perf_ctrls, DESIRED_PERF);
- 	if (ret)
- 		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
- 				cpu->perf_caps.highest_perf, cpu_num, ret);
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index a6a9373ab863..f229e903525d 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -135,7 +135,7 @@ struct cppc_cpudata {
-=20
- extern int cppc_get_desired_perf(int cpunum, u64 *desired_perf);
- extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_c=
-trs);
--extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
-+extern int cppc_set_reg(int cpu, struct cppc_perf_ctrls *perf_ctrls, enum =
-cppc_regs reg_idx);
- extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
- extern int acpi_get_psd_map(struct cppc_cpudata **);
- extern unsigned int cppc_get_transition_latency(int cpu);
---=20
-2.17.1
+[  380.211789]        CPU0
+[  380.211792]        ----
+[  380.211795]   lock(&policy->rwsem);
+[  380.211800]   lock(&policy->rwsem);
+[  380.211805]
+                *** DEADLOCK ***
 
+[  380.211811]  May be due to missing lock nesting notation
+
+[  380.211818] 8 locks held by systemd-sleep/2367:
+[  380.211823]  #0: 000000000e253e21 (sb_writers#5){.+.+}, at: vfs_write+0x16b/0x1d0
+[  380.211835]  #1: 00000000d0140159 (&of->mutex){+.+.}, at: kernfs_fop_write+0xfd/0x1c0
+[  380.211846]  #2: 00000000383c283a (kn->count#155){.+.+}, at: kernfs_fop_write+0x105/0x1c0
+[  380.211857]  #3: 000000007e6f342b (system_transition_mutex){+.+.}, at: pm_suspend.cold+0xd0/0x36a
+[  380.211869]  #4: 000000002ee59360 ((pm_chain_head).rwsem){++++}, at: __blocking_notifier_call_chain+0x46/0x80
+[  380.211883]  #5: 000000003972eb2e (&tz->lock){+.+.}, at: step_wise_throttle+0x3f/0x90
+[  380.211893]  #6: 0000000007747f02 (&cdev->lock){+.+.}, at: thermal_cdev_update+0x1e/0x16c
+[  380.211904]  #7: 0000000043cf69ce (&policy->rwsem){+.+.}, at: cpufreq_cpu_acquire+0x25/0x50
+[  380.211914]
+               stack backtrace:
+[  380.211921] CPU: 1 PID: 2367 Comm: systemd-sleep Not tainted 5.2.0-rc7-next-20190704+ #2
+[  380.211929] Hardware name: NA ZBOX-CI327NANO-GS-01/ZBOX-CI327NANO-GS-01, BIOS 5.12 04/26/2018
+[  380.211937] Call Trace:
+[  380.211944]  dump_stack+0x70/0xa0
+[  380.211950]  __lock_acquire.cold+0xc0/0x206
+[  380.211957]  lock_acquire+0x90/0x190
+[  380.211963]  ? refresh_frequency_limits+0x36/0x90
+[  380.211970]  down_write+0x38/0x80
+[  380.211975]  ? refresh_frequency_limits+0x36/0x90
+[  380.211981]  refresh_frequency_limits+0x36/0x90
+[  380.211987]  ? cpufreq_cpu_get+0x60/0x70
+[  380.211993]  ? cpufreq_get_policy+0x5e/0x70
+[  380.212000]  ? __module_text_address+0x10/0x60
+[  380.212006]  ? is_module_text_address+0x18/0x29
+[  380.212013]  ? kernel_text_address+0x3e/0x90
+[  380.212019]  ? __kernel_text_address+0x10/0x40
+[  380.212026]  ? unwind_get_return_address+0x1c/0x30
+[  380.212034]  ? __thaw_task+0x50/0x50
+[  380.212040]  ? arch_stack_walk+0xa2/0xf0
+[  380.212046]  ? stack_trace_save+0x55/0x80
+[  380.212052]  ? alloc_list_entry+0x15/0x60
+[  380.212058]  ? __lock_acquire+0x1067/0x1940
+[  380.212064]  ? cpufreq_cpu_acquire+0x25/0x50
+[  380.212071]  ? down_write+0x38/0x80
+[  380.212076]  ? cpufreq_cpu_acquire+0x25/0x50
+[  380.212082]  cpufreq_update_policy+0x51/0x70
+[  380.212089]  cpufreq_set_cur_state.part.0+0x82/0xa0
+[  380.212096]  processor_set_cur_state+0xa1/0x110
+[  380.212102]  thermal_cdev_update+0x86/0x16c
+[  380.212108]  step_wise_throttle+0x58/0x90
+[  380.212114]  handle_thermal_trip+0x80/0x240
+[  380.212120]  thermal_zone_device_update.part.0+0x68/0x1a0
+[  380.212127]  thermal_pm_notify+0x10f/0x130
+[  380.212133]  notifier_call_chain+0x53/0x80
+[  380.212139]  __blocking_notifier_call_chain+0x5f/0x80
+[  380.212146]  pm_notifier_call_chain+0x22/0x40
+[  380.212151]  pm_suspend.cold+0x341/0x36a
+[  380.212157]  state_store+0x7d/0xe0
+[  380.212162]  kobj_attr_store+0x33/0x50
+[  380.212168]  sysfs_kf_write+0x46/0x60
+[  380.212174]  kernfs_fop_write+0x134/0x1c0
+[  380.212181]  __vfs_write+0x37/0x70
+[  380.212186]  vfs_write+0xdc/0x1d0
+[  380.212191]  ksys_write+0x6e/0xf0
+[  380.212196]  __x64_sys_write+0x19/0x20
+[  380.212202]  do_syscall_64+0x50/0x1a0
+[  380.212209]  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+[  380.212216] RIP: 0033:0x7f0fd7e801f8
+[  380.212223] Code: 89 02 48 c7 c0 ff ff ff ff eb bb 0f 1f 80 00 00 00 00 f3 0f 1e fa 48 8d 05 25 50 0d 00 8b 00 85 c0 75 17 b8 01 00 00 00 0f 05 <48> 3d 00 f0 ff ff 77 60 c3 0f 1f 80 00 00 00 00 48 83 ec 28 48 89
+[  380.212238] RSP: 002b:00007ffc3d20f288 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+[  380.212247] RAX: ffffffffffffffda RBX: 0000000000000004 RCX: 00007f0fd7e801f8
+[  380.212253] RDX: 0000000000000004 RSI: 00007ffc3d20f370 RDI: 0000000000000004
+[  380.212260] RBP: 00007ffc3d20f370 R08: 00007f0fd66a6840 R09: 0000561ed5a28e50
+[  380.212267] R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000004
+[  380.212273] R13: 0000561ed5a27290 R14: 0000000000000004 R15: 00007f0fd7f507c0
+[  382.995704] r8169 0000:03:00.0 enp3s0: Link is Up - 1Gbps/Full - flow control rx/tx
