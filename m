@@ -2,39 +2,39 @@ Return-Path: <SRS0=sVk8=VH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AC84C74A3B
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 18:37:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B0B6C74A35
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 18:37:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2263C2087F
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 18:37:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E7132087F
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 18:37:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="rU0Puqzn"
+	dkim=pass (1024-bit key) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="P1V2N4bt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728172AbfGJShV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Jul 2019 14:37:21 -0400
-Received: from mail-eopbgr740045.outbound.protection.outlook.com ([40.107.74.45]:40544
-        "EHLO NAM01-BN3-obe.outbound.protection.outlook.com"
+        id S1728355AbfGJSh1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Jul 2019 14:37:27 -0400
+Received: from mail-eopbgr730083.outbound.protection.outlook.com ([40.107.73.83]:45272
+        "EHLO NAM05-DM3-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728162AbfGJShS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Jul 2019 14:37:18 -0400
+        id S1728341AbfGJSh1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jul 2019 14:37:27 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=amdcloud.onmicrosoft.com; s=selector1-amdcloud-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=1EuYjhv0K981eq+CHQGYecMhyIdmi6r6HsOp6EUH6sg=;
- b=rU0PuqznwLpfkwvTBg8Fy9PfPIWcRJBbcNBLOXqQbIwCTH9NM6bf2tm9Q/UjVq9sANT0AfykQ11FkXr4YuFCLCfxuZnyyQCBWSKCeG5z5+rHyMiBYZWLO7TYZZCg67J+dD0Q/aemByYf3OIP549nXME4NRyzhGKMpaJR/bOL3So=
+ bh=KzqTVqGv71g2DtZWBEu+CjQ3CTOwcVMwGyPCs3sQM/I=;
+ b=P1V2N4btIAGr5ePlQTTa3YdicJN/7yy14QUADOwu70P4sJxVXLazGoUs5tvPfJN2zXPFEk7eeuyJcCb7SUvB9n6MlniQudWGtER9S5nX91N1nIHrdPDmBMvXSxNYy3trBA2cYo+B1S5HnpsTAv4M1aDJAIykxWUSdTgilDWTaYY=
 Received: from SN6PR12MB2736.namprd12.prod.outlook.com (52.135.107.27) by
- SN6PR12MB2846.namprd12.prod.outlook.com (52.135.103.161) with Microsoft SMTP
+ SN6PR12MB2639.namprd12.prod.outlook.com (52.135.103.16) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2052.20; Wed, 10 Jul 2019 18:37:14 +0000
+ 15.20.2052.19; Wed, 10 Jul 2019 18:37:21 +0000
 Received: from SN6PR12MB2736.namprd12.prod.outlook.com
  ([fe80::a475:e612:8e1e:ed28]) by SN6PR12MB2736.namprd12.prod.outlook.com
  ([fe80::a475:e612:8e1e:ed28%3]) with mapi id 15.20.2052.020; Wed, 10 Jul 2019
- 18:37:14 +0000
+ 18:37:21 +0000
 From:   "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
 To:     "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
         "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -47,11 +47,13 @@ CC:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Erik Schmauss <erik.schmauss@intel.com>,
         "Ghannam, Yazen" <Yazen.Ghannam@amd.com>,
         "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
-Subject: [PATCHv3 1/6] acpi/cppc: Add macros for CPPC register checks
-Thread-Topic: [PATCHv3 1/6] acpi/cppc: Add macros for CPPC register checks
-Thread-Index: AQHVN059RHJ8UgAi2UmQapw4p1j2fg==
-Date:   Wed, 10 Jul 2019 18:37:12 +0000
-Message-ID: <668aa711c3c455e926c066a27cb62720399fb2df.1562781484.git.Janakarajan.Natarajan@amd.com>
+Subject: [PATCHv3 6/6] drivers/cpufreq: Add a CPUFreq driver for AMD
+ processors (Fam17h and later)
+Thread-Topic: [PATCHv3 6/6] drivers/cpufreq: Add a CPUFreq driver for AMD
+ processors (Fam17h and later)
+Thread-Index: AQHVN06AuI3rG5PgEkGK1o9FtbMXtQ==
+Date:   Wed, 10 Jul 2019 18:37:18 +0000
+Message-ID: <e48c6b836f996a16472c777612f1e3343c542077.1562781484.git.Janakarajan.Natarajan@amd.com>
 References: <cover.1562781484.git.Janakarajan.Natarajan@amd.com>
 In-Reply-To: <cover.1562781484.git.Janakarajan.Natarajan@amd.com>
 Accept-Language: en-US
@@ -67,97 +69,337 @@ x-ms-exchange-messagesentrepresentingtype: 1
 x-mailer: git-send-email 2.17.1
 x-originating-ip: [165.204.78.2]
 x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 519148af-081f-4840-79ed-08d705659fca
+x-ms-office365-filtering-correlation-id: eb687ae8-0adf-46f9-e3a8-08d70565a2f2
 x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(4618075)(2017052603328)(7193020);SRVR:SN6PR12MB2846;
-x-ms-traffictypediagnostic: SN6PR12MB2846:
-x-microsoft-antispam-prvs: <SN6PR12MB28465D2EF744D91BA917A44CE7F00@SN6PR12MB2846.namprd12.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:4941;
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(4618075)(2017052603328)(7193020);SRVR:SN6PR12MB2639;
+x-ms-traffictypediagnostic: SN6PR12MB2639:
+x-microsoft-antispam-prvs: <SN6PR12MB263919F101BA3BC41618CA19E7F00@SN6PR12MB2639.namprd12.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:8882;
 x-forefront-prvs: 0094E3478A
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(346002)(366004)(396003)(136003)(376002)(39860400002)(199004)(189003)(6512007)(14454004)(71190400001)(71200400001)(7736002)(25786009)(26005)(186003)(102836004)(76176011)(52116002)(486006)(50226002)(6436002)(64756008)(66446008)(53936002)(386003)(99286004)(6506007)(2201001)(66946007)(66476007)(8676002)(305945005)(81166006)(68736007)(6116002)(8936002)(81156014)(86362001)(3846002)(66556008)(6486002)(110136005)(316002)(2501003)(11346002)(446003)(2616005)(5660300002)(256004)(4326008)(36756003)(476003)(118296001)(478600001)(2906002)(66066001)(54906003);DIR:OUT;SFP:1101;SCL:1;SRVR:SN6PR12MB2846;H:SN6PR12MB2736.namprd12.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(39860400002)(396003)(136003)(366004)(346002)(376002)(189003)(199004)(11346002)(446003)(99286004)(3846002)(6436002)(6116002)(2501003)(6666004)(66066001)(71200400001)(71190400001)(316002)(476003)(25786009)(2616005)(6506007)(386003)(76176011)(486006)(36756003)(14454004)(66946007)(305945005)(6486002)(64756008)(66446008)(66476007)(8936002)(66556008)(81156014)(81166006)(54906003)(53936002)(186003)(2201001)(8676002)(26005)(4326008)(50226002)(118296001)(52116002)(102836004)(68736007)(86362001)(6512007)(5660300002)(2906002)(256004)(14444005)(110136005)(7736002)(478600001);DIR:OUT;SFP:1101;SCL:1;SRVR:SN6PR12MB2639;H:SN6PR12MB2736.namprd12.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
 received-spf: None (protection.outlook.com: amd.com does not designate
  permitted sender hosts)
 x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: +RaGSnKTBl89QJVfOEsOCET37Yq9J8a3Bh0ECgh3YcbWl+8Lg+iNIqCIVKLxaN5bbnnq8/dgVQGhFADfysO+nN8ZnLX301bbYe9iBBApJc0NvjTiK1LVLiXpfsA+GxVq1K7lCfLfqT2vt5buBqNCfoejsSZIGAfDoJntMYebnJ/AxxBMlNuuoXGPZCH2xewhewA6k6TxEs6H4uT7lNOyP7F6jj5Io634nV6rpkJ0CkX/4C5lbJd/CBen+Pr/TgCUIfdBD02+vkDkuBHJb713/9NjKFcczy2plLNRGmXIfMce7RgOMc+hHdjyY698CvLKNeXbfs78F9K37xNw9wCPkt/+6eQf5u44DQoPrmPwqidf42uPYlYDBpEbvUNSQvWuzrGehqwu4EYoTT6AK/V1kmwnIi/PADImgKhJrk8wNY4=
+x-microsoft-antispam-message-info: PZtyf9U8T0BLfvcrdIyhtTmd6AyTWWCc4m1S+ANTibJneEYOfLLPipa7iM0taupgi/b0UOZg4jHM1RIFsYO7to2GuZ2dFqmwGi2qQnM2L3MCjbbckHqtq71tv4usmzrzqDojJlp/DpML1rOD2RAtHbd/O3r4taDm32Q6XUI8A4jVWOOO/D9aIzu/G69joE0SDI3k8HrLH8RvYeVx2220o3mUoZQ2MdNWK+sZQSSo2qWEcDuKK7jOuls4J09R9S2KSpOkDhM6+gB/qW8haRG27E5fHJzYQAZSvlYVA0lerK0RkxdR9usToQ+PSXqeQTRkqDH3Ca8mP+VWWwXPu6Ep5Zkty8VqYtvdP6iB9PidS+ZCdjywlqpRZan2eETBKkMfS64MqKB6DfB4NnHNr/IXlp3+uinu6kE4ZtDCUOtVDvo=
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 519148af-081f-4840-79ed-08d705659fca
-X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Jul 2019 18:37:13.0355
+X-MS-Exchange-CrossTenant-Network-Message-Id: eb687ae8-0adf-46f9-e3a8-08d70565a2f2
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Jul 2019 18:37:18.4644
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
 X-MS-Exchange-CrossTenant-userprincipalname: jnataraj@amd.com
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR12MB2846
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR12MB2639
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduce two macros to help with checking the support for optional CPPC
-registers.
+Add a new CPUFreq driver which exposes sysfs entries to control the
+platform. To make use of this driver use a kernel commandline option.
 
-CPC_SUP_BUFFER_ONLY ensures that an expected BUFFER only register has a
-register type of ACPI_TYPE_BUFFER and is not NULL.
+Ex: amd_cpufreq=3Denable	- Enable AMD CPUFreq driver for Fam17h and later
 
-REG_SUPPORTED decides which check to perform based the expected type of
-the CPPC register.
+Also, place amd-cpufreq before acpi-cpufreq in the Makefile to give it
+higher priority.
 
 Signed-off-by: Janakarajan Natarajan <Janakarajan.Natarajan@amd.com>
 ---
- drivers/acpi/cppc_acpi.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ drivers/cpufreq/Kconfig.x86   |  14 ++
+ drivers/cpufreq/Makefile      |   4 +-
+ drivers/cpufreq/amd-cpufreq.c | 233 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 250 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/cpufreq/amd-cpufreq.c
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 15f103d7532b..c43de65531ae 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -111,6 +111,14 @@ static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr)=
-;
- #define CPC_SUPPORTED(cpc) ((cpc)->type =3D=3D ACPI_TYPE_INTEGER ?		\
- 				!!(cpc)->cpc_entry.int_value :		\
- 				!IS_NULL_REG(&(cpc)->cpc_entry.reg))
-+
-+/*
-+ * Evaluates to True if an optional cpc field is supported and is
-+ * BUFFER only
-+ */
-+#define CPC_SUP_BUFFER_ONLY(cpc) ((cpc)->type =3D=3D ACPI_TYPE_BUFFER &&	\
-+				  !IS_NULL_REG(&(cpc)->cpc_entry.reg))
-+
- /*
-  * Arbitrary Retries in case the remote processor is slow to respond
-  * to PCC commands. Keeping it high enough to cover emulators where
-@@ -705,6 +713,26 @@ static bool is_cppc_supported(int revision, int num_en=
-t)
-  *	}
-  */
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index dfa6457deaf6..01c7c5b5486a 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -32,6 +32,20 @@ config X86_PCC_CPUFREQ
 =20
-+static bool is_buf_only(int reg_idx)
+ 	  If in doubt, say N.
+=20
++config X86_AMD_CPUFREQ
++	tristate "AMD CPUFreq driver"
++	depends on ACPI_PROCESSOR
++	select ACPI_CPPC_LIB
++	help
++	  This adds a CPUFreq driver which uses CPPC methods
++	  as described in the ACPI v6.1 spec for newer (>=3D Fam17h)
++	  AMD processors.
++
++	  When this driver is enabled it will become preferred to
++	  the acpi-cpufreq driver.
++
++	  If in doubt, say N.
++
+ config X86_ACPI_CPUFREQ
+ 	tristate "ACPI Processor P-States driver"
+ 	depends on ACPI_PROCESSOR
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 689b26c6f949..b2837ed9aff2 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -22,8 +22,10 @@ obj-$(CONFIG_CPUFREQ_DT_PLATDEV)	+=3D cpufreq-dt-platdev=
+.o
+ # Link order matters. K8 is preferred to ACPI because of firmware bugs in =
+early
+ # K8 systems. This is still the case but acpi-cpufreq errors out so that
+ # powernow-k8 can load then. ACPI is preferred to all other hardware-speci=
+fic drivers.
+-# speedstep-* is preferred over p4-clockmod.
++# speedstep-* is preferred over p4-clockmod. amd-cpufreq is preferred to a=
+cpi-cpufreq
++# for Fam17h or newer AMD processors. For others, acpi-cpufreq will be use=
+d.
+=20
++obj-$(CONFIG_X86_AMD_CPUFREQ)		+=3D amd-cpufreq.o
+ obj-$(CONFIG_X86_ACPI_CPUFREQ)		+=3D acpi-cpufreq.o
+ obj-$(CONFIG_X86_POWERNOW_K8)		+=3D powernow-k8.o
+ obj-$(CONFIG_X86_PCC_CPUFREQ)		+=3D pcc-cpufreq.o
+diff --git a/drivers/cpufreq/amd-cpufreq.c b/drivers/cpufreq/amd-cpufreq.c
+new file mode 100644
+index 000000000000..262c8de3be2e
+--- /dev/null
++++ b/drivers/cpufreq/amd-cpufreq.c
+@@ -0,0 +1,233 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * AMD CPUFREQ driver for Family 17h or greater AMD processors.
++ *
++ * Copyright (C) 2019 Advanced Micro Devices, Inc.
++ *
++ * Author: Janakarajan Natarajan <janakarajan.natarajan@amd.com>
++ */
++#define pr_fmt(fmt)	"AMD Cpufreq: " fmt
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/cpu.h>
++#include <linux/vmalloc.h>
++#include <linux/cpufreq.h>
++#include <linux/acpi.h>
++#include <linux/delay.h>
++
++#include <asm/unaligned.h>
++
++#include <acpi/cppc_acpi.h>
++
++struct amd_desc {
++	int cpu_id;
++	struct cppc_ctrls ctrls;
++	struct kobject kobj;
++};
++
++struct amd_desc **all_cpu_data;
++
++static unsigned int cppc_enable;
++module_param(cppc_enable, uint, 0644);
++MODULE_PARM_DESC(cppc_enable,
++		 "1 - enable AMD CpuFreq, create CPPC sysfs entries.");
++
++#define to_amd_desc(a) container_of(a, struct amd_desc, kobj)
++
++#define show_func(access_fn, struct_name, member_name)			\
++	static ssize_t show_##member_name(struct kobject *kobj,		\
++					  struct kobj_attribute *attr,	\
++					  char *buf)			\
++	{								\
++		struct amd_desc *desc =3D to_amd_desc(kobj);		\
++		struct struct_name st_name =3D {0};			\
++		int ret;						\
++									\
++		ret =3D access_fn(desc->cpu_id, &st_name);		\
++		if (ret)						\
++			return ret;					\
++									\
++		return scnprintf(buf, PAGE_SIZE, "%llu\n",		\
++				 (u64)st_name.member_name);		\
++	}								\
++
++#define store_func(struct_name, member_name, reg_idx)			\
++	static ssize_t store_##member_name(struct kobject *kobj,	\
++					   struct kobj_attribute *attr,	\
++					   const char *buf, size_t count)\
++	{								\
++		struct amd_desc *desc =3D to_amd_desc(kobj);		\
++		struct struct_name st_name =3D {0};			\
++		u32 val;						\
++		int ret;						\
++									\
++		ret =3D kstrtou32(buf, 0, &val);				\
++		if (ret)						\
++			return ret;					\
++									\
++		st_name.member_name =3D val;				\
++									\
++		ret =3D cppc_set_reg(desc->cpu_id, &st_name, reg_idx);	\
++		if (ret)						\
++			return ret;					\
++									\
++		return count;						\
++	}								\
++
++#define define_one_rw(struct_name, access_fn, member_name, reg_idx)	\
++	show_func(access_fn, struct_name, member_name)			\
++	store_func(struct_name, member_name, reg_idx)			\
++	define_one_global_rw(member_name)
++
++define_one_rw(cppc_ctrls, cppc_get_ctrls, enable, ENABLE);
++define_one_rw(cppc_ctrls, cppc_get_ctrls, max_perf, MAX_PERF);
++define_one_rw(cppc_ctrls, cppc_get_ctrls, min_perf, MIN_PERF);
++define_one_rw(cppc_ctrls, cppc_get_ctrls, desired_perf, DESIRED_PERF);
++define_one_rw(cppc_ctrls, cppc_get_ctrls, auto_sel_enable, AUTO_SEL_ENABLE=
+);
++
++static struct attribute *amd_cpufreq_attributes[] =3D {
++	&enable.attr,
++	&max_perf.attr,
++	&min_perf.attr,
++	&desired_perf.attr,
++	&auto_sel_enable.attr,
++	NULL
++};
++
++static const struct attribute_group amd_cpufreq_attr_group =3D {
++	.attrs =3D amd_cpufreq_attributes,
++};
++
++static struct kobj_type amd_cpufreq_type =3D {
++	.sysfs_ops =3D &kobj_sysfs_ops,
++	.default_attrs =3D amd_cpufreq_attributes,
++};
++
++static int amd_cpufreq_cpu_init(struct cpufreq_policy *policy)
 +{
-+	switch (reg_idx) {
-+	case HIGHEST_PERF:
-+	case NOMINAL_PERF:
-+	case LOW_NON_LINEAR_PERF:
-+	case LOWEST_PERF:
-+	case CTR_WRAP_TIME:
-+	case AUTO_SEL_ENABLE:
-+	case REFERENCE_PERF:
-+		return false;
-+	default:
-+		return true;
-+	}
++	return 0;
 +}
 +
-+#define REG_SUPPORTED(cpc, idx) (is_buf_only(idx) ?			    \
-+				 CPC_SUP_BUFFER_ONLY(&cpc->cpc_regs[idx]) : \
-+				 CPC_SUPPORTED(&cpc->cpc_regs[idx]))
++static int amd_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	return 0;
++}
 +
- /**
-  * acpi_cppc_processor_probe - Search for per CPU _CPC objects.
-  * @pr: Ptr to acpi_processor containing this CPU's logical ID.
++static int amd_cpufreq_cpu_verify(struct cpufreq_policy *policy)
++{
++	return 0;
++}
++
++static int amd_cpufreq_cpu_target_index(struct cpufreq_policy *policy,
++					unsigned int index)
++{
++	return 0;
++}
++
++static struct cpufreq_driver amd_cpufreq_driver =3D {
++	.name =3D "amd_cpufreq",
++	.init =3D amd_cpufreq_cpu_init,
++	.exit =3D amd_cpufreq_cpu_exit,
++	.verify =3D amd_cpufreq_cpu_verify,
++	.target_index =3D amd_cpufreq_cpu_target_index,
++};
++
++static void amd_cpufreq_sysfs_delete_params(void)
++{
++	int i;
++
++	for_each_possible_cpu(i) {
++		if (all_cpu_data[i]) {
++			kobject_del(&all_cpu_data[i]->kobj);
++			kfree(all_cpu_data[i]);
++		}
++	}
++
++	kfree(all_cpu_data);
++}
++
++static int __init amd_cpufreq_sysfs_expose_params(void)
++{
++	struct device *cpu_dev;
++	int i, ret;
++
++	all_cpu_data =3D kcalloc(num_possible_cpus(), sizeof(void *),
++			       GFP_KERNEL);
++
++	if (!all_cpu_data)
++		return -ENOMEM;
++
++	for_each_possible_cpu(i) {
++		all_cpu_data[i] =3D kzalloc(sizeof(struct amd_desc), GFP_KERNEL);
++		if (!all_cpu_data[i]) {
++			ret =3D -ENOMEM;
++			goto free;
++		}
++
++		all_cpu_data[i]->cpu_id =3D i;
++		cpu_dev =3D get_cpu_device(i);
++		ret =3D kobject_init_and_add(&all_cpu_data[i]->kobj, &amd_cpufreq_type,
++					   &cpu_dev->kobj, "amd_cpufreq");
++		if (ret)
++			goto free;
++	}
++
++	return 0;
++free:
++	amd_cpufreq_sysfs_delete_params();
++	return ret;
++}
++
++static int __init amd_cpufreq_init(void)
++{
++	int ret =3D 0;
++
++	/*
++	 * Use only if:
++	 * - AMD,
++	 * - Family 17h (or) newer and,
++	 * - Explicitly enabled
++	 */
++	if (boot_cpu_data.x86_vendor !=3D X86_VENDOR_AMD ||
++	    boot_cpu_data.x86 < 0x17 || !cppc_enable)
++		return -ENODEV;
++
++	ret =3D cpufreq_register_driver(&amd_cpufreq_driver);
++	if (ret) {
++		pr_info("Failed to register driver\n");
++		goto out;
++	}
++
++	ret =3D amd_cpufreq_sysfs_expose_params();
++	if (ret) {
++		pr_info("Could not create sysfs entries\n");
++		cpufreq_unregister_driver(&amd_cpufreq_driver);
++		goto out;
++	}
++
++	pr_info("Using amd-cpufreq driver\n");
++	return ret;
++
++out:
++	return ret;
++}
++
++static void __exit amd_cpufreq_exit(void)
++{
++	amd_cpufreq_sysfs_delete_params();
++	cpufreq_unregister_driver(&amd_cpufreq_driver);
++}
++
++static const struct acpi_device_id amd_acpi_ids[] __used =3D {
++	{ACPI_PROCESSOR_DEVICE_HID, },
++	{}
++};
++
++device_initcall(amd_cpufreq_init);
++module_exit(amd_cpufreq_exit);
++MODULE_DEVICE_TABLE(acpi, amd_acpi_ids);
++
++MODULE_AUTHOR("Janakarajan Natarajan");
++MODULE_DESCRIPTION("AMD CPUFreq driver based on ACPI CPPC v6.1 spec");
++MODULE_LICENSE("GPL");
 --=20
 2.17.1
 
