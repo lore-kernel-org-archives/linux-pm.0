@@ -2,39 +2,38 @@ Return-Path: <SRS0=sVk8=VH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63571C74A25
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 13:44:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43C9EC74A21
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 13:44:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2F5C320861
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 13:44:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1ADAE2084B
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 13:44:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727389AbfGJNox (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Jul 2019 09:44:53 -0400
+        id S1726617AbfGJNoz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Jul 2019 09:44:55 -0400
 Received: from mga06.intel.com ([134.134.136.31]:8319 "EHLO mga06.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727718AbfGJNot (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Jul 2019 09:44:49 -0400
+        id S1727742AbfGJNoz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jul 2019 09:44:55 -0400
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 10 Jul 2019 06:44:48 -0700
+  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 10 Jul 2019 06:44:55 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.63,474,1557212400"; 
-   d="scan'208";a="170923285"
+   d="scan'208";a="170923321"
 Received: from ygao39-mobl1.ccr.corp.intel.com (HELO rzhang-dell-9360.ccr.corp.intel.com) ([10.255.30.205])
-  by orsmga006.jf.intel.com with ESMTP; 10 Jul 2019 06:44:47 -0700
+  by orsmga006.jf.intel.com with ESMTP; 10 Jul 2019 06:44:53 -0700
 From:   Zhang Rui <rui.zhang@intel.com>
 To:     rjw@rjwysocki.net
 Cc:     linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com,
         rui.zhang@intel.com
-Subject: [PATCH V3 04/17] intel_rapl: introduce struct rapl_if_private
-Date:   Wed, 10 Jul 2019 21:44:25 +0800
-Message-Id: <1562766278-7099-5-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH V3 08/17] intel_rapl: cleanup hardcoded MSR access
+Date:   Wed, 10 Jul 2019 21:44:29 +0800
+Message-Id: <1562766278-7099-9-git-send-email-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1562766278-7099-1-git-send-email-rui.zhang@intel.com>
 References: <1562766278-7099-1-git-send-email-rui.zhang@intel.com>
@@ -43,247 +42,110 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduce a new structure, rapl_if_private, to save the private data
-for different RAPL Interface.
+There are still some places in the common code that have hardcoded
+MSR access, convert them to follow the abstracted register access.
 
 Reviewed-and-tested-by: Pandruvada, Srinivas <srinivas.pandruvada@intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/powercap/intel_rapl.c | 59 +++++++++++++++++++++----------------------
- include/linux/intel_rapl.h    | 15 +++++++++++
- 2 files changed, 44 insertions(+), 30 deletions(-)
+ drivers/powercap/intel_rapl.c | 38 ++++++++++++++++++++++----------------
+ 1 file changed, 22 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index adb35ec..e05d92d 100644
+index 7a97d33..aa54c06 100644
 --- a/drivers/powercap/intel_rapl.c
 +++ b/drivers/powercap/intel_rapl.c
-@@ -75,6 +75,9 @@ enum unit_type {
- 	TIME_UNIT,
- };
+@@ -767,22 +767,24 @@ static int rapl_write_data_raw(struct rapl_domain *rd,
+  */
+ static int rapl_check_unit_core(struct rapl_package *rp, int cpu)
+ {
+-	u64 msr_val;
++	struct reg_action ra;
+ 	u32 value;
  
-+/* private data for RAPL MSR Interface */
-+static struct rapl_if_priv rapl_msr_priv;
+-	if (rdmsrl_safe_on_cpu(cpu, rp->priv->reg_unit, &msr_val)) {
+-		pr_err("Failed to read power unit MSR 0x%x on CPU %d, exit.\n",
++	ra.reg = rp->priv->reg_unit;
++	ra.mask = ~0;
++	if (rp->priv->read_raw(cpu, &ra)) {
++		pr_err("Failed to read power unit REG 0x%x on CPU %d, exit.\n",
+ 			rp->priv->reg_unit, cpu);
+ 		return -ENODEV;
+ 	}
+ 
+-	value = (msr_val & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
++	value = (ra.value & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
+ 	rp->energy_unit = ENERGY_UNIT_SCALE * 1000000 / (1 << value);
+ 
+-	value = (msr_val & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
++	value = (ra.value & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
+ 	rp->power_unit = 1000000 / (1 << value);
+ 
+-	value = (msr_val & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
++	value = (ra.value & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
+ 	rp->time_unit = 1000000 / (1 << value);
+ 
+ 	pr_debug("Core CPU %s energy=%dpJ, time=%dus, power=%duW\n",
+@@ -793,21 +795,24 @@ static int rapl_check_unit_core(struct rapl_package *rp, int cpu)
+ 
+ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
+ {
+-	u64 msr_val;
++	struct reg_action ra;
+ 	u32 value;
+ 
+-	if (rdmsrl_safe_on_cpu(cpu, rp->priv->reg_unit, &msr_val)) {
+-		pr_err("Failed to read power unit MSR 0x%x on CPU %d, exit.\n",
++	ra.reg = rp->priv->reg_unit;
++	ra.mask = ~0;
++	if (rp->priv->read_raw(cpu, &ra)) {
++		pr_err("Failed to read power unit REG 0x%x on CPU %d, exit.\n",
+ 			rp->priv->reg_unit, cpu);
+ 		return -ENODEV;
+ 	}
+-	value = (msr_val & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
 +
- /* per domain data, some are optional */
- #define NR_RAW_PRIMITIVES (NR_RAPL_PRIMITIVES - 2)
++	value = (ra.value & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
+ 	rp->energy_unit = ENERGY_UNIT_SCALE * 1 << value;
  
-@@ -155,17 +158,14 @@ static const char * const rapl_domain_names[] = {
- 	"psys",
- };
+-	value = (msr_val & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
++	value = (ra.value & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
+ 	rp->power_unit = (1 << value) * 1000;
  
--static struct powercap_control_type *control_type; /* PowerCap Controller */
--static struct rapl_domain *platform_rapl_domain; /* Platform (PSys) domain */
--
- /* caller to ensure CPU hotplug lock is held */
--static struct rapl_package *rapl_find_package_domain(int cpu)
-+static struct rapl_package *rapl_find_package_domain(int cpu, struct rapl_if_priv *priv)
+-	value = (msr_val & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
++	value = (ra.value & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
+ 	rp->time_unit = 1000000 / (1 << value);
+ 
+ 	pr_debug("Atom %s energy=%dpJ, time=%dus, power=%duW\n",
+@@ -1180,15 +1185,14 @@ static void rapl_remove_platform_domain(struct rapl_if_priv *priv)
+ 
+ static int rapl_check_domain(int cpu, int domain, struct rapl_package *rp)
  {
- 	int id = topology_logical_die_id(cpu);
- 	struct rapl_package *rp;
+-	u32 reg;
+-	u64 val = 0;
++	struct reg_action ra;
  
- 	list_for_each_entry(rp, &rapl_packages, plist) {
--		if (rp->id == id)
-+		if (rp->id == id && rp->priv->control_type == priv->control_type)
- 			return rp;
- 	}
- 
-@@ -1090,12 +1090,12 @@ static void rapl_update_domain_data(struct rapl_package *rp)
- 
- static void rapl_unregister_powercap(void)
- {
--	if (platform_rapl_domain) {
--		powercap_unregister_zone(control_type,
--					 &platform_rapl_domain->power_zone);
--		kfree(platform_rapl_domain);
-+	if (&rapl_msr_priv.platform_rapl_domain) {
-+		powercap_unregister_zone(rapl_msr_priv.control_type,
-+					 &rapl_msr_priv.platform_rapl_domain->power_zone);
-+		kfree(rapl_msr_priv.platform_rapl_domain);
- 	}
--	powercap_unregister_control_type(control_type);
-+	powercap_unregister_control_type(rapl_msr_priv.control_type);
- }
- 
- static int rapl_package_register_powercap(struct rapl_package *rp)
-@@ -1113,7 +1113,7 @@ static int rapl_package_register_powercap(struct rapl_package *rp)
- 			nr_pl = find_nr_power_limit(rd);
- 			pr_debug("register package domain %s\n", rp->name);
- 			power_zone = powercap_register_zone(&rd->power_zone,
--							control_type,
-+							rp->priv->control_type,
- 							rp->name, NULL,
- 							&zone_ops[rd->id],
- 							nr_pl,
-@@ -1140,7 +1140,7 @@ static int rapl_package_register_powercap(struct rapl_package *rp)
- 		/* number of power limits per domain varies */
- 		nr_pl = find_nr_power_limit(rd);
- 		power_zone = powercap_register_zone(&rd->power_zone,
--						control_type, rd->name,
-+						rp->priv->control_type, rd->name,
- 						rp->power_zone,
- 						&zone_ops[rd->id], nr_pl,
- 						&constraint_ops);
-@@ -1161,7 +1161,7 @@ static int rapl_package_register_powercap(struct rapl_package *rp)
+ 	switch (domain) {
+ 	case RAPL_DOMAIN_PACKAGE:
+ 	case RAPL_DOMAIN_PP0:
+ 	case RAPL_DOMAIN_PP1:
+ 	case RAPL_DOMAIN_DRAM:
+-		reg = rp->priv->regs[domain][RAPL_DOMAIN_REG_STATUS];
++		ra.reg = rp->priv->regs[domain][RAPL_DOMAIN_REG_STATUS];
+ 		break;
+ 	case RAPL_DOMAIN_PLATFORM:
+ 		/* PSYS(PLATFORM) is not a CPU domain, so avoid printng error */
+@@ -1200,7 +1204,9 @@ static int rapl_check_domain(int cpu, int domain, struct rapl_package *rp)
+ 	/* make sure domain counters are available and contains non-zero
+ 	 * values, otherwise skip it.
  	 */
- 	while (--rd >= rp->domains) {
- 		pr_debug("unregister %s domain %s\n", rp->name, rd->name);
--		powercap_unregister_zone(control_type, &rd->power_zone);
-+		powercap_unregister_zone(rp->priv->control_type, &rd->power_zone);
- 	}
- 
- 	return ret;
-@@ -1191,9 +1191,9 @@ static int __init rapl_register_psys(void)
- 	rd->rpl[0].name = pl1_name;
- 	rd->rpl[1].prim_id = PL2_ENABLE;
- 	rd->rpl[1].name = pl2_name;
--	rd->rp = rapl_find_package_domain(0);
-+	rd->rp = rapl_find_package_domain(0, &rapl_msr_priv);
- 
--	power_zone = powercap_register_zone(&rd->power_zone, control_type,
-+	power_zone = powercap_register_zone(&rd->power_zone, rapl_msr_priv.control_type,
- 					    "psys", NULL,
- 					    &zone_ops[RAPL_DOMAIN_PLATFORM],
- 					    2, &constraint_ops);
-@@ -1203,17 +1203,17 @@ static int __init rapl_register_psys(void)
- 		return PTR_ERR(power_zone);
- 	}
- 
--	platform_rapl_domain = rd;
-+	rapl_msr_priv.platform_rapl_domain = rd;
- 
- 	return 0;
- }
- 
- static int __init rapl_register_powercap(void)
- {
--	control_type = powercap_register_control_type(NULL, "intel-rapl", NULL);
--	if (IS_ERR(control_type)) {
-+	rapl_msr_priv.control_type = powercap_register_control_type(NULL, "intel-rapl", NULL);
-+	if (IS_ERR(rapl_msr_priv.control_type)) {
- 		pr_debug("failed to register powercap control_type.\n");
--		return PTR_ERR(control_type);
-+		return PTR_ERR(rapl_msr_priv.control_type);
- 	}
- 	return 0;
- }
-@@ -1338,16 +1338,16 @@ static void rapl_remove_package(struct rapl_package *rp)
- 		}
- 		pr_debug("remove package, undo power limit on %s: %s\n",
- 			 rp->name, rd->name);
--		powercap_unregister_zone(control_type, &rd->power_zone);
-+		powercap_unregister_zone(rp->priv->control_type, &rd->power_zone);
- 	}
- 	/* do parent zone last */
--	powercap_unregister_zone(control_type, &rd_package->power_zone);
-+	powercap_unregister_zone(rp->priv->control_type, &rd_package->power_zone);
- 	list_del(&rp->plist);
- 	kfree(rp);
- }
- 
- /* called from CPU hotplug notifier, hotplug lock held */
--static struct rapl_package *rapl_add_package(int cpu)
-+static struct rapl_package *rapl_add_package(int cpu, struct rapl_if_priv *priv)
- {
- 	int id = topology_logical_die_id(cpu);
- 	struct rapl_package *rp;
-@@ -1361,6 +1361,7 @@ static struct rapl_package *rapl_add_package(int cpu)
- 	/* add the new package to the list */
- 	rp->id = id;
- 	rp->lead_cpu = cpu;
-+	rp->priv = priv;
- 
- 	if (topology_max_die_per_package() > 1)
- 		snprintf(rp->name, PACKAGE_DOMAIN_NAME_LENGTH,
-@@ -1399,9 +1400,9 @@ static int rapl_cpu_online(unsigned int cpu)
- {
- 	struct rapl_package *rp;
- 
--	rp = rapl_find_package_domain(cpu);
-+	rp = rapl_find_package_domain(cpu, &rapl_msr_priv);
- 	if (!rp) {
--		rp = rapl_add_package(cpu);
-+		rp = rapl_add_package(cpu, &rapl_msr_priv);
- 		if (IS_ERR(rp))
- 			return PTR_ERR(rp);
- 	}
-@@ -1414,7 +1415,7 @@ static int rapl_cpu_down_prep(unsigned int cpu)
- 	struct rapl_package *rp;
- 	int lead_cpu;
- 
--	rp = rapl_find_package_domain(cpu);
-+	rp = rapl_find_package_domain(cpu, &rapl_msr_priv);
- 	if (!rp)
- 		return 0;
- 
-@@ -1427,8 +1428,6 @@ static int rapl_cpu_down_prep(unsigned int cpu)
- 	return 0;
- }
- 
--static enum cpuhp_state pcap_rapl_online;
--
- static void power_limit_state_save(void)
- {
- 	struct rapl_package *rp;
-@@ -1538,7 +1537,7 @@ static int __init rapl_init(void)
- 				rapl_cpu_online, rapl_cpu_down_prep);
- 	if (ret < 0)
- 		goto err_unreg;
--	pcap_rapl_online = ret;
-+	rapl_msr_priv.pcap_rapl_online = ret;
- 
- 	/* Don't bail out if PSys is not supported */
- 	rapl_register_psys();
-@@ -1550,7 +1549,7 @@ static int __init rapl_init(void)
- 	return 0;
- 
- err_unreg_all:
--	cpuhp_remove_state(pcap_rapl_online);
-+	cpuhp_remove_state(rapl_msr_priv.pcap_rapl_online);
- 
- err_unreg:
- 	rapl_unregister_powercap();
-@@ -1560,7 +1559,7 @@ static int __init rapl_init(void)
- static void __exit rapl_exit(void)
- {
- 	unregister_pm_notifier(&rapl_pm_notifier);
--	cpuhp_remove_state(pcap_rapl_online);
-+	cpuhp_remove_state(rapl_msr_priv.pcap_rapl_online);
- 	rapl_unregister_powercap();
- }
- 
-diff --git a/include/linux/intel_rapl.h b/include/linux/intel_rapl.h
-index 9471603..7bf1683e4 100644
---- a/include/linux/intel_rapl.h
-+++ b/include/linux/intel_rapl.h
-@@ -88,6 +88,20 @@ struct rapl_domain {
- 	struct rapl_package *rp;
- };
- 
-+/**
-+ * struct rapl_if_priv: private data for different RAPL interfaces
-+ * @control_type:		Each RAPL interface must have its own powercap
-+ *				control type.
-+ * @platform_rapl_domain:	Optional. Some RAPL interface may have platform
-+ *				level RAPL control.
-+ * @pcap_rapl_online:		CPU hotplug state for each RAPL interface.
-+ */
-+struct rapl_if_priv {
-+	struct powercap_control_type *control_type;
-+	struct rapl_domain *platform_rapl_domain;
-+	enum cpuhp_state pcap_rapl_online;
-+};
+-	if (rdmsrl_safe_on_cpu(cpu, reg, &val) || !val)
 +
- /* maximum rapl package domain name: package-%d-die-%d */
- #define PACKAGE_DOMAIN_NAME_LENGTH 30
++	ra.mask = ~0;
++	if (rp->priv->read_raw(cpu, &ra) || !ra.value)
+ 		return -ENODEV;
  
-@@ -108,6 +122,7 @@ struct rapl_package {
- 	/* Track active cpus */
- 	struct cpumask cpumask;
- 	char name[PACKAGE_DOMAIN_NAME_LENGTH];
-+	struct rapl_if_priv *priv;
- };
- 
- #endif /* __INTEL_RAPL_H__ */
+ 	return 0;
 -- 
 2.7.4
 
