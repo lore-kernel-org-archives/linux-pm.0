@@ -2,120 +2,97 @@ Return-Path: <SRS0=sVk8=VH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D4EBC73C64
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 11:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6135FC606CF
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 12:21:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F2C292064B
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 11:46:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XQEtbqgI"
+	by mail.kernel.org (Postfix) with ESMTP id 36E902084B
+	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 12:21:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726097AbfGJLqy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Jul 2019 07:46:54 -0400
-Received: from mail-pl1-f195.google.com ([209.85.214.195]:45324 "EHLO
-        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725956AbfGJLqy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2019 07:46:54 -0400
-Received: by mail-pl1-f195.google.com with SMTP id y8so1097717plr.12
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jul 2019 04:46:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=E7GcSL06EKocZd6MAQEqpVHgYClPW57nk4fTdNrfLes=;
-        b=XQEtbqgI5cgEJf0rZPJ+RHECruns4dgTgAsoNFnDCAeOtr8qshkl1bxYaOmDTI+7Tf
-         08hxYyOWtxGv+GLwRdpl9Qa9wqEiMnY3yViyXALarV/xYLol5P7O4R4evCbtL+rJcwk+
-         ZksC3NWSwIftzuXX6zvV6wWc0g8CsClMQ/SC2aMm1tNrO2W0HdGXgXgcIAX5KPxlWN2I
-         bzGd3we/6D/5K2LQ9r+HsGZURomaGJcmE2TQSgljwmy4HhIgBoEQ8W1dIQqVAxEOPQXb
-         XFP2eJokrNakGV7KgMOMXDfa0AX0RBwuPtFS5c8ycWgDErNnqGlJn8X1XAzsmejFE0Se
-         /UEA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=E7GcSL06EKocZd6MAQEqpVHgYClPW57nk4fTdNrfLes=;
-        b=XzrSImvb97q3Ty6uzDLhkkppwHj3piZaJ7EWavvJJC6COF31RcIRykyVMdK6bYxqdL
-         xJzg+T2UoawgPciVk7Z8qeXxYu94AxtEZ8iSHtVrYguIpPdo89swSAy38iAj2azY5mdQ
-         0nO+lNW8wLkTY7qt5vxb4872RD7Fz02SJ4soQ9IJj0/LCuNJhh1Artfa4e0Z3uetojIO
-         4zJOKcw5sc+7ww4N1pNsAIGCEzhmcpg6GiKq1v+FmaRbLwNmLwL8PzomOWtqt6b12kyS
-         95xcJlvCxFPvikQAN/nc5gku8OKnL2ZOeEEK64GGjEmeEDl/hsbeHDSvrLKsir/1m+ne
-         xVXw==
-X-Gm-Message-State: APjAAAXcsEXx/XJ/X6Jp/oZsGMwRxzuV9gO1iJtfzaVG0Vjgy+kTLUMw
-        dhI0ANtOsOllmk+bzRhYEWwpCJDB7vERHA==
-X-Google-Smtp-Source: APXvYqzwx+8EeHFffEXIFvoFOuecP4rBXizBq8vsKL6k/zuNVRpPi1MPCP7rAdrxe5n40/Df5lW9xw==
-X-Received: by 2002:a17:902:7687:: with SMTP id m7mr39014082pll.310.1562759212947;
-        Wed, 10 Jul 2019 04:46:52 -0700 (PDT)
-Received: from localhost ([49.248.170.152])
-        by smtp.gmail.com with ESMTPSA id q63sm2602413pfb.81.2019.07.10.04.46.51
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 10 Jul 2019 04:46:52 -0700 (PDT)
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-To:     linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH] thermal: Add some error messages
-Date:   Wed, 10 Jul 2019 17:16:47 +0530
-Message-Id: <0d3d6111f8a8bd199f1a5a5cd8c4e83e4f0690be.1562757659.git.amit.kucheria@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1562757659.git.amit.kucheria@linaro.org>
-References: <cover.1562757659.git.amit.kucheria@linaro.org>
+        id S1726945AbfGJMVY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Jul 2019 08:21:24 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:37314 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726411AbfGJMVY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jul 2019 08:21:24 -0400
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com [10.5.11.15])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mx1.redhat.com (Postfix) with ESMTPS id 508677573D;
+        Wed, 10 Jul 2019 12:21:24 +0000 (UTC)
+Received: from prarit.bos.redhat.com (prarit-guest.khw1.lab.eng.bos.redhat.com [10.16.200.63])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id D57571713F;
+        Wed, 10 Jul 2019 12:21:23 +0000 (UTC)
+Subject: Re: [PATCH v2] tools/power/x86/intel-speed-select: Add .gitignore
+ file
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        David Arcari <darcari@redhat.com>
+References: <20190708231725.11353-1-prarit@redhat.com>
+ <CAHp75VeyUK_ohxPwTg988gXugRh=y5QxT1zhSCmKoG5-CutRnQ@mail.gmail.com>
+From:   Prarit Bhargava <prarit@redhat.com>
+Message-ID: <b0d763a8-7f07-db47-3a99-6bb21db3bb0b@redhat.com>
+Date:   Wed, 10 Jul 2019 08:21:23 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
+MIME-Version: 1.0
+In-Reply-To: <CAHp75VeyUK_ohxPwTg988gXugRh=y5QxT1zhSCmKoG5-CutRnQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.25]); Wed, 10 Jul 2019 12:21:24 +0000 (UTC)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When registering a thermal zone device, we currently return -EINVAL in
-four cases. This makes it a little hard to debug the real cause of the
-failure.
 
-Print some error messages to make it easier for developer to figure out
-what happened.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/thermal_core.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+On 7/9/19 12:39 PM, Andy Shevchenko wrote:
+> On Tue, Jul 9, 2019 at 2:17 AM Prarit Bhargava <prarit@redhat.com> wrote:
+>>
+>> Add a .gitignore file for build include/ and final binary.
+>>
+> 
+> It has improper Cc list (No PDx86, no its maintainers, no LKML, which
+> is also requirement to send patches to PDx86).
+> Please, gather the tags you got and send v2 with properly formed Cc list.
+> 
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 46cfb7de4eb28..95c3a4c649cf8 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1238,17 +1238,26 @@ thermal_zone_device_register(const char *type, int trips, int mask,
- 	int count;
- 	struct thermal_governor *governor;
- 
--	if (!type || strlen(type) == 0)
-+	if (!type || strlen(type) == 0) {
-+		pr_err("Error: No thermal zone type defined");
- 		return ERR_PTR(-EINVAL);
-+	}
- 
--	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-+	if (type && strlen(type) >= THERMAL_NAME_LENGTH) {
-+		pr_err("Error: Thermal zone name (%s) too long, should be under %d chars",
-+		       type, THERMAL_NAME_LENGTH);
- 		return ERR_PTR(-EINVAL);
-+	}
- 
--	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips)
-+	if (trips > THERMAL_MAX_TRIPS || trips < 0 || mask >> trips) {
-+		pr_err("Error: Incorrect number of thermal trips");
- 		return ERR_PTR(-EINVAL);
-+	}
- 
--	if (!ops)
-+	if (!ops) {
-+		pr_err("Error: Thermal zone device ops not defined");
- 		return ERR_PTR(-EINVAL);
-+	}
- 
- 	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp))
- 		return ERR_PTR(-EINVAL);
--- 
-2.17.1
+The problem is that get_maintainer.pl is throwing an error when I run it on this
+patch so I had to make a guess at the cc list.
 
+ie) Bad divisor in main::vcs_assign: 0
+
+I'll backup a couple of versions of get_maintainer.pl and see if that works.  If
+not, should I just copy the cc list from Srinivas' original patchset?
+
+P.
+
+>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>> Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
+>> Cc: David Arcari <darcari@redhat.com>
+>> ---
+>>  tools/power/x86/intel-speed-select/.gitignore | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>  create mode 100644 tools/power/x86/intel-speed-select/.gitignore
+>>
+>> diff --git a/tools/power/x86/intel-speed-select/.gitignore b/tools/power/x86/intel-speed-select/.gitignore
+>> new file mode 100644
+>> index 000000000000..f61145925ce9
+>> --- /dev/null
+>> +++ b/tools/power/x86/intel-speed-select/.gitignore
+>> @@ -0,0 +1,2 @@
+>> +include/
+>> +intel-speed-select
+>> --
+>> 2.21.0
+>>
+> 
+> 
