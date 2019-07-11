@@ -2,182 +2,248 @@ Return-Path: <SRS0=gkov=VI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=no
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E73E5C742A1
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 23:17:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A1F4C742A1
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 23:44:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B1922216C4
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 23:17:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DA9D0208E4
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 23:44:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="dXUXhqnV"
+	dkim=pass (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="IGKpfpLd"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728748AbfGKXRX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 11 Jul 2019 19:17:23 -0400
-Received: from mail-ot1-f65.google.com ([209.85.210.65]:44107 "EHLO
-        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726207AbfGKXRX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2019 19:17:23 -0400
-Received: by mail-ot1-f65.google.com with SMTP id b7so7586702otl.11
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jul 2019 16:17:22 -0700 (PDT)
+        id S1729623AbfGKXoT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 11 Jul 2019 19:44:19 -0400
+Received: from mail-pl1-f193.google.com ([209.85.214.193]:38944 "EHLO
+        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729220AbfGKXoT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jul 2019 19:44:19 -0400
+Received: by mail-pl1-f193.google.com with SMTP id b7so3831762pls.6
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jul 2019 16:44:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=eF/FATHnyDx4kXpuDdrKjFESLigVlsCwyIyMGRSOv5o=;
-        b=dXUXhqnVpjdzJkRR84wx1ie47Lkb5xFZc0F1De5WarK7idFmMRbSp659Q9zkEIKemE
-         nnZGFifafl6P2MI62eBFkmcptAKt44aAzoX40E/Yxu2T+SMvkRxDA4SeLCzZKkFfcXOb
-         +Gg1v6vrTLy9fsxv46ddYIITt6G6QGwaFEsNkeYFtFWZPXOWE6IUXRMLWfhmkq+uP5dr
-         ugR+4/L3EpBxrCmypbwDnlmK4ZDHw1RF6HnzvI9DAg0Agq9PNboqsgpOiDPSZPfQOrhA
-         Zhjn4BFpbehfFcELpg9w5RnewGRZPmBzTW5rKf3KS5gb6ktdKebrfNS/rNm9iz+8+ky4
-         Qs9A==
+        d=joelfernandes.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=FITTKsy0ccvIyixSPRiCdGiovalZSrd3OHcUD21QK98=;
+        b=IGKpfpLdCh9L199i85cDoWBN2sVOwSD+UtAb3c4qrcAw43wxgeMdcgA9g+jve3LID5
+         6vOOpxemLXJj1CZ79tB3Pje6chjO0HvYbVetcbgPQoCchXFtYur1Efy9Q7vdAWUF4ngJ
+         VBDST6I2Pm3/IeSKN7V5T8vNCOjcm1ESkYOGo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=eF/FATHnyDx4kXpuDdrKjFESLigVlsCwyIyMGRSOv5o=;
-        b=KSyNSRY9TB7VH631HFDh+9e9xSGtY3bSJh1NxXkpqpJEYtfBrdAK8mkF3SXo6gCdqB
-         Y4NtXoEn0VpnT6vR20wl4YxOMYfcG3AVldq9B05j2K6uXHsXXV2noRgWlp8ZGHN2ucJe
-         ub0Z96dLW0TdiAqjxa6EP69O83fW/3VEmQSY3NAmVkj7cCZP99+cSFNEYsek36qHy+bt
-         n52hD478j5DogfCbiPqoa98wC6tEa7t1D0gPT0Mek/mevw6GQk+BfNE2ry6ADiXU0MOM
-         0cMWj/1e7T2muquTZsd34x2xqK8dbLdXDQYK0kpj3mX0FT6DToZwCYXUSEjAeB6Iw/ka
-         Z/4w==
-X-Gm-Message-State: APjAAAXcRB/a6CZ1M2sdQzg9IpOnt4zde3T+WFCd6odH19thE+PiWZeZ
-        h13PkQa/P3lBPIjbb4491kJo2x/5sECVPT+pCNQbBg==
-X-Google-Smtp-Source: APXvYqxv5qqykKmN0wSDtmvqN3DZS8UYcHJk5gwXPHStya7oU2uHtSU00jGdrstG6DFq0FZM2sY9YdbGgcBqruFHuLQ=
-X-Received: by 2002:a05:6830:12d6:: with SMTP id a22mr5605358otq.236.1562887042322;
- Thu, 11 Jul 2019 16:17:22 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190622003449.33707-1-saravanak@google.com> <20190624094349.rtjb7nuv6g7zmsf2@vireshk-i7>
- <CAGETcx_ggG8oDnAVaSfuHfip1ozjQpFiGs15cz8nLQnzjTiSTg@mail.gmail.com>
- <20190625041054.2ceuvnuuebc6hsr5@vireshk-i7> <CAGETcx8MuXkQyD5qZBC948-hOu=kWd4hPk2Qiu-zWOcHBCc=FA@mail.gmail.com>
- <20190625052227.3v74l6xtrkydzx6w@vireshk-i7> <CAGETcx_v05PfscMi2qiYwHRMLryyA_494+h+kmJ3mD+GOjjeLA@mail.gmail.com>
- <20190626063240.kgdiy7xsz4mahrdr@vireshk-i7> <CAGETcx_KH6pqgqZFKddWmgiUX3n+XBU6BoFXkVvPdA4vMDHWsw@mail.gmail.com>
- <20190628064914.4nu6ql7f7h7o4iul@vireshk-i7> <CAGETcx-gSQLtbM+7WgqNvhCypmwoMNjkAkGDqRnK=PUGUOxjkQ@mail.gmail.com>
-In-Reply-To: <CAGETcx-gSQLtbM+7WgqNvhCypmwoMNjkAkGDqRnK=PUGUOxjkQ@mail.gmail.com>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Thu, 11 Jul 2019 16:16:46 -0700
-Message-ID: <CAGETcx_AiziadEDBrTiXa0qy5dMp3MM=8JLkuESg_SJ4sLZzqQ@mail.gmail.com>
-Subject: Re: [PATCH v1 0/3] Add required-opps support to devfreq passive gov
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=FITTKsy0ccvIyixSPRiCdGiovalZSrd3OHcUD21QK98=;
+        b=q/5simg01HMchcwIf8wpzfcjoQO/jEakTV/vXUOztw5VkBZHaKdtjS2Ob75+B7zLO4
+         wHrnbdlYhbvifCFJY6nVGKCfr15UJuCSghmpiJEZsLUGkDPSgL9nn1Hpd8J8tB0QGIBT
+         MVayd+v+nNzZ/uiab/2WdDwr4sM+WjKdwAbO/4Y3q3sz8SS32rPYUV21EGN/jbU0zR5H
+         kmKiRTWgUf1zCKssMyTFN/fXnFawerSFNlJGul2Y8DwADfZ1/aSbWc6UmlpjfBMCzcZW
+         MIPA3WtUPnJjfVQ0LcGWTZq2Mtv2ANakOuOt+a/BZj9CepaXN4rx9+lUvmfaoit/BKZE
+         OgiQ==
+X-Gm-Message-State: APjAAAU2dKhXuT2J2JvnN+nw0CnC7Hw3ekdnPWgkPJnrIGWG3e0jXYHh
+        gBXOXyuuR3u4uscOhc0nulg=
+X-Google-Smtp-Source: APXvYqwozgq75nMKR73qox3f/PRoDIY5soJTLm7wRfHEcQK+usIOeqo0yORbOwCrmC8k4mWWATDhPg==
+X-Received: by 2002:a17:902:e281:: with SMTP id cf1mr7321567plb.271.1562888658619;
+        Thu, 11 Jul 2019 16:44:18 -0700 (PDT)
+Received: from joelaf.cam.corp.google.com ([2620:15c:6:12:9c46:e0da:efbf:69cc])
+        by smtp.gmail.com with ESMTPSA id t10sm6163450pjr.13.2019.07.11.16.44.15
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Thu, 11 Jul 2019 16:44:17 -0700 (PDT)
+From:   "Joel Fernandes (Google)" <joel@joelfernandes.org>
+To:     linux-kernel@vger.kernel.org
+Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
+        Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Borislav Petkov <bp@alien8.de>, c0d1n61at3@gmail.com,
+        "David S. Miller" <davem@davemloft.net>, edumazet@google.com,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+        Josh Triplett <josh@joshtriplett.org>, keescook@chromium.org,
+        kernel-hardening@lists.openwall.com,
+        Lai Jiangshan <jiangshanlai@gmail.com>,
+        Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+        neilb@suse.com, netdev@vger.kernel.org, oleg@redhat.com,
+        "Paul E. McKenney" <paulmck@linux.ibm.com>,
+        Pavel Machek <pavel@ucw.cz>, peterz@infradead.org,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Android Kernel Team <kernel-team@android.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Rasmus Villemoes <rasmus.villemoes@prevas.dk>,
+        rcu@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+        Tejun Heo <tj@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>, will@kernel.org,
+        x86@kernel.org (maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT))
+Subject: [PATCH v1 1/6] rcu: Add support for consolidated-RCU reader checking
+Date:   Thu, 11 Jul 2019 19:43:56 -0400
+Message-Id: <20190711234401.220336-2-joel@joelfernandes.org>
+X-Mailer: git-send-email 2.22.0.410.gd8fdbe21b5-goog
+In-Reply-To: <20190711234401.220336-1-joel@joelfernandes.org>
+References: <20190711234401.220336-1-joel@joelfernandes.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Bump. I saw your email in Sibi's patch series. His patch series is
-just one use case/user of this feature. This patch series is useful in
-general. Do plan to Ack this? Or thoughts on my earlier response?
+This patch adds support for checking RCU reader sections in list
+traversal macros. Optionally, if the list macro is called under SRCU or
+other lock/mutex protection, then appropriate lockdep expressions can be
+passed to make the checks pass.
 
-Thanks,
-Saravana
+Existing list_for_each_entry_rcu() invocations don't need to pass the
+optional fourth argument (cond) unless they are under some non-RCU
+protection and needs to make lockdep check pass.
 
-On Fri, Jun 28, 2019 at 1:26 PM Saravana Kannan <saravanak@google.com> wrote:
->
-> On Thu, Jun 27, 2019 at 11:49 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 26-06-19, 11:10, Saravana Kannan wrote:
-> > > On Tue, Jun 25, 2019 at 11:32 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > > > So, when a CPU changes frequency, we must change the performance state
-> > > > of PM domain and change frequency/bw of the cache synchronously.
-> > >
-> > > I mean, it's going to be changed when we get the CPUfreq transition
-> > > notifiers. From a correctness point of view, setting it inside the OPP
-> > > framework is not any better than doing it when we get the notifiers.
-> >
-> > That's what the problem is. All maintainers now a days ask people to
-> > stay away from notifiers and we are making that base of another new
-> > thing we are starting.
->
-> In that case we can just add direct calls in cpufreq.c to let devfreq
-> know about the frequency changes. But then again, CPU is just one
-> example for this use case. I'm just using that because people are more
-> familiar with that.
->
-> > Over that, with many cpufreq drivers we have fast switching enabled
-> > and notifiers disabled. How will they make these things work ? We
-> > still want to scale L3 in those cases as well.
->
-> Nothing is preventing them from using the xlate OPP API I added to
-> figure out all the CPU to L3 frequency mapping and then set the L3
-> frequency directly from the CPUfreq driver.
->
-> Also, whether we use OPP framework or devfreq to set the L3 frequency,
-> it's going to block fast switching because both these frameworks have
-> APIs that can sleep.
->
-> But really, most mobile use cases don't want to permanently tie L3
-> freq to CPU freq. Having it go through devfreq and being able to
-> switch governors is a very important need for mobile products.
->
-> Keep in mind that nothing in this series does any of the cpufreq stuff
-> yet. That'll need a few more changes. I was just using CPUfreq as an
-> example.
->
-> > > I see this as "required for good performance". So I don't see it as
-> > > redefining required-opps. If someone wants good performance/power
-> > > balance they follow the "required-opps". Technically even the PM
-> > > pstates are required for good power. Otherwise, the system could leave
-> > > the voltage at max and stuff would still work.
-> > >
-> > > Also, the slave device might need to get input from multiple master
-> > > devices and aggregate the request before setting the slave device
-> > > frequency. So I don't think OPP  framework would be the right place to
-> > > deal with those things. For example, L3 might (will) have different
-> > > mappings for big vs little cores. So that needs to be aggregated and
-> > > set properly by the slave device driver. Also, GPU might have a
-> > > mapping for L3 too. In which case the L3 slave driver needs to take
-> > > input from even more masters before it decides its frequency. But most
-> > > importantly, we still need the ability to change governors for L3.
-> > > Again these are just examples with L3 and it can get more complicated
-> > > based on the situation.
-> > >
-> > > Most importantly, instead of always going by mapping, one might decide
-> > > to scale the L3 based on some other governor (that looks at some HW
-> > > counter). Or just set it to performance governor for a use case for
-> > > which performance is more important. All of this comes for free with
-> > > devfreq and if we always set it from OPP framework we don't give this
-> > > required control to userspace.
-> > >
-> > > I think going through devfreq is the right approach for this. And we
-> > > can always rewrite the software if we find problems in the future. But
-> > > as it stands today, this will help cases like exynos without the need
-> > > for a lot of changes. Hope I've convinced you.
-> >
-> > I understand the aggregation thing and fully support that the
-> > aggregation can't happen in OPP core and must be done somewhere else.
-> > But the input can go from OPP core while the frequency is changing,
-> > isn't it ?
->
-> I'm not opposed to OPP sending input to devfreq to let it know that a
-> master device frequency change is happening. But I think this is kinda
-> orthogonal to this patch series.
->
-> Today the passive governor looks at the master device's devfreq
-> frequency changes to trigger the frequency change of the slave
-> devfreq. It neither supports tracking OPP frequency change nor CPUfreq
-> frequency change. If that's something we want to add, we can look into
-> that separately as passive governor (or a new governor) changes.
->
-> But then not all devices (CPUfreq or otherwise) use OPP to set the
-> frequencies. So it's beneficial to have all of these frameworks as
-> inputs for devfreq passive (like) governor. CPUfreq is actually a bit
-> more tricky because we'll also have to track hotplug, etc. So direct
-> calls from CPUfreq to devfreq (similar to cpufreq stats tracking)
-> would be good.
->
-> -Saravana
+Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+---
+ include/linux/rculist.h  | 29 ++++++++++++++++++++++++-----
+ include/linux/rcupdate.h |  7 +++++++
+ kernel/rcu/Kconfig.debug | 11 +++++++++++
+ kernel/rcu/update.c      | 26 ++++++++++++++++++++++++++
+ 4 files changed, 68 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index e91ec9ddcd30..78c15ec6b2c9 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -40,6 +40,23 @@ static inline void INIT_LIST_HEAD_RCU(struct list_head *list)
+  */
+ #define list_next_rcu(list)	(*((struct list_head __rcu **)(&(list)->next)))
+ 
++/*
++ * Check during list traversal that we are within an RCU reader
++ */
++
++#define SIXTH_ARG(a1, a2, a3, a4, a5, a6, ...) a6
++#define COUNT_VARGS(...) SIXTH_ARG(dummy, ## __VA_ARGS__, 4, 3, 2, 1, 0)
++
++#ifdef CONFIG_PROVE_RCU_LIST
++#define __list_check_rcu(dummy, cond, ...)				\
++	({								\
++	RCU_LOCKDEP_WARN(!cond && !rcu_read_lock_any_held(),		\
++			 "RCU-list traversed in non-reader section!");	\
++	 })
++#else
++#define __list_check_rcu(dummy, cond, ...) ({})
++#endif
++
+ /*
+  * Insert a new entry between two known consecutive entries.
+  *
+@@ -348,9 +365,10 @@ static inline void list_splice_tail_init_rcu(struct list_head *list,
+  * the _rcu list-mutation primitives such as list_add_rcu()
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+-#define list_for_each_entry_rcu(pos, head, member) \
+-	for (pos = list_entry_rcu((head)->next, typeof(*pos), member); \
+-		&pos->member != (head); \
++#define list_for_each_entry_rcu(pos, head, member, cond...)		\
++	for (__list_check_rcu(dummy, ## cond, 0),			\
++	     pos = list_entry_rcu((head)->next, typeof(*pos), member);	\
++		&pos->member != (head);					\
+ 		pos = list_entry_rcu(pos->member.next, typeof(*pos), member))
+ 
+ /**
+@@ -621,8 +639,9 @@ static inline void hlist_add_behind_rcu(struct hlist_node *n,
+  * the _rcu list-mutation primitives such as hlist_add_head_rcu()
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+-#define hlist_for_each_entry_rcu(pos, head, member)			\
+-	for (pos = hlist_entry_safe (rcu_dereference_raw(hlist_first_rcu(head)),\
++#define hlist_for_each_entry_rcu(pos, head, member, cond...)		\
++	for (__list_check_rcu(dummy, ## cond, 0),			\
++	     pos = hlist_entry_safe (rcu_dereference_raw(hlist_first_rcu(head)),\
+ 			typeof(*(pos)), member);			\
+ 		pos;							\
+ 		pos = hlist_entry_safe(rcu_dereference_raw(hlist_next_rcu(\
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 922bb6848813..712b464ab960 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -223,6 +223,7 @@ int debug_lockdep_rcu_enabled(void);
+ int rcu_read_lock_held(void);
+ int rcu_read_lock_bh_held(void);
+ int rcu_read_lock_sched_held(void);
++int rcu_read_lock_any_held(void);
+ 
+ #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+@@ -243,6 +244,12 @@ static inline int rcu_read_lock_sched_held(void)
+ {
+ 	return !preemptible();
+ }
++
++static inline int rcu_read_lock_any_held(void)
++{
++	return !preemptible();
++}
++
+ #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+ #ifdef CONFIG_PROVE_RCU
+diff --git a/kernel/rcu/Kconfig.debug b/kernel/rcu/Kconfig.debug
+index 0ec7d1d33a14..b20d0e2903d1 100644
+--- a/kernel/rcu/Kconfig.debug
++++ b/kernel/rcu/Kconfig.debug
+@@ -7,6 +7,17 @@ menu "RCU Debugging"
+ config PROVE_RCU
+ 	def_bool PROVE_LOCKING
+ 
++config PROVE_RCU_LIST
++	bool "RCU list lockdep debugging"
++	depends on PROVE_RCU
++	default n
++	help
++	  Enable RCU lockdep checking for list usages. By default it is
++	  turned off since there are several list RCU users that still
++	  need to be converted to pass a lockdep expression. To prevent
++	  false-positive splats, we keep it default disabled but once all
++	  users are converted, we can remove this config option.
++
+ config TORTURE_TEST
+ 	tristate
+ 	default n
+diff --git a/kernel/rcu/update.c b/kernel/rcu/update.c
+index c3bf44ba42e5..9cb30006a5e1 100644
+--- a/kernel/rcu/update.c
++++ b/kernel/rcu/update.c
+@@ -298,6 +298,32 @@ int rcu_read_lock_bh_held(void)
+ }
+ EXPORT_SYMBOL_GPL(rcu_read_lock_bh_held);
+ 
++int rcu_read_lock_any_held(void)
++{
++	int lockdep_opinion = 0;
++
++	if (!debug_lockdep_rcu_enabled())
++		return 1;
++	if (!rcu_is_watching())
++		return 0;
++	if (!rcu_lockdep_current_cpu_online())
++		return 0;
++
++	/* Preemptible RCU flavor */
++	if (lock_is_held(&rcu_lock_map))
++		return 1;
++
++	/* BH flavor */
++	if (in_softirq() || irqs_disabled())
++		return 1;
++
++	/* Sched flavor */
++	if (debug_locks)
++		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
++	return lockdep_opinion || !preemptible();
++}
++EXPORT_SYMBOL_GPL(rcu_read_lock_any_held);
++
+ #endif /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+ /**
+-- 
+2.22.0.410.gd8fdbe21b5-goog
+
