@@ -2,198 +2,100 @@ Return-Path: <SRS0=gkov=VI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C918C74A41
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 02:47:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8B29C74A42
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 03:13:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id ED98E20844
-	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 02:47:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 91E7921019
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 03:13:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="CIXfPm04"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="c9HpTO2i"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726030AbfGKCrF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Jul 2019 22:47:05 -0400
-Received: from mailout1.samsung.com ([203.254.224.24]:36651 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727889AbfGKCrF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2019 22:47:05 -0400
-Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
-        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20190711024701epoutp012fc4f95f3ff7681316400484f05ac26a~wOlhL34SP1715117151epoutp01k
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jul 2019 02:47:01 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20190711024701epoutp012fc4f95f3ff7681316400484f05ac26a~wOlhL34SP1715117151epoutp01k
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1562813221;
-        bh=1wGcXvZOX+6VVvBcfB3TBbo5h+k9SWIncQbkwIsXMfE=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=CIXfPm04yQLnavK6BZypaP377R6pLVHlcrz14rxu/kZeR5mkDmEWdpSFax68LiuyJ
-         2WoCOpzMudy2E7Nrqey62jp3cZaADoTrwA3IcHSQ3vpshXOKwiCRFw7ibqpDad3Aix
-         y1TwjSShFK52i2qjJ55fokv56B52eOBPoW9vIBhE=
-Received: from epsmges1p3.samsung.com (unknown [182.195.40.156]) by
-        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
-        20190711024658epcas1p3a52cfed6c3111461fe5689f661dcb24b~wOlelY57M3244632446epcas1p3T;
-        Thu, 11 Jul 2019 02:46:58 +0000 (GMT)
-Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
-        epsmges1p3.samsung.com (Symantec Messaging Gateway) with SMTP id
-        9D.8F.04143.223A62D5; Thu, 11 Jul 2019 11:46:58 +0900 (KST)
-Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
-        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20190711024657epcas1p228c9ed5db4a37970fe95511019d860d4~wOldtElr82016620166epcas1p2p;
-        Thu, 11 Jul 2019 02:46:57 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
-        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190711024657epsmtrp196202ce3efc9b1b7e7ae58f7bacc860c~wOldsO6zs2470024700epsmtrp15;
-        Thu, 11 Jul 2019 02:46:57 +0000 (GMT)
-X-AuditID: b6c32a37-f31ff7000000102f-37-5d26a322f923
-Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        67.FF.03692.123A62D5; Thu, 11 Jul 2019 11:46:57 +0900 (KST)
-Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190711024657epsmtip2b91dd300dca37759574381c784813ac7~wOldfcx5E1722817228epsmtip2W;
-        Thu, 11 Jul 2019 02:46:57 +0000 (GMT)
-Subject: Re: [PATCH v2] PM / devfreq: Fix kernel oops on governor module
- load
-To:     Ezequiel Garcia <ezequiel@collabora.com>, cwchoi00@gmail.com
-Cc:     Kyungmin Park <kyungmin.park@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>, kernel@collabora.com,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-Organization: Samsung Electronics
-Message-ID: <16d08fb2-da04-8920-93d0-43f479d2bbe0@samsung.com>
-Date:   Thu, 11 Jul 2019 11:49:57 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
-        Thunderbird/60.7.2
+        id S1728026AbfGKDNm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Jul 2019 23:13:42 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:44831 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727874AbfGKDNm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2019 23:13:42 -0400
+Received: by mail-lj1-f194.google.com with SMTP id k18so4162841ljc.11;
+        Wed, 10 Jul 2019 20:13:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=3Bk1blV5oQEyQV3BicG+2hmfkOduACJXlcdjcBUfd1g=;
+        b=c9HpTO2ig6B+SiMO23kHDjqljR4JBbZCFeobLD2jX3lQ25AoPcT5cW/Qdxfj8dY9AC
+         BLhc2+GyJmGwP+rJPxnHZnBCwtdwYlABjvo0SJQ2IXa4VKg2Jw6DQ2x5gdUlen033rAO
+         tIv5ebyR0k/6U9ZdSHD7OgHgimv4PTPR4rt0Aus4fIW9Xb+SXR9w/dKtD6SfXgI1Ft3X
+         3FUw0a4w9VFWwMxzUlpN7vxY0h5M4qggdSAmmt6PjAMetkForHZaq4ZhzXJco01HQTQu
+         hiuKVDzAhB/rHWIhU5QgYu3kvjnrQsxZjVDrdgJnsb0UBNvkqzCnFIW8zA9F4Yb2SMt/
+         84Lg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=3Bk1blV5oQEyQV3BicG+2hmfkOduACJXlcdjcBUfd1g=;
+        b=PvIIZmTpEE0/OpI0Rx2S9XU0usdXpOeq4NbJE22ETxLpZyMpjkFnaMthkwRMeh8A/L
+         hrZJG/8Ik9p80su2K9Uinl20fMGCi7l9Px7035Gbgnu3pldk0EJ3iIfnnNcPhfKKlKAF
+         iaRouTZ3sCH77lkSia21THsdiYLFZAbhFgoV+i2WkKm1bEb/D3XXp3l72fUJspjtxUNv
+         /j0xgOBCqB2Wrc6V5kD0mHM4KPvEsUVeSMaMjQldef9+4B92rcdRX0KzB55wQ6H3ictG
+         CyKDJB4kewBWuMj/TwD6q/e7HzQQa9Esd1TdVIMcrmSZj2D/UZUmV16E7tdGpM6Kpx1x
+         upOA==
+X-Gm-Message-State: APjAAAWaNpt7qaQ8Jhwxi8GYTW1v7xVEXkhRzhyIMWs+IZ4GfMbCPZhZ
+        RWIMctNkM2nEUIrEUS9RbVU=
+X-Google-Smtp-Source: APXvYqz1xa5euZ79IKq4iDtYx9Cl2OrfI1H9xAMWaAw4WTe5wxF75jFFc1u3Yr810Lfq079dF9Shew==
+X-Received: by 2002:a2e:9045:: with SMTP id n5mr453281ljg.66.1562814820197;
+        Wed, 10 Jul 2019 20:13:40 -0700 (PDT)
+Received: from localhost.localdomain (ppp79-139-233-208.pppoe.spdop.ru. [79.139.233.208])
+        by smtp.gmail.com with ESMTPSA id h84sm753915ljf.42.2019.07.10.20.13.39
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 10 Jul 2019 20:13:39 -0700 (PDT)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 5/6] ARM: multi_v7_defconfig: Enable Tegra cpuidle driver
+Date:   Thu, 11 Jul 2019 06:13:11 +0300
+Message-Id: <20190711031312.10038-6-digetx@gmail.com>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190711031312.10038-1-digetx@gmail.com>
+References: <20190711031312.10038-1-digetx@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <85fb2cb764961845a32b8af51e8c6ccebf60c703.camel@collabora.com>
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0hTYRjm8+xsR2n1NTPfBGudMtSw7ThXp9ISilooufBPCcsOenKyKztb
-        ZQVdJFOz+49qUhkVphTllU3UxdKkmyRqdEHIstLsQqUZhdC2Y+S/53uf5+F5n+/7KEJRJY2h
-        Cq1O3mHlzLQ0QtJ8L0GVRF9dYlC31qjY951L2Zuv/Ij13hmTsQ3dFST75PAnGfvjeAdiXx26
-        IU2X6TwD15DO6x6Q6U401iLdj/r5ekmOKdXIc/m8Q8lb82z5hdaCNDojO3ddrna5mkliVrIr
-        aKWVs/Bp9PpMfdKGQnNgAVq5izO7AiM9Jwi0ak2qw+Zy8kqjTXCm0bw932xfaV8mcBbBZS1Y
-        lmezrGLU6mRtQLjDZOx2+2X2hqg9k1dKyIPoAy5H4RTgFDhX3BJWjiIoBfYgGHSfI4KEAn9H
-        UPc8ViR+IvA8rpb8c0yOjUw52hC0XRknxcNXBL9OFcuCqkicBRX9DdIgnoPT4fatIVlQROBe
-        BG/KhskgIcWJ4Bt+HhLNwguh/9dbFMRyvAb+9HSH5hIcB/UTnaGdovBWeNhxSSJqZsODC0Mh
-        HI4zwFd8LKQncDS8HLocJuIFUNxUSQSDAY9K4dnIFyR2WA91R/um+kTCx65GmYhjYORkyRTe
-        BzUPOqSiuRRBo+8pKRIa8F0/G0igAgkJcLtFJY4XgvfPRSQGz4Qv4xVkUAJYDqUlClGyCHpf
-        D4SJeB5cPVomPYVo97Q67mkV3NMquP+HVSFJLZrL2wVLAS8wds30565Hod+ZuMKD7nRn+hGm
-        ED1Drh+MMyhIbpdQZPEjoAh6jrx94yKDQp7PFe3lHbZch8vMC36kDdz2aSImKs8W+OtWZy6j
-        TdZoNGwKs1zLMHS03DgYa1DgAs7Jm3jezjv++cKo8JiDaLf+m6617gC1Ja151Nd+pETd7vF6
-        KoXhos/kzljD2rnbTZ6okeOunB05Q4YtHZ0LsltN4zdnzkri3rlaXkZu7jnSs//kZNbYi75N
-        8XGP0k1Ni8vwiYnrvsj+tk33J5Tk5rzy2urzxJn4hLve0uTRQ9tWj3elGvsyf3fp0qv7z6hW
-        0xLByDGJhEPg/gJzfCFwswMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFupmkeLIzCtJLcpLzFFi42LZdlhJXldxsVqswY+FuhbPjmpbrLl9iNFi
-        54Yv7Babz/WwWpxtesNu8bn3CKPF7cYVbA7sHjvuLmH02DnrLrtH35ZVjB6fN8kFsERx2aSk
-        5mSWpRbp2yVwZZybdYi9YLNoxd+FbawNjM8Fuhg5OSQETCT+fnnJ1MXIxSEksJtRovnrf2aI
-        hKTEtItHgWwOIFtY4vDhYoiat4wS32buYASpERbwlbj7uZsNxBYRcJBYv/YJO0gRs8BlRomN
-        dycwQnRMZ5LYfWkTK0gVm4CWxP4XN8A6+AUUJa7+eAw2iVfATuL3xXNgcRYBVYlN34+CXSEq
-        ECEx6dpOFogaQYmTM5+A2ZwC3hL7myE2MwuoS/yZd4kZwhaXuPVkPhOELS/RvHU28wRG4VlI
-        2mchaZmFpGUWkpYFjCyrGCVTC4pz03OLDQsM81LL9YoTc4tL89L1kvNzNzGCo0hLcwfj5SXx
-        hxgFOBiVeHgDHqrGCrEmlhVX5h5ilOBgVhLh3eeuHCvEm5JYWZValB9fVJqTWnyIUZqDRUmc
-        92nesUghgfTEktTs1NSC1CKYLBMHp1QDo9ndjlfbzpf+Df+V3VZwkP//aVejx8rOa4p/HckU
-        1TK5G8BdU2f3d/3C6MP7DuxyvxO6cXbRhzPXfXcrnFR99FaJ9/u6z1Nef3I32liufWrix4u3
-        nA46xk9/tNRmypSy76ev7Fy9+F+X9jStlfPEpGfMm3phK8eaW0vKL/b0+qp4hR/S0ptifUpa
-        iaU4I9FQi7moOBEA88uFP54CAAA=
-X-CMS-MailID: 20190711024657epcas1p228c9ed5db4a37970fe95511019d860d4
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20190710183033epcas5p4845af2f6704e7e8e9b9c17fc651afe34
-References: <20190621213949.27018-1-ezequiel@collabora.com>
-        <CAGTfZH3WenT=t6bFWy7sZCKhcPaMBrzTs=00DeSFU-0Sm-qS=A@mail.gmail.com>
-        <CGME20190710183033epcas5p4845af2f6704e7e8e9b9c17fc651afe34@epcas5p4.samsung.com>
-        <85fb2cb764961845a32b8af51e8c6ccebf60c703.camel@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+The Tegra CPU Idle driver was moved out into driver/cpuidle/ directory and
+it is now a proper platform driver.
 
-On 19. 7. 11. 오전 3:30, Ezequiel Garcia wrote:
-> Hello Chanwoo,
-> 
-> On Sat, 2019-06-22 at 19:46 +0900, Chanwoo Choi wrote:
->> Hi,
->>
->> 2019년 6월 22일 (토) 오전 6:42, Ezequiel Garcia <ezequiel@collabora.com>님이 작성:
->>> A bit unexpectedly (but still documented), request_module may
->>> return a positive value, in case of a modprobe error.
->>> This is currently causing issues in the devfreq framework.
->>>
->>> When a request_module exits with a positive value, we currently
->>> return that via ERR_PTR. However, because the value is positive,
->>> it's not a ERR_VALUE proper, and is therefore treated as a
->>> valid struct devfreq_governor pointer, leading to a kernel oops.
->>>
->>> Fix this by returning -EINVAL if request_module returns a positive
->>> value.
->>>
->>> Fixes: b53b0128052ff ("PM / devfreq: Fix static checker warning in try_then_request_governor")
->>> Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
->>> ---
->>> Changes from v1:
->>> * Rework the fix as suggested by Enric and Chanwoo,
->>>   handling the return vaue.
->>> ---
->>>  drivers/devfreq/devfreq.c | 2 +-
->>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>> index 6b6991f0e873..258f70c1e48f 100644
->>> --- a/drivers/devfreq/devfreq.c
->>> +++ b/drivers/devfreq/devfreq.c
->>> @@ -257,7 +257,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
->>>                 /* Restore previous state before return */
->>>                 mutex_lock(&devfreq_list_lock);
->>>                 if (err)
->>> -                       return ERR_PTR(err);
->>> +                       return (err < 0) ? ERR_PTR(err) : ERR_PTR(-EINVAL);
->>>
->>>                 governor = find_devfreq_governor(name);
->>>         }
->>
->> Thanks you for fix-up.
->> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->>
->> But, you are missing the stable mailing list. In order to apply this
->> fix-up patch,\
->> you have to send it to stable mailing list. Please send it.
->>
->>
-> 
-> If I understand correctly, you or any of the devfreq maintainer
-> can simply add a Cc: stable@vger.kernel.org tag.
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ arch/arm/configs/multi_v7_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Originally, the author have to send the stable mailing list
-with the required style. You can do it.
-
-> 
-> This is documented as Option 1 in stable-kernel-rules.rst.
-> 
-> The Acked-by and Reviewed-by tags need to be collected anyway :-)
-
-This patch[1] was picked to devfreq.git.
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=4f065f69ebc2bdf1fbe224816a3c471babd370dd
-
-> 
-> Thanks!
-> Eze
-> 
-> 
-> 
-
-
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index 6a40bc2ef271..2c0fc7968c42 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -107,6 +107,7 @@ CONFIG_CPU_IDLE=y
+ CONFIG_ARM_CPUIDLE=y
+ CONFIG_ARM_ZYNQ_CPUIDLE=y
+ CONFIG_ARM_EXYNOS_CPUIDLE=y
++CONFIG_ARM_TEGRA_CPUIDLE=y
+ CONFIG_KERNEL_MODE_NEON=y
+ CONFIG_RASPBERRYPI_FIRMWARE=y
+ CONFIG_TRUSTED_FOUNDATIONS=y
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.22.0
+
