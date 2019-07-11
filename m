@@ -1,125 +1,83 @@
-Return-Path: <SRS0=sVk8=VH=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=gkov=VI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68F84C74A35
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 23:10:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28112C74A3F
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 00:22:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4131120838
-	for <linux-pm@archiver.kernel.org>; Wed, 10 Jul 2019 23:10:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H1UDpQLE"
+	by mail.kernel.org (Postfix) with ESMTP id EEB6D21530
+	for <linux-pm@archiver.kernel.org>; Thu, 11 Jul 2019 00:21:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727517AbfGJXKT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 10 Jul 2019 19:10:19 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:40408 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726708AbfGJXKT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2019 19:10:19 -0400
-Received: by mail-ot1-f67.google.com with SMTP id e8so3897535otl.7;
-        Wed, 10 Jul 2019 16:10:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=zOl/4QjBy1AW7qYuyDY5XT0hjYnXC6DcAJBpkzl0PHI=;
-        b=H1UDpQLEZcDHT2f5H5ImR/uneIMngNaFtHExhhRI1hPFxMbfZ4VUbowPJKrXdHu/Wt
-         smoBUScf5aczoqOoDJG9maeO0XjvWp+H4fNsfspzcmv31JCtuPqL0cXVz4GD8oLzbf2N
-         ZgGvav44nwUxj0RA6R0zBRV40Wfni/MkjCZJcSLJ7UgvH2O4e+2aZ7urVmR89RMHzfTZ
-         lxqTgljho97ZquaIlQ6yF05xR5M7ODf61hpv56An+RGS/nMpOODNSWTHDewJY2Wr3ct7
-         5Ghai8O3H2/tzyUAaj5QKonCrJceoW00furKv0qheUams9jV9kz+sYXaEglIe3CjMc+s
-         aR2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=zOl/4QjBy1AW7qYuyDY5XT0hjYnXC6DcAJBpkzl0PHI=;
-        b=qAoIO/QF+L6wyO/vTKYqyMyzcQ65kcgMagqL/mkOqU4rejaWpCqZv3pgqQ9dd2Mohu
-         BFmBFju4ezKzKsa/SB370AynZAezXsqz3f+KFFRnOlmUo8hoDHZ5iKLewkugsoNNwlGc
-         /r0aovgJ/OBgO24ix8vmDSuf3KMPVBFMpGcyS0mdS4EnLy+zv3ppXwKxoP0ctjV1CYjb
-         s0ciC33qGtMkd+dHz71UupKxI//5XicWPWNYGcNzkbmKdTBfMQ/ONWfLWMFmjeI+5ixB
-         SP/8vZLcwjTrgo6bfrIREOwTr2mQw/5lKEGHznwNFInVrHohxc9dmHzw6WWXFrYL/RGn
-         +hUA==
-X-Gm-Message-State: APjAAAW93X2JOSH2ERM49E/7a6GWBu6cZRR/Andv81TRPowDVAUxfYB/
-        p16FJC3Tvtbwph1L7AXTN/gH8GGp1S3I1B+W/Mk=
-X-Google-Smtp-Source: APXvYqz2RpwH4pyPuxIqsY3Jk01l6pCxhtB+fsAoA6sP8HbGqCPKyFUN1rGcJxjdBY2aJ7m7PpF04jShUCcSnuc4/nQ=
-X-Received: by 2002:a05:6830:2010:: with SMTP id e16mr728916otp.344.1562800218410;
- Wed, 10 Jul 2019 16:10:18 -0700 (PDT)
+        id S1727849AbfGKAV7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 10 Jul 2019 20:21:59 -0400
+Received: from smtprelay0057.hostedemail.com ([216.40.44.57]:51440 "EHLO
+        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1727325AbfGKAV7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jul 2019 20:21:59 -0400
+X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Jul 2019 20:21:58 EDT
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com [10.5.19.251])
+        by smtpgrave02.hostedemail.com (Postfix) with ESMTP id 69EAE1800B461
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jul 2019 00:14:43 +0000 (UTC)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
+        by smtprelay02.hostedemail.com (Postfix) with ESMTP id BC0308774;
+        Thu, 11 Jul 2019 00:14:41 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: pail12_bbc0872fcd3a
+X-Filterd-Recvd-Size: 1927
+Received: from XPS-9350.home (cpe-23-242-196-136.socal.res.rr.com [23.242.196.136])
+        (Authenticated sender: joe@perches.com)
+        by omf19.hostedemail.com (Postfix) with ESMTPA;
+        Thu, 11 Jul 2019 00:14:40 +0000 (UTC)
+Message-ID: <cd61708e47cd63f3efaaa3e079982f63bfc88933.camel@perches.com>
+Subject: Re: [PATCH] thermal: Add some error messages
+From:   Joe Perches <joe@perches.com>
+To:     Amit Kucheria <amit.kucheria@linaro.org>,
+        linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     linux-pm@vger.kernel.org
+Date:   Wed, 10 Jul 2019 17:14:38 -0700
+In-Reply-To: <0d3d6111f8a8bd199f1a5a5cd8c4e83e4f0690be.1562757659.git.amit.kucheria@linaro.org>
+References: <cover.1562757659.git.amit.kucheria@linaro.org>
+         <0d3d6111f8a8bd199f1a5a5cd8c4e83e4f0690be.1562757659.git.amit.kucheria@linaro.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.30.5-0ubuntu0.18.10.1 
 MIME-Version: 1.0
-References: <20190623164206.7467-1-tiny.windzz@gmail.com>
-In-Reply-To: <20190623164206.7467-1-tiny.windzz@gmail.com>
-From:   Vasily Khoruzhick <anarsoul@gmail.com>
-Date:   Wed, 10 Jul 2019 16:09:52 -0700
-Message-ID: <CA+E=qVfhDEQER2UTj65hR9erzej9Ey2FrUa9GV=iCFYsWZ2ztw@mail.gmail.com>
-Subject: Re: [PATCH v4 00/11] add thermal driver for h6
-To:     Yangtao Li <tiny.windzz@gmail.com>
-Cc:     rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Maxime Ripard <maxime.ripard@bootlin.com>,
-        Chen-Yu Tsai <wens@csie.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        paulmck@linux.ibm.com, devicetree <devicetree@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>,
-        arm-linux <linux-arm-kernel@lists.infradead.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Jun 23, 2019 at 9:42 AM Yangtao Li <tiny.windzz@gmail.com> wrote:
->
-> This patchset add support for H3 and H6 thermal sensor.
->
-> BTY, do a cleanup in thermal makfile.
->
-> Yangtao Li (11):
->   thermal: sun8i: add thermal driver for h6
->   dt-bindings: thermal: add binding document for h6 thermal controller
->   thermal: fix indentation in makefile
->   thermal: sun8i: get ths sensor number from device compatible
->   thermal: sun8i: rework for sun8i_ths_get_temp()
->   thermal: sun8i: get ths init func from device compatible
->   thermal: sun8i: rework for ths irq handler func
->   thermal: sun8i: support ahb clocks
->   thermal: sun8i: rework for ths calibrate func
->   dt-bindings: thermal: add binding document for h3 thermal controller
->   thermal: sun8i: add thermal driver for h3
+On Wed, 2019-07-10 at 17:16 +0530, Amit Kucheria wrote:
+> When registering a thermal zone device, we currently return -EINVAL in
+> four cases. This makes it a little hard to debug the real cause of the
+> failure.
+> 
+> Print some error messages to make it easier for developer to figure out
+> what happened.
+[]
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+[]
+> @@ -1238,17 +1238,26 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+>  	int count;
+>  	struct thermal_governor *governor;
+>  
+> -	if (!type || strlen(type) == 0)
+> +	if (!type || strlen(type) == 0) {
+> +		pr_err("Error: No thermal zone type defined");
 
-It would be nice to add dts changes to this series. It's unlikely that
-you'll get any "Tested-by" otherwise.
+Please use terminating newlines like:
+
+		pr_err("Error: No thermal zone type defined\n");
+
+[]
+> +		pr_err("Error: Thermal zone name (%s) too long, should be under %d chars",
+
+etc...
 
 
->  .../bindings/thermal/sun8i-thermal.yaml       |  94 +++
->  MAINTAINERS                                   |   7 +
->  drivers/thermal/Kconfig                       |  14 +
->  drivers/thermal/Makefile                      |   9 +-
->  drivers/thermal/sun8i_thermal.c               | 534 ++++++++++++++++++
->  5 files changed, 654 insertions(+), 4 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-thermal.yaml
->  create mode 100644 drivers/thermal/sun8i_thermal.c
->
-> ---
-> v4:
-> -add h3 support
-> -fix yaml file
-> ---
-> 2.17.1
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
