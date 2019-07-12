@@ -2,59 +2,58 @@ Return-Path: <SRS0=A/zv=VJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F28B4C742D2
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Jul 2019 17:01:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F14F5C742D1
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Jul 2019 17:01:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CBAD120651
-	for <linux-pm@archiver.kernel.org>; Fri, 12 Jul 2019 17:01:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6BE220651
+	for <linux-pm@archiver.kernel.org>; Fri, 12 Jul 2019 17:01:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="yP4qEse4"
+	dkim=pass (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="r+S4YTbr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727467AbfGLRAu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 12 Jul 2019 13:00:50 -0400
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:43781 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727459AbfGLRAq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jul 2019 13:00:46 -0400
-Received: by mail-pg1-f195.google.com with SMTP id f25so4787151pgv.10
-        for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2019 10:00:46 -0700 (PDT)
+        id S1727417AbfGLRBp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 12 Jul 2019 13:01:45 -0400
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:46435 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727370AbfGLRAi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jul 2019 13:00:38 -0400
+Received: by mail-pf1-f195.google.com with SMTP id c73so4544587pfb.13
+        for <linux-pm@vger.kernel.org>; Fri, 12 Jul 2019 10:00:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=joelfernandes.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ztK1SoGReZBhwdZ89bE2tj3KKCQLEvHK7oy3z8Z+Xn8=;
-        b=yP4qEse42R/bByX9BK8SGILXb5Wt77EgL1NJAsCWrORS0X+47/A1wlZRAGMUp76hRy
-         CmHGpOQduNYedmfSLa2MAEs1GRfukRXFpiwZwrWYx+pNcWUsMXhp5CsUVwfhJuzOD4bb
-         3DX/JieFW8x/XH4h0XyF0SJABUyC20gApI/ZM=
+        bh=HcJl4MkrcKZUWVrbOFfh0nnEc2FkI1NyULrXND4C1ok=;
+        b=r+S4YTbrFLXAaoxGT4GzejGKAZshIM9bV3jcdcbEAdv0c619zHSqLN4ei3n7OXVNx6
+         n8Mkpq4NMeAreqKp6CxwsDaUWLUdSJGaBd+a1NpA03X4d2w8pRoRmAK3YM7By8+HEacE
+         0fDSDMaBiifV8te0r9UChxgacvAyvBEzMCd4c=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ztK1SoGReZBhwdZ89bE2tj3KKCQLEvHK7oy3z8Z+Xn8=;
-        b=m1MuWAnT2mM/q/KWwFkYTHkplLDINa9udpQb69L1yRnXi1K8yE17PTDqi6yGWJhja7
-         Yq/JUkwX1p1rLDJzL3P6JKl7X12R5VOtvRANCWtEWSlg0MdFKaAx2mXR1jE9WwM0JI7G
-         wnJXkokvYsqI2JvbEiJnWzxivwBsRnsVBAkU3mTmXqSbjo9/ozXdVs2Qsfm2V8wmXv1D
-         Cti7sdRYLFaiUg8zAgRVm4zYzncpPBCuudXnonzpD8CNbpChplK8wiH2yi1i4suaM8p0
-         5y65s1L1dkAZa0xSxL1BP0ZTbZi2LiRth9e0bhkFeKJRY5x5VwZqiTFGhULmWHEYS5r+
-         ZeJQ==
-X-Gm-Message-State: APjAAAWbRCrjVj6PcvOUzEPRVFYMvUI1DfKlpRxaFrknoInM/Zu7Cs3Y
-        4mOX5yvfSAhxEzNbk+1Z+0s=
-X-Google-Smtp-Source: APXvYqxiMVhL5/bUvAI8iAaiaoWG6pTJu5V5J0XbdvBlQDWwxj7kS9rYgN7m4WPBHurlzZP/Kw2/0Q==
-X-Received: by 2002:a17:90a:ad41:: with SMTP id w1mr12826209pjv.52.1562950846214;
-        Fri, 12 Jul 2019 10:00:46 -0700 (PDT)
+        bh=HcJl4MkrcKZUWVrbOFfh0nnEc2FkI1NyULrXND4C1ok=;
+        b=jeB9ZYwdlQSGbaAs5K35me99BjO/wlcll3Mdg9aR9I9j+SV76Hof1LuRq0I9yRjGiA
+         lEpHZ/arPlkTLYrrKEUDslUngqKvOeJDMaWGVGvorTxCmsJG1dVPbfo/Fs8N/4VmLkN7
+         w4WLLvBpUlBfQWQI/jKfgQlKmogDJL+agQKWCc6MTEGXkxMaVHN5AJVHWdFoID9+0MXt
+         6kdIao2cpNIF7x2L6LDeOLkscAS8FD56deHatHCd+1ReteQCTS912fwDwtSC9Sem5+Cr
+         tbofrLBWJvaUqTigwCYaOtli3UJmkbDvlsSIW0RGP1Nsyjz9HKszzk9/6wQzXkUQLkUf
+         KiZA==
+X-Gm-Message-State: APjAAAXRNMtezQR103DbJBML/+POZQHAVkYUjeyTQJTLssVf1LMyTRcP
+        MK+15LV99sUJ92V6k7jAuJo=
+X-Google-Smtp-Source: APXvYqz15AQfC5v0dP6hN1pCpPQdyBrMqETAncc2VKUY67QfxtlC3x1zPGrp7KZtSsMpaH2x5QNcdQ==
+X-Received: by 2002:a17:90b:8c8:: with SMTP id ds8mr13144837pjb.89.1562950837630;
+        Fri, 12 Jul 2019 10:00:37 -0700 (PDT)
 Received: from joelaf.cam.corp.google.com ([2620:15c:6:12:9c46:e0da:efbf:69cc])
-        by smtp.gmail.com with ESMTPSA id a15sm7127385pgw.3.2019.07.12.10.00.42
+        by smtp.gmail.com with ESMTPSA id a15sm7127385pgw.3.2019.07.12.10.00.33
         (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Fri, 12 Jul 2019 10:00:45 -0700 (PDT)
+        Fri, 12 Jul 2019 10:00:36 -0700 (PDT)
 From:   "Joel Fernandes (Google)" <joel@joelfernandes.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
-        Oleg Nesterov <oleg@redhat.com>,
         Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
         Bjorn Helgaas <bhelgaas@google.com>,
         Borislav Petkov <bp@alien8.de>, c0d1n61at3@gmail.com,
@@ -71,6 +70,7 @@ Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
         linux-pm@vger.kernel.org,
         Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
         neilb@suse.com, netdev@vger.kernel.org,
+        Oleg Nesterov <oleg@redhat.com>,
         "Paul E. McKenney" <paulmck@linux.ibm.com>,
         Pavel Machek <pavel@ucw.cz>, peterz@infradead.org,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
@@ -79,9 +79,9 @@ Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
         Tejun Heo <tj@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>, will@kernel.org,
         x86@kernel.org (maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT))
-Subject: [PATCH v2 3/9] rcu/sync: Remove custom check for reader-section
-Date:   Fri, 12 Jul 2019 13:00:18 -0400
-Message-Id: <20190712170024.111093-4-joel@joelfernandes.org>
+Subject: [PATCH v2 1/9] rcu/update: Remove useless check for debug_locks
+Date:   Fri, 12 Jul 2019 13:00:16 -0400
+Message-Id: <20190712170024.111093-2-joel@joelfernandes.org>
 X-Mailer: git-send-email 2.22.0.510.g264f2c817a-goog
 In-Reply-To: <20190712170024.111093-1-joel@joelfernandes.org>
 References: <20190712170024.111093-1-joel@joelfernandes.org>
@@ -92,95 +92,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The rcu/sync code was doing its own check whether we are in a reader
-section. With RCU consolidating flavors and the generic helper added in
-this series, this is no longer need. We can just use the generic helper
-and it results in a nice cleanup.
+In rcu_read_lock_sched_held(), debug_locks can never be true at the
+point we check it because we already check debug_locks in
+debug_lockdep_rcu_enabled() in the beginning. Remove the check.
 
-Cc: Oleg Nesterov <oleg@redhat.com>
 Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 ---
-Please note: Only build and boot tested this particular patch so far.
+ kernel/rcu/update.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
- include/linux/rcu_sync.h |  5 ++---
- kernel/rcu/sync.c        | 22 ----------------------
- 2 files changed, 2 insertions(+), 25 deletions(-)
-
-diff --git a/include/linux/rcu_sync.h b/include/linux/rcu_sync.h
-index 6fc53a1345b3..c954f1efc919 100644
---- a/include/linux/rcu_sync.h
-+++ b/include/linux/rcu_sync.h
-@@ -39,9 +39,8 @@ extern void rcu_sync_lockdep_assert(struct rcu_sync *);
+diff --git a/kernel/rcu/update.c b/kernel/rcu/update.c
+index c3bf44ba42e5..bb961cd89e76 100644
+--- a/kernel/rcu/update.c
++++ b/kernel/rcu/update.c
+@@ -93,17 +93,13 @@ module_param(rcu_normal_after_boot, int, 0);
   */
- static inline bool rcu_sync_is_idle(struct rcu_sync *rsp)
+ int rcu_read_lock_sched_held(void)
  {
--#ifdef CONFIG_PROVE_RCU
--	rcu_sync_lockdep_assert(rsp);
--#endif
-+	RCU_LOCKDEP_WARN(!rcu_read_lock_any_held(),
-+			 "suspicious rcu_sync_is_idle() usage");
- 	return !rsp->gp_state; /* GP_IDLE */
+-	int lockdep_opinion = 0;
+-
+ 	if (!debug_lockdep_rcu_enabled())
+ 		return 1;
+ 	if (!rcu_is_watching())
+ 		return 0;
+ 	if (!rcu_lockdep_current_cpu_online())
+ 		return 0;
+-	if (debug_locks)
+-		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
+-	return lockdep_opinion || !preemptible();
++	return lock_is_held(&rcu_sched_lock_map) || !preemptible();
  }
- 
-diff --git a/kernel/rcu/sync.c b/kernel/rcu/sync.c
-index a8304d90573f..535e02601f56 100644
---- a/kernel/rcu/sync.c
-+++ b/kernel/rcu/sync.c
-@@ -10,37 +10,25 @@
- #include <linux/rcu_sync.h>
- #include <linux/sched.h>
- 
--#ifdef CONFIG_PROVE_RCU
--#define __INIT_HELD(func)	.held = func,
--#else
--#define __INIT_HELD(func)
--#endif
--
- static const struct {
- 	void (*sync)(void);
- 	void (*call)(struct rcu_head *, void (*)(struct rcu_head *));
- 	void (*wait)(void);
--#ifdef CONFIG_PROVE_RCU
--	int  (*held)(void);
--#endif
- } gp_ops[] = {
- 	[RCU_SYNC] = {
- 		.sync = synchronize_rcu,
- 		.call = call_rcu,
- 		.wait = rcu_barrier,
--		__INIT_HELD(rcu_read_lock_held)
- 	},
- 	[RCU_SCHED_SYNC] = {
- 		.sync = synchronize_rcu,
- 		.call = call_rcu,
- 		.wait = rcu_barrier,
--		__INIT_HELD(rcu_read_lock_sched_held)
- 	},
- 	[RCU_BH_SYNC] = {
- 		.sync = synchronize_rcu,
- 		.call = call_rcu,
- 		.wait = rcu_barrier,
--		__INIT_HELD(rcu_read_lock_bh_held)
- 	},
- };
- 
-@@ -49,16 +37,6 @@ enum { CB_IDLE = 0, CB_PENDING, CB_REPLAY };
- 
- #define	rss_lock	gp_wait.lock
- 
--#ifdef CONFIG_PROVE_RCU
--void rcu_sync_lockdep_assert(struct rcu_sync *rsp)
--{
--	RCU_LOCKDEP_WARN(!gp_ops[rsp->gp_type].held(),
--			 "suspicious rcu_sync_is_idle() usage");
--}
--
--EXPORT_SYMBOL_GPL(rcu_sync_lockdep_assert);
--#endif
--
- /**
-  * rcu_sync_init() - Initialize an rcu_sync structure
-  * @rsp: Pointer to rcu_sync structure to be initialized
+ EXPORT_SYMBOL(rcu_read_lock_sched_held);
+ #endif
 -- 
 2.22.0.510.g264f2c817a-goog
 
