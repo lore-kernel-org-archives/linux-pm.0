@@ -2,183 +2,254 @@ Return-Path: <SRS0=Lzxm=VM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E7AFC76191
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 12:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCC22C7618F
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 13:38:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F10BF20868
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 12:04:59 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="ttYj8HvI"
+	by mail.kernel.org (Postfix) with ESMTP id B5B3D21530
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 13:38:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729968AbfGOMEe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Jul 2019 08:04:34 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:35508 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729947AbfGOMEe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2019 08:04:34 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190715120432euoutp028417cfb7ee2dfc0fe0d8501c74d4a041~xkxbpnrLW1711217112euoutp02J
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2019 12:04:32 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190715120432euoutp028417cfb7ee2dfc0fe0d8501c74d4a041~xkxbpnrLW1711217112euoutp02J
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1563192272;
-        bh=slNR/BE5Z02LanzgRyRt+VQF3nSEOhb3VQJmenTTtaY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ttYj8HvI2e/1c/1PxHy4J3YWxy+ZxJtzwC/Dr9AZ35LvLk+B+V2zg2dgg6cCfEFlx
-         db8sOUBqrEuclE2kX/9+1R04J9QeFTm+lafT9iFR1b3xV3aBvlf9uIiJ43NKuVxAbO
-         MRH86NFHv9IbP+IAFnYxvqtwVT4wgG6m8iaECzu4=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20190715120431eucas1p214ba80053c1337718831edf3e1075e27~xkxa-E6mD0932509325eucas1p2I;
-        Mon, 15 Jul 2019 12:04:31 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id 9A.FF.04298.FCB6C2D5; Mon, 15
-        Jul 2019 13:04:31 +0100 (BST)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190715120430eucas1p19dddcc93756e6a110d3476229f9428b3~xkxaPhxYD3262432624eucas1p1N;
-        Mon, 15 Jul 2019 12:04:30 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190715120430eusmtrp13259615bc9da1a3f1a30ea6ffe1b0b1f~xkxaOlzLs1141311413eusmtrp1V;
-        Mon, 15 Jul 2019 12:04:30 +0000 (GMT)
-X-AuditID: cbfec7f2-f2dff700000010ca-cd-5d2c6bcf7dd5
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 82.5B.04146.ECB6C2D5; Mon, 15
-        Jul 2019 13:04:30 +0100 (BST)
-Received: from AMDC3218.DIGITAL.local (unknown [106.120.51.18]) by
-        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20190715120429eusmtip105ecc88f117c85cd52ccd596843a4ac3~xkxZa1v1B2021620216eusmtip1m;
-        Mon, 15 Jul 2019 12:04:29 +0000 (GMT)
-From:   Kamil Konieczny <k.konieczny@partner.samsung.com>
-To:     k.konieczny@partner.samsung.com
-Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Kukjin Kim <kgene@kernel.org>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Subject: [PATCH v2 1/4] opp: core: add regulators enable and disable
-Date:   Mon, 15 Jul 2019 14:04:13 +0200
-Message-Id: <20190715120416.3561-2-k.konieczny@partner.samsung.com>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190715120416.3561-1-k.konieczny@partner.samsung.com>
+        id S1730412AbfGONiK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Jul 2019 09:38:10 -0400
+Received: from foss.arm.com ([217.140.110.172]:49202 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1730879AbfGONiK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Jul 2019 09:38:10 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 28ED228;
+        Mon, 15 Jul 2019 06:38:09 -0700 (PDT)
+Received: from e110439-lin (e110439-lin.cambridge.arm.com [10.1.194.43])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BC13F3F71F;
+        Mon, 15 Jul 2019 06:38:06 -0700 (PDT)
+Date:   Mon, 15 Jul 2019 14:38:01 +0100
+From:   Patrick Bellasi <patrick.bellasi@arm.com>
+To:     Quentin Perret <quentin.perret@arm.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Tejun Heo <tj@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Ingo Molnar <mingo@redhat.com>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Paul Turner <pjt@google.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Todd Kjos <tkjos@google.com>,
+        Joel Fernandes <joelaf@google.com>,
+        Steve Muckle <smuckle@google.com>,
+        Suren Baghdasaryan <surenb@google.com>,
+        Alessio Balsini <balsini@android.com>
+Subject: Re: [PATCH v11 1/5] sched/core: uclamp: Extend CPU's cgroup
+ controller
+Message-ID: <20190715133801.yohhd2hywzsv3uyf@e110439-lin>
+References: <20190708084357.12944-1-patrick.bellasi@arm.com>
+ <20190708084357.12944-2-patrick.bellasi@arm.com>
+ <20190708110838.4ohd7pqx5ngkzcsu@queper01-lin>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA01SWUwTQRh29ugu1epSSBir8agxinJINHESxaASs4+EBzUaLFU2QKBVuxyi
-        D4IH0kYR0CgUPIgXIShQrlKKB1bWxkoDJHgQFAQ1QSDYqmkjiLSLx9s33zH/90+GxuUDpIJO
-        1WZwOq06XSmREs2dXme4My0sYcOUNxDVl9aS6NW3zyS6YesiUeHDGYAuDn/BkdNZR6GXp8Yo
-        ZBruI1GvpUKC3BdsAJU6H2Lovm2AQndedWOoP69KgsY8LzF0tt1GoV999QRqGOyUxMjZmus1
-        gDVV6yVsw+2T7JMJK8YWNlYDVnjdgrFu07I4ap90axKXnprF6SK3JUpT+vuLqSNdsmP2x7ty
-        wbX5BkDTkNkE77yJMgApLWeqABwyfgTi4RuAtqk8Ujy4ASxwNeAGEOBP1LeX4qJwD8CiyXzi
-        b0T/c9LvkjCb4YcWB+bDwcwqeOndVX8CZ7wErOutp3xCEBML+ybfUr4iBLMaGupCfbSM2Qnd
-        0y5MnLYc6s1thA8HzNrN7zsp0RMI7WUjfh6f9ZxuKvffD5lxCrbetZBiOBb2VFolIg6Co0Ij
-        JeKl8MWl84SIs+HHykJKDJ8BcPDc1zlhC3wqdJO+cjgTCmstkSK9HZaU3wXi4y2Er8cDxQ4L
-        YUmzb0cfLYMF+XLRHQ6vzzjm2iyBhpkHc5iFtgkHKAIrjf9tY/xvG+O/uTcBXg1CuExek8zx
-        UVouO4JXa/hMbXLEocMaE5j9dC9+CS4z+N5zsAMwNFAukMUkrU+Qk+osPkfTASCNK4Nl0d9n
-        KVmSOuc4pzus0mWmc3wHWEITyhDZiXmD++VMsjqDS+O4I5zuj4rRAYpcQFc43bc8V6IcsZ6M
-        R+sK9wrLVDGCq9QTTXHePa0w7oDnzEiuUmHcvidHZQ96/ElbbLklzxuKteunLDdUxfOnd/QU
-        CBvXCo9+oH5hw+gYZmyKbxurFMISj/54VrE4oslwuXtNGcUnhnX1hqwIfr57kWtiNNRaedFc
-        obDGKyKVBJ+ijlqH63j1b6jsIkRwAwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrDIsWRmVeSWpSXmKPExsVy+t/xu7rnsnViDdZuV7fYOGM9q8X1L89Z
-        LeYfOcdq0bfvP6NF/+PXzBbnz29gtzjb9IbdYtPja6wWl3fNYbP43HuE0WLG+X1MFmuP3GW3
-        WHr9IpPF7cYVbBZvfpxlsmjde4Td4t+1jSwWmx8cY3MQ8lgzbw2jx6ZVnWwem5fUexx8t4fJ
-        o2/LKkaP4ze2M3l83iQXwB6lZ1OUX1qSqpCRX1xiqxRtaGGkZ2hpoWdkYqlnaGwea2VkqqRv
-        Z5OSmpNZllqkb5egl3H79kT2gnO8FScPuDUwzuXuYuTkkBAwkdi4dwZzFyMXh5DAUkaJpZP+
-        M0MkpCUaT69mgrCFJf5c62KDKPrEKLHq/BGwBJuAucSj7WfAbBEBZYnJ96aDTWIW6GSVWPHk
-        CBtIQljAReLah1vsXYwcHCwCqhJdGzRBwrwCzhKf/36CWiAv0bljNwuIzQlUvuP+MXYQWwio
-        puVVPwtEvaDEyZlPwGxmoPrmrbOZJzAKzEKSmoUktYCRaRWjSGppcW56brGhXnFibnFpXrpe
-        cn7uJkZgTG479nPzDsZLG4MPMQpwMCrx8DqkaMcKsSaWFVfmHmKU4GBWEuG1/QoU4k1JrKxK
-        LcqPLyrNSS0+xGgK9MNEZinR5HxgusgriTc0NTS3sDQ0NzY3NrNQEuftEDgYIySQnliSmp2a
-        WpBaBNPHxMEp1QB03zLVSWWLLLzuy0zx/N6+5XrU7/iZdwRW737eFsroNkFwa+1lE7b1zW5X
-        TrakzZ67aPr8qq2S516n25sHtuw9G/m3WiNg546AsysPvju9c9aLIMWz1RtlJDqvnVkYedJk
-        nsbj1fPYTC5fjehr2qKW+GH7Eeerp7nOzxMznR6y/eU7/bbcqO8CSizFGYmGWsxFxYkAHY07
-        CN8CAAA=
-X-CMS-MailID: 20190715120430eucas1p19dddcc93756e6a110d3476229f9428b3
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190715120430eucas1p19dddcc93756e6a110d3476229f9428b3
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190715120430eucas1p19dddcc93756e6a110d3476229f9428b3
-References: <20190715120416.3561-1-k.konieczny@partner.samsung.com>
-        <CGME20190715120430eucas1p19dddcc93756e6a110d3476229f9428b3@eucas1p1.samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190708110838.4ohd7pqx5ngkzcsu@queper01-lin>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add enable regulators to dev_pm_opp_set_regulators() and disable
-regulators to dev_pm_opp_put_regulators(). This prepares for
-converting exynos-bus devfreq driver to use dev_pm_opp_set_rate().
+On 08-Jul 12:08, Quentin Perret wrote:
+> Hi Patrick,
 
-Signed-off-by: Kamil Konieczny <k.konieczny@partner.samsung.com>
---
-Changes in v2:
+Hi Quentin!
 
-- move regulator enable and disable into loop
+> On Monday 08 Jul 2019 at 09:43:53 (+0100), Patrick Bellasi wrote:
+> > +static inline int uclamp_scale_from_percent(char *buf, u64 *value)
+> > +{
+> > +	*value = SCHED_CAPACITY_SCALE;
+> > +
+> > +	buf = strim(buf);
+> > +	if (strncmp("max", buf, 4)) {
+> > +		s64 percent;
+> > +		int ret;
+> > +
+> > +		ret = cgroup_parse_float(buf, 2, &percent);
+> > +		if (ret)
+> > +			return ret;
+> > +
+> > +		percent <<= SCHED_CAPACITY_SHIFT;
+> > +		*value = DIV_ROUND_CLOSEST_ULL(percent, 10000);
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static inline u64 uclamp_percent_from_scale(u64 value)
+> > +{
+> > +	return DIV_ROUND_CLOSEST_ULL(value * 10000, SCHED_CAPACITY_SCALE);
+> > +}
+> 
+> FWIW, I tried the patches and realized these conversions result in a
+> 'funny' behaviour from a user's perspective. Things like this happen:
+> 
+>    $ echo 20 > cpu.uclamp.min
+>    $ cat cpu.uclamp.min
+>    20.2
+>    $ echo 20.2 > cpu.uclamp.min
+>    $ cat cpu.uclamp.min
+>    20.21
+> 
+> Having looked at the code, I get why this is happening, but I'm not sure
+> if a random user will. It's not an issue per se, but it's just a bit
+> weird.
 
----
- drivers/opp/core.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+Yes, that's what we get if we need to use a "two decimal digit
+precision percentage" to represent a 1024 range in kernel space.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 0e7703fe733f..069c5cf8827e 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1570,6 +1570,10 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 			goto free_regulators;
- 		}
- 
-+		ret = regulator_enable(reg);
-+		if (ret < 0)
-+			goto disable;
-+
- 		opp_table->regulators[i] = reg;
+I don't think the "percent <=> utilization" conversion code can be
+made more robust. The only possible alternative I see to get back
+exactly what we write in, is to store the actual request in kernel
+space, alongside its conversion to the SCHED_CAPACITY_SCALE required by the
+actual scheduler code.
+
+Something along these lines (on top of what we have in this series):
+
+---8<---
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index ddc5fcd4b9cf..82b28cfa5c3f 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -7148,40 +7148,35 @@ static void cpu_util_update_eff(struct cgroup_subsys_state *css)
  	}
- 
-@@ -1582,9 +1586,15 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 
- 	return opp_table;
- 
-+disable:
-+	regulator_put(reg);
-+	--i;
-+
- free_regulators:
--	while (i != 0)
--		regulator_put(opp_table->regulators[--i]);
-+	for (; i >= 0; --i) {
-+		regulator_disable(opp_table->regulators[i]);
-+		regulator_put(opp_table->regulators[i]);
-+	}
- 
- 	kfree(opp_table->regulators);
- 	opp_table->regulators = NULL;
-@@ -1610,8 +1620,10 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
- 
--	for (i = opp_table->regulator_count - 1; i >= 0; i--)
-+	for (i = opp_table->regulator_count - 1; i >= 0; i--) {
-+		regulator_disable(opp_table->regulators[i]);
- 		regulator_put(opp_table->regulators[i]);
-+	}
- 
- 	_free_set_opp_data(opp_table);
- 
--- 
-2.22.0
+ }
 
+-static inline int uclamp_scale_from_percent(char *buf, u64 *value)
++static inline int uclamp_scale_from_percent(char *buf, s64 *percent, u64 *scale)
+ {
+-	*value = SCHED_CAPACITY_SCALE;
++	*scale = SCHED_CAPACITY_SCALE;
+
+ 	buf = strim(buf);
+ 	if (strncmp("max", buf, 4)) {
+-		s64 percent;
+ 		int ret;
+
+-		ret = cgroup_parse_float(buf, 2, &percent);
++		ret = cgroup_parse_float(buf, 2, percent);
+ 		if (ret)
+ 			return ret;
+
+-		percent <<= SCHED_CAPACITY_SHIFT;
+-		*value = DIV_ROUND_CLOSEST_ULL(percent, 10000);
++		*scale = *percent << SCHED_CAPACITY_SHIFT;
++		*scale = DIV_ROUND_CLOSEST_ULL(*scale, 10000);
+ 	}
+
+ 	return 0;
+ }
+
+-static inline u64 uclamp_percent_from_scale(u64 value)
+-{
+-	return DIV_ROUND_CLOSEST_ULL(value * 10000, SCHED_CAPACITY_SCALE);
+-}
+-
+ static ssize_t cpu_uclamp_min_write(struct kernfs_open_file *of,
+ 				    char *buf, size_t nbytes,
+ 				    loff_t off)
+ {
+ 	struct task_group *tg;
+ 	u64 min_value;
++	s64 percent;
+ 	int ret;
+
+-	ret = uclamp_scale_from_percent(buf, &min_value);
++	ret = uclamp_scale_from_percent(buf, &percent, &min_value);
+ 	if (ret)
+ 		return ret;
+ 	if (min_value > SCHED_CAPACITY_SCALE)
+@@ -7197,6 +7192,9 @@ static ssize_t cpu_uclamp_min_write(struct kernfs_open_file *of,
+ 	/* Update effective clamps to track the most restrictive value */
+ 	cpu_util_update_eff(of_css(of));
+
++	/* Keep track of the actual requested value */
++	tg->uclamp_pct[UCLAMP_MIN] = percent;
++
+ 	rcu_read_unlock();
+ 	mutex_unlock(&uclamp_mutex);
+
+@@ -7209,9 +7207,10 @@ static ssize_t cpu_uclamp_max_write(struct kernfs_open_file *of,
+ {
+ 	struct task_group *tg;
+ 	u64 max_value;
++	s64 percent;
+ 	int ret;
+
+-	ret = uclamp_scale_from_percent(buf, &max_value);
++	ret = uclamp_scale_from_percent(buf, &percent, &max_value);
+ 	if (ret)
+ 		return ret;
+ 	if (max_value > SCHED_CAPACITY_SCALE)
+@@ -7227,6 +7226,9 @@ static ssize_t cpu_uclamp_max_write(struct kernfs_open_file *of,
+ 	/* Update effective clamps to track the most restrictive value */
+ 	cpu_util_update_eff(of_css(of));
+
++	/* Keep track of the actual requested value */
++	tg->uclamp_pct[UCLAMP_MAX] = percent;
++
+ 	rcu_read_unlock();
+ 	mutex_unlock(&uclamp_mutex);
+
+@@ -7251,7 +7253,7 @@ static inline void cpu_uclamp_print(struct seq_file *sf,
+ 		return;
+ 	}
+
+-	percent = uclamp_percent_from_scale(util_clamp);
++	percent = tg->uclamp_pct[clamp_id];
+ 	percent = div_u64_rem(percent, 100, &rem);
+ 	seq_printf(sf, "%llu.%u\n", percent, rem);
+ }
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 0e37f4a4e536..4f9b0c660310 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -395,6 +395,8 @@ struct task_group {
+ 	struct cfs_bandwidth	cfs_bandwidth;
+
+ #ifdef CONFIG_UCLAMP_TASK_GROUP
++	/* The two decimal precision [%] value requested from user-space */
++	unsigned int		uclamp_pct[UCLAMP_CNT];
+ 	/* Clamp values requested for a task group */
+ 	struct uclamp_se	uclamp_req[UCLAMP_CNT];
+ 	/* Effective clamp values used for a task group */
+---8<---
+
+> I guess one way to fix this would be to revert back to having a
+> 1024-scale for the cgroup interface too ... Though I understand Tejun
+> wanted % for consistency with other things.
+
+Yes that would be another option, which will also keep aligned the per-task
+and system-wide APIs with the CGroups one. Although, AFAIU, having two
+different APIs is not considered a major issue.
+
+> So, I'm not sure if this is still up for discussion, but in any case I
+> wanted to say I support your original idea of using a 1024-scale for the
+> cgroups interface, since that would solve the 'issue' above and keeps
+> things consistent with the per-task API too.
+
+
+Right, I'm personally more leaning toward either going back to use
+SCHED_CAPACITY_SCALE or the add the small change I suggested above.
+
+Tejun, Peter: any preference? Alternative suggestions?
+
+> Thanks,
+> Quentin
+
+Cheers,
+Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
