@@ -7,50 +7,50 @@ X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51C65C7618F
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 14:44:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 468EBC76195
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 14:44:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2AD9820651
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 14:44:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1FBF920651
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 14:44:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="sb4sRCBH"
+	dkim=pass (1024-bit key) header.d=joelfernandes.org header.i=@joelfernandes.org header.b="WUpb9JKs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391743AbfGOOoQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Jul 2019 10:44:16 -0400
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:42608 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391763AbfGOOhj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2019 10:37:39 -0400
-Received: by mail-pf1-f196.google.com with SMTP id q10so7502496pff.9
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2019 07:37:38 -0700 (PDT)
+        id S2404445AbfGOOoa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Jul 2019 10:44:30 -0400
+Received: from mail-pl1-f193.google.com ([209.85.214.193]:37028 "EHLO
+        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2404700AbfGOOhb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2019 10:37:31 -0400
+Received: by mail-pl1-f193.google.com with SMTP id b3so8400014plr.4
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jul 2019 07:37:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=joelfernandes.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=UMymzQWyTMjq6dLEXUYHnnYNVQu32eRzbAFgwnIdCTM=;
-        b=sb4sRCBHFXSE2cPqMR4+T5ZCDTZOXkYZvOefdmVbThG07/8ujO+ZMUI1qi0RzfQNtk
-         L2SG3O8Wv6tkY7NUfEU97Sodrr0ncVViDxOuD+Tu+lrXlmz95G5bFlD4Z39OvL7tmZa8
-         r01KC9K2ZD2d1/zC/71KGiI4hO6ZU/NWudwNw=
+        bh=/gvD5L3W4khYlR/j02/LMhetLZkkRNPQ8EPkwaYb/Yo=;
+        b=WUpb9JKsXzIHcxew1wAVQiWwZ+kaf0Ww3b9i/phqeK6eGSyIkMrGlEABg1JgP/N6a7
+         XI3TNv1vdpFEoUyT+MAAdsh6eiTQV1SZjNnbyXSh4bYq6H3Gz7K8UhzDuVF/rfbp1RTm
+         xNeitgRKD2kv4LjyEJgK6S9GJGZvS2JWmOhuM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=UMymzQWyTMjq6dLEXUYHnnYNVQu32eRzbAFgwnIdCTM=;
-        b=joecFrGoHi3ArQ8nK4Wc1+teeWQp4uc8ePHoqZIOUeWveVLuynNVr8PmxCfZ3BnXwJ
-         OqvPFNYjgBxdvgjpLVjH727aEhO+0PONTYVPC07JheHtju6rzDC1IgIczyTH6h0w0th/
-         DPbBDGj0pvigjf3s2//FCzakJXscygdqt/d0fRHV23IZ8r6cGRBVZFB22SylzdbkZmZ/
-         IQXKJtffOdVpKnh5nfdAw+rHrFiXe/78YfGw9hi7YsHKb4U8UoV9gErb3Y2VGJLTofFc
-         1MEdHIxsFNKl4ZiFcvTTB2OJiQRRuTEC/2dMDjxmIVyUzThrbPv3xopMAR0NEeDmcAFK
-         2w4Q==
-X-Gm-Message-State: APjAAAXqDZx1XNVQ/yixROwlZEPTPurv8vUSHc2KLBfTX+RLEapiqT6V
-        mbD6cnQt3doHRUi3Uc+Z+DA=
-X-Google-Smtp-Source: APXvYqwREOPm8jU5KaBh/4wpCriK+UOZQMzbDI3ea0SFjpipVn94p6ZbCr/TlFhUWr/4kL8J5e58FQ==
-X-Received: by 2002:a17:90a:3270:: with SMTP id k103mr28578111pjb.54.1563201458425;
-        Mon, 15 Jul 2019 07:37:38 -0700 (PDT)
+        bh=/gvD5L3W4khYlR/j02/LMhetLZkkRNPQ8EPkwaYb/Yo=;
+        b=TrVnvEhHfGv4SSKsIdHNj7v2aJVqDuis1/v0/4s43b/3luM8IcKrpWbJiXO8EBBmzm
+         DsNhQWU3Kgurz5jvc7xq8FQ5NlsmMRTYsPPBqYw5Y9H38LSqpa10HFOPGah9g/i5GEme
+         N2opEkCD2EreADD5hZZXO1ermm1nIhVg1tun5ItjlsYfmy7cv8JcCmah/2x0OMkAvx0Q
+         Jw1r2tZzgk9llmmn44f4cBPgBH8/th+3DGGDfut5BlpkcGHGqyQgkZ6FaOxG8n6PRQ4w
+         DpTdqqdJ+gNO4JCDfokdZKWpRtLHJu6XP4zr7uwoc3AKAkdVp07sbc0iXod4Ax5gGRXx
+         HrJw==
+X-Gm-Message-State: APjAAAVb2J/FDKSROV+rX+sPmxyaFlwu/vxIrRSvC/59py8hS3GgHWAF
+        yvqdxmJaMih/Glq70NYbcuY=
+X-Google-Smtp-Source: APXvYqySJr0Y1QIzNUIj9NJwd+Rw22u3LGJjXHmBidac39lx3Xu00PxoUZgolCbZ3bk0iovIh+UXIw==
+X-Received: by 2002:a17:902:1003:: with SMTP id b3mr29244590pla.172.1563201450419;
+        Mon, 15 Jul 2019 07:37:30 -0700 (PDT)
 Received: from joelaf.cam.corp.google.com ([2620:15c:6:12:9c46:e0da:efbf:69cc])
-        by smtp.gmail.com with ESMTPSA id s66sm18381852pfs.8.2019.07.15.07.37.34
+        by smtp.gmail.com with ESMTPSA id s66sm18381852pfs.8.2019.07.15.07.37.26
         (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Mon, 15 Jul 2019 07:37:37 -0700 (PDT)
+        Mon, 15 Jul 2019 07:37:29 -0700 (PDT)
 From:   "Joel Fernandes (Google)" <joel@joelfernandes.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
@@ -79,9 +79,9 @@ Cc:     "Joel Fernandes (Google)" <joel@joelfernandes.org>,
         Tejun Heo <tj@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>, will@kernel.org,
         x86@kernel.org (maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT))
-Subject: [PATCH 6/9] workqueue: Convert for_each_wq to use built-in list check (v2)
-Date:   Mon, 15 Jul 2019 10:37:02 -0400
-Message-Id: <20190715143705.117908-7-joel@joelfernandes.org>
+Subject: [PATCH 4/9] ipv4: add lockdep condition to fix for_each_entry (v1)
+Date:   Mon, 15 Jul 2019 10:37:00 -0400
+Message-Id: <20190715143705.117908-5-joel@joelfernandes.org>
 X-Mailer: git-send-email 2.22.0.510.g264f2c817a-goog
 In-Reply-To: <20190715143705.117908-1-joel@joelfernandes.org>
 References: <20190715143705.117908-1-joel@joelfernandes.org>
@@ -92,43 +92,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-list_for_each_entry_rcu now has support to check for RCU reader sections
-as well as lock. Just use the support in it, instead of explictly
-checking in the caller.
+Using the previous support added, use it for adding lockdep conditions
+to list usage here.
 
 Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 ---
- kernel/workqueue.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ net/ipv4/fib_frontend.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 601d61150b65..e882477ebf6e 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -364,11 +364,6 @@ static void workqueue_sysfs_unregister(struct workqueue_struct *wq);
- 			 !lockdep_is_held(&wq_pool_mutex),		\
- 			 "RCU or wq_pool_mutex should be held")
+diff --git a/net/ipv4/fib_frontend.c b/net/ipv4/fib_frontend.c
+index 317339cd7f03..26b0fb24e2c2 100644
+--- a/net/ipv4/fib_frontend.c
++++ b/net/ipv4/fib_frontend.c
+@@ -124,7 +124,8 @@ struct fib_table *fib_get_table(struct net *net, u32 id)
+ 	h = id & (FIB_TABLE_HASHSZ - 1);
  
--#define assert_rcu_or_wq_mutex(wq)					\
--	RCU_LOCKDEP_WARN(!rcu_read_lock_held() &&			\
--			 !lockdep_is_held(&wq->mutex),			\
--			 "RCU or wq->mutex should be held")
--
- #define assert_rcu_or_wq_mutex_or_pool_mutex(wq)			\
- 	RCU_LOCKDEP_WARN(!rcu_read_lock_held() &&			\
- 			 !lockdep_is_held(&wq->mutex) &&		\
-@@ -425,9 +420,8 @@ static void workqueue_sysfs_unregister(struct workqueue_struct *wq);
-  * ignored.
-  */
- #define for_each_pwq(pwq, wq)						\
--	list_for_each_entry_rcu((pwq), &(wq)->pwqs, pwqs_node)		\
--		if (({ assert_rcu_or_wq_mutex(wq); false; })) { }	\
--		else
-+	list_for_each_entry_rcu((pwq), &(wq)->pwqs, pwqs_node,		\
-+				 lock_is_held(&(wq->mutex).dep_map))
- 
- #ifdef CONFIG_DEBUG_OBJECTS_WORK
- 
+ 	head = &net->ipv4.fib_table_hash[h];
+-	hlist_for_each_entry_rcu(tb, head, tb_hlist) {
++	hlist_for_each_entry_rcu(tb, head, tb_hlist,
++				 lockdep_rtnl_is_held()) {
+ 		if (tb->tb_id == id)
+ 			return tb;
+ 	}
 -- 
 2.22.0.510.g264f2c817a-goog
 
