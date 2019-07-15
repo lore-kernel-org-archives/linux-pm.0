@@ -2,58 +2,59 @@ Return-Path: <SRS0=Lzxm=VM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C34BC76191
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 17:29:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9FA9C76191
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 17:29:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E128620838
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 17:29:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 79AE120838
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 17:29:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ixrxfkci"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jst9Ui9q"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731662AbfGOR3r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Jul 2019 13:29:47 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:42218 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730774AbfGOR3r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2019 13:29:47 -0400
-Received: by mail-lf1-f65.google.com with SMTP id s19so11578545lfb.9;
-        Mon, 15 Jul 2019 10:29:45 -0700 (PDT)
+        id S1731808AbfGOR3w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Jul 2019 13:29:52 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:39008 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731656AbfGOR3t (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jul 2019 13:29:49 -0400
+Received: by mail-lj1-f194.google.com with SMTP id v18so17086498ljh.6;
+        Mon, 15 Jul 2019 10:29:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=14LUvsDt1gvon+wQxuZkucZPfWNvGtdLSK5zNw+y+rA=;
-        b=ixrxfkci5dK+hglsPn5hYVamBJtCPCa0nsBEWDUI0EpA8GFehnCmVFI9GCfedQbpUu
-         FDTHVi3tV5sA67WmYGwasXnB3ivKrzwVNMy6/bWmDKs1XZOXtq1nTdETXmdcQPgyNfUk
-         1MA2KKVN1yaehff8y0asY8lIZ/lmYp5WycT4JNS2YfiaxTGM6K72tIpyqEOMrvljCxL8
-         23jzXHSLjHS0rfkSWtcqybyVS5dVDUVGziUOEgfy2SED+fBIQBxi4DSwau29FKuaqJSr
-         OaiFWePa0lYtnFBJ398YLihSjmxlSfB8wloB8tY0h+58x8eLb2FxgA2/zAOgdlO3qHJU
-         +Vxg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=wAZS/gHavS5YSEczNZRmVNHcV03HXfR9BNASQHjKGJI=;
+        b=Jst9Ui9qHEGJyoR820DT+dbzNqmoyU0griYCNuZ+AAWmlsLDSbF4r4hKBnx9FiGw6s
+         oqMpVKkdKs3dwznQ9d0PKfyxuuI8cPmU59grmhvotih4QLX3FJkKCL6yLghvu05Fbc5H
+         la0RYf84/EMum0P2XfBh13fdfWn7OYABemb0hJawquoRbUB4dDRnZNWIXR0utvX2dnLW
+         mcHgtrH7GNnAaKQCkPAWF3yBW9MY8O3Z2gsBNpnl18rO0+OTXeLd9U9HV23+M8rzjW/+
+         OZ3ecwiWSduDbZYK5iZwDoDqUtmlmNPJLBI7C1Q42+W1nE1kZ7GgGDjZTx1XPxJjNRVF
+         dzbQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=14LUvsDt1gvon+wQxuZkucZPfWNvGtdLSK5zNw+y+rA=;
-        b=b8uV0SnHUrjl/B1iLLh1MHDExQdRymjJm+9wh9zjHRKgdrkFngFz1b5OO3XmoqnpzW
-         toluuc4RuAAy1MwKj6AdBUbQ/W1pfAs+ZgQenfjCwIl9QpmtgMxcFEkh5UPjg9TwW32j
-         wSkcuVmnnbFvwKmVoczLplCOx4VjW7iSOSlDv8qc9iKJj2yNuwU9f1DlIdUAfw/ZHcUc
-         LRASDJdBHdsIPwJeHXsiyfOD5gvXcwcY/oaFv+3G7GbhPHSftuQlqJWX6Am0hbYmOskS
-         VQhmJ0GpbHWZ0Md8UxCnbd7JA7Mr0ZBP8a4IMkJBEUQLWOMZV60wYh+varncYjojfggy
-         at3w==
-X-Gm-Message-State: APjAAAUkHK9ih7hyYXx3bjCGh2vxgGcJwvpsGXzGzd6svTh/UmwpWI7w
-        9jhW7oEA9xAMpq0VzUWGg4Y=
-X-Google-Smtp-Source: APXvYqz03+U5F5T79TCqUrDKPWa9pW7113bB7WL9Hu2ZaUcqUgWSXnsTbG6w0fLEJMAFg3WfQLZ3lQ==
-X-Received: by 2002:ac2:5bc7:: with SMTP id u7mr12198271lfn.167.1563211784616;
-        Mon, 15 Jul 2019 10:29:44 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=wAZS/gHavS5YSEczNZRmVNHcV03HXfR9BNASQHjKGJI=;
+        b=DUu796qmThvHHQOI/otRylGNr0XFqzKaByzFE6TdSMhsmt1N1a0CCG5Xv2kQ1rkSrg
+         p5bMMuoc7FCj6iJTt1ksnjCjTtNHRN62vehBw7zmCdmG5nw+YYWI6b8bGhyABo/tknko
+         iId2unYrpR6G0j/nMk1UNgTsH/mc4jP9HDSmsWsqK6i+sS0F3/aeaR+dXPRMSnXl38FW
+         s85RtMwRMKX6HSA5KktxXC5nrB8LASxdeoaZO0+Sh3Vs79pughN8odwpvRtGrci9YeyU
+         NT33dQ90SM1efpwZMeDH1HYcsu86fpOo3Js3gA39OCwxh7wjhIfQpKF7BAqNGrSWkxsb
+         MyMw==
+X-Gm-Message-State: APjAAAWrcRrVxZZ4PpS34vltHO59wDLidYfkHVfAbbWP0MpREwijEjxw
+        58D8FtcgrlAf/eJv5uHaDKI=
+X-Google-Smtp-Source: APXvYqz/YOgCfk53IIHGcYQxyANpzzg7RT4bR0PVoEUmFsvNwc8I9plE9nCfBGaGoEESIt9W98AkeA==
+X-Received: by 2002:a2e:7818:: with SMTP id t24mr14310263ljc.210.1563211786801;
+        Mon, 15 Jul 2019 10:29:46 -0700 (PDT)
 Received: from localhost.localdomain (ppp79-139-233-208.pppoe.spdop.ru. [79.139.233.208])
-        by smtp.gmail.com with ESMTPSA id b17sm3248765ljf.34.2019.07.15.10.29.42
+        by smtp.gmail.com with ESMTPSA id b17sm3248765ljf.34.2019.07.15.10.29.45
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 15 Jul 2019 10:29:43 -0700 (PDT)
+        Mon, 15 Jul 2019 10:29:46 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -62,10 +63,12 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 00/13] Consolidate and improve NVIDIA Tegra CPUIDLE driver(s)
-Date:   Mon, 15 Jul 2019 20:26:16 +0300
-Message-Id: <20190715172629.4437-1-digetx@gmail.com>
+Subject: [PATCH v3 02/13] ARM: tegra: Change tegra_set_cpu_in_lp2() type to void
+Date:   Mon, 15 Jul 2019 20:26:18 +0300
+Message-Id: <20190715172629.4437-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190715172629.4437-1-digetx@gmail.com>
+References: <20190715172629.4437-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -73,111 +76,64 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+The old Tegra30 CPUIDLE driver had intention to check whether primary
+CPU was the last CPU that entered LP2 (CC6) idle-state, but that
+functionality never got utilized by the old-removed driver because it
+never supported the CC6 while secondary CPUs were online. The new driver
+will properly support CC6 on Tegra30, including the case where secondary
+CPUs are online, and that knowledge about what CPUs entered CC6 won't be
+needed at all because new driver will use different approach by making use
+of the coupled idle-state and explicitly parking secondary CPUs before
+entering into CC6.
 
-I was spending quite some time recently trying to hunt down CPU-suspend
-bug on Tegra30 SoC and in the end it was nailed. During that time I
-realized that the CPU Idle drivers could get some polish and gain new
-features, thus that's what this series does:
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ arch/arm/mach-tegra/pm.c | 8 +-------
+ arch/arm/mach-tegra/pm.h | 2 +-
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
-  1. Unifies Tegra20/30/114 drivers into a single driver and moves it out
-     into common drivers/cpuidle/ directory.
-
-  2. Enables CPU cluster power-down idling state on Tegra30.
-
-In the end there is a quite nice clean up of the Tegra CPUIDLE driver(s)
-and of the Tegra's arch code in general. Please review, thanks!
-
-Changelog:
-
-v3: - Addressed review comments that were made by Jon Hunter to v2 by
-      splitting patches into smaller (and simpler) chunks, better
-      documenting changes in the commit messages and using proper error
-      codes in the code.
-
-      Warnings are replaced with a useful error messages in the code of
-      "Introduce unified driver for NVIDIA Tegra SoCs" patch.
-
-      Secondary CPUs parking timeout increased to 100ms because I found
-      that it actually may happen to take more than 1ms if CPU is running
-      on a *very* low frequency.
-
-      Added diagnostic messages that are reporting Flow Controller state
-      when CPU parking fails.
-
-      Further polished cpuidle driver's code.
-
-      The coupled state entering is now aborted if there is a pending SGI
-      (Software Generated Interrupt) because it will be lost after GIC's
-      power-cycling. Like it was done by the old Tegra20 CPUIDLE driver.
-
-v2: - Added patches to enable the new cpuidle driver in the defconfigs:
-
-        ARM: multi_v7_defconfig: Enable Tegra cpuidle driver
-        ARM: tegra: Enable Tegra cpuidle driver in tegra_defconfig
-
-    - Dropped patches that removed CPUIDLE_FLAG_TIMER_STOP from the idling
-      states because that flag actually doesn't have any negative effects,
-      but still is correct for the case of a local CPU timer on older Tegra
-      SoCs:
-
-        cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from Tegra114/124 idle-state
-        cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from all states
-
-    - The "Add unified driver for NVIDIA Tegra SoCs" patch got more polish.
-      Tegra30 and Terga114 states are now squashed into a single common C7
-      state (following Parker TRM terminology, see 17.2.2.2 Power Management
-      States), more comments added, etc minor changes.
-
-Dmitry Osipenko (13):
-  ARM: tegra: Remove cpuidle drivers to replace them with a new driver
-  ARM: tegra: Change tegra_set_cpu_in_lp2() type to void
-  ARM: tegra: Propagate error from tegra_idle_lp2_last()
-  ARM: tegra: Compile sleep-tegra20/30.S unconditionally
-  ARM: tegra: Expose PM functions required for new cpuidle driver
-  ARM: tegra: Rename some of the newly exposed PM functions
-  ARM: tegra: Add tegra_pm_park_secondary_cpu()
-  clk: tegra: Add missing stubs for the case of !CONFIG_PM_SLEEP
-  cpuidle: Introduce unified driver for NVIDIA Tegra SoCs
-  cpuidle: tegra: Support CPU cluster power-down state on Tegra30
-  ARM: tegra: Create simple platform device for cpuidle driver
-  ARM: multi_v7_defconfig: Enable Tegra cpuidle driver
-  ARM: tegra: Enable Tegra cpuidle driver in tegra_defconfig
-
- arch/arm/configs/multi_v7_defconfig           |   1 +
- arch/arm/configs/tegra_defconfig              |   1 +
- arch/arm/mach-tegra/Makefile                  |  23 +-
- arch/arm/mach-tegra/cpuidle-tegra114.c        |  89 -----
- arch/arm/mach-tegra/cpuidle-tegra20.c         | 212 -----------
- arch/arm/mach-tegra/cpuidle-tegra30.c         | 132 -------
- arch/arm/mach-tegra/cpuidle.c                 |  50 ---
- arch/arm/mach-tegra/cpuidle.h                 |  21 --
- arch/arm/mach-tegra/irq.c                     |   3 +-
- arch/arm/mach-tegra/pm.c                      |  47 +--
- arch/arm/mach-tegra/pm.h                      |   4 -
- arch/arm/mach-tegra/reset-handler.S           |  11 -
- arch/arm/mach-tegra/reset.h                   |   9 +-
- arch/arm/mach-tegra/sleep-tegra20.S           | 170 ---------
- arch/arm/mach-tegra/sleep-tegra30.S           |   6 +-
- arch/arm/mach-tegra/sleep.h                   |  15 -
- arch/arm/mach-tegra/tegra.c                   |   7 +-
- drivers/cpuidle/Kconfig.arm                   |   8 +
- drivers/cpuidle/Makefile                      |   1 +
- drivers/cpuidle/cpuidle-tegra.c               | 348 ++++++++++++++++++
- drivers/soc/tegra/Kconfig                     |   1 -
- include/linux/clk/tegra.h                     |  13 +
- include/soc/tegra/cpuidle.h                   |   2 +-
- .../mach-tegra => include/soc/tegra}/irq.h    |   8 +-
- include/soc/tegra/pm.h                        |  31 ++
- 25 files changed, 450 insertions(+), 763 deletions(-)
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra114.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra20.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra30.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle.h
- create mode 100644 drivers/cpuidle/cpuidle-tegra.c
- rename {arch/arm/mach-tegra => include/soc/tegra}/irq.h (59%)
-
+diff --git a/arch/arm/mach-tegra/pm.c b/arch/arm/mach-tegra/pm.c
+index 6aaacb5757e1..2f6fb54be9f8 100644
+--- a/arch/arm/mach-tegra/pm.c
++++ b/arch/arm/mach-tegra/pm.c
+@@ -123,11 +123,9 @@ void tegra_clear_cpu_in_lp2(void)
+ 	spin_unlock(&tegra_lp2_lock);
+ }
+ 
+-bool tegra_set_cpu_in_lp2(void)
++void tegra_set_cpu_in_lp2(void)
+ {
+ 	int phy_cpu_id = cpu_logical_map(smp_processor_id());
+-	bool last_cpu = false;
+-	cpumask_t *cpu_lp2_mask = tegra_cpu_lp2_mask;
+ 	u32 *cpu_in_lp2 = tegra_cpu_lp2_mask;
+ 
+ 	spin_lock(&tegra_lp2_lock);
+@@ -135,11 +133,7 @@ bool tegra_set_cpu_in_lp2(void)
+ 	BUG_ON((*cpu_in_lp2 & BIT(phy_cpu_id)));
+ 	*cpu_in_lp2 |= BIT(phy_cpu_id);
+ 
+-	if ((phy_cpu_id == 0) && cpumask_equal(cpu_lp2_mask, cpu_online_mask))
+-		last_cpu = true;
+-
+ 	spin_unlock(&tegra_lp2_lock);
+-	return last_cpu;
+ }
+ 
+ static int tegra_sleep_cpu(unsigned long v2p)
+diff --git a/arch/arm/mach-tegra/pm.h b/arch/arm/mach-tegra/pm.h
+index 1e51a9b636eb..3f3164ad04b7 100644
+--- a/arch/arm/mach-tegra/pm.h
++++ b/arch/arm/mach-tegra/pm.h
+@@ -24,7 +24,7 @@ void tegra30_lp1_iram_hook(void);
+ void tegra30_sleep_core_init(void);
+ 
+ void tegra_clear_cpu_in_lp2(void);
+-bool tegra_set_cpu_in_lp2(void);
++void tegra_set_cpu_in_lp2(void);
+ void tegra_idle_lp2_last(void);
+ extern void (*tegra_tear_down_cpu)(void);
+ 
 -- 
 2.22.0
 
