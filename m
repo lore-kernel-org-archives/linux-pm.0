@@ -7,59 +7,48 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD90BC76191
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 15:03:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB188C7618F
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 15:08:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A6F7C2054F
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 15:03:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C2CC32054F
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jul 2019 15:08:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1563203033;
-	bh=lk6I4aH5+0b+VVVofMZ3cbJ7lsWFwa2u5jH2KKaaD+A=;
+	s=default; t=1563203287;
+	bh=pZYgTxZBhlV4zkeYOyQJylLILoJ83z/GR/3CqaetBTE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=kq4Ooq7gJ6bS/vGZ75lKoCHj/yAgsLQv98Uaz2J1WqVXRuvyRG2VrC3yR+zDGVv2G
-	 ZOLElXaHMR1QOVMiDuxHl2CPbDfcn52m8dzC27ckzH9qgRNF2eKdO+U6EVtNtdRrn7
-	 1o+77Gz2koKQ4MUtJ6sNy3PgT8a4F3MwlCQytpmw=
+	b=aSTTwpauLCIqO1p8XOIIIfINLsc5a7nFmfiNuTBZaQEutkA9rcRHptH3EMgGFUYmX
+	 QQC4t7vuTFDYWLpNS8bIh0oPB3mEvzlhWUVzj81fIz77V6GJQ2Y9DeuQjMatgEBm7Z
+	 ZvY4ZvK4rl1UjyazJ/eF/51WnLDW6355/Jqtk8Zw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388577AbfGOOIx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Jul 2019 10:08:53 -0400
-Received: from mail.kernel.org ([198.145.29.99]:59674 "EHLO mail.kernel.org"
+        id S1733267AbfGOPIC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Jul 2019 11:08:02 -0400
+Received: from mail.kernel.org ([198.145.29.99]:37536 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2388592AbfGOOIw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 15 Jul 2019 10:08:52 -0400
+        id S1733120AbfGON6S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Jul 2019 09:58:18 -0400
 Received: from sasha-vm.mshome.net (unknown [73.61.17.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 4862C2081C;
-        Mon, 15 Jul 2019 14:08:48 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 56884217D9;
+        Mon, 15 Jul 2019 13:58:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1563199731;
-        bh=lk6I4aH5+0b+VVVofMZ3cbJ7lsWFwa2u5jH2KKaaD+A=;
+        s=default; t=1563199097;
+        bh=pZYgTxZBhlV4zkeYOyQJylLILoJ83z/GR/3CqaetBTE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=LCNUV+dLemhzamwpKhRy+dbEgZVdePTAlrw8dSJC4mD0MNCFrEFKo/bFdVLXj/PfA
-         yXDT4BonW7QmBqMasHaCeto2/y9Z3XOfY9beMT/tZbFwey39BGpsB3gcap113Eu6yg
-         jc0KHuE9GEffVYPkBCoG5sFQTZK7lTBzYbKQoe2E=
+        b=THYyPTgW/obmuU/dPSm99zLcoGYj/DKPrDwyG00o5ddd3R9iMuxAr5DpnlHpOznRc
+         lRNKmvCfR6byhDHs2oNxmgg96oSHD0Sq1bCyDaEh2eVa2MIFury4s8moBdKOu34JBi
+         LmLfLkZYxZ6FacweJHU6ExHLXtTZTXa2L7AmwGzY=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>, bp@suse.de,
-        Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Kan Liang <kan.liang@linux.intel.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        platform-driver-x86@vger.kernel.org,
-        Qiuxu Zhuo <qiuxu.zhuo@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.1 087/219] x86/cpu: Add Ice Lake NNPI to Intel family
-Date:   Mon, 15 Jul 2019 10:01:28 -0400
-Message-Id: <20190715140341.6443-87-sashal@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.2 191/249] cpufreq: Don't skip frequency validation for has_target() drivers
+Date:   Mon, 15 Jul 2019 09:45:56 -0400
+Message-Id: <20190715134655.4076-191-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190715140341.6443-1-sashal@kernel.org>
-References: <20190715140341.6443-1-sashal@kernel.org>
+In-Reply-To: <20190715134655.4076-1-sashal@kernel.org>
+References: <20190715134655.4076-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -69,47 +58,81 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 
-[ Upstream commit e32d045cd4ba06b59878323e434bad010e78e658 ]
+[ Upstream commit 9801522840cc1073f8064b4c979b7b6995c74bca ]
 
-Add the CPUID model number of Ice Lake Neural Network Processor for Deep
-Learning Inference (ICL-NNPI) to the Intel family list. Ice Lake NNPI uses
-model number 0x9D and this will be documented in a future version of Intel
-Software Development Manual.
+CPUFREQ_CONST_LOOPS was introduced in a very old commit from pre-2.6
+kernel release by commit 6a4a93f9c0d5 ("[CPUFREQ] Fix 'out of sync'
+issue").
 
-Signed-off-by: Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: bp@suse.de
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Kan Liang <kan.liang@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: platform-driver-x86@vger.kernel.org
-Cc: Qiuxu Zhuo <qiuxu.zhuo@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>
-Link: https://lkml.kernel.org/r/20190606012419.13250-1-rajneesh.bhardwaj@linux.intel.com
+Basically, that commit does two things:
+
+ - It adds the frequency verification code (which is quite similar to
+   what we have today as well).
+
+ - And it sets the CPUFREQ_CONST_LOOPS flag only for setpolicy drivers,
+   rightly so based on the code we had then. The idea was to avoid
+   frequency validation for setpolicy drivers as the cpufreq core doesn't
+   know what frequency the hardware is running at and so no point in
+   doing frequency verification.
+
+The problem happened when we started to use the same CPUFREQ_CONST_LOOPS
+flag for constant loops-per-jiffy thing as well and many has_target()
+drivers started using the same flag and unknowingly skipped the
+verification of frequency. There is no logical reason behind skipping
+frequency validation because of the presence of CPUFREQ_CONST_LOOPS
+flag otherwise.
+
+Fix this issue by skipping frequency validation only for setpolicy
+drivers and always doing it for has_target() drivers irrespective of
+the presence or absence of CPUFREQ_CONST_LOOPS flag.
+
+cpufreq_notify_transition() is only called for has_target() type driver
+and not for set_policy type, and the check is simply redundant. Remove
+it as well.
+
+Also remove () around freq comparison statement as they aren't required
+and checkpatch also warns for them.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/x86/include/asm/intel-family.h | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/cpufreq.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/include/asm/intel-family.h b/arch/x86/include/asm/intel-family.h
-index 310118805f57..f60ddd655c78 100644
---- a/arch/x86/include/asm/intel-family.h
-+++ b/arch/x86/include/asm/intel-family.h
-@@ -56,6 +56,7 @@
- #define INTEL_FAM6_ICELAKE_XEON_D	0x6C
- #define INTEL_FAM6_ICELAKE_DESKTOP	0x7D
- #define INTEL_FAM6_ICELAKE_MOBILE	0x7E
-+#define INTEL_FAM6_ICELAKE_NNPI		0x9D
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 876a4cb09de3..7d37efb43621 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -356,12 +356,10 @@ static void cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		 * which is not equal to what the cpufreq core thinks is
+ 		 * "old frequency".
+ 		 */
+-		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+-			if (policy->cur && (policy->cur != freqs->old)) {
+-				pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n",
+-					 freqs->old, policy->cur);
+-				freqs->old = policy->cur;
+-			}
++		if (policy->cur && policy->cur != freqs->old) {
++			pr_debug("Warning: CPU frequency is %u, cpufreq assumed %u kHz\n",
++				 freqs->old, policy->cur);
++			freqs->old = policy->cur;
+ 		}
  
- /* "Small Core" Processors (Atom) */
+ 		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
+@@ -1627,8 +1625,7 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
+ 	if (policy->fast_switch_enabled)
+ 		return ret_freq;
  
+-	if (ret_freq && policy->cur &&
+-		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
++	if (has_target() && ret_freq && policy->cur) {
+ 		/* verify no discrepancy between actual and
+ 					saved value exists */
+ 		if (unlikely(ret_freq != policy->cur)) {
 -- 
 2.20.1
 
