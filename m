@@ -7,67 +7,62 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A616C76188
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A360EC76188
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EC80D20665
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7C54920665
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ya2E0F0K"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FbuySQDt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732768AbfGPJzN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Jul 2019 05:55:13 -0400
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:40907 "EHLO
-        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732752AbfGPJzM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 05:55:12 -0400
-Received: by mail-pg1-f194.google.com with SMTP id w10so9180471pgj.7
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2019 02:55:11 -0700 (PDT)
+        id S1732541AbfGPJzG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Jul 2019 05:55:06 -0400
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:35082 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732524AbfGPJzG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 05:55:06 -0400
+Received: by mail-pf1-f195.google.com with SMTP id u14so8870714pfn.2
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2019 02:55:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=T27u9AQsojQ674GAmNKFLMWAOrQITFIdhdVL3SNGHa0=;
-        b=Ya2E0F0Kpsdp0ttA6naaYP2zJx2kYW+h4/n4+NG/MQdbcO2+aQfnQEJkZLQ9tg1IiE
-         LX+8ONNPhgfmujOE3LMRsyCTIjud6ZaL7d6XCXOEcyGKlhQkrJ5/w23QMtezvJRWLK+O
-         mGs6kCsv0aUcf2RmgTLl1X8bv9Y6GQNBTCj2Nn27JzU3c/LizhYZC7T9mmsXsR0ap6d0
-         31PngFy12ihQsVK8r/izjoBloFuA3ryi2Ck8VejmUOML+kOxbEpWBCPFW/dx57VUIu05
-         y95wt1MSwxZH2sGlHEYflMvAabRwvVHwUKC5SUZutrT4j7T25CfaZAMxh5h4SS/hVJze
-         cvew==
+        bh=QxH+UbD9tCF0KwHpPpNeLuejcWOqKPoBzOiXe/lF/gk=;
+        b=FbuySQDtO2afso3Zxf3ISnrj/v2hbYkqAmDXCqX8MPUrL4zaHSiS5SY9RiGeUl4DBd
+         QYFEwKX1LxMARj+z317ztFPrv0F4GtsdtsOHbWT6MhcS3V4/9MxUrlc/V3gklYoUHOs0
+         a0Spyg/DNkDb/ExzrNrp0C/TIFJvN5XdZaLcrQXHaPYP7DRkPij+Gm8j2iS8Iyt81NpU
+         RYd8ZR0FhyMs9jTWMMD516MbMp+JLzFaFrHFq19l7iCxCkC2OJKVFaH838fVGVaiF5Eu
+         OFM4DMWboMqSSpHzjsdkOte3wz2s1/FFebxDMVpx5oLeFUyRxm8T3ZLw1FKyPtdKY9IX
+         KCQQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=T27u9AQsojQ674GAmNKFLMWAOrQITFIdhdVL3SNGHa0=;
-        b=oj/RC5WtdobYsP9gQfVFKaUx0MceWLPj12JvT7qCoZss+CGWmDaNxHsvRxQrxPb04U
-         /4KO7cE1QXIPvQVWAWrqi2F4ZQ01FQFfAeqSXR5hDJBpCaM2793Azl43jQwhIKKHAfTM
-         VjIOWm0QX4vtTvAZPsO3xiTzbuQfFbGbuehewVkLu7ZZFQhTr992vtjvtAoLEtQEQMXo
-         11PIJvxoIQreAlHfntyP1n0w3SjSJP2muboiIEciH/Z/A+3auMUsBvmpjnIT4e5PZZ4R
-         CI3QqzPXtovW9+A0yojWvQMzj1QXqyRBgOcfK3rFbzL5rUzUe/qVtHySSFojlBnXJdzN
-         5r6w==
-X-Gm-Message-State: APjAAAWFAfGveMhgFrvVVEEEJWvblq3D+Bmb3ZMpUjLTjXQpAT+vTgEj
-        /EnTEvJ4jbtHg1WxEK+hSqthLg==
-X-Google-Smtp-Source: APXvYqzLQtMrzz6QJKSWo1YKTTpqVphLEcvXV/oOOFIqqiOECX58t60hoGvqEexH+CJHrnbzc3itGA==
-X-Received: by 2002:a63:3fc9:: with SMTP id m192mr32998253pga.429.1563270911165;
-        Tue, 16 Jul 2019 02:55:11 -0700 (PDT)
+        bh=QxH+UbD9tCF0KwHpPpNeLuejcWOqKPoBzOiXe/lF/gk=;
+        b=O1uLqjXkxZCe7FvbfUt1Yb7Gsy5H8BNXzd+NWfNIpcrrBx48UFszBsqA4GJj/Yd7Ow
+         z8KG6pcWq2hfrE6cT+jKEK/aUA0y1GS/mviIYGKFD+jppqgK5LV5t0NIjfYC2c//6+4z
+         6VFtY6qtN6oNG2s5Ww9fq7bevxYLAv1/DhsY/dx5Bmy/NtZ/T1IANPo7XPwoFp64Qeo9
+         Daka7csStizjmLtchbntLnv8puGC+2fgS5wVDf2qWIf25eNYfeKIHvrjtLdg7qFAmdBE
+         pZFhUBhodIYmNly5NHC/vgztE7uUv7piRfuUyG51l4D7WVCueiUxHjRSUG400hwQzUEA
+         29FA==
+X-Gm-Message-State: APjAAAUfVKsPWwCguTBYzlUNobt6tk1e2snEisBYNnpwt7HxyLW+VED4
+        edpq02WQ3qn8Mo/ZEGWYpWrTMg==
+X-Google-Smtp-Source: APXvYqxVvOwNilTqDTpbthb8pN3i7U94PEikdceh26u14QE+VwDQo/NV8TzLClLcmOdL0R6dY7c2PA==
+X-Received: by 2002:a63:ad07:: with SMTP id g7mr30139354pgf.405.1563270905182;
+        Tue, 16 Jul 2019 02:55:05 -0700 (PDT)
 Received: from localhost ([122.172.28.117])
-        by smtp.gmail.com with ESMTPSA id n7sm24363826pff.59.2019.07.16.02.55.10
+        by smtp.gmail.com with ESMTPSA id r188sm33754776pfr.16.2019.07.16.02.55.04
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 16 Jul 2019 02:55:10 -0700 (PDT)
+        Tue, 16 Jul 2019 02:55:04 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Javi Merino <javi.merino@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org,
+To:     Rafael Wysocki <rjw@rjwysocki.net>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
+        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 05/10] thermal: cpu_cooling: Switch to QoS requests instead of cpufreq notifier
-Date:   Tue, 16 Jul 2019 15:24:49 +0530
-Message-Id: <c79fa19155146a03491461d7306970765e988696.1563270828.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/10] video: pxafb: Remove cpufreq policy notifier
+Date:   Tue, 16 Jul 2019 15:24:47 +0530
+Message-Id: <e69d47b1d497bdbd8c988754d98714e78ddc0a80.1563270828.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
 In-Reply-To: <cover.1563270828.git.viresh.kumar@linaro.org>
 References: <cover.1563270828.git.viresh.kumar@linaro.org>
@@ -78,230 +73,75 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cpufreq core now takes the min/max frequency constraints via QoS
-requests and the CPUFREQ_ADJUST notifier shall get removed later on.
+The cpufreq policy notifier's CPUFREQ_ADJUST notification is going to
+get removed soon.
 
-Switch over to using the QoS request for maximum frequency constraint
-for cpu_cooling driver.
+The notifier callback pxafb_freq_policy() isn't doing anything apart
+from printing a debug message on CPUFREQ_ADJUST notification. There is
+no point in keeping an otherwise empty callback and registering the
+notifier.
+
+Remove it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c | 110 ++++++++--------------------------
- 1 file changed, 26 insertions(+), 84 deletions(-)
+ drivers/video/fbdev/pxafb.c | 21 ---------------------
+ drivers/video/fbdev/pxafb.h |  1 -
+ 2 files changed, 22 deletions(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 4c5db59a619b..391f39776c6a 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -16,6 +16,7 @@
- #include <linux/err.h>
- #include <linux/idr.h>
- #include <linux/pm_opp.h>
-+#include <linux/pm_qos.h>
- #include <linux/slab.h>
- #include <linux/cpu.h>
- #include <linux/cpu_cooling.h>
-@@ -66,8 +67,6 @@ struct time_in_idle {
-  * @last_load: load measured by the latest call to cpufreq_get_requested_power()
-  * @cpufreq_state: integer value representing the current state of cpufreq
-  *	cooling	devices.
-- * @clipped_freq: integer value representing the absolute value of the clipped
-- *	frequency.
-  * @max_level: maximum cooling level. One less than total number of valid
-  *	cpufreq frequencies.
-  * @freq_table: Freq table in descending order of frequencies
-@@ -84,12 +83,12 @@ struct cpufreq_cooling_device {
- 	int id;
- 	u32 last_load;
- 	unsigned int cpufreq_state;
--	unsigned int clipped_freq;
- 	unsigned int max_level;
- 	struct freq_table *freq_table;	/* In descending order */
- 	struct cpufreq_policy *policy;
- 	struct list_head node;
- 	struct time_in_idle *idle_time;
-+	struct dev_pm_qos_request qos_req;
- };
- 
- static DEFINE_IDA(cpufreq_ida);
-@@ -118,59 +117,6 @@ static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
- 	return level - 1;
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 4282cb117b92..f70c9f79622e 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -1678,24 +1678,6 @@ pxafb_freq_transition(struct notifier_block *nb, unsigned long val, void *data)
+ 	}
+ 	return 0;
  }
- 
--/**
-- * cpufreq_thermal_notifier - notifier callback for cpufreq policy change.
-- * @nb:	struct notifier_block * with callback info.
-- * @event: value showing cpufreq event for which this function invoked.
-- * @data: callback-specific data
-- *
-- * Callback to hijack the notification on cpufreq policy transition.
-- * Every time there is a change in policy, we will intercept and
-- * update the cpufreq policy with thermal constraints.
-- *
-- * Return: 0 (success)
-- */
--static int cpufreq_thermal_notifier(struct notifier_block *nb,
--				    unsigned long event, void *data)
+-
+-static int
+-pxafb_freq_policy(struct notifier_block *nb, unsigned long val, void *data)
 -{
+-	struct pxafb_info *fbi = TO_INF(nb, freq_policy);
+-	struct fb_var_screeninfo *var = &fbi->fb.var;
 -	struct cpufreq_policy *policy = data;
--	unsigned long clipped_freq;
--	struct cpufreq_cooling_device *cpufreq_cdev;
 -
--	if (event != CPUFREQ_ADJUST)
--		return NOTIFY_DONE;
--
--	mutex_lock(&cooling_list_lock);
--	list_for_each_entry(cpufreq_cdev, &cpufreq_cdev_list, node) {
--		/*
--		 * A new copy of the policy is sent to the notifier and can't
--		 * compare that directly.
--		 */
--		if (policy->cpu != cpufreq_cdev->policy->cpu)
--			continue;
--
--		/*
--		 * policy->max is the maximum allowed frequency defined by user
--		 * and clipped_freq is the maximum that thermal constraints
--		 * allow.
--		 *
--		 * If clipped_freq is lower than policy->max, then we need to
--		 * readjust policy->max.
--		 *
--		 * But, if clipped_freq is greater than policy->max, we don't
--		 * need to do anything.
--		 */
--		clipped_freq = cpufreq_cdev->clipped_freq;
--
--		if (policy->max > clipped_freq)
--			cpufreq_verify_within_limits(policy, 0, clipped_freq);
+-	switch (val) {
+-	case CPUFREQ_ADJUST:
+-		pr_debug("min dma period: %d ps, "
+-			"new clock %d kHz\n", pxafb_display_dma_period(var),
+-			policy->max);
+-		/* TODO: fill in min/max values */
 -		break;
 -	}
--	mutex_unlock(&cooling_list_lock);
--
--	return NOTIFY_OK;
--}
--
- /**
-  * update_freq_table() - Update the freq table with power numbers
-  * @cpufreq_cdev:	the cpufreq cooling device in which to update the table
-@@ -374,7 +320,6 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long state)
- {
- 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
--	unsigned int clip_freq;
- 
- 	/* Request state should be less than max_level */
- 	if (WARN_ON(state > cpufreq_cdev->max_level))
-@@ -384,13 +329,10 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 	if (cpufreq_cdev->cpufreq_state == state)
- 		return 0;
- 
--	clip_freq = cpufreq_cdev->freq_table[state].frequency;
- 	cpufreq_cdev->cpufreq_state = state;
--	cpufreq_cdev->clipped_freq = clip_freq;
--
--	cpufreq_update_policy(cpufreq_cdev->policy->cpu);
- 
 -	return 0;
-+	return dev_pm_qos_update_request(&cpufreq_cdev->qos_req,
-+				cpufreq_cdev->freq_table[state].frequency);
- }
+-}
+ #endif
  
- /**
-@@ -554,11 +496,6 @@ static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
- 	.power2state		= cpufreq_power2state,
- };
+ #ifdef CONFIG_PM
+@@ -2400,11 +2382,8 @@ static int pxafb_probe(struct platform_device *dev)
  
--/* Notifier for cpufreq policy change */
--static struct notifier_block thermal_cpufreq_notifier_block = {
--	.notifier_call = cpufreq_thermal_notifier,
--};
--
- static unsigned int find_next_max(struct cpufreq_frequency_table *table,
- 				  unsigned int prev_max)
- {
-@@ -596,9 +533,16 @@ __cpufreq_cooling_register(struct device_node *np,
- 	struct cpufreq_cooling_device *cpufreq_cdev;
- 	char dev_name[THERMAL_NAME_LENGTH];
- 	unsigned int freq, i, num_cpus;
-+	struct device *dev;
- 	int ret;
- 	struct thermal_cooling_device_ops *cooling_ops;
--	bool first;
-+
-+	dev = get_cpu_device(policy->cpu);
-+	if (unlikely(!dev)) {
-+		pr_warn("No cpu device for cpu %d\n", policy->cpu);
-+		return ERR_PTR(-ENODEV);
-+	}
-+
+ #ifdef CONFIG_CPU_FREQ
+ 	fbi->freq_transition.notifier_call = pxafb_freq_transition;
+-	fbi->freq_policy.notifier_call = pxafb_freq_policy;
+ 	cpufreq_register_notifier(&fbi->freq_transition,
+ 				CPUFREQ_TRANSITION_NOTIFIER);
+-	cpufreq_register_notifier(&fbi->freq_policy,
+-				CPUFREQ_POLICY_NOTIFIER);
+ #endif
  
- 	if (IS_ERR_OR_NULL(policy)) {
- 		pr_err("%s: cpufreq policy isn't valid: %p\n", __func__, policy);
-@@ -671,25 +615,29 @@ __cpufreq_cooling_register(struct device_node *np,
- 		cooling_ops = &cpufreq_cooling_ops;
- 	}
+ 	/*
+diff --git a/drivers/video/fbdev/pxafb.h b/drivers/video/fbdev/pxafb.h
+index b641289c8a99..86b1e9ab1a38 100644
+--- a/drivers/video/fbdev/pxafb.h
++++ b/drivers/video/fbdev/pxafb.h
+@@ -162,7 +162,6 @@ struct pxafb_info {
  
-+	ret = dev_pm_qos_add_request(dev, &cpufreq_cdev->qos_req,
-+				     DEV_PM_QOS_MAX_FREQUENCY,
-+				     cpufreq_cdev->freq_table[0].frequency);
-+	if (ret < 0) {
-+		pr_err("%s: Failed to add freq constraint (%d)\n", __func__,
-+		       ret);
-+		cdev = ERR_PTR(ret);
-+		goto remove_ida;
-+	}
-+
- 	cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
- 						  cooling_ops);
- 	if (IS_ERR(cdev))
--		goto remove_ida;
--
--	cpufreq_cdev->clipped_freq = cpufreq_cdev->freq_table[0].frequency;
-+		goto remove_qos_req;
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
+-	struct notifier_block	freq_policy;
+ #endif
  
- 	mutex_lock(&cooling_list_lock);
--	/* Register the notifier for first cpufreq cooling device */
--	first = list_empty(&cpufreq_cdev_list);
- 	list_add(&cpufreq_cdev->node, &cpufreq_cdev_list);
- 	mutex_unlock(&cooling_list_lock);
- 
--	if (first)
--		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
--					  CPUFREQ_POLICY_NOTIFIER);
--
- 	return cdev;
- 
-+remove_qos_req:
-+	dev_pm_qos_remove_request(&cpufreq_cdev->qos_req);
- remove_ida:
- 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
- free_table:
-@@ -777,7 +725,6 @@ EXPORT_SYMBOL_GPL(of_cpufreq_cooling_register);
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
- 	struct cpufreq_cooling_device *cpufreq_cdev;
--	bool last;
- 
- 	if (!cdev)
- 		return;
-@@ -786,15 +733,10 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 
- 	mutex_lock(&cooling_list_lock);
- 	list_del(&cpufreq_cdev->node);
--	/* Unregister the notifier for the last cpufreq cooling device */
--	last = list_empty(&cpufreq_cdev_list);
- 	mutex_unlock(&cooling_list_lock);
- 
--	if (last)
--		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
--					    CPUFREQ_POLICY_NOTIFIER);
--
- 	thermal_cooling_device_unregister(cdev);
-+	dev_pm_qos_remove_request(&cpufreq_cdev->qos_req);
- 	ida_simple_remove(&cpufreq_ida, cpufreq_cdev->id);
- 	kfree(cpufreq_cdev->idle_time);
- 	kfree(cpufreq_cdev->freq_table);
+ 	struct regulator *lcd_supply;
 -- 
 2.21.0.rc0.269.g1a574e7a288b
 
