@@ -2,246 +2,157 @@ Return-Path: <SRS0=uSiu=VN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63C96C76195
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 12:11:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40786C76188
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 12:14:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2EE1A2173C
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 12:11:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1563279065;
-	bh=vUwqHoZ5x81TFeYIg67nfdnYj5axOl0J8XfYAwB1f5k=;
-	h=From:Cc:Subject:Date:To:List-ID:From;
-	b=aVRTRvHJlKOxPrayCafCdo6tJdpD3khefZskTMKzRIfbkOj6hhr/ehO0o9umMZ1u/
-	 GogdOYRKYXmLe+GxyXOmefIJtyVxoPD676vWbrBzB7orin6jfOTF0ppuz46h/+pGq6
-	 MUthWDQ1z9dRAJ3GH/w7mSO10HHiMZmcST7QqWV4=
+	by mail.kernel.org (Postfix) with ESMTP id F39BB20651
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 12:14:03 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="hc78p2mv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733079AbfGPMLB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Jul 2019 08:11:01 -0400
-Received: from bombadil.infradead.org ([198.137.202.133]:39064 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732581AbfGPMLA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 08:11:00 -0400
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-Type:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
-        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-         bh=cmrXWeKZex18XPtqOqXe6bsYV64AO68iLYgMsiWQPIg=; b=QAAw/LhYE17kHpcrRzOCn1piW
-        wDQhBm1yl/KZ+dj8rCQhgNieg+hhttiHCd56p5QhHz5ASeESwhg4e5NnaVU0xFvaS1lhK+pI34VAH
-        U07mMZP9tRQ4deiPKcIy4WDiR29u2hCPogiZhF9Lz2jHXns+8RDa0pzAsZAsHJhW3j3YMjCZIm/+P
-        LGpxBBG2lEGO3KMHIzygFcSKKg0GHttc1pRY0pbQBDBk7P+UYDrt1y6b2Q/bZPeVAySSZNi95nOXL
-        A9MLC1Mv0VfRw8xgU7fIrVDbMile7MGuQFtM0dQbNTrXk9FcF/xI3aZ/c1Bhe5nAJD6JiU0T0som+
-        3cGvhJxcQ==;
-Received: from [189.27.46.152] (helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
-        id 1hnMIL-0004hz-Al; Tue, 16 Jul 2019 12:10:57 +0000
-Received: from mchehab by bombadil.infradead.org with local (Exim 4.92)
-        (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1hnMII-0000QW-KI; Tue, 16 Jul 2019 09:10:54 -0300
-From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        linux-scsi@vger.kernel.org, esc.storagedev@microsemi.com,
-        linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>,
-        alsa-devel@alsa-project.org, kvm@vger.kernel.org,
-        linux-i2c@vger.kernel.org, rcu@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arch@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-watchdog@vger.kernel.org, x86@kernel.org,
-        dri-devel@lists.freedesktop.org, netdev@vger.kernel.org,
-        linux-crypto@vger.kernel.org, linux-sh@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: [PATCH 00/14] pending doc patches for 5.3-rc
-Date:   Tue, 16 Jul 2019 09:10:39 -0300
-Message-Id: <cover.1563277838.git.mchehab+samsung@kernel.org>
-X-Mailer: git-send-email 2.21.0
+        id S1728470AbfGPMOD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Jul 2019 08:14:03 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:33277 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726997AbfGPMOD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 08:14:03 -0400
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20190716121400epoutp031adaf6a5c6b8c3e3c8c4fb2fbb2f9108~x4i-ZCodI0372603726epoutp030
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2019 12:14:00 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20190716121400epoutp031adaf6a5c6b8c3e3c8c4fb2fbb2f9108~x4i-ZCodI0372603726epoutp030
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1563279240;
+        bh=gLGBzTyzGINyvnuzWw8l4hJ/ZhgkqrGgrOlI+es+Cx0=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=hc78p2mvZzrymqa+xJgLHmxzCfR3fxmhc013sk1dT+HBUGKoG7TQibEgA0MC6q9dm
+         fQuyoiTttKa5Rt7EsnjxbjcoFeMaDCsIPhQ/T9DZamTRYjvmpU02kOJZCRO7+o9RW1
+         I4OZppkZO4iL9n2un8DG2oUmgNhVokTdiJr2EGvw=
+Received: from epsnrtp6.localdomain (unknown [182.195.42.167]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20190716121400epcas1p241518b32e1143ff332bf02f56062bb9f~x4i_wes4c1105611056epcas1p2_;
+        Tue, 16 Jul 2019 12:14:00 +0000 (GMT)
+Received: from epsmges1p1.samsung.com (unknown [182.195.40.155]) by
+        epsnrtp6.localdomain (Postfix) with ESMTP id 45nzpC4SvqzMqYkX; Tue, 16 Jul
+        2019 12:13:55 +0000 (GMT)
+Received: from epcas1p4.samsung.com ( [182.195.41.48]) by
+        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
+        05.AC.04088.38FBD2D5; Tue, 16 Jul 2019 21:13:55 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
+        20190716121354epcas1p47d605507ac58d785fab82a7e7ae898b0~x4i5oevr50314203142epcas1p4S;
+        Tue, 16 Jul 2019 12:13:54 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190716121354epsmtrp1c1ed4b9f604ff4a9a83165c2dba9d4dc~x4i5k9rnK0050600506epsmtrp1T;
+        Tue, 16 Jul 2019 12:13:54 +0000 (GMT)
+X-AuditID: b6c32a35-845ff70000000ff8-58-5d2dbf83e094
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        CE.FD.03706.28FBD2D5; Tue, 16 Jul 2019 21:13:54 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190716121354epsmtip1a817edc8664a478c0d7d692ed4e8911d~x4i5W1ULT1146311463epsmtip1c;
+        Tue, 16 Jul 2019 12:13:54 +0000 (GMT)
+Subject: Re: [PATCH v4 10/24] PM / devfreq: tegra30: Don't enable
+ consecutive-down interrupt on startup
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <933b99a1-ac45-25fb-e8d5-0641ec0cab18@samsung.com>
+Date:   Tue, 16 Jul 2019 21:17:00 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.7.2
 MIME-Version: 1.0
+In-Reply-To: <20190707223303.6755-11-digetx@gmail.com>
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+X-Brightmail-Tracker: H4sIAAAAAAAAA01Sf0gTYRjm293OW3T1tbTeDGqdFGgtd+rWGRpBUaOCrCDKGnbooeJ+tZtR
+        SVBpmZKmZUTL7DeUVpL4Y1oxmEMpykrpB5kRKWUmzbKssLJtZ+R/z/t8z/O+3/N+H02oa6lI
+        OtvqFB1WwcxSk8jG1midNt+jNelcjzR8zedexBe4LpL8w4ODYXxXSyXFD5f4EF/01UXx3Qeu
+        UvzPliqSL73RSS1XGd09l5Gx2dUTZizJ/0QZS+urkXG4bk6KMjUnKUsUMkSHRrSm2zKyrZnJ
+        7NpNaSvS9AYdp+US+SWsxipYxGR25boU7apsc+BCrGaXYM4NUCmCJLGxy5IctlynqMmySc5k
+        VrRnmO2J9sWSYJFyrZmL022WpZxOF6cPCHfkZD2/eo6wP1btbrz5ndiP/oQVIxUNOAH8XSOK
+        YjSJVmM3gn5PNSkXXxBUdPoJuRhB4K0dpv5ZrrTVhskHdxF8fvVx3O9H0HT9GBlUTcfZMPhm
+        KNQrHP9BUPQzP2Qn8FZoba5RBDGFY8DT/yLET8Xz4OmPXlSMaJrBy8D/kQnSJJ4P/c2toZ4R
+        eAvc91WFMIOnwb3TfWRQrsIGePaEkbvPhJd95xQyngv5DWdCCQCPUVA2cFIpJ1gJhZ5WJOPp
+        MNBeP76MSPhw7PA4zoNr93yUbD6CoN7zeNwcD54rJxTBwQSOhtqWWJmeB82jZ5E8eAp8+nZU
+        GZQAZuDIYbUsiYKuNz0KGc+CS4VFVBliXRPSuCZEcE2I4Po/7Dwiq9EM0S5ZMkWJs3MTX7sO
+        hT5rjN6NKjrWeRGmETuZ0XgWmdRKYZe0x+JFQBNsOJP8baFJzWQIe/aKDluaI9csSl6kDyy7
+        nIiMSLcFvr7Vmcbp4+Lj4/kEzqDnOHYmU/Ur2qTGmYJTzBFFu+j451PQqsj96EBNSUHHqo1j
+        le/LR3d6DLFPT6du25xkPVS1zRS3fehEQmNBaeGCBz1jm5Xb8zrLylj36+Nxvy+spwcTyQ3s
+        7agR9yP7qLbpdnje+47hiDUmf2J5N114avWmgYqhtn13cFMx6py91NC9Nsqnf2uC/oq6lvR9
+        jjXCO5+3veEWpZFYUsoSuBjCIQl/AQ1EirLCAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprJIsWRmVeSWpSXmKPExsWy7bCSnG7Tft1Yg/710harPz5mtGiZtYjF
+        4mzTG3aLy7vmsFl87j3CaNH5ZRabxe3GFWwWP3fNY7HoW3uJzYHTY8fdJYweO2fdZffobX7H
+        5tG3ZRWjx+dNcgGsUVw2Kak5mWWpRfp2CVwZ11fMZy64wFmxbd135gbGf+xdjJwcEgImEkuP
+        rQeyuTiEBHYzSkxY9h0qISkx7eJR5i5GDiBbWOLw4WKImreMEk86HrKA1AgLZEq8efCBBSQh
+        ItDEJLGp9wJYM7NApETP3C1sEB1bGCV+dExiA0mwCWhJ7H9xA8zmF1CUuPrjMSPIBl4BO4n3
+        r3lBwiwCqhIvdh4GWyAqECEx6dpOMJtXQFDi5MwnLCDlnAJmEtcu8kKsUpf4M+8SM4QtLnHr
+        yXwmCFteonnrbOYJjMKzkHTPQtIyC0nLLCQtCxhZVjFKphYU56bnFhsWGOallusVJ+YWl+al
+        6yXn525iBEeYluYOxstL4g8xCnAwKvHwntijEyvEmlhWXJl7iFGCg1lJhNf2q3asEG9KYmVV
+        alF+fFFpTmrxIUZpDhYlcd6neccihQTSE0tSs1NTC1KLYLJMHJxSDYwlJvEle5wZQrfd4b6S
+        ETG7seRC6pY9y5+eLY7dfXUab1/UcdHJitJHffbtUfvnWCj9lvVrzbl32mvKP7/yzbz4O0mo
+        e2fCJ8bdT3/rxF0tPHbbNf7C1YyqKZe2f8zexVAvVPfl/Ycbl62+SlikXei8uqJktkJ/Q+wh
+        nv7mn+VZ8ul/zt+JmteixFKckWioxVxUnAgASaoPwKwCAAA=
+X-CMS-MailID: 20190716121354epcas1p47d605507ac58d785fab82a7e7ae898b0
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20190707223642epcas4p1fbfbcf5181e9a25fbbaad9ef95c56f8f
+References: <20190707223303.6755-1-digetx@gmail.com>
+        <CGME20190707223642epcas4p1fbfbcf5181e9a25fbbaad9ef95c56f8f@epcas4p1.samsung.com>
+        <20190707223303.6755-11-digetx@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Those are the pending documentation patches after my pull request
-for this branch:
+Hi Dmitry,
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-media.git tags/docs/v5.3-1
+On 19. 7. 8. 오전 7:32, Dmitry Osipenko wrote:
+> The consecutive-down event tells that we should perform frequency
+> de-boosting, but boosting is in a reset state on start and hence the
+> event won't do anything useful for us and it will be just a dummy
+> interrupt request.
+> 
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/devfreq/tegra30-devfreq.c | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+> index 32fe95458ee7..878c9396bb8c 100644
+> --- a/drivers/devfreq/tegra30-devfreq.c
+> +++ b/drivers/devfreq/tegra30-devfreq.c
+> @@ -558,7 +558,6 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+>  		<< ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_NUM_SHIFT;
+>  	val |= ACTMON_DEV_CTRL_AVG_ABOVE_WMARK_EN;
+>  	val |= ACTMON_DEV_CTRL_AVG_BELOW_WMARK_EN;
+> -	val |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
+>  	val |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
+>  	val |= ACTMON_DEV_CTRL_ENB;
+>  
+> 
 
-Patches 1 to 13 were already submitted, but got rebased. Patch 14
-is a new fixup one.
-
-Patches 1 and 2 weren't submitted before due to merge conflicts
-that are now solved upstream;
-
-Patch 3 fixes a series of random Documentation/* references that
-are pointing to the wrong places.
-
-Patch 4 fix a longstanding issue: every time a new book is added,
-conf.py need changes, in order to allow generating a PDF file.
-After the patch, conf.py will automatically recognize new books,
-saving the trouble of keeping adding documents to it.
-
-Patches 5 to 11 are due to fonts support when building translations.pdf.
-The main focus is to add xeCJK support. While doing it, I discovered
-some bugs at sphinx-pre-install script after running it with 7 different
-distributions.
-
-Patch 12 improves support for partial doc building. Currently, each
-subdir needs to have its own conf.py, in order to support partial
-doc build. After it, any Documentation subdir can be used to 
-roduce html/pdf docs with:
-
-	make SPHINXDIRS="foo bar" htmldocs
-	(or pdfdocs, latexdocs, epubdocs, ...)
-
-Patch 13 is a cleanup patch: it simply get rid of all those extra
-conf.py files that  aren't needed anymore. The only extra config
-file after it is this one:
-
-	Documentation/media/conf_nitpick.py
-
-With enables some extra optional Sphinx features.
-
-Patch 14 adds Documentation/virtual to the main index.rst file
-and add a new *.rst file that was orphaned there.
-
--
-
-After this series, there's just one more patch meant to be applied
-for 5.3, with is still waiting for some patches to be merged from
-linux-next:
-
-    https://git.linuxtv.org/mchehab/experimental.git/commit/?id=b1b5dc7d7bbfbbfdace2a248c6458301c6e34100
-
-
-Mauro Carvalho Chehab (14):
-  docs: powerpc: convert docs to ReST and rename to *.rst
-  docs: power: add it to to the main documentation index
-  docs: fix broken doc references due to renames
-  docs: pdf: add all Documentation/*/index.rst to PDF output
-  docs: conf.py: add CJK package needed by translations
-  docs: conf.py: only use CJK if the font is available
-  scripts/sphinx-pre-install: fix script for RHEL/CentOS
-  scripts/sphinx-pre-install: don't use LaTeX with CentOS 7
-  scripts/sphinx-pre-install: fix latexmk dependencies
-  scripts/sphinx-pre-install: cleanup Gentoo checks
-  scripts/sphinx-pre-install: seek for Noto CJK fonts for pdf output
-  docs: load_config.py: avoid needing a conf.py just due to LaTeX docs
-  docs: remove extra conf.py files
-  docs: virtual: add it to the documentation body
-
- Documentation/PCI/pci-error-recovery.rst      |   5 +-
- Documentation/RCU/rculist_nulls.txt           |   2 +-
- Documentation/admin-guide/conf.py             |  10 --
- Documentation/conf.py                         |  30 +++-
- Documentation/core-api/conf.py                |  10 --
- Documentation/crypto/conf.py                  |  10 --
- Documentation/dev-tools/conf.py               |  10 --
- .../devicetree/bindings/arm/idle-states.txt   |   2 +-
- Documentation/doc-guide/conf.py               |  10 --
- Documentation/driver-api/80211/conf.py        |  10 --
- Documentation/driver-api/conf.py              |  10 --
- Documentation/driver-api/pm/conf.py           |  10 --
- Documentation/filesystems/conf.py             |  10 --
- Documentation/gpu/conf.py                     |  10 --
- Documentation/index.rst                       |   3 +
- Documentation/input/conf.py                   |  10 --
- Documentation/kernel-hacking/conf.py          |  10 --
- Documentation/locking/spinlocks.rst           |   4 +-
- Documentation/maintainer/conf.py              |  10 --
- Documentation/media/conf.py                   |  12 --
- Documentation/memory-barriers.txt             |   2 +-
- Documentation/networking/conf.py              |  10 --
- Documentation/power/index.rst                 |   2 +-
- .../{bootwrapper.txt => bootwrapper.rst}      |  28 +++-
- .../{cpu_families.txt => cpu_families.rst}    |  23 +--
- .../{cpu_features.txt => cpu_features.rst}    |   6 +-
- Documentation/powerpc/{cxl.txt => cxl.rst}    |  46 ++++--
- .../powerpc/{cxlflash.txt => cxlflash.rst}    |  10 +-
- .../{DAWR-POWER9.txt => dawr-power9.rst}      |  15 +-
- Documentation/powerpc/{dscr.txt => dscr.rst}  |  18 +-
- ...ecovery.txt => eeh-pci-error-recovery.rst} | 108 ++++++------
- ...ed-dump.txt => firmware-assisted-dump.rst} | 117 +++++++------
- Documentation/powerpc/{hvcs.txt => hvcs.rst}  | 108 ++++++------
- Documentation/powerpc/index.rst               |  34 ++++
- Documentation/powerpc/isa-versions.rst        |  15 +-
- .../powerpc/{mpc52xx.txt => mpc52xx.rst}      |  12 +-
- ...nv.txt => pci_iov_resource_on_powernv.rst} |  15 +-
- .../powerpc/{pmu-ebb.txt => pmu-ebb.rst}      |   1 +
- Documentation/powerpc/ptrace.rst              | 156 ++++++++++++++++++
- Documentation/powerpc/ptrace.txt              | 151 -----------------
- .../{qe_firmware.txt => qe_firmware.rst}      |  37 +++--
- .../{syscall64-abi.txt => syscall64-abi.rst}  |  29 ++--
- ...al_memory.txt => transactional_memory.rst} |  45 ++---
- Documentation/process/conf.py                 |  10 --
- Documentation/sh/conf.py                      |  10 --
- Documentation/sound/conf.py                   |  10 --
- Documentation/sphinx/load_config.py           |  27 ++-
- .../translations/ko_KR/memory-barriers.txt    |   2 +-
- Documentation/userspace-api/conf.py           |  10 --
- Documentation/virtual/kvm/index.rst           |   1 +
- Documentation/vm/conf.py                      |  10 --
- Documentation/watchdog/hpwdt.rst              |   2 +-
- Documentation/x86/conf.py                     |  10 --
- MAINTAINERS                                   |  14 +-
- arch/powerpc/kernel/exceptions-64s.S          |   2 +-
- drivers/gpu/drm/drm_modes.c                   |   2 +-
- drivers/i2c/busses/i2c-nvidia-gpu.c           |   2 +-
- drivers/scsi/hpsa.c                           |   4 +-
- drivers/soc/fsl/qe/qe.c                       |   2 +-
- drivers/tty/hvc/hvcs.c                        |   2 +-
- include/soc/fsl/qe/qe.h                       |   2 +-
- scripts/sphinx-pre-install                    | 118 ++++++++++---
- 62 files changed, 738 insertions(+), 678 deletions(-)
- delete mode 100644 Documentation/admin-guide/conf.py
- delete mode 100644 Documentation/core-api/conf.py
- delete mode 100644 Documentation/crypto/conf.py
- delete mode 100644 Documentation/dev-tools/conf.py
- delete mode 100644 Documentation/doc-guide/conf.py
- delete mode 100644 Documentation/driver-api/80211/conf.py
- delete mode 100644 Documentation/driver-api/conf.py
- delete mode 100644 Documentation/driver-api/pm/conf.py
- delete mode 100644 Documentation/filesystems/conf.py
- delete mode 100644 Documentation/gpu/conf.py
- delete mode 100644 Documentation/input/conf.py
- delete mode 100644 Documentation/kernel-hacking/conf.py
- delete mode 100644 Documentation/maintainer/conf.py
- delete mode 100644 Documentation/media/conf.py
- delete mode 100644 Documentation/networking/conf.py
- rename Documentation/powerpc/{bootwrapper.txt => bootwrapper.rst} (93%)
- rename Documentation/powerpc/{cpu_families.txt => cpu_families.rst} (95%)
- rename Documentation/powerpc/{cpu_features.txt => cpu_features.rst} (97%)
- rename Documentation/powerpc/{cxl.txt => cxl.rst} (95%)
- rename Documentation/powerpc/{cxlflash.txt => cxlflash.rst} (98%)
- rename Documentation/powerpc/{DAWR-POWER9.txt => dawr-power9.rst} (95%)
- rename Documentation/powerpc/{dscr.txt => dscr.rst} (91%)
- rename Documentation/powerpc/{eeh-pci-error-recovery.txt => eeh-pci-error-recovery.rst} (82%)
- rename Documentation/powerpc/{firmware-assisted-dump.txt => firmware-assisted-dump.rst} (80%)
- rename Documentation/powerpc/{hvcs.txt => hvcs.rst} (91%)
- create mode 100644 Documentation/powerpc/index.rst
- rename Documentation/powerpc/{mpc52xx.txt => mpc52xx.rst} (91%)
- rename Documentation/powerpc/{pci_iov_resource_on_powernv.txt => pci_iov_resource_on_powernv.rst} (97%)
- rename Documentation/powerpc/{pmu-ebb.txt => pmu-ebb.rst} (99%)
- create mode 100644 Documentation/powerpc/ptrace.rst
- delete mode 100644 Documentation/powerpc/ptrace.txt
- rename Documentation/powerpc/{qe_firmware.txt => qe_firmware.rst} (95%)
- rename Documentation/powerpc/{syscall64-abi.txt => syscall64-abi.rst} (82%)
- rename Documentation/powerpc/{transactional_memory.txt => transactional_memory.rst} (93%)
- delete mode 100644 Documentation/process/conf.py
- delete mode 100644 Documentation/sh/conf.py
- delete mode 100644 Documentation/sound/conf.py
- delete mode 100644 Documentation/userspace-api/conf.py
- delete mode 100644 Documentation/vm/conf.py
- delete mode 100644 Documentation/x86/conf.py
+Maybe, I think that better to review it by Thierry.
+I'm not sure it is right or not because it depend on h/w.
 
 -- 
-2.21.0
-
-
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
