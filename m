@@ -2,75 +2,116 @@ Return-Path: <SRS0=uSiu=VN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 654E5C7618F
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 15:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0904AC76195
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4581720880
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 15:58:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D660D20880
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388035AbfGPP64 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Jul 2019 11:58:56 -0400
-Received: from mx2.suse.de ([195.135.220.15]:52420 "EHLO mx1.suse.de"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728121AbfGPP64 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 16 Jul 2019 11:58:56 -0400
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
-        by mx1.suse.de (Postfix) with ESMTP id 2639DAD05;
-        Tue, 16 Jul 2019 15:58:54 +0000 (UTC)
-Date:   Tue, 16 Jul 2019 17:58:52 +0200
-From:   Michal =?iso-8859-1?Q?Koutn=FD?= <mkoutny@suse.com>
-To:     Patrick Bellasi <patrick.bellasi@arm.com>
-Cc:     Alessio Balsini <balsini@android.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Morten Rasmussen <morten.rasmussen@arm.com>,
-        Quentin Perret <quentin.perret@arm.com>,
-        Joel Fernandes <joelaf@google.com>,
-        Paul Turner <pjt@google.com>,
-        Steve Muckle <smuckle@google.com>,
-        Suren Baghdasaryan <surenb@google.com>,
-        Todd Kjos <tkjos@google.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Tejun Heo <tj@kernel.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v11 4/5] sched/core: uclamp: Use TG's clamps to restrict
- TASK's clamps
-Message-ID: <20190716155852.GF32540@blackbody.suse.cz>
-References: <20190708084357.12944-1-patrick.bellasi@arm.com>
- <20190708084357.12944-5-patrick.bellasi@arm.com>
- <20190715164248.GA21982@blackbody.suse.cz>
- <20190716143435.iwwd6fjr3udlqol4@e110439-lin>
+        id S2387984AbfGPQ1Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Jul 2019 12:27:16 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:44817 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387958AbfGPQ1Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 12:27:16 -0400
+Received: from 79.184.255.39.ipv4.supernova.orange.pl (79.184.255.39) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.267)
+ id 492423adba02cbe0; Tue, 16 Jul 2019 18:27:13 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Len Brown <len.brown@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
+        "David E. Box" <david.e.box@linux.intel.com>
+Subject: [PATCH 7/8] PM: sleep: Integrate suspend-to-idle with generig suspend flow
+Date:   Tue, 16 Jul 2019 18:20:44 +0200
+Message-ID: <4251553.8YHTM1NVoD@kreacher>
+In-Reply-To: <71085220.z6FKkvYQPX@kreacher>
+References: <71085220.z6FKkvYQPX@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190716143435.iwwd6fjr3udlqol4@e110439-lin>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jul 16, 2019 at 03:34:35PM +0100, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> Am I missing something?
-No, it's rather my misinterpretation of the syscall semantics.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> Otherwise, I think the changelog sentence you quoted is just
-> misleading.
-It certainly mislead me to thinking about the sched_setattr calls as
-requests of utilization being in the given interval (substituting 0 or 1 when
-only one boundary is given, and further constrained by tg's interval).
+After previous changes the suspend-to-idle code flow can be
+integrated more tightly with the generic system suspend code flow
+by making suspend_enter() call s2idle_loop() later and removing
+the direct invocations of dpm_noirq_begin(),
+dpm_noirq_suspend_devices(), dpm_noirq_end(), and
+dpm_noirq_resume_devices() from the latter, so do that.
 
-I see your point, those are actually two (mostly) independent controls.
-Makes sense now.
+This change is not expected to alter functionality.
 
-Thanks,
-Michal
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/suspend.c |   21 +++++----------------
+ 1 file changed, 5 insertions(+), 16 deletions(-)
+
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -119,13 +119,6 @@ static void s2idle_enter(void)
+ 
+ static void s2idle_loop(void)
+ {
+-	int error;
+-
+-	dpm_noirq_begin();
+-	error = dpm_noirq_suspend_devices(PMSG_SUSPEND);
+-	if (error)
+-		goto resume;
+-
+ 	pm_pr_dbg("suspend-to-idle\n");
+ 
+ 	/*
+@@ -150,10 +143,6 @@ static void s2idle_loop(void)
+ 	}
+ 
+ 	pm_pr_dbg("resume from suspend-to-idle\n");
+-
+-resume:
+-	dpm_noirq_resume_devices(PMSG_RESUME);
+-	dpm_noirq_end();
+ }
+ 
+ void s2idle_wake(void)
+@@ -408,11 +397,6 @@ static int suspend_enter(suspend_state_t
+ 	if (error)
+ 		goto Devices_early_resume;
+ 
+-	if (state == PM_SUSPEND_TO_IDLE && pm_test_level != TEST_PLATFORM) {
+-		s2idle_loop();
+-		goto Platform_early_resume;
+-	}
+-
+ 	error = dpm_suspend_noirq(PMSG_SUSPEND);
+ 	if (error) {
+ 		pr_err("noirq suspend of devices failed\n");
+@@ -425,6 +409,11 @@ static int suspend_enter(suspend_state_t
+ 	if (suspend_test(TEST_PLATFORM))
+ 		goto Platform_wake;
+ 
++	if (state == PM_SUSPEND_TO_IDLE) {
++		s2idle_loop();
++		goto Platform_wake;
++	}
++
+ 	error = suspend_disable_secondary_cpus();
+ 	if (error || suspend_test(TEST_CPUS))
+ 		goto Enable_cpus;
+
+
+
