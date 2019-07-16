@@ -2,25 +2,25 @@ Return-Path: <SRS0=uSiu=VN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0904AC76195
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95A41C76192
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D660D20880
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 78AA021743
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387984AbfGPQ1Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Jul 2019 12:27:16 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:44817 "EHLO
+        id S2388128AbfGPQ1V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Jul 2019 12:27:21 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:52586 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387958AbfGPQ1Q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 12:27:16 -0400
+        with ESMTP id S2387977AbfGPQ1U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 12:27:20 -0400
 Received: from 79.184.255.39.ipv4.supernova.orange.pl (79.184.255.39) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.267)
- id 492423adba02cbe0; Tue, 16 Jul 2019 18:27:13 +0200
+ id 1116abc0f6e4ed4e; Tue, 16 Jul 2019 18:27:18 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
@@ -30,11 +30,9 @@ Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
         "David E. Box" <david.e.box@linux.intel.com>
-Subject: [PATCH 7/8] PM: sleep: Integrate suspend-to-idle with generig suspend flow
-Date:   Tue, 16 Jul 2019 18:20:44 +0200
-Message-ID: <4251553.8YHTM1NVoD@kreacher>
-In-Reply-To: <71085220.z6FKkvYQPX@kreacher>
-References: <71085220.z6FKkvYQPX@kreacher>
+Subject: [PATCH 0/8] PM / ACPI: sleep: Simplify the suspend-to-idle control flow
+Date:   Tue, 16 Jul 2019 18:08:29 +0200
+Message-ID: <71085220.z6FKkvYQPX@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -43,75 +41,57 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-After previous changes the suspend-to-idle code flow can be
-integrated more tightly with the generic system suspend code flow
-by making suspend_enter() call s2idle_loop() later and removing
-the direct invocations of dpm_noirq_begin(),
-dpm_noirq_suspend_devices(), dpm_noirq_end(), and
-dpm_noirq_resume_devices() from the latter, so do that.
+The rationale for these changes is explained in the changelog of patch [6/8] as follows:
 
-This change is not expected to alter functionality.
+"After commit 33e4f80ee69b ("ACPI / PM: Ignore spurious SCI wakeups
+from suspend-to-idle") the "noirq" phases of device suspend and
+resume may run for multiple times during suspend-to-idle, if there
+are spurious system wakeup events while suspended.  However, this
+is complicated and fragile and actually unnecessary.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/power/suspend.c |   21 +++++----------------
- 1 file changed, 5 insertions(+), 16 deletions(-)
+The main reason for doing this is that on some systems the EC may
+signal system wakeup events (power button events, for example) as
+well as events that should not cause the system to resume (spurious
+system wakeup events).  Thus, in order to determine whether or not
+a given event signaled by the EC while suspended is a proper system
+wakeup one, the EC GPE needs to be dispatched and to start with that
+was achieved by allowing the ACPI SCI action handler to run, which
+was only possible after calling resume_device_irqs().
 
-Index: linux-pm/kernel/power/suspend.c
-===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -119,13 +119,6 @@ static void s2idle_enter(void)
- 
- static void s2idle_loop(void)
- {
--	int error;
--
--	dpm_noirq_begin();
--	error = dpm_noirq_suspend_devices(PMSG_SUSPEND);
--	if (error)
--		goto resume;
--
- 	pm_pr_dbg("suspend-to-idle\n");
- 
- 	/*
-@@ -150,10 +143,6 @@ static void s2idle_loop(void)
- 	}
- 
- 	pm_pr_dbg("resume from suspend-to-idle\n");
--
--resume:
--	dpm_noirq_resume_devices(PMSG_RESUME);
--	dpm_noirq_end();
- }
- 
- void s2idle_wake(void)
-@@ -408,11 +397,6 @@ static int suspend_enter(suspend_state_t
- 	if (error)
- 		goto Devices_early_resume;
- 
--	if (state == PM_SUSPEND_TO_IDLE && pm_test_level != TEST_PLATFORM) {
--		s2idle_loop();
--		goto Platform_early_resume;
--	}
--
- 	error = dpm_suspend_noirq(PMSG_SUSPEND);
- 	if (error) {
- 		pr_err("noirq suspend of devices failed\n");
-@@ -425,6 +409,11 @@ static int suspend_enter(suspend_state_t
- 	if (suspend_test(TEST_PLATFORM))
- 		goto Platform_wake;
- 
-+	if (state == PM_SUSPEND_TO_IDLE) {
-+		s2idle_loop();
-+		goto Platform_wake;
-+	}
-+
- 	error = suspend_disable_secondary_cpus();
- 	if (error || suspend_test(TEST_CPUS))
- 		goto Enable_cpus;
+However, dispatching the EC GPE this way turned out to take too much
+time in some cases and some EC events might be missed due to that, so
+commit 68e22011856f ("ACPI: EC: Dispatch the EC GPE directly on
+s2idle wake") started to dispatch the EC GPE right after a wakeup
+event has been detected, so in fact the full ACPI SCI action handler
+doesn't need to run any more to deal with the wakeups coming from the
+EC.
+
+Use this observation to simplify the suspend-to-idle control flow
+so that the "noirq" phases of device suspend and resume are each
+run only once in every suspend-to-idle cycle, which is reported to
+significantly reduce power drawn by some systems when suspended to
+idle (by allowing them to reach a deep platform-wide low-power state
+through the suspend-to-idle flow)."
+
+A bonus is that after the essential changes the s2idle flow can be
+integrated back into the generic suspend/resume one (patch [7/8])
+and some simplifications can be made in drivers/base/power/main.c
+after that (patch [8/8]).
+
+Patches [1-5/8] are pre-requisite and the changes made by the first
+three of them really take effect after applying patch [6/8].  Patch
+[4/8], in turn, is a fix and patch [5/8] is an extra simplification.
+
+Please refer to the changelogs for details.
+
+For easier testing, this series is available from the git branch at:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-s2idle-rework
+
+Thanks,
+Rafael
 
 
 
