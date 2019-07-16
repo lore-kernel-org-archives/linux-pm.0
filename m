@@ -2,151 +2,167 @@ Return-Path: <SRS0=uSiu=VN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89310C76195
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C86BC76192
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 10:05:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 616AF20665
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 70D0D20880
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 10:05:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Dnnh+kwH"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tMocE6sw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732362AbfGPJzC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Jul 2019 05:55:02 -0400
-Received: from mail-pf1-f195.google.com ([209.85.210.195]:35074 "EHLO
-        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732315AbfGPJzC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 05:55:02 -0400
-Received: by mail-pf1-f195.google.com with SMTP id u14so8870643pfn.2
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2019 02:55:02 -0700 (PDT)
+        id S1728015AbfGPKFn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Jul 2019 06:05:43 -0400
+Received: from mail-pl1-f193.google.com ([209.85.214.193]:46455 "EHLO
+        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728136AbfGPKFn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 06:05:43 -0400
+Received: by mail-pl1-f193.google.com with SMTP id c2so9834243plz.13
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2019 03:05:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=wglnm+6yqzntyC9h13b4Wh3S/G9NJM2x5q1vPNkqSgU=;
-        b=Dnnh+kwHRtS9hSr7z8dtYzFB/z6nWaIrUpsWPzeEf7Pb6hhhWP8YrQn6phTamDKNCJ
-         r5ZsKcNuHQ+Eu35xX8eqMfOOc2GB9DW4slEjuF3JodDKrfbAZJm9l1Ooet/IVl5P6S6U
-         Sz0UkF/tUwYvWd5MgI9me+GK3bjcCp8fr/g4H4xmlOpIqjjnkxFBhnxIteeX/R5pvcTo
-         fFbz3ZpTfK6TPS/8AIdScSwOH9C9MzZ0EwKDGaxCnoaw6xQARQ5I0erDT6lXSXHRppbI
-         cXuEmVGUB4B7r+3GGUarHf2AwnUa4MWpRJhKm59XYpfXh8j4IV3qZ+BtA2LAN7z6OqmG
-         mGzw==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=eOw4mJCwxsos04l+iE4dhcTh1ydYMzdors+pgowvvxM=;
+        b=tMocE6swchBVuMnt58lGP9P628g1yOafJT46XmsoPTPU6cu+QH3WHGgsc/TzqTykTJ
+         rdGZzvn6Mr6/PJqwPcSatTt4KCjIUHOWmaND9V8869f0KdmOna8tDoC4N31GVxqzyEuP
+         EuNPIbAPdLAlOZZ4YTGbeCRtM8Qt76g0ldmmzrdR8bhfhTUk8KDNxnBisgvO+StyihUL
+         hUdt9bMl/8WwQFG2nJBH9y99Wp6WaJ5G64VHqBZaakuCUgHohQgp4dbB8Omi6hF7rJ3c
+         EvZCoX+goncN8mcgg/ODeGn69779oS06XcVejTPoaDJQg1DvPHhgrQ8c03ZGbvjjNjQS
+         F7Kg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=wglnm+6yqzntyC9h13b4Wh3S/G9NJM2x5q1vPNkqSgU=;
-        b=gxzUQ9LlHWOdPFwm8WBxH9Bq9Ni0vSz5Kx8AKwKSy3PttNHHKRwtTxWmqHP71KG3F0
-         buvszFk7bMiSJdp3R66eHHQkOMW0GUVOBqvtWFmJO1nL1kLmALBw8fPkwhI89jFkFM5L
-         aB662W4ue/9tjR4cunYu0w+dq4310xsBnbCsx3SJ1LDXhLA3ZRSXW3bZhEIgpzev9BOX
-         DVGqA+zVmEZyi1tPSRFEDKQTXFVO4CN/DBw3BYKJwPesCDv36FckUQn3coiH7g5w5keu
-         Pu4jgz8m0UMetcd43YIzF4k8ghm3CML6r5DR08fbxATo3BLp+0fptlo9UkUHPOuxk83Y
-         5Omw==
-X-Gm-Message-State: APjAAAWNvfoR9e43cczODbza/jaR5GqMsl1qmb2hU0LQzdab21c+q3Wh
-        SGNujWcMCtEFZuVZBK/gfQYemg==
-X-Google-Smtp-Source: APXvYqwE4djRSjudt1aj7hnAPyyjlo+Rw7Ep4ui1p1jCkZWoK7MWPCNdhvgpR/DouQUGSOiXwWBkjg==
-X-Received: by 2002:a17:90a:8c90:: with SMTP id b16mr34610804pjo.133.1563270901894;
-        Tue, 16 Jul 2019 02:55:01 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=eOw4mJCwxsos04l+iE4dhcTh1ydYMzdors+pgowvvxM=;
+        b=SuoO8ct6EnKSeP3aG+fPkSEDfTmNnrXa+QofA9GyytLrkBfezZhBAZnrGlBQcYebuo
+         zxFg5FKsDmxgj4RfBHfJ4bJp+24JrL+jxOcEju89P+HvLS9KTanKP8tJVgi6sLFkVPYu
+         zA9hgI7wiQsHMcWMOFtKnVYVuXEraR3N8VX7WRc0+Xl1iHVZVLKO244JFwjoUopPGTnX
+         LGDX4O4srcstAik2DeM+zvfXLEByaiGh7D2huAStw+6SlOTXpL0Kc5tLI2OAtoExKooc
+         is16k7j2KeNtzRVWT77kYJ6FXEvqdVGRuAjkn/dEV/ytaMxxDlkIo4ZosYG/2j9PgMCX
+         p8Wg==
+X-Gm-Message-State: APjAAAVFB9EpUlaZByYwHbfbvKBgKG5cJsBEUwhQ/xT+zaLfBhDnfS43
+        CLU3qd2M+uYgnyi7Qu5dO5Yc5w==
+X-Google-Smtp-Source: APXvYqxwTXMWEmk/VEda4x6ElrsGyejRqXGCt8fhdrVypQtnG9VBy8x7GNe4fxfIxk0bDln28cUC3w==
+X-Received: by 2002:a17:902:6b02:: with SMTP id o2mr31420099plk.99.1563271542213;
+        Tue, 16 Jul 2019 03:05:42 -0700 (PDT)
 Received: from localhost ([122.172.28.117])
-        by smtp.gmail.com with ESMTPSA id o14sm42384517pfh.153.2019.07.16.02.55.00
+        by smtp.gmail.com with ESMTPSA id f6sm21071066pga.50.2019.07.16.03.05.41
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 16 Jul 2019 02:55:01 -0700 (PDT)
+        Tue, 16 Jul 2019 03:05:41 -0700 (PDT)
+Date:   Tue, 16 Jul 2019 15:35:39 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 02/10] video: sa1100fb: Remove cpufreq policy notifier
-Date:   Tue, 16 Jul 2019 15:24:46 +0530
-Message-Id: <7163e57cfa1780d42732fa6b5ec424c24d1d4dc8.1563270828.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
-In-Reply-To: <cover.1563270828.git.viresh.kumar@linaro.org>
-References: <cover.1563270828.git.viresh.kumar@linaro.org>
+To:     Kamil Konieczny <k.konieczny@partner.samsung.com>
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Kukjin Kim <kgene@kernel.org>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Subject: Re: [PATCH v2 1/4] opp: core: add regulators enable and disable
+Message-ID: <20190716100539.4uqelbxqz7bmtmea@vireshk-i7>
+References: <20190715120416.3561-1-k.konieczny@partner.samsung.com>
+ <CGME20190715120430eucas1p19dddcc93756e6a110d3476229f9428b3@eucas1p1.samsung.com>
+ <20190715120416.3561-2-k.konieczny@partner.samsung.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190715120416.3561-2-k.konieczny@partner.samsung.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cpufreq policy notifier's CPUFREQ_ADJUST notification is going to
-get removed soon.
+On 15-07-19, 14:04, Kamil Konieczny wrote:
+> Add enable regulators to dev_pm_opp_set_regulators() and disable
+> regulators to dev_pm_opp_put_regulators(). This prepares for
+> converting exynos-bus devfreq driver to use dev_pm_opp_set_rate().
+> 
+> Signed-off-by: Kamil Konieczny <k.konieczny@partner.samsung.com>
+> --
+> Changes in v2:
+> 
+> - move regulator enable and disable into loop
+> 
+> ---
+>  drivers/opp/core.c | 18 +++++++++++++++---
+>  1 file changed, 15 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 0e7703fe733f..069c5cf8827e 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -1570,6 +1570,10 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
+>  			goto free_regulators;
+>  		}
+>  
+> +		ret = regulator_enable(reg);
+> +		if (ret < 0)
+> +			goto disable;
 
-The notifier callback sa1100fb_freq_policy() isn't doing anything apart
-from printing a debug message on CPUFREQ_ADJUST notification. There is
-no point in keeping an otherwise empty callback and registering the
-notifier.
+The name of this label is logically incorrect because we won't disable
+the regulator from there but put it. Over that, I would rather prefer
+to remove the label and add regulator_put() here itself.
 
-Remove it.
+> +
+>  		opp_table->regulators[i] = reg;
+>  	}
+>  
+> @@ -1582,9 +1586,15 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
+>  
+>  	return opp_table;
+>  
+> +disable:
+> +	regulator_put(reg);
+> +	--i;
+> +
+>  free_regulators:
+> -	while (i != 0)
+> -		regulator_put(opp_table->regulators[--i]);
+> +	for (; i >= 0; --i) {
+> +		regulator_disable(opp_table->regulators[i]);
+> +		regulator_put(opp_table->regulators[i]);
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/video/fbdev/sa1100fb.c | 27 ---------------------------
- drivers/video/fbdev/sa1100fb.h |  1 -
- 2 files changed, 28 deletions(-)
+This is incorrect as this will now try to put/disable the regulator
+which we failed to acquire. As --i happens only after the loop has run
+once. You can rather do:
 
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index f7f8dee044b1..ae2bcfee338a 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -1005,31 +1005,6 @@ sa1100fb_freq_transition(struct notifier_block *nb, unsigned long val,
- 	}
- 	return 0;
- }
--
--static int
--sa1100fb_freq_policy(struct notifier_block *nb, unsigned long val,
--		     void *data)
--{
--	struct sa1100fb_info *fbi = TO_INF(nb, freq_policy);
--	struct cpufreq_policy *policy = data;
--
--	switch (val) {
--	case CPUFREQ_ADJUST:
--		dev_dbg(fbi->dev, "min dma period: %d ps, "
--			"new clock %d kHz\n", sa1100fb_min_dma_period(fbi),
--			policy->max);
--		/* todo: fill in min/max values */
--		break;
--	case CPUFREQ_NOTIFY:
--		do {} while(0);
--		/* todo: panic if min/max values aren't fulfilled 
--		 * [can't really happen unless there's a bug in the
--		 * CPU policy verififcation process *
--		 */
--		break;
--	}
--	return 0;
--}
- #endif
- 
- #ifdef CONFIG_PM
-@@ -1242,9 +1217,7 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 
- #ifdef CONFIG_CPU_FREQ
- 	fbi->freq_transition.notifier_call = sa1100fb_freq_transition;
--	fbi->freq_policy.notifier_call = sa1100fb_freq_policy;
- 	cpufreq_register_notifier(&fbi->freq_transition, CPUFREQ_TRANSITION_NOTIFIER);
--	cpufreq_register_notifier(&fbi->freq_policy, CPUFREQ_POLICY_NOTIFIER);
- #endif
- 
- 	/* This driver cannot be unloaded at the moment */
-diff --git a/drivers/video/fbdev/sa1100fb.h b/drivers/video/fbdev/sa1100fb.h
-index 7a1a9ca33cec..d0aa33b0b88a 100644
---- a/drivers/video/fbdev/sa1100fb.h
-+++ b/drivers/video/fbdev/sa1100fb.h
-@@ -64,7 +64,6 @@ struct sa1100fb_info {
- 
- #ifdef CONFIG_CPU_FREQ
- 	struct notifier_block	freq_transition;
--	struct notifier_block	freq_policy;
- #endif
- 
- 	const struct sa1100fb_mach_info *inf;
+	while (i--) {
+		regulator_disable(opp_table->regulators[i]);
+		regulator_put(opp_table->regulators[i]);
+        }
+
+
+> +	}
+>  
+>  	kfree(opp_table->regulators);
+>  	opp_table->regulators = NULL;
+> @@ -1610,8 +1620,10 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
+>  	/* Make sure there are no concurrent readers while updating opp_table */
+>  	WARN_ON(!list_empty(&opp_table->opp_list));
+>  
+> -	for (i = opp_table->regulator_count - 1; i >= 0; i--)
+> +	for (i = opp_table->regulator_count - 1; i >= 0; i--) {
+> +		regulator_disable(opp_table->regulators[i]);
+>  		regulator_put(opp_table->regulators[i]);
+> +	}
+>  
+>  	_free_set_opp_data(opp_table);
+>  
+> -- 
+> 2.22.0
+
 -- 
-2.21.0.rc0.269.g1a574e7a288b
-
+viresh
