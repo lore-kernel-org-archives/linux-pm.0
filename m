@@ -7,62 +7,62 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 884B6C76192
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79647C76188
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 533C12145D
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 44AD220880
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 09:55:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cyDgYafj"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="H1uaGUoA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733104AbfGPJzT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Jul 2019 05:55:19 -0400
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:39729 "EHLO
+        id S1732199AbfGPJzZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Jul 2019 05:55:25 -0400
+Received: from mail-pg1-f193.google.com ([209.85.215.193]:40921 "EHLO
         mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733066AbfGPJzS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 05:55:18 -0400
-Received: by mail-pg1-f193.google.com with SMTP id u17so9182267pgi.6
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2019 02:55:17 -0700 (PDT)
+        with ESMTP id S1733186AbfGPJzY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 05:55:24 -0400
+Received: by mail-pg1-f193.google.com with SMTP id w10so9180753pgj.7
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2019 02:55:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=FCHE6jmJHvvf4ZOfPHyOAwxkEw7udl1CJtgxI9QEJbs=;
-        b=cyDgYafjtQ9BTLfXLwRoWNuVpBgLISxcZazGQYNrTGFUzlsgpGS5yhv/yPp7LXUPYv
-         rTOA5TTk/wdufu1YAISq/IoarJgOmanKbMeIuXOb6AjUvC7b3XjEsefLkgEB6vYpgSBh
-         Uu1DYcNJYyWfjkGOTv6dSXqxGYj1jiAZZcX8LjVTTE4lMxEIiwbg6XgvEKKQvNp1QOXC
-         LejdLEMEqdrQagKYWyxCAieW4SOivR/2TQAZ1tPzejXzJErkSV4RZwPzgP+v7bJRKhs7
-         tHYeH++bwkEyZWAYE1Og5vEGwfutWGp6OlbowV/sjNT0rd123qx6chxSx/PznWhvxZDQ
-         IAyg==
+        bh=igbw8Lq9b0TFNBWb47jJMKCAo+bPsNo96FEJcJLrXVc=;
+        b=H1uaGUoAeqRk6S2i3GDT8ntkwDm5cC2Flj+OsmfRqTVZQOoqEeOTDCKsdr3QFfWCQA
+         jIPdgK/siD6VGKOf89ZSbHQ+j1jPeChgW95ao4XWPlukec3p7kpdOUigGHiApEVT7fAi
+         EafM7d2Qy7MqOBAe6k5q7qDDPhMD7AdzffO+i9yl3vvgOzpHm4gVd5lgQ58XayNvMuhh
+         4UHcVXOZ220ePO6/sNBsel0AOBBiS4C4rr5kGcrP7M+qOUm5wTvGLrYjEKbctD6LwlTU
+         SwW+LMRxd/hv3ImIN9xUrJOoCbpaTxkwlDmUIlUNaY9z8ypRk3RqDmqs5LVX7Tr8mz87
+         okiw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=FCHE6jmJHvvf4ZOfPHyOAwxkEw7udl1CJtgxI9QEJbs=;
-        b=l/AiPP4b8IGoVnXMrGgJdhtl/hJrk6vauW04a/8K9XXJSoLckgsr0zNdUuCAMR+eUR
-         J70vGjBtr3Vf/gD9s6Jif+R7cty5s4GN2QZXXE/p2RWmOTIuhGDJxdTurcHze1QHvSsx
-         Elyj4ZM089O96efZc5Acq1G4gQl57Fdei/3LJmRgkOQSH6Kb95mwY+S+UeKh50dwICkG
-         +GvwRo582gQgdnz7FHyz3CiBKzxj69Y94gWF0EZuPb0QMvrwIo+ptwK+mw3glTnMJDAb
-         D22k1fz+UKX7XEgcImk/+/f9aM0BSSS7Vqm7rPdYO091n8IOtp1dgT2iQMI7tMf1edYw
-         dW4A==
-X-Gm-Message-State: APjAAAVE2Wd8sYZz2aMIsAB9fz9qfgSlUPw/tFsbgr5UL5lOkr5/MAk4
-        dGWYjxVxVGuu+a4XSUpm6m3YfA==
-X-Google-Smtp-Source: APXvYqwMBob2VfmnrLN5v4d5N+jfwUfKIWSHNvnYNp2pCMrmR3RooE8VYXZ1G5UeTyBjp6+lja6m2w==
-X-Received: by 2002:a17:90a:a410:: with SMTP id y16mr35296476pjp.62.1563270917408;
-        Tue, 16 Jul 2019 02:55:17 -0700 (PDT)
+        bh=igbw8Lq9b0TFNBWb47jJMKCAo+bPsNo96FEJcJLrXVc=;
+        b=S4wrekG4jWCbRl0HezNDT6qsLuiU/LrqF2WYUyzwf9aA+LwMZuXyPys92/J7wzI2f9
+         jpHwvcalkCwRHCXp1COzR3Osfd0goAne1v+h+WGuhBXRRucMXZKx1a7eOc4Fb3o336v2
+         OoB6xrG4VaWe96tXcUbQPEvooozTthN5PRLDW2ou0ycBGwENXeYnSCvpjGpwrZWwXCJL
+         yNBvbIZXXR0+VR3qryB2qtuQHcoHPF1auS9YVlNutGLQpvSO2Hdi4s+Edd79uuiUFsfv
+         CyL1znsZebd3+07SFeWAnLIYef6uZYp0tEB5yhBIV+K/RICpA84mjGGMQL5m6ACfp11U
+         7gRg==
+X-Gm-Message-State: APjAAAUI8LN2DDKAwRRap9y0hIPa6b1KQYJ+3A8h6O69CFdGOcN8oyCm
+        RbD4Nor5adxsZFsj9BZyupZxvfMg9Fs=
+X-Google-Smtp-Source: APXvYqyE+7Bc3mdRY/8YtnwTZaQfSALWQTjULeSe8UmU3bSLLn/OuNURlj4XozcnY0IUCtzfztxAaA==
+X-Received: by 2002:a17:90a:d14b:: with SMTP id t11mr34976911pjw.79.1563270923963;
+        Tue, 16 Jul 2019 02:55:23 -0700 (PDT)
 Received: from localhost ([122.172.28.117])
-        by smtp.gmail.com with ESMTPSA id bg3sm19071910pjb.9.2019.07.16.02.55.16
+        by smtp.gmail.com with ESMTPSA id d14sm27038469pfo.154.2019.07.16.02.55.23
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 16 Jul 2019 02:55:16 -0700 (PDT)
+        Tue, 16 Jul 2019 02:55:23 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Rafael Wysocki <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 07/10] cpufreq: powerpc_cbe: Switch to QoS requests instead of cpufreq notifier
-Date:   Tue, 16 Jul 2019 15:24:51 +0530
-Message-Id: <889777691cd3de894c37f5113e4ec1cc73473a0f.1563270828.git.viresh.kumar@linaro.org>
+Subject: [PATCH 09/10] cpufreq: Remove CPUFREQ_ADJUST and CPUFREQ_NOTIFY policy notifier events
+Date:   Tue, 16 Jul 2019 15:24:53 +0530
+Message-Id: <77857b9eadc26c57de2637fcca014239a93551e4.1563270828.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.21.0.rc0.269.g1a574e7a288b
 In-Reply-To: <cover.1563270828.git.viresh.kumar@linaro.org>
 References: <cover.1563270828.git.viresh.kumar@linaro.org>
@@ -73,235 +73,86 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cpufreq core now takes the min/max frequency constraints via QoS
-requests and the CPUFREQ_ADJUST notifier shall get removed later on.
-
-Switch over to using the QoS request for maximum frequency constraint
-for ppc_cbe_cpufreq driver.
+No driver makes reference to these events now, remove them and the code
+related to them.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/ppc_cbe_cpufreq.c     | 19 +++++-
- drivers/cpufreq/ppc_cbe_cpufreq.h     |  8 +++
- drivers/cpufreq/ppc_cbe_cpufreq_pmi.c | 96 +++++++++++++++++----------
- 3 files changed, 86 insertions(+), 37 deletions(-)
+ drivers/cpufreq/cpufreq.c | 36 +++++++-----------------------------
+ include/linux/cpufreq.h   |  6 ++----
+ 2 files changed, 9 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index b83f36febf03..c58abb4cca3a 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -110,6 +110,13 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
- #endif
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8a7eff2a3771..bd91091ed6b8 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2362,15 +2362,13 @@ EXPORT_SYMBOL(cpufreq_get_policy);
+  * @policy: Policy object to modify.
+  * @new_policy: New policy data.
+  *
+- * Pass @new_policy to the cpufreq driver's ->verify() callback, run the
+- * installed policy notifiers for it with the CPUFREQ_ADJUST value, pass it to
+- * the driver's ->verify() callback again and run the notifiers for it again
+- * with the CPUFREQ_NOTIFY value.  Next, copy the min and max parameters
+- * of @new_policy to @policy and either invoke the driver's ->setpolicy()
+- * callback (if present) or carry out a governor update for @policy.  That is,
+- * run the current governor's ->limits() callback (if the governor field in
+- * @new_policy points to the same object as the one in @policy) or replace the
+- * governor for @policy with the new one stored in @new_policy.
++ * Pass @new_policy to the cpufreq driver's ->verify() callback. Next, copy the
++ * min and max parameters of @new_policy to @policy and either invoke the
++ * driver's ->setpolicy() callback (if present) or carry out a governor update
++ * for @policy.  That is, run the current governor's ->limits() callback (if the
++ * governor field in @new_policy points to the same object as the one in
++ * @policy) or replace the governor for @policy with the new one stored in
++ * @new_policy.
+  *
+  * The cpuinfo part of @policy is not updated by this function.
+  */
+@@ -2398,26 +2396,6 @@ int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 	if (ret)
+ 		return ret;
  
- 	policy->freq_table = cbe_freqs;
-+	cbe_cpufreq_pmi_policy_init(policy);
-+	return 0;
-+}
-+
-+static int cbe_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	cbe_cpufreq_pmi_policy_exit(policy);
- 	return 0;
- }
- 
-@@ -129,6 +136,7 @@ static struct cpufreq_driver cbe_cpufreq_driver = {
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= cbe_cpufreq_target,
- 	.init		= cbe_cpufreq_cpu_init,
-+	.exit		= cbe_cpufreq_cpu_exit,
- 	.name		= "cbe-cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
- };
-@@ -139,15 +147,24 @@ static struct cpufreq_driver cbe_cpufreq_driver = {
- 
- static int __init cbe_cpufreq_init(void)
- {
-+	int ret;
-+
- 	if (!machine_is(cell))
- 		return -ENODEV;
- 
--	return cpufreq_register_driver(&cbe_cpufreq_driver);
-+	cbe_cpufreq_pmi_init();
-+
-+	ret = cpufreq_register_driver(&cbe_cpufreq_driver);
-+	if (ret)
-+		cbe_cpufreq_pmi_exit();
-+
-+	return ret;
- }
- 
- static void __exit cbe_cpufreq_exit(void)
- {
- 	cpufreq_unregister_driver(&cbe_cpufreq_driver);
-+	cbe_cpufreq_pmi_exit();
- }
- 
- module_init(cbe_cpufreq_init);
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.h b/drivers/cpufreq/ppc_cbe_cpufreq.h
-index 9d973519d669..00cd8633b0d9 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.h
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.h
-@@ -20,6 +20,14 @@ int cbe_cpufreq_set_pmode_pmi(int cpu, unsigned int pmode);
- 
- #if IS_ENABLED(CONFIG_CPU_FREQ_CBE_PMI)
- extern bool cbe_cpufreq_has_pmi;
-+void cbe_cpufreq_pmi_policy_init(struct cpufreq_policy *policy);
-+void cbe_cpufreq_pmi_policy_exit(struct cpufreq_policy *policy);
-+void cbe_cpufreq_pmi_init(void);
-+void cbe_cpufreq_pmi_exit(void);
- #else
- #define cbe_cpufreq_has_pmi (0)
-+static inline void cbe_cpufreq_pmi_policy_init(struct cpufreq_policy *policy) {}
-+static inline void cbe_cpufreq_pmi_policy_exit(struct cpufreq_policy *policy) {}
-+static inline void cbe_cpufreq_pmi_init(void) {}
-+static inline void cbe_cpufreq_pmi_exit(void) {}
- #endif
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-index 97c8ee4614b7..0babb27c1c72 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-@@ -12,6 +12,7 @@
- #include <linux/timer.h>
- #include <linux/init.h>
- #include <linux/of_platform.h>
-+#include <linux/pm_qos.h>
- 
- #include <asm/processor.h>
- #include <asm/prom.h>
-@@ -24,8 +25,6 @@
- 
- #include "ppc_cbe_cpufreq.h"
- 
--static u8 pmi_slow_mode_limit[MAX_CBE];
--
- bool cbe_cpufreq_has_pmi = false;
- EXPORT_SYMBOL_GPL(cbe_cpufreq_has_pmi);
- 
-@@ -65,64 +64,89 @@ EXPORT_SYMBOL_GPL(cbe_cpufreq_set_pmode_pmi);
- 
- static void cbe_cpufreq_handle_pmi(pmi_message_t pmi_msg)
- {
-+	struct cpufreq_policy *policy;
-+	struct dev_pm_qos_request *req;
- 	u8 node, slow_mode;
-+	int cpu, ret;
- 
- 	BUG_ON(pmi_msg.type != PMI_TYPE_FREQ_CHANGE);
- 
- 	node = pmi_msg.data1;
- 	slow_mode = pmi_msg.data2;
- 
--	pmi_slow_mode_limit[node] = slow_mode;
-+	cpu = cbe_node_to_cpu(node);
- 
- 	pr_debug("cbe_handle_pmi: node: %d max_freq: %d\n", node, slow_mode);
--}
--
--static int pmi_notifier(struct notifier_block *nb,
--				       unsigned long event, void *data)
--{
--	struct cpufreq_policy *policy = data;
--	struct cpufreq_frequency_table *cbe_freqs = policy->freq_table;
--	u8 node;
--
--	/* Should this really be called for CPUFREQ_ADJUST and CPUFREQ_NOTIFY
--	 * policy events?)
+-	/*
+-	 * The notifier-chain shall be removed once all the users of
+-	 * CPUFREQ_ADJUST are moved to use the QoS framework.
 -	 */
--	node = cbe_cpu_to_node(policy->cpu);
+-	/* adjust if necessary - all reasons */
+-	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+-			CPUFREQ_ADJUST, new_policy);
 -
--	pr_debug("got notified, event=%lu, node=%u\n", event, node);
- 
--	if (pmi_slow_mode_limit[node] != 0) {
--		pr_debug("limiting node %d to slow mode %d\n",
--			 node, pmi_slow_mode_limit[node]);
-+	policy = cpufreq_cpu_get(cpu);
-+	if (!policy) {
-+		pr_warn("cpufreq policy not found cpu%d\n", cpu);
-+		return;
-+	}
- 
--		cpufreq_verify_within_limits(policy, 0,
-+	req = policy->driver_data;
- 
--			cbe_freqs[pmi_slow_mode_limit[node]].frequency);
--	}
-+	ret = dev_pm_qos_update_request(req,
-+			policy->freq_table[slow_mode].frequency);
-+	if (ret)
-+		pr_warn("Failed to update freq constraint: %d\n", ret);
-+	else
-+		pr_debug("limiting node %d to slow mode %d\n", node, slow_mode);
- 
--	return 0;
-+	cpufreq_cpu_put(policy);
- }
- 
--static struct notifier_block pmi_notifier_block = {
--	.notifier_call = pmi_notifier,
--};
+-	/*
+-	 * verify the cpu speed can be set within this limit, which might be
+-	 * different to the first one
+-	 */
+-	ret = cpufreq_driver->verify(new_policy);
+-	if (ret)
+-		return ret;
 -
- static struct pmi_handler cbe_pmi_handler = {
- 	.type			= PMI_TYPE_FREQ_CHANGE,
- 	.handle_pmi_message	= cbe_cpufreq_handle_pmi,
- };
+-	/* notification of the new policy */
+-	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+-			CPUFREQ_NOTIFY, new_policy);
+-
+ 	policy->min = new_policy->min;
+ 	policy->max = new_policy->max;
+ 	trace_cpu_frequency_limits(policy);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index e28c8af697d2..cb1e86a14c7a 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -456,10 +456,8 @@ static inline void cpufreq_resume(void) {}
+ #define CPUFREQ_POSTCHANGE		(1)
  
-+void cbe_cpufreq_pmi_policy_init(struct cpufreq_policy *policy)
-+{
-+	struct dev_pm_qos_request *req;
-+	int ret;
-+
-+	if (!cbe_cpufreq_has_pmi)
-+		return;
-+
-+	req = kzalloc(sizeof(*req), GFP_KERNEL);
-+	if (!req)
-+		return;
-+
-+	ret = dev_pm_qos_add_request(get_cpu_device(policy->cpu), req,
-+				     DEV_PM_QOS_MAX_FREQUENCY,
-+				     policy->freq_table[0].frequency);
-+	if (ret < 0) {
-+		pr_err("Failed to add freq constraint (%d)\n", ret);
-+		kfree(req);
-+		return;
-+	}
+ /* Policy Notifiers  */
+-#define CPUFREQ_ADJUST			(0)
+-#define CPUFREQ_NOTIFY			(1)
+-#define CPUFREQ_CREATE_POLICY		(2)
+-#define CPUFREQ_REMOVE_POLICY		(3)
++#define CPUFREQ_CREATE_POLICY		(0)
++#define CPUFREQ_REMOVE_POLICY		(1)
  
-+	policy->driver_data = req;
-+}
-+EXPORT_SYMBOL_GPL(cbe_cpufreq_pmi_policy_init);
- 
--static int __init cbe_cpufreq_pmi_init(void)
-+void cbe_cpufreq_pmi_policy_exit(struct cpufreq_policy *policy)
- {
--	cbe_cpufreq_has_pmi = pmi_register_handler(&cbe_pmi_handler) == 0;
-+	struct dev_pm_qos_request *req = policy->driver_data;
- 
--	if (!cbe_cpufreq_has_pmi)
--		return -ENODEV;
-+	if (cbe_cpufreq_has_pmi) {
-+		dev_pm_qos_remove_request(req);
-+		kfree(req);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(cbe_cpufreq_pmi_policy_exit);
- 
--	cpufreq_register_notifier(&pmi_notifier_block, CPUFREQ_POLICY_NOTIFIER);
-+void cbe_cpufreq_pmi_init(void)
-+{
-+	if (!pmi_register_handler(&cbe_pmi_handler))
-+		cbe_cpufreq_has_pmi = true;
-+}
-+EXPORT_SYMBOL_GPL(cbe_cpufreq_pmi_init);
- 
--	return 0;
-+void cbe_cpufreq_pmi_exit(void)
-+{
-+	pmi_unregister_handler(&cbe_pmi_handler);
-+	cbe_cpufreq_has_pmi = false;
- }
--device_initcall(cbe_cpufreq_pmi_init);
-+EXPORT_SYMBOL_GPL(cbe_cpufreq_pmi_exit);
+ #ifdef CONFIG_CPU_FREQ
+ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
 -- 
 2.21.0.rc0.269.g1a574e7a288b
 
