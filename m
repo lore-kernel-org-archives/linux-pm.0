@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6B38C76192
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 070E9C7618F
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9FFA721743
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DB1A8217F9
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jul 2019 16:27:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388194AbfGPQ1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Jul 2019 12:27:34 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:61836 "EHLO
+        id S2388072AbfGPQ1R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Jul 2019 12:27:17 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:43340 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387958AbfGPQ1T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 12:27:19 -0400
+        with ESMTP id S2387977AbfGPQ1Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jul 2019 12:27:16 -0400
 Received: from 79.184.255.39.ipv4.supernova.orange.pl (79.184.255.39) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.267)
- id e17e7cc6a5295d67; Tue, 16 Jul 2019 18:27:16 +0200
+ id 73767e2c92a2ce24; Tue, 16 Jul 2019 18:27:15 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
@@ -30,9 +30,9 @@ Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
         "David E. Box" <david.e.box@linux.intel.com>
-Subject: [PATCH 3/8] ACPI: EC: Return bool from acpi_ec_dispatch_gpe()
-Date:   Tue, 16 Jul 2019 18:12:59 +0200
-Message-ID: <4778086.90p4OrCUAx@kreacher>
+Subject: [PATCH 5/8] ACPI: PM: Set s2idle_wakeup earlier and clear it later
+Date:   Tue, 16 Jul 2019 18:15:57 +0200
+Message-ID: <5118596.pkUOanpXUM@kreacher>
 In-Reply-To: <71085220.z6FKkvYQPX@kreacher>
 References: <71085220.z6FKkvYQPX@kreacher>
 MIME-Version: 1.0
@@ -45,59 +45,60 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On some systems, if suspend-to-idle is used, the EC may singal system
-wakeup events (power button events, for example) as well as events
-that should not cause the system to resume and acpi_ec_dispatch_gpe()
-needs to be called to determine whether or not the system should
-resume then.  In particular, if acpi_ec_dispatch_gpe() doesn't detect
-any EC events at all, the system should remain suspended, so it is
-useful to know when that is the case.
+The role of the s2idle_wakeup variable is to cause
+acpi_pm_wakeup_event() and acpi_pm_notify_handler() to
+increment pm_abort_suspend and trigger a wakeup from
+suspend-to-idle in case the ACPI SCI wakeup was canceled
+by acpi_s2idle_wake().
 
-For this reason, make acpi_ec_dispatch_gpe() return a bool value
-indicating whether or not any EC events have been detected by it.
+However, for this purpose it need not be set in acpi_s2idle_wake()
+and cleared in acpi_s2idle_sync(), respectively.  In fact, it
+may be set as early as in acpi_s2idle_prepare() and cleared as
+late as in acpi_s2idle_restore(), so do that to allow subsequent
+changes to be simpler.
+
+This change is not expected to alter functionality.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/ec.c       |   11 ++++++++---
- drivers/acpi/internal.h |    2 +-
- 2 files changed, 9 insertions(+), 4 deletions(-)
+ drivers/acpi/sleep.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Index: linux-pm/drivers/acpi/ec.c
+Index: linux-pm/drivers/acpi/sleep.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/ec.c
-+++ linux-pm/drivers/acpi/ec.c
-@@ -1060,10 +1060,15 @@ void acpi_ec_set_gpe_wake_mask(u8 action
- 		acpi_set_gpe_wake_mask(NULL, first_ec->gpe, action);
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -972,6 +972,8 @@ static int acpi_s2idle_prepare(void)
+ 	/* Change the configuration of GPEs to avoid spurious wakeup. */
+ 	acpi_enable_all_wakeup_gpes();
+ 	acpi_os_wait_events_complete();
++
++	s2idle_wakeup = true;
+ 	return 0;
  }
  
--void acpi_ec_dispatch_gpe(void)
-+bool acpi_ec_dispatch_gpe(void)
+@@ -991,7 +993,6 @@ static void acpi_s2idle_wake(void)
+ 	if (acpi_sci_irq_valid() &&
+ 	    !irqd_is_wakeup_armed(irq_get_irq_data(acpi_sci_irq))) {
+ 		pm_system_cancel_wakeup();
+-		s2idle_wakeup = true;
+ 		/*
+ 		 * On some platforms with the LPS0 _DSM device noirq resume
+ 		 * takes too much time for EC wakeup events to survive, so look
+@@ -1012,11 +1013,12 @@ static void acpi_s2idle_sync(void)
+ 	acpi_os_wait_events_complete();	/* synchronize SCI IRQ handling */
+ 	acpi_ec_flush_work();
+ 	acpi_os_wait_events_complete();	/* synchronize Notify handling */
+-	s2idle_wakeup = false;
+ }
+ 
+ static void acpi_s2idle_restore(void)
  {
--	if (first_ec)
--		acpi_dispatch_gpe(NULL, first_ec->gpe);
-+	u32 ret;
++	s2idle_wakeup = false;
 +
-+	if (!first_ec)
-+		return false;
-+
-+	ret = acpi_dispatch_gpe(NULL, first_ec->gpe);
-+	return ret == ACPI_INTERRUPT_HANDLED;
- }
+ 	acpi_enable_all_runtime_gpes();
  
- /* --------------------------------------------------------------------------
-Index: linux-pm/drivers/acpi/internal.h
-===================================================================
---- linux-pm.orig/drivers/acpi/internal.h
-+++ linux-pm/drivers/acpi/internal.h
-@@ -196,7 +196,7 @@ void acpi_ec_block_transactions(void);
- void acpi_ec_unblock_transactions(void);
- void acpi_ec_mark_gpe_for_wake(void);
- void acpi_ec_set_gpe_wake_mask(u8 action);
--void acpi_ec_dispatch_gpe(void);
-+bool acpi_ec_dispatch_gpe(void);
- int acpi_ec_add_query_handler(struct acpi_ec *ec, u8 query_bit,
- 			      acpi_handle handle, acpi_ec_query_func func,
- 			      void *data);
+ 	acpi_disable_wakeup_devices(ACPI_STATE_S0);
 
 
 
