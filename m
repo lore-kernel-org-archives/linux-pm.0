@@ -2,191 +2,198 @@ Return-Path: <SRS0=0DKf=VO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92A05C76186
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 06:34:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18217C76192
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 06:35:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 668C92173E
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 06:34:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DADCA217D9
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 06:35:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GaXmGqUc"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="kMk6ctcF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725856AbfGQGes (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Jul 2019 02:34:48 -0400
-Received: from mail-lf1-f66.google.com ([209.85.167.66]:32769 "EHLO
-        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725799AbfGQGer (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2019 02:34:47 -0400
-Received: by mail-lf1-f66.google.com with SMTP id x3so15619737lfc.0
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jul 2019 23:34:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=RneXg/3PcSiBdiN1Yij+yIhb511n0iX+fkkd6qMaq/c=;
-        b=GaXmGqUcaeItB1qbHommjcNkWXhHLsbY8+iv9qwigbYeYhFjrKbnC4TM7f9XOsGkgu
-         /urZAsaE/V051u+boHI+IV1BAtXoE9SB71R7lT8ZZdRJKPAmPlrWodDq7YZ6Ujw/epcm
-         KzfPxLFGEMQZcs2hybydZc3jEeYLVw/RLjLqE/DSiCa+Z3YsIuNXpwcY+fUaMmHp3p2V
-         N66Kz12XPE1aKM3WgWgjFtSW+2u2cxvRjuwVE+97FK8vnrxSCss3jjCnQpQhiupUhOI9
-         AGvOL7dyuKOsbeahrIO3KkdXB8EIIDXkTuvwpRBm8k/PkKnY+AnTsmACxJPBK6jEDtC0
-         aneg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=RneXg/3PcSiBdiN1Yij+yIhb511n0iX+fkkd6qMaq/c=;
-        b=LXaGcx5QWhNDwDsurXbBxuy23Hyc00lKWWT3LiACc9/pkHwttKSjEduO+pNV3Jk5N3
-         Ng0QOaa4hGl6q+K340UDyoLITgtNB2yl6GjXX9hed21DzfCdfd/tJ/WYFhqinTLSvM/W
-         LnpVzxOu6O/CDtbzoQtTRlm32qbvyu9fwTD4DU54CkdcminbTWsAchpf3kAAOOOteX+B
-         NZkVzoxiKwBOBcE1F4QxP8lqPJjyYKPUQAMJfCKTVNI+I/s+2FYDHf9H4PwVaTyJd2bL
-         OXk0cc/ztrLShKrMDmkacGXjVbWUnQUU3cA+UQbmwXiOzdd6VEgzgnB6ttMIqdf4pc+5
-         oLzg==
-X-Gm-Message-State: APjAAAVvZGR4vHtenLvfQjiZ54JCHPkepq5Cv7gTYpFHQrRXRTpvCztq
-        WxG0OHMbeADXMA3V70QGNTJCChiQGeI=
-X-Google-Smtp-Source: APXvYqx9hF4VJ+vzqac4RGqUC1OAiTvXFqPrSSGqWdg/90JVYfy2AnEswwo2f+sYA9JYr6s1cBLhUw==
-X-Received: by 2002:a19:f806:: with SMTP id a6mr3365442lff.102.1563345285056;
-        Tue, 16 Jul 2019 23:34:45 -0700 (PDT)
-Received: from localhost.localdomain (c-22cd225c.014-348-6c756e10.bbcust.telenor.se. [92.34.205.34])
-        by smtp.gmail.com with ESMTPSA id z22sm4277827ljz.20.2019.07.16.23.34.43
-        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Tue, 16 Jul 2019 23:34:44 -0700 (PDT)
-From:   Linus Walleij <linus.walleij@linaro.org>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 2/2] thermal: db8500: Use dev helper variable
-Date:   Wed, 17 Jul 2019 08:32:22 +0200
-Message-Id: <20190717063222.5902-2-linus.walleij@linaro.org>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190717063222.5902-1-linus.walleij@linaro.org>
-References: <20190717063222.5902-1-linus.walleij@linaro.org>
+        id S1727375AbfGQGfn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Jul 2019 02:35:43 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:51740 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726056AbfGQGfn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2019 02:35:43 -0400
+Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20190717063541epoutp03e2f45d92c1fce8a17c33a463881714d1~yHk4Sy05D2099420994epoutp03_
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jul 2019 06:35:41 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20190717063541epoutp03e2f45d92c1fce8a17c33a463881714d1~yHk4Sy05D2099420994epoutp03_
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1563345341;
+        bh=zhgJp2c1EEd5zsHzQMcfN8W5rw9BTdRu/SSkbuNu8x8=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=kMk6ctcFCYLNDAToKyAVWNpnv6yc6XNgyYyGLuEC7YVh3Bsu6XVVH0Ge3UqsGR11y
+         OQEJcxn4i83vmYFQ+Bvy/TYYEeZtZA1EOGEa8mlFdLxQ+oHohMrQqbYzglOpJvcEbQ
+         IEYYR4HWHauy1KqtGR7ThglVDNkthozuecPBR4no=
+Received: from epsnrtp2.localdomain (unknown [182.195.42.163]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190717063540epcas1p14851c1bc431c0f8da57014affbf4f72f~yHk3w-Ued0307803078epcas1p1e;
+        Wed, 17 Jul 2019 06:35:40 +0000 (GMT)
+Received: from epsmges1p1.samsung.com (unknown [182.195.40.152]) by
+        epsnrtp2.localdomain (Postfix) with ESMTP id 45pSFQ4LLWzMqYkc; Wed, 17 Jul
+        2019 06:35:38 +0000 (GMT)
+Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
+        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
+        93.8E.04088.AB1CE2D5; Wed, 17 Jul 2019 15:35:38 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
+        20190717063537epcas1p44d32e5af3318f4b9d197f7be657c72e4~yHk1IEBvU1593015930epcas1p4t;
+        Wed, 17 Jul 2019 06:35:37 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190717063537epsmtrp14c938f7baf65c4d1b3ab90a270966475~yHk1HQs_c0166501665epsmtrp19;
+        Wed, 17 Jul 2019 06:35:37 +0000 (GMT)
+X-AuditID: b6c32a35-85dff70000000ff8-4b-5d2ec1ba2bf7
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        13.CF.03706.9B1CE2D5; Wed, 17 Jul 2019 15:35:37 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190717063537epsmtip1112b8079667f54e0015e327883f5d903~yHk07EKR90815208152epsmtip13;
+        Wed, 17 Jul 2019 06:35:37 +0000 (GMT)
+Subject: Re: [PATCH v4 03/24] PM / devfreq: tegra30: Handle possible
+ round-rate error
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <faf0f014-71e6-ace9-391f-8b0080d94dc6@samsung.com>
+Date:   Wed, 17 Jul 2019 15:38:46 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.7.2
 MIME-Version: 1.0
+In-Reply-To: <e9fd7f68-8ad1-058f-7c87-ccd280ba0b0e@gmail.com>
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0hTYRjm85ydTWn1NbPe9qPsdAEVdUedncpJUcmgfhgR3RA76UHF7Wzt
+        zNJuWAtTU7sHHc0iu5hZmVnMkVhzkBndnFEURmV0R6lcaUW17Rj57/me53mv36siNE2UVpUn
+        2HmbwJloKoy81hEVH+u6GZehc/RNZ89/7kPsLukkyd7d+UnJel01FPu10oPYskGJYp/tqKfY
+        YVctyVZd6KbmhxqdvaeQsVXqVRorHf2UsaqlARm/Nk9JV6zJT8nluWzeFskLWZbsPCHHQC9Z
+        nrkwU5+sY2KZOexsOlLgzLyBXrQ0PTYtz+RviI7cyJkK/FQ6J4p0fGqKzVJg5yNzLaLdQPPW
+        bJN1jjVO5MxigZATl2Uxz2V0ugS937guP/d+hZOw9oQXln55SxSjz+PKUagKcBL0+M4oylGY
+        SoOdCI6UeBUBQYO/IHh4YJssfEPgcV0L+RfR19mllIU2BDs7/1DyYwBB04OHVMAVjlfC0OXD
+        QWEC/o2gbNgRFAi8GjpazwdTUTga2t89CfLj8DR4NNSHAliNU6H+5aNgHySeCSeltiAfgVdB
+        l6eWlD3j4fbR10Ecig1QNVAzkn8SPH19PETGU8FxtZoINAHYoYTHwxeV8gyL4NXV65SMw+HD
+        rZYRXgvv95aM4C1w7raHkoNLEbS0P1DIQiK0nz7or6DyV4iCS654mZ4GrT+PIbnwWOj3VSgC
+        FsBqKC3RyJbp4H3RO7LGyVC3u4zah2hp1DjSqBGkUSNI/4udQGQDmshbRXMOLzJWZvR3N6Pg
+        tUbrnejQvaVuhFWIHqM2dsRmaBTcRrHI7EagIugJaoMvJkOjzuaKNvM2S6atwMSLbqT3b3s/
+        oY3IsvhvX7BnMvqExMRENolJ1jMMPUld+ysqQ4NzODufz/NW3vYvLkQVqi1Gs3Vba84kdSUd
+        N857c0q4s2LQkPfRmrrpcD89Y+6COz5n41nJ8SPLq21Yk/b0e92yPc+FWZ6iwc7mAfJW8yac
+        pu7esGyo9YSxd+2YlHdkRaN3e1FI9fyt64nGxS/Kfe4bV2KSb7LF7sL6BNeryuSfuidp3i1/
+        xtdNVe9afbGwJCKsjSbFXI6JJmwi9xfKQMYBwwMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprFIsWRmVeSWpSXmKPExsWy7bCSnO7Og3qxBic2GFus/viY0aJl1iIW
+        i7NNb9gtLu+aw2bxufcIo0Xnl1lsFrcbV7BZ/Nw1j8Wib+0lNgdOjx13lzB67Jx1l92jt/kd
+        m0ffllWMHp83yQWwRnHZpKTmZJalFunbJXBlnO/ZwVxwRbii49Nz5gbGj/xdjJwcEgImEo9P
+        nGIHsYUEdjNKHLpoCxGXlJh28ShzFyMHkC0scfhwcRcjF1DJW0aJY2s7mEFqhAXCJX5snMoG
+        khARaGKS2NR7AWwQs0CkRM/cLWwQHbOZJO4f+s4EkmAT0JLY/+IGG4jNL6AocfXHY0YQm1fA
+        TmLFw6usIDaLgKrEoll7weKiAhESk67tZIGoEZQ4OfMJmM0pYCvR934OG8QydYk/8y4xQ9ji
+        EreezGeCsOUlmrfOZp7AKDwLSfssJC2zkLTMQtKygJFlFaNkakFxbnpusWGBYV5quV5xYm5x
+        aV66XnJ+7iZGcIxpae5gvLwk/hCjAAejEg/vhwO6sUKsiWXFlbmHGCU4mJVEeG2/ascK8aYk
+        VlalFuXHF5XmpBYfYpTmYFES532adyxSSCA9sSQ1OzW1ILUIJsvEwSnVwDihcX+QeMRVw/ie
+        Gw+v8t488bRS/06+wrnS6TpHG9X/+99UTZj7mjM/gfVa76KLT6cYrJRd4ir/1yX1gu1PBka+
+        3bs4T318asK4JCTF7cUv65jzZlMe+7WwXAj+mT+t9earJ1sfLcir3vpnQpPW22gBiV2T3LRy
+        TlzQDAwsf62uEi0uxPF/xR4lluKMREMt5qLiRACFiLzdrQIAAA==
+X-CMS-MailID: 20190717063537epcas1p44d32e5af3318f4b9d197f7be657c72e4
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20190707223726epcas4p1790944443c61b34e6c8dd4d64200a2a2
+References: <20190707223303.6755-1-digetx@gmail.com>
+        <CGME20190707223726epcas4p1790944443c61b34e6c8dd4d64200a2a2@epcas4p1.samsung.com>
+        <20190707223303.6755-4-digetx@gmail.com>
+        <f28470ca-93dc-cdf9-b008-54c7b50cfd83@samsung.com>
+        <e9fd7f68-8ad1-058f-7c87-ccd280ba0b0e@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The code gets easier to read like this.
+On 19. 7. 16. 오후 10:09, Dmitry Osipenko wrote:
+> 16.07.2019 14:50, Chanwoo Choi пишет:
+>> On 19. 7. 8. 오전 7:32, Dmitry Osipenko wrote:
+>>> The EMC clock rate rounding technically could fail, hence let's handle
+>>> the error cases properly.
+>>>
+>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>>> ---
+>>>  drivers/devfreq/tegra30-devfreq.c | 17 +++++++++++++++--
+>>>  1 file changed, 15 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+>>> index 5e2b133babdd..5e606ae3f238 100644
+>>> --- a/drivers/devfreq/tegra30-devfreq.c
+>>> +++ b/drivers/devfreq/tegra30-devfreq.c
+>>> @@ -592,8 +592,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>>  	struct tegra_devfreq_device *dev;
+>>>  	struct tegra_devfreq *tegra;
+>>>  	struct devfreq *devfreq;
+>>> -	unsigned long rate;
+>>>  	unsigned int i;
+>>> +	long rate;
+>>>  	int err;
+>>>  
+>>>  	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+>>> @@ -650,8 +650,14 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>>  
+>>>  	reset_control_deassert(tegra->reset);
+>>>  
+>>> -	tegra->max_freq = clk_round_rate(tegra->emc_clock, ULONG_MAX) / KHZ;
+>>> +	rate = clk_round_rate(tegra->emc_clock, ULONG_MAX);
+>>> +	if (rate < 0) {
+>>> +		dev_err(&pdev->dev, "Failed to round clock rate: %ld\n", rate);
+>>> +		return rate;
+>>> +	}
+>>> +
+>>>  	tegra->cur_freq = clk_get_rate(tegra->emc_clock) / KHZ;
+>>> +	tegra->max_freq = rate / KHZ;
+>>>  
+>>>  	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
+>>>  		dev = tegra->devices + i;
+>>> @@ -662,6 +668,13 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>>  	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
+>>>  		rate = clk_round_rate(tegra->emc_clock, rate);
+>>>  
+>>
+>> Please remove unneeded blank line.
+> 
+> I can remove it, but it was added specifically to ease reading of the code.
+> 
+>>> +		if (rate < 0) {
+>>> +			dev_err(&pdev->dev,
+>>> +				"Failed to round clock rate: %ld\n", rate);
+>>> +			err = rate;
+>>> +			goto remove_opps;
+>>> +		}
+>>
+>> Also, this patch doesn't contain code which restore the previous
+>> tegra->cur_freq/max_freq when error happen.
+> 
+> The error here results in abortion of the driver's probing, hence
+> nothing need to be restored in that case because nothing was changed at
+> this point yet.
+> 
+> 
 
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- drivers/thermal/db8500_thermal.c | 31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+OK.
 
-diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
-index d650ae5fdf2a..d250bcf3c10c 100644
---- a/drivers/thermal/db8500_thermal.c
-+++ b/drivers/thermal/db8500_thermal.c
-@@ -313,16 +313,16 @@ static void db8500_thermal_work(struct work_struct *work)
- }
- 
- static struct db8500_thsens_platform_data*
--		db8500_thermal_parse_dt(struct platform_device *pdev)
-+		db8500_thermal_parse_dt(struct device *dev)
- {
- 	struct db8500_thsens_platform_data *ptrips;
--	struct device_node *np = pdev->dev.of_node;
-+	struct device_node *np = dev->of_node;
- 	char prop_name[32];
- 	const char *tmp_str;
- 	u32 tmp_data;
- 	int i, j;
- 
--	ptrips = devm_kzalloc(&pdev->dev, sizeof(*ptrips), GFP_KERNEL);
-+	ptrips = devm_kzalloc(dev, sizeof(*ptrips), GFP_KERNEL);
- 	if (!ptrips)
- 		return NULL;
- 
-@@ -377,7 +377,7 @@ static struct db8500_thsens_platform_data*
- 	return ptrips;
- 
- err_parse_dt:
--	dev_err(&pdev->dev, "Parsing device tree data error.\n");
-+	dev_err(dev, "Parsing device tree data error.\n");
- 	return NULL;
- }
- 
-@@ -385,18 +385,19 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- {
- 	struct db8500_thermal_zone *pzone = NULL;
- 	struct db8500_thsens_platform_data *ptrips = NULL;
--	struct device_node *np = pdev->dev.of_node;
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = dev->of_node;
- 	int low_irq, high_irq, ret = 0;
- 	unsigned long dft_low, dft_high;
- 
- 	if (!np)
- 		return -EINVAL;
- 
--	ptrips = db8500_thermal_parse_dt(pdev);
-+	ptrips = db8500_thermal_parse_dt(dev);
- 	if (!ptrips)
- 		return -EINVAL;
- 
--	pzone = devm_kzalloc(&pdev->dev, sizeof(*pzone), GFP_KERNEL);
-+	pzone = devm_kzalloc(dev, sizeof(*pzone), GFP_KERNEL);
- 	if (!pzone)
- 		return -ENOMEM;
- 
-@@ -410,31 +411,31 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- 
- 	low_irq = platform_get_irq_byname(pdev, "IRQ_HOTMON_LOW");
- 	if (low_irq < 0) {
--		dev_err(&pdev->dev, "Get IRQ_HOTMON_LOW failed.\n");
-+		dev_err(dev, "Get IRQ_HOTMON_LOW failed.\n");
- 		ret = low_irq;
- 		goto out_unlock;
- 	}
- 
--	ret = devm_request_threaded_irq(&pdev->dev, low_irq, NULL,
-+	ret = devm_request_threaded_irq(dev, low_irq, NULL,
- 		prcmu_low_irq_handler, IRQF_NO_SUSPEND | IRQF_ONESHOT,
- 		"dbx500_temp_low", pzone);
- 	if (ret < 0) {
--		dev_err(&pdev->dev, "Failed to allocate temp low irq.\n");
-+		dev_err(dev, "Failed to allocate temp low irq.\n");
- 		goto out_unlock;
- 	}
- 
- 	high_irq = platform_get_irq_byname(pdev, "IRQ_HOTMON_HIGH");
- 	if (high_irq < 0) {
--		dev_err(&pdev->dev, "Get IRQ_HOTMON_HIGH failed.\n");
-+		dev_err(dev, "Get IRQ_HOTMON_HIGH failed.\n");
- 		ret = high_irq;
- 		goto out_unlock;
- 	}
- 
--	ret = devm_request_threaded_irq(&pdev->dev, high_irq, NULL,
-+	ret = devm_request_threaded_irq(dev, high_irq, NULL,
- 		prcmu_high_irq_handler, IRQF_NO_SUSPEND | IRQF_ONESHOT,
- 		"dbx500_temp_high", pzone);
- 	if (ret < 0) {
--		dev_err(&pdev->dev, "Failed to allocate temp high irq.\n");
-+		dev_err(dev, "Failed to allocate temp high irq.\n");
- 		goto out_unlock;
- 	}
- 
-@@ -442,11 +443,11 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- 		ptrips->num_trips, 0, pzone, &thdev_ops, NULL, 0, 0);
- 
- 	if (IS_ERR(pzone->therm_dev)) {
--		dev_err(&pdev->dev, "Register thermal zone device failed.\n");
-+		dev_err(dev, "Register thermal zone device failed.\n");
- 		ret = PTR_ERR(pzone->therm_dev);
- 		goto out_unlock;
- 	}
--	dev_info(&pdev->dev, "Thermal zone device registered.\n");
-+	dev_info(dev, "Thermal zone device registered.\n");
- 
- 	dft_low = PRCMU_DEFAULT_LOW_TEMP;
- 	dft_high = ptrips->trip_points[0].temp;
+
 -- 
-2.21.0
-
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
