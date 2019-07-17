@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-17.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
+	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB1D9C76192
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 22:24:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DEC3C7618F
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 22:24:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B1B9921849
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 22:24:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 709A321852
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 22:24:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="NnRzkWoN"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="D9RoywcP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730024AbfGQWYR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Jul 2019 18:24:17 -0400
-Received: from mail-vs1-f74.google.com ([209.85.217.74]:42128 "EHLO
-        mail-vs1-f74.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730006AbfGQWYE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2019 18:24:04 -0400
-Received: by mail-vs1-f74.google.com with SMTP id a11so6122745vso.9
-        for <linux-pm@vger.kernel.org>; Wed, 17 Jul 2019 15:24:04 -0700 (PDT)
+        id S1729208AbfGQWXz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Jul 2019 18:23:55 -0400
+Received: from mail-qk1-f201.google.com ([209.85.222.201]:49310 "EHLO
+        mail-qk1-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727410AbfGQWXy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2019 18:23:54 -0400
+Received: by mail-qk1-f201.google.com with SMTP id l14so21387425qke.16
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jul 2019 15:23:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=date:in-reply-to:message-id:mime-version:references:subject:from:to
          :cc;
-        bh=hlgN2kJF8O2fjyDEv3zuJRNqQ1+92Wl3CueXhQyVzIU=;
-        b=NnRzkWoN5/S27nZtGN8yKD37RUeIb30TAYui+l8MKkJjjOT5PipUtajEOAMDk3YNoc
-         8PTBCgW0yWc1MCot3JFGVlX5HzIjsbmZczGK5SNXBXM6xPTUEjTFyzzAUFh66LXRZ2yf
-         V49f5emTq5XuK2SSmMsDaN20WSehh/hCsKJ+cnTyJvPTXH6CtdFx0vRDarSfmgThKmdz
-         bNj4bz2ocVw0o9Loue41WzGw0CyLlFFVs/s8DwT3wOQgsYug5wJZjnxA0QwV55V6XxDF
-         JRjsdyUDNLiB5KUNQtrXX51GVqXwEjhJvFrupEnXsyMIpNF0B3yA23l9dvCmdFsRQZ2u
-         Zo+g==
+        bh=g20bmVhjq9PwMxcUgTHaVxhylFvIUYxFTb/7hfeQpvk=;
+        b=D9RoywcPL8rsZqz0bMu7/+OwR+2YE29yOrq24BR0n6XZX58xaU1+khGkXQfJ7oOrIo
+         JC6j6V1utL/bt3TA4HQOwyw39KP7TWDKDm5wD2IE9eEaXDow6O5bqk5GDgZvql6OOEP0
+         le0dUMPCh9Smyn8D8kWQ/Dot1jyfKG5pb27a66PvBMZpA1QHJjgTC+MIiSiqy3+afTXa
+         yNFl54jamNGQ9OdLQn/d0K3fIDW5onBbqY5cFOW0g2A1Ag7QJLZcnh8hvcuM0LhnW5cb
+         vJOIFuenmpajn3YaEaxIqKP6JNQJfOI7/bEUrvmu8fAuhDt3pwKA6y7BBCw4CEwe07dk
+         XxVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=hlgN2kJF8O2fjyDEv3zuJRNqQ1+92Wl3CueXhQyVzIU=;
-        b=o0jy5rZfXf+7TgcLmgA9ziNk6rYWvZnhVXEjf9RL6N1eoQWQ8K46W60qZgK0Q4tlLy
-         87Nlher9TN2uL9nsiPZjWDdpAb1F6Rl+PPojNsAIY7mh9h4mhoDar6PO+UGYbaI9CxKH
-         tU6HUUGmuYb7aKVKqCWprE7vTRhsOIHTyo8gl4IIN0qDZOBv/E7hq6EDOQbDziesLwEq
-         q0SI0FbgE9gUtyfFLEOdDQlRsDMPzQRgPofbuT3PVnWH2G14btBtzrwkN3mkEASECRiz
-         3Na/bJif7ZNPwsfCSTJr0Gy0hK14lkAj5zAqm8/q7CFej4wmG8qfi7cdP7tvsSKJSUe1
-         3OQA==
-X-Gm-Message-State: APjAAAVAERxJqXsl5FNBSdIMgwxVJFBSHNtLoNGqBvrUFMEboYBAixPV
-        s25ovWb6AYabmH9huri0ypwOZUBwwzQthBo=
-X-Google-Smtp-Source: APXvYqxT7Vys34+uPXtEl++ZtCFPgc1bYc+kkS7nUGHqMGkJzXWLXdIw67qCU6GNH5aCIzUf7VLs2KSSKQQV+0o=
-X-Received: by 2002:a1f:6e8e:: with SMTP id j136mr17525706vkc.80.1563402243539;
- Wed, 17 Jul 2019 15:24:03 -0700 (PDT)
-Date:   Wed, 17 Jul 2019 15:23:39 -0700
+        bh=g20bmVhjq9PwMxcUgTHaVxhylFvIUYxFTb/7hfeQpvk=;
+        b=aJmMGY1r37T+Iudkx12ucnmuQx5wVfCyEvfiuTuSoNkU5vtqA6GrL3JRgPlIhW0NbM
+         q7FL3ebVmXLFPgcmwp/wo6Ikw4o2sSeAisfkZ9MvKGBvfA9Xya794ks8rJxz/zebDcDc
+         5ZtWrcGfQZPorx8QMjw6LUhe6pLPfuUKDoUFHxlPXBhFD8k8YQUabvkOozuACukwz6oG
+         fRFhwl++zpu6QrjCYg/SPA47iqUiFb1ulclK4cITG3pR7OshPnVLnFnqINsA7R7sbEcH
+         Gk1zHaH77V+eEsYdYigHIuihUxGG8ER1ciN2km6hXAENVt/xHRIjWpGvEzsMbfl9GlOC
+         qH8A==
+X-Gm-Message-State: APjAAAULw2h5jOboRl2ednqPgoCLBgSUwDQJzvonjmRVZloCmDhgsWFS
+        S0ZazLDtXgemY8lIli1kXPZamnmycl99ixM=
+X-Google-Smtp-Source: APXvYqwz8KDML9VvH5pH0LJQsWloxsFAnC07TtA1W+tW5SM8ax4Yi/o76+L7uXmhgURWW0WrEThWjBifw5lWqiM=
+X-Received: by 2002:ae9:de87:: with SMTP id s129mr26896239qkf.485.1563402233331;
+ Wed, 17 Jul 2019 15:23:53 -0700 (PDT)
+Date:   Wed, 17 Jul 2019 15:23:36 -0700
 In-Reply-To: <20190717222340.137578-1-saravanak@google.com>
-Message-Id: <20190717222340.137578-5-saravanak@google.com>
+Message-Id: <20190717222340.137578-2-saravanak@google.com>
 Mime-Version: 1.0
 References: <20190717222340.137578-1-saravanak@google.com>
 X-Mailer: git-send-email 2.22.0.510.g264f2c817a-goog
-Subject: [PATCH v3 4/5] PM / devfreq: Cache OPP table reference in devfreq
+Subject: [PATCH v3 1/5] OPP: Allow required-opps even if the device doesn't
+ have power-domains
 From:   Saravana Kannan <saravanak@google.com>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -74,61 +74,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The OPP table can be used often in devfreq. Trying to get it each time can
-be expensive, so cache it in the devfreq struct.
+A Device-A can have a (minimum) performance requirement on another
+Device-B to be able to function correctly. This performance requirement
+on Device-B can also change based on the current performance level of
+Device-A.
+
+The existing required-opps feature fits well to describe this need. So,
+instead of limiting required-opps to point to only PM-domain devices,
+allow it to point to any device.
 
 Signed-off-by: Saravana Kannan <saravanak@google.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 6 ++++++
- include/linux/devfreq.h   | 2 ++
- 2 files changed, 8 insertions(+)
+ drivers/opp/core.c |  2 +-
+ drivers/opp/of.c   | 11 -----------
+ 2 files changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 784c08e4f931..7984b01d585d 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -594,6 +594,8 @@ static void devfreq_dev_release(struct device *dev)
- 	if (devfreq->profile->exit)
- 		devfreq->profile->exit(devfreq->dev.parent);
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index c094d5d20fd7..438fcd134d93 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -707,7 +707,7 @@ static int _set_required_opps(struct device *dev,
+ 		return 0;
  
-+	if (devfreq->opp_table)
-+		dev_pm_opp_put_opp_table(devfreq->opp_table);
- 	mutex_destroy(&devfreq->lock);
- 	kfree(devfreq);
- }
-@@ -674,6 +676,10 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->max_freq = devfreq->scaling_max_freq;
+ 	/* Single genpd case */
+-	if (!genpd_virt_devs) {
++	if (!genpd_virt_devs && required_opp_tables[0]->is_genpd) {
+ 		pstate = likely(opp) ? opp->required_opps[0]->pstate : 0;
+ 		ret = dev_pm_genpd_set_performance_state(dev, pstate);
+ 		if (ret) {
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index b313aca9894f..ff88eaf66b56 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -197,17 +197,6 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
  
- 	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
-+	devfreq->opp_table = dev_pm_opp_get_opp_table(dev);
-+	if (IS_ERR(devfreq->opp_table))
-+		devfreq->opp_table = NULL;
-+
- 	atomic_set(&devfreq->suspend_count, 0);
+ 		if (IS_ERR(required_opp_tables[i]))
+ 			goto free_required_tables;
+-
+-		/*
+-		 * We only support genpd's OPPs in the "required-opps" for now,
+-		 * as we don't know how much about other cases. Error out if the
+-		 * required OPP doesn't belong to a genpd.
+-		 */
+-		if (!required_opp_tables[i]->is_genpd) {
+-			dev_err(dev, "required-opp doesn't belong to genpd: %pOF\n",
+-				required_np);
+-			goto free_required_tables;
+-		}
+ 	}
  
- 	dev_set_name(&devfreq->dev, "devfreq%d",
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 2bae9ed3c783..1c05129f76c0 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -116,6 +116,7 @@ struct devfreq_dev_profile {
-  * @profile:	device-specific devfreq profile
-  * @governor:	method how to choose frequency based on the usage.
-  * @governor_name:	devfreq governor name for use with this devfreq
-+ * @opp_table:	Reference to OPP table of dev.parent, if one exists.
-  * @nb:		notifier block used to notify devfreq object that it should
-  *		reevaluate operable frequencies. Devfreq users may use
-  *		devfreq.nb to the corresponding register notifier call chain.
-@@ -153,6 +154,7 @@ struct devfreq {
- 	struct devfreq_dev_profile *profile;
- 	const struct devfreq_governor *governor;
- 	char governor_name[DEVFREQ_NAME_LEN];
-+	struct opp_table *opp_table;
- 	struct notifier_block nb;
- 	struct delayed_work work;
- 
+ 	goto put_np;
 -- 
 2.22.0.510.g264f2c817a-goog
 
