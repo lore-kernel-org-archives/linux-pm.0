@@ -2,128 +2,135 @@ Return-Path: <SRS0=0DKf=VO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DEC3C7618F
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 22:24:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44B8BC7618F
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 22:27:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 709A321852
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 22:24:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="D9RoywcP"
+	by mail.kernel.org (Postfix) with ESMTP id 17ECC208C0
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 22:27:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1563402443;
+	bh=krSZVsysL0odWmIs/cz6KRrtJu8WmJDZwR1kfZs0uhA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=tPtSPoV6RPQFS16MzRBEf4TlPNQL6TOurYFs1L1ToqmandJzpfIoH+kcqbgmpTQd7
+	 La9iQ0wpi/9jzibx0Li+lHDIcrPq5xCDt5OlVCuZsNX9UUc0fghKm0FW6AOdNDD3n1
+	 uSdTh346HMuMlXAk1hzNYiH4nwpVk5Mm6wCJNI5I=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729208AbfGQWXz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Jul 2019 18:23:55 -0400
-Received: from mail-qk1-f201.google.com ([209.85.222.201]:49310 "EHLO
-        mail-qk1-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727410AbfGQWXy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2019 18:23:54 -0400
-Received: by mail-qk1-f201.google.com with SMTP id l14so21387425qke.16
-        for <linux-pm@vger.kernel.org>; Wed, 17 Jul 2019 15:23:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
-         :cc;
-        bh=g20bmVhjq9PwMxcUgTHaVxhylFvIUYxFTb/7hfeQpvk=;
-        b=D9RoywcPL8rsZqz0bMu7/+OwR+2YE29yOrq24BR0n6XZX58xaU1+khGkXQfJ7oOrIo
-         JC6j6V1utL/bt3TA4HQOwyw39KP7TWDKDm5wD2IE9eEaXDow6O5bqk5GDgZvql6OOEP0
-         le0dUMPCh9Smyn8D8kWQ/Dot1jyfKG5pb27a66PvBMZpA1QHJjgTC+MIiSiqy3+afTXa
-         yNFl54jamNGQ9OdLQn/d0K3fIDW5onBbqY5cFOW0g2A1Ag7QJLZcnh8hvcuM0LhnW5cb
-         vJOIFuenmpajn3YaEaxIqKP6JNQJfOI7/bEUrvmu8fAuhDt3pwKA6y7BBCw4CEwe07dk
-         XxVg==
+        id S1727815AbfGQW1W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Jul 2019 18:27:22 -0400
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:45656 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727804AbfGQW1W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2019 18:27:22 -0400
+Received: by mail-oi1-f193.google.com with SMTP id m206so19854164oib.12;
+        Wed, 17 Jul 2019 15:27:21 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=g20bmVhjq9PwMxcUgTHaVxhylFvIUYxFTb/7hfeQpvk=;
-        b=aJmMGY1r37T+Iudkx12ucnmuQx5wVfCyEvfiuTuSoNkU5vtqA6GrL3JRgPlIhW0NbM
-         q7FL3ebVmXLFPgcmwp/wo6Ikw4o2sSeAisfkZ9MvKGBvfA9Xya794ks8rJxz/zebDcDc
-         5ZtWrcGfQZPorx8QMjw6LUhe6pLPfuUKDoUFHxlPXBhFD8k8YQUabvkOozuACukwz6oG
-         fRFhwl++zpu6QrjCYg/SPA47iqUiFb1ulclK4cITG3pR7OshPnVLnFnqINsA7R7sbEcH
-         Gk1zHaH77V+eEsYdYigHIuihUxGG8ER1ciN2km6hXAENVt/xHRIjWpGvEzsMbfl9GlOC
-         qH8A==
-X-Gm-Message-State: APjAAAULw2h5jOboRl2ednqPgoCLBgSUwDQJzvonjmRVZloCmDhgsWFS
-        S0ZazLDtXgemY8lIli1kXPZamnmycl99ixM=
-X-Google-Smtp-Source: APXvYqwz8KDML9VvH5pH0LJQsWloxsFAnC07TtA1W+tW5SM8ax4Yi/o76+L7uXmhgURWW0WrEThWjBifw5lWqiM=
-X-Received: by 2002:ae9:de87:: with SMTP id s129mr26896239qkf.485.1563402233331;
- Wed, 17 Jul 2019 15:23:53 -0700 (PDT)
-Date:   Wed, 17 Jul 2019 15:23:36 -0700
-In-Reply-To: <20190717222340.137578-1-saravanak@google.com>
-Message-Id: <20190717222340.137578-2-saravanak@google.com>
-Mime-Version: 1.0
-References: <20190717222340.137578-1-saravanak@google.com>
-X-Mailer: git-send-email 2.22.0.510.g264f2c817a-goog
-Subject: [PATCH v3 1/5] OPP: Allow required-opps even if the device doesn't
- have power-domains
-From:   Saravana Kannan <saravanak@google.com>
-To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Saravana Kannan <saravanak@google.com>,
-        Sibi Sankar <sibis@codeaurora.org>, kernel-team@android.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=aKdCh/T0TvCjAVMnS0S/bH9S/vTC4w+CAFYfC32nDW8=;
+        b=mIhmNY8OOmwtMFNU6RpTk6OQ2bxRPWaHGEoYM6ZeeChFB8EPoLmmSQksz7WYM6uBI5
+         8ZEUjIDNIM+0UvXGkMjqAN5ezqlWUFOlvCaSsz3ipUWKPCaNulv3Dv0AGS165zzojj3S
+         fLXCSnTVcNff2I4BqEmTr8RNdWBEbNHMl9UyxD+mtgRbsiaIRkJUbTUcUWRwvLmqi46m
+         1QTM6AtPHy6p9wYsnSD5tWSUwZWZOdsvOVCUq/02KzvJnmmQfyN48TclShPXbygr1cAX
+         FEumu/fwVZgSaniXZCKlbzzN8lRx/CIcnN7aQaNZWcqpAXXoMuEk6eyhhI9KYvwz72Sb
+         /pww==
+X-Gm-Message-State: APjAAAUzqY/mrwjEH1g80wF3vsZHauBbdEZENBYZ3GNDIuC1f+HF8bO6
+        4yaV0qfaWnSi4cVNbQtKcA4oC9Sy1QxxtOk0ZaQ=
+X-Google-Smtp-Source: APXvYqxjF6AUD3helldHpsLA2ynZmGMJJif5IvIahrbl69j2lcbFNCAcru7gRAkBWEUHYm+zLKJK8RxSzHAFHKW/TCg=
+X-Received: by 2002:aca:edc8:: with SMTP id l191mr20926358oih.103.1563402441139;
+ Wed, 17 Jul 2019 15:27:21 -0700 (PDT)
+MIME-Version: 1.0
+References: <6254683.2O5gIZElE2@kreacher> <20190716214024.GA8345@lenoir>
+ <CAJZ5v0gB0AHTebjpp87YKA1wmE+tCw5V=eaRE2XDM3nyQYndnA@mail.gmail.com> <20190717132115.GB8345@lenoir>
+In-Reply-To: <20190717132115.GB8345@lenoir>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 18 Jul 2019 00:27:09 +0200
+Message-ID: <CAJZ5v0icfumJc7E4+LgWpi3+UNpTsH4usAJOg4FEeCBptYYzUQ@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: Always stop scheduler tick on adaptive-tick CPUs
+To:     Frederic Weisbecker <frederic@kernel.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Thomas Lindroth <thomas.lindroth@gmail.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-A Device-A can have a (minimum) performance requirement on another
-Device-B to be able to function correctly. This performance requirement
-on Device-B can also change based on the current performance level of
-Device-A.
+On Wed, Jul 17, 2019 at 3:21 PM Frederic Weisbecker <frederic@kernel.org> wrote:
+>
+> On Wed, Jul 17, 2019 at 09:55:08AM +0200, Rafael J. Wysocki wrote:
+> > On Tue, Jul 16, 2019 at 11:40 PM Frederic Weisbecker
+> > <frederic@kernel.org> wrote:
+> > >
+> > > On Tue, Jul 16, 2019 at 05:25:10PM +0200, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > >
+> > > > Running the scheduler tick on idle adaptive-tick CPUs is not useful
+> > >
+> > > Judging by the below change, you mean full dynticks, right?
+> >
+> > Right.
+> >
+> > > > and it may also be not expected by users (as reported by Thomas), so
+> > > > add a check to cpuidle_idle_call() to always stop the tick on them
+> > > > regardless of the idle duration predicted by the governor.
+> > > >
+> > > > Fixes: 554c8aa8ecad ("sched: idle: Select idle state before stopping the tick")
+> > > > Reported-by: Thomas Lindroth <thomas.lindroth@gmail.com>
+> > > > Tested-by: Thomas Lindroth <thomas.lindroth@gmail.com>
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > ---
+> > > >  kernel/sched/idle.c |    3 ++-
+> > > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > >
+> > > > Index: linux-pm/kernel/sched/idle.c
+> > > > ===================================================================
+> > > > --- linux-pm.orig/kernel/sched/idle.c
+> > > > +++ linux-pm/kernel/sched/idle.c
+> > > > @@ -191,7 +191,8 @@ static void cpuidle_idle_call(void)
+> > > >                */
+> > > >               next_state = cpuidle_select(drv, dev, &stop_tick);
+> > > >
+> > > > -             if (stop_tick || tick_nohz_tick_stopped())
+> > > > +             if (stop_tick || tick_nohz_tick_stopped() ||
+> > > > +                 !housekeeping_cpu(dev->cpu, HK_FLAG_TICK))
+> > >
+> > > But tick_nohz_tick_stopped() also works on full dynticks CPUs. If the
+> > > tick isn't stopped on a full dynticks CPU by the time we reach this path,
+> > > it means that the conditions for the tick to be stopped are not met anyway
+> > > (eg: more than one task and sched tick is needed, perf event requires the tick,
+> > > posix CPU timer, etc...)
+> >
+> > First of all, according to Thomas, the patch does make a difference,
+> > so evidently on his system(s) the full dynticks CPUs enter the idle
+> > loop with running tick.
+> >
+> > This means that, indeed, the conditions for the tick to be stopped
+> > have not been met up to that point, but if the (full dynticks) CPU
+> > becomes idle, that's because it has been made idle on purpose
+> > (presumably by a user-space "orchestrator" or the sysadmin), so the
+> > kernel can assume that it will remain idle indefinitely.  That, in
+> > turn, is when the tick would be stopped on it regardless of everything
+> > else (even if it wasn't a full dynticks CPU).
+>
+> Well I think we disagree on that assumption that if a nohz_full CPU is put
+> idle, it will remain there indefinitely. Nohz_full CPUs aren't really special
+> in this regard, they can sleep on an IO, wait for a short event just like
+> any other CPU.
 
-The existing required-opps feature fits well to describe this need. So,
-instead of limiting required-opps to point to only PM-domain devices,
-allow it to point to any device.
+Fair enough.
 
-Signed-off-by: Saravana Kannan <saravanak@google.com>
----
- drivers/opp/core.c |  2 +-
- drivers/opp/of.c   | 11 -----------
- 2 files changed, 1 insertion(+), 12 deletions(-)
+This means that the governor (or rather governors) will need to be
+modified to address the issue reported by Thomas.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index c094d5d20fd7..438fcd134d93 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -707,7 +707,7 @@ static int _set_required_opps(struct device *dev,
- 		return 0;
- 
- 	/* Single genpd case */
--	if (!genpd_virt_devs) {
-+	if (!genpd_virt_devs && required_opp_tables[0]->is_genpd) {
- 		pstate = likely(opp) ? opp->required_opps[0]->pstate : 0;
- 		ret = dev_pm_genpd_set_performance_state(dev, pstate);
- 		if (ret) {
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index b313aca9894f..ff88eaf66b56 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -197,17 +197,6 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 
- 		if (IS_ERR(required_opp_tables[i]))
- 			goto free_required_tables;
--
--		/*
--		 * We only support genpd's OPPs in the "required-opps" for now,
--		 * as we don't know how much about other cases. Error out if the
--		 * required OPP doesn't belong to a genpd.
--		 */
--		if (!required_opp_tables[i]->is_genpd) {
--			dev_err(dev, "required-opp doesn't belong to genpd: %pOF\n",
--				required_np);
--			goto free_required_tables;
--		}
- 	}
- 
- 	goto put_np;
--- 
-2.22.0.510.g264f2c817a-goog
+Fortunately, I have a patch going in that direction too. :-)
 
+Cheers!
