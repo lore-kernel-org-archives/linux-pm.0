@@ -2,432 +2,255 @@ Return-Path: <SRS0=0DKf=VO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2132CC76186
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 06:30:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CFB8C76186
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 06:34:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DBBAB21743
-	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 06:30:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9F1DF21743
+	for <linux-pm@archiver.kernel.org>; Wed, 17 Jul 2019 06:34:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="t1UUbokf"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="Ghw6opmM"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726066AbfGQGaK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Jul 2019 02:30:10 -0400
-Received: from condef-06.nifty.com ([202.248.20.71]:34509 "EHLO
-        condef-06.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725892AbfGQGaK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2019 02:30:10 -0400
-X-Greylist: delayed 487 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Jul 2019 02:30:04 EDT
-Received: from conuserg-10.nifty.com ([10.126.8.73])by condef-06.nifty.com with ESMTP id x6H6IkIs006709
-        for <linux-pm@vger.kernel.org>; Wed, 17 Jul 2019 15:18:46 +0900
-Received: from localhost.localdomain (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp [153.142.97.92]) (authenticated)
-        by conuserg-10.nifty.com with ESMTP id x6H6I5Ol009435;
-        Wed, 17 Jul 2019 15:18:12 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-10.nifty.com x6H6I5Ol009435
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
-        s=dec2015msa; t=1563344292;
-        bh=krZ6W+tHWJH7GffyTlc7LmZ013xkArEQ4cWHwqkczlI=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=t1UUbokfuSiom8ybRWL4NLaySYXk9YGt5C6zZmBwZrHiNY25DkHy9ZCk3z9Ax+bB9
-         FIeWNPbolvDXCso6FTpmEtCTN3La8KWotw7YxepnqAfbxZR4e3VsYeuS0CJSuZUirY
-         wNvi9UE5dpfFdO8FR1mcSyBoWqImXIQF2L9gBdkAGN/GvfuIwZ/rZr4m702R7+HgbJ
-         ta2xoY73n7Yz1CwgqxTos+tNOY8dWfFfEWeWyifbtv31DrNC7Jm0ku2o/zQ4OLf2wg
-         EQpWQ8HlASCNVxsyiQ12NIezVkPfz91Heb7vyhcIj1Yy7Kw8RBv7Ztxng+pAz8LHGF
-         LwvF99gkXXpKw==
-X-Nifty-SrcIP: [153.142.97.92]
-From:   Masahiro Yamada <yamada.masahiro@socionext.com>
-To:     linux-kbuild@vger.kernel.org
-Cc:     Joe Lawrence <joe.lawrence@redhat.com>,
-        Masahiro Yamada <yamada.masahiro@socionext.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Michal Marek <michal.lkml@markovi.net>,
-        Shuah Khan <shuah@kernel.org>,
-        Thomas Renninger <trenn@suse.com>, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v3 09/12] kbuild: create *.mod with full directory path and remove MODVERDIR
-Date:   Wed, 17 Jul 2019 15:17:57 +0900
-Message-Id: <20190717061800.10018-10-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190717061800.10018-1-yamada.masahiro@socionext.com>
-References: <20190717061800.10018-1-yamada.masahiro@socionext.com>
+        id S1725932AbfGQGeZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 17 Jul 2019 02:34:25 -0400
+Received: from mailout4.samsung.com ([203.254.224.34]:63428 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725890AbfGQGeZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jul 2019 02:34:25 -0400
+Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
+        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20190717063422epoutp04ffcd850c9dd3b5642982384471322068~yHjvMeg8N1012610126epoutp04G
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jul 2019 06:34:22 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20190717063422epoutp04ffcd850c9dd3b5642982384471322068~yHjvMeg8N1012610126epoutp04G
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1563345262;
+        bh=JH91yOtS+jffgxTTFHGvw6ei+DdsN9zJJgohcmSBYac=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=Ghw6opmMfKXxmk6IuAPNpKUABd2hDsPjQFDnPWvGJB3u6CIzlb/yPkj3OS9x53TWR
+         aP1xQDwS0pBQyrpzMmG3ikC0PS91IzqqcQrSnJkizBeIfg5IHKlDFydi9VYJ48IhoL
+         FvB2VVlCu7kkfeIs+w2XWr73w280ZnEdH1vPLBLY=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20190717063422epcas1p203192e207e6f33e7ff96ee2fd29038cb~yHjuzgLBD1459914599epcas1p2a;
+        Wed, 17 Jul 2019 06:34:22 +0000 (GMT)
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.158]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 45pSCw1dFbzMqYlv; Wed, 17 Jul
+        2019 06:34:20 +0000 (GMT)
+Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
+        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
+        16.F0.04160.C61CE2D5; Wed, 17 Jul 2019 15:34:20 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
+        20190717063419epcas1p48c8037c7214623b761c270bfefbf88d9~yHjsS0z900625506255epcas1p4j;
+        Wed, 17 Jul 2019 06:34:19 +0000 (GMT)
+Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20190717063419epsmtrp2e0bd7419f210c5a1549631ecea66561e~yHjsSCCD81019710197epsmtrp2q;
+        Wed, 17 Jul 2019 06:34:19 +0000 (GMT)
+X-AuditID: b6c32a38-b4bff70000001040-71-5d2ec16cd0af
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        AE.8F.03638.B61CE2D5; Wed, 17 Jul 2019 15:34:19 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190717063419epsmtip1ccf829f1c4c3d555a71411df1e7224d9~yHjsGweoS1162611626epsmtip1R;
+        Wed, 17 Jul 2019 06:34:19 +0000 (GMT)
+Subject: Re: [PATCH v4 02/24] PM / devfreq: tegra30: Keep interrupt disabled
+ while governor is stopped
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <ca339b7f-1141-4c68-1c07-2ac818422bbc@samsung.com>
+Date:   Wed, 17 Jul 2019 15:37:28 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.7.2
+MIME-Version: 1.0
+In-Reply-To: <6c517d04-cf99-f907-e74d-9fba99405a53@gmail.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA01Se0hTcRTut7vdTW11nVnHBaW3B7lwetXVNVoUhg16IJX0AFkXvW3qXuxu
+        Pek5y7QMrShaZWVF5QPTXOmyJGeJhiVZUMoiSCjK7GGaVli73iL/+853vvP4fr8jwxSVuFKW
+        ZXGwdgtjIvFg8S1ftDrGdF+dHrevejxd/uUNonPdpWK6fX+vlO70nsXp/sJmROd/c+N0975r
+        OD3sLRHTRyuf4ouDdHX+y0hX7/ZLdYWuPlx3tLYM6fprpqVKNuYsNLJMJmuPZC0Z1swsi0FL
+        Ll+jT9Zr5sVRMVQSPZ+MtDBmVksuXZEak5JlCixERm5hTM4AlcpwHBm7aKHd6nSwkUYr59CS
+        rC3TZEuyqTnGzDktBnWG1byAiouL1wSEm3KMVd3PpLZccltFXoNoL2qdWoBkMiAS4XdbSAEK
+        limIOgRVpT0SIfiK4GRTkagABQWCQQRdD7N5zBecOjEoFUR3EeSe6MaF4BOCX0U+Ca8KI4zg
+        H/IhPjGJGEGQP+zC+QRGbABfffloW5xQQeO7F6P8RCIKng+9QfxOcmIR3CsN5mkxMQvuvS1B
+        PA4n1kNbc4mYx3IiFFpP94ziIEILt199lgrtp0BXz3mRgKeDy3MG43cAwiWFw0PtEsHzUvhQ
+        rBbchMH7llqpgJXQ33cXF/BOuN7ajAu1hxDUNnZIhEQCNF45LuL7YEQ0VHljBToK6n+eQ8Lc
+        CdA3cOTvKDkcOqgQJDOg87VfJOAIuJSXjxch0j3GjXuMA/cYB+7/wy4gcRmazNo4s4HlKFvi
+        2L+uQaOnqqLrUMPjFU2IkCFyvFzni0lXSJgt3HZzEwIZRk6Sawfmpivkmcz2Hazdqrc7TSzX
+        hDSBxy7GlOEZ1sDhWxx6ShOfkJBAJ1LzNBRFTpGX/IpOVxAGxsHmsKyNtf+rE8mClHuRkwrd
+        /9GQtMSStzq6Fzt9pmLbjxHP7q3Z9MvBcTrbk86Q5LWP0g6E71J+LfS03lS1fCz6UXwkq3p1
+        RHes52DB1Ybvq1Quj3Ekajp2zHT+bVlGx/vN7uGelWm1+nU47Q35kpcyc7Z32R0uoottDv2W
+        PMe/Z8IOqSLlRvuDi2FJFbc3kGLOyFAqzM4xfwB/p6KpwAMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprJIsWRmVeSWpSXmKPExsWy7bCSnG72Qb1YgzVN6harPz5mtGiZtYjF
+        4mzTG3aLy7vmsFl87j3CaNH5ZRabxe3GFWwWP3fNY7HoW3uJzYHTY8fdJYweO2fdZffobX7H
+        5tG3ZRWjx+dNcgGsUVw2Kak5mWWpRfp2CVwZ629fYS9oUapY076HqYHxpHQXIyeHhICJxPQp
+        39i7GLk4hAR2M0rsazzJDJGQlJh28SiQzQFkC0scPlwMEhYSeMsocbZdCMQWFsiQuPvjMCNI
+        r4hAE5PEpt4L7CAJZoFIiZ65W9gghs5mknjQ1MoEkmAT0JLY/+IGG4jNL6AocfXHY0aQBbwC
+        dhL7FnGBhFkEVCX2PZ/HCGKLCkRITLq2kwXE5hUQlDg58wmYzSlgK7H93geoXeoSf+ZdYoaw
+        xSVuPZnPBGHLSzRvnc08gVF4FpL2WUhaZiFpmYWkZQEjyypGydSC4tz03GLDAqO81HK94sTc
+        4tK8dL3k/NxNjOAI09LawXjiRPwhRgEORiUeXo/DurFCrIllxZW5hxglOJiVRHhtv2rHCvGm
+        JFZWpRblxxeV5qQWH2KU5mBREueVzz8WKSSQnliSmp2aWpBaBJNl4uCUamDMWFW659QLs6dv
+        dGuMqmXqttf+y9xc8NNN3Mv+89dGRd34E8xK+2UmMNnvW7xHrko/SWhbf9X8b0fnH5l82i2X
+        dZd2HcuZVQu9d0+YvXdtcrlw4yGD/f2/Jm8WsVhyPmlVDu+MTwyeMSa3/SX5mYyezf2s9PbS
+        6SkrDGLOHblcWPUr5PpCxf40JZbijERDLeai4kQAPr+/sawCAAA=
+X-CMS-MailID: 20190717063419epcas1p48c8037c7214623b761c270bfefbf88d9
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20190707223724epcas4p2d82cecc2969fecddca67192417843418
+References: <20190707223303.6755-1-digetx@gmail.com>
+        <CGME20190707223724epcas4p2d82cecc2969fecddca67192417843418@epcas4p2.samsung.com>
+        <20190707223303.6755-3-digetx@gmail.com>
+        <f691a845-18f3-a6fb-302c-a8a3fc13e5bf@samsung.com>
+        <6c517d04-cf99-f907-e74d-9fba99405a53@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-While descending directories, Kbuild produces objects for modules,
-but do not link final *.ko files; it is done in the modpost.
+On 19. 7. 16. 오후 10:03, Dmitry Osipenko wrote:
+> 16.07.2019 14:47, Chanwoo Choi пишет:
+>> On 19. 7. 8. 오전 7:32, Dmitry Osipenko wrote:
+>>> There is no real need to keep interrupt always-enabled, will be nicer
+>>> to keep it disabled while governor is inactive.
+>>>
+>>> Suggested-by: Thierry Reding <thierry.reding@gmail.com>
+>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>>> ---
+>>>  drivers/devfreq/tegra30-devfreq.c | 43 ++++++++++++++++---------------
+>>>  1 file changed, 22 insertions(+), 21 deletions(-)
+>>>
+>>> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+>>> index a27300f40b0b..5e2b133babdd 100644
+>>> --- a/drivers/devfreq/tegra30-devfreq.c
+>>> +++ b/drivers/devfreq/tegra30-devfreq.c
+>>> @@ -11,6 +11,7 @@
+>>>  #include <linux/devfreq.h>
+>>>  #include <linux/interrupt.h>
+>>>  #include <linux/io.h>
+>>> +#include <linux/irq.h>
+>>>  #include <linux/module.h>
+>>>  #include <linux/mod_devicetable.h>
+>>>  #include <linux/platform_device.h>
+>>> @@ -416,8 +417,6 @@ static void tegra_actmon_start(struct tegra_devfreq *tegra)
+>>>  {
+>>>  	unsigned int i;
+>>>  
+>>> -	disable_irq(tegra->irq);
+>>> -
+>>>  	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
+>>>  		      ACTMON_GLB_PERIOD_CTRL);
+>>>  
+>>> @@ -442,8 +441,6 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
+>>>  	}
+>>>  
+>>>  	actmon_write_barrier(tegra);
+>>> -
+>>> -	enable_irq(tegra->irq);
+>>>  }
+>>>  
+>>>  static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>>> @@ -552,6 +549,12 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
+>>>  {
+>>>  	struct tegra_devfreq *tegra = dev_get_drvdata(devfreq->dev.parent);
+>>>  
+>>> +	/*
+>>> +	 * Couple device with the governor early as it is needed at
+>>> +	 * the moment of governor's start (used by ISR).
+>>> +	 */
+>>> +	tegra->devfreq = devfreq;
+>>
+>> I'm not sure it is necessary. Almost devfreq device get
+>> the devfreq instance on probe timing through devfreq_add_device directly.
+> 
+> This is necessary because this assignment is for the "governor" and not
+> the "device". Governor is started during of devfreq_add_device(), hence
+> there is no better way to assign device to the driver's governor.
 
-To keep track of modules, Kbuild creates a *.mod file in $(MODVERDIR)
-for every module it is building. Some post-processing steps read the
-necessary information from *.mod files. This avoids descending into
-directories again. This mechanism was introduced in 2003 or so.
+OK. I understand.
 
-Later, commit 551559e13af1 ("kbuild: implement modules.order") added
-modules.order. So, we can simply read it out to know all the modules
-with directory paths. This is easier than parsing the first line of
-*.mod files.
+But, I have a question. Is it working before this patch?
+How can you test it on that tegra->devfreq is NULL?
 
-$(MODVERDIR) has a flat directory structure, that is, *.mod files
-are named only with base names. This is based on the assumption that
-the module name is unique across the tree. This assumption is really
-fragile.
+> 
+>>> +
+>>>  	switch (event) {
+>>>  	case DEVFREQ_GOV_START:
+>>>  		devfreq_monitor_start(devfreq);
+>>> @@ -586,10 +589,11 @@ static struct devfreq_governor tegra_devfreq_governor = {
+>>>  
+>>>  static int tegra_devfreq_probe(struct platform_device *pdev)
+>>>  {
+>>> -	struct tegra_devfreq *tegra;
+>>>  	struct tegra_devfreq_device *dev;
+>>> -	unsigned int i;
+>>> +	struct tegra_devfreq *tegra;
+>>> +	struct devfreq *devfreq;
+>>>  	unsigned long rate;
+>>> +	unsigned int i;
+>>>  	int err;
+>>>  
+>>>  	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+>>> @@ -625,6 +629,16 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>>  	}
+>>>  	tegra->irq = err;
+>>>  
+>>> +	irq_set_status_flags(tegra->irq, IRQ_NOAUTOEN);
+>>> +
+>>> +	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
+>>> +					actmon_thread_isr, IRQF_ONESHOT,
+>>> +					"tegra-devfreq", tegra);
+>>> +	if (err) {
+>>> +		dev_err(&pdev->dev, "Interrupt request failed: %d\n", err);
+>>> +		return err;
+>>> +	}
+>>> +
+>>>  	reset_control_assert(tegra->reset);
+>>>  
+>>>  	err = clk_prepare_enable(tegra->clock);
+>>> @@ -672,28 +686,15 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>>  	}
+>>>  
+>>>  	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
+>>> -	tegra->devfreq = devfreq_add_device(&pdev->dev,
+>>> -					    &tegra_devfreq_profile,
+>>> -					    "tegra_actmon",
+>>> -					    NULL);
+>>> +	devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
+>>> +				     "tegra_actmon", NULL);
+>>>  	if (IS_ERR(tegra->devfreq)) {
+>>
+>> Have to check 'devfreq' instead of 'tegra->devfreq'.
+>> Did you test it? It might be failed because 'tegra->devfreq is NULL.
+> 
+> That's a good catch! Thank you very much.
+> 
+>>>  		err = PTR_ERR(tegra->devfreq);
+>>
+>> ditto.
+> 
+> Ok
+> 
+> 
 
-Stephen Rothwell reported a race condition caused by a module name
-conflict:
 
-  https://lkml.org/lkml/2019/5/13/991
-
-In parallel building, two different threads could write to the same
-$(MODVERDIR)/*.mod simultaneously.
-
-Non-unique module names are the source of all kind of troubles, hence
-commit 3a48a91901c5 ("kbuild: check uniqueness of module names")
-introduced a new checker script.
-
-However, it is still fragile in the build system point of view because
-this race happens before scripts/modules-check.sh is invoked. If it
-happens again, the modpost will emit unclear error messages.
-
-To fix this issue completely, create *.mod with full directory path
-so that two threads never attempt to write to the same file.
-
-$(MODVERDIR) is no longer needed.
-
-Since modules with directory paths are listed in modules.order, Kbuild
-is still able to find *.mod files without additional descending.
-
-I also killed cmd_secanalysis; scripts/mod/sumversion.c computes MD4 hash
-for modules with MODULE_VERSION(). When CONFIG_DEBUG_SECTION_MISMATCH=y,
-it occurs not only in the modpost stage, but also during directory
-descending, where sumversion.c may parse stale *.mod files. It would emit
-'No such file or directory' warning when an object consisting a module is
-renamed, or when a single-obj module is turned into a multi-obj module or
-vice versa.
-
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-Acked-by: Nicolas Pitre <nico@fluxnic.net>
----
-
-Changes in v3:
-  - Fix build error of allnoconfig
-  - Remove cmd_secanalysis
-  - Fix up comment in scripts/adjust_autoksyms.sh
-  - Fix up tools/power/cpupower/debug/kernel/Makefile
-
-Changes in v2:
-  - Remove -r of xargs, which is a GNU extension
-  - Add '--' for extra safety
-
- .gitignore                                 |  1 +
- Documentation/dontdiff                     |  1 +
- Makefile                                   | 20 +++-----------------
- lib/Kconfig.debug                          | 12 +-----------
- scripts/Makefile.build                     | 15 +++------------
- scripts/Makefile.modpost                   |  4 ++--
- scripts/adjust_autoksyms.sh                | 14 +++++---------
- scripts/mod/sumversion.c                   | 16 +++-------------
- scripts/package/mkspec                     |  2 +-
- tools/power/cpupower/debug/kernel/Makefile |  4 ++--
- 10 files changed, 22 insertions(+), 67 deletions(-)
-
-diff --git a/.gitignore b/.gitignore
-index 7587ef56b92d..8f5422cba6e2 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -30,6 +30,7 @@
- *.lz4
- *.lzma
- *.lzo
-+*.mod
- *.mod.c
- *.o
- *.o.*
-diff --git a/Documentation/dontdiff b/Documentation/dontdiff
-index 5eba889ea84d..9f4392876099 100644
---- a/Documentation/dontdiff
-+++ b/Documentation/dontdiff
-@@ -30,6 +30,7 @@
- *.lzo
- *.mo
- *.moc
-+*.mod
- *.mod.c
- *.o
- *.o.*
-diff --git a/Makefile b/Makefile
-index 396cd5e525d1..9ad9f8d1130d 100644
---- a/Makefile
-+++ b/Makefile
-@@ -486,11 +486,6 @@ export KBUILD_AFLAGS_MODULE KBUILD_CFLAGS_MODULE KBUILD_LDFLAGS_MODULE
- export KBUILD_AFLAGS_KERNEL KBUILD_CFLAGS_KERNEL
- export KBUILD_ARFLAGS
- 
--# When compiling out-of-tree modules, put MODVERDIR in the module
--# tree rather than in the kernel tree. The kernel tree might
--# even be read-only.
--export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_versions
--
- # Files to ignore in find ... statements
- 
- export RCS_FIND_IGNORE := \( -name SCCS -o -name BitKeeper -o -name .svn -o    \
-@@ -1029,8 +1024,8 @@ vmlinux-deps := $(KBUILD_LDS) $(KBUILD_VMLINUX_OBJS) $(KBUILD_VMLINUX_LIBS)
- 
- # Recurse until adjust_autoksyms.sh is satisfied
- PHONY += autoksyms_recursive
--autoksyms_recursive: $(vmlinux-deps)
- ifdef CONFIG_TRIM_UNUSED_KSYMS
-+autoksyms_recursive: $(vmlinux-deps) modules.order
- 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/adjust_autoksyms.sh \
- 	  "$(MAKE) -f $(srctree)/Makefile vmlinux"
- endif
-@@ -1113,7 +1108,6 @@ endif
- 
- prepare1: prepare3 outputmakefile asm-generic $(version_h) $(autoksyms_h) \
- 						include/generated/utsrelease.h
--	$(cmd_crmodverdir)
- 
- archprepare: archheaders archscripts prepare1 scripts
- 
-@@ -1371,7 +1365,7 @@ endif # CONFIG_MODULES
- # make distclean Remove editor backup files, patch leftover files and the like
- 
- # Directories & files removed with 'make clean'
--CLEAN_DIRS  += $(MODVERDIR) include/ksym
-+CLEAN_DIRS  += include/ksym
- CLEAN_FILES += modules.builtin.modinfo
- 
- # Directories & files removed with 'make mrproper'
-@@ -1641,7 +1635,6 @@ PHONY += $(clean-dirs) clean
- $(clean-dirs):
- 	$(Q)$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
- 
--clean:	rm-dirs := $(MODVERDIR)
- clean: rm-files := $(KBUILD_EXTMOD)/Module.symvers
- 
- PHONY += help
-@@ -1655,8 +1648,6 @@ help:
- 	@echo  ''
- 
- PHONY += prepare
--prepare:
--	$(cmd_crmodverdir)
- endif # KBUILD_EXTMOD
- 
- clean: $(clean-dirs)
-@@ -1667,7 +1658,7 @@ clean: $(clean-dirs)
- 		-o -name '*.ko.*' \
- 		-o -name '*.dtb' -o -name '*.dtb.S' -o -name '*.dt.yaml' \
- 		-o -name '*.dwo' -o -name '*.lst' \
--		-o -name '*.su'  \
-+		-o -name '*.su' -o -name '*.mod' \
- 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
- 		-o -name '*.lex.c' -o -name '*.tab.[ch]' \
- 		-o -name '*.asn1.[ch]' \
-@@ -1796,11 +1787,6 @@ quiet_cmd_depmod = DEPMOD  $(KERNELRELEASE)
-       cmd_depmod = $(CONFIG_SHELL) $(srctree)/scripts/depmod.sh $(DEPMOD) \
-                    $(KERNELRELEASE)
- 
--# Create temporary dir for module support files
--# clean it up only when building all modules
--cmd_crmodverdir = $(Q)mkdir -p $(MODVERDIR) \
--                  $(if $(KBUILD_MODULES),; rm -f $(MODVERDIR)/*)
--
- # read saved command lines for existing targets
- existing-targets := $(wildcard $(sort $(targets)))
- 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 4ac4ca21a30a..cde5675340ba 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -353,23 +353,13 @@ config DEBUG_SECTION_MISMATCH
- 	  which results in the code/data being placed in specific sections.
- 	  The section mismatch analysis is always performed after a full
- 	  kernel build, and enabling this option causes the following
--	  additional steps to occur:
-+	  additional step to occur:
- 	  - Add the option -fno-inline-functions-called-once to gcc commands.
- 	    When inlining a function annotated with __init in a non-init
- 	    function, we would lose the section information and thus
- 	    the analysis would not catch the illegal reference.
- 	    This option tells gcc to inline less (but it does result in
- 	    a larger kernel).
--	  - Run the section mismatch analysis for each module/built-in.a file.
--	    When we run the section mismatch analysis on vmlinux.o, we
--	    lose valuable information about where the mismatch was
--	    introduced.
--	    Running the analysis for each module/built-in.a file
--	    tells where the mismatch happens much closer to the
--	    source. The drawback is that the same mismatch is
--	    reported at least twice.
--	  - Enable verbose reporting from modpost in order to help resolve
--	    the section mismatches that are reported.
- 
- config SECTION_MISMATCH_WARN_ONLY
- 	bool "Make section mismatch errors non-fatal"
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index be32a3752de4..c6dfcc028f56 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -67,8 +67,6 @@ ifeq ($(CONFIG_MODULES)$(need-modorder),y1)
- modorder-target := $(obj)/modules.order
- endif
- 
--# We keep a list of all modules in $(MODVERDIR)
--
- __build: $(if $(KBUILD_BUILTIN),$(builtin-target) $(lib-target) $(extra-y)) \
- 	 $(if $(KBUILD_MODULES),$(obj-m) $(modorder-target)) \
- 	 $(subdir-ym) $(always)
-@@ -87,11 +85,6 @@ ifneq ($(KBUILD_ENABLE_EXTRA_GCC_CHECKS),)
-   cmd_checkdoc = $(srctree)/scripts/kernel-doc -none $<
- endif
- 
--# Do section mismatch analysis for each module/built-in.a
--ifdef CONFIG_DEBUG_SECTION_MISMATCH
--  cmd_secanalysis = ; scripts/mod/modpost $@
--endif
--
- # Compile C sources (.c)
- # ---------------------------------------------------------------------------
- 
-@@ -278,13 +271,11 @@ $(obj)/%.o: $(src)/%.c $(recordmcount_source) $(objtool_dep) FORCE
- 	$(call cmd,force_checksrc)
- 	$(call if_changed_rule,cc_o_c)
- 
--# Single-part modules are special since we need to mark them in $(MODVERDIR)
--
- $(single-used-m): $(obj)/%.o: $(src)/%.c $(recordmcount_source) $(objtool_dep) FORCE
- 	$(call cmd,force_checksrc)
- 	$(call if_changed_rule,cc_o_c)
- 	@{ echo $(@:.o=.ko); echo $@; \
--	   $(cmd_undef_syms); } > $(MODVERDIR)/$(@F:.o=.mod)
-+	   $(cmd_undef_syms); } > $(patsubst %.o,%.mod,$@)
- 
- quiet_cmd_cc_lst_c = MKLST   $@
-       cmd_cc_lst_c = $(CC) $(c_flags) -g -c -o $*.o $< && \
-@@ -461,12 +452,12 @@ endif
- # module is turned into a multi object module, $^ will contain header file
- # dependencies recorded in the .*.cmd file.
- quiet_cmd_link_multi-m = LD [M]  $@
--cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(filter %.o,$^) $(cmd_secanalysis)
-+      cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(filter %.o,$^)
- 
- $(multi-used-m): FORCE
- 	$(call if_changed,link_multi-m)
- 	@{ echo $(@:.o=.ko); echo $(filter %.o,$^); \
--	   $(cmd_undef_syms); } > $(MODVERDIR)/$(@F:.o=.mod)
-+	   $(cmd_undef_syms); } > $(patsubst %.o,%.mod,$@)
- $(call multi_depend, $(multi-used-m), .o, -objs -y -m)
- 
- targets += $(multi-used-m)
-diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index 5841508ffca9..6b19c1a4eae5 100644
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -6,8 +6,8 @@
- # Stage one of module building created the following:
- # a) The individual .o files used for the module
- # b) A <module>.o file which is the .o files above linked together
--# c) A <module>.mod file in $(MODVERDIR)/, listing the name of the
--#    the preliminary <module>.o file, plus all .o files
-+# c) A <module>.mod file, listing the name of the preliminary <module>.o file,
-+#    plus all .o files
- # d) modules.order, which lists all the modules
- 
- # Stage 2 is handled by this file and does the following
-diff --git a/scripts/adjust_autoksyms.sh b/scripts/adjust_autoksyms.sh
-index aab4e299d7a2..2e4a7320bfb4 100755
---- a/scripts/adjust_autoksyms.sh
-+++ b/scripts/adjust_autoksyms.sh
-@@ -8,8 +8,7 @@
- #
- 
- # Create/update the include/generated/autoksyms.h file from the list
--# of all module's needed symbols as recorded on the third line of
--# .tmp_versions/*.mod files.
-+# of all module's needed symbols as recorded on the third line of *.mod files.
- #
- # For each symbol being added or removed, the corresponding dependency
- # file's timestamp is updated to force a rebuild of the affected source
-@@ -47,13 +46,10 @@ cat > "$new_ksyms_file" << EOT
-  */
- 
- EOT
--[ "$(ls -A "$MODVERDIR")" ] &&
--for mod in "$MODVERDIR"/*.mod; do
--	sed -n -e '3{s/ /\n/g;/^$/!p;}' "$mod"
--done | sort -u |
--while read sym; do
--	echo "#define __KSYM_${sym} 1"
--done >> "$new_ksyms_file"
-+sed 's/ko$/mod/' modules.order |
-+xargs -n1 sed -n -e '3{s/ /\n/g;/^$/!p;}' -- |
-+sort -u |
-+sed -e 's/\(.*\)/#define __KSYM_\1 1/' >> "$new_ksyms_file"
- 
- # Special case for modversions (see modpost.c)
- if [ -n "$CONFIG_MODVERSIONS" ]; then
-diff --git a/scripts/mod/sumversion.c b/scripts/mod/sumversion.c
-index 0f6dcb4011a8..166f3fa247a9 100644
---- a/scripts/mod/sumversion.c
-+++ b/scripts/mod/sumversion.c
-@@ -396,21 +396,11 @@ void get_src_version(const char *modname, char sum[], unsigned sumlen)
- 	unsigned long len;
- 	struct md4_ctx md;
- 	char *sources, *end, *fname;
--	const char *basename;
- 	char filelist[PATH_MAX + 1];
--	char *modverdir = getenv("MODVERDIR");
- 
--	if (!modverdir)
--		modverdir = ".";
--
--	/* Source files for module are in .tmp_versions/modname.mod,
--	   after the first line. */
--	if (strrchr(modname, '/'))
--		basename = strrchr(modname, '/') + 1;
--	else
--		basename = modname;
--	snprintf(filelist, sizeof(filelist), "%s/%.*s.mod", modverdir,
--		(int) strlen(basename) - 2, basename);
-+	/* objects for a module are listed in the second line of *.mod file. */
-+	snprintf(filelist, sizeof(filelist), "%.*smod",
-+		 (int)strlen(modname) - 1, modname);
- 
- 	file = grab_file(filelist, &len);
- 	if (!file)
-diff --git a/scripts/package/mkspec b/scripts/package/mkspec
-index 2d29df4a0a53..8640c278f1aa 100755
---- a/scripts/package/mkspec
-+++ b/scripts/package/mkspec
-@@ -29,7 +29,7 @@ fi
- 
- PROVIDES="$PROVIDES kernel-$KERNELRELEASE"
- __KERNELRELEASE=$(echo $KERNELRELEASE | sed -e "s/-/_/g")
--EXCLUDES="$RCS_TAR_IGNORE --exclude=.tmp_versions --exclude=*vmlinux* \
-+EXCLUDES="$RCS_TAR_IGNORE --exclude=*vmlinux* --exclude=*.mod \
- --exclude=*.o --exclude=*.ko --exclude=*.cmd --exclude=Documentation \
- --exclude=.config.old --exclude=.missing-syscalls.d --exclude=*.s"
- 
-diff --git a/tools/power/cpupower/debug/kernel/Makefile b/tools/power/cpupower/debug/kernel/Makefile
-index c23e5a6ceb7e..7b5c43684be1 100644
---- a/tools/power/cpupower/debug/kernel/Makefile
-+++ b/tools/power/cpupower/debug/kernel/Makefile
-@@ -12,8 +12,8 @@ default:
- 	$(MAKE) -C $(KDIR) M=$(CURDIR)
- 
- clean:
--	- rm -rf *.o *.ko .tmp-versions .*.cmd .*.mod.* *.mod.c
--	- rm -rf .tmp_versions* Module.symvers modules.order
-+	- rm -rf *.o *.ko .*.cmd .*.mod.* *.mod.c
-+	- rm -rf Module.symvers modules.order
- 
- install: default
- 	install -d $(KMISC)
 -- 
-2.17.1
-
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
