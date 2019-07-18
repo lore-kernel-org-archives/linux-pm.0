@@ -2,215 +2,142 @@ Return-Path: <SRS0=DMk0=VP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_SBL,URIBL_SBL_A,
+	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 507DFC7618F
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Jul 2019 18:18:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38DB3C7618F
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Jul 2019 19:46:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 26D722173B
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Jul 2019 18:18:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0D3032184E
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Jul 2019 19:46:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="GUfpKO3G"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391016AbfGRSSO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Jul 2019 14:18:14 -0400
-Received: from foss.arm.com ([217.140.110.172]:33370 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390994AbfGRSSO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 18 Jul 2019 14:18:14 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0221728;
-        Thu, 18 Jul 2019 11:18:13 -0700 (PDT)
-Received: from e110439-lin.cambridge.arm.com (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 4DE2C3F71A;
-        Thu, 18 Jul 2019 11:18:10 -0700 (PDT)
-From:   Patrick Bellasi <patrick.bellasi@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-api@vger.kernel.org, cgroups@vger.kernel.org
-Cc:     Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Tejun Heo <tj@kernel.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Paul Turner <pjt@google.com>, Michal Koutny <mkoutny@suse.com>,
-        Quentin Perret <quentin.perret@arm.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Morten Rasmussen <morten.rasmussen@arm.com>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Todd Kjos <tkjos@google.com>,
-        Joel Fernandes <joelaf@google.com>,
-        Steve Muckle <smuckle@google.com>,
-        Suren Baghdasaryan <surenb@google.com>,
-        Alessio Balsini <balsini@android.com>
-Subject: [PATCH v12 0/6] Add utilization clamping support (CGroups API)
-Date:   Thu, 18 Jul 2019 19:17:42 +0100
-Message-Id: <20190718181748.28446-1-patrick.bellasi@arm.com>
-X-Mailer: git-send-email 2.22.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S2403805AbfGRTq1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Jul 2019 15:46:27 -0400
+Received: from mail-qt1-f201.google.com ([209.85.160.201]:36097 "EHLO
+        mail-qt1-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2391635AbfGRTop (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jul 2019 15:44:45 -0400
+Received: by mail-qt1-f201.google.com with SMTP id q26so25450316qtr.3
+        for <linux-pm@vger.kernel.org>; Thu, 18 Jul 2019 12:44:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=7Fsa5djs+VQ2BrQJC+FUs9YwCCHQQfjCNM9PGrMIw+A=;
+        b=GUfpKO3Ga00Csg4gANFyqY7Cii9zK5UJiC7y7T53XWMHXolPbGtqL3/Y47/RTYgeVm
+         Mi6RCLXrn+mFXqpu5OsWOJKds5n11Pm7/VfKFqyJyZc9yr639fO4YGJKtjbx4J4dg9DS
+         PJwJtApulzrCc0Bgg28sX6Ujl31wRI6PaW5rfHbkzmCSi0hS7nYUQu7E9PQiI4ht1XC+
+         dnV7J2tcrTwkrO7Sg9e3n9F/+LqTDuw1UdpjFK6nE1GXMcyw2GcsKji4TXEFCm2+pont
+         rqA8db+Ui8EDLoOR90H03Sx1uL/TpWN4SwHCRaaCI4xM2JGV2I8do4YqpvWrigRG+SNK
+         TUUg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=7Fsa5djs+VQ2BrQJC+FUs9YwCCHQQfjCNM9PGrMIw+A=;
+        b=TIedUUuwbCk5MCBasB8aLHEAbUbutKbJAnc4gmXpWG/V4VSPAPzuuFiCCQGDdYPUbh
+         +8/FkhXsDxnL2rxRqxGmhoTBo/REmW9can8ifCHRDqltL3W0MDS22O3MSYmd2cIZCDj+
+         m8FTT57pKaIu7FlnK94pDbS02I7V/xBPUVxw8kcryydd/IE/kRZudCFHuWjo7H4jmHct
+         Uz0WxV2KvliallOEg+D/lyLfivjDJDXPZqwa50ey2G/zglg07L25nmfrpsLXho2pNFwb
+         a6Mkd96fKa7/OapaCY0ifNvZbROm+oQN8tr1zkgdpj7C6yQ7wVO/dG1COy0Iz3kSM8AP
+         4qNw==
+X-Gm-Message-State: APjAAAXdqwQj5A/UTXHKcIeFwl3Y0UtThZek7Mwf1ez0dY8FByOq0xn+
+        pVllCh89/Mx1OKyQg53k3pAD24cFUB/+6I32ICLsbg==
+X-Google-Smtp-Source: APXvYqy741iSM2u6/mj5HF9mJLUvf4WTxBzk/3jchTmVB1EWeHxmWZcFTfDOtltj6LRSG0GCOtQ7D+jq/zKj0P7CgkdOdQ==
+X-Received: by 2002:a0c:acab:: with SMTP id m40mr35031284qvc.52.1563479084552;
+ Thu, 18 Jul 2019 12:44:44 -0700 (PDT)
+Date:   Thu, 18 Jul 2019 12:43:56 -0700
+In-Reply-To: <20190718194415.108476-1-matthewgarrett@google.com>
+Message-Id: <20190718194415.108476-11-matthewgarrett@google.com>
+Mime-Version: 1.0
+References: <20190718194415.108476-1-matthewgarrett@google.com>
+X-Mailer: git-send-email 2.22.0.510.g264f2c817a-goog
+Subject: [PATCH V36 10/29] hibernate: Disable when the kernel is locked down
+From:   Matthew Garrett <matthewgarrett@google.com>
+To:     jmorris@namei.org
+Cc:     linux-security-module@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+        Josh Boyer <jwboyer@fedoraproject.org>,
+        David Howells <dhowells@redhat.com>,
+        Matthew Garrett <mjg59@google.com>,
+        Kees Cook <keescook@chromium.org>, rjw@rjwysocki.net,
+        pavel@ucw.cz, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all, this is a respin of:
+From: Josh Boyer <jwboyer@fedoraproject.org>
 
-  https://lore.kernel.org/lkml/20190708084357.12944-1-patrick.bellasi@arm.com/
+There is currently no way to verify the resume image when returning
+from hibernate.  This might compromise the signed modules trust model,
+so until we can work with signed hibernate images we disable it when the
+kernel is locked down.
 
-which addresses all the comments collected so far:
+Signed-off-by: Josh Boyer <jwboyer@fedoraproject.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Matthew Garrett <mjg59@google.com>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+Cc: rjw@rjwysocki.net
+Cc: pavel@ucw.cz
+cc: linux-pm@vger.kernel.org
+---
+ include/linux/security.h     | 1 +
+ kernel/power/hibernate.c     | 3 ++-
+ security/lockdown/lockdown.c | 1 +
+ 3 files changed, 4 insertions(+), 1 deletion(-)
 
-- track requested cgroup's percentage to mask conversion rounding to userspace
-- use a dedicated variable for parent restrictions
-- make more explicit in the documentation that the requested "protection" is
-  always capped by the requested "limit"
-- use the newly added uclamp_mutex to serialize the sysfs write callback
-- add missing RCU read locks across cpu_util_update_eff() call from
-  uclamp_update_root_tg()
-- remove not required and confusing sentence from the above changelog
-- add a new patch to always use enum uclamp_id for clamp_id values
-- fix percentage's decimals format string
-
-as well as adds some small modifications:
-
-- introduce UCLAMP_PERCENT_{SHIFT,SCALE} to avoid hardcoded constants
-- s/uclamp_scale_from_percent()/capacity_from_percent()/
-- move range check from cpu_uclamp_{min,max}_write() to capacity_from_percent()
-
-The series is based on top of today's Linus master branch (wip for 5.3-rc1):
-
-  commit 22051d9c4a57 ("Merge tag 'platform-drivers-x86-v5.3-2' of git://git.infradead.org/linux-platform-drivers-x86")
-
-Thanks Quentin, Michal and Tejun for your review comments!
-
-This has been the first code review targeting specifically the cgroups bits and
-the series is now hopefully in a better shape.
-
-Looking forward for any additional comments! ;)
-
-Cheers,
-Patrick
-
-Series Organization
-===================
-
-The full tree is available here:
-
-   git://linux-arm.org/linux-pb.git   lkml/utilclamp_v12
-   http://www.linux-arm.org/git?p=linux-pb.git;a=shortlog;h=refs/heads/lkml/utilclamp_v12
-
-
-Newcomer's Short Abstract
-=========================
-
-The Linux scheduler tracks a "utilization" signal for each scheduling entity
-(SE), e.g. tasks, to know how much CPU time they use. This signal allows the
-scheduler to know how "big" a task is and, in principle, it can support
-advanced task placement strategies by selecting the best CPU to run a task.
-Some of these strategies are represented by the Energy Aware Scheduler [1].
-
-When the schedutil cpufreq governor is in use, the utilization signal allows
-the Linux scheduler to also drive frequency selection. The CPU utilization
-signal, which represents the aggregated utilization of tasks scheduled on that
-CPU, is used to select the frequency which best fits the workload generated by
-the tasks.
-
-The current translation of utilization values into a frequency selection is
-simple: we go to max for RT tasks or to the minimum frequency which can
-accommodate the utilization of DL+FAIR tasks.
-However, utilization values by themselves cannot convey the desired
-power/performance behaviors of each task as intended by user-space.
-As such they are not ideally suited for task placement decisions.
-
-Task placement and frequency selection policies in the kernel can be improved
-by taking into consideration hints coming from authorized user-space elements,
-like for example the Android middleware or more generally any "System
-Management Software" (SMS) framework.
-
-Utilization clamping is a mechanism which allows to "clamp" (i.e. filter) the
-utilization generated by RT and FAIR tasks within a range defined by user-space.
-The clamped utilization value can then be used, for example, to enforce a
-minimum and/or maximum frequency depending on which tasks are active on a CPU.
-
-The main use-cases for utilization clamping are:
-
- - boosting: better interactive response for small tasks which
-   are affecting the user experience.
-
-   Consider for example the case of a small control thread for an external
-   accelerator (e.g. GPU, DSP, other devices). Here, from the task utilization
-   the scheduler does not have a complete view of what the task's requirements
-   are and, if it's a small utilization task, it keeps selecting a more energy
-   efficient CPU, with smaller capacity and lower frequency, thus negatively
-   impacting the overall time required to complete task activations.
-
- - capping: increase energy efficiency for background tasks not affecting the
-   user experience.
-
-   Since running on a lower capacity CPU at a lower frequency is more energy
-   efficient, when the completion time is not a main goal, then capping the
-   utilization considered for certain (maybe big) tasks can have positive
-   effects, both on energy consumption and thermal headroom.
-   This feature allows also to make RT tasks more energy friendly on mobile
-   systems where running them on high capacity CPUs and at the maximum
-   frequency is not required.
-
-From these two use-cases, it's worth noticing that frequency selection
-biasing, introduced by patches 9 and 10 of this series, is just one possible
-usage of utilization clamping. Another compelling extension of utilization
-clamping is in helping the scheduler in making tasks placement decisions.
-
-Utilization is (also) a task specific property the scheduler uses to know
-how much CPU bandwidth a task requires, at least as long as there is idle time.
-Thus, the utilization clamp values, defined either per-task or per-task_group,
-can represent tasks to the scheduler as being bigger (or smaller) than what
-they actually are.
-
-Utilization clamping thus enables interesting additional optimizations, for
-example on asymmetric capacity systems like Arm big.LITTLE and DynamIQ CPUs,
-where:
-
- - boosting: try to run small/foreground tasks on higher-capacity CPUs to
-   complete them faster despite being less energy efficient.
-
- - capping: try to run big/background tasks on low-capacity CPUs to save power
-   and thermal headroom for more important tasks
-
-This series does not present this additional usage of utilization clamping but
-it's an integral part of the EAS feature set, where [2] is one of its main
-components.
-
-Android kernels use SchedTune, a solution similar to utilization clamping, to
-bias both 'frequency selection' and 'task placement'. This series provides the
-foundation to add similar features to mainline while focusing, for the
-time being, just on schedutil integration.
-
-
-References
-==========
-
-[1] Energy Aware Scheduling
-    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/scheduler/sched-energy.txt?h=v5.1
-
-[2] Expressing per-task/per-cgroup performance hints
-    Linux Plumbers Conference 2018
-    https://linuxplumbersconf.org/event/2/contributions/128/
-
-
-Patrick Bellasi (6):
-  sched/core: uclamp: Extend CPU's cgroup controller
-  sched/core: uclamp: Propagate parent clamps
-  sched/core: uclamp: Propagate system defaults to root group
-  sched/core: uclamp: Use TG's clamps to restrict TASK's clamps
-  sched/core: uclamp: Update CPU's refcount on TG's clamp changes
-  sched/core: uclamp: always use enum uclamp_id for clamp_id values
-
- Documentation/admin-guide/cgroup-v2.rst |  34 +++
- init/Kconfig                            |  22 ++
- kernel/sched/core.c                     | 382 ++++++++++++++++++++++--
- kernel/sched/sched.h                    |  12 +-
- 4 files changed, 430 insertions(+), 20 deletions(-)
-
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 69c5de539e9a..304a155a5628 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -106,6 +106,7 @@ enum lockdown_reason {
+ 	LOCKDOWN_MODULE_SIGNATURE,
+ 	LOCKDOWN_DEV_MEM,
+ 	LOCKDOWN_KEXEC,
++	LOCKDOWN_HIBERNATION,
+ 	LOCKDOWN_INTEGRITY_MAX,
+ 	LOCKDOWN_CONFIDENTIALITY_MAX,
+ };
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index cd7434e6000d..3c0a5a8170b0 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -30,6 +30,7 @@
+ #include <linux/ctype.h>
+ #include <linux/genhd.h>
+ #include <linux/ktime.h>
++#include <linux/security.h>
+ #include <trace/events/power.h>
+ 
+ #include "power.h"
+@@ -68,7 +69,7 @@ static const struct platform_hibernation_ops *hibernation_ops;
+ 
+ bool hibernation_available(void)
+ {
+-	return (nohibernate == 0);
++	return nohibernate == 0 && !security_locked_down(LOCKDOWN_HIBERNATION);
+ }
+ 
+ /**
+diff --git a/security/lockdown/lockdown.c b/security/lockdown/lockdown.c
+index 6f302c156bc8..a0996f75629f 100644
+--- a/security/lockdown/lockdown.c
++++ b/security/lockdown/lockdown.c
+@@ -21,6 +21,7 @@ static char *lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1] = {
+ 	[LOCKDOWN_MODULE_SIGNATURE] = "unsigned module loading",
+ 	[LOCKDOWN_DEV_MEM] = "/dev/mem,kmem,port",
+ 	[LOCKDOWN_KEXEC] = "kexec of unsigned images",
++	[LOCKDOWN_HIBERNATION] = "hibernation",
+ 	[LOCKDOWN_INTEGRITY_MAX] = "integrity",
+ 	[LOCKDOWN_CONFIDENTIALITY_MAX] = "confidentiality",
+ };
 -- 
-2.22.0
+2.22.0.510.g264f2c817a-goog
 
