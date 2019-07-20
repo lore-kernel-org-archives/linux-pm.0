@@ -1,93 +1,97 @@
-Return-Path: <SRS0=bJFD=VQ=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=+TYP=VR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E442AC76197
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Jul 2019 20:32:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79A6EC7618F
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Jul 2019 01:25:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BBB5720693
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Jul 2019 20:32:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="a70ZBH4E";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="bfZWMo7/"
+	by mail.kernel.org (Postfix) with ESMTP id 4F90620873
+	for <linux-pm@archiver.kernel.org>; Sat, 20 Jul 2019 01:25:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730853AbfGSUcf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Jul 2019 16:32:35 -0400
-Received: from smtp.codeaurora.org ([198.145.29.96]:56414 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728057AbfGSUcf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jul 2019 16:32:35 -0400
-Received: by smtp.codeaurora.org (Postfix, from userid 1000)
-        id 3A065611D1; Fri, 19 Jul 2019 20:32:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1563568354;
-        bh=nOzlrnBEamhN2JgiNCP88vDUSaUd5wB7eTA/ysgT7+Y=;
-        h=From:To:Cc:Subject:Date:From;
-        b=a70ZBH4EIBVxceERFjClWJxCJWOzK9nnbr1rAd7bNYiAQqPNW+NzZGnndqU5ZDTDb
-         pXIMvUAYHrr/x2yih7yPPVOQcjT0zKJmKYEmkiDyQECiLiJt1yPfNQNmgwuOIFtM2H
-         PTfRrCJw6WlmKwJlx5h5dyU5KEO23GVn+GxAS7U4=
-Received: from davidai-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: daidavid1@smtp.codeaurora.org)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 0C18060ACA;
-        Fri, 19 Jul 2019 20:32:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1563568353;
-        bh=nOzlrnBEamhN2JgiNCP88vDUSaUd5wB7eTA/ysgT7+Y=;
-        h=From:To:Cc:Subject:Date:From;
-        b=bfZWMo7/uLhZ5X3/fbuEjCzGmhOqeKzaKIkp37wmbcNKGHmCDMAhPPh9ndEORWLsZ
-         VH7XfUlyVR2l4z7Ab+GNbScfUqP4IyXbTsC/aDf+RwkAscPXispicbGgihr/JtbjB8
-         pIvJdFVNJcMkFV+cofopcAMQzFJbeckHjhHSKKnI=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 0C18060ACA
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=daidavid1@codeaurora.org
-From:   David Dai <daidavid1@codeaurora.org>
-To:     georgi.djakov@linaro.org, bjorn.andersson@linaro.org,
-        robh+dt@kernel.org
-Cc:     David Dai <daidavid1@codeaurora.org>, evgreen@google.com,
-        ilina@codeaurora.org, seansw@qti.qualcomm.com, elder@linaro.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 0/2] Redefine interconnect provider DT nodes for SDM845
-Date:   Fri, 19 Jul 2019 13:32:22 -0700
-Message-Id: <1563568344-1274-1-git-send-email-daidavid1@codeaurora.org>
-X-Mailer: git-send-email 1.9.1
+        id S1730690AbfGTBZ5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Jul 2019 21:25:57 -0400
+Received: from mga14.intel.com ([192.55.52.115]:50321 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728662AbfGTBZ5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Jul 2019 21:25:57 -0400
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 19 Jul 2019 18:25:56 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.64,284,1559545200"; 
+   d="scan'208";a="343855155"
+Received: from jiajial1-mobl1.ccr.corp.intel.com ([10.255.30.115])
+  by orsmga005.jf.intel.com with ESMTP; 19 Jul 2019 18:25:54 -0700
+Message-ID: <1563585953.2455.7.camel@intel.com>
+Subject: Re: [Fwd: Commit 555c45fe0d0 ("int340X/processor_thermal_device:
+ add support for MMIO RAPL") boot failure]
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     "Kenneth R. Crudup" <kenny@panix.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Date:   Sat, 20 Jul 2019 09:25:53 +0800
+In-Reply-To: <alpine.DEB.2.21.1907191030130.2853@hp-x360>
+References: <alpine.DEB.2.21.1907181955330.2769@hp-x360>
+          <1563514893.2433.3.camel@intel.com>
+          <alpine.DEB.2.21.1907182308321.2769@hp-x360>
+          <CAJZ5v0jYdV3esYfj9Yc2NRkdTFNdDvFnuuOe-rTwFQFhFvRH=g@mail.gmail.com>
+          <alpine.DEB.2.21.1907190601580.2769@hp-x360>
+         <1563550442.2455.1.camel@intel.com>
+         <alpine.DEB.2.21.1907191030130.2853@hp-x360>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.18.5.2-0ubuntu3.2 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Redefine the SDM845 interconnect device nodes as the previous definitions
-of using a single child node under the apps_rsc device did not accurately
-capture the description of the hardware. The Network-On-Chip (NoC) interconnect
-devices should be represented in a manner akin to QCS404 platforms[1]
-where there is a separation of NoC devices and its RPM/RPMh counterparts.
+On 五, 2019-07-19 at 10:31 -0700, Kenneth R. Crudup wrote:
+> On Fri, 19 Jul 2019, Zhang Rui wrote:
+> 
+> > 
+> > please try the patch below and confirm if it helps or not.
+> > 
+> > From: Zhang Rui <rui.zhang@intel.com>
+> > Date: Fri, 19 Jul 2019 23:25:14 +0800
+> > Subject: [PATCH] powercap: adjust init order
+> The patch fixes the boot crash, yes.
+> 
+Hi, Kenny,
 
-The bcm-voter devices are representing the RPMh devices that the interconnect
-providers need to communicate with and there can be more than one instance of
-the Bus Clock Manager (BCM) which can live under different instances of Resource
-State Coordinators (RSC). There are display use cases where consumers may need
-to target a different bcm-voter (Some display specific RSC) than the default,
-and there needs to be a way to represent this connection in devicetree.
+thanks for testing.
 
-[1]: https://lkml.org/lkml/2019/6/13/143
+Rafael,
 
-David Dai (2):
-  dt-bindings: interconnect: Update Qualcomm SDM845 DT bindings
-  arm64: dts: sdm845: Redefine interconnect provider DT nodes
+can we merge this urgent fix before the merge window closed?
 
- .../bindings/interconnect/qcom,bcm-voter.txt       | 32 ++++++++++++
- .../bindings/interconnect/qcom,sdm845.txt          | 40 ++++++++++----
- arch/arm64/boot/dts/qcom/sdm845.dtsi               | 61 ++++++++++++++++++++--
- 3 files changed, 121 insertions(+), 12 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.txt
+thanks,
+rui
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+> ----
+> $ dmesg | fgrep -i rapl
+> [    0.816376] RAPL PMU: API unit is 2^-32 Joules, 4 fixed counters,
+> 655360 ms ovfl timer
+> [    0.816383] RAPL PMU: hw unit of domain pp0-core 2^-14 Joules
+> [    0.816387] RAPL PMU: hw unit of domain package 2^-14 Joules
+> [    0.816390] RAPL PMU: hw unit of domain dram 2^-14 Joules
+> [    0.816394] RAPL PMU: hw unit of domain pp1-gpu 2^-14 Joules
+> [    1.098943] intel_rapl_common: Found RAPL domain package
+> [    1.100438] intel_rapl_common: Found RAPL domain dram
+> [    1.911092] intel_rapl_common: Found RAPL domain package
+> [    1.912577] intel_rapl_common: Found RAPL domain core
+> [    1.913989] intel_rapl_common: Found RAPL domain uncore
+> [    1.915343] intel_rapl_common: Found RAPL domain dram
+> $
+> ----
+> 
+> 	-Kenny
+> 
