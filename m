@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E31F1C76190
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 19:53:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D7CCC7618F
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 19:53:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B9CB921985
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 19:53:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2D88921985
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 19:53:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cFBQsyJH"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="M+YlBCa7"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728505AbfGVTxZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Jul 2019 15:53:25 -0400
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:37679 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732331AbfGVTxY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2019 15:53:24 -0400
-Received: by mail-wm1-f66.google.com with SMTP id f17so36443931wme.2;
-        Mon, 22 Jul 2019 12:53:23 -0700 (PDT)
+        id S1732400AbfGVTxf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Jul 2019 15:53:35 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:40110 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732390AbfGVTxe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2019 15:53:34 -0400
+Received: by mail-wr1-f65.google.com with SMTP id r1so40654272wrl.7;
+        Mon, 22 Jul 2019 12:53:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=LSlpALgO5S3R0TyDNNvgRiZnKC8+OxLqhsNNnaICjPw=;
-        b=cFBQsyJHHatx3JSkJdhvrebXeVJ31a0VKFML6K3ScUwBUFuvBQ6L6CZbdJ2/GdtU2N
-         vk4kUD4CMe45B+UAU5a7Gap5p2YnMl5BbFPB12440cHBuThu0mPoBlwJ2/ja+rayW6A5
-         Z6jrzHt29FOd/FTRMTJuRYUn/GJMl6wf3Vl4TCGeoVStK8Tx9pthnP3b+9bAF5lAKWrg
-         NvBzRlqP6pg/z2eZiPaQ3a9mby89HjX/sqnaedi5+odKcKymV4JWEJ7qbpRK9Cb4+0sV
-         yJwcZzj3F807D9V9DkKi4/MLXbUWXm/mWvk87Pg+L6ue0SPJC0XB97/xXdX5uOhwyAHM
-         ShSw==
+        bh=IX8qAPZ5ga7jjpfsQbccNQpSlMQzcP4rHdYTapv0mIc=;
+        b=M+YlBCa7A8B8GaqJ4NYdHnOtuHzpjNo4WuNL/EroG4kVslfTkKmaCoovF0W1jCCIt4
+         BS3W+NkIjcdwIbrMYSyCfBjZ1+hv6PgwvELhEakF8b0GwUTIILmaEutRD1MKxAX7du1v
+         rLq4fouat5b53q8AaX/AEcZAl5Ey4nYxk3XdXQJ4RQLOlaaOBgObgFiJIk41XdOuS+at
+         jLcQ6U+HpvIvZvUSq5MdHH9Sp5qSJ5UShDqKM13Dnruq4qj2sRjpEs0mWBAycbVjVB9D
+         caOIo5wA/OCVJAfE9lMBZMRpE2SxeVTEc05aIe0W4ibcwZekzfasyXg8AuG9lQDcitbT
+         aEtw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=LSlpALgO5S3R0TyDNNvgRiZnKC8+OxLqhsNNnaICjPw=;
-        b=l7F6IwWwIkEnZ9u5R4mN3oh5tUlE2GvXx/kel1HUbzID0P5n/s/Gq77MDenGPtHUlm
-         9tzIsX5edoc9yu5dofh/uWUP0Qb+oLzos8btHIJyTknBCu3n5v915qZzbWuCwO/LZ4CT
-         0rXFz1RFx1BFNV23rUUb3RHl1zqDB6I9/DckhEZYB1t3+ha2lJxrb8zrfntXuddYMW7N
-         KrsDudkvV3CvS6XyGAMM9D1kClAB5PG+HWyvAUTZuZfK/0GpUzpXqeb639NJmb5o8egA
-         HuMQNXVkpRAPTtRzBErw8p/nlfX3kPxvVaHGAQoTMvp4rZPyVqOG7YSajowCy4j0ujiF
-         +BDw==
-X-Gm-Message-State: APjAAAXhpBOMxbFcQ7TaCUCczfs9R2ct1QdQadDJrNO/nYY72Bn25rHX
-        akfHvwNvqLmczpyKilgnQXU=
-X-Google-Smtp-Source: APXvYqz85kfxUOA8R7vP4BPYFKPdWETr5bWy98ysJmybNus/vONpVvl7FJFmHS4slzONzL2fYE0sUg==
-X-Received: by 2002:a7b:c947:: with SMTP id i7mr67082094wml.77.1563825202676;
-        Mon, 22 Jul 2019 12:53:22 -0700 (PDT)
+        bh=IX8qAPZ5ga7jjpfsQbccNQpSlMQzcP4rHdYTapv0mIc=;
+        b=dTf42ZwG0BG9h0Js6ZpkxJt3H96mYozQchK/LJastb4sVVlkl6VVEmAgMLvNWD9QBe
+         H8iecRyrlB7qTWkuc8r7qpBf5V4Qj0p6kO3GiZ0Q07DFpsYuKNc4vTOZ/W0Mw3oJSZPU
+         Au5Z/WTCnTxsiJV02Wj7M/011PPGurt9CKUZrOW2qYUtRdZ8V0S+zOYIPrS6ArR8nNU+
+         2LjJihSPmB21g67KYKBai1ds0x9MLjAQ+rp1EyChr5eMsxyYcBYhHkWA9WNAjaMcoF57
+         JoYY4H69PiYKXgyCQuf2KlCIx9E1gMVufrPCwH0GsVMj3jsN7nhLGIG7lbJEa8DxGBRn
+         kuiw==
+X-Gm-Message-State: APjAAAVlWlaMAQ1sNP+oFGDC0woFoVtnH8WNYxUwgvoVKfqPdfCP/ZyT
+        dPPvZVDoAqHSIhzq07RCv7s=
+X-Google-Smtp-Source: APXvYqykdwrFiIPBMnWje+j85w+VcW3cLfV+djpTPk/RQoTUSiLvLyiyGnJYWtnDT9ipOdxoP5qfvA==
+X-Received: by 2002:adf:dcc2:: with SMTP id x2mr63805568wrm.55.1563825211750;
+        Mon, 22 Jul 2019 12:53:31 -0700 (PDT)
 Received: from localhost.localdomain (nat-113.starnet.cz. [178.255.168.113])
-        by smtp.googlemail.com with ESMTPSA id c65sm37382975wma.44.2019.07.22.12.53.21
+        by smtp.googlemail.com with ESMTPSA id c65sm37382975wma.44.2019.07.22.12.53.30
         (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Mon, 22 Jul 2019 12:53:22 -0700 (PDT)
+        Mon, 22 Jul 2019 12:53:31 -0700 (PDT)
 From:   Evgeny Kolesnikov <evgenyz@gmail.com>
 Cc:     Evgeny Kolesnikov <evgenyz@gmail.com>,
         Sebastian Reichel <sre@kernel.org>,
@@ -66,9 +66,9 @@ Cc:     Evgeny Kolesnikov <evgenyz@gmail.com>,
         Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 2/5] power: reset: Add UART-based MCU restart DT bindings
-Date:   Mon, 22 Jul 2019 21:53:02 +0200
-Message-Id: <98b32aebe39a7b6b3ace1c2ef6f51428e8284946.1563822216.git.evgenyz@gmail.com>
+Subject: [PATCH 5/5] ARM: dts: armada385-wd-mcex2u: Add DTS file for WD My Cloud EX2 Ultra
+Date:   Mon, 22 Jul 2019 21:53:05 +0200
+Message-Id: <fd2a97d627c21a7e92a9a1aa15cf26c608d1e383.1563822216.git.evgenyz@gmail.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <cover.1563822216.git.evgenyz@gmail.com>
 References: <cover.1563822216.git.evgenyz@gmail.com>
@@ -80,61 +80,333 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds device tree bindings of the restart driver
-for power managing micro controller units that are connected
-to a board via the UART interface.
+Add the DTS file to describe the Western Digital My Cloud EX2 Ultra NAS.
 
 Signed-off-by: Evgeny Kolesnikov <evgenyz@gmail.com>
 ---
- .../bindings/power/reset/uart-restart.txt     | 39 +++++++++++++++++++
- 1 file changed, 39 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/uart-restart.txt
+ arch/arm/boot/dts/armada-385-wd-mcex2u.dts | 313 +++++++++++++++++++++
+ 1 file changed, 313 insertions(+)
+ create mode 100644 arch/arm/boot/dts/armada-385-wd-mcex2u.dts
 
-diff --git a/Documentation/devicetree/bindings/power/reset/uart-restart.txt b/Documentation/devicetree/bindings/power/reset/uart-restart.txt
+diff --git a/arch/arm/boot/dts/armada-385-wd-mcex2u.dts b/arch/arm/boot/dts/armada-385-wd-mcex2u.dts
 new file mode 100644
-index 000000000000..bf831d9bdff8
+index 000000000000..018e66adbb93
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/uart-restart.txt
-@@ -0,0 +1,39 @@
-+* UART-based PM MCU restart driver
++++ b/arch/arm/boot/dts/armada-385-wd-mcex2u.dts
+@@ -0,0 +1,313 @@
++// SPDX-License-Identifier: (GPL-2.0 OR MIT)
++/*
++ * Device Tree file for Western Digital My Cloud EX2 Ultra
++ * (BVBZ/Ranger Peak)
++ *
++ * Copyright (C) 2019 Evgeny Kolesnikov <evgenyz@gmail.com>
++ *
++ * Based on the code from:
++ *
++ * Copyright (C) 2016 Martin Mueller <mm@sig21.net>
++ * Copyright (C) 2013 Gregory CLEMENT <gregory.clement@free-electrons.com>
++ * Copyright (C) 2013 Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
++ */
 +
-+Some devices have a microcontroller controlling the main power
-+supply. This microcontroller is connected to UART of the SoC.
-+Sending a sequence of characters tells the MCU to reset the SoC
-+and/or MCU itself.
++/dts-v1/;
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/gpio/gpio.h>
++#include "armada-385.dtsi"
 +
-+The length of the sequence, baud rate and the timeout to process
-+the command may vary from device to device.
++/ {
++	model = "WD My Cloud EX2 Ultra (BVBZ/Ranger Peak)";
++	compatible = "wd,mcex2u", "marvell,armada385", "marvell,armada380";
 +
-+This driver could be used for WD My Cloud (Marvell SoCs), QNAP
-+(Kirkwood and Orion5x SoCs) and Synology NAS devices.
-+
-+Required properties:
-+- compatible: Should be "uart-restart"
-+- reg: Address and length of the register set for UART
-+- clocks: The tclk clock
-+- cmd: Array of bytes, the command to send to the MCU
-+- baud: Baud rate [75..460800]
-+
-+Optional properties:
-+- byte-delay: A delay after each byte of a command, could be useful
-+              for sloppy MCUs [ms], default value is 5
-+- timeout: A timeout to wait for the MCU to process the command [ms],
-+           default value is 1000
-+- override: Boolean flag that indicates if the driver should
-+            prioritize itself over any existing restart driver,
-+            default behaviour is not to interfere
-+
-+Example:
-+	restart@12100 {
-+		compatible = "uart-restart";
-+		reg = <0x12100 0x100>;
-+		clocks = <&coreclk 0>;
-+		baud = <19200>;
-+		cmd = [fa 03 03 02 00 00 fb];
-+		override;
-+		status = "okay";
++	chosen {
++		stdout-path = "serial0:115200n8";
++		bootargs = "console=ttyS0,115200";
 +	};
++
++	memory {
++		device_type = "memory";
++		reg = <0x00000000 0x40000000>; /* 1024 MB */
++	};
++
++	soc {
++		ranges = <MBUS_ID(0xf0, 0x01) 0 0xf1000000 0x100000
++			  MBUS_ID(0x01, 0x1d) 0 0xfff00000 0x100000
++			  MBUS_ID(0x09, 0x19) 0 0xf1100000 0x10000
++			  MBUS_ID(0x09, 0x15) 0 0xf1110000 0x10000
++			  MBUS_ID(0x0c, 0x04) 0 0xf1200000 0x100000>;
++
++		internal-regs {
++			timer@c200 {
++				status = "disabled";
++			};
++
++			i2c0: i2c@11000 {
++				status = "okay";
++				clock-frequency = <100000>;
++			};
++
++			i2c1: i2c@11100 {
++				status = "okay";
++				clock-frequency = <100000>;
++			};
++
++			serial@12000 {
++				status = "okay";
++			};
++
++			/* Connected to Welltrend 6703F-OG240WT MCU
++			 * which controls power, fan and other things
++			 */
++			serial@12100 {
++				status = "okay";
++			};
++
++			poweroff@12100 {
++				compatible = "uart-poweroff";
++				reg = <0x12100 0x100>;
++				clocks = <&coreclk 0>;
++				baud = <19200>;
++				cmd = [fa 03 03 01 00 00 fb];
++				status = "okay";
++			};
++
++			restart@12100 {
++				compatible = "uart-restart";
++				reg = <0x12100 0x100>;
++				clocks = <&coreclk 0>;
++				baud = <19200>;
++				cmd = [fa 03 03 02 00 00 fb];
++				override;
++				status = "okay";
++			};
++
++			pinctrl@18000 {
++				uart1_pins: uart-pins-1 {
++					marvell,pins = "mpp19";
++					marvell,function = "ua1";
++				};
++
++				xhci0_vbus_pins: xhci0-vbus-pins {
++					marvell,pins = "mpp26";
++					marvell,function = "gpio";
++				};
++
++				xhci1_vbus_pins: xhci1-vbus-pins {
++					marvell,pins = "mpp27";
++					marvell,function = "gpio";
++				};
++
++				sata0_pins: sata-pins-0 {
++					marvell,pins = "mpp55";
++					marvell,function = "sata0";
++				};
++
++				sata1_pins: sata-pins-1 {
++					marvell,pins = "mpp56";
++					marvell,function = "sata1";
++				};
++
++				sata_leds: sata-leds {
++					marvell,pins = "mpp43", "mpp52",
++						       "mpp53", "mpp54";
++					marvell,function = "gpio";
++				};
++
++				btn_pins: btn-pins {
++					marvell,pins = "mpp50";
++					marvell,function = "gpio";
++				};
++			};
++
++			ethernet@34000 {
++				phy = <&phy0>;
++				phy-mode = "sgmii";
++				buffer-manager = <&bm>;
++				bm,pool-long = <0>;
++				bm,pool-short = <1>;
++				status = "okay";
++			};
++
++			usb@58000 {
++				status = "okay";
++			};
++
++			mdio@72004 {
++				phy0: ethernet-phy@0 {
++					/* Init ETH LEDs */
++					marvell,reg-init = <3 16 0 0x101e>;
++					reg = <0>;
++				};
++			};
++
++			crypto@9d000 {
++				status = "okay";
++			};
++
++			rtc@a3800 {
++				status = "okay";
++			};
++
++			sata@a8000 {
++				status = "okay";
++			};
++
++			bm@c8000 {
++				status = "okay";
++			};
++
++			nand-controller@d0000 {
++				status = "okay";
++
++				nand: nand@0 {
++					reg = <0>;
++					label = "pxa3xx_nand-0";
++					marvell,nand-keep-config;
++					nand-rb = <0>;
++					nand-on-flash-bbt;
++					nand-ecc-strength = <4>;
++					nand-ecc-step-size = <512>;
++
++					partitions {
++						compatible = "fixed-partitions";
++						#address-cells = <1>;
++						#size-cells = <1>;
++
++						partition@0000000 {
++							label = "U-Boot";
++							reg = <0x00000000 0x00500000>;
++							read-only;
++						};
++						partition@0500000 {
++							label = "kernel";
++							reg = <0x00500000 0x00500000>;
++						};
++						partition@0a00000 {
++							label = "uRamdisk";
++							reg = <0x00a00000 0x00500000>;
++							read-only;
++						};
++						partition@0f00000 {
++							label = "ubi";
++							reg = <0x00f00000 0x0b900000>;
++						};
++						partition@c800000 {
++							label = "Recovery";
++							reg = <0x0c800000 0x00f00000>;
++							read-only;
++						};
++						partition@d700000 {
++							label = "config";
++							reg = <0x0d700000 0x01400000>;
++						};
++						partition@eb00000 {
++							label = "reserve1";
++							reg = <0x0eb00000 0x00a00000>;
++							read-only;
++						};
++						partition@f500000 {
++							label = "reserve2";
++							reg = <0x0f500000 0x00a00000>;
++							read-only;
++						};
++					};
++				};
++			};
++
++			sdhci@d8000 {
++				status = "disabled";
++			};
++
++			usb3@f0000 {
++				usb-phy = <&usb3_0_phy>;
++				status = "okay";
++			};
++
++			usb3@f8000 {
++				usb-phy = <&usb3_1_phy>;
++				status = "okay";
++			};
++		};
++
++		bm-bppi {
++			status = "okay";
++		};
++	};
++
++	gpio-leds {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&sata_leds>;
++
++		sata1-red-led {
++			label = "wdmcex2u:red:hdd1";
++			gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
++		};
++		sata2-red-led {
++			label = "wdmcex2u:red:hdd2";
++			gpios = <&gpio1 20 GPIO_ACTIVE_HIGH>;
++		};
++		sata1-blue-led {
++			label = "wdmcex2u:blue:hdd1";
++			gpios = <&gpio1 21 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "default-on";
++		};
++		sata2-blue-led {
++			label = "wdmcex2u:blue:hdd2";
++			gpios = <&gpio1 22 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "default-on";
++		};
++	};
++
++	gpio-keys {
++		compatible = "gpio-keys";
++		pinctrl-names = "default";
++		pinctrl-0 = <&btn_pins>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		reset {
++			label = "reset";
++			linux,code = <KEY_RESTART>;
++			gpios = <&gpio1 18 GPIO_ACTIVE_LOW>;
++			debounce-interval = <60>;
++			wakeup-source;
++		};
++	};
++
++	usb3_0_phy: usb3_0_phy {
++		compatible = "usb-nop-xceiv";
++		vcc-supply = <&reg_usb3_0_vbus>;
++	};
++
++	usb3_1_phy: usb3_1_phy {
++		compatible = "usb-nop-xceiv";
++		vcc-supply = <&reg_usb3_1_vbus>;
++	};
++
++	reg_usb3_0_vbus: usb3-vbus0 {
++		compatible = "regulator-fixed";
++		regulator-name = "usb3-vbus0";
++		pinctrl-names = "default";
++		pinctrl-0 = <&xhci0_vbus_pins>;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		enable-active-high;
++		regulator-always-on;
++		gpio = <&gpio0 26 GPIO_ACTIVE_HIGH>;
++	};
++
++	reg_usb3_1_vbus: usb3-vbus1 {
++		compatible = "regulator-fixed";
++		regulator-name = "usb3-vbus1";
++		pinctrl-names = "default";
++		pinctrl-0 = <&xhci1_vbus_pins>;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		enable-active-high;
++		regulator-always-on;
++		gpio = <&gpio0 27 GPIO_ACTIVE_HIGH>;
++	};
++};
 -- 
 2.21.0
 
