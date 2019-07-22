@@ -2,196 +2,173 @@ Return-Path: <SRS0=qrRL=VT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C07DBC7618F
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 21:54:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF6D0C7618F
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 22:16:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9358221955
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 21:54:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="YBMZhOKF";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="YBMZhOKF"
+	by mail.kernel.org (Postfix) with ESMTP id 7212021955
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 22:16:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1563833808;
+	bh=9obWtPEQW83mWcbsweMNU75/swGnG5hDm4YCDGdOMGs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=ayNR9rdRDFiIZ8CzIs+jw5P1cCijQMZQHHy+flk/QPOLcKTDMjeBjO8wn+rd4rDd3
+	 EgwyRPqex0uB/jZ3RRz3+NxQQO9eI5lgr9AUMPww3s46Jr0djlED1ZFQ7L0i0PokS7
+	 AFs21eXKrLsgcdPawcNBu4jhJhfwnII2Ui0eQTKo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731621AbfGVVyG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Jul 2019 17:54:06 -0400
-Received: from smtp.codeaurora.org ([198.145.29.96]:36700 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730704AbfGVVx4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2019 17:53:56 -0400
-Received: by smtp.codeaurora.org (Postfix, from userid 1000)
-        id B57696178B; Mon, 22 Jul 2019 21:53:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1563832435;
-        bh=68C2u8fpsqFhT6IQyKhGhREqY4z0D2JwTGvXninivrY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=YBMZhOKFMKlHm8XM2/zAkcHXBeuOu4OLdVAF6gZ/o6JZQONZUeoOGqRMOxfQv7F7j
-         OkJWx6/JyDORDJqHq+MhOzk5/KZ7BwlIDsECVdU/5yjyLUpZaPyBeRNdbVxwf9ICuy
-         OMipWyLgsP/A+eRsIOdbN3fAtZ1NznE7pNJ37MXM=
-Received: from codeaurora.org (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: ilina@smtp.codeaurora.org)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 4EB4F615E6;
-        Mon, 22 Jul 2019 21:53:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1563832435;
-        bh=68C2u8fpsqFhT6IQyKhGhREqY4z0D2JwTGvXninivrY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=YBMZhOKFMKlHm8XM2/zAkcHXBeuOu4OLdVAF6gZ/o6JZQONZUeoOGqRMOxfQv7F7j
-         OkJWx6/JyDORDJqHq+MhOzk5/KZ7BwlIDsECVdU/5yjyLUpZaPyBeRNdbVxwf9ICuy
-         OMipWyLgsP/A+eRsIOdbN3fAtZ1NznE7pNJ37MXM=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 4EB4F615E6
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=ilina@codeaurora.org
-From:   Lina Iyer <ilina@codeaurora.org>
-To:     agross@kernel.org, bjorn.andersson@linaro.org, swboyd@chromium.org
-Cc:     linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org,
-        rnayak@codeaurora.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, dianders@chromium.org,
-        mkshah@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>,
-        Lina Iyer <ilina@codeaurora.org>
-Subject: [PATCH V2 3/4] drivers: qcom: rpmh: switch over from spinlock irq variants
-Date:   Mon, 22 Jul 2019 15:53:39 -0600
-Message-Id: <20190722215340.3071-3-ilina@codeaurora.org>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190722215340.3071-1-ilina@codeaurora.org>
-References: <20190722215340.3071-1-ilina@codeaurora.org>
+        id S1726386AbfGVWQr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Jul 2019 18:16:47 -0400
+Received: from mail-io1-f67.google.com ([209.85.166.67]:34128 "EHLO
+        mail-io1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726265AbfGVWQr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2019 18:16:47 -0400
+Received: by mail-io1-f67.google.com with SMTP id k8so77574189iot.1;
+        Mon, 22 Jul 2019 15:16:47 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=GjaIw+OIOqnuVMPluGpxJ5ZQQXD25h9ZXkf8XCLJ1LQ=;
+        b=mD8HqbcBaVb+/y5WTUdncVbGGvV1MsirPwtGbhswdJbNVE1vCYNbq+Utk3rU5swfaH
+         NqyB/2y1rEwRC2iRnlUc36HuRCU7ChOeH7BQ/ZNJ3bbL/FUTgDaOtpr7tVTzogjlgxe2
+         3iT0LXZ5j7Nb8ARLN54cKtsC7gXkKgDCumaLJvMb3oHeM8p0NDwTeZ/AT7V3ab/l//fw
+         vgrwD5QsbMET4lAGSFDvLujSP5dk7MId3jxZoSI1OcpGLkhH8gjRMbJrGy6q9RWpwLlr
+         Ue2qSe55Vta2CJJ0OBEs412ihWGy20ewAkSVZrltJC2FVirW+hTThi3/gh3ABbYpexu3
+         wv0g==
+X-Gm-Message-State: APjAAAVRVcKJIYUsqyT0c4/eLL+WBShsWlj1xeQg1EAT4C1EuM502hUj
+        mMIYj8UW8WJ9EH5l0obY1w==
+X-Google-Smtp-Source: APXvYqweE1pmwMeEtkIP3+qOvfvr0a4dd6g5i87s1QCiHsWjaTPPGkEO/aZ9P3kxWiaUCc8OppzTRA==
+X-Received: by 2002:a5d:8747:: with SMTP id k7mr53543542iol.20.1563833806389;
+        Mon, 22 Jul 2019 15:16:46 -0700 (PDT)
+Received: from localhost ([64.188.179.254])
+        by smtp.gmail.com with ESMTPSA id x22sm29275248ioh.87.2019.07.22.15.16.45
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Mon, 22 Jul 2019 15:16:45 -0700 (PDT)
+Date:   Mon, 22 Jul 2019 16:16:45 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Akinobu Mita <akinobu.mita@gmail.com>
+Cc:     linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@fb.com>,
+        Christoph Hellwig <hch@lst.de>,
+        Sagi Grimberg <sagi@grimberg.me>,
+        Minwoo Im <minwoo.im.dev@gmail.com>,
+        Kenneth Heitke <kenneth.heitke@intel.com>,
+        Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
+Subject: Re: [PATCH v5 2/4] dt-bindings: thermal: nvme: Add binding
+ documentation
+Message-ID: <20190722221645.GA32515@bogus>
+References: <1561990354-4084-1-git-send-email-akinobu.mita@gmail.com>
+ <1561990354-4084-3-git-send-email-akinobu.mita@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1561990354-4084-3-git-send-email-akinobu.mita@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+On Mon, Jul 01, 2019 at 11:12:32PM +0900, Akinobu Mita wrote:
+> Add thermal binding documentation for NVMe temperature sensor.
+> 
+> Cc: Rob Herring <robh@kernel.org>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Keith Busch <kbusch@kernel.org>
+> Cc: Jens Axboe <axboe@fb.com>
+> Cc: Christoph Hellwig <hch@lst.de>
+> Cc: Sagi Grimberg <sagi@grimberg.me>
+> Cc: Minwoo Im <minwoo.im.dev@gmail.com>
+> Cc: Kenneth Heitke <kenneth.heitke@intel.com>
+> Cc: Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> ---
+> * v5
+> - New patch
+> 
+>  Documentation/devicetree/bindings/thermal/nvme.txt | 56 ++++++++++++++++++++++
+>  1 file changed, 56 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/nvme.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/nvme.txt b/Documentation/devicetree/bindings/thermal/nvme.txt
+> new file mode 100644
+> index 0000000..60b90de
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/nvme.txt
+> @@ -0,0 +1,56 @@
+> +Binding for NVMe temperature sensor
+> +
+> +An NVMe controller reports up to nine temperature values in the SMART / Health
+> +log.
+> +
+> +Required properties:
+> +- reg: A five-cell address encoded as (phys.hi phys.mid phys.lo size.hi
+> +  size.lo). phys.hi should contain the device's BDF (Bus/Device/Function)
+> +  as 0b00000000 bbbbbbbb dddddfff 00000000. The other cells should be zero.
+> +  See also Documentation/devicetree/bindings/pci/pci.txt
+> +
+> +- #thermal-sensor-cells: Must be 1. See ./thermal.txt for a description.
+> +  In the thermal-sensors property, the sensor ID 0 for composite temperature,
+> +  1 through 8 for NVMe temperature sensor N.
+> +
+> +Example:
+> +
+> +&pcie0 {
+> +	...
+> +	nvme: nvme@0,0 {
+> +		reg = <0x0000 0 0 0 0>;
+> +		#address-cells = <3>;
+> +		#size-cells = <2>;
+> +
+> +		nvmetemp: nvmetemp {
+> +			reg = <0x0000 0 0 0 0>; /* DEVFN = 0x00 (0:0) */
 
-Switch over from using _irqsave/_irqrestore variants since we no longer
-race with a lock from the interrupt handler. While we are at it, rename
-the cache_lock to just lock to allow use of the lock to synchronize
-controller access.
+I'm not sure this is really valid PCI addressing as the parent has the 
+same address.
 
-Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
-Signed-off-by: Lina Iyer <ilina@codeaurora.org>
----
- drivers/soc/qcom/rpmh-internal.h |  4 ++--
- drivers/soc/qcom/rpmh-rsc.c      |  2 +-
- drivers/soc/qcom/rpmh.c          | 21 ++++++++-------------
- 3 files changed, 11 insertions(+), 16 deletions(-)
+> +			#thermal-sensor-cells = <1>;
 
-diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
-index 969d5030860e..93d59db435bb 100644
---- a/drivers/soc/qcom/rpmh-internal.h
-+++ b/drivers/soc/qcom/rpmh-internal.h
-@@ -67,13 +67,13 @@ struct rpmh_request {
-  * struct rpmh_ctrlr: our representation of the controller
-  *
-  * @cache: the list of cached requests
-- * @cache_lock: synchronize access to the cache data
-+ * @lock: synchronize access to the controller data
-  * @dirty: was the cache updated since flush
-  * @batch_cache: Cache sleep and wake requests sent as batch
-  */
- struct rpmh_ctrlr {
- 	struct list_head cache;
--	spinlock_t cache_lock;
-+	spinlock_t lock;
- 	bool dirty;
- 	struct list_head batch_cache;
- };
-diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-index 694ba881624e..add5e84751c9 100644
---- a/drivers/soc/qcom/rpmh-rsc.c
-+++ b/drivers/soc/qcom/rpmh-rsc.c
-@@ -656,7 +656,7 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
- 	/* Enable the active TCS to send requests immediately */
- 	write_tcs_reg(drv, RSC_DRV_IRQ_ENABLE, 0, drv->tcs[ACTIVE_TCS].mask);
- 
--	spin_lock_init(&drv->client.cache_lock);
-+	spin_lock_init(&drv->client.lock);
- 	INIT_LIST_HEAD(&drv->client.cache);
- 	INIT_LIST_HEAD(&drv->client.batch_cache);
- 
-diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
-index 035091fd44b8..d6fb254a4b57 100644
---- a/drivers/soc/qcom/rpmh.c
-+++ b/drivers/soc/qcom/rpmh.c
-@@ -118,9 +118,8 @@ static struct cache_req *cache_rpm_request(struct rpmh_ctrlr *ctrlr,
- 					   struct tcs_cmd *cmd)
- {
- 	struct cache_req *req;
--	unsigned long flags;
- 
--	spin_lock_irqsave(&ctrlr->cache_lock, flags);
-+	spin_lock(&ctrlr->lock);
- 	req = __find_req(ctrlr, cmd->addr);
- 	if (req)
- 		goto existing;
-@@ -154,7 +153,7 @@ static struct cache_req *cache_rpm_request(struct rpmh_ctrlr *ctrlr,
- 
- 	ctrlr->dirty = true;
- unlock:
--	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
-+	spin_unlock(&ctrlr->lock);
- 
- 	return req;
- }
-@@ -283,23 +282,20 @@ EXPORT_SYMBOL(rpmh_write);
- 
- static void cache_batch(struct rpmh_ctrlr *ctrlr, struct batch_cache_req *req)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(&ctrlr->cache_lock, flags);
-+	spin_lock(&ctrlr->lock);
- 	list_add_tail(&req->list, &ctrlr->batch_cache);
--	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
-+	spin_unlock(&ctrlr->lock);
- }
- 
- static int flush_batch(struct rpmh_ctrlr *ctrlr)
- {
- 	struct batch_cache_req *req;
- 	const struct rpmh_request *rpm_msg;
--	unsigned long flags;
- 	int ret = 0;
- 	int i;
- 
- 	/* Send Sleep/Wake requests to the controller, expect no response */
--	spin_lock_irqsave(&ctrlr->cache_lock, flags);
-+	spin_lock(&ctrlr->lock);
- 	list_for_each_entry(req, &ctrlr->batch_cache, list) {
- 		for (i = 0; i < req->count; i++) {
- 			rpm_msg = req->rpm_msgs + i;
-@@ -309,7 +305,7 @@ static int flush_batch(struct rpmh_ctrlr *ctrlr)
- 				break;
- 		}
- 	}
--	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
-+	spin_unlock(&ctrlr->lock);
- 
- 	return ret;
- }
-@@ -317,13 +313,12 @@ static int flush_batch(struct rpmh_ctrlr *ctrlr)
- static void invalidate_batch(struct rpmh_ctrlr *ctrlr)
- {
- 	struct batch_cache_req *req, *tmp;
--	unsigned long flags;
- 
--	spin_lock_irqsave(&ctrlr->cache_lock, flags);
-+	spin_lock(&ctrlr->lock);
- 	list_for_each_entry_safe(req, tmp, &ctrlr->batch_cache, list)
- 		kfree(req);
- 	INIT_LIST_HEAD(&ctrlr->batch_cache);
--	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
-+	spin_unlock(&ctrlr->lock);
- }
- 
- /**
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Can't you just put this in the parent? Is this really a separate 
+addressable device from the parent?
 
+> +		};
+> +	};
+> +};
+> +
+> +&thermal_zones {
+> +	nvme_thermal: nvme {
+> +		polling-delay-passive = <2000>; /* milliseconds */
+> +		polling-delay = <0>; /* asynchronous event driven */
+> +
+> +				/* sensor	ID */
+> +		thermal-sensors = <&nvmetemp	0>;
+> +
+> +		trips {
+> +			nvme_alert0: nvme_alert0 {
+> +				temperature = <80000>; /* millicelsius */
+> +				hysteresis = <2000>; /* millicelsius */
+> +				type = "passive";
+> +			};
+> +		};
+> +
+> +		cooling-maps {
+> +			map0 {
+> +				trip = <&nvme_alert0>;
+> +				cooling-device =
+> +				<&fan0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+> +			};
+> +		};
+> +	};
+> +};
+> -- 
+> 2.7.4
+> 
