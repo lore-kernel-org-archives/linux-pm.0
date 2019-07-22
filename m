@@ -2,94 +2,88 @@ Return-Path: <SRS0=qrRL=VT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8085DC76194
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 15:38:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4D74C76188
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 15:51:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 595D221985
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 15:38:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8933A2190F
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 15:51:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="YIEEIbEn";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="CX2aHSFO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729488AbfGVPhz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Jul 2019 11:37:55 -0400
-Received: from foss.arm.com ([217.140.110.172]:39748 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729472AbfGVPhz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 22 Jul 2019 11:37:55 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E87AC1596;
-        Mon, 22 Jul 2019 08:37:54 -0700 (PDT)
-Received: from e121166-lin.cambridge.arm.com (unknown [10.1.196.255])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 798643F694;
-        Mon, 22 Jul 2019 08:37:53 -0700 (PDT)
-From:   Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-To:     linux-pm@vger.kernel.org
-Cc:     Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        LAKML <linux-arm-kernel@lists.infradead.org>
-Subject: [PATCH 2/6] ARM: cpuidle: Remove overzealous error logging
-Date:   Mon, 22 Jul 2019 16:37:41 +0100
-Message-Id: <20190722153745.32446-3-lorenzo.pieralisi@arm.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20190722153745.32446-1-lorenzo.pieralisi@arm.com>
-References: <20190722153745.32446-1-lorenzo.pieralisi@arm.com>
+        id S1728582AbfGVPvU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Jul 2019 11:51:20 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:54366 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727309AbfGVPvU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2019 11:51:20 -0400
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+        id E8BFA61C0D; Mon, 22 Jul 2019 15:51:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1563810679;
+        bh=rBf/mqWfKN7U2zd3m4iikSbifwekc4iKWTNDZ8h6ew0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=YIEEIbEnjVapuouGfIp/VVyD3UWeXPGlmGmS7uduHj1ndwiy57aLDm33fA7+E7G2H
+         /VgNuLDrHmbP0Qc7gwbqRYceNSU9WLkCYjjUYRoN+acgr2ABfp5PRy1LGPWDvPAJSm
+         X0ZQ4hZV18RLKgPnHY1A5aD9GBOkEdm8dTBzmAJs=
+Received: from localhost (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: ilina@smtp.codeaurora.org)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 726F161A49;
+        Mon, 22 Jul 2019 15:51:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1563810677;
+        bh=rBf/mqWfKN7U2zd3m4iikSbifwekc4iKWTNDZ8h6ew0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=CX2aHSFOyGUW+vWd/GPyfFBjHoOuvFbBvyUxT4wbTKtp9VHfWQBD5h0useAo9o9xz
+         ZUNntl2J84Wgkrc9WLOp9jYHAAuPQWH9dxvAZRuyChSNYqUjm57TKOmFzEznbkkItR
+         MeJ/DLLLU86CkmJMxnaWOTE6/sJthp7Q0ZFTlcdY=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 726F161A49
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=ilina@codeaurora.org
+Date:   Mon, 22 Jul 2019 09:51:16 -0600
+From:   Lina Iyer <ilina@codeaurora.org>
+To:     Stephen Boyd <swboyd@chromium.org>
+Cc:     andy.gross@linaro.org, bjorn.andersson@linaro.org,
+        linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org,
+        rnayak@codeaurora.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, dianders@chromium.org,
+        mkshah@codeaurora.org
+Subject: Re: [PATCH 2/2] drivers: qcom: rpmh-rsc: fix read back of trigger
+ register
+Message-ID: <20190722155116.GF25567@codeaurora.org>
+References: <20190701152907.16407-1-ilina@codeaurora.org>
+ <20190701152907.16407-2-ilina@codeaurora.org>
+ <5d320a79.1c69fb81.17c57.b9ba@mx.google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <5d320a79.1c69fb81.17c57.b9ba@mx.google.com>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CPUidle back-end operations are not implemented in some platforms
-but this should not be considered an error serious enough to be
-logged. Check the arm_cpuidle_init() return value to detect whether
-the failure must be reported or not in the kernel log and do
-not log it if the platform does not support CPUidle operations.
+On Fri, Jul 19 2019 at 12:22 -0600, Stephen Boyd wrote:
+>Quoting Lina Iyer (2019-07-01 08:29:07)
+>> When triggering a TCS to send its contents, reading back the trigger
+>> value may return an incorrect value. That is because, writing the
+>> trigger may raise an interrupt which could be handled immediately and
+>> the trigger value could be reset in the interrupt handler. By doing a
+>> read back we may end up spinning waiting for the value we wrote.
+>
+>Doesn't this need to be squashed into the patch that gets rid of the
+>irqs disabled state of this code? It sounds an awful lot like this
+>problem only happens now because the previous patch removed the
+>irqsave/irqrestore code around this function.
+>
 
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
----
- drivers/cpuidle/cpuidle-arm.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+True. Could be rolled into that fix.
 
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index dc33b3d2954f..9e5156d39627 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -105,11 +105,17 @@ static int __init arm_idle_init_cpu(int cpu)
- 	ret = arm_cpuidle_init(cpu);
- 
- 	/*
--	 * Allow the initialization to continue for other CPUs, if the reported
--	 * failure is a HW misconfiguration/breakage (-ENXIO).
-+	 * Allow the initialization to continue for other CPUs, if the
-+	 * reported failure is a HW misconfiguration/breakage (-ENXIO).
-+	 *
-+	 * Some platforms do not support idle operations
-+	 * (arm_cpuidle_init() returning -EOPNOTSUPP), we should
-+	 * not flag this case as an error, it is a valid
-+	 * configuration.
- 	 */
- 	if (ret) {
--		pr_err("CPU %d failed to init idle CPU ops\n", cpu);
-+		if (ret != -EOPNOTSUPP)
-+			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
- 		ret = ret == -ENXIO ? 0 : ret;
- 		goto out_kfree_drv;
- 	}
--- 
-2.21.0
-
+--Lina
