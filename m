@@ -2,166 +2,106 @@ Return-Path: <SRS0=qrRL=VT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EF7DC76190
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 22:33:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B26DC7618F
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 23:35:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2295E2199C
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 22:33:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="R2/O16xw"
+	by mail.kernel.org (Postfix) with ESMTP id D4F692199C
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jul 2019 23:35:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1563838504;
+	bh=ea7bbNWwRc2Jb5gKkCuC0BfPuCo9gTUGpILmdaKsYTc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=Ag4MpiJkLuViEOs5dcwUmGLjJQ7wC4EcBD7UlmWFxPbxN3pxqV0ZsB2CHoZEpcnNH
+	 G69icFD3WYc+12kr1N/b5A+DebMD1cQ39SmysZDHtH0qlrdnSa+2c/IoDtYUi5RT+m
+	 F5MzK2MD5vUxYk+xAR6Ql20qX33dpXEm6hq+ARgk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728292AbfGVWdn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Jul 2019 18:33:43 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:35902 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727381AbfGVWdm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2019 18:33:42 -0400
-Received: by mail-pf1-f194.google.com with SMTP id r7so18055365pfl.3
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jul 2019 15:33:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=from:to:subject:date:message-id:in-reply-to:references:mime-version
-         :content-transfer-encoding;
-        bh=WWFTKtpGRlvvtiWS/Mg0wAkpilGgkx7X1cSC4y5EWxE=;
-        b=R2/O16xw6Vk/KNoxUlhUa5Y+bXgLiwKgbdav7p8y4DZGly/uyjCTGTMmALhIz+umS2
-         BzWjpf90ZaYSY/iJRimrYmRKxNKa5lfLyYlUtkqPpeXJE1zQboA2EQf93zE2W+kDjXt5
-         XiLOxoYWuYSBNhATVp5D+auF3i3e+jHCk2Ttg=
+        id S1730775AbfGVXfE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Jul 2019 19:35:04 -0400
+Received: from mail-io1-f65.google.com ([209.85.166.65]:40178 "EHLO
+        mail-io1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727157AbfGVXfE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jul 2019 19:35:04 -0400
+Received: by mail-io1-f65.google.com with SMTP id h6so77814041iom.7;
+        Mon, 22 Jul 2019 16:35:03 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=WWFTKtpGRlvvtiWS/Mg0wAkpilGgkx7X1cSC4y5EWxE=;
-        b=cqaRmDgYyj/zeHrZFPdkdTwj+o06CLg/9Jxp6iBw9AEMkN3SmRIdNF+hg7vFSDBcQY
-         2DP6HNvCXsYLXYofzfQZ8wzknrwo1DPGVrrSEBlplbOm5lT0E/hAn3iDwoAnrqKtChAw
-         +Opan8JkYFBAD+/Pzdgg68HXe5HxyLXSHsq/JKXeIBFobq43qEkJpZ857L/CpCpPBbrV
-         oI4gG6YSB6n9Dda09MgfBA+DGovlxVZII3IWE2XKHDEr+86lbIbxtv7k2hK1jtu04yzb
-         PL878YoCObfwvCxKdrnx87TGDtIHrUkxvKMHg/aplbZdLJP2g83XapTNmXNSVicD3LIp
-         GIdA==
-X-Gm-Message-State: APjAAAUH9ds07HLN9BAbl/k4kKxh8e1Nxwardhm/SWu8jPamIsLWIbVA
-        SZZu1qZ3WdKhXhmxt33/1yh7Rg==
-X-Google-Smtp-Source: APXvYqzjNkKn9xJVfs5xGw8cpI55YmF3SpQ0/H+z0hmLe5p5Yj86uEZ+s3rh1vxlzdvzJ8lbYTj9ug==
-X-Received: by 2002:a17:90a:b011:: with SMTP id x17mr79797580pjq.113.1563834822065;
-        Mon, 22 Jul 2019 15:33:42 -0700 (PDT)
-Received: from ravisadineni0.mtv.corp.google.com ([2620:15c:202:1:98d2:1663:78dd:3593])
-        by smtp.gmail.com with ESMTPSA id k186sm20614285pga.68.2019.07.22.15.33.41
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Mon, 22 Jul 2019 15:33:41 -0700 (PDT)
-From:   Ravi Chandra Sadineni <ravisadineni@chromium.org>
-To:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
-        x86@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz,
-        len.brown@intel.com, gregkh@linuxfoundation.org,
-        ravisadineni@chromium.org, bhe@redhat.com, dyoung@redhat.com,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        tbroch@chromium.org
-Subject: [PATCH 1/2 V2] power: sysfs: Remove wakeup_abort_count attribute.
-Date:   Mon, 22 Jul 2019 15:33:36 -0700
-Message-Id: <20190722223337.36199-2-ravisadineni@chromium.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190722223337.36199-1-ravisadineni@chromium.org>
-References: <20190722182451.GB24412@kroah.com>
- <20190722223337.36199-1-ravisadineni@chromium.org>
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=+1l4y3t2UMkEkO+/MJw8aq8fSMYsxde02LarPu3Ozik=;
+        b=ZkUvj4cBeAW+x/BaVktMrSHfQkkWUySP21C/SpHbVPlPzwo7rJwqT4lYcClNpOAjRw
+         hv8FxCZWvOfyWFwFujwi16xOoyQgUQPDjJB8CfF7otkaDBU01GAm2Qx0OzllZtrVQgU2
+         6HMGS7cWwGiFeQz0kPUR+AQeCX3e/7FYqvcemPGlo9zmu6/zIPRp714BnKFY7ubpKAtr
+         4+PeYP2JQxsVKNhJYcc9LpNptQDiSl1WKU10loHDHwPC8ZALpb3W7nQnjSmaRatp6KrL
+         ic7LPdzafuyaEKfiqXs4PKeVHS5gqWp+5SQ8xjKjlnh+4VHTkEPDSciCFkf62HZVxiOi
+         ebSA==
+X-Gm-Message-State: APjAAAUHLw/nZcSp5IuZanQcy7hTEdi+fupBsDPgacyeRrbgrEYE4PSy
+        EeB0FULVJuHv/NSTfLgwzg==
+X-Google-Smtp-Source: APXvYqxPtT8L1B/fbW9iJFp4+RBI7uFqvTbw19TSSehSOpu+f76R4vtucET4OI7dIY9HOM2hAJhqNA==
+X-Received: by 2002:a6b:dd17:: with SMTP id f23mr55075087ioc.213.1563838503145;
+        Mon, 22 Jul 2019 16:35:03 -0700 (PDT)
+Received: from localhost ([64.188.179.254])
+        by smtp.gmail.com with ESMTPSA id v10sm36428164iob.43.2019.07.22.16.35.02
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Mon, 22 Jul 2019 16:35:02 -0700 (PDT)
+Date:   Mon, 22 Jul 2019 17:35:01 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Saravana Kannan <saravanak@google.com>
+Cc:     Sibi Sankar <sibis@codeaurora.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        "Sweeney, Sean" <seansw@qti.qualcomm.com>,
+        daidavid1@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Evan Green <evgreen@chromium.org>,
+        Android Kernel Team <kernel-team@android.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 1/6] dt-bindings: opp: Introduce opp-peak-KBps and
+ opp-avg-KBps bindings
+Message-ID: <20190722233501.GA19594@bogus>
+References: <20190703011020.151615-1-saravanak@google.com>
+ <20190703011020.151615-2-saravanak@google.com>
+ <98b2e315-e8da-80ad-1ef8-e6b222c1c6fe@codeaurora.org>
+ <CAGETcx9KSqvyzbM-S8LvBObkNBt38K683Ljm8nNQuhxk7MuvAg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAGETcx9KSqvyzbM-S8LvBObkNBt38K683Ljm8nNQuhxk7MuvAg@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-wakeup_abort_count and wakeup_count sysfs entries print the
-same (wakeup_count) attribute. This patch removes the duplicate
-wakeup_abort_count sysfs entry.
+On Tue, Jul 16, 2019 at 11:58:08AM -0700, Saravana Kannan wrote:
+> On Tue, Jul 16, 2019 at 10:25 AM Sibi Sankar <sibis@codeaurora.org> wrote:
+> >
+> > Hey Saravana,
+> >
+> > https://patchwork.kernel.org/patch/10850815/
+> > There was already a discussion ^^ on how bandwidth bindings were to be
+> > named.
+> 
+> Yes, I'm aware of that series. That series is trying to define a BW
+> mapping for an existing frequency OPP table. This patch is NOT about
+> adding a mapping to an existing table. This patch is about adding the
+> notion of BW OPP tables where BW is the "key" instead of "frequency".
+> 
+> So let's not mixed up these two series.
 
-Signed-off-by: Ravi Chandra Sadineni <ravisadineni@chromium.org>
----
- Documentation/ABI/testing/sysfs-devices-power | 25 ++++++-------------
- drivers/base/power/sysfs.c                    | 19 --------------
- 2 files changed, 7 insertions(+), 37 deletions(-)
+Maybe different reasons, but in the end we'd end up with 2 bandwidth 
+properties. We need to sort out how they'd overlap/coexist.
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-power b/Documentation/ABI/testing/sysfs-devices-power
-index 80a00f7b6667..1ca04b4f0489 100644
---- a/Documentation/ABI/testing/sysfs-devices-power
-+++ b/Documentation/ABI/testing/sysfs-devices-power
-@@ -81,12 +81,13 @@ What:		/sys/devices/.../power/wakeup_count
- Date:		September 2010
- Contact:	Rafael J. Wysocki <rjw@rjwysocki.net>
- Description:
--		The /sys/devices/.../wakeup_count attribute contains the number
--		of signaled wakeup events associated with the device.  This
--		attribute is read-only.  If the device is not capable to wake up
--		the system from sleep states, this attribute is not present.
--		If the device is not enabled to wake up the system from sleep
--		states, this attribute is empty.
-+		The /sys/devices/.../wakeup_count attribute contains the
-+		number of times the processing of a wakeup event associated with
-+		the device might have aborted system transition into a sleep
-+		state in progress. This attribute is read-only. If the device
-+		is not capable to wake up the system from sleep states, this
-+		attribute is not present. If the device is not enabled to wake
-+		up the system from sleep states, this attribute is empty.
- 
- What:		/sys/devices/.../power/wakeup_active_count
- Date:		September 2010
-@@ -100,18 +101,6 @@ Description:
- 		the device is not enabled to wake up the system from sleep
- 		states, this attribute is empty.
- 
--What:		/sys/devices/.../power/wakeup_abort_count
--Date:		February 2012
--Contact:	Rafael J. Wysocki <rjw@rjwysocki.net>
--Description:
--		The /sys/devices/.../wakeup_abort_count attribute contains the
--		number of times the processing of a wakeup event associated with
--		the device might have aborted system transition into a sleep
--		state in progress.  This attribute is read-only.  If the device
--		is not capable to wake up the system from sleep states, this
--		attribute is not present.  If the device is not enabled to wake
--		up the system from sleep states, this attribute is empty.
--
- What:		/sys/devices/.../power/wakeup_expire_count
- Date:		February 2012
- Contact:	Rafael J. Wysocki <rjw@rjwysocki.net>
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index 1b9c281cbe41..f42044d9711c 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -375,24 +375,6 @@ static ssize_t wakeup_active_count_show(struct device *dev,
- 
- static DEVICE_ATTR_RO(wakeup_active_count);
- 
--static ssize_t wakeup_abort_count_show(struct device *dev,
--				       struct device_attribute *attr,
--				       char *buf)
--{
--	unsigned long count = 0;
--	bool enabled = false;
--
--	spin_lock_irq(&dev->power.lock);
--	if (dev->power.wakeup) {
--		count = dev->power.wakeup->wakeup_count;
--		enabled = true;
--	}
--	spin_unlock_irq(&dev->power.lock);
--	return enabled ? sprintf(buf, "%lu\n", count) : sprintf(buf, "\n");
--}
--
--static DEVICE_ATTR_RO(wakeup_abort_count);
--
- static ssize_t wakeup_expire_count_show(struct device *dev,
- 					struct device_attribute *attr,
- 					char *buf)
-@@ -580,7 +562,6 @@ static struct attribute *wakeup_attrs[] = {
- 	&dev_attr_wakeup.attr,
- 	&dev_attr_wakeup_count.attr,
- 	&dev_attr_wakeup_active_count.attr,
--	&dev_attr_wakeup_abort_count.attr,
- 	&dev_attr_wakeup_expire_count.attr,
- 	&dev_attr_wakeup_active.attr,
- 	&dev_attr_wakeup_total_time_ms.attr,
--- 
-2.20.1
+The same comment in that series about defining a standard unit suffix 
+also applies to this one.
 
+Rob
