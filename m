@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A730BC7618B
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jul 2019 12:20:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96874C7618B
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jul 2019 12:21:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 76DC7223A1
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jul 2019 12:20:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5C180223A1
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jul 2019 12:21:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="r37o2mn0"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="UaVI1mOA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726328AbfGWMUv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Jul 2019 08:20:51 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:57755 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389737AbfGWMUc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2019 08:20:32 -0400
+        id S2389736AbfGWMUa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Jul 2019 08:20:30 -0400
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:38689 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389725AbfGWMUa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2019 08:20:30 -0400
 Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190723122030euoutp02af493fad379bd8e245d4988afb246ef7~0CJpzCE7W3179531795euoutp02Y
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jul 2019 12:20:30 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190723122030euoutp02af493fad379bd8e245d4988afb246ef7~0CJpzCE7W3179531795euoutp02Y
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190723122028euoutp01e8cb50ca277be86959a75991fadbb801~0CJoeDgoE2875828758euoutp01X
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jul 2019 12:20:28 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190723122028euoutp01e8cb50ca277be86959a75991fadbb801~0CJoeDgoE2875828758euoutp01X
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1563884430;
-        bh=EtXo80b/BOT2bVBAt0gRdcaUhCVQMvr2P5JS+yzpsFM=;
+        s=mail20170921; t=1563884428;
+        bh=xYHVjPEnK2SWP+r3hWe6spsBX3CeKCFK+Qz1Ihn5wCc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=r37o2mn0DkTPjwV1X0YN4FWaEExESyZ/rWuSS0vKyKZ2qh1DIG3JVTwfg4ye+5IxV
-         kzPLpQWZqh0cA7fIuVTfZiJBl2EehcBx2YnzFDeO1QdAP8KWeoKDAkpqlG9nYRqPPH
-         PeWaUfSHwt2n++sCe1ocPEM+zFUcfsfqxVPrrOKo=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+        b=UaVI1mOA+sPLf1x+tBVZqOIsO0hdEUIxRoLjdlxJAecyTZrERi9tsQomF32JhLFNu
+         4l1zkq3ZQVT9sMC222pC2VhV6f47Tnw3pa0n+bdvjqQclo/XKRKy2RgXTbWmE0D65v
+         2PciSDB308POH+dP6UM+9BY1TSHl/zL8dO40xeLI=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
         eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190723122029eucas1p1d78d048e09d79033ca28037784d3275e~0CJpL8H0n0311003110eucas1p1Z;
-        Tue, 23 Jul 2019 12:20:29 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id 96.5B.04298.D8BF63D5; Tue, 23
-        Jul 2019 13:20:29 +0100 (BST)
+        20190723122028eucas1p13eee0cf56f89df64afa3d2ce3ff472ae~0CJn56LWQ0096400964eucas1p1T;
+        Tue, 23 Jul 2019 12:20:28 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges3new.samsung.com (EUCPMTA) with SMTP id 58.75.04325.B8BF63D5; Tue, 23
+        Jul 2019 13:20:27 +0100 (BST)
 Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20190723122028eucas1p2eb75f35b810e71d6c590370aaff0997b~0CJoWSNdP2751627516eucas1p2d;
-        Tue, 23 Jul 2019 12:20:28 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20190723122027eucas1p124f44370a63b16dcb765585761d661a3~0CJnOVHTg0311803118eucas1p1H;
+        Tue, 23 Jul 2019 12:20:27 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
         eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20190723122028eusmtrp1913f3fc00eda32f785805f9f4a05df09~0CJoLsl3s2543625436eusmtrp1I;
-        Tue, 23 Jul 2019 12:20:28 +0000 (GMT)
-X-AuditID: cbfec7f2-f2dff700000010ca-89-5d36fb8dd145
+        20190723122027eusmtrp1e5dec855e09799ace7a70bf659773740~0CJnDXiFz2543625436eusmtrp1B;
+        Tue, 23 Jul 2019 12:20:27 +0000 (GMT)
+X-AuditID: cbfec7f5-b8fff700000010e5-aa-5d36fb8b99fa
 Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id 40.E8.04140.C8BF63D5; Tue, 23
-        Jul 2019 13:20:28 +0100 (BST)
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id DD.41.04146.A8BF63D5; Tue, 23
+        Jul 2019 13:20:26 +0100 (BST)
 Received: from AMDC3555.DIGITAL.local (unknown [106.120.51.67]) by
         eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190723122027eusmtip2139fe56f44e2ea08e589506ebef6382c~0CJniKV8X1668716687eusmtip2A;
-        Tue, 23 Jul 2019 12:20:27 +0000 (GMT)
+        20190723122026eusmtip2d645baf0e12dafb33d7dc0bd57036851~0CJmQ0Lac1668716687eusmtip2-;
+        Tue, 23 Jul 2019 12:20:26 +0000 (GMT)
 From:   =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>
 To:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -62,304 +62,84 @@ To:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 Cc:     krzk@kernel.org, cw00.choi@samsung.com, myungjoo.ham@samsung.com,
         inki.dae@samsung.com, sw0312.kim@samsung.com,
         georgi.djakov@linaro.org, m.szyprowski@samsung.com
-Subject: [RFC PATCH 09/11] devfreq: exynos-bus: Add interconnect
- functionality to exynos-bus
-Date:   Tue, 23 Jul 2019 14:20:14 +0200
-Message-Id: <20190723122016.30279-10-a.swigon@partner.samsung.com>
+Subject: [RFC PATCH 07/11] icc: Relax condition in apply_constraints()
+Date:   Tue, 23 Jul 2019 14:20:12 +0200
+Message-Id: <20190723122016.30279-8-a.swigon@partner.samsung.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190723122016.30279-1-a.swigon@partner.samsung.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrHKsWRmVeSWpSXmKPExsWy7djPc7q9v81iDdac57I4dGwru8XGGetZ
+X-Brightmail-Tracker: H4sIAAAAAAAAA02Sa0hTYRjHe3euWqvjpviUUTQwSPASlh0wIu3C6ZtGQWRSKw9L1Ck7arcP
+        rXt5w7SL6ciBYjYn6przkkqtpZjVikILC60p2WLZmq1CjZxnXb79/s/7/J8bL43JnhHL6HR1
+        Lq9RKzMVZCBu6f1pjyycjkuN+WGMYa29rRTbUtFEsENTHwi22vaUYF9+myTZ690mki0bKcVZ
+        u72ZYk2OQYJ90akjWU+xDbEV9h4J22h7S7HDp+pJtqL8I7l5CWcyXCK5N4NdJDdS2Cfh7tSe
+        5O5/7pJwJWYD4jymFUnU3sCNaXxmej6vid50IPBwjX2MyLHSRy3Xxikt8pIFKIAGZh10m92S
+        AhRIy5h6BCVtLkIUUwg83k+UKDwIXG01WAGi5y2tZk6M30LwteUW+dfR7B4ifHVJZgcUXW6f
+        LxXM2BCU6ydxn8AYw5z4bkG+LDmzHWqfOCU+xplw0HcYKR9LmQSoGnZh4oQroaH53jwHMIlQ
+        8PACKeYEQf+NMdzH2FzOmdYqzNcAGDcFj5ra/Oat8EZr97McnH1mSuTlMFBehIsswHjHCCGa
+        tQhMdTa/IR4e9D0nfEtjzBpo6owWwwnQaHRT4i0WwytXkDjDYiizXPefSAoXz8tEjAD9dIpo
+        BDjdMOivzUGV0YiVolWV/y1T+d8ylf/a6hFmQKF8npCl4oVYNX8kSlBmCXlqVdSh7CwTmvtn
+        A7/6vrWjnpmDVsTQSLFI2ty1PlVGKPOFY1lWBDSmCJYma+NSZdI05bHjvCZ7vyYvkxesKIzG
+        FaHSEwtGU2SMSpnLZ/B8Dq/58yqhA5ZpUdjFL7t6k89uoc5FjMa76RutqqkJw+4Qb+RE+OoN
+        T/eUPdfZEp0rk0ardy6N3invn0msdlwZGt501QlbQurinLfpBwtXpb03JRYvj62/rTNKC2cz
+        MrMJecfNhKKMfe+8NR8evw3L0HtSX6/4Or1NuZbHZx1PvLqJu9uxydLvVyYcClw4rFwbgWkE
+        5W+53JN5YwMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrCIsWRmVeSWpSXmKPExsVy+t/xe7pdv81iDd6ctbA4dGwru8XGGetZ
         La5/ec5qMf/IOVaLK1/fs1lM37uJzWLS/QksFufPb2C32PT4GqvF5V1z2Cw+9x5htJhxfh+T
         xdojd9ktbjeuYLOYMfklmwO/x6ZVnWwed67tYfO4332cyWPzknqPg+/2MHn0bVnF6PF5k1wA
-        exSXTUpqTmZZapG+XQJXxutdGgW/zSuW9/1jbGDcr9vFyMkhIWAicbD1BFMXIxeHkMAKRonv
-        e5ZBOV8YJdZ3P2CGcD4zSvy7/4UNpmXLmimsEInljBLdTz+zwrXsfzWLBaSKTcBTomfiDrCE
-        iMARRonJC96zgDjMAquAnO/bGLsYOTiEBeIkOva7gTSwCKhKTLwyjR0kzCvgJHFpijXENnmJ
-        1RsOMIPYnEDhrqPtYFfwCghKnJz5BGwXM1BN89bZYKdKCHxkl/j16gA7RLOLxKmlV5ghbGGJ
-        V8e3QMVlJE5P7mGBsIslnu68zwrR3MAosWnZEagGa4nDxy+yghzELKApsX6XPkTYUeJt31Fm
-        kLCEAJ/EjbeCEDfwSUzaNh0qzCvR0SYEYWpJLPgdDdEoIdG0+hrUbA+JlkfP2ScwKs5C8sws
-        JM/MQli7gJF5FaN4amlxbnpqsWFearlecWJucWleul5yfu4mRmAqO/3v+KcdjF8vJR1iFOBg
-        VOLh3bDHNFaINbGsuDL3EKMEB7OSCG9gg1msEG9KYmVValF+fFFpTmrxIUZpDhYlcd5qhgfR
-        QgLpiSWp2ampBalFMFkmDk6pBsamPhXLDRr7fThFjFs/5Z3+++/WhqcvvSvmn2Crk2JlU3ph
-        fLbmlXj2o6V6qw/2KMd/nqNqdEfW0HCzQTd/0tJptl7qihbXV38Rddr6KDp/VlZ01/RdPYte
-        JJ6b9PEaF3Oo7n2vN8dnR5pobeG2PC574u/6c1ffOJ08XcbV8jp2R02g7buExzOUWIozEg21
-        mIuKEwHM5WhMYQMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrMIsWRmVeSWpSXmKPExsVy+t/xe7o9v81iDX4e4Lc4dGwru8XGGetZ
-        La5/ec5qMf/IOVaLK1/fs1lM37uJzWLS/QksFufPb2C32PT4GqvF5V1z2Cw+9x5htJhxfh+T
-        xdojd9ktbjeuYLOYMfklmwO/x6ZVnWwed67tYfO4332cyWPzknqPg+/2MHn0bVnF6PF5k1wA
-        e5SeTVF+aUmqQkZ+cYmtUrShhZGeoaWFnpGJpZ6hsXmslZGpkr6dTUpqTmZZapG+XYJexutd
-        GgW/zSuW9/1jbGDcr9vFyMkhIWAisWXNFFYQW0hgKaPExGmqEHEJiY/rb7BC2MISf651sXUx
-        cgHVfGKUaF1xiwkkwSbgKdEzcQcrSEJE4BSjxNbl58CqmAU2MUrcPT6RHaRKWCBGYvenDYwg
-        NouAqsTEK9OA4hwcvAJOEpemWENskJdYveEAM4jNCRTuOtrOBnGRo8S27a/BWnkFBCVOznzC
-        AtLKLKAusX6eEEiYGai1eets5gmMgrOQVM1CqJqFpGoBI/MqRpHU0uLc9NxiI73ixNzi0rx0
-        veT83E2MwAjdduznlh2MXe+CDzEKcDAq8fBu2GMaK8SaWFZcmXuIUYKDWUmEN7DBLFaINyWx
-        siq1KD++qDQntfgQoynQZxOZpUST84HJI68k3tDU0NzC0tDc2NzYzEJJnLdD4GCMkEB6Yklq
-        dmpqQWoRTB8TB6dUA2Nkpd6ah1MSuNqyfVXEZm9w/nftQNPj6TPdy1geXZ99pLliWuU9/v/7
-        ft5buj4pev0bs2XP1Es8GkqyzavOSC6dy/RrVeUTBRE+108W9g8/f1mfMT3DYEPJ23cKgkur
-        G57t6Wo5X3HjmZV7uIOH3KZNi7Z9PbJfWTZ0R5CNhOlvs9N3579cWrdMiaU4I9FQi7moOBEA
-        hcHFd+YCAAA=
-X-CMS-MailID: 20190723122028eucas1p2eb75f35b810e71d6c590370aaff0997b
+        e5SeTVF+aUmqQkZ+cYmtUrShhZGeoaWFnpGJpZ6hsXmslZGpkr6dTUpqTmZZapG+XYJexuLz
+        T1gLDnFUbJv2lL2B8RtbFyMHh4SAicTWLR5djJwcQgJLGSXezQkEsSUEJCQ+rr/BCmELS/y5
+        1gVUzgVU84lRYurp14wgCTYBT4meiTtYQRIiAqcYJbYuPwdWxSywiVHi7vGJ7CBVwgJuEkvO
+        vmICsVkEVCUW7FwDFucVcJSYffstM8QKeYnVGw6A2ZwCThJdR9vZIE5ylNi2HWIbr4CgxMmZ
+        T1hArmYWUJdYP08IJMwM1Nq8dTbzBEbBWUiqZiFUzUJStYCReRWjSGppcW56brGhXnFibnFp
+        Xrpecn7uJkZgjG479nPzDsZLG4MPMQpwMCrx8G7YYxorxJpYVlyZe4hRgoNZSYQ3sMEsVog3
+        JbGyKrUoP76oNCe1+BCjKdBrE5mlRJPzgekjryTe0NTQ3MLS0NzY3NjMQkmct0PgYIyQQHpi
+        SWp2ampBahFMHxMHp1QDo4dnYqTYIYeDK76yqeUHr0kSYdAN1zhyIHDJqiydlUoHD9t/7pR5
+        xbRBIHRdDs/a+NKZP4WfinkEp5k8MprIyGjjl2mucuHnU4bdthnTr//wNaoSL/P9Mbs78dCl
+        3cbyn03r5Xi4Tv1qkMk2/xvna7V6WeW7f/19S+qUqqx6dRTsHjEFumcrsRRnJBpqMRcVJwIA
+        IsA9K+cCAAA=
+X-CMS-MailID: 20190723122027eucas1p124f44370a63b16dcb765585761d661a3
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190723122028eucas1p2eb75f35b810e71d6c590370aaff0997b
+X-RootMTR: 20190723122027eucas1p124f44370a63b16dcb765585761d661a3
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20190723122028eucas1p2eb75f35b810e71d6c590370aaff0997b
+X-CMS-RootMailID: 20190723122027eucas1p124f44370a63b16dcb765585761d661a3
 References: <20190723122016.30279-1-a.swigon@partner.samsung.com>
-        <CGME20190723122028eucas1p2eb75f35b810e71d6c590370aaff0997b@eucas1p2.samsung.com>
+        <CGME20190723122027eucas1p124f44370a63b16dcb765585761d661a3@eucas1p1.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds interconnect functionality to the exynos-bus devfreq
-driver.
-
-The SoC topology is a graph (or, more specifically, a tree) and most of its
-edges are taken from the devfreq parent-child hierarchy (cf.
-Documentation/devicetree/bindings/devfreq/exynos-bus.txt). The previous
-patch adds missing edges to the DT (under the name 'parent'). Due to
-unspecified relative probing order, -EPROBE_DEFER may be propagated to
-guarantee that a child is probed before its parent.
-
-Each bus is now an interconnect provider and an interconnect node as well
-(cf. Documentation/interconnect/interconnect.rst), i.e. every bus registers
-itself as a node. Node IDs are not hardcoded but rather assigned at
-runtime, in probing order (subject to the above-mentioned exception
-regarding relative order). This approach allows for using this driver with
-various Exynos SoCs.
-
-The devfreq target() callback provided by exynos-bus now selects either the
-frequency calculated by the devfreq governor or the frequency requested via
-the interconnect API for the given node, whichever is higher.
-
-Please note that it is not an error when CONFIG_INTERCONNECT is 'n', in
-which case all interconnect API functions are no-op.
+The exynos-bus devfreq driver is extended with interconnect functionality
+by a subsequent patch. This patch removes a check from the interconnect
+framework that prevents interconnect from working on exynos-bus, in which
+every bus is a separate interconnect provider.
 
 Signed-off-by: Artur Świgoń <a.swigon@partner.samsung.com>
 ---
- drivers/devfreq/exynos-bus.c | 145 +++++++++++++++++++++++++++++++++++
- 1 file changed, 145 insertions(+)
+ drivers/interconnect/core.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index 412511ca7703..12fb7c84ae50 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -14,6 +14,7 @@
- #include <linux/devfreq-event.h>
- #include <linux/device.h>
- #include <linux/export.h>
-+#include <linux/interconnect-provider.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/pm_opp.h>
-@@ -23,6 +24,8 @@
- #define DEFAULT_SATURATION_RATIO	40
- #define DEFAULT_VOLTAGE_TOLERANCE	2
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 2556fd6d1863..bb55565d190c 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -219,11 +219,8 @@ static int apply_constraints(struct icc_path *path)
+ 	for (i = 0; i < path->num_nodes; i++) {
+ 		next = path->reqs[i].node;
  
-+#define icc_units_to_hz(x) ((x) * 1000UL / 8)
-+
- struct exynos_bus {
- 	struct device *dev;
- 
-@@ -31,12 +34,17 @@ struct exynos_bus {
- 	unsigned int edev_count;
- 	struct mutex lock;
- 
-+	unsigned long min_freq;
- 	unsigned long curr_freq;
- 
- 	struct regulator *regulator;
- 	struct clk *clk;
- 	unsigned int voltage_tolerance;
- 	unsigned int ratio;
-+
-+	/* One provider per bus, one node per provider */
-+	struct icc_provider provider;
-+	struct icc_node *node;
- };
- 
- /*
-@@ -61,6 +69,13 @@ exynos_bus_ops_edev(enable_edev);
- exynos_bus_ops_edev(disable_edev);
- exynos_bus_ops_edev(set_event);
- 
-+static int exynos_bus_next_id(void)
-+{
-+	static int exynos_bus_node_id;
-+
-+	return exynos_bus_node_id++;
-+}
-+
- static int exynos_bus_get_event(struct exynos_bus *bus,
- 				struct devfreq_event_data *edata)
- {
-@@ -98,6 +113,8 @@ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
- 	unsigned long old_freq, new_freq, new_volt, tol;
- 	int ret = 0;
- 
-+	*freq = max(*freq, bus->min_freq);
-+
- 	/* Get new opp-bus instance according to new bus clock */
- 	new_opp = devfreq_recommended_opp(dev, freq, flags);
- 	if (IS_ERR(new_opp)) {
-@@ -208,6 +225,8 @@ static int exynos_bus_passive_target(struct device *dev, unsigned long *freq,
- 	unsigned long old_freq, new_freq;
- 	int ret = 0;
- 
-+	*freq = max(*freq, bus->min_freq);
-+
- 	/* Get new opp-bus instance according to new bus clock */
- 	new_opp = devfreq_recommended_opp(dev, freq, flags);
- 	if (IS_ERR(new_opp)) {
-@@ -251,6 +270,35 @@ static void exynos_bus_passive_exit(struct device *dev)
- 	clk_disable_unprepare(bus->clk);
- }
- 
-+static int exynos_bus_icc_set(struct icc_node *src, struct icc_node *dst)
-+{
-+	struct exynos_bus *src_bus = src->data, *dst_bus = dst->data;
-+
-+	src_bus->min_freq = icc_units_to_hz(src->peak_bw);
-+	dst_bus->min_freq = icc_units_to_hz(dst->peak_bw);
-+
-+	return 0;
-+}
-+
-+static int exynos_bus_icc_aggregate(struct icc_node *node, u32 avg_bw,
-+				    u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
-+{
-+	*agg_peak = *agg_avg = peak_bw;
-+
-+	return 0;
-+}
-+
-+static struct icc_node *exynos_bus_icc_xlate(struct of_phandle_args *spec,
-+					     void *data)
-+{
-+	struct exynos_bus *bus = data;
-+
-+	if (spec->np != bus->dev->of_node)
-+		return ERR_PTR(-EINVAL);
-+
-+	return bus->node;
-+}
-+
- static int exynos_bus_parent_parse_of(struct device_node *np,
- 					struct exynos_bus *bus)
- {
-@@ -469,6 +517,95 @@ static int exynos_bus_profile_init_passive(struct exynos_bus *bus,
- 	return ret;
- }
- 
-+static int exynos_bus_icc_connect(struct exynos_bus *bus)
-+{
-+	struct device_node *np = bus->dev->of_node;
-+	struct devfreq *parent_devfreq;
-+	struct icc_node *parent_node = NULL;
-+	struct of_phandle_args args;
-+	int ret = 0;
-+
-+	parent_devfreq = devfreq_get_devfreq_by_phandle(bus->dev, 0);
-+	if (!IS_ERR(parent_devfreq)) {
-+		struct exynos_bus *parent_bus;
-+
-+		parent_bus = dev_get_drvdata(parent_devfreq->dev.parent);
-+		parent_node = parent_bus->node;
-+	} else {
-+		/* Look for parent in DT */
-+		int num = of_count_phandle_with_args(np, "parent",
-+						     "#interconnect-cells");
-+		if (num != 1)
-+			goto out;
-+
-+		ret = of_parse_phandle_with_args(np, "parent",
-+						 "#interconnect-cells",
-+						 0, &args);
-+		if (ret < 0)
-+			goto out;
-+
-+		of_node_put(args.np);
-+
-+		parent_node = of_icc_get_from_provider(&args);
-+		if (IS_ERR(parent_node)) {
-+			/* May be -EPROBE_DEFER */
-+			ret = PTR_ERR(parent_node);
-+			goto out;
-+		}
-+	}
-+
-+	ret = icc_link_create(bus->node, parent_node->id);
-+
-+out:
-+	return ret;
-+}
-+
-+static int exynos_bus_icc_init(struct exynos_bus *bus)
-+{
-+	struct device *dev = bus->dev;
-+	struct icc_provider *provider = &bus->provider;
-+	struct icc_node *node;
-+	int id, ret;
-+
-+	/* Initialize the interconnect provider */
-+	provider->set = exynos_bus_icc_set;
-+	provider->aggregate = exynos_bus_icc_aggregate;
-+	provider->xlate = exynos_bus_icc_xlate;
-+	provider->dev = dev;
-+	provider->data = bus;
-+
-+	ret = icc_provider_add(provider);
-+	if (ret < 0)
-+		goto out;
-+
-+	id = exynos_bus_next_id();
-+	node = icc_node_create(id);
-+	if (IS_ERR(node)) {
-+		ret = PTR_ERR(node);
-+		goto err_node;
-+	}
-+
-+	bus->node = node;
-+	node->name = dev->of_node->name;
-+	node->data = bus;
-+	icc_node_add(node, provider);
-+
-+	ret = exynos_bus_icc_connect(bus);
-+	if (ret < 0)
-+		goto err_connect;
-+
-+out:
-+	return ret;
-+
-+err_connect:
-+	icc_node_del(node);
-+	icc_node_destroy(id);
-+err_node:
-+	icc_provider_del(provider);
-+
-+	return ret;
-+}
-+
- static int exynos_bus_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -517,6 +654,14 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 			goto err;
- 	}
- 
-+	/*
-+	 * Initialize interconnect provider. A return value of -ENOTSUPP means
-+	 * that CONFIG_INTERCONNECT is disabled.
-+	 */
-+	ret = exynos_bus_icc_init(bus);
-+	if (ret < 0 && ret != -ENOTSUPP)
-+		goto err;
-+
- 	max_state = bus->devfreq->profile->max_state;
- 	min_freq = (bus->devfreq->profile->freq_table[0] / 1000);
- 	max_freq = (bus->devfreq->profile->freq_table[max_state - 1] / 1000);
+-		/*
+-		 * Both endpoints should be valid master-slave pairs of the
+-		 * same interconnect provider that will be configured.
+-		 */
+-		if (!prev || next->provider != prev->provider) {
++		/* both endpoints should be valid master-slave pairs */
++		if (!prev) {
+ 			prev = next;
+ 			continue;
+ 		}
 -- 
 2.17.1
 
