@@ -2,194 +2,104 @@ Return-Path: <SRS0=dCrN=VV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1709C76191
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 20:36:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E398C76186
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 20:42:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 88034217F4
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 20:36:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1564000612;
-	bh=PpqXpKTFW4DTdTvVxGSXSjeBAVG2Y2g67kOcQGPRllY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=kpDla4OSPJvldS5k28rXROMPSO/NpgpTnGHVlnAGdX8j73WFWT/9kbbJKpgiLoJHl
-	 JgXGsa5KYpLdTnPqa9SpiJDL1VyhrrpkgUPoPcOTxBYRM5+wnb4t3IU3QS1sX+09x6
-	 LfWvIbVXuWbkeLCOu0pDgXXTvHizrK/TrEDYFPk4=
+	by mail.kernel.org (Postfix) with ESMTP id 52BFB21841
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 20:42:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="P2IEkSSl";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="GlwlEVE9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387946AbfGXTYc convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Jul 2019 15:24:32 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:33749 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726810AbfGXTYb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jul 2019 15:24:31 -0400
-Received: by mail-wr1-f66.google.com with SMTP id n9so48256611wru.0;
-        Wed, 24 Jul 2019 12:24:30 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=lfXxMsdfj3/069jvw/iy7OsZv8+UN7ABTGl62C7QKYA=;
-        b=KLLLaPbbO8eBii32cX5LOLTw947XYtHea0krdZtddLVAbCJq3zgEvX7KZSrvFeFiOn
-         REt/zdFIOh9DOTYmmIClMDgVilFbTKEXSL/L+W7X+QJFQZHN3C8Qax/2lZgRAnnpCUBS
-         Ao8WrJ7/5BebbGC+jobo7W5z9cRz7nPWtvcgF3lY4e2q1388+BQf/y3u0HywZHa3JzEZ
-         Ik7k1prk7lnTrMdtp6EafMdwaaw2wAR8iMTcZLDEKctSAk19vGTDcjnkm5/sHLUorBdP
-         GIW2mSo3ZLDspEQK3ORYLHyotRCrUgXLmulfoC69xJ0vs9lpLMmdeL6bYs4nLJofaCeL
-         p2nA==
-X-Gm-Message-State: APjAAAU/RoLqKcXiSeqKQ3hwto3eCPPZ+KurFnauN7NUGGqGij+Tnc+M
-        1eoISvJ5U+izgM0EZxRwER8=
-X-Google-Smtp-Source: APXvYqxsoh43HV2OpAyo0WN3mesXUKeJis1EeqQpdnzoRNCOZlfiNYz32Xds+Ra9u+/5tu5G/kpe4w==
-X-Received: by 2002:adf:80e6:: with SMTP id 93mr51827758wrl.298.1563996269437;
-        Wed, 24 Jul 2019 12:24:29 -0700 (PDT)
-Received: from kozik-lap ([194.230.155.239])
-        by smtp.googlemail.com with ESMTPSA id o6sm91244088wra.27.2019.07.24.12.24.27
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 24 Jul 2019 12:24:28 -0700 (PDT)
-Date:   Wed, 24 Jul 2019 21:24:26 +0200
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Artur =?utf-8?B?xZp3aWdvxYQ=?= <a.swigon@partner.samsung.com>
-Cc:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        cw00.choi@samsung.com, myungjoo.ham@samsung.com,
-        inki.dae@samsung.com, sw0312.kim@samsung.com,
-        georgi.djakov@linaro.org, m.szyprowski@samsung.com
-Subject: Re: [RFC PATCH 08/11] arm: dts: exynos: Add parents and
- #interconnect-cells to Exynos4412
-Message-ID: <20190724192426.GJ14346@kozik-lap>
-References: <20190723122016.30279-1-a.swigon@partner.samsung.com>
- <CGME20190723122027eucas1p24b1d76e3139f7cc52614d7613ff9ba98@eucas1p2.samsung.com>
- <20190723122016.30279-9-a.swigon@partner.samsung.com>
+        id S1727878AbfGXUmX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Jul 2019 16:42:23 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:56034 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726314AbfGXUmX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jul 2019 16:42:23 -0400
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+        id 01D6F60314; Wed, 24 Jul 2019 20:42:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1564000942;
+        bh=yE4b8DVH6UNu3QtVYOP2/QoCPJazwMi7Z4vS46emglg=;
+        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+        b=P2IEkSSlKMVUy3LeWMufAbJitm5TNC0i6tCCpJnHtpgadAoJmo9sMWoJrDPVkYx1f
+         eQwki+EuAigzGH5WM/pauyFu0Ri57e9XQ6yEGtHs/X0fcBuPQePirqJ6XgWl9vTVFO
+         cgkvLkHcRfprCuq+l0ht8IzBTUHUAvBM1HlcKasM=
+Received: from [10.46.162.237] (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: daidavid1@smtp.codeaurora.org)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 4203360256;
+        Wed, 24 Jul 2019 20:42:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1564000940;
+        bh=yE4b8DVH6UNu3QtVYOP2/QoCPJazwMi7Z4vS46emglg=;
+        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+        b=GlwlEVE9LNssety46OVjURuumaCj9inIy8RTbpcCJmeyX7SXYxh/sctD1NqIGhqUo
+         4U1fHOENMOhGaeQqRsy3xv7Gz8O2U3AGH9ucG/W8Im+tLmkdTtLqvBY/gNLj7I8i0o
+         oO3XGSYAzij2M5m2apgGUSlhuYaD5DCz4mOAPMcg=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 4203360256
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=daidavid1@codeaurora.org
+Subject: Re: [PATCH 1/2] dt-bindings: interconnect: Update Qualcomm SDM845 DT
+ bindings
+To:     Stephen Boyd <swboyd@chromium.org>, bjorn.andersson@linaro.org,
+        georgi.djakov@linaro.org, robh+dt@kernel.org
+Cc:     evgreen@google.com, ilina@codeaurora.org, seansw@qti.qualcomm.com,
+        elder@linaro.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <1563568344-1274-1-git-send-email-daidavid1@codeaurora.org>
+ <1563568344-1274-2-git-send-email-daidavid1@codeaurora.org>
+ <5d371ce7.1c69fb81.9650.8239@mx.google.com>
+ <8c181f08-559b-5d77-a617-65cfd3d5da55@codeaurora.org>
+ <5d3868a9.1c69fb81.876aa.ac30@mx.google.com>
+ <8efd5c48-5d3a-97e1-1dec-6a9cdc4c8ef6@codeaurora.org>
+ <5d38a31d.1c69fb81.80992.0052@mx.google.com>
+From:   David Dai <daidavid1@codeaurora.org>
+Message-ID: <150445a8-a6be-aa46-026b-1ad254128037@codeaurora.org>
+Date:   Wed, 24 Jul 2019 13:42:19 -0700
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20190723122016.30279-9-a.swigon@partner.samsung.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <5d38a31d.1c69fb81.80992.0052@mx.google.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jul 23, 2019 at 02:20:13PM +0200, Artur Świgoń wrote:
-> This patch adds two fields tp the Exynos4412 DTS:
 
-tp->to
+On 7/24/2019 11:27 AM, Stephen Boyd wrote:
+> Quoting David Dai (2019-07-24 10:22:57)
+>> The way that I view this is that the consumers consume both bandwidth
+>> and QoS from these physical NoC devices by getting some path between two
+>> endpoints on these different NoCs and applying some constraints. The NoC
+>> providers can accomplish that either by writing to MMIO spaces or by
+>> talking to some remote processor/hardware to tune its clock speed. The
+>> consumer doesn't interact with the RSCs directly, but can select a
+>> different bcm voter based on the endpoints that are associated with a
+>> particular bcm(apps or disp rsc). Each node(endpoints) will have its own
+>> BCM designation and an unique bcm voter.
+> Ok. I get it now. The MMIO nodes will be interconnect providers and
+> they'll know what RSCs they can use by exposing the same RSC "resource"
+> multiple times for each RSC that can be targeted? This is what the
+> postfix is with _DISP on your examples? Presumably there's an _APPS
+> version of the same prefixed endpoint in case the consumer wants to use
+> the APPS RSC instead of the DISP one, or maybe there's just no postfix
+> in this case because APPS is the "default".
 
->   - parent: to declare connections between nodes that are not in a
->     parent-child relation in devfreq;
+Right, the suffixes will denote the RSC association and will default to 
+APPS otherwise.
 
-Is it a standard property?
-The explanation needs some improvement... why are you adding parent to a
-devices which are not child-parent?
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
-Best regards,
-Krzysztof
-
->   - #interconnect-cells: required by the interconnect framework.
-> 
-> Please note that #interconnect-cells is always zero and node IDs are not
-> hardcoded anywhere.
-> 
-> Signed-off-by: Artur Świgoń <a.swigon@partner.samsung.com>
-> ---
->  arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 1 +
->  arch/arm/boot/dts/exynos4412.dtsi               | 9 +++++++++
->  2 files changed, 10 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-> index ea55f377d17c..bdd61ae86103 100644
-> --- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-> +++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-> @@ -106,6 +106,7 @@
->  &bus_leftbus {
->  	devfreq-events = <&ppmu_leftbus_3>, <&ppmu_rightbus_3>;
->  	vdd-supply = <&buck3_reg>;
-> +	parent = <&bus_dmc>;
->  	status = "okay";
->  };
->  
-> diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
-> index d20db2dfe8e2..a70a671acacd 100644
-> --- a/arch/arm/boot/dts/exynos4412.dtsi
-> +++ b/arch/arm/boot/dts/exynos4412.dtsi
-> @@ -390,6 +390,7 @@
->  			clocks = <&clock CLK_DIV_DMC>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_dmc_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> @@ -398,6 +399,7 @@
->  			clocks = <&clock CLK_DIV_ACP>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_acp_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> @@ -406,6 +408,7 @@
->  			clocks = <&clock CLK_DIV_C2C>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_dmc_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> @@ -459,6 +462,7 @@
->  			clocks = <&clock CLK_DIV_GDL>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_leftbus_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> @@ -467,6 +471,7 @@
->  			clocks = <&clock CLK_DIV_GDR>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_leftbus_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> @@ -475,6 +480,7 @@
->  			clocks = <&clock CLK_ACLK160>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_display_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> @@ -483,6 +489,7 @@
->  			clocks = <&clock CLK_ACLK133>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_fsys_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> @@ -491,6 +498,7 @@
->  			clocks = <&clock CLK_ACLK100>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_peri_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> @@ -499,6 +507,7 @@
->  			clocks = <&clock CLK_SCLK_MFC>;
->  			clock-names = "bus";
->  			operating-points-v2 = <&bus_leftbus_opp_table>;
-> +			#interconnect-cells = <0>;
->  			status = "disabled";
->  		};
->  
-> -- 
-> 2.17.1
-> 
