@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-17.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
 	USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 175E9C76186
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 01:42:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E816C76194
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 01:42:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C7C84229F4
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 01:42:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D8988229F5
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 01:42:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="GLzeC8O2"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="OjqB0ijO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728526AbfGXBmi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Jul 2019 21:42:38 -0400
-Received: from mail-pf1-f202.google.com ([209.85.210.202]:55365 "EHLO
+        id S1728523AbfGXBmp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Jul 2019 21:42:45 -0400
+Received: from mail-pf1-f202.google.com ([209.85.210.202]:41844 "EHLO
         mail-pf1-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728522AbfGXBmh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2019 21:42:37 -0400
-Received: by mail-pf1-f202.google.com with SMTP id i26so27374878pfo.22
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jul 2019 18:42:36 -0700 (PDT)
+        with ESMTP id S1728552AbfGXBmn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2019 21:42:43 -0400
+Received: by mail-pf1-f202.google.com with SMTP id q14so27463295pff.8
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jul 2019 18:42:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=date:in-reply-to:message-id:mime-version:references:subject:from:to
          :cc;
-        bh=SEZs2jCYZVWtwNC2TIXQwixIlhahYNp/FR94S5BAgLI=;
-        b=GLzeC8O2RxI0vi+5KBEE/tj5Pt9sRQLtQpwXGEaiVTr3ksjh9xyVh0hkvPXlX6ghHD
-         LY892stmN/RwLry2XliiTDP72x05E9GeA7Ekd3YRz9qyOx0Gj6EiRMt/r6eHhMHkLTRu
-         HDePkjuNqOMo5HK82ePKcn0UjaUkTiXcDKXBgSCENMQ/scKEF6fRWfWYCgcfxSNVAyMb
-         4+8VwxE2OxutYYs68sJliGL+ZnwiMBa0ObCoTY6mqSxwTRxpds2dXSicjJTGSzm8tO8e
-         jv6nGP+acXMj1JE1h7mjBkFPr2KTds0aAduOscYxCANeN5e0A0FwVbod6jWFJM/FuaMd
-         yniA==
+        bh=tcec6G8mdYvC44AUiiZquxcEHQD3/poU4Cd0DIagRzY=;
+        b=OjqB0ijOd5pzNZ1elvcBfW/VYQq9Xyi191z3lVRIEijGecmCpThtCaH7iAEAOQV6tt
+         n1Ma7p9sAXcFTkGiDuRpVzqQGS9v541NtuMY6wTBEFaB3+mr4IX8M4w8OiWHQCvmubm8
+         Yju7NLSi4U7n/lTTOksPbc2XETeb5BvCiu5vo6wve7xyJW1gy/VAecz2XFeG0rLFAV/G
+         zZ+mJdKhPjpQMlhvl95+iF1kVbre+8PnJY5WGzv4zkJmDfzAx29ovEXNLLGStTbDkEc+
+         NJ0im1qi8CZTIkUMjx+pxaVVsobC496FzzkLJtNZgBvfbrzOAV7JFut85IszWRP7WF0K
+         9S+w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=SEZs2jCYZVWtwNC2TIXQwixIlhahYNp/FR94S5BAgLI=;
-        b=c2QQgKWXR73yB15jJakvRxdfraQc95AodX57DuUQ5IRzSHfMGOWEQQbYrs5OZYouBu
-         yGXUMPIeen5gbelb+gIDmH7NnY/iwm4HBJF9y3hqEL0Q8IiGPtk/6KPdqHHGIe/wBvLB
-         sr/t6nkjOv+XUFmrDGoz0NyXcmDprgl9Sgl58DPy/exf2UjYa6syNs29LP0OZTyENVhG
-         g8G2frLeNAk173BOuv9nv8OWfYL6pTFhMruxC/+12ikO2zmKI/Ct/alb8X3++a3Oz3wX
-         v3mvaPCJArm3rUxTexvAHWhD5Qv5q2FHpd07lJLHJ3QVPAy1jQNGxgHu4U25CxQosooi
-         h5nw==
-X-Gm-Message-State: APjAAAUkdXP+HwNdhh8YYZfy2A3X4yZqopjjkBAaE1uCtuY8+nq3gk8x
-        tPGEwUwQWEL/9NajuXtxknqbAQGAHivFpNQ=
-X-Google-Smtp-Source: APXvYqx4miufCPfOh/OX7LGdgKZNTHriSMVQIat7T8l+We+el8Wt8FvO5jww/CDSgEBmVa0tGfpT+475WuM2aMU=
-X-Received: by 2002:a63:20a:: with SMTP id 10mr78418083pgc.226.1563932555775;
- Tue, 23 Jul 2019 18:42:35 -0700 (PDT)
-Date:   Tue, 23 Jul 2019 18:42:19 -0700
+        bh=tcec6G8mdYvC44AUiiZquxcEHQD3/poU4Cd0DIagRzY=;
+        b=jHIR2G20Ac2oKK5uEP1S9dIc/P68tUI7akwSwuMvQWag04tjk2Vc00LGHzQLhI6lCM
+         BplqZg5Inzm3/AX4TX1T8kX6AeY7edvE/84NEoVwuZBq8EnJaJ6xscMSW1UoIZ5gZd6W
+         hJk3ouvyKqEos53OtwlkHnbsCLm8B/sf8/Ovf04Tnlv5Wv8KmfyxOEHhjwdSy2RhdEhj
+         vUiHPjxPyQtvrT/TidWuBMZkGNLmlmdSPP0di8sz8QzKpkAGNjgIHybaULbNZPbbrF/Q
+         adis+xazaj1q6Cw0y/TA4HcTAkllyOIB0FYKmRKhp4Y8tLkE8bjIR2eMLuN6DWwnc6UR
+         29Aw==
+X-Gm-Message-State: APjAAAXxL8M5jnPUu4TMGF6otrvjmeRvy+3g68yJKXIYwH2lFCrOEnRd
+        atg+Z1PL96Qh7R3PaEN/xX8vtPhOXY9A/4s=
+X-Google-Smtp-Source: APXvYqzFshsuv+IyMmfv+K7ZxtUfZm5PhJHbRo0sv/PZ+9kPjXaRXrDQoTPve3lpQ+P63v+BW0L/MbdyD6oDveA=
+X-Received: by 2002:a63:4404:: with SMTP id r4mr77919539pga.245.1563932561833;
+ Tue, 23 Jul 2019 18:42:41 -0700 (PDT)
+Date:   Tue, 23 Jul 2019 18:42:21 -0700
 In-Reply-To: <20190724014222.110767-1-saravanak@google.com>
-Message-Id: <20190724014222.110767-4-saravanak@google.com>
+Message-Id: <20190724014222.110767-6-saravanak@google.com>
 Mime-Version: 1.0
 References: <20190724014222.110767-1-saravanak@google.com>
 X-Mailer: git-send-email 2.22.0.709.g102302147b-goog
-Subject: [PATCH v4 3/5] OPP: Improve required-opps linking
+Subject: [PATCH v4 5/5] PM / devfreq: Add required OPPs support to passive governor
 From:   Saravana Kannan <saravanak@google.com>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -73,290 +73,66 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently, the linking of required-opps fails silently if the
-destination OPP table hasn't been added before the source OPP table is
-added. This puts an unnecessary requirement that the destination table
-be added before the source table is added.
-
-In reality, the destination table is needed only when we try to
-translate from source OPP to destination OPP. So, instead of
-completely failing, retry linking the tables when the translation is
-attempted.
+Look at the required OPPs of the "parent" device to determine the OPP that
+is required from the slave device managed by the passive governor. This
+allows having mappings between a parent device and a slave device even when
+they don't have the same number of OPPs.
 
 Signed-off-by: Saravana Kannan <saravanak@google.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/opp/core.c |  30 ++++++++++----
- drivers/opp/of.c   | 101 ++++++++++++++++++++++++---------------------
- drivers/opp/opp.h  |   5 +++
- 3 files changed, 80 insertions(+), 56 deletions(-)
+ drivers/devfreq/governor_passive.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 5460b7da110e..01c71d145ec7 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -706,6 +706,9 @@ static int _set_required_opps(struct device *dev,
- 	if (!required_opp_tables)
- 		return 0;
+diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+index 58308948b863..14dc5bb58733 100644
+--- a/drivers/devfreq/governor_passive.c
++++ b/drivers/devfreq/governor_passive.c
+@@ -19,7 +19,7 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 			= (struct devfreq_passive_data *)devfreq->data;
+ 	struct devfreq *parent_devfreq = (struct devfreq *)p_data->parent;
+ 	unsigned long child_freq = ULONG_MAX;
+-	struct dev_pm_opp *opp;
++	struct dev_pm_opp *opp = NULL, *p_opp = NULL;
+ 	int i, count, ret = 0;
  
-+	if (!_of_lazy_link_required_tables(opp_table))
-+		return -EPROBE_DEFER;
-+
- 	/* Single genpd case */
- 	if (!genpd_virt_devs && required_opp_tables[0]->is_genpd) {
- 		pstate = likely(opp) ? opp->required_opps[0]->pstate : 0;
-@@ -726,11 +729,16 @@ static int _set_required_opps(struct device *dev,
- 	mutex_lock(&opp_table->genpd_virt_dev_lock);
- 
- 	for (i = 0; i < opp_table->required_opp_count; i++) {
--		pstate = likely(opp) ? opp->required_opps[i]->pstate : 0;
--
- 		if (!genpd_virt_devs[i])
- 			continue;
- 
-+		if (!opp->required_opps[i]) {
-+			ret = -ENODEV;
-+			break;
-+		}
-+
-+		pstate = likely(opp) ? opp->required_opps[i]->pstate : 0;
-+
- 		ret = dev_pm_genpd_set_performance_state(genpd_virt_devs[i], pstate);
- 		if (ret) {
- 			dev_err(dev, "Failed to set performance rate of %s: %d (%d)\n",
-@@ -1906,8 +1914,11 @@ struct dev_pm_opp *dev_pm_opp_xlate_required_opp(struct opp_table *src_table,
- 	if (!src_table || !dst_table || !src_opp)
- 		return NULL;
- 
-+	_of_lazy_link_required_tables(src_table);
-+
- 	for (i = 0; i < src_table->required_opp_count; i++) {
--		if (src_table->required_opp_tables[i]->np == dst_table->np)
-+		if (src_table->required_opp_tables[i]
-+		    && src_table->required_opp_tables[i]->np == dst_table->np)
- 			break;
+ 	/*
+@@ -56,13 +56,20 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 	 * list of parent device. Because in this case, *freq is temporary
+ 	 * value which is decided by ondemand governor.
+ 	 */
+-	opp = devfreq_recommended_opp(parent_devfreq->dev.parent, freq, 0);
+-	if (IS_ERR(opp)) {
+-		ret = PTR_ERR(opp);
++	p_opp = devfreq_recommended_opp(parent_devfreq->dev.parent, freq, 0);
++	if (IS_ERR(p_opp)) {
++		ret = PTR_ERR(p_opp);
+ 		goto out;
  	}
  
-@@ -1970,6 +1981,8 @@ int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
- 	if (!src_table->required_opp_count)
- 		return pstate;
- 
-+	_of_lazy_link_required_tables(src_table);
-+
- 	for (i = 0; i < src_table->required_opp_count; i++) {
- 		if (src_table->required_opp_tables[i]->np == dst_table->np)
- 			break;
-@@ -1985,15 +1998,16 @@ int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
- 
- 	list_for_each_entry(opp, &src_table->opp_list, node) {
- 		if (opp->pstate == pstate) {
--			dest_pstate = opp->required_opps[i]->pstate;
--			goto unlock;
-+			if (opp->required_opps[i])
-+				dest_pstate = opp->required_opps[i]->pstate;
-+			break;
- 		}
- 	}
- 
--	pr_err("%s: Couldn't find matching OPP (%p: %p)\n", __func__, src_table,
--	       dst_table);
-+	if (dest_pstate < 0)
-+		pr_err("%s: Couldn't find matching OPP (%p: %p)\n", __func__,
-+		       src_table, dst_table);
- 
--unlock:
- 	mutex_unlock(&src_table->lock);
- 
- 	return dest_pstate;
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index ff88eaf66b56..1f2860b2d6e5 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -145,7 +145,7 @@ static void _opp_table_free_required_tables(struct opp_table *opp_table)
- 
- 	for (i = 0; i < opp_table->required_opp_count; i++) {
- 		if (IS_ERR_OR_NULL(required_opp_tables[i]))
--			break;
-+			continue;
- 
- 		dev_pm_opp_put_opp_table(required_opp_tables[i]);
- 	}
-@@ -165,8 +165,8 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 					     struct device_node *opp_np)
- {
- 	struct opp_table **required_opp_tables;
--	struct device_node *required_np, *np;
--	int count, i;
-+	struct device_node *np;
-+	int count;
- 
- 	/* Traversing the first OPP node is all we need */
- 	np = of_get_next_available_child(opp_np, NULL);
-@@ -176,35 +176,65 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 	}
- 
- 	count = of_count_phandle_with_args(np, "required-opps", NULL);
-+	of_node_put(np);
- 	if (!count)
--		goto put_np;
-+		return;
- 
- 	required_opp_tables = kcalloc(count, sizeof(*required_opp_tables),
- 				      GFP_KERNEL);
- 	if (!required_opp_tables)
--		goto put_np;
-+		return;
- 
- 	opp_table->required_opp_tables = required_opp_tables;
- 	opp_table->required_opp_count = count;
-+}
-+
-+/*
-+ * Try to link all required tables and return true if all of them have been
-+ * linked. Otherwise, return false.
-+ */
-+bool _of_lazy_link_required_tables(struct opp_table *src)
-+{
-+	struct dev_pm_opp *src_opp, *tmp_opp;
-+	struct opp_table *req_table;
-+	struct device_node *req_np;
-+	int i, num_linked = 0;
- 
--	for (i = 0; i < count; i++) {
--		required_np = of_parse_required_opp(np, i);
--		if (!required_np)
--			goto free_required_tables;
-+	mutex_lock(&src->lock);
- 
--		required_opp_tables[i] = _find_table_of_opp_np(required_np);
--		of_node_put(required_np);
-+	if (list_empty(&src->opp_list))
+-	dev_pm_opp_put(opp);
++	if (devfreq->opp_table && parent_devfreq->opp_table)
++		opp = dev_pm_opp_xlate_required_opp(parent_devfreq->opp_table,
++						    devfreq->opp_table, p_opp);
++	if (opp) {
++		*freq = dev_pm_opp_get_freq(opp);
++		dev_pm_opp_put(opp);
 +		goto out;
- 
--		if (IS_ERR(required_opp_tables[i]))
--			goto free_required_tables;
--	}
-+	src_opp = list_first_entry(&src->opp_list, struct dev_pm_opp, node);
- 
--	goto put_np;
-+	for (i = 0; i < src->required_opp_count; i++) {
-+		if (src->required_opp_tables[i]) {
-+			num_linked++;
-+			continue;
-+		}
- 
--free_required_tables:
--	_opp_table_free_required_tables(opp_table);
--put_np:
--	of_node_put(np);
-+		req_np = of_parse_required_opp(src_opp->np, i);
-+		if (!req_np)
-+			continue;
-+
-+		req_table = _find_table_of_opp_np(req_np);
-+		of_node_put(req_np);
-+		if (!req_table)
-+			continue;
-+
-+		src->required_opp_tables[i] = req_table;
-+		list_for_each_entry(tmp_opp, &src->opp_list, node) {
-+			req_np = of_parse_required_opp(tmp_opp->np, i);
-+			tmp_opp->required_opps[i] = _find_opp_of_np(req_table,
-+								    req_np);
-+			of_node_put(req_np);
-+		}
-+		num_linked++;
 +	}
+ 
+ 	/*
+ 	 * Get the OPP table's index of decided freqeuncy by governor
+@@ -89,6 +96,9 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+ 	*freq = child_freq;
+ 
+ out:
++	if (!IS_ERR_OR_NULL(opp))
++		dev_pm_opp_put(p_opp);
 +
-+out:
-+	mutex_unlock(&src->lock);
-+	return num_linked == src->required_opp_count;
+ 	return ret;
  }
  
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev,
-@@ -267,7 +297,7 @@ void _of_opp_free_required_opps(struct opp_table *opp_table,
- 
- 	for (i = 0; i < opp_table->required_opp_count; i++) {
- 		if (!required_opps[i])
--			break;
-+			continue;
- 
- 		/* Put the reference back */
- 		dev_pm_opp_put(required_opps[i]);
-@@ -282,9 +312,7 @@ static int _of_opp_alloc_required_opps(struct opp_table *opp_table,
- 				       struct dev_pm_opp *opp)
- {
- 	struct dev_pm_opp **required_opps;
--	struct opp_table *required_table;
--	struct device_node *np;
--	int i, ret, count = opp_table->required_opp_count;
-+	int count = opp_table->required_opp_count;
- 
- 	if (!count)
- 		return 0;
-@@ -295,32 +323,7 @@ static int _of_opp_alloc_required_opps(struct opp_table *opp_table,
- 
- 	opp->required_opps = required_opps;
- 
--	for (i = 0; i < count; i++) {
--		required_table = opp_table->required_opp_tables[i];
--
--		np = of_parse_required_opp(opp->np, i);
--		if (unlikely(!np)) {
--			ret = -ENODEV;
--			goto free_required_opps;
--		}
--
--		required_opps[i] = _find_opp_of_np(required_table, np);
--		of_node_put(np);
--
--		if (!required_opps[i]) {
--			pr_err("%s: Unable to find required OPP node: %pOF (%d)\n",
--			       __func__, opp->np, i);
--			ret = -ENODEV;
--			goto free_required_opps;
--		}
--	}
--
- 	return 0;
--
--free_required_opps:
--	_of_opp_free_required_opps(opp_table, opp);
--
--	return ret;
- }
- 
- static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
-@@ -687,6 +690,8 @@ static int _of_add_opp_table_v2(struct device *dev, struct opp_table *opp_table)
- 	if (pstate_count)
- 		opp_table->genpd_performance_state = true;
- 
-+	_of_lazy_link_required_tables(opp_table);
-+
- 	opp_table->parsed_static_opps = true;
- 
- 	return 0;
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 01a500e2c40a..77e8394fd0fe 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -223,12 +223,17 @@ void _put_opp_list_kref(struct opp_table *opp_table);
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index);
- void _of_clear_opp_table(struct opp_table *opp_table);
- struct opp_table *_managed_opp(struct device *dev, int index);
-+bool _of_lazy_link_required_tables(struct opp_table *src);
- void _of_opp_free_required_opps(struct opp_table *opp_table,
- 				struct dev_pm_opp *opp);
- #else
- static inline void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index) {}
- static inline void _of_clear_opp_table(struct opp_table *opp_table) {}
- static inline struct opp_table *_managed_opp(struct device *dev, int index) { return NULL; }
-+bool _of_lazy_link_required_tables(struct opp_table *src)
-+{
-+	return true;
-+}
- static inline void _of_opp_free_required_opps(struct opp_table *opp_table,
- 					      struct dev_pm_opp *opp) {}
- #endif
 -- 
 2.22.0.709.g102302147b-goog
 
