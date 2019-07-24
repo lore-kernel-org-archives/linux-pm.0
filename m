@@ -2,57 +2,62 @@ Return-Path: <SRS0=dCrN=VV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
+	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DF74C76186
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 01:42:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4A56C76186
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 01:42:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 377072238C
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 01:42:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B32D229F4
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jul 2019 01:42:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="vNJBiF/x"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="tmIxXRh1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728398AbfGXBm1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Jul 2019 21:42:27 -0400
-Received: from mail-pf1-f201.google.com ([209.85.210.201]:45670 "EHLO
+        id S1728507AbfGXBme (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Jul 2019 21:42:34 -0400
+Received: from mail-pf1-f201.google.com ([209.85.210.201]:49348 "EHLO
         mail-pf1-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728339AbfGXBm1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2019 21:42:27 -0400
-Received: by mail-pf1-f201.google.com with SMTP id i27so27459097pfk.12
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jul 2019 18:42:26 -0700 (PDT)
+        with ESMTP id S1728374AbfGXBmd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jul 2019 21:42:33 -0400
+Received: by mail-pf1-f201.google.com with SMTP id 145so27442409pfw.16
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jul 2019 18:42:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
-        h=date:message-id:mime-version:subject:from:to:cc;
-        bh=RW3z74bdMJzDTGtz2VwJiLTUpXRTvYUzeWaG6+K3XV8=;
-        b=vNJBiF/x6OHCcjwCOHbluPIl8E9mfj1/fOW0MrKGISKuPO8IhHo2qNzcurebvR82nK
-         dqlzTf7VT1DWoGeS8gGDdsKgIJ0/ZslL6xo0xsTAsGC+8PzIBWHWoeuDXRVFnVcP6LmZ
-         FsC8Cjf6JjX24Uv5ARw/vbdQ6c3Ob4XzzNN62dE6/C6FOfoyxMTykQ9YpQ0XNZM9wOE3
-         zppn0MTMxA0U8dSv5AmsrWloImz4yc/9NOU9iiETG2AuRum/lVVkQRy/ef5YnBD18GBb
-         EkpJOEv2Uu9UheyGucrCVKtNu6l5F8cnJxvukg9wtmBA3/N7AMJEVKQmgDKbas0Pkoa1
-         91FQ==
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=AlLsqq3JZoQR71QbtZw0BssW/4/b+9WusH3P4c2zA1g=;
+        b=tmIxXRh1CzRVBErDXUtwQUib7z0gyuxbrGT4Dumdpo/LNx5ctaIziALV0oC5vyzdtF
+         ZUYLE5BllTzxVwqOtyxmp+aCGIuKR9GKgEcLfh3ezGCjqa0xrWQhkYvklb52TNMP3ymN
+         b/QcJ2/GaLDuhNFs05zgY8kY79sLDbc03HH1VBFrUUdioOpiYx5Ag3hK9kY2tw4pm8Gs
+         Ez/G9GLiHLQpuuq/Fx+CG2OEGbld5166zf6hvstPbj1zy4/2Ggtsvg5hXMCmmvl85nd6
+         SWk51mt+f4FMxt7HoYCOLW/F9MPvzK1XhJ+9xjKjria5kw2+4iy0O9KmAAYi4z6vZCA4
+         UYfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
-        bh=RW3z74bdMJzDTGtz2VwJiLTUpXRTvYUzeWaG6+K3XV8=;
-        b=PuAWUeSktl2444kOF5/IE6sm7qBPzW2f0co8NjmuAoNE+QNg3iZVi7kvsjWTFMH1Db
-         00ju5dc6ASDyNHi3wObB1k/k1rIpktj1PRC+BjNQIZj2JL0QiAkle2T764n16G5lc5x/
-         p6QPQBRMfvFzNhuQg88cGwTxpMAJRL/s0o9vABrvZpxkGNhRBIxcAvHROgo3gNpJiD1S
-         eo2r/XvACgILrqM/RBVcpH4bvx46NoFBJan2tkLUkgMIl+G9GP4+3fhfnAKgl74iWAne
-         MNl46/msCIjxMusInPiZiwVAuncSjU+ARDyrFt2+tbhi+sDMk3yZ9KNC11jk2Owhs4pj
-         BDRQ==
-X-Gm-Message-State: APjAAAXhAVB2oXLImAH5xMXD38LN0e2iVy92tRC1IqAWUs++3chUCgxm
-        2ze3fb62LBbzZzd9WjlmTy+3R7jksAJO8y4=
-X-Google-Smtp-Source: APXvYqyJ6rmRSMmpqO+pIAEVowap7BIjPFpMLo4a6RxHglx5k3LvlGrTrwVN1wOjB7wOGkYUfP//+q9zcmN1xcE=
-X-Received: by 2002:a63:4404:: with SMTP id r4mr77918560pga.245.1563932546228;
- Tue, 23 Jul 2019 18:42:26 -0700 (PDT)
-Date:   Tue, 23 Jul 2019 18:42:16 -0700
-Message-Id: <20190724014222.110767-1-saravanak@google.com>
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=AlLsqq3JZoQR71QbtZw0BssW/4/b+9WusH3P4c2zA1g=;
+        b=I7H+XvQpbdy6Ll253pnwREcl4a4H47TS6Et7MyZuGJAPVMA3T2DbDGVHoyKZJ/96Jt
+         wdfCjB4qdvIWisr16/n5ja1XP/OWyc3APHGPahTJpbJcZL+Wrp+DnzRZVsKtIeDYcJwj
+         t+ZoR+P0vb15+XMLYIigR9UAJVN4JdqFPattZGTyC/kSQKpQrrcDPXRAJD95wys+d7EW
+         AeHtLZMmfCsyr3byNcBz3kxnIrNfZSO0IJbFoUXEuv+wu8Nt3UgAGd7gXdla7pwN4P4U
+         fqd4CGgsNXr8aYxwalDLfFl6xYuomYZOIxjR+jWTlXuTQjpLm/Tu0U+mkMnt4r1e5Cia
+         +DzQ==
+X-Gm-Message-State: APjAAAX5QefIiKlhuEpFBD6p4UOIUWDo7w7VGBagmceko9jtjp7Tvz8h
+        +zQoWkAc8WszTDyZWNKPbyFmlZfB0hTvB9Q=
+X-Google-Smtp-Source: APXvYqzkaFKYh5Ik7ceQ1KGE0Fun2/u+dwQaWFzR63gtTpqlU+7qAEOGUQV3Nw0gt36cj5Mvk0/G9fNaDXazOnM=
+X-Received: by 2002:a65:49cc:: with SMTP id t12mr73912466pgs.83.1563932552371;
+ Tue, 23 Jul 2019 18:42:32 -0700 (PDT)
+Date:   Tue, 23 Jul 2019 18:42:18 -0700
+In-Reply-To: <20190724014222.110767-1-saravanak@google.com>
+Message-Id: <20190724014222.110767-3-saravanak@google.com>
 Mime-Version: 1.0
+References: <20190724014222.110767-1-saravanak@google.com>
 X-Mailer: git-send-email 2.22.0.709.g102302147b-goog
-Subject: [PATCH v4 0/5] Add required-opps support to devfreq passive gov
+Subject: [PATCH v4 2/5] OPP: Add function to look up required OPP's for a
+ given OPP
 From:   Saravana Kannan <saravanak@google.com>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -69,144 +74,108 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The devfreq passive governor scales the frequency of a "child" device based
-on the current frequency of a "parent" device (not parent/child in the
-sense of device hierarchy). As of today, the passive governor requires one
-of the following to work correctly:
-1. The parent and child device have the same number of frequencies
-2. The child device driver passes a mapping function to translate from
-   parent frequency to child frequency.
+Add a function that allows looking up required OPPs given a source OPP
+table, destination OPP table and the source OPP.
 
-When (1) is not true, (2) is the only option right now. But often times,
-all that is required is a simple mapping from parent's frequency to child's
-frequency.
+Signed-off-by: Saravana Kannan <saravanak@google.com>
+---
+ drivers/opp/core.c     | 53 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h | 11 +++++++++
+ 2 files changed, 64 insertions(+)
 
-Since OPPs already support pointing to other "required-opps", add support
-for using that to map from parent device frequency to child device
-frequency. That way, every child device driver doesn't have to implement a
-separate mapping function anytime (1) isn't true.
-
-Some common (but not comprehensive) reason for needing a devfreq passive
-governor to adjust the frequency of one device based on another are:
-
-1. These were the combination of frequencies that were validated/screened
-   during the manufacturing process.
-2. These are the sensible performance combinations between two devices
-   interacting with each other. So that when one runs fast the other
-   doesn't become the bottleneck.
-3. Hardware bugs requiring some kind of frequency ratio between devices.
-
-For example, the following mapping can't be captured in DT as it stands
-today because the parent and child device have different number of OPPs.
-But with this patch series, this mapping can be captured cleanly.
-
-In arch/arm64/boot/dts/exynos/exynos5433-bus.dtsi you have something
-like this with the following changes:
-
-	bus_g2d_400: bus0 {
-		compatible = "samsung,exynos-bus";
-		clocks = <&cmu_top CLK_ACLK_G2D_400>;
-		clock-names = "bus";
-		operating-points-v2 = <&bus_g2d_400_opp_table>;
-		status = "disabled";
-	};
-
-	bus_noc2: bus9 {
-		compatible = "samsung,exynos-bus";
-		clocks = <&cmu_mif CLK_ACLK_BUS2_400>;
-		clock-names = "bus";
-		operating-points-v2 = <&bus_noc2_opp_table>;
-		status = "disabled";
-	};
-
-	bus_g2d_400_opp_table: opp_table2 {
-		compatible = "operating-points-v2";
-		opp-shared;
-
-		opp-400000000 {
-			opp-hz = /bits/ 64 <400000000>;
-			opp-microvolt = <1075000>;
-			required-opps = <&noc2_400>;
-		};
-		opp-267000000 {
-			opp-hz = /bits/ 64 <267000000>;
-			opp-microvolt = <1000000>;
-			required-opps = <&noc2_200>;
-		};
-		opp-200000000 {
-			opp-hz = /bits/ 64 <200000000>;
-			opp-microvolt = <975000>;
-			required-opps = <&noc2_200>;
-		};
-		opp-160000000 {
-			opp-hz = /bits/ 64 <160000000>;
-			opp-microvolt = <962500>;
-			required-opps = <&noc2_134>;
-		};
-		opp-134000000 {
-			opp-hz = /bits/ 64 <134000000>;
-			opp-microvolt = <950000>;
-			required-opps = <&noc2_134>;
-		};
-		opp-100000000 {
-			opp-hz = /bits/ 64 <100000000>;
-			opp-microvolt = <937500>;
-			required-opps = <&noc2_100>;
-		};
-	};
-
-	bus_noc2_opp_table: opp_table6 {
-		compatible = "operating-points-v2";
-
-		noc2_400: opp-400000000 {
-			opp-hz = /bits/ 64 <400000000>;
-		};
-		noc2_200: opp-200000000 {
-			opp-hz = /bits/ 64 <200000000>;
-		};
-		noc2_134: opp-134000000 {
-			opp-hz = /bits/ 64 <134000000>;
-		};
-		noc2_100: opp-100000000 {
-			opp-hz = /bits/ 64 <100000000>;
-		};
-	};
-
--Saravana
-
-v3 -> v4:
-- Fixed documentation comments
-- Fixed order of functions in .h file
-- Renamed the new xlate API
-- Caused _set_required_opps() to fail if all required opps tables aren't
-  linked.
-v2 -> v3:
-- Rebased onto linux-next.
-- Added documentation comment for new fields.
-- Added support for lazy required-opps linking.
-- Updated Ack/Reviewed-bys.
-v1 -> v2:
-- Cached OPP table reference in devfreq to avoid looking up every time.
-- Renamed variable in passive governor to be more intuitive.
-- Updated cover letter with examples.
-
-
-Saravana Kannan (5):
-  OPP: Allow required-opps even if the device doesn't have power-domains
-  OPP: Add function to look up required OPP's for a given OPP
-  OPP: Improve required-opps linking
-  PM / devfreq: Cache OPP table reference in devfreq
-  PM / devfreq: Add required OPPs support to passive governor
-
- drivers/devfreq/devfreq.c          |   6 ++
- drivers/devfreq/governor_passive.c |  20 ++++--
- drivers/opp/core.c                 |  83 +++++++++++++++++++---
- drivers/opp/of.c                   | 108 ++++++++++++++---------------
- drivers/opp/opp.h                  |   5 ++
- include/linux/devfreq.h            |   2 +
- include/linux/pm_opp.h             |  11 +++
- 7 files changed, 165 insertions(+), 70 deletions(-)
-
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 438fcd134d93..5460b7da110e 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1883,6 +1883,59 @@ void dev_pm_opp_detach_genpd(struct opp_table *opp_table)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_detach_genpd);
+ 
++/**
++ * dev_pm_opp_xlate_required_opp() - Find required OPP for @src_table OPP.
++ * @src_table: OPP table which has @dst_table as one of its required OPP table.
++ * @dst_table: Required OPP table of the @src_table.
++ *
++ * This function returns the OPP (present in @dst_table) pointed out by the
++ * "required-opps" property of the OPP (present in @src_table).
++ *
++ * The callers are required to call dev_pm_opp_put() for the returned OPP after
++ * use.
++ *
++ * Return: destination table OPP on success, otherwise NULL on errors.
++ */
++struct dev_pm_opp *dev_pm_opp_xlate_required_opp(struct opp_table *src_table,
++						 struct opp_table *dst_table,
++						 struct dev_pm_opp *src_opp)
++{
++	struct dev_pm_opp *opp, *dest_opp = NULL;
++	int i;
++
++	if (!src_table || !dst_table || !src_opp)
++		return NULL;
++
++	for (i = 0; i < src_table->required_opp_count; i++) {
++		if (src_table->required_opp_tables[i]->np == dst_table->np)
++			break;
++	}
++
++	if (unlikely(i == src_table->required_opp_count)) {
++		pr_err("%s: Couldn't find matching OPP table (%p: %p)\n",
++		       __func__, src_table, dst_table);
++		return NULL;
++	}
++
++	mutex_lock(&src_table->lock);
++
++	list_for_each_entry(opp, &src_table->opp_list, node) {
++		if (opp == src_opp) {
++			dest_opp = opp->required_opps[i];
++			dev_pm_opp_get(dest_opp);
++			goto unlock;
++		}
++	}
++
++	pr_err("%s: Couldn't find matching OPP (%p: %p)\n", __func__, src_table,
++	       dst_table);
++
++unlock:
++	mutex_unlock(&src_table->lock);
++
++	return dest_opp;
++}
++
+ /**
+  * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
+  * @src_table: OPP table which has dst_table as one of its required OPP table.
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index af5021f27cb7..21d331de98b9 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -130,6 +130,9 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*s
+ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
+ struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, const char **names);
+ void dev_pm_opp_detach_genpd(struct opp_table *opp_table);
++struct dev_pm_opp *dev_pm_opp_xlate_required_opp(struct opp_table *src_table,
++						 struct opp_table *dst_table,
++						 struct dev_pm_opp *src_opp);
+ int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+@@ -299,6 +302,14 @@ static inline struct opp_table *dev_pm_opp_attach_genpd(struct device *dev, cons
+ 
+ static inline void dev_pm_opp_detach_genpd(struct opp_table *opp_table) {}
+ 
++static inline struct dev_pm_opp *dev_pm_opp_xlate_required_opp(
++						struct opp_table *src_table,
++						struct opp_table *dst_table,
++						struct dev_pm_opp *src_opp)
++{
++	return NULL;
++}
++
+ static inline int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate)
+ {
+ 	return -ENOTSUPP;
 -- 
 2.22.0.709.g102302147b-goog
 
