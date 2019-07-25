@@ -2,132 +2,194 @@ Return-Path: <SRS0=0uoY=VW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	FREEMAIL_REPLYTO_END_DIGIT,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67619C7618B
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:02:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8694C76191
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:24:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4A21A217F4
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:02:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A715C22BED
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:24:28 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T3qvU+3T"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388098AbfGYOCr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Jul 2019 10:02:47 -0400
-Received: from youngberry.canonical.com ([91.189.89.112]:45774 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388101AbfGYOCq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 10:02:46 -0400
-Received: from mail-pl1-f200.google.com ([209.85.214.200])
-        by youngberry.canonical.com with esmtps (TLS1.0:RSA_AES_128_CBC_SHA1:16)
-        (Exim 4.76)
-        (envelope-from <kai.heng.feng@canonical.com>)
-        id 1hqeKR-0002td-88
-        for linux-pm@vger.kernel.org; Thu, 25 Jul 2019 14:02:43 +0000
-Received: by mail-pl1-f200.google.com with SMTP id n1so26306092plk.11
-        for <linux-pm@vger.kernel.org>; Thu, 25 Jul 2019 07:02:43 -0700 (PDT)
+        id S1727644AbfGYOYY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Jul 2019 10:24:24 -0400
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:44475 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725944AbfGYOYY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 10:24:24 -0400
+Received: by mail-lj1-f193.google.com with SMTP id k18so48176513ljc.11;
+        Thu, 25 Jul 2019 07:24:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:reply-to:from:date:message-id
+         :subject:to:cc:content-transfer-encoding;
+        bh=QHpELRpBKO7EZIccXTfwOcj2Dzu6DQ0ve/foH0WRfeg=;
+        b=T3qvU+3Tb5TRK8AacfmISB0gOegIgKcyPLouaLtrAcRljhhQMWsVclxH8Ye/OGwc1y
+         FW2YGzEKdD4l66HhGY+YdLSQ8X+oqdu58DZ69ACt00NnHHlINMTc6fl2V135qEGPmGK5
+         0uFE1bOa4AGnDAAWD6z8Ffenp1fj4Ck9Ms5v3Octgp9x60b92ZroNI4RtI8FGyFwSM1F
+         UjlHmmCXXM5VscLwiEqZOxVTZkOyFuvgGmsOVHbeKx67sl7V3ZsaN9+VXQ+u1J3k7fwN
+         byklpgBBHHGjF74sTRKkgdpbOHNcsAgdwuwXRNJxxunkYoh6YblJ8RQ9E+jxzygshf5U
+         4LwA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
-         :content-transfer-encoding:message-id:references:to;
-        bh=dRGqqRdc8tkI0wtRj4b9pGjBs0cS4r9SniesDI0dk5k=;
-        b=J63WGIxkES0I6ERrwE/gV+eA5PmSmpPzIsR/bzZRoycA2p6Neact9J4Ae7OTJ5vvYq
-         mHSgpYZFKR1ILTkhpht8moGnRSvopCK++PE5Nta7jASLdjt17GSxcL1pShagcPLgApO8
-         inye2pB0KgEpvmttoqjtK80otbq+16MntCuTpU+1O4AzssIGzS0R6sKB7TKEp2XvGeu7
-         KMBYv8VEu+Kzvo26gMtjQHw677+Gme7aHiq8ZYxWBKsnzcRLIZhyy1x3kqxURsl560l1
-         vxILzJC7kS6pZJFdO3/I3bTEOiXaYCbO38P029jBHkPs0d8wTHPT1HlW+T5t3F0VZkAT
-         3OAg==
-X-Gm-Message-State: APjAAAUTzO7uGe4kmqT/a+lob1slj0XuQ6mw10PgZcLr1o18zrODsZwu
-        rYtVmt+Dau4sshnEUCRTaR75vANxXClm2FdH5o0qGcVKvkMmXbeTrFTnb8lahOtAYIS58KhyQVb
-        knoECKzOUzN0MqCqU+iYo1LLFzIWsHmszOdyn
-X-Received: by 2002:a63:9e54:: with SMTP id r20mr52056709pgo.64.1564063361877;
-        Thu, 25 Jul 2019 07:02:41 -0700 (PDT)
-X-Google-Smtp-Source: APXvYqzqyGieoMSzMW+cs+usTVtQ0tbDQ4xtlJACIElsyAMlDRT8SdSAUIjRG0amm82rcIJMkeA+5A==
-X-Received: by 2002:a63:9e54:: with SMTP id r20mr52056676pgo.64.1564063361539;
-        Thu, 25 Jul 2019 07:02:41 -0700 (PDT)
-Received: from 2001-b011-380f-3c20-0160-ac1c-9209-b8ff.dynamic-ip6.hinet.net (2001-b011-380f-3c20-0160-ac1c-9209-b8ff.dynamic-ip6.hinet.net. [2001:b011:380f:3c20:160:ac1c:9209:b8ff])
-        by smtp.gmail.com with ESMTPSA id e124sm80839839pfh.181.2019.07.25.07.02.39
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 25 Jul 2019 07:02:40 -0700 (PDT)
-Content-Type: text/plain;
-        charset=utf-8;
-        delsp=yes;
-        format=flowed
-Mime-Version: 1.0 (Mac OS X Mail 12.4 \(3445.104.11\))
-Subject: Re: [Regression] Commit "nvme/pci: Use host managed power state for
- suspend" has problems
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-In-Reply-To: <2332799.izEFUvJP67@kreacher>
-Date:   Thu, 25 Jul 2019 22:02:37 +0800
-Cc:     Keith Busch <keith.busch@intel.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        linux-nvme@lists.infradead.org,
-        Mario Limonciello <Mario.Limonciello@dell.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 8bit
-Message-Id: <E62786E4-5DA9-4542-899A-658D0E021190@canonical.com>
-References: <2332799.izEFUvJP67@kreacher>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-X-Mailer: Apple Mail (2.3445.104.11)
+        h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
+         :from:date:message-id:subject:to:cc:content-transfer-encoding;
+        bh=QHpELRpBKO7EZIccXTfwOcj2Dzu6DQ0ve/foH0WRfeg=;
+        b=GzbbHEhhHBDVNnZfwq8PLnfZAhFt0mjqfy53m8vc8sJNddHGn8/Dehc+B/MawuMkmm
+         S4mSo/WRyHxXWGSTeigIiEdONi4FMo2P9HwdzylwuHvNXvgi89LYWmQlJG9VlCnuFWfY
+         Mzii7dd1gcXdGkp0jmVb8c2PyXw6y2Bi0/dWZwaEoKw2n5vRp0gQLSKmWYimcxVZhDzk
+         H8gX51aURa6zbzUmIXEdswyztoGJnZnbneb8Ffy+l/f4MdRYkp0BVEvhbveqzxkVMguR
+         dcRk25KtXGoIGOlH9SW/RNpQZBflkcGlHCWcTGSDctvVjXeRqc5pG+MPuSEMh1WH20id
+         HmYA==
+X-Gm-Message-State: APjAAAWcmGnokaKKhJbmISycyjsBwRppYOUb13LN7NcaBvYrdEj1pS5G
+        TPHiGS6MHRh7aD+Y0J9EtRRiVxHAaR+b+f1+38Y=
+X-Google-Smtp-Source: APXvYqwEmzwuMqkOxr0aEHUwLmVQUEfqpgOv3BdVEQRWVSDRdsMreLUPZUh2LA5quQUjw8nMqzF9mEmTZ8nQFxNF6Pc=
+X-Received: by 2002:a2e:3008:: with SMTP id w8mr47159184ljw.13.1564064661345;
+ Thu, 25 Jul 2019 07:24:21 -0700 (PDT)
+MIME-Version: 1.0
+References: <cover.1563971855.git.leonard.crestez@nxp.com> <93df6e7d81a404a43af684e2f96bdb6561ed87fe.1563971855.git.leonard.crestez@nxp.com>
+In-Reply-To: <93df6e7d81a404a43af684e2f96bdb6561ed87fe.1563971855.git.leonard.crestez@nxp.com>
+Reply-To: cwchoi00@gmail.com
+From:   Chanwoo Choi <cwchoi00@gmail.com>
+Date:   Thu, 25 Jul 2019 23:23:44 +0900
+Message-ID: <CAGTfZH2UzvOVE-hKHLLGa7-ZF6DqsXvZiHcMy4O9qpohYLGbDA@mail.gmail.com>
+Subject: Re: [RFCv3 1/3] dt-bindings: devfreq: Add initial bindings for i.MX
+To:     Leonard Crestez <leonard.crestez@nxp.com>
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Will Deacon <will@kernel.org>, Stephen Boyd <sboyd@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Jacky Bai <ping.bai@nxp.com>,
+        Anson Huang <Anson.Huang@nxp.com>,
+        Abel Vesa <abel.vesa@nxp.com>,
+        Dong Aisheng <aisheng.dong@nxp.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Frank Li <Frank.li@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Hi,
 
-at 17:51, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+2019=EB=85=84 7=EC=9B=94 24=EC=9D=BC (=EC=88=98) =EC=98=A4=ED=9B=84 10:36, =
+Leonard Crestez <leonard.crestez@nxp.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=84=
+=B1:
+>
+> Add initial dt bindings for the interconnects inside i.MX chips.
+> Multiple external IPs are involved but SOC integration means the
+> software controllable interfaces are very similar.
+>
+> This is initially only for imx8mm but add an "fsl,imx-bus" fallback
+> similar to exynos-bus.
+>
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> ---
+>  .../devicetree/bindings/devfreq/imx.yaml      | 59 +++++++++++++++++++
+>  1 file changed, 59 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/imx.yaml
+>
+> diff --git a/Documentation/devicetree/bindings/devfreq/imx.yaml b/Documen=
+tation/devicetree/bindings/devfreq/imx.yaml
+> new file mode 100644
+> index 000000000000..87f90cddfd29
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/imx.yaml
+> @@ -0,0 +1,59 @@
+> +# SPDX-License-Identifier: GPL-2.0
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/devfreq/imx.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Generic i.MX bus frequency device
+> +
+> +maintainers:
+> +  - Leonard Crestez <leonard.crestez@nxp.com>
+> +
+> +description: |
+> +  The i.MX SoC family has multiple buses for which clock frequency (and =
+sometimes
+> +  voltage) can be adjusted.
+> +
+> +  Some of those buses expose register areas mentioned in the memory maps=
+ as GPV
+> +  ("Global Programmers View") but not all. Access to this area might be =
+denied for
+> +  normal world.
+> +
+> +  The buses are based on externally licensed IPs such as ARM NIC-301 and=
+ Arteris
+> +  FlexNOC but DT bindings are specific to the integration of these bus
+> +  interconnect IPs into imx SOCs.
+> +
+> +properties:
+> +  reg:
+> +    maxItems: 1
+> +    description: GPV area
+> +
+> +  compatible:
+> +    contains:
+> +      enum:
+> +       - fsl,imx8m-noc
+> +       - fsl,imx8m-nic
+> +       - fsl,imx8m-ddrc
+> +
+> +  clocks:
+> +    maxItems: 1
+> +
+> +required:
+> +  - compatible
+> +  - clocks
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/imx8mm-clock.h>
+> +    ddrc: dram-controller@3d400000 {
+> +            compatible =3D "fsl,imx8mm-ddrc";
 
-> Hi Keith,
->
-> Unfortunately,
->
-> commit d916b1be94b6dc8d293abed2451f3062f6af7551
-> Author: Keith Busch <keith.busch@intel.com>
-> Date:   Thu May 23 09:27:35 2019 -0600
->
->     nvme-pci: use host managed power state for suspend
->
-> doesn't universally improve things.  In fact, in some cases it makes  
-> things worse.
->
-> For example, on the Dell XPS13 9380 I have here it prevents the processor  
-> package
-> from reaching idle states deeper than PC2 in suspend-to-idle (which, of  
-> course, also
-> prevents the SoC from reaching any kind of S0ix).
->
-> That can be readily explained too.  Namely, with the commit above the  
-> NVMe device
-> stays in D0 over suspend/resume, so the root port it is connected to also  
-> has to stay in
-> D0 and that "blocks" package C-states deeper than PC2.
->
-> In order for the root port to be able to go to D3, the device connected  
-> to it also needs
-> to go into D3, so it looks like (at least on this particular machine, but  
-> maybe in
-> general), both D3 and the NVMe-specific PM are needed.
->
-> I'm not sure what to do here, because evidently there are systems where  
-> that commit
-> helps.  I was thinking about adding a module option allowing the user to  
-> override the
-> default behavior which in turn should be compatible with 5.2 and earlier  
-> kernels.
+s/imx8mm/imx8m
 
-I just briefly tested s2i on XPS 9370, and the power meter shows a 0.8~0.9W  
-power consumption so at least I don’t see the issue on XPS 9370.
+> +            reg =3D <0x3d400000 0x400000>;
+> +            clocks =3D <&clk IMX8MM_CLK_DRAM>;
+> +            operating-points-v2 =3D <&ddrc_opp_table>;
+> +    };
+> +
+> +  - |
+> +    noc: noc@32700000 {
+> +            compatible =3D "fsl,imx8mm-noc";
 
-Can you please provide the output of `nvme id-ctrl /dev/nvme*` and I’ll  
-test the NVMe controller on XPS 9380.
+s/imx8mm/imx8m
 
-Kai-Heng
-
+> +            reg =3D <0x32700000 0x100000>;
+> +            clocks =3D <&clk IMX8MM_CLK_NOC>;
+> +            operating-points-v2 =3D <&noc_opp_table>;
+> +    };
+> --
+> 2.17.1
 >
-> Cheers,
-> Rafael
 
 
+--=20
+Best Regards,
+Chanwoo Choi
