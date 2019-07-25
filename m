@@ -2,81 +2,197 @@ Return-Path: <SRS0=0uoY=VW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCCCFC7618B
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:28:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4140CC76191
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:43:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9F6CC22BED
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:28:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0DD552173B
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:43:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b="EXZ5L71u"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="sTEG5Qgv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727560AbfGYO2m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Jul 2019 10:28:42 -0400
-Received: from vern.gendns.com ([98.142.107.122]:53982 "EHLO vern.gendns.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725981AbfGYO2l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Jul 2019 10:28:41 -0400
-X-Greylist: delayed 1209 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jul 2019 10:28:41 EDT
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:MIME-Version:Date:Message-ID:From:References:To:Subject:Sender:
-        Reply-To:Cc:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=8iXF3z4I/1bFhPymp5brEezEOAt+VD8wjloraO/Zwfk=; b=EXZ5L71uP37YRG8OARqdv6Xg/0
-        RIycvmcz3YOUZ0lh/L7nIdAPHoDU74Ucg9nrvCgA6rkrGvJbgukLUmvm56LRBVfSsBHgf7sp+oGfg
-        P1n2E2cIznyFkE6WsIIUQe9Yb4A3ZOsTedEF5WXsXF8QEFGfQxPjH3z/cT2fi3Raj5YCuXmE3HsrQ
-        f6rylb6AqSyWzPSS4OQIu81FVjPKBUV7PBTjGtlvyMVvQEwkCFNZGbNzOAMIOm2VCVtJKaOI8wf+U
-        eVQUfi6Y4W9tptS0LJZSkugqoi8vNNwv16UNEmLySJwnwHcaeHb4gLyMF9+RtHQSdU75lO/vA9ECC
-        qUHojtRA==;
-Received: from 108-198-5-147.lightspeed.okcbok.sbcglobal.net ([108.198.5.147]:60968 helo=[192.168.0.134])
-        by vern.gendns.com with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
-        (Exim 4.92)
-        (envelope-from <david@lechnology.com>)
-        id 1hqeQ1-00Givk-AR; Thu, 25 Jul 2019 10:08:29 -0400
-Subject: Re: [PATCH 1/1] power/supply/powersupply_sysfs: Add of_node name to
- uevent message if available
-To:     Richard Tresidder <rtresidd@electromag.com.au>, sre@kernel.org,
-        enric.balletbo@collabora.com, ncrews@chromium.org,
-        andrew.smirnov@gmail.com, groeck@chromium.org, tglx@linutronix.de,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1564040858-24202-1-git-send-email-rtresidd@electromag.com.au>
-From:   David Lechner <david@lechnology.com>
-Message-ID: <9a10b934-e7f3-c95f-6250-8a857bdfa912@lechnology.com>
-Date:   Thu, 25 Jul 2019 09:08:28 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
+        id S2388363AbfGYOnb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Jul 2019 10:43:31 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:41887 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387920AbfGYOnb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 10:43:31 -0400
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190725144329euoutp0291a09cf2513ae5dcde3e536dc9224e72~0rZE7eaWl1229012290euoutp02q
+        for <linux-pm@vger.kernel.org>; Thu, 25 Jul 2019 14:43:29 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190725144329euoutp0291a09cf2513ae5dcde3e536dc9224e72~0rZE7eaWl1229012290euoutp02q
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1564065809;
+        bh=Ez/2lzRMCN6NYZ3shai8lT9fBiOe6bECqNjf1prjnCA=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=sTEG5QgvwTIn1g0GOSty/TacUPIcbv3PObP1o+vt6wn93gOiZbY+5MuHIOry8CtSm
+         DDaMQ2eOfg+45eA2wISzUo3sPVWIN4pVThtuNOCkjZXoQERvb7KKAB7e0gM/yLpvQy
+         96Aco2O1r3epLY5i14uy4EB0jXpBtLiLWEaKCqHg=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190725144329eucas1p163aba4ebd10cc83e128eed6d203b7179~0rZEJYqdz1363913639eucas1p1n;
+        Thu, 25 Jul 2019 14:43:29 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges2new.samsung.com (EUCPMTA) with SMTP id DF.CA.04377.010C93D5; Thu, 25
+        Jul 2019 15:43:28 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20190725144328eucas1p1e16c826c18c79af8f9c7283a896266a6~0rZDanIGf0147401474eucas1p1F;
+        Thu, 25 Jul 2019 14:43:28 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190725144328eusmtrp1a5fc98181a4d56eaceea38f4e1307752~0rZDMah3m0724307243eusmtrp1I;
+        Thu, 25 Jul 2019 14:43:28 +0000 (GMT)
+X-AuditID: cbfec7f4-12dff70000001119-9c-5d39c010631d
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 32.3E.04146.F00C93D5; Thu, 25
+        Jul 2019 15:43:27 +0100 (BST)
+Received: from AMDC3218.DIGITAL.local (unknown [106.120.51.18]) by
+        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190725144327eusmtip121f6b8fce50ae8e3f4098bf36862baac~0rZCZ9l5S0146301463eusmtip1n;
+        Thu, 25 Jul 2019 14:43:27 +0000 (GMT)
+From:   k.konieczny@partner.samsung.com
+To:     k.konieczny@partner.samsung.com
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Kukjin Kim <kgene@kernel.org>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Subject: [PATCH v4 5/5] devfreq: exynos-bus: remove
+ exynos_bus_passive_target()
+Date:   Thu, 25 Jul 2019 16:43:00 +0200
+Message-Id: <20190725144300.25014-6-k.konieczny@partner.samsung.com>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190725144300.25014-1-k.konieczny@partner.samsung.com>
 MIME-Version: 1.0
-In-Reply-To: <1564040858-24202-1-git-send-email-rtresidd@electromag.com.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - vern.gendns.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lechnology.com
-X-Get-Message-Sender-Via: vern.gendns.com: authenticated_id: davidmain+lechnology.com/only user confirmed/virtual account not confirmed
-X-Authenticated-Sender: vern.gendns.com: davidmain@lechnology.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrDKsWRmVeSWpSXmKPExsWy7djPc7oCByxjDR591LHYOGM9q8X1L89Z
+        LeYfOcdq0bfvP6NF/+PXzBbnz29gtzjb9IbdYtPja6wWl3fNYbP43HuE0WLG+X1MFmuP3GW3
+        WHr9IpPF7cYVbBZvfpxlsmjde4Td4t+1jSwWmx8cY3MQ8lgzbw2jx6ZVnWwem5fUexx8t4fJ
+        o2/LKkaP4ze2M3l83iQXwB7FZZOSmpNZllqkb5fAlTF9nn/Bd8GKq2fKGhg/8HUxcnJICJhI
+        fJo3l7GLkYtDSGAFo8Su11PYIZwvjBIdD46yQjifGSV+XlvECNPy9N1NqJbljBL3js5FaJm3
+        9iwLSBWbgKrElhkv2UFsEQFlicn3pjODFDEL/GSR2HB5I1hCWCBQ4u2292ANLEANxy/+ZgKx
+        eQVcJD583Qi1Tl6ic8dusBpOAVeJv41rGSFqBCVOznwCFmcGqmneOpsZov4tu8SyKWkQtotE
+        29o2VghbWOLV8S3sELaMxOnJPSwQdrnE04V9YB9ICLQwSjxo/wiVsJY4fPwiUDMH0AJNifW7
+        9EFMCQFHidN7mCFMPokbbwUhLuCTmLRtOlSYV6KjTQhihq7EvP9noA6Qluj6vw7K9pC4/a+V
+        aQKj4iwkv8xC8ssshLULGJlXMYqnlhbnpqcWG+WllusVJ+YWl+al6yXn525iBKa50/+Of9nB
+        uOtP0iFGAQ5GJR5ejVWWsUKsiWXFlbmHGCU4mJVEeLfuAArxpiRWVqUW5ccXleakFh9ilOZg
+        URLnrWZ4EC0kkJ5YkpqdmlqQWgSTZeLglGpgTJD7+EPD4O66CLlHj5/el//A+ujBTS7B9Q9z
+        pc4dnONz25nb5n9G+Buj49IZB1iCKh7P/mT+6ITQHl/DUDdDWfO4Bf78XcsrT4ie3V62wfDM
+        h4jivxcc3Ti3ij/XU01da640fyejT3rX5IgD3De2Ji49n/+44njWnUqeJJn5rtfWnzm81SXj
+        lhJLcUaioRZzUXEiAAK7CRFvAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrNIsWRmVeSWpSXmKPExsVy+t/xu7r8ByxjDfbuMLfYOGM9q8X1L89Z
+        LeYfOcdq0bfvP6NF/+PXzBbnz29gtzjb9IbdYtPja6wWl3fNYbP43HuE0WLG+X1MFmuP3GW3
+        WHr9IpPF7cYVbBZvfpxlsmjde4Td4t+1jSwWmx8cY3MQ8lgzbw2jx6ZVnWwem5fUexx8t4fJ
+        o2/LKkaP4ze2M3l83iQXwB6lZ1OUX1qSqpCRX1xiqxRtaGGkZ2hpoWdkYqlnaGwea2VkqqRv
+        Z5OSmpNZllqkb5eglzF9nn/Bd8GKq2fKGhg/8HUxcnJICJhIPH13kxHEFhJYyihx54g5RFxa
+        ovH0aiYIW1jiz7Uuti5GLqCaT4wSm6f9AmtgE1CV2DLjJTuILSKgLDH53nRmkCJmgU5WiRVP
+        jrCBJIQF/CU2XjkLNokFqOH4xd9gNq+Ai8SHrxsZITbIS3Tu2M0CYnMKuEr8bVwLdZGLRGP/
+        MUaIekGJkzOfgNUwA9U3b53NPIFRYBaS1CwkqQWMTKsYRVJLi3PTc4sN9YoTc4tL89L1kvNz
+        NzECI3LbsZ+bdzBe2hh8iFGAg1GJh/fCcstYIdbEsuLK3EOMEhzMSiK8W3cAhXhTEiurUovy
+        44tKc1KLDzGaAj0xkVlKNDkfmCzySuINTQ3NLSwNzY3Njc0slMR5OwQOxggJpCeWpGanphak
+        FsH0MXFwSjUwhhV98FsWeuBalaGP+JXD5jenLe04GPzQ+OP95j+3UzWt/6RPfsT/Pm/6x6R1
+        yyMeOs289/7Hm8i9VU3W6wQyV50+lPe9/tbmXVfPc19+FrOWc9/+5b8if/23nv6YOe5tkHSH
+        eFLVZQc9ThGtL7wHzsm9qnW4YR75Y8ODtyxPGS/dCkjunTH30yUlluKMREMt5qLiRABvQ0sS
+        3gIAAA==
+X-CMS-MailID: 20190725144328eucas1p1e16c826c18c79af8f9c7283a896266a6
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20190725144328eucas1p1e16c826c18c79af8f9c7283a896266a6
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190725144328eucas1p1e16c826c18c79af8f9c7283a896266a6
+References: <20190725144300.25014-1-k.konieczny@partner.samsung.com>
+        <CGME20190725144328eucas1p1e16c826c18c79af8f9c7283a896266a6@eucas1p1.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 7/25/19 2:47 AM, Richard Tresidder wrote:
-> If the of_node name of the supply is available from the devicetree binding
-> then include it under the var POWER_SUPPLY_OF_NODE_NAME.
-> This helps where a consistent name is known via the device tree binding
-> but it is hard to identify based on the usual enumeration process.
-> 
+Both functions exynos_bus_passive_target() and exynos_bus_target()
+have the same code, so remove exynos_bus_passive_target(). In
+exynos_bus_probe() replace it with exynos_bus_target.
 
-Would it be possible to use of_device_uevent() instead of introducing a new
-property?
+Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Kamil Konieczny <k.konieczny@partner.samsung.com>
+---
+This patch is new to this series.
+
+---
+ drivers/devfreq/exynos-bus.c | 34 ++--------------------------------
+ 1 file changed, 2 insertions(+), 32 deletions(-)
+
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index ebb8f46312b6..2aeb6cc07960 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -91,7 +91,7 @@ static int exynos_bus_get_event(struct exynos_bus *bus,
+ }
+ 
+ /*
+- * Must necessary function for devfreq simple-ondemand governor
++ * devfreq function for both simple-ondemand and passive governor
+  */
+ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
+ {
+@@ -167,36 +167,6 @@ static void exynos_bus_exit(struct device *dev)
+ 	}
+ }
+ 
+-/*
+- * Must necessary function for devfreq passive governor
+- */
+-static int exynos_bus_passive_target(struct device *dev, unsigned long *freq,
+-					u32 flags)
+-{
+-	struct exynos_bus *bus = dev_get_drvdata(dev);
+-	struct dev_pm_opp *new_opp;
+-	int ret;
+-
+-	/* Get correct frequency for bus. */
+-	new_opp = devfreq_recommended_opp(dev, freq, flags);
+-	if (IS_ERR(new_opp)) {
+-		dev_err(dev, "failed to get recommended opp instance\n");
+-		return PTR_ERR(new_opp);
+-	}
+-
+-	dev_pm_opp_put(new_opp);
+-
+-	/* Change the frequency according to new OPP level */
+-	mutex_lock(&bus->lock);
+-	ret = dev_pm_opp_set_rate(dev, *freq);
+-	if (!ret)
+-		bus->curr_freq = *freq;
+-
+-	mutex_unlock(&bus->lock);
+-
+-	return ret;
+-}
+-
+ static void exynos_bus_passive_exit(struct device *dev)
+ {
+ 	struct exynos_bus *bus = dev_get_drvdata(dev);
+@@ -417,7 +387,7 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	goto out;
+ passive:
+ 	/* Initialize the struct profile and governor data for passive device */
+-	profile->target = exynos_bus_passive_target;
++	profile->target = exynos_bus_target;
+ 	profile->exit = exynos_bus_passive_exit;
+ 
+ 	/* Get the instance of parent devfreq device */
+-- 
+2.22.0
 
