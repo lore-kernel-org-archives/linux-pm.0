@@ -2,102 +2,198 @@ Return-Path: <SRS0=0uoY=VW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	FREEMAIL_REPLYTO_END_DIGIT,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1F8AC7618B
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:55:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A700C7618B
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 15:00:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7D27721734
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:55:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1564066505;
-	bh=GrXVjWAVvN2gz6eFwJLndRnWEQThXUtatV7HHHWg/CQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=cM6lBk4lzzQmKEojb6zri5nouLKAl2WTY5493cRLUarjKKZeM8HFRwpl/+BPMDWb7
-	 7Wapr70JpPIWv4tsxOYdd38zVZJMxWbHyq0BR1ZOXp+7HrvZqhCDlbz1SU81fYHc90
-	 UqwZ3F1uvS+qXJDyly8yJqgTnBXUPfIoLkzX9gWU=
+	by mail.kernel.org (Postfix) with ESMTP id 265082238C
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 15:00:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QpF6BdCi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388639AbfGYOzF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Jul 2019 10:55:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:21779 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2388424AbfGYOzE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Jul 2019 10:55:04 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 25 Jul 2019 07:55:04 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.64,307,1559545200"; 
-   d="scan'208";a="177989924"
-Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
-  by FMSMGA003.fm.intel.com with ESMTP; 25 Jul 2019 07:55:03 -0700
-Date:   Thu, 25 Jul 2019 08:52:10 -0600
-From:   Keith Busch <kbusch@kernel.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     "Busch, Keith" <keith.busch@intel.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>,
-        Mario Limonciello <Mario.Limonciello@dell.com>,
-        Kai Heng Feng <kai.heng.feng@canonical.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Regression] Commit "nvme/pci: Use host managed power state for
- suspend" has problems
-Message-ID: <20190725145209.GA6949@localhost.localdomain>
-References: <2332799.izEFUvJP67@kreacher>
+        id S2388871AbfGYPAB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Jul 2019 11:00:01 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:38609 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388374AbfGYPAB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 11:00:01 -0400
+Received: by mail-lj1-f196.google.com with SMTP id r9so48317540ljg.5;
+        Thu, 25 Jul 2019 07:59:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:reply-to:from:date:message-id
+         :subject:to:cc:content-transfer-encoding;
+        bh=p9OR61FicIpVENd/71fr74aLBznslcDzFyCpkAgUAXc=;
+        b=QpF6BdCinO8sSU+WgwVqhTBRehdNQtib+EoE3soWMylfDlEr7ExQR6aPDum3wSyomO
+         YjvZHhKphEW9EvLI+saojKFniOHKA2wjO4m2MIh/dEBr82C/sZIL9KLeDDVlhcJaZjbU
+         4YMf32NobArfgLnsmOTI4uAUgcPoo9s12i65I023l8RYJ8s18KSHHdOQsaIsBRh3JEiA
+         TwZ55d1Eln05YRaSbpfpRcuQ8uLXh2ZNprhmG8BfsBxq/RjNvFhqBWGgW3vX7DKt3mtc
+         UqzbXF2+OgEuSmOr4S+gW1cA2J707vr1vY0nG1Ph5wxT5BKtVL5GBhYe94vSiSH7AWib
+         jLVQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
+         :from:date:message-id:subject:to:cc:content-transfer-encoding;
+        bh=p9OR61FicIpVENd/71fr74aLBznslcDzFyCpkAgUAXc=;
+        b=EV2nrpFgfwE/A5uNlXmmEfV2W5d+tgps9I3gbSINEzYORttBaLGtSxBlTtqeL2rTwR
+         vYx4qLtUrWBtziST/ZkKCis+zix0lYpkBBCfwz0eROw51mQurC/v4iBOoXynONvl+V4u
+         Mk8ZikzGgooLFHcGC75wg7vxdevfHphZR01effMnClrs8swALoHnCHkeOi+nxJyFh11/
+         o3TUC7v7Nu4myO4tByom+Lsxy2+4zoqkVaT4VgEXXUVtvCnbmBrZRmCKuDOuqJkuNiwq
+         ZMpEL9jYnLJgubleojn2gE4mD+sFxxJVBb/L9jrFcQlpDCZrKlyD71Q5a+yumylFijM+
+         XImQ==
+X-Gm-Message-State: APjAAAXKmjtQN7svYtxPTBZjPt8NPcXg7DbWIm7uRF+Wuu4VOqbYalCb
+        AxVD0UwIRDcIpBcGdV75R37WaG2wd8gIYbsgoSw=
+X-Google-Smtp-Source: APXvYqwsM3OgAowPI5xaCfG8fdrn/hdgdcd4tyijHhC7H2G6DeZ7i8m+exE9TkNVLdcveFGTrpBdfmLVo4VyTFHuGTE=
+X-Received: by 2002:a2e:b0e6:: with SMTP id h6mr44378736ljl.18.1564066797851;
+ Thu, 25 Jul 2019 07:59:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2332799.izEFUvJP67@kreacher>
-User-Agent: Mutt/1.9.1 (2017-09-22)
+References: <CGME20190725144325eucas1p1463ecde90f9c93cb73d3c54c7cf3f1ff@eucas1p1.samsung.com>
+ <20190725144300.25014-1-k.konieczny@partner.samsung.com> <20190725144300.25014-2-k.konieczny@partner.samsung.com>
+In-Reply-To: <20190725144300.25014-2-k.konieczny@partner.samsung.com>
+Reply-To: cwchoi00@gmail.com
+From:   Chanwoo Choi <cwchoi00@gmail.com>
+Date:   Thu, 25 Jul 2019 23:59:21 +0900
+Message-ID: <CAGTfZH0=skWJ3Dny7voeRzDp5oRkbNO=Pf6j+PM03=epmX-86g@mail.gmail.com>
+Subject: Re: [PATCH v4 1/5] devfreq: exynos-bus: correct clock enable sequence
+To:     Kamil Konieczny <k.konieczny@partner.samsung.com>
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Kukjin Kim <kgene@kernel.org>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        linux-samsung-soc <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jul 25, 2019 at 02:51:41AM -0700, Rafael J. Wysocki wrote:
-> Hi Keith,
-> 
-> Unfortunately,
-> 
-> commit d916b1be94b6dc8d293abed2451f3062f6af7551
-> Author: Keith Busch <keith.busch@intel.com>
-> Date:   Thu May 23 09:27:35 2019 -0600
-> 
->     nvme-pci: use host managed power state for suspend
-> 
-> doesn't universally improve things.  In fact, in some cases it makes things worse.
-> 
-> For example, on the Dell XPS13 9380 I have here it prevents the processor package
-> from reaching idle states deeper than PC2 in suspend-to-idle (which, of course, also
-> prevents the SoC from reaching any kind of S0ix).
-> 
-> That can be readily explained too.  Namely, with the commit above the NVMe device
-> stays in D0 over suspend/resume, so the root port it is connected to also has to stay in
-> D0 and that "blocks" package C-states deeper than PC2.
-> 
-> In order for the root port to be able to go to D3, the device connected to it also needs
-> to go into D3, so it looks like (at least on this particular machine, but maybe in
-> general), both D3 and the NVMe-specific PM are needed.
-> 
-> I'm not sure what to do here, because evidently there are systems where that commit
-> helps.  I was thinking about adding a module option allowing the user to override the
-> default behavior which in turn should be compatible with 5.2 and earlier kernels.
+Hi,
 
-Darn, that's too bad. I don't think we can improve one thing at the
-expense of another, so unless we find an acceptable criteria to select
-what low power mode to use, I would be inclined to support a revert or
-a kernel option to default to the previous behavior.
+You are missing my Acked tag.
 
-One thing we might check before using NVMe power states is if the lowest
-PS is non-operational with MP below some threshold. What does your device
-report for:
+2019=EB=85=84 7=EC=9B=94 25=EC=9D=BC (=EB=AA=A9) =EC=98=A4=ED=9B=84 11:44, =
+<k.konieczny@partner.samsung.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=84=B1:
+>
+> Regulators should be enabled before clocks to avoid h/w hang. This
+> require change in exynos_bus_probe() to move exynos_bus_parse_of()
+> after exynos_bus_parent_parse_of() and change in error handling.
+> Similar change is needed in exynos_bus_exit() where clock should be
+> disabled before regulators.
+>
+> Signed-off-by: Kamil Konieczny <k.konieczny@partner.samsung.com>
+> ---
+> Changes:
+> v4:
+> - move regulator disable after clock disable
+> - remove unrelated changes
+> - add disabling regulators in error path in exynos_bus_probe()
+>
+> ---
+>  drivers/devfreq/exynos-bus.c | 31 +++++++++++++++++--------------
+>  1 file changed, 17 insertions(+), 14 deletions(-)
+>
+> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+> index 486cc5b422f1..f34fa26f00d0 100644
+> --- a/drivers/devfreq/exynos-bus.c
+> +++ b/drivers/devfreq/exynos-bus.c
+> @@ -194,11 +194,10 @@ static void exynos_bus_exit(struct device *dev)
+>         if (ret < 0)
+>                 dev_warn(dev, "failed to disable the devfreq-event device=
+s\n");
+>
+> -       if (bus->regulator)
+> -               regulator_disable(bus->regulator);
+> -
+>         dev_pm_opp_of_remove_table(dev);
+>         clk_disable_unprepare(bus->clk);
+> +       if (bus->regulator)
+> +               regulator_disable(bus->regulator);
+>  }
+>
+>  /*
+> @@ -386,6 +385,7 @@ static int exynos_bus_probe(struct platform_device *p=
+dev)
+>         struct exynos_bus *bus;
+>         int ret, max_state;
+>         unsigned long min_freq, max_freq;
+> +       bool passive =3D false;
+>
+>         if (!np) {
+>                 dev_err(dev, "failed to find devicetree node\n");
+> @@ -399,27 +399,27 @@ static int exynos_bus_probe(struct platform_device =
+*pdev)
+>         bus->dev =3D &pdev->dev;
+>         platform_set_drvdata(pdev, bus);
+>
+> -       /* Parse the device-tree to get the resource information */
+> -       ret =3D exynos_bus_parse_of(np, bus);
+> -       if (ret < 0)
+> -               return ret;
+> -
+>         profile =3D devm_kzalloc(dev, sizeof(*profile), GFP_KERNEL);
+> -       if (!profile) {
+> -               ret =3D -ENOMEM;
+> -               goto err;
+> -       }
+> +       if (!profile)
+> +               return -ENOMEM;
+>
+>         node =3D of_parse_phandle(dev->of_node, "devfreq", 0);
+>         if (node) {
+>                 of_node_put(node);
+> -               goto passive;
+> +               passive =3D true;
+>         } else {
+>                 ret =3D exynos_bus_parent_parse_of(np, bus);
+> +               if (ret < 0)
+> +                       return ret;
+>         }
+>
+> +       /* Parse the device-tree to get the resource information */
+> +       ret =3D exynos_bus_parse_of(np, bus);
+>         if (ret < 0)
+> -               goto err;
+> +               goto err_reg;
+> +
+> +       if (passive)
+> +               goto passive;
+>
+>         /* Initialize the struct profile and governor data for parent dev=
+ice */
+>         profile->polling_ms =3D 50;
+> @@ -510,6 +510,9 @@ static int exynos_bus_probe(struct platform_device *p=
+dev)
+>  err:
+>         dev_pm_opp_of_remove_table(dev);
+>         clk_disable_unprepare(bus->clk);
+> +err_reg:
+> +       if (!passive)
+> +               regulator_disable(bus->regulator);
+>
+>         return ret;
+>  }
+> --
+> 2.22.0
+>
 
-  nvme id-ctrl /dev/nvme0
 
-?
+--=20
+Best Regards,
+Chanwoo Choi
