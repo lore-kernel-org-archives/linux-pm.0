@@ -2,188 +2,81 @@ Return-Path: <SRS0=0uoY=VW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 546A1C7618B
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:24:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCCCFC7618B
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:28:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1EB2322CD5
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:24:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9F6CC22BED
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 14:28:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n54k40O/"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lechnology.com header.i=@lechnology.com header.b="EXZ5L71u"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388169AbfGYOYs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Jul 2019 10:24:48 -0400
-Received: from mail-pf1-f195.google.com ([209.85.210.195]:37697 "EHLO
-        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388090AbfGYOYs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 10:24:48 -0400
-Received: by mail-pf1-f195.google.com with SMTP id 19so22847535pfa.4;
-        Thu, 25 Jul 2019 07:24:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=1VKuC1KiCNNy3fXegCj/9eEYpb5J1BMDpw/S3NGoOX4=;
-        b=n54k40O/4V9IXaWdt1c/O/X1SNbI13qgKZuP/3Pc40n1eWQBHyPiu/ieVitQ/bWzWJ
-         t0dPBt5MHm97pPuJzw6Pmqn1PiFHXIrzbQGcEEXizTWEiMZwth0i0V1qB8xs1l4lcXb5
-         5kk5y7xrhmShk6p7AGID6g74Xw+x7Yxb8lIb2NpH9SZeyxaDb0xqOkOiEtG+fqGKWfyn
-         qx0BZJpPplXJH2dOJBkUiWNqRgJpeHGIXl1/TLuMO1QSL8d/Vcx40CrUsaOisx5wJ/b6
-         1/TpYz/HYfaHr4W0gFy0ysELjwMC92jnNL0PZH5Pwus4sxaXTaklbq5VQ8oLrxRtHlv0
-         auNA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=1VKuC1KiCNNy3fXegCj/9eEYpb5J1BMDpw/S3NGoOX4=;
-        b=bC/lWAvpG1ud8HYQMkxvyYsB2x+1rHuh7z/Rvfl7tMAe1aWcgrycr46H0QMzToJK+d
-         /rt2lJQu9Fphjai1yvP5BvP81Ql/vQg49F33qD5LtthHlMBuQcgfug8tVfjyzCjmwdE3
-         a+AD7yzI/k5LkvkLBiYNsKmOnnc6Fj4hFYb0eYHjdQokUWTftyhveGOjxGOeHm+h6eG0
-         PgsQ0cgsJUitzxEvKdsUKw6NbM68DkJ0EOpkNB+sCdRfGOuPNIxbvMu6N0i68UnZilHO
-         XG8+zYQkiIdbyaLQkWSasRGZsJVwAXsyqcQN+oq9l5YN0PQe3l6n/PO2sGp6wNSaaVVj
-         VaIw==
-X-Gm-Message-State: APjAAAWc5NR+KcFH/CB5AgImU5kkyG8WBDpPWZCpMvhoeYiFJUkhOmiK
-        Y3bq+m9PgP3ayul9oH8L9aaOdOLragcxKaFgNDI=
-X-Google-Smtp-Source: APXvYqzPCe+/gaiuTPknRfAisyHmKvhdgM0c+iqn70Y3nn+xULbKyQCLk6le1kROzCUC/Mt4Yevnd44vRHi2NxWSm2Y=
-X-Received: by 2002:a63:7455:: with SMTP id e21mr81501053pgn.439.1564064687329;
- Thu, 25 Jul 2019 07:24:47 -0700 (PDT)
+        id S1727560AbfGYO2m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Jul 2019 10:28:42 -0400
+Received: from vern.gendns.com ([98.142.107.122]:53982 "EHLO vern.gendns.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725981AbfGYO2l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Jul 2019 10:28:41 -0400
+X-Greylist: delayed 1209 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jul 2019 10:28:41 EDT
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=lechnology.com; s=default; h=Content-Transfer-Encoding:Content-Type:
+        In-Reply-To:MIME-Version:Date:Message-ID:From:References:To:Subject:Sender:
+        Reply-To:Cc:Content-ID:Content-Description:Resent-Date:Resent-From:
+        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=8iXF3z4I/1bFhPymp5brEezEOAt+VD8wjloraO/Zwfk=; b=EXZ5L71uP37YRG8OARqdv6Xg/0
+        RIycvmcz3YOUZ0lh/L7nIdAPHoDU74Ucg9nrvCgA6rkrGvJbgukLUmvm56LRBVfSsBHgf7sp+oGfg
+        P1n2E2cIznyFkE6WsIIUQe9Yb4A3ZOsTedEF5WXsXF8QEFGfQxPjH3z/cT2fi3Raj5YCuXmE3HsrQ
+        f6rylb6AqSyWzPSS4OQIu81FVjPKBUV7PBTjGtlvyMVvQEwkCFNZGbNzOAMIOm2VCVtJKaOI8wf+U
+        eVQUfi6Y4W9tptS0LJZSkugqoi8vNNwv16UNEmLySJwnwHcaeHb4gLyMF9+RtHQSdU75lO/vA9ECC
+        qUHojtRA==;
+Received: from 108-198-5-147.lightspeed.okcbok.sbcglobal.net ([108.198.5.147]:60968 helo=[192.168.0.134])
+        by vern.gendns.com with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
+        (Exim 4.92)
+        (envelope-from <david@lechnology.com>)
+        id 1hqeQ1-00Givk-AR; Thu, 25 Jul 2019 10:08:29 -0400
+Subject: Re: [PATCH 1/1] power/supply/powersupply_sysfs: Add of_node name to
+ uevent message if available
+To:     Richard Tresidder <rtresidd@electromag.com.au>, sre@kernel.org,
+        enric.balletbo@collabora.com, ncrews@chromium.org,
+        andrew.smirnov@gmail.com, groeck@chromium.org, tglx@linutronix.de,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1564040858-24202-1-git-send-email-rtresidd@electromag.com.au>
+From:   David Lechner <david@lechnology.com>
+Message-ID: <9a10b934-e7f3-c95f-6250-8a857bdfa912@lechnology.com>
+Date:   Thu, 25 Jul 2019 09:08:28 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
 MIME-Version: 1.0
-References: <1561990354-4084-1-git-send-email-akinobu.mita@gmail.com>
- <1561990354-4084-3-git-send-email-akinobu.mita@gmail.com> <20190722221645.GA32515@bogus>
-In-Reply-To: <20190722221645.GA32515@bogus>
-From:   Akinobu Mita <akinobu.mita@gmail.com>
-Date:   Thu, 25 Jul 2019 23:24:36 +0900
-Message-ID: <CAC5umyh5d7Ya-Ou8BZmPfpXKT+WkMCWnRKkCw8xhe9upNKqVbg@mail.gmail.com>
-Subject: Re: [PATCH v5 2/4] dt-bindings: thermal: nvme: Add binding documentation
-To:     Rob Herring <robh@kernel.org>
-Cc:     linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org,
-        "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@fb.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        Minwoo Im <minwoo.im.dev@gmail.com>,
-        Kenneth Heitke <kenneth.heitke@intel.com>,
-        Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1564040858-24202-1-git-send-email-rtresidd@electromag.com.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - vern.gendns.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - lechnology.com
+X-Get-Message-Sender-Via: vern.gendns.com: authenticated_id: davidmain+lechnology.com/only user confirmed/virtual account not confirmed
+X-Authenticated-Sender: vern.gendns.com: davidmain@lechnology.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-2019=E5=B9=B47=E6=9C=8823=E6=97=A5(=E7=81=AB) 7:16 Rob Herring <robh@kernel=
-.org>:
->
-> On Mon, Jul 01, 2019 at 11:12:32PM +0900, Akinobu Mita wrote:
-> > Add thermal binding documentation for NVMe temperature sensor.
-> >
-> > Cc: Rob Herring <robh@kernel.org>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: Keith Busch <kbusch@kernel.org>
-> > Cc: Jens Axboe <axboe@fb.com>
-> > Cc: Christoph Hellwig <hch@lst.de>
-> > Cc: Sagi Grimberg <sagi@grimberg.me>
-> > Cc: Minwoo Im <minwoo.im.dev@gmail.com>
-> > Cc: Kenneth Heitke <kenneth.heitke@intel.com>
-> > Cc: Chaitanya Kulkarni <Chaitanya.Kulkarni@wdc.com>
-> > Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> > ---
-> > * v5
-> > - New patch
-> >
-> >  Documentation/devicetree/bindings/thermal/nvme.txt | 56 ++++++++++++++=
-++++++++
-> >  1 file changed, 56 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/thermal/nvme.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/thermal/nvme.txt b/Docum=
-entation/devicetree/bindings/thermal/nvme.txt
-> > new file mode 100644
-> > index 0000000..60b90de
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/thermal/nvme.txt
-> > @@ -0,0 +1,56 @@
-> > +Binding for NVMe temperature sensor
-> > +
-> > +An NVMe controller reports up to nine temperature values in the SMART =
-/ Health
-> > +log.
-> > +
-> > +Required properties:
-> > +- reg: A five-cell address encoded as (phys.hi phys.mid phys.lo size.h=
-i
-> > +  size.lo). phys.hi should contain the device's BDF (Bus/Device/Functi=
-on)
-> > +  as 0b00000000 bbbbbbbb dddddfff 00000000. The other cells should be =
-zero.
-> > +  See also Documentation/devicetree/bindings/pci/pci.txt
-> > +
-> > +- #thermal-sensor-cells: Must be 1. See ./thermal.txt for a descriptio=
-n.
-> > +  In the thermal-sensors property, the sensor ID 0 for composite tempe=
-rature,
-> > +  1 through 8 for NVMe temperature sensor N.
-> > +
-> > +Example:
-> > +
-> > +&pcie0 {
-> > +     ...
-> > +     nvme: nvme@0,0 {
-> > +             reg =3D <0x0000 0 0 0 0>;
-> > +             #address-cells =3D <3>;
-> > +             #size-cells =3D <2>;
-> > +
-> > +             nvmetemp: nvmetemp {
-> > +                     reg =3D <0x0000 0 0 0 0>; /* DEVFN =3D 0x00 (0:0)=
- */
->
-> I'm not sure this is really valid PCI addressing as the parent has the
-> same address.
->
-> > +                     #thermal-sensor-cells =3D <1>;
->
-> Can't you just put this in the parent? Is this really a separate
-> addressable device from the parent?
+On 7/25/19 2:47 AM, Richard Tresidder wrote:
+> If the of_node name of the supply is available from the devicetree binding
+> then include it under the var POWER_SUPPLY_OF_NODE_NAME.
+> This helps where a consistent name is known via the device tree binding
+> but it is hard to identify based on the usual enumeration process.
+> 
 
-How about this?
+Would it be possible to use of_device_uevent() instead of introducing a new
+property?
 
-&pcie0 {
-...
-        pci-bridge@0 {
-                reg =3D <0x00000 0 0 0 0>;
-                #address-cells =3D <3>;
-                #size-cells =3D <2>;
-
-                nvme: nvme@0,0 {
-                        reg =3D <0x10000 0 0 0 0>;
-                        #thermal-sensor-cells =3D <1>;
-                };
-        };
-};
-
-and
-
-&thermal_zones {
-...
-thermal-sensors =3D <&nvme 0>;
-};
-
-I tested this with the RockPro64 and edited
-arch/arm64/boot/dts/rockchip/rk3399-rockpro64.dts.
-
-$ lspci
-00:00.0 PCI bridge: Fuzhou Rockchip Electronics Co., Ltd Device 0100
-01:00.0 Non-Volatile memory controller: Micron/Crucial Technology
-Device 2263 (rev 03)
-
-$ lspci -tv
--[0000:00]---00.0-[01]----00.0  Micron/Crucial Technology Device 2263
