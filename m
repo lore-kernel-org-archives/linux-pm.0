@@ -2,55 +2,58 @@ Return-Path: <SRS0=0uoY=VW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA11AC76194
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 22:18:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A68A7C76194
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 22:19:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C32BF22C7D
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 22:18:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8009722C7B
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 22:19:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cLqjJ6Tz"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bjUFoDkw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726784AbfGYWS7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Jul 2019 18:18:59 -0400
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:38200 "EHLO
-        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726761AbfGYWS6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 18:18:58 -0400
-Received: by mail-pg1-f194.google.com with SMTP id f5so14890065pgu.5
-        for <linux-pm@vger.kernel.org>; Thu, 25 Jul 2019 15:18:58 -0700 (PDT)
+        id S1726906AbfGYWTG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Jul 2019 18:19:06 -0400
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:39150 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726821AbfGYWTG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 18:19:06 -0400
+Received: by mail-pf1-f194.google.com with SMTP id f17so19440651pfn.6
+        for <linux-pm@vger.kernel.org>; Thu, 25 Jul 2019 15:19:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=NVLzievBgAW2kTNQ4IEdhARg8wdn1fX0hhOxE5e3+74=;
-        b=cLqjJ6TzLW3C14g++C0UiRgOWuPiD4AbxAy1kd/QqmjjrhPahabScD3tUJEHzOnzhd
-         AUnfZmiZ2LhPk9mYrmJiXd/1yiieI+xtf9NvDs3w93GfM++Hu/DWkgFjOZoBp3Ij9Xra
-         JIhFOf2u4fmlaSnfUGzcNbLephleyNk1l+EkL+ZVE+KT9uYkRb4mfBBlaugUGMGCEQwx
-         UD0U6exjKJQS78zmA9TB8GeWX4JNO29747mR5z179rz2OgTgdaoHwAo+66L6AOMa+Zej
-         AKrKfqM7jyBXxK7f97ZjLAoagykpYBUur+nnUWql5k4LpxNdYe6M3XNMGxKgUkkDp4Fz
-         SAnw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :in-reply-to:references;
+        bh=xgmSGdIDu0v4P5hRNEQENmsRjAPMzQvZ2XtfdY307wY=;
+        b=bjUFoDkwwtUAE9rjXGY/yoZmv4SUpw3zs28N86CLMnkSz3U+2bn3+TLJS+4walCtmB
+         PVQpuIprCpvqgGD1hWDh4l6z7HtvdCGuNaShzu+KiztS8VV1ubwC6cMtXT9B8gqsYZpA
+         sP3T9ywIr4mAS+PZ98Ckn5ZGC1sZ/ATKTqJeDkZ6+0YlEmEEbN14p+4uUcVmseHdfP5s
+         DHmjxk72WKm+GFVr/biN9GvWyyvLqP7zztIloxDv1rrIieRYpNA9mjJheq0ihmCV9jNW
+         CXiQyERh4pgRHH5XRbCVnmwwLYv4sqP3LBIHGx5fH3LcaAWNjeAgBfH788SsDqKtqjyb
+         eLyg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=NVLzievBgAW2kTNQ4IEdhARg8wdn1fX0hhOxE5e3+74=;
-        b=pAfiAN2vk1w9NRDae02r7l6pxDy3tmImEXvXngpZw7my8xlmbkP/nbpfJQ/+WFV7Zo
-         9+QjHoAG5VH91GJhe38CH3F5GkEfhIaWnDFq+++8JFqFiiZHFQSU5E4gyGJ95OL/BhV0
-         bGzO2qzy3RGl6rWddHVGDuoo/3GFkdiNjyS+RPmgrHpF8Y1mmwxWyE/4VxVlPjMSEfFt
-         +8vex2FLjC2jn8xBNjhYVg0oWpSpc1IJ7D5LRQKCzhHKrtcqVpKchV29JUoieneCUW5i
-         1POwBT6oXq4cjGPBUqmvH+fjbDbdVVpX+LVBJn22H23A8YKsiMNOcx2V/jTtRuxiQVvR
-         xxtA==
-X-Gm-Message-State: APjAAAXnmO7krg17J8jvYB1KdJYCNCeiOxep25ITYp7/VPUAnfTXbqVE
-        Xj8IKUR+jxUggirqVBJyn62FEQ==
-X-Google-Smtp-Source: APXvYqxL6PmLuB36DChPLNPqejwMve0KfCx5pZgv1HkmNYQcHxAHvTB1jjrdTdLUgfkizEIKdFoX0w==
-X-Received: by 2002:aa7:93bb:: with SMTP id x27mr19445645pff.10.1564093138071;
-        Thu, 25 Jul 2019 15:18:58 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:in-reply-to:references;
+        bh=xgmSGdIDu0v4P5hRNEQENmsRjAPMzQvZ2XtfdY307wY=;
+        b=SqJ6HQELJrbBHx4eP5MNW3VusdtiRM0PL7hYer6mBYXiH5QY7q3VKVJTrj+WtCcMNZ
+         Cy7VPwmzcA/Pf7qfTIp0mA2em2jtom383MaYvlJjAQ7lMi9hUo8fuq6a0FzIU8SWqiUW
+         doELw+vuYsK5rqtiX7VFtG6m4cqKISbid1jILkMXzKiYedL6qkaJbiJ9/XsxBKBpOl7S
+         GgR9GhUoidihjRNpeGWJXDLOxgn9t1uZy/axSC88KjDnqgaJqKncTa351g4DNqzp4yOn
+         qYwm+XAJ/ufRH+gT6mS4/ZWSik4YNcbgqWdjoBU65L5a/wJsqP4rE+l6kk7fiM7MLT1Z
+         czbg==
+X-Gm-Message-State: APjAAAV+n06sD3JLbP+yortCHs84du5Hx1WPc+RmxblZNN0dLJukXMhf
+        Z5ROJeqOhy4aDWmLmQE7T9IXujac9rUVOA==
+X-Google-Smtp-Source: APXvYqwaSRF2/JeVa1u/7Y6W3dTGdYmgn066tsuvQjuj18nF/sNUfRqKZ0YJ1r2l5P9c6PXW8ZIQ8w==
+X-Received: by 2002:a62:16:: with SMTP id 22mr19525541pfa.151.1564093145400;
+        Thu, 25 Jul 2019 15:19:05 -0700 (PDT)
 Received: from localhost ([49.248.170.216])
-        by smtp.gmail.com with ESMTPSA id c130sm49074069pfc.184.2019.07.25.15.18.56
+        by smtp.gmail.com with ESMTPSA id 21sm46989303pjh.25.2019.07.25.15.19.04
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Thu, 25 Jul 2019 15:18:57 -0700 (PDT)
+        Thu, 25 Jul 2019 15:19:04 -0700 (PDT)
 From:   Amit Kucheria <amit.kucheria@linaro.org>
 To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         bjorn.andersson@linaro.org, edubezval@gmail.com,
@@ -59,61 +62,54 @@ To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Mark Rutland <mark.rutland@arm.com>,
         Rob Herring <robh+dt@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>
-Cc:     marc.w.gonzalez@free.fr, masneyb@onstation.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 00/15] thermal: qcom: tsens: Add interrupt support
-Date:   Fri, 26 Jul 2019 03:48:35 +0530
-Message-Id: <cover.1564091601.git.amit.kucheria@linaro.org>
+Cc:     linux-pm@vger.kernel.org
+Subject: [PATCH 02/15] drivers: thermal: tsens: Simplify code flow in tsens_probe
+Date:   Fri, 26 Jul 2019 03:48:37 +0530
+Message-Id: <355cd15c91e02716140d7114fd403559487b66b6.1564091601.git.amit.kucheria@linaro.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1564091601.git.amit.kucheria@linaro.org>
+References: <cover.1564091601.git.amit.kucheria@linaro.org>
+In-Reply-To: <cover.1564091601.git.amit.kucheria@linaro.org>
+References: <cover.1564091601.git.amit.kucheria@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add interrupt support to TSENS. The first 6 patches are general fixes and
-cleanups to the driver before interrupt support is introduced.
+Move platform_set_drvdata up to avoid an extra 'if (ret)' check after
+the call to tsens_register.
 
-This series has been developed against qcs404 and sdm845 and then tested on
-msm8916. Testing on msm8998 and msm8974 would be appreciated since I don't
-have hardware handy. Further, I plan to test on msm8996 and also submit to
-kernelci.
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+---
+ drivers/thermal/qcom/tsens.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-I'm sending this out for more review to get help with testing.
-
-Amit Kucheria (15):
-  drivers: thermal: tsens: Get rid of id field in tsens_sensor
-  drivers: thermal: tsens: Simplify code flow in tsens_probe
-  drivers: thermal: tsens: Add __func__ identifier to debug statements
-  drivers: thermal: tsens: Add debugfs support
-  arm: dts: msm8974: thermal: Add thermal zones for each sensor
-  arm64: dts: msm8916: thermal: Fixup HW ids for cpu sensors
-  dt: thermal: tsens: Document interrupt support in tsens driver
-  arm64: dts: sdm845: thermal: Add interrupt support
-  arm64: dts: msm8996: thermal: Add interrupt support
-  arm64: dts: msm8998: thermal: Add interrupt support
-  arm64: dts: qcs404: thermal: Add interrupt support
-  arm64: dts: msm8974: thermal: Add interrupt support
-  arm64: dts: msm8916: thermal: Add interrupt support
-  drivers: thermal: tsens: Create function to return sign-extended
-    temperature
-  drivers: thermal: tsens: Add interrupt support
-
- .../bindings/thermal/qcom-tsens.txt           |   5 +
- arch/arm/boot/dts/qcom-msm8974.dtsi           | 108 +++-
- arch/arm64/boot/dts/qcom/msm8916.dtsi         |  26 +-
- arch/arm64/boot/dts/qcom/msm8996.dtsi         |  60 +-
- arch/arm64/boot/dts/qcom/msm8998.dtsi         |  82 +--
- arch/arm64/boot/dts/qcom/qcs404.dtsi          |  42 +-
- arch/arm64/boot/dts/qcom/sdm845.dtsi          |  88 +--
- drivers/thermal/qcom/tsens-8960.c             |   4 +-
- drivers/thermal/qcom/tsens-common.c           | 610 +++++++++++++++++-
- drivers/thermal/qcom/tsens-v0_1.c             |  11 +
- drivers/thermal/qcom/tsens-v1.c               |  29 +
- drivers/thermal/qcom/tsens-v2.c               |  18 +
- drivers/thermal/qcom/tsens.c                  |  52 +-
- drivers/thermal/qcom/tsens.h                  | 285 +++++++-
- 14 files changed, 1214 insertions(+), 206 deletions(-)
-
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 6ed687a6e53c..542a7f8c3d96 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -149,6 +149,8 @@ static int tsens_probe(struct platform_device *pdev)
+ 	priv->feat = data->feat;
+ 	priv->fields = data->fields;
+ 
++	platform_set_drvdata(pdev, priv);
++
+ 	if (!priv->ops || !priv->ops->init || !priv->ops->get_temp)
+ 		return -EINVAL;
+ 
+@@ -167,11 +169,7 @@ static int tsens_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	ret = tsens_register(priv);
+-
+-	platform_set_drvdata(pdev, priv);
+-
+-	return ret;
++	return tsens_register(priv);
+ }
+ 
+ static int tsens_remove(struct platform_device *pdev)
 -- 
 2.17.1
 
