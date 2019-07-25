@@ -6,118 +6,106 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16762C7618B
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 07:09:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB31DC7618B
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 07:09:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E52EB22BEB
-	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 07:09:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8B7DA20840
+	for <linux-pm@archiver.kernel.org>; Thu, 25 Jul 2019 07:09:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387564AbfGYHJb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 25 Jul 2019 03:09:31 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:4394 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729633AbfGYHJV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 03:09:21 -0400
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x6P779Pv158939
-        for <linux-pm@vger.kernel.org>; Thu, 25 Jul 2019 03:09:20 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2ty718hmxe-1
+        id S1729596AbfGYHJP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 25 Jul 2019 03:09:15 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:26246 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1729580AbfGYHJO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jul 2019 03:09:14 -0400
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x6P76X8s089225
+        for <linux-pm@vger.kernel.org>; Thu, 25 Jul 2019 03:09:13 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2ty520ep36-1
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Thu, 25 Jul 2019 03:09:19 -0400
+        for <linux-pm@vger.kernel.org>; Thu, 25 Jul 2019 03:09:13 -0400
 Received: from localhost
-        by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
         for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
-        Thu, 25 Jul 2019 08:09:18 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
-        by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        Thu, 25 Jul 2019 08:09:10 +0100
+Received: from b06avi18626390.portsmouth.uk.ibm.com (9.149.26.192)
+        by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
         (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Thu, 25 Jul 2019 08:09:15 +0100
+        Thu, 25 Jul 2019 08:09:06 +0100
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
-        by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x6P79Erh34603108
+        by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x6P78otG38273304
         (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 25 Jul 2019 07:09:14 GMT
+        Thu, 25 Jul 2019 07:08:50 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 4C8144C046;
-        Thu, 25 Jul 2019 07:09:14 +0000 (GMT)
+        by IMSVA (Postfix) with ESMTP id 72DC94C040;
+        Thu, 25 Jul 2019 07:09:05 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id CBFD44C040;
-        Thu, 25 Jul 2019 07:09:12 +0000 (GMT)
+        by IMSVA (Postfix) with ESMTP id E7F9B4C04A;
+        Thu, 25 Jul 2019 07:09:03 +0000 (GMT)
 Received: from localhost.in.ibm.com (unknown [9.124.35.169])
         by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-        Thu, 25 Jul 2019 07:09:12 +0000 (GMT)
+        Thu, 25 Jul 2019 07:09:03 +0000 (GMT)
 From:   Parth Shah <parth@linux.ibm.com>
 To:     peterz@infradead.org, mingo@redhat.com
 Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         patrick.bellasi@arm.com, dietmar.eggemann@arm.com,
         daniel.lezcano@linaro.org, subhra.mazumdar@oracle.com
-Subject: [RFC v4 8/8] powerpc: Set turbo domain to NUMA node for task packing
-Date:   Thu, 25 Jul 2019 12:38:57 +0530
+Subject: [RFC v4 3/8] sched/core: Update turbo_sched count only when required
+Date:   Thu, 25 Jul 2019 12:38:52 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190725070857.6639-1-parth@linux.ibm.com>
 References: <20190725070857.6639-1-parth@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19072507-0012-0000-0000-00000335FA98
+x-cbid: 19072507-0028-0000-0000-000003879ECF
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19072507-0013-0000-0000-0000216F910F
-Message-Id: <20190725070857.6639-9-parth@linux.ibm.com>
+x-cbparentid: 19072507-0029-0000-0000-00002447DD2B
+Message-Id: <20190725070857.6639-4-parth@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-07-25_03:,,
  signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=985 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1906280000 definitions=main-1907250085
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Provide an powerpc architecture specific implementation for
-defining the turbo domain to make searching of the core to be bound within
-the NUMA.  This provides a way to decrease the searching time for specific
-architectures where we know the domain for the power budget.
+Use the get/put methods to add/remove the use of TurboSched support, such
+that the feature is turned on only if there is atleast one jitter task.
 
 Signed-off-by: Parth Shah <parth@linux.ibm.com>
 ---
- arch/powerpc/include/asm/topology.h | 3 +++
- arch/powerpc/kernel/smp.c           | 5 +++++
- 2 files changed, 8 insertions(+)
+ kernel/sched/core.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index 1c777ee67180..410b94c9e1a2 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -133,10 +133,13 @@ static inline void shared_proc_topology_init(void) {}
- #define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
- #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
- #define arch_scale_core_capacity	powerpc_scale_core_capacity
-+#define arch_turbo_domain		powerpc_turbo_domain
- 
- unsigned long powerpc_scale_core_capacity(int first_smt,
- 					  unsigned long smt_cap);
- 
-+struct cpumask *powerpc_turbo_domain(int cpu);
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index ee5980b4e150..60340fa18abb 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -3141,6 +3141,9 @@ static struct rq *finish_task_switch(struct task_struct *prev)
+ 		mmdrop(mm);
+ 	}
+ 	if (unlikely(prev_state == TASK_DEAD)) {
++		if (unlikely(prev->flags & PF_CAN_BE_PACKED))
++			turbo_sched_put();
 +
- int dlpar_cpu_readd(int cpu);
- #endif
- #endif
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 149a3fbf8ed3..856f7233190e 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1200,6 +1200,11 @@ unsigned long powerpc_scale_core_capacity(int first_cpu,
- 	/* Scale core capacity based on smt mode */
- 	return smt_mode == 1 ? cap : ((cap * smt_mode) >> 3) + cap;
- }
-+
-+inline struct cpumask *powerpc_turbo_domain(int cpu)
-+{
-+	return cpumask_of_node(cpu_to_node(cpu));
-+}
- #endif
+ 		if (prev->sched_class->task_dead)
+ 			prev->sched_class->task_dead(prev);
  
- static inline void add_cpu_to_smallcore_masks(int cpu)
+@@ -4793,6 +4796,10 @@ static int __sched_setscheduler(struct task_struct *p,
+ 
+ 	prev_class = p->sched_class;
+ 
++	/* Refcount tasks classified as jitter task */
++	if (task_packing_flag != (p->flags & PF_CAN_BE_PACKED))
++		(task_packing_flag) ? turbo_sched_get() : turbo_sched_put();
++
+ 	__setscheduler(rq, p, attr, pi);
+ 	__setscheduler_uclamp(p, attr);
+ 
 -- 
 2.17.1
 
