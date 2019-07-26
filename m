@@ -2,107 +2,98 @@ Return-Path: <SRS0=L8Ty=VX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23A46C76190
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Jul 2019 12:52:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1844BC7618B
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Jul 2019 13:05:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EC8FE2238C
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Jul 2019 12:52:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DC63522CBD
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Jul 2019 13:05:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1564145532;
-	bh=BxbbkMFqgNtILXkaFi0QPcyEp3AWh7Qc/d9mJJEzUCo=;
-	h=From:Cc:Subject:Date:In-Reply-To:References:To:List-ID:From;
-	b=hgKJ5ot6VWt084ZkZCyX8muktPzeJ5o9NpAuc/7911Z5PhZ2PDLWFXRV5laVB87VI
-	 IvYlO/MGKVc/CmXTfYJ7gFROglzi++NcjJ8QwH/lJrha/qWBpRsKBm9U3H78o3tOnO
-	 TSLRpZpTmgegKVT0au+S1yDa0+39in8nHhvBzyoc=
+	s=default; t=1564146353;
+	bh=pkotHNdt+yFvlEm4ZJemYwQrX120R837wGXa9j6uZM0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
+	b=LPnTUweXeIj/eHMqbFPerZkURwp55SyC4icQuwfJE+/Dn+OgwK6lcBKAFUfTAZHf0
+	 EF/9xOzKUzELOmKf2veiD62d7UvuWGbiy30U2CDnjOYL+J2Xdl6UXYHBZR8YfDIJRv
+	 c98kalDaZiB5n+1mmy6m5MSiW+cJfPy0ymhVvzxI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726635AbfGZMwK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Jul 2019 08:52:10 -0400
-Received: from bombadil.infradead.org ([198.137.202.133]:39990 "EHLO
+        id S1726784AbfGZNFp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Jul 2019 09:05:45 -0400
+Received: from bombadil.infradead.org ([198.137.202.133]:54662 "EHLO
         bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726640AbfGZMvo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2019 08:51:44 -0400
+        with ESMTP id S1726086AbfGZNFp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jul 2019 09:05:45 -0400
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
-        Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=9b5Epm2c2jNoQlY6d+GFbWG+r895kunbW+hUEth2imM=; b=iHWhH0xReM4Jjxoxep/sNm0iH/
-        88sSYbpB5LPgFeNm/YZSJmXqroOYwGitYaaCKyJf0dK1nTfEkF37GqF2hkSOb8+9hALT4EbmWd13S
-        6bJ1Fi5RRf6WLMPjviKEWvwQp37Uu0eIuJVpLra0yS3LMSi2oo7ZGnqr69mj9Q479ZxbQIrOUkMIq
-        GopAfkKFutpJbyMQi+x+MZBHaYONRuiXa+HQkCaRARAHZojuVgSnecsZ/bFvteY0puu7RT3PltCpd
-        q0/ibQVGeRtXqpGLYjyMO+MCSVdKX5hAbkxduBcR0z1SOLZ5M0zI7VXY830QjASaxRk6A7i30fdsw
-        JqippHIA==;
-Received: from [179.95.31.157] (helo=bombadil.infradead.org)
+        d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+        Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:
+        From:Date:Sender:Reply-To:Content-ID:Content-Description:Resent-Date:
+        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+         bh=v25fSyTOpn+HLVJ1/RYUYjo/p2HKkKXuypllJV6JuFU=; b=FGTl2rF5Ekw99U5eWA0qO4ViY
+        ezxgPoNckrfd02rKeR5DfhI5n58vJTcEz7aQ3diHZkRmGndI5Rrlekc33Ay4TibbLOwpG1XKCSloG
+        82pJRxtCcnQvPslNG7xO/8DHeER9qlTWSUhlaF/iNE0YUnkdxnIGvBgg9Brpdp4iVK9JkJjbm0TvY
+        TcCvfrG3NaxcqzRwVsiX1+l5U3fjf1yQEEnGnZRs2iZazrP26MkKBj4gTVChmnzy3Hz3krFh/Kx2g
+        S6dj3Qi5GKN2Rfpl0jR+wq9OXeL8jT6dpW75i/Mr7cpWYS51GnMWuFS7A6xMmFALsHG7f3ly85U0p
+        sDY3Ty9HA==;
+Received: from [179.95.31.157] (helo=coco.lan)
         by bombadil.infradead.org with esmtpsa (Exim 4.92 #3 (Red Hat Linux))
-        id 1hqzhE-0006AT-AA; Fri, 26 Jul 2019 12:51:40 +0000
-Received: from mchehab by bombadil.infradead.org with local (Exim 4.92)
-        (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1hqzhB-0005a8-Th; Fri, 26 Jul 2019 09:51:37 -0300
+        id 1hqzun-0004Yn-F9; Fri, 26 Jul 2019 13:05:42 +0000
+Date:   Fri, 26 Jul 2019 10:05:33 -0300
 From:   Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v2 01/26] docs: power: add it to to the main documentation index
-Date:   Fri, 26 Jul 2019 09:51:11 -0300
-Message-Id: <5417112ea7a391e6622c46bf833b7d6a5725c158.1564145354.git.mchehab+samsung@kernel.org>
-X-Mailer: git-send-email 2.21.0
+To:     Jonathan Corbet <corbet@lwn.net>
+Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-pci@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-rtc@vger.kernel.org,
+        netdev@vger.kernel.org, linux-parisc@vger.kernel.org,
+        openrisc@lists.librecores.org, devel@driverdev.osuosl.org,
+        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
+        devel@lists.orangefs.org, dmaengine@vger.kernel.org,
+        alsa-devel@alsa-project.org, linux-mips@vger.kernel.org,
+        linux-wireless@vger.kernel.org, rcu@vger.kernel.org
+Subject: Re: [PATCH v2 00/26] ReST conversion of text files without .txt
+ extension
+Message-ID: <20190726100521.5d379300@coco.lan>
 In-Reply-To: <cover.1564145354.git.mchehab+samsung@kernel.org>
 References: <cover.1564145354.git.mchehab+samsung@kernel.org>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The power docs are orphaned at the documentation body.
+Em Fri, 26 Jul 2019 09:51:10 -0300
+Mauro Carvalho Chehab <mchehab+samsung@kernel.org> escreveu:
 
-While it could likely be moved to be inside some guide, I'm opting to just
-adding it to the main index.rst, removing the :orphan: and adding the SPDX
-header.
+> This series converts the text files under Documentation with doesn't end
+> neither .txt or .rst and are not part of ABI or features.
+> 
+> This series is at:
+> 	https://git.linuxtv.org/mchehab/experimental.git/log/?h=rst_for_5_4_v3
+> 
+> And it is based on yesterday's upstream tree.
+> 
+> After this series, we have ~320 files left to be converted to ReST.
+> 
+> v2:
+>   - Added 3 files submitted for v5.3 that weren't merged yet;
+>   - markdown patch broken into two, per Rob's request;
+>   - rebased on the top of upstream master branch
+> 
+> Mauro Carvalho Chehab (26):
 
-The reason is similar to what it was done for other driver-specific
-subsystems: the docs there contain a mix of Kernelspace, uAPI and
-admin-guide. So, better to keep them on its own directory,
-while the docs there are not properly classified.
+>   docs: ABI: remove extension from sysfs-class-mic.txt
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
----
- Documentation/index.rst       | 1 +
- Documentation/power/index.rst | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+    ^ In time: this one was already merged.
 
-diff --git a/Documentation/index.rst b/Documentation/index.rst
-index 70ae148ec980..230e550e9741 100644
---- a/Documentation/index.rst
-+++ b/Documentation/index.rst
-@@ -111,6 +111,7 @@ needed).
-    netlabel/index
-    networking/index
-    pcmcia/index
-+   power/index
-    target/index
-    timers/index
-    watchdog/index
-diff --git a/Documentation/power/index.rst b/Documentation/power/index.rst
-index 20415f21e48a..002e42745263 100644
---- a/Documentation/power/index.rst
-+++ b/Documentation/power/index.rst
-@@ -1,4 +1,4 @@
--:orphan:
-+.. SPDX-License-Identifier: GPL-2.0
- 
- ================
- Power Management
--- 
-2.21.0
-
+Thanks,
+Mauro
