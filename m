@@ -2,132 +2,146 @@ Return-Path: <SRS0=pKl/=V2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95220C433FF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 17:23:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFF1DC7618B
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 17:43:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6C0BA2070B
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 17:23:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1564420998;
-	bh=8LBXeqCHLxzkhJ6fYk5Mwh6ZnoaN3oqy+XOaykDGmqY=;
-	h=In-Reply-To:References:From:To:Subject:Cc:Date:List-ID:From;
-	b=vAxjsjKP7IW3EhFQS4Tmg8qLoenUfNAz0r3PzXaU275SShlNaiC6Ypv9EETRN60bw
-	 RkfVxG3Zpd6sxcHBgCFdOu/OmgY9Y3a9NWEpXtJ5y+l6+EH1rWWj+GTKN3igJEULnV
-	 LtAQHbFLluLZeby0Rw6ITodEiLEL3DzbwacAWDrg=
+	by mail.kernel.org (Postfix) with ESMTP id C887C20C01
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 17:43:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="VzxBOSkQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726958AbfG2RXS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jul 2019 13:23:18 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38610 "EHLO mail.kernel.org"
+        id S2387743AbfG2RnI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jul 2019 13:43:08 -0400
+Received: from mout.gmx.net ([212.227.15.15]:42851 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725934AbfG2RXR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jul 2019 13:23:17 -0400
-Received: from kernel.org (unknown [104.132.0.74])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 56A5A206DD;
-        Mon, 29 Jul 2019 17:23:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1564420996;
-        bh=8LBXeqCHLxzkhJ6fYk5Mwh6ZnoaN3oqy+XOaykDGmqY=;
-        h=In-Reply-To:References:From:To:Subject:Cc:Date:From;
-        b=aAWCrQDkMvbS08hacUds+Wf+sZde7i/RjMzE9sV/eQqHTqn5a3FmpvX9WT3xLxFGK
-         oPZgYjtXx6TIZIT4i5EOInmnuRQZj/IsdkDO4wOLz3zWR9gSygToWFfqBVOE/l1/cJ
-         J0ycq151dPs5hFhPEg0DYdb8ihwl1LdMl6zQpcFw=
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+        id S2387679AbfG2RnH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Jul 2019 13:43:07 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1564422136;
+        bh=2upA4Eee2eLxGKQpMOKxUWbTwNeRMbtSYCSugmC0GWc=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=VzxBOSkQ57/fGvyduo8JBaFAJ+4VaF5CN4fW7TY2VDUPAkXvgMAcV3EEXSU8TTIV4
+         QzknCcyJLENarfrzz7nLk58UoDs17jWocp4aEaE09F9wttAq+No0HgtpWRw8pv0uQt
+         aFj27TlQ8tjwfDcuAN2ZNYmIDJd47SlpJ2oN66tY=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from localhost.localdomain ([185.76.97.79]) by mail.gmx.com
+ (mrgmx001 [212.227.17.190]) with ESMTPSA (Nemesis) id
+ 0LwaQZ-1iRnd926zn-018Gvw; Mon, 29 Jul 2019 19:42:16 +0200
+From:   Frank Wunderlich <frank-w@public-files.de>
+To:     Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Allison Randal <allison@lohutok.net>,
+        "David S. Miller" <davem@davemloft.net>,
+        devicetree@vger.kernel.org, Eddie Huang <eddie.huang@mediatek.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Kate Stewart <kstewart@linuxfoundation.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-rtc@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Richard Fontana <rfontana@redhat.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Sean Wang <sean.wang@mediatek.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        "Tianping . Fang" <tianping.fang@mediatek.com>
+Cc:     Josef Friedl <josef.friedl@speed.at>,
+        Frank Wunderlich <frank-w@public-files.de>
+Subject: [PATCH v3 02/10] dt-bindings: add missing mt6397 rtc
+Date:   Mon, 29 Jul 2019 19:41:46 +0200
+Message-Id: <20190729174154.4335-3-frank-w@public-files.de>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190729174154.4335-1-frank-w@public-files.de>
+References: <20190729174154.4335-1-frank-w@public-files.de>
+X-Provags-ID: V03:K1:n2zUh/vBMrR/T/FmmAN+wn7QKL0aiwb8lCVGDcRqmLkY60+LbYp
+ 75Yof9evGGAzVYq9T7To3kmtms+cHY1cVVgtyBTBTTcA6ILiDSHdco6fnRBkBVOFZWOgYB/
+ +mflzaL6iXpplrBY8RqzW8mD3pso3luf6hoAVRWBqYJr9F133IWFvdnHnVi760Wayt29vUB
+ DFXx+EoY/2zJUHu9L0pKQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:3BCmzlM7TJA=:/nJkZvBc4do4lI0pWVrXDu
+ fHAfzfWinW0B6mPgALHOmP3HwFCiJOmcN54Gq7X+9cPdGCfSx9tCoLpStWPNB+CBR9qwkqho4
+ r4ut0m4JUYbg+ZzLd+VkDyvISw4LKj/msNspivDKgUC3Qg9H9Zt716kgHwfrzNQXmLKBdoWlX
+ Tylf/ZNz+hT5FqzbZ5TJRX1xoI3ORKdhrHZy4y3BNGB09kuyrwkwrlWM+PC13R0iGFeOP70K+
+ SINkemcm/T0vK096Yei+cIZyrlt9ZZtet1+664WrbtvC2OwfB35ToHWqT07KVN0L17cruOGi5
+ 8UrpLVZkf8bjOXVwc5gec5BN+e1Jjn8M0PAkIQ1H4yDYAq1AJpTn1Fq0Ip45+BXcffemK9jF2
+ F/LN+SSGl1bN9GUv+REV1ZX/tEBNKrrEDG6S856a6W2zfOOU5yvi/r5VLiUhsZv/CWi1g8c6J
+ rejZOQcWdZcxc5Y96oCmTRNFdV6o1u+E4uYa402iMDW4WXgvs7LsNnx1oDNx9AvmlKeaA9+h1
+ OGfD4q0UobAfVJ2/I015fi9efjAUXoK3S0njDCypDdQloHPYjUx0rNW7ND0flKSl5hWSuRR+H
+ dIZrQQkm02s1bI8HQSqivuxxbFdAZo8bpbF2nlevAWDoxKfgarBuihytBUyB62ZSaz6Bg3vMR
+ ZjRofVttHU6kJDhwabkvEb7PU8hzRRTY1p2bjOnogGEhLeYNR8rgCJVzwJZSKNS6nLe3zuwgc
+ dzOSmlYWvMKQdvIE2l4vKPsWqzdJYom0wcVl8/L9gzUYb09p7pu9rWKKOkkkfMIX/4+MBSYHZ
+ mdCMYjMkYyJM1SPPRCgi9QvJDniXokzLN4nqqwnlX904L11+RlPckML8qM6xjEH4EuAex6Cng
+ b0ow36LqBD5lfuzSm5Rjqv9prApeZpbSTjfSKm7IXSRdZJq8rUxtdDmKTHRYDbD4j6zF838sz
+ XYsSb59qYHtTqMrJjn0FPtukG+/Kc5PGenkzXVGBxAvMDpg7YGJLE1GiXxZD46c2yGg5GHYtq
+ oDV0pdXxsrg1/X4PdtqRqhZRpNaTydxnTvfZPrpsiFz7NxGywxIcQSn5mvSKVuzUesbv/Rjk4
+ V7HMJZgp3cOoec=
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20190726231558.175130-2-saravanak@google.com>
-References: <20190726231558.175130-1-saravanak@google.com> <20190726231558.175130-2-saravanak@google.com>
-From:   Stephen Boyd <sboyd@kernel.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
-        Saravana Kannan <saravanak@google.com>,
-        Viresh Kumar <vireshk@kernel.org>
-Subject: Re: [PATCH v4 1/3] dt-bindings: opp: Introduce opp-peak-KBps and opp-avg-KBps bindings
-Cc:     Saravana Kannan <saravanak@google.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        vincent.guittot@linaro.org, seansw@qti.qualcomm.com,
-        daidavid1@codeaurora.org, adharmap@codeaurora.org,
-        Rajendra Nayak <rnayak@codeaurora.org>, sibis@codeaurora.org,
-        bjorn.andersson@linaro.org, evgreen@chromium.org,
-        kernel-team@android.com, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-User-Agent: alot/0.8.1
-Date:   Mon, 29 Jul 2019 10:23:15 -0700
-Message-Id: <20190729172316.56A5A206DD@mail.kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Saravana Kannan (2019-07-26 16:15:55)
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentatio=
-n/devicetree/bindings/opp/opp.txt
-> index 76b6c79604a5..b1eb49d6eab0 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -83,9 +83,14 @@ properties.
-> =20
->  Required properties:
->  - opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer. Thi=
-s is a
-> -  required property for all device nodes but devices like power domains.=
- The
-> -  power domain nodes must have another (implementation dependent) proper=
-ty which
-> -  uniquely identifies the OPP nodes.
-> +  required property for all device nodes but for devices like power doma=
-ins or
+From: Josef Friedl <josef.friedl@speed.at>
 
-s/but/except/
+add missing devicetree-binding document for mt6397 rtc
+in later patch driver is extended with mt6323 chip
 
-> +  bandwidth opp tables. The power domain nodes must have another (implem=
-entation
-> +  dependent) property which uniquely identifies the OPP nodes. The inter=
-connect
-> +  opps are required to have the opp-peak-KBps property.
-> +
-> +- opp-peak-KBps: Peak bandwidth in kilobytes per second, expressed as a =
-32-bit
-> +  big-endian integer. This is a required property for all devices that d=
-on't
-> +  have opp-hz. For example, bandwidth OPP tables for interconnect paths.
-> =20
->  Optional properties:
->  - opp-microvolt: voltage in micro Volts.
-> @@ -132,6 +137,10 @@ Optional properties:
->  - opp-level: A value representing the performance level of the device,
->    expressed as a 32-bit integer.
-> =20
-> +- opp-avg-KBps: Average bandwidth in kilobytes per second, expressed as a
+changes since v2: splitted rtc-mt6397.txt from first patch
 
-Shouldn't that be a lower case k? kBps?
+Suggested-By: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Signed-off-by: Josef Friedl <josef.friedl@speed.at>
+=2D--
+ .../devicetree/bindings/rtc/rtc-mt6397.txt    | 29 +++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
 
-> +  32-bit big-endian integer. This property is only meaningful in OPP tab=
-les
-> +  where opp-peak-KBps is present.
-> +
->  - clock-latency-ns: Specifies the maximum possible transition latency (in
->    nanoseconds) for switching to this OPP from any other OPP.
-> =20
-> diff --git a/Documentation/devicetree/bindings/property-units.txt b/Docum=
-entation/devicetree/bindings/property-units.txt
-> index e9b8360b3288..ef4c4a199efa 100644
-> --- a/Documentation/devicetree/bindings/property-units.txt
-> +++ b/Documentation/devicetree/bindings/property-units.txt
-> @@ -41,3 +41,7 @@ Temperature
->  Pressure
->  ----------------------------------------
->  -kpascal       : kilopascal
-> +
-> +Throughput
-> +----------------------------------------
-> +-KBps          : kilobytes per second
-
-Same comment.
+diff --git a/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt b/Docume=
+ntation/devicetree/bindings/rtc/rtc-mt6397.txt
+new file mode 100644
+index 000000000000..ebd1cf80dcc8
+=2D-- /dev/null
++++ b/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+@@ -0,0 +1,29 @@
++Device-Tree bindings for MediaTek PMIC based RTC
++
++MediaTek PMIC based RTC is an independent function of MediaTek PMIC that =
+works
++as a type of multi-function device (MFD). The RTC can be configured and s=
+et up
++with PMIC wrapper bus which is a common resource shared with the other
++functions found on the same PMIC.
++
++For MediaTek PMIC MFD bindings, see:
++Documentation/devicetree/bindings/mfd/mt6397.txt
++
++For MediaTek PMIC wrapper bus bindings, see:
++Documentation/devicetree/bindings/soc/mediatek/pwrap.txt
++
++Required properties:
++- compatible: Should be one of follows
++       "mediatek,mt6323-rtc": for MT6323 PMIC
++       "mediatek,mt6397-rtc": for MT6397 PMIC
++
++Example:
++
++       pmic {
++               compatible =3D "mediatek,mt6323";
++
++               ...
++
++               rtc {
++                       compatible =3D "mediatek,mt6323-rtc";
++               };
++       };
+=2D-
+2.17.1
 
