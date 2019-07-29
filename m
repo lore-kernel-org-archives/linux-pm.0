@@ -2,110 +2,90 @@ Return-Path: <SRS0=pKl/=V2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AE6DC433FF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 08:49:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22B89C433FF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 09:07:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5EE902075B
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 08:49:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F385B2073F
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 09:07:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727721AbfG2Ist (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jul 2019 04:48:49 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:43186 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727109AbfG2Ist (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jul 2019 04:48:49 -0400
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 1B865201492;
-        Mon, 29 Jul 2019 10:48:47 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3EB2C20149E;
-        Mon, 29 Jul 2019 10:48:42 +0200 (CEST)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 0E185402E8;
-        Mon, 29 Jul 2019 16:48:35 +0800 (SGT)
-From:   Anson.Huang@nxp.com
-To:     rui.zhang@intel.com, edubezval@gmail.com,
-        daniel.lezcano@linaro.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH V2 1/4] thermal: qoriq: Use devm_platform_ioremap_resource() instead of of_iomap()
-Date:   Mon, 29 Jul 2019 16:39:12 +0800
-Message-Id: <20190729083915.4855-1-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.9.5
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1726432AbfG2JHB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jul 2019 05:07:01 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:58648 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725917AbfG2JHB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2019 05:07:01 -0400
+Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
+ id a3ba5d91a3f87a99; Mon, 29 Jul 2019 11:06:58 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Tri Vo <trong@android.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Kalesh Singh <kaleshsingh@google.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Ravi Chandra Sadineni <ravisadineni@chromium.org>
+Subject: Re: [PATCH] PM / wakeup: Avoid dev_name collisions in wakeup class
+Date:   Mon, 29 Jul 2019 11:06:58 +0200
+Message-ID: <1771170.ZfA44AmTq3@kreacher>
+In-Reply-To: <CANA+-vDNkSG39SLd0_B_L8gkDkfQ2uJLcuvCaRgHkU8DiBzMTw@mail.gmail.com>
+References: <20190727011040.89582-1-swboyd@chromium.org> <CAJZ5v0hroRuGQ5N42Z8=yFVXiJPdid3wJrHoKqr2BZVx=sfnBQ@mail.gmail.com> <CANA+-vDNkSG39SLd0_B_L8gkDkfQ2uJLcuvCaRgHkU8DiBzMTw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Anson Huang <Anson.Huang@nxp.com>
+On Saturday, July 27, 2019 7:37:07 PM CEST Tri Vo wrote:
+> On Sat, Jul 27, 2019 at 6:10 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Sat, Jul 27, 2019 at 3:11 AM Stephen Boyd <swboyd@chromium.org> wrote:
+> > >
+> > > If a device is wakeup capable and the driver calls device_wakeup_init()
+> > > on it during probe and then userspace writes 'enabled' to that device's
+> > > power/wakeup file in sysfs we'll try to create the same named wakeup
+> > > device in sysfs. The kernel will complain about duplicate file names.
+> 
+> Thanks for reporting the issue, Stephen!
+> > >
+> > > sysfs: cannot create duplicate filename '/devices/virtual/wakeup/1-1.1'
+> > > kobject_add_internal failed for 1-1.1 with -EEXIST, don't try to register things with the same name in the same directory.
+> > >
+> > > It may be advantageous to not write 'enabled' to the wakeup file (see
+> > > wakeup_store()) from userspace for these devices because we allocate
+> > > devices and register them and then throw them all away later on if the
+> > > device driver has already initialized the wakeup attribute. The
+> > > implementation currently tries to avoid taking locks here so it seems
+> > > best to optimize that path in a separate patch.
+> > >
+> > > Let's rename the wakeup class devices as 'wakeupN' with an IDA that's
+> > > simple enough to just return some sort of number. In addition, let's
+> > > make the device registering the wakeup the parent and include a 'name'
+> > > attribute in case userspace wants to figure out the type of wakeup it is
+> > > (in the case of virtual wakeups) or the device associated with the
+> > > wakeup. This makes it easier for userspace to go from /sys/class/wakeup
+> > > to a place in the device hierarchy where the wakeup is generated from
+> > > like an input device.
+> > >
+> > > Cc: Tri Vo <trong@android.com>
+> > > Cc: Kalesh Singh <kaleshsingh@google.com>
+> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > > Cc: Ravi Chandra Sadineni <ravisadineni@chromium.org>
+> > > Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+> >
+> > I'd rather change the commit that introduced this issue which is only
+> > in linux-next for now.
+> 
+> Raphael, could you roll back my patch? I'll work with Stephen to fix it.
 
-Use devm_platform_ioremap_resource() instead of of_iomap() to
-save the iounmap() call in error handle path;
+I'll drop it, thanks!
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-No changes.
----
- drivers/thermal/qoriq_thermal.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 7b36493..c7c7de2 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -202,32 +202,27 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 
- 	data->little_endian = of_property_read_bool(np, "little-endian");
- 
--	data->regs = of_iomap(np, 0);
--	if (!data->regs) {
-+	data->regs = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(data->regs)) {
- 		dev_err(&pdev->dev, "Failed to get memory region\n");
--		ret = -ENODEV;
--		goto err_iomap;
-+		return PTR_ERR(data->regs);
- 	}
- 
- 	qoriq_tmu_init_device(data);	/* TMU initialization */
- 
- 	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
- 	if (ret < 0)
--		goto err_tmu;
-+		goto err;
- 
- 	ret = qoriq_tmu_register_tmu_zone(pdev);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Failed to register sensors\n");
--		ret = -ENODEV;
--		goto err_iomap;
-+		goto err;
- 	}
- 
- 	return 0;
- 
--err_tmu:
--	iounmap(data->regs);
--
--err_iomap:
-+err:
- 	platform_set_drvdata(pdev, NULL);
- 
- 	return ret;
-@@ -240,7 +235,6 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
- 	/* Disable monitoring */
- 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
- 
--	iounmap(data->regs);
- 	platform_set_drvdata(pdev, NULL);
- 
- 	return 0;
--- 
-2.7.4
 
