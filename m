@@ -2,230 +2,179 @@ Return-Path: <SRS0=pKl/=V2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A45E3C433FF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 08:37:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D475C7618B
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 08:40:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 701D420693
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 08:37:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1564389468;
-	bh=knet6KVnV1LE5iZFyD1wUyD7XHc/EZesMMVj+Wnb9Ks=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=vzX1naAiTFll6K1P+MHrfNi6G0juZ8imjHYkyXBmWagHJ68Czmat1qxA/dy/fP1VX
-	 wCPw4p7oG2DbtneuWLfbc0TgunQQwm7TCaA4Igs5JRLdm6+ChXbhfDihqV4jMyA6Ef
-	 3PlO0G1Am74Pmtmh76iBaW5ANU5DcEN+JpaTCh+k=
+	by mail.kernel.org (Postfix) with ESMTP id 00E332075B
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 08:40:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="bWHHE7p4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727750AbfG2Ihs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jul 2019 04:37:48 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:38208 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727739AbfG2Ihr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2019 04:37:47 -0400
-Received: by mail-ot1-f67.google.com with SMTP id d17so61767628oth.5;
-        Mon, 29 Jul 2019 01:37:46 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=0FNJJFcF3C8wNVBynkeaKAIuICl/dlha/IHcRCFKwAY=;
-        b=USJ7q3aWNCJHO5PSfCzOBJrnBFFWEKv42VsLlkoqRMY1gTx9bJbL1gJxH6fXbACh3V
-         7QGUgYahsnvdLd3ZLW8Ud5gsJhe30mZf5INQcr6z/afgvM1bYCOSFYgfTMlWaBgiCX3m
-         B7hWKah70XePNuGIjmwXS3L/HroG2bVgLGPjk5nZ+r1xtpgn5BMUEMVWi5nMXbMrohTg
-         RDxp+tJd/8IiWn/EQdZo7bZRfFu35YlQs2ZgP7+foQ1NNPTNzfe+pcmVeDJq3J+O+40F
-         vsylama+d3/uNpy/Byt22qgQBOEyS4ogecUTvS2cD+4AgoaPxWdMdBbOHSDotST+ikE9
-         rmuw==
-X-Gm-Message-State: APjAAAXIwc7wLSy9z/WwzmbbpkEPKZ+6VRKq2reVl5OntGLFfNiTcCKy
-        LQB8Ih8EfMNt/VPpSdz9v/hPoJpgxALn4B6LgBI=
-X-Google-Smtp-Source: APXvYqw2A4zHAxw1daqPl8bUdwnOEy78fNX1ADvTHdF0vLutd32wL302dlwNu18JqghX+NM1u7+hY+8+bFw5cSdxF+E=
-X-Received: by 2002:a9d:6959:: with SMTP id p25mr65277955oto.118.1564389466248;
- Mon, 29 Jul 2019 01:37:46 -0700 (PDT)
+        id S1727545AbfG2Ikr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jul 2019 04:40:47 -0400
+Received: from mail-eopbgr20067.outbound.protection.outlook.com ([40.107.2.67]:63558
+        "EHLO EUR02-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726305AbfG2Ikr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Jul 2019 04:40:47 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=CQh229xktp3HrRseLePvP2sWXdBSgK5h7+sUHifLCF4+cPEf0mKktWSoYBwHoeBjqIZTO+hP1/1Fqvab3uj3KKlJAhhrIxxFOvmo3QGQ4Ci90bHtgyVFfpMjUjyPbLvKKaCJq1wt89dS8hxtzWjmxqvHmu2sQUCx3boh/sLa+kpxg+4i5Vbv3cFpcEwQL1LYfp4nMNJ9aV9d66U/odZIfzjmzpnaTZiGKfys+H+7hIK3neEFx5glsVGZC0/+2dun5NVSSJfmB+JCSLkBFQ7csWxoQmJZzS5CqowakqRyuY0IcKINOfDGKO86s9F3LiYKFPXzGFq4C/9GEB3zoOyO2Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5NQyQFT0Vc4sAFGL7iH/6CU9hHQJF3qzFIkr/7Hp2Oc=;
+ b=gHhWzOR4yc4QEfG9JavM7QFXnIhUXK6ols++aMYg08g4BVGBeyDxteyxXdmIFvsLhWJgobr/cp9vgJIo44et0Oh+LMxY3TSk2Xgcp1g/C3XTX64G4kP6AMhk5UcWeDFDmbZJOcwxyK9F0KOscy0dqBvA4CDl5U3J/CWAMy/p6i8CjoDSZ2/D2TDl11beYTzJFSk9n/M31uueP0r6QjiIDnorxZlLxIoOLQCZq12uAMBCQrTsfulzaMb8uhJDHRMmLedGz/3mQc5yYOzLVzr64Z23wZF+f02cIj38tJ6dlyrl4Jr2UdMTj2EYekNII/01FPiRldgEZ7ktVKJa2Fg12g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1;spf=pass
+ smtp.mailfrom=nxp.com;dmarc=pass action=none header.from=nxp.com;dkim=pass
+ header.d=nxp.com;arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5NQyQFT0Vc4sAFGL7iH/6CU9hHQJF3qzFIkr/7Hp2Oc=;
+ b=bWHHE7p4IzQGZO8YZmlh2t6QvC2LyzsjVsT17IBqlLhybkWuyJQBUZ0uXkP5ndDvgltAgX/bw4EIxr8vdzDCCiN+OnHjcxudU1qZrMQ4TzihUCl7/iPHJLaSJVpkvkInUWSRmLyB4vLo9qF1hiSNw2J7+XutWU2dOtKKwa3TWI8=
+Received: from DB3PR0402MB3916.eurprd04.prod.outlook.com (52.134.72.18) by
+ DB3PR0402MB3819.eurprd04.prod.outlook.com (52.134.71.158) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2094.17; Mon, 29 Jul 2019 08:40:39 +0000
+Received: from DB3PR0402MB3916.eurprd04.prod.outlook.com
+ ([fe80::7cdf:bddc:212c:f77e]) by DB3PR0402MB3916.eurprd04.prod.outlook.com
+ ([fe80::7cdf:bddc:212c:f77e%4]) with mapi id 15.20.2115.005; Mon, 29 Jul 2019
+ 08:40:39 +0000
+From:   Anson Huang <anson.huang@nxp.com>
+To:     =?utf-8?B?R3VpZG8gR8O8bnRoZXI=?= <agx@sigxcpu.org>
+CC:     "rui.zhang@intel.com" <rui.zhang@intel.com>,
+        "edubezval@gmail.com" <edubezval@gmail.com>,
+        "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "mark.rutland@arm.com" <mark.rutland@arm.com>,
+        "shawnguo@kernel.org" <shawnguo@kernel.org>,
+        "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>,
+        "festevam@gmail.com" <festevam@gmail.com>,
+        "mturquette@baylibre.com" <mturquette@baylibre.com>,
+        "sboyd@kernel.org" <sboyd@kernel.org>,
+        "l.stach@pengutronix.de" <l.stach@pengutronix.de>,
+        Abel Vesa <abel.vesa@nxp.com>,
+        "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>,
+        "angus@akkea.ca" <angus@akkea.ca>,
+        "ccaione@baylibre.com" <ccaione@baylibre.com>,
+        Leonard Crestez <leonard.crestez@nxp.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>
+Subject: RE: [PATCH 4/6] thermal: qoriq: Add clock operations
+Thread-Topic: [PATCH 4/6] thermal: qoriq: Add clock operations
+Thread-Index: AQHVMu9L9eabQCV1yEK0bvOqH0zIxKbhZNKAgAACpdA=
+Date:   Mon, 29 Jul 2019 08:40:39 +0000
+Message-ID: <DB3PR0402MB391682A6263D084198E12DB6F5DD0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <20190705045612.27665-1-Anson.Huang@nxp.com>
+ <20190705045612.27665-4-Anson.Huang@nxp.com>
+ <20190729081221.GA2523@bogon.m.sigxcpu.org>
+In-Reply-To: <20190729081221.GA2523@bogon.m.sigxcpu.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=anson.huang@nxp.com; 
+x-originating-ip: [119.31.174.66]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 7313234e-adaa-462c-60bd-08d714006f2e
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(4618075)(2017052603328)(7193020);SRVR:DB3PR0402MB3819;
+x-ms-traffictypediagnostic: DB3PR0402MB3819:
+x-ms-exchange-purlcount: 1
+x-microsoft-antispam-prvs: <DB3PR0402MB38194A36B113D65244148CE9F5DD0@DB3PR0402MB3819.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:2657;
+x-forefront-prvs: 01136D2D90
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(376002)(366004)(39860400002)(346002)(396003)(136003)(199004)(189003)(53936002)(6116002)(3846002)(99286004)(55016002)(66446008)(25786009)(66476007)(6246003)(66556008)(8936002)(76116006)(6306002)(9686003)(33656002)(966005)(7736002)(74316002)(81166006)(305945005)(2906002)(54906003)(64756008)(316002)(86362001)(66574012)(66946007)(8676002)(256004)(6436002)(14454004)(14444005)(45080400002)(68736007)(102836004)(26005)(66066001)(76176011)(476003)(71200400001)(52536014)(7416002)(7696005)(11346002)(446003)(44832011)(4326008)(186003)(229853002)(6506007)(478600001)(6916009)(81156014)(71190400001)(5660300002)(486006);DIR:OUT;SFP:1101;SCL:1;SRVR:DB3PR0402MB3819;H:DB3PR0402MB3916.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: sguznUNbse9euGSeC60eXSACJKpLuWJugqDBWzz8ZlaFUZ7MfUX4AuXAekFHXwrPNHXLqzSx2xHqQD6JFXj77G7ixn6mg6G0Z2w3wPFCE3/Rwdupy7Y4LprEixYo0iWg+3re/VyM2/2ySCrzTGuA9SBhOihEfvxX8UbHDxBIdVSD1QVtKyoo6IgE9Ej0dtdIheiDpxabIIXag4BZVG4vuLS+GDO7DmZeUfBMdmlygPt2YXl/HMc952gfodcCVtuMdULn20CkACqvvQl332KCQDyfP6uL0IIaWVBAkFATZoMa7SHCaqpXMBSo1fA4URxEMAkW9YGd3c40YtKi5UrAXKGm++BJLezdgeHqoA6xBuZbL8m8UPl4sy1Z2mkwZoJW9TwLBb8szlX3rxjk0f6VUk8XaZI8UF4j3LKqrzhRMyo=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-References: <1563431200-3042-1-git-send-email-dsmythies@telus.net>
- <8091ef83f264feb2feaa827fbeefe08348bcd05d.1563778071.git.viresh.kumar@linaro.org>
- <001201d54125$a6a82350$f3f869f0$@net> <20190723091551.nchopfpqlmdmzvge@vireshk-i7>
- <CAJZ5v0ji+ksapJ4kc2m5UM_O+AShAvJWmYhTQHiXiHnpTq+xRg@mail.gmail.com>
- <20190724114327.apmx35c7a4tv3qt5@vireshk-i7> <000c01d542fc$703ff850$50bfe8f0$@net>
- <20190726065739.xjvyvqpkb3o6m4ty@vireshk-i7> <000001d545e3$047d9750$0d78c5f0$@net>
- <20190729083219.fe4xxq4ugmetzntm@vireshk-i7>
-In-Reply-To: <20190729083219.fe4xxq4ugmetzntm@vireshk-i7>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 29 Jul 2019 10:37:35 +0200
-Message-ID: <CAJZ5v0gaW=ujtsDmewrVXL7V8K0YZysNqwu=qKLw+kPC86ydqA@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: schedutil: Don't skip freq update when limits change
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Doug Smythies <dsmythies@telus.net>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Joel Fernandes <joel@joelfernandes.org>,
-        "v4 . 18+" <stable@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7313234e-adaa-462c-60bd-08d714006f2e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Jul 2019 08:40:39.3730
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: anson.huang@nxp.com
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB3PR0402MB3819
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jul 29, 2019 at 10:32 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 29-07-19, 00:55, Doug Smythies wrote:
-> > On 2019.07.25 23:58 Viresh Kumar wrote:
-> > > Hmm, so I tried to reproduce your setup on my ARM board.
-> > > - booted only with CPU0 so I hit the sugov_update_single() routine
-> > > - And applied below diff to make CPU look permanently busy:
-> > >
-> > > -------------------------8<-------------------------
-> > >diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > > index 2f382b0959e5..afb47490e5dc 100644
-> > > --- a/kernel/sched/cpufreq_schedutil.c
-> > > +++ b/kernel/sched/cpufreq_schedutil.c
-> > > @@ -121,6 +121,7 @@ static void sugov_fast_switch(struct sugov_policy *sg_policy, u64 time,
-> > >         if (!sugov_update_next_freq(sg_policy, time, next_freq))
-> > >                return;
-> > >
-> > > +       pr_info("%s: %d: %u\n", __func__, __LINE__, freq);
-> >
-> > ?? there is no "freq" variable here, and so this doesn't compile. However this works:
-> >
-> > +       pr_info("%s: %d: %u\n", __func__, __LINE__, next_freq);
->
-> There are two paths we can take to change the frequency, normal
-> sleep-able path (sugov_work) or fast path. Only one of them is taken
-> by any driver ever. In your case it is the fast path always and in
-> mine it was the slow path.
->
-> I only tested the diff with slow-path and copy pasted to fast path
-> while giving out to you and so the build issue. Sorry about that.
->
-> Also make sure that the print is added after sugov_update_next_freq()
-> is called, not before it.
->
-> > >         next_freq = cpufreq_driver_fast_switch(policy, next_freq);
-> > >        if (!next_freq)
-> > >                return;
-> > > @@ -424,14 +425,10 @@ static unsigned long sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time,
-> > > #ifdef CONFIG_NO_HZ_COMMON
-> > > static bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu)
-> > > {
-> > > -       unsigned long idle_calls = tick_nohz_get_idle_calls_cpu(sg_cpu->cpu);
-> > > -       bool ret = idle_calls == sg_cpu->saved_idle_calls;
-> > > -
-> > > -       sg_cpu->saved_idle_calls = idle_calls;
-> > > -       return ret;
-> > > +       return true;
-> > >  }
-> > >  #else
-> > > -static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return false; }
-> > > +static inline bool sugov_cpu_is_busy(struct sugov_cpu *sg_cpu) { return true; }
-> > > #endif /* CONFIG_NO_HZ_COMMON */
-> > >
-> > >  /*
-> > > @@ -565,6 +562,7 @@ static void sugov_work(struct kthread_work *work)
-> > >         sg_policy->work_in_progress = false;
-> > >         raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
-> > >
-> > > +       pr_info("%s: %d: %u\n", __func__, __LINE__, freq);
-> > >         mutex_lock(&sg_policy->work_lock);
-> > >         __cpufreq_driver_target(sg_policy->policy, freq, CPUFREQ_RELATION_L);
-> > >         mutex_unlock(&sg_policy->work_lock);
-> > >
-> > > -------------------------8<-------------------------
-> > >
-> > > Now, the frequency never gets down and so gets set to the maximum
-> > > possible after a bit.
-> > >
-> > > - Then I did:
-> > >
-> > > echo <any-low-freq-value> > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
-> > >
-> > > Without my patch applied:
-> > >        The print never gets printed and so frequency doesn't go down.
-> > >
-> > > With my patch applied:
-> > >        The print gets printed immediately from sugov_work() and so
-> > >        the frequency reduces.
-> > >
-> > > Can you try with this diff along with my Patch2 ? I suspect there may
-> > > be something wrong with the intel_cpufreq driver as the patch fixes
-> > > the only path we have in the schedutil governor which takes busyness
-> > > of a CPU into account.
-> >
-> > With this diff along with your patch2 There is never a print message
-> > from sugov_work. There are from sugov_fast_switch.
->
-> Which is okay. sugov_work won't get hit in your case as I explained
-> above.
->
-> > Note that for the intel_cpufreq CPU scaling driver and the schedutil
-> > governor I adjust the maximum clock frequency this way:
-> >
-> > echo <any-low-percent> > /sys/devices/system/cpu/intel_pstate/max_perf_pct
->
-> This should eventually call sugov_limits() in schedutil governor, this
-> can be easily checked with another print message.
->
-> > I also applied the pr_info messages to the reverted kernel, and re-did
-> > my tests (where everything works as expected). There is never a print
-> > message from sugov_work. There are from sugov_fast_switch.
->
-> that's fine.
->
-> > Notes:
-> >
-> > I do not know if:
-> > /sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq
-> > /sys/devices/system/cpu/cpufreq/policy*/scaling_min_freq
-> > Need to be accurate when using the intel_pstate driver in passive mode.
-> > They are not.
-> > The commit comment for 9083e4986124389e2a7c0ffca95630a4983887f0
-> > suggests that they might need to be representative.
-> > I wonder if something similar to that commit is needed
-> > for other global changes, such as max_perf_pct and min_perf_pct?
->
-> We are already calling intel_pstate_update_policies() in that case, so
-> it should be fine I believe.
->
-> > intel_cpufreq/ondemand doesn't work properly on the reverted kernel.
->
-> reverted kernel ? The patch you reverted was only for schedutil and it
-> shouldn't have anything to do with ondemand.
->
-> > (just discovered, not investigated)
-> > I don't know about other governors.
->
-> When you do:
->
-> echo <any-low-percent> > /sys/devices/system/cpu/intel_pstate/max_perf_pct
->
-> How soon does the print from sugov_fast_switch() gets printed ?
-> Immediately ? Check with both the kernels, with my patch and with the
-> reverted patch.
->
-> Also see if there is any difference in the next_freq value in both the
-> kernels when you change max_perf_pct.
->
-> FWIW, we now know the difference between intel-pstate and
-> acpi-cpufreq/my testcase and why we see differences here. In the cases
-> where my patch fixed the issue (acpi/ARM), we were really changing the
-> limits, i.e. policy->min/max. This happened because we touched
-> scaling_max_freq directly.
->
-> For the case of intel-pstate, you are changing max_perf_pct which
-> doesn't change policy->max directly. I am not very sure how all of it
-> work really, but at least schedutil will not see policy->max changing.
->
-> @Rafael: Do you understand why things don't work properly with
-> intel_cpufreq driver ?
-
-I haven't tried to understand this yet, so no.
-
-My somewhat educated guess is that using max_perf_pct has to do with
-it, so I would try to retest to see if there's any difference when
-scaling_max_freq is used instead of that.
+SGksIEd1aWRvDQoNCj4gT24gRnJpLCBKdWwgMDUsIDIwMTkgYXQgMTI6NTY6MTBQTSArMDgwMCwg
+QW5zb24uSHVhbmdAbnhwLmNvbSB3cm90ZToNCj4gPiBGcm9tOiBBbnNvbiBIdWFuZyA8QW5zb24u
+SHVhbmdAbnhwLmNvbT4NCj4gPg0KPiA+IFNvbWUgcGxhdGZvcm1zIGxpa2UgaS5NWDhNUSBoYXMg
+Y2xvY2sgY29udHJvbCBmb3IgdGhpcyBtb2R1bGUsIG5lZWQgdG8NCj4gPiBhZGQgY2xvY2sgb3Bl
+cmF0aW9ucyB0byBtYWtlIHN1cmUgdGhlIGRyaXZlciBpcyB3b3JraW5nIHByb3Blcmx5Lg0KPiA+
+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+DQo+
+ID4gLS0tDQo+ID4gIGRyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMgfCAyNCArKysrKysr
+KysrKysrKysrKysrKysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDI0IGluc2VydGlvbnMoKykN
+Cj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhlcm1hbC5jDQo+
+ID4gYi9kcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhlcm1hbC5jIGluZGV4IDJiMmY3OWIuLjA4MTNj
+MWIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy90aGVybWFsL3FvcmlxX3RoZXJtYWwuYw0KPiA+
+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMNCj4gPiBAQCAtMiw2ICsyLDcg
+QEANCj4gPiAgLy8NCj4gPiAgLy8gQ29weXJpZ2h0IDIwMTYgRnJlZXNjYWxlIFNlbWljb25kdWN0
+b3IsIEluYy4NCj4gPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvY2xrLmg+DQo+ID4gICNpbmNsdWRl
+IDxsaW51eC9tb2R1bGUuaD4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5o
+Pg0KPiA+ICAjaW5jbHVkZSA8bGludXgvZXJyLmg+DQo+ID4gQEAgLTcyLDYgKzczLDcgQEAgc3Ry
+dWN0IHFvcmlxX3NlbnNvciB7DQo+ID4NCj4gPiAgc3RydWN0IHFvcmlxX3RtdV9kYXRhIHsNCj4g
+PiAgCXN0cnVjdCBxb3JpcV90bXVfcmVncyBfX2lvbWVtICpyZWdzOw0KPiA+ICsJc3RydWN0IGNs
+ayAqY2xrOw0KPiA+ICAJYm9vbCBsaXR0bGVfZW5kaWFuOw0KPiA+ICAJc3RydWN0IHFvcmlxX3Nl
+bnNvcgkqc2Vuc29yW1NJVEVTX01BWF07DQo+ID4gIH07DQo+ID4gQEAgLTIwOCw2ICsyMTAsMTkg
+QEAgc3RhdGljIGludCBxb3JpcV90bXVfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAq
+cGRldikNCj4gPiAgCQlyZXR1cm4gUFRSX0VSUihkYXRhLT5yZWdzKTsNCj4gPiAgCX0NCj4gPg0K
+PiA+ICsJZGF0YS0+Y2xrID0gZGV2bV9jbGtfZ2V0KCZwZGV2LT5kZXYsIE5VTEwpOw0KPiA+ICsJ
+aWYgKElTX0VSUihkYXRhLT5jbGspKSB7DQo+ID4gKwkJaWYgKFBUUl9FUlIoZGF0YS0+Y2xrKSA9
+PSAtRVBST0JFX0RFRkVSKQ0KPiA+ICsJCQlyZXR1cm4gLUVQUk9CRV9ERUZFUjsNCj4gPiArCQlk
+YXRhLT5jbGsgPSBOVUxMOw0KPiA+ICsJfQ0KPiANCj4gV291bGRuJ3QgZGV2bV9jbGtfZ2V0X29w
+dGlvbmFsIG1ha2UgbW9yZSBzZW5zZT8NCg0KWWVzLCBsb29rcyBsaWtlIGl0IGlzIGJldHRlciwg
+d2lsbCBmaXggaXQgaW4gVjIuDQoNCj4gDQo+ID4gKw0KPiA+ICsJcmV0ID0gY2xrX3ByZXBhcmVf
+ZW5hYmxlKGRhdGEtPmNsayk7DQo+ID4gKwlpZiAocmV0KSB7DQo+ID4gKwkJZGV2X2VycigmcGRl
+di0+ZGV2LCAiRmFpbGVkIHRvIGVuYWJsZSBjbG9ja1xuIik7DQo+ID4gKwkJcmV0dXJuIHJldDsN
+Cj4gPiArCX0NCj4gPiArDQo+ID4gIAlxb3JpcV90bXVfaW5pdF9kZXZpY2UoZGF0YSk7CS8qIFRN
+VSBpbml0aWFsaXphdGlvbiAqLw0KPiA+DQo+ID4gIAlyZXQgPSBxb3JpcV90bXVfY2FsaWJyYXRp
+b24ocGRldik7CS8qIFRNVSBjYWxpYnJhdGlvbiAqLw0KPiA+IEBAIC0yMzUsNiArMjUwLDggQEAg
+c3RhdGljIGludCBxb3JpcV90bXVfcmVtb3ZlKHN0cnVjdA0KPiBwbGF0Zm9ybV9kZXZpY2UgKnBk
+ZXYpDQo+ID4gIAkvKiBEaXNhYmxlIG1vbml0b3JpbmcgKi8NCj4gPiAgCXRtdV93cml0ZShkYXRh
+LCBUTVJfRElTQUJMRSwgJmRhdGEtPnJlZ3MtPnRtcik7DQo+ID4NCj4gPiArCWNsa19kaXNhYmxl
+X3VucHJlcGFyZShkYXRhLT5jbGspOw0KPiA+ICsNCj4gPiAgCXBsYXRmb3JtX3NldF9kcnZkYXRh
+KHBkZXYsIE5VTEwpOw0KPiA+DQo+ID4gIAlyZXR1cm4gMDsNCj4gPiBAQCAtMjUwLDE0ICsyNjcs
+MjEgQEAgc3RhdGljIGludCBfX21heWJlX3VudXNlZA0KPiBxb3JpcV90bXVfc3VzcGVuZChzdHJ1
+Y3QgZGV2aWNlICpkZXYpDQo+ID4gIAl0bXIgJj0gflRNUl9NRTsNCj4gPiAgCXRtdV93cml0ZShk
+YXRhLCB0bXIsICZkYXRhLT5yZWdzLT50bXIpOw0KPiA+DQo+ID4gKwljbGtfZGlzYWJsZV91bnBy
+ZXBhcmUoZGF0YS0+Y2xrKTsNCj4gPiArDQo+ID4gIAlyZXR1cm4gMDsNCj4gPiAgfQ0KPiA+DQo+
+ID4gIHN0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgcW9yaXFfdG11X3Jlc3VtZShzdHJ1Y3QgZGV2
+aWNlICpkZXYpICB7DQo+ID4gIAl1MzIgdG1yOw0KPiA+ICsJaW50IHJldDsNCj4gPiAgCXN0cnVj
+dCBxb3JpcV90bXVfZGF0YSAqZGF0YSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPiA+DQo+ID4g
+KwlyZXQgPSBjbGtfcHJlcGFyZV9lbmFibGUoZGF0YS0+Y2xrKTsNCj4gPiArCWlmIChyZXQpDQo+
+ID4gKwkJcmV0dXJuIHJldDsNCj4gPiArDQo+ID4gIAkvKiBFbmFibGUgbW9uaXRvcmluZyAqLw0K
+PiA+ICAJdG1yID0gdG11X3JlYWQoZGF0YSwgJmRhdGEtPnJlZ3MtPnRtcik7DQo+ID4gIAl0bXIg
+fD0gVE1SX01FOw0KPiANCj4gQXBhcnQgZnJvbSB0aGF0IGl0IGxvb2tzIGxpa2Ugd2hhdCBGYWJp
+byBzZW50IGFuZCB3aGF0IGkgdGVzdGVkIHNvDQo+IA0KPiBSZXZpZXdlZC1ieTogR3VpZG8gR8O8
+bnRoZXIgPGFneEBzaWd4Y3B1Lm9yZz4NCg0KVGhhbmtzLA0KQW5zb24NCg0KPiANCj4gQ2hlZXJz
+LA0KPiAgLS0gR3VpZG8NCj4gDQo+ID4gLS0NCj4gPiAyLjcuNA0KPiA+DQo+ID4NCj4gPiBfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+IGxpbnV4LWFy
+bS1rZXJuZWwgbWFpbGluZyBsaXN0DQo+ID4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRl
+YWQub3JnDQo+ID4gaHR0cHM6Ly9ldXIwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNv
+bS8/dXJsPWh0dHAlM0ElMkYlMkZsaXN0cw0KPiA+IC5pbmZyYWRlYWQub3JnJTJGbWFpbG1hbiUy
+Rmxpc3RpbmZvJTJGbGludXgtYXJtLQ0KPiBrZXJuZWwmYW1wO2RhdGE9MDIlN0MwDQo+ID4NCj4g
+MSU3Q2Fuc29uLmh1YW5nJTQwbnhwLmNvbSU3QzkyNjNjMjQwZGE4MjQ4MmFmNTc5MDhkNzEzZmM3
+ZDBiJTcNCj4gQzY4NmVhMWQNCj4gPg0KPiAzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTdDMCU3
+QzAlN0M2MzY5OTk4NDc0NzI4OTQ2MjQmYW1wO3NkYXQNCj4gYT0wWUFsSw0KPiA+IFY4WlMzN3ZI
+RnozMTFuT2RCUDhxQmJxaXN2akZCdGFTUzFQVjlrJTNEJmFtcDtyZXNlcnZlZD0wDQo+ID4NCg==
