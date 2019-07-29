@@ -2,165 +2,93 @@ Return-Path: <SRS0=pKl/=V2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0581FC7618B
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 17:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D174EC433FF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 18:08:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D28E521850
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 17:43:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="LUYzoyK7"
+	by mail.kernel.org (Postfix) with ESMTP id A9611206DD
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jul 2019 18:08:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387717AbfG2Rnm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jul 2019 13:43:42 -0400
-Received: from mout.gmx.net ([212.227.15.15]:45503 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387689AbfG2RnI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jul 2019 13:43:08 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1564422143;
-        bh=uoSEstO7wh+z/Yh5O4xemCJ/Lip8M0+P7e9/vs/uBqg=;
-        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=LUYzoyK7AqrnAmb+JoOAKe6C62uiFNbkaRfz9LRBUHcaNbbLwpnqwttQbQqmpkF0g
-         1s5F7KynXRT58c+oaT13Z00UfOq508HvgXf1m/0a3GjtNfxaztYxmi4OqNLm/cGMrW
-         pgmIqMjUdc91tSN5wzB6dCI7EX0oaPwGws0aV0Lk=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from localhost.localdomain ([185.76.97.79]) by mail.gmx.com
- (mrgmx001 [212.227.17.190]) with ESMTPSA (Nemesis) id
- 0LzskF-1iV71A2pwh-014xXw; Mon, 29 Jul 2019 19:42:23 +0200
-From:   Frank Wunderlich <frank-w@public-files.de>
-To:     Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Allison Randal <allison@lohutok.net>,
-        "David S. Miller" <davem@davemloft.net>,
-        devicetree@vger.kernel.org, Eddie Huang <eddie.huang@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Kate Stewart <kstewart@linuxfoundation.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-rtc@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Richard Fontana <rfontana@redhat.com>,
+        id S2387423AbfG2SIm convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jul 2019 14:08:42 -0400
+Received: from lithops.sigma-star.at ([195.201.40.130]:42270 "EHLO
+        lithops.sigma-star.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727482AbfG2SIm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2019 14:08:42 -0400
+Received: from localhost (localhost [127.0.0.1])
+        by lithops.sigma-star.at (Postfix) with ESMTP id E832A60632C0;
+        Mon, 29 Jul 2019 20:08:38 +0200 (CEST)
+Received: from lithops.sigma-star.at ([127.0.0.1])
+        by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10032)
+        with ESMTP id ehX5VuQgnl7G; Mon, 29 Jul 2019 20:08:38 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+        by lithops.sigma-star.at (Postfix) with ESMTP id 70E276083139;
+        Mon, 29 Jul 2019 20:08:38 +0200 (CEST)
+Received: from lithops.sigma-star.at ([127.0.0.1])
+        by localhost (lithops.sigma-star.at [127.0.0.1]) (amavisd-new, port 10026)
+        with ESMTP id XjNoOe8nauWF; Mon, 29 Jul 2019 20:08:38 +0200 (CEST)
+Received: from lithops.sigma-star.at (lithops.sigma-star.at [195.201.40.130])
+        by lithops.sigma-star.at (Postfix) with ESMTP id D590B608311C;
+        Mon, 29 Jul 2019 20:08:37 +0200 (CEST)
+Date:   Mon, 29 Jul 2019 20:08:37 +0200 (CEST)
+From:   Richard Weinberger <richard@nod.at>
+To:     Paul Cercueil <paul@crapouillou.net>
+Cc:     Richard Weinberger <richard.weinberger@gmail.com>,
+        Ralf Baechle <ralf@linux-mips.org>,
+        Paul Burton <paul.burton@mips.com>,
+        James Hogan <jhogan@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
-        Sean Wang <sean.wang@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Vinod Koul <vkoul@kernel.org>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Lee Jones <lee.jones@linaro.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
         Sebastian Reichel <sre@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        "Tianping . Fang" <tianping.fang@mediatek.com>
-Cc:     Josef Friedl <josef.friedl@speed.at>,
-        Frank Wunderlich <frank-w@public-files.de>
-Subject: [PATCH v3 07/10] mfd: mt6323: add mt6323 rtc+pwrc
-Date:   Mon, 29 Jul 2019 19:41:51 +0200
-Message-Id: <20190729174154.4335-8-frank-w@public-files.de>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190729174154.4335-1-frank-w@public-files.de>
-References: <20190729174154.4335-1-frank-w@public-files.de>
-X-Provags-ID: V03:K1:/8/fLbWdSh3bVNpxmnpL3FPeT0+linP7Us78MAvnUZuQdGm5VkG
- JCpRlGkofnBlmrzQndWukonLRDLXi08x0zDn1J2XNV36jNGQW6hd1+5DfsE/9deZ0bsiaMA
- edVYQT2hdUbxeDb60rreTPNXvSJK/NOu196puTcD6SRN/wJAMbc4VxPi0BzC0WTQRF39r0X
- WD1BP0vy+5EW/qzQ+Ojwg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Dq3eJEN+210=:q2LebVnxWDyoNhAxtkTf2Y
- +9IwdSRG7/gRTn22h/ok2pRBgVfTwU1TmELeJPQmoQ0DGqMI6NaFOLyCrVgT2bcnId+G1Ft7i
- IXtNiOHfaM06LuVwQUAZCoEZENr90Lmd9aymi9DMhDjetx+F1fno4vKDOPaKiUlcmOaUbQNN3
- YCH/EoVoPOoGuvhaPvEtfSGKARshmEWVmFEGagr8Yze9qNWluOmMDyQ6NpXvS3g1gQHfHZwli
- PcpMOeKLdtvStE0x03reIA8Ma2Q6wTX3AqILxFpMUOksLsh8QxEJUHGlf/2L5P/YmDlAVESsN
- FoLWBu9zxex0dQUtlS60C+ha1FuczC1xntVCPw+qwbYE3HDnp4Lvn7ZiA8qQmyTeqoASOjDPO
- Naz0f0rVc57ItsDJFjAprh3obonT9WHtmuQc3017/DQoCx4O/GPS/TJgs4/mfL18WMcMf8vN8
- S3b8egTFabdqYWUu0wRTiSrlxc1zsppxQHaB4NeTylh1IRdxYo07C9NbcNOyxFpPg0bGbOMNS
- PhEfxl6jJ1EafnbxDo5wMcSEBFl58hcWTu8Z78VDhPWEJvkqC62Zf/juxT5KlRE4cVm6WYs+e
- qfiMQyD9Xa1vqC87EAQNNRVtjI8wVHUwwGvl4RkCV6xhL155YxdfCRGM65WVvC9x2u1vcSlw9
- NRpHOknBYtHL067Vu5gRVBXKwBdHAVLGwEF+vxW0J3XNLRwLlQOf8a274YXJyvrRZAKk1afTg
- roSQmVKesVkl9U8RHuvYQbMO/AEVYvYrbj6sRFVOHe1eWk6gROBBXWqCdfddYpTqHNCraQCyU
- G1MbEO4OUyqttPWApGg1LUptcoa3RqkPbPc2FCd0rftFqVmiJ1+fePbfLoL0L6ShvaapudN6q
- Ux7VPUnCNkVgtMMUWiymUuoOx8V9OYDoODl7RgW0WxXPvQ3q64qJ/5GCAPuAhvyRfvR3EGKvm
- 6lvgR5z6trDR4Nc9YarQW//4jsXvJvmzkv5BgJ8EYi8HSI11p0QHJUBz6oZkGMmtAKVWtmsTh
- LKWtjGkcFuYwZVXx/JQ8GEOkHl98NLAExD5GiQOjWuSoQNo9gf6mGICPQaL0iRtJtD18PDOHi
- /MMfS1tSjmIsqI=
-Content-Transfer-Encoding: quoted-printable
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>, linux-hwmon@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        alsa-devel <alsa-devel@alsa-project.org>,
+        linux-pm@vger.kernel.org, linux-mips@vger.kernel.org,
+        DRI mailing list <dri-devel@lists.freedesktop.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>, od@zcrc.me,
+        linux-mtd <linux-mtd@lists.infradead.org>,
+        dmaengine@vger.kernel.org, Artur Rojek <contact@artur-rojek.eu>
+Message-ID: <339409106.53616.1564423717793.JavaMail.zimbra@nod.at>
+In-Reply-To: <1564419921.1759.1@crapouillou.net>
+References: <20190725220215.460-1-paul@crapouillou.net> <CAFLxGvyi0+0E3M12A7cRoHfEKd8-7Yr8EMG9J=2XcjCxPWY5pA@mail.gmail.com> <1564419921.1759.1@crapouillou.net>
+Subject: Re: [PATCH 00/11] JZ4740 SoC cleanup
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Originating-IP: [195.201.40.130]
+X-Mailer: Zimbra 8.8.12_GA_3807 (ZimbraWebClient - FF60 (Linux)/8.8.12_GA_3809)
+Thread-Topic: JZ4740 SoC cleanup
+Thread-Index: pyW9XJwx/g8VXIVrZC/ODWU++joHAw==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Josef Friedl <josef.friedl@speed.at>
+----- Ursprüngliche Mail -----
+>> Was this series tested with the Ben Nanonote device?
+>> I have one of these and from time to time I upgrade the kernel on it.
+> 
+> Yes! Artur (Cc'd) tested it.
+> 
+> You can test it yourself, after merging this patchset with:
+> https://git.kernel.org/pub/scm/linux/kernel/git/vkoul/slave-dma.git
+> branch next,
+> git://git.freedesktop.org/git/drm-misc branch drm-misc-next.
+> 
+> These will be in 5.4-rc1.
 
-add entry for rtc and power-controller to mt6323
+Awesome! Thanks a lot for cleaning this up.
 
-changes since v2: only splitting, second part of v2 part 4
-
-Signed-off-by: Josef Friedl <josef.friedl@speed.at>
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-=2D--
- drivers/mfd/mt6397-core.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
-
-diff --git a/drivers/mfd/mt6397-core.c b/drivers/mfd/mt6397-core.c
-index 5f7070267c9a..a4abce00f156 100644
-=2D-- a/drivers/mfd/mt6397-core.c
-+++ b/drivers/mfd/mt6397-core.c
-@@ -16,13 +16,24 @@
- #include <linux/mfd/mt6397/registers.h>
- #include <linux/mfd/mt6323/registers.h>
-
-+#define MT6323_RTC_BASE		0x8000
-+#define MT6323_RTC_SIZE		0x40
-+
- #define MT6397_RTC_BASE		0xe000
- #define MT6397_RTC_SIZE		0x3e
-
-+#define MT6323_PWRC_BASE	0x8000
-+#define MT6323_PWRC_SIZE	0x40
-+
- #define MT6323_CID_CODE		0x23
- #define MT6391_CID_CODE		0x91
- #define MT6397_CID_CODE		0x97
-
-+static const struct resource mt6323_rtc_resources[] =3D {
-+	DEFINE_RES_MEM(MT6323_RTC_BASE, MT6323_RTC_SIZE),
-+	DEFINE_RES_IRQ(MT6323_IRQ_STATUS_RTC),
-+};
-+
- static const struct resource mt6397_rtc_resources[] =3D {
- 	DEFINE_RES_MEM(MT6397_RTC_BASE, MT6397_RTC_SIZE),
- 	DEFINE_RES_IRQ(MT6397_IRQ_RTC),
-@@ -38,8 +49,17 @@ static const struct resource mt6397_keys_resources[] =
-=3D {
- 	DEFINE_RES_IRQ(MT6397_IRQ_HOMEKEY),
- };
-
-+static const struct resource mt6323_pwrc_resources[] =3D {
-+	DEFINE_RES_MEM(MT6323_PWRC_BASE, MT6323_PWRC_SIZE),
-+};
-+
- static const struct mfd_cell mt6323_devs[] =3D {
- 	{
-+		.name =3D "mt6323-rtc",
-+		.num_resources =3D ARRAY_SIZE(mt6323_rtc_resources),
-+		.resources =3D mt6323_rtc_resources,
-+		.of_compatible =3D "mediatek,mt6323-rtc",
-+	}, {
- 		.name =3D "mt6323-regulator",
- 		.of_compatible =3D "mediatek,mt6323-regulator"
- 	}, {
-@@ -50,6 +70,11 @@ static const struct mfd_cell mt6323_devs[] =3D {
- 		.num_resources =3D ARRAY_SIZE(mt6323_keys_resources),
- 		.resources =3D mt6323_keys_resources,
- 		.of_compatible =3D "mediatek,mt6323-keys"
-+	}, {
-+		.name =3D "mt6323-pwrc",
-+		.num_resources =3D ARRAY_SIZE(mt6323_pwrc_resources),
-+		.resources =3D mt6323_pwrc_resources,
-+		.of_compatible =3D "mediatek,mt6323-pwrc"
- 	},
- };
-
-=2D-
-2.17.1
-
+Thanks,
+//richard
