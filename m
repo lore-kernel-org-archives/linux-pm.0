@@ -2,137 +2,199 @@ Return-Path: <SRS0=ncUy=V3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A23D0C0650F
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 17:44:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61116C433FF
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 18:01:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7C71E20C01
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 17:44:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2AC512089E
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 18:01:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=wavecomp.com header.i=@wavecomp.com header.b="kBcohFEJ"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="fbKhNQxz"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731496AbfG3Rnz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 13:43:55 -0400
-Received: from mail-eopbgr760093.outbound.protection.outlook.com ([40.107.76.93]:7663
-        "EHLO NAM02-CY1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1731481AbfG3Rnw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 30 Jul 2019 13:43:52 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=lYSooRtr6KF+flS7mhRw1vNnmEDXFpMMB+JPAZtN1ZwS2BX5xPjVMTZCzfDQheK0iFdj5R2I3LtDVA+QEjFTFw6FrNWwV41rQohl4uRXVkQ21y72ZVw0TGcaKaShQ8udGmfnqne01ndLhSwZS1f4dBFin2BM5tKUspY0+voLMbkIsJm0vfbimHmM20g5Kg9A2tkHxTLA6DpchaFKDYrM2Uh06mUykwwDnX7jpcEm7OaWJn3O2rb116Wb7NTt6ESePiyOWc8Jl0Nl0/fL6bvHrayZ5fzRE0R7CaPWo/MDMIopBrCwEfgZuDKtuyF7gedwKpoUmUUP5CumjpOZ8IopBA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TiwYG3TY3kxRFNJZh12NBzqhG4GKm0Mdj1GWDyD0oag=;
- b=mxiLh90Q58BCKv5mWiMO4SsfqeHgaFarj1ROeRsPvXxR0wOubrjThp8P5gbltphmHTviLPLCB+OYou9ixoEjOVHPMOtP5YGqeKTgThO5CeQwfofmnB5ZihmzzHJsgo+chys3EZyO74lvEcQNlKzZqR/ADg3gq7fWy7IvWBt/BvUe28dIWgshkNh/kvzBmq4chlDqJF/mHsf6l/75NhaaPF4Pom4J9W41rTlEmUOxH2vfaBE/hXbobXFSzG5E5FQqE1jSofufghgfjRXIEptPGcGlA5e+PWKOtF2aImJkj/wYFfheuWSgrj/L5Yy0SNIArYFq2HACvRmwRbu5+ifLZw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1;spf=pass
- smtp.mailfrom=wavecomp.com;dmarc=pass action=none
- header.from=mips.com;dkim=pass header.d=mips.com;arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wavecomp.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=TiwYG3TY3kxRFNJZh12NBzqhG4GKm0Mdj1GWDyD0oag=;
- b=kBcohFEJ4A9LgpoUkM/c/bSplLktc8OrRQ8ZLKoEb6JA5qwH2LtUTbKHLhBip9gciQg+UpCOQA7EeLc9+CafEArmfLHLbcwXr8E3bkLtrxPLRXv3cPafmYswqLjStabpBAWhkf7JuwrWLqyfDzDw6b9hpXxxnWJelZQsJ3agvTM=
-Received: from MWHPR2201MB1277.namprd22.prod.outlook.com (10.172.60.12) by
- MWHPR2201MB1199.namprd22.prod.outlook.com (10.174.169.162) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2115.10; Tue, 30 Jul 2019 17:43:47 +0000
-Received: from MWHPR2201MB1277.namprd22.prod.outlook.com
- ([fe80::105a:1595:b6ef:cbdf]) by MWHPR2201MB1277.namprd22.prod.outlook.com
- ([fe80::105a:1595:b6ef:cbdf%4]) with mapi id 15.20.2115.005; Tue, 30 Jul 2019
- 17:43:47 +0000
-From:   Paul Burton <paul.burton@mips.com>
-To:     Paul Cercueil <paul@crapouillou.net>
-CC:     Ralf Baechle <ralf@linux-mips.org>,
-        Paul Burton <pburton@wavecomp.com>,
-        James Hogan <jhogan@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Vinod Koul <vkoul@kernel.org>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Lee Jones <lee.jones@linaro.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Richard Weinberger <richard@nod.at>,
-        Sebastian Reichel <sre@kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, "od@zcrc.me" <od@zcrc.me>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
-        "linux-hwmon@vger.kernel.org" <linux-hwmon@vger.kernel.org>,
-        "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>,
-        "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-        "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-        Paul Cercueil <paul@crapouillou.net>,
-        Artur Rojek <contact@artur-rojek.eu>,
-        "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>
-Subject: Re: [PATCH 03/11] MIPS: configs: LB60: update defconfig
-Thread-Topic: [PATCH 03/11] MIPS: configs: LB60: update defconfig
-Thread-Index: AQHVRv5XudYChLMNHUqcnu9Ai4NHkg==
-Date:   Tue, 30 Jul 2019 17:43:47 +0000
-Message-ID: <MWHPR2201MB1277A4C6D97106748D1459CEC1DC0@MWHPR2201MB1277.namprd22.prod.outlook.com>
-References: <20190725220215.460-4-paul@crapouillou.net>
-In-Reply-To: <20190725220215.460-4-paul@crapouillou.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: BYAPR11CA0092.namprd11.prod.outlook.com
- (2603:10b6:a03:f4::33) To MWHPR2201MB1277.namprd22.prod.outlook.com
- (2603:10b6:301:18::12)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=pburton@wavecomp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [12.94.197.246]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: d063b250-7264-4a9e-0a7d-08d715157960
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600148)(711020)(4605104)(1401327)(2017052603328)(7193020);SRVR:MWHPR2201MB1199;
-x-ms-traffictypediagnostic: MWHPR2201MB1199:
-x-microsoft-antispam-prvs: <MWHPR2201MB1199EA5E9E95659DF2388F16C1DC0@MWHPR2201MB1199.namprd22.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:4502;
-x-forefront-prvs: 0114FF88F6
-x-forefront-antispam-report: SFV:NSPM;SFS:(10019020)(39850400004)(376002)(346002)(136003)(396003)(366004)(199004)(189003)(76176011)(54906003)(15650500001)(4326008)(8936002)(68736007)(14454004)(81156014)(66066001)(99286004)(6916009)(81166006)(7416002)(52116002)(7696005)(71200400001)(71190400001)(316002)(8676002)(256004)(14444005)(7736002)(2906002)(186003)(6246003)(305945005)(42882007)(478600001)(64756008)(66476007)(66556008)(66446008)(6436002)(6506007)(386003)(66946007)(53936002)(26005)(102836004)(6116002)(74316002)(25786009)(4744005)(3846002)(55016002)(229853002)(52536014)(476003)(44832011)(33656002)(9686003)(486006)(5660300002)(11346002)(446003);DIR:OUT;SFP:1102;SCL:1;SRVR:MWHPR2201MB1199;H:MWHPR2201MB1277.namprd22.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
-received-spf: None (protection.outlook.com: wavecomp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: hsjecgSx7ohi78vq+/o9dtOi6zhBeWgwWSlzxR0vkhN2emtny7LaJgTnl2qZI1KI7fKp96aLqGf8s9d1/wshoeoJ00HvHy9d9y90newVZcxciPdVFRmVEfSvMjtEBRV8igmEO8Ao1RXM8dLoYKAbMKtVdN+B25elLm9uj6pa7UgbLJ8SEmqJfoZfkJI3PpQRvKBweO377NJcgBkmpS5x8l0dQs5yecxa28/p0ZJb5toS6DETI8tlzMOn06YYgtllqIUuUqshi94t9jP7nHvVhYrY6Iyg9QG80PbNxC4kXO+/TLEgyayyh4lub8rEcQrvOu4pjTbJWKRYvupVQuJMc52YTYvRKqBBGXp672L8tTctoZnfgUbkDHXePigfVhfEbK6fmHaSSp448JndjrQ/thRoRsxhAG/BWHMylvMWvOs=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+        id S1728869AbfG3SBx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 14:01:53 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:39497 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726174AbfG3SBx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 14:01:53 -0400
+Received: by mail-pg1-f194.google.com with SMTP id u17so30457231pgi.6
+        for <linux-pm@vger.kernel.org>; Tue, 30 Jul 2019 11:01:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=e4oBhvl2JGL/g7znlpJb17wcZ4f4c/GlFLmGamjl13c=;
+        b=fbKhNQxzz82g4sdnAhZ57A0hb0uBcdzsGtvJIewH6J8HFiWd4v1DbjhZme3+FPpHN+
+         CgVrRWW5s0YuozJII/YB+2NZ5r573QGkU38HNUz7maBvW4CAJRPZpo9gRRMOu66NfgT1
+         4s1JAmGCs8uLjMqep+2ShT7MpdeLsB0l8QKaU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=e4oBhvl2JGL/g7znlpJb17wcZ4f4c/GlFLmGamjl13c=;
+        b=DiQQ+yXwkwARSwBLSA2hzci1melKuya7Le+kl7MFGzJfNn1OzIsjiPxFC+zS8QAT6d
+         Kg7TE8pMa/dpFDRRfO3soxZbz3OXoakxBplVFJ5DM3/8ztSVApwyGMMvFUZ5lRIaCL73
+         hmVGbHnQKqwcaCCCFHzTdxB+V+/yFxPFixlLAR+zvyUKj4S7tpDjmLC+lSdbzjsUVODK
+         t8aix8cbLk7X2JLlMdt3xSYipFkYfRNXzfnMw7vTVPEsvgtZT9LIODuGuRw27fQfuDzE
+         2alit6N8gQexjg/oreEDbRrLmD8HY87sCnCIYgVOoh8f/BfGLaKVGABvuMxFuYhIF/p1
+         UpHQ==
+X-Gm-Message-State: APjAAAUvWbBmJf3NVJmegyjAVdpvGEvknotgMNCRFPiurXLM0ltZBPdl
+        1t6zRJi4EjSMT/v62fmUl6Cn6Q==
+X-Google-Smtp-Source: APXvYqxjt+I4v/sdEnywIDMFxpX9dhohJ2h/xcn+2r0A6Nitb41VcNHFgzjYokT3yWbk7qgmF27dvQ==
+X-Received: by 2002:a17:90a:cb12:: with SMTP id z18mr112668727pjt.82.1564509712356;
+        Tue, 30 Jul 2019 11:01:52 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+        by smtp.gmail.com with ESMTPSA id c7sm7783391pgq.31.2019.07.30.11.01.51
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Tue, 30 Jul 2019 11:01:51 -0700 (PDT)
+Date:   Tue, 30 Jul 2019 11:01:50 -0700
+From:   Kees Cook <keescook@chromium.org>
+To:     Thomas Gleixner <tglx@linutronix.de>
+Cc:     Thomas Garnier <thgarnie@chromium.org>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        kernel-hardening@lists.openwall.com, kristen@linux.intel.com,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        "David S. Miller" <davem@davemloft.net>,
+        "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+        Andy Lutomirski <luto@kernel.org>,
+        Juergen Gross <jgross@suse.com>,
+        Alok Kataria <akataria@vmware.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Nadav Amit <namit@vmware.com>, Jann Horn <jannh@google.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Feng Tang <feng.tang@intel.com>,
+        Maran Wilson <maran.wilson@oracle.com>,
+        Enrico Weigelt <info@metux.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Alexios Zavras <alexios.zavras@intel.com>,
+        linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+        virtualization@lists.linux-foundation.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v8 00/11] x86: PIE support to extend KASLR randomization
+Message-ID: <201907301100.90BB865078@keescook>
+References: <20190708174913.123308-1-thgarnie@chromium.org>
 MIME-Version: 1.0
-X-OriginatorOrg: mips.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d063b250-7264-4a9e-0a7d-08d715157960
-X-MS-Exchange-CrossTenant-originalarrivaltime: 30 Jul 2019 17:43:47.3730
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: pburton@wavecomp.com
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1199
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190708174913.123308-1-thgarnie@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On Mon, Jul 08, 2019 at 10:48:53AM -0700, Thomas Garnier wrote:
+> Splitting the previous series in two. This part contains assembly code
+> changes required for PIE but without any direct dependencies with the
+> rest of the patchset.
+> 
+> Changes:
+>  - patch v8 (assembly):
+>    - Fix issues in crypto changes (thanks to Eric Biggers).
+>    - Remove unnecessary jump table change.
+>    - Change author and signoff to chromium email address.
 
-Paul Cercueil wrote:
-> Update the defconfig to select the new drivers instead of the old ones.
->=20
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> Tested-by: Artur Rojek <contact@artur-rojek.eu>
+With -rc2 done, is this a good time for this to land in -tip? Are there
+more steps needed for review?
 
-Applied to mips-next.
+Thanks!
 
-Thanks,
-    Paul
+-Kees
 
-[ This message was auto-generated; if you believe anything is incorrect
-  then please email paul.burton@mips.com to report it. ]
+>  - patch v7 (assembly):
+>    - Split patchset and reorder changes.
+>  - patch v6:
+>    - Rebase on latest changes in jump tables and crypto.
+>    - Fix wording on couple commits.
+>    - Revisit checkpatch warnings.
+>    - Moving to @chromium.org.
+>  - patch v5:
+>    - Adapt new crypto modules for PIE.
+>    - Improve per-cpu commit message.
+>    - Fix xen 32-bit build error with .quad.
+>    - Remove extra code for ftrace.
+>  - patch v4:
+>    - Simplify early boot by removing global variables.
+>    - Modify the mcount location script for __mcount_loc intead of the address
+>      read in the ftrace implementation.
+>    - Edit commit description to explain better where the kernel can be located.
+>    - Streamlined the testing done on each patch proposal. Always testing
+>      hibernation, suspend, ftrace and kprobe to ensure no regressions.
+>  - patch v3:
+>    - Update on message to describe longer term PIE goal.
+>    - Minor change on ftrace if condition.
+>    - Changed code using xchgq.
+>  - patch v2:
+>    - Adapt patch to work post KPTI and compiler changes
+>    - Redo all performance testing with latest configs and compilers
+>    - Simplify mov macro on PIE (MOVABS now)
+>    - Reduce GOT footprint
+>  - patch v1:
+>    - Simplify ftrace implementation.
+>    - Use gcc mstack-protector-guard-reg=%gs with PIE when possible.
+>  - rfc v3:
+>    - Use --emit-relocs instead of -pie to reduce dynamic relocation space on
+>      mapped memory. It also simplifies the relocation process.
+>    - Move the start the module section next to the kernel. Remove the need for
+>      -mcmodel=large on modules. Extends module space from 1 to 2G maximum.
+>    - Support for XEN PVH as 32-bit relocations can be ignored with
+>      --emit-relocs.
+>    - Support for GOT relocations previously done automatically with -pie.
+>    - Remove need for dynamic PLT in modules.
+>    - Support dymamic GOT for modules.
+>  - rfc v2:
+>    - Add support for global stack cookie while compiler default to fs without
+>      mcmodel=kernel
+>    - Change patch 7 to correctly jump out of the identity mapping on kexec load
+>      preserve.
+> 
+> These patches make some of the changes necessary to build the kernel as
+> Position Independent Executable (PIE) on x86_64. Another patchset will
+> add the PIE option and larger architecture changes.
+> 
+> The patches:
+>  - 1, 3-11: Change in assembly code to be PIE compliant.
+>  - 2: Add a new _ASM_MOVABS macro to fetch a symbol address generically.
+> 
+> diffstat:
+>  crypto/aegis128-aesni-asm.S         |    6 +-
+>  crypto/aegis128l-aesni-asm.S        |    8 +--
+>  crypto/aegis256-aesni-asm.S         |    6 +-
+>  crypto/aes-x86_64-asm_64.S          |   45 ++++++++++------
+>  crypto/aesni-intel_asm.S            |    8 +--
+>  crypto/aesni-intel_avx-x86_64.S     |    3 -
+>  crypto/camellia-aesni-avx-asm_64.S  |   42 +++++++--------
+>  crypto/camellia-aesni-avx2-asm_64.S |   44 ++++++++--------
+>  crypto/camellia-x86_64-asm_64.S     |    8 +--
+>  crypto/cast5-avx-x86_64-asm_64.S    |   50 ++++++++++--------
+>  crypto/cast6-avx-x86_64-asm_64.S    |   44 +++++++++-------
+>  crypto/des3_ede-asm_64.S            |   96 ++++++++++++++++++++++++------------
+>  crypto/ghash-clmulni-intel_asm.S    |    4 -
+>  crypto/glue_helper-asm-avx.S        |    4 -
+>  crypto/glue_helper-asm-avx2.S       |    6 +-
+>  crypto/morus1280-avx2-asm.S         |    4 -
+>  crypto/morus1280-sse2-asm.S         |    8 +--
+>  crypto/morus640-sse2-asm.S          |    6 +-
+>  crypto/sha256-avx2-asm.S            |   18 ++++--
+>  entry/entry_64.S                    |   16 ++++--
+>  include/asm/alternative.h           |    6 +-
+>  include/asm/asm.h                   |    1 
+>  include/asm/paravirt_types.h        |   25 +++++++--
+>  include/asm/pm-trace.h              |    2 
+>  include/asm/processor.h             |    6 +-
+>  kernel/acpi/wakeup_64.S             |   31 ++++++-----
+>  kernel/head_64.S                    |   16 +++---
+>  kernel/relocate_kernel_64.S         |    2 
+>  power/hibernate_asm_64.S            |    4 -
+>  29 files changed, 306 insertions(+), 213 deletions(-)
+> 
+> Patchset is based on next-20190708.
+> 
+> 
+
+-- 
+Kees Cook
