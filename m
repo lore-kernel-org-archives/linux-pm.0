@@ -2,101 +2,111 @@ Return-Path: <SRS0=ncUy=V3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78845C433FF
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A95DBC0650F
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:05:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 580FC206A2
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:04:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 887F6208E3
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:05:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726386AbfG3KEn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 06:04:43 -0400
-Received: from icp-osb-irony-out1.external.iinet.net.au ([203.59.1.210]:44024
-        "EHLO icp-osb-irony-out1.external.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725947AbfG3KEn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 06:04:43 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A2AEBgC6FUBd/1/rO8tmghmDVSESFxO?=
- =?us-ascii?q?NGogdAYJDAYkskRsJAQEBAQEBAQEBGxwBAYQ6BIJoNwYOAQMBAQEEAQEBAQU?=
- =?us-ascii?q?BbYRlRYV4L3JwEoMigXcTrVwziHmBSIE0hwmEboFAP4N1bIQDChuFfwSVOpV?=
- =?us-ascii?q?DCYEld5QYGZgRi2SBWZloIoFYTR8ZgyeCeY4aNTCLdIJSAQE?=
-X-IPAS-Result: =?us-ascii?q?A2AEBgC6FUBd/1/rO8tmghmDVSESFxONGogdAYJDAYksk?=
- =?us-ascii?q?RsJAQEBAQEBAQEBGxwBAYQ6BIJoNwYOAQMBAQEEAQEBAQUBbYRlRYV4L3JwE?=
- =?us-ascii?q?oMigXcTrVwziHmBSIE0hwmEboFAP4N1bIQDChuFfwSVOpVDCYEld5QYGZgRi?=
- =?us-ascii?q?2SBWZloIoFYTR8ZgyeCeY4aNTCLdIJSAQE?=
-X-IronPort-AV: E=Sophos;i="5.64,326,1559491200"; 
-   d="scan'208";a="229597879"
-Received: from 203-59-235-95.perm.iinet.net.au (HELO rtcentos7.electromag.com.au) ([203.59.235.95])
-  by icp-osb-irony-out1.iinet.net.au with ESMTP; 30 Jul 2019 18:04:40 +0800
-From:   Richard Tresidder <rtresidd@electromag.com.au>
-To:     sre@kernel.org, kstewart@linuxfoundation.org,
-        gregkh@linuxfoundation.org, tglx@linutronix.de,
-        rfontana@redhat.com, allison@lohutok.net,
-        rtresidd@electromag.com.au, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/1] power/supply/sbs-battery: Add ability to force load a battery via the devicetree
-Date:   Tue, 30 Jul 2019 18:04:39 +0800
-Message-Id: <1564481079-39238-1-git-send-email-rtresidd@electromag.com.au>
-X-Mailer: git-send-email 1.8.3.1
+        id S1732246AbfG3KFQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 06:05:16 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:64768 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732239AbfG3KFQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 06:05:16 -0400
+Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
+ id cef21d955188d92f; Tue, 30 Jul 2019 12:05:13 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 3/8] PM: s2idle: Rearrange lps0_device_attach()
+Date:   Tue, 30 Jul 2019 11:57:37 +0200
+Message-ID: <1832879.s96VGDVqo9@kreacher>
+In-Reply-To: <7528887.mqcfy9PZua@kreacher>
+References: <7528887.mqcfy9PZua@kreacher>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the ability to force load a hot pluggable battery during boot where
-there is no gpio detect method available and the module is statically
-built. Normal polling will then occur on that battery when it is inserted.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Richard Tresidder <rtresidd@electromag.com.au>
+To allow a subsequent change to be simpler, rearrange the code in
+lps0_device_attach() to reduce the indentation level and (while
+at it) make it avoid calling lpi_device_get_constraints() when
+lps0_device_handle is not going to be set.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-Notes:
-    sbs_battery: Add ability to force load from devicetree
-    
-    Add the ability to force load a hot pluggable battery during boot where
-    there is no gpio detect method available and the module is statically
-    built. Normal polling will then occur on that battery when it is inserted.
-    
-    v2: move forceload variable to a local in probe.
-        merge device tree documentation into this patch
+No changes in v2.
 
- drivers/power/supply/sbs-battery.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+---
+ drivers/acpi/sleep.c |   32 +++++++++++++++++---------------
+ 1 file changed, 17 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 048d205..b55721d 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -816,6 +816,7 @@ static int sbs_probe(struct i2c_client *client,
- 	struct power_supply_config psy_cfg = {};
- 	int rc;
- 	int irq;
-+	bool dt_force_load;
- 
- 	sbs_desc = devm_kmemdup(&client->dev, &sbs_default_desc,
- 			sizeof(*sbs_desc), GFP_KERNEL);
-@@ -852,6 +853,9 @@ static int sbs_probe(struct i2c_client *client,
- 	if (rc)
- 		chip->poll_retry_count = 0;
- 
-+	dt_force_load = of_property_read_bool(client->dev.of_node,
-+						"sbs,force-load");
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -916,28 +916,30 @@ static int lps0_device_attach(struct acp
+ 	guid_parse(ACPI_LPS0_DSM_UUID, &lps0_dsm_guid);
+ 	/* Check if the _DSM is present and as expected. */
+ 	out_obj = acpi_evaluate_dsm(adev->handle, &lps0_dsm_guid, 1, 0, NULL);
+-	if (out_obj && out_obj->type == ACPI_TYPE_BUFFER) {
+-		char bitmask = *(char *)out_obj->buffer.pointer;
+-
+-		lps0_dsm_func_mask = bitmask;
+-		lps0_device_handle = adev->handle;
+-		/*
+-		 * Use suspend-to-idle by default if the default
+-		 * suspend mode was not set from the command line.
+-		 */
+-		if (mem_sleep_default > PM_SUSPEND_MEM)
+-			mem_sleep_current = PM_SUSPEND_TO_IDLE;
+-
+-		acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
+-				  bitmask);
+-	} else {
++	if (!out_obj || out_obj->type != ACPI_TYPE_BUFFER) {
+ 		acpi_handle_debug(adev->handle,
+ 				  "_DSM function 0 evaluation failed\n");
++		return 0;
+ 	}
 +
- 	if (pdata) {
- 		chip->poll_retry_count = pdata->poll_retry_count;
- 		chip->i2c_retry_count  = pdata->i2c_retry_count;
-@@ -890,7 +894,7 @@ static int sbs_probe(struct i2c_client *client,
- 	 * Before we register, we might need to make sure we can actually talk
- 	 * to the battery.
- 	 */
--	if (!(force_load || chip->gpio_detect)) {
-+	if (!(force_load || chip->gpio_detect || dt_force_load)) {
- 		rc = sbs_read_word_data(client, sbs_data[REG_STATUS].addr);
++	lps0_dsm_func_mask = *(char *)out_obj->buffer.pointer;
++
+ 	ACPI_FREE(out_obj);
  
- 		if (rc < 0) {
--- 
-1.8.3.1
++	acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
++			  lps0_dsm_func_mask);
++
++	lps0_device_handle = adev->handle;
++
+ 	lpi_device_get_constraints();
+ 
++	/*
++	 * Use suspend-to-idle by default if the default suspend mode was not
++	 * set from the command line.
++	 */
++	if (mem_sleep_default > PM_SUSPEND_MEM)
++		mem_sleep_current = PM_SUSPEND_TO_IDLE;
++
+ 	return 0;
+ }
+ 
+
+
 
