@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B73EAC76186
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:31:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1825C433FF
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:31:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9478E206A2
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:31:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C9456206A2
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:31:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731296AbfG3CbF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jul 2019 22:31:05 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:36120 "EHLO inva021.nxp.com"
+        id S1731285AbfG3CbE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jul 2019 22:31:04 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:45644 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731282AbfG3CbF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jul 2019 22:31:05 -0400
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5512E200538;
-        Tue, 30 Jul 2019 04:31:03 +0200 (CEST)
+        id S1730971AbfG3CbD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Jul 2019 22:31:03 -0400
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 4FDF21A0271;
+        Tue, 30 Jul 2019 04:31:02 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6CC73200527;
-        Tue, 30 Jul 2019 04:30:58 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 699F41A0537;
+        Tue, 30 Jul 2019 04:30:57 +0200 (CEST)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 26C5D402E0;
-        Tue, 30 Jul 2019 10:30:52 +0800 (SGT)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 25307402F2;
+        Tue, 30 Jul 2019 10:30:51 +0800 (SGT)
 From:   Anson.Huang@nxp.com
 To:     rui.zhang@intel.com, edubezval@gmail.com,
         daniel.lezcano@linaro.org, robh+dt@kernel.org,
         mark.rutland@arm.com, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     Linux-imx@nxp.com
-Subject: [PATCH V3 5/5] dt-bindings: thermal: qoriq: Add optional clocks property
-Date:   Tue, 30 Jul 2019 10:21:26 +0800
-Message-Id: <20190730022126.17883-5-Anson.Huang@nxp.com>
+Subject: [PATCH V3 4/5] thermal: qoriq: Use __maybe_unused instead of #if CONFIG_PM_SLEEP
+Date:   Tue, 30 Jul 2019 10:21:25 +0800
+Message-Id: <20190730022126.17883-4-Anson.Huang@nxp.com>
 X-Mailer: git-send-email 2.9.5
 In-Reply-To: <20190730022126.17883-1-Anson.Huang@nxp.com>
 References: <20190730022126.17883-1-Anson.Huang@nxp.com>
@@ -48,29 +48,47 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Anson Huang <Anson.Huang@nxp.com>
 
-Some platforms like i.MX8M series SoCs have clock control for TMU,
-add optional clocks property to the binding doc.
+Use __maybe_unused for power management related functions
+instead of #if CONFIG_PM_SLEEP to simply the code.
 
 Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
-No changes, noted the i.MX8M series SoCs need this clock in commit log.
+No changes.
 ---
- Documentation/devicetree/bindings/thermal/qoriq-thermal.txt | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/qoriq_thermal.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-index 04cbb90..28f2cba 100644
---- a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-@@ -23,6 +23,7 @@ Required properties:
- Optional property:
- - little-endian : If present, the TMU registers are little endian. If absent,
- 	the default is big endian.
-+- clocks : the clock for clocking the TMU silicon.
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index 8d19601..39542c6 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -256,8 +256,7 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
+ 	return 0;
+ }
  
- Example:
+-#ifdef CONFIG_PM_SLEEP
+-static int qoriq_tmu_suspend(struct device *dev)
++static int __maybe_unused qoriq_tmu_suspend(struct device *dev)
+ {
+ 	u32 tmr;
+ 	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
+@@ -272,7 +271,7 @@ static int qoriq_tmu_suspend(struct device *dev)
+ 	return 0;
+ }
  
+-static int qoriq_tmu_resume(struct device *dev)
++static int __maybe_unused qoriq_tmu_resume(struct device *dev)
+ {
+ 	u32 tmr;
+ 	int ret;
+@@ -289,7 +288,6 @@ static int qoriq_tmu_resume(struct device *dev)
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
+ 			 qoriq_tmu_suspend, qoriq_tmu_resume);
 -- 
 2.7.4
 
