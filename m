@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C91FC31E40
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:33:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2D59C0650F
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:33:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 63C40206A2
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:33:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A7C90208E3
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:33:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ed0osdwN"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D5TqpdBR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728924AbfG3Qdm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 12:33:42 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:38882 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732866AbfG3Qcg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:36 -0400
-Received: by mail-wr1-f66.google.com with SMTP id g17so66484294wrr.5;
-        Tue, 30 Jul 2019 09:32:34 -0700 (PDT)
+        id S1732859AbfG3Qcd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 12:32:33 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:35782 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732810AbfG3Qc0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:26 -0400
+Received: by mail-wm1-f68.google.com with SMTP id l2so57213824wmg.0;
+        Tue, 30 Jul 2019 09:32:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=p5ThkyaRUgULktlNTFDDxUH47fhVBKZuE6estEo8LTA=;
-        b=Ed0osdwNwWTYs35A6MBKD50ixU+VAc2yIrHy1zd9Z1OGpwNim0xnBnN23/nFdU6wuX
-         biWECficVlZjnMje7wxxatwe9kPxkBUA9n0EJ1GHUu5DplNn/+g+kRT2ZnuFEPnPxmHm
-         vcy5gaOEU5KZsa7e3yFR/2vUqjhuIJ2L1XvKlK/jda2PYasZ95dAT5fKtIM+EFSfRE8y
-         NGQBfwVhQNYXnykiD3AVj+2TWeRl3VC02ZL5R0+vmEAYfd6wZ6lbUa8MZzo9xxSMYyBW
-         ntwp66F6WDEYGtCzM45NTHgkal5oi7UQtCgwtjYNsP+0Vdh/g6rLDlrTz9cqiJU58Zmn
-         7GdA==
+        bh=bdIejvgC5kaa3wn/Z/zklRDPf5qDMoTs2AWg86KAKyQ=;
+        b=D5TqpdBRVqAqqkcVW611wKboN66wqHhvyBXZmkN5Cs4e273DzmFV+h4/GrtALNRUSJ
+         x8khvlkAAoVOpQ37fPdwufK7IqfDMGCQEbzHxI01spFwtTO9d99DFHkrUkfKP+mlzMYn
+         BYUHUt7DvdftF0gdAarEy+1uB5bpwhf1tiWZ5uKBB3mTZSC+bFm5Jb1FJ1KBpRt+zOCx
+         vyySytsAR8QwcyYUaeHZvScc0u+5q90wKWaPlupXK+hMY3AWLLVhPtQ4paGV0hf+2NVo
+         LMH8mwvn5uBMaV5Hly9PdVcj3y1I+rOVVx1ebaFbPL8HScoJTTJoFC76el6PQlrF8/0x
+         qVHQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=p5ThkyaRUgULktlNTFDDxUH47fhVBKZuE6estEo8LTA=;
-        b=XcvlgqTa9u/wx/h1P21qdkpZcvpdG818RDMbEtnDH/idtlB5ZbcwhPWmCb6oNY5suE
-         e2LFo69ljwrFxTnP8xQXk8aLRCwKVySH9J10lGKP5tN0/vVFJzKC3gP7oQsyd01LAMbW
-         VBFvjPxCO9TAmNe+z2aVO7++vR0fkNhYcX6S7YXWZMJhdvJE8wHj+CCGIIbhhiAdzBBR
-         2K6wz9OqQBWQ0T2KvdZFp5xvxEEm6Ry1GBc2bYzudZlMSuREwszniGP52RWKVkDCHk8N
-         z4OzqS79hJ12qFDsujRZbdcRTvB4vxaS/GqGrhL9GNhZs9cRVz+7z/iJO/d908Fsp1a/
-         wu4Q==
-X-Gm-Message-State: APjAAAUsWAC4D/u3FvcD0sREQQslfUkb2l9j4rb27+kM2AHoT8DXTn2b
-        whluvHEf6UebAxKmHyOLVOo=
-X-Google-Smtp-Source: APXvYqyMIeVTb36FM3vbkQArOFuuIzsuV2kzdOr+VE6k6QiY1AKWaNGhzPHg75im1hfdp+05z6YV+A==
-X-Received: by 2002:a5d:54c7:: with SMTP id x7mr99169710wrv.39.1564504354344;
-        Tue, 30 Jul 2019 09:32:34 -0700 (PDT)
+        bh=bdIejvgC5kaa3wn/Z/zklRDPf5qDMoTs2AWg86KAKyQ=;
+        b=ELQd/oE1py6q4e4qQzbIODyS8YUL2+WRj5P2oo6yx5iTFwyku4upL80hNqE0W23+9y
+         5W9DrRgexbuLCQn8bTMeQENevTp8ankiLv+zZB9WAKXLpCUZaCVxsK+sIXEjArQAJynD
+         kB9nzk//zCj+briBGf5Y7lwIOMsyNoQRlaor2/+kUhjE0TBjGjZP3BmQv1ok3a1OToBJ
+         trt/WUBiM9ihx6ear94LhECRWyAhvOel8PCYsYEEtTMnxZkRKQR6w5kM+cYIoT5FDJds
+         SV0UaKxYAqcZc16oWuOHOxc9hJVXjXKdqzIQV+3ilviiAUmRJdKw5PHjof6ZPdZtsDAI
+         zjsw==
+X-Gm-Message-State: APjAAAUFj4Ip3BVf4+3pkmhdKcp3zqKw/kQM2kUhOuJtKxF5+ei3MO8x
+        rxSyznl1D6lQjkbuXm4NJ0g=
+X-Google-Smtp-Source: APXvYqys4KDqUTalkll3A+irj2HQVD4jyQL/DSD/vHU0bHldNWGX4UeyFKyJSxwHIq1EgzEplK2QGQ==
+X-Received: by 2002:a1c:3587:: with SMTP id c129mr109441547wma.90.1564504343908;
+        Tue, 30 Jul 2019 09:32:23 -0700 (PDT)
 Received: from localhost.localdomain (ppp91-78-220-99.pppoe.mtu-net.ru. [91.78.220.99])
-        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.33
+        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.22
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Jul 2019 09:32:33 -0700 (PDT)
+        Tue, 30 Jul 2019 09:32:23 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v5 12/20] PM / devfreq: tegra30: Move clk-notifier's registration to governor's start
-Date:   Tue, 30 Jul 2019 19:22:28 +0300
-Message-Id: <20190730162236.6063-13-digetx@gmail.com>
+Subject: [PATCH v5 04/20] PM / devfreq: tegra30: Drop write-barrier
+Date:   Tue, 30 Jul 2019 19:22:20 +0300
+Message-Id: <20190730162236.6063-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190730162236.6063-1-digetx@gmail.com>
 References: <20190730162236.6063-1-digetx@gmail.com>
@@ -77,104 +77,71 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is no point in receiving of the notifications while governor is
-stopped, let's keep them disabled like we do for the CPU freq-change
-notifications. This also fixes a potential use-after-free bug if
-notification happens after device's removal.
+There is no need in a write-barrier now, given that interrupt masking is
+handled by CPU's GIC now. Hence we know exactly that interrupt won't fire
+after stopping the devfreq's governor. In other cases we don't care about
+potential buffering of the writes to hardware and thus there is no need to
+stall CPU.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 33 ++++++++++++++++++-------------
- 1 file changed, 19 insertions(+), 14 deletions(-)
+ drivers/devfreq/tegra30-devfreq.c | 14 --------------
+ 1 file changed, 14 deletions(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 17de24d2ae32..762e17323095 100644
+index bfee9d43de1e..ee14bf534c0d 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -724,6 +724,19 @@ static int tegra_actmon_start(struct tegra_devfreq *tegra)
- 	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
- 		      ACTMON_GLB_PERIOD_CTRL);
+@@ -230,12 +230,6 @@ static void tegra_devfreq_update_wmark(struct tegra_devfreq *tegra,
+ 		      ACTMON_DEV_LOWER_WMARK);
+ }
  
-+	/*
-+	 * CLK notifications are needed in order to reconfigure the upper
-+	 * consecutive watermark in accordance to the actual clock rate
-+	 * to avoid unnecessary upper interrupts.
-+	 */
-+	err = clk_notifier_register(tegra->emc_clock,
-+				    &tegra->clk_rate_change_nb);
-+	if (err) {
-+		dev_err(tegra->devfreq->dev.parent,
-+			"Failed to register rate change notifier\n");
-+		return err;
-+	}
-+
+-static void actmon_write_barrier(struct tegra_devfreq *tegra)
+-{
+-	/* ensure the update has reached the ACTMON */
+-	readl(tegra->regs + ACTMON_GLB_STATUS);
+-}
+-
+ static void actmon_isr_device(struct tegra_devfreq *tegra,
+ 			      struct tegra_devfreq_device *dev)
+ {
+@@ -287,8 +281,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
+ 	device_writel(dev, dev_ctrl, ACTMON_DEV_CTRL);
+ 
+ 	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
+-
+-	actmon_write_barrier(tegra);
+ }
+ 
+ static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra,
+@@ -376,8 +368,6 @@ static int tegra_actmon_rate_notify_cb(struct notifier_block *nb,
+ 		tegra_devfreq_update_wmark(tegra, dev);
+ 	}
+ 
+-	actmon_write_barrier(tegra);
+-
+ 	return NOTIFY_OK;
+ }
+ 
+@@ -423,8 +413,6 @@ static void tegra_actmon_start(struct tegra_devfreq *tegra)
  	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
  		tegra_actmon_configure_device(tegra, &tegra->devices[i]);
  
-@@ -750,6 +763,8 @@ static int tegra_actmon_start(struct tegra_devfreq *tegra)
- 	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
- 		tegra_actmon_stop_device(&tegra->devices[i]);
- 
-+	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
-+
- 	return err;
+-	actmon_write_barrier(tegra);
+-
+ 	enable_irq(tegra->irq);
  }
  
-@@ -766,6 +781,8 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
- 
- 	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
- 		tegra_actmon_stop_device(&tegra->devices[i]);
-+
-+	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
+@@ -439,8 +427,6 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
+ 		device_writel(&tegra->devices[i], ACTMON_INTR_STATUS_CLEAR,
+ 			      ACTMON_DEV_INTR_STATUS);
+ 	}
+-
+-	actmon_write_barrier(tegra);
  }
  
  static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
-@@ -1010,24 +1027,16 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, tegra);
- 
-+	tegra->clk_rate_change_nb.notifier_call = tegra_actmon_clk_notify_cb;
- 	tegra->cpu_rate_change_nb.notifier_call = tegra_actmon_cpu_notify_cb;
- 
- 	INIT_DELAYED_WORK(&tegra->cpufreq_update_work,
- 			  tegra_actmon_delayed_update);
- 
--	tegra->clk_rate_change_nb.notifier_call = tegra_actmon_clk_notify_cb;
--	err = clk_notifier_register(tegra->emc_clock,
--				    &tegra->clk_rate_change_nb);
--	if (err) {
--		dev_err(&pdev->dev,
--			"Failed to register rate change notifier\n");
--		goto remove_opps;
--	}
--
- 	err = devfreq_add_governor(&tegra_devfreq_governor);
- 	if (err) {
- 		dev_err(&pdev->dev, "Failed to add governor: %d\n", err);
--		goto unreg_notifier;
-+		goto remove_opps;
- 	}
- 
- 	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
-@@ -1045,9 +1054,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- remove_governor:
- 	devfreq_remove_governor(&tegra_devfreq_governor);
- 
--unreg_notifier:
--	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
--
- remove_opps:
- 	dev_pm_opp_remove_all_dynamic(&pdev->dev);
- 
-@@ -1064,7 +1070,6 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
- 	devfreq_remove_device(tegra->devfreq);
- 	devfreq_remove_governor(&tegra_devfreq_governor);
- 
--	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
- 	dev_pm_opp_remove_all_dynamic(&pdev->dev);
- 
- 	reset_control_reset(tegra->reset);
 -- 
 2.22.0
 
