@@ -2,110 +2,102 @@ Return-Path: <SRS0=ncUy=V3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E2ADC76186
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:46:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CA14C76186
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 03:02:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D3ECE20679
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:46:44 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="L8GR5DfM"
+	by mail.kernel.org (Postfix) with ESMTP id 6AFD120578
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 03:02:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731467AbfG3Cqo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jul 2019 22:46:44 -0400
-Received: from mail-pl1-f194.google.com ([209.85.214.194]:41245 "EHLO
-        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731465AbfG3Cqo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2019 22:46:44 -0400
-Received: by mail-pl1-f194.google.com with SMTP id m9so28155452pls.8
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2019 19:46:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=TIMkP6Sbv3HhH7Pg62xgc50SN2hQat3s6fyOGmFVet4=;
-        b=L8GR5DfMRyep5ArrsWvl2jbLj0dmva+GRlpTMBEy28z/3U4kCIKeBfzq/cFSiBzTUq
-         WhFNVymIRwcWDQ1d+MP+L6pG65a1cGoWsZQPFjvo6ct+L43Bji6mvXlBS1bQneYXg7cx
-         fy+1Mt8/3wqfOeX7J2TAKnyQ35VlrhKD8JpFAba6lteniuBVkgF4ubCMEGl0DZ/8hxjE
-         AcnOxEssWV3etZKwaV/WP3qCQ2uzrfUxPFssPd4SdLqohFGIpSgD7oSRd5+RzJ7P/oUp
-         9eGmRtDwiQDJsUdu9E6hAg0U25uQ22eAq+YqsUekO+88XtqsfJH7eqal1w1uOJS6LDPz
-         A67A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=TIMkP6Sbv3HhH7Pg62xgc50SN2hQat3s6fyOGmFVet4=;
-        b=AlvMJ67crAlCHuo0Pw5M9IJnh+iH93fr/hi2SlhlJSXngKILlJxxR/VFu1y8Lz7rGW
-         ATWeMvEQnwDkXCTU/eX+VS1cttMXPSzmM6ds1qq+0jnGtohwY2neata5Fy/c97F8FOOv
-         xzCaj1q2AxJvj98b8OgJg1bu3IS98/C0sBdYkggfn3QgBPyRsOo+oAK0t7EYB1KLeXjM
-         ES7iHXvHn3Bdc/DJcov+2pvHCvCD18jJdIV6raKcL3XBf4ORP4yQ2407YZyW67kQr6f3
-         aTBMxNp/RDrSwyfkiMuoDvT2TUMTfZ3CaeMqZ8X372BIccfjCK5TvqeEuwwcxp+OCbJg
-         i2Yg==
-X-Gm-Message-State: APjAAAWz1mIzLkv3B0VypfRkaLcGL0tvth35F8glUowwRF+vQ8rdSHtq
-        2pLFiUGDAvL8Zhydq16niDr1sQ==
-X-Google-Smtp-Source: APXvYqzeA9LVcJv5kbvk0OnqoT6oBgmnCofJDcZtwfBTMsDgwL3UumIql4DmQbc9jwe2WS2gmfH5ow==
-X-Received: by 2002:a17:902:aa41:: with SMTP id c1mr112285898plr.201.1564454803345;
-        Mon, 29 Jul 2019 19:46:43 -0700 (PDT)
-Received: from localhost ([122.172.28.117])
-        by smtp.gmail.com with ESMTPSA id x14sm79932677pfq.158.2019.07.29.19.46.42
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 29 Jul 2019 19:46:42 -0700 (PDT)
-Date:   Tue, 30 Jul 2019 08:16:40 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Saravana Kannan <saravanak@google.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Sibi Sankar <sibis@codeaurora.org>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        "Sweeney, Sean" <seansw@qti.qualcomm.com>,
-        David Dai <daidavid1@codeaurora.org>, adharmap@codeaurora.org,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Evan Green <evgreen@chromium.org>,
-        Android Kernel Team <kernel-team@android.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v4 0/3] Introduce Bandwidth OPPs for interconnects
-Message-ID: <20190730024640.xk27jgdfl2j6ucx7@vireshk-i7>
-References: <20190726231558.175130-1-saravanak@google.com>
- <20190729093545.kvnqxjkyx4nogddk@vireshk-i7>
- <CAGETcx8OBFGgP1-hj717Sk-_N95-kacVsz0yb288n3pej12n1Q@mail.gmail.com>
+        id S1732834AbfG3DCl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jul 2019 23:02:41 -0400
+Received: from anchovy2.45ru.net.au ([203.30.46.146]:36427 "EHLO
+        anchovy2.45ru.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732835AbfG3DCf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2019 23:02:35 -0400
+Received: (qmail 342 invoked by uid 5089); 30 Jul 2019 03:02:33 -0000
+Received: by simscan 1.2.0 ppid: 32701, pid: 32702, t: 0.3042s
+         scanners: regex: 1.2.0 attach: 1.2.0 clamav: 0.88.3/m:40/d:1950 spam: 3.1.4
+Received: from unknown (HELO ?192.168.0.34?) (rtresidd@electromag.com.au@203.59.235.95)
+  by anchovy3.45ru.net.au with ESMTPA; 30 Jul 2019 03:02:32 -0000
+Subject: Re: [PATCH 1/1] power: supply: sbs-battery: Add ability to force load
+ a battery via the devicetree
+To:     sre@kernel.org, kstewart@linuxfoundation.org,
+        gregkh@linuxfoundation.org, tglx@linutronix.de,
+        rfontana@redhat.com, allison@lohutok.net, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Nick Crews <ncrews@chromium.org>,
+        Guenter Roeck <groeck@google.com>
+References: <1564030601-14639-1-git-send-email-rtresidd@electromag.com.au>
+From:   Richard Tresidder <rtresidd@electromag.com.au>
+Message-ID: <5023c937-0662-57e0-c104-bb9c23b07a49@electromag.com.au>
+Date:   Tue, 30 Jul 2019 11:02:29 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAGETcx8OBFGgP1-hj717Sk-_N95-kacVsz0yb288n3pej12n1Q@mail.gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <1564030601-14639-1-git-send-email-rtresidd@electromag.com.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-AU
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 29-07-19, 13:16, Saravana Kannan wrote:
-> Sibi might be working on doing that for the SDM845 CPUfreq driver.
-> Georgi could also change his GPU driver use case to use this BW OPP
-> table and required-opps.
-> 
-> The problem is that people don't want to start using this until we
-> decide on the DT representation. So it's like a chicken and egg
-> situation.
+Hi Nick and Guenter
+Just adding you to this one also seeing as you're looking at that other 
+sbs_battery patch for me.
+Not sure why the get maintainers didn't list you for this one.
 
-Yeah, I agree to that.
+Cheers
+    Richard Tresidder
+> Add the ability to force load a hot pluggable battery during boot where
+> there is no gpio detect method available and the module is statically
+> built. Normal polling will then occur on that battery when it is inserted.
+>
+> Signed-off-by: Richard Tresidder <rtresidd@electromag.com.au>
+> ---
+>
+> Notes:
+>      Add the ability to force load a hot pluggable battery during boot where
+>      there is no gpio detect method available and the module is statically
+>      built. Normal polling will then occur on that battery when it is inserted.
+>
+>   drivers/power/supply/sbs-battery.c | 6 +++++-
+>   1 file changed, 5 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+> index 048d205..ea8ba3e 100644
+> --- a/drivers/power/supply/sbs-battery.c
+> +++ b/drivers/power/supply/sbs-battery.c
+> @@ -161,6 +161,7 @@ struct sbs_info {
+>   	int				poll_time;
+>   	u32				i2c_retry_count;
+>   	u32				poll_retry_count;
+> +	bool				force_load;
+>   	struct delayed_work		work;
+>   	struct mutex			mode_lock;
+>   	u32				flags;
+> @@ -852,6 +853,9 @@ static int sbs_probe(struct i2c_client *client,
+>   	if (rc)
+>   		chip->poll_retry_count = 0;
+>   
+> +	chip->force_load = of_property_read_bool(client->dev.of_node,
+> +						"sbs,force-load");
+> +
+>   	if (pdata) {
+>   		chip->poll_retry_count = pdata->poll_retry_count;
+>   		chip->i2c_retry_count  = pdata->i2c_retry_count;
+> @@ -890,7 +894,7 @@ static int sbs_probe(struct i2c_client *client,
+>   	 * Before we register, we might need to make sure we can actually talk
+>   	 * to the battery.
+>   	 */
+> -	if (!(force_load || chip->gpio_detect)) {
+> +	if (!(force_load || chip->gpio_detect || chip->force_load)) {
+>   		rc = sbs_read_word_data(client, sbs_data[REG_STATUS].addr);
+>   
+>   		if (rc < 0) {
 
-@Georgi and @Sibi: This is your chance to speak up about the proposal
-from Saravana and if you find anything wrong with them. And specially
-that it is mostly about interconnects here, I would like to have an
-explicit Ack from Georgi on this.
-
-And if you guys are all okay about this then please at least commit
-that you will convert your stuff based on this in coming days.
-
--- 
-viresh
