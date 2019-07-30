@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A0A2C31E40
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3EB2C0650F
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 31A59216C8
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AA9B4206E0
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IGInv4Z4"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ThonQR5N"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732854AbfG3Qcd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 12:32:33 -0400
-Received: from mail-wr1-f68.google.com ([209.85.221.68]:37083 "EHLO
-        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732828AbfG3Qc2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:28 -0400
-Received: by mail-wr1-f68.google.com with SMTP id n9so41401344wrr.4;
-        Tue, 30 Jul 2019 09:32:27 -0700 (PDT)
+        id S1732887AbfG3Qci (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 12:32:38 -0400
+Received: from mail-wr1-f66.google.com ([209.85.221.66]:45995 "EHLO
+        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732875AbfG3Qch (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:37 -0400
+Received: by mail-wr1-f66.google.com with SMTP id f9so66460546wre.12;
+        Tue, 30 Jul 2019 09:32:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=g5tURnCPvlR1FgVTUPFvio04s8CzBn2V+f8QGTCwOFA=;
-        b=IGInv4Z4YwMrX+CzLKwBULMOwtb1kMKFrTq5nNuQJXWIxGRIAxRnoRhL/V0wizQrc2
-         OYfkqFqb8nmpMrTo9SIAWsIHJP+aWJouQTY/LOHOCZvYu5hbbCALBhYFe6DmdiNBTp0L
-         DCp9z6Bc4mJ5sXMG/uLNbAEJRkcXeI+OlsqPj4a5muYfK/QU2EKmdDqTaHUrDSyI67cd
-         2f5Hoq6j6xmbvpWaWycijHRihZuxYHaBY58LEuznOBmhb+2KRsWS6iwG+1ceup7Ss5qq
-         DWz/uzhsDsC7ATPepc0H6DB5JvVFYqrNhfW7vNu0q1ckJzvq1+a5Tf/oN4dDe29E5ifo
-         PXQQ==
+        bh=Le+gPqc9tIQojy6SU5vThsC8LVskQQb69uxlrI0JsWQ=;
+        b=ThonQR5NO1MwLW/8JmmHvoM0emVn+1GOrm2plUd6BXed715xsPEli04ZdADVsx8GK2
+         dyUcBuBzKG2Iprzjoo7Li3DfI2LnZnY5Y6Mt7gT3/lcViRTxmIBO5/wkuYktxR0mcXTo
+         w1ZMqdWOVE2Sfe7XVhKjzPuj0elSi/fbsfjI3GKWVQeskiJIQPKy0gTTU7jl0jh49r5M
+         a8bpYlU2aYGu9jGfccr6kv2YP1X7fuY/wSB0bh/ciOWJ5ZuVxW8fIk/oUgl2cA/fb+7k
+         mGmsJtYBTolFmxOUSA31SclPoL3g/OHYJFzzKRNOx8szxVYUphX/tSZKM9ZY56Ub+Asy
+         wupQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=g5tURnCPvlR1FgVTUPFvio04s8CzBn2V+f8QGTCwOFA=;
-        b=aGNo+BO9D/+JEZmXqtzFk75iD6Ar5aPU+l05BA+CCgdFFdbE2CNYkIpAq4fuYY6IUG
-         QeNl6p417OutPFcg2Fe0Otk/qJfM40x4iXH9g2X/2kAyrOrRBhP0/syoV2KTcXa5J+iG
-         tOcv0kHLksGJNbDRy0L6Us5KVNEWXheEYlQU17PTgQTnuh+V2KCoUayJrz+3gZk/S8ZL
-         MgdhjkE9b29uRXfrQuxoWcpVBE6YCUd/LfViJOuTOyLMj96oH/nl1byIOHEF766bmVEx
-         L3bGQVM6sixydsdnEiu+NiYlADJ8/jnjKzuxW8UI8zKwt9cOxvpfH3mPsjrPbr5Dq/VU
-         9Ccg==
-X-Gm-Message-State: APjAAAVNl2AG3MuBV+J7UkM2GzooDjYSTlnXnzwSbERQ2SmfdqhddELT
-        SIdepviy5KHCa6dPXC+MYp740ibt
-X-Google-Smtp-Source: APXvYqwd3YWgwQpq7SrWlW8v2kpTJkh48PQh6m24ruER9NF1l3cCVBckpMSQWVcPAfZly9ld9NEJfw==
-X-Received: by 2002:adf:ed8a:: with SMTP id c10mr132636248wro.33.1564504346710;
-        Tue, 30 Jul 2019 09:32:26 -0700 (PDT)
+        bh=Le+gPqc9tIQojy6SU5vThsC8LVskQQb69uxlrI0JsWQ=;
+        b=CAOfGVp5JvbtrhQY2jFb6Yg1ID8OntUWX6u0UvR3SHZSxMhpd/KmLepKgHcwmbFiM9
+         avoWKUiFXv86ZK6CoPul6jVH48jAYLFeF+FpSgE0QNuLyzb231/YtyzfFq3ZdneU10uy
+         ldooUGIsyEO5K77MWRUisv61CVVaQLNYG5SLc98/v+rKtUPlVpdH8mz0+nuVcRziB64p
+         C0ONAnM0ZR203u90Wf5VNuPN86DWybsxEy1UClRsmA67kJH5BRK7mn9fOXReMx7EIoKd
+         9x3SqY2I4D1BeJKCoDDYWsh9o12eW0FCeA30KnBNh5vpo8Qa1aQTR8QOwPXQ0wZSNljA
+         4oRQ==
+X-Gm-Message-State: APjAAAUwe9jhh1i8CCZ2/vZloqshECdnw2uhdxwzt3dx9YAFSGR97nwU
+        v1Zj3lLJ44/AFgMutzg48Io=
+X-Google-Smtp-Source: APXvYqyAmW83NC2q6/Fkgl/M/lLil+J3NzM/Cyfj0gFaeMT8v1hCIN4G/cFmzhPIhHDkYfTXnRno8Q==
+X-Received: by 2002:a5d:4111:: with SMTP id l17mr5371078wrp.59.1564504355595;
+        Tue, 30 Jul 2019 09:32:35 -0700 (PDT)
 Received: from localhost.localdomain (ppp91-78-220-99.pppoe.mtu-net.ru. [91.78.220.99])
-        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.25
+        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.34
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Jul 2019 09:32:26 -0700 (PDT)
+        Tue, 30 Jul 2019 09:32:35 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v5 06/20] PM / devfreq: tegra30: Tune up boosting thresholds
-Date:   Tue, 30 Jul 2019 19:22:22 +0300
-Message-Id: <20190730162236.6063-7-digetx@gmail.com>
+Subject: [PATCH v5 13/20] PM / devfreq: tegra30: Reset boosting on startup
+Date:   Tue, 30 Jul 2019 19:22:29 +0300
+Message-Id: <20190730162236.6063-14-digetx@gmail.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190730162236.6063-1-digetx@gmail.com>
 References: <20190730162236.6063-1-digetx@gmail.com>
@@ -77,32 +77,30 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that average-sustain coefficient / multiplier is gone, it won't hurt
-to re-tune the boosting thresholds to get a bit harder boosting for MCALL
-clients, resulting in a more reactive governing in a case of multimedia
-applications usage like 3d / video.
+Governor could be stopped while boosting is active. We have assumption
+that everything is reset on governor's restart, including the boosting
+value, which was missed.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/devfreq/tegra30-devfreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 2331052fd8bd..4525c051f85c 100644
+index 762e17323095..6e8ae20c3bf1 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -111,8 +111,8 @@ static struct tegra_devfreq_device_config actmon_device_configs[] = {
- 		.irq_mask = 1 << 26,
- 		.boost_up_coeff = 200,
- 		.boost_down_coeff = 50,
--		.boost_up_threshold = 60,
--		.boost_down_threshold = 40,
-+		.boost_up_threshold = 50,
-+		.boost_down_threshold = 25,
- 	},
- 	{
- 		/* MCCPU: memory accesses from the CPUs */
+@@ -684,6 +684,9 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+ {
+ 	u32 val = 0;
+ 
++	/* reset boosting on governor's restart */
++	dev->boost_freq = 0;
++
+ 	dev->avg_freq = clk_get_rate(tegra->emc_clock) / KHZ;
+ 	device_writel(dev, dev->avg_freq * ACTMON_SAMPLING_PERIOD,
+ 		      ACTMON_DEV_INIT_AVG);
 -- 
 2.22.0
 
