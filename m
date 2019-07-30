@@ -2,81 +2,87 @@ Return-Path: <SRS0=ncUy=V3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 912E1C0650F
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:10:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EABCC0650F
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:11:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 71E842089E
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:10:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 00BFE20679
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:11:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725209AbfG3KKJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 06:10:09 -0400
-Received: from icp-osb-irony-out1.external.iinet.net.au ([203.59.1.210]:44712
-        "EHLO icp-osb-irony-out1.external.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727360AbfG3KKJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 06:10:09 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A2BcBwDsFkBd/1/rO8tmHgEfBgeBTgK?=
- =?us-ascii?q?DUwwVEhcTjRqIHQGCQwGJLJEbCQEBAQEBAQEBARscAQGEOgQCAoJkNwYOAQM?=
- =?us-ascii?q?BAQEEAQEBAQUBbYRlRYVLBlYzPxJXBxKDIoF3E64KhAYBhHKBSIE0hwmEboF?=
- =?us-ascii?q?AP4ERg1CEAwobhV0iBJU6lUMJgSV3lBgZmBEtizeBWZloIoFYTR8ZgyeQT0Q?=
- =?us-ascii?q?1MIt0glIBAQ?=
-X-IPAS-Result: =?us-ascii?q?A2BcBwDsFkBd/1/rO8tmHgEfBgeBTgKDUwwVEhcTjRqIH?=
- =?us-ascii?q?QGCQwGJLJEbCQEBAQEBAQEBARscAQGEOgQCAoJkNwYOAQMBAQEEAQEBAQUBb?=
- =?us-ascii?q?YRlRYVLBlYzPxJXBxKDIoF3E64KhAYBhHKBSIE0hwmEboFAP4ERg1CEAwobh?=
- =?us-ascii?q?V0iBJU6lUMJgSV3lBgZmBEtizeBWZloIoFYTR8ZgyeQT0Q1MIt0glIBAQ?=
-X-IronPort-AV: E=Sophos;i="5.64,326,1559491200"; 
-   d="scan'208";a="229598849"
-Received: from 203-59-235-95.perm.iinet.net.au (HELO rtcentos7.electromag.com.au) ([203.59.235.95])
-  by icp-osb-irony-out1.iinet.net.au with ESMTP; 30 Jul 2019 18:10:06 +0800
-From:   Richard Tresidder <rtresidd@electromag.com.au>
-To:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
-        rtresidd@electromag.com.au, kstewart@linuxfoundation.org,
-        gregkh@linuxfoundation.org, tglx@linutronix.de,
-        rfontana@redhat.com, allison@lohutok.net, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RESEND v2 1/2] dt-binding docs: sbs_sbs-battery: Addition of force_load binding
-Date:   Tue, 30 Jul 2019 18:10:03 +0800
-Message-Id: <1564481404-39505-2-git-send-email-rtresidd@electromag.com.au>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1564481404-39505-1-git-send-email-rtresidd@electromag.com.au>
-References: <1564481404-39505-1-git-send-email-rtresidd@electromag.com.au>
+        id S1726210AbfG3KLK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 06:11:10 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:42105 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726078AbfG3KLK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 06:11:10 -0400
+Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
+ id f1d19142855f53dd; Tue, 30 Jul 2019 12:11:08 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpuidle: teo: Get rid of redundant check in teo_update()
+Date:   Tue, 30 Jul 2019 12:11:08 +0200
+Message-ID: <2331986.krM4XTe0ch@kreacher>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add device tree binding documentation for addition of force_load boolean value
-to allow loading a battery during boot even if notpresent at that time.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Richard Tresidder <rtresidd@electromag.com.au>
+Notice that setting measured_us to UINT_MAX in teo_update() earlier
+doesn't change the behavior of the following code, so do that and
+eliminate a redundant check used for setting measured_us to UINT_MAX.
+
+This change is not expected to alter functionality.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/cpuidle/governors/teo.c |   16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-index 4e78e51..187d7bb 100644
---- a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-@@ -15,7 +15,8 @@ Optional properties :
-    after an external change notification.
-  - sbs,battery-detect-gpios : The gpio which signals battery detection and
-    a flag specifying its polarity.
--
-+ - sbs,force-load : Allow loading of a hot-pluggable battery when there is no
-+   GPIO detect available and the module is statically built.
- Example:
+Index: linux-pm/drivers/cpuidle/governors/teo.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/teo.c
++++ linux-pm/drivers/cpuidle/governors/teo.c
+@@ -125,10 +125,11 @@ static void teo_update(struct cpuidle_dr
  
- 	battery@b {
-@@ -24,4 +25,5 @@ Example:
- 		sbs,i2c-retry-count = <2>;
- 		sbs,poll-retry-count = <10>;
- 		sbs,battery-detect-gpios = <&gpio-controller 122 1>;
-+		sbs,force-load;
+ 	if (cpu_data->time_span_ns >= cpu_data->sleep_length_ns) {
+ 		/*
+-		 * One of the safety nets has triggered or this was a timer
+-		 * wakeup (or equivalent).
++		 * One of the safety nets has triggered or the wakeup was close
++		 * enough to the closest timer event expected at the idle state
++		 * selection time to be discarded.
+ 		 */
+-		measured_us = sleep_length_us;
++		measured_us = UINT_MAX;
+ 	} else {
+ 		unsigned int lat = drv->states[cpu_data->last_state].exit_latency;
+ 
+@@ -189,15 +190,6 @@ static void teo_update(struct cpuidle_dr
  	}
--- 
-1.8.3.1
+ 
+ 	/*
+-	 * If the total time span between idle state selection and the "reflect"
+-	 * callback is greater than or equal to the sleep length determined at
+-	 * the idle state selection time, the wakeup is likely to be due to a
+-	 * timer event.
+-	 */
+-	if (cpu_data->time_span_ns >= cpu_data->sleep_length_ns)
+-		measured_us = UINT_MAX;
+-
+-	/*
+ 	 * Save idle duration values corresponding to non-timer wakeups for
+ 	 * pattern detection.
+ 	 */
+
+
 
