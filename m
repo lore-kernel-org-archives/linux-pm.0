@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A95DBC0650F
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:05:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33763C31E40
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:05:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 887F6208E3
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:05:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0668E208E3
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:05:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732246AbfG3KFQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 06:05:16 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:64768 "EHLO
+        id S1732254AbfG3KFR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 06:05:17 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:65198 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732239AbfG3KFQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 06:05:16 -0400
+        with ESMTP id S1725947AbfG3KFO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 06:05:14 -0400
 Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
- id cef21d955188d92f; Tue, 30 Jul 2019 12:05:13 +0200
+ id 6960aa9c85ff3342; Tue, 30 Jul 2019 12:05:12 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
@@ -28,9 +28,9 @@ Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 3/8] PM: s2idle: Rearrange lps0_device_attach()
-Date:   Tue, 30 Jul 2019 11:57:37 +0200
-Message-ID: <1832879.s96VGDVqo9@kreacher>
+Subject: [PATCH v2 5/8] ACPI: PM: s2idle: Switch EC over to polling during "noirq" suspend
+Date:   Tue, 30 Jul 2019 12:00:43 +0200
+Message-ID: <1767168.ICNatdIUZt@kreacher>
 In-Reply-To: <7528887.mqcfy9PZua@kreacher>
 References: <7528887.mqcfy9PZua@kreacher>
 MIME-Version: 1.0
@@ -43,70 +43,47 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-To allow a subsequent change to be simpler, rearrange the code in
-lps0_device_attach() to reduce the indentation level and (while
-at it) make it avoid calling lpi_device_get_constraints() when
-lps0_device_handle is not going to be set.
+Since the ACPI SCI is set up for system wakeup before the "noirq"
+suspend of devices, it is better to make suspend-to-idle follow
+suspend-to-RAM (S3) and switch over the EC to polling during "noirq"
+suspend (and back to interrupt-based flow during "noirq" resume).
+
+The frequency of spurious wakeup interrupts from the EC may be
+reduced this way.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-No changes in v2.
+New in v2.
 
 ---
- drivers/acpi/sleep.c |   32 +++++++++++++++++---------------
- 1 file changed, 17 insertions(+), 15 deletions(-)
+ drivers/acpi/ec.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Index: linux-pm/drivers/acpi/sleep.c
+Index: linux-pm/drivers/acpi/ec.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -916,28 +916,30 @@ static int lps0_device_attach(struct acp
- 	guid_parse(ACPI_LPS0_DSM_UUID, &lps0_dsm_guid);
- 	/* Check if the _DSM is present and as expected. */
- 	out_obj = acpi_evaluate_dsm(adev->handle, &lps0_dsm_guid, 1, 0, NULL);
--	if (out_obj && out_obj->type == ACPI_TYPE_BUFFER) {
--		char bitmask = *(char *)out_obj->buffer.pointer;
--
--		lps0_dsm_func_mask = bitmask;
--		lps0_device_handle = adev->handle;
--		/*
--		 * Use suspend-to-idle by default if the default
--		 * suspend mode was not set from the command line.
--		 */
--		if (mem_sleep_default > PM_SUSPEND_MEM)
--			mem_sleep_current = PM_SUSPEND_TO_IDLE;
--
--		acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
--				  bitmask);
--	} else {
-+	if (!out_obj || out_obj->type != ACPI_TYPE_BUFFER) {
- 		acpi_handle_debug(adev->handle,
- 				  "_DSM function 0 evaluation failed\n");
-+		return 0;
- 	}
-+
-+	lps0_dsm_func_mask = *(char *)out_obj->buffer.pointer;
-+
- 	ACPI_FREE(out_obj);
+--- linux-pm.orig/drivers/acpi/ec.c
++++ linux-pm/drivers/acpi/ec.c
+@@ -1958,8 +1958,7 @@ static int acpi_ec_suspend_noirq(struct
+ 	    ec->reference_count >= 1)
+ 		acpi_set_gpe(NULL, ec->gpe, ACPI_GPE_DISABLE);
  
-+	acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
-+			  lps0_dsm_func_mask);
-+
-+	lps0_device_handle = adev->handle;
-+
- 	lpi_device_get_constraints();
+-	if (acpi_sleep_no_ec_events())
+-		acpi_ec_enter_noirq(ec);
++	acpi_ec_enter_noirq(ec);
  
-+	/*
-+	 * Use suspend-to-idle by default if the default suspend mode was not
-+	 * set from the command line.
-+	 */
-+	if (mem_sleep_default > PM_SUSPEND_MEM)
-+		mem_sleep_current = PM_SUSPEND_TO_IDLE;
-+
  	return 0;
  }
+@@ -1968,8 +1967,7 @@ static int acpi_ec_resume_noirq(struct d
+ {
+ 	struct acpi_ec *ec = acpi_driver_data(to_acpi_device(dev));
  
+-	if (acpi_sleep_no_ec_events())
+-		acpi_ec_leave_noirq(ec);
++	acpi_ec_leave_noirq(ec);
+ 
+ 	if (ec_no_wakeup && test_bit(EC_FLAGS_STARTED, &ec->flags) &&
+ 	    ec->reference_count >= 1)
 
 
 
