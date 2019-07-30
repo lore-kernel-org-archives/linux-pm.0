@@ -2,183 +2,144 @@ Return-Path: <SRS0=ncUy=V3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 898D4C433FF
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:34:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41246C0650F
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:43:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 52E9521773
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:34:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 14D912171F
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:43:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AdDy3qZl"
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="HOl2oflI";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="giQuwOOg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732691AbfG3QcW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 12:32:22 -0400
-Received: from mail-wm1-f67.google.com ([209.85.128.67]:56213 "EHLO
-        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726703AbfG3QcV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:21 -0400
-Received: by mail-wm1-f67.google.com with SMTP id a15so57773918wmj.5;
-        Tue, 30 Jul 2019 09:32:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=mJBhLQBGKw9W1CH7iiRGJ+NYhLg8OsmSZT/MaVZztU0=;
-        b=AdDy3qZl8TR2Dr1ieEe5a5RTbAFUsZYCOin0+uegsJi40aexEm9s9f5pH/eBmtBmDz
-         0CnvAX+yGvHGbmRHR7ZpbwynG/J7kkhff4Vf2ORSOm85OBZYRyQ+CVLmMxjyk/BTfbBh
-         jEry6Pw3UceY7nIpklVt4xnekAU7zKpl65JVaTyLfp8y14f7Z5cIuNnrB/45ZcRBsiAu
-         +ok2rbCYVIg/s/i9N7WixRlRLhcPOaTVABOuV2YHdUwKUdKk24b8JcjXQCU8ez6TIsf7
-         J2MUlDdFt6wgXFzA+ib79IUJwXGF8HFlFj74B3cfe3KwxVXy/gAlv4joKETKQjwdgIPA
-         hMdQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=mJBhLQBGKw9W1CH7iiRGJ+NYhLg8OsmSZT/MaVZztU0=;
-        b=ip8YF5kQf1twtj5HC6Ff4yu20qcvjTh2jaLzLbPWqrB78xNxksvaunfZRL5KnoqOwf
-         ydWA6i86xyqasejNNABUGgawL6+lxFrcn/kQTXVjS03d00GZaO7Met3cpugMCFPJfx+N
-         zM6pQJyj94L5zUnSd7iTHyCa+P4+SHAHDDTYXjfNVgAt82gTByMR7fCRDaniBaTzXceY
-         mkXnQAhWawE65jtameAhJSsq7aUeLBG3wQTLyo4buKG8S208HNpMW8nNQbok8vVDLN8S
-         COgX/BhwD/lYw1JJlvir9JhFFJb20VcRYAiWg9lnGixd8Ny218DC+EUTK16jCfgvNPgW
-         OBoA==
-X-Gm-Message-State: APjAAAWrWAE3aB/PH/pod5vhpfiLUr/ez4b4CWivb8kNiJjLiKz+FPxz
-        moHRvtBY27wPsym5/2/cZ7k=
-X-Google-Smtp-Source: APXvYqz1etbIwSkmRp08u8llnZcMpY7U9CUtUhBXvOw2c/P42fpeq1ZAX2ECdyDaCfdoWk1fKhxi5Q==
-X-Received: by 2002:a1c:c542:: with SMTP id v63mr103080598wmf.97.1564504338780;
-        Tue, 30 Jul 2019 09:32:18 -0700 (PDT)
-Received: from localhost.localdomain (ppp91-78-220-99.pppoe.mtu-net.ru. [91.78.220.99])
-        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.17
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Jul 2019 09:32:18 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v5 00/20] More improvements for Tegra30 devfreq driver
-Date:   Tue, 30 Jul 2019 19:22:16 +0300
-Message-Id: <20190730162236.6063-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.22.0
+        id S1727360AbfG3Qno (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 12:43:44 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:58870 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726751AbfG3Qno (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:43:44 -0400
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+        id B501560850; Tue, 30 Jul 2019 16:43:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1564505022;
+        bh=nzlx+WA8YpyPWGC852+7ZM1qfO8l79oxasafpFjso+c=;
+        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+        b=HOl2oflInJUHQq2PZ68pCYQNQYdFCO+4JJDpEmNEvs49i4kZiqV10RlrLP2bhZs8c
+         S8a2q/z0w9eWP1x6/KjBQtyEkYlMei1S6kRHUYDaKQ7lDM1zr0kp+CsX7VLlMzCuJg
+         D1DVLX47+Yjxz05bcWdpCbU3/E19t0Csq//tIpEg=
+Received: from [10.79.43.230] (blr-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.18.19])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: sibis@smtp.codeaurora.org)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 915F3602BC;
+        Tue, 30 Jul 2019 16:43:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1564505021;
+        bh=nzlx+WA8YpyPWGC852+7ZM1qfO8l79oxasafpFjso+c=;
+        h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+        b=giQuwOOght+bx4P3Ia3F/fMlV8ERnpI8PRUC20JNo8qJIr0KXTBoby48qa2lmfAL3
+         /sjUn3+QJrx6sOjCwtrE0B9gbngmM9FIWZ+mHQU8Mw+UTzw7yW8VPEn4fp4sp6F6Sr
+         ozzHq2Z2qC/0vcVOmmA1Kz7Ad2G+XJ/GhSIGQFoo=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 915F3602BC
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=sibis@codeaurora.org
+Subject: Re: [PATCH v4 0/3] Introduce Bandwidth OPPs for interconnects
+To:     Saravana Kannan <saravanak@google.com>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        "Sweeney, Sean" <seansw@qti.qualcomm.com>,
+        David Dai <daidavid1@codeaurora.org>, adharmap@codeaurora.org,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Evan Green <evgreen@chromium.org>,
+        Android Kernel Team <kernel-team@android.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <20190726231558.175130-1-saravanak@google.com>
+ <20190729093545.kvnqxjkyx4nogddk@vireshk-i7>
+ <CAGETcx8OBFGgP1-hj717Sk-_N95-kacVsz0yb288n3pej12n1Q@mail.gmail.com>
+ <20190730024640.xk27jgdfl2j6ucx7@vireshk-i7>
+ <361effba-4433-24d9-243c-201af39214cc@codeaurora.org>
+ <CAGETcx_BpJswxA4AGARogZ1xRJPqm=_zTOZq1xJ2vgx+DUYsqQ@mail.gmail.com>
+From:   Sibi Sankar <sibis@codeaurora.org>
+Message-ID: <a9ab8614-7626-c309-24cc-02ce08a80ce5@codeaurora.org>
+Date:   Tue, 30 Jul 2019 22:13:34 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAGETcx_BpJswxA4AGARogZ1xRJPqm=_zTOZq1xJ2vgx+DUYsqQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On 7/30/19 11:23 AM, Saravana Kannan wrote:
+> On Mon, Jul 29, 2019 at 10:28 PM Sibi Sankar <sibis@codeaurora.org> wrote:
+>>
+>> Hey Viresh,
+>>
+>> On 7/30/19 8:16 AM, Viresh Kumar wrote:
+>>> On 29-07-19, 13:16, Saravana Kannan wrote:
+>>>> Sibi might be working on doing that for the SDM845 CPUfreq driver.
+>>>> Georgi could also change his GPU driver use case to use this BW OPP
+>>>> table and required-opps.
+>>>>
+>>>> The problem is that people don't want to start using this until we
+>>>> decide on the DT representation. So it's like a chicken and egg
+>>>> situation.
+>>>
+>>> Yeah, I agree to that.
+>>>
+>>> @Georgi and @Sibi: This is your chance to speak up about the proposal
+>>> from Saravana and if you find anything wrong with them. And specially
+>>> that it is mostly about interconnects here, I would like to have an
+>>> explicit Ack from Georgi on this.
+>>>
+>>> And if you guys are all okay about this then please at least commit
+>>> that you will convert your stuff based on this in coming days.
+>>
+>> I've been using both Saravana's and Georgi's series for a while
+>> now to scale DDR and L3 on SDM845. There is currently no consensus
+>> as to where the votes are to be actuated from, hence couldn't post
+>> anything out.
+>>
+>> DCVS based on Saravana's series + passive governor:
+>> https://github.com/QuinAsura/linux/tree/lnext-072619-SK-series
+> 
+> Thanks Sibi! You might want to convert your patches so that until the
+> passive governor is ready, you just look up the required opps and vote
+> for BW directly from the cpufreq driver. Once devfreq governor is
+> ready, you can switch to it.
 
-This series addresses some additional review comments that were made by
-Thierry Reding to [1], makes several important changes to the driver,
-fixing excessive interrupts activity, and adds new features. In the end
-I'm proposing myself as a maintainer for the Tegra devfreq drivers.
+Sure I'll do that.
 
-[1] https://lore.kernel.org/lkml/0fb50eb1-a173-1756-6889-2526a10ac707@gmail.com/T/
-
-Changelog:
-
-v5:  Addressed review comments that were made by Chanwoo Choi to v4 by
-     squashing few patches, dropping some questionable patches, rewording
-     comments to the code, restructuring the code and etc.
-
-     These patches are now dropped from the series:
-
-       PM / devfreq: tegra30: Use tracepoints for debugging
-       PM / devfreq: tegra30: Inline all one-line functions
-
-     The interrupt-optimization patches are squashed into a single patch:
-
-       PM / devfreq: tegra30: Reduce unnecessary interrupts activity
-
-     because it's better to keep the optimizations as a separate change and
-     this also helps to reduce code churning, since the code changes depend
-     on a previous patch in order to stay cleaner.
-
-     Fixed a lockup bug that I spotted recently, which is caused by a
-     clk-notifier->cpufreq_get()->clk_set_rate() sequence. Now a non-blocking
-     variant of CPU's frequency retrieving is used, i.e. cpufreq_quick_get().
-
-     Further optimized the CPUFreq notifier by postponing the delayed
-     updating in accordance to the polling interval, this actually uncovered
-     the above lockup bug.
-
-     Implemented new minor driver feature in the new patch:
-
-       PM / devfreq: tegra30: Support variable polling interval
-
-v4:  Added two new patches to the series:
-
-       PM / devfreq: tegra30: Synchronize average count on target's update
-       PM / devfreq: tegra30: Increase sampling period to 16ms
-
-     The first patch addresses problem where governor could get stuck due
-     to outdated "average count" value which is snapshoted by ISR and there
-     are cases where manual update of the value is required.
-
-     The second patch is just a minor optimization.
-
-v3:  Added support for tracepoints, replacing the debug messages.
-     Fixed few more bugs with the help of tracepoints.
-
-     New patches in this version:
-
-       PM / devfreq: tegra30: Use tracepoints for debugging
-       PM / devfreq: tegra30: Optimize CPUFreq notifier
-       PM / devfreq: tegra30: Optimize upper consecutive watermark selection
-       PM / devfreq: tegra30: Optimize upper average watermark selection
-       PM / devfreq: tegra30: Include appropriate header
-
-     Some of older patches of this series also got some extra minor polish.
-
-v2:  Added more patches that are cleaning driver's code further and
-     squashing another kHz conversion bug.
-
-     The patch "Rework frequency management logic" of the v1 series is now
-     converted to "Set up watermarks properly" because I found some problems
-     in the original patch and then realized that there is no need to change
-     the logic much. So the logic mostly preserved and only got improvements.
-
-     The series is based on the today's linux-next (25 Jun) and takes into
-     account minor changes that MyungJoo Ham made to the already queued
-     patches from the first batch [1].
-
-Dmitry Osipenko (20):
-  PM / devfreq: tegra30: Change irq type to unsigned int
-  PM / devfreq: tegra30: Keep interrupt disabled while governor is
-    stopped
-  PM / devfreq: tegra30: Handle possible round-rate error
-  PM / devfreq: tegra30: Drop write-barrier
-  PM / devfreq: tegra30: Set up watermarks properly
-  PM / devfreq: tegra30: Tune up boosting thresholds
-  PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
-  PM / devfreq: tegra30: Ensure that target freq won't overflow
-  PM / devfreq: tegra30: Use kHz units uniformly in the code
-  PM / devfreq: tegra30: Reduce unnecessary interrupts activity
-  PM / devfreq: tegra30: Use CPUFreq notifier
-  PM / devfreq: tegra30: Move clk-notifier's registration to governor's
-    start
-  PM / devfreq: tegra30: Reset boosting on startup
-  PM / devfreq: tegra30: Don't enable consecutive-down interrupt on
-    startup
-  PM / devfreq: tegra30: Constify structs
-  PM / devfreq: tegra30: Include appropriate header
-  PM / devfreq: tegra30: Increase sampling period to 16ms
-  PM / devfreq: tegra30: Define ACTMON_DEV_CTRL_STOP
-  PM / devfreq: tegra30: Support variable polling interval
-  PM / devfreq: tegra20/30: Add Dmitry as a maintainer
-
- MAINTAINERS                       |   9 +
- drivers/devfreq/tegra30-devfreq.c | 706 +++++++++++++++++++++++-------
- 2 files changed, 555 insertions(+), 160 deletions(-)
+> 
+> -Saravana
+> 
+>>
+>> DCVS based on Georgi's series: (I had already posted this out)
+>> https://github.com/QuinAsura/linux/tree/lnext-072619-GJ-series
+>>
+>> --
+>> Qualcomm Innovation Center, Inc.
+>> Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
+>> a Linux Foundation Collaborative Project
 
 -- 
-2.22.0
-
+Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
