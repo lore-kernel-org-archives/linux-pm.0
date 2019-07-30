@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AD20C433FF
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:31:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B73EAC76186
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:31:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 733A1206A2
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:31:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9478E206A2
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 02:31:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731267AbfG3CbC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jul 2019 22:31:02 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:36018 "EHLO inva021.nxp.com"
+        id S1731296AbfG3CbF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jul 2019 22:31:05 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:36120 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730971AbfG3CbB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jul 2019 22:31:01 -0400
+        id S1731282AbfG3CbF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Jul 2019 22:31:05 -0400
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5667D20053E;
-        Tue, 30 Jul 2019 04:30:59 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5512E200538;
+        Tue, 30 Jul 2019 04:31:03 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6E6A9200538;
-        Tue, 30 Jul 2019 04:30:54 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6CC73200527;
+        Tue, 30 Jul 2019 04:30:58 +0200 (CEST)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 318C1402F1;
-        Tue, 30 Jul 2019 10:30:48 +0800 (SGT)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 26C5D402E0;
+        Tue, 30 Jul 2019 10:30:52 +0800 (SGT)
 From:   Anson.Huang@nxp.com
 To:     rui.zhang@intel.com, edubezval@gmail.com,
         daniel.lezcano@linaro.org, robh+dt@kernel.org,
         mark.rutland@arm.com, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     Linux-imx@nxp.com
-Subject: [PATCH V3 1/5] thermal: qoriq: Add clock operations
-Date:   Tue, 30 Jul 2019 10:21:22 +0800
-Message-Id: <20190730022126.17883-1-Anson.Huang@nxp.com>
+Subject: [PATCH V3 5/5] dt-bindings: thermal: qoriq: Add optional clocks property
+Date:   Tue, 30 Jul 2019 10:21:26 +0800
+Message-Id: <20190730022126.17883-5-Anson.Huang@nxp.com>
 X-Mailer: git-send-email 2.9.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190730022126.17883-1-Anson.Huang@nxp.com>
+References: <20190730022126.17883-1-Anson.Huang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -48,97 +48,29 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Anson Huang <Anson.Huang@nxp.com>
 
-Some platforms like i.MX8MQ has clock control for this module,
-need to add clock operations to make sure the driver is working
-properly.
+Some platforms like i.MX8M series SoCs have clock control for TMU,
+add optional clocks property to the binding doc.
 
 Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Reviewed-by: Guido Günther <agx@sigxcpu.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
-Changes since V2:
-	- move this patch as first patch in the series;
-	- add clock disable handling in error path of probe.
+No changes, noted the i.MX8M series SoCs need this clock in commit log.
 ---
- drivers/thermal/qoriq_thermal.c | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ Documentation/devicetree/bindings/thermal/qoriq-thermal.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 7b36493..2893947 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -2,6 +2,7 @@
- //
- // Copyright 2016 Freescale Semiconductor, Inc.
+diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+index 04cbb90..28f2cba 100644
+--- a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+@@ -23,6 +23,7 @@ Required properties:
+ Optional property:
+ - little-endian : If present, the TMU registers are little endian. If absent,
+ 	the default is big endian.
++- clocks : the clock for clocking the TMU silicon.
  
-+#include <linux/clk.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/err.h>
-@@ -72,6 +73,7 @@ struct qoriq_sensor {
+ Example:
  
- struct qoriq_tmu_data {
- 	struct qoriq_tmu_regs __iomem *regs;
-+	struct clk *clk;
- 	bool little_endian;
- 	struct qoriq_sensor	*sensor[SITES_MAX];
- };
-@@ -209,6 +211,16 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 		goto err_iomap;
- 	}
- 
-+	data->clk = devm_clk_get_optional(&pdev->dev, NULL);
-+	if (IS_ERR(data->clk))
-+		return PTR_ERR(data->clk);
-+
-+	ret = clk_prepare_enable(data->clk);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to enable clock\n");
-+		return ret;
-+	}
-+
- 	qoriq_tmu_init_device(data);	/* TMU initialization */
- 
- 	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
-@@ -225,6 +237,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 	return 0;
- 
- err_tmu:
-+	clk_disable_unprepare(data->clk);
- 	iounmap(data->regs);
- 
- err_iomap:
-@@ -241,6 +254,9 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
- 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
- 
- 	iounmap(data->regs);
-+
-+	clk_disable_unprepare(data->clk);
-+
- 	platform_set_drvdata(pdev, NULL);
- 
- 	return 0;
-@@ -257,14 +273,21 @@ static int qoriq_tmu_suspend(struct device *dev)
- 	tmr &= ~TMR_ME;
- 	tmu_write(data, tmr, &data->regs->tmr);
- 
-+	clk_disable_unprepare(data->clk);
-+
- 	return 0;
- }
- 
- static int qoriq_tmu_resume(struct device *dev)
- {
- 	u32 tmr;
-+	int ret;
- 	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
- 
-+	ret = clk_prepare_enable(data->clk);
-+	if (ret)
-+		return ret;
-+
- 	/* Enable monitoring */
- 	tmr = tmu_read(data, &data->regs->tmr);
- 	tmr |= TMR_ME;
 -- 
 2.7.4
 
