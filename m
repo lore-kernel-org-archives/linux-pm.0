@@ -2,165 +2,93 @@ Return-Path: <SRS0=ncUy=V3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B0B0C76186
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 03:02:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2D4DC7618E
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 03:56:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5EDD02182B
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 03:02:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A99B720882
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 03:56:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Jc/YC9le"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O+ntVxr3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732730AbfG3DCw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jul 2019 23:02:52 -0400
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:45074 "EHLO
-        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732721AbfG3DCB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2019 23:02:01 -0400
-Received: by mail-pg1-f193.google.com with SMTP id o13so29230408pgp.12
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jul 2019 20:02:00 -0700 (PDT)
+        id S1728271AbfG3D4b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jul 2019 23:56:31 -0400
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:40522 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726133AbfG3D4a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jul 2019 23:56:30 -0400
+Received: by mail-lf1-f68.google.com with SMTP id b17so43650738lff.7;
+        Mon, 29 Jul 2019 20:56:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=+E8omEH906TCMOUVaEXWKpNgn+JOLXcUorYQ/vWPPf0=;
-        b=Jc/YC9lel3yNzxidJjL/B8/vFfeBsxFRicp39Oey3HLLBmzOKFl/TkdXqJsgaO1ojq
-         U2JDseu5QkwHIr9DHg0Zy0zyY6F38DCkSBbHVg66ejwCQhUvk8ZNDHIfTgLKiL4wcxnX
-         kp3K5zAmDoNjx9JdClWVxBf6JClsj1i/bpDJvJd/D2JYl0wPfjFznJl6Dx/c/a+kWsZy
-         0JCiBkHDo1hgK5btmADMHNmvEiuAHyWZnndkFa5ojybqyyPu7YS0X5qky1c/fzbAFGkL
-         k34hKPYhDnIFWjNHjar8YM+WjTadzFWy1D8/2FLDNSc7iZtKUFacgaiGgqk2bpFYZNGh
-         XuVA==
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=53o7yb2lde/U7HEY2EiQ3SDljF6junXae0FASrSnDQU=;
+        b=O+ntVxr3LzZJCCMpnzX9A8b3UZd9nQatTasdMI5cI2rBpR5kUCH3eMSVsjBwN1aY/M
+         khKOiN2rSKkyEQsisPxlNp9H1Gypz2Vx71EKHEWbAQO3VFFbkbJvNSliVtBioSELoklt
+         ZN6tqgUv2PIACskU9OGwM9q2xtg8jnDKNfeR4uRkeU0RoKRKropxeJoae2YtVsMjitjU
+         G20jLSHTpHovu9KkWjgbe8pBzV8wxlAFxBBAS1vj1wcwaE1V7KP/05yOdS2HMaq05XTz
+         1/g0UnX/DaPfudzLsY5kFFgZlE1UHj3sMX9Iuv7crhVXJOtrnDvqOp9CuQnyFXgYt6Ne
+         Y8tQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=+E8omEH906TCMOUVaEXWKpNgn+JOLXcUorYQ/vWPPf0=;
-        b=Gwe6amWsnbXWppFDwczIlG7pY61z8N8vPe2BzG+yGMnz9jLVuevJYlG5nPyKjIzGYc
-         2FTsU+RVzpuZna2IghwFYrbbAnJLq/hII4EbjxGPv9oO12KP9A3EzJzwwjFaFn5bUatg
-         IwEp6aR3l/U5AeJ9cNI/9tp8kfpoBUzNYEStmXLdnjRJodwP3YVUzh1WmTFnzScK8ipX
-         c+APZBxg6WrN8pCKUX62BSfiNRt5+017zJAo0NmvzaWX4/46SWQSeqjLXFDxd/AuH9rZ
-         u7uu0RH5N14R3hAMorGmBm/NizAOUOQ7N/H4iC3wkqp81qgEBK6s+GLc9Vksv7gHoDlb
-         Nuiw==
-X-Gm-Message-State: APjAAAWfjx0dxSXq4VC0OhT3OMU+6OOqGEVc3Lx7DiOmQYcpc8aeegMt
-        pnoJkiWg1DXzuMI+E3uluc139A==
-X-Google-Smtp-Source: APXvYqzE6E6bwEiPVPhC8MPvNKfvs+L5X43/lx99CsVqkOn2lJdGMjp42IO+nI7wkwvsesO+oQP+bA==
-X-Received: by 2002:a63:101b:: with SMTP id f27mr103042864pgl.291.1564455720224;
-        Mon, 29 Jul 2019 20:02:00 -0700 (PDT)
-Received: from localhost ([122.172.28.117])
-        by smtp.gmail.com with ESMTPSA id i126sm75052149pfb.32.2019.07.29.20.01.59
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 29 Jul 2019 20:01:59 -0700 (PDT)
-Date:   Tue, 30 Jul 2019 08:31:57 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Saravana Kannan <saravanak@google.com>
-Cc:     Georgi Djakov <georgi.djakov@linaro.org>,
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=53o7yb2lde/U7HEY2EiQ3SDljF6junXae0FASrSnDQU=;
+        b=O+yUlk89tImjFGab4PV1NygM1QHFJcC53W+As0b5NXrQMP2EUzs+o9PGhN+R3oXAIC
+         BCoBg2U3UDMcf9tKUH6VnRcczOZugB/RNvu+IRak6/HLvfdxs/K6d3MZMJtfaF+X63x1
+         fNInCRtrddRuIoJvXLxamDVWe1RODxiM7TWFlT8dXurmwRG3dvJzPjtYzGHeY+MsLBMI
+         PfRbBRh6LuEUfWfwnoZ+W7CVkfGqhl4xbm3KpUYHdv2YE0DZJdz7V4WrcY/WIHJg1DHP
+         xPsaJv+jHCMHFvorMNKJ+BJQRVo7dDHsa+eQVN1cwjEoSrOtLlTNQml5mUc+IZVfrOH2
+         tWUA==
+X-Gm-Message-State: APjAAAWGQ5/DIP5aq4pfZpSIeSF+ovWS1EuxHAua/SewqPjOyDriHLTc
+        S423Rj7VLgVSvqMGAxqFbB3rh2XFqLNsk0XdiDw=
+X-Google-Smtp-Source: APXvYqz+hYmOjR1Q1FPSHEsNxBWcPa6R8P/w6lkdcVuTC5EHaVjHD41jQKSp06Sb288wCdnNJBU41kRPwCRaMehGWZY=
+X-Received: by 2002:a19:5044:: with SMTP id z4mr51453777lfj.80.1564458988449;
+ Mon, 29 Jul 2019 20:56:28 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190729083915.4855-1-Anson.Huang@nxp.com> <20190729083915.4855-4-Anson.Huang@nxp.com>
+ <CAOMZO5AgP0BrHyFKz78rsEz1XQMgSNzMmtTV6Q+GYtCGBiFMEQ@mail.gmail.com> <DB3PR0402MB39161F938C25012015B9739CF5DC0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+In-Reply-To: <DB3PR0402MB39161F938C25012015B9739CF5DC0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+From:   Fabio Estevam <festevam@gmail.com>
+Date:   Tue, 30 Jul 2019 00:56:33 -0300
+Message-ID: <CAOMZO5D33zPEu8zkq-KYvDv4Xzd8OoshSbzOCrBw1hwwJr-qNg@mail.gmail.com>
+Subject: Re: [PATCH V2 4/4] thermal: qoriq: Add clock operations
+To:     Anson Huang <anson.huang@nxp.com>
+Cc:     "rui.zhang" <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        "Sweeney, Sean" <seansw@qti.qualcomm.com>,
-        David Dai <daidavid1@codeaurora.org>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        Sibi Sankar <sibis@codeaurora.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Evan Green <evgreen@chromium.org>,
-        Android Kernel Team <kernel-team@android.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
         "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 0/6] Introduce Bandwidth OPPs for interconnect paths
-Message-ID: <20190730030157.aml7z6vfsiqgyief@vireshk-i7>
-References: <20190703011020.151615-1-saravanak@google.com>
- <20190717103220.f7cys267hq23fbsb@vireshk-i7>
- <CAGETcx-tbjVzRKW8D-564zgNOhrA_z-NC1q5U70bhoUDBhp6VA@mail.gmail.com>
- <20190718053746.64drmonk72vwnt4s@vireshk-i7>
- <CAGETcx_-=b3An9YdxLUnZap=0iaeczvWTEnw65FMLU8BwA3HfQ@mail.gmail.com>
- <20190729092454.6lfqzmhkvrhpimsp@vireshk-i7>
- <CAGETcx_7fK20VZ6Zn07Z+Ran1_O7gSPohck_tg-aEr5oONQ5iA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAGETcx_7fK20VZ6Zn07Z+Ran1_O7gSPohck_tg-aEr5oONQ5iA@mail.gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+        <devicetree@vger.kernel.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 29-07-19, 13:12, Saravana Kannan wrote:
-> On Mon, Jul 29, 2019 at 2:24 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 18-07-19, 21:12, Saravana Kannan wrote:
-> > > On Wed, Jul 17, 2019 at 10:37 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > > I would like
-> > > > to put this data in the GPU OPP table only. What about putting a
-> > > > range in the GPU OPP table for the Bandwidth if it can change so much
-> > > > for the same frequency.
-> > >
-> > > I don't think the range is going to work.
-> >
-> > Any specific reason for that ?
-> 
-> The next sentence was literally explaining this :) Fine to debate
-> that, but ignoring that and asking this question is kinda funny.
+Hi Anson,
 
-Okay, but ...
- 
-> > > If a GPU is doing purely
-> > > computational work, it's not unreasonable for it to vote for the
-> > > lowest bandwidth for any GPU frequency.
+On Tue, Jul 30, 2019 at 12:00 AM Anson Huang <anson.huang@nxp.com> wrote:
 
-... it wasn't clear to me even after reading this sentence again now
-:)
+> Shawn already applied the patch, and Abel has the AHB clock patch to fix that,
+> so just wait for the AHB clock patch in instead of revert the TMU clock patch?
 
-I understand that you may have to vote for the lowest bandwidth but
-that doesn't explain why a range can't work (sorry if it was just me
-who doesn't understood it :)).
+Sorry, I don't understand Abel's patch as there is not a proper
+description of what it tries to fix.
 
-> > I think that is fine, but if the GPU is able to find how much
-> > bandwidth it needs why can't it just pass that value without needing
-> > to have another OPP table for the path ?
-> 
-> You were asking this question in the context of "can the GPU OPP just
-> list all the range of bandwidth it might use per GPU frequency". My point
-> is that the range would be useless because it would the entire
-> available bandwidth range (because purely compute work might not need
-> any bandwidth).
+If I understand correctly Abel's patch is not the proper fix and the
+real fix for the kernel TMU hang in linux-next is to manage the TMU
+clock inside the TMU driver, like you did in this patch.
 
-If it is useless to have entire range here, then why bother providing
-one ? Why can't the GPU request what it needs in exact terms, based on
-its calculations ? And then based on these requests, let the
-interconnect find what's the best/stable values it really wants to
-program the path for (and for that the interconnect can use its own
-OPP table, which would be fine).
-
-> Whereas, what the GPU's algorithm actually needs might be the list of
-> "useful" bandwidth levels to use.
-
-Hmm, I am not sure GPU's algorithm needs this table AFAIU based on all
-the conversations we had until now. It is very capable of finding how
-much bandwidth it needs, you just want the GPU driver to finally align
-that with a stable bandwidth for the platform later on. And what I am
-asking is that it is not required for the end driver to look for
-stable values, it just requests what it wants and let the interconnect
-core/driver decide the stable values.
-
-Very much like the clock framework, most of the user drivers just ask
-for a clk value to be programmed and it is the clock driver which
-keeps a table of the stable values and then aligns the requested value
-to one of those.
-
-> Also, as we add more ICC request properties, this range idea will not scale.
-
-I am not sure about what kind of properties there can be and where
-should they land. My feedback is completely based on what you have
-presented in this patchset.
-
--- 
-viresh
+To avoid a revert one possible solution would be to send only this one
+as a fix for 5.3. You can point that it Fixes the commit that adds
+i.MX8M support for the TMU driver.
