@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B686C0650F
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDADBC0650F
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 32BAC208E3
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A32DD206A2
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="B52Y6ecY"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NOsQUkAH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728858AbfG3QcX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 12:32:23 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:38848 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731235AbfG3QcW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:22 -0400
-Received: by mail-wr1-f66.google.com with SMTP id g17so66483537wrr.5;
-        Tue, 30 Jul 2019 09:32:20 -0700 (PDT)
+        id S1725871AbfG3Qcc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 12:32:32 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:33964 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732831AbfG3Qc3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:29 -0400
+Received: by mail-wr1-f65.google.com with SMTP id 31so66515162wrm.1;
+        Tue, 30 Jul 2019 09:32:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=vAb/Wbf6jN1XW90qv7LwGWyr9ST9lsuKJ6ZQmhSvlSc=;
-        b=B52Y6ecYwJ01MrPj5v1iQKo+08trN8HAitRyDdmF2eAeduJVshReg8PtQ1vLiEnyzz
-         eeblqXSX9dvocNnfWLW+xQlWbeqGTSWQJPHkX56IzGecCNoFfvpsiKoyGfVkKWc9WQiD
-         InPKWczClbZG3zyJtSxFuAR4nUxCC056S7h8ZG4mEg1K3CLvbNCsnHos+rC0ghNCARaO
-         zWu6VeG89edOTp+oahNKF/lfcYLtK8S8tVCdp+YmpJ6JKyyDWdyo4yok/tyr6PbaIqIP
-         G/rtO0b2dCCK0t7zlugrq4Y9ct1/2ePtUX4DYjN0dhb+ZmH1iXwmPazp9Q9a0julPj9M
-         m5sQ==
+        bh=WHBbqbfFd0BRb3uV6lTGI/raeYIwezEYsIDJ6CAqnew=;
+        b=NOsQUkAHUbBKJkEQDYdf9orMNjGdUlOLEbihtSpdWqMReWthFuC7gSvsnTq6k0HJu2
+         WXLTu49yiS9IkRNFuM2dmZWl53KqzY0aNt71mzrweHjPE95NsaErymAHmPPkL5Ui87Gv
+         FzQzWg/IpryqzRPE2NvosLu0nhGrZKk9LTKV5OAbOsRSNQj31FjK4VgPtwH79V+v0Pnu
+         hq7W8iwWInx+F+C8WYEfc9Qjm7Hw5Puff4FlMmcgbu+/dUemJkedAYBTzYjaG1U6FWJ9
+         pY3QFdmyJp4eUd+7GeLDXDRd03bJ+tr5rRaUe+zaXD6583btfDgfaIhhnuSvy5odbcU3
+         5hGQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=vAb/Wbf6jN1XW90qv7LwGWyr9ST9lsuKJ6ZQmhSvlSc=;
-        b=S0ms+tOiNuZGGhfl9Z4Lo0YIJyWopiKQsM5gb95r/HEK3+uUw+jx1Rnz7+SPzbPp/B
-         DbuGsQ40Uy44jh2R73M2fQjerMCGtSKe0kPbwMibkhyFynvBTQ+Y1H8wSm5yQAau3clM
-         62Ef+56gje4sSx6431jk99kKOsKELfi9F69y02eTWKu/wepveWJt0joLya0YwvppIUJm
-         qmL4xRP8YrZuNRdkA+gYHgmY053tR7O2zv480wwANhHU5L7/WoMjXd7zHEVCmShv88rX
-         M0burzOzbBPQVtwbdxB+N+jCiTkPUdRI8VrOqmbtge+ILivqfeALuMnJC04dbdKt9niO
-         hS3g==
-X-Gm-Message-State: APjAAAVTFQ9ooELM1sRTw7vmdftHYjiFVTyawQ9fDxR5CQvWBRiK09f9
-        lwFV70vvbbIjuuulaqaoDgM=
-X-Google-Smtp-Source: APXvYqz9QrAYsJsoZlzHjSb/eLW603ZuvezVphBqMkwt5SXjHAVKaSjp0aWaacXrI+0gT5y0RMczIQ==
-X-Received: by 2002:a5d:6a84:: with SMTP id s4mr51092367wru.125.1564504340045;
-        Tue, 30 Jul 2019 09:32:20 -0700 (PDT)
+        bh=WHBbqbfFd0BRb3uV6lTGI/raeYIwezEYsIDJ6CAqnew=;
+        b=G5RY28pL4PbBwl+Xs69+XN3QCldEg9zLTXIi9k1A/yGW+zAttIudpNFWxZ55jn6v6a
+         iFhjYYG4+nuE7vyN4tiLVl8jF+FwWkr7MiEaL6LvfonigFS2giK+s09BPpqo9pVPvb1m
+         rkBd0gJnB8nESeoz2mR/ekmR027t/IkXehsCqLzopWDVaxgF/TmS+Mx59Kx4H0UAAkp+
+         lsZoSw1Y7UCUBpbPbxzK8CvljAqXkbnI3s01f7KN3++6fUU9EZYZ09mBmv6d++hmiLl5
+         rcrrz1Lr7fOTq3Tq36vv1Do+W5ZOsu/OE0qboVdkXDjeNPLvoK0iPqiMbmtJCnykjUb9
+         AytQ==
+X-Gm-Message-State: APjAAAW26sijGKqVZ1qAdU1pDJf2AziIpfa2GA8qjlUTYWVLEbmIJuWt
+        IE5Vz7+3zS9j9g1ACOnGf40=
+X-Google-Smtp-Source: APXvYqzGQEp+w42idntKHGTPcZFnvHK7pxdgdlOjEGe3nu686QWc4MYOrCIqgRrUzTQ1l8Iif6Yd9w==
+X-Received: by 2002:adf:dd8e:: with SMTP id x14mr126350891wrl.344.1564504347946;
+        Tue, 30 Jul 2019 09:32:27 -0700 (PDT)
 Received: from localhost.localdomain (ppp91-78-220-99.pppoe.mtu-net.ru. [91.78.220.99])
-        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.18
+        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.26
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Jul 2019 09:32:19 -0700 (PDT)
+        Tue, 30 Jul 2019 09:32:27 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v5 01/20] PM / devfreq: tegra30: Change irq type to unsigned int
-Date:   Tue, 30 Jul 2019 19:22:17 +0300
-Message-Id: <20190730162236.6063-2-digetx@gmail.com>
+Subject: [PATCH v5 07/20] PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
+Date:   Tue, 30 Jul 2019 19:22:23 +0300
+Message-Id: <20190730162236.6063-8-digetx@gmail.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190730162236.6063-1-digetx@gmail.com>
 References: <20190730162236.6063-1-digetx@gmail.com>
@@ -77,47 +77,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IRQ numbers are always positive, hence the corresponding variable should
-be unsigned to keep types consistent. This is a minor change that cleans
-up code a tad more.
+There is another kHz-conversion bug in the code, resulting in integer
+overflow. Although, this time the resulting value is 4294966296 and it's
+close to ULONG_MAX, which is okay in this case.
 
-Suggested-by: Thierry Reding <thierry.reding@gmail.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/devfreq/tegra30-devfreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index a6ba75f4106d..a27300f40b0b 100644
+index 4525c051f85c..70dce58212a4 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -160,7 +160,7 @@ struct tegra_devfreq {
+@@ -70,6 +70,8 @@
  
- 	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
+ #define KHZ							1000
  
--	int irq;
-+	unsigned int		irq;
++#define KHZ_MAX						(ULONG_MAX / KHZ)
++
+ /* Assume that the bus is saturated if the utilization is 25% */
+ #define BUS_SATURATION_RATIO					25
+ 
+@@ -167,7 +169,7 @@ struct tegra_actmon_emc_ratio {
  };
  
- struct tegra_actmon_emc_ratio {
-@@ -618,12 +618,12 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->emc_clock);
- 	}
- 
--	tegra->irq = platform_get_irq(pdev, 0);
--	if (tegra->irq < 0) {
--		err = tegra->irq;
-+	err = platform_get_irq(pdev, 0);
-+	if (err < 0) {
- 		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
- 		return err;
- 	}
-+	tegra->irq = err;
- 
- 	reset_control_assert(tegra->reset);
- 
+ static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
+-	{ 1400000, ULONG_MAX },
++	{ 1400000,    KHZ_MAX },
+ 	{ 1200000,    750000 },
+ 	{ 1100000,    600000 },
+ 	{ 1000000,    500000 },
 -- 
 2.22.0
 
