@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 031ECC433FF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A0A2C31E40
 	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CEC102182B
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 31A59216C8
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 16:32:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AAghT0ws"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IGInv4Z4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732842AbfG3Qcc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 12:32:32 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:45979 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732835AbfG3Qca (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:30 -0400
-Received: by mail-wr1-f66.google.com with SMTP id f9so66460177wre.12;
-        Tue, 30 Jul 2019 09:32:29 -0700 (PDT)
+        id S1732854AbfG3Qcd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 12:32:33 -0400
+Received: from mail-wr1-f68.google.com ([209.85.221.68]:37083 "EHLO
+        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732828AbfG3Qc2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 12:32:28 -0400
+Received: by mail-wr1-f68.google.com with SMTP id n9so41401344wrr.4;
+        Tue, 30 Jul 2019 09:32:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=8iZqkZqXjTfAXjJSJnLg5xR1FkU/5dVzGt00ebVBBCo=;
-        b=AAghT0wsfPhV/j6U/ghiBwRe0n/heMMEDTKhX2F4Ap9PQ0gtxj9cOQMPDtVpf1ZA/Y
-         krISxNXiKhB/09kR6KwRsOdNFTzIcf3UjK0jRxbHmy3fvqHoG5hp+gxz4B+mnY4IKcW3
-         jTy43gQNCP4Tdml8w/wbqZo5jKjqwBHV2pDkpuhXsjiwXWypGHf0IsafhHKAKneOTrDs
-         VSkA7xIUDqmMl9Babs+F8HtxIR2AFJhFKqd5J979soBf8Q8+3MTnkFuYYokY/4X50q2K
-         O0yupl8qcgZoBfAe2jx0SUzeRYngNIL0PhuDadvxR8YwGhx/oR9FGB+u45y32nW7Mp1r
-         /1xA==
+        bh=g5tURnCPvlR1FgVTUPFvio04s8CzBn2V+f8QGTCwOFA=;
+        b=IGInv4Z4YwMrX+CzLKwBULMOwtb1kMKFrTq5nNuQJXWIxGRIAxRnoRhL/V0wizQrc2
+         OYfkqFqb8nmpMrTo9SIAWsIHJP+aWJouQTY/LOHOCZvYu5hbbCALBhYFe6DmdiNBTp0L
+         DCp9z6Bc4mJ5sXMG/uLNbAEJRkcXeI+OlsqPj4a5muYfK/QU2EKmdDqTaHUrDSyI67cd
+         2f5Hoq6j6xmbvpWaWycijHRihZuxYHaBY58LEuznOBmhb+2KRsWS6iwG+1ceup7Ss5qq
+         DWz/uzhsDsC7ATPepc0H6DB5JvVFYqrNhfW7vNu0q1ckJzvq1+a5Tf/oN4dDe29E5ifo
+         PXQQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=8iZqkZqXjTfAXjJSJnLg5xR1FkU/5dVzGt00ebVBBCo=;
-        b=B0i39xTkpg2LJKgK5ft855jvBqJvSWNlL3myr4jMPSKeVohNc6qY6L3lAd78c4RpbO
-         RpJddkxfh8XG6akU+HmNnM5Jq6q0C5ac/sm5LOQSfu1RiNnfjuJQuQgYbnSYqdbBf5oR
-         Iqcuj6aZImD4vfmOUS2g9qx3cnwGeT77APu+LUT+GQj3veQuChqjiZMaKaNhxhc8yHbB
-         WZfW9JyN/Sd1M7sXR/uoOUOkL7356o1ePtn+L1UPYrFx0WwLme3wYBn367hLeuyEen7D
-         TQO/IeLbzi4UQlI4m1VEMFDFjH1vzm6sWZN+HgwBqpVbn36Zm5k8l1KC27fIo9qnEKeL
-         4z/Q==
-X-Gm-Message-State: APjAAAU1xzFcgIKaOKIflbCllQ0uj3QiCoW/f/c3OMqdo6OHwJxNuI3W
-        SHaO+y1Nir6xjHNTBm//lic=
-X-Google-Smtp-Source: APXvYqyEu3zYvYk5Z8X5j1eud/4T36h60HChVLwgzdl/ZXaiN1ilLV6HKBPnYOMEz55QfG+dw+3DXA==
-X-Received: by 2002:adf:e552:: with SMTP id z18mr131981622wrm.45.1564504349166;
-        Tue, 30 Jul 2019 09:32:29 -0700 (PDT)
+        bh=g5tURnCPvlR1FgVTUPFvio04s8CzBn2V+f8QGTCwOFA=;
+        b=aGNo+BO9D/+JEZmXqtzFk75iD6Ar5aPU+l05BA+CCgdFFdbE2CNYkIpAq4fuYY6IUG
+         QeNl6p417OutPFcg2Fe0Otk/qJfM40x4iXH9g2X/2kAyrOrRBhP0/syoV2KTcXa5J+iG
+         tOcv0kHLksGJNbDRy0L6Us5KVNEWXheEYlQU17PTgQTnuh+V2KCoUayJrz+3gZk/S8ZL
+         MgdhjkE9b29uRXfrQuxoWcpVBE6YCUd/LfViJOuTOyLMj96oH/nl1byIOHEF766bmVEx
+         L3bGQVM6sixydsdnEiu+NiYlADJ8/jnjKzuxW8UI8zKwt9cOxvpfH3mPsjrPbr5Dq/VU
+         9Ccg==
+X-Gm-Message-State: APjAAAVNl2AG3MuBV+J7UkM2GzooDjYSTlnXnzwSbERQ2SmfdqhddELT
+        SIdepviy5KHCa6dPXC+MYp740ibt
+X-Google-Smtp-Source: APXvYqwd3YWgwQpq7SrWlW8v2kpTJkh48PQh6m24ruER9NF1l3cCVBckpMSQWVcPAfZly9ld9NEJfw==
+X-Received: by 2002:adf:ed8a:: with SMTP id c10mr132636248wro.33.1564504346710;
+        Tue, 30 Jul 2019 09:32:26 -0700 (PDT)
 Received: from localhost.localdomain (ppp91-78-220-99.pppoe.mtu-net.ru. [91.78.220.99])
-        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.28
+        by smtp.gmail.com with ESMTPSA id c65sm64835175wma.44.2019.07.30.09.32.25
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 30 Jul 2019 09:32:28 -0700 (PDT)
+        Tue, 30 Jul 2019 09:32:26 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -64,9 +64,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v5 08/20] PM / devfreq: tegra30: Ensure that target freq won't overflow
-Date:   Tue, 30 Jul 2019 19:22:24 +0300
-Message-Id: <20190730162236.6063-9-digetx@gmail.com>
+Subject: [PATCH v5 06/20] PM / devfreq: tegra30: Tune up boosting thresholds
+Date:   Tue, 30 Jul 2019 19:22:22 +0300
+Message-Id: <20190730162236.6063-7-digetx@gmail.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190730162236.6063-1-digetx@gmail.com>
 References: <20190730162236.6063-1-digetx@gmail.com>
@@ -77,27 +77,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We already had few integer overflow bugs, let's limit the freq for
-consistency.
+Now that average-sustain coefficient / multiplier is gone, it won't hurt
+to re-tune the boosting thresholds to get a bit harder boosting for MCALL
+clients, resulting in a more reactive governing in a case of multimedia
+applications usage like 3d / video.
 
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/devfreq/tegra30-devfreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 70dce58212a4..ca499368ee81 100644
+index 2331052fd8bd..4525c051f85c 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -430,7 +430,7 @@ static unsigned long actmon_update_target(struct tegra_devfreq *tegra,
- 	target_freq = dev->avg_count / ACTMON_SAMPLING_PERIOD + dev->boost_freq;
- 	target_freq = tegra_actmon_account_cpu_freq(tegra, dev, target_freq);
- 
--	return target_freq;
-+	return min(target_freq, tegra->max_freq);
- }
- 
- static irqreturn_t actmon_thread_isr(int irq, void *data)
+@@ -111,8 +111,8 @@ static struct tegra_devfreq_device_config actmon_device_configs[] = {
+ 		.irq_mask = 1 << 26,
+ 		.boost_up_coeff = 200,
+ 		.boost_down_coeff = 50,
+-		.boost_up_threshold = 60,
+-		.boost_down_threshold = 40,
++		.boost_up_threshold = 50,
++		.boost_down_threshold = 25,
+ 	},
+ 	{
+ 		/* MCCPU: memory accesses from the CPUs */
 -- 
 2.22.0
 
