@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C55F9C31E40
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:05:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16329C433FF
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:06:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A65BE216C8
-	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:05:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EBE9A2089E
+	for <linux-pm@archiver.kernel.org>; Tue, 30 Jul 2019 10:06:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726510AbfG3KFv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 30 Jul 2019 06:05:51 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:58453 "EHLO
+        id S1732223AbfG3KFN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 30 Jul 2019 06:05:13 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:57843 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732201AbfG3KFO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 06:05:14 -0400
+        with ESMTP id S1725947AbfG3KFM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jul 2019 06:05:12 -0400
 Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
- id 7a9f7e593ce976b8; Tue, 30 Jul 2019 12:05:11 +0200
+ id 29803c6a92586caf; Tue, 30 Jul 2019 12:05:10 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
@@ -28,9 +28,9 @@ Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 6/8] ACPI: PM: s2idle: Eliminate acpi_sleep_no_ec_events()
-Date:   Tue, 30 Jul 2019 12:01:44 +0200
-Message-ID: <25240910.MlnzASiNL0@kreacher>
+Subject: [PATCH v2 8/8] ACPI: EC: PM: Make acpi_ec_dispatch_gpe() print debug message
+Date:   Tue, 30 Jul 2019 12:04:58 +0200
+Message-ID: <5021710.3QdRCBUraa@kreacher>
 In-Reply-To: <7528887.mqcfy9PZua@kreacher>
 References: <7528887.mqcfy9PZua@kreacher>
 MIME-Version: 1.0
@@ -43,9 +43,9 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Change acpi_ec_suspend() to use pm_suspend_no_platform() instead of
-acpi_sleep_no_ec_events(), which allows the latter to be eliminated
-along with the s2idle_in_progress variable which is only used by it.
+Add a pm_pr_dbg() debug statement to acpi_ec_dispatch_gpe() to print
+a message when the EC GPE has been dispatched (because its status
+was set).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
@@ -53,87 +53,25 @@ Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 New in v2.
 
 ---
- drivers/acpi/ec.c       |    2 +-
- drivers/acpi/internal.h |    2 --
- drivers/acpi/sleep.c    |    9 ---------
- 3 files changed, 1 insertion(+), 12 deletions(-)
+ drivers/acpi/ec.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 Index: linux-pm/drivers/acpi/ec.c
 ===================================================================
 --- linux-pm.orig/drivers/acpi/ec.c
 +++ linux-pm/drivers/acpi/ec.c
-@@ -1941,7 +1941,7 @@ static int acpi_ec_suspend(struct device
- 	struct acpi_ec *ec =
- 		acpi_driver_data(to_acpi_device(dev));
+@@ -1980,7 +1980,11 @@ bool acpi_ec_dispatch_gpe(void)
+ 		return false;
  
--	if (acpi_sleep_no_ec_events() && ec_freeze_events)
-+	if (!pm_suspend_no_platform() && ec_freeze_events)
- 		acpi_ec_disable_event(ec);
- 	return 0;
+ 	ret = acpi_dispatch_gpe(NULL, first_ec->gpe);
+-	return ret == ACPI_INTERRUPT_HANDLED;
++	if (ret == ACPI_INTERRUPT_HANDLED) {
++		pm_pr_dbg("EC GPE dispatched\n");
++		return true;
++	}
++	return false;
  }
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -696,7 +696,6 @@ static const struct platform_suspend_ops
- 	.recover = acpi_pm_finish,
- };
- 
--static bool s2idle_in_progress;
- static bool s2idle_wakeup;
- 
- /*
-@@ -950,7 +949,6 @@ static struct acpi_scan_handler lps0_han
- static int acpi_s2idle_begin(void)
- {
- 	acpi_scan_lock_acquire();
--	s2idle_in_progress = true;
- 	return 0;
- }
- 
-@@ -1042,7 +1040,6 @@ static void acpi_s2idle_restore(void)
- 
- static void acpi_s2idle_end(void)
- {
--	s2idle_in_progress = false;
- 	acpi_scan_lock_release();
- }
- 
-@@ -1072,7 +1069,6 @@ static void acpi_sleep_suspend_setup(voi
- }
- 
- #else /* !CONFIG_SUSPEND */
--#define s2idle_in_progress	(false)
- #define s2idle_wakeup		(false)
- #define lps0_device_handle	(NULL)
- static inline void acpi_sleep_suspend_setup(void) {}
-@@ -1083,11 +1079,6 @@ bool acpi_s2idle_wakeup(void)
- 	return s2idle_wakeup;
- }
- 
--bool acpi_sleep_no_ec_events(void)
--{
--	return !s2idle_in_progress;
--}
--
- #ifdef CONFIG_PM_SLEEP
- static u32 saved_bm_rld;
- 
-Index: linux-pm/drivers/acpi/internal.h
-===================================================================
---- linux-pm.orig/drivers/acpi/internal.h
-+++ linux-pm/drivers/acpi/internal.h
-@@ -210,11 +210,9 @@ void acpi_ec_flush_work(void);
-   -------------------------------------------------------------------------- */
- #ifdef CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT
- extern bool acpi_s2idle_wakeup(void);
--extern bool acpi_sleep_no_ec_events(void);
- extern int acpi_sleep_init(void);
- #else
- static inline bool acpi_s2idle_wakeup(void) { return false; }
--static inline bool acpi_sleep_no_ec_events(void) { return true; }
- static inline int acpi_sleep_init(void) { return -ENXIO; }
- #endif
+ #endif /* CONFIG_PM_SLEEP */
  
 
 
