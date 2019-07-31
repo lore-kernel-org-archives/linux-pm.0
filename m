@@ -2,110 +2,128 @@ Return-Path: <SRS0=iELs=V4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EAC2C433FF
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 10:01:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80069C433FF
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 10:56:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 766B821842
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 10:01:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5186A2089E
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 10:56:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="F2cmNKe8"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GOtNIbIF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387612AbfGaKAy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Jul 2019 06:00:54 -0400
-Received: from mail-pg1-f196.google.com ([209.85.215.196]:41430 "EHLO
-        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387642AbfGaKAy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 06:00:54 -0400
-Received: by mail-pg1-f196.google.com with SMTP id x15so21371332pgg.8
-        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2019 03:00:53 -0700 (PDT)
+        id S1728540AbfGaK4V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Jul 2019 06:56:21 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:44078 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726751AbfGaK4V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 06:56:21 -0400
+Received: by mail-lj1-f196.google.com with SMTP id k18so65107852ljc.11;
+        Wed, 31 Jul 2019 03:56:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :in-reply-to:references;
-        bh=MmBOwwNeN+W1dC0nmIPZG6LtIHwgJLZWSo5QrSMSqcg=;
-        b=F2cmNKe82FILmNf5yBHDnTc0fv/W9P8ElxWyX9nD9eNEddHhrjcVcMripReHGh+S0v
-         tSNdYbOTYj5QQBmbdLKklAfAnbsGhNRFF8O/+LB3M71Jf26oCbFHGBxBwHSsBhGdqxyA
-         +KxTVK8klRgp4/pNwu9f2ux4WWomzu+suJyXaCfOMITmKuJ2rNjMgyJNtefNtQk/6Ced
-         +G4XQdEfuvog8fX/p/pcnavzvF0fv3pGjJxnKPAJzsT26oHgPzE1HZaAb08cu8XimFcy
-         Ot89rgQl1jDKVtz6fQ/61d+80sPzURiNrw0u2ctVaFEOZ6aLQg8LP6zliTaQ5zR/CcnX
-         jBig==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=8ruV96eR8x0/hUsLVlDy8Q+NkUQzpxpxvSxroyPzqzk=;
+        b=GOtNIbIF+FwSdoSSuqOdCRwipjuBAkt61ISft9SuLdF/xve2q68EEQIwfK3wzwRnrm
+         5msw0ky7aRIFGdGG4LAzlEO8Cg1ptWrW4WaThsPDhDS3gXEEziSU4FbslxwFS9srU4iI
+         e6+SeP6PfFELBL43QMoabxOvZymfYo7FbCY/XHJE84+sSvjJJfI4EbjLMQP44HpB29mV
+         8sE7DBb4AdsCXJlvlXfVSDgxwTHsIUAvISuoY/bPDk1PQa2dzYsS2lpJ0Rygk+GQpD2q
+         5Lqt7xoW8oZ+ks1o4sEpFlOXtBD/bumkcw3OH+7ROp7dQ2J/VsBj+Il1SaxnmRoyjoEH
+         PYAQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:in-reply-to:references;
-        bh=MmBOwwNeN+W1dC0nmIPZG6LtIHwgJLZWSo5QrSMSqcg=;
-        b=WqKcL5OG6+cWfNmCVd1WitLyuPiSA9w99/ST8kPrdTBvcFaPtKvGutBhEJE0M9BlbI
-         fl7QerxYHXnZtft+xvXeDqFo1pNrAzr6/9vuTyca5V+V2CXSC/iHUzJFmObUL+dGS1W7
-         LkMvNYSh0xSMcISOPFKWOJJx6sbIun/CbpvDXxEBUQv5a0CuZhV/gk8D1BmXfDfbqacH
-         PNM08RCe4Bur5aZWpFGPtU8D3LfYIzy8wPGhy+DJ3XDa5i2mAQDkLMgYrifEslNnQQ7B
-         2AJEDAjT8hZK5o07WxIAVs3RqB6+eU36+0IY9Tg7mZt6aH5xRtV5QfzbVsE/tQtLxZhw
-         xlYw==
-X-Gm-Message-State: APjAAAV7Xf6ZctV0mPcQAzS/cj+7/Bg1cOZkUnJZaLeJpKEs4hFEHNNy
-        08/vCs2aHqd2A/Exx06lm8VbkQ==
-X-Google-Smtp-Source: APXvYqwtDG50+CDnx8yHTX0XWjamhJQ0wzyuOwxWwmAtlyxz5NNOSYgypMSGVytueAL/Ooa0yoUJyA==
-X-Received: by 2002:a63:d555:: with SMTP id v21mr90143798pgi.179.1564567253116;
-        Wed, 31 Jul 2019 03:00:53 -0700 (PDT)
-Received: from baolinwangubtpc.spreadtrum.com ([117.18.48.82])
-        by smtp.gmail.com with ESMTPSA id m6sm68611352pfb.151.2019.07.31.03.00.50
-        (version=TLS1 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Wed, 31 Jul 2019 03:00:52 -0700 (PDT)
-From:   Baolin Wang <baolin.wang@linaro.org>
-To:     sre@kernel.org
-Cc:     orsonzhai@gmail.com, zhang.lyra@gmail.com, yuanjiang.yu@unisoc.com,
-        baolin.wang@linaro.org, vincent.guittot@linaro.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/6] power: supply: sc27xx: Add POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN attribute
-Date:   Wed, 31 Jul 2019 18:00:23 +0800
-Message-Id: <a48b8acd5111120e3effe71e05d5f8166470f725.1564566425.git.baolin.wang@linaro.org>
-X-Mailer: git-send-email 1.7.9.5
-In-Reply-To: <cover.1564566425.git.baolin.wang@linaro.org>
-References: <cover.1564566425.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1564566425.git.baolin.wang@linaro.org>
-References: <cover.1564566425.git.baolin.wang@linaro.org>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=8ruV96eR8x0/hUsLVlDy8Q+NkUQzpxpxvSxroyPzqzk=;
+        b=pE/py7v58zQQCj2BB9rJBuohwipnY8FHMjpOV0I0mKovUHGy9qI7y3fI8p5LFceyLQ
+         4EGEmqlMpzLZtLDxRvmoZiSFBYH39CL/8vsQ48qijy1nlpwowpX3FF3nE2EWKrX7Usbe
+         sV2M1D0jPd5YsrWEoinV6qBCM5ql/QL7fUVcY20CRvuYpV37jBw9CBt7wyGBhByyQr6r
+         yl9fBG5cc319pinjteZbmYSqzzf+MojBpQtIN3+67l8nOwDKdHDvC73rviX6TIW3ldP2
+         VUfA8sw8iO+eDRUcwZmWk4BrqHT/+5gPcqAkVVR7DbsbmPQiV54shzUsS/pLuPkog4W8
+         brOg==
+X-Gm-Message-State: APjAAAWIgu3CHAvi1KlULrO4yrX8xH21Niq83pebTfH3uIWHu7huKJv0
+        Whz7HmMS95GpVhXdURuE2rI+I0gE
+X-Google-Smtp-Source: APXvYqztGOoSbQR9A0xUiUIAyr0EBR8VhfVjH4uIj9PMb0cZ21qTlLVNsqEx7+YL2IiAPD4R1nsaKg==
+X-Received: by 2002:a2e:968f:: with SMTP id q15mr21909669lji.30.1564570578578;
+        Wed, 31 Jul 2019 03:56:18 -0700 (PDT)
+Received: from [192.168.2.145] (ppp91-78-220-99.pppoe.mtu-net.ru. [91.78.220.99])
+        by smtp.googlemail.com with ESMTPSA id e87sm15987690ljf.54.2019.07.31.03.56.17
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 31 Jul 2019 03:56:18 -0700 (PDT)
+Subject: Re: [PATCH v5 18/20] PM / devfreq: tegra30: Define
+ ACTMON_DEV_CTRL_STOP
+To:     Chanwoo Choi <cw00.choi@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20190730162236.6063-1-digetx@gmail.com>
+ <CGME20190730163331epcas4p2fabd7ccf1b24c0cb95bf3994a289e13b@epcas4p2.samsung.com>
+ <20190730162236.6063-19-digetx@gmail.com>
+ <033a342c-ffd6-fa51-a9a2-daac36b195f9@samsung.com>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <682c7b5d-eace-8c6a-6117-4b9b6d4e82f8@gmail.com>
+Date:   Wed, 31 Jul 2019 13:55:21 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
+MIME-Version: 1.0
+In-Reply-To: <033a342c-ffd6-fa51-a9a2-daac36b195f9@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
+31.07.2019 3:37, Chanwoo Choi пишет:
+> On 19. 7. 31. 오전 1:22, Dmitry Osipenko wrote:
+>> Add verbose definition for the client's device control register value that
+>> makes ACTMON to stop monitoring of the device.
+>>
+>> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  drivers/devfreq/tegra30-devfreq.c | 4 +++-
+>>  1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+>> index 3543fba74b52..8adc0ff48b45 100644
+>> --- a/drivers/devfreq/tegra30-devfreq.c
+>> +++ b/drivers/devfreq/tegra30-devfreq.c
+>> @@ -35,6 +35,8 @@
+>>  #define ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN		BIT(30)
+>>  #define ACTMON_DEV_CTRL_ENB					BIT(31)
+>>  
+>> +#define ACTMON_DEV_CTRL_STOP					0x00000000
+>> +
+>>  #define ACTMON_DEV_UPPER_WMARK					0x4
+>>  #define ACTMON_DEV_LOWER_WMARK					0x8
+>>  #define ACTMON_DEV_INIT_AVG					0xc
+>> @@ -714,7 +716,7 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+>>  
+>>  static void tegra_actmon_stop_device(struct tegra_devfreq_device *dev)
+>>  {
+>> -	device_writel(dev, 0x00000000, ACTMON_DEV_CTRL);
+>> +	device_writel(dev, ACTMON_DEV_CTRL_STOP, ACTMON_DEV_CTRL);
+>>  	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
+>>  }
+>>  
+>>
+> 
+> I think that you can combine it to patch11.
+> When combining it to patch11, don't need to add the suggested-by tag.
+> Thanks.
+> 
 
-Add POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN attribute to provide the battery's
-design capacity for charger manager to calculate the charging counter.
-
-Signed-off-by: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- drivers/power/supply/sc27xx_fuel_gauge.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/supply/sc27xx_fuel_gauge.c
-index 24895cc..2fe97ae 100644
---- a/drivers/power/supply/sc27xx_fuel_gauge.c
-+++ b/drivers/power/supply/sc27xx_fuel_gauge.c
-@@ -587,6 +587,10 @@ static int sc27xx_fgu_get_property(struct power_supply *psy,
- 		val->intval = value * 1000;
- 		break;
- 
-+	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
-+		val->intval = data->total_cap * 1000;
-+		break;
-+
- 	default:
- 		ret = -EINVAL;
- 		break;
-@@ -644,6 +648,7 @@ static int sc27xx_fgu_property_is_writeable(struct power_supply *psy,
- 	POWER_SUPPLY_PROP_CURRENT_NOW,
- 	POWER_SUPPLY_PROP_CURRENT_AVG,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
-+	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
- };
- 
- static const struct power_supply_desc sc27xx_fgu_desc = {
--- 
-1.7.9.5
-
+Alright, will combine them in the next revision which I'll make once the
+rest of the patches will be reviewed.
