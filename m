@@ -2,94 +2,91 @@ Return-Path: <SRS0=iELs=V4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F587C32751
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 22:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF32BC433FF
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 22:22:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F276E206B8
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 22:20:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7E8DB2089E
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 22:22:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1564611759;
+	bh=eRxijePWptzEnqpWtysxuSDWbhdaWYF+Lnq6TrTL2G8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=ofvXJZWKWBEEr0j47TyttmvzrCQayolBOPVhNj82+WvfYphkPXDfEHuNhX9Mex1Qf
+	 YQPSX6GF2zR5015P/UXtalK/R3CZsfRY+U6z1QzpAUcs6pFwHBEdhjkKriUcILkj3v
+	 gt30Nxr/nAfppuWNYI0apU8F2VFa0SD8Iq8JtX/A=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728170AbfGaWUv convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Jul 2019 18:20:51 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:63324 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726125AbfGaWUv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 18:20:51 -0400
-Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
- id 1892615acf94579e; Thu, 1 Aug 2019 00:20:49 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc:     Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Mario Limonciello <mario.limonciello@dell.com>,
-        Anthony Wong <anthony.wong@canonical.com>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Linux PCI <linux-pci@vger.kernel.org>,
+        id S1726641AbfGaWWi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Jul 2019 18:22:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:38707 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726073AbfGaWWi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 31 Jul 2019 18:22:38 -0400
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 31 Jul 2019 15:22:37 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.64,331,1559545200"; 
+   d="scan'208";a="371719160"
+Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
+  by fmsmga005.fm.intel.com with ESMTP; 31 Jul 2019 15:22:36 -0700
+Date:   Wed, 31 Jul 2019 16:19:56 -0600
+From:   Keith Busch <kbusch@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Mario Limonciello <Mario.Limonciello@dell.com>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Keith Busch <keith.busch@intel.com>,
+        Christoph Hellwig <hch@lst.de>,
+        Sagi Grimberg <sagi@grimberg.me>,
+        linux-nvme <linux-nvme@lists.infradead.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Regression] Commit "ACPI: PM: Allow transitions to D0 to occur in special cases"
-Date:   Thu, 01 Aug 2019 00:20:49 +0200
-Message-ID: <4787259.M8qLqd86a7@kreacher>
-In-Reply-To: <578BD3F1-B185-471B-A3EB-FF71BA34B822@canonical.com>
-References: <578BD3F1-B185-471B-A3EB-FF71BA34B822@canonical.com>
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Rajat Jain <rajatja@google.com>
+Subject: Re: [Regression] Commit "nvme/pci: Use host managed power state for
+ suspend" has problems
+Message-ID: <20190731221956.GB15795@localhost.localdomain>
+References: <4323ed84dd07474eab65699b4d007aaf@AUSX13MPC105.AMER.DELL.COM>
+ <CAJZ5v0iDQ4=kTUgW94tKGt7oJzA_3uVU_M6HAMbNCRXwp_do8A@mail.gmail.com>
+ <47415939.KV5G6iaeJG@kreacher>
+ <20190730144134.GA12844@localhost.localdomain>
+ <100ba4aff1c6434a81e47774ab4acddc@AUSX13MPC105.AMER.DELL.COM>
+ <8246360B-F7D9-42EB-94FC-82995A769E28@canonical.com>
+ <20190730191934.GD13948@localhost.localdomain>
+ <7d3e0b8ba1444194a153c93faa1cabb3@AUSX13MPC105.AMER.DELL.COM>
+ <20190730213114.GK13948@localhost.localdomain>
+ <CAJZ5v0gxfeMN8eCNRjcXmUOkReVsdozb3EccaYMpnmSHu3771g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gxfeMN8eCNRjcXmUOkReVsdozb3EccaYMpnmSHu3771g@mail.gmail.com>
+User-Agent: Mutt/1.9.1 (2017-09-22)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wednesday, July 31, 2019 6:04:29 PM CEST Kai-Heng Feng wrote:
-> Hi,
+On Wed, Jul 31, 2019 at 11:25:51PM +0200, Rafael J. Wysocki wrote:
 > 
-> After commit "ACPI: PM: Allow transitions to D0 to occur in special cases”,  
-> Thunderbolt on XPS 9380 spews the following when it runtime resumes:
-> [   36.136554] pci_raw_set_power_state: 25 callbacks suppressed
-> [   36.136558] pcieport 0000:03:00.0: Refused to change power state,  
-> currently in D3
-> [   36.143850] pcieport 0000:04:04.0: Refused to change power state,  
-> currently in D3
-> [   36.150796] pcieport 0000:04:00.0: Refused to change power state,  
-> currently in D3
-> [   36.157138] pcieport 0000:04:01.0: Refused to change power state,  
-> currently in D3
-> [   36.162635] pcieport 0000:04:02.0: Refused to change power state,  
-> currently in D3
+> A couple of remarks if you will.
+> 
+> First, we don't know which case is the majority at this point.  For
+> now, there is one example of each, but it may very well turn out that
+> the SK Hynix BC501 above needs to be quirked.
+> 
+> Second, the reference here really is 5.2, so if there are any systems
+> that are not better off with 5.3-rc than they were with 5.2, well, we
+> have not made progress.  However, if there are systems that are worse
+> off with 5.3, that's bad.  In the face of the latest findings the only
+> way to avoid that is to be backwards compatible with 5.2 and that's
+> where my patch is going.  That cannot be achieved by quirking all
+> cases that are reported as "bad", because there still may be
+> unreported ones.
 
-Thanks for identifying the offending commit and sorry for the breakage.
-
-The patch below should fix it.
-
----
- drivers/acpi/device_pm.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -236,13 +236,15 @@ int acpi_device_set_power(struct acpi_de
- 		if (device->power.flags.power_resources)
- 			result = acpi_power_transition(device, target_state);
- 	} else {
-+		int cur_state = device->power.state;
-+
- 		if (device->power.flags.power_resources) {
- 			result = acpi_power_transition(device, ACPI_STATE_D0);
- 			if (result)
- 				goto end;
- 		}
- 
--		if (device->power.state == ACPI_STATE_D0) {
-+		if (cur_state == ACPI_STATE_D0) {
- 			int psc;
- 
- 			/* Nothing to do here if _PSC is not present. */
-
-
-
+I have to agree. I think your proposal may allow PCI D3cold, in which
+case we do need to reintroduce the HMB handling.
