@@ -2,107 +2,148 @@ Return-Path: <SRS0=iELs=V4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D18CCC433FF
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 13:33:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2E97C32753
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 15:35:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A84E9206A2
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 13:33:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA6C5208E3
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 15:35:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=fpond.eu header.i=@fpond.eu header.b="eYzQrAVJ"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="c3EFEBNT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729604AbfGaNdt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Jul 2019 09:33:49 -0400
-Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.53]:16005 "EHLO
-        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727809AbfGaNds (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 09:33:48 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1564580026;
-        s=strato-dkim-0002; d=fpond.eu;
-        h=Subject:References:In-Reply-To:Message-ID:Cc:To:From:Date:
-        X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
-        bh=vsqdssxoLg7iBeNDj9knGPs6ySoH0oA9fTal8KVdSQY=;
-        b=eYzQrAVJyAhgUfobwzOO6AeVx235DGJAEkT7cWyoL3R3sb19W6mh1rNNNuFPHWPQVD
-        MYxuEmUoH4U8G6DUGfRGiDgdKSXM96tLSp/m4P8zDEOXwHEE9/EWLb6SK7SGckneKChx
-        GoVzMzU9weaIcC6xtKXiz0aVHA0tG2UcXO/hbAgWYL7bxXsMNEmRUToPcOKC6Hgg6tEM
-        LS32nTC1W9TfE+kszANyEr3++DYKp0NB8PBmZmCgHO7nCgPPLcqMZaQxpc4dc4LUiwOw
-        tzemuKYFfalVX6+xfcBHWW/zGbfdCTEqFi5RnDOBVVeru9zDsmytQmYcj8W9yJ7fU/Vg
-        gdAA==
-X-RZG-AUTH: ":OWANVUa4dPFUgKR/3dpvnYP0Np73amq+g13rqGzmt2bYDnKIKaws6YXTsc4="
-X-RZG-CLASS-ID: mo00
-Received: from oxapp06-03.back.ox.d0m.de
-        by smtp-ox.front (RZmta 44.24 AUTH)
-        with ESMTPSA id h0a328v6VDUiZTi
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve X9_62_prime256v1 with 256 ECDH bits, eq. 3072 bits RSA))
-        (Client did not present a certificate);
-        Wed, 31 Jul 2019 15:30:44 +0200 (CEST)
-Date:   Wed, 31 Jul 2019 15:30:44 +0200 (CEST)
-From:   Ulrich Hecht <uli@fpond.eu>
-To:     Geert Uytterhoeven <geert+renesas@glider.be>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Marek Vasut <marek.vasut+renesas@gmail.com>,
-        linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Message-ID: <51684361.319230.1564579844450@webmail.strato.com>
-In-Reply-To: <20190731125053.14750-1-geert+renesas@glider.be>
-References: <20190731125053.14750-1-geert+renesas@glider.be>
-Subject: Re: [PATCH] thermal: rcar_gen3_thermal: Use
- devm_add_action_or_reset() helper
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-Importance: Medium
-X-Mailer: Open-Xchange Mailer v7.10.1-Rev16
-X-Originating-IP: 85.212.153.30
-X-Originating-Client: open-xchange-appsuite
+        id S1729170AbfGaPfg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Jul 2019 11:35:36 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:35109 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729041AbfGaPfe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 11:35:34 -0400
+Received: by mail-wm1-f68.google.com with SMTP id l2so60222313wmg.0
+        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2019 08:35:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20150623.gappssmtp.com; s=20150623;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=H1Sjaa8cz7i5glOX1PPxwlXLvIYHZMeRObMTEKwKyto=;
+        b=c3EFEBNT6i2kOMObQOpFalgCmDnhp4V7I28AFBh+gZ6W8GhaG0wFL3Q7Y7W61TLsr3
+         5mtoNNC9KGuLcf3M2c1z7f7XjCn+TLqcO94CsRZELhc8qbWdt3y1FcgYbfJImhXNDNcm
+         mcgtNMpG8S9UrqxD0ItemaLYMYHFApqV1lUuO2ibwrUyahDlIhFESkrnSvM22x4aJL/O
+         qXkId+RSUrKL9L/wuqM4Nkukc5rLN/bO2WWx+pLJKSZ1vLc2wTs5EIfq5uc03SGjsiLX
+         j+cFO/uCezEdvPBABnuAIX2C/x1IM4YbwdvWusd9u38yiUtzexD1tkW1AvfHqE6ywu6n
+         MYAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=H1Sjaa8cz7i5glOX1PPxwlXLvIYHZMeRObMTEKwKyto=;
+        b=lSZEnLj0YW0fohiRbdJj01h60U5GnIp91RJthvMFbwdSSfUIK3KvRtBuzfxm0o92L/
+         Hz9XBzq2+w2edBWZ80ki7DnggD6nGr7dyW9sVeUJkwKUrgGRVdf4pXnaRKsM8SYk/4Zs
+         vZ8Gp+AWXkfYGC8LbLIxH8OJ+/zKrai9lOF/mot6BhRBPoL51wxeFHeYHogxB0vHLre/
+         FO4Tv3cEnPtv6c4IdgXWHO7+tzT9CULsaePwAjdEGwdnO/6TrKafrP9rCzFQtAgUnjuO
+         Lf51dZiVgzfAq4wuYjDdFCxt885kjqraiG22f+u2Lou/DUjtPgrjYekXjipoiinvE9cJ
+         WD2A==
+X-Gm-Message-State: APjAAAUYnkCSGzZhZPQR5K98G1R15JOdZPZ2FC1JKkt3Jsmlz6fLlOqu
+        JUoRcKSgfl2SEBGomfq0Yyf+rA==
+X-Google-Smtp-Source: APXvYqwi/mxyDfTaLNfjPLXTxNpEjZnEgzg93rTwxWBssbCJDK1mqwZ8VkQPDQY8zNbK8m0dVkEHSw==
+X-Received: by 2002:a7b:c40c:: with SMTP id k12mr103602947wmi.122.1564587332704;
+        Wed, 31 Jul 2019 08:35:32 -0700 (PDT)
+Received: from glaroque-ThinkPad-T480.baylibre.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
+        by smtp.gmail.com with ESMTPSA id i13sm62834396wrr.73.2019.07.31.08.35.31
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Wed, 31 Jul 2019 08:35:32 -0700 (PDT)
+From:   Guillaume La Roque <glaroque@baylibre.com>
+To:     daniel.lezcano@linaro.org, khilman@baylibre.com
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v2 1/6] dt-bindings: thermal: Add DT bindings documentation for Amlogic Thermal
+Date:   Wed, 31 Jul 2019 17:35:24 +0200
+Message-Id: <20190731153529.30159-2-glaroque@baylibre.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190731153529.30159-1-glaroque@baylibre.com>
+References: <20190731153529.30159-1-glaroque@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Adding the devicetree binding documentation for the Amlogic temperature
+sensor found in the Amlogic Meson G12 SoCs.
+the G12A  and G12B SoCs are supported.
 
-> On July 31, 2019 at 2:50 PM Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> 
-> 
-> Use the devm_add_action_or_reset() helper instead of open-coding the
-> same operations.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/thermal/rcar_gen3_thermal.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> index a56463308694e937..2db7e7f8baf939fd 100644
-> --- a/drivers/thermal/rcar_gen3_thermal.c
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -443,11 +443,10 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
->  		if (ret)
->  			goto error_unregister;
->  
-> -		ret = devm_add_action(dev, rcar_gen3_hwmon_action, zone);
-> -		if (ret) {
-> -			rcar_gen3_hwmon_action(zone);
-> +		ret = devm_add_action_or_reset(dev, rcar_gen3_hwmon_action,
-> +					       zone);
-> +		if (ret)
->  			goto error_unregister;
-> -		}
->  
->  		ret = of_thermal_get_ntrips(tsc->zone);
->  		if (ret < 0)
-> -- 
-> 2.17.1
->
+Signed-off-by: Guillaume La Roque <glaroque@baylibre.com>
+---
+ .../bindings/thermal/amlogic,thermal.yaml     | 58 +++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
 
-Reviewed-by: Ulrich Hecht <uli+renesas@fpond.eu>
+diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+new file mode 100644
+index 000000000000..f10537ab4c8b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+@@ -0,0 +1,58 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/amlogic,thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Amlogic Thermal Driver
++
++maintainers:
++  - Guillaume La Roque <glaroque@baylibre.com>
++
++description: Amlogic Thermal driver
++
++properties:
++  compatible:
++    oneOf:
++      - items:
++          - enum:
++              - amlogic,g12-cpu-thermal
++              - amlogic,g12-ddr-thermal
++          - const:
++              - amlogic,g12-thermal
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  amlogic,ao-secure:
++    description: phandle to the ao-secure syscon
++    allOf:
++     - $ref: /schemas/types.yaml#/definitions/uint32
++
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++  - amlogic,ao-secure
++
++examples:
++  - |
++        cpu_temp: temperature-sensor@ff634800 {
++                compatible = "amlogic,g12-cpu-thermal",
++                             "amlogic,g12-thermal";
++                reg = <0x0 0xff634800 0x0 0x50>;
++                interrupts = <0x0 0x24 0x0>;
++                clocks = <&clk 164>;
++                status = "okay";
++                #thermal-sensor-cells = <0>;
++                amlogic,ao-secure = <&sec_AO>;
++        };
++...
+\ No newline at end of file
+-- 
+2.17.1
 
-CU
-Uli
