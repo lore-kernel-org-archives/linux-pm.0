@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EA87C433FF
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 12:14:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66C67C32751
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 12:14:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2F451206A2
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 12:14:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3912D21726
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 12:14:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="fYS3Tgnw"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="KOwU/VDL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729120AbfGaMOU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Jul 2019 08:14:20 -0400
-Received: from mail-wm1-f68.google.com ([209.85.128.68]:32951 "EHLO
-        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729039AbfGaMOT (ORCPT
+        id S1727489AbfGaMOc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Jul 2019 08:14:32 -0400
+Received: from mail-wr1-f67.google.com ([209.85.221.67]:44892 "EHLO
+        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729108AbfGaMOT (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 08:14:19 -0400
-Received: by mail-wm1-f68.google.com with SMTP id h19so1171268wme.0
-        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2019 05:14:17 -0700 (PDT)
+Received: by mail-wr1-f67.google.com with SMTP id p17so69404215wrf.11
+        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2019 05:14:18 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20150623.gappssmtp.com; s=20150623;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=4dhyanCajCoQ1NdrxY9RmPZmRRskdkUd8pA1FbO4zdo=;
-        b=fYS3TgnwrniuqSiM6EH8XBX5NO0WHBVCvOQ0paEeMa5/j1L16S3eMBI475LTjoV8ui
-         XZMH/qiesdnDqiwtIhyM1C2/aKEjieF90KHqB6+woi/R04pCoUA/DS7g8FxIvxCnVtge
-         CGwXU2VF0b6n9CWoTmUCdsFiMDjRLlu5sziIWWZIkiHdyN0Y/Wsf0v2npxS2fT0fS+lM
-         erUXS9kjSafOR4vz6DeIvqCDioiICAfx5E4DG2s8qQ9IObARQnUnjfv1c+5qN9fxljuk
-         dnOaSG3+0/aKtms73knvFjaJth/VFSJ1fRgV96ir5bKG0YYN6P1Pt94Qm3nVEVGmD6W2
-         8e7Q==
+        bh=BOF17YQQWl12xZ1QhY8MZFUcVRdvZruqxl9AoPVourc=;
+        b=KOwU/VDLfH4d9hcV47fA2w/uqwOYT2FS68Y+GEZgeAIxQeMzox1GTF+0nrmfbwgok6
+         lFKgs6HQrZ5vHJV79TS3uRpfM7LBBpF/8oOwgSPwJoZn4uSGVeyYfnWNtxTN0cCnSKnA
+         fwLcqzDLNkSmAbYJFRKWbisb1VHFrT9BBYe1njiRWWCpIVjSFXkGFjmG8l7ix6YGmBuO
+         jmb5mztHtAF8AeFgsBIRAXSHH7dLXHH2WTPiyN1yejHwdxPZrwqe+2OU49FlyeZkQ6rT
+         E+OVoUnb/VSTVGanCM84e147CCmhwhG/RaHrkLmA2+q2AMN+jbaHINtHsTQGrCX8cYtO
+         lB1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=4dhyanCajCoQ1NdrxY9RmPZmRRskdkUd8pA1FbO4zdo=;
-        b=gMKyU0x7MXeU93phdNBfnIcen5e4hKo2IGV3mPOzRINhY9+EX8PtKHL7j5UK3kQgeg
-         rkliPlph7YeoE2q78Cga/mYs4zrc+4gAz31hJbkkgQi2BxfW02pqA4ih6H6hSVZSzYSA
-         StaelluzhjXb03QeWZFAkZuqTCNQKiQs05VJVfzh2INl3cOEyFAekuU9gW4EbcmPRMaI
-         M6CIBwt1XJkJTD8OpxckKUwkMLrcHObuqSh6eLUA4YYzisi5jV10SwCi0NhUFm1uobK9
-         kPYdK0FyVkvh0j26fZ+JWm1/L1oEsBs83Nv3lPmumwhAk9oESt6cCsNIvYlj9rvHAF/K
-         Tncg==
-X-Gm-Message-State: APjAAAVceK7VQjGJniDkHKG0/j4BCHOVcSEZKwErtOuy4Z3qitBYWHcT
-        j5nUnaKenJU4Pwh8KT5PwCZumw==
-X-Google-Smtp-Source: APXvYqxRDiGgBTKX4OvpK3DPoOUb/3Cu6lXEUEkKcn4C86RVnIxo9nRbAkWga96jF5qAdQmTIoHbSA==
-X-Received: by 2002:a7b:c251:: with SMTP id b17mr37174245wmj.143.1564575257149;
-        Wed, 31 Jul 2019 05:14:17 -0700 (PDT)
+        bh=BOF17YQQWl12xZ1QhY8MZFUcVRdvZruqxl9AoPVourc=;
+        b=Qg+dGn5WtaC2zYfNqeh7qPgtHIjRvPKGG5Xt0fAKMZW878e9IIuoNoIU6SsLUUrynI
+         Wr+r2ETV2iQNKEjqDvMFSuUYR9sdEwb0O1J1+IZAXgzOkkyUQRKi2ztatrJLlrDpa0Nh
+         MR53RV/IL09d4VgXqEBcysKulCsg39LprNqyxaQFaviwX4cSlGd8v8nCxNFYA6yQ7iZa
+         TsrrEd67odQZlCN7h6dv+AbT4VXNGOT/zK3SFtlll508BEdSEOCcBhNdBB4pnLriJrmZ
+         ORVRZjb3fw88do+iGeQO2rJcpD9riF203RC8QBld9dVO+XNiNgDUVJCouLB9K0yafuJV
+         9wKg==
+X-Gm-Message-State: APjAAAUK1kfja30pdKmoOlKLk83aqbAsEHckZTOpE4hTZJjbf117xg5C
+        SaF7KJFOgaiKkvv5CCnKGs+xtg==
+X-Google-Smtp-Source: APXvYqw5Af6krHH2u8yfiDYnUo0PUK03ieMfQQIWsJDDVp5cTQO8+Z6dt5o79L+VaM5ofBQMkgnbuQ==
+X-Received: by 2002:adf:c803:: with SMTP id d3mr61363995wrh.130.1564575258197;
+        Wed, 31 Jul 2019 05:14:18 -0700 (PDT)
 Received: from glaroque-ThinkPad-T480.baylibre.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id a64sm3613713wmf.1.2019.07.31.05.14.16
+        by smtp.gmail.com with ESMTPSA id a64sm3613713wmf.1.2019.07.31.05.14.17
         (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Wed, 31 Jul 2019 05:14:16 -0700 (PDT)
+        Wed, 31 Jul 2019 05:14:17 -0700 (PDT)
 From:   Guillaume La Roque <glaroque@baylibre.com>
 To:     daniel.lezcano@linaro.org, khilman@baylibre.com
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 4/6] arm64: dts: meson: sei510: Add minimal thermal zone
-Date:   Wed, 31 Jul 2019 14:14:07 +0200
-Message-Id: <20190731121409.17285-5-glaroque@baylibre.com>
+Subject: [PATCH 5/6] arm64: dts: amlogic: odroid-n2: add minimal thermal zone
+Date:   Wed, 31 Jul 2019 14:14:08 +0200
+Message-Id: <20190731121409.17285-6-glaroque@baylibre.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190731121409.17285-1-glaroque@baylibre.com>
 References: <20190731121409.17285-1-glaroque@baylibre.com>
@@ -73,14 +73,14 @@ Add minimal thermal zone for DDR and CPU sensor
 
 Signed-off-by: Guillaume La Roque <glaroque@baylibre.com>
 ---
- arch/arm64/boot/dts/amlogic/meson-g12a-sei510.dts | 13 +++++++++++++
+ .../arm64/boot/dts/amlogic/meson-g12b-odroid-n2.dts | 13 +++++++++++++
  1 file changed, 13 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/amlogic/meson-g12a-sei510.dts b/arch/arm64/boot/dts/amlogic/meson-g12a-sei510.dts
-index c7a87368850b..79ae514e238d 100644
---- a/arch/arm64/boot/dts/amlogic/meson-g12a-sei510.dts
-+++ b/arch/arm64/boot/dts/amlogic/meson-g12a-sei510.dts
-@@ -33,6 +33,19 @@
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b-odroid-n2.dts b/arch/arm64/boot/dts/amlogic/meson-g12b-odroid-n2.dts
+index 81780ffcc7f0..4bd8d6d0c972 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12b-odroid-n2.dts
++++ b/arch/arm64/boot/dts/amlogic/meson-g12b-odroid-n2.dts
+@@ -20,6 +20,19 @@
  		ethernet0 = &ethmac;
  	};
  
@@ -97,9 +97,9 @@ index c7a87368850b..79ae514e238d 100644
 +		};
 +	};
 +
- 	mono_dac: audio-codec-0 {
- 		compatible = "maxim,max98357a";
- 		#sound-dai-cells = <0>;
+ 	chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
 -- 
 2.17.1
 
