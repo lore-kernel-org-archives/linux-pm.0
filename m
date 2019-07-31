@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1BD2C433FF
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 15:35:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 595D6C433FF
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 15:36:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C84E82171F
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 15:35:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2C003208E3
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 15:36:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="WslNVOJJ"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="KYF9hpGE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728898AbfGaPfp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Jul 2019 11:35:45 -0400
-Received: from mail-wm1-f68.google.com ([209.85.128.68]:36522 "EHLO
-        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729285AbfGaPfj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 11:35:39 -0400
-Received: by mail-wm1-f68.google.com with SMTP id g67so56138874wme.1
-        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2019 08:35:38 -0700 (PDT)
+        id S1729357AbfGaPfv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Jul 2019 11:35:51 -0400
+Received: from mail-wr1-f67.google.com ([209.85.221.67]:37355 "EHLO
+        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726672AbfGaPfg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 11:35:36 -0400
+Received: by mail-wr1-f67.google.com with SMTP id n9so45112473wrr.4
+        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2019 08:35:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20150623.gappssmtp.com; s=20150623;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=/dy6tDwrDZyQwCbBNtI3rvHog6QhVWeb1hPHlqbhReg=;
-        b=WslNVOJJOckqG6h4DUpirvwvnqcmy+9M5+8dYvKmXJPwRrWZiPJo6I/x0g8HyQpQ9D
-         Aa7KMN245ZUr648WNxDMcVk/5ALnaSic0hiu82fiKQ7wg9efPgm1MUO+9PPqqOjtPiKa
-         iyhqeccWEHkRjiKa6j+w+5NfuQzqCkS6K+7ZQL1U7NaUl3fR4RsrlZj+NSAA+/aN9FXu
-         k7M4t6I3rIl8izUOnLr9my5zNSBsFR8QtflfQib/5almrlmleu30fEd3gaHMhq8VftIp
-         VmsMFYg6ZTOu01A4qh356un3Q821YxTWmznUd3veMM9XEX6oU8J0YNGc8yWn/HroMI0b
-         fwrw==
+        bh=zwXMQFf4O72zRXvxhXDpjn4gC2DC6LZbFolWqJXYtrg=;
+        b=KYF9hpGEUbp0s0D642XDycTGprN3nqCsZUHBJdEKiex/mFMiZiWZ5/jd45H50ptbNU
+         gw8EOQxt0VEWOwPRO9cHC+8Ray13wzLmL2meqCrouR1exyscsJduepsVv0tVycyMKrAx
+         og2pGcy/PFs9xB5pIxirKZzAjqQ0hmhI1FvPVk7wCeTN1b8iueOtfp9RDkH0HQq5AOqO
+         BIsh5KY+3D+v4FETW04yDsEQrdHpBzqHuVwgLELR/iZMZZ12GTAcLO3jy8qP0z/lXN89
+         pH+/vGjHdLe0f0U+b/34BBcYccDIKZpHm9TC2KQ8QAL/lNqMRJSWt0F//+Yg0kpY8hxP
+         PrUQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=/dy6tDwrDZyQwCbBNtI3rvHog6QhVWeb1hPHlqbhReg=;
-        b=KMpfxatiCz81E27gpn6JkPZkbAVeEYYWU7n/s+vJP5c7MRQ7YBaDld7LvA0dIQHxZ7
-         3cgsuKndhd6egGQO5yWZLIsFwzol/ploVBZiu9kf1oayer9AEi8VLWla4tFelfNxvPOQ
-         4JbGEOnRL5cYmhfXMhBkTEyVZvncu4vyCm9j+2M6YYoSCX9JgO0nrZZ17/cj7Vhws00y
-         NFcm4uyt9efw/IOMsIVebOST2aCj23yPNRT5QQ3O16Ud0rCs+drCg8/LZ+X0jeEPLWAz
-         2l0hU7KTGBd7tFNtgO0cyGofFDJZHkw5bfXe+1hGxSVZsiQH/9M1AFkEWe9meIT5KX8g
-         H4nQ==
-X-Gm-Message-State: APjAAAWySZSV2DxFrL8B78M6TTnU6ceXFBWXm1WA/sT5ykNvcuAu4pWF
-        XVHXoE4R2I7vqDuObRDmVTvHHg==
-X-Google-Smtp-Source: APXvYqx/2w4qexmNS3QtNNLbJZY+VWEyXJDKlHfgNsPNm/cMZzoKbM5oOF3POVTExmO2V6vkElbleQ==
-X-Received: by 2002:a1c:4d05:: with SMTP id o5mr110767934wmh.63.1564587337837;
-        Wed, 31 Jul 2019 08:35:37 -0700 (PDT)
+        bh=zwXMQFf4O72zRXvxhXDpjn4gC2DC6LZbFolWqJXYtrg=;
+        b=KInUoEt8Jo26UaVGS7CswNE0tO65CWS/b3pQKLn4ihR6P0GS3S1YHywe1saH6Ofw/M
+         9Nx1U7y5Ru3cV05Ua25NxyyQaPITZNMJ6lI6ppSw3xXWE20zVxfoDQaTuqS6QSY9E56S
+         +30wv6qXystiVpBaWmwm+vwui2gQH6Ppypz7Lys3Dsdk1eNt36xfj9kF0Q9piziOyEhp
+         gc9E9vkmVtDiQz4kuSHXQSgdv8gK2cUqBGevi+FQng5tHeGYB1gns67N+BRvBa4C0flU
+         eaoRVtKoz6gSF/z1XbvSemDHNUlkXgk08axSMyeAoPfqSMAzn7MZnsbSW2J07YeduvAP
+         q7lQ==
+X-Gm-Message-State: APjAAAXq5RtqQZeUZBL7bM6wGS8xCCO/PgQD3KjzFAK0bnPxFrJdHoRR
+        uyhVDLWS5zX32yYfuxa9lITjFw==
+X-Google-Smtp-Source: APXvYqzoxnNYY2vWzgJ9XlUvY8Co2H5qYLxlbwUS/OxtwDXdbJ0v1wfkv4b07TjdDvzHYrdxfIXyZQ==
+X-Received: by 2002:a5d:4087:: with SMTP id o7mr91580852wrp.277.1564587334955;
+        Wed, 31 Jul 2019 08:35:34 -0700 (PDT)
 Received: from glaroque-ThinkPad-T480.baylibre.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id i13sm62834396wrr.73.2019.07.31.08.35.36
+        by smtp.gmail.com with ESMTPSA id i13sm62834396wrr.73.2019.07.31.08.35.34
         (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Wed, 31 Jul 2019 08:35:37 -0700 (PDT)
+        Wed, 31 Jul 2019 08:35:34 -0700 (PDT)
 From:   Guillaume La Roque <glaroque@baylibre.com>
 To:     daniel.lezcano@linaro.org, khilman@baylibre.com
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 6/6] MAINTAINERS: add entry for Amlogic Thermal driver
-Date:   Wed, 31 Jul 2019 17:35:29 +0200
-Message-Id: <20190731153529.30159-7-glaroque@baylibre.com>
+Subject: [PATCH v2 3/6] arm64: dts: amlogic: g12: add temperature sensor
+Date:   Wed, 31 Jul 2019 17:35:26 +0200
+Message-Id: <20190731153529.30159-4-glaroque@baylibre.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190731153529.30159-1-glaroque@baylibre.com>
 References: <20190731153529.30159-1-glaroque@baylibre.com>
@@ -69,33 +69,46 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add myself as maintainer for Amlogic Thermal driver.
+Add cpu and ddr temperature sensors for G12 Socs
 
 Signed-off-by: Guillaume La Roque <glaroque@baylibre.com>
 ---
- MAINTAINERS | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ .../boot/dts/amlogic/meson-g12-common.dtsi    | 22 +++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fb2b12f75c37..299f27d11058 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -15910,6 +15910,15 @@ F:	Documentation/driver-api/thermal/cpu-cooling-api.rst
- F:	drivers/thermal/cpu_cooling.c
- F:	include/linux/cpu_cooling.h
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
+index 06e186ca41e3..7f862a3490fb 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
+@@ -1353,6 +1353,28 @@
+ 				};
+ 			};
  
-+THERMAL DRIVER FOR AMLOGIC SOCS
-+M:	Guillaume La Roque <glaroque@baylibre.com>
-+L:	linux-pm@vger.kernel.org
-+L:	linux-amlogic@lists.infradead.org
-+W:	http://linux-meson.com/
-+S:	Supported
-+F:	drivers/thermal/amlogic_thermal.c
-+F:	Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
++			cpu_temp: temperature-sensor@34800 {
++				compatible = "amlogic,g12-cpu-thermal",
++					     "amlogic,g12-thermal";
++				reg = <0x0 0x34800 0x0 0x50>;
++				interrupts = <GIC_SPI 35 IRQ_TYPE_EDGE_RISING>;
++				clocks = <&clkc CLKID_TS>;
++				status = "okay";
++				#thermal-sensor-cells = <0>;
++				amlogic,ao-secure = <&sec_AO>;
++			};
 +
- THINKPAD ACPI EXTRAS DRIVER
- M:	Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>
- L:	ibm-acpi-devel@lists.sourceforge.net
++			ddr_temp: temperature-sensor@34c00 {
++				compatible = "amlogic,g12-ddr-thermal",
++					     "amlogic,g12-thermal";
++				reg = <0x0 0x34c00 0x0 0x50>;
++				interrupts = <GIC_SPI 36 IRQ_TYPE_EDGE_RISING>;
++				clocks = <&clkc CLKID_TS>;
++				status = "okay";
++				#thermal-sensor-cells = <0>;
++				amlogic,ao-secure = <&sec_AO>;
++			};
++
+ 			usb2_phy0: phy@36000 {
+ 				compatible = "amlogic,g12a-usb2-phy";
+ 				reg = <0x0 0x36000 0x0 0x2000>;
 -- 
 2.17.1
 
