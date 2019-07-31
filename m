@@ -2,63 +2,108 @@ Return-Path: <SRS0=iELs=V4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93356C433FF
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 20:02:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9092C32753
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 21:11:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 78602216C8
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 20:02:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B00D22067D
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 21:11:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="cF0vTPm9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730602AbfGaUCn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Jul 2019 16:02:43 -0400
-Received: from ms.lwn.net ([45.79.88.28]:56022 "EHLO ms.lwn.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729280AbfGaUCn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 31 Jul 2019 16:02:43 -0400
-Received: from lwn.net (localhost [127.0.0.1])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by ms.lwn.net (Postfix) with ESMTPSA id D82EC6D9;
-        Wed, 31 Jul 2019 20:02:42 +0000 (UTC)
-Date:   Wed, 31 Jul 2019 14:02:39 -0600
-From:   Jonathan Corbet <corbet@lwn.net>
-To:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        linux-doc@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 01/26] docs: power: add it to to the main
- documentation index
-Message-ID: <20190731140239.34e3ca40@lwn.net>
-In-Reply-To: <20190731165859.10b439c8@coco.lan>
-References: <cover.1564145354.git.mchehab+samsung@kernel.org>
-        <5417112ea7a391e6622c46bf833b7d6a5725c158.1564145354.git.mchehab+samsung@kernel.org>
-        <20190731130338.6de6c5d7@lwn.net>
-        <20190731161606.2572a567@coco.lan>
-        <20190731133443.49368cbb@lwn.net>
-        <20190731165859.10b439c8@coco.lan>
-Organization: LWN.net
+        id S1730662AbfGaVLM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Jul 2019 17:11:12 -0400
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:17193 "EHLO
+        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730567AbfGaVLL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 17:11:11 -0400
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5d4203f00000>; Wed, 31 Jul 2019 14:11:12 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+  by hqpgpgate101.nvidia.com (PGP Universal service);
+  Wed, 31 Jul 2019 14:11:11 -0700
+X-PGP-Universal: processed;
+        by hqpgpgate101.nvidia.com on Wed, 31 Jul 2019 14:11:11 -0700
+Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL106.nvidia.com
+ (172.18.146.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 31 Jul
+ 2019 21:11:10 +0000
+Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL109.nvidia.com
+ (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 31 Jul
+ 2019 21:11:10 +0000
+Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL109.nvidia.com
+ (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Wed, 31 Jul 2019 21:11:10 +0000
+Received: from skomatineni-linux.nvidia.com (Not Verified[10.110.102.167]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
+        id <B5d4203ee0000>; Wed, 31 Jul 2019 14:11:10 -0700
+From:   Sowjanya Komatineni <skomatineni@nvidia.com>
+To:     <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
+        <tglx@linutronix.de>, <jason@lakedaemon.net>,
+        <marc.zyngier@arm.com>, <linus.walleij@linaro.org>,
+        <stefan@agner.ch>, <mark.rutland@arm.com>
+CC:     <pdeschrijver@nvidia.com>, <pgaikwad@nvidia.com>,
+        <sboyd@kernel.org>, <linux-clk@vger.kernel.org>,
+        <linux-gpio@vger.kernel.org>, <jckuo@nvidia.com>,
+        <josephl@nvidia.com>, <talho@nvidia.com>, <skomatineni@nvidia.com>,
+        <linux-tegra@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <mperttunen@nvidia.com>, <spatra@nvidia.com>, <robh+dt@kernel.org>,
+        <digetx@gmail.com>, <devicetree@vger.kernel.org>,
+        <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
+        <linux-pm@vger.kernel.org>
+Subject: [PATCH v7 20/20] arm64: dts: tegra210-p3450: Jetson Nano SC7 timings
+Date:   Wed, 31 Jul 2019 14:11:03 -0700
+Message-ID: <1564607463-28802-21-git-send-email-skomatineni@nvidia.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1564607463-28802-1-git-send-email-skomatineni@nvidia.com>
+References: <1564607463-28802-1-git-send-email-skomatineni@nvidia.com>
+X-NVConfidentiality: public
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+        t=1564607472; bh=IAZSdScPMp/Ip7Sf+sfNEWrp2xlTiRUarz1Aolfu/RA=;
+        h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
+         In-Reply-To:References:X-NVConfidentiality:MIME-Version:
+         Content-Type;
+        b=cF0vTPm91OYZIhKUXrVAAlDmo7PFU4MgrXyeF0eYj5gSZuFAFFqDd1ZHwFLJIXun4
+         CO/kQhyBb9yfQXDpNImeC69edPI2btVmrHWPflZz4ej6zwZP9H/pJVsUzs3mHA7STt
+         irIiPgQXJj9J9yhWO9og7Bc1gT399CbEUJNGCegkz98hjB3pFZamlTyYT5UtGy/ZFu
+         8z9CCvetE3flwrUGJP8yYRgaIGB8YgJdbIZUZtFzmwFRw8xLUzTLJuBuZSvEyEvm1g
+         RPBbejG8xR9tXShupaWLJWiiDf6eC+oc662SQbZZedO37DNJFMmMIr15Nj8gHL0XQc
+         1QpnD9jPUiVyA==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 31 Jul 2019 16:58:59 -0300
-Mauro Carvalho Chehab <mchehab+samsung@kernel.org> wrote:
+This patch adds Jetson Nano platform specific SC7 timing configuration
+in the device tree.
 
-> > - [PATCH v2 07/26] docs: w1: convert to ReST and add to the kAPI group of
-> >   docs
-> > 
-> > 	Gives me the dreaded "could not build fake ancestor" error, I
-> > 	don't really understand why.  
-> 
-> That's new! What Sphinx version are you using?
+Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
+---
+ arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-That's a "git am" error, sphinx doesn't enter into the picture...
+diff --git a/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts b/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
+index 9d17ec707bce..b525e69c172a 100644
+--- a/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
++++ b/arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts
+@@ -382,6 +382,13 @@
+ 
+ 	pmc@7000e400 {
+ 		nvidia,invert-interrupt;
++		nvidia,suspend-mode = <0>;
++		nvidia,cpu-pwr-good-time = <0>;
++		nvidia,cpu-pwr-off-time = <0>;
++		nvidia,core-pwr-good-time = <4587 3876>;
++		nvidia,core-pwr-off-time = <39065>;
++		nvidia,core-power-req-active-high;
++		nvidia,sys-clock-req-active-high;
+ 	};
+ 
+ 	hda@70030000 {
+-- 
+2.7.4
 
-jon
