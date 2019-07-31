@@ -2,142 +2,94 @@ Return-Path: <SRS0=iELs=V4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	URIBL_SBL,URIBL_SBL_A,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53D5EC41514
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 22:19:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F587C32751
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 22:20:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 25C522171F
-	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 22:19:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="IXsxtFi3"
+	by mail.kernel.org (Postfix) with ESMTP id F276E206B8
+	for <linux-pm@archiver.kernel.org>; Wed, 31 Jul 2019 22:20:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731248AbfGaWQx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 31 Jul 2019 18:16:53 -0400
-Received: from mail-pg1-f202.google.com ([209.85.215.202]:52712 "EHLO
-        mail-pg1-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731242AbfGaWQw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 18:16:52 -0400
-Received: by mail-pg1-f202.google.com with SMTP id h3so43743596pgc.19
-        for <linux-pm@vger.kernel.org>; Wed, 31 Jul 2019 15:16:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
-         :cc;
-        bh=mRx6DvobeAgz9fXiYoI+VAmx830kBHXoGc7G6A5EVd0=;
-        b=IXsxtFi3dTqKB+o/Wp7s083XS7SjUbQMcCgIsd0WIzzMtZmNaSQKck9SZk8/LV/tKW
-         iauqc9Sh1AIluynW7+PR4PhpczN6yRdIv953ynjwuwFWHa/UVnQ72sULwrXjNjS6e/rU
-         9B58SiL1PCO7x+gwtiCfLRDcFLfHYqJckXhIxs7f7BmC/OAWPsSihkTtRDo4hMCslWC4
-         DcbbsuYXQYGwOfMS+1sE0Xp813o+0VO5tuwgaPAWsIiBTlDFJ2yTuhzH/viPVcMxtFXv
-         PCDiNz31TQAFo2c/g5gz4FxUjGG5qNoYLTvZVJc1/xMrVhVCF6vii+6Ml1XW+QkFPzAs
-         w83w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=mRx6DvobeAgz9fXiYoI+VAmx830kBHXoGc7G6A5EVd0=;
-        b=Yc+c3gz/BT8FDQLzUuc/m0m4JH9KyLdkbBxH9rh8zyY0ECfu9tV0NNs1ieCV1GQ/EX
-         oArYLdc17ZKda3cmapAhrccWgnqTgOBY7uOwltZ5DQrhv3UMXT+l0CL6nB9kMsLkKDZ0
-         B5YrSoyxucz3AvdK2skxSZlQzVJwSq91Lr1t0I5EDyP6hfgFMa99PWfbuXroNQyJdh72
-         EL8I7Fy9VMsyjkt89RBRRnLsEpibYgtLihKZxJzJw6YznYDHnnwXwURbVSEuPCQlwGlv
-         OxyTaZ7Ic5qU9C7ZRRLFxlY5SkEEEtDbu3Kv7fHB3MjHia+9X7L1zcz/fRdtLM8ofmkF
-         dqKw==
-X-Gm-Message-State: APjAAAW9ZzadGq3kRAH1qZ84AtlT0o8KPoG4gzc+0l17pKlZNhfUT+Z2
-        kobkbDaTHG1JduYi8e0r5xiNrMYbL748+oA/JbqdVw==
-X-Google-Smtp-Source: APXvYqwPUST8bcWEuK6wPg2C/0aVphd5/eFEPuRhKx/A1xJZobcujQxWD9xlWlFEjxq639LtyRci3WWJHAF+9qOzVRDrpA==
-X-Received: by 2002:a65:44cc:: with SMTP id g12mr37784362pgs.409.1564611411719;
- Wed, 31 Jul 2019 15:16:51 -0700 (PDT)
-Date:   Wed, 31 Jul 2019 15:15:58 -0700
-In-Reply-To: <20190731221617.234725-1-matthewgarrett@google.com>
-Message-Id: <20190731221617.234725-11-matthewgarrett@google.com>
-Mime-Version: 1.0
-References: <20190731221617.234725-1-matthewgarrett@google.com>
-X-Mailer: git-send-email 2.22.0.770.g0f2c4a37fd-goog
-Subject: [PATCH V37 10/29] hibernate: Disable when the kernel is locked down
-From:   Matthew Garrett <matthewgarrett@google.com>
-To:     jmorris@namei.org
-Cc:     linux-security-module@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-        Josh Boyer <jwboyer@fedoraproject.org>,
-        David Howells <dhowells@redhat.com>,
-        Matthew Garrett <mjg59@google.com>,
-        Kees Cook <keescook@chromium.org>, rjw@rjwysocki.net,
-        pavel@ucw.cz, linux-pm@vger.kernel.org
+        id S1728170AbfGaWUv convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 31 Jul 2019 18:20:51 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:63324 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726125AbfGaWUv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Jul 2019 18:20:51 -0400
+Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
+ id 1892615acf94579e; Thu, 1 Aug 2019 00:20:49 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc:     Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Mario Limonciello <mario.limonciello@dell.com>,
+        Anthony Wong <anthony.wong@canonical.com>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Regression] Commit "ACPI: PM: Allow transitions to D0 to occur in special cases"
+Date:   Thu, 01 Aug 2019 00:20:49 +0200
+Message-ID: <4787259.M8qLqd86a7@kreacher>
+In-Reply-To: <578BD3F1-B185-471B-A3EB-FF71BA34B822@canonical.com>
+References: <578BD3F1-B185-471B-A3EB-FF71BA34B822@canonical.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Josh Boyer <jwboyer@fedoraproject.org>
+On Wednesday, July 31, 2019 6:04:29 PM CEST Kai-Heng Feng wrote:
+> Hi,
+> 
+> After commit "ACPI: PM: Allow transitions to D0 to occur in special cases”,  
+> Thunderbolt on XPS 9380 spews the following when it runtime resumes:
+> [   36.136554] pci_raw_set_power_state: 25 callbacks suppressed
+> [   36.136558] pcieport 0000:03:00.0: Refused to change power state,  
+> currently in D3
+> [   36.143850] pcieport 0000:04:04.0: Refused to change power state,  
+> currently in D3
+> [   36.150796] pcieport 0000:04:00.0: Refused to change power state,  
+> currently in D3
+> [   36.157138] pcieport 0000:04:01.0: Refused to change power state,  
+> currently in D3
+> [   36.162635] pcieport 0000:04:02.0: Refused to change power state,  
+> currently in D3
 
-There is currently no way to verify the resume image when returning
-from hibernate.  This might compromise the signed modules trust model,
-so until we can work with signed hibernate images we disable it when the
-kernel is locked down.
+Thanks for identifying the offending commit and sorry for the breakage.
 
-Signed-off-by: Josh Boyer <jwboyer@fedoraproject.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
-Signed-off-by: Matthew Garrett <mjg59@google.com>
-Reviewed-by: Kees Cook <keescook@chromium.org>
-Cc: rjw@rjwysocki.net
-Cc: pavel@ucw.cz
-cc: linux-pm@vger.kernel.org
+The patch below should fix it.
+
 ---
- include/linux/security.h     | 1 +
- kernel/power/hibernate.c     | 3 ++-
- security/lockdown/lockdown.c | 1 +
- 3 files changed, 4 insertions(+), 1 deletion(-)
+ drivers/acpi/device_pm.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 69c5de539e9a..304a155a5628 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -106,6 +106,7 @@ enum lockdown_reason {
- 	LOCKDOWN_MODULE_SIGNATURE,
- 	LOCKDOWN_DEV_MEM,
- 	LOCKDOWN_KEXEC,
-+	LOCKDOWN_HIBERNATION,
- 	LOCKDOWN_INTEGRITY_MAX,
- 	LOCKDOWN_CONFIDENTIALITY_MAX,
- };
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index cd7434e6000d..3c0a5a8170b0 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -30,6 +30,7 @@
- #include <linux/ctype.h>
- #include <linux/genhd.h>
- #include <linux/ktime.h>
-+#include <linux/security.h>
- #include <trace/events/power.h>
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -236,13 +236,15 @@ int acpi_device_set_power(struct acpi_de
+ 		if (device->power.flags.power_resources)
+ 			result = acpi_power_transition(device, target_state);
+ 	} else {
++		int cur_state = device->power.state;
++
+ 		if (device->power.flags.power_resources) {
+ 			result = acpi_power_transition(device, ACPI_STATE_D0);
+ 			if (result)
+ 				goto end;
+ 		}
  
- #include "power.h"
-@@ -68,7 +69,7 @@ static const struct platform_hibernation_ops *hibernation_ops;
+-		if (device->power.state == ACPI_STATE_D0) {
++		if (cur_state == ACPI_STATE_D0) {
+ 			int psc;
  
- bool hibernation_available(void)
- {
--	return (nohibernate == 0);
-+	return nohibernate == 0 && !security_locked_down(LOCKDOWN_HIBERNATION);
- }
- 
- /**
-diff --git a/security/lockdown/lockdown.c b/security/lockdown/lockdown.c
-index 6f302c156bc8..a0996f75629f 100644
---- a/security/lockdown/lockdown.c
-+++ b/security/lockdown/lockdown.c
-@@ -21,6 +21,7 @@ static char *lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1] = {
- 	[LOCKDOWN_MODULE_SIGNATURE] = "unsigned module loading",
- 	[LOCKDOWN_DEV_MEM] = "/dev/mem,kmem,port",
- 	[LOCKDOWN_KEXEC] = "kexec of unsigned images",
-+	[LOCKDOWN_HIBERNATION] = "hibernation",
- 	[LOCKDOWN_INTEGRITY_MAX] = "integrity",
- 	[LOCKDOWN_CONFIDENTIALITY_MAX] = "confidentiality",
- };
--- 
-2.22.0.770.g0f2c4a37fd-goog
+ 			/* Nothing to do here if _PSC is not present. */
+
+
 
