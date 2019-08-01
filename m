@@ -2,86 +2,137 @@ Return-Path: <SRS0=sepJ=V5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0BAFC433FF
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Aug 2019 20:25:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EAB8C19759
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Aug 2019 21:33:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C0C392084C
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Aug 2019 20:25:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1564691132;
-	bh=5RoZcFIWkJno+T2nNTwg4u2tni+S/MlSh0qACR6sNEQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=Csxv1jen3E04+cow+HGMq7cFMIkAS+HkV0aSBvr72eJeRJOK5q+MqqVSCff1W1+MR
-	 zze1FW+Gy+3AhTBF1vABPBCtsn9y23tfF0g63MA5EaZKv6vmliHAElU84K3Ujb2W82
-	 qbFcP60Fp/bxHSjE3Unw5/ZCX70TBeSu3DG1Twhk=
+	by mail.kernel.org (Postfix) with ESMTP id C91502064A
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Aug 2019 21:33:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="cyRZJ1yR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726151AbfHAUZc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Aug 2019 16:25:32 -0400
-Received: from mga12.intel.com ([192.55.52.136]:17876 "EHLO mga12.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725871AbfHAUZc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 1 Aug 2019 16:25:32 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 01 Aug 2019 13:25:31 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.64,335,1559545200"; 
-   d="scan'208";a="163729047"
-Received: from unknown (HELO localhost.localdomain) ([10.232.112.69])
-  by orsmga007.jf.intel.com with ESMTP; 01 Aug 2019 13:25:30 -0700
-Date:   Thu, 1 Aug 2019 14:22:51 -0600
-From:   Keith Busch <kbusch@kernel.org>
-To:     Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Mario Limonciello <Mario.Limonciello@dell.com>,
+        id S1730522AbfHAVdd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Aug 2019 17:33:33 -0400
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:39103 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728045AbfHAVdd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Aug 2019 17:33:33 -0400
+Received: by mail-pf1-f194.google.com with SMTP id f17so30806856pfn.6
+        for <linux-pm@vger.kernel.org>; Thu, 01 Aug 2019 14:33:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=RWmARDo48Z8Dv81pG22MrnEPvg/7991SYFzMS48qKnE=;
+        b=cyRZJ1yRaVu6PJnIyZ0m2XF/aeI4KSucQmlgOYSbGhPKcG5yUcoM8+RdJ8DbmCDMnc
+         RkHD86VRMuw7CevSp88Ee4Ezex7hFoeV3tSzVJFbBo0dyrpIsh0i+pZZIPAhDK8CzAxX
+         UpJhLcrmpqLJsBs7zYMLqfQrw6B4tik6LogGI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=RWmARDo48Z8Dv81pG22MrnEPvg/7991SYFzMS48qKnE=;
+        b=sihVCq3BCORJqm/MtjTtMHEdtkRuYzm6E8VtcZPg+LpJOPJKALDixeNoz62kwx2CvA
+         xvVtwiS/qlT8bO2iQSsFS2Bga3bRSyfLILbatGEwDJqm0D+PLp/e5jMrVXiDDHrQeubT
+         QcljZqv1HpjaXxqJPcNvfh8EcycezvYl7kM+To89+OhSPBEWSuKBI+RutGyMMKiclrH6
+         T2wdIceCILpF5W7AINNRUIMweFW3+uiIBf0ZQoHqZH2j0bTU1T1iiSpXL7F/t9PFpxsa
+         QAocTD4RTF2qjEBMsf3d1hdHaofXQ+oFuhBKSOP9LS+pr9FDi8ewr+3/tFQ/igvyppgB
+         0IZw==
+X-Gm-Message-State: APjAAAWi/9H8dVniztGLVDaoMa47+i4vfjXBeBY/5PZDukaZ53fCppxv
+        IjPnVduVSB0hw2beZMEB1Anbmw==
+X-Google-Smtp-Source: APXvYqwYyiNdtpaoJsKsetkRz6ay7LYTZwzMZKhXzzcDkAft5BnXgQ6QvVK/JsDun15uuAKQ3FIRiw==
+X-Received: by 2002:a63:5945:: with SMTP id j5mr120457107pgm.452.1564695212134;
+        Thu, 01 Aug 2019 14:33:32 -0700 (PDT)
+Received: from smtp.gmail.com ([2620:15c:202:1:fa53:7765:582b:82b9])
+        by smtp.gmail.com with ESMTPSA id v138sm83854994pfc.15.2019.08.01.14.33.31
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Thu, 01 Aug 2019 14:33:31 -0700 (PDT)
+From:   Stephen Boyd <swboyd@chromium.org>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        kernel-team@android.com,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Tri Vo <trong@android.com>,
+        Kalesh Singh <kaleshsingh@google.com>,
+        Ravi Chandra Sadineni <ravisadineni@chromium.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Busch, Keith" <keith.busch@intel.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        linux-nvme <linux-nvme@lists.infradead.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Rajat Jain <rajatja@google.com>
-Subject: Re: [Regression] Commit "nvme/pci: Use host managed power state for
- suspend" has problems
-Message-ID: <20190801202251.GD15795@localhost.localdomain>
-References: <20190730144134.GA12844@localhost.localdomain>
- <100ba4aff1c6434a81e47774ab4acddc@AUSX13MPC105.AMER.DELL.COM>
- <8246360B-F7D9-42EB-94FC-82995A769E28@canonical.com>
- <20190730191934.GD13948@localhost.localdomain>
- <7d3e0b8ba1444194a153c93faa1cabb3@AUSX13MPC105.AMER.DELL.COM>
- <20190730213114.GK13948@localhost.localdomain>
- <CAJZ5v0gxfeMN8eCNRjcXmUOkReVsdozb3EccaYMpnmSHu3771g@mail.gmail.com>
- <20190731221956.GB15795@localhost.localdomain>
- <CAJZ5v0hxYGBXau39sb80MQ8jbZZCzH0JU2DYZvn9JOtYT2+30g@mail.gmail.com>
- <70D536BE-8DC7-4CA2-84A9-AFB067BA520E@canonical.com>
+        Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] power: supply: Init device wakeup after device_add()
+Date:   Thu,  1 Aug 2019 14:33:30 -0700
+Message-Id: <20190801213330.81079-1-swboyd@chromium.org>
+X-Mailer: git-send-email 2.22.0.770.g0f2c4a37fd-goog
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <70D536BE-8DC7-4CA2-84A9-AFB067BA520E@canonical.com>
-User-Agent: Mutt/1.9.1 (2017-09-22)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Aug 01, 2019 at 02:05:54AM -0700, Kai-Heng Feng wrote:
-> at 06:33, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Thu, Aug 1, 2019 at 12:22 AM Keith Busch <kbusch@kernel.org> wrote:
-> >
-> >> In which case we do need to reintroduce the HMB handling.
-> >
-> > Right.
-> 
-> The patch alone doesn’t break HMB Toshiba NVMe I tested. But I think it’s  
-> still safer to do proper HMB handling.
+We may want to use the device pointer in device_init_wakeup() with
+functions that expect the device to already be added with device_add().
+For example, if we were to link the device initializing wakeup to
+something in sysfs such as a class for wakeups we'll run into an error.
+It looks like this code was written with the assumption that the device
+would be added before initializing wakeup due to the order of operations
+in power_supply_unregister().
 
-Spec requires host request controller release HMB for D3cold. I suspect
-you're only getting to D3hot.
+Let's change the order of operations so we don't run into problems here.
+
+Fixes: 948dcf966228 ("power_supply: Prevent suspend until power supply events are processed")
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>                                                                                                                      
+Cc: Tri Vo <trong@android.com>                                                                                                                                             
+Cc: Kalesh Singh <kaleshsingh@google.com>      
+Cc: Ravi Chandra Sadineni <ravisadineni@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+---
+
+See this thread[1] for more information on how this will be necessary.
+
+[1] https://lkml.kernel.org/r/20190731215514.212215-1-trong@android.com
+
+
+ drivers/power/supply/power_supply_core.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 82e84801264c..5c36c430ce8b 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -1051,14 +1051,14 @@ __power_supply_register(struct device *parent,
+ 	}
+ 
+ 	spin_lock_init(&psy->changed_lock);
+-	rc = device_init_wakeup(dev, ws);
+-	if (rc)
+-		goto wakeup_init_failed;
+-
+ 	rc = device_add(dev);
+ 	if (rc)
+ 		goto device_add_failed;
+ 
++	rc = device_init_wakeup(dev, ws);
++	if (rc)
++		goto wakeup_init_failed;
++
+ 	rc = psy_register_thermal(psy);
+ 	if (rc)
+ 		goto register_thermal_failed;
+@@ -1101,8 +1101,8 @@ __power_supply_register(struct device *parent,
+ 	psy_unregister_thermal(psy);
+ register_thermal_failed:
+ 	device_del(dev);
+-device_add_failed:
+ wakeup_init_failed:
++device_add_failed:
+ check_supplies_failed:
+ dev_set_name_failed:
+ 	put_device(dev);
+-- 
+Sent by a computer through tubes
+
