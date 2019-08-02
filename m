@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94144C32750
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 13:27:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE315C32753
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 13:28:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6B3FB217D4
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 13:27:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C173B217D4
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 13:28:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1564752465;
+	s=default; t=1564752520;
 	bh=4oWQDHZFwKM0CyiLtzfXQIeFDTAs45D2SNwezf9ahlY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=H8hP9ZDhhaijZ7KEDjGzBOZPtcg3bwSuc8SgVgygqxPASHocRlwM0S4Jz3jISSJVU
-	 h2YXbfnrpZ+QRUhaQbZfeKlEzByaluk7pVIpLH/joQJetUZL8+5fGjExFWVV8gBQxR
-	 rlyjjiTcNP4Bs8t1j7qyy0cHHD0kqezGJXtQIokw=
+	b=pngtSDB1hX/R4w3FzlkGHZfEL6AmIKA5pyUapymeYRgS5miVO/bphwRK61twVb8Mw
+	 atfkn1vZbG63Ag7bz90gvjj3H8zA0Tj0+nnmp683J8fM/temXr5J1mlcMQxAtODXwW
+	 EYieCtLObJoXokiAJdgE6RFI9zTPOho68I11hCGE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2394667AbfHBN0w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Aug 2019 09:26:52 -0400
-Received: from mail.kernel.org ([198.145.29.99]:37640 "EHLO mail.kernel.org"
+        id S2394494AbfHBN0I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Aug 2019 09:26:08 -0400
+Received: from mail.kernel.org ([198.145.29.99]:36818 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2394661AbfHBN0v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 2 Aug 2019 09:26:51 -0400
+        id S2394459AbfHBN0H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 2 Aug 2019 09:26:07 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 36B89217D6;
-        Fri,  2 Aug 2019 13:26:50 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 500F121850;
+        Fri,  2 Aug 2019 13:26:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1564752411;
+        s=default; t=1564752367;
         bh=4oWQDHZFwKM0CyiLtzfXQIeFDTAs45D2SNwezf9ahlY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=YulxduCOMV5trFe1cn70Q7UtmaENreF+G7gO7xQsm8G4TXPZ98GhGzwoTCeb4DBqA
-         xc8H55RaX8m8HKDBoNg/yxM06oJqkR0Wf6DH/yDWzGpQCQXiZkqzJX3XUfgXroH0RE
-         x4MmYNCt5uAjNg7LEhqKx61d/mNLzF/PKhKwAl+o=
+        b=MJVnc7WQhM9j3Q5cqTr7jvwW4WdmdFtNRWXlrUv7ZqsBPGMvENpkrwNDuz+gkiYUN
+         xGkiCqkM0dr8q6p7vOAhH6kcKrXSawbwxJDFheF7mzBhu2N/K1Aj8BbwMea8GlcKpx
+         S0Ee7jA7LJfIyqyuLVOZWVGNH5GSZG8jKtp8TV9k=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Wen Yang <wen.yang99@zte.com.cn>,
@@ -45,12 +45,12 @@ Cc:     Wen Yang <wen.yang99@zte.com.cn>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 07/17] cpufreq/pasemi: fix use-after-free in pas_cpufreq_cpu_init()
-Date:   Fri,  2 Aug 2019 09:26:24 -0400
-Message-Id: <20190802132635.14885-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 08/22] cpufreq/pasemi: fix use-after-free in pas_cpufreq_cpu_init()
+Date:   Fri,  2 Aug 2019 09:25:32 -0400
+Message-Id: <20190802132547.14517-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190802132635.14885-1-sashal@kernel.org>
-References: <20190802132635.14885-1-sashal@kernel.org>
+In-Reply-To: <20190802132547.14517-1-sashal@kernel.org>
+References: <20190802132547.14517-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
