@@ -2,92 +2,79 @@ Return-Path: <SRS0=20Ye=V6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70E92C32750
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:39:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36C44C32750
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:45:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4D5992086A
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:39:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1938B2087C
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:45:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726975AbfHBKjp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Aug 2019 06:39:45 -0400
-Received: from shell.v3.sk ([90.176.6.54]:47610 "EHLO shell.v3.sk"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726170AbfHBKjp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 2 Aug 2019 06:39:45 -0400
-Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 976D980536;
-        Fri,  2 Aug 2019 12:39:41 +0200 (CEST)
-Received: from shell.v3.sk ([127.0.0.1])
-        by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
-        with ESMTP id l3f8uPEHJigc; Fri,  2 Aug 2019 12:39:37 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-        by zimbra.v3.sk (Postfix) with ESMTP id 2EBF88053A;
-        Fri,  2 Aug 2019 12:39:37 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at zimbra.v3.sk
-Received: from shell.v3.sk ([127.0.0.1])
-        by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
-        with ESMTP id qTxvkqCPAoyF; Fri,  2 Aug 2019 12:39:36 +0200 (CEST)
-Received: from belphegor (nat-pool-brq-t.redhat.com [213.175.37.10])
-        by zimbra.v3.sk (Postfix) with ESMTPSA id BB54380536;
-        Fri,  2 Aug 2019 12:39:35 +0200 (CEST)
-Message-ID: <390f31d2f85e8075d9b1e250a2ec093ac8769703.camel@v3.sk>
-Subject: Re: OLPC in 5.3? was Re: [PATCH v7 01/10] dt-bindings:
- olpc,xo1.75-ec: Add OLPC XO-1.75 EC bindings
-From:   Lubomir Rintel <lkundrak@v3.sk>
-To:     Pavel Machek <pavel@ucw.cz>
-Cc:     Andy Shevchenko <andy@infradead.org>,
-        Darren Hart <dvhart@infradead.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Russell King <linux@armlinux.org.uk>,
-        Mark Rutland <mark.rutland@arm.com>,
-        platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Rob Herring <robh@kernel.org>
-Date:   Fri, 02 Aug 2019 12:39:34 +0200
-In-Reply-To: <20190801192713.GA22373@amd>
-References: <20190513075641.1277716-1-lkundrak@v3.sk>
-         <20190513075641.1277716-2-lkundrak@v3.sk> <20190513090743.GA19319@amd>
-         <20190801192713.GA22373@amd>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.32.4 (3.32.4-1.fc30) 
+        id S1730683AbfHBKpt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Aug 2019 06:45:49 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:62497 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730424AbfHBKpt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2019 06:45:49 -0400
+Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
+ id 6d0e2bb3b2824af2; Fri, 2 Aug 2019 12:45:47 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mario Limonciello <mario.limonciello@dell.com>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: [PATCH v3 7/8] ACPI: EC: PM: Make acpi_ec_dispatch_gpe() print debug message
+Date:   Fri, 02 Aug 2019 12:44:17 +0200
+Message-ID: <1822028.vPQc0PzIAM@kreacher>
+In-Reply-To: <5997740.FPbUVk04hV@kreacher>
+References: <5997740.FPbUVk04hV@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello Pavel,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Thu, 2019-08-01 at 21:27 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> What is status of OLPC-1.75 in v5.3? IIRC most of the patches went in,
-> but I don't see suitable dts file in the tree. I tried porting one
-> from working (4.19 or so) kernel, but it was not quite trivial.
-> 
-> Is there time for dts to be merged?
+Add a pm_pr_dbg() debug statement to acpi_ec_dispatch_gpe() to print
+a message when the EC GPE has been dispatched (because its status
+was set).
 
-Short answer is that it's not absolutely necessary. With a new enough
-OpenFirmware, the firmware will just construct a correct FDT.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-To upgrade your machine to the new firmware, just copy 
-http://dev.laptop.org/~quozl/q4e00ja.rom to a FAT partition on a USB
-flash stick and run "flash u:\q4e00ja.rom" from the "ok" prompt.
-Then you'll be able to run stock mainline kernels happily.
+In v2 this was patch 8.
 
-That said, it might still be useful to have a DTS file in tree (for
-reference, testing, machines with older firmware, etc.). I've now re-
-sent the MMP2 devicetree update patch set with the DTS file included
-and copied you on that one.
+---
+ drivers/acpi/ec.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-As usual, I'm thankful for testing, reviews and acks.
+Index: linux-pm/drivers/acpi/ec.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/ec.c
++++ linux-pm/drivers/acpi/ec.c
+@@ -1980,7 +1980,11 @@ bool acpi_ec_dispatch_gpe(void)
+ 		return false;
+ 
+ 	ret = acpi_dispatch_gpe(NULL, first_ec->gpe);
+-	return ret == ACPI_INTERRUPT_HANDLED;
++	if (ret == ACPI_INTERRUPT_HANDLED) {
++		pm_pr_dbg("EC GPE dispatched\n");
++		return true;
++	}
++	return false;
+ }
+ #endif /* CONFIG_PM_SLEEP */
+ 
 
-Take care!
 
-Lubo
 
