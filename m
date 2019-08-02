@@ -4,26 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE96AC32750
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 09:09:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D26FBC32750
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 09:09:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B4B5021783
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 09:09:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B44CC21783
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 09:09:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387731AbfHBJJO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Aug 2019 05:09:14 -0400
-Received: from foss.arm.com ([217.140.110.172]:47074 "EHLO foss.arm.com"
+        id S2404623AbfHBJJX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Aug 2019 05:09:23 -0400
+Received: from foss.arm.com ([217.140.110.172]:47134 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727024AbfHBJJN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 2 Aug 2019 05:09:13 -0400
+        id S2404618AbfHBJJW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 2 Aug 2019 05:09:22 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E638D344;
-        Fri,  2 Aug 2019 02:09:12 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9B9191596;
+        Fri,  2 Aug 2019 02:09:21 -0700 (PDT)
 Received: from e110439-lin.cambridge.arm.com (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 42A1C3F575;
-        Fri,  2 Aug 2019 02:09:10 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id EC63C3F575;
+        Fri,  2 Aug 2019 02:09:18 -0700 (PDT)
 From:   Patrick Bellasi <patrick.bellasi@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-api@vger.kernel.org, cgroups@vger.kernel.org
@@ -43,9 +44,9 @@ Cc:     Ingo Molnar <mingo@redhat.com>,
         Steve Muckle <smuckle@google.com>,
         Suren Baghdasaryan <surenb@google.com>,
         Alessio Balsini <balsini@android.com>
-Subject: [PATCH v13 2/6] sched/core: uclamp: Propagate parent clamps
-Date:   Fri,  2 Aug 2019 10:08:49 +0100
-Message-Id: <20190802090853.4810-3-patrick.bellasi@arm.com>
+Subject: [PATCH v13 5/6] sched/core: uclamp: Update CPU's refcount on TG's clamp changes
+Date:   Fri,  2 Aug 2019 10:08:52 +0100
+Message-Id: <20190802090853.4810-6-patrick.bellasi@arm.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190802090853.4810-1-patrick.bellasi@arm.com>
 References: <20190802090853.4810-1-patrick.bellasi@arm.com>
@@ -56,28 +57,15 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In order to properly support hierarchical resources control, the cgroup
-delegation model requires that attribute writes from a child group never
-fail but still are locally consistent and constrained based on parent's
-assigned resources. This requires to properly propagate and aggregate
-parent attributes down to its descendants.
+On updates of task group (TG) clamp values, ensure that these new values
+are enforced on all RUNNABLE tasks of the task group, i.e. all RUNNABLE
+tasks are immediately boosted and/or capped as requested.
 
-Implement this mechanism by adding a new "effective" clamp value for each
-task group. The effective clamp value is defined as the smaller value
-between the clamp value of a group and the effective clamp value of its
-parent. This is the actual clamp value enforced on tasks in a task group.
-
-Since it's possible for a cpu.uclamp.min value to be bigger than the
-cpu.uclamp.max value, ensure local consistency by restricting each
-"protection" (i.e. min utilization) with the corresponding "limit"
-(i.e. max utilization).
-
-Do that at effective clamps propagation to ensure all user-space write
-never fails while still always tracking the most restrictive values.
-
-Update sysctl_sched_uclamp_handler() to use the newly introduced
-uclamp_mutex so that we serialize system default updates with cgroup
-relate updates.
+Do that each time we update effective clamps from cpu_util_update_eff().
+Use the *cgroup_subsys_state (css) to walk the list of tasks in each
+affected TG and update their RUNNABLE tasks.
+Update each task by using the same mechanism used for cpu affinity masks
+updates, i.e. by taking the rq lock.
 
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Acked-by: Tejun Heo <tj@kernel.org>
@@ -85,158 +73,86 @@ Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Tejun Heo <tj@kernel.org>
 ---
- kernel/sched/core.c  | 65 ++++++++++++++++++++++++++++++++++++++++++--
- kernel/sched/sched.h |  2 ++
- 2 files changed, 64 insertions(+), 3 deletions(-)
+ kernel/sched/core.c | 58 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 57 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 40cd7567e4d9..de8886ce0f65 100644
+index 106cf69d70cc..8cc1198e7199 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -773,6 +773,18 @@ static void set_load_weight(struct task_struct *p, bool update_load)
+@@ -1043,6 +1043,57 @@ static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p)
+ 		uclamp_rq_dec_id(rq, p, clamp_id);
  }
  
- #ifdef CONFIG_UCLAMP_TASK
-+/*
-+ * Serializes updates of utilization clamp values
-+ *
-+ * The (slow-path) user-space triggers utilization clamp value updates which
-+ * can require updates on (fast-path) scheduler's data structures used to
-+ * support enqueue/dequeue operations.
-+ * While the per-CPU rq lock protects fast-path update operations, user-space
-+ * requests are serialized using a mutex to reduce the risk of conflicting
-+ * updates or API abuses.
-+ */
-+static DEFINE_MUTEX(uclamp_mutex);
-+
- /* Max allowed minimum utilization */
- unsigned int sysctl_sched_uclamp_util_min = SCHED_CAPACITY_SCALE;
- 
-@@ -1010,10 +1022,9 @@ int sysctl_sched_uclamp_handler(struct ctl_table *table, int write,
- 				loff_t *ppos)
- {
- 	int old_min, old_max;
--	static DEFINE_MUTEX(mutex);
- 	int result;
- 
--	mutex_lock(&mutex);
-+	mutex_lock(&uclamp_mutex);
- 	old_min = sysctl_sched_uclamp_util_min;
- 	old_max = sysctl_sched_uclamp_util_max;
- 
-@@ -1048,7 +1059,7 @@ int sysctl_sched_uclamp_handler(struct ctl_table *table, int write,
- 	sysctl_sched_uclamp_util_min = old_min;
- 	sysctl_sched_uclamp_util_max = old_max;
- done:
--	mutex_unlock(&mutex);
-+	mutex_unlock(&uclamp_mutex);
- 
- 	return result;
- }
-@@ -1137,6 +1148,8 @@ static void __init init_uclamp(void)
- 	unsigned int clamp_id;
- 	int cpu;
- 
-+	mutex_init(&uclamp_mutex);
-+
- 	for_each_possible_cpu(cpu) {
- 		memset(&cpu_rq(cpu)->uclamp, 0, sizeof(struct uclamp_rq));
- 		cpu_rq(cpu)->uclamp_flags = 0;
-@@ -1153,6 +1166,7 @@ static void __init init_uclamp(void)
- 		uclamp_default[clamp_id] = uc_max;
- #ifdef CONFIG_UCLAMP_TASK_GROUP
- 		root_task_group.uclamp_req[clamp_id] = uc_max;
-+		root_task_group.uclamp[clamp_id] = uc_max;
- #endif
- 	}
- }
-@@ -6799,6 +6813,7 @@ static inline void alloc_uclamp_sched_group(struct task_group *tg,
- 	for_each_clamp_id(clamp_id) {
- 		uclamp_se_set(&tg->uclamp_req[clamp_id],
- 			      uclamp_none(clamp_id), false);
-+		tg->uclamp[clamp_id] = parent->uclamp[clamp_id];
- 	}
- #endif
- }
-@@ -7045,6 +7060,45 @@ static void cpu_cgroup_attach(struct cgroup_taskset *tset)
- }
- 
- #ifdef CONFIG_UCLAMP_TASK_GROUP
-+static void cpu_util_update_eff(struct cgroup_subsys_state *css)
++static inline void
++uclamp_update_active(struct task_struct *p, unsigned int clamp_id)
 +{
-+	struct cgroup_subsys_state *top_css = css;
-+	struct uclamp_se *uc_parent = NULL;
-+	struct uclamp_se *uc_se = NULL;
-+	unsigned int eff[UCLAMP_CNT];
-+	unsigned int clamp_id;
-+	unsigned int clamps;
++	struct rq_flags rf;
++	struct rq *rq;
 +
-+	css_for_each_descendant_pre(css, top_css) {
-+		uc_parent = css_tg(css)->parent
-+			? css_tg(css)->parent->uclamp : NULL;
++	/*
++	 * Lock the task and the rq where the task is (or was) queued.
++	 *
++	 * We might lock the (previous) rq of a !RUNNABLE task, but that's the
++	 * price to pay to safely serialize util_{min,max} updates with
++	 * enqueues, dequeues and migration operations.
++	 * This is the same locking schema used by __set_cpus_allowed_ptr().
++	 */
++	rq = task_rq_lock(p, &rf);
 +
-+		for_each_clamp_id(clamp_id) {
-+			/* Assume effective clamps matches requested clamps */
-+			eff[clamp_id] = css_tg(css)->uclamp_req[clamp_id].value;
-+			/* Cap effective clamps with parent's effective clamps */
-+			if (uc_parent &&
-+			    eff[clamp_id] > uc_parent[clamp_id].value) {
-+				eff[clamp_id] = uc_parent[clamp_id].value;
-+			}
-+		}
-+		/* Ensure protection is always capped by limit */
-+		eff[UCLAMP_MIN] = min(eff[UCLAMP_MIN], eff[UCLAMP_MAX]);
++	/*
++	 * Setting the clamp bucket is serialized by task_rq_lock().
++	 * If the task is not yet RUNNABLE and its task_struct is not
++	 * affecting a valid clamp bucket, the next time it's enqueued,
++	 * it will already see the updated clamp bucket value.
++	 */
++	if (!p->uclamp[clamp_id].active)
++		goto done;
 +
-+		/* Propagate most restrictive effective clamps */
-+		clamps = 0x0;
-+		uc_se = css_tg(css)->uclamp;
-+		for_each_clamp_id(clamp_id) {
-+			if (eff[clamp_id] == uc_se[clamp_id].value)
-+				continue;
-+			uc_se[clamp_id].value = eff[clamp_id];
-+			uc_se[clamp_id].bucket_id = uclamp_bucket_id(eff[clamp_id]);
-+			clamps |= (0x1 << clamp_id);
-+		}
-+		if (!clamps)
-+			css = css_rightmost_descendant(css);
-+	}
++	uclamp_rq_dec_id(rq, p, clamp_id);
++	uclamp_rq_inc_id(rq, p, clamp_id);
++
++done:
++
++	task_rq_unlock(rq, p, &rf);
 +}
- 
- #define _POW10(exp) ((unsigned int)1e##exp)
- #define POW10(exp) _POW10(exp)
-@@ -7095,6 +7149,7 @@ static ssize_t cpu_uclamp_write(struct kernfs_open_file *of, char *buf,
- 	if (req.ret)
- 		return req.ret;
- 
-+	mutex_lock(&uclamp_mutex);
- 	rcu_read_lock();
- 
- 	tg = css_tg(of_css(of));
-@@ -7107,7 +7162,11 @@ static ssize_t cpu_uclamp_write(struct kernfs_open_file *of, char *buf,
- 	 */
- 	tg->uclamp_pct[clamp_id] = req.percent;
- 
-+	/* Update effective clamps to track the most restrictive value */
-+	cpu_util_update_eff(of_css(of));
 +
- 	rcu_read_unlock();
-+	mutex_unlock(&uclamp_mutex);
- 
- 	return nbytes;
++static inline void
++uclamp_update_active_tasks(struct cgroup_subsys_state *css,
++			   unsigned int clamps)
++{
++	struct css_task_iter it;
++	struct task_struct *p;
++	unsigned int clamp_id;
++
++	css_task_iter_start(css, 0, &it);
++	while ((p = css_task_iter_next(&it))) {
++		for_each_clamp_id(clamp_id) {
++			if ((0x1 << clamp_id) & clamps)
++				uclamp_update_active(p, clamp_id);
++		}
++	}
++	css_task_iter_end(&it);
++}
++
+ #ifdef CONFIG_UCLAMP_TASK_GROUP
+ static void cpu_util_update_eff(struct cgroup_subsys_state *css);
+ static void uclamp_update_root_tg(void)
+@@ -7148,8 +7199,13 @@ static void cpu_util_update_eff(struct cgroup_subsys_state *css)
+ 			uc_se[clamp_id].bucket_id = uclamp_bucket_id(eff[clamp_id]);
+ 			clamps |= (0x1 << clamp_id);
+ 		}
+-		if (!clamps)
++		if (!clamps) {
+ 			css = css_rightmost_descendant(css);
++			continue;
++		}
++
++		/* Immediately update descendants RUNNABLE tasks */
++		uclamp_update_active_tasks(css, clamps);
+ 	}
  }
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 45c6d7e1e3ed..452541efdac1 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -399,6 +399,8 @@ struct task_group {
- 	unsigned int		uclamp_pct[UCLAMP_CNT];
- 	/* Clamp values requested for a task group */
- 	struct uclamp_se	uclamp_req[UCLAMP_CNT];
-+	/* Effective clamp values used for a task group */
-+	struct uclamp_se	uclamp[UCLAMP_CNT];
- #endif
  
- };
 -- 
 2.22.0
 
