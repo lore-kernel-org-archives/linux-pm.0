@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8110EC32753
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:46:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F5C7C32750
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:46:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 591ED2087E
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:46:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3205320880
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:46:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731110AbfHBKqX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Aug 2019 06:46:23 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:59740 "EHLO
+        id S1730882AbfHBKpv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Aug 2019 06:45:51 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:61369 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730841AbfHBKpv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2019 06:45:51 -0400
+        with ESMTP id S1730642AbfHBKpu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2019 06:45:50 -0400
 Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
- id 08687bff39390d68; Fri, 2 Aug 2019 12:45:49 +0200
+ id 1df5efcae0810c49; Fri, 2 Aug 2019 12:45:47 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
@@ -30,9 +30,9 @@ Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Mario Limonciello <mario.limonciello@dell.com>,
         Kai-Heng Feng <kai.heng.feng@canonical.com>
-Subject: [PATCH v3 4/8] ACPI: PM: s2idle: Switch EC over to polling during "noirq" suspend
-Date:   Fri, 02 Aug 2019 12:40:43 +0200
-Message-ID: <2250753.m3tS5N7MJZ@kreacher>
+Subject: [PATCH v3 6/8] ACPI: EC: PM: Consolidate some code depending on PM_SLEEP
+Date:   Fri, 02 Aug 2019 12:43:08 +0200
+Message-ID: <2097262.dE6Kv6hMgP@kreacher>
 In-Reply-To: <5997740.FPbUVk04hV@kreacher>
 References: <5997740.FPbUVk04hV@kreacher>
 MIME-Version: 1.0
@@ -45,47 +45,116 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Since the ACPI SCI is set up for system wakeup before the "noirq"
-suspend of devices, it is better to make suspend-to-idle follow
-suspend-to-RAM (S3) and switch over the EC to polling during "noirq"
-suspend (and back to interrupt-based flow during "noirq" resume).
+Move some routines, including acpi_ec_dispatch_gpe(), that are only
+used if CONFIG_PM_SLEEP is set to the #ifdef block containing the EC
+suspend and resume callbacks, to make the "full EC PM picture" easier
+to follow.
 
-The frequency of spurious wakeup interrupts from the EC may be
-reduced this way.
+While at it, move the header of acpi_ec_dispatch_gpe() in the
+header file to a CONFIG_PM_SLEEP #ifdef block.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-In v2 this was patch 5.
+In v2 this was patch 7.
 
 ---
- drivers/acpi/ec.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/acpi/ec.c       |   54 +++++++++++++++++++++++-------------------------
+ drivers/acpi/internal.h |    2 -
+ 2 files changed, 27 insertions(+), 29 deletions(-)
 
+Index: linux-pm/drivers/acpi/internal.h
+===================================================================
+--- linux-pm.orig/drivers/acpi/internal.h
++++ linux-pm/drivers/acpi/internal.h
+@@ -194,7 +194,6 @@ void acpi_ec_ecdt_probe(void);
+ void acpi_ec_dsdt_probe(void);
+ void acpi_ec_block_transactions(void);
+ void acpi_ec_unblock_transactions(void);
+-bool acpi_ec_dispatch_gpe(void);
+ int acpi_ec_add_query_handler(struct acpi_ec *ec, u8 query_bit,
+ 			      acpi_handle handle, acpi_ec_query_func func,
+ 			      void *data);
+@@ -202,6 +201,7 @@ void acpi_ec_remove_query_handler(struct
+ 
+ #ifdef CONFIG_PM_SLEEP
+ void acpi_ec_flush_work(void);
++bool acpi_ec_dispatch_gpe(void);
+ #endif
+ 
+ 
 Index: linux-pm/drivers/acpi/ec.c
 ===================================================================
 --- linux-pm.orig/drivers/acpi/ec.c
 +++ linux-pm/drivers/acpi/ec.c
-@@ -1958,8 +1958,7 @@ static int acpi_ec_suspend_noirq(struct
- 	    ec->reference_count >= 1)
- 		acpi_set_gpe(NULL, ec->gpe, ACPI_GPE_DISABLE);
+@@ -1049,33 +1049,6 @@ void acpi_ec_unblock_transactions(void)
+ 		acpi_ec_start(first_ec, true);
+ }
  
--	if (acpi_sleep_no_ec_events())
--		acpi_ec_enter_noirq(ec);
-+	acpi_ec_enter_noirq(ec);
- 
+-#ifdef CONFIG_PM_SLEEP
+-void acpi_ec_mark_gpe_for_wake(void)
+-{
+-	if (first_ec && !ec_no_wakeup)
+-		acpi_mark_gpe_for_wake(NULL, first_ec->gpe);
+-}
+-EXPORT_SYMBOL_GPL(acpi_ec_mark_gpe_for_wake);
+-
+-void acpi_ec_set_gpe_wake_mask(u8 action)
+-{
+-	if (pm_suspend_no_platform() && first_ec && !ec_no_wakeup)
+-		acpi_set_gpe_wake_mask(NULL, first_ec->gpe, action);
+-}
+-EXPORT_SYMBOL_GPL(acpi_ec_set_gpe_wake_mask);
+-#endif
+-
+-bool acpi_ec_dispatch_gpe(void)
+-{
+-	u32 ret;
+-
+-	if (!first_ec)
+-		return false;
+-
+-	ret = acpi_dispatch_gpe(NULL, first_ec->gpe);
+-	return ret == ACPI_INTERRUPT_HANDLED;
+-}
+-
+ /* --------------------------------------------------------------------------
+                                 Event Management
+    -------------------------------------------------------------------------- */
+@@ -1984,7 +1957,32 @@ static int acpi_ec_resume(struct device
+ 	acpi_ec_enable_event(ec);
  	return 0;
  }
-@@ -1968,8 +1967,7 @@ static int acpi_ec_resume_noirq(struct d
- {
- 	struct acpi_ec *ec = acpi_driver_data(to_acpi_device(dev));
+-#endif
++
++void acpi_ec_mark_gpe_for_wake(void)
++{
++	if (first_ec && !ec_no_wakeup)
++		acpi_mark_gpe_for_wake(NULL, first_ec->gpe);
++}
++EXPORT_SYMBOL_GPL(acpi_ec_mark_gpe_for_wake);
++
++void acpi_ec_set_gpe_wake_mask(u8 action)
++{
++	if (pm_suspend_no_platform() && first_ec && !ec_no_wakeup)
++		acpi_set_gpe_wake_mask(NULL, first_ec->gpe, action);
++}
++EXPORT_SYMBOL_GPL(acpi_ec_set_gpe_wake_mask);
++
++bool acpi_ec_dispatch_gpe(void)
++{
++	u32 ret;
++
++	if (!first_ec)
++		return false;
++
++	ret = acpi_dispatch_gpe(NULL, first_ec->gpe);
++	return ret == ACPI_INTERRUPT_HANDLED;
++}
++#endif /* CONFIG_PM_SLEEP */
  
--	if (acpi_sleep_no_ec_events())
--		acpi_ec_leave_noirq(ec);
-+	acpi_ec_leave_noirq(ec);
- 
- 	if (ec_no_wakeup && test_bit(EC_FLAGS_STARTED, &ec->flags) &&
- 	    ec->reference_count >= 1)
+ static const struct dev_pm_ops acpi_ec_pm = {
+ 	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(acpi_ec_suspend_noirq, acpi_ec_resume_noirq)
 
 
 
