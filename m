@@ -2,25 +2,25 @@ Return-Path: <SRS0=20Ye=V6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D302FC32750
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:46:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A59A7C32750
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:46:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A746D20B7C
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:46:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 890D021773
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 10:46:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732669AbfHBKqD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Aug 2019 06:46:03 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:57612 "EHLO
+        id S2390997AbfHBKqL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Aug 2019 06:46:11 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:51281 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731110AbfHBKpy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2019 06:45:54 -0400
+        with ESMTP id S1730856AbfHBKpw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2019 06:45:52 -0400
 Received: from 79.184.255.110.ipv4.supernova.orange.pl (79.184.255.110) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
- id badbf9746cbeff85; Fri, 2 Aug 2019 12:45:52 +0200
+ id 4cf97550f7c11232; Fri, 2 Aug 2019 12:45:50 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
@@ -30,46 +30,144 @@ Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Mario Limonciello <mario.limonciello@dell.com>,
         Kai-Heng Feng <kai.heng.feng@canonical.com>
-Subject: [PATCH v3 0/8] PM / ACPI: sleep: Additional changes related to suspend-to-idle
-Date:   Fri, 02 Aug 2019 12:33:05 +0200
-Message-ID: <5997740.FPbUVk04hV@kreacher>
+Subject: [PATCH v3 3/8] ACPI: PM: s2idle: Add acpi.sleep_no_lps0 module parameter
+Date:   Fri, 02 Aug 2019 12:38:40 +0200
+Message-ID: <2163806.ECDdQTgCPu@kreacher>
+In-Reply-To: <5997740.FPbUVk04hV@kreacher>
+References: <5997740.FPbUVk04hV@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SGkgQWxsLAoKPiA+IE9uIHRvcCBvZiB0aGUgIlNpbXBsaWZ5IHRoZSBzdXNwZW5kLXRvLWlkbGUg
-Y29udHJvbCBmbG93IiBwYXRjaCBzZXJpZXMKPiA+IHBvc3RlZCBwcmV2aW91c2x5Ogo+ID4gCj4g
-PiBodHRwczovL2xvcmUua2VybmVsLm9yZy9sa21sLzcxMDg1MjIwLno2RktrdllRUFhAa3JlYWNo
-ZXIvCj4gPiAKPiA+IHNhbml0aXplIHRoZSBzdXNwZW5kLXRvLWlkbGUgZmxvdyBldmVuIGZ1cnRo
-ZXIuCj4gPiAKPiA+IEZpcnN0IG9mZiwgZGVjb3VwbGUgRUMgd2FrZXVwIGZyb20gdGhlIExQUzAg
-X0RTTSBwcm9jZXNzaW5nIChwYXRjaCAxKS4KPiA+IAo+ID4gTmV4dCwgcmVvcmRlciB0aGUgY29k
-ZSB0byBpbnZva2UgTFBTMCBfRFNNIEZ1bmN0aW9ucyA1IGFuZCA2IGluIHRoZQo+ID4gc3BlY2lm
-aWNhdGlvbi1jb21wbGlhbnQgb3JkZXIgd2l0aCByZXNwZWN0IHRvIHN1c3BlbmRpbmcgYW5kIHJl
-c3VtaW5nCj4gPiBkZXZpY2VzIChwYXRjaCAyKS4KPiA+IAo+ID4gRmluYWxseSwgcmVhcnJhbmdl
-IGxwczBfZGV2aWNlX2F0dGFjaCgpIChwYXRjaCAzKSBhbmQgYWRkIGEgY29tbWFuZCBsaW5lCj4g
-PiBzd2l0Y2ggdG8gcHJldmVudCB0aGUgTFBTMCBfRFNNIGZyb20gYmVpbmcgdXNlZC4ACj4gCj4g
-VGhlIHYyIGlzIGJlY2F1c2UgSSBmb3VuZCBhIChtaW5vcikgYnVnIGluIHBhdGNoIDEsIGRlY2lk
-ZWQgdG8gdXNlIGEgbW9kdWxlCj4gcGFyYW1ldGVyIGluc3RlYWQgb2YgYSBrZXJuZWwgY29tbWFu
-ZCBsaW5lIG9wdGlvbiBpbiBwYXRjaCA0LiAgQWxzbywgdGhlcmUKPiBhcmUgNCBuZXcgcGF0Y2hl
-czoKPiAKPiBQYXRjaCA1OiBTd2l0Y2ggdGhlIEVDIG92ZXIgdG8gcG9sbGluZyBkdXJpbmcgIm5v
-aXJxIiBzdXNwZW5kIGFuZCBiYWNrCj4gZHVyaW5nICJub2lycSIgcmVzdW1lLgo+IAo+IFBhdGNo
-IDY6IEVsaW1pbmF0ZSBhY3BpX3NsZWVwX25vX2VjX2V2ZW50cygpLgo+IAo+IFBhdGNoIDc6IENv
-bnNvbGlkYXRlIHNvbWUgRUMgY29kZSBkZXBlbmRpbmcgb24gUE1fU0xFRVAuCj4gCj4gUGF0Y2gg
-ODogQWRkIEVDIEdQRSBkaXNwYXRjaGluZyBkZWJ1ZyBtZXNzYWdlLgAKClRoZSB2MyBpcyBqdXN0
-IGEgcmVhcnJhbmdlZCB2MiBzbyBhcyB0byBtb3ZlIHRoZSBwb3N0IHNlbnNpdGl2ZSBwYXRjaCAo
-cHJldmlvdXMgcGF0Y2ggMikKdG8gdGhlIGVuZCBvZiB0aGUgc2VyaWVzLiAgIFtBZnRlciBhcHBs
-eWluZyB0aGUgZnVsbCBzZXJpZXMgdGhlIGNvZGUgaXMgdGhlIHNhbWUgYXMgYmVmb3JlLl0KCkZv
-ciBlYXNpZXIgdGVzdGluZywgdGhlIHNlcmllcyAoYWxvbmcgd2l0aCBzb21lIHByZXZpb3VzIHBh
-dGNoZXMgZGVwZW5kZWQgb24gYnkgaXQpCmlzIGF2YWlsYWJsZSBpbiB0aGUgcG0tczJpZGxlLXRl
-c3RpbmcgYnJhbmNoIG9mIHRoZSBsaW51eC1wbS5naXQgdHJlZSBhdCBrZXJuZWwub3JnOgoKaHR0
-cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvcmFmYWVsL2xpbnV4
-LXBtLmdpdC9sb2cvP2g9cG0tczJpZGxlLXRlc3RpbmcKClBsZWFzZSByZWZlciB0byB0aGUgY2hh
-bmdlbG9ncyBmb3IgZGV0YWlscy4KClRoYW5rcywKUmFmYWVsCgoKCg==
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+Add a module parameter to prevent the ACPI LPS0 _DSM functions
+from being invoked (if need be) and rework the suspend-to-idle
+blacklist entries in acpisleep_dmi_table[] to make them simply
+prevent suspend-to-idle from being used by default on the systems
+in question (which really is the original purpose of those entries).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+In v2 this was patch 4.
+
+---
+ drivers/acpi/sleep.c |   31 +++++++++++++++----------------
+ 1 file changed, 15 insertions(+), 16 deletions(-)
+
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -89,6 +89,10 @@ bool acpi_sleep_state_supported(u8 sleep
+ }
+ 
+ #ifdef CONFIG_ACPI_SLEEP
++static bool sleep_no_lps0 __read_mostly;
++module_param(sleep_no_lps0, bool, 0644);
++MODULE_PARM_DESC(sleep_no_lps0, "Do not use the special LPS0 device interface");
++
+ static u32 acpi_target_sleep_state = ACPI_STATE_S0;
+ 
+ u32 acpi_target_system_state(void)
+@@ -158,11 +162,11 @@ static int __init init_nvs_nosave(const
+ 	return 0;
+ }
+ 
+-static bool acpi_sleep_no_lps0;
++static bool acpi_sleep_default_s3;
+ 
+-static int __init init_no_lps0(const struct dmi_system_id *d)
++static int __init init_default_s3(const struct dmi_system_id *d)
+ {
+-	acpi_sleep_no_lps0 = true;
++	acpi_sleep_default_s3 = true;
+ 	return 0;
+ }
+ 
+@@ -363,7 +367,7 @@ static const struct dmi_system_id acpisl
+ 	 * S0 Idle firmware interface.
+ 	 */
+ 	{
+-	.callback = init_no_lps0,
++	.callback = init_default_s3,
+ 	.ident = "Dell XPS13 9360",
+ 	.matches = {
+ 		DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
+@@ -376,7 +380,7 @@ static const struct dmi_system_id acpisl
+ 	 * https://bugzilla.kernel.org/show_bug.cgi?id=199057).
+ 	 */
+ 	{
+-	.callback = init_no_lps0,
++	.callback = init_default_s3,
+ 	.ident = "ThinkPad X1 Tablet(2016)",
+ 	.matches = {
+ 		DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+@@ -524,8 +528,9 @@ static void acpi_pm_end(void)
+ 	acpi_sleep_tts_switch(acpi_target_sleep_state);
+ }
+ #else /* !CONFIG_ACPI_SLEEP */
++#define sleep_no_lps0	(1)
+ #define acpi_target_sleep_state	ACPI_STATE_S0
+-#define acpi_sleep_no_lps0	(false)
++#define acpi_sleep_default_s3	(1)
+ static inline void acpi_sleep_dmi_check(void) {}
+ #endif /* CONFIG_ACPI_SLEEP */
+ 
+@@ -904,12 +909,6 @@ static int lps0_device_attach(struct acp
+ 	if (lps0_device_handle)
+ 		return 0;
+ 
+-	if (acpi_sleep_no_lps0) {
+-		acpi_handle_info(adev->handle,
+-				 "Low Power S0 Idle interface disabled\n");
+-		return 0;
+-	}
+-
+ 	if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
+ 		return 0;
+ 
+@@ -937,7 +936,7 @@ static int lps0_device_attach(struct acp
+ 	 * Use suspend-to-idle by default if the default suspend mode was not
+ 	 * set from the command line.
+ 	 */
+-	if (mem_sleep_default > PM_SUSPEND_MEM)
++	if (mem_sleep_default > PM_SUSPEND_MEM && !acpi_sleep_default_s3)
+ 		mem_sleep_current = PM_SUSPEND_TO_IDLE;
+ 
+ 	return 0;
+@@ -957,7 +956,7 @@ static int acpi_s2idle_begin(void)
+ 
+ static int acpi_s2idle_prepare(void)
+ {
+-	if (lps0_device_handle) {
++	if (lps0_device_handle && !sleep_no_lps0) {
+ 		acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_OFF);
+ 		acpi_sleep_run_lps0_dsm(ACPI_LPS0_ENTRY);
+ 	}
+@@ -977,7 +976,7 @@ static int acpi_s2idle_prepare(void)
+ 
+ static void acpi_s2idle_wake(void)
+ {
+-	if (lps0_device_handle && pm_debug_messages_on)
++	if (lps0_device_handle && !sleep_no_lps0 && pm_debug_messages_on)
+ 		lpi_check_constraints();
+ 
+ 	/*
+@@ -1025,7 +1024,7 @@ static void acpi_s2idle_restore(void)
+ 	if (acpi_sci_irq_valid())
+ 		disable_irq_wake(acpi_sci_irq);
+ 
+-	if (lps0_device_handle) {
++	if (lps0_device_handle && !sleep_no_lps0) {
+ 		acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT);
+ 		acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_ON);
+ 	}
 
 
 
