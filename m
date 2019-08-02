@@ -2,131 +2,104 @@ Return-Path: <SRS0=20Ye=V6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00C88C433FF
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 13:35:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DAF1C32753
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 14:13:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CB1EE20880
-	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 13:35:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1564752931;
-	bh=nopyJIrag+tPMdf2wrz1rrKCXw5JMgcHYzSfj2Boglc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=AeXHCpBsZwmT9F4J4EPFaz7TCZsQNzesfDGhnWnomkhhwQuCy73SQWDPrm9lr+eIE
-	 bmLYXF00rdiW8ZMIOR41BRhjz6t3t2pMd96s9rpQm5lis54am83QbHGYw+3SdBQgOk
-	 m2j+r6lmGLw/JuaGionJ9VzWvUbd1jRoorN3e7aA=
+	by mail.kernel.org (Postfix) with ESMTP id D3D4521726
+	for <linux-pm@archiver.kernel.org>; Fri,  2 Aug 2019 14:13:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="DXHR6ABY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406114AbfHBNf1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 2 Aug 2019 09:35:27 -0400
-Received: from mail.kernel.org ([198.145.29.99]:60366 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2393625AbfHBNVw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 2 Aug 2019 09:21:52 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 1F178217D4;
-        Fri,  2 Aug 2019 13:21:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1564752110;
-        bh=nopyJIrag+tPMdf2wrz1rrKCXw5JMgcHYzSfj2Boglc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=PxD64+STnfdSfTjPcVy2aYkS3+rChY16rICVjaBDV38YJmmGLSBzsXwoPAf+I+Y8g
-         CHWLXuRE+UVm8evJDrtPdVm3O251wmvWnFk2y2G8P7+Q/S2QBJD2LGz6B0whuziRUH
-         vslAktsx4kZ5DbHYHCGE+NB25BYNIzJgY6IkKcgY=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Wen Yang <wen.yang99@zte.com.cn>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.2 46/76] cpufreq/pasemi: fix use-after-free in pas_cpufreq_cpu_init()
-Date:   Fri,  2 Aug 2019 09:19:20 -0400
-Message-Id: <20190802131951.11600-46-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190802131951.11600-1-sashal@kernel.org>
-References: <20190802131951.11600-1-sashal@kernel.org>
+        id S2388957AbfHBON2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 2 Aug 2019 10:13:28 -0400
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:41603 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389189AbfHBON1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Aug 2019 10:13:27 -0400
+Received: by mail-pg1-f196.google.com with SMTP id x15so25794008pgg.8
+        for <linux-pm@vger.kernel.org>; Fri, 02 Aug 2019 07:13:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=5treBjW4ojfofZKzbstHsda4v5OqUABJGRx6t6ZH9CA=;
+        b=DXHR6ABYqH0h3ErX1CGCyj9oFdGOkuWQz5xaeVmLGPxQHExg2mLZ8afYJcvtHmuXqE
+         L20AgP7+xUJ4V7qAQs5B/BJ11bjm8pSt9u+EnbShqDMGU0uhL+rRktj+PNPGxttUDcUO
+         IHhV4g3O+mQnpNSZgujQMBw0vY29Y5UlWzexdAaWhAtBOlJ7D06vuhabLGuonB0TomkS
+         5SlnmCjTIB5CDwJrozyi7Go3G8ThnoANR0iexUYoHhIr0PjXnnJdp3HWMh0wexSPboUD
+         +C8GOmO09pobgglUY/dTY1X3abZWEATbRdfmlraPBN2dxmD5GKuMW7DdLI3cpjayxpml
+         TVHg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=5treBjW4ojfofZKzbstHsda4v5OqUABJGRx6t6ZH9CA=;
+        b=fG1ART5t8E7k4LVJPFFUmN9mMVvCbVY0UdiJzEiRy034UE22PfMX86cxfQSRlDONq9
+         D0MB51fy5TADepTAiNnMtacyp447QhCfIwXD2cfKWt69HvZwiK9m3i58/fP47byHXA/1
+         O0+R5+lFbQnNZ86hCau+R+fdatM1a+VgDD52SLSTPVhqOz63p6uwVoqopslnI/6eSW7p
+         amVLl7M9HXs10mm2+2ytspARaE8d57rQZmzP+8rOi9u5SYgqLqKdliIYYAMYOLcrHBwz
+         mafg3hc1oLJGEHyRLbqOPz4k6J/u+QaZyvBk3FcZ2vblPPo9frkVYCYQeX7dakIAXdw2
+         8G5w==
+X-Gm-Message-State: APjAAAWBtwE2O55YiKOVjSpObwVmd/Dj0GWKOUHA9MHbbcaU82vwF4wM
+        LLSZqi8dbDqnFvComN4Cr2s5PGbkeaD6pcGzDQxoiQ==
+X-Google-Smtp-Source: APXvYqzJzMIq2BOAXKkfk2ONCggXPJ354hGozdppgPTsk/gVMr7/MXdnjVkdh4xqKYqTMjZSIuwIvWZwZ8GOnQ6Cmbo=
+X-Received: by 2002:a65:4b8b:: with SMTP id t11mr123928876pgq.130.1564755206144;
+ Fri, 02 Aug 2019 07:13:26 -0700 (PDT)
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+References: <000000000000cd0435058f21e8c3@google.com> <20190802133317.GA5538@amd>
+In-Reply-To: <20190802133317.GA5538@amd>
+From:   Andrey Konovalov <andreyknvl@google.com>
+Date:   Fri, 2 Aug 2019 16:13:15 +0200
+Message-ID: <CAAeHK+ziKCz=SZss7mnWZWQXWBGyXkw5dcPfjdH-6MJLUJqO8Q@mail.gmail.com>
+Subject: Re: KASAN: use-after-free Read in __pm_runtime_resume
+To:     Pavel Machek <pavel@denx.de>
+Cc:     syzbot <syzbot+b156665cf4d1b5e00c76@syzkaller.appspotmail.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        len.brown@intel.com, LKML <linux-kernel@vger.kernel.org>,
+        linux-pm@vger.kernel.org, USB list <linux-usb@vger.kernel.org>,
+        rjw@rjwysocki.net, syzkaller-bugs <syzkaller-bugs@googlegroups.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Wen Yang <wen.yang99@zte.com.cn>
+On Fri, Aug 2, 2019 at 3:33 PM Pavel Machek <pavel@denx.de> wrote:
+>
+> On Fri 2019-08-02 05:58:05, syzbot wrote:
+> > Hello,
+> >
+> > syzbot found the following crash on:
+> >
+> > HEAD commit:    e96407b4 usb-fuzzer: main usb gadget fuzzer driver
+> > git tree:       https://github.com/google/kasan.git usb-fuzzer
+> > console output: https://syzkaller.appspot.com/x/log.txt?x=146071b4600000
+> > kernel config:  https://syzkaller.appspot.com/x/.config?x=792eb47789f57810
+> > dashboard link: https://syzkaller.appspot.com/bug?extid=b156665cf4d1b5e00c76
+> > compiler:       gcc (GCC) 9.0.0 20181231 (experimental)
+> >
+> > Unfortunately, I don't have any reproducer for this crash yet.
+>
+> I asked a question, noone bothered to reply, yet you spam me again?
+>
+> You are a bad bot. Go away. Come back when your human master is
+> willing to communicate.
 
-[ Upstream commit e0a12445d1cb186d875410d093a00d215bec6a89 ]
+Hi Pavel,
 
-The cpu variable is still being used in the of_get_property() call
-after the of_node_put() call, which may result in use-after-free.
+What was the question that you've asked and where did you send it? I
+can't find anything in my inbox.
 
-Fixes: a9acc26b75f6 ("cpufreq/pasemi: fix possible object reference leak")
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpufreq/pasemi-cpufreq.c | 23 +++++++++--------------
- 1 file changed, 9 insertions(+), 14 deletions(-)
+Thanks!
 
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 6b1e4abe32483..d2f061015323d 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -131,10 +131,18 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	int err = -ENODEV;
- 
- 	cpu = of_get_cpu_node(policy->cpu, NULL);
-+	if (!cpu)
-+		goto out;
- 
-+	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
- 	of_node_put(cpu);
--	if (!cpu)
-+	if (!max_freqp) {
-+		err = -EINVAL;
- 		goto out;
-+	}
-+
-+	/* we need the freq in kHz */
-+	max_freq = *max_freqp / 1000;
- 
- 	dn = of_find_compatible_node(NULL, NULL, "1682m-sdc");
- 	if (!dn)
-@@ -171,16 +179,6 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	}
- 
- 	pr_debug("init cpufreq on CPU %d\n", policy->cpu);
--
--	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
--	if (!max_freqp) {
--		err = -EINVAL;
--		goto out_unmap_sdcpwr;
--	}
--
--	/* we need the freq in kHz */
--	max_freq = *max_freqp / 1000;
--
- 	pr_debug("max clock-frequency is at %u kHz\n", max_freq);
- 	pr_debug("initializing frequency table\n");
- 
-@@ -198,9 +196,6 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	return cpufreq_generic_init(policy, pas_freqs, get_gizmo_latency());
- 
--out_unmap_sdcpwr:
--	iounmap(sdcpwr_mapbase);
--
- out_unmap_sdcasr:
- 	iounmap(sdcasr_mapbase);
- out:
--- 
-2.20.1
-
+>
+>                                                                 Pavel
+>
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
