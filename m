@@ -2,210 +2,101 @@ Return-Path: <SRS0=/GjE=WB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1494C0650F
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Aug 2019 07:58:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F3ECC433FF
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Aug 2019 08:29:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8C0732067D
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Aug 2019 07:58:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 33DDB2067D
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Aug 2019 08:29:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="d0wHezom"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726518AbfHEH6i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Aug 2019 03:58:38 -0400
-Received: from mout.kundenserver.de ([212.227.126.187]:53869 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726423AbfHEH6h (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Aug 2019 03:58:37 -0400
-Received: from threadripper.lan ([149.172.19.189]) by mrelayeu.kundenserver.de
- (mreue011 [212.227.15.129]) with ESMTPA (Nemesis) id
- 1MLAF0-1hcKXl0u5i-00IAXS; Mon, 05 Aug 2019 09:58:23 +0200
-From:   Arnd Bergmann <arnd@arndb.de>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Arnd Bergmann <arnd@arndb.de>, Nandor Han <nandor.han@vaisala.com>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH] power: reset: make reboot-mode user selectable
-Date:   Mon,  5 Aug 2019 09:57:15 +0200
-Message-Id: <20190805075812.1056069-1-arnd@arndb.de>
-X-Mailer: git-send-email 2.20.0
+        id S1727346AbfHEI36 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Aug 2019 04:29:58 -0400
+Received: from mail-io1-f68.google.com ([209.85.166.68]:34461 "EHLO
+        mail-io1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727328AbfHEI36 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Aug 2019 04:29:58 -0400
+Received: by mail-io1-f68.google.com with SMTP id k8so165609095iot.1
+        for <linux-pm@vger.kernel.org>; Mon, 05 Aug 2019 01:29:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=utE9KIcR0f6O7/Nl0QrtDLlS9or1TsF6Brw5BfMNxCA=;
+        b=d0wHezomM4JELxNG1RXAvHXwky0XmyiTzsKSe/aaydaB+Ep00jiSc2XOmm0T0UKf0/
+         R3IFTCaY3ORDePWQlzE3eOFpwpxXiQ8zgDy3i5+KDN58y3neju2XC7Pckm7hreBAxOUN
+         kjxtmBubW+ncgwetw2nwYN0Fwk3A3EN8rpYKLBhlYRbmmdT309CeqHJUhZZdk93w1X2u
+         Ic6sFRLmi+qnfvmJzkDgbtOtWKajfXoyG6CnlfxNiYNNVkTlfQ8I+vyWC2q/QsL+Wt/K
+         G9zcgXiIhggUoQfWc/TreThgGqt5sC0c31QQJlY04qPhVKKwBfNUlTU2e7f6VtLywHvx
+         XayQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=utE9KIcR0f6O7/Nl0QrtDLlS9or1TsF6Brw5BfMNxCA=;
+        b=J7/Wb/22DG837xzqL0f2mq9Yo26dNLlGWXV2NY8EiI3Mn1/NuTbWRHVjXgkZq7mcOY
+         wusRnVKXqLC+e0//tqdvM+8uxGISIIQ3I3rZzYELhmfSZ87cKkroVHnUJt//9tgwQbxi
+         FALckq91v1s3ovvi3N05gH3MKvLzCs6/O+3+SDNPt53u2qmOuGFfibdiWchbQRas7Emk
+         hbJ+nhO4L+W5mt7dwYULUEbDcKxcgQTkf4Aa7mQZqfU0GlwVkRxKx8AqwrJZPV7JEjSj
+         GRfvnuziqVN0ASs1KIbz0TUb7F3qtbn8lgeSGkFGv9LcOjsSDDiBtv0neJPdxrwO56Yb
+         TFRg==
+X-Gm-Message-State: APjAAAUfvKmGI77ebNm01eUk5rx6CmgwUfuOm92EboQZK1y06N7xmxG5
+        vUG1E6mXdMOIc/ElUzFk0ICPyb2SeDq4yrWtOyd8mg==
+X-Google-Smtp-Source: APXvYqwG2qGnHr5QDUaSd+OFbMEQGTuAoyrOpHr27vtVqWcgtgIvxk1ESLat++QpC/1nyVQeDMRQ2DrEjrqx+c8O4Rg=
+X-Received: by 2002:a5d:80c3:: with SMTP id h3mr20730801ior.167.1564993796136;
+ Mon, 05 Aug 2019 01:29:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:eB6KAa6NN+juzvqJXgzHBfsfG/scGuoWUNe/iXcQ4WsqcfrIT4c
- abT1fGHqLKnDU5AgeZfPXwiEpachq2sxcC1bcghQEJVDXahbDdkuKpdlceGWMvv2oLT517f
- 1AhDr+hSSSGpK5xTRq7TXJuaN+Af28kshLMnVtDBs+9CuaXJTVrcVo3pFjPnS0NokZ11J0a
- YJROpXnDR2Y39WdDhBsHA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:tNJ49rDmRec=:vWYI6b80lwQs6h4UnOE/YK
- Y+ceupVhOpprNmKpqD8SEcdR/9rX4DtZrdgekpLYIKV1PrgXJn9mmmOzSdWlNhujkTCFvmPu4
- msJpr9EICT9JyMGOwBRfVZQEK+OiGDYli9CF9X8mzSnXFU1Zdm0Lbfr5nfEi1RlUVBqIhhign
- qSJKFtNuZIqzS+J3NwRiyhFmHPdNNlHAS1TngkYd4rOaPlPN9udRhkeSVQYcbZ5UOKUhM8zRw
- CiNRAiASlTJhkdf3SD7dd8HHY4qi9TgUaHuGZ162ELSL3lBKP9pIAXAHnagZRX+A5UZQJZPjp
- WGFcOhF8GAAo0wEWeKqTTNXj19b7f2iBprSaYwBjZDMlSPBTHDsaU1G1NuoYS+hl+G74CJc7U
- einXiunzhprAU95Wi9wfLGmwuDLE4/t8Bqu46aAvnlfamSutlpy4ZbyQFoIiFCvpQbt0vdrDZ
- tvsI1B5pDfz3o98w8Asv3sz7jycXvKevk7ExEMoRJJ/SIPgLYaCtCuMPAXncFGOJrKdMFU/gs
- +6U9imBonMlivUCizLAreqCKA19lO/5tgmnK+feOjUCRvpUd23Wb1dTm6LW1UMl337Sj5hny0
- 47fZdXMq6R+xvWXWv42BuSynTY4t8fjcqVpeD1b4BC7kFS1UMOdRCajQQzG8Sb7cPnPxtflZU
- wXqrbyMaCNr4KzcVSlfohsZjbzKxV8KfYmADtDpZG+Wm+wuxA64nGgsCO+S7EFYdHwZPAUZN7
- Vp2SauL0pj1f9+4pN9CX/IGuSoCFB0ALAHu0SQ==
+References: <20190703084811.9582-1-brgl@bgdev.pl>
+In-Reply-To: <20190703084811.9582-1-brgl@bgdev.pl>
+From:   Bartosz Golaszewski <brgl@bgdev.pl>
+Date:   Mon, 5 Aug 2019 10:29:45 +0200
+Message-ID: <CAMRc=MdzZDHLRpgC966CGQMBj8O9FXuXLvjKJNf_N0UwcXzZgA@mail.gmail.com>
+Subject: Re: [PATCH] power: supply: max77650: add MODULE_ALIAS()
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Nandor Han points out that there might be drivers that can use
-the reboot-mode interfaces but might also be usable on configurations
-without device tree.
+=C5=9Br., 3 lip 2019 o 10:48 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=
+=82(a):
+>
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>
+> Define a MODULE_ALIAS() in the charger sub-driver for max77650 so that
+> the appropriate module gets loaded together with the core mfd driver.
+>
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> ---
+>  drivers/power/supply/max77650-charger.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/power/supply/max77650-charger.c b/drivers/power/supp=
+ly/max77650-charger.c
+> index e34714cb05ec..5f9477c5cf5a 100644
+> --- a/drivers/power/supply/max77650-charger.c
+> +++ b/drivers/power/supply/max77650-charger.c
+> @@ -366,3 +366,4 @@ module_platform_driver(max77650_charger_driver);
+>  MODULE_DESCRIPTION("MAXIM 77650/77651 charger driver");
+>  MODULE_AUTHOR("Bartosz Golaszewski <bgolaszewski@baylibre.com>");
+>  MODULE_LICENSE("GPL v2");
+> +MODULE_ALIAS("platform:max77650-charger");
+> --
+> 2.21.0
+>
 
-Move the 'depends on OF' dependency into CONFIG_REBOOT_MODE since
-that is the only thing that truely has a compile-time dependency
-on CONFIG_OF, and make it user visible to make it possible to
-disable it.
+Hi Sebastian,
 
-The drivers that used to 'select REBOOT_MODE' of course now have to
-use 'depends on REBOOT_MODE instead'. With this, we can soften the
-dependency and allow compile-testing the three front-end drivers
-on non-OF platforms.
+just a gentle ping for this patch.
 
-Note: anyone who was using a reboot mode driver in their kernel
-configuration now has to enable CONFIG_REBOOT_MODE as well.
-
-Suggested-by: Nandor Han <nandor.han@vaisala.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-Nandor, this is so far untested, could you make sure this
-works in all configurations and forward it along with the
-bugfix?
-
-Sebastian, I'm not convinced this is a good idea, just sending
-it as Nandor requested. Please decide for yourself.
----
- arch/arm/configs/davinci_all_defconfig |  1 +
- arch/arm64/configs/defconfig           |  1 +
- drivers/power/reset/Kconfig            | 22 +++++++++++++---------
- include/linux/reboot-mode.h            | 20 ++++++++++++++++++++
- 4 files changed, 35 insertions(+), 9 deletions(-)
-
-diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
-index b34970ce6b31..ebf506c01899 100644
---- a/arch/arm/configs/davinci_all_defconfig
-+++ b/arch/arm/configs/davinci_all_defconfig
-@@ -139,6 +139,7 @@ CONFIG_GPIO_PCA953X_IRQ=y
- CONFIG_RESET_CONTROLLER=y
- CONFIG_POWER_RESET=y
- CONFIG_POWER_RESET_GPIO=y
-+CONFIG_REBOOT_MODE=m
- CONFIG_SYSCON_REBOOT_MODE=m
- CONFIG_BATTERY_LEGO_EV3=m
- CONFIG_WATCHDOG=y
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 0e58ef02880c..bb7d7bec1413 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -419,6 +419,7 @@ CONFIG_ROCKCHIP_IODOMAIN=y
- CONFIG_POWER_RESET_MSM=y
- CONFIG_POWER_RESET_XGENE=y
- CONFIG_POWER_RESET_SYSCON=y
-+CONFIG_REBOOT_MODE=y
- CONFIG_SYSCON_REBOOT_MODE=y
- CONFIG_BATTERY_SBS=m
- CONFIG_BATTERY_BQ27XXX=y
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index a564237278ff..997323d443f5 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -9,6 +9,13 @@ menuconfig POWER_RESET
- 
- if POWER_RESET
- 
-+config REBOOT_MODE
-+	tristate "Pass reboot-mode to firmware"
-+	depends on OF
-+	help
-+	  Some drivers allow setting the reboot mode through a platform
-+	  interface that the boot firmware can read.
-+
- config POWER_RESET_AS3722
- 	bool "ams AS3722 power-off driver"
- 	depends on MFD_AS3722
-@@ -107,9 +114,9 @@ config POWER_RESET_MSM
- 
- config POWER_RESET_QCOM_PON
- 	tristate "Qualcomm power-on driver"
--	depends on ARCH_QCOM
-+	depends on ARCH_QCOM || COMPILE_TEST
- 	depends on MFD_SPMI_PMIC
--	select REBOOT_MODE
-+	depends on REBOOT_MODE || !REBOOT_MODE
- 	help
- 	  Power On support for Qualcomm boards.
- 	  If you have a Qualcomm platform and need support for
-@@ -223,14 +230,11 @@ config POWER_RESET_ZX
- 	help
- 	  Reboot support for ZTE SoCs.
- 
--config REBOOT_MODE
--	tristate
--
- config SYSCON_REBOOT_MODE
- 	tristate "Generic SYSCON regmap reboot mode driver"
--	depends on OF
-+	depends on OF || COMPILE_TEST
- 	depends on MFD_SYSCON
--	select REBOOT_MODE
-+	depends on REBOOT_MODE || !REBOOT_MODE
- 	help
- 	  Say y here will enable reboot mode driver. This will
- 	  get reboot mode arguments and store it in SYSCON mapped
-@@ -248,8 +252,8 @@ config POWER_RESET_SC27XX
- 
- config NVMEM_REBOOT_MODE
- 	tristate "Generic NVMEM reboot mode driver"
--	depends on OF
--	select REBOOT_MODE
-+	depends on OF || COMPILE_TEST
-+	depends on REBOOT_MODE || !REBOOT_MODE
- 	help
- 	  Say y here will enable reboot mode driver. This will
- 	  get reboot mode arguments and store it in a NVMEM cell,
-diff --git a/include/linux/reboot-mode.h b/include/linux/reboot-mode.h
-index 4a2abb38d1d6..bd002060e3d0 100644
---- a/include/linux/reboot-mode.h
-+++ b/include/linux/reboot-mode.h
-@@ -9,11 +9,31 @@ struct reboot_mode_driver {
- 	struct notifier_block reboot_notifier;
- };
- 
-+#if IS_ENABLED(CONFIG_REBOOT_MODE)
- int reboot_mode_register(struct reboot_mode_driver *reboot);
- int reboot_mode_unregister(struct reboot_mode_driver *reboot);
- int devm_reboot_mode_register(struct device *dev,
- 			      struct reboot_mode_driver *reboot);
- void devm_reboot_mode_unregister(struct device *dev,
- 				 struct reboot_mode_driver *reboot);
-+#else
-+static inline int reboot_mode_register(struct reboot_mode_driver *reboot)
-+{
-+	return 0;
-+}
-+static inline int reboot_mode_unregister(struct reboot_mode_driver *reboot)
-+{
-+	return 0;
-+}
-+static inline int devm_reboot_mode_register(struct device *dev,
-+			      struct reboot_mode_driver *reboot)
-+{
-+	return 0;
-+}
-+static inline void devm_reboot_mode_unregister(struct device *dev,
-+				 struct reboot_mode_driver *reboot)
-+{
-+}
-+#endif
- 
- #endif
--- 
-2.20.0
-
+Bart
