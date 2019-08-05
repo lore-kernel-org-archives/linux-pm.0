@@ -2,104 +2,139 @@ Return-Path: <SRS0=/GjE=WB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37DB0C433FF
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Aug 2019 20:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 024FBC0650F
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Aug 2019 20:54:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0171021738
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Aug 2019 20:52:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1565038374;
-	bh=IOBQeBrjuJWC+xvDlUUCjyNQJ22b8xmF5sL15aFS4Wk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=Av2nd+PB/lKQH2YgT/HDRuVERgYrW0qRZKCUfA+Uxg2Mi+1AILoUW9wOaY9X3GQxx
-	 V0jjqIqtz5ZRlXfafoRs+0R2hw7oWchEm7I0JcjZR2EQrRTRZEUImF5qmlNgJIy8zq
-	 T7K/LBJz/5L+ugKR5KwNuVtRUIa23Wz2yoQgNrsk=
+	by mail.kernel.org (Postfix) with ESMTP id BF68220C01
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Aug 2019 20:54:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="HhydXBbY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730594AbfHEUwd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Aug 2019 16:52:33 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38928 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730572AbfHEUwc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 5 Aug 2019 16:52:32 -0400
-Received: from localhost (unknown [64.22.228.164])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id D8779216B7;
-        Mon,  5 Aug 2019 20:52:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1565038352;
-        bh=IOBQeBrjuJWC+xvDlUUCjyNQJ22b8xmF5sL15aFS4Wk=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=RiHVRhFYnLOi2Bk2+3BKrMmmToRYVL6mc9VkXKFU7+DA8ZZ+o2GEuNoGUO+tK7dG9
-         NUnkGH14ev6E2SzPDu/cEZmpLoDBiDyfGMVSkT8eoRpDoYiLHrGG75vp5qUYjsG8nV
-         6+zSbxGYDMGhsprHTGCLXk1zq1FU4nihhIho42XQ=
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     linux-pci@vger.kernel.org
-Cc:     Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Keith Busch <keith.busch@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 2/5] PCI / PM: Return error when changing power state from D3cold
-Date:   Mon,  5 Aug 2019 15:52:11 -0500
-Message-Id: <20190805205214.194981-3-helgaas@kernel.org>
-X-Mailer: git-send-email 2.22.0.770.g0f2c4a37fd-goog
-In-Reply-To: <20190805205214.194981-1-helgaas@kernel.org>
-References: <20190805205214.194981-1-helgaas@kernel.org>
+        id S1730516AbfHEUyH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Aug 2019 16:54:07 -0400
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:46113 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727460AbfHEUyH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Aug 2019 16:54:07 -0400
+Received: by mail-pf1-f194.google.com with SMTP id c3so17100036pfa.13
+        for <linux-pm@vger.kernel.org>; Mon, 05 Aug 2019 13:54:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=message-id:mime-version:content-transfer-encoding:in-reply-to
+         :references:subject:from:cc:to:user-agent:date;
+        bh=mOizxR/PNtnId+Sb+BWdRBtxpS3vclA2BEij6kTKhc8=;
+        b=HhydXBbYUhnBCrtlHADL9265gD54RNeu8sSkPjhfmPHVn4fodfnXsJk0WLfGIKhXW0
+         Xrk1mTEuqhM3krsxGA0FYu1Z0vilr383CdKoLuysJ82fAGxtJS2PTjyi9gL3KZ49Jv0Y
+         ko9dloW7a/1csTI3JP2+Q7FlL3LARcyEnHqeA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:mime-version
+         :content-transfer-encoding:in-reply-to:references:subject:from:cc:to
+         :user-agent:date;
+        bh=mOizxR/PNtnId+Sb+BWdRBtxpS3vclA2BEij6kTKhc8=;
+        b=F/mL8s42ONryZ8UmXIVZd5ShV34eTtaPtw3EQkyiW9oJ7zxGkxfUobqQT06CGAnaQ6
+         h9msNH0M8aXmu2muzOrZxFhycKjubDEw6yGKpUvyWYzdOlOHZUMdHonFpDib8Y7x8BnY
+         zYlsOT7fufl5fx1n9pwanwQzTDimqiQeD7BrCm8bNwALle+GXASsbrPGUZRMNSped7nS
+         QNM1BUBKwV2dtjY6BGz7kcxRqUH9Wz1ErEGa7M/kFWd14UaGnOkZsfjHSxgT/D8cpw6F
+         uH8d5yrLcvPL6a5BnzWCCdLg6To1l5RqpDxrjop7+p4ev/l0pg3kt+p6o6uJn0Q1iOVr
+         i1yQ==
+X-Gm-Message-State: APjAAAW40y2hK8fy1IGPaO7Bo9PMw2OK2Ufjp0bseMWLXIBw7QlqueAy
+        aFstcGwQdqqZISnyEeNeer/3oA==
+X-Google-Smtp-Source: APXvYqwTw5wwVacOL1oiThIgpQZ52CQCplagGiGwIjc3KW33ijXkRyTky5lafmhul/JFfor/u/XWJw==
+X-Received: by 2002:a17:90a:cb12:: with SMTP id z18mr19007172pjt.82.1565038446918;
+        Mon, 05 Aug 2019 13:54:06 -0700 (PDT)
+Received: from chromium.org ([2620:15c:202:1:fa53:7765:582b:82b9])
+        by smtp.gmail.com with ESMTPSA id g2sm136518281pfq.88.2019.08.05.13.54.06
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Mon, 05 Aug 2019 13:54:06 -0700 (PDT)
+Message-ID: <5d48976e.1c69fb81.a6781.3565@mx.google.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20190805175848.163558-2-trong@android.com>
+References: <20190805175848.163558-1-trong@android.com> <20190805175848.163558-2-trong@android.com>
+Subject: Re: [PATCH v7 1/3] PM / wakeup: Drop wakeup_source_init(), wakeup_source_prepare()
+From:   Stephen Boyd <swboyd@chromium.org>
+Cc:     rafael@kernel.org, hridya@google.com, sspatil@google.com,
+        kaleshsingh@google.com, ravisadineni@chromium.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        kernel-team@android.com, Tri Vo <trong@android.com>
+To:     Tri Vo <trong@android.com>, gregkh@linuxfoundation.org,
+        rjw@rjwysocki.net, viresh.kumar@linaro.org
+User-Agent: alot/0.8.1
+Date:   Mon, 05 Aug 2019 13:54:05 -0700
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+Quoting Tri Vo (2019-08-05 10:58:46)
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index ee31d4f8d856..3938892c8903 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -72,23 +72,6 @@ static struct wakeup_source deleted_ws =3D {
+>         .lock =3D  __SPIN_LOCK_UNLOCKED(deleted_ws.lock),
+>  };
+> =20
+> -/**
+> - * wakeup_source_prepare - Prepare a new wakeup source for initializatio=
+n.
+> - * @ws: Wakeup source to prepare.
+> - * @name: Pointer to the name of the new wakeup source.
+> - *
+> - * Callers must ensure that the @name string won't be freed when @ws is =
+still in
+> - * use.
+> - */
+> -void wakeup_source_prepare(struct wakeup_source *ws, const char *name)
+> -{
+> -       if (ws) {
+> -               memset(ws, 0, sizeof(*ws));
+> -               ws->name =3D name;
+> -       }
+> -}
+> -EXPORT_SYMBOL_GPL(wakeup_source_prepare);
+> -
+>  /**
+>   * wakeup_source_create - Create a struct wakeup_source object.
+>   * @name: Name of the new wakeup source.
+> @@ -96,13 +79,23 @@ EXPORT_SYMBOL_GPL(wakeup_source_prepare);
+>  struct wakeup_source *wakeup_source_create(const char *name)
+>  {
+>         struct wakeup_source *ws;
+> +       const char *ws_name;
+> =20
+> -       ws =3D kmalloc(sizeof(*ws), GFP_KERNEL);
+> +       ws =3D kzalloc(sizeof(*ws), GFP_KERNEL);
+>         if (!ws)
+> -               return NULL;
+> +               goto err_ws;
+> +
+> +       ws_name =3D kstrdup_const(name, GFP_KERNEL);
+> +       if (!ws_name)
 
-pci_raw_set_power_state() uses the Power Management capability to change a
-device's power state.  The capability is in config space, which is
-accessible in D0, D1, D2, and D3hot, but not in D3cold.
+Does this intentionally change this function to return an error if
+'name' is NULL? Before, wakeup_source_prepare() would just assign
+ws->name to NULL, but now it errors out. I don't see how it's good or
+useful to allow NULL for the wakeup source name, but it is what it is.
 
-If we call pci_raw_set_power_state() on a device that's in D3cold, config
-reads fail and return ~0 data, which we erroneously interpreted as "the
-device is in D3hot", leading to messages like this:
-
-  pcieport 0000:03:00.0: Refused to change power state, currently in D3
-
-The PCI_PM_CTRL has several RsvdP fields, so ~0 is never a valid register
-value.  Notice if we get that data, print a more informative message, and
-return an error.
-
-Changing the power state of a device from D3cold must be done by a platform
-power management method or some other non-config space mechanism.
-
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/pci/pci.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index bfc739dc6ada..984171d40858 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -851,6 +851,11 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
- 		return -EIO;
- 
- 	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-+	if (pmcsr == (u16) PCI_ERROR_RESPONSE) {
-+		pci_err(dev, "device not responding; can't change to power state D%d\n",
-+			state);
-+		return -EIO;
-+	}
- 
- 	/*
- 	 * If we're (effectively) in D3, force entire word to 0.
--- 
-2.22.0.770.g0f2c4a37fd-goog
-
+> +               goto err_name;
+> +       ws->name =3D ws_name;
+> =20
+> -       wakeup_source_prepare(ws, name ? kstrdup_const(name, GFP_KERNEL) =
+: NULL);
+>         return ws;
+> +
+> +err_name:
+> +       kfree(ws);
+> +err_ws:
+> +       return NULL;
+>  }
+>  EXPORT_SYMBOL_GPL(wakeup_source_create);
+> =20
