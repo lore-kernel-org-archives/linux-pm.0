@@ -7,31 +7,31 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BC38C32754
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3205AC31E40
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3060B2086D
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 03742217D9
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="T0iVRuoT"
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="Sm7iniuL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387939AbfHFQ3D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Aug 2019 12:29:03 -0400
-Received: from mout.gmx.net ([212.227.17.22]:42383 "EHLO mout.gmx.net"
+        id S2387985AbfHFQ3H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Aug 2019 12:29:07 -0400
+Received: from mout.gmx.net ([212.227.17.22]:38137 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387893AbfHFQ3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Aug 2019 12:29:01 -0400
+        id S2387968AbfHFQ3G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Aug 2019 12:29:06 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1565108892;
-        bh=3PISsFhP2p4tj5ULA7y6xFGMEsiPJROECIygBRA4/zw=;
+        s=badeba3b8450; t=1565108884;
+        bh=zpDHFZtFnB6jtb9Ty5VxV4oP5o3ljb0IMfQ1WZg0clY=;
         h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=T0iVRuoT39ebTrgaB4OPmg8iKCMVi7occ3T/FDP4lznR919TIUhhex3qNkfFO/XJD
-         JB6x5QXGcc2Z6dMM/2LvbOOXTTMb4Cf/Dt0uU3pTZBAWBzxa2c+kwIn/aHF02ERY+i
-         RXrbehwbzB2PTGqqOMRELCEwuNmrVkUTeHdIiz1s=
+        b=Sm7iniuLTfio2K6K9jk23/qCkaDP0SaifhnYXC3l6DFmQe1/qob5bGW/zHV+CnEL7
+         NZmponM93e49n/3Aw8tLWhhxLX2qjpNnHfwUI2iNCqrxQtBqZKPkYywtnonxdAkOBV
+         4yr1wJQLYRrnURxW59FVRPs7gJwHVaLOrrVLUEX4=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from localhost.localdomain ([217.61.153.94]) by mail.gmx.com
  (mrgmx103 [212.227.17.168]) with ESMTPSA (Nemesis) id
- 0M1nOg-1iAuD01Mxm-00tlSl; Tue, 06 Aug 2019 18:28:12 +0200
+ 0Mg3h3-1hikmv1UOL-00NSmC; Tue, 06 Aug 2019 18:28:04 +0200
 From:   Frank Wunderlich <frank-w@public-files.de>
 To:     Alessandro Zummo <a.zummo@towertech.it>,
         Alexandre Belloni <alexandre.belloni@bootlin.com>,
@@ -56,33 +56,33 @@ To:     Alessandro Zummo <a.zummo@towertech.it>,
         "Tianping . Fang" <tianping.fang@mediatek.com>
 Cc:     Josef Friedl <josef.friedl@speed.at>,
         Frank Wunderlich <frank-w@public-files.de>
-Subject: [PATCH v4 06/10] rtc: mt6397: add compatible for mt6323
-Date:   Tue,  6 Aug 2019 18:27:41 +0200
-Message-Id: <20190806162745.8414-7-frank-w@public-files.de>
+Subject: [PATCH v4 01/10] dt-bindings: add powercontroller
+Date:   Tue,  6 Aug 2019 18:27:36 +0200
+Message-Id: <20190806162745.8414-2-frank-w@public-files.de>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190806162745.8414-1-frank-w@public-files.de>
 References: <20190806162745.8414-1-frank-w@public-files.de>
-X-Provags-ID: V03:K1:DIhRHK2hht0aS3gGjUBdMit/fe5lr9+ny2VtU0f6VLpF4RgJt8C
- Ny5zDjYzK3kf7a1hq2zGlC6rBLjIORmId4UnzIKKaj3aDh+S033M7zD5wxBBv7c9usz0me8
- lAPNLVND/HByjaQNmrq7dlxPC/nk3seTF7rC6T4zZWTZoX3Myf0SkR6QS/2uCrRC8FqNBIj
- RpFLUf40mm8Ixb9lHkRaA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:E2LKdkfghHA=:FNem/ARHXV0uE2yKyiYHq5
- gY2PBWiTOl70HXT2nYwno+ily3sUA4zF6RH2X6jPdcezoNtDW0fpVgTll1zlwPeq6Tw2ub8Rh
- 2DLriMUfIv4XlI/ncDzyEsiBAjtRLwzGfzPsHMwUj/Wl9ZfBUgZHNcwMGRrKMWpEBZDMQe3MA
- 40RANSqPGoLq8gRDOILBjzXQ/2BuDR9gCOEuupkUc2lXuDRHXHbD4ThS6RYnu5Z0cn+Gi1KFD
- LYMHR+GzdSqPtFAy+XhcGSA/I5KpbH6J8GLn/LOJNfWQz9SyQDrY5PmNbYwWthglBYrE9hiBM
- 2dyibsQZIos8kXbtwoYjpC6xQ6zuaoOc+LNJtSELPkyn0a6YoHAvapE+enMJ13xzXqFry9Sm+
- jaIWjOOJwJX5oBn9vmD8xD16S9Vdpo5TF1uWeDcgLFnF5nqrqPKksW/Br+h6/AC/8T3k7LwnV
- DPspmn7LgPYxWTYu5gm7BGQcz2xh0/CIi0I9rRMC/QwJUBsPv1NOpINrzBQ5cscHM1/JeX4yg
- UddkmfaCEOZK5J64UCYbahuJVmvyr0GJL9eYhVMaYgH6U8sBnr2ffYzBRLTTafV5mBqhO3dy+
- Bx2Rs8b3QG44khaV9pZ7wcGjl7cGKUHzsS/3tF6MD54cRvPBGrlzTPMOG/L7QsoVqhJwJjxyK
- 1bcmddHtIQEVPdd0UbPJz7Rb9dQqwd509SQEE9EHOob1v4Lc75sXYIF5Dy+s+7PTvEg9ExrTU
- oUknbl01i9Ro0FT+8HcYIWXwFBfOPRxq+TPqkl7RE+dKTAkYt9J2dqt4Ti3jTxyspfevS2dVi
- wAVKFf+bEijKxm4qvqTNLNz6iZUYVETBgVCFh1pry7t7Xl4t+muKh+YdDmFBEKUJB5QzVN9nL
- 2KXBIRoKtZONJ5pFopJyRjfPjLnrqICzU5ZD2Th8JDqeVjJOWddlHsNtYyT2jbr6sGshe/Ak/
- fnRiizWw3kUvQ6xUX/Mit6facC85cft/l/ziBX6Ozlhz9dND526CTsRN4Ym56T5SAjC7O9/LM
- zqpKrMeRZNwABkCelzWUxfKrTOI/7YumvfaTL55UMibw9pwOMmkMo7HI24Mxb5UJZHgVCCFn4
- JukOcDmXXHQvKfHc4/TxuTbdyIKcKMo8Xcg/uHjyZE9VlfLbTbE66IFDw==
+X-Provags-ID: V03:K1:AIGOCby4oFv47YSJ9VFQ9scd8B6VnGGTMhIk5HuNYlF12fPSCco
+ xKJUKT6QYOFGIKQ/z6NSePLt0CdsRa+wV9mqMkGua7Wffu3uHXZ5GOP+r81dHjoAOYNJDfu
+ e/5lRA4Zr/gAapa68Gp9+4b7M1GCmMLNxEIvYHwHWvx9ONzS5qP8Hqyb3Nr1jYM+UxZbj2k
+ paoqGOeO7rPQh33p9JYoQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:XWjw5J45VAM=:2dSZxUR1GbmeEjxNlusGLw
+ bS/X4iPie7hRL4oNU0IhIawv8w7+UaAWS95KxFVjElYWEJvvWqTdn6Of+Z5s3pA5a9TSAtTMj
+ CNctLTB1MuM/wZXB0BiCWE0l8i5SsBGBTEMa6FYysrIVH6UcYZQHj/oXM85L+Q/rYgzFwQ7t9
+ KrYKViVdYJ3Cj/HGncWtchT8zc6jf/VVEXyEgb8OzWklBRbUKLf8vXVajYu8EqaMY4HTEffiS
+ ERCxOFFmDFBcBp2ziLwibJKhxV9qWOrsf3c0D0RFmsdiaINA4aO44zOnVKSg3odRwKzHFg+9y
+ yvTBNPqvgqJn2UJVieb5Z5k+jE8MDkgk97ncG1an3Dp+/5LkmCmSS0agyHjVMOhoKkjB4uCH/
+ 4X3Ui7XOo1nSJrRZTJhyWDPVYlq+Muv3n8wnI4MxiZUQe6UMAX2oLXdHnHF/Ia8u/+WfUHoV2
+ tQdK+HuRiK+2xvrxaUgyhvU0esYsoGZdM6htmr03ZbflgROiJdJgqPghUdnnCz5dABD6VQjLr
+ CRV2mgHbch0EACyFGdFBkc2EDfrKVHajslHZDqg+BNtjewwzgdoTAIXCswuNAAcRG3SHLY9Cr
+ F7kRexbw9K0pwF4OTHNgMf25kgvRHEkDHvi16uh+BGahESYj4HBnribGQ2OUWnA+lbGgeZ28S
+ 2F4GwZU08OlcbJRvneemznuruY3ibbR05hjE6AbcWWPgvyYpQXBYWnoFkRzrtSMiYstbt0kEX
+ GgWQH78SAYaE5hTmH51YVSxQp/JvjCsfcWKDveoM0AtjrDNaaLFCmevOSssHo23ywjF3Jf0/e
+ 0fTx4cJ9IIZ0X+Qfs+hC+xdW8Bj6UHsssu7G6UluKU/7SvzBiCY00JL6I0/B7lNzbXcL+HcVQ
+ fm4NgU5Z6Z6jy8dzgVeUiFvzJOZQQGvTEr1VvSHkhT0susH89L9ZYOoORcRB1mV8DwF/nA7So
+ 2h+msJBOwWROaNUIXy/NTGNiHq/VV352sSO1x86bfskFwlT/bLkEVE80aH9fOIKxq7TzxP1JJ
+ 8wZu2uOSr4wwEKqJ64LTSYdq2OOiZsm1EgvhjeCav0HTs7diGxKHv7gDj/RM5/GREsfhgyVQg
+ zjAqbidpbe8q32hMi7f5Z/Qb5OTiNuYD3oKEzkaLPWDUc54ZGLJ/s/5Og==
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -91,31 +91,91 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Josef Friedl <josef.friedl@speed.at>
 
-use mt6397 rtc driver also for mt6323 but with different
-base/size see "mfd: mt6323: add mt6323 rtc+pwrc"
+add mt6323-rtc and mt6323-pwrc to mt6397 mfd DT bindings
+an example is shown in mt6323-poweroff.txt
 
+Suggested-by: Frank Wunderlich <frank-w@public-files.de>
 Signed-off-by: Josef Friedl <josef.friedl@speed.at>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 =2D--
-changes since v3: moved (was part 5)
-changes since v2: splitted this from v2.3 suggested-by Alexandre Belloni
+changes since v3: none
+changes since v2: separated rtc-mt6397.txt to part 2
 
- drivers/rtc/rtc-mt6397.c | 1 +
- 1 file changed, 1 insertion(+)
+ .../devicetree/bindings/mfd/mt6397.txt        | 10 +++++++++-
+ .../bindings/power/reset/mt6323-poweroff.txt  | 20 +++++++++++++++++++
+ 2 files changed, 29 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/mt6323-p=
+oweroff.txt
 
-diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-index 9370b7fc9f81..21cd9cc8b4c7 100644
-=2D-- a/drivers/rtc/rtc-mt6397.c
-+++ b/drivers/rtc/rtc-mt6397.c
-@@ -325,6 +325,7 @@ static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_rtc_sus=
-pend,
- 			mt6397_rtc_resume);
+diff --git a/Documentation/devicetree/bindings/mfd/mt6397.txt b/Documentat=
+ion/devicetree/bindings/mfd/mt6397.txt
+index 0ebd08af777d..44acb9827716 100644
+=2D-- a/Documentation/devicetree/bindings/mfd/mt6397.txt
++++ b/Documentation/devicetree/bindings/mfd/mt6397.txt
+@@ -8,6 +8,7 @@ MT6397/MT6323 is a multifunction device with the following=
+ sub modules:
+ - Clock
+ - LED
+ - Keys
++- Power controller
 
- static const struct of_device_id mt6397_rtc_of_match[] =3D {
-+	{ .compatible =3D "mediatek,mt6323-rtc", },
- 	{ .compatible =3D "mediatek,mt6397-rtc", },
- 	{ }
- };
+ It is interfaced to host controller using SPI interface by a proprietary =
+hardware
+ called PMIC wrapper or pwrap. MT6397/MT6323 MFD is a child device of pwra=
+p.
+@@ -22,8 +23,10 @@ compatible: "mediatek,mt6397" or "mediatek,mt6323"
+ Optional subnodes:
+
+ - rtc
+-	Required properties:
++	Required properties: Should be one of follows
++		- compatible: "mediatek,mt6323-rtc"
+ 		- compatible: "mediatek,mt6397-rtc"
++	For details, see Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+ - regulators
+ 	Required properties:
+ 		- compatible: "mediatek,mt6397-regulator"
+@@ -46,6 +49,11 @@ Optional subnodes:
+ 		- compatible: "mediatek,mt6397-keys" or "mediatek,mt6323-keys"
+ 	see Documentation/devicetree/bindings/input/mtk-pmic-keys.txt
+
++- power-controller
++	Required properties:
++		- compatible: "mediatek,mt6323-pwrc"
++	For details, see Documentation/devicetree/bindings/power/reset/mt6323-po=
+weroff.txt
++
+ Example:
+ 	pwrap: pwrap@1000f000 {
+ 		compatible =3D "mediatek,mt8135-pwrap";
+diff --git a/Documentation/devicetree/bindings/power/reset/mt6323-poweroff=
+.txt b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
+new file mode 100644
+index 000000000000..933f0c48e887
+=2D-- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
+@@ -0,0 +1,20 @@
++Device Tree Bindings for Power Controller on MediaTek PMIC
++
++The power controller which could be found on PMIC is responsible for exte=
+rnally
++powering off or on the remote MediaTek SoC through the circuit BBPU.
++
++Required properties:
++- compatible: Should be one of follows
++       "mediatek,mt6323-pwrc": for MT6323 PMIC
++
++Example:
++
++       pmic {
++               compatible =3D "mediatek,mt6323";
++
++               ...
++
++               power-controller {
++                       compatible =3D "mediatek,mt6323-pwrc";
++               };
++       }
 =2D-
 2.17.1
 
