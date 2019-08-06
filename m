@@ -4,34 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68CCEC31E40
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD12DC31E40
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2DDDC21743
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 77672214C6
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="S+FiRh76"
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="U7td5nPF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387944AbfHFQ3D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Aug 2019 12:29:03 -0400
-Received: from mout.gmx.net ([212.227.17.20]:44951 "EHLO mout.gmx.net"
+        id S2387934AbfHFQ3C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Aug 2019 12:29:02 -0400
+Received: from mout.gmx.net ([212.227.17.20]:34005 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387906AbfHFQ3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S2387911AbfHFQ3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Tue, 6 Aug 2019 12:29:01 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1565108888;
-        bh=HzEHIxIKYm6KPLL0JPFew9mFnKGyvVsgusVw6nRHTTw=;
+        s=badeba3b8450; t=1565108891;
+        bh=8gcB2Y1P8SSH9aDUi/qMuaH1abxfVQO9b3fZW4tMYTQ=;
         h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=S+FiRh76N9kjTLJHbv400S0ijDXh2zkWxH5w5CLk030WIBkRI06GV8ukh3RO0ol64
-         YBYy/K7BYNGLXIk4f6J802F9eai4Y6/ikli5H8+0yxkUxmQTSWK2buGWhmUSEpVIU3
-         qb32jY7S6ebeUhWIXNfwOsWgIsO1m8GTapkJI3Ig=
+        b=U7td5nPFbcCHuXvafAlc/iOM2+O7JofTOjmK7Lu3GcH5PehobU8I8GkjyFaAKjJYM
+         AdWrQBGOOqYwlze+ynLrPHD4RusRIpT/zlPpQ2+StLkihSn3H1RkqHq3e355+3XKT5
+         fgp15x6ygO+0/qNZodycQOhQ9qCQxV+x6NFgTApI=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from localhost.localdomain ([217.61.153.94]) by mail.gmx.com
  (mrgmx103 [212.227.17.168]) with ESMTPSA (Nemesis) id
- 0MMkgl-1hycgK36Ct-008YWc; Tue, 06 Aug 2019 18:28:08 +0200
+ 0ML6XF-1hulKt3KJl-000H3o; Tue, 06 Aug 2019 18:28:11 +0200
 From:   Frank Wunderlich <frank-w@public-files.de>
 To:     Alessandro Zummo <a.zummo@towertech.it>,
         Alexandre Belloni <alexandre.belloni@bootlin.com>,
@@ -56,33 +56,33 @@ To:     Alessandro Zummo <a.zummo@towertech.it>,
         "Tianping . Fang" <tianping.fang@mediatek.com>
 Cc:     Josef Friedl <josef.friedl@speed.at>,
         Frank Wunderlich <frank-w@public-files.de>
-Subject: [PATCH v4 03/10] rtc: mt6397: move some common definitions into rtc.h
-Date:   Tue,  6 Aug 2019 18:27:38 +0200
-Message-Id: <20190806162745.8414-4-frank-w@public-files.de>
+Subject: [PATCH v4 05/10] mfd: mt6323: some improvements of mt6397-core
+Date:   Tue,  6 Aug 2019 18:27:40 +0200
+Message-Id: <20190806162745.8414-6-frank-w@public-files.de>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190806162745.8414-1-frank-w@public-files.de>
 References: <20190806162745.8414-1-frank-w@public-files.de>
-X-Provags-ID: V03:K1:u9hdvNiTHJABtB4jUq16WoTMdaMAfx9o4ccbdvchDpyvkEG5xf/
- RNkuAZBPOx/Ddf7gtrBUcv2FiFU+MmFN46QBEnpkNfei3idXzfMaDVp0L17g/wQdJuCx5ix
- hzU2kWnFpbiwgiDDa8F9HIgDKbxWWpB9nY0pDRoPPrfRo+EFiih5VPQ+LNxL96k8/AryIra
- BuE+fOnKU++LTNRtQfUtA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:cMUz6x+Gsec=:eEPPRAYpOPjYGPdy4lEqJg
- YKfxGrOEh+0c/i4LKTG6X3aiqybpgwtA1h7e9rp2uP3Wd3mK3XNAVmlzF0oqL2IVGBGfVCs41
- /kEWgjmAyxaZbP+KCUP5NhsWhyMysyTdeTaRDRy3RrB/pCy4hUSeerb21H8wi2/8eLJCxD0Wd
- QKdi6P5YLA5E16EY3ReI3i3EJ7pffskC9iCnCUZCnHqqma20B/VgonSyLeEEEvBafKhw+U+OR
- +NPyg7YzrjXTN/5Xx8aL047QaUAlxwfbYsiXApyZEtqTuSRA6VJ8dA0a2OM97PJUdCEJ8mP1B
- NUdTJ7IdqAWHy/vdFpHE2Si0V885aHceu6R5edSHQ+FpqKuzR/Y4xbhTctTwOu1D6n5mnYpXx
- j+XoBqJGGLQfOzxns1nM8V+MYMtGjeq3yWn1rzXyACrqaMm3Eq0SYUvErsJbVfJfGmXzTifiz
- ueUB/HTsMzkOkfCYN5WJDuZhPl7WNg/bqQd2cxeR5w1bZSfBR1E4W6ZDfIKVsRvXWjH+8QtoN
- vaou6TupBywkEDMXGLg+46gOOniLxZBjCA+Y0g42D5sUcqb0XvOjvwkFKn4Z6o0T3mwmQhU6d
- 1fv4/SMxvmiTvQ6tPBa/TdX0sNsQtLGWRcmxm0GaQnGY/pGim/AtFVirjObFXPz007oNe9sqW
- UOSDDjACW5EMiiwLYyW3CnORQ3BfEhrlLAZDkf7DY9mhhjYspr1k4XvX4YGtzJMk9s4/gW4ro
- Ws5hWSMKYo+Ofj6mu1hMLjQrO6eA5DTGleh1N1PnpyiXXCwFvJEJ0Gs3uuPMlT6t6TBH1rZzQ
- UdYysD7xZ2jCE05v3oITyhxoFVxIByYsLWzWspKiu7x55BD+PBps65he/4nuB/1KBH04VDMGM
- xGJ5CcEGogagIse3Agzw7Cubv2TqY0c2LY38vX/0/bZrpRgaVEaE/7uYodsX3TLWo29XQukKo
- BxAe3FDp7ZW5OGjLDZhH5ROWMA5LSingpR/45TylfuA/R88cfv8HVSvx7Uh7Zd6rYyEuN2FXT
- FAlyO2Qymn/B51JAM8+byz6qN9xW6Ee8+eGc625/E0Cd8DejuinuSHwlonGTa1q9e0f5t/0dQ
- slNfV5m+FZL9gere6jpwZDdeCDuhrjjsT2G3mXfTJ2mGNp+EXOps1wYjQ==
+X-Provags-ID: V03:K1:+iJfjBRFYOn5WAoXepUrh13Q4VN8x0Pn6CZbVyyfzp1nlJk7Eaa
+ fM00X5uVPvHuR4yEfqQDwItl0Vq6mGkZ8HXTDNzO1DxpZ5TOmjBS68h2tdCVMzWB0rCamWd
+ GZu1q2wvYM8TWMa6FA0QC1GxIrP05tZ9Q2bfZM0goxn8B7BbrS6Na9xJiZQ8JaV4QodItIZ
+ jLT+LxQppzWiatoHlqbwA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:MJvW8qc5hm4=:lAYxn4cfPwTASX+zg1i74R
+ qpKmfVTZRA8Cp/vTqoiid//1VOohTVi7PgWw7HLPBit/6gKWLq1zewIgVi8PvbhlNqXksEeRF
+ kR0PDqn90h1UyJ8Ddvzrr24cvOKg/yzDctRdyCKRTf3/cNBriT3qlTHSeWE1oCYHa3IsTvEwL
+ EHkMM3lKR99zdE7Cg2Afg8aqiFb1diaNlnWYN9CasXGfZ9xQZGGSHlFoyWyzBy1D9dE5MpEFO
+ MUXXa0L+nbx4Tl3A2r2RBSTKuIm/t+frimTBgXAkD+5G/bHncXcCOouuZs3l5NKlOVzq9usFn
+ hhYF6PayadlaA05xSx4PXxN72Abu5JgcA725vIvFffHaHPkdV9u1chCJfDh2Gg8jlQeCLOKCD
+ iIooGX5qwY2Y3cVnfcSmUiD+YFQWvmvSnUx81SHQqvgQ7jC0XIIeMRHpUYicB5ErmKOiD/2f2
+ j50kiQ4ikevgIM9tLZnnL1zdg7cdEl+uhFxeWJE9VfWHnIuglf3pb6eZ2ELWhTfID0j5WFa2+
+ ukBjvv4u0VoNGZPC/UV1WrI0i7Qdv8ScSZL14H48UC0EbjpPjcDCTLoVPzzTPS+aYpxvXW0sf
+ GxIStdBGfyG4Tp6R9wOynwuqCKWYbhZJNswvd+Q0aQXQzEvQKoXRosYWpfi1Nbrh3/ny0L7uZ
+ G9hhbydgP12VvugoCG37qKWFysRCuMKxSuVrUw/sb3Ny9mWF5FA9f2/TNerVjRcyhoKsH0uBx
+ kwlx8HzY47m6iCjHSO9Bx2Ic0ANI58L89kCGcWuY+XQYTP3nSzpksAPumhUvftf8dfdfigfQU
+ W/9b353G9V1xiBXSJSA8mj2zhdYIUbsjEyGRLdYuYjm+2wINq2tkHhUqoI/NMhZ+ypH5dGU2R
+ Yy1ewQQcnul2tpZkYThqdfjp3quPWbB1ORvud6PDCO6xtCmXnF4/HcAMYkdtRRRQYv+jguOtV
+ tRksqUX2O0SfcM666SL4SP8slFKtCvkwyg5N+rCR9n/Ad/GSOGSdfnbpcJT12k6KeX8tWkbPa
+ 3XMuY6/sc/tWVgC8vNV1dUCJm1SBviIx1WHp9XQCZhMmU/KtwT/l0imJf3t7tQxUip5O2xJ1c
+ FKBF2n1uI8v7ObMTJH9SxLsWYnF7YgMMF6koDCcbY0+/obmf/Tbk3CArw==
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -91,165 +91,54 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Josef Friedl <josef.friedl@speed.at>
 
-move code to separate header-file to reuse definitions later
-in poweroff-driver (drivers/power/reset/mt6323-poweroff.c)
+simplyfications (resource definitions my DEFINE_RES_* macros)
 
-Suggested-by: Frank Wunderlich <frank-w@public-files.de>
 Signed-off-by: Josef Friedl <josef.friedl@speed.at>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 =2D--
-changes since v3: none
-changes since v2: add missing commit-message
+changes since v3: moved part 6 forward to let compatible and driver be tog=
+ether
+changes since v2: splitted v2 part 4 into 6+7
 
- drivers/rtc/rtc-mt6397.c       | 55 +-------------------------
- include/linux/mfd/mt6397/rtc.h | 71 ++++++++++++++++++++++++++++++++++
- 2 files changed, 72 insertions(+), 54 deletions(-)
- create mode 100644 include/linux/mfd/mt6397/rtc.h
+ drivers/mfd/mt6397-core.c | 15 ++++-----------
+ 1 file changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-index b46ed4dc7015..c08ee5edf865 100644
-=2D-- a/drivers/rtc/rtc-mt6397.c
-+++ b/drivers/rtc/rtc-mt6397.c
-@@ -9,60 +9,7 @@
+diff --git a/drivers/mfd/mt6397-core.c b/drivers/mfd/mt6397-core.c
+index 337bcccdb914..5f7070267c9a 100644
+=2D-- a/drivers/mfd/mt6397-core.c
++++ b/drivers/mfd/mt6397-core.c
+@@ -1,10 +1,11 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /*
+- * Copyright (c) 2014 MediaTek Inc.
++ * Copyright (c) 2014-2018 MediaTek Inc.
+  * Author: Flora Fu, MediaTek
+  */
+
+ #include <linux/interrupt.h>
++#include <linux/ioport.h>
  #include <linux/module.h>
- #include <linux/regmap.h>
- #include <linux/rtc.h>
--#include <linux/irqdomain.h>
--#include <linux/platform_device.h>
--#include <linux/of_address.h>
--#include <linux/of_irq.h>
--#include <linux/io.h>
--#include <linux/mfd/mt6397/core.h>
--
--#define RTC_BBPU		0x0000
--#define RTC_BBPU_CBUSY		BIT(6)
--
--#define RTC_WRTGR		0x003c
--
--#define RTC_IRQ_STA		0x0002
--#define RTC_IRQ_STA_AL		BIT(0)
--#define RTC_IRQ_STA_LP		BIT(3)
--
--#define RTC_IRQ_EN		0x0004
--#define RTC_IRQ_EN_AL		BIT(0)
--#define RTC_IRQ_EN_ONESHOT	BIT(2)
--#define RTC_IRQ_EN_LP		BIT(3)
--#define RTC_IRQ_EN_ONESHOT_AL	(RTC_IRQ_EN_ONESHOT | RTC_IRQ_EN_AL)
--
--#define RTC_AL_MASK		0x0008
--#define RTC_AL_MASK_DOW		BIT(4)
--
--#define RTC_TC_SEC		0x000a
--/* Min, Hour, Dom... register offset to RTC_TC_SEC */
--#define RTC_OFFSET_SEC		0
--#define RTC_OFFSET_MIN		1
--#define RTC_OFFSET_HOUR		2
--#define RTC_OFFSET_DOM		3
--#define RTC_OFFSET_DOW		4
--#define RTC_OFFSET_MTH		5
--#define RTC_OFFSET_YEAR		6
--#define RTC_OFFSET_COUNT	7
--
--#define RTC_AL_SEC		0x0018
--
--#define RTC_PDN2		0x002e
--#define RTC_PDN2_PWRON_ALARM	BIT(4)
--
--#define RTC_MIN_YEAR		1968
--#define RTC_BASE_YEAR		1900
--#define RTC_NUM_YEARS		128
--#define RTC_MIN_YEAR_OFFSET	(RTC_MIN_YEAR - RTC_BASE_YEAR)
--
--struct mt6397_rtc {
--	struct device		*dev;
--	struct rtc_device	*rtc_dev;
--	struct mutex		lock;
--	struct regmap		*regmap;
--	int			irq;
--	u32			addr_base;
--};
-+#include <linux/mfd/mt6397/rtc.h>
+ #include <linux/of_device.h>
+ #include <linux/of_irq.h>
+@@ -23,16 +24,8 @@
+ #define MT6397_CID_CODE		0x97
 
- static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
- {
-diff --git a/include/linux/mfd/mt6397/rtc.h b/include/linux/mfd/mt6397/rtc=
-.h
-new file mode 100644
-index 000000000000..b702c29e8c74
-=2D-- /dev/null
-+++ b/include/linux/mfd/mt6397/rtc.h
-@@ -0,0 +1,71 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2014-2018 MediaTek Inc.
-+ *
-+ * Author: Tianping.Fang <tianping.fang@mediatek.com>
-+ *        Sean Wang <sean.wang@mediatek.com>
-+ */
-+
-+#ifndef _LINUX_MFD_MT6397_RTC_H_
-+#define _LINUX_MFD_MT6397_RTC_H_
-+
-+#include <linux/jiffies.h>
-+#include <linux/mutex.h>
-+#include <linux/regmap.h>
-+#include <linux/rtc.h>
-+
-+#define RTC_BBPU               0x0000
-+#define RTC_BBPU_CBUSY         BIT(6)
-+#define RTC_BBPU_KEY            (0x43 << 8)
-+
-+#define RTC_WRTGR              0x003c
-+
-+#define RTC_IRQ_STA            0x0002
-+#define RTC_IRQ_STA_AL         BIT(0)
-+#define RTC_IRQ_STA_LP         BIT(3)
-+
-+#define RTC_IRQ_EN             0x0004
-+#define RTC_IRQ_EN_AL          BIT(0)
-+#define RTC_IRQ_EN_ONESHOT     BIT(2)
-+#define RTC_IRQ_EN_LP          BIT(3)
-+#define RTC_IRQ_EN_ONESHOT_AL  (RTC_IRQ_EN_ONESHOT | RTC_IRQ_EN_AL)
-+
-+#define RTC_AL_MASK            0x0008
-+#define RTC_AL_MASK_DOW                BIT(4)
-+
-+#define RTC_TC_SEC             0x000a
-+/* Min, Hour, Dom... register offset to RTC_TC_SEC */
-+#define RTC_OFFSET_SEC         0
-+#define RTC_OFFSET_MIN         1
-+#define RTC_OFFSET_HOUR                2
-+#define RTC_OFFSET_DOM         3
-+#define RTC_OFFSET_DOW         4
-+#define RTC_OFFSET_MTH         5
-+#define RTC_OFFSET_YEAR                6
-+#define RTC_OFFSET_COUNT       7
-+
-+#define RTC_AL_SEC             0x0018
-+
-+#define RTC_PDN2               0x002e
-+#define RTC_PDN2_PWRON_ALARM   BIT(4)
-+
-+#define RTC_MIN_YEAR           1968
-+#define RTC_BASE_YEAR          1900
-+#define RTC_NUM_YEARS          128
-+#define RTC_MIN_YEAR_OFFSET    (RTC_MIN_YEAR - RTC_BASE_YEAR)
-+
-+#define MTK_RTC_POLL_DELAY_US  10
-+#define MTK_RTC_POLL_TIMEOUT   (jiffies_to_usecs(HZ))
-+
-+struct mt6397_rtc {
-+	struct device           *dev;
-+	struct rtc_device       *rtc_dev;
-+
-+	/* Protect register access from multiple tasks */
-+	struct mutex            lock;
-+	struct regmap           *regmap;
-+	int                     irq;
-+	u32                     addr_base;
-+};
-+
-+#endif /* _LINUX_MFD_MT6397_RTC_H_ */
+ static const struct resource mt6397_rtc_resources[] =3D {
+-	{
+-		.start =3D MT6397_RTC_BASE,
+-		.end   =3D MT6397_RTC_BASE + MT6397_RTC_SIZE,
+-		.flags =3D IORESOURCE_MEM,
+-	},
+-	{
+-		.start =3D MT6397_IRQ_RTC,
+-		.end   =3D MT6397_IRQ_RTC,
+-		.flags =3D IORESOURCE_IRQ,
+-	},
++	DEFINE_RES_MEM(MT6397_RTC_BASE, MT6397_RTC_SIZE),
++	DEFINE_RES_IRQ(MT6397_IRQ_RTC),
+ };
+
+ static const struct resource mt6323_keys_resources[] =3D {
 =2D-
 2.17.1
 
