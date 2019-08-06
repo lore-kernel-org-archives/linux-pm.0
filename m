@@ -2,93 +2,64 @@ Return-Path: <SRS0=tL1J=WC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CA89C433FF
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 15:43:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34BA1C433FF
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 15:51:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1137720C01
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 15:43:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="dt2cjv9c"
+	by mail.kernel.org (Postfix) with ESMTP id 106B820717
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 15:51:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731683AbfHFPnu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Aug 2019 11:43:50 -0400
-Received: from mail.skyhub.de ([5.9.137.197]:35336 "EHLO mail.skyhub.de"
+        id S1729891AbfHFPvW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Aug 2019 11:51:22 -0400
+Received: from foss.arm.com ([217.140.110.172]:35718 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728558AbfHFPnu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Aug 2019 11:43:50 -0400
-Received: from zn.tnic (p200300EC2F0DA00008E04FA4C58F7CE4.dip0.t-ipconnect.de [IPv6:2003:ec:2f0d:a000:8e0:4fa4:c58f:7ce4])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 42CB21EC0C42;
-        Tue,  6 Aug 2019 17:43:48 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1565106228;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-        bh=TDFDazt6//hwNfwRMzmVKFiu4ldxLz+yMwXDE8Lj5Eo=;
-        b=dt2cjv9ck6Riog7ad+ewdarAX2dM8UrmZhk8qdfxpW8EfZWGjwleuVrU4g1cmXqrcn8Kh+
-        TWcpA8A1qy+/qbzkXNRCP6wNTc/+TBGiGV3muxnmmGbdGi77lel3IPkl79O3Iqqfn0x3XN
-        2iqBRrkAzDyyrAqpiKzGnDMqxESTm0c=
-Date:   Tue, 6 Aug 2019 17:43:47 +0200
-From:   Borislav Petkov <bp@alien8.de>
-To:     Thomas Garnier <thgarnie@chromium.org>
-Cc:     kernel-hardening@lists.openwall.com, kristen@linux.intel.com,
-        keescook@chromium.org, Herbert Xu <herbert@gondor.apana.org.au>,
-        "David S. Miller" <davem@davemloft.net>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-        Andy Lutomirski <luto@kernel.org>,
-        Juergen Gross <jgross@suse.com>,
-        Thomas Hellstrom <thellstrom@vmware.com>,
-        "VMware, Inc." <pv-drivers@vmware.com>,
+        id S1728041AbfHFPvW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Aug 2019 11:51:22 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DE19B344;
+        Tue,  6 Aug 2019 08:51:21 -0700 (PDT)
+Received: from e107155-lin (e107155-lin.cambridge.arm.com [10.1.196.42])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8AF213F575;
+        Tue,  6 Aug 2019 08:51:20 -0700 (PDT)
+Date:   Tue, 6 Aug 2019 16:51:15 +0100
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc:     linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Nadav Amit <namit@vmware.com>, Jann Horn <jannh@google.com>,
-        Feng Tang <feng.tang@intel.com>,
-        Maran Wilson <maran.wilson@oracle.com>,
-        Enrico Weigelt <info@metux.net>,
-        Allison Randal <allison@lohutok.net>,
-        Alexios Zavras <alexios.zavras@intel.com>,
-        linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-        virtualization@lists.linux-foundation.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v9 00/11] x86: PIE support to extend KASLR randomization
-Message-ID: <20190806154347.GD25897@zn.tnic>
-References: <20190730191303.206365-1-thgarnie@chromium.org>
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        LAKML <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 1/6] ARM: cpuidle: Remove useless header include
+Message-ID: <20190806155115.GA16546@e107155-lin>
+References: <20190722153745.32446-1-lorenzo.pieralisi@arm.com>
+ <20190722153745.32446-2-lorenzo.pieralisi@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190730191303.206365-1-thgarnie@chromium.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190722153745.32446-2-lorenzo.pieralisi@arm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jul 30, 2019 at 12:12:44PM -0700, Thomas Garnier wrote:
-> These patches make some of the changes necessary to build the kernel as
-> Position Independent Executable (PIE) on x86_64. Another patchset will
-> add the PIE option and larger architecture changes.
+On Mon, Jul 22, 2019 at 04:37:40PM +0100, Lorenzo Pieralisi wrote:
+> The generic ARM CPUidle driver includes <linux/topology.h> by mistake.
+> 
+> Remove the topology header include.
+> 
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
 
-Yeah, about this: do we have a longer writeup about the actual benefits
-of all this and why we should take this all? After all, after looking
-at the first couple of asm patches, it is posing restrictions to how
-we deal with virtual addresses in asm (only RIP-relative addressing in
-64-bit mode, MOVs with 64-bit immediates, etc, for example) and I'm
-willing to bet money that some future unrelated change will break PIE
-sooner or later. And I'd like to have a better justification why we
-should enforce those new "rules" unconditionally.
+Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Thx.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+--
+Regards,
+Sudeep
