@@ -7,31 +7,31 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9612C433FF
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68CCEC31E40
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7F08A21743
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2DDDC21743
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="X83wdvbq"
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="S+FiRh76"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387947AbfHFQ3e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Aug 2019 12:29:34 -0400
-Received: from mout.gmx.net ([212.227.17.21]:44665 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387721AbfHFQ3D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S2387944AbfHFQ3D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 6 Aug 2019 12:29:03 -0400
+Received: from mout.gmx.net ([212.227.17.20]:44951 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2387906AbfHFQ3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Aug 2019 12:29:01 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1565108895;
-        bh=YYhqVadKi9Ny0MQd5nYruiuZfLEPo+Mk45x6ClJf9vs=;
+        s=badeba3b8450; t=1565108888;
+        bh=HzEHIxIKYm6KPLL0JPFew9mFnKGyvVsgusVw6nRHTTw=;
         h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=X83wdvbqiQWov+vx/Y7tRkRKeHEWDZQ1V/OIOhPqZlZSuEcGdBa4PjJbohz7I98bI
-         kpRE8qR2VzutyxDD5oiXHioiI6NxRZLqdNA0XjD8jx0dd2lRidR2r7HmYlTU8nWnH+
-         +39FXC15ccBpn7mmYUc0x9YgDRFEt0sx2RhailYY=
+        b=S+FiRh76N9kjTLJHbv400S0ijDXh2zkWxH5w5CLk030WIBkRI06GV8ukh3RO0ol64
+         YBYy/K7BYNGLXIk4f6J802F9eai4Y6/ikli5H8+0yxkUxmQTSWK2buGWhmUSEpVIU3
+         qb32jY7S6ebeUhWIXNfwOsWgIsO1m8GTapkJI3Ig=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from localhost.localdomain ([217.61.153.94]) by mail.gmx.com
  (mrgmx103 [212.227.17.168]) with ESMTPSA (Nemesis) id
- 0MUHbK-1hmosH0fqc-00R3PH; Tue, 06 Aug 2019 18:28:15 +0200
+ 0MMkgl-1hycgK36Ct-008YWc; Tue, 06 Aug 2019 18:28:08 +0200
 From:   Frank Wunderlich <frank-w@public-files.de>
 To:     Alessandro Zummo <a.zummo@towertech.it>,
         Alexandre Belloni <alexandre.belloni@bootlin.com>,
@@ -56,33 +56,33 @@ To:     Alessandro Zummo <a.zummo@towertech.it>,
         "Tianping . Fang" <tianping.fang@mediatek.com>
 Cc:     Josef Friedl <josef.friedl@speed.at>,
         Frank Wunderlich <frank-w@public-files.de>
-Subject: [PATCH v4 08/10] power: reset: add driver for mt6323 poweroff
-Date:   Tue,  6 Aug 2019 18:27:43 +0200
-Message-Id: <20190806162745.8414-9-frank-w@public-files.de>
+Subject: [PATCH v4 03/10] rtc: mt6397: move some common definitions into rtc.h
+Date:   Tue,  6 Aug 2019 18:27:38 +0200
+Message-Id: <20190806162745.8414-4-frank-w@public-files.de>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190806162745.8414-1-frank-w@public-files.de>
 References: <20190806162745.8414-1-frank-w@public-files.de>
-X-Provags-ID: V03:K1:6Nvk99cZ4lkB9xXKbFHJNhLkUhjDQqkoO6Kw5xHbaPS4bfFc+ZK
- L++rabZ5AN/jHCYnXxRJEEEXCxbcwkN3wdiog2qdFNtuUogjRNuCBaI50Gid9dje9t8G9Ao
- XfOOXB5l6M9HypzOxjicoJ0X/YIhinGJNdqjLmUq+3F/8ZQ+MFu9X9pqnL+dGseaYJZdVSI
- EUo9BMQ7NVolRdr5SMKGQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:/OknRzOgVBc=:EcfajLlIrF9zRC/n3HTFb+
- 4yz6pWy+aN60wl1VmTNhazBOCARSZwKmxZ2PMpKC21LrUxLZ9o5Em1RpeGQbnK6iBLjubbK4c
- fC2vf7M4Hrb2nYBfjMCVLEwZmOPnl5KWE61t63ZvHk8KnlRZUcxcFRhEM+MILP2OUYF/Zi2L1
- KkB2AF2UI+ubXds6y5z2pKY+AjtpIbKKHjiLFemGEGPgxH6TN3M+ArnR0aeZE5m7Ugv1xP43w
- 3h3DJrkuWwkDwVjWL2M1+bWspLdbAHLFe7pmKrXD/bgglFmoBhhXYLI3JVsx1i+XW5CSSCqyd
- gxy6YH1gqhc6RBtKcHcVarA22FY8q9TQyNebXjBpef282yLjs8OiD6gIQtDhXefx1vBeaPAZ7
- U36lgM11tpAOP6kXC9adcQ+qHDwslgyJBVRSoOBnHfuv8cswa1jvfqCLQKPHj4UpfL3YPJfxI
- KyXVmyEOFr8+KRwJXphi/hs3xCXEQ74IZkwZiLATb8kG6KyGFKfelBbgCAPsLhGCNAqcbexFC
- gvkZeY0xSyt+5J/ykRy7j5UzpAhLo6qvzLaiJI3ijdQR3eviUUWrnWmY7MNiAt6AiVMdodE0i
- Wc6QhioBqWdYqycJfeHwo5udxp+PpzqdyVy3ze9dvgAvrWIXgq0clm81tP7McLvsVolYk/rsG
- GaOroiN2ekc0IZKsSoNZ3FsEYUFFd30fwzqI0hoURTHxY/+ScX41KP2yke2Td4X7U7BKQLB9Z
- rXyq7HgweWoBL0n6J92dJh0e7WeOVJGC8cCbGhPOK2qlAb71dFp7qEZ9unWNPw7JfF353kpXm
- AOrY/r5HufLyl5kJPuWU4X4o0h3NR/IAOHQzqb8NssupaY8y0GTawVSMPEgOPeK3yVFRVQxoQ
- eBhFeRuEp9LVNZ82hdTKbJzv0TTbyZozfXKppITdlFgvlqViyhO8z/PweR5I3iAYogQmMxb8g
- JPcE5U/PoV/l1iP0ElUAOoQdIdSwPCqcRyWc9Mk+S/yfAN0Q3jt0vO8W0JRAnojPe5A/Ic4L0
- jkw+Haz2mgKJolIB/7Pc+O3j8aQxwjFgVzzC2J4A0Z5LnYyRKe1sXC1lY4ALrSM6XOrxSRNv0
- Fs606no9/swNQA04yKiBtfe5YgGxyxo1PePptaJedEQt9Q93MtXCIA6LQ==
+X-Provags-ID: V03:K1:u9hdvNiTHJABtB4jUq16WoTMdaMAfx9o4ccbdvchDpyvkEG5xf/
+ RNkuAZBPOx/Ddf7gtrBUcv2FiFU+MmFN46QBEnpkNfei3idXzfMaDVp0L17g/wQdJuCx5ix
+ hzU2kWnFpbiwgiDDa8F9HIgDKbxWWpB9nY0pDRoPPrfRo+EFiih5VPQ+LNxL96k8/AryIra
+ BuE+fOnKU++LTNRtQfUtA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:cMUz6x+Gsec=:eEPPRAYpOPjYGPdy4lEqJg
+ YKfxGrOEh+0c/i4LKTG6X3aiqybpgwtA1h7e9rp2uP3Wd3mK3XNAVmlzF0oqL2IVGBGfVCs41
+ /kEWgjmAyxaZbP+KCUP5NhsWhyMysyTdeTaRDRy3RrB/pCy4hUSeerb21H8wi2/8eLJCxD0Wd
+ QKdi6P5YLA5E16EY3ReI3i3EJ7pffskC9iCnCUZCnHqqma20B/VgonSyLeEEEvBafKhw+U+OR
+ +NPyg7YzrjXTN/5Xx8aL047QaUAlxwfbYsiXApyZEtqTuSRA6VJ8dA0a2OM97PJUdCEJ8mP1B
+ NUdTJ7IdqAWHy/vdFpHE2Si0V885aHceu6R5edSHQ+FpqKuzR/Y4xbhTctTwOu1D6n5mnYpXx
+ j+XoBqJGGLQfOzxns1nM8V+MYMtGjeq3yWn1rzXyACrqaMm3Eq0SYUvErsJbVfJfGmXzTifiz
+ ueUB/HTsMzkOkfCYN5WJDuZhPl7WNg/bqQd2cxeR5w1bZSfBR1E4W6ZDfIKVsRvXWjH+8QtoN
+ vaou6TupBywkEDMXGLg+46gOOniLxZBjCA+Y0g42D5sUcqb0XvOjvwkFKn4Z6o0T3mwmQhU6d
+ 1fv4/SMxvmiTvQ6tPBa/TdX0sNsQtLGWRcmxm0GaQnGY/pGim/AtFVirjObFXPz007oNe9sqW
+ UOSDDjACW5EMiiwLYyW3CnORQ3BfEhrlLAZDkf7DY9mhhjYspr1k4XvX4YGtzJMk9s4/gW4ro
+ Ws5hWSMKYo+Ofj6mu1hMLjQrO6eA5DTGleh1N1PnpyiXXCwFvJEJ0Gs3uuPMlT6t6TBH1rZzQ
+ UdYysD7xZ2jCE05v3oITyhxoFVxIByYsLWzWspKiu7x55BD+PBps65he/4nuB/1KBH04VDMGM
+ xGJ5CcEGogagIse3Agzw7Cubv2TqY0c2LY38vX/0/bZrpRgaVEaE/7uYodsX3TLWo29XQukKo
+ BxAe3FDp7ZW5OGjLDZhH5ROWMA5LSingpR/45TylfuA/R88cfv8HVSvx7Uh7Zd6rYyEuN2FXT
+ FAlyO2Qymn/B51JAM8+byz6qN9xW6Ee8+eGc625/E0Cd8DejuinuSHwlonGTa1q9e0f5t/0dQ
+ slNfV5m+FZL9gere6jpwZDdeCDuhrjjsT2G3mXfTJ2mGNp+EXOps1wYjQ==
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -91,174 +91,165 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Josef Friedl <josef.friedl@speed.at>
 
-add poweroff driver for mt6323 and make Makefile and Kconfig-Entries
+move code to separate header-file to reuse definitions later
+in poweroff-driver (drivers/power/reset/mt6323-poweroff.c)
 
 Suggested-by: Frank Wunderlich <frank-w@public-files.de>
 Signed-off-by: Josef Friedl <josef.friedl@speed.at>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 =2D--
 changes since v3: none
-changes since v2: none (=3Dv2 part 5)
+changes since v2: add missing commit-message
 
- drivers/power/reset/Kconfig           | 10 +++
- drivers/power/reset/Makefile          |  1 +
- drivers/power/reset/mt6323-poweroff.c | 97 +++++++++++++++++++++++++++
- include/linux/mfd/mt6397/core.h       |  2 +
- 4 files changed, 110 insertions(+)
- create mode 100644 drivers/power/reset/mt6323-poweroff.c
+ drivers/rtc/rtc-mt6397.c       | 55 +-------------------------
+ include/linux/mfd/mt6397/rtc.h | 71 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 72 insertions(+), 54 deletions(-)
+ create mode 100644 include/linux/mfd/mt6397/rtc.h
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index a564237278ff..c721939767eb 100644
-=2D-- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -140,6 +140,16 @@ config POWER_RESET_LTC2952
- 	  This driver supports an external powerdown trigger and board power
- 	  down via the LTC2952. Bindings are made in the device tree.
+diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+index b46ed4dc7015..c08ee5edf865 100644
+=2D-- a/drivers/rtc/rtc-mt6397.c
++++ b/drivers/rtc/rtc-mt6397.c
+@@ -9,60 +9,7 @@
+ #include <linux/module.h>
+ #include <linux/regmap.h>
+ #include <linux/rtc.h>
+-#include <linux/irqdomain.h>
+-#include <linux/platform_device.h>
+-#include <linux/of_address.h>
+-#include <linux/of_irq.h>
+-#include <linux/io.h>
+-#include <linux/mfd/mt6397/core.h>
+-
+-#define RTC_BBPU		0x0000
+-#define RTC_BBPU_CBUSY		BIT(6)
+-
+-#define RTC_WRTGR		0x003c
+-
+-#define RTC_IRQ_STA		0x0002
+-#define RTC_IRQ_STA_AL		BIT(0)
+-#define RTC_IRQ_STA_LP		BIT(3)
+-
+-#define RTC_IRQ_EN		0x0004
+-#define RTC_IRQ_EN_AL		BIT(0)
+-#define RTC_IRQ_EN_ONESHOT	BIT(2)
+-#define RTC_IRQ_EN_LP		BIT(3)
+-#define RTC_IRQ_EN_ONESHOT_AL	(RTC_IRQ_EN_ONESHOT | RTC_IRQ_EN_AL)
+-
+-#define RTC_AL_MASK		0x0008
+-#define RTC_AL_MASK_DOW		BIT(4)
+-
+-#define RTC_TC_SEC		0x000a
+-/* Min, Hour, Dom... register offset to RTC_TC_SEC */
+-#define RTC_OFFSET_SEC		0
+-#define RTC_OFFSET_MIN		1
+-#define RTC_OFFSET_HOUR		2
+-#define RTC_OFFSET_DOM		3
+-#define RTC_OFFSET_DOW		4
+-#define RTC_OFFSET_MTH		5
+-#define RTC_OFFSET_YEAR		6
+-#define RTC_OFFSET_COUNT	7
+-
+-#define RTC_AL_SEC		0x0018
+-
+-#define RTC_PDN2		0x002e
+-#define RTC_PDN2_PWRON_ALARM	BIT(4)
+-
+-#define RTC_MIN_YEAR		1968
+-#define RTC_BASE_YEAR		1900
+-#define RTC_NUM_YEARS		128
+-#define RTC_MIN_YEAR_OFFSET	(RTC_MIN_YEAR - RTC_BASE_YEAR)
+-
+-struct mt6397_rtc {
+-	struct device		*dev;
+-	struct rtc_device	*rtc_dev;
+-	struct mutex		lock;
+-	struct regmap		*regmap;
+-	int			irq;
+-	u32			addr_base;
+-};
++#include <linux/mfd/mt6397/rtc.h>
 
-+config POWER_RESET_MT6323
-+       bool "MediaTek MT6323 power-off driver"
-+       depends on MFD_MT6397
-+       help
-+         The power-off driver is responsible for externally shutdown down
-+         the power of a remote MediaTek SoC MT6323 is connected to throug=
-h
-+         controlling a tiny circuit BBPU inside MT6323 RTC.
-+
-+         Say Y if you have a board where MT6323 could be found.
-+
- config POWER_RESET_QNAP
- 	bool "QNAP power-off driver"
- 	depends on OF_GPIO && PLAT_ORION
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 85da3198e4e0..da37f8b851dc 100644
-=2D-- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) +=3D gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restart.o
- obj-$(CONFIG_POWER_RESET_HISI) +=3D hisi-reboot.o
- obj-$(CONFIG_POWER_RESET_MSM) +=3D msm-poweroff.o
-+obj-$(CONFIG_POWER_RESET_MT6323) +=3D mt6323-poweroff.o
- obj-$(CONFIG_POWER_RESET_QCOM_PON) +=3D qcom-pon.o
- obj-$(CONFIG_POWER_RESET_OCELOT_RESET) +=3D ocelot-reset.o
- obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) +=3D piix4-poweroff.o
-diff --git a/drivers/power/reset/mt6323-poweroff.c b/drivers/power/reset/m=
-t6323-poweroff.c
+ static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
+ {
+diff --git a/include/linux/mfd/mt6397/rtc.h b/include/linux/mfd/mt6397/rtc=
+.h
 new file mode 100644
-index 000000000000..1caf43d9e46d
+index 000000000000..b702c29e8c74
 =2D-- /dev/null
-+++ b/drivers/power/reset/mt6323-poweroff.c
-@@ -0,0 +1,97 @@
-+// SPDX-License-Identifier: GPL-2.0
++++ b/include/linux/mfd/mt6397/rtc.h
+@@ -0,0 +1,71 @@
++/* SPDX-License-Identifier: GPL-2.0 */
 +/*
-+ * Power off through MediaTek PMIC
++ * Copyright (C) 2014-2018 MediaTek Inc.
 + *
-+ * Copyright (C) 2018 MediaTek Inc.
-+ *
-+ * Author: Sean Wang <sean.wang@mediatek.com>
-+ *
++ * Author: Tianping.Fang <tianping.fang@mediatek.com>
++ *        Sean Wang <sean.wang@mediatek.com>
 + */
 +
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/mfd/mt6397/core.h>
-+#include <linux/mfd/mt6397/rtc.h>
++#ifndef _LINUX_MFD_MT6397_RTC_H_
++#define _LINUX_MFD_MT6397_RTC_H_
 +
-+struct mt6323_pwrc {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	u32 base;
-+};
-+
-+static struct mt6323_pwrc *mt_pwrc;
-+
-+static void mt6323_do_pwroff(void)
-+{
-+	struct mt6323_pwrc *pwrc =3D mt_pwrc;
-+	unsigned int val;
-+	int ret;
-+
-+	regmap_write(pwrc->regmap, pwrc->base + RTC_BBPU, RTC_BBPU_KEY);
-+	regmap_write(pwrc->regmap, pwrc->base + RTC_WRTGR, 1);
-+
-+	ret =3D regmap_read_poll_timeout(pwrc->regmap,
-+					pwrc->base + RTC_BBPU, val,
-+					!(val & RTC_BBPU_CBUSY),
-+					MTK_RTC_POLL_DELAY_US,
-+					MTK_RTC_POLL_TIMEOUT);
-+	if (ret)
-+		dev_err(pwrc->dev, "failed to write BBPU: %d\n", ret);
-+
-+	/* Wait some time until system down, otherwise, notice with a warn */
-+	mdelay(1000);
-+
-+	WARN_ONCE(1, "Unable to power off system\n");
-+}
-+
-+static int mt6323_pwrc_probe(struct platform_device *pdev)
-+{
-+	struct mt6397_chip *mt6397_chip =3D dev_get_drvdata(pdev->dev.parent);
-+	struct mt6323_pwrc *pwrc;
-+	struct resource *res;
-+
-+	pwrc =3D devm_kzalloc(&pdev->dev, sizeof(*pwrc), GFP_KERNEL);
-+	if (!pwrc)
-+		return -ENOMEM;
-+
-+	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	pwrc->base =3D res->start;
-+	pwrc->regmap =3D mt6397_chip->regmap;
-+	pwrc->dev =3D &pdev->dev;
-+	mt_pwrc =3D pwrc;
-+
-+	pm_power_off =3D &mt6323_do_pwroff;
-+
-+	return 0;
-+}
-+
-+static int mt6323_pwrc_remove(struct platform_device *pdev)
-+{
-+	if (pm_power_off =3D=3D &mt6323_do_pwroff)
-+		pm_power_off =3D NULL;
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id mt6323_pwrc_dt_match[] =3D {
-+	{ .compatible =3D "mediatek,mt6323-pwrc" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, mt6323_pwrc_dt_match);
-+
-+static struct platform_driver mt6323_pwrc_driver =3D {
-+	.probe          =3D mt6323_pwrc_probe,
-+	.remove         =3D mt6323_pwrc_remove,
-+	.driver         =3D {
-+		.name   =3D "mt6323-pwrc",
-+		.of_match_table =3D mt6323_pwrc_dt_match,
-+	},
-+};
-+
-+module_platform_driver(mt6323_pwrc_driver);
-+
-+MODULE_DESCRIPTION("Poweroff driver for MT6323 PMIC");
-+MODULE_AUTHOR("Sean Wang <sean.wang@mediatek.com>");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/mfd/mt6397/core.h b/include/linux/mfd/mt6397/co=
-re.h
-index 25a95e72179b..652da61e3711 100644
-=2D-- a/include/linux/mfd/mt6397/core.h
-+++ b/include/linux/mfd/mt6397/core.h
-@@ -7,6 +7,8 @@
- #ifndef __MFD_MT6397_CORE_H__
- #define __MFD_MT6397_CORE_H__
-
++#include <linux/jiffies.h>
 +#include <linux/mutex.h>
++#include <linux/regmap.h>
++#include <linux/rtc.h>
 +
- enum mt6397_irq_numbers {
- 	MT6397_IRQ_SPKL_AB =3D 0,
- 	MT6397_IRQ_SPKR_AB,
++#define RTC_BBPU               0x0000
++#define RTC_BBPU_CBUSY         BIT(6)
++#define RTC_BBPU_KEY            (0x43 << 8)
++
++#define RTC_WRTGR              0x003c
++
++#define RTC_IRQ_STA            0x0002
++#define RTC_IRQ_STA_AL         BIT(0)
++#define RTC_IRQ_STA_LP         BIT(3)
++
++#define RTC_IRQ_EN             0x0004
++#define RTC_IRQ_EN_AL          BIT(0)
++#define RTC_IRQ_EN_ONESHOT     BIT(2)
++#define RTC_IRQ_EN_LP          BIT(3)
++#define RTC_IRQ_EN_ONESHOT_AL  (RTC_IRQ_EN_ONESHOT | RTC_IRQ_EN_AL)
++
++#define RTC_AL_MASK            0x0008
++#define RTC_AL_MASK_DOW                BIT(4)
++
++#define RTC_TC_SEC             0x000a
++/* Min, Hour, Dom... register offset to RTC_TC_SEC */
++#define RTC_OFFSET_SEC         0
++#define RTC_OFFSET_MIN         1
++#define RTC_OFFSET_HOUR                2
++#define RTC_OFFSET_DOM         3
++#define RTC_OFFSET_DOW         4
++#define RTC_OFFSET_MTH         5
++#define RTC_OFFSET_YEAR                6
++#define RTC_OFFSET_COUNT       7
++
++#define RTC_AL_SEC             0x0018
++
++#define RTC_PDN2               0x002e
++#define RTC_PDN2_PWRON_ALARM   BIT(4)
++
++#define RTC_MIN_YEAR           1968
++#define RTC_BASE_YEAR          1900
++#define RTC_NUM_YEARS          128
++#define RTC_MIN_YEAR_OFFSET    (RTC_MIN_YEAR - RTC_BASE_YEAR)
++
++#define MTK_RTC_POLL_DELAY_US  10
++#define MTK_RTC_POLL_TIMEOUT   (jiffies_to_usecs(HZ))
++
++struct mt6397_rtc {
++	struct device           *dev;
++	struct rtc_device       *rtc_dev;
++
++	/* Protect register access from multiple tasks */
++	struct mutex            lock;
++	struct regmap           *regmap;
++	int                     irq;
++	u32                     addr_base;
++};
++
++#endif /* _LINUX_MFD_MT6397_RTC_H_ */
 =2D-
 2.17.1
 
