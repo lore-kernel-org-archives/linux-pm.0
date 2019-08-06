@@ -2,112 +2,145 @@ Return-Path: <SRS0=tL1J=WC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CDD7C433FF
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 13:05:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C801EC433FF
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 13:36:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6380F214C6
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 13:05:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="aAt655SR"
+	by mail.kernel.org (Postfix) with ESMTP id 9B1C5214C6
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 13:36:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1565098601;
+	bh=Z+FnyuvhyHFY98v/41stQdrl5WFV8d/8/KwkxLTuC0s=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=VFmgGSJ96xCH28a44Cwj3iqIoe/smVJYXGaRKazaa5xGbyMio8pcu0A6ukiXNT2b0
+	 z5U5kB/9B4DWyj07E/knZ/OKrjoJoT+Mz3NbaeNL6sxo7WN3egPcYitUn3M56YWSkj
+	 KPVFWG334mZALP2OB3S78e1miR3lRAFeq5R9Z1fA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731630AbfHFNFo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Aug 2019 09:05:44 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:34743 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731787AbfHFNFP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2019 09:05:15 -0400
-Received: by mail-wr1-f66.google.com with SMTP id 31so87872122wrm.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Aug 2019 06:05:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=uqH4UC1eSv85wYUtuk1mdjTGck9SIfF7lj/7yQH/8cg=;
-        b=aAt655SRq+X0Jny0WrUuo7sHjdd6G8a1GtrHRFYhXO1URHEr3byWv8/KWMOj8q9TjQ
-         040nKWawlrr5JZ83gyaGdkT+k1Mod+TK9X1aG9bdRz2rdifNlah3zVCF0zUmssP6DQAi
-         u3gIb/HUhMGroGl90/ytrizOn8PNZgHtXNNLH4BpNhVvNKEckWXSXJP70eDShNK7qgyd
-         50ytA6pXiVCBbSku2+T3undY7EiTNu9bOpKmrDi6UT7/QwWz3kFlsPMYFtqH5oCuGoja
-         w7UBBPo0rnAaaKloFS59gpptairrYwWMTvFTstw4Idmcu9lwAcX3CdPgsDkSbBH7H2dZ
-         h8TA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=uqH4UC1eSv85wYUtuk1mdjTGck9SIfF7lj/7yQH/8cg=;
-        b=WtS/7lFgwin6j+ZoK4JUL0a4oYt3tWGLe644FAlK3EXRWD5/SmjUj2bWLOhXcfyHsO
-         W5RgKW/X90h62Zg2/u9Ry6zPCXX1dkB0rLYvM5LSyKalMCkWedYQk52nu6Z0dqJ8ycI8
-         cbVVXNdB30EmT18tSp95wUf65GAwIU6bA0xJbHhrifBmvmAE/kzU5L1pwyhJ7vR1W265
-         hanvYQmsnBKH/CzYIacG40JeLLY+3dsCzggNo36UnY43HKRxbvKrRFDRHhxeh3r0W0wc
-         Wvi+lrUY3UfdivGn7k9w88FelwmLWD8TUDO0amLRzpr/rHD5rQPkGUVSuQCjV1lZcmKj
-         1b+A==
-X-Gm-Message-State: APjAAAVHqVxVMVKKM9b/rzsvAnKBA2aNkhcsdnZhGFIyDPA6KcLnaZTC
-        3BR/rJyOwxpb1avbkkwp7/2DqA==
-X-Google-Smtp-Source: APXvYqzvKl6XDaK+k++qOddjwyFWqDlehJlRskJnMO8xAi2r7ugXjIzQcQOHtKclpqWFZJmrdGoijA==
-X-Received: by 2002:adf:e708:: with SMTP id c8mr4973678wrm.25.1565096713800;
-        Tue, 06 Aug 2019 06:05:13 -0700 (PDT)
-Received: from glaroque-ThinkPad-T480.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id j33sm201888738wre.42.2019.08.06.06.05.12
-        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
-        Tue, 06 Aug 2019 06:05:13 -0700 (PDT)
-From:   Guillaume La Roque <glaroque@baylibre.com>
-To:     daniel.lezcano@linaro.org, khilman@baylibre.com
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v3 3/6] arm64: dts: amlogic: g12: add temperature sensor
-Date:   Tue,  6 Aug 2019 15:05:03 +0200
-Message-Id: <20190806130506.8753-4-glaroque@baylibre.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190806130506.8753-1-glaroque@baylibre.com>
-References: <20190806130506.8753-1-glaroque@baylibre.com>
+        id S1726373AbfHFNgl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Aug 2019 09:36:41 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47700 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726092AbfHFNgl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Aug 2019 09:36:41 -0400
+Received: from localhost (173-25-83-245.client.mchsi.com [173.25.83.245])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 63992206A2;
+        Tue,  6 Aug 2019 13:36:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1565098599;
+        bh=Z+FnyuvhyHFY98v/41stQdrl5WFV8d/8/KwkxLTuC0s=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=1jO/BjLahJpbTqPAHOWZ3Gtqul5YAAcpR/h+ZcBUq0gsXqu0vO9fysubuai58qPHW
+         NOTI4prJ+iWQWCkM/HD4dPJ8pnXabGg0d3REehztoV7uo6f2kpY0l5NUzMCZldZYX3
+         qOhDdanOEeA5kqx7ewR+43T4mvwyCxyMgFBBtGXs=
+Date:   Tue, 6 Aug 2019 08:36:38 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linux PCI <linux-pci@vger.kernel.org>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Keith Busch <keith.busch@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/5] PCI / PM: Check for error when reading PME status
+Message-ID: <20190806133638.GQ151852@google.com>
+References: <20190805205214.194981-1-helgaas@kernel.org>
+ <20190805205214.194981-4-helgaas@kernel.org>
+ <CAJZ5v0i5oVuZMxFmYiLnYPk=BsFGGiYntez3m1V5xeWgTgA4hg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0i5oVuZMxFmYiLnYPk=BsFGGiYntez3m1V5xeWgTgA4hg@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add cpu and ddr temperature sensors for G12 Socs
+On Mon, Aug 05, 2019 at 11:02:51PM +0200, Rafael J. Wysocki wrote:
+> On Mon, Aug 5, 2019 at 10:52 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+> >
+> > pci_check_pme_status() reads the Power Management capability to determine
+> > whether a device has generated a PME.  The capability is in config space,
+> > which is accessible in D0, D1, D2, and D3hot, but not in D3cold.
+> >
+> > If we call pci_check_pme_status() on a device that's in D3cold, config
+> > reads fail and return ~0 data, which we erroneously interpreted as "the
+> > device has generated a PME".
+> >
+> > 000dd5316e1c ("PCI: Do not poll for PME if the device is in D3cold")
+> > avoided many of these problems by avoiding pci_check_pme_status() if we
+> > think the device is in D3cold.  However, it is not a complete fix because
+> > the device may go to D3cold after we check its power state but before
+> > pci_check_pme_status() reads the Power Management Status Register.
+> >
+> > Return false ("device has not generated a PME") if we get an error response
+> > reading the Power Management Status Register.
+> >
+> > Fixes: 000dd5316e1c ("PCI: Do not poll for PME if the device is in D3cold")
+> > Fixes: 71a83bd727cc ("PCI/PM: add runtime PM support to PCIe port")
+> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> > ---
+> >  drivers/pci/pci.c | 3 +++
+> >  1 file changed, 3 insertions(+)
+> >
+> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > index 984171d40858..af6a97d7012b 100644
+> > --- a/drivers/pci/pci.c
+> > +++ b/drivers/pci/pci.c
+> > @@ -2008,6 +2008,9 @@ bool pci_check_pme_status(struct pci_dev *dev)
+> >
+> >         pmcsr_pos = dev->pm_cap + PCI_PM_CTRL;
+> >         pci_read_config_word(dev, pmcsr_pos, &pmcsr);
+> > +       if (pmcsr == (u16) PCI_ERROR_RESPONSE)
+> > +               return false;
+> 
+> No, sorry.
+> 
+> We tried that and it didn't work.
+> 
+> pcie_pme_handle_request() depends on this returning "true" for all
+> bits set, as from its perspective "device is not accessible" may very
+> well mean "device may have signaled PME".
 
-Signed-off-by: Guillaume La Roque <glaroque@baylibre.com>
-Reviewed-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
----
- .../boot/dts/amlogic/meson-g12-common.dtsi    | 20 +++++++++++++++++++
- 1 file changed, 20 insertions(+)
+Right, it's obviously wrong in the case of devices that advertise
+D3cold in PME_Support, i.e., devices that can generate PME even with
+main power off.  Also, we may want to try to wake up devices if the
+config read fails for a reason other than the device being in D3cold.
 
-diff --git a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-index 06e186ca41e3..a06298538614 100644
---- a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-@@ -1353,6 +1353,26 @@
- 				};
- 			};
- 
-+			cpu_temp: temperature-sensor@34800 {
-+				compatible = "amlogic,g12-cpu-thermal",
-+					     "amlogic,g12-thermal";
-+				reg = <0x0 0x34800 0x0 0x50>;
-+				interrupts = <GIC_SPI 35 IRQ_TYPE_EDGE_RISING>;
-+				clocks = <&clkc CLKID_TS>;
-+				#thermal-sensor-cells = <0>;
-+				amlogic,ao-secure = <&sec_AO>;
-+			};
-+
-+			ddr_temp: temperature-sensor@34c00 {
-+				compatible = "amlogic,g12-ddr-thermal",
-+					     "amlogic,g12-thermal";
-+				reg = <0x0 0x34c00 0x0 0x50>;
-+				interrupts = <GIC_SPI 36 IRQ_TYPE_EDGE_RISING>;
-+				clocks = <&clkc CLKID_TS>;
-+				#thermal-sensor-cells = <0>;
-+				amlogic,ao-secure = <&sec_AO>;
-+			};
-+
- 			usb2_phy0: phy@36000 {
- 				compatible = "amlogic,g12a-usb2-phy";
- 				reg = <0x0 0x36000 0x0 0x2000>;
--- 
-2.17.1
+What I don't like about the current code is that it checks
+PCI_PM_CTRL_PME_STATUS in data that may be completely bogus.  Do you
+think it would be better to do something like this:
 
+  pci_read_config_word(dev, pmcsr_pos, &pmcsr);
+  if (pmcsr == (u16) PCI_ERROR_RESPONSE) {
+    if (pci_pme_capable(dev, PCI_PM_CAP_PME_D3cold))
+      return true;
+    return false;
+  }
+
+or maybe this:
+
+  pci_read_config_word(dev, pmcsr_pos, &pmcsr);
+  if (pmcsr == (u16) PCI_ERROR_RESPONSE)
+    return true;
+
+We should get PCI_ERROR_RESPONSE pretty reliably from devices in
+D3cold, so the first possibility would cover that case.
+
+But since pci_check_pme_status() basically returns a hint ("true"
+means a device *may* have generated a PME), and even if the hint is
+wrong, the worst that happens is an unnecessary wakeup, maybe the
+second possibility is safer.
+
+What do you think?
+
+> >         if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
+> >                 return false;
