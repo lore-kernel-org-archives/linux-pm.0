@@ -2,119 +2,127 @@ Return-Path: <SRS0=tL1J=WC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2C10C31E40
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 21:32:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B946C433FF
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 21:51:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 91C5C217F4
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 21:32:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1565127161;
-	bh=frBRW98Gphsjm7khOnwDtnCiYYJEpmxxx35acMgCkB8=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=zLhWePWSWigA3+HzG2gERZAEyaI5Q4Gc6rf6B2fBLvOBve76/YMKEJwFS7EOVunXh
-	 zqklNEsz2i52YLVo3FUkGGvr5kwrzOsCMqWysMuJyGouABV2DlISBsuCYPQWoWk3rp
-	 OB4+HN6H9aBnX849lTV5IocNO8NuLR7sA8RLV+Jw=
+	by mail.kernel.org (Postfix) with ESMTP id 2DA3F2086D
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 21:51:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="oMlhdEUV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726238AbfHFVcl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Aug 2019 17:32:41 -0400
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:36349 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725974AbfHFVck (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2019 17:32:40 -0400
-Received: by mail-oi1-f195.google.com with SMTP id c15so13424236oic.3;
-        Tue, 06 Aug 2019 14:32:40 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Ef8vY14IPg+ARIOj2VrrOApE5VT46udp6YkWmmIY8Ms=;
-        b=C9tpcqn2Gg1FkvdmKFSoHZzZpu7xwyVY7lSOlgHozEIMXdpQGdGjlFZGhNTo//CHGA
-         z0f0OyVtxGZwCgGGqEoT18sEkm7LGTENIZT1LAQv4vfJ7JSwSo9E6RQQ1MKfqBs93EMn
-         g5a4SyThQ8EI9MEW8/Jt8qlcmlCrqEGnTUtrjCbzBwrN5nbvMh6Lpimd4h/kuGPYn4S8
-         MItErD+nfNesXZG+uUt4+82N6BHomyH0SloZH2cXNYZMnbbxKZYqMB8ty8dvakV4WOwm
-         4Bu2U/9jZ3mq/uVfhKl/XEsRIlrbVzO667+PiDpVWfxAcckczXaoxo2icywo+divFWLy
-         J9sw==
-X-Gm-Message-State: APjAAAWOvh9d7SKKkN5v2Np35ZG534woE8xnhYbEDoDa2lqbAAuHy2+5
-        dXIV0iJRZn4FaguH5zRAriNSmjUcuXvNf03RuHg=
-X-Google-Smtp-Source: APXvYqz5InPmzAE9CcFUiwV8OQSK3Rfqze+93pwnQo2dyWs4n8mTKQoIhMVewx9cL+IVA1slbun5a7mS7PvjzPnLM8g=
-X-Received: by 2002:aca:cdd3:: with SMTP id d202mr3451399oig.115.1565127159601;
- Tue, 06 Aug 2019 14:32:39 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190805175848.163558-1-trong@android.com> <20190805175848.163558-4-trong@android.com>
- <5d48bbc2.1c69fb81.62114.5473@mx.google.com> <CANA+-vBFY_mVfhhK=5BL5m_yyQ5+GTE9bv32fk-qsfnAmfE4nA@mail.gmail.com>
-In-Reply-To: <CANA+-vBFY_mVfhhK=5BL5m_yyQ5+GTE9bv32fk-qsfnAmfE4nA@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 6 Aug 2019 23:32:27 +0200
-Message-ID: <CAJZ5v0ijZdTPi3dFrqcGwPo-gmCEOmjnShv=fLBW9L_8vDNuZQ@mail.gmail.com>
-Subject: Re: [PATCH v7 3/3] PM / wakeup: Show wakeup sources stats in sysfs
-To:     Tri Vo <trong@android.com>
-Cc:     Stephen Boyd <swboyd@chromium.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        id S1726340AbfHFVvZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Aug 2019 17:51:25 -0400
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:6224 "EHLO
+        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726052AbfHFVvZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Aug 2019 17:51:25 -0400
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5d49f65d0002>; Tue, 06 Aug 2019 14:51:25 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+  by hqpgpgate101.nvidia.com (PGP Universal service);
+  Tue, 06 Aug 2019 14:51:24 -0700
+X-PGP-Universal: processed;
+        by hqpgpgate101.nvidia.com on Tue, 06 Aug 2019 14:51:24 -0700
+Received: from [10.110.102.151] (10.124.1.5) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Tue, 6 Aug
+ 2019 21:51:23 +0000
+Subject: Re: [PATCH v7 01/20] pinctrl: tegra: Add suspend and resume support
+To:     Linus Walleij <linus.walleij@linaro.org>
+CC:     "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
+        Jon Hunter <jonathanh@nvidia.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Jason Cooper <jason@lakedaemon.net>,
+        Marc Zyngier <marc.zyngier@arm.com>,
+        Stefan Agner <stefan@agner.ch>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Prashant Gaikwad <pgaikwad@nvidia.com>,
+        "Stephen Boyd" <sboyd@kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        <jckuo@nvidia.com>, "Joseph Lo" <josephl@nvidia.com>,
+        <talho@nvidia.com>, <linux-tegra@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "Mikko Perttunen" <mperttunen@nvidia.com>, <spatra@nvidia.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Dmitry Osipenko <digetx@gmail.com>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Hridya Valsaraju <hridya@google.com>,
-        Sandeep Patil <sspatil@google.com>,
-        Kalesh Singh <kaleshsingh@google.com>,
-        Ravi Chandra Sadineni <ravisadineni@chromium.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Cc: Android Kernel" <kernel-team@android.com>
-Content-Type: text/plain; charset="UTF-8"
+        viresh kumar <viresh.kumar@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+References: <1564607463-28802-1-git-send-email-skomatineni@nvidia.com>
+ <1564607463-28802-2-git-send-email-skomatineni@nvidia.com>
+ <CACRpkdZVR-i1c5eATL2hSPbLXcX1sR8NgXwa4j259XXUi57xug@mail.gmail.com>
+From:   Sowjanya Komatineni <skomatineni@nvidia.com>
+Message-ID: <a2fb3795-5ec1-1d03-f496-f151d1270e90@nvidia.com>
+Date:   Tue, 6 Aug 2019 14:51:23 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
+MIME-Version: 1.0
+In-Reply-To: <CACRpkdZVR-i1c5eATL2hSPbLXcX1sR8NgXwa4j259XXUi57xug@mail.gmail.com>
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL104.nvidia.com (172.18.146.11) To
+ HQMAIL107.nvidia.com (172.20.187.13)
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+        t=1565128285; bh=gUV/nSFh9pyMbly/cxjMzIWO74RSun53rYYSNmmjoN4=;
+        h=X-PGP-Universal:Subject:To:CC:References:From:Message-ID:Date:
+         User-Agent:MIME-Version:In-Reply-To:X-Originating-IP:
+         X-ClientProxiedBy:Content-Type:Content-Transfer-Encoding:
+         Content-Language;
+        b=oMlhdEUVeAmLGkU//WqtrKAHRzWtFZLiP6j4JhfYiR20Wo6xa2/qMIG5sVEIyqvRP
+         VNiYGpXrJvCrevAHJzkq8q/7QhZENK9zqamKqdYdefnNkULU4Iws4Ilg+XG9W2WqCZ
+         3FoURqBqFmv9gntK41TQNuDMgdwA+7fsCwHoZYd7//RhHIFM73L/f51tow56+N6Kjy
+         xwnIGz9auKNZneGQPaTt/u6N01Tel9NCTolybXgyWQGDupdaIZYDfuDi83EpeJ+58I
+         X2j+aJ03o6TC/zSlBZrz48r6vTKEyBFm+jOd4iQ+K105mVHPGMQeGAlkjF09AXQe4d
+         l3ugSzwppV/tg==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Aug 6, 2019 at 8:51 PM Tri Vo <trong@android.com> wrote:
->
-> On Mon, Aug 5, 2019 at 4:29 PM Stephen Boyd <swboyd@chromium.org> wrote:
-> >
-> > Quoting Tri Vo (2019-08-05 10:58:48)
-> > > diff --git a/drivers/base/power/wakeup_stats.c b/drivers/base/power/wakeup_stats.c
-> > > new file mode 100644
-> > > index 000000000000..3a4f55028e27
-> > > --- /dev/null
-> > > +++ b/drivers/base/power/wakeup_stats.c
-> > > @@ -0,0 +1,161 @@
-> > [...]
-> > > +/**
-> > > + * wakeup_source_sysfs_add - Add wakeup_source attributes to sysfs.
-> > > + * @parent: Device given wakeup source is associated with (or NULL if virtual).
-> > > + * @ws: Wakeup source to be added in sysfs.
-> > > + */
-> > > +int wakeup_source_sysfs_add(struct device *parent, struct wakeup_source *ws)
-> > > +{
-> > > +       struct device *dev;
-> > > +
-> > > +       dev = device_create_with_groups(wakeup_class, parent, MKDEV(0, 0), ws,
-> > > +                                       wakeup_source_groups, "wakeup%d",
-> > > +                                       ws->id);
-> > > +       if (IS_ERR(dev))
-> > > +               return PTR_ERR(dev);
-> > > +       ws->dev = dev;
-> > > +       pm_runtime_no_callbacks(ws->dev);
-> >
-> > Does this only avoid adding runtime PM attributes?
-> >
-> > I thought we would call device_set_pm_not_required() on the device here.
-> > Probably requiring a bit of copy/paste from device_create_with_groups()
-> > so that it can be set before the device is registered. Or another
-> > version of device_create_with_groups() that does everything besides call
-> > device_add().
->
-> Comments on pm_runtime_no_callbacks() say,
->   "Set the power.no_callbacks flag, which tells the PM core that this
->    device is power-managed through its parent and has no runtime PM
->    callbacks of its own.  The runtime sysfs attributes will be removed."
->
-> Sound like it's appropriate to apply this function to the wakeup source.
 
-This is only useful if you ever enable PM-runtime for this device.
-Which you won't do.
+On 8/5/19 2:20 AM, Linus Walleij wrote:
+> On Wed, Jul 31, 2019 at 11:11 PM Sowjanya Komatineni
+> <skomatineni@nvidia.com> wrote:
+>
+>> This patch adds support for Tegra pinctrl driver suspend and resume.
+>>
+>> During suspend, context of all pinctrl registers are stored and
+>> on resume they are all restored to have all the pinmux and pad
+>> configuration for normal operation.
+>>
+>> Acked-by: Thierry Reding <treding@nvidia.com>
+>> Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
+>> Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
+> Patch applied to the pinctrl tree.
+>
+> This patch seems finished.
+>
+> Also if the rest don't get merged for v5.4 then at least this is so
+> your patch stack gets more shallow.
+>
+> I hope it's fine to merge this separately, else tell me and I'll
+> pull it out.
+>
+> Yours,
+> Linus Walleij
 
-You could use device_set_pm_not_required(), though.
+Yes, this patch can be merged separately. But, there's latest feedback 
+from Dmitry to add barrier after writes to make sure pinmux register 
+writes happen.
+
+So will update this patch to add barrier in v8. So, need to wait for v8.
+
+Thanks
+
+Sowjanya
+
