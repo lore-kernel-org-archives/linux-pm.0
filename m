@@ -2,147 +2,134 @@ Return-Path: <SRS0=tL1J=WC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5BD0C31E40
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB42EC433FF
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:34:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8DF67217D9
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:29:44 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="baKyKelj"
+	by mail.kernel.org (Postfix) with ESMTP id 967EF208C3
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Aug 2019 16:34:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387636AbfHFQ3n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Aug 2019 12:29:43 -0400
-Received: from mout.gmx.net ([212.227.17.21]:53185 "EHLO mout.gmx.net"
+        id S1732788AbfHFQeQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Aug 2019 12:34:16 -0400
+Received: from foss.arm.com ([217.140.110.172]:36650 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387912AbfHFQ3C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Aug 2019 12:29:02 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1565108886;
-        bh=VLX9HTUE+wmslMOMb17Tzc973mqiJr+Dnn3HZbMgnn0=;
-        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=baKyKeljVeqoNyXI4cQXWi5NcbcAkx3TMg8CMSG1yOf6cTcuEoXalPAE0HoK0zvDy
-         WsZ50oHWZ6u4YRHmZCmqc9hlRvbNtd19Kz41VKhvXSFPPIrtQJ79DsdiwLetjzv+WZ
-         67NnIQOm+A17LNiUKgFzbZhtnaIfh00sP4aBLunM=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from localhost.localdomain ([217.61.153.94]) by mail.gmx.com
- (mrgmx103 [212.227.17.168]) with ESMTPSA (Nemesis) id
- 0M6ioC-1iI5TO0Gpw-00wWc1; Tue, 06 Aug 2019 18:28:06 +0200
-From:   Frank Wunderlich <frank-w@public-files.de>
-To:     Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Allison Randal <allison@lohutok.net>,
-        "David S. Miller" <davem@davemloft.net>,
-        devicetree@vger.kernel.org, Eddie Huang <eddie.huang@mediatek.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Kate Stewart <kstewart@linuxfoundation.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-rtc@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Richard Fontana <rfontana@redhat.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sean Wang <sean.wang@mediatek.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        "Tianping . Fang" <tianping.fang@mediatek.com>
-Cc:     Josef Friedl <josef.friedl@speed.at>,
-        Frank Wunderlich <frank-w@public-files.de>
-Subject: [PATCH v4 02/10] dt-bindings: add missing mt6397 rtc
-Date:   Tue,  6 Aug 2019 18:27:37 +0200
-Message-Id: <20190806162745.8414-3-frank-w@public-files.de>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190806162745.8414-1-frank-w@public-files.de>
-References: <20190806162745.8414-1-frank-w@public-files.de>
-X-Provags-ID: V03:K1:D9CrS8W2Jt6EUrtYbAmTXR2EPFc9FV/KlELr/U3yFcQs96LMz2L
- 7wbIt7yjgZqE4q03I87LOvJLuxjjYHUx80fkTLla6PNa0RXVJyJCyvugHqnFm/NgggSb2Wv
- ckPxkPl9ss+Fpsqi4Nk7FYjeVqc5v/U0coLTIpl8FCvZWi4n+ZmhE9mQhVlviKt3S9tCyZV
- uYdR0WKJK8A4i+EhOM/Cg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:odKRs4cm06A=:4nolkJEMYxs1kTVI3ZyguN
- oBKZp+Kyium1XB72WISTc1o62MGS6+qLQhpeg/w0VTuWJbzyKtn6IqMaA2lQyZEDPBJSlRgjJ
- ZEn6vOQUH6ZFspPwXlsSJo/QMq7iXlgmz0M2s6y4NUsmPTstIukWJx8RFbJAOxbWVWM5OMyEH
- qCR+QcDVDeZBWJvJ4xXTD6dx0vOLNS0mq/wwamKnhPPOpEKZTGYVeQ9LpHQ0y4pH9UXpt9gbN
- nupqDjZRqxXSsOr/FiVGalcNVnQvWN34H9JeceERHzEfqhYuqHMXvMnZyWptIWEro093u9DBv
- 8a0PMCGVLWwwkGRzei/OfbeePTI9QnsuaIV3TRt3w+uj3GbYM3lmgQO7aMF4AvIJcULEwbiCD
- L50WhUvfdUEP/l7vHv8QawaTr6BVd5DiX6m5cwrKvossu/OfDnYlDvvjd8b42MACzxGLaxu6D
- ywl3+Hftge1v10vFfnafXQ7U9gG4mdBAJN51xPXQUCDQsOY1v+HKF+mMsFQhnnTncNsr1uNfr
- jhO7rqym3pY/TnGdxsTU4daaiArm9v7jH6riZVbwm0XIO+93iG67yfyHOL2M8mNhKb+otQ+JD
- gO1WkKDpD2dPCNaFQH8f+P+TGkGT1G4GJwVspD702YHCQ8GYT/J8QD8PoPKAc0t5wh/U1mT7+
- 9+6R8zopzJAxccpdJBTzMV+AfRiqC4aCjVoPNlGjqvBUDfNzNU4KC5Saj3dxgnb9my58uBU0Z
- 7BUWoscMfQ53AhrPLmKCBzH5Pj4dAnNsdN8iixZkUP33BSe7p3k45ZJuSWHnmprJY6AUZ0gxi
- 2bWjhI9i856I4kYfnhJ6CwO67o9iWV3CPwbEir+wG+55ECNowJb4+8B0cqr81PlS/h+muwqgv
- T33f3d0+SPFEFfQ5fwlZSn++ToK+ijTgdcfKBC1dhzSQ6hLhZsHXLL3FZy52G4t1WT1rv7hHy
- s69kDK+npcHt+QKts32wYVM7nOSWkbQV4BqDEzx42tMwd2fgwl2/baE7YWffqDZrGwrWbzPF9
- Qhzc6shkpkWJLkE+jLFRz7qgeAdz0EcI6jDHnw75qK0tQNfz/q6dlBL1lJh9pi2hAI8Eg7PJy
- r0sww1CjlcMBtvrfkzi3YlZyg8GqYc4P28vxVllKxXzgmt88up8bNPa8w==
-Content-Transfer-Encoding: quoted-printable
+        id S1732048AbfHFQeQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Aug 2019 12:34:16 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C1B54344;
+        Tue,  6 Aug 2019 09:34:15 -0700 (PDT)
+Received: from e121166-lin.cambridge.arm.com (unknown [10.1.196.255])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3932C3F575;
+        Tue,  6 Aug 2019 09:34:14 -0700 (PDT)
+Date:   Tue, 6 Aug 2019 17:34:11 +0100
+From:   Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        LAKML <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH 4/6] ARM: psci: cpuidle: Introduce PSCI CPUidle driver
+Message-ID: <20190806163411.GC15498@e121166-lin.cambridge.arm.com>
+References: <20190722153745.32446-1-lorenzo.pieralisi@arm.com>
+ <20190722153745.32446-5-lorenzo.pieralisi@arm.com>
+ <20190806161033.GD16546@e107155-lin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190806161033.GD16546@e107155-lin>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Josef Friedl <josef.friedl@speed.at>
+On Tue, Aug 06, 2019 at 05:10:33PM +0100, Sudeep Holla wrote:
+> On Mon, Jul 22, 2019 at 04:37:43PM +0100, Lorenzo Pieralisi wrote:
+> > PSCI firmware is the standard power management control for
+> > all ARM64 based platforms and it is also deployed on some
+> > ARM 32 bit platforms to date.
+> >
+> > Idle state entry in PSCI is currently achieved by calling
+> > arm_cpuidle_init() and arm_cpuidle_suspend() in a generic
+> > idle driver, which in turn relies on ARM/ARM64 CPUidle back-end
+> > to relay the call into PSCI firmware if PSCI is the boot method.
+> >
+> > Given that PSCI is the standard idle entry method on ARM64 systems
+> > (which means that no other CPUidle driver are expected on ARM64
+> > platforms - so PSCI is already a generic idle driver), in order to
+> > simplify idle entry and code maintenance, it makes sense to have a PSCI
+> > specific idle driver so that idle code that it is currently living in
+> > drivers/firmware directory can be hoisted out of it and moved
+> > where it belongs, into a full-fledged PSCI driver, leaving PSCI code
+> > in drivers/firmware as a pure firmware interface, as it should be.
+> >
+> > Implement a PSCI CPUidle driver. By default it is a silent Kconfig entry
+> > which is left unselected, since it selection would clash with the
+> > generic ARM CPUidle driver that provides a PSCI based idle driver
+> > through the arm/arm64 arches back-ends CPU operations.
+> >
+> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> > Cc: Sudeep Holla <sudeep.holla@arm.com>
+> 
+> Once the error path issues pointed by Ulf are resolved,
+> 
+> Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+> 
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Cc: Mark Rutland <mark.rutland@arm.com>
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > ---
+> >  MAINTAINERS                    |   8 ++
+> >  drivers/cpuidle/Kconfig.arm    |   3 +
+> >  drivers/cpuidle/Makefile       |   1 +
+> >  drivers/cpuidle/cpuidle-psci.c | 150 +++++++++++++++++++++++++++++++++
+> >  4 files changed, 162 insertions(+)
+> >  create mode 100644 drivers/cpuidle/cpuidle-psci.c
+> >
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 783569e3c4b4..c2bf8ce65e83 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -4286,6 +4286,14 @@ S:	Supported
+> >  F:	drivers/cpuidle/cpuidle-exynos.c
+> >  F:	arch/arm/mach-exynos/pm.c
+> >
+> > +CPUIDLE DRIVER - ARM PSCI
+> > +M:	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > +M:	Sudeep Holla <sudeep.holla@arm.com>
+> > +L:	linux-pm@vger.kernel.org
+> > +L:	linux-arm-kernel@lists.infradead.org
+> > +S:	Supported
+> > +F:	drivers/cpuidle/cpuidle-psci.c
+> > +
+> >  CPU IDLE TIME MANAGEMENT FRAMEWORK
+> >  M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+> >  M:	Daniel Lezcano <daniel.lezcano@linaro.org>
+> > diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+> > index 48cb3d4bb7d1..929b57424ea4 100644
+> > --- a/drivers/cpuidle/Kconfig.arm
+> > +++ b/drivers/cpuidle/Kconfig.arm
+> > @@ -13,6 +13,9 @@ config ARM_CPUIDLE
+> >            initialized by calling the CPU operations init idle hook
+> >            provided by architecture code.
+> >
+> > +config ARM_PSCI_CPUIDLE
+> > +	bool
+> > +
+> 
+> [nit] I understand the intention to keep it hidden, but can't we have
+> the dependency and selection of other config as part of this patch to
+> make it more complete ?
 
-add missing devicetree-binding document for mt6397 rtc
-in later patch driver is extended with mt6323 chip
+Yes we can, it makes sense.
 
-Suggested-By: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Signed-off-by: Josef Friedl <josef.friedl@speed.at>
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-=2D--
-changes since v3: moved SOB
-changes since v2: splitted rtc-mt6397.txt from first patch
-
- .../devicetree/bindings/rtc/rtc-mt6397.txt    | 29 +++++++++++++++++++
- 1 file changed, 29 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
-
-diff --git a/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt b/Docume=
-ntation/devicetree/bindings/rtc/rtc-mt6397.txt
-new file mode 100644
-index 000000000000..ebd1cf80dcc8
-=2D-- /dev/null
-+++ b/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
-@@ -0,0 +1,29 @@
-+Device-Tree bindings for MediaTek PMIC based RTC
-+
-+MediaTek PMIC based RTC is an independent function of MediaTek PMIC that =
-works
-+as a type of multi-function device (MFD). The RTC can be configured and s=
-et up
-+with PMIC wrapper bus which is a common resource shared with the other
-+functions found on the same PMIC.
-+
-+For MediaTek PMIC MFD bindings, see:
-+Documentation/devicetree/bindings/mfd/mt6397.txt
-+
-+For MediaTek PMIC wrapper bus bindings, see:
-+Documentation/devicetree/bindings/soc/mediatek/pwrap.txt
-+
-+Required properties:
-+- compatible: Should be one of follows
-+       "mediatek,mt6323-rtc": for MT6323 PMIC
-+       "mediatek,mt6397-rtc": for MT6397 PMIC
-+
-+Example:
-+
-+       pmic {
-+               compatible =3D "mediatek,mt6323";
-+
-+               ...
-+
-+               rtc {
-+                       compatible =3D "mediatek,mt6323-rtc";
-+               };
-+       };
-=2D-
-2.17.1
-
+Thanks,
+Lorenzo
