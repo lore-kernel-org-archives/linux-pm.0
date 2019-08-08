@@ -7,35 +7,35 @@ X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DB60C32756
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DCEDC0650F
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E42EA21874
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 41A0F21874
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="HmDzTLAS"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="DiIm8SbQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404971AbfHHXsh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Aug 2019 19:48:37 -0400
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:12825 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404787AbfHHXrF (ORCPT
+        id S2405045AbfHHXsw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Aug 2019 19:48:52 -0400
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:17844 "EHLO
+        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2404850AbfHHXrF (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 19:47:05 -0400
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5d4cb4790001>; Thu, 08 Aug 2019 16:47:05 -0700
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5d4cb47a0001>; Thu, 08 Aug 2019 16:47:06 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
-  by hqpgpgate101.nvidia.com (PGP Universal service);
+  by hqpgpgate102.nvidia.com (PGP Universal service);
   Thu, 08 Aug 2019 16:47:04 -0700
 X-PGP-Universal: processed;
-        by hqpgpgate101.nvidia.com on Thu, 08 Aug 2019 16:47:04 -0700
-Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL101.nvidia.com
+        by hqpgpgate102.nvidia.com on Thu, 08 Aug 2019 16:47:04 -0700
+Received: from HQMAIL105.nvidia.com (172.20.187.12) by HQMAIL101.nvidia.com
  (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
- 2019 23:47:03 +0000
-Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL109.nvidia.com
- (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 8 Aug 2019 23:47:03 +0000
+ 2019 23:47:04 +0000
+Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Thu, 8 Aug 2019 23:47:04 +0000
 Received: from skomatineni-linux.nvidia.com (Not Verified[10.110.103.110]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
-        id <B5d4cb4770004>; Thu, 08 Aug 2019 16:47:03 -0700
+        id <B5d4cb4780000>; Thu, 08 Aug 2019 16:47:04 -0700
 From:   Sowjanya Komatineni <skomatineni@nvidia.com>
 To:     <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
         <tglx@linutronix.de>, <jason@lakedaemon.net>,
@@ -50,9 +50,9 @@ CC:     <pdeschrijver@nvidia.com>, <pgaikwad@nvidia.com>,
         <digetx@gmail.com>, <devicetree@vger.kernel.org>,
         <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
         <linux-pm@vger.kernel.org>
-Subject: [PATCH v8 08/21] clk: tegra: periph: Add restore_context support
-Date:   Thu, 8 Aug 2019 16:46:47 -0700
-Message-ID: <1565308020-31952-9-git-send-email-skomatineni@nvidia.com>
+Subject: [PATCH v8 12/21] cpufreq: tegra124: Add suspend and resume support
+Date:   Thu, 8 Aug 2019 16:46:51 -0700
+Message-ID: <1565308020-31952-13-git-send-email-skomatineni@nvidia.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
 References: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
@@ -60,124 +60,120 @@ X-NVConfidentiality: public
 MIME-Version: 1.0
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1565308025; bh=MaBbjtBMzuugkNzaFeu4r//HvNEiuUr9jhuS1/yiVIA=;
+        t=1565308026; bh=F15XAU7jizr+feJ2UEN0D8nDDnwfPQ1DdVDP+ne0krg=;
         h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
          In-Reply-To:References:X-NVConfidentiality:MIME-Version:
          Content-Type;
-        b=HmDzTLASre08uJVoG+GDqLGUppRw+6b7cwK1/jWDBcEc5n45F9WNTWIAQd/ghRMgf
-         5VHAdLqYYM2RdlcyWo8PsXfg+8EJgBZqPIJ+3VjQ4kO4S9Qo5SJNMU7+k/XK4Mw1Xq
-         8bh7oEpjsITaT8dr+M785yB1ToOnbt5maXJDZWbbkaueH3NdTF2t4lSMd0wXeYoBOt
-         H3Tve3uNUlj60+UQRvYzzwuingpVPnlLaImkZz6cOggh7cRfNjm2bklF2NW+gYI+N9
-         tDTyPryOs8D+c/1Sp6C6fEmz0+SmRRmJZgd4nQw0MQEr6t5Fd2kwMnxIBr32X47gRJ
-         b1g0EtDZOOFZA==
+        b=DiIm8SbQO+GNmP8myF8kslsguetVqPKnpVAGIIK8X0P/mhUg5v00X4lLDKSCFG2hl
+         a6/nrSE0ULtxxsNk4Sicyk3gCwn+RlCv0YM7ZF26DIatJlmUMgaAZuf6XT2YvwqMN+
+         aM4DCyOsTo10juYViiLOfVJXInAzKEWVCzI9XI4AOm+RKEbOMfQ/mJrkrhST3R+WKq
+         TMsKbdY2Zl72C/LcKVYGl0acH72Fzq1OFdxn12dPFy6um7I9cdIDHTF+hWFQRxSDeW
+         nUpad2gJbphmoWHDkDcLsknr4cY9JAcaJObk2SwPSM8anyXT1L9Z0J9ZpDzrqZ+wVo
+         kRr78/b3q0Bhg==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch implements restore_context support for clk-periph and
-clk-sdmmc-mux clock operations to restore clock parent and rates
-on system resume.
+This patch adds suspend and resume pm ops for cpufreq driver.
 
-During system suspend, core power goes off and looses the context
-of the Tegra clock controller registers.
+PLLP is the safe clock source for CPU during system suspend and
+resume as PLLP rate is below the CPU Fmax at Vmin.
 
-So on system resume, clocks parent and rate are restored back to
-the context before suspend based on cached data.
+CPUFreq driver suspend switches the CPU clock source to PLLP and
+disables the DFLL clock.
 
+During system resume, warmboot code powers up the CPU with PLLP
+clock source. So CPUFreq driver resume enabled DFLL clock and
+switches CPU back to DFLL clock source.
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
 Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
 ---
- drivers/clk/tegra/clk-periph.c    | 18 ++++++++++++++++++
- drivers/clk/tegra/clk-sdmmc-mux.c | 12 ++++++++++++
- 2 files changed, 30 insertions(+)
+ drivers/cpufreq/tegra124-cpufreq.c | 60 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
-diff --git a/drivers/clk/tegra/clk-periph.c b/drivers/clk/tegra/clk-periph.c
-index 58437da25156..c9d28cbadccc 100644
---- a/drivers/clk/tegra/clk-periph.c
-+++ b/drivers/clk/tegra/clk-periph.c
-@@ -3,6 +3,7 @@
-  * Copyright (c) 2012, NVIDIA CORPORATION.  All rights reserved.
-  */
+diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
+index 4f0c637b3b49..e979a3370988 100644
+--- a/drivers/cpufreq/tegra124-cpufreq.c
++++ b/drivers/cpufreq/tegra124-cpufreq.c
+@@ -6,6 +6,7 @@
+ #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
  
-+#include <linux/clk.h>
- #include <linux/clk-provider.h>
- #include <linux/export.h>
- #include <linux/slab.h>
-@@ -99,6 +100,20 @@ static void clk_periph_disable(struct clk_hw *hw)
- 	gate_ops->disable(gate_hw);
+ #include <linux/clk.h>
++#include <linux/cpufreq.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -128,8 +129,67 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
+ 	return ret;
  }
  
-+static void clk_periph_restore_context(struct clk_hw *hw)
++static int __maybe_unused tegra124_cpufreq_suspend(struct device *dev)
 +{
-+	struct tegra_clk_periph *periph = to_clk_periph(hw);
-+	const struct clk_ops *div_ops = periph->div_ops;
-+	struct clk_hw *div_hw = &periph->divider.hw;
-+	struct clk_hw *parent = clk_hw_get_parent(hw);
-+	int parent_id = clk_hw_get_parent_index(hw, parent);
++	struct tegra124_cpufreq_priv *priv = dev_get_drvdata(dev);
++	int err;
 +
-+	if (!(periph->gate.flags & TEGRA_PERIPH_NO_DIV))
-+		div_ops->restore_context(div_hw);
++	/*
++	 * PLLP rate 408Mhz is below the CPU Fmax at Vmin and is safe to
++	 * use during suspend and resume. So, switch the CPU clock source
++	 * to PLLP and disable DFLL.
++	 */
++	err = clk_set_parent(priv->cpu_clk, priv->pllp_clk);
++	if (err < 0) {
++		dev_err(dev, "failed to reparent to PLLP: %d\n", err);
++		return err;
++	}
 +
-+	clk_periph_set_parent(hw, parent_id);
++	/* disable DFLL clock */
++	clk_disable_unprepare(priv->dfll_clk);
++
++	return 0;
 +}
 +
- const struct clk_ops tegra_clk_periph_ops = {
- 	.get_parent = clk_periph_get_parent,
- 	.set_parent = clk_periph_set_parent,
-@@ -108,6 +123,7 @@ const struct clk_ops tegra_clk_periph_ops = {
- 	.is_enabled = clk_periph_is_enabled,
- 	.enable = clk_periph_enable,
- 	.disable = clk_periph_disable,
-+	.restore_context = clk_periph_restore_context,
- };
- 
- static const struct clk_ops tegra_clk_periph_nodiv_ops = {
-@@ -116,6 +132,7 @@ static const struct clk_ops tegra_clk_periph_nodiv_ops = {
- 	.is_enabled = clk_periph_is_enabled,
- 	.enable = clk_periph_enable,
- 	.disable = clk_periph_disable,
-+	.restore_context = clk_periph_restore_context,
- };
- 
- static const struct clk_ops tegra_clk_periph_no_gate_ops = {
-@@ -124,6 +141,7 @@ static const struct clk_ops tegra_clk_periph_no_gate_ops = {
- 	.recalc_rate = clk_periph_recalc_rate,
- 	.round_rate = clk_periph_round_rate,
- 	.set_rate = clk_periph_set_rate,
-+	.restore_context = clk_periph_restore_context,
- };
- 
- static struct clk *_tegra_clk_register_periph(const char *name,
-diff --git a/drivers/clk/tegra/clk-sdmmc-mux.c b/drivers/clk/tegra/clk-sdmmc-mux.c
-index a5cd3e31dbae..8db48966b100 100644
---- a/drivers/clk/tegra/clk-sdmmc-mux.c
-+++ b/drivers/clk/tegra/clk-sdmmc-mux.c
-@@ -194,6 +194,17 @@ static void clk_sdmmc_mux_disable(struct clk_hw *hw)
- 	gate_ops->disable(gate_hw);
- }
- 
-+static void clk_sdmmc_mux_restore_context(struct clk_hw *hw)
++static int __maybe_unused tegra124_cpufreq_resume(struct device *dev)
 +{
-+	struct clk_hw *parent = clk_hw_get_parent(hw);
-+	unsigned long parent_rate = clk_hw_get_rate(parent);
-+	unsigned long rate = clk_hw_get_rate(hw);
-+	int parent_id = clk_hw_get_parent_index(hw, parent);
++	struct tegra124_cpufreq_priv *priv = dev_get_drvdata(dev);
++	int err;
 +
-+	clk_sdmmc_mux_set_parent(hw, parent_id);
-+	clk_sdmmc_mux_set_rate(hw, rate, parent_rate);
++	/*
++	 * Warmboot code powers up the CPU with PLLP clock source.
++	 * Enable DFLL clock and switch CPU clock source back to DFLL.
++	 */
++	err = clk_prepare_enable(priv->dfll_clk);
++	if (err < 0) {
++		dev_err(dev, "failed to enable DFLL clock for CPU: %d\n", err);
++		goto disable_cpufreq;
++	}
++
++	err = clk_set_parent(priv->cpu_clk, priv->dfll_clk);
++	if (err < 0) {
++		dev_err(dev, "failed to reparent to DFLL clock: %d\n", err);
++		goto disable_dfll;
++	}
++
++	return 0;
++
++disable_dfll:
++	clk_disable_unprepare(priv->dfll_clk);
++disable_cpufreq:
++	disable_cpufreq();
++
++	return err;
 +}
 +
- static const struct clk_ops tegra_clk_sdmmc_mux_ops = {
- 	.get_parent = clk_sdmmc_mux_get_parent,
- 	.set_parent = clk_sdmmc_mux_set_parent,
-@@ -203,6 +214,7 @@ static const struct clk_ops tegra_clk_sdmmc_mux_ops = {
- 	.is_enabled = clk_sdmmc_mux_is_enabled,
- 	.enable = clk_sdmmc_mux_enable,
- 	.disable = clk_sdmmc_mux_disable,
-+	.restore_context = clk_sdmmc_mux_restore_context,
++static const struct dev_pm_ops tegra124_cpufreq_pm_ops = {
++	SET_SYSTEM_SLEEP_PM_OPS(tegra124_cpufreq_suspend,
++				tegra124_cpufreq_resume)
++};
++
+ static struct platform_driver tegra124_cpufreq_platdrv = {
+ 	.driver.name	= "cpufreq-tegra124",
++	.driver.pm	= &tegra124_cpufreq_pm_ops,
+ 	.probe		= tegra124_cpufreq_probe,
  };
  
- struct clk *tegra_clk_register_sdmmc_mux_div(const char *name,
 -- 
 2.7.4
 
