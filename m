@@ -5,37 +5,40 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A10BC0650F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4B5DC32756
 	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:47:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 65EDB217D7
+	by mail.kernel.org (Postfix) with ESMTP id 9C8A521743
 	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:47:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="f7K97+d5"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="pN4TEGpT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404965AbfHHXrH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S2404959AbfHHXrH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 8 Aug 2019 19:47:07 -0400
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:17829 "EHLO
-        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404788AbfHHXrG (ORCPT
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:12834 "EHLO
+        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2404842AbfHHXrG (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 19:47:06 -0400
-Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5d4cb4790000>; Thu, 08 Aug 2019 16:47:05 -0700
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5d4cb47a0000>; Thu, 08 Aug 2019 16:47:06 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
-  by hqpgpgate102.nvidia.com (PGP Universal service);
-  Thu, 08 Aug 2019 16:47:03 -0700
+  by hqpgpgate101.nvidia.com (PGP Universal service);
+  Thu, 08 Aug 2019 16:47:04 -0700
 X-PGP-Universal: processed;
-        by hqpgpgate102.nvidia.com on Thu, 08 Aug 2019 16:47:03 -0700
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL105.nvidia.com
+        by hqpgpgate101.nvidia.com on Thu, 08 Aug 2019 16:47:04 -0700
+Received: from HQMAIL111.nvidia.com (172.20.187.18) by HQMAIL105.nvidia.com
  (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
- 2019 23:47:03 +0000
-Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 8 Aug 2019 23:47:03 +0000
+ 2019 23:47:04 +0000
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
+ 2019 23:47:04 +0000
+Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Thu, 8 Aug 2019 23:47:04 +0000
 Received: from skomatineni-linux.nvidia.com (Not Verified[10.110.103.110]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
-        id <B5d4cb4760004>; Thu, 08 Aug 2019 16:47:02 -0700
+        id <B5d4cb4770007>; Thu, 08 Aug 2019 16:47:04 -0700
 From:   Sowjanya Komatineni <skomatineni@nvidia.com>
 To:     <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
         <tglx@linutronix.de>, <jason@lakedaemon.net>,
@@ -50,9 +53,9 @@ CC:     <pdeschrijver@nvidia.com>, <pgaikwad@nvidia.com>,
         <digetx@gmail.com>, <devicetree@vger.kernel.org>,
         <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
         <linux-pm@vger.kernel.org>
-Subject: [PATCH v8 05/21] clk: tegra: pll: Save and restore pll context
-Date:   Thu, 8 Aug 2019 16:46:44 -0700
-Message-ID: <1565308020-31952-6-git-send-email-skomatineni@nvidia.com>
+Subject: [PATCH v8 11/21] clk: tegra: clk-dfll: Add suspend and resume support
+Date:   Thu, 8 Aug 2019 16:46:50 -0700
+Message-ID: <1565308020-31952-12-git-send-email-skomatineni@nvidia.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
 References: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
@@ -60,219 +63,137 @@ X-NVConfidentiality: public
 MIME-Version: 1.0
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1565308025; bh=+RrIyyq/a5RwtKD+kltNeSYSPE/V/5yZ63xRpL2sp2c=;
+        t=1565308026; bh=ZmXQG3uKkfyAQI4tPlaiZSRJU0Jj7WxxNukinw2sjd0=;
         h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
          In-Reply-To:References:X-NVConfidentiality:MIME-Version:
          Content-Type;
-        b=f7K97+d5MEzw2ZVyeGqchujaYBj8RJn+G7014wPhqH5hIvdYUXDPeLVfbRvfncGfU
-         7PqBQA5jpvW0LaIPxU5mloY+I8j2FAuIj4arghHQPLpMftfGd+lZipmp8HmL2Z7gwI
-         NHvY5WXWa3YbBuJYxhktQkf9tnaB6zKl/CAQ7kuz0/O5uPBCVkfurfFZKrRkdRhKPS
-         vPs4NsSvpL6JG5oo/IKyK+ntkDKqenqWSTOS1UyZ9o459+2QPRxbXSMeH/6r/Uwg4E
-         D0cIkpKPzANq5nBGMvLcEZUuge6W9Xqq2Onsw+phBZ7/XF9d+OAEEQBLgba18hFfkT
-         U92652QUO8sjQ==
+        b=pN4TEGpT5neEasaIDCorZX7dErxt9ghpNf8CWAusUGoPpSfYMv7ONNcZvaQAcF2TE
+         yjErBWa8fSDKCvZWgA5/6Fh87hb5VaoDNDcSCXpCqJd1XrjaYfBAuxSJQAFjc3eB1o
+         SsbTf6z7iBT4PQK+Q8S02T6ptVxHHnmOD7Cc/dzKvP/nHxb1S7SIUqhWXB8oqg36fi
+         1ppWVw+R5/ZmH5GmVjpUKoYlSxoxDpTdL3aQt88PKa1xgj7HpyljGXT2ZJqDk/ktYq
+         NUR5dyzamnQtGiLHTe06/8OcuFsL/Oc8UOBQjd2Czm/zx9lpM6Rf/OmWy82nczTG4f
+         TIs5VHT6N1Qjg==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch implements save and restore of PLL context.
+This patch implements DFLL suspend and resume operation.
 
-During system suspend, core power goes off and looses the settings
-of the Tegra CAR controller registers.
+During system suspend entry, CPU clock will switch CPU to safe
+clock source of PLLP and disables DFLL clock output.
 
-So during suspend entry pll context is stored and on resume it is
-restored back along with its state.
+DFLL driver suspend confirms DFLL disable state and errors out on
+being active.
 
-Acked-by: Thierry Reding <treding@nvidia.com>
+DFLL is re-initialized during the DFLL driver resume as it goes
+through complete reset during suspend entry.
+
 Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
 ---
- drivers/clk/tegra/clk-pll.c | 88 ++++++++++++++++++++++++++++-----------------
- drivers/clk/tegra/clk.h     |  2 ++
- 2 files changed, 58 insertions(+), 32 deletions(-)
+ drivers/clk/tegra/clk-dfll.c               | 56 ++++++++++++++++++++++++++++++
+ drivers/clk/tegra/clk-dfll.h               |  2 ++
+ drivers/clk/tegra/clk-tegra124-dfll-fcpu.c |  1 +
+ 3 files changed, 59 insertions(+)
 
-diff --git a/drivers/clk/tegra/clk-pll.c b/drivers/clk/tegra/clk-pll.c
-index 1583f5fc992f..e52add2bbdbb 100644
---- a/drivers/clk/tegra/clk-pll.c
-+++ b/drivers/clk/tegra/clk-pll.c
-@@ -1008,6 +1008,28 @@ static unsigned long clk_plle_recalc_rate(struct clk_hw *hw,
- 	return rate;
- }
+diff --git a/drivers/clk/tegra/clk-dfll.c b/drivers/clk/tegra/clk-dfll.c
+index f8688c2ddf1a..eb298a5d7be9 100644
+--- a/drivers/clk/tegra/clk-dfll.c
++++ b/drivers/clk/tegra/clk-dfll.c
+@@ -1487,6 +1487,7 @@ static int dfll_init(struct tegra_dfll *td)
+ 	td->last_unrounded_rate = 0;
  
-+static void tegra_clk_pll_restore_context(struct clk_hw *hw)
-+{
-+	struct tegra_clk_pll *pll = to_clk_pll(hw);
-+	struct clk_hw *parent = clk_hw_get_parent(hw);
-+	unsigned long parent_rate = clk_hw_get_rate(parent);
-+	unsigned long rate = clk_hw_get_rate(hw);
-+	u32 val;
-+
-+	if (clk_pll_is_enabled(hw))
-+		return;
-+
-+	if (pll->params->set_defaults)
-+		pll->params->set_defaults(pll);
-+
-+	clk_pll_set_rate(hw, rate, parent_rate);
-+
-+	if (!__clk_get_enable_count(hw->clk))
-+		clk_pll_disable(hw);
-+	else
-+		clk_pll_enable(hw);
-+}
-+
- const struct clk_ops tegra_clk_pll_ops = {
- 	.is_enabled = clk_pll_is_enabled,
- 	.enable = clk_pll_enable,
-@@ -1015,6 +1037,7 @@ const struct clk_ops tegra_clk_pll_ops = {
- 	.recalc_rate = clk_pll_recalc_rate,
- 	.round_rate = clk_pll_round_rate,
- 	.set_rate = clk_pll_set_rate,
-+	.restore_context = tegra_clk_pll_restore_context,
- };
+ 	pm_runtime_enable(td->dev);
++	pm_runtime_irq_safe(td->dev);
+ 	pm_runtime_get_sync(td->dev);
  
- const struct clk_ops tegra_clk_plle_ops = {
-@@ -1802,6 +1825,27 @@ static int clk_pllu_tegra114_enable(struct clk_hw *hw)
- 
+ 	dfll_set_mode(td, DFLL_DISABLED);
+@@ -1513,6 +1514,61 @@ static int dfll_init(struct tegra_dfll *td)
  	return ret;
  }
-+
-+static void _clk_plle_tegra_init_parent(struct tegra_clk_pll *pll)
+ 
++/**
++ * tegra_dfll_suspend - check DFLL is disabled
++ * @dev: DFLL device *
++ *
++ * DFLL clock should be disabled by the CPUFreq driver. So, make
++ * sure it is disabled and disable all clocks needed by the DFLL.
++ */
++int tegra_dfll_suspend(struct device *dev)
 +{
-+	u32 val, val_aux;
++	struct tegra_dfll *td = dev_get_drvdata(dev);
 +
-+	/* ensure parent is set to pll_ref */
-+	val = pll_readl_base(pll);
-+	val_aux = pll_readl(pll->params->aux_reg, pll);
-+
-+	if (val & PLL_BASE_ENABLE) {
-+		if ((val_aux & PLLE_AUX_PLLRE_SEL) ||
-+		    (val_aux & PLLE_AUX_PLLP_SEL))
-+			WARN(1, "pll_e enabled with unsupported parent %s\n",
-+			     (val_aux & PLLE_AUX_PLLP_SEL) ? "pllp_out0" :
-+			     "pll_re_vco");
-+	} else {
-+		val_aux &= ~(PLLE_AUX_PLLRE_SEL | PLLE_AUX_PLLP_SEL);
-+		pll_writel(val_aux, pll->params->aux_reg, pll);
-+		fence_udelay(1, pll->clk_base);
++	if (dfll_is_running(td)) {
++		dev_err(td->dev, "dfll is enabled while shouldn't be\n");
++		return -EBUSY;
 +	}
++
++	reset_control_assert(td->dvco_rst);
++
++	return 0;
 +}
- #endif
- 
- static struct tegra_clk_pll *_tegra_init_pll(void __iomem *clk_base,
-@@ -2214,27 +2258,12 @@ struct clk *tegra_clk_register_plle_tegra114(const char *name,
- {
- 	struct tegra_clk_pll *pll;
- 	struct clk *clk;
--	u32 val, val_aux;
- 
- 	pll = _tegra_init_pll(clk_base, NULL, pll_params, lock);
- 	if (IS_ERR(pll))
- 		return ERR_CAST(pll);
- 
--	/* ensure parent is set to pll_re_vco */
--
--	val = pll_readl_base(pll);
--	val_aux = pll_readl(pll_params->aux_reg, pll);
--
--	if (val & PLL_BASE_ENABLE) {
--		if ((val_aux & PLLE_AUX_PLLRE_SEL) ||
--			(val_aux & PLLE_AUX_PLLP_SEL))
--			WARN(1, "pll_e enabled with unsupported parent %s\n",
--			  (val_aux & PLLE_AUX_PLLP_SEL) ? "pllp_out0" :
--					"pll_re_vco");
--	} else {
--		val_aux &= ~(PLLE_AUX_PLLRE_SEL | PLLE_AUX_PLLP_SEL);
--		pll_writel(val_aux, pll_params->aux_reg, pll);
--	}
-+	_clk_plle_tegra_init_parent(pll);
- 
- 	clk = _tegra_clk_register_pll(pll, name, parent_name, flags,
- 				      &tegra_clk_plle_tegra114_ops);
-@@ -2276,6 +2305,7 @@ static const struct clk_ops tegra_clk_pllss_ops = {
- 	.recalc_rate = clk_pll_recalc_rate,
- 	.round_rate = clk_pll_ramp_round_rate,
- 	.set_rate = clk_pllxc_set_rate,
-+	.restore_context = tegra_clk_pll_restore_context,
- };
- 
- struct clk *tegra_clk_register_pllss(const char *name, const char *parent_name,
-@@ -2375,6 +2405,7 @@ struct clk *tegra_clk_register_pllre_tegra210(const char *name,
- 		pll_params->vco_min = pll_params->adjust_vco(pll_params,
- 							     parent_rate);
- 
-+	pll_params->flags |= TEGRA_PLLRE;
- 	pll = _tegra_init_pll(clk_base, pmc, pll_params, lock);
- 	if (IS_ERR(pll))
- 		return ERR_CAST(pll);
-@@ -2520,11 +2551,19 @@ static void clk_plle_tegra210_disable(struct clk_hw *hw)
- 		spin_unlock_irqrestore(pll->lock, flags);
- }
- 
-+static void tegra_clk_plle_t210_restore_context(struct clk_hw *hw)
++EXPORT_SYMBOL(tegra_dfll_suspend);
++
++/**
++ * tegra_dfll_resume - reinitialize DFLL on resume
++ * @dev: DFLL instance
++ *
++ * DFLL is disabled and reset during suspend and resume.
++ * So, reinitialize the DFLL IP block back for use.
++ * DFLL clock is enabled later in closed loop mode by CPUFreq
++ * driver before switching its clock source to DFLL output.
++ */
++int tegra_dfll_resume(struct device *dev)
 +{
-+	struct tegra_clk_pll *pll = to_clk_pll(hw);
++	struct tegra_dfll *td = dev_get_drvdata(dev);
 +
-+	_clk_plle_tegra_init_parent(pll);
++	reset_control_deassert(td->dvco_rst);
++
++	pm_runtime_get_sync(td->dev);
++
++	dfll_set_mode(td, DFLL_DISABLED);
++	dfll_set_default_params(td);
++
++	if (td->soc->init_clock_trimmers)
++		td->soc->init_clock_trimmers();
++
++	dfll_set_open_loop_config(td);
++
++	dfll_init_out_if(td);
++
++	pm_runtime_put_sync(td->dev);
++
++	return 0;
 +}
++EXPORT_SYMBOL(tegra_dfll_resume);
 +
- static const struct clk_ops tegra_clk_plle_tegra210_ops = {
- 	.is_enabled =  clk_plle_tegra210_is_enabled,
- 	.enable = clk_plle_tegra210_enable,
- 	.disable = clk_plle_tegra210_disable,
- 	.recalc_rate = clk_pll_recalc_rate,
-+	.restore_context = tegra_clk_plle_t210_restore_context,
+ /*
+  * DT data fetch
+  */
+diff --git a/drivers/clk/tegra/clk-dfll.h b/drivers/clk/tegra/clk-dfll.h
+index 1b14ebe7268b..fb209eb5f365 100644
+--- a/drivers/clk/tegra/clk-dfll.h
++++ b/drivers/clk/tegra/clk-dfll.h
+@@ -42,5 +42,7 @@ int tegra_dfll_register(struct platform_device *pdev,
+ struct tegra_dfll_soc_data *tegra_dfll_unregister(struct platform_device *pdev);
+ int tegra_dfll_runtime_suspend(struct device *dev);
+ int tegra_dfll_runtime_resume(struct device *dev);
++int tegra_dfll_suspend(struct device *dev);
++int tegra_dfll_resume(struct device *dev);
+ 
+ #endif /* __DRIVERS_CLK_TEGRA_CLK_DFLL_H */
+diff --git a/drivers/clk/tegra/clk-tegra124-dfll-fcpu.c b/drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
+index e84b6d52cbbd..2ac2679d696d 100644
+--- a/drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
++++ b/drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
+@@ -631,6 +631,7 @@ static int tegra124_dfll_fcpu_remove(struct platform_device *pdev)
+ static const struct dev_pm_ops tegra124_dfll_pm_ops = {
+ 	SET_RUNTIME_PM_OPS(tegra_dfll_runtime_suspend,
+ 			   tegra_dfll_runtime_resume, NULL)
++	SET_SYSTEM_SLEEP_PM_OPS(tegra_dfll_suspend, tegra_dfll_resume)
  };
  
- struct clk *tegra_clk_register_plle_tegra210(const char *name,
-@@ -2535,27 +2574,12 @@ struct clk *tegra_clk_register_plle_tegra210(const char *name,
- {
- 	struct tegra_clk_pll *pll;
- 	struct clk *clk;
--	u32 val, val_aux;
- 
- 	pll = _tegra_init_pll(clk_base, NULL, pll_params, lock);
- 	if (IS_ERR(pll))
- 		return ERR_CAST(pll);
- 
--	/* ensure parent is set to pll_re_vco */
--
--	val = pll_readl_base(pll);
--	val_aux = pll_readl(pll_params->aux_reg, pll);
--
--	if (val & PLLE_BASE_ENABLE) {
--		if ((val_aux & PLLE_AUX_PLLRE_SEL) ||
--			(val_aux & PLLE_AUX_PLLP_SEL))
--			WARN(1, "pll_e enabled with unsupported parent %s\n",
--			  (val_aux & PLLE_AUX_PLLP_SEL) ? "pllp_out0" :
--					"pll_re_vco");
--	} else {
--		val_aux &= ~(PLLE_AUX_PLLRE_SEL | PLLE_AUX_PLLP_SEL);
--		pll_writel(val_aux, pll_params->aux_reg, pll);
--	}
-+	_clk_plle_tegra_init_parent(pll);
- 
- 	clk = _tegra_clk_register_pll(pll, name, parent_name, flags,
- 				      &tegra_clk_plle_tegra210_ops);
-diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-index a464524fbc90..dc546292e030 100644
---- a/drivers/clk/tegra/clk.h
-+++ b/drivers/clk/tegra/clk.h
-@@ -233,6 +233,7 @@ struct tegra_clk_pll;
-  * TEGRA_PLLMB - PLLMB has should be treated similar to PLLM. This
-  *     flag indicated that it is PLLMB.
-  * TEGRA_PLL_VCO_OUT - Used to indicate that the PLL has a VCO output
-+ * TEGRA_PLLRE - Used to indicate that it is PLLRE
-  */
- struct tegra_clk_pll_params {
- 	unsigned long	input_min;
-@@ -299,6 +300,7 @@ struct tegra_clk_pll_params {
- #define TEGRA_MDIV_NEW BIT(11)
- #define TEGRA_PLLMB BIT(12)
- #define TEGRA_PLL_VCO_OUT BIT(13)
-+#define TEGRA_PLLRE BIT(14)
- 
- /**
-  * struct tegra_clk_pll - Tegra PLL clock
+ static struct platform_driver tegra124_dfll_fcpu_driver = {
 -- 
 2.7.4
 
