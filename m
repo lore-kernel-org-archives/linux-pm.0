@@ -7,35 +7,35 @@ X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DCEDC0650F
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D62EC0650F
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 41A0F21874
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 620FD21881
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="DiIm8SbQ"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="j1+RoJyz"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2405045AbfHHXsw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Aug 2019 19:48:52 -0400
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:17844 "EHLO
+        id S2404703AbfHHXrE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Aug 2019 19:47:04 -0400
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:17814 "EHLO
         hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404850AbfHHXrF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 19:47:05 -0400
+        with ESMTP id S2404557AbfHHXrD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 19:47:03 -0400
 Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqemgate16.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5d4cb47a0001>; Thu, 08 Aug 2019 16:47:06 -0700
+        id <B5d4cb4780000>; Thu, 08 Aug 2019 16:47:04 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
   by hqpgpgate102.nvidia.com (PGP Universal service);
-  Thu, 08 Aug 2019 16:47:04 -0700
+  Thu, 08 Aug 2019 16:47:03 -0700
 X-PGP-Universal: processed;
-        by hqpgpgate102.nvidia.com on Thu, 08 Aug 2019 16:47:04 -0700
-Received: from HQMAIL105.nvidia.com (172.20.187.12) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
- 2019 23:47:04 +0000
-Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 8 Aug 2019 23:47:04 +0000
+        by hqpgpgate102.nvidia.com on Thu, 08 Aug 2019 16:47:03 -0700
+Received: from HQMAIL111.nvidia.com (172.20.187.18) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
+ 2019 23:47:02 +0000
+Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Thu, 8 Aug 2019 23:47:02 +0000
 Received: from skomatineni-linux.nvidia.com (Not Verified[10.110.103.110]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
-        id <B5d4cb4780000>; Thu, 08 Aug 2019 16:47:04 -0700
+        id <B5d4cb4760002>; Thu, 08 Aug 2019 16:47:02 -0700
 From:   Sowjanya Komatineni <skomatineni@nvidia.com>
 To:     <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
         <tglx@linutronix.de>, <jason@lakedaemon.net>,
@@ -50,9 +50,9 @@ CC:     <pdeschrijver@nvidia.com>, <pgaikwad@nvidia.com>,
         <digetx@gmail.com>, <devicetree@vger.kernel.org>,
         <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
         <linux-pm@vger.kernel.org>
-Subject: [PATCH v8 12/21] cpufreq: tegra124: Add suspend and resume support
-Date:   Thu, 8 Aug 2019 16:46:51 -0700
-Message-ID: <1565308020-31952-13-git-send-email-skomatineni@nvidia.com>
+Subject: [PATCH v8 03/21] clk: tegra: divider: Save and restore divider rate
+Date:   Thu, 8 Aug 2019 16:46:42 -0700
+Message-ID: <1565308020-31952-4-git-send-email-skomatineni@nvidia.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
 References: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
@@ -60,120 +60,60 @@ X-NVConfidentiality: public
 MIME-Version: 1.0
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1565308026; bh=F15XAU7jizr+feJ2UEN0D8nDDnwfPQ1DdVDP+ne0krg=;
+        t=1565308024; bh=MetX0MEocYV00a7mqgBES36OrLqh3mkw6YdN4UcIjLE=;
         h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
          In-Reply-To:References:X-NVConfidentiality:MIME-Version:
          Content-Type;
-        b=DiIm8SbQO+GNmP8myF8kslsguetVqPKnpVAGIIK8X0P/mhUg5v00X4lLDKSCFG2hl
-         a6/nrSE0ULtxxsNk4Sicyk3gCwn+RlCv0YM7ZF26DIatJlmUMgaAZuf6XT2YvwqMN+
-         aM4DCyOsTo10juYViiLOfVJXInAzKEWVCzI9XI4AOm+RKEbOMfQ/mJrkrhST3R+WKq
-         TMsKbdY2Zl72C/LcKVYGl0acH72Fzq1OFdxn12dPFy6um7I9cdIDHTF+hWFQRxSDeW
-         nUpad2gJbphmoWHDkDcLsknr4cY9JAcaJObk2SwPSM8anyXT1L9Z0J9ZpDzrqZ+wVo
-         kRr78/b3q0Bhg==
+        b=j1+RoJyzmRVH49PCMeOwe2iyZ4Inab12aqdo35yPrrIJJxqdXxedZW/R2mGsF7zj9
+         aTEvQbqqI4l1SBGC2WD3XHj3ObNy1J2gyre3zPcGRejFEfIO9zgzDb1xrFxrtdLTBt
+         SKIv1u0oFe659xDDp41gBSUMaYh60Wl5YoNbZcS6UnlAG54+A05NiJBFViWe1hapVr
+         nXF2wUoFvN1hkRU79tLW2HHD/bRhc1A7PnbMaHeWFUe9jzDwL80q6cwpHLIMTlV679
+         FySf0Suz20MXcTkyGjgLhjoj+q3SHQEiZdShSsUxQqn21hjOuPn6JzfZRHOnj1Jnqj
+         XxyfLcQtEXHgQ==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds suspend and resume pm ops for cpufreq driver.
+This patch implements context restore for clock divider.
 
-PLLP is the safe clock source for CPU during system suspend and
-resume as PLLP rate is below the CPU Fmax at Vmin.
+During system suspend, core power goes off and looses the settings
+of the Tegra CAR controller registers.
 
-CPUFreq driver suspend switches the CPU clock source to PLLP and
-disables the DFLL clock.
+So on resume, clock dividers are restored back for normal operation.
 
-During system resume, warmboot code powers up the CPU with PLLP
-clock source. So CPUFreq driver resume enabled DFLL clock and
-switches CPU back to DFLL clock source.
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
 Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
 ---
- drivers/cpufreq/tegra124-cpufreq.c | 60 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 60 insertions(+)
+ drivers/clk/tegra/clk-divider.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
-index 4f0c637b3b49..e979a3370988 100644
---- a/drivers/cpufreq/tegra124-cpufreq.c
-+++ b/drivers/cpufreq/tegra124-cpufreq.c
-@@ -6,6 +6,7 @@
- #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
- 
- #include <linux/clk.h>
-+#include <linux/cpufreq.h>
- #include <linux/err.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -128,8 +129,67 @@ static int tegra124_cpufreq_probe(struct platform_device *pdev)
- 	return ret;
+diff --git a/drivers/clk/tegra/clk-divider.c b/drivers/clk/tegra/clk-divider.c
+index e76731fb7d69..ca0de5f11f84 100644
+--- a/drivers/clk/tegra/clk-divider.c
++++ b/drivers/clk/tegra/clk-divider.c
+@@ -109,10 +109,21 @@ static int clk_frac_div_set_rate(struct clk_hw *hw, unsigned long rate,
+ 	return 0;
  }
  
-+static int __maybe_unused tegra124_cpufreq_suspend(struct device *dev)
++static void clk_divider_restore_context(struct clk_hw *hw)
 +{
-+	struct tegra124_cpufreq_priv *priv = dev_get_drvdata(dev);
-+	int err;
++	struct clk_hw *parent = clk_hw_get_parent(hw);
++	unsigned long parent_rate = clk_hw_get_rate(parent);
++	unsigned long rate = clk_hw_get_rate(hw);
 +
-+	/*
-+	 * PLLP rate 408Mhz is below the CPU Fmax at Vmin and is safe to
-+	 * use during suspend and resume. So, switch the CPU clock source
-+	 * to PLLP and disable DFLL.
-+	 */
-+	err = clk_set_parent(priv->cpu_clk, priv->pllp_clk);
-+	if (err < 0) {
-+		dev_err(dev, "failed to reparent to PLLP: %d\n", err);
-+		return err;
-+	}
-+
-+	/* disable DFLL clock */
-+	clk_disable_unprepare(priv->dfll_clk);
-+
-+	return 0;
++	if (clk_frac_div_set_rate(hw, rate, parent_rate) < 0)
++		WARN_ON(1);
 +}
 +
-+static int __maybe_unused tegra124_cpufreq_resume(struct device *dev)
-+{
-+	struct tegra124_cpufreq_priv *priv = dev_get_drvdata(dev);
-+	int err;
-+
-+	/*
-+	 * Warmboot code powers up the CPU with PLLP clock source.
-+	 * Enable DFLL clock and switch CPU clock source back to DFLL.
-+	 */
-+	err = clk_prepare_enable(priv->dfll_clk);
-+	if (err < 0) {
-+		dev_err(dev, "failed to enable DFLL clock for CPU: %d\n", err);
-+		goto disable_cpufreq;
-+	}
-+
-+	err = clk_set_parent(priv->cpu_clk, priv->dfll_clk);
-+	if (err < 0) {
-+		dev_err(dev, "failed to reparent to DFLL clock: %d\n", err);
-+		goto disable_dfll;
-+	}
-+
-+	return 0;
-+
-+disable_dfll:
-+	clk_disable_unprepare(priv->dfll_clk);
-+disable_cpufreq:
-+	disable_cpufreq();
-+
-+	return err;
-+}
-+
-+static const struct dev_pm_ops tegra124_cpufreq_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(tegra124_cpufreq_suspend,
-+				tegra124_cpufreq_resume)
-+};
-+
- static struct platform_driver tegra124_cpufreq_platdrv = {
- 	.driver.name	= "cpufreq-tegra124",
-+	.driver.pm	= &tegra124_cpufreq_pm_ops,
- 	.probe		= tegra124_cpufreq_probe,
+ const struct clk_ops tegra_clk_frac_div_ops = {
+ 	.recalc_rate = clk_frac_div_recalc_rate,
+ 	.set_rate = clk_frac_div_set_rate,
+ 	.round_rate = clk_frac_div_round_rate,
++	.restore_context = clk_divider_restore_context,
  };
  
+ struct clk *tegra_clk_register_divider(const char *name,
 -- 
 2.7.4
 
