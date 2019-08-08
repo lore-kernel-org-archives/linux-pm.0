@@ -2,43 +2,43 @@ Return-Path: <SRS0=lDgx=WE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1CB1C32756
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66D79C433FF
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 870A9217D7
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2CFB221773
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="BCwzIi+6"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="pTB9G5px"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2405158AbfHHXr4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Aug 2019 19:47:56 -0400
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:12850 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404923AbfHHXrH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 19:47:07 -0400
-Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5d4cb47b0004>; Thu, 08 Aug 2019 16:47:07 -0700
+        id S2404924AbfHHXrG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Aug 2019 19:47:06 -0400
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:12738 "EHLO
+        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732796AbfHHXrF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 19:47:05 -0400
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5d4cb4800004>; Thu, 08 Aug 2019 16:47:12 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
   by hqpgpgate102.nvidia.com (PGP Universal service);
-  Thu, 08 Aug 2019 16:47:06 -0700
+  Thu, 08 Aug 2019 16:47:02 -0700
 X-PGP-Universal: processed;
-        by hqpgpgate102.nvidia.com on Thu, 08 Aug 2019 16:47:06 -0700
-Received: from HQMAIL110.nvidia.com (172.18.146.15) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
- 2019 23:47:05 +0000
-Received: from HQMAIL107.nvidia.com (172.20.187.13) by hqmail110.nvidia.com
- (172.18.146.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
- 2019 23:47:05 +0000
+        by hqpgpgate102.nvidia.com on Thu, 08 Aug 2019 16:47:02 -0700
+Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
+ 2019 23:47:02 +0000
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL109.nvidia.com
+ (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
+ 2019 23:47:01 +0000
 Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL107.nvidia.com
  (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 8 Aug 2019 23:47:05 +0000
+ Transport; Thu, 8 Aug 2019 23:47:01 +0000
 Received: from skomatineni-linux.nvidia.com (Not Verified[10.110.103.110]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
-        id <B5d4cb4790000>; Thu, 08 Aug 2019 16:47:05 -0700
+        id <B5d4cb4750003>; Thu, 08 Aug 2019 16:47:01 -0700
 From:   Sowjanya Komatineni <skomatineni@nvidia.com>
 To:     <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
         <tglx@linutronix.de>, <jason@lakedaemon.net>,
@@ -53,187 +53,175 @@ CC:     <pdeschrijver@nvidia.com>, <pgaikwad@nvidia.com>,
         <digetx@gmail.com>, <devicetree@vger.kernel.org>,
         <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
         <linux-pm@vger.kernel.org>
-Subject: [PATCH v8 16/21] soc/tegra: pmc: Add pmc wake support for tegra210
-Date:   Thu, 8 Aug 2019 16:46:55 -0700
-Message-ID: <1565308020-31952-17-git-send-email-skomatineni@nvidia.com>
+Subject: [PATCH v8 00/21] SC7 entry and exit support for Tegra210
+Date:   Thu, 8 Aug 2019 16:46:39 -0700
+Message-ID: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
-References: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
 X-NVConfidentiality: public
 MIME-Version: 1.0
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1565308027; bh=YC2WyHhKcxO32X94/1fVg0egtzrRq/QXLMfSSFFNqSI=;
+        t=1565308032; bh=EgYLiwe2CvChAnWbOIKpUtKlaBT/RzrYeRVChw1CODQ=;
         h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
-         In-Reply-To:References:X-NVConfidentiality:MIME-Version:
-         Content-Type;
-        b=BCwzIi+6qqnfoJoTWzUOic3TGcYxxtanAowKJWSEfwy/eP/vmQuGLbYl1r3IOn8s8
-         jkU5Orf6qEdfLP64gjd0EtJRrTThVNvUEVVy58Ek3sExRxPtxYnGAb77hbIOrbXsPx
-         wy7IRgKyArIIM1Evr5yIANAYGo9wDP8wMW3op/uoOPVDR3qCGvbO1hZLzoK/VhOwN8
-         ZOw7UAP/3HwL6q8IpnPIcfyc73gzoj63xL8r4HFwxexVf19zbANZ+UylqdeI7xPiib
-         rikzRhxgOQ5kV2E5j7FDeRHB92FxlQGUxq7aCV3sGCsD3xdmqIIDWGEeiAX6LYMmF9
-         rv7HtzW/OP4NQ==
+         X-NVConfidentiality:MIME-Version:Content-Type;
+        b=pTB9G5pxiek6wCRDjVYoCJ4ckBK93ubdmM8PjvyJ+AHJ6EwJhProgeGGHwVPjeJXW
+         8cHWvh/tFoMINnzaJZnqwTUk3YitU6Ug7nW+DVpawSNlSyW7kFfmRbTqOFBRFnWA8m
+         21jSwJGlMIXLKtNxfqTazAi0M+zIMGqbu/avDik7oqGgjUdYiUUKE+R/2FPLEiXmIH
+         GIIXYmRLFSNIRnKtAhBJE4TS7jE8drwQe+qNz6eszr4JC4K0QH7HLXhhdHY2FYHAPb
+         E923dSQyExElGWUeR1U/GKyAa1l/YcSQeyWMOKnhhYQY0h34pMLfN0RIkmXYTDEApf
+         6v1qtvviZXzdQ==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch implements PMC wakeup sequence for Tegra210 and defines
-common used RTC alarm wake event.
+This patch series includes Tegra210 deepsleep (SC7) support with RTC alarm
+wake event.
 
-Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
----
- drivers/soc/tegra/pmc.c | 98 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 98 insertions(+)
+This series also includes save and restore of PLLs, clocks, OSC contexts
+for deepsleep exit to normal operation.
 
-diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-index 91c84d0e66ae..3aa71c28a10a 100644
---- a/drivers/soc/tegra/pmc.c
-+++ b/drivers/soc/tegra/pmc.c
-@@ -58,6 +58,11 @@
- #define  PMC_CNTRL_SYSCLK_POLARITY	BIT(10) /* sys clk polarity */
- #define  PMC_CNTRL_MAIN_RST		BIT(4)
- 
-+#define PMC_WAKE_MASK			0x0c
-+#define PMC_WAKE_LEVEL			0x10
-+#define PMC_WAKE_STATUS			0x14
-+#define PMC_SW_WAKE_STATUS		0x18
-+
- #define DPD_SAMPLE			0x020
- #define  DPD_SAMPLE_ENABLE		BIT(0)
- #define  DPD_SAMPLE_DISABLE		(0 << 0)
-@@ -87,6 +92,11 @@
- 
- #define PMC_SCRATCH41			0x140
- 
-+#define PMC_WAKE2_MASK			0x160
-+#define PMC_WAKE2_LEVEL			0x164
-+#define PMC_WAKE2_STATUS		0x168
-+#define PMC_SW_WAKE2_STATUS		0x16c
-+
- #define PMC_SENSOR_CTRL			0x1b0
- #define  PMC_SENSOR_CTRL_SCRATCH_WRITE	BIT(2)
- #define  PMC_SENSOR_CTRL_ENABLE_RST	BIT(1)
-@@ -1922,6 +1932,43 @@ static const struct irq_domain_ops tegra_pmc_irq_domain_ops = {
- 	.alloc = tegra_pmc_irq_alloc,
- };
- 
-+static int tegra210_pmc_irq_set_wake(struct irq_data *data, unsigned int on)
-+{
-+	struct tegra_pmc *pmc = irq_data_get_irq_chip_data(data);
-+	unsigned int offset, bit;
-+	u32 value;
-+
-+	if (data->hwirq == ULONG_MAX)
-+		return 0;
-+
-+	offset = data->hwirq / 32;
-+	bit = data->hwirq % 32;
-+
-+	/* clear wake status */
-+	tegra_pmc_writel(pmc, 0, PMC_SW_WAKE_STATUS);
-+	tegra_pmc_writel(pmc, 0, PMC_SW_WAKE2_STATUS);
-+
-+	tegra_pmc_writel(pmc, 0, PMC_WAKE_STATUS);
-+	tegra_pmc_writel(pmc, 0, PMC_WAKE2_STATUS);
-+
-+	/* enable PMC wake */
-+	if (data->hwirq >= 32)
-+		offset = PMC_WAKE2_MASK;
-+	else
-+		offset = PMC_WAKE_MASK;
-+
-+	value = tegra_pmc_readl(pmc, offset);
-+
-+	if (on)
-+		value |= 1 << bit;
-+	else
-+		value &= ~(1 << bit);
-+
-+	tegra_pmc_writel(pmc, value, offset);
-+
-+	return 0;
-+}
-+
- static int tegra186_pmc_irq_set_wake(struct irq_data *data, unsigned int on)
- {
- 	struct tegra_pmc *pmc = irq_data_get_irq_chip_data(data);
-@@ -1954,6 +2001,49 @@ static int tegra186_pmc_irq_set_wake(struct irq_data *data, unsigned int on)
- 	return 0;
- }
- 
-+static int tegra210_pmc_irq_set_type(struct irq_data *data, unsigned int type)
-+{
-+	struct tegra_pmc *pmc = irq_data_get_irq_chip_data(data);
-+	unsigned int offset, bit;
-+	u32 value;
-+
-+	if (data->hwirq == ULONG_MAX)
-+		return 0;
-+
-+	offset = data->hwirq / 32;
-+	bit = data->hwirq % 32;
-+
-+	if (data->hwirq >= 32)
-+		offset = PMC_WAKE2_LEVEL;
-+	else
-+		offset = PMC_WAKE_LEVEL;
-+
-+	value = tegra_pmc_readl(pmc, offset);
-+
-+	switch (type) {
-+	case IRQ_TYPE_EDGE_RISING:
-+	case IRQ_TYPE_LEVEL_HIGH:
-+		value |= 1 << bit;
-+		break;
-+
-+	case IRQ_TYPE_EDGE_FALLING:
-+	case IRQ_TYPE_LEVEL_LOW:
-+		value &= ~(1 << bit);
-+		break;
-+
-+	case IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING:
-+		value ^= 1 << bit;
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	tegra_pmc_writel(pmc, value, offset);
-+
-+	return 0;
-+}
-+
- static int tegra186_pmc_irq_set_type(struct irq_data *data, unsigned int type)
- {
- 	struct tegra_pmc *pmc = irq_data_get_irq_chip_data(data);
-@@ -2540,6 +2630,10 @@ static const struct pinctrl_pin_desc tegra210_pin_descs[] = {
- 	TEGRA210_IO_PAD_TABLE(TEGRA_IO_PIN_DESC)
- };
- 
-+static const struct tegra_wake_event tegra210_wake_events[] = {
-+	TEGRA_WAKE_IRQ("rtc", 16, 2),
-+};
-+
- static const struct tegra_pmc_soc tegra210_pmc_soc = {
- 	.num_powergates = ARRAY_SIZE(tegra210_powergates),
- 	.powergates = tegra210_powergates,
-@@ -2557,10 +2651,14 @@ static const struct tegra_pmc_soc tegra210_pmc_soc = {
- 	.regs = &tegra20_pmc_regs,
- 	.init = tegra20_pmc_init,
- 	.setup_irq_polarity = tegra20_pmc_setup_irq_polarity,
-+	.irq_set_wake = tegra210_pmc_irq_set_wake,
-+	.irq_set_type = tegra210_pmc_irq_set_type,
- 	.reset_sources = tegra210_reset_sources,
- 	.num_reset_sources = ARRAY_SIZE(tegra210_reset_sources),
- 	.reset_levels = NULL,
- 	.num_reset_levels = 0,
-+	.num_wake_events = ARRAY_SIZE(tegra210_wake_events),
-+	.wake_events = tegra210_wake_events,
- };
- 
- #define TEGRA186_IO_PAD_TABLE(_pad)					     \
+This patch series doesn't support 100% suspend/resume to allow fully
+functional state upon resume and we are working on some more drivers suspend
+and resume implementations.
+
+[v8]: Changes between v7 & v8 are
+	- v7 feedback fixes
+	- moved clock enable/disable state and reset enable/disable state
+	  restore from clk_save/restore_context back to clk-tegra210 driver
+	  to do complete register value store/restore.
+	- Removed manual store/restore of peripheral parent context and added
+	  API in clk core to retrieve clock parent index to use during
+	  restoring parent on resume.
+	- Implemented Tegra recommended clock source programming sequence
+	  during restore (CLK ENB ON followed by divider/source programming
+	  followed by restoring CLK ENB ON/OFF state followed by restoring
+	  RST state).
+	- Removed pinctrl suspend/resume patch from this series as pinctrl
+	  suspend/resume patch from v7 got acked and merged.
+	- Added pinctrl patch-0001 to update pmx_writel for proper placement
+	  of write barrier.
+	- Added pinctrl patch-0002 to insert write barrier after all pinctrl
+	  register writes during pinctrl resume.
+
+	Note:
+	  Below patch is also needed for SC7 support as GPIO restore need
+	  to happen prior to pinctrl.
+	  https://patchwork.kernel.org/patch/11012077/
+
+[v7]: Changes between V6 & v7 are
+	- V6 feedback fixes
+	- Removed patch-0001 from V6 which keeps COP IRQ enabled. Looking
+	  more into ATF FW, it loads SC7 entry FW into IRAM and sets the
+	  COP reset vector to SC7 FW load address and resets COP. So, COP
+	  IRQ can be cleared during suspend.
+
+	Note:
+	  Below patch is also needed for SC7 support as GPIO restore need
+	  to happen prior to pinctrl.
+	  https://patchwork.kernel.org/patch/11012077/
+
+[V6]: Changes between V5 & V6 are
+	- V5 feedback fixes
+	- DFLL suspend and resume moved to DFLL clock driver
+	- Add suspend and resume support for CPUFreq driver to explicitly
+	  switch source to safe source of PLLP and disable DFLL clock.
+	- Fix to super clock driver to enable PLLP branch to CPU before
+	  source switch to PLLP.
+	- Added save and restore support for super clock driver.
+
+[V5]: Changes between V4 & V5 are
+	- V4 feedback fixes
+
+[V4]: Changes between V3 & V4 are
+	- V3 feedback fixes
+	- Removed park bits clear for EMMC pads in pinctrl-tegra driver
+	  function tegra_pinctrl_clear_parked_bits as based on V3 feedback
+	  parked_bit is updated to parked_bitmask to use with DRV_PINGROUP
+	  as well and thierry posted patch series for this.
+	- Implemented all peripheral clocks save and restore through their
+	  corresponding clk_ops save_context and restore_context and removed
+	  all direct registers store and restore in clk-tegra210 driver.
+	- Created separate patch for fence_delay update during PLLU init based
+	  on V3 feedback.
+	- Added more comments in tegra210_clk_resume regarding dfll restore
+	  sequence and its dependency on peripheral clocks restore.
+
+[V3]: Changes between V2 & V3 are
+	- V2 feedback fixes
+	- GPIO restore should happen prior to Pinctrl restore to prevent
+	  glitch on GPIO lines. So using resume_noirq for gpio tegra to allow
+	  gpio resume prior to pinctrl resume.
+	- Implemented save_context and restore_context callbacks for clock
+	  plls, pll outs and dividers in corresponding drivers.
+	  Note: Peripheral clocks and clock enable and reset need to be in
+	  Tegra210 clock suspend/resume as they need to be in proper sequence
+	  w.r.t DFLL resume for restoring CPU clock.
+	- Removed gpio-tegra changes for hierarchical support to have PMC as
+	  parent to GPIOs for GPIO wake event support. Thierry is working on
+	  gpiolib for some cleanup before adding hierarchical support. So
+	  holding on to GPIO wake support for now.
+
+[V2] : V1 feedback fixes
+	Patch 0002: This version still using syscore. Thierry suggest not to
+	use syscore and waiting on suggestion from Linux Walleij for any better
+	way of storing current state of pins before suspend entry and restoring
+	them on resume at very early stage. So left this the same way as V1 and
+	will address once I get more feedback on this.
+	Also need to findout and implement proper way of forcing resume order
+	between pinctrl and gpio driver.
+
+[V1]:	Tegra210 SC7 entry and exit thru RTC wake and Power button GPIO wake
+	using hierarchical IRQ with PMC as parent to GPIO.
+
+
+Sowjanya Komatineni (21):
+  pinctrl: tegra: Fix write barrier placement in pmx_writel
+  pinctrl: tegra: Add write barrier after all pinctrl register writes
+  clk: tegra: divider: Save and restore divider rate
+  clk: tegra: pllout: Save and restore pllout context
+  clk: tegra: pll: Save and restore pll context
+  clk: tegra: Support for OSC context save and restore
+  clk: Add API to get index of the clock parent
+  clk: tegra: periph: Add restore_context support
+  clk: tegra: clk-super: Fix to enable PLLP branches to CPU
+  clk: tegra: clk-super: Add restore-context support
+  clk: tegra: clk-dfll: Add suspend and resume support
+  cpufreq: tegra124: Add suspend and resume support
+  clk: tegra210: Use fence_udelay during PLLU init
+  clk: tegra210: Add suspend and resume support
+  soc/tegra: pmc: Allow to support more tegras wake
+  soc/tegra: pmc: Add pmc wake support for tegra210
+  arm64: tegra: Enable wake from deep sleep on RTC alarm
+  soc/tegra: pmc: Configure core power request polarity
+  soc/tegra: pmc: Configure deep sleep control settings
+  arm64: dts: tegra210-p2180: Jetson TX1 SC7 timings
+  arm64: dts: tegra210-p3450: Jetson Nano SC7 timings
+
+ arch/arm64/boot/dts/nvidia/tegra210-p2180.dtsi     |   7 ++
+ arch/arm64/boot/dts/nvidia/tegra210-p3450-0000.dts |   7 ++
+ arch/arm64/boot/dts/nvidia/tegra210.dtsi           |   5 +-
+ drivers/clk/clk.c                                  |  17 +++
+ drivers/clk/tegra/clk-dfll.c                       |  56 +++++++++
+ drivers/clk/tegra/clk-dfll.h                       |   2 +
+ drivers/clk/tegra/clk-divider.c                    |  11 ++
+ drivers/clk/tegra/clk-periph.c                     |  18 +++
+ drivers/clk/tegra/clk-pll-out.c                    |   9 ++
+ drivers/clk/tegra/clk-pll.c                        |  88 +++++++++-----
+ drivers/clk/tegra/clk-sdmmc-mux.c                  |  12 ++
+ drivers/clk/tegra/clk-super.c                      |  35 ++++++
+ drivers/clk/tegra/clk-tegra-fixed.c                |  15 +++
+ drivers/clk/tegra/clk-tegra-super-gen4.c           |   7 +-
+ drivers/clk/tegra/clk-tegra124-dfll-fcpu.c         |   1 +
+ drivers/clk/tegra/clk-tegra210.c                   | 114 ++++++++++++++++--
+ drivers/clk/tegra/clk.c                            |  78 +++++++++++++
+ drivers/clk/tegra/clk.h                            |  17 +++
+ drivers/cpufreq/tegra124-cpufreq.c                 |  60 ++++++++++
+ drivers/pinctrl/tegra/pinctrl-tegra.c              |   6 +-
+ drivers/soc/tegra/pmc.c                            | 129 ++++++++++++++++++++-
+ include/linux/clk-provider.h                       |   1 +
+ 22 files changed, 646 insertions(+), 49 deletions(-)
+
 -- 
 2.7.4
 
