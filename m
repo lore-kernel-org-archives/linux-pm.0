@@ -2,154 +2,102 @@ Return-Path: <SRS0=lDgx=WE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA2F8C433FF
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 08:44:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15D9EC433FF
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 08:48:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 99A1E2173C
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 08:44:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E74212173C
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 08:48:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731065AbfHHIok (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Aug 2019 04:44:40 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:49275 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731048AbfHHIof (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 04:44:35 -0400
-Received: from 79.184.254.29.ipv4.supernova.orange.pl (79.184.254.29) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.275)
- id 975af00a9d8c7bd9; Thu, 8 Aug 2019 10:44:33 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     platform-driver-x86@vger.kernel.org
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
+        id S1730305AbfHHIsK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Aug 2019 04:48:10 -0400
+Received: from verein.lst.de ([213.95.11.211]:44626 "EHLO verein.lst.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725805AbfHHIsK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 8 Aug 2019 04:48:10 -0400
+Received: by verein.lst.de (Postfix, from userid 2407)
+        id B571D68BFE; Thu,  8 Aug 2019 10:48:04 +0200 (CEST)
+Date:   Thu, 8 Aug 2019 10:48:04 +0200
+From:   Christoph Hellwig <hch@lst.de>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-nvme <linux-nvme@lists.infradead.org>,
+        Keith Busch <kbusch@kernel.org>,
+        Mario Limonciello <Mario.Limonciello@dell.com>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        Keith Busch <keith.busch@intel.com>,
+        Christoph Hellwig <hch@lst.de>,
+        Sagi Grimberg <sagi@grimberg.me>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>
-Subject: [PATCH 1/2] intel-hid: intel-vbtn: Avoid leaking wakeup_mode set
-Date:   Thu, 08 Aug 2019 10:42:42 +0200
-Message-ID: <7715913.DUxqI9eLD1@kreacher>
-In-Reply-To: <1717835.1Yz4jNODO2@kreacher>
-References: <1717835.1Yz4jNODO2@kreacher>
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Rajat Jain <rajatja@google.com>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] nvme-pci: Allow PCI bus-level PM to be used if ASPM is
+ disabled
+Message-ID: <20190808084804.GA31404@lst.de>
+References: <47415939.KV5G6iaeJG@kreacher> <20190730144134.GA12844@localhost.localdomain> <100ba4aff1c6434a81e47774ab4acddc@AUSX13MPC105.AMER.DELL.COM> <8246360B-F7D9-42EB-94FC-82995A769E28@canonical.com> <20190730191934.GD13948@localhost.localdomain> <7d3e0b8ba1444194a153c93faa1cabb3@AUSX13MPC105.AMER.DELL.COM> <20190730213114.GK13948@localhost.localdomain> <CAJZ5v0gxfeMN8eCNRjcXmUOkReVsdozb3EccaYMpnmSHu3771g@mail.gmail.com> <20190731221956.GB15795@localhost.localdomain> <2583975.4sIyE3leJj@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2583975.4sIyE3leJj@kreacher>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> -     ndev->last_ps = 0;
+>       ret = nvme_get_power_state(ctrl, &ndev->last_ps);
+> -     if (ret < 0)
+> +     if (ret < 0 || ndev->last_ps == U32_MAX)
 
-Both intel-hid and intel-vbtn set a wakeup_mode flag causing them
-to behave in a special way during system suspend and while suspended
-in their "prepare" PM callbacks and clear it in their "resume" PM
-callbacks.  That may cause the wakeup_mode flag to remain set after
-a system suspend failure (if some other driver's "suspend" callback
-returns an error before the "suspend" callback of either intel-hid
-or intel-vbtn is invoked).
+Is the intent of the magic U32_MAX check to see if the
+nvme_get_power_state failed at the nvme level?  In that case just
+checking for any non-zero return value from nvme_get_power_state might
+be the easier and more clear way to do it.
 
-After commit 10a08fd65ec1 ("ACPI: PM: Set up EC GPE for system wakeup
-from drivers that need it") that also affects the "wakeup mask" bit
-of the EC GPE, which may not be cleared after a failing system
-suspend.
+> Index: linux-pm/drivers/pci/pcie/aspm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pcie/aspm.c
+> +++ linux-pm/drivers/pci/pcie/aspm.c
 
-Fix this issue by adding "complete" PM callbacks to intel-hid and
-intel-vbtn to clear the wakeup_mode flag and the "wakeup mask" bit
-of the EC GPE if they have not been cleared earlier.
+Shouldn't we split PCI vs nvme in two patches?
 
-Fixes: 10a08fd65ec1 ("ACPI: PM: Set up EC GPE for system wakeup from drivers that need it")
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+> @@ -1170,6 +1170,26 @@ static int pcie_aspm_get_policy(char *bu
+>  module_param_call(policy, pcie_aspm_set_policy, pcie_aspm_get_policy,
+>  	NULL, 0644);
+>  
+> +/*
+> + * pcie_aspm_enabled - Return the mask of enabled ASPM link states.
+> + * @pci_device: Target device.
+> + */
+> +u32 pcie_aspm_enabled(struct pci_dev *pci_device)
 
-The commit pointed to by the Fixes: tag above is in linux-next only ATM.
+pcie_aspm_enabled sounds like it returns a boolean.  Shouldn't there be
+a mask or so in the name better documenting what it returns?
 
-The problem had been there before that commit, but it wasn't fixed by it and
-the fix depends on that commit.
+> +{
+> +	struct pci_dev *bridge = pci_upstream_bridge(pci_device);
+> +	u32 ret;
+> +
+> +	if (!bridge)
+> +		return 0;
+> +
+> +	mutex_lock(&aspm_lock);
+> +	ret = bridge->link_state ? bridge->link_state->aspm_enabled : 0;
+> +	mutex_unlock(&aspm_lock);
+> +
+> +	return ret;
+> +}
 
+I think this will need a EXPORT_SYMBOL_GPL thrown in so that modular
+nvme continues working.
 
----
- drivers/platform/x86/intel-hid.c  |   17 ++++++++++++-----
- drivers/platform/x86/intel-vbtn.c |   12 +++++++++---
- 2 files changed, 21 insertions(+), 8 deletions(-)
+> +
+> +
+>  #ifdef CONFIG_PCIEASPM_DEBUG
 
-Index: linux-pm/drivers/platform/x86/intel-hid.c
-===================================================================
---- linux-pm.orig/drivers/platform/x86/intel-hid.c
-+++ linux-pm/drivers/platform/x86/intel-hid.c
-@@ -262,6 +262,16 @@ static int intel_hid_pm_prepare(struct d
- 	return 0;
- }
- 
-+static void intel_hid_pm_complete(struct device *device)
-+{
-+	struct intel_hid_priv *priv = dev_get_drvdata(device);
-+
-+	if (priv->wakeup_mode) {
-+		acpi_ec_set_gpe_wake_mask(ACPI_GPE_DISABLE);
-+		priv->wakeup_mode = false;
-+	}
-+}
-+
- static int intel_hid_pl_suspend_handler(struct device *device)
- {
- 	if (pm_suspend_via_firmware()) {
-@@ -273,12 +283,8 @@ static int intel_hid_pl_suspend_handler(
- 
- static int intel_hid_pl_resume_handler(struct device *device)
- {
--	if (device_may_wakeup(device)) {
--		struct intel_hid_priv *priv = dev_get_drvdata(device);
-+	intel_hid_pm_complete(device);
- 
--		acpi_ec_set_gpe_wake_mask(ACPI_GPE_DISABLE);
--		priv->wakeup_mode = false;
--	}
- 	if (pm_resume_via_firmware()) {
- 		intel_hid_set_enable(device, true);
- 		intel_button_array_enable(device, true);
-@@ -288,6 +294,7 @@ static int intel_hid_pl_resume_handler(s
- 
- static const struct dev_pm_ops intel_hid_pl_pm_ops = {
- 	.prepare = intel_hid_pm_prepare,
-+	.complete = intel_hid_pm_complete,
- 	.freeze  = intel_hid_pl_suspend_handler,
- 	.thaw  = intel_hid_pl_resume_handler,
- 	.restore  = intel_hid_pl_resume_handler,
-Index: linux-pm/drivers/platform/x86/intel-vbtn.c
-===================================================================
---- linux-pm.orig/drivers/platform/x86/intel-vbtn.c
-+++ linux-pm/drivers/platform/x86/intel-vbtn.c
-@@ -210,19 +210,25 @@ static int intel_vbtn_pm_prepare(struct
- 	return 0;
- }
- 
--static int intel_vbtn_pm_resume(struct device *dev)
-+static void intel_vbtn_pm_complete(struct device *dev)
- {
--	if (device_may_wakeup(dev)) {
--		struct intel_vbtn_priv *priv = dev_get_drvdata(dev);
-+	struct intel_vbtn_priv *priv = dev_get_drvdata(dev);
- 
-+	if (priv->wakeup_mode) {
- 		acpi_ec_set_gpe_wake_mask(ACPI_GPE_DISABLE);
- 		priv->wakeup_mode = false;
- 	}
-+}
-+
-+static int intel_vbtn_pm_resume(struct device *dev)
-+{
-+	intel_vbtn_pm_complete(dev);
- 	return 0;
- }
- 
- static const struct dev_pm_ops intel_vbtn_pm_ops = {
- 	.prepare = intel_vbtn_pm_prepare,
-+	.complete = intel_vbtn_pm_complete,
- 	.resume = intel_vbtn_pm_resume,
- 	.restore = intel_vbtn_pm_resume,
- 	.thaw = intel_vbtn_pm_resume,
-
-
-
+Nit: double blank line here.
