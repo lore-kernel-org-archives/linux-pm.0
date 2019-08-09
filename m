@@ -1,101 +1,99 @@
-Return-Path: <SRS0=lDgx=WE=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=aSb8=WF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD183C32756
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AA9CC433FF
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 00:21:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A32B921743
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Aug 2019 23:48:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EF2322173C
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 00:21:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="BXlb6cQ3"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="efR77BEu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404791AbfHHXrE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Aug 2019 19:47:04 -0400
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:12806 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404329AbfHHXrD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 19:47:03 -0400
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5d4cb4780000>; Thu, 08 Aug 2019 16:47:04 -0700
-Received: from hqmail.nvidia.com ([172.20.161.6])
-  by hqpgpgate101.nvidia.com (PGP Universal service);
-  Thu, 08 Aug 2019 16:47:02 -0700
-X-PGP-Universal: processed;
-        by hqpgpgate101.nvidia.com on Thu, 08 Aug 2019 16:47:02 -0700
-Received: from HQMAIL105.nvidia.com (172.20.187.12) by HQMAIL104.nvidia.com
- (172.18.146.11) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 8 Aug
- 2019 23:47:02 +0000
-Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Thu, 8 Aug 2019 23:47:02 +0000
-Received: from skomatineni-linux.nvidia.com (Not Verified[10.110.103.110]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
-        id <B5d4cb4760000>; Thu, 08 Aug 2019 16:47:02 -0700
-From:   Sowjanya Komatineni <skomatineni@nvidia.com>
-To:     <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
-        <tglx@linutronix.de>, <jason@lakedaemon.net>,
-        <marc.zyngier@arm.com>, <linus.walleij@linaro.org>,
-        <stefan@agner.ch>, <mark.rutland@arm.com>
-CC:     <pdeschrijver@nvidia.com>, <pgaikwad@nvidia.com>,
-        <sboyd@kernel.org>, <linux-clk@vger.kernel.org>,
-        <linux-gpio@vger.kernel.org>, <jckuo@nvidia.com>,
-        <josephl@nvidia.com>, <talho@nvidia.com>, <skomatineni@nvidia.com>,
-        <linux-tegra@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <mperttunen@nvidia.com>, <spatra@nvidia.com>, <robh+dt@kernel.org>,
-        <digetx@gmail.com>, <devicetree@vger.kernel.org>,
-        <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
-        <linux-pm@vger.kernel.org>
-Subject: [PATCH v8 02/21] pinctrl: tegra: Add write barrier after all pinctrl register writes
-Date:   Thu, 8 Aug 2019 16:46:41 -0700
-Message-ID: <1565308020-31952-3-git-send-email-skomatineni@nvidia.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
-References: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
-X-NVConfidentiality: public
+        id S2404329AbfHIAVw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Aug 2019 20:21:52 -0400
+Received: from mail-ot1-f67.google.com ([209.85.210.67]:44675 "EHLO
+        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732796AbfHIAVw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Aug 2019 20:21:52 -0400
+Received: by mail-ot1-f67.google.com with SMTP id b7so75799596otl.11;
+        Thu, 08 Aug 2019 17:21:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=qJ18L1wbrERX6F3k10BGEMdcTJ2aPiTL4BfastDFNCk=;
+        b=efR77BEuls51ClSBywaN/hcJ6AZ5kn0vIw/M0u8cgAabCxj3RPufdHV5E1zFLIPjh5
+         VLQe4lQ4mfafTAjeFWtrG/iApUet5NUBLELLd8cIU05T/6SJU+oQSWuZxnsck5H9e4+d
+         AVqYTen2tOawpHvT88kTFJ+rkFlUjutbPiH2qtNIfZXKzKb2j42mkPjoj2qoSlCjWzBa
+         03hQyHaULEXxY81DUZa6zdt1ZD9tYWybRTFng5/Vb13BSD5AZ7lVsIzyPuFFga6wyWNe
+         SK0zzHsRmbI+0uFe0MrUwL2xkALc+H6kLZFpFlq/a29ZzgjfRfLpiUXDJBDErrGk/KJS
+         vDuQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+         :mime-version:content-transfer-encoding;
+        bh=qJ18L1wbrERX6F3k10BGEMdcTJ2aPiTL4BfastDFNCk=;
+        b=JdGVI2THjL+GdCadLm7SoJu/YjaIbm0B4SUY0uJZtlDS1O+oOXBiO8AQX2x8glpLyX
+         rm9hwEN290nHVYf7m98Pxq4nizUiKR689A0O8aKxVKpMrjE7Jemjg6zkDomuDxsAQyMV
+         8QDwZoQSSBQ8VQbC1AZhxHtp2GoGoizB2uZ6QWKvdcaUEDBm7J47ARmMCGm4VHAzxMTm
+         1MA+oVAoujYia3lD1o8uEnLkgmOM1JDCRDAfRBdcro6PkEPLs57WbqjQpXNr0E6hfv1l
+         El2F+UsdPiyTOehV0IISL5tUPdjBdi5146AyFKitdnfeaGWrOZjgXVRQCPYDpMhl1cfs
+         7a8Q==
+X-Gm-Message-State: APjAAAXh7bxNVjlV0bW3xer9iYGZDIjllMhRpcv9LhC6wYT0nFbTAzra
+        /gZu+M6sY1faffNl2yW/YsE=
+X-Google-Smtp-Source: APXvYqz+CkU4806/CIx6WZm+rcWifVImcUB5taTQGzvDeO2HlNEropKLCzMbdOV3P7x3CatDHMWbTA==
+X-Received: by 2002:a5d:8451:: with SMTP id w17mr18797106ior.226.1565310111075;
+        Thu, 08 Aug 2019 17:21:51 -0700 (PDT)
+Received: from wandering.us.cray.com (msp-nat.cray.com. [136.162.2.1])
+        by smtp.gmail.com with ESMTPSA id l7sm8426377iof.81.2019.08.08.17.21.49
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Thu, 08 Aug 2019 17:21:50 -0700 (PDT)
+From:   Shaun Tancheff <shaun@tancheff.com>
+X-Google-Original-From: Shaun Tancheff <stancheff@cray.com>
+To:     Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc:     Shaun Tancheff <stancheff@cray.com>, linux-kbuild@vger.kernel.org,
+        Joe Lawrence <joe.lawrence@redhat.com>,
+        "'James E . J . Bottomley'" <jejb@linux.ibm.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        "'Martin K . Petersen'" <martin.petersen@oracle.com>,
+        Michal Marek <michal.lkml@markovi.net>,
+        Shuah Khan <shuah@kernel.org>,
+        Thomas Renninger <trenn@suse.com>, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-scsi@vger.kernel.org
+Subject: [PATCH 0/1] kbuild: Support building a tree of modules with -M=<root>
+Date:   Thu,  8 Aug 2019 19:21:03 -0500
+Message-Id: <20190809002104.18599-1-stancheff@cray.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1565308024; bh=NK4pgGR6xJSTh0oyzuTnp9rDJd43CHOoKN5Ajsuwe28=;
-        h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
-         In-Reply-To:References:X-NVConfidentiality:MIME-Version:
-         Content-Type;
-        b=BXlb6cQ3SBMGJQRhljRbRT60OHFwr6YmnY3ZlJHqk+8Ip9SUS8Dy5SVKJX8q7YGy9
-         kLBfMFMJKjsnQviM+lnapI9bzaqKzC2NVNBzDc0Ff1hhxD6Lm094OLaIzplB6s69vB
-         djnd5ZL/UuLcCY/LS5TX1Nlyhl0fGMNtRm1VXD6eyg02hSs3xQf0SiIGFniV/UVeZE
-         Z6VDBbb6MmPRshQ5vvZHpeQhSM+BHT5aeA6SBw5olYb8eciqOnQALDS4sbY1PuYz5p
-         uN0M+ALfP0Zm4L/6StQwk/ELuxiX73Vp2lvmT0PCn3j49saJbSfpT9w7781J+X1OAq
-         fFTSYV23aLL8Q==
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds write barrier after all pinctrl register writes
-during resume to make sure all pinctrl changes are complete.
+Currently when building lustre against 5.3 kernel modules fail to
+generate <module>.ko files.
 
-Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
----
- drivers/pinctrl/tegra/pinctrl-tegra.c | 2 ++
- 1 file changed, 2 insertions(+)
+Lustre builds a tree of modules however the numerous modules.order files
+are created but only the modules.order file at the root appears to be 
+read.
 
-diff --git a/drivers/pinctrl/tegra/pinctrl-tegra.c b/drivers/pinctrl/tegra/pinctrl-tegra.c
-index 982ee634b3b1..f49fe29fb6df 100644
---- a/drivers/pinctrl/tegra/pinctrl-tegra.c
-+++ b/drivers/pinctrl/tegra/pinctrl-tegra.c
-@@ -677,6 +677,8 @@ static int tegra_pinctrl_resume(struct device *dev)
- 			writel_relaxed(*backup_regs++, regs++);
- 	}
- 
-+	/* make sure all the pinmux register writes are complete */
-+	wmb();
- 	return 0;
- }
- 
+This changes the the scheme for KBUILD_EXTMOD to write to and read from
+a single modules.order file at the root.
+
+Shaun Tancheff (1):
+  kbuild: recursive build of external kernel modules
+
+ Makefile               | 1 +
+ scripts/Makefile.build | 8 +++++++-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
 -- 
-2.7.4
+2.20.1
 
