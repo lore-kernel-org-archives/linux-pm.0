@@ -2,112 +2,230 @@ Return-Path: <SRS0=aSb8=WF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AD05C31E40
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 12:13:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 42329C433FF
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 12:15:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5CE3220B7C
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 12:13:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YUgvvikf"
+	by mail.kernel.org (Postfix) with ESMTP id 0DA8A20B7C
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 12:15:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1565352922;
+	bh=y2AblsgyH90W9uanPM1iy1YMwgP785dob1plVrMLN3c=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=OzWDV8zHwdhap/k43bj+Bls5ajsOfBzaGC4Hh79e4yqzatjXte1gXZCkwMNWOpQGj
+	 SkN1qJJvH2AokwHJ/lYENFqzl/U7TNu4royNG3UFKwYNz9V7esAZaeWnTMsJJxQPOE
+	 oat6U3FjEkBWRe1T7FICeFVz05EbozYl6fkM/mkg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406720AbfHIMNa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Aug 2019 08:13:30 -0400
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:42392 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2406715AbfHIMNa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2019 08:13:30 -0400
-Received: by mail-lj1-f193.google.com with SMTP id 15so103742ljr.9
-        for <linux-pm@vger.kernel.org>; Fri, 09 Aug 2019 05:13:28 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=khC2xFZGDuzHm7LauVefQf76DxyJ5wKd6wD3GFIWUBg=;
-        b=YUgvvikfXP7Algmo5FVFozvaeWU2EgvjF+cD5mnYuI9U/j45lqwxwPig/8wh+wBIYJ
-         vuM2ziYQxZ3XRGtGKH8leZv/0X/H5XGfN1teN4G6dK5r5mNF99DaoQBvutQOFSVgwerk
-         9hK95niDmQhtp26IAkvdHZCV9wiiW3TXt449kOLrWnGCjOlO//g5MXgC16LV+89FUL9f
-         3zsyayZsATMVEY1Wc5XXhy87ejlE2aYZ++BhvhVtk2AaWLM9L0u0zz8JAEu8ZmpFvpWu
-         69JrTgiRNMAMoGfpFEMoxM7A/bOsdIg1DJByonCqXf1r4c4b7onV3S+OXPKN6QADsvbR
-         0rZw==
+        id S2406725AbfHIMPR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Aug 2019 08:15:17 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:42570 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726157AbfHIMPR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2019 08:15:17 -0400
+Received: by mail-ot1-f65.google.com with SMTP id l15so131744057otn.9;
+        Fri, 09 Aug 2019 05:15:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=khC2xFZGDuzHm7LauVefQf76DxyJ5wKd6wD3GFIWUBg=;
-        b=tXOmlKSbPAmQQEDJI/V3FqERnjgPt/4fe9gb0Vuw963td1M80+ZTK83pysiUf92HVG
-         ko9BFbpUhMHuPre3p3SXN9EEX1oC2mkDMSRUCPnthqKG/xkbDEqQDjXRA5jjmTf9pBo8
-         6ao8inJqxQv08SmUZEQgFnUvjPADSwwDS7ojmIw8HwW+E/P+tWbXPvbl5Ku5RjsCUelZ
-         6frrKp4urb+Is9DTUIC76SZUjUrgWMfUmE2gdVIDYklylYGoRuijZ91TrTjWsTeWMczw
-         3A8asiokEaGzeqT12778aSRPghkliH2C9Fpf1NmaWIm2QUGxUyv0RMhcyr+MZFYHm80a
-         Hmew==
-X-Gm-Message-State: APjAAAXVeuP0e0enKfMy1QiK6s95w2n5AGT6lUehX70K5iyAPsRoTeqi
-        y9Ype5IMKCR3b0EdwvHeMaQLM44fXrM=
-X-Google-Smtp-Source: APXvYqwRqWQziVL8uoa4G3k4jkXSZfMfrqNN15MtnOv5kCBBjJo+CYN2nXEZmgvdeMjACcuywFWqNA==
-X-Received: by 2002:a2e:8455:: with SMTP id u21mr10848999ljh.20.1565352808013;
-        Fri, 09 Aug 2019 05:13:28 -0700 (PDT)
-Received: from localhost.localdomain ([37.157.136.206])
-        by smtp.googlemail.com with ESMTPSA id f23sm1083425lfc.25.2019.08.09.05.13.26
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 09 Aug 2019 05:13:27 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org, evgreen@chromium.org
-Cc:     daidavid1@codeaurora.org, vincent.guittot@linaro.org,
-        bjorn.andersson@linaro.org, amit.kucheria@linaro.org,
-        dianders@chromium.org, seansw@qti.qualcomm.com,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
-Subject: [PATCH v3 0/3] interconnect: Add path tagging support
-Date:   Fri,  9 Aug 2019 15:13:22 +0300
-Message-Id: <20190809121325.8138-1-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.22.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=CPhQEfpz2L9VudZCV93fBfsiwCxuI7FC2IEWQ3k3cwk=;
+        b=bu9o1lxop2dB53R9PaxhTZb0axc1le/joJNESDWnIh+/6kOvvya3BVVtT9xjy8/7LS
+         lKe3qmqO7kCy5YMkYDx0UPICb+Y27//RuWt3ww8LuydVGdwi3zXbKuojrfalmVaS5opP
+         dvBxkt/hn1a+A27ChN/G1g43wKA5xa4TBxRbL9CymNXE9X2CyOeW2kptbjqwJXPTLIo3
+         GTdCHiIbobI3xKt4FwVWyGmAkeJEpw9MuVzDI6R0zBhMsH8Wbszl3Z0RE+2J6Px66r3j
+         79w8892bMoThOw8pEvzTw3MIVgj9/GRmCGb9uXfzh6Njyg1q1gwnuWbNWmpvLDkhegpK
+         0YyA==
+X-Gm-Message-State: APjAAAXNX4MeOr+QZRjCr4E2uMsihkSKokDnK3zP9Lts/Zefi4Ib/SGD
+        o2Wd8fYFRLKTU5p1O93HZXMbscK7f/QTCOWwRXI=
+X-Google-Smtp-Source: APXvYqxNJ013eLC09yGsgapHlLqfUe7REnVobb2QQ0Zm5fWHeXii/Qw7Uj++14PuKNVdHPErOsjLrF24st3nrgHmFx4=
+X-Received: by 2002:aca:d907:: with SMTP id q7mr5752039oig.68.1565352915951;
+ Fri, 09 Aug 2019 05:15:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <5997740.FPbUVk04hV@kreacher> <CGME20190809120052eucas1p11b56806662ef4f4efb82a152ad651481@eucas1p1.samsung.com>
+ <74514118.QN1Ey1fWSL@kreacher> <1b181f35-29c3-c6ce-6c42-ae55e890579e@samsung.com>
+In-Reply-To: <1b181f35-29c3-c6ce-6c42-ae55e890579e@samsung.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 9 Aug 2019 14:15:04 +0200
+Message-ID: <CAJZ5v0h_Bem4U46tgJyE7k+uHFN7viqUo10Vgh+UWZf_C1qD2g@mail.gmail.com>
+Subject: Re: [PATCH v3 8/8] ACPI: PM: s2idle: Execute LPS0 _DSM functions with
+ suspended devices
+To:     Marek Szyprowski <m.szyprowski@samsung.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rajneesh Bhardwaj <rajneesh.bhardwaj@linux.intel.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Mario Limonciello <mario.limonciello@dell.com>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SoCs that have multiple coexisting CPUs and DSPs, may have shared
-interconnect buses between them. In such cases, each CPU/DSP may have
-different bandwidth needs, depending on whether it is active or sleeping.
-This means that we have to keep different bandwidth configurations for
-the CPU (active/sleep). In such systems, usually there is a way to
-communicate and synchronize this information with some firmware or pass
-it to another processor responsible for monitoring and switching the
-interconnect configurations based on the state of each CPU/DSP.
+On Fri, Aug 9, 2019 at 2:00 PM Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
+>
+> Hi Rafael,
+>
+> On 2019-08-02 12:45, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > According to Section 3.5 of the "Intel Low Power S0 Idle" document [1],
+> > Function 5 of the LPS0 _DSM is expected to be invoked when the system
+> > configuration matches the criteria for entering the target low-power
+> > state of the platform.  In particular, this means that all devices
+> > should be suspended and in low-power states already when that function
+> > is invoked.
+> >
+> > This is not the case currently, however, because Function 5 of the
+> > LPS0 _DSM is invoked by it before the "noirq" phase of device suspend,
+> > which means that some devices may not have been put into low-power
+> > states yet at that point.  That is a consequence of the previous
+> > design of the suspend-to-idle flow that allowed the "noirq" phase of
+> > device suspend and the "noirq" phase of device resume to be carried
+> > out for multiple times while "suspended" (if any spurious wakeup
+> > events were detected) and the point of the LPS0 _DSM Function 5
+> > invocation was chosen so as to call it (and LPS0 _DSM Function 6
+> > analogously) once per suspend-resume cycle (regardless of how many
+> > times the "noirq" phases of device suspend and resume were carried
+> > out while "suspended").
+> >
+> > Now that the suspend-to-idle flow has been redesigned to carry out
+> > the "noirq" phases of device suspend and resume once in each cycle,
+> > the code can be reordered to follow the specification that it is
+> > based on more closely.
+> >
+> > For this purpose, add ->prepare_late and ->restore_early platform
+> > callbacks for suspend-to-idle, to be executed, respectively, after
+> > the "noirq" phase of suspending devices and before the "noirq"
+> > phase of resuming them and make ACPI use them for the invocation
+> > of LPS0 _DSM functions as appropriate.
+> >
+> > While at it, move the LPS0 entry requirements check to be made
+> > before invoking Functions 3 and 5 of the LPS0 _DSM (also once
+> > per cycle) as follows from the specification [1].
+> >
+> > Link: https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf # [1]
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >
+> > In v2 this was patch 2.
+> >
+> > ---
+> >   drivers/acpi/sleep.c    |   36 ++++++++++++++++++++++++------------
+> >   include/linux/suspend.h |    2 ++
+> >   kernel/power/suspend.c  |   12 +++++++++---
+> >   3 files changed, 35 insertions(+), 15 deletions(-)
+> >
+> > Index: linux-pm/drivers/acpi/sleep.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/acpi/sleep.c
+> > +++ linux-pm/drivers/acpi/sleep.c
+> > @@ -954,11 +954,6 @@ static int acpi_s2idle_begin(void)
+> >
+> >   static int acpi_s2idle_prepare(void)
+> >   {
+> > -     if (lps0_device_handle && !sleep_no_lps0) {
+> > -             acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_OFF);
+> > -             acpi_sleep_run_lps0_dsm(ACPI_LPS0_ENTRY);
+> > -     }
+> > -
+> >       if (acpi_sci_irq_valid())
+> >               enable_irq_wake(acpi_sci_irq);
+> >
+> > @@ -972,11 +967,22 @@ static int acpi_s2idle_prepare(void)
+> >       return 0;
+> >   }
+> >
+> > -static void acpi_s2idle_wake(void)
+> > +static int acpi_s2idle_prepare_late(void)
+> >   {
+> > -     if (lps0_device_handle && !sleep_no_lps0 && pm_debug_messages_on)
+> > +     if (!lps0_device_handle || sleep_no_lps0)
+> > +             return 0;
+> > +
+> > +     if (pm_debug_messages_on)
+> >               lpi_check_constraints();
+> >
+> > +     acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_OFF);
+> > +     acpi_sleep_run_lps0_dsm(ACPI_LPS0_ENTRY);
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +static void acpi_s2idle_wake(void)
+> > +{
+> >       /*
+> >        * If IRQD_WAKEUP_ARMED is set for the SCI at this point, the SCI has
+> >        * not triggered while suspended, so bail out.
+> > @@ -1011,6 +1017,15 @@ static void acpi_s2idle_wake(void)
+> >       rearm_wake_irq(acpi_sci_irq);
+> >   }
+> >
+> > +static void acpi_s2idle_restore_early(void)
+> > +{
+> > +     if (!lps0_device_handle || sleep_no_lps0)
+> > +             return;
+> > +
+> > +     acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT);
+> > +     acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_ON);
+> > +}
+> > +
+> >   static void acpi_s2idle_restore(void)
+> >   {
+> >       s2idle_wakeup = false;
+> > @@ -1021,11 +1036,6 @@ static void acpi_s2idle_restore(void)
+> >
+> >       if (acpi_sci_irq_valid())
+> >               disable_irq_wake(acpi_sci_irq);
+> > -
+> > -     if (lps0_device_handle && !sleep_no_lps0) {
+> > -             acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT);
+> > -             acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_ON);
+> > -     }
+> >   }
+> >
+> >   static void acpi_s2idle_end(void)
+> > @@ -1036,7 +1046,9 @@ static void acpi_s2idle_end(void)
+> >   static const struct platform_s2idle_ops acpi_s2idle_ops = {
+> >       .begin = acpi_s2idle_begin,
+> >       .prepare = acpi_s2idle_prepare,
+> > +     .prepare_late = acpi_s2idle_prepare_late,
+> >       .wake = acpi_s2idle_wake,
+> > +     .restore_early = acpi_s2idle_restore_early,
+> >       .restore = acpi_s2idle_restore,
+> >       .end = acpi_s2idle_end,
+> >   };
+> > Index: linux-pm/kernel/power/suspend.c
+> > ===================================================================
+> > --- linux-pm.orig/kernel/power/suspend.c
+> > +++ linux-pm/kernel/power/suspend.c
+> > @@ -253,13 +253,19 @@ static int platform_suspend_prepare_late
+> >
+> >   static int platform_suspend_prepare_noirq(suspend_state_t state)
+> >   {
+> > -     return state != PM_SUSPEND_TO_IDLE && suspend_ops->prepare_late ?
+> > -             suspend_ops->prepare_late() : 0;
+> > +     if (state == PM_SUSPEND_TO_IDLE) {
+> > +             if (s2idle_ops && s2idle_ops->prepare_late)
+> > +                     return s2idle_ops->prepare_late();
 
-The above problem can be solved by introducing the path tagging concept,
-that allows consumers to optionally attach a tag to each path they use.
-This tag is used to differentiate between the aggregated bandwidth values
-for each state. The tag is generic and how it's handled is up to the
-platform specific interconnect provider drivers.
+This should be
 
-v3:
-- New patch to add a pre_aggregate() callback.
+return s2idle_ops && s2idle_ops->prepare_late ? s2idle_ops->prepare_late() : 0;
 
-v2: https://lore.kernel.org/lkml/20190618091724.28232-1-georgi.djakov@linaro.org/
-- Store tag with the request. (Evan)
-- Reorganize the code to save bandwidth values into buckets and use the
-  tag as a bitfield. (Evan)
-- Clear the aggregated values after icc_set().
+> > +     }
+> > +     return suspend_ops->prepare_late ? suspend_ops->prepare_late() : 0;
+>
+> This unconditionally references suspend_ops here, what wasn't done
+> earlier. On one of my test boards (OdroidXU) it causes following NULL
+> pointer dereference since Linux next-20190809 (the first -next, which
+> contains this patch):
 
-v1: https://lore.kernel.org/lkml/20190208172152.1807-1-georgi.djakov@linaro.org/
-
-
-David Dai (1):
-  interconnect: qcom: Add tagging and wake/sleep support for sdm845
-
-Georgi Djakov (2):
-  interconnect: Add support for path tags
-  interconnect: Add pre_aggregate() callback
-
- drivers/interconnect/core.c           |  27 ++++-
- drivers/interconnect/qcom/sdm845.c    | 136 ++++++++++++++++++++------
- include/linux/interconnect-provider.h |   7 +-
- include/linux/interconnect.h          |   5 +
- 4 files changed, 140 insertions(+), 35 deletions(-)
-
+Sorry about this, will fix early next week.
