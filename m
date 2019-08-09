@@ -2,237 +2,310 @@ Return-Path: <SRS0=aSb8=WF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DEB0C32756
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 12:11:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77DA8C31E40
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 12:13:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 59469208C3
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 12:11:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3FE98208C3
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Aug 2019 12:13:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KEFHb3YY"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LgxYjcaR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406528AbfHIMLP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Aug 2019 08:11:15 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:33261 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2406048AbfHIMLP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2019 08:11:15 -0400
-Received: by mail-lj1-f194.google.com with SMTP id z17so3432510ljz.0;
-        Fri, 09 Aug 2019 05:11:13 -0700 (PDT)
+        id S2406753AbfHIMNf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Aug 2019 08:13:35 -0400
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:35838 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2406740AbfHIMNf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Aug 2019 08:13:35 -0400
+Received: by mail-lf1-f68.google.com with SMTP id p197so69323151lfa.2
+        for <linux-pm@vger.kernel.org>; Fri, 09 Aug 2019 05:13:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=j4NIkH+GpdlRIeIm+LhASfH+CmApJe3E7KjCUhYh+Bs=;
-        b=KEFHb3YYxZ1op/aQjto19YmwFDANODMg8ElcHBR+nbGid4IVZfqPq+/beDcTQq83KG
-         zbkHMaWYPsxsoquDIR0PeVIXvREfL9WFgKNRd/Jr7C0Y0rq6CNRkCE9YarBiB0ny1UuO
-         Z1DNL9+/mZjFQkxNDRk956HwCWHSVy3TxtKQ3hRQezNORolPeZ0fngpDJgcdprR/QxE9
-         SY770JhLIu2SKIcYd4LzHf/47lUxGDKl9M6XnrKPEEdFodu2DRlLFfFNkxtwcKgIsd6E
-         KJB9Zdv24OWKJ5OSi+tb62qkxJhwy7MGTjbcFJbytuh/hY2oySsT93+BZC0WekYtFBBt
-         cixA==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Nv77OQJ4wAginoyVflZ1aiIA0B/xXdKVZ4ai4MBEt/c=;
+        b=LgxYjcaR5YDWLbczNxlYJ+ENOQue2F1rKRf6UcnXKkf4cMmIZq4pU4re9Rux9DbPaB
+         fn76unZBnCbuKzUzw01bavZPktY7qjHLyTX6Pew0q54Pk8PZN92wx6OX/iyKu/DOl00L
+         MXSRNGh0aImXRL6ZKcma19q5FCK+S+DB5pQDvTyEcy7smyrWq4jxWDywgTc1gP8yhhfu
+         eXgCZ0LpWd0PxxmnMqS/llh76pspoRE8iXMlw9YD008bg6Y5NO3Dhm/ITfPfsdA9y20k
+         /bE5lM9d2ZXU+dV0wEiU7hVppoqgf+RpkpgtFxP8MOudphIUY1apDkCi0OHaRqkrolRF
+         tEvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=j4NIkH+GpdlRIeIm+LhASfH+CmApJe3E7KjCUhYh+Bs=;
-        b=umg5hRfIKJz4KjtRahGH3n3pUtWQRyBelMkBmerEYwC85ICn6+FDfojkVSBPoKyfTG
-         DnAI0c7jFXKCpp8+Umrv4BMLG1Ap+W4tFRnis/xfg3NbtgBCJb4Py5xV4jIMssf6x0Rn
-         HDEGemflssV/GHp1FQp00gFKmNV4pyBeNh9S5ZLX0L44Ev/3KsiYaqL1nbfR7H+5smdL
-         BmKyTuEOYfj2aDdnnocUd7rw1NNqT53qTrwaaSOHnBeBnMBTwU4pOeUkreiXdbmQvF/r
-         8l4OOhjqwb73D7b6j80H3HKSjcJGnpWktCk1BkJoX5ov2/dHsDrwUpPapLgT7qxF+klN
-         rIuQ==
-X-Gm-Message-State: APjAAAWnN6N+/wg56N+xBO/qup9jlbf4B0KoWeAj7NOpp7TCexKXAvY3
-        2awasHLfDk+hogP5Ret1SvlMThLI
-X-Google-Smtp-Source: APXvYqzRa7ByJrg8pG5XhDucmkgzfM+RQksQzWnDUszyx+R735+zNgdFen8vQrviwUIGwZYvkxh90w==
-X-Received: by 2002:a2e:b4d4:: with SMTP id r20mr11348307ljm.5.1565352672392;
-        Fri, 09 Aug 2019 05:11:12 -0700 (PDT)
-Received: from [192.168.2.145] ([94.29.34.218])
-        by smtp.googlemail.com with ESMTPSA id i9sm17562927lfl.10.2019.08.09.05.11.10
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 09 Aug 2019 05:11:11 -0700 (PDT)
-Subject: Re: [PATCH v8 09/21] clk: tegra: clk-super: Fix to enable PLLP
- branches to CPU
-To:     Sowjanya Komatineni <skomatineni@nvidia.com>,
-        thierry.reding@gmail.com, jonathanh@nvidia.com, tglx@linutronix.de,
-        jason@lakedaemon.net, marc.zyngier@arm.com,
-        linus.walleij@linaro.org, stefan@agner.ch, mark.rutland@arm.com
-Cc:     pdeschrijver@nvidia.com, pgaikwad@nvidia.com, sboyd@kernel.org,
-        linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
-        jckuo@nvidia.com, josephl@nvidia.com, talho@nvidia.com,
-        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org,
-        mperttunen@nvidia.com, spatra@nvidia.com, robh+dt@kernel.org,
-        devicetree@vger.kernel.org, rjw@rjwysocki.net,
-        viresh.kumar@linaro.org, linux-pm@vger.kernel.org
-References: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com>
- <1565308020-31952-10-git-send-email-skomatineni@nvidia.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <35a716fe-595c-b260-a577-bf46e39c8acb@gmail.com>
-Date:   Fri, 9 Aug 2019 15:11:10 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.7.2
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Nv77OQJ4wAginoyVflZ1aiIA0B/xXdKVZ4ai4MBEt/c=;
+        b=QSk56tesMZgaYNKW9ItUBKFJRa/keFLWWJDGBjqCc/+0cdhhKRoBIH3tzC0ifl8KkH
+         5OFbUX7mx8Y2jI3+vFneVZOOoUmMyG9ju5SlhIVrQMjcCn5eirayoPf6h+hpSC0+hpYh
+         kso+lJH6u2bUjoLiL0qqa4kvd3bmoHDNXo5TV/wkArIMFT7pyCb3KKKdq7WMTEJLqOO7
+         kRPrrkkP65ze1khP9af7ItcYuaT3Y5tJzd9ZWKfJRCwJXvtHtWha/oqSOP3tSEYnp5hk
+         LN9uGFvmBY9Nh4wVz5q0vCQRILkn4G3C46nEN3nG2DLQlVCvmZEb5LmzjDcYabfROSeg
+         uyvQ==
+X-Gm-Message-State: APjAAAWrQj2DHpTTR0CeH03KqHkkr6COXueELB0d40s+Mq2qVNmc+9SU
+        rTBwi1aqCGHR44jp2am3CcBWg/GUj5U=
+X-Google-Smtp-Source: APXvYqxFUkwTLM0yLzNMJVzI2IUjEvXWAw83CsS+OyA4NffQkZuiECZmFZqLY33hbjy/3anmrtYFNA==
+X-Received: by 2002:a19:f819:: with SMTP id a25mr13239881lff.183.1565352812618;
+        Fri, 09 Aug 2019 05:13:32 -0700 (PDT)
+Received: from localhost.localdomain ([37.157.136.206])
+        by smtp.googlemail.com with ESMTPSA id f23sm1083425lfc.25.2019.08.09.05.13.31
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Fri, 09 Aug 2019 05:13:32 -0700 (PDT)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     linux-pm@vger.kernel.org, evgreen@chromium.org
+Cc:     daidavid1@codeaurora.org, vincent.guittot@linaro.org,
+        bjorn.andersson@linaro.org, amit.kucheria@linaro.org,
+        dianders@chromium.org, seansw@qti.qualcomm.com,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
+Subject: [PATCH v3 3/3] interconnect: qcom: Add tagging and wake/sleep support for sdm845
+Date:   Fri,  9 Aug 2019 15:13:25 +0300
+Message-Id: <20190809121325.8138-4-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190809121325.8138-1-georgi.djakov@linaro.org>
+References: <20190809121325.8138-1-georgi.djakov@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <1565308020-31952-10-git-send-email-skomatineni@nvidia.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-09.08.2019 2:46, Sowjanya Komatineni пишет:
-> This patch has a fix to enable PLLP branches to CPU before changing
-> the CPU cluster clock source to PLLP for Gen5 Super clock and
-> disables PLLP branches to CPU when not in use.
-> 
-> During system suspend entry and exit, CPU source will be switched
-> to PLLP and this needs PLLP branches to be enabled to CPU prior to
-> the switch.
-> 
-> On system resume, warmboot code enables PLLP branches to CPU and
-> powers up the CPU with PLLP clock source.
-> 
-> Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
-> ---
->  drivers/clk/tegra/clk-super.c            | 14 ++++++++++++++
->  drivers/clk/tegra/clk-tegra-super-gen4.c |  7 ++++++-
->  drivers/clk/tegra/clk.c                  | 14 ++++++++++++++
->  drivers/clk/tegra/clk.h                  |  5 +++++
->  4 files changed, 39 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/clk/tegra/clk-super.c b/drivers/clk/tegra/clk-super.c
-> index 39ef31b46df5..e2a1e95a8db7 100644
-> --- a/drivers/clk/tegra/clk-super.c
-> +++ b/drivers/clk/tegra/clk-super.c
-> @@ -28,6 +28,9 @@
->  #define super_state_to_src_shift(m, s) ((m->width * s))
->  #define super_state_to_src_mask(m) (((1 << m->width) - 1))
->  
-> +#define CCLK_SRC_PLLP_OUT0 4
-> +#define CCLK_SRC_PLLP_OUT4 5
-> +
->  static u8 clk_super_get_parent(struct clk_hw *hw)
->  {
->  	struct tegra_clk_super_mux *mux = to_clk_super_mux(hw);
-> @@ -97,12 +100,23 @@ static int clk_super_set_parent(struct clk_hw *hw, u8 index)
->  		if (index == mux->div2_index)
->  			index = mux->pllx_index;
->  	}
-> +
-> +	/* enable PLLP branches to CPU before selecting PLLP source */
-> +	if ((mux->flags & TEGRA210_CPU_CLK) &&
-> +	    (index == CCLK_SRC_PLLP_OUT0 || index == CCLK_SRC_PLLP_OUT4))
-> +		tegra_clk_set_pllp_out_cpu(true);
-> +
->  	val &= ~((super_state_to_src_mask(mux)) << shift);
->  	val |= (index & (super_state_to_src_mask(mux))) << shift;
->  
->  	writel_relaxed(val, mux->reg);
->  	udelay(2);
->  
-> +	/* disable PLLP branches to CPU if not used */
-> +	if ((mux->flags & TEGRA210_CPU_CLK) &&
-> +	    index != CCLK_SRC_PLLP_OUT0 && index != CCLK_SRC_PLLP_OUT4)
-> +		tegra_clk_set_pllp_out_cpu(false);
-> +
->  out:
->  	if (mux->lock)
->  		spin_unlock_irqrestore(mux->lock, flags);
-> diff --git a/drivers/clk/tegra/clk-tegra-super-gen4.c b/drivers/clk/tegra/clk-tegra-super-gen4.c
-> index cdfe7c9697e1..98538f79b0c4 100644
-> --- a/drivers/clk/tegra/clk-tegra-super-gen4.c
-> +++ b/drivers/clk/tegra/clk-tegra-super-gen4.c
-> @@ -180,7 +180,7 @@ static void __init tegra_super_clk_init(void __iomem *clk_base,
->  					gen_info->num_cclk_g_parents,
->  					CLK_SET_RATE_PARENT,
->  					clk_base + CCLKG_BURST_POLICY,
-> -					0, 4, 8, 0, NULL);
-> +					TEGRA210_CPU_CLK, 4, 8, 0, NULL);
->  		} else {
->  			clk = tegra_clk_register_super_mux("cclk_g",
->  					gen_info->cclk_g_parents,
-> @@ -196,6 +196,11 @@ static void __init tegra_super_clk_init(void __iomem *clk_base,
->  	dt_clk = tegra_lookup_dt_id(tegra_clk_cclk_lp, tegra_clks);
->  	if (dt_clk) {
->  		if (gen_info->gen == gen5) {
-> +		/*
-> +		 * TEGRA210_CPU_CLK flag is not needed for cclk_lp as cluster
-> +		 * switching is not currently supported on Tegra210 and also
-> +		 * cpu_lp is not used.
-> +		 */
->  			clk = tegra_clk_register_super_mux("cclk_lp",
->  					gen_info->cclk_lp_parents,
->  					gen_info->num_cclk_lp_parents,
-> diff --git a/drivers/clk/tegra/clk.c b/drivers/clk/tegra/clk.c
-> index 573e3c967ae1..eb08047fd02f 100644
-> --- a/drivers/clk/tegra/clk.c
-> +++ b/drivers/clk/tegra/clk.c
-> @@ -23,6 +23,7 @@
->  #define CLK_OUT_ENB_W			0x364
->  #define CLK_OUT_ENB_X			0x280
->  #define CLK_OUT_ENB_Y			0x298
-> +#define CLK_ENB_PLLP_OUT_CPU		BIT(31)
->  #define CLK_OUT_ENB_SET_L		0x320
->  #define CLK_OUT_ENB_CLR_L		0x324
->  #define CLK_OUT_ENB_SET_H		0x328
-> @@ -199,6 +200,19 @@ const struct tegra_clk_periph_regs *get_reg_bank(int clkid)
->  	}
->  }
->  
-> +void tegra_clk_set_pllp_out_cpu(bool enable)
-> +{
-> +	u32 val;
-> +
-> +	val = readl_relaxed(clk_base + CLK_OUT_ENB_Y);
-> +	if (enable)
-> +		val |= CLK_ENB_PLLP_OUT_CPU;
-> +	else
-> +		val &= ~CLK_ENB_PLLP_OUT_CPU;
-> +
-> +	writel_relaxed(val, clk_base + CLK_OUT_ENB_Y);
-> +}
-> +
->  struct clk ** __init tegra_clk_init(void __iomem *regs, int num, int banks)
->  {
->  	clk_base = regs;
-> diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-> index 8a9af45b6084..560e2bcb3d7d 100644
-> --- a/drivers/clk/tegra/clk.h
-> +++ b/drivers/clk/tegra/clk.h
-> @@ -677,6 +677,9 @@ struct clk *tegra_clk_register_periph_data(void __iomem *clk_base,
->   * Flags:
->   * TEGRA_DIVIDER_2 - LP cluster has additional divider. This flag indicates
->   *     that this is LP cluster clock.
-> + * TEGRA210_CPU_CLK - This flag is used to identify CPU cluster for gen5
-> + * super mux parent using PLLP branches. To use PLLP branches to CPU, need
-> + * to configure additional bit PLLP_OUT_CPU in the clock registers.
->   */
->  struct tegra_clk_super_mux {
->  	struct clk_hw	hw;
-> @@ -693,6 +696,7 @@ struct tegra_clk_super_mux {
->  #define to_clk_super_mux(_hw) container_of(_hw, struct tegra_clk_super_mux, hw)
->  
->  #define TEGRA_DIVIDER_2 BIT(0)
-> +#define TEGRA210_CPU_CLK BIT(1)
->  
->  extern const struct clk_ops tegra_clk_super_ops;
->  struct clk *tegra_clk_register_super_mux(const char *name,
-> @@ -838,6 +842,7 @@ int tegra_pll_p_div_to_hw(struct tegra_clk_pll *pll, u8 p_div);
->  int div_frac_get(unsigned long rate, unsigned parent_rate, u8 width,
->  		 u8 frac_width, u8 flags);
->  void tegra_clk_osc_resume(void __iomem *clk_base);
-> +void tegra_clk_set_pllp_out_cpu(bool enable);
->  
->  
->  /* Combined read fence with delay */
-> 
+From: David Dai <daidavid1@codeaurora.org>
 
-Looks good to me.
+Add support for wake and sleep commands by using a tag to indicate
+whether or not the aggregate and set requests fall into execution
+state specific bucket.
 
-Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
+Signed-off-by: David Dai <daidavid1@codeaurora.org>
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+---
+ drivers/interconnect/qcom/sdm845.c | 134 ++++++++++++++++++++++-------
+ 1 file changed, 103 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
+index fb526004c82e..b2047d1c6d84 100644
+--- a/drivers/interconnect/qcom/sdm845.c
++++ b/drivers/interconnect/qcom/sdm845.c
+@@ -66,6 +66,17 @@ struct bcm_db {
+ #define SDM845_MAX_BCM_PER_NODE	2
+ #define SDM845_MAX_VCD		10
+ 
++#define QCOM_ICC_BUCKET_AMC		0
++#define QCOM_ICC_BUCKET_WAKE		1
++#define QCOM_ICC_BUCKET_SLEEP		2
++#define QCOM_ICC_NUM_BUCKETS		3
++#define QCOM_ICC_TAG_AMC		BIT(QCOM_ICC_BUCKET_AMC)
++#define QCOM_ICC_TAG_WAKE		BIT(QCOM_ICC_BUCKET_WAKE)
++#define QCOM_ICC_TAG_SLEEP		BIT(QCOM_ICC_BUCKET_SLEEP)
++#define QCOM_ICC_TAG_ACTIVE_ONLY	(QCOM_ICC_TAG_AMC | QCOM_ICC_TAG_WAKE)
++#define QCOM_ICC_TAG_ALWAYS		(QCOM_ICC_TAG_AMC | QCOM_ICC_TAG_WAKE |\
++					 QCOM_ICC_TAG_SLEEP)
++
+ /**
+  * struct qcom_icc_node - Qualcomm specific interconnect nodes
+  * @name: the node name used in debugfs
+@@ -86,8 +97,8 @@ struct qcom_icc_node {
+ 	u16 num_links;
+ 	u16 channels;
+ 	u16 buswidth;
+-	u64 sum_avg;
+-	u64 max_peak;
++	u64 sum_avg[QCOM_ICC_NUM_BUCKETS];
++	u64 max_peak[QCOM_ICC_NUM_BUCKETS];
+ 	struct qcom_icc_bcm *bcms[SDM845_MAX_BCM_PER_NODE];
+ 	size_t num_bcms;
+ };
+@@ -112,8 +123,8 @@ struct qcom_icc_bcm {
+ 	const char *name;
+ 	u32 type;
+ 	u32 addr;
+-	u64 vote_x;
+-	u64 vote_y;
++	u64 vote_x[QCOM_ICC_NUM_BUCKETS];
++	u64 vote_y[QCOM_ICC_NUM_BUCKETS];
+ 	bool dirty;
+ 	bool keepalive;
+ 	struct bcm_db aux_data;
+@@ -555,7 +566,7 @@ inline void tcs_cmd_gen(struct tcs_cmd *cmd, u64 vote_x, u64 vote_y,
+ 		cmd->wait = true;
+ }
+ 
+-static void tcs_list_gen(struct list_head *bcm_list,
++static void tcs_list_gen(struct list_head *bcm_list, int bucket,
+ 			 struct tcs_cmd tcs_list[SDM845_MAX_VCD],
+ 			 int n[SDM845_MAX_VCD])
+ {
+@@ -573,8 +584,8 @@ static void tcs_list_gen(struct list_head *bcm_list,
+ 			commit = true;
+ 			cur_vcd_size = 0;
+ 		}
+-		tcs_cmd_gen(&tcs_list[idx], bcm->vote_x, bcm->vote_y,
+-			    bcm->addr, commit);
++		tcs_cmd_gen(&tcs_list[idx], bcm->vote_x[bucket],
++			    bcm->vote_y[bucket], bcm->addr, commit);
+ 		idx++;
+ 		n[batch]++;
+ 		/*
+@@ -595,51 +606,76 @@ static void tcs_list_gen(struct list_head *bcm_list,
+ 
+ static void bcm_aggregate(struct qcom_icc_bcm *bcm)
+ {
+-	size_t i;
+-	u64 agg_avg = 0;
+-	u64 agg_peak = 0;
++	size_t i, bucket;
++	u64 agg_avg[QCOM_ICC_NUM_BUCKETS] = {0};
++	u64 agg_peak[QCOM_ICC_NUM_BUCKETS] = {0};
+ 	u64 temp;
+ 
+-	for (i = 0; i < bcm->num_nodes; i++) {
+-		temp = bcm->nodes[i]->sum_avg * bcm->aux_data.width;
+-		do_div(temp, bcm->nodes[i]->buswidth * bcm->nodes[i]->channels);
+-		agg_avg = max(agg_avg, temp);
++	for (bucket = 0; bucket < QCOM_ICC_NUM_BUCKETS; bucket++) {
++		for (i = 0; i < bcm->num_nodes; i++) {
++			temp = bcm->nodes[i]->sum_avg[bucket] * bcm->aux_data.width;
++			do_div(temp, bcm->nodes[i]->buswidth * bcm->nodes[i]->channels);
++			agg_avg[bucket] = max(agg_avg[bucket], temp);
+ 
+-		temp = bcm->nodes[i]->max_peak * bcm->aux_data.width;
+-		do_div(temp, bcm->nodes[i]->buswidth);
+-		agg_peak = max(agg_peak, temp);
+-	}
++			temp = bcm->nodes[i]->max_peak[bucket] * bcm->aux_data.width;
++			do_div(temp, bcm->nodes[i]->buswidth);
++			agg_peak[bucket] = max(agg_peak[bucket], temp);
++		}
+ 
+-	temp = agg_avg * 1000ULL;
+-	do_div(temp, bcm->aux_data.unit);
+-	bcm->vote_x = temp;
++		temp = agg_avg[bucket] * 1000ULL;
++		do_div(temp, bcm->aux_data.unit);
++		bcm->vote_x[bucket] = temp;
+ 
+-	temp = agg_peak * 1000ULL;
+-	do_div(temp, bcm->aux_data.unit);
+-	bcm->vote_y = temp;
++		temp = agg_peak[bucket] * 1000ULL;
++		do_div(temp, bcm->aux_data.unit);
++		bcm->vote_y[bucket] = temp;
++	}
+ 
+-	if (bcm->keepalive && bcm->vote_x == 0 && bcm->vote_y == 0) {
+-		bcm->vote_x = 1;
+-		bcm->vote_y = 1;
++	if (bcm->keepalive && bcm->vote_x[0] == 0 && bcm->vote_y[0] == 0) {
++		bcm->vote_x[QCOM_ICC_BUCKET_AMC] = 1;
++		bcm->vote_x[QCOM_ICC_BUCKET_WAKE] = 1;
++		bcm->vote_y[QCOM_ICC_BUCKET_AMC] = 1;
++		bcm->vote_y[QCOM_ICC_BUCKET_WAKE] = 1;
+ 	}
+ 
+ 	bcm->dirty = false;
+ }
+ 
++static void qcom_icc_pre_aggregate(struct icc_node *node)
++{
++	size_t i;
++	struct qcom_icc_node *qn;
++
++	qn = node->data;
++
++	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
++		qn->sum_avg[i] = 0;
++		qn->max_peak[i] = 0;
++	}
++}
++
+ static int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+ 			      u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
+ {
+ 	size_t i;
+ 	struct qcom_icc_node *qn;
++	unsigned long tag_word = (unsigned long)tag;
+ 
+ 	qn = node->data;
+ 
++	if (!tag)
++		tag_word = QCOM_ICC_TAG_ALWAYS;
++
++	for (i = 0; i < QCOM_ICC_NUM_BUCKETS; i++) {
++		if (test_bit(i, &tag_word)) {
++			qn->sum_avg[i] += avg_bw;
++			qn->max_peak[i] = max_t(u32, qn->max_peak[i], peak_bw);
++		}
++	}
++
+ 	*agg_avg += avg_bw;
+ 	*agg_peak = max_t(u32, *agg_peak, peak_bw);
+ 
+-	qn->sum_avg = *agg_avg;
+-	qn->max_peak = *agg_peak;
+-
+ 	for (i = 0; i < qn->num_bcms; i++)
+ 		qn->bcms[i]->dirty = true;
+ 
+@@ -675,7 +711,7 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	 * Construct the command list based on a pre ordered list of BCMs
+ 	 * based on VCD.
+ 	 */
+-	tcs_list_gen(&commit_list, cmds, commit_idx);
++	tcs_list_gen(&commit_list, QCOM_ICC_BUCKET_AMC, cmds, commit_idx);
+ 
+ 	if (!commit_idx[0])
+ 		return ret;
+@@ -693,6 +729,41 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 		return ret;
+ 	}
+ 
++	INIT_LIST_HEAD(&commit_list);
++
++	for (i = 0; i < qp->num_bcms; i++) {
++		/*
++		 * Only generate WAKE and SLEEP commands if a resource's
++		 * requirements change as the execution environment transitions
++		 * between different power states.
++		 */
++		if (qp->bcms[i]->vote_x[QCOM_ICC_BUCKET_WAKE] !=
++		    qp->bcms[i]->vote_x[QCOM_ICC_BUCKET_SLEEP] ||
++		    qp->bcms[i]->vote_y[QCOM_ICC_BUCKET_WAKE] !=
++		    qp->bcms[i]->vote_y[QCOM_ICC_BUCKET_SLEEP]) {
++			list_add_tail(&qp->bcms[i]->list, &commit_list);
++		}
++	}
++
++	if (list_empty(&commit_list))
++		return ret;
++
++	tcs_list_gen(&commit_list, QCOM_ICC_BUCKET_WAKE, cmds, commit_idx);
++
++	ret = rpmh_write_batch(qp->dev, RPMH_WAKE_ONLY_STATE, cmds, commit_idx);
++	if (ret) {
++		pr_err("Error sending WAKE RPMH requests (%d)\n", ret);
++		return ret;
++	}
++
++	tcs_list_gen(&commit_list, QCOM_ICC_BUCKET_SLEEP, cmds, commit_idx);
++
++	ret = rpmh_write_batch(qp->dev, RPMH_SLEEP_STATE, cmds, commit_idx);
++	if (ret) {
++		pr_err("Error sending SLEEP RPMH requests (%d)\n", ret);
++		return ret;
++	}
++
+ 	return ret;
+ }
+ 
+@@ -738,6 +809,7 @@ static int qnoc_probe(struct platform_device *pdev)
+ 	provider = &qp->provider;
+ 	provider->dev = &pdev->dev;
+ 	provider->set = qcom_icc_set;
++	provider->pre_aggregate = qcom_icc_pre_aggregate;
+ 	provider->aggregate = qcom_icc_aggregate;
+ 	provider->xlate = of_icc_xlate_onecell;
+ 	INIT_LIST_HEAD(&provider->nodes);
