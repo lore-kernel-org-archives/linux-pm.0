@@ -5,55 +5,55 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92D99C32751
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Aug 2019 05:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBC02C32751
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Aug 2019 05:30:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 694B7217D7
-	for <linux-pm@archiver.kernel.org>; Sat, 10 Aug 2019 05:30:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BF6A9217D7
+	for <linux-pm@archiver.kernel.org>; Sat, 10 Aug 2019 05:30:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZPRFOqHE"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iT05HnTW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726579AbfHJFaR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 10 Aug 2019 01:30:17 -0400
-Received: from mail-pl1-f193.google.com ([209.85.214.193]:37979 "EHLO
-        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725837AbfHJFaR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Aug 2019 01:30:17 -0400
-Received: by mail-pl1-f193.google.com with SMTP id m12so7153522plt.5;
-        Fri, 09 Aug 2019 22:30:16 -0700 (PDT)
+        id S1725837AbfHJFaY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 10 Aug 2019 01:30:24 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:42418 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725788AbfHJFaY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Aug 2019 01:30:24 -0400
+Received: by mail-pg1-f194.google.com with SMTP id t132so46849180pgb.9;
+        Fri, 09 Aug 2019 22:30:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=iiVQJk9D8CfuggMoVj1p+aqwNp2abkAIMeZ4iA8Pj/0=;
-        b=ZPRFOqHEq7Cw2ufw3Mm2fY9Oaz3hac0l3Xu5PsEOGPLF7COULFq05vg+XsWinezM2a
-         DZ0T6vL1hWwTe2xwQZll89TldlAUZRYW405qeLdMQcjU3/IGu+ZWJJew0nSuWonus/zJ
-         3JLaJenIBmaVCH5FZrduNe0PsSup6K0UKslPlWsK8BA/E8H8JA9+iYl6ErJ8ZnZ29/fe
-         OZOCVbAzbxScW9VeRy7Gh84k7HOBfX5j1DeoW/PqwkCJtokhft4JzptwnZPYRzsKe0PT
-         0A4y/DS2aRJJGlOsoMiG5W01lR8r2O5CEj7S5GST3f7YsPykvQ1a66hOE3UM1BDrjdfZ
-         UZtw==
+        bh=hwZTuXR1RQwweZBHdOcMrMag4gKUpB96/RLkAJHYs6E=;
+        b=iT05HnTWCRVNX3VU2btAQTjum2T+H9ULSXrJJd/2QrK9AKvJeXrvnxM8TyNOPU14rm
+         E1GHGLJgMoUZrLrm4iOekEcYzmBbG11qAPmrtCUQoia0mVsrMWI/PxnfwM5ed4OlB2ip
+         4uqyj+cqtpqGg1gzRwK2Y/BdxqgF7kMc+dLxKQNblnDrIUZUfnRJtd3Ir8l9ara8AQ4+
+         BgsRHPG1sehtgh86UHXL5li5nvBiEPxNaFLCcf7ah+NhWcrnbthtihKz08RDZ1FKNykI
+         jH/Q+cXLV0h5we2av3QOQMJ4iTF9weqw6TmMRPbXIKFliH0wy+rBeeIzYLqKiwq1CX9Q
+         M1FQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=iiVQJk9D8CfuggMoVj1p+aqwNp2abkAIMeZ4iA8Pj/0=;
-        b=hsJqKWs5UtEtlh0XqhGaOS23R5Da3C3+CuhtwuP2Sicfqn28odCnO5CMgFpm7NrhLy
-         QjVTgEjDHFNINuYMVf3CNrdT2dSati7h/vD1UWhGILayE8YKSOE1ArgFNuG2SOhfA7QA
-         6zc3YflToE3YHZ+hJIUD7qxU6pzOV/8GlqWZWiYu0kpfHRssCjpFd1xkzgbKkMrhArWu
-         g0qQBJyn5ItN4BH/TITAVvaI3T9CMJiE0NKj6kTUURj5DLul3xEGB2w+AQId/FB3EfR1
-         c0riZ6+Iwj1yKVKOat7YqHneWjUwpn8x8LSaDGtAjOHSWn0tP4Zpz+B131nBkggzehYS
-         kbVA==
-X-Gm-Message-State: APjAAAV9f91J1HfmnUPlQDyqTaPyUMm0CgTEwEQa5mszfOwpdJyqHDNR
-        ob8tpVPnuM0uIYiZU41ZnGc=
-X-Google-Smtp-Source: APXvYqyJvqnqpxM/3lHUXCDIW0XlM04lSny/PBrutlyVaXbNaFDXGDzHAnGo7L7W6ut3mw/ucA2TpA==
-X-Received: by 2002:a17:902:1101:: with SMTP id d1mr22881836pla.212.1565415016564;
-        Fri, 09 Aug 2019 22:30:16 -0700 (PDT)
+        bh=hwZTuXR1RQwweZBHdOcMrMag4gKUpB96/RLkAJHYs6E=;
+        b=YxNhaPv/PK1PX2ESy4XsNnYqCKPQX4fDOi6hB6V9Lt3lVN3hgR+ibE2uuNjg+7g9w9
+         2PFr2/tdFOmknS6oW/6kaSP3Chw3R0q+kZ3V2tNDvRo4asFnuGC+OGezU4+GCwRP/QbI
+         /sU8t++EjWqelQ0FnCmnSOjKMuXSnJICl6/aY/0WvsBeTyhatotzT366jh1QKgju/Vcm
+         ejue7zk3KklIMkPGOiFrTrBmXZREcj3Q+7GSrzr+yLEsK0E/UlUsKJlLzA2VWVRnUgz8
+         Q+4v79SI+LOv0n4ne89sYc4BdyCdLF82AlyY2mPh21Cz3Zhk5/2a2Q2TvOZxJb+fUp+Q
+         EqqA==
+X-Gm-Message-State: APjAAAXNeVyiKU/gMLKO9/SHQ716ouvB7t8caCTCEogEzupQ6YnNCh3X
+        rXf48jc1TuGhthU57/kE7yc=
+X-Google-Smtp-Source: APXvYqw4s2jvP5CyZ7Z78O0x5bAHOAkoJ+5b1iaaYMbNLO9REx5WqGP6UNJ+iBWk2V4PX1g9bg983w==
+X-Received: by 2002:a63:e807:: with SMTP id s7mr20041477pgh.194.1565415023202;
+        Fri, 09 Aug 2019 22:30:23 -0700 (PDT)
 Received: from localhost ([202.182.106.211])
-        by smtp.gmail.com with ESMTPSA id z4sm86286175pgp.80.2019.08.09.22.30.15
+        by smtp.gmail.com with ESMTPSA id k70sm6641708pje.14.2019.08.09.22.30.22
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Fri, 09 Aug 2019 22:30:16 -0700 (PDT)
+        Fri, 09 Aug 2019 22:30:22 -0700 (PDT)
 From:   Yangtao Li <tiny.windzz@gmail.com>
 To:     rui.zhang@intel.com, edubezval@gmail.com,
         daniel.lezcano@linaro.org, robh+dt@kernel.org,
@@ -63,10 +63,10 @@ To:     rui.zhang@intel.com, edubezval@gmail.com,
         nicolas.ferre@microchip.com
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Icenowy Zheng <icenowy@aosc.io>
-Subject: [PATCH v5 15/18] thermal: sun8i: allow to use custom temperature calculation function
-Date:   Sat, 10 Aug 2019 05:28:26 +0000
-Message-Id: <20190810052829.6032-16-tiny.windzz@gmail.com>
+        Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH v5 17/18] dt-bindings: thermal: add binding document for r40 thermal controller
+Date:   Sat, 10 Aug 2019 05:28:28 +0000
+Message-Id: <20190810052829.6032-18-tiny.windzz@gmail.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190810052829.6032-1-tiny.windzz@gmail.com>
 References: <20190810052829.6032-1-tiny.windzz@gmail.com>
@@ -75,65 +75,25 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Icenowy Zheng <icenowy@aosc.io>
+This patch adds binding document for allwinner r40 thermal controller.
 
-The H5 temperature calculation function is strange. Firstly, it's
-segmented. Secondly, the formula of two sensors are different in the
-second segment.
-
-Allow to use a custom temperature calculation function, in case of
-the function is complex.
-
-Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 ---
- drivers/thermal/sun8i_thermal.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ Documentation/devicetree/bindings/thermal/sun8i-thermal.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
-index 3259081da841..a761e2afda08 100644
---- a/drivers/thermal/sun8i_thermal.c
-+++ b/drivers/thermal/sun8i_thermal.c
-@@ -76,6 +76,7 @@ struct ths_thermal_chip {
- 				     u16 *caldata, int callen);
- 	int		(*init)(struct ths_device *tmdev);
- 	int             (*irq_ack)(struct ths_device *tmdev);
-+	int		(*calc_temp)(int id, int reg);
- };
- 
- struct ths_device {
-@@ -90,9 +91,12 @@ struct ths_device {
- 
- /* Temp Unit: millidegree Celsius */
- static int sun8i_ths_reg2temp(struct ths_device *tmdev,
--			      int reg)
-+			      int id, int reg)
- {
--	return (reg + tmdev->chip->offset) * tmdev->chip->scale;
-+	if (tmdev->chip->calc_temp)
-+		return tmdev->chip->calc_temp(id, reg);
-+	else
-+		return (reg + tmdev->chip->offset) * tmdev->chip->scale;
- }
- 
- static int sun8i_ths_get_temp(void *data, int *temp)
-@@ -108,7 +112,7 @@ static int sun8i_ths_get_temp(void *data, int *temp)
- 	if (!val)
- 		return -EAGAIN;
- 
--	*temp = sun8i_ths_reg2temp(tmdev, val);
-+	*temp = sun8i_ths_reg2temp(tmdev, s->id, val);
- 	/*
- 	 * XX - According to the original sdk, there are some platforms(rarely)
- 	 * that add a fixed offset value after calculating the temperature
-@@ -232,7 +236,7 @@ static int sun50i_h6_ths_calibrate(struct ths_device *tmdev,
- 
- 	for (i = 0; i < tmdev->chip->sensor_num; i++) {
- 		int reg = (int)caldata[i + 1];
--		int sensor_temp = sun8i_ths_reg2temp(tmdev, reg);
-+		int sensor_temp = sun8i_ths_reg2temp(tmdev, i, reg);
- 		int delta, cdata, offset;
- 
- 		/*
+diff --git a/Documentation/devicetree/bindings/thermal/sun8i-thermal.yaml b/Documentation/devicetree/bindings/thermal/sun8i-thermal.yaml
+index 2e28f5b33d33..28c438d3bfea 100644
+--- a/Documentation/devicetree/bindings/thermal/sun8i-thermal.yaml
++++ b/Documentation/devicetree/bindings/thermal/sun8i-thermal.yaml
+@@ -17,6 +17,7 @@ properties:
+   compatible:
+     enum:
+       - allwinner,sun8i-h3-ths
++      - allwinner,sun8i-r40-ths
+       - allwinner,sun50i-a64-ths
+       - allwinner,sun50i-h5-ths
+       - allwinner,sun50i-h6-ths
 -- 
 2.17.1
 
