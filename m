@@ -2,122 +2,96 @@ Return-Path: <SRS0=47La=WH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3252FC433FF
-	for <linux-pm@archiver.kernel.org>; Sun, 11 Aug 2019 21:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE2E8C0650F
+	for <linux-pm@archiver.kernel.org>; Sun, 11 Aug 2019 22:21:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 04756217D4
-	for <linux-pm@archiver.kernel.org>; Sun, 11 Aug 2019 21:26:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 96BFA20820
+	for <linux-pm@archiver.kernel.org>; Sun, 11 Aug 2019 22:21:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BiQzBctp"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="F87DPDCx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726296AbfHKVYg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 11 Aug 2019 17:24:36 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:35748 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726011AbfHKVYg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Aug 2019 17:24:36 -0400
-Received: by mail-lf1-f65.google.com with SMTP id p197so72932572lfa.2;
-        Sun, 11 Aug 2019 14:24:34 -0700 (PDT)
+        id S1726094AbfHKWVp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 11 Aug 2019 18:21:45 -0400
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:40709 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726053AbfHKWVo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Aug 2019 18:21:44 -0400
+Received: by mail-lf1-f66.google.com with SMTP id b17so73024955lff.7
+        for <linux-pm@vger.kernel.org>; Sun, 11 Aug 2019 15:21:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=vAb/Wbf6jN1XW90qv7LwGWyr9ST9lsuKJ6ZQmhSvlSc=;
-        b=BiQzBctpmmIl+DFhnqskDUHKskSo70mqGg1OwBP/RXn4hVZKsZ4ALnHKRktswCxBnb
-         lKoOsK3+O7kJqldO3u8NO9YN+jp5sbOQlOEp71WoBhehpMq1q7hMe20oGA1BITIuWvsh
-         +rso/niw88+7Jo6HLGesqBPeg98rIoSB/6Fc+c50l9iAukOSt6rSI234+dxJ5QXmJ7Of
-         c7cx2dWCff+hDss7roSvWQ4aQISVEaZ5Pketk99LR9aEyebQ1nCoRIUkReJKYJl6gn2X
-         81HU+485Z6MA+lglnnjKJo3thoklFZHNx2OrkP8cXhdftd3sqgi+sVHCqYgBEuzAetLu
-         yTCg==
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=9PKMnQITWwiXFSMsZSKMDb22TaOXVnDVmZW4//J3IWw=;
+        b=F87DPDCxu7qIiZp3Iste/+lk9+QFN97gCAZMErm/aWY1IvruObafGHsGTw0CQyf2k4
+         8gOeV67Q6Clph22ez5jP3zA7VXVGeEiKiLLfQw3VVc7vmOMJWqOQHmguB6fnIQHZb9EU
+         8OH9pkSXbmZHWZzeM5pxDYzhyMSl6TycH7RAOo2dDDyWzE2aQGtaxt9itY7qPaYT8iLb
+         V9cbjhVBzEl9ZcqSoZVtbRFtZ9gCagNIds8d6P9fWYqFtEUcyrQewT+daihzzX6/AF/9
+         JPL8a5ze71GKaTXakXMixC83mi2I5SOFnzOafvhWAjwYGC57VU/zn5RWtOwhttjyeS9k
+         o93w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=vAb/Wbf6jN1XW90qv7LwGWyr9ST9lsuKJ6ZQmhSvlSc=;
-        b=D9aHh4i/3VJ3/kAwtJh23s+tNkiEw43E9c+WkxHDacVlD8fzFWySW8E0G1t1ApaYhr
-         b/16rgWHDKIDKBDmuXopvJSASKjcD6GR+BktDdcrWLBTcQsR/SdhXdvqo0pDCS+ACtyp
-         Il4YO8/JVFOuwW05lVSA0TqbZ1YI7TVDuvvfIcEdg/BwK44rF1zUTANgZxrsaNcNP60i
-         f6Kjfw5Z4j+v2JRRi1mJji9ruRcQoAKBi3AjWUxZOlUhAHEUwnyDrwE4LJ58P9EwZ4zn
-         K0JMrvxtZN/mQWhjjT/udfeEhIx7kj2svDlY9HoiYYVUvx8E9KIYXl0nT4Le3unyAAX5
-         o+1A==
-X-Gm-Message-State: APjAAAXPqBlzFuiiuTISvrMqfnbF34+ZIr7BSHjjsKzgAKTlZ2g9fReb
-        LIQYJBL4Cf7+N5TlWIoCp+8=
-X-Google-Smtp-Source: APXvYqwPPfBbW+6UiJYYLhkZT+EkEJxDbuPYn5DSBVbyEmbRNgL/5ZWcnD59iJknxOczk2VBKsm3cQ==
-X-Received: by 2002:ac2:5492:: with SMTP id t18mr5694040lfk.41.1565558674126;
-        Sun, 11 Aug 2019 14:24:34 -0700 (PDT)
-Received: from localhost.localdomain ([94.29.34.218])
-        by smtp.gmail.com with ESMTPSA id f1sm20470806ljk.86.2019.08.11.14.24.33
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 11 Aug 2019 14:24:33 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v6 01/19] PM / devfreq: tegra30: Change irq type to unsigned int
-Date:   Mon, 12 Aug 2019 00:22:57 +0300
-Message-Id: <20190811212315.12689-2-digetx@gmail.com>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190811212315.12689-1-digetx@gmail.com>
-References: <20190811212315.12689-1-digetx@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=9PKMnQITWwiXFSMsZSKMDb22TaOXVnDVmZW4//J3IWw=;
+        b=sQBoquPjvdpqxeIGrSGz/TwUZv3qsTmcwJlgaspAZrPKcXTdgVgzQ88Nt8LubCUzLK
+         9zzQct3E8+wqNMru0tNW+NoNhEgGC5msVE9RIEPSHwaq6QzbwnQuNdAPtiC1sWPxXzLK
+         gwKQIFsxZPcAsprvStaYQe8VfibpqfhZ0WA1Mk4dy7SQLj7GSSXE7uKGy8MgZEDOn45L
+         RzJQW+xE2YlSbAzty7EaQEFWyxMSOzuElnCsCTZihcDxtv2ko8d4v7xTj0qcAHXbKl0m
+         Q+Kk6PcUsk0QE7zuzE7tinfa1r9SiYH0gFiwDvjgXD78htCuNdeNkgpl+Xfc8Scr+7X/
+         ZYpA==
+X-Gm-Message-State: APjAAAU4UO/9OsZzj+Sxh/2tA33z3UhMo3wsIQGyMsJLee/Omej6zxDx
+        T18ZAw7khGG1/yEMGaEztV09gSAQYjQ9CFB/bGsDcA==
+X-Google-Smtp-Source: APXvYqy6mTIfA60NE7kmS7s1BxZG3hi4Qgr/HAnUJW4KB8c+62S/9s0VLcQaLSRgmtQkP2qox9Vitw+vqHeZRJ6c4pk=
+X-Received: by 2002:a19:e006:: with SMTP id x6mr17864493lfg.165.1565562102810;
+ Sun, 11 Aug 2019 15:21:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20190717063222.5902-1-linus.walleij@linaro.org> <CACRpkdZcuqeUXVtwNJj8N+ncs6CVjmthdoe1cDj+M_imGLqisg@mail.gmail.com>
+In-Reply-To: <CACRpkdZcuqeUXVtwNJj8N+ncs6CVjmthdoe1cDj+M_imGLqisg@mail.gmail.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Mon, 12 Aug 2019 00:21:31 +0200
+Message-ID: <CACRpkdbtk_hjwuEp+9-NuGDs6OficrJVWZ86ncmiH+NANay6CQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] thermal: db8500: Finalize device tree conversion
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IRQ numbers are always positive, hence the corresponding variable should
-be unsigned to keep types consistent. This is a minor change that cleans
-up code a tad more.
+On Sat, Aug 3, 2019 at 3:58 PM Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Wed, Jul 17, 2019 at 8:34 AM Linus Walleij <linus.walleij@linaro.org> wrote:
+>
+> > At some point there was an attempt to convert the DB8500
+> > thermal sensor to device tree: a probe path was added
+> > and the device tree was augmented for the Snowball board.
+> > The switchover was never completed: instead the thermal
+> > devices came from from the PRCMU MFD device and the probe
+> > on the Snowball was confused as another set of configuration
+> > appeared from the device tree.
+> >
+> > Move over to a device-tree only approach, as we fixed up
+> > the device trees.
+> >
+> > Cc: Lee Jones <lee.jones@linaro.org>
+> > Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+>
+> Thermal folks: can you apply/look into this?
+>
+> If you're short on time, please just ACK it if it looks OK and
+> I can send it through the ARM SoC tree.
 
-Suggested-by: Thierry Reding <thierry.reding@gmail.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/devfreq/tegra30-devfreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Ping on this patch, I need to merge dependent code, so it'd
+be great of it could be applied. Sorry for hammering, just a
+bit desperate.
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index a6ba75f4106d..a27300f40b0b 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -160,7 +160,7 @@ struct tegra_devfreq {
- 
- 	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
- 
--	int irq;
-+	unsigned int		irq;
- };
- 
- struct tegra_actmon_emc_ratio {
-@@ -618,12 +618,12 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->emc_clock);
- 	}
- 
--	tegra->irq = platform_get_irq(pdev, 0);
--	if (tegra->irq < 0) {
--		err = tegra->irq;
-+	err = platform_get_irq(pdev, 0);
-+	if (err < 0) {
- 		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
- 		return err;
- 	}
-+	tegra->irq = err;
- 
- 	reset_control_assert(tegra->reset);
- 
--- 
-2.22.0
-
+Yours,
+Linus Walleij
