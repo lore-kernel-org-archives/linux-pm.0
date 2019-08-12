@@ -2,32 +2,31 @@ Return-Path: <SRS0=ntgF=WI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 375D1C31E40
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 18:50:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9100C31E40
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 18:50:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 11AEE2070C
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 18:50:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 83EE82085A
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 18:50:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726602AbfHLSuC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Aug 2019 14:50:02 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:51608 "EHLO inva021.nxp.com"
+        id S1726596AbfHLSuE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Aug 2019 14:50:04 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:51686 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726550AbfHLSuC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 12 Aug 2019 14:50:02 -0400
+        id S1726488AbfHLSuD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 12 Aug 2019 14:50:03 -0400
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 8B9832006A4;
-        Mon, 12 Aug 2019 20:49:59 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C269E2006A1;
+        Mon, 12 Aug 2019 20:50:01 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7D4CC2006A1;
-        Mon, 12 Aug 2019 20:49:59 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A7DE32006AE;
+        Mon, 12 Aug 2019 20:50:01 +0200 (CEST)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 7B3A5205ED;
-        Mon, 12 Aug 2019 20:49:58 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id A0E00205ED;
+        Mon, 12 Aug 2019 20:50:00 +0200 (CEST)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     Stephen Boyd <sboyd@kernel.org>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -51,9 +50,9 @@ Cc:     Shawn Guo <shawnguo@kernel.org>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-imx@nxp.com, kernel@pengutronix.de,
         linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 4/7] dt-bindings: devfreq: Add bindings for imx ddr controller
-Date:   Mon, 12 Aug 2019 21:49:48 +0300
-Message-Id: <4cbddd75652c63aab19866c93faa0b784b56d53f.1565633880.git.leonard.crestez@nxp.com>
+Subject: [PATCH 6/7] PM / devfreq: imx-ddrc: Measure bandwidth with perf
+Date:   Mon, 12 Aug 2019 21:49:50 +0300
+Message-Id: <6d8762453bf6020b8f1ec8c06bb5713a3d3d635e.1565633880.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1565633880.git.leonard.crestez@nxp.com>
 References: <cover.1565633880.git.leonard.crestez@nxp.com>
@@ -65,75 +64,229 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add devicetree bindings for the i.MX DDR Controller on imx8m series
-chips. It supports dynamic frequency switching between multiple data
-rates and this is exposed to Linux via the devfreq subsystem.
+The imx8m ddrc has a performance monitoring block attached which can
+be used to measure bandwidth usage and automatically adjust frequency.
+
+There is already a perf driver for that block so instead of implementing
+a devfreq events driver use the in-kernel perf API to implement
+get_dev_status directly.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 ---
- .../devicetree/bindings/devfreq/imx-ddrc.yaml | 53 +++++++++++++++++++
- 1 file changed, 53 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/imx-ddrc.yaml
+ drivers/devfreq/imx-ddrc.c | 136 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 134 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/imx-ddrc.yaml b/Documentation/devicetree/bindings/devfreq/imx-ddrc.yaml
-new file mode 100644
-index 000000000000..fa20280a682f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/imx-ddrc.yaml
-@@ -0,0 +1,53 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/devfreq/imx.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/devfreq/imx-ddrc.c b/drivers/devfreq/imx-ddrc.c
+index e46a1e711bc6..d7f27cdce697 100644
+--- a/drivers/devfreq/imx-ddrc.c
++++ b/drivers/devfreq/imx-ddrc.c
+@@ -11,10 +11,13 @@
+ #include <linux/pm_opp.h>
+ #include <linux/clk.h>
+ #include <linux/clk-provider.h>
+ #include <linux/arm-smccc.h>
+ 
++#include <asm/perf_event.h>
++#include <linux/perf_event.h>
 +
-+title: i.MX DDR Controller
+ #define IMX_SIP_DDR_DVFS			0xc2000004
+ 
+ /* Values starting from 0 switch to specific frequency */
+ #define IMX_SIP_DDR_FREQ_SET_HIGH		0x00
+ 
+@@ -81,10 +84,22 @@ struct imx_ddrc {
+ 	struct clk *dram_alt;
+ 	struct clk *dram_apb;
+ 
+ 	int freq_count;
+ 	struct imx_ddrc_freq freq_table[IMX_DDRC_MAX_FREQ_COUNT];
 +
-+maintainers:
-+  - Leonard Crestez <leonard.crestez@nxp.com>
++	/* For measuring load with perf events: */
++	struct platform_device* pmu_pdev;
++	struct pmu *pmu;
 +
-+properties:
-+  compatible:
-+    contains:
-+      enum:
-+       - fsl,imx8m-ddrc
++	struct perf_event_attr rd_event_attr;
++	struct perf_event_attr wr_event_attr;
++	struct perf_event *rd_event;
++	struct perf_event *wr_event;
 +
-+  reg:
-+    maxItems: 1
-+    description: DDR Controller registers
++	u64 last_rd_val, last_rd_ena, last_rd_run;
++	u64 last_wr_val, last_wr_ena, last_wr_run;
+ };
+ 
+ static struct imx_ddrc_freq* imx_ddrc_find_freq(struct imx_ddrc* priv,
+ 						unsigned long rate)
+ {
+@@ -233,17 +248,117 @@ static int imx_ddrc_get_cur_freq(struct device *dev, unsigned long *freq)
+ static int imx_ddrc_get_dev_status(struct device *dev,
+ 		struct devfreq_dev_status *stat)
+ {
+ 	struct imx_ddrc *priv = dev_get_drvdata(dev);
+ 
+-	stat->busy_time = 0;
+-	stat->total_time = 0;
+ 	stat->current_frequency = clk_get_rate(priv->dram_core);
+ 
++	if (priv->rd_event && priv->wr_event) {
++		u64 rd_delta, rd_val, rd_ena, rd_run;
++		u64 wr_delta, wr_val, wr_ena, wr_run;
 +
-+  clocks:
-+    minItems: 5
-+    maxItems: 5
++		rd_val = perf_event_read_value(priv->rd_event, &rd_ena, &rd_run);
++		wr_val = perf_event_read_value(priv->wr_event, &wr_ena, &wr_run);
 +
-+  clock-names:
-+    items:
-+      - const: dram_core
-+      - const: dram_pll
-+      - const: dram_alt_root
-+      - const: dram_alt
-+      - const: dram_apb
++		rd_delta = (rd_val - priv->last_rd_val) * (rd_ena - priv->last_rd_ena) / (rd_run - priv->last_rd_run);
++		priv->last_rd_val = rd_val;
++		priv->last_rd_ena = rd_ena;
++		priv->last_rd_run = rd_run;
++		wr_delta = (wr_val - priv->last_wr_val) * (wr_ena - priv->last_wr_ena) / (wr_run - priv->last_wr_run);
++		priv->last_wr_val = wr_val;
++		priv->last_wr_ena = wr_ena;
++		priv->last_wr_run = wr_run;
 +
-+required:
-+  - reg
-+  - compatible
-+  - clocks
-+  - clock-names
++		/* magic numbers, possibly wrong */
++		stat->busy_time = 4 * (rd_delta + wr_delta);
++		stat->total_time = stat->current_frequency;
++	} else {
++		stat->busy_time = 0;
++		stat->total_time = 0;
++	}
 +
-+examples:
-+  - |
-+    #include <dt-bindings/clock/imx8mm-clock.h>
-+    ddrc: dram-controller@3d400000 {
-+        compatible = "fsl,imx8mm-ddrc", "fsl,imx8m-ddrc";
-+        reg = <0x3d400000 0x400000>;
-+        clock-names = "dram_core", "dram_pll", "dram_alt_root", "dram_alt", "dram_apb";
-+        clocks = <&clk IMX8MM_CLK_DRAM_CORE>,
-+                 <&clk IMX8MM_DRAM_PLL>,
-+                 <&clk IMX8MM_CLK_DRAM_ALT_ROOT>,
-+                 <&clk IMX8MM_CLK_DRAM_ALT>,
-+                 <&clk IMX8MM_CLK_DRAM_APB>;
-+        operating-points-v2 = <&ddrc_opp_table>;
-+    };
++	return 0;
++}
++
++static int imx_ddrc_perf_disable(struct imx_ddrc *priv)
++{
++	/* release and set to NULL */
++	if (!IS_ERR_OR_NULL(priv->rd_event))
++		perf_event_release_kernel(priv->rd_event);
++	if (!IS_ERR_OR_NULL(priv->wr_event))
++		perf_event_release_kernel(priv->wr_event);
++	priv->rd_event = NULL;
++	priv->wr_event = NULL;
++
+ 	return 0;
+ }
+ 
++static int imx_ddrc_perf_enable(struct imx_ddrc *priv)
++{
++	int ret;
++
++	priv->rd_event_attr.size = sizeof(priv->rd_event_attr);
++	priv->rd_event_attr.type = priv->pmu->type;
++	priv->rd_event_attr.config = 0x2a;
++
++	priv->rd_event = perf_event_create_kernel_counter(
++			&priv->rd_event_attr, 0, NULL, NULL, NULL);
++	if (IS_ERR(priv->rd_event)) {
++		ret = PTR_ERR(priv->rd_event);
++		goto err;
++	}
++
++	priv->wr_event_attr.size = sizeof(priv->wr_event_attr);
++	priv->wr_event_attr.type = priv->pmu->type;
++	priv->wr_event_attr.config = 0x2b;
++
++	priv->wr_event = perf_event_create_kernel_counter(
++			&priv->wr_event_attr, 0, NULL, NULL, NULL);
++	if (IS_ERR(priv->wr_event)) {
++		ret = PTR_ERR(priv->wr_event);
++		goto err;
++	}
++
++	return 0;
++
++err:
++	imx_ddrc_perf_disable(priv);
++	return ret;
++}
++
++static int imx_ddrc_init_events(struct device *dev,
++				   struct device_node* events_node)
++{
++	struct imx_ddrc *priv = dev_get_drvdata(dev);
++	struct device_driver *driver;
++
++	/*
++	 * We need pmu->type for perf_event_attr but there is no API for
++	 * mapping device_node to pmu. Fetch private data for imx-ddr-pmu and
++	 * cast that to a struct pmu instead.
++	 */
++	priv->pmu_pdev = of_find_device_by_node(events_node);
++	if (!priv->pmu_pdev)
++		return -EPROBE_DEFER;
++	driver = priv->pmu_pdev->dev.driver;
++	if (!driver)
++		return -EPROBE_DEFER;
++	if (strcmp(driver->name, "imx-ddr-pmu")) {
++		dev_warn(dev, "devfreq-events node %pOF has unexpected driver %s\n",
++				events_node, driver->name);
++		return -ENODEV;
++	}
++
++	priv->pmu = platform_get_drvdata(priv->pmu_pdev);
++	if (!priv->pmu)
++		return -EINVAL;
++
++	dev_info(dev, "events from pmu %s\n", priv->pmu->name);
++
++	return imx_ddrc_perf_enable(priv);
++}
++
+ static int imx_ddrc_init_freq_info(struct device *dev)
+ {
+ 	struct imx_ddrc *priv = dev_get_drvdata(dev);
+ 	struct arm_smccc_res res;
+ 	int index;
+@@ -291,10 +406,13 @@ static int imx_ddrc_init_freq_info(struct device *dev)
+ 
+ static void imx_ddrc_exit(struct device *dev)
+ {
+ 	struct imx_ddrc *priv = dev_get_drvdata(dev);
+ 
++	imx_ddrc_perf_disable(priv);
++	platform_device_put(priv->pmu_pdev);
++
+ 	return dev_pm_opp_of_remove_table(dev);
+ }
+ 
+ static int imx_ddrc_probe(struct platform_device *pdev)
+ {
+@@ -342,10 +460,22 @@ static int imx_ddrc_probe(struct platform_device *pdev)
+ 	priv->profile.get_dev_status = imx_ddrc_get_dev_status;
+ 	priv->profile.exit = imx_ddrc_exit;
+ 	priv->profile.get_cur_freq = imx_ddrc_get_cur_freq;
+ 	priv->profile.initial_freq = clk_get_rate(priv->dram_core);
+ 
++	/* Handle devfreq-events */
++	events_node = of_parse_phandle(dev->of_node, "devfreq-events", 0);
++	if (events_node) {
++		ret = imx_ddrc_init_events(dev, events_node);
++		of_node_put(events_node);
++		if (ret) {
++			dev_warn(dev, "failed to init perf events: %d\n", ret);
++			goto err;
++		}
++		gov = DEVFREQ_GOV_SIMPLE_ONDEMAND;
++	}
++
+ 	priv->devfreq = devm_devfreq_add_device(dev, &priv->profile,
+ 						gov, NULL);
+ 	if (IS_ERR(priv->devfreq)) {
+ 		ret = PTR_ERR(priv->devfreq);
+ 		dev_err(dev, "failed to add devfreq device: %d\n", ret);
+@@ -353,10 +483,12 @@ static int imx_ddrc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	return 0;
+ 
+ err:
++	imx_ddrc_perf_disable(priv);
++	platform_device_put(priv->pmu_pdev);
+ 	dev_pm_opp_of_remove_table(dev);
+ 	return ret;
+ }
+ 
+ static const struct of_device_id imx_ddrc_of_match[] = {
 -- 
 2.17.1
 
