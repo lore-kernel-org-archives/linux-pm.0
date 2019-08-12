@@ -2,339 +2,130 @@ Return-Path: <SRS0=ntgF=WI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23775C433FF
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 08:43:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25D42C433FF
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 08:49:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E6C372087B
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 08:43:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EFC8720820
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 08:49:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727233AbfHLImw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Aug 2019 04:42:52 -0400
-Received: from foss.arm.com ([217.140.110.172]:45242 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727207AbfHLImv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 12 Aug 2019 04:42:51 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 719C715A2;
-        Mon, 12 Aug 2019 01:42:50 -0700 (PDT)
-Received: from queper01-lin.cambridge.arm.com (queper01-lin.cambridge.arm.com [10.1.195.48])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 53AC63F718;
-        Mon, 12 Aug 2019 01:42:48 -0700 (PDT)
-From:   Quentin Perret <quentin.perret@arm.com>
-To:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
-        viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net,
-        catalin.marinas@arm.com, will@kernel.org, daniel.lezcano@linaro.org
-Cc:     dietmar.eggemann@arm.com, ionela.voinescu@arm.com,
-        mka@chromium.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        quentin.perret@arm.com
-Subject: [PATCH v7 3/4] thermal: cpu_cooling: Make the power-related code depend on IPA
-Date:   Mon, 12 Aug 2019 09:42:34 +0100
-Message-Id: <20190812084235.21440-4-quentin.perret@arm.com>
-X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190812084235.21440-1-quentin.perret@arm.com>
-References: <20190812084235.21440-1-quentin.perret@arm.com>
+        id S1727128AbfHLItV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Aug 2019 04:49:21 -0400
+Received: from relay12.mail.gandi.net ([217.70.178.232]:55959 "EHLO
+        relay12.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727017AbfHLItV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Aug 2019 04:49:21 -0400
+Received: from localhost (lfbn-1-17395-211.w86-250.abo.wanadoo.fr [86.250.200.211])
+        (Authenticated sender: maxime.ripard@bootlin.com)
+        by relay12.mail.gandi.net (Postfix) with ESMTPSA id 8E8D6200006;
+        Mon, 12 Aug 2019 08:49:16 +0000 (UTC)
+Date:   Mon, 12 Aug 2019 10:49:15 +0200
+From:   Maxime Ripard <maxime.ripard@bootlin.com>
+To:     Yangtao Li <tiny.windzz@gmail.com>
+Cc:     rui.zhang@intel.com, edubezval@gmail.com,
+        daniel.lezcano@linaro.org, robh+dt@kernel.org,
+        mark.rutland@arm.com, wens@csie.org, mchehab+samsung@kernel.org,
+        davem@davemloft.net, gregkh@linuxfoundation.org,
+        Jonathan.Cameron@huawei.com, nicolas.ferre@microchip.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Icenowy Zheng <icenowy@aosc.io>
+Subject: Re: [PATCH v5 15/18] thermal: sun8i: allow to use custom temperature
+ calculation function
+Message-ID: <20190812084915.lasb4dh25bfeoigr@flea>
+References: <20190810052829.6032-1-tiny.windzz@gmail.com>
+ <20190810052829.6032-16-tiny.windzz@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="f4uotbkobwqxzt7r"
+Content-Disposition: inline
+In-Reply-To: <20190810052829.6032-16-tiny.windzz@gmail.com>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The core CPU cooling infrastructure has power-related functions
-that have only one client: IPA. Since there can be no user of those
-functions if IPA is not compiled in, make sure to guard them with
-checks on CONFIG_THERMAL_GOV_POWER_ALLOCATOR to not waste space
-unnecessarily.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- drivers/thermal/cpu_cooling.c | 214 +++++++++++++++++-----------------
- 1 file changed, 104 insertions(+), 110 deletions(-)
+--f4uotbkobwqxzt7r
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 4c5db59a619b..498f59ab64b2 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -46,7 +46,9 @@
-  */
- struct freq_table {
- 	u32 frequency;
-+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
- 	u32 power;
-+#endif
- };
- 
- /**
-@@ -96,28 +98,6 @@ static DEFINE_IDA(cpufreq_ida);
- static DEFINE_MUTEX(cooling_list_lock);
- static LIST_HEAD(cpufreq_cdev_list);
- 
--/* Below code defines functions to be used for cpufreq as cooling device */
--
--/**
-- * get_level: Find the level for a particular frequency
-- * @cpufreq_cdev: cpufreq_cdev for which the property is required
-- * @freq: Frequency
-- *
-- * Return: level corresponding to the frequency.
-- */
--static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
--			       unsigned int freq)
--{
--	struct freq_table *freq_table = cpufreq_cdev->freq_table;
--	unsigned long level;
--
--	for (level = 1; level <= cpufreq_cdev->max_level; level++)
--		if (freq > freq_table[level].frequency)
--			break;
--
--	return level - 1;
--}
--
- /**
-  * cpufreq_thermal_notifier - notifier callback for cpufreq policy change.
-  * @nb:	struct notifier_block * with callback info.
-@@ -171,6 +151,27 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
- 	return NOTIFY_OK;
- }
- 
-+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
-+/**
-+ * get_level: Find the level for a particular frequency
-+ * @cpufreq_cdev: cpufreq_cdev for which the property is required
-+ * @freq: Frequency
-+ *
-+ * Return: level corresponding to the frequency.
-+ */
-+static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_cdev,
-+			       unsigned int freq)
-+{
-+	struct freq_table *freq_table = cpufreq_cdev->freq_table;
-+	unsigned long level;
-+
-+	for (level = 1; level <= cpufreq_cdev->max_level; level++)
-+		if (freq > freq_table[level].frequency)
-+			break;
-+
-+	return level - 1;
-+}
-+
- /**
-  * update_freq_table() - Update the freq table with power numbers
-  * @cpufreq_cdev:	the cpufreq cooling device in which to update the table
-@@ -319,80 +320,6 @@ static u32 get_dynamic_power(struct cpufreq_cooling_device *cpufreq_cdev,
- 	return (raw_cpu_power * cpufreq_cdev->last_load) / 100;
- }
- 
--/* cpufreq cooling device callback functions are defined below */
--
--/**
-- * cpufreq_get_max_state - callback function to get the max cooling state.
-- * @cdev: thermal cooling device pointer.
-- * @state: fill this variable with the max cooling state.
-- *
-- * Callback for the thermal cooling device to return the cpufreq
-- * max cooling state.
-- *
-- * Return: 0 on success, an error code otherwise.
-- */
--static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
--				 unsigned long *state)
--{
--	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
--
--	*state = cpufreq_cdev->max_level;
--	return 0;
--}
--
--/**
-- * cpufreq_get_cur_state - callback function to get the current cooling state.
-- * @cdev: thermal cooling device pointer.
-- * @state: fill this variable with the current cooling state.
-- *
-- * Callback for the thermal cooling device to return the cpufreq
-- * current cooling state.
-- *
-- * Return: 0 on success, an error code otherwise.
-- */
--static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
--				 unsigned long *state)
--{
--	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
--
--	*state = cpufreq_cdev->cpufreq_state;
--
--	return 0;
--}
--
--/**
-- * cpufreq_set_cur_state - callback function to set the current cooling state.
-- * @cdev: thermal cooling device pointer.
-- * @state: set this variable to the current cooling state.
-- *
-- * Callback for the thermal cooling device to change the cpufreq
-- * current cooling state.
-- *
-- * Return: 0 on success, an error code otherwise.
-- */
--static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
--				 unsigned long state)
--{
--	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
--	unsigned int clip_freq;
--
--	/* Request state should be less than max_level */
--	if (WARN_ON(state > cpufreq_cdev->max_level))
--		return -EINVAL;
--
--	/* Check if the old cooling action is same as new cooling action */
--	if (cpufreq_cdev->cpufreq_state == state)
--		return 0;
--
--	clip_freq = cpufreq_cdev->freq_table[state].frequency;
--	cpufreq_cdev->cpufreq_state = state;
--	cpufreq_cdev->clipped_freq = clip_freq;
--
--	cpufreq_update_policy(cpufreq_cdev->policy->cpu);
--
--	return 0;
--}
--
- /**
-  * cpufreq_get_requested_power() - get the current power
-  * @cdev:	&thermal_cooling_device pointer
-@@ -536,22 +463,88 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
- 				      power);
- 	return 0;
- }
-+#endif /* CONFIG_THERMAL_GOV_POWER_ALLOCATOR */
-+
-+/* cpufreq cooling device callback functions are defined below */
-+
-+/**
-+ * cpufreq_get_max_state - callback function to get the max cooling state.
-+ * @cdev: thermal cooling device pointer.
-+ * @state: fill this variable with the max cooling state.
-+ *
-+ * Callback for the thermal cooling device to return the cpufreq
-+ * max cooling state.
-+ *
-+ * Return: 0 on success, an error code otherwise.
-+ */
-+static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
-+
-+	*state = cpufreq_cdev->max_level;
-+	return 0;
-+}
-+
-+/**
-+ * cpufreq_get_cur_state - callback function to get the current cooling state.
-+ * @cdev: thermal cooling device pointer.
-+ * @state: fill this variable with the current cooling state.
-+ *
-+ * Callback for the thermal cooling device to return the cpufreq
-+ * current cooling state.
-+ *
-+ * Return: 0 on success, an error code otherwise.
-+ */
-+static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
-+
-+	*state = cpufreq_cdev->cpufreq_state;
-+
-+	return 0;
-+}
-+
-+/**
-+ * cpufreq_set_cur_state - callback function to set the current cooling state.
-+ * @cdev: thermal cooling device pointer.
-+ * @state: set this variable to the current cooling state.
-+ *
-+ * Callback for the thermal cooling device to change the cpufreq
-+ * current cooling state.
-+ *
-+ * Return: 0 on success, an error code otherwise.
-+ */
-+static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long state)
-+{
-+	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
-+	unsigned int clip_freq;
-+
-+	/* Request state should be less than max_level */
-+	if (WARN_ON(state > cpufreq_cdev->max_level))
-+		return -EINVAL;
-+
-+	/* Check if the old cooling action is same as new cooling action */
-+	if (cpufreq_cdev->cpufreq_state == state)
-+		return 0;
-+
-+	clip_freq = cpufreq_cdev->freq_table[state].frequency;
-+	cpufreq_cdev->cpufreq_state = state;
-+	cpufreq_cdev->clipped_freq = clip_freq;
-+
-+	cpufreq_update_policy(cpufreq_cdev->policy->cpu);
-+
-+	return 0;
-+}
- 
- /* Bind cpufreq callbacks to thermal cooling device ops */
- 
- static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
--	.get_max_state = cpufreq_get_max_state,
--	.get_cur_state = cpufreq_get_cur_state,
--	.set_cur_state = cpufreq_set_cur_state,
--};
--
--static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
- 	.get_max_state		= cpufreq_get_max_state,
- 	.get_cur_state		= cpufreq_get_cur_state,
- 	.set_cur_state		= cpufreq_set_cur_state,
--	.get_requested_power	= cpufreq_get_requested_power,
--	.state2power		= cpufreq_state2power,
--	.power2state		= cpufreq_power2state,
- };
- 
- /* Notifier for cpufreq policy change */
-@@ -659,18 +652,19 @@ __cpufreq_cooling_register(struct device_node *np,
- 			pr_debug("%s: freq:%u KHz\n", __func__, freq);
- 	}
- 
-+	cooling_ops = &cpufreq_cooling_ops;
-+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
- 	if (capacitance) {
- 		ret = update_freq_table(cpufreq_cdev, capacitance);
- 		if (ret) {
- 			cdev = ERR_PTR(ret);
- 			goto remove_ida;
- 		}
--
--		cooling_ops = &cpufreq_power_cooling_ops;
--	} else {
--		cooling_ops = &cpufreq_cooling_ops;
-+		cooling_ops->get_requested_power = cpufreq_get_requested_power;
-+		cooling_ops->state2power = cpufreq_state2power;
-+		cooling_ops->power2state = cpufreq_power2state;
- 	}
--
-+#endif
- 	cdev = thermal_of_cooling_device_register(np, dev_name, cpufreq_cdev,
- 						  cooling_ops);
- 	if (IS_ERR(cdev))
--- 
-2.22.0
+Hi,
 
+On Sat, Aug 10, 2019 at 05:28:26AM +0000, Yangtao Li wrote:
+> From: Icenowy Zheng <icenowy@aosc.io>
+>
+> The H5 temperature calculation function is strange. Firstly, it's
+> segmented. Secondly, the formula of two sensors are different in the
+> second segment.
+>
+> Allow to use a custom temperature calculation function, in case of
+> the function is complex.
+>
+> Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
+
+When you send a patch on someone else's behalf, you need to put your
+Signed-off-by as well.
+
+> ---
+>  drivers/thermal/sun8i_thermal.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
+> index 3259081da841..a761e2afda08 100644
+> --- a/drivers/thermal/sun8i_thermal.c
+> +++ b/drivers/thermal/sun8i_thermal.c
+> @@ -76,6 +76,7 @@ struct ths_thermal_chip {
+>  				     u16 *caldata, int callen);
+>  	int		(*init)(struct ths_device *tmdev);
+>  	int             (*irq_ack)(struct ths_device *tmdev);
+> +	int		(*calc_temp)(int id, int reg);
+>  };
+>
+>  struct ths_device {
+> @@ -90,9 +91,12 @@ struct ths_device {
+>
+>  /* Temp Unit: millidegree Celsius */
+>  static int sun8i_ths_reg2temp(struct ths_device *tmdev,
+> -			      int reg)
+> +			      int id, int reg)
+>  {
+> -	return (reg + tmdev->chip->offset) * tmdev->chip->scale;
+> +	if (tmdev->chip->calc_temp)
+> +		return tmdev->chip->calc_temp(id, reg);
+> +	else
+> +		return (reg + tmdev->chip->offset) * tmdev->chip->scale;
+
+You're not consistent here compared to the other callbacks you have
+introduced: calibrate, init and irq_ack all need to be set and will
+fail (hard) if you don't set them, yet this one will have a different
+behaviour (that behaviour being to use the H6 formula, which is the
+latest SoC, which is a bit odd in itself).
+
+I guess we should either make it mandatory as the rest of the
+callbacks, or document which callbacks are mandatory and which are
+optional (and the behaviour when it's optional).
+
+Maxime
+
+--
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+--f4uotbkobwqxzt7r
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXVEoCwAKCRDj7w1vZxhR
+xfQmAP9xX6EXk3hDLg/bBSbrnJp6QkeJeiCQrfENROxox3MBTQD/Xm0PpUdxbQaF
+HD4uZ6W1In3fv39oufKd/j0DlKZ5Lwc=
+=i8aL
+-----END PGP SIGNATURE-----
+
+--f4uotbkobwqxzt7r--
