@@ -2,64 +2,33 @@ Return-Path: <SRS0=ntgF=WI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E4B0C433FF
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 11:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8E3EC433FF
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 12:24:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D4C35208C2
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 11:51:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nz/9gOYB"
+	by mail.kernel.org (Postfix) with ESMTP id B8A5E208C2
+	for <linux-pm@archiver.kernel.org>; Mon, 12 Aug 2019 12:24:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728183AbfHLLvx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Aug 2019 07:51:53 -0400
-Received: from mail-wm1-f68.google.com ([209.85.128.68]:33129 "EHLO
-        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728229AbfHLLvx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Aug 2019 07:51:53 -0400
-Received: by mail-wm1-f68.google.com with SMTP id p77so10680206wme.0
-        for <linux-pm@vger.kernel.org>; Mon, 12 Aug 2019 04:51:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=RBO3DRjOTnD2wLqgKm2sOWPkxUiw82Gd++GtZ0/46Pk=;
-        b=nz/9gOYBm5f41AVteysD7l24n/Fd0CiOd3001w0L8BtaHes0R2oAL3pINo1E67hDqy
-         LYLZYDx2CxxVwMBSRwITxQ7LBANizanIV8XLQDJPMvsJ77m9tES+HS7jSPuaZNNf5zLH
-         nJNC3fbaSgk6TIwPbEkvXAR9YMr4uaJGNyujl8nkgLPC2ajuplKaJMLBVMygaRw4mctr
-         v9K4EXL7KXzp3RsqZvOuNFZZIBgL3EH8ok18K9QCfbZD0XeauBkGNU8sGb/rdBD+mhii
-         VoucQhke9qSJVeBDCh/U7CT6nQl1GGi3bHOV9kBWWjJvjTkOKetcXv8rzrMZAI1jwibq
-         JScg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=RBO3DRjOTnD2wLqgKm2sOWPkxUiw82Gd++GtZ0/46Pk=;
-        b=Ac2w+NEQoS9PxxIz79WOc57j+5aDv6bdxtHzgil7vze7OFMRXXuu/ESSXSookiSV0L
-         RB2HwXZm1E8pX6rnDhWMb+U53fObLExefNwIlTsMrywryuQNYEDwqhhbVd+c++OG13zi
-         TiaBFG+McK/D6bja5zNxbCk5bJwa3pvG7xa/68XJXIv8XcyAgAJmriXYYUZDqdfiun7e
-         zfO4yaan4AFAU1zLhidm/LLaVw+v2RXjnS6lRXfvSYRhwNIrjhwumYdcYj+HTM88NdO7
-         PdxeYKKsiJVvhYyHt7rBjeHsdy1udi68hg5/nPe+HGrrD0To0JoXeXsZSqVzVgmhCKUU
-         UVfg==
-X-Gm-Message-State: APjAAAW18n31y110JI/PKIBeWxoIGAG9tWjJ0eidNDa2u1qu0wpQBFrr
-        u4evVhBYAglNTwJRAjtMs/k6yw==
-X-Google-Smtp-Source: APXvYqwV9aoRqyXcZZQN5vuglpU7Un+RzXUmxodwxoqrNtY4ZzQnftXwr2r3/ozL4duHxbq6J6RM+w==
-X-Received: by 2002:a1c:a985:: with SMTP id s127mr26790055wme.163.1565610711038;
-        Mon, 12 Aug 2019 04:51:51 -0700 (PDT)
-Received: from dell ([2.27.35.255])
-        by smtp.gmail.com with ESMTPSA id s64sm22246982wmf.16.2019.08.12.04.51.49
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Mon, 12 Aug 2019 04:51:50 -0700 (PDT)
-Date:   Mon, 12 Aug 2019 12:51:48 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Frank Wunderlich <frank-w@public-files.de>
-Cc:     Alessandro Zummo <a.zummo@towertech.it>,
+        id S1728517AbfHLMYK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Aug 2019 08:24:10 -0400
+Received: from mxwww.masterlogin.de ([95.129.51.220]:59218 "EHLO
+        mxwww.masterlogin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728293AbfHLMYK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Aug 2019 08:24:10 -0400
+Received: from mxout2.routing.net (unknown [192.168.10.82])
+        by new.mxwww.masterlogin.de (Postfix) with ESMTPS id 9C6F696D7C;
+        Mon, 12 Aug 2019 12:15:39 +0000 (UTC)
+Received: from mxbox2.masterlogin.de (unknown [192.168.10.253])
+        by mxout2.routing.net (Postfix) with ESMTP id F20BA64895;
+        Mon, 12 Aug 2019 12:15:39 +0000 (UTC)
+Received: from localhost.localdomain (fttx-pool-217.61.152.193.bambit.de [217.61.152.193])
+        by mxbox2.masterlogin.de (Postfix) with ESMTPSA id 527D7100D06;
+        Mon, 12 Aug 2019 14:15:37 +0200 (CEST)
+From:   Frank Wunderlich <frank-w@public-files.de>
+To:     Alessandro Zummo <a.zummo@towertech.it>,
         Alexandre Belloni <alexandre.belloni@bootlin.com>,
         Allison Randal <allison@lohutok.net>,
         "David S. Miller" <davem@davemloft.net>,
@@ -67,6 +36,7 @@ Cc:     Alessandro Zummo <a.zummo@towertech.it>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Jonathan Cameron <Jonathan.Cameron@huawei.com>,
         Kate Stewart <kstewart@linuxfoundation.org>,
+        Lee Jones <lee.jones@linaro.org>,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
         linux-rtc@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
@@ -78,47 +48,52 @@ Cc:     Alessandro Zummo <a.zummo@towertech.it>,
         Sean Wang <sean.wang@mediatek.com>,
         Sebastian Reichel <sre@kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
-        "Tianping . Fang" <tianping.fang@mediatek.com>,
-        Josef Friedl <josef.friedl@speed.at>
-Subject: Re: Re: Re: [PATCH v3 01/10] dt-bindings: add powercontroller
-Message-ID: <20190812115148.GT26727@dell>
-References: <20190729174154.4335-1-frank-w@public-files.de>
- <20190729174154.4335-2-frank-w@public-files.de>
- <20190812102035.GH26727@dell>
- <trinity-a6c06411-16d3-40ab-a4fb-3494131c8ed6-1565608221532@3c-app-gmx-bs80>
- <20190812112507.GR26727@dell>
- <trinity-738d59ed-ecac-4025-a729-0888eaea1f95-1565609875829@3c-app-gmx-bs80>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <trinity-738d59ed-ecac-4025-a729-0888eaea1f95-1565609875829@3c-app-gmx-bs80>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+        "Tianping . Fang" <tianping.fang@mediatek.com>
+Cc:     Josef Friedl <josef.friedl@speed.at>,
+        Frank Wunderlich <frank-w@public-files.de>
+Subject: [PATCH v5 09/10] MAINTAINERS: add Mediatek shutdown drivers
+Date:   Mon, 12 Aug 2019 14:15:10 +0200
+Message-Id: <20190812121511.4169-10-frank-w@public-files.de>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190812121511.4169-1-frank-w@public-files.de>
+References: <20190812121511.4169-1-frank-w@public-files.de>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 12 Aug 2019, Frank Wunderlich wrote:
+From: Josef Friedl <josef.friedl@speed.at>
 
-> > Gesendet: Montag, 12. August 2019 um 13:25 Uhr
-> > Von: "Lee Jones" <lee.jones@linaro.org>
-> > It was an example (hence the "E.g.").
-> >
-> > You will need to adapt it depending on where the file ends up.
-> 
-> i saw the e.g., but i wanted to know relative to which directory ;) your example mentions that it should contain the dt-bindings-folder and i think it should be relative to current file...
-> 
-> have applied your suggestions to my tree
-> 
-> https://github.com/frank-w/BPI-R2-4.14/commits/5.3-poweroff
-> 
-> please take a short look if i don't miss anything
+add Section in MAINTAINERS file for poweroff driver
 
-Just resubmit them.  Doing off-list reviews is a slippery slope.
+Signed-off-by: Josef Friedl <josef.friedl@speed.at>
+Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+---
+changes since v4: none
+changes since v3: moved SOB
+changes since v2: none (=v2 part 6)
+---
+ MAINTAINERS | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6426db5198f0..4172a3177633 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10128,6 +10128,13 @@ S:	Maintained
+ F:	drivers/net/dsa/mt7530.*
+ F:	net/dsa/tag_mtk.c
+ 
++MEDIATEK BOARD LEVEL SHUTDOWN DRIVERS
++M:	Sean Wang <sean.wang@mediatek.com>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
++F:	drivers/power/reset/mt6323-poweroff.c
++
+ MEDIATEK JPEG DRIVER
+ M:	Rick Chang <rick.chang@mediatek.com>
+ M:	Bin Liu <bin.liu@mediatek.com>
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.17.1
+
