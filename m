@@ -2,70 +2,109 @@ Return-Path: <SRS0=bePy=WJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0810AC32750
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Aug 2019 17:28:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 274BEC433FF
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Aug 2019 18:47:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BE63D20663
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Aug 2019 17:28:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F35062054F
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Aug 2019 18:47:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="lqt/2/49"
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="MzKvf3Bd";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="kEw1XN3r"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726126AbfHMR2g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Aug 2019 13:28:36 -0400
-Received: from mail-qt1-f195.google.com ([209.85.160.195]:42355 "EHLO
-        mail-qt1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726975AbfHMR2g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Aug 2019 13:28:36 -0400
-Received: by mail-qt1-f195.google.com with SMTP id t12so18562885qtp.9
-        for <linux-pm@vger.kernel.org>; Tue, 13 Aug 2019 10:28:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Yv80EgLntszbP6TTSuSNcZVmW18fS3ZlkdDQEp8VgVs=;
-        b=lqt/2/49srXKrh03BepDy8ewMxZilLS+HF5Q8tjtdHvoJ25v94i337rLbGfBQBoz/j
-         5uYxhwEWDC8JbXTGO2wGuWUVicwKMYYnHxP/T3omg+jGHWt24eTisq6cOOxrucgpbgSh
-         8Mb/Awr7Rmu8FNYwp+TcxQa6QTZClGnK11eXgIW5t/08reYP4+p1NqlrgI23LOM0GHo8
-         n7d81aO680+1ETTNoz6Wa61+xadQDDkvkchWGDNhievj3RYAfSAZreip61Gfk44AZ1jB
-         YwiKiYEcLje4kz8vDVfAsbXgTFXB7fDxFacz9pKXyv8gEhsUDse/aDpxMvCISOtnoNYG
-         3pZQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Yv80EgLntszbP6TTSuSNcZVmW18fS3ZlkdDQEp8VgVs=;
-        b=YTc5IaVotdthFUMCX9mSyxSc/zAiMaX1koZrb6DBG9sjPyglUorHXrr9iiKlCgHpIu
-         VDtrrXvXxQa+0R0V2Vx6KHq2XWtLsf+j+VvTsQJcN/rS8k/wiAKbgBBSj0Pu3kMCxJQ5
-         +nePSxkxYeMsveCNmSl7TSk+cIx9631efvNh2oK4E0SI1P4nNywxeBkZH0ZO5+oxJxBC
-         zY5D46DvT8uWvjneMPp+nXXFlqsfIVxPB84cpIc3J/4ey1lJiRB8SIYQ4dbdrKDSuWDR
-         jVGash5qb+LM4/MRhON7nGrR8OgHRg6acIhfwfoQQryMNjdDm14tdceJXSF3cVFMuQyZ
-         b4Xw==
-X-Gm-Message-State: APjAAAWWa/X6T+aWvyLAaJJ1JVL3Q7/lFRdxDXKAZUBnc5xY81MOABd4
-        O6qUYHXIGUSud5jUTe12ijYHssk/Gs7gIHEB0QYKGA==
-X-Google-Smtp-Source: APXvYqwjzhV0kDofeJYBNfZiu4sKgLdBAjdHPNSXHEraksdZW2nTzfcS4y9kTvM4BM8tj6/KYmHQMElrErf5PqkmmgQ=
-X-Received: by 2002:ac8:6c9:: with SMTP id j9mr3573806qth.76.1565717315175;
- Tue, 13 Aug 2019 10:28:35 -0700 (PDT)
+        id S1726188AbfHMSrW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Aug 2019 14:47:22 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:39188 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725923AbfHMSrW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Aug 2019 14:47:22 -0400
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+        id 1C48C60A4E; Tue, 13 Aug 2019 18:47:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1565722041;
+        bh=4vlQBHXZefdhk1fMpS9K60hc0yLOya2J7kL8k05ISsE=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=MzKvf3Bdi4lF9Vx/WDwVpzChgPmmDmNM7n9XD4ndxMS3tZ059aEv6ySa4+kR+OrzE
+         HNHphu71chDg5he16DcbDOtVAJK+L0j3dBYXgru4z3u6C8z2tEI+KOAU0cYKcFBXAH
+         kL6gHFGYnvZ+YvCWfkbGRdWNl624vTAvguWhac+Y=
+Received: from jcrouse1-lnx.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: jcrouse@smtp.codeaurora.org)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 8773B605A2;
+        Tue, 13 Aug 2019 18:47:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1565722040;
+        bh=4vlQBHXZefdhk1fMpS9K60hc0yLOya2J7kL8k05ISsE=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=kEw1XN3rhVtk1HvRWxOSp3f/VsT0koH4XYN1tvdk1wXd1LTOGh6wtXqQoohnlgqM2
+         Z14vc2EYUHFduUw/JlE0KKNQK/QVsWiRyBpzrUzpAenAVE15VT6q77Zoqjzkx3id0M
+         gPM9ohyoSWiM14roPi3Dx7z7EfQykuA02NczTqPw=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 8773B605A2
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=jcrouse@codeaurora.org
+Date:   Tue, 13 Aug 2019 12:47:17 -0600
+From:   Jordan Crouse <jcrouse@codeaurora.org>
+To:     Stephen Boyd <sboyd@kernel.org>
+Cc:     freedreno@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
+        Michael Turquette <mturquette@baylibre.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Andy Gross <agross@kernel.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        linux-clk@vger.kernel.org, Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v2] drivers: qcom: Add BCM vote macro to header
+Message-ID: <20190813184717.GA28465@jcrouse1-lnx.qualcomm.com>
+Mail-Followup-To: Stephen Boyd <sboyd@kernel.org>,
+        freedreno@lists.freedesktop.org, linux-arm-msm@vger.kernel.org,
+        Michael Turquette <mturquette@baylibre.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Andy Gross <agross@kernel.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>, linux-clk@vger.kernel.org,
+        Taniya Das <tdas@codeaurora.org>
+References: <1565037226-1684-1-git-send-email-jcrouse@codeaurora.org>
+ <20190807234232.27AA720880@mail.kernel.org>
 MIME-Version: 1.0
-References: <20190613184923.245935-1-nhuck@google.com> <27428324-129e-ee37-304a-0da2ed3810a0@linaro.org>
-In-Reply-To: <27428324-129e-ee37-304a-0da2ed3810a0@linaro.org>
-From:   Nathan Huckleberry <nhuck@google.com>
-Date:   Tue, 13 Aug 2019 10:28:24 -0700
-Message-ID: <CAJkfWY4X-YwuansL1R5w0rQNmE_hVJZKrMBJmOLp9G2DJPkNow@mail.gmail.com>
-Subject: Re: [PATCH] thermal: armada: Fix -Wshift-negative-value
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     miquel.raynal@bootlin.com, rui.zhang@intel.com,
-        edubezval@gmail.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        clang-built-linux <clang-built-linux@googlegroups.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190807234232.27AA720880@mail.kernel.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Following up to see if this patch is going to be accepted.
+On Wed, Aug 07, 2019 at 04:42:31PM -0700, Stephen Boyd wrote:
+> Quoting Jordan Crouse (2019-08-05 13:33:46)
+> > The macro to generate a Bus Controller Manager (BCM) TCS command is used
+> > by the interconnect driver but might also be interesting to other
+> > drivers that need to construct TCS commands for sub processors so move
+> > it out of the sdm845 specific file and into the header.
+> > 
+> > Signed-off-by: Jordan Crouse <jcrouse@codeaurora.org>
+> > ---
+> 
+> Acked-by: Stephen Boyd <sboyd@kernel.org>
+> 
+> Unless this is supposed to be applied by me?
+
+I figured this landed in Bjorn's domain, but you guys can fight it out if you
+want.
+
+Jordan
+
+> BTW, I wonder why we need an rpm clk driver much at all nowadays, except
+> maybe for the XO clk state. The big user, from what I can tell, is the
+> interconnect driver and we don't use any of the features of the clk
+> framework besides the API to set a frequency. Maybe it would be better
+> to just push push the bus frequency logic into interconnect code, then
+> XO clk is the only thing we need to keep, and it can be a simple on/off
+> thing.
+> 
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
