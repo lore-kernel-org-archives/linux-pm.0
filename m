@@ -2,123 +2,90 @@ Return-Path: <SRS0=t0Ng=WK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67612C32753
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 17:18:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8616C32753
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 17:59:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3F411206C1
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 17:18:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C499D214C6
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 17:59:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Zc/RhUNa"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729201AbfHNRSB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Aug 2019 13:18:01 -0400
-Received: from mga14.intel.com ([192.55.52.115]:39030 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730809AbfHNRM7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Aug 2019 13:12:59 -0400
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 14 Aug 2019 10:12:59 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.64,386,1559545200"; 
-   d="scan'208";a="176635353"
-Received: from powerlab.fi.intel.com (HELO powerlab.backendnet) ([10.237.71.25])
-  by fmsmga008.fm.intel.com with ESMTP; 14 Aug 2019 10:12:57 -0700
-From:   Artem Bityutskiy <dedekind1@gmail.com>
-To:     Len Brown <lenb@kernel.org>
-Cc:     Linux PM Mailing List <linux-pm@vger.kernel.org>,
-        Artem Bityutskiy <dedekind1@gmail.com>
-Subject: [PATCH v2 1/2] tools/power turbostat: read from pipes too
-Date:   Wed, 14 Aug 2019 20:12:55 +0300
-Message-Id: <20190814171256.45337-1-dedekind1@gmail.com>
-X-Mailer: git-send-email 2.20.1
+        id S1728366AbfHNR7p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Aug 2019 13:59:45 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:41722 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727558AbfHNR7p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Aug 2019 13:59:45 -0400
+Received: by mail-pg1-f194.google.com with SMTP id x15so43120823pgg.8
+        for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2019 10:59:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=message-id:mime-version:content-transfer-encoding:in-reply-to
+         :references:subject:from:cc:to:user-agent:date;
+        bh=kF2rSGg7TWdsph3+jKGWM5Z90AAtcPpo25Mf5csWFrU=;
+        b=Zc/RhUNaKUH6TKfhRZWBo6OBqnN6wsyVNMAXjBgiNUtQxZoaGMZ+qifnZYFCHOtQNq
+         93B6SETP1TqUWc7SCQ5mY3c3gtiWJs3r/RoBFb0OerUawl9ihfJgTVV4pxnTZyN7Uy7w
+         41upxhquofjg2gVE6AG70o1y8XyTA+QyHCgLQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:mime-version
+         :content-transfer-encoding:in-reply-to:references:subject:from:cc:to
+         :user-agent:date;
+        bh=kF2rSGg7TWdsph3+jKGWM5Z90AAtcPpo25Mf5csWFrU=;
+        b=bcao3V66BD4Y9BimSDZXXD6bA3AXk08BpkQ7QLFQj5hAb2Z1oc8OPAwzQGrTGUmxrs
+         38GaOdV9MdIDMq//OmjsFoXlxFY6LK9wkL+40ZvSyw3kvYlTVGcV8N//MveU8wbcmjh+
+         69ZcM0FWlsMUsCc9ZlGTFyuR8Kn3dfL04eE1rhl3XijL4t4xTUhel24NPWMylq1pY/L8
+         sqrRIid1d9LedPTR97S86yTX9zIvLgoI+l/F/OvDWSzsGUFaVbsSl9gYVNxPfQHY0PZ2
+         uYiMLukpcSDozVa4Q3g1aJDv+Jp6jvlhZAKucylmJK/WVHN9lqJb6TwEbzkQjxD1zSxY
+         +Uog==
+X-Gm-Message-State: APjAAAWADKOdaZnDM8ZUHkg958cZxpIGzuUZajKOe68tTNYyQ4vqzNfx
+        drcc3e3og+35triTrgpeihQ9iA==
+X-Google-Smtp-Source: APXvYqzlhFg/syHBm6u3NkrWSTkdwA/nnqbqnwh5uAmEwTa/NV7gwIbeSWeDmlMEvcDq5rUej/oTTg==
+X-Received: by 2002:a17:90a:7d09:: with SMTP id g9mr903391pjl.38.1565805584194;
+        Wed, 14 Aug 2019 10:59:44 -0700 (PDT)
+Received: from chromium.org ([2620:15c:202:1:fa53:7765:582b:82b9])
+        by smtp.gmail.com with ESMTPSA id f72sm486217pjg.10.2019.08.14.10.59.43
+        (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+        Wed, 14 Aug 2019 10:59:43 -0700 (PDT)
+Message-ID: <5d544c0f.1c69fb81.a78d3.1381@mx.google.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20190813082442.25796-2-mkshah@codeaurora.org>
+References: <20190813082442.25796-1-mkshah@codeaurora.org> <20190813082442.25796-2-mkshah@codeaurora.org>
+Subject: Re: [PATCH 1/4] drivers: qcom: rpmh: fix macro to accept NULL argument
+From:   Stephen Boyd <swboyd@chromium.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        bjorn.andersson@linaro.org, evgreen@chromium.org,
+        dianders@chromium.org, rnayak@codeaurora.org, ilina@codeaurora.org,
+        lsrao@codeaurora.org, ulf.hansson@linaro.org,
+        Maulik Shah <mkshah@codeaurora.org>
+To:     Maulik Shah <mkshah@codeaurora.org>, agross@kernel.org,
+        david.brown@linaro.org, linux-arm-msm@vger.kernel.org
+User-Agent: alot/0.8.1
+Date:   Wed, 14 Aug 2019 10:59:42 -0700
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Quoting Maulik Shah (2019-08-13 01:24:39)
+> Device argument matches with dev variable declared in RPMH message.
+> Compiler reports error when the argument is NULL since the argument
+> matches the name of the property. Rename dev argument to device to
+> fix this.
+>=20
+> Signed-off-by: Maulik Shah <mkshah@codeaurora.org>
+> ---
 
-Commit '47936f944e78 tools/power turbostat: fix printing on input' make
-a valid fix, but it completely disabled piped stdin support, which is
-a valuable use-case. Indeed, if stdin is a pipe, turbostat won't read
-anything from it, so it becomes impossible to get turbostat output at
-user-defined moments, instead of the regular intervals.
+Maybe this should have a Fixes tag? And the subject could be something
+like "avoid shadowing local variables in macro"?
 
-There is no reason why this should works for terminals, but not for
-pipes. This patch improves the situation. Instead of ignoring pipes, we
-read data from them but gracefully handle the EOF case.
+Reviewed-by: Stephen Boyd <swboyd@chromium.org>
 
-Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
-
----
-Changelog:
-
-v2: Clean up commit message.
-
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 75fc4fb9901c..573230a774cd 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -100,6 +100,7 @@ unsigned int has_hwp_epp;		/* IA32_HWP_REQUEST[bits 31:24] */
- unsigned int has_hwp_pkg;		/* IA32_HWP_REQUEST_PKG */
- unsigned int has_misc_feature_control;
- unsigned int first_counter_read = 1;
-+int ignore_stdin = 0;
- 
- #define RAPL_PKG		(1 << 0)
- 					/* 0x610 MSR_PKG_POWER_LIMIT */
-@@ -3005,26 +3006,37 @@ void setup_signal_handler(void)
- 
- void do_sleep(void)
- {
--	struct timeval select_timeout;
-+	struct timeval tout;
-+	struct timespec rest;
- 	fd_set readfds;
- 	int retval;
- 
- 	FD_ZERO(&readfds);
- 	FD_SET(0, &readfds);
- 
--	if (!isatty(fileno(stdin))) {
-+	if (ignore_stdin) {
- 		nanosleep(&interval_ts, NULL);
- 		return;
- 	}
- 
--	select_timeout = interval_tv;
--	retval = select(1, &readfds, NULL, NULL, &select_timeout);
-+	tout = interval_tv;
-+	retval = select(1, &readfds, NULL, NULL, &tout);
- 
- 	if (retval == 1) {
- 		switch (getc(stdin)) {
- 		case 'q':
- 			exit_requested = 1;
- 			break;
-+		case EOF:
-+			/*
-+			 * 'stdin' is a pipe closed on the other end. There
-+			 * won't be any further input.
-+			 */
-+			ignore_stdin = 1;
-+			/* Sleep the rest of the time */
-+			rest.tv_sec = (tout.tv_sec + tout.tv_usec / 1000000);
-+			rest.tv_nsec = (tout.tv_usec % 1000000) * 1000;
-+			nanosleep(&rest, NULL);
- 		}
- 		/* make sure this manually-invoked interval is at least 1ms long */
- 		nanosleep(&one_msec, NULL);
--- 
-2.20.1
 
