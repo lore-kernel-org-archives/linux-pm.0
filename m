@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44131C32757
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 17:02:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9199C433FF
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 17:13:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1AF42208C2
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 17:02:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8BC1E2173B
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 17:13:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728233AbfHNRCD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Aug 2019 13:02:03 -0400
-Received: from mga06.intel.com ([134.134.136.31]:43794 "EHLO mga06.intel.com"
+        id S1728775AbfHNRNB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Aug 2019 13:13:01 -0400
+Received: from mga14.intel.com ([192.55.52.115]:39030 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726804AbfHNRCD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Aug 2019 13:02:03 -0400
+        id S1730814AbfHNRNA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Aug 2019 13:13:00 -0400
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 14 Aug 2019 10:02:03 -0700
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 14 Aug 2019 10:13:00 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.64,386,1559545200"; 
-   d="scan'208";a="376112591"
+   d="scan'208";a="176635366"
 Received: from powerlab.fi.intel.com (HELO powerlab.backendnet) ([10.237.71.25])
-  by fmsmga005.fm.intel.com with ESMTP; 14 Aug 2019 10:02:02 -0700
+  by fmsmga008.fm.intel.com with ESMTP; 14 Aug 2019 10:12:59 -0700
 From:   Artem Bityutskiy <dedekind1@gmail.com>
 To:     Len Brown <lenb@kernel.org>
 Cc:     Linux PM Mailing List <linux-pm@vger.kernel.org>,
         Artem Bityutskiy <dedekind1@gmail.com>
-Subject: [PATCH 2/2] tools/power turbostat: do not enforce 1ms
-Date:   Wed, 14 Aug 2019 20:01:59 +0300
-Message-Id: <20190814170159.42952-2-dedekind1@gmail.com>
+Subject: [PATCH v2 2/2] tools/power turbostat: do not enforce 1ms
+Date:   Wed, 14 Aug 2019 20:12:56 +0300
+Message-Id: <20190814171256.45337-2-dedekind1@gmail.com>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190814170159.42952-1-dedekind1@gmail.com>
-References: <20190814170159.42952-1-dedekind1@gmail.com>
+In-Reply-To: <20190814171256.45337-1-dedekind1@gmail.com>
+References: <20190814171256.45337-1-dedekind1@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -64,11 +64,15 @@ This patch removes the unconditional 1ms sleep. This is an expert user
 tool, after all, and non-experts will unlikely ever use it in the non-fixed
 interval mode anyway, so I think it is OK to remove the 1ms delay.
 
-Change-Id: Id2075036e7e2c682b34c9597d2dade13ea28acf6
 Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 ---
  tools/power/x86/turbostat/turbostat.c | 5 -----
  1 file changed, 5 deletions(-)
+
+---
+Changelog:
+
+v2: Clean up commit message.
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
 index 573230a774cd..57e236187cdb 100644
