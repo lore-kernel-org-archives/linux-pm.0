@@ -2,110 +2,104 @@ Return-Path: <SRS0=t0Ng=WK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62B1DC433FF
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 07:32:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3803EC433FF
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 08:32:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 45D12216F4
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 07:32:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C3A020843
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Aug 2019 08:32:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qMdw+xMV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727662AbfHNHck (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Aug 2019 03:32:40 -0400
-Received: from muru.com ([72.249.23.125]:57436 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727560AbfHNHcj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Aug 2019 03:32:39 -0400
-Received: from atomide.com (localhost [127.0.0.1])
-        by muru.com (Postfix) with ESMTPS id 9956480C8;
-        Wed, 14 Aug 2019 07:33:05 +0000 (UTC)
-Date:   Wed, 14 Aug 2019 00:32:34 -0700
-From:   Tony Lindgren <tony@atomide.com>
-To:     Stephen Boyd <swboyd@chromium.org>
-Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Kalesh Singh <kaleshsingh@google.com>,
-        Tri Vo <trong@android.com>, linux-omap@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
-Subject: Re: Regression in Linux next with show wakeup sources stats in sysfs
-Message-ID: <20190814073234.GZ52127@atomide.com>
-References: <20190814063803.GY52127@atomide.com>
- <5d53b378.1c69fb81.31b2e.5077@mx.google.com>
+        id S1725265AbfHNIcl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Aug 2019 04:32:41 -0400
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:35268 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726534AbfHNIcl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Aug 2019 04:32:41 -0400
+Received: by mail-lj1-f195.google.com with SMTP id l14so14079324lje.2
+        for <linux-pm@vger.kernel.org>; Wed, 14 Aug 2019 01:32:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Qprk97I1dFe+WA8kDtJTqkPzn2PSILy5kREIC5Uixm4=;
+        b=qMdw+xMV024LAbvccUI3jC70aaEEO5YWomLZhuABCdzO2cL+7TrxzWBaQItupTGIe5
+         V5iI287R6yEzuK4400Xf11LNmZT5SP6D3BpwXIiP0REHYCp8lEccJQsiTnSQK7+qJw5c
+         Adf6kT0NahAxCaB61a4PDzWh0bZsvpdye0vrJeeZ3SE9yW+n4tXTOd0BO1uq9rjGvYuB
+         5Nnv5m31Aj9HkD49sGMjQwz//29/ywzsTipoA+S2vbv/e5ERHrl6TQtuGZhTkqDX2q/6
+         Bt86uvuXeQ6/przYNgkxiJfzspWLBBF/cOGwWI6Nx23yadkF0Xae3G66sAVLnvA6hs3F
+         KrJA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Qprk97I1dFe+WA8kDtJTqkPzn2PSILy5kREIC5Uixm4=;
+        b=twkZsvnA7xBczckcEhhBky/436uFsoLSLRqWndxN6BfkHJxqoM1Bytrl82MA076ztM
+         ZSycxpNLJYmQPvXPxYPM/ddotjhH6j/PKw+7egYgGsdEgWvE1FFBgF4mL2fGYEqN3f3n
+         U2huhVBPxrB/WtROcXhug1vLniNc3rWsN+G+WsZ3PkISJlOpD5t5bZYqO4WvEYihIBHO
+         syY1J/zJW/1+I7v1K6S8Y8m23DoSTDGspaTfTwHU9i4pwv6yWP8Fmwt6XNHAAMqdhENz
+         A97Y8jo+pIhwWexj4N/lJysiT+G5eURtys/XJ4nKXgdtBC9tU18JUnAtaBY0hkFdeEKY
+         +vTg==
+X-Gm-Message-State: APjAAAUUM4YtV0g2HnLhSlOdYIdF4Tp2peyDs8+4E6OX2kaJ6PSmM5lh
+        iK7thEGvmA5yTGFnSiiKfOerjY2n0muiYzyROQJo1w==
+X-Google-Smtp-Source: APXvYqx+fft1SOz2IQDyCGJ15XAqb3Zjb5OEqzoV7vIlggjkoFNfsMZU8eWQaIcFkhj1gV1hUfaGOfz43NWpoIBxdXE=
+X-Received: by 2002:a2e:9f0f:: with SMTP id u15mr14722764ljk.54.1565771559322;
+ Wed, 14 Aug 2019 01:32:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5d53b378.1c69fb81.31b2e.5077@mx.google.com>
-User-Agent: Mutt/1.11.4 (2019-03-13)
+References: <1565308020-31952-1-git-send-email-skomatineni@nvidia.com> <1565308020-31952-2-git-send-email-skomatineni@nvidia.com>
+In-Reply-To: <1565308020-31952-2-git-send-email-skomatineni@nvidia.com>
+From:   Linus Walleij <linus.walleij@linaro.org>
+Date:   Wed, 14 Aug 2019 10:32:28 +0200
+Message-ID: <CACRpkdasx8AooB_bhUpVhU9ig_ztri3hbryiO_FEGEO+eUXwkg@mail.gmail.com>
+Subject: Re: [PATCH v8 01/21] pinctrl: tegra: Fix write barrier placement in pmx_writel
+To:     Sowjanya Komatineni <skomatineni@nvidia.com>
+Cc:     "thierry.reding@gmail.com" <thierry.reding@gmail.com>,
+        Jon Hunter <jonathanh@nvidia.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Jason Cooper <jason@lakedaemon.net>,
+        Marc Zyngier <marc.zyngier@arm.com>,
+        Stefan Agner <stefan@agner.ch>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Prashant Gaikwad <pgaikwad@nvidia.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        jckuo@nvidia.com, Joseph Lo <josephl@nvidia.com>, talho@nvidia.com,
+        linux-tegra@vger.kernel.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Mikko Perttunen <mperttunen@nvidia.com>, spatra@nvidia.com,
+        Rob Herring <robh+dt@kernel.org>,
+        Dmitry Osipenko <digetx@gmail.com>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        viresh kumar <viresh.kumar@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-* Stephen Boyd <swboyd@chromium.org> [190814 07:09]:
-> Quoting Tony Lindgren (2019-08-13 23:38:03)
-> > Hi all,
-> > 
-> > Looks like commit 986845e747af ("PM / wakeup: Show wakeup sources stats
-> > in sysfs") has caused a regression in Linux next where I can now get
-> > some errors like this during the boot:
-> > 
-> > kobject_add_internal failed for wakeup10 (error: -2 parent: usb)
-> > 
-> > Any ideas why this might be happening? Maybe some deferred probe
-> > related issue?
-> > 
-> 
-> Yeah! Take a look at this thread[1] and please test out patches I'm
-> throwing out there like a total cowboy(d).
-> 
-> [1] https://lkml.kernel.org/r/1565731976.8572.16.camel@lca.pw
+On Fri, Aug 9, 2019 at 1:47 AM Sowjanya Komatineni
+<skomatineni@nvidia.com> wrote:
 
-Oh OK thanks, looks like I'm a bit behind then. My test case turned
-out to be caused by device_init_wakeup() called before device_add() for
-power_supply in case that helps. In that case create_dir() will fail
-for kobject_add_internal(). Doing something like below fixes the
-issue, but seems like we probably have other similar issues as well.
-Adding Sebastian to Cc in case this might be a real problem despite
-the other issues.
+> pmx_writel uses writel which inserts write barrier before the
+> register write rather.
+>
+> This patch has fix to replace writel with writel_relaxed followed
+> by a write barrier to ensure write operation before the barrier
+> is completed for successful pinctrl change.
+>
+> Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
 
-Regards,
+Patch applied with the ACKs.
 
-Tony
-
-8< -----------------------
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -1051,14 +1051,14 @@ __power_supply_register(struct device *parent,
- 	}
- 
- 	spin_lock_init(&psy->changed_lock);
--	rc = device_init_wakeup(dev, ws);
--	if (rc)
--		goto wakeup_init_failed;
--
- 	rc = device_add(dev);
- 	if (rc)
- 		goto device_add_failed;
- 
-+	rc = device_init_wakeup(dev, ws);
-+	if (rc)
-+		goto wakeup_init_failed;
-+
- 	rc = psy_register_thermal(psy);
- 	if (rc)
- 		goto register_thermal_failed;
-@@ -1100,9 +1100,9 @@ __power_supply_register(struct device *parent,
- register_cooler_failed:
- 	psy_unregister_thermal(psy);
- register_thermal_failed:
-+wakeup_init_failed:
- 	device_del(dev);
- device_add_failed:
--wakeup_init_failed:
- check_supplies_failed:
- dev_set_name_failed:
- 	put_device(dev);
+Yours,
+Linus Walleij
