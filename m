@@ -6,27 +6,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 853BFC433FF
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Aug 2019 11:18:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B43BC31E40
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Aug 2019 11:18:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 590B8206C2
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Aug 2019 11:18:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19E1F21744
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Aug 2019 11:18:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730497AbfHOLSO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Aug 2019 07:18:14 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:42562 "EHLO inva021.nxp.com"
+        id S1731299AbfHOLSW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Aug 2019 07:18:22 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:38084 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730511AbfHOLSO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 15 Aug 2019 07:18:14 -0400
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 2CCC4200299;
-        Thu, 15 Aug 2019 13:18:13 +0200 (CEST)
+        id S1730969AbfHOLSV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Aug 2019 07:18:21 -0400
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 997881A00FE;
+        Thu, 15 Aug 2019 13:18:19 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4535F2000B7;
-        Thu, 15 Aug 2019 13:18:05 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B639B1A0115;
+        Thu, 15 Aug 2019 13:18:11 +0200 (CEST)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 6DFB3402D7;
-        Thu, 15 Aug 2019 19:17:55 +0800 (SGT)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E3E9B402F1;
+        Thu, 15 Aug 2019 19:18:01 +0800 (SGT)
 From:   Anson.Huang@nxp.com
 To:     robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
         s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
@@ -36,10 +36,12 @@ To:     robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     Linux-imx@nxp.com
-Subject: [PATCH 1/6] arm64: dts: imx8mn-ddr4-evk: Add i2c1 support
-Date:   Thu, 15 Aug 2019 06:59:38 -0400
-Message-Id: <1565866783-19672-1-git-send-email-Anson.Huang@nxp.com>
+Subject: [PATCH 5/6] clk: imx8mn: Add necessary frequency support for ARM PLL table
+Date:   Thu, 15 Aug 2019 06:59:42 -0400
+Message-Id: <1565866783-19672-5-git-send-email-Anson.Huang@nxp.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1565866783-19672-1-git-send-email-Anson.Huang@nxp.com>
+References: <1565866783-19672-1-git-send-email-Anson.Huang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -48,45 +50,35 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Anson Huang <Anson.Huang@nxp.com>
 
-Enable i2c1 on i.MX8MN DDR4 EVK board.
+i.MX8MN supports CPU running at 1.5GHz/1.4GHz/1.2GHz, add missing
+frequency for ARM PLL table.
 
 Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 ---
- arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/clk/imx/clk-imx8mn.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts b/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-index 9b2c172..5fce5b1 100644
---- a/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-+++ b/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-@@ -50,6 +50,13 @@
- 		>;
- 	};
- 
-+	pinctrl_i2c1: i2c1grp {
-+		fsl,pins = <
-+			MX8MN_IOMUXC_I2C1_SCL_I2C1_SCL		0x400001c3
-+			MX8MN_IOMUXC_I2C1_SDA_I2C1_SDA		0x400001c3
-+		>;
-+	};
-+
- 	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmc {
- 		fsl,pins = <
- 			MX8MN_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41
-@@ -182,6 +189,13 @@
- 	};
+diff --git a/drivers/clk/imx/clk-imx8mn.c b/drivers/clk/imx/clk-imx8mn.c
+index ecd1062..3f1239a 100644
+--- a/drivers/clk/imx/clk-imx8mn.c
++++ b/drivers/clk/imx/clk-imx8mn.c
+@@ -42,6 +42,8 @@ enum {
+ static const struct imx_pll14xx_rate_table imx8mn_pll1416x_tbl[] = {
+ 	PLL_1416X_RATE(1800000000U, 225, 3, 0),
+ 	PLL_1416X_RATE(1600000000U, 200, 3, 0),
++	PLL_1416X_RATE(1500000000U, 375, 3, 1),
++	PLL_1416X_RATE(1400000000U, 350, 3, 1),
+ 	PLL_1416X_RATE(1200000000U, 300, 3, 1),
+ 	PLL_1416X_RATE(1000000000U, 250, 3, 1),
+ 	PLL_1416X_RATE(800000000U,  200, 3, 1),
+@@ -82,6 +84,7 @@ static struct imx_pll14xx_clk imx8mn_dram_pll = {
+ static struct imx_pll14xx_clk imx8mn_arm_pll = {
+ 		.type = PLL_1416X,
+ 		.rate_table = imx8mn_pll1416x_tbl,
++		.rate_count = ARRAY_SIZE(imx8mn_pll1416x_tbl),
  };
  
-+&i2c1 {
-+	clock-frequency = <400000>;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_i2c1>;
-+	status = "okay";
-+};
-+
- &snvs_pwrkey {
- 	status = "okay";
- };
+ static struct imx_pll14xx_clk imx8mn_gpu_pll = {
 -- 
 2.7.4
 
