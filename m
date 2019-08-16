@@ -7,35 +7,35 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDD6BC3A59D
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 19:43:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C69B4C3A59D
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 19:43:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B19D22171F
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 19:43:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9DD61206C1
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 19:43:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="qWKqGagu"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="XIq2kGB7"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727908AbfHPTne (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Aug 2019 15:43:34 -0400
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:13177 "EHLO
+        id S1727818AbfHPTmw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Aug 2019 15:42:52 -0400
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:13159 "EHLO
         hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727605AbfHPTnF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2019 15:43:05 -0400
+        with ESMTP id S1727771AbfHPTmv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2019 15:42:51 -0400
 Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5d57074b0000>; Fri, 16 Aug 2019 12:43:07 -0700
+        id <B5d57073b0000>; Fri, 16 Aug 2019 12:42:51 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
   by hqpgpgate102.nvidia.com (PGP Universal service);
-  Fri, 16 Aug 2019 12:43:05 -0700
+  Fri, 16 Aug 2019 12:42:49 -0700
 X-PGP-Universal: processed;
-        by hqpgpgate102.nvidia.com on Fri, 16 Aug 2019 12:43:05 -0700
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 16 Aug
- 2019 19:43:04 +0000
-Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Fri, 16 Aug 2019 19:43:04 +0000
+        by hqpgpgate102.nvidia.com on Fri, 16 Aug 2019 12:42:49 -0700
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL104.nvidia.com
+ (172.18.146.11) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 16 Aug
+ 2019 19:42:49 +0000
+Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Fri, 16 Aug 2019 19:42:49 +0000
 Received: from skomatineni-linux.nvidia.com (Not Verified[10.2.166.126]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
-        id <B5d5707470002>; Fri, 16 Aug 2019 12:43:04 -0700
+        id <B5d5707350001>; Fri, 16 Aug 2019 12:42:48 -0700
 From:   Sowjanya Komatineni <skomatineni@nvidia.com>
 To:     <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
         <tglx@linutronix.de>, <jason@lakedaemon.net>,
@@ -50,9 +50,9 @@ CC:     <pdeschrijver@nvidia.com>, <pgaikwad@nvidia.com>,
         <digetx@gmail.com>, <devicetree@vger.kernel.org>,
         <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
         <linux-pm@vger.kernel.org>
-Subject: [PATCH v9 18/22] arm64: tegra: Enable wake from deep sleep on RTC alarm
-Date:   Fri, 16 Aug 2019 12:42:03 -0700
-Message-ID: <1565984527-5272-19-git-send-email-skomatineni@nvidia.com>
+Subject: [PATCH v9 14/22] clk: tegra: Share clk and rst register defines with Tegra clock driver
+Date:   Fri, 16 Aug 2019 12:41:59 -0700
+Message-ID: <1565984527-5272-15-git-send-email-skomatineni@nvidia.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1565984527-5272-1-git-send-email-skomatineni@nvidia.com>
 References: <1565984527-5272-1-git-send-email-skomatineni@nvidia.com>
@@ -60,52 +60,142 @@ X-NVConfidentiality: public
 MIME-Version: 1.0
 Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1565984587; bh=r/7sch8XJz5tT01ckyUKnesfNR9nppNjP97KIR+puRI=;
+        t=1565984572; bh=o6rk830OCvPUp4Y9Ub5IhFbtsD+qecod9DB8emdiYiU=;
         h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
          In-Reply-To:References:X-NVConfidentiality:MIME-Version:
          Content-Type;
-        b=qWKqGaguwl9s9rmE2pikyUDQOdCDZJYLw4ePhOCcl9J6IDSTwowJ5GDWcpdhwrLCT
-         8gTNa6a8G7HqknQ/Yl6WnGSoCLln3Olh+qQYHG7UwnLoZtgQp3Uiiz3Bq+AP4jQB00
-         v3wX+X2cw0u48lG2+DufUOyMyqDzZv2LJVx0V2AEV7efTRHslsz11nGtVabpMcPWBH
-         qOSUtTGRryFobs8Ixl9S8iiAAX/uJ6GzrTvxnXCDKzaE6m3uDwUDZ4SCpG/wMnmNim
-         GJ0l2lm5EqSCFvj9O4FlltmPR7KYVEdEUhn8ZV90A1NmDcHdy+RpwbWkKYJ2zOTZF1
-         oQGhkNJ/KQ67w==
+        b=XIq2kGB7ILBzBPBbFX6jtfFNVHH8r/39NRxwq96HHIcO2Zt+A6jP/q9hudkZk+4ah
+         KXZVwHEEtrceWc/gUENE40rhoZHNb1DYKBTyyn9XjPqcF9JIXn6NddZASqoHkkJXTq
+         HZJ9m/YnO/p9jmDFRMg+K0jbMnvfhfMYenEGZDJFPWCQl4SCxdloD1IE/6exqafvIm
+         Olwocuj2akhSXgqFYTjixlP1QCSv/gKi+YwjhBWaVovj6G/VHWitMXHxLcGMtDaGYf
+         Ygq5ntquUSCXkfLqTvaKdUi+urf8oWMCAhUBJmf62J96Jl8KfBCGS+NvFIAgFBaZkc
+         /LP/JsSUeiC8g==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch updates device tree for RTC and PMC to allow system wake
-from deep sleep on RTC alarm.
+Move CLK_OUT_ENB and RST_DEVICES registers to clk.h to share these with
+Tegra clock driver.
 
 Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
 ---
- arch/arm64/boot/dts/nvidia/tegra210.dtsi | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/clk/tegra/clk.c | 45 ---------------------------------------------
+ drivers/clk/tegra/clk.h | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+), 45 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra210.dtsi b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-index 659753118e96..30a7c48385a2 100644
---- a/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra210.dtsi
-@@ -768,7 +768,8 @@
- 	rtc@7000e000 {
- 		compatible = "nvidia,tegra210-rtc", "nvidia,tegra20-rtc";
- 		reg = <0x0 0x7000e000 0x0 0x100>;
--		interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
-+		interrupts = <16 IRQ_TYPE_LEVEL_HIGH>;
-+		interrupt-parent = <&pmc>;
- 		clocks = <&tegra_car TEGRA210_CLK_RTC>;
- 		clock-names = "rtc";
- 	};
-@@ -778,6 +779,8 @@
- 		reg = <0x0 0x7000e400 0x0 0x400>;
- 		clocks = <&tegra_car TEGRA210_CLK_PCLK>, <&clk32k_in>;
- 		clock-names = "pclk", "clk32k_in";
-+		#interrupt-cells = <2>;
-+		interrupt-controller;
+diff --git a/drivers/clk/tegra/clk.c b/drivers/clk/tegra/clk.c
+index eb08047fd02f..33ac88ee324a 100644
+--- a/drivers/clk/tegra/clk.c
++++ b/drivers/clk/tegra/clk.c
+@@ -16,51 +16,6 @@
  
- 		powergates {
- 			pd_audio: aud {
+ #include "clk.h"
+ 
+-#define CLK_OUT_ENB_L			0x010
+-#define CLK_OUT_ENB_H			0x014
+-#define CLK_OUT_ENB_U			0x018
+-#define CLK_OUT_ENB_V			0x360
+-#define CLK_OUT_ENB_W			0x364
+-#define CLK_OUT_ENB_X			0x280
+-#define CLK_OUT_ENB_Y			0x298
+-#define CLK_ENB_PLLP_OUT_CPU		BIT(31)
+-#define CLK_OUT_ENB_SET_L		0x320
+-#define CLK_OUT_ENB_CLR_L		0x324
+-#define CLK_OUT_ENB_SET_H		0x328
+-#define CLK_OUT_ENB_CLR_H		0x32c
+-#define CLK_OUT_ENB_SET_U		0x330
+-#define CLK_OUT_ENB_CLR_U		0x334
+-#define CLK_OUT_ENB_SET_V		0x440
+-#define CLK_OUT_ENB_CLR_V		0x444
+-#define CLK_OUT_ENB_SET_W		0x448
+-#define CLK_OUT_ENB_CLR_W		0x44c
+-#define CLK_OUT_ENB_SET_X		0x284
+-#define CLK_OUT_ENB_CLR_X		0x288
+-#define CLK_OUT_ENB_SET_Y		0x29c
+-#define CLK_OUT_ENB_CLR_Y		0x2a0
+-
+-#define RST_DEVICES_L			0x004
+-#define RST_DEVICES_H			0x008
+-#define RST_DEVICES_U			0x00C
+-#define RST_DEVICES_V			0x358
+-#define RST_DEVICES_W			0x35C
+-#define RST_DEVICES_X			0x28C
+-#define RST_DEVICES_Y			0x2a4
+-#define RST_DEVICES_SET_L		0x300
+-#define RST_DEVICES_CLR_L		0x304
+-#define RST_DEVICES_SET_H		0x308
+-#define RST_DEVICES_CLR_H		0x30c
+-#define RST_DEVICES_SET_U		0x310
+-#define RST_DEVICES_CLR_U		0x314
+-#define RST_DEVICES_SET_V		0x430
+-#define RST_DEVICES_CLR_V		0x434
+-#define RST_DEVICES_SET_W		0x438
+-#define RST_DEVICES_CLR_W		0x43c
+-#define RST_DEVICES_SET_X		0x290
+-#define RST_DEVICES_CLR_X		0x294
+-#define RST_DEVICES_SET_Y		0x2a8
+-#define RST_DEVICES_CLR_Y		0x2ac
+-
+ /* Global data of Tegra CPU CAR ops */
+ static struct tegra_cpu_car_ops dummy_car_ops;
+ struct tegra_cpu_car_ops *tegra_cpu_car_ops = &dummy_car_ops;
+diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
+index 55c4b78280be..ba123ba4a1da 100644
+--- a/drivers/clk/tegra/clk.h
++++ b/drivers/clk/tegra/clk.h
+@@ -10,6 +10,51 @@
+ #include <linux/clkdev.h>
+ #include <linux/delay.h>
+ 
++#define CLK_OUT_ENB_L			0x010
++#define CLK_OUT_ENB_H			0x014
++#define CLK_OUT_ENB_U			0x018
++#define CLK_OUT_ENB_V			0x360
++#define CLK_OUT_ENB_W			0x364
++#define CLK_OUT_ENB_X			0x280
++#define CLK_OUT_ENB_Y			0x298
++#define CLK_ENB_PLLP_OUT_CPU		BIT(31)
++#define CLK_OUT_ENB_SET_L		0x320
++#define CLK_OUT_ENB_CLR_L		0x324
++#define CLK_OUT_ENB_SET_H		0x328
++#define CLK_OUT_ENB_CLR_H		0x32c
++#define CLK_OUT_ENB_SET_U		0x330
++#define CLK_OUT_ENB_CLR_U		0x334
++#define CLK_OUT_ENB_SET_V		0x440
++#define CLK_OUT_ENB_CLR_V		0x444
++#define CLK_OUT_ENB_SET_W		0x448
++#define CLK_OUT_ENB_CLR_W		0x44c
++#define CLK_OUT_ENB_SET_X		0x284
++#define CLK_OUT_ENB_CLR_X		0x288
++#define CLK_OUT_ENB_SET_Y		0x29c
++#define CLK_OUT_ENB_CLR_Y		0x2a0
++
++#define RST_DEVICES_L			0x004
++#define RST_DEVICES_H			0x008
++#define RST_DEVICES_U			0x00C
++#define RST_DEVICES_V			0x358
++#define RST_DEVICES_W			0x35C
++#define RST_DEVICES_X			0x28C
++#define RST_DEVICES_Y			0x2a4
++#define RST_DEVICES_SET_L		0x300
++#define RST_DEVICES_CLR_L		0x304
++#define RST_DEVICES_SET_H		0x308
++#define RST_DEVICES_CLR_H		0x30c
++#define RST_DEVICES_SET_U		0x310
++#define RST_DEVICES_CLR_U		0x314
++#define RST_DEVICES_SET_V		0x430
++#define RST_DEVICES_CLR_V		0x434
++#define RST_DEVICES_SET_W		0x438
++#define RST_DEVICES_CLR_W		0x43c
++#define RST_DEVICES_SET_X		0x290
++#define RST_DEVICES_CLR_X		0x294
++#define RST_DEVICES_SET_Y		0x2a8
++#define RST_DEVICES_CLR_Y		0x2ac
++
+ /**
+  * struct tegra_clk_sync_source - external clock source from codec
+  *
 -- 
 2.7.4
 
