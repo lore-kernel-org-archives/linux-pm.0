@@ -2,131 +2,131 @@ Return-Path: <SRS0=FDUK=WM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97534C3A59D
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 18:23:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 864A1C3A59D
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 19:42:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 71C692086C
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 18:23:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1565979785;
-	bh=Os7RmwFmk/bvYTsc+erxUvNygEZaIVYpIKLZnm5tJQ8=;
-	h=In-Reply-To:References:Subject:From:Cc:To:Date:List-ID:From;
-	b=LtxjFMBvwewHnwYs5PQhIEylXzFhRsxEMn9gC0+J02QwGGiwC3Vz1hk6FPAcYK1w+
-	 J4hhmxlybSBxpb+NccXdsLHBu8DNRN7PZUZMGBbbigaIWLvqc4b2Fyn5fO72awNvU+
-	 Umq/phYtE0pED3VvG3Jlw2YXUXDUa7JAgU1hTpb0=
+	by mail.kernel.org (Postfix) with ESMTP id 5BB9C2171F
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 19:42:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="DnB/En3o"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727067AbfHPSXA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Aug 2019 14:23:00 -0400
-Received: from mail.kernel.org ([198.145.29.99]:46108 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727500AbfHPSXA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 16 Aug 2019 14:23:00 -0400
-Received: from kernel.org (unknown [104.132.0.74])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 538532077C;
-        Fri, 16 Aug 2019 18:22:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1565979779;
-        bh=Os7RmwFmk/bvYTsc+erxUvNygEZaIVYpIKLZnm5tJQ8=;
-        h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
-        b=Adjba4SejZEIRO+Ov9Lzdodd3sqIArS0Iry4f3BQyWM2DQroF9Z+U11Pbs1d/Aru1
-         qPxAzwjzPc5OUdkL2N6Mn5Fz4HTfMF0fh0d/R0QFfLjrWELMYOfgbsCcOieyJkPtIs
-         IaRzYp/utbr1y9t+DUUcp8A1vEpDgVyuhnbdWEg0=
-Content-Type: text/plain; charset="utf-8"
+        id S1727700AbfHPTma (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Aug 2019 15:42:30 -0400
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:14970 "EHLO
+        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727687AbfHPTm2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2019 15:42:28 -0400
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5d57072f0000>; Fri, 16 Aug 2019 12:42:39 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+  by hqpgpgate101.nvidia.com (PGP Universal service);
+  Fri, 16 Aug 2019 12:42:27 -0700
+X-PGP-Universal: processed;
+        by hqpgpgate101.nvidia.com on Fri, 16 Aug 2019 12:42:27 -0700
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL104.nvidia.com
+ (172.18.146.11) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 16 Aug
+ 2019 19:42:27 +0000
+Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Fri, 16 Aug 2019 19:42:27 +0000
+Received: from skomatineni-linux.nvidia.com (Not Verified[10.2.166.126]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
+        id <B5d570721000b>; Fri, 16 Aug 2019 12:42:27 -0700
+From:   Sowjanya Komatineni <skomatineni@nvidia.com>
+To:     <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
+        <tglx@linutronix.de>, <jason@lakedaemon.net>,
+        <marc.zyngier@arm.com>, <linus.walleij@linaro.org>,
+        <stefan@agner.ch>, <mark.rutland@arm.com>
+CC:     <pdeschrijver@nvidia.com>, <pgaikwad@nvidia.com>,
+        <sboyd@kernel.org>, <linux-clk@vger.kernel.org>,
+        <linux-gpio@vger.kernel.org>, <jckuo@nvidia.com>,
+        <josephl@nvidia.com>, <talho@nvidia.com>, <skomatineni@nvidia.com>,
+        <linux-tegra@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <mperttunen@nvidia.com>, <spatra@nvidia.com>, <robh+dt@kernel.org>,
+        <digetx@gmail.com>, <devicetree@vger.kernel.org>,
+        <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
+        <linux-pm@vger.kernel.org>
+Subject: [PATCH v9 07/22] clk: Add API to get index of the clock parent
+Date:   Fri, 16 Aug 2019 12:41:52 -0700
+Message-ID: <1565984527-5272-8-git-send-email-skomatineni@nvidia.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1565984527-5272-1-git-send-email-skomatineni@nvidia.com>
+References: <1565984527-5272-1-git-send-email-skomatineni@nvidia.com>
+X-NVConfidentiality: public
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20190807223111.230846-4-saravanak@google.com>
-References: <20190807223111.230846-1-saravanak@google.com> <20190807223111.230846-4-saravanak@google.com>
-Subject: Re: [PATCH v5 3/3] OPP: Add helper function for bandwidth OPP tables
-From:   Stephen Boyd <sboyd@kernel.org>
-Cc:     Saravana Kannan <saravanak@google.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        vincent.guittot@linaro.org, seansw@qti.qualcomm.com,
-        daidavid1@codeaurora.org, adharmap@codeaurora.org,
-        Rajendra Nayak <rnayak@codeaurora.org>, sibis@codeaurora.org,
-        bjorn.andersson@linaro.org, evgreen@chromium.org,
-        kernel-team@android.com, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
-        Saravana Kannan <saravanak@google.com>,
-        Viresh Kumar <vireshk@kernel.org>
-User-Agent: alot/0.8.1
-Date:   Fri, 16 Aug 2019 11:22:58 -0700
-Message-Id: <20190816182259.538532077C@mail.kernel.org>
+Content-Type: text/plain
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+        t=1565984559; bh=+6ERoAACorYaysuYDP8ceYAHJiBt40PUivlQZua8vRY=;
+        h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
+         In-Reply-To:References:X-NVConfidentiality:MIME-Version:
+         Content-Type;
+        b=DnB/En3oXEcmbvugodC0hNEERW5GDrDc61DLqJNPXdjoXD7bTPKtSPlGiZzqQHW1q
+         ipxEWonEkrmGjK2Ynbl1rm2Ha/2dqRMKE47knhedZS5sX5Bf2YWsQprdOsp0/gxUTW
+         df8/C76py62fO/59Mm1hcgpK6uHAtmDx7cVoWr4B7u/6KajBwi1QkQohvXCjZ7e3mp
+         e9a+22TvwgGU066OIW1uDqTe1IT6dkjRmyJQfp9+31BJ7VdE/Q7Ec4qMR5zMvmeCs6
+         g4a6vAZ709MUnlhQwOdtwI1wwPR47u74yPakl1+Uik9FGVPsM3nEB7GZ6sd9+2aMpc
+         PuwbQPgO9bjZw==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Saravana Kannan (2019-08-07 15:31:11)
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index 3b7ffd0234e9..22dcf22f908f 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -127,6 +127,29 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp =
-*opp)
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
-> =20
-> +/**
-> + * dev_pm_opp_get_bw() - Gets the bandwidth corresponding to an availabl=
-e opp
-> + * @opp:       opp for which frequency has to be returned for
+This patch adds an API clk_hw_get_parent_index to get index of the
+clock parent to use during the clock restore operations on system
+resume.
 
-s/frequency/bandwidth/ ?
+Reviewed-by: Thierry Reding <treding@nvidia.com>
+Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
+Signed-off-by: Sowjanya Komatineni <skomatineni@nvidia.com>
+---
+ drivers/clk/clk.c            | 17 +++++++++++++++++
+ include/linux/clk-provider.h |  1 +
+ 2 files changed, 18 insertions(+)
 
-> + * @avg_bw:    Pointer where the corresponding average bandwidth is stor=
-ed.
-> + *             Can be NULL.
-> + *
-> + * Return: Peak bandwidth in kBps corresponding to the opp, else
-> + * return 0
-> + */
-> +unsigned long dev_pm_opp_get_bw(struct dev_pm_opp *opp, unsigned long *a=
-vg_bw)
-> +{
-> +       if (IS_ERR_OR_NULL(opp) || !opp->available) {
-> +               pr_err("%s: Invalid parameters\n", __func__);
-> +               return 0;
-> +       }
-> +
-> +       if (avg_bw)
-> +               *avg_bw =3D opp->avg_bw;
-> +
-> +       return opp->rate;
-
-It deserves a comment if it stays named 'rate'. At a glance it looks
-like a bug.
-
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_get_bw);
-> +
->  /**
->   * dev_pm_opp_get_level() - Gets the level corresponding to an available=
- opp
->   * @opp:       opp for which level value has to be returned for
-> @@ -299,6 +322,34 @@ unsigned long dev_pm_opp_get_suspend_opp_freq(struct=
- device *dev)
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_opp_get_suspend_opp_freq);
-> =20
-> +/**
-> + * dev_pm_opp_get_suspend_opp_bw() - Get peak bandwidth of suspend opp i=
-n kBps
-> + * @dev:       device for which we do this operation
-> + * @avg_bw:    Pointer where the corresponding average bandwidth is stor=
-ed.
-> + *             Can be NULL.
-> + *
-> + * Return: This function returns the peak bandwidth of the OPP marked as
-> + * suspend_opp if one is available, else returns 0;
-
-Why a semicolon instead a full stop?
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index cbcc333aec84..12ad0e9b8591 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -1645,6 +1645,23 @@ static int clk_fetch_parent_index(struct clk_core *core,
+ 	return i;
+ }
+ 
++/**
++ * clk_hw_get_parent_index - return the index of parent clock
++ * @hw: clk_hw associated with the clk being consumed
++ * @parent_hw: clk_hw associated with the parent of clk
++ *
++ * Fetches and returns the index of parent clock.
++ * If hw or parent_hw is NULL, returns -EINVAL.
++ */
++int clk_hw_get_parent_index(struct clk_hw *hw, struct clk_hw *parent_hw)
++{
++	if (!hw || !parent_hw)
++		return -EINVAL;
++
++	return clk_fetch_parent_index(hw->core, parent_hw->core);
++}
++EXPORT_SYMBOL_GPL(clk_hw_get_parent_index);
++
+ /*
+  * Update the orphan status of @core and all its children.
+  */
+diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+index dce5521a9bf6..cce830780900 100644
+--- a/include/linux/clk-provider.h
++++ b/include/linux/clk-provider.h
+@@ -817,6 +817,7 @@ unsigned int clk_hw_get_num_parents(const struct clk_hw *hw);
+ struct clk_hw *clk_hw_get_parent(const struct clk_hw *hw);
+ struct clk_hw *clk_hw_get_parent_by_index(const struct clk_hw *hw,
+ 					  unsigned int index);
++int clk_hw_get_parent_index(struct clk_hw *hw, struct clk_hw *parent_hw);
+ int clk_hw_set_parent(struct clk_hw *hw, struct clk_hw *new_parent);
+ unsigned int __clk_get_enable_count(struct clk *clk);
+ unsigned long clk_hw_get_rate(const struct clk_hw *hw);
+-- 
+2.7.4
 
