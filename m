@@ -7,28 +7,28 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DA98C3A5A3
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70CF1C3A59C
 	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 12:52:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0F35E2064A
+	by mail.kernel.org (Postfix) with ESMTP id 5238E2173B
 	for <linux-pm@archiver.kernel.org>; Fri, 16 Aug 2019 12:52:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727202AbfHPMw3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1727206AbfHPMw3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 16 Aug 2019 08:52:29 -0400
-Received: from laurent.telenet-ops.be ([195.130.137.89]:50488 "EHLO
-        laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727206AbfHPMw3 (ORCPT
+Received: from albert.telenet-ops.be ([195.130.137.90]:40034 "EHLO
+        albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727203AbfHPMw3 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Aug 2019 08:52:29 -0400
 Received: from ramsan ([84.194.98.4])
-        by laurent.telenet-ops.be with bizsmtp
-        id posT2000T05gfCL01osTT6; Fri, 16 Aug 2019 14:52:27 +0200
+        by albert.telenet-ops.be with bizsmtp
+        id posT2000A05gfCL06osTD2; Fri, 16 Aug 2019 14:52:27 +0200
 Received: from rox.of.borg ([192.168.97.57])
         by ramsan with esmtp (Exim 4.90_1)
         (envelope-from <geert@linux-m68k.org>)
-        id 1hybiV-0005JG-Ki; Fri, 16 Aug 2019 14:52:27 +0200
+        id 1hybiV-0005JD-Af; Fri, 16 Aug 2019 14:52:27 +0200
 Received: from geert by rox.of.borg with local (Exim 4.90_1)
         (envelope-from <geert@linux-m68k.org>)
-        id 1hybiV-0004By-JV; Fri, 16 Aug 2019 14:52:27 +0200
+        id 1hybiV-0004Bv-9R; Fri, 16 Aug 2019 14:52:27 +0200
 From:   Geert Uytterhoeven <geert+renesas@glider.be>
 To:     Michael Turquette <mturquette@baylibre.com>,
         Stephen Boyd <sboyd@kernel.org>
@@ -38,9 +38,9 @@ Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org,
         linux-pm@vger.kernel.org,
         Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 2/3] clk: renesas: r9a06g032: Set GENPD_FLAG_ALWAYS_ON for clock domain
-Date:   Fri, 16 Aug 2019 14:52:24 +0200
-Message-Id: <20190816125225.16061-3-geert+renesas@glider.be>
+Subject: [PATCH 1/3] clk: renesas: mstp: Set GENPD_FLAG_ALWAYS_ON for clock domain
+Date:   Fri, 16 Aug 2019 14:52:23 +0200
+Message-Id: <20190816125225.16061-2-geert+renesas@glider.be>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190816125225.16061-1-geert+renesas@glider.be>
 References: <20190816125225.16061-1-geert+renesas@glider.be>
@@ -49,32 +49,33 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The RZ/N1 Clock Domain driver does not implement the
+The CPG/MSTP Clock Domain driver does not implement the
 generic_pm_domain.power_{on,off}() callbacks, as the domain itself
 cannot be powered down.  Hence the domain should be marked as always-on
 by setting the GENPD_FLAG_ALWAYS_ON flag.
 
+This gets rid of the following boot warning on RZ/A1:
+
+    sh_mtu2 fcff0000.timer: PM domain cpg_clocks will not be powered off
+
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Untested due to lack of hardware, but similar in spirit to the other
-Clock Domain drivers.
----
- drivers/clk/renesas/r9a06g032-clocks.c | 3 ++-
+ drivers/clk/renesas/clk-mstp.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/clk/renesas/r9a06g032-clocks.c b/drivers/clk/renesas/r9a06g032-clocks.c
-index b33e1383efe3abcd..1907ee195a08cf77 100644
---- a/drivers/clk/renesas/r9a06g032-clocks.c
-+++ b/drivers/clk/renesas/r9a06g032-clocks.c
-@@ -421,7 +421,8 @@ static int r9a06g032_add_clk_domain(struct device *dev)
- 		return -ENOMEM;
+diff --git a/drivers/clk/renesas/clk-mstp.c b/drivers/clk/renesas/clk-mstp.c
+index dfbef37eed4a82e8..fcf753a6249a0e53 100644
+--- a/drivers/clk/renesas/clk-mstp.c
++++ b/drivers/clk/renesas/clk-mstp.c
+@@ -335,7 +335,8 @@ void __init cpg_mstp_add_clk_domain(struct device_node *np)
+ 		return;
  
  	pd->name = np->name;
 -	pd->flags = GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP;
 +	pd->flags = GENPD_FLAG_PM_CLK | GENPD_FLAG_ALWAYS_ON |
 +		    GENPD_FLAG_ACTIVE_WAKEUP;
- 	pd->attach_dev = r9a06g032_attach_dev;
- 	pd->detach_dev = r9a06g032_detach_dev;
+ 	pd->attach_dev = cpg_mstp_attach_dev;
+ 	pd->detach_dev = cpg_mstp_detach_dev;
  	pm_genpd_init(pd, &pm_domain_always_on_gov, false);
 -- 
 2.17.1
