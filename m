@@ -2,190 +2,128 @@ Return-Path: <SRS0=Wgrr=WO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64D4AC3A589
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 06:51:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF45EC3A59E
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 08:27:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4519E21851
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 06:51:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A5F8D2173B
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 08:27:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726523AbfHRGvH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 18 Aug 2019 02:51:07 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:32910 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726097AbfHRGvG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 18 Aug 2019 02:51:06 -0400
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A550A20070B;
-        Sun, 18 Aug 2019 08:51:03 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 85181200138;
-        Sun, 18 Aug 2019 08:50:55 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id BBBC740281;
-        Sun, 18 Aug 2019 14:50:45 +0800 (SGT)
-From:   Anson Huang <Anson.Huang@nxp.com>
-To:     robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
-        s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
-        mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net,
-        viresh.kumar@linaro.org, leonard.crestez@nxp.com,
-        abel.vesa@nxp.com, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH RESEND V2 2/7] arm64: dts: imx8mn-ddr4-evk: Add rohm,bd71847 PMIC support
-Date:   Sun, 18 Aug 2019 02:32:20 -0400
-Message-Id: <1566109945-11149-2-git-send-email-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1566109945-11149-1-git-send-email-Anson.Huang@nxp.com>
-References: <1566109945-11149-1-git-send-email-Anson.Huang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1726578AbfHRI1l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 18 Aug 2019 04:27:41 -0400
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:34058 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726247AbfHRI1k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Aug 2019 04:27:40 -0400
+Received: by mail-ot1-f66.google.com with SMTP id c7so13467780otp.1;
+        Sun, 18 Aug 2019 01:27:40 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=iGsbphl0FQQGBuaRly5CWz/iJFmuKNjtWAnSJ2N4x+0=;
+        b=dUcsNVHIiueFDkN4qMQ/xgJKFVim6rXPU2vPe8DySPZ2y37HnkcLshStNYpR4m9sii
+         6BjsM/mR8P19NwiRHHOqv44CL5lduXAG+wrSVTe1S+WhshDVHk9pFaHziVlxHfjeJlQJ
+         vuU8PrHslBPFabqwqED5t/BWsh7fLsCwKkREKsJN8OTWQRG7H6XobgmFTC6Z313s2s5b
+         j0bPpA/ALsrdiA/AnLEVgyludy12ViUxvjfHyJS0X7iaMxQmRaPO/NAdazhTNQCa28C6
+         TokBhOQzQVJ96MZZjx93zzykHVKypgtISFkqhKBXAPHCmYQJbyzLvCkchoNqgX8kzCeX
+         rTwQ==
+X-Gm-Message-State: APjAAAVR+dERphw6MIArOIOHk/A39kk3zv++iNExY7dLZ3cYYWhC2EAN
+        01LEIKWat/TJJbPyTEp0Ve5nwzkYGxGd0j5H9Bk=
+X-Google-Smtp-Source: APXvYqx7IA3LHDxIT7relAV7fI5zU5sPnu2xMiAU9Hh4XnETjwrFtGdKnmornqsRB0cg2qycSCFuJg+2WRrk3UyjPh4=
+X-Received: by 2002:a9d:5c0c:: with SMTP id o12mr14124466otk.145.1566116859589;
+ Sun, 18 Aug 2019 01:27:39 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190816125225.16061-1-geert+renesas@glider.be>
+ <20190816125225.16061-2-geert+renesas@glider.be> <20190816180123.6299720665@mail.kernel.org>
+ <CAMuHMdVvwsXU2YwFRA2Y2K9KKzF4L-hqDudarmc-OeHXRMCifQ@mail.gmail.com> <20190817034812.5435B21721@mail.kernel.org>
+In-Reply-To: <20190817034812.5435B21721@mail.kernel.org>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Sun, 18 Aug 2019 10:27:28 +0200
+Message-ID: <CAMuHMdWpUEt-wxEdAK7NsAOadS5TtHYdO=JTGT=CtSROHuR+Pw@mail.gmail.com>
+Subject: Re: [PATCH 1/3] clk: renesas: mstp: Set GENPD_FLAG_ALWAYS_ON for
+ clock domain
+To:     Stephen Boyd <sboyd@kernel.org>
+Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
+        Michael Turquette <mturquette@baylibre.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On i.MX8MN DDR4 EVK board, there is a rohm,bd71847 PMIC
-on i2c1 bus, enable it.
+Hi Stephen,
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-No changes.
----
- arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts | 109 ++++++++++++++++++++++
- 1 file changed, 109 insertions(+)
+On Sat, Aug 17, 2019 at 5:48 AM Stephen Boyd <sboyd@kernel.org> wrote:
+> Quoting Geert Uytterhoeven (2019-08-16 12:59:32)
+> > On Fri, Aug 16, 2019 at 8:01 PM Stephen Boyd <sboyd@kernel.org> wrote:
+> > > Quoting Geert Uytterhoeven (2019-08-16 05:52:23)
+> > > > The CPG/MSTP Clock Domain driver does not implement the
+> > > > generic_pm_domain.power_{on,off}() callbacks, as the domain itself
+> > > > cannot be powered down.  Hence the domain should be marked as always-on
+> > > > by setting the GENPD_FLAG_ALWAYS_ON flag.
+> > > >
+> > > > This gets rid of the following boot warning on RZ/A1:
+> > > >
+> > > >     sh_mtu2 fcff0000.timer: PM domain cpg_clocks will not be powered off
+> > > >
+> > > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > > > ---
+> > >
+> > > Are you going to add a Fixes tag?
+> >
+> > I didn't add a Fixes tag, as there's no clear point in history where the
+> > problem appeared: the Clock Domain code in this driver predates the
+> > introduction of the GENPD_FLAG_ALWAYS_ON flag by ca. 18 months.
+> >
+> > Candidates are:
+> > d716f4798ff8c65a ("PM / Domains: Support IRQ safe PM domains")
+> > ffaa42e8a40b7f10 ("PM / Domains: Enable users of genpd to specify
+> > always on PM domains")
+> > 075c37d59ecd4a8b ("PM / Domains: Don't warn about IRQ safe device for
+> > an always on PM domain")
+> >
+> > Do you think it's worth adding one or more of the above?
+>
+> Well is it actually a problem to not specify the flag? I guess it's just
+> a potential problem if the genpd is ever powered off, but given that the
+> governor decides to leave it always enabled it doesn't actually matter?
+> So it's not really fixing anything besides silencing a harmless warning?
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts b/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-index 5fce5b1..10ebf77 100644
---- a/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-+++ b/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-@@ -57,6 +57,12 @@
- 		>;
- 	};
- 
-+	pinctrl_pmic: pmicirq {
-+		fsl,pins = <
-+			MX8MN_IOMUXC_GPIO1_IO03_GPIO1_IO3	0x41
-+		>;
-+	};
-+
- 	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmc {
- 		fsl,pins = <
- 			MX8MN_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41
-@@ -194,6 +200,109 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_i2c1>;
- 	status = "okay";
-+
-+	pmic@4b {
-+		compatible = "rohm,bd71847";
-+		reg = <0x4b>;
-+		pinctrl-0 = <&pinctrl_pmic>;
-+		interrupt-parent = <&gpio1>;
-+		interrupts = <3 GPIO_ACTIVE_LOW>;
-+		rohm,reset-snvs-powered;
-+
-+		regulators {
-+			buck1_reg: BUCK1 {
-+				regulator-name = "BUCK1";
-+				regulator-min-microvolt = <700000>;
-+				regulator-max-microvolt = <1300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+				regulator-ramp-delay = <1250>;
-+			};
-+
-+			buck2_reg: BUCK2 {
-+				regulator-name = "BUCK2";
-+				regulator-min-microvolt = <700000>;
-+				regulator-max-microvolt = <1300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+				regulator-ramp-delay = <1250>;
-+			};
-+
-+			buck3_reg: BUCK3 {
-+				// BUCK5 in datasheet
-+				regulator-name = "BUCK3";
-+				regulator-min-microvolt = <700000>;
-+				regulator-max-microvolt = <1350000>;
-+			};
-+
-+			buck4_reg: BUCK4 {
-+				// BUCK6 in datasheet
-+				regulator-name = "BUCK4";
-+				regulator-min-microvolt = <3000000>;
-+				regulator-max-microvolt = <3300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			buck5_reg: BUCK5 {
-+				// BUCK7 in datasheet
-+				regulator-name = "BUCK5";
-+				regulator-min-microvolt = <1605000>;
-+				regulator-max-microvolt = <1995000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			buck6_reg: BUCK6 {
-+				// BUCK8 in datasheet
-+				regulator-name = "BUCK6";
-+				regulator-min-microvolt = <800000>;
-+				regulator-max-microvolt = <1400000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo1_reg: LDO1 {
-+				regulator-name = "LDO1";
-+				regulator-min-microvolt = <3000000>;
-+				regulator-max-microvolt = <3300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo2_reg: LDO2 {
-+				regulator-name = "LDO2";
-+				regulator-min-microvolt = <900000>;
-+				regulator-max-microvolt = <900000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo3_reg: LDO3 {
-+				regulator-name = "LDO3";
-+				regulator-min-microvolt = <1800000>;
-+				regulator-max-microvolt = <3300000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo4_reg: LDO4 {
-+				regulator-name = "LDO4";
-+				regulator-min-microvolt = <900000>;
-+				regulator-max-microvolt = <1800000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+
-+			ldo6_reg: LDO6 {
-+				regulator-name = "LDO6";
-+				regulator-min-microvolt = <900000>;
-+				regulator-max-microvolt = <1800000>;
-+				regulator-boot-on;
-+				regulator-always-on;
-+			};
-+		};
-+	};
- };
- 
- &snvs_pwrkey {
+The warning is indeed harmless.
+
+The "interesting" case is the case where no warning is printed, as no
+IRQ-safe device is present.  In that case, the absence of the
+GENPD_FLAG_ALWAYS_ON flag means that the core PM Domain code will
+consider the domain for power-off, and will loop over all devices part
+of it, which is suboptimal.  Setting the flag avoids that.
+
+Thanks for your continued questions, it made me realize I need to add more
+meat to the description to these "simple" patches!
+
+For the PM people: would it make sense to add a
+WARN(!genpd->power_off && !genpd_is_always_on(genpd), "...") check to
+pm_genpd_init()?
+Or set GENPD_FLAG_ALWAYS_ON automatically if !genpd->power_off?
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.7.4
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
