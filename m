@@ -2,89 +2,97 @@ Return-Path: <SRS0=Wgrr=WO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3CD6C3A589
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:05:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60B4FC3A59F
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:30:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BAB932189E
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:05:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 367BF20B7C
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:30:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="LgrhlsHH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726776AbfHROEQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 18 Aug 2019 10:04:16 -0400
-Received: from mxwww.masterlogin.de ([95.129.51.220]:42940 "EHLO
-        mxwww.masterlogin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726757AbfHROEQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Aug 2019 10:04:16 -0400
-Received: from mxout2.routing.net (unknown [192.168.10.82])
-        by new.mxwww.masterlogin.de (Postfix) with ESMTPS id 9D96F96DFD;
-        Sun, 18 Aug 2019 13:56:29 +0000 (UTC)
-Received: from mxbox3.masterlogin.de (unknown [192.168.10.253])
-        by mxout2.routing.net (Postfix) with ESMTP id F32AE6207B;
-        Sun, 18 Aug 2019 13:56:29 +0000 (UTC)
-Received: from localhost.localdomain (fttx-pool-185.53.43.183.bambit.de [185.53.43.183])
-        by mxbox3.masterlogin.de (Postfix) with ESMTPSA id 3C00336066A;
-        Sun, 18 Aug 2019 15:56:29 +0200 (CEST)
-From:   Frank Wunderlich <frank-w@public-files.de>
-To:     linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
-        devicetree@vger.kernel.org,
-        "linux-arm-kernel @ lists . infradead . org Alessandro Zummo" 
-        <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Eddie Huang <eddie.huang@mediatek.com>,
-        Josef Friedl <josef.friedl@speed.at>,
-        Lee Jones <lee.jones@linaro.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        Mark Rutland <mark.rutland@arm.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sean Wang <sean.wang@mediatek.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        "Tianping Fang" <tianping.fang@mediatek.com>
-Subject: [PATCH v6 09/13] rtc: mt6397: add compatible for mt6323
-Date:   Sun, 18 Aug 2019 15:56:07 +0200
-Message-Id: <20190818135611.7776-10-frank-w@public-files.de>
-X-Mailer: git-send-email 2.17.1
+        id S1726115AbfHROar (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 18 Aug 2019 10:30:47 -0400
+Received: from mout.gmx.net ([212.227.15.19]:59825 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726097AbfHROar (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 18 Aug 2019 10:30:47 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1566138605;
+        bh=hLYcToeezHf4hhXnjWzLCdKxM5gIK0icGM3XbjtZPHY=;
+        h=X-UI-Sender-Class:Date:In-Reply-To:References:Subject:Reply-to:To:
+         CC:From;
+        b=LgrhlsHHnrQ5D6dukHV9YUjrYL+t2YQqMc4Tawlbn/WGi4moyohaLXAM4rfZG86op
+         N0fLGBd+G7erbyDkmIWN9VWzEWaDj1J2MwH+rz5cl8v3avLYO5MET8c/NsNEHuxxtS
+         f1iIELB4GznxvEeaZOpqLDASVsB8m3cXPMcffHYY=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [10.197.41.87] ([80.187.106.20]) by mail.gmx.com (mrgmx003
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 0LeMWL-1ibiHB3r49-00q9Hg; Sun, 18
+ Aug 2019 16:30:05 +0200
+Date:   Sun, 18 Aug 2019 16:30:01 +0200
+User-Agent: K-9 Mail for Android
 In-Reply-To: <20190818135611.7776-1-frank-w@public-files.de>
 References: <20190818135611.7776-1-frank-w@public-files.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH v6 00/13] implement poweroff for mt6323 / bpi-r2
+Reply-to: frank-w@public-files.de
+To:     linux-mediatek@lists.infradead.org
+CC:     linux-rtc@vger.kernel.org, devicetree@vger.kernel.org,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Sean Wang <sean.wang@mediatek.com>,
+        "linux-arm-kernel @ lists . infradead . org Alessandro Zummo" 
+        <a.zummo@towertech.it>, linux-pm@vger.kernel.org,
+        Josef Friedl <josef.friedl@speed.at>,
+        linux-kernel@vger.kernel.org,
+        Tianping Fang <tianping.fang@mediatek.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Eddie Huang <eddie.huang@mediatek.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        linux-arm-kernel@lists.infradead.org
+From:   Frank Wunderlich <frank-w@public-files.de>
+Message-ID: <B8BBF532-0642-4BB6-818B-4376E1E70431@public-files.de>
+X-Provags-ID: V03:K1:zOBPsfR5VsRIKzVesxNFmJJSCrm0Fff6ZmF6d2IwO5U7qE4OrFU
+ b5ps1PHdKlgJOkcsi8EW0pRYXPEi7BYynicsUWIvTDroCdJSlLJW/P6tVOwKU8aWtRGUjf/
+ UBXtLWIcoEiyWdxHKY8T95xF9y7/TIhvqDfUzS3KbVRbpn7kEd5UGX4IuRSeaE8XZy+IPKy
+ 9yonCI0h9cZVNA6usR/BQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:r0ruDgMvpM0=:ntuNEBZnKwg/0M0XUuunXI
+ aMgls3M2XyuuBwgc3aXuM0XMXD65FwXYAUW/1cP834BllvVa/rNZhzgtyY3XrNOk9NJmTcMWB
+ OW6WA8zLqutcBWQ+Utl563hVDtlxzjrTmbTz69U2uMu2La4mPHm5Icm2Kb6u27EzcQYkm4GXB
+ ogs4cEjXHEsOqtElDTdmIqCC1jw75422kvotO2ZLdu9vw+P2JPSiQ/2r+p/B4wwE5/rWDZsjr
+ mt8tBEkVL1UogwUIGAtkpcpOTlYbBTFZ4Hac3ZJgevC2J3LvaGcfSs2boXFepLZ4fcKSd/58G
+ eWVlrO6xNX2pp+kV+erASbqmUwzVbBHA18Q3PVBJiBIB4NbgJbiTnu7jWjRzXuP51/zg3HTIO
+ sYwXa9CYZcaGY2deMC6Galx4/s44gE6nidlNIWAEzmHoGPDpzxnZjEDQSLV+xl+NkYjdbhLe1
+ 8TvvFNMa5pdMa2CEz140FuQ4iCumSK/E+eaoMOpmifm/9gpKDMBqTKe6enSw6DdRvl73UPHbx
+ syIwQpR0myvYJfNrcNHZtZ9325LiM4AuE5afyXvj0NG9BCarP/9IVbL5rOXxEPOpDGhxSmWo1
+ 0oRt1NSixNWZSb9Fc6rrAm4pZjut6QVSzHiZQLnMlf+Lx57BvCPGYMSN1+9KBOjJ0OROmqC2N
+ aJ9lYXLPy6ISvk5ebnReKnxAdE2/YAIVIwYQ0lcD+RASDEuwGbHfbM0zqVDbacUzO1vSXTBR8
+ 9jI9xrPQ3xariQkni9HdCYrp3F6WnwjEFv1orPIcnoUrd+c02+KNp5lEHqrHjzz4iC2I7Q6eB
+ yp9Y3vzPYztnXqTKPn8zENNIiwWMJLjd0k0VH50qjPFZMofBWYAeiE2xnXqT80HLXvYhL5rx1
+ pNyg+nC5N/118Xhz7ik+pRfpec+mBZgLUqSkEaS61vTwxIrM/58JPZbG8zlwMafxnkXaoJYF/
+ zQ3HBRTi0JWXuu27eEKrBK8sCfv+MsU3aY5G4KSdfAuoVU2ZweSydZ5z9MConAC5Z4Tb7jUhZ
+ rJstYb5be3ik8NuGo8nOgFisd56yMYA3G5ItCY3hBiy3QEdQuTYU7WvArgosSyQS9J1MkGeks
+ 8A0CpD02P3L9wEd/kmbmum2LEuDoEOa2Kb6tNZcI8mmol56uCuB92R82CYchVEN5vVVth8xVl
+ hTxqE=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Josef Friedl <josef.friedl@speed.at>
+Arg, missed a comma between
 
-use mt6397 rtc driver also for mt6323 but with different
-base/size see "mfd: mt6323: add mt6323 rtc+pwrc"
+linux-arm-kernel@lists=2Einfradead=2Eorg
+ and
+Alessandro Zummo
 
-Signed-off-by: Josef Friedl <josef.friedl@speed.at>
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
----
-changes since v5: none
-changes since v4: none
-changes since v3: moved (was part 5)
-changes since v2: splitted this from v2.3 suggested-by Alexandre Belloni
----
- drivers/rtc/rtc-mt6397.c | 1 +
- 1 file changed, 1 insertion(+)
+Will send the series to linux-arm-kernel later
 
-diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
-index 9370b7fc9f81..21cd9cc8b4c7 100644
---- a/drivers/rtc/rtc-mt6397.c
-+++ b/drivers/rtc/rtc-mt6397.c
-@@ -325,6 +325,7 @@ static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_rtc_suspend,
- 			mt6397_rtc_resume);
- 
- static const struct of_device_id mt6397_rtc_of_match[] = {
-+	{ .compatible = "mediatek,mt6323-rtc", },
- 	{ .compatible = "mediatek,mt6397-rtc", },
- 	{ }
- };
--- 
-2.17.1
-
+Sorry for that
