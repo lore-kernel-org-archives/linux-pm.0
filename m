@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBF29C3A589
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:05:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51FA9C3A59E
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:05:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C854621883
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:05:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 28AC320B7C
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:05:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726953AbfHROEi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726946AbfHROEi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sun, 18 Aug 2019 10:04:38 -0400
-Received: from mxwww.masterlogin.de ([95.129.51.220]:43042 "EHLO
+Received: from mxwww.masterlogin.de ([95.129.51.220]:43040 "EHLO
         mxwww.masterlogin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726830AbfHROE0 (ORCPT
+        with ESMTP id S1726820AbfHROE0 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Aug 2019 10:04:26 -0400
-Received: from mxout2.routing.net (unknown [192.168.10.82])
-        by new.mxwww.masterlogin.de (Postfix) with ESMTPS id 5A0DC96DF9;
-        Sun, 18 Aug 2019 13:56:27 +0000 (UTC)
+Received: from mxout1.routing.net (unknown [192.168.10.81])
+        by new.mxwww.masterlogin.de (Postfix) with ESMTPS id EB2EC96DFC;
+        Sun, 18 Aug 2019 13:56:28 +0000 (UTC)
 Received: from mxbox3.masterlogin.de (unknown [192.168.10.253])
-        by mxout2.routing.net (Postfix) with ESMTP id AB4D46207B;
-        Sun, 18 Aug 2019 13:56:27 +0000 (UTC)
+        by mxout1.routing.net (Postfix) with ESMTP id 46D0F43CE1;
+        Sun, 18 Aug 2019 13:56:29 +0000 (UTC)
 Received: from localhost.localdomain (fttx-pool-185.53.43.183.bambit.de [185.53.43.183])
-        by mxbox3.masterlogin.de (Postfix) with ESMTPSA id ED0C536043A;
-        Sun, 18 Aug 2019 15:56:26 +0200 (CEST)
+        by mxbox3.masterlogin.de (Postfix) with ESMTPSA id 7662136043A;
+        Sun, 18 Aug 2019 15:56:28 +0200 (CEST)
 From:   Frank Wunderlich <frank-w@public-files.de>
 To:     linux-mediatek@lists.infradead.org
 Cc:     Frank Wunderlich <frank-w@public-files.de>,
@@ -46,9 +46,9 @@ Cc:     Frank Wunderlich <frank-w@public-files.de>,
         Sean Wang <sean.wang@mediatek.com>,
         Sebastian Reichel <sre@kernel.org>,
         "Tianping Fang" <tianping.fang@mediatek.com>
-Subject: [PATCH v6 06/13] mfd: mt6397: add mutex include
-Date:   Sun, 18 Aug 2019 15:56:04 +0200
-Message-Id: <20190818135611.7776-7-frank-w@public-files.de>
+Subject: [PATCH v6 08/13] mfd: mt6323: some improvements of mt6397-core
+Date:   Sun, 18 Aug 2019 15:56:06 +0200
+Message-Id: <20190818135611.7776-9-frank-w@public-files.de>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190818135611.7776-1-frank-w@public-files.de>
 References: <20190818135611.7776-1-frank-w@public-files.de>
@@ -59,29 +59,51 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Josef Friedl <josef.friedl@speed.at>
 
-add missing mutex.h
+simplyfications (resource definitions my DEFINE_RES_* macros)
 
 Signed-off-by: Josef Friedl <josef.friedl@speed.at>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 ---
-changes since v5: separated from "power: reset: add driver for mt6323 poweroff"
+changes since v5: none
+changes since v4: do not touch year of copyright
+changes since v3: moved part 6 forward to let compatible and driver be together
+changes since v2: splitted v2 part 4 into 6+7
 ---
- include/linux/mfd/mt6397/core.h | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/mfd/mt6397-core.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/include/linux/mfd/mt6397/core.h b/include/linux/mfd/mt6397/core.h
-index 25a95e72179b..652da61e3711 100644
---- a/include/linux/mfd/mt6397/core.h
-+++ b/include/linux/mfd/mt6397/core.h
-@@ -7,6 +7,8 @@
- #ifndef __MFD_MT6397_CORE_H__
- #define __MFD_MT6397_CORE_H__
+diff --git a/drivers/mfd/mt6397-core.c b/drivers/mfd/mt6397-core.c
+index 337bcccdb914..c9a81087fa55 100644
+--- a/drivers/mfd/mt6397-core.c
++++ b/drivers/mfd/mt6397-core.c
+@@ -5,6 +5,7 @@
+  */
  
-+#include <linux/mutex.h>
-+
- enum mt6397_irq_numbers {
- 	MT6397_IRQ_SPKL_AB = 0,
- 	MT6397_IRQ_SPKR_AB,
+ #include <linux/interrupt.h>
++#include <linux/ioport.h>
+ #include <linux/module.h>
+ #include <linux/of_device.h>
+ #include <linux/of_irq.h>
+@@ -23,16 +24,8 @@
+ #define MT6397_CID_CODE		0x97
+ 
+ static const struct resource mt6397_rtc_resources[] = {
+-	{
+-		.start = MT6397_RTC_BASE,
+-		.end   = MT6397_RTC_BASE + MT6397_RTC_SIZE,
+-		.flags = IORESOURCE_MEM,
+-	},
+-	{
+-		.start = MT6397_IRQ_RTC,
+-		.end   = MT6397_IRQ_RTC,
+-		.flags = IORESOURCE_IRQ,
+-	},
++	DEFINE_RES_MEM(MT6397_RTC_BASE, MT6397_RTC_SIZE),
++	DEFINE_RES_IRQ(MT6397_IRQ_RTC),
+ };
+ 
+ static const struct resource mt6323_keys_resources[] = {
 -- 
 2.17.1
 
