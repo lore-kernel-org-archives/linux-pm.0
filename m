@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5880EC3A59F
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:04:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DAD68C3A59E
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:04:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 38CD82173B
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:04:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BC3B02173B
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Aug 2019 14:04:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726901AbfHROE0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 18 Aug 2019 10:04:26 -0400
-Received: from mxwww.masterlogin.de ([95.129.51.220]:43036 "EHLO
+        id S1726956AbfHROEi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 18 Aug 2019 10:04:38 -0400
+Received: from mxwww.masterlogin.de ([95.129.51.220]:43026 "EHLO
         mxwww.masterlogin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726821AbfHROE0 (ORCPT
+        with ESMTP id S1726805AbfHROE0 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Aug 2019 10:04:26 -0400
-Received: from mxout1.routing.net (unknown [192.168.10.81])
-        by new.mxwww.masterlogin.de (Postfix) with ESMTPS id 75F1E96DF0;
-        Sun, 18 Aug 2019 13:56:24 +0000 (UTC)
+Received: from mxout2.routing.net (unknown [192.168.10.82])
+        by new.mxwww.masterlogin.de (Postfix) with ESMTPS id 2897096DF2;
+        Sun, 18 Aug 2019 13:56:25 +0000 (UTC)
 Received: from mxbox3.masterlogin.de (unknown [192.168.10.253])
-        by mxout1.routing.net (Postfix) with ESMTP id E9D6843D5A;
-        Sun, 18 Aug 2019 13:56:23 +0000 (UTC)
+        by mxout2.routing.net (Postfix) with ESMTP id 738156207B;
+        Sun, 18 Aug 2019 13:56:25 +0000 (UTC)
 Received: from localhost.localdomain (fttx-pool-185.53.43.183.bambit.de [185.53.43.183])
-        by mxbox3.masterlogin.de (Postfix) with ESMTPSA id 493E536008B;
-        Sun, 18 Aug 2019 15:56:21 +0200 (CEST)
+        by mxbox3.masterlogin.de (Postfix) with ESMTPSA id AA8F336008B;
+        Sun, 18 Aug 2019 15:56:24 +0200 (CEST)
 From:   Frank Wunderlich <frank-w@public-files.de>
 To:     linux-mediatek@lists.infradead.org
 Cc:     Frank Wunderlich <frank-w@public-files.de>,
@@ -46,9 +46,9 @@ Cc:     Frank Wunderlich <frank-w@public-files.de>,
         Sean Wang <sean.wang@mediatek.com>,
         Sebastian Reichel <sre@kernel.org>,
         "Tianping Fang" <tianping.fang@mediatek.com>
-Subject: [PATCH v6 01/13] dt-bindings: mfd: mediatek: mt6397: change to relative paths
-Date:   Sun, 18 Aug 2019 15:55:59 +0200
-Message-Id: <20190818135611.7776-2-frank-w@public-files.de>
+Subject: [PATCH v6 03/13] dt-bindings: mfd: mediatek: add mt6323 power-controller
+Date:   Sun, 18 Aug 2019 15:56:01 +0200
+Message-Id: <20190818135611.7776-4-frank-w@public-files.de>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190818135611.7776-1-frank-w@public-files.de>
 References: <20190818135611.7776-1-frank-w@public-files.de>
@@ -57,56 +57,76 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-paths in dt-bindings should be relative as suggested by Lee Johnes
+From: Josef Friedl <josef.friedl@speed.at>
 
-Suggested-By: Lee Jones <lee.jones@linaro.org>
+- add powercontroller-section to existing binding-document
+- add mt6323-pwrc bindings-document with example
+
+Suggested-by: Frank Wunderlich <frank-w@public-files.de>
+Signed-off-by: Josef Friedl <josef.friedl@speed.at>
 Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
+Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 ---
-changes since v5: splitted from dt-bindings: add powercontroller
+changes since v5: split out non-pwrc related changes
+changes since v4: none
+changes since v3: none
+changes since v2: none (=v2 part 7)
 ---
- Documentation/devicetree/bindings/mfd/mt6397.txt | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ .../devicetree/bindings/mfd/mt6397.txt        |  6 ++++++
+ .../bindings/power/reset/mt6323-poweroff.txt  | 20 +++++++++++++++++++
+ 2 files changed, 26 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
 
 diff --git a/Documentation/devicetree/bindings/mfd/mt6397.txt b/Documentation/devicetree/bindings/mfd/mt6397.txt
-index 0ebd08af777d..ab3163a60929 100644
+index 5fccf987865b..a9b105ac00a8 100644
 --- a/Documentation/devicetree/bindings/mfd/mt6397.txt
 +++ b/Documentation/devicetree/bindings/mfd/mt6397.txt
-@@ -12,7 +12,7 @@ MT6397/MT6323 is a multifunction device with the following sub modules:
+@@ -8,6 +8,7 @@ MT6397/MT6323 is a multifunction device with the following sub modules:
+ - Clock
+ - LED
+ - Keys
++- Power controller
+ 
  It is interfaced to host controller using SPI interface by a proprietary hardware
  called PMIC wrapper or pwrap. MT6397/MT6323 MFD is a child device of pwrap.
- See the following for pwarp node definitions:
--Documentation/devicetree/bindings/soc/mediatek/pwrap.txt
-+../soc/mediatek/pwrap.txt
- 
- This document describes the binding for MFD device and its sub module.
- 
-@@ -27,9 +27,9 @@ Optional subnodes:
- - regulators
- 	Required properties:
- 		- compatible: "mediatek,mt6397-regulator"
--	see Documentation/devicetree/bindings/regulator/mt6397-regulator.txt
-+	see ../regulator/mt6397-regulator.txt
- 		- compatible: "mediatek,mt6323-regulator"
--	see Documentation/devicetree/bindings/regulator/mt6323-regulator.txt
-+	see ../regulator/mt6323-regulator.txt
- - codec
- 	Required properties:
- 		- compatible: "mediatek,mt6397-codec"
-@@ -39,12 +39,12 @@ Optional subnodes:
- - led
- 	Required properties:
- 		- compatible: "mediatek,mt6323-led"
--	see Documentation/devicetree/bindings/leds/leds-mt6323.txt
-+	see ../leds/leds-mt6323.txt
- 
- - keys
- 	Required properties:
+@@ -48,6 +49,11 @@ Optional subnodes:
  		- compatible: "mediatek,mt6397-keys" or "mediatek,mt6323-keys"
--	see Documentation/devicetree/bindings/input/mtk-pmic-keys.txt
-+	see ../input/mtk-pmic-keys.txt
+ 	see ../input/mtk-pmic-keys.txt
  
++- power-controller
++	Required properties:
++		- compatible: "mediatek,mt6323-pwrc"
++	For details, see ../power/reset/mt6323-poweroff.txt
++
  Example:
  	pwrap: pwrap@1000f000 {
+ 		compatible = "mediatek,mt8135-pwrap";
+diff --git a/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
+new file mode 100644
+index 000000000000..933f0c48e887
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/mt6323-poweroff.txt
+@@ -0,0 +1,20 @@
++Device Tree Bindings for Power Controller on MediaTek PMIC
++
++The power controller which could be found on PMIC is responsible for externally
++powering off or on the remote MediaTek SoC through the circuit BBPU.
++
++Required properties:
++- compatible: Should be one of follows
++       "mediatek,mt6323-pwrc": for MT6323 PMIC
++
++Example:
++
++       pmic {
++               compatible = "mediatek,mt6323";
++
++               ...
++
++               power-controller {
++                       compatible = "mediatek,mt6323-pwrc";
++               };
++       }
 -- 
 2.17.1
 
