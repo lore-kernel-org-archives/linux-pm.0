@@ -2,63 +2,64 @@ Return-Path: <SRS0=+zxN=WP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEE82C3A5A0
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Aug 2019 17:55:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C553C3A5A1
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Aug 2019 17:55:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 895FB22CEB
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Aug 2019 17:55:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2652A22CF4
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Aug 2019 17:55:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="BFxv2Z0J"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="k7y0Y8zj"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727794AbfHSRzA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Aug 2019 13:55:00 -0400
-Received: from mail-pf1-f193.google.com ([209.85.210.193]:33620 "EHLO
-        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727483AbfHSRy7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Aug 2019 13:54:59 -0400
-Received: by mail-pf1-f193.google.com with SMTP id g2so1603268pfq.0
-        for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2019 10:54:59 -0700 (PDT)
+        id S1728093AbfHSRzC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Aug 2019 13:55:02 -0400
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:39920 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728066AbfHSRzB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Aug 2019 13:55:01 -0400
+Received: by mail-pf1-f195.google.com with SMTP id f17so1592339pfn.6
+        for <linux-pm@vger.kernel.org>; Mon, 19 Aug 2019 10:55:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=MW64udRZZTYjeoFAzTVzLQFQQek0N5DUnNryD8PEGbs=;
-        b=BFxv2Z0JDOq1B0BGDrU+WG8JI09yP8MI9bNRj5ujd+iRomT7WccF73hGNDYcteCeBI
-         OgEoRYdc1VlJCrlF+5eXz0/nYZnFP/3L6IXtFBtmT0UAKalldk48tsF2TKdwR8ITaTRS
-         Dai9cDe5ro42eEYHa/vQCoPkcVg9KSssSgTY4=
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=MdtAV1xATKqzVzk/DbE+IGNr2mWwyW+FAULaw9PivyY=;
+        b=k7y0Y8zjrpJBSAsXL0IKx0rACGq4A7Q7tkpgbaokOh9YtrZU7lwXxhZnJIoajPIXCE
+         J5+CPvFXtrgrIOMZ7qhPnQYabXztxNSYPc9tuN8Or+v8VEiwXjPPtVWoVrVWFFCMqgQU
+         DDZP6dUUBOwGCIDMKsL1RQdvGHfECORM1Sbog=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=MW64udRZZTYjeoFAzTVzLQFQQek0N5DUnNryD8PEGbs=;
-        b=ie+y5zT7Xu+tnQmg16XqTMmLsHUQZd/Inh+FY0Ww8vn+ztWfKgWLu8ZFls3apfFGDD
-         As1iKdBuMTUmnfQ2csbtqDo3gKuJH0tLILF1GIS7yjAP9tnH4sLEbcZiqpGcJtNlxNKs
-         WQXEK8twQI/58O/jf5BRxbHwGwCwVpDgY+BkJBqfseXg9ya3VbPotTaEzKylCedZvpF8
-         08Qep/l0HXEY3wVdZtIS3JUFDnBkdeKOSx1NHfsh3hEujTuEbpy61OlCrLHzQQGflKDr
-         3cH9ez2CDZWVyL9CnQZCMHWtF43KeujuoTh+sPQWSZxbflayeTfmY4IKO4VQkFHN2Oqd
-         p4mA==
-X-Gm-Message-State: APjAAAUKvxa8DFxi/EG5n3NgpiOblTZwy8tBG/eUDi+OgFCQoZ+BbnjN
-        9AGFGnQQZqJNdYEq6fXjzhMyhQ==
-X-Google-Smtp-Source: APXvYqwKMjD+9wsCXJcs+RYjWqkYAICWjsDh/OArsHSIGOWXQ8I6Qgi0ieWcoAgwmfmJkqIzdyetEA==
-X-Received: by 2002:a63:6888:: with SMTP id d130mr20157988pgc.197.1566237298980;
-        Mon, 19 Aug 2019 10:54:58 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=MdtAV1xATKqzVzk/DbE+IGNr2mWwyW+FAULaw9PivyY=;
+        b=ZFDAtOxE38SHJxi/P2umC6YpsqsrUqHqH8Zbu2fVOnlyOw5u+YEoGtYmY36Xb6aQhS
+         hFgQLt0oMBi9TYRg1Pyj7Wr2miN58PiRPlKMAmL6C8vnMTxTc4caJZEY2O4h45USZsEL
+         tIdhCopVHUgYHD+qGmfkiE9v+ev56+zpc/hERZ9UXG9ZPIvdJwDCd8XnlZETIl3ovnOl
+         RnyD/a4XVl1vwVeCeoy/3aBDc/Ju4o1LaCv3JINR5oA6XV4pGJp+JUbImVHvBivxEIFe
+         KMSbxOv8gPbJnW3hL0Haa/URGaItAE6p1Y2FIQbN59P+6tBbDHkDlGOaF0f878PFTfG2
+         iKIg==
+X-Gm-Message-State: APjAAAViGydDLANdbX0ibX7qZYAfpaPXPx312Rmml1VFSKDyFCHrv6pF
+        4NXGAeOc4w0qifPm05xPpnnF1KiGXTQLtQ==
+X-Google-Smtp-Source: APXvYqzNjjUiIRP7t3A7+8awsygXwikF5otXIBfdzuPefg5wLRfX9kixkt9gNTcLWfFzgEqm87h08w==
+X-Received: by 2002:a62:fb18:: with SMTP id x24mr24759894pfm.231.1566237300798;
+        Mon, 19 Aug 2019 10:55:00 -0700 (PDT)
 Received: from smtp.gmail.com ([2620:15c:202:1:fa53:7765:582b:82b9])
-        by smtp.gmail.com with ESMTPSA id h197sm18084237pfe.67.2019.08.19.10.54.58
+        by smtp.gmail.com with ESMTPSA id h197sm18084237pfe.67.2019.08.19.10.54.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 19 Aug 2019 10:54:58 -0700 (PDT)
+        Mon, 19 Aug 2019 10:55:00 -0700 (PDT)
 From:   Stephen Boyd <swboyd@chromium.org>
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Qian Cai <cai@lca.pw>, Tri Vo <trong@android.com>
-Subject: [PATCH v3 0/2] PM / wakeup: Fix wakeup class wrecakge in -next
-Date:   Mon, 19 Aug 2019 10:54:55 -0700
-Message-Id: <20190819175457.231058-1-swboyd@chromium.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH v3 2/2] PM / wakeup: Unexport pm_wakeup_sysfs_{add,remove}()
+Date:   Mon, 19 Aug 2019 10:54:57 -0700
+Message-Id: <20190819175457.231058-3-swboyd@chromium.org>
 X-Mailer: git-send-email 2.23.0.rc1.153.gdeed80330f-goog
+In-Reply-To: <20190819175457.231058-1-swboyd@chromium.org>
+References: <20190819175457.231058-1-swboyd@chromium.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -66,28 +67,36 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now a patch series because I found another patch to apply to unexport
-some symbols.
+These functions are just used by the PM core, and that isn't modular so
+these functions don't need to be exported. Drop the exports.
 
-Changes from v2:
- * Fix logic for not adding the wakeup class from dpm_sysfs_add()
- * Compile tested on !CONFIG_PM_SLEEP
+Fixes: 986845e747af ("PM / wakeup: Show wakeup sources stats in sysfs")
+Cc: Tri Vo <trong@android.com
+Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+---
+ drivers/base/power/wakeup_stats.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-Cc: Qian Cai <cai@lca.pw>
-Cc: Tri Vo <trong@android.com>
-
-Stephen Boyd (2):
-  PM / wakeup: Register wakeup class kobj after device is added
-  PM / wakeup: Unexport pm_wakeup_sysfs_{add,remove}()
-
- drivers/base/power/power.h        |  9 +++++++++
- drivers/base/power/sysfs.c        |  6 ++++++
- drivers/base/power/wakeup.c       | 10 ++++++----
- drivers/base/power/wakeup_stats.c | 15 +++++++++++++--
- 4 files changed, 34 insertions(+), 6 deletions(-)
-
-
-base-commit: 0c3d3d648b3ed72b920a89bc4fd125e9b7aa5f23
+diff --git a/drivers/base/power/wakeup_stats.c b/drivers/base/power/wakeup_stats.c
+index bc5e3945f7a8..c7734914d914 100644
+--- a/drivers/base/power/wakeup_stats.c
++++ b/drivers/base/power/wakeup_stats.c
+@@ -182,7 +182,6 @@ int wakeup_source_sysfs_add(struct device *parent, struct wakeup_source *ws)
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(wakeup_source_sysfs_add);
+ 
+ /**
+  * pm_wakeup_source_sysfs_add - Add wakeup_source attributes to sysfs
+@@ -205,7 +204,6 @@ void wakeup_source_sysfs_remove(struct wakeup_source *ws)
+ {
+ 	device_unregister(ws->dev);
+ }
+-EXPORT_SYMBOL_GPL(wakeup_source_sysfs_remove);
+ 
+ static int __init wakeup_sources_sysfs_init(void)
+ {
 -- 
 Sent by a computer through tubes
 
