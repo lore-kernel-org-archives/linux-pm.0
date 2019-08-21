@@ -2,299 +2,125 @@ Return-Path: <SRS0=Akw9=WR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92284C3A59E
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Aug 2019 10:44:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F850C3A59E
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Aug 2019 11:41:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 53775233A1
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Aug 2019 10:44:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5E15F22D6D
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Aug 2019 11:41:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="hNKmox1N"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="hgz89Dj8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727348AbfHUKoF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Aug 2019 06:44:05 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:35673 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728194AbfHUKnW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2019 06:43:22 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190821104321euoutp0266ffc59e0fbdbafc89bc57155a6f9b12~86iHP8Qx50294502945euoutp02a
-        for <linux-pm@vger.kernel.org>; Wed, 21 Aug 2019 10:43:21 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190821104321euoutp0266ffc59e0fbdbafc89bc57155a6f9b12~86iHP8Qx50294502945euoutp02a
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1566384201;
-        bh=V2RxqnmrrTg838z/OUohhOWlIB6UFsk0++imMcaiW7Y=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=hNKmox1N5UytW/PTTA1ZEZzT2V2yOzFq/U0BSumeGjczHamUQZovbKI3BwcmNZR1F
-         piExUVYIYhE2zNqUIBTmNUrzYrfWzCTKH0I5Z8SJ5Deqqpo6zIZdxVRORzzm2ry34f
-         Iuxy2lhwYNqx5pzVKkJP0NgQM3NFCPAQIWu2dr+8=
-Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190821104320eucas1p1ed71e72e6e8ab4265f7d91cb2dd0cb4e~86iGPaL5F0727407274eucas1p1u;
-        Wed, 21 Aug 2019 10:43:20 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id B4.0C.04309.7402D5D5; Wed, 21
-        Aug 2019 11:43:19 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190821104319eucas1p10db51f7a181cae024465cc775292d2b1~86iFZ3PL41124011240eucas1p1V;
-        Wed, 21 Aug 2019 10:43:19 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190821104319eusmtrp2c9ef838381444376c27fa59dbf91f273~86iFLr9sM2827428274eusmtrp26;
-        Wed, 21 Aug 2019 10:43:19 +0000 (GMT)
-X-AuditID: cbfec7f4-ae1ff700000010d5-3d-5d5d20474f9e
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id 39.38.04117.6402D5D5; Wed, 21
-        Aug 2019 11:43:19 +0100 (BST)
-Received: from AMDC3778.DIGITAL.local (unknown [106.120.51.20]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190821104317eusmtip221f1e7e384a831f5024b51e5df9568a7~86iEEROLI1735217352eusmtip2q;
-        Wed, 21 Aug 2019 10:43:17 +0000 (GMT)
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-clk@vger.kernel.org
-Cc:     mturquette@baylibre.com, sboyd@kernel.org,
-        b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
-        mark.rutland@arm.com, robh+dt@kernel.org, cw00.choi@samsung.com,
-        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
-        s.nawrocki@samsung.com, myungjoo.ham@samsung.com,
-        keescook@chromium.org, tony@atomide.com, jroedel@suse.de,
-        treding@nvidia.com, digetx@gmail.com, gregkh@linuxfoundation.org,
-        willy.mh.wolff.ml@gmail.com,
-        Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v13 2/8] dt-bindings: ddr: add LPDDR3 memories
-Date:   Wed, 21 Aug 2019 12:42:57 +0200
-Message-Id: <20190821104303.32079-3-l.luba@partner.samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190821104303.32079-1-l.luba@partner.samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA0WSa1CMYRTHPfte22nNa4XjFtYwruU25nEZYlye8cGYCR80YfFOpXbLvoow
-        ZlnXVSFNorJkyGybLppUE6V2RKXk1tII5bKzym3TjMFiexfffuec//n/zzzz8JT6EzOMj9Jv
-        Fw16bYyGVdKlt781TV0+Ojx8mss5BxdlFDC4tecdgy32Jgbnfe5E2HSxgMWn6rMVuPGYDh/v
-        fE/h5uZCDt/b38XhZ8YR+HNSO4MfVmSx2J1sRzij+aYC59ufc/hSa4sCt9QvxW37rrD44A07
-        h2u7DjPY86SIxlWPVuC27/1x750OFDKU2M7ZEOn9mkqTj46DHMk0ttCk/OxzjhRbj7KkKtvG
-        kWTTB5bc+lCpICklVkSuNewm7uLAVf7rlPO3iDFRCaIheMFGZWRyRgMbVzR+50/XD86IXgSa
-        kR8PwiyorKllzUjJq4UrCF7fuuErehA4O9IouXAjSHd/RGbE96007tsm93MRnHQ70L+N7O63
-        fSJWCIIy6zZvRICQgSDTGerVUMIrClLys5B3MFBYACntXxgv08I46LGk97FKWAiWtExavm8U
-        5BVWU172E0LAc+Iu4zUC4QIPrxxtlHzREnj8YrWsHwiuuhJO5hHwq9yikFkCY/IFJPMe6Dye
-        7dPMg9q6FsZrQwkToaAiWG4vgpL6HEZ27w+O7gHeNvUHU0tP+0JVcOSQWlZPgJKk+76gwZBr
-        S/eZE8jx5Pue8BSCXkc1fQKNOvs/7DxCVjREjJd0EaI0Qy/uCJK0OileHxG0OVZXjP78wwZP
-        XU8ZqvixqQYJPNL4q8qehoWrGW2ClKirQcBTmgDVzqx14WrVFm3iLtEQu8EQHyNKNWg4T2uG
-        qHb3exmmFiK028VoUYwTDX+nCt5vmBEdDU2LTNy7VYDmkJxWTc65VXbF17wgDKlR0ctYK0o4
-        9qZh6GzPmY6AkSbTgZFjnF2XmhpdsfujJn9f7CxNW7po9ZwplcHUmfa3l7vWF1omx4XN6J4b
-        ekRZ3FhlWRhpJrZq84Hocv/xSabc6ysfEG3g3ZV3yKA19NqwqzNd7fqxRENLkdrpkyiDpP0N
-        VCdrOYMDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrCIsWRmVeSWpSXmKPExsVy+t/xe7ruCrGxBhu3MFlsnLGe1eL6l+es
-        FvOPnGO1WP3xMaNF8+L1bBaTT81lsjjTnWvR//g1s8X58xvYLc42vWG3uNUgY/Gx5x6rxeVd
-        c9gsPvceYbSYcX4fk8XaI3fZLZZev8hkcfGUq8XtxhVsFq17j7BbHH7Tzmrx79pGFov9V7ws
-        bv/ms/h24hGjg6THmnlrGD2+fZ3E4vH+Riu7x+yGiyweO2fdZffYtKqTzWP/3DXsHr3N79g8
-        Dr7bw+TRt2UVo8fm09UenzfJBfBE6dkU5ZeWpCpk5BeX2CpFG1oY6RlaWugZmVjqGRqbx1oZ
-        mSrp29mkpOZklqUW6dsl6GX0zjjNVrBRreLvqz/sDYz35boYOTgkBEwkzjQWdjFycQgJLGWU
-        WLntCmMXIydQXExi0r7t7BC2sMSfa11sEEWfGCW+ze1gA2lmE9CT2LEKrFlEYA6jxM+ubYwg
-        DrPAb2aJg3f7wbqFBewk+u59YgWxWQRUJb7MnwZm8wrYS8yfMpsFYoO8xOoNB5hBbE4BB4l/
-        E06C1QgB1Uzd8JZ1AiPfAkaGVYwiqaXFuem5xUZ6xYm5xaV56XrJ+bmbGIExuu3Yzy07GLve
-        BR9iFOBgVOLh3XEzOlaINbGsuDL3EKMEB7OSCG/FnKhYId6UxMqq1KL8+KLSnNTiQ4ymQEdN
-        ZJYSTc4Hpo+8knhDU0NzC0tDc2NzYzMLJXHeDoGDMUIC6YklqdmpqQWpRTB9TBycUg2MOnNs
-        S59YTOf80THJQfdoRlpCqOTqYIFjT79OzEy8sFzzwazHJ4oFs43KjcrXGe6/x+ThtaktwPXS
-        HE6V2dsXa/J12UnW391lYjPL4MDCa/Mv3cqIi1/AsJKnpF3oxjG5ay55xfbxvzLq2mdOOpS3
-        p4zr22czFcWDd5VEGTYnXu7MvLCvqPCWEktxRqKhFnNRcSIAFojHLucCAAA=
-X-CMS-MailID: 20190821104319eucas1p10db51f7a181cae024465cc775292d2b1
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190821104319eucas1p10db51f7a181cae024465cc775292d2b1
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190821104319eucas1p10db51f7a181cae024465cc775292d2b1
-References: <20190821104303.32079-1-l.luba@partner.samsung.com>
-        <CGME20190821104319eucas1p10db51f7a181cae024465cc775292d2b1@eucas1p1.samsung.com>
+        id S1727082AbfHULlZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Aug 2019 07:41:25 -0400
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:39382 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726966AbfHULlZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Aug 2019 07:41:25 -0400
+Received: by mail-wm1-f65.google.com with SMTP id i63so1799385wmg.4
+        for <linux-pm@vger.kernel.org>; Wed, 21 Aug 2019 04:41:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20150623.gappssmtp.com; s=20150623;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=x8o3T2t5tz7Ixcjhq857p3V1LeL5QkE3oMH88PryfCM=;
+        b=hgz89Dj8EeATIFFjaX2KCz0C0uNpZrY6QVX6pEY33E64+i8O/OuKaESi3p4fdK2r2Z
+         z3pwPkLNuACjxRRfK4Nyn8j3lYz5gApK5BBWdosClSfrsvnto88TYv8GANdPhaDUuceH
+         nyQ63eaHKAYQvJQPOp4SwMw6BLc3jg2z7K0fsqMvovx5oLxNLr1t2u0WJcKEqaVKOevR
+         F8kZvLViHXnGIECx0lXkgBtF0PgZTrEcICBkcoFQz3no1rTFrj8SY3GMtJsyAHjkLlKb
+         nmi8SBh8WYSmiqhszrysruibpzkQDDZxec3PiA1PWdpURj/yr1KzA+Yxc5RLUU1iDi4C
+         o4lw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=x8o3T2t5tz7Ixcjhq857p3V1LeL5QkE3oMH88PryfCM=;
+        b=Gf6bNPIa9rM4z7340zAAhFXbTxWUpX/g4gVfMl1c8KMnGv6k3MIWOt8//HmoENjvWs
+         uM0jdI8ineJtQfcsQQ1ZiEwwRYLMKYSWKJTAN5c/dzp1eMISGUsTksxVGa0LxDqjLr2g
+         4zbGKo3aitQ78VjrzLb7MlaBcvX6+ovYWy9NXNpS001/jzUt4hym6n3PckiZ6Muzgh2Y
+         WJD2hflQITRpo2pAJkydUYKbf//upy+NNLRHLY+FlfrcgZnifjV2MyIegv2+t8T700tU
+         m3NIUZyqx+PV47fntQho+DxB6AE8ToJmOPopQ4Ohdj59xbOeOCUfneNUwaaKN3jo9nDm
+         9n1A==
+X-Gm-Message-State: APjAAAWR8cYCHdTFxlbkyKDi+Fm6+U8HAe3C/2eNANv8S1CHNlnxIbuL
+        7JtuDouoC1SVzrLXamT+1FuLHWUvJqQxIw==
+X-Google-Smtp-Source: APXvYqzrf0tMJG6BPFz3rwTLTrCXMVxjFRd5KCZ5s+IEF3EuyTik4+AtnX+i6dCshLvZBUUTBNaCMg==
+X-Received: by 2002:a1c:b6d4:: with SMTP id g203mr5595031wmf.100.1566387683719;
+        Wed, 21 Aug 2019 04:41:23 -0700 (PDT)
+Received: from bender.baylibre.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
+        by smtp.gmail.com with ESMTPSA id g12sm24049686wrv.9.2019.08.21.04.41.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 21 Aug 2019 04:41:23 -0700 (PDT)
+From:   Neil Armstrong <narmstrong@baylibre.com>
+To:     khilman@baylibre.com, ulf.hansson@linaro.org
+Cc:     Neil Armstrong <narmstrong@baylibre.com>, linux-pm@vger.kernel.org,
+        linux-amlogic@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/5] arm64: meson: add support for SM1 Power Domains
+Date:   Wed, 21 Aug 2019 13:41:16 +0200
+Message-Id: <20190821114121.10430-1-narmstrong@baylibre.com>
+X-Mailer: git-send-email 2.22.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Specifies the AC timing parameters of the LPDDR3 memory device.
+This patchset introduces a new "Everything-Else Power Domain Controller"
+designed to handle all the different non-Always On peripherals like :
+- VPU
+- Ethernet Memories
+- USB, PCIe, Audio, NNA on SM1
 
-Reviewed-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- .../bindings/ddr/lpddr3-timings.txt           | 58 +++++++++++
- .../devicetree/bindings/ddr/lpddr3.txt        | 97 +++++++++++++++++++
- 2 files changed, 155 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/ddr/lpddr3-timings.txt
- create mode 100644 Documentation/devicetree/bindings/ddr/lpddr3.txt
+The current "gx-vpu-pwrc" process has been integrated to support the VPU
+and the other power domains in a single driver.
 
-diff --git a/Documentation/devicetree/bindings/ddr/lpddr3-timings.txt b/Documentation/devicetree/bindings/ddr/lpddr3-timings.txt
-new file mode 100644
-index 000000000000..84705e50a3fd
---- /dev/null
-+++ b/Documentation/devicetree/bindings/ddr/lpddr3-timings.txt
-@@ -0,0 +1,58 @@
-+* AC timing parameters of LPDDR3 memories for a given speed-bin.
-+
-+The structures are based on LPDDR2 and extended where needed.
-+
-+Required properties:
-+- compatible : Should be "jedec,lpddr3-timings"
-+- min-freq : minimum DDR clock frequency for the speed-bin. Type is <u32>
-+- reg : maximum DDR clock frequency for the speed-bin. Type is <u32>
-+
-+Optional properties:
-+
-+The following properties represent AC timing parameters from the memory
-+data-sheet of the device for a given speed-bin. All these properties are
-+of type <u32> and the default unit is ps (pico seconds).
-+- tRFC
-+- tRRD
-+- tRPab
-+- tRPpb
-+- tRCD
-+- tRC
-+- tRAS
-+- tWTR
-+- tWR
-+- tRTP
-+- tW2W-C2C
-+- tR2R-C2C
-+- tFAW
-+- tXSR
-+- tXP
-+- tCKE
-+- tCKESR
-+- tMRD
-+
-+Example:
-+
-+timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@800000000 {
-+	compatible	= "jedec,lpddr3-timings";
-+	reg		= <800000000>; /* workaround: it shows max-freq */
-+	min-freq	= <100000000>;
-+	tRFC		= <65000>;
-+	tRRD		= <6000>;
-+	tRPab		= <12000>;
-+	tRPpb		= <12000>;
-+	tRCD		= <10000>;
-+	tRC		= <33750>;
-+	tRAS		= <23000>;
-+	tWTR		= <3750>;
-+	tWR		= <7500>;
-+	tRTP		= <3750>;
-+	tW2W-C2C	= <0>;
-+	tR2R-C2C	= <0>;
-+	tFAW		= <25000>;
-+	tXSR		= <70000>;
-+	tXP		= <3750>;
-+	tCKE		= <3750>;
-+	tCKESR		= <3750>;
-+	tMRD		= <7000>;
-+};
-diff --git a/Documentation/devicetree/bindings/ddr/lpddr3.txt b/Documentation/devicetree/bindings/ddr/lpddr3.txt
-new file mode 100644
-index 000000000000..3b2485b84b3f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/ddr/lpddr3.txt
-@@ -0,0 +1,97 @@
-+* LPDDR3 SDRAM memories compliant to JEDEC JESD209-3C
-+
-+Required properties:
-+- compatible : Should be  - "jedec,lpddr3"
-+- density  : <u32> representing density in Mb (Mega bits)
-+- io-width : <u32> representing bus width. Possible values are 8, 16, 32, 64
-+- #address-cells: Must be set to 1
-+- #size-cells: Must be set to 0
-+
-+Optional properties:
-+
-+The following optional properties represent the minimum value of some AC
-+timing parameters of the DDR device in terms of number of clock cycles.
-+These values shall be obtained from the device data-sheet.
-+- tRFC-min-tck
-+- tRRD-min-tck
-+- tRPab-min-tck
-+- tRPpb-min-tck
-+- tRCD-min-tck
-+- tRC-min-tck
-+- tRAS-min-tck
-+- tWTR-min-tck
-+- tWR-min-tck
-+- tRTP-min-tck
-+- tW2W-C2C-min-tck
-+- tR2R-C2C-min-tck
-+- tWL-min-tck
-+- tDQSCK-min-tck
-+- tRL-min-tck
-+- tFAW-min-tck
-+- tXSR-min-tck
-+- tXP-min-tck
-+- tCKE-min-tck
-+- tCKESR-min-tck
-+- tMRD-min-tck
-+
-+Child nodes:
-+- The lpddr3 node may have one or more child nodes of type "lpddr3-timings".
-+  "lpddr3-timings" provides AC timing parameters of the device for
-+  a given speed-bin. Please see Documentation/devicetree/
-+  bindings/ddr/lpddr3-timings.txt for more information on "lpddr3-timings"
-+
-+Example:
-+
-+samsung_K3QF2F20DB: lpddr3 {
-+	compatible	= "Samsung,K3QF2F20DB", "jedec,lpddr3";
-+	density		= <16384>;
-+	io-width	= <32>;
-+	#address-cells	= <1>;
-+	#size-cells	= <0>;
-+
-+	tRFC-min-tck		= <17>;
-+	tRRD-min-tck		= <2>;
-+	tRPab-min-tck		= <2>;
-+	tRPpb-min-tck		= <2>;
-+	tRCD-min-tck		= <3>;
-+	tRC-min-tck		= <6>;
-+	tRAS-min-tck		= <5>;
-+	tWTR-min-tck		= <2>;
-+	tWR-min-tck		= <7>;
-+	tRTP-min-tck		= <2>;
-+	tW2W-C2C-min-tck	= <0>;
-+	tR2R-C2C-min-tck	= <0>;
-+	tWL-min-tck		= <8>;
-+	tDQSCK-min-tck		= <5>;
-+	tRL-min-tck		= <14>;
-+	tFAW-min-tck		= <5>;
-+	tXSR-min-tck		= <12>;
-+	tXP-min-tck		= <2>;
-+	tCKE-min-tck		= <2>;
-+	tCKESR-min-tck		= <2>;
-+	tMRD-min-tck		= <5>;
-+
-+	timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@800000000 {
-+		compatible	= "jedec,lpddr3-timings";
-+		reg		= <800000000>; /* workaround: it shows max-freq */
-+		min-freq	= <100000000>;
-+		tRFC		= <65000>;
-+		tRRD		= <6000>;
-+		tRPab		= <12000>;
-+		tRPpb		= <12000>;
-+		tRCD		= <10000>;
-+		tRC		= <33750>;
-+		tRAS		= <23000>;
-+		tWTR		= <3750>;
-+		tWR		= <7500>;
-+		tRTP		= <3750>;
-+		tW2W-C2C	= <0>;
-+		tR2R-C2C	= <0>;
-+		tFAW		= <25000>;
-+		tXSR		= <70000>;
-+		tXP		= <3750>;
-+		tCKE		= <3750>;
-+		tCKESR		= <3750>;
-+		tMRD		= <7000>;
-+	};
-+}
+Support for SoC domains has been made generic and easily extendable.
+
+In order to restart from clean architecture :
+- the PWRC node has been moved into the HHI simple-mfd, this suits much
+  better than beeing in the AO RTI simple-mfd
+- a brand new yaml bindings schemas has been written
+- reset-names has been added to clarify which resets are needed, so we can
+  dispatch them to domains
+
+For G12A, the PWRC now offers support for the ethmac memory power domain.
+
+For SM1, it also offers support for PCIe, USB, NNA, ethmac and Audio power
+domains.
+
+The DOS domains has been excluded for now, but can be added very easily.
+
+GX hasn't been integrated for now, but it would follow the same scheme
+as G12A support.
+
+Neil Armstrong (5):
+  dt-bindings: power: add Amlogic Everything-Else power domains bindings
+  soc: amlogic: Add support for Everything-Else power domains controller
+  arm64: meson-g12: add Everything-Else power domain controller
+  arm64: dts: meson-sm1-sei610: add HDMI display support
+  arm64: dts: meson-sm1-sei610: add USB support
+
+ .../bindings/power/amlogic,meson-ee-pwrc.yaml |  93 +++
+ .../boot/dts/amlogic/meson-g12-common.dtsi    |  92 +--
+ arch/arm64/boot/dts/amlogic/meson-g12a.dtsi   |   9 +
+ arch/arm64/boot/dts/amlogic/meson-g12b.dtsi   |   9 +
+ .../boot/dts/amlogic/meson-sm1-sei610.dts     |  28 +
+ arch/arm64/boot/dts/amlogic/meson-sm1.dtsi    |  15 +-
+ drivers/soc/amlogic/Kconfig                   |  11 +
+ drivers/soc/amlogic/Makefile                  |   1 +
+ drivers/soc/amlogic/meson-ee-pwrc.c           | 560 ++++++++++++++++++
+ include/dt-bindings/power/meson-g12a-power.h  |  13 +
+ include/dt-bindings/power/meson-sm1-power.h   |  18 +
+ 11 files changed, 801 insertions(+), 48 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/amlogic,meson-ee-pwrc.yaml
+ create mode 100644 drivers/soc/amlogic/meson-ee-pwrc.c
+ create mode 100644 include/dt-bindings/power/meson-g12a-power.h
+ create mode 100644 include/dt-bindings/power/meson-sm1-power.h
+
 -- 
-2.17.1
+2.22.0
 
