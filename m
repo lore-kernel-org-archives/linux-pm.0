@@ -2,152 +2,193 @@ Return-Path: <SRS0=Pfty=WS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDAA8C3A5A1
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 12:24:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A869C3A5A1
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 13:18:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9963C214DA
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 12:24:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 274C523400
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 13:18:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="ROkiB8fN"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="f0vLyt8w"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732472AbfHVMYN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 22 Aug 2019 08:24:13 -0400
-Received: from mail-eopbgr50072.outbound.protection.outlook.com ([40.107.5.72]:20992
-        "EHLO EUR03-VE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1732359AbfHVMYN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 22 Aug 2019 08:24:13 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=SzTZOzEHVbsN1eGhJCleq9yQ+0uGFQG9RrmHHTXsOXEJ4hFvCU1pgG7PWBWmwrgA3uNhjJq4hnZrAhVPBCvCQ6wDdUkAZq/X2bVa/YC7oA3WKGo0CKugHp6wQDct0S+n5huWyBd5EotWEd8vkfVdJcugTViM/+fRfI8xHU4MmBwc6mpgUCwWHdlrGPhmwMlVUUa4s29w/0VCwbOcPQBjLsqoofJ9qVSH4iMkwYNrIx+DZo56pFKB017CYxgNIYtFxZxwt2styNidIi6O6reDG86SXGDzEwJ1BCR3E4N6vCehmREG6+bnBCT8B6pdAuTNRVU1Xxq9bXJPjTJCBOMbRQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=QFCX5FYm2KM45A5cLfUtmOUv3fdDtwPajxY4Y867wpo=;
- b=YtIdx37LFZ+WJuGHO7cSUUaKGMjq6/5OERjF1jvLEbzHFJDNtOhK7fD80HwDx/jyQsSpRKs8oRzlLSbnrIT6KW9Eit6U10DpXxjoi7I0FIjmWl+yo5cIKbcM9IELwUa2pDx/tC4EjeWhqobbhYSWmc/ofhRsVjiAP/uNMKw3LwH2a8TgzcSNwKx3HPuk/ylU0n1mEOzMIxssNIICVA9W6dvNKeChOfSMrIkG2JSMAkja2azKnX/zEjG4iQE7yIsCU4DnG3DfKWA/Z+yMNHntBhj3A65Vo/d+5xSGkJ/vkheOc4oDEvuc5Gj99p0o3/9UBur6KHR5aki8WVbMCoq9sg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=QFCX5FYm2KM45A5cLfUtmOUv3fdDtwPajxY4Y867wpo=;
- b=ROkiB8fNoE7O/ERyDflV05xgGGwAfZ0GI5ZlkHM3eaFO33THyKuAkT2/zGbtm7kOqXbdtkQznEsesAYP8fY/A1ObVKwueoBUrU84VR9VRademsBBqUiVxFzv8YiYHvKZYUTJq3/WPm8s28ieEunUkyEMGEKGMvAMGJYzQMpqCeY=
-Received: from VI1PR04MB7023.eurprd04.prod.outlook.com (10.186.159.144) by
- VI1PR04MB6192.eurprd04.prod.outlook.com (20.179.28.82) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2178.19; Thu, 22 Aug 2019 12:24:07 +0000
-Received: from VI1PR04MB7023.eurprd04.prod.outlook.com
- ([fe80::c5e8:90f8:da97:947e]) by VI1PR04MB7023.eurprd04.prod.outlook.com
- ([fe80::c5e8:90f8:da97:947e%3]) with mapi id 15.20.2178.020; Thu, 22 Aug 2019
- 12:24:07 +0000
-From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     Chanwoo Choi <cw00.choi@samsung.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-CC:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        =?utf-8?B?QXJ0dXIgxZp3aWdvxYQ=?= <a.swigon@partner.samsung.com>,
-        Saravana Kannan <saravanak@google.com>,
+        id S1732606AbfHVNS4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 22 Aug 2019 09:18:56 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:36946 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732467AbfHVNS4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2019 09:18:56 -0400
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20190822131854euoutp02f4e291d750420c61fe7d9399c8c3477f~9QTNv9uF12905629056euoutp02W
+        for <linux-pm@vger.kernel.org>; Thu, 22 Aug 2019 13:18:54 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20190822131854euoutp02f4e291d750420c61fe7d9399c8c3477f~9QTNv9uF12905629056euoutp02W
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1566479934;
+        bh=F44EVnTO+GtDjxdQbJnARMCEO/Q+Yxe2hI8JoPBw2gQ=;
+        h=Subject:Cc:To:From:Date:In-Reply-To:References:From;
+        b=f0vLyt8w7YPH1rhBmSW+wXxcSts5ox5EmwTa6ocUbdjVPzFpKbrQE77MR+tTYQ0Ek
+         +Gvw1yS3tFZ9FRDxi8nkclY9Ty41F6Pho6ZCRDQd+zlbMiAHBrAWMzQA81YTyi++qC
+         wDCkzeJ9Nkbik75HcsDBCJZCDTCCBM6cawbiY8HI=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20190822131853eucas1p2c5af1edc93b92358245c742ecd1de77a~9QTM0H8ic0687106871eucas1p2G;
+        Thu, 22 Aug 2019 13:18:53 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges3new.samsung.com (EUCPMTA) with SMTP id B3.9E.04374.D369E5D5; Thu, 22
+        Aug 2019 14:18:53 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20190822131852eucas1p14653c9ddd85096bbee11447e0c68c052~9QTLxC46Y1860818608eucas1p1k;
+        Thu, 22 Aug 2019 13:18:52 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20190822131852eusmtrp2c34461aaa48dd5fe69e0efcb6635db70~9QTLhTY4g2865128651eusmtrp2S;
+        Thu, 22 Aug 2019 13:18:52 +0000 (GMT)
+X-AuditID: cbfec7f5-4f7ff70000001116-f7-5d5e963dae74
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms2.samsung.com (EUCPMTA) with SMTP id 56.D3.04117.C369E5D5; Thu, 22
+        Aug 2019 14:18:52 +0100 (BST)
+Received: from [106.120.51.18] (unknown [106.120.51.18]) by
+        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20190822131851eusmtip22c23884609353eaf52f43abc24fd7fcb~9QTK1iFoa2631926319eusmtip2L;
+        Thu, 22 Aug 2019 13:18:51 +0000 (GMT)
+Subject: Re: [RESEND PATCH v5 0/4] add coupled regulators for
+ Exynos5422/5800
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
         Krzysztof Kozlowski <krzk@kernel.org>,
-        Alexandre Bailon <abailon@baylibre.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Jacky Bai <ping.bai@nxp.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
-Subject: Re: [PATCH v3 2/2] PM / devfreq: Use dev_pm_qos for sysfs
- min/max_freq
-Thread-Topic: [PATCH v3 2/2] PM / devfreq: Use dev_pm_qos for sysfs
- min/max_freq
-Thread-Index: AQHVV8RskIGk1lt2FkKxkb2XApS7YQ==
-Date:   Thu, 22 Aug 2019 12:24:07 +0000
-Message-ID: <VI1PR04MB70231FF65C1A50FD6830D88FEEA50@VI1PR04MB7023.eurprd04.prod.outlook.com>
-References: <cover.1566314535.git.leonard.crestez@nxp.com>
- <CGME20190820152411epcas4p33e2ef4d271ddd82a4401c0286b53d2f1@epcas4p3.samsung.com>
- <af14021b98254032e856397b54329756c1cc59c0.1566314535.git.leonard.crestez@nxp.com>
- <e2ba9b0d-1930-0d2a-c262-72f0f85c86d0@samsung.com>
- <VI1PR04MB7023A7AC7DDE349BF6D2D2C9EEAA0@VI1PR04MB7023.eurprd04.prod.outlook.com>
- <921d9eb8-aa38-6e67-ac2e-55e01bf630f5@samsung.com>
- <VI1PR04MB7023D551332373BE98CA60E8EEA50@VI1PR04MB7023.eurprd04.prod.outlook.com>
- <4bdc0742-42ab-1ab6-4868-409eb9738cd8@samsung.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=leonard.crestez@nxp.com; 
-x-originating-ip: [89.37.124.34]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 5ebe5693-1539-48fe-52f1-08d726fba107
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(5600166)(711020)(4605104)(1401327)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7193020);SRVR:VI1PR04MB6192;
-x-ms-traffictypediagnostic: VI1PR04MB6192:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <VI1PR04MB619225BB4BDEFCB24F52956AEEA50@VI1PR04MB6192.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:10000;
-x-forefront-prvs: 01371B902F
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(366004)(136003)(396003)(346002)(376002)(39860400002)(189003)(51444003)(199004)(86362001)(446003)(5660300002)(476003)(102836004)(486006)(66446008)(6246003)(229853002)(26005)(186003)(53936002)(66946007)(76116006)(66556008)(64756008)(33656002)(7416002)(6116002)(53546011)(74316002)(110136005)(54906003)(2906002)(66066001)(71190400001)(316002)(71200400001)(14454004)(55016002)(52536014)(76176011)(7696005)(256004)(305945005)(44832011)(66476007)(7736002)(478600001)(99286004)(6506007)(8936002)(81156014)(8676002)(25786009)(4326008)(9686003)(6436002)(14444005)(3846002)(81166006);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB6192;H:VI1PR04MB7023.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: pUYW04n462TiM/e+GyhseXiKhnCngTmvfZ/U8k6rqS0AgiDqCqh1VM/hN2I1qE6+enbSv7Cb5+tfHicOT0wooxAjvohPEg616bhcRaG+xleM82n/aHAiVmjiG/hEShzbB0ZOUoPqHBjp3PYifhRdNzIUcSzMvcQCvzWfRaUMdKKZosNxk1IJ7vQAZ2XLiZl40Gy/6AndNNEUKZ44fnT+OQSICJrwgPs/5CTocjEeudqR/h+EBmQfJ047QPivJET3693YvIU7T1a0iZJO/DS5Xri8q1MjS16aIA9LHv/ifHEOdGcdUJFDZC9hnIMyzkbl3HQFaLbERhdzkojwp0f/Lmijd5cgwo3+bPdENdwpiglGo96nybjmC+Ninil4/5oh1QktKMlrctEA93sQk973KJ54ZBIXasiqj8g3f7SwT24=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+        Kukjin Kim <kgene@kernel.org>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+To:     MyungJoo Ham <myungjoo.ham@samsung.com>
+From:   Kamil Konieczny <k.konieczny@partner.samsung.com>
+Message-ID: <fd9897b6-edc9-f88f-4393-62050bd66710@partner.samsung.com>
+Date:   Thu, 22 Aug 2019 15:18:50 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.8.0
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5ebe5693-1539-48fe-52f1-08d726fba107
-X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Aug 2019 12:24:07.5272
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: zv9eBriXgJl2Dqnid9sdEEUlWouwuzY2H8GbVAGdB6D2vU4oXfAAbBP3avzdAzzIlugtK/RU2Sbs2sJHwUX1yQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB6192
+In-Reply-To: <20190808090234.12577-1-k.konieczny@partner.samsung.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0iTURj27Lvs05odp7UX7WITIY0ySeiA3YSSVT8S/KFkmiu/VFKzTafW
+        D83ssnW/UDYlu1gumbcpTqOsdDg10yywYQXLS0FqZSophtb2FfnvOc/lvO9zOBwltTPeXHJa
+        Bq9KU6bIWTe6vnW6a82m63Gx65reu5OawiqGvJ34zJASSxdDLg4MU6S7u1pMXuaPiIlpoJch
+        bx4Vs2T8vAWRwu4mEamwfBCT+297ROTdcQNLRqZeisjJJxYxme2toUmtvZXd6qEw3jIihalc
+        yypqS3MVF+rKkcJqM4sU46blEewet40JfEqyhlcFbY53SyrNr2TSJxZnX6vOp/OQ0UOHXDnA
+        IVAwNE3pkBsnxQYE/VfrxcJhAkH1gI12uKR4HIFhZq8Occ7ECaOr4ClDUNRz9W96FEHh00rW
+        EfDEu+H5zwbaIVD4FQ1fXt2mHIIXXg0zto/OW1m8AfrNnSIHluBwMJ+4yzgwjf2h6Os7p38x
+        joYf9hZG8HhA+81BZ9YVb4eK8nYnprAM+gZLRAJeAebRYudGgLUcTPaVMULRbaDrbGEF7Alf
+        rHViAS+FuUYhDDgLhu5cEAvhAgT202O0IIRCi7WHcfSncABUPQoS6DAoajDQwrO4g23UQ9jB
+        Ha7U36AEWgJnTkkFtz987jj3d5IP6OYqmUtIrp/XTD+vjX5eG/3/ubcRXY5kfKY6NZFXr0/j
+        s9aqlanqzLTEtQcOp5rQn3/3YtY62YCafu1vRphD8oWSNl1crJRRatQ5qc0IOEruJdFc/kNJ
+        EpQ5R3nV4X2qzBRe3Yx8OFoukxxzscdIcaIygz/E8+m86p8q4ly98xDqtQZw1Xm76BjwKd0S
+        ft9v1fu2D0vuTu18ol12ve/1YIJs+uRjSX/rjq23cmsiQjeVdN2I8naJfhYZPKPNkbmkH9Ev
+        eZCsPeS1cruvxHZcFxhiojQRGsv3yhHfeL8FZR8bxx5GRVZEJ5DBrivxZxOHp6hFSZ+Cv91r
+        CQtHHdmBB+W0OkkZHEip1MrfD68QFXMDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrMIsWRmVeSWpSXmKPExsVy+t/xe7o20+JiDSZuZLfYOGM9q8X1L89Z
+        LeYfOcdq0f/4NbPF+fMb2C3ONr1ht9j0+BqrxeVdc9gsPvceYbSYcX4fk8XaI3fZLZZev8hk
+        cbtxBZvFmx9nmSxa9x5ht/h3bSOLxeYHx9gcBD3WzFvD6LFpVSebx+Yl9R59W1Yxehy/sZ3J
+        4/MmuQC2KD2bovzSklSFjPziElulaEMLIz1DSws9IxNLPUNj81grI1MlfTublNSczLLUIn27
+        BL2MJU3rWAu+iFZM2dDE0sC4RrCLkYNDQsBEonkNZxcjJ4eQwFJGiUOzbEFsCQFpicbTq5kg
+        bGGJP9e62LoYuYBqXjNK3N5ykxUkISzgK3Hxwh0WkASzwAUWiee/DrJCVM1glLgzp5EdpEpE
+        QFvi942HLCA2m4C5xKPtZ8DG8gq4SWxvXgQ2iUVAVWL2u9vMILaoQITE4R2zGCFqBCVOznwC
+        1ssp4CqxdtVJMJtZQF3iz7xLzBC2uMStJ/OZIGx5ie1v5zBPYBSahaR9FpKWWUhaZiFpWcDI
+        sopRJLW0ODc9t9hIrzgxt7g0L10vOT93EyMwwrcd+7llB2PXu+BDjAIcjEo8vCe64mKFWBPL
+        iitzDzFKcDArifCWTQQK8aYkVlalFuXHF5XmpBYfYjQFem4is5Rocj4w+eSVxBuaGppbWBqa
+        G5sbm1koifN2CByMERJITyxJzU5NLUgtgulj4uCUamDMEZVaci5V68Ttc+WcT5cd2Z23Tirt
+        1Y336hvXF2TfOdP6ab10Dv+PW+eebFw+zfZCysrm6pkRjya1qFu6Suz2PXf83I8lzFfjp860
+        9ImeUfH2sGJ6utqlaw9t6jOYZp2KiZvDwR+1rsj4u2pLe7DLmZD1tQz37nxR3bBxzhajGUIy
+        6Xma5o4PlViKMxINtZiLihMB6AXRsgYDAAA=
+X-CMS-MailID: 20190822131852eucas1p14653c9ddd85096bbee11447e0c68c052
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20190808090249eucas1p19944820d79ec211c85d9e1285f892f9c
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190808090249eucas1p19944820d79ec211c85d9e1285f892f9c
+References: <CGME20190808090249eucas1p19944820d79ec211c85d9e1285f892f9c@eucas1p1.samsung.com>
+        <20190808090234.12577-1-k.konieczny@partner.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-T24gMjIuMDguMjAxOSAxNDowNiwgQ2hhbndvbyBDaG9pIHdyb3RlOgo+IE9uIDE5LiA4LiAyMi4g
-7Jik7ZuEIDc6NTgsIExlb25hcmQgQ3Jlc3RleiB3cm90ZToKPj4gT24gOC8yMi8yMDE5IDE6MDMg
-UE0sIENoYW53b28gQ2hvaSB3cm90ZToKPj4+IFRoaXMgcGF0Y2ggZG9lc24ndCBjaGVjayB0aGUg
-cmFuZ2Ugb2YgaW5wdXQgdmFsdWUKPj4+IHdpdGggdGhlIHN1cHBvcnRlZCBmcmVxdWVuY2llcyBv
-ZiBkZXZmcmVxIGRldmljZS4KPj4+Cj4+PiBGb3IgZXhhbXBsZSwKPj4+IFRoZSBkZXZmcmVxMCBk
-ZXZpY2UgaGFzIHRoZSBmb2xsb3dpbmcgYXZhaWxhYmxlIGZyZXF1ZW5jaWVzCj4+PiAxMDAwMDAw
-MDAgMjAwMDAwMDAwIDMwMDAwMDAwMAo+Pj4KPj4+IGFuZCB0aGVuIHVzZXIgZW50ZXJzIHRoZSA1
-MDAwMDAwMDAgYXMgZm9sbG93aW5nOgo+Pj4gZWNobyA1MDAwMDAwMDAgPiAvc3lzL2NsYXNzL2Rl
-dmZyZXEvZGV2ZnJlcTAvbWluX2ZyZXEKPj4+Cj4+PiBJbiByZXN1bHQsIGdldF9lZmZlY3RpdmVf
-bWluX2ZyZXEoKSB3aWxsIHJldHVybiB0aGUgNTAwMDAwMDAwLgo+Pj4gSXQgaXMgd3JvbmcgdmFs
-dWUuIGl0IHNob3cgdGhlIHVuc3VwcG9ydGVkIGZyZXF1ZW5jeSB0aHJvdWdoCj4+PiBtaW5fZnJl
-cSBzeXNmcyBwYXRoLgo+Pgo+PiBUaHJvdWdoIGRldl9wbV9xb3MgZGV2aWNlcyBjYW4gYWxzbyBh
-c2sgZm9yIGEgZnJlcSBoaWdoZXIgdGhhbiB0aGUKPj4gbWF4aW11bSBPUFAgYW5kIHVubGlrZSBz
-eXNmcyB0aGVyZSBpcyBubyB3YXkgdG8gcmVqZWN0IHN1Y2ggcmVxdWVzdHMsCj4+IGluc3RlYWQg
-UE0gcW9zIGNsYWltcyBpdCdzIGJhc2VkIG9uICJiZXN0IGVmZm9ydCIuCj4+Cj4+IFRoZXJlIGFy
-ZSBtYW55IHJlcXVlc3RzIGluIHRoZSBrZXJuZWwgZm9yICJQTV9RT1NfQ1BVX0RNQV9MQVRFTkNZ
-IDAiIGFuZAo+PiBJIHRoaW5rIHRoYXQgREVWX1BNX1FPU19NSU5fRlJFUVVFTkNZLCBNQVhfUzMy
-IGlzIGEgcmVhc29uYWJsZSB3YXkgZm9yIGEKPj4gZGV2aWNlIHRvIHJlcXVlc3QgIm1heCBwZXJm
-b3JtYW5jZSIgZnJvbSBkZXZmcmVxLgo+Pgo+PiBSZWplY3RpbmcgbWluID4gbWF4IGlzIGNvbXBs
-aWNhdGVkICh3aGF0IGhhcHBlbnMgdG8gcmVqZWN0ZWQgcmVxdWVzdHMKPj4gd2hlbiBtYXggZ29l
-cyBiYWNrIHVwPykgYW5kIEkgdGhpbmsgaXQncyBiZXR0ZXIgdG8ganVzdCBzdGljayB3aXRoIGEK
-Pj4gIm1heCBvdmVycmlkZXMgbWluIiBwb2xpY3kgc2luY2UgaXQgY2FuIGFscmVhZHkgZGVhbCB3
-aXRoIGNvbmZsaWN0cy4KPj4KPj4gRG8geW91IGhhdmUgYSB1c2VjYXNlIGZvciByZWplY3Rpbmcg
-b3V0LW9mLXJhbmdlIG1pbl9mcmVxIGZyb20KPj4gdXNlcnNwYWNlPyBjcHVmcmVxIGFsc28gYWNj
-ZXB0cyBhcmJpdHJhcnkgbWluL21heCB2YWx1ZXMgYW5kIGhhbmRsZXMgdGhlbS4KPiAKPiBJIGRv
-bid0IG1lYW4gdGhlIHJlamVjdGluZyB3aGVuIHVzZXIgZW50ZXIgdGhlIG91dC1vZi1yYW5nZSBm
-cmVxdWVuY3kuCj4gQXMgSSBjb21tZW50ZWQsIHVzZXIgY2FuIGVudGVyIHRoZSB2YWx1ZSB0aGV5
-IHdhbnQuIEJ1dCwgd2Ugc2hvdWxkCj4gY2hlY2sgdGhlIHJhbmdlIG9mIGlucHV0IGJlY2F1c2Ug
-ZGV2ZnJlcSBoYXZlIHRvIHNob3cgdGhlIGNvcnJlY3Qgc3VwcG9ydGVkCj4gZnJlcXVlbmN5IHRo
-cm91Z2ggc3lzZnMuCgpXZSBjYW4gYXZvaWQgc2hvd2luZyBhbiBvdXQtb2YtcmFuZ2UgdmFsdWUg
-aW4gbWluX2ZyZXEgYnkgcHJpbnRpbmcgCm1pbihtaW5fZnJlcSwgbWF4X2ZyZXEpLgoKVGhlIG1h
-eF9mcmVxIHZhbHVlIGZyb20gcG1fcW9zIGNhbiBzdGlsbCBiZSBiZXR3ZWVuIE9QUHMgc28gbWF5
-YmUgcHJpbnQgCmRldmZyZXFfcmVjb21tZW5kZWRfb3BwKG1heF9mcmVxLCBERVZGUkVRX0ZMQUdf
-TEVBU1RfVVBQRVJfQk9VTkQpLgoKPj4gSW4gdGhlb3J5IHBtX3FvcyBjb3VsZCBiZSBleHRlbmRl
-ZCB0byBkaWZmZXJlbnRpYXRlIGJldHdlZW4gInNvZnQiCj4+IHJlcXVlc3RzIChjdXJyZW50IGJl
-aGF2aW9yKSBhbmQgImhhcmQiIHJlcXVlc3RzIHdoaWNoIHJldHVybiBlcnJvcnMgaWYKPj4gdGhl
-eSBjYW4ndCBiZSBndWFyYW50ZWVkIGJ1dCB0aGlzIGlzIGZhciBvdXQgb2Ygc2NvcGUuCj4gCj4g
-SSB0aGluayB0aGF0IHlvdSBhZ3JlZWQgdGhlIGxpbWl0YXRpb24gb2YgZGV2X3BtX3FvcyB3aGVu
-IGVudGVyaW5nCj4gb3IgcmVxdWVzdGluZyB0aGUgdW5zdXBwb3J0ZWQgZnJlcXVlbmN5LgoKWWVz
-LCAiYmVzdCBlZmZvcnQgcW9zIiBpcyBhY2NlcHRhYmxlIGZvciBub3cuCg==
+
+Dear MyungJoo,
+
+On 08.08.2019 11:02, Kamil Konieczny wrote:
+> Hi,
+> 
+> The main purpose of this patch series is to add coupled regulators for
+> Exynos5422/5800 to keep constrain on voltage difference between vdd_arm
+> and vdd_int to be at most 300mV. In exynos-bus instead of using
+> regulator_set_voltage_tol() with default voltage tolerance it should be
+> used regulator_set_voltage_triplet() with volatege range, and this is
+> already present in opp/core.c code, so it can be reused. While at this,
+> move setting regulators into opp/core.
+> 
+> This patchset was tested on Odroid XU3.
+> 
+> The DTS coupled regulators patch depends on previous patches.
+> 
+> Changes:
+> v5:
+> - squashed last patch "remove exynos_bus_passive_target()" into second
+> - added Acked-by to patch "correct clock enable sequence"
+
+Could you please merge patches 1/4 and 2/4 for v5.4
+(they were already Ack-ed by Chanwoo Choi)?
+
+-- 
+Best regards,
+Kamil Konieczny
+Samsung R&D Institute Poland
+
+> v4:
+> - removed "opp: core: add regulators enable and disable" from patchset
+>   as it was applied by Viresh Kumar and changed cover letter
+> - fix patch "devfreq: exynos-bus: correct clock enable sequence" to
+>   correct order of enable/disable
+> - removed unrelated changes in "devfreq: exynos-bus: convert to use
+>   dev_pm_opp_set_rate()"
+> - added new patch "devfreq: exynos-bus: remove exynos_bus_passive_target()"
+>   as suggested by Chanwoo Choi
+> v3:
+> - added new exynos-bus patch to correct clock and regulator enabling
+>   and disabling sequence as suggested by Chanwoo Choi
+> - corrected error path in enable and improved commit message in opp/core
+> - improve comment in devfreq/exynos-bus.c before devfreq_recommended_opp()
+> - change cover letter as there is new patch
+> - added note before Signed-off-by in 4th patch
+> v2:
+> - improve regulators enable/disable code in opp/core as suggested by
+>   Viresh Kumar
+> - add new patch for remove unused dt-bindings as suggested by Krzysztof
+>   Kozlowski
+> 
+> Kamil Konieczny (3):
+>   devfreq: exynos-bus: correct clock enable sequence
+>   devfreq: exynos-bus: convert to use dev_pm_opp_set_rate()
+>   dt-bindings: devfreq: exynos-bus: remove unused property
+> 
+> Marek Szyprowski (1):
+>   ARM: dts: exynos: add initial data for coupled regulators for
+>     Exynos5422/5800
+> 
+>  .../bindings/devfreq/exynos-bus.txt           |   2 -
+>  arch/arm/boot/dts/exynos5420.dtsi             |  34 ++--
+>  arch/arm/boot/dts/exynos5422-odroid-core.dtsi |   4 +
+>  arch/arm/boot/dts/exynos5800-peach-pi.dts     |   4 +
+>  arch/arm/boot/dts/exynos5800.dtsi             |  32 ++--
+>  drivers/devfreq/exynos-bus.c                  | 153 +++++-------------
+>  6 files changed, 78 insertions(+), 151 deletions(-)
+> 
+
