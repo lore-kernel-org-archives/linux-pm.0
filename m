@@ -2,29 +2,28 @@ Return-Path: <SRS0=Pfty=WS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44C4BC3A5A1
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 13:29:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 552FBC3A5A2
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 13:29:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 19B44233FE
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 13:29:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 29253233FE
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 13:29:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388544AbfHVN27 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 22 Aug 2019 09:28:59 -0400
-Received: from foss.arm.com ([217.140.110.172]:45904 "EHLO foss.arm.com"
+        id S1732208AbfHVN2Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 22 Aug 2019 09:28:25 -0400
+Received: from foss.arm.com ([217.140.110.172]:45780 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389096AbfHVN2m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 22 Aug 2019 09:28:42 -0400
+        id S1730723AbfHVN2Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 22 Aug 2019 09:28:25 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6F6E215A2;
-        Thu, 22 Aug 2019 06:28:41 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E3D72337;
+        Thu, 22 Aug 2019 06:28:23 -0700 (PDT)
 Received: from e110439-lin.cambridge.arm.com (e110439-lin.cambridge.arm.com [10.1.194.43])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id BF5AC3F706;
-        Thu, 22 Aug 2019 06:28:38 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 3FD6E3F706;
+        Thu, 22 Aug 2019 06:28:21 -0700 (PDT)
 From:   Patrick Bellasi <patrick.bellasi@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-api@vger.kernel.org, cgroups@vger.kernel.org
@@ -44,12 +43,10 @@ Cc:     Ingo Molnar <mingo@redhat.com>,
         Steve Muckle <smuckle@google.com>,
         Suren Baghdasaryan <surenb@google.com>,
         Alessio Balsini <balsini@android.com>
-Subject: [PATCH v14 6/6] sched/core: uclamp: always use enum uclamp_id for clamp_id values
-Date:   Thu, 22 Aug 2019 14:28:11 +0100
-Message-Id: <20190822132811.31294-7-patrick.bellasi@arm.com>
+Subject: [PATCH v14 0/6] Add utilization clamping support (CGroups API)
+Date:   Thu, 22 Aug 2019 14:28:05 +0100
+Message-Id: <20190822132811.31294-1-patrick.bellasi@arm.com>
 X-Mailer: git-send-email 2.22.0
-In-Reply-To: <20190822132811.31294-1-patrick.bellasi@arm.com>
-References: <20190822132811.31294-1-patrick.bellasi@arm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -57,208 +54,143 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The supported clamp indexes are defined in enum clamp_id however, because
-of the code logic in some of the first utilization clamping series version,
-sometimes we needed to use unsigned int to represent indexes.
+Hi all, this is a respin of:
 
-This is not more required since the final version of the uclamp_* APIs can
-always use the proper enum uclamp_id type.
+  https://lore.kernel.org/lkml/20190802090853.4810-1-patrick.bellasi@arm.com/
 
-Fix it with a bulk rename now that we have all the bits merged.
+which introduces only a small fix suggested by Michal and adds his Reviewed-by.
+Thanks Michal for your additional review!
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Reviewed-by: Michal Koutny <mkoutny@suse.com>
-Acked-by: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
----
- kernel/sched/core.c  | 38 +++++++++++++++++++-------------------
- kernel/sched/sched.h |  2 +-
- 2 files changed, 20 insertions(+), 20 deletions(-)
+The series is based on top of today's tip/sched/core:
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index fc2dc86a2abe..269c14ad4473 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -810,7 +810,7 @@ static inline unsigned int uclamp_bucket_base_value(unsigned int clamp_value)
- 	return UCLAMP_BUCKET_DELTA * uclamp_bucket_id(clamp_value);
- }
- 
--static inline unsigned int uclamp_none(int clamp_id)
-+static inline enum uclamp_id uclamp_none(enum uclamp_id clamp_id)
- {
- 	if (clamp_id == UCLAMP_MIN)
- 		return 0;
-@@ -826,7 +826,7 @@ static inline void uclamp_se_set(struct uclamp_se *uc_se,
- }
- 
- static inline unsigned int
--uclamp_idle_value(struct rq *rq, unsigned int clamp_id,
-+uclamp_idle_value(struct rq *rq, enum uclamp_id clamp_id,
- 		  unsigned int clamp_value)
- {
- 	/*
-@@ -842,7 +842,7 @@ uclamp_idle_value(struct rq *rq, unsigned int clamp_id,
- 	return uclamp_none(UCLAMP_MIN);
- }
- 
--static inline void uclamp_idle_reset(struct rq *rq, unsigned int clamp_id,
-+static inline void uclamp_idle_reset(struct rq *rq, enum uclamp_id clamp_id,
- 				     unsigned int clamp_value)
- {
- 	/* Reset max-clamp retention only on idle exit */
-@@ -853,8 +853,8 @@ static inline void uclamp_idle_reset(struct rq *rq, unsigned int clamp_id,
- }
- 
- static inline
--unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id,
--				 unsigned int clamp_value)
-+enum uclamp_id uclamp_rq_max_value(struct rq *rq, enum uclamp_id clamp_id,
-+				   unsigned int clamp_value)
- {
- 	struct uclamp_bucket *bucket = rq->uclamp[clamp_id].bucket;
- 	int bucket_id = UCLAMP_BUCKETS - 1;
-@@ -874,7 +874,7 @@ unsigned int uclamp_rq_max_value(struct rq *rq, unsigned int clamp_id,
- }
- 
- static inline struct uclamp_se
--uclamp_tg_restrict(struct task_struct *p, unsigned int clamp_id)
-+uclamp_tg_restrict(struct task_struct *p, enum uclamp_id clamp_id)
- {
- 	struct uclamp_se uc_req = p->uclamp_req[clamp_id];
- #ifdef CONFIG_UCLAMP_TASK_GROUP
-@@ -906,7 +906,7 @@ uclamp_tg_restrict(struct task_struct *p, unsigned int clamp_id)
-  * - the system default clamp value, defined by the sysadmin
-  */
- static inline struct uclamp_se
--uclamp_eff_get(struct task_struct *p, unsigned int clamp_id)
-+uclamp_eff_get(struct task_struct *p, enum uclamp_id clamp_id)
- {
- 	struct uclamp_se uc_req = uclamp_tg_restrict(p, clamp_id);
- 	struct uclamp_se uc_max = uclamp_default[clamp_id];
-@@ -918,7 +918,7 @@ uclamp_eff_get(struct task_struct *p, unsigned int clamp_id)
- 	return uc_req;
- }
- 
--unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id)
-+enum uclamp_id uclamp_eff_value(struct task_struct *p, enum uclamp_id clamp_id)
- {
- 	struct uclamp_se uc_eff;
- 
-@@ -942,7 +942,7 @@ unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id)
-  * for each bucket when all its RUNNABLE tasks require the same clamp.
-  */
- static inline void uclamp_rq_inc_id(struct rq *rq, struct task_struct *p,
--				    unsigned int clamp_id)
-+				    enum uclamp_id clamp_id)
- {
- 	struct uclamp_rq *uc_rq = &rq->uclamp[clamp_id];
- 	struct uclamp_se *uc_se = &p->uclamp[clamp_id];
-@@ -980,7 +980,7 @@ static inline void uclamp_rq_inc_id(struct rq *rq, struct task_struct *p,
-  * enforce the expected state and warn.
-  */
- static inline void uclamp_rq_dec_id(struct rq *rq, struct task_struct *p,
--				    unsigned int clamp_id)
-+				    enum uclamp_id clamp_id)
- {
- 	struct uclamp_rq *uc_rq = &rq->uclamp[clamp_id];
- 	struct uclamp_se *uc_se = &p->uclamp[clamp_id];
-@@ -1019,7 +1019,7 @@ static inline void uclamp_rq_dec_id(struct rq *rq, struct task_struct *p,
- 
- static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
- {
--	unsigned int clamp_id;
-+	enum uclamp_id clamp_id;
- 
- 	if (unlikely(!p->sched_class->uclamp_enabled))
- 		return;
-@@ -1034,7 +1034,7 @@ static inline void uclamp_rq_inc(struct rq *rq, struct task_struct *p)
- 
- static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p)
- {
--	unsigned int clamp_id;
-+	enum uclamp_id clamp_id;
- 
- 	if (unlikely(!p->sched_class->uclamp_enabled))
- 		return;
-@@ -1044,7 +1044,7 @@ static inline void uclamp_rq_dec(struct rq *rq, struct task_struct *p)
- }
- 
- static inline void
--uclamp_update_active(struct task_struct *p, unsigned int clamp_id)
-+uclamp_update_active(struct task_struct *p, enum uclamp_id clamp_id)
- {
- 	struct rq_flags rf;
- 	struct rq *rq;
-@@ -1080,9 +1080,9 @@ static inline void
- uclamp_update_active_tasks(struct cgroup_subsys_state *css,
- 			   unsigned int clamps)
- {
-+	enum uclamp_id clamp_id;
- 	struct css_task_iter it;
- 	struct task_struct *p;
--	unsigned int clamp_id;
- 
- 	css_task_iter_start(css, 0, &it);
- 	while ((p = css_task_iter_next(&it))) {
-@@ -1190,7 +1190,7 @@ static int uclamp_validate(struct task_struct *p,
- static void __setscheduler_uclamp(struct task_struct *p,
- 				  const struct sched_attr *attr)
- {
--	unsigned int clamp_id;
-+	enum uclamp_id clamp_id;
- 
- 	/*
- 	 * On scheduling class change, reset to default clamps for tasks
-@@ -1227,7 +1227,7 @@ static void __setscheduler_uclamp(struct task_struct *p,
- 
- static void uclamp_fork(struct task_struct *p)
- {
--	unsigned int clamp_id;
-+	enum uclamp_id clamp_id;
- 
- 	for_each_clamp_id(clamp_id)
- 		p->uclamp[clamp_id].active = false;
-@@ -1249,7 +1249,7 @@ static void uclamp_fork(struct task_struct *p)
- static void __init init_uclamp(void)
- {
- 	struct uclamp_se uc_max = {};
--	unsigned int clamp_id;
-+	enum uclamp_id clamp_id;
- 	int cpu;
- 
- 	mutex_init(&uclamp_mutex);
-@@ -6924,7 +6924,7 @@ static inline void alloc_uclamp_sched_group(struct task_group *tg,
- 					    struct task_group *parent)
- {
- #ifdef CONFIG_UCLAMP_TASK_GROUP
--	int clamp_id;
-+	enum uclamp_id clamp_id;
- 
- 	for_each_clamp_id(clamp_id) {
- 		uclamp_se_set(&tg->uclamp_req[clamp_id],
-@@ -7182,7 +7182,7 @@ static void cpu_util_update_eff(struct cgroup_subsys_state *css)
- 	struct uclamp_se *uc_parent = NULL;
- 	struct uclamp_se *uc_se = NULL;
- 	unsigned int eff[UCLAMP_CNT];
--	unsigned int clamp_id;
-+	enum uclamp_id clamp_id;
- 	unsigned int clamps;
- 
- 	css_for_each_descendant_pre(css, top_css) {
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 5b343112a47b..00ff5b57e9cd 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -2281,7 +2281,7 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
- #endif /* CONFIG_CPU_FREQ */
- 
- #ifdef CONFIG_UCLAMP_TASK
--unsigned int uclamp_eff_value(struct task_struct *p, unsigned int clamp_id);
-+enum uclamp_id uclamp_eff_value(struct task_struct *p, enum uclamp_id clamp_id);
- 
- static __always_inline
- unsigned int uclamp_util_with(struct rq *rq, unsigned int util,
+  commit a46d14eca7b7 ("sched/fair: Use rq_lock/unlock in online_fair_sched_group")
+
+Since there was only minor changes, I've kept Tejun ACK tag.
+
+Cheers,
+Patrick
+
+
+Series Organization
+===================
+
+The full tree is available here:
+
+   git://linux-arm.org/linux-pb.git   lkml/utilclamp_v14
+   http://www.linux-arm.org/git?p=linux-pb.git;a=shortlog;h=refs/heads/lkml/utilclamp_v14
+
+
+Newcomer's Short Abstract
+=========================
+
+The Linux scheduler tracks a "utilization" signal for each scheduling entity
+(SE), e.g. tasks, to know how much CPU time they use. This signal allows the
+scheduler to know how "big" a task is and, in principle, it can support
+advanced task placement strategies by selecting the best CPU to run a task.
+Some of these strategies are represented by the Energy Aware Scheduler [1].
+
+When the schedutil cpufreq governor is in use, the utilization signal allows
+the Linux scheduler to also drive frequency selection. The CPU utilization
+signal, which represents the aggregated utilization of tasks scheduled on that
+CPU, is used to select the frequency which best fits the workload generated by
+the tasks.
+
+The current translation of utilization values into a frequency selection is
+simple: we go to max for RT tasks or to the minimum frequency which can
+accommodate the utilization of DL+FAIR tasks.
+However, utilization values by themselves cannot convey the desired
+power/performance behaviors of each task as intended by user-space.
+As such they are not ideally suited for task placement decisions.
+
+Task placement and frequency selection policies in the kernel can be improved
+by taking into consideration hints coming from authorized user-space elements,
+like for example the Android middleware or more generally any "System
+Management Software" (SMS) framework.
+
+Utilization clamping is a mechanism which allows to "clamp" (i.e. filter) the
+utilization generated by RT and FAIR tasks within a range defined by user-space.
+The clamped utilization value can then be used, for example, to enforce a
+minimum and/or maximum frequency depending on which tasks are active on a CPU.
+
+The main use-cases for utilization clamping are:
+
+ - boosting: better interactive response for small tasks which
+   are affecting the user experience.
+
+   Consider for example the case of a small control thread for an external
+   accelerator (e.g. GPU, DSP, other devices). Here, from the task utilization
+   the scheduler does not have a complete view of what the task's requirements
+   are and, if it's a small utilization task, it keeps selecting a more energy
+   efficient CPU, with smaller capacity and lower frequency, thus negatively
+   impacting the overall time required to complete task activations.
+
+ - capping: increase energy efficiency for background tasks not affecting the
+   user experience.
+
+   Since running on a lower capacity CPU at a lower frequency is more energy
+   efficient, when the completion time is not a main goal, then capping the
+   utilization considered for certain (maybe big) tasks can have positive
+   effects, both on energy consumption and thermal headroom.
+   This feature allows also to make RT tasks more energy friendly on mobile
+   systems where running them on high capacity CPUs and at the maximum
+   frequency is not required.
+
+From these two use-cases, it's worth noticing that frequency selection
+biasing, introduced by patches 9 and 10 of this series, is just one possible
+usage of utilization clamping. Another compelling extension of utilization
+clamping is in helping the scheduler in making tasks placement decisions.
+
+Utilization is (also) a task specific property the scheduler uses to know
+how much CPU bandwidth a task requires, at least as long as there is idle time.
+Thus, the utilization clamp values, defined either per-task or per-task_group,
+can represent tasks to the scheduler as being bigger (or smaller) than what
+they actually are.
+
+Utilization clamping thus enables interesting additional optimizations, for
+example on asymmetric capacity systems like Arm big.LITTLE and DynamIQ CPUs,
+where:
+
+ - boosting: try to run small/foreground tasks on higher-capacity CPUs to
+   complete them faster despite being less energy efficient.
+
+ - capping: try to run big/background tasks on low-capacity CPUs to save power
+   and thermal headroom for more important tasks
+
+This series does not present this additional usage of utilization clamping but
+it's an integral part of the EAS feature set, where [2] is one of its main
+components.
+
+Android kernels use SchedTune, a solution similar to utilization clamping, to
+bias both 'frequency selection' and 'task placement'. This series provides the
+foundation to add similar features to mainline while focusing, for the
+time being, just on schedutil integration.
+
+
+References
+==========
+
+[1] Energy Aware Scheduling
+    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/scheduler/sched-energy.txt?h=v5.1
+
+[2] Expressing per-task/per-cgroup performance hints
+    Linux Plumbers Conference 2018
+    https://linuxplumbersconf.org/event/2/contributions/128/
+
+
+Patrick Bellasi (6):
+  sched/core: uclamp: Extend CPU's cgroup controller
+  sched/core: uclamp: Propagate parent clamps
+  sched/core: uclamp: Propagate system defaults to root group
+  sched/core: uclamp: Use TG's clamps to restrict TASK's clamps
+  sched/core: uclamp: Update CPU's refcount on TG's clamp changes
+  sched/core: uclamp: always use enum uclamp_id for clamp_id values
+
+ Documentation/admin-guide/cgroup-v2.rst |  34 +++
+ init/Kconfig                            |  22 ++
+ kernel/sched/core.c                     | 375 ++++++++++++++++++++++--
+ kernel/sched/sched.h                    |  12 +-
+ 4 files changed, 421 insertions(+), 22 deletions(-)
+
 -- 
 2.22.0
 
