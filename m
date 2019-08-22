@@ -2,89 +2,129 @@ Return-Path: <SRS0=Pfty=WS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 417C3C3A5A3
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 20:33:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36B05C3A5A2
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 21:10:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 17E3323406
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 20:33:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="iSYgPMbs"
+	by mail.kernel.org (Postfix) with ESMTP id D533A233FC
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Aug 2019 21:10:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1566508230;
+	bh=8lmA4y+c41NSfIWmIwk3izt7RyEIzi1EgDtTezS9EJU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=IW4OAR+10g9Dnya0o0Anx32T1Gza8QXftMdzdl8KNk50yTIpqLNTCe7g5JoYbgG42
+	 4IR9DBXx8lJoGi9FrNcz4KKtvb3AGfuCarDiPycJ8oEyjqbbYFlr2DL0a9F8ceIZ8c
+	 6IGqI4oLgot0twFvqYk55pn+ukefJG6mc4Vx3UEg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389188AbfHVUdB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 22 Aug 2019 16:33:01 -0400
-Received: from mail-lj1-f177.google.com ([209.85.208.177]:34089 "EHLO
-        mail-lj1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389591AbfHVUdB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2019 16:33:01 -0400
-Received: by mail-lj1-f177.google.com with SMTP id x18so6821950ljh.1
-        for <linux-pm@vger.kernel.org>; Thu, 22 Aug 2019 13:33:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=aSnnc8KBnx7nrvm7nH0Gg3VFjqjZe9P0okjTldYJjjI=;
-        b=iSYgPMbsL3t6QnFwApaGXlR0ZbuJs+IAPKIsNUEqxemsMpgbcVe6mSUpMDalbU/ynk
-         SImZR6mf+Pp+jqfXBRZXecFPsJaR+boZwmg96r7FAbVkf7NIqcBXWfAbX4qtWr2PhJgp
-         d12vXFDVjMQ02Zr5ssJiB1GXnyGDqa8HoXJVc=
+        id S1731184AbfHVVKa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 22 Aug 2019 17:10:30 -0400
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:41139 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730991AbfHVVKa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Aug 2019 17:10:30 -0400
+Received: by mail-oi1-f195.google.com with SMTP id g7so5463557oia.8;
+        Thu, 22 Aug 2019 14:10:29 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=aSnnc8KBnx7nrvm7nH0Gg3VFjqjZe9P0okjTldYJjjI=;
-        b=OcjNbgyBK2UfsTEjIBqqui6lfDRTTIfq1mcs7/VI08tHRRtgCpLNnktRDjR/U152Yq
-         wpSDMYnYYw1WvWTnoNIQHER6Dw+3kaY7kkPd0vIvyxNkoAhn8bYTtYjYqQQQYkplT1z9
-         y6a6VI/aFKcWc/2YslrBJG/O47rFcYNPhHrb3BRR/tVJsCWFytsJC1Xh+rOrEcJcHXfP
-         AioK6g/uOL/X0gwvrYUzcGFx1PuIfIG72sj0EcJDhKsd1p0+sTHN4zVWfuypFTauJ+8l
-         bKuLk3ROdBAww+M8cY0gN8eqYT+k6JjBHjCXqVL6sNe/SxLyjHVZA9TtFaODaam3B3Xh
-         /LhA==
-X-Gm-Message-State: APjAAAUDvk2oh3BbXLHRnKlJSD/Dg1KnWeI9dRFtfQfEHzUFivz7QevO
-        0GL0ik47tqmFZI5BoVNaSyRyzhWA5tc=
-X-Google-Smtp-Source: APXvYqwZDQpT9JpWA16UbuaZtMit20wwPr2xHXSm9ZXSXCPY3xAmnBM3/e0FGDm06o0lTxQ2sZevLg==
-X-Received: by 2002:a2e:1518:: with SMTP id s24mr645145ljd.205.1566505979024;
-        Thu, 22 Aug 2019 13:32:59 -0700 (PDT)
-Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com. [209.85.167.52])
-        by smtp.gmail.com with ESMTPSA id r8sm114733lfc.39.2019.08.22.13.32.57
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 22 Aug 2019 13:32:57 -0700 (PDT)
-Received: by mail-lf1-f52.google.com with SMTP id b17so5490725lff.7
-        for <linux-pm@vger.kernel.org>; Thu, 22 Aug 2019 13:32:57 -0700 (PDT)
-X-Received: by 2002:ac2:5181:: with SMTP id u1mr561108lfi.42.1566505977561;
- Thu, 22 Aug 2019 13:32:57 -0700 (PDT)
+        bh=722k5ddNheSppDzrG90q8EFQ8uGNK424zDmyHBRv/xk=;
+        b=sQ2/Kgp64yj3UAzuBYxwngzdEsHH68xa0fs511sEE7FtajN+DcF1jQOnBWTeCAwwop
+         pGu30/wuYeVTLFG5Fy/hP3qmpKk/s/cL28i5K2pxyFhNOCHMFSUhv6v4JomnSyG87xE1
+         J0VY5ivLVW5m5dIn5Tyy5HSF85sLplKjOokZM0KygO5aR+qV1eEX4SAyLVXR/4cPVfBk
+         d/Sftdg/wypUFxiCcFUAot2RcoAhuGC96MxT1COkz0WT7F52AUEZUKcQA79xPHXI2Dn9
+         CVijj2x673H//O8eNn0wuPu0IuWBmWiS0XNmePGTHnl2rZLPozQANXUREqck2Eio086G
+         eE2Q==
+X-Gm-Message-State: APjAAAVxoKcx6P0vbNKiGYizjfPYfTh3eRMFJMchzbeQvR+Hhi1S5FUE
+        /FujHt6ThG5kcPV9GYrhUerSjSeUuXjmO/+kmoA=
+X-Google-Smtp-Source: APXvYqzipBbFAy30yqllDRxVg2wDXWGv50k8XyQth34p3InV0dg8l5sHIhCCRt/28NsM9VDdy0aBudPzL12G7mXE8DE=
+X-Received: by 2002:aca:4dd8:: with SMTP id a207mr756501oib.115.1566508228550;
+ Thu, 22 Aug 2019 14:10:28 -0700 (PDT)
 MIME-Version: 1.0
-References: <20190816075842.27333-1-committed@heine.so> <20190822014655.GA165945@google.com>
- <5D5E47B1.70604@heine.so>
-In-Reply-To: <5D5E47B1.70604@heine.so>
-From:   Brian Norris <briannorris@chromium.org>
-Date:   Thu, 22 Aug 2019 13:32:46 -0700
-X-Gmail-Original-Message-ID: <CA+ASDXMETzc72iZq5pN6QfySXGiHQEcsB0A5ZujSyg-YhKNBBw@mail.gmail.com>
-Message-ID: <CA+ASDXMETzc72iZq5pN6QfySXGiHQEcsB0A5ZujSyg-YhKNBBw@mail.gmail.com>
-Subject: Re: [PATCH] power: supply: sbs-battery: only return health when
- battery present
-To:     Michael Nosthoff <committed@heine.so>
-Cc:     linux-pm <linux-pm@vger.kernel.org>,
-        stable <stable@vger.kernel.org>,
-        Sebastian Reichel <sre@kernel.org>
+References: <20190822200551.129039-1-helgaas@kernel.org> <20190822200551.129039-4-helgaas@kernel.org>
+In-Reply-To: <20190822200551.129039-4-helgaas@kernel.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 22 Aug 2019 23:10:17 +0200
+Message-ID: <CAJZ5v0joSqE5hwHGEPoVG0xDb_wnhS8EjnYZe+EuukBgDpzwQg@mail.gmail.com>
+Subject: Re: [PATCH 3/3] PCI / PM: Return error when changing power state from D3cold
+To:     Bjorn Helgaas <helgaas@kernel.org>
+Cc:     Linux PCI <linux-pci@vger.kernel.org>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Keith Busch <keith.busch@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Aug 22, 2019 at 12:43 AM Michael Nosthoff <committed@heine.so> wrote:
-> This done at the end of 'sbs_get_property' if the presence state changed and
-> no gpio is used. I suspect it triggers a readout of all the properties
-> and leads to this
-> endless loop?
+On Thu, Aug 22, 2019 at 10:06 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> From: Bjorn Helgaas <bhelgaas@google.com>
+>
+> pci_raw_set_power_state() uses the Power Management capability to change a
+> device's power state.  The capability is in config space, which is
+> accessible in D0, D1, D2, and D3hot, but not in D3cold.
+>
+> If we call pci_raw_set_power_state() on a device that's in D3cold, config
+> reads fail and return ~0 data, which we erroneously interpreted as "the
+> device is in D3hot", leading to messages like this:
+>
+>   pcieport 0000:03:00.0: Refused to change power state, currently in D3
+>
+> The PCI_PM_CTRL has several RsvdP fields, so ~0 is never a valid register
+> value.  Notice if we get that data, print a more informative message, and
+> return an error.
+>
+> Changing the power state of a device from D3cold must be done by a platform
+> power management method or some other non-config space mechanism.
+>
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Ah, it's not all properties IIUC, but it does lead to
-power_supply_update_leds() -> power_supply_update_bat_leds() ->
-power_supply_get_property(... POWER_SUPPLY_PROP_STATUS ...). That
-would be enough to kick off the loop you're noticing.
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Brian
+> ---
+>  drivers/pci/pci.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 5f0a3145c3f2..41112af189a8 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -853,6 +853,12 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
+>                 return -EIO;
+>
+>         pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+> +       if (pmcsr == (u16) PCI_ERROR_RESPONSE) {
+> +               pci_err(dev, "can't access config space to change power state from %s to %s\n",
+> +                       pci_power_name(dev->current_state),
+> +                       pci_power_name(state));
+> +               return -EIO;
+> +       }
+>
+>         /*
+>          * If we're (effectively) in D3, force entire word to 0.
+> @@ -893,8 +899,9 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
+>         pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+>         dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
+>         if (dev->current_state != state && printk_ratelimit())
+> -               pci_info(dev, "refused to change power state (currently %s)\n",
+> -                        pci_power_name(dev->current_state));
+> +               pci_info(dev, "refused to change power state from %s to %s\n",
+> +                        pci_power_name(dev->current_state),
+> +                        pci_power_name(state));
+>
+>         /*
+>          * According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
+> --
+> 2.23.0.187.g17f5b7556c-goog
+>
