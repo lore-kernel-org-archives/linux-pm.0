@@ -7,61 +7,63 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3896FC3A5A2
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 09:04:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C7A8C3A5A4
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 09:04:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F401E2166E
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 09:04:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E891C2166E
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 09:04:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="dlnYmbcA"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="E+zizfj6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2393502AbfHWJEZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Aug 2019 05:04:25 -0400
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:34898 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2393426AbfHWJEZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2019 05:04:25 -0400
-Received: by mail-wm1-f65.google.com with SMTP id l2so8365322wmg.0
-        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2019 02:04:23 -0700 (PDT)
+        id S1726447AbfHWJEY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Aug 2019 05:04:24 -0400
+Received: from mail-wr1-f67.google.com ([209.85.221.67]:44395 "EHLO
+        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2393379AbfHWJEY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2019 05:04:24 -0400
+Received: by mail-wr1-f67.google.com with SMTP id p17so7904986wrf.11
+        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2019 02:04:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20150623.gappssmtp.com; s=20150623;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=nXVc7lr79gHa7m2sNFALcMUoOAv3CwAI7GPYmurLn+Y=;
-        b=dlnYmbcANnHuvKUhYRq6DNpemyNnupwagFpk33KxETdLgDwAo5AJh5r39o0ZaiFcf4
-         Iu5DRtWBLDNxf8U606dm5axMiAYRZ0VJVGskLwDp2JJzpbXMYysdD7CuS36qmYbXMEJV
-         Lp6jhH8duM7wI2R0lU4Hg1dTY6TIfse0kMLI1MUBErLGl3WwV3ZPrmUcIZKGFbIbX3ln
-         rFcdzbz0MheF07lxtuuxjAkD/y98oOt324His5BXmi/TcBGDv3ivhI4a0+CVof8Jt/mr
-         76UO1KvUSE7IILRWvPezVVFv7W/NtCCKgFHXHIN43Yi4DWCQLwt+xrtzyREtF5d0QK/r
-         oPVQ==
+        bh=LvSehJyODRU+BRndfta8X08B5j8xEwZsfCZBCIijqkA=;
+        b=E+zizfj6/hflx1ZbXlN5dwuG/nBU4lF/fLOdwiBVlomxgRHm32lbrGRc1FKrVpEDEN
+         LvO8Y70tSWIjHy9d4t/3kTOws5W8riekeiM1p65Vd2zAgqFkgEnklJ4HsaZtLCdw3p8t
+         JVjJszDE+m/3wlvHFIKWqG07gjSFEtss6siXetJUxE93nhrBizLayCmrVvfoRDN+tTgw
+         E/FqG5Tq89P5qKL33BaC50Wkcrllu5X95lQiQet1zQOlHRiZEt0A2//Bk9NfGNAIx0/F
+         AwmCeFCHjYAzsB9kMLjBo1TFlKpuTnB250m13X0rIOKizYqZ+HKl4kpItlJ/hXaJQtIR
+         9oew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=nXVc7lr79gHa7m2sNFALcMUoOAv3CwAI7GPYmurLn+Y=;
-        b=sEIt/M1ldyqetfKMj7sbnsAeqC5Rq3A0MMgBNi5WglXIVdPqxdacZnVgfTMCHuyL3H
-         D3FUiFwP1dVGy7TcDspQCkGXl4dDhm6gssKq02NpkIyDJ1QQqz+Yyc6f0l1ocFLXShFE
-         pnyHwL7VKC84RrJUjnI51Fy6CfQoQ1JSanAE/ijM8+dg2J8SpnmgGVKHBoQDeQJR3Ur+
-         uz/pAQnXB0iNz/KTv2rVzmZBxwwIziIrYhXxOUdaQoEErDh6TjzNpVJKNg3jT/kw1HyC
-         XEXsb9T2nTcbhFGC2JiAuxOmar4z0PZONpVdpYA7j55IM8wLLyJQdr414hkZvVdubPMy
-         SCUg==
-X-Gm-Message-State: APjAAAUnE3ZiPg2DFHgj9Axnn3bs8ho1QUD04Zt1NI+cf4pQOKvibi9U
-        inJr840DGZjzDNkPogPgOMWQ4A==
-X-Google-Smtp-Source: APXvYqxN7cy3oKqmIjJgoY7BmWwjxQ/OHw4WYVk47lxGYWd9PJvgrlXL4tGEcSGkVLR9Ly5IjsAwYg==
-X-Received: by 2002:a1c:ef14:: with SMTP id n20mr4026979wmh.89.1566551062982;
-        Fri, 23 Aug 2019 02:04:22 -0700 (PDT)
+        bh=LvSehJyODRU+BRndfta8X08B5j8xEwZsfCZBCIijqkA=;
+        b=c4SgaUGrmnLQj3g68wua4ucYrurV1eJXT73GheRWek3D1ECNWqEKRTScSqmjqPNxA5
+         EJMsSU/BDr35jjWyoCjUOYiD/3gnbulBuJ2DRwDbR3Ksj+BwiWfCE4FRKV5u2eAUYwWI
+         OS6psXOFS8+vtIhcmPxknDTXHqQRLZW8lDo7ptGG9KwrRozi1kWcx8DN7Sc/+jBJfwCW
+         PdzDZ+peW0c85k3EezPMFWqsaxPBiVgTaBgaNmywirVcFHf1v4AuVP2TX+8kbfaaiBYe
+         7j0ry8n6sF/nuy+YJX3VLVLxlkqbDlc7543JTZy8gpobIFiIpEboTxTVwkm9zl4Bc54A
+         TgHA==
+X-Gm-Message-State: APjAAAVlxOCpd0zBA/7kUR4lS+pdKFxshrOelgT3s/s6QPtVKaz6Z5dI
+        BEuCsaoVnqWGk+7kVp73h5qQ/w==
+X-Google-Smtp-Source: APXvYqwDUPj4N7Dlk+UHgEF98F+a80ceB6IAZDgPKpiKwLjDdXUp2W+wP1PIvNCDjmQKl+tzKhHfoQ==
+X-Received: by 2002:a05:6000:1085:: with SMTP id y5mr3787664wrw.285.1566551061365;
+        Fri, 23 Aug 2019 02:04:21 -0700 (PDT)
 Received: from bender.baylibre.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id x26sm1625544wmj.42.2019.08.23.02.04.22
+        by smtp.gmail.com with ESMTPSA id x26sm1625544wmj.42.2019.08.23.02.04.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Aug 2019 02:04:22 -0700 (PDT)
+        Fri, 23 Aug 2019 02:04:20 -0700 (PDT)
 From:   Neil Armstrong <narmstrong@baylibre.com>
-To:     khilman@baylibre.com, ulf.hansson@linaro.org
+To:     khilman@baylibre.com, ulf.hansson@linaro.org,
+        devicetree@vger.kernel.org
 Cc:     Neil Armstrong <narmstrong@baylibre.com>, linux-pm@vger.kernel.org,
         linux-amlogic@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 3/5] arm64: meson-g12: add Everything-Else power domain controller
-Date:   Fri, 23 Aug 2019 11:04:16 +0200
-Message-Id: <20190823090418.17148-4-narmstrong@baylibre.com>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Rob Herring <robh@kernel.org>
+Subject: [PATCH v2 1/5] dt-bindings: power: add Amlogic Everything-Else power domains bindings
+Date:   Fri, 23 Aug 2019 11:04:14 +0200
+Message-Id: <20190823090418.17148-2-narmstrong@baylibre.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20190823090418.17148-1-narmstrong@baylibre.com>
 References: <20190823090418.17148-1-narmstrong@baylibre.com>
@@ -72,223 +74,165 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Replace the VPU-centric power domain controller by the generic system-wide
-Everything-Else power domain controller and setup the right power-domains
-properties on the VPU, Ethernet & USB nodes.
+Add the bindings for the Amlogic Everything-Else power domains,
+controlling the Everything-Else peripherals power domains.
+
+The bindings targets the Amlogic G12A and SM1 compatible SoCs,
+support for earlier SoCs will be added later.
 
 Signed-off-by: Neil Armstrong <narmstrong@baylibre.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- .../boot/dts/amlogic/meson-g12-common.dtsi    | 92 ++++++++++---------
- arch/arm64/boot/dts/amlogic/meson-g12a.dtsi   |  9 ++
- arch/arm64/boot/dts/amlogic/meson-g12b.dtsi   |  9 ++
- arch/arm64/boot/dts/amlogic/meson-sm1.dtsi    | 15 ++-
- 4 files changed, 77 insertions(+), 48 deletions(-)
+ .../bindings/power/amlogic,meson-ee-pwrc.yaml | 93 +++++++++++++++++++
+ include/dt-bindings/power/meson-g12a-power.h  | 13 +++
+ include/dt-bindings/power/meson-sm1-power.h   | 18 ++++
+ 3 files changed, 124 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/amlogic,meson-ee-pwrc.yaml
+ create mode 100644 include/dt-bindings/power/meson-g12a-power.h
+ create mode 100644 include/dt-bindings/power/meson-sm1-power.h
 
-diff --git a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-index a921d6334e5b..8baa6318f180 100644
---- a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-@@ -1426,6 +1426,53 @@
- 						clocks = <&xtal>;
- 						clock-names = "xtal";
- 					};
+diff --git a/Documentation/devicetree/bindings/power/amlogic,meson-ee-pwrc.yaml b/Documentation/devicetree/bindings/power/amlogic,meson-ee-pwrc.yaml
+new file mode 100644
+index 000000000000..aab70e8b681e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/amlogic,meson-ee-pwrc.yaml
+@@ -0,0 +1,93 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++# Copyright 2019 BayLibre, SAS
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/amlogic,meson-ee-pwrc.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
 +
-+					pwrc: power-controller {
-+						compatible = "amlogic,meson-g12a-pwrc";
-+						#power-domain-cells = <1>;
-+						amlogic,ao-sysctrl = <&rti>;
-+						resets = <&reset RESET_VIU>,
-+							 <&reset RESET_VENC>,
-+							 <&reset RESET_VCBUS>,
-+							 <&reset RESET_BT656>,
-+							 <&reset RESET_RDMA>,
-+							 <&reset RESET_VENCI>,
-+							 <&reset RESET_VENCP>,
-+							 <&reset RESET_VDAC>,
-+							 <&reset RESET_VDI6>,
-+							 <&reset RESET_VENCL>,
-+							 <&reset RESET_VID_LOCK>;
-+						reset-names = "viu", "venc", "vcbus", "bt656",
-+							      "rdma", "venci", "vencp", "vdac",
-+							      "vdi6", "vencl", "vid_lock";
-+						clocks = <&clkc CLKID_VPU>,
-+							 <&clkc CLKID_VAPB>;
-+						clock-names = "vpu", "vapb";
-+						/*
-+						 * VPU clocking is provided by two identical clock paths
-+						 * VPU_0 and VPU_1 muxed to a single clock by a glitch
-+						 * free mux to safely change frequency while running.
-+						 * Same for VAPB but with a final gate after the glitch free mux.
-+						 */
-+						assigned-clocks = <&clkc CLKID_VPU_0_SEL>,
-+								  <&clkc CLKID_VPU_0>,
-+								  <&clkc CLKID_VPU>, /* Glitch free mux */
-+								  <&clkc CLKID_VAPB_0_SEL>,
-+								  <&clkc CLKID_VAPB_0>,
-+								  <&clkc CLKID_VAPB_SEL>; /* Glitch free mux */
-+						assigned-clock-parents = <&clkc CLKID_FCLK_DIV3>,
-+									 <0>, /* Do Nothing */
-+									 <&clkc CLKID_VPU_0>,
-+									 <&clkc CLKID_FCLK_DIV4>,
-+									 <0>, /* Do Nothing */
-+									 <&clkc CLKID_VAPB_0>;
-+						assigned-clock-rates = <0>, /* Do Nothing */
-+								       <666666666>,
-+								       <0>, /* Do Nothing */
-+								       <0>, /* Do Nothing */
-+								       <250000000>,
-+								       <0>; /* Do Nothing */
-+					};
- 				};
- 			};
- 
-@@ -1773,50 +1820,6 @@
- 					clock-names = "xtal", "mpeg-clk";
- 				};
- 
--				pwrc_vpu: power-controller-vpu {
--					compatible = "amlogic,meson-g12a-pwrc-vpu";
--					#power-domain-cells = <0>;
--					amlogic,hhi-sysctrl = <&hhi>;
--					resets = <&reset RESET_VIU>,
--						 <&reset RESET_VENC>,
--						 <&reset RESET_VCBUS>,
--						 <&reset RESET_BT656>,
--						 <&reset RESET_RDMA>,
--						 <&reset RESET_VENCI>,
--						 <&reset RESET_VENCP>,
--						 <&reset RESET_VDAC>,
--						 <&reset RESET_VDI6>,
--						 <&reset RESET_VENCL>,
--						 <&reset RESET_VID_LOCK>;
--					clocks = <&clkc CLKID_VPU>,
--						 <&clkc CLKID_VAPB>;
--					clock-names = "vpu", "vapb";
--					/*
--					 * VPU clocking is provided by two identical clock paths
--					 * VPU_0 and VPU_1 muxed to a single clock by a glitch
--					 * free mux to safely change frequency while running.
--					 * Same for VAPB but with a final gate after the glitch free mux.
--					 */
--					assigned-clocks = <&clkc CLKID_VPU_0_SEL>,
--							  <&clkc CLKID_VPU_0>,
--							  <&clkc CLKID_VPU>, /* Glitch free mux */
--							  <&clkc CLKID_VAPB_0_SEL>,
--							  <&clkc CLKID_VAPB_0>,
--							  <&clkc CLKID_VAPB_SEL>; /* Glitch free mux */
--					assigned-clock-parents = <&clkc CLKID_FCLK_DIV3>,
--								 <0>, /* Do Nothing */
--								 <&clkc CLKID_VPU_0>,
--								 <&clkc CLKID_FCLK_DIV4>,
--								 <0>, /* Do Nothing */
--								 <&clkc CLKID_VAPB_0>;
--					assigned-clock-rates = <0>, /* Do Nothing */
--							       <666666666>,
--							       <0>, /* Do Nothing */
--							       <0>, /* Do Nothing */
--							       <250000000>,
--							       <0>; /* Do Nothing */
--				};
--
- 				ao_pinctrl: pinctrl@14 {
- 					compatible = "amlogic,meson-g12a-aobus-pinctrl";
- 					#address-cells = <2>;
-@@ -2169,7 +2172,6 @@
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			amlogic,canvas = <&canvas>;
--			power-domains = <&pwrc_vpu>;
- 
- 			/* CVBS VDAC output port */
- 			cvbs_vdac_port: port@0 {
-diff --git a/arch/arm64/boot/dts/amlogic/meson-g12a.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12a.dtsi
-index 733a9d46fc4b..eb5d177d7a99 100644
---- a/arch/arm64/boot/dts/amlogic/meson-g12a.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/meson-g12a.dtsi
-@@ -4,6 +4,7 @@
-  */
- 
- #include "meson-g12-common.dtsi"
-+#include <dt-bindings/power/meson-g12a-power.h>
- 
- / {
- 	compatible = "amlogic,g12a";
-@@ -110,6 +111,14 @@
- 	};
- };
- 
-+&ethmac {
-+	power-domains = <&pwrc PWRC_G12A_ETH_ID>;
-+};
++title: Amlogic Meson Everything-Else Power Domains
 +
-+&vpu {
-+	power-domains = <&pwrc PWRC_G12A_VPU_ID>;
-+};
++maintainers:
++  - Neil Armstrong <narmstrong@baylibre.com>
 +
- &sd_emmc_a {
- 	amlogic,dram-access-quirk;
- };
-diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi
-index d5edbc1a1991..5628ccd54531 100644
---- a/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi
-@@ -5,6 +5,7 @@
-  */
- 
- #include "meson-g12-common.dtsi"
-+#include <dt-bindings/power/meson-g12a-power.h>
- 
- / {
- 	compatible = "amlogic,g12b";
-@@ -101,6 +102,14 @@
- 	compatible = "amlogic,g12b-clkc";
- };
- 
-+&ethmac {
-+	power-domains = <&pwrc PWRC_G12A_ETH_ID>;
-+};
++description: |+
++  The Everything-Else Power Domains node should be the child of a syscon
++  node with the required property:
 +
-+&vpu {
-+	power-domains = <&pwrc PWRC_G12A_VPU_ID>;
-+};
++  - compatible: Should be the following:
++                "amlogic,meson-gx-hhi-sysctrl", "simple-mfd", "syscon"
 +
- &sd_emmc_a {
- 	amlogic,dram-access-quirk;
- };
-diff --git a/arch/arm64/boot/dts/amlogic/meson-sm1.dtsi b/arch/arm64/boot/dts/amlogic/meson-sm1.dtsi
-index e902d4f9165f..37064d7f66c1 100644
---- a/arch/arm64/boot/dts/amlogic/meson-sm1.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/meson-sm1.dtsi
-@@ -5,6 +5,7 @@
-  */
- 
- #include "meson-g12-common.dtsi"
-+#include <dt-bindings/power/meson-sm1-power.h>
- 
- / {
- 	compatible = "amlogic,sm1";
-@@ -59,10 +60,18 @@
- 	compatible = "amlogic,meson-sm1-clk-measure";
- };
- 
--&pwrc_vpu {
--	status = "disabled";
-+&ethmac {
-+	power-domains = <&pwrc PWRC_SM1_ETH_ID>;
-+};
++  Refer to the the bindings described in
++  Documentation/devicetree/bindings/mfd/syscon.txt
 +
-+&pwrc {
-+	compatible = "amlogic,meson-sm1-pwrc";
- };
- 
- &vpu {
--	status = "disabled";
-+	power-domains = <&pwrc PWRC_SM1_VPU_ID>;
-+};
++properties:
++  compatible:
++    enum:
++      - amlogic,meson-g12a-pwrc
++      - amlogic,meson-sm1-pwrc
 +
-+&usb {
-+	power-domains = <&pwrc PWRC_SM1_USB_ID>;
- };
++  clocks:
++    minItems: 2
++
++  clock-names:
++    items:
++      - const: vpu
++      - const: vapb
++
++  resets:
++    minItems: 11
++
++  reset-names:
++    items:
++      - const: viu
++      - const: venc
++      - const: vcbus
++      - const: bt656
++      - const: rdma
++      - const: venci
++      - const: vencp
++      - const: vdac
++      - const: vdi6
++      - const: vencl
++      - const: vid_lock
++
++  "#power-domain-cells":
++    const: 1
++
++  amlogic,ao-sysctrl:
++    description: phandle to the AO sysctrl node
++    allOf:
++      - $ref: /schemas/types.yaml#/definitions/phandle
++
++required:
++  - compatible
++  - clocks
++  - clock-names
++  - resets
++  - reset-names
++  - "#power-domain-cells"
++  - amlogic,ao-sysctrl
++
++examples:
++  - |
++    pwrc: power-controller {
++          compatible = "amlogic,meson-sm1-pwrc";
++          #power-domain-cells = <1>;
++          amlogic,ao-sysctrl = <&rti>;
++          resets = <&reset_viu>,
++                   <&reset_venc>,
++                   <&reset_vcbus>,
++                   <&reset_bt656>,
++                   <&reset_rdma>,
++                   <&reset_venci>,
++                   <&reset_vencp>,
++                   <&reset_vdac>,
++                   <&reset_vdi6>,
++                   <&reset_vencl>,
++                   <&reset_vid_lock>;
++          reset-names = "viu", "venc", "vcbus", "bt656",
++                        "rdma", "venci", "vencp", "vdac",
++                        "vdi6", "vencl", "vid_lock";
++          clocks = <&clk_vpu>, <&clk_vapb>;
++          clock-names = "vpu", "vapb";
++    };
+diff --git a/include/dt-bindings/power/meson-g12a-power.h b/include/dt-bindings/power/meson-g12a-power.h
+new file mode 100644
+index 000000000000..bb5e67a842de
+--- /dev/null
++++ b/include/dt-bindings/power/meson-g12a-power.h
+@@ -0,0 +1,13 @@
++/* SPDX-License-Identifier: (GPL-2.0+ or MIT) */
++/*
++ * Copyright (c) 2019 BayLibre, SAS
++ * Author: Neil Armstrong <narmstrong@baylibre.com>
++ */
++
++#ifndef _DT_BINDINGS_MESON_G12A_POWER_H
++#define _DT_BINDINGS_MESON_G12A_POWER_H
++
++#define PWRC_G12A_VPU_ID		0
++#define PWRC_G12A_ETH_ID		1
++
++#endif
+diff --git a/include/dt-bindings/power/meson-sm1-power.h b/include/dt-bindings/power/meson-sm1-power.h
+new file mode 100644
+index 000000000000..a020ab00c134
+--- /dev/null
++++ b/include/dt-bindings/power/meson-sm1-power.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: (GPL-2.0+ or MIT) */
++/*
++ * Copyright (c) 2019 BayLibre, SAS
++ * Author: Neil Armstrong <narmstrong@baylibre.com>
++ */
++
++#ifndef _DT_BINDINGS_MESON_SM1_POWER_H
++#define _DT_BINDINGS_MESON_SM1_POWER_H
++
++#define PWRC_SM1_VPU_ID		0
++#define PWRC_SM1_NNA_ID		1
++#define PWRC_SM1_USB_ID		2
++#define PWRC_SM1_PCIE_ID	3
++#define PWRC_SM1_GE2D_ID	4
++#define PWRC_SM1_AUDIO_ID	5
++#define PWRC_SM1_ETH_ID		6
++
++#endif
 -- 
 2.22.0
 
