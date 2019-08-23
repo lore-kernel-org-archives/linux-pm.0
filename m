@@ -2,66 +2,69 @@ Return-Path: <SRS0=i3NW=WT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AD18C3A5A2
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 09:04:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F131C3A5A4
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 09:04:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D314F22CE3
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 09:04:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1095022CE3
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 09:04:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="m7Lm47K3"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="b0KqI2bK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2393393AbfHWJEX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Aug 2019 05:04:23 -0400
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:39454 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726247AbfHWJEW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2019 05:04:22 -0400
-Received: by mail-wm1-f65.google.com with SMTP id i63so8341340wmg.4
-        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2019 02:04:21 -0700 (PDT)
+        id S2393514AbfHWJE1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Aug 2019 05:04:27 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:53133 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2393477AbfHWJE0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Aug 2019 05:04:26 -0400
+Received: by mail-wm1-f68.google.com with SMTP id o4so8207856wmh.2
+        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2019 02:04:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=Dl/uscAowXukXuhpqgLF0MCIjY2hwV9HUJY7MTPFx+U=;
-        b=m7Lm47K3lfmXXBH6bb1ALP6Euh07K7vyM5wb7vvgY1B/1TR9RRsENy/mPoA/yPIk/e
-         p4efrhHsjMIdMdqdpRRb6j2eazLpFHK0x8RbKnmNFLtBD3KJ9gSq/RgvvS0jQ1xWpzDb
-         Td7RNmf5S4vIqYxm+tQBGBfFowm9P6Ul0t2yjFo6I8FlGfhngtHEG1mwNBaLM5rxKIRe
-         WLurq85T17urVVGq9y/qSw8gPnT7vV0ks2XJ/CA8pLLLdg5yJWFK4k5SlmGNe6bNrA65
-         G6REu8wlkQTiZSn9ltQIqMPhfYCZpnPhmwkfksyfImvLuI/2yy3EEz5rHZv7/VmGEt2N
-         Fj2g==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=x7lS6otfNfKn2A4Z6EJ+EWGqquL/jDHyWtp6eWoI2sQ=;
+        b=b0KqI2bKabxX/CLyMZVp4C9olw9IuKvdW4s2hW59kzepQ9tpvF7cIj3t7rlg5bdUoi
+         SjrpZuX4aNecZpzG5WoarF2JwNbhgnTmhw6tOCTLPyj6a0MlCUri0PrZZbpzevTGI+2u
+         jCP/dyGPZLHcwTzex2b+yWNzs+SYVzxIbYmN+1/gCEV4dWN/KFAkr/GkRmYPFEBq72qa
+         +vptHtmHo11a57W5NNTxKHo7S3yWTEcABRlm9XfLO8ZpzjIQ3XrTcW9admytv+PYB37p
+         wMOPBj4PfQGnFhzI+wRMlAt/VscakAVYsPEWyoClsGMbQUQG+zDSOFYHufNIYK/zcXeF
+         adEQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=Dl/uscAowXukXuhpqgLF0MCIjY2hwV9HUJY7MTPFx+U=;
-        b=F1CKMLxxXVLBBfuAcmyPrlf8/0UplafwKkyNh9pvfhgdQcTRy9nyOaSUJI/WHT7n7W
-         o8kLTL7sIGDIdSo2GgOJZamtoFvRaoqJWtArhpiyq2NwBW0nTBGErZRZAyjnKYl2jy6/
-         KRCFUJIKIuC0JWv9bS+gOZ4HuLc0K3BX8hiO3k/yByfP5We/LH+NBSN+PXXcuzGKqptA
-         IRdidsg9RNnoWYSv86l5BdF5gHxfXGDvAWqL+C6nBWxntVCd1svmmGCgVnA8b01lwZWX
-         qCu7y4kkOG4iVYflXF9h8An1RoLcjZLcp/MFCyRJ1e2ZiX5HvWTfHGYBVikO86ZE6Srx
-         8MDQ==
-X-Gm-Message-State: APjAAAWPOWvIXNKLgS//vr3Qlz8uO97wctTspp0syYitzYnfq8tOsSB+
-        /ob1F7xcDi0OhJpr/M1X1tO0355CPZIvjA==
-X-Google-Smtp-Source: APXvYqwmq4sNSi424dS+1qU5TMcPyATzSUaYYh47inFl7d7klYRZCt3JcgSepJzzLt1ujHPiHmZPhQ==
-X-Received: by 2002:a1c:64c5:: with SMTP id y188mr4038875wmb.154.1566551060583;
-        Fri, 23 Aug 2019 02:04:20 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=x7lS6otfNfKn2A4Z6EJ+EWGqquL/jDHyWtp6eWoI2sQ=;
+        b=jrGYWyBtKp42BYPPsLp2S3K4sA0aT1cJuM4Lg7MVCiDLt4ZCCwI/UHqnz2aYshx0SR
+         7Sv620jtZGuDWGp76e0GEchYJ0PvBktHn3rL8wQNvUAeRkPug7omWMWJNcmIN+HONuDe
+         v/Dqg2sJrGJvezUZLTJfNyR7QedITfIxghVUsSLuGn1m9YDad8m3T75UZ2l5OmhZAdCE
+         kP1OBE8qF7Of8cLHAtQl8zv85AtlvOFhlh6/uCuCyxHjr37+7LTd3mjI0o21aRj3PS5/
+         1Ma8xxy2v9A4JICKp4MnyygzECqFz0bB4WTWARnx0VRNmcAjqYlJ65Ib60S1vUbEblBG
+         D3Ww==
+X-Gm-Message-State: APjAAAX9fHNHdzSwY0c8ksCTsemvzZ/eInT0Ibe3bQQZtTAcMjCBFA2t
+        g2iOKKKZaLRie+NIYiZmBRsv9g==
+X-Google-Smtp-Source: APXvYqzv+3OEYdyAmsOvtHfKnTXCIdOXKgggpEvAEYxC41wrsIacwiO8beWA5cQ7p8t4M1JJqXh2tw==
+X-Received: by 2002:a1c:c1cd:: with SMTP id r196mr4049459wmf.127.1566551064134;
+        Fri, 23 Aug 2019 02:04:24 -0700 (PDT)
 Received: from bender.baylibre.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id x26sm1625544wmj.42.2019.08.23.02.04.19
+        by smtp.gmail.com with ESMTPSA id x26sm1625544wmj.42.2019.08.23.02.04.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 23 Aug 2019 02:04:20 -0700 (PDT)
+        Fri, 23 Aug 2019 02:04:23 -0700 (PDT)
 From:   Neil Armstrong <narmstrong@baylibre.com>
 To:     khilman@baylibre.com, ulf.hansson@linaro.org
 Cc:     Neil Armstrong <narmstrong@baylibre.com>, linux-pm@vger.kernel.org,
         linux-amlogic@lists.infradead.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/5] arm64: meson: add support for SM1 Power Domains
-Date:   Fri, 23 Aug 2019 11:04:13 +0200
-Message-Id: <20190823090418.17148-1-narmstrong@baylibre.com>
+Subject: [PATCH v2 4/5] arm64: dts: meson-sm1-sei610: add HDMI display support
+Date:   Fri, 23 Aug 2019 11:04:17 +0200
+Message-Id: <20190823090418.17148-5-narmstrong@baylibre.com>
 X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190823090418.17148-1-narmstrong@baylibre.com>
+References: <20190823090418.17148-1-narmstrong@baylibre.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -69,71 +72,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset introduces a new "Everything-Else Power Domain Controller"
-designed to handle all the different non-Always On peripherals like :
-- VPU
-- Ethernet Memories
-- USB, PCIe, Audio, NNA on SM1
+Add the HDMI support nodes for the Amlogic SM1 Based SEI610 Board.
 
-The current "gx-vpu-pwrc" process has been integrated to support the VPU
-and the other power domains in a single driver.
+Signed-off-by: Neil Armstrong <narmstrong@baylibre.com>
+---
+ .../boot/dts/amlogic/meson-sm1-sei610.dts     | 23 +++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-Support for SoC domains has been made generic and easily extendable.
-
-In order to restart from clean architecture :
-- the PWRC node has been moved into the HHI simple-mfd, this suits much
-  better than beeing in the AO RTI simple-mfd
-- a brand new yaml bindings schemas has been written
-- reset-names has been added to clarify which resets are needed, so we can
-  dispatch them to domains
-
-For G12A, the PWRC now offers support for the ethmac memory power domain.
-
-For SM1, it also offers support for PCIe, USB, NNA, ethmac and Audio power
-domains.
-
-The DOS domains has been excluded for now, but can be added very easily.
-
-GX hasn't been integrated for now, but it would follow the same scheme
-as G12A support.
-
-Changes since v1 at [1]:
-- removed open-coded reset & clock get, enable/assert, disable/deassert
-- moved to clk_bulk and reset_array with count check with a warning
-- removed remaining sm1_pwrc in probe
-- reordered arguments for VPU_PD and TOP_PD
-- added get_power for TOP_PD aswell
-- ported special VPU handling from gx-vpu-pwrc
-- added shutdown driver call to avoid errors on reboot
-- fixed patch 4 commit log
-- collected rob's review tag on patch 1
-
-[1] https://patchwork.kernel.org/cover/11106393/
-
-Neil Armstrong (5):
-  dt-bindings: power: add Amlogic Everything-Else power domains bindings
-  soc: amlogic: Add support for Everything-Else power domains controller
-  arm64: meson-g12: add Everything-Else power domain controller
-  arm64: dts: meson-sm1-sei610: add HDMI display support
-  arm64: dts: meson-sm1-sei610: add USB support
-
- .../bindings/power/amlogic,meson-ee-pwrc.yaml |  93 ++++
- .../boot/dts/amlogic/meson-g12-common.dtsi    |  92 ++--
- arch/arm64/boot/dts/amlogic/meson-g12a.dtsi   |   9 +
- arch/arm64/boot/dts/amlogic/meson-g12b.dtsi   |   9 +
- .../boot/dts/amlogic/meson-sm1-sei610.dts     |  28 +
- arch/arm64/boot/dts/amlogic/meson-sm1.dtsi    |  15 +-
- drivers/soc/amlogic/Kconfig                   |  11 +
- drivers/soc/amlogic/Makefile                  |   1 +
- drivers/soc/amlogic/meson-ee-pwrc.c           | 492 ++++++++++++++++++
- include/dt-bindings/power/meson-g12a-power.h  |  13 +
- include/dt-bindings/power/meson-sm1-power.h   |  18 +
- 11 files changed, 733 insertions(+), 48 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/amlogic,meson-ee-pwrc.yaml
- create mode 100644 drivers/soc/amlogic/meson-ee-pwrc.c
- create mode 100644 include/dt-bindings/power/meson-g12a-power.h
- create mode 100644 include/dt-bindings/power/meson-sm1-power.h
-
+diff --git a/arch/arm64/boot/dts/amlogic/meson-sm1-sei610.dts b/arch/arm64/boot/dts/amlogic/meson-sm1-sei610.dts
+index 12dab0ba2f26..66bd3bfbaf91 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-sm1-sei610.dts
++++ b/arch/arm64/boot/dts/amlogic/meson-sm1-sei610.dts
+@@ -51,6 +51,17 @@
+ 		};
+ 	};
+ 
++	hdmi-connector {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi_connector_in: endpoint {
++				remote-endpoint = <&hdmi_tx_tmds_out>;
++			};
++		};
++	};
++
+ 	leds {
+ 		compatible = "gpio-leds";
+ 
+@@ -177,6 +188,18 @@
+ 	phy-mode = "rmii";
+ };
+ 
++&hdmi_tx {
++	status = "okay";
++	pinctrl-0 = <&hdmitx_hpd_pins>, <&hdmitx_ddc_pins>;
++	pinctrl-names = "default";
++};
++
++&hdmi_tx_tmds_port {
++	hdmi_tx_tmds_out: endpoint {
++		remote-endpoint = <&hdmi_connector_in>;
++	};
++};
++
+ &i2c3 {
+ 	status = "okay";
+ 	pinctrl-0 = <&i2c3_sda_a_pins>, <&i2c3_sck_a_pins>;
 -- 
 2.22.0
 
