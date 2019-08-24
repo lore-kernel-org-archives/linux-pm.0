@@ -1,143 +1,113 @@
-Return-Path: <SRS0=i3NW=WT=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=2U1y=WU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8256DC3A5A2
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 19:29:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1B42C3A59E
+	for <linux-pm@archiver.kernel.org>; Sat, 24 Aug 2019 05:58:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5578122CE3
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Aug 2019 19:29:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1566588564;
-	bh=uIK4gKr6LBqWcnb2353Sxa3YV4CobVhslIIjwr3IInY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=pq6XbVsIKsUo3XYi6jkOPv5V+pTF/m2+283/LRLDkDdOK+86NGemJR8o6Im/tCv70
-	 7fuqbgf72x3bE8NWQaLRPG+RWA6mRVrfZWyOiJ9RpN6lb1TXSr6y+9tWur6NrAap5t
-	 VRnc7YC2AkXbBZF4K4bsyH3exijW1lAGRO1uaaLI=
+	by mail.kernel.org (Postfix) with ESMTP id AAB152133F
+	for <linux-pm@archiver.kernel.org>; Sat, 24 Aug 2019 05:58:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qkF+5Fb1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391606AbfHWT3X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Aug 2019 15:29:23 -0400
-Received: from mail.kernel.org ([198.145.29.99]:41766 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2391604AbfHWT3X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 23 Aug 2019 15:29:23 -0400
-Received: from localhost (unknown [69.71.4.100])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id C880F21874;
-        Fri, 23 Aug 2019 19:29:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1566588562;
-        bh=uIK4gKr6LBqWcnb2353Sxa3YV4CobVhslIIjwr3IInY=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=X599OQxOO+nrYPeYotid93GGbP3k2bq7c7WrUd2ZmIe5Vg4vdw7aZUxBr+vMLehmw
-         JJk9MQUwo2BckT04EGL40gX/Pfd67dhXfy46H34ENlXtsZls4eu3nVnLu1N8mBYQWC
-         NOMfO7t3dKM+CHmhGzxF40Nx2QbGnoQU0BdHYZuE=
-Date:   Fri, 23 Aug 2019 14:29:20 -0500
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Andrew Murray <andrew.murray@arm.com>
-Cc:     linux-pci@vger.kernel.org,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Keith Busch <keith.busch@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH 1/3] PCI: Add PCI_ERROR_RESPONSE definition
-Message-ID: <20190823192920.GA127465@google.com>
-References: <20190822200551.129039-1-helgaas@kernel.org>
- <20190822200551.129039-2-helgaas@kernel.org>
- <20190823104415.GC14582@e119886-lin.cambridge.arm.com>
+        id S1725782AbfHXF6M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 24 Aug 2019 01:58:12 -0400
+Received: from mail-pl1-f172.google.com ([209.85.214.172]:38275 "EHLO
+        mail-pl1-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725777AbfHXF6M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Aug 2019 01:58:12 -0400
+Received: by mail-pl1-f172.google.com with SMTP id w11so6405102plp.5
+        for <linux-pm@vger.kernel.org>; Fri, 23 Aug 2019 22:58:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=9XRmX24je7yglBYNnKykqbyW6HW63V9ReMAxFYEEt1s=;
+        b=qkF+5Fb1zSoQCB4yA3iJFPvYFkOn+QAGCxX1cDIS47hpoTsNIylKqNs6zKfF0r0iqS
+         Szq6IQtSIS5Pe7Pd3S4OqOJoFEZhEFEN/YB0sFk+f+WEdOm45fWTREN1MXMGJKRlGnn+
+         gdI7fqv9JswyhDpABaQX7fvDvDRFG7MPBjihoPEMuudwGT4dl4oJjfY/6s7znvE38oZM
+         nP2P9ROqQ8FhO9cW1Qv1YHcYOaaGUJ+8+vqRlm/aBa6nSFZNmn6zxXWgWzmcXiuBnKd9
+         AVWfItHhsDHiaD0Gc5YIMG1REV74ppZf7c4SiiUcC/BIlrGSzz60S7TpSSI+ATYwwXH1
+         YAdw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=9XRmX24je7yglBYNnKykqbyW6HW63V9ReMAxFYEEt1s=;
+        b=Z7LwLJZn8CuXtzw9+M7PpqO3LUL4KHH1Yo65jYG/tNI2M6stlVzQM+pcL/pwIxNuuR
+         j5dcmjdkbyHBjTDA8ZKtZGogvFfBo/pJlwLnUO/N3yNMFtUbmZ3750Dxad38681Smqwd
+         AWuNYYdbA9zjboP4mYyxwBbF9aHVZL+iXhf3KInu+1qdlXUWoAHj22WFse5OoEeMPA/8
+         r3Jrr7Szv9raJ1pMV/nb4ah1tumZWh8h3g4fLcP9UY/X77p4qQgcGbwnuU7kwR+NeBqL
+         l0Tf6VV853axCuY7ErjjpbnkjMsXLsIIXpWHpqe8Dnk8uWZo9niwjy+adTyyuCbiFbDk
+         ZxJg==
+X-Gm-Message-State: APjAAAUm5r//KhGzSI7yBiiaPO2BLDmzrqAsAuqzGaw9l0yf76pCdc34
+        95gDaMUkuJYtESz0eUPagP724g==
+X-Google-Smtp-Source: APXvYqx/S116wBZhFEBYMvZPw0PX30vsJXa9tlWx1ji4IPTccDJ/vnV/LOzMfXLdMIT08JMykBbf9A==
+X-Received: by 2002:a17:902:302:: with SMTP id 2mr8654563pld.149.1566626291651;
+        Fri, 23 Aug 2019 22:58:11 -0700 (PDT)
+Received: from tuxbook-pro (104-188-17-28.lightspeed.sndgca.sbcglobal.net. [104.188.17.28])
+        by smtp.gmail.com with ESMTPSA id d18sm3580521pgi.40.2019.08.23.22.58.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 23 Aug 2019 22:58:10 -0700 (PDT)
+Date:   Fri, 23 Aug 2019 23:00:02 -0700
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Thara Gopinath <thara.gopinath@linaro.org>,
+        qualcomm-lt@lists.linaro.org, linux-pm@vger.kernel.org,
+        ulf.hansson@linaro.org, rnayak@codeaurora.org
+Subject: Re: [PATCH 0/4] qcom: Model RPMH power domains as thermal cooling
+ devices
+Message-ID: <20190824060002.GS26807@tuxbook-pro>
+References: <1565398727-23090-1-git-send-email-thara.gopinath@linaro.org>
+ <efe98b11-9b79-4ecb-5e28-2a62235cf56c@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190823104415.GC14582@e119886-lin.cambridge.arm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <efe98b11-9b79-4ecb-5e28-2a62235cf56c@linaro.org>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Aug 23, 2019 at 11:44:15AM +0100, Andrew Murray wrote:
-> On Thu, Aug 22, 2019 at 03:05:49PM -0500, Bjorn Helgaas wrote:
-> > From: Bjorn Helgaas <bhelgaas@google.com>
-> > 
-> > An MMIO read from a PCI device that doesn't exist or doesn't respond causes
-> > a PCI error.  There's no real data to return to satisfy the CPU read, so
-> > most hardware fabricates ~0 data.
-> > 
-> > Add a PCI_ERROR_RESPONSE definition for that and use it where appropriate
-> > to make these checks consistent and easier to find.
-> > 
-> > Note that successful reads *also* may return ~0 data, so additional
-> > information (e.g., knowledge that ~0 is not a valid register value) is
-> > needed to reliably identify errors.
+On Wed 14 Aug 03:52 PDT 2019, Daniel Lezcano wrote:
 
-> > -	 * generally synthesize ~0 data to complete the read (except when
-> > -	 * CRS SV is enabled and the read was for the Vendor ID; in that
-> > -	 * case it synthesizes 0x0001 data).
-> > +	 * generally synthesize ~0 data (PCI_ERROR_RESPONSE) to complete
-> > +	 * the read (except when CRS SV is enabled and the read was for the
-> > +	 * Vendor ID; in that case it synthesizes 0x0001 data).
 > 
-> There are some other areas in drivers/pci where comments also refer to ~0
-> and similar:
+> Hi Thara,
 > 
-> $ git grep -i ffffffff drivers/pci/ | grep \*
-> drivers/pci/access.c:            * have been written as 0xFFFFFFFF if hardware error happens
-> drivers/pci/controller/dwc/pci-keystone.c: * bus error instead of returning 0xffffffff. This handler always returns 0
-> drivers/pci/controller/pci-xgene.c:      * ready") instead of 0xFFFFFFFF ("device does not exist").  This
-> drivers/pci/controller/pcie-iproc.c:     * eventually return the wrong data (0xffffffff).
-> drivers/pci/pci.c: * FFFFFFFFs on the command line.)
+> interesting series. Can you describe what use case this series will solve?
 > 
-> I've removed anything in the above list that doesn't look like a good candidate
-> for PCI_ERROR_RESPONSE.
-> 
-> Perhaps there is some value for replacing "~0" with "~0 (PCI_ERROR_RESPONSE)"
-> in the comments too?
 
-Good idea, I'll take a look at those.
+The purpose is to ensure a minimum voltage (voltage corner) on the
+memory rail (mx) at low temperature, to meet some physical requirement.
 
-> >  		pdev->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
-> >  		if (pci_read_config_dword(pdev, PCI_CFG_SPACE_SIZE, &status) !=
-> > -		    PCIBIOS_SUCCESSFUL || (status == 0xffffffff))
-> > +		    PCIBIOS_SUCCESSFUL || (status == (u32) PCI_ERROR_RESPONSE))
+> On 10/08/2019 02:58, Thara Gopinath wrote:
+> > Certain RPMH power domains can be used to warm up the SoC (mx on sdm845)
+> > if the temperature falls below certain threshold. 
 > 
-> The casts are necessary but slightly annoying. Have you considered something
-> like:
+> What is the relationship between the temperature fall, the sensor(s)
+> location and the warming device(s) in this case?
 > 
-> #define SET_PCI_ERROR_RESPONSE(val)	(val = ((typeof(val))(~0ULL)))
-> #define RESPONSE_IS_PCI_ERROR(val)	(val == ((typeof(val))(~0ULL)))
 
-I hadn't thought of that, but I really like the idea.  Thanks, I think
-I'll try that out!
+Presumably any on-die sensor could be used and the minimum voltage
+requirement only applies below some configurable threshold.
 
-> >  			pdev->cfg_size = PCI_CFG_SPACE_SIZE;
-> >  
-> >  		if (pci_find_saved_cap(pdev, PCI_CAP_ID_EXP))
-> > diff --git a/include/linux/pci.h b/include/linux/pci.h
-> > index 9e700d9f9f28..d64fd3788061 100644
-> > --- a/include/linux/pci.h
-> > +++ b/include/linux/pci.h
-> > @@ -123,6 +123,13 @@ enum pci_interrupt_pin {
-> >  /* The number of legacy PCI INTx interrupts */
-> >  #define PCI_NUM_INTX	4
-> >  
-> > +/*
-> > + * Reading from a device that doesn't respond typically returns ~0.  A
-> > + * successful read from a device may also return ~0, so you need additional
-> > + * information to reliably identify errors.
-> > + */
-> > +#define PCI_ERROR_RESPONSE		(~0ULL)
-> > +
-> >  /*
-> >   * pci_power_t values must match the bits in the Capabilities PME_Support
-> >   * and Control/Status PowerState fields in the Power Management capability.
-> > -- 
-> > 2.23.0.187.g17f5b7556c-goog
-> > 
+> 
+> > These power domains
+> > can be considered as thermal warming devices
+> > (opposite of thermal cooling devices).
+> 
+> Is it possible to elaborate how works the RPMH as a warming device and
+> what is the "mx on sdm845"?
+> 
+
+RPMh is the interface used to configure the voltage corner (and other
+shared resources, such as regulators, interconnects etc). mx is the
+"memory rail" power domain.
+
+Regards,
+Bjorn
