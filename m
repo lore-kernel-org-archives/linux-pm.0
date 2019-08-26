@@ -2,263 +2,130 @@ Return-Path: <SRS0=3Wtg=WW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DACFC3A5A4
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Aug 2019 13:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAF24C3A59F
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Aug 2019 14:45:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5345C2341C
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Aug 2019 13:44:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9C56E22CBB
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Aug 2019 14:45:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="NqWSZ27f"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731951AbfHZNon (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Aug 2019 09:44:43 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:53530 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731801AbfHZNok (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 26 Aug 2019 09:44:40 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 75D4A1A01E3;
-        Mon, 26 Aug 2019 15:44:38 +0200 (CEST)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 676D51A0191;
-        Mon, 26 Aug 2019 15:44:38 +0200 (CEST)
-Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id CE6F120605;
-        Mon, 26 Aug 2019 15:44:37 +0200 (CEST)
+        id S1731948AbfHZOpq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Aug 2019 10:45:46 -0400
+Received: from mail-eopbgr30062.outbound.protection.outlook.com ([40.107.3.62]:51326
+        "EHLO EUR03-AM5-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1731186AbfHZOpq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 26 Aug 2019 10:45:46 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Buxn2QG81vpY/FXll3QGUAicNOySJXSElWH3ZRqWD17toJL3aIcWnUXlOL1qknJnYVsh1SR6TWB5F2Hzy79R60hOHc8Webq+pHOesJGQjVCfDqMiVmz5tK1Dg4kpLXzkXbUn4bzAQxHiFjDWg8VVjCv2AnYV3ifF1pWtNZYNDpmFnW5fOAV/5SdgeXcN8RUboy0udbXzp3WS8/L8M4jbncLGRdOCvHDyTGv+tuX7naxQAjfPogRha8SD50Cny71S9b7juMM366qWatG8kU5jgMfGtlJGl/PP1KvSbm/OhTWsRgjLyLZrp3BwHIdrzOWtp1UVpDR1rYQVWKHrk09/CQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bg44byClphCiUQr60zpMaGt8vFEHLaNwrwl9FbWvHtU=;
+ b=mtSYezYLy4UAq4uprFERq6d92ybFiQQvWzsuERvUoq5ek/vJ1B1T5PVswx3LGf6s7ebmwh2W+WOYewtpZORMxAu9kwgXcJIbY8ejORh2jH1VOFsp5MtykRROj+dLPAOXrY1XTvzC47JifRslsQMu9BXywMSIF5KDQB/zx4hMwAHWgWghSNeNbeFmvft7crfnqIukjE9w7WQ4RafD5WZX1vs4bchjn1aIw4QorqfyV2aDsAbDXniphp1f8IWa45cM4xEteKUkF+aSguEc+e37sY1FQiVqlkF1M54OffidoAgs/1P/1sVzidP9hwH4JaLCfEcs4UG9bbMNTQgyAH4xCg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bg44byClphCiUQr60zpMaGt8vFEHLaNwrwl9FbWvHtU=;
+ b=NqWSZ27fqM5Tg50tHzY6SrJCr1OdxgfShOezVDlriYwsk7zUY1AHNDHRjlaEnqwvftHyqwZ9G2Tgi03i4G+2X9mpAN/oIEiW9XDFP/t3eDPvbxY0DrH0rmeD0xcF04viIYTPsdofwwEl2WK+Q2Flib2TCIvUHZIKfVSuRpyqM1Y=
+Received: from VI1PR04MB7023.eurprd04.prod.outlook.com (10.186.159.144) by
+ VI1PR04MB5920.eurprd04.prod.outlook.com (20.178.205.82) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2199.21; Mon, 26 Aug 2019 14:45:40 +0000
+Received: from VI1PR04MB7023.eurprd04.prod.outlook.com
+ ([fe80::c5e8:90f8:da97:947e]) by VI1PR04MB7023.eurprd04.prod.outlook.com
+ ([fe80::c5e8:90f8:da97:947e%3]) with mapi id 15.20.2199.021; Mon, 26 Aug 2019
+ 14:45:40 +0000
 From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     Chanwoo Choi <cw00.choi@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc:     Kyungmin Park <kyungmin.park@samsung.com>,
-        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Alexandre Bailon <abailon@baylibre.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 3/6] PM / devfreq: Introduce devfreq_get_freq_range
-Date:   Mon, 26 Aug 2019 16:44:30 +0300
-Message-Id: <f47c1c342fe83be54ec046bf8e41e2dcd541accc.1566826075.git.leonard.crestez@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1566826075.git.leonard.crestez@nxp.com>
-References: <cover.1566826075.git.leonard.crestez@nxp.com>
-In-Reply-To: <cover.1566826075.git.leonard.crestez@nxp.com>
-References: <cover.1566826075.git.leonard.crestez@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+To:     Anson Huang <anson.huang@nxp.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Shawn Guo <shawnguo@kernel.org>
+CC:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "mark.rutland@arm.com" <mark.rutland@arm.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: Re: [PATCH V3 1/5] thermal: qoriq: Add clock operations
+Thread-Topic: [PATCH V3 1/5] thermal: qoriq: Add clock operations
+Thread-Index: AQHVRn7UNdyaJx5tOE6OrvzyFWKCoA==
+Date:   Mon, 26 Aug 2019 14:45:40 +0000
+Message-ID: <VI1PR04MB7023F219CA7B4187F86EAA42EEA10@VI1PR04MB7023.eurprd04.prod.outlook.com>
+References: <20190730022126.17883-1-Anson.Huang@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=leonard.crestez@nxp.com; 
+x-originating-ip: [212.146.100.6]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 47938838-ec7c-4734-d552-08d72a3410b0
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600166)(711020)(4605104)(1401327)(4618075)(2017052603328)(7193020);SRVR:VI1PR04MB5920;
+x-ms-traffictypediagnostic: VI1PR04MB5920:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <VI1PR04MB5920BA96346B2E7E954763FFEEA10@VI1PR04MB5920.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:7691;
+x-forefront-prvs: 01415BB535
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(366004)(346002)(396003)(39860400002)(136003)(376002)(199004)(189003)(486006)(476003)(44832011)(229853002)(316002)(6506007)(53546011)(14454004)(76176011)(99286004)(7696005)(54906003)(110136005)(8936002)(478600001)(102836004)(4326008)(25786009)(6246003)(26005)(446003)(66066001)(8676002)(53936002)(81166006)(81156014)(55016002)(9686003)(7416002)(33656002)(6116002)(3846002)(6436002)(74316002)(186003)(86362001)(305945005)(7736002)(2906002)(91956017)(64756008)(52536014)(66446008)(5660300002)(66574012)(76116006)(71190400001)(4744005)(14444005)(71200400001)(256004)(66946007)(66556008)(66476007);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB5920;H:VI1PR04MB7023.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: Q3gZqQGW1IqOtO/nyHuhZ9fJEamu1fq9qNEThjtXwkiT2Hlk+6jPgJ3b2AkBM8KTtNRtJ3txMsPMqIGCJmcHYIQlRNCPGHzEGl/wph5ZqrfAAw7JMe5rQ25b/uSR+QfOvNkt29LWvh/UZsAyafu7aOJ/cRvcBIzCfLSCGnefH7vad8Z7SnbqLqDxsFcLEoG+n8thsZ96N95nrbkVCzGumjOu/mTofRRPNQIviAu3eELwTItUHLPbBcVFzlY7fqNLtaVpc/1OSzvsKv/sTJOKlIVShSh1s9mMjU4yen8Tc9QMpnOesULloRngkLjajmHMiMWImOn6jMqZUB43hA6saaJoJsoCjlg45F+HlqRJrX41hRyIaExlaXH2WHcKWSwtcgEbGj1fzgWzVVoqTszcwoPuFWRy6rNqv5T0rXVjWyc=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 47938838-ec7c-4734-d552-08d72a3410b0
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Aug 2019 14:45:40.1203
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: tKaj00hjkeUWlXl5iMlRmFwSRu3JClmuBYC7cNjAwU0QwPtYy4VEcVK90JHgkf9VHivHm2UsCPszxMfOJtHeQw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5920
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Moving handling of min/max freq to a single function and call it from
-update_devfreq and for printing min/max freq values in sysfs.
-
-This changes the behavior of out-of-range min_freq/max_freq: clamping
-is now done at evaluation time. This means that if an out-of-range
-constraint is imposed by sysfs and it later becomes valid then it will
-be enforced.
-
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
----
- drivers/devfreq/devfreq.c | 111 +++++++++++++++++++++-----------------
- 1 file changed, 63 insertions(+), 48 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 9b3bf64dc37d..96e218b07771 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -24,10 +24,12 @@
- #include <linux/printk.h>
- #include <linux/hrtimer.h>
- #include <linux/of.h>
- #include "governor.h"
- 
-+#define HZ_PER_KHZ 1000
-+
- #define CREATE_TRACE_POINTS
- #include <trace/events/devfreq.h>
- 
- static struct class *devfreq_class;
- 
-@@ -96,10 +98,50 @@ static unsigned long find_available_max_freq(struct devfreq *devfreq)
- 		dev_pm_opp_put(opp);
- 
- 	return max_freq;
- }
- 
-+/**
-+ * devfreq_get_freq_range() - Get the current freq range
-+ * @devfreq:	the devfreq instance
-+ * @min_freq:	the min frequency
-+ * @max_freq:	the max frequency
-+ *
-+ * This takes into consideration all constraints.
-+ */
-+static void devfreq_get_freq_range(struct devfreq *devfreq,
-+				   unsigned long *min_freq,
-+				   unsigned long *max_freq)
-+{
-+	unsigned long *freq_table = devfreq->profile->freq_table;
-+
-+	lockdep_assert_held(&devfreq->lock);
-+
-+	/* Init min/max frequency from freq table */
-+	if (freq_table[0] < freq_table[devfreq->profile->max_state - 1]) {
-+		*min_freq = freq_table[0];
-+		*max_freq = freq_table[devfreq->profile->max_state - 1];
-+	} else {
-+		*min_freq = freq_table[devfreq->profile->max_state - 1];
-+		*max_freq = freq_table[0];
-+	}
-+
-+	/* constraints from sysfs: */
-+	*min_freq = max(*min_freq, devfreq->min_freq);
-+	*max_freq = min(*max_freq, devfreq->max_freq);
-+
-+	/* constraints from opp interface: */
-+	*min_freq = max(*min_freq, devfreq->scaling_min_freq);
-+	/* scaling_max_freq can be zero on error */
-+	if (devfreq->scaling_max_freq)
-+		*max_freq = min(*max_freq, devfreq->scaling_max_freq);
-+
-+	/* max_freq takes precedence over min_freq */
-+	if (*min_freq > *max_freq)
-+		*min_freq = *max_freq;
-+}
-+
- /**
-  * devfreq_get_freq_level() - Lookup freq_table for the frequency
-  * @devfreq:	the devfreq instance
-  * @freq:	the target frequency
-  */
-@@ -348,21 +390,13 @@ int update_devfreq(struct devfreq *devfreq)
- 
- 	/* Reevaluate the proper frequency */
- 	err = devfreq->governor->get_target_freq(devfreq, &freq);
- 	if (err)
- 		return err;
-+	devfreq_get_freq_range(devfreq, &min_freq, &max_freq);
- 
--	/*
--	 * Adjust the frequency with user freq, QoS and available freq.
--	 *
--	 * List from the highest priority
--	 * max_freq
--	 * min_freq
--	 */
--	max_freq = min(devfreq->scaling_max_freq, devfreq->max_freq);
--	min_freq = max(devfreq->scaling_min_freq, devfreq->min_freq);
--
-+	/* max freq takes priority over min freq */
- 	if (freq < min_freq) {
- 		freq = min_freq;
- 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
- 	}
- 	if (freq > max_freq) {
-@@ -1297,40 +1331,28 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&df->lock);
--
--	if (value) {
--		if (value > df->max_freq) {
--			ret = -EINVAL;
--			goto unlock;
--		}
--	} else {
--		unsigned long *freq_table = df->profile->freq_table;
--
--		/* Get minimum frequency according to sorting order */
--		if (freq_table[0] < freq_table[df->profile->max_state - 1])
--			value = freq_table[0];
--		else
--			value = freq_table[df->profile->max_state - 1];
--	}
--
- 	df->min_freq = value;
- 	update_devfreq(df);
--	ret = count;
--unlock:
- 	mutex_unlock(&df->lock);
--	return ret;
-+
-+	return count;
- }
- 
- static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
- 	struct devfreq *df = to_devfreq(dev);
-+	unsigned long min_freq, max_freq;
- 
--	return sprintf(buf, "%lu\n", max(df->scaling_min_freq, df->min_freq));
-+	mutex_lock(&df->lock);
-+	devfreq_get_freq_range(df, &min_freq, &max_freq);
-+	mutex_unlock(&df->lock);
-+
-+	return sprintf(buf, "%lu\n", min_freq);
- }
- 
- static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- 			      const char *buf, size_t count)
- {
-@@ -1342,40 +1364,33 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- 	if (ret != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&df->lock);
- 
--	if (value) {
--		if (value < df->min_freq) {
--			ret = -EINVAL;
--			goto unlock;
--		}
--	} else {
--		unsigned long *freq_table = df->profile->freq_table;
--
--		/* Get maximum frequency according to sorting order */
--		if (freq_table[0] < freq_table[df->profile->max_state - 1])
--			value = freq_table[df->profile->max_state - 1];
--		else
--			value = freq_table[0];
--	}
-+	/* Interpret zero as "don't care" */
-+	if (!value)
-+		value = ULONG_MAX;
- 
- 	df->max_freq = value;
- 	update_devfreq(df);
--	ret = count;
--unlock:
- 	mutex_unlock(&df->lock);
--	return ret;
-+
-+	return count;
- }
- static DEVICE_ATTR_RW(min_freq);
- 
- static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
- 	struct devfreq *df = to_devfreq(dev);
-+	unsigned long min_freq, max_freq;
-+
-+	mutex_lock(&df->lock);
-+	devfreq_get_freq_range(df, &min_freq, &max_freq);
-+	mutex_unlock(&df->lock);
- 
--	return sprintf(buf, "%lu\n", min(df->scaling_max_freq, df->max_freq));
-+	return sprintf(buf, "%lu\n", max_freq);
- }
- static DEVICE_ATTR_RW(max_freq);
- 
- static ssize_t available_frequencies_show(struct device *d,
- 					  struct device_attribute *attr,
--- 
-2.17.1
-
+On 7/30/2019 5:31 AM, Anson.Huang@nxp.com wrote:=0A=
+> From: Anson Huang <Anson.Huang@nxp.com>=0A=
+> =0A=
+> Some platforms like i.MX8MQ has clock control for this module,=0A=
+> need to add clock operations to make sure the driver is working=0A=
+> properly.=0A=
+> =0A=
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>=0A=
+> Reviewed-by: Guido G=FCnther <agx@sigxcpu.org>=0A=
+=0A=
+This series looks good, do you think it can be merged in time for v5.4? =0A=
+Today was v5.3-rc6.=0A=
+=0A=
+In an earlier series the CLK_IS_CRITICAL flags was removed from the TMU =0A=
+clock so if the thermal driver doesn't explicitly enable it the system =0A=
+will hang on probe. This is what happens in linux-next right now!=0A=
+=0A=
+Unless this patches is merged soon we'll end up with a 5.4-rc1 that =0A=
+doesn't boot on imx8mq. An easy fix would be to drop/revert commit =0A=
+951c1aef9691 ("clk: imx8mq: Remove CLK_IS_CRITICAL flag for =0A=
+IMX8MQ_CLK_TMU_ROOT") until the thermal patches are accepted.=0A=
+=0A=
+Merging patches out-of-order when they have hard (boot-breaking) =0A=
+dependencies also breaks bisect.=0A=
+=0A=
+--=0A=
+Regards,=0A=
+Leonard=0A=
