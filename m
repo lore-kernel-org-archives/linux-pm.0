@@ -6,27 +6,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54D85C3A5A7
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB433C3A5A8
 	for <linux-pm@archiver.kernel.org>; Mon, 26 Aug 2019 13:44:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2FAC4206B7
+	by mail.kernel.org (Postfix) with ESMTP id A09A4217F5
 	for <linux-pm@archiver.kernel.org>; Mon, 26 Aug 2019 13:44:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731801AbfHZNon (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 26 Aug 2019 09:44:43 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:55646 "EHLO inva021.nxp.com"
+        id S1731982AbfHZNom (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 26 Aug 2019 09:44:42 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:55584 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731954AbfHZNon (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 26 Aug 2019 09:44:43 -0400
+        id S1731816AbfHZNoj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 26 Aug 2019 09:44:39 -0400
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5E684200251;
-        Mon, 26 Aug 2019 15:44:40 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id CE81D200241;
+        Mon, 26 Aug 2019 15:44:37 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4EAF820000C;
-        Mon, 26 Aug 2019 15:44:40 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id BFAFE20000C;
+        Mon, 26 Aug 2019 15:44:37 +0200 (CEST)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id B809620605;
-        Mon, 26 Aug 2019 15:44:39 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 3597420605;
+        Mon, 26 Aug 2019 15:44:37 +0200 (CEST)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     Chanwoo Choi <cw00.choi@samsung.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>
@@ -39,9 +39,9 @@ Cc:     Kyungmin Park <kyungmin.park@samsung.com>,
         Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 6/6] PM / devfreq: Move opp notifier registration to core
-Date:   Mon, 26 Aug 2019 16:44:33 +0300
-Message-Id: <d5bb9bf47ea9ac8882525ff18e817da35304f2a7.1566826075.git.leonard.crestez@nxp.com>
+Subject: [PATCH v4 2/6] PM / devfreq: Add to devfreq_list immediately after registration
+Date:   Mon, 26 Aug 2019 16:44:29 +0300
+Message-Id: <29f4c0442344f0d1f333c5fbbcb9e60a4ffe3200.1566826075.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1566826075.git.leonard.crestez@nxp.com>
 References: <cover.1566826075.git.leonard.crestez@nxp.com>
@@ -53,242 +53,53 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-An opp notifier can be registered by devfreq in order to respond to OPPs
-being enabled or disabled at runtime (for example by thermal). This is
-currently handled explicitly by drivers.
+After the devfreq->dev is registered all error cleanup paths call
+devfreq_dev_release which fails if the devfreq instance is not in the
+global devfreq_list.
 
-Move notifier handling to devfreq_add_device because this shouldn't be
-hardware-specific.
-
-Handling this inside the core also takes less code.
+Fix by adding to the list immediately after registration.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 ---
- drivers/devfreq/devfreq.c    | 84 +++---------------------------------
- drivers/devfreq/exynos-bus.c |  7 ---
- drivers/devfreq/rk3399_dmc.c |  6 ---
- include/linux/devfreq.h      |  8 ----
- 4 files changed, 6 insertions(+), 99 deletions(-)
+ drivers/devfreq/devfreq.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+Alternatively we could make devfreq_dev_release accept devfreq instance
+not in the list.
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index f85c6628249f..c7123d8b6a33 100644
+index 15270293bea9..9b3bf64dc37d 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -667,20 +667,22 @@ static void devfreq_dev_release(struct device *dev)
- 		return;
+@@ -677,10 +677,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	if (err) {
+ 		put_device(&devfreq->dev);
+ 		goto err_out;
  	}
- 	list_del(&devfreq->node);
+ 
++	/* Add to global list of devfreq instances */
++	mutex_lock(&devfreq_list_lock);
++	list_add(&devfreq->node, &devfreq_list);
++	mutex_unlock(&devfreq_list_lock);
++
+ 	devfreq->trans_table = devm_kzalloc(&devfreq->dev,
+ 			array3_size(sizeof(unsigned int),
+ 				    devfreq->profile->max_state,
+ 				    devfreq->profile->max_state),
+ 			GFP_KERNEL);
+@@ -719,12 +724,10 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		dev_err(dev, "%s: Unable to start governor for the device\n",
+ 			__func__);
+ 		goto err_init;
+ 	}
+ 
+-	list_add(&devfreq->node, &devfreq_list);
+-
  	mutex_unlock(&devfreq_list_lock);
  
-+	dev_pm_opp_unregister_notifier(dev, &devfreq->nb);
- 	dev_pm_qos_remove_notifier(devfreq->dev.parent, &devfreq->nb_max,
- 			DEV_PM_QOS_MAX_FREQUENCY);
- 	dev_pm_qos_remove_notifier(devfreq->dev.parent, &devfreq->nb_min,
- 			DEV_PM_QOS_MIN_FREQUENCY);
+ 	return devfreq;
  
- 	if (devfreq->profile->exit)
- 		devfreq->profile->exit(devfreq->dev.parent);
- 
- 	dev_pm_qos_remove_request(&devfreq->max_freq_req);
- 	dev_pm_qos_remove_request(&devfreq->min_freq_req);
-+	dev_pm_opp_unregister_notifier(dev, &devfreq->nb);
- 	mutex_destroy(&devfreq->lock);
- 	kfree(devfreq);
- }
- 
- /**
-@@ -729,11 +731,10 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->profile = profile;
- 	strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
- 	devfreq->previous_freq = profile->initial_freq;
- 	devfreq->last_status.current_frequency = profile->initial_freq;
- 	devfreq->data = data;
--	devfreq->nb.notifier_call = devfreq_notifier_call;
- 
- 	if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
- 		err = set_freq_table(devfreq);
- 		if (err < 0)
- 			goto err_dev;
-@@ -816,10 +817,14 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->nb_max.notifier_call = devfreq_qos_max_notifier_call;
- 	err = dev_pm_qos_add_notifier(devfreq->dev.parent, &devfreq->nb_max,
- 				      DEV_PM_QOS_MAX_FREQUENCY);
- 	if (err)
- 		goto err_devfreq;
-+	devfreq->nb.notifier_call = devfreq_notifier_call;
-+	err = dev_pm_opp_register_notifier(dev, &devfreq->nb);
-+	if (err)
-+		goto err_devfreq;
- 
- 	mutex_lock(&devfreq_list_lock);
- 
- 	governor = try_then_request_governor(devfreq->governor_name);
- 	if (IS_ERR(governor)) {
-@@ -1619,87 +1624,10 @@ struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
- 
- 	return opp;
- }
- EXPORT_SYMBOL(devfreq_recommended_opp);
- 
--/**
-- * devfreq_register_opp_notifier() - Helper function to get devfreq notified
-- *				     for any changes in the OPP availability
-- *				     changes
-- * @dev:	The devfreq user device. (parent of devfreq)
-- * @devfreq:	The devfreq object.
-- */
--int devfreq_register_opp_notifier(struct device *dev, struct devfreq *devfreq)
--{
--	return dev_pm_opp_register_notifier(dev, &devfreq->nb);
--}
--EXPORT_SYMBOL(devfreq_register_opp_notifier);
--
--/**
-- * devfreq_unregister_opp_notifier() - Helper function to stop getting devfreq
-- *				       notified for any changes in the OPP
-- *				       availability changes anymore.
-- * @dev:	The devfreq user device. (parent of devfreq)
-- * @devfreq:	The devfreq object.
-- *
-- * At exit() callback of devfreq_dev_profile, this must be included if
-- * devfreq_recommended_opp is used.
-- */
--int devfreq_unregister_opp_notifier(struct device *dev, struct devfreq *devfreq)
--{
--	return dev_pm_opp_unregister_notifier(dev, &devfreq->nb);
--}
--EXPORT_SYMBOL(devfreq_unregister_opp_notifier);
--
--static void devm_devfreq_opp_release(struct device *dev, void *res)
--{
--	devfreq_unregister_opp_notifier(dev, *(struct devfreq **)res);
--}
--
--/**
-- * devm_devfreq_register_opp_notifier() - Resource-managed
-- *					  devfreq_register_opp_notifier()
-- * @dev:	The devfreq user device. (parent of devfreq)
-- * @devfreq:	The devfreq object.
-- */
--int devm_devfreq_register_opp_notifier(struct device *dev,
--				       struct devfreq *devfreq)
--{
--	struct devfreq **ptr;
--	int ret;
--
--	ptr = devres_alloc(devm_devfreq_opp_release, sizeof(*ptr), GFP_KERNEL);
--	if (!ptr)
--		return -ENOMEM;
--
--	ret = devfreq_register_opp_notifier(dev, devfreq);
--	if (ret) {
--		devres_free(ptr);
--		return ret;
--	}
--
--	*ptr = devfreq;
--	devres_add(dev, ptr);
--
--	return 0;
--}
--EXPORT_SYMBOL(devm_devfreq_register_opp_notifier);
--
--/**
-- * devm_devfreq_unregister_opp_notifier() - Resource-managed
-- *					    devfreq_unregister_opp_notifier()
-- * @dev:	The devfreq user device. (parent of devfreq)
-- * @devfreq:	The devfreq object.
-- */
--void devm_devfreq_unregister_opp_notifier(struct device *dev,
--					 struct devfreq *devfreq)
--{
--	WARN_ON(devres_release(dev, devm_devfreq_opp_release,
--			       devm_devfreq_dev_match, devfreq));
--}
--EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
--
- /**
-  * devfreq_register_notifier() - Register a driver with devfreq
-  * @devfreq:	The devfreq object.
-  * @nb:		The notifier block to register.
-  * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index d9f377912c10..2d9a4781f401 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -440,17 +440,10 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 		dev_err(dev, "failed to add devfreq device\n");
- 		ret = PTR_ERR(bus->devfreq);
- 		goto err;
- 	}
- 
--	/* Register opp_notifier to catch the change of OPP  */
--	ret = devm_devfreq_register_opp_notifier(dev, bus->devfreq);
--	if (ret < 0) {
--		dev_err(dev, "failed to register opp notifier\n");
--		goto err;
--	}
--
- 	/*
- 	 * Enable devfreq-event to get raw data which is used to determine
- 	 * current bus load.
- 	 */
- 	ret = exynos_bus_enable_edev(bus);
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index 2e65d7279d79..f660d2031e8a 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -454,12 +454,10 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 	if (IS_ERR(data->devfreq)) {
- 		ret = PTR_ERR(data->devfreq);
- 		goto err_free_opp;
- 	}
- 
--	devm_devfreq_register_opp_notifier(dev, data->devfreq);
--
- 	data->dev = dev;
- 	platform_set_drvdata(pdev, data);
- 
- 	return 0;
- 
-@@ -470,14 +468,10 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 
- static int rk3399_dmcfreq_remove(struct platform_device *pdev)
- {
- 	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(&pdev->dev);
- 
--	/*
--	 * Before remove the opp table we need to unregister the opp notifier.
--	 */
--	devm_devfreq_unregister_opp_notifier(dmcfreq->dev, dmcfreq->devfreq);
- 	dev_pm_opp_of_remove_table(dmcfreq->dev);
- 
- 	return 0;
- }
- 
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 4b5cc80abbe3..bf6ebfbc1e8a 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -220,18 +220,10 @@ extern void devfreq_resume(void);
- extern int update_devfreq(struct devfreq *devfreq);
- 
- /* Helper functions for devfreq user device driver with OPP. */
- extern struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
- 					   unsigned long *freq, u32 flags);
--extern int devfreq_register_opp_notifier(struct device *dev,
--					 struct devfreq *devfreq);
--extern int devfreq_unregister_opp_notifier(struct device *dev,
--					   struct devfreq *devfreq);
--extern int devm_devfreq_register_opp_notifier(struct device *dev,
--					      struct devfreq *devfreq);
--extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
--						struct devfreq *devfreq);
- extern int devfreq_register_notifier(struct devfreq *devfreq,
- 					struct notifier_block *nb,
- 					unsigned int list);
- extern int devfreq_unregister_notifier(struct devfreq *devfreq,
- 					struct notifier_block *nb,
+ err_init:
 -- 
 2.17.1
 
