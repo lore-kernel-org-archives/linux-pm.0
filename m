@@ -2,42 +2,28 @@ Return-Path: <SRS0=dKCo=WY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C731AC3A5A4
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Aug 2019 12:00:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0BD2C41514
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Aug 2019 12:09:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 590A222DA7
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Aug 2019 12:00:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="Jd6T353A"
+	by mail.kernel.org (Postfix) with ESMTP id B17C220828
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Aug 2019 12:09:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726368AbfH1MAe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Aug 2019 08:00:34 -0400
-Received: from mail.skyhub.de ([5.9.137.197]:39738 "EHLO mail.skyhub.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725991AbfH1MAe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Aug 2019 08:00:34 -0400
-Received: from zn.tnic (p200300EC2F0A5300B1A6357224C8EB83.dip0.t-ipconnect.de [IPv6:2003:ec:2f0a:5300:b1a6:3572:24c8:eb83])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 1E35E1EC06E5;
-        Wed, 28 Aug 2019 14:00:32 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1566993632;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-        bh=8xpwVf+VIsLRQ2aLupeFHolCJXDPzjt+Wi6mPweoFlg=;
-        b=Jd6T353AKbGfPOz7tG4uD23DNCJsXidU8hWdEU9EXJGXYGFVH9vRF5WV9oRvRaZFd9m8eW
-        5gshBwZD3lTmzW92WtE9tivbdyynKQd0GkwTtGgJREm0IGUEYFhq9uQ1vc46DSG8UjyTZ2
-        QCb/wSOq3lva6H2aai39nrB21g45mHw=
-Date:   Wed, 28 Aug 2019 14:00:24 +0200
-From:   Borislav Petkov <bp@alien8.de>
-To:     Pavel Machek <pavel@denx.de>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
+        id S1726506AbfH1MJj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Aug 2019 08:09:39 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46996 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726259AbfH1MJj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2019 08:09:39 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id EB15781E70; Wed, 28 Aug 2019 14:09:22 +0200 (CEST)
+Date:   Wed, 28 Aug 2019 14:09:36 +0200
+From:   Pavel Machek <pavel@denx.de>
+To:     Borislav Petkov <bp@alien8.de>
+Cc:     Pavel Machek <pavel@denx.de>, Thomas Gleixner <tglx@linutronix.de>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-kernel@vger.kernel.org, stable@vger.kernel.org,
         Tom Lendacky <thomas.lendacky@amd.com>,
@@ -57,7 +43,7 @@ Cc:     Thomas Gleixner <tglx@linutronix.de>,
         "x86@kernel.org" <x86@kernel.org>
 Subject: Re: [PATCH 4.19 72/98] x86/CPU/AMD: Clear RDRAND CPUID bit on AMD
  family 15h/16h
-Message-ID: <20190828120024.GF4920@zn.tnic>
+Message-ID: <20190828120935.GD8052@amd>
 References: <20190827072718.142728620@linuxfoundation.org>
  <20190827072722.020603090@linuxfoundation.org>
  <20190827113604.GB18218@amd>
@@ -65,23 +51,56 @@ References: <20190827072718.142728620@linuxfoundation.org>
  <20190828103113.GA14677@amd>
  <alpine.DEB.2.21.1908281231480.1869@nanos.tec.linutronix.de>
  <20190828114947.GC8052@amd>
+ <20190828120024.GF4920@zn.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="Xm/fll+QQv+hsKip"
 Content-Disposition: inline
-In-Reply-To: <20190828114947.GC8052@amd>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190828120024.GF4920@zn.tnic>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 28, 2019 at 01:49:47PM +0200, Pavel Machek wrote:
-> AMD screwed this up,
 
-Except that it wasn't AMD who screwed up but BIOS on *some* laptops.
+--Xm/fll+QQv+hsKip
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Regards/Gruss,
-    Boris.
+On Wed 2019-08-28 14:00:24, Borislav Petkov wrote:
+> On Wed, Aug 28, 2019 at 01:49:47PM +0200, Pavel Machek wrote:
+> > AMD screwed this up,
+>=20
+> Except that it wasn't AMD who screwed up but BIOS on *some* laptops.
 
-Good mailing practices for 400: avoid top-posting and trim the reply.
+Yes, and now AMD has patch to break it on *all* machines.
+
+Hmm. "Get random data" instruction that fails to return random data,
+depending on BIOS... (and even indicates success, IIRC)... Sounds like
+CPU vendor screwup to me.
+
+And they can also fix it up. If re-initing random generator is
+impossible from kernel, surely CPU microcode can be either updated to
+do the init automatically, or at least allow kernel to do the init.
+
+Best regards,
+								Pavel
+--=20
+DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+
+--Xm/fll+QQv+hsKip
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAl1mbv8ACgkQMOfwapXb+vKuGQCggrpXRxPboGyVt8+wPQDzbHsk
+Y5AAoJH+7uzv6qf18s+wwWNFoIo3pTOc
+=xR92
+-----END PGP SIGNATURE-----
+
+--Xm/fll+QQv+hsKip--
