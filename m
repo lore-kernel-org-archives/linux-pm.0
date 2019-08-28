@@ -2,120 +2,125 @@ Return-Path: <SRS0=dKCo=WY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA420C3A5A1
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Aug 2019 08:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD29EC3A5A4
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Aug 2019 08:34:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9F7E82343D
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Aug 2019 08:34:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B443121883
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Aug 2019 08:34:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TP06DYbD"
+	dkim=pass (2048-bit key) header.d=endlessm-com.20150623.gappssmtp.com header.i=@endlessm-com.20150623.gappssmtp.com header.b="0LY5dSJg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726449AbfH1Iez (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Aug 2019 04:34:55 -0400
-Received: from mail-oi1-f194.google.com ([209.85.167.194]:38477 "EHLO
-        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726253AbfH1Iey (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2019 04:34:54 -0400
-Received: by mail-oi1-f194.google.com with SMTP id q8so1460302oij.5;
-        Wed, 28 Aug 2019 01:34:54 -0700 (PDT)
+        id S1726297AbfH1Ie4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Aug 2019 04:34:56 -0400
+Received: from mail-qk1-f194.google.com ([209.85.222.194]:46142 "EHLO
+        mail-qk1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726328AbfH1Iez (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Aug 2019 04:34:55 -0400
+Received: by mail-qk1-f194.google.com with SMTP id p13so1644745qkg.13
+        for <linux-pm@vger.kernel.org>; Wed, 28 Aug 2019 01:34:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
+        d=endlessm-com.20150623.gappssmtp.com; s=20150623;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=U8FH7AFxalfo9kXqgzeqBM8w1kp/vA0EX4/dnehxzF8=;
-        b=TP06DYbD3V6ERHTB3g0KbjtgqWL9TuvRo0wmUzXGiDGjXKb3S3L4Mb2a/jtVlf2VmP
-         wioNJCGVxlZITAL0k7PPNPIdAr/7KSa7wvD2FvKUEaPfPJ4gFF46ZnXi49F+MOwodDHE
-         odc7xsPY51gjFc+ghK+35ZpYlu5JymD7y5dT9LxeZQJPCr5D45k+sUBfS7tgfeTCuuB5
-         b4BfOVEE7RxQAv/GGMsa3dRqzx8EaBvDD9rQ6Sw6rTuB9kj/+Dr+G8ORrBzRHG0ZMoWB
-         EEHYTIAdYESfcYmwuq272GcfrQmwEIxFkYSDbrQsqGTXXjdimdbmA8emXt+v76vaDsTN
-         hdOw==
+         :cc;
+        bh=bKbqkzBFkxNdJKJXQR+Wg8QV6rEOuQGhAn3aSf/gT7M=;
+        b=0LY5dSJgfo67dGEGIVRFLIWsHbcXhkEjfOWuVxFfBqzdIeSgoRnl9/zr+F662NYTtv
+         DAtLpJEhQdBbTxZJ9y/EcTuvEGMRslGOXJ0s1pwZHf4Qo2aniHeVfSYZdwTM8rPsGHKq
+         XsevQmVRJi5lG68+Aus5eM/Bggoy5u9XjenGQO72QTp2nBu2r2ylprVKy8sJ9vbYCPAi
+         5bqsvoX688duqLyMJkdEPIAIzz0ZK302QHLnPlOVqvxIR3S8Gq1XXRHD/tLy7uktAfDV
+         CGaFJx/w0ZqswFPkYEkBwoRGzmSD8RBT5gvbd7t101UjfC/mA3NSMDH++G0uFr3KNrk2
+         bNaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=U8FH7AFxalfo9kXqgzeqBM8w1kp/vA0EX4/dnehxzF8=;
-        b=Ri9P7KNua3Xts6sgt7uNghB3hrfmn3j/UrWKi5potBso8GTK4IJdl+HNU8L5wYu4l2
-         FNX9PpDjxocl12w5yy3zWfleFWtsi/I3n0rIVPtroEbUFmEzhaw1+nJyBpcb616azkbu
-         LSIinBNAjqs84D2dLMDnkMc0x3Ufa51S2BnELjVp7uwCEXnPrcGhyfcI5reoRNmw42bY
-         NzVGOpoaM5H/QkEDUctX++NlgxuYRzXJzuCV0xI8oSTDdagBkCxgb6w6vRTR+ClN80ei
-         4PxVqfLmbtPIl/6e90qPBwZnvHHea521b+4VlXK2EUTMM5mElxgdjtPs+7uMlzi4EFe4
-         p7zw==
-X-Gm-Message-State: APjAAAXGjZwYLsUnwk2dS9wap9z/W7DlRBR5WWt/lyzZ5DkBlIdiXKbf
-        GaaA8VQvKbisl5gyx/fkMGLkjSGo0sDBcJJcU5E=
-X-Google-Smtp-Source: APXvYqzmD3lOi71p/BZRzvw9jM1MKLJ3Zwe/887SQPAbbvl+RMdE0RaTkaVm1kIc+BH0REmOSCceeJdskb95k+RqEqI=
-X-Received: by 2002:a54:488e:: with SMTP id r14mr1922852oic.174.1566981293845;
- Wed, 28 Aug 2019 01:34:53 -0700 (PDT)
+         :message-id:subject:to:cc;
+        bh=bKbqkzBFkxNdJKJXQR+Wg8QV6rEOuQGhAn3aSf/gT7M=;
+        b=tQsHJV09o9vwDl+RW01Lo4u1xICDDG7Thkn7MmaYa5dTF4GNRjsugC7qQOxh8s/Fhi
+         BwsuSgtj4LCWezDgA/ROEC3MjgOqmBGhJSwMHA6ROlQfDX3TSunl+YgsGgqYZhuP7J6h
+         +MU8IazFCtink/fsWG4DYY1+h7F44N0k3E5t/9kB7UH+Z6thKAyvSxYdrbU78YkZJ5Ad
+         F7yE26lQJEfM00tyyCAjupSFO6XT9fQNA2bOZbc/G2LStVfwTEdGg4nO2lDhwkshJxb2
+         hqDQefOhFR/mEiMWK+gglnv2yejKwg4x/aHk9buRylgfQGtA3SdU/LYJ8jXFCJOadjt0
+         RNsA==
+X-Gm-Message-State: APjAAAV5kuV8VQ57lJ90aRx3m6mJ8lXpxW0z69WeJyyzmxoi0PY4xLYt
+        GxiL3JSPK00hsB4Nlp9826SLEI4FeW+bDtE9Owcv2Q==
+X-Google-Smtp-Source: APXvYqxtwyFq4YxyCPY50hEgBSnFiGRmpJPgBZNALz6POFBCkxPUVDDj5mHn1JruCZ/L+mUaMIJQUWP4i6qbs6M0M+U=
+X-Received: by 2002:ae9:c206:: with SMTP id j6mr2683342qkg.14.1566981294229;
+ Wed, 28 Aug 2019 01:34:54 -0700 (PDT)
 MIME-Version: 1.0
-References: <1564643196-7797-1-git-send-email-wanpengli@tencent.com>
- <7b1e3025-f513-7068-32ac-4830d67b65ac@intel.com> <c3fe182f-627f-88ad-cb4d-a4189202b438@redhat.com>
- <20190803202058.GA9316@amt.cnet> <CANRm+CwtHBOVWFcn+6Z3Ds7dEcNL2JP+b6hLRS=oeUW98A24MQ@mail.gmail.com>
- <20190826204045.GA24697@amt.cnet> <CANRm+Cx0+V67Ek7FhSs61ZqZL3MgV88Wdy17Q6UA369RH7=dgQ@mail.gmail.com>
-In-Reply-To: <CANRm+Cx0+V67Ek7FhSs61ZqZL3MgV88Wdy17Q6UA369RH7=dgQ@mail.gmail.com>
-From:   Wanpeng Li <kernellwp@gmail.com>
-Date:   Wed, 28 Aug 2019 16:35:30 +0800
-Message-ID: <CANRm+CxqYMzgvxYyhZLmEzYd6SLTyHdRzKVaSiHO-4SV+OwZUQ@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle-haltpoll: Enable kvm guest polling when dedicated
- physical CPUs are available
-To:     Marcelo Tosatti <mtosatti@redhat.com>
-Cc:     Paolo Bonzini <pbonzini@redhat.com>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>,
-        =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+References: <CAD8Lp47Vh69gQjROYG69=waJgL7hs1PwnLonL9+27S_TcRhixA@mail.gmail.com>
+ <CAJZ5v0g4T_0VD_oYMF_BF1VM-d1bg-BD8h8=STDrhVBgouPOPg@mail.gmail.com>
+ <01cf6be6-9175-87ca-f3ad-78c06b666893@linux.intel.com> <CAD8Lp4658-c=7KabiJ=xuNRCqPwF4BJauMHqh_8WSBfCFHWSSg@mail.gmail.com>
+ <CAJZ5v0gouaztf7tcKXBr90gjrVjOvqH70regD=o2r_d+9Bwvqg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gouaztf7tcKXBr90gjrVjOvqH70regD=o2r_d+9Bwvqg@mail.gmail.com>
+From:   Daniel Drake <drake@endlessm.com>
+Date:   Wed, 28 Aug 2019 16:34:42 +0800
+Message-ID: <CAD8Lp47oNJb5N5i4oUQfN5b=xCtUc1Lt852pnXxhNq0vyWj=yg@mail.gmail.com>
+Subject: Re: Ryzen7 3700U xhci fails on resume from sleep
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Mathias Nyman <mathias.nyman@linux.intel.com>,
+        Linux USB Mailing List <linux-usb@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        "Michael S. Tsirkin" <mst@redhat.com>
+        Endless Linux Upstreaming Team <linux@endlessm.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 27 Aug 2019 at 08:43, Wanpeng Li <kernellwp@gmail.com> wrote:
+On Tue, Aug 27, 2019 at 3:48 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> That depends on what exactly happens when you try to do the D0-D3-D0
+> with setpci.  If the device becomes unreachable (or worse) after that,
+> it indicates a platform issue.  It should not do any harm at the
+> least.
 >
-> Cc Michael S. Tsirkin,
-> On Tue, 27 Aug 2019 at 04:42, Marcelo Tosatti <mtosatti@redhat.com> wrote=
-:
-> >
-> > On Tue, Aug 13, 2019 at 08:55:29AM +0800, Wanpeng Li wrote:
-> > > On Sun, 4 Aug 2019 at 04:21, Marcelo Tosatti <mtosatti@redhat.com> wr=
-ote:
-> > > >
-> > > > On Thu, Aug 01, 2019 at 06:54:49PM +0200, Paolo Bonzini wrote:
-> > > > > On 01/08/19 18:51, Rafael J. Wysocki wrote:
-> > > > > > On 8/1/2019 9:06 AM, Wanpeng Li wrote:
-> > > > > >> From: Wanpeng Li <wanpengli@tencent.com>
-> > > > > >>
-> > > > > >> The downside of guest side polling is that polling is performe=
-d even
-> > > > > >> with other runnable tasks in the host. However, even if poll i=
-n kvm
-> > > > > >> can aware whether or not other runnable tasks in the same pCPU=
-, it
-> > > > > >> can still incur extra overhead in over-subscribe scenario. Now=
- we can
-> > > > > >> just enable guest polling when dedicated pCPUs are available.
-> > > > > >>
-> > > > > >> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > >> Cc: Paolo Bonzini <pbonzini@redhat.com>
-> > > > > >> Cc: Radim Kr=C4=8Dm=C3=A1=C5=99 <rkrcmar@redhat.com>
-> > > > > >> Cc: Marcelo Tosatti <mtosatti@redhat.com>
-> > > > > >> Signed-off-by: Wanpeng Li <wanpengli@tencent.com>
-> > > > > >
-> > > > > > Paolo, Marcelo, any comments?
-> > > > >
-> > > > > Yes, it's a good idea.
-> > > > >
-> > > > > Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+> However, in principle D0-D3-D0 at the PCI level alone may not be
+> sufficient, because ACPI may need to be involved.
 
-Hi Marcelo,
+After using setpci to do D0-D3-D0 transitions, the xhci module fails to probe.
 
-If you don't have more concern, I guess Rafael can apply this patch
-now since the merge window is not too far.
+  xhci_hcd 0000:03:00.3: WARN: xHC restore state timeout
+  xhci_hcd 0000:03:00.3: PCI post-resume error -110!
 
-Regards,
-Wanpeng Li
+But maybe it's not a great test; as you say I'm not involving ACPI,
+and also if Linux has a reason for not runtime suspending PCI devices
+without drivers present then maybe I should also not be doing this.
+
+> I think that PM-runtime should suspend XHCI controllers without
+> anything on the bus under them, so I wonder what happens if
+> ".../power/control" is set to "on" and then to "auto" for that device,
+> with the driver loaded.
+
+Good hint.
+
+# echo on > /sys/bus/pci/devices/0000\:03\:00.3/power/control
+# echo auto > /sys/bus/pci/devices/0000\:03\:00.3/power/control
+# echo 1 > /sys/bus/usb/devices/1-4/remove
+# cat /sys/bus/pci/devices/0000\:03\:00.3/power/runtime_status
+suspended
+# echo on > /sys/bus/pci/devices/0000\:03\:00.3/power/control
+
+The final command there triggers these messages (including a printk I
+added in pci_raw_set_power_state):
+ xhci_hcd 0000:03:00.3: pci_raw_set_power_state from 3 to 0
+ xhci_hcd 0000:03:00.3: Refused to change power state, currently in D3
+ xhci_hcd 0000:03:00.3: pci_raw_set_power_state from 3 to 0
+ xhci_hcd 0000:03:00.3: enabling device (0000 -> 0002)
+ xhci_hcd 0000:03:00.3: WARN: xHC restore state timeout
+ xhci_hcd 0000:03:00.3: PCI post-resume error -110!
+ xhci_hcd 0000:03:00.3: HC died; cleaning up
+
+So we just reproduced the same issue using runtime PM, without having
+to go through the whole suspend path.
+
+I guess that points towards a platform issue, although the weird thing
+is that Windows presumably does the D3-D0-D3 transition during
+suspend/resume and that appears to work fine.
+
+I'll report it to the vendor, but if you have any other debug ideas
+they would be much appreciated.
+
+Daniel
