@@ -2,113 +2,117 @@ Return-Path: <SRS0=VW+F=WZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19C5BC3A59F
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Aug 2019 14:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACA73C3A59F
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Aug 2019 14:42:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DD44C233FF
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Aug 2019 14:29:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lHE8Rghi"
+	by mail.kernel.org (Postfix) with ESMTP id 8E2BA22CED
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Aug 2019 14:42:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727171AbfH2O25 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Aug 2019 10:28:57 -0400
-Received: from mail-vs1-f67.google.com ([209.85.217.67]:41730 "EHLO
-        mail-vs1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726518AbfH2O25 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Aug 2019 10:28:57 -0400
-Received: by mail-vs1-f67.google.com with SMTP id m62so2531575vsc.8
-        for <linux-pm@vger.kernel.org>; Thu, 29 Aug 2019 07:28:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=mIpyQ3wOb9bWqvkX0Kpr4MtQFBTIPyZmoRnHAHX/iC4=;
-        b=lHE8RghiwfW1Za7MXZfEj+tcRA5+wrEWmVF5Keow8qTDcQOlGf4062XfDSUn6uEXDh
-         lZNKY9YudWj2VwmIGrrk0z96f7MCwqTmToJ0qUx7s9qo5fMEKYT63v3iilBq/ykKVI0k
-         4uQGf2L0Qu4GxqfenZnbk3+E1Hyft/0qcstmSQbMSOP0hSUEeCdV4ho5986Zq2vC8vFd
-         /3xTmD1TXSCXRTRhGGM9PJzXP4mIJTDL8Uz9uL0aFnR4Pv2X7S+q6R+YjGzN16IA04xd
-         G/zNaTE1nZDJiQiJwhAZUOdxXwX36xfy+KGbSTMV406iQO+PaEU3HTP2Bd2sUPzNjmH9
-         9DGg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=mIpyQ3wOb9bWqvkX0Kpr4MtQFBTIPyZmoRnHAHX/iC4=;
-        b=ENLizzogJWsAI/X2SeY1Da0Ttwy7cgprNaEgubfDumlonVEuESl3w1Rq8Q8RZ3Pa/8
-         jcVRHqEmWkrE7jOG7+er33y6Z6uGSww74RXG/z7IiReo/eeB4fjwIi+XGJwTrK2ar34g
-         SZniJ1BYIWEfetnIEyKGPU5kX9elpIFy6HNko4frEOBXS/doedvbuKazAaIHwl3hGRDu
-         dRSGrX8mJogb5kuwqbpnNCVPFP2d1QwTRCJFiFSeybaVjg+MJQlisbIdGPNvUeiCFjB/
-         +AVFmAUk9OL+5ofrt++26kDl/bJTV8JSGfaBCFmOmYYgBdcoEJzvPGEUif9Asw/NX1Xc
-         zKMQ==
-X-Gm-Message-State: APjAAAUVlPuOQOkgH7n65/ZDhz24aQmjlLAWFajANgRZRdSFIe/cYOSR
-        Lz1GGM16z6r9mSmZoIRKh2kYMl5cxnPpnFrym4Dsng==
-X-Google-Smtp-Source: APXvYqzYJ6oqRwamIEDLJ3VtjU+XaOg77kkXW1O2XB+w4FxGCSBbCRCZltm1LjnvJjPK+WsK0l7De0RJSAqYnMnKyvI=
-X-Received: by 2002:a67:b009:: with SMTP id z9mr5725405vse.27.1567088936391;
- Thu, 29 Aug 2019 07:28:56 -0700 (PDT)
-MIME-Version: 1.0
-References: <cover.1566907161.git.amit.kucheria@linaro.org>
- <93fa782bde9c66845993ff883532b3f1f02d99e4.1566907161.git.amit.kucheria@linaro.org>
- <20190829140459.szauzhennltrwvg4@holly.lan>
-In-Reply-To: <20190829140459.szauzhennltrwvg4@holly.lan>
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-Date:   Thu, 29 Aug 2019 19:58:45 +0530
-Message-ID: <CAHLCerNuycWTLmCvdffM0=GdG7UZ7zNoj0Jb0CeLTULzVmfSJw@mail.gmail.com>
-Subject: Re: [PATCH v2 03/15] drivers: thermal: tsens: Add __func__ identifier
- to debug statements
-To:     Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Brian Masney <masneyb@onstation.org>,
-        Marc Gonzalez <marc.w.gonzalez@free.fr>,
+        id S1728128AbfH2Okf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Aug 2019 10:40:35 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33508 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727420AbfH2Oke (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Aug 2019 10:40:34 -0400
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com [10.5.11.16])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mx1.redhat.com (Postfix) with ESMTPS id D5CF3102504A;
+        Thu, 29 Aug 2019 14:40:33 +0000 (UTC)
+Received: from amt.cnet (ovpn-112-4.gru2.redhat.com [10.97.112.4])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 4731D5C1D6;
+        Thu, 29 Aug 2019 14:40:33 +0000 (UTC)
+Received: from amt.cnet (localhost [127.0.0.1])
+        by amt.cnet (Postfix) with ESMTP id B6F20105140;
+        Thu, 29 Aug 2019 11:40:18 -0300 (BRT)
+Received: (from marcelo@localhost)
+        by amt.cnet (8.14.7/8.14.7/Submit) id x7TEeEe7014394;
+        Thu, 29 Aug 2019 11:40:14 -0300
+Date:   Thu, 29 Aug 2019 11:40:14 -0300
+From:   Marcelo Tosatti <mtosatti@redhat.com>
+To:     Joao Martins <joao.m.martins@oracle.com>
+Cc:     kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+        Sean Christopherson <sean.j.christopherson@intel.com>,
+        Vitaly Kuznetsov <vkuznets@redhat.com>,
+        Wanpeng Li <wanpengli@tencent.com>,
+        Jim Mattson <jmattson@google.com>,
+        Joerg Roedel <joro@8bytes.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        linux-pm@vger.kernel.org,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Subject: Re: [PATCH v1] cpuidle-haltpoll: vcpu hotplug support
+Message-ID: <20190829144011.GA14365@amt.cnet>
+References: <20190828185650.16923-1-joao.m.martins@oracle.com>
+ <20190829115634.GA4949@amt.cnet>
+ <8c459d91-bc47-2ff4-7d3b-243ed4e466cb@oracle.com>
+ <311c2ffe-f840-9990-c1a7-5561cc5a0f54@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <311c2ffe-f840-9990-c1a7-5561cc5a0f54@oracle.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.6.2 (mx1.redhat.com [10.5.110.66]); Thu, 29 Aug 2019 14:40:34 +0000 (UTC)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Aug 29, 2019 at 7:35 PM Daniel Thompson
-<daniel.thompson@linaro.org> wrote:
->
-> On Tue, Aug 27, 2019 at 05:43:59PM +0530, Amit Kucheria wrote:
-> > Printing the function name when enabling debugging makes logs easier to
-> > read.
-> >
-> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > Reviewed-by: Stephen Boyd <swboyd@chromium.org>
-> > Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->
-> This should need to be manually added at each call site; it is already
-> built into the logging system (the f flag for dynamic debug)?
+On Thu, Aug 29, 2019 at 03:24:31PM +0100, Joao Martins wrote:
+> On 8/29/19 2:50 PM, Joao Martins wrote:
+> > On 8/29/19 12:56 PM, Marcelo Tosatti wrote:
+> >> Hi Joao,
+> >>
+> >> On Wed, Aug 28, 2019 at 07:56:50PM +0100, Joao Martins wrote:
+> >>> +static void haltpoll_uninit(void)
+> >>> +{
+> >>> +	unsigned int cpu;
+> >>> +
+> >>> +	cpus_read_lock();
+> >>> +
+> >>> +	for_each_online_cpu(cpu) {
+> >>> +		struct cpuidle_device *dev =
+> >>> +			per_cpu_ptr(haltpoll_cpuidle_devices, cpu);
+> >>> +
+> >>> +		if (!dev->registered)
+> >>> +			continue;
+> >>> +
+> >>> +		arch_haltpoll_disable(cpu);
+> >>> +		cpuidle_unregister_device(dev);
+> >>> +	}
+> >>
+> >> 1)
+> >>
+> >>> +
+> >>> +	cpuidle_unregister(&haltpoll_driver);
+> >>
+> >> cpuidle_unregister_driver.
+> > 
+> > Will fix -- this was an oversight.
+> > 
+> >>
+> >>> +	free_percpu(haltpoll_cpuidle_devices);
+> >>> +	haltpoll_cpuidle_devices = NULL;
+> >>> +
+> >>> +	cpus_read_unlock();
+> >>
+> >> Any reason you can't cpus_read_unlock() at 1) ?
+> >>
+> > No, let me adjust that too.
+> > 
+> >> Looks good otherwise.
+> >>
+> 
+> BTW, should I take this as a Acked-by, Reviewed-by, or neither? :)
+> 
+> 	Joao
 
-I assume you meant "shouldn't".
+I'll ACK -v2 once you send it.
 
-I haven't yet integrated dynamic debug into my daily workflow.
-
-Last time I looked at it, it was a bit bothersome to use because I
-needed to lookup exact line numbers to trigger useful information. And
-those line numbers constantly keep changing as I work on the driver,
-so it was a bit painful to script. Not to mention the syntax to frob
-the correct files in debugfs to enable this functionality.
-
-As opposed to this, adding the following to the makefile is so easy. :-)
-
-CFLAGS_tsens-common.o          := -DDEBUG
-
-Perhaps I am using it all wrong? How would I go about using dynamic
-debug instead of this patch?
-
-Regards,
-Amit
