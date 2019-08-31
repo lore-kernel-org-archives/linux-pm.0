@@ -2,126 +2,126 @@ Return-Path: <SRS0=eDrI=W3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 103B2C3A5A6
-	for <linux-pm@archiver.kernel.org>; Sat, 31 Aug 2019 16:48:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3626C3A5A6
+	for <linux-pm@archiver.kernel.org>; Sat, 31 Aug 2019 19:35:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D070F2190F
-	for <linux-pm@archiver.kernel.org>; Sat, 31 Aug 2019 16:48:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B2A3C2187F
+	for <linux-pm@archiver.kernel.org>; Sat, 31 Aug 2019 19:35:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1567270125;
-	bh=8Mro9PvfbZMxhnsH/UQLgMPFUV8SjJviW6EtxlqPkjg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=0MDnzWyMD+LBixm+CJqr2RBzleG6G1gu7037rap+R3ZRod1kwcNR6HNq0EZOJuEnH
-	 vIEI5uEBqrhHYUulMXP/tEHyqODbqW8FCuApARRPkdQthZE811uuXKgiDaTy7pmdzg
-	 SoejxH2abDU4b/TuFxiHQFa9Z6piEotKFp6zD/MY=
+	s=default; t=1567280119;
+	bh=k53cyOQKRd6m3Bw97pzRnO6NqjIs34xYq9/bAjFxWxM=;
+	h=From:To:Subject:Date:List-ID:From;
+	b=w935XHfit0I4xCgox8UO1nhZY0jPSPz/9CwYayBW8DClTgnZbi1VwRUAUiHdg2WOh
+	 utF6ZgLd/NdN+4uIjv1sLgQuq7ax3j3/r8Bpx8DA0iiHRAniG4bAYB63tGzb9z5Fxk
+	 +tKLAZ6UT1/ZZr9ce6e5rGJr5RHmeA44QxHHOgpw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728274AbfHaQsp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 31 Aug 2019 12:48:45 -0400
-Received: from mail-ed1-f65.google.com ([209.85.208.65]:40767 "EHLO
-        mail-ed1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727816AbfHaQso (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 31 Aug 2019 12:48:44 -0400
-Received: by mail-ed1-f65.google.com with SMTP id v38so5683786edm.7;
-        Sat, 31 Aug 2019 09:48:43 -0700 (PDT)
+        id S1728481AbfHaTfS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 31 Aug 2019 15:35:18 -0400
+Received: from mail-io1-f67.google.com ([209.85.166.67]:45319 "EHLO
+        mail-io1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728477AbfHaTfS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 31 Aug 2019 15:35:18 -0400
+Received: by mail-io1-f67.google.com with SMTP id f12so3579447iog.12
+        for <linux-pm@vger.kernel.org>; Sat, 31 Aug 2019 12:35:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:from:to:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=MJ/iD/oPEHsEzGQ/DDA12QMxceMO733MKRlP0ppxKvc=;
+        b=NRWOynWHa8i0D5JOZmMY7F/HlWjXlV0WqOCqvtSEmQQE8rMq+wyB/sVIidvNVONZKZ
+         /OPTdEGwM934pi92OAyQzSc7UFEkqjHfkMygsFFXlrpq34zeW3MqtLXdb1qxJxbtTab+
+         Vkb1y8yIc3uPvmnrO9Pr2bMkyafV7dd04AwM6al6mYF3yxF5+6o4VFMd/kiB20Ls5nAw
+         196dg5NLbKJ//4vjn7P/j/bGpplbmUTOHqTwH1Th2wmfpg7NgBgiPsrPwwWQTOHnMSpV
+         P1TFMaBUiJnxTV8b4SBw8zOpggeAf1YOd9eZ8EG0n/m58gcdEkWuomCrdz1JH8k3puT8
+         SiaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=ztMy/qc6TZtxWztQakmFfR5mUH6yqYSc1RNJD7TlbZQ=;
-        b=s0DJ7pg3BA42rYndtdKLUHBIo9N2tWK9bc7/62X4w586Mz2sozc8X12oEH8IrZyxNC
-         c9iUvDNO2V1C+twP/W1CGx7WK8ay71ihd+CsYAtAPwDu4yRjPXZHOS0X+TKSfHX9t+mg
-         5xm4vdkVYN/Fyhh24QGD6KD7qweGTDz368CbcwpVFY9NoKiTaArhVMjsFiOQo3zZJHJj
-         95+ZUsHhGnjHyO6AJiDZ3GUoIbvny5RHVGZtFePhbaoA52BJTjRE+e6Ir2M7TOgTxIRp
-         I6uT+eun4MZ1pNDjHSJX5w8nJh6uTA68DBhc+TuI12nFYAg5x7u0I+5FYTREh7coDFCs
-         4TGg==
-X-Gm-Message-State: APjAAAX1hNbgDU3MD18mN5+nT/7/MxsnB5pScY7Hm+3xc8vyp1jsyG7e
-        LFlYwhW6d7LnxlFy/vrGpAOENLJgQwUIV8u4V86upA==
-X-Google-Smtp-Source: APXvYqyl4ibkLRkDUjYF8n0z5MtjgExy1a9DAIVq8L6fnpy7YHsbekFn804yrSKHc1SJcIQgcCR5/e/oZGJpW7b9VUQ=
-X-Received: by 2002:a50:bf4f:: with SMTP id g15mr21462355edk.92.1567270123028;
- Sat, 31 Aug 2019 09:48:43 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190325173232.216357-1-Yazen.Ghannam@amd.com>
- <SN6PR12MB26394D7FEE4582FD19860104F8230@SN6PR12MB2639.namprd12.prod.outlook.com>
- <SN6PR12MB2639ABA1421E220FF5813738F8100@SN6PR12MB2639.namprd12.prod.outlook.com>
-In-Reply-To: <SN6PR12MB2639ABA1421E220FF5813738F8100@SN6PR12MB2639.namprd12.prod.outlook.com>
+        h=x-gm-message-state:sender:from:to:subject:date:message-id
+         :mime-version:content-transfer-encoding;
+        bh=MJ/iD/oPEHsEzGQ/DDA12QMxceMO733MKRlP0ppxKvc=;
+        b=HkJBKGXLH7PH3gOzTAuURLiAdEz7HMA5I8Y9vo6zOGIPsrZQk52sThNmL9mlR801lc
+         hsTWQFLZtyVASqlnKAa1cZ76kaolqlHt0k72ieWwiPq1FutGBbQ8NF7bIJEh2F/nFWgD
+         tqvE3ksX6NyUdNrknuAMdCt1xzKVbWJTxa2HDTNTfUnX4YtcDyHDAgPHBTJXPxwBzxX1
+         hCQUIfNk29PNJrzBYX6sUZSPVoZotU6xWStZ+YfQfguhMzK/cHZX822McaQKaEfhFcw4
+         HUCD5eX1Z96apshC6CFI9kpYZ3774eoHiYk9a+IwmSPoyPny9cxdaY3azS7kznZOB6RH
+         yMcw==
+X-Gm-Message-State: APjAAAXUZYrYZwmNj+vF0Zfx+1bMSkeTk49NaTbSVZbmjaQ8n5ECIOhz
+        vXMiVypmJ9iKFJVr2Sgytu/KPPPN
+X-Google-Smtp-Source: APXvYqzrpm3f9wM9sXqpFUtbZ/70qgn8+jEceqr99s/n7b0FZKtJSY26Owt/vYxrybdz1Nctyybokw==
+X-Received: by 2002:a6b:5a0b:: with SMTP id o11mr25364136iob.98.1567280117768;
+        Sat, 31 Aug 2019 12:35:17 -0700 (PDT)
+Received: from nuc8.tds (h69-131-112-51.cntcnh.dsl.dynamic.tds.net. [69.131.112.51])
+        by smtp.gmail.com with ESMTPSA id r2sm6937376ioh.61.2019.08.31.12.35.16
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 31 Aug 2019 12:35:17 -0700 (PDT)
 From:   Len Brown <lenb@kernel.org>
-Date:   Sat, 31 Aug 2019 12:48:32 -0400
-Message-ID: <CAJvTdKk28qQnVv-fMkd6dPGrbfYryp+7PRHgqyurLyavMHSGbw@mail.gmail.com>
-Subject: Re: [PATCH] tools/power turbostat: Make interval calculation per
- thread to reduce jitter
-To:     "Ghannam, Yazen" <Yazen.Ghannam@amd.com>
-Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "len.brown@intel.com" <len.brown@intel.com>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+To:     linux-pm@vger.kernel.org
+Subject: turbostat 19.08.31 is available
+Date:   Sat, 31 Aug 2019 15:34:39 -0400
+Message-Id: <20190831193458.12698-1-lenb@kernel.org>
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Yeah, I like this patch, and I have applied it.
+Thanks for the patches everybody!
 
-thanks!
+You can download the latest turbostat (and x86_energy_perf_policy) for testing here:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
+
+ tools/power/x86/turbostat/Makefile                 |   3 +-
+ tools/power/x86/turbostat/turbostat.c              | 101 ++++++++++++++-------
+ tools/power/x86/x86_energy_perf_policy/Makefile    |   3 +-
+ .../x86_energy_perf_policy.8                       |   2 +-
+ .../x86_energy_perf_policy.c                       |  28 +++---
+ 5 files changed, 90 insertions(+), 47 deletions(-)
+
+[PATCH 01/19] tools/power x86_energy_perf_policy: Fix "uninitialized variable" warnings at -O2
+[PATCH 02/19] tools/power/x86: Enable compiler optimisations and Fortify by default
+[PATCH 03/19] tools/power: Fix typo in man page
+[PATCH 04/19] tools/power x86_energy_perf_policy: Fix argument parsing
+[PATCH 05/19] tools/power turbostat: remove duplicate pc10 column
+[PATCH 06/19] tools/power turbostat: Make interval calculation per thread to reduce jitter
+[PATCH 07/19] tools/power turbostat: fix leak of file descriptor on error return path
+[PATCH 08/19] tools/power turbostat: fix file descriptor leaks
+[PATCH 09/19] tools/power turbostat: fix buffer overrun
+
+Prarit, Naoya,
+For now, I went with your initial 1-line fix,
+as I currently don't have an appetite for a 400-line patch
+when 1-line spending 1KB / CPU will float the boat.
+
+Yeah, it is a bummer that this "bundle formatted output into
+a single buffered write" optimiation is even necessary...
+you'd think that stdio could be smarter to automatically buffer
+multiple prints into a single write...
+
+[PATCH 10/19] tools/power turbostat: add Jacobsville support
+[PATCH 11/19] tools/power turbostat: Fix Haswell Core systems
+[PATCH 12/19] tools/power turbostat: rename has_hsw_msrs()
+[PATCH 13/19] tools/power turbostat: Add Ice Lake NNPI support
+[PATCH 14/19] tools/power turbostat: read from pipes too
+[PATCH 15/19] tools/power turbostat: do not enforce 1ms
+[PATCH 16/19] tools/power turbostat: Fix CPU%C1 display value
+
+[PATCH 17/19] tools/power turbostat: Fix caller parameter of get_tdp_amd()
+[PATCH 18/19] tools/power turbostat: Add support for Hygon Fam 18h (Dhyana) RAPL
+
+Although these were marked RFC instead of PATCH, I applied them,
+because they were otherwise properly signed, and seemed ready.
+
+[PATCH 19/19] tools/power turbostat: update version number
+
+cheers,
 -Len
 
-On Fri, Jun 7, 2019 at 12:28 PM Ghannam, Yazen <Yazen.Ghannam@amd.com> wrote:
->
-> > -----Original Message-----
-> > From: Ghannam, Yazen <Yazen.Ghannam@amd.com>
-> > Sent: Tuesday, April 23, 2019 12:53 PM
-> > To: Ghannam, Yazen <Yazen.Ghannam@amd.com>; linux-pm@vger.kernel.org; len.brown@intel.com
-> > Cc: linux-kernel@vger.kernel.org; Len Brown <lenb@kernel.org>
-> > Subject: RE: [PATCH] tools/power turbostat: Make interval calculation per thread to reduce jitter
-> >
-> > > -----Original Message-----
-> > > From: linux-kernel-owner@vger.kernel.org <linux-kernel-owner@vger.kernel.org> On Behalf Of Ghannam, Yazen
-> > > Sent: Monday, March 25, 2019 12:33 PM
-> > > To: linux-pm@vger.kernel.org
-> > > Cc: Ghannam, Yazen <Yazen.Ghannam@amd.com>; linux-kernel@vger.kernel.org; lenb@kernel.org
-> > > Subject: [PATCH] tools/power turbostat: Make interval calculation per thread to reduce jitter
-> > >
-> > > From: Yazen Ghannam <yazen.ghannam@amd.com>
-> > >
-> > > Turbostat currently normalizes TSC and other values by dividing by an
-> > > interval. This interval is the delta between the start of one global
-> > > (all counters on all CPUs) sampling and the start of another. However,
-> > > this introduces a lot of jitter into the data.
-> > >
-> > > In order to reduce jitter, the interval calculation should be based on
-> > > timestamps taken per thread and close to the start of the thread's
-> > > sampling.
-> > >
-> > > Define a per thread time value to hold the delta between samples taken
-> > > on the thread.
-> > >
-> > > Use the timestamp taken at the beginning of sampling to calculate the
-> > > delta.
-> > >
-> > > Move the thread's beginning timestamp to after the CPU migration to
-> > > avoid jitter due to the migration.
-> > >
-> > > Use the global time delta for the average time delta.
-> > >
-> > > Signed-off-by: Yazen Ghannam <yazen.ghannam@amd.com>
-> > > ---
-> >
-> > Hi Len,
-> >
-> > Any comments on this patch?
-> >
->
-> Hi Len,
->
-> Just wanted to check in. Do you have any comments on this patch?
->
-> Thanks,
-> Yazen
-
-
-
--- 
-Len Brown, Intel Open Source Technology Center
