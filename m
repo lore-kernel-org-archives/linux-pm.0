@@ -2,172 +2,109 @@ Return-Path: <SRS0=abAq=W5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4113DC3A59B
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Sep 2019 08:00:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD963C3A59B
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Sep 2019 09:43:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1752C22DD6
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Sep 2019 08:00:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1567411247;
-	bh=L83zCSB1qiwTYwMO95Zsb92WohQS4er/qeMOyrCaEvc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=iBz3tVZhT4NZ8xDJ+OryPXbkI3v/Y6al8+eVFeaBtkCrErJlElse2rYzd7MsmF7he
-	 NhCdrDiM3bTv9VCUHy0isXl4v1nc0jiUsAulDkCGis3tEvk8zOijYB26DZ5DjmSY5o
-	 B0DAaouLOgMrXh6T/bFJChzUkqDcnc0cncJyX3uU=
+	by mail.kernel.org (Postfix) with ESMTP id A400F21897
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Sep 2019 09:43:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mhtkERu8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729626AbfIBIAq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Sep 2019 04:00:46 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55374 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729535AbfIBIAq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 2 Sep 2019 04:00:46 -0400
-Received: from earth.universe (dyndsl-091-096-044-124.ewe-ip-backbone.de [91.96.44.124])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 10DA122CF7;
-        Mon,  2 Sep 2019 08:00:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1567411245;
-        bh=L83zCSB1qiwTYwMO95Zsb92WohQS4er/qeMOyrCaEvc=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=npha/fxKlCxSrpKAu0q7t6vulPXDDZwH1O7a/jwXEwqLgNwoQUD+DyNsFTsCY8NJj
-         DL2Ek58sfD2J6glEz8zMNVmSC3sjqLzn6y2gajXHNtH4IB1ngez5w3DiAiL+fheqQZ
-         32EuL94JEk+H7L9mArHt/EQxmqgd/sWEeRXlyep4=
-Received: by earth.universe (Postfix, from userid 1000)
-        id 4216C3C0B7F; Mon,  2 Sep 2019 10:00:43 +0200 (CEST)
-Date:   Mon, 2 Sep 2019 10:00:43 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Stephen Boyd <swboyd@chromium.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        kernel-team@android.com,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Tri Vo <trong@android.com>,
-        Kalesh Singh <kaleshsingh@google.com>,
-        Ravi Chandra Sadineni <ravisadineni@chromium.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] power: supply: Init device wakeup after device_add()
-Message-ID: <20190902080043.nx7rqf32fv7w6eoy@earth.universe>
-References: <20190801213330.81079-1-swboyd@chromium.org>
+        id S1730890AbfIBJnS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Sep 2019 05:43:18 -0400
+Received: from mail-wm1-f66.google.com ([209.85.128.66]:39237 "EHLO
+        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730680AbfIBJnS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Sep 2019 05:43:18 -0400
+Received: by mail-wm1-f66.google.com with SMTP id n2so12470512wmk.4
+        for <linux-pm@vger.kernel.org>; Mon, 02 Sep 2019 02:43:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to
+         :user-agent;
+        bh=4d0l7N35iWoMyBbjAl4hMooElMfpWLjU+xP3/QM48gE=;
+        b=mhtkERu8jUQkzHnNqRbpGC8pMP8PM9wc9YYdW3YJzfxC+5CivPw0eN4Mx0FCBqkZ1k
+         MMpoWhfUGlcZ11BMUqW6LIGUqZ5vgXx8aarqN0fXE9js6Z524xGTXLKm6blIp1daoMKx
+         0J5VxGMjhAiQxIeU+zuC6dUZUtFUveEcznHTq14si0umE8rRYGiDKfwK+5RFTa/d29GI
+         /c/EdZUuoNeHEdVdE8Wk+3yh73Qi+0Ro5yqJlSh32RqsCQGOvjbi8PUiqBo7yQt4iXzn
+         6FzeKLgh7cF2NZ50ISsMteEICGPzKmU/mdoKRiwjs/fdB+p7i+EJT9EKTZ0LTnRwsHd+
+         Es7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        bh=4d0l7N35iWoMyBbjAl4hMooElMfpWLjU+xP3/QM48gE=;
+        b=cfP54TxcqkQVSljNGdpAqbuVtw/63mDH8RtlFiZH5nNMxtp66muOsIAa2llJUHkMEC
+         QIpZRd2xYECgPg1U+gO/f/hlbJQR610G1p2gTxM4Wfv03EiwNBcT+zYqdInn8ANdy++M
+         ZDlSou3RC/7SaY6AMSp7QWy6dAHBVLThwFdqMmMGPim9ScRQxjut+8krTxDUB/2XZcNL
+         su/JTTPF1Qp2igQ0pdsCkzR+J3UNRrT4qVJm+TGxn8m5GitdFbbGh+XVHERLeLzBfa9s
+         EkJzHfjtV1rkxb5oDWMMcM4BwV8/2y/M1yWDzvVHW+9vgZ2ngzCtzY12CltuZv/5M8Vv
+         gHIA==
+X-Gm-Message-State: APjAAAXAjY4KHLwvb+JXrPLlgbCO3UzyOv7pvmJeREDdcOx+6tyzqrV8
+        jd8p2f+azpIC6AHDK1+eMRYrCA==
+X-Google-Smtp-Source: APXvYqzm2jMdu+QtRADNIC1TnhWQKqVD1sQ/ZS7+PqSLNP6Rmxvz386etPsBfvjnR60QuMOGSfWyEg==
+X-Received: by 2002:a7b:c935:: with SMTP id h21mr33247098wml.35.1567417396069;
+        Mon, 02 Sep 2019 02:43:16 -0700 (PDT)
+Received: from dell ([95.147.198.93])
+        by smtp.gmail.com with ESMTPSA id e4sm11403837wro.21.2019.09.02.02.43.15
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Mon, 02 Sep 2019 02:43:15 -0700 (PDT)
+Date:   Mon, 2 Sep 2019 10:43:13 +0100
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Frank Wunderlich <frank-w@public-files.de>
+Cc:     linux-mediatek@lists.infradead.org, devicetree@vger.kernel.org,
+        "linux-arm-kernel @ lists . infradead . org Alessandro Zummo" 
+        <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Eddie Huang <eddie.huang@mediatek.com>,
+        Josef Friedl <josef.friedl@speed.at>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Sean Wang <sean.wang@mediatek.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Tianping Fang <tianping.fang@mediatek.com>
+Subject: Re: [PATCH v6 01/13] dt-bindings: mfd: mediatek: mt6397: change to
+ relative paths
+Message-ID: <20190902094313.GP32232@dell>
+References: <20190818135611.7776-1-frank-w@public-files.de>
+ <20190818135611.7776-2-frank-w@public-files.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fcu4abygg3rqtqkb"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190801213330.81079-1-swboyd@chromium.org>
-User-Agent: NeoMutt/20180716
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190818135611.7776-2-frank-w@public-files.de>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Sun, 18 Aug 2019, Frank Wunderlich wrote:
 
---fcu4abygg3rqtqkb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Thu, Aug 01, 2019 at 02:33:30PM -0700, Stephen Boyd wrote:
-> We may want to use the device pointer in device_init_wakeup() with
-> functions that expect the device to already be added with device_add().
-> For example, if we were to link the device initializing wakeup to
-> something in sysfs such as a class for wakeups we'll run into an error.
-> It looks like this code was written with the assumption that the device
-> would be added before initializing wakeup due to the order of operations
-> in power_supply_unregister().
->=20
-> Let's change the order of operations so we don't run into problems here.
->=20
-> Fixes: 948dcf966228 ("power_supply: Prevent suspend until power supply ev=
-ents are processed")
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>                      =
-                                                                           =
-                    =20
-> Cc: Tri Vo <trong@android.com>                                           =
-                                                                           =
-                      =20
-> Cc: Kalesh Singh <kaleshsingh@google.com>     =20
-> Cc: Ravi Chandra Sadineni <ravisadineni@chromium.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+> paths in dt-bindings should be relative as suggested by Lee Johnes
+> 
+> Suggested-By: Lee Jones <lee.jones@linaro.org>
+> Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
 > ---
-
-Thanks, queued.
-
--- Sebastian
-
->=20
-> See this thread[1] for more information on how this will be necessary.
->=20
-> [1] https://lkml.kernel.org/r/20190731215514.212215-1-trong@android.com
->=20
->=20
->  drivers/power/supply/power_supply_core.c | 10 +++++-----
+> changes since v5: splitted from dt-bindings: add powercontroller
+> ---
+>  Documentation/devicetree/bindings/mfd/mt6397.txt | 10 +++++-----
 >  1 file changed, 5 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
-ply/power_supply_core.c
-> index 82e84801264c..5c36c430ce8b 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -1051,14 +1051,14 @@ __power_supply_register(struct device *parent,
->  	}
-> =20
->  	spin_lock_init(&psy->changed_lock);
-> -	rc =3D device_init_wakeup(dev, ws);
-> -	if (rc)
-> -		goto wakeup_init_failed;
-> -
->  	rc =3D device_add(dev);
->  	if (rc)
->  		goto device_add_failed;
-> =20
-> +	rc =3D device_init_wakeup(dev, ws);
-> +	if (rc)
-> +		goto wakeup_init_failed;
-> +
->  	rc =3D psy_register_thermal(psy);
->  	if (rc)
->  		goto register_thermal_failed;
-> @@ -1101,8 +1101,8 @@ __power_supply_register(struct device *parent,
->  	psy_unregister_thermal(psy);
->  register_thermal_failed:
->  	device_del(dev);
-> -device_add_failed:
->  wakeup_init_failed:
-> +device_add_failed:
->  check_supplies_failed:
->  dev_set_name_failed:
->  	put_device(dev);
-> --=20
-> Sent by a computer through tubes
->=20
 
---fcu4abygg3rqtqkb
-Content-Type: application/pgp-signature; name="signature.asc"
+Applied, thanks.
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl1szCsACgkQ2O7X88g7
-+poKTg/+PPMWnxzv7N42HIkbJcOljQK+Bkv98IuSroLz7Sg3wsA07untO69B+e+A
-xZLwbmJo7hPCpBFyCIlN+LRSrvFPwpdbUKJiSpfkuUWMe/9hUhBSupZWftJbrz8H
-5BSBBxeXdNwULTZ/8Dg2j3I/0udexWUFxpUVSPTjzJrGXgNqY0P49957G6E5N4VE
-ul7HdgnkAqzo/cfrLn03WOOZbEstgni41hpj6cvtgC2CiZwDjaZK6+oNboIBYHZl
-HlvJMezAV2YaAnPwteNm2B4wDlQ83AjcUpPH0EkmuqlQr2Iq9zEuXO9/NjZeMKUK
-S7YHGj170r2IQRUjG1J1hGAbrWF5Xc1KgQMvdXM95eQP9aGrYzP/AzoRrOUpD1A4
-OOyG6PPHIfQ72jM5UiTDrWPhygLasvWPW6lPTu3xFQbwZ4lPUg63d0F6QicvBjl+
-a43tZJUeIjs/7mR8KM7A88FqOTu+NcR6JbDeJvnPiogBF3V+rrJ2AJL+hdHwSBn1
-xcMYoxz4p9Su/vdSV4baOpx0zEFDThXl7iIKiqH8xpIe8vqlYQRg8XsD4dRJYHZ4
-49QwK0l7ykeoM/jB7V9tj3pZ/OC2KA6NxBI76z3kgsuPSe5CqNexQfeKU6zT+VCe
-3o46oe3ZBCI9/Ehipnk28FE1y6KuZf+z9akmtbyWiVCA0ntdUWY=
-=XWqr
------END PGP SIGNATURE-----
-
---fcu4abygg3rqtqkb--
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
