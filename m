@@ -2,115 +2,96 @@ Return-Path: <SRS0=abAq=W5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 592E8C3A59E
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Sep 2019 10:58:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A945C3A59E
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Sep 2019 11:01:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 312F921882
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Sep 2019 10:58:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 785D421882
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Sep 2019 11:01:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=megous.com header.i=@megous.com header.b="ZbXSnUMV"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="f+8kmddF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731133AbfIBK6T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Sep 2019 06:58:19 -0400
-Received: from vps.xff.cz ([195.181.215.36]:35122 "EHLO vps.xff.cz"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730702AbfIBK6T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 2 Sep 2019 06:58:19 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=megous.com; s=mail;
-        t=1567421896; bh=0+YtJ5mB5rWakjDiMfZibOLsuS/yEq29XZ5qfNzcLuU=;
-        h=Date:From:To:Cc:Subject:References:X-My-GPG-KeyId:From;
-        b=ZbXSnUMVfg4rtkOpS+y5AV70FlL40OX7C2yA4xkApWMjPmylOteNvAaflG151OGc6
-         tKkEvcYvWlHD7DXmQqkU8jrSlXCGt5jIyUHDsmX+1pGoVjQ6Gx+M0dxSdNxKgSE+6H
-         3qfcFDTOsr6b01Q30YlcLFrpquM4afSkHVZkBWno=
-Date:   Mon, 2 Sep 2019 12:58:16 +0200
-From:   =?utf-8?Q?Ond=C5=99ej?= Jirman <megous@megous.com>
-To:     Maxime Ripard <maxime.ripard@bootlin.com>
-Cc:     Yangtao Li <tiny.windzz@gmail.com>, rui.zhang@intel.com,
-        edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, wens@csie.org, mchehab+samsung@kernel.org,
-        davem@davemloft.net, gregkh@linuxfoundation.org,
-        Jonathan.Cameron@huawei.com, nicolas.ferre@microchip.com,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v5 00/18] add thermal driver for h6
-Message-ID: <20190902105816.zurkkh2vjfexft7t@core.my.home>
-Mail-Followup-To: Maxime Ripard <maxime.ripard@bootlin.com>,
-        Yangtao Li <tiny.windzz@gmail.com>, rui.zhang@intel.com,
-        edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org,
-        mark.rutland@arm.com, wens@csie.org, mchehab+samsung@kernel.org,
-        davem@davemloft.net, gregkh@linuxfoundation.org,
-        Jonathan.Cameron@huawei.com, nicolas.ferre@microchip.com,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-References: <20190810052829.6032-1-tiny.windzz@gmail.com>
- <20190901215214.f4vbxemdd7mf3gun@core.my.home>
- <20190902072735.zkrueocyz4glc26n@flea>
+        id S1731171AbfIBLB6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Sep 2019 07:01:58 -0400
+Received: from mo4-p03-ob.smtp.rzone.de ([85.215.255.102]:31195 "EHLO
+        mo4-p03-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730954AbfIBLB5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Sep 2019 07:01:57 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1567422116;
+        s=strato-dkim-0002; d=goldelico.com;
+        h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
+        X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+        bh=iDHDcTZofAwFtKZ+JtaTo+qsb9dMO/SudfMjC+bQAcY=;
+        b=f+8kmddFqaBjvylI7vwICwf8Rpwut1TXq2k/rrn3N9+6CZ5Tla9BxLnX/8pl2bNqgZ
+        k+WuvyoNxGafs7kIkzkDbGlEjFF8hWU/1a2lS606hGj9Kg9GtHFNVnZbaY0XfmfnU90m
+        6TP2hwtoOFUPjjAtzVNv+K7Q02r/wYlu4+P4e7oWRqj0b7c9wi0EdZ2U+DrZo+zXSF/+
+        7Y/thqzQxQ7iS/VcIPLK47ERnLAs5taJaPyR1n3t4E2cXxnz5Ttx6AlD8iHRDtT8shCO
+        e1+gAxzekijt1dEQWE0iT12e2PARcBzvfjaNJ7O8gINZ0kWGMEI+CHCFg45c5QRJ2orE
+        U+/g==
+X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMhflhwDubTJ9o1mfYzBGHXL8GTnvuHRT"
+X-RZG-CLASS-ID: mo00
+Received: from iMac.fritz.box
+        by smtp.strato.de (RZmta 44.27.0 DYNA|AUTH)
+        with ESMTPSA id u036f9v82AtsPvl
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with 521 ECDH bits, eq. 15360 bits RSA))
+        (Client did not present a certificate);
+        Mon, 2 Sep 2019 12:55:54 +0200 (CEST)
+From:   "H. Nikolaus Schaller" <hns@goldelico.com>
+To:     =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Adam Ford <aford173@gmail.com>,
+        =?UTF-8?q?Andr=C3=A9=20Roth?= <neolynx@gmail.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        letux-kernel@openphoenux.org, kernel@pyra-handheld.com,
+        "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: [RFC 4/5] ARM: dts: omap3-n950-n9: remove opp-v1 table
+Date:   Mon,  2 Sep 2019 12:55:50 +0200
+Message-Id: <2f978667c1533e46e3a5df58871e9048f3eb74e9.1567421751.git.hns@goldelico.com>
+X-Mailer: git-send-email 2.19.1
+In-Reply-To: <cover.1567421750.git.hns@goldelico.com>
+References: <cover.1567421750.git.hns@goldelico.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190902072735.zkrueocyz4glc26n@flea>
-X-My-GPG-KeyId: EBFBDDE11FB918D44D1F56C1F9F0A873BE9777ED
- <https://xff.cz/key.txt>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello Maxime,
+With opp-v2 in omap36xx.dtsi and ti-cpufreq driver the
+1GHz capability is automatically detected.
 
-On Mon, Sep 02, 2019 at 09:27:35AM +0200, Maxime Ripard wrote:
-> Hi,
-> 
-> On Sun, Sep 01, 2019 at 11:52:14PM +0200, Ondřej Jirman wrote:
-> > Hello Yangtao,
-> >
-> > On Sat, Aug 10, 2019 at 05:28:11AM +0000, Yangtao Li wrote:
-> > > This patchset add support for A64, H3, H5, H6 and R40 thermal sensor.
-> > >
-> > > Thx to Icenowy and Vasily.
-> > >
-> > > BTY, do a cleanup in thermal makfile.
-> >
-> > I've added support for A83T and also some cleanups, according to my
-> > feedback:
-> >
-> > https://megous.com/git/linux/log/?h=ths-5.3
-> >
-> > Feel free to pick up whatever you like from that tree.
-> >
-> > For others, there are also DTS patches in that tree for H3, H5, A83T, and H6, so
-> > that shoul make testing of this driver easier.
-> 
-> I'm not convinced that always expanding the number of SoC supported is
-> the best strategy to get this merged. Usually, keeping the same
-> feature set across version, consolidating that, and then once it's in
-> sending the new SoC support works best.
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ arch/arm/boot/dts/omap3-n950-n9.dtsi | 7 -------
+ 1 file changed, 7 deletions(-)
 
-That's fine and all, but I've mostly added DT descriptions for already supported
-SoCs and fixed bugs in the driver, so that people can actually test the existing
-driver.
+diff --git a/arch/arm/boot/dts/omap3-n950-n9.dtsi b/arch/arm/boot/dts/omap3-n950-n9.dtsi
+index 5441e9ffdbb4..e98b0c615f19 100644
+--- a/arch/arm/boot/dts/omap3-n950-n9.dtsi
++++ b/arch/arm/boot/dts/omap3-n950-n9.dtsi
+@@ -11,13 +11,6 @@
+ 	cpus {
+ 		cpu@0 {
+ 			cpu0-supply = <&vcc>;
+-			operating-points = <
+-				/* kHz    uV */
+-				300000  1012500
+-				600000  1200000
+-				800000  1325000
+-				1000000	1375000
+-			>;
+ 		};
+ 	};
+ 
+-- 
+2.19.1
 
-I think adding DT changes will actually help get needed exposure for this
-patch series.
-
-A83T support that I added, was actually just a small change to the driver.
-
-regards,
-	o.
-
-> Maxime
-> 
-> --
-> Maxime Ripard, Bootlin
-> Embedded Linux and Kernel engineering
-> https://bootlin.com
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
