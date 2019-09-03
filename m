@@ -2,127 +2,141 @@ Return-Path: <SRS0=mEUM=W6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE341C3A5A2
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Sep 2019 13:25:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1CC9C3A5A2
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Sep 2019 13:29:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C7A6023402
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Sep 2019 13:25:30 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="om/BDeOc"
+	by mail.kernel.org (Postfix) with ESMTP id 9971A23717
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Sep 2019 13:29:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1567517374;
+	bh=NLqCL4CDXLU3XgXKCj95PxujHWeCjp562H7YUcMntWI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=wHeacYfQXkUb9BAhbEqgQS/aRr9zABMiozhTI/5OfvUNUAGTt3sgahw2xSlzVqMdw
+	 r4WDut6dvqA5TTY0fgcyMpVkWeOF63eubZIcsAbLp2b5H6z/kEN1+KX7Zb6hkMq6H2
+	 D0oNwlj5NlYPKRpA2CnGuwRN7T5dU04GNY8AMC8E=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729418AbfICNZ3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Sep 2019 09:25:29 -0400
-Received: from userp2120.oracle.com ([156.151.31.85]:33554 "EHLO
-        userp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729246AbfICNZI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Sep 2019 09:25:08 -0400
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
-        by userp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x83DOEr4042572;
-        Tue, 3 Sep 2019 13:24:55 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-type :
- content-transfer-encoding; s=corp-2019-08-05;
- bh=ewpAgye3E1YENYXsQuKLPVZrT2BZqpOWcte4zXSaAu8=;
- b=om/BDeOctOz/ZjjyrHuIuC+vuB/rE5VF68is/CgdMSsXCkglWZNBuJzE+oTRXPGwfyBq
- 7XAgv453S1jZbySLJ5xiIkkZlEiiH13dJwxM1umJhqQMzF9gpBCnDaVI5J+14Sh2H9IK
- JVCeIhEAwYstvCLt0ia2xI2u2ihgBRbD37SMot+M4z2wN9sNZdBbQxggkYNb4A/DR+ZF
- +vFzu5GMH9eepPi84ZWpmY2zeQBy622iRs5jz/d9bbnY32PMLOxJqud0numBRl+Brpci
- 3tdIspeut1/zmywX6c9/l7k7rjD9EVR1/DYdebGE6vW+I8gUjy/EFykp/3+8xFLhNZtG 6g== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by userp2120.oracle.com with ESMTP id 2usrw8r1e4-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 03 Sep 2019 13:24:55 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x83DOFIe129260;
-        Tue, 3 Sep 2019 13:24:54 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by aserp3020.oracle.com with ESMTP id 2us5pgutx8-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 03 Sep 2019 13:24:54 +0000
-Received: from abhmp0001.oracle.com (abhmp0001.oracle.com [141.146.116.7])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x83DOsWH000492;
-        Tue, 3 Sep 2019 13:24:54 GMT
-Received: from paddy.uk.oracle.com (/10.175.205.235)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Tue, 03 Sep 2019 06:24:53 -0700
-From:   Joao Martins <joao.m.martins@oracle.com>
-To:     linux-pm@vger.kernel.org
-Cc:     Joao Martins <joao.m.martins@oracle.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-kernel@vger.kernel.org,
-        Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org
-Subject: [PATCH v2 0/4] cpuidle, haltpoll: governor switching on idle register
-Date:   Tue,  3 Sep 2019 14:24:40 +0100
-Message-Id: <20190903132444.11808-1-joao.m.martins@oracle.com>
-X-Mailer: git-send-email 2.11.0
+        id S1729142AbfICN3e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Sep 2019 09:29:34 -0400
+Received: from mail.kernel.org ([198.145.29.99]:32960 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729066AbfICN3d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 3 Sep 2019 09:29:33 -0400
+Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 498CA23402;
+        Tue,  3 Sep 2019 13:29:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1567517372;
+        bh=NLqCL4CDXLU3XgXKCj95PxujHWeCjp562H7YUcMntWI=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=qaXN86v6cIyTWdnvtaZOQQfBuuLThLlMRA/EJyQNgmyoLCjT/75zE/M4mRQeArqAE
+         q4YgAkDS6yIyQVA1WxKIVB7rtdCigj9Sz0V6NzXh5PlLXZooECitbVO6sWthzskktB
+         K+ItPCsbY4BLi25J8cwa71OUpyPJxZShfeyXk83Q=
+Received: by mail-lf1-f44.google.com with SMTP id r134so12000449lff.12;
+        Tue, 03 Sep 2019 06:29:32 -0700 (PDT)
+X-Gm-Message-State: APjAAAXceZ1F0VtCGnv9s3brmXuw2bEDDN7WCQ0LhshmWuK9GoK3nIy0
+        07jSwK7TNhywRrFEtPhPHXfCyUK6Y2dMkQXBWdw=
+X-Google-Smtp-Source: APXvYqxqbuDcNwZVBZKdEn/yqco/nPvJHxybzLgeR8t1/wyDoTImujg8oF2KZNPIWeHPuUNFUp5BwgTKED9vOoaznqs=
+X-Received: by 2002:ac2:41c2:: with SMTP id d2mr6978921lfi.24.1567517370489;
+ Tue, 03 Sep 2019 06:29:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9368 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=891
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1906280000 definitions=main-1909030142
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9368 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1906280000
- definitions=main-1909030142
+References: <20190902150336.3600-1-krzk@kernel.org> <CAL_JsqK_O+7zQDGxAhAHDW=AkMy+RtyijTXUuRStOgu8CYXe0g@mail.gmail.com>
+ <CAJKOXPfO0yBzGFPvF_WwsGGJBZSBGMLsFi2CQ2Eg5RVfyfW3nA@mail.gmail.com>
+ <CAL_JsqJUfGBRAv=StPyavQU1DiHnFwUseNCvP6Ce_ZMohJXTXQ@mail.gmail.com>
+ <CAJKOXPcjF9nERQxDdSVBLsfc2V_M1_BPZ6iM6EXvEx4tdr3rDQ@mail.gmail.com> <CAL_Jsq+1NEcmvrKPp9N=07CbxT3ZUsViXk7GGb1v0NzsxvWEdg@mail.gmail.com>
+In-Reply-To: <CAL_Jsq+1NEcmvrKPp9N=07CbxT3ZUsViXk7GGb1v0NzsxvWEdg@mail.gmail.com>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+Date:   Tue, 3 Sep 2019 15:29:19 +0200
+X-Gmail-Original-Message-ID: <CAJKOXPcGWuW7HP-_kj_OjpPyHtj9gr36bpVUeT5VF2V9wTZY9Q@mail.gmail.com>
+Message-ID: <CAJKOXPcGWuW7HP-_kj_OjpPyHtj9gr36bpVUeT5VF2V9wTZY9Q@mail.gmail.com>
+Subject: Re: [PATCH 1/2] dt-bindings: power: syscon-reboot: Convert bindings
+ to json-schema
+To:     Rob Herring <robh+dt@kernel.org>
+Cc:     Sebastian Reichel <sre@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        devicetree@vger.kernel.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hey,
+On Tue, 3 Sep 2019 at 15:12, Rob Herring <robh+dt@kernel.org> wrote:
+> > arch/arm/boot/dts/exynos3250-artik5-eval.dt.yaml: syscon-reboot:
+> > {'regmap': [[9]], 'mask': [[1]], '$nodename': ['syscon-reboot'],
+> > 'value': [[1]], 'offset': [[1024]], 'compatible': ['syscon-reboot']}
+> > is valid under each of {'required': ['mask']}, {'required': ['value',
+> > 'mask']}, {'required': ['value']}
+>
+> Ahh, right. 'anyOf' is what we want:
+>
+> anyOf:
+>   - required: [ value ]
+>   - required: [ mask ]
 
-Presented herewith a series with aims to tie in together the haltpoll
-idle driver and governor, without sacrificing previous governor setups.
-In addition, there are a few fixes with respect to module loading for
-cpuidle-haltpoll. 
+This triggers meta-schema error:
 
-The series is organized as follows:
+  SCHEMA  Documentation/devicetree/bindings/processed-schema.yaml
+Traceback (most recent call last):
+  File "/home/kozik/.local/lib/python3.5/site-packages/dtschema/lib.py",
+line 429, in process_schema
+    DTValidator.check_schema(schema)
+  File "/home/kozik/.local/lib/python3.5/site-packages/dtschema/lib.py",
+line 575, in check_schema
+    raise jsonschema.SchemaError.create_from(error)
+jsonschema.exceptions.SchemaError: Additional properties are not
+allowed ('anyOf' was unexpected)
 
- Patch 1: Allows idle driver stating a preferred governor that it
-          wants to use, based on discussion here:
+Failed validating 'additionalProperties' in metaschema['allOf'][0]:
+    {'$id': 'http://devicetree.org/meta-schemas/base.yaml#',
+     '$schema': 'http://json-schema.org/draft-07/schema#',
+     'additionalProperties': False,
+     'allOf': [{'$ref': 'http://json-schema.org/draft-07/schema#'}],
+     'description': 'Metaschema for devicetree binding documentation',
+     'properties': {'$id': {'pattern':
+'http://devicetree.org/schemas/.*\\.yaml#'},
+                    '$schema': {'enum':
+['http://devicetree.org/meta-schemas/core.yaml#',
 
-  https://lore.kernel.org/kvm/457e8ca1-beb3-ca39-b257-e7bc6bb35d4d@oracle.com/
+'http://devicetree.org/meta-schemas/base.yaml#']},
+                    'additionalProperties': {'type': 'boolean'},
+                    'allOf': {'items': {'propertyNames': {'enum': ['$ref',
+                                                                   'if',
+                                                                   'then',
+                                                                   'else']}}},
+                    'definitions': True,
+                    'dependencies': True,
+                    'description': True,
+                    'else': True,
+                    'examples': {'items': {'type': 'string'},
+                                 'type': 'array'},
+                    'if': True,
+                    'maintainers': {'items': {'format': 'email',
+                                              'type': 'string'},
+                                    'type': 'array'},
+                    'oneOf': True,
+                    'patternProperties': True,
+                    'properties': True,
+                    'required': True,
+                    'select': {'allOf': [{'$ref':
+'http://json-schema.org/draft-07/schema#'},
+                                         {'oneOf': [{'properties':
+{'properties': True,
 
- Patch 2: Decrease rating of governor, and allows previous defaults
-	  to be as before haltpoll, while using @governor to switch to haltpoll
-	  when haltpoll driver is registered;
+'required': True},
+                                                     'type': 'object'},
+                                                    {'type': 'boolean'}]}]},
+                    'then': True,
+                    'title': {'maxLength': 100},
+                    'unevaluatedProperties': {'type': 'boolean'}},
+     'required': ['$id', '$schema', 'title', 'maintainers']}
 
- Patch 3 - 4: Module loading fixes. first is the incorrect error
-	      reporting and second is supportting module unloading.
-
-Thoughts, comments appreciated.
-
-Thanks,
-	Joao
-
-v2:
-* Add missing Fixes tag on patches 3 and 4.
-
-Joao Martins (4):
-  cpuidle: allow governor switch on cpuidle_register_driver()
-  cpuidle-haltpoll: set haltpoll as preferred governor
-  cpuidle-haltpoll: return -ENODEV on modinit failure
-  cpuidle-haltpoll: do not set an owner to allow modunload
-
- drivers/cpuidle/cpuidle-haltpoll.c   |  4 ++--
- drivers/cpuidle/cpuidle.h            |  1 +
- drivers/cpuidle/driver.c             | 26 ++++++++++++++++++++++++++
- drivers/cpuidle/governor.c           |  6 +++---
- drivers/cpuidle/governors/haltpoll.c |  2 +-
- include/linux/cpuidle.h              |  3 +++
- 6 files changed, 36 insertions(+), 6 deletions(-)
-
--- 
-2.17.1
-
+Best regards,
+Krzysztof
