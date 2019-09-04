@@ -2,52 +2,53 @@ Return-Path: <SRS0=F5jN=W7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F85AC3A5A8
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 18:31:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37CD5C3A5A8
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 18:35:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EE7C020882
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 18:31:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0EB7520882
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 18:35:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1567621885;
-	bh=hsJdVa01uomsFV9ahOXalHDfMaTyQcIwI+m2ZgSZm1o=;
+	s=default; t=1567622118;
+	bh=NDskAU3EZM/kSTfk8HyDaVjeJ7BcQ1qVr7nJn7qS9xA=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=YwGs+uiInKL3G4my7IkYd1I1VFMA2GEf+3+l00PW2B2sL1dlLSlomM+me0luBFHaq
-	 F2JY5blQvHYQTL8LpLkrnXAYNjKx7YCbmF0NVhusierNa463Io2IvZQFL8vMkhv27r
-	 ErxD1JEVIcbOYj1GqghZrUCIGdcD6Z6rYvfVq4KU=
+	b=PyPBnsiNxh20YsgpFyhOWKHEnTZsJ/i4/CuadWTZRfHCjyvhk+n+dgYvIOb1MY32f
+	 UEA9uf2klvnDEUOYVccCWihy1OzO24RdaRba5OFjcweG90888F0G8qh68Ahu2FoP7E
+	 egmG43W7rHH11b1ftdwQkno7BB4xeLWnVyXRth+Q=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732466AbfIDSbW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Sep 2019 14:31:22 -0400
-Received: from mail-wm1-f68.google.com ([209.85.128.68]:38443 "EHLO
-        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732951AbfIDSbV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Sep 2019 14:31:21 -0400
-Received: by mail-wm1-f68.google.com with SMTP id o184so4949008wme.3;
-        Wed, 04 Sep 2019 11:31:19 -0700 (PDT)
+        id S1732558AbfIDSfR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Sep 2019 14:35:17 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:38511 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732542AbfIDSfR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Sep 2019 14:35:17 -0400
+Received: by mail-wr1-f65.google.com with SMTP id l11so13523104wrx.5;
+        Wed, 04 Sep 2019 11:35:15 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=hsJdVa01uomsFV9ahOXalHDfMaTyQcIwI+m2ZgSZm1o=;
-        b=IMGfQjZMM/rwo/iIhT2xgttUTu01BNIpib3yfQNY5PsbwkZ1Rw4mUGm5O59bo+HNUR
-         J3HBJ+M3Wt4LRmtR+zbj+15jVFvtC7M++7FL6T+QTQVqqSsBoJLij6tYMpPlmBpocgFu
-         Wmx8/sDSGuVsl1XEj5rQjCs/3An+MDLZijmsjKzgOOTMcJTEq+GoZTNmg8L162+BAgWx
-         mNu25WUe56CUztAjvkzFhMG00+0pJLlyrAYsbSfCeQgap7aVK43lIRcSU+rliYnZCh3H
-         pdBBeuRWpaCP1UjjY0+/o2L4aqIO4ijGxMY71/eaFhZBfLyIbJ3wUTERWh0c4ZetkIbY
-         /1BA==
-X-Gm-Message-State: APjAAAVcEcN8UteqElFgLW4SfmUEbePvVWB6FTChnvpQrwhTEbDE9OIf
-        4rwJuC2k/gNgk+b8olfp/Mg=
-X-Google-Smtp-Source: APXvYqx50kGyewoRhEfHRm1dIpaYZpn3D+gdSEGrCOzZ/nz1uVLkScoUS0FqBfE7Wg150Co82Xs4eg==
-X-Received: by 2002:a1c:c911:: with SMTP id f17mr5625501wmb.73.1567621879136;
-        Wed, 04 Sep 2019 11:31:19 -0700 (PDT)
+        bh=YYvy5JDq8wduxQvbZiHxp3SZAOhECKg/qQw/mqdhCPs=;
+        b=JDB5r4Sa8nWSbjbo7NyBk0PLy0ws0affbjEsTbz5ACI6jcEfA2OZ8hr3e6SecYMI5A
+         PMi0D3o6fGXrj+L8DwRdGWSRoXOlMX17rHFBMgHjRZtgCozR6fNT4omXzrUjeF7SK+Co
+         gW/qnAu7MC5otLaQNGVqf/qoM0B6FDygMd6cT6JvFgdyg5bhMH1GBUiPLQ8tIDzRm9ak
+         UvdS+LMGYXKrB5Nhf4/ZCYy4SckrALjvf1MFHTAo3yQzAJzmL6ReuhSOKnwraVryGCKc
+         xK8icNrxUbhLztE/7tKhZ1kzP6/akF+5xFfbFBOF5pvBYIWySu5uzibYtrjPy8ciQNDP
+         tMMw==
+X-Gm-Message-State: APjAAAUchTpmzH8A1fuHhe8xoMqbty3CADO3S20B9HSgWKJ7N8rIZ8FV
+        g9RJU080mxITQvzSSb815Vg=
+X-Google-Smtp-Source: APXvYqwhDiVqMHvqzUFC15cl+L5VQH0uEboP5JjpEqJoaX0jr8C+QbK38ChLrI8pf5C0OKuzZ8HRAA==
+X-Received: by 2002:adf:f18c:: with SMTP id h12mr46945525wro.47.1567622114456;
+        Wed, 04 Sep 2019 11:35:14 -0700 (PDT)
 Received: from kozik-lap ([194.230.155.145])
-        by smtp.googlemail.com with ESMTPSA id f24sm3252156wmc.25.2019.09.04.11.31.15
+        by smtp.googlemail.com with ESMTPSA id u10sm733191wmm.43.2019.09.04.11.35.12
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 04 Sep 2019 11:31:18 -0700 (PDT)
-Date:   Wed, 4 Sep 2019 20:31:14 +0200
+        Wed, 04 Sep 2019 11:35:13 -0700 (PDT)
+Date:   Wed, 4 Sep 2019 20:35:10 +0200
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Lukasz Luba <l.luba@partner.samsung.com>
 Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -60,33 +61,50 @@ Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         keescook@chromium.org, tony@atomide.com, jroedel@suse.de,
         treding@nvidia.com, digetx@gmail.com, gregkh@linuxfoundation.org,
         willy.mh.wolff.ml@gmail.com
-Subject: Re: [PATCH v13 3/8] drivers: memory: extend of_memory by LPDDR3
- support
-Message-ID: <20190904183114.GB12918@kozik-lap>
+Subject: Re: [PATCH v13 5/8] drivers: memory: add DMC driver for Exynos5422
+Message-ID: <20190904183510.GC12918@kozik-lap>
 References: <20190821104303.32079-1-l.luba@partner.samsung.com>
- <CGME20190821104320eucas1p10c911c2ce59007bcf6c039f52b869656@eucas1p1.samsung.com>
- <20190821104303.32079-4-l.luba@partner.samsung.com>
+ <CGME20190821104323eucas1p1ab979133de45373866e9db1a5f63fb76@eucas1p1.samsung.com>
+ <20190821104303.32079-6-l.luba@partner.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190821104303.32079-4-l.luba@partner.samsung.com>
+In-Reply-To: <20190821104303.32079-6-l.luba@partner.samsung.com>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 21, 2019 at 12:42:58PM +0200, Lukasz Luba wrote:
-> The patch adds AC timings information needed to support LPDDR3 and memory
-> controllers. The structure is used in of_memory and currently in Exynos
-> 5422 DMC. Add parsing data needed for LPDDR3 support.
+On Wed, Aug 21, 2019 at 12:43:00PM +0200, Lukasz Luba wrote:
+> This patch adds driver for Exynos5422 Dynamic Memory Controller.
+> The driver provides support for dynamic frequency and voltage scaling
+> for DMC and DRAM. It supports changing timings of DRAM running with
+> different frequency. There is also an algorithm to calculate timigns
+> based on memory description provided in DT.
+> The patch also contains needed MAINTAINERS file update.
+> 
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  MAINTAINERS                             |    8 +
+>  drivers/memory/samsung/Kconfig          |   13 +
+>  drivers/memory/samsung/Makefile         |    1 +
+>  drivers/memory/samsung/exynos5422-dmc.c | 1257 +++++++++++++++++++++++
+>  4 files changed, 1279 insertions(+)
+>  create mode 100644 drivers/memory/samsung/exynos5422-dmc.c
 
-Thanks, applied, with commit msg fixes.
+Thanks, applied... or almost. Let's fix it incrementally.
 
-Please do not write "This patch" (submitting patches mentions preferred
-format). Also at this point, this is not "used currently in Exynos 5422
-DMC" because there is no such driver. Just say that it is necessary for
-upcoming DMC driver.
+You have two smatch warnings:
+  CHECK   ../drivers/memory/samsung/exynos5422-dmc.c
+drivers/memory/samsung/exynos5422-dmc.c:272 exynos5_init_freq_table() warn: passing devm_ allocated variable to kfree. 'dmc->opp'
+  CHECK   ../drivers/memory/jedec_ddr_data.c
+drivers/memory/samsung/exynos5422-dmc.c:565 exynos5_dmc_get_volt_freq() warn: passing zero to 'PTR_ERR'
+
+The second looks like false positive, but first seems to be real.
+
+You have also sparse warning to fix:
+../drivers/memory/samsung/exynos5422-dmc.c:736:1: warning: symbol 'exynos5_dmc_align_init_freq' was not declared. Should it be static?
 
 Best regards,
 Krzysztof
