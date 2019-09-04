@@ -7,48 +7,48 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A58E3C3A5AA
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 16:05:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34A4BC3A5A8
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 16:06:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 76DA32070C
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 16:05:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 00E172070C
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 16:06:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1567613109;
-	bh=fSg4w60wGc2fe1to3ZNBO/o5AAysdACtKnyKU+ecgZ0=;
+	s=default; t=1567613208;
+	bh=Gnb060WgRtLXs6JnHukAVdDIzLPHCh1bvcZjwA+WdiE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=VQ9os16+XmQLPtfyDxDPnUYj7HWeDOrfISG2qczwNA6DAtlnFt5jwAN2Zk3Sh0qmV
-	 gYLSU1J8YH3xc8791X+vfY+dGbEV4eOTUY1oMXWk9A9JYE2U7X/nJknIrguRcrpY7p
-	 q0meSvLeKRjphAcZQ+C6jUPXjYbRl6W2oDNDGmd8=
+	b=BfqkQGfdFJfvaS7Cd6TY31bID8sAoqPgkx4CQZg2vRXOjOcMrP5SjxmkB3aZbyImR
+	 4v5pH7xwXp6ZzsEPdBbdPAZkEuoQ2kUUw+svnmCGUzgWW85m/X3V9CMi6bVJan6NHu
+	 uXlCsmvZvpRJ5YAaw3Dq/y5+sCo2T+7IsRVkt0z8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732357AbfIDQFF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Sep 2019 12:05:05 -0400
-Received: from mail.kernel.org ([198.145.29.99]:39268 "EHLO mail.kernel.org"
+        id S1733219AbfIDQCS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Sep 2019 12:02:18 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38166 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387546AbfIDQC7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Sep 2019 12:02:59 -0400
+        id S1731990AbfIDQCR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 4 Sep 2019 12:02:17 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 3E4752070C;
-        Wed,  4 Sep 2019 16:02:58 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 6784822CF5;
+        Wed,  4 Sep 2019 16:02:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1567612978;
-        bh=fSg4w60wGc2fe1to3ZNBO/o5AAysdACtKnyKU+ecgZ0=;
+        s=default; t=1567612937;
+        bh=Gnb060WgRtLXs6JnHukAVdDIzLPHCh1bvcZjwA+WdiE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=doNt8EfQwaKGoTvrK+hXqQldit536WjpotMw1jDuxT4hiEcReewoZ/FBqHw9tlD11
-         wETcD2kAfN9MtS93bTjm32d9vkrLNY9D/i56bHBrfoADwAauT7G26JT7TInmznMikX
-         M4hQk65NDQQAa8JiJ7WaV3A5zitK33M+SM4rqgDY=
+        b=KEKxKHfF9KlNYpruOaaAsSWD0coQo67VpHW3Z7tGk1AXsRMjs9H6UqoWqpXOMmZlt
+         aHtBGA0esfXpW4AqVy24thsB1ylIApmnXuQsWSdLUGfiaHLqNm+yuZjG8OIOYHy3TO
+         9JEhXXRsJMsQjUHuBgObkDb2DRjVpOw8LdRjkd7w=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
         Len Brown <len.brown@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 26/27] tools/power turbostat: fix buffer overrun
-Date:   Wed,  4 Sep 2019 12:02:19 -0400
-Message-Id: <20190904160220.4545-26-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 35/36] tools/power turbostat: fix buffer overrun
+Date:   Wed,  4 Sep 2019 12:01:21 -0400
+Message-Id: <20190904160122.4179-35-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190904160220.4545-1-sashal@kernel.org>
-References: <20190904160220.4545-1-sashal@kernel.org>
+In-Reply-To: <20190904160122.4179-1-sashal@kernel.org>
+References: <20190904160122.4179-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -75,10 +75,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index b4c5d96e54c12..7c2c8e74aa9a9 100644
+index 3e5f8b3db2720..19e345cf8193e 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -3593,7 +3593,7 @@ int initialize_counters(int cpu_id)
+@@ -4488,7 +4488,7 @@ int initialize_counters(int cpu_id)
  
  void allocate_output_buffer()
  {
