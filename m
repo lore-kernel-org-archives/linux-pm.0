@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA24FC3A5A9
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 16:03:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A58E3C3A5AA
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 16:05:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A437722DBF
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 16:03:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 76DA32070C
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 16:05:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1567613015;
-	bh=VlEPEG/5/6vOlgK2tyw5SjA1y6Lt098z68Ly0L6u+/c=;
+	s=default; t=1567613109;
+	bh=fSg4w60wGc2fe1to3ZNBO/o5AAysdACtKnyKU+ecgZ0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=BN+qkKjx9ntUpj39gbbUb4u+ne+5skzVWnle/4EzUV++itdGW+gqwx44YRKAFMdTd
-	 JSawnQhqnkgGyyoqbAeIypPFiPM0VPyA/3bNDIAui3SokEftavgSgvIxRqwCuWMDCJ
-	 egs/tcGjRLVzxKgfz9LBSTq/yBRi/AHXb5JLZdg8=
+	b=VQ9os16+XmQLPtfyDxDPnUYj7HWeDOrfISG2qczwNA6DAtlnFt5jwAN2Zk3Sh0qmV
+	 gYLSU1J8YH3xc8791X+vfY+dGbEV4eOTUY1oMXWk9A9JYE2U7X/nJknIrguRcrpY7p
+	 q0meSvLeKRjphAcZQ+C6jUPXjYbRl6W2oDNDGmd8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732588AbfIDQDe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Sep 2019 12:03:34 -0400
-Received: from mail.kernel.org ([198.145.29.99]:40176 "EHLO mail.kernel.org"
+        id S1732357AbfIDQFF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Sep 2019 12:05:05 -0400
+Received: from mail.kernel.org ([198.145.29.99]:39268 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732344AbfIDQDc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Sep 2019 12:03:32 -0400
+        id S2387546AbfIDQC7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 4 Sep 2019 12:02:59 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id AD0722070C;
-        Wed,  4 Sep 2019 16:03:30 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 3E4752070C;
+        Wed,  4 Sep 2019 16:02:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1567613011;
-        bh=VlEPEG/5/6vOlgK2tyw5SjA1y6Lt098z68Ly0L6u+/c=;
+        s=default; t=1567612978;
+        bh=fSg4w60wGc2fe1to3ZNBO/o5AAysdACtKnyKU+ecgZ0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=RWCX9O+2b5h/XVQMRc5gvImdSeqgHbKLHHYjzv7M9dzb0DXskR1dCIJV/z7G/Mdrw
-         7QN2SLiDRGoWANmwtiKIEPKLWkyTKkfXXuO4UXTKMjRmp5eaQyJSKh9JBaIOT6Hl5H
-         g/Hop0DKqkg8wlaz7C/um9OekBEep0Dik9guXmY8=
+        b=doNt8EfQwaKGoTvrK+hXqQldit536WjpotMw1jDuxT4hiEcReewoZ/FBqHw9tlD11
+         wETcD2kAfN9MtS93bTjm32d9vkrLNY9D/i56bHBrfoADwAauT7G26JT7TInmznMikX
+         M4hQk65NDQQAa8JiJ7WaV3A5zitK33M+SM4rqgDY=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
         Len Brown <len.brown@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 19/20] tools/power turbostat: fix buffer overrun
-Date:   Wed,  4 Sep 2019 12:03:02 -0400
-Message-Id: <20190904160303.5062-19-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 26/27] tools/power turbostat: fix buffer overrun
+Date:   Wed,  4 Sep 2019 12:02:19 -0400
+Message-Id: <20190904160220.4545-26-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190904160303.5062-1-sashal@kernel.org>
-References: <20190904160303.5062-1-sashal@kernel.org>
+In-Reply-To: <20190904160220.4545-1-sashal@kernel.org>
+References: <20190904160220.4545-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -75,10 +75,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 532e7bf068689..58cf161887225 100644
+index b4c5d96e54c12..7c2c8e74aa9a9 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -3014,7 +3014,7 @@ int initialize_counters(int cpu_id)
+@@ -3593,7 +3593,7 @@ int initialize_counters(int cpu_id)
  
  void allocate_output_buffer()
  {
