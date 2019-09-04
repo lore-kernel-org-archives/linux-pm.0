@@ -2,144 +2,268 @@ Return-Path: <SRS0=F5jN=W7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A273C3A5A7
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 08:47:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A025C3A5A7
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 08:53:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 41D8C22DBF
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 08:47:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BC6BA22CF7
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Sep 2019 08:53:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="VKVi29+u"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="PLnXcraD"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727387AbfIDIrU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Sep 2019 04:47:20 -0400
-Received: from mo4-p01-ob.smtp.rzone.de ([81.169.146.167]:24534 "EHLO
-        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727787AbfIDIrT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Sep 2019 04:47:19 -0400
-X-Greylist: delayed 165066 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Sep 2019 04:47:18 EDT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1567586836;
+        id S1726834AbfIDIx6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Sep 2019 04:53:58 -0400
+Received: from mo4-p02-ob.smtp.rzone.de ([85.215.255.83]:18264 "EHLO
+        mo4-p02-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726010AbfIDIx6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Sep 2019 04:53:58 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1567587231;
         s=strato-dkim-0002; d=goldelico.com;
-        h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
+        h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
         X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
-        bh=Tz1SNv7+7mwC04RCYM6zEntjQIfTGl/IpU/FemTzlv4=;
-        b=VKVi29+uQWA5b7Z5NOdhdmRLRTlkgwhfBq5Nslebgu3Yx49JgYMyDmvvxUx3/v64wI
-        yyo7CwN+7syL2dk9Kdoxv8gfGEvlb3bvjv0JSi7rWfHsicQ/qFmIpe2jWHdiqf3rPbfj
-        DVWEI+dGQNXaXvffaGjh0JGwPpHze85pop7wlTK6rLYwgrFExw1l5Y/178rLxAe+uMx/
-        PvDdmEloshRPfhcN0748HCy+OYQdC88ThWx8i0IcSP2jF6iAXK0J+g8kVC71mW32czgU
-        hjn6bQtVF1MkK/gZdJplbfIJwbO1fx+JFgzQtbvJ/n4teSqi9pp4GZ75uciGSWtfPYCk
-        PZ8w==
-X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMgPgp8VKxflSZ1P34KBj5Qpw97WFDlabXAYFwg=="
+        bh=EX1bNEn/x8Jc1Wv1Dd9sM3KpSMIqIknqvK0YdCx9ouo=;
+        b=PLnXcraDG/6bR1XncskxicMHKNX1sNQupUKZiTeCmVIdfj5fWrGxIowE5W04ExBA1v
+        MtFJPCQ9iR31CRpMDz+B0CfyFvgnQQb8W12AFYR7ERLUsiMLei6N2r2BBzdRdki+Ghk7
+        hH5IxMxDSaQ2h/rNoDtdI/MPvKsHDdtnC0O4EbIw5eLMHx6FVRP7BPpzpWkh/vy1eDEq
+        9AY31zrjcizL1bt4E4ZRF1qDdJCO6btKVL9JTpuOvGSfQFIoIC06/monsG+IqBbac/j/
+        sxmJOQoRaYlt3DRHE/jZGFKzK5P+CmGBb8uNTLisDYggQoYEw1uK/zqCohCm/xJcoBGj
+        ZcAA==
+X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMhflhwDubTJ9o1mfYzBGHXH6GK4zSwk="
 X-RZG-CLASS-ID: mo00
-Received: from imac.fritz.box
+Received: from iMac.fritz.box
         by smtp.strato.de (RZmta 44.27.0 DYNA|AUTH)
-        with ESMTPSA id u036f9v848l7cEH
-        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (curve secp521r1 with 521 ECDH bits, eq. 15360 bits RSA))
+        with ESMTPSA id u036f9v848rgcLf
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with 521 ECDH bits, eq. 15360 bits RSA))
         (Client did not present a certificate);
-        Wed, 4 Sep 2019 10:47:07 +0200 (CEST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Subject: Re: [RFC 5/5] ARM: dts: omap3-beagle: make explicitly compatible to ti,omap34xx
+        Wed, 4 Sep 2019 10:53:42 +0200 (CEST)
 From:   "H. Nikolaus Schaller" <hns@goldelico.com>
-In-Reply-To: <20190903134000.GM52127@atomide.com>
-Date:   Wed, 4 Sep 2019 10:47:07 +0200
-Cc:     =?utf-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>,
+To:     =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
+        Tony Lindgren <tony@atomide.com>,
         Rob Herring <robh+dt@kernel.org>,
         Adam Ford <aford173@gmail.com>,
-        =?utf-8?Q?Andr=C3=A9_Roth?= <neolynx@gmail.com>,
+        =?UTF-8?q?Andr=C3=A9=20Roth?= <neolynx@gmail.com>,
         Mark Rutland <mark.rutland@arm.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        letux-kernel@openphoenux.org, kernel@pyra-handheld.com
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <4C3C8BEA-F03E-42CE-8E5C-397A025CB684@goldelico.com>
-References: <cover.1567421750.git.hns@goldelico.com> <150eb34a95b2e7ead8ac81a9ab275592ea31595b.1567421751.git.hns@goldelico.com> <20190903134000.GM52127@atomide.com>
-To:     Tony Lindgren <tony@atomide.com>
-X-Mailer: Apple Mail (2.3124)
+        letux-kernel@openphoenux.org, kernel@pyra-handheld.com,
+        "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: [RFC v2 2/3] ARM: dts: replace opp-v1 tables by opp-v2 for omap34xx and omap36xx
+Date:   Wed,  4 Sep 2019 10:53:40 +0200
+Message-Id: <647c83c40a8afd530464a6f7d74634738311399f.1567587220.git.hns@goldelico.com>
+X-Mailer: git-send-email 2.19.1
+In-Reply-To: <cover.1567587220.git.hns@goldelico.com>
+References: <cover.1567587220.git.hns@goldelico.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Tony,
+In addition, move omap3 from whitelist to blacklist in cpufreq-dt-platdev
+in the same patch, because doing either first breaks operation and
+may make trouble in bisect.
 
-> Am 03.09.2019 um 15:40 schrieb Tony Lindgren <tony@atomide.com>:
->=20
-> * H. Nikolaus Schaller <hns@goldelico.com> [190902 10:56]:
->> Matching the ti-cpufreq driver needs to specify explicitly if
->> a board uses an omap34xx or omap36xx chip.
->>=20
->> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
->> ---
->> arch/arm/boot/dts/omap3-beagle.dts | 2 +-
->> 1 file changed, 1 insertion(+), 1 deletion(-)
->>=20
->> diff --git a/arch/arm/boot/dts/omap3-beagle.dts =
-b/arch/arm/boot/dts/omap3-beagle.dts
->> index e3df3c166902..d47213c7a4d0 100644
->> --- a/arch/arm/boot/dts/omap3-beagle.dts
->> +++ b/arch/arm/boot/dts/omap3-beagle.dts
->> @@ -8,7 +8,7 @@
->>=20
->> / {
->> 	model =3D "TI OMAP3 BeagleBoard";
->> -	compatible =3D "ti,omap3-beagle", "ti,omap3";
->> +	compatible =3D "ti,omap3-beagle", "ti,omap34xx", "ti,omap3";
->>=20
->> 	cpus {
->> 		cpu@0 {
->=20
-> For a clean-up patch, we should just use the following compatibles
-> in general for omap3:
->=20
-> ti,omap3	omap3
-> ti,omap34	omap34xx and omap35xx
-> ti,omap36	omap36xx and dm37xx
-> ti,am35		am35xx
->=20
-> So we should just leave out the "xx" part. But we still need parse
-> also the legacy binding with "xx" in drivers.
+We also can remove opp-v1 table for omap3-n950-n9 since it is now
+automatically detected.
 
-Yes, getting rid of the xx in the device trees would be nice.
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ arch/arm/boot/dts/omap3-n950-n9.dtsi |  7 ---
+ arch/arm/boot/dts/omap34xx.dtsi      | 65 ++++++++++++++++++++++++----
+ arch/arm/boot/dts/omap36xx.dtsi      | 53 +++++++++++++++++++----
+ drivers/cpufreq/cpufreq-dt-platdev.c |  2 +-
+ 4 files changed, 102 insertions(+), 25 deletions(-)
 
-But I have looked through the kernel tree and that makes more problems
-than it solves...
-
-There is code that explicitly checks for "ti,omap36xx" in =
-drivers/clk/ti/dpll.c
-
-Maybe that should be replaced by a check for a "ti,dpll5" property
-which is only defined in omap36xx.dtsi to make the code depend
-on a feature rather than SoC family string. Although such a change
-may break other things or we have to keep even more legacy code around.
-
-And there is a binding document omap.txt that does not describe
-it the way you propose. IMHO that should be changed first.
-
-Next is that omap.txt explicitly says that ti,omap3 defauls to OMAP3430.
-And OMAP3430 should be specified as compatible =3D "ti,omap3430", =
-"ti,omap3"
-while OMAP3630 should have compatible =3D "ti,omap36xx", "ti,omap3".
-AM3517 is compatible =3D "ti,am3517", "ti,omap3" which seems to ignore
-the AM3505 (maybe there was never a board using it).
-
-So this clean up is much more than what we need for moving from
-opp-v1 to opp-v2 and it should therefore be addressed separately.
-
-Therefore I'd prefer if we can keep all these problems isolated
-into a separate set of patches. And because of this I have prepared
-an RFC-V2 which only adds the "ti,omap3430" to those boards which
-do not yet have it (in accordance to existing omap.txt).
-
-AM3517 does not seem to have any opp table and therefore I also
-exclude it at the moment.
-
-BR and thanks,
-Nikolaus
+diff --git a/arch/arm/boot/dts/omap3-n950-n9.dtsi b/arch/arm/boot/dts/omap3-n950-n9.dtsi
+index 5441e9ffdbb4..e98b0c615f19 100644
+--- a/arch/arm/boot/dts/omap3-n950-n9.dtsi
++++ b/arch/arm/boot/dts/omap3-n950-n9.dtsi
+@@ -11,13 +11,6 @@
+ 	cpus {
+ 		cpu@0 {
+ 			cpu0-supply = <&vcc>;
+-			operating-points = <
+-				/* kHz    uV */
+-				300000  1012500
+-				600000  1200000
+-				800000  1325000
+-				1000000	1375000
+-			>;
+ 		};
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/omap34xx.dtsi b/arch/arm/boot/dts/omap34xx.dtsi
+index f572a477f74c..6408a0448834 100644
+--- a/arch/arm/boot/dts/omap34xx.dtsi
++++ b/arch/arm/boot/dts/omap34xx.dtsi
+@@ -16,19 +16,66 @@
+ / {
+ 	cpus {
+ 		cpu: cpu@0 {
+-			/* OMAP343x/OMAP35xx variants OPP1-5 */
+-			operating-points = <
+-				/* kHz    uV */
+-				125000   975000
+-				250000  1075000
+-				500000  1200000
+-				550000  1270000
+-				600000  1350000
+-			>;
++			/* OMAP343x/OMAP35xx variants OPP1-6 */
++			operating-points-v2 = <&cpu0_opp_table>;
++
+ 			clock-latency = <300000>; /* From legacy driver */
+ 		};
+ 	};
+ 
++	/* see Documentation/devicetree/bindings/opp/opp.txt */
++	cpu0_opp_table: opp-table {
++		compatible = "operating-points-v2-ti-cpu";
++		syscon = <&scm_conf>;
++
++		opp1-125000000 {
++			opp-hz = /bits/ 64 <125000000>;
++			/*
++			 * we currently only select the max voltage from table
++			 * Table 3-3 of the omap3530 Data sheet (SPRS507F).
++			 * Format is: <target min max>
++			 */
++			opp-microvolt = <975000 975000 975000>;
++			/*
++			 * first value is silicon revision bit mask
++			 * second one 720MHz Device Identification bit mask
++			 */
++			opp-supported-hw = <0xffffffff 3>;
++		};
++
++		opp2-250000000 {
++			opp-hz = /bits/ 64 <250000000>;
++			opp-microvolt = <1075000 1075000 1075000>;
++			opp-supported-hw = <0xffffffff 3>;
++			opp-suspend;
++		};
++
++		opp3-500000000 {
++			opp-hz = /bits/ 64 <500000000>;
++			opp-microvolt = <1200000 1200000 1200000>;
++			opp-supported-hw = <0xffffffff 3>;
++		};
++
++		opp4-550000000 {
++			opp-hz = /bits/ 64 <550000000>;
++			opp-microvolt = <1270000 1270000 1270000>;
++			opp-supported-hw = <0xffffffff 3>;
++		};
++
++		opp5-600000000 {
++			opp-hz = /bits/ 64 <600000000>;
++			opp-microvolt = <1350000 1350000 1350000>;
++			opp-supported-hw = <0xffffffff 3>;
++		};
++
++		opp6-720000000 {
++			opp-hz = /bits/ 64 <720000000>;
++			opp-microvolt = <1350000 1350000 1350000>;
++			/* only high-speed grade omap3530 devices */
++			opp-supported-hw = <0xffffffff 2>;
++		};
++	};
++
+ 	ocp@68000000 {
+ 		omap3_pmx_core2: pinmux@480025d8 {
+ 			compatible = "ti,omap3-padconf", "pinctrl-single";
+diff --git a/arch/arm/boot/dts/omap36xx.dtsi b/arch/arm/boot/dts/omap36xx.dtsi
+index 6fb23ada1f64..44f25b0eb45b 100644
+--- a/arch/arm/boot/dts/omap36xx.dtsi
++++ b/arch/arm/boot/dts/omap36xx.dtsi
+@@ -19,15 +19,52 @@
+ 	};
+ 
+ 	cpus {
+-		/* OMAP3630/OMAP37xx 'standard device' variants OPP50 to OPP130 */
++		/* OMAP3630/OMAP37xx variants OPP50 to OPP130 and OPP1G */
+ 		cpu: cpu@0 {
+-			operating-points = <
+-				/* kHz    uV */
+-				300000  1012500
+-				600000  1200000
+-				800000  1325000
+-			>;
+-			clock-latency = <300000>; /* From legacy driver */
++			operating-points-v2 = <&cpu0_opp_table>;
++
++			clock-latency = <300000>; /* From omap-cpufreq driver */
++		};
++	};
++
++	/* see Documentation/devicetree/bindings/opp/opp.txt */
++	cpu0_opp_table: opp-table {
++		compatible = "operating-points-v2-ti-cpu";
++		syscon = <&scm_conf>;
++
++		opp50-300000000 {
++			opp-hz = /bits/ 64 <300000000>;
++			/*
++			 * we currently only select the max voltage from table
++			 * Table 4-19 of the DM3730 Data sheet (SPRS685B)
++			 * Format is: <target min max>
++			 */
++			opp-microvolt = <1012500 1012500 1012500>;
++			/*
++			 * first value is silicon revision bit mask
++			 * second one is "speed binned" bit mask
++			 */
++			opp-supported-hw = <0xffffffff 3>;
++			opp-suspend;
++		};
++
++		opp100-600000000 {
++			opp-hz = /bits/ 64 <600000000>;
++			opp-microvolt = <1200000 1200000 1200000>;
++			opp-supported-hw = <0xffffffff 3>;
++		};
++
++		opp130-800000000 {
++			opp-hz = /bits/ 64 <800000000>;
++			opp-microvolt = <1325000 1325000 1325000>;
++			opp-supported-hw = <0xffffffff 3>;
++		};
++
++		opp1g-1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			opp-microvolt = <1375000 1375000 1375000>;
++			/* only on am/dm37x with speed-binned bit set */
++			opp-supported-hw = <0xffffffff 2>;
+ 		};
+ 	};
+ 
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 03dc4244ab00..68b7fc4225f8 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -86,7 +86,6 @@ static const struct of_device_id whitelist[] __initconst = {
+ 	{ .compatible = "st-ericsson,u9540", },
+ 
+ 	{ .compatible = "ti,omap2", },
+-	{ .compatible = "ti,omap3", },
+ 	{ .compatible = "ti,omap4", },
+ 	{ .compatible = "ti,omap5", },
+ 
+@@ -132,6 +131,7 @@ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "ti,am33xx", },
+ 	{ .compatible = "ti,am43", },
+ 	{ .compatible = "ti,dra7", },
++	{ .compatible = "ti,omap3", },
+ 
+ 	{ }
+ };
+-- 
+2.19.1
 
