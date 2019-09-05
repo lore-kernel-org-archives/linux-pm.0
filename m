@@ -2,154 +2,79 @@ Return-Path: <SRS0=v9qj=XA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EF2EC43331
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Sep 2019 16:20:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BEA9C43331
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Sep 2019 16:24:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CEF222137B
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Sep 2019 16:20:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Kl4bnPES"
+	by mail.kernel.org (Postfix) with ESMTP id 31332214D9
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Sep 2019 16:24:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731992AbfIEQSC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Sep 2019 12:18:02 -0400
-Received: from mail-pl1-f195.google.com ([209.85.214.195]:37319 "EHLO
-        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731660AbfIEQSB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Sep 2019 12:18:01 -0400
-Received: by mail-pl1-f195.google.com with SMTP id b10so1538286plr.4
-        for <linux-pm@vger.kernel.org>; Thu, 05 Sep 2019 09:18:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=mukYH+OPB5B2Q8cIXti1kEopT3yxftlik4aW1yItWl0=;
-        b=Kl4bnPESFCY769er88olLvIMydPIt7MSvRLFnbrMUBFJe2XGXC8oNJ+eB44CxUq8Z8
-         icVfI4Z7Zv2fzyYYpmgSfOeLpo80hrioId35SGiSFn9P8y2EAYTnu2zhJFWW2+ZCCuVB
-         Acsg/wxujlaWpromsOPO/XEkL8skQ8K6nxVzl/UgdDGnWguc6yvHxK/Wv797MeTMZZKg
-         uTS6IS/ihZs3WKvkhpct4BSG3iQljiRqCPgkcGGvlkMO9io8/jgOGOyYiaq1v5JzqePy
-         StJEuicwLxbARj/KoZGqt30jsFFl3ji38xfmmhdmOvICWnSF2ih5SFi0lKIRKtupViAc
-         aAVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=mukYH+OPB5B2Q8cIXti1kEopT3yxftlik4aW1yItWl0=;
-        b=eKZl5f/LpTF3lV+aKm2yamMg2GAJwUzAEAyJtyh8amsrdy7qnNF9zXcwKirRW26Z8t
-         LBv8qvUychc1AdHZJ2ImnbZ/KW3xkgCyT5DOsVBovVPRpGjW9X4D6kyPyxdKazz4hw7V
-         LjGnHssIs0s/Xt7gKB4Scck0lBFJUra0OptdvimFbdyXJXDINIQz7Zpj+xKHfPfgn4RO
-         hkcWIBIsNfy30RE8pBK6jbHXBaI/0LFpBNcR/yAIIawzYggn8PhMiJJ8qv3G1pmtcItp
-         2aAnvBpkhdsjaR+O8pattkGe2izljOL7nzqlBNoEUfn/zW4YpP/LiDsWxbcbfnL7lw4n
-         pIrg==
-X-Gm-Message-State: APjAAAX5wunpKfDZFZyOMPkS/NJv2tMZI4xF+8cY4HTdGHx6LN/2k5oi
-        0fZujoTQetNA4/nFY99anQtvbQEoqGM=
-X-Google-Smtp-Source: APXvYqzStzXxTWL+1VFEsqINN1zYVOMyUuv7eD3n8K9EXYt6eOChXB640bT4MB9P7QjeXftsWyVKSw==
-X-Received: by 2002:a17:902:b583:: with SMTP id a3mr4258322pls.52.1567700281066;
-        Thu, 05 Sep 2019 09:18:01 -0700 (PDT)
-Received: from xps15.cg.shawcable.net (S0106002369de4dac.cg.shawcable.net. [68.147.8.254])
-        by smtp.gmail.com with ESMTPSA id m129sm6324005pga.39.2019.09.05.09.17.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Sep 2019 09:18:00 -0700 (PDT)
-From:   Mathieu Poirier <mathieu.poirier@linaro.org>
-To:     stable@vger.kernel.org
-Cc:     linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-omap@vger.kernel.org, linux-i2c@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-mtd@lists.infradead.org
-Subject: [BACKPORT 4.14.y 00/18] Backport candidate from TI 4.14 product kernel 
-Date:   Thu,  5 Sep 2019 10:17:41 -0600
-Message-Id: <20190905161759.28036-1-mathieu.poirier@linaro.org>
-X-Mailer: git-send-email 2.17.1
+        id S1725945AbfIEQYn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Sep 2019 12:24:43 -0400
+Received: from sauhun.de ([88.99.104.3]:58922 "EHLO pokefinder.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728815AbfIEQYn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 5 Sep 2019 12:24:43 -0400
+Received: from localhost (p54B335F6.dip0.t-ipconnect.de [84.179.53.246])
+        by pokefinder.org (Postfix) with ESMTPSA id 835902C00C0;
+        Thu,  5 Sep 2019 18:24:40 +0200 (CEST)
+Date:   Thu, 5 Sep 2019 18:24:40 +0200
+From:   Wolfram Sang <wsa@the-dreams.de>
+To:     Mathieu Poirier <mathieu.poirier@linaro.org>
+Cc:     stable@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org,
+        linux-i2c@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-mtd@lists.infradead.org
+Subject: Re: [BACKPORT 4.14.y 00/18] Backport candidate from TI 4.14 product
+ kernel
+Message-ID: <20190905162440.GB3695@kunai>
+References: <20190905161759.28036-1-mathieu.poirier@linaro.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="mojUlQ0s9EVzWg2t"
+Content-Disposition: inline
+In-Reply-To: <20190905161759.28036-1-mathieu.poirier@linaro.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-These patches are backport candidates picked out of TI's 4.14.y tree [1],
-with most of them already found in the 4.19.y stable tree.
 
-The set apply and compiles cleanly on 4.14.141.
+--mojUlQ0s9EVzWg2t
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks,
-Mathieu
+On Thu, Sep 05, 2019 at 10:17:41AM -0600, Mathieu Poirier wrote:
+> These patches are backport candidates picked out of TI's 4.14.y tree [1],
+> with most of them already found in the 4.19.y stable tree.
+
+Could you please update your scripting that only the cover-letter and
+I2C related patches will be sent to the I2C mailing list?
 
 
-[1]. http://git.ti.com/gitweb/?p=ti-linux-kernel/ti-linux-kernel.git;a=shortlog;h=refs/heads/ti-linux-4.14.y
+--mojUlQ0s9EVzWg2t
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Andrew F. Davis (1):
-  ASoC: tlv320aic31xx: Handle inverted BCLK in non-DSP modes
+-----BEGIN PGP SIGNATURE-----
 
-Arvind Yadav (1):
-  ASoC: davinci-mcasp: Handle return value of devm_kasprintf
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl1xNscACgkQFA3kzBSg
+KbbSXA//Qr7qcTKeYW+0LEBOI7jVtHAd2WvUvM5Dd4cDxWi9xFJLp3mq9RHpUp2n
+C+TcMxlcW7slL8ffeERAPOV3hF+IOWkWiMg+9VUHgK2MvWf+fd3wcmBC/8Cn4DQ3
+B8582lHxQQcVy6jYAvgxkojUFDRrVNS0nSb0Vfb8am062q1DIkiilFqdNPNFoGWy
+UMV6JnawALcKyWVHftb8p66KvJ0SRMNdm36It3CDQhr4ZBRnuLkZD5HN0QKljKYp
+0iFy2yoJnsnTZKmtuEetjVNM01avU8wE0CY9gUb3Oi0xQUfPkqOgQ3WtmeolsOLQ
+PriFq6j8Xt4knqOjVhkyPFpfm1uedxeqNF8uUtRL+r0Fm7ytDTwsGashc7so4D0O
+s1oOEKDeYT6EOVBVC/4oxYJmIeRk6PX8qeyt6+7dz4MEkfrR+yWr10zOFr7wX6Bh
+xmDd5nGeWLVCUnRWaXmph+QTjUlmsP/bKDuTtpkVSuM5X5y62NYpZ7WqsQV2Hob9
+NsYPtS4xag5ak71KlvQRVpqaK8Lzgna0qHrXrk9gynDOYpoN+bUsBf+JNfRCKCOa
+RO1DDv2S35m+mFLoS5Ddxo/j2urW36sfuLuUmdGcR3oxovCNcgUyG+CRIDJTwnFn
+HVVbHqEnxF7f+gw6CiKqAdhye4IWXYWxYbK4hKWi540R8iLVI6g=
+=3bwX
+-----END PGP SIGNATURE-----
 
-Christophe Jaillet (1):
-  ASoC: davinci-mcasp: Fix an error handling path in
-    'davinci_mcasp_probe()'
-
-Claudio Foellmi (1):
-  i2c: omap: Trigger bus recovery in lockup case
-
-Dan Carpenter (1):
-  misc: pci_endpoint_test: Prevent some integer overflows
-
-Gustavo A. R. Silva (1):
-  ASoC: tlv320dac31xx: mark expected switch fall-through
-
-Keerthy (2):
-  mfd: palmas: Assign the right powerhold mask for tps65917
-  PCI: dra7xx: Add shutdown handler to cleanly turn off clocks
-
-Kishon Vijay Abraham I (1):
-  misc: pci_endpoint_test: Fix BUG_ON error during pci_disable_msi()
-
-Niklas Cassel (1):
-  PCI: designware-ep: Fix find_first_zero_bit() usage
-
-Roger Quadros (1):
-  usb: dwc3: Allow disabling of metastability workaround
-
-Roman Yeryomin (1):
-  mtd: spi-nor: enable 4B opcodes for mx66l51235l
-
-Sudeep Holla (1):
-  mailbox: reset txdone_method TXDONE_BY_POLL if client knows_txdone
-
-Takashi Iwai (1):
-  ASoC: davinci: Kill BUG_ON() usage
-
-Tony Lindgren (1):
-  drm/omap: panel-dsi-cm: fix driver
-
-Vignesh R (2):
-  PCI: dra7xx: Fix legacy INTD IRQ handling
-  mtd: spi-nor: cadence-quadspi: add a delay in write sequence
-
-Zumeng Chen (1):
-  cpufreq: ti-cpufreq: add missing of_node_put()
-
- .../devicetree/bindings/usb/dwc3.txt          |  2 +
- drivers/cpufreq/ti-cpufreq.c                  |  1 +
- .../gpu/drm/omapdrm/displays/panel-dsi-cm.c   | 56 +++++++++++++++++--
- drivers/i2c/busses/i2c-omap.c                 | 25 ++++++++-
- drivers/mailbox/mailbox.c                     |  4 +-
- drivers/mailbox/pcc.c                         |  4 +-
- drivers/mfd/palmas.c                          | 10 +++-
- drivers/misc/pci_endpoint_test.c              | 17 ++++++
- drivers/mtd/spi-nor/cadence-quadspi.c         | 27 ++++++++-
- drivers/mtd/spi-nor/spi-nor.c                 |  2 +-
- drivers/pci/dwc/pci-dra7xx.c                  | 20 ++++++-
- drivers/pci/dwc/pcie-designware-ep.c          | 34 ++++++++---
- drivers/pci/dwc/pcie-designware.h             |  8 ++-
- drivers/usb/dwc3/core.c                       |  3 +
- drivers/usb/dwc3/core.h                       |  3 +
- drivers/usb/dwc3/gadget.c                     |  6 +-
- include/linux/mfd/palmas.h                    |  3 +
- sound/soc/codecs/tlv320aic31xx.c              | 30 ++++++----
- sound/soc/davinci/davinci-mcasp.c             | 21 ++++++-
- 19 files changed, 235 insertions(+), 41 deletions(-)
-
--- 
-2.17.1
-
+--mojUlQ0s9EVzWg2t--
