@@ -4,47 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31301C3A5A5
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Sep 2019 09:05:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C34FC3A5A5
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Sep 2019 09:17:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 01FB521848
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Sep 2019 09:05:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0761121848
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Sep 2019 09:17:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="MYYIhq3m";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="k3ZXzWLw"
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="Y/MWrKxv";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="Y/MWrKxv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726120AbfIEJFL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Sep 2019 05:05:11 -0400
-Received: from smtp.codeaurora.org ([198.145.29.96]:55926 "EHLO
+        id S1731294AbfIEJRV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Sep 2019 05:17:21 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:38438 "EHLO
         smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726137AbfIEJFL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Sep 2019 05:05:11 -0400
+        with ESMTP id S1731199AbfIEJRV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Sep 2019 05:17:21 -0400
 Received: by smtp.codeaurora.org (Postfix, from userid 1000)
-        id 421206115B; Thu,  5 Sep 2019 09:05:10 +0000 (UTC)
+        id B2D376115B; Thu,  5 Sep 2019 09:17:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1567674310;
-        bh=kurhh/6InAL4dYm8QfJ+nWAbksUUnGWz4Zs93nPkqvw=;
+        s=default; t=1567675039;
+        bh=xMmsJjpiUbsQYYw3AXNouwmzhzt+g8V7N7GpNzi7lRg=;
         h=From:To:Cc:Subject:Date:From;
-        b=MYYIhq3mhSUiRC5d3ZLrtcYbkjTAIrFTwk8Umfd/HIFhhIxvT6BX+mx2sFWLhLkTI
-         gP3LhKULbmc4pKd5gHx5gjMFkLXOYi3bStuuCXoyzZ3A7PWnJfDkuLZC7IgDw8sM23
-         ZQRD818tyG8LsD77HFJv9uYBkbpNJXEZy1Odfg7E=
+        b=Y/MWrKxvYG6ufQuRhV6lV9lhAGydKGRlogRpnbUOYOWsgB7xXcvdmUStyxQTgBGqO
+         yeiH2bDCMCKURBCxmLxhxfgAW/O0nLkPpuySY3GNldfbzg7jpnQZOlwoVvQ1YQgcXG
+         9H9vVQgVASyF4VTmaQw+ARUQA8jqu4RbMrh0ue0Y=
 Received: from mkshah-linux.qualcomm.com (blr-c-bdr-fw-01_globalnat_allzones-outside.qualcomm.com [103.229.19.19])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: mkshah@smtp.codeaurora.org)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 8DED56030B;
-        Thu,  5 Sep 2019 09:05:04 +0000 (UTC)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 614A3615AD;
+        Thu,  5 Sep 2019 09:17:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1567674308;
-        bh=kurhh/6InAL4dYm8QfJ+nWAbksUUnGWz4Zs93nPkqvw=;
+        s=default; t=1567675039;
+        bh=xMmsJjpiUbsQYYw3AXNouwmzhzt+g8V7N7GpNzi7lRg=;
         h=From:To:Cc:Subject:Date:From;
-        b=k3ZXzWLwr2gkEFpXtnNDJeNfZkFQprEtMrM9wHciL/RUgfw8JdSaoNmQVMJ5CP0kx
-         hhN2NeH2qv0eUdvujUID4JFEwTWpwN1Qn5Ptfbo0myeiBQYWB4K3TDTChBnw95Wkiy
-         2wEIaFYEyp39fX+bOSV2QcNhpvm1iotKth2TOkMU=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 8DED56030B
+        b=Y/MWrKxvYG6ufQuRhV6lV9lhAGydKGRlogRpnbUOYOWsgB7xXcvdmUStyxQTgBGqO
+         yeiH2bDCMCKURBCxmLxhxfgAW/O0nLkPpuySY3GNldfbzg7jpnQZOlwoVvQ1YQgcXG
+         9H9vVQgVASyF4VTmaQw+ARUQA8jqu4RbMrh0ue0Y=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 614A3615AD
 Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=mkshah@codeaurora.org
 From:   Maulik Shah <mkshah@codeaurora.org>
@@ -54,9 +54,9 @@ Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         bjorn.andersson@linaro.org, evgreen@chromium.org,
         dianders@chromium.org, rnayak@codeaurora.org, ilina@codeaurora.org,
         lsrao@codeaurora.org, Maulik Shah <mkshah@codeaurora.org>
-Subject: [PATCH] soc: qcom: Introduce subsystem sleep stats driver
-Date:   Thu,  5 Sep 2019 14:34:24 +0530
-Message-Id: <20190905090424.5591-1-mkshah@codeaurora.org>
+Subject: [PATCH v2] soc: qcom: Introduce subsystem sleep stats driver
+Date:   Thu,  5 Sep 2019 14:47:07 +0530
+Message-Id: <20190905091707.14420-1-mkshah@codeaurora.org>
 X-Mailer: git-send-email 2.22.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -71,6 +71,9 @@ statistics in shared memory (SMEM). Lets add a driver to read
 and display this information using sysfs.
 
 Signed-off-by: Maulik Shah <mkshah@codeaurora.org>
+---
+Changes in v2:
+	- Correct Makefile to use QCOM_SS_SLEEP_STATS config
 ---
  Documentation/ABI/testing/sysfs-power    |  10 ++
  drivers/soc/qcom/Kconfig                 |   9 ++
@@ -121,14 +124,14 @@ index 880cf0290962..da53a96c6cce 100644
  	tristate "Qualcomm WCNSS control driver"
  	depends on ARCH_QCOM || COMPILE_TEST
 diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
-index ffe519b0cb66..657e9494fc51 100644
+index ffe519b0cb66..f00f21b87a22 100644
 --- a/drivers/soc/qcom/Makefile
 +++ b/drivers/soc/qcom/Makefile
 @@ -17,6 +17,7 @@ obj-$(CONFIG_QCOM_SMEM) +=	smem.o
  obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
  obj-$(CONFIG_QCOM_SMP2P)	+= smp2p.o
  obj-$(CONFIG_QCOM_SMSM)	+= smsm.o
-+qcom_rpmh-y	+= subsystem_sleep_stats.o
++obj-$(CONFIG_QCOM_SS_SLEEP_STATS)	+= subsystem_sleep_stats.o
  obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
  obj-$(CONFIG_QCOM_APR) += apr.o
  obj-$(CONFIG_QCOM_LLCC) += llcc-slice.o
