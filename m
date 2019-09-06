@@ -2,99 +2,249 @@ Return-Path: <SRS0=18oQ=XB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72991C43331
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Sep 2019 17:55:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36E5DC43140
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Sep 2019 18:13:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4F1F320842
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Sep 2019 17:55:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="QDpoVKvq"
+	by mail.kernel.org (Postfix) with ESMTP id 07FDA214DE
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Sep 2019 18:13:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391016AbfIFRzu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Sep 2019 13:55:50 -0400
-Received: from mo4-p02-ob.smtp.rzone.de ([85.215.255.84]:9972 "EHLO
-        mo4-p02-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388384AbfIFRzu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2019 13:55:50 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1567792547;
-        s=strato-dkim-0002; d=goldelico.com;
-        h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
-        X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
-        bh=le0i+C3WnJJ1pNcpGn6EKP8MS/2QDXn4lZNvB0jm46I=;
-        b=QDpoVKvqt6915dyUTD+lH3OqId+5Uc4wxacuz+IjP8LKaWrUMdMSN7J/dyeEDk5uiN
-        HU3z/eHIuJ+Jx59C8WoHxVTSTMZtSS4PrzZ2+ITJ08DGKbjGc/dXSpPkyIdeoC+EhlK7
-        gmRZdan+nEqWYgMSnN6e3JXC/yR1rxb+FVk/NT9bPgI9M0DldZeF9h8xeHBTEmSWKGTO
-        2w42kLWtItN/bM0W1s0NC6d3l2mfp8RA0LN0Is1TLgxZp1OwYy+ljx/XoxK+ObrmQr81
-        ycbv+Tdf82NzAOy/pcWyEf0tBlTS7IuB5SrQyt0DhPTh26wZdeTrRRNOotG+IrF50Xv3
-        5xGw==
-X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMgPgp8VKxflSZ1P34KBj7wpz8NMGH/PqwDqp5w=="
-X-RZG-CLASS-ID: mo00
-Received: from imac.fritz.box
-        by smtp.strato.de (RZmta 44.27.0 DYNA|AUTH)
-        with ESMTPSA id u036f9v86Htepil
-        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (curve secp521r1 with 521 ECDH bits, eq. 15360 bits RSA))
-        (Client did not present a certificate);
-        Fri, 6 Sep 2019 19:55:40 +0200 (CEST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Subject: Re: [RFC v2 3/3] ARM: dts: omap3: bulk convert compatible to be explicitly ti,omap3430 or ti,omap36xx
-From:   "H. Nikolaus Schaller" <hns@goldelico.com>
-In-Reply-To: <20190906172403.GG52127@atomide.com>
-Date:   Fri, 6 Sep 2019 19:55:40 +0200
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        =?utf-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Adam Ford <aford173@gmail.com>,
-        =?utf-8?Q?Andr=C3=A9_Roth?= <neolynx@gmail.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux-OMAP <linux-omap@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-pm@vger.kernel.org,
-        Discussions about the Letux Kernel 
-        <letux-kernel@openphoenux.org>, kernel@pyra-handheld.com
+        id S2403779AbfIFSNF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Sep 2019 14:13:05 -0400
+Received: from smtprelay0122.hostedemail.com ([216.40.44.122]:57642 "EHLO
+        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1731928AbfIFSNF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2019 14:13:05 -0400
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
+        by smtprelay07.hostedemail.com (Postfix) with ESMTP id 2A06A181D341A;
+        Fri,  6 Sep 2019 18:13:03 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: hand82_546059634e43e
+X-Filterd-Recvd-Size: 10002
+Received: from XPS-9350.home (unknown [47.151.152.152])
+        (Authenticated sender: joe@perches.com)
+        by omf15.hostedemail.com (Postfix) with ESMTPA;
+        Fri,  6 Sep 2019 18:12:59 +0000 (UTC)
+Message-ID: <1b1cfc9c8c13b58c47d1d123763c8bc412abf9d4.camel@perches.com>
+Subject: [RFC PATCH] tools: Add SPDX license to man pages
+From:   Joe Perches <joe@perches.com>
+To:     Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linux Media Mailing List <linux-media@vger.kernel.org>,
+        Mauro Carvalho Chehab <mchehab@infradead.org>,
+        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        Jessica Yu <jeyu@kernel.org>,
+        Federico Vaga <federico.vaga@vaga.pv.it>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-doc@vger.kernel.org, Robert Moore <robert.moore@intel.com>,
+        Erik Schmauss <erik.schmauss@intel.com>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Len Brown <lenb@kernel.org>, Thomas Renninger <trenn@suse.com>,
+        Shuah Khan <shuah@kernel.org>,
+        Valentina Manea <valentina.manea.m@gmail.com>,
+        linux-acpi@vger.kernel.org, devel@acpica.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-usb <linux-usb@vger.kernel.org>
+Date:   Fri, 06 Sep 2019 11:12:58 -0700
+In-Reply-To: <20190906083457.7e7934ec@coco.lan>
+References: <20190905055614.7958918b@coco.lan>
+         <88e638eb959095ab6657d295f9f8c27169569bf2.1567675272.git.mchehab+samsung@kernel.org>
+         <20190905092703.GA30899@kroah.com> <20190905090701.37dcf75e@coco.lan>
+         <b32c2e46b91e7bcda2a9bd140673f06d71b2487a.camel@perches.com>
+         <20190906083457.7e7934ec@coco.lan>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.32.1-2 
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <17A56ADB-2217-41CC-BE0B-C3899815F10F@goldelico.com>
-References: <cover.1567587220.git.hns@goldelico.com> <a2b56edcada7b9000a6e906387a02c0ee42681db.1567587220.git.hns@goldelico.com> <20190905142734.GV52127@atomide.com> <4BC39938-D63E-4BDC-BA28-5132F77F602D@goldelico.com> <20190906154732.GC52127@atomide.com> <8C8644AC-FA12-4D26-B96A-76B78798612A@goldelico.com> <20190906172403.GG52127@atomide.com>
-To:     Tony Lindgren <tony@atomide.com>
-X-Mailer: Apple Mail (2.3124)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Fri, 2019-09-06 at 08:34 -0300, Mauro Carvalho Chehab wrote:
+> Warning: SPDX header for file tools/thermal/tmon/tmon.8 is at line 2
+[]
+> The last one is interesting... what's the "very first line" where a
+> SPDX header tag should be on a man page?
 
-> Am 06.09.2019 um 19:24 schrieb Tony Lindgren <tony@atomide.com>:
-> 
-> * H. Nikolaus Schaller <hns@goldelico.com> [190906 17:09]:
-> 
->> BTW there is also some code that does special SoC detection based on
->> soc_device_match(), mainly in omapdrm/dss.
->> 
->> If we were to use this mechanism in the ti-cpufreq driver we could
->> match it to ti,omap3 and could avoid all these changes.
->> 
->> But make it less maintainable and code more complex.
-> 
-> Hmm right, yeah using soc_device_match() would remove this issue.
-> It might be worth doing as these SoC variants do not change
-> much and the code should not need updating. Up to you to
-> decide.
+just fyi:
 
-I have looked through the structure of the ti-cpufreq driver but
-it assumes that each set of register offsets and bit masks
-has its own compatible so that it can just switch descriptor
-tables.
+It looks like .man pages could use a comment form
+using '.\"' like this example on the first line:
 
-There is no provision to run soc_device_match() instead.
+$ head -5 tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8
+.\"  This page Copyright (C) 2010 - 2015 Len Brown <len.brown@intel.com>
+.\"  Distributed under the GPL, Copyleft 1994.
+.TH X86_ENERGY_PERF_POLICY 8
+.SH NAME
+x86_energy_perf_policy \- Manage Energy vs. Performance Policy via x86 Model Specific Registers
 
-So let's forget this idea...
+So maybe:
+---
+ tools/power/acpi/man/acpidump.8                                 | 1 +
+ tools/power/cpupower/man/cpupower-frequency-info.1              | 1 +
+ tools/power/cpupower/man/cpupower-frequency-set.1               | 1 +
+ tools/power/cpupower/man/cpupower-idle-info.1                   | 1 +
+ tools/power/cpupower/man/cpupower-idle-set.1                    | 1 +
+ tools/power/cpupower/man/cpupower-info.1                        | 1 +
+ tools/power/cpupower/man/cpupower-monitor.1                     | 1 +
+ tools/power/cpupower/man/cpupower-set.1                         | 1 +
+ tools/power/cpupower/man/cpupower.1                             | 1 +
+ tools/power/pm-graph/bootgraph.8                                | 1 +
+ tools/power/pm-graph/sleepgraph.8                               | 1 +
+ tools/power/x86/turbostat/turbostat.8                           | 1 +
+ tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8 | 1 +
+ tools/thermal/tmon/tmon.8                                       | 1 +
+ tools/usb/usbip/doc/usbip.8                                     | 1 +
+ tools/usb/usbip/doc/usbipd.8                                    | 1 +
+ 16 files changed, 16 insertions(+)
 
-BR,
-Nikolaus
+diff --git a/tools/power/acpi/man/acpidump.8 b/tools/power/acpi/man/acpidump.8
+index 79e2d1d435d1..31513ea4bc6b 100644
+--- a/tools/power/acpi/man/acpidump.8
++++ b/tools/power/acpi/man/acpidump.8
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH ACPIDUMP 8
+ .SH NAME
+ acpidump \- dump a system's ACPI tables to an ASCII file
+diff --git a/tools/power/cpupower/man/cpupower-frequency-info.1 b/tools/power/cpupower/man/cpupower-frequency-info.1
+index 6aa8d239dff9..e3f46215c3b6 100644
+--- a/tools/power/cpupower/man/cpupower-frequency-info.1
++++ b/tools/power/cpupower/man/cpupower-frequency-info.1
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH "CPUPOWER\-FREQUENCY\-INFO" "1" "0.1" "" "cpupower Manual"
+ .SH "NAME"
+ .LP 
+diff --git a/tools/power/cpupower/man/cpupower-frequency-set.1 b/tools/power/cpupower/man/cpupower-frequency-set.1
+index b50570221a5b..f6b4619e7ef6 100644
+--- a/tools/power/cpupower/man/cpupower-frequency-set.1
++++ b/tools/power/cpupower/man/cpupower-frequency-set.1
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH "CPUPOWER\-FREQUENCY\-SET" "1" "0.1" "" "cpupower Manual"
+ .SH "NAME"
+ .LP 
+diff --git a/tools/power/cpupower/man/cpupower-idle-info.1 b/tools/power/cpupower/man/cpupower-idle-info.1
+index 80a1311fa747..d05728573bd9 100644
+--- a/tools/power/cpupower/man/cpupower-idle-info.1
++++ b/tools/power/cpupower/man/cpupower-idle-info.1
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH "CPUPOWER-IDLE-INFO" "1" "0.1" "" "cpupower Manual"
+ .SH "NAME"
+ .LP
+diff --git a/tools/power/cpupower/man/cpupower-idle-set.1 b/tools/power/cpupower/man/cpupower-idle-set.1
+index 21916cff7516..746322ea9b3e 100644
+--- a/tools/power/cpupower/man/cpupower-idle-set.1
++++ b/tools/power/cpupower/man/cpupower-idle-set.1
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH "CPUPOWER-IDLE-SET" "1" "0.1" "" "cpupower Manual"
+ .SH "NAME"
+ .LP
+diff --git a/tools/power/cpupower/man/cpupower-info.1 b/tools/power/cpupower/man/cpupower-info.1
+index 340bcd0be7de..d77b34bcf1f3 100644
+--- a/tools/power/cpupower/man/cpupower-info.1
++++ b/tools/power/cpupower/man/cpupower-info.1
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH CPUPOWER\-INFO "1" "22/02/2011" "" "cpupower Manual"
+ .SH NAME
+ cpupower\-info \- Shows processor power related kernel or hardware configurations
+diff --git a/tools/power/cpupower/man/cpupower-monitor.1 b/tools/power/cpupower/man/cpupower-monitor.1
+index 70a56476f4b0..4027cf424ea0 100644
+--- a/tools/power/cpupower/man/cpupower-monitor.1
++++ b/tools/power/cpupower/man/cpupower-monitor.1
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH CPUPOWER\-MONITOR "1" "22/02/2011" "" "cpupower Manual"
+ .SH NAME
+ cpupower\-monitor \- Report processor frequency and idle statistics
+diff --git a/tools/power/cpupower/man/cpupower-set.1 b/tools/power/cpupower/man/cpupower-set.1
+index 2bcc696f4496..77dec3ec4c10 100644
+--- a/tools/power/cpupower/man/cpupower-set.1
++++ b/tools/power/cpupower/man/cpupower-set.1
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH CPUPOWER\-SET "1" "22/02/2011" "" "cpupower Manual"
+ .SH NAME
+ cpupower\-set \- Set processor power related kernel or hardware configurations
+diff --git a/tools/power/cpupower/man/cpupower.1 b/tools/power/cpupower/man/cpupower.1
+index baf741d06e82..0a8b08a1fd90 100644
+--- a/tools/power/cpupower/man/cpupower.1
++++ b/tools/power/cpupower/man/cpupower.1
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH CPUPOWER "1" "07/03/2011" "" "cpupower Manual"
+ .SH NAME
+ cpupower \- Shows and sets processor power related values
+diff --git a/tools/power/pm-graph/bootgraph.8 b/tools/power/pm-graph/bootgraph.8
+index 64d513f80a2a..4a8981356e1a 100644
+--- a/tools/power/pm-graph/bootgraph.8
++++ b/tools/power/pm-graph/bootgraph.8
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH BOOTGRAPH 8
+ .SH NAME
+ bootgraph \- Kernel boot timing analysis
+diff --git a/tools/power/pm-graph/sleepgraph.8 b/tools/power/pm-graph/sleepgraph.8
+index 43aee64316df..ce456d1b7da9 100644
+--- a/tools/power/pm-graph/sleepgraph.8
++++ b/tools/power/pm-graph/sleepgraph.8
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH SLEEPGRAPH 8
+ .SH NAME
+ sleepgraph \- Suspend/Resume timing analysis
+diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
+index a6db83a88e85..48ac735526df 100644
+--- a/tools/power/x86/turbostat/turbostat.8
++++ b/tools/power/x86/turbostat/turbostat.8
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH TURBOSTAT 8
+ .SH NAME
+ turbostat \- Report processor frequency and idle statistics
+diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8 b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8
+index 78c6361898b1..e702d2117062 100644
+--- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8
++++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.8
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .\"  This page Copyright (C) 2010 - 2015 Len Brown <len.brown@intel.com>
+ .\"  Distributed under the GPL, Copyleft 1994.
+ .TH X86_ENERGY_PERF_POLICY 8
+diff --git a/tools/thermal/tmon/tmon.8 b/tools/thermal/tmon/tmon.8
+index 2f122de5841b..cffaa0d65478 100644
+--- a/tools/thermal/tmon/tmon.8
++++ b/tools/thermal/tmon/tmon.8
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH TMON 8
+ # SPDX-License-Identifier: GPL-2.0
+ .SH NAME
+diff --git a/tools/usb/usbip/doc/usbip.8 b/tools/usb/usbip/doc/usbip.8
+index a6097be25d28..7430d80d5f66 100644
+--- a/tools/usb/usbip/doc/usbip.8
++++ b/tools/usb/usbip/doc/usbip.8
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH USBIP "8" "February 2009" "usbip" "System Administration Utilities"
+ .SH NAME
+ usbip \- manage USB/IP devices
+diff --git a/tools/usb/usbip/doc/usbipd.8 b/tools/usb/usbip/doc/usbipd.8
+index ac4635db3f03..5f2f4e2d0c9b 100644
+--- a/tools/usb/usbip/doc/usbipd.8
++++ b/tools/usb/usbip/doc/usbipd.8
+@@ -1,3 +1,4 @@
++.\" SPDX-License-Identifier: GPL-2.0-only
+ .TH USBIP "8" "February 2009" "usbip" "System Administration Utilities"
+ .SH NAME
+ usbipd \- USB/IP server daemon
+
 
