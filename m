@@ -2,131 +2,166 @@ Return-Path: <SRS0=18oQ=XB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5629C43331
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Sep 2019 09:52:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E409C43331
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Sep 2019 10:05:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A54A7206CD
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Sep 2019 09:52:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 61FEF2082C
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Sep 2019 10:05:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2392978AbfIFJwL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Sep 2019 05:52:11 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:46795 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2392975AbfIFJwK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2019 05:52:10 -0400
-Received: from [5.158.153.53] (helo=tip-bot2.lab.linutronix.de)
-        by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
-        (Exim 4.80)
-        (envelope-from <tip-bot2@linutronix.de>)
-        id 1i6AuS-000557-PG; Fri, 06 Sep 2019 11:52:04 +0200
-Received: from [127.0.1.1] (localhost [IPv6:::1])
-        by tip-bot2.lab.linutronix.de (Postfix) with ESMTP id 4B09D1C0DE8;
-        Fri,  6 Sep 2019 11:52:04 +0200 (CEST)
-Date:   Fri, 06 Sep 2019 09:52:04 -0000
-From:   "tip-bot2 for Jiri Slaby" <tip-bot2@linutronix.de>
-Reply-to: linux-kernel@vger.kernel.org
-To:     linux-tip-commits@vger.kernel.org
-Subject: [tip: x86/asm] x86/asm/suspend: Get rid of bogus_64_magic
-Cc:     Jiri Slaby <jslaby@suse.cz>, Borislav Petkov <bp@suse.de>,
-        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-        Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org,
-        Pavel Machek <pavel@ucw.cz>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        "x86-ml" <x86@kernel.org>, Ingo Molnar <mingo@kernel.org>,
-        Borislav Petkov <bp@alien8.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20190906075550.23435-1-jslaby@suse.cz>
-References: <20190906075550.23435-1-jslaby@suse.cz>
+        id S2388818AbfIFKFp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Sep 2019 06:05:45 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:27184 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1731943AbfIFKFp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Sep 2019 06:05:45 -0400
+X-UUID: 772fc6cf6220486c9844593c7ea48682-20190906
+X-UUID: 772fc6cf6220486c9844593c7ea48682-20190906
+Received: from mtkcas08.mediatek.inc [(172.21.101.126)] by mailgw02.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.10 Build 0809 with TLS)
+        with ESMTP id 1923528875; Fri, 06 Sep 2019 18:05:40 +0800
+Received: from mtkcas08.mediatek.inc (172.21.101.126) by
+ mtkmbs01n1.mediatek.inc (172.21.101.68) with Microsoft SMTP Server (TLS) id
+ 15.0.1395.4; Fri, 6 Sep 2019 18:05:36 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas08.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1395.4 via Frontend
+ Transport; Fri, 6 Sep 2019 18:05:36 +0800
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>
+CC:     Fan Chen <fan.chen@mediatek.com>,
+        HenryC Chen <HenryC.Chen@mediatek.com>, <yt.lee@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH v5 1/3] dt-bindings: soc: add mtk svs dt-bindings
+Date:   Fri, 6 Sep 2019 18:05:13 +0800
+Message-ID: <20190906100514.30803-2-roger.lu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20190906100514.30803-1-roger.lu@mediatek.com>
+References: <20190906100514.30803-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
-Message-ID: <156776352423.24167.12782521075233555186.tip-bot2@tip-bot2>
-X-Mailer: tip-git-log-daemon
-Robot-ID: <tip-bot2.linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required,  ALL_TRUSTED=-1,SHORTCIRCUIT=-0.0001
+Content-Type: text/plain
+X-MTK:  N
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The following commit has been merged into the x86/asm branch of tip:
+Document the binding for enabling mtk svs on MediaTek SoC.
 
-Commit-ID:     559ceeed62a5121783a8955c63aeb18aaa0ef224
-Gitweb:        https://git.kernel.org/tip/559ceeed62a5121783a8955c63aeb18aaa0ef224
-Author:        Jiri Slaby <jslaby@suse.cz>
-AuthorDate:    Fri, 06 Sep 2019 09:55:49 +02:00
-Committer:     Borislav Petkov <bp@suse.de>
-CommitterDate: Fri, 06 Sep 2019 10:34:15 +02:00
-
-x86/asm/suspend: Get rid of bogus_64_magic
-
-bogus_64_magic is only a dead-end loop. There is no need for an
-out-of-order function (and unannotated local label), so just handle it
-in-place and also store 0xbad-m-a-g-i-c to %rcx beforehand, in case
-someone is inspecting registers.
-
-Here a qemu+gdb example:
-
-  Remote debugging using localhost:1235
-  wakeup_long64 () at arch/x86/kernel/acpi/wakeup_64.S:26
-  26              jmp 1b
-  (gdb) info registers
-  rax            0x123456789abcdef0       1311768467463790320
-  rbx            0x0      0
-  rcx            0xbad6d61676963  3286910041024867
-  		 ^^^^^^^^^^^^^^^
-
- [ bp: Add the gdb example. ]
-
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Signed-off-by: Borislav Petkov <bp@suse.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: x86-ml <x86@kernel.org>
-Link: https://lkml.kernel.org/r/20190906075550.23435-1-jslaby@suse.cz
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
 ---
- arch/x86/kernel/acpi/wakeup_64.S | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ .../devicetree/bindings/power/mtk-svs.txt     | 88 +++++++++++++++++++
+ 1 file changed, 88 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/mtk-svs.txt
 
-diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-index b0715c3..7f9ade1 100644
---- a/arch/x86/kernel/acpi/wakeup_64.S
-+++ b/arch/x86/kernel/acpi/wakeup_64.S
-@@ -18,8 +18,13 @@ ENTRY(wakeup_long64)
- 	movq	saved_magic, %rax
- 	movq	$0x123456789abcdef0, %rdx
- 	cmpq	%rdx, %rax
--	jne	bogus_64_magic
-+	je	2f
- 
-+	/* stop here on a saved_magic mismatch */
-+	movq $0xbad6d61676963, %rcx
-+1:
-+	jmp 1b
-+2:
- 	movw	$__KERNEL_DS, %ax
- 	movw	%ax, %ss	
- 	movw	%ax, %ds
-@@ -37,9 +42,6 @@ ENTRY(wakeup_long64)
- 	jmp	*%rax
- ENDPROC(wakeup_long64)
- 
--bogus_64_magic:
--	jmp	bogus_64_magic
--
- ENTRY(do_suspend_lowlevel)
- 	FRAME_BEGIN
- 	subq	$8, %rsp
+diff --git a/Documentation/devicetree/bindings/power/mtk-svs.txt b/Documentation/devicetree/bindings/power/mtk-svs.txt
+new file mode 100644
+index 000000000000..6a71992ef162
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/mtk-svs.txt
+@@ -0,0 +1,88 @@
++* Mediatek Smart Voltage Scaling (MTK SVS)
++
++This describes the device tree binding for the MTK SVS controller (bank)
++which helps provide the optimized CPU/GPU/CCI voltages. This device also
++needs thermal data to calculate thermal slope for accurately compensate
++the voltages when temperature change.
++
++Required properties:
++- compatible:
++  - "mediatek,mt8183-svs" : For MT8183 family of SoCs
++- reg: Address range of the MTK SVS controller.
++- interrupts: IRQ for the MTK SVS controller.
++- clocks, clock-names: Clocks needed for the svs controller. required
++                       clocks are:
++		       "main_clk": Main clock needed for register access
++- nvmem-cells: Phandle to the calibration data provided by a nvmem device.
++- nvmem-cell-names: Should be "svs-calibration-data" and "calibration-data"
++
++Subnodes:
++- svs_cpu_little: SVS bank device node of little CPU
++  compatible: "mediatek,mt8183-svs-cpu-little"
++  operating-points-v2: OPP table hooked by SVS little CPU bank.
++		       SVS will optimze this OPP table voltage part.
++  vcpu-little-supply: PMIC buck of little CPU
++- svs_cpu_big: SVS bank device node of big CPU
++  compatible: "mediatek,mt8183-svs-cpu-big"
++  operating-points-v2: OPP table hooked by SVS big CPU bank.
++		       SVS will optimze this OPP table voltage part.
++  vcpu-big-supply: PMIC buck of big CPU
++- svs_cci: SVS bank device node of CCI
++  compatible: "mediatek,mt8183-svs-cci"
++  operating-points-v2: OPP table hooked by SVS CCI bank.
++		       SVS will optimze this OPP table voltage part.
++  vcci-supply: PMIC buck of CCI
++- svs_gpu: SVS bank device node of GPU
++  compatible: "mediatek,mt8183-svs-gpu"
++  operating-points-v2: OPP table hooked by SVS GPU bank.
++		       SVS will optimze this OPP table voltage part.
++  vgpu-spply: PMIC buck of GPU
++
++Example:
++
++	svs: svs@1100b000 {
++		compatible = "mediatek,mt8183-svs";
++		reg = <0 0x1100b000 0 0x1000>;
++		interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_LOW 0>;
++		clocks = <&infracfg CLK_INFRA_THERM>;
++		clock-names = "main_clk";
++		nvmem-cells = <&svs_calibration>, <&thermal_calibration>;
++		nvmem-cell-names = "svs-calibration-data", "calibration-data";
++
++		svs_cpu_little: svs_cpu_little {
++			compatible = "mediatek,mt8183-svs-cpu-little";
++			operating-points-v2 = <&cluster0_opp>;
++		};
++
++		svs_cpu_big: svs_cpu_big {
++			compatible = "mediatek,mt8183-svs-cpu-big";
++			operating-points-v2 = <&cluster1_opp>;
++		};
++
++		svs_cci: svs_cci {
++			compatible = "mediatek,mt8183-svs-cci";
++			operating-points-v2 = <&cci_opp>;
++		};
++
++		svs_gpu: svs_gpu {
++			compatible = "mediatek,mt8183-svs-gpu";
++			power-domains = <&scpsys MT8183_POWER_DOMAIN_MFG_2D>;
++			operating-points-v2 = <&gpu_opp_table>;
++		};
++	};
++
++	&svs_cpu_little {
++		vcpu-little-supply = <&mt6358_vproc12_reg>;
++	};
++
++	&svs_cpu_big {
++		vcpu-big-supply = <&mt6358_vproc11_reg>;
++	};
++
++	&svs_cci {
++		vcci-supply = <&mt6358_vproc12_reg>;
++	};
++
++	&svs_gpu {
++		vgpu-spply = <&mt6358_vgpu_reg>;
++	};
+-- 
+2.18.0
+
