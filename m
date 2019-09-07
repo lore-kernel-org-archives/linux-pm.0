@@ -2,98 +2,114 @@ Return-Path: <SRS0=enx6=XC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BA2EC47401
-	for <linux-pm@archiver.kernel.org>; Sat,  7 Sep 2019 09:21:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D8D1C43331
+	for <linux-pm@archiver.kernel.org>; Sat,  7 Sep 2019 13:10:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D221A21871
-	for <linux-pm@archiver.kernel.org>; Sat,  7 Sep 2019 09:21:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1567848085;
-	bh=cWo8UMY+qdzhv9zEUE6bF/VNqUqOWP09bVH4/y6TTAk=;
-	h=From:To:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=1xIizhSmaTuKU5Ct3YfyIhN7xnrZqZl3EK1nzvC3P2piCGHpKjlDBil9LMbw/qdUl
-	 Kfgm2NUM5ozQqzYK4XbLeWSa0YxWAMloDNxSINRxUXjCh9WxGUU9oj+9meWv5nJtVb
-	 L2WpT0GPO15l6T8v4hypgRnYZw6jAo8XuzCkuA20=
+	by mail.kernel.org (Postfix) with ESMTP id 53BCF21835
+	for <linux-pm@archiver.kernel.org>; Sat,  7 Sep 2019 13:10:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2394621AbfIGJUm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 7 Sep 2019 05:20:42 -0400
-Received: from mail.kernel.org ([198.145.29.99]:59398 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2406592AbfIGJUk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 7 Sep 2019 05:20:40 -0400
-Received: from localhost.localdomain (unknown [194.230.155.145])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 3315F218AF;
-        Sat,  7 Sep 2019 09:20:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1567848039;
-        bh=cWo8UMY+qdzhv9zEUE6bF/VNqUqOWP09bVH4/y6TTAk=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=hfhpT9X2LPD+6kHWEwHtG8iPFTCQcRpLme6YyGFxR4TOo/zh89KmBrFtQUBaYxO5I
-         2ipPWsNaJdxH+ZvLexrFF89NRj5BzHaye5dZPy3ithhXHTFn6kUIvQm6Jg6pFKMblG
-         bklNSwQBqUXcl5UjbPT77n5Z240DAKFGLplfQWBU=
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Kukjin Kim <kgene@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        Sebastian Reichel <sre@kernel.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-rtc@vger.kernel.org
-Subject: [PATCH v2 04/11] dt-bindings: arm: samsung: Document missing S5Pv210 boards bindings
-Date:   Sat,  7 Sep 2019 11:20:00 +0200
-Message-Id: <20190907092007.9946-4-krzk@kernel.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190907092007.9946-1-krzk@kernel.org>
-References: <20190907092007.9946-1-krzk@kernel.org>
+        id S2390138AbfIGNK2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 7 Sep 2019 09:10:28 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57860 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389683AbfIGNK2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 7 Sep 2019 09:10:28 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id 8C93D8183B; Sat,  7 Sep 2019 15:10:11 +0200 (CEST)
+Date:   Sat, 7 Sep 2019 15:10:24 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Jiri Slaby <jslaby@suse.cz>
+Cc:     bp@alien8.de, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+        x86@kernel.org, linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/2] x86/asm/suspend: Get rid of bogus_64_magic
+Message-ID: <20190907131024.GA4430@amd>
+References: <20190906075550.23435-1-jslaby@suse.cz>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
+Content-Disposition: inline
+In-Reply-To: <20190906075550.23435-1-jslaby@suse.cz>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add missing documentation of Samsung S5Pv210 SoC based boards bindings.
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- .../bindings/arm/samsung/samsung-boards.yaml           | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+--45Z9DzgjV8m4Oswq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/devicetree/bindings/arm/samsung/samsung-boards.yaml b/Documentation/devicetree/bindings/arm/samsung/samsung-boards.yaml
-index d8811edf7b7a..98401a6db2a0 100644
---- a/Documentation/devicetree/bindings/arm/samsung/samsung-boards.yaml
-+++ b/Documentation/devicetree/bindings/arm/samsung/samsung-boards.yaml
-@@ -14,6 +14,16 @@ properties:
-     const: '/'
-   compatible:
-     oneOf:
-+      - description: S5PV210 based boards
-+        items:
-+          - enum:
-+              - aesop,torbreck                  # aESOP Torbreck based on S5PV210
-+              - samsung,aquila                  # Samsung Aquila based on S5PC110
-+              - samsung,goni                    # Samsung Goni based on S5PC110
-+              - yic,smdkc110                    # YIC System SMDKC110 based on S5PC110
-+              - yic,smdkv210                    # YIC System SMDKV210 based on S5PV210
-+          - const: samsung,s5pv210
-+
-       - description: S5PV210 based Aries boards
-         items:
-           - enum:
--- 
-2.17.1
+On Fri 2019-09-06 09:55:49, Jiri Slaby wrote:
+> bogus_64_magic is only a dead-end loop. There is no need for an
+> out-of-order function (and unannotated local label), so just handle it
+> in-place and also store 0xbad-m-a-g-i-c to rcx beforehand.
+>=20
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  arch/x86/kernel/acpi/wakeup_64.S | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wake=
+up_64.S
+> index b0715c3ac18d..7f9ade13bbcf 100644
+> --- a/arch/x86/kernel/acpi/wakeup_64.S
+> +++ b/arch/x86/kernel/acpi/wakeup_64.S
+> @@ -18,8 +18,13 @@ ENTRY(wakeup_long64)
+>  	movq	saved_magic, %rax
+>  	movq	$0x123456789abcdef0, %rdx
+>  	cmpq	%rdx, %rax
+> -	jne	bogus_64_magic
+> +	je	2f
+> =20
+> +	/* stop here on a saved_magic mismatch */
+> +	movq $0xbad6d61676963, %rcx
+> +1:
+> +	jmp 1b
+> +2:
 
+btw I suspect you can simply do here
+
+1b:  jne 1b
+
+=2E.. if someone is looking with gdb, he'll understand what is going
+on. no need to bother with special %rcx, %rdx is already rather magic.
+
+Best regards,
+								Pavel
+							=09
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--45Z9DzgjV8m4Oswq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAl1zrEAACgkQMOfwapXb+vIeZACfcTkUyDEalzzN3zbqAS5xl2CF
+HUwAn0YkpbYtbVUqojF84r5VTahwheAo
+=lKXd
+-----END PGP SIGNATURE-----
+
+--45Z9DzgjV8m4Oswq--
