@@ -2,114 +2,110 @@ Return-Path: <SRS0=Z7rT=XF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23907C49ED6
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Sep 2019 07:15:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB81FC3A5A2
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Sep 2019 07:59:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 04E4621D82
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Sep 2019 07:15:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8FFF32084D
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Sep 2019 07:59:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="F/4DbNZM"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406693AbfIJHPG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Sep 2019 03:15:06 -0400
-Received: from mxwww.masterlogin.de ([95.129.51.220]:43452 "EHLO
-        mxwww.masterlogin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404313AbfIJHOa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Sep 2019 03:14:30 -0400
-Received: from mxout2.routing.net (unknown [192.168.10.82])
-        by new.mxwww.masterlogin.de (Postfix) with ESMTPS id 38CCF9630D;
-        Tue, 10 Sep 2019 07:05:14 +0000 (UTC)
-Received: from mxbox2.masterlogin.de (unknown [192.168.10.253])
-        by mxout2.routing.net (Postfix) with ESMTP id 80AE26205B;
-        Tue, 10 Sep 2019 07:05:14 +0000 (UTC)
-Received: from localhost.localdomain (fttx-pool-185.75.73.135.bambit.de [185.75.73.135])
-        by mxbox2.masterlogin.de (Postfix) with ESMTPSA id E2744100C3C;
-        Tue, 10 Sep 2019 07:05:11 +0000 (UTC)
-From:   Frank Wunderlich <frank-w@public-files.de>
-To:     linux-mediatek@lists.infradead.org
-Cc:     Frank Wunderlich <frank-w@public-files.de>,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Eddie Huang <eddie.huang@mediatek.com>,
-        Josef Friedl <josef.friedl@speed.at>,
-        Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        Mark Rutland <mark.rutland@arm.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sean Wang <sean.wang@mediatek.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        "Tianping Fang" <tianping.fang@mediatek.com>
-Subject: [PATCH v7 1/7] dt-bindings: rtc: mediatek: add missing mt6397 rtc
-Date:   Tue, 10 Sep 2019 09:04:40 +0200
-Message-Id: <20190910070446.639-2-frank-w@public-files.de>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190910070446.639-1-frank-w@public-files.de>
-References: <20190910070446.639-1-frank-w@public-files.de>
+        id S1729267AbfIJH7N (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Sep 2019 03:59:13 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:42898 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727205AbfIJH7N (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Sep 2019 03:59:13 -0400
+Received: by mail-pg1-f194.google.com with SMTP id p3so9364350pgb.9
+        for <linux-pm@vger.kernel.org>; Tue, 10 Sep 2019 00:59:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=+ICqDZT0+Rww/hGCZQ9/7SaJeWoOs3iDbAih166xoms=;
+        b=F/4DbNZMB0nf7DgnHlLG8hechqYzxn49BWwlDiqD6w5zAWKLdtCcwUMdYD1CsqN+Ng
+         jzKPub20pUMRPuzTI4YvJD3AiyE28CCh4t/qGp+gjJYenrY9lh/BXg7sRph0NR66KjSF
+         k6CBYACYO5XANiHDoc9soi/2ks1/EbDYV2mfM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=+ICqDZT0+Rww/hGCZQ9/7SaJeWoOs3iDbAih166xoms=;
+        b=hoVxLVhZ9KbBYJie6UKIYoaFR7hD27jd0cXcOCun/VuEKDawGxBrw0wXvLSTJDroTi
+         /zM40muqbEtKCZBB/0wcTUm/MFoaET7AB1chFx/iN0KnFbyBp2G9Rbc57c6T5UZmAgPR
+         6ux9/fEWVVoxKeWBcmZ8t3O3VVgTV9Dqwy/jx0n0eszyl6AZFgapCY+eO7x/9NvbkNcx
+         sH5VfbSBhTbaOwO7mtKg7EUGBGPMMq/k0fEG52i6GJrH17ohxaamBWXYgnX/5E5xQ2Z/
+         Tfo0shxVsLOpTg84choaD8HToo9f+WoKW6gRoZ0RLPIXX5xEsIzxfN1BJ+4JzPrOdFF5
+         Slbg==
+X-Gm-Message-State: APjAAAWhsernEP8Gmdhxkx6N8jLNttVT1+ut5xNubqqBDWHYURouu2sf
+        EzscNwb8vSX4do88ydqg8OnRxQ==
+X-Google-Smtp-Source: APXvYqyDn9hO++8SUhAPekxT/ojMiADYLdC41QbV41Z++f9OMrsB5LXCadAWjtEN/hNbyMZ7r2vYLg==
+X-Received: by 2002:aa7:870c:: with SMTP id b12mr34260902pfo.122.1568102352293;
+        Tue, 10 Sep 2019 00:59:12 -0700 (PDT)
+Received: from hsinyi-z840.tpe.corp.google.com ([2401:fa00:1:10:b852:bd51:9305:4261])
+        by smtp.gmail.com with ESMTPSA id c23sm16189538pgj.62.2019.09.10.00.59.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Sep 2019 00:59:11 -0700 (PDT)
+From:   Hsin-Yi Wang <hsinyi@chromium.org>
+To:     Eduardo Valentin <edubezval@gmail.com>,
+        Laxman Dewangan <ldewangan@nvidia.com>,
+        linux-arm-kernel@lists.infradead.org
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Jonathan Cameron <jic23@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] thermal-generic-adc: Silent error message for EPROBE_DEFER
+Date:   Tue, 10 Sep 2019 15:59:07 +0800
+Message-Id: <20190910075907.132200-1-hsinyi@chromium.org>
+X-Mailer: git-send-email 2.23.0.162.g0b9fbb3734-goog
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Josef Friedl <josef.friedl@speed.at>
+If devm_iio_channel_get() or devm_thermal_zone_of_sensor_register()
+fail with EPROBE_DEFER, we shouldn't print an error message, as the
+device will be probed again later.
 
-add missing devicetree-binding document for mt6397 rtc
-in later patch driver is extended with mt6323 chip
-
-Suggested-By: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Signed-off-by: Josef Friedl <josef.friedl@speed.at>
-Signed-off-by: Frank Wunderlich <frank-w@public-files.de>
-Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Hsin-Yi Wang <hsinyi@chromium.org>
 ---
-changes since v6: none
-changes since v5: none
-changes since v4: use relative path
-changes since v3: moved SOB
-changes since v2: splitted rtc-mt6397.txt from first patch
----
- .../devicetree/bindings/rtc/rtc-mt6397.txt    | 29 +++++++++++++++++++
- 1 file changed, 29 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
+ drivers/thermal/thermal-generic-adc.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt b/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
-new file mode 100644
-index 000000000000..55a0c8874c03
---- /dev/null
-+++ b/Documentation/devicetree/bindings/rtc/rtc-mt6397.txt
-@@ -0,0 +1,29 @@
-+Device-Tree bindings for MediaTek PMIC based RTC
-+
-+MediaTek PMIC based RTC is an independent function of MediaTek PMIC that works
-+as a type of multi-function device (MFD). The RTC can be configured and set up
-+with PMIC wrapper bus which is a common resource shared with the other
-+functions found on the same PMIC.
-+
-+For MediaTek PMIC MFD bindings, see:
-+../mfd/mt6397.txt
-+
-+For MediaTek PMIC wrapper bus bindings, see:
-+../soc/mediatek/pwrap.txt
-+
-+Required properties:
-+- compatible: Should be one of follows
-+       "mediatek,mt6323-rtc": for MT6323 PMIC
-+       "mediatek,mt6397-rtc": for MT6397 PMIC
-+
-+Example:
-+
-+       pmic {
-+               compatible = "mediatek,mt6323";
-+
-+               ...
-+
-+               rtc {
-+                       compatible = "mediatek,mt6323-rtc";
-+               };
-+       };
+diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
+index dcecf2e8dc8e..ae5743c9a894 100644
+--- a/drivers/thermal/thermal-generic-adc.c
++++ b/drivers/thermal/thermal-generic-adc.c
+@@ -134,7 +134,8 @@ static int gadc_thermal_probe(struct platform_device *pdev)
+ 	gti->channel = devm_iio_channel_get(&pdev->dev, "sensor-channel");
+ 	if (IS_ERR(gti->channel)) {
+ 		ret = PTR_ERR(gti->channel);
+-		dev_err(&pdev->dev, "IIO channel not found: %d\n", ret);
++		if (ret != -EPROBE_DEFER)
++			dev_err(&pdev->dev, "IIO channel not found: %d\n", ret);
+ 		return ret;
+ 	}
+ 
+@@ -142,8 +143,10 @@ static int gadc_thermal_probe(struct platform_device *pdev)
+ 							   &gadc_thermal_ops);
+ 	if (IS_ERR(gti->tz_dev)) {
+ 		ret = PTR_ERR(gti->tz_dev);
+-		dev_err(&pdev->dev, "Thermal zone sensor register failed: %d\n",
+-			ret);
++		if (ret != -EPROBE_DEFER)
++			dev_err(&pdev->dev,
++				"Thermal zone sensor register failed: %d\n",
++				ret);
+ 		return ret;
+ 	}
+ 
 -- 
-2.17.1
+2.23.0.162.g0b9fbb3734-goog
 
