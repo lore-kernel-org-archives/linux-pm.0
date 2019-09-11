@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39F46C5ACAE
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Sep 2019 22:32:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4683AECDE20
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Sep 2019 22:33:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0A3592087E
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Sep 2019 22:32:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1C067216F4
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Sep 2019 22:33:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="o/hNxA2g"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iIqmRKYb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728808AbfIKWcs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Sep 2019 18:32:48 -0400
-Received: from mail-pl1-f194.google.com ([209.85.214.194]:36945 "EHLO
-        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728810AbfIKWcs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2019 18:32:48 -0400
-Received: by mail-pl1-f194.google.com with SMTP id b10so10836964plr.4
-        for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2019 15:32:47 -0700 (PDT)
+        id S1729015AbfIKWc7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Sep 2019 18:32:59 -0400
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:35657 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728421AbfIKWc6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2019 18:32:58 -0400
+Received: by mail-pg1-f196.google.com with SMTP id n4so12288228pgv.2
+        for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2019 15:32:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :in-reply-to:references;
-        bh=OSYcY8IBbPXHFII/5CsrnXT8+IaVG+jk8Oh4t4Zn6xA=;
-        b=o/hNxA2gr0vDUeX9kntmZsI+c644sUOFOjeuCT21i22ln2dgMqCeD+ac/azR80Ssz1
-         FeA575pCuqYEFUSjPfrcnwZ2dY+6oq8PyzemYUloMch5Qsw7ZJKxtaEPMaRLZi1yacCh
-         dwCK84LSrzklc9yE0pL3xJawW8MODGsnOCLi07pY4uM53SKgRSvuXqnMtwfhgJZk4Jxj
-         P0aNX8We7coIMq3hfcxnM7tef1PTGpkgpeOUycGITRBuG/Zq3MsfCHWrriPK+TuIY4u0
-         F+L/B7RfsqFnS7zRnnPWV40L4TgtLk7vMsnVXcnsg7uzoXeMmD41j3ZfC3BYib3uB7Mn
-         acNg==
+        bh=eHfwVmwRPrvBBQCHCMtELR2XIT6WK3JZDo6MrEMP+JI=;
+        b=iIqmRKYbvavAa/xuuU8kPkn7fxW5tBdl+m37NywaOZtqPeAc9v+0vQMv1An+TbS/lq
+         h2h/lvNN7VuQCP5dJHAqjPqeE84W7DrbhAXAPa7fOnwH4R9zJCBhJcpU2a7J9weR7se0
+         hEZVIg+idKp6P3t3UXVpLxNPkhdMK61ihXOBWZUTZew9Bbo4OYl6lYRkaVfAPVTutAxH
+         eQZS0sGdSY+f2lYxtZWKCQt0ptOk112EhKPbLjHY0UUgyM4Dab/lcE2Ye51VrQVmmeUv
+         ehGxPIHQpkPl2H0jFp3cQpp0pCy3SJodRf64SQUKKyI6xZ8y/JLjVXSIV7XDFh9HHj2Y
+         QQ+w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:in-reply-to:references;
-        bh=OSYcY8IBbPXHFII/5CsrnXT8+IaVG+jk8Oh4t4Zn6xA=;
-        b=UItAMDYO7V0H11XAZ/kkuV+fkbdX+YGOB7BRALxSwH2UittnzGKq9f2t/caXjXcewB
-         Me7lEuW5SInvitByGYZ00QRc/phaEmJ7EluJSDF7BwspEvEQYcAxgTerQ9IowttEWmHU
-         QNe0xeN6rCrSFqJARMeJUHwtu9+Zdn+Q+/VBJzxsntmZfqBWZiHKtGgWFoUKNkRvVDxM
-         K2d9BB1wEyk/JUGySAJKKbTmRO6og67XeKY8ycdN0XiFxAGajC9Cct2fYExcctDUWuiL
-         yb18WyMNBp9S5+63wOrPcZQzHrRXMMpMmGpHmNWw81Aga5tQSIDfuh/HQhohXLTT3P93
-         prgg==
-X-Gm-Message-State: APjAAAV6YQikiX8AWI8GxNsM8MJfwyMe55Zw2UrIE8cWB8mZBw8crSae
-        o5+L2lHBr9D0aoWI2FdKTUjTsA==
-X-Google-Smtp-Source: APXvYqzvuQibd2D6UfQ//STmLBnUmZhqs5HY1ImusyRyrxLJ/G1YruEWbLPZRbhabAyr6M3Iq1nTrw==
-X-Received: by 2002:a17:902:7792:: with SMTP id o18mr37634234pll.73.1568241167291;
-        Wed, 11 Sep 2019 15:32:47 -0700 (PDT)
+        bh=eHfwVmwRPrvBBQCHCMtELR2XIT6WK3JZDo6MrEMP+JI=;
+        b=OijIhIIMO2sU9AAQuzKzTMHy6YDcydN3gr53upQvwNwaFZ+tppFIMxYHXH2gncudqD
+         EvuvlZ6LwJ9TR9BF/z3mv/fyUlnntB9CMePDHMK/+2PRhv6sBMJCfu+7FZ59IpQxUzNE
+         kudmkFPAP5u0ccJxBdV5d5K8qRLmfzS5ixfTiJjBTXn5sTudkuzFwU7bv0R51Gqxux23
+         zdOOH0d/uaLHCtqJDCjXF3WN2vFT7zHP4YMn8vXRdns6J/n9o3Dlx/Ku+c1kR9g/fFBJ
+         2Ixo7eVKg7Iw2rBjTlqsYmR6NjspdRu8bzivIAInDbyGIPbVK2xICiJEueaxBqqk70Go
+         VxHw==
+X-Gm-Message-State: APjAAAVpKISA9k68g+r9iHrKJ/PioLUx9zl4P+PmJkRLdagOE2NwyaH8
+        KND/XnJyMRSYMd4h2MHY92libA==
+X-Google-Smtp-Source: APXvYqwXpm2pHm8jH8I/tTmio2/EH4EjPAWMxPZdHsmxvodKvWV4WrJTmQONqaYs2sPtqqMgcPT8dw==
+X-Received: by 2002:a17:90a:af8d:: with SMTP id w13mr5333319pjq.141.1568241178117;
+        Wed, 11 Sep 2019 15:32:58 -0700 (PDT)
 Received: from localhost ([49.248.179.160])
-        by smtp.gmail.com with ESMTPSA id v5sm22415190pfv.76.2019.09.11.15.32.46
+        by smtp.gmail.com with ESMTPSA id t8sm3431343pjq.30.2019.09.11.15.32.57
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 11 Sep 2019 15:32:46 -0700 (PDT)
+        Wed, 11 Sep 2019 15:32:57 -0700 (PDT)
 From:   Amit Kucheria <amit.kucheria@linaro.org>
 To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         bjorn.andersson@linaro.org, edubezval@gmail.com, agross@kernel.org,
@@ -63,9 +63,9 @@ To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>
 Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH 2/5] cpufreq: Initialise the governors in core_initcall
-Date:   Thu, 12 Sep 2019 04:02:31 +0530
-Message-Id: <6ac50a647b8b9ee4af70a33fab10bb5df4a6b5ff.1568240476.git.amit.kucheria@linaro.org>
+Subject: [PATCH 5/5] cpufreq: qcom-hw: Move driver initialisation earlier
+Date:   Thu, 12 Sep 2019 04:02:34 +0530
+Message-Id: <b731b713d8738239c26361ece7f5cadea035b353.1568240476.git.amit.kucheria@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1568240476.git.amit.kucheria@linaro.org>
 References: <cover.1568240476.git.amit.kucheria@linaro.org>
@@ -76,81 +76,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Initialise the cpufreq governors earlier to allow for earlier
-performance control during the boot process.
+Allow qcom-hw driver to initialise right after the cpufreq and thermal
+subsystems are initialised in core_initcall so we get earlier access to
+thermal mitigation.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/cpufreq/cpufreq_conservative.c | 2 +-
- drivers/cpufreq/cpufreq_ondemand.c     | 2 +-
- drivers/cpufreq/cpufreq_performance.c  | 2 +-
- drivers/cpufreq/cpufreq_powersave.c    | 2 +-
- drivers/cpufreq/cpufreq_userspace.c    | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/cpufreq/qcom-cpufreq-hw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index b66e81c06a57..737ff3b9c2c0 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -346,7 +346,7 @@ struct cpufreq_governor *cpufreq_default_governor(void)
- 	return CPU_FREQ_GOV_CONSERVATIVE;
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 4b0b50403901..04676cc82ba6 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -327,7 +327,7 @@ static int __init qcom_cpufreq_hw_init(void)
+ {
+ 	return platform_driver_register(&qcom_cpufreq_hw_driver);
  }
+-device_initcall(qcom_cpufreq_hw_init);
++postcore_initcall(qcom_cpufreq_hw_init);
  
--fs_initcall(cpufreq_gov_dbs_init);
-+core_initcall(cpufreq_gov_dbs_init);
- #else
- module_init(cpufreq_gov_dbs_init);
- #endif
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index dced033875bf..82a4d37ddecb 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -483,7 +483,7 @@ struct cpufreq_governor *cpufreq_default_governor(void)
- 	return CPU_FREQ_GOV_ONDEMAND;
- }
- 
--fs_initcall(cpufreq_gov_dbs_init);
-+core_initcall(cpufreq_gov_dbs_init);
- #else
- module_init(cpufreq_gov_dbs_init);
- #endif
-diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
-index aaa04dfcacd9..def9afe0f5b8 100644
---- a/drivers/cpufreq/cpufreq_performance.c
-+++ b/drivers/cpufreq/cpufreq_performance.c
-@@ -50,5 +50,5 @@ MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
- MODULE_DESCRIPTION("CPUfreq policy governor 'performance'");
- MODULE_LICENSE("GPL");
- 
--fs_initcall(cpufreq_gov_performance_init);
-+core_initcall(cpufreq_gov_performance_init);
- module_exit(cpufreq_gov_performance_exit);
-diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
-index c143dc237d87..1ae66019eb83 100644
---- a/drivers/cpufreq/cpufreq_powersave.c
-+++ b/drivers/cpufreq/cpufreq_powersave.c
-@@ -43,7 +43,7 @@ struct cpufreq_governor *cpufreq_default_governor(void)
- 	return &cpufreq_gov_powersave;
- }
- 
--fs_initcall(cpufreq_gov_powersave_init);
-+core_initcall(cpufreq_gov_powersave_init);
- #else
- module_init(cpufreq_gov_powersave_init);
- #endif
-diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-index cbd81c58cb8f..b43e7cd502c5 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -147,7 +147,7 @@ struct cpufreq_governor *cpufreq_default_governor(void)
- 	return &cpufreq_gov_userspace;
- }
- 
--fs_initcall(cpufreq_gov_userspace_init);
-+core_initcall(cpufreq_gov_userspace_init);
- #else
- module_init(cpufreq_gov_userspace_init);
- #endif
+ static void __exit qcom_cpufreq_hw_exit(void)
+ {
 -- 
 2.17.1
 
