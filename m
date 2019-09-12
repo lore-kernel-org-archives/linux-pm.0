@@ -1,98 +1,89 @@
-Return-Path: <SRS0=v2tG=XG=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=Y9oQ=XH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DEC2ECDE2A
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Sep 2019 22:33:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22D15C5ACAE
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Sep 2019 01:03:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5E3D3216F4
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Sep 2019 22:33:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uAu3IFF7"
+	by mail.kernel.org (Postfix) with ESMTP id E6DE02089F
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Sep 2019 01:03:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1568250210;
+	bh=DNaLcHjtAram+fHXt9n0Qh+Msw5zL/BxK7rfBfFbCdY=;
+	h=In-Reply-To:References:Cc:To:From:Subject:Date:List-ID:From;
+	b=MvEpCD8kInikli0xUitEVHm2KzYzJAgBhTQNePKoZs7KgJQY0TGfEV2kmorYPtJis
+	 xQ1fwJ3rIaTWb2OggRr+HDycj9+ZAr2rBx9aFb2nWIPtWUzgUoDejitqhfGAxhP4qd
+	 Ud57ESSO3elOV3dnoLfUhim3xgZqI7HmgdPZNYak=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728864AbfIKWcx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Sep 2019 18:32:53 -0400
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:36458 "EHLO
-        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728815AbfIKWcw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Sep 2019 18:32:52 -0400
-Received: by mail-pg1-f194.google.com with SMTP id j191so1728959pgd.3
-        for <linux-pm@vger.kernel.org>; Wed, 11 Sep 2019 15:32:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :in-reply-to:references;
-        bh=rCgC8Qrm5F0gNSrIs0vFn+72THJYWJ5Zs57TxaytFro=;
-        b=uAu3IFF7H4n58zHhmASCIixwb4gEbmqJtpGTmmF7HVJPuloEcVxrhqHsmxgMVu0Xc3
-         MR9qPqOcC5Mpz1Kscbp6vse4E4prUvF6A2P2TgBH20yQMocZPth0L35N+4OFswJWTiiS
-         aQSGs0wbIg7MU3if4kuGqUq+frQ6peNPr19+hIkBr6vC7XZuz5N8Rx9Eq3lc55a6QKe+
-         n2i2q4/inHIe6HrJWm/54cQ7pjHzszN44EL5iuSGKnelBzv0mfiwVPyr4CAYJmj9K9W4
-         +6M1RPvmEoMhPqNxEadBR7sSbKhu9ZFSQhD8PfuSbAzehJ3G5I3DWjzDMIS7Erk4C8Uc
-         V9QA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:in-reply-to:references;
-        bh=rCgC8Qrm5F0gNSrIs0vFn+72THJYWJ5Zs57TxaytFro=;
-        b=K2h4zOuFf3DbnM0z7T4QpW/Mv5+rmaQ3TZSTYoGMpAtPFxNFnerRLIk7x96S0TGtTq
-         d2lt+CGWX09BnZZlHDRtx/6zmSSttaJAR1sBqIzHNF1M66jrLJiJw485Wc8ULQxEBkuq
-         rd3bVQfVpLZHsew+QQjkhH3YU1FkDcLDZPbSiMMnIK5XzOzFVkaY/zdpLIWXV633V1aT
-         PuYvER91GksORW7q+uTmgM+kqSC3uziPqUuUesMQSi73zvx4BvvcXlmeNRphXBKndVER
-         s0vCfrmqyXEHLJlQ6tWVBQbdkdR3PCjtahayJQ/Hl9JiWCBNDeWaSKaRcvHG0dmofRYv
-         JYxA==
-X-Gm-Message-State: APjAAAXH6bLxbY9g0E0gzHLb9oZsiYPCJcXb+oxS3s7why4vHsYzYaF2
-        hxS6j8Dygvu3y6O6KANiz4YZbA==
-X-Google-Smtp-Source: APXvYqxjHp1AP2HznEflZ+tVWWOn7YNF8jnr1eEJ2vJdV+IzbtqSmn/f2+XvWevzUHetdPPxoCAjEQ==
-X-Received: by 2002:a17:90a:ad46:: with SMTP id w6mr8144055pjv.52.1568241170728;
-        Wed, 11 Sep 2019 15:32:50 -0700 (PDT)
-Received: from localhost ([49.248.179.160])
-        by smtp.gmail.com with ESMTPSA id p68sm42585690pfp.9.2019.09.11.15.32.49
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 11 Sep 2019 15:32:50 -0700 (PDT)
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        bjorn.andersson@linaro.org, edubezval@gmail.com, agross@kernel.org,
-        tdas@codeaurora.org, swboyd@chromium.org, ilina@codeaurora.org,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH 3/5] cpufreq: Initialize cpufreq-dt driver earlier
-Date:   Thu, 12 Sep 2019 04:02:32 +0530
-Message-Id: <23d3ed7edc8b859da8e7640f77cf3028ad5804f3.1568240476.git.amit.kucheria@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1568240476.git.amit.kucheria@linaro.org>
-References: <cover.1568240476.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1568240476.git.amit.kucheria@linaro.org>
-References: <cover.1568240476.git.amit.kucheria@linaro.org>
+        id S1728462AbfILBD0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Sep 2019 21:03:26 -0400
+Received: from mail.kernel.org ([198.145.29.99]:44270 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727020AbfILBDZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 11 Sep 2019 21:03:25 -0400
+Received: from kernel.org (unknown [104.132.0.74])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0DE5220863;
+        Thu, 12 Sep 2019 01:03:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1568250205;
+        bh=DNaLcHjtAram+fHXt9n0Qh+Msw5zL/BxK7rfBfFbCdY=;
+        h=In-Reply-To:References:Cc:To:From:Subject:Date:From;
+        b=WHfcMcEd5siGpnVlhfOi3HeoUu2n1CVCwXugiYRcQOgA5PLidzNvtx5w+bfY/+1wI
+         C/mBQrEqNueP5fBZhnFV1nRdITVQHNm//bZ3IJS0geeKnpEGeMT/ZSf1speT+vj9QB
+         GHbvtbzI6vqWlY6Lm0WmSoelZBYf8laWgucQJCJ8=
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <f6cefef2bf6b34ec6eb82d3614054734fa5e8dd1.1568239378.git.amit.kucheria@linaro.org>
+References: <cover.1568239378.git.amit.kucheria@linaro.org> <f6cefef2bf6b34ec6eb82d3614054734fa5e8dd1.1568239378.git.amit.kucheria@linaro.org>
+Cc:     linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To:     Amit Kucheria <amit.kucheria@linaro.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Kishon Vijay Abraham I <kishon@ti.com>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Mark Brown <broonie@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Will Deacon <will@kernel.org>, arm@kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From:   Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH 1/4] arm64: Kconfig: Fix XGENE driver dependencies
+User-Agent: alot/0.8.1
+Date:   Wed, 11 Sep 2019 18:03:24 -0700
+Message-Id: <20190912010325.0DE5220863@mail.kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This allows HW drivers that depend on cpufreq-dt to initialise earlier.
+Quoting Amit Kucheria (2019-09-11 15:18:45)
+> diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+> index 801fa1cd0321..9b2790d3f18a 100644
+> --- a/drivers/clk/Kconfig
+> +++ b/drivers/clk/Kconfig
+> @@ -225,7 +225,7 @@ config CLK_QORIQ
+> =20
+>  config COMMON_CLK_XGENE
+>         bool "Clock driver for APM XGene SoC"
+> -       default ARCH_XGENE
+> +       depends on ARCH_XGENE
+>         depends on ARM64 || COMPILE_TEST
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Is ARCH_XGENE supported outside of ARM64? I'd expect to see something
+more like depends on ARCH_XGENE || COMPILE_TEST and default ARCH_XGENE
+so that if the config is supported it becomes the default. Or at least
+depends on ARCH_XGENE && ARM64 || COMPILE_TEST
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 03dc4244ab00..12c79c92a2b8 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -175,4 +175,4 @@ static int __init cpufreq_dt_platdev_init(void)
- 			       -1, data,
- 			       sizeof(struct cpufreq_dt_platform_data)));
- }
--device_initcall(cpufreq_dt_platdev_init);
-+core_initcall(cpufreq_dt_platdev_init);
--- 
-2.17.1
-
+>         ---help---
+>           Sypport for the APM X-Gene SoC reference, PLL, and device clock=
+s.
