@@ -2,163 +2,256 @@ Return-Path: <SRS0=hFic=XI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79861C49ED7
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Sep 2019 14:37:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2097C49ED7
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Sep 2019 20:58:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 480E620CC7
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Sep 2019 14:37:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1568385431;
-	bh=ndT1KvoDhcV79HmyCsaWJS59TOr45FTRB9Grc2WIsaw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=kGxANu612S5uTmjcj2WAZoyGZWDEICaWfm664eRtnNUGyEqYO4cwbyLNw8klxMrhb
-	 LF0XVL8NqR/WHEPKtPKIIqTy6zVju1By/05mJmw4YlEZ0r3oJ9Brl3j8tXl4Rn41r4
-	 mPQY+f6F6MZbwCS+JTD8YG7OnRGtDp5W6M6+2eaE=
+	by mail.kernel.org (Postfix) with ESMTP id 96A0020830
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Sep 2019 20:58:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="ZQ0oQi7O"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730928AbfIMOhI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Sep 2019 10:37:08 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:41422 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730579AbfIMOgM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2019 10:36:12 -0400
-Received: by mail-ot1-f67.google.com with SMTP id g16so14495337otp.8;
-        Fri, 13 Sep 2019 07:36:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:from:to:cc:subject:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=Udp1qs2PnQd+suer1OhTIlkS/OekkcPK9CiDkJDjShA=;
-        b=slHt68/wZWZvVdF3p3n3Z3/kpIZrKM7cr7RoZ2CJUVnCJdw3nVxU2W9AELUPlBTQFw
-         fJR1bGq1EGIN5El8UcUCoUqNK9UHci2itT0n/Wpx3baC5ZdKqT6F0SaDzVXMLoPYbQhQ
-         sB+who7kl2LkF2w2KSgaltJEnHSPkAJyBtVr+SMh54W/f00wOhlQ8OxQ2HlTY6BVb4uj
-         zsEyNc4Hzsy78kh2ussv9hL9Zy9Fvge6TXdqRuXeNcKeNe160RfQwmff4TMzJnI0wA/g
-         KNdrEXJ/wTVmc4cpL8A6d8M3citjNPkCvTd9XespvXkUmqqL1IciAjy3g3eTv5zvpzrE
-         76ZQ==
-X-Gm-Message-State: APjAAAWluZmqw48+dtPVdHNyb3kyvghpIGe0u1SxpRwUxA/6+Xw+rBpn
-        IY8GOGcKMBPlW/BNrUj4mg==
-X-Google-Smtp-Source: APXvYqycFKRr57mlzxEV5y+yWerE/UvbEc15wS4dWm6MgJQ1ln7TuCcpwqsSqLk1VgSzUI9biggE8Q==
-X-Received: by 2002:a9d:5f9a:: with SMTP id g26mr9285769oti.27.1568385371763;
-        Fri, 13 Sep 2019 07:36:11 -0700 (PDT)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id j3sm1115259oih.52.2019.09.13.07.36.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 13 Sep 2019 07:36:10 -0700 (PDT)
-Message-ID: <5d7ba95a.1c69fb81.bfd81.77ba@mx.google.com>
-Date:   Fri, 13 Sep 2019 15:36:10 +0100
-From:   Rob Herring <robh@kernel.org>
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     Lukasz Luba <l.luba@partner.samsung.com>,
-        devicetree@vger.kernel.org,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        linux-pm@vger.kernel.org,
-        "linux-samsung-soc@vger.kernel.org" 
-        <linux-samsung-soc@vger.kernel.org>,
-        linux-arm-kernel@lists.infradead.org,
-        =?utf-8?Q?Bart=C5=82omiej_=C5=BBo=C5=82nierkiewicz?= 
-        <b.zolnierkie@samsung.com>, kgene@kernel.org, mark.rutland@arm.com,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        kyungmin.park@samsung.com,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        s.nawrocki@samsung.com, myungjoo.ham@samsung.com,
-        willy.mh.wolff.ml@gmail.com
-Subject: Re: [PATCH 3/3] dt-bindings: ddr: Add bindings for Samsung LPDDR3
- memories
-References: <CGME20190906101407eucas1p15eb0df53374b27497b4793eab24becf6@eucas1p1.samsung.com>
- <20190906101344.3535-1-l.luba@partner.samsung.com>
- <20190906101344.3535-4-l.luba@partner.samsung.com>
- <CAJKOXPfoYxTVvt_bMQOs1=BkHzUuW_WvL9zn0jTGS6LLpv=fhQ@mail.gmail.com>
- <52963d0d-cf48-7085-5581-a94c6e15e0bd@partner.samsung.com>
- <CAJKOXPfEcURr_bLRaAdjWT3cb7mcuKTk8rmn7OTO=xtvjvJ=jQ@mail.gmail.com>
+        id S2388202AbfIMU6g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Sep 2019 16:58:36 -0400
+Received: from cmta16.telus.net ([209.171.16.89]:37888 "EHLO cmta16.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2387637AbfIMU6f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 13 Sep 2019 16:58:35 -0400
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id 8seAiDyQhFXoi8seBiUxnH; Fri, 13 Sep 2019 14:58:32 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1568408312; bh=JFZiZ8GywZn4EntghOB1nQTSaxuHLighS4niCi6IdzU=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=ZQ0oQi7O9SVl3Y0pXISANC3alP2PMgqdD2BxYaWcBNnGppUQ5boXbhQ3D9elT+VZT
+         C/+LGFJW9znC/uhcRM4bBK//pI6mFEBL6UrkOGFEKRt8o1ZybKk5JmEUd1rID/m2ND
+         NZkVZ2oYT1w4GJ/krpOkRJooh/ANJDDI8eMrY4QgX2o6MvLCHme8Th5EIU/WMd8LDI
+         gnc7skW8Fw3KcEgWxQfmz4M2zLr1t/w4JcZPlbASn/nJD4OnP1QUqo+OlCuWGMqBZm
+         aNcwT07Bdp5oOQ4UFmvKfI/q0uI+R6UlWrpbpACV+FT1n1iKOVCbs6DU7bhn/T9okZ
+         Y7zbe41LIAzbw==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.3 cv=HoEI5HbS c=1 sm=1 tr=0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=jpOVt7BSZ2e4Z31A5e1TngXxSK0=:19
+ a=kj9zAlcOel0A:10 a=gu6fZOg2AAAA:8 a=FGbulvE0AAAA:8 a=kMzJ0VUsHSJ4pOcj8RsA:9
+ a=7Zwj6sZBwVKJAoWSPKxL6X1jA+E=:19 a=tA1zSrZllMrc5sIv:21 a=4Q3CTht2G7KouQuB:21
+ a=CjuIK1q_8ugA:10 a=wC6wFTFn8J8A:10 a=-MXCNWVgZdEA:10 a=-FEs8UIgK8oA:10
+ a=NWVoK91CQyQA:10 a=2RSlZUUhi9gRBrsHwhhZ:22 a=svzTaB3SJmTkU8mK-ULk:22
+ a=pHzHmUro8NiASowvMSCR:22 a=xoEH_sTeL_Rfw54TyV31:22
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Giovanni Gherdovich'" <ggherdovich@suse.cz>
+Cc:     <x86@kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <mgorman@techsingularity.net>,
+        <matt@codeblueprint.co.uk>, <viresh.kumar@linaro.org>,
+        <juri.lelli@redhat.com>, <pjt@google.com>,
+        <vincent.guittot@linaro.org>, <qperret@qperret.net>,
+        <dietmar.eggemann@arm.com>, <srinivas.pandruvada@linux.intel.com>,
+        <tglx@linutronix.de>, <mingo@redhat.com>, <peterz@infradead.org>,
+        <bp@suse.de>, <lenb@kernel.org>, <rjw@rjwysocki.net>
+References: <20190909024216.5942-1-ggherdovich@suse.cz> <20190909024216.5942-2-ggherdovich@suse.cz> <000e01d568b5$87de9be0$979bd3a0$@net>
+In-Reply-To: <000e01d568b5$87de9be0$979bd3a0$@net>
+Subject: RE: [PATCH 1/2] x86,sched: Add support for frequency invariance
+Date:   Fri, 13 Sep 2019 13:58:25 -0700
+Message-ID: <000301d56a76$0022e630$0068b290$@net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJKOXPfEcURr_bLRaAdjWT3cb7mcuKTk8rmn7OTO=xtvjvJ=jQ@mail.gmail.com>
-X-Mutt-References: <CAJKOXPfEcURr_bLRaAdjWT3cb7mcuKTk8rmn7OTO=xtvjvJ=jQ@mail.gmail.com>
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Content-Language: en-ca
+Thread-Index: AdVmt5+Zhvy5aOFESi2j+LaB1JUY0wArmRMwAMJIfyA=
+X-CMAE-Envelope: MS4wfFcQ3m5YsQFKxTfs2VdGW7p5LBTbIe3iaIda3JlqseEHsaiZ98yR4mo9wbhnq1CTtjVlxfWV/R/r32mmZUHMv4OpfBSvfmdKEybZtZKUDSItmN7ruMiH
+ /hen019PMxi51aI4CnrUKCW0catcWUlW7QRatWhmYXbrRiV+qCt7suM1ZAERDm28Ch+iC05RMHaywhjMFYvrhtXRa/3qe6ZvYsCdFG8zZtVi1EKpXhjRwofp
+ 4U6Sll/hytA1+WHahT3eqPN7b5Zau5029eiWih59ZqQNEf8JZCTkIr26KsBx/kvuYtU66hY7+yLZKEVA7nsgNGpLBRnhXkHWfdi6MAjW+6pMmpFHzlGCwxUB
+ U9LRTYab+xSF8i3G0R6B14tfiEiaqtKCFOEudNiXGUtjV610GUgjEvoNJlH7ZTtfNpZtAZpfI12KMe0C+gRc9YilT10e69E2oUwEF1h4N8du3HP6hcwBTsGf
+ pIGWBxLgre8x3TwWgdYrea3OCAC604n1Ohahk7tatpkyeGWH5pj3XcBVK6aMHwXJKgsVlm3oD8HTVyFnGdWzz5ZaresPkYsH45jzqQSPWM2RxymlElU8+neX
+ Xxn+1hLVJMi7LSiLueA9g5xgk6SCAtYMUxMmhQxt62dXlLLrhS/G16VynfNYSci7zZy23BWNA7aHYLAjSsz0UV/SiqyVV1rVZo+cUCZGfsVszOdJ2oT4AXIC
+ r1VIVJVLQI7A5iD8tUiNgTQCun/3djIS/ocAaAQjkaZV5sk2kCfFTA==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Sep 06, 2019 at 01:50:26PM +0200, Krzysztof Kozlowski wrote:
-> On Fri, 6 Sep 2019 at 13:39, Lukasz Luba <l.luba@partner.samsung.com> wrote:
-> >
-> > Hi Krzysztof,
-> >
-> > On 9/6/19 12:56 PM, Krzysztof Kozlowski wrote:
-> > > On Fri, 6 Sep 2019 at 12:14, Lukasz Luba <l.luba@partner.samsung.com> wrote:
-> > >>
-> > >> Add description of bindings for Samsung k3qf2f20db LPDDR3 memory.
-> > >> Minor fixes in the old documentation.
-> > >>
-> > >> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> > >> ---
-> > >>   .../devicetree/bindings/ddr/lpddr3.txt        | 29 +++++++++++++++++--
-> > >>   1 file changed, 27 insertions(+), 2 deletions(-)
-> > >>
-> > >> diff --git a/Documentation/devicetree/bindings/ddr/lpddr3.txt b/Documentation/devicetree/bindings/ddr/lpddr3.txt
-> > >> index 3b2485b84b3f..de0905239767 100644
-> > >> --- a/Documentation/devicetree/bindings/ddr/lpddr3.txt
-> > >> +++ b/Documentation/devicetree/bindings/ddr/lpddr3.txt
-> > >> @@ -40,10 +40,34 @@ Child nodes:
-> > >>     a given speed-bin. Please see Documentation/devicetree/
-> > >>     bindings/ddr/lpddr3-timings.txt for more information on "lpddr3-timings"
-> > >>
-> > >> +Samsung K3QF2F20DB LPDDR3 memory
-> > >> +------------------------------------------------------------
-> > >> +
-> > >> +This binding uses the LPDDR3 binding (described above)
-> > >> +
-> > >> +Required properties:
-> > >> +- compatible:  Should be:
-> > >> +               "samsung,K3QF2F20DB"
-> > >> +               followed by "jedec,lpddr3"
-> > >> +- density  : <u32> representing density in Mb (Mega bits)
-> > >> +- io-width : <u32> representing bus width. Possible value 32
-> > >> +- #address-cells: Must be set to 1
-> > >> +- #size-cells: Must be set to 0
-> > >
-> > > If you decided to repeat all properties again, then it deserves its
-> > > own bindings file. However I though about simpler solution - just
-> > > document compatible. Exactly the same as AT24 or AT25 EEPROM bindings.
-> > > There is not much benefit from copying all these properties.
-> > OK, I see. I will add only 'compatible' and skip the rest then.
-> > So the lpddr3.txt file will get this addition:
-> >
-> > +Samsung K3QF2F20DB LPDDR3 memory
-> > +------------------------------------------------------------
-> > +
-> > +This binding uses the LPDDR3 binding (described above)
-> > +
-> > +Required properties:
-> > +- compatible:  Should be:
-> > +               "samsung,K3QF2F20DB"
-> > +               followed by "jedec,lpddr3"
-> > +
-> > +Optional properties:
-> > +
-> > +The optional properties are the same as in the LPDDR3 generic bindings and
-> > +values should be taken from the data-sheet. Detailed bindings are described
-> > +above.
-> > +
-> > +Child nodes:
-> > +
-> > +Detailed bindings are described in LPDDR3 generic bindings described above.
-> > +
-> >
-> > Is it OK?
+On 2019.09.11 08:28 Doug Smythies wrote:
+
+> Hi Giovanni,
+>
+> Thank you for the great detail and test results you provided.
+>
+> On 2019.09.08.07:42 Giovanni Gherdovich wrote:
+>
+> ... [snip]...
+>
+>> The test we call "gitsource" (running the git unit test suite, a long-running
+>> single-threaded shell script) appears rather spectacular in this table (gains
+>> of 30-50% depending on the machine). It is to be noted, however, that
+>> gitsource has no adjustable parameters (such as the number of jobs in
+>> kernbench, which we average over in order to get a single-number summary
+>> score) and is exactly the kind of low-parallelism workload that benefits the
+>> most from this patch. When looking at the detailed tables of kernbench or
+>> tbench4, at low process or client counts one can see similar numbers.
+>
+> I think the "gitsource" test, is the one I learned about here two years
+> ago, [1]. It is an extremely good (best I know of) example of single
+> threaded, high PID consumption (about 400 / second average, my computer
+> [3]), performance issues on a multi CPU computer. I.E., this:
+>
+> Dountil the list of tasks is finished:
+>    Start the next task in the list of stuff to do.
+> Enduntil
+>
+> The problem with the test is its run to run variability, which was from
+> all the disk I/O, as far as I could determine.
+
+I forgot, also some memory caching. I always toss out the first test,
+then do it 5 more times. If I do not do much stuff with my hard disk
+in between tests, it is repeatable enough.
+
+I did the "make test" method and, presenting the numbers your way,
+got that 4C took 0.69 times as long as the unpatched schedutil.
+Your numbers were same or better (copied below, lower is better):
+80x-BROADWELL-NUMA:	0.49
+8x-SKYLAKE-UMA:		0.55
+48x-HASWELL-NUMA:		0.69
+
+> At the time,
+> I studied this to death [2], and made a more repeatable test, without
+> any disk I/O.
+>
+> While the challenges with this work flow have tended to be focused
+> on the CPU frequency scaling driver, I have always considered
+> the root issue here to be a scheduling issue. Excerpt from my notes
+> [2]:
+>
+>> The issue is that performance is much much better if the system is
+>> forced to use only 1 CPU rather than relying on the defaults where
+>> the CPU scheduler decides what to do.
+>> The scheduler seems to not realize that the current CPU has just
+>> become free, and assigns the new task to a new CPU. Thus the load
+>> on any one CPU is so low that it doesn't ramp up the CPU frequency.
+>> It would be better if somehow the scheduler knew that the current
+>> active CPU was now able to take on the new task, overall resulting
+>> on one fully loaded CPU at the highest CPU frequency.
+>
+> I do not know if such is practical, and I didn't re-visit the issue.
+>
+> Anyway these are my results:
+>
+> Kernel: 5.3-rc8 and + these patches
+> Processor: i7-2600K
+>
+> This is important, at least for the performance governor numbers:
+>
+> cpu6: MSR_TURBO_RATIO_LIMIT: 0x23242526
+> 35 * 100.0 = 3500.0 MHz max turbo 4 active cores
+> 36 * 100.0 = 3600.0 MHz max turbo 3 active cores
+> 37 * 100.0 = 3700.0 MHz max turbo 2 active cores
+> 38 * 100.0 = 3800.0 MHz max turbo 1 active cores
+>
+> For reference against which all other results are compared
+> is the forced CPU affinity test run. i.e.:
+>
+> taskset -c 3 test_script.
+>
+> Mode		Governor		degradation	Power		Bzy_MHz
+> Reference	perf 1 CPU		1.00		reference	3798
+> -		performance 	1.2		6% worse	3618
+> passive	ondemand		2.3
+> active	powersave		2.6
+> passive	schedutil		2.7				1600
+> passive	schedutil-4C	1.68				2515
+>
+> Where degradation ratio is the time to execute / the reference time for
+> the same conditions. The test runs over a wide range of processes per
+> second, and the worst ratio has been selected for the above table.
+> I have yet to write up this experiment, but the graphs that will
+> eventually be used are at [4] and [5] (same data presented two
+> different ways).
+
+The experiment write up is at [6], however I wanted more data
+from the lower tasks per second region, and so I re-did it, [7].
+In the limit as sequential tasks per second goes to 0, the
+differences should diminish and I wanted to clearly observe this.
+
+Excerpt:
+> Conclusion: the schedutil governor improves from the worst 
+> governor to (mostly) second only to the performance governor
+> for unforced CPU affinity execution.
+
+> The energy for the performance cases is worth more detail, as it
+> is being wasted with CPUs waking up and going to sleep, and can be
+> observed in the IRQ column of turbostat output:
+>
+> $ sudo turbostat --quiet --Summary --show Busy%,Bzy_MHz,PkgTmp,PkgWatt,GFXWatt,IRQ --interval 60
+> Busy%   Bzy_MHz IRQ     PkgTmp  PkgWatt GFXWatt
+> 12.52   3798    81407   49      22.17   0.12 <<< Forced to CPU 3 only
+> 12.52   3798    81139   51      22.18   0.12
+> 12.52   3798    81036   51      22.20   0.12
+> 11.43   3704    267644  48      21.16   0.12 <<< Change over
+> 12.56   3618    490994  48      23.43   0.12 <<< Let the scheduler decide
+> 12.56   3620    491336  47      23.50   0.12
+> 12.56   3619    491607  47      23.50   0.12
+> 12.56   3619    491512  48      23.52   0.12
+> 12.56   3619    490806  47      23.51   0.12
+> 12.56   3618    491356  49      23.48   0.12
+> 12.56   3618    491035  48      23.51   0.12
+> 12.56   3618    491121  48      23.46   0.12
 > 
-> To me it is still a lot of text just for one compatible and I can
-> image more of such entries for other memories... However I do not mind
-> and anyway, YAML will simplify it. If you're in doubt, wait for Rob's
-> reply as this is his part.
+> Note also the busy megahertz column, where other active cores
+> (constantly waking and sleeping as we rotate through which
+> CPUs are used) are limiting the highest frequency.
 
-We can't have multiple (top-level) schema in one file, so better to add 
-in where the existing compatible strings are.
+I looked at the power and idle statistics for this forced verses
+unforced CPU affinity scenario in more detail, [8].
+(which isn't really part of this patch sets concern.)
 
-Rob
+Just an additional note:
+
+>> +-------------------------------------------------------------------------+
+>> | 3. EFFECTS ON THE SCHEDUTIL FREQUENCY GOVERNOR
+>> +-------------------------------------------------------------------------+
+>> 
+>> Once an architecture implements a frequency scale-invariant utilization (the
+>> PELT signal util_avg), schedutil switches its frequency selection formula from
+>>
+>>    freq_next = 1.25 * freq_curr * util            [non-invariant util signal]
+>>
+>> to
+>>
+>>    freq_next = 1.25 * freq_max * util             [invariant util signal]
+>>
+>> where, in the second formula, freq_max is set to the 1C turbo frequency (max
+>> turbo). The advantage of the second formula, whose usage we unlock with this
+>> patch, is that freq_next doesn't depend on the current frequency in an
+>> iterative fashion, but can jump to any frequency in a single update. This
+>> absence of feedback in the formula makes it quicker to react to utilization
+>> changes and more robust against pathological instabilities.
+>>
+>> Compare it to the update formula of intel_pstate/powersave:
+>>
+>>    freq_next = 1.25 * freq_max * Busy%
+>>
+>> where again freq_max is 1C turbo and Busy% is the percentage of time not spent
+>> idling (calculated with delta_MPERF / delta_TSC);
+
+Note that the delta_MPERF / delta_TSC method includes idle state 0 and the old
+method of utilization does not (at least not last time I investigated, which was
+awhile ago (and I can not find my notes)).
+
+... Doug
+
+> [1] https://marc.info/?l=linux-kernel&m=149181369622980&w=2
+> [2] http://www.smythies.com/~doug/linux/single-threaded/index.html
+> [3] http://www.smythies.com/~doug/linux/single-threaded/pids_per_second2.png
+> [4] http://www.smythies.com/~doug/linux/single-threaded/gg-pidps.png
+> [5] http://www.smythies.com/~doug/linux/single-threaded/gg-loops.png
+
+[6] http://www.smythies.com/~doug/linux/single-threaded/k53rc8gg.html
+[7] http://www.smythies.com/~doug/linux/single-threaded/k53rc8gg2.html
+[8] http://www.smythies.com/~doug/linux/single-threaded/idle01/index.html
+
 
