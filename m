@@ -2,153 +2,95 @@ Return-Path: <SRS0=hFic=XI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D148C49ED7
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Sep 2019 10:41:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30D2CC49ED7
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Sep 2019 14:36:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 32BF4208C2
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Sep 2019 10:41:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="f3NLr6fb"
+	by mail.kernel.org (Postfix) with ESMTP id 090A6208C2
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Sep 2019 14:36:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1568385416;
+	bh=zGvG6vwU+4Wve22LR7HC/hFRdAMk8OxaZVh14ahbX6c=;
+	h=Date:From:Subject:References:In-Reply-To:Cc:Cc:To:List-ID:From;
+	b=Fh2P2QXjZD3dMiWv2dcl7HqQrncx/NJlZGAFgNC352r534pPtyjv+AZV5Jq3LOI87
+	 vFENEb3jGR/zLvvT3mwpn3HgZfOOu08lbbhAjQIQluec/YLDdlz6y7W3gYiV/k0nEj
+	 yCOD0VkfsntM27r3ek5Fv2hPAWJPy7Cp4kUexAko=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387554AbfIMKlz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Sep 2019 06:41:55 -0400
-Received: from mail-vk1-f194.google.com ([209.85.221.194]:46141 "EHLO
-        mail-vk1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387549AbfIMKlz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2019 06:41:55 -0400
-Received: by mail-vk1-f194.google.com with SMTP id s28so4030519vkm.13
-        for <linux-pm@vger.kernel.org>; Fri, 13 Sep 2019 03:41:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=VzFtOukORn6BTxSSinbhVvnit+eXevFHlnBe06UcHUA=;
-        b=f3NLr6fbzNYDtDc9NetNG83qATddX3ST7qNfOKiC7D5A26Lz2W6t+TDvpUxWeoYtT3
-         M4aApAZGloRKGHMgH5L8irTiEYBLKD3B/TRtWOrBOlsAjjACHoc4sHORYAgqvS0mL4E7
-         t30zdO7NhhgWVnNDKr0/2Bh3D/lnBW2Kv3e4DwIMIDa17R97vTDrnH1O2Okzk0a4Kq+o
-         kQ7BLoiH1T9lNsHm2mbS7J+LamF28uuFHwj5hA7c0oM0csUOHIolCIFZAva9Njfv3iIH
-         Dtn3ozGFbppAKM4KDwUz8SJW1Z+2yZo2q6DQ2w3yD6hcXQSIQMiQ8gv7iN/j0A0ewzRo
-         yIgw==
+        id S2389868AbfIMOgv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Sep 2019 10:36:51 -0400
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:39925 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389605AbfIMOgT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Sep 2019 10:36:19 -0400
+Received: by mail-ot1-f68.google.com with SMTP id n7so29671291otk.6;
+        Fri, 13 Sep 2019 07:36:19 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=VzFtOukORn6BTxSSinbhVvnit+eXevFHlnBe06UcHUA=;
-        b=Kdc4n28pxDfuUo/VjBK4viDoRNVtlbRNiTTowoYqYeibKceWHACGAMeKZ/KvsLCtWC
-         w34DqHIMmVrLf/diJyqb9GEcIGLTpLpFzms30QTWRBNA/TUk1ALHl9u0N6tDUYjRtZOP
-         GqEAgQbAgmsnM1+4VZkcmu7MgJMn7I4rSu6+y4b9D9tcMLEAqn5lwrcnAZno8MmcJv7o
-         9WX+69M4QnCDZiN+hw5GJJvZ7dyExA4gzDsL47kfDJ1jbqIGxba0bgQWnufeRe2EUPpe
-         b3LAv5JtITEqvP+hGxpu5vr956RXpxBjibLvX0mwQk8WcLiCSKJl9E3Emsn0XBpHMxxi
-         TWkw==
-X-Gm-Message-State: APjAAAXHNAwbHZORe9O8Wx2atbufOpIkZVJohBnKIwifmrvrLstvrnEm
-        4lhRF/NQNsl82MoVscDp30xBIVverjGOp+fGPEE7fQ==
-X-Google-Smtp-Source: APXvYqxu3cBj6Axf6oFZHBU9kgVq97krzKOT0Ts3wNrOj22Hb1h0mDeMG74eyOdiEpKHd1mAbLgszYVEJZSRRFRkBo8=
-X-Received: by 2002:a1f:410f:: with SMTP id o15mr19922615vka.82.1568371312972;
- Fri, 13 Sep 2019 03:41:52 -0700 (PDT)
+        h=x-gm-message-state:message-id:date:from:subject:references
+         :in-reply-to:mime-version:content-transfer-encoding:cc:cc:to;
+        bh=WQe3sxk7jEHoM6MhJMqflNra51yrlF9TrLwm+43/CtI=;
+        b=OWCXhxcK5z+g0uNmAHPzSMSXxOFIqBSKRIyN/ukd5v5BmAUrBKzEFOTL5oQ5UupNWS
+         7f0idd020ph+o6rpq6DUGkidtCgKOG4PkF4QDEmz+Z/INsZemywq1fDKRHQUqDEqGXKK
+         udPFBH7vPzmWF5Jdp9b0vvi8b8Vsl+P/EmrSoX2smLiF/8QLEOQFW552ae0qe8IMfU6s
+         nLmriI2/rxualgHKIy+Re53yM/NfMope8uG+uDvcee5w6QlIRnqaCFYf3zniS4g94Xp0
+         swTDjP6qLIosZ0K/AlYSmpZMXIGJIOo93zv0rJ03yJo9UEFKhkRGt0LXdvVnmmWkJCPG
+         0cGw==
+X-Gm-Message-State: APjAAAU9VhoMmCjmMr4EWfBZAqxuxdFMfYlABVpmyk2DgD4ER/spdQkr
+        37s+6h+TsRY6TDmWVl+Ddg==
+X-Google-Smtp-Source: APXvYqznYXhUuY9wMJA1kZwpAbctOEANyWf0evGLBf0houriOZBOxRh9w67VoSrSBWRo9z1lP7esoA==
+X-Received: by 2002:a9d:62c3:: with SMTP id z3mr41959312otk.194.1568385378735;
+        Fri, 13 Sep 2019 07:36:18 -0700 (PDT)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id e3sm9962835otr.73.2019.09.13.07.36.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 13 Sep 2019 07:36:18 -0700 (PDT)
+Message-ID: <5d7ba962.1c69fb81.eabe3.44bf@mx.google.com>
+Date:   Fri, 13 Sep 2019 15:36:17 +0100
+From:   Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 4/4] DTS: bindings: omap: update bindings documentation
+References: <cover.1567878413.git.hns@goldelico.com> <35e4f219af5f8bff48e89ece7541f4e4ae6f27a0.1567878413.git.hns@goldelico.com>
+In-Reply-To: <35e4f219af5f8bff48e89ece7541f4e4ae6f27a0.1567878413.git.hns@goldelico.com>
 MIME-Version: 1.0
-References: <20190821222421.30242-1-glaroque@baylibre.com> <20190821222421.30242-2-glaroque@baylibre.com>
-In-Reply-To: <20190821222421.30242-2-glaroque@baylibre.com>
-From:   Amit Kucheria <amit.kucheria@verdurent.com>
-Date:   Fri, 13 Sep 2019 16:11:41 +0530
-Message-ID: <CAHLCerONjCa4Az7+d_0Qn8X36oOxXEMps++5MnBRdH5QE+aS=g@mail.gmail.com>
-Subject: Re: [PATCH v4 1/6] dt-bindings: thermal: Add DT bindings
- documentation for Amlogic Thermal
-To:     Guillaume La Roque <glaroque@baylibre.com>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-        lakml <linux-arm-kernel@lists.infradead.org>,
-        linux-amlogic@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Cc:     =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Adam Ford <aford173@gmail.com>,
+        =?UTF-8?q?Andr=C3=A9=20Roth?= <neolynx@gmail.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Enric Balletbo i Serra <eballetbo@gmail.com>,
+        Javier Martinez Canillas <javier@dowhile0.org>,
+        Roger Quadros <rogerq@ti.com>,
+        Teresa Remmet <t.remmet@phytec.de>,
+        "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc:     linux-omap@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        letux-kernel@openphoenux.org, kernel@pyra-handheld.com,
+        linux-arm-kernel@lists.infradead.org
+To:     "H. Nikolaus Schaller" <hns@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Aug 22, 2019 at 3:54 AM Guillaume La Roque
-<glaroque@baylibre.com> wrote:
->
-> Adding the devicetree binding documentation for the Amlogic temperature
-> sensor found in the Amlogic Meson G12 SoCs.
-> the G12A  and G12B SoCs are supported.
-
-Merge the two sentences into a single one?
-
-> Signed-off-by: Guillaume La Roque <glaroque@baylibre.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
+On Sat,  7 Sep 2019 19:46:53 +0200, "H. Nikolaus Schaller" wrote:
+> * clarify that we now need either "ti,omap3430" or "ti,omap3630" or "ti,am3517" for omap3 chips
+> * clarify that "ti,omap3" has no default
+> * clarify that AM33x is not an "ti,omap3"
+> * clarify that the list of boards is incomplete
+> * remove some "ti,am33xx", "ti,omap3"
+> * add some missing "ti,omap4"
+> 
+> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+> Acked-by: Tony Lindgren <tony@atomide.com>
 > ---
->  .../bindings/thermal/amlogic,thermal.yaml     | 54 +++++++++++++++++++
->  1 file changed, 54 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
->
-> diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-> new file mode 100644
-> index 000000000000..f761681e4c0d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-> @@ -0,0 +1,54 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/thermal/amlogic,thermal.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Amlogic Thermal
-> +
-> +maintainers:
-> +  - Guillaume La Roque <glaroque@baylibre.com>
-> +
-> +description: Binding for Amlogic Thermal
-> +
-> +properties:
-> +  compatible:
-> +      items:
-> +        - enum:
-> +            - amlogic,g12a-cpu-thermal
-> +            - amlogic,g12a-ddr-thermal
-> +        - const: amlogic,g12a-thermal
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  amlogic,ao-secure:
-> +    description: phandle to the ao-secure syscon
-> +    $ref: '/schemas/types.yaml#/definitions/phandle'
-> +
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupts
-> +  - clocks
-> +  - amlogic,ao-secure
-> +
-> +examples:
-> +  - |
-> +        cpu_temp: temperature-sensor@ff634800 {
-> +                compatible = "amlogic,g12a-cpu-thermal",
-> +                             "amlogic,g12a-thermal";
-> +                reg = <0xff634800 0x50>;
-> +                interrupts = <0x0 0x24 0x0>;
-> +                clocks = <&clk 164>;
-> +                #thermal-sensor-cells = <0>;
-> +                amlogic,ao-secure = <&sec_AO>;
-> +        };
-> +...
-> --
-> 2.17.1
->
+>  .../devicetree/bindings/arm/omap/omap.txt     | 30 +++++++++++--------
+>  1 file changed, 17 insertions(+), 13 deletions(-)
+> 
+
+Acked-by: Rob Herring <robh@kernel.org>
+
