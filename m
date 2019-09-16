@@ -2,138 +2,274 @@ Return-Path: <SRS0=fQl1=XL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1134FC4CECD
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Sep 2019 10:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F0D5C49ED7
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Sep 2019 10:08:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D5D2B214AF
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Sep 2019 10:07:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="OU5UqgGj"
+	by mail.kernel.org (Postfix) with ESMTP id 64784214AF
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Sep 2019 10:08:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732226AbfIPKH3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Sep 2019 06:07:29 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:40150 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732196AbfIPKHV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2019 06:07:21 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190916100720euoutp01a438f20ab873a4ceade61b6aab3a507d~E40Fk9VlH2526325263euoutp01U
-        for <linux-pm@vger.kernel.org>; Mon, 16 Sep 2019 10:07:20 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190916100720euoutp01a438f20ab873a4ceade61b6aab3a507d~E40Fk9VlH2526325263euoutp01U
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1568628440;
-        bh=Uy8PbI8Ay//0lPtuuye0Cr4E/yS+/gJgE62W7KlqB88=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=OU5UqgGjGY6HuGv5V+CorBe0NhspzeUHj22GF68n4ohALSAkrlZkq41jakFiHbAeY
-         U5VOwE4zf9MZrLktuDUxOBQhqrgaTNmFqWfkj6tX357GShUd+6aXUd5NijgtEbdafE
-         O5c2iMvCXC2rdCsr4h4baLBPr2NREPEYci/3JJZw=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20190916100719eucas1p1e84d4fa680983ee4ec5878e476e7022c~E40Ey87c90424904249eucas1p1x;
-        Mon, 16 Sep 2019 10:07:19 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id 7F.DE.04469.7DE5F7D5; Mon, 16
-        Sep 2019 11:07:19 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20190916100718eucas1p1efcbabdf9dbe17a062ae83b8c19ac256~E40D-SBI20720607206eucas1p1N;
-        Mon, 16 Sep 2019 10:07:18 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20190916100718eusmtrp2b28c2b52b5b47de5f999ceecc557c737~E40DxPHpI2883028830eusmtrp25;
-        Mon, 16 Sep 2019 10:07:18 +0000 (GMT)
-X-AuditID: cbfec7f2-54fff70000001175-ea-5d7f5ed77158
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id DD.48.04117.6DE5F7D5; Mon, 16
-        Sep 2019 11:07:18 +0100 (BST)
-Received: from AMDC3778.digital.local (unknown [106.120.51.20]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20190916100717eusmtip283feedbd6c1b28f23253ea84770886ce~E40DCHngk2339323393eusmtip2X;
-        Mon, 16 Sep 2019 10:07:17 +0000 (GMT)
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
-        mark.rutland@arm.com, robh+dt@kernel.org, cw00.choi@samsung.com,
-        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
-        s.nawrocki@samsung.com, myungjoo.ham@samsung.com,
-        willy.mh.wolff.ml@gmail.com,
-        Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 2/3] ARM: dts: exynos: fix too long line in memory device
-Date:   Mon, 16 Sep 2019 12:07:03 +0200
-Message-Id: <20190916100704.26692-3-l.luba@partner.samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190916100704.26692-1-l.luba@partner.samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA0VSa0hTYRj229nZjqPFcUa+LFFZBSXkDYMPEjPox6B+SESRYTn1pJJbtqOW
-        GbkC85Z5qdRE00pTlqJOGVM0vDVNTZ1SimWoIzIvWZtXsIvzrPr3vM/7PN/z8PJRhKSJlFIx
-        qnhGrVLEygQivt64MXho7EJKqI9BS+CGojoSjy1/IXFZ9yCJc8zzBB4aqhfit3cWhHhC44p1
-        5vckHm0pEWBrdjfCRUOveLi2e1KIK8dMPPzhdrUAp7Z1C3HXQhqJV3tnUJCTvOZJDZI3F08K
-        5TpthkDeWJEi7/jWypPfb9IiuVXnFiwMEQVEMrExiYzaOzBMFG1oHyXivgiut318ytOgUTIT
-        OVJA+8NiRpogE4koCV2N4Guf0T4sI3j8eZnHDVYEd6atxF/LsqWC5BZVCGZbf/D/WfSbj7b8
-        FCWgvcCgvWoz7KKfI1jtCrFhgtbzIHvF1Yad6ZOwMLu03YNP74es3Axkw2L6KNSurAq4MHd4
-        Wd++HexIB8F69WvClgW0UQjajVR7o+OQN7SEOOwMcz1NQg67wu/mMh6HWdBkP7VrboI5p9Su
-        OQJdPSbS1pmgD0JdizdHH4Ppkk2+jQZ6J4wvOnH1d0K+vpDgaDGk35Vw6gPQdG/YHrQbqmoK
-        7I/LYaK3wH7QBwgmlr7zc5F78f+wcoS0yIVJYJVRDOurYq55sQolm6CK8oq4otShrb/U/6vH
-        YkArI+GdiKaQbIdYk3orVEIqEtkkZScCipDtEp9NTw6ViCMVSTcY9ZWL6oRYhu1Eeyi+zEWc
-        7DB1XkJHKeKZywwTx6j/bnmUo1SD9nlID6+twehMXs6sXwM1GRMwIPV8E9geOlXqkm0YKUr0
-        MOqDTk/8nK/s6BUXTlnKgoNGsupU/rFh3ubFF3PPyhs/G/1k0gGHyRO+p/JpT2tawplIXVFf
-        /yXTulOvck5SGP7OrM03jfQNN1j81kTjPolu3nvPPVwLif4UYcpRyPhstMLXk1Czij/BbdFd
-        RwMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprBIsWRmVeSWpSXmKPExsVy+t/xe7rX4upjDbbu47fYOGM9q8X1L89Z
-        LeYfOcdq0f/4NbPF+fMb2C3ONr1ht7jVIGOx6fE1VovLu+awWXzuPcJoMeP8PiaLtUfuslss
-        vX6RyeJ24wo2i9a9R9gtDr9pZ7X4duIRo4Ogx5p5axg9ds66y+6xaVUnm8fmJfUeB9/tYfLo
-        27KK0ePzJrkA9ig9m6L80pJUhYz84hJbpWhDCyM9Q0sLPSMTSz1DY/NYKyNTJX07m5TUnMyy
-        1CJ9uwS9jB0HLjMXPGer2HtnIVMD42XWLkZODgkBE4kvn5YA2VwcQgJLGSUabu1mh0iISUza
-        tx3KFpb4c62LDaLoE6PE4ZVngTo4ONgE9CR2rCoEiYsILGeUOLbqLTOIwyxwhEmif9c8sBXC
-        Aj4Sb168B7NZBFQluid0MoLYvAL2Emu/fmOD2CAvsXrDAWYQm1PAQeLHiqNgthBQzZTrPxgn
-        MPItYGRYxSiSWlqcm55bbKRXnJhbXJqXrpecn7uJERgr24793LKDsetd8CFGAQ5GJR7ehta6
-        WCHWxLLiytxDjBIczEoivOEd1bFCvCmJlVWpRfnxRaU5qcWHGE2BjprILCWanA+M47ySeENT
-        Q3MLS0NzY3NjMwslcd4OgYMxQgLpiSWp2ampBalFMH1MHJxSDYwH9L5YTJk44/mTVPsTzLZb
-        FTSdWCZvOProktQGvWmuNw/1i2uyOM24MuEKb1+oe53qdhHVGr7Fa0qeqAv5rLA87jOBO2f3
-        qve2PYaSK6X8erg9laauWbRhzp5ZSs/ubYmW7DsT92aJ5Bwvp09X5h79djbx1kNP0Z0asaXv
-        WA57vro+5dDOD/KzlFiKMxINtZiLihMBMglGiasCAAA=
-X-CMS-MailID: 20190916100718eucas1p1efcbabdf9dbe17a062ae83b8c19ac256
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190916100718eucas1p1efcbabdf9dbe17a062ae83b8c19ac256
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190916100718eucas1p1efcbabdf9dbe17a062ae83b8c19ac256
-References: <20190916100704.26692-1-l.luba@partner.samsung.com>
-        <CGME20190916100718eucas1p1efcbabdf9dbe17a062ae83b8c19ac256@eucas1p1.samsung.com>
+        id S1727227AbfIPKI0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Sep 2019 06:08:26 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:55558 "EHLO
+        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725865AbfIPKI0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Sep 2019 06:08:26 -0400
+Received: from reginn.horms.nl (watermunt.horms.nl [80.127.179.77])
+        by kirsty.vergenet.net (Postfix) with ESMTPA id 6B73325B705;
+        Mon, 16 Sep 2019 20:08:22 +1000 (AEST)
+Received: by reginn.horms.nl (Postfix, from userid 7100)
+        id 60F19944602; Mon, 16 Sep 2019 12:08:20 +0200 (CEST)
+From:   Simon Horman <horms+renesas@verge.net.au>
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        Yoshihiro Kaneko <ykaneko0929@gmail.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-renesas-soc@vger.kernel.org,
+        Simon Horman <horms+renesas@verge.net.au>
+Subject: [PATCH] dt-bindings: thermal: rcar-thermal: convert bindings to json-schema
+Date:   Mon, 16 Sep 2019 12:07:17 +0200
+Message-Id: <20190916100717.31472-1-horms+renesas@verge.net.au>
+X-Mailer: git-send-email 2.11.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Small fix moving the comment to line above making sure the lines do not
-exceed 80 characters.
+Convert Renesas R-Car Thermal bindings documentation to json-schema.
+Also name bindings documentation file according to the compat string
+being documented.
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+As a side effect of this change all currently supported/used compat
+strings are listed while no while card compat string is documented.
+This, in my opinion, is desirable as only supported hardware should
+be documented.
+
+Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
 ---
- arch/arm/boot/dts/exynos5422-odroid-core.dtsi | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Based on v5.3-rc1
+Tested using:
+  ARCH=arm make dtbs_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/thermal/renesas,rcar-thermal.yaml
+---
+ .../devicetree/bindings/thermal/rcar-thermal.txt   |  78 ---------------
+ .../bindings/thermal/renesas,rcar-thermal.yaml     | 110 +++++++++++++++++++++
+ 2 files changed, 110 insertions(+), 78 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+ create mode 100644 Documentation/devicetree/bindings/thermal/renesas,rcar-thermal.yaml
 
-diff --git a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-index fe885ca969af..059fa32d1a8f 100644
---- a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-+++ b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-@@ -103,7 +103,8 @@
- 
- 		timings_samsung_K3QF2F20DB_800mhz: lpddr3-timings@800000000 {
- 			compatible	= "jedec,lpddr3-timings";
--			reg		= <800000000>; /* workaround: it shows max-freq */
-+			/* workaround: 'reg' shows max-freq */
-+			reg		= <800000000>;
- 			min-freq	= <100000000>;
- 			tRFC		= <65000>;
- 			tRRD		= <6000>;
+diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+deleted file mode 100644
+index 196112d23b1e..000000000000
+--- a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
++++ /dev/null
+@@ -1,78 +0,0 @@
+-* Renesas R-Car Thermal
+-
+-Required properties:
+-- compatible		: "renesas,thermal-<soctype>",
+-			   "renesas,rcar-gen2-thermal" (with thermal-zone) or
+-			   "renesas,rcar-thermal" (without thermal-zone) as
+-                           fallback except R-Car V3M/E3/D3 and RZ/G2E.
+-			  Examples with soctypes are:
+-			    - "renesas,thermal-r8a73a4" (R-Mobile APE6)
+-			    - "renesas,thermal-r8a7743" (RZ/G1M)
+-			    - "renesas,thermal-r8a7744" (RZ/G1N)
+-			    - "renesas,thermal-r8a774c0" (RZ/G2E)
+-			    - "renesas,thermal-r8a7779" (R-Car H1)
+-			    - "renesas,thermal-r8a7790" (R-Car H2)
+-			    - "renesas,thermal-r8a7791" (R-Car M2-W)
+-			    - "renesas,thermal-r8a7792" (R-Car V2H)
+-			    - "renesas,thermal-r8a7793" (R-Car M2-N)
+-			    - "renesas,thermal-r8a77970" (R-Car V3M)
+-			    - "renesas,thermal-r8a77990" (R-Car E3)
+-			    - "renesas,thermal-r8a77995" (R-Car D3)
+-- reg			: Address range of the thermal registers.
+-			  The 1st reg will be recognized as common register
+-			  if it has "interrupts".
+-
+-Option properties:
+-
+-- interrupts		: If present should contain 3 interrupts for
+-                          R-Car V3M/E3/D3 and RZ/G2E or 1 interrupt otherwise.
+-
+-Example (non interrupt support):
+-
+-thermal@ffc48000 {
+-	compatible = "renesas,thermal-r8a7779", "renesas,rcar-thermal";
+-	reg = <0xffc48000 0x38>;
+-};
+-
+-Example (interrupt support):
+-
+-thermal@e61f0000 {
+-	compatible = "renesas,thermal-r8a73a4", "renesas,rcar-thermal";
+-	reg = <0xe61f0000 0x14
+-		0xe61f0100 0x38
+-		0xe61f0200 0x38
+-		0xe61f0300 0x38>;
+-	interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
+-};
+-
+-Example (with thermal-zone):
+-
+-thermal-zones {
+-	cpu_thermal: cpu-thermal {
+-		polling-delay-passive	= <1000>;
+-		polling-delay		= <5000>;
+-
+-		thermal-sensors = <&thermal>;
+-
+-		trips {
+-			cpu-crit {
+-				temperature	= <115000>;
+-				hysteresis	= <0>;
+-				type		= "critical";
+-			};
+-		};
+-		cooling-maps {
+-		};
+-	};
+-};
+-
+-thermal: thermal@e61f0000 {
+-	compatible =	"renesas,thermal-r8a7790",
+-			"renesas,rcar-gen2-thermal",
+-			"renesas,rcar-thermal";
+-	reg = <0 0xe61f0000 0 0x14>, <0 0xe61f0100 0 0x38>;
+-	interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
+-	clocks = <&mstp5_clks R8A7790_CLK_THERMAL>;
+-	power-domains = <&cpg_clocks>;
+-	#thermal-sensor-cells = <0>;
+-};
+diff --git a/Documentation/devicetree/bindings/thermal/renesas,rcar-thermal.yaml b/Documentation/devicetree/bindings/thermal/renesas,rcar-thermal.yaml
+new file mode 100644
+index 000000000000..ab4cc3c35410
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/renesas,rcar-thermal.yaml
+@@ -0,0 +1,110 @@
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/renesas,rcar-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Renesas R-Car Thermal
++
++maintainers:
++  - Niklas Söderlund <niklas.soderlund@ragnatech.se>
++  - Geert Uytterhoeven <geert+renesas@glider.be>
++
++properties:
++  compatible:
++    oneOf:
++      - items:
++          - enum:
++              - renesas,thermal-r8a73a4       # R-Mobile APE6
++              - renesas,thermal-r8a7743       # RZ/G1M
++              - renesas,thermal-r8a7744       # RZ/G1N
++              - renesas,thermal-r8a7779       # R-Car H1
++              - renesas,thermal-r8a774c0      # RZ/G2E
++              - renesas,thermal-r8a77970      # R-Car V3M
++              - renesas,thermal-r8a77990      # R-Car E3
++              - renesas,thermal-r8a77995      # R-Car D3
++          - const: renesas,rcar-thermal       # Without thermal-zone
++
++      - items:
++          - enum:
++              - renesas,thermal-r8a7790       # R-Car H2
++              - renesas,thermal-r8a7791       # R-Car M2-W
++              - renesas,thermal-r8a7792       # R-Car V2H
++              - renesas,thermal-r8a7793       # R-Car M2-N
++          - const: renesas,rcar-gen2-thermal  # With thermal-zone
++          - const: renesas,rcar-thermal       # Without thermal-zone
++
++  reg:
++    # Address range of the thermal registers.
++    # The 1st reg will be recognized as common register if it has "interrupts".
++    minItems: 1
++
++  interrupts:
++    # If present should contain 3 interrupts for R-Car V3M/E3/D3 and RZ/G2E,
++    # otherwise 1 interrupt.
++    minItems: 1
++    maxItems: 3
++
++  clocks:
++    maxItems: 1
++
++  power-domains:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++
++examples :
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++    #include <dt-bindings/clock/r8a7790-clock.h>
++
++ # Example (non interrupt support):
++  - |
++    thermal@ffc48000 {
++        compatible = "renesas,thermal-r8a7779", "renesas,rcar-thermal";
++        reg = <0xffc48000 0x38>;
++    };
++
++  # Example (interrupt support):
++  - |
++    thermal@e61f0000 {
++        compatible = "renesas,thermal-r8a73a4", "renesas,rcar-thermal";
++        reg = <0xe61f0000 0x14
++               0xe61f0100 0x38
++               0xe61f0200 0x38
++               0xe61f0300 0x38>;
++        interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
++    };
++
++  # Example (with thermal-zone):
++  - |
++    thermal-zones {
++        cpu_thermal: cpu-thermal {
++            polling-delay-passive = <1000>;
++            polling-delay = <5000>;
++
++            thermal-sensors = <&thermal>;
++
++            trips {
++                cpu-crit {
++                    temperature = <115000>;
++                    hysteresis = <0>;
++                    type = "critical";
++                };
++            };
++            cooling-maps {
++            };
++        };
++    };
++
++    thermal: thermal@e61f0000 {
++        compatible = "renesas,thermal-r8a7790",
++                     "renesas,rcar-gen2-thermal",
++                     "renesas,rcar-thermal";
++        reg = <0 0xe61f0000 0 0x14>, <0 0xe61f0100 0 0x38>;
++        interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&mstp5_clks R8A7790_CLK_THERMAL>;
++        power-domains = <&cpg_clocks>;
++        #thermal-sensor-cells = <0>;
++    };
 -- 
-2.17.1
+2.11.0
 
