@@ -2,92 +2,68 @@ Return-Path: <SRS0=fQl1=XL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29C3CC49ED7
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Sep 2019 15:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70EC0C4CECD
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Sep 2019 16:24:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F0E102186A
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Sep 2019 15:09:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5178421852
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Sep 2019 16:24:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388953AbfIPPJk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Sep 2019 11:09:40 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51150 "EHLO mx1.redhat.com"
+        id S2389735AbfIPQYz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Sep 2019 12:24:55 -0400
+Received: from muru.com ([72.249.23.125]:33272 "EHLO muru.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2388324AbfIPPJk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Sep 2019 11:09:40 -0400
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mx1.redhat.com (Postfix) with ESMTPS id 0FBF93001571;
-        Mon, 16 Sep 2019 15:09:40 +0000 (UTC)
-Received: from prarit.bos.redhat.com (prarit-guest.khw1.lab.eng.bos.redhat.com [10.16.200.63])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 7A2424E6A0;
-        Mon, 16 Sep 2019 15:09:39 +0000 (UTC)
-Subject: Re: [PATCH 09/19] tools/power turbostat: fix buffer overrun
-To:     Len Brown <lenb@kernel.org>,
-        Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        Len Brown <len.brown@intel.com>
-References: <eeb71c950bc6eee460f2070643ce137e067b234c.1567277326.git.len.brown
- () intel ! com>
-From:   Prarit Bhargava <prarit@redhat.com>
-Message-ID: <f335ff51-4c10-11c4-c022-401d15aab8c3@redhat.com>
-Date:   Mon, 16 Sep 2019 11:09:38 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+        id S1727450AbfIPQYz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Sep 2019 12:24:55 -0400
+Received: from atomide.com (localhost [127.0.0.1])
+        by muru.com (Postfix) with ESMTPS id 1F32380EA;
+        Mon, 16 Sep 2019 16:25:23 +0000 (UTC)
+Date:   Mon, 16 Sep 2019 09:24:49 -0700
+From:   Tony Lindgren <tony@atomide.com>
+To:     "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc:     =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Adam Ford <aford173@gmail.com>,
+        =?utf-8?B?QW5kcsOp?= Roth <neolynx@gmail.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Enric Balletbo i Serra <eballetbo@gmail.com>,
+        Javier Martinez Canillas <javier@dowhile0.org>,
+        Roger Quadros <rogerq@ti.com>,
+        Teresa Remmet <t.remmet@phytec.de>, linux-omap@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, letux-kernel@openphoenux.org,
+        kernel@pyra-handheld.com, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v3 5/8] cpufreq: ti-cpufreq: omap36xx use "cpu0","vbb" if
+ run in multi_regulator mode
+Message-ID: <20190916162449.GB52127@atomide.com>
+References: <cover.1568224032.git.hns@goldelico.com>
+ <1c803be8060fb99b7d92e2f5cde3c0e1962fbe2b.1568224033.git.hns@goldelico.com>
 MIME-Version: 1.0
-In-Reply-To: <eeb71c950bc6eee460f2070643ce137e067b234c.1567277326.git.len.brown
- () intel ! com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16 (mx1.redhat.com [10.5.110.46]); Mon, 16 Sep 2019 15:09:40 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1c803be8060fb99b7d92e2f5cde3c0e1962fbe2b.1568224033.git.hns@goldelico.com>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 8/31/19 3:34 PM, Len Brown wrote:
-> From: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+* H. Nikolaus Schaller <hns@goldelico.com> [190911 17:48]:
+> In preparation for using the multi_regulator capability of
+> this driver for handling the ABB LDO for OPP1G of the omap36xx
+> we have to take care that the (legacy) vdd-supply name is
+> cpu0-supply = <&vcc>;
 > 
-> turbostat could be terminated by general protection fault on some latest
-> hardwares which (for example) support 9 levels of C-states and show 18
-> "tADDED" lines. That bloats the total output and finally causes buffer
-> overrun.  So let's extend the buffer to avoid this.
+> To do this we add another field to the SoC description table which
+> optionally can specify a list of regulator names.
 > 
-> Signed-off-by: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  tools/power/x86/turbostat/turbostat.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> For omap36xx we define "cpu0-supply" and "vbb-supply".
 > 
-> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-> index 2fb5c155289b..f8f4e1c130a6 100644
-> --- a/tools/power/x86/turbostat/turbostat.c
-> +++ b/tools/power/x86/turbostat/turbostat.c
-> @@ -5131,7 +5131,7 @@ int initialize_counters(int cpu_id)
->  
->  void allocate_output_buffer()
->  {
-> -	output_buffer = calloc(1, (1 + topo.num_cpus) * 1024);
-> +	output_buffer = calloc(1, (1 + topo.num_cpus) * 2048);
+> The default remains "vdd-supply" and "vbb-supply".
 
-While this "works" I'm not convinced it is a final fix. I think moving to the
-proposal Naoya & I laid out would be better.
-
-https://marc.info/?l=linux-pm&m=155809356001873&w=2
-
-Len, what do you think?
-
-P.
-
->  	outp = output_buffer;
->  	if (outp == NULL)
->  		err(-1, "calloc output buffer");
-> 
+Acked-by: Tony Lindgren <tony@atomide.com>
