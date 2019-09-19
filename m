@@ -2,57 +2,56 @@ Return-Path: <SRS0=GQM4=XO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCFDFC4CEC4
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Sep 2019 02:18:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8470FC4CEC4
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Sep 2019 02:18:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B0236217D6
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Sep 2019 02:18:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5AFEB217D6
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Sep 2019 02:18:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iAArHRRB"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MdALuVzF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388328AbfISCSa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Sep 2019 22:18:30 -0400
-Received: from mail-qt1-f196.google.com ([209.85.160.196]:45541 "EHLO
-        mail-qt1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388321AbfISCS3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Sep 2019 22:18:29 -0400
-Received: by mail-qt1-f196.google.com with SMTP id c21so2259018qtj.12
-        for <linux-pm@vger.kernel.org>; Wed, 18 Sep 2019 19:18:29 -0700 (PDT)
+        id S2388251AbfISCS1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Sep 2019 22:18:27 -0400
+Received: from mail-qt1-f193.google.com ([209.85.160.193]:45533 "EHLO
+        mail-qt1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388279AbfISCS1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Sep 2019 22:18:27 -0400
+Received: by mail-qt1-f193.google.com with SMTP id c21so2258866qtj.12
+        for <linux-pm@vger.kernel.org>; Wed, 18 Sep 2019 19:18:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=CdiCEHMKk566XZjegQIR8gg3RICYYDFYb1Lqktv3Klc=;
-        b=iAArHRRBTsV5yhKp9vUFsoOfflBPOmyRZtdEhLbpeyK61kwCKweRNYjzy+Zy04Crif
-         HiQRJ6OaVxKNDg2sZQYLsCbBqPvUnIzBGL55Z0Sl9m4djlYd5UziTnkdP4RIjwxIKsn3
-         Njc1vxS5Ih18BLZw6HVukX/o+mwgBsM3T7aStWKIPQprYDBmcrptPEuPEsO9RVWiLSpJ
-         P4h1Kl2YSps2naPRH0TObYDVJLLFxfJWieojb0rPfXketj96TOb1vrh0s0V4rJeiuhHB
-         oA3PHt5FM97ORUkV9rziVHeuWb/JXxXwztlcaORgYLLwhrov8bOpgv2xd5vHAvT4h5U4
-         L66A==
+        h=from:to:cc:subject:date:message-id;
+        bh=eMoL+WWX1O3Mr1Rt4D8nfxQ68OPxFI2LpksFdwrwiPI=;
+        b=MdALuVzFTvSx2saviYRgBg5S9c2sbaPoLc8vqx13RNuKSCpSSMtjL+s8zbn+SmBzjJ
+         fni31MmFQbdVSlo983Ns41faBRzjgX9RGZrS5d5/023Vq/zxIjZfTBiCgm1i3pHNVA3b
+         Y5kTHkjDXC4nRqC26TNaBT7flijBXYCaiN1+C2nUd0YDwMHhtZ2I/n9i/Xd4nByA7LR7
+         8viYXIDA6AMurqdW9l26pVxmG7F9Q8rhGsvJiCfk+sJytVX+cXB6NNqXpRPnhxWFG+lf
+         aYCaiklkmcwZAyD0Jzl9Eh+rmWVC0dYTfFN72OaPevO62Caa6F+1/FEL5fqNvWVj8ZRt
+         maAw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=CdiCEHMKk566XZjegQIR8gg3RICYYDFYb1Lqktv3Klc=;
-        b=mZIJ8m91BcqPIZilwvlb0XMOySDVMJx88fQt/KcLS0DhHrS1Pr9TcOCqC6LuJ4YrvT
-         gj+Ql8BfuCMZkjbifSYNDUMcj3Bt0ira2zsmusQqzqUc57g3Kdq/VCmR3vdRJQfoAtid
-         94zvbxeGQTHyxIcGTDzQII9ZwItjfdjC/lAKALYJzXsPP/I78QoYh8lYoDv468SbbCGg
-         2N02wZRoEZIeQKolv8lSsoiRawfizoBqjmWjmtWk4444ZeFF27yLV74MpjPmIm25ALuJ
-         ln+NWQHUn16uhqRsbeQfUULJqeOhDfkCGPCTHdzJzzB8g0D7338H21cNMqixKi6OncQv
-         H0KQ==
-X-Gm-Message-State: APjAAAVmDlCxk3TOUe+FVC7352SVI+pd7o4u5+ulmxLsNfQTzIZB3t70
-        HIY1+Jxe4Os3VCRZ6vtg2ZSpRw==
-X-Google-Smtp-Source: APXvYqw2+kxRJ8EJ3nEnCluvCd7E46yWcBFu61Ab8biFE5LJvvb+8aL1yzz26d5V+Nb0YUs+87vKkg==
-X-Received: by 2002:a0c:f712:: with SMTP id w18mr4600436qvn.244.1568859508633;
-        Wed, 18 Sep 2019 19:18:28 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=eMoL+WWX1O3Mr1Rt4D8nfxQ68OPxFI2LpksFdwrwiPI=;
+        b=Cf7/1q9HUpBlhOrj0ocwYHqeNjOw4wmDkVntCUVUjPH0cc3zVDXhsP2S+pCF6+mGb+
+         fMoGI1zo6qAECjlzHbDclhDrwENTyGOO4QOrGmLiqw+9KvhZhiO2bRO81Sy8BH0620QF
+         Ec0dqYkjKTd08PPj4yfczYUcw4vQ9LPequfB+oR4hhAVRiLGIwBtcr47Fii0H4a/8aF8
+         Xg6+GOYwTUXVrKuuFaRoAoj0gN2cfbfmbB3ixUj+t9Ra87JM4xQ7qIg6apcyPQilNrKH
+         sAzRoFKTMp/J9a5OqvkmutZJkeDuAg4rOR3ddFEb3g1Fgk6zUGXdRYtvdTBuq/SERg6u
+         SrVg==
+X-Gm-Message-State: APjAAAXQYnRLSyE6luxo+MXFOPQxgzwZ2aioDaRXeOmDfSvzsbIhi5ij
+        mNxZa6020/k5sW46v/2IZLqNRA==
+X-Google-Smtp-Source: APXvYqwJFUoPzG/PtZYrmV1PH6BUjNqVT10yYwHct/Nr7msy09vUchGl4OLWWgbHUSaCaZ3cdWRi5A==
+X-Received: by 2002:ad4:528b:: with SMTP id v11mr6051296qvr.200.1568859504693;
+        Wed, 18 Sep 2019 19:18:24 -0700 (PDT)
 Received: from Thara-Work-Ubuntu.fios-router.home (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
-        by smtp.googlemail.com with ESMTPSA id o52sm5261275qtf.56.2019.09.18.19.18.27
+        by smtp.googlemail.com with ESMTPSA id o52sm5261275qtf.56.2019.09.18.19.18.23
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Wed, 18 Sep 2019 19:18:27 -0700 (PDT)
+        Wed, 18 Sep 2019 19:18:23 -0700 (PDT)
 From:   Thara Gopinath <thara.gopinath@linaro.org>
 To:     rui.zhang@intel.com, edubezval@gmail.com,
         daniel.lezcano@linaro.org, vincent.guittot@linaro.org,
@@ -60,80 +59,58 @@ To:     rui.zhang@intel.com, edubezval@gmail.com,
 Cc:     amit.kucheria@verdurent.com, mark.rutland@arm.com,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] thermal: of-thermal: Extend thermal dt driver to support bi-directional monitoring of a thermal trip point.
-Date:   Wed, 18 Sep 2019 22:18:22 -0400
-Message-Id: <1568859503-19725-4-git-send-email-thara.gopinath@linaro.org>
+Subject: [PATCH 0/4] thermal: Introduce support for monitoring falling temperatures.
+Date:   Wed, 18 Sep 2019 22:18:19 -0400
+Message-Id: <1568859503-19725-1-git-send-email-thara.gopinath@linaro.org>
 X-Mailer: git-send-email 2.1.4
-In-Reply-To: <1568859503-19725-1-git-send-email-thara.gopinath@linaro.org>
-References: <1568859503-19725-1-git-send-email-thara.gopinath@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduce of_thermal_get_trip_monitor_type to return the direction
-of monitoring of a thermal trip point. Also translate the DT information
-regarding trip point monitor direction into the thermal framework.
+Thermal framework today supports monitoring for rising temperatures and
+subsequently initiating cooling action in case of a trip point being 
+crossed. There are scenarios where a SoC needs some warming action to be
+activated if the temperature falls below a cetain allowable limit.
+Since warming action can be considered mirror opposite of cooling action,
+most of the thermal framework can be re-used to achieve this.
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
----
- drivers/thermal/of-thermal.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+To enable thermal framework to monitor falling temperature, a new parameter
+is added to the thermal trip point binding in the device tree to indicate
+the direction(rising/falling) of temperature monitoring. Thermal DT
+driver is extended to capture this information from the device tree 
+entries and to reflect it in the thermal framework as a new enum
+variable in the thermal trip point structure.
+As an initial attempt, step-wise governor is extended to support
+bi-directional monitoring of temprature if a trip point is hit, depending
+on the newly introduced enum variable. Finally thermal sysfs entries are
+extended to indicate the trip point monitor direction.
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index dc5093b..a5f6fdc 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -377,6 +377,20 @@ static int of_thermal_set_trip_hyst(struct thermal_zone_device *tz, int trip,
- 	return 0;
- }
- 
-+static int of_thermal_get_trip_monitor_type
-+				(struct thermal_zone_device *tz, int trip,
-+				 enum thermal_trip_monitor_type *type)
-+{
-+	struct __thermal_zone *data = tz->devdata;
-+
-+	if (trip >= data->ntrips || trip < 0)
-+		return -EDOM;
-+
-+	*type = data->trips[trip].monitor_type;
-+
-+	return 0;
-+}
-+
- static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
- 				    int *temp)
- {
-@@ -401,6 +415,7 @@ static struct thermal_zone_device_ops of_thermal_ops = {
- 	.set_trip_temp = of_thermal_set_trip_temp,
- 	.get_trip_hyst = of_thermal_get_trip_hyst,
- 	.set_trip_hyst = of_thermal_set_trip_hyst,
-+	.get_trip_monitor_type = of_thermal_get_trip_monitor_type,
- 	.get_crit_temp = of_thermal_get_crit_temp,
- 
- 	.bind = of_thermal_bind,
-@@ -809,6 +824,7 @@ static int thermal_of_populate_trip(struct device_node *np,
- {
- 	int prop;
- 	int ret;
-+	bool is_monitor_falling;
- 
- 	ret = of_property_read_u32(np, "temperature", &prop);
- 	if (ret < 0) {
-@@ -830,6 +846,12 @@ static int thermal_of_populate_trip(struct device_node *np,
- 		return ret;
- 	}
- 
-+	is_monitor_falling = of_property_read_bool(np, "monitor-falling");
-+	if (is_monitor_falling)
-+		trip->monitor_type = THERMAL_TRIP_MONITOR_FALLING;
-+	else
-+		trip->monitor_type = THERMAL_TRIP_MONITOR_RISING;
-+
- 	/* Required for cooling map matching */
- 	trip->np = np;
- 	of_node_get(np);
+Patch series introducing various resources that are used as warming devices
+on Qualcomm sdm845:
+https://lkml.org/lkml/2019/7/29/749 (already merged)
+
+https://lkml.org/lkml/2019/9/10/727 (under review)
+
+
+Thara Gopinath (4):
+  dt-bindings: thermal: Introduce monitor-falling binding to thermal
+    trip point description
+  thermal: Thermal core and sysfs changes needed to support
+    bi-directional monitoring of trip points.
+  thermal: of-thermal: Extend thermal dt driver to support
+    bi-directional monitoring of a thermal trip point.
+  thermal: step_wise: Extend thermal step-wise governor to monitor
+    falling temperature.
+
+ .../devicetree/bindings/thermal/thermal.txt        |  8 +++
+ drivers/thermal/of-thermal.c                       | 22 ++++++++
+ drivers/thermal/step_wise.c                        | 59 +++++++++++++++------
+ drivers/thermal/thermal_sysfs.c                    | 60 ++++++++++++++++++++--
+ include/linux/thermal.h                            | 10 ++++
+ include/uapi/linux/thermal.h                       |  2 +-
+ 6 files changed, 141 insertions(+), 20 deletions(-)
+
 -- 
 2.1.4
 
