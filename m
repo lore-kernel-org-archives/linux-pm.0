@@ -2,123 +2,138 @@ Return-Path: <SRS0=GQM4=XO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B83BEC3A5A6
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Sep 2019 09:27:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5F43C49ED7
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Sep 2019 09:27:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 99F3E21A49
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Sep 2019 09:27:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A1EB021929
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Sep 2019 09:27:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="j5tkUKL0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388774AbfISJ1C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Sep 2019 05:27:02 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45291 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388601AbfISJ1B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Sep 2019 05:27:01 -0400
-Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
-        id 3721881B7E; Thu, 19 Sep 2019 11:26:45 +0200 (CEST)
-Date:   Thu, 19 Sep 2019 11:26:58 +0200
-From:   Pavel Machek <pavel@ucw.cz>
-To:     Tony Lindgren <tony@atomide.com>
-Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        linux-omap@vger.kernel.org, Merlijn Wajer <merlijn@wizzup.org>
-Subject: Re: [PATCH 2/3] power: supply: cpcap-charger: Allow changing
- constant charge voltage
-Message-ID: <20190919092658.GD9644@amd>
-References: <20190917215253.17880-1-tony@atomide.com>
- <20190917215253.17880-3-tony@atomide.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="3Gf/FFewwPeBMqCJ"
-Content-Disposition: inline
-In-Reply-To: <20190917215253.17880-3-tony@atomide.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+        id S2388601AbfISJ1D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Sep 2019 05:27:03 -0400
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:48007 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387881AbfISJ04 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Sep 2019 05:26:56 -0400
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20190919092653euoutp016980334c3dd177778e35f7573bd4b297~FzMol5lDq2470924709euoutp01I
+        for <linux-pm@vger.kernel.org>; Thu, 19 Sep 2019 09:26:53 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20190919092653euoutp016980334c3dd177778e35f7573bd4b297~FzMol5lDq2470924709euoutp01I
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1568885213;
+        bh=xMgegydTj1VyjtJMSlQNdpjkJ9FHauOHBGUiS06xb+k=;
+        h=From:To:Cc:Subject:Date:References:From;
+        b=j5tkUKL0oGjaT4Sa8M0HT/WjLgXDzhLevHIEgMMekKKlnGbbkKvt2L4jlSviBYkMk
+         VfhUuKYZAbstC8K6M4NI+OKHannlUg/vIZjzKy1Zj503zndjqW1lXZLrQSeXskU+Tx
+         5MSG0v72fsvIK7hU1fWQOZ+A8d8lqf73x6XaB0ew=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20190919092652eucas1p146a6438833f2b7837de81c491ff25e8c~FzMn00FD03057630576eucas1p14;
+        Thu, 19 Sep 2019 09:26:52 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges2new.samsung.com (EUCPMTA) with SMTP id 26.BE.04309.CD9438D5; Thu, 19
+        Sep 2019 10:26:52 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20190919092652eucas1p2715611db7a0b0c4cc79956311e01c35a~FzMm7_JNw0197101971eucas1p2C;
+        Thu, 19 Sep 2019 09:26:52 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20190919092651eusmtrp1388058d2816f3078f44dbc3d529337fc~FzMmtcVCN1357513575eusmtrp1O;
+        Thu, 19 Sep 2019 09:26:51 +0000 (GMT)
+X-AuditID: cbfec7f4-ae1ff700000010d5-f3-5d8349dcba50
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 35.25.04166.BD9438D5; Thu, 19
+        Sep 2019 10:26:51 +0100 (BST)
+Received: from AMDC3778.digital.local (unknown [106.120.51.20]) by
+        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20190919092650eusmtip11435e05346dd810ba269b0402294f2b7~FzMl8JRRi1630716307eusmtip1V;
+        Thu, 19 Sep 2019 09:26:50 +0000 (GMT)
+From:   Lukasz Luba <l.luba@partner.samsung.com>
+To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
+        mark.rutland@arm.com, robh+dt@kernel.org, cw00.choi@samsung.com,
+        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
+        s.nawrocki@samsung.com, myungjoo.ham@samsung.com,
+        willy.mh.wolff.ml@gmail.com, dan.carpenter@oracle.com,
+        Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v3 0/2] Exynos5 DMC minor fixes
+Date:   Thu, 19 Sep 2019 11:26:39 +0200
+Message-Id: <20190919092641.4407-1-l.luba@partner.samsung.com>
+X-Mailer: git-send-email 2.17.1
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrHKsWRmVeSWpSXmKPExsWy7djPc7p3PJtjDeZd0bTYOGM9q8X1L89Z
+        LV7/m85iMf/IOVaL/sevmS3On9/AbnG26Q27xa0GGYtNj6+xWlzeNYfN4nPvEUaLGef3MVms
+        PXKX3WLp9YtMFrcbV7BZtO49wm5x+E07q8W3E48YHYQ81sxbw+ixc9Zddo9NqzrZPDYvqff4
+        +PQWi8fBd3uYPPq2rGL0+LxJLoAjissmJTUnsyy1SN8ugStj8+6L7AVT2CvezWhnb2D8ydrF
+        yMEhIWAisWRtQhcjF4eQwApGia4zj9kgnC+MEk9+b2WBcD4zSrR2gWQgOpa2m0LElzNK3LnS
+        zQrX0dB5gBmkiE1AT2LHqsIuRk4OEYHFjBLfDkeB2MwCF5gkTq+UBbGFBfQlJj3qYQEpZxFQ
+        lTjwPBIkzCtgJ9F1cDEbiC0hIC+xegPIRC4gex+7RFvPJyaIhIvEzYcPWSFsYYlXx7ewQ9gy
+        Eqcng8wEsYslGnoXMkLYNRKP++dC1VhLHD5+Eex7ZgFNifW79CHCjhL9S7qYIV7kk7jxVhDi
+        Yj6JSdumQ4V5JTrahCCqNSS29FyAOkZMYvmaaVDDPSQez98NZgsJxEp8bt3OPIFRbhbCrgWM
+        jKsYxVNLi3PTU4uN8lLL9YoTc4tL89L1kvNzNzECU9Hpf8e/7GDc9SfpEKMAB6MSD+8P9aZY
+        IdbEsuLK3EOMEhzMSiK8c0yBQrwpiZVVqUX58UWlOanFhxilOViUxHmrGR5ECwmkJ5akZqem
+        FqQWwWSZODilGhhNAvd0HJO/n1G/aaqZrc2qxbtuc4ulyjJaPA9leCT09E2uEfOuvV43j5mU
+        zvgZs8GFP7VIr/WVxISZzoeKtjV6eDCdqc1fsKztjutzc69mli1PEz/s2dT+Xmiuy4fNTQYm
+        PXvuTtw2Y0Fp0/n/CWsvyyuJrtT9yjFbgYt39tOXZU784Z1CPW1KLMUZiYZazEXFiQBUMrMR
+        QQMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFupgkeLIzCtJLcpLzFFi42I5/e/4Xd3bns2xBud+6lhsnLGe1eL6l+es
+        Fq//TWexmH/kHKtF/+PXzBbnz29gtzjb9Ibd4laDjMWmx9dYLS7vmsNm8bn3CKPFjPP7mCzW
+        HrnLbrH0+kUmi9uNK9gsWvceYbc4/Kad1eLbiUeMDkIea+atYfTYOesuu8emVZ1sHpuX1Ht8
+        fHqLxePguz1MHn1bVjF6fN4kF8ARpWdTlF9akqqQkV9cYqsUbWhhpGdoaaFnZGKpZ2hsHmtl
+        ZKqkb2eTkpqTWZZapG+XoJexefdF9oIp7BXvZrSzNzD+ZO1i5OCQEDCRWNpu2sXIxSEksJRR
+        om/JfeYuRk6guJjEpH3b2SFsYYk/17rYIIo+MUp8XbsLrJlNQE9ix6pCkLiIwHJGiWOr3jKD
+        OMwCD5gkLs49xgjSLSygLzHpUQ8LSAOLgKrEgeeRIGFeATuJroOL2SAWyEus3nCAeQIjzwJG
+        hlWMIqmlxbnpucWGesWJucWleel6yfm5mxiBsbDt2M/NOxgvbQw+xCjAwajEw/tDvSlWiDWx
+        rLgy9xCjBAezkgjvHFOgEG9KYmVValF+fFFpTmrxIUZToN0TmaVEk/OBcZpXEm9oamhuYWlo
+        bmxubGahJM7bIXAwRkggPbEkNTs1tSC1CKaPiYNTqoHRfe5U+YJTj6OkWzuTTEwdNhxImZJ3
+        bMXnpRt3RLE+3daTUxmV+3T7vovnWVvXcfGYhhaev1HXsVpoUpdVuopMbkBPfAbvxrCrLkuf
+        /N/xNJFr893FagYmVuf6Hh+cd1JR9+fCbMWPERvuH/Zxray6uD+AaYK0LrN5jInmTT+jwjae
+        rsTAvZ1KLMUZiYZazEXFiQAHHfzXmwIAAA==
+X-CMS-MailID: 20190919092652eucas1p2715611db7a0b0c4cc79956311e01c35a
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20190919092652eucas1p2715611db7a0b0c4cc79956311e01c35a
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190919092652eucas1p2715611db7a0b0c4cc79956311e01c35a
+References: <CGME20190919092652eucas1p2715611db7a0b0c4cc79956311e01c35a@eucas1p2.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi all,
 
---3Gf/FFewwPeBMqCJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is a follow up patch set for the Exynos5 Dynamic Memory Controller
+driver v13 [1]. The patches are for Krzysztof's branch [2]
+for-v5.4-5.5/memory-samsung-dmc
+and/or linux-next where Dan Carpenter reported the issue (patch 1/2).
+There are a few fixes captured during static analysis and a new
+binding for 'samsung,K3QF2F20DB' LPDDR3 memory.
 
-Hi!
+Regards,
+Lukasz Luba
 
-> Let's allow reconfiguring the cpcap-charger max charge voltage and
-> default to 4.2V that should be safe for the known users.
->=20
-> This allows the users to use 4.35V for the extra capacity if really
-> needed at a cost of probably shorter battery life. We check the
-> constant charge voltage limit set by the battery.
->=20
-> Some pieces of the property setting code is based on an earlier patch
-> from Pavel Machek <pavel@ucw.cz> but limited to configuring the charge
-> voltage for now.
+[1] https://lkml.org/lkml/2019/8/21/283
+[2] https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux.git/log/?h=for-v5.4-5.5/memory-samsung-dmc
 
-I'm sorry I'm a tiny bit busy at the moment.
+Lukasz Luba (2):
+  memory: samsung: exynos5422-dmc: Fix kfree() of devm-allocated memory
+    and missing static
+  dt-bindings: ddr: Add bindings for Samsung LPDDR3 memories
 
-> +const int cpcap_charge_voltage[] =3D {
-> +	[CPCAP_REG_CRM_VCHRG_3V80] =3D 3800000,
-> +	[CPCAP_REG_CRM_VCHRG_4V10] =3D 4100000,
-> +	[CPCAP_REG_CRM_VCHRG_4V12] =3D 4120000,
-> +	[CPCAP_REG_CRM_VCHRG_4V15] =3D 4150000,
-> +	[CPCAP_REG_CRM_VCHRG_4V17] =3D 4170000,
-> +	[CPCAP_REG_CRM_VCHRG_4V20] =3D 4200000,
-> +	[CPCAP_REG_CRM_VCHRG_4V23] =3D 4230000,
-> +	[CPCAP_REG_CRM_VCHRG_4V25] =3D 4250000,
-> +	[CPCAP_REG_CRM_VCHRG_4V27] =3D 4270000,
-> +	[CPCAP_REG_CRM_VCHRG_4V30] =3D 4300000,
-> +	[CPCAP_REG_CRM_VCHRG_4V33] =3D 4330000,
-> +	[CPCAP_REG_CRM_VCHRG_4V35] =3D 4350000,
-> +	[CPCAP_REG_CRM_VCHRG_4V38] =3D 4380000,
-> +	[CPCAP_REG_CRM_VCHRG_4V40] =3D 4400000,
-> +	[CPCAP_REG_CRM_VCHRG_4V42] =3D 4420000,
-> +	[CPCAP_REG_CRM_VCHRG_4V44] =3D 4440000,
-> +};
+ Documentation/devicetree/bindings/ddr/lpddr3.txt | 10 +++++++---
+ drivers/memory/samsung/exynos5422-dmc.c          |  6 ++----
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
-We really don't need this kind of explicit table, as the values can be
-simply computed. Can I offer this?
+-- 
+2.17.1
 
-Best regards,
-								Pavel
-
-static int voltage_to_register(int microvolt)
-{
-	int milivolt =3D microvolt/1000;
-	int res;
-
-	if (milivolt < 4100)
-		return CPCAP_REG_CRM_VCHRG_3V80;
-	if (milivolt > 4350)
-		return -EINVAL;
-
-	milivolt =3D milivolt - (4100 - 250);
-	res =3D milivolt / 250;
-	BUG_ON(res < 1);
-	BUG_ON(res > 0xb);
-	return CPCAP_REG_CRM_VCHRG(res);
-}
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---3Gf/FFewwPeBMqCJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAl2DSeIACgkQMOfwapXb+vI3ZwCfbjRw5XriwwePmB0OD5zrLXQo
-6cMAn0LHMD1AefGxjgzYYy/t3k1UKBe5
-=1nCB
------END PGP SIGNATURE-----
-
---3Gf/FFewwPeBMqCJ--
