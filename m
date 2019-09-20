@@ -2,116 +2,108 @@ Return-Path: <SRS0=2Xd2=XP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EBFAC49ED7
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Sep 2019 21:53:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 360EAC49ED7
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Sep 2019 22:03:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 31FB120B7C
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Sep 2019 21:53:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 052FF20820
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Sep 2019 22:03:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gC01BHP1"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="YDPl0GG4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727290AbfITVwq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Sep 2019 17:52:46 -0400
-Received: from mail-pl1-f195.google.com ([209.85.214.195]:40234 "EHLO
-        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727178AbfITVwp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2019 17:52:45 -0400
-Received: by mail-pl1-f195.google.com with SMTP id d22so3793591pll.7
-        for <linux-pm@vger.kernel.org>; Fri, 20 Sep 2019 14:52:45 -0700 (PDT)
+        id S1730640AbfITWDu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Sep 2019 18:03:50 -0400
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:32954 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727442AbfITWDt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Sep 2019 18:03:49 -0400
+Received: by mail-pf1-f195.google.com with SMTP id q10so5446576pfl.0
+        for <linux-pm@vger.kernel.org>; Fri, 20 Sep 2019 15:03:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :in-reply-to:references;
-        bh=BcKGfqptsJMIyqg8m+kdv7mwKKvvYfua8/fbCWYYrS8=;
-        b=gC01BHP1P590aH1DpG92/2a9eu0OC50zfmGm/ISqUL+Edf8eKtzKtYupItgKC3NC4V
-         YnGr79289Q1KN/q09yX1oZGTwgPpeMNTg9Ms/0sHXfbVLv+eRLYFb0iS5h2kMPx2Pt/H
-         nm3cx01VKVxgVY7U6ZdSgX73IFqs2evm5lYv/fFrllMl3gQ4UBsg77QnTCUAkR1sLsfv
-         OHXm5zlBci/Ps2gD1m7LsdNXuUKp9Um7cQeKq6bNJV3q2wNiCpKa2nBUTmnazNXOrJGL
-         24l+eQUYSg4WyryPMS4GYEZtqovCvhGgbQKyYxqim1UAVkBeE/IRUSQB1o5u83ISfFJj
-         yZyg==
+        d=chromium.org; s=google;
+        h=message-id:mime-version:content-transfer-encoding:in-reply-to
+         :references:cc:to:from:subject:user-agent:date;
+        bh=/EQwbpIsvd1cytDYn0HntBTy9k3TGtcIL0KkXrfCaiQ=;
+        b=YDPl0GG4EI8wJoWxtR1nfBaelslT8/kTPV7iNWiqqjHZFPISQDIQWQD016P911qdJQ
+         aibMH+xB7INC43BG0DInOi9+0rmKL4zekRRgR+Jc/n8EqKcu9d8kiSxm7tYnV3EuqysS
+         6xevhW6w/zrCEkrmond8+1jcLyEjxrtllbKg4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:in-reply-to:references;
-        bh=BcKGfqptsJMIyqg8m+kdv7mwKKvvYfua8/fbCWYYrS8=;
-        b=i3PgCtDLK8Ypsmro1Fz0WiTe7UIr8HLi08XCt0fwuKvf31t3Sj5l/iTfYVKDpD35d0
-         sFx5H22l+LnEyOrb+Z45oyG6ZG64VUlU+XQhR4wVV/4y7fSaGXcZxKdrZEMy4BCqHggX
-         Ml5t6oUnNgBEb4l4JHsoFrXk4kLFfgDV7tNSQR9l2xBEqGvbz0t7uAXGY2ifX70k4xEh
-         P0fhVkdg5wTdIlKmpMVpKBb06FpzkE0hb5kk0HXYh4ljgRxTNGPbreSzcrBNfBy8F1bm
-         +r029QsCBzS0e+hS6BSI4GvZEKFQpoDUwGyxcrg3NVNZkHVzKtR05Ze+by0ROgj1ZJ3f
-         7tlQ==
-X-Gm-Message-State: APjAAAU9drKQME4LHesDiw46yfpU35JPNIz4DJ9ZMWmRjeWPGeuh371K
-        NzpMkhstYfna/jEDW5ZOPNC+Gg==
-X-Google-Smtp-Source: APXvYqzQfIiJEn2m3GVJXE8ugbnOGc3O1v8GA0STmdXQCDw0YRuUJmFyxBWT9guY6rp6NxoKhxOtwg==
-X-Received: by 2002:a17:902:8bca:: with SMTP id r10mr4121889plo.43.1569016364897;
-        Fri, 20 Sep 2019 14:52:44 -0700 (PDT)
-Received: from localhost (wsip-98-175-107-49.sd.sd.cox.net. [98.175.107.49])
-        by smtp.gmail.com with ESMTPSA id 22sm3480863pfo.131.2019.09.20.14.52.44
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Fri, 20 Sep 2019 14:52:44 -0700 (PDT)
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        bjorn.andersson@linaro.org, edubezval@gmail.com, agross@kernel.org,
-        masneyb@onstation.org, swboyd@chromium.org,
+        h=x-gm-message-state:message-id:mime-version
+         :content-transfer-encoding:in-reply-to:references:cc:to:from:subject
+         :user-agent:date;
+        bh=/EQwbpIsvd1cytDYn0HntBTy9k3TGtcIL0KkXrfCaiQ=;
+        b=gCrB82Cw0XQQjCJL5wWpM3NKEGk4lYz18q0q8pO7T0BcgFh2WJJgsX7/m15kN6zrK/
+         yyiscASXWV5M/SC/RTdc414zyA2Q+l7EY6nrCMo0v6nHue5kmyIZ9VApR4yJLR635PW+
+         LHHtM8qNQ105Fpwk2E95NsDPgcCa3tjJU0X27BIhEyId7n8o07fNyy9eRTn+W7KFZ1XS
+         dkblkxAhiVlwGndBC5Sj04XC21MtJEV7PGid3IsSYUjifOa5VXGfIcK1blrjz7lEhnu/
+         PAIdKwVnvbFMtm4AK4YnnekY7Sx3cmbOcDry7SWJX5rjbqv6y1Yl3k1Id2DgbdHwL3DD
+         DFvg==
+X-Gm-Message-State: APjAAAWbTdV8BQlRVKBq5YMTPyAvDbJ2xfWLAcs+3igiOxEZ533ibMDq
+        qiLLgJ24WMsP9qvWCfIzsncSl7la9VM=
+X-Google-Smtp-Source: APXvYqyBgz+MphNZfB4Kvgk3Xd1zPioLjL8mQsK1TqROI5tdB+AxFL4uyLGMg25Kl2Cgn2fDtdeeHA==
+X-Received: by 2002:a17:90a:8c89:: with SMTP id b9mr7128649pjo.45.1569017027567;
+        Fri, 20 Sep 2019 15:03:47 -0700 (PDT)
+Received: from chromium.org ([2620:15c:202:1:fa53:7765:582b:82b9])
+        by smtp.gmail.com with ESMTPSA id z2sm4706797pfq.58.2019.09.20.15.03.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 20 Sep 2019 15:03:47 -0700 (PDT)
+Message-ID: <5d854cc3.1c69fb81.4264c.bab8@mx.google.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <aa318f9ba4aa3fd13b05201743acc1ab2c1a0db1.1569015835.git.amit.kucheria@linaro.org>
+References: <cover.1569015835.git.amit.kucheria@linaro.org> <aa318f9ba4aa3fd13b05201743acc1ab2c1a0db1.1569015835.git.amit.kucheria@linaro.org>
+Cc:     linux-pm@vger.kernel.org
+To:     Amit Kucheria <amit.kucheria@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Mark Rutland <mark.rutland@arm.com>,
         Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH v4 02/15] drivers: thermal: tsens: Simplify code flow in tsens_probe
-Date:   Fri, 20 Sep 2019 14:52:17 -0700
-Message-Id: <dc5468cdf64e5acccd37fa9b5e849f423874764a.1569015835.git.amit.kucheria@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1569015835.git.amit.kucheria@linaro.org>
-References: <cover.1569015835.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1569015835.git.amit.kucheria@linaro.org>
-References: <cover.1569015835.git.amit.kucheria@linaro.org>
+        Zhang Rui <rui.zhang@intel.com>, agross@kernel.org,
+        bjorn.andersson@linaro.org, edubezval@gmail.com,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        masneyb@onstation.org
+From:   Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH v4 14/15] drivers: thermal: tsens: Create function to return sign-extended temperature
+User-Agent: alot/0.8.1
+Date:   Fri, 20 Sep 2019 15:03:46 -0700
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Move platform_set_drvdata up to avoid an extra 'if (ret)' check after
-the call to tsens_register.
+Quoting Amit Kucheria (2019-09-20 14:52:29)
+> Hide the details of how to convert values read from TSENS HW to mCelsius
+> behind a function. All versions of the IP can be supported as a result.
+>=20
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 Reviewed-by: Stephen Boyd <swboyd@chromium.org>
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/qcom/tsens.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 6ed687a6e53c..542a7f8c3d96 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -149,6 +149,8 @@ static int tsens_probe(struct platform_device *pdev)
- 	priv->feat = data->feat;
- 	priv->fields = data->fields;
- 
-+	platform_set_drvdata(pdev, priv);
-+
- 	if (!priv->ops || !priv->ops->init || !priv->ops->get_temp)
- 		return -EINVAL;
- 
-@@ -167,11 +169,7 @@ static int tsens_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	ret = tsens_register(priv);
--
--	platform_set_drvdata(pdev, priv);
--
--	return ret;
-+	return tsens_register(priv);
- }
- 
- static int tsens_remove(struct platform_device *pdev)
--- 
-2.17.1
+Just one nit below.
+
+>  drivers/thermal/qcom/tsens-common.c | 50 +++++++++++++++++++++--------
+>  1 file changed, 36 insertions(+), 14 deletions(-)
+>=20
+> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/t=
+sens-common.c
+> index ea2c46cc6a66..6b6b3841c2d0 100644
+> --- a/drivers/thermal/qcom/tsens-common.c
+> +++ b/drivers/thermal/qcom/tsens-common.c
+> @@ -310,6 +331,7 @@ int __init init_common(struct tsens_priv *priv)
+>                         goto err_put_device;
+>                 }
+>         }
+> +
+>         for (i =3D 0, j =3D VALID_0; i < priv->feat->max_sensors; i++, j+=
++) {
+>                 priv->rf[j] =3D devm_regmap_field_alloc(dev, priv->tm_map,
+>                                                       priv->fields[j]);
+
+Drop this hunk?
 
