@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49624C3A5A6
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:16:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 968C6C3A5A2
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:25:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2245721479
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:16:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6E42520869
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:25:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1569179810;
-	bh=sByufSALIAPF6n01zQQTJHouuIvhtjNGtpPcRB30gDQ=;
+	s=default; t=1569180303;
+	bh=AR8xkLta58mWfwbBEqsTYV291X1xSKFmHu7uqW2tgpM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=FD0rvag4fsLSQLQtqWuHkPYIigjoGKrjmuZzPyKcXLUQ2Um5hDDgov0chAj4EjkhC
-	 yQ9S+Z5ZSndpUs7gLCmd5fbEtbVOUj9xvnzMr35z5yRfw9ZoCG9FgZcYYS3rXWuExF
-	 rsdEppgf6RX0fxgPKvXv2fZ1jkIZBXFhhLIXLrWc=
+	b=Aycc+X492D7EG4SSSSbzf9tbPcCBy095WDjkIbSpXHvuoXSu4eTcmjahQs/laEGzs
+	 PXrrCPDBJfWkOEV/6TNHSEMXzyMGtgtrLQtqivrFBzYG2IKuy61X50hIastvdysukD
+	 Dm8AaXEfpgmzXpLD0Pw1bGOXgjng7zLnqpOzx1jk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726441AbfIVTQs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 22 Sep 2019 15:16:48 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57808 "EHLO mail.kernel.org"
+        id S2407941AbfIVSwg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 22 Sep 2019 14:52:36 -0400
+Received: from mail.kernel.org ([198.145.29.99]:51692 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2408141AbfIVS4B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 22 Sep 2019 14:56:01 -0400
+        id S2407937AbfIVSwf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 22 Sep 2019 14:52:35 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 63ADE21D7C;
-        Sun, 22 Sep 2019 18:56:00 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id AD20021D7C;
+        Sun, 22 Sep 2019 18:52:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1569178561;
-        bh=sByufSALIAPF6n01zQQTJHouuIvhtjNGtpPcRB30gDQ=;
+        s=default; t=1569178354;
+        bh=AR8xkLta58mWfwbBEqsTYV291X1xSKFmHu7uqW2tgpM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=mV4/9LFn2aCohXfeforTbwvjyUWo+XT3qsnxHIjO0fYyOpqqoL2eLx7UgEAxW/p9b
-         LCQSsotgwK8TQrZo/eKfclRzI8QF36aKFrO2We3Q3xBvr52alis46f3MQL4KngXuUp
-         oJq8yB5sDUJem6xK2ZlDU03ueJfrr03FaUcfmc5c=
+        b=HeUmHv4bcEXDVrYOTnyojgEfUxRb0cdgKrzf/XpRG6xyPd9fyDKTHNnJMfrKApyLQ
+         h4ywZOcIiNOKHqaUorg3c+Syv+r/YEN7Kw5ySAms0fgNI/vPzyu72Gnf5jDI0Z3N+F
+         LbqfywaenC8DW0UklnXYUwTPjkHuAcmONlPQF0cQ=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Leonard Crestez <leonard.crestez@nxp.com>,
         Chanwoo Choi <cw00.choi@samsung.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 075/128] PM / devfreq: passive: Use non-devm notifiers
-Date:   Sun, 22 Sep 2019 14:53:25 -0400
-Message-Id: <20190922185418.2158-75-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.2 110/185] PM / devfreq: passive: Use non-devm notifiers
+Date:   Sun, 22 Sep 2019 14:48:08 -0400
+Message-Id: <20190922184924.32534-110-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190922185418.2158-1-sashal@kernel.org>
-References: <20190922185418.2158-1-sashal@kernel.org>
+In-Reply-To: <20190922184924.32534-1-sashal@kernel.org>
+References: <20190922184924.32534-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -101,10 +101,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-index 3bc29acbd54e8..22fd41b4c1098 100644
+index 58308948b8637..da485477065c5 100644
 --- a/drivers/devfreq/governor_passive.c
 +++ b/drivers/devfreq/governor_passive.c
-@@ -168,12 +168,12 @@ static int devfreq_passive_event_handler(struct devfreq *devfreq,
+@@ -165,12 +165,12 @@ static int devfreq_passive_event_handler(struct devfreq *devfreq,
  			p_data->this = devfreq;
  
  		nb->notifier_call = devfreq_passive_notifier_call;
