@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4594BC3A5A2
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 18:52:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABF8CC4740C
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:00:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2108621BE5
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 18:52:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8775E21D7C
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:00:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1569178364;
-	bh=JynpDT/gW2P7z3FNimWG7u5TDUQgbp30m34PxCe32QM=;
+	s=default; t=1569178823;
+	bh=wcXHOx5i/Yxq9c0RNlMMhVQk9lBkRtog124MZoxnOIo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=KFcTevF6MoLWuLCFX6xkAAIkM45daTv3R+YaGhEGu5fYOod3iftbG48M2xGusl/n6
-	 o2ZdbUBLhFA9zsQuhRc7hoNKMixpPtIWCDSkhOV/vSpRTDArLyKW978sR7sCrvFkMr
-	 Q44BMbl6jL/777o2BxmjV2gIUPdz2RgcORfMyfMs=
+	b=icHB8UWaUbTy7A8R/KE1X938Ap6oT81dbWdeMxwW+R7089tVfQjsbFAqRh9NR5YzZ
+	 nZgFNHRayXfxA1z6hTlXBNF8U9fxh5MVYeKFseRxq4f0jbbFbROV3COMse9jP+RRy3
+	 wYHZ+JmeZSf/ezBLfrQI3FU6X0J/ry8Je+Bhk9wg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2407962AbfIVSwm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 22 Sep 2019 14:52:42 -0400
-Received: from mail.kernel.org ([198.145.29.99]:51738 "EHLO mail.kernel.org"
+        id S2395149AbfIVTAW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 22 Sep 2019 15:00:22 -0400
+Received: from mail.kernel.org ([198.145.29.99]:35970 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2407944AbfIVSwh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 22 Sep 2019 14:52:37 -0400
+        id S2395136AbfIVTAV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 22 Sep 2019 15:00:21 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 134B721479;
-        Sun, 22 Sep 2019 18:52:34 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 2FDA3208C2;
+        Sun, 22 Sep 2019 19:00:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1569178356;
-        bh=JynpDT/gW2P7z3FNimWG7u5TDUQgbp30m34PxCe32QM=;
+        s=default; t=1569178820;
+        bh=wcXHOx5i/Yxq9c0RNlMMhVQk9lBkRtog124MZoxnOIo=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=hTEUvRCDbYRsNJuoCUoDqpj+RJ1jBT6dmfrK/umV5m7HcJdNwGpk8QKfX6XpHmqpz
-         r94M6SilCzg0TNkFk887ZLtetL2ONHvIs5fe+vvrgYZkoonkZ0wZGFTUSezBDkzbk3
-         wS4d8g8LybdNBOFpRP/Htgx1j1xLD5nB49nsjHq4=
+        b=LeQoI5ct5wELOh41WX8qljTk22/5cjL5Ms5T+0b9l+BHaroqA/lq/4EMewSlboJHv
+         MMzZxuqiLGj5MPBsDe8OKSd4qtx3y+oOWMKeogXlEzG5LixguMMBr3hNcKq4Cuv+uO
+         fW2Y7LbPcPrbLlAFa5fXHG6Vl47ZyGAk8bDDDBW0=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Kamil Konieczny <k.konieczny@partner.samsung.com>,
@@ -45,12 +45,12 @@ Cc:     Kamil Konieczny <k.konieczny@partner.samsung.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
         linux-samsung-soc@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.2 111/185] PM / devfreq: exynos-bus: Correct clock enable sequence
-Date:   Sun, 22 Sep 2019 14:48:09 -0400
-Message-Id: <20190922184924.32534-111-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 32/60] PM / devfreq: exynos-bus: Correct clock enable sequence
+Date:   Sun, 22 Sep 2019 14:59:05 -0400
+Message-Id: <20190922185934.4305-32-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190922184924.32534-1-sashal@kernel.org>
-References: <20190922184924.32534-1-sashal@kernel.org>
+In-Reply-To: <20190922185934.4305-1-sashal@kernel.org>
+References: <20190922185934.4305-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -79,10 +79,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 17 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index d9f377912c104..7c06df8bd74fe 100644
+index 1b21bb60e7975..2c8f41fbe94fb 100644
 --- a/drivers/devfreq/exynos-bus.c
 +++ b/drivers/devfreq/exynos-bus.c
-@@ -191,11 +191,10 @@ static void exynos_bus_exit(struct device *dev)
+@@ -198,11 +198,10 @@ static void exynos_bus_exit(struct device *dev)
  	if (ret < 0)
  		dev_warn(dev, "failed to disable the devfreq-event devices\n");
  
@@ -96,7 +96,7 @@ index d9f377912c104..7c06df8bd74fe 100644
  }
  
  /*
-@@ -383,6 +382,7 @@ static int exynos_bus_probe(struct platform_device *pdev)
+@@ -391,6 +390,7 @@ static int exynos_bus_probe(struct platform_device *pdev)
  	struct exynos_bus *bus;
  	int ret, max_state;
  	unsigned long min_freq, max_freq;
@@ -104,7 +104,7 @@ index d9f377912c104..7c06df8bd74fe 100644
  
  	if (!np) {
  		dev_err(dev, "failed to find devicetree node\n");
-@@ -396,27 +396,27 @@ static int exynos_bus_probe(struct platform_device *pdev)
+@@ -404,27 +404,27 @@ static int exynos_bus_probe(struct platform_device *pdev)
  	bus->dev = &pdev->dev;
  	platform_set_drvdata(pdev, bus);
  
@@ -143,7 +143,7 @@ index d9f377912c104..7c06df8bd74fe 100644
  
  	/* Initialize the struct profile and governor data for parent device */
  	profile->polling_ms = 50;
-@@ -507,6 +507,9 @@ static int exynos_bus_probe(struct platform_device *pdev)
+@@ -514,6 +514,9 @@ static int exynos_bus_probe(struct platform_device *pdev)
  err:
  	dev_pm_opp_of_remove_table(dev);
  	clk_disable_unprepare(bus->clk);
