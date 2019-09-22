@@ -7,46 +7,45 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 479D4C3A5A2
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:34:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94EEAC3A5A6
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:39:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1E94A214AF
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:34:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 68ABB20644
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Sep 2019 19:39:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1569180877;
-	bh=Hd313bNn1nwYn7nl2HeoEwQBysegcQMaraVjCkG6hTY=;
+	s=default; t=1569181172;
+	bh=Lc59sncasa5gS38TB/SVhDDqzccv+JjvHgvKuSv4u+I=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=A9mBl00l7kT/K0fcEv6G+pawbHz+77qR1vCDn4Wu6+0VvQ9Nsh+eZcUa35rPsz9K+
-	 Mh+qbupqhP6jR/DWbRyBHwig81j6DiUASRs4TL+BdIepJb+11lHgLJ5YOU+awWDNg+
-	 Te2Dt6vWzb45FOklTM1hUCQbE43SSoG/K5dvXNKU=
+	b=YauRGgF3eri79aVfQQXTXS3RDMJlVGRI6SXyEL7R58bQ3xCnV0/leeneKoQSdzuoj
+	 dTV4DANSNAf/2HJIK59g/yBPDfR5ibsSEIFIX5oQWtnMPXkxpMsbnKgqNHAfixQo3k
+	 5+Y2NeunKbNULHP5QcryjW6ft88lwSoWwftedei4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390590AbfIVSrK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 22 Sep 2019 14:47:10 -0400
-Received: from mail.kernel.org ([198.145.29.99]:43484 "EHLO mail.kernel.org"
+        id S2388606AbfIVSn5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 22 Sep 2019 14:43:57 -0400
+Received: from mail.kernel.org ([198.145.29.99]:39500 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390571AbfIVSrJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 22 Sep 2019 14:47:09 -0400
+        id S2388156AbfIVSnz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 22 Sep 2019 14:43:55 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 4975F2186A;
-        Sun, 22 Sep 2019 18:47:08 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 466D5208C2;
+        Sun, 22 Sep 2019 18:43:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1569178029;
-        bh=Hd313bNn1nwYn7nl2HeoEwQBysegcQMaraVjCkG6hTY=;
+        s=default; t=1569177834;
+        bh=Lc59sncasa5gS38TB/SVhDDqzccv+JjvHgvKuSv4u+I=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=RBCrQVRmJJKJbQwqWpZVF1M91ut7qNRSFpTdIOPhwi8JmpNUv4e+X2j/rGYrNZafq
-         ntZc1P1h02mGFPuLjVRCz/PiN313tPRGRXSgS/PCU/FHimzeJl+GB7ZKLnRznYc+GI
-         nVkMgv+6RPabmJWfFtaAgkki2d5MXWDYjA/oiDzI=
+        b=MbZjLj/GI2VvpA44g+nfEV7NBqYfn9+rI8eVbtCpj2Qd9MS2WW26VmwkIIvzBor2r
+         IuksnVhQN2t8x8o7BcLWRe5kOtornKKjoMxZXMtIyPfxVJiEzBAQeo6F3djih7iM02
+         Kfjggtwrw/Xb4yJKwPqfWCi7IqrrupZ/Rj3RDZrk=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Anson Huang <Anson.Huang@nxp.com>,
-        Leonard Crestez <leonard.crestez@nxp.com>,
+Cc:     Hariprasad Kelam <hariprasad.kelam@gmail.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.3 112/203] cpufreq: imx-cpufreq-dt: Add i.MX8MN support
-Date:   Sun, 22 Sep 2019 14:42:18 -0400
-Message-Id: <20190922184350.30563-112-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.3 003/203] cpufreq: ap806: Add NULL check after kcalloc
+Date:   Sun, 22 Sep 2019 14:40:29 -0400
+Message-Id: <20190922184350.30563-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190922184350.30563-1-sashal@kernel.org>
 References: <20190922184350.30563-1-sashal@kernel.org>
@@ -59,63 +58,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Anson Huang <Anson.Huang@nxp.com>
+From: Hariprasad Kelam <hariprasad.kelam@gmail.com>
 
-[ Upstream commit 75c000c4bcbe2b0eb82baf90c7dd75c7380cc3fd ]
+[ Upstream commit 3355c91b79394593ebbb197c8e930a91826f4ff3 ]
 
-i.MX8MN has different speed grading definition as below, it has 4 bits
-to define speed grading, add support for it.
+Add NULL check  after kcalloc.
 
- SPEED_GRADE[3:0]    MHz
-    0000            2300
-    0001            2200
-    0010            2100
-    0011            2000
-    0100            1900
-    0101            1800
-    0110            1700
-    0111            1600
-    1000            1500
-    1001            1400
-    1010            1300
-    1011            1200
-    1100            1100
-    1101            1000
-    1110             900
-    1111             800
+Fix below issue reported by coccicheck
+./drivers/cpufreq/armada-8k-cpufreq.c:138:1-12: alloc with no test,
+possible model on line 151
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Reviewed-by: Leonard Crestez <leonard.crestez@nxp.com>
+Signed-off-by: Hariprasad Kelam <hariprasad.kelam@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/imx-cpufreq-dt.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/cpufreq/armada-8k-cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/imx-cpufreq-dt.c b/drivers/cpufreq/imx-cpufreq-dt.c
-index 4f85f3112784f..35db14cf31026 100644
---- a/drivers/cpufreq/imx-cpufreq-dt.c
-+++ b/drivers/cpufreq/imx-cpufreq-dt.c
-@@ -16,6 +16,7 @@
+diff --git a/drivers/cpufreq/armada-8k-cpufreq.c b/drivers/cpufreq/armada-8k-cpufreq.c
+index 988ebc326bdbb..39e34f5066d3d 100644
+--- a/drivers/cpufreq/armada-8k-cpufreq.c
++++ b/drivers/cpufreq/armada-8k-cpufreq.c
+@@ -136,6 +136,8 @@ static int __init armada_8k_cpufreq_init(void)
  
- #define OCOTP_CFG3_SPEED_GRADE_SHIFT	8
- #define OCOTP_CFG3_SPEED_GRADE_MASK	(0x3 << 8)
-+#define IMX8MN_OCOTP_CFG3_SPEED_GRADE_MASK	(0xf << 8)
- #define OCOTP_CFG3_MKT_SEGMENT_SHIFT    6
- #define OCOTP_CFG3_MKT_SEGMENT_MASK     (0x3 << 6)
- 
-@@ -34,7 +35,12 @@ static int imx_cpufreq_dt_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
--	speed_grade = (cell_value & OCOTP_CFG3_SPEED_GRADE_MASK) >> OCOTP_CFG3_SPEED_GRADE_SHIFT;
-+	if (of_machine_is_compatible("fsl,imx8mn"))
-+		speed_grade = (cell_value & IMX8MN_OCOTP_CFG3_SPEED_GRADE_MASK)
-+			      >> OCOTP_CFG3_SPEED_GRADE_SHIFT;
-+	else
-+		speed_grade = (cell_value & OCOTP_CFG3_SPEED_GRADE_MASK)
-+			      >> OCOTP_CFG3_SPEED_GRADE_SHIFT;
- 	mkt_segment = (cell_value & OCOTP_CFG3_MKT_SEGMENT_MASK) >> OCOTP_CFG3_MKT_SEGMENT_SHIFT;
+ 	nb_cpus = num_possible_cpus();
+ 	freq_tables = kcalloc(nb_cpus, sizeof(*freq_tables), GFP_KERNEL);
++	if (!freq_tables)
++		return -ENOMEM;
+ 	cpumask_copy(&cpus, cpu_possible_mask);
  
  	/*
 -- 
