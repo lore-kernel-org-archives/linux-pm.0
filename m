@@ -2,31 +2,31 @@ Return-Path: <SRS0=CGCd=XS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A38FC4CEC4
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6FEEC4CECF
 	for <linux-pm@archiver.kernel.org>; Mon, 23 Sep 2019 15:51:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6A23F20835
+	by mail.kernel.org (Postfix) with ESMTP id C738E2089F
 	for <linux-pm@archiver.kernel.org>; Mon, 23 Sep 2019 15:51:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2394068AbfIWPvQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Sep 2019 11:51:16 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:59110 "EHLO inva020.nxp.com"
+        id S2394076AbfIWPvR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Sep 2019 11:51:17 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:59232 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728720AbfIWPvP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 23 Sep 2019 11:51:15 -0400
+        id S1732806AbfIWPvQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 23 Sep 2019 11:51:16 -0400
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 68B071A0BB1;
-        Mon, 23 Sep 2019 17:51:12 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id F152A1A015C;
+        Mon, 23 Sep 2019 17:51:13 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 62BA91A09C6;
-        Mon, 23 Sep 2019 17:51:12 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id DA5CA1A0142;
+        Mon, 23 Sep 2019 17:51:13 +0200 (CEST)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id B185420613;
-        Mon, 23 Sep 2019 17:51:11 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 358E320613;
+        Mon, 23 Sep 2019 17:51:13 +0200 (CEST)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     Matthias Kaehlcke <mka@chromium.org>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -42,90 +42,131 @@ Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
         Lukasz Luba <l.luba@partner.samsung.com>,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         NXP Linux Team <linux-imx@nxp.com>
-Subject: [PATCH v6 0/6] PM / devfreq: Add dev_pm_qos support
-Date:   Mon, 23 Sep 2019 18:51:03 +0300
-Message-Id: <cover.1569252537.git.leonard.crestez@nxp.com>
+Subject: [PATCH v6 2/6] PM / devfreq: Move more initialization before registration
+Date:   Mon, 23 Sep 2019 18:51:05 +0300
+Message-Id: <0ad496507cd7e6731e46249b1499dfdebe205c16.1569252537.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1569252537.git.leonard.crestez@nxp.com>
+References: <cover.1569252537.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1569252537.git.leonard.crestez@nxp.com>
+References: <cover.1569252537.git.leonard.crestez@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add dev_pm_qos notifiers to devfreq core in order to support frequency
-limits via dev_pm_qos_add_request.
+In general it is a better to initialize an object before making it
+accessible externally (through device_register).
 
-Unlike the rest of devfreq the dev_pm_qos frequency is measured in Khz,
-this is consistent with current dev_pm_qos usage for cpufreq and
-allows frequencies above 2Ghz (pm_qos expresses limits as s32).
+This makes it possible to avoid relying on locking a partially
+initialized object.
 
-Like with cpufreq the handling of min_freq/max_freq is moved to the
-dev_pm_qos mechanism. Constraints from userspace are no longer clamped on
-store, instead all values can be written and we only check against OPPs in a
-new devfreq_get_freq_range function. This is consistent with the design of
-dev_pm_qos.
-
-Notifiers from pm_qos are executed under a single global dev_pm_qos_mtx and
-need to take devfreq->lock. Notifier registration takes the same dev_pm_qos_mtx
-so in order to prevent lockdep warnings it must be done outside devfreq->lock.
-Current devfreq_add_device does all initialization under devfreq->lock and that
-needs to be relaxed.
-
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 ---
+ drivers/devfreq/devfreq.c | 43 +++++++++++++++++++++++----------------
+ 1 file changed, 25 insertions(+), 18 deletions(-)
 
-Changes since v5 are mostly cosmetic:
-* Drop patches which are not strictly related to PM QoS.
-* Add a comment explaining why devfreq_add_device needs two cleanup paths.
-* Remove {} for single line.
-* Rename {min,max}_freq_req to user_{min,max}_freq_freq
-* Collect reviews
-Link to v5: https://patchwork.kernel.org/cover/11149497/
-
-Sorry for forgetting to properly label v5. I know this is inside the
-merge window but review would still be appreciated.
-
-Changes since v4:
-* Move more devfreq_add_device init ahead of device_register.
-* Make devfreq_dev_release cleanup devices not yet in devfreq_list. This is
-simpler than previous attempt to add to devfreq_list sonner.
-* Take devfreq->lock in trans_stat_show
-* Register dev_pm_opp notifier on devfreq parent dev (which has OPPs)
-Link to v4: https://patchwork.kernel.org/cover/11114657/
-
-Changes since v3:
-* Cleanup locking and error-handling in devfreq_add_device
-* Register notifiers after device registration but before governor start
-* Keep the initialization of min_req/max_req ahead of device_register
-because it's used for sysfs handling
-* Use HZ_PER_KHZ instead of 1000
-* Add kernel-doc comments
-* Move OPP notifier to core
-Link to v3: https://patchwork.kernel.org/cover/11104061/
-
-Changes since v2:
-* Handle sysfs via dev_pm_qos (in separate patch)
-* Add locking to {min,max}_freq_show
-* Fix checkpatch issues (long lines etc)
-Link to v2: https://patchwork.kernel.org/patch/11084279/
-
-Changes since v1:
-* Add doxygen comments for min_nb/max_nb
-* Remove notifiers on error/cleanup paths. Keep gotos simple by relying on
-dev_pm_qos_remove_notifier ignoring notifiers which were not added.
-Link to v1: https://patchwork.kernel.org/patch/11078475/
-
-Leonard Crestez (6):
-  PM / devfreq: Don't fail devfreq_dev_release if not in list
-  PM / devfreq: Move more initialization before registration
-  PM / devfreq: Don't take lock in devfreq_add_device
-  PM / devfreq: Introduce devfreq_get_freq_range
-  PM / devfreq: Add PM QoS support
-  PM / devfreq: Use PM QoS for sysfs min/max_freq
-
- drivers/devfreq/devfreq.c | 264 +++++++++++++++++++++++++-------------
- include/linux/devfreq.h   |  14 +-
- 2 files changed, 188 insertions(+), 90 deletions(-)
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 323d43315d1e..b4d2bfebb140 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -587,10 +587,12 @@ static void devfreq_dev_release(struct device *dev)
+ 	mutex_unlock(&devfreq_list_lock);
+ 
+ 	if (devfreq->profile->exit)
+ 		devfreq->profile->exit(devfreq->dev.parent);
+ 
++	kfree(devfreq->time_in_state);
++	kfree(devfreq->trans_table);
+ 	mutex_destroy(&devfreq->lock);
+ 	kfree(devfreq);
+ }
+ 
+ /**
+@@ -670,44 +672,43 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq->max_freq = devfreq->scaling_max_freq;
+ 
+ 	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
+ 	atomic_set(&devfreq->suspend_count, 0);
+ 
+-	dev_set_name(&devfreq->dev, "devfreq%d",
+-				atomic_inc_return(&devfreq_no));
+-	err = device_register(&devfreq->dev);
+-	if (err) {
+-		mutex_unlock(&devfreq->lock);
+-		put_device(&devfreq->dev);
+-		goto err_out;
+-	}
+-
+-	devfreq->trans_table = devm_kzalloc(&devfreq->dev,
++	devfreq->trans_table = kzalloc(
+ 			array3_size(sizeof(unsigned int),
+ 				    devfreq->profile->max_state,
+ 				    devfreq->profile->max_state),
+ 			GFP_KERNEL);
+ 	if (!devfreq->trans_table) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = -ENOMEM;
+-		goto err_devfreq;
++		goto err_dev;
+ 	}
+ 
+-	devfreq->time_in_state = devm_kcalloc(&devfreq->dev,
+-			devfreq->profile->max_state,
+-			sizeof(unsigned long),
+-			GFP_KERNEL);
++	devfreq->time_in_state = kcalloc(devfreq->profile->max_state,
++					 sizeof(unsigned long),
++					 GFP_KERNEL);
+ 	if (!devfreq->time_in_state) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = -ENOMEM;
+-		goto err_devfreq;
++		goto err_dev;
+ 	}
+ 
+ 	devfreq->last_stat_updated = jiffies;
+ 
+ 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
+ 
++	dev_set_name(&devfreq->dev, "devfreq%d",
++				atomic_inc_return(&devfreq_no));
++	err = device_register(&devfreq->dev);
++	if (err) {
++		mutex_unlock(&devfreq->lock);
++		put_device(&devfreq->dev);
++		goto err_out;
++	}
++
+ 	mutex_unlock(&devfreq->lock);
+ 
+ 	mutex_lock(&devfreq_list_lock);
+ 
+ 	governor = try_then_request_governor(devfreq->governor_name);
+@@ -733,14 +734,20 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 
+ 	return devfreq;
+ 
+ err_init:
+ 	mutex_unlock(&devfreq_list_lock);
+-err_devfreq:
+ 	devfreq_remove_device(devfreq);
+-	devfreq = NULL;
++	return ERR_PTR(err);
++
+ err_dev:
++	/*
++	 * Cleanup path for errors that happen before registration.
++	 * Otherwise we rely on devfreq_dev_release
++	 */
++	kfree(devfreq->time_in_state);
++	kfree(devfreq->trans_table);
+ 	kfree(devfreq);
+ err_out:
+ 	return ERR_PTR(err);
+ }
+ EXPORT_SYMBOL(devfreq_add_device);
 -- 
 2.17.1
 
