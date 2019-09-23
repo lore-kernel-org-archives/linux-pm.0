@@ -6,67 +6,104 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F3A2C32755
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Sep 2019 14:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EE7BC4CED0
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Sep 2019 15:51:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6FE7E20856
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Sep 2019 14:26:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 009C920882
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Sep 2019 15:51:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2407984AbfIWO0A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Sep 2019 10:26:00 -0400
-Received: from relmlor1.renesas.com ([210.160.252.171]:52316 "EHLO
-        relmlie5.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2407439AbfIWO0A (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Sep 2019 10:26:00 -0400
-X-IronPort-AV: E=Sophos;i="5.64,540,1559487600"; 
-   d="scan'208";a="27259438"
-Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
-  by relmlie5.idc.renesas.com with ESMTP; 23 Sep 2019 23:25:58 +0900
-Received: from be1yocto.ree.adwin.renesas.com (unknown [172.29.43.62])
-        by relmlir5.idc.renesas.com (Postfix) with ESMTP id 1416140078B2;
-        Mon, 23 Sep 2019 23:25:55 +0900 (JST)
-From:   Biju Das <biju.das@bp.renesas.com>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>
-Cc:     Biju Das <biju.das@bp.renesas.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Simon Horman <horms@verge.net.au>,
-        Chris Paterson <Chris.Paterson2@renesas.com>,
-        Fabrizio Castro <fabrizio.castro@bp.renesas.com>,
-        linux-renesas-soc@vger.kernel.org
-Subject: [PATCH] thermal: rcar_gen3_thermal: Add r8a774b1 support
-Date:   Mon, 23 Sep 2019 15:25:46 +0100
-Message-Id: <1569248746-56718-1-git-send-email-biju.das@bp.renesas.com>
-X-Mailer: git-send-email 2.7.4
+        id S2388124AbfIWPvO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Sep 2019 11:51:14 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:59206 "EHLO inva020.nxp.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1732783AbfIWPvO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 23 Sep 2019 11:51:14 -0400
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 316531A09C6;
+        Mon, 23 Sep 2019 17:51:13 +0200 (CEST)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 24BE11A0321;
+        Mon, 23 Sep 2019 17:51:13 +0200 (CEST)
+Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 73BE020613;
+        Mon, 23 Sep 2019 17:51:12 +0200 (CEST)
+From:   Leonard Crestez <leonard.crestez@nxp.com>
+To:     Matthias Kaehlcke <mka@chromium.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>
+Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
+        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Lukasz Luba <l.luba@partner.samsung.com>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        NXP Linux Team <linux-imx@nxp.com>
+Subject: [PATCH v6 1/6] PM / devfreq: Don't fail devfreq_dev_release if not in list
+Date:   Mon, 23 Sep 2019 18:51:04 +0300
+Message-Id: <4e81fa059fc93ae4e0978d3e17e55d318fc62624.1569252537.git.leonard.crestez@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1569252537.git.leonard.crestez@nxp.com>
+References: <cover.1569252537.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1569252537.git.leonard.crestez@nxp.com>
+References: <cover.1569252537.git.leonard.crestez@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add r8a774b1 specific compatible string.
+Right now devfreq_dev_release will print a warning and abort the rest of
+the cleanup if the devfreq instance is not part of the global
+devfreq_list. But this is a valid scenario, for example it can happen if
+the governor can't be found or on any other init error that happens
+after device_register.
 
-Signed-off-by: Biju Das <biju.das@bp.renesas.com>
+Initialize devfreq->node to an empty list head in devfreq_add_device so
+that list_del becomes a safe noop inside devfreq_dev_release and we can
+continue the rest of the cleanup.
+
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/devfreq/devfreq.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index a564633..ca214b2 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -315,6 +315,10 @@ static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
- 		.data = &rcar_gen3_ths_tj_1_m3_w,
- 	},
- 	{
-+		.compatible = "renesas,r8a774b1-thermal",
-+		.data = &rcar_gen3_ths_tj_1,
-+	},
-+	{
- 		.compatible = "renesas,r8a7795-thermal",
- 		.data = &rcar_gen3_ths_tj_1,
- 	},
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index eefd481885dd..323d43315d1e 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -581,15 +581,10 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+ static void devfreq_dev_release(struct device *dev)
+ {
+ 	struct devfreq *devfreq = to_devfreq(dev);
+ 
+ 	mutex_lock(&devfreq_list_lock);
+-	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
+-		mutex_unlock(&devfreq_list_lock);
+-		dev_warn(&devfreq->dev, "releasing devfreq which doesn't exist\n");
+-		return;
+-	}
+ 	list_del(&devfreq->node);
+ 	mutex_unlock(&devfreq_list_lock);
+ 
+ 	if (devfreq->profile->exit)
+ 		devfreq->profile->exit(devfreq->dev.parent);
+@@ -640,10 +635,11 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	mutex_init(&devfreq->lock);
+ 	mutex_lock(&devfreq->lock);
+ 	devfreq->dev.parent = dev;
+ 	devfreq->dev.class = devfreq_class;
+ 	devfreq->dev.release = devfreq_dev_release;
++	INIT_LIST_HEAD(&devfreq->node);
+ 	devfreq->profile = profile;
+ 	strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
+ 	devfreq->previous_freq = profile->initial_freq;
+ 	devfreq->last_status.current_frequency = profile->initial_freq;
+ 	devfreq->data = data;
 -- 
-2.7.4
+2.17.1
 
