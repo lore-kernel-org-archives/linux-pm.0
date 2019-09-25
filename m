@@ -2,171 +2,166 @@ Return-Path: <SRS0=k2rc=XU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F7F7C432C1
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Sep 2019 02:38:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50971C432C1
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Sep 2019 05:36:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DB9012168B
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Sep 2019 02:38:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2576121D7F
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Sep 2019 05:36:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SI4cjaQO"
+	dkim=pass (2048-bit key) header.d=endlessm-com.20150623.gappssmtp.com header.i=@endlessm-com.20150623.gappssmtp.com header.b="iyRFlBzI"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389764AbfIYCiF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Sep 2019 22:38:05 -0400
-Received: from mail-wm1-f68.google.com ([209.85.128.68]:34732 "EHLO
-        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2411400AbfIYCiE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Sep 2019 22:38:04 -0400
-Received: by mail-wm1-f68.google.com with SMTP id y135so2982590wmc.1
-        for <linux-pm@vger.kernel.org>; Tue, 24 Sep 2019 19:38:02 -0700 (PDT)
+        id S2411745AbfIYFgj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Sep 2019 01:36:39 -0400
+Received: from mail-qk1-f171.google.com ([209.85.222.171]:42060 "EHLO
+        mail-qk1-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2404421AbfIYFgj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Sep 2019 01:36:39 -0400
+Received: by mail-qk1-f171.google.com with SMTP id f16so4220305qkl.9
+        for <linux-pm@vger.kernel.org>; Tue, 24 Sep 2019 22:36:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=HCLrXCyTc7kRmItMmApfFBrbXPpLKB3je1Qh4DxO1lE=;
-        b=SI4cjaQOO5OGPTBzjrDMDxsy3wFb1Ydf3/0tcjgO0pClq6aT+LSPN8Umi3jhvozS6E
-         suroxPjBbde13X1ix7OIiaJ9CvfrE3obro1D1FVkvKPkZFOAcNfL8LQL/rkypnHP//QA
-         wymDV4CoB/Bt/03jXeMnNk6ug9jFFaFoz2D30DiF7FgF+KY7U1a1EFP2pQRJ0EU3vORS
-         dgQKZqttUr5cj4X0I58lBU0pNHGCYctbvtklPvFh+XJXf89DGH8DDMxLiEutLU2XgbEn
-         UgKZZh9cYI5T/nOYMkF/lqPd34eOsL6DK38piVk40hlhEDT8Q+SEEgcDRginHrisP9n9
-         qteQ==
+        d=endlessm-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=n4OkSaLpNdi0uLSUNENiAT5o+G4P+NMR/tdptF66Z3I=;
+        b=iyRFlBzIrYvGOOWlhqn+rRjFHWu51+wz+sFp2keLvkfA0dK+gopgYcrOdsln3IhuQ5
+         8nzIWwdWs+TJPFwKG3GcFtlkEm+VFC3pjouCpuh5Y7AxL8LWrtxWiuUFCfDzXoTQsAu2
+         aIzdol6kPQ2BeOJehaa89K1/y4awNETENu/sq6nwhr17MUzaMGJ4M/hXNFLhug98AqQ5
+         RelGTWy2nJ4L7H4wXVThA2cfYqlBAwKK0aItnAcRHCyNMrsejG/ZPAtBriIO61FkE9z3
+         dwqlKiSTP+N/pOi4jSe4O8rHlg4LZBhNU2L4uG4I3/ukUbrL4FQiu9O082CaP0oDgyUp
+         qgiA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
-         :message-id:date:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=HCLrXCyTc7kRmItMmApfFBrbXPpLKB3je1Qh4DxO1lE=;
-        b=GusA1oPXTi7L6O9XXGwUzTPaCjktNjMNI0dvfwjHqOnd+e1Xl+MbwUqU4a/yxTM1nc
-         sAAxIa82zHOy4MuUl4MXL7AweWlwezZfWrDvhmiCXUmIPygjXYguZ4PEep1n8KS1Kbnc
-         bNLxgkkx5IYR+vqG8k4diBxU5GJ4Cg8vIVMq1nd/2mn8rG0rDtseRytfg7IKL1trdRF8
-         2oaAZ7uwTD6cwYKjlc6yk3Kz7SwyXzbRVWGQHm7codCMl8bdCjkhj/fSzAfaGmS3Mc3F
-         YSDx7Y3KsZiX0Nu01aXjOmldOoZmDjp+LvFvCq7zve/vo64cOBfoZdAVJfa8Cwb9dcZs
-         I4hQ==
-X-Gm-Message-State: APjAAAX3ET501oa2v/p2WwM+Dc30yLX1taFYbxEw2rs6Y0jlzHqarxjM
-        gobVDLLP7jDaLbLrgJwfagEUgA==
-X-Google-Smtp-Source: APXvYqw2z25gXcAh6NsGQG9x5KJKCmJKDU6r3JdNFetfu182Q+6Tu/8Tb3luJZx+s8JT6jxu7cc50A==
-X-Received: by 2002:a1c:60c1:: with SMTP id u184mr4191443wmb.32.1569379081825;
-        Tue, 24 Sep 2019 19:38:01 -0700 (PDT)
-Received: from [10.44.66.8] ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id q10sm7857791wrd.39.2019.09.24.19.37.55
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 24 Sep 2019 19:38:01 -0700 (PDT)
-Subject: Re: [RFCv4 0/7] interconnect: Add imx support via devfreq
-To:     Leonard Crestez <leonard.crestez@nxp.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Cc:     =?UTF-8?B?QXJ0dXIgxZp3aWdvxYQ=?= <a.swigon@partner.samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Alexandre Bailon <abailon@baylibre.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>
-References: <cover.1566570260.git.leonard.crestez@nxp.com>
- <VI1PR04MB702373BE28E4404C7F2CE75FEE8C0@VI1PR04MB7023.eurprd04.prod.outlook.com>
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-Openpgp: preference=signencrypt
-Autocrypt: addr=georgi.djakov@linaro.org; prefer-encrypt=mutual; keydata=
- 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
- KEmKjLDvB0pePJkdTw==
-Message-ID: <02d3fe6a-53a6-3290-deab-d79e940978ff@linaro.org>
-Date:   Tue, 24 Sep 2019 19:37:53 -0700
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=n4OkSaLpNdi0uLSUNENiAT5o+G4P+NMR/tdptF66Z3I=;
+        b=fX1OGWjG4CK/C/nAtktuyFbXXOq70Gpi46jDTM3b/ecuzFplzJ8KJo+m3efqmpYsCn
+         TBilxmJaxMAAT8u7WfDNXFe+fS0BBVefA01GMqHQXmneC077OWWSiHJ++fwBvG/r7bdB
+         JBRCOiWZZnAuS+OdDAOqi49XNLuEQ1hnDty6PPa2tew+xM9nbe2HlnyqP94vlcm37Dy0
+         ULJ9rMrTHRSn7VeskykW7jWLC1SUa5CGTMQm06ldY1YhPRaKKD2+ST0j9k5JfLtS3J/W
+         EWiSd5rtmZMQfEWlDRzER+nSbf9s45IiO7g0t2jsz48leNwGsIR8e/YmmZef3i+ZZznc
+         LCPQ==
+X-Gm-Message-State: APjAAAUomgTna3XEuzgb74swRf/qHr1PhFpd5fT75RDGV/b3vP5hH6dz
+        sf1fbg5yksZBmn2ormbIhCwN3mMDGdYZWaRM5o+AFQ==
+X-Google-Smtp-Source: APXvYqxaFV8T/oCBkaikYDBW2cR0TU7jGiBrlEWX4Aqh8n7slYKD1Ubm6p+Bq8NxOtSYcKrxsZn5aRN73s43tyULGPY=
+X-Received: by 2002:a37:a7c5:: with SMTP id q188mr1749753qke.445.1569389796371;
+ Tue, 24 Sep 2019 22:36:36 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <VI1PR04MB702373BE28E4404C7F2CE75FEE8C0@VI1PR04MB7023.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=iso-8859-2
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <CAD8Lp47Vh69gQjROYG69=waJgL7hs1PwnLonL9+27S_TcRhixA@mail.gmail.com>
+ <CAJZ5v0g4T_0VD_oYMF_BF1VM-d1bg-BD8h8=STDrhVBgouPOPg@mail.gmail.com>
+ <01cf6be6-9175-87ca-f3ad-78c06b666893@linux.intel.com> <CAD8Lp4658-c=7KabiJ=xuNRCqPwF4BJauMHqh_8WSBfCFHWSSg@mail.gmail.com>
+ <CAJZ5v0gouaztf7tcKXBr90gjrVjOvqH70regD=o2r_d+9Bwvqg@mail.gmail.com>
+ <CAD8Lp47oNJb5N5i4oUQfN5b=xCtUc1Lt852pnXxhNq0vyWj=yg@mail.gmail.com>
+ <CAJZ5v0j=x4HHOsJ6fCX-xOr29-4BMRzjR5H5UaoWW9v-Ci8ODQ@mail.gmail.com> <CAD8Lp47qSte0C6sUFBkXVAHa755R5PnNUSvjRYD=JehYJ2R0pQ@mail.gmail.com>
+In-Reply-To: <CAD8Lp47qSte0C6sUFBkXVAHa755R5PnNUSvjRYD=JehYJ2R0pQ@mail.gmail.com>
+From:   Daniel Drake <drake@endlessm.com>
+Date:   Wed, 25 Sep 2019 13:36:25 +0800
+Message-ID: <CAD8Lp4574C4QCA3mBb9iC_3hBj7pZ3kJi-fkg7dONQPjWcF8bQ@mail.gmail.com>
+Subject: Re: Ryzen7 3700U xhci fails on resume from sleep
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Mathias Nyman <mathias.nyman@linux.intel.com>,
+        Linux USB Mailing List <linux-usb@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Endless Linux Upstreaming Team <linux@endlessm.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Leonard,
+On Mon, Sep 23, 2019 at 5:10 PM Daniel Drake <drake@endlessm.com> wrote:
+> Unfortunately it's not quite as simple as quirking d3_delay though,
+> because the problem still happens upon resume from s2idle. In that
+> case, pci_dev_d3_sleep() is not called at all.
+>
+>     if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
+>         pci_dev_d3_sleep(dev);
+>
+> In the runtime resume case, dev->current_state == PCI_D3hot here (even
+> though pci_set_power_state had been called to put it into D3cold), so
+> the msleep happens.
+> But in the system sleep (s2idle) case, dev->current_state ==
+> PCI_D3cold here, so no sleep happens.
+> That is strangely inconsistent - is it a bug?
 
-On 9/16/19 05:34, Leonard Crestez wrote:
-> On 23.08.2019 17:37, Leonard Crestez wrote:
->> This series add imx support for interconnect via devfreq: the ICC
->> framework is used to aggregate requests from devices and then those are
->> converted to DEV_PM_QOS_MIN_FREQUENCY requests for devfreq.
->>  
->> Since there is no single devicetree node that can represent the "interconnect"
->> new API is added to allow individual devfreq nodes to act as parsing proxies
->> all mapping to a single soc-level icc provider. This is still RFC
->> because of this
-> 
-> Any comments? I made a lot of changes relative to previous versions, 
-> most of them solely to avoid adding a virtual node in DT bindings.
-> 
-> The only current interconnect provider implementation is for qcom and it 
-> uses a firmware node as the provider node (with #interconnect-cells). 
-> However there is no obvious equivalent of that for imx and many other SOCs.
+In more detail:
 
-Not sure if it will help, but have you seen the qcs404 interconnect driver?
-There is also mt8183 interconnect provider driver on LKML.
+During runtime suspend:
 
-> On imx there are multiple pieces of scalable fabric which can be defined 
-> in DT as devfreq devices and it sort of makes sense to add 
-> #interconnect-cells to those. However when it comes to describing the 
-> SOC interconnect graph it's much more convenient to have a single 
-> per-SOC platform driver.
+pci_set_power_state() is called with state=D3cold
+ - This calls pci_raw_set_power_state() with state=D3hot
+ -- After transitioning to D3hot, dev->current_state is updated to
+D3hot based on pmcsr readback
 
-Is all the NoC configuration done only by ATF? Are there any NoC related memory
-mapped registers?
+acpi_device_set_power() is called with state=D3cold
+ - acpi_power_transition() is called with state=D3cold, updates
+adev->power.state to D3cold
+ - adev->power.state is updated (again) to D0
 
-Thanks,
-Georgi
+pci_update_current_state() is called
+ - platform_pci_get_power_state() returns D3cold
+ - dev->current_state is updated to D3cold
+
+Observations: everything seems to be in order
+
+
+During runtime resume:
+
+pci_update_current_state() is called
+ - platform_pci_get_power_state() returns D3cold
+ - dev->current_state is updated to D3cold
+
+pci_set_power_state() is called with state=D0
+ - Calls pci_platform_power_transition
+ -- Calls acpi_pci_set_power_state -> acpi_device_set_power with state=D0 :
+ --- acpi_power_transition() updates adev->power.state to D0
+ --- adev->power.state is updated (again) to D0
+ -- Calls pci_update_current_state
+ --- platform_pci_get_power_state() returns D0 (so this is ignored)
+ --- dev->current_state is updated to D3 via pmcsr read
+ - D3cold delay happens (good)
+ - Calls pci_raw_set_power_state() with state=D0
+ -- current_state is D3 so the D3 delay happens (good) (I quirked this
+delay to 20ms)
+ -- device is transitioned to D0 and dev->current_state is updated to
+D0 from pmcsr read
+
+Observations: everything seems to be in order, USB is working after resume
+
+
+During s2idle suspend:
+
+Exactly the same as runtime suspend above. Device transitions into
+D3cold and dev->current_state ends up as D3cold. Everything seems to
+be in order.
+
+
+During s2idle resume:
+
+acpi_device_set_power() is called with state=D0
+ - acpi_power_transition() is called with state=D0, updates
+adev->power.state to D0
+ - adev->power.state is updated (again) to D0
+
+pci_raw_set_power_state() is calld with state=D0
+ -- dev->current_state is D3cold so no D3 delay happens ***
+ -- device fails to transitioned to D0, pmcsr read indicates it's still in D3.
+
+Observations: that's a pretty clear difference between the s2idle
+resume and runtime resume paths.
+The s2idle resume path is arrived at via pci_pm_default_resume_early()
+--> pci_power_up().
+
+
+Should the s2idle resume path be modified to call into
+pci_update_current_state() to change the current_state to D3hot based
+on pmcsr (like the runtime resume path does)?
+Or should pci_raw_set_power_state() be modified to also apply the
+d3_delay when transitioning from D3cold to D0?
+
+Thanks
+Daniel
