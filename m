@@ -2,35 +2,37 @@ Return-Path: <SRS0=k2rc=XU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE2FEC432C2
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Sep 2019 19:12:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C0F6C4360D
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Sep 2019 19:12:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AA8E221D80
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Sep 2019 19:12:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DCD7F21D81
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Sep 2019 19:12:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726522AbfIYTMe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Sep 2019 15:12:34 -0400
-Received: from mail.kernel.org ([198.145.29.99]:42848 "EHLO mail.kernel.org"
+        id S1726626AbfIYTMf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Sep 2019 15:12:35 -0400
+Received: from mail.kernel.org ([198.145.29.99]:42888 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726379AbfIYTMe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 25 Sep 2019 15:12:34 -0400
+        id S1726379AbfIYTMf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Sep 2019 15:12:35 -0400
 Received: from localhost (c-71-197-186-152.hsd1.wa.comcast.net [71.197.186.152])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id A317221D79;
-        Wed, 25 Sep 2019 19:12:33 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 5496621D7F;
+        Wed, 25 Sep 2019 19:12:34 +0000 (UTC)
 From:   Kevin Hilman <khilman@baylibre.com>
 To:     linux-amlogic@lists.infradead.org,
         Neil Armstrong <narmstrong@baylibre.com>
 Cc:     linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: [PATCH 0/2] soc: amlogic: ee-pwrc: cleanup init state
-Date:   Wed, 25 Sep 2019 12:12:31 -0700
-Message-Id: <20190925191233.22253-1-khilman@baylibre.com>
+Subject: [PATCH 2/2] soc: amlogic: ee-pwrc: ensure driver state maches HW state
+Date:   Wed, 25 Sep 2019 12:12:33 -0700
+Message-Id: <20190925191233.22253-3-khilman@baylibre.com>
 X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20190925191233.22253-1-khilman@baylibre.com>
+References: <20190925191233.22253-1-khilman@baylibre.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -38,18 +40,63 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Cleanup the PM domain init state and ensure that the driver state
-matches the HW state for all domains.
+During init, ensure that the driver on/off state as well as clock
+state matches the hardware state by calling drivers on/off functions
+based on whether the HW state is on/off.
 
-Tested on meson-sm1-sei610.
+Signed-off-by: Kevin Hilman <khilman@baylibre.com>
+---
+ drivers/soc/amlogic/meson-ee-pwrc.c | 30 +++++++++--------------------
+ 1 file changed, 9 insertions(+), 21 deletions(-)
 
-Kevin Hilman (2):
-  soc: amlogic: ee-pwrc: rename get_power
-  soc: amlogic: ee-pwrc: ensure driver state maches HW state
-
- drivers/soc/amlogic/meson-ee-pwrc.c | 58 ++++++++++++-----------------
- 1 file changed, 23 insertions(+), 35 deletions(-)
-
+diff --git a/drivers/soc/amlogic/meson-ee-pwrc.c b/drivers/soc/amlogic/meson-ee-pwrc.c
+index dcce8e694a07..2cb5341aedfa 100644
+--- a/drivers/soc/amlogic/meson-ee-pwrc.c
++++ b/drivers/soc/amlogic/meson-ee-pwrc.c
+@@ -323,6 +323,8 @@ static int meson_ee_pwrc_init_domain(struct platform_device *pdev,
+ 				     struct meson_ee_pwrc *pwrc,
+ 				     struct meson_ee_pwrc_domain *dom)
+ {
++	bool is_off;
++
+ 	dom->pwrc = pwrc;
+ 	dom->num_rstc = dom->desc.reset_names_count;
+ 	dom->num_clks = dom->desc.clk_names_count;
+@@ -356,27 +358,13 @@ static int meson_ee_pwrc_init_domain(struct platform_device *pdev,
+ 	dom->base.power_on = meson_ee_pwrc_on;
+ 	dom->base.power_off = meson_ee_pwrc_off;
+ 
+-	/*
+-         * TOFIX: This is a special case for the VPU power domain, which can
+-	 * be enabled previously by the bootloader. In this case the VPU
+-         * pipeline may be functional but no driver maybe never attach
+-         * to this power domain, and if the domain is disabled it could
+-         * cause system errors. This is why the pm_domain_always_on_gov
+-         * is used here.
+-         * For the same reason, the clocks should be enabled in case
+-         * we need to power the domain off, otherwise the internal clocks
+-         * prepare/enable counters won't be in sync.
+-         */
+-	if (dom->num_clks && dom->desc.is_off && !dom->desc.is_off(dom)) {
+-		int ret = clk_bulk_prepare_enable(dom->num_clks, dom->clks);
+-		if (ret)
+-			return ret;
+-
+-		pm_genpd_init(&dom->base, &pm_domain_always_on_gov, false);
+-	} else
+-		pm_genpd_init(&dom->base, NULL,
+-			      (dom->desc.is_off ?
+-			       dom->desc.is_off(dom) : true));
++	/* Ensure that driver state matches HW state */
++	is_off = dom->desc.is_off ? dom->desc.is_off(dom) : true;
++	if (is_off)
++		meson_ee_pwrc_off(&dom->base);
++	else 
++		meson_ee_pwrc_on(&dom->base);
++	pm_genpd_init(&dom->base, NULL, is_off);
+ 
+ 	return 0;
+ }
 -- 
 2.22.0
 
