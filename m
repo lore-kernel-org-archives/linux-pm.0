@@ -2,125 +2,91 @@ Return-Path: <SRS0=OGkg=XW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EFC32C4360C
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 16:27:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7576FC4360C
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 16:29:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BD86520872
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 16:27:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ARglq3II"
+	by mail.kernel.org (Postfix) with ESMTP id 44FAB21850
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 16:29:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1569601772;
+	bh=eIYAHQn9C9x770vucfTM0ALtgSftVzg9UfDlM5Y7Ul4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=UDDgW4LBC5KwTGNI06vP1meruM+GapoUpCLk3QFAeJhbE/A4/z75L5vx3KNqEnI+k
+	 CbqDLWFzC1qIyDW/4l9yIPVy9qOrSGzK59c0XdojbLfK7QMN6yCAyyuN8pp2rep5Y7
+	 J54xvwjfZG2nvZJHWVbigK01sqHLlfTBXmifpKnY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727207AbfI0Q1O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Sep 2019 12:27:14 -0400
-Received: from mail-wr1-f65.google.com ([209.85.221.65]:40752 "EHLO
-        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727079AbfI0Q1N (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2019 12:27:13 -0400
-Received: by mail-wr1-f65.google.com with SMTP id l3so3816721wru.7;
-        Fri, 27 Sep 2019 09:27:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=2lCuiRbFgOSM4Ubgy+288vYl4eCNEBz3B+rKFzHjDeg=;
-        b=ARglq3II831kl9SJpiHk4BObl5q90bachb52+Bz99uKW4lGlE2FLntfVndzQk6D9JD
-         YYHLNqZrw03Il/uC5HESYuFjzeo922UfFEZV7pQQERANNqK48OftLcLpMFBOULa0Vqtn
-         8SavKkE13AJISWTaJxCiaxQIlRKyHnvpq6vjaruVBo2ML/LuOHKkZ/ma23nd807n2AVW
-         lw9HmXPGaOJEcBRGQZOVKQ5kt2lrmbphjXS0pC02to4zeqcW5nna2KpGNvcKCPbL29Y0
-         xoliAF4lln25vM1eHoYq68gYbvdpBum5rL1IriHOSBpVT8lL9K41fogVYiOSRbqwhvLA
-         Vlww==
+        id S1727273AbfI0Q3b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Sep 2019 12:29:31 -0400
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:37204 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727079AbfI0Q3b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2019 12:29:31 -0400
+Received: by mail-ot1-f66.google.com with SMTP id k32so2762998otc.4;
+        Fri, 27 Sep 2019 09:29:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=2lCuiRbFgOSM4Ubgy+288vYl4eCNEBz3B+rKFzHjDeg=;
-        b=pBkySAobYllzN21lTplyeN5htB6cAMUglv2yeuML/VbsJ+cuNbgdC79eArLFLTwKut
-         i9bQ1nSe+cUH6Ccr9aBQa5ILzspskLMymbdy27tzxxIO6/dIDWwrzTGHgD13rLElTW8X
-         Y4VbAEHBX0br76oXnwaosW8TEmI8T7ViVg9/rMNscwDM3I9eWrft21wLCNLKsIjG38/a
-         Vfvuubvfhnm7fc9hUPTUZ4IOlsw0OZC8tkDT6SXBj6Wvu9aj7Ge2L9A7ElSj5JWV+ABz
-         zYsWi9UKU/IB4EL+1vthe5XqpkKWNDGnhqFjWOSl0Llxy4CB3rEw9VulbF1+DVB2s7a9
-         y2GQ==
-X-Gm-Message-State: APjAAAVsFoqh5aNz7Ua/AexS4RUfEsoG9/bcrh0KZ/wMx5ChgIVM6fo3
-        VcFe9AyePPGGhGiLAAxWdm+AQvBB
-X-Google-Smtp-Source: APXvYqwepQ/8jJXnJ4c/0HgbDtzW+vuzmS0Fjhppbh3cGGqW+DRpiG8aeCciTNrretkSXaoh2vvI7w==
-X-Received: by 2002:a05:600c:2052:: with SMTP id p18mr7841656wmg.13.1569601629706;
-        Fri, 27 Sep 2019 09:27:09 -0700 (PDT)
-Received: from localhost.localdomain ([2a01:4f8:222:2f1b::2])
-        by smtp.gmail.com with ESMTPSA id o19sm7609986wmh.27.2019.09.27.09.27.08
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=ijPthvXY5MkzJmndJb4QPmgAxNMcU2lPzqEJVv6FKic=;
+        b=JndAQ8C/ST2/qjKS8JZGVGzHI9ae0F2lHMQ37OkbAywWC6Nh+o8RRBwzV0CtwtFhtx
+         HcYvf1D2lGBnRvPPIiLPRyr70ItQr+B9gr1oluLlLYwANz1R/vXkHs5F5M1OpFYug/yt
+         eAihmu4WzQaAbmg7WasdpWEjLwNrZxKN27+iqhveZ+z+FHmjZtipjT6xvYtBAvnY2Ah2
+         werbEFsszDxVO8Z2jfitWT1ET0G502hMPXIu2KeeSxh+AWVW5NFPUqQYgzJxJBTv+4Nj
+         xzUL5l/VarTrCncRiovCLDXu2MdfAz4hndhX2cdN+EflHjo+HsNhuF3hPdsx+FKC8VpH
+         JWOw==
+X-Gm-Message-State: APjAAAX7y4uYh4COQh3Seq6wgsBRJg6beotzYWHoMDFRqebxYiuMs84X
+        nc5DnNQPcTGASG02UnLxTw==
+X-Google-Smtp-Source: APXvYqyD1bsWUu1PkapLS2xhliXVV73CnxU+i/v9UfsVJdpaGaFnJoMTWN/WoU0EM9M/qN8nNCtBJg==
+X-Received: by 2002:a9d:3dca:: with SMTP id l68mr4106313otc.49.1569601770160;
+        Fri, 27 Sep 2019 09:29:30 -0700 (PDT)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id v132sm1832174oif.34.2019.09.27.09.29.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Sep 2019 09:27:09 -0700 (PDT)
-From:   Nathan Chancellor <natechancellor@gmail.com>
-To:     Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        clang-built-linux@googlegroups.com,
-        Nathan Chancellor <natechancellor@gmail.com>
-Subject: [PATCH] tools/power/cpupower: Fix initializer override in hsw_ext_cstates
-Date:   Fri, 27 Sep 2019 09:26:42 -0700
-Message-Id: <20190927162642.2292584-1-natechancellor@gmail.com>
-X-Mailer: git-send-email 2.23.0
+        Fri, 27 Sep 2019 09:29:29 -0700 (PDT)
+Date:   Fri, 27 Sep 2019 11:29:29 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Amit Kucheria <amit.kucheria@linaro.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        bjorn.andersson@linaro.org, edubezval@gmail.com, agross@kernel.org,
+        masneyb@onstation.org, swboyd@chromium.org,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v4 07/15] dt-bindings: thermal: tsens: Convert over to a
+ yaml schema
+Message-ID: <20190927162929.GA27130@bogus>
+References: <cover.1569015835.git.amit.kucheria@linaro.org>
+ <805a2ae9c95f41dc733ccc80346941998e1b230c.1569015835.git.amit.kucheria@linaro.org>
 MIME-Version: 1.0
-X-Patchwork-Bot: notify
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <805a2ae9c95f41dc733ccc80346941998e1b230c.1569015835.git.amit.kucheria@linaro.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When building cpupower with clang, the following warning appears:
+On Fri, 20 Sep 2019 14:52:22 -0700, Amit Kucheria wrote:
+> Older IP only supports the 'uplow' interrupt, but newer IP supports
+> 'uplow' and 'critical' interrupts. Document interrupt support in the
+> tsens driver by converting over to a YAML schema.
+> 
+> Suggested-by: Stephen Boyd <swboyd@chromium.org>
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  .../bindings/thermal/qcom-tsens.txt           |  55 ------
+>  .../bindings/thermal/qcom-tsens.yaml          | 168 ++++++++++++++++++
+>  MAINTAINERS                                   |   1 +
+>  3 files changed, 169 insertions(+), 55 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+>  create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> 
 
- utils/idle_monitor/hsw_ext_idle.c:42:16: warning: initializer overrides
- prior initialization of this subobject [-Winitializer-overrides]
-                 .desc                   = N_("Processor Package C2"),
-                                              ^~~~~~~~~~~~~~~~~~~~~~
- ./utils/helpers/helpers.h:25:33: note: expanded from macro 'N_'
- #define N_(String) gettext_noop(String)
-                                 ^~~~~~
- ./utils/helpers/helpers.h:23:30: note: expanded from macro
- 'gettext_noop'
- #define gettext_noop(String) String
-                              ^~~~~~
- utils/idle_monitor/hsw_ext_idle.c:41:16: note: previous initialization
- is here
-                 .desc                   = N_("Processor Package C9"),
-                                              ^~~~~~~~~~~~~~~~~~~~~~
- ./utils/helpers/helpers.h:25:33: note: expanded from macro 'N_'
- #define N_(String) gettext_noop(String)
-                                 ^~~~~~
- ./utils/helpers/helpers.h:23:30: note: expanded from macro
- 'gettext_noop'
- #define gettext_noop(String) String
-                             ^~~~~~
- 1 warning generated.
-
-This appears to be a copy and paste or merge mistake because the name
-and id fields both have PC9 in them, not PC2. Remove the second
-assignment to fix the warning.
-
-Fixes: 7ee767b69b68 ("cpupower: Add Haswell family 0x45 specific idle monitor to show PC8,9,10 states")
-Link: https://github.com/ClangBuiltLinux/linux/issues/718
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
-index 7c7451d3f494..58dbdfd4fa13 100644
---- a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
-+++ b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
-@@ -39,7 +39,6 @@ static cstate_t hsw_ext_cstates[HSW_EXT_CSTATE_COUNT] = {
- 	{
- 		.name			= "PC9",
- 		.desc			= N_("Processor Package C9"),
--		.desc			= N_("Processor Package C2"),
- 		.id			= PC9,
- 		.range			= RANGE_PACKAGE,
- 		.get_count_percent	= hsw_ext_get_count_percent,
--- 
-2.23.0
-
+Reviewed-by: Rob Herring <robh@kernel.org>
