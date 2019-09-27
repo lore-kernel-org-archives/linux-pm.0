@@ -7,61 +7,61 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC746C388F4
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 12:47:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 347E8C388F3
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 12:48:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 81E5D21850
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 12:47:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0BC882146E
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 12:48:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="hM5HszN1"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="oi7neAwW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727538AbfI0Mr6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Sep 2019 08:47:58 -0400
-Received: from mail-wr1-f67.google.com ([209.85.221.67]:34618 "EHLO
-        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727611AbfI0Mr6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2019 08:47:58 -0400
-Received: by mail-wr1-f67.google.com with SMTP id a11so2612805wrx.1
-        for <linux-pm@vger.kernel.org>; Fri, 27 Sep 2019 05:47:57 -0700 (PDT)
+        id S1727899AbfI0MsK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Sep 2019 08:48:10 -0400
+Received: from mail-wm1-f67.google.com ([209.85.128.67]:35682 "EHLO
+        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727843AbfI0MsD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2019 08:48:03 -0400
+Received: by mail-wm1-f67.google.com with SMTP id y21so6059417wmi.0
+        for <linux-pm@vger.kernel.org>; Fri, 27 Sep 2019 05:48:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20150623.gappssmtp.com; s=20150623;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=K7iwhASPxbBfW+q2EXnPK2zfjdwyLTY+27xuFNIdRtA=;
-        b=hM5HszN16GCur2cmgDofM9AqaYy/8VHWlTMuTYKWxaoCpfe68AbKYf7EgP7AZTtGQV
-         8QNDXtu1HjBkX9ECY6kbivdSZfVJYZTeKsZHaMbuU/sLrONewee0F1UjlotFAULK1C3o
-         /z9KWEDWXZpk/LY86hLqVLE6JoiskNBmKHPiML4PpKE88HOBCkpaexIc0YGwOw4cno4Q
-         15a8we+0SuJt2+CZCC9j4Ve9gg14S6DEGczcfLM/AVRpLfrWYM66YFp4YjgKfrzGxMe2
-         zKPZJzJGzRWIyYFMG0tBMuhPFNRns/rx2Jrh4MfM3e20HwdEmYFkaqe2BP/3sAK2M08R
-         nJBQ==
+        bh=HzQhDkqVyohi8147rI3+BgZwRO47r6m1rOvI8gEcCVQ=;
+        b=oi7neAwW2LPL3XABbjq079ydlG5AqDgyurTggZMicVjKIV5UMxxiyLM+baxNYU7LMn
+         KX0awqzp3ut3v6fG74urUYMNC7Us0TNh9cFPafo8aX6keUN84SNN8/13CiS2mOaNYVXW
+         51GjVuPtTereISnJig7mP/IpoNpIQPIiC9dIHozWqZj8wKaFul+FMr0+2WVtMfP9Pit0
+         iwshl1qVi1DzPPokQOFhT608amsRwajCmDibnhxZ2uNGfJGVClCLRHl2oTzSMrGuU6BL
+         VMNsZeZHCwXRvn8wMc3M95Xc8gy4zBAopdQdfa29TD3KYqD7aefu+UKji02tx/K8JHiL
+         3p0Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=K7iwhASPxbBfW+q2EXnPK2zfjdwyLTY+27xuFNIdRtA=;
-        b=JGbYw3ZpXAXnxjoOmKZhka9XJa3U0qG2CnWxmtjF3Cj/GEW42Dqs+RTSbyMgSc+X2k
-         uJBDco8FFddHCBK8n1zJwg7wIxVkzIeZMxDIk73fv4FmSRwYN6Eq77fVZfc4Y4T7AcYv
-         jEDW6Box6yNGlu6QWCFrucoHIRfPtI5rEcxlWOb5NIRWIF/4KZj9vOmosIegHy1X5JAp
-         wnwj8LwXJ4QTADdyXyLMztunmqAQOEnFuqhMRtlEidGEzdJndAJOCkPrEfeqOi49e9gi
-         zwUIQRm64iwyZL3/hN2da945Rx66i5K25dHVqvw5rsIxcK/VstbHrDQ2IftkktW8UXsF
-         jB3Q==
-X-Gm-Message-State: APjAAAXLnmwbQx6zNvQdcvUBFIS39NWxUYRWkloM6dHOhuA9A5mkCCxo
-        BlR2rlbaJLZ70H2MA9OV1ibuqA==
-X-Google-Smtp-Source: APXvYqwAZclia+Z3ixWm7xB2/jZuLwc25ZPoW5O3SUaOaSe4s8zlVe9XokOOM88zEMRzk8WB6E25Jw==
-X-Received: by 2002:a5d:66d2:: with SMTP id k18mr2807206wrw.7.1569588476337;
-        Fri, 27 Sep 2019 05:47:56 -0700 (PDT)
+        bh=HzQhDkqVyohi8147rI3+BgZwRO47r6m1rOvI8gEcCVQ=;
+        b=ODiUCN1T4GeNU2ENm3F1iXIOh/2ThKjykBOmC8WUTwVjwrRamOHRyPECxuPYUeJ9C6
+         FjqOqP5wTRH86r7lfhM/vnmIatTN227vzG3Tqg5pXGqnDHC/aDQQrih9+jY95KPKzHKj
+         wKi+9Zpe4WTpCuzQ2WBKNm+TkuIpx8XyR2JVEFPmTmBOcBNg0tIdv7/19LFWVnuXsP9q
+         Y1KWU71pYqWMmPZu9CYzBEciQCpl6NaTA71RM3oTZCTCV6ZT43PT9ytfbrpWW0iHhWnl
+         05P1i4Uf/zTUyY8AOs+jlqgHQzRW01RkLlRSe1epYXpW/ridnCwP7Mf2peEqbTQoQpHD
+         whQg==
+X-Gm-Message-State: APjAAAUpBpbrPymHHLmV0VpUMQ/tpmnubiI6NSajWtq8+yZZmXvxNQQB
+        TzIsTf5A991/uzEUvkbCKITN/w==
+X-Google-Smtp-Source: APXvYqy/1/MJyl2yq0JNJ1lJAbS7sXpETew3r6arHgnR/Bo+YJC+IXAdeOl3m8wFVO8i1kW5vfviIg==
+X-Received: by 2002:a1c:6508:: with SMTP id z8mr7418209wmb.93.1569588481463;
+        Fri, 27 Sep 2019 05:48:01 -0700 (PDT)
 Received: from glaroque-ThinkPad-T480.baylibre.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id h9sm2985564wrv.30.2019.09.27.05.47.55
+        by smtp.gmail.com with ESMTPSA id h9sm2985564wrv.30.2019.09.27.05.48.00
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Sep 2019 05:47:55 -0700 (PDT)
+        Fri, 27 Sep 2019 05:48:00 -0700 (PDT)
 From:   Guillaume La Roque <glaroque@baylibre.com>
 To:     amit.kucheria@linaro.org, rui.zhang@intel.com, edubezval@gmail.com,
         daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-amlogic@lists.infradead.org
-Subject: [PATCH v5 4/7] arm64: dts: meson: g12: Add minimal thermal zone
-Date:   Fri, 27 Sep 2019 14:47:45 +0200
-Message-Id: <20190927124750.12467-5-glaroque@baylibre.com>
+Subject: [PATCH v5 7/7] MAINTAINERS: add entry for Amlogic Thermal driver
+Date:   Fri, 27 Sep 2019 14:47:50 +0200
+Message-Id: <20190927124750.12467-10-glaroque@baylibre.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190927124750.12467-1-glaroque@baylibre.com>
 References: <20190927124750.12467-1-glaroque@baylibre.com>
@@ -70,89 +70,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add minimal thermal zone for two temperature sensor
-One is located close to the DDR and the other one is
-located close to the PLLs (between the CPU and GPU)
+Add myself as maintainer for Amlogic Thermal driver.
 
-Acked-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Tested-by: Christian Hewitt <christianshewitt@gmail.com>
-Tested-by: Kevin Hilman <khilman@baylibre.com>
+Reviewed-by: Neil Armstrong <narmstrong@baylibre.com>
 Signed-off-by: Guillaume La Roque <glaroque@baylibre.com>
 ---
- .../boot/dts/amlogic/meson-g12-common.dtsi    | 46 +++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-index 0660d9ef6a86..f98171949fcb 100644
---- a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-+++ b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
-@@ -12,6 +12,7 @@
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/reset/amlogic,meson-axg-audio-arb.h>
- #include <dt-bindings/reset/amlogic,meson-g12a-reset.h>
-+#include <dt-bindings/thermal/thermal.h>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 390c3194ee93..bdc30d740342 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -15932,6 +15932,15 @@ F:	Documentation/driver-api/thermal/cpu-cooling-api.rst
+ F:	drivers/thermal/cpu_cooling.c
+ F:	include/linux/cpu_cooling.h
  
- / {
- 	interrupt-parent = <&gic>;
-@@ -94,6 +95,50 @@
- 		#size-cells = <2>;
- 		ranges;
- 
-+		thermal-zones {
-+			cpu_thermal: cpu-thermal {
-+				polling-delay = <1000>;
-+				polling-delay-passive = <100>;
-+				thermal-sensors = <&cpu_temp>;
++THERMAL DRIVER FOR AMLOGIC SOCS
++M:	Guillaume La Roque <glaroque@baylibre.com>
++L:	linux-pm@vger.kernel.org
++L:	linux-amlogic@lists.infradead.org
++W:	http://linux-meson.com/
++S:	Supported
++F:	drivers/thermal/amlogic_thermal.c
++F:	Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
 +
-+				trips {
-+					cpu_passive: cpu-passive {
-+						temperature = <85000>; /* millicelsius */
-+						hysteresis = <2000>; /* millicelsius */
-+						type = "passive";
-+					};
-+
-+					cpu_hot: cpu-hot {
-+						temperature = <95000>; /* millicelsius */
-+						hysteresis = <2000>; /* millicelsius */
-+						type = "hot";
-+					};
-+
-+				};
-+			};
-+
-+			ddr_thermal: ddr-thermal {
-+				polling-delay = <1000>;
-+				polling-delay-passive = <100>;
-+				thermal-sensors = <&ddr_temp>;
-+
-+				trips {
-+					ddr_passive: ddr-passive {
-+						temperature = <85000>; /* millicelsius */
-+						hysteresis = <2000>; /* millicelsius */
-+						type = "passive";
-+					};
-+				};
-+
-+				cooling-maps {
-+					map {
-+						trip = <&ddr_passive>;
-+						cooling-device = <&mali THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+					};
-+				};
-+			};
-+		};
-+
- 		ethmac: ethernet@ff3f0000 {
- 			compatible = "amlogic,meson-axg-dwmac",
- 				     "snps,dwmac-3.70a",
-@@ -2412,6 +2457,7 @@
- 			assigned-clock-rates = <0>, /* Do Nothing */
- 					       <800000000>,
- 					       <0>; /* Do Nothing */
-+			#cooling-cells = <2>;
- 		};
- 	};
- 
+ THINKPAD ACPI EXTRAS DRIVER
+ M:	Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>
+ L:	ibm-acpi-devel@lists.sourceforge.net
 -- 
 2.17.1
 
