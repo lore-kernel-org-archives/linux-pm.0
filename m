@@ -7,61 +7,61 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B3A6C47404
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 12:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41DC0C4360C
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 12:47:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1300D2146E
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 12:47:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 178412146E
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Sep 2019 12:47:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="OQhpBfcp"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="IbvIMhs+"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726203AbfI0Mrz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Sep 2019 08:47:55 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:45085 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725992AbfI0Mry (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2019 08:47:54 -0400
-Received: by mail-wr1-f66.google.com with SMTP id r5so2555840wrm.12
-        for <linux-pm@vger.kernel.org>; Fri, 27 Sep 2019 05:47:53 -0700 (PDT)
+        id S1727758AbfI0Mr6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Sep 2019 08:47:58 -0400
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:36792 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727608AbfI0Mr6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Sep 2019 08:47:58 -0400
+Received: by mail-wm1-f65.google.com with SMTP id m18so6047807wmc.1
+        for <linux-pm@vger.kernel.org>; Fri, 27 Sep 2019 05:47:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=baylibre-com.20150623.gappssmtp.com; s=20150623;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=aeDGNakdvDCwTy0gCOMkwdHE4LANquitP3dscaSQqkM=;
-        b=OQhpBfcpOsi75i7MK05zao1qNF+c6CA+789h6xIiZbaDZTePZbFMkmg4+S/AkzcybG
-         s7LtOeJQEcM8Tg2mrsr7mcQ4Dz62a0iXZ6Oxx/OF81hRye25+jReaG5Kd/0cpcNN7W4B
-         LBjxld9HzH5mJGAlsqhwA/oYdIoeaOr8755YGFEYlAcq7rFMNnWX1Gwe5SrotyjC7AXp
-         e3+i+owHxRsDsYcl7v04KzuyKUF9PCsW9Y34C8h0773Dqxmz0/024Vm4w2GUccQHeLYE
-         NSOCUXSU3w63EbbIWalilUPUGw52KumrautjQxf3Pbdb3kBLBObppu2UKRHr53CCaut9
-         1evg==
+        bh=uFRkuroOBs+uKwTPCimySu+UhJ9t5OAbbzvyFqNj3Aw=;
+        b=IbvIMhs+m82DKjlxmxk0KpabMZlkRk9aSH5y7m0WMKNaE/mPbNTvN1MMJn2rZWSpFm
+         osUpuPBHwajyNIgPo7qTrV/0yrPwPLFjQbI0jVRZsSKArdli/vih9wM64MEHcNxpqHdk
+         WO+VDoQkUsVjM6VKgCFC0vpUUUFdc0AAJ6baqTRGuGXwmt8WrhPNDhC6vt9qYU70TPFP
+         6cqZ6jXeg6FgaROINu2jYzBNrOjPzi/wIYCNwEvTN3ak39a9n87GVYe1dtV+Qh2u21vk
+         YKgYN+feGNtlbmmosfTegWr1Zt2SwCV24NMYw4CsQUG+CCcJO2qgT7IQn+HXeTe2Z/cG
+         7k6A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=aeDGNakdvDCwTy0gCOMkwdHE4LANquitP3dscaSQqkM=;
-        b=Xnr3mN36tD1xfLQVDi1C3TA5CrnKynYJEOpqLgRe8ALkUTPI3ArS5YlvpAfQkjwUU3
-         oy42t+Pb81nC5fZzV/kXyJ5WkwyAZztTP6nfUEhGN9TtxqiKHZKPBCMb/O3MuWZqFakQ
-         VJPMfo30g2fUex2Y9OnuVHvCGLjqZfMsQFN85XwU63/cSeVOfADX4UxRJGfjCi/NDMnr
-         XeMJ3NLtmv4Eb2uFOpIgpRzIyWcrATsZkUICIOMWY/KDTaxy666kugdYKOxP48lCZJ+b
-         qjd2KpYCeNkVKSbKqyp1/lNWSKcdpquuPDq3pHbhS+/7+5b4xFCAQDQ3NCEutKkyr6zR
-         t0Wg==
-X-Gm-Message-State: APjAAAXn5zUx42WrberXd8SIZQIBlrfN6ZkrnanQE4v/3lVDODfMWOWj
-        CPhIRpUsweGC9QRMC0wWZwzsRA==
-X-Google-Smtp-Source: APXvYqypZkDa1uq/ObhGW89r/AheycuvvS28MTywJ+8XL10HzmA4LvD0u/6iYpeX3B26TIElBWdLww==
-X-Received: by 2002:a5d:620d:: with SMTP id y13mr2717814wru.86.1569588473023;
-        Fri, 27 Sep 2019 05:47:53 -0700 (PDT)
+        bh=uFRkuroOBs+uKwTPCimySu+UhJ9t5OAbbzvyFqNj3Aw=;
+        b=mG/fS9MothsHZBiFHTVXsWphXQoStjnSmtLU77K35TnT9yHEjj8r28Q5x5VuYD5Kfg
+         RWgK3lZh8fmz4iEU3a5x38gAHeKI2ZzW7QIUpY2YE9FVAenG5wPz1vFdhNckNLdhIIhQ
+         JXNz/DpH4DH8ulIvlTcq0SDtmxE2nKhGos0DcmfnmMVudNF7/raY0C75+ViyXJIYcdQ6
+         d9ew3A8xANlLw74vL6nmXE7iYS64onkRQ3tcJcxk12laeR1VdYb5FD/75+u8A5dZ43Th
+         h/U6AdoPEZr/xYRD8ZUEfFzTBLTkzIrTUgMhOpCZVYg0ITWl9gilk0DmNPXMOKlHYiSq
+         OwYw==
+X-Gm-Message-State: APjAAAVzN4FjFiqTJ4b3K2TOY310PMFnU/w5b5G92/hmwCyvGsz5/sgb
+        rO6MoxMmRLmBr9Rf2nsfsEB/fA==
+X-Google-Smtp-Source: APXvYqzkhXyxkYDZ2LWI+X/CiVCmdmGFOljhWnQ2h3Igjxu8Dl9JkvFJINOwIZjIcCRWLVHGYGy5iw==
+X-Received: by 2002:a05:600c:1009:: with SMTP id c9mr6777747wmc.64.1569588475224;
+        Fri, 27 Sep 2019 05:47:55 -0700 (PDT)
 Received: from glaroque-ThinkPad-T480.baylibre.local (lmontsouris-657-1-212-31.w90-63.abo.wanadoo.fr. [90.63.244.31])
-        by smtp.gmail.com with ESMTPSA id h9sm2985564wrv.30.2019.09.27.05.47.51
+        by smtp.gmail.com with ESMTPSA id h9sm2985564wrv.30.2019.09.27.05.47.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Sep 2019 05:47:52 -0700 (PDT)
+        Fri, 27 Sep 2019 05:47:54 -0700 (PDT)
 From:   Guillaume La Roque <glaroque@baylibre.com>
 To:     amit.kucheria@linaro.org, rui.zhang@intel.com, edubezval@gmail.com,
         daniel.lezcano@linaro.org
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-amlogic@lists.infradead.org
-Subject: [PATCH v5 1/7] dt-bindings: thermal: Add DT bindings documentation for Amlogic Thermal
-Date:   Fri, 27 Sep 2019 14:47:42 +0200
-Message-Id: <20190927124750.12467-2-glaroque@baylibre.com>
+Subject: [PATCH v5 3/7] arm64: dts: amlogic: g12: add temperature sensor
+Date:   Fri, 27 Sep 2019 14:47:44 +0200
+Message-Id: <20190927124750.12467-4-glaroque@baylibre.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20190927124750.12467-1-glaroque@baylibre.com>
 References: <20190927124750.12467-1-glaroque@baylibre.com>
@@ -70,78 +70,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Adding the devicetree binding documentation for the Amlogic temperature
-sensor found in the Amlogic Meson G12A and G12B SoCs.
+Add cpu and ddr temperature sensors for G12 Socs
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
 Tested-by: Christian Hewitt <christianshewitt@gmail.com>
 Tested-by: Kevin Hilman <khilman@baylibre.com>
 Signed-off-by: Guillaume La Roque <glaroque@baylibre.com>
 ---
- .../bindings/thermal/amlogic,thermal.yaml     | 54 +++++++++++++++++++
- 1 file changed, 54 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+ .../boot/dts/amlogic/meson-g12-common.dtsi    | 20 +++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-new file mode 100644
-index 000000000000..f761681e4c0d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
-@@ -0,0 +1,54 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/amlogic,thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
+index 38d70ce1cfc7..0660d9ef6a86 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
+@@ -1353,6 +1353,26 @@
+ 				};
+ 			};
+ 
++			cpu_temp: temperature-sensor@34800 {
++				compatible = "amlogic,g12a-cpu-thermal",
++					     "amlogic,g12a-thermal";
++				reg = <0x0 0x34800 0x0 0x50>;
++				interrupts = <GIC_SPI 35 IRQ_TYPE_EDGE_RISING>;
++				clocks = <&clkc CLKID_TS>;
++				#thermal-sensor-cells = <0>;
++				amlogic,ao-secure = <&sec_AO>;
++			};
 +
-+title: Amlogic Thermal
++			ddr_temp: temperature-sensor@34c00 {
++				compatible = "amlogic,g12a-ddr-thermal",
++					     "amlogic,g12a-thermal";
++				reg = <0x0 0x34c00 0x0 0x50>;
++				interrupts = <GIC_SPI 36 IRQ_TYPE_EDGE_RISING>;
++				clocks = <&clkc CLKID_TS>;
++				#thermal-sensor-cells = <0>;
++				amlogic,ao-secure = <&sec_AO>;
++			};
 +
-+maintainers:
-+  - Guillaume La Roque <glaroque@baylibre.com>
-+
-+description: Binding for Amlogic Thermal
-+
-+properties:
-+  compatible:
-+      items:
-+        - enum:
-+            - amlogic,g12a-cpu-thermal
-+            - amlogic,g12a-ddr-thermal
-+        - const: amlogic,g12a-thermal
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  amlogic,ao-secure:
-+    description: phandle to the ao-secure syscon
-+    $ref: '/schemas/types.yaml#/definitions/phandle'
-+
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - clocks
-+  - amlogic,ao-secure
-+
-+examples:
-+  - |
-+        cpu_temp: temperature-sensor@ff634800 {
-+                compatible = "amlogic,g12a-cpu-thermal",
-+                             "amlogic,g12a-thermal";
-+                reg = <0xff634800 0x50>;
-+                interrupts = <0x0 0x24 0x0>;
-+                clocks = <&clk 164>;
-+                #thermal-sensor-cells = <0>;
-+                amlogic,ao-secure = <&sec_AO>;
-+        };
-+...
+ 			usb2_phy0: phy@36000 {
+ 				compatible = "amlogic,g12a-usb2-phy";
+ 				reg = <0x0 0x36000 0x0 0x2000>;
 -- 
 2.17.1
 
