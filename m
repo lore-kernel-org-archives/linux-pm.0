@@ -2,136 +2,179 @@ Return-Path: <SRS0=aEsM=XY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A2FBC4360C
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Sep 2019 18:01:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7C61C4360C
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Sep 2019 18:19:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7723221925
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Sep 2019 18:01:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BF25821882
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Sep 2019 18:19:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jEkRti53"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TgW9h/Qp"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729213AbfI2SAN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 29 Sep 2019 14:00:13 -0400
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:33794 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729022AbfI2SAN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Sep 2019 14:00:13 -0400
-Received: by mail-lj1-f193.google.com with SMTP id j19so7125096lja.1;
-        Sun, 29 Sep 2019 11:00:11 -0700 (PDT)
+        id S1729120AbfI2STS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 29 Sep 2019 14:19:18 -0400
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:36996 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729044AbfI2STS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Sep 2019 14:19:18 -0400
+Received: by mail-pf1-f194.google.com with SMTP id y5so4225258pfo.4
+        for <linux-pm@vger.kernel.org>; Sun, 29 Sep 2019 11:19:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=hb10u+5FTmJk4Ov2bvkx+DvcjkejWf8nRCYDqHfhxFs=;
-        b=jEkRti53uzQ/wwAgHw3isn/r1DUVfAcnhnVf+caN1qoNtV8C2z0dc07uMUxWpc3qXQ
-         LV87UD9YX/htWOt6ZnjjuNYxKsvlybnvbkcZcteDQ2iBbe8oi9ySqn24IxT+MiUxOAyj
-         d9s7o9O+Mt/Pz/2gTgihD16xYGMFFvJyno8MJ6+srEiY7OyxVrF2SIy5QA9HPzOTMUgZ
-         7JFJ/8EclvgokkLb2wmDkNKVI+RfSsnYBXoCDwv/q6k7I9cqPMbHne5XVKpjs1AD8uz2
-         myZ+I+rCV8Sxnev1sQErd3MGEjDnvlUjpLgsTDV967JVmeTuobCkUugo/TS+Eo6cjwgo
-         zDvg==
+        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
+         :user-agent;
+        bh=65Whwopcw85NQTCWGFtmXbrzKQyWnHggD3EOKfGTEwM=;
+        b=TgW9h/Qpup/7ceB8FSCXKEO5Bc7K04xHHs63oMT0mSDMTPU5QC1Bou0Wg9Yz2grZ+G
+         V0SEJViqn1PhhF93Dfqxyz81eUVvp1J6g0M7+VRFSKRUxw4m9yXWPHawCViS11Xobbta
+         Jzl22ilhL5YB9KOKJs43teGgQLvkyvyFqb3HigTle5cjCoFiX94ffh/gcStiTafbfLkh
+         5sutP4w83spLuoENDbL/LZObaWF3NnLCGYdD79lRK0reECyh51xYOH0sEn8nH/xi3X2H
+         mw1ojGq/bKxKdMPuvJjKiSw4PlPfyvXg6/Ho1U9S5wxREejNMv2gaMNW9E12s0xZzJ/+
+         iRDA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=hb10u+5FTmJk4Ov2bvkx+DvcjkejWf8nRCYDqHfhxFs=;
-        b=J+SolWxgZzJN3e7JQTsduWXWWLO/FPJPhectAT1mCRiYAGphACrQH0RT20XeLGYw4v
-         rfZzfENXh7mfAK/gLwyX+19f9uMfPk4ZUcHbZ+ZsSMJIHON0aL/1z5sjXrbBadpnUlVH
-         QqGug6IJS+wfBybX2k3ZlLhYeIJyNRTVpeP/6RmGylf5eSNv40tiDRS4p1c6P0YLXWkx
-         oVOR0M5tHcLt2UP8AEbePitlPs4oDEzlyyh2/T3jyjmWCjtbcbyxsIsbufopWoNbqgJQ
-         L6uBc1bsD/MIOzYkJdXaRS80kPcuzkKUuYVKGkwL0TDsLhPhC+z7Yci9axdHzAKZDb2b
-         APqg==
-X-Gm-Message-State: APjAAAUSFxQFopyhZRf3VCEaMfyay6ShEzGKVWIJPIN7DXAKcsl87dOW
-        TwRFyac+m73CtxIq81Fd4UPfPTYn
-X-Google-Smtp-Source: APXvYqymnfaHb1KTiEwwOGyKrX3EBgNSg9249nqO2pYjwowQ5RKJ4/YQ1pghOnwwn9JKfAheibJdpA==
-X-Received: by 2002:a2e:9a83:: with SMTP id p3mr9684509lji.136.1569780011032;
-        Sun, 29 Sep 2019 11:00:11 -0700 (PDT)
-Received: from localhost.localdomain (ppp94-29-32-67.pppoe.spdop.ru. [94.29.32.67])
-        by smtp.gmail.com with ESMTPSA id y3sm2355511lfh.97.2019.09.29.11.00.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 29 Sep 2019 11:00:10 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v5 03/14] ARM: tegra: Propagate error from tegra_idle_lp2_last()
-Date:   Sun, 29 Sep 2019 20:59:41 +0300
-Message-Id: <20190929175952.22690-4-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20190929175952.22690-1-digetx@gmail.com>
-References: <20190929175952.22690-1-digetx@gmail.com>
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+         :content-disposition:user-agent;
+        bh=65Whwopcw85NQTCWGFtmXbrzKQyWnHggD3EOKfGTEwM=;
+        b=ksKpCfI6WRNGzyjz4hDLCOoghJv/eOgBqc622/DbsEb72aIW78UonXS9otPlaGmjsm
+         mQDyCHJ8fyzWqkmLgIdjJY9Qj1RNUs0DLlkNl7dedeePZnNIuA+PbAbNJgS4umNRBTLs
+         unWdbHMbO0mCZqM0z3TZeqgPY4zc3hyMl+FGQ1jIYXhvbxpcm7Hq4fvyG/c5c4VddNo9
+         ZVGN9o0lGv1KNBuuzZbrThezyyZQFjh2NZOIP6pAdYvW8QRjajxS1L5AOnJ90jRcL0Gb
+         t9y1sZ4rod7cYWeIzkkGD4bVdSwUIW2YLd9cOZEV2G2cDx4U1+arL0LX0h8wkpRAgGAS
+         3Gng==
+X-Gm-Message-State: APjAAAVWo/+zV0f9tRAfj/M+C/Jpgjqsvl2t58BXv31N9t7Ya1+a/7KJ
+        ELlMeZYNyj3OSBRoYZyODS0FRmfMQeE=
+X-Google-Smtp-Source: APXvYqwS4tHcNc+ngdA6Ge+YXyySNlu68rZXMLNbhMRmpTMRUcfiSVC8NoaE+4gQCXWkFYul+SgiGg==
+X-Received: by 2002:a63:a051:: with SMTP id u17mr20100481pgn.7.1569781156271;
+        Sun, 29 Sep 2019 11:19:16 -0700 (PDT)
+Received: from madhuparna-HP-Notebook ([2402:3a80:51e:fd84:cd82:94a1:ffba:66f9])
+        by smtp.gmail.com with ESMTPSA id k3sm12116276pgl.9.2019.09.29.11.19.14
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Sun, 29 Sep 2019 11:19:15 -0700 (PDT)
+Date:   Sun, 29 Sep 2019 23:49:10 +0530
+From:   Madhuparna Bhowmik <madhuparnabhowmik04@gmail.com>
+To:     linux-pm@vger.kernel.org
+Cc:     sre@kernel.org, madhuparnabhowmik03@gmail.com,
+        linux-kernel-mentees@lists.linuxfoundation.org
+Subject: [PATCH 4/4] Driver: Power: Supply: abx500_chargalg: Fixed a few
+ coding style errors
+Message-ID: <20190929181906.GA21828@madhuparna-HP-Notebook>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cpu_suspend() may fail, it's never good to lose information about
-failure because it may become very useful for the caller. The new CPUIDLE
-driver will handle all of possible error cases, including the case of
-tegra_idle_lp2_last() failure.
+This patch fixes a few coding style errors and warnings
+detected by checkpatch.pl:
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+WARNING: please, no space before tabs
+ERROR: code indent should use tabs where possible
+WARNING: please, no spaces at the start of a line
+WARNING: Unnecessary parentheses
+WARNING: Block comments use a trailing */ on a separate line
+WARNING: Prefer 'long' over 'long int' as the int is unnecessary
+
+Signed-off-by: Madhuparna Bhowmik <madhuparnabhowmik04@gmail.com>
 ---
- arch/arm/mach-tegra/pm.c | 8 ++++++--
- arch/arm/mach-tegra/pm.h | 2 +-
- 2 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/power/supply/abx500_chargalg.c | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/pm.c b/arch/arm/mach-tegra/pm.c
-index 2f6fb54be9f8..f9c9bce9e15d 100644
---- a/arch/arm/mach-tegra/pm.c
-+++ b/arch/arm/mach-tegra/pm.c
-@@ -189,14 +189,16 @@ static void tegra_pm_set(enum tegra_suspend_mode mode)
- 	tegra_pmc_enter_suspend_mode(mode);
- }
+diff --git a/drivers/power/supply/abx500_chargalg.c b/drivers/power/supply/abx500_chargalg.c
+index 23757fb10479..a779fcabe3c6 100644
+--- a/drivers/power/supply/abx500_chargalg.c
++++ b/drivers/power/supply/abx500_chargalg.c
+@@ -219,7 +219,7 @@ enum maxim_ret {
+  * @chg_info:		information about connected charger types
+  * @batt_data:		data of the battery
+  * @susp_status:	current charger suspension status
+- * @bm:           	Platform specific battery management information
++ * @bm:			Platform specific battery management information
+  * @curr_status:	Current step status for over-current protection
+  * @parent:		pointer to the struct abx500
+  * @chargalg_psy:	structure that holds the battery properties exposed by
+@@ -354,13 +354,13 @@ static int abx500_chargalg_check_charger_enable(struct abx500_chargalg *di)
  
--void tegra_idle_lp2_last(void)
-+int tegra_idle_lp2_last(void)
+ 	if (di->chg_info.charger_type & USB_CHG) {
+ 		return di->usb_chg->ops.check_enable(di->usb_chg,
+-                         di->bm->bat_type[di->bm->batt_id].normal_vol_lvl,
+-                         di->bm->bat_type[di->bm->batt_id].normal_cur_lvl);
++			di->bm->bat_type[di->bm->batt_id].normal_vol_lvl,
++			di->bm->bat_type[di->bm->batt_id].normal_cur_lvl);
+ 	} else if ((di->chg_info.charger_type & AC_CHG) &&
+ 		   !(di->ac_chg->external)) {
+ 		return di->ac_chg->ops.check_enable(di->ac_chg,
+-                         di->bm->bat_type[di->bm->batt_id].normal_vol_lvl,
+-                         di->bm->bat_type[di->bm->batt_id].normal_cur_lvl);
++			di->bm->bat_type[di->bm->batt_id].normal_vol_lvl,
++			di->bm->bat_type[di->bm->batt_id].normal_cur_lvl);
+ 	}
+ 	return 0;
+ }
+@@ -865,7 +865,7 @@ static enum maxim_ret abx500_chargalg_chg_curr_maxim(struct abx500_chargalg *di)
+ 
+ 	di->ccm.wait_cnt = 0;
+ 
+-	if ((di->batt_data.inst_curr > di->ccm.original_iset)) {
++	if (di->batt_data.inst_curr > di->ccm.original_iset) {
+ 		dev_dbg(di->dev, " Maximization Ibat (%dmA) too high"
+ 			" (limit %dmA) (current iset: %dmA)!\n",
+ 			di->batt_data.inst_curr, di->ccm.original_iset,
+@@ -967,7 +967,8 @@ static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
+ 
+ 		/*
+ 		 * Initialize chargers if not already done.
+-		 * The ab8500_charger*/
++		 * The ab8500_charger
++		 */
+ 		if (!di->ac_chg &&
+ 			ext->desc->type == POWER_SUPPLY_TYPE_MAINS)
+ 			di->ac_chg = psy_to_ux500_charger(ext);
+@@ -1173,7 +1174,8 @@ static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
+ 			switch (ext->desc->type) {
+ 			case POWER_SUPPLY_TYPE_MAINS:
+ 				/* AVG is used to indicate when we are
+-				 * in CV mode */
++				 * in CV mode
++				 */
+ 				if (ret.intval)
+ 					di->events.ac_cv_active = true;
+ 				else
+@@ -1182,7 +1184,8 @@ static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
+ 				break;
+ 			case POWER_SUPPLY_TYPE_USB:
+ 				/* AVG is used to indicate when we are
+-				 * in CV mode */
++				 * in CV mode
++				 */
+ 				if (ret.intval)
+ 					di->events.usb_cv_active = true;
+ 				else
+@@ -1750,7 +1753,7 @@ static ssize_t abx500_chargalg_curr_step_show(struct abx500_chargalg *di,
+ static ssize_t abx500_chargalg_curr_step_store(struct abx500_chargalg *di,
+ 					       const char *buf, size_t length)
  {
-+	int err;
-+
- 	tegra_pm_set(TEGRA_SUSPEND_LP2);
+-	long int param;
++	long param;
+ 	int ret;
  
- 	cpu_cluster_pm_enter();
- 	suspend_cpu_complex();
+ 	ret = kstrtol(buf, 10, &param);
+@@ -1783,7 +1786,7 @@ static ssize_t abx500_chargalg_en_show(struct abx500_chargalg *di,
+ static ssize_t abx500_chargalg_en_store(struct abx500_chargalg *di,
+ 	const char *buf, size_t length)
+ {
+-	long int param;
++	long param;
+ 	int ac_usb;
+ 	int ret;
  
--	cpu_suspend(PHYS_OFFSET - PAGE_OFFSET, &tegra_sleep_cpu);
-+	err = cpu_suspend(PHYS_OFFSET - PAGE_OFFSET, &tegra_sleep_cpu);
- 
- 	/*
- 	 * Resume L2 cache if it wasn't re-enabled early during resume,
-@@ -208,6 +210,8 @@ void tegra_idle_lp2_last(void)
- 
- 	restore_cpu_complex();
- 	cpu_cluster_pm_exit();
-+
-+	return err;
- }
- 
- enum tegra_suspend_mode tegra_pm_validate_suspend_mode(
-diff --git a/arch/arm/mach-tegra/pm.h b/arch/arm/mach-tegra/pm.h
-index 3f3164ad04b7..ae68fc7db576 100644
---- a/arch/arm/mach-tegra/pm.h
-+++ b/arch/arm/mach-tegra/pm.h
-@@ -25,7 +25,7 @@ void tegra30_sleep_core_init(void);
- 
- void tegra_clear_cpu_in_lp2(void);
- void tegra_set_cpu_in_lp2(void);
--void tegra_idle_lp2_last(void);
-+int tegra_idle_lp2_last(void);
- extern void (*tegra_tear_down_cpu)(void);
- 
- #ifdef CONFIG_PM_SLEEP
 -- 
-2.23.0
+2.17.1
 
