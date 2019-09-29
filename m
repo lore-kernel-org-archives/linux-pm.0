@@ -1,112 +1,121 @@
-Return-Path: <SRS0=GxSy=XX=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=aEsM=XY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0B16C4360C
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Sep 2019 23:12:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F352C4360C
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Sep 2019 16:05:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C70B52146E
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Sep 2019 23:12:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 51F7C21835
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Sep 2019 16:05:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="I9UDzWtG"
+	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="PMzYdUCe"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728877AbfI1XMk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Sep 2019 19:12:40 -0400
-Received: from mail-pf1-f195.google.com ([209.85.210.195]:41608 "EHLO
-        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728666AbfI1XMj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Sep 2019 19:12:39 -0400
-Received: by mail-pf1-f195.google.com with SMTP id q7so3468445pfh.8;
-        Sat, 28 Sep 2019 16:12:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
-         :user-agent;
-        bh=lNZrzq4ZFFPrX0MTl+M498nYJtUFl4tpzfGqtmJqwcI=;
-        b=I9UDzWtG5ZUny0q4yWYmOR4H8K7qYtcnS7BEFTS7vaeVBSKCGtM+qrPgWEtugKT1mh
-         SwiW15+gci+ED9BjD1M75oWaIzW6N/c4WYwmn9M/+VQxtO5OKq2la7k+kXVA4rkuN0oI
-         PxMAr/z3t/IXwdjUmjr+3IR8nMt8ac3Cmhxh1qkWp1JXd3lfdQ2NuX7X+XFuyqtXSoih
-         KL4/0VCuoC80ALHHCRshcZkMqm2SVSF4rTakNY8aNwRVLE0a9ERlEdA68bWgUL/1Jg3f
-         OBV4L8y3iyUNTECFiwQzuqdOD2i/PNsY0PhS1bEG+gh1mALjWZj3cMQXS2Kn5vldAJP+
-         krCw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
-         :content-disposition:user-agent;
-        bh=lNZrzq4ZFFPrX0MTl+M498nYJtUFl4tpzfGqtmJqwcI=;
-        b=ckCW7t4xj4DgjyOhV41LLxaB6anQz8E7s4Tzp2LzE/AAn8U2NB8w8WdLqerTW7xCAg
-         YvNMlHisp+rLT2zZupqW0HwCxfB1MlKawMDo7sfnyQRDNcWTVhxQiZE9tGQhCWVJfKoz
-         U2XlWIV603ROONNe9eBHuTwLvKp5/4IvCOdy9NbZijmglaSXFez/9uHRnbxLHcKPJ0b6
-         rP50WbVtBm6RYq6X0z28Sj+wVdn85JWU0sbC/fkAeo6x9h+y3dA/kRKiRbTzGT26A5jw
-         9ZhTHgH8WsIqrISTLa65Me49xlyA0OURrNNdQHY9R4oegPy//zcqSfqYMe9NMVDuZb3m
-         HyAw==
-X-Gm-Message-State: APjAAAWvYVDlafhQzD2bwxwU4FvMTkQxGa9wOTe8sXhZMT0ek+jXa+S6
-        UyCkDshBHFzir7lO1pia2EY=
-X-Google-Smtp-Source: APXvYqytmRo7xCnVrcWcE5cZXb/tDBqsxGrous6RdG6Jj7jkX/YY7EFEN1bkHopa4BbpOuqRv0qTCw==
-X-Received: by 2002:a63:4381:: with SMTP id q123mr16706745pga.169.1569712358821;
-        Sat, 28 Sep 2019 16:12:38 -0700 (PDT)
-Received: from localhost.localdomain ([2601:644:8201:32e0:7256:81ff:febd:926d])
-        by smtp.gmail.com with ESMTPSA id s17sm14607186pgg.77.2019.09.28.16.12.38
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sat, 28 Sep 2019 16:12:38 -0700 (PDT)
-Date:   Sat, 28 Sep 2019 16:12:36 -0700
-From:   Eduardo Valentin <edubezval@gmail.com>
-To:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Rui Zhang <rui.zhang@intel.com>
-Cc:     ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] Thermal-SoC management changes for v5.4-rc1
-Message-ID: <20190928231236.GD7360@localhost.localdomain>
+        id S1725948AbfI2QFG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 29 Sep 2019 12:05:06 -0400
+Received: from cmta20.telus.net ([209.171.16.93]:54472 "EHLO cmta20.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726018AbfI2QFG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 29 Sep 2019 12:05:06 -0400
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id Ebgwiliw2N5I9Ebgxinmno; Sun, 29 Sep 2019 10:05:04 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1569773104; bh=CJQ87ZzpO9IqG72eA+TgWxmbKOsF+7vh52cSQ42MqWs=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=PMzYdUCepAiTqiZov//Ksvi2NGML2+wILAwPLaBdJvo2eNvhdWkan+E9rgDgsnHr6
+         VdXMUSMA+Y2ab8rWVS6OEdsh/iwIYYlOtZLFpeTW71q8tEqJ5qnSW6tGZ4jAFZxVfn
+         Ti47DSBobw2uikwJAcMTn1BgzZffy5QRI5899hF5uJ7rwlXSqhCKGnw9/9pa6oY7Tq
+         c6fdMCTbMWdZf8eVI+GlqqS2dH51QGPSb6y0+N+QDk3ju5OnGI1IUZRsQ10YseFl3i
+         m5DMu3Zo/5gx/3++dKPgfGjImPxlWrGbMINXeQPu5gGrX4rubbau5e0CoRqZ9WSWo4
+         vH+K5V4yUEd9g==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.3 cv=K/Fc4BeI c=1 sm=1 tr=0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=jpOVt7BSZ2e4Z31A5e1TngXxSK0=:19
+ a=kj9zAlcOel0A:10 a=I8o6C4CDd1cejXE1t-8A:9 a=7Zwj6sZBwVKJAoWSPKxL6X1jA+E=:19
+ a=CjuIK1q_8ugA:10
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc:     "'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>,
+        "'Peter Zijlstra'" <peterz@infradead.org>,
+        "'LKML'" <linux-kernel@vger.kernel.org>,
+        "'Frederic Weisbecker'" <frederic@kernel.org>,
+        "'Mel Gorman'" <mgorman@suse.de>,
+        "'Daniel Lezcano'" <daniel.lezcano@linaro.org>,
+        "'Chen, Hu'" <hu1.chen@intel.com>,
+        "'Quentin Perret'" <quentin.perret@arm.com>,
+        "'Linux PM'" <linux-pm@vger.kernel.org>,
+        "'Giovanni Gherdovich'" <ggherdovich@suse.cz>
+References: WgXvgFd5aBdpLWgY0gWTga <001601d57487$e1029ef0$a307dcd0$@net>
+In-Reply-To: <001601d57487$e1029ef0$a307dcd0$@net>
+Subject: RE: [RFC/RFT][PATCH v8] cpuidle: New timer events oriented governor for tickless systems
+Date:   Sun, 29 Sep 2019 09:04:56 -0700
+Message-ID: <000f01d576df$a6b87a30$f4296e90$@net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.23 (2014-03-12)
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AdSRR6W+nknzDAweSJ6DmHc6MWYLQjjLqLuAAJlpaNA=
+Content-Language: en-ca
+X-CMAE-Envelope: MS4wfNd4PLcYlWcYTmKMQ0x0mxpaSmVGCF0vsHot2FUBNEc9dQIqHC+IRfibA6ofm8HsHJyzySgJFJguxnbnakarg7/zbJwbYCiTBAG7azFB+lYBfQUfRP8/
+ cDcOliEGEz0tcIBrw9KMOaqM/+wqclTQu7a4llPFMZIsNCP5joCtiSR0EcwbpR4t9CEOqClC32vF/ZYwlaQ6q4RIWfXF6Q+DegCk63VWIpIsuduoCwBXUlEa
+ yOZM5dS5h/8UjGwOQCmQowd9IKW6e6FWL8wXTT9HbOZHXYmJhxI8S8SvvvCekYIOdVUsQS+kJB+Y4VOAnAmVPFFQGAgYmHpbVGqRvuJIoWU1FCW2UJsvItc/
+ XudAcIREMUxewyDV0px+q9AxwuawG9jJeRnuLs1c6SZccgPqTnjyX0b9/XI+zvz7YWHKyUqZiZ3RI8SOuZHoFdcDJ+SgW8Ekk3GSJkBYK6c5I7dzdps0tuUv
+ lAYI7hZyK2BdMP/iAmoPyk1bsrogvnZUbBvtIQ==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello Linus,
+On 2019.09.26 09:32 Doug Smythies wrote:
 
-Please consider the following thermal soc changes for v5.4-rc1. This is a really
-small pull in the midst of a lot of pending patches. We are in the middle
-of restructuring how we are maintaining the thermal subsystem, as per
-discussion in our last LPC. For now, I am sending just some changes
-that were pending in my tree. Looking forward to get a more streamlined
-process in the next merge window.
+> If the deepest idle state is disabled, the system
+> can become somewhat unstable, with anywhere between no problem
+> at all, to the occasional temporary jump using a lot more
+> power for a few seconds, to a permanent jump using a lot more
+> power continuously. I have been unable to isolate the exact
+> test load conditions under which this will occur. However,
+> temporarily disabling and then enabling other idle states
+> seems to make for a somewhat repeatable test. It is important
+> to note that the issue occurs with only ever disabling the deepest
+> idle state, just not reliably.
+>
+> I want to know how you want to proceed before I do a bunch of
+> regression testing.
 
-The following changes since commit 56037cadf60461b4a2996b4d8f0057c4d343c17c:
+I did some regression testing anyhow, more to create and debug
+a methodology than anything else.
 
-  Merge tag 'regulator-fix-v5.3-rc8' of git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator (2019-09-09 10:58:57 -0700)
+> On 2018.12.11 03:50 Rafael J. Wysocki wrote:
+>
+>> v7 -> v8:
+>>  * Apply the selection rules to the idle deepest state as well as to
+>>    the shallower ones (the deepest idle state was treated differently
+>>    before by mistake).
+>>  * Subtract 1/2 of the exit latency from the measured idle duration
+>>    in teo_update() (instead of subtracting the entire exit latency).
+>>    This makes the idle state selection be slightly more performance-
+>>   oriented.
+>
+> I have isolated the issue to a subset of the v7 to v8 changes, however
+> it was not the exit latency changes.
+>
+> The partial revert to V7 changes I made were (on top of 5.3):
 
-are available in the git repository at:
+The further testing showed a problem or two with my partial teo-v7 reversion
+(I call it teo-v12) under slightly different testing conditions.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+I also have a 5.3 based kernel with the current teo reverted and the entire
+teo-v7 put in its place. I have yet to find a idle state disabled related issue
+with this kernel.
 
-for you to fetch changes up to 6c375eccded41df8033ed55a1b785531b304fc67:
+I'll come back to this thread at a later date with better details and test results.
 
-  thermal: db8500: Rewrite to be a pure OF sensor (2019-09-24 22:59:22 -0700)
+... Doug
 
-----------------------------------------------------------------
-Dan Carpenter (1):
-      thermal: thermal_mmio: remove some dead code
 
-Linus Walleij (3):
-      thermal: db8500: Finalize device tree conversion
-      thermal: db8500: Use dev helper variable
-      thermal: db8500: Rewrite to be a pure OF sensor
-
- drivers/mfd/db8500-prcmu.c                   |  53 +--
- drivers/thermal/Kconfig                      |   2 +-
- drivers/thermal/db8500_thermal.c             | 486 ++++++---------------------
- drivers/thermal/thermal_mmio.c               |   7 -
- include/linux/platform_data/db8500_thermal.h |  29 --
- 5 files changed, 114 insertions(+), 463 deletions(-)
- delete mode 100644 include/linux/platform_data/db8500_thermal.h
