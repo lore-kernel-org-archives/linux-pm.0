@@ -2,57 +2,58 @@ Return-Path: <SRS0=EnsE=XZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81DA9C32792
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 13:03:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 192E4C388F3
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 13:03:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 58E542190F
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 13:03:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E4F51216F4
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 13:03:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="tIxdis1c"
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="w1gNg8pr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731070AbfI3NDB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Sep 2019 09:03:01 -0400
-Received: from mail-wm1-f52.google.com ([209.85.128.52]:51665 "EHLO
-        mail-wm1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731046AbfI3NDA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Sep 2019 09:03:00 -0400
-Received: by mail-wm1-f52.google.com with SMTP id 7so13337857wme.1
-        for <linux-pm@vger.kernel.org>; Mon, 30 Sep 2019 06:02:58 -0700 (PDT)
+        id S1731105AbfI3NDQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Sep 2019 09:03:16 -0400
+Received: from mail-wm1-f66.google.com ([209.85.128.66]:53276 "EHLO
+        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731112AbfI3NDH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Sep 2019 09:03:07 -0400
+Received: by mail-wm1-f66.google.com with SMTP id i16so13323128wmd.3
+        for <linux-pm@vger.kernel.org>; Mon, 30 Sep 2019 06:03:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=vNX+Pqr7l6mVyA3yK7rKaQ3s0VflVZgQrJhL3g7/Ip4=;
-        b=tIxdis1cAH+RvP4PA/a2sKVUiFk+Cb8ktSu0Khl9Hhsng9haOllbEdr+iuZx3lPSYU
-         sDOw0/LmRP8ATtF8hVEim3PnfPDf7quuj2Rn4LNrfdNjQ/WNeOIEa1ZLSpdi01EojiUu
-         v2U2CqItDoxwn99A0kVco8fUslg9NmMhNjof/Zm9Hj/7fzahvz+7MW24L6ymTx9cntQ4
-         iG8x57C+wJnP1ViTabcJxmaDc9fur1vkKOQ2wJ/uwMiVtM4pZ7eeBQB7jQVZvcfHgs5b
-         0igr1XNlgRQ6W1pmNpMM5C3eRZKZW6j9mpzEV/oMcDWMbEP8KJsJw5uVhQ2QYXy4w2Ft
-         g9jQ==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=HrIq4ZVm8xkVZyO8f5Owi3O1Tv53HlREs0EWWL4v/q4=;
+        b=w1gNg8prgUP3BwyEHY0icT829DCXzmLYUhxFKoVjRtdaNyQitXh4veJvCPRIsJ1yAa
+         EjV8yIaLqywn2OLOjIE1Qiqqlwb35juSylLnUYlGzVFdhIGmVX6UEhYTQ2fTS2s550ug
+         +rEmahuc8qfCuv0k9jUnqAVP71g8ErK+jQyWeSZNqOb3wtPyKoNwQ4LtlLVaO2/icP9e
+         Y0flzj/3RcC8NaIT8OrfJpYtb1l/UrnuoZrpD0UUN6UBwnj5EAiAAVFjgXjhHLSzMgMA
+         nxidQ6CioHKdgup5Do1f2UZjKGdcLsijRVhzgFl1CPphyS5x76IeMjkY9mnL4zLR3avD
+         dmRQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=vNX+Pqr7l6mVyA3yK7rKaQ3s0VflVZgQrJhL3g7/Ip4=;
-        b=djgG60i9ezw+okhKy2T2+V7IdHpadZaYCvoHn93rMKp5rYxZZQ4mowTU95FY0ckMHV
-         YP0vUlGaRDKDkHZ9c4W/SkN0xKFn+QhQE8gOrHWJN8851M3K83YRrUyLo02qYFOn6X45
-         S2tGomYyXV+yXz8MNjx20BtNceNxM7V5Mf2ZsDF9r30Be+kb/IG8AqFG/OQjvto7gBmn
-         l5pfwLxKGqHcr3KlDXOpAnczrci0Pi0+RuMK5130aoGs32M6BIvN63E5GKKEwKvUPpb8
-         z8hbJcPJQ9g5akc9JaOT4+8iWRgAul5S7BUdotuRooMd940XDLq2nCfnZThlAscDKpw2
-         FUUw==
-X-Gm-Message-State: APjAAAVjCZd8gyKuZAa6wtlNWq6vS8d2s5pJTA3OvNd3EmMEWgpzMfPT
-        k376NANlarJrZq1VlzwPGHEmRw==
-X-Google-Smtp-Source: APXvYqxK7o4G9mpvoB48Pb3o2/pQXGinDSvX0SV4RdXXaPNltTKFMwrC3kfNsl75Q4BTOzphLXez4w==
-X-Received: by 2002:a1c:3182:: with SMTP id x124mr18351314wmx.168.1569848577745;
-        Mon, 30 Sep 2019 06:02:57 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=HrIq4ZVm8xkVZyO8f5Owi3O1Tv53HlREs0EWWL4v/q4=;
+        b=NKrQ88s2VQk61Iq87RRN5EEKLHRCKwmTAKM/nJltE6hN6DrE/WGXb503Jf/l/r/Zxw
+         URNd8ZmqcwFiI94YcbLPtTtxMOk+5ESQaVV3e6Ko00n8J0UI8M8x+IZnb71EviI2+Vxq
+         wg2gXpJKxj9arCwcPz8wRwqOaBHI02lXD8WAwMzG0nzscFC4TJMZpSN2mE2jxCuikUlg
+         R1uTG9ETQ8zUkXRMhe+0By54ay/6xcpIg2Z5Hx8xl0eLauk5NfOhKRunmqyfsykmdY8/
+         5/unK3kRCwmTzDA9Vr6bP19mER2OTflgjFZlwo1F4jntHzBTn91dV6NC9d1yiVrTussJ
+         juHA==
+X-Gm-Message-State: APjAAAUKXvQBeetWc8hVi4vT3poXrpsR5oU40yRLLMIxWVqwE4aMa86a
+        T4DR1etT4Jz+fWk7OWo/cUk4wQ==
+X-Google-Smtp-Source: APXvYqzN6+yvym0aDjApdak2rnKhCxj3WgNHI4XeHwFPAGwC+jP/VsGclRBJNsmG4KVSjtE79Djsrg==
+X-Received: by 2002:a1c:544e:: with SMTP id p14mr16383235wmi.72.1569848584419;
+        Mon, 30 Sep 2019 06:03:04 -0700 (PDT)
 Received: from localhost.localdomain (amontpellier-652-1-281-69.w109-210.abo.wanadoo.fr. [109.210.96.69])
-        by smtp.gmail.com with ESMTPSA id e6sm10654756wrp.91.2019.09.30.06.02.56
+        by smtp.gmail.com with ESMTPSA id e6sm10654756wrp.91.2019.09.30.06.03.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Sep 2019 06:02:57 -0700 (PDT)
+        Mon, 30 Sep 2019 06:03:03 -0700 (PDT)
 From:   Bartosz Golaszewski <brgl@bgdev.pl>
 To:     Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
@@ -67,10 +68,12 @@ Cc:     linux-input@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
         linux-pm@vger.kernel.org,
         Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH 0/6] dt-bindings: max77650: convert the device-tree bindings to yaml
-Date:   Mon, 30 Sep 2019 15:02:40 +0200
-Message-Id: <20190930130246.4860-1-brgl@bgdev.pl>
+Subject: [PATCH 6/6] MAINTAINERS: update the list of maintained files for max77650
+Date:   Mon, 30 Sep 2019 15:02:46 +0200
+Message-Id: <20190930130246.4860-7-brgl@bgdev.pl>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20190930130246.4860-1-brgl@bgdev.pl>
+References: <20190930130246.4860-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -80,34 +83,29 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-This series converts all DT binding documents for max77650 PMIC to yaml.
+The DT bindings for max77650 MFD have now been converted to yaml.
+Update the MAINTAINERS entry for this set of drivers.
 
-Bartosz Golaszewski (6):
-  dt-bindings: mfd: max77650: convert the binding document to yaml
-  dt-bindings: input: max77650: convert the binding document to yaml
-  dt-bindings: regulator: max77650: convert the binding document to yaml
-  dt-bindings: power: max77650: convert the binding document to yaml
-  dt-bindings: leds: max77650: convert the binding document to yaml
-  MAINTAINERS: update the list of maintained files for max77650
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ MAINTAINERS | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- .../bindings/input/max77650-onkey.txt         | 27 +-----
- .../bindings/input/max77650-onkey.yaml        | 43 ++++++++++
- .../bindings/leds/leds-max77650.txt           | 58 +------------
- .../bindings/leds/leds-max77650.yaml          | 82 ++++++++++++++++++
- .../devicetree/bindings/mfd/max77650.txt      | 47 +----------
- .../devicetree/bindings/mfd/max77650.yaml     | 83 +++++++++++++++++++
- .../power/supply/max77650-charger.txt         | 29 +------
- .../power/supply/max77650-charger.yaml        | 42 ++++++++++
- .../bindings/regulator/max77650-regulator.txt | 42 +---------
- .../regulator/max77650-regulator.yaml         | 51 ++++++++++++
- MAINTAINERS                                   |  4 +-
- 11 files changed, 308 insertions(+), 200 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/input/max77650-onkey.yaml
- create mode 100644 Documentation/devicetree/bindings/leds/leds-max77650.yaml
- create mode 100644 Documentation/devicetree/bindings/mfd/max77650.yaml
- create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.yaml
- create mode 100644 Documentation/devicetree/bindings/regulator/max77650-regulator.yaml
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 296de2b51c83..d60dd3729437 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -9902,8 +9902,8 @@ MAXIM MAX77650 PMIC MFD DRIVER
+ M:	Bartosz Golaszewski <bgolaszewski@baylibre.com>
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+-F:	Documentation/devicetree/bindings/*/*max77650.txt
+-F:	Documentation/devicetree/bindings/*/max77650*.txt
++F:	Documentation/devicetree/bindings/*/*max77650.yaml
++F:	Documentation/devicetree/bindings/*/max77650*.yaml
+ F:	include/linux/mfd/max77650.h
+ F:	drivers/mfd/max77650.c
+ F:	drivers/regulator/max77650-regulator.c
 -- 
 2.23.0
 
