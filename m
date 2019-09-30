@@ -2,135 +2,114 @@ Return-Path: <SRS0=EnsE=XZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7575BC35280
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 14:24:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8E5CC35280
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 14:29:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4BF442086A
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 14:24:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B7D6721924
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 14:29:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="VLZKtMgM"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a0TGinOg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731441AbfI3OYo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Sep 2019 10:24:44 -0400
-Received: from fllv0015.ext.ti.com ([198.47.19.141]:33602 "EHLO
-        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730809AbfI3OYn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Sep 2019 10:24:43 -0400
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id x8UEOgav033420;
-        Mon, 30 Sep 2019 09:24:42 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1569853482;
-        bh=OdgxqyUdXWuWEOFnd3GhwaGyIsu5p0JZKq2/4UKgGF8=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=VLZKtMgMtw938/HIg0L5eTppq60iKtYRgt3JytsqwLK+M6G2HHaUxXZGBEcLJbNgU
-         +BlwUJaIqSXTPa/eU6jGtc7qU1Ame9ySXSI+i5zgIw++szCv0hOz0MF93H2jZ+PR8E
-         +J9ifad/DxkjTPJ8ahJJhvoux+hmQUiqDVlmFJQ8=
-Received: from DLEE115.ent.ti.com (dlee115.ent.ti.com [157.170.170.26])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id x8UEOgPP115410
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 30 Sep 2019 09:24:42 -0500
-Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE115.ent.ti.com
- (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1713.5; Mon, 30
- Sep 2019 09:24:42 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE111.ent.ti.com
- (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1713.5 via
- Frontend Transport; Mon, 30 Sep 2019 09:24:32 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id x8UEOfa8062238;
-        Mon, 30 Sep 2019 09:24:42 -0500
-From:   Dan Murphy <dmurphy@ti.com>
-To:     <sre@kernel.org>, <linux-pm@vger.kernel.org>
-CC:     <linux-kernel@vger.kernel.org>, Dan Murphy <dmurphy@ti.com>
-Subject: [PATCH 2/3] dt: power: Add the bq2515x family dt bindings
-Date:   Mon, 30 Sep 2019 09:31:36 -0500
-Message-ID: <20190930143137.21624-2-dmurphy@ti.com>
-X-Mailer: git-send-email 2.22.0.214.g8dca754b1e
-In-Reply-To: <20190930143137.21624-1-dmurphy@ti.com>
-References: <20190930143137.21624-1-dmurphy@ti.com>
+        id S1731780AbfI3O3S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Sep 2019 10:29:18 -0400
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:33793 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731686AbfI3O3S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Sep 2019 10:29:18 -0400
+Received: by mail-lf1-f66.google.com with SMTP id r22so7224125lfm.1;
+        Mon, 30 Sep 2019 07:29:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=/cUHoUaqss8qI6KXUvCsZN8O0fRZQEbP5/fl3QSwh1o=;
+        b=a0TGinOg0c8hiInPfRkFhKcAI/pPy0nuNaJobXF+ErQ72uXQF0IISRHdV5KIfRKiC7
+         glTMDeFvH8GoZxUb3rhz6SyfDHaoaiboEpIPcOGNUpnV3XFCSAlKJu/+HZDGetm93Q1n
+         9M6z+TW3AAe/z4CeBn5/Enmwy5Gm6qRIKGSlbdIkCA3P8uOYoXX8QPBtlH3e4pXZBMdn
+         EJrq0Mb008YwZ/t8h50HYz3DbR8exEIK0ouyE1uxF+8J3MRRiEWeyEkjJY5rGjpUlX9e
+         QV83BlJtHyG4EjL0WVvijHCD0IxkNYSqD8+4T91bZIAA5wmo1Qp6pD0PPXD6aknBflsf
+         U8+A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=/cUHoUaqss8qI6KXUvCsZN8O0fRZQEbP5/fl3QSwh1o=;
+        b=gEOdt+7eN4z0Ha40/HaGdsDzrbtkI2VUJHufnSBz7dXASQ0G8dr/1T58nh5xs80bC3
+         M9tfVAw0o5VlwcPz8DhMFjJtXtVbqHE0jrlAb64CCPRZpTOt8zO7K+CYF3uQOuIYK+mC
+         S9iyhePhG3NmCoZpP9miyucT474m9lUV9QFqrjdYS5K5mK3/yf58kmvxCZj6VLo/WHYX
+         zrTsvdcAMbJUioEqYjDEdrDT9hGe8yhMjzFy79+aiH6DawhJcH77stQ4Kzo/wH6yVUVt
+         oJ0+LrBLQ2nXRQdp6ZYefNgvAmKhFNh5K0u43ceH5poZiTDQBbQZ9VJsxc4OxI/Qw6bu
+         60BQ==
+X-Gm-Message-State: APjAAAV7dDyZNF6uoN3SV3b5jPJzxM8xtU/0djF/45q2YaoJLaRxuf08
+        J8Jzn6pcfhw940Q/YsbiRdzQ8M5F
+X-Google-Smtp-Source: APXvYqwFjlepUlfhs1IaHhMZu4sLyNS0YVja8fQhsmG6txfhULFCIZsY4a893MARc0PIh4ARbcSTUw==
+X-Received: by 2002:ac2:5586:: with SMTP id v6mr11431654lfg.180.1569853755403;
+        Mon, 30 Sep 2019 07:29:15 -0700 (PDT)
+Received: from [192.168.2.145] (ppp94-29-32-67.pppoe.spdop.ru. [94.29.32.67])
+        by smtp.googlemail.com with ESMTPSA id w17sm3252756lfl.43.2019.09.30.07.29.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 30 Sep 2019 07:29:14 -0700 (PDT)
+Subject: Re: [PATCH v5 08/14] ARM: tegra: Make outer_disable() open-coded
+To:     Thierry Reding <thierry.reding@gmail.com>
+Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20190929175952.22690-1-digetx@gmail.com>
+ <20190929175952.22690-9-digetx@gmail.com> <20190930080511.GE1518582@ulmo>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <a23edc5b-97c6-9dae-589e-b71d07069b0c@gmail.com>
+Date:   Mon, 30 Sep 2019 17:29:13 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.1
 MIME-Version: 1.0
+In-Reply-To: <20190930080511.GE1518582@ulmo>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the bindings for the bq25150 and bq25155 500mA
- charging IC from Texas Instruments.
+30.09.2019 11:05, Thierry Reding пишет:
+> On Sun, Sep 29, 2019 at 08:59:46PM +0300, Dmitry Osipenko wrote:
+>> The outer_disable() of Tegra's suspend code is open-coded now since
+>> that helper produces spurious warning message about secondary CPUs being
+>> online. The secondaries are actually halted by the cpuidle driver on
+>> entering into LP2 idle-state. This fixes a storm of warnings once LP2
+>> idling state is enabled on Tegra30.
+> 
+> If the cpuidle driver halts the secondaries, shouldn't it set it offline
+> then so that outer_disable() can still work correctly?
 
-Datasheet:
-http://www.ti.com/lit/ds/symlink/bq25150.pdf
-http://www.ti.com/lit/ds/symlink/bq25155.pdf
+No.. how would you know what CPU's should be resumed?
 
-Signed-off-by: Dan Murphy <dmurphy@ti.com>
----
- .../bindings/power/supply/bq2515x.txt         | 48 +++++++++++++++++++
- 1 file changed, 48 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq2515x.txt
+AFAIK, the online status should be only changed by the hotplug code and
+nothing else. I don't think that it's a good idea to manually touch the
+online mask.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq2515x.txt b/Documentation/devicetree/bindings/power/supply/bq2515x.txt
-new file mode 100644
-index 000000000000..98203ab53d44
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/bq2515x.txt
-@@ -0,0 +1,48 @@
-+Binding for TI bq25150 500-mA Linear charger
-+
-+The BQ25150 is a highly integrated battery charge management IC that integrates
-+the most common functions for wearable devices, namely a charger, an
-+output voltage rail, ADC for battery and system monitoring, and
-+push-button controller.
-+
-+Required Properties:
-+	- compatible: Should contain one of the following:
-+		"ti,bq25150"
-+		"ti,bq25155"
-+	- reg: int I2c address 0x6b
-+	- #address-cells: 1;
-+	- #size-cells: = 0;
-+
-+Optional Properties:
-+	- ti,battery-regulation-voltage: integer, maximum charging voltage in mV.
-+		Values range from 3600->4600mV
-+	- ti,charge-current: integer, maximum charging current in mA.
-+		Values range from 50->600mA
-+	- reset-gpios: GPIO used for Master reset
-+	- low-power-gpios: GPIO used for low power mode of IC.
-+	- charge-enable-gpios: GPIO used to turn on and off charging.
-+	- pg-gpios: GPIO used for connecting the bq2515x device PG (Power Good)
-+		pin.  This pin should be used if possible as this is the
-+		recommended way to obtain the charger's input PG state.
-+		If this pin is not specified a software-based approach for PG
-+		detection is used.
-+
-+Example
-+bq25150@6b {
-+	compatible = "ti,bq25150";
-+	reg = <0x6b>;
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+
-+	pg-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
-+	reset-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
-+	low-power-gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
-+	charge-enable-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
-+
-+	ti,charge-current = <300>;
-+	ti,battery-regulation-voltage = <4200>;
-+};
-+
-+Reference Datasheet:
-+http://www.ti.com/lit/ds/symlink/bq25150.pdf
-+http://www.ti.com/lit/ds/symlink/bq25155.pdf
--- 
-2.22.0.214.g8dca754b1e
+It looks to me that the only purpose of outer_disable() checking for the
+num_online_cpus is to prevent people from doing wrong things by
+disabling L2 in a random places in their code. Hence it should be
+absolutely fine to open code when you know what you're doing, which is
+the case here.
 
+We can check the rail status in tegra_sleep_cpu():
+
+if (trusted_foundations_registered() && outer_cache.disable) {
+	if (WARN_ON(!tegra_cpu_rail_off_ready()))
+		return -EBUSY;
+
+	outer_cache.disable();
+}
+
+Which is equal to the check for num_online_cpus. Does it sound good?
