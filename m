@@ -2,114 +2,136 @@ Return-Path: <SRS0=EnsE=XZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8E5CC35280
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 14:29:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 868A2C32792
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 14:42:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B7D6721924
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 14:29:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a0TGinOg"
+	by mail.kernel.org (Postfix) with ESMTP id 5D9D9218DE
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Sep 2019 14:42:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1569854528;
+	bh=P4PufoiPhLsWp3s+Vd1yGyKyRIWv7/KoYOAbcaWqAIQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=SvHIL7PPIKTw7BcXUO3IuPwZJxMU7yz47QbZvZdZfzfww+gW5Lkh1CDM4Je4d7Uas
+	 fPMtf41mLFQCulEq1m8c4jFAfCsBv5lR9ncmIk89L7g8lNX+ypBobKA2k+oODINV/A
+	 jGGc4yrwBCxUHnLrkq/hUe+4UuHoV85yvbObEYQU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731780AbfI3O3S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Sep 2019 10:29:18 -0400
-Received: from mail-lf1-f66.google.com ([209.85.167.66]:33793 "EHLO
-        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731686AbfI3O3S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Sep 2019 10:29:18 -0400
-Received: by mail-lf1-f66.google.com with SMTP id r22so7224125lfm.1;
-        Mon, 30 Sep 2019 07:29:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=/cUHoUaqss8qI6KXUvCsZN8O0fRZQEbP5/fl3QSwh1o=;
-        b=a0TGinOg0c8hiInPfRkFhKcAI/pPy0nuNaJobXF+ErQ72uXQF0IISRHdV5KIfRKiC7
-         glTMDeFvH8GoZxUb3rhz6SyfDHaoaiboEpIPcOGNUpnV3XFCSAlKJu/+HZDGetm93Q1n
-         9M6z+TW3AAe/z4CeBn5/Enmwy5Gm6qRIKGSlbdIkCA3P8uOYoXX8QPBtlH3e4pXZBMdn
-         EJrq0Mb008YwZ/t8h50HYz3DbR8exEIK0ouyE1uxF+8J3MRRiEWeyEkjJY5rGjpUlX9e
-         QV83BlJtHyG4EjL0WVvijHCD0IxkNYSqD8+4T91bZIAA5wmo1Qp6pD0PPXD6aknBflsf
-         U8+A==
+        id S1731470AbfI3OmH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Sep 2019 10:42:07 -0400
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:40422 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731190AbfI3OmH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Sep 2019 10:42:07 -0400
+Received: by mail-oi1-f193.google.com with SMTP id k9so11313632oib.7;
+        Mon, 30 Sep 2019 07:42:06 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=/cUHoUaqss8qI6KXUvCsZN8O0fRZQEbP5/fl3QSwh1o=;
-        b=gEOdt+7eN4z0Ha40/HaGdsDzrbtkI2VUJHufnSBz7dXASQ0G8dr/1T58nh5xs80bC3
-         M9tfVAw0o5VlwcPz8DhMFjJtXtVbqHE0jrlAb64CCPRZpTOt8zO7K+CYF3uQOuIYK+mC
-         S9iyhePhG3NmCoZpP9miyucT474m9lUV9QFqrjdYS5K5mK3/yf58kmvxCZj6VLo/WHYX
-         zrTsvdcAMbJUioEqYjDEdrDT9hGe8yhMjzFy79+aiH6DawhJcH77stQ4Kzo/wH6yVUVt
-         oJ0+LrBLQ2nXRQdp6ZYefNgvAmKhFNh5K0u43ceH5poZiTDQBbQZ9VJsxc4OxI/Qw6bu
-         60BQ==
-X-Gm-Message-State: APjAAAV7dDyZNF6uoN3SV3b5jPJzxM8xtU/0djF/45q2YaoJLaRxuf08
-        J8Jzn6pcfhw940Q/YsbiRdzQ8M5F
-X-Google-Smtp-Source: APXvYqwFjlepUlfhs1IaHhMZu4sLyNS0YVja8fQhsmG6txfhULFCIZsY4a893MARc0PIh4ARbcSTUw==
-X-Received: by 2002:ac2:5586:: with SMTP id v6mr11431654lfg.180.1569853755403;
-        Mon, 30 Sep 2019 07:29:15 -0700 (PDT)
-Received: from [192.168.2.145] (ppp94-29-32-67.pppoe.spdop.ru. [94.29.32.67])
-        by smtp.googlemail.com with ESMTPSA id w17sm3252756lfl.43.2019.09.30.07.29.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 30 Sep 2019 07:29:14 -0700 (PDT)
-Subject: Re: [PATCH v5 08/14] ARM: tegra: Make outer_disable() open-coded
-To:     Thierry Reding <thierry.reding@gmail.com>
-Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=EYSKNqzhWZ5pBYySik+qJ+6jR/qzoTuoas9JM4Wu8F8=;
+        b=pD/WFvJzTeQ75IM0qSoU/zoj0oyNc55V9h2o5gf6+VxQZyvRTpVUIZ5kkCLYLALTdf
+         Jil0VAMrjmjkELoI8H7u0dUiVhHcslE5HaE+lJ96CYlag7/3K2dCpQ37WAWEhDWlcI6I
+         Iso4P0SXDE5SuTKU40gbfeLLruqkxAkrGIa8kjI4hBLZzZm89Vhn2WHDPQiDNY1IXXRt
+         hEHzNcdjCsuR6FTjfvkAjREkHOtq0w3mobpM4RhP7QGmPF55Oc9NDjxLJ33kD5xKBk3m
+         A4FjlI5Bx7eZlo5sfd8bSS6YPz6eQ+4+A7Z81g6a8SR2zULYEMrM5t6/7tmRynJINB/q
+         a41Q==
+X-Gm-Message-State: APjAAAU22yfYSKVMBngCO18ym0VGVibZyPA8UTH9XnoCpszSwo6Z9Ao6
+        92fyubusjCzhHS4BXSuB4w==
+X-Google-Smtp-Source: APXvYqwX8v05lHHK67LEiARr1bwtyadlGwKRScnVJBehvPR1uH/YfAs2RwR6L1jOvqsZkjnT81Z0uA==
+X-Received: by 2002:aca:d9c4:: with SMTP id q187mr18629684oig.45.1569854526386;
+        Mon, 30 Sep 2019 07:42:06 -0700 (PDT)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id 34sm3825189otf.55.2019.09.30.07.42.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 30 Sep 2019 07:42:05 -0700 (PDT)
+Date:   Mon, 30 Sep 2019 09:42:05 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Thara Gopinath <thara.gopinath@linaro.org>
+Cc:     edubezval@gmail.com, rui.zhang@intel.com, ulf.hansson@linaro.org,
+        daniel.lezcano@linaro.org, bjorn.andersson@linaro.org,
+        agross@kernel.org, amit.kucheria@verdurent.com,
+        mark.rutland@arm.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-References: <20190929175952.22690-1-digetx@gmail.com>
- <20190929175952.22690-9-digetx@gmail.com> <20190930080511.GE1518582@ulmo>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <a23edc5b-97c6-9dae-589e-b71d07069b0c@gmail.com>
-Date:   Mon, 30 Sep 2019 17:29:13 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.1.1
+Subject: Re: [PATCH 3/5] dt-bindings: thermal: Add generic power domain
+ warming device binding
+Message-ID: <20190930144205.GA11539@bogus>
+References: <1568135676-9328-1-git-send-email-thara.gopinath@linaro.org>
+ <1568135676-9328-4-git-send-email-thara.gopinath@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <20190930080511.GE1518582@ulmo>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1568135676-9328-4-git-send-email-thara.gopinath@linaro.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-30.09.2019 11:05, Thierry Reding пишет:
-> On Sun, Sep 29, 2019 at 08:59:46PM +0300, Dmitry Osipenko wrote:
->> The outer_disable() of Tegra's suspend code is open-coded now since
->> that helper produces spurious warning message about secondary CPUs being
->> online. The secondaries are actually halted by the cpuidle driver on
->> entering into LP2 idle-state. This fixes a storm of warnings once LP2
->> idling state is enabled on Tegra30.
+On Tue, Sep 10, 2019 at 01:14:34PM -0400, Thara Gopinath wrote:
+> Add binding to define power domains as thermal warming
+> devices.
 > 
-> If the cpuidle driver halts the secondaries, shouldn't it set it offline
-> then so that outer_disable() can still work correctly?
+> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+> ---
+>  .../bindings/thermal/pwr-domain-warming.txt        | 32 ++++++++++++++++++++++
+>  1 file changed, 32 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/pwr-domain-warming.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/pwr-domain-warming.txt b/Documentation/devicetree/bindings/thermal/pwr-domain-warming.txt
+> new file mode 100644
+> index 0000000..25fc568
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/pwr-domain-warming.txt
+> @@ -0,0 +1,32 @@
+> +* Generic power domain based thermal warming device.
+> +
+> +This binding describes the power domains that can be used as a
+> +thermal warming device.
 
-No.. how would you know what CPU's should be resumed?
+This looks like just a gathering of properties and way to instantiate 
+some driver.
 
-AFAIK, the online status should be only changed by the hotplug code and
-nothing else. I don't think that it's a good idea to manually touch the
-online mask.
+I think this all belongs in the power domain provider. Make it a cooling 
+device and you should know which domains are relevant based on the 
+compatible (though perhaps we could consider a list in DT). If you want 
+to instantiate a separate driver to handle this, then make the power 
+domain driver do that.
 
-It looks to me that the only purpose of outer_disable() checking for the
-num_online_cpus is to prevent people from doing wrong things by
-disabling L2 in a random places in their code. Hence it should be
-absolutely fine to open code when you know what you're doing, which is
-the case here.
+Rob
 
-We can check the rail status in tegra_sleep_cpu():
-
-if (trusted_foundations_registered() && outer_cache.disable) {
-	if (WARN_ON(!tegra_cpu_rail_off_ready()))
-		return -EBUSY;
-
-	outer_cache.disable();
-}
-
-Which is equal to the check for num_online_cpus. Does it sound good?
+> +
+> +- compatible:
+> +	Usage: required
+> +	Value type: <string>
+> +	Definition: must be "thermal-power-domain-wdev"
+> +
+> +- #temp-reg-cells:
+> +	Usage: required
+> +	Value type: <u32>
+> +	Definition: Must be 2
+> +
+> +- power-domains:
+> +	Usage: required
+> +	Value type: <phandle>
+> +	Definition: reference to power-domains that match power-domain-names
+> +
+> +- power-domain-names:
+> +	Usage: required
+> +	Value type: <stringlist>
+> +	Definition: The power-domains that can behave as warming devices
+> +
+> +Example 1
+> +thermal_wdev: rpmhpd_mx_wdev {
+> +		compatible = "thermal-power-domain-wdev";
+> +		#cooling-cells = <2>;
+> +		power-domains =  <&rpmhpd SDM845_MX>;
+> +		power-domain-names = "mx";
+> +	};
+> -- 
+> 2.1.4
+> 
