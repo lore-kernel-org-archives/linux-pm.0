@@ -2,182 +2,110 @@ Return-Path: <SRS0=wBCb=X2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37AD8ECE587
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Oct 2019 17:04:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2645ECE58A
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Oct 2019 17:42:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 07EEA2086A
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Oct 2019 17:04:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1569949486;
-	bh=sdWjKc7950Ix1oAlzn3Bdm8pbL63ww+3W/0cLP/FqRI=;
-	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=ZhkwsD+AtpAcWXPm7hb3svlMH4134qtsvYUgrfJTkQlnKyRNki8l34tZHksT9K8Bm
-	 zEQfcdFkttZKSrR8G0vEQ1Fv5ORn4ttXd24pi1rWzRx/Kd55mGfNadoz96K7X/DWlZ
-	 qxS1S1PhzZDSnJPhxy7LJC1EY8doeudjfYTYHRjM=
+	by mail.kernel.org (Postfix) with ESMTP id 892BF2133F
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Oct 2019 17:42:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="EuM4Q0z1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727570AbfJAQjZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Oct 2019 12:39:25 -0400
-Received: from mail.kernel.org ([198.145.29.99]:50294 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725747AbfJAQjZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 1 Oct 2019 12:39:25 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 58B532168B;
-        Tue,  1 Oct 2019 16:39:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1569947964;
-        bh=sdWjKc7950Ix1oAlzn3Bdm8pbL63ww+3W/0cLP/FqRI=;
-        h=From:To:Cc:Subject:Date:From;
-        b=lcMSEn1iwSYiXpzEX/NXKetKJPHm1YTvbJ/HdTCfJnJ5kJbveV4SsHzjVEZQppWg7
-         yvMf48oSC1BomSPh+Ksi4NTScQRl8Fz/99VlSMP94QeWtiQ8LqfnIKWnpPLj6YPvfb
-         R254JFg47OUEZzBEYC5fS/9UwYb4HPSvQ1Ihu1rQ=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Sasha Levin <sashal@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.3 01/71] drivers: thermal: qcom: tsens: Fix memory leak from qfprom read
-Date:   Tue,  1 Oct 2019 12:38:11 -0400
-Message-Id: <20191001163922.14735-1-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
+        id S1725747AbfJARmi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Oct 2019 13:42:38 -0400
+Received: from mail-pl1-f196.google.com ([209.85.214.196]:45977 "EHLO
+        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726034AbfJARmi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Oct 2019 13:42:38 -0400
+Received: by mail-pl1-f196.google.com with SMTP id u12so5822393pls.12
+        for <linux-pm@vger.kernel.org>; Tue, 01 Oct 2019 10:42:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=YFxRATsNQaGZQ2KW4IdFsbHZlAeW0PIeqLRycQhx35w=;
+        b=EuM4Q0z1OahXXHkGjQfyNSGZ1+CO/NpKjlblsrTfRm5BrRkcK+aVXim9KLPIKlID18
+         b3H3pHd4q+mjbkN5ppIOULKrRFEUmV4ipMxiTo5nKspuWP2TFReXJsfG0FRf7OvxXTeM
+         4hhMDgrk8tPcJNfqBpMeWTWEdCC0yuzU25BFg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=YFxRATsNQaGZQ2KW4IdFsbHZlAeW0PIeqLRycQhx35w=;
+        b=Nsnt1ttO2qcpOaEloEKsrVlHxWe0f+l5E6gIbnetXALR2OMF8ryHgvoSMxRgNb4JpY
+         wkwHVGsfg66gRiyX/jMtxH54BP15XaSSndmMOTqKaNaGMKKBcini/BTZXMl+/pVAmM2y
+         B0zOXXvIZgvLnVEd5i9eUFyXQhBp7Rd73UDhT11UaSbq+2Lfumj6LMim9Dgsu/KuW4Gg
+         8s0y5af8TNd4v8p5vZrFXP91eVD1487RS0VaNEHU9SeS4aRZaml6wyfiGhher8XgXzS5
+         RJ6xQPhG7k2nKOyZ0+IfFgwfnPrVxkw87f8cWDTxxCxk2zEf3lh0WmncQkRf6PgBO8K7
+         AlBA==
+X-Gm-Message-State: APjAAAWY2MtqCAlQgveAH9fRrqMyT5mFhSNt+4WVUNaFMvtmw+BtdzI5
+        /rleXw3QHZNNnIXD8c2/6HjuhyMzQ/8=
+X-Google-Smtp-Source: APXvYqyisXQ1TNjFshaU4wTjOi7PUBwRw4IyhoZPQeAeY44k/fmfqYg+kNWQ337Jxz2KS1UwCR7Lnw==
+X-Received: by 2002:a17:902:9346:: with SMTP id g6mr27688893plp.0.1569951757581;
+        Tue, 01 Oct 2019 10:42:37 -0700 (PDT)
+Received: from localhost ([2620:15c:202:1:4fff:7a6b:a335:8fde])
+        by smtp.gmail.com with ESMTPSA id g24sm27852167pgn.90.2019.10.01.10.42.36
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 01 Oct 2019 10:42:36 -0700 (PDT)
+Date:   Tue, 1 Oct 2019 10:42:35 -0700
+From:   Matthias Kaehlcke <mka@chromium.org>
+To:     Steven Rostedt <rostedt@goodmis.org>
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Douglas Anderson <dianders@chromium.org>,
+        linux-pm@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>,
+        linux-kernel@vger.kernel.org,
+        Ravi Chandra Sadineni <ravisadineni@chromium.org>
+Subject: Re: [PATCH v1] PM / Domains: Add tracepoints
+Message-ID: <20191001174235.GC87296@google.com>
+References: <20190926150406.v1.1.I07a769ad7b00376777c9815fb169322cde7b9171@changeid>
+ <20190927044239.589e7c4c@oasis.local.home>
+ <20191001163542.GB87296@google.com>
+ <20191001130343.4480afe3@gandalf.local.home>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20191001130343.4480afe3@gandalf.local.home>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+On Tue, Oct 01, 2019 at 01:03:43PM -0400, Steven Rostedt wrote:
+> On Tue, 1 Oct 2019 09:35:42 -0700
+> Matthias Kaehlcke <mka@chromium.org> wrote:
+> 
+> > How about this instead:
+> > 
+> >   Add tracepoints for genpd_power_on, genpd_power_off and
+> >   genpd_set_performance_state. The tracepoints can help with
+> >   understanding power domain behavior of a given device, which
+> >   may be particularly interesting for battery powered devices
+> >   and suspend/resume.
+> 
+> Do you have a use case example to present?
 
-[ Upstream commit 6b8249abb093551ef173d13a25ed0044d5dd33e0 ]
+TBH I'm not looking into a specific use case right now. While
+peeking around in /sys/kernel/debug/tracing/events to learn more
+about existing tracepoints that might be relevant for my work
+I noticed the absence of genpd ones and it seemed a good idea to
+add them preemptively. Conceptually they seem similar to the
+existing regulator_enable/disable and cpu_idle tracepoints.
 
-memory returned as part of nvmem_read via qfprom_read should be
-freed by the consumer once done.
-Existing code is not doing it so fix it.
-
-Below memory leak detected by kmemleak
-   [<ffffff80088b7658>] kmemleak_alloc+0x50/0x84
-    [<ffffff80081df120>] __kmalloc+0xe8/0x168
-    [<ffffff80086db350>] nvmem_cell_read+0x30/0x80
-    [<ffffff8008632790>] qfprom_read+0x4c/0x7c
-    [<ffffff80086335a4>] calibrate_v1+0x34/0x204
-    [<ffffff8008632518>] tsens_probe+0x164/0x258
-    [<ffffff80084e0a1c>] platform_drv_probe+0x80/0xa0
-    [<ffffff80084de4f4>] really_probe+0x208/0x248
-    [<ffffff80084de2c4>] driver_probe_device+0x98/0xc0
-    [<ffffff80084dec54>] __device_attach_driver+0x9c/0xac
-    [<ffffff80084dca74>] bus_for_each_drv+0x60/0x8c
-    [<ffffff80084de634>] __device_attach+0x8c/0x100
-    [<ffffff80084de6c8>] device_initial_probe+0x20/0x28
-    [<ffffff80084dcbb8>] bus_probe_device+0x34/0x7c
-    [<ffffff80084deb08>] deferred_probe_work_func+0x6c/0x98
-    [<ffffff80080c3da8>] process_one_work+0x160/0x2f8
-
-Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Acked-by: Amit Kucheria <amit.kucheria@linaro.org>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/thermal/qcom/tsens-8960.c |  2 ++
- drivers/thermal/qcom/tsens-v0_1.c | 12 ++++++++++--
- drivers/thermal/qcom/tsens-v1.c   |  1 +
- drivers/thermal/qcom/tsens.h      |  1 +
- 4 files changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index 8d9b721dadb65..e46a4e3f25c42 100644
---- a/drivers/thermal/qcom/tsens-8960.c
-+++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -229,6 +229,8 @@ static int calibrate_8960(struct tsens_priv *priv)
- 	for (i = 0; i < num_read; i++, s++)
- 		s->offset = data[i];
- 
-+	kfree(data);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index 6f26fadf4c279..055647bcee67d 100644
---- a/drivers/thermal/qcom/tsens-v0_1.c
-+++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -145,8 +145,10 @@ static int calibrate_8916(struct tsens_priv *priv)
- 		return PTR_ERR(qfprom_cdata);
- 
- 	qfprom_csel = (u32 *)qfprom_read(priv->dev, "calib_sel");
--	if (IS_ERR(qfprom_csel))
-+	if (IS_ERR(qfprom_csel)) {
-+		kfree(qfprom_cdata);
- 		return PTR_ERR(qfprom_csel);
-+	}
- 
- 	mode = (qfprom_csel[0] & MSM8916_CAL_SEL_MASK) >> MSM8916_CAL_SEL_SHIFT;
- 	dev_dbg(priv->dev, "calibration mode is %d\n", mode);
-@@ -181,6 +183,8 @@ static int calibrate_8916(struct tsens_priv *priv)
- 	}
- 
- 	compute_intercept_slope(priv, p1, p2, mode);
-+	kfree(qfprom_cdata);
-+	kfree(qfprom_csel);
- 
- 	return 0;
- }
-@@ -198,8 +202,10 @@ static int calibrate_8974(struct tsens_priv *priv)
- 		return PTR_ERR(calib);
- 
- 	bkp = (u32 *)qfprom_read(priv->dev, "calib_backup");
--	if (IS_ERR(bkp))
-+	if (IS_ERR(bkp)) {
-+		kfree(calib);
- 		return PTR_ERR(bkp);
-+	}
- 
- 	calib_redun_sel =  bkp[1] & BKP_REDUN_SEL;
- 	calib_redun_sel >>= BKP_REDUN_SHIFT;
-@@ -313,6 +319,8 @@ static int calibrate_8974(struct tsens_priv *priv)
- 	}
- 
- 	compute_intercept_slope(priv, p1, p2, mode);
-+	kfree(calib);
-+	kfree(bkp);
- 
- 	return 0;
- }
-diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
-index 10b595d4f6199..870f502f2cb6c 100644
---- a/drivers/thermal/qcom/tsens-v1.c
-+++ b/drivers/thermal/qcom/tsens-v1.c
-@@ -138,6 +138,7 @@ static int calibrate_v1(struct tsens_priv *priv)
- 	}
- 
- 	compute_intercept_slope(priv, p1, p2, mode);
-+	kfree(qfprom_cdata);
- 
- 	return 0;
- }
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 2fd94997245bf..b89083b61c383 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -17,6 +17,7 @@
- 
- #include <linux/thermal.h>
- #include <linux/regmap.h>
-+#include <linux/slab.h>
- 
- struct tsens_priv;
- 
--- 
-2.20.1
-
+As an abstract use case I could see power analysis on battery
+powered devices during suspend. genpd_power_on/off allow to see
+which power domains remain on during suspend, and might give
+insights for possible power saving options. Examples could be that
+a power domain stays unexpectedly on due to a misconfiguration, or
+two power domains remain on when it could be only one if you just
+moved that one pin/port over to the other domain in the next
+hardware revision.
