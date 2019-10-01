@@ -7,48 +7,48 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE31DECE587
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Oct 2019 16:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00EDCECE587
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Oct 2019 16:52:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A994A2168B
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Oct 2019 16:49:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CB6802168B
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Oct 2019 16:52:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1569948585;
-	bh=Uqe3PPhMbjPLH3eEmx2bGn9raqRLtVaaWQuxH8cxNHo=;
+	s=default; t=1569948742;
+	bh=Gi9OCBf2zp9pYAtNqckJKhGKm64nq0WQybonBSa/r+s=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=VVqnxjg9N9hTIQnnUXe4DTXZsMVqK8Mm7LoOWRZInRY7awv6HPxI7ksT5omvmJziv
-	 A8bWGgkG/caXvbVImL6s15QGanfDx+sFcDteKSqFOgjzjJgSyt85jWJu0Xl/Sgsd04
-	 Swkg19G18MY/VSo0TSjQBDpqXK9n8ZWN1xl0icqg=
+	b=jPIsrn99fCOs+huTmZb783am8NNl10hD5pwHJWoWqCtuNZnAoYQKGMtAILoTOyxA5
+	 VZwU/852yDQWCqmkShS+0vtde9xqwzrqW4D1lW++67cADZmewi6aIxfpX/Ed4mr+fB
+	 Xy8KvQPfi28gvHjfYQOYEoAmHqvcahBR4xDui78w=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390076AbfJAQos (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Oct 2019 12:44:48 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57094 "EHLO mail.kernel.org"
+        id S1733033AbfJAQns (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Oct 2019 12:43:48 -0400
+Received: from mail.kernel.org ([198.145.29.99]:55930 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390072AbfJAQor (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 1 Oct 2019 12:44:47 -0400
+        id S1732996AbfJAQnr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Oct 2019 12:43:47 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 9075921A4C;
-        Tue,  1 Oct 2019 16:44:45 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id B9CBE21855;
+        Tue,  1 Oct 2019 16:43:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1569948286;
-        bh=Uqe3PPhMbjPLH3eEmx2bGn9raqRLtVaaWQuxH8cxNHo=;
+        s=default; t=1569948226;
+        bh=Gi9OCBf2zp9pYAtNqckJKhGKm64nq0WQybonBSa/r+s=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=rVhloUkHKgqcF0wtdM/yNhIjHW3WHQU388/Q3JlmkssxspdQelOeU7nMI4kn7YCZH
-         UKNL7Yc/b4gXvTlR042esSc9LGHDE0nMuI/RiPJBZa0NY8+cvSKsw+Lf9Xbsu+mTic
-         fq+2MjPP0dxmtyYkTBr6ox2VEQ/TyMvidXMlXfok=
+        b=QQtM6/Jwe5G+H7/v3KbA9JuB8k2fInOnphmdBrzQymJQlyRyVicWGzfrGSFHaGlph
+         sTgY5sfE8kVwQxgUPDihNqeP4tc6na+VzCEUrX/Q48L50rlcGsRTii13zj9mV9FPK+
+         kt86EJSJbucBqhFBeBIJ8fbC7ElCNxsv0LDMbCjo=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Ido Schimmel <idosch@mellanox.com>, Jiri Pirko <jiri@mellanox.com>,
         Zhang Rui <rui.zhang@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 18/29] thermal: Fix use-after-free when unregistering thermal zone device
-Date:   Tue,  1 Oct 2019 12:44:12 -0400
-Message-Id: <20191001164423.16406-18-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 24/43] thermal: Fix use-after-free when unregistering thermal zone device
+Date:   Tue,  1 Oct 2019 12:42:52 -0400
+Message-Id: <20191001164311.15993-24-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191001164423.16406-1-sashal@kernel.org>
-References: <20191001164423.16406-1-sashal@kernel.org>
+In-Reply-To: <20191001164311.15993-1-sashal@kernel.org>
+References: <20191001164311.15993-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -172,10 +172,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 17d6079c76429..456ef213dc141 100644
+index bf9721fc2824e..be3eafc7682ba 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -299,7 +299,7 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
+@@ -296,7 +296,7 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
  		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
  				 msecs_to_jiffies(delay));
  	else
