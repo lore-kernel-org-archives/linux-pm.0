@@ -2,116 +2,95 @@ Return-Path: <SRS0=v0US=X3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD382C352AA
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:43:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C05DC35280
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:44:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B762321920
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:43:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 68397222BE
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:44:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1570031084;
+	bh=iGknIM5mlxE2d7a9bLofUuOHC1m6dyg8pV7hg7RCcwE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=n8+4zriXczRuOs6hLPpTBnDaYjekKNj2Hs6juTS+qxtuhUptDBFrZrilXlrbMGPHW
+	 Wsl7+EVQiQ6Cvn/YALjqi9Ar6ZvQgdwmsCoqH0DSdYsSd/e8BzRhl3JQY4liNC0/q/
+	 ujuf6A6/mIF4fMLBkCOCqDCFaQTXKguTkJAPQFxk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728885AbfJBPnu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Oct 2019 11:43:50 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38754 "EHLO mx1.suse.de"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725875AbfJBPnu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 2 Oct 2019 11:43:50 -0400
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
-        by mx1.suse.de (Postfix) with ESMTP id 5296DAC7D;
-        Wed,  2 Oct 2019 15:43:45 +0000 (UTC)
-Message-ID: <1570031352.22393.4.camel@suse.cz>
-Subject: Re: [PATCH v2 1/2] x86,sched: Add support for frequency invariance
-From:   Giovanni Gherdovich <ggherdovich@suse.cz>
-To:     kbuild test robot <lkp@intel.com>
-Cc:     kbuild-all@01.org,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>, x86@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Mel Gorman <mgorman@techsingularity.net>,
-        Matt Fleming <matt@codeblueprint.co.uk>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Paul Turner <pjt@google.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Quentin Perret <qperret@qperret.net>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Doug Smythies <dsmythies@telus.net>
-Date:   Wed, 02 Oct 2019 17:49:12 +0200
-In-Reply-To: <201910022359.6gxzMDqF%lkp@intel.com>
-References: <20191002122926.385-2-ggherdovich@suse.cz>
-         <201910022359.6gxzMDqF%lkp@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.26.6 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+        id S1728302AbfJBPon (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Oct 2019 11:44:43 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:35267 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725935AbfJBPon (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2019 11:44:43 -0400
+Received: by mail-wm1-f68.google.com with SMTP id y21so7517046wmi.0;
+        Wed, 02 Oct 2019 08:44:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=Rw5jKC8OGucVDozLco5ojghsOIfhGWFzK0qNPccS9GY=;
+        b=P/H7Efh8WiJSl4k+6Brc2+i+qvOh7a47TuNsaSdasYczsGjHLATrbEoEUqn53OY73n
+         siMmT4m+4q0dOs8MZC+h5UDzdIKjh9tKMvypa59NAn2YzCy2y8HXv8TMzxLNGQVQfARV
+         k4QJkVgIx+3Jy1eX6Qeeq63n+7OTQkWkpDPc9VusQ1eL3w2CnrE1HTcOwN1IJklsTRkg
+         DwBSMKu8wf/7kQzbluGyIuIj8yP67FA7VEjTZUOyzoL2T4JHN5dAW52Hq50lrLcLDFdN
+         tZWT79nAYi2AcRrlGsLiJwsXG0JC077GCM0l4iKRy+/PcQAE0csP26QLTMSMIpXg7DQ0
+         LiYw==
+X-Gm-Message-State: APjAAAVtE4UnqwEB9yS2U6Q1cj8SfdmBnZvQIqS9S7C7IbUVwcwEdE8v
+        5g6wqJjVEfhXKcgpdZaW+QI=
+X-Google-Smtp-Source: APXvYqzsAkCLBGBVJzQidK1zPKRxtayFetKKeIH1OJPHVj1SYsdQOee6/yZsaG/xLJ18XWMsurQGTg==
+X-Received: by 2002:a7b:c398:: with SMTP id s24mr3558491wmj.78.1570031081030;
+        Wed, 02 Oct 2019 08:44:41 -0700 (PDT)
+Received: from kozik-lap ([194.230.155.145])
+        by smtp.googlemail.com with ESMTPSA id c10sm31462810wrf.58.2019.10.02.08.44.39
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Wed, 02 Oct 2019 08:44:40 -0700 (PDT)
+Date:   Wed, 2 Oct 2019 17:44:37 +0200
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc:     vireshk@kernel.org, robh+dt@kernel.org, kgene@kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        b.zolnierkie@samsung.com, m.szyprowski@samsung.com
+Subject: Re: [PATCH v4 5/6] ARM: dts: Add "syscon" compatible string to
+ chipid node
+Message-ID: <20191002154437.GB3469@kozik-lap>
+References: <20190910123618.27985-1-s.nawrocki@samsung.com>
+ <CGME20190910123644eucas1p234a55b19e68046900539195f55ea60dd@eucas1p2.samsung.com>
+ <20190910123618.27985-6-s.nawrocki@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20190910123618.27985-6-s.nawrocki@samsung.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 2019-10-02 at 23:23 +0800, kbuild test robot wrote:
-> Hi Giovanni,
+On Tue, Sep 10, 2019 at 02:36:17PM +0200, Sylwester Nawrocki wrote:
+> The CHIP ID block in addition to exact chip revision information
+> contains data and control registers for ASV (Adaptive Supply Voltage)
+> and ABB (Adaptive Body Bias). Add "syscon" compatible so the CHIPID
+> block can be shared by respective drivers.
 > 
-> Thank you for the patch! Yet something to improve:
-> 
-> [auto build test ERROR on tip/sched/core]
-> [cannot apply to v5.4-rc1 next-20191002]
-> [if your patch is applied to the wrong git tree, please drop us a note to help
-> improve the system. BTW, we also suggest to use '--base' option to specify the
-> base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
-
-Noted, thanks.
-
-Indeed this patch applies to the master branch of the "tip" tree,
-git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git , and depends on
-5ebb34edbefa8 "x86/intel: Aggregate microserver naming".
-
-I'll use '--base' in the future.
-
-
-Giovanni
-
-> 
-> url:    https://github.com/0day-ci/linux/commits/Giovanni-Gherdovich/Add-support-for-frequency-invariance-for-some-x86/20191002-221807
-> config: x86_64-defconfig (attached as .config)
-> compiler: gcc-7 (Debian 7.4.0-13) 7.4.0
-> reproduce:
->         # save the attached .config to linux build tree
->         make ARCH=x86_64 
-> 
-> If you fix the issue, kindly add following tag
-> Reported-by: kbuild test robot <lkp@intel.com>
-> 
-> All errors (new ones prefixed by >>):
-> 
-> > > arch/x86/kernel/smpboot.c:1834:7: error: 'INTEL_FAM6_ATOM_GOLDMONT_D' undeclared here (not in a function); did you mean 'INTEL_FAM6_ATOM_GOLDMONT_X'?
-> 
->      ICPU(INTEL_FAM6_ATOM_GOLDMONT_D),
->           ^
->    arch/x86/kernel/smpboot.c:1824:25: note: in definition of macro 'ICPU'
->      { X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF, 0}
->                             ^~~~~
-> 
-> vim +1834 arch/x86/kernel/smpboot.c
-> 
->   1831	
->   1832	static const struct x86_cpu_id has_turbo_ratio_group_limits[] = {
->   1833		ICPU(INTEL_FAM6_ATOM_GOLDMONT),
-> > 1834		ICPU(INTEL_FAM6_ATOM_GOLDMONT_D),
-> 
->   1835		ICPU(INTEL_FAM6_ATOM_GOLDMONT_PLUS),
->   1836		ICPU(INTEL_FAM6_SKYLAKE_X),
->   1837		{}
->   1838	};
->   1839	
-> 
+> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 > ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> Changes since v2:
+>  - none
+> 
+> Changes since v1 (RFC):
+>  - new patch
+> ---
+>  arch/arm/boot/dts/exynos5.dtsi | 4 ++--
+
+Please do not forget about exynos prefix in subject.
+
+Thanks, applied.
+
+Best regards,
+Krzysztof
+
