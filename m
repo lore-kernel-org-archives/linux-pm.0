@@ -2,138 +2,128 @@ Return-Path: <SRS0=v0US=X3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DF44C352AA
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBCF7C35280
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 16:00:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4FCD3222C6
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:54:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A1154222C4
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 16:00:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="Rik/3mFa"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="DPIGAGVE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728231AbfJBPyu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Oct 2019 11:54:50 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:52496 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725935AbfJBPyu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2019 11:54:50 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20191002155448euoutp020262fd7af84ac69f45b323edafe64525~J34Cjki863143331433euoutp024
-        for <linux-pm@vger.kernel.org>; Wed,  2 Oct 2019 15:54:48 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20191002155448euoutp020262fd7af84ac69f45b323edafe64525~J34Cjki863143331433euoutp024
+        id S1726326AbfJBQAk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Oct 2019 12:00:40 -0400
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:47502 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726000AbfJBQAj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2019 12:00:39 -0400
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20191002160037euoutp018d56c1ded9904c6afcd1afc58adccc48~J39HlOI4O2053320533euoutp01Y
+        for <linux-pm@vger.kernel.org>; Wed,  2 Oct 2019 16:00:37 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20191002160037euoutp018d56c1ded9904c6afcd1afc58adccc48~J39HlOI4O2053320533euoutp01Y
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1570031688;
-        bh=dO98rwiJ4tvmdexXBQqD68SKjJaPBN1+ST7RvpER/yg=;
+        s=mail20170921; t=1570032037;
+        bh=zx9fXIrViR3O6faysvbaQv1laJb273LTvU1SgoNFeRw=;
         h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=Rik/3mFaYggaSmisUCEjz6jwDaT5L7pU+idLcipx6RMJhyH/1rTHn+kaev0sFH/6D
-         nNX7o8wl1Jv5dA7PJgQd1ErzWjdTsGpAg5VtNm7pXn1db0n6owuOw7OuCo1QCYTbHP
-         k7kxbqHVv/j3Yd75EAAL730fUxvAYqR1ozQqSt74=
+        b=DPIGAGVE8pUlz2ohMPT4Z5LGxM/5vhQBydO5nEhLT3m1h+gy92ax0lgw4BJXRyItR
+         tRm17N9euUDnBt2+BH4fAc3JIEiw/jvoxUJ6WSq+UEbYLIHe7MU9wapxDitDLS5c9/
+         /2uL03MtJ8eyMbzHvpm16KTy5QP85d9q5JSY7gi8=
 Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
         eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20191002155448eucas1p246e67cfa52a412c3d3e41a8f6bd78b71~J34CDIQjb3055930559eucas1p2X;
-        Wed,  2 Oct 2019 15:54:48 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id 5B.22.04309.848C49D5; Wed,  2
-        Oct 2019 16:54:48 +0100 (BST)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20191002155447eucas1p27fedafa6277bb3fbff62be76ecec61d3~J34BwhW5d2815328153eucas1p2y;
-        Wed,  2 Oct 2019 15:54:47 +0000 (GMT)
+        20191002160037eucas1p27ecf61c7742b27e92e255a9de3aecdc2~J39HLX6Nt2151621516eucas1p2e;
+        Wed,  2 Oct 2019 16:00:37 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges2new.samsung.com (EUCPMTA) with SMTP id D3.A2.04309.5A9C49D5; Wed,  2
+        Oct 2019 17:00:37 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20191002160036eucas1p12ca78e31017e81bf60064e36805a6913~J39G3SfBV1008210082eucas1p1f;
+        Wed,  2 Oct 2019 16:00:36 +0000 (GMT)
 Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20191002155447eusmtrp1994d135604b7ad804df78150467540fc~J34Bv4hwf1558815588eusmtrp1G;
-        Wed,  2 Oct 2019 15:54:47 +0000 (GMT)
-X-AuditID: cbfec7f4-ae1ff700000010d5-92-5d94c8486127
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20191002160036eusmtrp2781afda37055fb51b9038865d8864bad~J39G2nkAV0849408494eusmtrp2I;
+        Wed,  2 Oct 2019 16:00:36 +0000 (GMT)
+X-AuditID: cbfec7f4-afbff700000010d5-a9-5d94c9a5da81
 Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 77.35.04166.748C49D5; Wed,  2
-        Oct 2019 16:54:47 +0100 (BST)
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 28.A5.04166.4A9C49D5; Wed,  2
+        Oct 2019 17:00:36 +0100 (BST)
 Received: from [106.120.51.75] (unknown [106.120.51.75]) by
         eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20191002155447eusmtip2f9fcb187e200c69f7015f72d91c42f9d~J34BOmENe0880708807eusmtip23;
-        Wed,  2 Oct 2019 15:54:47 +0000 (GMT)
-Subject: Re: [PATCH v4 1/6] opp: Handle target/min/max voltage in
- dev_pm_opp_adjust_voltage()
-To:     Krzysztof Kozlowski <krzk@kernel.org>, vireshk@kernel.org
-Cc:     robh+dt@kernel.org, kgene@kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        20191002160036eusmtip2b36600fc018770f30e4b31f2ccc5417f~J39GNPMwD1368513685eusmtip20;
+        Wed,  2 Oct 2019 16:00:36 +0000 (GMT)
+Subject: Re: [PATCH v4 2/6] dt-bindings: samsung: Update the CHIP ID binding
+ documentation
+To:     Krzysztof Kozlowski <krzk@kernel.org>,
+        Rob Herring <robh@kernel.org>
+Cc:     vireshk@kernel.org, robh+dt@kernel.org, kgene@kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-samsung-soc@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         b.zolnierkie@samsung.com, m.szyprowski@samsung.com
 From:   Sylwester Nawrocki <s.nawrocki@samsung.com>
-Message-ID: <ada1bb2f-a824-c34e-6561-04a35782a9b8@samsung.com>
-Date:   Wed, 2 Oct 2019 17:54:46 +0200
+Message-ID: <272b82b6-b77f-5cdd-5f39-68e529574f66@samsung.com>
+Date:   Wed, 2 Oct 2019 18:00:35 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
         Thunderbird/60.8.0
 MIME-Version: 1.0
-In-Reply-To: <20191002143310.GA15898@pi3>
+In-Reply-To: <20191002154819.GA4072@kozik-lap>
 Content-Language: en-GB
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrJKsWRmVeSWpSXmKPExsWy7djP87oeJ6bEGlz5z26xccZ6Vov5R86x
-        WvQ/fs1scf78BnaLTY+vsVpc3jWHzeJz7xFGixnn9zFZrD1yl92ide8RdovND46xOXB7bFrV
-        yeaxeUm9R9+WVYwenzfJBbBEcdmkpOZklqUW6dslcGUsfn+EseAKW8XCpp3MDYxbWbsYOTgk
-        BEwkFu8P6mLk4hASWMEo8X7XcRYI5wujRN/TN4wQzmdGibttd4E6OME6Vq/9ApVYzijx+Osj
-        RpCEkMBbRonzN71BbGGBeIkdkw6wg9giArYSd75OARvLLPCfUeJQ3082kASbgKFE79E+sGZe
-        ATuJH3vngW1gEVCReNa8mAnEFhWIkPj04DArRI2gxMmZT1hAbE4BTYlPl06D1TALiEs0fVnJ
-        CmHLS2x/O4cZZJmEwCl2ia4Ve5ggznaR+LT6HDOELSzx6vgWdghbRuL05B4WiIZmRome3bfZ
-        IZwJjBL3jy9ghKiyljh8/CI4yJiBVq/fpQ8RdpR483w3GyQk+SRuvBWEOIJPYtK26cwQYV6J
-        jjYhiGoVid+rpkOdIyXR/eQ/ywRGpVlIXpuF5J1ZSN6ZhbB3ASPLKkbx1NLi3PTUYqO81HK9
-        4sTc4tK8dL3k/NxNjMAEdfrf8S87GHf9STrEKMDBqMTD2xA0OVaINbGsuDL3EKMEB7OSCO+l
-        9VNihXhTEiurUovy44tKc1KLDzFKc7AoifNWMzyIFhJITyxJzU5NLUgtgskycXBKNTAy7pg2
-        I0eSS11d56nM1L4fBw1m6f78LG6i/SGHdcnN9TWdMmWa6zYVnGEXvGxdXad6lt0o+1m62bvA
-        fTu+cwW92L/2xU5dn+V9U4TXPZSNj/H7pWcQ3XrTPaI0Zf5CpsMruH7clBRu92g6PvcPC8PL
-        2ccep0VYqMlo9SXIMYWof3Gou30vm0uJpTgj0VCLuag4EQC7epL4TAMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrDIsWRmVeSWpSXmKPExsVy+t/xe7ruJ6bEGvxoMbTYOGM9q8X8I+dY
-        Lfofv2a2OH9+A7vFpsfXWC0u75rDZvG59wijxYzz+5gs1h65y27RuvcIu8XmB8fYHLg9Nq3q
-        ZPPYvKTeo2/LKkaPz5vkAlii9GyK8ktLUhUy8otLbJWiDS2M9AwtLfSMTCz1DI3NY62MTJX0
-        7WxSUnMyy1KL9O0S9DIWvz/CWHCFrWJh007mBsatrF2MnBwSAiYSq9d+Yexi5OIQEljKKHHw
-        wGumLkYOoISUxPwWJYgaYYk/17rYIGpeM0q0d25mA0kIC8RL7Jh0gB3EFhGwlbjzdQoLSBGz
-        wH9Gia6uw1Ad9xglfvQeZAGpYhMwlOg92scIYvMK2En82DsP7AwWARWJZ82LmUBsUYEIicM7
-        ZkHVCEqcnPkErJdTQFPi06XTYDXMAuoSf+ZdYoawxSWavqxkhbDlJba/ncM8gVFoFpL2WUha
-        ZiFpmYWkZQEjyypGkdTS4tz03GJDveLE3OLSvHS95PzcTYzAmNx27OfmHYyXNgYfYhTgYFTi
-        4W0ImhwrxJpYVlyZe4hRgoNZSYT30vopsUK8KYmVValF+fFFpTmpxYcYTYGem8gsJZqcD0wX
-        eSXxhqaG5haWhubG5sZmFkrivB0CB2OEBNITS1KzU1MLUotg+pg4OKUaGC1CLSK/lEy4n5hm
-        Z6xU579LtPlJnDULE/uVW8L3/wbvnmmSyXji8XxDjmmKudfyHrR+it7SfW+7u+nBgvqmYouy
-        azPkwl9sS6yfNveGqZxKX1D0sw8mBbIZS1jky/ayz9ZwZDylcnfHq8K4+giJ+8Ga7/ebtl6R
-        ePleubTsUYmDt6Dil22LlFiKMxINtZiLihMB6R928t8CAAA=
-X-CMS-MailID: 20191002155447eucas1p27fedafa6277bb3fbff62be76ecec61d3
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SbUhTYRTHe3bv3a7LyePUPFkWDT9U5it9uJRJkdY+SC9+ikr0mtcXmlM2
+        tawPajIx3UxNcy1DbYUvKZaamU2jOR1maS40IypLITImlAZK4XK7Rn77nXP+5znnf3hoQtpP
+        +dFpyixOpWQVMqGY7B5aHg26N1wVFzpRIWYe6tspps4ySjHXZr4TzNjYAxHTMTNJMW96a4XM
+        gs6CGP1Yv4Bps3wQMZo+i4hxmHpETOf0kPCgu7yj5apQ3nk3T17W1YLkCx3bTpCnxRFJnCIt
+        h1OFRCaIU1utNcLMSsFFXXk/mY8mUQlyowHvhd4hq6gEiWkpbkLw41YRyQeLCAZvNBF8sIBA
+        o3u9WqFdLeMVvs5uKW5EUGTexGvsCBqnvgmdBS98Fvq+1lFO9sZyeFn/zvUQgasFsGycd4mE
+        OAx0g2WuPSQ4Ep7fqXUxiQPAoTe5ND74FPycHqB4jScM35wlneyGg0F3+76LCewLVxabKZ63
+        w2N7rWsYYJsItKUmgjcaBfq5pTX2gjlrl4jnreB4UifgGwoRaJ++F/FBOYJP1vq1M+2HAes4
+        5fRP4F3Q3hvCpw+BrXVayJ/FA6bsnvwSHlDZXUPwaQkUF0l5dQD8bqkR8OwHpbMOshzJDOus
+        GdbZMayzY/g/tx6RLciXy1anp3DqcCV3IVjNpquzlSnB5zLSO9DqrxpZsS72oN4/iWaEaSRz
+        l+THXo+TUmyOOjfdjIAmZN4SW3tVnFSSxOZe4lQZ8apsBac2oy00KfOVXN4wfUaKU9gs7jzH
+        ZXKqf1UB7eaXjyA0WRFkigqmbSPinMpHmiWP5LeFbdH0vpDNG2MGfNCzGJ8vR+aidxaMh8cv
+        jUZUT/qPJEi8RmIt846ogrzuQONJAQ5LZIeAC1jpURi0xxsOG4+r5mwVR2s+2yb8NZGakEQB
+        G/hCY9Qe+KgvKo0KHJA177EHHCv+ZV5peLVDRqpT2bDdhErN/gWzXGHnUQMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrAIsWRmVeSWpSXmKPExsVy+t/xe7pLTk6JNTj4WN9i44z1rBbzj5xj
+        teh//JrZ4vz5DewWmx5fY7W4vGsOm8Xn3iOMFjPO72OyWHvkLrtF694j7Bb/9+xgt9j84Bib
+        A4/HplWdbB6bl9R79G1ZxejxeZNcAEuUnk1RfmlJqkJGfnGJrVK0oYWRnqGlhZ6RiaWeobF5
+        rJWRqZK+nU1Kak5mWWqRvl2CXsaa49PZCiYxVfRO2MfSwHiNsYuRg0NCwETi4kTxLkYuDiGB
+        pYwS/+7dZoKIS0nMb1HqYuQEMoUl/lzrYoOoec0osf/7WxaQhLBAjMTe5/NZQWwRAQ+JMwtu
+        MoMUMQtMZZI4fHgHM0RHE5NEf/ceNpAqNgFDid6jfYwgNq+AncTBRXPAbBYBFYn/MyBqRAUi
+        JA7vmAVVIyhxcuYTsG2cAnoSvXNXg9nMAuoSf+ZdYoawxSWavqxkhbDlJba/ncM8gVFoFpL2
+        WUhaZiFpmYWkZQEjyypGkdTS4tz03GJDveLE3OLSvHS95PzcTYzA2Nx27OfmHYyXNgYfYhTg
+        YFTi4W0ImhwrxJpYVlyZe4hRgoNZSYT30vopsUK8KYmVValF+fFFpTmpxYcYTYGem8gsJZqc
+        D0wbeSXxhqaG5haWhubG5sZmFkrivB0CB2OEBNITS1KzU1MLUotg+pg4OKUaGCtM/OcYX785
+        9Y77U6ctqUqsepvv/o2ef603fl740eO3l/OpzK4L5Xrqsu1CU0udV4Lfyk3K3tpvmFPO73/9
+        4np9VLOi6QvuP/s9Zd2EpB94K1xZ1ib9dOk7kbAk9ddNweJXp806Glh7JCRk5seXnmLJevam
+        tzvfRDzy3aiy4XOB57Su0x/UHyixFGckGmoxFxUnAgA9eiEl4wIAAA==
+X-CMS-MailID: 20191002160036eucas1p12ca78e31017e81bf60064e36805a6913
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190910123636eucas1p250ec04901f227b947cc38936563f63b2
+X-RootMTR: 20190910123637eucas1p26d2051f9bdd1bdf4510f1908ea98f641
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20190910123636eucas1p250ec04901f227b947cc38936563f63b2
+X-CMS-RootMailID: 20190910123637eucas1p26d2051f9bdd1bdf4510f1908ea98f641
 References: <20190910123618.27985-1-s.nawrocki@samsung.com>
-        <CGME20190910123636eucas1p250ec04901f227b947cc38936563f63b2@eucas1p2.samsung.com>
-        <20190910123618.27985-2-s.nawrocki@samsung.com> <20191002143310.GA15898@pi3>
+        <CGME20190910123637eucas1p26d2051f9bdd1bdf4510f1908ea98f641@eucas1p2.samsung.com>
+        <20190910123618.27985-3-s.nawrocki@samsung.com> <20190917181322.GA683@bogus>
+        <20191002154819.GA4072@kozik-lap>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 10/2/19 16:33, Krzysztof Kozlowski wrote:
-> On Tue, Sep 10, 2019 at 02:36:13PM +0200, Sylwester Nawrocki wrote:
->> To be squashed with patch "PM / OPP: Support adjusting OPP voltages
->> at runtime".
->>
->> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
->> ---
->>
->>  drivers/opp/core.c     | 10 ++++++++--
->>  include/linux/pm_opp.h |  3 ++-
->>  2 files changed, 10 insertions(+), 3 deletions(-)
->
-> I'll take the ASV driver via samsung-soc but I see it depends on this
-> one.  Please provide me a stable tag with it or an Ack.
+On 10/2/19 17:48, Krzysztof Kozlowski wrote:
+> This will create conflicts with conversion to dt-schema (already picked
+> up by Rob).
+> 
+> Can you convert this patch to dt-schema format and send it for Rob?
 
-There is further dependency on patch 
-"[PATCH v4 6/8] PM / OPP: Support adjusting OPP voltages at runtime"
-https://lore.kernel.org/linux-arm-kernel/1565703113-31479-7-git-send-email-andrew-sh.cheng@mediatek.com
-
-Viresh, what are your plans WRT to those patches?
+Sure, I will convert the patch.
 
 -- 
-Thanks,
+Regards,
 Sylwester
