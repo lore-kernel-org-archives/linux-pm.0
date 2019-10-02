@@ -2,141 +2,141 @@ Return-Path: <SRS0=v0US=X3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC25DC352AA
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 06:05:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E991ECE58B
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 07:51:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A4083218DE
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 06:05:30 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="pLHUbwM0"
+	by mail.kernel.org (Postfix) with ESMTP id 2003C21D81
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 07:51:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1570002688;
+	bh=MCG9vi15eXQf4+3zgtsMMnP8nAjsxBDGSgj+AXLjkh4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=a6qp5ZTYGdlllTY3n7unKk4+sLibu4gq/9xmvL25qbPekupe8TZwsDTJUwJ67vWTf
+	 +VWi0//0XySm6tS6wPeQ1YUh7UtUNEuCFWupyhx3+xlHQxoFiPTjLPzG7sllPmNprm
+	 T9oY5VSuWZvcq7xu92eopM6GwZkDD655Hsc5l2tE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727294AbfJBGF3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Oct 2019 02:05:29 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:45472 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725843AbfJBGFH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2019 02:05:07 -0400
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20191002060506euoutp019edddd4ed4104578a6771208593a099b~Jv1KV6zNF1488514885euoutp01X
-        for <linux-pm@vger.kernel.org>; Wed,  2 Oct 2019 06:05:06 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20191002060506euoutp019edddd4ed4104578a6771208593a099b~Jv1KV6zNF1488514885euoutp01X
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1569996306;
-        bh=vznnw8/ZImwrHPelkoL0LBLjMQ+XqOxLrcrGR3tiPIs=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=pLHUbwM0uLNcb8eksqDDnzQN1W2LJ+771grSSjkQuimvUjlGgY5f5x+BAfZc8Qbkx
-         /TQXEyGW+oeTDU5ICipZEo0z++AwQ6LS5W8qhcRpHGDgqrHJwuVp45x8/zB/Nu55cd
-         j2zIMnlsLPYPJgIS/ohjykh5CCBl0NBDReU2f/5E=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20191002060506eucas1p1c302ac36b85ec6e83325c0351ac37669~Jv1J6yd9Q0353603536eucas1p1z;
-        Wed,  2 Oct 2019 06:05:06 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges3new.samsung.com (EUCPMTA) with SMTP id 64.62.04374.11E349D5; Wed,  2
-        Oct 2019 07:05:06 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20191002060505eucas1p2efd80ccde8c728973df8d932580cd58b~Jv1JUx3S40451004510eucas1p2x;
-        Wed,  2 Oct 2019 06:05:05 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20191002060505eusmtrp2d6cec5606a70442d5ce7a351c4767788~Jv1JUEe4Z0112001120eusmtrp20;
-        Wed,  2 Oct 2019 06:05:05 +0000 (GMT)
-X-AuditID: cbfec7f5-4ddff70000001116-a2-5d943e110fc0
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id FE.14.04166.11E349D5; Wed,  2
-        Oct 2019 07:05:05 +0100 (BST)
-Received: from AMDC3778.digital.local (unknown [106.120.51.20]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20191002060504eusmtip22e10129d7ab4a3a21f1dcfc74dff71c9~Jv1If9uHN3226032260eusmtip2f;
-        Wed,  2 Oct 2019 06:05:04 +0000 (GMT)
-From:   Lukasz Luba <l.luba@partner.samsung.com>
-To:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Cc:     b.zolnierkie@samsung.com, krzk@kernel.org, kgene@kernel.org,
-        mark.rutland@arm.com, cw00.choi@samsung.com,
-        kyungmin.park@samsung.com, m.szyprowski@samsung.com,
-        s.nawrocki@samsung.com, myungjoo.ham@samsung.com,
-        robh+dt@kernel.org, willy.mh.wolff.ml@gmail.com,
-        Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v3 2/4] ARM: dts: exynos: Add interrupt to DMC controller in
- Exynos5422
-Date:   Wed,  2 Oct 2019 08:04:53 +0200
-Message-Id: <20191002060455.3834-3-l.luba@partner.samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191002060455.3834-1-l.luba@partner.samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA0WSfUhTYRTGe3d3d6/m4jojD6UJo8CCNLHiDXUVCY0IKrA/UlbOvE3JTdtV
-        0wqafarlB/Zly7Qw0eZCm8Om+dVcTjFboqQUUWmYlBoxXYitcl6t/57znN95n8PhpQlJPbma
-        Ttaks1qNMkUq8hY2ds06NklkNxSb9fvwk9I6Eg9NfyFxhe0ViYtGvxHY4aincN/5CQq/1QVg
-        0+gbEg80l4mws8CGcKmjTYAf295TuGqoX4Df5dSI8KVWG4U7J66Q2NU9gnb6yo3lRiRv0r+n
-        5CZDnkje8PCc/PlUi0BeaDYgudO09gAV6x2ZyKYkZ7LaUFm8d9Ll9glRmovKqq3ooXSoR5SP
-        vGhgtkBNlY3KR960hKlB0Np1l+SLaQSzOWVCvnAi6Cl1oKWRIptRxDeqETjqB4X/Rp4a7UQ+
-        omkREwIWw0nPwEqmEoGrM9bDEEyjAD4aXKSH8WMOQ3GXzCOFzHoo7KU8UszIwD0YxkcFQW19
-        B+HRXswOmPowTHheAcZKgb7tGsFD0eA2Dyzu5gdf7WaK1wHwp6lCwGsOdAUPFpmzMFp0b5GJ
-        gE57/8I2BLMB6ppDeXsXjJUPL9jArIDhSV+PTczLksbbBG+LIfeyhKeDwXzt9WLQKqg23qJ4
-        RA6TN8P505QgGH/RTRSjIP3/rPsIGZA/m8GpVSwXrmFPhXBKNZehUYUcS1Wb0Pw/6v1tn7Gg
-        tl8JVsTQSOojHo65rpCQykwuW21FQBPSleLIXyUKiThRmX2a1aYe1WaksJwVraGFUn/xmWUf
-        4ySMSpnOnmDZNFa71BXQXqt1iP4cY8Fn9B2zCbRTMWcy9oxYrmqOfB/Xpgfun0skfI7T96Xr
-        VC+tyO6OeqTdFmF/tn3H3rzczJGauIvxdYa5zGb3aLilZffZnPzAPsXBnyZcEtX4bS5i8E5W
-        0Lr1/YdapyUNJ4J1ipn4jrGtldC9XLGHaA/8cSGaEjgV0Y5PUiGXpAzbSGg55V8/NAtnQwMA
-        AA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprKIsWRmVeSWpSXmKPExsVy+t/xe7qCdlNiDSa/E7fYOGM9q8X1L89Z
-        LeYfOcdq0f/4NbPF+fMb2C3ONr1ht7jVIGOx6fE1VovLu+awWXzuPcJoMeP8PiaLtUfuslss
-        vX6RyeJ24wo2i9a9R9gtDr9pZ7X4duIRo4Ogx5p5axg9ds66y+6xaVUnm8fmJfUeB9/tYfLo
-        27KK0ePzJrkA9ig9m6L80pJUhYz84hJbpWhDCyM9Q0sLPSMTSz1DY/NYKyNTJX07m5TUnMyy
-        1CJ9uwS9jLb9b9gKvrFXrJ5/kr2B8SRbFyMnh4SAiUT/kTVANheHkMBSRolTJ74yQiTEJCbt
-        284OYQtL/LnWBVX0iVHi788bQAkODjYBPYkdqwpB4iICyxkljq16ywziMAscYZI4uvoa2CRh
-        gXCJS3vbmEEaWARUJfpOg/XyCthJ/L1iCDFfXmL1hgPMIDangL3Eu/s3wKqFgEr+n6mcwMi3
-        gJFhFaNIamlxbnpusaFecWJucWleul5yfu4mRmCUbDv2c/MOxksbgw8xCnAwKvHwNgRNjhVi
-        TSwrrsw9xCjBwawkwmvzZ1KsEG9KYmVValF+fFFpTmrxIUZToIsmMkuJJucDIzivJN7Q1NDc
-        wtLQ3Njc2MxCSZy3Q+BgjJBAemJJanZqakFqEUwfEwenVANjp966Ta9DDvvtcmRVsWd9ckVC
-        dc1ZUT3Xjz/+yTyUnKG37JJW8+/VXz5EF3AssRY5Ge1oaX70Wfja+b/NTh2PPTwziCXxYvid
-        W+YPbm5/xNr+h81nya5ne0zZrwksnXmdzVQ47qhnc0WFihRn0NNTTgwNj7Q0j/ae1yk/mrZY
-        I6xqXsXa1qnySizFGYmGWsxFxYkA3EL4bKgCAAA=
-X-CMS-MailID: 20191002060505eucas1p2efd80ccde8c728973df8d932580cd58b
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20191002060505eucas1p2efd80ccde8c728973df8d932580cd58b
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20191002060505eucas1p2efd80ccde8c728973df8d932580cd58b
-References: <20191002060455.3834-1-l.luba@partner.samsung.com>
-        <CGME20191002060505eucas1p2efd80ccde8c728973df8d932580cd58b@eucas1p2.samsung.com>
+        id S1726446AbfJBHvY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Oct 2019 03:51:24 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:37358 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725988AbfJBHvY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2019 03:51:24 -0400
+Received: by mail-ot1-f65.google.com with SMTP id k32so13896575otc.4;
+        Wed, 02 Oct 2019 00:51:23 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=nicjUzK1aCzTPXfkiTszftUB1bSootFU4r9Af2VZdd4=;
+        b=pI8tMAzhuWe1DDEcfpzJhos0mKr4QoiPl3GM4TPtsGGoOsFWc/ZYNPvnNK7HgO4qMV
+         czkhBZXxLv7EYUNU3uKl/1dn9E6qDIB1Nb9k1BJp5yk7LMkPM9iNJvaklyuDKi5ZmAns
+         uznao+HE6dx67UcSxLF4/2QGDiuntb39OuD3rNGdLWDlP7KyQ4cWECwtEWESa/TL5rvW
+         dWi0VOpkamIgKh1f9xgZ10tNUyozw/TKzE9g+l1Vlk+5WjBsiMrUsd3Mxw+upzscf7Kg
+         ZWHiePNiwZUt1PW60PQXX5BDDuWrrBjtKwzqUj1HDDHJ9oJwL1NZy7RXVnBM1LIvTx9g
+         9kUw==
+X-Gm-Message-State: APjAAAWXHZCuU1YlIojzPJIrZVBJCywKa+RyeC9AZuQyIqwbdaigWAMy
+        QKcaTwlpUJN5CXoCtk4UAYgCkhZ7MhkdgBwpSRc=
+X-Google-Smtp-Source: APXvYqz71nTjSqBxRr4QDswp1ob5aZ+KAvXvpMiCwA5SDyyXDIdUmYP20t6SgsKoFSgzFPZdmYYH4mgWrEHkD4h0TFc=
+X-Received: by 2002:a9d:6a16:: with SMTP id g22mr1570217otn.118.1570002682809;
+ Wed, 02 Oct 2019 00:51:22 -0700 (PDT)
+MIME-Version: 1.0
+References: <CACO55tvjFPAMgz6DMGmJQ3adtJBX6yYnFRO9gVBEpMVTEBu0og@mail.gmail.com>
+ <20191001193427.GA59137@google.com>
+In-Reply-To: <20191001193427.GA59137@google.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 2 Oct 2019 09:51:10 +0200
+Message-ID: <CAJZ5v0gUddEhOPqNvTboO9mL6vcxu5HeCEC+-pJMzippTiAy9Q@mail.gmail.com>
+Subject: Re: [RFC PATCH] pci: prevent putting pcie devices into lower device
+ states on certain intel bridges
+To:     Bjorn Helgaas <helgaas@kernel.org>
+Cc:     Karol Herbst <kherbst@redhat.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Lyude Paul <lyude@redhat.com>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        nouveau <nouveau@lists.freedesktop.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        "Schmauss, Erik" <erik.schmauss@intel.com>,
+        Robert Moore <robert.moore@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add interrupt to Dynamic Memory Controller in Exynos5422 and Odroid
-XU3-family boards. It will be used instead of devfreq polling mode
-governor. The interrupt is connected to performance counters private
-for DMC, which might track utilisation of the memory channels.
+On Tue, Oct 1, 2019 at 9:34 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+>
+> On Tue, Oct 01, 2019 at 06:21:28PM +0200, Karol Herbst wrote:
+> > On Tue, Oct 1, 2019 at 3:27 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > > On Mon, Sep 30, 2019 at 06:36:12PM +0200, Karol Herbst wrote:
+> > > > On Mon, Sep 30, 2019 at 6:30 PM Mika Westerberg
+> > > > <mika.westerberg@linux.intel.com> wrote:
+> > > > >
+> > > > > On Mon, Sep 30, 2019 at 06:05:14PM +0200, Karol Herbst wrote:
+> > > > > > still happens with your patch applied. The machine simply gets shut down.
+> > > > > >
+> > > > > > dmesg can be found here:
+> > > > > > https://gist.githubusercontent.com/karolherbst/40eb091c7b7b33ef993525de660f1a3b/raw/2380e31f566e93e5ba7c87ef545420965d4c492c/gistfile1.txt
+> > > > >
+> > > > > Looking your dmesg:
+> > > > >
+> > > > > Sep 30 17:24:27 kernel: nouveau 0000:01:00.0: DRM: DCB version 4.1
+> > > > > Sep 30 17:24:27 kernel: nouveau 0000:01:00.0: DRM: MM: using COPY for buffer copies
+> > > > > Sep 30 17:24:27 kernel: [drm] Initialized nouveau 1.3.1 20120801 for 0000:01:00.0 on minor 1
+> > > > >
+> > > > > I would assume it runtime suspends here. Then it wakes up because of PCI
+> > > > > access from userspace:
+> > > > >
+> > > > > Sep 30 17:24:42 kernel: pci_raw_set_power_state: 56 callbacks suppressed
+> > > > >
+> > > > > and for some reason it does not get resumed properly. There are also few
+> > > > > warnings from ACPI that might be relevant:
+> > > > >
+> > > > > Sep 30 17:24:27 kernel: ACPI Warning: \_SB.PCI0.GFX0._DSM: Argument #4 type mismatch - Found [Buffer], ACPI requires [Package] (20190509/nsarguments-59)
+> > > > > Sep 30 17:24:27 kernel: ACPI Warning: \_SB.PCI0.PEG0.PEGP._DSM: Argument #4 type mismatch - Found [Buffer], ACPI requires [Package] (20190509/nsarguments-59)
+> > > >
+> > > > afaik this is the case for essentially every laptop out there.
+> > >
+> > > I think we should look into this a little bit.
+> > > acpi_ns_check_argument_types() checks the argument type and prints
+> > > this message, but AFAICT it doesn't actually fix anything or prevent
+> > > execution of the method, so I have no idea what happens when we
+> > > actually execute the _DSM.
+> >
+> > I can assure you that this warning happens on every single laptop out
+> > there with dual Nvidia graphics and it's essentially just a firmware
+> > bug. And it never caused any issues on any of the older laptops (or
+> > newest one for that matter).
+>
+> Rafael, do you know anything about this?
 
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- arch/arm/boot/dts/exynos5420.dtsi | 3 +++
- 1 file changed, 3 insertions(+)
+IIRC ACPICA will simply run the method with the assumption that the
+AML in there will deal with the arguments properly anyway.
 
-diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-index 92c5e0d8a824..98f6c71f57d8 100644
---- a/arch/arm/boot/dts/exynos5420.dtsi
-+++ b/arch/arm/boot/dts/exynos5420.dtsi
-@@ -240,6 +240,9 @@
- 		dmc: memory-controller@10c20000 {
- 			compatible = "samsung,exynos5422-dmc";
- 			reg = <0x10c20000 0x100>, <0x10c30000 0x100>;
-+			interrupt-parent = <&combiner>;
-+			interrupts = <16 0>, <16 1>;
-+			interrupt-names = "drex_0", "drex_1";
- 			clocks = <&clock CLK_FOUT_SPLL>,
- 				 <&clock CLK_MOUT_SCLK_SPLL>,
- 				 <&clock CLK_FF_DOUT_SPLL2>,
--- 
-2.17.1
+> If ACPI has some sort of workaround so it can execute the method correctly
+> anyway, maybe we should remove or reword the warning?
 
+I can agree that printing these warnings on a user system by default
+is not very useful, at least as long as no visible functional issues
+are present, but if there are such issues, it is good to know that
+something fishy is going on.  For instance, while the method may
+execute successfully, the result of that may not be as expected.
+
+So maybe they should be debug level or similar.
+
+> Or if this does prevent execution of the method, maybe we need to add
+> a workaround since the problem is so prevalent in the field?
+
+As par the above, no workarounds should be needed, but I'll let Bob
+and Erik (CCed now) confirm or deny this.
+
+A side note: please CC all discussions regarding general ACPI issues
+to linux-acpi, so they can get the attention of all of the right
+people (who may not subscribe linux-pci, for example).
