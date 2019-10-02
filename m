@@ -2,320 +2,116 @@ Return-Path: <SRS0=v0US=X3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 926A0C35280
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:27:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD382C352AA
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:43:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5215D21920
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:27:51 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="USgJeNCB"
+	by mail.kernel.org (Postfix) with ESMTP id B762321920
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:43:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727165AbfJBP1u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Oct 2019 11:27:50 -0400
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:45245 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726710AbfJBP1u (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2019 11:27:50 -0400
-Received: by mail-lj1-f195.google.com with SMTP id q64so17555312ljb.12;
-        Wed, 02 Oct 2019 08:27:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=+XkppJh76zQG+z7eHKGe6Lr4cdpRntCx0CAPy1aKT+o=;
-        b=USgJeNCBFzPWJL/hQ3Vc4ReNbEWrli2P+F+WwjERjspXI2L2TWYRsOiHFFUHxL7BDG
-         zbpVRQb1uhBJ6g+l+XaTP5fXmepaNKoGt4xVxhc2ge9jmjiIzUfY/IfZ1W+NT8+zRLPV
-         9HkdecKIDXcJaRKTFz0We4WRAWj5kwLa0+MTC9vdK1V2uXN/x4E2+y0I6Rm/Ivw7Vvvl
-         Bdnp7NZi9kbuIDkqHj1McmvzF7YUS9kYjxK0mEZ6c5BDUrMa7ol1SIBnZ5VyCXB5bmAJ
-         v3REbZn4o6wmVD6WQHllWbFTv+Ul/ObtXD76zSaRbzEwkuiSBZBT6435SY2qer2+VTlx
-         6TZw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=+XkppJh76zQG+z7eHKGe6Lr4cdpRntCx0CAPy1aKT+o=;
-        b=fA5pKi634bAMBmRSwy6lK/pfWNqeWiapc+4LHhMyBWCVicPK5ERSwBVHsTJ/MHAANA
-         RzLg3/mlyakkfSLpfJ0le/SLjmawyKFc5RDawlObndDjOq8Flx9Qx73/cMV0o05Vl0E3
-         Lyp3mJsnpS5iPmjAOMlyrcddBeDzR3heEt5UiTbVdSCAU1XGg5bB3tN4MIWqf++8k896
-         9N9NEMurM/SWxissGvJZXOQaTawzs2jqmrv9OH4F4tYBdY2JyXP89QYJfCijsx2OqUq3
-         pcLM8Vgu7WpVitUsr5S0AMGP5swbxYBm73+GkekFHjJ7WpFz16ukrREftlkF2k5A/mtd
-         gCoA==
-X-Gm-Message-State: APjAAAWpH8fokZaUYxFc4gmazSlnopoQs9icyXeAejaiVIm0hytpZAcX
-        Z6nPCwDIpzWAYzYbpeR7rULp4xlE
-X-Google-Smtp-Source: APXvYqzmoB9nbALd/RFjqZlRIZbc7MHa/7A/ZgwUC7tO94MzSmt1z1gS1hiMfRbQ+wTs3gc1k4u7DA==
-X-Received: by 2002:a2e:8084:: with SMTP id i4mr2942331ljg.119.1570030066891;
-        Wed, 02 Oct 2019 08:27:46 -0700 (PDT)
-Received: from [192.168.2.145] ([94.29.34.231])
-        by smtp.googlemail.com with ESMTPSA id v1sm4707924lfe.34.2019.10.02.08.27.45
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 02 Oct 2019 08:27:46 -0700 (PDT)
-Subject: Re: [PATCH v6 18/19] PM / devfreq: tegra30: Support variable polling
- interval
-To:     Chanwoo Choi <cw00.choi@samsung.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20190811212315.12689-1-digetx@gmail.com>
- <CGME20190811212509epcas4p20ec245213cedfcc066f7b0032b912a39@epcas4p2.samsung.com>
- <20190811212315.12689-19-digetx@gmail.com>
- <721c4dd0-d667-f83d-64b5-74e4b58a7a1c@samsung.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <a800b077-3d01-78d8-2fb4-bec82c796b45@gmail.com>
-Date:   Wed, 2 Oct 2019 18:27:45 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.1.1
-MIME-Version: 1.0
-In-Reply-To: <721c4dd0-d667-f83d-64b5-74e4b58a7a1c@samsung.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+        id S1728885AbfJBPnu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Oct 2019 11:43:50 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38754 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725875AbfJBPnu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 2 Oct 2019 11:43:50 -0400
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+        by mx1.suse.de (Postfix) with ESMTP id 5296DAC7D;
+        Wed,  2 Oct 2019 15:43:45 +0000 (UTC)
+Message-ID: <1570031352.22393.4.camel@suse.cz>
+Subject: Re: [PATCH v2 1/2] x86,sched: Add support for frequency invariance
+From:   Giovanni Gherdovich <ggherdovich@suse.cz>
+To:     kbuild test robot <lkp@intel.com>
+Cc:     kbuild-all@01.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>, x86@kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Matt Fleming <matt@codeblueprint.co.uk>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Paul Turner <pjt@google.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Quentin Perret <qperret@qperret.net>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Doug Smythies <dsmythies@telus.net>
+Date:   Wed, 02 Oct 2019 17:49:12 +0200
+In-Reply-To: <201910022359.6gxzMDqF%lkp@intel.com>
+References: <20191002122926.385-2-ggherdovich@suse.cz>
+         <201910022359.6gxzMDqF%lkp@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.26.6 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-02.10.2019 03:18, Chanwoo Choi пишет:
-> Hi,
+On Wed, 2019-10-02 at 23:23 +0800, kbuild test robot wrote:
+> Hi Giovanni,
 > 
-> On 19. 8. 12. 오전 6:23, Dmitry Osipenko wrote:
->> The ACTMON governor is interrupt-driven and currently hardware's polling
->> interval is fixed to 16ms in the driver. Devfreq supports variable polling
->> interval by the generic governors, let's re-use the generic interface for
->> changing of the polling interval. Now the polling interval can be changed
->> dynamically via /sys/class/devfreq/devfreq0/polling_interval.
->>
->> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->> ---
->>  drivers/devfreq/tegra30-devfreq.c | 71 ++++++++++++++++++++++---------
->>  1 file changed, 50 insertions(+), 21 deletions(-)
->>
->> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
->> index 8adc0ff48b45..e30314bd571a 100644
->> --- a/drivers/devfreq/tegra30-devfreq.c
->> +++ b/drivers/devfreq/tegra30-devfreq.c
->> @@ -12,6 +12,7 @@
->>  #include <linux/interrupt.h>
->>  #include <linux/io.h>
->>  #include <linux/irq.h>
->> +#include <linux/jiffies.h>
->>  #include <linux/module.h>
->>  #include <linux/of_device.h>
->>  #include <linux/platform_device.h>
->> @@ -236,7 +237,7 @@ tegra_actmon_dev_avg_dependency_freq(struct tegra_devfreq *tegra,
->>  				     struct tegra_devfreq_device *dev)
->>  {
->>  	return dev->config->avg_dependency_threshold /
->> -		ACTMON_SAMPLING_PERIOD;
->> +		tegra->devfreq->profile->polling_ms;
->>  }
->>  
->>  static unsigned long
->> @@ -314,8 +315,8 @@ static void tegra_actmon_get_lower_upper(struct tegra_devfreq *tegra,
->>  	 */
->>  	*upper = tegra_actmon_account_cpu_freq(tegra, dev, *upper);
->>  
->> -	*lower *= ACTMON_SAMPLING_PERIOD;
->> -	*upper *= ACTMON_SAMPLING_PERIOD;
->> +	*lower *= tegra->devfreq->profile->polling_ms;
->> +	*upper *= tegra->devfreq->profile->polling_ms;
->>  }
->>  
->>  static void tegra_devfreq_update_avg_wmark(struct tegra_devfreq *tegra,
->> @@ -341,8 +342,8 @@ static void tegra_devfreq_update_avg_wmark(struct tegra_devfreq *tegra,
->>  	 * result, but this one is probably the least churning, although
->>  	 * it may look a bit convoluted.
->>  	 */
->> -	if (freq * ACTMON_SAMPLING_PERIOD > upper)
->> -		upper = freq * ACTMON_SAMPLING_PERIOD;
->> +	if (freq * tegra->devfreq->profile->polling_ms > upper)
->> +		upper = freq * tegra->devfreq->profile->polling_ms;
->>  
->>  	/*
->>  	 * We want to get interrupts when MCCPU client crosses the
->> @@ -420,7 +421,7 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
->>  	avg_count = device_readl(dev, ACTMON_DEV_AVG_COUNT);
->>  	dev_ctrl = device_readl(dev, ACTMON_DEV_CTRL);
->>  
->> -	dev->avg_freq = avg_count / ACTMON_SAMPLING_PERIOD;
->> +	dev->avg_freq = avg_count / tegra->devfreq->profile->polling_ms;
->>  
->>  	avg_intr_mask = ACTMON_DEV_INTR_AVG_BELOW_WMARK |
->>  			ACTMON_DEV_INTR_AVG_ABOVE_WMARK;
->> @@ -499,7 +500,7 @@ static unsigned long actmon_update_target(struct tegra_devfreq *tegra,
->>  	 * outdated.
->>  	 */
->>  	avg_count = device_readl(dev, ACTMON_DEV_AVG_COUNT);
->> -	avg_freq = avg_count / ACTMON_SAMPLING_PERIOD;
->> +	avg_freq = avg_count / tegra->devfreq->profile->polling_ms;
->>  
->>  	old_upper = tegra_actmon_upper_freq(tegra, dev->avg_freq);
->>  	new_upper = tegra_actmon_upper_freq(tegra, avg_freq);
->> @@ -675,7 +676,7 @@ static int tegra_actmon_cpu_notify_cb(struct notifier_block *nb,
->>  	 * here for too long, otherwise CPUFreq's core will complain with a
->>  	 * warning splat.
->>  	 */
->> -	delay = msecs_to_jiffies(ACTMON_SAMPLING_PERIOD);
->> +	delay = msecs_to_jiffies(tegra->devfreq->profile->polling_ms);
->>  	schedule_delayed_work(&tegra->cpufreq_update_work, delay);
->>  
->>  	return NOTIFY_OK;
->> @@ -690,7 +691,7 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
->>  	dev->boost_freq = 0;
->>  
->>  	dev->avg_freq = clk_get_rate(tegra->emc_clock) / KHZ;
->> -	device_writel(dev, dev->avg_freq * ACTMON_SAMPLING_PERIOD,
->> +	device_writel(dev, dev->avg_freq * tegra->devfreq->profile->polling_ms,
->>  		      ACTMON_DEV_INIT_AVG);
->>  
->>  	tegra_devfreq_update_avg_wmark(tegra, dev, dev->avg_freq);
->> @@ -725,7 +726,14 @@ static int tegra_actmon_start(struct tegra_devfreq *tegra)
->>  	unsigned int i;
->>  	int err;
->>  
->> -	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
->> +	if (!tegra->devfreq->stop_polling)
+> Thank you for the patch! Yet something to improve:
 > 
-> I don't prefer to change the 'stop_polling' on each device driver direclty
-> without devfreq interface. Don't access it directly.
+> [auto build test ERROR on tip/sched/core]
+> [cannot apply to v5.4-rc1 next-20191002]
+> [if your patch is applied to the wrong git tree, please drop us a note to help
+> improve the system. BTW, we also suggest to use '--base' option to specify the
+> base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
 
-Hmm.. okay. Please see more comments below.
+Noted, thanks.
 
->> +		return 0;
->> +
->> +	tegra->devfreq->previous_freq = clk_get_rate(tegra->emc_clock) / KHZ;
->> +	tegra->devfreq->last_stat_updated = jiffies;
->> +	tegra->devfreq->stop_polling = false;
-> 
-> ditto.
-> 
->> +
->> +	actmon_writel(tegra, tegra->devfreq->profile->polling_ms - 1,
->>  		      ACTMON_GLB_PERIOD_CTRL);
->>  
->>  	/*
->> @@ -776,6 +784,11 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
->>  {
->>  	unsigned int i;
->>  
->> +	if (tegra->devfreq->stop_polling)
-> 
-> ditto.
-> 
->> +		return;
->> +
->> +	mutex_unlock(&tegra->devfreq->lock);
->> +
->>  	disable_irq(tegra->irq);
->>  
->>  	cpufreq_unregister_notifier(&tegra->cpu_rate_change_nb,
->> @@ -783,10 +796,16 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
->>  
->>  	cancel_delayed_work_sync(&tegra->cpufreq_update_work);
->>  
->> +	mutex_lock(&tegra->devfreq->lock);
->> +
->>  	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
->>  		tegra_actmon_stop_device(&tegra->devices[i]);
->>  
->>  	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
->> +
->> +	devfreq_update_status(tegra->devfreq, tegra->devfreq->previous_freq);
->> +
->> +	tegra->devfreq->stop_polling = true;
-> 
-> ditto.
-> 
->>  }
->>  
->>  static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
->> @@ -846,7 +865,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
->>  	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
->>  
->>  	/* Number of cycles in a sampling period */
->> -	stat->total_time = cur_freq * ACTMON_SAMPLING_PERIOD;
->> +	stat->total_time = cur_freq * tegra->devfreq->profile->polling_ms;
->>  
->>  	stat->busy_time = min(stat->busy_time, stat->total_time);
->>  
->> @@ -854,7 +873,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
->>  }
->>  
->>  static struct devfreq_dev_profile tegra_devfreq_profile = {
->> -	.polling_ms	= 0,
->> +	.polling_ms	= ACTMON_SAMPLING_PERIOD,
->>  	.target		= tegra_devfreq_target,
->>  	.get_dev_status	= tegra_devfreq_get_dev_status,
->>  };
->> @@ -895,8 +914,11 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
->>  					unsigned int event, void *data)
->>  {
->>  	struct tegra_devfreq *tegra = dev_get_drvdata(devfreq->dev.parent);
->> +	unsigned int new_delay, *delay_ptr = data;
->>  	int ret = 0;
->>  
->> +	mutex_lock(&devfreq->lock);
->> +
->>  	/*
->>  	 * Couple device with the governor early as it is needed at
->>  	 * the moment of governor's start (used by ISR).
->> @@ -905,26 +927,33 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
->>  
->>  	switch (event) {
->>  	case DEVFREQ_GOV_START:
->> -		devfreq_monitor_start(devfreq);
->> +		devfreq->stop_polling = true;
-> 
-> It is not proper to initialize the 'stop_polling' on device driver directly.
-> 
->> +		/* fall through */
->> +	case DEVFREQ_GOV_RESUME:
->>  		ret = tegra_actmon_start(tegra);
->>  		break;
->>  
->>  	case DEVFREQ_GOV_STOP:
->> -		tegra_actmon_stop(tegra);
->> -		devfreq_monitor_stop(devfreq);
-> 
-> Why do you remove them?
+Indeed this patch applies to the master branch of the "tip" tree,
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git , and depends on
+5ebb34edbefa8 "x86/intel: Aggregate microserver naming".
 
-Becasue DEVFREQ_GOV_STOP and DEVFREQ_GOV_SUSPEND are doing the same now:
+I'll use '--base' in the future.
 
-	case DEVFREQ_GOV_STOP:
-		/* fall through */
-	case DEVFREQ_GOV_SUSPEND:
-		tegra_actmon_stop(tegra);
-		break;
 
->> -		break;
->> -
->> +		/* fall through */
->>  	case DEVFREQ_GOV_SUSPEND:
->>  		tegra_actmon_stop(tegra);
->> -		devfreq_monitor_suspend(devfreq);
+Giovanni
+
 > 
-> Why do you remove it?
-
-a) it takes the same mutex devfreq->lock as tegra_governor_event_handler()
-b) the devfreq's manual polling isn't needed for this driver and thus
-devfreq->work is unwanted
-c) this patch makes tegra_actmon_stop() to replicate what
-devfreq_monitor_suspend() does
-
-It looks like it will be better to add new generic events for the
-governors, like DEVFREQ_GOV_START/STOP_POLLING. Then this driver will be
-able to customize start/stop of the polling, while software governors
-will utilize some new default helpers that will start/stop the polling
-work. What do you think?
-
-[snip]
+> url:    https://github.com/0day-ci/linux/commits/Giovanni-Gherdovich/Add-support-for-frequency-invariance-for-some-x86/20191002-221807
+> config: x86_64-defconfig (attached as .config)
+> compiler: gcc-7 (Debian 7.4.0-13) 7.4.0
+> reproduce:
+>         # save the attached .config to linux build tree
+>         make ARCH=x86_64 
+> 
+> If you fix the issue, kindly add following tag
+> Reported-by: kbuild test robot <lkp@intel.com>
+> 
+> All errors (new ones prefixed by >>):
+> 
+> > > arch/x86/kernel/smpboot.c:1834:7: error: 'INTEL_FAM6_ATOM_GOLDMONT_D' undeclared here (not in a function); did you mean 'INTEL_FAM6_ATOM_GOLDMONT_X'?
+> 
+>      ICPU(INTEL_FAM6_ATOM_GOLDMONT_D),
+>           ^
+>    arch/x86/kernel/smpboot.c:1824:25: note: in definition of macro 'ICPU'
+>      { X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF, 0}
+>                             ^~~~~
+> 
+> vim +1834 arch/x86/kernel/smpboot.c
+> 
+>   1831	
+>   1832	static const struct x86_cpu_id has_turbo_ratio_group_limits[] = {
+>   1833		ICPU(INTEL_FAM6_ATOM_GOLDMONT),
+> > 1834		ICPU(INTEL_FAM6_ATOM_GOLDMONT_D),
+> 
+>   1835		ICPU(INTEL_FAM6_ATOM_GOLDMONT_PLUS),
+>   1836		ICPU(INTEL_FAM6_SKYLAKE_X),
+>   1837		{}
+>   1838	};
+>   1839	
+> 
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
