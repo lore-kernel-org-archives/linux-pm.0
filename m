@@ -6,88 +6,103 @@ X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AA37C352AA
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:44:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CB70C35280
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:48:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CB74621A4C
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:44:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 650C621D82
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Oct 2019 15:48:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1570031094;
-	bh=h97wpChBL+4LGh/qzMAkPQSbxEV96F97EHARQGp65cQ=;
+	s=default; t=1570031305;
+	bh=JsedYp4w2ADAPpiKFdN6u1P4tSD3N5UGjygwVyZOcjA=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=SCev8S833W9OQxe9rNprA9Q7v98JAc5SWQsRYtK3aqqiKfCFmuN0sFhBs0MCTPaBa
-	 mReWo8TCJlISCRiGqpLP7soIi/2FUaPOWUCwxpCBtkAY321LO6Vbo+O+9vXby4R5Ti
-	 Nz1/ndm743PGtIcqr1dHRb8pi0F2Q/7BdYdE5ciY=
+	b=CqRgrv74SMa4V/zaPbj2Opqr65LaxfsczySEvo71j53dAIKyye2zFhax5R6Hs+kR5
+	 h/cetEC3Zbve3iIEdJrAXWF6Qh0zkfRFnWZtj8zyioIS4DxBB8utBbofPUxkwxrbGY
+	 LWxnIG3LR/UfQ7tPI0aqTNfsWT0rOYnSsZIMwG0Y=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728932AbfJBPoy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Oct 2019 11:44:54 -0400
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:38126 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728926AbfJBPoy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2019 11:44:54 -0400
-Received: by mail-wm1-f66.google.com with SMTP id 3so7518321wmi.3;
-        Wed, 02 Oct 2019 08:44:52 -0700 (PDT)
+        id S1728546AbfJBPsY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Oct 2019 11:48:24 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:36481 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725799AbfJBPsY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Oct 2019 11:48:24 -0400
+Received: by mail-wm1-f68.google.com with SMTP id m18so7523621wmc.1;
+        Wed, 02 Oct 2019 08:48:23 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=P0EZ/+e8qucG/cQYiHJqjOhVj0ZUu3vDLKFzG8b8i9s=;
-        b=Mr6eAMzCqmWntCY4AjWk1EuITkkw9kHOPhzvpsb0o67amEqr4ZSH1A0B8DAhcOeIUt
-         kJTTMJzAtIsBGZjVDeSgOj/8up3OIfLiF92N/F7w+vjyz+nM/IPPi8bGHO4mq/2FWMml
-         QIYFzYmYEW0vnyG6JMT6jPAyk+W2Psb5tkFNDY9etIFgm2le4BCinOowUX9GWAdXo6VR
-         vna/CYT4Te1rxPEqutWlE2+e9xj1I3xL+8qR3kYwYoHh/EvZQm9O9N5Y1dHQuYxSC679
-         OKj2rtyFrNCRVUS0mHHJqpuD0o1suqHqsk+qXir8hV4SlSzELfkRQ+rJNS+DPD5qD9Xs
-         Yd6A==
-X-Gm-Message-State: APjAAAWtjjZfVQgbinmHzYnMQ6kiF+kJbR5zNNqtuFZBsa/RzpW2J9JL
-        M8Em0vwutaPFtcmB7oDsDHCIGSpHnE4=
-X-Google-Smtp-Source: APXvYqwb5maeTNZ54okVFennzadNPAKBnKZfrg1xA+6SFQtS7oKo7yiFyyqi8xS+MXyKqTMuCwNHqg==
-X-Received: by 2002:a7b:cf33:: with SMTP id m19mr3582106wmg.143.1570031091409;
-        Wed, 02 Oct 2019 08:44:51 -0700 (PDT)
+        bh=IwKP6bZ0/M/GNRiVw0vgEg5C/Drz9g4f2GY67meqLWE=;
+        b=I3BhUdD05maN4HlqZnHRXQv+3zKf0pTyiwmB4Mc06OW6G4rLDijaeWzUIJTBZIXoXb
+         jxMYFmuz7Xq70ZnDTPscRPkOuKF3za0nwFObjAAeKyJAuP4NLtWcdTgjs0Nx4XRFDQnK
+         DcwKmpmiYn+5p1xVo/uog+5Nm4pZ/BsyKvBijeU0w7XRAG5lnynUXlQSh4fHr76Yzq1+
+         w1PbskxiX8xTZfaP1HXRGZ/0AzFVPcYn49SkXHKYgfAW8IkCUglqNNjZ8IwiuJx8/iit
+         1m4fwtgfoOgc72Y/Us0BhJmM9PORr98twPReAS0t812R/qOMFi/B7b6EvDTtWdr4+K5/
+         S+Tg==
+X-Gm-Message-State: APjAAAVZzehGYvcvEo5z0yAWVmNUqBJEElGiu8lT72vCMcH0o8zg2tZi
+        dNufGlvmnFiexUp5RMLsfqQ=
+X-Google-Smtp-Source: APXvYqxeZ2BmgRha6QvpGjz+C0CN04lAeTAC36faPuMfUtJeANX0YHIp1xp1+lIX7zNyzHcuV9uAvQ==
+X-Received: by 2002:a1c:1d85:: with SMTP id d127mr3638645wmd.14.1570031302235;
+        Wed, 02 Oct 2019 08:48:22 -0700 (PDT)
 Received: from kozik-lap ([194.230.155.145])
-        by smtp.googlemail.com with ESMTPSA id 90sm3976343wrr.1.2019.10.02.08.44.49
+        by smtp.googlemail.com with ESMTPSA id o1sm3159082wrs.78.2019.10.02.08.48.20
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 02 Oct 2019 08:44:50 -0700 (PDT)
-Date:   Wed, 2 Oct 2019 17:44:48 +0200
+        Wed, 02 Oct 2019 08:48:21 -0700 (PDT)
+Date:   Wed, 2 Oct 2019 17:48:19 +0200
 From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Sylwester Nawrocki <s.nawrocki@samsung.com>
-Cc:     vireshk@kernel.org, robh+dt@kernel.org, kgene@kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
+To:     Rob Herring <robh@kernel.org>
+Cc:     Sylwester Nawrocki <s.nawrocki@samsung.com>, vireshk@kernel.org,
+        robh+dt@kernel.org, kgene@kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         b.zolnierkie@samsung.com, m.szyprowski@samsung.com
-Subject: Re: [PATCH v4 6/6] ARM: dts: Add samsung,asv-bin property for
- odroidxu3-lite
-Message-ID: <20191002154448.GC3469@kozik-lap>
+Subject: Re: [PATCH v4 2/6] dt-bindings: samsung: Update the CHIP ID binding
+ documentation
+Message-ID: <20191002154819.GA4072@kozik-lap>
 References: <20190910123618.27985-1-s.nawrocki@samsung.com>
- <CGME20190910123647eucas1p176bc817bbdae813e5aa9ab4745f9c285@eucas1p1.samsung.com>
- <20190910123618.27985-7-s.nawrocki@samsung.com>
+ <CGME20190910123637eucas1p26d2051f9bdd1bdf4510f1908ea98f641@eucas1p2.samsung.com>
+ <20190910123618.27985-3-s.nawrocki@samsung.com>
+ <20190917181322.GA683@bogus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20190910123618.27985-7-s.nawrocki@samsung.com>
+In-Reply-To: <20190917181322.GA683@bogus>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 10, 2019 at 02:36:18PM +0200, Sylwester Nawrocki wrote:
-> The Exynos5422 SoC used on Odroid XU3 Lite boards belongs to
-> a special ASV bin but this information cannot be read from the
-> CHIPID block registers. Add samsung,asv-bin property for XU3
-> Lite to ensure the ASV bin is properly determined.
+On Tue, Sep 17, 2019 at 01:13:22PM -0500, Rob Herring wrote:
+> On Tue, 10 Sep 2019 14:36:14 +0200, Sylwester Nawrocki wrote:
+> > This patch adds documentation of a new optional "samsung,asv-bin"
+> > property in the chipid device node and documents requirement of
+> > "syscon" compatible string.  These additions are needed to support
+> > Exynos ASV (Adaptive Supply Voltage) feature.
+> > 
+> > Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> > ---
+> > Changes since v3:
+> >  - none
+> > 
+> > Changes since v2:
+> >  - corrected patch summary line prefix, the patch moved in the
+> >    sequence
+> > 
+> > Changes since v1 (RFC):
+> >  - new patch
+> > ---
+> >  .../devicetree/bindings/arm/samsung/exynos-chipid.txt  | 10 ++++++++--
+> >  1 file changed, 8 insertions(+), 2 deletions(-)
+> > 
 > 
-> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> ---
-> Changes since v2:
->  - none
-> 
-> Changes since v1 (RFC):
->  - new patch
-> ---
->  arch/arm/boot/dts/exynos5422-odroidxu3-lite.dts | 4 ++++
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-Thanks, applied.
+Dear Sylwester,
+
+This will create conflicts with conversion to dt-schema (already picked
+up by Rob).
+
+Can you convert this patch to dt-schema format and send it for Rob?
 
 Best regards,
 Krzysztof
