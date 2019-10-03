@@ -2,37 +2,29 @@ Return-Path: <SRS0=CaQ/=X4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A65F5C32792
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Oct 2019 17:36:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A51A7C10F14
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Oct 2019 17:53:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 89BE220865
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Oct 2019 17:36:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7C08D20865
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Oct 2019 17:53:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388556AbfJCRgT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Oct 2019 13:36:19 -0400
-Received: from mga11.intel.com ([192.55.52.93]:13339 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387524AbfJCRgS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 3 Oct 2019 13:36:18 -0400
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 03 Oct 2019 10:36:17 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.67,253,1566889200"; 
-   d="scan'208";a="192188491"
-Received: from spandruv-mobl3.jf.intel.com ([10.254.33.3])
-  by fmsmga007.fm.intel.com with ESMTP; 03 Oct 2019 10:36:16 -0700
-Message-ID: <dfb172a0a8003f90fd185b7b154164b8b49bbaa9.camel@linux.intel.com>
-Subject: Re: [PATCH v2 1/2] x86,sched: Add support for frequency invariance
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+        id S1729379AbfJCRxw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Oct 2019 13:53:52 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:65244 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726119AbfJCRxw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Oct 2019 13:53:52 -0400
+Received: from 79.184.253.225.ipv4.supernova.orange.pl (79.184.253.225) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
+ id e988acc0bf5e2a5f; Thu, 3 Oct 2019 19:53:49 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Peter Zijlstra <peterz@infradead.org>
 Cc:     Giovanni Gherdovich <ggherdovich@suse.cz>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Thomas Gleixner <tglx@linutronix.de>,
         Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>,
         Len Brown <lenb@kernel.org>, x86@kernel.org,
@@ -46,24 +38,22 @@ Cc:     Giovanni Gherdovich <ggherdovich@suse.cz>,
         Quentin Perret <qperret@qperret.net>,
         Dietmar Eggemann <dietmar.eggemann@arm.com>,
         Doug Smythies <dsmythies@telus.net>
-Date:   Thu, 03 Oct 2019 10:36:16 -0700
+Subject: Re: [PATCH v2 1/2] x86,sched: Add support for frequency invariance
+Date:   Thu, 03 Oct 2019 19:53:49 +0200
+Message-ID: <1990043.dY4KdrEkPr@kreacher>
 In-Reply-To: <20191003121537.GR4536@hirez.programming.kicks-ass.net>
-References: <20191002122926.385-1-ggherdovich@suse.cz>
-         <20191002122926.385-2-ggherdovich@suse.cz> <1906426.HDqaVa71mF@kreacher>
-         <20191003121537.GR4536@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-3.fc28) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+References: <20191002122926.385-1-ggherdovich@suse.cz> <1906426.HDqaVa71mF@kreacher> <20191003121537.GR4536@hirez.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 2019-10-03 at 14:15 +0200, Peter Zijlstra wrote:
+On Thursday, October 3, 2019 2:15:37 PM CEST Peter Zijlstra wrote:
 > On Thu, Oct 03, 2019 at 12:27:52PM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, October 2, 2019 2:29:25 PM CEST Giovanni Gherdovich
-> > wrote:
+> > On Wednesday, October 2, 2019 2:29:25 PM CEST Giovanni Gherdovich wrote:
 > > > +static bool turbo_disabled(void)
 > > > +{
 > > > +	u64 misc_en;
@@ -76,23 +66,19 @@ On Thu, 2019-10-03 at 14:15 +0200, Peter Zijlstra wrote:
 > > > +	return (misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE);
 > > > +}
 > > 
-> > This setting may be updated by the platform firmware (BIOS) in some
-> > cases
-> > (see kernel.org BZ 200759, for example), so in general checking it
-> > once
+> > This setting may be updated by the platform firmware (BIOS) in some cases
+> > (see kernel.org BZ 200759, for example), so in general checking it once
 > > at the init time is not enough.
 > 
-> Is there anything sane we can do if the BIOS frobs stuff like that
-> under
+> Is there anything sane we can do if the BIOS frobs stuff like that under
 > our feet? Other than yell bloody murder, that is?
-On  this platform which this BZ is talking about, you will get an ACPI
-notification about this change. But the notification will happen for
-only one CPU, but it needs to be accounted for all CPUs.
 
-Thanks,
-Srinivas
+Sane?  No, I don't think so.
 
-> 
+Now, in principle *something* could be done to fix things up in the _PPC
+notify handler, but I guess we would just end up disabling the scale
+invariance code altogether in those cases.
+
 > > > +
 > > > +#include <asm/cpu_device_id.h>
 > > > +#include <asm/intel-family.h>
@@ -106,8 +92,7 @@ Srinivas
 > > > +	{}
 > > > +};
 > > > +
-> > > +static const struct x86_cpu_id has_turbo_ratio_group_limits[] =
-> > > {
+> > > +static const struct x86_cpu_id has_turbo_ratio_group_limits[] = {
 > > > +	ICPU(INTEL_FAM6_ATOM_GOLDMONT),
 > > > +	ICPU(INTEL_FAM6_ATOM_GOLDMONT_D),
 > > > +	ICPU(INTEL_FAM6_ATOM_GOLDMONT_PLUS),
@@ -141,13 +126,10 @@ Srinivas
 > > > +	if (err)
 > > > +		return;
 > > > +
-> > > +	ratio = (ratio >> 8) & 0xFF;                /* max P state
-> > > ratio */
-> > > +	turbo_ratio = (turbo_ratio >> 24) & 0xFF;   /* 4C turbo ratio
-> > > */
+> > > +	ratio = (ratio >> 8) & 0xFF;                /* max P state ratio */
+> > > +	turbo_ratio = (turbo_ratio >> 24) & 0xFF;   /* 4C turbo ratio */
 > > > +
-> > > +	arch_max_freq = div_u64(turbo_ratio * SCHED_CAPACITY_SCALE,
-> > > ratio);
+> > > +	arch_max_freq = div_u64(turbo_ratio * SCHED_CAPACITY_SCALE, ratio);
 > > > +
 > > > +	static_branch_enable(&arch_scale_freq_key);
 > > > +}
@@ -161,8 +143,7 @@ Srinivas
 > > > +	 * - Xeon Gold/Platinum, Atom Goldmont/Goldmont Plus
 > > > +	 * - Atom Silvermont
 > > > +	 *
-> > > +	 * which all now get by default arch_max_freq =
-> > > SCHED_CAPACITY_SCALE
+> > > +	 * which all now get by default arch_max_freq = SCHED_CAPACITY_SCALE
 > > > +	 */
 > > > +	core_set_cpu_max_freq();
 > 
@@ -176,16 +157,27 @@ Srinivas
 > 
 > 	...
 > 
-> and then those checks make sense, because we're failing the 'core'
-> way,
+> and then those checks make sense, because we're failing the 'core' way,
 > but another way might work.
 > 
-> But in this version the atom version has gone missing -- I've
-> suggested
+> But in this version the atom version has gone missing -- I've suggested
 > it be put back as an additional patch.
 > 
 > Also, the SKX way still needs to be written..
-> 
+
+Well, but the smp_processor_id() check has nothing to do with whether or not
+this is "core" or "atom" or something else, for example.
+
+And to me
+
+	if (this is not core)
+		return;
+
+	do_core_stuff();
+
+is slightly more straightforward than putting the "this is not core" check into
+do_core_stuff() as the former avoids a redundant call (at least in principle).
+
 > > > +}
 > > > +
 > > > +static void init_scale_freq(void *arg)
@@ -222,7 +214,9 @@ Srinivas
 > > would do the trick.
 > 
 > I was hoping to grow X86_VENDOR_AMD bits..
-> 
+
+Well, the if () can be changed into switch () easily enough while adding them.
+
 > > > +
 > > > +	init_scale_freq(NULL);
 > > > +}
@@ -241,8 +235,7 @@ Srinivas
 > > > +		return;
 > > > +
 > > 
-> > This may be a silly question, but can using tick_disable be
-> > avoided?
+> > This may be a silly question, but can using tick_disable be avoided?
 > > 
 > > I guess it is there, because disabling the static branch from
 > > x86_arch_scale_freq_tick_disable() would be unsafe, but I'm not
@@ -250,8 +243,11 @@ Srinivas
 > 
 > There's not enough state -- we can of course fix that.
 > 
-> That is, if you disable it, we don't know if we should enable it
-> again
-> later or if it was disabled because we failed to initialize it
-> earlier.
+> That is, if you disable it, we don't know if we should enable it again
+> later or if it was disabled because we failed to initialize it earlier.
+
+Two bits can be used for storing that info, so BIT(1) is set when we fail to
+initialize it and BIT(0) is set when it is disabled later.  Or similar.
+
+
 
