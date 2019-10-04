@@ -2,110 +2,104 @@ Return-Path: <SRS0=lxUh=X5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCCC0C4360C
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Oct 2019 13:52:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DB47C4CED1
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Oct 2019 15:07:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B494F222C0
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Oct 2019 13:52:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BAWysBsP"
+	by mail.kernel.org (Postfix) with ESMTP id 75408222C4
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Oct 2019 15:07:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1570201671;
+	bh=qYioEzDmICb0pDIcd2sao32iGGG/DdI1z0g1uD+bG7w=;
+	h=From:To:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=c4rspyAkyuSsW+t4xd6SdGBBDKwAzXwbt94+lg4GrloxTJVBnbam5BalIinYi372L
+	 Os24ohjkPH1JRmqAjRKiR6dSF5uWq+q3lsRAEfQnso3RX0cs1I/vxJ/PW99nfABKPQ
+	 OeTcyjZR3TNnfbNfcCG2l1oakxPe+fT0Njult7+o=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388870AbfJDNwe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Oct 2019 09:52:34 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:37711 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388806AbfJDNwd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Oct 2019 09:52:33 -0400
-Received: by mail-wr1-f66.google.com with SMTP id p14so6376670wro.4
-        for <linux-pm@vger.kernel.org>; Fri, 04 Oct 2019 06:52:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=/NvVmuNoOB0cI3exs6clZvUlSAX7Buc7zqODPiW83oc=;
-        b=BAWysBsPte1eDOFAueq6l7aDz/lo8WQ4I00OCGcelbXMKdAaHfz7FnmV8vaWJUtuJl
-         XYSYy9P8BXBhxyBRaFO/SZb6sUBrhWoxzVUhi1BnayfEt6xfB1E5Syt3KiiCXlNIGXav
-         5+xHo8reipGBqmVqZxoa2DV2l3RZ1j6EblIJkMIDZ1ZB4htJ3izRSLbDYNSGJZOzj17V
-         Zcohv/yAKl9kPLc0stlmTD/HEXtMccfj5kHhf2ckYTm4pZ3pE2WiR7NYgy6LLP3LtgWU
-         U4Lh1s3ay5tdxqXImbzaKSLyVkITdDOpt7NFl+N7jVXt3t+/EMW4I3u5+veWBLx/x9wj
-         SNTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=/NvVmuNoOB0cI3exs6clZvUlSAX7Buc7zqODPiW83oc=;
-        b=do1a0l+qfGLO8NPpjorJk6YU5JCY44UuwSKLzp9kVxGGnU6Q6z9B1Ya1p6ZGTZZoIA
-         ezySNHQstRs7cZiUK6fHXG6iwUGQFBwDvm14z1ADvhjOUZYsQASRFS8fAjD/zvVRDYaP
-         DwqTaGBNVaHs1sq7KohINjQQ7Log6idg/EIY0LBG9xjRw0+mg3YWJw4rMjELqfbttNLW
-         ahdCHRxk+OfwaQoi4zs4HQCN/rdS48PAtPd1udoXh0lCP/ZhcT1nM6LRUggSBQh6AkVc
-         ZpjIU6SWdSwXhIJDcbY5QnxO3QXVwTx9IcpM/YMh40jTfUg2X9kn4ZnIQIrdAs8JVsaJ
-         ZCuQ==
-X-Gm-Message-State: APjAAAVFE04x+zBVRW2muUCUPIsekubgcv9M1ztFB5qr8DDXyt6hT+mC
-        gjN0R1BjD4zRXse42sFnLNFwig==
-X-Google-Smtp-Source: APXvYqy2g3UP4Xetnx/eP45GILdnzIptbOKDy3NsV2tZHWR0IcpxUDP5HKAjTn9LSSeZcbJQp0Ux3g==
-X-Received: by 2002:a5d:4a09:: with SMTP id m9mr11842704wrq.93.1570197151233;
-        Fri, 04 Oct 2019 06:52:31 -0700 (PDT)
-Received: from dell ([2.27.167.122])
-        by smtp.gmail.com with ESMTPSA id x5sm5230136wrt.75.2019.10.04.06.52.30
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Fri, 04 Oct 2019 06:52:30 -0700 (PDT)
-Date:   Fri, 4 Oct 2019 14:52:29 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Bartosz Golaszewski <brgl@bgdev.pl>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, linux-input@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: Re: [PATCH 1/6] dt-bindings: mfd: max77650: convert the binding
- document to yaml
-Message-ID: <20191004135229.GF18429@dell>
-References: <20190930130246.4860-1-brgl@bgdev.pl>
- <20190930130246.4860-2-brgl@bgdev.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190930130246.4860-2-brgl@bgdev.pl>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+        id S2389312AbfJDPHu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Oct 2019 11:07:50 -0400
+Received: from mail.kernel.org ([198.145.29.99]:50402 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2388802AbfJDPHt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 4 Oct 2019 11:07:49 -0400
+Received: from localhost.localdomain (unknown [194.230.155.145])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id F257521D81;
+        Fri,  4 Oct 2019 15:07:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1570201668;
+        bh=qYioEzDmICb0pDIcd2sao32iGGG/DdI1z0g1uD+bG7w=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=QxMOULfhqAHILdyIZyGrilDN3NMOHFLVFs1DQK2m3A3Kgc53Sy9lrgf6WfAxseFC7
+         z/lVWyJmrLK/sgW43+7YUZGRN5UNjWPy69Cgt2uB4Pdv/a3PxmdjvZmBIc5ZgVPMqg
+         1nZLHnCqZVXtqEkiGjZZ4X0sMtIH74tEyFJS6YWA=
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFT 2/3] power: supply: ab8500_fg: Do not free non-requested IRQs in probe's error path
+Date:   Fri,  4 Oct 2019 17:07:37 +0200
+Message-Id: <20191004150738.6542-2-krzk@kernel.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191004150738.6542-1-krzk@kernel.org>
+References: <20191004150738.6542-1-krzk@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 30 Sep 2019, Bartosz Golaszewski wrote:
+When requesting interrupt fails, free only interrupts already requested,
+not all of them.
 
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> 
-> Convert the binding document for max77650 core mfd module to yaml.
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-MAX77650, MFD, YAML.
+---
 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> ---
->  .../devicetree/bindings/mfd/max77650.txt      | 47 +----------
->  .../devicetree/bindings/mfd/max77650.yaml     | 83 +++++++++++++++++++
->  2 files changed, 84 insertions(+), 46 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/mfd/max77650.yaml
+Not marking as cc-stable as this was not reproduced and not tested.
+---
+ drivers/power/supply/ab8500_fg.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Looks okay in principle, but needs a DT Ack.  Preferably from someone
-who speaks YAML.
-
+diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
+index 36bbb8ea05da..7d879589adc2 100644
+--- a/drivers/power/supply/ab8500_fg.c
++++ b/drivers/power/supply/ab8500_fg.c
+@@ -3158,7 +3158,7 @@ static int ab8500_fg_probe(struct platform_device *pdev)
+ 		if (ret != 0) {
+ 			dev_err(di->dev, "failed to request %s IRQ %d: %d\n",
+ 				ab8500_fg_irq_th[i].name, irq, ret);
+-			goto free_irq;
++			goto free_irq_th;
+ 		}
+ 		dev_dbg(di->dev, "Requested %s IRQ %d: %d\n",
+ 			ab8500_fg_irq_th[i].name, irq, ret);
+@@ -3173,7 +3173,7 @@ static int ab8500_fg_probe(struct platform_device *pdev)
+ 	if (ret != 0) {
+ 		dev_err(di->dev, "failed to request %s IRQ %d: %d\n",
+ 			ab8500_fg_irq_bh[0].name, irq, ret);
+-		goto free_irq;
++		goto free_irq_th;
+ 	}
+ 	dev_dbg(di->dev, "Requested %s IRQ %d: %d\n",
+ 		ab8500_fg_irq_bh[0].name, irq, ret);
+@@ -3215,7 +3215,9 @@ static int ab8500_fg_probe(struct platform_device *pdev)
+ 	/* We also have to free all registered irqs */
+ 	irq = platform_get_irq_byname(pdev, ab8500_fg_irq_bh[0].name);
+ 	free_irq(irq, di);
+-	for (i = 0; i < ARRAY_SIZE(ab8500_fg_irq_th); i++) {
++free_irq_th:
++	while (--i >= 0) {
++		/* Last assignment of i from primary interrupt handlers */
+ 		irq = platform_get_irq_byname(pdev, ab8500_fg_irq_th[i].name);
+ 		free_irq(irq, di);
+ 	}
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.17.1
+
