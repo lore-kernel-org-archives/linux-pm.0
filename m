@@ -2,170 +2,214 @@ Return-Path: <SRS0=zYO/=X7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41998C10F14
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Oct 2019 15:12:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94A53C10F14
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Oct 2019 15:34:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0E7EB214D9
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Oct 2019 15:12:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pp0Vss3x"
+	by mail.kernel.org (Postfix) with ESMTP id 5CA032080F
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Oct 2019 15:34:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1570376068;
+	bh=ub5FnWHQniRSsgAuU+7OZVcSEkJMP+Yo0VPYG7HHSag=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=zsAckrg+yOx8zAiHz/Nmh5kgCKvBJehfDMVOuryQjbbWpNEGfzxc+k8CwdQT1RCQ5
+	 mw33Px3xhDRpCTkeWqoj4Rsv++TqALZWexwiXunjaxOiyw6sg217iw5i9E/wdyA1JL
+	 XOi28Qf5GoRx2Knbb25MFpJrOLSDzoq3MZzFBGPk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726439AbfJFPLe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Oct 2019 11:11:34 -0400
-Received: from mail-yb1-f196.google.com ([209.85.219.196]:39968 "EHLO
-        mail-yb1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726134AbfJFPLe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Oct 2019 11:11:34 -0400
-Received: by mail-yb1-f196.google.com with SMTP id s7so207940ybq.7;
-        Sun, 06 Oct 2019 08:11:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=jbtblgd/jJPBkocI+MwRuPHJhAT10ALT9hQEoN0MCo4=;
-        b=pp0Vss3xZ2x2i3OiesE0HzbYZb1Ba6rMU6p/AmC99WBLaB24DpFCIZ/Pbh5rmUlmgU
-         789dzs9gnGZ4m5nej4eyLhbiAc6b2qi3q0EsI1KIJfRPC3EiOYEhQWv9Me+JICnlFZVI
-         L+cGI086edZssoONImyLsgv1cvGs53NZ83CNYkBuL303hI+X3cCQJ0cwz1uDPpI5MHQp
-         4++e9laTjLX+5C5ofKZej0BCnJWYBwwRdchZs1gHnW1UkFQCHbfSvfeBcENs8l2dNWhi
-         fOQq3sngZWTyUuex7wGfhand7B8AwkmwHZWso8ASQoYIfQQC/gaFSEJJ9SDRAVx+sV3I
-         Dn4Q==
+        id S1725985AbfJFPe2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Oct 2019 11:34:28 -0400
+Received: from mail-ot1-f67.google.com ([209.85.210.67]:41622 "EHLO
+        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725905AbfJFPe1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Oct 2019 11:34:27 -0400
+Received: by mail-ot1-f67.google.com with SMTP id g13so9004763otp.8;
+        Sun, 06 Oct 2019 08:34:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=jbtblgd/jJPBkocI+MwRuPHJhAT10ALT9hQEoN0MCo4=;
-        b=tcnLSQzwXVWwadZ+iw+mRcMMisolUHTEzbT5BgYdLPVw1+nBwkz8mPMLHd8p5kFYoi
-         bsX2He4hwLTnKPbG70p0Ks1zroRLJ2raBf+xP4FnTobjPIGCsFazgFtrpzYLtDw+eVu/
-         FhYo1qTua0nKNvUEju4xaYNuGiScep9F3qq8zyyic/Rs1QR1oT+jTz66hlI+8XXy/pzs
-         i8zxyg016oCMs0rcQ0DR1qTpEe2Gle7eA2GzMhJvlWh/t5Th2TGgYEQhbCx9DMx4pZoX
-         WWrGiJl7EbEd/qw/WqbCGicRoQR7rlB+fqJnJQmTkgaJomnQvl85xaRvHvQdeVvzxBQU
-         DB8g==
-X-Gm-Message-State: APjAAAXgx/8cSHPKB+FAmsCE4QFReu6TUSJrM57hjPEvcVztq44K0xtl
-        t+NZRhgL74cSWFtemeGsMSY=
-X-Google-Smtp-Source: APXvYqzuLr7tNwFfzVIotQtIQRiBkdOuxRVp0bEL09oY03vVYasfb32PD0Z2/XiXhEWU81GBtjcSng==
-X-Received: by 2002:a25:34d2:: with SMTP id b201mr7985252yba.232.1570374693292;
-        Sun, 06 Oct 2019 08:11:33 -0700 (PDT)
-Received: from localhost.localdomain (072-189-084-142.res.spectrum.com. [72.189.84.142])
-        by smtp.gmail.com with ESMTPSA id e82sm2662434ywc.43.2019.10.06.08.11.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Oct 2019 08:11:32 -0700 (PDT)
-From:   William Breathitt Gray <vilhelm.gray@gmail.com>
-To:     linus.walleij@linaro.org, bgolaszewski@baylibre.com
-Cc:     akpm@linux-foundation.org, linux-gpio@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-        andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk,
-        yamada.masahiro@socionext.com,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        geert@linux-m68k.org, preid@electromag.com.au, lukas@wunner.de,
-        sean.nyekjaer@prevas.dk, morten.tiljeset@prevas.dk,
-        William Breathitt Gray <vilhelm.gray@gmail.com>
-Subject: [PATCH v16 00/14] Introduce the for_each_set_clump8 macro
-Date:   Sun,  6 Oct 2019 11:10:57 -0400
-Message-Id: <cover.1570374078.git.vilhelm.gray@gmail.com>
-X-Mailer: git-send-email 2.23.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ZpRvHMhSkMtvUwP1xP8/zh4CxYzgsJIcKXMPh4MXB5I=;
+        b=i58kjVfVKjGd3BbwnOUKbseZHmTIJBtMynuuBQPkeydjhcypJwGCfi7RhRqvyLImf5
+         65yJoShSfyhlRCkzb8q9xOa0/f9oLcSom7VJMnFJxc+Vsyel7UCRD0yobCqRP2F7KWcS
+         LHAUCYXmlGme9RqvZUgyolnHGWm1PeINZG7SS7TlcWQVdDJ0bEo4CxldOq1XvOb0sMIT
+         LstBxU7sUf1aEdllCdwgR7faO7WqYWPZ6Ui39WmfEyYycTBHUugqxyojomVbZj2eZM1f
+         L76U0HC3UjdocIuFTPRem28HsqZuzSoAV5ne36/3XSB1blz5mfwdnXOS9Nb6grxWyv1a
+         MbsA==
+X-Gm-Message-State: APjAAAU78FHYFy7r7ZLfZdoOjPVb7yakfHfgmb4NJHVhBeQcpiZQcQMN
+        eeFDf4xrTkoCAi3MM6ZvUcwqqQu4ewFL+oPcu10=
+X-Google-Smtp-Source: APXvYqy7q9sgfYqVSnfVVCMqi8eFd+CXpG3crmh1bySZ1WRxDy/+xj4KQY858higSaFglUZMBcoHU4ytn0DeV2qEv8c=
+X-Received: by 2002:a05:6830:1504:: with SMTP id k4mr4873638otp.262.1570376066195;
+ Sun, 06 Oct 2019 08:34:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <001601d57487$e1029ef0$a307dcd0$@net> <000f01d576df$a6b87a30$f4296e90$@net>
+ <CAJZ5v0gu=rALS9ZLNMDT3cw_sT2m8XCKP6+AW3488x2Q9EXM3g@mail.gmail.com> <000001d57c54$db31f8c0$9195ea40$@net>
+In-Reply-To: <000001d57c54$db31f8c0$9195ea40$@net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Sun, 6 Oct 2019 17:34:15 +0200
+Message-ID: <CAJZ5v0jo-KQouuE3P51THvU33kViBVtDq1WknBFx+FWUY0e=ag@mail.gmail.com>
+Subject: Re: [RFC/RFT][PATCH v8] cpuidle: New timer events oriented governor
+ for tickless systems
+To:     Doug Smythies <dsmythies@telus.net>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Mel Gorman <mgorman@suse.de>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Chen, Hu" <hu1.chen@intel.com>,
+        Quentin Perret <quentin.perret@arm.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Giovanni Gherdovich <ggherdovich@suse.cz>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes in v16:
-  - Fix typo in max3191x patch ('offset' to 'bit' in bitmap_set_value8)
+On Sun, Oct 6, 2019 at 4:46 PM Doug Smythies <dsmythies@telus.net> wrote:
+>
+> On 2019.10.01 02:32 Rafael J. Wysocki wrote:
+> > On Sun, Sep 29, 2019 at 6:05 PM Doug Smythies <dsmythies@telus.net> wrote:
+> >> On 2019.09.26 09:32 Doug Smythies wrote:
+> >>
+> >>> If the deepest idle state is disabled, the system
+> >>> can become somewhat unstable, with anywhere between no problem
+> >>> at all, to the occasional temporary jump using a lot more
+> >>> power for a few seconds, to a permanent jump using a lot more
+> >>> power continuously. I have been unable to isolate the exact
+> >>> test load conditions under which this will occur. However,
+> >>> temporarily disabling and then enabling other idle states
+> >>> seems to make for a somewhat repeatable test. It is important
+> >>> to note that the issue occurs with only ever disabling the deepest
+> >>> idle state, just not reliably.
+> >>>
+> >>> I want to know how you want to proceed before I do a bunch of
+> >>> regression testing.
+> >>
+> >> I did some regression testing anyhow, more to create and debug
+> >> a methodology than anything else.
+> >>
+> >>> On 2018.12.11 03:50 Rafael J. Wysocki wrote:
+> >>>
+> >>>> v7 -> v8:
+> >>>>  * Apply the selection rules to the idle deepest state as well as to
+> >>>>    the shallower ones (the deepest idle state was treated differently
+> >>>>    before by mistake).
+> >>>>  * Subtract 1/2 of the exit latency from the measured idle duration
+> >>>>    in teo_update() (instead of subtracting the entire exit latency).
+> >>>>    This makes the idle state selection be slightly more performance-
+> >>>>   oriented.
+> >>>
+> >>> I have isolated the issue to a subset of the v7 to v8 changes, however
+> >>> it was not the exit latency changes.
+> >>>
+> >>> The partial revert to V7 changes I made were (on top of 5.3):
+> >>
+> >> The further testing showed a problem or two with my partial teo-v7 reversion
+> >> (I call it teo-v12) under slightly different testing conditions.
+>
+> Correction:
+> There was no problem with my partial reversion kernel (a.k.a. teo-v12). The problem
+> was confusion over which kernel I was actually running for whatever test.
+>
+> >>
+> >> I also have a 5.3 based kernel with the current teo reverted and the entire
+> >> teo-v7 put in its place. I have yet to find a idle state disabled related issue
+> >> with this kernel.
+> >>
+> >> I'll come back to this thread at a later date with better details and test results.
+> >
+> > Thanks for this work!
+> >
+> > Please also note that there is a teo patch in 5.4-rc1 that may make a
+> > difference in principle.
+>
+> Yes, actually this saga started from somewhere between kernel 5.3 and 5.4-rc1,
+> and did include those teo patches, which actually significantly increases the
+> probability of the issue occurring.
+>
+> When the deepest idle state is disabled, and the all states search loop exits
+> normally, it might incorrectly re-evaluate a previous idle state previously
+> deemed not worthy of the check. This was introduced between teo development
+> versions 7 and 8. The fix is to move the code back inside the loop.
+> (I'll submit a patch in a day or two).
 
-While adding GPIO get_multiple/set_multiple callback support for various
-drivers, I noticed a pattern of looping manifesting that would be useful
-standardized as a macro.
+OK
 
-This patchset introduces the for_each_set_clump8 macro and utilizes it
-in several GPIO drivers. The for_each_set_clump macro8 facilitates a
-for-loop syntax that iterates over a memory region entire groups of set
-bits at a time.
+> I do not think I stated it clearly before: The problem here is that some CPUs
+> seem to get stuck in idle state 0, and when they do power consumption spikes,
+> often by several hundred % and often indefinitely.
 
-For example, suppose you would like to iterate over a 32-bit integer 8
-bits at a time, skipping over 8-bit groups with no set bit, where
-XXXXXXXX represents the current 8-bit group:
+That indeed has not been clear to me, thanks for the clarification!
 
-    Example:        10111110 00000000 11111111 00110011
-    First loop:     10111110 00000000 11111111 XXXXXXXX
-    Second loop:    10111110 00000000 XXXXXXXX 00110011
-    Third loop:     XXXXXXXX 00000000 11111111 00110011
+> I made a hack job automated test:
+> Kernel  tests           fail rate
+> 5.4-rc1  6616           13.45%
+> 5.3              2376            4.50%
+> 5.3-teov7       12136            0.00%  <<< teo.c reverted and teov7 put in its place.
+> 5.4-rc1-ds      11168        0.00%  <<< proposed patch (> 7 hours test time)
+>
+> Proposed patch (on top of kernel 5.4-rc1):
+>
+> doug@s15:~/temp-k-git/linux$ git diff
+> diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
+> index b5a0e49..0502aa9 100644
+> --- a/drivers/cpuidle/governors/teo.c
+> +++ b/drivers/cpuidle/governors/teo.c
+> @@ -276,8 +276,22 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+>                 if (idx < 0)
+>                         idx = i; /* first enabled state */
+>
+> -               if (s->target_residency > duration_us)
+> +               if (s->target_residency > duration_us){
+> +                       /*
+> +                        * If the "hits" metric of the idle state matching the sleep length is
+> +                        * greater than its "misses" metric, that is the one to use.  Otherwise,
+> +                        * it is more likely that one of the shallower states will match the
+> +                        * idle duration observed after wakeup, so take the one with the maximum
+> +                        * "early hits" metric, but if that cannot be determined, just use the
+> +                        * state selected so far.
+> +                        */
+> +                       if (cpu_data->states[idx].hits <= cpu_data->states[idx].misses &&
+> +                           max_early_idx >= 0) {
+> +                               idx = max_early_idx;
+> +                               duration_us = drv->states[idx].target_residency;
+> +                       }
+>                         break;
+> +               }
+>
+>                 if (s->exit_latency > latency_req && constraint_idx > i)
+>                         constraint_idx = i;
+> @@ -293,20 +307,6 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+>         }
+>
+>         /*
+> -        * If the "hits" metric of the idle state matching the sleep length is
+> -        * greater than its "misses" metric, that is the one to use.  Otherwise,
+> -        * it is more likely that one of the shallower states will match the
+> -        * idle duration observed after wakeup, so take the one with the maximum
+> -        * "early hits" metric, but if that cannot be determined, just use the
+> -        * state selected so far.
+> -        */
+> -       if (cpu_data->states[idx].hits <= cpu_data->states[idx].misses &&
+> -           max_early_idx >= 0) {
+> -               idx = max_early_idx;
+> -               duration_us = drv->states[idx].target_residency;
+> -       }
+> -
+> -       /*
+>          * If there is a latency constraint, it may be necessary to use a
+>          * shallower idle state than the one selected so far.
+>          */
 
-Each iteration of the loop returns the next 8-bit group that has at
-least one set bit.
+This change may cause the deepest state to be selected even if its
+"hits" metric is less than the "misses" one AFAICS, in which case the
+max_early_index state should be selected instead.
 
-The for_each_set_clump8 macro has four parameters:
-
-    * start: set to the bit offset of the current clump
-    * clump: set to the current clump value
-    * bits: bitmap to search within
-    * size: bitmap size in number of bits
-
-In this version of the patchset, the for_each_set_clump macro has been
-reimplemented and simplified based on the suggestions provided by Rasmus
-Villemoes and Andy Shevchenko in the version 4 submission.
-
-In particular, the function of the for_each_set_clump macro has been
-restricted to handle only 8-bit clumps; the drivers that use the
-for_each_set_clump macro only handle 8-bit ports so a generic
-for_each_set_clump implementation is not necessary. Thus, a solution for
-large clumps (i.e. those larger than the width of a bitmap word) can be
-postponed until a driver appears that actually requires such a generic
-for_each_set_clump implementation.
-
-For what it's worth, a semi-generic for_each_set_clump (i.e. for clumps
-smaller than the width of a bitmap word) can be implemented by simply
-replacing the hardcoded '8' and '0xFF' instances with respective
-variables. I have not yet had a need for such an implementation, and
-since it falls short of a true generic for_each_set_clump function, I
-have decided to forgo such an implementation for now.
-
-In addition, the bitmap_get_value8 and bitmap_set_value8 functions are
-introduced to get and set 8-bit values respectively. Their use is based
-on the behavior suggested in the patchset version 4 review.
-
-William Breathitt Gray (14):
-  bitops: Introduce the for_each_set_clump8 macro
-  lib/test_bitmap.c: Add for_each_set_clump8 test cases
-  gpio: 104-dio-48e: Utilize for_each_set_clump8 macro
-  gpio: 104-idi-48: Utilize for_each_set_clump8 macro
-  gpio: gpio-mm: Utilize for_each_set_clump8 macro
-  gpio: ws16c48: Utilize for_each_set_clump8 macro
-  gpio: pci-idio-16: Utilize for_each_set_clump8 macro
-  gpio: pcie-idio-24: Utilize for_each_set_clump8 macro
-  gpio: uniphier: Utilize for_each_set_clump8 macro
-  gpio: 74x164: Utilize the for_each_set_clump8 macro
-  thermal: intel: intel_soc_dts_iosf: Utilize for_each_set_clump8 macro
-  gpio: pisosr: Utilize the for_each_set_clump8 macro
-  gpio: max3191x: Utilize the for_each_set_clump8 macro
-  gpio: pca953x: Utilize the for_each_set_clump8 macro
-
- drivers/gpio/gpio-104-dio-48e.c            |  73 ++++----------
- drivers/gpio/gpio-104-idi-48.c             |  36 ++-----
- drivers/gpio/gpio-74x164.c                 |  19 ++--
- drivers/gpio/gpio-gpio-mm.c                |  73 ++++----------
- drivers/gpio/gpio-max3191x.c               |  19 ++--
- drivers/gpio/gpio-pca953x.c                |  17 ++--
- drivers/gpio/gpio-pci-idio-16.c            |  75 +++++---------
- drivers/gpio/gpio-pcie-idio-24.c           | 109 ++++++++-------------
- drivers/gpio/gpio-pisosr.c                 |  12 +--
- drivers/gpio/gpio-uniphier.c               |  16 ++-
- drivers/gpio/gpio-ws16c48.c                |  73 ++++----------
- drivers/thermal/intel/intel_soc_dts_iosf.c |  29 +++---
- drivers/thermal/intel/intel_soc_dts_iosf.h |   2 -
- include/asm-generic/bitops/find.h          |  50 ++++++++++
- include/linux/bitops.h                     |   5 +
- lib/find_bit.c                             |  14 +++
- lib/test_bitmap.c                          |  65 ++++++++++++
- 17 files changed, 325 insertions(+), 362 deletions(-)
-
-
-base-commit: 8c550e94b8835170593169a45b5ba30d3fc72a70
--- 
-2.23.0
-
+It looks like the max_early_index computation is broken when the
+deepest state is disabled.
