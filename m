@@ -2,129 +2,133 @@ Return-Path: <SRS0=zYO/=X7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0009AC4360C
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Oct 2019 15:08:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 048BAC4360C
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Oct 2019 15:11:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C770520862
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Oct 2019 15:08:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1570374529;
-	bh=OKtcuD4x+cDr3mMNVt22HFnpqd0jT8dTaGb9StBb3P8=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=g6yj721KPjTubekHIrx5Kf70fHed927TiKEuYjZQarkZe38dWFxVMcFtKS8ss6Z7c
-	 +kzuJXtUjTwPaizunj0GZSXC+O1lRFPVX5ze441mCnTAYXrcQ5uCMBU504C2XCxTNv
-	 q7e7YxoW+A7FblAVCdA3emWcMk6afMK6PRupC0s8=
+	by mail.kernel.org (Postfix) with ESMTP id CAA7121850
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Oct 2019 15:11:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bSaBzvAm"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725985AbfJFPIt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Oct 2019 11:08:49 -0400
-Received: from mail-oi1-f193.google.com ([209.85.167.193]:39935 "EHLO
-        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725905AbfJFPIt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Oct 2019 11:08:49 -0400
-Received: by mail-oi1-f193.google.com with SMTP id w144so9601655oia.6;
-        Sun, 06 Oct 2019 08:08:47 -0700 (PDT)
+        id S1726883AbfJFPLy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Oct 2019 11:11:54 -0400
+Received: from mail-yw1-f66.google.com ([209.85.161.66]:38086 "EHLO
+        mail-yw1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726875AbfJFPLx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Oct 2019 11:11:53 -0400
+Received: by mail-yw1-f66.google.com with SMTP id s6so4177576ywe.5;
+        Sun, 06 Oct 2019 08:11:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=+D/uU8MO7mShW9teASkMb7bJZjWkGz/G9NDBF9ekIAA=;
+        b=bSaBzvAm7KA+Z/RsiMdo7RdD6lPZanjxLUuwHA3WYW2PklPBygtPZwz4rImtHSmqZC
+         /HnjmIQeRebqFtRiVoceY8ds406L6UZJ1DYUz6ZGQMD3INfafFKEi+0wwYVbdhwnGQ4a
+         bvIxyiWv7HzbHyulJAhvUugTqHm1U7VG2ajipNGF3dnH3fIqjZ5QJTm2Oq5C2bvtG91u
+         mTeUEGBRdsPJ8krYvExNEWIcqP12Wr6LNuPVnkE9XcriRZf18Ct/5hZyXXXWy9yQF+98
+         l7ZGiLbhCnrhPU3yw8EGIF8ZkLWst53Ovm89jxBlqlzykMnTtxQIzw8KT+2DWIoapry4
+         NUhQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=nqvbMIqcq67/i2yVAL0YTUW6apJz4THEkuKthWl5fgE=;
-        b=HyuJR8DjoVRp3FQ/QPDhQ8MWC1olcnGcpYbztk9CrqxZsP36w3DsfPimCpoYbhYxzw
-         gEFmfDsx6EVn2Q3r6FO9wXlWi47XGbuaeKC9B1ZNLTC+4tAaRzaSxUtWAIviov9R6Zhc
-         lnub7hyvPqV5LF0xZH1T5VpS77nuLRAtRVNIWvTyd/4+JndLsdceolILatucNytVd25r
-         XY/FaW+Nv9117xLbyyvN78vw67Adjz+Dp91ntFwoGtAy2jpEvOqyvyA28piRnnd7slkl
-         YP9fuA8H+pho/BdnjlHM5b3no2jMFCtFVdc/H54Lzv9SdA5zhkCWfIv9OvHDc1uEZACa
-         ivRA==
-X-Gm-Message-State: APjAAAVc5B10z/TQwCLK6B1U+/4TDn5tKhGxu1lexambBi+YRuURW1H3
-        Hv0tDKOqSlE+FEPJ5ayEI452liOP72f96Neu8Mw=
-X-Google-Smtp-Source: APXvYqwq60LmDn6AGtgdwDclNIdBSotjYjNaDAYj0L2DIdw3d2KLe0BdN5/cm86sCM6ESSLo3pGS2cGtZt9GawUo8cM=
-X-Received: by 2002:aca:50ca:: with SMTP id e193mr15226415oib.110.1570374526444;
- Sun, 06 Oct 2019 08:08:46 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=+D/uU8MO7mShW9teASkMb7bJZjWkGz/G9NDBF9ekIAA=;
+        b=k+0MYw7cIXj2dtmbQ/yij8ruuhW9E7PP+qr4WWNO57jwHn4eD4fejlxVddpbm8nRdy
+         JcPuQOmaqU7p0gy4oPAvsI2mgFN0a2NqcRXvlcv+xxt6jASUgc1fCcLU6p+jOAxpqX1T
+         6i3wFVOP4SFNDPFbBbbp2fjNPvh2JsTWfh6rB5PZEnm4XDuhlvMfXYHsn2VOwze1PH0D
+         TWsLtE+MPrx8i/GE1VQkGPGilJVUFXXTUPPzXrXk/J1f9JIUYhNxR0qN+LLtBcAVPjMM
+         +P0x5xHRJ6R+3MBlFo4laKcoqYbCNzPaDbI3FqcFU2I6KcCoS5adiUsIHD0TD+sg982v
+         nHng==
+X-Gm-Message-State: APjAAAXD2aqqQlEZK+0bDZ0bipt93MYxMQ0ag8nK2BN028hUB5PNlbRQ
+        KMskIxtHjmvUztWnAeXEC2o=
+X-Google-Smtp-Source: APXvYqwr2ooDXQQ6eqsusMVR7Kxn0E0w2B0g/QYDmlIZXMarPB9hGznNphE4oCV+6ROdcWSP24S/hQ==
+X-Received: by 2002:a81:6bc2:: with SMTP id g185mr16996224ywc.316.1570374712617;
+        Sun, 06 Oct 2019 08:11:52 -0700 (PDT)
+Received: from localhost.localdomain (072-189-084-142.res.spectrum.com. [72.189.84.142])
+        by smtp.gmail.com with ESMTPSA id e82sm2662434ywc.43.2019.10.06.08.11.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 06 Oct 2019 08:11:52 -0700 (PDT)
+From:   William Breathitt Gray <vilhelm.gray@gmail.com>
+To:     linus.walleij@linaro.org, bgolaszewski@baylibre.com
+Cc:     akpm@linux-foundation.org, linux-gpio@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+        andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk,
+        yamada.masahiro@socionext.com,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        geert@linux-m68k.org, preid@electromag.com.au, lukas@wunner.de,
+        sean.nyekjaer@prevas.dk, morten.tiljeset@prevas.dk,
+        William Breathitt Gray <vilhelm.gray@gmail.com>
+Subject: [PATCH v16 14/14] gpio: pca953x: Utilize the for_each_set_clump8 macro
+Date:   Sun,  6 Oct 2019 11:11:11 -0400
+Message-Id: <e72393325e58778b7ba59c80c6b79c1f93b81d8d.1570374078.git.vilhelm.gray@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <cover.1570374078.git.vilhelm.gray@gmail.com>
+References: <cover.1570374078.git.vilhelm.gray@gmail.com>
 MIME-Version: 1.0
-References: <20191004100025.70798-1-mika.westerberg@linux.intel.com> <0002b2f3-d17c-0d49-52f4-b2ce31832e6c@kernel.dk>
-In-Reply-To: <0002b2f3-d17c-0d49-52f4-b2ce31832e6c@kernel.dk>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Sun, 6 Oct 2019 17:08:31 +0200
-Message-ID: <CAJZ5v0i=rc6DiZfch6J8ZOyj8ksK-2Dyb+qH_o=NQxtSntfnOw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] bdi: Do not use freezable workqueue
-To:     Jens Axboe <axboe@kernel.dk>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Pavel Machek <pavel@ucw.cz>, Jan Kara <jack@suse.cz>,
-        Tejun Heo <tj@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        AceLan Kao <acelan.kao@canonical.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Oct 4, 2019 at 3:22 PM Jens Axboe <axboe@kernel.dk> wrote:
->
-> On 10/4/19 4:00 AM, Mika Westerberg wrote:
-> > A removable block device, such as NVMe or SSD connected over Thunderbolt
-> > can be hot-removed any time including when the system is suspended. When
-> > device is hot-removed during suspend and the system gets resumed, kernel
-> > first resumes devices and then thaws the userspace including freezable
-> > workqueues. What happens in that case is that the NVMe driver notices
-> > that the device is unplugged and removes it from the system. This ends
-> > up calling bdi_unregister() for the gendisk which then schedules
-> > wb_workfn() to be run one more time.
-> >
-> > However, since the bdi_wq is still frozen flush_delayed_work() call in
-> > wb_shutdown() blocks forever halting system resume process. User sees
-> > this as hang as nothing is happening anymore.
-> >
-> > Triggering sysrq-w reveals this:
-> >
-> >    Workqueue: nvme-wq nvme_remove_dead_ctrl_work [nvme]
-> >    Call Trace:
-> >     ? __schedule+0x2c5/0x630
-> >     ? wait_for_completion+0xa4/0x120
-> >     schedule+0x3e/0xc0
-> >     schedule_timeout+0x1c9/0x320
-> >     ? resched_curr+0x1f/0xd0
-> >     ? wait_for_completion+0xa4/0x120
-> >     wait_for_completion+0xc3/0x120
-> >     ? wake_up_q+0x60/0x60
-> >     __flush_work+0x131/0x1e0
-> >     ? flush_workqueue_prep_pwqs+0x130/0x130
-> >     bdi_unregister+0xb9/0x130
-> >     del_gendisk+0x2d2/0x2e0
-> >     nvme_ns_remove+0xed/0x110 [nvme_core]
-> >     nvme_remove_namespaces+0x96/0xd0 [nvme_core]
-> >     nvme_remove+0x5b/0x160 [nvme]
-> >     pci_device_remove+0x36/0x90
-> >     device_release_driver_internal+0xdf/0x1c0
-> >     nvme_remove_dead_ctrl_work+0x14/0x30 [nvme]
-> >     process_one_work+0x1c2/0x3f0
-> >     worker_thread+0x48/0x3e0
-> >     kthread+0x100/0x140
-> >     ? current_work+0x30/0x30
-> >     ? kthread_park+0x80/0x80
-> >     ret_from_fork+0x35/0x40
-> >
-> > This is not limited to NVMes so exactly same issue can be reproduced by
-> > hot-removing SSD (over Thunderbolt) while the system is suspended.
-> >
-> > Prevent this from happening by removing WQ_FREEZABLE from bdi_wq.
->
-> This series looks good for me, I don't think there's a reason for
-> the workers to be marked freezable.
+Replace verbose implementation in set_multiple callback with
+for_each_set_clump8 macro to simplify code and improve clarity.
 
-I was a bit concerned that the original idea might be to prevent
-writes to the persistent storage from occurring after creating an
-image during hibernation, but if that's not the case, the series is
-fine from the general power management standpoint, so
+Cc: Phil Reid <preid@electromag.com.au>
+Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
+---
+ drivers/gpio/gpio-pca953x.c | 17 +++++++----------
+ 1 file changed, 7 insertions(+), 10 deletions(-)
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+diff --git a/drivers/gpio/gpio-pca953x.c b/drivers/gpio/gpio-pca953x.c
+index de5d1383f28d..10b669b8f27d 100644
+--- a/drivers/gpio/gpio-pca953x.c
++++ b/drivers/gpio/gpio-pca953x.c
+@@ -10,6 +10,7 @@
+ 
+ #include <linux/acpi.h>
+ #include <linux/bits.h>
++#include <linux/bitops.h>
+ #include <linux/gpio/driver.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/i2c.h>
+@@ -456,7 +457,8 @@ static void pca953x_gpio_set_multiple(struct gpio_chip *gc,
+ 				      unsigned long *mask, unsigned long *bits)
+ {
+ 	struct pca953x_chip *chip = gpiochip_get_data(gc);
+-	unsigned int bank_mask, bank_val;
++	unsigned long offset;
++	unsigned long bank_mask;
+ 	int bank;
+ 	u8 reg_val[MAX_BANK];
+ 	int ret;
+@@ -466,15 +468,10 @@ static void pca953x_gpio_set_multiple(struct gpio_chip *gc,
+ 	if (ret)
+ 		goto exit;
+ 
+-	for (bank = 0; bank < NBANK(chip); bank++) {
+-		bank_mask = mask[bank / sizeof(*mask)] >>
+-			   ((bank % sizeof(*mask)) * 8);
+-		if (bank_mask) {
+-			bank_val = bits[bank / sizeof(*bits)] >>
+-				  ((bank % sizeof(*bits)) * 8);
+-			bank_val &= bank_mask;
+-			reg_val[bank] = (reg_val[bank] & ~bank_mask) | bank_val;
+-		}
++	for_each_set_clump8(offset, bank_mask, mask, gc->ngpio) {
++		bank = offset / 8;
++		reg_val[bank] &= ~bank_mask;
++		reg_val[bank] |= bitmap_get_value8(bits, offset) & bank_mask;
+ 	}
+ 
+ 	pca953x_write_regs(chip, chip->regs->output, reg_val);
+-- 
+2.23.0
 
-for both patches.
