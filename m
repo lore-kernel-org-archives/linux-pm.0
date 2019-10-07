@@ -2,206 +2,154 @@ Return-Path: <SRS0=XOQU=YA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5DFEC47404
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Oct 2019 18:20:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 434E3ECE58C
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Oct 2019 21:11:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A55C1206C2
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Oct 2019 18:20:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0B237206C0
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Oct 2019 21:11:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=marvell.com header.i=@marvell.com header.b="V6Bxxcf4";
-	dkim=pass (1024-bit key) header.d=marvell.onmicrosoft.com header.i=@marvell.onmicrosoft.com header.b="Ss6La/UK"
+	dkim=pass (1024-bit key) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="x2TQWFRY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728212AbfJGSUu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Oct 2019 14:20:50 -0400
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:22408 "EHLO
-        mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728031AbfJGSUu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Oct 2019 14:20:50 -0400
-Received: from pps.filterd (m0045851.ppops.net [127.0.0.1])
-        by mx0b-0016f401.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id x97I6IC1023358;
-        Mon, 7 Oct 2019 11:20:44 -0700
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=marvell.com; h=from : to : cc :
- subject : date : message-id : references : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=pfpt0818;
- bh=FMRuwt61Yb7GTe/jlxeZHQq+inFdfXY2+o9zEk5kcOA=;
- b=V6Bxxcf4TbP4GQIcb2hhTGRwRFhtsrIj0MEtPl2WlbDG5pLMFoyYGpLJi7z0Kv5QnlMp
- ZXzFG1Xe31DjPMeFJNisSX/FC1Pbi1NG/FH5mTqRVhDrM5ounzRKyuy6J4g69hHe7K/K
- qg9r09WpzWP60FzwPeTJ4fp5yc+1fLCUpnR3xjl26y0zeaylBgePBmh9wPViBb/fYPCh
- glqvlONQQHFH/S8lVHUXP3DCSR4wuz8W3Q4Osvt3q8Enm7rS14X6aIJUBe8Z6EtS5V30
- whUdlhAll+mUVMjY+WaiW8l4Mzjl3gdNcX+9LBwPqCmsSMUQptnLQUfuLoH+cLUc8MLF Bg== 
-Received: from sc-exch03.marvell.com ([199.233.58.183])
-        by mx0b-0016f401.pphosted.com with ESMTP id 2vetpmxy4w-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-SHA384 bits=256 verify=NOT);
-        Mon, 07 Oct 2019 11:20:44 -0700
-Received: from SC-EXCH02.marvell.com (10.93.176.82) by SC-EXCH03.marvell.com
- (10.93.176.83) with Microsoft SMTP Server (TLS) id 15.0.1367.3; Mon, 7 Oct
- 2019 11:20:42 -0700
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com (104.47.36.50) by
- SC-EXCH02.marvell.com (10.93.176.82) with Microsoft SMTP Server (TLS) id
- 15.0.1367.3 via Frontend Transport; Mon, 7 Oct 2019 11:20:42 -0700
+        id S1729177AbfJGVLe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Oct 2019 17:11:34 -0400
+Received: from mail-eopbgr700059.outbound.protection.outlook.com ([40.107.70.59]:12448
+        "EHLO NAM04-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1728273AbfJGVLe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 7 Oct 2019 17:11:34 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=AZbiCaQsN56Um2CqRf1PD9V9Jkp8oG/z9vNIt39EAQ9RvfRL1W4r8OLeuZVRmql8ub4ZoAaL8tOCJy2fQmddEHe521f55DodGm37mcVuv+rZQM/KgJBjXG26YmBKka3fTUDGcGVOrdVVk8OQn2IuwsI1A6hLs1sBzcl2nOks+30R6y19FJfmBnpHNA/PVinILO7IYM7HNz9OPFBbQIQi0zaFjn0Pz1GdVH46lL5cdJ6/hhMs+UxZXvVckvd8Wuy0hPyAVF+uMlhiCdwjtvT3zOJGwwA91C7uIQjbepkWWes53hvIY0e8RStjG4fMYqfRwQwKkLT+9aatrXLpWIewkg==
+ b=MnIniyHVIwBAAk2H2+oAJBsYiNGR98SUnT4worJZzvXOZIDmQ0/WKKj0joHWKp9FOYn56e9zJ/TcpTasf8iJOHMVOOA3sOGrdjwvXh19aADE9teumDItRNI+ZJlcuvquCLfnyfP/QbPNIUPjbst/TW9CGQnE79YinGGSQJck8Ntmjwu2SeHka/dDjw3GR9pKSM6nBOJnOaYBIrxSTkJR6fNQl0/kRIBqbJLkhM6zgGNfXOcpR4cFJALNv4KcLq3HYYc19KrnrB5UdhsYBNIZ4EP4qyqNSIk1l4IgKdUiSQX3+zxtY811S5NIP/Gcrm5uTxbOq+qsam83VTZU8/EI1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FMRuwt61Yb7GTe/jlxeZHQq+inFdfXY2+o9zEk5kcOA=;
- b=e8rFqZZmNnqSt5eqQWbXlvpdB9EPqmwjZWde4WrXtGKbvMDdjPR1Wf0wrVjj3Dd16A1fy9OLtZh4gCCgjt8hXPbSeEn5AxU+dRwD1eCUffOMM6v0W6dr2k0iVmX2SFcdBW5jil+FiCbhIs43BlD/4FgNvKh7RpcYXrnTHCuVQaCnmSIYFlJdn9Pu2etuZzgZ7SYM8DUeWAEvTrXEle0D0dhUILC7ZUh9hjh8y3izR7Id10cnXQ7JLE5l7SmX1SuMmCaCRxsCY4zR6h5T+GIlANQe+butnkp2tKy1T8UzFjWVu1lYRWQM7NSyt+Ve36ZZxVwE656HQHMcsPwVd+uy2Q==
+ bh=FXqfz8DKHV7IbkR9wsO091rTdHBmSp+3F3+G71x2Jjs=;
+ b=RjK2f+FjrqZVBvcXD/vF6SDrhDw+GJiL3HIU5/29MqnYSKalPSb9IG2BhSdNaUxGVsAG3oLF82/Ql6g6rBTO209sUgQ0LW+5ui/Vl7LV5F89djxh3yVuKXDe03yjhDZ7QFfOtyD5jQUCYp+IR0CM/r1jAR+xcm0GhxA5rG/VJOyUJm7zZ8jYV0RMDSbBqSR20o4Wpl0zt4rsoGaP9g0UeBPW2tJeHp9/pXlNK/iyClwugbLeL8PTAul5BgaP1uBhv4T6u3ky7zJELYMlA/o1sVeudW1fouyYz9fBfbeLEW2WPo7gABwoceeHFjgkDXSEzZLG1qr3fI3rkPwLzIsGag==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=marvell.com; dmarc=pass action=none header.from=marvell.com;
- dkim=pass header.d=marvell.com; arc=none
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=marvell.onmicrosoft.com; s=selector2-marvell-onmicrosoft-com;
+ d=amdcloud.onmicrosoft.com; s=selector2-amdcloud-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=FMRuwt61Yb7GTe/jlxeZHQq+inFdfXY2+o9zEk5kcOA=;
- b=Ss6La/UKfuJbQsaIMzdTgL7XVHuLVLQZZA4CdG3KXZvuA70V6ZAdfBE6lOtnCMfh+LEDXLDnmUqRGogLaNczie6fZ5GnnUSW5uwiUQxsh7X460C4v5efd/5IDd0XrxluQB9UGDI+tSX53Vd8i3CEgeYMpQCm9hMbAMlooWkt/R4=
-Received: from BYAPR18MB2438.namprd18.prod.outlook.com (20.179.91.207) by
- BYAPR18MB2504.namprd18.prod.outlook.com (20.179.92.208) with Microsoft SMTP
+ bh=FXqfz8DKHV7IbkR9wsO091rTdHBmSp+3F3+G71x2Jjs=;
+ b=x2TQWFRY7AvdBwcWBH2WpCXVLnWWEZ5pABKkVABDCtGdklKGd1YaVZoCqM5T1Q3vI3AQKVnDwZO0sdqatukF4/+KDH1esK79dq6gW8eyFTs8CqvBHqtaPjIeqLgE0xbuOOn0er/S+85rueWrerNZI1QW/IYQkkILyPic4kSFErg=
+Received: from SN6PR12MB2736.namprd12.prod.outlook.com (52.135.107.27) by
+ SN6PR12MB2784.namprd12.prod.outlook.com (52.135.107.147) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2327.24; Mon, 7 Oct 2019 18:20:41 +0000
-Received: from BYAPR18MB2438.namprd18.prod.outlook.com
- ([fe80::fc70:ffee:bbab:36aa]) by BYAPR18MB2438.namprd18.prod.outlook.com
- ([fe80::fc70:ffee:bbab:36aa%3]) with mapi id 15.20.2327.025; Mon, 7 Oct 2019
- 18:20:41 +0000
-From:   Sujeet Kumar Baranwal <sbaranwal@marvell.com>
-To:     Sudeep Holla <sudeep.holla@arm.com>
-CC:     "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: RE: [EXT] Re: SCMI & Devfreq
-Thread-Topic: [EXT] Re: SCMI & Devfreq
-Thread-Index: AdVpmcIOOnWimjPqQIW4YU3Z3/EySQAg3ggAAIw5QkAACl8sgAAPZ0vwAG91siAAIsPQAAEzMlhw
-Date:   Mon, 7 Oct 2019 18:20:40 +0000
-Message-ID: <BYAPR18MB2438ADA20039CFF8F62DFF11AF9B0@BYAPR18MB2438.namprd18.prod.outlook.com>
-References: <BYAPR18MB24387C9DDE32067F1763B6DEAFB00@BYAPR18MB2438.namprd18.prod.outlook.com>
- <20190913102304.GC2559@bogus>
- <BYAPR18MB2438723658EF1F0586170CDDAF8C0@BYAPR18MB2438.namprd18.prod.outlook.com>
- <20190916101505.GB6109@bogus>
- <BYAPR18MB2438DC4E8CA4E90455F0345BAF8C0@BYAPR18MB2438.namprd18.prod.outlook.com>
- <BYAPR18MB2438047B622951C6EFE92FABAF8E0@BYAPR18MB2438.namprd18.prod.outlook.com>
- <20190919152300.GA11801@bogus>
-In-Reply-To: <20190919152300.GA11801@bogus>
+ 15.20.2327.24; Mon, 7 Oct 2019 21:11:31 +0000
+Received: from SN6PR12MB2736.namprd12.prod.outlook.com
+ ([fe80::b1e3:1867:e650:796c]) by SN6PR12MB2736.namprd12.prod.outlook.com
+ ([fe80::b1e3:1867:e650:796c%6]) with mapi id 15.20.2327.023; Mon, 7 Oct 2019
+ 21:11:30 +0000
+From:   "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
+To:     Thomas Renninger <trenn@suse.de>
+CC:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        Pu Wen <puwen@hygon.com>, Shuah Khan <shuah@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Kate Stewart <kstewart@linuxfoundation.org>,
+        Allison Randal <allison@lohutok.net>,
+        Richard Fontana <rfontana@redhat.com>,
+        Thomas Renninger <trenn@suse.com>, Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH 1/2] Modify cpupower to schedule itself on cores it is
+ reading MSRs from
+Thread-Topic: [PATCH 1/2] Modify cpupower to schedule itself on cores it is
+ reading MSRs from
+Thread-Index: AQHVbj8CzXj8hQvM60aQ8slBTBcq36c/ayGAgACy6gCAB2VngIAElFSAgAOzTQA=
+Date:   Mon, 7 Oct 2019 21:11:30 +0000
+Message-ID: <f2dc183f-68a5-d98d-7758-bad224578737@amd.com>
+References: <20190918163445.129103-1-Janakarajan.Natarajan@amd.com>
+ <4340017.MFpoU6RDpq@c100> <64022abd-a798-c679-1c1d-eec9b18c4fb2@amd.com>
+ <1798336.DyNOivuPDK@c100>
+In-Reply-To: <1798336.DyNOivuPDK@c100>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-x-originating-ip: [199.233.58.37]
+x-clientproxiedby: SN4PR0201CA0015.namprd02.prod.outlook.com
+ (2603:10b6:803:2b::25) To SN6PR12MB2736.namprd12.prod.outlook.com
+ (2603:10b6:805:77::27)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=Janakarajan.Natarajan@amd.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [165.204.77.1]
 x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 60553c2d-32c8-4a48-11a4-08d74b530f8f
-x-ms-traffictypediagnostic: BYAPR18MB2504:
-x-microsoft-antispam-prvs: <BYAPR18MB2504947718EE1EFD50698321AF9B0@BYAPR18MB2504.namprd18.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:8882;
+x-ms-office365-filtering-correlation-id: 00cf5c08-09ae-4a12-4bed-08d74b6aecb6
+x-ms-office365-filtering-ht: Tenant
+x-ms-traffictypediagnostic: SN6PR12MB2784:|SN6PR12MB2784:
+x-microsoft-antispam-prvs: <SN6PR12MB278489B657326C34A40A3806E79B0@SN6PR12MB2784.namprd12.prod.outlook.com>
+x-ms-exchange-transport-forked: True
+x-ms-oob-tlc-oobclassifiers: OLM:9508;
 x-forefront-prvs: 01834E39B7
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(346002)(39860400002)(136003)(366004)(376002)(396003)(13464003)(189003)(199004)(53546011)(446003)(11346002)(64756008)(66556008)(6246003)(66946007)(66476007)(54906003)(316002)(6916009)(66446008)(76116006)(81166006)(102836004)(8676002)(81156014)(6506007)(9686003)(76176011)(25786009)(4326008)(8936002)(7696005)(5660300002)(55016002)(99286004)(52536014)(33656002)(14454004)(71190400001)(71200400001)(256004)(229853002)(6436002)(26005)(86362001)(186003)(478600001)(3846002)(6116002)(2906002)(66066001)(7736002)(305945005)(486006)(74316002)(476003);DIR:OUT;SFP:1101;SCL:1;SRVR:BYAPR18MB2504;H:BYAPR18MB2438.namprd18.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
-received-spf: None (protection.outlook.com: marvell.com does not designate
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(366004)(346002)(136003)(39860400002)(376002)(396003)(189003)(199004)(25786009)(26005)(186003)(2906002)(6116002)(3846002)(52116002)(86362001)(7736002)(99286004)(305945005)(66066001)(256004)(66476007)(66946007)(229853002)(64756008)(66446008)(66556008)(14444005)(11346002)(6436002)(6486002)(486006)(446003)(476003)(2616005)(316002)(81166006)(54906003)(4326008)(76176011)(7416002)(53546011)(14454004)(31696002)(102836004)(6512007)(386003)(5660300002)(6506007)(6246003)(31686004)(6916009)(71190400001)(8676002)(81156014)(36756003)(8936002)(478600001)(71200400001);DIR:OUT;SFP:1101;SCL:1;SRVR:SN6PR12MB2784;H:SN6PR12MB2736.namprd12.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+received-spf: None (protection.outlook.com: amd.com does not designate
  permitted sender hosts)
 x-ms-exchange-senderadcheck: 1
 x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: sFCY2CxBo5OQTH3K8dj33u8Nl6NwyWNxuR/Q670KeykI5B7Ij3HVLTDdG4Huj/NhyIZfRXUj+406+ibIDY30EqgxbB138zCpyDl9lTPEIM+hcOuiMPhh7PU2Gu1jS8Xr9cjf0L/YoshfsqtwJAlTBJE5GL15zwFk+3qCrV2pYEIF7AkDQzFfKv3aeEA9Ol96iNikvopeqYrF0A3HreMPTF29gHyIMm8LJzzNJB82BjSHwaQ6Atu4UV0l/cmwJJKh9LRjhtUZ1Ath6sN4vc4OQrkARaWcPq5CQf3L9wmHd2gtUqbIwb4ke2Pl/2BwBWEcIT68m/dVpTSkKOSQV4xr2I+9yiyIAz4EcChiCI4JmN8UL1R2CRWh8L0uGLyQjc1A1LqTjhjPsW2LBAqiYnNe2gW2PN1J/3lGH2agXbEwr7g=
-x-ms-exchange-transport-forked: True
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+x-microsoft-antispam-message-info: sGosMbM/SJ+2XjKCYZM4EEAB7saDYG9ZtnJSjy6/Qh5puk0do08AtvptScC4Rd5lXA7npstiZTki77JsxWk0WzbZVepvZH7hjBipOTteygF+NVWqi8+CWUbrBC0DJccdNktKc+1Te4PaXHu6XSykTiwHKrlTvXURCMfU7ChzNd3CpFzmAefE0cyfOsuNNA5hsRbKbIrXQmooHzW8J5YcLKVJAI7zsBCG5oBbGfNhST7suhWHyAcha15R8g9H7joyM8w02me9UVpD86wNH5EFJaUIEc4f3MTjHl40r5y8XDuzAn6k07d4OWfBB+kHuzw9rJNtsCg1yMEYs2v5QIc6mR1Vav6akll56DumpKO3OwDhKVjp+b1A5Aln+BhyKFVP167UX1hL2YPhmr6lUaAy1de+OnID1hw8kEYgsk572LQ=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <BBBF6A5A3EF6D94A8DD7A6B2DABDF3F6@namprd12.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-Network-Message-Id: 60553c2d-32c8-4a48-11a4-08d74b530f8f
-X-MS-Exchange-CrossTenant-originalarrivaltime: 07 Oct 2019 18:20:40.9908
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 00cf5c08-09ae-4a12-4bed-08d74b6aecb6
+X-MS-Exchange-CrossTenant-originalarrivaltime: 07 Oct 2019 21:11:30.8539
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 70e1fb47-1155-421d-87fc-2e58f638b6e0
+X-MS-Exchange-CrossTenant-id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: S0iop/xtQnfdkYY/r4mqk4khkiaeOU/8qphGwBF6pjYC+x+wiJzpWWDzmAsMc7AF7HYnOFO8/y1jZDQrRUQLKA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BYAPR18MB2504
-X-OriginatorOrg: marvell.com
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,1.0.8
- definitions=2019-10-07_03:2019-10-07,2019-10-07 signatures=0
+X-MS-Exchange-CrossTenant-userprincipalname: 0ItynOx3RFmdi8hRcOmpsaAb2HRP8+6ZA2I478itar79fafNvIJD7+KCzS51LNZamN+ipa7uqigTA2mAJkjb7A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR12MB2784
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Sudeep,
-
-Per SCMI perf protocol, the MAX_OPPS macro which is 16, means that at max t=
-here could be only 16 OPPs.
-In my platform implementation, I tried with 16 OPPs but  when OPPs info cam=
-e linux perf.c file from SCP, it only showed 12 OPPs only.
-
-Suspecting the rx buffer size, I increased the size to 256 and now the mess=
-age for all 16 OPPs were reliably received.=20
-
-*****************
-diff --git a/drivers/firmware/arm_scmi/driver.c b/drivers/firmware/arm_scmi=
-/driver.c
-index 449f713..737d675 100644 (file)
---- a/drivers/firmware/arm_scmi/driver.c
-+++ b/drivers/firmware/arm_scmi/driver.c
-@@ -612,7 +612,7 @@ int scmi_handle_put(const struct scmi_handle *handle)
- static const struct scmi_desc scmi_generic_desc =3D {
-        .max_rx_timeout_ms =3D 30,        /* We may increase this if requir=
-ed */
-        .max_msg =3D 20,          /* Limited by MBOX_TX_QUEUE_LEN */
--       .max_msg_size =3D 128,
-+       .max_msg_size =3D 256,
- };
-=20
- /* Each compatible listed below must have descriptor associated with it */
-*****************
-Since this is a legit case of having 16 or more OPPs, we need to have a bug=
-ger buffer for rx. Let me know what you think.
-
-Regards
-Sujeet
------Original Message-----
-From: Sudeep Holla <sudeep.holla@arm.com>=20
-Sent: Thursday, September 19, 2019 8:23 AM
-To: Sujeet Kumar Baranwal <sbaranwal@marvell.com>
-Cc: linux-arm-kernel@lists.infradead.org; Sudeep Holla <sudeep.holla@arm.co=
-m>; linux-pm@vger.kernel.org
-Subject: Re: [EXT] Re: SCMI & Devfreq
-
-(Adding linux-pm list)
-
-On Wed, Sep 18, 2019 at 10:53:07PM +0000, Sujeet Kumar Baranwal wrote:
-> Sudeep, One trivial question wrt SCMI-CPUFREQ framework.
->=20
-> The SCMI perf protocol would tell what are different frequencies the=20
-> platform support in the beginning.
->
-> For example, the command :
-> cat =20
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-> shows:
-> 280000 560000 840000 1120000 1400000 1820000 1960000 2240000 2520000=20
-> 2800000
->
-> /* Attempt to change the frequency */
-> ~ # echo 2240000 >=20
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed
-> It works.
->
-> But in a scenario, where user tries a number which is not listed, SCP=20
-> applies its own logic to get a nearby value frequency for CPU and returns=
-.
->
-> My question is that could we add some print message in kernel that=20
-> user wish is not exactly fulfilled, an approximation has been done so=20
-> the user explicitly knows his command has been partially met.  If this=20
-> to happen, a patch might be needed in kernel. What is your opinion?
->
-
-May be, you need to check with the maintainers ? :)
-
-The path of execution is:
-cpufreq_set(policy, freq) [cpufreq_userspace.c] __cpufreq_driver_target(pol=
-icy, freq, CPUFREQ_RELATION_L) [cpufreq_userspace.c] index =3D cpufreq_freq=
-uency_table_target(policy, target_freq, relation) [cpufreq.c] __target_inde=
-x(policy, index) [cpufreq.c]
-
-So if you need logs, it needs to be in core file rather than individual dri=
-vers.
-
---
-Regards,
-Sudeep
+T24gMTAvNS8yMDE5IDc6NDAgQU0sIFRob21hcyBSZW5uaW5nZXIgd3JvdGU6DQo+IEhpLA0KPg0K
+PiBPbiBXZWRuZXNkYXksIE9jdG9iZXIgMiwgMjAxOSA0OjQ1OjAzIFBNIENFU1QgTmF0YXJhamFu
+LCBKYW5ha2FyYWphbiB3cm90ZToNCj4+IE9uIDkvMjcvMTkgNDo0OCBQTSwgVGhvbWFzIFJlbm5p
+bmdlciB3cm90ZToNCj4+DQo+Pj4gT24gRnJpZGF5LCBTZXB0ZW1iZXIgMjcsIDIwMTkgNjowNzo1
+NiBQTSBDRVNUICBOYXRhcmFqYW4sIEphbmFrYXJhamFuDQo+Pj4gd3JvdGU6DQo+Pj4+IE9uIDkv
+MTgvMjAxOSAxMTozNCBBTSwgTmF0YXJhamFuLCBKYW5ha2FyYWphbiB3cm90ZToNCj4gICANCj4+
+IE9uIGEgMjU2IGxvZ2ljYWwtY3B1IFJvbWUgc3lzdGVtIHdlIHNlZSBDMCB2YWx1ZSBmcm9tIGNw
+dXBvd2VyIG91dHB1dCBnbw0KPj4gZnJvbSAwLjAxIHRvIH4oMC4xIHRvIDEuMDApDQo+Pg0KPj4g
+Zm9yIGFsbCBjcHVzIHdpdGggdGhlIDFzdCBwYXRjaC4NCj4+DQo+PiBIb3dldmVyLCB0aGlzIGdv
+ZXMgZG93biB0byB+MC4wMSB3aGVuIHdlIHVzZSB0aGUgUkRQUlUgaW5zdHJ1Y3Rpb24NCj4+ICh3
+aGljaCBjYW4gYmUgdXNlZCB0byBnZXQNCj4+DQo+PiBBUEVSRi9NUEVSRiBmcm9tIENQTCA+IDAp
+IGFuZCBhdm9pZCB1c2luZyB0aGUgbXNyIG1vZHVsZSAocGF0Y2ggMikuDQo+IEFuZCB0aGlzIG9u
+ZSBvbmx5IGV4aXN0cyBvbiBsYXRlc3QgQU1EIGNwdXMsIHJpZ2h0Pw0KDQoNClllcy4gVGhlIFJE
+UFJVIGluc3RydWN0aW9uIGV4aXN0cyBvbmx5IG9uIEFNRCBjcHVzLg0KDQoNCj4NCj4+IEhvd2V2
+ZXIsIGZvciBzeXN0ZW1zIHRoYXQgcHJvdmlkZSBhbiBpbnN0cnVjdGlvbiAgdG8gZ2V0IHJlZ2lz
+dGVyIHZhbHVlcw0KPj4gZnJvbSB1c2Vyc3BhY2UsIHdvdWxkIGEgY29tbWFuZC1saW5lIHBhcmFt
+ZXRlciBiZSBhY2NlcHRhYmxlPw0KPiBQYXJhbWV0ZXIgc291bmRzIGxpa2UgYSBnb29kIGlkZWEu
+IEluIGZhY3QsIHRoZXJlIGFscmVhZHkgaXMgc3VjaCBhIHBhcmFtdGVyLg0KPiBjcHVwb3dlciBt
+b25pdG9yIC0taGVscA0KPiAgICAgICAgIC1jDQo+ICAgICAgICAgICAgIFNjaGVkdWxlICB0aGUg
+IHByb2Nlc3MgIG9uIGV2ZXJ5IGNvcmUgYmVmb3JlIHN0YXJ0aW5nIGFuZCBlbmRpbmcNCj4gbWVh
+c3VyaW5nLiAgVGhpcyBjb3VsZCBiZSBuZWVkZWQgZm9yIHRoZSBJZGxlX1N0YXRzIG1vbml0b3Ig
+d2hlbiBubyBvdGhlciBNU1INCj4gYmFzZWQgbW9uaXRvciAoaGFzIHRvIGJlIHJ1biBvbiB0aGUg
+Y29yZSB0aGF0IGlzIG1lYXN1cmVkKSBpcyBydW4gaW4gcGFyYWxsZWwuDQo+IFRoaXMgaXMgdG8g
+d2FrZSB1cCB0aGUgcHJvY2Vzc29ycyBmcm9tIGRlZXBlciBzbGVlcCBzdGF0ZXMgYW5kIGxldCB0
+aGUga2VybmVsDQo+IHJlYWNjb3VudCBpdHMgY3B1aWRsZSAoQy1zdGF0ZSkgaW5mb3JtYXRpb24g
+YmVmb3JlIHJlYWRpbmcgdGhlIGNwdWlkbGUgdGltaW5ncw0KPiBmcm9tIHN5c2ZzLg0KPg0KPiBC
+ZXN0IGlzIHlvdSBleGNoYW5nZSB0aGUgb3JkZXIgb2YgeW91ciBwYXRjaGVzLiBUaGUgMm5kIGxv
+b2tzIHJhdGhlciBzdHJhaWdodA0KPiBmb3J3YXJkIGFuZCB5b3UgY2FuIGFkZCBteSByZXZpZXdl
+ZC1ieS4NCg0KDQpUaGUgUkRQUlUgaW5zdHJ1Y3Rpb24gcmVhZHMgdGhlIEFQRVJGL01QRVJGIG9m
+IHRoZSBjcHUgb24gd2hpY2ggaXQgaXMgDQpydW5uaW5nLiBJZiB3ZSBkbw0KDQpub3Qgc2NoZWR1
+bGUgaXQgb24gZWFjaCBjcHUgc3BlY2lmaWNhbGx5LCBpdCB3aWxsIHJlYWQgdGhlIEFQRVJGL01Q
+RVJGIA0Kb2YgdGhlIGNwdSBpbiB3aGljaCBpdCBydW5zL21pZ2h0DQoNCmhhcHBlbiB0byBydW4g
+b24sIHdoaWNoIHdpbGwgbm90IGJlIHRoZSBjb3JyZWN0IGJlaGF2aW9yLg0KDQoNCj4NCj4gSWYg
+eW91IHN0aWxsIG5lZWQgYWRqdXN0aW5ncyB3aXRoIC1jIHBhcmFtLCB0aGV5IGNhbiBiZSBkaXNj
+dXNzZWQgc2VwYXJhdGVseS4NCg0KDQpUaGUgLWMgcGFyYW1ldGVyIGNhdXNlcyBjcHVwb3dlciB0
+byBzY2hlZHVsZSBpdHNlbGYgb24gZWFjaCBvZiB0aGUgY3B1cyANCm9mIHRoZSBzeXN0ZW0gaW4g
+YSBsb29wLg0KDQpBZnRlciB0aGUgbG9vcCB0aGUgY3B1cG93ZXIgc3RhcnRzIHRoZSBtZWFzdXJl
+bWVudCBvZiBBUEVSRi9NUEVSRiBvZiANCmVhY2ggY3B1Lg0KDQpUaGlzIGRvZXNuJ3Qgb2ZmZXIg
+dGhlIGJlaGF2aW9yIG5lZWRlZCB0byB1c2UgUkRQUlUsIHdoaWNoIHJlcXVpcmVzIA0KY3B1cG93
+ZXIgdG8gZXhlY3V0ZSBvbiB0aGUgY3B1DQoNCndob3NlIEFQRVJGL01QRVJGIHZhbHVlcyB3ZSBh
+cmUgaW50ZXJlc3RlZCBpbi4NCg0KDQpUaGFua3MsDQoNCkphbmFrDQoNCg0KPiBJdCB3b3VsZCBh
+bHNvIGJlIG5pY2UgdG8gbWVudGlvbiBpbiB3aGljaCBjYXNlIGl0IG1ha2VzIHNlbnNlIHRvIHVz
+ZSBpdCBpbiB0aGUNCj4gbWFucGFnZSBvciBhZHZhbnRhZ2VzL2RyYXdiYWNrcyBpZiB5b3UgZG9u
+J3QuDQo+DQo+IFRoYW5rcyENCj4NCj4gICAgICBUaG9tYXMNCj4NCj4NCj4NCg==
