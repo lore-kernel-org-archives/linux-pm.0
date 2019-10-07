@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAD35ECE58D
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Oct 2019 08:31:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EF1EECE58D
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Oct 2019 08:31:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C9CC420867
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Oct 2019 08:31:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6F77121655
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Oct 2019 08:31:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727505AbfJGIbL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Oct 2019 04:31:11 -0400
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:53570 "EHLO
+        id S1727561AbfJGIbT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Oct 2019 04:31:19 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:28374 "EHLO
         mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727416AbfJGIbH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Oct 2019 04:31:07 -0400
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x978SbfM022157
-        for <linux-pm@vger.kernel.org>; Mon, 7 Oct 2019 04:31:06 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2vfycdcbw5-1
+        by vger.kernel.org with ESMTP id S1727587AbfJGIbT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Oct 2019 04:31:19 -0400
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id x978SM35100554
+        for <linux-pm@vger.kernel.org>; Mon, 7 Oct 2019 04:31:18 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2vg097tx49-1
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 07 Oct 2019 04:31:06 -0400
+        for <linux-pm@vger.kernel.org>; Mon, 07 Oct 2019 04:31:17 -0400
 Received: from localhost
-        by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
         for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
-        Mon, 7 Oct 2019 09:31:03 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
-        by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
+        Mon, 7 Oct 2019 09:31:15 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+        by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
         (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Mon, 7 Oct 2019 09:30:58 +0100
+        Mon, 7 Oct 2019 09:31:11 +0100
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-        by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x978Uvsx25428140
+        by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id x978VAbY40239290
         (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 7 Oct 2019 08:30:57 GMT
+        Mon, 7 Oct 2019 08:31:10 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 29FF711C064;
-        Mon,  7 Oct 2019 08:30:57 +0000 (GMT)
+        by IMSVA (Postfix) with ESMTP id E54A211C050;
+        Mon,  7 Oct 2019 08:31:09 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id DC2DC11C04C;
-        Mon,  7 Oct 2019 08:30:54 +0000 (GMT)
+        by IMSVA (Postfix) with ESMTP id A2C6111C054;
+        Mon,  7 Oct 2019 08:31:07 +0000 (GMT)
 Received: from localhost.in.ibm.com (unknown [9.124.35.220])
         by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-        Mon,  7 Oct 2019 08:30:54 +0000 (GMT)
+        Mon,  7 Oct 2019 08:31:07 +0000 (GMT)
 From:   Parth Shah <parth@linux.ibm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org,
@@ -53,16 +53,16 @@ Cc:     peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org,
         valentin.schneider@arm.com, pavel@ucw.cz, dsmythies@telus.net,
         quentin.perret@arm.com, rafael.j.wysocki@intel.com,
         tim.c.chen@linux.intel.com, daniel.lezcano@linaro.org
-Subject: [RFC v5 1/6] sched/core: Add manual background task classification using sched_setattr syscall
-Date:   Mon,  7 Oct 2019 14:00:46 +0530
+Subject: [RFC v5 6/6] powerpc: Set turbo domain to NUMA node for task packing
+Date:   Mon,  7 Oct 2019 14:00:51 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191007083051.4820-1-parth@linux.ibm.com>
 References: <20191007083051.4820-1-parth@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19100708-4275-0000-0000-0000036EC34B
+x-cbid: 19100708-0028-0000-0000-000003A6BE4F
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19100708-4276-0000-0000-00003881D060
-Message-Id: <20191007083051.4820-2-parth@linux.ibm.com>
+x-cbparentid: 19100708-0029-0000-0000-00002468CDD2
+Message-Id: <20191007083051.4820-7-parth@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:,, definitions=2019-10-07_01:,,
  signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
@@ -75,98 +75,51 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Small background tasks typically performs some housekeeping work and are
-less important in the overall scheme of load balancing and scheduling.
+Provide an powerpc architecture specific implementation for defining the
+turbo domain to make searching of the core to be bound within the NUMA.
 
-So provide a way to mark the task which are small background noises with
-the use of additional flag to the existing task attribute. Also provide an
-interface from the userspace which uses sched_setattr syscall to mark such
-tasks.
-
-The scheduler may use this as hints to pack such tasks on fewer number of
-cores.
+The POWER9 systems have a pair of cores in the LLC domain. Hence to make
+TurboSched more effective, increase the domain space for task packing
+to search within NUMA domain.
 
 Signed-off-by: Parth Shah <parth@linux.ibm.com>
 ---
- include/linux/sched.h      | 1 +
- include/uapi/linux/sched.h | 4 +++-
- kernel/sched/core.c        | 9 +++++++++
- 3 files changed, 13 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/topology.h | 3 +++
+ arch/powerpc/kernel/smp.c           | 7 +++++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 1113dd4706ae..e03b85166e34 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1463,6 +1463,7 @@ extern struct pid *cad_pid;
- #define PF_NO_SETAFFINITY	0x04000000	/* Userland is not allowed to meddle with cpus_mask */
- #define PF_MCE_EARLY		0x08000000      /* Early kill for mce process policy */
- #define PF_MEMALLOC_NOCMA	0x10000000	/* All allocation request will have _GFP_MOVABLE cleared */
-+#define PF_CAN_BE_PACKED	0x20000000	/* Provide hints to the scheduler to pack such tasks */
- #define PF_FREEZER_SKIP		0x40000000	/* Freezer should not count it as freezable */
- #define PF_SUSPEND_TASK		0x80000000      /* This thread called freeze_processes() and should not be frozen */
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index f85e2b01c3df..b2493bb11653 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -132,6 +132,9 @@ static inline void shared_proc_topology_init(void) {}
+ #define topology_sibling_cpumask(cpu)	(per_cpu(cpu_sibling_map, cpu))
+ #define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
+ #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
++#define arch_turbo_domain		powerpc_turbo_domain
++
++struct cpumask *powerpc_turbo_domain(int cpu);
  
-diff --git a/include/uapi/linux/sched.h b/include/uapi/linux/sched.h
-index 617bb59aa8ba..fccb1c57d037 100644
---- a/include/uapi/linux/sched.h
-+++ b/include/uapi/linux/sched.h
-@@ -55,6 +55,7 @@
- #define SCHED_FLAG_KEEP_PARAMS		0x10
- #define SCHED_FLAG_UTIL_CLAMP_MIN	0x20
- #define SCHED_FLAG_UTIL_CLAMP_MAX	0x40
-+#define SCHED_FLAG_TASK_PACKING		0x80
- 
- #define SCHED_FLAG_KEEP_ALL	(SCHED_FLAG_KEEP_POLICY | \
- 				 SCHED_FLAG_KEEP_PARAMS)
-@@ -66,6 +67,7 @@
- 			 SCHED_FLAG_RECLAIM		| \
- 			 SCHED_FLAG_DL_OVERRUN		| \
- 			 SCHED_FLAG_KEEP_ALL		| \
--			 SCHED_FLAG_UTIL_CLAMP)
-+			 SCHED_FLAG_UTIL_CLAMP		| \
-+			 SCHED_FLAG_TASK_PACKING)
- 
- #endif /* _UAPI_LINUX_SCHED_H */
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index fa43ce3962e7..e7cda4aa8696 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -4498,6 +4498,8 @@ static void __setscheduler_params(struct task_struct *p,
- 	p->rt_priority = attr->sched_priority;
- 	p->normal_prio = normal_prio(p);
- 	set_load_weight(p, true);
-+	if (attr->sched_flags & SCHED_FLAG_TASK_PACKING)
-+		p->flags |= PF_CAN_BE_PACKED;
+ int dlpar_cpu_readd(int cpu);
+ #endif
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index ea6adbf6a221..0fc4443a3f27 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1169,6 +1169,13 @@ static void remove_cpu_from_masks(int cpu)
  }
- 
- /* Actually do priority change: must hold pi & rq lock. */
-@@ -4557,6 +4559,8 @@ static int __sched_setscheduler(struct task_struct *p,
- 	struct rq_flags rf;
- 	int reset_on_fork;
- 	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
-+	unsigned long long task_packing_flag =
-+				attr->sched_flags & SCHED_FLAG_TASK_PACKING;
- 	struct rq *rq;
- 
- 	/* The pi code expects interrupts enabled */
-@@ -4686,6 +4690,8 @@ static int __sched_setscheduler(struct task_struct *p,
- 			goto change;
- 		if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)
- 			goto change;
-+		if (task_packing_flag)
-+			goto change;
- 
- 		p->sched_reset_on_fork = reset_on_fork;
- 		task_rq_unlock(rq, p, &rf);
-@@ -5181,6 +5187,9 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
- 	attr.sched_util_max = p->uclamp_req[UCLAMP_MAX].value;
  #endif
  
-+	if (p->flags & PF_CAN_BE_PACKED)
-+		attr.sched_flags |= SCHED_FLAG_TASK_PACKING;
++#ifdef CONFIG_SCHED_SMT
++inline struct cpumask *powerpc_turbo_domain(int cpu)
++{
++	return cpumask_of_node(cpu_to_node(cpu));
++}
++#endif
 +
- 	rcu_read_unlock();
- 
- 	retval = sched_read_attr(uattr, &attr, size);
+ static inline void add_cpu_to_smallcore_masks(int cpu)
+ {
+ 	struct cpumask *this_l1_cache_map = per_cpu(cpu_l1_cache_map, cpu);
 -- 
 2.17.1
 
