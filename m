@@ -2,137 +2,123 @@ Return-Path: <SRS0=9m57=YB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85F4FC35280
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Oct 2019 16:52:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E8EDECE58C
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Oct 2019 20:11:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 665F82070B
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Oct 2019 16:52:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F0E4521835
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Oct 2019 20:11:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="AtOd3TWD"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727336AbfJHQwk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Oct 2019 12:52:40 -0400
-Received: from foss.arm.com ([217.140.110.172]:41300 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726138AbfJHQwj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Oct 2019 12:52:39 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 424301570;
-        Tue,  8 Oct 2019 09:52:39 -0700 (PDT)
-Received: from [192.168.0.9] (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2AAC23F6C4;
-        Tue,  8 Oct 2019 09:52:37 -0700 (PDT)
-Subject: Re: [RFC v5 4/6] sched/fair: Tune task wake-up logic to pack small
- background tasks on fewer cores
-To:     Parth Shah <parth@linux.ibm.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>
-Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Patrick Bellasi <patrick.bellasi@matbug.net>,
-        Valentin Schneider <valentin.schneider@arm.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Doug Smythies <dsmythies@telus.net>,
-        Quentin Perret <qperret@qperret.net>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Tim Chen <tim.c.chen@linux.intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-References: <20191007083051.4820-1-parth@linux.ibm.com>
- <20191007083051.4820-5-parth@linux.ibm.com>
- <CAKfTPtCgoTJXxbYyza1W55ayw9QeM7fue2e91Xpt804sL9GQWA@mail.gmail.com>
- <80bb34ec-6358-f4dc-d20d-cde6c9d7e197@linux.ibm.com>
-From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
-Message-ID: <d55c593d-af8e-c8ba-cc0e-c9917df5d593@arm.com>
-Date:   Tue, 8 Oct 2019 18:52:27 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+        id S1729935AbfJHULH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Oct 2019 16:11:07 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:46651 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729436AbfJHULH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Oct 2019 16:11:07 -0400
+Received: by mail-wr1-f65.google.com with SMTP id o18so20831142wrv.13
+        for <linux-pm@vger.kernel.org>; Tue, 08 Oct 2019 13:11:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=zRkRhcx1S5ZqWKlDmiJVwEoGZ+yDHNmQqx+oKN4Jgv8=;
+        b=AtOd3TWDRf/o/4Bk21hI1q1YaTWWdaG3kfNytZ/qPPqQn0JmyK/rui2r0EuMm8vE2N
+         Np/9eOnnhAfrOMxdeGVmpMNNUITk/jZ0GxMsHDhFh98bjdETUHvlBY2H2yWdhLUbI3W5
+         vOw1QD0teRf5YvXCnUOhW96QuhDy8himtKuUpNv4e8Cbmhg7SsZTzok5JiGonwy3xyCF
+         F5Ed/T8RqitQMrGPS8M9hZq/uA/ExeBWPyxPR4ynWQ+mri6r3sRTW7Pq+bKlCVlSkT7+
+         AmUR5uR3NbMZ6Yc37l6ZxQyjo9BNg3wNZWoK0wGtnUY7GBdQj5t/AJWTt9Ft4SABFuL4
+         uzbw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=zRkRhcx1S5ZqWKlDmiJVwEoGZ+yDHNmQqx+oKN4Jgv8=;
+        b=jGHmztQ40/lQ3Da1hGa64Rpk0CP0XWImLTv3wvS26lsXDgtJpRC0iGe+HzbZ376wLT
+         aOLyRGXUI7cDXAjRWmNZIdMPWaV6KpoRVWMP86JJYjQYPYPckuC0CK3mzs1fMMFmnKNt
+         6/TITCfrNhjjXRlZSRi/oQI+S6PGfTxruMspWfWhITM6pV0w0/hDKDeTURRAPe50vgtx
+         ktBSUH67kxkIu/0xA+ESaJnxBabJ9siYfDDFGOz6bf1R7qRUdYLvY7JtzFjgFmpyeTAP
+         KH/mXk7XpkZu5gxQT4BSjoa9Pa5O6gWu3/WfFAqUWNyzRFsfrYBL4i0v7LiDJoE6vrIR
+         sWgw==
+X-Gm-Message-State: APjAAAUIuyjiY0QAFvjZQ5IXS1hTE3kUXIncsa7ranWZHUJNbUDWWB3n
+        Gl5ZMXz8qDSJM3JlIw3OVGaIRbgYUYv1KmWmAPZ+Ug==
+X-Google-Smtp-Source: APXvYqwecQ8I1R5sloUUyTYf0HUKBV5L5CNFDnDEzLhwHMC1MDTm+0cieCjDImMOjidyvRvF2c1VqO+N08z5SbZTKEw=
+X-Received: by 2002:adf:f7ce:: with SMTP id a14mr15752442wrq.239.1570565464249;
+ Tue, 08 Oct 2019 13:11:04 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <80bb34ec-6358-f4dc-d20d-cde6c9d7e197@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <CAA25o9T6C4VCVbqzS0hJgmvpJb6h+htFpH3OUY30E2VtuG8fxQ@mail.gmail.com>
+ <56319808-87dc-76ed-c1e0-9f60108e94a6@arm.com> <CAA25o9TpBm+LNwVccTaUng4vQ1Q9_Wz2QftGho7DG_+26CCYoA@mail.gmail.com>
+ <CAJZ5v0jCb5jLVQ2Oj0bSNf987apxi7SHx4duX9eALMD6QQXB+w@mail.gmail.com> <CAA25o9SUnwc908Grh8qYMDi_tnyhov00Y11RT69MuK8gXcrN4A@mail.gmail.com>
+In-Reply-To: <CAA25o9SUnwc908Grh8qYMDi_tnyhov00Y11RT69MuK8gXcrN4A@mail.gmail.com>
+From:   Luigi Semenzato <semenzato@google.com>
+Date:   Tue, 8 Oct 2019 13:10:52 -0700
+Message-ID: <CAA25o9TWrLh0o17Epqimsvwe8GoW682jVh_4u2KtjJ7SqKGbsQ@mail.gmail.com>
+Subject: Re: hibernation memory usage
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     James Morse <james.morse@arm.com>,
+        Linux Memory Management List <linux-mm@kvack.org>,
+        Bas Nowaira <bassem@google.com>, Geoff Pike <gpike@google.com>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-[- Quentin Perret <quentin.perret@arm.com>]
-[+ Quentin Perret <qperret@qperret.net>]
+Actually, I think we only need to change the MM watermarks before
+hibernation and after resume.  There's a patch that will do just that:
 
-See commit c193a3ffc282 ("mailmap: Update email address for Quentin Perret")
+https://lkml.org/lkml/2013/2/17/210
 
-On 07/10/2019 18:53, Parth Shah wrote:
-> 
-> 
-> On 10/7/19 5:49 PM, Vincent Guittot wrote:
->> On Mon, 7 Oct 2019 at 10:31, Parth Shah <parth@linux.ibm.com> wrote:
->>>
->>> The algorithm finds the first non idle core in the system and tries to
->>> place a task in the idle CPU in the chosen core. To maintain
->>> cache hotness, work of finding non idle core starts from the prev_cpu,
->>> which also reduces task ping-pong behaviour inside of the core.
->>>
->>> Define a new method to select_non_idle_core which keep tracks of the idle
->>> and non-idle CPUs in the core and based on the heuristics determines if the
->>> core is sufficiently busy to place the incoming backgroung task. The
->>> heuristic further defines the non-idle CPU into either busy (>12.5% util)
->>> CPU and overutilized (>80% util) CPU.
->>> - The core containing more idle CPUs and no busy CPUs is not selected for
->>>   packing
->>> - The core if contains more than 1 overutilized CPUs are exempted from
->>>   task packing
->>> - Pack if there is atleast one busy CPU and overutilized CPUs count is <2
->>>
->>> Value of 12.5% utilization for busy CPU gives sufficient heuristics for CPU
->>> doing enough work an
+It didn't make it into mainline (which seems kind of unreasonable,
+since the watermarks themselves are based on heuristics) but shouldn't
+be difficult to apply.  Or are there simpler solutions?
 
-[...]
-
->>> @@ -6483,7 +6572,11 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
->>>         } else if (sd_flag & SD_BALANCE_WAKE) { /* XXX always ? */
->>>                 /* Fast path */
->>>
->>> -               new_cpu = select_idle_sibling(p, prev_cpu, new_cpu);
->>> +               if (is_turbosched_enabled() && unlikely(is_background_task(p)))
->>> +                       new_cpu = turbosched_select_non_idle_core(p, prev_cpu,
->>> +                                                                 new_cpu);
->>
->> Could you add turbosched_select_non_idle_core() similarly to
->> find_energy_efficient_cpu() ?
->> Add it at the beg select_task_rq_fair()
->> Return immediately with theCPU if you have found one
->> Or let the normal path select a CPU if the
->> turbosched_select_non_idle_core() has not been able to find a suitable
->> CPU for packing
->>
-> 
-> of course. I can do that.
-> I was just not aware about the effect of wake_affine and so was waiting for
-> such comments to be sure of. Thanks for this.
-> Maybe I can add just below the sched_energy_present(){...} construct giving
-> precedence to EAS? I'm asking this because I remember Patrick telling me to
-> leverage task packing for android as well?
-
-I have a hard time imaging that Turbosched will be used in Android next
-to EAS in the foreseeable future.
-
-First of all, EAS provides task packing already on Performance Domain
-(PD) level (a.k.a. as cluster on traditional 2-cluster Arm/Arm64
-big.LITTLE or DynamIQ (with Phantom domains (out of tree solution)).
-This is where we can safe energy without harming latency.
-
-See the tests results under '2.1 Energy test case' in
-
-https://lore.kernel.org/r/20181203095628.11858-1-quentin.perret@arm.com
-
-There are 10 to 50 small (classified solely by task utilization) tasks
-per test case and EAS shows an effect on energy consumption by packing
-them onto the PD (cluster) of the small CPUs.
-
-And second, the CPU supported topology is different to the one you're
-testing on.
-
-[...]
+On Tue, Oct 8, 2019 at 9:18 AM Luigi Semenzato <semenzato@google.com> wrote:
+>
+> Yes, that makes sense, thank you.  Use separate partitions for swap
+> and hibernation.
+>
+> Normally the kernel starts swapping out when there's no reclaimable
+> memory, so anon usage will be high.  Do you think cranking up
+> /proc/vm/swappiness would be enough to ensure that file pages stay
+> over 50%?  Or would you use some tricks, such as running a
+> high-priority process which allocates >50% of RAM, thus forcing other
+> anon pages to be swapped out, then killing that process and quickly
+> hibernating before too many pages are brought back in?  Or changing
+> the kernel so that in the first part of hibernation we'll just swap
+> stuff out?
+>
+> On Tue, Oct 8, 2019 at 8:39 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Tue, Oct 8, 2019 at 5:26 PM Luigi Semenzato <semenzato@google.com> wrote:
+> > >
+> > > Thank you for your reply!
+> > >
+> > > I understand the need for saving all state, not just process/task
+> > > state.  But for many of the systems that could benefit from
+> > > hibernation, the majority of RAM is taken by user processes (I am
+> > > thinking laptops).  It should be possible to copy their anonymous
+> > > pages to disk more or less directly, without making an extra copy like
+> > > it's done for all other pages.  I am not sure what happens with kernel
+> > > tasks, but they don't have anonymous pages (that I know).
+> > >
+> > > I am curious to know how/if hibernation is currently used in practice.
+> > > It doesn't seem practical to require that user processes take less
+> > > than 50% of RAM at all times.  There may be special cases in which the
+> > > restriction can be achieved by terminating non-essential processes
+> > > before hibernating, but I don't know of any.
+> > >
+> > > I would also like to know how much work it might take to avoid the
+> > > extra copy of the anonymous pages of frozen processes.
+> >
+> > Whatever doesn't fit into 50% of RAM needs to be swapped out before
+> > hibernation.  The efficiency of that depends on the swap handling code
+> > and the underlying hardware.  If that is efficient enough overall,
+> > trying to avoid it altogether isn't going to make much of a
+> > difference.
