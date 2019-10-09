@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83BA7ECE58D
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Oct 2019 17:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F38CECE58C
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Oct 2019 17:16:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 565AD218AC
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Oct 2019 17:16:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B08721D7A
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Oct 2019 17:16:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UXvK3a1D"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vU5nENGi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732059AbfJIRQK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Oct 2019 13:16:10 -0400
-Received: from mail-yw1-f65.google.com ([209.85.161.65]:33631 "EHLO
-        mail-yw1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731907AbfJIRPV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Oct 2019 13:15:21 -0400
-Received: by mail-yw1-f65.google.com with SMTP id w140so1101052ywd.0;
-        Wed, 09 Oct 2019 10:15:20 -0700 (PDT)
+        id S1731836AbfJIRPP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Oct 2019 13:15:15 -0400
+Received: from mail-yb1-f193.google.com ([209.85.219.193]:41340 "EHLO
+        mail-yb1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730490AbfJIRPP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Oct 2019 13:15:15 -0400
+Received: by mail-yb1-f193.google.com with SMTP id 206so979811ybc.8;
+        Wed, 09 Oct 2019 10:15:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=DSd0IOl/SfIaZDr2U/8RUT6ZXyKiyqc5Z3E1jM5LeZE=;
-        b=UXvK3a1DzK8YhcxCfRPFpKmLpSGquvCZAFIXwU/b+bsTaTEeZZuCDRApHde3p5KudE
-         nZ8Zgj0YZEOX/S+ikrDoMM9cswIaJyd0oBEH9m6yBTyt7s90ktnvOb1Fi8DZt6JAD/1W
-         IjrJ/iBMMNV4ycv/5qpPNxVM0PxNwLRbXwh9ppkeQykrR9nxlpDl0yVTHdCihU9BAro1
-         hIeEPDHpumwUDBnphJdXSIKraHcQyqzvbZ4G4jFU824ZeGdWDb5DOGM7HjlazjkgzqQz
-         X8o91fIernfsy8SQ1aErMDiyq0qc9PgLdIYbuHgkAqmgsAjVzmuSHFWsj9qeeDVLEqEx
-         NPdw==
+        bh=qFx5e6sekWj4cSXabcHlK2m6teGcz5rYDUsYdjC+rrw=;
+        b=vU5nENGi+96qwP1zXySRiWdFjmgbqu2wz/Nv/G+uJKJJ3evWwp5yKBdbAOYOxR1UD6
+         02e0fvSrnPTf7cs9XAocBH5tfFvYAD8DjRLbupbDBxhqDO1OnyL0+YkJOZJ78rYIuDkv
+         4lHksmb169tCjBIbSMDL/SXap1/9ySx+oH7+ANVrRMaxo6Z8e8hlkvhRqH9aJvh0tyXE
+         O8OC4U47zNrp1IPyOfx9kyFntLDoj3vwq3s2lkMmrk0n6z46+gIjoW4Xjo/uPQWtzRz3
+         Tkr5VXvUolO44bthr8sCq3XyND0NpqFKhBnozXvK/qa7maJKhSBEnwQ5UtCvBGg6SWgz
+         ZYVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=DSd0IOl/SfIaZDr2U/8RUT6ZXyKiyqc5Z3E1jM5LeZE=;
-        b=KZAnPwP86F+Kqp1shnnnY1yekl13cBOf9B4ZMek7UZpxGl8iy3t1jolQwXfRlPJ0F6
-         Cknel1pLaYcq2My4eqi48vAyoTuAdFiMsjQwiEUa2AeQN/gPM9ERbSAAnW8b1fuU1xXq
-         dYOEyBPZ66DtV4cm0iQH2Q2ql7olj7r1BKn1/V00zwF9jZ7yEey2HwVb6LOy4AzxTc7d
-         E0KmbYhHHASnfMyOuA1g40+y2cpF5lribLEHHS25DTsPlVT0LbmHEU9+P2wdoa2MNp0h
-         tJmO5XAkn4/KTUWoxInT74nv46t2QysLD8O3TY0eNFcsJXpWffYDyzMJKtmCripoSl43
-         cr6Q==
-X-Gm-Message-State: APjAAAUcqKeSKap0CqMItk+H3ioW+uthIdzn2rke2Hr7/woaKnEfdDCK
-        d7LjSc/HBMbL4Lb2aEnwQnw=
-X-Google-Smtp-Source: APXvYqzsApzNZpe228+5FVco77ADvnrdm8wsf1MQtSLRInz2WOiJ03ZxlCm2ygp8a611VBL5BWwF1g==
-X-Received: by 2002:a81:83c7:: with SMTP id t190mr3525655ywf.88.1570641319886;
-        Wed, 09 Oct 2019 10:15:19 -0700 (PDT)
+        bh=qFx5e6sekWj4cSXabcHlK2m6teGcz5rYDUsYdjC+rrw=;
+        b=Sx7xgE8EFtXsp2M7Rlpy7G8JpN8sX7Z6Rw4B3fvSLCjjWZ2WFVJAs493RNmbMyaxbS
+         hf+wctYISSgjLnmgnJqiNMHlfyvTTefqzXwSPrklvo/83NIcXq5JDGp0Sh5rPloXJ594
+         WrBJWOnFtT/fETTV5XVSVWutAz7QMMdR9PR4Bywxr9XO7GXdm96sH1zMxfhM57CVI4FW
+         GNYEYT2/EJ1ZOcmQNB+wqvppdJcfP3i6Pr91hrrBbi1GBVnvPuO0v9nTXIuvJBqHhlK+
+         zF3dUmPEGrtE5zTdT2cXi9XFhadobp9/vdeDogSI7mRZ4LARZKRMuPKECwT+Fcl58b4P
+         flpA==
+X-Gm-Message-State: APjAAAXOQrIn2eqickt56oYXwmkcIHT0Jpu89FyZ5+Hy9GnbtSC8u0ek
+        3shajPKLFVZIV+WqANftOE8=
+X-Google-Smtp-Source: APXvYqyo/6BM6QV7w2AEso0LDLVV9QJhxnkgkXCJdqwwCDn8k8vz3H54P9dTdCDOoxtGL1DTt4y1QA==
+X-Received: by 2002:a25:49c7:: with SMTP id w190mr2853099yba.140.1570641313477;
+        Wed, 09 Oct 2019 10:15:13 -0700 (PDT)
 Received: from localhost.localdomain (072-189-084-142.res.spectrum.com. [72.189.84.142])
-        by smtp.gmail.com with ESMTPSA id r63sm743292ywg.36.2019.10.09.10.15.18
+        by smtp.gmail.com with ESMTPSA id r63sm743292ywg.36.2019.10.09.10.15.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Oct 2019 10:15:19 -0700 (PDT)
+        Wed, 09 Oct 2019 10:15:11 -0700 (PDT)
 From:   William Breathitt Gray <vilhelm.gray@gmail.com>
 To:     linus.walleij@linaro.org, bgolaszewski@baylibre.com,
         akpm@linux-foundation.org
@@ -63,10 +63,12 @@ Cc:     linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux@rasmusvillemoes.dk, yamada.masahiro@socionext.com,
         linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
         geert@linux-m68k.org, preid@electromag.com.au, lukas@wunner.de,
-        William Breathitt Gray <vilhelm.gray@gmail.com>
-Subject: [PATCH v18 05/14] gpio: gpio-mm: Utilize for_each_set_clump8 macro
-Date:   Wed,  9 Oct 2019 13:14:41 -0400
-Message-Id: <0de53d7021b2d6db10294473cd8a1b6102bcec94.1570641097.git.vilhelm.gray@gmail.com>
+        William Breathitt Gray <vilhelm.gray@gmail.com>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH v18 01/14] bitops: Introduce the for_each_set_clump8 macro
+Date:   Wed,  9 Oct 2019 13:14:37 -0400
+Message-Id: <893c3b4f03266c9496137cc98ac2b1bd27f92c73.1570641097.git.vilhelm.gray@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <cover.1570641097.git.vilhelm.gray@gmail.com>
 References: <cover.1570641097.git.vilhelm.gray@gmail.com>
@@ -77,125 +79,145 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Replace verbose implementation in get_multiple/set_multiple callbacks
-with for_each_set_clump8 macro to simplify code and improve clarity.
+This macro iterates for each 8-bit group of bits (clump) with set bits,
+within a bitmap memory region. For each iteration, "start" is set to the
+bit offset of the found clump, while the respective clump value is
+stored to the location pointed by "clump". Additionally, the
+bitmap_get_value8 and bitmap_set_value8 functions are introduced to
+respectively get and set an 8-bit value in a bitmap memory region.
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Suggested-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Suggested-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Suggested-by: Lukas Wunner <lukas@wunner.de>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: William Breathitt Gray <vilhelm.gray@gmail.com>
 ---
- drivers/gpio/gpio-gpio-mm.c | 73 +++++++++++--------------------------
- 1 file changed, 21 insertions(+), 52 deletions(-)
+ include/asm-generic/bitops/find.h | 17 +++++++++++++++
+ include/linux/bitmap.h            | 35 +++++++++++++++++++++++++++++++
+ include/linux/bitops.h            |  5 +++++
+ lib/find_bit.c                    | 14 +++++++++++++
+ 4 files changed, 71 insertions(+)
 
-diff --git a/drivers/gpio/gpio-gpio-mm.c b/drivers/gpio/gpio-gpio-mm.c
-index 78a1db24e931..72196ea36358 100644
---- a/drivers/gpio/gpio-gpio-mm.c
-+++ b/drivers/gpio/gpio-gpio-mm.c
-@@ -164,46 +164,25 @@ static int gpiomm_gpio_get(struct gpio_chip *chip, unsigned int offset)
- 	return !!(port_state & mask);
- }
+diff --git a/include/asm-generic/bitops/find.h b/include/asm-generic/bitops/find.h
+index 8a1ee10014de..9fdf21302fdf 100644
+--- a/include/asm-generic/bitops/find.h
++++ b/include/asm-generic/bitops/find.h
+@@ -80,4 +80,21 @@ extern unsigned long find_first_zero_bit(const unsigned long *addr,
  
-+static const size_t ports[] = { 0, 1, 2, 4, 5, 6 };
+ #endif /* CONFIG_GENERIC_FIND_FIRST_BIT */
+ 
++/**
++ * find_next_clump8 - find next 8-bit clump with set bits in a memory region
++ * @clump: location to store copy of found clump
++ * @addr: address to base the search on
++ * @size: bitmap size in number of bits
++ * @offset: bit offset at which to start searching
++ *
++ * Returns the bit offset for the next set clump; the found clump value is
++ * copied to the location pointed by @clump. If no bits are set, returns @size.
++ */
++extern unsigned long find_next_clump8(unsigned long *clump,
++				      const unsigned long *addr,
++				      unsigned long size, unsigned long offset);
 +
- static int gpiomm_gpio_get_multiple(struct gpio_chip *chip, unsigned long *mask,
- 	unsigned long *bits)
- {
- 	struct gpiomm_gpio *const gpiommgpio = gpiochip_get_data(chip);
--	size_t i;
--	static const size_t ports[] = { 0, 1, 2, 4, 5, 6 };
--	const unsigned int gpio_reg_size = 8;
--	unsigned int bits_offset;
--	size_t word_index;
--	unsigned int word_offset;
--	unsigned long word_mask;
--	const unsigned long port_mask = GENMASK(gpio_reg_size - 1, 0);
-+	unsigned long offset;
-+	unsigned long gpio_mask;
-+	unsigned int port_addr;
- 	unsigned long port_state;
- 
- 	/* clear bits array to a clean slate */
- 	bitmap_zero(bits, chip->ngpio);
- 
--	/* get bits are evaluated a gpio port register at a time */
--	for (i = 0; i < ARRAY_SIZE(ports); i++) {
--		/* gpio offset in bits array */
--		bits_offset = i * gpio_reg_size;
--
--		/* word index for bits array */
--		word_index = BIT_WORD(bits_offset);
--
--		/* gpio offset within current word of bits array */
--		word_offset = bits_offset % BITS_PER_LONG;
--
--		/* mask of get bits for current gpio within current word */
--		word_mask = mask[word_index] & (port_mask << word_offset);
--		if (!word_mask) {
--			/* no get bits in this port so skip to next one */
--			continue;
--		}
--
--		/* read bits from current gpio port */
--		port_state = inb(gpiommgpio->base + ports[i]);
-+	for_each_set_clump8(offset, gpio_mask, mask, ARRAY_SIZE(ports) * 8) {
-+		port_addr = gpiommgpio->base + ports[offset / 8];
-+		port_state = inb(port_addr) & gpio_mask;
- 
--		/* store acquired bits at respective bits array offset */
--		bits[word_index] |= (port_state << word_offset) & word_mask;
-+		bitmap_set_value8(bits, port_state, offset);
- 	}
- 
- 	return 0;
-@@ -234,37 +213,27 @@ static void gpiomm_gpio_set_multiple(struct gpio_chip *chip,
- 	unsigned long *mask, unsigned long *bits)
- {
- 	struct gpiomm_gpio *const gpiommgpio = gpiochip_get_data(chip);
--	unsigned int i;
--	const unsigned int gpio_reg_size = 8;
--	unsigned int port;
--	unsigned int out_port;
--	unsigned int bitmask;
-+	unsigned long offset;
-+	unsigned long gpio_mask;
-+	size_t index;
-+	unsigned int port_addr;
-+	unsigned long bitmask;
- 	unsigned long flags;
- 
--	/* set bits are evaluated a gpio register size at a time */
--	for (i = 0; i < chip->ngpio; i += gpio_reg_size) {
--		/* no more set bits in this mask word; skip to the next word */
--		if (!mask[BIT_WORD(i)]) {
--			i = (BIT_WORD(i) + 1) * BITS_PER_LONG - gpio_reg_size;
--			continue;
--		}
-+	for_each_set_clump8(offset, gpio_mask, mask, ARRAY_SIZE(ports) * 8) {
-+		index = offset / 8;
-+		port_addr = gpiommgpio->base + ports[index];
- 
--		port = i / gpio_reg_size;
--		out_port = (port > 2) ? port + 1 : port;
--		bitmask = mask[BIT_WORD(i)] & bits[BIT_WORD(i)];
-+		bitmask = bitmap_get_value8(bits, offset) & gpio_mask;
- 
- 		spin_lock_irqsave(&gpiommgpio->lock, flags);
- 
- 		/* update output state data and set device gpio register */
--		gpiommgpio->out_state[port] &= ~mask[BIT_WORD(i)];
--		gpiommgpio->out_state[port] |= bitmask;
--		outb(gpiommgpio->out_state[port], gpiommgpio->base + out_port);
-+		gpiommgpio->out_state[index] &= ~gpio_mask;
-+		gpiommgpio->out_state[index] |= bitmask;
-+		outb(gpiommgpio->out_state[index], port_addr);
- 
- 		spin_unlock_irqrestore(&gpiommgpio->lock, flags);
--
--		/* prepare for next gpio register set */
--		mask[BIT_WORD(i)] >>= gpio_reg_size;
--		bits[BIT_WORD(i)] >>= gpio_reg_size;
- 	}
++#define find_first_clump8(clump, bits, size) \
++	find_next_clump8((clump), (bits), (size), 0)
++
+ #endif /*_ASM_GENERIC_BITOPS_FIND_H_ */
+diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
+index 90528f12bdfa..761fab5b60a7 100644
+--- a/include/linux/bitmap.h
++++ b/include/linux/bitmap.h
+@@ -66,6 +66,8 @@
+  *  bitmap_allocate_region(bitmap, pos, order)  Allocate specified bit region
+  *  bitmap_from_arr32(dst, buf, nbits)          Copy nbits from u32[] buf to dst
+  *  bitmap_to_arr32(buf, src, nbits)            Copy nbits from buf to u32[] dst
++ *  bitmap_get_value8(map, start)               Get 8bit value from map at start
++ *  bitmap_set_value8(map, value, start)        Set 8bit value to map at start
+  *
+  * Note, bitmap_zero() and bitmap_fill() operate over the region of
+  * unsigned longs, that is, bits behind bitmap till the unsigned long
+@@ -488,6 +490,39 @@ static inline void bitmap_from_u64(unsigned long *dst, u64 mask)
+ 		dst[1] = mask >> 32;
  }
  
++/**
++ * bitmap_get_value8 - get an 8-bit value within a memory region
++ * @map: address to the bitmap memory region
++ * @start: bit offset of the 8-bit value; must be a multiple of 8
++ *
++ * Returns the 8-bit value located at the @start bit offset within the @src
++ * memory region.
++ */
++static inline unsigned long bitmap_get_value8(const unsigned long *map,
++					      unsigned long start)
++{
++	const size_t index = BIT_WORD(start);
++	const unsigned long offset = start % BITS_PER_LONG;
++
++	return (map[index] >> offset) & 0xFF;
++}
++
++/**
++ * bitmap_set_value8 - set an 8-bit value within a memory region
++ * @map: address to the bitmap memory region
++ * @value: the 8-bit value; values wider than 8 bits may clobber bitmap
++ * @start: bit offset of the 8-bit value; must be a multiple of 8
++ */
++static inline void bitmap_set_value8(unsigned long *map, unsigned long value,
++				     unsigned long start)
++{
++	const size_t index = BIT_WORD(start);
++	const unsigned long offset = start % BITS_PER_LONG;
++
++	map[index] &= ~(0xFF << offset);
++	map[index] |= value << offset;
++}
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __LINUX_BITMAP_H */
+diff --git a/include/linux/bitops.h b/include/linux/bitops.h
+index cf074bce3eb3..fb94a10f7853 100644
+--- a/include/linux/bitops.h
++++ b/include/linux/bitops.h
+@@ -40,6 +40,11 @@ extern unsigned long __sw_hweight64(__u64 w);
+ 	     (bit) < (size);					\
+ 	     (bit) = find_next_zero_bit((addr), (size), (bit) + 1))
+ 
++#define for_each_set_clump8(start, clump, bits, size) \
++	for ((start) = find_first_clump8(&(clump), (bits), (size)); \
++	     (start) < (size); \
++	     (start) = find_next_clump8(&(clump), (bits), (size), (start) + 8))
++
+ static inline int get_bitmask_order(unsigned int count)
+ {
+ 	int order;
+diff --git a/lib/find_bit.c b/lib/find_bit.c
+index 5c51eb45178a..e35a76b291e6 100644
+--- a/lib/find_bit.c
++++ b/lib/find_bit.c
+@@ -214,3 +214,17 @@ EXPORT_SYMBOL(find_next_bit_le);
+ #endif
+ 
+ #endif /* __BIG_ENDIAN */
++
++unsigned long find_next_clump8(unsigned long *clump, const unsigned long *addr,
++			       unsigned long size, unsigned long offset)
++{
++	offset = find_next_bit(addr, size, offset);
++	if (offset == size)
++		return size;
++
++	offset = round_down(offset, 8);
++	*clump = bitmap_get_value8(addr, offset);
++
++	return offset;
++}
++EXPORT_SYMBOL(find_next_clump8);
 -- 
 2.23.0
 
