@@ -2,25 +2,25 @@ Return-Path: <SRS0=GHkd=YD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EC47C4360C
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 21:34:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C7D6C4360C
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 21:34:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0D67420B7C
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 21:34:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 050BD208C3
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 21:34:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727164AbfJJVeO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Oct 2019 17:34:14 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:58721 "EHLO
+        id S1727379AbfJJVeP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Oct 2019 17:34:15 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:65291 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726977AbfJJVeO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2019 17:34:14 -0400
+        with ESMTP id S1725867AbfJJVeP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2019 17:34:15 -0400
 Received: from 79.184.255.36.ipv4.supernova.orange.pl (79.184.255.36) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
- id 3a48057531757d0a; Thu, 10 Oct 2019 23:34:11 +0200
+ id 41120e105ba2e198; Thu, 10 Oct 2019 23:34:13 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -28,11 +28,9 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Peter Zijlstra <peterz@infradead.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Doug Smythies <dsmythies@telus.net>
-Subject: [PATCH 2/4] cpuidle: teo: Rename local variable in teo_select()
-Date:   Thu, 10 Oct 2019 23:32:59 +0200
-Message-ID: <5976014.dk64zBpnPU@kreacher>
-In-Reply-To: <60416800.X4hXmAfbqi@kreacher>
-References: <60416800.X4hXmAfbqi@kreacher>
+Subject: [PATCH 0/4] cpuidle: teo: Fix issues related to disabled idle states
+Date:   Thu, 10 Oct 2019 23:30:40 +0200
+Message-ID: <60416800.X4hXmAfbqi@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -41,80 +39,19 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-Rename a local variable in teo_select() in preparation for subsequent
-code modifications, no intentional impact.
+There are a few issues related to the handling of disabled idle states in the
+TEO (Timer-Events-Oriented) cpuidle governor which are addressed by this
+series.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/teo.c |   19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+The application of the entire series is exactly equivalent to the testing patch
+at https://lore.kernel.org/lkml/3490479.2dnHFFeJIp@kreacher/ , but IMO it is
+cleaner to split the changes into smaller patches which also allows them to
+be explained more accurately.
 
-Index: linux-pm/drivers/cpuidle/governors/teo.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/teo.c
-+++ linux-pm/drivers/cpuidle/governors/teo.c
-@@ -233,7 +233,7 @@ static int teo_select(struct cpuidle_dri
- {
- 	struct teo_cpu *cpu_data = per_cpu_ptr(&teo_cpus, dev->cpu);
- 	int latency_req = cpuidle_governor_latency_req(dev->cpu);
--	unsigned int duration_us, count;
-+	unsigned int duration_us, early_hits;
- 	int max_early_idx, constraint_idx, idx, i;
- 	ktime_t delta_tick;
- 
-@@ -247,7 +247,7 @@ static int teo_select(struct cpuidle_dri
- 	cpu_data->sleep_length_ns = tick_nohz_get_sleep_length(&delta_tick);
- 	duration_us = ktime_to_us(cpu_data->sleep_length_ns);
- 
--	count = 0;
-+	early_hits = 0;
- 	max_early_idx = -1;
- 	constraint_idx = drv->state_count;
- 	idx = -1;
-@@ -270,12 +270,12 @@ static int teo_select(struct cpuidle_dri
- 			 * into account, because it would be a mistake to select
- 			 * a deeper state with lower "early hits" metric.  The
- 			 * index cannot be changed to point to it, however, so
--			 * just increase the max count alone and let the index
--			 * still point to a shallower idle state.
-+			 * just increase the "early hits" count alone and let
-+			 * the index still point to a shallower idle state.
- 			 */
- 			if (max_early_idx >= 0 &&
--			    count < cpu_data->states[i].early_hits)
--				count = cpu_data->states[i].early_hits;
-+			    early_hits < cpu_data->states[i].early_hits)
-+				early_hits = cpu_data->states[i].early_hits;
- 
- 			continue;
- 		}
-@@ -291,10 +291,10 @@ static int teo_select(struct cpuidle_dri
- 
- 		idx = i;
- 
--		if (count < cpu_data->states[i].early_hits &&
-+		if (early_hits < cpu_data->states[i].early_hits &&
- 		    !(tick_nohz_tick_stopped() &&
- 		      drv->states[i].target_residency < TICK_USEC)) {
--			count = cpu_data->states[i].early_hits;
-+			early_hits = cpu_data->states[i].early_hits;
- 			max_early_idx = i;
- 		}
- 	}
-@@ -323,10 +323,9 @@ static int teo_select(struct cpuidle_dri
- 	if (idx < 0) {
- 		idx = 0; /* No states enabled. Must use 0. */
- 	} else if (idx > 0) {
-+		unsigned int count = 0;
- 		u64 sum = 0;
- 
--		count = 0;
--
- 		/*
- 		 * Count and sum the most recent idle duration values less than
- 		 * the current expected idle duration value.
+Thanks,
+Rafael
 
 
 
