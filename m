@@ -2,307 +2,168 @@ Return-Path: <SRS0=GHkd=YD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 15F33C10F14
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38AABECE596
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E53622190F
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1BF4121A4A
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733283AbfJJIVe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Oct 2019 04:21:34 -0400
-Received: from mail-sh.amlogic.com ([58.32.228.43]:20799 "EHLO
-        mail-sh.amlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733224AbfJJIVd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2019 04:21:33 -0400
-Received: from droid13.amlogic.com (116.236.93.172) by mail-sh.amlogic.com
- (10.18.11.5) with Microsoft SMTP Server id 15.1.1591.10; Thu, 10 Oct 2019
- 16:21:27 +0800
-From:   Jianxin Pan <jianxin.pan@amlogic.com>
-To:     Kevin Hilman <khilman@baylibre.com>,
-        <linux-amlogic@lists.infradead.org>
-CC:     Jianxin Pan <jianxin.pan@amlogic.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Neil Armstrong <narmstrong@baylibre.com>,
-        Jerome Brunet <jbrunet@baylibre.com>,
-        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <devicetree@vger.kernel.org>, Jian Hu <jian.hu@amlogic.com>,
-        Hanjie Lin <hanjie.lin@amlogic.com>,
-        Victor Wan <victor.wan@amlogic.com>,
-        Xingyu Chen <xingyu.chen@amlogic.com>
-Subject: [PATCH RESEND v2 3/4] soc: amlogic: Add support for Secure power domains controller
-Date:   Thu, 10 Oct 2019 04:21:17 -0400
-Message-ID: <1570695678-42623-4-git-send-email-jianxin.pan@amlogic.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1570695678-42623-1-git-send-email-jianxin.pan@amlogic.com>
-References: <1570695678-42623-1-git-send-email-jianxin.pan@amlogic.com>
+        id S1733309AbfJJIV6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Oct 2019 04:21:58 -0400
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:36118 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733269AbfJJIV6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2019 04:21:58 -0400
+Received: by mail-oi1-f195.google.com with SMTP id k20so4177793oih.3;
+        Thu, 10 Oct 2019 01:21:57 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=dc5RA2BPKZVYGXJLYtKKxLVdHq6Dac4u37aEDEUkLQM=;
+        b=DHfArRrkuDjQXYob8Lw47pqT7FpGLO3GzFoGIG4uahhSnTK01APmr63DFxVyPUMF9M
+         3KekuOiGOLQGQlsHJPINfnYMaEoO8oH7vvDSQ3D782Eu6QJIzQw+ZOESPV165k1suM/q
+         mCdDvgFn+N0YWjiOO4vd5HUQbEB0dtvmpES5TLEoCGNSc8ALolmKN+AgmzyzeiYTCYwx
+         qBmmg6x3JMY9fy5oh6/4I38nDvR2DSakyqXIg091/+7T6cEulp95VbPTY1oxPC5Ulmvf
+         FDXcVa96udIjaf9nWPrv6JUBXiq6yXBqdxqWAk5WxCZ9VCsMzjeplrVSKMkaNISJA5wU
+         cgZw==
+X-Gm-Message-State: APjAAAXhxIECF093MrNyvztttwiNc+b31SFLnrqLH48n+NJfQSb6E56L
+        a9xoCW8l/YiZQsc6h1HiDgQm9G+i20VvtnUFiv0=
+X-Google-Smtp-Source: APXvYqxtgx03+B0HB6RKN9jHyeCpS8CcGrjyRFWnknFz7FyEGnnntki6sJN+xgX/b9Aj5CRhCziqQeixZ7YTrOe0LG8=
+X-Received: by 2002:aca:4bd2:: with SMTP id y201mr6665365oia.102.1570695716750;
+ Thu, 10 Oct 2019 01:21:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [116.236.93.172]
+References: <cover.1570633189.git.vilhelm.gray@gmail.com> <893c3b4f03266c9496137cc98ac2b1bd27f92c73.1570633189.git.vilhelm.gray@gmail.com>
+ <CAK7LNATgW7bXUmqV=3QAaJ0Qu73Kox-TgDCQJb=s0=mwewSCUg@mail.gmail.com>
+ <20191009170917.GG32742@smile.fi.intel.com> <CAMuHMdXyyrL4ibKvjMV6r8TuxpmK73=JxsWNEfcRk1NjwsnOjA@mail.gmail.com>
+ <CAK7LNASVdqU_6+_iinWStb9ALqLw494pnZKr46fLW+WJ9nUo6A@mail.gmail.com>
+ <CAHp75VeLkfNZkqhD8tedJdav81L+VA3Z50Kwcd9h4R7zMwjtvA@mail.gmail.com>
+ <CAMuHMdVs=PgET6=-fKgznETOye_Bxqt6h16Ok0nu6J2vXG-r_w@mail.gmail.com>
+ <CAHp75Vc8HX=hs2F2R_wOaFM7cFjaX0k_kENybdxSh742PpVkjw@mail.gmail.com>
+ <CAMuHMdVrQyt=VJ8outiGEXW78-cY=YUWyeVXN-_MFg75erJ=Yg@mail.gmail.com> <20191010080750.GN32742@smile.fi.intel.com>
+In-Reply-To: <20191010080750.GN32742@smile.fi.intel.com>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Thu, 10 Oct 2019 10:21:45 +0200
+Message-ID: <CAMuHMdVv_pYq7rVLvjAPhkoADLgXF-AFGWUBNqLjaumDPBYGaQ@mail.gmail.com>
+Subject: Re: [PATCH v17 01/14] bitops: Introduce the for_each_set_clump8 macro
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Masahiro Yamada <yamada.masahiro@socionext.com>,
+        William Breathitt Gray <vilhelm.gray@gmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-arch <linux-arch@vger.kernel.org>,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        Linux PM mailing list <linux-pm@vger.kernel.org>,
+        Phil Reid <preid@electromag.com.au>,
+        Lukas Wunner <lukas@wunner.de>, sean.nyekjaer@prevas.dk,
+        morten.tiljeset@prevas.dk, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for the Amlogic Secure Power controller. In A1/C1 series, power
-control registers are in secure domain, and should be accessed by smc.
+Hi Andy,
 
-Signed-off-by: Jianxin Pan <jianxin.pan@amlogic.com>
----
- drivers/soc/amlogic/Kconfig             |  13 ++
- drivers/soc/amlogic/Makefile            |   1 +
- drivers/soc/amlogic/meson-secure-pwrc.c | 203 ++++++++++++++++++++++++++++++++
- 3 files changed, 217 insertions(+)
- create mode 100644 drivers/soc/amlogic/meson-secure-pwrc.c
+On Thu, Oct 10, 2019 at 10:08 AM Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> On Thu, Oct 10, 2019 at 09:49:51AM +0200, Geert Uytterhoeven wrote:
+> > On Thu, Oct 10, 2019 at 9:42 AM Andy Shevchenko
+> > <andy.shevchenko@gmail.com> wrote:
+> > > On Thu, Oct 10, 2019 at 9:29 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > > On Thu, Oct 10, 2019 at 7:49 AM Andy Shevchenko
+> > > > <andy.shevchenko@gmail.com> wrote:
+> > > > > On Thu, Oct 10, 2019 at 5:31 AM Masahiro Yamada
+> > > > > <yamada.masahiro@socionext.com> wrote:
+> > > > > > On Thu, Oct 10, 2019 at 3:54 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > > > > > On Wed, Oct 9, 2019 at 7:09 PM Andy Shevchenko
+> > > > > > > <andriy.shevchenko@linux.intel.com> wrote:
+> > > > > > > > On Thu, Oct 10, 2019 at 01:28:08AM +0900, Masahiro Yamada wrote:
+> > > > > > > > > On Thu, Oct 10, 2019 at 12:27 AM William Breathitt Gray
+> > > > > > > > > <vilhelm.gray@gmail.com> wrote:
+>
+> > > > > > > > > Why is the return type "unsigned long" where you know
+> > > > > > > > > it return the 8-bit value ?
+> > > > > > > >
+> > > > > > > > Because bitmap API operates on unsigned long type. This is not only
+> > > > > > > > consistency, but for sake of flexibility in case we would like to introduce
+> > > > > > > > more calls like clump16 or so.
+> > > > > > >
+> > > > > > > TBH, that doesn't convince me: those functions explicitly take/return an
+> > > > > > > 8-bit value, and have "8" in their name.  The 8-bit value is never
+> > > > > > > really related to, retrieved from, or stored in a full "unsigned long"
+> > > > > > > element of a bitmap, only to/from/in a part (byte) of it.
+> > > > > > >
+> > > > > > > Following your rationale, all of iowrite{8,16,32,64}*() should take an
+> > > > > > > "unsigned long" value, too.
+> > > > > >
+> > > > > > Using u8/u16/u32/u64 looks more consistent with other bitmap helpers.
+> > > > > >
+> > > > > > void bitmap_from_arr32(unsigned long *bitmap, const u32 *buf, unsigned
+> > > > > > int nbits);
+> > > > > > void bitmap_to_arr32(u32 *buf, const unsigned long *bitmap, unsigned int nbits);
+> > > > > > static inline void bitmap_from_u64(unsigned long *dst, u64 mask);
+> > > > > >
+> > > > > > If you want to see more examples from other parts,
+> > > > >
+> > > > > Geert's and yours examples both are not related. They are about
+> > > > > fixed-width properies when we know that is the part of protocol.
+> > > > > Here we have no protocol which stricts us to the mentioned fixed-width types.
+> > > >
+> > > > Yes you have: they are functions to store/retrieve an 8-bit value from
+> > > > the middle of the bitmap, which is reflected in their names ("clump8",
+> > > > "value8").
+> > > > The input/output value is clearly separated from the actual bitmap,
+> > > > which is referenced by the "unsigned long *".
+> > > >
+> > > > If you add new "value16" functions, they will be intended to store/retrieve
+> > > > 16-bit values.
+> > >
+> > > And if I add 4-bit, 12-bit or 24-bit values, what should I use?
+> >
+> > Whatever is needed to store that?
+> > I agree "unsigned long" is appropriate for a generic function to extract a
+> > bit field of 1 to BITS_PER_LONG bits.
+> >
+> > > > Besides, if retrieving an 8-bit value requires passing an
+> > > > "unsigned long *", the caller needs two variables: one unsigned long to
+> > > > pass the address of, and one u8 to copy the returned value into.
+> > >
+> > > Why do you need a temporary variable? In some cases it might make
+> > > sense, but in general simple cases I don't see what you may achieve
+> > > with it.
+> >
+> > Because find_next_clump8() takes a pointer to store the output value.
+>
+> So does regmap_read().
 
-diff --git a/drivers/soc/amlogic/Kconfig b/drivers/soc/amlogic/Kconfig
-index bc2c912..6cb06e7 100644
---- a/drivers/soc/amlogic/Kconfig
-+++ b/drivers/soc/amlogic/Kconfig
-@@ -48,6 +48,19 @@ config MESON_EE_PM_DOMAINS
- 	  Say yes to expose Amlogic Meson Everything-Else Power Domains as
- 	  Generic Power Domains.
- 
-+config MESON_SECURE_PM_DOMAINS
-+	bool "Amlogic Meson Secure Power Domains driver"
-+	depends on ARCH_MESON || COMPILE_TEST
-+	depends on PM && OF
-+	depends on HAVE_ARM_SMCCC
-+	default ARCH_MESON
-+	select PM_GENERIC_DOMAINS
-+	select PM_GENERIC_DOMAINS_OF
-+	help
-+	  Support for the power controller on Amlogic A1/C1 series.
-+	  Say yes to expose Amlogic Meson Secure Power Domains as Generic
-+	  Power Domains.
-+
- config MESON_MX_SOCINFO
- 	bool "Amlogic Meson MX SoC Information driver"
- 	depends on ARCH_MESON || COMPILE_TEST
-diff --git a/drivers/soc/amlogic/Makefile b/drivers/soc/amlogic/Makefile
-index de79d044..7b8c5d3 100644
---- a/drivers/soc/amlogic/Makefile
-+++ b/drivers/soc/amlogic/Makefile
-@@ -5,3 +5,4 @@ obj-$(CONFIG_MESON_GX_SOCINFO) += meson-gx-socinfo.o
- obj-$(CONFIG_MESON_GX_PM_DOMAINS) += meson-gx-pwrc-vpu.o
- obj-$(CONFIG_MESON_MX_SOCINFO) += meson-mx-socinfo.o
- obj-$(CONFIG_MESON_EE_PM_DOMAINS) += meson-ee-pwrc.o
-+obj-$(CONFIG_MESON_SECURE_PM_DOMAINS) += meson-secure-pwrc.o
-diff --git a/drivers/soc/amlogic/meson-secure-pwrc.c b/drivers/soc/amlogic/meson-secure-pwrc.c
-new file mode 100644
-index 00000000..25951cb
---- /dev/null
-+++ b/drivers/soc/amlogic/meson-secure-pwrc.c
-@@ -0,0 +1,203 @@
-+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-+/*
-+ * Copyright (c) 2019 Amlogic, Inc.
-+ * Author: Jianxin Pan <jianxin.pan@amlogic.com>
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/io.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
-+#include <dt-bindings/power/meson-a1-power.h>
-+#include <linux/arm-smccc.h>
-+#include <linux/firmware/meson/meson_sm.h>
-+
-+#define PWRC_ON		1
-+#define PWRC_OFF	0
-+
-+struct meson_secure_pwrc_domain {
-+	struct generic_pm_domain base;
-+	unsigned int index;
-+	struct meson_secure_pwrc *pwrc;
-+};
-+
-+struct meson_secure_pwrc {
-+	struct meson_secure_pwrc_domain *domains;
-+	struct genpd_onecell_data xlate;
-+	struct meson_sm_firmware *fw;
-+};
-+
-+struct meson_secure_pwrc_domain_desc {
-+	unsigned int index;
-+	unsigned int flags;
-+	char *name;
-+	bool (*is_off)(struct meson_secure_pwrc_domain *pwrc_domain);
-+};
-+
-+struct meson_secure_pwrc_domain_data {
-+	unsigned int count;
-+	struct meson_secure_pwrc_domain_desc *domains;
-+};
-+
-+static bool pwrc_secure_is_off(struct meson_secure_pwrc_domain *pwrc_domain)
-+{
-+	int sts = 1;
-+
-+	if (meson_sm_call(pwrc_domain->pwrc->fw, SM_PWRC_GET, &sts,
-+			  pwrc_domain->index, 0, 0, 0, 0) < 0)
-+		pr_err("failed to get power domain status\n");
-+
-+	return !!sts;
-+}
-+
-+static int meson_secure_pwrc_off(struct generic_pm_domain *domain)
-+{
-+	int sts = 0;
-+	struct meson_secure_pwrc_domain *pwrc_domain =
-+		container_of(domain, struct meson_secure_pwrc_domain, base);
-+
-+	if (meson_sm_call(pwrc_domain->pwrc->fw, SM_PWRC_SET, NULL,
-+	    pwrc_domain->index, PWRC_OFF, 0, 0, 0) < 0) {
-+		pr_err("failed to set power domain off\n");
-+		sts = -EINVAL;
-+	}
-+
-+	return sts;
-+}
-+
-+static int meson_secure_pwrc_on(struct generic_pm_domain *domain)
-+{
-+	int sts = 0;
-+	struct meson_secure_pwrc_domain *pwrc_domain =
-+		container_of(domain, struct meson_secure_pwrc_domain, base);
-+
-+	if (meson_sm_call(pwrc_domain->pwrc->fw, SM_PWRC_SET, NULL,
-+	    pwrc_domain->index, PWRC_ON, 0, 0, 0) < 0) {
-+		pr_err("failed to set power domain on\n");
-+		sts = -EINVAL;
-+	}
-+
-+	return sts;
-+}
-+
-+#define SEC_PD(__name, __flag)			\
-+{						\
-+	.name = #__name,			\
-+	.index = PWRC_##__name##_ID,		\
-+	.is_off = pwrc_secure_is_off,	\
-+	.flags = __flag,			\
-+}
-+
-+static struct meson_secure_pwrc_domain_desc a1_pwrc_domains[] = {
-+	SEC_PD(DSPA,	0),
-+	SEC_PD(DSPB,	0),
-+	/* UART should keep working in ATF after suspend and before resume */
-+	SEC_PD(UART,	GENPD_FLAG_ALWAYS_ON),
-+	/* DMC is for DDR PHY ana/dig and DMC, and should be always on */
-+	SEC_PD(DMC,	GENPD_FLAG_ALWAYS_ON),
-+	SEC_PD(I2C,	0),
-+	SEC_PD(PSRAM,	0),
-+	SEC_PD(ACODEC,	0),
-+	SEC_PD(AUDIO,	0),
-+	SEC_PD(OTP,	0),
-+	SEC_PD(DMA,	0),
-+	SEC_PD(SD_EMMC,	0),
-+	SEC_PD(RAMA,	0),
-+	/* SRAMB is used as AFT runtime memory, and should be always on */
-+	SEC_PD(RAMB,	GENPD_FLAG_ALWAYS_ON),
-+	SEC_PD(IR,	0),
-+	SEC_PD(SPICC,	0),
-+	SEC_PD(SPIFC,	0),
-+	SEC_PD(USB,	0),
-+	/* NIC is for NIC400, and should be always on */
-+	SEC_PD(NIC,	GENPD_FLAG_ALWAYS_ON),
-+	SEC_PD(PDMIN,	0),
-+	SEC_PD(RSA,	0),
-+};
-+
-+static int meson_secure_pwrc_probe(struct platform_device *pdev)
-+{
-+	int i;
-+	struct device_node *sm_np;
-+	struct meson_secure_pwrc *pwrc;
-+	const struct meson_secure_pwrc_domain_data *match;
-+
-+	match = of_device_get_match_data(&pdev->dev);
-+	if (!match) {
-+		dev_err(&pdev->dev, "failed to get match data\n");
-+		return -ENODEV;
-+	}
-+
-+	sm_np = of_parse_phandle(pdev->dev.of_node, "secure-monitor", 0);
-+	if (!sm_np) {
-+		dev_err(&pdev->dev, "no secure-monitor node\n");
-+		return -ENODEV;
-+	}
-+
-+	pwrc = devm_kzalloc(&pdev->dev, sizeof(*pwrc), GFP_KERNEL);
-+	if (!pwrc)
-+		return -ENOMEM;
-+
-+	pwrc->fw = meson_sm_get(sm_np);
-+	of_node_put(sm_np);
-+	if (!pwrc->fw)
-+		return -EPROBE_DEFER;
-+
-+	pwrc->xlate.domains = devm_kcalloc(&pdev->dev, match->count,
-+					   sizeof(*pwrc->xlate.domains),
-+					   GFP_KERNEL);
-+	if (!pwrc->xlate.domains)
-+		return -ENOMEM;
-+
-+	pwrc->domains = devm_kcalloc(&pdev->dev, match->count,
-+				     sizeof(*pwrc->domains), GFP_KERNEL);
-+	if (!pwrc->domains)
-+		return -ENOMEM;
-+
-+	pwrc->xlate.num_domains = match->count;
-+	platform_set_drvdata(pdev, pwrc);
-+
-+	for (i = 0 ; i < match->count ; ++i) {
-+		struct meson_secure_pwrc_domain *dom = &pwrc->domains[i];
-+
-+		if (!match->domains[i].index)
-+			continue;
-+
-+		dom->pwrc = pwrc;
-+		dom->index = match->domains[i].index;
-+		dom->base.name = match->domains[i].name;
-+		dom->base.flags = match->domains[i].flags;
-+		dom->base.power_on = meson_secure_pwrc_on;
-+		dom->base.power_off = meson_secure_pwrc_off;
-+
-+		pm_genpd_init(&dom->base, NULL, match->domains[i].is_off(dom));
-+
-+		pwrc->xlate.domains[i] = &dom->base;
-+	}
-+
-+	return of_genpd_add_provider_onecell(pdev->dev.of_node, &pwrc->xlate);
-+}
-+
-+static struct meson_secure_pwrc_domain_data meson_secure_a1_pwrc_data = {
-+	.domains = a1_pwrc_domains,
-+	.count = ARRAY_SIZE(a1_pwrc_domains),
-+};
-+
-+static const struct of_device_id meson_secure_pwrc_match_table[] = {
-+	{
-+		.compatible = "amlogic,meson-a1-pwrc",
-+		.data = &meson_secure_a1_pwrc_data,
-+	},
-+	{ /* sentinel */ }
-+};
-+
-+static struct platform_driver meson_secure_pwrc_driver = {
-+	.probe = meson_secure_pwrc_probe,
-+	.driver = {
-+		.name		= "meson_secure_pwrc",
-+		.of_match_table	= meson_secure_pwrc_match_table,
-+	},
-+};
-+builtin_platform_driver(meson_secure_pwrc_driver);
+I believe that one is different, as it is a generic function, and the
+width of the
+returned value depends on the regmap config.
+
+> 8 appeared there during review when it has been proposed to optimize to 8-bit
+> clumps as most of the current users utilize it. The initial idea was to be
+> bit-width agnostic. And with current API it's possible to easy convert to other
+> formats later if we need.
+
+"optimized for 8-bit clumps" and "out-of-line function that takes an
+unsigned long pointer for an output parameter" don't match well, IMHO.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.7.4
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
