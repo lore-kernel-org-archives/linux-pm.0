@@ -2,22 +2,22 @@ Return-Path: <SRS0=GHkd=YD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 611E7C4360C
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0ECBC4360C
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3EA2F2067B
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 990A021929
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Oct 2019 08:21:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733195AbfJJIVX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Oct 2019 04:21:23 -0400
+        id S1733258AbfJJIV1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Oct 2019 04:21:27 -0400
 Received: from mail-sh.amlogic.com ([58.32.228.43]:20799 "EHLO
         mail-sh.amlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732980AbfJJIVX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2019 04:21:23 -0400
+        with ESMTP id S1733232AbfJJIV1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Oct 2019 04:21:27 -0400
 Received: from droid13.amlogic.com (116.236.93.172) by mail-sh.amlogic.com
  (10.18.11.5) with Microsoft SMTP Server id 15.1.1591.10; Thu, 10 Oct 2019
  16:21:27 +0800
@@ -35,10 +35,12 @@ CC:     Jianxin Pan <jianxin.pan@amlogic.com>,
         Hanjie Lin <hanjie.lin@amlogic.com>,
         Victor Wan <victor.wan@amlogic.com>,
         Xingyu Chen <xingyu.chen@amlogic.com>
-Subject: [PATCH RESEND v2 0/4] arm64: meson: add support for A1 Power Domains
-Date:   Thu, 10 Oct 2019 04:21:14 -0400
-Message-ID: <1570695678-42623-1-git-send-email-jianxin.pan@amlogic.com>
+Subject: [PATCH RESED v2 2/4] firmware: meson_sm: Add secure power domain support
+Date:   Thu, 10 Oct 2019 04:21:16 -0400
+Message-ID: <1570695678-42623-3-git-send-email-jianxin.pan@amlogic.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1570695678-42623-1-git-send-email-jianxin.pan@amlogic.com>
+References: <1570695678-42623-1-git-send-email-jianxin.pan@amlogic.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [116.236.93.172]
@@ -47,39 +49,41 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset introduces a "Secure Power Doamin Controller". In A1/C1, power
-controller registers such as PWRCTRL_FOCRSTN, PWRCTRL_PWR_OFF, PWRCTRL_MEM_PD
-and PWRCTRL_ISO_EN, are in the secure domain, and should be accessed from ATF
-by smc.
+The Amlogic Meson A1/C1 Secure Monitor implements calls to control power
+domain.
 
-Changes since v1 at [0]:
-- use APIs from sm driver
-- rename pwrc_secure_get_power as Kevin suggested
-- add comments for always on domains
-- replace arch_initcall_sync with builtin_platform_driver
-- fix coding style
+Signed-off-by: Jianxin Pan <jianxin.pan@amlogic.com>
+---
+ drivers/firmware/meson/meson_sm.c       | 2 ++
+ include/linux/firmware/meson/meson_sm.h | 2 ++
+ 2 files changed, 4 insertions(+)
 
-[0]  https://lore.kernel.org/linux-amlogic/1568895064-4116-1-git-send-email-jianxin.pan@amlogic.com
-
-Jianxin Pan (4):
-  dt-bindings: power: add Amlogic secure power domains bindings
-  firmware: meson_sm: Add secure power domain support
-  soc: amlogic: Add support for Secure power domains controller
-  arm64: dts: meson: a1: add secure power domain controller
-
- .../bindings/power/amlogic,meson-sec-pwrc.yaml     |  42 +++++
- arch/arm64/boot/dts/amlogic/meson-a1.dtsi          |   7 +
- drivers/firmware/meson/meson_sm.c                  |   2 +
- drivers/soc/amlogic/Kconfig                        |  13 ++
- drivers/soc/amlogic/Makefile                       |   1 +
- drivers/soc/amlogic/meson-secure-pwrc.c            | 203 +++++++++++++++++++++
- include/dt-bindings/power/meson-a1-power.h         |  32 ++++
- include/linux/firmware/meson/meson_sm.h            |   2 +
- 8 files changed, 302 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
- create mode 100644 drivers/soc/amlogic/meson-secure-pwrc.c
- create mode 100644 include/dt-bindings/power/meson-a1-power.h
-
+diff --git a/drivers/firmware/meson/meson_sm.c b/drivers/firmware/meson/meson_sm.c
+index 1d5b4d7..7ec09f5 100644
+--- a/drivers/firmware/meson/meson_sm.c
++++ b/drivers/firmware/meson/meson_sm.c
+@@ -44,6 +44,8 @@ static const struct meson_sm_chip gxbb_chip = {
+ 		CMD(SM_EFUSE_WRITE,	0x82000031),
+ 		CMD(SM_EFUSE_USER_MAX,	0x82000033),
+ 		CMD(SM_GET_CHIP_ID,	0x82000044),
++		CMD(SM_PWRC_SET,	0x82000093),
++		CMD(SM_PWRC_GET,	0x82000095),
+ 		{ /* sentinel */ },
+ 	},
+ };
+diff --git a/include/linux/firmware/meson/meson_sm.h b/include/linux/firmware/meson/meson_sm.h
+index 6669e2a..4ed3989 100644
+--- a/include/linux/firmware/meson/meson_sm.h
++++ b/include/linux/firmware/meson/meson_sm.h
+@@ -12,6 +12,8 @@ enum {
+ 	SM_EFUSE_WRITE,
+ 	SM_EFUSE_USER_MAX,
+ 	SM_GET_CHIP_ID,
++	SM_PWRC_SET,
++	SM_PWRC_GET,
+ };
+ 
+ struct meson_sm_firmware;
 -- 
 2.7.4
 
