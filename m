@@ -1,229 +1,199 @@
-Return-Path: <SRS0=Jp3p=YE=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=9O/F=YF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DATE_IN_PAST_12_24,
+	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6D09C47404
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Oct 2019 19:38:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF616C4360C
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Oct 2019 08:30:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8ABD1218AC
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Oct 2019 19:38:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 854852089F
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Oct 2019 08:30:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="UNbf2toR"
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="V1+TiLL4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728855AbfJKTiI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Oct 2019 15:38:08 -0400
-Received: from mail-eopbgr770083.outbound.protection.outlook.com ([40.107.77.83]:9201
-        "EHLO NAM02-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728974AbfJKTiH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 11 Oct 2019 15:38:07 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Nb0/1IyY9llDvmeLZJDDzdUyeqcXgfJe5GT655LDsIhM4Mrd3Sh8E1cRK6tG3FCNPH5pdZO4ug0fRcgpxqRDw1JkFpiLpYtA12NIJ2tipv38OT97rT8P+WbBE9pFulpJBOEoLfkwCA11ICNcz2u3g7h6h8G6fC4mY6Tv/tRDYyVcW0zz5oqtsb9L9CmEC/2C5/Fdw/hrWvU/OC8vas0fBGaeCs4OgQo3AZZZSUrMaVZrxWofScj+TC3OJOzvV2492yezqid91IwkT1CY2zjbhMUchmy4LVbfacnLjkHbT6xk2G+LxATxJZFm9+O790Gwut76x8Mpx+4xJh8X9jHwqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=I9p0P0Toe6zw87H3a09vvXCta+K80/rdZcAk6pOfK1c=;
- b=SBXp3y0kj8tFYHZs1KAH6M8jJ0Myb0oMOSj2bTvgYmEJO9L0eS9tIpB9wEy5FPA31TsbAsPTe7OjfEJHzTH2BtfsI/GBFLops2Z11cG269Xt0lxnAhcGoCQPCiYEs6Lsl8AB/nLXIjfuP0Trr/QGq1+72C0ZijBZDso+jlaeUSsfiVEfaM9YgH8oAzMz4D8LaJoSeLsNV4+ZTB9UnG3QpSPgJNbCSoWaqirxSnznqsjqxbSFB5sMHY7FnPz1zTCEsOfFUXVHLenaAdx/qA88ywmkTfVY1xt8aaKGbhE1ICpT9NIhE51t3D+Cgqojrn3iRTDjhgRs36AcBTghgTnWWw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amdcloud.onmicrosoft.com; s=selector2-amdcloud-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=I9p0P0Toe6zw87H3a09vvXCta+K80/rdZcAk6pOfK1c=;
- b=UNbf2toR0VBuwJ0pzKoeMdvlt1Pyw4vsVUOxV2C3NZYW+Yybx9TgnqFdPRTIVNEdpFQMOTc9l6olSOWfWWeVopxvdD8+txTfYjIVT1oEv3OuYrYrrrQTOiAKcR3kZtWozcJ59MfieEbufIMShyfn8RANDw7ZpMF5w6+QwX6DFVU=
-Received: from SN6PR12MB2736.namprd12.prod.outlook.com (52.135.107.27) by
- SN6PR12MB2816.namprd12.prod.outlook.com (52.135.107.153) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2347.16; Fri, 11 Oct 2019 19:37:56 +0000
-Received: from SN6PR12MB2736.namprd12.prod.outlook.com
- ([fe80::b1e3:1867:e650:796c]) by SN6PR12MB2736.namprd12.prod.outlook.com
- ([fe80::b1e3:1867:e650:796c%6]) with mapi id 15.20.2347.016; Fri, 11 Oct 2019
- 19:37:56 +0000
-From:   "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
-To:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC:     Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
-        Pu Wen <puwen@hygon.com>, Borislav Petkov <bp@suse.de>,
-        Allison Randal <allison@lohutok.net>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Kate Stewart <kstewart@linuxfoundation.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Richard Fontana <rfontana@redhat.com>,
-        "Natarajan, Janakarajan" <Janakarajan.Natarajan@amd.com>
-Subject: [PATCHv2 2/3] cpupower: mperf_monitor: Introduce per_cpu_schedule
- flag
-Thread-Topic: [PATCHv2 2/3] cpupower: mperf_monitor: Introduce
- per_cpu_schedule flag
-Thread-Index: AQHVgGthysllBZ56ukW20e1QLXbBzQ==
-Date:   Fri, 11 Oct 2019 19:37:55 +0000
-Message-ID: <bb4b0e4137b62651b9d028925fa8f09ca5fbd989.1570819652.git.Janakarajan.Natarajan@amd.com>
-References: <cover.1570819652.git.Janakarajan.Natarajan@amd.com>
-In-Reply-To: <cover.1570819652.git.Janakarajan.Natarajan@amd.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: SN4PR0201CA0060.namprd02.prod.outlook.com
- (2603:10b6:803:20::22) To SN6PR12MB2736.namprd12.prod.outlook.com
- (2603:10b6:805:77::27)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=Janakarajan.Natarajan@amd.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-mailer: git-send-email 2.17.1
-x-originating-ip: [165.204.78.2]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: aa19112c-cdec-4356-3147-08d74e828366
-x-ms-office365-filtering-ht: Tenant
-x-ms-traffictypediagnostic: SN6PR12MB2816:|SN6PR12MB2816:
-x-ld-processed: 3dd8961f-e488-4e60-8e11-a82d994e183d,ExtAddr
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <SN6PR12MB281609B366D770F04C0D08A5E7970@SN6PR12MB2816.namprd12.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:3044;
-x-forefront-prvs: 0187F3EA14
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(39860400002)(396003)(346002)(136003)(376002)(366004)(199004)(189003)(386003)(7736002)(14454004)(6506007)(36756003)(11346002)(6116002)(476003)(2616005)(2501003)(478600001)(25786009)(3846002)(446003)(486006)(2906002)(52116002)(66556008)(66946007)(64756008)(99286004)(102836004)(66476007)(66446008)(76176011)(186003)(26005)(7416002)(305945005)(118296001)(6512007)(316002)(8936002)(8676002)(6436002)(54906003)(110136005)(6486002)(81166006)(81156014)(256004)(50226002)(71190400001)(71200400001)(4326008)(86362001)(66066001)(5660300002)(14444005);DIR:OUT;SFP:1101;SCL:1;SRVR:SN6PR12MB2816;H:SN6PR12MB2736.namprd12.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
-received-spf: None (protection.outlook.com: amd.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: 2XTTwVaZ14uVQcWewoxBR9/H4c/sBaMmh1GU+juO/z6siLSWNkhl76igCuLVRIJzfUWD3HU6NvX1c1iv+9epb2FaXLQLCkSFtE3WQc9Q3/TM7djTNetvI1+iZBsyurqCX4gK4+58F0wvW8G5jhVJdDMS/z6bw/1bLnRzGJUjC18PETfVN74jO/0gcZl6wS0IV1CrGaNiqu0ssCmyO0mNXAilaY4zKCqL4Ku0Mj6J1g8qoWVOJsTaFwweWdD2F50D9GKnhJetd8ymqdH76C3o5YiZV6O4l9tyHP8EYPLszdJu7UAXVEuEGOY6vtDeOa6s2gyxWElis4Jd2Xjgqe/fO0rmzkIY971T3OnVrAcJl/W7c7R8i5oQ01uqzy8aMSCL59F9/Qd4DUmeIR/TqpUeh6AedutgJD8aAI9N2s/UxJw=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: aa19112c-cdec-4356-3147-08d74e828366
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Oct 2019 19:37:55.6140
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: tCbbig3UoMH+9LtEcdFtK91+KkaWSzeKyqBacKTOHBF5Mu45Y6MrjA9BMfG/TnWdhWpuZ1PMjaoQJFYwJu8M8g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR12MB2816
+        id S1728159AbfJLIam (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 12 Oct 2019 04:30:42 -0400
+Received: from aserp2120.oracle.com ([141.146.126.78]:56442 "EHLO
+        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728060AbfJLIam (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Oct 2019 04:30:42 -0400
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+        by aserp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x9C8TRJK195161;
+        Sat, 12 Oct 2019 08:30:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id; s=corp-2019-08-05;
+ bh=DvkPmvgpRjxjpBe2LUXihgz5mIyBG+fGwIcFtLVc8eU=;
+ b=V1+TiLL44U75vKOu80qTolOC/DwuMA6XIKiPLz1FDZwLQgtSk59XPg4xVOJpr9hpNFl7
+ 7LXvHwanJyO8aFIOVMNfRDUcyPG30Bb8pbqIjZ9YgvaT/inxOllqBfaL2hzGstTukEFh
+ 7GW+sOnwKLrEzZtwQjY8zo/uk0F5p1X2uUnKWhxaaSmEtAzjxdy2yotLfWfY/LAMtxvq
+ K5KH4MloQgbtqcQ/eYYKl4pDxmBlNce7XddW+6P+g33eXTbynmWkjYP2mSqKHJC+LglY
+ ep48K3KfodpNQMEUBWqMwODPSFK5ncFuVsTgvdfn7t1nLYF5C2v7dpPzngccl/wvDN7M 0Q== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+        by aserp2120.oracle.com with ESMTP id 2vk6sq0nh3-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Sat, 12 Oct 2019 08:30:24 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+        by aserp3030.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x9C8SDuu038208;
+        Sat, 12 Oct 2019 08:30:24 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+        by aserp3030.oracle.com with ESMTP id 2vk4vr903r-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Sat, 12 Oct 2019 08:30:24 +0000
+Received: from abhmp0018.oracle.com (abhmp0018.oracle.com [141.146.116.24])
+        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x9C8ULk9000414;
+        Sat, 12 Oct 2019 08:30:21 GMT
+Received: from z2.cn.oracle.com (/10.182.71.205)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Sat, 12 Oct 2019 01:30:21 -0700
+From:   Zhenzhong Duan <zhenzhong.duan@oracle.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org, mtosatti@redhat.com,
+        Zhenzhong Duan <zhenzhong.duan@oracle.com>
+Subject: [PATCH] cpuidle: cpu hotplug support
+Date:   Fri, 11 Oct 2019 16:34:59 +0800
+Message-Id: <1570782899-31455-1-git-send-email-zhenzhong.duan@oracle.com>
+X-Mailer: git-send-email 1.8.3.1
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9407 signatures=668684
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=1 malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1908290000 definitions=main-1910120079
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9407 signatures=668684
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
+ suspectscore=1 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1908290000
+ definitions=main-1910120079
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The per_cpu_schedule flag is used to move the cpupower process to the cpu
-on which we are looking to read the APERF/MPERF registers.
+Currently cpuidle driver doesn't support cpu hotplug. When
+cpus != maxcpus cpuidle_register() will fail to register all cpus
+past the online ones and thus fail to register the idle driver.
+This is because cpuidle_add_sysfs() will return with -ENODEV as a
+consequence from get_cpu_device() return no device for a non-existing
+CPU.
 
-This prevents IPIs from being generated by read_msr()s as we are already
-on the cpu of interest.
+At least cpuidle-haltpoll and intel_idle are making their own custom
+code to support cpu hotplug.
 
-Ex: If cpupower is running on CPU 0 and we execute
+This patch ease the work if we need to write a cpuidle driver with cpu
+hotplug support in the future.
 
-    read_msr(20, MSR_APERF, val) then,
-    read_msr(20, MSR_MPERF, val)
-
-    the msr module will generate an IPI from CPU 0 to CPU 20 to query
-    for the MSR_APERF and then the MSR_MPERF in separate IPIs.
-
-This delay, caused by IPI latency, between reading the APERF and MPERF
-registers may cause both of them to go out of sync.
-
-The use of the per_cpu_schedule flag reduces the probability of this
-from happening. It comes at the cost of a negligible increase in cpu
-consumption caused by the migration of cpupower across each of the
-cpus of the system.
-
-Signed-off-by: Janakarajan Natarajan <Janakarajan.Natarajan@amd.com>
+Signed-off-by: Zhenzhong Duan <zhenzhong.duan@oracle.com>
 ---
- .../utils/idle_monitor/cpupower-monitor.h     |  1 +
- .../utils/idle_monitor/mperf_monitor.c        | 42 ++++++++++++++-----
- 2 files changed, 33 insertions(+), 10 deletions(-)
+ drivers/cpuidle/cpuidle.c | 76 ++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 52 insertions(+), 24 deletions(-)
 
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/t=
-ools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-index 9b612d999660..5b5eb1da0cce 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-+++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-@@ -62,6 +62,7 @@ struct cpuidle_monitor {
- 	unsigned int overflow_s;
- 	struct {
- 		unsigned int needs_root:1;
-+		unsigned int per_cpu_schedule:1;
- 	} flags;
- };
-=20
-diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tool=
-s/power/cpupower/utils/idle_monitor/mperf_monitor.c
-index 7cae74202a4d..afb2e6f8edd3 100644
---- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-+++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-@@ -86,15 +86,35 @@ static int mperf_get_tsc(unsigned long long *tsc)
- 	return ret;
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 0895b98..3ce6d2d 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -558,6 +558,51 @@ static void __cpuidle_device_init(struct cpuidle_device *dev)
+ 	dev->next_hrtimer = 0;
  }
-=20
-+static int get_aperf_mperf(int cpu, unsigned long long *aval,
-+				    unsigned long long *mval)
+ 
++static int cpuidle_cpu_online(unsigned int cpu)
 +{
 +	int ret;
++	struct cpuidle_device *device;
++	struct cpuidle_driver *drv;
 +
++	device = &per_cpu(cpuidle_dev, cpu);
++	device->cpu = cpu;
++
++	drv = cpuidle_get_cpu_driver(device);
++	if (!drv || !cpumask_test_cpu(cpu, drv->cpumask))
++		return 0;
++
++#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
 +	/*
-+	 * Running on the cpu from which we read the registers will
-+	 * prevent APERF/MPERF from going out of sync because of IPI
-+	 * latency introduced by read_msr()s.
++	 * On multiplatform for ARM, the coupled idle states could be
++	 * enabled in the kernel even if the cpuidle driver does not
++	 * use it. Note, coupled_cpus is a struct copy.
 +	 */
-+	if (mperf_monitor.flags.per_cpu_schedule) {
-+		if (bind_cpu(cpu))
-+			return 1;
-+	}
-+
-+	ret  =3D read_msr(cpu, MSR_APERF, aval);
-+	ret |=3D read_msr(cpu, MSR_MPERF, mval);
++	if (coupled_cpus)
++		device->coupled_cpus = *coupled_cpus;
++#endif
++	ret = cpuidle_register_device(device);
++	if (ret)
++		pr_err("Failed to register cpuidle device for cpu%d\n", cpu);
 +
 +	return ret;
 +}
 +
- static int mperf_init_stats(unsigned int cpu)
- {
--	unsigned long long val;
-+	unsigned long long aval, mval;
- 	int ret;
-=20
--	ret =3D read_msr(cpu, MSR_APERF, &val);
--	aperf_previous_count[cpu] =3D val;
--	ret |=3D read_msr(cpu, MSR_MPERF, &val);
--	mperf_previous_count[cpu] =3D val;
-+	ret =3D get_aperf_mperf(cpu, &aval, &mval);
-+	aperf_previous_count[cpu] =3D aval;
-+	mperf_previous_count[cpu] =3D mval;
- 	is_valid[cpu] =3D !ret;
-=20
- 	return 0;
-@@ -102,13 +122,12 @@ static int mperf_init_stats(unsigned int cpu)
-=20
- static int mperf_measure_stats(unsigned int cpu)
- {
--	unsigned long long val;
-+	unsigned long long aval, mval;
- 	int ret;
-=20
--	ret =3D read_msr(cpu, MSR_APERF, &val);
--	aperf_current_count[cpu] =3D val;
--	ret |=3D read_msr(cpu, MSR_MPERF, &val);
--	mperf_current_count[cpu] =3D val;
-+	ret =3D get_aperf_mperf(cpu, &aval, &mval);
-+	aperf_current_count[cpu] =3D aval;
-+	mperf_current_count[cpu] =3D mval;
- 	is_valid[cpu] =3D !ret;
-=20
- 	return 0;
-@@ -305,6 +324,9 @@ struct cpuidle_monitor *mperf_register(void)
- 	if (init_maxfreq_mode())
- 		return NULL;
-=20
-+	if (cpupower_cpu_info.vendor =3D=3D X86_VENDOR_AMD)
-+		mperf_monitor.flags.per_cpu_schedule =3D 1;
++static int cpuidle_cpu_offline(unsigned int cpu)
++{
++	struct cpuidle_device *device;
++	struct cpuidle_driver *drv;
 +
- 	/* Free this at program termination */
- 	is_valid =3D calloc(cpu_count, sizeof(int));
- 	mperf_previous_count =3D calloc(cpu_count, sizeof(unsigned long long));
---=20
-2.17.1
++	device = &per_cpu(cpuidle_dev, cpu);
++
++	drv = cpuidle_get_cpu_driver(device);
++	if (!drv || !cpumask_test_cpu(cpu, drv->cpumask))
++		return 0;
++
++	cpuidle_unregister_device(device);
++
++	return 0;
++}
++
+ /**
+  * __cpuidle_register_device - internal register function called before register
+  * and enable routines
+@@ -690,8 +735,8 @@ void cpuidle_unregister(struct cpuidle_driver *drv)
+ int cpuidle_register(struct cpuidle_driver *drv,
+ 		     const struct cpumask *const coupled_cpus)
+ {
+-	int ret, cpu;
+-	struct cpuidle_device *device;
++	int ret;
++	char cb_name[64];
+ 
+ 	ret = cpuidle_register_driver(drv);
+ 	if (ret) {
+@@ -699,28 +744,11 @@ int cpuidle_register(struct cpuidle_driver *drv,
+ 		return ret;
+ 	}
+ 
+-	for_each_cpu(cpu, drv->cpumask) {
+-		device = &per_cpu(cpuidle_dev, cpu);
+-		device->cpu = cpu;
+-
+-#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+-		/*
+-		 * On multiplatform for ARM, the coupled idle states could be
+-		 * enabled in the kernel even if the cpuidle driver does not
+-		 * use it. Note, coupled_cpus is a struct copy.
+-		 */
+-		if (coupled_cpus)
+-			device->coupled_cpus = *coupled_cpus;
+-#endif
+-		ret = cpuidle_register_device(device);
+-		if (!ret)
+-			continue;
+-
+-		pr_err("Failed to register cpuidle device for cpu%d\n", cpu);
+-
+-		cpuidle_unregister(drv);
+-		break;
+-	}
++	sprintf(cb_name, "cpuidle/%s:online", drv->name);
++	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, cb_name,
++				cpuidle_cpu_online, cpuidle_cpu_offline);
++	if (ret < 0)
++		cpuidle_unregister_driver(drv);
+ 
+ 	return ret;
+ }
+-- 
+1.8.3.1
 
