@@ -1,109 +1,93 @@
-Return-Path: <SRS0=9O/F=YF=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=qYo0=YG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CD4FC4360C
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Oct 2019 11:00:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FAEBC4360C
+	for <linux-pm@archiver.kernel.org>; Sun, 13 Oct 2019 10:55:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E07CD2196E
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Oct 2019 11:00:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=onstation.org header.i=@onstation.org header.b="inOMyMio"
+	by mail.kernel.org (Postfix) with ESMTP id ECDA121882
+	for <linux-pm@archiver.kernel.org>; Sun, 13 Oct 2019 10:55:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728111AbfJLLAq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 12 Oct 2019 07:00:46 -0400
-Received: from onstation.org ([52.200.56.107]:39942 "EHLO onstation.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726555AbfJLLAq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 12 Oct 2019 07:00:46 -0400
-Received: from localhost (c-98-239-145-235.hsd1.wv.comcast.net [98.239.145.235])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: masneyb)
-        by onstation.org (Postfix) with ESMTPSA id E714D3E88D;
-        Sat, 12 Oct 2019 11:00:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=onstation.org;
-        s=default; t=1570878045;
-        bh=RKEyGbpvgWtwHv8UHOurWHkaxTHUsbMgak77d33UolU=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=inOMyMioapH/dHJS9M7XNIdUmPxozcHiRqJ0lNduxURkpo+/iLn9/d7wAyigCB8ZI
-         gYR/uXByl8UsSNdGbbksuAa0YEUvu8+K68Sr5h9tX/9bkb26U6W8NKI4FsAPBAU0Qk
-         1ehSKMsZzLefA2hwou0q5RSjhw1g3vAVMtSR3YJM=
-Date:   Sat, 12 Oct 2019 07:00:44 -0400
-From:   Brian Masney <masneyb@onstation.org>
-To:     Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     georgi.djakov@linaro.org, robh+dt@kernel.org, agross@kernel.org,
-        mark.rutland@arm.com, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, jonathan@marek.ca
-Subject: Re: [PATCH v2 2/2] interconnect: qcom: add msm8974 driver
-Message-ID: <20191012110044.GA19009@onstation.org>
-References: <20191005114605.5279-1-masneyb@onstation.org>
- <20191005114605.5279-3-masneyb@onstation.org>
- <20191011170506.GD571@minitux>
+        id S1728821AbfJMKz3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 13 Oct 2019 06:55:29 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40455 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728620AbfJMKz3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Oct 2019 06:55:29 -0400
+Received: by atrey.karlin.mff.cuni.cz (Postfix, from userid 512)
+        id 1B5AD80249; Sun, 13 Oct 2019 12:55:10 +0200 (CEST)
+Date:   Sun, 13 Oct 2019 12:55:05 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Tony Lindgren <tony@atomide.com>
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-omap@vger.kernel.org, Merlijn Wajer <merlijn@wizzup.org>
+Subject: Re: [PATCH 1/5] power: supply: cpcap-battery: Move coulomb counter
+ units per lsb to ddata
+Message-ID: <20191013105505.GA26237@amd>
+References: <20191009210621.10522-1-tony@atomide.com>
+ <20191009210621.10522-2-tony@atomide.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="KsGdsel6WgEHnImy"
 Content-Disposition: inline
-In-Reply-To: <20191011170506.GD571@minitux>
+In-Reply-To: <20191009210621.10522-2-tony@atomide.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Oct 11, 2019 at 10:05:06AM -0700, Bjorn Andersson wrote:
-> On Sat 05 Oct 04:46 PDT 2019, Brian Masney wrote:
-> > diff --git a/drivers/interconnect/qcom/msm8974.c b/drivers/interconnect/qcom/msm8974.c
-> [..]
-> > +static void msm8974_icc_rpm_smd_send(struct device *dev, int rsc_type,
-> > +				     char *name, int id, u64 val)
-> > +{
-> > +	int ret;
-> > +
-> > +	if (id == -1)
-> > +		return;
-> > +
-> > +	/*
-> > +	 * Setting the bandwidth requests for some nodes fails and this same
-> > +	 * behavior occurs on the downstream MSM 3.4 kernel sources based on
-> > +	 * errors like this in that kernel:
-> > +	 *
-> > +	 *   msm_rpm_get_error_from_ack(): RPM NACK Unsupported resource
-> > +	 *   AXI: msm_bus_rpm_req(): RPM: Ack failed
-> > +	 *   AXI: msm_bus_rpm_commit_arb(): RPM: Req fail: mas:32, bw:240000000
-> > +	 *
-> > +	 * Since there's no publicly available documentation for this hardware,
-> > +	 * and the bandwidth for some nodes in the path can be set properly,
-> > +	 * let's not return an error.
-> > +	 */
-> 
-> So presumably all that matters for paths including these endpoints is
-> the clk_set_rate() on the bus itself.
 
-That's the case for the GPU at the very least.
+--KsGdsel6WgEHnImy
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> But I prefer that we merge it like you propose and then swing back to
-> work out the details.
+On Wed 2019-10-09 14:06:17, Tony Lindgren wrote:
+> We can simplify cpcap_battery_cc_raw_div() a bit by moving the units per
+> lsb to ddata.
+>=20
+> Cc: Merlijn Wajer <merlijn@wizzup.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  drivers/power/supply/cpcap-battery.c | 28 ++++++++++++++--------------
+>  1 file changed, 14 insertions(+), 14 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/=
+cpcap-battery.c
+> --- a/drivers/power/supply/cpcap-battery.c
+> +++ b/drivers/power/supply/cpcap-battery.c
+> @@ -111,6 +111,7 @@ struct cpcap_battery_ddata {
+>  	struct power_supply *psy;
+>  	struct cpcap_battery_config config;
+>  	struct cpcap_battery_state_data state[CPCAP_BATTERY_STATE_NR];
+> +	u32 cc_lsb;		/* =CE=BCAms per LSB */
 
-Thanks,
+micro-Ampere-seconds? Should be uAs?
 
-Brian
+									Pavel
 
 
-> 
-> > +	ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE, rsc_type, id,
-> > +				    val);
-> > +	if (ret)
-> > +		dev_dbg(dev, "Cannot set bandwidth for node %s (%d): %d\n",
-> > +			name, id, ret);
-> > +}
-> > +
-> 
-> Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> 
-> Regards,
-> Bjorn
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--KsGdsel6WgEHnImy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAl2jAokACgkQMOfwapXb+vLHvgCcDH3Jzo7DRlXg7WHfpaycOW4L
+Td8AoL6fJ3hD4VcZIRybDHn+nLWhnwsD
+=eo6j
+-----END PGP SIGNATURE-----
+
+--KsGdsel6WgEHnImy--
