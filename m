@@ -2,62 +2,58 @@ Return-Path: <SRS0=aKUx=YH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.8 required=3.0 tests=DATE_IN_PAST_12_24,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.8 required=3.0 tests=DATE_IN_PAST_12_24,
+	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44B69C4CECE
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Oct 2019 21:27:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBFBEECE58C
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Oct 2019 21:27:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0E76C21A49
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Oct 2019 21:27:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9BAE421D71
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Oct 2019 21:27:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571088421;
-	bh=M9bcdnCeNrkpTQITeGXNjQpGnJuPalAz253L966tFWM=;
+	s=default; t=1571088424;
+	bh=7/AhaNPDgZNvkvT9YnXKUPXg5QzFw/154jC621nlWIs=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=pAPmXfyW11RFBA4VcXdJz8y3OZv8gmxDBj6FltLgcy5kWi8P/ZxygsBkQpl05ch4b
-	 m1pg9AJ94sigXPL6evrCxyS1U5b01eUtSY9nwdxEG6lQ+FW3KSiYywW14bUr28vOh4
-	 VQcHzb9xrrd646pGgOPdvaTz6GEWUkSEzn6+TajM=
+	b=AdTCoZ/te1cfFmZdWMLIO5OxhhatDlbzUNnEWb+V3HzisxyjfozmxqlXVJ7x5hACg
+	 v38/R92a/R4kp8RI1ILm3dfcbdVFbuOuUWMHxzi58J8IwB32MBkU6/3OlW1ipeXV2a
+	 3HbS89gv0R409tB2kBZ+kHe6v3LS0JHcBYVXOwyk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388965AbfJNV07 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Oct 2019 17:26:59 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33784 "EHLO mail.kernel.org"
+        id S2387657AbfJNV0s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Oct 2019 17:26:48 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33666 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387823AbfJNV0t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 14 Oct 2019 17:26:49 -0400
+        id S1731287AbfJNV0s (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 14 Oct 2019 17:26:48 -0400
 Received: from earth.universe (eth-west-pareq2-46-193-2-41.wb.wifirst.net [46.193.2.41])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id DF58A2067B;
-        Mon, 14 Oct 2019 21:26:48 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id B8B6421835;
+        Mon, 14 Oct 2019 21:26:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1571088409;
-        bh=M9bcdnCeNrkpTQITeGXNjQpGnJuPalAz253L966tFWM=;
+        s=default; t=1571088406;
+        bh=7/AhaNPDgZNvkvT9YnXKUPXg5QzFw/154jC621nlWIs=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=KdMEydFVZCAn+LklPnDJKHbFGfkUb0FfxiBrEh8vacnbAR5IZIx6zsO59ta3EIsl3
-         Ygo+FLmrPmYIh8ZsbcccQK52a/JKEz6FRTA9WnmgkLVi3QD48Bo4CkcIvVDmzUH1J0
-         lRj/ZZ4TTovgsY8XrLxOjCkY42+s67O83EphI3Go=
+        b=Ppow9DQRFn59PClKLaF2tKdukIKa7mNcHJFkz75VZEgoXxMV2ywgCAb+g25Wa982Z
+         eb4M13ZdtLHYLVnWeNoyPVXAeCPiiRZ4quWQnGn/yZqZVl2mJgsptxJd/XKiMvwD7o
+         nVDmmhkO0Tn90TY+966TmJNRqNQdNi4KBGviPenE=
 Received: by earth.universe (Postfix, from userid 1000)
-        id C4D0F3C0CA4; Mon, 14 Oct 2019 06:24:28 +0200 (CEST)
-Date:   Mon, 14 Oct 2019 06:24:28 +0200
+        id A96633C0CA6; Mon, 14 Oct 2019 07:46:21 +0200 (CEST)
+Date:   Mon, 14 Oct 2019 07:46:21 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     Chen-Yu Tsai <wens@csie.org>
-Cc:     Icenowy Zheng <icenowy@aosc.io>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>,
-        linux-sunxi <linux-sunxi@googlegroups.com>
-Subject: Re: [linux-sunxi] [PATCH 2/2] power: supply: axp20x_usb_power: add
- applied max Vbus support for AXP813
-Message-ID: <20191014042428.wslcadbv45k7v242@earth.universe>
-References: <20191002112545.58481-1-icenowy@aosc.io>
- <20191002112545.58481-3-icenowy@aosc.io>
- <CAGb2v65MPG=zbKtQk1oXq+TYP=0fPBXEj0fcGA=6mCD2+Smmpg@mail.gmail.com>
+To:     lecopzer@gmail.com
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        yj.chiang@mediatek.com, lecopzer.chen@mediatek.com
+Subject: Re: [PATCH v2 1/2] test_power: Add CHARGE_COUNTER properties
+Message-ID: <20191014054621.lopb7keyo7iej567@earth.universe>
+References: <20190912182600.24211-1-lecopzer.chen@mediatek.com>
+ <20190912182600.24211-2-lecopzer.chen@mediatek.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="jnwzl62lfmns7tc6"
+        protocol="application/pgp-signature"; boundary="p2covrf7b6w7z3ql"
 Content-Disposition: inline
-In-Reply-To: <CAGb2v65MPG=zbKtQk1oXq+TYP=0fPBXEj0fcGA=6mCD2+Smmpg@mail.gmail.com>
+In-Reply-To: <20190912182600.24211-2-lecopzer.chen@mediatek.com>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -65,45 +61,147 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---jnwzl62lfmns7tc6
+--p2covrf7b6w7z3ql
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Oct 08, 2019 at 12:07:05AM +0800, Chen-Yu Tsai wrote:
-> As far as the sysfs documents go, CURRENT_MAX is read-only, and should re=
-fer to
-> the hard limit the hardware can support, i.e. maximum power ratings.
-> INPUT_CURRENT_LIMIT and INPUT_VOLTAGE_LIMIT are for configurable upper an=
-d lower
-> limits respectively.
+On Fri, Sep 13, 2019 at 02:25:59AM +0800, lecopzer@gmail.com wrote:
+> CHARGE_COUNTER is really general in other power supply drivers and
+> Android also has an interface to monitor CHARGE_COUNTER, so let's
+> add it into test framework.
 >=20
-> Sebastian, is my understanding of this correct?
+> Set default as -1000 is because the default status is
+> POWER_SUPPLY_STATUS_DISCHARGING, which means the counter should be
+> negative, and 1000 means not zero but small enough.
+>=20
+> Signed-off-by: Lecopzer Chen <lecopzer.chen@mediatek.com>
+> ---
 
-Yes.
+Thanks, queued.
 
 -- Sebastian
 
---jnwzl62lfmns7tc6
+>  drivers/power/supply/test_power.c | 30 ++++++++++++++++++++++++++++++
+>  1 file changed, 30 insertions(+)
+>=20
+> diff --git a/drivers/power/supply/test_power.c b/drivers/power/supply/tes=
+t_power.c
+> index c3cad2b6daba..70db8d20e138 100644
+> --- a/drivers/power/supply/test_power.c
+> +++ b/drivers/power/supply/test_power.c
+> @@ -33,6 +33,7 @@ static int battery_present		=3D 1; /* true */
+>  static int battery_technology		=3D POWER_SUPPLY_TECHNOLOGY_LION;
+>  static int battery_capacity		=3D 50;
+>  static int battery_voltage		=3D 3300;
+> +static int battery_charge_counter	=3D -1000;
+> =20
+>  static bool module_initialized;
+> =20
+> @@ -100,6 +101,9 @@ static int test_power_get_battery_property(struct pow=
+er_supply *psy,
+>  	case POWER_SUPPLY_PROP_CHARGE_NOW:
+>  		val->intval =3D battery_capacity;
+>  		break;
+> +	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+> +		val->intval =3D battery_charge_counter;
+> +		break;
+>  	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+>  	case POWER_SUPPLY_PROP_CHARGE_FULL:
+>  		val->intval =3D 100;
+> @@ -135,6 +139,7 @@ static enum power_supply_property test_power_battery_=
+props[] =3D {
+>  	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>  	POWER_SUPPLY_PROP_CHARGE_FULL,
+>  	POWER_SUPPLY_PROP_CHARGE_NOW,
+> +	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+>  	POWER_SUPPLY_PROP_CAPACITY,
+>  	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+>  	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+> @@ -447,6 +452,21 @@ static int param_set_battery_voltage(const char *key,
+> =20
+>  #define param_get_battery_voltage param_get_int
+> =20
+> +static int param_set_battery_charge_counter(const char *key,
+> +					const struct kernel_param *kp)
+> +{
+> +	int tmp;
+> +
+> +	if (1 !=3D sscanf(key, "%d", &tmp))
+> +		return -EINVAL;
+> +
+> +	battery_charge_counter =3D tmp;
+> +	signal_power_supply_changed(test_power_supplies[TEST_BATTERY]);
+> +	return 0;
+> +}
+> +
+> +#define param_get_battery_charge_counter param_get_int
+> +
+>  static const struct kernel_param_ops param_ops_ac_online =3D {
+>  	.set =3D param_set_ac_online,
+>  	.get =3D param_get_ac_online,
+> @@ -487,6 +507,11 @@ static const struct kernel_param_ops param_ops_batte=
+ry_voltage =3D {
+>  	.get =3D param_get_battery_voltage,
+>  };
+> =20
+> +static const struct kernel_param_ops param_ops_battery_charge_counter =
+=3D {
+> +	.set =3D param_set_battery_charge_counter,
+> +	.get =3D param_get_battery_charge_counter,
+> +};
+> +
+>  #define param_check_ac_online(name, p) __param_check(name, p, void);
+>  #define param_check_usb_online(name, p) __param_check(name, p, void);
+>  #define param_check_battery_status(name, p) __param_check(name, p, void);
+> @@ -495,6 +520,7 @@ static const struct kernel_param_ops param_ops_batter=
+y_voltage =3D {
+>  #define param_check_battery_health(name, p) __param_check(name, p, void);
+>  #define param_check_battery_capacity(name, p) __param_check(name, p, voi=
+d);
+>  #define param_check_battery_voltage(name, p) __param_check(name, p, void=
+);
+> +#define param_check_battery_charge_counter(name, p) __param_check(name, =
+p, void);
+> =20
+> =20
+>  module_param(ac_online, ac_online, 0644);
+> @@ -525,6 +551,10 @@ MODULE_PARM_DESC(battery_capacity, "battery capacity=
+ (percentage)");
+>  module_param(battery_voltage, battery_voltage, 0644);
+>  MODULE_PARM_DESC(battery_voltage, "battery voltage (millivolts)");
+> =20
+> +module_param(battery_charge_counter, battery_charge_counter, 0644);
+> +MODULE_PARM_DESC(battery_charge_counter,
+> +	"battery charge counter (microampere-hours)");
+> +
+>  MODULE_DESCRIPTION("Power supply driver for testing");
+>  MODULE_AUTHOR("Anton Vorontsov <cbouatmailru@gmail.com>");
+>  MODULE_LICENSE("GPL");
+> --=20
+> 2.17.1
+>=20
+
+--p2covrf7b6w7z3ql
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl2j+HwACgkQ2O7X88g7
-+prfHA/+Jc00u/1cAYAPN6ewnUrc/bbD55/ftu4HZ0EXef5mU4CtB6P+f/gVJfwT
-sRtrW/liEbo+tC238pyJE1VwradxeXErWIxnjv68NkjTyxjqZdN4EEeKW0qIrur+
-QisFcrdSxbu17GCyBxOWztgxwksnahRkzrIFOZlbSqP9B8OayMKKdcB+heUoC1pP
-qMm4SsYiVvEVwVzS95Z3rwDsQioyHzXhMD6RxCEeZEiKFovuiJ0YbS7WL+pA/ay1
-6Pnv7V89C1T5sGG8oBzU+ow3e9Cp/uTMlhVSl20MMvE4vKTp47HP+5xMmZ/Nx5Ja
-bc9th2ABWPalmpv03wXM3ERol7FNtFtG5CkMmqbbL3IJc9VklqPw3lqXF1x7RtYP
-FEuXDdQeZwiFnwAfzJRge1gsOv6Dt0T0F7qvCtnGLHrcEusQ2hVDpqpbh5ySDUuN
-zemYtNep3+6MQ9cSd9285XKtTO6SectY04SL6VeF0uYo/5t2oJC4YW3KgZOAMd4r
-fR7YMJQwiKb1xzomvul37o4wSltTsCP+Zw0321d6USHvfLDPxs0zQD2aWogGJ/cs
-wUycmIge9neDb2DPxWeKY9QLUClXyt/99PuzHjZ+y7Rv9ADGpbo3pz+PejpSjf0Z
-+sz3g/pvL0vpmdwqTige7/TW/zTFZ6DjYcn+bZ1sBWiShVOZarI=
-=RG51
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl2kC6oACgkQ2O7X88g7
++poV6w/9EMKb8RCHrFqH+t3GCtmpFqNB86zAFTLRWIBp+Y7FbJoDICMP0zhoRUU0
+qCTYu2hoNJoUMuA+zCVfqAhtJ6eSzNxemp16a2T+3gQ1a+gms5E9jD7AhYVTK2ow
+694D94vaqLzZVJ4ZaPglNcSpMXrQItTTt+0U9z1K7e0ml1b4VwXOgMpUktzav4Jy
+uHFUlhtA+hdtfef2Hck1hr+4UJh4QZ6MA39R1j7er7QuD2ygCw+I2fFh6QLoHen5
+88zHKhGZZzrGOki7h/Vhj5uJBGZ0mgF8Y6OWeaPBNDJGdNC3NE+UPLlYGU3aKNE1
+HAWUrZ0fcVqqKitW1GNrTEuuJA28kEbqAKQVlN+thD328hbS0Q7Uo4OR6FqW9x/q
+sJRrP2F6igwvqXjoT2OP97Y5oRQP0C2TnGMXXCF6S4vElv08m7QY3fUTWx4hFgi+
+aSZvTfxuBPbvFfGtNAdRRlWCzkTuvTlBuzbmFoTd8Kof/+3EZ8JYTc7smGLfbUeq
+gLgeOaVZyrylsYo++ZKFhmV4psyjFVzVvJrKynyfK7ytoCYX9F9Ymk6/p2WaEKsU
++izHwa7/UGhTpLJjQfzb6NRAtXbmBdAK3TUhK/JwOLnTb1d3XD3U7kbMJZpXXshg
+JjOaO58qmDLJvSrxsZJjNfGmdei+02Q2h8m++uBIBuRXtUqUVbs=
+=HD4T
 -----END PGP SIGNATURE-----
 
---jnwzl62lfmns7tc6--
+--p2covrf7b6w7z3ql--
