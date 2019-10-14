@@ -2,112 +2,112 @@ Return-Path: <SRS0=aKUx=YH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66926ECE58C
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Oct 2019 21:12:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6559EC4CECE
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Oct 2019 21:23:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4800B21D7E
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Oct 2019 21:12:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 448742067B
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Oct 2019 21:23:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732525AbfJNVMB convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Oct 2019 17:12:01 -0400
-Received: from mga17.intel.com ([192.55.52.151]:26571 "EHLO mga17.intel.com"
+        id S1730002AbfJNVXQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Oct 2019 17:23:16 -0400
+Received: from mga18.intel.com ([134.134.136.126]:21982 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730627AbfJNVMB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 14 Oct 2019 17:12:01 -0400
+        id S1729708AbfJNVXQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 14 Oct 2019 17:23:16 -0400
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 14 Oct 2019 14:12:01 -0700
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 14 Oct 2019 14:23:16 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.67,296,1566889200"; 
-   d="scan'208";a="189143213"
-Received: from fmsmsx104.amr.corp.intel.com ([10.18.124.202])
-  by orsmga008.jf.intel.com with ESMTP; 14 Oct 2019 14:12:00 -0700
-Received: from fmsmsx112.amr.corp.intel.com (10.18.116.6) by
- fmsmsx104.amr.corp.intel.com (10.18.124.202) with Microsoft SMTP Server (TLS)
- id 14.3.439.0; Mon, 14 Oct 2019 14:12:00 -0700
-Received: from crsmsx151.amr.corp.intel.com (172.18.7.86) by
- FMSMSX112.amr.corp.intel.com (10.18.116.6) with Microsoft SMTP Server (TLS)
- id 14.3.439.0; Mon, 14 Oct 2019 14:12:00 -0700
-Received: from crsmsx104.amr.corp.intel.com ([169.254.6.181]) by
- CRSMSX151.amr.corp.intel.com ([169.254.3.114]) with mapi id 14.03.0439.000;
- Mon, 14 Oct 2019 15:11:58 -0600
-From:   "Hernandez Lopez, Fabiola" <fabiola.hernandez.lopez@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-CC:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: RE: Frequency not returning to fixed value after AVX workload
-Thread-Topic: Frequency not returning to fixed value after AVX workload
-Thread-Index: AdWAW7g0RYwhbvwkQrq2viRm3SLyeQCSpKyAAAtq94A=
-Date:   Mon, 14 Oct 2019 21:11:57 +0000
-Message-ID: <67737C20FC7E4D44B44817ABFA5B1DCE6EC020E9@CRSMSX104.amr.corp.intel.com>
+   d="scan'208";a="194328026"
+Received: from spandruv-desk.jf.intel.com ([10.54.75.31])
+  by fmsmga008.fm.intel.com with ESMTP; 14 Oct 2019 14:23:15 -0700
+Message-ID: <e7e89cd85fb5d367338491651b36cc912967edab.camel@linux.intel.com>
+Subject: Re: Frequency not returning to fixed value after AVX workload
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     "Hernandez Lopez, Fabiola" <fabiola.hernandez.lopez@intel.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Date:   Mon, 14 Oct 2019 14:23:15 -0700
+In-Reply-To: <67737C20FC7E4D44B44817ABFA5B1DCE6EC020E9@CRSMSX104.amr.corp.intel.com>
 References: <67737C20FC7E4D44B44817ABFA5B1DCE6EC01C77@CRSMSX104.amr.corp.intel.com>
- <3340378.NBreQbsDsf@kreacher>
-In-Reply-To: <3340378.NBreQbsDsf@kreacher>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-titus-metadata-40: eyJDYXRlZ29yeUxhYmVscyI6IiIsIk1ldGFkYXRhIjp7Im5zIjoiaHR0cDpcL1wvd3d3LnRpdHVzLmNvbVwvbnNcL0ludGVsMyIsImlkIjoiYTdhNThmOGItMmJhNy00NDM1LWE0ZGQtYmQxYzIxZjE4YWI0IiwicHJvcHMiOlt7Im4iOiJDVFBDbGFzc2lmaWNhdGlvbiIsInZhbHMiOlt7InZhbHVlIjoiQ1RQX05UIn1dfV19LCJTdWJqZWN0TGFiZWxzIjpbXSwiVE1DVmVyc2lvbiI6IjE3LjEwLjE4MDQuNDkiLCJUcnVzdGVkTGFiZWxIYXNoIjoibWd2eFAxOXdIUUJ4OG1EVTFOVE40Vk1LbGhaN0VVYzVIZnBGVWpTRVZtZ2IydllnMzllczR3RnhOOFhET2l6SiJ9
-x-ctpclassification: CTP_NT
-dlp-product: dlpe-windows
-dlp-version: 11.2.0.6
-dlp-reaction: no-action
-x-originating-ip: [172.18.205.10]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+         <3340378.NBreQbsDsf@kreacher>
+         <67737C20FC7E4D44B44817ABFA5B1DCE6EC020E9@CRSMSX104.amr.corp.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-3.fc28) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-How do you measure the frequency?
-With lscpu.
+On Mon, 2019-10-14 at 21:11 +0000, Hernandez Lopez, Fabiola wrote:
+> How do you measure the frequency?
+Do whatever you are doing to get to your problem state and while doing
+the test run in another window:
 
-What exactly do you do to get the expected frequency back?
-A script is used that sets the frequency with /sys/devices/system/cpu/cpu*/cpufreq/scaling_setspeed
+#turbostat
 
-Is the target frequency in the turbo range?
-No, the target frequency is the same as the base processor frequency: 2.4GHz. The max turbo frequency for this CPU si 3.9 GHz.
-This has been tested with turbo boost enabled and disabled. 
-
-This behavior is very sporadic: < 10%
+Attach the output.
 
 Thanks,
-Fabiola
+Srinivas
 
------Original Message-----
-From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net] 
-Sent: Monday, October 14, 2019 4:45 AM
-To: Hernandez Lopez, Fabiola <fabiola.hernandez.lopez@intel.com>
-Cc: linux-pm@vger.kernel.org; Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: Frequency not returning to fixed value after AVX workload
-
-On Friday, October 11, 2019 7:45:55 PM CEST Hernandez Lopez, Fabiola wrote:
-> Hi,
+> With lscpu.
 > 
-> We are seeing an unexpected behavior after applying AVX workloads. 
-> After setting the CPU frequency to a fixed value with CPU Freq - 
-> userspace governor and applying heavy AVX workloads, the CPU frequency 
-> is decreased (as expected) but it never returns to the previously established value.
-
-How do you measure the frequency?
-
-> This does not happen on all cores, only on a single core. The only way 
-> to return to the desired frequency is by setting it through the 
-> command line again.
-
-What exactly do you do to get the expected frequency back?
-
-> We are wondering how can this change in frequency happen.
-
-Is the target frequency in the turbo range?
-
-
+> What exactly do you do to get the expected frequency back?
+> A script is used that sets the frequency with
+> /sys/devices/system/cpu/cpu*/cpufreq/scaling_setspeed
+> 
+> Is the target frequency in the turbo range?
+> No, the target frequency is the same as the base processor frequency:
+> 2.4GHz. The max turbo frequency for this CPU si 3.9 GHz.
+> This has been tested with turbo boost enabled and disabled. 
+> 
+> This behavior is very sporadic: < 10%
+> 
+> Thanks,
+> Fabiola
+> 
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net] 
+> Sent: Monday, October 14, 2019 4:45 AM
+> To: Hernandez Lopez, Fabiola <fabiola.hernandez.lopez@intel.com>
+> Cc: linux-pm@vger.kernel.org; Srinivas Pandruvada <
+> srinivas.pandruvada@linux.intel.com>
+> Subject: Re: Frequency not returning to fixed value after AVX
+> workload
+> 
+> On Friday, October 11, 2019 7:45:55 PM CEST Hernandez Lopez, Fabiola
+> wrote:
+> > Hi,
+> > 
+> > We are seeing an unexpected behavior after applying AVX workloads. 
+> > After setting the CPU frequency to a fixed value with CPU Freq - 
+> > userspace governor and applying heavy AVX workloads, the CPU
+> > frequency 
+> > is decreased (as expected) but it never returns to the previously
+> > established value.
+> 
+> How do you measure the frequency?
+> 
+> > This does not happen on all cores, only on a single core. The only
+> > way 
+> > to return to the desired frequency is by setting it through the 
+> > command line again.
+> 
+> What exactly do you do to get the expected frequency back?
+> 
+> > We are wondering how can this change in frequency happen.
+> 
+> Is the target frequency in the turbo range?
+> 
+> 
+> 
 
