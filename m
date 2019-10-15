@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 037B0ECE588
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85B16C10F14
 	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:02:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CEFE621835
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:02:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5C72020872
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:02:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hhHXoeGk"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ql+EZ+qs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388445AbfJORBr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Oct 2019 13:01:47 -0400
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:42354 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729897AbfJORBo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 13:01:44 -0400
-Received: by mail-lj1-f193.google.com with SMTP id y23so21001583lje.9;
-        Tue, 15 Oct 2019 10:01:42 -0700 (PDT)
+        id S2388392AbfJORBq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Oct 2019 13:01:46 -0400
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:42130 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388377AbfJORBp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 13:01:45 -0400
+Received: by mail-lf1-f68.google.com with SMTP id c195so15062017lfg.9;
+        Tue, 15 Oct 2019 10:01:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=PAYNs/o0oQ+5oMrw2AY1UO1+THnKmjTd9tnbcB8Y4M0=;
-        b=hhHXoeGkeFH0aG2jGZZZ5SdqCD7w4e45J1BVWduxeXXVD4TeDF5TpJraTJ8N72qawA
-         49pAISszbYizOd2peiIVDpJoiFjO0qOJvev0OcvMPM+VE++6BxSlvPPc5JGpQn+ucBKM
-         b28olFBRKPBb4cRw1u4OeEFkkH5fWybbbEPQFmWnD8XoQgdW4iA6ocWapMhxZta0buAk
-         viiRVkSBtnZuGfo4vALCOhmjpiPxpKqz/WAoJEsClyf4Er/WuZY4MA9zCvXAuvGJkYyf
-         jfqkYcLZVppSJNmgk0uM+4zkHPLRRK0hkLanIjftmD/0/1FeT6xLfHQqnNwzTX9yv4AQ
-         h7Gw==
+        bh=5moJgPZ2Xa4K5tgWm4Nx1p1i/obHq7JljyrRhB5JMRE=;
+        b=ql+EZ+qsgNkTj1l6uuRBk+HDu7XEubMfue2+p4/Rh98xlRRW78lzDTEz2PPRzTMCQT
+         Nr4TimyF7bV2AuR2ulo+H+XbXH2szOfq7qWu5geaJuWtgr4WlkCIjLe84Mthud+GF2B9
+         F7dyUkMR0DVPiVI4aB/rCYvsahJzCEtyMklv4eFddBS2RQHVpqqgyk9DsaRieTw7GqAw
+         re/W1bEMuX1gfk0N73HiqMUmTBaIzaW85AvMTUzF2Wr9PXZ4Yjx8v5JsYuqJn3hahmHm
+         BiRzQTwrYjR4MThNOBBm+vW03p/9jrZpL7RxACCuDFSVh9/kiyK3CpYPm5nrSFeQiqv9
+         cJAw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=PAYNs/o0oQ+5oMrw2AY1UO1+THnKmjTd9tnbcB8Y4M0=;
-        b=pyXyjV1PzEZcJWVTP/E3yq8dYj7PosS3UHK0pXVjdaiD7be2lPcJa7m0a5gji+wU7E
-         id2r1NgtrqpX8UZaHnIkOCiK4IkkSrUZlSa4eYLAVcCBcxSyVQIrPz0ytldgmcbU1LSc
-         pGyhS2o7y9NtcgPMCoIYTUJLwEX9ZOLen+b3QIQeyG0jt9TT9KiQuv6Ze1EUULbqcSNn
-         UYv6Vxsk6qxMlf5jN/sT/H39hq1HREK24oODPqRNdb+oJl8gxezljOLapObbq6GeHM0m
-         uS7n/FxpJZ6jU1kvvBdfvADfEYxeDElRrJr3aEp58X5wX9c2iyqmF22ia64YWdeDregW
-         Yaqg==
-X-Gm-Message-State: APjAAAWO6Xq2F4ME17QMXQH6DRepFKcqbB6Cm/hpjTBm4Tl7x1TGmrJb
-        WSdFjgjWkU5DtiDdQFof0So=
-X-Google-Smtp-Source: APXvYqxl7Tz9wEfgAkrvBVOg4eZ9ADEiRSRldWhV7QHOFUUVf8eYWuB4B5BDfnRtXrgCghrxi8WyRQ==
-X-Received: by 2002:a2e:858f:: with SMTP id b15mr23110599lji.68.1571158900984;
-        Tue, 15 Oct 2019 10:01:40 -0700 (PDT)
+        bh=5moJgPZ2Xa4K5tgWm4Nx1p1i/obHq7JljyrRhB5JMRE=;
+        b=aDF9nMk9DNM4fpSgb4ycELOFnLpF2kZ5jFyQAryIE6oYT+SKyCxiVc5hOLHJ1s1Qwd
+         kVJVTwC0vZjPOaeMsHnwgu4pMy2+xtmqw1h7+St+Gzz0oyg/HCzeKUYOQQjc84Msr3gw
+         pckkc2rBlCz+F+lq2XGPIGtgHuzfCbkCt46q5EhRBG6+PNpq1fKDdl8fJOmLYUyTutio
+         ftRe+gAInTeVDlobH13yXQUE8Q40L+zbSYnuCZfLStNckd8kGlf6Np5EEtyiX2XwYtK1
+         yrMVGaPThRP0PJvJxVdKqmpjnU22Hdrg9/AX4r4h9M/wlqm2piiSEHd9a7RmXWBLzNVJ
+         ig1A==
+X-Gm-Message-State: APjAAAVlziFuKAn7KN/3mAFZyTM4wpjird9JD/CZvXRmZb92bAyz9mFt
+        gVc+OHRmieKpQqHL9Da9K7Q=
+X-Google-Smtp-Source: APXvYqz0N13dp4HmI2iWqx0gr7F7VoN8nEQp2x/hUAylnur/3lhCKlEWxfmQYlsIE6m16rfoWjbfGw==
+X-Received: by 2002:ac2:44c3:: with SMTP id d3mr20793012lfm.109.1571158902982;
+        Tue, 15 Oct 2019 10:01:42 -0700 (PDT)
 Received: from localhost.localdomain ([94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id t6sm5144992ljd.102.2019.10.15.10.01.40
+        by smtp.gmail.com with ESMTPSA id t6sm5144992ljd.102.2019.10.15.10.01.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Oct 2019 10:01:40 -0700 (PDT)
+        Tue, 15 Oct 2019 10:01:42 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -63,9 +63,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v6 02/18] ARM: tegra: Add tegra_pm_park_secondary_cpu()
-Date:   Tue, 15 Oct 2019 19:59:59 +0300
-Message-Id: <20191015170015.1135-3-digetx@gmail.com>
+Subject: [PATCH v6 04/18] ARM: tegra: Change tegra_set_cpu_in_lp2() type to void
+Date:   Tue, 15 Oct 2019 20:00:01 +0300
+Message-Id: <20191015170015.1135-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191015170015.1135-1-digetx@gmail.com>
 References: <20191015170015.1135-1-digetx@gmail.com>
@@ -76,58 +76,96 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This function resembles tegra_cpu_die() of the hotplug code, but
-this variant is more suitable to be used for CPU PM because it's made
-specifically to be used by cpu_suspend(). In short this function puts
-secondary CPU offline, it will be used by the new CPUIDLE driver.
+The Tegra30 CPUIDLE driver has intention to check whether primary CPU was
+the last CPU that entered LP2 (CC6) idle-state, but that functionality
+never got utilized because driver never supported the CC6 state for the
+case where any secondary CPU is online. The new cpuidle driver will
+properly support CC6 on Tegra30, including the case where secondary CPUs
+are online, and that knowledge about what CPUs entered into CC6 won't be
+needed at all because new driver will use different approach by making use
+of the coupled idle-state and explicitly parking secondary CPUs before
+entering into CC6. Thus this patch is just a minor cleanup change.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/mach-tegra/pm.c | 14 ++++++++++++++
- arch/arm/mach-tegra/pm.h |  5 +++++
- 2 files changed, 19 insertions(+)
+ arch/arm/mach-tegra/cpuidle-tegra30.c | 14 ++++----------
+ arch/arm/mach-tegra/pm.c              |  8 +-------
+ arch/arm/mach-tegra/pm.h              |  2 +-
+ 3 files changed, 6 insertions(+), 18 deletions(-)
 
+diff --git a/arch/arm/mach-tegra/cpuidle-tegra30.c b/arch/arm/mach-tegra/cpuidle-tegra30.c
+index c6128526877d..a3ce8dabfe18 100644
+--- a/arch/arm/mach-tegra/cpuidle-tegra30.c
++++ b/arch/arm/mach-tegra/cpuidle-tegra30.c
+@@ -98,22 +98,16 @@ static int tegra30_idle_lp2(struct cpuidle_device *dev,
+ 			    int index)
+ {
+ 	bool entered_lp2 = false;
+-	bool last_cpu;
+ 
+ 	local_fiq_disable();
+ 
+-	last_cpu = tegra_set_cpu_in_lp2();
++	tegra_set_cpu_in_lp2();
+ 	cpu_pm_enter();
+ 
+-	if (dev->cpu == 0) {
+-		if (last_cpu)
+-			entered_lp2 = tegra30_cpu_cluster_power_down(dev, drv,
+-								     index);
+-		else
+-			cpu_do_idle();
+-	} else {
++	if (dev->cpu == 0)
++		entered_lp2 = tegra30_cpu_cluster_power_down(dev, drv, index);
++	else
+ 		entered_lp2 = tegra30_cpu_core_power_down(dev, drv, index);
+-	}
+ 
+ 	cpu_pm_exit();
+ 	tegra_clear_cpu_in_lp2();
 diff --git a/arch/arm/mach-tegra/pm.c b/arch/arm/mach-tegra/pm.c
-index 3cab81b82866..f5ff3dd1dd81 100644
+index 1ff499068bb1..a72f9a2d3cb7 100644
 --- a/arch/arm/mach-tegra/pm.c
 +++ b/arch/arm/mach-tegra/pm.c
-@@ -436,4 +436,18 @@ void __init tegra_init_suspend(void)
- 
- 	suspend_set_ops(&tegra_suspend_ops);
+@@ -123,11 +123,9 @@ void tegra_clear_cpu_in_lp2(void)
+ 	spin_unlock(&tegra_lp2_lock);
  }
-+
-+int tegra_pm_park_secondary_cpu(unsigned long cpu)
-+{
-+	if (cpu > 0) {
-+		tegra_disable_clean_inv_dcache(TEGRA_FLUSH_CACHE_LOUIS);
-+
-+		if (tegra_get_chip_id() == TEGRA20)
-+			tegra20_hotplug_shutdown();
-+		else
-+			tegra30_hotplug_shutdown();
-+	}
-+
-+	return -EINVAL;
-+}
- #endif
+ 
+-bool tegra_set_cpu_in_lp2(void)
++void tegra_set_cpu_in_lp2(void)
+ {
+ 	int phy_cpu_id = cpu_logical_map(smp_processor_id());
+-	bool last_cpu = false;
+-	cpumask_t *cpu_lp2_mask = tegra_cpu_lp2_mask;
+ 	u32 *cpu_in_lp2 = tegra_cpu_lp2_mask;
+ 
+ 	spin_lock(&tegra_lp2_lock);
+@@ -135,11 +133,7 @@ bool tegra_set_cpu_in_lp2(void)
+ 	BUG_ON((*cpu_in_lp2 & BIT(phy_cpu_id)));
+ 	*cpu_in_lp2 |= BIT(phy_cpu_id);
+ 
+-	if ((phy_cpu_id == 0) && cpumask_equal(cpu_lp2_mask, cpu_online_mask))
+-		last_cpu = true;
+-
+ 	spin_unlock(&tegra_lp2_lock);
+-	return last_cpu;
+ }
+ 
+ static int tegra_sleep_cpu(unsigned long v2p)
 diff --git a/arch/arm/mach-tegra/pm.h b/arch/arm/mach-tegra/pm.h
-index 569151b3edc0..9a790f00237f 100644
+index b9cc12222bb1..2c294f6365c0 100644
 --- a/arch/arm/mach-tegra/pm.h
 +++ b/arch/arm/mach-tegra/pm.h
-@@ -31,8 +31,13 @@ extern void (*tegra_tear_down_cpu)(void);
+@@ -24,7 +24,7 @@ void tegra30_lp1_iram_hook(void);
+ void tegra30_sleep_core_init(void);
  
- #ifdef CONFIG_PM_SLEEP
- void tegra_init_suspend(void);
-+int tegra_pm_park_secondary_cpu(unsigned long cpu);
- #else
- static inline void tegra_init_suspend(void) {}
-+static inline int tegra_pm_park_secondary_cpu(unsigned long cpu)
-+{
-+	return -ENOTSUPP;
-+}
- #endif
+ void tegra_clear_cpu_in_lp2(void);
+-bool tegra_set_cpu_in_lp2(void);
++void tegra_set_cpu_in_lp2(void);
+ void tegra_idle_lp2_last(void);
+ extern void (*tegra_tear_down_cpu)(void);
  
- #endif /* _MACH_TEGRA_PM_H_ */
 -- 
 2.23.0
 
