@@ -2,115 +2,145 @@ Return-Path: <SRS0=AVup=YI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EABEDC10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 16:23:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7EB8C10F14
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 16:57:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C3A37217D6
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 16:23:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B1A1220872
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 16:57:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="aHmAbdbi"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ucr.edu header.i=@ucr.edu header.b="kwqJI4LR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726632AbfJOQXk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Oct 2019 12:23:40 -0400
-Received: from mail-wr1-f41.google.com ([209.85.221.41]:37501 "EHLO
-        mail-wr1-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387872AbfJOQXJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 12:23:09 -0400
-Received: by mail-wr1-f41.google.com with SMTP id p14so24618844wro.4
-        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2019 09:23:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=At2DqHL0ULEbo28PWT+4kh8rdtcYy0zRsGcxpKfsRvo=;
-        b=aHmAbdbiM4ZWtHLyoRLNmPSKJuGRCmiTdkpRf8WjvsiCX/URpSq66qVJM9NxTsXmLY
-         w0tLE3GtdgXe2o4UTpGR5Q84VS6NegWrT9j+g6sqP0mswC9kfmLMSU181sq/Vc/SlQ+2
-         cLX/MkSijLN2tGx8/wZ6/zTxyOboUkmvu4YXtvn1as37a84zM/3gTkSBjfsvyS6lVKLe
-         LRyGKhq5JjXrz9k/DxwJVxNUMOOXRG2OmYgVI0HsaulfmJI3KqpGF4X2RRiIPJyc+jPM
-         vZCLic5TJMVSsNJPXkixTK5y5Lf/Hf1z7GDoIKFpf9HekSNPlsIyUzHR2dCEp9CjMbEE
-         9D9g==
+        id S1728641AbfJOQ5D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Oct 2019 12:57:03 -0400
+Received: from mx2.ucr.edu ([138.23.62.3]:34079 "EHLO mx2.ucr.edu"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726360AbfJOQ5D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 15 Oct 2019 12:57:03 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=ucr.edu; i=@ucr.edu; q=dns/txt; s=selector3;
+  t=1571158622; x=1602694622;
+  h=from:to:cc:subject:date:message-id;
+  bh=tJT8udUe23SQ/yMvXD9JrhV+zdyow2x8Zk5qa/cM1lw=;
+  b=kwqJI4LRtiIQgzIuaPaxiqVQ6q97bZxu/wAqXPeFJX38IhOeQafkWzGP
+   Kn0ESeyReXnI8ajdYNebrTQPipm0n8yErhpxbeH8RXgz1Ki5uYRsgL6ds
+   HFm9ISb5IU8ePXogqg9AN8jo85d90ziyXn5uuWwsOnFSSjeUYTy11Bt0e
+   1LMcHuDzX3xDo9IEnFDbK9p4JB/Dn1J0vPoYKP/UIrTiCADIaXtE0Q+fU
+   1dAgsDVYasHaANAapsAR59YwLlEfpLTmck7G/fKx5fn/AjMagmlXC5zsd
+   S2VbNQ+iuDGMZ3bm9rw7Z+30cjgiwlU+Paty9DMgc02yHxBSAJBNuaELJ
+   A==;
+IronPort-SDR: IxMzZAf3dYGaOfkIgl7wP4cXtwvp8/75qQR1egV/l4w/BUHVolfZooDLUpq5g4oayn78+vDxqR
+ h8BYYYT8vqCz+CT7Ko99+qio2mtodVGh/nkvEQ5f3+oJOHmbqbOsnX2ksTpVtirouVzr96COsz
+ oFexY6Mx7nZNVPiXfRli5W61KkSR8VOp1fNeohEAYDjVIkTet30252E6NX2vswDNQy7W4aZMtu
+ Oa42scBLQ+t6aNBqq9veKqJ+6OYB2W1lUZEiNiNOeWTRVRkQaWU/4Z/tdXXeDRUQQq+5Ro45oy
+ 2d8=
+IronPort-PHdr: =?us-ascii?q?9a23=3ANlPahx3lLMXLwrbJsmDT+DRfVm0co7zxezQtwd?=
+ =?us-ascii?q?8Zse0eLPad9pjvdHbS+e9qxAeQG9mCsLQb0KGP6/2ocFdDyK7JiGoFfp1IWk?=
+ =?us-ascii?q?1NouQttCtkPvS4D1bmJuXhdS0wEZcKflZk+3amLRodQ56mNBXdrXKo8DEdBA?=
+ =?us-ascii?q?j0OxZrKeTpAI7SiNm82/yv95HJbAhEmTSwbalwIRi4ogndq9UajIt/Iast1x?=
+ =?us-ascii?q?XFpWdFdf5Lzm1yP1KTmBj85sa0/JF99ilbpuws+c1dX6jkZqo0VbNXAigoPG?=
+ =?us-ascii?q?Az/83rqALMTRCT6XsGU2UZiQRHDg7Y5xznRJjxsy/6tu1g2CmGOMD9UL45VS?=
+ =?us-ascii?q?i+46ptVRTlkzkMOSIn/27Li8xwlKNbrwynpxxj2I7ffYWZOONjcq/BYd8WQG?=
+ =?us-ascii?q?xMXsNQVyxaGYO8bo0PD+UcNuhGtof2ulUOrRqgCgmoGezk1ztEi3Hq0aE/1e?=
+ =?us-ascii?q?kqDAPI0xE6H98WsHrassj7OqkRX+6y16TE0SnPYulK1Trn9ITEbhYsquyMU7?=
+ =?us-ascii?q?JqdsrRzFEiGAHEjlSRqYzlIjSV3fkKvmmb7utgVfigi287pw1trDWi3doshZ?=
+ =?us-ascii?q?XTho4P1F/L6Dh5zZ8zKNalS0B7ecapHIVMuyyeLYd7QcMvT3t2tConxbAKo4?=
+ =?us-ascii?q?C3cDQWxJg/2hLSaviKf5KW7h/tVOudOyl0iXN/dL+9iBu/91WrxPfmWcmuyl?=
+ =?us-ascii?q?lKqzJIktzLtn8QyRPe8tOHSv5h/ke53jaPyhzT5vlEIU8qkarbLIYswrsqmZ?=
+ =?us-ascii?q?oStUTPBzf2mEHrgKOPeEUo5PSk5/j9brXpoZ+cMIB0igXgPag0hsO/BuE4Ph?=
+ =?us-ascii?q?APX2id5+u8yKXu8VPlTLhOlPE7kanUvIrEKcgGqaO1GRFZ3po/5xqnCjepyt?=
+ =?us-ascii?q?UYnX0JLFJffxKHipDkOlHPIfD4F/i/gkignCtlyv3dI73uHo/NImLdn7j8YL?=
+ =?us-ascii?q?Zx81RcxxYrzdBD+5JUDakMIPbyWk/3qdzZAQY1MxSxw+v8FtV92Z0RWXiVDq?=
+ =?us-ascii?q?+aLqzSq1mI6fwrI+WWY48Vojn9eLAL/fnr2E44i18AeuH9zIkXYXHgRq9OPk?=
+ =?us-ascii?q?6DJ3fgn4FSQi8xogMiQbmy2xW5WjlJaiP3APox?=
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: =?us-ascii?q?A2EvEgA1+qVdgMjWVdFmHgELHIFwC4N?=
+ =?us-ascii?q?gTBCNJ4YzBospGHGFe4owAQgBAQEMAQEtAgEBhECCcSQ3Bg4CAwkBAQUBAQE?=
+ =?us-ascii?q?BAQUEAQECEAEBCQ0JCCeFQoI6KYM1CxYVUoEVAQUBNSI5gkcBglIloguBAzy?=
+ =?us-ascii?q?MJTOIYwEJDYFICQEIgSKHNYRZgRCBB4NuB2yEAwobgz6CSgSBOQEBAYtBiXJ?=
+ =?us-ascii?q?wlWsBBgKCEBSBepMVJ4I6ggKJQDmLDAEtjBibJwIKBwYPI4FFgXxNJYFsCoF?=
+ =?us-ascii?q?EUBAUggeOLiEzgQiNe4JUAQ?=
+X-IPAS-Result: =?us-ascii?q?A2EvEgA1+qVdgMjWVdFmHgELHIFwC4NgTBCNJ4YzBospG?=
+ =?us-ascii?q?HGFe4owAQgBAQEMAQEtAgEBhECCcSQ3Bg4CAwkBAQUBAQEBAQUEAQECEAEBC?=
+ =?us-ascii?q?Q0JCCeFQoI6KYM1CxYVUoEVAQUBNSI5gkcBglIloguBAzyMJTOIYwEJDYFIC?=
+ =?us-ascii?q?QEIgSKHNYRZgRCBB4NuB2yEAwobgz6CSgSBOQEBAYtBiXJwlWsBBgKCEBSBe?=
+ =?us-ascii?q?pMVJ4I6ggKJQDmLDAEtjBibJwIKBwYPI4FFgXxNJYFsCoFEUBAUggeOLiEzg?=
+ =?us-ascii?q?QiNe4JUAQ?=
+X-IronPort-AV: E=Sophos;i="5.67,300,1566889200"; 
+   d="scan'208";a="15213564"
+Received: from mail-pl1-f200.google.com ([209.85.214.200])
+  by smtp2.ucr.edu with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 15 Oct 2019 09:57:01 -0700
+Received: by mail-pl1-f200.google.com with SMTP id d1so12450044plj.9
+        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2019 09:57:01 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=At2DqHL0ULEbo28PWT+4kh8rdtcYy0zRsGcxpKfsRvo=;
-        b=bKBa0f6dzf4nHkuSRmZMxAm9EA8Qh++viw9DBeMCds6R5vMb3h8D9fnUm2xuqdUZQ1
-         VMMGoyTwK54K9ZJZJ14xd59rXJ3Um2lWDVdZZKuc5fZquIAfXTNxGh4MItTp9taS4P6P
-         pz2DLZSMeUz2EtjYXK1AxkAKwjnPpDG46/SkVbPlAbjlNwgVImcPeMIBarMxVd6Rh2po
-         fzEJYb5RbLd3QZSR93aF7JzoJpXlT3gP4+gC56sJ9Bwf2oB+UQgtqD/hGud6DKEqDtCd
-         m79XapMlQrDgEczxZUEaFKuPsxzH8ZVBJlqvlst+9bATT1A547Bisj/eI//pXtq0VeGh
-         TR7g==
-X-Gm-Message-State: APjAAAWEcyjZP5S+AFkw1FUsnV10xKFyaFLyZYA0hLVP6vFl1tH5XLdE
-        OEikC0JY8LtzH/zMDU2NVSqSzw==
-X-Google-Smtp-Source: APXvYqzwtJVnM0+sB/QY9mFpWS8ak0T/l8lL1nG68KLspWgJQBslTm9u8o7QI4CvpIdKwf3Ee0Y3lQ==
-X-Received: by 2002:a5d:55ca:: with SMTP id i10mr21686396wrw.12.1571156585435;
-        Tue, 15 Oct 2019 09:23:05 -0700 (PDT)
-Received: from debian-brgl.home ([2a01:cb1d:af:5b00:6d6c:8493:1ab5:dad7])
-        by smtp.gmail.com with ESMTPSA id x129sm41427605wmg.8.2019.10.15.09.23.03
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=Oyyo8ueGcSv2C2YN7t5+4dy6tp5fxBoXld6XJLZPnpM=;
+        b=BCEDxWcfAr9I1IzwCzysv9322c8KBFCZw53EL7cf5OiyI4mAoxju6RVHpAEP1wUOp4
+         zmjKiZNEM1aiZndmQvvxWegjAoAQt73pGqEjNninz/qIa7KE3WUNcjM4bq0GOrTdkdf0
+         9L15A4A2Yuuik4qiors93tlt5AUHZTJKAx0TY+j4zz2fKaJPQKw8De75Lif4W5RXAiNT
+         2HQSqrWROJ1R5c05IbqxgFi1zmjX1iIO6i3k4qHiJamCrTtq7w2j4upN5QFq3okyXJx7
+         0rb4vpiLxbkwKH7uNvo9j+EUYnSXXItPpKUYdmt/AsTyGcJk8lS/tqJqcJLyQhC8uOOE
+         HTrQ==
+X-Gm-Message-State: APjAAAW/PutWmyjadqD4jWOJZdgaN3ypiHcCGRVoUr5ARli/BjHWBLn1
+        anBMnvkTeHdrLu4AHGN+P0V2ZBC6/MyFYIT/fMAHMh0PniqmmACd6/5ncRoyiLvjS1xtvyquGI/
+        RkGxSJMB4iHCf8+ciDopN
+X-Received: by 2002:a17:902:9008:: with SMTP id a8mr37063838plp.218.1571158620567;
+        Tue, 15 Oct 2019 09:57:00 -0700 (PDT)
+X-Google-Smtp-Source: APXvYqzYM/sGx2FnwldouLf984y/BIUzeFauhYwXc+v3vyUmkpZ29mvFBQoj0yMfftTqU12/tZAZ2w==
+X-Received: by 2002:a17:902:9008:: with SMTP id a8mr37063822plp.218.1571158620267;
+        Tue, 15 Oct 2019 09:57:00 -0700 (PDT)
+Received: from Yizhuo.cs.ucr.edu (yizhuo.cs.ucr.edu. [169.235.26.74])
+        by smtp.googlemail.com with ESMTPSA id v19sm21864641pff.46.2019.10.15.09.56.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Oct 2019 09:23:04 -0700 (PDT)
-From:   Bartosz Golaszewski <brgl@bgdev.pl>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>
-Cc:     linux-input@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH v2 0/6] dt-bindings: max77650: convert the device-tree bindings to yaml
-Date:   Tue, 15 Oct 2019 18:22:54 +0200
-Message-Id: <20191015162300.22024-1-brgl@bgdev.pl>
-X-Mailer: git-send-email 2.23.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Tue, 15 Oct 2019 09:56:59 -0700 (PDT)
+From:   Yizhuo <yzhai003@ucr.edu>
+Cc:     zhiyunq@cs.ucr.edu, csong@cs.ucr.edu, Yizhuo <yzhai003@ucr.edu>,
+        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH] power: supply: rt5033_battery: Fix the usage of potential uninitialized variable
+Date:   Tue, 15 Oct 2019 09:57:37 -0700
+Message-Id: <20191015165737.658-1-yzhai003@ucr.edu>
+X-Mailer: git-send-email 2.17.1
+To:     unlisted-recipients:; (no To-header on input)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+In function rt5033_battery_get_present(), variable "val" could be
+uninitialized if regmap_read() returns -EINVAL. However, "val" is
+used to decide the return value, which is potentially unsafe.
 
-This series converts all DT binding documents for MAX77650 PMIC to YAML.
+Signed-off-by: Yizhuo <yzhai003@ucr.edu>
+---
+ drivers/power/supply/rt5033_battery.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-v1 -> v2:
-- use upper case for abbreviations in commit messages
-
-Bartosz Golaszewski (6):
-  dt-bindings: mfd: max77650: convert the binding document to yaml
-  dt-bindings: input: max77650: convert the binding document to yaml
-  dt-bindings: regulator: max77650: convert the binding document to yaml
-  dt-bindings: power: max77650: convert the binding document to yaml
-  dt-bindings: leds: max77650: convert the binding document to yaml
-  MAINTAINERS: update the list of maintained files for max77650
-
- .../bindings/input/max77650-onkey.txt         | 27 +-----
- .../bindings/input/max77650-onkey.yaml        | 43 ++++++++++
- .../bindings/leds/leds-max77650.txt           | 58 +------------
- .../bindings/leds/leds-max77650.yaml          | 82 ++++++++++++++++++
- .../devicetree/bindings/mfd/max77650.txt      | 47 +----------
- .../devicetree/bindings/mfd/max77650.yaml     | 83 +++++++++++++++++++
- .../power/supply/max77650-charger.txt         | 29 +------
- .../power/supply/max77650-charger.yaml        | 42 ++++++++++
- .../bindings/regulator/max77650-regulator.txt | 42 +---------
- .../regulator/max77650-regulator.yaml         | 51 ++++++++++++
- MAINTAINERS                                   |  4 +-
- 11 files changed, 308 insertions(+), 200 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/input/max77650-onkey.yaml
- create mode 100644 Documentation/devicetree/bindings/leds/leds-max77650.yaml
- create mode 100644 Documentation/devicetree/bindings/mfd/max77650.yaml
- create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.yaml
- create mode 100644 Documentation/devicetree/bindings/regulator/max77650-regulator.yaml
-
+diff --git a/drivers/power/supply/rt5033_battery.c b/drivers/power/supply/rt5033_battery.c
+index d8667a9fc49b..6a617531698c 100644
+--- a/drivers/power/supply/rt5033_battery.c
++++ b/drivers/power/supply/rt5033_battery.c
+@@ -26,8 +26,14 @@ static int rt5033_battery_get_present(struct i2c_client *client)
+ {
+ 	struct rt5033_battery *battery = i2c_get_clientdata(client);
+ 	u32 val;
++	int ret;
+ 
+-	regmap_read(battery->regmap, RT5033_FUEL_REG_CONFIG_L, &val);
++	ret = regmap_read(battery->regmap, RT5033_FUEL_REG_CONFIG_L, &val);
++	if (ret) {
++		dev_err(&client->dev,
++			"Failed to read RT5033_FUEL_REG_CONFIG_L.\n");
++		return false;
++	}
+ 
+ 	return (val & RT5033_FUEL_BAT_PRESENT) ? true : false;
+ }
 -- 
-2.23.0
+2.17.1
 
