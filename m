@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E84FCECE59E
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 21:18:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F512ECE58F
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 21:18:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BBFDF2168B
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 21:18:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 318CB20663
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 21:18:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lIzH0Mlz"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TVHE7h4Y"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389466AbfJOVRJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Oct 2019 17:17:09 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:44047 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388648AbfJOVRI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 17:17:08 -0400
-Received: by mail-lj1-f194.google.com with SMTP id m13so21709349ljj.11;
-        Tue, 15 Oct 2019 14:17:06 -0700 (PDT)
+        id S2388598AbfJOVRF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Oct 2019 17:17:05 -0400
+Received: from mail-lf1-f65.google.com ([209.85.167.65]:45205 "EHLO
+        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388542AbfJOVRF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 17:17:05 -0400
+Received: by mail-lf1-f65.google.com with SMTP id a19so2725348lfg.12;
+        Tue, 15 Oct 2019 14:17:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=wentp7FFll65K1llUGqB9K42nqf09O9M82PtyoqU4C8=;
-        b=lIzH0Mlz0MdjUT2f0/sVwJF9Kj4s88ea9jJwObSq29uh/p9BT0qKaZZ25HhnctIMOg
-         jBSzlV5SdpwczxJGKQUjPQUbPLFec1SbuxNvNGdvyaSuIVBZxFDpPNOzCA0m+S7OBIea
-         6C6kKEG0ow0WoA5QWS+wDTZdTOunGANiTYAjE5rJvsPAz9/iyV98zh5WvBabusx5Xi/I
-         f3Wv4Kl3lr2asOVVsaibKAB9cjFO5bf64NAoH3wPeVWTENN1WcxcR/GEfcbAXeyfesnW
-         EkLemn03I7RCcC5NfHnfl3SD2MSOnT0EtoDO/4km/xE46Tbrwd/ywNT3VhIKxHeTE8lL
-         6J5A==
+        bh=sxE09PUcKKlExbr/5uoOUH1nEVCHzR8KIH2/PrRNMfI=;
+        b=TVHE7h4Yq2BENyPFXKaq+AkyBAAOXTp7hMJt63QwDtuy0X8srXp6CV8ZkGzhUQ3RZ7
+         eZ5unQf0L0Vt6Vqm0J1+upkYbvt6eU+7LJYcQ4VyIegv82QuDW+WA4DsHLhYCyPS+Jyt
+         ogKsqZpkLDbItQvcisrMYSNfIBzXTDW/+38j3W3V99UDFp4oE2UeGkidx2SqHxCzHdMX
+         1H2ASLfA7psXuVfLnPiwdzv/kgmxD06Ec7A6+YqZ0bUQYfIjpO08tW+SgmytU7peAbdI
+         amvGmU/OUsnI/mOGmw7S/L7RgdhRwU32mhHmVu9vBpPLEz4Z3xfQQ0S3T7czydP11ClI
+         T5Bw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=wentp7FFll65K1llUGqB9K42nqf09O9M82PtyoqU4C8=;
-        b=q4+9NQfXow0q7lP+1d7WwbNQyFnfSm6wWonI0PrP+MKHV2cceWmm0vRvLaAKb/kYBj
-         EMyobK9UZkZrWjYgYCzZQiAskDY9dSHhUGsrc03abPTa/Gp+SiEyWuTstxiXJ+8uBUig
-         CRYLvzYpjlAscNlx0xdS+8t/CdwI+XW9UqKbgFrKDA0pBDsu+SQtNSDltmqZGHQxwgUD
-         5ie78Ml25FKjVH1UzqbZfwy5JMu4BAeEMaUq31lLtMWpHleYy5VRC5KrdMcNC48XeugQ
-         vrGWj6HFe0AsbPc8mTFvHYdN2VOcF9Jbc28WAmDEg9WdmbmHSx8yUsVLz46m+a8a8lFb
-         y0Tg==
-X-Gm-Message-State: APjAAAVZ94YkoAbvLO7L7nB+wviiG6Nvm571FHM6uEqoUclK6HhuX08z
-        n0hx1F4EI4x9uBo0jXlKwnM=
-X-Google-Smtp-Source: APXvYqw/jKUk2M6TLUii+Jp447FpsmXx1/s99l2ZBbA91XttDU+nzbMQtRxQj6Yf/Nb7FWSV0t8y6w==
-X-Received: by 2002:a2e:420a:: with SMTP id p10mr13183152lja.16.1571174225657;
-        Tue, 15 Oct 2019 14:17:05 -0700 (PDT)
+        bh=sxE09PUcKKlExbr/5uoOUH1nEVCHzR8KIH2/PrRNMfI=;
+        b=Ik6YhjIIsVuCnnTYVEMhjWRUoTbub9EGEaxOUlMcDRrWDOLyktksYuLyLj9kZCrX8F
+         Vj2FIGEAaCSIRQYjyozZh3Kb5n6lNWOjbfB+ZT0AGTtgmmfCiBq9Y2gHlG5dSaWouFwJ
+         ty1oUoO7e3CZBFyer9hbDMscWKEmCJPrmgEzdIx8ete5PsjsZWKZ/YpAim1hL5K1CqWP
+         BOpPoUgqfOcDcxKz6TrHWeSgUx2C70srbKHgrmq/yzM1YafoA0AuaRG7gBegZ4N1YJD9
+         Nd0JYCZ0mgFS62kD88ryP8poPqSiU6yDgP1MZBcpsIxIds+pR5OGtZxySTXK8bPm4bG4
+         ul4Q==
+X-Gm-Message-State: APjAAAUGLHEjY0NfpUg1zx2kYEYM9cnTrw7ZT7Xw9CZmKfIXh65kLBX3
+        sq3b9wIyJ4AOmiv+ybRSGJ8=
+X-Google-Smtp-Source: APXvYqwIuLux3wrHGvsAD+Isi95lNtBmZbRI5cerr+59VLJX5ktxw2119ZCyzvmywujgxT14AESH5Q==
+X-Received: by 2002:ac2:42c7:: with SMTP id n7mr19789898lfl.138.1571174222322;
+        Tue, 15 Oct 2019 14:17:02 -0700 (PDT)
 Received: from localhost.localdomain ([94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id t16sm5269186ljj.29.2019.10.15.14.17.04
+        by smtp.gmail.com with ESMTPSA id t16sm5269186ljj.29.2019.10.15.14.17.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Oct 2019 14:17:05 -0700 (PDT)
+        Tue, 15 Oct 2019 14:17:01 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -71,9 +71,9 @@ Cc:     Peter Geis <pgwipeout@gmail.com>,
         linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v1 06/17] dt-bindings: cpufreq: Add binding for NVIDIA Tegra20/30
-Date:   Wed, 16 Oct 2019 00:16:07 +0300
-Message-Id: <20191015211618.20758-7-digetx@gmail.com>
+Subject: [PATCH v1 03/17] clk: tegra: cclk: Add helpers for handling PLLX rate changes
+Date:   Wed, 16 Oct 2019 00:16:04 +0300
+Message-Id: <20191015211618.20758-4-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191015211618.20758-1-digetx@gmail.com>
 References: <20191015211618.20758-1-digetx@gmail.com>
@@ -84,77 +84,91 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add device-tree binding that describes CPU frequency-scaling hardware
-found on NVIDIA Tegra20/30 SoCs.
+CCLK should be re-parented away from PLLX if PLLX's rate is changing.
+The PLLP parent is a common safe CPU parent for all Tegra SoCs, thus
+CCLK will be re-parented to PLLP before PLLX rate-change begins and then
+switched back to PLLX after the rate-change completion. This patch adds
+helper functions which perform CCLK re-parenting, these helpers will be
+utilized by further patches.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../cpufreq/nvidia,tegra20-cpufreq.txt        | 56 +++++++++++++++++++
- 1 file changed, 56 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+ drivers/clk/tegra/clk-tegra-super-cclk.c | 34 ++++++++++++++++++++++++
+ drivers/clk/tegra/clk.h                  |  2 ++
+ 2 files changed, 36 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-new file mode 100644
-index 000000000000..daeca6ae6b76
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-@@ -0,0 +1,56 @@
-+Binding for NVIDIA Tegra20 CPUFreq
-+==================================
+diff --git a/drivers/clk/tegra/clk-tegra-super-cclk.c b/drivers/clk/tegra/clk-tegra-super-cclk.c
+index 9b41365c4331..cacb00796c99 100644
+--- a/drivers/clk/tegra/clk-tegra-super-cclk.c
++++ b/drivers/clk/tegra/clk-tegra-super-cclk.c
+@@ -21,6 +21,9 @@
+ #define PLLP_INDEX	4
+ #define PLLX_INDEX	8
+ 
++static struct tegra_clk_super_mux *cclk_super;
++static bool cclk_on_pllx;
 +
-+Required properties:
-+- clocks: Must contain an entry for the CPU clock.
-+  See ../clocks/clock-bindings.txt for details.
-+- operating-points-v2: See ../bindings/opp/opp.txt for details.
-+- #cooling-cells: Should be 2. See ../thermal/thermal.txt for details.
+ static u8 cclk_super_get_parent(struct clk_hw *hw)
+ {
+ 	return tegra_clk_super_ops.get_parent(hw);
+@@ -98,6 +101,9 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
+ 	struct clk *clk;
+ 	struct clk_init_data init;
+ 
++	if (WARN_ON(cclk_super))
++		return ERR_PTR(-EBUSY);
 +
-+For each opp entry in 'operating-points-v2' table:
-+- opp-supported-hw: Two bitfields indicating:
-+	On Tegra20:
-+	1. CPU process ID mask
-+	2. SoC speedo ID mask
+ 	super = kzalloc(sizeof(*super), GFP_KERNEL);
+ 	if (!super)
+ 		return ERR_PTR(-ENOMEM);
+@@ -126,6 +132,34 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
+ 	clk = clk_register(NULL, &super->hw);
+ 	if (IS_ERR(clk))
+ 		kfree(super);
++	else
++		cclk_super = super;
+ 
+ 	return clk;
+ }
 +
-+	On Tegra30:
-+	1. CPU process ID mask
-+	2. CPU speedo ID mask
++int tegra_cclk_pre_pllx_rate_change(void)
++{
++	if (IS_ERR_OR_NULL(cclk_super))
++		return -EINVAL;
 +
-+	A bitwise AND is performed against these values and if any bit
-+	matches, the OPP gets enabled.
++	if (cclk_super_get_parent(&cclk_super->hw) == PLLX_INDEX)
++		cclk_on_pllx = true;
++	else
++		cclk_on_pllx = false;
 +
-+- opp-microvolt: CPU voltage triplet.
++	/*
++	 * CPU needs to be temporarily re-parented away from PLLX if PLLX
++	 * changes its rate. PLLP is a safe parent for CPU on all Tegra SoCs.
++	 */
++	if (cclk_on_pllx)
++		cclk_super_set_parent(&cclk_super->hw, PLLP_INDEX);
 +
-+Optional properties:
-+- cpu-supply: Phandle to the CPU power supply.
++	return 0;
++}
 +
-+Example:
-+	regulators {
-+		cpu_reg: regulator0 {
-+			regulator-name = "vdd_cpu";
-+		};
-+	};
-+
-+	cpu0_opp_table: opp_table0 {
-+		compatible = "operating-points-v2";
-+
-+		opp@456000000 {
-+			clock-latency-ns = <125000>;
-+			opp-microvolt = <825000 825000 1125000>;
-+			opp-supported-hw = <0x03 0x0001>;
-+			opp-hz = /bits/ 64 <456000000>;
-+		};
-+
-+		...
-+	};
-+
-+	cpus {
-+		cpu@0 {
-+			compatible = "arm,cortex-a9";
-+			clocks = <&tegra_car TEGRA20_CLK_CCLK>;
-+			operating-points-v2 = <&cpu0_opp_table>;
-+			cpu-supply = <&cpu_reg>;
-+			#cooling-cells = <2>;
-+		};
-+	};
++void tegra_cclk_post_pllx_rate_change(void)
++{
++	if (cclk_on_pllx)
++		cclk_super_set_parent(&cclk_super->hw, PLLX_INDEX);
++}
+diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
+index 2be38aa2c204..3285b0332ae8 100644
+--- a/drivers/clk/tegra/clk.h
++++ b/drivers/clk/tegra/clk.h
+@@ -709,6 +709,8 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
+ 		const char * const *parent_names, u8 num_parents,
+ 		unsigned long flags, void __iomem *reg, u8 clk_super_flags,
+ 		spinlock_t *lock);
++int tegra_cclk_pre_pllx_rate_change(void);
++void tegra_cclk_post_pllx_rate_change(void);
+ 
+ /**
+  * struct tegra_sdmmc_mux - switch divider with Low Jitter inputs for SDMMC
 -- 
 2.23.0
 
