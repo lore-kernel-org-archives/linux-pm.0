@@ -2,141 +2,90 @@ Return-Path: <SRS0=AVup=YI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0A0EC10F14
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:02:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FA48ECE58F
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:10:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C76EA214AE
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:02:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FY5C708+"
+	by mail.kernel.org (Postfix) with ESMTP id 6D6E42086A
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:10:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1571159454;
+	bh=mDEtXLSoQfNWU7CmHmgTRDGBYS6McxGZnZilTrAP4ls=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=Hrqf21EJ0Z1bHQWAA2iaUyX1YX9JAp0El4hYj/gx8NnAhi3CJ5mTjQkpJ64DJ3Hb5
+	 vv9Zr4snrI1te/ju15ajYJ9uCe2iKk9xqRIWpyuiZJAe5GxLIMkkdLgFOQVwrF9XYB
+	 KUnifBu+TpcUhbPKtWRx3wpJ04uN7RSlozbnosro=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388415AbfJORBo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Oct 2019 13:01:44 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:40699 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726379AbfJORBm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 13:01:42 -0400
-Received: by mail-lj1-f194.google.com with SMTP id 7so21029917ljw.7;
-        Tue, 15 Oct 2019 10:01:40 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=AJsM8Od2cQbwnjMd2WWbJxd1SHRmM5N6fXuOeZ21tBs=;
-        b=FY5C708+7R3R+T2+2UOKodWusasv7UcODH3feQg6EaDVYSPJItMgxs28+Euriicg2p
-         DqH9dihcTkCskwC1ydhMiqccrDXHiSeWXlPMNbfCh/4WrgsVrv20bigOsKuMsxe9Z+l6
-         L/xcAmGzH8irwMxlSjkZFpZuC6AiqiVDgamhs/L5ZYs0wpIBFOdG+LL6roPkDUMMyo9K
-         93N2d/zAXlAk3NIw3VwXdYxKu768n3ijPPIU+1qfRojes3YVddknpTY/46h2D07iBarT
-         KJSLn6qaVWTUIIR+JuXkbB2kS4T5/GsapEKcdAW9ZN7L5oimMeautX+uftwmzrI4d5BK
-         qzrw==
+        id S1728096AbfJORKu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Oct 2019 13:10:50 -0400
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:45820 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727810AbfJORKu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 13:10:50 -0400
+Received: by mail-oi1-f195.google.com with SMTP id o205so17462108oib.12;
+        Tue, 15 Oct 2019 10:10:49 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=AJsM8Od2cQbwnjMd2WWbJxd1SHRmM5N6fXuOeZ21tBs=;
-        b=T/DX/FOEH3TxCRBC9/dUgYRzewTFgt0D92ea/8gsjAwwSUZE9J+SASAYYSPFdbxvHd
-         uJgmOs087T7iao/Z6bzgp4tyeAgQh4X8r8Mz5ZraRRlksKobYBr7JEKhIxf3JCkmJ79Z
-         qmesppyWCjYpMOavWJfjTk6NrxLjXh/2sCDJjX2wwl5MIHG1YjCwKsKVEoFmJsbZotRv
-         oI9wWcy/Is7smgjq2efIshTE17Zaw++wzVGySyPToWyoegX53urTt9zVR6iIbRG1JBsl
-         /RPaf3LhWNjuDsqlnHCxr0KUGcX8Qw04SsnEYGQxxSj3OrEkUNsX73tnW6BgdR7V+yx4
-         7m0A==
-X-Gm-Message-State: APjAAAXTbJw/Bu8Mj6cvhByLr/gh/LJEpG4u6LEIWAP5tzEyAMzP0RLa
-        TdPzrpxkzfyVpMm1d2DWFiM=
-X-Google-Smtp-Source: APXvYqxpvul+nMVqpIug+XdB+meqQlQVFNMFw50vLLX2A3w8eaBdAb3LZ0LiyxBd6shpR4An30N4dA==
-X-Received: by 2002:a2e:8204:: with SMTP id w4mr23138163ljg.3.1571158900054;
-        Tue, 15 Oct 2019 10:01:40 -0700 (PDT)
-Received: from localhost.localdomain ([94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id t6sm5144992ljd.102.2019.10.15.10.01.39
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=MuM5OXPQEf/qQaZDX6U88QiRRUcUu9cQvoANannVLLg=;
+        b=f9dFBLTg/nyxklKIG/IbWsoWkAZnfBJzBWpdXdavLSfGmiyLiia8m6EVTqCnWpie8b
+         MAUTLwRzRrSLoad0hSCyJDIUp3qcA6cMlAs8Xe9t7WW217/jYqRS9mOyD9hNg65/cmjs
+         y+wnuc1fyUFJmm6gb4cFM8hwdMKQ3n0Zx8WMQBDsWp0PsSaOIqbuir8SzHFQa5twZ76E
+         GYbf9oheO8ogbARb4KgKkdLz4WRli/jlgz/QIdP2UkEcaOBAW4HPX8xyZumhFrExowpY
+         C+WVWyjcEYlbHS6MUhrzIzkiXgSH4mRnQiR/cnO6y4Q2354Yv5PLidu9rq1eJ1h+JzJg
+         rjLg==
+X-Gm-Message-State: APjAAAUm9UUEUCOBO9w0kA/ZHK4nkNemuvaDXHO81GPyiLbvPIDZYrOv
+        CVkSFYDEt4pPVTm1O3GiCHXuB9g=
+X-Google-Smtp-Source: APXvYqzaGxPe8TwkXiP2OfuHpB4m420Ks0jDce+UGmdVQ7BdQQbg5qasG/3Db5bbjpGHHy65AoHC5g==
+X-Received: by 2002:a05:6808:9:: with SMTP id u9mr30411976oic.98.1571159449283;
+        Tue, 15 Oct 2019 10:10:49 -0700 (PDT)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id n27sm6583417otr.32.2019.10.15.10.10.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Oct 2019 10:01:39 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v6 01/18] ARM: tegra: Compile sleep-tegra20/30.S unconditionally
-Date:   Tue, 15 Oct 2019 19:59:58 +0300
-Message-Id: <20191015170015.1135-2-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191015170015.1135-1-digetx@gmail.com>
-References: <20191015170015.1135-1-digetx@gmail.com>
+        Tue, 15 Oct 2019 10:10:48 -0700 (PDT)
+Date:   Tue, 15 Oct 2019 12:10:48 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-rtc@vger.kernel.org
+Subject: Re: [PATCH 1/4] dt-bindings: samsung: Indent examples with four
+ spaces
+Message-ID: <20191015171048.GA10675@bogus>
+References: <20191002160744.11307-1-krzk@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191002160744.11307-1-krzk@kernel.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The sleep-tegra*.S provides functionality required for suspend/resume
-and CPU hotplugging. The new unified CPUIDLE driver will support multiple
-hardware generations starting from Terga20 and ending with Tegra124, the
-driver will utilize functions that are provided by the assembly and thus
-it is cleaner to compile that code without any build-dependencies in order
-to avoid churning with #ifdef's.
+On Wed,  2 Oct 2019 18:07:41 +0200, Krzysztof Kozlowski wrote:
+> Change the indentation of examples used in json-schema bindings from two
+> to four spaces as this makes the code easier to read and seems to be
+> preferred in other files.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
+>  .../bindings/arm/samsung/exynos-chipid.yaml   |  4 +-
+>  .../bindings/iio/adc/samsung,exynos-adc.yaml  | 64 +++++++++----------
+>  .../bindings/power/reset/syscon-poweroff.yaml |  8 +--
+>  .../bindings/power/reset/syscon-reboot.yaml   |  8 +--
+>  .../devicetree/bindings/rtc/s3c-rtc.yaml      | 12 ++--
+>  5 files changed, 48 insertions(+), 48 deletions(-)
+> 
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- arch/arm/mach-tegra/Makefile | 6 ++----
- arch/arm/mach-tegra/sleep.h  | 2 --
- 2 files changed, 2 insertions(+), 6 deletions(-)
+Applied, thanks.
 
-diff --git a/arch/arm/mach-tegra/Makefile b/arch/arm/mach-tegra/Makefile
-index 6c1dff2eccc2..965862608ff6 100644
---- a/arch/arm/mach-tegra/Makefile
-+++ b/arch/arm/mach-tegra/Makefile
-@@ -8,13 +8,13 @@ obj-y					+= reset.o
- obj-y					+= reset-handler.o
- obj-y					+= sleep.o
- obj-y					+= tegra.o
-+obj-y					+= sleep-tegra20.o
-+obj-y					+= sleep-tegra30.o
- obj-$(CONFIG_CPU_IDLE)			+= cpuidle.o
--obj-$(CONFIG_ARCH_TEGRA_2x_SOC)		+= sleep-tegra20.o
- obj-$(CONFIG_ARCH_TEGRA_2x_SOC)		+= pm-tegra20.o
- ifeq ($(CONFIG_CPU_IDLE),y)
- obj-$(CONFIG_ARCH_TEGRA_2x_SOC)		+= cpuidle-tegra20.o
- endif
--obj-$(CONFIG_ARCH_TEGRA_3x_SOC)		+= sleep-tegra30.o
- obj-$(CONFIG_ARCH_TEGRA_3x_SOC)		+= pm-tegra30.o
- ifeq ($(CONFIG_CPU_IDLE),y)
- obj-$(CONFIG_ARCH_TEGRA_3x_SOC)		+= cpuidle-tegra30.o
-@@ -22,12 +22,10 @@ endif
- obj-$(CONFIG_SMP)			+= platsmp.o
- obj-$(CONFIG_HOTPLUG_CPU)               += hotplug.o
- 
--obj-$(CONFIG_ARCH_TEGRA_114_SOC)	+= sleep-tegra30.o
- obj-$(CONFIG_ARCH_TEGRA_114_SOC)	+= pm-tegra30.o
- ifeq ($(CONFIG_CPU_IDLE),y)
- obj-$(CONFIG_ARCH_TEGRA_114_SOC)	+= cpuidle-tegra114.o
- endif
--obj-$(CONFIG_ARCH_TEGRA_124_SOC)	+= sleep-tegra30.o
- obj-$(CONFIG_ARCH_TEGRA_124_SOC)	+= pm-tegra30.o
- ifeq ($(CONFIG_CPU_IDLE),y)
- obj-$(CONFIG_ARCH_TEGRA_124_SOC)	+= cpuidle-tegra114.o
-diff --git a/arch/arm/mach-tegra/sleep.h b/arch/arm/mach-tegra/sleep.h
-index 78ef32a907c8..63e2205cbc82 100644
---- a/arch/arm/mach-tegra/sleep.h
-+++ b/arch/arm/mach-tegra/sleep.h
-@@ -120,10 +120,8 @@ void tegra_resume(void);
- int tegra_sleep_cpu_finish(unsigned long);
- void tegra_disable_clean_inv_dcache(u32 flag);
- 
--#ifdef CONFIG_HOTPLUG_CPU
- void tegra20_hotplug_shutdown(void);
- void tegra30_hotplug_shutdown(void);
--#endif
- 
- void tegra20_cpu_shutdown(int cpu);
- int tegra20_cpu_is_resettable_soon(void);
--- 
-2.23.0
-
+Rob
