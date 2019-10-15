@@ -2,107 +2,169 @@ Return-Path: <SRS0=AVup=YI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FAKE_REPLY_C,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4FF8ECE598
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:52:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80788ECE58C
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 19:20:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C2AD72086A
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 17:52:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 51C8520854
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 19:20:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571161976;
-	bh=BNIqSr8JLqhucOua3RO9pB9Y0snjy7Bkp6wmAXD+1So=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=YoJA+oqRG2qPA2AgmxszHbfx7VLZ0Hkk1DBrLa2SYsK0yCx1F8wjKtEE3hfvB/41z
-	 7YHTiiSM2mIDQSGYVKK+r9g2EktDw23zmx1e8GTcnQm60keQKYOsMShhTJs8OcoHe6
-	 8PhWByKYcEhC+69950/aBJQX2b5RfoHYc+ybvulQ=
+	s=default; t=1571167225;
+	bh=nm/8Au21VodRlss2uP12IzrkFOHeWZtsigxeMX4xdvg=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:List-ID:From;
+	b=JmXA7gdvRoRlv3tRPz7Uq7PHjuAx/+broa2tK4e42JC5zDHrMph/iTNamr0pmRPUN
+	 QGZjWfTSD6tn0cde/BqjNCTNHz9y4RZ3q9ZzCg0RGaVkWNNFB75b9KsEMxy0xA2SEz
+	 S+WzgQ/2nL3sSTb5VKk7WYjv1BuKBvxq5OE4fNUw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729641AbfJORwz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Oct 2019 13:52:55 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:41078 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726192AbfJORwz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 13:52:55 -0400
-Received: by mail-ot1-f67.google.com with SMTP id g13so17708036otp.8;
-        Tue, 15 Oct 2019 10:52:53 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=0awkrNAPcXWo+Wm8QfkD5O17YbDc9wlliWJjxDTQPl4=;
-        b=A09rzlzGFg3ApjtfQolUx0XxOId8zdCTpVL2fhgTgcmL2qNYTJQ/QAPwTMzYOdBUGL
-         hEyn0wRe4hq7oOBqHLpQcDSZtrfPx+RlkUI1S2q4eGu2Z+UI3zKXcs/hT9IImrtprId7
-         Rp4GFSbYrFYi/obgIQJuuqA+TwHAQLsdG28Yl5lwKDRjY6VSmop9DGTiWrVCFOnJnz2D
-         p6om/04m9zyYrBpV2Y9BnwwCFUE4I1TXwmEED5T+jjItUEFgjFLW38cNPrrc3milLAdE
-         f6/cM+AbqwfoRr9557VnAtLKkj6wY9UXpQe0bhpF8OGsOfP83L18r4z5SWWrrfefrWq5
-         VgXw==
-X-Gm-Message-State: APjAAAUkOenZSVnnQJsYj/klZkQKtFwSn0Lk8ZhvEDW/eOfP5RkASYBZ
-        2BvYMylx+pzZDHLvGfSBGj3CvRbmqqeKS23p+qA=
-X-Google-Smtp-Source: APXvYqy+z2640pLWXA/n52YLsdwhV9kHXEIfBefEfzEG0gR7AIhD1qLPwhn/HydFH/9RJQz2Qf4j1X31ihVGYH3jcuA=
-X-Received: by 2002:a05:6830:1e69:: with SMTP id m9mr1431970otr.262.1571161972801;
- Tue, 15 Oct 2019 10:52:52 -0700 (PDT)
-MIME-Version: 1.0
-References: <20191014061355.29072-1-drake@endlessm.com> <20191014154322.GA190693@google.com>
- <CAD8Lp45hmYhrj9v-=7NKrG2YHmxZKFExDsHCL67hap+Y2iM-uw@mail.gmail.com>
-In-Reply-To: <CAD8Lp45hmYhrj9v-=7NKrG2YHmxZKFExDsHCL67hap+Y2iM-uw@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 15 Oct 2019 19:52:41 +0200
-Message-ID: <CAJZ5v0jCh87azmBuhj1T_M+OV8tu7v7Y7WV_zaf56+fxhXU3KQ@mail.gmail.com>
-Subject: Re: [PATCH] PCI: increase D3 delay for AMD Ryzen5/7 XHCI controllers
-To:     Daniel Drake <drake@endlessm.com>
-Cc:     Bjorn Helgaas <helgaas@kernel.org>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>,
+        id S1729946AbfJOTUU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Oct 2019 15:20:20 -0400
+Received: from mail.kernel.org ([198.145.29.99]:56942 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726620AbfJOTUT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 15 Oct 2019 15:20:19 -0400
+Received: from localhost (unknown [69.71.4.100])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 83F5B20854;
+        Tue, 15 Oct 2019 19:20:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1571167217;
+        bh=nm/8Au21VodRlss2uP12IzrkFOHeWZtsigxeMX4xdvg=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=Y9eQxQ8eeOLe4bEHt5LRnA/jIuE1RuSSEq1ZbkroD6GqEpkEajpxa/6OXzV77b9+N
+         4RHncj5xNgL9OTFt7KL2cXmo/RBVCL9jF/CrcxHnlxzwY8fvRh7NbyH0ZjkQZeLtba
+         OIexIAahn1cXKgcQKFveVZGW2FqlDpRy7iO5k+QE=
+Date:   Tue, 15 Oct 2019 14:20:13 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux PCI <linux-pci@vger.kernel.org>,
+        Daniel Drake <drake@endlessm.com>,
+        Mathias Nyman <mathias.nyman@linux.intel.com>,
         Linux Upstreaming Team <linux@endlessm.com>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Linux USB Mailing List <linux-usb@vger.kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PCI: PM: Fix pci_power_up()
+Message-ID: <20191015192013.GA115182@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5720276.eiOaOx1Qyb@kreacher>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 15, 2019 at 7:31 AM Daniel Drake <drake@endlessm.com> wrote:
->
-> On Mon, Oct 14, 2019 at 11:43 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > Can you tell if this is because the Ryzen7 XHCI controller is out of
-> > spec, or is the Linux PCI core missing some delay?  If the latter,
-> > fixing the core might fix other devices as well.
-> >
-> > Mika has this patch:
-> > https://lore.kernel.org/r/20190821124519.71594-1-mika.westerberg@linux.intel.com
-> > for similar issues, but I think that patch fixes D3cold->D0
-> > transitions, and your patch appears to be concerned with D3hot->D0
-> > transitions.
->
-> It's actually coming out of D3cold here, however what happens right
-> before this is that __pci_start_power_transition() calls
-> pci_platform_power_transition(D0) to leave D3cold state, then
-> pci_update_current_state() reads PMCSR and updates dev->current_state
-> to D3hot.
+On Mon, Oct 14, 2019 at 01:25:00PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> There is an arbitrary difference between the system resume and
+> runtime resume code paths for PCI devices regarding the delay to
+> apply when switching the devices from D3cold to D0.
+> 
+> Namely, pci_restore_standard_config() used in the runtime resume
+> code path calls pci_set_power_state() which in turn invokes
+> __pci_start_power_transition() to power up the device through the
+> platform firmware and that function applies the transition delay
+> (as per PCI Express Base Specification Revision 2.0, Section 6.6.1).
+> However, pci_pm_default_resume_early() used in the system resume
+> code path calls pci_power_up() which doesn't apply the delay at
+> all and that causes issues to occur during resume from
+> suspend-to-idle on some systems where the delay is required.
+> 
+> Since there is no reason for that difference to exist, modify
+> pci_power_up() to follow pci_set_power_state() more closely and
+> invoke __pci_start_power_transition() from there to call the
+> platform firmware to power up the device (in case that's necessary).
+> 
+> Fixes: db288c9c5f9d ("PCI / PM: restore the original behavior of pci_set_power_state()")
+> Reported-by: Daniel Drake <drake@endlessm.com> 
+> Link: https://lore.kernel.org/linux-pm/CAD8Lp44TYxrMgPLkHCqF9hv6smEurMXvmmvmtyFhZ6Q4SE+dig@mail.gmail.com/T/#m21be74af263c6a34f36e0fc5c77c5449d9406925
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> Daniel, please test this one.
+> 
+> ---
+>  drivers/pci/pci.c |   24 +++++++++++-------------
+>  1 file changed, 11 insertions(+), 13 deletions(-)
+> 
+> Index: linux-pm/drivers/pci/pci.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci.c
+> +++ linux-pm/drivers/pci/pci.c
+> @@ -959,19 +959,6 @@ void pci_refresh_power_state(struct pci_
+>  }
+>  
+>  /**
+> - * pci_power_up - Put the given device into D0 forcibly
+> - * @dev: PCI device to power up
+> - */
+> -void pci_power_up(struct pci_dev *dev)
+> -{
+> -	if (platform_pci_power_manageable(dev))
+> -		platform_pci_set_power_state(dev, PCI_D0);
+> -
+> -	pci_raw_set_power_state(dev, PCI_D0);
+> -	pci_update_current_state(dev, PCI_D0);
+> -}
+> -
+> -/**
+>   * pci_platform_power_transition - Use platform to change device power state
+>   * @dev: PCI device to handle.
+>   * @state: State to put the device into.
+> @@ -1154,6 +1141,17 @@ int pci_set_power_state(struct pci_dev *
+>  EXPORT_SYMBOL(pci_set_power_state);
+>  
+>  /**
+> + * pci_power_up - Put the given device into D0 forcibly
 
-Which pci_update_current_state() do you mean, exactly?
+Not specifically for this patch, but what does "forcibly" mean?
 
-Note that pci_platform_power_transition() itself contains one, which
-triggers after a successful change of the ACPI power state of the
-device (which should be the case here).
+> + * @dev: PCI device to power up
+> + */
+> +void pci_power_up(struct pci_dev *dev)
+> +{
+> +	__pci_start_power_transition(dev, PCI_D0);
+> +	pci_raw_set_power_state(dev, PCI_D0);
+> +	pci_update_current_state(dev, PCI_D0);
 
-Then, there is one in pci_power_up(), but before that the device's
-PMCSR is read from and written to in pci_raw_set_power_state().
+There's not very much difference between:
 
-It looks like the reads from it after the ACPI power state change are
-all successful, but the write isn't unless there is the delay between
-it and the former platform_pci_set_power_state().
+  pci_power_up(dev);
 
-> The 20ms delay for these XHCI controllers is needed precisely at this
-> point - after writing PMCSR to move to D0, and before reading it back
-> to check the result.
-> I tried moving the delay immediately before writing PMCSR, but that
-> doesn't work. Based on that, it seems like it's just a little out of
-> spec.
+and
 
-That I agree with and the platform firmware doesn't compensate for
-that (which it could do, arguably).
+  pci_set_power_state(dev, PCI_D0);
+
+It looks like the main difference is that pci_set_power_state() calls
+__pci_complete_power_transition(), which ultimately calls
+acpi_pci_set_power_state() (for ACPI systems).
+
+So maybe "forcibly" means something like "ignoring any platform power
+management methods"?  It's not obvious to me when we should skip the
+platform stuff or whether the skipping should be done at the high
+level (like calling either pci_power_up() or pci_set_power_state()) or
+at a lower level (e.g., if everybody called pci_set_power_state() and
+it could internally tell whether we're skipping the platform part).
+
+If we could unify the paths as much as possible, that would be nice,
+but if it's not feasible, it's not feasible.  If you'd like me to push
+this for v5.4, let me know, otherwise you can apply my:
+
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+
+> +}
+> +
+> +/**
+>   * pci_choose_state - Choose the power state of a PCI device
+>   * @dev: PCI device to be suspended
+>   * @state: target sleep state for the whole system. This is the value
+> 
+> 
+> 
