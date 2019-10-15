@@ -2,241 +2,125 @@ Return-Path: <SRS0=AVup=YI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3164ECE59E
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 21:17:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E4D4ECE58F
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 21:17:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6DFF620663
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 21:17:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571174270;
-	bh=jIfi3VFA+OegxDDpnwRnKq+fhutLut+9ZOueqNEQbPI=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=Kab98+aiRWuXHYvFXmFOMvxFlM0xRwscCP48h5C1+BrvhJ+FyNUrcqmsp4lO9o4+H
-	 6Gus4+mDfD4paMdgntwPV7COI/R1Zek5E7r0u76Ei4vNPk4WhqQfOM2b6/hER+9Scl
-	 Qo+Gagn5Pw82pJa+WFkoZKmnr7e6PXiIwq6ZH/2I=
+	by mail.kernel.org (Postfix) with ESMTP id 7088320663
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 21:17:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X2QuMH+4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389772AbfJOVRj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Oct 2019 17:17:39 -0400
-Received: from mail.kernel.org ([198.145.29.99]:54022 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389595AbfJOVRi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 15 Oct 2019 17:17:38 -0400
-Received: from mail-qt1-f173.google.com (mail-qt1-f173.google.com [209.85.160.173])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id C9085222C3;
-        Tue, 15 Oct 2019 21:17:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1571174257;
-        bh=jIfi3VFA+OegxDDpnwRnKq+fhutLut+9ZOueqNEQbPI=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=TGsjNywc3rHcmuEtXlu9Pn7r5K2nwIzu8e222f8Nbjk9TuHnDzqrtam2x0ERVY/JB
-         36n8dtFtHu7k5LZ8Dvkpbc8Zv+3ycMqyZTVU+cm3LBE5DYQ0+21nstI40fLdjtgfv1
-         MWkZtjuRXuUvKlYi61+M9UEwxQlssQ5Ihe5IXCbM=
-Received: by mail-qt1-f173.google.com with SMTP id m61so32811378qte.7;
-        Tue, 15 Oct 2019 14:17:37 -0700 (PDT)
-X-Gm-Message-State: APjAAAWePWAwAGPprBaGSMsnFtTo+hJgi6H1oUm+0dB8LPEIC0Qv47tg
-        2YOE5LklDkIoRzmPIBGzs5zWKH+N7P5oTmWtrw==
-X-Google-Smtp-Source: APXvYqyevsC2cDcw4pd7YhFFGDFDowGK32qaUpls4A42LVTy8FkDCk4zGehTF79O/gchBXQMIX0BAqfbIm7HCGsf7Tk=
-X-Received: by 2002:ac8:44d9:: with SMTP id b25mr42253694qto.300.1571174256837;
- Tue, 15 Oct 2019 14:17:36 -0700 (PDT)
+        id S2389803AbfJOVRu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Oct 2019 17:17:50 -0400
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:38821 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389585AbfJOVRS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 17:17:18 -0400
+Received: by mail-lf1-f66.google.com with SMTP id u28so15618069lfc.5;
+        Tue, 15 Oct 2019 14:17:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=qUBAwOdtpZgi+MnUyIrnTd1TaWn9LHYTmkJ6UDbhmPk=;
+        b=X2QuMH+4Mprgws7E9bew4AL+fIPEmI0keAdvnLCdMDnX0Nsh1UsKHL6MEdKCJyThuS
+         srB13fnARNVip5dZmcH+096SJwfZ0MZ3wbCFxIz5ag7wdMiGDJ/yTvhNjzDc46KJVLDk
+         F+0u2FTGT3B26sItSRKB2+WPjyLwHDT+J4Mk6GEbTDaispIaHVuOcvlxwGUevAEBjlvA
+         TzL+XKUQH+o2rUP2RSWP82JqmXHMe/NzOgOuKCnTW7PRp7hxJC1AOAWHeOC02v38hX2A
+         qRdCzPlb7xSx/RqOfuwm0CB2TDPlfvY+39eTgACDxLA+QAj7H2C5T7IKz7HTvV3zmom/
+         j1iQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=qUBAwOdtpZgi+MnUyIrnTd1TaWn9LHYTmkJ6UDbhmPk=;
+        b=aBGYB+9N1HdSTv4oXofAlDxvH+LmXYGb7veLtPfBpckvy3SLy/sUnmXNCL6CU7hLcc
+         kjcdjkh8IFgnx+kZWmZQ/RG1KkxMWcjUjLvSC19cydLXipF1VAdC2pSt99u47pPG4d/w
+         1NSEQ4F/1mII4iNLr9lJGkMUmfcmOZsbL+pzG3/wkmAF02Dp7Pk7Nnn+4dgagezotLaq
+         Kzr51bkH6sbOWMFieeQ4jC7HYoHVca1cfSjwWfQfoNPKAZ/SNImxgFo3Q7S5YRkOa+06
+         5Z0vvKJm+2fc8xMZVtCNy9q5F6bG9i4iDYQCvd+zR94PRUw3KvuLwGIUThP8g+rt2KtL
+         To9g==
+X-Gm-Message-State: APjAAAXaalZrAfsIsn4bDsgNo/yr4odhEFd1s6+/ngFV3rV75sZxzMQS
+        GNPoDb9n9AJ7t2grRc4nykc=
+X-Google-Smtp-Source: APXvYqypqalVRZvYL8LDLcAe5fDXSaObl4g1nLtoW3nrwSadYxapybwFA5yDbTlfgvdtn7s/y9SwWw==
+X-Received: by 2002:a19:5f50:: with SMTP id a16mr7974332lfj.104.1571174234868;
+        Tue, 15 Oct 2019 14:17:14 -0700 (PDT)
+Received: from localhost.localdomain ([94.29.10.250])
+        by smtp.gmail.com with ESMTPSA id t16sm5269186ljj.29.2019.10.15.14.17.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Oct 2019 14:17:14 -0700 (PDT)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Prashant Gaikwad <pgaikwad@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Cc:     Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Marcel Ziswiler <marcel.ziswiler@toradex.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v1 14/17] ARM: dts: tegra20: paz00: Add CPU Operating Performance Points
+Date:   Wed, 16 Oct 2019 00:16:15 +0300
+Message-Id: <20191015211618.20758-15-digetx@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191015211618.20758-1-digetx@gmail.com>
+References: <20191015211618.20758-1-digetx@gmail.com>
 MIME-Version: 1.0
-References: <20191015162300.22024-1-brgl@bgdev.pl> <20191015162300.22024-2-brgl@bgdev.pl>
-In-Reply-To: <20191015162300.22024-2-brgl@bgdev.pl>
-From:   Rob Herring <robh+dt@kernel.org>
-Date:   Tue, 15 Oct 2019 16:17:25 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqKhGr6QDWZFR6cq6MH-0vghb9oSgkCCdi7bhiKmvrkY_w@mail.gmail.com>
-Message-ID: <CAL_JsqKhGr6QDWZFR6cq6MH-0vghb9oSgkCCdi7bhiKmvrkY_w@mail.gmail.com>
-Subject: Re: [PATCH v2 1/6] dt-bindings: mfd: max77650: convert the binding
- document to yaml
-To:     Bartosz Golaszewski <brgl@bgdev.pl>
-Cc:     Mark Rutland <mark.rutland@arm.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Linux Input <linux-input@vger.kernel.org>,
-        devicetree@vger.kernel.org,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 15, 2019 at 11:23 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
->
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->
-> Convert the binding document for MAX77650 core MFD module to YAML.
->
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> ---
->  .../devicetree/bindings/mfd/max77650.txt      | 47 +----------
->  .../devicetree/bindings/mfd/max77650.yaml     | 83 +++++++++++++++++++
->  2 files changed, 84 insertions(+), 46 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/mfd/max77650.yaml
->
-> diff --git a/Documentation/devicetree/bindings/mfd/max77650.txt b/Documentation/devicetree/bindings/mfd/max77650.txt
-> index b529d8d19335..080871686b3b 100644
-> --- a/Documentation/devicetree/bindings/mfd/max77650.txt
-> +++ b/Documentation/devicetree/bindings/mfd/max77650.txt
-> @@ -1,46 +1 @@
-> -MAX77650 ultra low-power PMIC from Maxim Integrated.
-> -
-> -Required properties:
-> --------------------
-> -- compatible:          Must be "maxim,max77650"
-> -- reg:                 I2C device address.
-> -- interrupts:          The interrupt on the parent the controller is
-> -                       connected to.
-> -- interrupt-controller: Marks the device node as an interrupt controller.
-> -- #interrupt-cells:    Must be <2>.
-> -
-> -- gpio-controller:     Marks the device node as a gpio controller.
-> -- #gpio-cells:         Must be <2>. The first cell is the pin number and
-> -                       the second cell is used to specify the gpio active
-> -                       state.
-> -
-> -Optional properties:
-> ---------------------
-> -gpio-line-names:       Single string containing the name of the GPIO line.
-> -
-> -The GPIO-controller module is represented as part of the top-level PMIC
-> -node. The device exposes a single GPIO line.
-> -
-> -For device-tree bindings of other sub-modules (regulator, power supply,
-> -LEDs and onkey) refer to the binding documents under the respective
-> -sub-system directories.
-> -
-> -For more details on GPIO bindings, please refer to the generic GPIO DT
-> -binding document <devicetree/bindings/gpio/gpio.txt>.
-> -
-> -Example:
-> ---------
-> -
-> -       pmic@48 {
-> -               compatible = "maxim,max77650";
-> -               reg = <0x48>;
-> -
-> -               interrupt-controller;
-> -               interrupt-parent = <&gpio2>;
-> -               #interrupt-cells = <2>;
-> -               interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
-> -
-> -               gpio-controller;
-> -               #gpio-cells = <2>;
-> -               gpio-line-names = "max77650-charger";
-> -       };
-> +This file has been moved to max77650.yaml.
-> diff --git a/Documentation/devicetree/bindings/mfd/max77650.yaml b/Documentation/devicetree/bindings/mfd/max77650.yaml
-> new file mode 100644
-> index 000000000000..5186ad287ec7
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/mfd/max77650.yaml
-> @@ -0,0 +1,83 @@
-> +# SPDX-License-Identifier: GPL-2.0
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/mfd/max77650.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: MAX77650 ultra low-power PMIC from Maxim Integrated.
-> +
-> +maintainers:
-> +  - Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> +
-> +description: |
-> +  This document describes the DT properties of the core MFD controller.
-> +
-> +  The GPIO-controller module is represented as part of the top-level PMIC
-> +  node. The device exposes a single GPIO line.
-> +
-> +  For device-tree bindings of other sub-modules (regulator, power supply,
-> +  LEDs and onkey) refer to the binding documents under the respective
-> +  sub-system directories.
-> +
-> +  For more details on GPIO bindings, please refer to the generic GPIO DT
-> +  binding document <devicetree/bindings/gpio/gpio.txt>.
-> +
-> +properties:
-> +  compatible:
-> +    const: maxim,max77650
-> +
-> +  reg:
-> +    description:
-> +      I2C device address.
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    description:
-> +      The interrupt on the parent the controller is connected to.
-> +    maxItems: 1
-> +
-> +  interrupt-controller: true
-> +
-> +  "#interrupt-cells":
-> +    const: 2
-> +    description:
-> +      The first cell is the IRQ number, the second cell is the trigger type.
-> +
-> +  gpio-controller: true
-> +
-> +  "#gpio-cells":
-> +    const: 2
-> +    description:
-> +      The first cell is the pin number and the second cell is used to specify
-> +      the gpio active state.
-> +
-> +  gpio-line-names:
-> +    $ref: '/schemas/types.yaml#/definitions/string-array'
-> +    maxItems: 1
-> +    description:
-> +      Single string containing the name of the GPIO line.
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupts
-> +  - interrupt-controller
-> +  - "#interrupt-cells"
-> +  - gpio-controller
-> +  - "#gpio-cells"
-> +
-> +examples:
-> +  - |
-> +    pmic@48 {
-> +        compatible = "maxim,max77650";
-> +        reg = <0x48>;
-> +
-> +        interrupt-controller;
-> +        interrupt-parent = <&gpio2>;
-> +        #interrupt-cells = <2>;
-> +        interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
+Utilize common Tegra20 CPU OPP table. CPU DVFS is available now on AC100.
 
-Examples are built now. Run 'make dt_binding_check' on bindings before
-sending them:
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ arch/arm/boot/dts/tegra20-paz00.dts | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Error: Documentation/devicetree/bindings/mfd/max77650.example.dts:24.29-30
-syntax error
-FATAL ERROR: Unable to parse input tree
-scripts/Makefile.lib:321: recipe for target
-'Documentation/devicetree/bindings/mfd/max77650.example.dt.yaml'
-failed
-make[1]: *** [Documentation/devicetree/bindings/mfd/max77650.example.dt.yaml]
-Error 1
+diff --git a/arch/arm/boot/dts/tegra20-paz00.dts b/arch/arm/boot/dts/tegra20-paz00.dts
+index 6e9fe192c648..85fce5bc72d6 100644
+--- a/arch/arm/boot/dts/tegra20-paz00.dts
++++ b/arch/arm/boot/dts/tegra20-paz00.dts
+@@ -3,6 +3,8 @@
+ 
+ #include <dt-bindings/input/input.h>
+ #include "tegra20.dtsi"
++#include "tegra20-cpu-opp.dtsi"
++#include "tegra20-cpu-opp-microvolt.dtsi"
+ 
+ / {
+ 	model = "Toshiba AC100 / Dynabook AZ";
+@@ -616,4 +618,16 @@
+ 			 <&tegra_car TEGRA20_CLK_CDEV1>;
+ 		clock-names = "pll_a", "pll_a_out0", "mclk";
+ 	};
++
++	cpus {
++		cpu0: cpu@0 {
++			cpu-supply = <&cpu_vdd_reg>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++
++		cpu@1 {
++			cpu-supply = <&cpu_vdd_reg>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++	};
+ };
+-- 
+2.23.0
 
-You need to include any includes that you use.
-
-Rob
