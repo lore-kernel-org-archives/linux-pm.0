@@ -2,70 +2,177 @@ Return-Path: <SRS0=AVup=YI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20CE6ECE588
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 16:18:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DFB0ECE588
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 16:23:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F01AF2064A
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 16:18:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1A9412086A
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Oct 2019 16:23:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="JjbUuwJY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387838AbfJOQSF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Oct 2019 12:18:05 -0400
-Received: from foss.arm.com ([217.140.110.172]:42276 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387829AbfJOQSF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 15 Oct 2019 12:18:05 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4A97F337;
-        Tue, 15 Oct 2019 09:18:05 -0700 (PDT)
-Received: from bogus (e107155-lin.cambridge.arm.com [10.1.196.42])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 984D73F68E;
-        Tue, 15 Oct 2019 09:18:04 -0700 (PDT)
-Date:   Tue, 15 Oct 2019 17:17:59 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: NULL pointer dereference in cpufreq_set_policy
-Message-ID: <20191015161759.GA16693@bogus>
-References: <20191015155735.GA29105@bogus>
- <CAJZ5v0g04KoF3pQk4=3cTyyPsKdgLV+ZrO63k44HvySss1xJ=g@mail.gmail.com>
+        id S2387903AbfJOQXK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Oct 2019 12:23:10 -0400
+Received: from mail-wr1-f68.google.com ([209.85.221.68]:36745 "EHLO
+        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387895AbfJOQXK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Oct 2019 12:23:10 -0400
+Received: by mail-wr1-f68.google.com with SMTP id y19so24647652wrd.3
+        for <linux-pm@vger.kernel.org>; Tue, 15 Oct 2019 09:23:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=ecEOVvVQZ5mhgGBjJTEl6lzO4iyftGF76AQ8D8ASw0U=;
+        b=JjbUuwJYLYkmaYLE3E1Naa7+ymQjSaxbTCuq7NqsIOslNMK1UzZApQlcxyPrAs3Xsg
+         g+hJCLRf9ebxqZ3+T/L9BSqaRA9nbk6Sg8FwFL3SURrpjMRh4N1+qc08uEIkMjAtMOpx
+         JK3/tpfBW/qMsbcd7nDWQBIL7wkmAQAtFi8h2w1jpTl2RKiAmguLRZGjiKfuFc2ZcQpZ
+         3988pWa6ByvglVVp986DA1VDl9A//7ZNTjJ7ZuLLE+KU1wLqVX547kxLQsxYR3BDvcZb
+         EiwxEAAPVM2rW/4xatzJlFlGBk+tZphrA7NyVEX5hd87b+0MuGmdrWzP4qBi5gUhAgpG
+         AacA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=ecEOVvVQZ5mhgGBjJTEl6lzO4iyftGF76AQ8D8ASw0U=;
+        b=dh9pLBExIaWLMzEFoXwVOnfJsYLbtl6wETmsBshutYS7vuHW0uOsd/YOrP47VSt8Ll
+         f//GH6ZckOJ5p0KzthGq+E64IxtsgQxIHF0320UR/P7R0yM5tIg5QrFs+mwmyYqPybsn
+         P3erSFBMS68NAlT1OKWtdmhvYPiVE6nu/Rfp/YQDKv7nuJPd1HDyp5jzZI9xMSGOKRlt
+         VF9AwmCoyXuVMvguiBRUd/fRvVRkC+JMnT0GwVWD5WisrVx5sjjMaT2Of4ijEPGs0PTI
+         l+mk4m4LzTUksZi7Z0ExLU7yx5tJtn0UVqI27Md2cZdLNK7i6gQ4rzGEP7aDJngDfBsb
+         nKQQ==
+X-Gm-Message-State: APjAAAUspvdd9qycys5PHwidZszcjH0cdfQ3tRoDQ5Fk6nLq7fQH0lR1
+        DnuUxeOPjuRvj1p4a/UczKu80A==
+X-Google-Smtp-Source: APXvYqxTlGURckyxe8xKZFHfyXGsEZKiq+XZ4jbSogIXJ1MlJzGRolqXijrT94s+bwmwdElCnbuoYg==
+X-Received: by 2002:adf:f64f:: with SMTP id x15mr10732927wrp.381.1571156588511;
+        Tue, 15 Oct 2019 09:23:08 -0700 (PDT)
+Received: from debian-brgl.home ([2a01:cb1d:af:5b00:6d6c:8493:1ab5:dad7])
+        by smtp.gmail.com with ESMTPSA id x129sm41427605wmg.8.2019.10.15.09.23.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Oct 2019 09:23:07 -0700 (PDT)
+From:   Bartosz Golaszewski <brgl@bgdev.pl>
+To:     Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
+        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>
+Cc:     linux-input@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Subject: [PATCH v2 2/6] dt-bindings: input: max77650: convert the binding document to yaml
+Date:   Tue, 15 Oct 2019 18:22:56 +0200
+Message-Id: <20191015162300.22024-3-brgl@bgdev.pl>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191015162300.22024-1-brgl@bgdev.pl>
+References: <20191015162300.22024-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g04KoF3pQk4=3cTyyPsKdgLV+ZrO63k44HvySss1xJ=g@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 15, 2019 at 06:08:14PM +0200, Rafael J. Wysocki wrote:
-> On Tue, Oct 15, 2019 at 5:57 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
-> >
-> > Hi Viresh,
-> >
-> > I was trying to unify Vexpress SPC driver and arm_big_little generic
-> > driver as it's the only user of bL driver and switcher in the mainline.
-> > I did this a while ago(v5.3) and encountered the kernel crash with NULL
-> > pointer reference(crash log with some debug enabled below).
-> >
-> > Since dev_pm_qos_* was added in v5.3 with the Commit 18c49926c4bf
-> > ("cpufreq: Add QoS requests for userspace constraints"), I just tried
-> > reverting that and it fixed the crash. I haven't spent much time
-> > debugging, since it has been for a while I wanted to report it.
-> 
-> This looks like another manifestation of the bug discussed here:
-> https://lore.kernel.org/linux-pm/5ad2624194baa2f53acc1f1e627eb7684c577a19.1562210705.git.viresh.kumar@linaro.org/T/#md2d89e95906b8c91c15f582146173dce2e86e99f
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Indeed, it reminded me to dig up the setup, try again and report this
-bug before I forget again about the issue as this platform is in back
-burner and not priority :)
+Convert the binding document for MAX77650 onkey module to YAML.
 
---
-Regards,
-Sudeep
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ .../bindings/input/max77650-onkey.txt         | 27 +-----------
+ .../bindings/input/max77650-onkey.yaml        | 43 +++++++++++++++++++
+ 2 files changed, 44 insertions(+), 26 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/input/max77650-onkey.yaml
+
+diff --git a/Documentation/devicetree/bindings/input/max77650-onkey.txt b/Documentation/devicetree/bindings/input/max77650-onkey.txt
+index 477dc74f452a..a691fc49f1ea 100644
+--- a/Documentation/devicetree/bindings/input/max77650-onkey.txt
++++ b/Documentation/devicetree/bindings/input/max77650-onkey.txt
+@@ -1,26 +1 @@
+-Onkey driver for MAX77650 PMIC from Maxim Integrated.
+-
+-This module is part of the MAX77650 MFD device. For more details
+-see Documentation/devicetree/bindings/mfd/max77650.txt.
+-
+-The onkey controller is represented as a sub-node of the PMIC node on
+-the device tree.
+-
+-Required properties:
+---------------------
+-- compatible:		Must be "maxim,max77650-onkey".
+-
+-Optional properties:
+-- linux,code:		The key-code to be reported when the key is pressed.
+-			Defaults to KEY_POWER.
+-- maxim,onkey-slide:	The system's button is a slide switch, not the default
+-			push button.
+-
+-Example:
+---------
+-
+-	onkey {
+-		compatible = "maxim,max77650-onkey";
+-		linux,code = <KEY_END>;
+-		maxim,onkey-slide;
+-	};
++This file has been moved to max77650-onkey.yaml.
+diff --git a/Documentation/devicetree/bindings/input/max77650-onkey.yaml b/Documentation/devicetree/bindings/input/max77650-onkey.yaml
+new file mode 100644
+index 000000000000..eb2f8609bae2
+--- /dev/null
++++ b/Documentation/devicetree/bindings/input/max77650-onkey.yaml
+@@ -0,0 +1,43 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/input/max77650-onkey.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Onkey driver for MAX77650 PMIC from Maxim Integrated.
++
++maintainers:
++  - Bartosz Golaszewski <bgolaszewski@baylibre.com>
++
++description: |
++  This module is part of the MAX77650 MFD device. For more details
++  see Documentation/devicetree/bindings/mfd/max77650.yaml.
++
++  The onkey controller is represented as a sub-node of the PMIC node on
++  the device tree.
++
++properties:
++  compatible:
++    const: maxim,max77650-onkey
++
++  linux,code:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description:
++      The key-code to be reported when the key is pressed. Defaults
++      to KEY_POWER.
++
++  maxim,onkey-slide:
++    $ref: /schemas/types.yaml#/definitions/flag
++    description:
++      The system's button is a slide switch, not the default push button.
++
++required:
++  - compatible
++
++examples:
++  - |
++    onkey {
++        compatible = "maxim,max77650-onkey";
++        linux,code = <KEY_END>;
++        maxim,onkey-slide;
++    };
+-- 
+2.23.0
+
