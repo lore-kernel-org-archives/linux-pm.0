@@ -2,196 +2,111 @@ Return-Path: <SRS0=MfD0=YJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC2A0ECE599
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Oct 2019 19:21:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85337FA372D
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Oct 2019 19:37:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AC9DF218DE
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Oct 2019 19:21:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5FF1C218DE
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Oct 2019 19:37:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="rAGYy4mB"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yiEGyuxw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2436628AbfJPTVh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Oct 2019 15:21:37 -0400
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:3226 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2403782AbfJPTVh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2019 15:21:37 -0400
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5da76dc50000>; Wed, 16 Oct 2019 12:21:41 -0700
-Received: from hqmail.nvidia.com ([172.20.161.6])
-  by hqpgpgate101.nvidia.com (PGP Universal service);
-  Wed, 16 Oct 2019 12:21:36 -0700
-X-PGP-Universal: processed;
-        by hqpgpgate101.nvidia.com on Wed, 16 Oct 2019 12:21:36 -0700
-Received: from DRHQMAIL107.nvidia.com (10.27.9.16) by HQMAIL111.nvidia.com
- (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 16 Oct
- 2019 19:21:36 +0000
-Received: from tbergstrom-lnx.Nvidia.com (10.124.1.5) by
- DRHQMAIL107.nvidia.com (10.27.9.16) with Microsoft SMTP Server (TLS) id
- 15.0.1473.3; Wed, 16 Oct 2019 19:21:35 +0000
-Received: by tbergstrom-lnx.Nvidia.com (Postfix, from userid 1000)
-        id 9AE2542807; Wed, 16 Oct 2019 22:21:33 +0300 (EEST)
-Date:   Wed, 16 Oct 2019 22:21:33 +0300
-From:   Peter De Schrijver <pdeschrijver@nvidia.com>
-To:     Dmitry Osipenko <digetx@gmail.com>
-CC:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Daniel Lezcano" <daniel.lezcano@linaro.org>,
-        <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v6 00/18] Consolidate and improve NVIDIA Tegra CPUIDLE
- driver(s)
-Message-ID: <20191016192133.GB26038@pdeschrijver-desktop.Nvidia.com>
-References: <20191015170015.1135-1-digetx@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20191015170015.1135-1-digetx@gmail.com>
-X-NVConfidentiality: public
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Originating-IP: [10.124.1.5]
-X-ClientProxiedBy: HQMAIL101.nvidia.com (172.20.187.10) To
- DRHQMAIL107.nvidia.com (10.27.9.16)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1571253701; bh=nroN3FHoFwV3XA6q1YkfsgkTextLKDHjNycGp27ezdc=;
-        h=X-PGP-Universal:Date:From:To:CC:Subject:Message-ID:References:
-         MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
-         X-NVConfidentiality:User-Agent:X-Originating-IP:X-ClientProxiedBy;
-        b=rAGYy4mB0DojFGY14D9t5hauU3YDyjKaDWJhazpYwapaylHOMWi9QJXublk3LJA2O
-         mVVV+r0Nq5wtadsbN1yC5THHsPkRxV35P/1gPPkEIEPBOajMwjafab7MIb4yzvq7CK
-         jzO2SzAWmwc5A+siqUD9bwWi5vFAyksQzsIQqveEFNBY8R3/g6+VYn2MbGHxR1sZ0l
-         55Tp5fjEsm4JXY9dyaXXsVGONqefshME6VNEKE7aJtww7vBcV6hg3LbJA49bg+qf5f
-         yHFE9vIT1X92IxipB6xxW8M1yZxMP93Ih8okg1l5odob8/z+SOI/qGlDLUXb8zJk98
-         H4FzTWA6TrQwA==
+        id S2394465AbfJPThe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Oct 2019 15:37:34 -0400
+Received: from mail-qt1-f194.google.com ([209.85.160.194]:36531 "EHLO
+        mail-qt1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2394413AbfJPThd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2019 15:37:33 -0400
+Received: by mail-qt1-f194.google.com with SMTP id o12so37924912qtf.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2019 12:37:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=E2xMtfg5bJTmZe94/qx4v5HPv3cpP1DHi2yBTTi4UXk=;
+        b=yiEGyuxwygGASqd+4EnfQQXnAstv6WNIJC4tpcMTrjTHMRBlAxqUUmy3TXbQ9wu1OS
+         jDd/n79uL5Fh7FnlU3t+AjYcBamWvQW9x5Fk4Wu2074XgFIzZ614l7R8FsvKfxEMRsWJ
+         ITsuWypSAEltVlevAHN+PVhr+CvPw2BZNuOgs/ZRm91Ly7xpPDomQ4Rv00ssBs+cxQFg
+         0B3G4r0phywCDRzo2iFnxSmyTQTnWVtEJDawys7gUkmESDhvMhbJb7XHsia+hkyAB/of
+         7OowfA6qoW5J/sGNBUqAGvouMHJQYZA2yIbTy4NzsYAcJZ4oqmGDXC087MoHr6rLPfiA
+         LnkA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=E2xMtfg5bJTmZe94/qx4v5HPv3cpP1DHi2yBTTi4UXk=;
+        b=HYT3Csn2+za6hItGfBhfdXKBPW6cDzMW6IZAarmd0J0ZEAlhN3Yk8YCFycz6aYu9fg
+         FEmp9shVd8pT5hZQ5sMZ91K/tyqzBEiYOarNJ0Fte3up9VC5T4ykQdFotkm5vbTRjOcF
+         NYAKQZVBELYIlMoswJci7EEu2RwjCdpRVYgycxo4zK5aYZYDifPgA/7fjvm1NfwDRwUt
+         q2nz4T5q8UPML2OOfSBqxy/bzex+hYB4WNw1fbUcsFJqOFqS3ILdjP6O6RuEnDHTUFlL
+         lI4Wm80Xd//Ypn3SPfMXHMKTB2mnkjNEH0V3TGrANfhTaFJKGS9TiZzCUAo1uv5mfRXk
+         VxBQ==
+X-Gm-Message-State: APjAAAVLpaISXMCLPuUpYlgDhsnGzYBhzeAWKQoKC3LLOlCt07QMO8ss
+        QSCs0ze8QUX16DKCIIxIAcIuDg==
+X-Google-Smtp-Source: APXvYqzM2qvnUjfMlRvsvXUMH3bvdX6uNGcU6wQ3RSuMt0JXSDsqGZCSUlK0OwltEypjlC181PH/Vg==
+X-Received: by 2002:ac8:3652:: with SMTP id n18mr13523277qtb.232.1571254651349;
+        Wed, 16 Oct 2019 12:37:31 -0700 (PDT)
+Received: from Thara-Work-Ubuntu.fios-router.home (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
+        by smtp.googlemail.com with ESMTPSA id 54sm16246030qts.75.2019.10.16.12.37.29
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Wed, 16 Oct 2019 12:37:30 -0700 (PDT)
+From:   Thara Gopinath <thara.gopinath@linaro.org>
+To:     edubezval@gmail.com, rui.zhang@intel.com, ulf.hansson@linaro.org,
+        daniel.lezcano@linaro.org, bjorn.andersson@linaro.org,
+        agross@kernel.org
+Cc:     amit.kucheria@verdurent.com, mark.rutland@arm.com,
+        rjw@rjwysocki.net, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v3 2/7] soc: qcom: rpmhpd: Introduce function to retrieve power domain performance state count
+Date:   Wed, 16 Oct 2019 15:37:16 -0400
+Message-Id: <1571254641-13626-3-git-send-email-thara.gopinath@linaro.org>
+X-Mailer: git-send-email 2.1.4
+In-Reply-To: <1571254641-13626-1-git-send-email-thara.gopinath@linaro.org>
+References: <1571254641-13626-1-git-send-email-thara.gopinath@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 15, 2019 at 07:59:57PM +0300, Dmitry Osipenko wrote:
-> Hello,
-> 
-> This series does the following:
-> 
->   1. Unifies Tegra20/30/114 drivers into a single driver and moves it out
->      into common drivers/cpuidle/ directory.
-> 
->   2. Enables CPU cluster power-down idling state on Tegra30.
-> 
-> In the end there is a quite nice clean up of the Tegra CPUIDLE drivers
-> and of the Tegra's arch code in general. Please review, thanks!
-> 
-> Changelog:
-> 
-> v6: - Addressed request from Thierry Reding to change the way patches are
->       organized by making changes in a more incremental manner.
-> 
->     - tegra_sleep_cpu() now checks for the secondary CPUs to be offline
->       in the "Make outer_disable() open-coded" patch.
-> 
-> v5: - Rebased on a recent linux-next, fixed one minor conflict in Kconfig.
-> 
->     - Improved commit's message of the "Support CPU cluster power-down state
->       on Tegra30" patch.
-> 
->     - The "Support CPU cluster power-down state on Tegra30" patch is also
->       got split and now there is additional "Make outer_disable() open-coded"
->       patch.
-> 
->     - Made minor cosmetic changes to the "Introduce unified driver for
->       NVIDIA Tegra SoCs" patch by improving error message and renaming
->       one variable.
-> 
-> v4: - Fixed compilation with !CONFIG_CACHE_L2X0 (and tested that it still
->       works).
-> 
->     - Replaced ktime_compare() with ktime_before() in the new driver,
->       for consistency.
-> 
-> v3: - Addressed review comments that were made by Jon Hunter to v2 by
->       splitting patches into smaller (and simpler) chunks, better
->       documenting changes in the commit messages and using proper error
->       codes in the code.
-> 
->       Warnings are replaced with a useful error messages in the code of
->       "Introduce unified driver for NVIDIA Tegra SoCs" patch.
-> 
->       Secondary CPUs parking timeout increased to 100ms because I found
->       that it actually may happen to take more than 1ms if CPU is running
->       on a *very* low frequency.
-> 
->       Added diagnostic messages that are reporting Flow Controller state
->       when CPU parking fails.
-> 
->       Further polished cpuidle driver's code.
-> 
->       The coupled state entering is now aborted if there is a pending SGI
->       (Software Generated Interrupt) because it will be lost after GIC's
->       power-cycling. Like it was done by the old Tegra20 CPUIDLE driver.
-> 
-> v2: - Added patches to enable the new cpuidle driver in the defconfigs:
-> 
->         ARM: multi_v7_defconfig: Enable Tegra cpuidle driver
->         ARM: tegra: Enable Tegra cpuidle driver in tegra_defconfig
-> 
->     - Dropped patches that removed CPUIDLE_FLAG_TIMER_STOP from the idling
->       states because that flag actually doesn't have any negative effects,
->       but still is correct for the case of a local CPU timer on older Tegra
->       SoCs:
-> 
->         cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from Tegra114/124 idle-state
->         cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from all states
-> 
->     - The "Add unified driver for NVIDIA Tegra SoCs" patch got more polish.
->       Tegra30 and Terga114 states are now squashed into a single common C7
->       state (following Parker TRM terminology, see 17.2.2.2 Power Management
->       States), more comments added, etc minor changes.
+Populate .get_performace_state_count in genpd ops to retrieve the count
+of performance states supported by a rpmh power domain.
 
-It would be useful to switch the power state terminology to the one used
-for later chips:
+Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+---
+ drivers/soc/qcom/rpmhpd.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-LP0 becomes SC7
-LP1 becomes C1
-LP2 becomes CC7
+diff --git a/drivers/soc/qcom/rpmhpd.c b/drivers/soc/qcom/rpmhpd.c
+index 5741ec3..9d37534 100644
+--- a/drivers/soc/qcom/rpmhpd.c
++++ b/drivers/soc/qcom/rpmhpd.c
+@@ -285,6 +285,13 @@ static unsigned int rpmhpd_get_performance_state(struct generic_pm_domain *genpd
+ 	return dev_pm_opp_get_level(opp);
+ }
+ 
++static int rpmhpd_performance_states_count(struct generic_pm_domain *domain)
++{
++	struct rpmhpd *pd = domain_to_rpmhpd(domain);
++
++	return pd->level_count;
++}
++
+ static int rpmhpd_update_level_mapping(struct rpmhpd *rpmhpd)
+ {
+ 	int i;
+@@ -373,6 +380,8 @@ static int rpmhpd_probe(struct platform_device *pdev)
+ 		rpmhpds[i]->pd.power_on = rpmhpd_power_on;
+ 		rpmhpds[i]->pd.set_performance_state = rpmhpd_set_performance_state;
+ 		rpmhpds[i]->pd.opp_to_performance_state = rpmhpd_get_performance_state;
++		rpmhpds[i]->pd.get_performance_state_count =
++					rpmhpd_performance_states_count;
+ 		pm_genpd_init(&rpmhpds[i]->pd, NULL, true);
+ 
+ 		data->domains[i] = &rpmhpds[i]->pd;
+-- 
+2.1.4
 
-Meaning of these states is as follows
-
-C is a core state:
-
-C1 clock gating
-C2 not defined
-C3 not defined
-C4 not defined
-C5 not defined
-C6 not defined for ARM cores
-C7 power-gating
-
-CC is a CPU cluster C state:
-
-CC1 cluster clock gated
-CC2 not defined
-CC3 fmax@Vmin: not used prior to Tegra186
-CC4: cluster retention: no longer supported
-CC5: not defined
-CC6: cluster power gating
-CC7: cluster rail gating
-
-SC is a System C state:
-
-SC1: not defined
-SC2: not defined
-SC3: not defined
-SC4: not defined
-SC5: not defined
-SC6: not defined
-SC7: VDD_SOC off
-
-Cheers,
-
-Peter.
