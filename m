@@ -2,67 +2,99 @@ Return-Path: <SRS0=MfD0=YJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC7F6FA372B
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Oct 2019 11:04:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E43FA3728
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Oct 2019 11:26:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9BABF2168B
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Oct 2019 11:04:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C0C2421848
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Oct 2019 11:26:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404817AbfJPLDw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Oct 2019 07:03:52 -0400
-Received: from foss.arm.com ([217.140.110.172]:36554 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726083AbfJPLDw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 16 Oct 2019 07:03:52 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BD4621570;
-        Wed, 16 Oct 2019 04:03:51 -0700 (PDT)
-Received: from usa.arm.com (unknown [10.1.196.42])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id C89623F6C4;
-        Wed, 16 Oct 2019 04:03:50 -0700 (PDT)
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] cpufreq: scpi: remove stale/outdated comment about the driver
-Date:   Wed, 16 Oct 2019 12:03:42 +0100
-Message-Id: <20191016110344.15259-2-sudeep.holla@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191016110344.15259-1-sudeep.holla@arm.com>
-References: <20191016110344.15259-1-sudeep.holla@arm.com>
+        id S2404925AbfJPL0o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Oct 2019 07:26:44 -0400
+Received: from mail-sh.amlogic.com ([58.32.228.43]:51854 "EHLO
+        mail-sh.amlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2404922AbfJPL0n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2019 07:26:43 -0400
+Received: from [10.18.29.227] (10.18.29.227) by mail-sh.amlogic.com
+ (10.18.11.5) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1591.10; Wed, 16 Oct
+ 2019 19:26:50 +0800
+Subject: Re: [PATCH RESEND v2 1/4] dt-bindings: power: add Amlogic secure
+ power domains bindings
+To:     Rob Herring <robh@kernel.org>
+CC:     Kevin Hilman <khilman@baylibre.com>,
+        <linux-amlogic@lists.infradead.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <devicetree@vger.kernel.org>, Jian Hu <jian.hu@amlogic.com>,
+        Hanjie Lin <hanjie.lin@amlogic.com>,
+        Victor Wan <victor.wan@amlogic.com>,
+        Xingyu Chen <xingyu.chen@amlogic.com>
+References: <1570695678-42623-1-git-send-email-jianxin.pan@amlogic.com>
+ <1570695678-42623-2-git-send-email-jianxin.pan@amlogic.com>
+ <20191014173900.GA6886@bogus>
+From:   Jianxin Pan <jianxin.pan@amlogic.com>
+Message-ID: <622c7785-8254-5473-6b35-7287830f3c60@amlogic.com>
+Date:   Wed, 16 Oct 2019 19:26:49 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <20191014173900.GA6886@bogus>
+Content-Type: text/plain; charset="UTF-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.18.29.227]
+X-ClientProxiedBy: mail-sh.amlogic.com (10.18.11.5) To mail-sh.amlogic.com
+ (10.18.11.5)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Commit 343a8d17fa8d ("cpufreq: scpi: remove arm_big_little dependency")
-removed the arm_big_little dependency from scpi driver and doesn't
-provide any ops to arm_big_little cpufreq driver. Lets remove that
-stale comment.
+Hi Rob,
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/cpufreq/scpi-cpufreq.c | 2 --
- 1 file changed, 2 deletions(-)
+On 2019/10/15 1:39, Rob Herring wrote:
+> On Thu, Oct 10, 2019 at 04:21:15AM -0400, Jianxin Pan wrote:
+>> Add the bindings for the Amlogic Secure power domains, controlling the
+>> secure power domains.
+>>
+>> The bindings targets the Amlogic A1 and C1 compatible SoCs, in which the
+>> power domain registers are in secure world.
+>>
+>> Signed-off-by: Jianxin Pan <jianxin.pan@amlogic.com>
+>> ---
+>>  .../bindings/power/amlogic,meson-sec-pwrc.yaml     | 42 ++++++++++++++++++++++
+>>  include/dt-bindings/power/meson-a1-power.h         | 32 +++++++++++++++++
+>>  2 files changed, 74 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
+>> +
+>> +  secure-monitor:
+>> +    description: phandle to the secure-monitor node
+>> +    $ref: /schemas/types.yaml#/definitions/phandle
+> 
+> Why not just a child node of this node?
+> 
+Thanks for the review.
 
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index 2b51e0718c9f..20d1f85d5f5a 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -1,8 +1,6 @@
- /*
-  * System Control and Power Interface (SCPI) based CPUFreq Interface driver
-  *
-- * It provides necessary ops to arm_big_little cpufreq driver.
-- *
-  * Copyright (C) 2015 ARM Ltd.
-  * Sudeep Holla <sudeep.holla@arm.com>
-  *
--- 
-2.17.1
+I followed the style of the previous series of meson：
+
+  46         efuse: efuse {                                                           
+  47                 compatible = "amlogic,meson-gxbb-efuse";                         
+  48                 clocks = <&clkc CLKID_EFUSE>;                                    
+  49                 #address-cells = <1>;                                            
+  50                 #size-cells = <1>;                                               
+  51                 read-only;                                                       
+  52                 secure-monitor = <&sm>;                                          
+  53         };
+
+> Rob
+> 
+> .
+> 
 
