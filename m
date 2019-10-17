@@ -2,120 +2,150 @@ Return-Path: <SRS0=hqGy=YK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CF50ECE58E
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 08:57:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B610BFA3733
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 09:03:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2431521925
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 08:57:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8CC5B21A49
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 09:03:06 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="B6RpQs+3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2408398AbfJQI5o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Oct 2019 04:57:44 -0400
-Received: from [217.140.110.172] ([217.140.110.172]:35926 "EHLO foss.arm.com"
-        rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-        id S2408397AbfJQI5o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Oct 2019 04:57:44 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AF68B15BF;
-        Thu, 17 Oct 2019 01:57:23 -0700 (PDT)
-Received: from [192.168.0.9] (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E296E3F718;
-        Thu, 17 Oct 2019 01:57:21 -0700 (PDT)
-Subject: Re: [RFC PATCH v3 2/6] sched/cpufreq: Attach perf domain to sugov
- policy
-To:     Douglas RAILLARD <douglas.raillard@arm.com>,
-        linux-kernel@vger.kernel.org
-Cc:     linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org,
-        rjw@rjwysocki.net, viresh.kumar@linaro.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, qperret@qperret.net,
-        patrick.bellasi@matbug.net, dh.han@samsung.com
-References: <20191011134500.235736-1-douglas.raillard@arm.com>
- <20191011134500.235736-3-douglas.raillard@arm.com>
-From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
-Message-ID: <4ebf6419-c8e0-3998-41e0-3f7b49b34084@arm.com>
-Date:   Thu, 17 Oct 2019 10:57:16 +0200
+        id S1729109AbfJQJDG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Oct 2019 05:03:06 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:43329 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726728AbfJQJDG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2019 05:03:06 -0400
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20191017090303euoutp029143e2225baa20cf50fda1ff1ba9cd60~OY70R76qi2647126471euoutp02f
+        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2019 09:03:03 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20191017090303euoutp029143e2225baa20cf50fda1ff1ba9cd60~OY70R76qi2647126471euoutp02f
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1571302983;
+        bh=3z0Meifbwr5zG+mE7LdzyRuTTfPqBg1Ea+yb3WOdQ6M=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=B6RpQs+3bIbxe5nbrqwo/7TX6yFC91J3iDB/9DHDOMpf5JJlvIHBnKx6UAhVUGJwA
+         GQH02JYtVURBOxWSAN+Z1ii0SW/e2PT/PGrVrqQMt9zzd5PGeMdITi47G917JDeUv/
+         Nws3WxjY76mtQVJbamXa+GBQRH7gpJalcsCQJlIY=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20191017090303eucas1p16b2cb435692005c820b1b5d9b745397a~OY7z7wYCy2584825848eucas1p1t;
+        Thu, 17 Oct 2019 09:03:03 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+        eusmges3new.samsung.com (EUCPMTA) with SMTP id 24.13.04374.74E28AD5; Thu, 17
+        Oct 2019 10:03:03 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20191017090302eucas1p17cbcaea2d7e2479d19a60205fe7ba69f~OY7zh1K0b0112301123eucas1p1p;
+        Thu, 17 Oct 2019 09:03:02 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20191017090302eusmtrp2a9e9214e2871787b5e86381e36dafc57~OY7zgzBm52488524885eusmtrp2e;
+        Thu, 17 Oct 2019 09:03:02 +0000 (GMT)
+X-AuditID: cbfec7f5-4ddff70000001116-65-5da82e475026
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms1.samsung.com (EUCPMTA) with SMTP id 03.B9.04166.64E28AD5; Thu, 17
+        Oct 2019 10:03:02 +0100 (BST)
+Received: from [106.120.51.75] (unknown [106.120.51.75]) by
+        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20191017090302eusmtip2c6d402ce73ee18fe5039249704c2f539~OY7y-COjD1289712897eusmtip2_;
+        Thu, 17 Oct 2019 09:03:02 +0000 (GMT)
+Subject: Re: [PATCH v5 2/4] dt-bindings: arm: samsung: Update the CHIPID
+ binding for ASV
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     devicetree@vger.kernel.org,
+        "linux-samsung-soc@vger.kernel.org" 
+        <linux-samsung-soc@vger.kernel.org>, linux-pm@vger.kernel.org,
+        sboyd@kernel.org, vireshk@kernel.org,
+        =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= 
+        <b.zolnierkie@samsung.com>, roger.lu@mediatek.com,
+        robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org,
+        Marek Szyprowski <m.szyprowski@samsung.com>
+From:   Sylwester Nawrocki <s.nawrocki@samsung.com>
+Message-ID: <e5f441af-a21c-292b-b6ba-7e1e6550f091@samsung.com>
+Date:   Thu, 17 Oct 2019 11:03:01 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+        Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <20191011134500.235736-3-douglas.raillard@arm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+In-Reply-To: <CAJKOXPeagcSRUm2Qwwby=NHfWGdQ6KVZ2htb3UmnU2GfX+Ckcg@mail.gmail.com>
+Content-Language: en-GB
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrJKsWRmVeSWpSXmKPExsWy7djPc7rueitiDbZvErLYOGM9q8X8I+dY
+        Lc6f38BusenxNVaLz71HGC1mnN/HZLH2yF12i9a9R9gtLj/eyGbx79pGFovND46xOXB7bFrV
+        yeaxeUm9R8vJ/SwefVtWMXp83iQXwBrFZZOSmpNZllqkb5fAlTFz1ha2gs/sFd9/ZTcwzmXr
+        YuTkkBAwkfj5s52xi5GLQ0hgBaPE3ssfmUASQgJfGCW+/fOEsD8zSrQtz4FpmPe6jQmiYTmj
+        xIt7Cxkhit4ySrxuMQGxhQWiJA68W8oCYosIaEpc//udFaSBWaCJWeL0qvVgq9kEDCV6j/aB
+        NfMK2Em0n78CZrMIqEpMaP0OZHNwiApESJz+mghRIihxcuYTsJmcAoESN3fOYgWxmQXEJZq+
+        rISy5SW2v53DDHHoJXaJiWskQcZICLhI/N1tDxEWlnh1fAs7hC0j8X/nfLBfJASaGSV6dt9m
+        h3AmMErcP76AEaLKWuLw8YusIIOYgZ5Zv0sfIuwo8eHrckaI+XwSN94KQpzAJzFp23RmiDCv
+        REebEES1isTvVdOZIGwpie4n/1kmMCrNQvLYLCTPzELyzCyEvQsYWVYxiqeWFuempxYb56WW
+        6xUn5haX5qXrJefnbmIEJqjT/45/3cG470/SIUYBDkYlHt4Jj5bHCrEmlhVX5h5ilOBgVhLh
+        nd+yJFaINyWxsiq1KD++qDQntfgQozQHi5I4bzXDg2ghgfTEktTs1NSC1CKYLBMHpxQwyVxR
+        DOdVWvtWibnFamlkh0Dux09eXtOMmEJW/9S9PPFl+numUyF+3oJt+xuPXu5ujy/KmitWv34P
+        r5X5ylXVGxIWXmk+3bCJddPTg1o/jlhfuXjUTcnu4POalNZjZyfqC5WtLvleGiOy+GxOQf4q
+        /yXyfTMFzTW3/18yh3f5PRG2tW5TrwW9V2Ipzkg01GIuKk4EAEcrwptMAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrAIsWRmVeSWpSXmKPExsVy+t/xe7pueitiDU680rfYOGM9q8X8I+dY
+        Lc6f38BusenxNVaLz71HGC1mnN/HZLH2yF12i9a9R9gtLj/eyGbx79pGFovND46xOXB7bFrV
+        yeaxeUm9R8vJ/SwefVtWMXp83iQXwBqlZ1OUX1qSqpCRX1xiqxRtaGGkZ2hpoWdkYqlnaGwe
+        a2VkqqRvZ5OSmpNZllqkb5eglzFz1ha2gs/sFd9/ZTcwzmXrYuTkkBAwkZj3uo2pi5GLQ0hg
+        KaPEtkO32LsYOYASUhLzW5QgaoQl/lzrYoOoec0oMf9RLytIQlggSuLAu6UsILaIgKbE9b/f
+        WUGKmAWamCX+dRxjhujoYJJYvqOFHaSKTcBQovdoHyOIzStgJ9F+/gqYzSKgKjGh9TuYLSoQ
+        IfF8+w2oGkGJkzOfgG3gFAiUuLlzFthmZgF1iT/zLjFD2OISTV9WQsXlJba/ncM8gVFoFpL2
+        WUhaZiFpmYWkZQEjyypGkdTS4tz03GJDveLE3OLSvHS95PzcTYzA2Nx27OfmHYyXNgYfYhTg
+        YFTi4Z3AuDxWiDWxrLgy9xCjBAezkgjv/JYlsUK8KYmVValF+fFFpTmpxYcYTYGem8gsJZqc
+        D0wbeSXxhqaG5haWhubG5sZmFkrivB0CB2OEBNITS1KzU1MLUotg+pg4OKUaGKe5rl31wVaC
+        M/B6ZqrV8X+xdsKm2pIHmBOatWbtFgh4vMuqodYt/ntHdGy8SkzsgVnqnaun3ls4x32W0g7Z
+        1fN/7jUrkjjmvN+N++6ehrtX65orfm/eeT3Ci9NNTG39/IVyv16c/L/ot0jJuvN/l8YdlQwr
+        5YxJ5jj/9GfKzCxl0XWntpYZ8SuxFGckGmoxFxUnAgCOd6+r4wIAAA==
+X-CMS-MailID: 20191017090302eucas1p17cbcaea2d7e2479d19a60205fe7ba69f
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20191016145812eucas1p1a3cf3f44a2cff4c32a2270334630c4a2
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20191016145812eucas1p1a3cf3f44a2cff4c32a2270334630c4a2
+References: <CGME20191016145812eucas1p1a3cf3f44a2cff4c32a2270334630c4a2@eucas1p1.samsung.com>
+        <20191016145756.16004-1-s.nawrocki@samsung.com>
+        <20191016145756.16004-3-s.nawrocki@samsung.com>
+        <CAJKOXPeagcSRUm2Qwwby=NHfWGdQ6KVZ2htb3UmnU2GfX+Ckcg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11/10/2019 15:44, Douglas RAILLARD wrote:
+On 10/16/19 18:16, Krzysztof Kozlowski wrote:
+>> --- a/Documentation/devicetree/bindings/arm/samsung/exynos-chipid.yaml
+>> +++ b/Documentation/devicetree/bindings/arm/samsung/exynos-chipid.yaml
+>> @@ -9,17 +9,42 @@ title: Samsung Exynos SoC series Chipid driver
 
-[...]
+BTW, I think we should rename the above title to talk about IP block/device
+rather than driver, e.g.
 
-> @@ -66,6 +70,38 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
->  
->  /************************ Governor internals ***********************/
->  
-> +#ifdef CONFIG_ENERGY_MODEL
-> +static void sugov_policy_attach_pd(struct sugov_policy *sg_policy)
-> +{
-> +	struct em_perf_domain *pd;
-> +	struct cpufreq_policy *policy = sg_policy->policy;
+-SAMSUNG Exynos SoCs Chipid driver.
++SAMSUNG Exynos SoC series CHIPID subsystem
 
-Shouldn't always order local variable declarations from longest to
-shortest line?
+>> +# Custom select to avoid matching all nodes with 'syscon'
+>> +select:
+>> +  properties:
+>> +    compatible:
+>> +      contains:
+>> +        const: samsung,exynos4210-chipid
+>> +  required:
+>> +    - compatible
+>> +
+>>  properties:
+>>    compatible:
+>> -    items:
+>> -      - const: samsung,exynos4210-chipid
+>> +    allOf:
+>
+> I think it was my mistake to use allOf in other Exynos bindings. It
+> should not be needed.
 
-> +
-> +	sg_policy->pd = NULL;
-> +	pd = em_cpu_get(policy->cpu);
-> +	if (!pd)
-> +		return;
-> +
-> +	if (cpumask_equal(policy->related_cpus, to_cpumask(pd->cpus)))
-> +		sg_policy->pd = pd;
-> +	else
-> +		pr_warn("%s: Not all CPUs in schedutil policy %u share the same perf domain, no perf domain for that policy will be registered\n",
-> +			__func__, policy->cpu);
-
-Maybe {} because of 2 lines?
-
-> +}
-> +
-> +static struct em_perf_domain *sugov_policy_get_pd(
-> +						struct sugov_policy *sg_policy)
-
-
-Maybe this way? This format is already used in this file.
-
-static struct em_perf_domain *
-sugov_policy_get_pd(struct sugov_policy *sg_policy)
-
-
-> +{
-> +	return sg_policy->pd;
-> +}
-> +#else /* CONFIG_ENERGY_MODEL */
-> +static void sugov_policy_attach_pd(struct sugov_policy *sg_policy) {}
-> +static struct em_perf_domain *sugov_policy_get_pd(
-> +						struct sugov_policy *sg_policy)
-> +{
-> +	return NULL;
-> +}
-> +#endif /* CONFIG_ENERGY_MODEL */
-> +
->  static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->  {
->  	s64 delta_ns;
-> @@ -859,6 +895,9 @@ static int sugov_start(struct cpufreq_policy *policy)
->  							sugov_update_shared :
->  							sugov_update_single);
->  	}
-> +
-> +	sugov_policy_attach_pd(sg_policy);
-> +
->  	return 0;
->  }
-
-A sugov_policy_detach_pd() called from sugov_stop() (doing for instance
-the g_policy->pd = NULL) is not needed?
+Indeed it seems to work well without allOf, I was wondering why we
+needed the custom select above AND allOf.
