@@ -2,136 +2,109 @@ Return-Path: <SRS0=hqGy=YK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28776ECE58E
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 15:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA932ECE58E
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 15:43:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E658220872
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 15:28:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C1C972089C
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 15:43:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xgGpKj4T"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="epCRTxPc"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2392174AbfJQP2V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Oct 2019 11:28:21 -0400
-Received: from mail-qk1-f196.google.com ([209.85.222.196]:36982 "EHLO
-        mail-qk1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391285AbfJQP2V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2019 11:28:21 -0400
-Received: by mail-qk1-f196.google.com with SMTP id u184so2257275qkd.4
-        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2019 08:28:20 -0700 (PDT)
+        id S2407690AbfJQPnp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Oct 2019 11:43:45 -0400
+Received: from mail-pf1-f178.google.com ([209.85.210.178]:46336 "EHLO
+        mail-pf1-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727291AbfJQPno (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2019 11:43:44 -0400
+Received: by mail-pf1-f178.google.com with SMTP id q5so1888878pfg.13
+        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2019 08:43:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:references:cc:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-transfer-encoding;
-        bh=HxxMlxSnOHFXolbR3XOteHFHB5Y0fMxkCzdRoCJf6PE=;
-        b=xgGpKj4TXIiDL2Gz1GlKIH2KXJ8E6eseq0BY8b2KgfYyfK58FKJ11SlPKH8K1smi82
-         L35ggCBPhbbXjWHssTvzJuk2pRSddXo67qbvFKhD+7P7wfVM9p3w003AYYu8QtKBaLJz
-         2SJRD9C4OCcncGkLr7jZ2LP3TOFI8Sp+9Xk2N2oJ+ONxCVLOy74EoTgOEUOE+XXMxYRa
-         ISeYQhHPojhyy3MYnhOZ0R3NAvNFbQSY0iurBuFneYei4WRR+xP9dr2kzGnCDdO6RPm7
-         XLA9Vf5fWpP8i8KPY1PnpPutVSmCO3oIC/2fxPyaK+tVs2q+0oPxB5/iKp+Q8A+wOtjT
-         MxBA==
+        d=baylibre-com.20150623.gappssmtp.com; s=20150623;
+        h=from:to:cc:subject:in-reply-to:references:date:message-id
+         :mime-version;
+        bh=VOvV2/r2ynt55cnuM6fNik0rL8EihZtai79HG+PQGYs=;
+        b=epCRTxPcIzW1JK1hav0kYxQFV4/KtoeRzGuJPSEcPwm+07F5s+hclMNoXvQqf4/Xn1
+         PHRKmwonpyafnqMNOi9dcJPoPWnD3ya7CTnu9Qry/TzAB4HpaKOrbK0R0qaDDbOiEQuc
+         NAMjpGaz/LGOeUnEU04tjxWY9G5Za9Eys1QYmuHKt94WBRAaXPRhFZjOql8+NYkH3ors
+         UfFt5ENN2F9lK41nMVEmg+Mu/70pL+aDZgePCLsFDjUW2Ci+iy3EgWg4J7mRQpCA0hge
+         OOvt2UsggArcB7npbmFQA0cehGx67F4L0qjr14Beidi0Rt1MqMZm6SjLMBOoC32THmyd
+         CsDQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:references:cc:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding;
-        bh=HxxMlxSnOHFXolbR3XOteHFHB5Y0fMxkCzdRoCJf6PE=;
-        b=JLlq+H+IYi9NLm7MHl/dv5AuKRTb1w+h1DzVp6D4iunRO91oph3YioZ9qPqPxOSBrW
-         fS/B9VUlcC8panYkLQvyNwv764MoLB7UQz8HnufP6CpvZxt2Oj2mUmmLr0avmUdOJgjQ
-         NrXq6Ytkg4Ppm23tsKs1LC1qRp99PVRUoUdYANYw4ApJGJt/usx8pY80CieS+18Ycbxw
-         1ACa5PktTUgNtDc1L8oofoNAVcrIRrbS0aYvjMl8JkvT0KL6Cnm6WBqa26Dchu2Kvc1n
-         rGCviNN8OLSGtHOGXy21Xq7VfYlc0xyohucwRVMCqB20oMXk2k8XHmIKi3W4j4ZGmJl6
-         xcJA==
-X-Gm-Message-State: APjAAAWuAKiEVA1BQqcZNbwoJ+lkGChX4Cqg2iJfGxoYqxcBVep0NBcn
-        14s/rLPQCL+6L979GBV5OJZ+fA==
-X-Google-Smtp-Source: APXvYqyp4wRR1ov3vJ/c6kD326l229dgP5IfCEwdoMk3qpE+kXLbkjhLaTm41gj0At0tLw14+faOlw==
-X-Received: by 2002:a37:98c1:: with SMTP id a184mr3628260qke.119.1571326100082;
-        Thu, 17 Oct 2019 08:28:20 -0700 (PDT)
-Received: from [192.168.1.169] (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
-        by smtp.gmail.com with ESMTPSA id q200sm1230672qke.114.2019.10.17.08.28.18
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 17 Oct 2019 08:28:19 -0700 (PDT)
-Subject: Re: [PATCH v3 6/7] dt-bindings: soc: qcom: Extend RPMh power
- controller binding to describe thermal warming device
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-References: <1571254641-13626-1-git-send-email-thara.gopinath@linaro.org>
- <1571254641-13626-7-git-send-email-thara.gopinath@linaro.org>
- <CAPDyKFqcKfmnNJ7j4Jb+JH739FBcHg5NBD6aR4H_N=zWGwm1ww@mail.gmail.com>
-Cc:     Eduardo Valentin <edubezval@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Andy Gross <agross@kernel.org>, amit.kucheria@verdurent.com,
-        Mark Rutland <mark.rutland@arm.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        DTML <devicetree@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-Message-ID: <5DA88892.5000408@linaro.org>
-Date:   Thu, 17 Oct 2019 11:28:18 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101
- Thunderbird/38.5.1
+        h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+         :message-id:mime-version;
+        bh=VOvV2/r2ynt55cnuM6fNik0rL8EihZtai79HG+PQGYs=;
+        b=j7zSvErXehVrcuc9Qkw7Jgx1JiFg46yvRqAz+JWUkDj+bhehCokJS59asTQPmsC1p9
+         1kk32+FBUebt+IPGxn2aAcjUL6BlD2PXvIo9rDdET4867LyC5XSC6oJ6xUgIgM/3Y8OF
+         eEs2MGkaSR5KmIYofhFYQdqnpeh7k7YYyJOgHggZ8oDoWECErI5i5Uxv2vFJMjHb+H3f
+         SIC6axoSK1VRe0zb4JbWaXw8fvUqX0/KnrQY7XTXR2nFqX5ZyP4ZT3CtIu/61vZV0YYc
+         igIWKgQ2E8G+cam+j9kdoypd9pHHrri/2vjod5f7zcvuk6fiyR+CBhB+h7LGPxr90AdK
+         eOYQ==
+X-Gm-Message-State: APjAAAVVs4gPl5XLGpKL71lXx2oky8cr2R5rcixNXMArWvBAgH+ftE4V
+        hNRP8PdeNDWzXqPfb/42+VYvNw==
+X-Google-Smtp-Source: APXvYqwBC3rv9yHdPPniodMnf3ve5F6d/VBydNViIQXvnFmqx0IoTgB6MJOo2TPQ1KZma6BcLkaNWA==
+X-Received: by 2002:a17:90a:3608:: with SMTP id s8mr5226930pjb.44.1571327022410;
+        Thu, 17 Oct 2019 08:43:42 -0700 (PDT)
+Received: from localhost ([2601:602:9200:a1a5:d8f2:392e:5b44:157d])
+        by smtp.gmail.com with ESMTPSA id f14sm3987624pfq.187.2019.10.17.08.43.41
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Thu, 17 Oct 2019 08:43:41 -0700 (PDT)
+From:   Kevin Hilman <khilman@baylibre.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>, edubezval@gmail.com
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-amlogic@lists.infradead.org,
+        Guillaume La Roque <glaroque@baylibre.com>,
+        amit.kucheria@linaro.org, rui.zhang@intel.com
+Subject: Re: [PATCH v7 0/7] Add support of New Amlogic temperature sensor for G12 SoCs
+In-Reply-To: <9ade0e3e-1bd7-c49b-44b1-2361f1e3a7b1@linaro.org>
+References: <20191004090114.30694-1-glaroque@baylibre.com> <7hwod4fxwb.fsf@baylibre.com> <9ade0e3e-1bd7-c49b-44b1-2361f1e3a7b1@linaro.org>
+Date:   Thu, 17 Oct 2019 08:43:41 -0700
+Message-ID: <7h36frcr82.fsf@baylibre.com>
 MIME-Version: 1.0
-In-Reply-To: <CAPDyKFqcKfmnNJ7j4Jb+JH739FBcHg5NBD6aR4H_N=zWGwm1ww@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello Ulf,
-Thanks for the review!
+Hi Daniel,
 
-On 10/17/2019 05:04 AM, Ulf Hansson wrote:
-> On Wed, 16 Oct 2019 at 21:37, Thara Gopinath <thara.gopinath@linaro.org> wrote:
->>
->> RPMh power controller hosts mx domain that can be used as thermal
->> warming device. Add a sub-node to specify this.
->>
->> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
->> ---
->>  Documentation/devicetree/bindings/power/qcom,rpmpd.txt | 10 ++++++++++
->>  1 file changed, 10 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.txt b/Documentation/devicetree/bindings/power/qcom,rpmpd.txt
->> index eb35b22..fff695d 100644
->> --- a/Documentation/devicetree/bindings/power/qcom,rpmpd.txt
->> +++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.txt
->> @@ -18,6 +18,16 @@ Required Properties:
->>  Refer to <dt-bindings/power/qcom-rpmpd.h> for the level values for
->>  various OPPs for different platforms as well as Power domain indexes
->>
->> += SUBNODES
->> +RPMh alsp hosts power domains that can behave as thermal warming device.
->> +These are expressed as subnodes of the RPMh. The name of the node is used
->> +to identify the power domain and must therefor be "mx".
->> +
->> +- #cooling-cells:
->> +       Usage: optional
->> +       Value type: <u32>
->> +       Definition: must be 2
->> +
-> 
-> Just wanted to express a minor thought about this. In general we use
-> subnodes of PM domain providers to represent the topology of PM
-> domains (subdomains), this is something different, which I guess is
-> fine.
-> 
-> I assume the #cooling-cells is here tells us this is not a PM domain
-> provider, but a "cooling device provider"?
-Yep.
-> 
-> Also, I wonder if it would be fine to specify "power-domains" here,
-> rather than using "name" as I think that is kind of awkward!?
-Do you mean "power-domain-names" ? I am using this to match against the
-genpd names defined in the provider driver.
+Daniel Lezcano <daniel.lezcano@linaro.org> writes:
 
-Warm Regards
-Thara
+> On 16/10/2019 18:39, Kevin Hilman wrote:
+>> Eduardo,
+>> 
+>> Guillaume La Roque <glaroque@baylibre.com> writes:
+>> 
+>>> This patchs series add support of New Amlogic temperature sensor and minimal
+>>> thermal zone for SEI510 and ODROID-N2 boards.
+>> 
+>> [...]
+>> 
+>>> Guillaume La Roque (7):
+>>>   dt-bindings: thermal: Add DT bindings documentation for Amlogic
+>>>     Thermal
+>>>   thermal: amlogic: Add thermal driver to support G12 SoCs
+>>>   arm64: dts: amlogic: g12: add temperature sensor
+>>>   arm64: dts: meson: g12: Add minimal thermal zone
+>>>   arm64: dts: amlogic: g12a: add cooling properties
+>>>   arm64: dts: amlogic: g12b: add cooling properties
+>>>   MAINTAINERS: add entry for Amlogic Thermal driver
+>> 
+>> This has now been thorougly reviewed/tested.
+>> 
+>> I've queued all the "arm64: dts:" patches via my amlogic tree for v5.5.
+>> Can you please queue up the driver, bindings and MAINTAINERS patch?
+>
+> 1, 2, 7 right?
 
+Correct.
+
+Thanks,
+
+Kevin
