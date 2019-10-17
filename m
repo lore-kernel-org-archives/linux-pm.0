@@ -2,284 +2,132 @@ Return-Path: <SRS0=hqGy=YK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 686CCECE599
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 02:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0934FA372B
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 02:28:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 33D5921A49
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 02:21:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C629621928
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 02:28:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="mtPv5oeS";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="mTngHsQe"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="AaHywvkM"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404046AbfJQCVH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Oct 2019 22:21:07 -0400
-Received: from smtp.codeaurora.org ([198.145.29.96]:45348 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727823AbfJQCVH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2019 22:21:07 -0400
-Received: by smtp.codeaurora.org (Postfix, from userid 1000)
-        id 9DD806088D; Thu, 17 Oct 2019 02:21:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1571278865;
-        bh=/X2nvYE8arAJyqkCCndBCq0rQxxg6mGCEArXEpJZb0E=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=mtPv5oeSiEopLl8/+T5gAxrKdnHp4MWu0hJPIlROKFhYtY93tmI+98trl0on7jUmc
-         ulk1j6IKd4pfiFW4cbvKs8z4rK/XABUGJwGvw2SKEx6RTs7ouOHIziGCmsM1HSpyZs
-         U8nOjQbRRLv4i3Kqqm+XfDq60UuVz8H0BQ5M3lws=
-Received: from davidai-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: daidavid1@smtp.codeaurora.org)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id BC62F6079C;
-        Thu, 17 Oct 2019 02:21:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1571278864;
-        bh=/X2nvYE8arAJyqkCCndBCq0rQxxg6mGCEArXEpJZb0E=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=mTngHsQeL0a5pmwyW7AYPQnEreaw8iiVwhP6f60SD/uCQNDOGDSFsWFDiINzR2BCF
-         ABhOlCwBCBhk/I1ujmEzdyPcEuceT2/RI5KrnbIGOf01lWRfjM/0JnyDZ6nMGnKE3p
-         fEfzFr0g1D3kWt0p0CTp9mQIZitdpNaDmHQWXs/0=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org BC62F6079C
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=daidavid1@codeaurora.org
-From:   David Dai <daidavid1@codeaurora.org>
-To:     georgi.djakov@linaro.org, bjorn.andersson@linaro.org,
-        robh+dt@kernel.org
-Cc:     David Dai <daidavid1@codeaurora.org>, evgreen@google.com,
-        sboyd@kernel.org, ilina@codeaurora.org, seansw@qti.qualcomm.com,
-        elder@linaro.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [RFC PATCH 1/4] dt-bindings: interconnect: Update Qualcomm SDM845 DT bindings
-Date:   Wed, 16 Oct 2019 19:20:49 -0700
-Message-Id: <1571278852-8023-2-git-send-email-daidavid1@codeaurora.org>
-X-Mailer: git-send-email 1.9.1
-In-Reply-To: <1571278852-8023-1-git-send-email-daidavid1@codeaurora.org>
-References: <1571278852-8023-1-git-send-email-daidavid1@codeaurora.org>
+        id S2406752AbfJQC27 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Oct 2019 22:28:59 -0400
+Received: from mail-pl1-f196.google.com ([209.85.214.196]:36832 "EHLO
+        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389173AbfJQC27 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2019 22:28:59 -0400
+Received: by mail-pl1-f196.google.com with SMTP id j11so361304plk.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Oct 2019 19:28:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to
+         :user-agent;
+        bh=mJUTEhX3TFcHtz27+83IOXuwWGxntrc9pvOqZY1hpgM=;
+        b=AaHywvkMSuy9OnV8rJbxorKjDSfBfAc1ciKJafM0KBuyZdEKajDgUAPvSRruvLwpUd
+         s+rQUukzTiEgkCgX9ldvv6cMt0gbvjKrDpPBLWtGtzHtvrxbH6RduRz8o7Oz8xGeausy
+         afnLLUqD6xKhLvHoiWflgql6wLjsl8xZjnq+1wfnTXNgfug7Z3XMLWGm51c5WHMjk8X8
+         rcUDp/d+Q9Gki6VzIj0FBWno9kMjvauIXpvrMUSWpe9GKmQ4rGGYIJ7VhHK+9ozUOm14
+         rg76exgPb9QRPsqoIquFELofX0VLBSiNdb5Efoqxmpwjvl2+q2cHgVZx0N6AEYiP7+5i
+         mUKQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        bh=mJUTEhX3TFcHtz27+83IOXuwWGxntrc9pvOqZY1hpgM=;
+        b=GCDdoRl1UzQBcT+MDEsClMHg6Iu8Gq1IXZWJ5l+681tKxbCxdbnwve+wiM06E1u0Qw
+         GaNGpFh/3bTXkqigcUg2BsT4DGsd/K4wEAMgEVj9rIhNAb7Hh+u2bH7qjHoIq+QaOOmE
+         zSf6x0LqbsopeUCcQ9sZHBv0QWCdZKB2WQrvQ/u9gfG0wG+yv2hVlfqVbnPFLaNPG/OZ
+         ztOPLLppu1fdWZc2A8YBrWhJ59C42BgEFz4iiLuHJhwXESc2sRfDQUbwEfRtXnFFf0j3
+         M67r/OMAoSe+KotiZOZL/5/Xlu2s/TDdWlzWfKjO5DY4BJq+FqFSR+p+DmNU7wDQ2d1Q
+         H6og==
+X-Gm-Message-State: APjAAAXGV4AQVHtMGsExgL3UOeT9C6V+wSeW3aEjFDPxX500omdaNqVv
+        q3x6dMgP4z9kwP6Bb7FtP6CTNA==
+X-Google-Smtp-Source: APXvYqwNFLKLkCxw5ab420MkNxcVkjXE2Jlq4h5pXqtFv2s2iZhgQ3vv70QHp3Lxt9QjQiam6DFvtw==
+X-Received: by 2002:a17:902:d90e:: with SMTP id c14mr1427032plz.91.1571279337923;
+        Wed, 16 Oct 2019 19:28:57 -0700 (PDT)
+Received: from localhost ([122.172.151.112])
+        by smtp.gmail.com with ESMTPSA id x10sm448224pfr.44.2019.10.16.19.28.55
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 16 Oct 2019 19:28:56 -0700 (PDT)
+Date:   Thu, 17 Oct 2019 07:58:54 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Prashant Gaikwad <pgaikwad@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Marcel Ziswiler <marcel.ziswiler@toradex.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 11/17] ARM: dts: tegra20: Add CPU Operating
+ Performance Points
+Message-ID: <20191017022854.c23zgp3th7v4afa4@vireshk-i7>
+References: <20191015211618.20758-1-digetx@gmail.com>
+ <20191015211618.20758-12-digetx@gmail.com>
+ <20191016052323.w6hav4qqn3ybt55q@vireshk-i7>
+ <ba9d6de0-38dc-a851-cf0a-fb9d06461671@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ba9d6de0-38dc-a851-cf0a-fb9d06461671@gmail.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Redefine the Network-on-Chip devices to more accurately describe
-the interconnect topology on Qualcomm's SDM845 platform. Each
-interconnect device can communicate with different instances of the
-RPMh hardware which are described as RSCs(Resource State Coordinators).
+On 16-10-19, 16:21, Dmitry Osipenko wrote:
+> 16.10.2019 08:23, Viresh Kumar пишет:
+> > On 16-10-19, 00:16, Dmitry Osipenko wrote:
+> >> Operating Point are specified per HW version. The OPP voltages are kept
+> >> in a separate DTSI file because some boards may not define CPU regulator
+> >> in their device-tree if voltage scaling isn't necessary, like for example
+> >> in a case of tegra20-trimslice which is outlet-powered device.
+> >>
+> >> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> >> ---
+> >>  .../boot/dts/tegra20-cpu-opp-microvolt.dtsi   | 201 ++++++++++++
+> >>  arch/arm/boot/dts/tegra20-cpu-opp.dtsi        | 302 ++++++++++++++++++
+> >>  2 files changed, 503 insertions(+)
+> >>  create mode 100644 arch/arm/boot/dts/tegra20-cpu-opp-microvolt.dtsi
+> >>  create mode 100644 arch/arm/boot/dts/tegra20-cpu-opp.dtsi
+> >>
+> >> diff --git a/arch/arm/boot/dts/tegra20-cpu-opp-microvolt.dtsi b/arch/arm/boot/dts/tegra20-cpu-opp-microvolt.dtsi
+> >> new file mode 100644
+> >> index 000000000000..e85ffdbef876
+> >> --- /dev/null
+> >> +++ b/arch/arm/boot/dts/tegra20-cpu-opp-microvolt.dtsi
+> >> @@ -0,0 +1,201 @@
+> >> +// SPDX-License-Identifier: GPL-2.0
+> >> +
+> >> +/ {
+> >> +	cpu0_opp_table: cpu_opp_table0 {
+> >> +		opp@216000000_750 {
+> > 
+> > Maybe just drop the _750 (i.e. voltage) from the names as we don't generally
+> > follow it :)
+> 
+> The reason for the _750 postfix is that there are multiple OPPs for
+> 216MHz and they have different voltages for different versions of
+> hardware, thus those are separate OPPs and they can't be squashed into a
+> single OPP node.
 
-As part of updating the DT bindings, convert the existing sdm845 bindings
-to DT schema format using json-schema.
+Ah, okay. I missed that you are using supported-hw bindings.
 
-Signed-off-by: David Dai <daidavid1@codeaurora.org>
----
- .../bindings/interconnect/qcom,bcm-voter.yaml      |  45 +++++++++
- .../bindings/interconnect/qcom,sdm845.txt          |  24 -----
- .../bindings/interconnect/qcom,sdm845.yaml         | 108 +++++++++++++++++++++
- 3 files changed, 153 insertions(+), 24 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml
- delete mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.yaml
-
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml b/Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml
-new file mode 100644
-index 0000000..74f0715
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml
-@@ -0,0 +1,45 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interconnect/qcom,bcm-voter.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm BCM-Voter Interconnect
-+
-+maintainers:
-+  - David Dai <daidavid1@codeaurora.org>
-+
-+description: |
-+    The Bus Clock Manager (BCM) is a dedicated hardware accelerator
-+    that manages shared system resources by aggregating requests
-+    from multiple Resource State Coordinators (RSC). Interconnect
-+    providers are able to vote for aggregated thresholds values from
-+    consumers by communicating through their respective RSCs.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - qcom,sdm845-bcm-voter
-+
-+required:
-+  - compatible
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    apps_rsc: interconnect@179c0000 {
-+        compatible = "qcom,rpmh-rsc";
-+
-+        apps_bcm_voter: bcm_voter {
-+            compatible = "qcom,sdm845-bcm-voter";
-+        };
-+    };
-+
-+    disp_rsc: interconnect@179d0000 {
-+        compatible = "qcom,rpmh-rsc";
-+
-+        disp_bcm_voter: bcm_voter {
-+            compatible = "qcom,sdm845-bcm-voter";
-+        };
-+    };
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt b/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
-deleted file mode 100644
-index 5c4f1d9..0000000
---- a/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
-+++ /dev/null
-@@ -1,24 +0,0 @@
--Qualcomm SDM845 Network-On-Chip interconnect driver binding
-------------------------------------------------------------
--
--SDM845 interconnect providers support system bandwidth requirements through
--RPMh hardware accelerators known as Bus Clock Manager (BCM). The provider is
--able to communicate with the BCM through the Resource State Coordinator (RSC)
--associated with each execution environment. Provider nodes must reside within
--an RPMh device node pertaining to their RSC and each provider maps to a single
--RPMh resource.
--
--Required properties :
--- compatible : shall contain only one of the following:
--			"qcom,sdm845-rsc-hlos"
--- #interconnect-cells : should contain 1
--
--Examples:
--
--apps_rsc: rsc {
--	rsc_hlos: interconnect {
--		compatible = "qcom,sdm845-rsc-hlos";
--		#interconnect-cells = <1>;
--	};
--};
--
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sdm845.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sdm845.yaml
-new file mode 100644
-index 0000000..1aec321
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,sdm845.yaml
-@@ -0,0 +1,108 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interconnect/qcom,sdm845.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title:  Qualcomm SDM845 Network-On-Chip Interconnect
-+
-+maintainers:
-+  - David Dai <daidavid1@codeaurora.org>
-+
-+description: |
-+   SDM845 interconnect providers support system bandwidth requirements through
-+   RPMh hardware accelerators known as Bus Clock Manager (BCM). The provider is
-+   able to communicate with the BCM through the Resource State Coordinator (RSC)
-+   associated with each execution environment. Provider nodes must point to at
-+   least one RPMh device child node pertaining to their RSC and each provider
-+   can map to multiple RPMh resources.
-+
-+properties:
-+  reg:
-+    maxItems: 1
-+
-+  compatible:
-+    enum:
-+      - qcom,sdm845-aggre1-noc
-+      - qcom,sdm845-aggre2-noc
-+      - qcom,sdm845-config-noc
-+      - qcom,sdm845-dc-noc
-+      - qcom,sdm845-gladiator-noc
-+      - qcom,sdm845-mem-noc
-+      - qcom,sdm845-mmss-noc
-+      - qcom,sdm845-system-noc
-+
-+  '#interconnect-cells':
-+    const: 1
-+
-+  qcom,bcm-voters:
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    description: |
-+      List of phandles to qcom,bcm-voter nodes that are required by
-+      this interconnect to send RPMh commands.
-+
-+  qcom,bcm-voter-names:
-+    $ref: /schemas/types.yaml#/definitions/string-array
-+    description: |
-+      Names for each of the qcom,bcm-voters specified.
-+
-+required:
-+  - compatible
-+  - reg
-+  - '#interconnect-cells'
-+  - qcom,bcm-voters
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+      #include <dt-bindings/interconnect/qcom,sdm845.h>
-+
-+      mem_noc: interconnect@1380000 {
-+             compatible = "qcom,sdm845-mem-noc";
-+             reg = <0 0x01380000 0 0x27200>;
-+             #interconnect-cells = <1>;
-+             qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-+
-+      dc_noc: interconnect@14e0000 {
-+             compatible = "qcom,sdm845-dc-noc";
-+             reg = <0 0x014e0000 0 0x400>;
-+             #interconnect-cells = <1>;
-+             qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-+
-+      config_noc: interconnect@1500000 {
-+             compatible = "qcom,sdm845-config-noc";
-+             reg = <0 0x01500000 0 0x5080>;
-+             #interconnect-cells = <1>;
-+             qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-+
-+      system_noc: interconnect@1620000 {
-+             compatible = "qcom,sdm845-system-noc";
-+             reg = <0 0x01620000 0 0x18080>;
-+             #interconnect-cells = <1>;
-+             qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-+
-+      aggre1_noc: interconnect@16e0000 {
-+             compatible = "qcom,sdm845-aggre1-noc";
-+             reg = <0 0x016e0000 0 0xd080>;
-+             #interconnect-cells = <1>;
-+             qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-+
-+      aggre2_noc: interconnect@1700000 {
-+             compatible = "qcom,sdm845-aggre2-noc";
-+             reg = <0 0x01700000 0 0x3b100>;
-+             #interconnect-cells = <1>;
-+             qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-+
-+      mmss_noc: interconnect@1740000 {
-+             compatible = "qcom,sdm845-mmss-noc";
-+             reg = <0 0x01740000 0 0x1c1000>;
-+             #interconnect-cells = <1>;
-+             qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+viresh
