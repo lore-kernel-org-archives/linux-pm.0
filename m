@@ -2,306 +2,266 @@ Return-Path: <SRS0=hqGy=YK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E13FFA372B
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 07:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D87DBFA3731
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 08:47:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5A7F22082C
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 07:13:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B017D21A49
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 08:47:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="U6l3MlsZ"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="VC+bz3qt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726805AbfJQHNP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Oct 2019 03:13:15 -0400
-Received: from mail-wr1-f65.google.com ([209.85.221.65]:42447 "EHLO
-        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2407940AbfJQHMn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2019 03:12:43 -0400
-Received: by mail-wr1-f65.google.com with SMTP id n14so1001577wrw.9
-        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2019 00:12:40 -0700 (PDT)
+        id S2408307AbfJQIrt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Oct 2019 04:47:49 -0400
+Received: from mail-ua1-f67.google.com ([209.85.222.67]:41352 "EHLO
+        mail-ua1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2408209AbfJQIrs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2019 04:47:48 -0400
+Received: by mail-ua1-f67.google.com with SMTP id l13so409968uap.8
+        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2019 01:47:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=OIumAK1lbGEHj0MS4QlJuOGFTG/z3O93ZyUuuJ6zuC0=;
-        b=U6l3MlsZe3KcyIEHJnpOalU4hrw9GoBeQK+BJ4bZEcI+VNkW0jWTPwA11H9IrHEvSK
-         /JbxPiA1VNU3TenVS7MiAuw2llJ6tcKQBcXQ/8X5nSlJmifxtXDqrzGqckg9zwbubBBS
-         WymvEhCe4qcXGtsepEsK0duYiz5Ug8WHjD5RXpgMx2OQrLXuk0xuEr3Wmb2tYuUamEc6
-         rCfZGG5Mnx53pUpBxgncY4oAAnSNCZUBQXGE2F6pFhL4AWR5/EKx82qG93e7HXbhZ/ci
-         lyVCWKC4jB0YldfXRYcRUh+XLDT80+nSwYcmGRb8bc3MapPytJN6PEybrOwkgdnseDPz
-         8LXA==
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=paqFDTtdY3M8Ln3kvS2sgcbv9f/ilylyzRvaduM2VsY=;
+        b=VC+bz3qt6il9V5qrADuSCMdBWfzwaxRUScgGnlDsNHERQWfLKSR2Bxszm+EkQ6jXXD
+         3nx7yN/G8ujuN794/Ej/j2SFHBU5W9H32gRcN3NFh2y5zsrNw1nPIZJf55cVcFnRu0BP
+         TeeukIDKYJF1RYwC+cZmKLhQN+OJz0gzV5MlKgGUtQFDSVX+m5vYHKL3d0NLTmm+uee3
+         gdKDqwBVu9qln9Rx8gaIbwB/tyB01lAaaELk7bklckQW0qidsuZpLO1MQg7uv4DqrYxg
+         AewZ/U+sNxK/GmtPC9Sl4hp77at+xOiCv++zS2LhMdbJJz1FTZ5uhZiJwEzxK7SXdxjC
+         Ci9Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=OIumAK1lbGEHj0MS4QlJuOGFTG/z3O93ZyUuuJ6zuC0=;
-        b=nfxJ9utifGYOfORRbcLJ7AB9T3hAONUSN/JreAZuiFFTR/XLnyEGVM2WUSX2kh9nUv
-         Ng+whVg2PQ/Rc09bDvehNC1fI8q7IMZpTwR11NNQYb7YuAQ4+YLwrTkCPEgNUlTVk1JW
-         TBP1Fqo34JQFe2cal7k0m/2gq2KKysoyvM4B2ekDtrGTc5raUKAulKSZi57f8soGsSbq
-         EDM6BcQ7NhN08/H6zbTMcrT5nS6l9NWBcM1POgA0oWMjTiOT8a21MlFqS+5LH6H3tCO6
-         GGkQxuyJGbu0UDeocTlRJekn8RPkP1tJwg42dGSA7LTESz+hZ9jXIZbIHZiMitI6iXBK
-         z6Cw==
-X-Gm-Message-State: APjAAAXc0kSKZmVhC6nHcahYQQ6Nu6dXqSK30ov7RcFOMXLBEwkvOLZ9
-        /0NmZO5QBEALmbss2OXzCZ5WHQ==
-X-Google-Smtp-Source: APXvYqzpsWk+icwbRs39pNzCTfkqlbpenskyx49fLQSztpdyeoqxDXn/46hT0rLQHqnrFhjGxP9zig==
-X-Received: by 2002:adf:eec4:: with SMTP id a4mr1591677wrp.38.1571296360102;
-        Thu, 17 Oct 2019 00:12:40 -0700 (PDT)
-Received: from debian-brgl.home ([2a01:cb1d:af:5b00:6d6c:8493:1ab5:dad7])
-        by smtp.gmail.com with ESMTPSA id n22sm1156689wmk.19.2019.10.17.00.12.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Oct 2019 00:12:39 -0700 (PDT)
-From:   Bartosz Golaszewski <brgl@bgdev.pl>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>
-Cc:     linux-input@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH v3 1/6] dt-bindings: mfd: max77650: convert the binding document to yaml
-Date:   Thu, 17 Oct 2019 09:12:29 +0200
-Message-Id: <20191017071234.8719-2-brgl@bgdev.pl>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191017071234.8719-1-brgl@bgdev.pl>
-References: <20191017071234.8719-1-brgl@bgdev.pl>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=paqFDTtdY3M8Ln3kvS2sgcbv9f/ilylyzRvaduM2VsY=;
+        b=CnfPOtUJsPuN5qsymE0SCw/18236mkL85GRHXt0lEM2vxOCFg9iO7Nbr9jJmiuwoN0
+         C3+faaJQtY3bosXfGHVNm2SVZf8JoqJprYt0h7QEH5PYiJHFY3q8tJOcZm66U3aUEHqg
+         FmZ2e2wYykD0eVUfdVJu/1fhNk7ipBkKe1/OlpFOkLRDfG0MCjvUX/rtqYzAW5V1sVNq
+         Tkt1HU+mDm6qf+h5H6vEBs7H5LW/rRmd0tF95RnEhIamruS/+CdOn6YE9Tf7IcNzZ0M4
+         0Z7ux9o6KBCc7EzKVZnIaXMsKYTAfs835EGxVGF8xzCwPS7tCrmVlZ+R9Y2L1OM49eM2
+         n2sA==
+X-Gm-Message-State: APjAAAW3BYNCyR0xQNstPzJ5EFuYr0YUpuWkAPiHPjFJ46Kj6mN4kEdz
+        K8YTtVqrJ7LJoeFiaY+Fx3gBH7ppPLJVQHkaeuJBPA==
+X-Google-Smtp-Source: APXvYqxd6dQcGbSpCKxJAN7cuzTjKDPHr8BOJ/ritWtbU7r/7bPdSmety13gO9Mj4sTiUij+G5xrdaUjYdN0Z/Ytw8o=
+X-Received: by 2002:ab0:5a97:: with SMTP id w23mr1633617uae.129.1571302067047;
+ Thu, 17 Oct 2019 01:47:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <1571254641-13626-1-git-send-email-thara.gopinath@linaro.org> <1571254641-13626-5-git-send-email-thara.gopinath@linaro.org>
+In-Reply-To: <1571254641-13626-5-git-send-email-thara.gopinath@linaro.org>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Thu, 17 Oct 2019 10:47:11 +0200
+Message-ID: <CAPDyKFoOpxWWhbr0ZSmuKEoqx=qoZ2ksLO9QodyhWU35tPVX6w@mail.gmail.com>
+Subject: Re: [PATCH v3 4/7] thermal: Add generic power domain warming device driver.
+To:     Thara Gopinath <thara.gopinath@linaro.org>
+Cc:     Eduardo Valentin <edubezval@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Andy Gross <agross@kernel.org>, amit.kucheria@verdurent.com,
+        Mark Rutland <mark.rutland@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        DTML <devicetree@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+On Wed, 16 Oct 2019 at 21:37, Thara Gopinath <thara.gopinath@linaro.org> wrote:
+>
+> Resources modeled as power domains in linux kenrel
+> can  be used to warm the SoC(eg. mx power domain on sdm845).
+> To support this feature, introduce a generic power domain
+> warming device driver that can be plugged into the thermal framework
+> (The thermal framework itself requires further modifiction to
+> support a warming device in place of a cooling device.
+> Those extensions are not introduced in this patch series).
+>
+> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+> ---
+>  drivers/thermal/Kconfig              |  10 +++
+>  drivers/thermal/Makefile             |   2 +
+>  drivers/thermal/pwr_domain_warming.c | 136 +++++++++++++++++++++++++++++++++++
+>  include/linux/pwr_domain_warming.h   |  31 ++++++++
+>  4 files changed, 179 insertions(+)
+>  create mode 100644 drivers/thermal/pwr_domain_warming.c
+>  create mode 100644 include/linux/pwr_domain_warming.h
+>
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 001a21a..0c5c93e 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -187,6 +187,16 @@ config DEVFREQ_THERMAL
+>
+>           If you want this support, you should say Y here.
+>
+> +config PWR_DOMAIN_WARMING_THERMAL
+> +       bool "Power Domain based warming device"
+> +       depends on PM_GENERIC_DOMAINS_OF
+> +       help
+> +         This implements the generic power domain based warming
+> +         mechanism through increasing the performance state of
+> +         a power domain.
+> +
+> +         If you want this support, you should say Y here.
+> +
+>  config THERMAL_EMULATION
+>         bool "Thermal emulation mode support"
+>         help
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index 74a37c7..382c64a 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -27,6 +27,8 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)   += clock_cooling.o
+>  # devfreq cooling
+>  thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
+>
+> +thermal_sys-$(CONFIG_PWR_DOMAIN_WARMING_THERMAL)       += pwr_domain_warming.o
+> +
+>  # platform thermal drivers
+>  obj-y                          += broadcom/
+>  obj-$(CONFIG_THERMAL_MMIO)             += thermal_mmio.o
+> diff --git a/drivers/thermal/pwr_domain_warming.c b/drivers/thermal/pwr_domain_warming.c
+> new file mode 100644
+> index 0000000..60fae3e
+> --- /dev/null
+> +++ b/drivers/thermal/pwr_domain_warming.c
+> @@ -0,0 +1,136 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2019, Linaro Ltd
+> + */
+> +#include <linux/err.h>
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/module.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/slab.h>
+> +#include <linux/pwr_domain_warming.h>
+> +
+> +struct pd_warming_device {
+> +       struct thermal_cooling_device *cdev;
+> +       struct generic_pm_domain *gpd;
 
-Convert the binding document for MAX77650 core MFD module to YAML.
+No, this isn't a genpd provider and thus we should not need to carry
+the above pointer in the struct pd_warming_device.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- .../devicetree/bindings/mfd/max77650.txt      |  46 ------
- .../devicetree/bindings/mfd/max77650.yaml     | 151 ++++++++++++++++++
- 2 files changed, 151 insertions(+), 46 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
- create mode 100644 Documentation/devicetree/bindings/mfd/max77650.yaml
+> +       struct device *dev;
+> +       int max_state;
+> +       int cur_state;
+> +       bool runtime_resumed;
+> +};
+> +
+> +static int pd_wdev_get_max_state(struct thermal_cooling_device *cdev,
+> +                                unsigned long *state)
+> +{
+> +       struct pd_warming_device *pd_wdev = cdev->devdata;
+> +
+> +       *state = pd_wdev->max_state;
+> +       return 0;
+> +}
+> +
+> +static int pd_wdev_get_cur_state(struct thermal_cooling_device *cdev,
+> +                                unsigned long *state)
+> +{
+> +       struct pd_warming_device *pd_wdev = cdev->devdata;
+> +
+> +       *state = dev_pm_genpd_get_performance_state(pd_wdev->dev);
+> +
+> +       return 0;
+> +}
+> +
+> +static int pd_wdev_set_cur_state(struct thermal_cooling_device *cdev,
+> +                                unsigned long state)
+> +{
+> +       struct pd_warming_device *pd_wdev = cdev->devdata;
+> +       struct device *dev = pd_wdev->dev;
+> +       int ret;
+> +
+> +       ret = dev_pm_genpd_set_performance_state(dev, state);
+> +
+> +       if (ret)
+> +               return ret;
+> +
+> +       if (state && !pd_wdev->runtime_resumed) {
+> +               ret = pm_runtime_get_sync(dev);
+> +               pd_wdev->runtime_resumed = true;
+> +       } else if (!state && pd_wdev->runtime_resumed) {
+> +               ret = pm_runtime_put(dev);
+> +               pd_wdev->runtime_resumed = false;
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +static int pd_wdev_late_init(struct thermal_cooling_device *cdev)
+> +{
+> +       struct pd_warming_device *pd_wdev = cdev->devdata;
+> +       struct device *dev = &cdev->device;
+> +       int state_count, ret;
+> +
+> +       ret = pm_genpd_add_device(pd_wdev->gpd, dev);
 
-diff --git a/Documentation/devicetree/bindings/mfd/max77650.txt b/Documentation/devicetree/bindings/mfd/max77650.txt
-deleted file mode 100644
-index b529d8d19335..000000000000
---- a/Documentation/devicetree/bindings/mfd/max77650.txt
-+++ /dev/null
-@@ -1,46 +0,0 @@
--MAX77650 ultra low-power PMIC from Maxim Integrated.
--
--Required properties:
---------------------
--- compatible:		Must be "maxim,max77650"
--- reg:			I2C device address.
--- interrupts:		The interrupt on the parent the controller is
--			connected to.
--- interrupt-controller: Marks the device node as an interrupt controller.
--- #interrupt-cells:	Must be <2>.
--
--- gpio-controller:	Marks the device node as a gpio controller.
--- #gpio-cells:		Must be <2>. The first cell is the pin number and
--			the second cell is used to specify the gpio active
--			state.
--
--Optional properties:
----------------------
--gpio-line-names:	Single string containing the name of the GPIO line.
--
--The GPIO-controller module is represented as part of the top-level PMIC
--node. The device exposes a single GPIO line.
--
--For device-tree bindings of other sub-modules (regulator, power supply,
--LEDs and onkey) refer to the binding documents under the respective
--sub-system directories.
--
--For more details on GPIO bindings, please refer to the generic GPIO DT
--binding document <devicetree/bindings/gpio/gpio.txt>.
--
--Example:
----------
--
--	pmic@48 {
--		compatible = "maxim,max77650";
--		reg = <0x48>;
--
--		interrupt-controller;
--		interrupt-parent = <&gpio2>;
--		#interrupt-cells = <2>;
--		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
--
--		gpio-controller;
--		#gpio-cells = <2>;
--		gpio-line-names = "max77650-charger";
--	};
-diff --git a/Documentation/devicetree/bindings/mfd/max77650.yaml b/Documentation/devicetree/bindings/mfd/max77650.yaml
-new file mode 100644
-index 000000000000..66a447e1cf56
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/max77650.yaml
-@@ -0,0 +1,151 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/max77650.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: MAX77650 ultra low-power PMIC from Maxim Integrated.
-+
-+maintainers:
-+  - Bartosz Golaszewski <bgolaszewski@baylibre.com>
-+
-+description: |
-+  This document describes the DT properties of the core MFD controller.
-+
-+  The GPIO-controller module is represented as part of the top-level PMIC
-+  node. The device exposes a single GPIO line.
-+
-+  For device-tree bindings of other sub-modules (regulator, power supply,
-+  LEDs and onkey) refer to the binding documents under the respective
-+  sub-system directories.
-+
-+  For more details on GPIO bindings, please refer to the generic GPIO DT
-+  binding document <devicetree/bindings/gpio/gpio.txt>.
-+
-+properties:
-+  compatible:
-+    const: maxim,max77650
-+
-+  reg:
-+    description:
-+      I2C device address.
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  interrupt-controller: true
-+
-+  "#interrupt-cells":
-+    const: 2
-+    description:
-+      The first cell is the IRQ number, the second cell is the trigger type.
-+
-+  gpio-controller: true
-+
-+  "#gpio-cells":
-+    const: 2
-+    description:
-+      The first cell is the pin number and the second cell is used to specify
-+      the gpio active state.
-+
-+  gpio-line-names:
-+    maxItems: 1
-+    description:
-+      Single string containing the name of the GPIO line.
-+
-+  regulators:
-+    $ref: ../regulator/max77650-regulator.yaml
-+
-+  charger:
-+    $ref: ../power/supply/max77650-charger.yaml
-+
-+  leds:
-+    $ref: ../leds/leds-max77650.yaml
-+
-+  onkey:
-+    $ref: ../input/max77650-onkey.yaml
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - interrupt-controller
-+  - "#interrupt-cells"
-+  - gpio-controller
-+  - "#gpio-cells"
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    #include <dt-bindings/input/linux-event-codes.h>
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        pmic@48 {
-+            compatible = "maxim,max77650";
-+            reg = <0x48>;
-+
-+            interrupt-controller;
-+            interrupt-parent = <&gpio2>;
-+            #interrupt-cells = <2>;
-+            interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
-+
-+            gpio-controller;
-+            #gpio-cells = <2>;
-+            gpio-line-names = "max77650-charger";
-+
-+            regulators {
-+                compatible = "maxim,max77650-regulator";
-+
-+                max77650_ldo: regulator@0 {
-+                    regulator-compatible = "ldo";
-+                    regulator-name = "max77650-ldo";
-+                    regulator-min-microvolt = <1350000>;
-+                    regulator-max-microvolt = <2937500>;
-+                };
-+
-+                max77650_sbb0: regulator@1 {
-+                    regulator-compatible = "sbb0";
-+                    regulator-name = "max77650-sbb0";
-+                    regulator-min-microvolt = <800000>;
-+                    regulator-max-microvolt = <1587500>;
-+                };
-+            };
-+
-+            charger {
-+                compatible = "maxim,max77650-charger";
-+                input-voltage-min-microvolt = <4200000>;
-+                input-current-limit-microamp = <285000>;
-+            };
-+
-+            leds {
-+                compatible = "maxim,max77650-led";
-+                #address-cells = <1>;
-+                #size-cells = <0>;
-+
-+                led@0 {
-+                    reg = <0>;
-+                    label = "blue:usr0";
-+                };
-+
-+                led@1 {
-+                    reg = <1>;
-+                    label = "red:usr1";
-+                    linux,default-trigger = "heartbeat";
-+                };
-+
-+                led@2 {
-+                    reg = <2>;
-+                    label = "green:usr2";
-+                };
-+            };
-+
-+            onkey {
-+                compatible = "maxim,max77650-onkey";
-+                linux,code = <KEY_END>;
-+                maxim,onkey-slide;
-+            };
-+        };
-+    };
--- 
-2.23.0
+The pm_genpd_add_device() is a legacy interface and we are striving to
+remove it. I think there are two better options for you to use to deal
+with the attach thingy.
 
+1. The easiest one is probably just to convert into using
+of_genpd_add_device() instead. I think you already have the
+information that you need in the ->cdev pointer to do that. However,
+that also means you need to add the ->late_init() callback to the
+struct thermal_cooling_device_ops, like what you do here.
+
+2. Maybe the most correct solution is, rather than attaching
+&cdev->device to the PM domain, to register a separate new device
+(device_register()) and assign it the corresponding OF node as the
+genpd provider's subnode and then attach this one instead. If
+"power-domains" can be specified in the subnode, you can even use
+dev_pm_domain_attach() to attach the device to the PM domain, else
+of_genpd_add_device() should work. In the second step, when
+registering the cooling device, the new device above should be
+assigned as parent to the device that is about to be registered via
+thermal_of_cooling_device_register(). In other words, the
+thermal_of_cooling_device_register() needs to be extended to cope with
+receiving a parent device as an in-parameter, but that should be
+doable I think. In this way, you don't need to add the ->late_init()
+callback at all, but you can instead just use the parent device when
+operating on the PM domain.
+
+> +
+> +       if (ret)
+> +               return ret;
+> +
+> +       state_count = dev_pm_genpd_performance_state_count(dev);
+> +       if (state_count < 0)
+> +               return state_count;
+> +
+> +       pm_runtime_enable(dev);
+> +
+> +       pd_wdev->dev = dev;
+> +       pd_wdev->max_state = state_count - 1;
+> +
+> +       return 0;
+> +}
+> +
+> +static struct thermal_cooling_device_ops pd_warming_device_ops = {
+> +       .late_init      = pd_wdev_late_init,
+> +       .get_max_state  = pd_wdev_get_max_state,
+> +       .get_cur_state  = pd_wdev_get_cur_state,
+> +       .set_cur_state  = pd_wdev_set_cur_state,
+> +};
+
+[...]
+
+Kind regards
+Uffe
