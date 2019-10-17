@@ -2,113 +2,117 @@ Return-Path: <SRS0=hqGy=YK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E61ECE599
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 00:41:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 219D0ECE599
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 02:21:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 132B12082C
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 00:41:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EDA3121A49
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 02:21:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="ou7y+4ZX"
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="HXw4sWQl";
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="dp1hnxyS"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726458AbfJQAlT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Oct 2019 20:41:19 -0400
-Received: from userp2130.oracle.com ([156.151.31.86]:47790 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725877AbfJQAlT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2019 20:41:19 -0400
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x9H0Tci2054010;
-        Thu, 17 Oct 2019 00:41:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id; s=corp-2019-08-05;
- bh=hz+5f6iLUqcsD4s/JDp34cnZKqTf0cQyrV5VqWsRJSg=;
- b=ou7y+4ZXtq6FvVzAlIpvfIRcRF74cR/PrexWYRrcJdBZt8F6oNpKO7Kk8FvvqMk4ylVn
- 9/Y+wL2emggLxopUh4WScKUOc6NEQtE9xp5axlhZUQM+YsV0DnMO0EeC3EYI8NO59DLF
- 3X/GtqpDEHSedQiE6h2tEYnI+/aH7XEvO9wCOaeicvkapotOhC7+nMR5RiDanHLSwU2j
- jwLNGcjnyqIqvkOvA8g3qN9LuyVIM2/5anfl/fLTh873VIgz7EJ+bwAoiZUYX3pZfWEs
- P8667totgyTYCvgftiEOtb4QRm5PaTa7zhMoucybPqt9+4T18DuxflHkl4OxgUZqVaw1 iA== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by userp2130.oracle.com with ESMTP id 2vk68utp35-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 17 Oct 2019 00:41:05 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x9H0SPtW167879;
-        Thu, 17 Oct 2019 00:41:04 GMT
-Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
-        by aserp3020.oracle.com with ESMTP id 2vp70nvkv7-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 17 Oct 2019 00:41:04 +0000
-Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
-        by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x9H0f2Vh022438;
-        Thu, 17 Oct 2019 00:41:02 GMT
-Received: from z2.cn.oracle.com (/10.182.70.159)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Thu, 17 Oct 2019 00:41:01 +0000
-From:   Zhenzhong Duan <zhenzhong.duan@oracle.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org,
-        linux-pm@vger.kernel.org, mtosatti@redhat.com,
-        Zhenzhong Duan <zhenzhong.duan@oracle.com>,
-        Joao Martins <joao.m.martins@oracle.com>
-Subject: [PATCH] cpuidle-haltpoll: make haltpoll aware of 'idle=' override
-Date:   Thu, 17 Oct 2019 08:39:10 +0800
-Message-Id: <1571272750-29798-1-git-send-email-zhenzhong.duan@oracle.com>
-X-Mailer: git-send-email 1.8.3.1
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9412 signatures=668684
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=1 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=995
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1908290000 definitions=main-1910170001
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9412 signatures=668684
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=1 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1908290000
- definitions=main-1910170001
+        id S1733053AbfJQCVE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Oct 2019 22:21:04 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:45248 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727823AbfJQCVD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Oct 2019 22:21:03 -0400
+Received: by smtp.codeaurora.org (Postfix, from userid 1000)
+        id 63F476032D; Thu, 17 Oct 2019 02:21:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1571278862;
+        bh=ya0y6uIRyTrjP0oZpf7fC4HeXiZCPtMSPUrBj16lLQg=;
+        h=From:To:Cc:Subject:Date:From;
+        b=HXw4sWQlIeoRH5NyTz3+OYGP6BiUi6CdoiBqNCJtAyD56RlSas7vL4VTLHVoICbU/
+         0VgkSxesa8qR+22m31W7p3Wfgrw1udapEqjeVvuKZwg55g3z6L5yO+m4KQ6zRpt/40
+         7bFaOjMNrIwjHdfFJK1OK8Wh58eLGY/9OzpNYs8k=
+Received: from davidai-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: daidavid1@smtp.codeaurora.org)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 0AB7860588;
+        Thu, 17 Oct 2019 02:21:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
+        s=default; t=1571278861;
+        bh=ya0y6uIRyTrjP0oZpf7fC4HeXiZCPtMSPUrBj16lLQg=;
+        h=From:To:Cc:Subject:Date:From;
+        b=dp1hnxySPzveI1r8i/H0PIobU3pyRmtIX34yugKQ1bM7Mv/XWpn0YVp+b8nq606HF
+         hThh7an7dxGYOh8QB3frRfnC/sqMAQHRgd61fhFdtjGJhtffuR+kN8K10qLougTNFw
+         1ekXsd2PGWfR4AFXs1D60BFVEfBax4wqEYwpF/A4=
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 0AB7860588
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=daidavid1@codeaurora.org
+From:   David Dai <daidavid1@codeaurora.org>
+To:     georgi.djakov@linaro.org, bjorn.andersson@linaro.org,
+        robh+dt@kernel.org
+Cc:     David Dai <daidavid1@codeaurora.org>, evgreen@google.com,
+        sboyd@kernel.org, ilina@codeaurora.org, seansw@qti.qualcomm.com,
+        elder@linaro.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: [RFC PATCH 0/4] Redefine interconnect provider DT nodes for SDM845
+Date:   Wed, 16 Oct 2019 19:20:48 -0700
+Message-Id: <1571278852-8023-1-git-send-email-daidavid1@codeaurora.org>
+X-Mailer: git-send-email 1.9.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currenly haltpoll isn't aware of the 'idle=' override, the priority is
-'idle=poll' > haltpoll > 'idle=halt'. When 'idle=poll' is used, cpuidle
-driver is bypassed but current_driver in sys still shows 'haltpoll'.
+While there are no current consumers of the SDM845 interconnect device in
+devicetree, take this opportunity to redefine the interconnect device nodes
+as the previous definitions of using a single child node under the apps_rsc
+device did not accurately capture the description of the hardware.
+The Network-On-Chip (NoC) interconnect devices should be represented in a
+manner akin to QCS404 platforms[1] where there is a separation of NoC devices
+and its RPM/RPMh counterparts.
 
-When 'idle=halt' is used, haltpoll take precedence and make 'idle=halt'
-no effect.
+The bcm-voter devices are representing the RPMh devices that the interconnect
+providers need to communicate with and there can be more than one instance of
+the Bus Clock Manager (BCM) which can live under different instances of Resource
+State Coordinators (RSC). There are display use cases where consumers may need
+to target a different bcm-voter (Some display specific RSC) than the default,
+and there needs to be a way to represent this connection in devicetree.
 
-Add a check to not load haltpoll driver if there is 'idle=' and haltpoll
-is built in. If haltpoll is built as a module, still give a chance for
-admin to use it despite 'idle='.
+This patches series extends the original discussion involving the SDM845
+interconnect bindings[2] by adding accompanying driver implementations
+using the split NoC devices. The first patch also updates existing
+sdm845 binding documentation to DT schema format using json-schema.
 
-Signed-off-by: Zhenzhong Duan <zhenzhong.duan@oracle.com>
-Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
----
- drivers/cpuidle/cpuidle-haltpoll.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+[1]: https://lkml.org/lkml/2019/6/13/143
+[2]: https://lkml.org/lkml/2019/7/19/1063
 
-diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
-index 932390b..00e9821 100644
---- a/drivers/cpuidle/cpuidle-haltpoll.c
-+++ b/drivers/cpuidle/cpuidle-haltpoll.c
-@@ -95,6 +95,12 @@ static int __init haltpoll_init(void)
- 	int ret;
- 	struct cpuidle_driver *drv = &haltpoll_driver;
- 
-+#if !defined(CONFIG_HALTPOLL_CPUIDLE_MODULE)
-+	/* Do not load haltpoll if idle= is passed */
-+	if (boot_option_idle_override != IDLE_NO_OVERRIDE)
-+		return -ENODEV;
-+#endif
-+
- 	cpuidle_poll_state_init(drv);
- 
- 	if (!kvm_para_available() ||
+David Dai (4):
+  dt-bindings: interconnect: Update Qualcomm SDM845 DT bindings
+  arm64: dts: sdm845: Redefine interconnect provider DT nodes
+  interconnect: qcom: Refactor icc rpmh support
+  interconnect: qcom: sdm845: Split qnodes into their respective NoCs
+
+ .../bindings/interconnect/qcom,bcm-voter.yaml      |  45 ++
+ .../bindings/interconnect/qcom,sdm845.txt          |  24 -
+ .../bindings/interconnect/qcom,sdm845.yaml         | 108 +++
+ arch/arm64/boot/dts/qcom/sdm845.dtsi               |  60 +-
+ drivers/interconnect/qcom/Kconfig                  |   8 +
+ drivers/interconnect/qcom/Makefile                 |   4 +
+ drivers/interconnect/qcom/bcm-voter.c              | 355 ++++++++++
+ drivers/interconnect/qcom/bcm-voter.h              |  28 +
+ drivers/interconnect/qcom/icc-rpmh.c               | 154 +++++
+ drivers/interconnect/qcom/icc-rpmh.h               | 150 +++++
+ drivers/interconnect/qcom/sdm845.c                 | 727 ++++++---------------
+ 11 files changed, 1115 insertions(+), 548 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml
+ delete mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.yaml
+ create mode 100644 drivers/interconnect/qcom/bcm-voter.c
+ create mode 100644 drivers/interconnect/qcom/bcm-voter.h
+ create mode 100644 drivers/interconnect/qcom/icc-rpmh.c
+ create mode 100644 drivers/interconnect/qcom/icc-rpmh.h
+
 -- 
-1.8.3.1
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
