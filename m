@@ -2,50 +2,53 @@ Return-Path: <SRS0=hqGy=YK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81ADEFA372A
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 21:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02E11FA372A
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 21:29:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4DE1621D7C
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 21:28:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C8C0121A49
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 21:29:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571347739;
-	bh=TO0yNu9Whn6Lp8lLVIfxOgVAK9V/+ggxJbbaHAZ3ENE=;
-	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=2er2UlhCzpK3XDrOWm4rJrj8owyI9q49nEQxPFW7ksREU+s9ZBGAH0vZYL8vEC6IC
-	 bfGxAk4SFRXkooPjg9+AiDbq6FECFaCahzDmJAvN/S+1dNvfjxv+fllUTV8ZnnUjST
-	 pQEc7YlCQJfIcQvJ5yXBmwOXcQ/piAeGrACHlbRQ=
+	s=default; t=1571347746;
+	bh=j7zh1mvjgnbLlrLEg0jZQ1d4/6qSUS30PoJk196vWi4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=qq90K6IXJWPnvG8hHS9u7IxENL/9m/RV4Ms1V6T9R/8vt/A3ndvjSVI3I9nsC71CA
+	 u0J/oevHb9v47bLCq6bqQGq84YRkl6Sv6KW/o1XZwLMGgdEgvkfY+vjs/nML4mpmjG
+	 VdhJflO8+UYBOw4u+V0LrLLeBEEVC/RU1uif06QI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391230AbfJQV26 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Oct 2019 17:28:58 -0400
-Received: from mail.kernel.org ([198.145.29.99]:40856 "EHLO mail.kernel.org"
+        id S2503636AbfJQV3G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Oct 2019 17:29:06 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40980 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727683AbfJQV26 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Oct 2019 17:28:58 -0400
+        id S1727683AbfJQV3E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 17 Oct 2019 17:29:04 -0400
 Received: from localhost (unknown [69.71.4.100])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id BEE1C21D7A;
-        Thu, 17 Oct 2019 21:28:57 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 3EC5521D7A;
+        Thu, 17 Oct 2019 21:29:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1571347738;
-        bh=TO0yNu9Whn6Lp8lLVIfxOgVAK9V/+ggxJbbaHAZ3ENE=;
-        h=From:To:Cc:Subject:Date:From;
-        b=PMyU3Vw2ibjEVLh14210kOjWBIQ4PLI0jBxBiqk2UwvqbP5AD43BzGwlKS85cCEY9
-         f3Z6lOSU87RETH+/PwRj1Ui46HjllNBw+H8JX4xq5GwsROToZ1GUDX+wR48gZYr4CZ
-         fEUnYgAYGzGZCTTstE6TWfFf/ms7/YoszPGvOf8Y=
+        s=default; t=1571347743;
+        bh=j7zh1mvjgnbLlrLEg0jZQ1d4/6qSUS30PoJk196vWi4=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=FTFb6uHfG/KwbOLYb7b2V7owWfoakFzhRsPcayuF4R2WuhjG0PQBYXwDlVzxDrq19
+         MkdHjK99NHU7BBuCEAC/8oUtNJvjnsPZFZjBG4ft6j1/EH2Tq9BztVQOd9eOMhySO+
+         4cDtH+ciNok+U8bCACILfuTEhAQxWCIxGroN56Ek=
 From:   Bjorn Helgaas <helgaas@kernel.org>
 To:     linux-pci@vger.kernel.org
 Cc:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 0/2] PCI/PM: Use dev_printk() when possible
-Date:   Thu, 17 Oct 2019 16:28:49 -0500
-Message-Id: <20191017212851.54237-1-helgaas@kernel.org>
+Subject: [PATCH 2/2] PCI/PM: Use pci_WARN() to include device information
+Date:   Thu, 17 Oct 2019 16:28:51 -0500
+Message-Id: <20191017212851.54237-3-helgaas@kernel.org>
 X-Mailer: git-send-email 2.23.0.866.gb869b98d4c-goog
+In-Reply-To: <20191017212851.54237-1-helgaas@kernel.org>
+References: <20191017212851.54237-1-helgaas@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -55,17 +58,111 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Bjorn Helgaas <bhelgaas@google.com>
 
-Some PM messages, e.g., "PCI PM: Device state not saved by %pS\n", had no
-indication of what device was affected.  Add pci_WARN() and use it.
+Add and use pci_WARN() wrappers so warnings include device information.
 
-Bjorn Helgaas (2):
-  PCI/PM: Use PCI dev_printk() wrappers for consistency
-  PCI/PM: Use pci_WARN() to include device information
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/pci/pci-driver.c | 34 +++++++++++++++++-----------------
+ include/linux/pci.h      |  8 ++++++++
+ 2 files changed, 25 insertions(+), 17 deletions(-)
 
- drivers/pci/pci-driver.c | 45 ++++++++++++++++++++--------------------
- include/linux/pci.h      |  8 +++++++
- 2 files changed, 31 insertions(+), 22 deletions(-)
-
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 407b1df5ea7c..5337cbbd69de 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -585,9 +585,9 @@ static int pci_legacy_suspend(struct device *dev, pm_message_t state)
+ 
+ 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
+ 		    && pci_dev->current_state != PCI_UNKNOWN) {
+-			WARN_ONCE(pci_dev->current_state != prev,
+-				"PCI PM: Device state not saved by %pS\n",
+-				drv->suspend);
++			pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
++				      "PCI PM: Device state not saved by %pS\n",
++				      drv->suspend);
+ 		}
+ 	}
+ 
+@@ -612,9 +612,9 @@ static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
+ 
+ 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
+ 		    && pci_dev->current_state != PCI_UNKNOWN) {
+-			WARN_ONCE(pci_dev->current_state != prev,
+-				"PCI PM: Device state not saved by %pS\n",
+-				drv->suspend_late);
++			pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
++				      "PCI PM: Device state not saved by %pS\n",
++				      drv->suspend_late);
+ 			goto Fixup;
+ 		}
+ 	}
+@@ -670,8 +670,8 @@ static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
+ 	 * supported as well.  Drivers are supposed to support either the
+ 	 * former, or the latter, but not both at the same time.
+ 	 */
+-	WARN(ret && drv->driver.pm, "driver %s device %04x:%04x\n",
+-		drv->name, pci_dev->vendor, pci_dev->device);
++	pci_WARN(pci_dev, ret && drv->driver.pm, "device %04x:%04x\n",
++		 pci_dev->vendor, pci_dev->device);
+ 
+ 	return ret;
+ }
+@@ -794,9 +794,9 @@ static int pci_pm_suspend(struct device *dev)
+ 
+ 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
+ 		    && pci_dev->current_state != PCI_UNKNOWN) {
+-			WARN_ONCE(pci_dev->current_state != prev,
+-				"PCI PM: State of device not saved by %pS\n",
+-				pm->suspend);
++			pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
++				      "PCI PM: State of device not saved by %pS\n",
++				      pm->suspend);
+ 		}
+ 	}
+ 
+@@ -842,9 +842,9 @@ static int pci_pm_suspend_noirq(struct device *dev)
+ 
+ 		if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
+ 		    && pci_dev->current_state != PCI_UNKNOWN) {
+-			WARN_ONCE(pci_dev->current_state != prev,
+-				"PCI PM: State of device not saved by %pS\n",
+-				pm->suspend_noirq);
++			pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
++				      "PCI PM: State of device not saved by %pS\n",
++				      pm->suspend_noirq);
+ 			goto Fixup;
+ 		}
+ 	}
+@@ -1311,9 +1311,9 @@ static int pci_pm_runtime_suspend(struct device *dev)
+ 	if (pm && pm->runtime_suspend
+ 	    && !pci_dev->state_saved && pci_dev->current_state != PCI_D0
+ 	    && pci_dev->current_state != PCI_UNKNOWN) {
+-		WARN_ONCE(pci_dev->current_state != prev,
+-			"PCI PM: State of device not saved by %pS\n",
+-			pm->runtime_suspend);
++		pci_WARN_ONCE(pci_dev, pci_dev->current_state != prev,
++			      "PCI PM: State of device not saved by %pS\n",
++			      pm->runtime_suspend);
+ 		return 0;
+ 	}
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index f9088c89a534..4846306d521c 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -2400,4 +2400,12 @@ void pci_uevent_ers(struct pci_dev *pdev, enum  pci_ers_result err_type);
+ #define pci_info_ratelimited(pdev, fmt, arg...) \
+ 	dev_info_ratelimited(&(pdev)->dev, fmt, ##arg)
+ 
++#define pci_WARN(pdev, condition, fmt, arg...) \
++	WARN(condition, "%s %s: " fmt, \
++	     dev_driver_string(&(pdev)->dev), pci_name(pdev), ##arg)
++
++#define pci_WARN_ONCE(pdev, condition, fmt, arg...) \
++	WARN_ONCE(condition, "%s %s: " fmt, \
++		  dev_driver_string(&(pdev)->dev), pci_name(pdev), ##arg)
++
+ #endif /* LINUX_PCI_H */
 -- 
 2.23.0.866.gb869b98d4c-goog
 
