@@ -2,116 +2,146 @@ Return-Path: <SRS0=hqGy=YK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2100ECE58D
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 21:29:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11D80CA9EC8
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 22:56:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 78C3E21A49
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 21:29:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571347763;
-	bh=Bc3HCFc6y6+gN2QfwO1d6iGBdnhOT8r7h4mEEpAH98U=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=pC6YgBkp/CO10eX+lGZ6bquYZqX7gaYwv69ZypWNwE9SNgnPROmO+HzMvGqhz9h7k
-	 OmbZA23AefCWF5NVnImbpPZOXxwFGGqls5NfgPipcUNxaIsIUNKhljEUT9Gjn8JMRM
-	 8dmDZLB9Wkmj7sL98H1VOXWhHe78FuIHIfCfqSe4=
+	by mail.kernel.org (Postfix) with ESMTP id CA91921D80
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Oct 2019 22:56:06 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="SjAkaqVl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2503599AbfJQV3C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Oct 2019 17:29:02 -0400
-Received: from mail.kernel.org ([198.145.29.99]:40954 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727683AbfJQV3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Oct 2019 17:29:01 -0400
-Received: from localhost (unknown [69.71.4.100])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B03B321A49;
-        Thu, 17 Oct 2019 21:29:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1571347740;
-        bh=Bc3HCFc6y6+gN2QfwO1d6iGBdnhOT8r7h4mEEpAH98U=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=THiR1MPGnsFaVzoHvGizfzyBLLJZUGaZuUbK7m/D0TvLSZTgJbE8XcPNtsJn3sQTh
-         PLxMkKAGwTY4SlhtSOLkwtRUcwcWFTwxtbDifp4SpZyDhr07+yjnIIHvozWgFjKl9k
-         PKC9EO2rnZBJG6LPnYLB3GlhWpU30QgmZxWq7z4Q=
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     linux-pci@vger.kernel.org
-Cc:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 1/2] PCI/PM: Use PCI dev_printk() wrappers for consistency
-Date:   Thu, 17 Oct 2019 16:28:50 -0500
-Message-Id: <20191017212851.54237-2-helgaas@kernel.org>
-X-Mailer: git-send-email 2.23.0.866.gb869b98d4c-goog
-In-Reply-To: <20191017212851.54237-1-helgaas@kernel.org>
-References: <20191017212851.54237-1-helgaas@kernel.org>
+        id S2438353AbfJQW4G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Oct 2019 18:56:06 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:44446 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389846AbfJQW4F (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2019 18:56:05 -0400
+Received: by mail-wr1-f65.google.com with SMTP id z9so4109060wrl.11
+        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2019 15:56:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=9rBnmh0SQQD7EZXCwG/Rmi0xjqD1Y0ThAZXFkdsY+iQ=;
+        b=SjAkaqVlUWpxNksMr2KvBoEDX6hksckR56Ak8Yd5CTE9AGs8U5Mp3OPVW1cg0eUInR
+         pQtHGsO8MiZVlBZP6PN6PgoShQbW0ceFcn1VKnGZH6/o5ZkgI+gSS10Rx6FU7p6GXaYV
+         n8GxMp0AeaWH12aLWP+Xdx/UaIMz+2T7BqQBSu0rNhFpTX93+/f4g/q0x34Wx2L+63tR
+         8mrCxZB9PV6Fi4T+QFxbMDcWys2prqsiPfoKfNgKquWVITTygcfcurosbtiT7jNr5jU2
+         TQ0oxtisPoGLGLfZ+tO+0noC+nQNPKx/0FhAzp0z7aUcpblBYGq5CLshgI3YGxy6AXam
+         JIcg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=9rBnmh0SQQD7EZXCwG/Rmi0xjqD1Y0ThAZXFkdsY+iQ=;
+        b=jInLsx2x23yLyM3hEmCADL+K6GAMmZ7X4P+dLeuPKlT5tMfb0fN8F6bhNttD5CFKZV
+         jXrf0D1+W+b7HdmmxJRFjJkFKTWEoNT7y0BtAKJRXoKpKIVteDA60BP6qVvzjYx2GyVy
+         egjWzPf3ScSEXzxsf8KvJg7TvmJX34sjfiQe4u6Y5nFXJ3/yhq0YsafYmvxH83I+xb1W
+         a6YApQlOdkPWB+pxQLlbNFjkxHP88RopCyzwsnP5iLqK43ls/X3IDsAJxRkf9tXQp0vB
+         4fOqQJNoLjHeb3+MJ4LeO12XZ4RUBRKPkdeDUlHo6Z3xkNZKyokn9e5bM+F2VjnQ6BDD
+         5QSw==
+X-Gm-Message-State: APjAAAV06M0TfdhZ6sf/DIXqbuGoJoxgIhFcfLZkuUtdcI9WJ85nr+Kt
+        5TaQW+v4ViO9BMtUKqTif+A8GT92IoB0Ozstd8kWTQ==
+X-Google-Smtp-Source: APXvYqxHqv5uhe6ktRmll2ZYbxrAZbwZeyIqcYcgbC3LJooqk9Iaqd3KZYxFkpAuQ+Hwd/x1fSfnhac10/ItdibGrSc=
+X-Received: by 2002:adf:e7c2:: with SMTP id e2mr4967616wrn.29.1571352961493;
+ Thu, 17 Oct 2019 15:56:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <CAA25o9T6C4VCVbqzS0hJgmvpJb6h+htFpH3OUY30E2VtuG8fxQ@mail.gmail.com>
+ <56319808-87dc-76ed-c1e0-9f60108e94a6@arm.com> <CAA25o9TpBm+LNwVccTaUng4vQ1Q9_Wz2QftGho7DG_+26CCYoA@mail.gmail.com>
+ <CAJZ5v0jCb5jLVQ2Oj0bSNf987apxi7SHx4duX9eALMD6QQXB+w@mail.gmail.com>
+ <CAA25o9SUnwc908Grh8qYMDi_tnyhov00Y11RT69MuK8gXcrN4A@mail.gmail.com> <CAA25o9TWrLh0o17Epqimsvwe8GoW682jVh_4u2KtjJ7SqKGbsQ@mail.gmail.com>
+In-Reply-To: <CAA25o9TWrLh0o17Epqimsvwe8GoW682jVh_4u2KtjJ7SqKGbsQ@mail.gmail.com>
+From:   Luigi Semenzato <semenzato@google.com>
+Date:   Thu, 17 Oct 2019 15:55:49 -0700
+Message-ID: <CAA25o9QKsTwMcuz1yAT7qtnO2rOUVpzkUmnfSLkfRZAFZ_CE9g@mail.gmail.com>
+Subject: Re: hibernation memory usage
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     James Morse <james.morse@arm.com>,
+        Linux Memory Management List <linux-mm@kvack.org>,
+        Bas Nowaira <bassem@google.com>, Geoff Pike <gpike@google.com>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+To make hibernation work, I have been playing with this suggestion:
 
-Use the PCI dev_printk() wrappers for consistency with the rest of the PCI
-core.  No functional change intended.
+> Whatever doesn't fit into 50% of RAM needs to be swapped out before
+> hibernation.  The efficiency of that depends on the swap handling code
+> and the underlying hardware.  If that is efficient enough overall,
+> trying to avoid it altogether isn't going to make much of a
+> difference.
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/pci/pci-driver.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+What's a good way of swapping out 50% of RAM?  I have tried playing
+with /proc/sys/vm/min_free_kbytes.  Lowering it below MemFree forces
+reclaim and gets swapping started.  Unfortunately the reclaim also
+hits file pages, so badly that the system thrashes to a grinding halt.
+Swappiness is already set to 100.  Internally it seems that values up
+to 200 are valid, and I wish that the entire range was allowed, but I
+am not sure it would help.  Right now I am playing with the production
+kernel, but similar situations triggered the same behavior in the
+Chrome OS kernels, even after internally setting swappiness to values
+close to 200.
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index dd70ab2519c9..407b1df5ea7c 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -315,7 +315,8 @@ static long local_pci_probe(void *_ddi)
- 	 * Probe function should return < 0 for failure, 0 for success
- 	 * Treat values > 0 as success, but warn.
- 	 */
--	dev_warn(dev, "Driver probe function unexpectedly returned %d\n", rc);
-+	pci_warn(pci_dev, "Driver probe function unexpectedly returned %d\n",
-+		 rc);
- 	return 0;
- }
- 
-@@ -865,7 +866,7 @@ static int pci_pm_suspend_noirq(struct device *dev)
- 			pci_prepare_to_sleep(pci_dev);
- 	}
- 
--	dev_dbg(dev, "PCI PM: Suspend power state: %s\n",
-+	pci_dbg(pci_dev, "PCI PM: Suspend power state: %s\n",
- 		pci_power_name(pci_dev->current_state));
- 
- 	if (pci_dev->current_state == PCI_D0) {
-@@ -880,7 +881,7 @@ static int pci_pm_suspend_noirq(struct device *dev)
- 	}
- 
- 	if (pci_dev->skip_bus_pm && pm_suspend_no_platform()) {
--		dev_dbg(dev, "PCI PM: Skipped\n");
-+		pci_dbg(pci_dev, "PCI PM: Skipped\n");
- 		goto Fixup;
- 	}
- 
-@@ -1295,11 +1296,11 @@ static int pci_pm_runtime_suspend(struct device *dev)
- 		 * log level.
- 		 */
- 		if (error == -EBUSY || error == -EAGAIN) {
--			dev_dbg(dev, "can't suspend now (%ps returned %d)\n",
-+			pci_dbg(pci_dev, "can't suspend now (%ps returned %d)\n",
- 				pm->runtime_suspend, error);
- 			return error;
- 		} else if (error) {
--			dev_err(dev, "can't suspend (%ps returned %d)\n",
-+			pci_err(pci_dev, "can't suspend (%ps returned %d)\n",
- 				pm->runtime_suspend, error);
- 			return error;
- 		}
--- 
-2.23.0.866.gb869b98d4c-goog
 
+On Tue, Oct 8, 2019 at 1:10 PM Luigi Semenzato <semenzato@google.com> wrote:
+>
+> Actually, I think we only need to change the MM watermarks before
+> hibernation and after resume.  There's a patch that will do just that:
+>
+> https://lkml.org/lkml/2013/2/17/210
+>
+> It didn't make it into mainline (which seems kind of unreasonable,
+> since the watermarks themselves are based on heuristics) but shouldn't
+> be difficult to apply.  Or are there simpler solutions?
+>
+> On Tue, Oct 8, 2019 at 9:18 AM Luigi Semenzato <semenzato@google.com> wrote:
+> >
+> > Yes, that makes sense, thank you.  Use separate partitions for swap
+> > and hibernation.
+> >
+> > Normally the kernel starts swapping out when there's no reclaimable
+> > memory, so anon usage will be high.  Do you think cranking up
+> > /proc/vm/swappiness would be enough to ensure that file pages stay
+> > over 50%?  Or would you use some tricks, such as running a
+> > high-priority process which allocates >50% of RAM, thus forcing other
+> > anon pages to be swapped out, then killing that process and quickly
+> > hibernating before too many pages are brought back in?  Or changing
+> > the kernel so that in the first part of hibernation we'll just swap
+> > stuff out?
+> >
+> > On Tue, Oct 8, 2019 at 8:39 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >
+> > > On Tue, Oct 8, 2019 at 5:26 PM Luigi Semenzato <semenzato@google.com> wrote:
+> > > >
+> > > > Thank you for your reply!
+> > > >
+> > > > I understand the need for saving all state, not just process/task
+> > > > state.  But for many of the systems that could benefit from
+> > > > hibernation, the majority of RAM is taken by user processes (I am
+> > > > thinking laptops).  It should be possible to copy their anonymous
+> > > > pages to disk more or less directly, without making an extra copy like
+> > > > it's done for all other pages.  I am not sure what happens with kernel
+> > > > tasks, but they don't have anonymous pages (that I know).
+> > > >
+> > > > I am curious to know how/if hibernation is currently used in practice.
+> > > > It doesn't seem practical to require that user processes take less
+> > > > than 50% of RAM at all times.  There may be special cases in which the
+> > > > restriction can be achieved by terminating non-essential processes
+> > > > before hibernating, but I don't know of any.
+> > > >
+> > > > I would also like to know how much work it might take to avoid the
+> > > > extra copy of the anonymous pages of frozen processes.
+> > >
+> > > Whatever doesn't fit into 50% of RAM needs to be swapped out before
+> > > hibernation.  The efficiency of that depends on the swap handling code
+> > > and the underlying hardware.  If that is efficient enough overall,
+> > > trying to avoid it altogether isn't going to make much of a
+> > > difference.
