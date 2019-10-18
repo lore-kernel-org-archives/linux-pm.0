@@ -4,35 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9628FCA9EA5
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 10:38:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AE69CA9EA8
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 10:38:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6DF94222C3
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 10:38:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C739222BD
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 10:38:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2408312AbfJRKiX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Oct 2019 06:38:23 -0400
-Received: from [217.140.110.172] ([217.140.110.172]:34218 "EHLO foss.arm.com"
+        id S2439167AbfJRKiq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Oct 2019 06:38:46 -0400
+Received: from [217.140.110.172] ([217.140.110.172]:34262 "EHLO foss.arm.com"
         rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-        id S1729479AbfJRKiX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 18 Oct 2019 06:38:23 -0400
+        id S2439166AbfJRKiq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 18 Oct 2019 06:38:46 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 199F5B42;
-        Fri, 18 Oct 2019 03:38:02 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 755D3C8F;
+        Fri, 18 Oct 2019 03:38:05 -0700 (PDT)
 Received: from usa.arm.com (e107155-lin.cambridge.arm.com [10.1.196.42])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 31C4F3F6C4;
-        Fri, 18 Oct 2019 03:38:01 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 8CA923F6C4;
+        Fri, 18 Oct 2019 03:38:04 -0700 (PDT)
 From:   Sudeep Holla <sudeep.holla@arm.com>
 To:     Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     Sudeep Holla <sudeep.holla@arm.com>,
         "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, nico@fluxnic.net
-Subject: [PATCH v3 2/5] cpufreq: merge arm_big_little and vexpress-spc
-Date:   Fri, 18 Oct 2019 11:37:46 +0100
-Message-Id: <20191018103749.11226-3-sudeep.holla@arm.com>
+Subject: [PATCH v3 5/5] cpufreq: vexpress-spc: fix some coding style issues
+Date:   Fri, 18 Oct 2019 11:37:49 +0100
+Message-Id: <20191018103749.11226-6-sudeep.holla@arm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191018103749.11226-1-sudeep.holla@arm.com>
 References: <20191018103749.11226-1-sudeep.holla@arm.com>
@@ -41,264 +40,129 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-arm_big_little cpufreq driver was designed as a generic big little
-driver that could be used by any platform and make use of bL switcher.
-Over years alternate solutions have been designed and merged to deal
-with bL/HMP systems like EAS.
+Fix the following checkpatch checks/warnings:
 
-Also since no other driver made use of generic arm_big_little cpufreq
-driver except Vexpress SPC, we can merge them together as vexpress-spc
-driver used only on Vexpress TC2(CA15_CA7) platform.
+CHECK: Unnecessary parentheses around the code
+CHECK: Alignment should match open parenthesis
+CHECK: Prefer kernel type 'u32' over 'uint32_t'
+WARNING: Missing a blank line after declarations
 
 Acked-by: Nicolas Pitre <nico@fluxnic.net>
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- MAINTAINERS                                   |  5 +-
- drivers/cpufreq/Kconfig.arm                   | 12 +--
- drivers/cpufreq/Makefile                      |  2 -
- drivers/cpufreq/arm_big_little.h              | 43 ----------
- ...rm_big_little.c => vexpress-spc-cpufreq.c} | 79 +++++++++++++++----
- 5 files changed, 67 insertions(+), 74 deletions(-)
- delete mode 100644 drivers/cpufreq/arm_big_little.h
- rename drivers/cpufreq/{arm_big_little.c => vexpress-spc-cpufreq.c} (90%)
+ drivers/cpufreq/vexpress-spc-cpufreq.c | 36 +++++++++++++-------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a69e6db80c79..78a4adff7892 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4269,14 +4269,13 @@ F:	include/linux/cpufreq.h
- F:	include/linux/sched/cpufreq.h
- F:	tools/testing/selftests/cpufreq/
- 
--CPU FREQUENCY DRIVERS - ARM BIG LITTLE
-+CPU FREQUENCY DRIVERS - VEXPRESS SPC ARM BIG LITTLE
- M:	Viresh Kumar <viresh.kumar@linaro.org>
- M:	Sudeep Holla <sudeep.holla@arm.com>
- L:	linux-pm@vger.kernel.org
- W:	http://www.arm.com/products/processors/technologies/biglittleprocessing.php
- S:	Maintained
--F:	drivers/cpufreq/arm_big_little.h
--F:	drivers/cpufreq/arm_big_little.c
-+F:	drivers/cpufreq/vexpress-spc-cpufreq.c
- 
- CPU POWER MONITORING SUBSYSTEM
- M:	Thomas Renninger <trenn@suse.com>
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index a905796f7f85..3858d86cf409 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -49,14 +49,6 @@ config ARM_ARMADA_8K_CPUFREQ
- 
- 	  If in doubt, say N.
- 
--# big LITTLE core layer and glue drivers
--config ARM_BIG_LITTLE_CPUFREQ
--	tristate "Generic ARM big LITTLE CPUfreq driver"
--	depends on ARM_CPU_TOPOLOGY && HAVE_CLK
--	select PM_OPP
--	help
--	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
--
- config ARM_SCPI_CPUFREQ
- 	tristate "SCPI based CPUfreq driver"
- 	depends on ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-@@ -69,7 +61,9 @@ config ARM_SCPI_CPUFREQ
- 
- config ARM_VEXPRESS_SPC_CPUFREQ
- 	tristate "Versatile Express SPC based CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
-+	depends on ARM_CPU_TOPOLOGY && HAVE_CLK
-+	depends on ARCH_VEXPRESS_SPC
-+	select PM_OPP
- 	help
- 	  This add the CPUfreq driver support for Versatile Express
- 	  big.LITTLE platforms using SPC for power management.
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 9a9f5ccd13d9..f6670c4abbb0 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -47,8 +47,6 @@ obj-$(CONFIG_X86_SFI_CPUFREQ)		+= sfi-cpufreq.o
- 
- ##################################################################################
- # ARM SoC drivers
--obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
--
- obj-$(CONFIG_ARM_ARMADA_37XX_CPUFREQ)	+= armada-37xx-cpufreq.o
- obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
- obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
-diff --git a/drivers/cpufreq/arm_big_little.h b/drivers/cpufreq/arm_big_little.h
-deleted file mode 100644
-index 88a176e466c8..000000000000
---- a/drivers/cpufreq/arm_big_little.h
-+++ /dev/null
-@@ -1,43 +0,0 @@
--/*
-- * ARM big.LITTLE platform's CPUFreq header file
-- *
-- * Copyright (C) 2013 ARM Ltd.
-- * Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-- *
-- * Copyright (C) 2013 Linaro.
-- * Viresh Kumar <viresh.kumar@linaro.org>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-- * kind, whether express or implied; without even the implied warranty
-- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-- * GNU General Public License for more details.
-- */
--#ifndef CPUFREQ_ARM_BIG_LITTLE_H
--#define CPUFREQ_ARM_BIG_LITTLE_H
--
--#include <linux/cpufreq.h>
--#include <linux/device.h>
--#include <linux/types.h>
--
--struct cpufreq_arm_bL_ops {
--	char name[CPUFREQ_NAME_LEN];
--
--	/*
--	 * This must set opp table for cpu_dev in a similar way as done by
--	 * dev_pm_opp_of_add_table().
--	 */
--	int (*init_opp_table)(const struct cpumask *cpumask);
--
--	/* Optional */
--	int (*get_transition_latency)(struct device *cpu_dev);
--	void (*free_opp_table)(const struct cpumask *cpumask);
--};
--
--int bL_cpufreq_register(const struct cpufreq_arm_bL_ops *ops);
--void bL_cpufreq_unregister(const struct cpufreq_arm_bL_ops *ops);
--
--#endif /* CPUFREQ_ARM_BIG_LITTLE_H */
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
-similarity index 90%
-rename from drivers/cpufreq/arm_big_little.c
-rename to drivers/cpufreq/vexpress-spc-cpufreq.c
-index 7fe52fcddcf1..622dc42e42b1 100644
---- a/drivers/cpufreq/arm_big_little.c
+diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
+index 132610424747..3259498d7eaa 100644
+--- a/drivers/cpufreq/vexpress-spc-cpufreq.c
 +++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
-@@ -1,20 +1,12 @@
-+// SPDX-License-Identifier: GPL-2.0
- /*
-- * ARM big.LITTLE Platforms CPUFreq support
-+ * Versatile Express SPC CPUFreq Interface driver
-  *
-- * Copyright (C) 2013 ARM Ltd.
-- * Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-+ * Copyright (C) 2013 - 2019 ARM Ltd.
-+ * Sudeep Holla <sudeep.holla@arm.com>
-  *
-  * Copyright (C) 2013 Linaro.
-  * Viresh Kumar <viresh.kumar@linaro.org>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-- * kind, whether express or implied; without even the implied warranty
-- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-- * GNU General Public License for more details.
-  */
+@@ -79,8 +79,8 @@ static unsigned int find_cluster_maxfreq(int cluster)
+ 	for_each_online_cpu(j) {
+ 		cpu_freq = per_cpu(cpu_last_req_freq, j);
  
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-@@ -24,16 +16,29 @@
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
- #include <linux/cpu_cooling.h>
--#include <linux/export.h>
-+#include <linux/device.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include <linux/pm_opp.h>
- #include <linux/slab.h>
- #include <linux/topology.h>
- #include <linux/types.h>
+-		if ((cluster == per_cpu(physical_cluster, j)) &&
+-				(max_freq < cpu_freq))
++		if (cluster == per_cpu(physical_cluster, j) &&
++		    max_freq < cpu_freq)
+ 			max_freq = cpu_freq;
+ 	}
  
--#include "arm_big_little.h"
-+struct cpufreq_arm_bL_ops {
-+	char name[CPUFREQ_NAME_LEN];
+@@ -190,13 +190,11 @@ static int ve_spc_cpufreq_set_target(struct cpufreq_policy *policy,
+ 	freqs_new = freq_table[cur_cluster][index].frequency;
+ 
+ 	if (is_bL_switching_enabled()) {
+-		if ((actual_cluster == A15_CLUSTER) &&
+-				(freqs_new < clk_big_min)) {
++		if (actual_cluster == A15_CLUSTER && freqs_new < clk_big_min)
+ 			new_cluster = A7_CLUSTER;
+-		} else if ((actual_cluster == A7_CLUSTER) &&
+-				(freqs_new > clk_little_max)) {
++		else if (actual_cluster == A7_CLUSTER &&
++			 freqs_new > clk_little_max)
+ 			new_cluster = A15_CLUSTER;
+-		}
+ 	}
+ 
+ 	ret = ve_spc_cpufreq_set_rate(cpu, actual_cluster, new_cluster,
+@@ -224,7 +222,8 @@ static inline u32 get_table_count(struct cpufreq_frequency_table *table)
+ static inline u32 get_table_min(struct cpufreq_frequency_table *table)
+ {
+ 	struct cpufreq_frequency_table *pos;
+-	uint32_t min_freq = ~0;
++	u32 min_freq = ~0;
 +
-+	/*
-+	 * This must set opp table for cpu_dev in a similar way as done by
-+	 * dev_pm_opp_of_add_table().
-+	 */
-+	int (*init_opp_table)(const struct cpumask *cpumask);
+ 	cpufreq_for_each_entry(pos, table)
+ 		if (pos->frequency < min_freq)
+ 			min_freq = pos->frequency;
+@@ -235,7 +234,8 @@ static inline u32 get_table_min(struct cpufreq_frequency_table *table)
+ static inline u32 get_table_max(struct cpufreq_frequency_table *table)
+ {
+ 	struct cpufreq_frequency_table *pos;
+-	uint32_t max_freq = 0;
++	u32 max_freq = 0;
 +
-+	/* Optional */
-+	int (*get_transition_latency)(struct device *cpu_dev);
-+	void (*free_opp_table)(const struct cpumask *cpumask);
-+};
+ 	cpufreq_for_each_entry(pos, table)
+ 		if (pos->frequency > max_freq)
+ 			max_freq = pos->frequency;
+@@ -259,10 +259,9 @@ static int merge_cluster_tables(void)
+ 	/* Add in reverse order to get freqs in increasing order */
+ 	for (i = MAX_CLUSTERS - 1; i >= 0; i--) {
+ 		for (j = 0; freq_table[i][j].frequency != CPUFREQ_TABLE_END;
+-				j++) {
+-			table[k].frequency = VIRT_FREQ(i,
+-					freq_table[i][j].frequency);
+-			k++;
++		     j++, k++) {
++			table[k].frequency =
++				VIRT_FREQ(i, freq_table[i][j].frequency);
+ 		}
+ 	}
  
- /* Currently we support only two clusters */
- #define A15_CLUSTER	0
-@@ -633,7 +638,6 @@ int bL_cpufreq_register(const struct cpufreq_arm_bL_ops *ops)
- 	bL_switcher_put_enabled();
+@@ -335,13 +334,13 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev,
+ 		return 0;
+ 
+ 	dev_err(cpu_dev, "%s: Failed to get clk for cpu: %d, cluster: %d\n",
+-			__func__, cpu_dev->id, cluster);
++		__func__, cpu_dev->id, cluster);
+ 	ret = PTR_ERR(clk[cluster]);
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table[cluster]);
+ 
+ out:
+ 	dev_err(cpu_dev, "%s: Failed to get data for cluster: %d\n", __func__,
+-			cluster);
++		cluster);
  	return ret;
  }
--EXPORT_SYMBOL_GPL(bL_cpufreq_register);
  
- void bL_cpufreq_unregister(const struct cpufreq_arm_bL_ops *ops)
- {
-@@ -651,8 +655,49 @@ void bL_cpufreq_unregister(const struct cpufreq_arm_bL_ops *ops)
- 			arm_bL_ops->name);
- 	arm_bL_ops = NULL;
- }
--EXPORT_SYMBOL_GPL(bL_cpufreq_unregister);
-+
-+static int ve_spc_init_opp_table(const struct cpumask *cpumask)
-+{
-+	struct device *cpu_dev = get_cpu_device(cpumask_first(cpumask));
-+	/*
-+	 * platform specific SPC code must initialise the opp table
-+	 * so just check if the OPP count is non-zero
-+	 */
-+	return dev_pm_opp_get_opp_count(cpu_dev) <= 0;
-+}
-+
-+static int ve_spc_get_transition_latency(struct device *cpu_dev)
-+{
-+	return 1000000; /* 1 ms */
-+}
-+
-+static const struct cpufreq_arm_bL_ops ve_spc_cpufreq_ops = {
-+	.name	= "vexpress-spc",
-+	.get_transition_latency = ve_spc_get_transition_latency,
-+	.init_opp_table = ve_spc_init_opp_table,
-+};
-+
-+static int ve_spc_cpufreq_probe(struct platform_device *pdev)
-+{
-+	return bL_cpufreq_register(&ve_spc_cpufreq_ops);
-+}
-+
-+static int ve_spc_cpufreq_remove(struct platform_device *pdev)
-+{
-+	bL_cpufreq_unregister(&ve_spc_cpufreq_ops);
-+	return 0;
-+}
-+
-+static struct platform_driver ve_spc_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "vexpress-spc-cpufreq",
-+	},
-+	.probe		= ve_spc_cpufreq_probe,
-+	.remove		= ve_spc_cpufreq_remove,
-+};
-+module_platform_driver(ve_spc_cpufreq_platdrv);
+@@ -411,7 +410,7 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
+ 	cpu_dev = get_cpu_device(policy->cpu);
+ 	if (!cpu_dev) {
+ 		pr_err("%s: failed to get cpu%d device\n", __func__,
+-				policy->cpu);
++		       policy->cpu);
+ 		return -ENODEV;
+ 	}
  
- MODULE_AUTHOR("Viresh Kumar <viresh.kumar@linaro.org>");
--MODULE_DESCRIPTION("Generic ARM big LITTLE cpufreq driver");
-+MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");
-+MODULE_DESCRIPTION("Vexpress SPC ARM big LITTLE cpufreq driver");
- MODULE_LICENSE("GPL v2");
+@@ -437,7 +436,8 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
+ 	dev_pm_opp_of_register_em(policy->cpus);
+ 
+ 	if (is_bL_switching_enabled())
+-		per_cpu(cpu_last_req_freq, policy->cpu) = clk_get_cpu_rate(policy->cpu);
++		per_cpu(cpu_last_req_freq, policy->cpu) =
++						clk_get_cpu_rate(policy->cpu);
+ 
+ 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
+ 	return 0;
+@@ -456,7 +456,7 @@ static int ve_spc_cpufreq_exit(struct cpufreq_policy *policy)
+ 	cpu_dev = get_cpu_device(policy->cpu);
+ 	if (!cpu_dev) {
+ 		pr_err("%s: failed to get cpu%d device\n", __func__,
+-				policy->cpu);
++		       policy->cpu);
+ 		return -ENODEV;
+ 	}
+ 
 -- 
 2.17.1
 
