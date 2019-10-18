@@ -2,107 +2,127 @@ Return-Path: <SRS0=3uIP=YL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C14EBCA9EA0
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 21:12:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B198CA9EAC
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 22:16:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 92382222C6
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 21:12:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4EE6C21D7C
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 22:16:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571433135;
-	bh=nWv0pT1v8ileCG/uTO1XI4TI/P//OjNODZ+LjyV8Pnk=;
-	h=In-Reply-To:References:From:To:Cc:Subject:Date:List-ID:From;
-	b=y2//JKcXGBdLh/40GopxXJLrVRFLMKzHw/84QDBb1sbmhicOM6RqxxKxWHmloqGtZ
-	 X1vpXW+CRnERcPlEqkxar4jVaSDglT7TQmIy5N6sj3Mk2R2FjQiYfC8C4S3L8zREJy
-	 A8gQKKDXRx7ggLVkUpODqM1pRHUg/CX7426oq7LU=
+	s=default; t=1571436982;
+	bh=XYF7y0BM07GfP9nY7zrjKzNbEKYrD2mjyfQAzvcSNZg=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=hRTqXHQT2bDy3R+psII6TICRTpa93aShnRxQHXRbzV7mURNig56xgp0I1qp5G5jBI
+	 xlFC6jm0IYlp03Xf3lCRHs7Dx9tOpdhbUsMtMX0x9AWM1fROzIpCEKiRg6l+QSFI1/
+	 +feF2jp+aeFr+STx10GOMVcOAzHnaB9R760A4pNs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2502111AbfJRVMP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Oct 2019 17:12:15 -0400
-Received: from mail.kernel.org ([198.145.29.99]:52054 "EHLO mail.kernel.org"
+        id S2387791AbfJRWI2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Oct 2019 18:08:28 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40876 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2394095AbfJRVMO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 18 Oct 2019 17:12:14 -0400
-Received: from kernel.org (unknown [104.132.0.74])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        id S2387779AbfJRWI1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 18 Oct 2019 18:08:27 -0400
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 444D32089C;
-        Fri, 18 Oct 2019 21:12:14 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 456EB2245A;
+        Fri, 18 Oct 2019 22:08:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1571433134;
-        bh=nWv0pT1v8ileCG/uTO1XI4TI/P//OjNODZ+LjyV8Pnk=;
-        h=In-Reply-To:References:From:To:Cc:Subject:Date:From;
-        b=g0MrlMp1cPSmyMilQM/x8aUF2msz5Kh9rffAd7IdbaMnxc3U+UbXjiLIo+wxDNa0G
-         xpMfhYlByJM55jASjiX64wuV127c/ULYwYDlRTFP9+X2hahQKxZgk7+J+jKsveSc+Y
-         u2SyLbvDNl6nIL8wIhnBcA04FCEZI81l3hYDDUXs=
-Content-Type: text/plain; charset="utf-8"
+        s=default; t=1571436507;
+        bh=XYF7y0BM07GfP9nY7zrjKzNbEKYrD2mjyfQAzvcSNZg=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=NmAFxMIog1l7f+e9p/J01xP31wgx1kpRcVe+JOpBMTxNz/kXhoJZ8UOKoUJuIR/+f
+         3ZPx7QYBPenhqGw7cFBTGxsBpDD8+GWhhaUHQFCCG6P7cxrhaZ34Lh/ewmtTSWvq8D
+         XdygxW5fQKPS69UxKmly6t0bHYHiBzhHDmCG3LJk=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Sven Van Asbroeck <thesven73@gmail.com>,
+        Alexander Kurz <akurz@blala.de>,
+        Sven Van Asbroeck <TheSven73@gmail.com>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.14 18/56] power: supply: max14656: fix potential use-after-free
+Date:   Fri, 18 Oct 2019 18:07:15 -0400
+Message-Id: <20191018220753.10002-18-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20191018220753.10002-1-sashal@kernel.org>
+References: <20191018220753.10002-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <2700308706c0d46ca06eeb973079a1f18bf553dd.1571390916.git.viresh.kumar@linaro.org>
-References: <2700308706c0d46ca06eeb973079a1f18bf553dd.1571390916.git.viresh.kumar@linaro.org>
-From:   Stephen Boyd <sboyd@kernel.org>
-To:     Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] opp: Reinitialize the list_kref before adding the static OPPs again
-User-Agent: alot/0.8.1
-Date:   Fri, 18 Oct 2019 14:12:13 -0700
-Message-Id: <20191018211214.444D32089C@mail.kernel.org>
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Viresh Kumar (2019-10-18 02:28:41)
-> The list_kref reaches a count of 0 when all the static OPPs are removed,
-> for example when dev_pm_opp_of_cpumask_remove_table() is called, though
-> the actual OPP table may not get freed as it may still be referenced by
-> other parts of the kernel, like from a call to
-> dev_pm_opp_set_supported_hw(). And if we call
-> dev_pm_opp_of_cpumask_add_table() again at this point, we must
-> reinitialize the list_kref otherwise the kernel will hit a WARN() in
-> kref infrastructure for incrementing a kref with value 0.
->=20
-> Fixes: 11e1a1648298 ("opp: Don't decrement uninitialized list_kref")
-> Reported-by: Dmitry Osipenko <digetx@gmail.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/opp/of.c | 7 +++++++
->  1 file changed, 7 insertions(+)
->=20
-> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-> index 6dc41faf74b5..1cbb58240b80 100644
-> --- a/drivers/opp/of.c
-> +++ b/drivers/opp/of.c
-> @@ -663,6 +663,13 @@ static int _of_add_opp_table_v2(struct device *dev, =
-struct opp_table *opp_table)
->                 return 0;
->         }
-> =20
-> +       /*
-> +        * Re-initialize list_kref every time we add static OPPs to the O=
-PP
-> +        * table as the reference count may be 0 after the last tie stati=
-c OPPs
+From: Sven Van Asbroeck <thesven73@gmail.com>
 
-s/tie/time/
+[ Upstream commit 252fbeb86ceffa549af9842cefca2412d53a7653 ]
 
-> +        * were removed.
-> +        */
-> +       kref_init(&opp_table->list_kref);
+Explicitly cancel/sync the irq_work delayed work, otherwise
+there's a chance that it will run after the device is removed,
+which would result in a use-after-free.
 
-It seems racy. Why are we doing this vs. making an entirely new and
-different OPP structure? Or why is the count reaching 0 when something
-is obviously still referencing it?
+Note that cancel/sync should happen:
+- after irq's have been disabled, as the isr re-schedules the work
+- before the power supply is unregistered, because the work func
+    uses the power supply handle.
 
-> +
->         /* We have opp-table node now, iterate over it and add OPPs */
->         for_each_available_child_of_node(opp_table->np, np) {
->                 opp =3D _opp_add_static_v2(opp_table, dev, np);
+Cc: Alexander Kurz <akurz@blala.de>
+Signed-off-by: Sven Van Asbroeck <TheSven73@gmail.com>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ .../power/supply/max14656_charger_detector.c    | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/max14656_charger_detector.c b/drivers/power/supply/max14656_charger_detector.c
+index d19307f791c68..9e6472834e373 100644
+--- a/drivers/power/supply/max14656_charger_detector.c
++++ b/drivers/power/supply/max14656_charger_detector.c
+@@ -240,6 +240,14 @@ static enum power_supply_property max14656_battery_props[] = {
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ };
+ 
++static void stop_irq_work(void *data)
++{
++	struct max14656_chip *chip = data;
++
++	cancel_delayed_work_sync(&chip->irq_work);
++}
++
++
+ static int max14656_probe(struct i2c_client *client,
+ 			  const struct i2c_device_id *id)
+ {
+@@ -278,8 +286,6 @@ static int max14656_probe(struct i2c_client *client,
+ 	if (ret)
+ 		return -ENODEV;
+ 
+-	INIT_DELAYED_WORK(&chip->irq_work, max14656_irq_worker);
+-
+ 	chip->detect_psy = devm_power_supply_register(dev,
+ 		       &chip->psy_desc, &psy_cfg);
+ 	if (IS_ERR(chip->detect_psy)) {
+@@ -287,6 +293,13 @@ static int max14656_probe(struct i2c_client *client,
+ 		return -EINVAL;
+ 	}
+ 
++	INIT_DELAYED_WORK(&chip->irq_work, max14656_irq_worker);
++	ret = devm_add_action(dev, stop_irq_work, chip);
++	if (ret) {
++		dev_err(dev, "devm_add_action %d failed\n", ret);
++		return ret;
++	}
++
+ 	ret = devm_request_irq(dev, chip->irq, max14656_irq,
+ 			       IRQF_TRIGGER_FALLING,
+ 			       MAX14656_NAME, chip);
+-- 
+2.20.1
+
