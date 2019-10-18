@@ -4,155 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDF53CA9EB3
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 00:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E61D7CA9EC8
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 00:50:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 860E421D80
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 00:04:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BB31F222D0
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 00:50:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="jG+wp7iH"
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="MvFua4Tk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2441828AbfJRAEn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Oct 2019 20:04:43 -0400
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:3840 "EHLO
-        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2441811AbfJRAEn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2019 20:04:43 -0400
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5da901a60000>; Thu, 17 Oct 2019 17:04:54 -0700
-Received: from hqmail.nvidia.com ([172.20.161.6])
-  by hqpgpgate101.nvidia.com (PGP Universal service);
-  Thu, 17 Oct 2019 17:04:42 -0700
-X-PGP-Universal: processed;
-        by hqpgpgate101.nvidia.com on Thu, 17 Oct 2019 17:04:42 -0700
-Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL105.nvidia.com
- (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 18 Oct
- 2019 00:04:42 +0000
-Received: from hqnvemgw01.nvidia.com (172.20.150.20) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Fri, 18 Oct 2019 00:04:42 +0000
-Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by hqnvemgw01.nvidia.com with Trustwave SEG (v7,5,8,10121)
-        id <B5da9019a0000>; Thu, 17 Oct 2019 17:04:42 -0700
-From:   John Hubbard <jhubbard@nvidia.com>
-To:     Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-CC:     LKML <linux-kernel@vger.kernel.org>,
-        John Hubbard <jhubbard@nvidia.com>,
-        Preeti U Murthy <preeti@linux.vnet.ibm.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] cpufreq: powernv: fix stack bloat and NR_CPUS limitation
-Date:   Thu, 17 Oct 2019 17:04:31 -0700
-Message-ID: <20191018000431.1675281-1-jhubbard@nvidia.com>
-X-Mailer: git-send-email 2.23.0
-MIME-Version: 1.0
-X-NVConfidentiality: public
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1571357094; bh=jMIVMS2k3nt+KBSFjXMj5e0P3S6l8dH7Zx0lZXXcpko=;
-        h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
-         MIME-Version:X-NVConfidentiality:Content-Transfer-Encoding:
-         Content-Type;
-        b=jG+wp7iHF0RN5Tn/nZDD4xJriVKb5DiI5acvhritKAZypir3iuZnXHppODrfo1kdX
-         hABXN5bOYSgzMQ6qiuADHLmVo/eJsdldhda46dDKKqWNBXa6BSSWBeggxjkJ+hoJmQ
-         XKlYnzLP+dXh7+EiIVlO17gtQZM6dpCs53U0WwySjpngtZzhB8k85+sq45N7HQKc3k
-         kk0yIkUz9j4PWXLn9+66jbovHjoQIy3aJjW7UmkfZ63aHn7dGwfnFfI4fGqiTMvoUI
-         wV+sd9odwKKDD1xlDIA8JrL3mAWof1mnmZsHHyChaQQyBCrIgi54fg61Vxywik3Scc
-         UTCqawVY+jwCw==
+        id S2408807AbfJRAuE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Oct 2019 20:50:04 -0400
+Received: from userp2130.oracle.com ([156.151.31.86]:47822 "EHLO
+        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2409035AbfJRAuE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Oct 2019 20:50:04 -0400
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+        by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x9I0nTs9071784;
+        Fri, 18 Oct 2019 00:49:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id; s=corp-2019-08-05;
+ bh=+vwT+5KKYBbhbI7WHloSzb4suphzKe7v/mQR2yYzwfU=;
+ b=MvFua4TkOjApWPLtYD2KnpMfwnJfhr3+ZFJfqKnUAjZ78Er9g7ji7tb8M1Opf5JBl2n+
+ jox1IMVarjVuN7luOrLb5djtEd9S4RbZVdJ4VlyTs7eLKiK/dzzklGTKSwzQShxJ08ij
+ 7ZiodKS3kvV7vk8jANlomTgycSiwYf396gVLSGyALkWzVXG26OLSIF2sWJvQoXUzDN6T
+ 9fN4q7uEKsuiKolL7qiCFNw7HyqxllLlLbO9Bnvn33yQQLY+eXTtT1fcTLZof+yY6+w5
+ 9zEz4laGZ1F9OSZa/aaBNG8WQGqDrFFt/DXqZm+0owD51gLm5ML0yUwVBsJAgzFjjklc 5A== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+        by userp2130.oracle.com with ESMTP id 2vq0q48g89-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 18 Oct 2019 00:49:49 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+        by userp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x9I0mXMm074602;
+        Fri, 18 Oct 2019 00:49:48 GMT
+Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
+        by userp3020.oracle.com with ESMTP id 2vq0ev1g7c-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 18 Oct 2019 00:49:48 +0000
+Received: from abhmp0009.oracle.com (abhmp0009.oracle.com [141.146.116.15])
+        by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x9I0nl0n027845;
+        Fri, 18 Oct 2019 00:49:47 GMT
+Received: from z2.cn.oracle.com (/10.182.70.159)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Fri, 18 Oct 2019 00:49:46 +0000
+From:   Zhenzhong Duan <zhenzhong.duan@oracle.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org,
+        linux-pm@vger.kernel.org, mtosatti@redhat.com,
+        Zhenzhong Duan <zhenzhong.duan@oracle.com>,
+        Joao Martins <joao.m.martins@oracle.com>
+Subject: [PATCH v2] cpuidle-haltpoll: make haltpoll aware of 'idle=' override
+Date:   Fri, 18 Oct 2019 08:49:29 +0800
+Message-Id: <1571359769-32040-1-git-send-email-zhenzhong.duan@oracle.com>
+X-Mailer: git-send-email 1.8.3.1
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9413 signatures=668684
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=1 malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=854
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1908290000 definitions=main-1910180005
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9413 signatures=668684
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
+ suspectscore=1 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=941 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1908290000
+ definitions=main-1910180005
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The following build warning occurred on powerpc 64-bit builds:
+Currenly haltpoll isn't aware of the 'idle=' override, the priority is
+'idle=poll' > haltpoll > 'idle=halt'. When 'idle=poll' is used, cpuidle
+driver is bypassed but current_driver in sys still shows 'haltpoll'.
 
-drivers/cpufreq/powernv-cpufreq.c: In function 'init_chip_info':
-drivers/cpufreq/powernv-cpufreq.c:1070:1: warning: the frame size of 1040 b=
-ytes is larger than 1024 bytes [-Wframe-larger-than=3D]
+When 'idle=halt' is used, haltpoll take precedence and make 'idle=halt'
+no effect.
 
-This is due to putting 1024 bytes on the stack:
+Add a check to not load haltpoll driver if there is 'idle='.
 
-    unsigned int chip[256];
-
-...and while looking at this, it also has a bug: it fails with a stack
-overrun, if CONFIG_NR_CPUS > 256.
-
-Fix both problems by dynamically allocating based on CONFIG_NR_CPUS.
-
-Fixes: 053819e0bf840 ("cpufreq: powernv: Handle throttling due to Pmax capp=
-ing at chip level")
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Signed-off-by: Zhenzhong Duan <zhenzhong.duan@oracle.com>
+Signed-off-by: Joao Martins <joao.m.martins@oracle.com>
 ---
+v2: remove #if guard per Rafael
 
-Hi,
+ drivers/cpuidle/cpuidle-haltpoll.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-I have only compile-tested this, so I would appreciate if anyone
-could do a basic runtime test on it. But (famous last words) it
-seems simple enough that I'm confident it's correct. oh boy. :)
-
-thanks,
-John Hubbard
-NVIDIA
-
- drivers/cpufreq/powernv-cpufreq.c | 17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cp=
-ufreq.c
-index 6061850e59c9..78e04402125f 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -1041,9 +1041,14 @@ static struct cpufreq_driver powernv_cpufreq_driver =
-=3D {
-=20
- static int init_chip_info(void)
- {
--	unsigned int chip[256];
-+	unsigned int *chip;
- 	unsigned int cpu, i;
- 	unsigned int prev_chip_id =3D UINT_MAX;
-+	int ret =3D 0;
+diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
+index 932390b..b0ce9bc 100644
+--- a/drivers/cpuidle/cpuidle-haltpoll.c
++++ b/drivers/cpuidle/cpuidle-haltpoll.c
+@@ -95,6 +95,10 @@ static int __init haltpoll_init(void)
+ 	int ret;
+ 	struct cpuidle_driver *drv = &haltpoll_driver;
+ 
++	/* Do not load haltpoll if idle= is passed */
++	if (boot_option_idle_override != IDLE_NO_OVERRIDE)
++		return -ENODEV;
 +
-+	chip =3D kcalloc(CONFIG_NR_CPUS, sizeof(int), GFP_KERNEL);
-+	if (!chips)
-+		return -ENOMEM;
-=20
- 	for_each_possible_cpu(cpu) {
- 		unsigned int id =3D cpu_to_chip_id(cpu);
-@@ -1055,8 +1060,10 @@ static int init_chip_info(void)
- 	}
-=20
- 	chips =3D kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
--	if (!chips)
--		return -ENOMEM;
-+	if (!chips) {
-+		ret =3D -ENOMEM;
-+		goto free_and_return;
-+	}
-=20
- 	for (i =3D 0; i < nr_chips; i++) {
- 		chips[i].id =3D chip[i];
-@@ -1066,7 +1073,9 @@ static int init_chip_info(void)
- 			per_cpu(chip_info, cpu) =3D  &chips[i];
- 	}
-=20
--	return 0;
-+free_and_return:
-+	kfree(chip);
-+	return ret;
- }
-=20
- static inline void clean_chip_info(void)
---=20
-2.23.0
+ 	cpuidle_poll_state_init(drv);
+ 
+ 	if (!kvm_para_available() ||
+-- 
+1.8.3.1
 
