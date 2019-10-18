@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86AC3CA9EA9
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 15:44:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 100D0CA9EAB
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 15:44:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 64942222C6
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 15:44:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E1AF0222C6
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 15:44:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2505181AbfJRPmm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Oct 2019 11:42:42 -0400
-Received: from mout.kundenserver.de ([217.72.192.75]:51121 "EHLO
+        id S2505399AbfJRPoN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Oct 2019 11:44:13 -0400
+Received: from mout.kundenserver.de ([217.72.192.73]:53243 "EHLO
         mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2505167AbfJRPmk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Oct 2019 11:42:40 -0400
+        with ESMTP id S2505177AbfJRPmm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Oct 2019 11:42:42 -0400
 Received: from threadripper.lan ([149.172.19.189]) by mrelayeu.kundenserver.de
  (mreue108 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1Mq2rM-1hiK9j1L1e-00n5fL; Fri, 18 Oct 2019 17:42:33 +0200
+ 1MLi0U-1id1FP1lhY-00Hit3; Fri, 18 Oct 2019 17:42:31 +0200
 From:   Arnd Bergmann <arnd@arndb.de>
 To:     Daniel Mack <daniel@zonque.org>,
         Haojian Zhuang <haojian.zhuang@gmail.com>,
@@ -28,127 +28,121 @@ To:     Daniel Mack <daniel@zonque.org>,
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         Linus Walleij <linus.walleij@linaro.org>,
         Arnd Bergmann <arnd@arndb.de>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH 39/46] power: tosa: simplify probe function
-Date:   Fri, 18 Oct 2019 17:41:54 +0200
-Message-Id: <20191018154201.1276638-39-arnd@arndb.de>
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-pm@vger.kernel.org
+Subject: [PATCH 34/46] ARM: pxa: remove get_clk_frequency_khz()
+Date:   Fri, 18 Oct 2019 17:41:49 +0200
+Message-Id: <20191018154201.1276638-34-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
 In-Reply-To: <20191018154052.1276506-1-arnd@arndb.de>
 References: <20191018154052.1276506-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:hl7BVkd0yWFJrOmiZHbeobrWCSoJQ+ScQbAwl6PsnGpuJOJIEHu
- W0QV/e5+JWq7TsLgc2PtBEnls5NuarY449LGFoJViTSJWvMdHcLlMDX2XoWwFZEcbYPI5WZ
- TdOdhaetEZ7yT8ULxFUd+U0PpVPf/ceYiuCvUo7SyrqiG5srZ7uqgbND4fJK/5Lkt+TFsTD
- 40f6kuITqgYxlt9LHI6UQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:H4Ylysjy0ZA=:/XEzK/9RniR7YFlZoEyvOt
- 96k2I0vU6eFeQVYNinRZYLqMtbg2Zj3rAQyQGnOHBs5u+TB+8sRWhVmJUdvbPrx8+i9jhXxCa
- cux8jIgrcfoGgiVR6hzJQ6XSCkrVw+f63GS8MXKzgu/KDRmHn+IVrCd/fvzEpKw8zW3Xy8AYl
- 6nY4dEbC9HxJ8XyC4ueDhKV7gZOE+plXzxxtAy01EeW/ip8d0apUcP9fnPKiNsv0RkAa2hUA3
- eeiKt5kZ2hiCv912MsTwG/rWA0kw47V9mr2FdA/yLy9Ib+Xe4hqPFgHzSlu5aMBm4rJYSOYUU
- Ufn5VqBmUuwUkgDtn2PLMzwRt8Ed4z0LgxO+QXZGIpgxIeV+jtxBXNquKQHq0Ul5IrQ9sZik8
- mRVvKqm1SOknx18e/pj/6I8uCfwaa+A0KA+iKP0kV5Yrjd6XmlAp49azsORHHnDByVUC/yf9x
- EEgrc9tI9Axi5IHvUcCYwhgkijFLu8xgiXAbvsQuSlALU/QSjPatNYqXiZ5Ax+0ucplamJd2G
- 81jEcjedwI+C4nr8ELmgS93/M5QldzfaizY3neyNehWGgJOKieaJyUmwBBL8dwEauT54HsvH/
- u1+1jCkw1CCq4yUZn3fwV/ywmTttv9TfeYXlj1tE9dAkp19dOQhmw8sSPt1aPq+jQe1W2IRN5
- oQLZMuDv6cNAldguZPFT+8gjHn/w8hqf/0WP63uJ0l33g32WBLUCxEH82OtVBaSU9BXRYoeJh
- nfxJr+55wQNqDBa2UfH3ccIHTo7sEoRuG2Zl5dA9xiYnJDgneAxAoINw1wy5S/8r/AmkA31Gk
- yFfFbUaXdiJS8WT0H2tVEaW6xyOc0+EcuV7zwq7+0PX/PEzKDk1u/p/TAir1FIPGtgX3w7iq1
- 0VQp6qh9uRbkEH8o4DZA==
+X-Provags-ID: V03:K1:ajv1C8WSwVVJwqubsC2bt5cO+b8wc4Y8xW9NXo4JVw9G1bsGrT2
+ 3+AXPyCmUhlneskgIxrP1/FVZhhyJDOeFVaZ7tzYj8Hstb5oJOuFDu2lJHTSf9417rg3p/w
+ dIFCsdSou6O+Hmb7sa7EpVsP80GbrRnJTs+05l0OqYOo5OVAJHAtzYFZhOqsCeEISOScGj+
+ DRePXvk5skmsTagbj3WvQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:oBYQDQ5NikY=:1/p81ZtOp5BNF6NbpXcMrB
+ WDiVRh3sMMuxA/8SaPXIMXYcTsSq2RSlU2NEnaJ1oBFcd1Kdr67kGzkTw9DtdSOLm9EU8T00N
+ yNy4vDnSgAYf+Nst43jK8b5rcNPYrcLor1InPRd2v7LhQGd5tJJ7H5wXWKerdgr1DVIlcgEs5
+ bcL78VQJdz8tgjyvc6Ip3wcCDqCqpZwsgf8Xb0K6NhE90J/nbilMhQrwR5c6U8y7z8UmEwCkY
+ ysXqGzk1UhoCWNI2A988VVCZD5+wYCsOtBBd7DURKWgxjGu/qzgHJvjtN+wmvSSEZwvaPS+8R
+ U2DkOy1Z6Z3FDo25RPeY90GmA5hzki5tadDZJ1dNOv/eab1eXMO+PNpYq9mlxKsB+Rr9AwzeT
+ HVPaKTfCjgoUzN4Y/VBkzwH9vY6phomuVhXWpQP/KiIE9ASCLOwttKYAzmWl+7qrl7ob/avRB
+ ub+NBSNFnvvIb0xaKQzbeE+qmmNiY8SVsY7jL7yxy6ejjFY9XCXWsmum2JunQSJdHAt80IzPB
+ OCkfxGEGS2GwuvYQETR/3q01z0XNEN58i8olEcBMv5LunSB4SQqxDdwIS7aIMnO1LW6H/VOTz
+ Q+/RDlrQZKJrnciw9X9jrC+hKgtL5b6XvbOh/UjzpDx9k6QhrzDNwWQ+hFmkcBBxF8ZK06ONh
+ ascEnK0BRqWh39rYwTTJtjzKxuTnkz271NnQ4jv4lcVIEFxsYh18JX8Q34HA6dexcVaMPz9XQ
+ Q7mydkeSFHx73dDypsCDoYuNK5BAQqqlB8Yc2QbiPnf6bYCItRy/AAyQmVkJAy/LvEaaBMq78
+ AMuJ8SOiCx1+qzUszz5qFdEKhDQuvw2nCA/Bx6f9eo4MLvxXEb4v04OOXVGzi97Ru5/aPmkGF
+ nyCg7GZL1rlZxn1uPhuQ==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We have three power supplies that need similar initialization.
-As a preparation for the gpio lookup table conversion, split
-out the initialization into a separate function.
+get_clk_frequency_khz() is not a proper name for a global function,
+and there is only one caller.
 
-Cc: Sebastian Reichel <sre@kernel.org>
+Convert viper to use the properly namespaced
+pxa25x_get_clk_frequency_khz() and remove the other references.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/power/supply/tosa_battery.c | 50 ++++++++++++++---------------
- 1 file changed, 24 insertions(+), 26 deletions(-)
+ arch/arm/mach-pxa/generic.c      | 15 ---------------
+ arch/arm/mach-pxa/generic.h      |  1 -
+ arch/arm/mach-pxa/viper.c        |  2 +-
+ drivers/cpufreq/pxa2xx-cpufreq.c |  2 --
+ 4 files changed, 1 insertion(+), 19 deletions(-)
 
-diff --git a/drivers/power/supply/tosa_battery.c b/drivers/power/supply/tosa_battery.c
-index 32cc31cd4761..b26b0eca33e1 100644
---- a/drivers/power/supply/tosa_battery.c
-+++ b/drivers/power/supply/tosa_battery.c
-@@ -343,12 +343,24 @@ static int tosa_bat_resume(struct platform_device *dev)
- #define tosa_bat_resume NULL
- #endif
+diff --git a/arch/arm/mach-pxa/generic.c b/arch/arm/mach-pxa/generic.c
+index fe1d55d328e5..2c2c82fcf9cb 100644
+--- a/arch/arm/mach-pxa/generic.c
++++ b/arch/arm/mach-pxa/generic.c
+@@ -55,21 +55,6 @@ void __init pxa_timer_init(void)
+ 	pxa_timer_nodt_init(IRQ_OST0, io_p2v(0x40a00000));
+ }
  
-+static int tosa_power_supply_register(struct device *dev,
-+			struct tosa_bat *bat,
-+			const struct power_supply_desc *desc)
-+{
-+	struct power_supply_config cfg = {
-+		.drv_data = bat,
-+	};
-+
-+	mutex_init(&bat->work_lock);
-+	bat->psy = power_supply_register(dev, desc, &cfg);
-+
-+	return PTR_ERR_OR_ZERO(bat->psy);
-+}
-+
-+
- static int tosa_bat_probe(struct platform_device *dev)
- {
- 	int ret;
--	struct power_supply_config main_psy_cfg = {},
--				   jacket_psy_cfg = {},
--				   bu_psy_cfg = {};
- 
- 	if (!machine_is_tosa())
- 		return -ENODEV;
-@@ -357,36 +369,22 @@ static int tosa_bat_probe(struct platform_device *dev)
- 	if (ret)
- 		return ret;
- 
--	mutex_init(&tosa_bat_main.work_lock);
--	mutex_init(&tosa_bat_jacket.work_lock);
+-/*
+- * Get the clock frequency as reflected by CCCR and the turbo flag.
+- * We assume these values have been applied via a fcs.
+- * If info is not 0 we also display the current settings.
+- */
+-unsigned int get_clk_frequency_khz(int info)
+-{
+-	if (cpu_is_pxa25x())
+-		return pxa25x_get_clk_frequency_khz(info);
+-	else if (cpu_is_pxa27x())
+-		return pxa27x_get_clk_frequency_khz(info);
+-	return 0;
+-}
+-EXPORT_SYMBOL(get_clk_frequency_khz);
 -
- 	INIT_WORK(&bat_work, tosa_bat_work);
+ void pxa_smemc_set_pcmcia_timing(int sock, u32 mcmem, u32 mcatt, u32 mcio)
+ {
+ 	__raw_writel(mcmem, MCMEM(sock));
+diff --git a/arch/arm/mach-pxa/generic.h b/arch/arm/mach-pxa/generic.h
+index 67925d3ea026..2f706ef97357 100644
+--- a/arch/arm/mach-pxa/generic.h
++++ b/arch/arm/mach-pxa/generic.h
+@@ -11,7 +11,6 @@
  
--	main_psy_cfg.drv_data = &tosa_bat_main;
--	tosa_bat_main.psy = power_supply_register(&dev->dev,
--						  &tosa_bat_main_desc,
--						  &main_psy_cfg);
--	if (IS_ERR(tosa_bat_main.psy)) {
--		ret = PTR_ERR(tosa_bat_main.psy);
-+	ret = tosa_power_supply_register(&dev->dev, &tosa_bat_main,
-+					 &tosa_bat_main_desc);
-+	if (ret)
- 		goto err_psy_reg_main;
--	}
+ struct irq_data;
  
--	jacket_psy_cfg.drv_data = &tosa_bat_jacket;
--	tosa_bat_jacket.psy = power_supply_register(&dev->dev,
--						    &tosa_bat_jacket_desc,
--						    &jacket_psy_cfg);
--	if (IS_ERR(tosa_bat_jacket.psy)) {
--		ret = PTR_ERR(tosa_bat_jacket.psy);
-+	ret = tosa_power_supply_register(&dev->dev, &tosa_bat_jacket,
-+					 &tosa_bat_jacket_desc);
-+	if (ret)
- 		goto err_psy_reg_jacket;
--	}
+-extern unsigned int get_clk_frequency_khz(int info);
+ extern void __init pxa_dt_irq_init(int (*fn)(struct irq_data *,
+ 					     unsigned int));
+ extern void __init pxa_map_io(void);
+diff --git a/arch/arm/mach-pxa/viper.c b/arch/arm/mach-pxa/viper.c
+index fe74ee266871..e341e26f7e2a 100644
+--- a/arch/arm/mach-pxa/viper.c
++++ b/arch/arm/mach-pxa/viper.c
+@@ -852,7 +852,7 @@ static void __init viper_init_vcore_gpios(void)
+ 		goto err_dir;
  
--	bu_psy_cfg.drv_data = &tosa_bat_bu;
--	tosa_bat_bu.psy = power_supply_register(&dev->dev, &tosa_bat_bu_desc,
--						&bu_psy_cfg);
--	if (IS_ERR(tosa_bat_bu.psy)) {
--		ret = PTR_ERR(tosa_bat_bu.psy);
-+	ret = tosa_power_supply_register(&dev->dev, &tosa_bat_bu,
-+					 &tosa_bat_bu_desc);
-+	if (ret)
- 		goto err_psy_reg_bu;
--	}
+ 	/* c/should assume redboot set the correct level ??? */
+-	viper_set_core_cpu_voltage(get_clk_frequency_khz(0), 1);
++	viper_set_core_cpu_voltage(pxa25x_get_clk_frequency_khz(0), 1);
  
- 	ret = request_irq(gpio_to_irq(TOSA_GPIO_BAT0_CRG),
- 				tosa_bat_gpio_isr,
+ 	return;
+ 
+diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+index 0f0e676ff781..e74d36d6f78d 100644
+--- a/drivers/cpufreq/pxa2xx-cpufreq.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+@@ -107,8 +107,6 @@ static struct pxa_freqs pxa27x_freqs[] = {
+ static struct cpufreq_frequency_table
+ 	pxa27x_freq_table[NUM_PXA27x_FREQS+1];
+ 
+-extern unsigned get_clk_frequency_khz(int info);
+-
+ #ifdef CONFIG_REGULATOR
+ 
+ static int pxa_cpufreq_change_voltage(const struct pxa_freqs *pxa_freq)
 -- 
 2.20.0
 
