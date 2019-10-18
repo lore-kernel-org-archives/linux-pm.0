@@ -2,107 +2,149 @@ Return-Path: <SRS0=3uIP=YL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73BE1CA9ED0
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 04:55:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13408CA9ECF
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 04:55:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 496ED222CD
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 04:55:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D9323222CD
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 04:55:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="WlTTFGi+"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="WlTqEoi5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731803AbfJREzF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Oct 2019 00:55:05 -0400
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:14945 "EHLO
-        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726103AbfJREzE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Oct 2019 00:55:04 -0400
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate15.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5da940f00000>; Thu, 17 Oct 2019 21:34:56 -0700
+        id S2407142AbfJREzr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Oct 2019 00:55:47 -0400
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:2690 "EHLO
+        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2392808AbfJREzq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Oct 2019 00:55:46 -0400
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5da945d60000>; Thu, 17 Oct 2019 21:55:50 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
   by hqpgpgate101.nvidia.com (PGP Universal service);
-  Thu, 17 Oct 2019 21:34:45 -0700
+  Thu, 17 Oct 2019 21:55:45 -0700
 X-PGP-Universal: processed;
-        by hqpgpgate101.nvidia.com on Thu, 17 Oct 2019 21:34:45 -0700
-Received: from DRHQMAIL107.nvidia.com (10.27.9.16) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 18 Oct
- 2019 04:34:45 +0000
-Received: from [10.110.48.28] (10.124.1.5) by DRHQMAIL107.nvidia.com
- (10.27.9.16) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 18 Oct
- 2019 04:34:44 +0000
-Subject: Re: [PATCH] cpufreq: powernv: fix stack bloat and NR_CPUS limitation
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-CC:     Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
-        LKML <linux-kernel@vger.kernel.org>,
+        by hqpgpgate101.nvidia.com on Thu, 17 Oct 2019 21:55:45 -0700
+Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 18 Oct
+ 2019 04:55:45 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
+ Transport; Fri, 18 Oct 2019 04:55:45 +0000
+Received: from blueforge.nvidia.com (Not Verified[10.110.48.28]) by hqnvemgw03.nvidia.com with Trustwave SEG (v7,5,8,10121)
+        id <B5da945d10003>; Thu, 17 Oct 2019 21:55:45 -0700
+From:   John Hubbard <jhubbard@nvidia.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+CC:     LKML <linux-kernel@vger.kernel.org>,
+        John Hubbard <jhubbard@nvidia.com>,
         Preeti U Murthy <preeti@linux.vnet.ibm.com>,
         "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-References: <20191018000431.1675281-1-jhubbard@nvidia.com>
- <20191018042715.f76bawmoyk66isap@vireshk-i7>
-From:   John Hubbard <jhubbard@nvidia.com>
-X-Nvconfidentiality: public
-Message-ID: <c3f16019-5724-a181-8068-8dda60fb67fa@nvidia.com>
-Date:   Thu, 17 Oct 2019 21:34:44 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.8.0
+Subject: [PATCH v2] cpufreq: powernv: fix stack bloat and NR_CPUS limitation
+Date:   Thu, 17 Oct 2019 21:55:39 -0700
+Message-ID: <20191018045539.3765565-1-jhubbard@nvidia.com>
+X-Mailer: git-send-email 2.23.0
 MIME-Version: 1.0
-In-Reply-To: <20191018042715.f76bawmoyk66isap@vireshk-i7>
-X-Originating-IP: [10.124.1.5]
-X-ClientProxiedBy: HQMAIL105.nvidia.com (172.20.187.12) To
- DRHQMAIL107.nvidia.com (10.27.9.16)
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-NVConfidentiality: public
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1571373296; bh=Rx+GgSz5ZaCKM6ZVWjMWxWP6l9wESsNJ8Pg+CRriU3k=;
-        h=X-PGP-Universal:Subject:To:CC:References:From:X-Nvconfidentiality:
-         Message-ID:Date:User-Agent:MIME-Version:In-Reply-To:
-         X-Originating-IP:X-ClientProxiedBy:Content-Type:Content-Language:
-         Content-Transfer-Encoding;
-        b=WlTTFGi+AW1cpVxLjrs3k8ct7IRcSwLMlcB1VoUvIgOvhpy0sZ7jLoFWyB5BHgNiM
-         5wp7xLBwKA2KvbE5a57Ovnr0pgIO1B8wmxe5lOcpdzaChYnL4yshjN+bKWPDZdELEC
-         y6g/otss4TxpEUxCddKfKfsIKq9efIPvw/Ac+RMdtQhpc7m5ha1SBpohR3cgEmKNp7
-         RSvUEvFKLYIpfE+ObXISnyRzueh0vip+XorSEzzaVDrk2ubY10iIZQI7BXD/nQEtKB
-         39GaFWZiltzh212WsM6Vk3/Qk4IZx+C+j1KSICJbrQZpJkhSU2WFJBOUBlfAgnglt9
-         jNdFGP9PTB6PA==
+        t=1571374550; bh=df18Gs5j3cwrHl5PwObGl2FSzw7tZwBe+5B9upV/qmU=;
+        h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
+         MIME-Version:X-NVConfidentiality:Content-Transfer-Encoding:
+         Content-Type;
+        b=WlTqEoi5Gs0evA3sLhhGZhfcxwx3m/vSQElv4bqkxcVwKpJJr19qDRntWBEMKxukr
+         pvDQ8O0f8J0Y0ueNopFf/SiMkUxcKJWUMbyucxzHNsumK+iBvAMwN6k1LFlyMgKhuK
+         QMB93N+E2Rz3FittCdYokclkYTAA7YRoW0o6AkQhwCI8n6HZADPwqGZSl55kv/oQN7
+         /7avi+Xqhrt8s/39ZIs70NEca9ePo3eccO4OhblbWS3XWTaSNG6KO1GAZa0A52UTRO
+         hU0PkUcGepqdlRb1NlIKtyGwVnfJiWQWKNqFRQBisPvefqIsZNaxio6Y6pAl9kPvTf
+         /92RK4C9M0l3Q==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 10/17/19 9:27 PM, Viresh Kumar wrote:
-> On 17-10-19, 17:04, John Hubbard wrote:
->> The following build warning occurred on powerpc 64-bit builds:
->>
->> drivers/cpufreq/powernv-cpufreq.c: In function 'init_chip_info':
->> drivers/cpufreq/powernv-cpufreq.c:1070:1: warning: the frame size of 1040 bytes is larger than 1024 bytes [-Wframe-larger-than=]
-> 
-> How come we are catching this warning after 4 years ?
-> 
+The following build warning occurred on powerpc 64-bit builds:
 
-Newer compilers. And btw, I don't spend a lot of time in powerpc
-code, so I just recently ran this, and I guess everyone has been on less
-new compilers so far, it seems.
+drivers/cpufreq/powernv-cpufreq.c: In function 'init_chip_info':
+drivers/cpufreq/powernv-cpufreq.c:1070:1: warning: the frame size of 1040 b=
+ytes is larger than 1024 bytes [-Wframe-larger-than=3D]
 
-I used a gcc 8.1 cross compiler in this case:
+This is due to putting 1024 bytes on the stack:
 
-$ $ /blue_exp/kernel/cross-compilers/powerpc64/gcc-8.1.0-nolibc/powerpc64-linux/bin/powerpc64-linux-gcc -v
-Using built-in specs.
-COLLECT_GCC=/blue_exp/kernel/cross-compilers/powerpc64/gcc-8.1.0-nolibc/powerpc64-linux/bin/powerpc64-linux-gcc
-COLLECT_LTO_WRAPPER=/home/jhubbard/blue_exp/kernel/cross-compilers/powerpc64/gcc-8.1.0-nolibc/powerpc64-linux/bin/../libexec/gcc/powerpc64-linux/8.1.0/lto-wrapper
-Target: powerpc64-linux
-Configured with: /home/arnd/git/gcc/configure --target=powerpc64-linux --enable-targets=all --prefix=/home/arnd/cross/x86_64/gcc-8.1.0-nolibc/powerpc64-linux --enable-languages=c --without-headers --disable-bootstrap --disable-nls --disable-threads --disable-shared --disable-libmudflap --disable-libssp --disable-libgomp --disable-decimal-float --disable-libquadmath --disable-libatomic --disable-libcc1 --disable-libmpx --enable-checking=release
-Thread model: single
-gcc version 8.1.0 (GCC) 
+    unsigned int chip[256];
 
+...and while looking at this, it also has a bug: it fails with a stack
+overrun, if CONFIG_NR_CPUS > 256.
 
+Fix both problems by dynamically allocating based on CONFIG_NR_CPUS.
 
-thanks,
+Fixes: 053819e0bf840 ("cpufreq: powernv: Handle throttling due to Pmax capp=
+ing at chip level")
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
 
-John Hubbard
-NVIDIA
+Changes since v1: includes Viresh's review commit fixes.
+
+ drivers/cpufreq/powernv-cpufreq.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cp=
+ufreq.c
+index 6061850e59c9..5b2e968cb5ea 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -1041,9 +1041,14 @@ static struct cpufreq_driver powernv_cpufreq_driver =
+=3D {
+=20
+ static int init_chip_info(void)
+ {
+-	unsigned int chip[256];
++	unsigned int *chip;
+ 	unsigned int cpu, i;
+ 	unsigned int prev_chip_id =3D UINT_MAX;
++	int ret =3D 0;
++
++	chip =3D kcalloc(CONFIG_NR_CPUS, sizeof(*chip), GFP_KERNEL);
++	if (!chip)
++		return -ENOMEM;
+=20
+ 	for_each_possible_cpu(cpu) {
+ 		unsigned int id =3D cpu_to_chip_id(cpu);
+@@ -1055,8 +1060,10 @@ static int init_chip_info(void)
+ 	}
+=20
+ 	chips =3D kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
+-	if (!chips)
+-		return -ENOMEM;
++	if (!chips) {
++		ret =3D -ENOMEM;
++		goto free_and_return;
++	}
+=20
+ 	for (i =3D 0; i < nr_chips; i++) {
+ 		chips[i].id =3D chip[i];
+@@ -1066,7 +1073,9 @@ static int init_chip_info(void)
+ 			per_cpu(chip_info, cpu) =3D  &chips[i];
+ 	}
+=20
+-	return 0;
++free_and_return:
++	kfree(chip);
++	return ret;
+ }
+=20
+ static inline void clean_chip_info(void)
+--=20
+2.23.0
 
