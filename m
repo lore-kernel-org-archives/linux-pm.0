@@ -4,165 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AE69CA9EA8
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 10:38:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 393C0CA9EA1
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 10:59:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0C739222BD
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 10:38:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0ED09222C6
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 10:59:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2439167AbfJRKiq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Oct 2019 06:38:46 -0400
-Received: from [217.140.110.172] ([217.140.110.172]:34262 "EHLO foss.arm.com"
+        id S1727872AbfJRK6t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Oct 2019 06:58:49 -0400
+Received: from [217.140.110.172] ([217.140.110.172]:34856 "EHLO foss.arm.com"
         rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-        id S2439166AbfJRKiq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 18 Oct 2019 06:38:46 -0400
+        id S1728576AbfJRK6t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 18 Oct 2019 06:58:49 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 755D3C8F;
-        Fri, 18 Oct 2019 03:38:05 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F1EB6AB6;
+        Fri, 18 Oct 2019 03:58:25 -0700 (PDT)
 Received: from usa.arm.com (e107155-lin.cambridge.arm.com [10.1.196.42])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 8CA923F6C4;
-        Fri, 18 Oct 2019 03:38:04 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 2E8C33F6C4;
+        Fri, 18 Oct 2019 03:58:25 -0700 (PDT)
 From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, nico@fluxnic.net
-Subject: [PATCH v3 5/5] cpufreq: vexpress-spc: fix some coding style issues
-Date:   Fri, 18 Oct 2019 11:37:49 +0100
-Message-Id: <20191018103749.11226-6-sudeep.holla@arm.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2] cpufreq: cancel any pending policy update work scheduled before freeing
+Date:   Fri, 18 Oct 2019 11:58:15 +0100
+Message-Id: <20191018105815.5714-1-sudeep.holla@arm.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191018103749.11226-1-sudeep.holla@arm.com>
-References: <20191018103749.11226-1-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix the following checkpatch checks/warnings:
+Schedules policy update work may end up racing with the freeing of the
+policy and unregistering the driver.
 
-CHECK: Unnecessary parentheses around the code
-CHECK: Alignment should match open parenthesis
-CHECK: Prefer kernel type 'u32' over 'uint32_t'
-WARNING: Missing a blank line after declarations
+One possible race is as below where the cpufreq_driver is unregistered
+but the scheduled work gets executed at later stage when cpufreq_driver
+is NULL(i.e. after freeing the policy and driver)
 
-Acked-by: Nicolas Pitre <nico@fluxnic.net>
+Unable to handle kernel NULL pointer dereference at virtual address 0000001c
+pgd = (ptrval)
+[0000001c] *pgd=80000080204003, *pmd=00000000
+Internal error: Oops: 206 [#1] SMP THUMB2
+Modules linked in:
+CPU: 0 PID: 34 Comm: kworker/0:1 Not tainted 5.4.0-rc3-00006-g67f5a8081a4b #86
+Hardware name: ARM-Versatile Express
+Workqueue: events handle_update
+PC is at cpufreq_set_policy+0x58/0x228
+LR is at dev_pm_qos_read_value+0x77/0xac
+Control: 70c5387d  Table: 80203000  DAC: fffffffd
+Process kworker/0:1 (pid: 34, stack limit = 0x(ptrval))
+	(cpufreq_set_policy) from (refresh_frequency_limits.part.24+0x37/0x48)
+	(refresh_frequency_limits.part.24) from (handle_update+0x2f/0x38)
+	(handle_update) from (process_one_work+0x16d/0x3cc)
+	(process_one_work) from (worker_thread+0xff/0x414)
+	(worker_thread) from (kthread+0xff/0x100)
+	(kthread) from (ret_from_fork+0x11/0x28)
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/cpufreq/vexpress-spc-cpufreq.c | 36 +++++++++++++-------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ drivers/cpufreq/cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
-index 132610424747..3259498d7eaa 100644
---- a/drivers/cpufreq/vexpress-spc-cpufreq.c
-+++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
-@@ -79,8 +79,8 @@ static unsigned int find_cluster_maxfreq(int cluster)
- 	for_each_online_cpu(j) {
- 		cpu_freq = per_cpu(cpu_last_req_freq, j);
- 
--		if ((cluster == per_cpu(physical_cluster, j)) &&
--				(max_freq < cpu_freq))
-+		if (cluster == per_cpu(physical_cluster, j) &&
-+		    max_freq < cpu_freq)
- 			max_freq = cpu_freq;
+v1->v2:
+	- Dropped check for work_pending as it can still be racy
+	- Changed from flush_work to cancel_work_sync
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e93cba29fbb2..8ad9c2859841 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1279,6 +1279,8 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
  	}
- 
-@@ -190,13 +190,11 @@ static int ve_spc_cpufreq_set_target(struct cpufreq_policy *policy,
- 	freqs_new = freq_table[cur_cluster][index].frequency;
- 
- 	if (is_bL_switching_enabled()) {
--		if ((actual_cluster == A15_CLUSTER) &&
--				(freqs_new < clk_big_min)) {
-+		if (actual_cluster == A15_CLUSTER && freqs_new < clk_big_min)
- 			new_cluster = A7_CLUSTER;
--		} else if ((actual_cluster == A7_CLUSTER) &&
--				(freqs_new > clk_little_max)) {
-+		else if (actual_cluster == A7_CLUSTER &&
-+			 freqs_new > clk_little_max)
- 			new_cluster = A15_CLUSTER;
--		}
- 	}
- 
- 	ret = ve_spc_cpufreq_set_rate(cpu, actual_cluster, new_cluster,
-@@ -224,7 +222,8 @@ static inline u32 get_table_count(struct cpufreq_frequency_table *table)
- static inline u32 get_table_min(struct cpufreq_frequency_table *table)
- {
- 	struct cpufreq_frequency_table *pos;
--	uint32_t min_freq = ~0;
-+	u32 min_freq = ~0;
-+
- 	cpufreq_for_each_entry(pos, table)
- 		if (pos->frequency < min_freq)
- 			min_freq = pos->frequency;
-@@ -235,7 +234,8 @@ static inline u32 get_table_min(struct cpufreq_frequency_table *table)
- static inline u32 get_table_max(struct cpufreq_frequency_table *table)
- {
- 	struct cpufreq_frequency_table *pos;
--	uint32_t max_freq = 0;
-+	u32 max_freq = 0;
-+
- 	cpufreq_for_each_entry(pos, table)
- 		if (pos->frequency > max_freq)
- 			max_freq = pos->frequency;
-@@ -259,10 +259,9 @@ static int merge_cluster_tables(void)
- 	/* Add in reverse order to get freqs in increasing order */
- 	for (i = MAX_CLUSTERS - 1; i >= 0; i--) {
- 		for (j = 0; freq_table[i][j].frequency != CPUFREQ_TABLE_END;
--				j++) {
--			table[k].frequency = VIRT_FREQ(i,
--					freq_table[i][j].frequency);
--			k++;
-+		     j++, k++) {
-+			table[k].frequency =
-+				VIRT_FREQ(i, freq_table[i][j].frequency);
- 		}
- 	}
- 
-@@ -335,13 +334,13 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev,
- 		return 0;
- 
- 	dev_err(cpu_dev, "%s: Failed to get clk for cpu: %d, cluster: %d\n",
--			__func__, cpu_dev->id, cluster);
-+		__func__, cpu_dev->id, cluster);
- 	ret = PTR_ERR(clk[cluster]);
- 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table[cluster]);
- 
- out:
- 	dev_err(cpu_dev, "%s: Failed to get data for cluster: %d\n", __func__,
--			cluster);
-+		cluster);
- 	return ret;
- }
- 
-@@ -411,7 +410,7 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
- 		pr_err("%s: failed to get cpu%d device\n", __func__,
--				policy->cpu);
-+		       policy->cpu);
- 		return -ENODEV;
- 	}
- 
-@@ -437,7 +436,8 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
- 	dev_pm_opp_of_register_em(policy->cpus);
- 
- 	if (is_bL_switching_enabled())
--		per_cpu(cpu_last_req_freq, policy->cpu) = clk_get_cpu_rate(policy->cpu);
-+		per_cpu(cpu_last_req_freq, policy->cpu) =
-+						clk_get_cpu_rate(policy->cpu);
- 
- 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
- 	return 0;
-@@ -456,7 +456,7 @@ static int ve_spc_cpufreq_exit(struct cpufreq_policy *policy)
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
- 		pr_err("%s: failed to get cpu%d device\n", __func__,
--				policy->cpu);
-+		       policy->cpu);
- 		return -ENODEV;
- 	}
- 
--- 
+
+ 	dev_pm_qos_remove_request(policy->min_freq_req);
++	/* cancel any pending policy->update work before freeing the policy */
++	cancel_work_sync(&policy->update);
+ 	kfree(policy->min_freq_req);
+
+ 	cpufreq_policy_put_kobj(policy);
+--
 2.17.1
 
