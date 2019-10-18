@@ -2,110 +2,101 @@ Return-Path: <SRS0=3uIP=YL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46774CA9ED0
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 04:55:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D053CA9ECF
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 04:56:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1463C222CE
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 04:55:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 00F5D222C3
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 04:56:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Lziqmfp5"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="KGFuI8CR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406837AbfJREzr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Oct 2019 00:55:47 -0400
-Received: from mail-qt1-f195.google.com ([209.85.160.195]:37961 "EHLO
-        mail-qt1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727547AbfJREzq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Oct 2019 00:55:46 -0400
-Received: by mail-qt1-f195.google.com with SMTP id j31so7329265qta.5
-        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2019 21:55:46 -0700 (PDT)
+        id S1726597AbfJRE4U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Oct 2019 00:56:20 -0400
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:36123 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2392808AbfJRE4U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Oct 2019 00:56:20 -0400
+Received: by mail-pf1-f194.google.com with SMTP id y22so3078436pfr.3
+        for <linux-pm@vger.kernel.org>; Thu, 17 Oct 2019 21:56:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=4JOjG0QUc189P6/WaRSOoK29dlyby423TPDBlUfjjUI=;
-        b=Lziqmfp58ruDPDlAnaXX9i3ImvrJ8f7RhL0uRY6ovTLudo2mORUTvpbSWzM8/XTFPO
-         dFk8WHRs3OF1tEwWHvb5wuKYHlZxMfAclM17/kR0QbxAuHs7cADgAJjT9R1tHPgjrTnM
-         xjiO0KIFnQ7x6SlBm+hzBJRqmoyBnMOnImt+wR3FFhuS3wSEn1dLHiMzmktM4NPZVdRN
-         WbHdFR3JDDRHZdjoaQCCVz0Dk1C3wyUMSqNmcQKVoe8DL4xYTP5PfAInbys6MErXbD63
-         XO4rlKOJ4DA9Rc1pmJIHasULYT7aZfsuszsQdsQl1QMr6HTEFVABmCyYEKW7g+GaCzgO
-         pYOw==
+        bh=tfGt3fWr1kwumbPQFxe11qp25uq0tySIsvg724aDQmA=;
+        b=KGFuI8CR3x3LxE3B6tHHY82iaAVS9aFWFJQHPc+YDlC6ws2OgEqL2mZavAKH21Hx+N
+         urFDi/fRju5x2WB1BQ8XO1R+jhVlMWSksN/B4/UY9zRT3GTIcsTPoK6OGJbzVh6MkCSn
+         dWSfodppq81ggRbPJUAJlDxbG0cLFaVUy8WsN3qlimvn6ycSFTD5JwLQ3CNuPKBMSrph
+         vIPwi1Lc8Bs1jCYz0FoGNy+3P+Dc3DVtB/zJtA5q6eF7nIiOnVVVaayioIwtLC7GhW5g
+         EoIGr7xKR0+i4AplYvDAQaua3auhBQQw/9I4V00lXjVImKCm2cQvEpKgzvUDqgTf6iup
+         /P7g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=4JOjG0QUc189P6/WaRSOoK29dlyby423TPDBlUfjjUI=;
-        b=U8khALNINWM9a+CHDHoG6UGwI5PcGJvcPeJkT1gtOF/U0b4Z8sbswvs/aYndy3Wslx
-         xZX3PouR/5qmKAFfVdEYAh5EZQFwglnIT8Pwg5xZ8mmCeRepHXslaLuKAPX5oUAb4ubJ
-         DtMu4EkgnckIrhEzK+dqOLUPXoCyu+qppSkjNCtqzHA4ZfEXTeHaYmB1dQ/yxxLtPN5c
-         wedTldOdAy7TJl1kBBr8lkNRgADMarYJqIdRbk3WXMHSewdO6HAFceE4N0xJ/sNITC+i
-         68Jyez5cTau28FVqADGAJvEGFZddnwt456bFJu6fdIjrWBFL2KNiaVbz6b6GMSkncROq
-         qCnA==
-X-Gm-Message-State: APjAAAU4wQ8ioVmgJSC8AM3+X+/bq3Wlfg+s5JRzJCUOVOX86FeJnjof
-        VukEkjs13s8uzP9ZpnNcfrIayql50F4=
-X-Google-Smtp-Source: APXvYqyuPtcqnmg+CxjS4b/CVJ38AAAsq1UNlBTr0YiXF/SJVY0vvLvaK1ceDkGa1t8Y8jOOs66R6w==
-X-Received: by 2002:a63:3d41:: with SMTP id k62mr7844596pga.129.1571374241418;
-        Thu, 17 Oct 2019 21:50:41 -0700 (PDT)
+        bh=tfGt3fWr1kwumbPQFxe11qp25uq0tySIsvg724aDQmA=;
+        b=XQ8ogv8OZ+R2OB147c164JpO+CziMDd/v91SZWR7OcurB7D2OZstSjp455wjB7ieV3
+         kYnYGXjOxunUON0SM3UTti33GVvn+a16AdUwtBJMc5t+hHFqSKGjt6dlMwI+O7YO8nz/
+         1S33ivPpPf8ufyc1r+7OX0G4mUSmHXp4dL1y3tkNwRp/6bQB1ICj6Y0A0DXTxcS0SkU4
+         ANv5ffNgBYK6NA4yA5UCL3nKYPgrg4ynbynjo5xp20bdloC7GeeqPucDk/l5p2jVLcWT
+         b/sJrALm7ZtnIrGx2U98jKk4k+1kF7yIytAvhS8yfZQkeqz2ysz31ZfRO68rjj0COCss
+         hAlw==
+X-Gm-Message-State: APjAAAUdWbzPaJTY5tztnk3/hNkwS8Npr1rLSDBsCGnvljUKEEOQ6lwA
+        kbfS4FDcMv9l8ZgB/FzFm63HmIcZORE=
+X-Google-Smtp-Source: APXvYqxXUTl/qqRC2TrizgbN8R5z7HfGkcGAOE67XLCu4N491ssVlmnv2H4qbY7PTZNpiYtxuCM64Q==
+X-Received: by 2002:aa7:93de:: with SMTP id y30mr4189899pff.98.1571373029465;
+        Thu, 17 Oct 2019 21:30:29 -0700 (PDT)
 Received: from localhost ([122.172.151.112])
-        by smtp.gmail.com with ESMTPSA id q2sm8125639pfg.144.2019.10.17.21.50.40
+        by smtp.gmail.com with ESMTPSA id i184sm4192692pge.5.2019.10.17.21.30.28
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 17 Oct 2019 21:50:40 -0700 (PDT)
-Date:   Fri, 18 Oct 2019 10:20:38 +0530
+        Thu, 17 Oct 2019 21:30:28 -0700 (PDT)
+Date:   Fri, 18 Oct 2019 10:00:26 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     John Hubbard <jhubbard@nvidia.com>
-Cc:     Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] cpufreq: powernv: fix stack bloat and NR_CPUS limitation
-Message-ID: <20191018045038.cytb46msqzmu4age@vireshk-i7>
-References: <20191018000431.1675281-1-jhubbard@nvidia.com>
- <20191018042715.f76bawmoyk66isap@vireshk-i7>
- <c3f16019-5724-a181-8068-8dda60fb67fa@nvidia.com>
- <20191018043856.srvgft6jhqw62bx3@vireshk-i7>
- <a4a1467f-2c92-34f2-a8bf-718feaa17da7@nvidia.com>
+To:     Marek Szyprowski <m.szyprowski@samsung.com>
+Cc:     linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>,
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        Mark Brown <broonie@kernel.org>,
+        Dmitry Osipenko <digetx@gmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Kamil Konieczny <k.konieczny@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] opp: core: Revert "add regulators enable and disable"
+Message-ID: <20191018043026.xm7a6emczm6w7bck@vireshk-i7>
+References: <CGME20191017102843eucas1p164993b3644d006481fb041e36175eebe@eucas1p1.samsung.com>
+ <20191017102758.8104-1-m.szyprowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a4a1467f-2c92-34f2-a8bf-718feaa17da7@nvidia.com>
+In-Reply-To: <20191017102758.8104-1-m.szyprowski@samsung.com>
 User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 17-10-19, 21:41, John Hubbard wrote:
-> On 10/17/19 9:38 PM, Viresh Kumar wrote:
-> > On 17-10-19, 21:34, John Hubbard wrote:
-> >> On 10/17/19 9:27 PM, Viresh Kumar wrote:
-> >>> On 17-10-19, 17:04, John Hubbard wrote:
-> >>>> The following build warning occurred on powerpc 64-bit builds:
-> >>>>
-> >>>> drivers/cpufreq/powernv-cpufreq.c: In function 'init_chip_info':
-> >>>> drivers/cpufreq/powernv-cpufreq.c:1070:1: warning: the frame size of 1040 bytes is larger than 1024 bytes [-Wframe-larger-than=]
-> >>>
-> >>> How come we are catching this warning after 4 years ?
-> >>>
-> >>
-> >> Newer compilers. And btw, I don't spend a lot of time in powerpc
-> >> code, so I just recently ran this, and I guess everyone has been on less
-> >> new compilers so far, it seems.
-> >>
-> >> I used a gcc 8.1 cross compiler in this case:
-> > 
-> > Hmm, okay.
-> > 
-> > I hope you haven't missed my actual review comments on your patch,
-> > just wanted to make sure we don't end up waiting for each other
-> > indefinitely here :)
-> > 
+On 17-10-19, 12:27, Marek Szyprowski wrote:
+> All the drivers, which use the OPP framework control regulators, which
+> are already enabled. Typically those regulators are also system critical,
+> due to providing power to CPU core or system buses. It turned out that
+> there are cases, where calling regulator_enable() on such boot-enabled
+> regulator has side-effects and might change its initial voltage due to
+> performing initial voltage balancing without all restrictions from the
+> consumers. Until this issue becomes finally solved in regulator core,
+> avoid calling regulator_enable()/disable() from the OPP framework.
 > 
-> Ha, I did overlook those. It's late around here, I guess. :)
+> This reverts commit 7f93ff73f7c8c8bfa6be33bcc16470b0b44682aa.
+> 
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+> This is a follow-up from the following discussion:
+> https://lkml.org/lkml/2019/10/9/541
 
-Good that I reminded you then :)
+I suppose this must go the v5.4-rcs, right ?
 
 -- 
 viresh
