@@ -2,154 +2,99 @@ Return-Path: <SRS0=3uIP=YL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DB0BCA9EA1
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 09:33:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B37DFCA9EA1
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 09:39:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 100B421852
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 09:33:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8C7F921D7C
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Oct 2019 09:39:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2409808AbfJRJcz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 18 Oct 2019 05:32:55 -0400
-Received: from mail-sh.amlogic.com ([58.32.228.43]:32069 "EHLO
-        mail-sh.amlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2409794AbfJRJcy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Oct 2019 05:32:54 -0400
-Received: from droid13.amlogic.com (116.236.93.172) by mail-sh.amlogic.com
- (10.18.11.5) with Microsoft SMTP Server id 15.1.1591.10; Fri, 18 Oct 2019
- 17:33:00 +0800
-From:   Jianxin Pan <jianxin.pan@amlogic.com>
-To:     Kevin Hilman <khilman@baylibre.com>,
-        <linux-amlogic@lists.infradead.org>
-CC:     Jianxin Pan <jianxin.pan@amlogic.com>,
+        id S2404308AbfJRJjJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Oct 2019 05:39:09 -0400
+Received: from [217.140.110.172] ([217.140.110.172]:59874 "EHLO foss.arm.com"
+        rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+        id S1727917AbfJRJjI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 18 Oct 2019 05:39:08 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8AE093E8;
+        Fri, 18 Oct 2019 02:38:43 -0700 (PDT)
+Received: from e121166-lin.cambridge.arm.com (unknown [10.1.196.255])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BE60F3F718;
+        Fri, 18 Oct 2019 02:38:41 -0700 (PDT)
+Date:   Fri, 18 Oct 2019 10:38:39 +0100
+From:   Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org,
         Rob Herring <robh+dt@kernel.org>,
-        Neil Armstrong <narmstrong@baylibre.com>,
-        Jerome Brunet <jbrunet@baylibre.com>,
-        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <devicetree@vger.kernel.org>, Jian Hu <jian.hu@amlogic.com>,
-        Hanjie Lin <hanjie.lin@amlogic.com>,
-        Victor Wan <victor.wan@amlogic.com>,
-        Xingyu Chen <xingyu.chen@amlogic.com>
-Subject: [PATCH v3 1/4] dt-bindings: power: add Amlogic secure power domains bindings
-Date:   Fri, 18 Oct 2019 17:32:44 +0800
-Message-ID: <1571391167-79679-2-git-send-email-jianxin.pan@amlogic.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1571391167-79679-1-git-send-email-jianxin.pan@amlogic.com>
-References: <1571391167-79679-1-git-send-email-jianxin.pan@amlogic.com>
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+Subject: Re: [PATCH 01/13] cpuidle: psci: Fix potential access to unmapped
+ memory
+Message-ID: <20191018093839.GB25918@e121166-lin.cambridge.arm.com>
+References: <20191010113937.15962-1-ulf.hansson@linaro.org>
+ <20191010113937.15962-2-ulf.hansson@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [116.236.93.172]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191010113937.15962-2-ulf.hansson@linaro.org>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the bindings for the Amlogic Secure power domains, controlling the
-secure power domains.
+On Thu, Oct 10, 2019 at 01:39:25PM +0200, Ulf Hansson wrote:
+> When the WFI state have been selected, the in-parameter idx to
+> psci_enter_idle_state() is zero. In this case, we must not index the state
+> array as "state[idx - 1]", as it means accessing data outside the array.
+> Fix the bug by pre-checking if idx is zero.
+> 
+> Fixes: 9ffeb6d08c3a ("PSCI: cpuidle: Refactor CPU suspend power_state parameter handling")
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle-psci.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.c
+> index f3c1a2396f98..2e91c8d6c211 100644
+> --- a/drivers/cpuidle/cpuidle-psci.c
+> +++ b/drivers/cpuidle/cpuidle-psci.c
+> @@ -27,10 +27,10 @@ static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
+>  static int psci_enter_idle_state(struct cpuidle_device *dev,
+>  				struct cpuidle_driver *drv, int idx)
+>  {
+> -	u32 *state = __this_cpu_read(psci_power_state);
+> +	u32 *states = __this_cpu_read(psci_power_state);
+> +	u32 state = idx ? states[idx - 1] : 0;
+>  
+> -	return CPU_PM_CPU_IDLE_ENTER_PARAM(psci_cpu_suspend_enter,
+> -					   idx, state[idx - 1]);
+> +	return CPU_PM_CPU_IDLE_ENTER_PARAM(psci_cpu_suspend_enter, idx, state);
 
-The bindings targets the Amlogic A1 and C1 compatible SoCs, in which the
-power domain registers are in secure world.
+Technically we don't dereference that array entry but I agree this
+is ugly and potentially broken.
 
-Signed-off-by: Jianxin Pan <jianxin.pan@amlogic.com>
----
- .../bindings/power/amlogic,meson-sec-pwrc.yaml     | 42 ++++++++++++++++++++++
- include/dt-bindings/power/meson-a1-power.h         | 32 +++++++++++++++++
- 2 files changed, 74 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
- create mode 100644 include/dt-bindings/power/meson-a1-power.h
+My preference is aligning it with ACPI code and allocate one more
+entry in the psci_power_state array (useless for wfi, agreed but
+at least we remove this (-1) handling from the code).
 
-diff --git a/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml b/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
-new file mode 100644
-index 00000000..88d8261
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
-@@ -0,0 +1,42 @@
-+# SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-+# Copyright (c) 2019 Amlogic, Inc
-+# Author: Jianxin Pan <jianxin.pan@amlogic.com>
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/amlogic,meson-sec-pwrc.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: Amlogic Meson Secure Power Domains
-+
-+maintainers:
-+  - Jianxin Pan <jianxin.pan@amlogic.com>
-+
-+description: |+
-+  Meson Secure Power Domains used in A1/C1 SoCs.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - amlogic,meson-a1-pwrc
-+
-+  "#power-domain-cells":
-+    const: 1
-+
-+  secure-monitor:
-+    description: phandle to the secure-monitor node
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+
-+required:
-+  - compatible
-+  - "#power-domain-cells"
-+  - secure-monitor
-+
-+examples:
-+  - |
-+    pwrc: power-controller {
-+          compatible = "amlogic,meson-a1-pwrc";
-+          #power-domain-cells = <1>;
-+          secure-monitor = <&sm>;
-+    };
-+
-+
-diff --git a/include/dt-bindings/power/meson-a1-power.h b/include/dt-bindings/power/meson-a1-power.h
-new file mode 100644
-index 00000000..6cf50bf
---- /dev/null
-+++ b/include/dt-bindings/power/meson-a1-power.h
-@@ -0,0 +1,32 @@
-+/* SPDX-License-Identifier: (GPL-2.0+ or MIT) */
-+/*
-+ * Copyright (c) 2019 Amlogic, Inc.
-+ * Author: Jianxin Pan <jianxin.pan@amlogic.com>
-+ */
-+
-+#ifndef _DT_BINDINGS_MESON_A1_POWER_H
-+#define _DT_BINDINGS_MESON_A1_POWER_H
-+
-+#define PWRC_DSPA_ID	8
-+#define PWRC_DSPB_ID	9
-+#define PWRC_UART_ID	10
-+#define PWRC_DMC_ID	11
-+#define PWRC_I2C_ID	12
-+#define PWRC_PSRAM_ID	13
-+#define PWRC_ACODEC_ID	14
-+#define PWRC_AUDIO_ID	15
-+#define PWRC_OTP_ID	16
-+#define PWRC_DMA_ID	17
-+#define PWRC_SD_EMMC_ID	18
-+#define PWRC_RAMA_ID	19
-+#define PWRC_RAMB_ID	20
-+#define PWRC_IR_ID	21
-+#define PWRC_SPICC_ID	22
-+#define PWRC_SPIFC_ID	23
-+#define PWRC_USB_ID	24
-+#define PWRC_NIC_ID	25
-+#define PWRC_PDMIN_ID	26
-+#define PWRC_RSA_ID	27
-+#define PWRC_MAX_ID	28
-+
-+#endif
--- 
-2.7.4
+Thanks,
+Lorenzo
 
+>  }
+>  
+>  static struct cpuidle_driver psci_idle_driver __initdata = {
+> -- 
+> 2.17.1
+> 
