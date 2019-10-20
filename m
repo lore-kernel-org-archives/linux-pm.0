@@ -2,75 +2,118 @@ Return-Path: <SRS0=RX5W=YN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E0B5CA9EA0
-	for <linux-pm@archiver.kernel.org>; Sun, 20 Oct 2019 22:21:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A97D5CA9EA0
+	for <linux-pm@archiver.kernel.org>; Sun, 20 Oct 2019 23:50:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id ECB7B21929
-	for <linux-pm@archiver.kernel.org>; Sun, 20 Oct 2019 22:21:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6C76E21927
+	for <linux-pm@archiver.kernel.org>; Sun, 20 Oct 2019 23:50:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1571615450;
+	bh=N4e3Gl1opvJNmZnV1eoFNarQ0qO8QV9Ee/7oonNfepY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=EvVcc6kr3nPUDDOCKVser1NfZCoZaUwY9HeOeJXE4UlfQYmW2flJLYVHrsc3JemKe
+	 2bcPxrxaY+vi8VsI+zOhJAojB7iqY7avja+WjcivCRUuOdDcH806fQEmjaBIniPGbW
+	 0G0PrD9USwQTBG05gisZh78aK2TbL2400D7/oGvU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726610AbfJTWVN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 20 Oct 2019 18:21:13 -0400
-Received: from mga11.intel.com ([192.55.52.93]:56363 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726537AbfJTWVN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 20 Oct 2019 18:21:13 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 20 Oct 2019 15:21:12 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.67,320,1566889200"; 
-   d="scan'208";a="203188658"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
-  by FMSMGA003.fm.intel.com with ESMTP; 20 Oct 2019 15:21:11 -0700
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
-        (envelope-from <lkp@intel.com>)
-        id 1iMJZX-0006Md-59; Mon, 21 Oct 2019 06:21:11 +0800
-Date:   Mon, 21 Oct 2019 06:20:51 +0800
-From:   kbuild test robot <lkp@intel.com>
-To:     Tony Lindgren <tony@atomide.com>
-Cc:     kbuild-all@lists.01.org,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [power-supply:for-next 18/29]
- drivers/power/supply/cpcap-charger.c:481:5: sparse: sparse: symbol
- 'cpcap_charger_voltage_to_regval' was not declared. Should it be static?
-Message-ID: <201910210600.WlHJI3rO%lkp@intel.com>
+        id S1726597AbfJTXut (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 20 Oct 2019 19:50:49 -0400
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:36107 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726200AbfJTXut (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Oct 2019 19:50:49 -0400
+Received: by mail-oi1-f195.google.com with SMTP id k20so9555295oih.3;
+        Sun, 20 Oct 2019 16:50:47 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=8n+CfgHrVlYbOyIx7HIFqyuXutdrrSkrZVWKO7njL/U=;
+        b=GrwmHQz0f40MJAeUj/wIKLRj5Mz7fn/NsFx3fMu2aAgRuN7qEK8gG0l6k+Eqm0ke7g
+         ZfGuDGfNgRWV5iW+rieqwjPnvn1SC3te/SciTo38PmH8pl5/2W+dw1RjhM+vr38J8TXY
+         vWWhYxkC6qBgjxjYiG6MyaQktmQq6ISOc7Y5bJ3bKi+H/2q0OE2qqrHJpK1AR3mvj3TD
+         S4LgUYCe9MhPdAr/HMeySGrtypf7ZNAgJmN8+sniSNOY2xRpGJ57GJB4tJTnojv6+v81
+         uEKmp5tiX6RdSDUyO7XUPvhkTum4lijGLljQOPTkdXKq21emgJ8CBSIQV6JpDWgFdwso
+         3rNA==
+X-Gm-Message-State: APjAAAWk26aQRchz9AQgrCDDg9dJmWh/scFAKjcRgEw4N68zhQtkTg9N
+        IaaGWjYtH9sxImflZbk9Lo3p4flsmyhQtrmTV7k=
+X-Google-Smtp-Source: APXvYqwJx6/icv4b9V0nQ9H9QSSDWXq0NSOsNklvjxlbkPf67XhAPTbo2vI/mzE/NWRT6ZOgAV7MbbCSRpOpOp/dWO0=
+X-Received: by 2002:a05:6808:917:: with SMTP id w23mr16026275oih.68.1571615447361;
+ Sun, 20 Oct 2019 16:50:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Patchwork-Hint: ignore
-User-Agent: NeoMutt/20170113 (1.7.2)
+References: <20191018105815.5714-1-sudeep.holla@arm.com>
+In-Reply-To: <20191018105815.5714-1-sudeep.holla@arm.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 21 Oct 2019 01:50:36 +0200
+Message-ID: <CAJZ5v0hBP4Zitd+V0s3zohd=gd6fKRHKN5RnwAPyfNXv3VX+iQ@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq: cancel any pending policy update work
+ scheduled before freeing
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git for-next
-head:   722f20d707b77bc7e3d241a3600b46b995474087
-commit: d4ee021c410f72bf2aacc61069ad6305120d2127 [18/29] power: supply: cpcap-charger: Limit voltage to 4.2V for battery
-reproduce:
-        # apt-get install sparse
-        # sparse version: v0.6.1-dirty
-        git checkout d4ee021c410f72bf2aacc61069ad6305120d2127
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
+On Fri, Oct 18, 2019 at 12:59 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
+>
+> Schedules policy update work may end up racing with the freeing of the
+> policy and unregistering the driver.
+>
+> One possible race is as below where the cpufreq_driver is unregistered
+> but the scheduled work gets executed at later stage when cpufreq_driver
+> is NULL(i.e. after freeing the policy and driver)
+>
+> Unable to handle kernel NULL pointer dereference at virtual address 0000001c
+> pgd = (ptrval)
+> [0000001c] *pgd=80000080204003, *pmd=00000000
+> Internal error: Oops: 206 [#1] SMP THUMB2
+> Modules linked in:
+> CPU: 0 PID: 34 Comm: kworker/0:1 Not tainted 5.4.0-rc3-00006-g67f5a8081a4b #86
+> Hardware name: ARM-Versatile Express
+> Workqueue: events handle_update
+> PC is at cpufreq_set_policy+0x58/0x228
+> LR is at dev_pm_qos_read_value+0x77/0xac
+> Control: 70c5387d  Table: 80203000  DAC: fffffffd
+> Process kworker/0:1 (pid: 34, stack limit = 0x(ptrval))
+>         (cpufreq_set_policy) from (refresh_frequency_limits.part.24+0x37/0x48)
+>         (refresh_frequency_limits.part.24) from (handle_update+0x2f/0x38)
+>         (handle_update) from (process_one_work+0x16d/0x3cc)
+>         (process_one_work) from (worker_thread+0xff/0x414)
+>         (worker_thread) from (kthread+0xff/0x100)
+>         (kthread) from (ret_from_fork+0x11/0x28)
+>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> v1->v2:
+>         - Dropped check for work_pending as it can still be racy
+>         - Changed from flush_work to cancel_work_sync
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index e93cba29fbb2..8ad9c2859841 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1279,6 +1279,8 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+>         }
+>
+>         dev_pm_qos_remove_request(policy->min_freq_req);
+> +       /* cancel any pending policy->update work before freeing the policy */
+> +       cancel_work_sync(&policy->update);
+>         kfree(policy->min_freq_req);
+>
+>         cpufreq_policy_put_kobj(policy);
+> --
 
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
-
-
-sparse warnings: (new ones prefixed by >>)
-
->> drivers/power/supply/cpcap-charger.c:481:5: sparse: sparse: symbol 'cpcap_charger_voltage_to_regval' was not declared. Should it be static?
-
-Please review and possibly fold the followup patch.
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Applying as a fix for 5.4, thanks!
