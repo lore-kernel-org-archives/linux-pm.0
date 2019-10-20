@@ -2,59 +2,56 @@ Return-Path: <SRS0=RX5W=YN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B1FFCA9EA0
-	for <linux-pm@archiver.kernel.org>; Sun, 20 Oct 2019 20:35:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85FCDCA9EA0
+	for <linux-pm@archiver.kernel.org>; Sun, 20 Oct 2019 20:35:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4C5D721A4A
-	for <linux-pm@archiver.kernel.org>; Sun, 20 Oct 2019 20:35:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5935821A4A
+	for <linux-pm@archiver.kernel.org>; Sun, 20 Oct 2019 20:35:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571603720;
-	bh=0BZCTVybFYdutIhAdoTAhNwvf9adyvA5o/4WyUSSLCI=;
+	s=default; t=1571603736;
+	bh=5b5wr87HoNjOB/IBjJpVV9X3WCNeB9MXMOprHKehRcM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=jDrwjC42JMMJeRmRmfQRvOEimsUAbSNhL7RlEfSMwyqH1+ZrH4464KXdD5e/e4fih
-	 r5g3Dxwo7HYPhfpkRMCpIDrh95EMfuc+OfdZBNrJ515jRDRfgYSJopvj2JK7uMZf52
-	 ZsQIZ7EeJ8wBaLLHws9wxXRLUKLR7Uv4IbH9kHqo=
+	b=PwzFVm4NFjVPbRS6Yahoi1ErV+0Cr7it9LF9sOoeXSkxPSEHyXw1TfV19RANW7L5q
+	 kMUU4m71iOBiK6kq8OeXb8lHroQB8KP1AmNWQU9VLkTT0XlrHDz8TLO3bMmHbvpMQ6
+	 K3ylpSEkfeO693Fo8/08zo+LATO++LVSqssYK9Uo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726152AbfJTUfT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 20 Oct 2019 16:35:19 -0400
-Received: from mail.kernel.org ([198.145.29.99]:52670 "EHLO mail.kernel.org"
+        id S1726506AbfJTUfg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 20 Oct 2019 16:35:36 -0400
+Received: from mail.kernel.org ([198.145.29.99]:52734 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725941AbfJTUfT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 20 Oct 2019 16:35:19 -0400
+        id S1726424AbfJTUff (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 20 Oct 2019 16:35:35 -0400
 Received: from earth.universe (cust-west-pareq2-46-193-15-226.wb.wifirst.net [46.193.15.226])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 28A7121928;
-        Sun, 20 Oct 2019 20:35:18 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 33E2121928;
+        Sun, 20 Oct 2019 20:35:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1571603718;
-        bh=0BZCTVybFYdutIhAdoTAhNwvf9adyvA5o/4WyUSSLCI=;
+        s=default; t=1571603735;
+        bh=5b5wr87HoNjOB/IBjJpVV9X3WCNeB9MXMOprHKehRcM=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Es/t6OJrm5fYKS/AjdcXrChXRJd+I0JtwjaBfZmeJVWJtHkMJ2N4ZOL0ER263TBKh
-         zblhD3wmlYg0lqLsB0KLTd/PU9Wpk5VRd7ezp4oJfBo4g9PJram7Wd1m4abQaVz41C
-         OQMi3mGQIuHpsqQXCSUezP/bE8nrzKKLfcS3nWl0=
+        b=wJlS6aOEMCm9SmwDrJdM1zeAOZZWqqf1L85dqBRrm1JPvV/G3pQDNI6gRJ3RUk4f1
+         3dzeg0Bvf6g2ozge6UaC/9gvJ8AbkipeGo0nhb650161TRlo0RpFBk+/AehFDp0MPk
+         nIl5AuVEGVubXSBaDnaydqispFVAji+j21JmXzwE=
 Received: by earth.universe (Postfix, from userid 1000)
-        id 70EB63C0CA0; Sun, 20 Oct 2019 22:35:16 +0200 (CEST)
-Date:   Sun, 20 Oct 2019 22:35:16 +0200
+        id 7A22C3C0CA0; Sun, 20 Oct 2019 22:35:33 +0200 (CEST)
+Date:   Sun, 20 Oct 2019 22:35:33 +0200
 From:   Sebastian Reichel <sre@kernel.org>
 To:     Tony Lindgren <tony@atomide.com>
 Cc:     linux-pm@vger.kernel.org, linux-omap@vger.kernel.org,
-        Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>,
-        Merlijn Wajer <merlijn@wizzup.org>
-Subject: Re: [PATCHv2] power: supply: cpcap-charger: Limit voltage to 4.2V
- for battery
-Message-ID: <20191020203516.sp2vafrvb2pi3hp6@earth.universe>
-References: <20191016221817.8501-1-tony@atomide.com>
+        Merlijn Wajer <merlijn@wizzup.org>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCHv2 0/2] cpcap charger and battery fixes
+Message-ID: <20191020203533.tjs6uy3wtxpgjp5v@earth.universe>
+References: <20191016223005.9246-1-tony@atomide.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="3thxzith3uiedyki"
+        protocol="application/pgp-signature"; boundary="kpnlt4him4x57frq"
 Content-Disposition: inline
-In-Reply-To: <20191016221817.8501-1-tony@atomide.com>
+In-Reply-To: <20191016223005.9246-1-tony@atomide.com>
 User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -62,74 +59,64 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---3thxzith3uiedyki
+--kpnlt4him4x57frq
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Tony,
+Hi,
 
-On Wed, Oct 16, 2019 at 03:18:17PM -0700, Tony Lindgren wrote:
-> There have been some cases of droid4 battery bulging that seem to be
-> related to being left connected to the charger for several weeks.
+On Wed, Oct 16, 2019 at 03:30:03PM -0700, Tony Lindgren wrote:
+> Hi,
 >=20
-> It is suspected that the 4.35V charge voltage configured for the battery
-> is too much in the long run, so lets limit the charge voltage to 4.2V.
-> It could also be that the batteries are just getting old.
+> Here are few fixes for cpcap charger and battery. These can probably wait
+> for v5.5 if preferred that way and can be applied separate from the 4.2V
+> charger fix.
 >=20
-> We don't really want to just change the charge voltage to 4.2V as Android
-> may have charged the battery to 4.35V as pointed out by Pavel Machek.
+> Regards,
 >=20
-> To add checks for battery voltage, the driver needs to understand the
-> voltage it's charging at, and also needs to better understand it's
-> charger state. Right now it only understands connect and disconnect,
-> while now we need to know also a connected state but not charging.
+> Tony
 >=20
-> So let's add better charger state handling with help of chrgcurr2 interru=
-pt
-> for detecting charge full and retry, and add a check for battery voltage
-> before we start charging. And then we finally can lower the charge voltage
-> to 4.2V.
+> Changes since v2:
 >=20
-> Note that we've been using the same register values as the Android distros
-> on droid4, so it is suspected that the same problem also exists in Androi=
-d.
+> - Drop the pointless test for latest->voltage >=3D 0 as noted by Pavel
 >=20
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Reported-by: Merlijn Wajer <merlijn@wizzup.org>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
+> - Allow poweroff to trigger at 3.2V and lower as suggested by Pavel
 >=20
-> If this looks OK, I would appreciate an immutable branch against v5.4-rc1
-> with just this patch in it for merge conflicts with v5.5 dts changes.
+> Changes since v1:
+>=20
+> - Sent the updated 4.2V voltage fix separately
+>=20
+> Tony Lindgren (2):
+>   power: supply: cpcap-battery: Check voltage before orderly_poweroff
+>   power: supply: cpcap-charger: Improve battery detection
+>=20
+>  drivers/power/supply/cpcap-battery.c | 8 +++++---
+>  drivers/power/supply/cpcap-charger.c | 7 ++++---
+>  2 files changed, 9 insertions(+), 6 deletions(-)
 
-Thanks, I queued this to power-supply's for-next branch using the following
-signed immutable branch:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/=
-tag/?h=3Dpsy-cpcap-charge-volt-limit-signed
+Thanks, queued.
 
 -- Sebastian
 
---3thxzith3uiedyki
+--kpnlt4him4x57frq
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl2sxQQACgkQ2O7X88g7
-+ppfug/+OwZrst7R7Pe1ieMe0cpXbAWsTLzZJhIOWOQQ6ow8ppg0m6HaEIOFT+9y
-NzE0OBG0FrLRCHa00bMDt+zUllueb9HRNxeEBeIGU3bahJz+CVmZ1n8WKYjHFwIw
-ZGE+5fM+ouGGsM4j+1m+Ls/BCYlzMDV7OCcxZW/In3SYpP5LbWZevAzaQ4B7Ahvb
-c3lNftMELx6ngiHJ0CSJ+lBhTNTxdpIlHn04yYtuPMLLogycHa4ldMZk/VlzKZF5
-KoEDDP5lEhVIOBCRMidcbyY+Va7wT6zZtpzV0YahvW65GFNkhYAAH6mL2nI4HxAH
-TvE7AjVq34amkS6WG45sgJYVELVUV5fDLrUpKtgU4bR+ixUYvDwicHV4yqkL+LQI
-Hsku/sz4EBDJY6CMUXtgzSHkyQncI76/G+bXBlBHMLNIImE2rFJ4tsNsR7REbTc9
-fyrwNWfiYV8+HbqSKpurQteHH6vee5jFjqzOFHIxRbNOsrM4omCzPN13Gq+alooa
-ryjWgdUAoryzGxEYrzI2yT9Wy8BxlcNGTa3nW/tFehwMN60C9briGEFu8y35dgPx
-gSCPL2Zdngz6fwRWtLrMm9xJTmHhxDcjMJwt8pfvQex6iwtT8kDMQQna0m+QEObX
-edmwk+LsXCb9MqAyY+2v6mQPKDf4PauFmLVwoC1ND4PsZF3eJZs=
-=bf+f
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl2sxRUACgkQ2O7X88g7
++prqfA//ZnYEZBCg73xyW/KmMfKpp5gC4gMdSyPMK5UDU4ca9G8Vi5rlb+Mq/Xyv
+yPacv4ph7bik4rOHOKEKiXyjtHxZ6Qyh3SsebNZ4Gnbm5Ch6V8+XcqgIZp0O12gQ
+aGCQhYJsRgL9aK62fiiSccptdjqy+vkKTcNekjdbmxNw4+aDCSB4/5MQ9q4J6jM3
+RPm/58l3UWZRAh2OnEvuxMlpKxBjDVhhTQePPTfPsE0zi2PfkILMvikJzH97pzPY
+U+0LGZg0utL3FaBLCq/OS7Zr2a8/9bO1t5H6DJK652/fmVHXhtMEZzcha0q3kp6h
+MuapDTOMG+4515h0zwwKqWAoSn5GRGCebMC3KhaW9rK/8aMJk8rpUz9L2v+HaMdA
+0Zr9PL+FUByIC9SYmZpZmHm7dIFUUWY1ln27fTaud20IuUP2B9baXOUAOP8xitqK
+Lh2OjZ9ENMKrzKoHmBWjmJ5HnMUVRK9PMjku/VRsOG1wXoCsy+xY3oSDjlheNvBk
+gxx28QZLoGFqCF1527UZucBMEmwVcuqBcjP+cV8V+Er/5yo56I2oSsBJDojWCFlv
+8k2WUD0dIBsOtXm6XB5yGlBrYQ2Z6qdaYKawsDwKZlmAympWZvOG/IrQIa6wWd2x
+0Oi35aK+I7g4nznlpdFPiUHmEnMYSSnBWpTtHEPS8Mzng+4b66c=
+=oGxB
 -----END PGP SIGNATURE-----
 
---3thxzith3uiedyki--
+--kpnlt4him4x57frq--
