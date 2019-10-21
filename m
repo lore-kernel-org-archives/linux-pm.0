@@ -2,55 +2,58 @@ Return-Path: <SRS0=QGVl=YO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C294CA9EAF
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 12:15:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D18B3CA9EB0
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 12:15:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4D09620882
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 12:15:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A8482214B2
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 12:15:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MPXS8Hgx"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="h+Y0coRG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728081AbfJUMPV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Oct 2019 08:15:21 -0400
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:46937 "EHLO
-        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727256AbfJUMPV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2019 08:15:21 -0400
-Received: by mail-pg1-f194.google.com with SMTP id e15so7694774pgu.13
-        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2019 05:15:21 -0700 (PDT)
+        id S1728682AbfJUMPg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Oct 2019 08:15:36 -0400
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:38272 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728681AbfJUMPg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2019 08:15:36 -0400
+Received: by mail-pg1-f196.google.com with SMTP id w3so7719209pgt.5
+        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2019 05:15:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=pnzJsmuP9CKg9EDHDwS6w3J2PHJifgSu4We6SYgSAmQ=;
-        b=MPXS8Hgx2hMZyNlkxK1TpJq79YlVtmaPiMszJobyCWB6W2W/iMtbsrJ3k8abj8Jjgd
-         kKokTdR0uO+rz6zBWhKNqeITZRkQm1P0Hmv50IwnpFD6h/NLMA0ZkRzwp4YoYAAZ0Yrq
-         7QN4onmyAX49U1ISSKDimvWDGWYpeWW6Yc/TQ2zvNYmz/QHuegKU8gS55zwiL3U//q26
-         AfAmznmph4e8VBioWsB5opWwavJ00Q9dCofFRuLXmZauAJ1bmQH31xAtn7Ji0/Xt5aOq
-         95t/l5XDDehU95n2bGCHPHAwoszt9EVvBQRw+jDOtO+GI1oOZo9lab2e34tdUsFEdCFz
-         HVsA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :in-reply-to:references;
+        bh=xR7W1GwN0go/X8fLSEXaPJYIpihUkOKlEqRzolNBmOs=;
+        b=h+Y0coRGMly4KE+nb6Ra2tV4nrilADDUYPnv33sAaGK1eugmzVW/FzZHN5W0m3X4o3
+         UTml0Vzf8Z3tWGUifXS6P2VyXfqj1WfCsp9tnanGN2S3CDux8EIriXWqHoWKvE5bIP8k
+         f2GOQYC4fQaP1Og3jqa7m5W1neAhuF1Ud7Hs8VgcazP+JFZ9rfw0RNxK2EjI6iOoQJs4
+         aQqyFEG0Zro+ajeqx3snZUlUr9CJNTzzsNyDHBF+XKqwtamsA+aHldGw395f1V9akZCl
+         wGLZ+eqPPvlIss2oVUQXfASrOgnarubvZ+rVKlVANfx9SBRLyjxjVo1DkCdv+TuQJn3z
+         k7cQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=pnzJsmuP9CKg9EDHDwS6w3J2PHJifgSu4We6SYgSAmQ=;
-        b=ole8564/UGMXnPAYpwlampASmt+QuTjsxKlGeMXoesE4a4Xix4KFFg/XCQL3egX1V9
-         OCClbOucEHjI/JC/vFLMiTZwFM/ZO5ajEhboyRKYSjdSUUxP7iZQL1dt8Z+oaXFePahC
-         uAx+NQKWefC0yVTRkWZeBqbmfBnavcFKLrWhvDYN94NqUDa35NCAx/RKWpH1uyFF2sZR
-         SD9+3/ugkSTj9Xr5JlfYivnpPana+4kdT7fJ9ANrPqbsVg2rlZjFI2s9y6XtaIAmQnMR
-         qyH9BHUQDRXmiQkGNNNaeJfNLttJ+kuwCrkv/nywmivYnZQInMkW3/kTl9szSD0jHz80
-         7hFg==
-X-Gm-Message-State: APjAAAW46OU+gow/fYtvQkT2OMDCgoXFhcMSMUmsxODpyJ0C4mL3oTFi
-        oh7Oi14BfWPNFgjdacULkQVGWQ==
-X-Google-Smtp-Source: APXvYqyTx9szRJ/IlXGm9s39CYsVN3ql4UST/yfWvA3CcItmEPfi67K+EXUUV46r2Q/R5XlRwxpzFQ==
-X-Received: by 2002:a62:7a8c:: with SMTP id v134mr23078737pfc.143.1571660120619;
-        Mon, 21 Oct 2019 05:15:20 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:in-reply-to:references;
+        bh=xR7W1GwN0go/X8fLSEXaPJYIpihUkOKlEqRzolNBmOs=;
+        b=AFOklohycGhXhVA/VOfOr8aB2uTh3PTY+6Cz4JtXMR6MDdKiyG9XBNjauG8FGC5pxL
+         tLdzdIz3Z304/K9C70cskCXyYzPdlziFzHuT2UW2hoU2IAkVJkfG0brwSzIxF3DBxJs6
+         B5oyRkmHz1pVo6CALVegi6sRWzHzESy0z2+dKoPc8Byom+wNKrvIz8EUdpm6Y14WGLeU
+         lfONOuwXgEY5GDDYXpBSlD9hdC7Z4szOI3FFw8EFZRyFJONJOexBMSQChZujXRDmf71S
+         XyKZoYWCWukuvjor9B3oNdvGihsr6TpLWOvCb/C5WiNNAcPFIMS06xh5fOzjpnOyPB54
+         S4BA==
+X-Gm-Message-State: APjAAAWfgozZ2uUVaKpeSDZ4gc4pGk7kZbShPJXUfdEZezeOOQPhqRYA
+        lNvKh9xCJ/Lq00HXYk4bbl+WIw==
+X-Google-Smtp-Source: APXvYqwuE5ibzoeEar2RmNJatw8fKmT/CcJL8qyHAbJNydyMBKY12CDuW0bKMW/3gv35irjm6Xl82w==
+X-Received: by 2002:a62:1646:: with SMTP id 67mr22946275pfw.128.1571660135774;
+        Mon, 21 Oct 2019 05:15:35 -0700 (PDT)
 Received: from localhost ([49.248.62.222])
-        by smtp.gmail.com with ESMTPSA id 203sm3006606pfa.165.2019.10.21.05.15.19
+        by smtp.gmail.com with ESMTPSA id x10sm13800801pgl.53.2019.10.21.05.15.34
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Mon, 21 Oct 2019 05:15:19 -0700 (PDT)
+        Mon, 21 Oct 2019 05:15:35 -0700 (PDT)
 From:   Amit Kucheria <amit.kucheria@linaro.org>
 To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         daniel.lezcano@linaro.org, viresh.kumar@linaro.org,
@@ -68,70 +71,38 @@ To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Steven Rostedt <rostedt@goodmis.org>,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>
-Cc:     linux-clk@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v5 0/6] Initialise thermal framework and cpufreq earlier during boot
-Date:   Mon, 21 Oct 2019 17:45:09 +0530
-Message-Id: <cover.1571656014.git.amit.kucheria@linaro.org>
+Cc:     linux-pm@vger.kernel.org
+Subject: [PATCH v5 4/6] cpufreq: Initialize cpufreq-dt driver earlier
+Date:   Mon, 21 Oct 2019 17:45:13 +0530
+Message-Id: <353c745d4ca1feff600bd44154c01c013f185ca4.1571656015.git.amit.kucheria@linaro.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1571656014.git.amit.kucheria@linaro.org>
+References: <cover.1571656014.git.amit.kucheria@linaro.org>
+In-Reply-To: <cover.1571656014.git.amit.kucheria@linaro.org>
+References: <cover.1571656014.git.amit.kucheria@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes since v4:
-- Collect Acks
-- Pick the US spelling for 'initialis^Hze' consistently.
+This allows HW drivers that depend on cpufreq-dt to initialize earlier.
 
-Changes since v3:
-- Init schedutil governor earlier too
-- Simplified changes to thermal_init() error path
-- Collects Acks
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes since v2:
-- Missed one patch when posting v2. Respinning.
-
-Changes since v1:
-- Completely get rid of netlink support in the thermal framework.
-- This changes the early init patch to a single line - change to
-  core_initcall. Changed authorship of patch since it is nothing like the
-  original. Lina, let me know if you feel otherwise.
-- I've tested to make sure that the qcom-cpufreq-hw driver continues to
-  work correctly as a module so this won't impact Android's GKI plans.
-- Collected Acks
-
-Device boot needs to be as fast as possible while keeping under the thermal
-envelope. Now that thermal framework is built-in to the kernel, we can
-initialize it earlier to enable thermal mitigation during boot.
-
-We also need the cpufreq HW drivers to be initialised earlier to act as the
-cooling devices. This series only converts over the qcom-hw driver to
-initialize earlier but can be extended to other platforms as well.
-
-Amit Kucheria (6):
-  thermal: Remove netlink support
-  thermal: Initialize thermal subsystem earlier
-  cpufreq: Initialize the governors in core_initcall
-  cpufreq: Initialize cpufreq-dt driver earlier
-  clk: qcom: Initialize clock drivers earlier
-  cpufreq: qcom-hw: Move driver initialization earlier
-
- .../driver-api/thermal/sysfs-api.rst          |  26 +----
- drivers/clk/qcom/clk-rpmh.c                   |   2 +-
- drivers/clk/qcom/gcc-qcs404.c                 |   2 +-
- drivers/clk/qcom/gcc-sdm845.c                 |   2 +-
- drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +-
- drivers/cpufreq/cpufreq_conservative.c        |   2 +-
- drivers/cpufreq/cpufreq_ondemand.c            |   2 +-
- drivers/cpufreq/cpufreq_performance.c         |   2 +-
- drivers/cpufreq/cpufreq_powersave.c           |   2 +-
- drivers/cpufreq/cpufreq_userspace.c           |   2 +-
- drivers/cpufreq/qcom-cpufreq-hw.c             |   2 +-
- drivers/thermal/thermal_core.c                | 103 +-----------------
- include/linux/thermal.h                       |  11 --
- kernel/sched/cpufreq_schedutil.c              |   2 +-
- 14 files changed, 19 insertions(+), 143 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index bca8d1f47fd2c..3282defe14d41 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -180,4 +180,4 @@ static int __init cpufreq_dt_platdev_init(void)
+ 			       -1, data,
+ 			       sizeof(struct cpufreq_dt_platform_data)));
+ }
+-device_initcall(cpufreq_dt_platdev_init);
++core_initcall(cpufreq_dt_platdev_init);
 -- 
 2.17.1
 
