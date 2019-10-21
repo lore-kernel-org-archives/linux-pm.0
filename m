@@ -2,71 +2,89 @@ Return-Path: <SRS0=QGVl=YO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91735CA9EB0
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 13:21:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84AFECA9EAF
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 13:29:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 67E2121872
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 13:21:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5FE7C214AE
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 13:29:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728954AbfJUNVR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Oct 2019 09:21:17 -0400
-Received: from mga09.intel.com ([134.134.136.24]:61100 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728753AbfJUNVR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 21 Oct 2019 09:21:17 -0400
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga102.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 21 Oct 2019 06:21:16 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.67,323,1566889200"; 
-   d="scan'208";a="209442881"
-Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.157])
-  by fmsmga001.fm.intel.com with SMTP; 21 Oct 2019 06:21:12 -0700
-Received: by lahna (sSMTP sendmail emulation); Mon, 21 Oct 2019 16:21:12 +0300
-Date:   Mon, 21 Oct 2019 16:21:12 +0300
-From:   Mika Westerberg <mika.westerberg@intel.com>
-To:     Karol Herbst <kherbst@redhat.com>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Lyude Paul <lyude@redhat.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        nouveau <nouveau@lists.freedesktop.org>
-Subject: Re: [PATCH v3] pci: prevent putting nvidia GPUs into lower device
- states on certain intel bridges
-Message-ID: <20191021132112.GH2819@lahna.fi.intel.com>
-References: <20191016144449.24646-1-kherbst@redhat.com>
- <20191021114017.GY2819@lahna.fi.intel.com>
- <CACO55tt2iGcySugTAb1khEYpiGoq6Os3upG5fGq+0PbE2gyyeQ@mail.gmail.com>
- <20191021120611.GB2819@lahna.fi.intel.com>
- <CACO55tvYEvPHwFLDmLOQ_BCiNw7ZRA7dun9P=KdLb4bvYTtrcg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CACO55tvYEvPHwFLDmLOQ_BCiNw7ZRA7dun9P=KdLb4bvYTtrcg@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-User-Agent: Mutt/1.12.1 (2019-06-15)
+        id S1727322AbfJUN3B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Oct 2019 09:29:01 -0400
+Received: from [217.140.110.172] ([217.140.110.172]:52642 "EHLO foss.arm.com"
+        rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+        id S1727152AbfJUN3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Oct 2019 09:29:01 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A339C493;
+        Mon, 21 Oct 2019 06:28:30 -0700 (PDT)
+Received: from usa.arm.com (e107155-lin.cambridge.arm.com [10.1.196.42])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id D65B63F718;
+        Mon, 21 Oct 2019 06:28:29 -0700 (PDT)
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     viresh.kumar@linaro.org
+Cc:     Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Subject: [PATCH] cpufreq: Move cancelling of policy update work just after removing notifiers
+Date:   Mon, 21 Oct 2019 14:28:18 +0100
+Message-Id: <20191021132818.23787-1-sudeep.holla@arm.com>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 21, 2019 at 03:02:23PM +0200, Karol Herbst wrote:
-> > No, just block runtime PM from the device in nouveau driver.
-> 
-> but that's not what the patch does. It only skips the PCI PM reg
-> write, but still let the ACPI method be invoked to put the device into
-> D3cold
+Commit 099967699ad9 ("cpufreq: Cancel policy update work scheduled before freeing")
+added cancel_work_sync(policy->update) after the frequency QoS were
+removed. We can cancel the work just after taking the last CPU in the
+policy offline and unregistering the notifiers as policy->update cannot
+be scheduled from anywhere at this point.
 
-Oh, indeed it does. I did not realize that.
+However, due to other bugs, doing so still triggered the race between
+freeing of policy and scheduled policy update work. Now that all those
+issues are resolved, we can move this cancelling of any scheduled policy
+update work just after removing min/max notifiers.
 
-Which makes me wonder whether ACPI _OFF() expects the device to be in D0
-for some reason.
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/cpufreq/cpufreq.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+Hi Rafael,
+
+Based on Viresh's suggestion, I am posting a patch to move this
+cancel_work_sync earlier though it's not a must have change.
+I will leave it up to your preference.
+
+Regards,
+Sudeep
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 829a3764df1b..48a224a6b178 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1268,6 +1268,9 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+ 	freq_qos_remove_notifier(&policy->constraints, FREQ_QOS_MIN,
+ 				 &policy->nb_min);
+ 
++	/* Cancel any pending policy->update work before freeing the policy. */
++	cancel_work_sync(&policy->update);
++
+ 	if (policy->max_freq_req) {
+ 		/*
+ 		 * CPUFREQ_CREATE_POLICY notification is sent only after
+@@ -1279,8 +1282,6 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	freq_qos_remove_request(policy->min_freq_req);
+-	/* Cancel any pending policy->update work before freeing the policy. */
+-	cancel_work_sync(&policy->update);
+ 	kfree(policy->min_freq_req);
+ 
+ 	cpufreq_policy_put_kobj(policy);
+-- 
+2.17.1
+
