@@ -2,172 +2,112 @@ Return-Path: <SRS0=QGVl=YO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02A76CA9EAF
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 12:44:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8F53CA9EAF
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 13:02:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CDAC020B7C
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 12:44:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=bgdev-pl.20150623.gappssmtp.com header.i=@bgdev-pl.20150623.gappssmtp.com header.b="F3itfG7P"
+	by mail.kernel.org (Postfix) with ESMTP id 941BA2089C
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 13:02:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728299AbfJUMo6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Oct 2019 08:44:58 -0400
-Received: from mail-wm1-f67.google.com ([209.85.128.67]:51207 "EHLO
-        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728811AbfJUMoj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2019 08:44:39 -0400
-Received: by mail-wm1-f67.google.com with SMTP id q70so5993691wme.1
-        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2019 05:44:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=FbliBa1VhrZKjwZZgo9YBYBDBnz5mW0Jl/y78vfYK5s=;
-        b=F3itfG7P2iJu2uSiO8bPUCz6gsXDwqCg0me7nWNSzccPfO5Hp9zVtAy0JTy1saMUQU
-         +MXwhaDxQJDkVLy3su6qApGJbYl6b9dbLLplqvdcW639yTFkfAP4jaltm6hiNZ0QVBMG
-         ZAbeBxJA85I53xdhArLrj4rQ0lnrNcEjmLFLfS7A0VoXGwqo+MuAUI82jEAq5Z5w2BaI
-         EnD1SPa/VVJ1vLRw+TMabY2R0BmM73646gEvjT1aNuNiA/N5eXN6lds654GfaqCpZPy6
-         9YAY9aEcK2eH6mil9R0AXHRsM81nvAchF20MHBBafpUDvGe1nKMCvFmbk9eUJRNbV2MC
-         V/bQ==
+        id S1728714AbfJUNCg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Oct 2019 09:02:36 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:46382 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728696AbfJUNCg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Oct 2019 09:02:36 -0400
+Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mx1.redhat.com (Postfix) with ESMTPS id 9FDFBC057F23
+        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2019 13:02:35 +0000 (UTC)
+Received: by mail-qt1-f200.google.com with SMTP id f15so13987150qth.6
+        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2019 06:02:35 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=FbliBa1VhrZKjwZZgo9YBYBDBnz5mW0Jl/y78vfYK5s=;
-        b=SJvlaP/RJxJClwh8Ob/Zbg8nMVW6LDpQCCySf1z5R7gYdjkidCyCwSoxCp3GsTFdn9
-         6rgaWjUOpAF7BWJCXg6aqUXEMyg+p/ZyMSihGaJQXIcWM7klRJEMfrTYOyaw4SISdqFi
-         2TgGFtO1mNOGPTajXps+k0mEmPy2/CdY0XtPU7XgxnmmcehKykJGkw9u+DPaX9KdfHu5
-         acbPcDVHP8eeKaH2msZ3DZd2vFtVTZ2nDuMdKJWDzcU6V9ChWSNcYHsf9pq7ShRA38y5
-         uc8nHoliv5hpZEAKsM1l4Pd3gw4qEXQN9qRPzEKdAWHfWOBUAYPgl3ZCM8AG5DxPlgOX
-         l19g==
-X-Gm-Message-State: APjAAAVFlLO3+/OJBe0BLhJ7HdULGC9KeOGX4cVxzGrMmMUO+9Qf6MiM
-        e17x3mD854DAR2mRyUw19yQSEgiqaCE=
-X-Google-Smtp-Source: APXvYqw8PFsmtbUuomL4aBiyNRsZAYhTMftxSHrzusnCImRIZn4IbvSamiKMe9Edc7Z0zhuj/55Jvg==
-X-Received: by 2002:a7b:c7c8:: with SMTP id z8mr3574162wmk.29.1571661877315;
-        Mon, 21 Oct 2019 05:44:37 -0700 (PDT)
-Received: from debian-brgl.home ([2a01:cb1d:af:5b00:6d6c:8493:1ab5:dad7])
-        by smtp.gmail.com with ESMTPSA id a17sm10216150wmb.8.2019.10.21.05.44.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Oct 2019 05:44:36 -0700 (PDT)
-From:   Bartosz Golaszewski <brgl@bgdev.pl>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>
-Cc:     linux-input@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH v4 3/6] dt-bindings: power: max77650: convert the binding document to yaml
-Date:   Mon, 21 Oct 2019 14:44:25 +0200
-Message-Id: <20191021124428.2541-4-brgl@bgdev.pl>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191021124428.2541-1-brgl@bgdev.pl>
-References: <20191021124428.2541-1-brgl@bgdev.pl>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=MATzqi2DYgY3f2a3E6niPS64+EAt9PrYf2/3XZiaaBU=;
+        b=iCxPJJmBznpj95VZoW/zVgGsSBbdFMpgnS7OwscmdA4E3ciFnRnOInjGPL1TJuPsmZ
+         XiFhyLUTRNYeJCd+kWfvmC3r39R1NbVWQ5Xx62zCIodZnpLqe1toPutT0aGIswlIl8sV
+         i9ZwQU/x5ukNsh9QTgLS9IfVK5vXaDeCcsN41q3W3PkDQQffgTKJpe1qLSubjMFo08cw
+         yryDMx7j5Q9MGCMnhCrZhVHms87Ejl0BvPybubjb1NYDc/v5Wy/HekCRo4ceYkInk60i
+         lnBp40jSR9PRnYZms+lHv9V9xKbL/lNyYmZcFxitRS/xttfxYvfsETqcIfZqYlMm+H2v
+         kf4g==
+X-Gm-Message-State: APjAAAU0Iy1jT81AHKyChzQrKxUO7POO2+8QHeTDJQRi460hAmkpLfp1
+        zTyfT48Sfgsvc7+bDVIwDoQvt+sllc5U2fpCBGiGL2PeoMoL/2Y8SXfX5CWFvAuc20Kt2AqFd1Y
+        qvfSA6m/mqQKI0xBqCgLdwXaigUZ3JvjJ8os=
+X-Received: by 2002:a05:620a:16b9:: with SMTP id s25mr22922007qkj.102.1571662954913;
+        Mon, 21 Oct 2019 06:02:34 -0700 (PDT)
+X-Google-Smtp-Source: APXvYqyhj+jJSrLfQkuYBSA3fMA/d8Rx0RQ7EY47UhYO+DdxvK1frDIPrR+k9EvVDJ33OZEmDSuD4GzUm4UQE4AVqWs=
+X-Received: by 2002:a05:620a:16b9:: with SMTP id s25mr22921978qkj.102.1571662954620;
+ Mon, 21 Oct 2019 06:02:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20191016144449.24646-1-kherbst@redhat.com> <20191021114017.GY2819@lahna.fi.intel.com>
+ <CACO55tt2iGcySugTAb1khEYpiGoq6Os3upG5fGq+0PbE2gyyeQ@mail.gmail.com> <20191021120611.GB2819@lahna.fi.intel.com>
+In-Reply-To: <20191021120611.GB2819@lahna.fi.intel.com>
+From:   Karol Herbst <kherbst@redhat.com>
+Date:   Mon, 21 Oct 2019 15:02:23 +0200
+Message-ID: <CACO55tvYEvPHwFLDmLOQ_BCiNw7ZRA7dun9P=KdLb4bvYTtrcg@mail.gmail.com>
+Subject: Re: [PATCH v3] pci: prevent putting nvidia GPUs into lower device
+ states on certain intel bridges
+To:     Mika Westerberg <mika.westerberg@intel.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Lyude Paul <lyude@redhat.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        nouveau <nouveau@lists.freedesktop.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+On Mon, Oct 21, 2019 at 2:06 PM Mika Westerberg
+<mika.westerberg@intel.com> wrote:
+>
+> On Mon, Oct 21, 2019 at 02:00:46PM +0200, Karol Herbst wrote:
+> > On Mon, Oct 21, 2019 at 1:40 PM Mika Westerberg
+> > <mika.westerberg@intel.com> wrote:
+> > >
+> > > Hi Karol,
+> > >
+> > > Sorry for commenting late, I just came back from vacation.
+> > >
+> > > On Wed, Oct 16, 2019 at 04:44:49PM +0200, Karol Herbst wrote:
+> > > > Fixes state transitions of Nvidia Pascal GPUs from D3cold into higher device
+> > > > states.
+> > > >
+> > > > v2: convert to pci_dev quirk
+> > > >     put a proper technical explanation of the issue as a in-code comment
+> > > > v3: disable it only for certain combinations of intel and nvidia hardware
+> > > >
+> > > > Signed-off-by: Karol Herbst <kherbst@redhat.com>
+> > > > Cc: Bjorn Helgaas <bhelgaas@google.com>
+> > > > Cc: Lyude Paul <lyude@redhat.com>
+> > > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > > > Cc: Mika Westerberg <mika.westerberg@intel.com>
+> > > > Cc: linux-pci@vger.kernel.org
+> > > > Cc: linux-pm@vger.kernel.org
+> > > > Cc: dri-devel@lists.freedesktop.org
+> > > > Cc: nouveau@lists.freedesktop.org
+> > > > ---
+> > > >  drivers/pci/pci.c    | 11 ++++++++++
+> > > >  drivers/pci/quirks.c | 52 ++++++++++++++++++++++++++++++++++++++++++++
+> > >
+> > > I may be missing something but why you can't do this in the nouveau
+> > > driver itself?
+> >
+> > What do you mean precisely? Move the quirk into nouveau, but keep the
+> > changes to pci core?
+>
+> No, just block runtime PM from the device in nouveau driver.
 
-Convert the binding document for MAX77650 charger module to YAML.
-
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Acked-by: Sebastian Reichel <sre@kernel.org>
----
- .../power/supply/max77650-charger.txt         | 28 ---------------
- .../power/supply/max77650-charger.yaml        | 34 +++++++++++++++++++
- 2 files changed, 34 insertions(+), 28 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/max77650-charger.yaml
-
-diff --git a/Documentation/devicetree/bindings/power/supply/max77650-charger.txt b/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
-deleted file mode 100644
-index e6d0fb6ff94e..000000000000
---- a/Documentation/devicetree/bindings/power/supply/max77650-charger.txt
-+++ /dev/null
-@@ -1,28 +0,0 @@
--Battery charger driver for MAX77650 PMIC from Maxim Integrated.
--
--This module is part of the MAX77650 MFD device. For more details
--see Documentation/devicetree/bindings/mfd/max77650.txt.
--
--The charger is represented as a sub-node of the PMIC node on the device tree.
--
--Required properties:
----------------------
--- compatible:		Must be "maxim,max77650-charger"
--
--Optional properties:
----------------------
--- input-voltage-min-microvolt:	Minimum CHGIN regulation voltage. Must be one
--				of: 4000000, 4100000, 4200000, 4300000,
--				4400000, 4500000, 4600000, 4700000.
--- input-current-limit-microamp:	CHGIN input current limit (in microamps). Must
--				be one of: 95000, 190000, 285000, 380000,
--				475000.
--
--Example:
----------
--
--	charger {
--		compatible = "maxim,max77650-charger";
--		input-voltage-min-microvolt = <4200000>;
--		input-current-limit-microamp = <285000>;
--	};
-diff --git a/Documentation/devicetree/bindings/power/supply/max77650-charger.yaml b/Documentation/devicetree/bindings/power/supply/max77650-charger.yaml
-new file mode 100644
-index 000000000000..deef010ec535
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/max77650-charger.yaml
-@@ -0,0 +1,34 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/max77650-charger.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Battery charger driver for MAX77650 PMIC from Maxim Integrated.
-+
-+maintainers:
-+  - Bartosz Golaszewski <bgolaszewski@baylibre.com>
-+
-+description: |
-+  This module is part of the MAX77650 MFD device. For more details
-+  see Documentation/devicetree/bindings/mfd/max77650.yaml.
-+
-+  The charger is represented as a sub-node of the PMIC node on the device tree.
-+
-+properties:
-+  compatible:
-+    const: maxim,max77650-charger
-+
-+  input-voltage-min-microvolt:
-+    description:
-+      Minimum CHGIN regulation voltage.
-+    enum: [ 4000000, 4100000, 4200000, 4300000,
-+            4400000, 4500000, 4600000, 4700000 ]
-+
-+  input-current-limit-microamp:
-+    description:
-+      CHGIN input current limit (in microamps).
-+    enum: [ 95000, 190000, 285000, 380000, 475000 ]
-+
-+required:
-+  - compatible
--- 
-2.23.0
-
+but that's not what the patch does. It only skips the PCI PM reg
+write, but still let the ACPI method be invoked to put the device into
+D3cold
