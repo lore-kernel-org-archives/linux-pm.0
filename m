@@ -2,94 +2,90 @@ Return-Path: <SRS0=QGVl=YO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0279CA9EB7
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 14:49:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57835CA9EB0
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 14:52:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AE8B32053B
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 14:49:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2B6462053B
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 14:52:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728983AbfJUOtW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Oct 2019 10:49:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:35582 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727406AbfJUOtW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 21 Oct 2019 10:49:22 -0400
-Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mx1.redhat.com (Postfix) with ESMTPS id BD68586663
-        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2019 14:49:21 +0000 (UTC)
-Received: by mail-qt1-f198.google.com with SMTP id x50so3132812qth.4
-        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2019 07:49:21 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=qoM05916f2iOKQ8k9NQo94DTKSXVJOYaaX8pIUuRDvI=;
-        b=Bp1jsICALKLYvXx4kgBM4Pn23Cep7zC2taHiPozbNy3WNBKe/qZpWmPDNKXcbxGtKi
-         HR/lpl4a+qGNQPImc7bSpN7+jUodLDBHYFdfZJuKaJslQZ26kf4trCcxGIsNYrFmSUJp
-         UenbOqQlhPQbwkIpxUDAcj5KQfDvr4g7oanPRr9R+XLNp8hO1/AnuLHLelFC75pZ0xNi
-         7Q6EmMHtFDW9Hla295zi3tQ4Jfe/Qg62sjtdn2JlnvKl7AhgFZ9RHx8z+RmeRQUHbKFy
-         9kpQujRVGfJmFCq+OsR2sCPzJ8nLHeZlb+3TIdBVRERqM1ivRgAJZqauvSJE396lo1KQ
-         S7pA==
-X-Gm-Message-State: APjAAAUr8XpK32s7EbUrT8/IS3cCYQfjiQdyMaDLVRnFUXbwlehtSSTT
-        ATcxFpA+gc5tnlCeBDsKpbFHXJwTWPmMdFMX4uHwAD/vVZiV6e8nF5gVvHNRFIGWyvxxDH0vlU+
-        +jOAN8KWp8pRkZy+zzDO5kZKRtsTP2bn7A6E=
-X-Received: by 2002:a05:620a:a9c:: with SMTP id v28mr1773196qkg.381.1571669361065;
-        Mon, 21 Oct 2019 07:49:21 -0700 (PDT)
-X-Google-Smtp-Source: APXvYqxd+SAXdjO3y4S1oIDF06DXEmDuqtYz9U6zcL462CpXUBB9ua/mW5nvAsl4Exz5hHeQUwEuYJSw0QkJYkjPK+k=
-X-Received: by 2002:a05:620a:a9c:: with SMTP id v28mr1773179qkg.381.1571669360782;
- Mon, 21 Oct 2019 07:49:20 -0700 (PDT)
-MIME-Version: 1.0
-References: <CACO55ttOJaXKWmKQQbMAQRJHLXF-VtNn58n4BZhFKYmAdfiJjA@mail.gmail.com>
- <20191016213722.GA72810@google.com> <CACO55tuXck7vqGVLmMBGFg6A2pr3h8koRuvvWHLNDH8XvBVxew@mail.gmail.com>
- <20191021133328.GI2819@lahna.fi.intel.com> <CACO55tujUZr+rKkyrkfN+wkNOJWdNEVhVc-eZ3RCXJD+G1z=7A@mail.gmail.com>
- <20191021140852.GM2819@lahna.fi.intel.com>
-In-Reply-To: <20191021140852.GM2819@lahna.fi.intel.com>
-From:   Karol Herbst <kherbst@redhat.com>
-Date:   Mon, 21 Oct 2019 16:49:09 +0200
-Message-ID: <CACO55tvp6n2ahizwhc70xRJ1uTohs2ep962vwtHGQK-MkcLmsw@mail.gmail.com>
-Subject: Re: [PATCH v3] pci: prevent putting nvidia GPUs into lower device
- states on certain intel bridges
-To:     Mika Westerberg <mika.westerberg@intel.com>
-Cc:     Bjorn Helgaas <helgaas@kernel.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Lyude Paul <lyude@redhat.com>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        dri-devel <dri-devel@lists.freedesktop.org>,
-        nouveau <nouveau@lists.freedesktop.org>,
-        Linux ACPI Mailing List <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        id S1729312AbfJUOwN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Oct 2019 10:52:13 -0400
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:58476 "EHLO
+        baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729211AbfJUOwN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2019 10:52:13 -0400
+Received: from ramsan ([84.194.98.4])
+        by baptiste.telenet-ops.be with bizsmtp
+        id GErr2100905gfCL01Err8t; Mon, 21 Oct 2019 16:52:11 +0200
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan with esmtp (Exim 4.90_1)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1iMZ2F-00075n-1J; Mon, 21 Oct 2019 16:51:51 +0200
+Received: from geert by rox.of.borg with local (Exim 4.90_1)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1iMZ2E-0008FW-Vt; Mon, 21 Oct 2019 16:51:50 +0200
+From:   Geert Uytterhoeven <geert+renesas@glider.be>
+To:     =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
+        Nayna Jain <nayna@linux.ibm.com>,
+        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Paul Mackerras <paulus@samba.org>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        "David S . Miller" <davem@davemloft.net>,
+        Alex Deucher <alexander.deucher@amd.com>,
+        =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
+        David@rox.of.borg, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>,
+        Casey Leedom <leedom@chelsio.com>,
+        Shannon Nelson <snelson@pensando.io>,
+        Pensando Drivers <drivers@pensando.io>,
+        Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        netdev@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 3/5] drm/amdgpu: Remove superfluous void * cast in debugfs_create_file() call
+Date:   Mon, 21 Oct 2019 16:51:47 +0200
+Message-Id: <20191021145149.31657-4-geert+renesas@glider.be>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191021145149.31657-1-geert+renesas@glider.be>
+References: <20191021145149.31657-1-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 21, 2019 at 4:09 PM Mika Westerberg
-<mika.westerberg@intel.com> wrote:
->
-> On Mon, Oct 21, 2019 at 03:54:09PM +0200, Karol Herbst wrote:
-> > > I really would like to provide you more information about such
-> > > workaround but I'm not aware of any ;-) I have not seen any issues like
-> > > this when D3cold is properly implemented in the platform.  That's why
-> > > I'm bit skeptical that this has anything to do with specific Intel PCIe
-> > > ports. More likely it is some power sequence in the _ON/_OFF() methods
-> > > that is run differently on Windows.
-> >
-> > yeah.. maybe. I really don't know what's the actual root cause. I just
-> > know that with this workaround it works perfectly fine on my and some
-> > other systems it was tested on. Do you know who would be best to
-> > approach to get proper documentation about those methods and what are
-> > the actual prerequisites of those methods?
->
-> Those should be documented in the ACPI spec. Chapter 7 should explain
-> power resources and the device power methods in detail.
+There is no need to cast a typed pointer to a void pointer when calling
+a function that accepts the latter.  Remove it, as the cast prevents
+further compiler checks.
 
-either I looked up the wrong spec or the documentation isn't really
-saying much there.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
+index 5652cc72ed3a9b3a..b97a38b1e089b3d6 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
+@@ -1090,8 +1090,8 @@ int amdgpu_debugfs_init(struct amdgpu_device *adev)
+ {
+ 	adev->debugfs_preempt =
+ 		debugfs_create_file("amdgpu_preempt_ib", 0600,
+-				    adev->ddev->primary->debugfs_root,
+-				    (void *)adev, &fops_ib_preempt);
++				    adev->ddev->primary->debugfs_root, adev,
++				    &fops_ib_preempt);
+ 	if (!(adev->debugfs_preempt)) {
+ 		DRM_ERROR("unable to create amdgpu_preempt_ib debugsfs file\n");
+ 		return -EIO;
+-- 
+2.17.1
+
