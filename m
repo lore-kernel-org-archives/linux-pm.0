@@ -2,140 +2,129 @@ Return-Path: <SRS0=QGVl=YO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 092BECA9EAF
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 03:49:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE91CCA9EB5
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 07:52:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D8AE2214AE
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 03:49:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A00A920830
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 07:52:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="f4plsD5O"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726994AbfJUDtU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 20 Oct 2019 23:49:20 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:41982 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726846AbfJUDtT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 20 Oct 2019 23:49:19 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 373311A04BB;
-        Mon, 21 Oct 2019 05:49:17 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id C869A1A02C8;
-        Mon, 21 Oct 2019 05:49:10 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 05021402E5;
-        Mon, 21 Oct 2019 11:49:02 +0800 (SGT)
-From:   Ran Wang <ran.wang_1@nxp.com>
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Rob Herring <robh+dt@kernel.org>, Li Yang <leoyang.li@nxp.com>,
+        id S1727406AbfJUHw0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Oct 2019 03:52:26 -0400
+Received: from mail-ed1-f65.google.com ([209.85.208.65]:40277 "EHLO
+        mail-ed1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726480AbfJUHw0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2019 03:52:26 -0400
+Received: by mail-ed1-f65.google.com with SMTP id p59so860302edp.7
+        for <linux-pm@vger.kernel.org>; Mon, 21 Oct 2019 00:52:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=lshseq5695iLMWS2/yTnU4q4phMFdnGbVyLcqMyDgNw=;
+        b=f4plsD5OF7QI01+J/daaDJeoz3LkteQ6BQB7+jftsCG7vHACEuYAS0/ifg1VOZ+2bv
+         DVnIY34EwF6RV/LyAIkxxcICf5gDAB5lJnzvHZwPiIbqUNd0/Lda6KhsIL7Vv666qS53
+         0dm2LtJmUWVBz3Z6INSe5m7WXyh7OwRPV6IN4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=lshseq5695iLMWS2/yTnU4q4phMFdnGbVyLcqMyDgNw=;
+        b=bs8cg6EUgeR4xW2fXVDeZB5uMGNfur1ySPIvR4ACxMy8Wtf8yL7K9HKQSQgjEBKWhX
+         0SkCE5jH1T4hDsGnyYDrfvrWRI8hZg+mWrQs0ITOLPzq8LjEfN89F4A/NWCVM3OGVMR3
+         22E/QeUN//bbmUnA0jZBcKObvW3bA0W74uojjirpTz4CDTmWlsZ67kLICrorZQbf8CZr
+         o5A1vJbFYzshAbIZr4BZ9wu/uAKdHx2DHg3HUtzlUEcyCjdfyzuIrZhFUKpzg4Y60Ok1
+         PIPtjMz1TKbJQwnwO+CvkM6bmgKr2AdTEhr2fjkGvlhLpy2eWHyJiRp96sYtBPqsHODN
+         D4/Q==
+X-Gm-Message-State: APjAAAUiw/pk7XtN5PJ1br/Sj0TEp8d7hDrZL/BK9DhNYIi4jCkGp/P1
+        p8nUP+CgPA2lh8gh1WpsYKHLANeqhd/23LXwOmM+9A==
+X-Google-Smtp-Source: APXvYqzlkUpYGQn2syS3ZLVsVWF/tTk0yVfY4fQyTuFCwfaWNooQm7u2tuJVHYSsQtBTu3rWlHNporZiD288c1BLvm4=
+X-Received: by 2002:aa7:d8c6:: with SMTP id k6mr23548337eds.87.1571644344157;
+ Mon, 21 Oct 2019 00:52:24 -0700 (PDT)
+MIME-Version: 1.0
+References: <20190906100514.30803-1-roger.lu@mediatek.com> <20190906100514.30803-4-roger.lu@mediatek.com>
+In-Reply-To: <20190906100514.30803-4-roger.lu@mediatek.com>
+From:   Pi-Hsun Shih <pihsun@chromium.org>
+Date:   Mon, 21 Oct 2019 15:51:48 +0800
+Message-ID: <CANdKZ0dAWWy7QMMZhNHAha5ZpcBo1GHebPc5_FRu5gvBc569QA@mail.gmail.com>
+Subject: Re: [PATCH v5 3/3] PM / AVS: SVS: Introduce SVS engine
+To:     Roger Lu <roger.lu@mediatek.com>
+Cc:     Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Fan Chen <fan.chen@mediatek.com>,
+        HenryC Chen <HenryC.Chen@mediatek.com>, yt.lee@mediatek.com,
+        Angus Lin <Angus.Lin@mediatek.com>,
         Mark Rutland <mark.rutland@arm.com>,
-        Pavel Machek <pavel@ucw.cz>
-Cc:     Li Biwen <biwen.li@nxp.com>, Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linuxppc-dev@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Ran Wang <ran.wang_1@nxp.com>
-Subject: [PATCH v7 2/3] Documentation: dt: binding: fsl: Add 'little-endian' and update Chassis define
-Date:   Mon, 21 Oct 2019 11:49:26 +0800
-Message-Id: <20191021034927.19300-2-ran.wang_1@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191021034927.19300-1-ran.wang_1@nxp.com>
-References: <20191021034927.19300-1-ran.wang_1@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Nishanth Menon <nm@ti.com>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        open list <linux-kernel@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-By default, QorIQ SoC's RCPM register block is Big Endian. But
-there are some exceptions, such as LS1088A and LS2088A, are
-Little Endian. So add this optional property to help identify
-them.
+Hi Roger,
 
-Actually LS2021A and other Layerscapes won't totally follow Chassis
-2.1, so separate them from powerpc SoC.
+On Fri, Sep 6, 2019 at 6:06 PM Roger Lu <roger.lu@mediatek.com> wrote:
+> ...
+> +static int svs_resource_setup(struct mtk_svs *svs)
+> ...
+> +               for (i = 0, freq = (u32)-1; i < svsb->opp_count; i++, freq--) {
+> +                       opp = dev_pm_opp_find_freq_floor(svsb->dev, &freq);
+> +                       if (IS_ERR(opp)) {
+> +                               pr_err("%s: error opp entry!!, err = %ld\n",
+> +                                      svsb->name, PTR_ERR(opp));
+> +                               return PTR_ERR(opp);
+> +                       }
+> +
+> +                       svsb->opp_freqs[i] = freq;
+> +                       svsb->opp_volts[i] = dev_pm_opp_get_voltage(opp);
+> +                       svsb->freqs_pct[i] = percent(svsb->opp_freqs[i],
+> +                                                    svsb->freq_base) & 0xff;
 
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
-Change in v7:
-	- None.
+Should have dev_pm_opp_put(opp); here.
 
-Change in v6:
-	- None.
+> +               }
+> +       }
+> +
+> +       return 0;
+> +}
+> ...
+> +static int svs_status_proc_show(struct seq_file *m, void *v)
+> ...
+> +       for (i = 0, freq = (u32)-1; i < svsb->opp_count; i++, freq--) {
+> +               opp = dev_pm_opp_find_freq_floor(svsb->dev, &freq);
+> +               if (IS_ERR(opp)) {
+> +                       seq_printf(m, "%s: error opp entry!!, err = %ld\n",
+> +                                  svsb->name, PTR_ERR(opp));
+> +                       return PTR_ERR(opp);
+> +               }
+> +
+> +               seq_printf(m, "opp_freqs[%02u]: %lu, volts[%02u]: %lu, ",
+> +                          i, freq, i, dev_pm_opp_get_voltage(opp));
+> +               seq_printf(m, "svsb_volts[%02u]: 0x%x, freqs_pct[%02u]: %u\n",
+> +                          i, svsb->volts[i], i, svsb->freqs_pct[i]);
 
-Change in v5:
-	- Add 'Reviewed-by: Rob Herring <robh@kernel.org>' to commit message.
-	- Rename property 'fsl,#rcpm-wakeup-cells' to '#fsl,rcpm-wakeup-cells'.
-	please see https://lore.kernel.org/patchwork/patch/1101022/
+Same here.
 
-Change in v4:
-	- Adjust indectation of 'ls1021a, ls1012a, ls1043a, ls1046a'.
-
-Change in v3:
-	- None.
-
-Change in v2:
-	- None.
-
- Documentation/devicetree/bindings/soc/fsl/rcpm.txt | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-index e284e4e..5a33619 100644
---- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-+++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-@@ -5,7 +5,7 @@ and power management.
- 
- Required properites:
-   - reg : Offset and length of the register set of the RCPM block.
--  - fsl,#rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
-+  - #fsl,rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
- 	fsl,rcpm-wakeup property.
-   - compatible : Must contain a chip-specific RCPM block compatible string
- 	and (if applicable) may contain a chassis-version RCPM compatible
-@@ -20,6 +20,7 @@ Required properites:
- 	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
- 	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
- 	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
-+	* "fsl,qoriq-rcpm-2.1+": for chassis 2.1+ rcpm
- 
- All references to "1.0" and "2.0" refer to the QorIQ chassis version to
- which the chip complies.
-@@ -27,14 +28,19 @@ Chassis Version		Example Chips
- ---------------		-------------------------------
- 1.0				p4080, p5020, p5040, p2041, p3041
- 2.0				t4240, b4860, b4420
--2.1				t1040, ls1021
-+2.1				t1040,
-+2.1+				ls1021a, ls1012a, ls1043a, ls1046a
-+
-+Optional properties:
-+ - little-endian : RCPM register block is Little Endian. Without it RCPM
-+   will be Big Endian (default case).
- 
- Example:
- The RCPM node for T4240:
- 	rcpm: global-utilities@e2000 {
- 		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
- 		reg = <0xe2000 0x1000>;
--		fsl,#rcpm-wakeup-cells = <2>;
-+		#fsl,rcpm-wakeup-cells = <2>;
- 	};
- 
- * Freescale RCPM Wakeup Source Device Tree Bindings
-@@ -44,7 +50,7 @@ can be used as a wakeup source.
- 
-   - fsl,rcpm-wakeup: Consists of a phandle to the rcpm node and the IPPDEXPCR
- 	register cells. The number of IPPDEXPCR register cells is defined in
--	"fsl,#rcpm-wakeup-cells" in the rcpm node. The first register cell is
-+	"#fsl,rcpm-wakeup-cells" in the rcpm node. The first register cell is
- 	the bit mask that should be set in IPPDEXPCR0, and the second register
- 	cell is for IPPDEXPCR1, and so on.
- 
--- 
-2.7.4
-
+> +       }
+> +
+> +       return 0;
+> +}
+> ...
