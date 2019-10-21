@@ -4,111 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1656CA9EAF
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 14:52:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4234CA9EAF
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 15:44:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C253F2053B
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 14:52:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 80CDC214AE
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Oct 2019 15:44:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727355AbfJUOwt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Oct 2019 10:52:49 -0400
-Received: from xavier.telenet-ops.be ([195.130.132.52]:35704 "EHLO
-        xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728289AbfJUOwK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Oct 2019 10:52:10 -0400
-Received: from ramsan ([84.194.98.4])
-        by xavier.telenet-ops.be with bizsmtp
-        id GErr2100B05gfCL01ErrRZ; Mon, 21 Oct 2019 16:52:08 +0200
-Received: from rox.of.borg ([192.168.97.57])
-        by ramsan with esmtp (Exim 4.90_1)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1iMZ2E-00075h-Vs; Mon, 21 Oct 2019 16:51:50 +0200
-Received: from geert by rox.of.borg with local (Exim 4.90_1)
-        (envelope-from <geert@linux-m68k.org>)
-        id 1iMZ2E-0008FR-UG; Mon, 21 Oct 2019 16:51:50 +0200
-From:   Geert Uytterhoeven <geert+renesas@glider.be>
-To:     =?UTF-8?q?Breno=20Leit=C3=A3o?= <leitao@debian.org>,
-        Nayna Jain <nayna@linux.ibm.com>,
-        Paulo Flabiano Smorigo <pfsmorigo@gmail.com>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        "David S . Miller" <davem@davemloft.net>,
-        Alex Deucher <alexander.deucher@amd.com>,
-        =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
-        David@rox.of.borg, David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Casey Leedom <leedom@chelsio.com>,
-        Shannon Nelson <snelson@pensando.io>,
-        Pensando Drivers <drivers@pensando.io>,
-        Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
-        netdev@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 1/5] crypto: nx - Improve debugfs_create_u{32,64}() handling for atomics
-Date:   Mon, 21 Oct 2019 16:51:45 +0200
-Message-Id: <20191021145149.31657-2-geert+renesas@glider.be>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191021145149.31657-1-geert+renesas@glider.be>
-References: <20191021145149.31657-1-geert+renesas@glider.be>
+        id S1727680AbfJUPoH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Oct 2019 11:44:07 -0400
+Received: from szxga06-in.huawei.com ([45.249.212.32]:49026 "EHLO huawei.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726289AbfJUPoH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Oct 2019 11:44:07 -0400
+Received: from DGGEMS410-HUB.china.huawei.com (unknown [172.30.72.58])
+        by Forcepoint Email with ESMTP id 4C2A82344871C2782850;
+        Mon, 21 Oct 2019 23:44:02 +0800 (CST)
+Received: from linux-ibm.site (10.175.102.37) by
+ DGGEMS410-HUB.china.huawei.com (10.3.19.210) with Microsoft SMTP Server id
+ 14.3.439.0; Mon, 21 Oct 2019 23:43:53 +0800
+From:   zhong jiang <zhongjiang@huawei.com>
+To:     <sre@kernel.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <zhongjiang@huawei.com>
+Subject: [PATCH] power: supply: cpcap-charger: Make cpcap_charger_voltage_to_regval static
+Date:   Mon, 21 Oct 2019 23:40:07 +0800
+Message-ID: <1571672407-58950-1-git-send-email-zhongjiang@huawei.com>
+X-Mailer: git-send-email 1.7.12.4
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Originating-IP: [10.175.102.37]
+X-CFilter-Loop: Reflected
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Variables of type atomic{,64}_t can be used fine with
-debugfs_create_u{32,64}, when passing a pointer to the embedded counter.
-This allows to get rid of the casts, which prevented compiler checks.
+The GCC complains the following case when compiling kernel.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+drivers/power/supply/cpcap-charger.c:563:5: warning: symbol 'cpcap_charger_voltage_to_regval' was not declared. Should it be static?
+
+Signed-off-by: zhong jiang <zhongjiang@huawei.com>
 ---
- drivers/crypto/nx/nx_debugfs.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/power/supply/cpcap-charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/crypto/nx/nx_debugfs.c b/drivers/crypto/nx/nx_debugfs.c
-index e0d44a5512ab455b..1975bcbee997481e 100644
---- a/drivers/crypto/nx/nx_debugfs.c
-+++ b/drivers/crypto/nx/nx_debugfs.c
-@@ -38,23 +38,23 @@ void nx_debugfs_init(struct nx_crypto_driver *drv)
- 	drv->dfs_root = root;
- 
- 	debugfs_create_u32("aes_ops", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.aes_ops);
-+			   root, &drv->stats.aes_ops.counter);
- 	debugfs_create_u32("sha256_ops", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.sha256_ops);
-+			   root, &drv->stats.sha256_ops.counter);
- 	debugfs_create_u32("sha512_ops", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.sha512_ops);
-+			   root, &drv->stats.sha512_ops.counter);
- 	debugfs_create_u64("aes_bytes", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u64 *)&drv->stats.aes_bytes);
-+			   root, &drv->stats.aes_bytes.counter);
- 	debugfs_create_u64("sha256_bytes", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u64 *)&drv->stats.sha256_bytes);
-+			   root, &drv->stats.sha256_bytes.counter);
- 	debugfs_create_u64("sha512_bytes", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u64 *)&drv->stats.sha512_bytes);
-+			   root, &drv->stats.sha512_bytes.counter);
- 	debugfs_create_u32("errors", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.errors);
-+			   root, &drv->stats.errors.counter);
- 	debugfs_create_u32("last_error", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.last_error);
-+			   root, &drv->stats.last_error.counter);
- 	debugfs_create_u32("last_error_pid", S_IRUSR | S_IRGRP | S_IROTH,
--			   root, (u32 *)&drv->stats.last_error_pid);
-+			   root, &drv->stats.last_error_pid.counter);
+diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cpcap-charger.c
+index 40d96b8..c0d452e 100644
+--- a/drivers/power/supply/cpcap-charger.c
++++ b/drivers/power/supply/cpcap-charger.c
+@@ -560,7 +560,7 @@ static void cpcap_charger_update_state(struct cpcap_charger_ddata *ddata,
+ 	dev_dbg(ddata->dev, "state: %s\n", status);
  }
  
- void
+-int cpcap_charger_voltage_to_regval(int voltage)
++static int cpcap_charger_voltage_to_regval(int voltage)
+ {
+ 	int offset;
+ 
 -- 
-2.17.1
+1.7.12.4
 
