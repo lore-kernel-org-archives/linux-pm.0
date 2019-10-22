@@ -7,89 +7,139 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA4FCCA9EA0
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Oct 2019 04:42:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71606CA9EB9
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Oct 2019 07:51:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8004E21783
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Oct 2019 04:42:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5202E21929
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Oct 2019 07:51:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387463AbfJVEml (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Oct 2019 00:42:41 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:44002 "EHLO inva020.nxp.com"
+        id S2387983AbfJVHvs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Oct 2019 03:51:48 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:58088 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387462AbfJVEmk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 22 Oct 2019 00:42:40 -0400
+        id S2387827AbfJVHvs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 22 Oct 2019 03:51:48 -0400
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 984DD1A030A;
-        Tue, 22 Oct 2019 06:42:38 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 26A5B1A0932;
+        Tue, 22 Oct 2019 09:51:45 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 1A2D81A0009;
-        Tue, 22 Oct 2019 06:42:34 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 46DBA40245;
-        Tue, 22 Oct 2019 12:42:28 +0800 (SGT)
-From:   Anson Huang <Anson.Huang@nxp.com>
-To:     rafael.j.wysocki@intel.com, viresh.kumar@linaro.org,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
-        festevam@gmail.com, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH] cpufreq: imx-cpufreq-dt: Correct i.MX8MN's default speed grade value
-Date:   Tue, 22 Oct 2019 12:39:39 +0800
-Message-Id: <1571719179-23316-1-git-send-email-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.7.4
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6D37C1A0D3D;
+        Tue, 22 Oct 2019 09:51:38 +0200 (CEST)
+Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 46BBE402F0;
+        Tue, 22 Oct 2019 15:51:30 +0800 (SGT)
+From:   Ran Wang <ran.wang_1@nxp.com>
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Rob Herring <robh+dt@kernel.org>, Li Yang <leoyang.li@nxp.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Pavel Machek <pavel@ucw.cz>, Huang Anson <anson.huang@nxp.com>
+Cc:     Li Biwen <biwen.li@nxp.com>, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linuxppc-dev@lists.ozlabs.org,
+        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Ran Wang <ran.wang_1@nxp.com>
+Subject: [PATCH 2/3] Documentation: dt: binding: fsl: Add 'little-endian' and update Chassis define
+Date:   Tue, 22 Oct 2019 15:51:22 +0800
+Message-Id: <20191022075123.17057-2-ran.wang_1@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191022075123.17057-1-ran.wang_1@nxp.com>
+References: <20191022075123.17057-1-ran.wang_1@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-i.MX8MN has different speed grade definition compared to
-i.MX8MQ/i.MX8MM, when fuses are NOT written, the default
-speed_grade should be set to minimum available OPP defined
-in DT which is 1.2GHz, the corresponding speed_grade value
-should be 0xb.
+By default, QorIQ SoC's RCPM register block is Big Endian. But
+there are some exceptions, such as LS1088A and LS2088A, are
+Little Endian. So add this optional property to help identify
+them.
 
-Fixes: 5b8010ba70d5 ("cpufreq: imx-cpufreq-dt: Add i.MX8MN support")
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+Actually LS2021A and other Layerscapes won't totally follow Chassis
+2.1, so separate them from powerpc SoC.
+
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/cpufreq/imx-cpufreq-dt.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+Change in v8:
+	- None.
 
-diff --git a/drivers/cpufreq/imx-cpufreq-dt.c b/drivers/cpufreq/imx-cpufreq-dt.c
-index 35db14c..26531f0 100644
---- a/drivers/cpufreq/imx-cpufreq-dt.c
-+++ b/drivers/cpufreq/imx-cpufreq-dt.c
-@@ -44,19 +44,19 @@ static int imx_cpufreq_dt_probe(struct platform_device *pdev)
- 	mkt_segment = (cell_value & OCOTP_CFG3_MKT_SEGMENT_MASK) >> OCOTP_CFG3_MKT_SEGMENT_SHIFT;
+Change in v7:
+	- None.
+
+Change in v6:
+	- None.
+
+Change in v5:
+	- Add 'Reviewed-by: Rob Herring <robh@kernel.org>' to commit message.
+	- Rename property 'fsl,#rcpm-wakeup-cells' to '#fsl,rcpm-wakeup-cells'.
+	please see https://lore.kernel.org/patchwork/patch/1101022/
+
+Change in v4:
+	- Adjust indectation of 'ls1021a, ls1012a, ls1043a, ls1046a'.
+
+Change in v3:
+	- None.
+
+Change in v2:
+	- None.
+
+ Documentation/devicetree/bindings/soc/fsl/rcpm.txt | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+index e284e4e..5a33619 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+@@ -5,7 +5,7 @@ and power management.
  
- 	/*
--	 * Early samples without fuses written report "0 0" which means
--	 * consumer segment and minimum speed grading.
--	 *
--	 * According to datasheet minimum speed grading is not supported for
--	 * consumer parts so clamp to 1 to avoid warning for "no OPPs"
-+	 * Early samples without fuses written report "0 0" which may NOT
-+	 * match any OPP defined in DT. So clamp to minimum OPP defined in
-+	 * DT to avoid warning for "no OPPs".
- 	 *
- 	 * Applies to i.MX8M series SoCs.
- 	 */
--	if (mkt_segment == 0 && speed_grade == 0 && (
--			of_machine_is_compatible("fsl,imx8mm") ||
--			of_machine_is_compatible("fsl,imx8mn") ||
--			of_machine_is_compatible("fsl,imx8mq")))
--		speed_grade = 1;
-+	if (mkt_segment == 0 && speed_grade == 0) {
-+		if (of_machine_is_compatible("fsl,imx8mm") ||
-+			of_machine_is_compatible("fsl,imx8mq"))
-+			speed_grade = 1;
-+		if (of_machine_is_compatible("fsl,imx8mn"))
-+			speed_grade = 0xb;
-+	}
+ Required properites:
+   - reg : Offset and length of the register set of the RCPM block.
+-  - fsl,#rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
++  - #fsl,rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
+ 	fsl,rcpm-wakeup property.
+   - compatible : Must contain a chip-specific RCPM block compatible string
+ 	and (if applicable) may contain a chassis-version RCPM compatible
+@@ -20,6 +20,7 @@ Required properites:
+ 	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
+ 	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
+ 	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
++	* "fsl,qoriq-rcpm-2.1+": for chassis 2.1+ rcpm
  
- 	supported_hw[0] = BIT(speed_grade);
- 	supported_hw[1] = BIT(mkt_segment);
+ All references to "1.0" and "2.0" refer to the QorIQ chassis version to
+ which the chip complies.
+@@ -27,14 +28,19 @@ Chassis Version		Example Chips
+ ---------------		-------------------------------
+ 1.0				p4080, p5020, p5040, p2041, p3041
+ 2.0				t4240, b4860, b4420
+-2.1				t1040, ls1021
++2.1				t1040,
++2.1+				ls1021a, ls1012a, ls1043a, ls1046a
++
++Optional properties:
++ - little-endian : RCPM register block is Little Endian. Without it RCPM
++   will be Big Endian (default case).
+ 
+ Example:
+ The RCPM node for T4240:
+ 	rcpm: global-utilities@e2000 {
+ 		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
+ 		reg = <0xe2000 0x1000>;
+-		fsl,#rcpm-wakeup-cells = <2>;
++		#fsl,rcpm-wakeup-cells = <2>;
+ 	};
+ 
+ * Freescale RCPM Wakeup Source Device Tree Bindings
+@@ -44,7 +50,7 @@ can be used as a wakeup source.
+ 
+   - fsl,rcpm-wakeup: Consists of a phandle to the rcpm node and the IPPDEXPCR
+ 	register cells. The number of IPPDEXPCR register cells is defined in
+-	"fsl,#rcpm-wakeup-cells" in the rcpm node. The first register cell is
++	"#fsl,rcpm-wakeup-cells" in the rcpm node. The first register cell is
+ 	the bit mask that should be set in IPPDEXPCR0, and the second register
+ 	cell is for IPPDEXPCR1, and so on.
+ 
 -- 
 2.7.4
 
