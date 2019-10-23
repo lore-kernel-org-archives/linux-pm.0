@@ -2,48 +2,61 @@ Return-Path: <SRS0=tW8b=YQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCEBCCA9EB6
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 16:59:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30CF4CA9EB9
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 17:03:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9C5E321906
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 16:59:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571849973;
-	bh=XrIyTUIIcwGweoXzbiGvqpSOVSltHgzWrBHeN+yMKhA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=mhNqvq5lE/SZuLduRehbI2CCTktzIk6UyrujozUStyFGdREWYEr0n6qLghVcxsKCb
-	 1BF+da3uTB/MnoHK08rKTZVjJhENHhjEG/N0ICT7U3TndsK+BwgncyX8MVDt/h459I
-	 1NvtQDxldnRaD3jtvrjjrKsBWQnya8HHM9LNDai0=
+	by mail.kernel.org (Postfix) with ESMTP id 03BD42086D
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 17:03:07 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N4mOPS98"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726817AbfJWQ7a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Oct 2019 12:59:30 -0400
-Received: from heliosphere.sirena.org.uk ([172.104.155.198]:60776 "EHLO
-        heliosphere.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726316AbfJWQ73 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2019 12:59:29 -0400
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
-        MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-         bh=XrIyTUIIcwGweoXzbiGvqpSOVSltHgzWrBHeN+yMKhA=; b=luoGGER/eGCXKNWHKBECwxZ9x
-        sLCfmNfX4bnSYny15P6DcWr3vzki1ED12Zzs26AainIOjMYSGefPYltHf2uBBfJJzVcOV+gTYjaVQ
-        4ybUzVgt6iWL9sNjMtyTB93lLR3o6t9ffzuOhla/Yu9gsa8LwoPh2pfc7v6I/psgmtLN8=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net ([82.37.168.47] helo=ypsilon.sirena.org.uk)
-        by heliosphere.sirena.org.uk with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <broonie@sirena.co.uk>)
-        id 1iNJym-0000zH-4P; Wed, 23 Oct 2019 16:59:24 +0000
-Received: by ypsilon.sirena.org.uk (Postfix, from userid 1000)
-        id 50EF62743021; Wed, 23 Oct 2019 17:59:23 +0100 (BST)
-Date:   Wed, 23 Oct 2019 17:59:23 +0100
-From:   Mark Brown <broonie@kernel.org>
-To:     Nathan Chancellor <natechancellor@gmail.com>
+        id S1726951AbfJWRDG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Oct 2019 13:03:06 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:38820 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726497AbfJWRDG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2019 13:03:06 -0400
+Received: by mail-ot1-f65.google.com with SMTP id e11so18045694otl.5;
+        Wed, 23 Oct 2019 10:03:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=LNIlo875oLUnbVBAslOcAnj59hqK1kHx858TCXge7cA=;
+        b=N4mOPS98IWbZY/2/KBp62o4U8DpmiY8K/DxEPJzcpUxxxheeFNhUu7vukEldTwgqYR
+         rHqct06pgkkgI7CxlYFrLPVZFWX0enc8m766N5KPfidbuNpOhSlOnf7lUm4GpzbTXhqi
+         mKxKG1Y07F9CS+p9fzQ9CFIozlQSEzIVJiYzQjPfo6BpMzEDSObuiZoB7x9je0fp6S0/
+         DyL2E/W6hxxWsJfr0QGpj9uWjDA0V25V2YCZx82kOEZYyAZ8gLMmecgtPLXiTgUOyeY+
+         X9ZQcx5xLJl2//NB9fL0WDdd6hfY1K67a98OMzhy12qY9cFN8oW7zGfw3Oiphk5MZUXX
+         LNyg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=LNIlo875oLUnbVBAslOcAnj59hqK1kHx858TCXge7cA=;
+        b=MNvc3Vph9kmIvuS0C8x2xUpu81uNJgC/oeQ3V5vx/tpkXM4PwilMxsxQgS2X2Drg+1
+         jOU3bc2yEHqHM4s97HW3IF4E200n3kXt1+nUzcNHo2Njrsq9VBAzaC2OCio8Vgt0egge
+         nb63icvMU5Bui6SsPTco4uGpixoY1LDqqj0RkgegvJDX1Mpb2C6F1jNaa0hv/eIZHk4w
+         8KhX/tphdeM6WPEG8XlJO7hpipgh7Rgow0ZB6eMxBi35vdwOUrj8prrwLygckeW0Qewm
+         BwX6vfzIAyfS6H0eTUuUF/IyF6s5GwpK8PoBaqGkA463UTDceAubckB037kX/6+bGmhI
+         Rk5g==
+X-Gm-Message-State: APjAAAVavtALCw53b/h//ReV5tJXX0OzBvasy3cYEOYqzF/TOsmalBm+
+        2icab+bE7uWmuJ1+DLTFKoQ=
+X-Google-Smtp-Source: APXvYqyr+KOjBV2W0qrTz7k8vKZIZRshNryK06zDkLhWk6XYcHe9LOVkSReS/D2+RnKymZPKRqgmvQ==
+X-Received: by 2002:a9d:6ace:: with SMTP id m14mr8170163otq.11.1571850184682;
+        Wed, 23 Oct 2019 10:03:04 -0700 (PDT)
+Received: from ubuntu-m2-xlarge-x86 ([2604:1380:4111:8b00::1])
+        by smtp.gmail.com with ESMTPSA id r26sm5705285oij.46.2019.10.23.10.03.04
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Wed, 23 Oct 2019 10:03:04 -0700 (PDT)
+Date:   Wed, 23 Oct 2019 10:03:02 -0700
+From:   Nathan Chancellor <natechancellor@gmail.com>
+To:     Mark Brown <broonie@kernel.org>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
         Kukjin Kim <kgene@kernel.org>,
         Krzysztof Kozlowski <krzk@kernel.org>,
@@ -53,60 +66,44 @@ Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
         linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com
 Subject: Re: [PATCH] cpufreq: s3c64xx: Remove pointless NULL check in
  s3c64xx_cpufreq_driver_init
-Message-ID: <20191023165923.GL5723@sirena.co.uk>
+Message-ID: <20191023170302.GA45373@ubuntu-m2-xlarge-x86>
 References: <20191023000906.14374-1-natechancellor@gmail.com>
  <20191023032302.tu5nkvulo2yoctgr@vireshk-i7>
  <20191023104304.GA5723@sirena.co.uk>
  <20191023162628.GA10997@ubuntu-m2-xlarge-x86>
  <20191023163656.GH5723@sirena.co.uk>
  <20191023165417.GA15082@ubuntu-m2-xlarge-x86>
+ <20191023165923.GL5723@sirena.co.uk>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="AQNmCumFClRcGgHG"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191023165417.GA15082@ubuntu-m2-xlarge-x86>
-X-Cookie: MMM-MM!!  So THIS is BIO-NEBULATION!
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20191023165923.GL5723@sirena.co.uk>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Wed, Oct 23, 2019 at 05:59:23PM +0100, Mark Brown wrote:
+> On Wed, Oct 23, 2019 at 09:54:17AM -0700, Nathan Chancellor wrote:
+> > On Wed, Oct 23, 2019 at 05:36:56PM +0100, Mark Brown wrote:
+> > > On Wed, Oct 23, 2019 at 09:26:28AM -0700, Nathan Chancellor wrote:
+> > > > On Wed, Oct 23, 2019 at 11:43:04AM +0100, Mark Brown wrote:
+> 
+> > > > > The driver should also have supported s3c6400 as well.
+> 
+> > > > Kconfig says otherwise, unless I am missing something.
+> 
+> > > Note the XX in the config option.
+> 
+> > But what about the depends and the help text?
+> 
+> Viresh asked why the driver was written with s3c6410 support optional.
+> I explained that the reason that it was written this way was to
+> accomodate s3c6400 support.
 
---AQNmCumFClRcGgHG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Ah understood, thanks for the clarification and sorry for the
+misunderstanding!
 
-On Wed, Oct 23, 2019 at 09:54:17AM -0700, Nathan Chancellor wrote:
-> On Wed, Oct 23, 2019 at 05:36:56PM +0100, Mark Brown wrote:
-> > On Wed, Oct 23, 2019 at 09:26:28AM -0700, Nathan Chancellor wrote:
-> > > On Wed, Oct 23, 2019 at 11:43:04AM +0100, Mark Brown wrote:
-
-> > > > The driver should also have supported s3c6400 as well.
-
-> > > Kconfig says otherwise, unless I am missing something.
-
-> > Note the XX in the config option.
-
-> But what about the depends and the help text?
-
-Viresh asked why the driver was written with s3c6410 support optional.
-I explained that the reason that it was written this way was to
-accomodate s3c6400 support.
-
---AQNmCumFClRcGgHG
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl2whuoACgkQJNaLcl1U
-h9D5XQf8DtCAVE+KWRLKQff+e0eoyrmuOH64fFlBCM0iJFytXmKaO6yq/o7FQjcx
-9CLRRHMdyzXLnTiVGkmkhsVGuAOJPCM+tTjYr/fHoq83Y3cKVSpWnOre95Z52OBa
-qkawCaJ6i1XrXY0hznOXDb48gQuKG7kecSLaKxGvskoYpI6csEoqeTU/jUKTSMqr
-GGa5Kdcp4LNd77ZbOWg4TRzUVj9BdcU59SFkOSPB+eA9O/Lers0oGENcu59MrxXF
-wgJnuQnwnJIv7liRZDk0/z6lSLWqIq32C/nm+AKUrQrD3obXhzvyZnigHpn/hwfV
-tEmawktj1/+nJxfhTt1gh0vRlbhiyw==
-=wsTD
------END PGP SIGNATURE-----
-
---AQNmCumFClRcGgHG--
+Cheers,
+Nathan
