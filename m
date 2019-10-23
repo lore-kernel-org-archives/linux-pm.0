@@ -2,318 +2,114 @@ Return-Path: <SRS0=tW8b=YQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E92CACA9EB6
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 10:54:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F3E6CA9EB6
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 11:08:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A5D952173B
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 10:54:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1571828094;
-	bh=zuPUU6awCl2qB3sdbL4sUWSYEYFDZsdkIQBj4I6weU8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=wZMJZksIbqxAo2XMpvcKIHOxFyb9iBnoVjaCleaeOz7OmUdIAPBOxaMQQvN1H/j9s
-	 d/2A/DVpJDRT3dNB6JuO8WaYv7GslhcVq43K6s4CYYYqmkYeMdLnbcVfoKYLjH9N3N
-	 Juz7GeOa45MV1MedXF7JSXlCagdpjBiWDlsu4cEg=
+	by mail.kernel.org (Postfix) with ESMTP id E013E20650
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 11:08:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391132AbfJWKyv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Oct 2019 06:54:51 -0400
-Received: from mail-ed1-f65.google.com ([209.85.208.65]:43601 "EHLO
-        mail-ed1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391130AbfJWKyv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2019 06:54:51 -0400
-Received: by mail-ed1-f65.google.com with SMTP id q24so9414761edr.10;
-        Wed, 23 Oct 2019 03:54:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=r6ms4pDA2Io4CTjl1wUKKAATbv5RRZz2tIcEDGLgepo=;
-        b=pKd6AAzmwQNVDkNuU1W1XtMuzsfcD7jfek5faWv2EyAlF0oAhwUqW/nozV6fF+zeYe
-         eFxQeC4FdVFBIWC+47TqlYk7KO9eEwyfwyPeJcNIp3fPMwnaL9ZZ9M0oKT3CLnJo6B/y
-         XQKMGvvMH7ReapAq73sY80qNH8XIElp9OeJ7XgFb1/pjVy4vY1247Sxeh+cZoKt43aED
-         tCGGqDJD6RrlbPHo72o0redUg6e4+ofAMedk+WhaNE7TjOrdaOBiWP+tnjSgeU8gY49m
-         rwLwxSZPU947u0XpIZyk5KqCE2b8xAvbijyr2FeOjSgG1LCxMJDnI5MgX4lcK4GFdVDk
-         j5qg==
-X-Gm-Message-State: APjAAAVfN+ATq0qjzJ9OFWO8bioGP/gEdDgOgl034OLTCJMw/YmDEJ3Z
-        cYUhao7PXSIny5JUzMblLGM=
-X-Google-Smtp-Source: APXvYqwyEdHY2cawxAEl8qxuJDNsa+N3qjsKSsNQUSXfNNSO0jGbBOf9XkdEZb3aiOgqobmijN4vpQ==
-X-Received: by 2002:aa7:c48c:: with SMTP id m12mr2761987edq.152.1571828086544;
-        Wed, 23 Oct 2019 03:54:46 -0700 (PDT)
-Received: from pi3 ([194.230.155.217])
-        by smtp.googlemail.com with ESMTPSA id x4sm748023eds.87.2019.10.23.03.54.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 23 Oct 2019 03:54:45 -0700 (PDT)
-Date:   Wed, 23 Oct 2019 12:54:43 +0200
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Arnd Bergmann <arnd@arndb.de>
-Cc:     Kukjin Kim <kgene@kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linus.walleij@linaro.org,
-        Tomasz Figa <tomasz.figa@gmail.com>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Pankaj Dubey <pankaj.dubey@samsung.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 07/36] ARM: exynos: use private samsung_cpu_id copy
-Message-ID: <20191023105443.GE10630@pi3>
-References: <20191010202802.1132272-1-arnd@arndb.de>
- <20191010203043.1241612-1-arnd@arndb.de>
- <20191010203043.1241612-7-arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20191010203043.1241612-7-arnd@arndb.de>
-User-Agent: Mutt/1.12.1 (2019-06-15)
+        id S2391107AbfJWLIn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Oct 2019 07:08:43 -0400
+Received: from [217.140.110.172] ([217.140.110.172]:48428 "EHLO foss.arm.com"
+        rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+        id S2391006AbfJWLIn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 23 Oct 2019 07:08:43 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5FA35497;
+        Wed, 23 Oct 2019 04:08:22 -0700 (PDT)
+Received: from usa.arm.com (e107155-lin.cambridge.arm.com [10.1.196.42])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 7E32C3F718;
+        Wed, 23 Oct 2019 04:08:21 -0700 (PDT)
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] cpufreq: vexpress-spc: find and skip duplicates when merging frequencies
+Date:   Wed, 23 Oct 2019 12:08:11 +0100
+Message-Id: <20191023110811.15086-2-sudeep.holla@arm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191023110811.15086-1-sudeep.holla@arm.com>
+References: <20191023110811.15086-1-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Oct 10, 2019 at 10:29:51PM +0200, Arnd Bergmann wrote:
-> The only part of plat-samsung that is shared with arch-exynos
-> is the CPU identification code.
-> 
-> Having a separate exynos_cpu_id variable makes the two completely
-> independent and is actually a bit less code in total.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  arch/arm/mach-exynos/common.h                |  6 +++---
->  arch/arm/mach-exynos/exynos.c                | 19 +++++++++++++++----
->  arch/arm/mach-exynos/include/mach/map.h      | 18 ------------------
->  arch/arm/mach-exynos/platsmp.c               |  4 +---
->  arch/arm/mach-exynos/pm.c                    |  8 ++++----
->  arch/arm/plat-samsung/cpu.c                  | 17 -----------------
->  arch/arm/plat-samsung/include/plat/cpu.h     |  2 --
->  arch/arm/plat-samsung/include/plat/map-s5p.h |  2 --
->  8 files changed, 23 insertions(+), 53 deletions(-)
->  delete mode 100644 arch/arm/mach-exynos/include/mach/map.h
-> 
-> diff --git a/arch/arm/mach-exynos/common.h b/arch/arm/mach-exynos/common.h
-> index 56411bb63d45..adf7db9c0885 100644
-> --- a/arch/arm/mach-exynos/common.h
-> +++ b/arch/arm/mach-exynos/common.h
-> @@ -24,12 +24,12 @@
->  #define EXYNOS5800_SOC_ID	0xE5422000
->  #define EXYNOS5_SOC_MASK	0xFFFFF000
->  
-> -extern unsigned long samsung_cpu_id;
-> +extern unsigned long exynos_cpu_id;
->  
->  #define IS_SAMSUNG_CPU(name, id, mask)		\
->  static inline int is_samsung_##name(void)	\
->  {						\
-> -	return ((samsung_cpu_id & mask) == (id & mask));	\
-> +	return ((exynos_cpu_id & mask) == (id & mask));	\
->  }
->  
->  IS_SAMSUNG_CPU(exynos3250, EXYNOS3250_SOC_ID, EXYNOS3_SOC_MASK)
-> @@ -147,7 +147,7 @@ extern struct cpuidle_exynos_data cpuidle_coupled_exynos_data;
->  
->  extern void exynos_set_delayed_reset_assertion(bool enable);
->  
-> -extern unsigned int samsung_rev(void);
-> +extern unsigned int exynos_rev(void);
->  extern void exynos_core_restart(u32 core_id);
->  extern int exynos_set_boot_addr(u32 core_id, unsigned long boot_addr);
->  extern int exynos_get_boot_addr(u32 core_id, unsigned long *boot_addr);
-> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-> index 9aa483366ebc..da9300d655c6 100644
-> --- a/arch/arm/mach-exynos/exynos.c
-> +++ b/arch/arm/mach-exynos/exynos.c
-> @@ -19,11 +19,10 @@
->  #include <asm/mach/arch.h>
->  #include <asm/mach/map.h>
->  
-> -#include <mach/map.h>
-> -#include <plat/cpu.h>
-> -
->  #include "common.h"
->  
-> +#define S5P_VA_CHIPID	((void __iomem __force *)0xF8000000)
+Currently the cpufreq core aborts the validation and return error
+immediately when it encounter duplicate frequency table entries.
+This change was introduced long back since commit da0c6dc00c69
+("cpufreq: Handle sorted frequency tables more efficiently").
 
-How about keeping the S3C_VA and S3C_ADDR_BASE macros/defines and using
-them? They still appear in arch/arm/include/debug/exynos.S so they could
-be integrated into one header, unless you plan to remove it in further
-patches.
+However, this missed the testing with modified firmware for long time.
+Inorder to make it work with default settings, we need to ensure the
+merged table for bL switcher contains no duplicates. Find the duplicates
+and skip them when merging the frequenct tables of A15 and A7 clusters.
 
-> +
->  static struct platform_device exynos_cpuidle = {
->  	.name              = "exynos_cpuidle",
->  #ifdef CONFIG_ARM_EXYNOS_CPUIDLE
-> @@ -36,6 +35,14 @@ void __iomem *sysram_base_addr __ro_after_init;
->  phys_addr_t sysram_base_phys __ro_after_init;
->  void __iomem *sysram_ns_base_addr __ro_after_init;
->  
-> +unsigned long exynos_cpu_id;
-> +static unsigned int exynos_cpu_rev;
-> +
-> +unsigned int exynos_rev(void)
-> +{
-> +	return exynos_cpu_rev;
-> +}
-> +
->  void __init exynos_sysram_init(void)
->  {
->  	struct device_node *node;
-> @@ -86,7 +93,11 @@ static void __init exynos_init_io(void)
->  	of_scan_flat_dt(exynos_fdt_map_chipid, NULL);
->  
->  	/* detect cpu id and rev. */
-> -	s5p_init_cpu(S5P_VA_CHIPID);
-> +	exynos_cpu_id = readl_relaxed(S5P_VA_CHIPID);
-> +	exynos_cpu_rev = exynos_cpu_id & 0xFF;
-> +
-> +	pr_info("Samsung CPU ID: 0x%08lx\n", exynos_cpu_id);
-> +
->  }
->  
->  /*
-> diff --git a/arch/arm/mach-exynos/include/mach/map.h b/arch/arm/mach-exynos/include/mach/map.h
-> deleted file mode 100644
-> index 22ebe3654633..000000000000
-> --- a/arch/arm/mach-exynos/include/mach/map.h
-> +++ /dev/null
-> @@ -1,18 +0,0 @@
-> -/* SPDX-License-Identifier: GPL-2.0 */
-> -/*
-> - * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
-> - *		http://www.samsung.com/
-> - *
-> - * EXYNOS - Memory map definitions
-> - */
-> -
-> -#ifndef __ASM_ARCH_MAP_H
-> -#define __ASM_ARCH_MAP_H __FILE__
-> -
-> -#include <plat/map-base.h>
-> -
-> -#include <plat/map-s5p.h>
-> -
-> -#define EXYNOS_PA_CHIPID		0x10000000
-> -
-> -#endif /* __ASM_ARCH_MAP_H */
-> diff --git a/arch/arm/mach-exynos/platsmp.c b/arch/arm/mach-exynos/platsmp.c
-> index 0cbbae8bf1f8..d7fedbb2eefe 100644
-> --- a/arch/arm/mach-exynos/platsmp.c
-> +++ b/arch/arm/mach-exynos/platsmp.c
-> @@ -22,8 +22,6 @@
->  #include <asm/smp_scu.h>
->  #include <asm/firmware.h>
->  
-> -#include <mach/map.h>
-> -
->  #include "common.h"
->  
->  extern void exynos4_secondary_startup(void);
-> @@ -188,7 +186,7 @@ void exynos_scu_enable(void)
->  
->  static void __iomem *cpu_boot_reg_base(void)
->  {
-> -	if (soc_is_exynos4210() && samsung_rev() == EXYNOS4210_REV_1_1)
-> +	if (soc_is_exynos4210() && exynos_rev() == EXYNOS4210_REV_1_1)
->  		return pmu_base_addr + S5P_INFORM5;
->  	return sysram_base_addr;
->  }
-> diff --git a/arch/arm/mach-exynos/pm.c b/arch/arm/mach-exynos/pm.c
-> index 48e7fb38613e..624585641a9c 100644
-> --- a/arch/arm/mach-exynos/pm.c
-> +++ b/arch/arm/mach-exynos/pm.c
-> @@ -26,18 +26,18 @@
->  
->  static inline void __iomem *exynos_boot_vector_addr(void)
->  {
-> -	if (samsung_rev() == EXYNOS4210_REV_1_1)
-> +	if (exynos_rev() == EXYNOS4210_REV_1_1)
->  		return pmu_base_addr + S5P_INFORM7;
-> -	else if (samsung_rev() == EXYNOS4210_REV_1_0)
-> +	else if (exynos_rev() == EXYNOS4210_REV_1_0)
->  		return sysram_base_addr + 0x24;
->  	return pmu_base_addr + S5P_INFORM0;
->  }
->  
->  static inline void __iomem *exynos_boot_vector_flag(void)
->  {
-> -	if (samsung_rev() == EXYNOS4210_REV_1_1)
-> +	if (exynos_rev() == EXYNOS4210_REV_1_1)
->  		return pmu_base_addr + S5P_INFORM6;
-> -	else if (samsung_rev() == EXYNOS4210_REV_1_0)
-> +	else if (exynos_rev() == EXYNOS4210_REV_1_0)
->  		return sysram_base_addr + 0x20;
->  	return pmu_base_addr + S5P_INFORM1;
->  }
-> diff --git a/arch/arm/plat-samsung/cpu.c b/arch/arm/plat-samsung/cpu.c
-> index e1ba88ba31d8..8acba21bbf4b 100644
-> --- a/arch/arm/plat-samsung/cpu.c
-> +++ b/arch/arm/plat-samsung/cpu.c
-> @@ -14,13 +14,6 @@
->  #include <plat/cpu.h>
->  
->  unsigned long samsung_cpu_id;
-> -static unsigned int samsung_cpu_rev;
-> -
-> -unsigned int samsung_rev(void)
-> -{
-> -	return samsung_cpu_rev;
-> -}
-> -EXPORT_SYMBOL(samsung_rev);
->  
->  void __init s3c64xx_init_cpu(void)
->  {
-> @@ -34,15 +27,5 @@ void __init s3c64xx_init_cpu(void)
->  		samsung_cpu_id = readl_relaxed(S3C_VA_SYS + 0xA1C);
->  	}
->  
-> -	samsung_cpu_rev = 0;
-> -
-> -	pr_info("Samsung CPU ID: 0x%08lx\n", samsung_cpu_id);
-> -}
-> -
-> -void __init s5p_init_cpu(const void __iomem *cpuid_addr)
-> -{
-> -	samsung_cpu_id = readl_relaxed(cpuid_addr);
-> -	samsung_cpu_rev = samsung_cpu_id & 0xFF;
-> -
->  	pr_info("Samsung CPU ID: 0x%08lx\n", samsung_cpu_id);
->  }
-> diff --git a/arch/arm/plat-samsung/include/plat/cpu.h b/arch/arm/plat-samsung/include/plat/cpu.h
-> index fadcddbea064..02d7f991d5a3 100644
-> --- a/arch/arm/plat-samsung/include/plat/cpu.h
-> +++ b/arch/arm/plat-samsung/include/plat/cpu.h
-> @@ -111,8 +111,6 @@ extern void s3c24xx_init_io(struct map_desc *mach_desc, int size);
->  extern void s3c64xx_init_cpu(void);
->  extern void s5p_init_cpu(const void __iomem *cpuid_addr);
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/cpufreq/vexpress-spc-cpufreq.c | 35 ++++++++++++++++++++------
+ 1 file changed, 28 insertions(+), 7 deletions(-)
 
-You can remove it as well.
+diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
+index 093ef8d3a8d4..921dbd42b3bb 100644
+--- a/drivers/cpufreq/vexpress-spc-cpufreq.c
++++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
+@@ -242,6 +242,19 @@ static inline u32 get_table_max(struct cpufreq_frequency_table *table)
+ 	return max_freq;
+ }
+ 
++static bool search_frequency(struct cpufreq_frequency_table *table, int size,
++			     unsigned int freq)
++{
++	int count;
++
++	for (count = 0; count < size; count++) {
++		if (table[count].frequency == freq)
++			return true;
++	}
++
++	return false;
++}
++
+ static int merge_cluster_tables(void)
+ {
+ 	int i, j, k = 0, count = 1;
+@@ -256,13 +269,21 @@ static int merge_cluster_tables(void)
+ 
+ 	freq_table[MAX_CLUSTERS] = table;
+ 
+-	/* Add in reverse order to get freqs in increasing order */
+-	for (i = MAX_CLUSTERS - 1; i >= 0; i--) {
+-		for (j = 0; freq_table[i][j].frequency != CPUFREQ_TABLE_END;
+-		     j++, k++) {
+-			table[k].frequency =
+-				VIRT_FREQ(i, freq_table[i][j].frequency);
+-		}
++	/* Add A7_CLUSTER first to get freqs in increasing order */
++	for (j = 0; freq_table[A7_CLUSTER][j].frequency != CPUFREQ_TABLE_END;
++	     j++, k++) {
++		table[k].frequency =
++			VIRT_FREQ(A7_CLUSTER, freq_table[A7_CLUSTER][j].frequency);
++	}
++	count = k;
++
++	/* And then A15_CLUSTER checking for duplicates */
++	for (j = 0; freq_table[A15_CLUSTER][j].frequency != CPUFREQ_TABLE_END;
++	     j++) {
++		if (search_frequency(table, count,
++				     freq_table[A15_CLUSTER][j].frequency))
++			continue; /* skip duplicates */
++		table[k++].frequency = freq_table[A15_CLUSTER][j].frequency;
+ 	}
+ 
+ 	table[k].driver_data = k;
+-- 
+2.17.1
 
-Best regards,
-Krzysztof
-
->  
-> -extern unsigned int samsung_rev(void);
-> -
->  extern void s3c24xx_init_uarts(struct s3c2410_uartcfg *cfg, int no);
->  
->  extern void s3c24xx_init_clocks(int xtal);
-> diff --git a/arch/arm/plat-samsung/include/plat/map-s5p.h b/arch/arm/plat-samsung/include/plat/map-s5p.h
-> index d69a0ca09fb5..3812085f8761 100644
-> --- a/arch/arm/plat-samsung/include/plat/map-s5p.h
-> +++ b/arch/arm/plat-samsung/include/plat/map-s5p.h
-> @@ -9,8 +9,6 @@
->  #ifndef __ASM_PLAT_MAP_S5P_H
->  #define __ASM_PLAT_MAP_S5P_H __FILE__
->  
-> -#define S5P_VA_CHIPID		S3C_ADDR(0x02000000)
-> -
->  #define VA_VIC(x)		(S3C_VA_IRQ + ((x) * 0x10000))
->  #define VA_VIC0			VA_VIC(0)
->  #define VA_VIC1			VA_VIC(1)
-> -- 
-> 2.20.0
-> 
