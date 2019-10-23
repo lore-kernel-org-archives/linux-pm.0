@@ -2,147 +2,72 @@ Return-Path: <SRS0=tW8b=YQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D56D3CA9EB9
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 08:24:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CEDECA9EB6
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 08:33:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B4B0221872
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 08:24:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E17FD2084C
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Oct 2019 08:33:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1571819612;
+	bh=D4gOnQeLuj9+5il4ltBSis3rRpxk4R0QCuWQA3A0S4g=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=Wh6W76KXTsh0h8Y7SA9zC3lAUBq2tcdhqPHSw4WgoW3KWxNPanx2Kf66mKbNO9X/X
+	 Jb5BmmnXQ2sMqXaBV+NsixLzTMfzxhGc36E0Y6nrEwU7nr8RmQaJoiKBBSK74VD8nG
+	 fNOfgwkJW0rnH/qpvkKt5MUQw4pR7sWZvWQEbx+4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390034AbfJWIYI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Oct 2019 04:24:08 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:40524 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389987AbfJWIYI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 23 Oct 2019 04:24:08 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A1C421A09B3;
-        Wed, 23 Oct 2019 10:24:05 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id ED3071A070C;
-        Wed, 23 Oct 2019 10:23:58 +0200 (CEST)
-Received: from localhost.localdomain (mega.ap.freescale.net [10.192.208.232])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id C9F7B402BC;
-        Wed, 23 Oct 2019 16:23:50 +0800 (SGT)
-From:   Ran Wang <ran.wang_1@nxp.com>
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Rob Herring <robh+dt@kernel.org>, Li Yang <leoyang.li@nxp.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Pavel Machek <pavel@ucw.cz>, Huang Anson <anson.huang@nxp.com>
-Cc:     Li Biwen <biwen.li@nxp.com>, Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linuxppc-dev@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Ran Wang <ran.wang_1@nxp.com>
-Subject: [PATCH v9 2/3] Documentation: dt: binding: fsl: Add 'little-endian' and update Chassis define
-Date:   Wed, 23 Oct 2019 16:24:22 +0800
-Message-Id: <20191023082423.12569-2-ran.wang_1@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191023082423.12569-1-ran.wang_1@nxp.com>
-References: <20191023082423.12569-1-ran.wang_1@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S2390233AbfJWIdb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Oct 2019 04:33:31 -0400
+Received: from mail-ot1-f51.google.com ([209.85.210.51]:44772 "EHLO
+        mail-ot1-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2390034AbfJWIdb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Oct 2019 04:33:31 -0400
+Received: by mail-ot1-f51.google.com with SMTP id n48so1750153ota.11
+        for <linux-pm@vger.kernel.org>; Wed, 23 Oct 2019 01:33:30 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=tfyLsyouTrLcWvGpDw8Mc60JVri63iB7UVRISL3VHjg=;
+        b=qFP1PXvKxt7QFUDJz2YOua9oGWlgQlOeBnfpnZwHDaZs7bJvY6wOh4M+ghoOI59vVE
+         BCj0FGt3k8KL4HXma8AnwL6ME0QTd16YnZrDCZWpBLEURaBnoE25mZgfUlS1uOFLNAEb
+         aOm42qz5qAeJ8nyQwAPVj4+uE6EjYzPry2zC9p7olkvrDOOM9tSidt7ebym+bPrsZJgp
+         E8Xehe2fkeoeJGemEtkDGkWewRCukmFa4syrZVWQ4BI23kQC/qHeqPUVf1dQ6HzM6jQ+
+         NobcVpjZ1fCt/Fz4En8sbwILocK8Rtn1LU9kzs3LYJ4nlVAhAsLHKGrN2zEJYh9RPa13
+         D4fw==
+X-Gm-Message-State: APjAAAUJ7EvJ6Sa3Fws0h1Ez/YMvZKZDhQBLYSKAuAQs3hr1D8shJkTA
+        3CswfntjLrIktDcp+Ppr2BcsR7hLqm0xIxYHsUGA+g==
+X-Google-Smtp-Source: APXvYqwmMjrhnMTSvX4IsUC4ZA84B5OI6iwEnQPe/rr+xi/HLA7k2tJ2f2GO3Qx5wN6bcQQmQ4mVC+VT9gKP6bCxeZw=
+X-Received: by 2002:a9d:664:: with SMTP id 91mr6106462otn.189.1571819610469;
+ Wed, 23 Oct 2019 01:33:30 -0700 (PDT)
+MIME-Version: 1.0
+References: <20191023053517.aa7not4zqjt5tvtw@vireshk-i7>
+In-Reply-To: <20191023053517.aa7not4zqjt5tvtw@vireshk-i7>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 23 Oct 2019 10:33:19 +0200
+Message-ID: <CAJZ5v0gsewEsAjcvJbwB7cocH9XO1_PSmBZGiExUx8P09YSsYQ@mail.gmail.com>
+Subject: Re: [GIT PULL] opp/fixes for 5.4-rc
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-By default, QorIQ SoC's RCPM register block is Big Endian. But
-there are some exceptions, such as LS1088A and LS2088A, are
-Little Endian. So add this optional property to help identify
-them.
+On Wed, Oct 23, 2019 at 7:35 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> Hi Rafael,
+>
+> This pull request contains:
+>
+> - Patch to revert addition of regulator enable/disable in OPP core
+>   (Marek).
+> - Remove incorrect lockdep assert (Viresh).
+> - Fix a kref counting issue (Viresh).
 
-Actually LS2021A and other Layerscapes won't totally follow Chassis
-2.1, so separate them from powerpc SoC.
-
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
-Change in v9:
-	- None
-
-Change in v8:
-	- None.
-
-Change in v7:
-	- None.
-
-Change in v6:
-	- None.
-
-Change in v5:
-	- Add 'Reviewed-by: Rob Herring <robh@kernel.org>' to commit message.
-	- Rename property 'fsl,#rcpm-wakeup-cells' to '#fsl,rcpm-wakeup-cells'.
-	please see https://lore.kernel.org/patchwork/patch/1101022/
-
-Change in v4:
-	- Adjust indectation of 'ls1021a, ls1012a, ls1043a, ls1046a'.
-
-Change in v3:
-	- None.
-
-Change in v2:
-	- None.
-
- Documentation/devicetree/bindings/soc/fsl/rcpm.txt | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-index e284e4e..5a33619 100644
---- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-+++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-@@ -5,7 +5,7 @@ and power management.
- 
- Required properites:
-   - reg : Offset and length of the register set of the RCPM block.
--  - fsl,#rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
-+  - #fsl,rcpm-wakeup-cells : The number of IPPDEXPCR register cells in the
- 	fsl,rcpm-wakeup property.
-   - compatible : Must contain a chip-specific RCPM block compatible string
- 	and (if applicable) may contain a chassis-version RCPM compatible
-@@ -20,6 +20,7 @@ Required properites:
- 	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
- 	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
- 	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
-+	* "fsl,qoriq-rcpm-2.1+": for chassis 2.1+ rcpm
- 
- All references to "1.0" and "2.0" refer to the QorIQ chassis version to
- which the chip complies.
-@@ -27,14 +28,19 @@ Chassis Version		Example Chips
- ---------------		-------------------------------
- 1.0				p4080, p5020, p5040, p2041, p3041
- 2.0				t4240, b4860, b4420
--2.1				t1040, ls1021
-+2.1				t1040,
-+2.1+				ls1021a, ls1012a, ls1043a, ls1046a
-+
-+Optional properties:
-+ - little-endian : RCPM register block is Little Endian. Without it RCPM
-+   will be Big Endian (default case).
- 
- Example:
- The RCPM node for T4240:
- 	rcpm: global-utilities@e2000 {
- 		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
- 		reg = <0xe2000 0x1000>;
--		fsl,#rcpm-wakeup-cells = <2>;
-+		#fsl,rcpm-wakeup-cells = <2>;
- 	};
- 
- * Freescale RCPM Wakeup Source Device Tree Bindings
-@@ -44,7 +50,7 @@ can be used as a wakeup source.
- 
-   - fsl,rcpm-wakeup: Consists of a phandle to the rcpm node and the IPPDEXPCR
- 	register cells. The number of IPPDEXPCR register cells is defined in
--	"fsl,#rcpm-wakeup-cells" in the rcpm node. The first register cell is
-+	"#fsl,rcpm-wakeup-cells" in the rcpm node. The first register cell is
- 	the bit mask that should be set in IPPDEXPCR0, and the second register
- 	cell is for IPPDEXPCR1, and so on.
- 
--- 
-2.7.4
-
+Pulled, thanks!
