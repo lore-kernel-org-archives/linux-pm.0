@@ -1,159 +1,175 @@
-Return-Path: <SRS0=GSFJ=YR=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=qNI4=YS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0FABCA9EBE
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Oct 2019 22:19:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94F73C47E49
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Oct 2019 00:41:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C426A20663
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Oct 2019 22:19:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VWOzSqhD"
+	by mail.kernel.org (Postfix) with ESMTP id 7798021928
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Oct 2019 00:41:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730454AbfJXWRl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Oct 2019 18:17:41 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:41310 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730394AbfJXWRj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Oct 2019 18:17:39 -0400
-Received: by mail-lf1-f65.google.com with SMTP id x4so14117799lfn.8;
-        Thu, 24 Oct 2019 15:17:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=RQVJNNL4da8n9Sk1LwVlO9zFiqg3NWuXdGvnGpoii4k=;
-        b=VWOzSqhDCNBNpiV8E6naLYSmkUYhTUXqPf5M6+X0u/pmVhf+oFx0s5cJwcVnB99axy
-         EDR/omZwgTfrsGWUHiEDvt5KrpHRJCwzu/cKryQWQm89xNhHzHjtEolsZyOvHE3szRRp
-         DBSpufnIff6u33qh5Rw4GcX8dNWNsOIByJPPT+TsfvnXmxoKljCGJxgEF9183HbZPVL+
-         d2XHhytMyAiU2ff1aRbS7uXmGh5ozrDI3APnwyOldZ0eGcpuqjKbI0oCi9wb52M4Fx0Z
-         AnRJmfY/PcNaUJUPCTl3jtz/UtGduEntKuwhsMOSHIEAPW3U442PmNI5PBJVvyfGtf2w
-         VZog==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=RQVJNNL4da8n9Sk1LwVlO9zFiqg3NWuXdGvnGpoii4k=;
-        b=ZOmVt3sZ5YfKs73eQCL+bI9DgQCQY450cEd5KchAay0IOXxGTd5sHiK+N7nV3GFCWm
-         z24W4975s0kd8fQT8L/PgmNdAnlQ03/k5CkO+ojRZY1QOt67ux6BgbcJ6FTiKLg6hE3Y
-         m0amOkCTSdxykcXbn2Yy1S8uF+AqLC/YOxk4WXxm5DxVdTcQLaWvD26tAISM5+VcB3al
-         ewu+XuI5xlkVAMyo5ATIUD3nnj1QGE6RHib7aiGyYUiT5mS/wMvhYc3ebfQmlKRRgUei
-         mE4luwFBoYl00TYpBpga7CxlvIaIPnDOhsTYJ0cNqpDx1UsJQNpTHkrJyUCD/hYqebg3
-         hHOQ==
-X-Gm-Message-State: APjAAAUUJqT9It7Y3B3e1XwVhi3Weg4vR71R59whKAswYPtQYzKQrWXJ
-        zrFxOi9lzHYwo2ecPPa1cNI=
-X-Google-Smtp-Source: APXvYqxrY702Ciuq4uM8C1Q7gjzvZXcB0zz9gCPlVN4hNBkVeFIIGwd0FbWi6VvocKPpLOn/alAPYA==
-X-Received: by 2002:a19:1ce:: with SMTP id 197mr322126lfb.16.1571955456954;
-        Thu, 24 Oct 2019 15:17:36 -0700 (PDT)
-Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id i6sm11338765lfo.83.2019.10.24.15.17.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Oct 2019 15:17:35 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Prashant Gaikwad <pgaikwad@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        id S2387705AbfJYAlo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Oct 2019 20:41:44 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:65441 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726164AbfJYAlo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Oct 2019 20:41:44 -0400
+Received: from 79.184.254.57.ipv4.supernova.orange.pl (79.184.254.57) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
+ id 3d5b083a06540a5e; Fri, 25 Oct 2019 02:41:41 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Marcel Ziswiler <marcel.ziswiler@toradex.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2 02/17] clk: tegra: pll: Add pre/post rate-change hooks
-Date:   Fri, 25 Oct 2019 01:14:01 +0300
-Message-Id: <20191024221416.14197-3-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191024221416.14197-1-digetx@gmail.com>
-References: <20191024221416.14197-1-digetx@gmail.com>
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ACPI: processor: Add QoS requests for all CPUs
+Date:   Fri, 25 Oct 2019 02:41:40 +0200
+Message-ID: <2435090.1mJ0fSsrDY@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is a need to temporarily re-parent CCLK away from PLLX if PLLX's
-rate is about to change. The newly introduced PLL pre/post rate-change
-hooks allow to handle such case.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+The _PPC change notifications from the platform firmware are per-CPU,
+so acpi_processor_ppc_init() needs to add a frequency QoS request
+for each CPU covered by a cpufreq policy to take all of them into
+account.
+
+Even though ACPI thermal control of CPUs sets frequency limits
+per processor package, it also needs a frequency QoS request for each
+CPU in a cpufreq policy in case some of them are taken offline and
+the frequency limit needs to be set through the remaining online
+ones (this is slightly excessive, because all CPUs covered by one
+cpufreq policy will set the same frequency limit through their QoS
+requests, but it is not incorrect).
+
+Modify the code in accordance with the above observations.
+
+Fixes: d15ce412737a ("ACPI: cpufreq: Switch to QoS requests instead of cpufreq notifier")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/clk/tegra/clk-pll.c | 12 +++++++++++-
- drivers/clk/tegra/clk.h     |  6 ++++++
- 2 files changed, 17 insertions(+), 1 deletion(-)
+ drivers/acpi/processor_perflib.c |   38 +++++++++++++++++++++++---------------
+ drivers/acpi/processor_thermal.c |   38 +++++++++++++++++++++++---------------
+ 2 files changed, 46 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/clk/tegra/clk-pll.c b/drivers/clk/tegra/clk-pll.c
-index 1583f5fc992f..859340ad3515 100644
---- a/drivers/clk/tegra/clk-pll.c
-+++ b/drivers/clk/tegra/clk-pll.c
-@@ -744,13 +744,19 @@ static int _program_pll(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
+Index: linux-pm/drivers/acpi/processor_thermal.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/processor_thermal.c
++++ linux-pm/drivers/acpi/processor_thermal.c
+@@ -127,26 +127,34 @@ static int cpufreq_set_cur_state(unsigne
  
- 	state = clk_pll_is_enabled(hw);
- 
-+	if (state && pll->params->pre_rate_change) {
-+		ret = pll->params->pre_rate_change();
-+		if (WARN_ON(ret))
-+			return ret;
+ void acpi_thermal_cpufreq_init(struct cpufreq_policy *policy)
+ {
+-	int cpu = policy->cpu;
+-	struct acpi_processor *pr = per_cpu(processors, cpu);
+-	int ret;
+-
+-	if (!pr)
+-		return;
+-
+-	ret = freq_qos_add_request(&policy->constraints, &pr->thermal_req,
+-				   FREQ_QOS_MAX, INT_MAX);
+-	if (ret < 0)
+-		pr_err("Failed to add freq constraint for CPU%d (%d)\n", cpu,
+-		       ret);
++	unsigned int cpu;
++
++	for_each_cpu(cpu, policy->related_cpus) {
++		struct acpi_processor *pr = per_cpu(processors, cpu);
++		int ret;
++
++		if (!pr)
++			continue;
++
++		ret = freq_qos_add_request(&policy->constraints,
++					   &pr->thermal_req,
++					   FREQ_QOS_MAX, INT_MAX);
++		if (ret < 0)
++			pr_err("Failed to add freq constraint for CPU%d (%d)\n",
++			       cpu, ret);
 +	}
-+
- 	_get_pll_mnp(pll, &old_cfg);
- 
- 	if (state && pll->params->defaults_set && pll->params->dyn_ramp &&
- 			(cfg->m == old_cfg.m) && (cfg->p == old_cfg.p)) {
- 		ret = pll->params->dyn_ramp(pll, cfg);
- 		if (!ret)
--			return 0;
-+			goto done;
- 	}
- 
- 	if (state) {
-@@ -772,6 +778,10 @@ static int _program_pll(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
- 		pll_clk_start_ss(pll);
- 	}
- 
-+done:
-+	if (state && pll->params->post_rate_change)
-+		pll->params->post_rate_change();
-+
- 	return ret;
  }
  
-diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-index 095595a5b8a8..2be38aa2c204 100644
---- a/drivers/clk/tegra/clk.h
-+++ b/drivers/clk/tegra/clk.h
-@@ -211,6 +211,10 @@ struct tegra_clk_pll;
-  *				disabled.
-  * @dyn_ramp:			Callback which can be used to define a custom
-  *				dynamic ramp function for a given PLL.
-+ * @pre_rate_change:		Callback which is invoked just before changing
-+ *				PLL's rate.
-+ * @post_rate_change:		Callback which is invoked right after changing
-+ *				PLL's rate.
-  *
-  * Flags:
-  * TEGRA_PLL_USE_LOCK - This flag indicated to use lock bits for
-@@ -287,6 +291,8 @@ struct tegra_clk_pll_params {
- 	void	(*set_defaults)(struct tegra_clk_pll *pll);
- 	int	(*dyn_ramp)(struct tegra_clk_pll *pll,
- 			struct tegra_clk_pll_freq_table *cfg);
-+	int	(*pre_rate_change)(void);
-+	void	(*post_rate_change)(void);
- };
+ void acpi_thermal_cpufreq_exit(struct cpufreq_policy *policy)
+ {
+-	struct acpi_processor *pr = per_cpu(processors, policy->cpu);
++	unsigned int cpu;
++
++	for_each_cpu(cpu, policy->related_cpus) {
++		struct acpi_processor *pr = per_cpu(processors, policy->cpu);
  
- #define TEGRA_PLL_USE_LOCK BIT(0)
--- 
-2.23.0
+-	if (pr)
+-		freq_qos_remove_request(&pr->thermal_req);
++		if (pr)
++			freq_qos_remove_request(&pr->thermal_req);
++	}
+ }
+ #else				/* ! CONFIG_CPU_FREQ */
+ static int cpufreq_get_max_state(unsigned int cpu)
+Index: linux-pm/drivers/acpi/processor_perflib.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/processor_perflib.c
++++ linux-pm/drivers/acpi/processor_perflib.c
+@@ -159,26 +159,34 @@ void acpi_processor_ignore_ppc_init(void
+ 
+ void acpi_processor_ppc_init(struct cpufreq_policy *policy)
+ {
+-	int cpu = policy->cpu;
+-	struct acpi_processor *pr = per_cpu(processors, cpu);
+-	int ret;
+-
+-	if (!pr)
+-		return;
+-
+-	ret = freq_qos_add_request(&policy->constraints, &pr->perflib_req,
+-				   FREQ_QOS_MAX, INT_MAX);
+-	if (ret < 0)
+-		pr_err("Failed to add freq constraint for CPU%d (%d)\n", cpu,
+-		       ret);
++	unsigned int cpu;
++
++	for_each_cpu(cpu, policy->related_cpus) {
++		struct acpi_processor *pr = per_cpu(processors, cpu);
++		int ret;
++
++		if (!pr)
++			continue;
++
++		ret = freq_qos_add_request(&policy->constraints,
++					   &pr->perflib_req,
++					   FREQ_QOS_MAX, INT_MAX);
++		if (ret < 0)
++			pr_err("Failed to add freq constraint for CPU%d (%d)\n",
++			       cpu, ret);
++	}
+ }
+ 
+ void acpi_processor_ppc_exit(struct cpufreq_policy *policy)
+ {
+-	struct acpi_processor *pr = per_cpu(processors, policy->cpu);
++	unsigned int cpu;
++
++	for_each_cpu(cpu, policy->related_cpus) {
++		struct acpi_processor *pr = per_cpu(processors, cpu);
+ 
+-	if (pr)
+-		freq_qos_remove_request(&pr->perflib_req);
++		if (pr)
++			freq_qos_remove_request(&pr->perflib_req);
++	}
+ }
+ 
+ static int acpi_processor_get_performance_control(struct acpi_processor *pr)
+
+
 
