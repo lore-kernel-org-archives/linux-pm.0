@@ -2,95 +2,128 @@ Return-Path: <SRS0=ZNNd=YU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1831CA9EAF
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Oct 2019 07:34:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8825BCA9EBC
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Oct 2019 21:30:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 77F9620717
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Oct 2019 07:34:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="lVxzMif0"
+	by mail.kernel.org (Postfix) with ESMTP id 5AA6C214E0
+	for <linux-pm@archiver.kernel.org>; Sun, 27 Oct 2019 21:30:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1572211836;
+	bh=8izSZAbx6fQBwUzEgqL17sTkPb8Aj2f809bsHzCJRec=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=SPOYxkb6/9ehocwctJ80fl8lO753rX8BTw7OOiI51w1DqDjKyjd3LkL+3G55VdhT4
+	 r2VYeXqGiN/k73l8sF9TeZ7lM+OTn5SYCRYmu9Eix3Pl3M/Bqn5sRMXuWMynIEXABz
+	 uukAKwvcuBmR4SOemen+tyG6WVjqD9lsAx1UnHaE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726030AbfJ0HeP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Oct 2019 03:34:15 -0400
-Received: from smtp-fw-33001.amazon.com ([207.171.190.10]:54012 "EHLO
-        smtp-fw-33001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725965AbfJ0HeP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Oct 2019 03:34:15 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1572161655; x=1603697655;
-  h=subject:to:cc:references:from:message-id:date:
-   mime-version:in-reply-to:content-transfer-encoding;
-  bh=Ri+RSELqnUN93/J6a80rSFEySKHexPxEGcRasXgLP9I=;
-  b=lVxzMif0KClooMJ9GJOtwQEF20vMdnTJjocqzzd5ObxnY3gMVOktdMob
-   lKMT17mDhTXc5jvp/ZHE5xbq+acxcS9+CWjOhx985YtHLmsPYbwBYzLZ1
-   EWQD1+HqzwklDNbAouwOK8y4rbezlNPZh7XySEKXfQWGrDe7r4jSz/CmR
-   w=;
-IronPort-SDR: HVVBNljbkukYMXBrYIik98vs58RnFOzUP6QltO4oPusYhrEFQkpWqFPNEur62k/P9CwQTO6+VU
- Rn589btUKScA==
-X-IronPort-AV: E=Sophos;i="5.68,235,1569283200"; 
-   d="scan'208";a="917511"
-Received: from sea32-co-svc-lb4-vlan3.sea.corp.amazon.com (HELO email-inbound-relay-1e-27fb8269.us-east-1.amazon.com) ([10.47.23.38])
-  by smtp-border-fw-out-33001.sea14.amazon.com with ESMTP; 27 Oct 2019 07:34:10 +0000
-Received: from EX13MTAUEA001.ant.amazon.com (iad55-ws-svc-p15-lb9-vlan2.iad.amazon.com [10.40.159.162])
-        by email-inbound-relay-1e-27fb8269.us-east-1.amazon.com (Postfix) with ESMTPS id 18200A1D2D;
-        Sun, 27 Oct 2019 07:34:06 +0000 (UTC)
-Received: from EX13D01EUB001.ant.amazon.com (10.43.166.194) by
- EX13MTAUEA001.ant.amazon.com (10.43.61.82) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Sun, 27 Oct 2019 07:34:06 +0000
-Received: from [10.125.238.52] (10.43.161.223) by EX13D01EUB001.ant.amazon.com
- (10.43.166.194) with Microsoft SMTP Server (TLS) id 15.0.1367.3; Sun, 27 Oct
- 2019 07:34:02 +0000
-Subject: Re: [PATCH] thermal: no need to set .owner when using
- module_platform_driver
-To:     Tian Tao <tiantao6@huawei.com>, <rui.zhang@intel.com>,
-        <edubezval@gmail.com>, <daniel.lezcano@linaro.org>,
-        <amit.kucheria@verdurent.com>, <linux-pm@vger.kernel.org>
-CC:     <linuxarm@huawei.com>, "Krupnik, Ronen" <ronenk@amazon.com>
-References: <1572051875-35861-1-git-send-email-tiantao6@huawei.com>
-From:   "Shenhar, Talel" <talel@amazon.com>
-Message-ID: <3f82f629-8fb6-19bc-cd57-dd54ba613b1d@amazon.com>
-Date:   Sun, 27 Oct 2019 09:33:56 +0200
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
- Thunderbird/68.1.1
+        id S1731331AbfJ0Vab (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 27 Oct 2019 17:30:31 -0400
+Received: from mail.kernel.org ([198.145.29.99]:51290 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1731152AbfJ0Va2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 27 Oct 2019 17:30:28 -0400
+Received: from earth.universe (unknown [46.218.74.72])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 32A912070B;
+        Sun, 27 Oct 2019 21:30:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1572211827;
+        bh=8izSZAbx6fQBwUzEgqL17sTkPb8Aj2f809bsHzCJRec=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=A3CHmcenkVz7kS733vuH0673jNWz9Zx/lWgZ/CbFxj8unHvz7OjccwI2DkDKF85rM
+         LMtg1WkSbZ/5lwFO6+laJwBckY9C34S0Tiaj75y783XYBu77cNxeyaJU+niPkYu1Hq
+         GEI1BTRX36Cku/6aZyi2uzXhFMvIyxyPSeUCidzo=
+Received: by earth.universe (Postfix, from userid 1000)
+        id B31FF3C09B2; Sun, 27 Oct 2019 22:30:24 +0100 (CET)
+Date:   Sun, 27 Oct 2019 22:30:24 +0100
+From:   Sebastian Reichel <sre@kernel.org>
+To:     "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc:     Jonathan Cameron <jic23@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: supply: ab8500_charger: Fix inconsistent IS_ERR
+ and PTR_ERR
+Message-ID: <20191027213024.x3lvdefs67wcb37j@earth.universe>
+References: <20191021174937.GA17424@embeddedor>
 MIME-Version: 1.0
-In-Reply-To: <1572051875-35861-1-git-send-email-tiantao6@huawei.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Originating-IP: [10.43.161.223]
-X-ClientProxiedBy: EX13P01UWB003.ant.amazon.com (10.43.161.209) To
- EX13D01EUB001.ant.amazon.com (10.43.166.194)
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ci4bos7uztzfqtgo"
+Content-Disposition: inline
+In-Reply-To: <20191021174937.GA17424@embeddedor>
+User-Agent: NeoMutt/20180716
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-On 10/26/2019 4:04 AM, Tian Tao wrote:
-> the module_platform_driver will call platform_driver_register.
-> and It will set the .owner to THIS_MODULE
->
-> Signed-off-by: Tian Tao <tiantao6@huawei.com>
+--ci4bos7uztzfqtgo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Mon, Oct 21, 2019 at 12:49:37PM -0500, Gustavo A. R. Silva wrote:
+> Fix inconsistent IS_ERR and PTR_ERR in ab8500_charger_probe().
+>=20
+> The proper pointer to be passed as argument is di->adc_main_charger_c
+>=20
+> This bug was detected with the help of Coccinelle.
+>=20
+> Fixes: 97ab78bac5d0 ("power: supply: ab8500_charger: Convert to IIO ADC")
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 > ---
->   drivers/thermal/thermal_mmio.c | 1 -
->   1 file changed, 1 deletion(-)
->
-> diff --git a/drivers/thermal/thermal_mmio.c b/drivers/thermal/thermal_mmio.c
-> index 40524fa..d0bdf1e 100644
-> --- a/drivers/thermal/thermal_mmio.c
-> +++ b/drivers/thermal/thermal_mmio.c
-> @@ -110,7 +110,6 @@ static struct platform_driver thermal_mmio_driver = {
->   	.probe = thermal_mmio_probe,
->   	.driver = {
->   		.name = "thermal-mmio",
-> -		.owner = THIS_MODULE,
->   		.of_match_table = of_match_ptr(thermal_mmio_id_table),
->   	},
->   };
-Acked-by: Talel Shenhar <talel@amazon.com>
+
+Thanks, queued.
+
+-- Sebastian
+
+>  drivers/power/supply/ab8500_charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply=
+/ab8500_charger.c
+> index ff2bb4411a22..8a0f9d769690 100644
+> --- a/drivers/power/supply/ab8500_charger.c
+> +++ b/drivers/power/supply/ab8500_charger.c
+> @@ -3393,7 +3393,7 @@ static int ab8500_charger_probe(struct platform_dev=
+ice *pdev)
+>  		if (PTR_ERR(di->adc_main_charger_c) =3D=3D -ENODEV)
+>  			return -EPROBE_DEFER;
+>  		dev_err(&pdev->dev, "failed to get ADC main charger current\n");
+> -		return PTR_ERR(di->adc_main_charger_v);
+> +		return PTR_ERR(di->adc_main_charger_c);
+>  	}
+>  	di->adc_vbus_v =3D devm_iio_channel_get(&pdev->dev, "vbus_v");
+>  	if (IS_ERR(di->adc_vbus_v)) {
+> --=20
+> 2.23.0
+>=20
+
+--ci4bos7uztzfqtgo
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl22DG0ACgkQ2O7X88g7
++pqcLQ/+JkR/ANfCqah3p0yYMbAWJ6Rs3SI2YzhwyIFJBWzOIEWwWgcsUzq+ahlf
+2t8Um/Db2BC68q/GT+304JNaumpr5XfH/mWt4DrKcZgCGFePPwh5EscqAbUCHfu+
+IqNQbtoHrnofZu4hThBZDqDvgZL+LGtikMRwBL2asytquPBveDJ/URKNdec+ue23
+k7GzGGrvXp/IakLcWcFEfb66ibqgue8k4RL7YzKvySE74RQX/6ePQNVwGP4vGCSP
+Zin9CH+uFAgg7/Dg6dBpxjE6L2DWFv+ftrg0pQO9rn6bLdWWjZvOXjo/RNk+GTpF
+YMSfI1unLWHUf8/S/aGZjox/bH6KsqkY/W/TJ10C3OF5w19xj11hgWTQ1Y5oNB5c
+VRJCEcWwrBfT42IjQKLvzjqP4GAduwqqYc5dyyXp5lKVU7qKNl0G51EPomkyPw4z
+zNuS7KscPQeZQaZ6XB+70jQ2yUGvYN5IR4/H6ATgcG4zPUAQ286YobarRldJAeO2
+y1RkZF52MtIvLozfMR+hd3ppNXO/nb5v4xsAvJu0QhuAiMfCzwz6v8/dU3KMF5dW
+6zUxuX95sX3rW7zj0G35+O1r+olXHDqTJQmR1l+LLIOIA5F043DXTogsX9T8DzR9
+qpLj0bikHEnmnZKjl2mV7E44zrAvE6jDaPfTaiP1au8BiiGLuqo=
+=1lwG
+-----END PGP SIGNATURE-----
+
+--ci4bos7uztzfqtgo--
