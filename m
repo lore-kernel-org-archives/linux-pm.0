@@ -1,158 +1,78 @@
-Return-Path: <SRS0=ZNNd=YU=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=0rhz=YV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 658E3CA9EAF
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Oct 2019 21:38:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F20A2CA9EA0
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Oct 2019 06:07:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3668821848
-	for <linux-pm@archiver.kernel.org>; Sun, 27 Oct 2019 21:38:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1572212293;
-	bh=ejTMU2PKQBIvXRez9MZn4+fwYEV5lq+acuqnLFVTjRk=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=jFzE0Lr2aPROsjxhpyzrnt0mh2+flSCo2HiJme0z89pzI4wi4jw7v7vRiQ959EkjG
-	 g/lyZQTnAsQvWQKyWALMhpOBoyJBqkLOBzK3vvuNHgoV3QZRBgjUZ2dUKMr6J4F7iQ
-	 MzZukt1j3TC8U7w5ZlxxDCLdfhQUZU8dhxAopdf8=
+	by mail.kernel.org (Postfix) with ESMTP id CD7F721850
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Oct 2019 06:07:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728581AbfJ0ViI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 27 Oct 2019 17:38:08 -0400
-Received: from mail.kernel.org ([198.145.29.99]:49666 "EHLO mail.kernel.org"
+        id S1731686AbfJ1GHW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Oct 2019 02:07:22 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:46388 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728507AbfJ0VEE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 27 Oct 2019 17:04:04 -0400
-Received: from mail-qk1-f180.google.com (mail-qk1-f180.google.com [209.85.222.180])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 46EB6222BE;
-        Sun, 27 Oct 2019 21:04:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1572210243;
-        bh=ejTMU2PKQBIvXRez9MZn4+fwYEV5lq+acuqnLFVTjRk=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=YS5blBDgCLLdaVUBscufdzFBWqilByx/mzOp2lPJdgTGefAY0qo7zl3CToLksevf5
-         RXNIWsBQgj8DjxJbSlCw5u0MnvbfSlZbd31dvvM2s/w15qFbLDC356zis+nFLypp+y
-         yuu51CWefzALIDqXy6XOnj/tfiMfRjVJ+DlH3lgg=
-Received: by mail-qk1-f180.google.com with SMTP id w2so6699615qkf.2;
-        Sun, 27 Oct 2019 14:04:03 -0700 (PDT)
-X-Gm-Message-State: APjAAAWQjCkEogmbS7F72uuk9gf6P1BLLMRa82DuhREgwqfdZjxmB47d
-        as/hJcrlWEMSmkan7tzNtZ8AFkbXZ01qJPtpjA==
-X-Google-Smtp-Source: APXvYqxH6jcRbIdQqMyzEbVP8RBOqjV1tIloJha8kSXqB1poy40CPrXvcGOaIctBmE89+n7Vi2T5C7riiCYexD1eFZE=
-X-Received: by 2002:a37:9847:: with SMTP id a68mr13244112qke.223.1572210242357;
- Sun, 27 Oct 2019 14:04:02 -0700 (PDT)
-MIME-Version: 1.0
-References: <20191021124428.2541-1-brgl@bgdev.pl> <CAMRc=MeYS+rQMCEc_z1FudnremUhUsXnxdcB2heF6qdtOkH9uQ@mail.gmail.com>
-In-Reply-To: <CAMRc=MeYS+rQMCEc_z1FudnremUhUsXnxdcB2heF6qdtOkH9uQ@mail.gmail.com>
-From:   Rob Herring <robh+dt@kernel.org>
-Date:   Sun, 27 Oct 2019 16:03:51 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqK+6-pz6gQyW3ZEEb6_2AOzwsM0aDZ1PwVCLy-=OeSjhw@mail.gmail.com>
-Message-ID: <CAL_JsqK+6-pz6gQyW3ZEEb6_2AOzwsM0aDZ1PwVCLy-=OeSjhw@mail.gmail.com>
-Subject: Re: [PATCH v4 0/6] dt-bindings: max77650: convert the device-tree
- bindings to yaml
-To:     Bartosz Golaszewski <brgl@bgdev.pl>
-Cc:     Linux Input <linux-input@vger.kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Lee Jones <lee.jones@linaro.org>, Dan Murphy <dmurphy@ti.com>,
-        Linux LED Subsystem <linux-leds@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Mark Rutland <mark.rutland@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        id S1731635AbfJ1GHV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 28 Oct 2019 02:07:21 -0400
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id DE9C31A0264;
+        Mon, 28 Oct 2019 07:07:19 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 2F1611A003F;
+        Mon, 28 Oct 2019 07:07:06 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id B17964030D;
+        Mon, 28 Oct 2019 14:06:52 +0800 (SGT)
+From:   Anson Huang <Anson.Huang@nxp.com>
+To:     rui.zhang@intel.com, edubezval@gmail.com,
+        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
+        robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
+        s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
+        catalin.marinas@arm.com, will@kernel.org, leonard.crestez@nxp.com,
+        abel.vesa@nxp.com, ping.bai@nxp.com, daniel.baluta@nxp.com,
+        jun.li@nxp.com, bjorn.andersson@linaro.org, olof@lixom.net,
+        mripard@kernel.org, vkoul@kernel.org, jagan@amarulasolutions.com,
+        dinguyen@kernel.org, marcin.juszkiewicz@linaro.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc:     Linux-imx@nxp.com
+Subject: [PATCH RESEND 3/4] arm64: defconfig: Enable CONFIG_IMX8MM_THERMAL as module
+Date:   Mon, 28 Oct 2019 14:03:37 +0800
+Message-Id: <1572242618-18806-3-git-send-email-Anson.Huang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1572242618-18806-1-git-send-email-Anson.Huang@nxp.com>
+References: <1572242618-18806-1-git-send-email-Anson.Huang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Oct 26, 2019 at 6:54 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
->
-> pon., 21 pa=C5=BA 2019 o 14:44 Bartosz Golaszewski <brgl@bgdev.pl> napisa=
-=C5=82(a):
-> >
-> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> >
-> > This series converts all DT binding documents for MAX77650 PMIC to YAML=
-.
-> >
-> > v1 -> v2:
-> > - use upper case for abbreviations in commit messages
-> >
-> > v2 -> v3:
-> > - pull all example fragments into the binding document for the core MFD=
- module
-> > - fix all dt_binding_check errors
-> > - add references to submodules to the main binding document
-> > - drop the type for gpio-line-names
-> > - drop the description for the interrupts property
-> > - completely delete the previous txt files
-> >
-> > v3 -> v4:
-> > - remove unnecessary parts of descriptions, added details on the chip
-> > - correct file references (.txt -> .yaml)
-> > - fix mixing scalar and array constraints
-> > - dropped type refs for globally defined properties
-> >
-> > Bartosz Golaszewski (6):
-> >   dt-bindings: input: max77650: convert the binding document to yaml
-> >   dt-bindings: regulator: max77650: convert the binding document to yam=
-l
-> >   dt-bindings: power: max77650: convert the binding document to yaml
-> >   dt-bindings: leds: max77650: convert the binding document to yaml
-> >   dt-bindings: mfd: max77650: convert the binding document to yaml
-> >   MAINTAINERS: update the list of maintained files for max77650
-> >
-> >  .../bindings/input/max77650-onkey.txt         |  26 ---
-> >  .../bindings/input/max77650-onkey.yaml        |  35 ++++
-> >  .../bindings/leds/leds-max77650.txt           |  57 -------
-> >  .../bindings/leds/leds-max77650.yaml          |  51 ++++++
-> >  .../devicetree/bindings/mfd/max77650.txt      |  46 ------
-> >  .../devicetree/bindings/mfd/max77650.yaml     | 149 ++++++++++++++++++
-> >  .../power/supply/max77650-charger.txt         |  28 ----
-> >  .../power/supply/max77650-charger.yaml        |  34 ++++
-> >  .../bindings/regulator/max77650-regulator.txt |  41 -----
-> >  .../regulator/max77650-regulator.yaml         |  31 ++++
-> >  MAINTAINERS                                   |   4 +-
-> >  11 files changed, 302 insertions(+), 200 deletions(-)
-> >  delete mode 100644 Documentation/devicetree/bindings/input/max77650-on=
-key.txt
-> >  create mode 100644 Documentation/devicetree/bindings/input/max77650-on=
-key.yaml
-> >  delete mode 100644 Documentation/devicetree/bindings/leds/leds-max7765=
-0.txt
-> >  create mode 100644 Documentation/devicetree/bindings/leds/leds-max7765=
-0.yaml
-> >  delete mode 100644 Documentation/devicetree/bindings/mfd/max77650.txt
-> >  create mode 100644 Documentation/devicetree/bindings/mfd/max77650.yaml
-> >  delete mode 100644 Documentation/devicetree/bindings/power/supply/max7=
-7650-charger.txt
-> >  create mode 100644 Documentation/devicetree/bindings/power/supply/max7=
-7650-charger.yaml
-> >  delete mode 100644 Documentation/devicetree/bindings/regulator/max7765=
-0-regulator.txt
-> >  create mode 100644 Documentation/devicetree/bindings/regulator/max7765=
-0-regulator.yaml
-> >
-> > --
-> > 2.23.0
-> >
->
-> Hi Rob,
->
-> thanks for reviewing the series. Can you please take it through your
-> tree for v5.5? I think it'll be easier than bothering all the
-> respective maintainers and it only touches on bindings anyway.
+Enable CONFIG_IMX8MM_THERMAL as module to support i.MX8MM
+thermal driver.
 
-Okay, series applied.
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Rob
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index f191a4f..cde02aa 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -446,6 +446,7 @@ CONFIG_THERMAL_GOV_POWER_ALLOCATOR=y
+ CONFIG_CPU_THERMAL=y
+ CONFIG_THERMAL_EMULATION=y
+ CONFIG_QORIQ_THERMAL=m
++CONFIG_IMX8MM_THERMAL=m
+ CONFIG_ROCKCHIP_THERMAL=m
+ CONFIG_RCAR_THERMAL=y
+ CONFIG_RCAR_GEN3_THERMAL=y
+-- 
+2.7.4
+
