@@ -2,58 +2,59 @@ Return-Path: <SRS0=NOrW=YW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0C5CCA9EAE
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:06:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF4A9CA9EC5
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:06:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 88B572087F
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:06:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 83AC92087F
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:06:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hkTw9Hpo"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Hdm35bQw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727489AbfJ2WGM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Oct 2019 18:06:12 -0400
-Received: from mail-lf1-f67.google.com ([209.85.167.67]:43158 "EHLO
-        mail-lf1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726222AbfJ2WGL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 18:06:11 -0400
-Received: by mail-lf1-f67.google.com with SMTP id j5so5355778lfh.10;
-        Tue, 29 Oct 2019 15:06:09 -0700 (PDT)
+        id S1727782AbfJ2WGO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Oct 2019 18:06:14 -0400
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:35180 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727482AbfJ2WGN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 18:06:13 -0400
+Received: by mail-lf1-f66.google.com with SMTP id y6so11721245lfj.2;
+        Tue, 29 Oct 2019 15:06:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=K8Utf9ayM8XYwdDyhQBxYHMwC6OY3jEY8sLyS1jTeXg=;
-        b=hkTw9HpoDR4FfDMf1gQTwliyN2W2o8IW8Xg25P/3a3PFt72OZaxJeCerSylYFz4RGe
-         7GlmRb8o44WeuNi/8kWLAtQzNpZp7ezS1K0VHgzUdVREYUn4TXuKPzrDcz+xC0yv46Br
-         XsBCR+yc9ps0AiMm24buRQKKR+ElpDzPQ9CQXL+VuYot6hM+hiY4qTE51dvs9g7jLgYj
-         512V5ZLzYSe6k/vYVHh9vvZr94uhPfT/Cjy0cauVrVWvRtg5tAewCyDuInUXftt+KsvG
-         B1S2kl4jBlAaNwG+WFRq/SBygu9u3HpaLJtMHAutmY9nfrlQu2kI6GFsnbX0OQEPGYGC
-         Qn1Q==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=sJbbmSkJxlV8NtqyjIaLW9Dj6j3YmXwewmjIh5nKOvo=;
+        b=Hdm35bQwGTOkebo2y3HS/ZzLBK0jNQaWlVLOnsWk32OwcnKiPDlE35b+tmVEZBQ/MT
+         yUF2KdlzLu+TD4edFq3pVRaqGhnacfGMNBYsvsytWVWH9Np+Z+qhHHZD/pcWFd/tb1xc
+         4VcM2SA05FV/SdyymD60thZnb3VObiMOzZcasFIT37YPUKgh7IcK0q0BMN9HRWf0BHuF
+         8KRM3oCx1cIifkU7YkqrEU5grhkKfxuMN/SkBpXvlkyMcCSd2Tr1vTMc//LaLRJ46u/f
+         Y0YtzLoOZJYxII8XlgzRAl2IeoPzoJknmyJXbmnTL6Bx7F0NjlixGlSsu81EDuUdKCmM
+         oobA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=K8Utf9ayM8XYwdDyhQBxYHMwC6OY3jEY8sLyS1jTeXg=;
-        b=A0HNBfrj6/NL39FxJ6kabW6QWDaZJDmRQvW0UJ7mBFSeWdgAgmmp8nEBsO1MuC4aOp
-         n2c5TcZ+un80CwOdO2iMQpH23zVQKfnwDmccjZzz81QI/eIaPM2SP8aRN09Xn3UfC/OI
-         5TuOZBpzZvLvlg0iA0wQA71bfGA8r6AhauQ/Lf0SjgfV16xIo109p9ZgHOCgBGkARZ8q
-         yYqE/fpKZj0Mss8Y281L7xY0xbn1Sh3b8W/LZ62HHpBjKAstU7rxQ1VOSEtNEMSwMKrX
-         a9YvBbv/vqy/CM7K4IvydtCW3y6LfSpHNbDiAeJKdVaXT8OEsPeoT4rC4LvsDJZfSqsj
-         GWMA==
-X-Gm-Message-State: APjAAAW3bHA98oK9gT7L9yUxxbAOMtJgTdD1747IpJYrMy8JFk0Ys/5i
-        +wXM/oD5qYmGtfOWtStrQnQ=
-X-Google-Smtp-Source: APXvYqyJkoy6Ggrpk8jhWGjFJHAeZ+19e82wf8ZmD0+VTralXXO0hdkpacpPn6zSwDjYiWpcx4z3PA==
-X-Received: by 2002:a19:23d7:: with SMTP id j206mr3799697lfj.187.1572386769102;
-        Tue, 29 Oct 2019 15:06:09 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=sJbbmSkJxlV8NtqyjIaLW9Dj6j3YmXwewmjIh5nKOvo=;
+        b=GQ/wf/7RMauxwni2HT3bJhIveRlJlMqtBRlBlfNMCrpaba3Qki1B+5J7AjB/mDiH/C
+         yyI/p+F5gYrWFWqzu0BCxPdeV9WeULLtmJ+dt/MBlflPZgdF7u3kTdZl+U3jXemv+dWX
+         C6PRYI08WHETStzwy1Zy/BK0tGDa7aLMG9Px6GJCMaDwqSez7hmC5HzI9VwzKU2z7rgl
+         7x1t1w+rFy6BCSaOLywe3Xfs/BBagrfI1TNshehzDz8KkOgzJjs0+0FhZlv86QAa7Hev
+         AD0ytkm7O/jVhyBM6z+fxHK1ZZ6scYH28hvlZi5SJkZOlQrvJrDrj6pWx45x1bIqhTKk
+         AN+Q==
+X-Gm-Message-State: APjAAAWL21mL9jR6TM9LSWl2T/7tafa+E1m+I83xSoop7Dls3f/edHJE
+        6NQiT1v+EPFWiO73LgCRPXw=
+X-Google-Smtp-Source: APXvYqwaWX3dv0Hs+x5U4t/iKaz5bHIxIskIYRdZPYKrcjuQroOqyFJQAoQfLirya1uOL4YxuSWj2A==
+X-Received: by 2002:a19:6759:: with SMTP id e25mr3682429lfj.80.1572386771175;
+        Tue, 29 Oct 2019 15:06:11 -0700 (PDT)
 Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id 12sm51536lje.92.2019.10.29.15.06.07
+        by smtp.gmail.com with ESMTPSA id 12sm51536lje.92.2019.10.29.15.06.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Oct 2019 15:06:08 -0700 (PDT)
+        Tue, 29 Oct 2019 15:06:10 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -64,10 +65,12 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Peter Geis <pgwipeout@gmail.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v7 00/19] More improvements for Tegra30 devfreq driver
-Date:   Wed, 30 Oct 2019 01:00:00 +0300
-Message-Id: <20191029220019.26773-1-digetx@gmail.com>
+Subject: [PATCH v7 02/19] PM / devfreq: tegra30: Keep interrupt disabled while governor is stopped
+Date:   Wed, 30 Oct 2019 01:00:02 +0300
+Message-Id: <20191029220019.26773-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191029220019.26773-1-digetx@gmail.com>
+References: <20191029220019.26773-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -75,139 +78,124 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+There is no real need to keep interrupt always-enabled, will be nicer
+to keep it disabled while governor is inactive.
 
-This series addresses some additional review comments that were made by
-Thierry Reding to [1], makes several important changes to the driver,
-reducing interrupts activity, and adds new features. In the end I'm
-proposing myself as a maintainer for the Tegra devfreq drivers.
+Suggested-by: Thierry Reding <thierry.reding@gmail.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra30-devfreq.c | 47 ++++++++++++++++---------------
+ 1 file changed, 24 insertions(+), 23 deletions(-)
 
-[1] https://lore.kernel.org/lkml/0fb50eb1-a173-1756-6889-2526a10ac707@gmail.com/T/
-
-Changelog:
-
-v7:  Addressed review comments that were made by Chanwoo Choi to v6 by:
-
-     1. Dropping patch "Ensure that target freq won't overflow".
-     2. Making "Use kHz units uniformly in the code" patch more easier
-        for review and improving its commit's message.
-     3. The "Support variable polling interval" patch is reworked, now it
-        doesn't touch things that should stay internal to devfreq core, like
-        devfreq->stop_polling and etc. In a result a new generic
-        interrupt_driven flag is available for devfreq governors (added in a
-        new patch "Add new interrupt_driven flag for governors").
-
-     Patch "Set up watermarks properly" and related to it patches are dropped
-     because I found a case where it doesn't work well. These patches need
-     some more thought and not ready for now, I'll continue working on them.
-     I extracted useful changes from the dropped patches and then tuned up
-     MCCPU boost-down coefficient to keep ACTMON silent when system is idling,
-     in a result there are these new patches:
-
-       1. Don't enable already enabled consecutive interrupts
-       2. Disable consecutive interrupts when appropriate
-       3. Tune up MCCPU boost-down coefficient
-
-v6:  Addressed review comment that was made by Chanwoo Choi to v5 by
-     squashing "Define ACTMON_DEV_CTRL_STOP" patch into the "Use CPUFreq
-     notifier" patch.
-
-v5:  Addressed review comments that were made by Chanwoo Choi to v4 by
-     squashing few patches, dropping some questionable patches, rewording
-     comments to the code, restructuring the code and etc.
-
-     These patches are now dropped from the series:
-
-       PM / devfreq: tegra30: Use tracepoints for debugging
-       PM / devfreq: tegra30: Inline all one-line functions
-
-     The interrupt-optimization patches are squashed into a single patch:
-
-       PM / devfreq: tegra30: Reduce unnecessary interrupts activity
-
-     because it's better to keep the optimizations as a separate change and
-     this also helps to reduce code churning, since the code changes depend
-     on a previous patch in order to stay cleaner.
-
-     Fixed a lockup bug that I spotted recently, which is caused by a
-     clk-notifier->cpufreq_get()->clk_set_rate() sequence. Now a non-blocking
-     variant of CPU's frequency retrieving is used, i.e. cpufreq_quick_get().
-
-     Further optimized the CPUFreq notifier by postponing the delayed
-     updating in accordance to the polling interval, this actually uncovered
-     the above lockup bug.
-
-     Implemented new minor driver feature in the new patch:
-
-       PM / devfreq: tegra30: Support variable polling interval
-
-v4:  Added two new patches to the series:
-
-       PM / devfreq: tegra30: Synchronize average count on target's update
-       PM / devfreq: tegra30: Increase sampling period to 16ms
-
-     The first patch addresses problem where governor could get stuck due
-     to outdated "average count" value which is snapshoted by ISR and there
-     are cases where manual update of the value is required.
-
-     The second patch is just a minor optimization.
-
-v3:  Added support for tracepoints, replacing the debug messages.
-     Fixed few more bugs with the help of tracepoints.
-
-     New patches in this version:
-
-       PM / devfreq: tegra30: Use tracepoints for debugging
-       PM / devfreq: tegra30: Optimize CPUFreq notifier
-       PM / devfreq: tegra30: Optimize upper consecutive watermark selection
-       PM / devfreq: tegra30: Optimize upper average watermark selection
-       PM / devfreq: tegra30: Include appropriate header
-
-     Some of older patches of this series also got some extra minor polish.
-
-v2:  Added more patches that are cleaning driver's code further and
-     squashing another kHz conversion bug.
-
-     The patch "Rework frequency management logic" of the v1 series is now
-     converted to "Set up watermarks properly" because I found some problems
-     in the original patch and then realized that there is no need to change
-     the logic much. So the logic mostly preserved and only got improvements.
-
-     The series is based on the today's linux-next (25 Jun) and takes into
-     account minor changes that MyungJoo Ham made to the already queued
-     patches from the first batch [1].
-
-Dmitry Osipenko (19):
-  PM / devfreq: tegra30: Change irq type to unsigned int
-  PM / devfreq: tegra30: Keep interrupt disabled while governor is
-    stopped
-  PM / devfreq: tegra30: Handle possible round-rate error
-  PM / devfreq: tegra30: Drop write-barrier
-  PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
-  PM / devfreq: tegra30: Use kHz units uniformly in the code
-  PM / devfreq: tegra30: Use CPUFreq notifier
-  PM / devfreq: tegra30: Move clk-notifier's registration to governor's
-    start
-  PM / devfreq: tegra30: Reset boosting on startup
-  PM / devfreq: tegra30: Don't enable consecutive-down interrupt on
-    startup
-  PM / devfreq: tegra30: Constify structs
-  PM / devfreq: tegra30: Include appropriate header
-  PM / devfreq: tegra30: Increase sampling period to 16ms
-  PM / devfreq: tegra30: Don't enable already enabled consecutive
-    interrupts
-  PM / devfreq: tegra30: Disable consecutive interrupts when appropriate
-  PM / devfreq: Add new interrupt_driven flag for governors
-  PM / devfreq: tegra30: Support variable polling interval
-  PM / devfreq: tegra30: Tune up MCCPU boost-down coefficient
-  PM / devfreq: tegra20/30: Add Dmitry as a maintainer
-
- MAINTAINERS                       |   9 +
- drivers/devfreq/devfreq.c         |  14 +-
- drivers/devfreq/governor.h        |   3 +
- drivers/devfreq/tegra30-devfreq.c | 356 +++++++++++++++++++++---------
- 4 files changed, 276 insertions(+), 106 deletions(-)
-
+diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+index a27300f40b0b..8be6a33beb9c 100644
+--- a/drivers/devfreq/tegra30-devfreq.c
++++ b/drivers/devfreq/tegra30-devfreq.c
+@@ -11,6 +11,7 @@
+ #include <linux/devfreq.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
++#include <linux/irq.h>
+ #include <linux/module.h>
+ #include <linux/mod_devicetable.h>
+ #include <linux/platform_device.h>
+@@ -416,8 +417,6 @@ static void tegra_actmon_start(struct tegra_devfreq *tegra)
+ {
+ 	unsigned int i;
+ 
+-	disable_irq(tegra->irq);
+-
+ 	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
+ 		      ACTMON_GLB_PERIOD_CTRL);
+ 
+@@ -442,8 +441,6 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
+ 	}
+ 
+ 	actmon_write_barrier(tegra);
+-
+-	enable_irq(tegra->irq);
+ }
+ 
+ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+@@ -552,6 +549,12 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
+ {
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(devfreq->dev.parent);
+ 
++	/*
++	 * Couple device with the governor early as it is needed at
++	 * the moment of governor's start (used by ISR).
++	 */
++	tegra->devfreq = devfreq;
++
+ 	switch (event) {
+ 	case DEVFREQ_GOV_START:
+ 		devfreq_monitor_start(devfreq);
+@@ -586,10 +589,11 @@ static struct devfreq_governor tegra_devfreq_governor = {
+ 
+ static int tegra_devfreq_probe(struct platform_device *pdev)
+ {
+-	struct tegra_devfreq *tegra;
+ 	struct tegra_devfreq_device *dev;
+-	unsigned int i;
++	struct tegra_devfreq *tegra;
++	struct devfreq *devfreq;
+ 	unsigned long rate;
++	unsigned int i;
+ 	int err;
+ 
+ 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+@@ -625,6 +629,16 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	}
+ 	tegra->irq = err;
+ 
++	irq_set_status_flags(tegra->irq, IRQ_NOAUTOEN);
++
++	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
++					actmon_thread_isr, IRQF_ONESHOT,
++					"tegra-devfreq", tegra);
++	if (err) {
++		dev_err(&pdev->dev, "Interrupt request failed: %d\n", err);
++		return err;
++	}
++
+ 	reset_control_assert(tegra->reset);
+ 
+ 	err = clk_prepare_enable(tegra->clock);
+@@ -672,28 +686,15 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
+-	tegra->devfreq = devfreq_add_device(&pdev->dev,
+-					    &tegra_devfreq_profile,
+-					    "tegra_actmon",
+-					    NULL);
+-	if (IS_ERR(tegra->devfreq)) {
+-		err = PTR_ERR(tegra->devfreq);
++	devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
++				     "tegra_actmon", NULL);
++	if (IS_ERR(devfreq)) {
++		err = PTR_ERR(devfreq);
+ 		goto remove_governor;
+ 	}
+ 
+-	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
+-					actmon_thread_isr, IRQF_ONESHOT,
+-					"tegra-devfreq", tegra);
+-	if (err) {
+-		dev_err(&pdev->dev, "Interrupt request failed: %d\n", err);
+-		goto remove_devfreq;
+-	}
+-
+ 	return 0;
+ 
+-remove_devfreq:
+-	devfreq_remove_device(tegra->devfreq);
+-
+ remove_governor:
+ 	devfreq_remove_governor(&tegra_devfreq_governor);
+ 
 -- 
 2.23.0
 
