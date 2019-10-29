@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A64E0CA9EC5
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:44:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77AACCA9EC3
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:44:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7C5402087F
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:44:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 481F4217F9
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:44:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nGhuDYkf"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YplOBV9M"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390563AbfJ2Qos (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Oct 2019 12:44:48 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:33884 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390521AbfJ2Qor (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 12:44:47 -0400
-Received: by mail-lj1-f194.google.com with SMTP id 139so15864549ljf.1
-        for <linux-pm@vger.kernel.org>; Tue, 29 Oct 2019 09:44:45 -0700 (PDT)
+        id S2390633AbfJ2Qov (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Oct 2019 12:44:51 -0400
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:40301 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2390624AbfJ2Qou (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 12:44:50 -0400
+Received: by mail-lj1-f195.google.com with SMTP id u22so16040123lji.7
+        for <linux-pm@vger.kernel.org>; Tue, 29 Oct 2019 09:44:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=bWmI0Xiuvq89sgTizuBFylB3C9/WTB7ILCq148rwhZk=;
-        b=nGhuDYkfvkQnrZTY/TN3SJPYAaq6N0hugnaQQTvYzRjyoPirGxoPyytewdnMuFCFij
-         DaKmL0IiI3Qljq5CIImb9zhUYVW5VW+op923nnammGE5rv2FOHsLNPRmSR5VSjEBxWTZ
-         +oyoY/dWhez06dxKGThbrMguGRiBM7sr5gIaMs4iiiLuPwmPqMDG6CWDzEBWGB0x0Ha1
-         In+/km5T6X+Vcwoxcv0M++rn5YHmiXagng2jm6Cu5K0cpWPMP5hz4j2QblIRc92btI15
-         4916IppXqRFSp/7tSoPmztteLkZaZyI8t2KNAKLsXA/ULl2xQ7yG8pW90jbbx1HmvIqH
-         BLRA==
+        bh=pxj7KLSW5R2axCiapc3eou/vjW6LvEtO3EFuHvUy+4g=;
+        b=YplOBV9MJp6EqG3mBNIF6X+EXkSFeG7T2VIHeODHEiXdaWz4zntnkKVjKaEGbI0f7R
+         G1A3ZryFYT2UlYqsMdN/gzyqvvBDLriCWS/mNDFxaZwYrOCO8d6H6+BjlQyw+EnzsiWW
+         u+Ypmf3mJBfP68rmHWB+MHCs+KuSiKH0I1wHy/mK+sLeXog+tuKsTV2PQoDIY/2AnrO5
+         B2PRaJLBliCJARdr2V0NbAM0At2TTYQL3cAjEAOv3MHVMQNlBsqKv8UE+wFZQWsnqRyk
+         +O8j5iezP2XmZtk9vE+QNwVVh83h+umuALjKvcTgvqsVMruxhWmQ07eIhO0QU2DJaODO
+         sU7Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=bWmI0Xiuvq89sgTizuBFylB3C9/WTB7ILCq148rwhZk=;
-        b=qcaxfqqgWIcIQYbYOuMenaeu9LMrz4QI8cVeqXCvEUt1MJUyxlvIW60uwIpgHzifPC
-         kXjCuzyYy2AWCxpJxgJP5OHyI1p2rHdnA6GrYq703D+XXXvH4tpNA27baZgXxpf1kTYR
-         SaLGD04HuJdbVXutPxQr40A/KdspYwMNWt5yVFZSBtpB55flbXCrxLNIZ1/7y1ZoN/gS
-         JmKm9OFUFnmggP1M7GC23B9bHHMPsy4SkaoMV00ztcC63kjzTSGdz6JBVmMllMM0UrRg
-         QMTfsrnD9U5cUrt4kCWcULwR5KeG4GH+Ci/HBs/48SpmlLd35iln2V1ivK2M8gnvmDRq
-         v4qg==
-X-Gm-Message-State: APjAAAUfMZLS3H8oLtrxStMMiw4Nf7hNPOHOPne+lMCkFLazn+fEKtUG
-        xbReeL8u2qhCPe+QVE4qIrqDLA==
-X-Google-Smtp-Source: APXvYqxiw4yXF19S009oKLq+GuUCc8WXW014siinCqLOYELILmRXWbsHObr2NPT+v/kN830ot6hPPw==
-X-Received: by 2002:a2e:9a9a:: with SMTP id p26mr3283051lji.164.1572367485207;
-        Tue, 29 Oct 2019 09:44:45 -0700 (PDT)
+        bh=pxj7KLSW5R2axCiapc3eou/vjW6LvEtO3EFuHvUy+4g=;
+        b=RDTGktWhidOKMbBR3nKumt8oo20g8KfqnFrJJShlcXKhP/1gmgTg+RdUNa4Gvus6wY
+         AQZeK5PF84jup4zj7eyM3/Mjj0Y3M5S40L7olfiA8xVt0zpJbUlUBp3sVM6gJ6RhECpH
+         30WpIkKHTKGYShpEDG7uZTOCc6cl5/Sh1oePa4y/Bio7ss4F/f7Ympvarf/3ofUVPXmb
+         rDmAFCeEzpunLwzOGVq+neg9aAnPg9iAqPuQc2sNJrKXEhd084aSz5YYTeXAAV21/2N/
+         jRwq4tXeLKeZNxV8oABXw02T2+309eyoVkEsZuQElJ4hjGopSSBZM8UZ5faUTcyNwlyw
+         UizQ==
+X-Gm-Message-State: APjAAAVLUulNq9jN8HwXp+oMgJHz0kdpHerlyymsUEhhYIeDzq83ABsq
+        6QzHeJjy2hg52ge6e/5GsonaZA==
+X-Google-Smtp-Source: APXvYqxTjxZNGQL/LqFi3IPfYCjxpsMyLxV8MH634j47PS/Jjpjo1p7lcpDprbECJDfAoIIUSpu45A==
+X-Received: by 2002:a2e:9d06:: with SMTP id t6mr3391781lji.253.1572367488497;
+        Tue, 29 Oct 2019 09:44:48 -0700 (PDT)
 Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id f28sm2048161lfh.35.2019.10.29.09.44.43
+        by smtp.gmail.com with ESMTPSA id f28sm2048161lfh.35.2019.10.29.09.44.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Oct 2019 09:44:44 -0700 (PDT)
+        Tue, 29 Oct 2019 09:44:47 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -68,9 +68,9 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         Kevin Hilman <khilman@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
-Subject: [PATCH v2 01/13] cpuidle: psci: Align psci_power_state count with idle state count
-Date:   Tue, 29 Oct 2019 17:44:26 +0100
-Message-Id: <20191029164438.17012-2-ulf.hansson@linaro.org>
+Subject: [PATCH v2 03/13] firmware: psci: Export functions to manage the OSI mode
+Date:   Tue, 29 Oct 2019 17:44:28 +0100
+Message-Id: <20191029164438.17012-4-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191029164438.17012-1-ulf.hansson@linaro.org>
 References: <20191029164438.17012-1-ulf.hansson@linaro.org>
@@ -79,63 +79,84 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Sudeep Holla <sudeep.holla@arm.com>
+To allow subsequent changes to implement support for OSI mode through the
+cpuidle-psci driver, export the existing psci_has_osi_support(). Export
+also a new function, psci_set_osi_mode(), that allows its caller to enable
+the OS-initiated CPU-suspend mode in the PSCI FW.
 
-Instead of allocating 'n-1' states in psci_power_state to manage 'n'
-idle states which include "ARM WFI" state, it would be simpler to have
-1:1 mapping between psci_power_state and cpuidle driver states.
+To deal with backwards compatibility for a kernel started through a kexec
+call, default to set the CPU-suspend mode to the Platform Coordinated mode
+during boot.
 
-ARM WFI state(i.e. idx == 0) is handled specially in the generic macro
-CPU_PM_CPU_IDLE_ENTER_PARAM and hence state[-1] is not possible. However
-for sake of code readability, it is better to have 1:1 mapping and not
-use [idx - 1] to access psci_power_state corresponding to driver cpuidle
-state for idx.
-
-psci_power_state[0] is default initialised to 0 and is never accessed
-while entering WFI state.
-
-Reported-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
 
 Changes in v2:
 	- Added tags.
-
 ---
- drivers/cpuidle/cpuidle-psci.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/firmware/psci/psci.c | 18 ++++++++++++++++--
+ include/linux/psci.h         |  2 ++
+ 2 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.c
-index f3c1a2396f98..361985f52ddd 100644
---- a/drivers/cpuidle/cpuidle-psci.c
-+++ b/drivers/cpuidle/cpuidle-psci.c
-@@ -30,7 +30,7 @@ static int psci_enter_idle_state(struct cpuidle_device *dev,
- 	u32 *state = __this_cpu_read(psci_power_state);
- 
- 	return CPU_PM_CPU_IDLE_ENTER_PARAM(psci_cpu_suspend_enter,
--					   idx, state[idx - 1]);
-+					   idx, state[idx]);
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index 84f4ff351c62..76f3a991d4d7 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -89,7 +89,7 @@ static inline bool psci_has_ext_power_state(void)
+ 				PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK;
  }
  
- static struct cpuidle_driver psci_idle_driver __initdata = {
-@@ -89,12 +89,14 @@ static int __init psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
- 	if (!count)
- 		return -ENODEV;
+-static inline bool psci_has_osi_support(void)
++bool psci_has_osi_support(void)
+ {
+ 	return psci_cpu_suspend_feature & PSCI_1_0_OS_INITIATED;
+ }
+@@ -154,6 +154,15 @@ static u32 psci_get_version(void)
+ 	return invoke_psci_fn(PSCI_0_2_FN_PSCI_VERSION, 0, 0, 0);
+ }
  
-+	count++; /* Add WFI state too */
- 	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
- 	if (!psci_states)
- 		return -ENOMEM;
++int psci_set_osi_mode(void)
++{
++	int err;
++
++	err = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			     PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
++	return psci_to_linux_errno(err);
++}
++
+ static int psci_cpu_suspend(u32 state, unsigned long entry_point)
+ {
+ 	int err;
+@@ -536,9 +545,14 @@ static int __init psci_1_0_init(struct device_node *np)
+ 	if (err)
+ 		return err;
  
--	for (i = 0; i < count; i++) {
--		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+	for (i = 1; i < count; i++) {
-+		state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
-+					      i - 1);
- 		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
- 		of_node_put(state_node);
+-	if (psci_has_osi_support())
++	if (psci_has_osi_support()) {
+ 		pr_info("OSI mode supported.\n");
  
++		/* Default to PC mode. */
++		invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			       PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/psci.h b/include/linux/psci.h
+index e2bacc6fd2f2..f76b45341adf 100644
+--- a/include/linux/psci.h
++++ b/include/linux/psci.h
+@@ -17,6 +17,8 @@ bool psci_tos_resident_on(int cpu);
+ 
+ int psci_cpu_suspend_enter(u32 state);
+ bool psci_power_state_is_valid(u32 state);
++int psci_set_osi_mode(void);
++bool psci_has_osi_support(void);
+ 
+ enum psci_conduit {
+ 	PSCI_CONDUIT_NONE,
 -- 
 2.17.1
 
