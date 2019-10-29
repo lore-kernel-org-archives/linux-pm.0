@@ -2,124 +2,107 @@ Return-Path: <SRS0=NOrW=YW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EC4ACA9EAE
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:07:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92869CA9EAE
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:13:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 109FD217D9
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:07:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PMM8ZHjz"
+	by mail.kernel.org (Postfix) with ESMTP id 6BE8A2054F
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:13:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726222AbfJ2WGM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Oct 2019 18:06:12 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:41283 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727470AbfJ2WGM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 18:06:12 -0400
-Received: by mail-lj1-f194.google.com with SMTP id m9so331555ljh.8;
-        Tue, 29 Oct 2019 15:06:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ppdzoc/V97ChcXO7v2Rn6eiJN21LngJ2PFR09uQ6kL0=;
-        b=PMM8ZHjztDKj7RfeyexDPFQxTw09ZFSUJpNTpZ9LzuPgybf5cs4PL7APSEHSNBZC2f
-         aZdGGdnRFRL4z6L1mn/WABTWyJKh+B35T5dqVaDyRFa8Y5vHQkyljwkz8qCSQEdBZkw7
-         5M20UBCndnb8dlK0xPiDgebcO60KyuReTh6Zlmj7mrbnpSOkE8v9cW/NmT2V2nPV6g4b
-         07xwr9AY3leVjqbuF5aZWZ0D+6V1HccNQf8H8FQ/qpHSnjsLJ8n5/nVN1IiL9AePpIV1
-         hPtbnmDicHq5/mFBVXGBVHoPAX3z/F8XqQU2JkcdiB+MolzyaxxPsRuS/aIb0s8NQ101
-         JJGQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ppdzoc/V97ChcXO7v2Rn6eiJN21LngJ2PFR09uQ6kL0=;
-        b=d3mAmFN0fI3npDkWgqXFH4cfZo0M4qW5F93Xf/hM7v9yj1meCOcRhW7+XBSHrSoRMC
-         jUwom7Y1Hb2eMMRTsBbECYjEJfQJOsDC6qge4yXwnJPXtRdaTgAxYmxIVdhZJCPNW0lv
-         Zny5AT9szbCpk0ZyFAsZxfGoI3jjIldf6AXYl4CdiTp02aO7g6OP9Y6th/zXneAIb/5+
-         TnzIxOKAbie2bwod0/NsJYH1pTqDNNi1lqlfTialRnU9f4Gszd7j2As4OcRSgWrL8mVf
-         hz/n2ktatZc0vLw1dp/wmXVWcW/1vHbil+M62bIUCr7fFs+ng0nk1VmOPjUSFZGIUBbH
-         WNdA==
-X-Gm-Message-State: APjAAAWGjxgpiUFTU9NyT7n8IYketCJg0n6jh3d/vZeaQIxXgWsYFCE1
-        YyKSFOxoBmMVDoQ2uP7h58wTrkkC
-X-Google-Smtp-Source: APXvYqyF61OfNi9o8iSFdS/6C+hpCB3nmkDxZsfipOepvNUFnmu2YryQ+1qQRD7iVJBto6mbc8G83A==
-X-Received: by 2002:a2e:9058:: with SMTP id n24mr2463465ljg.114.1572386770132;
-        Tue, 29 Oct 2019 15:06:10 -0700 (PDT)
-Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id 12sm51536lje.92.2019.10.29.15.06.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Oct 2019 15:06:09 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
-        Peter Geis <pgwipeout@gmail.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v7 01/19] PM / devfreq: tegra30: Change irq type to unsigned int
-Date:   Wed, 30 Oct 2019 01:00:01 +0300
-Message-Id: <20191029220019.26773-2-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191029220019.26773-1-digetx@gmail.com>
-References: <20191029220019.26773-1-digetx@gmail.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1725932AbfJ2WNc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Oct 2019 18:13:32 -0400
+Received: from mga04.intel.com ([192.55.52.120]:27222 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725840AbfJ2WNc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 29 Oct 2019 18:13:32 -0400
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 29 Oct 2019 15:13:32 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.68,245,1569308400"; 
+   d="diff'?scan'208";a="198501923"
+Received: from spandruv-mobl3.jf.intel.com ([10.255.229.217])
+  by fmsmga008.fm.intel.com with ESMTP; 29 Oct 2019 15:13:31 -0700
+Message-ID: <53fc01bf9ef25012a1a43b87954b62a02101d85c.camel@linux.intel.com>
+Subject: Re: "Force HWP min perf before offline" triggers unchecked MSR
+ access errors
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Qian Cai <cai@lca.pw>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Chen Yu <yu.c.chen@intel.com>, Len Brown <lenb@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Borislav Petkov <bp@alien8.de>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date:   Tue, 29 Oct 2019 15:13:30 -0700
+In-Reply-To: <A94C23C3-E6B9-4390-B380-C49D87731D81@lca.pw>
+References: <CAJZ5v0g6_-HBEKfHtfe8LFG9PKosGeUW3-gwTBW6F32OwFwO3g@mail.gmail.com>
+         <A94C23C3-E6B9-4390-B380-C49D87731D81@lca.pw>
+Content-Type: multipart/mixed; boundary="=-QOLy+FCNmsPb1Mw2UaNS"
+X-Mailer: Evolution 3.28.5 (3.28.5-3.fc28) 
+Mime-Version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IRQ numbers are always positive, hence the corresponding variable should
-be unsigned to keep types consistent. This is a minor change that cleans
-up code a tad more.
 
-Suggested-by: Thierry Reding <thierry.reding@gmail.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/devfreq/tegra30-devfreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+--=-QOLy+FCNmsPb1Mw2UaNS
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index a6ba75f4106d..a27300f40b0b 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -160,7 +160,7 @@ struct tegra_devfreq {
- 
- 	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
- 
--	int irq;
-+	unsigned int		irq;
- };
- 
- struct tegra_actmon_emc_ratio {
-@@ -618,12 +618,12 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->emc_clock);
- 	}
- 
--	tegra->irq = platform_get_irq(pdev, 0);
--	if (tegra->irq < 0) {
--		err = tegra->irq;
-+	err = platform_get_irq(pdev, 0);
-+	if (err < 0) {
- 		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
- 		return err;
- 	}
-+	tegra->irq = err;
- 
- 	reset_control_assert(tegra->reset);
- 
--- 
-2.23.0
+On Tue, 2019-10-29 at 18:01 -0400, Qian Cai wrote:
+> > On Oct 29, 2019, at 5:47 PM, Rafael J. Wysocki <rafael@kernel.org>
+> > wrote:
+> > 
+> > The MSR_IA32_ENERGY_PERF_BIAS MSR appears to be not present, which
+> > should be caught by the X86_FEATURE_EPB check in
+> > intel_pstate_set_epb().
+> > 
+> > Do you run this in a guest perchance?
+> 
+> No, it is a baremetal HPE server. The dmesg does say something like
+> energy perf bias changed from performance to normal, and the cpuflag
+> contains epb which I thought that would pass the feature check? I
+> could upload the whole dmesg a bit later if that helps.
+
+Try the attached change. You have a Skylake server with no EPP support.
+This is odd.
+
+Thanks,
+Srinivas
+
+
+--=-QOLy+FCNmsPb1Mw2UaNS
+Content-Disposition: attachment; filename="epb_power.diff"
+Content-Type: text/x-patch; name="epb_power.diff"; charset="UTF-8"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvYWNwaS9wcm9jZXNzb3JfdGhlcm1hbC5jIGIvZHJpdmVycy9h
+Y3BpL3Byb2Nlc3Nvcl90aGVybWFsLmMKaW5kZXggZWMyNjM4ZjFkZjRmLi5mNzBmNzQ2ZWQ1OGQg
+MTAwNjQ0Ci0tLSBhL2RyaXZlcnMvYWNwaS9wcm9jZXNzb3JfdGhlcm1hbC5jCisrKyBiL2RyaXZl
+cnMvYWNwaS9wcm9jZXNzb3JfdGhlcm1hbC5jCkBAIC0xMzAsNiArMTMwLDcgQEAgdm9pZCBhY3Bp
+X3RoZXJtYWxfY3B1ZnJlcV9pbml0KGludCBjcHUpCiAJc3RydWN0IGFjcGlfcHJvY2Vzc29yICpw
+ciA9IHBlcl9jcHUocHJvY2Vzc29ycywgY3B1KTsKIAlpbnQgcmV0OwogCisJbWVtc2V0KCZwci0+
+dGhlcm1hbF9yZXEsIDAsIHNpemVvZihwci0+dGhlcm1hbF9yZXEpKTsKIAlyZXQgPSBkZXZfcG1f
+cW9zX2FkZF9yZXF1ZXN0KGdldF9jcHVfZGV2aWNlKGNwdSksCiAJCQkJICAgICAmcHItPnRoZXJt
+YWxfcmVxLCBERVZfUE1fUU9TX01BWF9GUkVRVUVOQ1ksCiAJCQkJICAgICBJTlRfTUFYKTsKZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYyBiL2RyaXZlcnMvY3B1ZnJl
+cS9pbnRlbF9wc3RhdGUuYwppbmRleCA5ZjAyZGU5YTFiNDcuLmVhYjhiMDQ4ZGM5ZiAxMDA2NDQK
+LS0tIGEvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJl
+cS9pbnRlbF9wc3RhdGUuYwpAQCAtODUxLDcgKzg1MSw3IEBAIHN0YXRpYyB2b2lkIGludGVsX3Bz
+dGF0ZV9od3BfZm9yY2VfbWluX3BlcmYoaW50IGNwdSkKIAlpZiAoYm9vdF9jcHVfaGFzKFg4Nl9G
+RUFUVVJFX0hXUF9FUFApKQogCQl2YWx1ZSB8PSBIV1BfRU5FUkdZX1BFUkZfUFJFRkVSRU5DRShI
+V1BfRVBQX1BPV0VSU0FWRSk7CiAJZWxzZQotCQlpbnRlbF9wc3RhdGVfc2V0X2VwYihjcHUsIEhX
+UF9FUFBfQkFMQU5DRV9QT1dFUlNBVkUpOworCQlpbnRlbF9wc3RhdGVfc2V0X2VwYihjcHUsIDB4
+MEYpOwogCiAJd3Jtc3JsX29uX2NwdShjcHUsIE1TUl9IV1BfUkVRVUVTVCwgdmFsdWUpOwogfQo=
+
+
+--=-QOLy+FCNmsPb1Mw2UaNS--
 
