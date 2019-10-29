@@ -2,55 +2,65 @@ Return-Path: <SRS0=NOrW=YW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FD5CCA9EAE
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 21:47:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A87ECA9EAE
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:01:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6575021721
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 21:47:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1572385655;
-	bh=pwNnyj+k5EM25iSVdP3GC9AqhFmMSbZd5YRK21JHcfE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=At4bjgJ4JuIqnKHjjsyJG+fax1PNHY5c7/OHtX9huSnsauE+n0nPDk+VQbZQDnhTk
-	 zIuB3mUTs+aP5IVzstHZ/8gxJtEQx6Y4C2sTvsYc0Cg/muBXd0gKQh2JPuF0LHCo6X
-	 0otnLA36HayvvnBYl/nSU2WomMxfRIwhxWGJw6kE=
+	by mail.kernel.org (Postfix) with ESMTP id 4E5CD2087F
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:01:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="RfvI6IJX"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729230AbfJ2Vrf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Oct 2019 17:47:35 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:33495 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726364AbfJ2Vre (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 17:47:34 -0400
-Received: by mail-ot1-f68.google.com with SMTP id u13so307058ote.0;
-        Tue, 29 Oct 2019 14:47:34 -0700 (PDT)
+        id S1726875AbfJ2WBe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Oct 2019 18:01:34 -0400
+Received: from mail-qt1-f196.google.com ([209.85.160.196]:35324 "EHLO
+        mail-qt1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725909AbfJ2WBe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 18:01:34 -0400
+Received: by mail-qt1-f196.google.com with SMTP id l3so410598qtp.2
+        for <linux-pm@vger.kernel.org>; Tue, 29 Oct 2019 15:01:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=lca.pw; s=google;
+        h=content-transfer-encoding:from:mime-version:subject:date:message-id
+         :references:cc:in-reply-to:to;
+        bh=IkV7pzdHzeP4W9uWbTsQ7etbx4DSYi39wSa2PvGrX6c=;
+        b=RfvI6IJX3Jf/JhX4q/KwdEzN4UF0kChI0DDMFYEYqA+F9Mmy8ug1DbpQvquaIkh9+i
+         DvC2bPiyTBMjQnjtE3XdjvaktrG24Ku8RyVky9le/cZDwcJXlOOxD23pjxA/jdm51GDD
+         RGF1jXeDj+alZw/xoU72AmDNt2pvUZYS6T+g4AQaZxlYtmWCKbJZH6s2GHEhXX2JpiG5
+         BxSR0fkB2gxylEY9WQNt4BtPh9mdmC/dIaF49bzj9Q1C3K0Wi8Kz7FyHu8dt+CPEZhvo
+         tmIGP+gwiQw1CnKpEGoCrURJkOuwgXNoiEzAMHvoGPJL6TCfe0vuYxqEpgzsSceg8Nh6
+         9gww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=pwNnyj+k5EM25iSVdP3GC9AqhFmMSbZd5YRK21JHcfE=;
-        b=LqWPNvkKEGAL5arS764pYx3bjQA+SSvecwI/CX9cxDydl2t0Cpa0e3Rrswxlo5B+1V
-         1gp4832PAXvG/qQuwgbep0kHC/qZNFIbHyyWnEVtAieJcs/MwXO0E/CFkvVLuhdVgoCx
-         p5ywKvSwxm/LuPwM0M71smMFU6yFdr5ikKpkz4hjAXayqRJNfklEB0Iclwa0XlRbwHqD
-         jE/vdY06pM3yFX9vlLq2LgniYSmhY5RaDfMowyAA1nY8gXDq8AI+s3KxMV3x25k4gUu3
-         VqRYasyNq650I/BECySPuS1XGdD8gUq69/RfHkL0PWBdDbjChiQzEFOuI6wGDla2gXay
-         SFmQ==
-X-Gm-Message-State: APjAAAXFta/WAyEVMjQSXDxIfp61Ar/U0SSsDaeTDh9QFuS1fRx1VALe
-        eOPDJzUUCoLDtiWA4zLLrGWm68gJ4w5/6c71ojw=
-X-Google-Smtp-Source: APXvYqweZp4jeAZD2ef4WZnlOnsYXcZXtVF5QzQHiNciMjK9rivjpgDTE7L4/I4xSUGRnOgqcFjUpQUz/ptSalHNY6A=
-X-Received: by 2002:a9d:5907:: with SMTP id t7mr19014905oth.118.1572385654042;
- Tue, 29 Oct 2019 14:47:34 -0700 (PDT)
-MIME-Version: 1.0
-References: <1572382505.5937.97.camel@lca.pw>
-In-Reply-To: <1572382505.5937.97.camel@lca.pw>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 29 Oct 2019 22:47:23 +0100
-Message-ID: <CAJZ5v0g6_-HBEKfHtfe8LFG9PKosGeUW3-gwTBW6F32OwFwO3g@mail.gmail.com>
+        h=x-gm-message-state:content-transfer-encoding:from:mime-version
+         :subject:date:message-id:references:cc:in-reply-to:to;
+        bh=IkV7pzdHzeP4W9uWbTsQ7etbx4DSYi39wSa2PvGrX6c=;
+        b=mo6V5CHhXY/7RXjnJ9NFvfM/KKKZzspSDIvfR6vYnt3r3POvAGxO137lG4RohTbkm/
+         8PerZIVvQB6WyrABRtg1vpl0zG5FqG1SRgUxtVug6khnUWDRC/RMB7DLXvDF7pBco/Ev
+         h6j8ErODsN3SN17VdBYIzhk/jrypAx7UxIkMNvFD1vfwQSjA0NiUQWRw9JJuBzFOKO+B
+         XHqoZVmbGWajdeOtAU5IT+4FrfZS2eigKS3QaznNctScux188Q9UWgPAiZBh8vaOa67M
+         /g2lrcsNJpzjmX4cl1VQ/t3xUqI1H6v6Dmcwj5OFJbTS0Xx0JmDv1xQN/EfPZ977RVMh
+         uC0Q==
+X-Gm-Message-State: APjAAAVcRZivlOQSYeQvss9sb57h4J7cFgR/H2ryM2+lupfJ5SnkcVxx
+        o+DyJTI0B5uOoZdHH3d6nJ4v6Q==
+X-Google-Smtp-Source: APXvYqzRDJnyT0AvItDzx453y4BLjC9jf3D+/3b3ob/WwGM7SPp0dlo5AEIDPRWfSp/v5PbLannDWQ==
+X-Received: by 2002:a0c:c3c5:: with SMTP id p5mr25907593qvi.34.1572386492432;
+        Tue, 29 Oct 2019 15:01:32 -0700 (PDT)
+Received: from ?IPv6:2600:1000:b063:e143:e15a:1807:6e04:c401? ([2600:1000:b063:e143:e15a:1807:6e04:c401])
+        by smtp.gmail.com with ESMTPSA id u18sm89248qth.20.2019.10.29.15.01.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 29 Oct 2019 15:01:31 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+From:   Qian Cai <cai@lca.pw>
+Mime-Version: 1.0 (1.0)
 Subject: Re: "Force HWP min perf before offline" triggers unchecked MSR access errors
-To:     Qian Cai <cai@lca.pw>
+Date:   Tue, 29 Oct 2019 18:01:30 -0400
+Message-Id: <A94C23C3-E6B9-4390-B380-C49D87731D81@lca.pw>
+References: <CAJZ5v0g6_-HBEKfHtfe8LFG9PKosGeUW3-gwTBW6F32OwFwO3g@mail.gmail.com>
 Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         Chen Yu <yu.c.chen@intel.com>, Len Brown <lenb@kernel.org>,
@@ -59,22 +69,25 @@ Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Thomas Gleixner <tglx@linutronix.de>,
         Linux PM <linux-pm@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CAJZ5v0g6_-HBEKfHtfe8LFG9PKosGeUW3-gwTBW6F32OwFwO3g@mail.gmail.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+X-Mailer: iPhone Mail (17A878)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 29, 2019 at 9:55 PM Qian Cai <cai@lca.pw> wrote:
->
-> The commit af3b7379e2d7 ("cpufreq: intel_pstate: Force HWP min perf before
-> offline") triggers an error below while doing CPU hotplug. Reverted it (on the
-> top of the linux-next) fixed it.
->
-> https://raw.githubusercontent.com/cailca/linux-mm/master/x86.config
 
-The MSR_IA32_ENERGY_PERF_BIAS MSR appears to be not present, which
-should be caught by the X86_FEATURE_EPB check in
-intel_pstate_set_epb().
 
-Do you run this in a guest perchance?
+> On Oct 29, 2019, at 5:47 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>=20
+> The MSR_IA32_ENERGY_PERF_BIAS MSR appears to be not present, which
+> should be caught by the X86_FEATURE_EPB check in
+> intel_pstate_set_epb().
+>=20
+> Do you run this in a guest perchance?
+
+No, it is a baremetal HPE server. The dmesg does say something like energy p=
+erf bias changed from performance to normal, and the cpuflag contains epb wh=
+ich I thought that would pass the feature check? I could upload the whole dm=
+esg a bit later if that helps.=
