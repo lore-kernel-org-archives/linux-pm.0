@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA147CA9EAE
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D7DACA9EAE
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:07:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9BD622087F
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:06:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F28E92173E
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 22:07:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jXH9ZKZP"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uDuxkMJE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726788AbfJ2WG7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Oct 2019 18:06:59 -0400
-Received: from mail-lf1-f67.google.com ([209.85.167.67]:37825 "EHLO
+        id S1728380AbfJ2WGY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Oct 2019 18:06:24 -0400
+Received: from mail-lf1-f67.google.com ([209.85.167.67]:32809 "EHLO
         mail-lf1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728362AbfJ2WG0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 18:06:26 -0400
-Received: by mail-lf1-f67.google.com with SMTP id b20so11721049lfp.4;
-        Tue, 29 Oct 2019 15:06:24 -0700 (PDT)
+        with ESMTP id S1728261AbfJ2WGX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 18:06:23 -0400
+Received: by mail-lf1-f67.google.com with SMTP id y127so11746213lfc.0;
+        Tue, 29 Oct 2019 15:06:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=D11VVY4Rxxm/W54Uqk6BFbiOvSAgZpDrlyvTJkKD0Sw=;
-        b=jXH9ZKZPkIc26Kl4neZ4IIyKLIbmcTQgjlMy9HVZyaSBJyTKKB5TWMLjb01usctBJR
-         tuDBFgBAgcQ2C7c4CrWspt4ujLHfygXR1g3XJdhMg6SHj362gpK0gUr2vkYFbg2RtMUH
-         FXNJ6zfcNyAzpZRHlVEPhLw4Q0EqhZQeUmPxv4WPiEYRxg3V/aHT734BJBAol/VFh6g2
-         cC6zXWUHVBzRySi5Z7wrYecjzjt/x5nAWSq5r3EHAMuCBUURCSGbzxbuGqAS82CJrftj
-         tC3mAFg2G4f1iCV7m7wkVBrn5rEKGVfyfVZeY0TiUZ3QDBZpBREjFudJziv8CSnKudnk
-         LOtw==
+        bh=5LONhI03rb2fwfUY6X7OU7Y25sYxMdC9HcXKn9+BCyQ=;
+        b=uDuxkMJEKoGGClHLxpgL5yA4z60Lv5lPzaeYSs3xAcGhttJWal3QJqTG8rkQys5I1R
+         xLLoE0quWFbJIhm/SovHBSpfo8ahIXJ991BD4bbc3VQMtrtYJ/IVWdnf8gHwUnUVkdYV
+         OfJU/dCHLm12SiHCjZPem5v7StHvRLcVi/9RWRApfqYJVuPKvHSgDQdgdlYAVZ4qLrBS
+         rT4w5sGQLqKkiPCD5N26pqzIo6kJwZyQbfn6ZTX1WDgPSlsIA39ufbzkGkME1x46nite
+         GIB8uDQIDKtvSl2mcBp8hh731XIoIV+Wed+eOr/UqUJa6eZP9Wnp2BWUqHQj4M6bM8pe
+         mZdw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=D11VVY4Rxxm/W54Uqk6BFbiOvSAgZpDrlyvTJkKD0Sw=;
-        b=Fq8ucnISf7o3KK7MkpKjY4C849+M6eqt2L6LnY7JmIzlLP+e2iOF4AAjnHrax8aqxp
-         QJtvEtEAPaqbs2S4f5wB4uI2Ir0TDFuTr2Mxm1DmTvHxE3WkANbWyU01Hx8pAAhmVIYn
-         lLwadE77DYbIRDkHWR8RiBba4JZQ2oNnfEO5GYgKAn2x9WnY3l12tnIo5vRvIC0wAipl
-         596P3ejCZAIl2lWTTa99PfjBCwQnehMWH2KV6mTnoaDOc9sawF4O7N7XAlIKLO3BhWOt
-         m8kTQqDwfl8qWxgkuD9UvlKzY9W32+6+p8ga+0439QSlOW48FdO6/vq/QtOPbL5fX1u0
-         KI6A==
-X-Gm-Message-State: APjAAAUjoe9l2wHjwTu+WhDfRjcbkz3s1IXnKqys1V7RJtUWY3+UbzRN
-        Hy/1uCO7bWebRUzOgbj01Cc=
-X-Google-Smtp-Source: APXvYqwV9uLlqA5CnvxwBGpmgt3v1zyI90Zr39IZSpxa3/SUYck98d4ynMWgQTWnsUiQyoq3y6eAzg==
-X-Received: by 2002:a19:7f15:: with SMTP id a21mr3847976lfd.169.1572386783589;
-        Tue, 29 Oct 2019 15:06:23 -0700 (PDT)
+        bh=5LONhI03rb2fwfUY6X7OU7Y25sYxMdC9HcXKn9+BCyQ=;
+        b=sV2xIZfc8WX1Q8ZESfL9WUpkfvIMRIrHFn9nvNgrHSPrQQerhGdGrllsM9k5ICp6f8
+         JQPDbE8Jq5S/kWX0m8Lyy/YBf1fRZEzy8Wc80ANiefdtVc677YzlEI91WAeAudvU96Z+
+         rehv/1NNzHWk16ADemA3iULtyoT7AcnCemeaM92tAXYuvgmAuO6o3Ef0deAQGwwwj+20
+         01ftPWUjRAQbp6YQR5OhFHFEZe/djjtnFHHovK7q/pAXjzk5uHKfyAEphoYb7PRombrQ
+         ocd+Wq/PFBA2nc9Ursq85PdLuOxAHQxOuRE3ek/Ky9OgJ/Z8aa8B8YEaZrw+RRPuuXQG
+         QF3w==
+X-Gm-Message-State: APjAAAWf0lh4MClAcCNd9+PFbZ8h8k2MHufQWf9lfUsprOSNnmxXqEQM
+        OAy3lbst9DmO2Y7PPw7l+mA=
+X-Google-Smtp-Source: APXvYqzapl51XY9ifplkQr/u2ykDrE0Hk/PIVVJwSSXLaMk8Ts/yv0GJXscMYBrU2W6tGh/O4PLOFQ==
+X-Received: by 2002:ac2:4d17:: with SMTP id r23mr4035546lfi.56.1572386781628;
+        Tue, 29 Oct 2019 15:06:21 -0700 (PDT)
 Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id 12sm51536lje.92.2019.10.29.15.06.22
+        by smtp.gmail.com with ESMTPSA id 12sm51536lje.92.2019.10.29.15.06.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Oct 2019 15:06:23 -0700 (PDT)
+        Tue, 29 Oct 2019 15:06:21 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -65,9 +65,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Peter Geis <pgwipeout@gmail.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v7 14/19] PM / devfreq: tegra30: Don't enable already enabled consecutive interrupts
-Date:   Wed, 30 Oct 2019 01:00:14 +0300
-Message-Id: <20191029220019.26773-15-digetx@gmail.com>
+Subject: [PATCH v7 12/19] PM / devfreq: tegra30: Include appropriate header
+Date:   Wed, 30 Oct 2019 01:00:12 +0300
+Message-Id: <20191029220019.26773-13-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191029220019.26773-1-digetx@gmail.com>
 References: <20191029220019.26773-1-digetx@gmail.com>
@@ -78,37 +78,29 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Consecutive up/down interrupt-bit is set in the interrupt status register
-only if that interrupt was previously enabled. Thus enabling the already
-enabled interrupt doesn't do much for us.
+It's not very correct to include mod_devicetable.h for the OF device
+drivers and of_device.h should be included instead.
 
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Peter Geis <pgwipeout@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/devfreq/tegra30-devfreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 9cbee82880ff..a9336cf4b37a 100644
+index f658b0b4a845..9da62f695859 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -261,8 +261,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
- 
- 		if (dev->boost_freq >= tegra->max_freq)
- 			dev->boost_freq = tegra->max_freq;
--		else
--			dev_ctrl |= ACTMON_DEV_CTRL_CONSECUTIVE_ABOVE_WMARK_EN;
- 	} else if (intr_status & ACTMON_DEV_INTR_CONSECUTIVE_LOWER) {
- 		/*
- 		 * new_boost = old_boost * down_coef
-@@ -275,8 +273,6 @@ static void actmon_isr_device(struct tegra_devfreq *tegra,
- 
- 		if (dev->boost_freq < (ACTMON_BOOST_FREQ_STEP >> 1))
- 			dev->boost_freq = 0;
--		else
--			dev_ctrl |= ACTMON_DEV_CTRL_CONSECUTIVE_BELOW_WMARK_EN;
- 	}
- 
- 	if (dev->config->avg_dependency_threshold) {
+@@ -13,7 +13,7 @@
+ #include <linux/io.h>
+ #include <linux/irq.h>
+ #include <linux/module.h>
+-#include <linux/mod_devicetable.h>
++#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
+ #include <linux/reset.h>
 -- 
 2.23.0
 
