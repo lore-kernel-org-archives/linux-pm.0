@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D89E0C47E49
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:44:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0891FCA9EC6
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:44:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A6A252173E
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:44:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D4D4B208E3
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:44:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Fkoxqmi5"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kBwGCSdc"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390391AbfJ2Qow (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Oct 2019 12:44:52 -0400
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:45430 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390619AbfJ2Qov (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 12:44:51 -0400
-Received: by mail-lj1-f193.google.com with SMTP id q64so15989068ljb.12
-        for <linux-pm@vger.kernel.org>; Tue, 29 Oct 2019 09:44:47 -0700 (PDT)
+        id S2390622AbfJ2Qox (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Oct 2019 12:44:53 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:34855 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2390631AbfJ2Qow (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 12:44:52 -0400
+Received: by mail-lj1-f196.google.com with SMTP id m7so16040561lji.2
+        for <linux-pm@vger.kernel.org>; Tue, 29 Oct 2019 09:44:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=vx1yeiYtbxdfUZEGLcn/GapdFgHrvVzZj2LYjH6Qipc=;
-        b=Fkoxqmi5obbN5D8KiED0GDf2VMvl+yGRap5u5DvS5arveZdlAQDAPXHdayL1+WTok+
-         LGYVQ5ILzMpoernOY5Qd/dwjKhlBMWBdUZc2ODopoU7NPU7oxthRe3fTPkiS4Ft+Lc7m
-         aE4wxkchBGDMleSnkmLrCtgti0b75RN6qyqJOq0+czV+kJi5lyJxPrAmjBF5DWFjVrT1
-         2azq3w9IMJTYkkt6CIu771rCLj+N2TpEQmLMav3yvsenOsefdWc3jpS/3tf/6xDPR5Le
-         84RHvn18prIrS2TSR/gWIuDE5MWjam+6gHZMAsfRCEvpfq3NJ6nDTU9pWFbdLBFKmqR1
-         nP9Q==
+        bh=gHfhTk/O49Ag6+ZgN50VNvSjMx4ttcjd8NQhNmRdxaI=;
+        b=kBwGCSdcHXtMe3sAoLYr0VqgSQvqQMH7Be08x+ORAc/oHNG4om3G2+2RVU3MwRtSev
+         JgE3Bws5r9oxtaoqgcdO5trbHkW8Wq9DQd6/OsJ86y36wblEkknTE6yi1NljQ/R8pWrh
+         4gwuaySu0L2rh2+UdpZN9NJw0+W9Gqzzp8KR6nGBzAo1gDbowaKp59MYDdocACXuDQt1
+         Hjq15y6tPjVCfpN9npjBKhR/1w1FAc2HuSGjSpUuSWyaN20PVbSGbOFEF85Lqc9rxX+g
+         +Yh8+ptPJbGSyiMSYALJ3qf514fbpfyoSjfRgVrjSmbFBII+rr5ZHxujfbiicWoB7ZM6
+         fsRg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=vx1yeiYtbxdfUZEGLcn/GapdFgHrvVzZj2LYjH6Qipc=;
-        b=sSE/4aqabHg3QHvwXmpro1xdjfSkjmsZo53IxaL4cSqMYCzzHo9odyj4aDTdnSHE1t
-         DQszUzAldFr1t6wAfe1pkw9+FXqbKy9tSR4UxP7Mr7gNtVATdoHsDXi/CY5YJkmtKPVB
-         CcDEEIIeJHwmVLl//zw/szY9yibJwZR9rT4tovv7Fqz2OXFYzscOObRgw/nL3loXHUXK
-         UNkG3VUoMBoL6J5luwB4jj9yzxyzUySj1vVNorIYBfHtv+gRs7QmFl53B5tyXVjtslhZ
-         8mEvFJwLiuV4E10jZtlZ//ouaXX2PlXOF+pKygivtS4fihH9UqJ56OUC8sMh+ngKfYze
-         wsoQ==
-X-Gm-Message-State: APjAAAUBB1y7O0Fdfb0PTEZuaVg9Tj1FQ4gY+NFODBq3cdFwAL1j0gO+
-        iRQcoMT/+QRZrYGe+9oqQ8xoRA==
-X-Google-Smtp-Source: APXvYqzNAJhOXSwzgS3m1Z95FU4/bc2E3nX7fJG9+SlaGXQA0RhR9Fs7yJqz8IEOfLNRvwR9bzPwxw==
-X-Received: by 2002:a2e:b607:: with SMTP id r7mr3349557ljn.47.1572367487022;
-        Tue, 29 Oct 2019 09:44:47 -0700 (PDT)
+        bh=gHfhTk/O49Ag6+ZgN50VNvSjMx4ttcjd8NQhNmRdxaI=;
+        b=VUCx8RNokf+URRSn+tbzL4+8uOT7rKFbezC2RPtfF8l1Zbj6ckW///6H+tLuqs4dKF
+         o46ACk2HsQ0Oh+e6ySm4/ce/J+3iFyKIS+lH/qC1PCqjWMUOjhLNwxH840J9SkD+KqeO
+         DhHOZy/G9zEP3gkab4NgHEIAm448p1e0ePrpObgrLWhOsCuPbje85P7FYm47EmiTbzML
+         g/y12GowT0T1bYCgOT4MlfWdj+YNgkNdnt6fjN1wVRGOLglH2mmGihKE+Fr8+PWnpU1J
+         nkhPA+it9/JcxcAbjwEnFxdYcJDzSbVSvH+JcUjgY7Hr9e6AGVzlXz4iTeYeVVYsE7I8
+         gQhw==
+X-Gm-Message-State: APjAAAWmVd0qMUs/rZz2h82hx4Z86LweJRCE+n1p6MlJCSPLwbRUdmnW
+        XwEherfAxeefxLL3ZaRdWenqNw==
+X-Google-Smtp-Source: APXvYqz3ttjp033w7q9pFbNW+CdyFiZXvfTHTwHhsj8i7aBiEIBj+pAt4q6efIJOsShT2yI5wSVanA==
+X-Received: by 2002:a2e:350f:: with SMTP id z15mr3476941ljz.185.1572367490178;
+        Tue, 29 Oct 2019 09:44:50 -0700 (PDT)
 Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id f28sm2048161lfh.35.2019.10.29.09.44.45
+        by smtp.gmail.com with ESMTPSA id f28sm2048161lfh.35.2019.10.29.09.44.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Oct 2019 09:44:46 -0700 (PDT)
+        Tue, 29 Oct 2019 09:44:49 -0700 (PDT)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -69,9 +69,9 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
         linux-arm-kernel@lists.infradead.org,
         linux-arm-msm@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v2 02/13] dt: psci: Update DT bindings to support hierarchical PSCI states
-Date:   Tue, 29 Oct 2019 17:44:27 +0100
-Message-Id: <20191029164438.17012-3-ulf.hansson@linaro.org>
+Subject: [PATCH v2 04/13] of: base: Add of_get_cpu_state_node() to get idle states for a CPU node
+Date:   Tue, 29 Oct 2019 17:44:29 +0100
+Message-Id: <20191029164438.17012-5-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191029164438.17012-1-ulf.hansson@linaro.org>
 References: <20191029164438.17012-1-ulf.hansson@linaro.org>
@@ -80,178 +80,111 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Update PSCI DT bindings to allow to represent idle states for CPUs and the
-CPU topology, by using a hierarchical layout. Primarily this is done by
-re-using the existing DT bindings for PM domains [1] and for PM domain idle
-states [2].
+The CPU's idle state nodes are currently parsed at the common cpuidle DT
+library, but also when initializing data for specific CPU idle operations,
+as in the PSCI cpuidle driver case and qcom-spm cpuidle case.
 
-Let's also add an example into the document for the PSCI DT bindings, to
-clearly show the new hierarchical based layout. The currently supported
-flattened layout, is already described in the ARM idle states bindings [3],
-so let's leave that as is.
+To avoid open-coding, let's introduce of_get_cpu_state_node(), which takes
+the device node for the CPU and the index to the requested idle state node,
+as in-parameters. In case a corresponding idle state node is found, it
+returns the node with the refcount incremented for it, else it returns
+NULL.
 
-[1] Documentation/devicetree/bindings/power/power_domain.txt
-[2] Documentation/devicetree/bindings/power/domain-idle-state.txt
-[3] Documentation/devicetree/bindings/arm/idle-states.txt
+Moreover, for PSCI there are two options to describe the CPU's idle states
+[1], either via a flattened description or a hierarchical layout. Hence,
+let's take both options into account.
 
+[1] Documentation/devicetree/bindings/arm/psci.yaml
+
+Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
 Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
 
 Changes in v2:
-	- Clarifications and also added updates cpus.yaml, to descrive that CPUs
-	may be attached to PM domains.
-
+	- Added tags.
 ---
- .../devicetree/bindings/arm/cpus.yaml         |  15 +++
- .../devicetree/bindings/arm/psci.yaml         | 102 ++++++++++++++++++
- 2 files changed, 117 insertions(+)
+ drivers/of/base.c  | 36 ++++++++++++++++++++++++++++++++++++
+ include/linux/of.h |  8 ++++++++
+ 2 files changed, 44 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/cpus.yaml b/Documentation/devicetree/bindings/arm/cpus.yaml
-index cb30895e3b67..92a775d6fc0e 100644
---- a/Documentation/devicetree/bindings/arm/cpus.yaml
-+++ b/Documentation/devicetree/bindings/arm/cpus.yaml
-@@ -241,6 +241,21 @@ properties:
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 1d667eb730e1..0e4cdf0f3864 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -477,6 +477,42 @@ int of_cpu_node_to_id(struct device_node *cpu_node)
+ }
+ EXPORT_SYMBOL(of_cpu_node_to_id);
  
-       where voltage is in V, frequency is in MHz.
++/**
++ * of_get_cpu_state_node - Get CPU's idle state node at the given index
++ *
++ * @cpu_node: The device node for the CPU
++ * @index: The index in the list of the idle states
++ *
++ * Two generic methods can be used to describe a CPU's idle states, either via
++ * a flattened description through the "cpu-idle-states" binding or via the
++ * hierarchical layout, using the "power-domains" and the "domain-idle-states"
++ * bindings. This function check for both and returns the idle state node for
++ * the requested index.
++ *
++ * In case an idle state node is found at @index, the refcount is incremented
++ * for it, so call of_node_put() on it when done. Returns NULL if not found.
++ */
++struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
++					  int index)
++{
++	struct of_phandle_args args;
++	int err;
++
++	err = of_parse_phandle_with_args(cpu_node, "power-domains",
++					"#power-domain-cells", 0, &args);
++	if (!err) {
++		struct device_node *state_node =
++			of_parse_phandle(args.np, "domain-idle-states", index);
++
++		of_node_put(args.np);
++		if (state_node)
++			return state_node;
++	}
++
++	return of_parse_phandle(cpu_node, "cpu-idle-states", index);
++}
++EXPORT_SYMBOL(of_get_cpu_state_node);
++
+ /**
+  * __of_device_is_compatible() - Check if the node matches given constraints
+  * @device: pointer to node
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 844f89e1b039..c669c0a4732f 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -351,6 +351,8 @@ extern const void *of_get_property(const struct device_node *node,
+ 				int *lenp);
+ extern struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
+ extern struct device_node *of_get_next_cpu_node(struct device_node *prev);
++extern struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
++						 int index);
  
-+  power-domains:
-+    $ref: '/schemas/types.yaml#/definitions/phandle-array'
-+    description:
-+      List of phandles and PM domain specifiers, as defined by bindings of the
-+      PM domain provider (see also ../power_domain.txt).
-+
-+  power-domain-names:
-+    $ref: '/schemas/types.yaml#/definitions/string-array'
-+    description:
-+      A list of power domain name strings sorted in the same order as the
-+      power-domains property.
-+
-+      For PSCI based platforms, the name corresponding to the index of the PSCI
-+      PM domain provider, must be "psci".
-+
-   qcom,saw:
-     $ref: '/schemas/types.yaml#/definitions/phandle'
-     description: |
-diff --git a/Documentation/devicetree/bindings/arm/psci.yaml b/Documentation/devicetree/bindings/arm/psci.yaml
-index 7abdf58b335e..9fed255cc92d 100644
---- a/Documentation/devicetree/bindings/arm/psci.yaml
-+++ b/Documentation/devicetree/bindings/arm/psci.yaml
-@@ -102,6 +102,34 @@ properties:
-       [1] Kernel documentation - ARM idle states bindings
-         Documentation/devicetree/bindings/arm/idle-states.txt
+ #define for_each_property_of_node(dn, pp) \
+ 	for (pp = dn->properties; pp != NULL; pp = pp->next)
+@@ -765,6 +767,12 @@ static inline struct device_node *of_get_next_cpu_node(struct device_node *prev)
+ 	return NULL;
+ }
  
-+  "#power-domain-cells":
-+    description:
-+      The number of cells in a PM domain specifier as per binding in [3].
-+      Must be 0 as to represent a single PM domain.
++static inline struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
++					int index)
++{
++	return NULL;
++}
 +
-+      ARM systems can have multiple cores, sometimes in an hierarchical
-+      arrangement. This often, but not always, maps directly to the processor
-+      power topology of the system. Individual nodes in a topology have their
-+      own specific power states and can be better represented hierarchically.
-+
-+      For these cases, the definitions of the idle states for the CPUs and the
-+      CPU topology, must conform to the binding in [3]. The idle states
-+      themselves must conform to the binding in [4] and must specify the
-+      arm,psci-suspend-param property.
-+
-+      It should also be noted that, in PSCI firmware v1.0 the OS-Initiated
-+      (OSI) CPU suspend mode is introduced. Using a hierarchical representation
-+      helps to implement support for OSI mode and OS implementations may choose
-+      to mandate it.
-+
-+      [3] Documentation/devicetree/bindings/power/power_domain.txt
-+      [4] Documentation/devicetree/bindings/power/domain-idle-state.txt
-+
-+  power-domains:
-+    $ref: '/schemas/types.yaml#/definitions/phandle-array'
-+    description:
-+      List of phandles and PM domain specifiers, as defined by bindings of the
-+      PM domain provider.
- 
- required:
-   - compatible
-@@ -160,4 +188,78 @@ examples:
-       cpu_on = <0x95c10002>;
-       cpu_off = <0x95c10001>;
-     };
-+
-+  - |+
-+
-+    // Case 4: CPUs and CPU idle states described using the hierarchical model.
-+
-+    cpus {
-+
-+      CPU0: cpu@0 {
-+        device_type = "cpu";
-+        compatible = "arm,cortex-a53", "arm,armv8";
-+        reg = <0x0>;
-+        enable-method = "psci";
-+        power-domains = <&CPU_PD0>;
-+        power-domain-names = "psci";
-+      };
-+
-+      CPU1: cpu@1 {
-+        device_type = "cpu";
-+        compatible = "arm,cortex-a57", "arm,armv8";
-+        reg = <0x100>;
-+        enable-method = "psci";
-+        power-domains = <&CPU_PD1>;
-+        power-domain-names = "psci";
-+      };
-+
-+      idle-states {
-+
-+        CPU_PWRDN: cpu-power-down {
-+          compatible = "arm,idle-state";
-+          arm,psci-suspend-param = <0x0000001>;
-+          entry-latency-us = <10>;
-+          exit-latency-us = <10>;
-+          min-residency-us = <100>;
-+        };
-+
-+        CLUSTER_RET: cluster-retention {
-+          compatible = "domain-idle-state";
-+          arm,psci-suspend-param = <0x1000011>;
-+          entry-latency-us = <500>;
-+          exit-latency-us = <500>;
-+          min-residency-us = <2000>;
-+        };
-+
-+        CLUSTER_PWRDN: cluster-power-down {
-+          compatible = "domain-idle-state";
-+          arm,psci-suspend-param = <0x1000031>;
-+          entry-latency-us = <2000>;
-+          exit-latency-us = <2000>;
-+          min-residency-us = <6000>;
-+        };
-+      };
-+    };
-+
-+    psci {
-+      compatible = "arm,psci-1.0";
-+      method = "smc";
-+
-+      CPU_PD0: cpu-pd0 {
-+        #power-domain-cells = <0>;
-+        domain-idle-states = <&CPU_PWRDN>;
-+        power-domains = <&CLUSTER_PD>;
-+      };
-+
-+      CPU_PD1: cpu-pd1 {
-+        #power-domain-cells = <0>;
-+        domain-idle-states =  <&CPU_PWRDN>;
-+        power-domains = <&CLUSTER_PD>;
-+      };
-+
-+      CLUSTER_PD: cluster-pd {
-+        #power-domain-cells = <0>;
-+        domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWRDN>;
-+      };
-+    };
- ...
+ static inline int of_n_addr_cells(struct device_node *np)
+ {
+ 	return 0;
 -- 
 2.17.1
 
