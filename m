@@ -2,241 +2,112 @@ Return-Path: <SRS0=NOrW=YW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76FC1CA9EC6
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:46:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDF0FCA9EAE
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:50:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4AA2221479
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:46:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9EADF20830
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Oct 2019 16:50:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="t6qvVNmC"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="iR7KWdeG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390708AbfJ2QqU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Oct 2019 12:46:20 -0400
-Received: from mx07-00178001.pphosted.com ([62.209.51.94]:26982 "EHLO
-        mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727279AbfJ2QqI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 12:46:08 -0400
-Received: from pps.filterd (m0046668.ppops.net [127.0.0.1])
-        by mx07-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id x9TGhXa2026559;
-        Tue, 29 Oct 2019 17:45:45 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=st.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-type; s=STMicroelectronics;
- bh=cUNYleQOTDVYQ2kHeqm4eAjJNxaCQ04tYu9otVBG33M=;
- b=t6qvVNmCbyVwbLydDiLqxFcdzWvqEScCxt31fTLVerLjU2PZEIXSJ777akiQQUE3CFlZ
- y1ghwEYLI13DZdNHTJruAgW+c1HMPF5mHHfDj5DwWUU3B9+p84kKt0vnkUOe+w+t5O8I
- pxfKRICCTiHPn1oScsABlEPgqG+Vg5gtGAotX36LXFTO2+BC94DjBTETTmJoCxjdi2EE
- KlH2HCmuJ682lRZBresYUbjbmxxPGEFjKTeRGXcvxAZ/zbhwim5N9L5i3ajNcVrBIRMb
- 28V7aAS7Ao5I0CEuvQo9uQor95snjbYv2C02L1NwcG/dvAOkr0KGLRv5Ra6QWhJfN/43 jA== 
-Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
-        by mx07-00178001.pphosted.com with ESMTP id 2vvbm0gwdb-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 29 Oct 2019 17:45:45 +0100
-Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
-        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id BFD34100034;
-        Tue, 29 Oct 2019 17:45:44 +0100 (CET)
-Received: from Webmail-eu.st.com (sfhdag6node2.st.com [10.75.127.17])
-        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id AE8C62A748A;
-        Tue, 29 Oct 2019 17:45:44 +0100 (CET)
-Received: from localhost (10.75.127.49) by SFHDAG6NODE2.st.com (10.75.127.17)
- with Microsoft SMTP Server (TLS) id 15.0.1347.2; Tue, 29 Oct 2019 17:45:44
- +0100
-From:   Pascal Paillet <p.paillet@st.com>
-To:     <mcoquelin.stm32@gmail.com>, <alexandre.torgue@st.com>,
-        <robh+dt@kernel.org>, <mark.rutland@arm.com>,
-        <rui.zhang@intel.com>, <edubezval@gmail.com>,
-        <daniel.lezcano@linaro.org>, <amit.kucheria@verdurent.com>,
-        <david.hernandezsanchez@st.com>,
-        <wsa+renesas@sang-engineering.com>,
-        <linux-stm32@st-md-mailman.stormreply.com>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>
-CC:     <p.paillet@st.com>
-Subject: [PATCH 2/4] thermal: stm32: fix IRQ flood on low threshold
-Date:   Tue, 29 Oct 2019 17:45:35 +0100
-Message-ID: <20191029164537.1561-3-p.paillet@st.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191029164537.1561-1-p.paillet@st.com>
-References: <20191029164537.1561-1-p.paillet@st.com>
+        id S1727763AbfJ2QuU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Oct 2019 12:50:20 -0400
+Received: from bombadil.infradead.org ([198.137.202.133]:35180 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727279AbfJ2QuT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Oct 2019 12:50:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+        :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+         bh=fIL1Adi28JKakaN1g7A5cYvjz9S3B/LlVrClKBzVNUg=; b=iR7KWdeGJ6IKWizwsGIN/qDyH
+        Iq2kpS0o/8rrl2nt3rTN/6xKl4OxrDkSkRONXz7hN0Q5XuRL7bPWhk5Ec3m6vtBjK2MyUctCR7aC8
+        fy7uhV1Xb+TmfITt4SsPvh3020vahab8yY7Rb4d1Lx2PfPctOLd5ZftqcN5zNXu7dPhh7/ZoYtPvq
+        x4pSxhTwC5zi7fDBsH3xpiFm04YIcmY4Si8+N/dAR7yYCqDlXmWwobDpJLNyi6DrmYejBpHNXBSh6
+        ufrdVRopDyOJ+gaFv2PbzLBCi2zcR3C6V85u0ZdcEUKweJVel8uQjHFgujopMFFw5ctVRdwoPfwBK
+        b2Vht7r6g==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1iPUgx-0008Vu-Dk; Tue, 29 Oct 2019 16:49:59 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3BA86300E4D;
+        Tue, 29 Oct 2019 17:48:54 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id C957C20D7FEFA; Tue, 29 Oct 2019 17:49:55 +0100 (CET)
+Date:   Tue, 29 Oct 2019 17:49:55 +0100
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Vincent Guittot <vincent.guittot@linaro.org>
+Cc:     Doug Smythies <dsmythies@telus.net>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Sargun Dhillon <sargun@sargun.me>, Tejun Heo <tj@kernel.org>,
+        Xie XiuQi <xiexiuqi@huawei.com>, xiezhipeng1@huawei.com,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Rik van Riel <riel@surriel.com>
+Subject: Re: [PATCH] Revert "sched/fair: Fix O(nr_cgroups) in the load
+ balancing path"
+Message-ID: <20191029164955.GO4131@hirez.programming.kicks-ass.net>
+References: <1572018904-5234-1-git-send-email-dsmythies@telus.net>
+ <CAKfTPtDFAS3TiNaaPoEXFZbqdMt_-tfGm9ffVcQAN=Mu_KbRdQ@mail.gmail.com>
+ <000c01d58bca$f5709b30$e051d190$@net>
+ <CAKfTPtDx6nu7YtYN=JLRAseZS3Q6Nt-QdMQuG_XoUtmtR_101A@mail.gmail.com>
+ <001201d58e68$eaa39630$bfeac290$@net>
+ <20191029153615.GP4114@hirez.programming.kicks-ass.net>
+ <CAKfTPtD79VE+gqffpBAGd39bJKe7ao+jbmVSQ7PtS=dky0Wx6g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.75.127.49]
-X-ClientProxiedBy: SFHDAG2NODE1.st.com (10.75.127.4) To SFHDAG6NODE2.st.com
- (10.75.127.17)
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,1.0.8
- definitions=2019-10-29_05:2019-10-28,2019-10-29 signatures=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtD79VE+gqffpBAGd39bJKe7ao+jbmVSQ7PtS=dky0Wx6g@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix IRQ flood on low threshold by too ways:
-- improve temperature reading resolution,
-- add an hysteresis to the low threshold: on low threshold interrupt,
-it is not possible to get the temperature value that has fired the
-interrupt. The time to acquire a new value is enough for the CPU to
-become hotter than the current low threshold.
+On Tue, Oct 29, 2019 at 05:20:56PM +0100, Vincent Guittot wrote:
+> On Tue, 29 Oct 2019 at 16:36, Peter Zijlstra <peterz@infradead.org> wrote:
+> >
+> > On Tue, Oct 29, 2019 at 07:55:26AM -0700, Doug Smythies wrote:
+> >
+> > > I only know that the call to the intel_pstate driver doesn't
+> > > happen, and that it is because cfs_rq_is_decayed returns TRUE.
+> > > So, I am asserting that the request is not actually decayed, and
+> > > should not have been deleted.
+> >
+> > So what cfs_rq_is_decayed() does is allow a cgroup's cfs_rq to be
+> > removed from the list.
+> >
+> > Once it is removed, that cfs_rq will no longer be checked in the
+> > update_blocked_averages() loop. Which means done has less chance of
+> > getting false. Which in turn means that it's more likely
+> > rq->has_blocked_load becomes 0.
+> >
+> > Which all sounds good.
+> >
+> > Can you please trace what keeps the CPU awake?
+> 
+> I think that the sequence below is what intel pstate driver was using
+> 
+> rt/dl task wakes up and run for some times
+> rt/dl pelt signal is no more null so periodic decay happens.
+> 
+> before optimization update_cfs_rq_load_avg() for root cfs_rq was
+> called even if pelt was null,
+> which calls cfs_rq_util_change,  which calls intel pstate
+> 
+> after optimization its no more called.
 
-Signed-off-by: Pascal Paillet <p.paillet@st.com>
-Change-Id: I3b63b8aab38fd651a165c4e69a2d090b3c6f5db3
----
- drivers/thermal/st/stm_thermal.c | 73 +++++++++-----------------------
- 1 file changed, 19 insertions(+), 54 deletions(-)
-
-diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-index 0aae1cc14235..4bc1bbece0de 100644
---- a/drivers/thermal/st/stm_thermal.c
-+++ b/drivers/thermal/st/stm_thermal.c
-@@ -59,7 +59,6 @@
- 
- /* Less significant bit position definitions */
- #define TS1_T0_POS		16
--#define TS1_SMP_TIME_POS	16
- #define TS1_HITTHD_POS		16
- #define TS1_LITTHD_POS		0
- #define HSREF_CLK_DIV_POS	24
-@@ -83,15 +82,10 @@
- #define ONE_MHZ			1000000
- #define POLL_TIMEOUT		5000
- #define STARTUP_TIME		40
--#define TS1_T0_VAL0		30
--#define TS1_T0_VAL1		130
-+#define TS1_T0_VAL0		30000  /* 30 celsius */
-+#define TS1_T0_VAL1		130000 /* 130 celsius */
- #define NO_HW_TRIG		0
--
--/* The Thermal Framework expects millidegrees */
--#define mcelsius(temp)		((temp) * 1000)
--
--/* The Sensor expects oC degrees */
--#define celsius(temp)		((temp) / 1000)
-+#define SAMPLING_TIME		15
- 
- struct stm_thermal_sensor {
- 	struct device *dev;
-@@ -222,12 +216,8 @@ static int stm_thermal_calibration(struct stm_thermal_sensor *sensor)
- 	if (!clk_freq)
- 		return -EINVAL;
- 
--	prescaler = 0;
--	clk_freq /= ONE_MHZ;
--	if (clk_freq) {
--		while (prescaler <= clk_freq)
--			prescaler++;
--	}
-+	/* calculate divider for maximum 1MHz PCLK */
-+	prescaler = clk_freq / ONE_MHZ + 1;
- 
- 	value = readl_relaxed(sensor->base + DTS_CFGR1_OFFSET);
- 
-@@ -235,7 +225,7 @@ static int stm_thermal_calibration(struct stm_thermal_sensor *sensor)
- 	value &= ~HSREF_CLK_DIV_MASK;
- 
- 	/* Set prescaler. pclk_freq/prescaler < 1MHz */
--	value |= (prescaler << HSREF_CLK_DIV_POS);
-+	value |= (prescaler << HSREF_CLK_DIV_POS) & HSREF_CLK_DIV_MASK;
- 
- 	/* Select PCLK as reference clock */
- 	value &= ~REFCLK_SEL;
-@@ -289,28 +279,16 @@ static int stm_thermal_calculate_threshold(struct stm_thermal_sensor *sensor,
- 					   int temp, u32 *th)
- {
- 	int freqM;
--	u32 sampling_time;
--
--	/* Retrieve the number of periods to sample */
--	sampling_time = (readl_relaxed(sensor->base + DTS_CFGR1_OFFSET) &
--			TS1_SMP_TIME_MASK) >> TS1_SMP_TIME_POS;
- 
- 	/* Figure out the CLK_PTAT frequency for a given temperature */
--	freqM = ((temp - sensor->t0) * sensor->ramp_coeff)
--		 + sensor->fmt0;
--
--	dev_dbg(sensor->dev, "%s: freqM for threshold = %d Hz",
--		__func__, freqM);
-+	freqM = ((temp - sensor->t0) * sensor->ramp_coeff) / 1000 +
-+		sensor->fmt0;
- 
- 	/* Figure out the threshold sample number */
--	*th = clk_get_rate(sensor->clk);
-+	*th = clk_get_rate(sensor->clk) * SAMPLING_TIME / freqM;
- 	if (!*th)
- 		return -EINVAL;
- 
--	*th = *th / freqM;
--
--	*th *= sampling_time;
--
- 	dev_dbg(sensor->dev, "freqM=%d Hz, threshold=0x%x", freqM, *th);
- 
- 	return 0;
-@@ -320,42 +298,28 @@ static int stm_thermal_calculate_threshold(struct stm_thermal_sensor *sensor,
- static int stm_thermal_get_temp(void *data, int *temp)
- {
- 	struct stm_thermal_sensor *sensor = data;
--	u32 sampling_time;
-+	u32 periods;
- 	int freqM, ret;
- 
- 	if (sensor->mode != THERMAL_DEVICE_ENABLED)
- 		return -EAGAIN;
- 
--	/* Retrieve the number of samples */
--	ret = readl_poll_timeout(sensor->base + DTS_DR_OFFSET, freqM,
--				 (freqM & TS1_MFREQ_MASK), STARTUP_TIME,
--				 POLL_TIMEOUT);
--
-+	/* Retrieve the number of periods sampled */
-+	ret = readl_relaxed_poll_timeout(sensor->base + DTS_DR_OFFSET, periods,
-+					 (periods & TS1_MFREQ_MASK),
-+					 STARTUP_TIME, POLL_TIMEOUT);
- 	if (ret)
- 		return ret;
- 
--	if (!freqM)
--		return -ENODATA;
--
--	/* Retrieve the number of periods sampled */
--	sampling_time = (readl_relaxed(sensor->base + DTS_CFGR1_OFFSET) &
--			TS1_SMP_TIME_MASK) >> TS1_SMP_TIME_POS;
--
--	/* Figure out the number of samples per period */
--	freqM /= sampling_time;
--
- 	/* Figure out the CLK_PTAT frequency */
--	freqM = clk_get_rate(sensor->clk) / freqM;
-+	freqM = (clk_get_rate(sensor->clk) * SAMPLING_TIME) / periods;
- 	if (!freqM)
- 		return -EINVAL;
- 
--	dev_dbg(sensor->dev, "%s: freqM=%d\n", __func__, freqM);
--
- 	/* Figure out the temperature in mili celsius */
--	*temp = mcelsius(sensor->t0 + ((freqM - sensor->fmt0) /
--			 sensor->ramp_coeff));
-+	*temp = (freqM - sensor->fmt0) * 1000 / sensor->ramp_coeff + sensor->t0;
- 
--	dev_dbg(sensor->dev, "temperature = %d millicelsius", *temp);
-+	dev_dbg(sensor->dev, "periods=0x%x t=%d mC", periods, *temp);
- 
- 	return 0;
- }
-@@ -379,7 +343,8 @@ static int stm_thermal_set_trips(void *data, int low, int high)
- 
- 	if (low > -INT_MAX) {
- 		sensor->low_en = 1;
--		ret = stm_thermal_calculate_threshold(sensor, low, &th);
-+		/* add 0.5 of hysteresis due to measurement error */
-+		ret = stm_thermal_calculate_threshold(sensor, low - 500, &th);
- 		if (ret)
- 			return ret;
- 
--- 
-2.17.1
-
+Not calling cfs_rq_util_change() when it doesn't change, seems like the
+right thing. Why would intel_pstate want it called when it doesn't
+change?
