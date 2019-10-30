@@ -2,156 +2,142 @@ Return-Path: <SRS0=w0+C=YX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-7.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FAKE_REPLY_C,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24857CA9EC7
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 21:36:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A196CA9EC7
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 22:14:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EAD8F20873
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 21:36:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="K+JGjMrp"
+	by mail.kernel.org (Postfix) with ESMTP id D2E122087F
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 22:14:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1572473684;
+	bh=jZI/FXKfbqv9Ga9+lgH+eslmJ6dwwmvbb60jHX9+xF0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:List-ID:From;
+	b=EqZ5Zsl4HmEdA3mbLmULc+N99vPc9dO9+Dfg4c/2qXtSAw+SniTitecKOci/MC1Yt
+	 R1D8qU2wx3NZx9gbSN5RLXb/3vKH2Vt9JkJKpXaqd8nUcek1H0BVkfws5DH1cDGR1G
+	 ETlQUiwmld63c6tTuuYEd7if+k+0oxWjwAG/TSnc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727252AbfJ3Vf3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Oct 2019 17:35:29 -0400
-Received: from mail-lf1-f67.google.com ([209.85.167.67]:45945 "EHLO
-        mail-lf1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727241AbfJ3Vf2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2019 17:35:28 -0400
-Received: by mail-lf1-f67.google.com with SMTP id v8so2745746lfa.12;
-        Wed, 30 Oct 2019 14:35:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Y0gNszD0ptBgrgfqARNo4dCfpARXgUJI1xW2pH1mNqQ=;
-        b=K+JGjMrpWis7LiqdTjrEDc0Vb4vkrIiJgpGzq8V5anTW1SLs0nOIZjQ3YiS4tFagQK
-         ZCim6N7Ja6vb12irMLpYvntQgob7oxH5jqyn5ApvTfymoP/pBmpCBWk+tGUlq+ibe3UE
-         Li17jzu4JYWaHyNoKxKB7BKnzLrO6405nNSySFiFdKrgtt460RiytltlawXyEMp1zImP
-         oFHjT/MgRAlHTLAeFNN3utd2ZFoIzO2N1FMnwg4M65zM3Qq9EA5+jq3wb3eRYxsC5fbn
-         IGeVyo2IEWBXFl9N/gCIDBJvx79LqQEigQxEftaMRtLFJDOEiPIf88LuPS2NTOXLwD+t
-         3G8g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Y0gNszD0ptBgrgfqARNo4dCfpARXgUJI1xW2pH1mNqQ=;
-        b=Tf49f7CfnhachPDmRXyz+VqEQWXSqwOdsUINWp2avUWIYJeBF8RZX6S9DIyuANunHX
-         Wnw5WHfQ2tK1Q9LcMvqVRfs2oGYRdfCwq87IR3lvARgInaOp+/G558lBiWxttE+OL/Za
-         RTTCCLWPZKLLqmPBDR7Sc+Igg6oGsMwg96KtBAC/LmPpTti1BPg4ae1ZkesRVo3O1KS9
-         TEI5ln+Cc/Z+ksRv4Atp3SPFykh4+BeYV4/vPGtmH4xaX4XGccMu0yj2zURTE1OMshln
-         17qTbtjVWPIPp7bjwi0uGTVubwpnu7Ncgo08lBZAjzi3HHUyORkr/bxfkiV6GwcAaNMn
-         /H/g==
-X-Gm-Message-State: APjAAAVfv/4V6UesHMSsS0a1rpvGw5xODRqTl5p35SpvN820mdK+HdTH
-        x28FSNeoJ1ywg3JeiRtmJ7M=
-X-Google-Smtp-Source: APXvYqwVLX27k1uSJPoQEJ8Tj9MGUe4CF2sJMA6bvZGQkGnOTDBhEMEHYJmOmqcP5bpWKXn+APqsfg==
-X-Received: by 2002:ac2:5deb:: with SMTP id z11mr252892lfq.35.1572471325864;
-        Wed, 30 Oct 2019 14:35:25 -0700 (PDT)
-Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id c24sm553812lfm.20.2019.10.30.14.35.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Oct 2019 14:35:25 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Prashant Gaikwad <pgaikwad@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Marcel Ziswiler <marcel.ziswiler@toradex.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 02/10] clk: tegra: pll: Add pre/post rate-change hooks
-Date:   Thu, 31 Oct 2019 00:33:52 +0300
-Message-Id: <20191030213400.29434-3-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191030213400.29434-1-digetx@gmail.com>
-References: <20191030213400.29434-1-digetx@gmail.com>
+        id S1726673AbfJ3WOl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Oct 2019 18:14:41 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38648 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726268AbfJ3WOk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 30 Oct 2019 18:14:40 -0400
+Received: from localhost (unknown [69.71.4.100])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 7F5822083E;
+        Wed, 30 Oct 2019 22:14:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1572473679;
+        bh=jZI/FXKfbqv9Ga9+lgH+eslmJ6dwwmvbb60jHX9+xF0=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=kUIVedaXNCpW7h6o6+TG8ZlyRVFBUfFWi5EMxFY0ByFPcZNjyKmUAO4lYJss7uy06
+         o40AOBGZ9ruMLMzUbuKp5XXiFOhs39cyESitVnc0VxiSmjRYGraANRBREo47HdtQIL
+         ah+bEH8XGGTVy7LPClfV5OUPIvpcL6HqUNiG+yx0=
+Date:   Wed, 30 Oct 2019 17:14:36 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Dilip Kota <eswara.kota@linux.intel.com>
+Cc:     Andrew Murray <andrew.murray@arm.com>, jingoohan1@gmail.com,
+        gustavo.pimentel@synopsys.com, lorenzo.pieralisi@arm.com,
+        robh@kernel.org, martin.blumenstingl@googlemail.com,
+        linux-pci@vger.kernel.org, hch@infradead.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        andriy.shevchenko@intel.com, cheol.yong.kim@intel.com,
+        chuanhua.lei@linux.intel.com, qi-ming.wu@intel.com,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
+        Rajat Jain <rajatja@google.com>,
+        Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Re: [PATCH v4 3/3] pci: intel: Add sysfs attributes to configure
+ pcie link
+Message-ID: <20191030221436.GA261632@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c1aadeea-7904-1455-5393-c4998fbd8037@linux.intel.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is a need to temporarily re-parent CCLK away from PLLX if PLLX's
-rate is about to change. The newly introduced PLL pre/post rate-change
-hooks allow to handle such case.
+[+cc Heiner, Rajat]
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/clk/tegra/clk-pll.c | 12 +++++++++++-
- drivers/clk/tegra/clk.h     |  6 ++++++
- 2 files changed, 17 insertions(+), 1 deletion(-)
+On Tue, Oct 29, 2019 at 05:31:18PM +0800, Dilip Kota wrote:
+> On 10/22/2019 8:59 PM, Bjorn Helgaas wrote:
+> > [+cc Rafael, linux-pm, beginning of discussion at
+> > https://lore.kernel.org/r/d8574605f8e70f41ce1e88ccfb56b63c8f85e4df.1571638827.git.eswara.kota@linux.intel.com]
+> > 
+> > On Tue, Oct 22, 2019 at 05:27:38PM +0800, Dilip Kota wrote:
+> > > On 10/22/2019 1:18 AM, Bjorn Helgaas wrote:
+> > > > On Mon, Oct 21, 2019 at 02:38:50PM +0100, Andrew Murray wrote:
+> > > > > On Mon, Oct 21, 2019 at 02:39:20PM +0800, Dilip Kota wrote:
+> > > > > > PCIe RC driver on Intel Gateway SoCs have a requirement
+> > > > > > of changing link width and speed on the fly.
+> > > > Please add more details about why this is needed.  Since you're adding
+> > > > sysfs files, it sounds like it's not actually the *driver* that needs
+> > > > this; it's something in userspace?
+> > > We have use cases to change the link speed and width on the fly.
+> > > One is EMI check and other is power saving.  Some battery backed
+> > > applications have to switch PCIe link from higher GEN to GEN1 and
+> > > width to x1. During the cases like external power supply got
+> > > disconnected or broken. Once external power supply is connected then
+> > > switch PCIe link to higher GEN and width.
+> > That sounds plausible, but of course nothing there is specific to the
+> > Intel Gateway, so we should implement this generically so it would
+> > work on all hardware.
+> Agree.
+> > 
+> > I'm not sure what the interface should look like -- should it be a
+> > low-level interface as you propose where userspace would have to
+> > identify each link of interest, or is there some system-wide
+> > power/performance knob that could tune all links?  Cc'd Rafael and
+> > linux-pm in case they have ideas.
+> 
+> To my knowledge sysfs is the appropriate way to go.
+> If there are any other best possible knobs, will be helpful.
 
-diff --git a/drivers/clk/tegra/clk-pll.c b/drivers/clk/tegra/clk-pll.c
-index 531c2b3d814e..0b212cf2e794 100644
---- a/drivers/clk/tegra/clk-pll.c
-+++ b/drivers/clk/tegra/clk-pll.c
-@@ -744,13 +744,19 @@ static int _program_pll(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
- 
- 	state = clk_pll_is_enabled(hw);
- 
-+	if (state && pll->params->pre_rate_change) {
-+		ret = pll->params->pre_rate_change();
-+		if (WARN_ON(ret))
-+			return ret;
-+	}
-+
- 	_get_pll_mnp(pll, &old_cfg);
- 
- 	if (state && pll->params->defaults_set && pll->params->dyn_ramp &&
- 			(cfg->m == old_cfg.m) && (cfg->p == old_cfg.p)) {
- 		ret = pll->params->dyn_ramp(pll, cfg);
- 		if (!ret)
--			return 0;
-+			goto done;
- 	}
- 
- 	if (state) {
-@@ -772,6 +778,10 @@ static int _program_pll(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
- 		pll_clk_start_ss(pll);
- 	}
- 
-+done:
-+	if (state && pll->params->post_rate_change)
-+		pll->params->post_rate_change();
-+
- 	return ret;
- }
- 
-diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-index ee35a847df08..fa18bef914af 100644
---- a/drivers/clk/tegra/clk.h
-+++ b/drivers/clk/tegra/clk.h
-@@ -266,6 +266,10 @@ struct tegra_clk_pll;
-  *				disabled.
-  * @dyn_ramp:			Callback which can be used to define a custom
-  *				dynamic ramp function for a given PLL.
-+ * @pre_rate_change:		Callback which is invoked just before changing
-+ *				PLL's rate.
-+ * @post_rate_change:		Callback which is invoked right after changing
-+ *				PLL's rate.
-  *
-  * Flags:
-  * TEGRA_PLL_USE_LOCK - This flag indicated to use lock bits for
-@@ -342,6 +346,8 @@ struct tegra_clk_pll_params {
- 	void	(*set_defaults)(struct tegra_clk_pll *pll);
- 	int	(*dyn_ramp)(struct tegra_clk_pll *pll,
- 			struct tegra_clk_pll_freq_table *cfg);
-+	int	(*pre_rate_change)(void);
-+	void	(*post_rate_change)(void);
- };
- 
- #define TEGRA_PLL_USE_LOCK BIT(0)
--- 
-2.23.0
+I agree sysfs is the right place for it; my question was whether we
+should have files like:
 
+  /sys/.../0000:00:1f.3/pcie_speed
+  /sys/.../0000:00:1f.3/pcie_width
+
+as I think this patch would add (BTW, please include sample paths like
+the above in the commit log), or whether there should be a more global
+thing that would affect all the links in the system.
+
+I think the low-level files like you propose would be better because
+one might want to tune link performance differently for different
+types of devices and workloads.
+
+We also have to decide if these files should be associated with the
+device at the upstream or downstream end of the link.  For ASPM, the
+current proposal [1] has the files at the downstream end on the theory
+that the GPU, NIC, NVMe device, etc is the user-recognizable one.
+Also, neither ASPM nor link speed/width make any sense unless there
+*is* a device at the downstream end, so putting them there
+automatically makes them visible only when they're useful.
+
+Rafael had some concerns about the proposed ASPM interface [2], but I
+don't know what they are yet.
+
+For ASPM we added a "link_pm" directory, and maybe that's too
+specific.  Maybe it should be a generic "link_mgt" or even "pcie"
+directory that could contain both the ASPM and width/speed files.
+
+There's also a change coming to put AER stats in something like this:
+
+  /sys/.../0000:00:1f.3/aer_stats/correctable_rx_err
+  /sys/.../0000:00:1f.3/aer_stats/correctable_timeout
+  /sys/.../0000:00:1f.3/aer_stats/fatal_TLP
+  ...
+
+It would certainly be good to have some organizational scheme or we'll
+end up with a real hodge-podge.
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git/commit/?h=pci/aspm&id=ad46fe1c733656611788e2cd59793e891ed7ded7
+[2] https://lore.kernel.org/r/CAJZ5v0jdxR4roEUC_Hs3puCzGY4ThdLsi_XcxfBUUxqruP4z7A@mail.gmail.com
