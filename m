@@ -6,53 +6,102 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5A05CA9EC5
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 14:05:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98611CA9EC5
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 14:13:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B1ADF20874
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 14:05:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7958720874
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 14:13:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726501AbfJ3OFQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Oct 2019 10:05:16 -0400
-Received: from verein.lst.de ([213.95.11.211]:45675 "EHLO verein.lst.de"
+        id S1726435AbfJ3OM7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Oct 2019 10:12:59 -0400
+Received: from verein.lst.de ([213.95.11.211]:45754 "EHLO verein.lst.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726284AbfJ3OFQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 30 Oct 2019 10:05:16 -0400
+        id S1726284AbfJ3OM7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 30 Oct 2019 10:12:59 -0400
 Received: by verein.lst.de (Postfix, from userid 2407)
-        id BC5D068C4E; Wed, 30 Oct 2019 15:05:11 +0100 (CET)
-Date:   Wed, 30 Oct 2019 15:05:11 +0100
+        id 35A1568B05; Wed, 30 Oct 2019 15:12:56 +0100 (CET)
+Date:   Wed, 30 Oct 2019 15:12:56 +0100
 From:   Christoph Hellwig <hch@lst.de>
-To:     Akinobu Mita <akinobu.mita@gmail.com>
-Cc:     Guenter Roeck <linux@roeck-us.net>,
-        Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@fb.com>,
+To:     Guenter Roeck <linux@roeck-us.net>
+Cc:     Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@fb.com>,
         Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        LKML <linux-kernel@vger.kernel.org>,
+        Sagi Grimberg <sagi@grimberg.me>, linux-kernel@vger.kernel.org,
         linux-nvme@lists.infradead.org,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Chris Healy <cphealy@gmail.com>
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        linux-pm@vger.kernel.org, Chris Healy <cphealy@gmail.com>
 Subject: Re: [PATCH v2] nvme: Add hardware monitoring support
-Message-ID: <20191030140511.GA14252@lst.de>
-References: <20191029223214.18889-1-linux@roeck-us.net> <CAC5umyhc=6yULiLwXu65VDvDk2cBiF0R9O39B-T5ftapJfj0rQ@mail.gmail.com>
+Message-ID: <20191030141256.GB14252@lst.de>
+References: <20191029223214.18889-1-linux@roeck-us.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAC5umyhc=6yULiLwXu65VDvDk2cBiF0R9O39B-T5ftapJfj0rQ@mail.gmail.com>
+In-Reply-To: <20191029223214.18889-1-linux@roeck-us.net>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Oct 30, 2019 at 08:16:48PM +0900, Akinobu Mita wrote:
-> The nvme_init_identify() can be called multiple time in nvme ctrl's
-> lifetime (e.g 'nvme reset /dev/nvme*' or suspend/resume paths), so
-> should we need to prevent nvme_hwmon_init() from registering hwmon
-> device more than twice?
-> 
-> In the nvme thermal zone patchset[1], thernal zone is registered in
-> nvme_init_identify and unregistered in nvme_stop_ctrl().
+On Tue, Oct 29, 2019 at 03:32:14PM -0700, Guenter Roeck wrote:
+> This patch adds support to read NVME temperatures from the kernel using the
+> hwmon API and adds temperature zones for NVME drives. The thermal subsystem
+> can use this information to set thermal policies, and userspace can access
+> it using libsensors and/or the "sensors" command.
 
-So Guenter said above the thermal subsystem could use the information
-from hwmon as well.  Does this mean this patch would solve your needs
-as well?
+Except in all upper case or all lower case identifier the speling should
+always be "NVMe".  Thi also happens a few more places like in the Kconfig
+text.
+
+> +static int nvme_hwmon_get_smart_log(struct nvme_hwmon_data *data)
+> +{
+> +	return nvme_get_log(data->ctrl, NVME_NSID_ALL, NVME_LOG_SMART, 0,
+> +			    &data->log, sizeof(data->log), 0);
+> +}
+> +
+> +static int nvme_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
+> +			   u32 attr, int channel, long *val)
+> +{
+> +	struct nvme_hwmon_data *data = dev_get_drvdata(dev);
+> +	struct nvme_smart_log *log = &data->log;
+> +	int err;
+> +	int temp;
+> +
+> +	err = nvme_hwmon_get_smart_log(data);
+> +	if (err)
+> +		return err < 0 ? err : -EPROTO;
+
+I think the handling of positive errnos fits better into
+nvme_hwmon_get_smart_log.  Also EIO sounds like a better error for
+generic NVMe level errors.
+
+> +
+> +	switch (attr) {
+> +	case hwmon_temp_max:
+> +		*val = (data->ctrl->wctemp - 273) * 1000;
+> +		break;
+> +	case hwmon_temp_crit:
+> +		*val = (data->ctrl->cctemp - 273) * 1000;
+> +		break;
+> +	case hwmon_temp_input:
+> +		if (!channel)
+> +			temp = le16_to_cpup((__le16 *)log->temperature);
+
+This needs to use get_unaligned_le16, otherwise you'll run into problems
+on architectures that don't support unaligned loads.
+
+> +static const struct hwmon_ops nvme_hwmon_ops = {
+> +	.is_visible = nvme_hwmon_is_visible,
+> +	.read = nvme_hwmon_read,
+> +	.read_string = nvme_hwmon_read_string,
+> +};
+> +
+> +static const struct hwmon_chip_info nvme_hwmon_chip_info = {
+> +	.ops = &nvme_hwmon_ops,
+> +	.info = nvme_hwmon_info,
+> +};
+
+Please use tabs to align all the = in an ops structure.
+
+> +#if IS_ENABLED(CONFIG_NVME_HWMON)
+
+No real need to use IS_ENABLED here, a plain ifdef should do it.
