@@ -2,310 +2,146 @@ Return-Path: <SRS0=w0+C=YX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91748CA9EC6
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 15:15:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B66DCA9EC5
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 15:27:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 49B2620874
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 15:15:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CCDCE20679
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Oct 2019 15:27:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="Dg00Ev7J"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="AWLbv+os"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727166AbfJ3PPG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Oct 2019 11:15:06 -0400
-Received: from mail-wm1-f73.google.com ([209.85.128.73]:58595 "EHLO
-        mail-wm1-f73.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726772AbfJ3PPF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2019 11:15:05 -0400
-Received: by mail-wm1-f73.google.com with SMTP id g21so765256wmh.8
-        for <linux-pm@vger.kernel.org>; Wed, 30 Oct 2019 08:15:03 -0700 (PDT)
+        id S1726461AbfJ3P1Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Oct 2019 11:27:25 -0400
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:35610 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726472AbfJ3P1X (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2019 11:27:23 -0400
+Received: by mail-lj1-f195.google.com with SMTP id m7so3176466lji.2
+        for <linux-pm@vger.kernel.org>; Wed, 30 Oct 2019 08:27:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=m3W2oGARPPMCHIp2PKS5ARTjfwy7pKB/hUfDT0hLOYc=;
-        b=Dg00Ev7JgqHNFUTq3JByiGkwiULHuDmUpFRnS5o5Ei7Yx0tsMnIhgJugCuluOLS129
-         lTfMs073Q6cpV+CY/E/jLOZP++PQOTZ4HrkU4NqthgzSeNXgzwT9we0oihOoGu/A33Fl
-         YflrqNiNTF4FUjoiNnuPfPJprKk/oDeJOKGcnCqjFDXOtqIMN7SIF58Mal1xmUnEC2kg
-         /wi++ANhRTULx1R+5t42i0sLbouO4fMRg5Nl+fPabZWl+FfDdOAXF0LyiUoWrDHBBers
-         MgCZYLFztRsw0NI4TVEF0rvUc2g+UF/bvjOQWkRcOlhXbN0Kl9ReYRQzF+5MxSLc+DQs
-         b3BA==
+        bh=7mZ3hdtUFZsghSAyhPspAG9N/gAftJ/UKlLExYxE09E=;
+        b=AWLbv+osewTPSi/vLPVd5pQBM/2GgohGKpImcwCHp66lnoHDlebOgO6/T/itPeQt82
+         lnJEtwhEWqY93eVMkA+vgu4zGeJNEpQQdE4Gjr2d0jJ2ddX5f2mOBY7GysGUwGE0ylRh
+         ezKxa7AM3Gv3oEtBZiauKf4Wc5mzy0a3TBZgSan6bJf2Oy6+EQr701yCG9jJHrms+Jsu
+         Q2B6DA4T/qWPaAp2fnIC7DoaZGV14MtiBA4D8SzpNP2IPwBF8meFCzFU7aNYL8rPdmiL
+         A1VobGpDRWIFP2NrIINA8evRtg4K97nBoVQEpj+Ylm+OK1BbvaHX5rNGiyY4qNjhkbxX
+         C3aA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=m3W2oGARPPMCHIp2PKS5ARTjfwy7pKB/hUfDT0hLOYc=;
-        b=eRnUi0mam0iFaHO0bimEdqlrGn3GR2ad3gL7JB+1MMy1Tz01m4KCjOcXck1+5oED/I
-         KswLsakasrTLfDAJ/hpPijgOTH2iHXPFuYHuu7UbAhA1KRjFCwbvTibjmxTKwPGK6kus
-         knrzdyASSUHkE7eKmBlu3MlxESNY7JJv0l/vAYX+WjU3ukfSNWdQL9gkTtAhItE+ZsOj
-         +X+54X0BxNSOq7/Fp33qfzQhpEKtFeDFbFyTpPQNT+Uhu++DULvAvCBMKp0x6Pe2DeXO
-         GwwsxUIxltIBhq/GNYEXPlyspKlDc2JQ1xQjG/ThGEd7SeF8XHgb7z0culmCJUOhn0K9
-         rJtg==
-X-Gm-Message-State: APjAAAXxPALmWJ6NEjB7/JZM0Pyc1CXaGB3xmDh0BBrD8/H9ktqyxfLk
-        uRfVp1oCvgoPmv7FUc+BIdcAaHpAlGic
-X-Google-Smtp-Source: APXvYqzHm7+kyR5AaNndtjcpbglDxAQyp+X2DBzPerei0J0s7LQflNf+L+6zQV4QTV7lMqMM2cjp1mxq2Ee3
-X-Received: by 2002:a5d:4f89:: with SMTP id d9mr365493wru.286.1572448502909;
- Wed, 30 Oct 2019 08:15:02 -0700 (PDT)
-Date:   Wed, 30 Oct 2019 15:14:50 +0000
-In-Reply-To: <20191030151451.7961-1-qperret@google.com>
-Message-Id: <20191030151451.7961-4-qperret@google.com>
-Mime-Version: 1.0
-References: <20191030151451.7961-1-qperret@google.com>
-X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
-Subject: [PATCH v9 3/4] thermal: cpu_cooling: Make the power-related code
- depend on IPA
-From:   Quentin Perret <qperret@google.com>
-To:     edubezval@gmail.com, rui.zhang@intel.com, javi.merino@kernel.org,
-        viresh.kumar@linaro.org, amit.kachhap@gmail.com, rjw@rjwysocki.net,
-        catalin.marinas@arm.com, will@kernel.org, daniel.lezcano@linaro.org
-Cc:     dietmar.eggemann@arm.com, ionela.voinescu@arm.com,
-        mka@chromium.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, qperret@google.com
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=7mZ3hdtUFZsghSAyhPspAG9N/gAftJ/UKlLExYxE09E=;
+        b=qge9QrGA6eToPMgyMOuGSy07Omgy9G1L97ATXnUhEJcHfQKCcrXf4nF6KKyoh62iTl
+         HSnAvZ4M2SGAIKPcK4P2Mt2pBBpM7JUwKuH/01zOveSArAnERQFDqSJCGCNJPmKINscB
+         7rcuwEB+eXExpxkRr5Rqe2hThxlDnB8g2tELiGn1ekOiphJDZE5FTcfNeK4ywq38bzi5
+         rFlBZEXhl8RKgJdKlusb7A0YUp4Vs84HgTEEx/688+YVZftgx6uVDB5sx88oKvgew70Q
+         YANTol0DebBIb4G6Q4jnaGuRbdimxzfLur7GPZWZv9VSd9kpeamUBeU5g3ut5z7lloka
+         rAgg==
+X-Gm-Message-State: APjAAAWWLab+HU8t4ogGDi62jmXzzt4dQA10kaXLRjII381fUCXfGKHE
+        ww9Dy8ttJxqu+mQE7TDv3RyH9vIYtkVNpM6gV4ps7Q==
+X-Google-Smtp-Source: APXvYqyzInUrcF8c/QhRYg1Eb1OIgwXR80Ufflf62AWpz2Kzp1rGhOxHbcJr8EDpwdJMRwO8ntm8CVu/h6z5QBX2Xo4=
+X-Received: by 2002:a2e:3e18:: with SMTP id l24mr252556lja.48.1572449240686;
+ Wed, 30 Oct 2019 08:27:20 -0700 (PDT)
+MIME-Version: 1.0
+References: <1572018904-5234-1-git-send-email-dsmythies@telus.net>
+ <CAKfTPtDFAS3TiNaaPoEXFZbqdMt_-tfGm9ffVcQAN=Mu_KbRdQ@mail.gmail.com>
+ <000c01d58bca$f5709b30$e051d190$@net> <CAKfTPtDx6nu7YtYN=JLRAseZS3Q6Nt-QdMQuG_XoUtmtR_101A@mail.gmail.com>
+ <001201d58e68$eaa39630$bfeac290$@net> <20191029160210.GA8343@linaro.org> <000001d58f2a$fc593200$f50b9600$@net>
+In-Reply-To: <000001d58f2a$fc593200$f50b9600$@net>
+From:   Vincent Guittot <vincent.guittot@linaro.org>
+Date:   Wed, 30 Oct 2019 16:27:08 +0100
+Message-ID: <CAKfTPtCjhYKttEuWs9cqicUdJMiJVy5he+=xWofof_4xAWgKAw@mail.gmail.com>
+Subject: Re: [PATCH] Revert "sched/fair: Fix O(nr_cgroups) in the load
+ balancing path"
+To:     Doug Smythies <dsmythies@telus.net>
+Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Sargun Dhillon <sargun@sargun.me>, Tejun Heo <tj@kernel.org>,
+        Xie XiuQi <xiexiuqi@huawei.com>, xiezhipeng1@huawei.com,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Rik van Riel <riel@surriel.com>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The core CPU cooling infrastructure has power-related functions
-that have only one client: IPA. Since there can be no user of those
-functions if IPA is not compiled in, make sure to guard them with
-checks on CONFIG_THERMAL_GOV_POWER_ALLOCATOR to not waste space
-unnecessarily.
+On Wed, 30 Oct 2019 at 15:04, Doug Smythies <dsmythies@telus.net> wrote:
+>
+> On 2019.10.29 09:02 Vincent Guittot wrote:
+>
+> > Could you try the patch below ? It ensures that at least the root cfs rq stays
+> > in the list so each time update_blocked_averages is called, we will call update_cfs_rq_load_avg()
+> > for the root cfs_rq at least and even if everything already reach zero.
+> > This will ensure that cfs_rq_util_change is called even if nothing has
+> > changed.
+> >
+> > ---
+> >  kernel/sched/fair.c | 5 +++++
+> >  1 file changed, 5 insertions(+)
+> >
+> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> > index 151c0b7..ac0a549 100644
+> > --- a/kernel/sched/fair.c
+> > +++ b/kernel/sched/fair.c
+> > @@ -7552,6 +7552,8 @@ static inline void update_blocked_load_status(struct rq *rq, bool has_blocked) {
+> >
+> >  static inline bool cfs_rq_is_decayed(struct cfs_rq *cfs_rq)
+> >  {
+> > +     struct rq *rq = rq_of(cfs_rq);
+> > +
+> >       if (cfs_rq->load.weight)
+> >               return false;
+> >
+> > @@ -7564,6 +7566,9 @@ static inline bool cfs_rq_is_decayed(struct cfs_rq *cfs_rq)
+> >       if (cfs_rq->avg.runnable_load_sum)
+> >               return false;
+> >
+> > +     if (cfs_rq == &rq->cfs)
+> > +             return false;
+> > +
+> >       return true;
+> > }
+> >
+> > --
+> > 2.7.4
+>
+> Yes, this patch works and solves the long time
+> between calls of the intel_pstate CPU frequency scaling
+> driver issue.
+> I see you sent a formal patch a few hours ago.
+> I'll try it and report back.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Quentin Perret <qperret@google.com>
----
- drivers/thermal/cpu_cooling.c | 166 +++++++++++++++++-----------------
- 1 file changed, 81 insertions(+), 85 deletions(-)
+The patch that I sent a few hours ago, doesn't solve your problem. It
+solves item 1 of my previous email.
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 6b9865c786ba..cc6b84e41404 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -47,7 +47,9 @@
-  */
- struct freq_table {
- 	u32 frequency;
-+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
- 	u32 power;
-+#endif
- };
- 
- /**
-@@ -95,8 +97,7 @@ static DEFINE_IDA(cpufreq_ida);
- static DEFINE_MUTEX(cooling_list_lock);
- static LIST_HEAD(cpufreq_cdev_list);
- 
--/* Below code defines functions to be used for cpufreq as cooling device */
--
-+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
- /**
-  * get_level: Find the level for a particular frequency
-  * @cpufreq_cdev: cpufreq_cdev for which the property is required
-@@ -265,76 +266,6 @@ static u32 get_dynamic_power(struct cpufreq_cooling_device *cpufreq_cdev,
- 	return (raw_cpu_power * cpufreq_cdev->last_load) / 100;
- }
- 
--/* cpufreq cooling device callback functions are defined below */
--
--/**
-- * cpufreq_get_max_state - callback function to get the max cooling state.
-- * @cdev: thermal cooling device pointer.
-- * @state: fill this variable with the max cooling state.
-- *
-- * Callback for the thermal cooling device to return the cpufreq
-- * max cooling state.
-- *
-- * Return: 0 on success, an error code otherwise.
-- */
--static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
--				 unsigned long *state)
--{
--	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
--
--	*state = cpufreq_cdev->max_level;
--	return 0;
--}
--
--/**
-- * cpufreq_get_cur_state - callback function to get the current cooling state.
-- * @cdev: thermal cooling device pointer.
-- * @state: fill this variable with the current cooling state.
-- *
-- * Callback for the thermal cooling device to return the cpufreq
-- * current cooling state.
-- *
-- * Return: 0 on success, an error code otherwise.
-- */
--static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
--				 unsigned long *state)
--{
--	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
--
--	*state = cpufreq_cdev->cpufreq_state;
--
--	return 0;
--}
--
--/**
-- * cpufreq_set_cur_state - callback function to set the current cooling state.
-- * @cdev: thermal cooling device pointer.
-- * @state: set this variable to the current cooling state.
-- *
-- * Callback for the thermal cooling device to change the cpufreq
-- * current cooling state.
-- *
-- * Return: 0 on success, an error code otherwise.
-- */
--static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
--				 unsigned long state)
--{
--	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
--
--	/* Request state should be less than max_level */
--	if (WARN_ON(state > cpufreq_cdev->max_level))
--		return -EINVAL;
--
--	/* Check if the old cooling action is same as new cooling action */
--	if (cpufreq_cdev->cpufreq_state == state)
--		return 0;
--
--	cpufreq_cdev->cpufreq_state = state;
--
--	return freq_qos_update_request(&cpufreq_cdev->qos_req,
--				cpufreq_cdev->freq_table[state].frequency);
--}
--
- /**
-  * cpufreq_get_requested_power() - get the current power
-  * @cdev:	&thermal_cooling_device pointer
-@@ -478,22 +409,84 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
- 				      power);
- 	return 0;
- }
-+#endif /* CONFIG_THERMAL_GOV_POWER_ALLOCATOR */
-+
-+/* cpufreq cooling device callback functions are defined below */
-+
-+/**
-+ * cpufreq_get_max_state - callback function to get the max cooling state.
-+ * @cdev: thermal cooling device pointer.
-+ * @state: fill this variable with the max cooling state.
-+ *
-+ * Callback for the thermal cooling device to return the cpufreq
-+ * max cooling state.
-+ *
-+ * Return: 0 on success, an error code otherwise.
-+ */
-+static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
-+
-+	*state = cpufreq_cdev->max_level;
-+	return 0;
-+}
-+
-+/**
-+ * cpufreq_get_cur_state - callback function to get the current cooling state.
-+ * @cdev: thermal cooling device pointer.
-+ * @state: fill this variable with the current cooling state.
-+ *
-+ * Callback for the thermal cooling device to return the cpufreq
-+ * current cooling state.
-+ *
-+ * Return: 0 on success, an error code otherwise.
-+ */
-+static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
-+
-+	*state = cpufreq_cdev->cpufreq_state;
-+
-+	return 0;
-+}
-+
-+/**
-+ * cpufreq_set_cur_state - callback function to set the current cooling state.
-+ * @cdev: thermal cooling device pointer.
-+ * @state: set this variable to the current cooling state.
-+ *
-+ * Callback for the thermal cooling device to change the cpufreq
-+ * current cooling state.
-+ *
-+ * Return: 0 on success, an error code otherwise.
-+ */
-+static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long state)
-+{
-+	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
-+
-+	/* Request state should be less than max_level */
-+	if (WARN_ON(state > cpufreq_cdev->max_level))
-+		return -EINVAL;
-+
-+	/* Check if the old cooling action is same as new cooling action */
-+	if (cpufreq_cdev->cpufreq_state == state)
-+		return 0;
-+
-+	cpufreq_cdev->cpufreq_state = state;
-+
-+	return freq_qos_update_request(&cpufreq_cdev->qos_req,
-+				cpufreq_cdev->freq_table[state].frequency);
-+}
- 
- /* Bind cpufreq callbacks to thermal cooling device ops */
- 
- static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
--	.get_max_state = cpufreq_get_max_state,
--	.get_cur_state = cpufreq_get_cur_state,
--	.set_cur_state = cpufreq_set_cur_state,
--};
--
--static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
- 	.get_max_state		= cpufreq_get_max_state,
- 	.get_cur_state		= cpufreq_get_cur_state,
- 	.set_cur_state		= cpufreq_set_cur_state,
--	.get_requested_power	= cpufreq_get_requested_power,
--	.state2power		= cpufreq_state2power,
--	.power2state		= cpufreq_power2state,
- };
- 
- static unsigned int find_next_max(struct cpufreq_frequency_table *table,
-@@ -603,17 +596,20 @@ __cpufreq_cooling_register(struct device_node *np,
- 			pr_debug("%s: freq:%u KHz\n", __func__, freq);
- 	}
- 
-+	cooling_ops = &cpufreq_cooling_ops;
-+
-+#ifdef CONFIG_THERMAL_GOV_POWER_ALLOCATOR
- 	if (capacitance) {
- 		ret = update_freq_table(cpufreq_cdev, capacitance);
- 		if (ret) {
- 			cdev = ERR_PTR(ret);
- 			goto remove_ida;
- 		}
--
--		cooling_ops = &cpufreq_power_cooling_ops;
--	} else {
--		cooling_ops = &cpufreq_cooling_ops;
-+		cooling_ops->get_requested_power = cpufreq_get_requested_power;
-+		cooling_ops->state2power = cpufreq_state2power;
-+		cooling_ops->power2state = cpufreq_power2state;
- 	}
-+#endif
- 
- 	ret = freq_qos_add_request(&policy->constraints,
- 				   &cpufreq_cdev->qos_req, FREQ_QOS_MAX,
--- 
-2.24.0.rc0.303.g954a862665-goog
+The fact that this hack fix your problem means that Intel pstate needs
+to be called periodically even if the cfs pelt signals are null and
+this is probably linked to the internal state machine of the driver.
+The current behavior for CFS makes perfectly sense because cfs signal
+is already null so we don't need to update freq because of cfs' signal
+Then it remains the rt, dl and irq signals which might not be null yet
+and which doesn't trigger a call to cpufreq_update_util whereas it
+could worth calling it.
 
+I have to prepare a patch for this part which is item 2
+
+Regards,
+Vincent
+
+
+>
+> ... Doug
+>
+>
