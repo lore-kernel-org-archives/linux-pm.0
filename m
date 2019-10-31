@@ -2,106 +2,174 @@ Return-Path: <SRS0=fF9S=YY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD3CACA9EC7
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 02:14:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E061ECA9EC7
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 02:16:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7907020862
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 02:14:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 816BF2087E
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 02:16:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wkipk/vm"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="SLfwxIrA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726184AbfJaCO6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Oct 2019 22:14:58 -0400
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:42720 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726246AbfJaCO6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2019 22:14:58 -0400
-Received: by mail-lf1-f68.google.com with SMTP id z12so3233340lfj.9
-        for <linux-pm@vger.kernel.org>; Wed, 30 Oct 2019 19:14:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=LsH3A1DqDOFl2XsHUyxDjmPi6g5GPerOQXufskJ4zsE=;
-        b=wkipk/vmz3K+UqUSWwx9TakqLnbKR+02jMAR5SGMZCzif8JAFmJ08VLcACypiWHgd3
-         Nq3A9LCWfNpUNIycEwlJ4UAxP5zL23OJiIho6/dnsB9Q36nvjP7/yqh7dc8MTagsv+FN
-         AAqP79LixqCc1p/WSlBvTZWZFa4zOOvid5BNy/2G4O03423a8n8czYonP/S1X7AzJei+
-         xFnAp1z2bYsMIRUatRet7wQ9djRfkazHtwwoJqZNe14MmN+igdTj+tXsgOE67YF8E3qO
-         ecbGQkektDWSE7iJ49llVAzwhgYwCscfYLsFMckewsT8APYyRdOiFPK6vFFNQb4UEuxg
-         dXfw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=LsH3A1DqDOFl2XsHUyxDjmPi6g5GPerOQXufskJ4zsE=;
-        b=F+q77gmNUPWpPeNmKB7skhd/6I0OYx9CjswNjo5rE0f/FI+holh1gG/9WLnBWUrE0F
-         sRK0A834nBDT6B8IKmekofBCpyn4lJvpGVWQSd7Mv+BcZ1un2sYSj05vvACOle+SUnfM
-         BTrA6VNK/5cnxWm11LW30q737lMLgmiuyCWWA4PeZw3oW1wFo+hvHY9j7mU5AY3tW3tv
-         v0MvzhTorWeBiqnQl9RWo8LP12WBIrVeFY54PZyUm1850G0zDZI3EfGJ0qA2rDVsdEOe
-         q+l0N4sAFRGsb7juTbAnPgNBok/b+T5/ozN94oTG14lD7VdgCPahi07J5r1vcVUxUtvi
-         h1OQ==
-X-Gm-Message-State: APjAAAVfaPjQUBxXTmU5C/9vRpEuFFfnlwhWxfCljbbWgs1KTQAH0e/F
-        ozW/CVn80DgEOd9H1LvPsq5UOCN4v2yy7B9rQFKJlXZRnoU=
-X-Google-Smtp-Source: APXvYqw+VI3/9pmeyk/FQBCxrTYSXbxKCCcEUYb6gLT2e3GJrpxbjpDnQJnhwJNDWQ47aNAf2rbGE63JO7PrPoICa+g=
-X-Received: by 2002:ac2:420a:: with SMTP id y10mr997190lfh.65.1572488096719;
- Wed, 30 Oct 2019 19:14:56 -0700 (PDT)
+        id S1726322AbfJaCQ3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Oct 2019 22:16:29 -0400
+Received: from mailout4.samsung.com ([203.254.224.34]:35746 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726184AbfJaCQ3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Oct 2019 22:16:29 -0400
+Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
+        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20191031021627epoutp0417226bc33072e868fa8350cb3055d5e6~Smay5Zfr40640506405epoutp04e
+        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2019 02:16:26 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20191031021627epoutp0417226bc33072e868fa8350cb3055d5e6~Smay5Zfr40640506405epoutp04e
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1572488187;
+        bh=0gRbLXMZAt8FFWMG14xAWn8mAiyTn1jsY/Zr+NtuseM=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=SLfwxIrAzlZXsitHy24KSfWP/srf3/dU3kiUF24cJbvvSDCT4ODF9kLozE8YR+gHR
+         j0gVIKux8QYWofuPL6d4PIZr8wtAzuy0/lQ2CzrEynBLbd7MpImGNWupHCEgZXwePI
+         C/ydXe0ti8Z+kGFG09sbEvLfvP5GNi7A8+Wy97bk=
+Received: from epsnrtp6.localdomain (unknown [182.195.42.167]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
+        20191031021626epcas1p45f68e04392fae54eac85ab23787559ec~SmayMC8Wm1510915109epcas1p4I;
+        Thu, 31 Oct 2019 02:16:26 +0000 (GMT)
+Received: from epsmges1p5.samsung.com (unknown [182.195.40.154]) by
+        epsnrtp6.localdomain (Postfix) with ESMTP id 473TTM3bBFzMqYkf; Thu, 31 Oct
+        2019 02:16:23 +0000 (GMT)
+Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
+        epsmges1p5.samsung.com (Symantec Messaging Gateway) with SMTP id
+        BE.7C.04068.7F34ABD5; Thu, 31 Oct 2019 11:16:23 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
+        20191031021622epcas1p32a10d0435e0a6c4dd42ef1e5fec50da1~SmavDm8NL1928919289epcas1p3R;
+        Thu, 31 Oct 2019 02:16:22 +0000 (GMT)
+Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20191031021622epsmtrp21d748d3f271fc3f64fe1f22edc90a7e2~SmavCrCf52146121461epsmtrp2W;
+        Thu, 31 Oct 2019 02:16:22 +0000 (GMT)
+X-AuditID: b6c32a39-f5fff70000000fe4-aa-5dba43f74692
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        D7.AA.25663.6F34ABD5; Thu, 31 Oct 2019 11:16:22 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20191031021622epsmtip1bad6ebd4622149580a9eb0178904ba9a~Smaupuiwr2460524605epsmtip11;
+        Thu, 31 Oct 2019 02:16:22 +0000 (GMT)
+Subject: Re: [PATCH v9 3/8] PM / devfreq: Set scaling_max_freq to max on OPP
+ notifier error
+To:     Leonard Crestez <leonard.crestez@nxp.com>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc:     Kyungmin Park <kyungmin.park@samsung.com>,
+        =?UTF-8?B?QXJ0dXIgxZp3aWdvxYQ=?= <a.swigon@partner.samsung.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Lukasz Luba <l.luba@partner.samsung.com>,
+        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <802a29ac-d98e-db0b-0e6f-95d02a53d3b5@samsung.com>
+Date:   Thu, 31 Oct 2019 11:21:54 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+        Thunderbird/60.9.0
 MIME-Version: 1.0
-References: <cover.1572245011.git.baolin.wang@linaro.org> <00202f739348258555dcc40982c330542ac61863.1572245011.git.baolin.wang@linaro.org>
- <20191030143949.GA18637@bogus>
-In-Reply-To: <20191030143949.GA18637@bogus>
-From:   Baolin Wang <baolin.wang@linaro.org>
-Date:   Thu, 31 Oct 2019 10:14:45 +0800
-Message-ID: <CAMz4kuJ=8dOj6XbayNHKAYW7LD1EOaqv+Q4hYk_-7+R-z_m2Xw@mail.gmail.com>
-Subject: Re: [PATCH 4/5] dt-bindings: power: sc27xx: Add a new property to
- describe the real resistance of coulomb counter chip
-To:     Rob Herring <robh@kernel.org>
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        DTML <devicetree@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com,
-        baolin.wang7@gmail.com, Chunyan Zhang <zhang.lyra@gmail.com>,
-        Orson Zhai <orsonzhai@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <bee69d4635f83d8812fedbc108beb6c51ac9d4e7.1570044052.git.leonard.crestez@nxp.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrBJsWRmVeSWpSXmKPExsWy7bCmru53512xBlfnSFgcOraV3eLr6VOM
+        FssuHWW0mL53E5vF+fMb2C3ONr1ht7jVIGOx4u5HVotNj6+xWnT9Wsls8bn3CKPF5w2PGS1u
+        N65gs1h97iCbRdehv2wWG796OAh4vL/Ryu4xu+Eii8eCTaUem1Z1snncubaHzWPzknqPje92
+        MHkcfLeHyaNvyypGj8+b5AK4orJtMlITU1KLFFLzkvNTMvPSbZW8g+Od403NDAx1DS0tzJUU
+        8hJzU22VXHwCdN0yc4AeUVIoS8wpBQoFJBYXK+nb2RTll5akKmTkF5fYKqUWpOQUWBboFSfm
+        Fpfmpesl5+daGRoYGJkCFSZkZ3yYcp+54CdXxdpH91gaGBs4uxg5OSQETCTW9X5i7mLk4hAS
+        2MEose7PFXYI5xOjxKy+LSwQzjdGiU/rXrLDtEyYMosJIrGXUWLFzF9QzntGifV/JzGBVAkL
+        xEos/X6YBcQWEaiTuLX4BNgSZoGJLBL/f3WBJdgEtCT2v7jBBmLzCyhKXP3xmBHE5hWwk3h1
+        7T+YzSKgKrH1XzNrFyMHh6hAhMTpr4kQJYISJ2c+ARvDKRAnseHwTDCbWUBc4taT+UwQtrxE
+        89bZYHslBC6xS3xfepsF4gUXiRXbulkhbGGJV8e3QL0mJfH53V42CLtaYuXJI2wQzR2MElv2
+        X4BqMJbYv3QyE8hBzAKaEut36UOEFSV2/p7LCLGYT+Ld1x6wmyUEeCU62oQgSpQlLj+4ywRh
+        S0osbu9km8CoNAvJO7OQvDALyQuzEJYtYGRZxSiWWlCcm55abFhgihzdmxjBqVzLcgfjsXM+
+        hxgFOBiVeHgnlO2MFWJNLCuuzD3EKMHBrCTC+80GKMSbklhZlVqUH19UmpNafIjRFBjYE5ml
+        RJPzgXkmryTe0NTI2NjYwsTQzNTQUEmc13H50lghgfTEktTs1NSC1CKYPiYOTqkGxvwbm+ZU
+        Z+h8qYnNaXiQ5j47+Xt50+28G2GS4u82dgft177st6BZd8O6gjzLpmPOZYmT590/lCGzclGy
+        QxzHg6YJHOkGgdn6xq5zJqj90H8rvXi51xev28XnO+XSz0z6s297Y/bLbQceXF773NWv1H99
+        ssCOzTsU1U38G3wvN63TX7OqvHRXiRJLcUaioRZzUXEiADtBGzv7AwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrMIsWRmVeSWpSXmKPExsWy7bCSnO43512xBr+e6VkcOraV3eLr6VOM
+        FssuHWW0mL53E5vF+fMb2C3ONr1ht7jVIGOx4u5HVotNj6+xWnT9Wsls8bn3CKPF5w2PGS1u
+        N65gs1h97iCbRdehv2wWG796OAh4vL/Ryu4xu+Eii8eCTaUem1Z1snncubaHzWPzknqPje92
+        MHkcfLeHyaNvyypGj8+b5AK4orhsUlJzMstSi/TtErgyPky5z1zwk6ti7aN7LA2MDZxdjJwc
+        EgImEhOmzGLqYuTiEBLYzShx9M95doiEpMS0i0eZuxg5gGxhicOHiyFq3jJKvO16ygpSIywQ
+        K7H0+2EWEFtEoE7iz/N9YIOYBSazSBw8uo8RouMRo8TL523MIFVsAloS+1/cYAOx+QUUJa7+
+        eMwIYvMK2Em8uvYfzGYRUJXY+q8ZbIOoQITE8+03oGoEJU7OfAK2jVMgTmLD4ZlgNrOAusSf
+        eZeYIWxxiVtP5jNB2PISzVtnM09gFJ6FpH0WkpZZSFpmIWlZwMiyilEytaA4Nz232LDAKC+1
+        XK84Mbe4NC9dLzk/dxMjOKq1tHYwnjgRf4hRgINRiYd3QtnOWCHWxLLiytxDjBIczEoivN9s
+        gEK8KYmVValF+fFFpTmpxYcYpTlYlMR55fOPRQoJpCeWpGanphakFsFkmTg4pRoYpy3wPLQk
+        IHn97BSmu5YSd4+/i/CaY36lxvTMFsHjn7/4+LoYan5q6A935dtxhK+yVua6oOXzqRVPC0PF
+        Ts3UsPovku9pl+Nhrz/jZJakae7XS6wBTzRV6nL3dGl3Pz2nvn7us019r9c3fTuvZBC91y3o
+        3xfldxrfbJ95xSYXbJlcdP4be5SFEktxRqKhFnNRcSIA2OCu4eYCAAA=
+X-CMS-MailID: 20191031021622epcas1p32a10d0435e0a6c4dd42ef1e5fec50da1
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20191002192526epcas4p200615dced577dea9d99885b3b8b1bf36
+References: <cover.1570044052.git.leonard.crestez@nxp.com>
+        <CGME20191002192526epcas4p200615dced577dea9d99885b3b8b1bf36@epcas4p2.samsung.com>
+        <bee69d4635f83d8812fedbc108beb6c51ac9d4e7.1570044052.git.leonard.crestez@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rob,
+On 19. 10. 3. 오전 4:25, Leonard Crestez wrote:
+> The devfreq_notifier_call functions will update scaling_min_freq and
+> scaling_max_freq when the OPP table is updated.
+> 
+> If fetching the maximum frequency fails then scaling_max_freq remains
+> set to zero which is confusing. Set to ULONG_MAX instead so we don't
+> need special handling for this case in other places.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> ---
+>  drivers/devfreq/devfreq.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 32bbf6e80380..3e0e936185a3 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -557,12 +557,14 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+>  	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
+>  	if (!devfreq->scaling_min_freq)
+>  		goto out;
+>  
+>  	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
+> -	if (!devfreq->scaling_max_freq)
+> +	if (!devfreq->scaling_max_freq) {
+> +		devfreq->scaling_max_freq = ULONG_MAX;
+>  		goto out;
+> +	}
+>  
+>  	err = update_devfreq(devfreq);
+>  
+>  out:
+>  	mutex_unlock(&devfreq->lock);
+> 
 
-On Wed, 30 Oct 2019 at 22:39, Rob Herring <robh@kernel.org> wrote:
->
-> On Mon, Oct 28, 2019 at 03:19:00PM +0800, Baolin Wang wrote:
-> > Add a new property to describe the real resistance of coulomb counter chip,
-> > which is used to calibrate the accuracy of the coulomb counter chip.
-> >
-> > Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> > ---
-> >  .../devicetree/bindings/power/supply/sc27xx-fg.txt |    2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
-> > index 0a5705b..fc042d0 100644
-> > --- a/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
-> > +++ b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
-> > @@ -13,6 +13,7 @@ Required properties:
-> >  - io-channel-names: Should be "bat-temp" or "charge-vol".
-> >  - nvmem-cells: A phandle to the calibration cells provided by eFuse device.
-> >  - nvmem-cell-names: Should be "fgu_calib".
-> > +- sprd,calib-resistance: Specify the real resistance of coulomb counter chip in micro Ohms.
-> >  - monitored-battery: Phandle of battery characteristics devicetree node.
-> >    See Documentation/devicetree/bindings/power/supply/battery.txt
->
-> Needs a standard unit suffix.
+Sorry for the late reply.
 
-Got it. Thanks.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 -- 
-Baolin Wang
-Best Regards
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
