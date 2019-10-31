@@ -2,152 +2,136 @@ Return-Path: <SRS0=fF9S=YY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7111CA9ECB
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 18:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BA328CA9ECB
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 19:01:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8BBCF2080F
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 18:55:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8E04B2080F
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 19:01:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZYtnp5Vt"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="G1Lm9dgq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729377AbfJaSz6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 31 Oct 2019 14:55:58 -0400
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:37862 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729252AbfJaSz5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2019 14:55:57 -0400
-Received: by mail-wm1-f65.google.com with SMTP id q130so6980529wme.2;
-        Thu, 31 Oct 2019 11:55:55 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=KEZ2MGdwSvgyihy3BgAVtU7EXgoX4IyUpv+yaDE4EcM=;
-        b=ZYtnp5VtI2P7IqkhTg1B8qmX/LGKFnyoyP1OI02dcs9Y9z49dyvvKdcCH9EFsu7iyJ
-         t3/OP80zD06K5ZwZsq3mCVndr+GGQO6XZ+W2cyUIPfufhkG7kSrg8Mp7cfm2aDfxLUgV
-         eu11mNVUZvgFNT+OXFwpttyldXIHuSXsgwyUzXzLiEAZj5GUUmmBi7xHjroJUTFmlxXp
-         7qra1V80Vh6JiZ2mfcX/uIaSdLZJ7w/AN54R2pbz3oBnrULe1IxtgUwIpFIIrkVsqFw5
-         cbpacAfI5X7UrSZxxYKVBLQNgtp6ojnq1PgdlRoTMg4cI/bS+xYJaB0eEiO5W/GRwdOf
-         /sdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=KEZ2MGdwSvgyihy3BgAVtU7EXgoX4IyUpv+yaDE4EcM=;
-        b=tGfSqBmJEv5vaelaaPmluVSZ6oC0d3HEMpVPh45bQ5eZTAzo7Wwfw7k2o3kwksG0jf
-         yTlgcfXQxoJNHdGo4okbtsilU4nDglUDGj8CtkO9QV+me08iWYOE1iofQ9mfdhfBoVtq
-         9DyjiJoKbvbF3zaBZ5dboXSs3CQYBH2xFHU994HIG5w5mngjbiCci2P1xXM7hrzeoEl+
-         K1SavmSqXUpLzIucBkgJEGiICbjaDmPblc5MDRyv1myiVu+MQuDa2DOLmUHdMH+cSc0t
-         cBjClePFDnM6CH7C8wmtz87VYBI5RTt2RtJ/aoGIYfexjRqj8iw09B6K9JzdlmqVLAU4
-         Ns0g==
-X-Gm-Message-State: APjAAAXlKbnNx3B7QYk3PC5+w7qT9U6HFzkeSAzMlU0uwtwIIH2zq3Xc
-        CUUe7q6xHK+GOTLOwZC0itsv3dZ3Ga90w9Ht+/M=
-X-Google-Smtp-Source: APXvYqzQvRT21L0PVgbV5c5C9W19QRhbCaQ8fQ/tMOUZwJgzzYQuw10WGZvoatXernuYn4EhUroIbjQ5XFwa10cGKYc=
-X-Received: by 2002:a1c:480a:: with SMTP id v10mr6775812wma.138.1572548154853;
- Thu, 31 Oct 2019 11:55:54 -0700 (PDT)
+        id S1729289AbfJaTBz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 31 Oct 2019 15:01:55 -0400
+Received: from gateway32.websitewelcome.com ([192.185.144.98]:32310 "EHLO
+        gateway32.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1729252AbfJaTBy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2019 15:01:54 -0400
+X-Greylist: delayed 1201 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Oct 2019 15:01:53 EDT
+Received: from cm13.websitewelcome.com (cm13.websitewelcome.com [100.42.49.6])
+        by gateway32.websitewelcome.com (Postfix) with ESMTP id 175C1E6B536
+        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2019 13:41:50 -0500 (CDT)
+Received: from br164.hostgator.com.br ([192.185.176.180])
+        by cmsmtp with SMTP
+        id QFOIiqt1N3Qi0QFOIiDPGm; Thu, 31 Oct 2019 13:41:50 -0500
+X-Authority-Reason: nr=8
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=castello.eng.br; s=default; h=Content-Transfer-Encoding:MIME-Version:
+        References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+        Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
+        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=u9eu9WCQNyseKzoI8Ryx9iIExl/72+uskdYexjehiNk=; b=G1Lm9dgqzDhBZfmncbb1NY3Nkf
+        UrAJyZ8rwlAaCbFyKhYobMYu310kkHTIgLf60Ypi+azzXJtNlo+vYhqYqBsEMPz+Un1+bezqAGkMQ
+        09OBEFwIoEizfwAnAcDvYmztTgr1xOaYVY4cSgKMdVRw3nvmZyV/d76dU4d81GneZ6QtTd0WW6dtp
+        blKJNAA6Pbv4lvSbq3phZT0DJWyNVP/BGLcwNE4eXTiP3ELlFr6k19M1M2/xCadkal2aAUxi/k0HC
+        BAQTqISdltabD0qmLX3J1jD8XC6yaXJWrpGNmPvP8DUjFYmxXyS9wBuORKM+BVY4Vy8mmLtAEWpDW
+        DDUzMjSg==;
+Received: from [191.31.195.127] (port=35710 helo=castello.bz.toradex.local)
+        by br164.hostgator.com.br with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
+        (Exim 4.92)
+        (envelope-from <matheus@castello.eng.br>)
+        id 1iQFOH-0035gz-3t; Thu, 31 Oct 2019 15:41:49 -0300
+From:   Matheus Castello <matheus@castello.eng.br>
+To:     sre@kernel.org, krzk@kernel.org, robh+dt@kernel.org
+Cc:     mark.rutland@arm.com, cw00.choi@samsung.com,
+        b.zolnierkie@samsung.com, lee.jones@linaro.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Matheus Castello <matheus@castello.eng.br>
+Subject: [PATCH v4 2/4] dt-bindings: power: supply: Max17040: Add low level SOC alert threshold
+Date:   Thu, 31 Oct 2019 15:41:32 -0300
+Message-Id: <20191031184134.30621-3-matheus@castello.eng.br>
+X-Mailer: git-send-email 2.24.0.rc2
+In-Reply-To: <20191031184134.30621-1-matheus@castello.eng.br>
+References: <CAJKOXPdCtbsPaAgYp5iVBhkAsjXzOYWwttQBptgiUgzhbKi09w@mail.gmail.com>
+ <20191031184134.30621-1-matheus@castello.eng.br>
 MIME-Version: 1.0
-References: <20191031181359.282617-1-megous@megous.com>
-In-Reply-To: <20191031181359.282617-1-megous@megous.com>
-From:   =?UTF-8?B?Q2zDqW1lbnQgUMOpcm9u?= <peron.clem@gmail.com>
-Date:   Thu, 31 Oct 2019 19:55:43 +0100
-Message-ID: <CAJiuCcdZqpoXKuupk_w3F1npZgCHDgb=+Fdd1ukKA22K2PJ6Ww@mail.gmail.com>
-Subject: Re: [linux-sunxi] [PATCH] cpufreq: sun50i: Fix CPU speed bin detection
-To:     megous@megous.com
-Cc:     linux-sunxi <linux-sunxi@googlegroups.com>,
-        Yangtao Li <tiny.windzz@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        "open list:ALLWINNER CPUFREQ DRIVER" <linux-pm@vger.kernel.org>,
-        "moderated list:ARM/Allwinner sunXi SoC support" 
-        <linux-arm-kernel@lists.infradead.org>,
-        open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - br164.hostgator.com.br
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - castello.eng.br
+X-BWhitelist: no
+X-Source-IP: 191.31.195.127
+X-Source-L: No
+X-Exim-ID: 1iQFOH-0035gz-3t
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: (castello.bz.toradex.local) [191.31.195.127]:35710
+X-Source-Auth: matheus@castello.eng.br
+X-Email-Count: 25
+X-Source-Cap: Y2FzdGUyNDg7Y2FzdGUyNDg7YnIxNjQuaG9zdGdhdG9yLmNvbS5icg==
+X-Local-Domain: yes
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Ondrej,
+For configure low level state of charge threshold alert signaled from
+max17040 we add "maxim,alert-low-soc-level" property.
 
-On Thu, 31 Oct 2019 at 19:14, Ondrej Jirman <megous@megous.com> wrote:
->
-> I have failures to boot on Orange Pi 3, because this driver determined
-> that my SoC is from the normal bin, but my SoC only works reliably with
-> the OPP values for the slowest bin.
->
-> Looking at BSP code, I found that efuse values have following meanings
-> on H6:
->
-> - 0b000 invalid (interpreted in vendor's BSP as normal bin)
-> - 0b001 slowest bin
-> - 0b011 normal bin
-> - 0b111 fastest bin
+Signed-off-by: Matheus Castello <matheus@castello.eng.br>
+---
+ .../power/supply/max17040_battery.txt         | 33 +++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
 
-Maybe have some defines will be more readable no ?
-https://megous.com/git/linux/tree/drivers/soc/sunxi/sunxi-sid.c?h=3Dh6-4.9-=
-bsp#n213
+diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+new file mode 100644
+index 000000000000..f2d0b22b5f79
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+@@ -0,0 +1,33 @@
++max17040_battery
++~~~~~~~~~~~~~~~~
++
++Required properties :
++ - compatible : "maxim,max17040" or "maxim,max77836-battery"
++ - reg: i2c slave address
++
++Optional properties :
++- maxim,alert-low-soc-level :	The alert threshold that sets the state of
++ 				charge level (%) where an interrupt is
++				generated. Can be configured from 1 up to 32
++				(%). If skipped the power up default value of
++				4 (%) will be used.
++- interrupts : 			Interrupt line see Documentation/devicetree/
++				bindings/interrupt-controller/interrupts.txt
++- wakeup-source :		This device has wakeup capabilities. Use this
++				property to use alert low SOC level interrupt
++				as wake up source.
++
++Optional properties support interrupt functionality for alert low state of
++charge level, present in some ICs in the same family, and should be used with
++compatible "maxim,max77836-battery".
++
++Example:
++
++	battery-fuel-gauge@36 {
++		compatible = "maxim,max77836-battery";
++		reg = <0x36>;
++		maxim,alert-low-soc-level = <10>;
++		interrupt-parent = <&gpio7>;
++		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
++		wakeup-source;
++	};
+--
+2.24.0.rc2
 
-#define SUN50I_NVEM_INVALID_CPU_OPP (0b000)
-#define SUN50I_NVEM_LOW_CPU_OPP (0b001)
-#define SUN50I_NVEM_NORMAL_CPU_OPP (0b011)
-#define SUN50I_NVEM_HIGH_CPU_OPP (0b111)
-
-Regards,
-Cl=C3=A9ment
-
->
-> Let's play it safe and interpret 0 as the slowest bin, but fix detection
-> of other bins to match vendor code.
->
-> Fixes: f328584f7bff ("cpufreq: Add sun50i nvmem based CPU scaling driver"=
-)
-> Signed-off-by: Ondrej Jirman <megous@megous.com>
-> ---
->
-> See https://megous.com/git/linux/tree/drivers/soc/sunxi/sunxi-sid.c?h=3Dh=
-6-4.9-bsp#n484
-> and https://megous.com/git/linux/tree/drivers/cpufreq/sunxi-cpufreq.c?h=
-=3Dh6-4.9-bsp#n428
-> (1 is substracted from soc_bin number here!)
->
->  drivers/cpufreq/sun50i-cpufreq-nvmem.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun=
-50i-cpufreq-nvmem.c
-> index df35ef3ef567..41dad03e245c 100644
-> --- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-> +++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-> @@ -71,9 +71,12 @@ static int sun50i_cpufreq_get_efuse(u32 *versions)
->         efuse_value =3D (*speedbin >> NVMEM_SHIFT) & NVMEM_MASK;
->         switch (efuse_value) {
->         case 0b0001:
-> -               *versions =3D 1;
-> +               *versions =3D 0;
->                 break;
->         case 0b0011:
-> +               *versions =3D 1;
-> +               break;
-> +       case 0b0111:
->                 *versions =3D 2;
->                 break;
->         default:
-> --
-> 2.23.0
->
-> --
-> You received this message because you are subscribed to the Google Groups=
- "linux-sunxi" group.
-> To unsubscribe from this group and stop receiving emails from it, send an=
- email to linux-sunxi+unsubscribe@googlegroups.com.
-> To view this discussion on the web, visit https://groups.google.com/d/msg=
-id/linux-sunxi/20191031181359.282617-1-megous%40megous.com.
