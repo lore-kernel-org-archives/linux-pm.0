@@ -6,62 +6,58 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACA9FCA9ECE
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 13:14:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33D3ECA9ECB
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 13:18:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8CEAC20873
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 13:14:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1586E20873
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 13:18:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726887AbfJaNOZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 31 Oct 2019 09:14:25 -0400
-Received: from mga18.intel.com ([134.134.136.126]:63632 "EHLO mga18.intel.com"
+        id S1726765AbfJaNSP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 31 Oct 2019 09:18:15 -0400
+Received: from mga11.intel.com ([192.55.52.93]:64576 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726538AbfJaNOZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 31 Oct 2019 09:14:25 -0400
+        id S1726760AbfJaNSP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 31 Oct 2019 09:18:15 -0400
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 31 Oct 2019 06:14:24 -0700
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 31 Oct 2019 06:18:15 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.68,250,1569308400"; 
-   d="scan'208";a="206106606"
+   d="scan'208";a="212456663"
 Received: from sunjia-mobl.ccr.corp.intel.com (HELO rzhang1-mobile.ccr.corp.intel.com) ([10.249.173.87])
-  by FMSMGA003.fm.intel.com with ESMTP; 31 Oct 2019 06:14:22 -0700
+  by orsmga002.jf.intel.com with ESMTP; 31 Oct 2019 06:18:13 -0700
 From:   Zhang Rui <rui.zhang@intel.com>
-To:     rjw@rjwysocki.net, lenb@kernel.org
+To:     rjw@rjwysocki.net
 Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH] tools/power turbostat: Add Cometlake support
-Date:   Thu, 31 Oct 2019 21:14:22 +0800
-Message-Id: <20191031131422.18887-1-rui.zhang@intel.com>
+Subject: [PATCH 1/2] powercap/intel_rapl: add support for CometLake Mobile
+Date:   Thu, 31 Oct 2019 21:18:11 +0800
+Message-Id: <20191031131812.19427-1-rui.zhang@intel.com>
 X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Chen Yu <yu.c.chen@intel.com>
+Add CometLake Mobile support in intel_rapl driver
 
-From a turbostat point of view, Cometlake is like Kabylake.
-
-Suggested-by: Rui Zhang <rui.zhang@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/powercap/intel_rapl_common.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 5d0fddda842c..985e195f066b 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -4610,6 +4610,8 @@ unsigned int intel_model_duplicates(unsigned int model)
- 	case INTEL_FAM6_SKYLAKE:
- 	case INTEL_FAM6_KABYLAKE_L:
- 	case INTEL_FAM6_KABYLAKE:
-+	case INTEL_FAM6_COMETLAKE_L:
-+	case INTEL_FAM6_COMETLAKE:
- 		return INTEL_FAM6_SKYLAKE_L;
+diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+index 94ddd7d659c8..cc1e82d513a9 100644
+--- a/drivers/powercap/intel_rapl_common.c
++++ b/drivers/powercap/intel_rapl_common.c
+@@ -978,6 +978,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	INTEL_CPU_FAM6(ICELAKE_NNPI, rapl_defaults_core),
+ 	INTEL_CPU_FAM6(ICELAKE_X, rapl_defaults_hsw_server),
+ 	INTEL_CPU_FAM6(ICELAKE_D, rapl_defaults_hsw_server),
++	INTEL_CPU_FAM6(COMETLAKE_L, rapl_defaults_core),
  
- 	case INTEL_FAM6_ICELAKE_L:
+ 	INTEL_CPU_FAM6(ATOM_SILVERMONT, rapl_defaults_byt),
+ 	INTEL_CPU_FAM6(ATOM_AIRMONT, rapl_defaults_cht),
 -- 
 2.17.1
 
