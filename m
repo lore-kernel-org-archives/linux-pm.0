@@ -2,32 +2,31 @@ Return-Path: <SRS0=fF9S=YY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 199F7CA9ECE
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 19:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1B73CA9ECB
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 19:05:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DB73E2080F
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 19:04:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A6D7E208E3
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 19:05:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="YUvI81fL"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="owWBC3YO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729312AbfJaTEj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 31 Oct 2019 15:04:39 -0400
-Received: from gateway23.websitewelcome.com ([192.185.49.60]:23203 "EHLO
-        gateway23.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1729315AbfJaTEi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2019 15:04:38 -0400
-X-Greylist: delayed 1357 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Oct 2019 15:04:37 EDT
-Received: from cm13.websitewelcome.com (cm13.websitewelcome.com [100.42.49.6])
-        by gateway23.websitewelcome.com (Postfix) with ESMTP id EA7497DC7
-        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2019 13:41:53 -0500 (CDT)
+        id S1729566AbfJaTFS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 31 Oct 2019 15:05:18 -0400
+Received: from gateway20.websitewelcome.com ([192.185.44.20]:25562 "EHLO
+        gateway20.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1729315AbfJaTFS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2019 15:05:18 -0400
+X-Greylist: delayed 1413 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Oct 2019 15:05:17 EDT
+Received: from cm14.websitewelcome.com (cm14.websitewelcome.com [100.42.49.7])
+        by gateway20.websitewelcome.com (Postfix) with ESMTP id B289C400C7B47
+        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2019 12:33:25 -0500 (CDT)
 Received: from br164.hostgator.com.br ([192.185.176.180])
         by cmsmtp with SMTP
-        id QFOLiqt4g3Qi0QFOLiDPK6; Thu, 31 Oct 2019 13:41:53 -0500
+        id QFOBiONsvBnGaQFOBi1uqC; Thu, 31 Oct 2019 13:41:43 -0500
 X-Authority-Reason: nr=8
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=castello.eng.br; s=default; h=Content-Transfer-Encoding:MIME-Version:
@@ -35,17 +34,17 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
         Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
         List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=V94B8xdnq24BoAQFYkXN5tfRIqIwmBgiwRAbgoWmaDo=; b=YUvI81fLMwBkZfBILvu52UW2t8
-        6HR2nBtZfh5u0eefDjVAu6Vewg2pbkIyvK1wrR4IjbbPa4gYoGdIrDnFCFELQ6Nq9Haub6AC4IvTL
-        EcYPOhrIUCHTYQ3npi7ZUCh3GPO9aaoUxBTdzVdZn4XhT5UU0zPYZ+Bx+9ulLiARBPNxsZNu3KS8B
-        IN1xI5o7EFFZh5SQ/p5mp6APuM66yEAedHf0LMnKJlZdzF4ifTmGfXSBNZ/aPQD40jyA9t9tB9S9M
-        BeydakdIQCd4cTU78Vfv4ZN9adSv3I8F8sixRM4if1jVhgjTzPmcYAN0mb3YYDTY7tgrs9Vjjn0bw
-        s4b7hxCw==;
+        bh=hqa03vOsorRFXxU8y2ofxcTa3+6apVLKNhZ0+d6Hk5s=; b=owWBC3YOBH6Ib58Jh1NCbdN19r
+        Tb5MJR0fTAbeE5E9aMpDf6A1PQDZk0GAdZpJqUfK2VfbnZ7+fTZfu0HqmsnP//GZ7lBlWIzZEqgUu
+        AJ8/GVjNe2x3NlwaLYM7PI/G3iI+uRaNRXzrX5Fvgs1FXtIBbDNjAktMhgPEjbebV0iRiSns4gw7p
+        IPdg3V2Ft/XOj+sHB986lF2MaOZdHYlg8P/N6R8SuDRZ702b/lLgf1dQ9n6mvKzUlfsQj4y2hoO5U
+        +rZ3FCS8edE4/PmsGwqeo4Qr9soFrCYYcJVBo2fjS6HsfRTk8uqSUCNv92Vz2xqOrWkPgN4ZRbWBL
+        4oO9OITw==;
 Received: from [191.31.195.127] (port=35710 helo=castello.bz.toradex.local)
         by br164.hostgator.com.br with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
         (Exim 4.92)
         (envelope-from <matheus@castello.eng.br>)
-        id 1iQFOK-0035gz-4p; Thu, 31 Oct 2019 15:41:52 -0300
+        id 1iQFO9-0035gz-Mi; Thu, 31 Oct 2019 15:41:42 -0300
 From:   Matheus Castello <matheus@castello.eng.br>
 To:     sre@kernel.org, krzk@kernel.org, robh+dt@kernel.org
 Cc:     mark.rutland@arm.com, cw00.choi@samsung.com,
@@ -53,13 +52,12 @@ Cc:     mark.rutland@arm.com, cw00.choi@samsung.com,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Matheus Castello <matheus@castello.eng.br>
-Subject: [PATCH v4 3/4] power: supply: max17040: Config alert SOC low level threshold from FDT
-Date:   Thu, 31 Oct 2019 15:41:33 -0300
-Message-Id: <20191031184134.30621-4-matheus@castello.eng.br>
+Subject: [PATCH v4 0/4] power: supply: MAX17040: Add IRQ for low level and alert SOC changes
+Date:   Thu, 31 Oct 2019 15:41:30 -0300
+Message-Id: <20191031184134.30621-1-matheus@castello.eng.br>
 X-Mailer: git-send-email 2.24.0.rc2
-In-Reply-To: <20191031184134.30621-1-matheus@castello.eng.br>
+In-Reply-To: <CAJKOXPdCtbsPaAgYp5iVBhkAsjXzOYWwttQBptgiUgzhbKi09w@mail.gmail.com>
 References: <CAJKOXPdCtbsPaAgYp5iVBhkAsjXzOYWwttQBptgiUgzhbKi09w@mail.gmail.com>
- <20191031184134.30621-1-matheus@castello.eng.br>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
@@ -70,13 +68,13 @@ X-AntiAbuse: Sender Address Domain - castello.eng.br
 X-BWhitelist: no
 X-Source-IP: 191.31.195.127
 X-Source-L: No
-X-Exim-ID: 1iQFOK-0035gz-4p
+X-Exim-ID: 1iQFO9-0035gz-Mi
 X-Source: 
 X-Source-Args: 
 X-Source-Dir: 
 X-Source-Sender: (castello.bz.toradex.local) [191.31.195.127]:35710
 X-Source-Auth: matheus@castello.eng.br
-X-Email-Count: 36
+X-Email-Count: 3
 X-Source-Cap: Y2FzdGUyNDg7Y2FzdGUyNDg7YnIxNjQuaG9zdGdhdG9yLmNvbS5icg==
 X-Local-Domain: yes
 Sender: linux-pm-owner@vger.kernel.org
@@ -84,173 +82,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For configuration of fuel gauge alert for a low level state of charge
-interrupt we add a function to config level threshold and a device tree
-binding property to set it in flatned device tree node.
+This series add IRQ handler for low level SOC alert, define a devicetree
+binding attribute to configure the alert level threshold and check for
+changes in SOC and power supply status for send uevents.
 
-Now we can use "maxim,alert-low-soc-level" property with the values from
-1% up to 32% to configure alert interrupt threshold.
+Max17043/17044 have a pin for alert host about low level state of charge and
+this alert can be configured in a threshold from 1% up to 32% of SOC.
 
-Signed-off-by: Matheus Castello <matheus@castello.eng.br>
----
- drivers/power/supply/max17040_battery.c | 88 +++++++++++++++++++++----
- 1 file changed, 74 insertions(+), 14 deletions(-)
+Tested on Toradex Colibri iMX7D, with a SparkFun Lipo Fuel Gauge module
+based on MAXIM MAX17043.
 
-diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index 75459f76d02c..802575342c72 100644
---- a/drivers/power/supply/max17040_battery.c
-+++ b/drivers/power/supply/max17040_battery.c
-@@ -29,6 +29,9 @@
- #define MAX17040_DELAY		1000
- #define MAX17040_BATTERY_FULL	95
+Thanks Krzysztof for your time reviewing it. Let me know what you think about
+the fixes.
 
-+#define MAX17040_ATHD_MASK		0xFFC0
-+#define MAX17040_ATHD_DEFAULT_POWER_UP	4
-+
- struct max17040_chip {
- 	struct i2c_client		*client;
- 	struct delayed_work		work;
-@@ -43,6 +46,8 @@ struct max17040_chip {
- 	int soc;
- 	/* State Of Charge */
- 	int status;
-+	/* Low alert threshold from 32% to 1% of the State of Charge */
-+	u32 low_soc_alert_threshold;
- };
+Changes since v3:
+(Suggested by Krzysztof Kozlowski)
+- Validate values of the maxim,alert-low-soc-level early as possible
+- Clear the alert bit while handling IRQ
+- Remove the "chip->alert_bit"
+- Check the SOC and status at the same time on max17040_work
+- Add note about the compatible of devices with ALERT feature
+- Only set alert register and IRQ when compatible is max77836
 
- static int max17040_get_property(struct power_supply *psy,
-@@ -99,6 +104,22 @@ static void max17040_reset(struct i2c_client *client)
- 	max17040_write_reg(client, MAX17040_CMD, 0x0054);
- }
+Changes since v2:
+(Suggested by Krzysztof Kozlowski)
+- Fix ebusy exception
+- Remove device_init_wakeup from probe, let wakeup-source from DT decide that
+- Fix the use of "charger" to fuel-gauge on device tree description
+- Clear ALRT bit while setting the SOC threshold
+- Check SOC and clear ALRT bit when the SOC are above alert threshold
+- Fix unnecessary uevent when SOC is an ERRNO
+- Notify user space when power supply status change
 
-+static int max17040_set_low_soc_threshold_alert(struct i2c_client *client,
-+	u32 level)
-+{
-+	int ret;
-+	u16 data;
-+
-+	level = 32 - level;
-+	data = max17040_read_reg(client, MAX17040_RCOMP);
-+	/* clear the alrt bit and set LSb 5 bits */
-+	data &= MAX17040_ATHD_MASK;
-+	data |= level;
-+	ret = max17040_write_reg(client, MAX17040_RCOMP, data);
-+
-+	return ret;
-+}
-+
- static void max17040_get_vcell(struct i2c_client *client)
- {
- 	struct max17040_chip *chip = i2c_get_clientdata(client);
-@@ -115,7 +136,6 @@ static void max17040_get_soc(struct i2c_client *client)
- 	u16 soc;
+(Suggested by Rob Herring)
+- Fix the use of "charger" to fuel-gauge on device tree description
+- Add the (%) units on the description of property
+- Drop interrupt-parent
+- Fix name of property to let clear that is a low level SOC alert
 
- 	soc = max17040_read_reg(client, MAX17040_SOC);
--
- 	chip->soc = (soc >> 8);
- }
+Changes since v1:
+(Suggested by Krzysztof Kozlowski)
+- Put common code from max17040_work and max17040_thread_handler in a function
+- Code style fixes
+- Define mask and low level threshold alert default
+- Check return value from max17040_set_soc_threshold
+- Set low level state of charge threshold before IRQ
+- CC maintainers from drivers/mfd/max14577
+- Use flags from FDT client->flags instead hard coded it
+- Mention interrupts on DT Documentation
+- Fix "maxim,max77836-battery" missed from DT Documentation
+- Fix commit description
 
-@@ -161,6 +181,24 @@ static void max17040_get_status(struct i2c_client *client)
- 		chip->status = POWER_SUPPLY_STATUS_FULL;
- }
+Matheus Castello (4):
+  power: supply: max17040: Add IRQ handler for low SOC alert
+  dt-bindings: power: supply: Max17040: Add low level SOC alert
+    threshold
+  power: supply: max17040: Config alert SOC low level threshold from FDT
+  power: supply: max17040: Send uevent in SOC and status change
 
-+static int max17040_get_of_data(struct max17040_chip *chip)
-+{
-+	struct device *dev = &chip->client->dev;
-+	struct device_node *np = dev->of_node;
-+	int ret = 0;
-+
-+	if (of_property_read_u32(np, "maxim,alert-low-soc-level",
-+			&chip->low_soc_alert_threshold)) {
-+		chip->low_soc_alert_threshold = MAX17040_ATHD_DEFAULT_POWER_UP;
-+	/* check if low_soc_alert_threshold is between 1% and 32% */
-+	} else if (chip->low_soc_alert_threshold <= 0 ||
-+			chip->low_soc_alert_threshold >= 33){
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
- static void max17040_check_changes(struct i2c_client *client)
- {
- 	max17040_get_vcell(client);
-@@ -192,6 +230,10 @@ static irqreturn_t max17040_thread_handler(int id, void *dev)
- 	/* send uevent */
- 	power_supply_changed(chip->battery);
-
-+	/* reset alert bit */
-+	max17040_set_low_soc_threshold_alert(client,
-+		chip->low_soc_alert_threshold);
-+
- 	return IRQ_HANDLED;
- }
-
-@@ -216,6 +258,7 @@ static int max17040_probe(struct i2c_client *client,
- 	struct i2c_adapter *adapter = client->adapter;
- 	struct power_supply_config psy_cfg = {};
- 	struct max17040_chip *chip;
-+	int ret;
-
- 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
- 		return -EIO;
-@@ -226,6 +269,12 @@ static int max17040_probe(struct i2c_client *client,
-
- 	chip->client = client;
- 	chip->pdata = client->dev.platform_data;
-+	ret = max17040_get_of_data(chip);
-+	if (ret) {
-+		dev_err(&client->dev,
-+			"failed: low SOC alert OF data out of bounds\n");
-+		return ret;
-+	}
-
- 	i2c_set_clientdata(client, chip);
- 	psy_cfg.drv_data = chip;
-@@ -242,20 +291,31 @@ static int max17040_probe(struct i2c_client *client,
-
- 	/* check interrupt */
- 	if (client->irq) {
--		int ret;
--		unsigned int flags;
--
--		dev_info(&client->dev, "IRQ: enabled\n");
--		flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
--		ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
--						max17040_thread_handler, flags,
--						chip->battery->desc->name,
--						chip);
--
--		if (ret) {
--			client->irq = 0;
-+		if (of_device_is_compatible(client->dev.of_node,
-+			"maxim,max77836-battery")) {
-+			ret = max17040_set_low_soc_threshold_alert(client,
-+				chip->low_soc_alert_threshold);
-+			if (ret) {
-+				dev_err(&client->dev,
-+					"Failed to set low SOC alert: err %d\n",
-+					ret);
-+				return ret;
-+			}
-+
-+			dev_info(&client->dev, "IRQ: enabled\n");
-+			ret = devm_request_threaded_irq(&client->dev,
-+				client->irq, NULL, max17040_thread_handler,
-+				(client->flags | IRQF_ONESHOT),
-+				chip->battery->desc->name, chip);
-+
-+			if (ret) {
-+				client->irq = 0;
-+				dev_warn(&client->dev,
-+					"Failed to get IRQ err %d\n", ret);
-+			}
-+		} else {
- 			dev_warn(&client->dev,
--				"Failed to get IRQ err %d\n", ret);
-+				"Device not compatible for IRQ");
- 		}
- 	}
+ .../power/supply/max17040_battery.txt         |  33 +++++
+ drivers/power/supply/max17040_battery.c       | 134 +++++++++++++++++-
+ 2 files changed, 162 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
 
 --
 2.24.0.rc2
