@@ -2,172 +2,117 @@ Return-Path: <SRS0=fF9S=YY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FAKE_REPLY_C,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E3B6CA9ECB
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 12:24:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62349CA9ECF
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 13:01:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 54BD5208E3
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 12:24:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ts249/eg"
+	by mail.kernel.org (Postfix) with ESMTP id 3891C2087F
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 13:01:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1572526895;
+	bh=ZqQmIL+VZ3QRd14dH7SG/ODYbXnGFyGCVOWZyG3KxSY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:List-ID:From;
+	b=w3faUhvCuBScPDcNYBkfOQrd91luxOa2lATl/Z7OXWzBYkLej/B+Y4GDG6djoRHvD
+	 yoJeRtQ2ag9TpHuTJ4f5/q840rZWhhjKydzIATyK5kXX5b8Uyi2506Que0Aq7hXC+l
+	 Jz5Q39mYRntHX90x7t9xn3VqH/MknTzxzkBZ6mOk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727381AbfJaMXu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 31 Oct 2019 08:23:50 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:35545 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726664AbfJaMXu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2019 08:23:50 -0400
-Received: by mail-pf1-f194.google.com with SMTP id d13so4286915pfq.2
-        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2019 05:23:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :in-reply-to:references;
-        bh=ipn4aXAOp87D2v3r9KdhlrkAx9KnL+jbYVkv6tX05Nc=;
-        b=Ts249/egnrhzEnpXd834uI2TsYDQGJUwwxIXs5mn5C+Q4KZiVMKkCBPTYzys4nYqgq
-         xziLKywtITszSHspc6rib/y5uXeygD6cYUVj4k1TGPpDyI5VdC9JdZJ0SbRlx/uFMx4q
-         yqlRwdLtYMNEnlDwSS1VfDuyr4zuEb8mmG8e7h0Wgw5lIlEcPX19EbMBKah2Bq53HI1v
-         SpMA7AHFE02wNG4vvt+SB6TCGEo6ZUQT37b+DgdXeKv5sdSTpFjzx8+yEGB0RRSTa6IY
-         6+iwybqUmbH21IGe8G0TCqltT5PMjVbhBcYLhiGWYPZzW7Azs4ZcZ3XPJF+bWTIIKHEo
-         FRIQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:in-reply-to:references;
-        bh=ipn4aXAOp87D2v3r9KdhlrkAx9KnL+jbYVkv6tX05Nc=;
-        b=sHlwnawKC83+L1iLHMXO2i0+c5wAzdXvwvmJT5/eHg1wkPeT/uz0jdz8g+zWz4hUtl
-         czdlNmxaKtdayzwfJ93BkB23sDMVEB72zMDysp7XxVkAdSszRwvkBNePDi/MNmqoMGgQ
-         JUhLkiVMx4CS7MM0sby4c39OJmMDZrfYOQ7blDQzn42bFyFR0juA9XOc0n4+IV9C/TpK
-         V6tJlw6wcISB7Bb8UZ3+BtVWutkcVoN6Tj8c/d00SkaceIiqIIyvjcBnoJvXibKm7kK4
-         +ElQgIWQVxoETFhwCL/3j8G4E35FShhcadpicRmoV/cGBLL9R3C4XOJdSbqndmzTwCYI
-         fZ8Q==
-X-Gm-Message-State: APjAAAVqQxSTlKa+SUnvzFIC9nSD8y7Xiu5zKTwOGfJYtUhKywo8NWAm
-        8MPdFgwEfpW5coiu8NphcDk/fA==
-X-Google-Smtp-Source: APXvYqzHkz+hq1Ad589b9IlHVZAbwK6zRa2McYPDf0VLn5AKIPV++LFv6ETIZcgRQ1ibWBfKh0zBGA==
-X-Received: by 2002:a17:90a:8816:: with SMTP id s22mr2159357pjn.31.1572524628486;
-        Thu, 31 Oct 2019 05:23:48 -0700 (PDT)
-Received: from baolinwangubtpc.spreadtrum.com ([117.18.48.82])
-        by smtp.gmail.com with ESMTPSA id j25sm2983077pfi.113.2019.10.31.05.23.44
-        (version=TLS1 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Thu, 31 Oct 2019 05:23:47 -0700 (PDT)
-From:   Baolin Wang <baolin.wang@linaro.org>
-To:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com,
-        baolin.wang@linaro.org, baolin.wang7@gmail.com,
-        zhang.lyra@gmail.com, orsonzhai@gmail.com
-Subject: [PATCH v2 3/5] power: supply: sc27xx: Optimize the battery resistance with measuring temperature
-Date:   Thu, 31 Oct 2019 20:22:42 +0800
-Message-Id: <3dbd343189aa027c00148a5d8365661aa8b4c7ff.1572523415.git.baolin.wang@linaro.org>
-X-Mailer: git-send-email 1.7.9.5
-In-Reply-To: <cover.1572523415.git.baolin.wang@linaro.org>
-References: <cover.1572523415.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1572523415.git.baolin.wang@linaro.org>
-References: <cover.1572523415.git.baolin.wang@linaro.org>
+        id S1726566AbfJaNBe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 31 Oct 2019 09:01:34 -0400
+Received: from mail.kernel.org ([198.145.29.99]:32904 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726462AbfJaNBe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 31 Oct 2019 09:01:34 -0400
+Received: from localhost (173-25-83-245.client.mchsi.com [173.25.83.245])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 5301A2080F;
+        Thu, 31 Oct 2019 13:01:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1572526892;
+        bh=ZqQmIL+VZ3QRd14dH7SG/ODYbXnGFyGCVOWZyG3KxSY=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=hlInG3xtoBSQHfifz9LHNoOEdY9N8dlqgVblZ/QP0IlO7bwjXFGCVa9icKRitjoso
+         PzMKiJFjxRiaVg/P8AAm72mD7oaWA38vJ/M/hParD24E3dYe3FwmvgYptU/BJ5Vt+f
+         QlAjWdEH8WPyq0t5hmqDqYZckNeFzT5h1sU9yyEc=
+Date:   Thu, 31 Oct 2019 08:01:30 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Dilip Kota <eswara.kota@linux.intel.com>,
+        Andrew Murray <andrew.murray@arm.com>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        gustavo.pimentel@synopsys.com,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Rob Herring <robh@kernel.org>,
+        martin.blumenstingl@googlemail.com,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Christoph Hellwig <hch@infradead.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "Shevchenko, Andriy" <andriy.shevchenko@intel.com>,
+        cheol.yong.kim@intel.com, chuanhua.lei@linux.intel.com,
+        qi-ming.wu@intel.com, Linux PM <linux-pm@vger.kernel.org>,
+        Rajat Jain <rajatja@google.com>,
+        Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Re: [PATCH v4 3/3] pci: intel: Add sysfs attributes to configure
+ pcie link
+Message-ID: <20191031130130.GA37287@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5652130.irlrSN52DS@kreacher>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
+On Thu, Oct 31, 2019 at 10:13:11AM +0100, Rafael J. Wysocki wrote:
+> On Thursday, October 31, 2019 3:56:37 AM CET Bjorn Helgaas wrote:
+> > On Thu, Oct 31, 2019 at 12:31:44AM +0100, Rafael J. Wysocki wrote:
+> > > On Wed, Oct 30, 2019 at 11:14 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
 
-Optimize the battery internal resistance in a certain temerature to
-get a accurate battery internal resistance.
+> > > > Rafael had some concerns about the proposed ASPM interface [2], but I
+> > > > don't know what they are yet.
+> > > 
+> > > I was talking about the existing ASPM interface in sysfs.  The new one
+> > > I still have to review, but I'm kind of wondering what about people
+> > > who used the old one?  Would it be supported going forward?
+> > 
+> > The old one interface was enabled by CONFIG_PCIEASPM_DEBUG.  Red Hat
+> > doesn't enable that.  Ubuntu does.  I *thought* we heard from a
+> > Canonical person who said they didn't have any tools that used it, but
+> > I can't find that now.  I don't know about SUSE.
+> > 
+> > So the idea was to drop it on the theory that nobody is using it.
+> > Possibly that's too aggressive.
+> 
+> Well, one problem is that the "old" (actually existing) I/F has made it
+> to one of my OSS EU presentation slides (I did not talk to this particular
+> slide, but it is there in the deck that's available for downloading), so who
+> knows who is going to use it. :-)
+> 
+> So I guess that there's a risk that needs to be taken into consideration.
+> 
+> What could be done, in principle, would be to make the new I/F depend on
+> CONFIG_PCIEASPM_DEBUG being unset and provide the "old" one when it is set.
 
-Signed-off-by: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- drivers/power/supply/sc27xx_fuel_gauge.c |   32 ++++++++++++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
+I would prefer to enable the new interface unconditionally to make it
+easier for userspace tools like powertop to use it.
 
-diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/supply/sc27xx_fuel_gauge.c
-index bc8f5bd..221b6fb 100644
---- a/drivers/power/supply/sc27xx_fuel_gauge.c
-+++ b/drivers/power/supply/sc27xx_fuel_gauge.c
-@@ -81,9 +81,11 @@
-  * @max_volt: the maximum constant input voltage in millivolt
-  * @min_volt: the minimum drained battery voltage in microvolt
-  * @table_len: the capacity table length
-+ * @resist_table_len: the resistance table length
-  * @cur_1000ma_adc: ADC value corresponding to 1000 mA
-  * @vol_1000mv_adc: ADC value corresponding to 1000 mV
-  * @cap_table: capacity table with corresponding ocv
-+ * @resist_table: resistance percent table with corresponding temperature
-  */
- struct sc27xx_fgu_data {
- 	struct regmap *regmap;
-@@ -103,15 +105,18 @@ struct sc27xx_fgu_data {
- 	int max_volt;
- 	int min_volt;
- 	int table_len;
-+	int resist_table_len;
- 	int cur_1000ma_adc;
- 	int vol_1000mv_adc;
- 	struct power_supply_battery_ocv_table *cap_table;
-+	struct power_supply_resistance_temp_table *resist_table;
- };
- 
- static int sc27xx_fgu_cap_to_clbcnt(struct sc27xx_fgu_data *data, int capacity);
- static void sc27xx_fgu_capacity_calibration(struct sc27xx_fgu_data *data,
- 					    int cap, bool int_mode);
- static void sc27xx_fgu_adjust_cap(struct sc27xx_fgu_data *data, int cap);
-+static int sc27xx_fgu_get_temp(struct sc27xx_fgu_data *data, int *temp);
- 
- static const char * const sc27xx_charger_supply_name[] = {
- 	"sc2731_charger",
-@@ -434,7 +439,7 @@ static int sc27xx_fgu_get_current(struct sc27xx_fgu_data *data, int *val)
- 
- static int sc27xx_fgu_get_vbat_ocv(struct sc27xx_fgu_data *data, int *val)
- {
--	int vol, cur, ret;
-+	int vol, cur, ret, temp, resistance;
- 
- 	ret = sc27xx_fgu_get_vbat_vol(data, &vol);
- 	if (ret)
-@@ -444,8 +449,19 @@ static int sc27xx_fgu_get_vbat_ocv(struct sc27xx_fgu_data *data, int *val)
- 	if (ret)
- 		return ret;
- 
-+	resistance = data->internal_resist;
-+	if (data->resist_table_len > 0) {
-+		ret = sc27xx_fgu_get_temp(data, &temp);
-+		if (ret)
-+			return ret;
-+
-+		resistance = power_supply_temp2resist_simple(data->resist_table,
-+						data->resist_table_len, temp);
-+		resistance = data->internal_resist * resistance / 100;
-+	}
-+
- 	/* Return the battery OCV in micro volts. */
--	*val = vol * 1000 - cur * data->internal_resist;
-+	*val = vol * 1000 - cur * resistance;
- 
- 	return 0;
- }
-@@ -929,6 +945,18 @@ static int sc27xx_fgu_hw_init(struct sc27xx_fgu_data *data)
- 	if (!data->alarm_cap)
- 		data->alarm_cap += 1;
- 
-+	data->resist_table_len = info.resist_table_size;
-+	if (data->resist_table_len > 0) {
-+		data->resist_table = devm_kmemdup(data->dev, info.resist_table,
-+						  data->resist_table_len *
-+						  sizeof(struct power_supply_resistance_temp_table),
-+						  GFP_KERNEL);
-+		if (!data->resist_table) {
-+			power_supply_put_battery_info(data->battery, &info);
-+			return -ENOMEM;
-+		}
-+	}
-+
- 	power_supply_put_battery_info(data->battery, &info);
- 
- 	ret = sc27xx_fgu_calibration(data);
--- 
-1.7.9.5
+I think the existing and new interfaces could coexist, with the
+existing interface being enabled by CONFIG_PCIEASPM_DEBUG as it is
+today.  The patch that removes the existing interface is the last in
+the series and could easily be dropped.
 
+> In any case, the pcie_aspm.policy module parameter cannot be dropped, because
+> AFAICS there is quite a bit of user space using it (e.g. TLP).
+
+What is TLP?  Since CONFIG_PCIEASPM is a bool, aspm.o is built in
+statically if enabled, so pcie_aspm.policy is effectively a boot-time
+kernel parameter, right?  We don't have a plan to remove it.
+
+Bjorn
