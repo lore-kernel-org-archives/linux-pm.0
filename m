@@ -4,248 +4,182 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48CF1CA9ECB
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 21:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FB33C47E49
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 21:50:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1746F2086D
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 21:34:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F076E208C0
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 21:50:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728406AbfJaVem (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 31 Oct 2019 17:34:42 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:57724 "EHLO inva020.nxp.com"
+        id S1729118AbfJaVug (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 31 Oct 2019 17:50:36 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:42330 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727580AbfJaVem (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 31 Oct 2019 17:34:42 -0400
+        id S1728713AbfJaVug (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 31 Oct 2019 17:50:36 -0400
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B21351A057E;
-        Thu, 31 Oct 2019 22:34:39 +0100 (CET)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 32F331A0596;
+        Thu, 31 Oct 2019 22:50:33 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A4A6B1A0112;
-        Thu, 31 Oct 2019 22:34:39 +0100 (CET)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 239551A00B6;
+        Thu, 31 Oct 2019 22:50:33 +0100 (CET)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 0CDEC205E9;
-        Thu, 31 Oct 2019 22:34:39 +0100 (CET)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 14856205E9;
+        Thu, 31 Oct 2019 22:50:32 +0100 (CET)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+To:     Stephen Boyd <sboyd@kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
-        Matthias Kaehlcke <mka@chromium.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Michael Turquette <mturquette@baylibre.com>,
         =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
         Saravana Kannan <saravanak@google.com>,
+        Angus Ainslie <angus@akkea.ca>,
+        Martin Kepplinger <martink@posteo.de>,
+        Matthias Kaehlcke <mka@chromium.org>,
         Krzysztof Kozlowski <krzk@kernel.org>,
         Alexandre Bailon <abailon@baylibre.com>,
         Georgi Djakov <georgi.djakov@linaro.org>,
+        Dong Aisheng <aisheng.dong@nxp.com>,
         Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
+        Anson Huang <Anson.Huang@nxp.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v10 11/11] PM / devfreq: Use PM QoS for sysfs min/max_freq
-Date:   Thu, 31 Oct 2019 23:34:28 +0200
-Message-Id: <5b58df9e6244d79768617d20ff1a9a825da6293d.1572556786.git.leonard.crestez@nxp.com>
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-imx@nxp.com,
+        kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v3 1/6] clk: imx8m: Set CLK_GET_RATE_NOCACHE on dram clocks
+Date:   Thu, 31 Oct 2019 23:50:22 +0200
+Message-Id: <94c478c1209704a3da4577ae79ea28888759e8a7.1572558427.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1572556786.git.leonard.crestez@nxp.com>
-References: <cover.1572556786.git.leonard.crestez@nxp.com>
-In-Reply-To: <cover.1572556786.git.leonard.crestez@nxp.com>
-References: <cover.1572556786.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1572558427.git.leonard.crestez@nxp.com>
+References: <cover.1572558427.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1572558427.git.leonard.crestez@nxp.com>
+References: <cover.1572558427.git.leonard.crestez@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Switch the handling of min_freq and max_freq from sysfs to use the
-dev_pm_qos_request interface.
+These clocks are only modified as part of DRAM frequency switches during
+which DRAM itself is briefly inaccessible. The switch is performed with
+a SMC call to by TF-A which runs from a SRAM area; upon returning to
+linux several clocks bits are modified and we need to update them.
 
-Since PM QoS handles frequencies as kHz this change reduces the
-precision of min_freq and max_freq. This shouldn't introduce problems
-because frequencies which are not an integer number of kHz are likely
-not an integer number of Hz either.
-
-Try to ensure compatibility by rounding min values down and rounding
-max values up.
+For rate bits an easy solution is to just mark with
+CLK_GET_RATE_NOCACHE so that new rates are always read back from
+registers.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Tested-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- drivers/devfreq/devfreq.c | 58 +++++++++++++++++++++++++++------------
- include/linux/devfreq.h   |  9 +++---
- 2 files changed, 46 insertions(+), 21 deletions(-)
+ drivers/clk/imx/clk-imx8mm.c | 11 +++++++++--
+ drivers/clk/imx/clk-imx8mn.c | 12 ++++++++++--
+ drivers/clk/imx/clk-imx8mq.c | 15 +++++++++++----
+ 3 files changed, 30 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 776dec301a4e..ddf6a8ff454d 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -139,14 +139,10 @@ static void get_freq_range(struct devfreq *devfreq,
- 	*min_freq = max(*min_freq, (unsigned long)HZ_PER_KHZ * qos_min_freq);
- 	if (qos_max_freq != PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE)
- 		*max_freq = min(*max_freq,
- 				(unsigned long)HZ_PER_KHZ * qos_max_freq);
+diff --git a/drivers/clk/imx/clk-imx8mm.c b/drivers/clk/imx/clk-imx8mm.c
+index 030b15d7c0ce..c58f988191a5 100644
+--- a/drivers/clk/imx/clk-imx8mm.c
++++ b/drivers/clk/imx/clk-imx8mm.c
+@@ -440,13 +440,20 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
  
--	/* Apply constraints from sysfs */
--	*min_freq = max(*min_freq, devfreq->min_freq);
--	*max_freq = min(*max_freq, devfreq->max_freq);
--
- 	/* Apply constraints from OPP interface */
- 	*min_freq = max(*min_freq, devfreq->scaling_min_freq);
- 	*max_freq = min(*max_freq, devfreq->scaling_max_freq);
+ 	/* IPG */
+ 	clks[IMX8MM_CLK_IPG_ROOT] = imx_clk_divider2("ipg_root", "ahb", base + 0x9080, 0, 1);
+ 	clks[IMX8MM_CLK_IPG_AUDIO_ROOT] = imx_clk_divider2("ipg_audio_root", "audio_ahb", base + 0x9180, 0, 1);
  
- 	if (*min_freq > *max_freq)
-@@ -688,10 +684,19 @@ static void devfreq_dev_release(struct device *dev)
- 			"Failed to remove min_freq notifier: %d\n", err);
- 
- 	if (devfreq->profile->exit)
- 		devfreq->profile->exit(devfreq->dev.parent);
- 
-+	err = dev_pm_qos_remove_request(&devfreq->user_max_freq_req);
-+	if (err)
-+		dev_warn(dev->parent,
-+			"Failed to remove max_freq request: %d\n", err);
-+	err = dev_pm_qos_remove_request(&devfreq->user_min_freq_req);
-+	if (err)
-+		dev_warn(dev->parent,
-+			"Failed to remove min_freq request: %d\n", err);
-+
- 	mutex_destroy(&devfreq->lock);
- 	kfree(devfreq);
- }
- 
- /**
-@@ -755,18 +760,26 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
- 	if (!devfreq->scaling_min_freq) {
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
--	devfreq->min_freq = devfreq->scaling_min_freq;
- 
- 	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
- 	if (!devfreq->scaling_max_freq) {
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
--	devfreq->max_freq = devfreq->scaling_max_freq;
-+
-+	err = dev_pm_qos_add_request(dev, &devfreq->user_min_freq_req,
-+				     DEV_PM_QOS_MIN_FREQUENCY, 0);
-+	if (err < 0)
-+		goto err_dev;
-+	err = dev_pm_qos_add_request(dev, &devfreq->user_max_freq_req,
-+				     DEV_PM_QOS_MAX_FREQUENCY,
-+				     PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE);
-+	if (err < 0)
-+		goto err_dev;
- 
- 	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
- 	atomic_set(&devfreq->suspend_count, 0);
- 
- 	devfreq->trans_table = devm_kzalloc(&devfreq->dev,
-@@ -1401,14 +1414,15 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- 
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
- 
--	mutex_lock(&df->lock);
--	df->min_freq = value;
--	update_devfreq(df);
--	mutex_unlock(&df->lock);
-+	/* Round down to kHz for PM QoS */
-+	ret = dev_pm_qos_update_request(&df->user_min_freq_req,
-+					value / HZ_PER_KHZ);
-+	if (ret < 0)
-+		return ret;
- 
- 	return count;
- }
- 
- static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
-@@ -1433,18 +1447,28 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- 
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
- 
--	mutex_lock(&df->lock);
--
--	if (!value)
--		value = ULONG_MAX;
 +	/*
-+	 * PM QoS frequencies are in kHz so we need to convert. Convert by
-+	 * rounding upwards so that the acceptable interval never shrinks.
-+	 *
-+	 * For example if the user writes "666666666" to sysfs this value will
-+	 * be converted to 666667 kHz and back to 666667000 Hz before an OPP
-+	 * lookup, this ensures that an OPP of 666666666Hz is still accepted.
-+	 *
-+	 * A value of zero means "no limit".
++	 * DRAM clocks are manipulated from TF-A outside clock framework.
++	 * Mark with GET_RATE_NOCACHE to always read div value from hardware
 +	 */
-+	if (value)
-+		value = DIV_ROUND_UP(value, HZ_PER_KHZ);
-+	else
-+		value = PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
++	clks[IMX8MM_CLK_DRAM_ALT] = __imx8m_clk_composite("dram_alt", imx8mm_dram_alt_sels, base + 0xa000,
++			CLK_GET_RATE_NOCACHE);
++	clks[IMX8MM_CLK_DRAM_APB] = __imx8m_clk_composite("dram_apb", imx8mm_dram_apb_sels, base + 0xa080,
++			CLK_IS_CRITICAL | CLK_GET_RATE_NOCACHE);
++
+ 	/* IP */
+-	clks[IMX8MM_CLK_DRAM_ALT] = imx8m_clk_composite("dram_alt", imx8mm_dram_alt_sels, base + 0xa000);
+-	clks[IMX8MM_CLK_DRAM_APB] = imx8m_clk_composite_critical("dram_apb", imx8mm_dram_apb_sels, base + 0xa080);
+ 	clks[IMX8MM_CLK_VPU_G1] = imx8m_clk_composite("vpu_g1", imx8mm_vpu_g1_sels, base + 0xa100);
+ 	clks[IMX8MM_CLK_VPU_G2] = imx8m_clk_composite("vpu_g2", imx8mm_vpu_g2_sels, base + 0xa180);
+ 	clks[IMX8MM_CLK_DISP_DTRC] = imx8m_clk_composite("disp_dtrc", imx8mm_disp_dtrc_sels, base + 0xa200);
+ 	clks[IMX8MM_CLK_DISP_DC8000] = imx8m_clk_composite("disp_dc8000", imx8mm_disp_dc8000_sels, base + 0xa280);
+ 	clks[IMX8MM_CLK_PCIE1_CTRL] = imx8m_clk_composite("pcie1_ctrl", imx8mm_pcie1_ctrl_sels, base + 0xa300);
+diff --git a/drivers/clk/imx/clk-imx8mn.c b/drivers/clk/imx/clk-imx8mn.c
+index 9f5a5a56b45e..ca78cb1249a7 100644
+--- a/drivers/clk/imx/clk-imx8mn.c
++++ b/drivers/clk/imx/clk-imx8mn.c
+@@ -428,12 +428,20 @@ static int imx8mn_clocks_probe(struct platform_device *pdev)
+ 	clks[IMX8MN_CLK_AHB] = imx8m_clk_composite_critical("ahb", imx8mn_ahb_sels, base + 0x9000);
+ 	clks[IMX8MN_CLK_AUDIO_AHB] = imx8m_clk_composite("audio_ahb", imx8mn_audio_ahb_sels, base + 0x9100);
+ 	clks[IMX8MN_CLK_IPG_ROOT] = imx_clk_divider2("ipg_root", "ahb", base + 0x9080, 0, 1);
+ 	clks[IMX8MN_CLK_IPG_AUDIO_ROOT] = imx_clk_divider2("ipg_audio_root", "audio_ahb", base + 0x9180, 0, 1);
+ 	clks[IMX8MN_CLK_DRAM_CORE] = imx_clk_mux2_flags("dram_core_clk", base + 0x9800, 24, 1, imx8mn_dram_core_sels, ARRAY_SIZE(imx8mn_dram_core_sels), CLK_IS_CRITICAL);
+-	clks[IMX8MN_CLK_DRAM_ALT] = imx8m_clk_composite("dram_alt", imx8mn_dram_alt_sels, base + 0xa000);
+-	clks[IMX8MN_CLK_DRAM_APB] = imx8m_clk_composite_critical("dram_apb", imx8mn_dram_apb_sels, base + 0xa080);
++
++	/*
++	 * DRAM clocks are manipulated from TF-A outside clock framework.
++	 * Mark with GET_RATE_NOCACHE to always read div value from hardware
++	 */
++	clks[IMX8MN_CLK_DRAM_ALT] = __imx8m_clk_composite("dram_alt", imx8mn_dram_alt_sels, base + 0xa000,
++			CLK_GET_RATE_NOCACHE);
++	clks[IMX8MN_CLK_DRAM_APB] = __imx8m_clk_composite("dram_apb", imx8mn_dram_apb_sels, base + 0xa080,
++			CLK_IS_CRITICAL | CLK_GET_RATE_NOCACHE);
++
+ 	clks[IMX8MN_CLK_DISP_PIXEL] = imx8m_clk_composite("disp_pixel", imx8mn_disp_pixel_sels, base + 0xa500);
+ 	clks[IMX8MN_CLK_SAI2] = imx8m_clk_composite("sai2", imx8mn_sai2_sels, base + 0xa600);
+ 	clks[IMX8MN_CLK_SAI3] = imx8m_clk_composite("sai3", imx8mn_sai3_sels, base + 0xa680);
+ 	clks[IMX8MN_CLK_SAI5] = imx8m_clk_composite("sai5", imx8mn_sai5_sels, base + 0xa780);
+ 	clks[IMX8MN_CLK_SAI6] = imx8m_clk_composite("sai6", imx8mn_sai6_sels, base + 0xa800);
+diff --git a/drivers/clk/imx/clk-imx8mq.c b/drivers/clk/imx/clk-imx8mq.c
+index 4a5dbc4366a5..ceb1e79cf2e9 100644
+--- a/drivers/clk/imx/clk-imx8mq.c
++++ b/drivers/clk/imx/clk-imx8mq.c
+@@ -341,11 +341,12 @@ static int imx8mq_clocks_probe(struct platform_device *pdev)
+ 	clks[IMX8MQ_VIDEO_PLL1_OUT] = imx_clk_gate("video_pll1_out", "video_pll1_bypass", base + 0x10, 21);
  
--	df->max_freq = value;
--	update_devfreq(df);
--	mutex_unlock(&df->lock);
-+	ret = dev_pm_qos_update_request(&df->user_max_freq_req, value);
-+	if (ret < 0)
-+		return ret;
+ 	clks[IMX8MQ_SYS1_PLL_OUT] = imx_clk_fixed("sys1_pll_out", 800000000);
+ 	clks[IMX8MQ_SYS2_PLL_OUT] = imx_clk_fixed("sys2_pll_out", 1000000000);
+ 	clks[IMX8MQ_SYS3_PLL_OUT] = imx_clk_sccg_pll("sys3_pll_out", sys3_pll_out_sels, ARRAY_SIZE(sys3_pll_out_sels), 0, 0, 1, base + 0x48, CLK_IS_CRITICAL);
+-	clks[IMX8MQ_DRAM_PLL_OUT] = imx_clk_sccg_pll("dram_pll_out", dram_pll_out_sels, ARRAY_SIZE(dram_pll_out_sels), 0, 0, 0, base + 0x60, CLK_IS_CRITICAL);
++	clks[IMX8MQ_DRAM_PLL_OUT] = imx_clk_sccg_pll("dram_pll_out", dram_pll_out_sels, ARRAY_SIZE(dram_pll_out_sels), 0, 0, 0, base + 0x60,
++			CLK_IS_CRITICAL | CLK_GET_RATE_NOCACHE);
+ 	clks[IMX8MQ_VIDEO2_PLL_OUT] = imx_clk_sccg_pll("video2_pll_out", video2_pll_out_sels, ARRAY_SIZE(video2_pll_out_sels), 0, 0, 0, base + 0x54, 0);
  
- 	return count;
- }
- static DEVICE_ATTR_RW(min_freq);
+ 	/* SYS PLL1 fixed output */
+ 	clks[IMX8MQ_SYS1_PLL_40M_CG] = imx_clk_gate("sys1_pll_40m_cg", "sys1_pll_out", base + 0x30, 9);
+ 	clks[IMX8MQ_SYS1_PLL_80M_CG] = imx_clk_gate("sys1_pll_80m_cg", "sys1_pll_out", base + 0x30, 11);
+@@ -433,15 +434,21 @@ static int imx8mq_clocks_probe(struct platform_device *pdev)
  
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index dac0dffeabb4..d4d1ec04aeea 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -11,10 +11,11 @@
- #define __LINUX_DEVFREQ_H__
+ 	/* IPG */
+ 	clks[IMX8MQ_CLK_IPG_ROOT] = imx_clk_divider2("ipg_root", "ahb", base + 0x9080, 0, 1);
+ 	clks[IMX8MQ_CLK_IPG_AUDIO_ROOT] = imx_clk_divider2("ipg_audio_root", "audio_ahb", base + 0x9180, 0, 1);
  
- #include <linux/device.h>
- #include <linux/notifier.h>
- #include <linux/pm_opp.h>
-+#include <linux/pm_qos.h>
+-	/* IP */
++	/*
++	 * DRAM clocks are manipulated from TF-A outside clock framework.
++	 * Mark with GET_RATE_NOCACHE to always read div value from hardware
++	 */
+ 	clks[IMX8MQ_CLK_DRAM_CORE] = imx_clk_mux2_flags("dram_core_clk", base + 0x9800, 24, 1, imx8mq_dram_core_sels, ARRAY_SIZE(imx8mq_dram_core_sels), CLK_IS_CRITICAL);
++	clks[IMX8MQ_CLK_DRAM_ALT] = __imx8m_clk_composite("dram_alt", imx8mq_dram_alt_sels, base + 0xa000,
++			CLK_GET_RATE_NOCACHE);
++	clks[IMX8MQ_CLK_DRAM_APB] = __imx8m_clk_composite("dram_apb", imx8mq_dram_apb_sels, base + 0xa080,
++			CLK_IS_CRITICAL | CLK_GET_RATE_NOCACHE);
  
- #define DEVFREQ_NAME_LEN 16
- 
- /* DEVFREQ governor name */
- #define DEVFREQ_GOV_SIMPLE_ONDEMAND	"simple_ondemand"
-@@ -121,12 +122,12 @@ struct devfreq_dev_profile {
-  *		devfreq.nb to the corresponding register notifier call chain.
-  * @work:	delayed work for load monitoring.
-  * @previous_freq:	previously configured frequency value.
-  * @data:	Private data of the governor. The devfreq framework does not
-  *		touch this.
-- * @min_freq:	Limit minimum frequency requested by user (0: none)
-- * @max_freq:	Limit maximum frequency requested by user (0: none)
-+ * @user_min_freq_req:	PM QoS minimum frequency request from user (via sysfs)
-+ * @user_max_freq_req:	PM QoS maximum frequency request from user (via sysfs)
-  * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
-  * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
-  * @stop_polling:	 devfreq polling status of a device.
-  * @suspend_freq:	 frequency of a device set during suspend phase.
-  * @resume_freq:	 frequency of a device set in resume phase.
-@@ -161,12 +162,12 @@ struct devfreq {
- 	unsigned long previous_freq;
- 	struct devfreq_dev_status last_status;
- 
- 	void *data; /* private data for governors */
- 
--	unsigned long min_freq;
--	unsigned long max_freq;
-+	struct dev_pm_qos_request user_min_freq_req;
-+	struct dev_pm_qos_request user_max_freq_req;
- 	unsigned long scaling_min_freq;
- 	unsigned long scaling_max_freq;
- 	bool stop_polling;
- 
- 	unsigned long suspend_freq;
+-	clks[IMX8MQ_CLK_DRAM_ALT] = imx8m_clk_composite("dram_alt", imx8mq_dram_alt_sels, base + 0xa000);
+-	clks[IMX8MQ_CLK_DRAM_APB] = imx8m_clk_composite_critical("dram_apb", imx8mq_dram_apb_sels, base + 0xa080);
++	/* IP */
+ 	clks[IMX8MQ_CLK_VPU_G1] = imx8m_clk_composite("vpu_g1", imx8mq_vpu_g1_sels, base + 0xa100);
+ 	clks[IMX8MQ_CLK_VPU_G2] = imx8m_clk_composite("vpu_g2", imx8mq_vpu_g2_sels, base + 0xa180);
+ 	clks[IMX8MQ_CLK_DISP_DTRC] = imx8m_clk_composite("disp_dtrc", imx8mq_disp_dtrc_sels, base + 0xa200);
+ 	clks[IMX8MQ_CLK_DISP_DC8000] = imx8m_clk_composite("disp_dc8000", imx8mq_disp_dc8000_sels, base + 0xa280);
+ 	clks[IMX8MQ_CLK_PCIE1_CTRL] = imx8m_clk_composite("pcie1_ctrl", imx8mq_pcie1_ctrl_sels, base + 0xa300);
 -- 
 2.17.1
 
