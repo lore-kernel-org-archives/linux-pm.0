@@ -5,64 +5,64 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F1A1C47E49
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 12:23:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24132CA9EC3
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 12:23:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 752C8208C0
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 12:23:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EC80C208E3
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 12:23:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cLIQcH9d"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="a0/sfJRT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727319AbfJaMXp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 31 Oct 2019 08:23:45 -0400
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:34895 "EHLO
-        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726687AbfJaMXp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2019 08:23:45 -0400
-Received: by mail-pg1-f193.google.com with SMTP id c8so3974008pgb.2
-        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2019 05:23:45 -0700 (PDT)
+        id S1727443AbfJaMX6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 31 Oct 2019 08:23:58 -0400
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:39933 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727440AbfJaMX5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Oct 2019 08:23:57 -0400
+Received: by mail-pf1-f195.google.com with SMTP id x28so1054110pfo.6
+        for <linux-pm@vger.kernel.org>; Thu, 31 Oct 2019 05:23:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :in-reply-to:references;
-        bh=zQKRY2XE5oS+mi6BE44agpH5JNOXqmvzvanMV9EmHYs=;
-        b=cLIQcH9d9VBOuW5eg1WEB5cH12kHdtw3tpLXDCqui+gGLI2o+7YmxJeMpr3bTTID22
-         OxrVgLn7lpnpBFmynNLHesa80WLHSG1l1PQOM92u6713UOvNwXflkXZNdNY4MS2WMztn
-         5QvPoMfZiu9X5Kwdqy4XwZKlycdtyH3cLehgxbzfTn4P9qeLqQ60qm8/vRDXUNfi5oU6
-         J9fN2TF2DbSg1+UCZu3XGYnYUhlbE7r6+qHwvv+UtvcO92CHjzbwqmmzSc4MhwgKFwoY
-         wCVaTSmQIfpf8AivSJE+7TFrbb/Qe3bg2EbtvphPWKjHzBOjKLO0MPfGhElq9/Y0VcFX
-         Ax4g==
+        bh=3oVOdq8I07h/GCMR1jINzKAZkqhi2YtbfA6UhRaG+n8=;
+        b=a0/sfJRTsmfaNdczbP/UocpLZeZWofQtNcy/OCkKLyPFEzM62I2i+2UIUeRohI2Pzh
+         dJuAqpawZBwB5gf8KbLZvqBtZ66tXwq2oxP+j3mLWZj9WIvAfeeHLVRlv5iZRzYdIGY/
+         +BJkEgbFY56XdIUiDecypECQx/gY0Cw/rRF3Zk1aB6ci+f3XVrTAqSJbI/9gvnmt/0TW
+         Y9N42pwj+OY+n4tYx/ZGe85ChkV3wNss7JpiczK4K3v54hwlYdHYduIzEo/qO/rURc8w
+         tj1UPWzFILDZuc0MMFy/cm6aLQw95ceusZWQGBscvGtkPJgt+FVEIxblgYJ12ZkCJfQP
+         vwtQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:in-reply-to:references;
-        bh=zQKRY2XE5oS+mi6BE44agpH5JNOXqmvzvanMV9EmHYs=;
-        b=YuDK+PADgz53WuXlGBlYJDypvVFFPhtshn2WG/w3O+qkkJd18bLd8TVdd96RI4byVV
-         AjKa83dnXVO+hruFdtcCUs/BbRVJ1B+vSx+nvW7y+l07MqJODjOyAYep4OVJFyyRb5YP
-         R2G0kXYnlSHGkJsthHSb7brxwpdKxPDKhr/Q3CQUt+RcppD4lxzuc9vHjZJWwNT/e1b0
-         m3M3/Lx4KtOxrFWcTcQfqOuy2X/cQ3b+irjhm++4igyFngOpkVZYkXbMHEr0h43RM4WK
-         I8Pp9ME4KGnHBc63YSytMdSi1iRax3FOb6ED+wIIEvfKN1qZYFhVnOMKBwKNo6Z+cg7q
-         rBNw==
-X-Gm-Message-State: APjAAAV15LbL67PLr5gU8TfG4Kwh9vbuV318zF3/u8vXPIOvAc2/AgqN
-        dpi3VjP7egOiRxsBzR57a1R2fA==
-X-Google-Smtp-Source: APXvYqz4LtpsmNhxAR8BEP3jfQN9Zi/GoqBPCUEwXEOGFoUFUvabW6mN4F67lmRMZ3lE0g99zgH2oA==
-X-Received: by 2002:a17:90a:9293:: with SMTP id n19mr6915757pjo.67.1572524624617;
-        Thu, 31 Oct 2019 05:23:44 -0700 (PDT)
+        bh=3oVOdq8I07h/GCMR1jINzKAZkqhi2YtbfA6UhRaG+n8=;
+        b=ZTSQxiMYgjGR52Q6PsYxF8KeTzZ6O4q5ujytgVBn0u9fb3HRTz+oaOmxTlpRLIYgXG
+         8+nZA+QygUzFLpSudIuD1imOvBPT+OvHhAxmt9Ch1075pC4OD91IfrYnwEOdxYicwSzZ
+         zhaqkp5Np0XiwKPrU5LbEZLKhumzITPFHPgOef5Dk90aYKbJst125Bc3Bc0w0QZ9Eapj
+         Qb8HEt+nVHSg0gTFL80pkYyLA1sKzkpuRZffCi1df9ETAtFvojKrRkXmip9fRlJ3Yxu3
+         xoXYK+P+1e+4ejnaT0jm0iHYvHPlMVEvKqmFayMvzYcRDYb1pHvNg58gM53b9wjeiypf
+         EKUg==
+X-Gm-Message-State: APjAAAUqBt80tbPCoWkQLbk8pUIKVOVa7Xgs1c3PDwR0TjG1WFAMlb0t
+        AeFT3J00EQkf69iXnTRWJXOLKg==
+X-Google-Smtp-Source: APXvYqwRsBatPyRPC6H5u3bNXQ3d9fpGbW7bwKpnEtOkZpwtidHIsC1wSk8dAdf1LqVvm7kugUi34w==
+X-Received: by 2002:a63:6d8b:: with SMTP id i133mr6165132pgc.241.1572524636826;
+        Thu, 31 Oct 2019 05:23:56 -0700 (PDT)
 Received: from baolinwangubtpc.spreadtrum.com ([117.18.48.82])
-        by smtp.gmail.com with ESMTPSA id j25sm2983077pfi.113.2019.10.31.05.23.40
+        by smtp.gmail.com with ESMTPSA id j25sm2983077pfi.113.2019.10.31.05.23.52
         (version=TLS1 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Thu, 31 Oct 2019 05:23:43 -0700 (PDT)
+        Thu, 31 Oct 2019 05:23:55 -0700 (PDT)
 From:   Baolin Wang <baolin.wang@linaro.org>
 To:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com,
         baolin.wang@linaro.org, baolin.wang7@gmail.com,
         zhang.lyra@gmail.com, orsonzhai@gmail.com
-Subject: [PATCH v2 2/5] power: supply: core: Add battery internal resistance temperature table support
-Date:   Thu, 31 Oct 2019 20:22:41 +0800
-Message-Id: <febb8a7721ddd29ad2fa7cf92c2b7a79180bb61e.1572523415.git.baolin.wang@linaro.org>
+Subject: [PATCH v2 5/5] power: supply: sc27xx: Calibrate the resistance of coulomb counter
+Date:   Thu, 31 Oct 2019 20:22:44 +0800
+Message-Id: <d32db383ed63c4775b92c30a129cb5f6b0929007.1572523415.git.baolin.wang@linaro.org>
 X-Mailer: git-send-email 1.7.9.5
 In-Reply-To: <cover.1572523415.git.baolin.wang@linaro.org>
 References: <cover.1572523415.git.baolin.wang@linaro.org>
@@ -73,164 +73,72 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since the battery internal resistance can be changed with the temperature
-changes, thus add a resistance temperature table support to look up
-the accurate battery internal resistance in a certain temperature.
+There are some deviations between the real resistance and the ideal
+resistance of coulomb counter, which will affect the accuracy of
+the coulomb counter, thus calibrate the real resistance of coulomb
+counter to improve the accuracy.
 
 Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 ---
- drivers/power/supply/power_supply_core.c |   67 +++++++++++++++++++++++++++++-
- include/linux/power_supply.h             |   10 +++++
- 2 files changed, 76 insertions(+), 1 deletion(-)
+ drivers/power/supply/sc27xx_fuel_gauge.c |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 5c36c43..1a9a9fa 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -565,9 +565,11 @@ struct power_supply *devm_power_supply_get_by_phandle(struct device *dev,
- int power_supply_get_battery_info(struct power_supply *psy,
- 				  struct power_supply_battery_info *info)
- {
-+	struct power_supply_resistance_temp_table *resist_table;
- 	struct device_node *battery_np;
- 	const char *value;
- 	int err, len, index;
-+	const __be32 *list;
+diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/supply/sc27xx_fuel_gauge.c
+index 221b6fb..951d5d1 100644
+--- a/drivers/power/supply/sc27xx_fuel_gauge.c
++++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+@@ -62,6 +62,8 @@
  
- 	info->energy_full_design_uwh         = -EINVAL;
- 	info->charge_full_design_uah         = -EINVAL;
-@@ -578,6 +580,7 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 	info->constant_charge_current_max_ua = -EINVAL;
- 	info->constant_charge_voltage_max_uv = -EINVAL;
- 	info->factory_internal_resistance_uohm  = -EINVAL;
-+	info->resist_table = NULL;
- 
- 	for (index = 0; index < POWER_SUPPLY_OCV_TEMP_MAX; index++) {
- 		info->ocv_table[index]       = NULL;
-@@ -644,7 +647,6 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 	for (index = 0; index < len; index++) {
- 		struct power_supply_battery_ocv_table *table;
- 		char *propname;
--		const __be32 *list;
- 		int i, tab_len, size;
- 
- 		propname = kasprintf(GFP_KERNEL, "ocv-capacity-table-%d", index);
-@@ -677,6 +679,26 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 		}
- 	}
- 
-+	list = of_get_property(battery_np, "resistance-temp-table", &len);
-+	if (!list || !len)
-+		goto out_put_node;
-+
-+	info->resist_table_size = len / (2 * sizeof(__be32));
-+	resist_table = info->resist_table = devm_kcalloc(&psy->dev,
-+							 info->resist_table_size,
-+							 sizeof(*resist_table),
-+							 GFP_KERNEL);
-+	if (!info->resist_table) {
-+		power_supply_put_battery_info(psy, info);
-+		err = -ENOMEM;
-+		goto out_put_node;
-+	}
-+
-+	for (index = 0; index < info->resist_table_size; index++) {
-+		resist_table[index].temp = be32_to_cpu(*list++);
-+		resist_table[index].resistance = be32_to_cpu(*list++);
-+	}
-+
- out_put_node:
- 	of_node_put(battery_np);
- 	return err;
-@@ -692,10 +714,53 @@ void power_supply_put_battery_info(struct power_supply *psy,
- 		if (info->ocv_table[i])
- 			devm_kfree(&psy->dev, info->ocv_table[i]);
- 	}
-+
-+	if (info->resist_table)
-+		devm_kfree(&psy->dev, info->resist_table);
- }
- EXPORT_SYMBOL_GPL(power_supply_put_battery_info);
- 
- /**
-+ * power_supply_temp2resist_simple() - find the battery internal resistance
-+ * percent
-+ * @table: Pointer to battery resistance temperature table
-+ * @table_len: The table length
-+ * @ocv: Current temperature
-+ *
-+ * This helper function is used to look up battery internal resistance percent
-+ * according to current temperature value from the resistance temperature table,
-+ * and the table must be ordered descending. Then the actual battery internal
-+ * resistance = the ideal battery internal resistance * percent / 100.
-+ *
-+ * Return: the battery internal resistance percent
-+ */
-+int power_supply_temp2resist_simple(struct power_supply_resistance_temp_table *table,
-+				    int table_len, int temp)
-+{
-+	int i, resist;
-+
-+	for (i = 0; i < table_len; i++)
-+		if (temp > table[i].temp)
-+			break;
-+
-+	if (i > 0 && i < table_len) {
-+		int tmp;
-+
-+		tmp = (table[i - 1].resistance - table[i].resistance) *
-+			(temp - table[i].temp);
-+		tmp /= table[i - 1].temp - table[i].temp;
-+		resist = tmp + table[i].resistance;
-+	} else if (i == 0) {
-+		resist = table[0].resistance;
-+	} else {
-+		resist = table[table_len - 1].resistance;
-+	}
-+
-+	return resist;
-+}
-+EXPORT_SYMBOL_GPL(power_supply_temp2resist_simple);
-+
-+/**
-  * power_supply_ocv2cap_simple() - find the battery capacity
-  * @table: Pointer to battery OCV lookup table
-  * @table_len: OCV table length
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 28413f7..dcd5a71 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -325,6 +325,11 @@ struct power_supply_battery_ocv_table {
- 	int capacity;	/* percent */
- };
- 
-+struct power_supply_resistance_temp_table {
-+	int temp;	/* celsius */
-+	int resistance;	/* internal resistance percent */
-+};
-+
- #define POWER_SUPPLY_OCV_TEMP_MAX 20
+ #define SC27XX_FGU_CUR_BASIC_ADC	8192
+ #define SC27XX_FGU_SAMPLE_HZ		2
++/* micro Ohms */
++#define SC27XX_FGU_IDEAL_RESISTANCE	20000
  
  /*
-@@ -349,6 +354,8 @@ struct power_supply_battery_info {
- 	int ocv_temp[POWER_SUPPLY_OCV_TEMP_MAX];/* celsius */
- 	struct power_supply_battery_ocv_table *ocv_table[POWER_SUPPLY_OCV_TEMP_MAX];
- 	int ocv_table_size[POWER_SUPPLY_OCV_TEMP_MAX];
-+	struct power_supply_resistance_temp_table *resist_table;
-+	int resist_table_size;
+  * struct sc27xx_fgu_data: describe the FGU device
+@@ -84,6 +86,7 @@
+  * @resist_table_len: the resistance table length
+  * @cur_1000ma_adc: ADC value corresponding to 1000 mA
+  * @vol_1000mv_adc: ADC value corresponding to 1000 mV
++ * @calib_resist: the real resistance of coulomb counter chip in mOhm
+  * @cap_table: capacity table with corresponding ocv
+  * @resist_table: resistance percent table with corresponding temperature
+  */
+@@ -108,6 +111,7 @@ struct sc27xx_fgu_data {
+ 	int resist_table_len;
+ 	int cur_1000ma_adc;
+ 	int vol_1000mv_adc;
++	int calib_resist;
+ 	struct power_supply_battery_ocv_table *cap_table;
+ 	struct power_supply_resistance_temp_table *resist_table;
  };
+@@ -900,7 +904,9 @@ static int sc27xx_fgu_calibration(struct sc27xx_fgu_data *data)
+ 	 */
+ 	cal_4200mv = (calib_data & 0x1ff) + 6963 - 4096 - 256;
+ 	data->vol_1000mv_adc = DIV_ROUND_CLOSEST(cal_4200mv * 10, 42);
+-	data->cur_1000ma_adc = data->vol_1000mv_adc * 4;
++	data->cur_1000ma_adc =
++		DIV_ROUND_CLOSEST(data->vol_1000mv_adc * 4 * data->calib_resist,
++				  SC27XX_FGU_IDEAL_RESISTANCE);
  
- extern struct atomic_notifier_head power_supply_notifier;
-@@ -381,6 +388,9 @@ extern int power_supply_ocv2cap_simple(struct power_supply_battery_ocv_table *ta
- 				int temp, int *table_len);
- extern int power_supply_batinfo_ocv2cap(struct power_supply_battery_info *info,
- 					int ocv, int temp);
-+extern int
-+power_supply_temp2resist_simple(struct power_supply_resistance_temp_table *table,
-+				int table_len, int temp);
- extern void power_supply_changed(struct power_supply *psy);
- extern int power_supply_am_i_supplied(struct power_supply *psy);
- extern int power_supply_set_input_current_limit_from_supplier(
+ 	kfree(buf);
+ 	return 0;
+@@ -1079,6 +1085,15 @@ static int sc27xx_fgu_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	ret = device_property_read_u32(&pdev->dev,
++				       "sprd,calib-resistance-micro-ohms",
++				       &data->calib_resist);
++	if (ret) {
++		dev_err(&pdev->dev,
++			"failed to get fgu calibration resistance\n");
++		return ret;
++	}
++
+ 	data->channel = devm_iio_channel_get(dev, "bat-temp");
+ 	if (IS_ERR(data->channel)) {
+ 		dev_err(dev, "failed to get IIO channel\n");
 -- 
 1.7.9.5
 
