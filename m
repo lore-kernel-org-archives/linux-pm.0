@@ -6,27 +6,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2194CA9ED0
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 21:34:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 406DACA9ECB
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 21:34:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BAA442086D
-	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 21:34:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 11465208E3
+	for <linux-pm@archiver.kernel.org>; Thu, 31 Oct 2019 21:34:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728506AbfJaVej (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 31 Oct 2019 17:34:39 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:57666 "EHLO inva020.nxp.com"
+        id S1728448AbfJaVek (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 31 Oct 2019 17:34:40 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:58040 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728448AbfJaVej (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 31 Oct 2019 17:34:39 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id EF3171A0218;
-        Thu, 31 Oct 2019 22:34:36 +0100 (CET)
+        id S1728492AbfJaVek (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 31 Oct 2019 17:34:40 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 0AF4620056E;
+        Thu, 31 Oct 2019 22:34:39 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E22431A0112;
-        Thu, 31 Oct 2019 22:34:36 +0100 (CET)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id F1689200563;
+        Thu, 31 Oct 2019 22:34:38 +0100 (CET)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 4A6CE205E9;
-        Thu, 31 Oct 2019 22:34:36 +0100 (CET)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 593A4205E9;
+        Thu, 31 Oct 2019 22:34:38 +0100 (CET)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
@@ -42,9 +42,9 @@ Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v10 07/11] PM / QoS: Export _freq_qos_apply
-Date:   Thu, 31 Oct 2019 23:34:24 +0200
-Message-Id: <077c5132cc4391bfc43897c719c648f10b658b11.1572556786.git.leonard.crestez@nxp.com>
+Subject: [PATCH v10 10/11] PM / devfreq: Add PM QoS support
+Date:   Thu, 31 Oct 2019 23:34:27 +0200
+Message-Id: <c2c27970e7c0c1ae2724aa57523334158a99cfab.1572556786.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1572556786.git.leonard.crestez@nxp.com>
 References: <cover.1572556786.git.leonard.crestez@nxp.com>
@@ -56,109 +56,219 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is exported only for dev_pm_qos to use in order to implement
-per-device freq constraints.
+Register notifiers with the PM QoS framework in order to respond to
+requests for DEV_PM_QOS_MIN_FREQUENCY and DEV_PM_QOS_MAX_FREQUENCY.
 
-Export with a leading underscore because this is an implementation
-detail, it's not meant to be used by drivers making QoS requests.
+No notifiers are added by this patch but PM QoS constraints can be
+imposed externally (for example from other devices).
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- include/linux/pm_qos.h |  2 ++
- kernel/power/qos.c     | 11 ++++++-----
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ drivers/devfreq/devfreq.c | 78 +++++++++++++++++++++++++++++++++++++++
+ include/linux/devfreq.h   |  5 +++
+ 2 files changed, 83 insertions(+)
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index a8e1486e3200..89a8e7a4710f 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -291,10 +291,12 @@ s32 freq_qos_read_value(struct freq_constraints *qos,
- int freq_qos_add_request(struct freq_constraints *qos,
- 			 struct freq_qos_request *req,
- 			 enum freq_qos_req_type type, s32 value);
- int freq_qos_update_request(struct freq_qos_request *req, s32 new_value);
- int freq_qos_remove_request(struct freq_qos_request *req);
-+int _freq_qos_apply(struct freq_qos_request *req,
-+		    enum pm_qos_req_action action, s32 value);
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index ba3b53ee23fd..776dec301a4e 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -22,15 +22,18 @@
+ #include <linux/platform_device.h>
+ #include <linux/list.h>
+ #include <linux/printk.h>
+ #include <linux/hrtimer.h>
+ #include <linux/of.h>
++#include <linux/pm_qos.h>
+ #include "governor.h"
  
- int freq_qos_add_notifier(struct freq_constraints *qos,
- 			  enum freq_qos_req_type type,
- 			  struct notifier_block *notifier);
- int freq_qos_remove_notifier(struct freq_constraints *qos,
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 04e83fdfbe80..ea38ae86bd66 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -708,16 +708,16 @@ s32 freq_qos_read_value(struct freq_constraints *qos,
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/devfreq.h>
  
- 	return ret;
- }
++#define HZ_PER_KHZ	1000
++
+ static struct class *devfreq_class;
  
- /**
-- * freq_qos_apply - Add/modify/remove frequency QoS request.
-+ * _freq_qos_apply - Add/modify/remove frequency QoS request.
-  * @req: Constraint request to apply.
-  * @action: Action to perform (add/update/remove).
-  * @value: Value to assign to the QoS request.
-  */
--static int freq_qos_apply(struct freq_qos_request *req,
-+int _freq_qos_apply(struct freq_qos_request *req,
- 			  enum pm_qos_req_action action, s32 value)
+ /*
+  * devfreq core provides delayed work based load monitoring helper
+  * functions. Governors can use these or can implement their own
+@@ -109,10 +112,11 @@ static unsigned long find_available_max_freq(struct devfreq *devfreq)
+ static void get_freq_range(struct devfreq *devfreq,
+ 			   unsigned long *min_freq,
+ 			   unsigned long *max_freq)
  {
- 	int ret;
+ 	unsigned long *freq_table = devfreq->profile->freq_table;
++	s32 qos_min_freq, qos_max_freq;
  
- 	switch(req->type) {
-@@ -733,10 +733,11 @@ static int freq_qos_apply(struct freq_qos_request *req,
- 		ret = -EINVAL;
+ 	lockdep_assert_held(&devfreq->lock);
+ 
+ 	/*
+ 	 * Initialize minimum/maximum frequency from freq table.
+@@ -125,10 +129,20 @@ static void get_freq_range(struct devfreq *devfreq,
+ 	} else {
+ 		*min_freq = freq_table[devfreq->profile->max_state - 1];
+ 		*max_freq = freq_table[0];
  	}
  
- 	return ret;
++	/* Apply constraints from PM QoS */
++	qos_min_freq = dev_pm_qos_read_value(devfreq->dev.parent,
++					     DEV_PM_QOS_MIN_FREQUENCY);
++	qos_max_freq = dev_pm_qos_read_value(devfreq->dev.parent,
++					     DEV_PM_QOS_MAX_FREQUENCY);
++	*min_freq = max(*min_freq, (unsigned long)HZ_PER_KHZ * qos_min_freq);
++	if (qos_max_freq != PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE)
++		*max_freq = min(*max_freq,
++				(unsigned long)HZ_PER_KHZ * qos_max_freq);
++
+ 	/* Apply constraints from sysfs */
+ 	*min_freq = max(*min_freq, devfreq->min_freq);
+ 	*max_freq = min(*max_freq, devfreq->max_freq);
+ 
+ 	/* Apply constraints from OPP interface */
+@@ -606,24 +620,75 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+ 			err);
+ 
+ 	return NOTIFY_OK;
  }
-+EXPORT_SYMBOL_GPL(_freq_qos_apply);
  
++/**
++ * qos_notifier_call() - Common handler for QoS constraints.
++ * @devfreq:    the devfreq instance.
++ */
++static int qos_notifier_call(struct devfreq *devfreq)
++{
++	int err;
++
++	mutex_lock(&devfreq->lock);
++	err = update_devfreq(devfreq);
++	mutex_unlock(&devfreq->lock);
++	if (err)
++		dev_err(devfreq->dev.parent,
++			"failed to update frequency from PM QoS (%d)\n",
++			err);
++
++	return NOTIFY_OK;
++}
++
++/**
++ * qos_min_notifier_call() - Callback for QoS min_freq changes.
++ * @nb:		Should be devfreq->nb_min
++ */
++static int qos_min_notifier_call(struct notifier_block *nb,
++					 unsigned long val, void *ptr)
++{
++	return qos_notifier_call(container_of(nb, struct devfreq, nb_min));
++}
++
++/**
++ * qos_max_notifier_call() - Callback for QoS max_freq changes.
++ * @nb:		Should be devfreq->nb_max
++ */
++static int qos_max_notifier_call(struct notifier_block *nb,
++					 unsigned long val, void *ptr)
++{
++	return qos_notifier_call(container_of(nb, struct devfreq, nb_max));
++}
++
  /**
-  * freq_qos_add_request - Insert new frequency QoS request into a given list.
-  * @qos: Constraints to update.
-  * @req: Preallocated request object.
-@@ -763,11 +764,11 @@ int freq_qos_add_request(struct freq_constraints *qos,
- 		 "%s() called for active request\n", __func__))
- 		return -EINVAL;
+  * devfreq_dev_release() - Callback for struct device to release the device.
+  * @dev:	the devfreq device
+  *
+  * Remove devfreq from the list and release its resources.
+  */
+ static void devfreq_dev_release(struct device *dev)
+ {
+ 	struct devfreq *devfreq = to_devfreq(dev);
++	int err;
  
- 	req->qos = qos;
- 	req->type = type;
--	ret = freq_qos_apply(req, PM_QOS_ADD_REQ, value);
-+	ret = _freq_qos_apply(req, PM_QOS_ADD_REQ, value);
- 	if (ret < 0) {
- 		req->qos = NULL;
- 		req->type = 0;
- 	}
+ 	mutex_lock(&devfreq_list_lock);
+ 	list_del(&devfreq->node);
+ 	mutex_unlock(&devfreq_list_lock);
  
-@@ -796,11 +797,11 @@ int freq_qos_update_request(struct freq_qos_request *req, s32 new_value)
- 		return -EINVAL;
++	err = dev_pm_qos_remove_notifier(devfreq->dev.parent, &devfreq->nb_max,
++					 DEV_PM_QOS_MAX_FREQUENCY);
++	if (err)
++		dev_warn(dev->parent,
++			"Failed to remove max_freq notifier: %d\n", err);
++	err = dev_pm_qos_remove_notifier(devfreq->dev.parent, &devfreq->nb_min,
++					 DEV_PM_QOS_MIN_FREQUENCY);
++	if (err)
++		dev_warn(dev->parent,
++			"Failed to remove min_freq notifier: %d\n", err);
++
+ 	if (devfreq->profile->exit)
+ 		devfreq->profile->exit(devfreq->dev.parent);
  
- 	if (req->pnode.prio == new_value)
- 		return 0;
+ 	mutex_destroy(&devfreq->lock);
+ 	kfree(devfreq);
+@@ -731,10 +796,22 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 				atomic_inc_return(&devfreq_no));
+ 	err = device_add(&devfreq->dev);
+ 	if (err)
+ 		goto err_dev;
  
--	return freq_qos_apply(req, PM_QOS_UPDATE_REQ, new_value);
-+	return _freq_qos_apply(req, PM_QOS_UPDATE_REQ, new_value);
- }
- EXPORT_SYMBOL_GPL(freq_qos_update_request);
++	devfreq->nb_min.notifier_call = qos_min_notifier_call;
++	err = dev_pm_qos_add_notifier(devfreq->dev.parent, &devfreq->nb_min,
++				      DEV_PM_QOS_MIN_FREQUENCY);
++	if (err)
++		goto err_devfreq;
++
++	devfreq->nb_max.notifier_call = qos_max_notifier_call;
++	err = dev_pm_qos_add_notifier(devfreq->dev.parent, &devfreq->nb_max,
++				      DEV_PM_QOS_MAX_FREQUENCY);
++	if (err)
++		goto err_devfreq;
++
+ 	mutex_lock(&devfreq_list_lock);
  
- /**
-  * freq_qos_remove_request - Remove frequency QoS request from its list.
-@@ -819,11 +820,11 @@ int freq_qos_remove_request(struct freq_qos_request *req)
+ 	governor = try_then_request_governor(devfreq->governor_name);
+ 	if (IS_ERR(governor)) {
+ 		dev_err(dev, "%s: Unable to find governor for the device\n",
+@@ -758,10 +835,11 @@ struct devfreq *devfreq_add_device(struct device *dev,
  
- 	if (WARN(!freq_qos_request_active(req),
- 		 "%s() called for unknown object\n", __func__))
- 		return -EINVAL;
+ 	return devfreq;
  
--	return freq_qos_apply(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-+	return _freq_qos_apply(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- }
- EXPORT_SYMBOL_GPL(freq_qos_remove_request);
+ err_init:
+ 	mutex_unlock(&devfreq_list_lock);
++err_devfreq:
+ 	devfreq_remove_device(devfreq);
+ 	return ERR_PTR(err);
+ err_dev:
+ 	put_device(&devfreq->dev);
+ err_out:
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index c3cbc15fdf08..dac0dffeabb4 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -134,10 +134,12 @@ struct devfreq_dev_profile {
+  * @total_trans:	Number of devfreq transitions
+  * @trans_table:	Statistics of devfreq transitions
+  * @time_in_state:	Statistics of devfreq states
+  * @last_stat_updated:	The last time stat updated
+  * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
++ * @nb_min:		Notifier block for DEV_PM_QOS_MIN_FREQUENCY
++ * @nb_max:		Notifier block for DEV_PM_QOS_MAX_FREQUENCY
+  *
+  * This structure stores the devfreq information for a give device.
+  *
+  * Note that when a governor accesses entries in struct devfreq in its
+  * functions except for the context of callbacks defined in struct
+@@ -176,10 +178,13 @@ struct devfreq {
+ 	unsigned int *trans_table;
+ 	unsigned long *time_in_state;
+ 	unsigned long last_stat_updated;
  
- /**
-  * freq_qos_add_notifier - Add frequency QoS change notifier.
+ 	struct srcu_notifier_head transition_notifier_list;
++
++	struct notifier_block nb_min;
++	struct notifier_block nb_max;
+ };
+ 
+ struct devfreq_freqs {
+ 	unsigned long old;
+ 	unsigned long new;
 -- 
 2.17.1
 
