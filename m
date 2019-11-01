@@ -2,129 +2,95 @@ Return-Path: <SRS0=AJ/8=YZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75074CA9ECF
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 16:42:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64CB8CA9ECF
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 17:02:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1B9A5217D9
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 16:42:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=megous.com header.i=@megous.com header.b="q1GNBpiQ"
+	by mail.kernel.org (Postfix) with ESMTP id 2D4BA2085B
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 17:02:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1572627757;
+	bh=DajJe0mFj15gK2TgkfxM5mDbiFLnzq+6Bv8I4oC5BqY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=vBvOEMCiOnvS8pWE/U38C7mfMrcV9BDEzII3qfYJZQgDUkHDxMvoiuksPQHMfPbg+
+	 0LYGKdELFRg/l/QovaDSOd9GYCJKd6Gg2J/wou0sN+AU4JYDKpRHCc232Qtz1Haxjn
+	 gg6TYULtLF9k9LRriuI978B1QAR+6/bjLwyhXHVo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727766AbfKAQmE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Nov 2019 12:42:04 -0400
-Received: from vps.xff.cz ([195.181.215.36]:60608 "EHLO vps.xff.cz"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727426AbfKAQmE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 1 Nov 2019 12:42:04 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=megous.com; s=mail;
-        t=1572626522; bh=Gmx9bz5c58Bmxt6o/l+l4TxxiIaJ3KV5uLxeuq7aJF4=;
-        h=From:To:Cc:Subject:Date:From;
-        b=q1GNBpiQn9Hc6z2CYpSi/KhF7+Zu43LFYFVzBX3EmFZCU0KFXbokbxCCPg1g7n+FU
-         Ztbh4zB5zrTH1o5e8YV6cvZkk+eeb0mP2ta6GWqUrAWICBj5DIOyo14eLesIO0F8UZ
-         YRUOINktiejT4Q2xpVswf4M6RJynZKasnXXDtpGU=
-From:   Ondrej Jirman <megous@megous.com>
-To:     linux-sunxi@googlegroups.com
-Cc:     Ondrej Jirman <megous@megous.com>,
-        Yangtao Li <tiny.windzz@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        linux-pm@vger.kernel.org (open list:ALLWINNER CPUFREQ DRIVER),
-        linux-arm-kernel@lists.infradead.org (moderated list:ARM/Allwinner
-        sunXi SoC support), linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v2] cpufreq: sun50i: Fix CPU speed bin detection
-Date:   Fri,  1 Nov 2019 17:41:51 +0100
-Message-Id: <20191101164152.445067-1-megous@megous.com>
+        id S1729213AbfKARCg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Nov 2019 13:02:36 -0400
+Received: from mail-ed1-f66.google.com ([209.85.208.66]:40566 "EHLO
+        mail-ed1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729197AbfKARCg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Nov 2019 13:02:36 -0400
+Received: by mail-ed1-f66.google.com with SMTP id p59so8025665edp.7
+        for <linux-pm@vger.kernel.org>; Fri, 01 Nov 2019 10:02:35 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=2uoew/fPqh/5Cx3han3omflzNw7btngpjIhB4RSS554=;
+        b=su0v+t2/zHb/+Ycbm8IoT85044e28DekaSi6pIlCuqpY1R9oMw8l1OT2BvcSf4KJCi
+         28wYbaiQhULy7ahgvbTFo3THSqMo9HHRedD1dvUwZHc/RFOAngwJHWuXTS/qvzmMmowd
+         6Wv12xdE5veqh6NvTviRqP7LQhFM/QgTbPPTdKMh2E930PdlVews9wks8wMzK4UXmsIc
+         aHI8CflK8oNF+BhWXKnWaCNYOWhDjqUmsFrPcwJUcuy9M01tm8DqbjqyPi+IbVURqIno
+         IttXnF+MHgdFETUc5WjimsPk/a3Yni3UA/MlD8tfweYcmGrecqaV8DhrmUyG3NGbz0dn
+         hXGQ==
+X-Gm-Message-State: APjAAAVdlAg7x9YIbv02/zIlnTRWxRXgteV0oar7Cg1Fvuf/cDP75Th8
+        LBV8tVSlti6EY5iGvGMxfCFeUDYIWkB7GALr4Ycnew==
+X-Google-Smtp-Source: APXvYqy6mcKjgVIUaNEoM2d4tSgLqIUk++sXg2gAMUCNlKSpAm+jXFoN4FjzdL8JEs8Rt+aTyaeufJNIPxyCL4iaoKA=
+X-Received: by 2002:a50:bb48:: with SMTP id y66mr13868752ede.66.1572627754739;
+ Fri, 01 Nov 2019 10:02:34 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20191031131422.18887-1-rui.zhang@intel.com>
+In-Reply-To: <20191031131422.18887-1-rui.zhang@intel.com>
+From:   Len Brown <lenb@kernel.org>
+Date:   Fri, 1 Nov 2019 13:02:23 -0400
+Message-ID: <CAJvTdKnjNwRDVukT_JONSTfzG-6kzxHFzNJoyWFpbmoHwTr45g@mail.gmail.com>
+Subject: Re: [PATCH] tools/power turbostat: Add Cometlake support
+To:     Zhang Rui <rui.zhang@intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-I have observed failures to boot on Orange Pi 3, because this driver
-determined that my SoC is from the normal bin, but my SoC only works
-reliably with the OPP values for the slowest bin.
+Applied -- thanks!
 
-By querying H6 owners, it was found that e-fuse values found in the wild
-are in the range of 1-3, value of 7 was not reported, yet. From this and
-from unused defines in BSP code, it can be assumed that meaning of efuse
-values on H6 actually is:
+On Thu, Oct 31, 2019 at 9:14 AM Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> From: Chen Yu <yu.c.chen@intel.com>
+>
+> From a turbostat point of view, Cometlake is like Kabylake.
+>
+> Suggested-by: Rui Zhang <rui.zhang@intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  tools/power/x86/turbostat/turbostat.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index 5d0fddda842c..985e195f066b 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -4610,6 +4610,8 @@ unsigned int intel_model_duplicates(unsigned int model)
+>         case INTEL_FAM6_SKYLAKE:
+>         case INTEL_FAM6_KABYLAKE_L:
+>         case INTEL_FAM6_KABYLAKE:
+> +       case INTEL_FAM6_COMETLAKE_L:
+> +       case INTEL_FAM6_COMETLAKE:
+>                 return INTEL_FAM6_SKYLAKE_L;
+>
+>         case INTEL_FAM6_ICELAKE_L:
+> --
+> 2.17.1
+>
 
-- 1 = slowest bin
-- 2 = normal bin
-- 3 = fastest bin
 
-Vendor code actually treats 0 and 2 as invalid efuse values, but later
-treats all invalid values as a normal bin. This looks like a mistake in
-bin detection code, that was plastered over by a hack in cpufreq code,
-so let's not repeat it here. It probably only works because there are no
-SoCs in the wild with efuse value of 0, and fast bin SoCs are made to
-use normal bin OPP tables, which is also safe.
-
-Let's play it safe and interpret 0 as the slowest bin, but fix detection
-of other bins to match this research. More research will be done before
-actual OPP tables are merged.
-
-Fixes: f328584f7bff ("cpufreq: Add sun50i nvmem based CPU scaling driver")
-Signed-off-by: Ondrej Jirman <megous@megous.com>
----
-
- See also https://lkml.org/lkml/2019/11/1/496
-
- drivers/cpufreq/sun50i-cpufreq-nvmem.c | 25 ++++++++++---------------
- 1 file changed, 10 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-index eca32e443716..9907a165135b 100644
---- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-@@ -25,7 +25,7 @@
- static struct platform_device *cpufreq_dt_pdev, *sun50i_cpufreq_pdev;
- 
- /**
-- * sun50i_cpufreq_get_efuse() - Parse and return efuse value present on SoC
-+ * sun50i_cpufreq_get_efuse() - Determine speed grade from efuse value
-  * @versions: Set to the value parsed from efuse
-  *
-  * Returns 0 if success.
-@@ -69,21 +69,16 @@ static int sun50i_cpufreq_get_efuse(u32 *versions)
- 		return PTR_ERR(speedbin);
- 
- 	efuse_value = (*speedbin >> NVMEM_SHIFT) & NVMEM_MASK;
--	switch (efuse_value) {
--	case 0b0001:
--		*versions = 1;
--		break;
--	case 0b0011:
--		*versions = 2;
--		break;
--	default:
--		/*
--		 * For other situations, we treat it as bin0.
--		 * This vf table can be run for any good cpu.
--		 */
-+
-+	/*
-+	 * We treat unexpected efuse values as if the SoC was from
-+	 * the slowest bin. Expected efuse values are 1-3, slowest
-+	 * to fastest.
-+	 */
-+	if (efuse_value >= 1 && efuse_value <= 3)
-+		*versions = efuse_value - 1;
-+	else
- 		*versions = 0;
--		break;
--	}
- 
- 	kfree(speedbin);
- 	return 0;
 -- 
-2.23.0
-
+Len Brown, Intel Open Source Technology Center
