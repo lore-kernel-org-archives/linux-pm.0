@@ -2,173 +2,121 @@ Return-Path: <SRS0=AJ/8=YZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CC2ECA9ED1
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:22:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20EF3CA9ED1
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E640E21835
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:22:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EE3D8217D9
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MSMO14DH"
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="X9MZO549"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726840AbfKANW2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Nov 2019 09:22:28 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:45935 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726780AbfKANW1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Nov 2019 09:22:27 -0400
-Received: by mail-lj1-f194.google.com with SMTP id q64so10191247ljb.12;
-        Fri, 01 Nov 2019 06:22:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=BxLuKMZeBlVEfxN/A5Vfu9gCXIr8p72x+ZY3unGqehk=;
-        b=MSMO14DH6Z1a0eTruGrePh2yxhOOYdC3mv/l+VHLxl/E0Ub3012lpAoCuMOWFNx5Gs
-         DNideGmtLK7TGQVSv9CVsaKUEncGH6TmWjSciHa4QTBpBi5JyQI4dh5Puw6x4Io8e0NW
-         tbk+rk4GdB4C7wVJLivNAahZJkAngdEY5R69tH6+rWsYTVXTcVy7d6ab4iJu/K9nvmeP
-         RLhRIjnVlNTijyRPDGvWR5jmQtNDWOCFA0BaJAEvRaUSPQwry90dy/M+9Hwalej2zFS/
-         b9w3Qq7Y+I2c5Yl3swluJKY+gqoF53z4aHZ4BjFvHKKiDA2xr0EpaYRgikkmzCMVcXob
-         YEyw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=BxLuKMZeBlVEfxN/A5Vfu9gCXIr8p72x+ZY3unGqehk=;
-        b=fdYusMLDzFvqMEJVVL5+VNX72KG7U+bvr+eux28XJt5jKtgeHI1Dzw8l/iAvCKoRXj
-         CaWfJKHijdzcnVIcM+pkxkY6VykKjWw1ycsQPOQVhcq2FzzIkoWcA6qwxFNmwNymQ/as
-         TY6klA9aA3KKPX5rTqUSzj7KmdZm37jZi5qhpSTwWKa3ZvigO1yrYJhQ+bQKtvk+3sey
-         r+6/P0/YE1i1wJGFdJlEgOHWR1wGuu5PcVrHML4x14K26qwgknZOdXgljEsx6GbRYBAR
-         7wumzPwGXZgTXGxg06x/m3g9dhakMAv0CQgdPjMrjMx/poF4vGthpeiQwMnMf4NEUWTs
-         CRdQ==
-X-Gm-Message-State: APjAAAUEDhKXFsIKun+BZsUMHUMIyjy0vFcDL2foju70l3Cn84Im5jcZ
-        0v7YQ/Uk3g9GRQbgpzXJyAobBthq
-X-Google-Smtp-Source: APXvYqzoXtTpyz8779l4Pan7YKFr+WghIOshLrJXjqxgJt3oJslriavZUkF4t4kZyFY8lJdkfh7WNA==
-X-Received: by 2002:a2e:b5b7:: with SMTP id f23mr8267156ljn.236.1572614544555;
-        Fri, 01 Nov 2019 06:22:24 -0700 (PDT)
-Received: from [192.168.2.145] (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.googlemail.com with ESMTPSA id r1sm2512815ljk.83.2019.11.01.06.22.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 01 Nov 2019 06:22:23 -0700 (PDT)
-Subject: Re: [PATCH v6 00/18] Consolidate and improve NVIDIA Tegra CPUIDLE
- driver(s)
-To:     Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        id S1726912AbfKANn3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Nov 2019 09:43:29 -0400
+Received: from mout.gmx.net ([212.227.17.21]:38803 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726710AbfKANn3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 1 Nov 2019 09:43:29 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1572615792;
+        bh=fOvzyTqdzRPJH9OPOKinIdqeCZlBTTjHLrFlxGo7twE=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=X9MZO549TJZ3vLpsTN53oZPmrRiVr6QEhE+a8tJ0Vozj/4p8GngNCsMNBWi/HHAQF
+         d0u4qpBcTg6lLFDQuuzcz3tdFsHTD1R8t2vxGKcKvBRsDYlZ+m7v6+yHlqt8F60ZMk
+         SdZduKccraRWC8etr/ne1T5gzHczUiJDg70n+HXM=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from localhost.localdomain ([37.4.249.112]) by mail.gmx.com
+ (mrgmx104 [212.227.17.168]) with ESMTPSA (Nemesis) id
+ 1MtfNf-1i6fdQ4C7D-00v7fj; Fri, 01 Nov 2019 14:43:12 +0100
+From:   Stefan Wahren <wahrenst@gmx.net>
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20191015170015.1135-1-digetx@gmail.com>
- <20191016192133.GB26038@pdeschrijver-desktop.Nvidia.com>
- <72636eb3-5354-eea3-3a51-4975a04186b2@gmail.com>
- <53ee8bd3-5c53-f0aa-175c-7fa3024d0af5@gmail.com>
- <20191028140443.GA27141@pdeschrijver-desktop.Nvidia.com>
- <40de641f-c38e-51ee-ae27-c5db468c45b5@gmail.com>
- <20191101123359.GG27141@pdeschrijver-desktop.Nvidia.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <a72463cd-cc16-691c-3c82-54ebb618ec32@gmail.com>
-Date:   Fri, 1 Nov 2019 16:22:17 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.1.1
-MIME-Version: 1.0
-In-Reply-To: <20191101123359.GG27141@pdeschrijver-desktop.Nvidia.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Eric Anholt <eric@anholt.net>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>,
+        Markus Mayer <mmayer@broadcom.com>
+Cc:     Chen-Yu Tsai <wens@kernel.org>,
+        bcm-kernel-feedback-list@broadcom.com,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, Stefan Wahren <wahrenst@gmx.net>
+Subject: [PATCH 4/4] ARM: configs: Build BCM2711 thermal as module
+Date:   Fri,  1 Nov 2019 14:42:29 +0100
+Message-Id: <1572615749-9524-5-git-send-email-wahrenst@gmx.net>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
+References: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
+X-Provags-ID: V03:K1:TbKDFSyoLz5kGUMLh2sdMchsMi8B7ywabIQ029/PvKMAKErCJPq
+ LaV4eY+9A6wMG6XJAq+AzVhHdeDbWKCIQ2SdpxaHQVJDnPz05KWwr/zYmz4qRItRUAmMueQ
+ 52bZwE1KDdhZw19Aa3Vn6hRMebJFvpX727zxqEUbD6e5Il680xV+/xuwUvFKrOLUtnTXGr9
+ eM4jtb+KLzwTZf5GlyVCA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:MkaZ/3lmt58=:nz5UCjGMivPj91VNzCwyFe
+ 6eTbZupEK6tkHD/UlTaZguPibR6Acl9YFic3AY75LQk2NoG51Ex7boMYU+seMx6ZfqRW6CoKr
+ 82zvdUtskysVkSwIFg01uXDzcuS75oaF7e2SOArQNIU6sMCgbB1T7UI3M21LqHQw/XikjB5bg
+ Q7FLOawvCLmPPc0vGqhtvxOtC/HWrmfORZqcmpVNyU94muqiEX7XutEIIq8LlxBSXUs2Ith+5
+ q5YzU1OWw7G/gzg/iSw4hlhWoLvkmkjNAXbTf7GuB8u3EaPtjKTaQWacZ0FoqMVJpQuCy83bR
+ tHeOzjRMGwYaGjJ/7NlW6yLsxr+GPypkXEivylBTPBJDKdl9Sl+mDIDYjvt0cG2yBqFJqG44s
+ 2CbRHr6clzj7fYcOSZgS7AlymGiKuFKVNlFYteTaksqTMoZ+ikGoBared5E/tGt06dxRzHmcG
+ J6yAg53kzjL7gwq5087VkC95YdYT1ukWME6yqugRfaOOtZUANg6uIeWGq57ufCRCciYjncoF5
+ HR3Ah4IBy/h5HZSx55vtBkX5m6kKrJAzUgcE/UOmMNQZ6qwXZETpwB1G3ghmauLKVsLsMz+OS
+ vigD293HSdqK0UJ/QpbAUoVlKTETu616J4lWurFMBaUcrRED3YQCniCMIsPI61yvICXrHP188
+ 2LnqqwvqvJ+mTxARSP3h7/YAPes5o13PDlG+gUA+2U6AgQfBhoxALznXemfcWAuRxcD0YHMoB
+ Z/4cce5K/gaKIBXapRxP41P10j9ZX3TmUhrs93PMlDGGFv60tBJpb3TCnL3/Kfo+0fjnboGkJ
+ o9NQ3J6gVe2/05QpLi3BQEvuhyQbE8KHXTrJnKqH7OG8XnePT8LbHza1HkX1ZRRA5XsMo9BiF
+ S2eeWhpw35peMp9UiyI7N5jFDyeBOgYtqoO3+uv64HPL9I8qKqTlLlsk3ReNsQGP85331SXAZ
+ 87IojnVd41AxiBEGU5Qjz4rGCqnJqbQo8S9ox50/0VDxDl2TwF5kaNERTIcL5kRod62nvTSSm
+ nP0j/C3mLORpdWUnWkE53uyjSXcpFP7q5gKDPBn3GlIu7409OCcBi4mqPWwGuGqejVGegoR/0
+ /aUTIpuslWS/e0MRk2Ilba/FqKbra8O6GpLnyw3V1LaNy54d5X04ge+lWrFGRCt//R9QOCnWt
+ fBwFYpy2gNB+0M41/3elbVdwJ6u6roVi12SysrxoTFP+P4PFWPZSGN2ZVaGAJq2k3Pl6eeMQr
+ G4ozsyV4gPkFnB+7uOCXTVn7bktCAG7C+pHQRlA==
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-01.11.2019 15:33, Peter De Schrijver пишет:
-> On Tue, Oct 29, 2019 at 03:47:56AM +0300, Dmitry Osipenko wrote:
-> ..
-> 
->>>>>> It would be useful to switch the power state terminology to the one used
->>>>>> for later chips:
->>>>>>
->>>>>> LP0 becomes SC7
->>>>>> LP1 becomes C1
->>>>>> LP2 becomes CC7
->>>>>>
->>>>>> Meaning of these states is as follows
->>>>>>
->>>>>> C is a core state:
->>>>>>
->>>>>> C1 clock gating
->>>>>> C2 not defined
->>>>>> C3 not defined
->>>>>> C4 not defined
->>>>>> C5 not defined
->>>>>> C6 not defined for ARM cores
->>>>>> C7 power-gating
->>>>>>
->>>>>> CC is a CPU cluster C state:
->>>>>>
->>>>>> CC1 cluster clock gated
->>>>>> CC2 not defined
->>>>>> CC3 fmax@Vmin: not used prior to Tegra186
->>>>>> CC4: cluster retention: no longer supported
->>>>>> CC5: not defined
->>>>>> CC6: cluster power gating
->>>>>> CC7: cluster rail gating
->>>>>>
->>>>>> SC is a System C state:
->>>>>>
->>>>>> SC1: not defined
->>>>>> SC2: not defined
->>>>>> SC3: not defined
->>>>>> SC4: not defined
->>>>>> SC5: not defined
->>>>>> SC6: not defined
->>>>>> SC7: VDD_SOC off
->>>>>
->>>>> Hello Peter,
->>>>>
->>>>> But new "drivers/cpuidle/cpuidle-tegra.c" uses exactly that terminology,
->>>>> please see "cpuidle: Refactor and move NVIDIA Tegra20 driver into
->>>>> drivers/cpuidle/" and further patches. Am I missing something? Or do you
->>>>> want the renaming to be a separate patch?
->>>>>
->>>>
->>>> Or maybe you're suggesting to change the names everywhere and not only
->>>> in the cpuidle driver? Please clarify :)
->>>
->>> At least some of the variable and function names still say lp2?
->>
->> The cpuidle driver uses LP2 terminology for everything that comes from
->> the external arch / firmware includes. But it says CC6 for everything
->> that is internal to the driver. So yes, there is a bit of new/old
->> terminology mixing in the code.
->>
->> The arch code / PMC driver / TF firmware are all saying LP2. The LP2
->> naming is also a part of the device-tree binding.
->>
->> It will be a lot of mess to rename the mach-tegra/pm.c code. I guess
->> eventually it could be moved to drivers/soc/, so maybe it will be better
->> to postpone the renaming until then?
-> 
-> Or maybe add a comment somewhere indicating:
-> 
-> LP2 = CC6
-> LP1 = C1
-> LP0 = SC7
-> 
-> TF predates the new naming, so that may make some sense.
+This builds the BCM2711 thermal driver as module for the Raspberry Pi 4.
 
-Today it should make more sense just to add an explicit comment to the
-cpuidle driver that clarifies the new naming (IMHO). I'll prepare v7
-with that change.
+Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
+=2D--
+ arch/arm/configs/multi_v7_defconfig | 1 +
+ arch/arm64/configs/defconfig        | 1 +
+ 2 files changed, 2 insertions(+)
 
-Maybe later on, once more code will be consolidated in
-drivers/soc/tegra/, it will become useful to duplicate the clarification
-there as well.
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_=
+v7_defconfig
+index 13ba532..441b795 100644
+=2D-- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -487,6 +487,7 @@ CONFIG_IMX_THERMAL=3Dy
+ CONFIG_ROCKCHIP_THERMAL=3Dy
+ CONFIG_RCAR_THERMAL=3Dy
+ CONFIG_ARMADA_THERMAL=3Dy
++CONFIG_BCM2711_THERMAL=3Dm
+ CONFIG_BCM2835_THERMAL=3Dm
+ CONFIG_BRCMSTB_THERMAL=3Dm
+ CONFIG_ST_THERMAL_MEMMAP=3Dy
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 8e05c39..0a52987 100644
+=2D-- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -444,6 +444,7 @@ CONFIG_ROCKCHIP_THERMAL=3Dm
+ CONFIG_RCAR_THERMAL=3Dy
+ CONFIG_RCAR_GEN3_THERMAL=3Dy
+ CONFIG_ARMADA_THERMAL=3Dy
++CONFIG_BCM2711_THERMAL=3Dm
+ CONFIG_BCM2835_THERMAL=3Dm
+ CONFIG_BRCMSTB_THERMAL=3Dm
+ CONFIG_EXYNOS_THERMAL=3Dy
+=2D-
+2.7.4
 
-Please let me know if you disagree or think that something better could
-be done.
