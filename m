@@ -2,37 +2,36 @@ Return-Path: <SRS0=AJ/8=YZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11F68CA9ED2
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20D91CA9ED1
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DE28F21855
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EE09221734
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="PtVBxoI/"
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="XoByljlP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727377AbfKANna (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Nov 2019 09:43:30 -0400
-Received: from mout.gmx.net ([212.227.17.22]:51057 "EHLO mout.gmx.net"
+        id S1727385AbfKANnb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Nov 2019 09:43:31 -0400
+Received: from mout.gmx.net ([212.227.17.20]:49577 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727297AbfKANna (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 1 Nov 2019 09:43:30 -0400
+        id S1726792AbfKANnb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 1 Nov 2019 09:43:31 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1572615791;
-        bh=mEh+x+3L1b8hpI6ZWmfCju/bOUL39/Dd9BRJ+2nObT4=;
-        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=PtVBxoI/SK+6xEvg1ZZo/HuF/tuOPnLqu+thDi7KHYnTfE9x/4eInk6cMQd4lEZ7V
-         m+V75PmzVlo9uufNrv5J58RhefcWg/iH0h59JzkDg01rWu78kGrGlTo5i02717NE2p
-         UHHY3NQdytJWTHahI+5F1E9c8yVBNmQHmA0xeBIE=
+        s=badeba3b8450; t=1572615789;
+        bh=kcBKcJVOa9O9gt/1gGKhUY/mTXUJsEdNU9cT780Y7Og=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
+        b=XoByljlPxUx2ORHxVRylkGzQHBRaOhdOBUSliRz9zmfeGNoM6nKTrj4yRwcWVeLAv
+         60abCnG42zVXdU3+WUCWyOMBVt2bLg51VXdoa1xt0/9vexbu7LvFXlCkS1NGACj5op
+         njiP9I1SdecTozWYl7AOiTJOe1kBT835OnFxAUG4=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from localhost.localdomain ([37.4.249.112]) by mail.gmx.com
  (mrgmx104 [212.227.17.168]) with ESMTPSA (Nemesis) id
- 1M8hZJ-1iMOTe1cET-004mP3; Fri, 01 Nov 2019 14:43:11 +0100
+ 1MVNB1-1iZ5Ug1luZ-00SLQ7; Fri, 01 Nov 2019 14:43:09 +0100
 From:   Stefan Wahren <wahrenst@gmx.net>
 To:     Zhang Rui <rui.zhang@intel.com>,
         Eduardo Valentin <edubezval@gmail.com>,
@@ -49,76 +48,63 @@ Cc:     Chen-Yu Tsai <wens@kernel.org>,
         bcm-kernel-feedback-list@broadcom.com,
         linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, Stefan Wahren <wahrenst@gmx.net>
-Subject: [PATCH 3/4] ARM: dts: bcm2711: Enable thermal
-Date:   Fri,  1 Nov 2019 14:42:28 +0100
-Message-Id: <1572615749-9524-4-git-send-email-wahrenst@gmx.net>
+Subject: [PATCH 0/4] ARM: Enable thermal support for Raspberry Pi 4
+Date:   Fri,  1 Nov 2019 14:42:25 +0100
+Message-Id: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
-References: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
-X-Provags-ID: V03:K1:ViqU/VzUpFCBeYdz3DMy0XjDhbi83+YFTtFiwdUEVCrb12y0xJG
- JHSeurEL6x2c0xITdynQuAUktcS2actjWiIcNA9LKW6tSgbU4IhAqr/yb80wmiiZXDdkkxU
- RtaDv6oRxWUJAIbdWQfDHlrNwKOTXsQFLGnYK7ocTLyLfIIfqYH0GRhzLYCHKV4Go2SCjyw
- iKXWGy7Va5HhUkYZWj9vg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:MjkymLFkrhU=:1Ws8atzNbDZdaq1V4d/LKk
- v2eazIzDsKJlqd4spVvQ/fNN8dFUjNONZGSxKKSajuNU+hi6m1/Z0ZMTXsHhktDhj1vYKHdr1
- 8AvacTavjC2bmm74rP292jyJc0sEpUwSII4vRfMtr0xSjftUBuF2A1g1hp4gT2Fg/EaCBviA1
- 0dVn5FRaQkRHilVQ71NtftEPpZtX7wKhxfYUI0BGmVTuXPjL+nV28FLte84HJZcMwvjtcV701
- jq0ZmBZVt1uISeZNouLQRKpy3D1JR9iGbRegmrbfiVCFRDQHpBVg+HBjrN6O8gAH/jztdBUVc
- vMDoM6/F2Y8gb1gyTpJVleVsfeJaWYgLs53duUvmADHitN/mlU8WqmDBEV6DBf+lWP7Qe4xqc
- KvaClEpno6dNx7SO7gDwrxuVZWUd2wMmoun+hu44juAusckaDREliL3tlxeXDObtJF/XTdFlV
- Dke/fzIrAl5LkM7utm9FZHGfQ50hjTo5dS/rrOgJDGyYpxhUwvXt9Cm/g6hw69KOdAx+giiTg
- LBuTuDBRTCQG+rB9TOT3fac5pSdvubD+OCSc+Jvaaz+lgMH9teTg/WcEe3OgYteiEEDPDYcib
- I9C6zN4KL7/2mtHvjuXfT2IKDp9WQcCbPkL9nzpNLmEdQLHxlCRJjg+36y0nlIMmhayuTbbmf
- 4yTVOJAUumLulA1ZvR5MLYJ15TIVFQXQZEvP0kF/5xKe3tW5GUJDYnTwoiQ3EscYCGOQP3GCB
- DIJlVjZX9luHL2/SdwBqCvrxm1GZ83sidrinQAdc3z8ldM1hIQOvId0b9EHZ0HCgq2OQvXw3j
- h8odivHAkN9wLj1eW//NTO14VC0mQt4FsXt0Boi7oGecLLnd3c8vWPHCsWE4zfqVyXHlD10Qe
- 4ee/D/Cno3QBz4We1PKvlfMsj5ezI/uSLxe7vLfQAJEXlVcvAgl4tajfDQcaSyhuYVFQuLuit
- eq+MbaCn41hcG7a2D/ZdCiu0qYw7zPJf2G+fbSzdIuROxfjCaMmiDGbzYQmGuwX+7d4PfyHMx
- 9CngQ3dspgHJGQwxxdHJ5CWjkDYSBajueTHBrvWNgV1pUScO+USCwW4NAi/5jla0R5ppV1FhQ
- J02uoOPYATV1xXlblla1F8YueZWT5CYkwdcyCg6zkjm5DbHXztkNCkJ3erEpju/qRxUbmRl/A
- qw2f6wijiiNORLjJDsekKtUegmWjWrgQUzVoihKPe6qfwXiZ/CdZ8kJ+qdPlsnceZxRKiqM+t
- zivh29+ZZwvMkagY80nc5iVJzCURgwZfAVwHe6A==
+X-Provags-ID: V03:K1:LYhrgAqYuJOSKZBHS4xtwA6qw+Fd7NI7pnQJ1JEonsrCmfvtrIH
+ Lyq+cNclMYkZADaN6b92h1cQbUBuJfONajbE6qeK1AFP7U/h2xJQ8P+r6vNODLZwZhZ2ktO
+ InieNmIR8xR/yHy3Q51s8ZZx+IG1AHDs4AvYognOK0TIYxglAVQ4arD9pW9QuppgrqwRRGj
+ CERsa8Vesen2yT7oA5lPw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:7sBRXt/lcKo=:iyAG+/n+l2vq9c1Lv6rdmK
+ oZOzFVFYUoeBQXkrBSSZro4Xi9DwaC/cZyG9NXwLaw+Oob+aNnPe8TB1kG0+hC/9WMGEjvrKi
+ ht99cgtuWDjfH17nU5MXUsPhtv70Af1Rg5XLlgQX4ChkSpwxYeCem3b2umMdN1pfuvyFq4hUc
+ vVM2MgLN5WKRqLUzNS5gGSdomiFeliBF915Gfb2c8GzWkY2NxDMtppRP0BpME2HpMGfyoO0+D
+ iYMoALpyHcNPEsSsYAC36MD8AV3eeXxPcf+q66ApkMJuI5Metvdt7UqBAO4LNteg+sdKo+8id
+ T2Uo14Uw8VjQC+X6dlMO3LSbYGtL1KIZp6D9PHS9YGC1dZv+UO08UxFlD3OAWz3KsLyDksxYy
+ 7Kp6U+kiyp//FnTEsW+jPWTEFQXTi2+wxCWniMo6GkVVZkNe/nYZukVA1n6EQLPX1+W/zewYP
+ kfp/TtI0dstoZJ0hxXA5+mQE8u1jD/CIX+fbuBiXLjqsn5567kbqt2CSB8bM+MxCVH4kc3NMf
+ 0zvMbkq9rondCg4XtKutQcPa21/BcaKd4ig5gIPY5s7MiUX6VdGGr21BTDG1tmraXJSdaYuaq
+ RFefkC53yFd7BmtIO53K8DKpNQyNqVT4D3peO/hBsEjXVjC5lODvrPXj94uGia0prycDtuP7+
+ S8A+TAMEBDfKQ9Bvvx9oqpA8lUHK1beVqz2NLdpABWNPFGDU9mEt7IMWanWwwMq3zD0JNSx4c
+ gokYLzVj6HvyOe/gR3AQp6jz41mX8+VCklXgQAYJYOoWnPF+ZjXFgPFhjulYn+U178kydwB1g
+ 3KEz+K3bRmcZbxfHHUPMipHkowE9/GOmdm9I4NKx4yhq4QY4G17UY4T0D+fKKdIGKarJ2aQeR
+ MWKkE8F1Oqwh8ilH7bIyFDb01fpjp9WMJdzH4zMoGCzuOssfnwaO6c81yB0ZYiJn6PuwEfojx
+ 6wdBOrQ50UBOJ+8Ala1O6nF8ELXwodyRpzCqH/CNgxafsLCjITtUPHLPgJmWPgp3iB/sxPs45
+ 8hKBuiJQwX1olIO/rRnREf256C61AtjOiAk/2d/4YKoWLOtjxLCas77YTgyGxHsW5t16Y8WSS
+ He6b0WX4JSi7/JRFpz3SnAXu9d9KP/j8s0+anO5FY4REYqIU2Lz0HoaNlb//MnZ2p25sXu0ts
+ 5Hldo73ASMxmhg4EfplLu8R5s9dSlHyl9Fc8gZCKitzbGYHhmYOQj/VRIE6qdRecTBU1skvsB
+ CHl/KE4xvW/OvQuS+iKyaQrmebJwb9QRuF/34Cw==
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This enables thermal for the BCM2711 and the Raspberry Pi 4.
+This series enables thermal support for the Raspberry Pi 4. Neither the
+bcm2835_thermal nor the brcmstb_thermal are suitable for the BCM2711.
+So add a new thermal driver to read out the SoC temperature from the
+AVS RO block of the BCM2711.
 
-Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
-=2D--
- arch/arm/boot/dts/bcm2711.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Stefan Wahren (4):
+  dt-bindings: Add BCM2711 thermal
+  thermal: Add BCM2711 thermal driver
+  ARM: dts: bcm2711: Enable thermal
+  ARM: configs: Build BCM2711 thermal as module
 
-diff --git a/arch/arm/boot/dts/bcm2711.dtsi b/arch/arm/boot/dts/bcm2711.dt=
-si
-index ac83dac..950e43f 100644
-=2D-- a/arch/arm/boot/dts/bcm2711.dtsi
-+++ b/arch/arm/boot/dts/bcm2711.dtsi
-@@ -46,6 +46,14 @@
- 						 IRQ_TYPE_LEVEL_HIGH)>;
- 		};
+ .../bindings/thermal/brcm,bcm2711-thermal.txt      |  39 ++++++
+ arch/arm/boot/dts/bcm2711.dtsi                     |   9 ++
+ arch/arm/configs/multi_v7_defconfig                |   1 +
+ arch/arm64/configs/defconfig                       |   1 +
+ drivers/thermal/broadcom/Kconfig                   |   8 ++
+ drivers/thermal/broadcom/Makefile                  |   1 +
+ drivers/thermal/broadcom/bcm2711_thermal.c         | 146 ++++++++++++++++=
++++++
+ 7 files changed, 205 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,bcm2711=
+-thermal.txt
+ create mode 100644 drivers/thermal/broadcom/bcm2711_thermal.c
 
-+		thermal: thermal@7d5d2200 {
-+			compatible =3D "brcm,bcm2711-thermal";
-+			reg =3D <0x7d5d2200 0x4>;
-+			clocks =3D <&clocks BCM2835_CLOCK_TSENS>;
-+			#thermal-sensor-cells =3D <0>;
-+			status =3D "okay";
-+		};
-+
- 		dma: dma@7e007000 {
- 			compatible =3D "brcm,bcm2835-dma";
- 			reg =3D <0x7e007000 0xb00>;
-@@ -317,6 +325,7 @@
-
- &cpu_thermal {
- 	coefficients =3D <(-487) 410040>;
-+	thermal-sensors =3D <&thermal>;
- };
-
- &dsi0 {
 =2D-
 2.7.4
 
