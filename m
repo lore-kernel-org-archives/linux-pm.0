@@ -2,101 +2,173 @@ Return-Path: <SRS0=AJ/8=YZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0B52CA9ED1
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:00:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CC2ECA9ED1
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:22:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7919921906
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:00:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E640E21835
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:22:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EC15ozzq"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MSMO14DH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726876AbfKANAh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Nov 2019 09:00:37 -0400
-Received: from mail-wr1-f67.google.com ([209.85.221.67]:41984 "EHLO
-        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726687AbfKANAh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Nov 2019 09:00:37 -0400
-Received: by mail-wr1-f67.google.com with SMTP id a15so9586416wrf.9
-        for <linux-pm@vger.kernel.org>; Fri, 01 Nov 2019 06:00:34 -0700 (PDT)
+        id S1726840AbfKANW2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Nov 2019 09:22:28 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:45935 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726780AbfKANW1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Nov 2019 09:22:27 -0400
+Received: by mail-lj1-f194.google.com with SMTP id q64so10191247ljb.12;
+        Fri, 01 Nov 2019 06:22:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JnAtrIp1CQEJrAviLU5bc1LnukML3+XTcip2l+4dcgE=;
-        b=EC15ozzq5r6O7Xmzqx3qzWh0ljIqUYns6h1WdyJ7AKAd20rZqTYo9V9KHWyQiCtzJc
-         647HxCf7/prcMBcdFlUb80gkD8T5S30CtKLZvt5UJ4OJGH8gNIxehms7v8Fs+Y7IBDIF
-         YtWlCjv71EcQ+rsc5bShlkFA17hS8F5ax7Xv9WftYOAtj1Y7JC64GTo7j+4hyTapTeR2
-         GLiE/RjbbB+jkC+dEm2veHwxFVO5lieAqz+rHWsx5p61xB2Pf5xq0SGSDK2BZSb7RPRJ
-         YQevWkOvlEwSkJSLoJkq2wkc7gSZiOr6JkUy7L3agZGpFF2ZgMcCD/fj+PlyWwbxm0r0
-         NliA==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=BxLuKMZeBlVEfxN/A5Vfu9gCXIr8p72x+ZY3unGqehk=;
+        b=MSMO14DH6Z1a0eTruGrePh2yxhOOYdC3mv/l+VHLxl/E0Ub3012lpAoCuMOWFNx5Gs
+         DNideGmtLK7TGQVSv9CVsaKUEncGH6TmWjSciHa4QTBpBi5JyQI4dh5Puw6x4Io8e0NW
+         tbk+rk4GdB4C7wVJLivNAahZJkAngdEY5R69tH6+rWsYTVXTcVy7d6ab4iJu/K9nvmeP
+         RLhRIjnVlNTijyRPDGvWR5jmQtNDWOCFA0BaJAEvRaUSPQwry90dy/M+9Hwalej2zFS/
+         b9w3Qq7Y+I2c5Yl3swluJKY+gqoF53z4aHZ4BjFvHKKiDA2xr0EpaYRgikkmzCMVcXob
+         YEyw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=JnAtrIp1CQEJrAviLU5bc1LnukML3+XTcip2l+4dcgE=;
-        b=UXstmU3LYpFpXx+JbJVPWf5ElsX+l7xRer9J3o/W6EbITipWf8wnOfT+ub2eckJbFg
-         K1Cr8s9cXV77NegVFNQzi9LHAxNDW3B5RQzIOh8f67YcYktKuLCbS/DjCeRvJVsTeQRZ
-         YyuYbX3q3ydWeCdNfOAss0L6XYdVpEcM/Qmb6Twbsu+Cc2kfEYXnXLQftEWLRk6Qt4KC
-         3vFrYodiPG+pYECps27UZPfKoHnB0T5dzdv6Ig7rM4b8+IoajcJ7OPlRWiaVYc4MxUR8
-         Ao0oeBLUWQAAFwg/3m8QwQyCVQVmwmkACoikL8FQaOzgUo7nwgsmq+sy7caAqU9lNNTS
-         SvaA==
-X-Gm-Message-State: APjAAAVbtHiIobU1q0iSkJnwx65XLtAlJMpd+sZQ9p4iYhKZqxFNxCcz
-        xTqBCXKQ484QJZOlSUgulxyDOhT9fG4=
-X-Google-Smtp-Source: APXvYqwBJap78uhfylY8s1lRyzHMgoLG9vqE82nyBm2uLab+9M9LZMN2Ea5nZ9jbJRyQeJNGuqcRdQ==
-X-Received: by 2002:adf:db42:: with SMTP id f2mr3231266wrj.287.1572613233401;
-        Fri, 01 Nov 2019 06:00:33 -0700 (PDT)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id x7sm14208476wrg.63.2019.11.01.06.00.31
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 01 Nov 2019 06:00:32 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org, rostedt@goodmis.org, mingo@redhat.com
-Cc:     bjorn.andersson@linaro.org, vincent.guittot@linaro.org,
-        daidavid1@codeaurora.org, okukatla@codeaurora.org,
-        evgreen@chromium.org, mka@chromium.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v2 0/3] interconnect: Add basic tracepoints
-Date:   Fri,  1 Nov 2019 15:00:28 +0200
-Message-Id: <20191101130031.27996-1-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.23.0
+        bh=BxLuKMZeBlVEfxN/A5Vfu9gCXIr8p72x+ZY3unGqehk=;
+        b=fdYusMLDzFvqMEJVVL5+VNX72KG7U+bvr+eux28XJt5jKtgeHI1Dzw8l/iAvCKoRXj
+         CaWfJKHijdzcnVIcM+pkxkY6VykKjWw1ycsQPOQVhcq2FzzIkoWcA6qwxFNmwNymQ/as
+         TY6klA9aA3KKPX5rTqUSzj7KmdZm37jZi5qhpSTwWKa3ZvigO1yrYJhQ+bQKtvk+3sey
+         r+6/P0/YE1i1wJGFdJlEgOHWR1wGuu5PcVrHML4x14K26qwgknZOdXgljEsx6GbRYBAR
+         7wumzPwGXZgTXGxg06x/m3g9dhakMAv0CQgdPjMrjMx/poF4vGthpeiQwMnMf4NEUWTs
+         CRdQ==
+X-Gm-Message-State: APjAAAUEDhKXFsIKun+BZsUMHUMIyjy0vFcDL2foju70l3Cn84Im5jcZ
+        0v7YQ/Uk3g9GRQbgpzXJyAobBthq
+X-Google-Smtp-Source: APXvYqzoXtTpyz8779l4Pan7YKFr+WghIOshLrJXjqxgJt3oJslriavZUkF4t4kZyFY8lJdkfh7WNA==
+X-Received: by 2002:a2e:b5b7:: with SMTP id f23mr8267156ljn.236.1572614544555;
+        Fri, 01 Nov 2019 06:22:24 -0700 (PDT)
+Received: from [192.168.2.145] (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
+        by smtp.googlemail.com with ESMTPSA id r1sm2512815ljk.83.2019.11.01.06.22.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 01 Nov 2019 06:22:23 -0700 (PDT)
+Subject: Re: [PATCH v6 00/18] Consolidate and improve NVIDIA Tegra CPUIDLE
+ driver(s)
+To:     Peter De Schrijver <pdeschrijver@nvidia.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20191015170015.1135-1-digetx@gmail.com>
+ <20191016192133.GB26038@pdeschrijver-desktop.Nvidia.com>
+ <72636eb3-5354-eea3-3a51-4975a04186b2@gmail.com>
+ <53ee8bd3-5c53-f0aa-175c-7fa3024d0af5@gmail.com>
+ <20191028140443.GA27141@pdeschrijver-desktop.Nvidia.com>
+ <40de641f-c38e-51ee-ae27-c5db468c45b5@gmail.com>
+ <20191101123359.GG27141@pdeschrijver-desktop.Nvidia.com>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <a72463cd-cc16-691c-3c82-54ebb618ec32@gmail.com>
+Date:   Fri, 1 Nov 2019 16:22:17 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.1
 MIME-Version: 1.0
+In-Reply-To: <20191101123359.GG27141@pdeschrijver-desktop.Nvidia.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The tracepoints can help with understanding the system behavior of a
-given interconnect path when the consumer drivers change their bandwidth
-demands. This might be interesting when we want to monitor the requested
-interconnect bandwidth for each client driver. The paths may share the
-same nodes and this will help to understand "who and when is requesting
-what". All this is useful for subsystem drivers developers and may also
-provide hints when optimizing the power and performance profile of the
-system.
+01.11.2019 15:33, Peter De Schrijver пишет:
+> On Tue, Oct 29, 2019 at 03:47:56AM +0300, Dmitry Osipenko wrote:
+> ..
+> 
+>>>>>> It would be useful to switch the power state terminology to the one used
+>>>>>> for later chips:
+>>>>>>
+>>>>>> LP0 becomes SC7
+>>>>>> LP1 becomes C1
+>>>>>> LP2 becomes CC7
+>>>>>>
+>>>>>> Meaning of these states is as follows
+>>>>>>
+>>>>>> C is a core state:
+>>>>>>
+>>>>>> C1 clock gating
+>>>>>> C2 not defined
+>>>>>> C3 not defined
+>>>>>> C4 not defined
+>>>>>> C5 not defined
+>>>>>> C6 not defined for ARM cores
+>>>>>> C7 power-gating
+>>>>>>
+>>>>>> CC is a CPU cluster C state:
+>>>>>>
+>>>>>> CC1 cluster clock gated
+>>>>>> CC2 not defined
+>>>>>> CC3 fmax@Vmin: not used prior to Tegra186
+>>>>>> CC4: cluster retention: no longer supported
+>>>>>> CC5: not defined
+>>>>>> CC6: cluster power gating
+>>>>>> CC7: cluster rail gating
+>>>>>>
+>>>>>> SC is a System C state:
+>>>>>>
+>>>>>> SC1: not defined
+>>>>>> SC2: not defined
+>>>>>> SC3: not defined
+>>>>>> SC4: not defined
+>>>>>> SC5: not defined
+>>>>>> SC6: not defined
+>>>>>> SC7: VDD_SOC off
+>>>>>
+>>>>> Hello Peter,
+>>>>>
+>>>>> But new "drivers/cpuidle/cpuidle-tegra.c" uses exactly that terminology,
+>>>>> please see "cpuidle: Refactor and move NVIDIA Tegra20 driver into
+>>>>> drivers/cpuidle/" and further patches. Am I missing something? Or do you
+>>>>> want the renaming to be a separate patch?
+>>>>>
+>>>>
+>>>> Or maybe you're suggesting to change the names everywhere and not only
+>>>> in the cpuidle driver? Please clarify :)
+>>>
+>>> At least some of the variable and function names still say lp2?
+>>
+>> The cpuidle driver uses LP2 terminology for everything that comes from
+>> the external arch / firmware includes. But it says CC6 for everything
+>> that is internal to the driver. So yes, there is a bit of new/old
+>> terminology mixing in the code.
+>>
+>> The arch code / PMC driver / TF firmware are all saying LP2. The LP2
+>> naming is also a part of the device-tree binding.
+>>
+>> It will be a lot of mess to rename the mach-tegra/pm.c code. I guess
+>> eventually it could be moved to drivers/soc/, so maybe it will be better
+>> to postpone the renaming until then?
+> 
+> Or maybe add a comment somewhere indicating:
+> 
+> LP2 = CC6
+> LP1 = C1
+> LP0 = SC7
+> 
+> TF predates the new naming, so that may make some sense.
 
-v2:
-- Moved dev_name() into TP_fast_assign() to reduce cache footprint. (Steven)
-- Added path name to traces (Bjorn)
-- Added trace for path, device and ret. (Bjorn)
+Today it should make more sense just to add an explicit comment to the
+cpuidle driver that clarifies the new naming (IMHO). I'll prepare v7
+with that change.
 
-v1: https://lore.kernel.org/r/20191018140224.15087-1-georgi.djakov@linaro.org
+Maybe later on, once more code will be consolidated in
+drivers/soc/tegra/, it will become useful to duplicate the clarification
+there as well.
 
-Georgi Djakov (3):
-  interconnect: Move internal structs into a separate file
-  interconnect: Add a name to struct icc_path
-  interconnect: Add basic tracepoints
-
- MAINTAINERS                         |  1 +
- drivers/interconnect/core.c         | 53 ++++++++-----------
- drivers/interconnect/internal.h     | 42 +++++++++++++++
- include/trace/events/interconnect.h | 81 +++++++++++++++++++++++++++++
- 4 files changed, 147 insertions(+), 30 deletions(-)
- create mode 100644 drivers/interconnect/internal.h
- create mode 100644 include/trace/events/interconnect.h
-
+Please let me know if you disagree or think that something better could
+be done.
