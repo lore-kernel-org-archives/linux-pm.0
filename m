@@ -8,31 +8,31 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20EF3CA9ED1
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89326C47E49
 	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EE3D8217D9
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6058E21897
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="X9MZO549"
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="As2ICfrZ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726912AbfKANn3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Nov 2019 09:43:29 -0400
-Received: from mout.gmx.net ([212.227.17.21]:38803 "EHLO mout.gmx.net"
+        id S1726710AbfKANna (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Nov 2019 09:43:30 -0400
+Received: from mout.gmx.net ([212.227.17.21]:55497 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726710AbfKANn3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1726792AbfKANn3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Fri, 1 Nov 2019 09:43:29 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1572615792;
-        bh=fOvzyTqdzRPJH9OPOKinIdqeCZlBTTjHLrFlxGo7twE=;
+        s=badeba3b8450; t=1572615790;
+        bh=G2JQYHldnl50zbZW3JMKhp0c1cNsuaONpIMkrJ/KY1A=;
         h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=X9MZO549TJZ3vLpsTN53oZPmrRiVr6QEhE+a8tJ0Vozj/4p8GngNCsMNBWi/HHAQF
-         d0u4qpBcTg6lLFDQuuzcz3tdFsHTD1R8t2vxGKcKvBRsDYlZ+m7v6+yHlqt8F60ZMk
-         SdZduKccraRWC8etr/ne1T5gzHczUiJDg70n+HXM=
+        b=As2ICfrZ6dP9svRVq3VYkJZapZIuGCT4dfGp5jepvxoPepDqUZ7/GdEBLYOLczpsD
+         YLwzcIZprxLKFy/Nhj09ng2eCZ4lIzOZ+l3eilNnBHSDdG++8nSUZ36bZh0lmjtGq+
+         Gd23zG9lwzpFh5cZkQtrvgLf+X0N0VGPAuQyWiOQ=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from localhost.localdomain ([37.4.249.112]) by mail.gmx.com
  (mrgmx104 [212.227.17.168]) with ESMTPSA (Nemesis) id
- 1MtfNf-1i6fdQ4C7D-00v7fj; Fri, 01 Nov 2019 14:43:12 +0100
+ 1N8GMq-1hvtKY0FqS-0148Tw; Fri, 01 Nov 2019 14:43:10 +0100
 From:   Stefan Wahren <wahrenst@gmx.net>
 To:     Zhang Rui <rui.zhang@intel.com>,
         Eduardo Valentin <edubezval@gmail.com>,
@@ -49,74 +49,99 @@ Cc:     Chen-Yu Tsai <wens@kernel.org>,
         bcm-kernel-feedback-list@broadcom.com,
         linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, Stefan Wahren <wahrenst@gmx.net>
-Subject: [PATCH 4/4] ARM: configs: Build BCM2711 thermal as module
-Date:   Fri,  1 Nov 2019 14:42:29 +0100
-Message-Id: <1572615749-9524-5-git-send-email-wahrenst@gmx.net>
+Subject: [PATCH 1/4] dt-bindings: Add BCM2711 thermal
+Date:   Fri,  1 Nov 2019 14:42:26 +0100
+Message-Id: <1572615749-9524-2-git-send-email-wahrenst@gmx.net>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
 References: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
-X-Provags-ID: V03:K1:TbKDFSyoLz5kGUMLh2sdMchsMi8B7ywabIQ029/PvKMAKErCJPq
- LaV4eY+9A6wMG6XJAq+AzVhHdeDbWKCIQ2SdpxaHQVJDnPz05KWwr/zYmz4qRItRUAmMueQ
- 52bZwE1KDdhZw19Aa3Vn6hRMebJFvpX727zxqEUbD6e5Il680xV+/xuwUvFKrOLUtnTXGr9
- eM4jtb+KLzwTZf5GlyVCA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:MkaZ/3lmt58=:nz5UCjGMivPj91VNzCwyFe
- 6eTbZupEK6tkHD/UlTaZguPibR6Acl9YFic3AY75LQk2NoG51Ex7boMYU+seMx6ZfqRW6CoKr
- 82zvdUtskysVkSwIFg01uXDzcuS75oaF7e2SOArQNIU6sMCgbB1T7UI3M21LqHQw/XikjB5bg
- Q7FLOawvCLmPPc0vGqhtvxOtC/HWrmfORZqcmpVNyU94muqiEX7XutEIIq8LlxBSXUs2Ith+5
- q5YzU1OWw7G/gzg/iSw4hlhWoLvkmkjNAXbTf7GuB8u3EaPtjKTaQWacZ0FoqMVJpQuCy83bR
- tHeOzjRMGwYaGjJ/7NlW6yLsxr+GPypkXEivylBTPBJDKdl9Sl+mDIDYjvt0cG2yBqFJqG44s
- 2CbRHr6clzj7fYcOSZgS7AlymGiKuFKVNlFYteTaksqTMoZ+ikGoBared5E/tGt06dxRzHmcG
- J6yAg53kzjL7gwq5087VkC95YdYT1ukWME6yqugRfaOOtZUANg6uIeWGq57ufCRCciYjncoF5
- HR3Ah4IBy/h5HZSx55vtBkX5m6kKrJAzUgcE/UOmMNQZ6qwXZETpwB1G3ghmauLKVsLsMz+OS
- vigD293HSdqK0UJ/QpbAUoVlKTETu616J4lWurFMBaUcrRED3YQCniCMIsPI61yvICXrHP188
- 2LnqqwvqvJ+mTxARSP3h7/YAPes5o13PDlG+gUA+2U6AgQfBhoxALznXemfcWAuRxcD0YHMoB
- Z/4cce5K/gaKIBXapRxP41P10j9ZX3TmUhrs93PMlDGGFv60tBJpb3TCnL3/Kfo+0fjnboGkJ
- o9NQ3J6gVe2/05QpLi3BQEvuhyQbE8KHXTrJnKqH7OG8XnePT8LbHza1HkX1ZRRA5XsMo9BiF
- S2eeWhpw35peMp9UiyI7N5jFDyeBOgYtqoO3+uv64HPL9I8qKqTlLlsk3ReNsQGP85331SXAZ
- 87IojnVd41AxiBEGU5Qjz4rGCqnJqbQo8S9ox50/0VDxDl2TwF5kaNERTIcL5kRod62nvTSSm
- nP0j/C3mLORpdWUnWkE53uyjSXcpFP7q5gKDPBn3GlIu7409OCcBi4mqPWwGuGqejVGegoR/0
- /aUTIpuslWS/e0MRk2Ilba/FqKbra8O6GpLnyw3V1LaNy54d5X04ge+lWrFGRCt//R9QOCnWt
- fBwFYpy2gNB+0M41/3elbVdwJ6u6roVi12SysrxoTFP+P4PFWPZSGN2ZVaGAJq2k3Pl6eeMQr
- G4ozsyV4gPkFnB+7uOCXTVn7bktCAG7C+pHQRlA==
+X-Provags-ID: V03:K1:XnyeRi2jiPspsf4cwaVjO7Sm9iumAfDgEuhhWAzWuUTyzpkYTrn
+ BZ4zqBog/lv978dQiAbhvrQjw18T1QuN0sYetKc4U8LKMDUfOQy8viOFMaPkuyQrzg2eoM9
+ AFlppBpsz+22+a2Xt0WGqS+MpsOQXB9B9kJrBbw6ou+lIoIn19T7tcZVYbzk8FpdRc9xp4G
+ ICQ+A5ANyQLuqvaacA29A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:eb27wEqko/8=:dZYolVj9YmOQf1lyukuXK+
+ wbcZ6wQJnr8dEEwvs2blpP12a8QH1sc9E+o6QUjCEsLP0/+OhWW0OsHaammYuVbloP7QwkNJc
+ dboo9BfdAPBZXckhXFdBK5U/DA5v35KL+2Ax4lj50NzOOd5GD5GqPslbMgyLfp92Qpt9wW49t
+ utMfXvQFK0HqT5Lkljnlmzbt/869k2GU1AcedKK8kPvJDhgLry5EkDtSGY8uCtZk9Tzj8k2vm
+ XiTIn0ZBkR10CcS9r+rovHe9JxiWm2X91v4d4D9L9Lx4ed/pbh1eAIaW1P1gmlavpIND/gHVA
+ 1q9tw+c0HBOhR5BoXT/ZRMoUCQN2JvgkiEUmC+DkFgP8uJUdZha4qLmEtrpv+FzYNAPI4l6Ed
+ R943ngFB90lWQIkr+98iv6YO1uDvcCbrXRmywEBX478vpJlfqDvmo6CiPxKGI1ZL960CbKevO
+ YgJXxhCPjVcdbLkVJ6TVT2mxT7fJkmDNCv7/ClL7YGjdyOBEikXORb6qx5PTXi4xBZ8VKqKj0
+ zy5JFc4WfKrBgT/m6DnI5EY6KvzYV6QyH7C87WaON1ujpuPuK8P3v395S7kJBLAJtBltpEqUg
+ W1CmvJwx9M+C8j9h+RGyc/4vC3xm5gBQFZCDqOtaeln5n7BuQxKQ/nf570AqhuG+Z+RCKESrb
+ p6FJmB0YyIawSi8JDmjZV0cEaKl9XfNCuzZufjr8izFLxn+qE6rKINp+BRIp8rvhwejNabMWf
+ MySojlAt7i37Jd4vFvz8LEhXVzOuTH99ovxQv6+mQgIxeqJnU4BG8umOPwDzlhd06+TT/3Fd3
+ xLCq+L0F/4Lj3SwtoM36OWQR6dMFBaffsTOzAsfmpLUon748NF5x4r2v3wkM33ME3pLmNa20m
+ CKEq+5lyOJALTjZY1DATbsp1UdHhRF7GFZsxgnvIyptEKGFAkoB1ftCzo3OKJ+MpW+huCc3+F
+ xGM05bpv9RYy8pcKOZDq1lYndf/tmNFSMnSGWCBoIF48NsgjJImwfrB1eWEldlWtWbpxaQEiH
+ uqmbyEZ5cBFiPwqR/zW2GdShItd22ARYL1HPYJWq0sgv8BOCGZWYepVDuCctnlA3u++xQlkF9
+ Ex2fjYWes3671H9njr/6zGKkblMzxsEe74SSasSavXt94OvdnGjhwZjUMyJ/2J6Q+apEQfHby
+ na0b7n11ecULFE6C+saJKfYggBtullLsEemT53BJx3h1Df1yCbM8wGETtoMilj79pu7p28nG1
+ 8UICQTetG56wX0DWfQu8EmdKuIt3ardik89PYRA==
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This builds the BCM2711 thermal driver as module for the Raspberry Pi 4.
+Since the BCM2711 doesn't have a AVS TMON block, the thermal information
+must be retrieved from the AVS ring oscillator block. So add a new
+suitable binding.
 
 Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
 =2D--
- arch/arm/configs/multi_v7_defconfig | 1 +
- arch/arm64/configs/defconfig        | 1 +
- 2 files changed, 2 insertions(+)
+ .../bindings/thermal/brcm,bcm2711-thermal.txt      | 39 +++++++++++++++++=
++++++
+ 1 file changed, 39 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,bcm2711=
+-thermal.txt
 
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_=
-v7_defconfig
-index 13ba532..441b795 100644
-=2D-- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -487,6 +487,7 @@ CONFIG_IMX_THERMAL=3Dy
- CONFIG_ROCKCHIP_THERMAL=3Dy
- CONFIG_RCAR_THERMAL=3Dy
- CONFIG_ARMADA_THERMAL=3Dy
-+CONFIG_BCM2711_THERMAL=3Dm
- CONFIG_BCM2835_THERMAL=3Dm
- CONFIG_BRCMSTB_THERMAL=3Dm
- CONFIG_ST_THERMAL_MEMMAP=3Dy
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 8e05c39..0a52987 100644
-=2D-- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -444,6 +444,7 @@ CONFIG_ROCKCHIP_THERMAL=3Dm
- CONFIG_RCAR_THERMAL=3Dy
- CONFIG_RCAR_GEN3_THERMAL=3Dy
- CONFIG_ARMADA_THERMAL=3Dy
-+CONFIG_BCM2711_THERMAL=3Dm
- CONFIG_BCM2835_THERMAL=3Dm
- CONFIG_BRCMSTB_THERMAL=3Dm
- CONFIG_EXYNOS_THERMAL=3Dy
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,bcm2711-therma=
+l.txt b/Documentation/devicetree/bindings/thermal/brcm,bcm2711-thermal.txt
+new file mode 100644
+index 0000000..5531d3f
+=2D-- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/brcm,bcm2711-thermal.txt
+@@ -0,0 +1,39 @@
++Binding for Thermal Sensor driver for BCM2711 SoCs.
++
++Required properties:
++- compatible:		must be: "brcm,bcm2711-thermal"
++- reg:			Address range of the thermal registers.
++- clocks:		Phandle of the clock used by the thermal sensor.
++- #thermal-sensor-cells:	should be 0 (see thermal.txt)
++
++Example:
++
++thermal-zones {
++	cpu_thermal: cpu-thermal {
++		polling-delay-passive =3D <0>;
++		polling-delay =3D <1000>;
++
++		thermal-sensors =3D <&thermal>;
++
++		trips {
++			cpu-crit {
++				temperature	=3D <80000>;
++				hysteresis	=3D <0>;
++				type		=3D "critical";
++			};
++		};
++
++		coefficients =3D <(-487)  410040>;
++
++		cooling-maps {
++		};
++	};
++};
++
++thermal@7d5d2200 {
++	compatible =3D "brcm,bcm2711-thermal";
++	reg =3D <0x7d5d2200 0x4>;
++	clocks =3D <&clocks BCM2835_CLOCK_TSENS>;
++	#thermal-sensor-cells =3D <0>;
++};
++
 =2D-
 2.7.4
 
