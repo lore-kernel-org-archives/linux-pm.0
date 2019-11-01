@@ -2,153 +2,178 @@ Return-Path: <SRS0=AJ/8=YZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E1CCCA9ECF
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 12:34:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4759CCA9ECF
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:00:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0FFCC21855
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 12:34:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19B92218DE
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:00:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="JPm8R1IH"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="m2c6kB/L"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729308AbfKAMeC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Nov 2019 08:34:02 -0400
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:4650 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726229AbfKAMeC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Nov 2019 08:34:02 -0400
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqemgate14.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5dbc26400000>; Fri, 01 Nov 2019 05:34:08 -0700
-Received: from hqmail.nvidia.com ([172.20.161.6])
-  by hqpgpgate101.nvidia.com (PGP Universal service);
-  Fri, 01 Nov 2019 05:34:01 -0700
-X-PGP-Universal: processed;
-        by hqpgpgate101.nvidia.com on Fri, 01 Nov 2019 05:34:01 -0700
-Received: from tbergstrom-lnx.Nvidia.com (10.124.1.5) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 1 Nov
- 2019 12:34:01 +0000
-Received: by tbergstrom-lnx.Nvidia.com (Postfix, from userid 1000)
-        id 2D99742966; Fri,  1 Nov 2019 14:33:59 +0200 (EET)
-Date:   Fri, 1 Nov 2019 14:33:59 +0200
-From:   Peter De Schrijver <pdeschrijver@nvidia.com>
-To:     Dmitry Osipenko <digetx@gmail.com>
-CC:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Daniel Lezcano" <daniel.lezcano@linaro.org>,
-        <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v6 00/18] Consolidate and improve NVIDIA Tegra CPUIDLE
- driver(s)
-Message-ID: <20191101123359.GG27141@pdeschrijver-desktop.Nvidia.com>
-References: <20191015170015.1135-1-digetx@gmail.com>
- <20191016192133.GB26038@pdeschrijver-desktop.Nvidia.com>
- <72636eb3-5354-eea3-3a51-4975a04186b2@gmail.com>
- <53ee8bd3-5c53-f0aa-175c-7fa3024d0af5@gmail.com>
- <20191028140443.GA27141@pdeschrijver-desktop.Nvidia.com>
- <40de641f-c38e-51ee-ae27-c5db468c45b5@gmail.com>
+        id S1726951AbfKANAk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Nov 2019 09:00:40 -0400
+Received: from mail-wr1-f66.google.com ([209.85.221.66]:33531 "EHLO
+        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726684AbfKANAh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Nov 2019 09:00:37 -0400
+Received: by mail-wr1-f66.google.com with SMTP id s1so9625082wro.0
+        for <linux-pm@vger.kernel.org>; Fri, 01 Nov 2019 06:00:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Zgv/LTWdUPNIRDPJwbY82R6L2iDmim3JZRo8TtTz+DY=;
+        b=m2c6kB/LVRJSVWZHgdelDlqhnHhd5gEDgD5WOy08yss+OVxQy2bbNOOeJaFURNoD9b
+         IY4afffJgN/frvFyhGmkcCMoq/UF7Sbh5NnoHOxAEsyVJ6bO68psGKCkJX9N0XRgRlFB
+         JKW77qcnOQpcON/+CJ/eVyh8vtjYQYKpizevs/fyavmUpTrcFfLCi2L3t21CNocpfrDV
+         nsTLEO0Q8YWTVScdy/et75XKbtTSLsjX7dIGEWdmjlf51ZUZYdZNgdOsgOVS99oZ8FvC
+         j1GFB+IvgSxmIgZRtw4qnZPAaR0wfCueJW7nHNaAXt9B3G+5M0WSqI+G2nTMEfjvYRCz
+         nugg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Zgv/LTWdUPNIRDPJwbY82R6L2iDmim3JZRo8TtTz+DY=;
+        b=K+OfHUhq2cYnoBfmpocO/svBrZjH4WofbgOyExOhkqJAzX6Jksvflbk6NwxR8eMR+4
+         ZBe733vjFC5zwdjAEedlX3ifaIi5iFbTezq88ucFyjk+CdFJ5x1YtZerH4iIdQAk5r51
+         Tpxn94U5hdYZ/IwFStDw0JW3VblQch5w3pzmb0SrFps+3iYxDIYLR9u5pdwHhqE4QXJD
+         7JyphnkNs8+x60R7ywJvg734K7xj4PtioScOnuA5GEWwBzCuRseszVrEYEdJ+SxUPK34
+         psaMzUte+y1xqyPCAhPoIqY7qnQpzmUeSDqsUFy0JR609RuYN9lEbjYnivvss0/1dtcD
+         Ob4A==
+X-Gm-Message-State: APjAAAW6b5wPghWjVgvcz5G1pSx1iipen6M4bf883lAcFQoXkqLhiUGk
+        PCkjfER+9gcW5GD6zigfVqWy3pUBK+0=
+X-Google-Smtp-Source: APXvYqwVGRprB/tc1woV5aX/nx+Hv/+U5SrzfdXyQ9nfNAQlvzclYFxj361Z1IW2A+ySlxSqPA7lag==
+X-Received: by 2002:adf:e8cf:: with SMTP id k15mr18778wrn.256.1572613234712;
+        Fri, 01 Nov 2019 06:00:34 -0700 (PDT)
+Received: from localhost.localdomain ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id x7sm14208476wrg.63.2019.11.01.06.00.33
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Fri, 01 Nov 2019 06:00:34 -0700 (PDT)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     linux-pm@vger.kernel.org, rostedt@goodmis.org, mingo@redhat.com
+Cc:     bjorn.andersson@linaro.org, vincent.guittot@linaro.org,
+        daidavid1@codeaurora.org, okukatla@codeaurora.org,
+        evgreen@chromium.org, mka@chromium.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH v2 1/3] interconnect: Move internal structs into a separate file
+Date:   Fri,  1 Nov 2019 15:00:29 +0200
+Message-Id: <20191101130031.27996-2-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191101130031.27996-1-georgi.djakov@linaro.org>
+References: <20191101130031.27996-1-georgi.djakov@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <40de641f-c38e-51ee-ae27-c5db468c45b5@gmail.com>
-X-NVConfidentiality: public
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Originating-IP: [10.124.1.5]
-X-ClientProxiedBy: HQMAIL105.nvidia.com (172.20.187.12) To
- HQMAIL107.nvidia.com (172.20.187.13)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1572611648; bh=ClHEOCZNpQnrcTnVEWCJjHR07pbg7qvno12Y8tH2Dy8=;
-        h=X-PGP-Universal:Date:From:To:CC:Subject:Message-ID:References:
-         MIME-Version:Content-Type:Content-Disposition:In-Reply-To:
-         X-NVConfidentiality:User-Agent:X-Originating-IP:X-ClientProxiedBy;
-        b=JPm8R1IH6Np2IGI6y3kIMTOJ1rP/8Pi2c76MBsBfFNDkpBX901NBpRClwnNreTgEA
-         qLExi2OcAxxXyaLsmVGDlzxVKZCFbZX8+dnqSIEeaFKzH3T+m7UvU4BbDPd6CYd2Hb
-         2C/Nr53Dkt9wFk1K/NG0z6FRmVRTgbZzsIWOLmi7iqgl8fLUdV3nmiOu9fbcQI0bJU
-         YCE8cefv6mBzfFUsp/YWJ1RbTDJleWRvHL3mMIK+RWYPBmJbnz3ALNrNs/8EW4VlBs
-         4+j7XujCFSVktQig4fJTqLqwcK1o60tENBkdb5FAQwIIbTEz26Nr2lC1jW0+SscMt2
-         jtOP5Lk1c2L8Q==
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 29, 2019 at 03:47:56AM +0300, Dmitry Osipenko wrote:
-..
+Move the interconnect framework internal structs into a separate file,
+so that it can be included and used by ftrace code. This will allow us
+to expose some more useful information in the traces.
 
-> >>>> It would be useful to switch the power state terminology to the one used
-> >>>> for later chips:
-> >>>>
-> >>>> LP0 becomes SC7
-> >>>> LP1 becomes C1
-> >>>> LP2 becomes CC7
-> >>>>
-> >>>> Meaning of these states is as follows
-> >>>>
-> >>>> C is a core state:
-> >>>>
-> >>>> C1 clock gating
-> >>>> C2 not defined
-> >>>> C3 not defined
-> >>>> C4 not defined
-> >>>> C5 not defined
-> >>>> C6 not defined for ARM cores
-> >>>> C7 power-gating
-> >>>>
-> >>>> CC is a CPU cluster C state:
-> >>>>
-> >>>> CC1 cluster clock gated
-> >>>> CC2 not defined
-> >>>> CC3 fmax@Vmin: not used prior to Tegra186
-> >>>> CC4: cluster retention: no longer supported
-> >>>> CC5: not defined
-> >>>> CC6: cluster power gating
-> >>>> CC7: cluster rail gating
-> >>>>
-> >>>> SC is a System C state:
-> >>>>
-> >>>> SC1: not defined
-> >>>> SC2: not defined
-> >>>> SC3: not defined
-> >>>> SC4: not defined
-> >>>> SC5: not defined
-> >>>> SC6: not defined
-> >>>> SC7: VDD_SOC off
-> >>>
-> >>> Hello Peter,
-> >>>
-> >>> But new "drivers/cpuidle/cpuidle-tegra.c" uses exactly that terminology,
-> >>> please see "cpuidle: Refactor and move NVIDIA Tegra20 driver into
-> >>> drivers/cpuidle/" and further patches. Am I missing something? Or do you
-> >>> want the renaming to be a separate patch?
-> >>>
-> >>
-> >> Or maybe you're suggesting to change the names everywhere and not only
-> >> in the cpuidle driver? Please clarify :)
-> > 
-> > At least some of the variable and function names still say lp2?
-> 
-> The cpuidle driver uses LP2 terminology for everything that comes from
-> the external arch / firmware includes. But it says CC6 for everything
-> that is internal to the driver. So yes, there is a bit of new/old
-> terminology mixing in the code.
-> 
-> The arch code / PMC driver / TF firmware are all saying LP2. The LP2
-> naming is also a part of the device-tree binding.
-> 
-> It will be a lot of mess to rename the mach-tegra/pm.c code. I guess
-> eventually it could be moved to drivers/soc/, so maybe it will be better
-> to postpone the renaming until then?
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+---
+ drivers/interconnect/core.c     | 30 ++-----------------------
+ drivers/interconnect/internal.h | 40 +++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 28 deletions(-)
+ create mode 100644 drivers/interconnect/internal.h
 
-Or maybe add a comment somewhere indicating:
-
-LP2 = CC6
-LP1 = C1
-LP0 = SC7
-
-TF predates the new naming, so that may make some sense.
-
-Peter.
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 56cc4bacea5b..86ca6245fe6e 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -19,39 +19,13 @@
+ #include <linux/of.h>
+ #include <linux/overflow.h>
+ 
++#include "internal.h"
++
+ static DEFINE_IDR(icc_idr);
+ static LIST_HEAD(icc_providers);
+ static DEFINE_MUTEX(icc_lock);
+ static struct dentry *icc_debugfs_dir;
+ 
+-/**
+- * struct icc_req - constraints that are attached to each node
+- * @req_node: entry in list of requests for the particular @node
+- * @node: the interconnect node to which this constraint applies
+- * @dev: reference to the device that sets the constraints
+- * @tag: path tag (optional)
+- * @avg_bw: an integer describing the average bandwidth in kBps
+- * @peak_bw: an integer describing the peak bandwidth in kBps
+- */
+-struct icc_req {
+-	struct hlist_node req_node;
+-	struct icc_node *node;
+-	struct device *dev;
+-	u32 tag;
+-	u32 avg_bw;
+-	u32 peak_bw;
+-};
+-
+-/**
+- * struct icc_path - interconnect path structure
+- * @num_nodes: number of hops (nodes)
+- * @reqs: array of the requests applicable to this path of nodes
+- */
+-struct icc_path {
+-	size_t num_nodes;
+-	struct icc_req reqs[];
+-};
+-
+ static void icc_summary_show_one(struct seq_file *s, struct icc_node *n)
+ {
+ 	if (!n)
+diff --git a/drivers/interconnect/internal.h b/drivers/interconnect/internal.h
+new file mode 100644
+index 000000000000..5853e8faf223
+--- /dev/null
++++ b/drivers/interconnect/internal.h
+@@ -0,0 +1,40 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Interconnect framework internal structs
++ *
++ * Copyright (c) 2019, Linaro Ltd.
++ * Author: Georgi Djakov <georgi.djakov@linaro.org>
++ */
++
++#ifndef __DRIVERS_INTERCONNECT_INTERNAL_H
++#define __DRIVERS_INTERCONNECT_INTERNAL_H
++
++/**
++ * struct icc_req - constraints that are attached to each node
++ * @req_node: entry in list of requests for the particular @node
++ * @node: the interconnect node to which this constraint applies
++ * @dev: reference to the device that sets the constraints
++ * @tag: path tag (optional)
++ * @avg_bw: an integer describing the average bandwidth in kBps
++ * @peak_bw: an integer describing the peak bandwidth in kBps
++ */
++struct icc_req {
++	struct hlist_node req_node;
++	struct icc_node *node;
++	struct device *dev;
++	u32 tag;
++	u32 avg_bw;
++	u32 peak_bw;
++};
++
++/**
++ * struct icc_path - interconnect path structure
++ * @num_nodes: number of hops (nodes)
++ * @reqs: array of the requests applicable to this path of nodes
++ */
++struct icc_path {
++	size_t num_nodes;
++	struct icc_req reqs[];
++};
++
++#endif
