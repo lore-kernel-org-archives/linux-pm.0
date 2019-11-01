@@ -2,284 +2,191 @@ Return-Path: <SRS0=AJ/8=YZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A046CA9ED3
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4034BCA9ECF
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:52:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 62BA121835
-	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:43:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F392C20862
+	for <linux-pm@archiver.kernel.org>; Fri,  1 Nov 2019 13:52:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="KnOtTbab"
+	dkim=pass (1024-bit key) header.d=analog.onmicrosoft.com header.i=@analog.onmicrosoft.com header.b="DMm3DVUy"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727387AbfKANnc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 Nov 2019 09:43:32 -0400
-Received: from mout.gmx.net ([212.227.17.20]:43287 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727297AbfKANnc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 1 Nov 2019 09:43:32 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1572615791;
-        bh=ZvRbobq/A3o7unOYL01pPMgbwSptuQGi8SXTyWvKFeA=;
-        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=KnOtTbabCVnfy4poWpfEZJkcZ9+w/nuj9kY6riio9Ce1xjqo5hpHq9b4bOPsJB/vw
-         Lq9VIy6y0E7dJJHxdzfCQPSCfdItlHGJmFdJbWxIjtAaFYI0xtuJ3zxAtbsTWQEmV2
-         7NgBe1a3JYhynoVgNun823x2v9ULOCB2aSSPfSFI=
-X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
-Received: from localhost.localdomain ([37.4.249.112]) by mail.gmx.com
- (mrgmx104 [212.227.17.168]) with ESMTPSA (Nemesis) id
- 1MGz1f-1iE6jl2up9-00E5nH; Fri, 01 Nov 2019 14:43:10 +0100
-From:   Stefan Wahren <wahrenst@gmx.net>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Eric Anholt <eric@anholt.net>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Markus Mayer <mmayer@broadcom.com>
-Cc:     Chen-Yu Tsai <wens@kernel.org>,
-        bcm-kernel-feedback-list@broadcom.com,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, Stefan Wahren <wahrenst@gmx.net>
-Subject: [PATCH 2/4] thermal: Add BCM2711 thermal driver
-Date:   Fri,  1 Nov 2019 14:42:27 +0100
-Message-Id: <1572615749-9524-3-git-send-email-wahrenst@gmx.net>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
-References: <1572615749-9524-1-git-send-email-wahrenst@gmx.net>
-X-Provags-ID: V03:K1:W8Y8TrjXv7DBI+UOhPg3H+lw+29ji7fbc4oPSb9Y3kLSajZq+F9
- 6vM7vUP/2p2NtXAKA2x7TYf7cz4NIx5plmG/lt0WoIQ6YzvBQ4uI6kfZtgGRgXw9KIbGYRv
- I4oY9GWGsh+DpA2G/kpO3HD8T65yvclzGp1X4l89ioeqC2FzIN0OzeYVma2iw32Wk8VhU8w
- GemtnKn3nrc7/xc2FKbTQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:5XyeTRLrFlY=:k9mMXgNrcwECxFFK5SlcSE
- oxFZ6rUMIuMoCArq1DyGiUJ+p8h5lQC5APjN1djYpWuJfyRgOlFtrqdpkGzrVVJg5CFu3xKK6
- /vUyLSRvGQvPmJpExxXaLX9idFGxc6y7JvWAwcZzkbi0NtsYYXVFxsEB9UlUQclyMLxmpE9kD
- RA9aUY97ChtHxmZ99IhZw/DTvnqDroXyqXBrv5DdCkSGH8gFRmciL5BsPK5au+wa1xuuEiu1M
- fbbK7+SPPIJM6DToFRjoAb/jhi2wn7Lqwpo+ImugKFNfhaJLvUZYDZ2TSbvwr+59P7vQJbC8L
- ek8wCUhjlC96gJCxyM6+XCXk2QcPTW+A7DOfZ8IwPyLKJvVKi/lG3f7UuEnpSakYS/JrgFmGU
- GBI0WwfjslQ972Z60zAaojDaoaAbtQXIFdBcPR7vbIH+KozMO3QRlnufiTSD7jnWlq1aZMllK
- GYOYVatHhWjr7eY6L6GzuqReABJvz2npL7HTD4vkg3RzickB4EKEssSOql8x/P0jTL2ROvBmy
- pKqoVc2I5QqjoCm6rmS/WsfeiY6hncROSZq35UhPBpQm0BlZ9TQf3E6HgFBwH7b5gp66NY1K1
- aVmwxqIwVcqWEnTni6C4L3BeOci1fqxmKzHfNOSCjen6Ft/tYMGh5WJfjteA67as/LMk7VWxR
- uW6vPdbhVmMMFOfCuteuRmoigFyjOs0+H2BWo57hFY33aWiJwY8+MZvvRymy1H0xP/Eie59rk
- QNllDA0F/odNpWS0IGayHYaASN0HR3puh2ZKnnUtPLJmM4doSGZFRPs6owIWQDixV3CtdED5O
- VFWwYeBlymygBbrlh/nqHVRRktT+9F9IAjdY2yil3j/FUJvLViq2545Ydk2SmiRcS9tssdLUF
- E0DZDovQKyiAt/YOqQVKhtUIPlEWuFIrzLTZYEFcKEJc9P8MWGlv0sVGC3CfCdMA4vzeAycnD
- 8PszgrSa36aXyxy5kGxZOC5RsWwcyAkHqIcCZhCYjzUAHAKS4VAlsBtNgtbkyFKbkpW1jawBH
- LbzE4WKyrnfZyImtd71ZjHEHk0/S48y65Slh1NAtdS6qzEWB2jjAMTb7Bu+LopV82/VFvvLZj
- puH3eT4AN48C1WagFBaxOXKVLLBXzkvy9M3eZoG2GNs5bhr/9ufWLuogjSi/ltHUufP+hseMi
- g+BL/aUe5vCAKYNmHXk9xF78eQrZ0aa+JYVN4JuXRF+HoaFMjN6OvDye5r9rm6dhwvhBreEu/
- fdMdt3V6InXvHbD8q5sULbKt9eSvRdXpGA57d0Q==
-Content-Transfer-Encoding: quoted-printable
+        id S1726841AbfKANwO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 Nov 2019 09:52:14 -0400
+Received: from mx0b-00128a01.pphosted.com ([148.163.139.77]:45926 "EHLO
+        mx0b-00128a01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726622AbfKANwO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Nov 2019 09:52:14 -0400
+Received: from pps.filterd (m0167091.ppops.net [127.0.0.1])
+        by mx0b-00128a01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id xA1DlJRj003539;
+        Fri, 1 Nov 2019 09:52:05 -0400
+Received: from nam05-co1-obe.outbound.protection.outlook.com (mail-co1nam05lp2055.outbound.protection.outlook.com [104.47.48.55])
+        by mx0b-00128a01.pphosted.com with ESMTP id 2vxwh5skcm-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 01 Nov 2019 09:52:05 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=STvhtj1yIxU+ZbDDhaOKx65l+J6u1ngbFTEUI1Kj712E3vvakAN+v1eiwoWdrM/141GHH/a0mnkQzf04135nCoVD0LmrCGDjTm2EePaOPRBpUQdZmGJ7EtUKGPYGsbsHtNQa7pVJI1MA1hKXqYWyUBZvZ7TG0uzKiwWA0L5rJcDTbBsOzm85AB54MT9vftAKl2Gh23un87wcdEX6ff/jQOsUlFlBMtKf+M3X7Y59XyyjCoTH8xFBjxC06Dmw31y+ySo5mcYzkr8RQ9x2bHV4d9Sa11CM7r/p2iwWrnMI6eswqmtIAS5b+0FKG6XZZLBaTrSkxEUNCPePqAudVNJC0A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=tqjz81NXufaxJxlsDBH2S3peDBDPDjFRdOS3RRvpoZo=;
+ b=Kg3rocGBXM0NdcRSwfSOyOTaouw9j7mcE9Oz96UcE066XjTmLZBK3lJPfG1bJSqrExKtVOq92kVvl5WsMgozZ/1qAjB4JUkDQEVGqg9HIhsqQl/GeykrPPswBdPC24XLN4nxv3ZPfi5bzKUKwnW70wVLyo/90wshuv751K7WKJdYsbKBMufZfHO3T3f44wCBm7kn2b4YZJ5WasvxRoVD6mHtVwKVjjMqwo2l7Dp3s6JSMBW6Fk2ugTQD1A77/75o50uvUquE4zrKGvOAWNMarvDQqyoXk5uHfZcmYgRUccp6c1kBbCxArKFuJ9Xem2jM8ziz5hudELZNV5naeGeecw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=analog.com; dmarc=pass action=none header.from=analog.com;
+ dkim=pass header.d=analog.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=analog.onmicrosoft.com; s=selector2-analog-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=tqjz81NXufaxJxlsDBH2S3peDBDPDjFRdOS3RRvpoZo=;
+ b=DMm3DVUy6sLCENerqKFtdhfLyL+RMEbusTcnCIeDuc5N4Y0SxSCLupQ0fdZVpuVSdBM+OorLtGhKV4l+vm6BB+k0E4G7duVBKZtPTZOulejsc7wacF4IPgTYolWD3dfjKdt0kcFxhBVNi1VQ4NG21sIwlQOokYanTggoTpo5rsw=
+Received: from CH2PR03MB5192.namprd03.prod.outlook.com (20.180.12.152) by
+ CH2PR03MB5208.namprd03.prod.outlook.com (20.180.4.78) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2408.24; Fri, 1 Nov 2019 13:52:02 +0000
+Received: from CH2PR03MB5192.namprd03.prod.outlook.com
+ ([fe80::99:71f2:a588:977c]) by CH2PR03MB5192.namprd03.prod.outlook.com
+ ([fe80::99:71f2:a588:977c%3]) with mapi id 15.20.2387.028; Fri, 1 Nov 2019
+ 13:52:02 +0000
+From:   "Ardelean, Alexandru" <alexandru.Ardelean@analog.com>
+To:     "lkp@intel.com" <lkp@intel.com>
+CC:     "kbuild-all@lists.01.org" <kbuild-all@lists.01.org>,
+        "Popa, Stefan Serban" <StefanSerban.Popa@analog.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "sre@kernel.org" <sre@kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3][RESEND] adp5061: Add support for battery charging
+ enable
+Thread-Topic: [PATCH v3][RESEND] adp5061: Add support for battery charging
+ enable
+Thread-Index: AQHVgCKU61ApHx17CkqcGfq0pqtOsadZNqcAgB1AJYA=
+Date:   Fri, 1 Nov 2019 13:52:02 +0000
+Message-ID: <0676d4f49624a60a6cb596eea8e9962b3dce531c.camel@analog.com>
+References: <20191011105649.22357-1-alexandru.ardelean@analog.com>
+         <201910140646.Ch4WbSsG%lkp@intel.com>
+In-Reply-To: <201910140646.Ch4WbSsG%lkp@intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [137.71.226.54]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: f5f3da06-8e93-49bd-6d97-08d75ed2ac7d
+x-ms-traffictypediagnostic: CH2PR03MB5208:
+x-ms-exchange-purlcount: 5
+x-ld-processed: eaa689b4-8f87-40e0-9c6f-7228de4d754a,ExtAddr
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <CH2PR03MB52083931EACB329182607FC1F9620@CH2PR03MB5208.namprd03.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:10000;
+x-forefront-prvs: 020877E0CB
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(396003)(39860400002)(366004)(136003)(346002)(376002)(189003)(199004)(99286004)(4326008)(316002)(2501003)(2616005)(5640700003)(6306002)(2906002)(476003)(966005)(229853002)(6512007)(3846002)(66946007)(14454004)(25786009)(36756003)(66446008)(54906003)(66066001)(66476007)(66556008)(64756008)(6116002)(1730700003)(486006)(11346002)(446003)(118296001)(76116006)(4001150100001)(81156014)(186003)(6916009)(76176011)(305945005)(7736002)(26005)(6506007)(5660300002)(86362001)(102836004)(81166006)(6436002)(6246003)(6486002)(478600001)(71200400001)(71190400001)(256004)(8676002)(2351001)(5024004)(8936002);DIR:OUT;SFP:1101;SCL:1;SRVR:CH2PR03MB5208;H:CH2PR03MB5192.namprd03.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+received-spf: None (protection.outlook.com: analog.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: /vHLYCYb0LBShElxCXw/oL9LySoE5jTdZ30kH68vSPWd++X0vBCyMhyQ9GlTaQdXBlmZT5LP5QUcLFSODCgrBxI0WbDvcy0Vjao6P3YxaOuQ3tYZL7gVVUMxp7bRhS2sSMAFvRfZkO1dOeQkZNrZVKxtXAWun+dlrgsl+FN6CBM30Fazgqf9NmlRppdbp1KMkwfUWMGtCuLXR+iZ+pfOaE/jtcZJgCWvPd8DpMSbVQCfFiE7mlZsoh8q+P+B3M0IkUNZ3vc1Jh62gtISZ8ps0KuOO0CLy8R/EqY3iYIp/30gH/Jc7UHlenUWI5LPi7phSlQKtRLlZmnqOwivKJE62AwmOrIKxAWMQk7HqJoTco1J689OUlhMTF/U1EGgvppGwSKJU4/hclRqBE7Ibc9FUI3A/XLJPkrOW+u7PlRolw4lTdYlM3prVgQjGgaD6kIH+ki95kdvWWNI+6rjHxKYoz1NznFkdXyvr+gbeU5H1jo=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <B5B196BCB609AD4EB79B982A28BC9585@namprd03.prod.outlook.com>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: analog.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f5f3da06-8e93-49bd-6d97-08d75ed2ac7d
+X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Nov 2019 13:52:02.5103
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: eaa689b4-8f87-40e0-9c6f-7228de4d754a
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: y4k0//tByBzfKuKSulQ3EMCk7DnzjdZFDguRWPKY9YpVmgBdItMKUlyyGohLb5nA931gCxuCS9THonawn5AAXxojo0Z4YG872zCIf379e4I=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH2PR03MB5208
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,1.0.8
+ definitions=2019-11-01_05:2019-10-30,2019-11-01 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 bulkscore=0
+ adultscore=0 spamscore=0 priorityscore=1501 mlxscore=0 mlxlogscore=999
+ malwarescore=0 clxscore=1011 lowpriorityscore=0 suspectscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-1908290000 definitions=main-1911010138
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds the thermal sensor driver for the Broadcom BCM2711 SoC,
-which is placed on the Raspberry Pi 4. The driver only provides
-SoC temperature reading so far.
-
-Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
-=2D--
- drivers/thermal/broadcom/Kconfig           |   8 ++
- drivers/thermal/broadcom/Makefile          |   1 +
- drivers/thermal/broadcom/bcm2711_thermal.c | 146 ++++++++++++++++++++++++=
-+++++
- 3 files changed, 155 insertions(+)
- create mode 100644 drivers/thermal/broadcom/bcm2711_thermal.c
-
-diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/K=
-config
-index cf43e15..b970295 100644
-=2D-- a/drivers/thermal/broadcom/Kconfig
-+++ b/drivers/thermal/broadcom/Kconfig
-@@ -1,4 +1,12 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+config BCM2711_THERMAL
-+	tristate "Broadcom AVS RO thermal sensor driver"
-+	depends on ARCH_BCM2835 || COMPILE_TEST
-+	depends on HAS_IOMEM
-+	depends on THERMAL_OF
-+	help
-+	  Support for thermal sensors on Broadcom BCM2711 SoCs.
-+
- config BCM2835_THERMAL
- 	tristate "Thermal sensors on bcm2835 SoC"
- 	depends on ARCH_BCM2835 || COMPILE_TEST
-diff --git a/drivers/thermal/broadcom/Makefile b/drivers/thermal/broadcom/=
-Makefile
-index 490ab1f..c917b24 100644
-=2D-- a/drivers/thermal/broadcom/Makefile
-+++ b/drivers/thermal/broadcom/Makefile
-@@ -1,4 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_BCM2711_THERMAL)		+=3D bcm2711_thermal.o
- obj-$(CONFIG_BCM2835_THERMAL)		+=3D bcm2835_thermal.o
- obj-$(CONFIG_BRCMSTB_THERMAL)		+=3D brcmstb_thermal.o
- obj-$(CONFIG_BCM_NS_THERMAL)		+=3D ns-thermal.o
-diff --git a/drivers/thermal/broadcom/bcm2711_thermal.c b/drivers/thermal/=
-broadcom/bcm2711_thermal.c
-new file mode 100644
-index 0000000..214a305
-=2D-- /dev/null
-+++ b/drivers/thermal/broadcom/bcm2711_thermal.c
-@@ -0,0 +1,146 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Broadcom AVS RO thermal sensor driver
-+ *
-+ * based on brcmstb_thermal
-+ *
-+ * Copyright (C) 2019 Stefan Wahren
-+ */
-+
-+#include <linux/bitops.h>
-+#include <linux/clk.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/of_device.h>
-+#include <linux/thermal.h>
-+
-+#include "../thermal_hwmon.h"
-+
-+#define AVS_RO_TEMP_STATUS		0x00
-+ #define AVS_RO_TEMP_STATUS_valid_msk	(BIT(16) | BIT(10))
-+ #define AVS_RO_TEMP_STATUS_data_msk	GENMASK(9, 0)
-+
-+struct bcm2711_thermal_priv {
-+	void __iomem *base;
-+	struct device *dev;
-+	struct clk *clk;
-+	struct thermal_zone_device *thermal;
-+};
-+
-+static int bcm2711_get_temp(void *data, int *temp)
-+{
-+	struct bcm2711_thermal_priv *priv =3D data;
-+	int slope =3D thermal_zone_get_slope(priv->thermal);
-+	int offset =3D thermal_zone_get_offset(priv->thermal);
-+	u32 val;
-+	long t;
-+
-+	val =3D __raw_readl(priv->base + AVS_RO_TEMP_STATUS);
-+
-+	if (!(val & AVS_RO_TEMP_STATUS_valid_msk)) {
-+		dev_err(priv->dev, "reading not valid\n");
-+		return -EIO;
-+	}
-+
-+	val &=3D AVS_RO_TEMP_STATUS_data_msk;
-+
-+	/* Convert a HW code to a temperature reading (millidegree celsius) */
-+	t =3D slope * val + offset;
-+	if (t < 0)
-+		*temp =3D 0;
-+	else
-+		*temp =3D t;
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops bcm2711_thermal_of_ops =3D=
- {
-+	.get_temp	=3D bcm2711_get_temp,
-+};
-+
-+static const struct of_device_id bcm2711_thermal_id_table[] =3D {
-+	{ .compatible =3D "brcm,bcm2711-thermal" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, bcm2711_thermal_id_table);
-+
-+static int bcm2711_thermal_probe(struct platform_device *pdev)
-+{
-+	struct thermal_zone_device *thermal;
-+	struct bcm2711_thermal_priv *priv;
-+	struct resource *res;
-+	int ret;
-+
-+	priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	priv->base =3D devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(priv->base))
-+		return PTR_ERR(priv->base);
-+
-+	priv->clk =3D devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(priv->clk)) {
-+		ret =3D PTR_ERR(priv->clk);
-+		if (ret !=3D -EPROBE_DEFER)
-+			dev_err(&pdev->dev, "could not get clk: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret =3D clk_prepare_enable(priv->clk);
-+	if (ret)
-+		return ret;
-+
-+	priv->dev =3D &pdev->dev;
-+	platform_set_drvdata(pdev, priv);
-+
-+	thermal =3D devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv,
-+						       &bcm2711_thermal_of_ops);
-+	if (IS_ERR(thermal)) {
-+		ret =3D PTR_ERR(thermal);
-+		dev_err(&pdev->dev, "could not register sensor: %d\n", ret);
-+		goto err_clk;
-+	}
-+
-+	priv->thermal =3D thermal;
-+
-+	thermal->tzp->no_hwmon =3D false;
-+	ret =3D thermal_add_hwmon_sysfs(thermal);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+
-+err_clk:
-+	clk_disable_unprepare(priv->clk);
-+
-+	return ret;
-+}
-+
-+static int bcm2711_thermal_remove(struct platform_device *pdev)
-+{
-+	struct bcm2711_thermal_priv *priv =3D platform_get_drvdata(pdev);
-+
-+	clk_disable_unprepare(priv->clk);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver bcm2711_thermal_driver =3D {
-+	.probe =3D bcm2711_thermal_probe,
-+	.remove =3D bcm2711_thermal_remove,
-+	.driver =3D {
-+		.name =3D "bcm2711_thermal",
-+		.of_match_table =3D bcm2711_thermal_id_table,
-+	},
-+};
-+module_platform_driver(bcm2711_thermal_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Stefan Wahren");
-+MODULE_DESCRIPTION("Broadcom AVS RO thermal sensor driver");
-=2D-
-2.7.4
-
+T24gTW9uLCAyMDE5LTEwLTE0IGF0IDA3OjEwICswODAwLCBrYnVpbGQgdGVzdCByb2JvdCB3cm90
+ZToNCj4gW0V4dGVybmFsXQ0KPiANCj4gSGkgQWxleGFuZHJ1LA0KPiANCg0KUGhldy4NCk15IGJh
+ZCBoZXJlLg0KRWl0aGVyIEkgaGF2ZSBiYXNlZCBpdCBhbiBvbGRlciB0cmVlIHByb2JhYmx5LCBv
+ciB0aGUgQVJNIGNvbXBpbGVycyBkaWQgbm90DQpjYXRjaCB0aGlzLg0KVGhlIHg4Nl82NCBjb21w
+aWxlciBzZWVtcyBwcmV0dHkgbml0cGljay15IFt3aGljaCBpcyBnb29kWy4NCldpbGwgZml4Lg0K
+DQoNCj4gSSBsb3ZlIHlvdXIgcGF0Y2ghIFlldCBzb21ldGhpbmcgdG8gaW1wcm92ZToNCj4gDQo+
+IFthdXRvIGJ1aWxkIHRlc3QgRVJST1Igb24gcG93ZXItc3VwcGx5L2Zvci1uZXh0XQ0KPiBbY2Fu
+bm90IGFwcGx5IHRvIHY1LjQtcmMyIG5leHQtMjAxOTEwMTFdDQo+IFtpZiB5b3VyIHBhdGNoIGlz
+IGFwcGxpZWQgdG8gdGhlIHdyb25nIGdpdCB0cmVlLCBwbGVhc2UgZHJvcCB1cyBhIG5vdGUgdG8N
+Cj4gaGVscA0KPiBpbXByb3ZlIHRoZSBzeXN0ZW0uIEJUVywgd2UgYWxzbyBzdWdnZXN0IHRvIHVz
+ZSAnLS1iYXNlJyBvcHRpb24gdG8NCj4gc3BlY2lmeSB0aGUNCj4gYmFzZSB0cmVlIGluIGdpdCBm
+b3JtYXQtcGF0Y2gsIHBsZWFzZSBzZWUgDQo+IGh0dHBzOi8vc3RhY2tvdmVyZmxvdy5jb20vYS8z
+NzQwNjk4Ml0NCj4gDQo+IHVybDogICAgDQo+IGh0dHBzOi8vZ2l0aHViLmNvbS8wZGF5LWNpL2xp
+bnV4L2NvbW1pdHMvQWxleGFuZHJ1LUFyZGVsZWFuL2FkcDUwNjEtQWRkLXN1cHBvcnQtZm9yLWJh
+dHRlcnktY2hhcmdpbmctZW5hYmxlLzIwMTkxMDE0LTAzNTQ1Ng0KPiBiYXNlOiAgIA0KPiBodHRw
+czovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9zcmUvbGludXgtcG93
+ZXItc3VwcGx5LmdpdA0KPiBmb3ItbmV4dA0KPiBjb25maWc6IHNwYXJjNjQtYWxsbW9kY29uZmln
+IChhdHRhY2hlZCBhcyAuY29uZmlnKQ0KPiBjb21waWxlcjogc3BhcmM2NC1saW51eC1nY2MgKEdD
+QykgNy40LjANCj4gcmVwcm9kdWNlOg0KPiAgICAgICAgIHdnZXQgDQo+IGh0dHBzOi8vcmF3Lmdp
+dGh1YnVzZXJjb250ZW50LmNvbS9pbnRlbC9sa3AtdGVzdHMvbWFzdGVyL3NiaW4vbWFrZS5jcm9z
+cw0KPiAtTyB+L2Jpbi9tYWtlLmNyb3NzDQo+ICAgICAgICAgY2htb2QgK3ggfi9iaW4vbWFrZS5j
+cm9zcw0KPiAgICAgICAgICMgc2F2ZSB0aGUgYXR0YWNoZWQgLmNvbmZpZyB0byBsaW51eCBidWls
+ZCB0cmVlDQo+ICAgICAgICAgR0NDX1ZFUlNJT049Ny40LjAgbWFrZS5jcm9zcyBBUkNIPXNwYXJj
+NjQgDQo+IA0KPiBJZiB5b3UgZml4IHRoZSBpc3N1ZSwga2luZGx5IGFkZCBmb2xsb3dpbmcgdGFn
+DQo+IFJlcG9ydGVkLWJ5OiBrYnVpbGQgdGVzdCByb2JvdCA8bGtwQGludGVsLmNvbT4NCj4gDQo+
+IEFsbCBlcnJvci93YXJuaW5ncyAobmV3IG9uZXMgcHJlZml4ZWQgYnkgPj4pOg0KPiANCj4gICAg
+SW4gZmlsZSBpbmNsdWRlZCBmcm9tIGluY2x1ZGUvbGludXgva29iamVjdC5oOjIwOjAsDQo+ICAg
+ICAgICAgICAgICAgICAgICAgZnJvbSBpbmNsdWRlL2xpbnV4L21vZHVsZS5oOjE3LA0KPiAgICAg
+ICAgICAgICAgICAgICAgIGZyb20gZHJpdmVycy9wb3dlci9zdXBwbHkvYWRwNTA2MS5jOjk6DQo+
+ID4gPiBkcml2ZXJzL3Bvd2VyL3N1cHBseS9hZHA1MDYxLmM6NzM4OjQ0OiBlcnJvcjogaW5pdGlh
+bGl6YXRpb24gZnJvbQ0KPiA+ID4gaW5jb21wYXRpYmxlIHBvaW50ZXIgdHlwZSBbLVdlcnJvcj1p
+bmNvbXBhdGlibGUtcG9pbnRlci10eXBlc10NCj4gICAgIHN0YXRpYyBERVZJQ0VfQVRUUihjaGFy
+Z2luZ19lbmFibGVkLCAwNjQ0LA0KPiBhZHA1MDYxX2dldF9jaGFyZ2luZ19lbmFibGVkLA0KPiAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIF4NCj4gICAgaW5j
+bHVkZS9saW51eC9zeXNmcy5oOjEwNDoxMDogbm90ZTogaW4gZGVmaW5pdGlvbiBvZiBtYWNybyAn
+X19BVFRSJw0KPiAgICAgIC5zaG93ID0gX3Nob3csICAgICAgXA0KPiAgICAgICAgICAgICAgXn5+
+fn4NCj4gPiA+IGRyaXZlcnMvcG93ZXIvc3VwcGx5L2FkcDUwNjEuYzo3Mzg6ODogbm90ZTogaW4g
+ZXhwYW5zaW9uIG9mIG1hY3JvDQo+ID4gPiAnREVWSUNFX0FUVFInDQo+ICAgICBzdGF0aWMgREVW
+SUNFX0FUVFIoY2hhcmdpbmdfZW5hYmxlZCwgMDY0NCwNCj4gYWRwNTA2MV9nZXRfY2hhcmdpbmdf
+ZW5hYmxlZCwNCj4gICAgICAgICAgICBefn5+fn5+fn5+fg0KPiAgICBkcml2ZXJzL3Bvd2VyL3N1
+cHBseS9hZHA1MDYxLmM6NzM4OjQ0OiBub3RlOiAobmVhciBpbml0aWFsaXphdGlvbiBmb3INCj4g
+J2Rldl9hdHRyX2NoYXJnaW5nX2VuYWJsZWQuc2hvdycpDQo+ICAgICBzdGF0aWMgREVWSUNFX0FU
+VFIoY2hhcmdpbmdfZW5hYmxlZCwgMDY0NCwNCj4gYWRwNTA2MV9nZXRfY2hhcmdpbmdfZW5hYmxl
+ZCwNCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBeDQo+
+ICAgIGluY2x1ZGUvbGludXgvc3lzZnMuaDoxMDQ6MTA6IG5vdGU6IGluIGRlZmluaXRpb24gb2Yg
+bWFjcm8gJ19fQVRUUicNCj4gICAgICAuc2hvdyA9IF9zaG93LCAgICAgIFwNCj4gICAgICAgICAg
+ICAgIF5+fn5+DQo+ID4gPiBkcml2ZXJzL3Bvd2VyL3N1cHBseS9hZHA1MDYxLmM6NzM4Ojg6IG5v
+dGU6IGluIGV4cGFuc2lvbiBvZiBtYWNybw0KPiA+ID4gJ0RFVklDRV9BVFRSJw0KPiAgICAgc3Rh
+dGljIERFVklDRV9BVFRSKGNoYXJnaW5nX2VuYWJsZWQsIDA2NDQsDQo+IGFkcDUwNjFfZ2V0X2No
+YXJnaW5nX2VuYWJsZWQsDQo+ICAgICAgICAgICAgXn5+fn5+fn5+fn4NCj4gICAgZHJpdmVycy9w
+b3dlci9zdXBwbHkvYWRwNTA2MS5jOjczOTo2OiBlcnJvcjogaW5pdGlhbGl6YXRpb24gZnJvbQ0K
+PiBpbmNvbXBhdGlibGUgcG9pbnRlciB0eXBlIFstV2Vycm9yPWluY29tcGF0aWJsZS1wb2ludGVy
+LXR5cGVzXQ0KPiAgICAgICAgICBhZHA1MDYxX3NldF9jaGFyZ2luZ19lbmFibGVkKTsNCj4gICAg
+ICAgICAgXg0KPiAgICBpbmNsdWRlL2xpbnV4L3N5c2ZzLmg6MTA1OjExOiBub3RlOiBpbiBkZWZp
+bml0aW9uIG9mIG1hY3JvICdfX0FUVFInDQo+ICAgICAgLnN0b3JlID0gX3N0b3JlLCAgICAgIFwN
+Cj4gICAgICAgICAgICAgICBefn5+fn4NCj4gPiA+IGRyaXZlcnMvcG93ZXIvc3VwcGx5L2FkcDUw
+NjEuYzo3Mzg6ODogbm90ZTogaW4gZXhwYW5zaW9uIG9mIG1hY3JvDQo+ID4gPiAnREVWSUNFX0FU
+VFInDQo+ICAgICBzdGF0aWMgREVWSUNFX0FUVFIoY2hhcmdpbmdfZW5hYmxlZCwgMDY0NCwNCj4g
+YWRwNTA2MV9nZXRfY2hhcmdpbmdfZW5hYmxlZCwNCj4gICAgICAgICAgICBefn5+fn5+fn5+fg0K
+PiAgICBkcml2ZXJzL3Bvd2VyL3N1cHBseS9hZHA1MDYxLmM6NzM5OjY6IG5vdGU6IChuZWFyIGlu
+aXRpYWxpemF0aW9uIGZvcg0KPiAnZGV2X2F0dHJfY2hhcmdpbmdfZW5hYmxlZC5zdG9yZScpDQo+
+ICAgICAgICAgIGFkcDUwNjFfc2V0X2NoYXJnaW5nX2VuYWJsZWQpOw0KPiAgICAgICAgICBeDQo+
+ICAgIGluY2x1ZGUvbGludXgvc3lzZnMuaDoxMDU6MTE6IG5vdGU6IGluIGRlZmluaXRpb24gb2Yg
+bWFjcm8gJ19fQVRUUicNCj4gICAgICAuc3RvcmUgPSBfc3RvcmUsICAgICAgXA0KPiAgICAgICAg
+ICAgICAgIF5+fn5+fg0KPiA+ID4gZHJpdmVycy9wb3dlci9zdXBwbHkvYWRwNTA2MS5jOjczODo4
+OiBub3RlOiBpbiBleHBhbnNpb24gb2YgbWFjcm8NCj4gPiA+ICdERVZJQ0VfQVRUUicNCj4gICAg
+IHN0YXRpYyBERVZJQ0VfQVRUUihjaGFyZ2luZ19lbmFibGVkLCAwNjQ0LA0KPiBhZHA1MDYxX2dl
+dF9jaGFyZ2luZ19lbmFibGVkLA0KPiAgICAgICAgICAgIF5+fn5+fn5+fn5+DQo+ICAgIGNjMTog
+c29tZSB3YXJuaW5ncyBiZWluZyB0cmVhdGVkIGFzIGVycm9ycw0KPiANCj4gdmltICs3MzggZHJp
+dmVycy9wb3dlci9zdXBwbHkvYWRwNTA2MS5jDQo+IA0KPiAgICA3MzcJDQo+ICA+IDczOAlzdGF0
+aWMgREVWSUNFX0FUVFIoY2hhcmdpbmdfZW5hYmxlZCwgMDY0NCwNCj4gYWRwNTA2MV9nZXRfY2hh
+cmdpbmdfZW5hYmxlZCwNCj4gICAgNzM5CQkJICAgYWRwNTA2MV9zZXRfY2hhcmdpbmdfZW5hYmxl
+ZCk7DQo+ICAgIDc0MAkNCj4gDQo+IC0tLQ0KPiAwLURBWSBrZXJuZWwgdGVzdCBpbmZyYXN0cnVj
+dHVyZSAgICAgICAgICAgICAgICBPcGVuIFNvdXJjZSBUZWNobm9sb2d5DQo+IENlbnRlcg0KPiBo
+dHRwczovL2xpc3RzLjAxLm9yZy9waXBlcm1haWwva2J1aWxkLWFsbCAgICAgICAgICAgICAgICAg
+ICBJbnRlbA0KPiBDb3Jwb3JhdGlvbg0K
