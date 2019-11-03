@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BDE7CA9EBB
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDB03CA9EB0
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E90F721D80
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A3D6E21A4A
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TUqLQDiq"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ptgdzv41"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728558AbfKCUnA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 3 Nov 2019 15:43:00 -0500
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:40765 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727490AbfKCUmM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Nov 2019 15:42:12 -0500
-Received: by mail-lj1-f196.google.com with SMTP id q2so8825923ljg.7;
-        Sun, 03 Nov 2019 12:42:10 -0800 (PST)
+        id S1728268AbfKCUmL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 3 Nov 2019 15:42:11 -0500
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:38339 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728229AbfKCUmK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Nov 2019 15:42:10 -0500
+Received: by mail-lj1-f195.google.com with SMTP id y23so14975145ljc.5;
+        Sun, 03 Nov 2019 12:42:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=z9+CHMZoGGQ0kyLUVsXDA/Tuh9oFzpRRT79bF9HX1WM=;
-        b=TUqLQDiqv3xLDWlA1iKqmrWtizpsM0hTiM2kEHMtOkSgXplN8gDdNICP2vgGqK6PWx
-         EWakDXBQ6W1DTYySfNp0ftYUn8EplzJS2owRJvis9dwPH+nk7zoIGpgHkWXEmTGGIE/n
-         +6cntfMUOLLV5+gz8LvRjCsD090WfmUhwgEPC+olGa52x2PMdOJD6ihzSyS2LbFpna7J
-         8pBT8R7NJTwOmYIoEVpyRiLCFLg+BxWFgw9BA+FAujcNrJbQs12fXBPyG/6zFh/FvutW
-         LE3i3tR9RltCxCPpJqZ3kIQiMVU1lw0f7HhsOOv43Lkw8Z8jE3TkOqRBgOQi1FPZAf0u
-         4sAg==
+        bh=T6ehYayj/CsEjREzCecGwtuH1vTkkw6hdLvoIOrkLyE=;
+        b=Ptgdzv4188nCij+3Y1+uj2V7WEUNb4/7dxYNQWUfW5/EdACAxMbj3dyNfyJZ1tspwk
+         4rVRzkSy3P9BqCgtlyU2PF+hoCX06hKqVrz6ii1iyrsoZA2nHnSFoF2Ol10rhQmRCIQG
+         SoDiwrEo2nshbpVPwB66QuzA2el9Bl7W5tAU7rtgJ+LjR3NVT5N0PZGIIijARIpm6VXF
+         BCz6Bhr+nsWraaLqXeMr6dsDHkNsK3P66yPnSx1g+TniQsdDvVZpX6GrGyq1Wf2WoYLs
+         vQlEjkkmcSNgFX4qZZmhgX3i+zlBKqWkj1LkqKbCmUHNvUPy9pYE2cIZIpWVlXTUXPmX
+         z3ag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=z9+CHMZoGGQ0kyLUVsXDA/Tuh9oFzpRRT79bF9HX1WM=;
-        b=hMNSy3eXxhffLULo029e8czzJQiewai3+pOibtaY5s0JWkKHLqQphYLuDTC5u7uDuX
-         jvcyAnwXWIdP7n1Zi24A7sE2LLBt3bfXoxDVp36HAUF/sBlpKkh+BLWzs/unq826AlMn
-         8tpkZ4uHE+k+QqCcaqkaGFo6g8U+UVfplrqbaelXNVOHT4/hxvoi1zS8K5NdQrDGsjcu
-         Mm5MEO2hqKZhhMyoVRTsJFuTT/W5iHNCPEJGiIO5mqzuGeKTy3IBvWkoU5SnTRwJcLeN
-         ebftyZICRMOuwL6WuEm30EbupedJb/CNH2saf3gRswwBzZsfeip8LX2ypCDQyitwaDrS
-         bUSA==
-X-Gm-Message-State: APjAAAUo3/Ke4nG9PUnNAt0zWRTDGdA68Z2eNNV8m/50CYKpAn24U3Ci
-        qMpjSDwccIZtMWD7CAN1IjY=
-X-Google-Smtp-Source: APXvYqySs8z1GndldbAF6dJuniLNMKNLeR1pFr8/RYSTNzBtsN54Q6N4DkDftUWSLVckSuuXFlFd6A==
-X-Received: by 2002:a2e:b0f3:: with SMTP id h19mr9203237ljl.153.1572813730098;
-        Sun, 03 Nov 2019 12:42:10 -0800 (PST)
+        bh=T6ehYayj/CsEjREzCecGwtuH1vTkkw6hdLvoIOrkLyE=;
+        b=SJB+Lahn5HLD+BjI9l5essrxzNfoi8hU2sn+UPvmI86E9CFtt5Rv+clhlfqg7HkEOo
+         JARrKRg0cdtyqzVbfzNyOSollxCIt/D0V5WSWNmiZwtTxZMOmPf3JE/Me8YGkv3etzWC
+         FQoiM7nwBUrfp7wgbP7WydmBO1+I48x9og+I33ez19MKgdLvTYL9vuFHDlz5fAahbz14
+         d1Klw5Mcq1gHgEN95LBrH/pr+ZT+rsp/sFlS8DnjFCfmXxuwuQqocf7wfc1e8ywkmOCe
+         D/xn/K0s/fieem8oJ47hg8vBO76xK3WfOETP1ykhk03ltRLHLbekCxpXLITuNyTrQabk
+         BsvQ==
+X-Gm-Message-State: APjAAAVn/P4JRTVWiMirKOTiC8q8mpxqkgsLOTY7cLJeAe2rf00LO60p
+        FEhLChQKYQ+LcGNreJcHr9M=
+X-Google-Smtp-Source: APXvYqzv42KLMu8jlJL0jhswKJbINknrWxI1NCCkixsiBipoWEE1FReIAwTejtTyjUDIWZYq5MS9nQ==
+X-Received: by 2002:a2e:9a95:: with SMTP id p21mr12344939lji.175.1572813728080;
+        Sun, 03 Nov 2019 12:42:08 -0800 (PST)
 Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id e22sm7099853ljg.73.2019.11.03.12.42.09
+        by smtp.gmail.com with ESMTPSA id e22sm7099853ljg.73.2019.11.03.12.42.07
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 03 Nov 2019 12:42:09 -0800 (PST)
+        Sun, 03 Nov 2019 12:42:07 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -66,9 +66,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v8 08/18] PM / devfreq: tegra30: Move clk-notifier's registration to governor's start
-Date:   Sun,  3 Nov 2019 23:41:20 +0300
-Message-Id: <20191103204130.2172-9-digetx@gmail.com>
+Subject: [PATCH v8 06/18] PM / devfreq: tegra30: Use kHz units uniformly in the code
+Date:   Sun,  3 Nov 2019 23:41:18 +0300
+Message-Id: <20191103204130.2172-7-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191103204130.2172-1-digetx@gmail.com>
 References: <20191103204130.2172-1-digetx@gmail.com>
@@ -79,120 +79,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is no point in receiving of the notifications while governor is
-stopped, let's keep them disabled like we do for the CPU freq-change
-notifications. This also fixes a potential use-after-free bug if
-notification happens after device's removal.
+Part of the code uses Hz units and the other kHz, let's switch to kHz
+everywhere for consistency. A small benefit from this change (besides
+code's cleanup) is that now powertop utility correctly displays devfreq's
+stats, for some reason it expects them to be in kHz.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Tested-by: Peter Geis <pgwipeout@gmail.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 39 ++++++++++++++++++-------------
- 1 file changed, 23 insertions(+), 16 deletions(-)
+ drivers/devfreq/tegra30-devfreq.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 2d720e7e2236..6960d8ba0577 100644
+index 7d7b7eecc19c..9ccde64be0a0 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -514,6 +514,21 @@ static int tegra_actmon_start(struct tegra_devfreq *tegra)
- 	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
- 		      ACTMON_GLB_PERIOD_CTRL);
+@@ -448,7 +448,7 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 	rate = dev_pm_opp_get_freq(opp);
+ 	dev_pm_opp_put(opp);
  
-+	/*
-+	 * CLK notifications are needed in order to reconfigure the upper
-+	 * consecutive watermark in accordance to the actual clock rate
-+	 * to avoid unnecessary upper interrupts.
-+	 */
-+	err = clk_notifier_register(tegra->emc_clock,
-+				    &tegra->clk_rate_change_nb);
-+	if (err) {
-+		dev_err(tegra->devfreq->dev.parent,
-+			"Failed to register rate change notifier\n");
-+		return err;
-+	}
-+
-+	tegra->cur_freq = clk_get_rate(tegra->emc_clock) / KHZ;
-+
- 	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++)
- 		tegra_actmon_configure_device(tegra, &tegra->devices[i]);
+-	err = clk_set_min_rate(tegra->emc_clock, rate);
++	err = clk_set_min_rate(tegra->emc_clock, rate * KHZ);
+ 	if (err)
+ 		return err;
  
-@@ -539,6 +554,8 @@ static int tegra_actmon_start(struct tegra_devfreq *tegra)
- err_stop:
- 	tegra_actmon_stop_devices(tegra);
+@@ -477,7 +477,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ 	stat->private_data = tegra;
  
-+	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
-+
- 	return err;
- }
+ 	/* The below are to be used by the other governors */
+-	stat->current_frequency = cur_freq * KHZ;
++	stat->current_frequency = cur_freq;
  
-@@ -552,6 +569,8 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
- 	cancel_delayed_work_sync(&tegra->cpufreq_update_work);
+ 	actmon_dev = &tegra->devices[MCALL];
  
- 	tegra_actmon_stop_devices(tegra);
-+
-+	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
- }
- 
- static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
-@@ -768,7 +787,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return rate;
+@@ -527,7 +527,7 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
+ 		target_freq = max(target_freq, dev->target_freq);
  	}
  
--	tegra->cur_freq = clk_get_rate(tegra->emc_clock) / KHZ;
- 	tegra->max_freq = rate / KHZ;
+-	*freq = target_freq * KHZ;
++	*freq = target_freq;
  
- 	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
-@@ -796,27 +814,20 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+@@ -663,7 +663,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 			goto remove_opps;
+ 		}
  
- 	platform_set_drvdata(pdev, tegra);
- 
-+	tegra->clk_rate_change_nb.notifier_call = tegra_actmon_clk_notify_cb;
- 	tegra->cpu_rate_change_nb.notifier_call = tegra_actmon_cpu_notify_cb;
- 
- 	INIT_DELAYED_WORK(&tegra->cpufreq_update_work,
- 			  tegra_actmon_delayed_update);
- 
--	tegra->clk_rate_change_nb.notifier_call = tegra_actmon_clk_notify_cb;
--	err = clk_notifier_register(tegra->emc_clock,
--				    &tegra->clk_rate_change_nb);
--	if (err) {
--		dev_err(&pdev->dev,
--			"Failed to register rate change notifier\n");
--		goto remove_opps;
--	}
--
- 	err = devfreq_add_governor(&tegra_devfreq_governor);
- 	if (err) {
- 		dev_err(&pdev->dev, "Failed to add governor: %d\n", err);
--		goto unreg_notifier;
-+		goto remove_opps;
+-		err = dev_pm_opp_add(&pdev->dev, rate, 0);
++		err = dev_pm_opp_add(&pdev->dev, rate / KHZ, 0);
+ 		if (err) {
+ 			dev_err(&pdev->dev, "Failed to add OPP: %d\n", err);
+ 			goto remove_opps;
+@@ -686,7 +686,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 		goto unreg_notifier;
  	}
  
--	tegra_devfreq_profile.initial_freq = tegra->cur_freq;
-+	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
-+	tegra_devfreq_profile.initial_freq /= KHZ;
- 
+-	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
++	tegra_devfreq_profile.initial_freq = tegra->cur_freq;
++
  	devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
  				     "tegra_actmon", NULL);
-@@ -830,9 +841,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- remove_governor:
- 	devfreq_remove_governor(&tegra_devfreq_governor);
- 
--unreg_notifier:
--	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
--
- remove_opps:
- 	dev_pm_opp_remove_all_dynamic(&pdev->dev);
- 
-@@ -849,7 +857,6 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
- 	devfreq_remove_device(tegra->devfreq);
- 	devfreq_remove_governor(&tegra_devfreq_governor);
- 
--	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
- 	dev_pm_opp_remove_all_dynamic(&pdev->dev);
- 
- 	reset_control_reset(tegra->reset);
+ 	if (IS_ERR(devfreq)) {
 -- 
 2.23.0
 
