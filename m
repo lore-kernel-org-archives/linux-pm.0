@@ -2,73 +2,42 @@ Return-Path: <SRS0=m6sv=Y3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7484ECA9EB0
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACD64C47E49
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 22:08:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 36CB321D80
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6D53121D56
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 22:08:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Dk7m+jJ7"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b="Q8w14l5h"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727607AbfKCUmG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 3 Nov 2019 15:42:06 -0500
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:38992 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727268AbfKCUmF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Nov 2019 15:42:05 -0500
-Received: by mail-lj1-f196.google.com with SMTP id y3so15387194ljj.6;
-        Sun, 03 Nov 2019 12:42:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=2h+y9JvQKmkZDektrVGodVCasQAVlpaUJr5NA4uPYFA=;
-        b=Dk7m+jJ7LcmTyP23Ve1A1hk6rp36ct7ojMjPxPj2TWl7pSZQas4ED4+j+R6M+5eWjB
-         aJj/RXJy2Lj2icmKMgkEFOagKL92+ZBy3OQT9XMu2gmzKYPgwh5h6b3+01/Eig4c7rQx
-         QscmBTvUt9/GyliyZVg7PWt3G/IZhdaHH7grPd7mek7uUK9MrBvA5eU7lWI3dmkgLIDj
-         IJYhIrbxDErrVCW8Ag+6G+Yc19U/KNUniFP52/uCpUwPlXfc4UK9zpUxEy/SlBgk46oH
-         aB5MMug3my3jO8xzt7dD4OQCgVB22ru1T2amhXOE/jciV1w9e+cofz8IrjsuYGacEQ8o
-         f4aA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=2h+y9JvQKmkZDektrVGodVCasQAVlpaUJr5NA4uPYFA=;
-        b=iaSNWQKziUvqIUb4sRRM53umSFkEta4oKhY3n4hIiSqymYXnseh2an2/udruE6+UBb
-         ssW0K5+hgDStpznLPNz69oZc6kUV9dgR7KMGHU9JfC82lhR9lXIQ7AKgduYW02oa4JQ4
-         12XUhjfgR2QvXY6hpp6CNVJxVAYf2o5yXH+Xpm79p+0sAKtaPalJTJE/LcG1e6Ci6ETy
-         DWSjwp13G5AXbgooIvObXP8XYdecCbqs7R/apDvJ46WDtxASQ7EFlaDpBsf0DzdvUlGw
-         Ma7eICN1roqnh1qeBvflq/LIVmAa+fay4/vJnZWwWSc55+Q4DRXPQDTtCBPKwighiJJu
-         VAsA==
-X-Gm-Message-State: APjAAAVZPEtx0l2L2ThN7aVyp748UX3sUUrVMLkpIjFsMS6Jr5kUpjuX
-        ZdOE0syaUBZGz7MAH9eUkkk=
-X-Google-Smtp-Source: APXvYqy6NiGv42MNYpUo7Zk8PMP8FbSnXUwlGM7JbrPsHXiVL5D6mmWdrXTpd8pByYbmfa1qEnhaJA==
-X-Received: by 2002:a2e:9dd5:: with SMTP id x21mr9873898ljj.232.1572813722406;
-        Sun, 03 Nov 2019 12:42:02 -0800 (PST)
-Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id e22sm7099853ljg.73.2019.11.03.12.42.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 03 Nov 2019 12:42:01 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v8 00/18] More improvements for Tegra30 devfreq driver
-Date:   Sun,  3 Nov 2019 23:41:12 +0300
-Message-Id: <20191103204130.2172-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
+        id S1728178AbfKCWIk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 3 Nov 2019 17:08:40 -0500
+Received: from outils.crapouillou.net ([89.234.176.41]:48174 "EHLO
+        crapouillou.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727856AbfKCWIk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Nov 2019 17:08:40 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
+        s=mail; t=1572818918; h=from:from:sender:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:references; bh=/EPj4Iza17N8gPM/llWGgmaRA7Okh4ILYdXdlgDqNwc=;
+        b=Q8w14l5hw/Pvm2aODE3I01Of+4noTkO2NZxlLj6DzM8mX4ZsgmNVsxvrDRdbJVoTZWpful
+        tWj/4bODx1GlZV3u1TUDSTRlhfo0Xuz9klHcag7w6ocQY8YmUv4sXzxdidZcY1BdQrzOEa
+        EyAosBU6fpv1Qt95h5euQ2KBVd5g/Y8=
+From:   Paul Cercueil <paul@crapouillou.net>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, od@zcrc.me,
+        Paul Cercueil <paul@crapouillou.net>
+Subject: [PATCH 1/2] dt-bindings: power/supply: Document generic USB charger
+Date:   Sun,  3 Nov 2019 23:08:00 +0100
+Message-Id: <20191103220801.10666-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -76,162 +45,45 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+Add documentation about the devicetree bindings for the generic USB
+charger.
 
-This series addresses some additional review comments that were made by
-Thierry Reding to [1], makes several important changes to the driver,
-reducing interrupts activity, and adds new features. In the end I'm
-proposing myself as a maintainer for the Tegra devfreq drivers.
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+---
+ .../bindings/power/supply/usb-charger.txt     | 24 +++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/usb-charger.txt
 
-[1] https://lore.kernel.org/lkml/0fb50eb1-a173-1756-6889-2526a10ac707@gmail.com/T/
-
-Changelog:
-
-v8:  Addressed review comments that were made by Chanwoo Choi to v7 by:
-
-     1. Taking into account suggestions that were made for the "Add new
-        interrupt_driven flag for governors".
-
-     2. Patch "Support variable polling interval" now doesn't use
-        devfreq->stop_polling and uses tegra->cur_freq instead. There is
-        now a comment for the 256ms max polling interval limitation as well.
-
-     The patch "Increase sampling period to 16ms" is dropped from the series
-     for now since we found out that it doesn't bring much benefit.
-
-     The cur_freq value is now refreshed after clk-notifier registration in
-     the "Move clk-notifier's registration to governor's start" patch, for
-     consistency. This also becomes useful for the "Support variable polling
-     interval" patch since it now uses the cur_freq for tracking of the
-     governor's enable-state.
-
-     The patch "Support variable polling interval" now has a proper scaling
-     of the dependency threshold value, which I missed to backport into
-     v7 after dropping some of the v6 patches. The do_percent() function
-     now doesn't suffer from integer overflow bug when freq, boosting and
-     polling interval values are too large.
-
-v7:  Addressed review comments that were made by Chanwoo Choi to v6 by:
-
-     1. Dropping patch "Ensure that target freq won't overflow".
-     2. Making "Use kHz units uniformly in the code" patch more easier
-        for review and improving its commit's message.
-     3. The "Support variable polling interval" patch is reworked, now it
-        doesn't touch things that should stay internal to devfreq core, like
-        devfreq->stop_polling and etc. In a result a new generic
-        interrupt_driven flag is available for devfreq governors (added in a
-        new patch "Add new interrupt_driven flag for governors").
-
-     Patch "Set up watermarks properly" and related to it patches are dropped
-     because I found a case where it doesn't work well. These patches need
-     some more thought and not ready for now, I'll continue working on them.
-     I extracted useful changes from the dropped patches and then tuned up
-     MCCPU boost-down coefficient to keep ACTMON silent when system is idling,
-     in a result there are these new patches:
-
-       1. Don't enable already enabled consecutive interrupts
-       2. Disable consecutive interrupts when appropriate
-       3. Tune up MCCPU boost-down coefficient
-
-v6:  Addressed review comment that was made by Chanwoo Choi to v5 by
-     squashing "Define ACTMON_DEV_CTRL_STOP" patch into the "Use CPUFreq
-     notifier" patch.
-
-v5:  Addressed review comments that were made by Chanwoo Choi to v4 by
-     squashing few patches, dropping some questionable patches, rewording
-     comments to the code, restructuring the code and etc.
-
-     These patches are now dropped from the series:
-
-       PM / devfreq: tegra30: Use tracepoints for debugging
-       PM / devfreq: tegra30: Inline all one-line functions
-
-     The interrupt-optimization patches are squashed into a single patch:
-
-       PM / devfreq: tegra30: Reduce unnecessary interrupts activity
-
-     because it's better to keep the optimizations as a separate change and
-     this also helps to reduce code churning, since the code changes depend
-     on a previous patch in order to stay cleaner.
-
-     Fixed a lockup bug that I spotted recently, which is caused by a
-     clk-notifier->cpufreq_get()->clk_set_rate() sequence. Now a non-blocking
-     variant of CPU's frequency retrieving is used, i.e. cpufreq_quick_get().
-
-     Further optimized the CPUFreq notifier by postponing the delayed
-     updating in accordance to the polling interval, this actually uncovered
-     the above lockup bug.
-
-     Implemented new minor driver feature in the new patch:
-
-       PM / devfreq: tegra30: Support variable polling interval
-
-v4:  Added two new patches to the series:
-
-       PM / devfreq: tegra30: Synchronize average count on target's update
-       PM / devfreq: tegra30: Increase sampling period to 16ms
-
-     The first patch addresses problem where governor could get stuck due
-     to outdated "average count" value which is snapshoted by ISR and there
-     are cases where manual update of the value is required.
-
-     The second patch is just a minor optimization.
-
-v3:  Added support for tracepoints, replacing the debug messages.
-     Fixed few more bugs with the help of tracepoints.
-
-     New patches in this version:
-
-       PM / devfreq: tegra30: Use tracepoints for debugging
-       PM / devfreq: tegra30: Optimize CPUFreq notifier
-       PM / devfreq: tegra30: Optimize upper consecutive watermark selection
-       PM / devfreq: tegra30: Optimize upper average watermark selection
-       PM / devfreq: tegra30: Include appropriate header
-
-     Some of older patches of this series also got some extra minor polish.
-
-v2:  Added more patches that are cleaning driver's code further and
-     squashing another kHz conversion bug.
-
-     The patch "Rework frequency management logic" of the v1 series is now
-     converted to "Set up watermarks properly" because I found some problems
-     in the original patch and then realized that there is no need to change
-     the logic much. So the logic mostly preserved and only got improvements.
-
-     The series is based on the today's linux-next (25 Jun) and takes into
-     account minor changes that MyungJoo Ham made to the already queued
-     patches from the first batch [1].
-
-Dmitry Osipenko (18):
-  PM / devfreq: tegra30: Change irq type to unsigned int
-  PM / devfreq: tegra30: Keep interrupt disabled while governor is
-    stopped
-  PM / devfreq: tegra30: Handle possible round-rate error
-  PM / devfreq: tegra30: Drop write-barrier
-  PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
-  PM / devfreq: tegra30: Use kHz units uniformly in the code
-  PM / devfreq: tegra30: Use CPUFreq notifier
-  PM / devfreq: tegra30: Move clk-notifier's registration to governor's
-    start
-  PM / devfreq: tegra30: Reset boosting on startup
-  PM / devfreq: tegra30: Don't enable consecutive-down interrupt on
-    startup
-  PM / devfreq: tegra30: Constify structs
-  PM / devfreq: tegra30: Include appropriate header
-  PM / devfreq: tegra30: Don't enable already enabled consecutive
-    interrupts
-  PM / devfreq: tegra30: Disable consecutive interrupts when appropriate
-  PM / devfreq: Add new interrupt_driven flag for governors
-  PM / devfreq: tegra30: Support variable polling interval
-  PM / devfreq: tegra30: Tune up MCCPU boost-down coefficient
-  PM / devfreq: tegra20/30: Add Dmitry as a maintainer
-
- MAINTAINERS                       |   9 +
- drivers/devfreq/devfreq.c         |   9 +-
- drivers/devfreq/governor.h        |   3 +
- drivers/devfreq/tegra30-devfreq.c | 394 +++++++++++++++++++++---------
- 4 files changed, 303 insertions(+), 112 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/power/supply/usb-charger.txt b/Documentation/devicetree/bindings/power/supply/usb-charger.txt
+new file mode 100644
+index 000000000000..fd46734cb0e5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/usb-charger.txt
+@@ -0,0 +1,24 @@
++Generic USB charger bindings
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++Required properties :
++ - compatible : should be "usb-charger"
++ - phys: phandle to the USB PHY
++
++Example:
++
++usb_con: extcon {
++	compatible = "linux,extcon-usb-gpio";
++	vbus-gpios = <&gpb 5 GPIO_ACTIVE_HIGH>;
++};
++
++usb_phy: usb-phy@0 {
++	compatible = "usb-nop-xceiv";
++	#phy-cells = <0>;
++	extcon = <&usb_con>;
++};
++
++usb_charger: usb-charger {
++	compatible = "usb-charger";
++	phys = <&usb_phy>;
++};
 -- 
-2.23.0
+2.24.0.rc1
 
