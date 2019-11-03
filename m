@@ -2,112 +2,125 @@ Return-Path: <SRS0=m6sv=Y3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63D14CA9EB0
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 15:59:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08D3ECA9EB0
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:42:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 383E0214B2
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 15:59:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1572796746;
-	bh=STPgCcvb19pfRf+vnfbC1wTtiEh0IBWfIryoTNEJMEA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=XTyHOvJTtHvHWY327au5Rpev8UIthPr6S6uyW0pC+RmsAXwPA//faE0MBP/P7aIVn
-	 owyq2/bU+IA8wRUdt2Gj+sYphoC5dOH0ZPTQVy1aDnxUPp1+v+v9eYc3x22VONghFS
-	 YFCTmi5yA1c3Pof6rlclROcwysHhR+wXmLQK+jXg=
+	by mail.kernel.org (Postfix) with ESMTP id C476221929
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:42:06 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sA8KNKsl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727769AbfKCP7F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 3 Nov 2019 10:59:05 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38224 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727523AbfKCP7F (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 3 Nov 2019 10:59:05 -0500
-Received: from localhost (lfbn-1-10718-76.w90-89.abo.wanadoo.fr [90.89.68.76])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 60FA920578;
-        Sun,  3 Nov 2019 15:59:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1572796744;
-        bh=STPgCcvb19pfRf+vnfbC1wTtiEh0IBWfIryoTNEJMEA=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=TWHerJGBCwtOqQStSNzF3VL2JaGGK3XHgLAfZDlqRHGVbSHM0qWqvmIZ2JO8gIlyQ
-         iHIR2oY9pr5KRvDKjNBx3SjgjbhL+vrRCscsJa17npYGIOwVYksL1rkf27GNCjQRUI
-         eq9YtHm10ACDH+EykS5F4Je1V8NqYfScJwHW9WFo=
-Date:   Sun, 3 Nov 2019 16:59:01 +0100
-From:   Maxime Ripard <mripard@kernel.org>
-To:     Ondrej Jirman <megous@megous.com>
-Cc:     linux-sunxi@googlegroups.com, Yangtao Li <tiny.windzz@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        "open list:ALLWINNER CPUFREQ DRIVER" <linux-pm@vger.kernel.org>,
-        "moderated list:ARM/Allwinner sunXi SoC support" 
-        <linux-arm-kernel@lists.infradead.org>,
-        open list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] cpufreq: sun50i: Fix CPU speed bin detection
-Message-ID: <20191103155901.GC7001@gilmour>
-References: <20191101164152.445067-1-megous@megous.com>
+        id S1727588AbfKCUmG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 3 Nov 2019 15:42:06 -0500
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:46217 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727380AbfKCUmF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Nov 2019 15:42:05 -0500
+Received: by mail-lj1-f194.google.com with SMTP id e9so2072141ljp.13;
+        Sun, 03 Nov 2019 12:42:04 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=ppdzoc/V97ChcXO7v2Rn6eiJN21LngJ2PFR09uQ6kL0=;
+        b=sA8KNKslQTu1fx9Hz2fbizBl3BgADQEJQ/twcTW6XrldX5d2D0pKA7E2P5heHDDM7b
+         3ILsSBEvYvqKEb7ziEm8BRaPMUyYxbLT83+hcofjRGccsG9eNti8swPW2LtgMD1qxCqy
+         sn0himHN/mWBVAEs+Z90pyRRoLzCEIgzir0G+nM4zssLUWzVe8RTp8B0HqXtD5hv+5Yo
+         lqqthKze4yEqzskH+NlP/w1tQ373kWBRV1t3fLYRN+OqmyeERoaLybyy+fQPss09afP8
+         c50hmBwzPu1J9jOaAxe/P4AeDhjszouAS/n99Kk8WZcEHO0DKlDBELC/AV7alF/RqVLj
+         MxmA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=ppdzoc/V97ChcXO7v2Rn6eiJN21LngJ2PFR09uQ6kL0=;
+        b=NN1tR60J/llwfcbCGJ1UwcHie+zxgnDRjyP8lg66hBMSjmjvADfkxlMD78udi4psbN
+         bikQ930SqIBG0EKAnmdI4X56bmNwWUXdMsGOTdR0ZSIbQMia2XBAnEXnTmK/I3AArFnL
+         eLK9ttAxN3BYwna1MX5FC3kxRMI40Sip+gVdr5QdI8IsVkr0htj7qnN/m1RSSYMFYFOg
+         cUlUoyRgI5psa2xfvFWZi2o1hIIGsn0Y8ngJIzrvu6j/sAorERGXaIaZ/MvebYS6ICqp
+         dH5xW7IAzjb+geAC6Z7DSOBCPFVdOENEAWSm/zhBZVkbjoDUUFw68BTngIRWboFPR8FY
+         FVFw==
+X-Gm-Message-State: APjAAAWp9lwET6JR8JuscbOvWF3MWMdb2BFr/s2ev2h7YdpxB1g/qNvL
+        nsu7d6T2WnYpTNtMvBtuAV99RHTm
+X-Google-Smtp-Source: APXvYqw4+G9IDQ4vnBSolbpPMmiz7JH+55Y/+11xHwJDYjXvbs23dzrbkHtOQj0Ha1cdpi/nGI+gTg==
+X-Received: by 2002:a2e:3a1a:: with SMTP id h26mr16288308lja.25.1572813723354;
+        Sun, 03 Nov 2019 12:42:03 -0800 (PST)
+Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
+        by smtp.gmail.com with ESMTPSA id e22sm7099853ljg.73.2019.11.03.12.42.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 03 Nov 2019 12:42:02 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v8 01/18] PM / devfreq: tegra30: Change irq type to unsigned int
+Date:   Sun,  3 Nov 2019 23:41:13 +0300
+Message-Id: <20191103204130.2172-2-digetx@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191103204130.2172-1-digetx@gmail.com>
+References: <20191103204130.2172-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="WYTEVAkct0FjGQmd"
-Content-Disposition: inline
-In-Reply-To: <20191101164152.445067-1-megous@megous.com>
-User-Agent: Mutt/1.12.1 (2019-06-15)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+IRQ numbers are always positive, hence the corresponding variable should
+be unsigned to keep types consistent. This is a minor change that cleans
+up code a tad more.
 
---WYTEVAkct0FjGQmd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Suggested-by: Thierry Reding <thierry.reding@gmail.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra30-devfreq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-On Fri, Nov 01, 2019 at 05:41:51PM +0100, Ondrej Jirman wrote:
-> I have observed failures to boot on Orange Pi 3, because this driver
-> determined that my SoC is from the normal bin, but my SoC only works
-> reliably with the OPP values for the slowest bin.
->
-> By querying H6 owners, it was found that e-fuse values found in the wild
-> are in the range of 1-3, value of 7 was not reported, yet. From this and
-> from unused defines in BSP code, it can be assumed that meaning of efuse
-> values on H6 actually is:
->
-> - 1 = slowest bin
-> - 2 = normal bin
-> - 3 = fastest bin
->
-> Vendor code actually treats 0 and 2 as invalid efuse values, but later
-> treats all invalid values as a normal bin. This looks like a mistake in
-> bin detection code, that was plastered over by a hack in cpufreq code,
-> so let's not repeat it here. It probably only works because there are no
-> SoCs in the wild with efuse value of 0, and fast bin SoCs are made to
-> use normal bin OPP tables, which is also safe.
->
-> Let's play it safe and interpret 0 as the slowest bin, but fix detection
-> of other bins to match this research. More research will be done before
-> actual OPP tables are merged.
->
-> Fixes: f328584f7bff ("cpufreq: Add sun50i nvmem based CPU scaling driver")
-> Signed-off-by: Ondrej Jirman <megous@megous.com>
+diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+index a6ba75f4106d..a27300f40b0b 100644
+--- a/drivers/devfreq/tegra30-devfreq.c
++++ b/drivers/devfreq/tegra30-devfreq.c
+@@ -160,7 +160,7 @@ struct tegra_devfreq {
+ 
+ 	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
+ 
+-	int irq;
++	unsigned int		irq;
+ };
+ 
+ struct tegra_actmon_emc_ratio {
+@@ -618,12 +618,12 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 		return PTR_ERR(tegra->emc_clock);
+ 	}
+ 
+-	tegra->irq = platform_get_irq(pdev, 0);
+-	if (tegra->irq < 0) {
+-		err = tegra->irq;
++	err = platform_get_irq(pdev, 0);
++	if (err < 0) {
+ 		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
+ 		return err;
+ 	}
++	tegra->irq = err;
+ 
+ 	reset_control_assert(tegra->reset);
+ 
+-- 
+2.23.0
 
-Acked-by: Maxime Ripard <mripard@kernel.org>
-
-Maxime
-
---WYTEVAkct0FjGQmd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXb75RQAKCRDj7w1vZxhR
-xWJzAQDSTsPAfe3tzFoFc8OXfLqCONSQW6Y7iTt9VnVtov6sNwEAuBQWjBl3soHJ
-5L0MFRa27tIkr2hh5oVbQSGj6vO5rAw=
-=0Y7o
------END PGP SIGNATURE-----
-
---WYTEVAkct0FjGQmd--
