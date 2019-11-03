@@ -2,59 +2,58 @@ Return-Path: <SRS0=m6sv=Y3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 867BCCA9ED0
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7484ECA9EB0
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5E16E222C6
-	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 36CB321D80
+	for <linux-pm@archiver.kernel.org>; Sun,  3 Nov 2019 20:43:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pvVlhT4E"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Dk7m+jJ7"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727268AbfKCUmH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 3 Nov 2019 15:42:07 -0500
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:32960 "EHLO
+        id S1727607AbfKCUmG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 3 Nov 2019 15:42:06 -0500
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:38992 "EHLO
         mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727501AbfKCUmH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Nov 2019 15:42:07 -0500
-Received: by mail-lj1-f196.google.com with SMTP id t5so15413672ljk.0;
-        Sun, 03 Nov 2019 12:42:05 -0800 (PST)
+        with ESMTP id S1727268AbfKCUmF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 Nov 2019 15:42:05 -0500
+Received: by mail-lj1-f196.google.com with SMTP id y3so15387194ljj.6;
+        Sun, 03 Nov 2019 12:42:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=1E19zvKxqtuRF5nZpIuuGaKt1sQQwAAlPwmfDp5qZb0=;
-        b=pvVlhT4ETISoKg+fMU9LQYGOZmFDbpM3envTWc0EoWKlEhMawcmThX+ot9jCZx6Fdg
-         9zcjkQYjEsdeffkXRoT12ArKGs7E+kT31edq2x8RfQiAnQXUl8ykgSQzvK9yWEgcX8OR
-         ojOIeiHyZm+D+X62qxTtEjOynoArfMK9ZWCOpD9403ueKPi4xOlHLn6xFvYfLvy4zfGu
-         dc+qCpUtFFiUckSIEJUWUXlSNx/FVy58dRP3g0khLk1XjtxAEcYB9NqV/nphDuh0ZYAP
-         aXNxONYFzMj//PDCbkNGcBO6PcEDfIxZogle1hPiz0LFJLI+MU6avyMNU6oM3PZkq+GT
-         r7JA==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=2h+y9JvQKmkZDektrVGodVCasQAVlpaUJr5NA4uPYFA=;
+        b=Dk7m+jJ7LcmTyP23Ve1A1hk6rp36ct7ojMjPxPj2TWl7pSZQas4ED4+j+R6M+5eWjB
+         aJj/RXJy2Lj2icmKMgkEFOagKL92+ZBy3OQT9XMu2gmzKYPgwh5h6b3+01/Eig4c7rQx
+         QscmBTvUt9/GyliyZVg7PWt3G/IZhdaHH7grPd7mek7uUK9MrBvA5eU7lWI3dmkgLIDj
+         IJYhIrbxDErrVCW8Ag+6G+Yc19U/KNUniFP52/uCpUwPlXfc4UK9zpUxEy/SlBgk46oH
+         aB5MMug3my3jO8xzt7dD4OQCgVB22ru1T2amhXOE/jciV1w9e+cofz8IrjsuYGacEQ8o
+         f4aA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=1E19zvKxqtuRF5nZpIuuGaKt1sQQwAAlPwmfDp5qZb0=;
-        b=IPNLP/fVa1aqYQOedRbQuJQEvxH/U8yhWLWqiquIgEN0ZeOka+PVymQ8QiK6bDTFRu
-         2NwfkG9MR0MtyRhCpE/L1akwbrRBTdM1nlb0Ufxj47IwJStJesy0g6R6T8LfaZoNhmok
-         lElXUJskaz6+TVR4xgQIEEYhf77oldgPMMNLw8yOJgjEE2OGcuPSBAzEEgO4E+sI/Ux/
-         LefHMyTa/71EzAserz2jay/cKni5leLdPPfoY1KiJmvNCDgRj7r2xsI03ZeybaroXYca
-         im8xDbcAXMNxjlfbgp71xwOzZ8HuO0RSd6wM630yTRoK1El0Omte4v4dgYtzNUSX/wT1
-         f/EA==
-X-Gm-Message-State: APjAAAUVmntRef8WG7kaTVzh2Jmg9beRoem75Jg2Z3fnDWBHRepd0T+V
-        GkmM4Ol9W0UtVHvB1U5CzZU=
-X-Google-Smtp-Source: APXvYqwv+T87YncukajttXX36/m5LJoRVcWATkx6Ei4V0cMfbx2erNdTUNK2AnZ6fZuYCG6PNbIGSg==
-X-Received: by 2002:a2e:9985:: with SMTP id w5mr9735477lji.162.1572813724334;
-        Sun, 03 Nov 2019 12:42:04 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=2h+y9JvQKmkZDektrVGodVCasQAVlpaUJr5NA4uPYFA=;
+        b=iaSNWQKziUvqIUb4sRRM53umSFkEta4oKhY3n4hIiSqymYXnseh2an2/udruE6+UBb
+         ssW0K5+hgDStpznLPNz69oZc6kUV9dgR7KMGHU9JfC82lhR9lXIQ7AKgduYW02oa4JQ4
+         12XUhjfgR2QvXY6hpp6CNVJxVAYf2o5yXH+Xpm79p+0sAKtaPalJTJE/LcG1e6Ci6ETy
+         DWSjwp13G5AXbgooIvObXP8XYdecCbqs7R/apDvJ46WDtxASQ7EFlaDpBsf0DzdvUlGw
+         Ma7eICN1roqnh1qeBvflq/LIVmAa+fay4/vJnZWwWSc55+Q4DRXPQDTtCBPKwighiJJu
+         VAsA==
+X-Gm-Message-State: APjAAAVZPEtx0l2L2ThN7aVyp748UX3sUUrVMLkpIjFsMS6Jr5kUpjuX
+        ZdOE0syaUBZGz7MAH9eUkkk=
+X-Google-Smtp-Source: APXvYqy6NiGv42MNYpUo7Zk8PMP8FbSnXUwlGM7JbrPsHXiVL5D6mmWdrXTpd8pByYbmfa1qEnhaJA==
+X-Received: by 2002:a2e:9dd5:: with SMTP id x21mr9873898ljj.232.1572813722406;
+        Sun, 03 Nov 2019 12:42:02 -0800 (PST)
 Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id e22sm7099853ljg.73.2019.11.03.12.42.03
+        by smtp.gmail.com with ESMTPSA id e22sm7099853ljg.73.2019.11.03.12.42.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 03 Nov 2019 12:42:03 -0800 (PST)
+        Sun, 03 Nov 2019 12:42:01 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -66,12 +65,10 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v8 02/18] PM / devfreq: tegra30: Keep interrupt disabled while governor is stopped
-Date:   Sun,  3 Nov 2019 23:41:14 +0300
-Message-Id: <20191103204130.2172-3-digetx@gmail.com>
+Subject: [PATCH v8 00/18] More improvements for Tegra30 devfreq driver
+Date:   Sun,  3 Nov 2019 23:41:12 +0300
+Message-Id: <20191103204130.2172-1-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191103204130.2172-1-digetx@gmail.com>
-References: <20191103204130.2172-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -79,124 +76,162 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is no real need to keep interrupt always-enabled, will be nicer
-to keep it disabled while governor is inactive.
+Hello,
 
-Suggested-by: Thierry Reding <thierry.reding@gmail.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/devfreq/tegra30-devfreq.c | 47 ++++++++++++++++---------------
- 1 file changed, 24 insertions(+), 23 deletions(-)
+This series addresses some additional review comments that were made by
+Thierry Reding to [1], makes several important changes to the driver,
+reducing interrupts activity, and adds new features. In the end I'm
+proposing myself as a maintainer for the Tegra devfreq drivers.
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index a27300f40b0b..a0a5f3f7b789 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -11,6 +11,7 @@
- #include <linux/devfreq.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
-+#include <linux/irq.h>
- #include <linux/module.h>
- #include <linux/mod_devicetable.h>
- #include <linux/platform_device.h>
-@@ -416,8 +417,6 @@ static void tegra_actmon_start(struct tegra_devfreq *tegra)
- {
- 	unsigned int i;
- 
--	disable_irq(tegra->irq);
--
- 	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
- 		      ACTMON_GLB_PERIOD_CTRL);
- 
-@@ -442,8 +441,6 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
- 	}
- 
- 	actmon_write_barrier(tegra);
--
--	enable_irq(tegra->irq);
- }
- 
- static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
-@@ -552,6 +549,12 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
- {
- 	struct tegra_devfreq *tegra = dev_get_drvdata(devfreq->dev.parent);
- 
-+	/*
-+	 * Couple devfreq-device with the governor early because it is
-+	 * needed at the moment of governor's start (used by ISR).
-+	 */
-+	tegra->devfreq = devfreq;
-+
- 	switch (event) {
- 	case DEVFREQ_GOV_START:
- 		devfreq_monitor_start(devfreq);
-@@ -586,10 +589,11 @@ static struct devfreq_governor tegra_devfreq_governor = {
- 
- static int tegra_devfreq_probe(struct platform_device *pdev)
- {
--	struct tegra_devfreq *tegra;
- 	struct tegra_devfreq_device *dev;
--	unsigned int i;
-+	struct tegra_devfreq *tegra;
-+	struct devfreq *devfreq;
- 	unsigned long rate;
-+	unsigned int i;
- 	int err;
- 
- 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
-@@ -625,6 +629,16 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 	}
- 	tegra->irq = err;
- 
-+	irq_set_status_flags(tegra->irq, IRQ_NOAUTOEN);
-+
-+	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
-+					actmon_thread_isr, IRQF_ONESHOT,
-+					"tegra-devfreq", tegra);
-+	if (err) {
-+		dev_err(&pdev->dev, "Interrupt request failed: %d\n", err);
-+		return err;
-+	}
-+
- 	reset_control_assert(tegra->reset);
- 
- 	err = clk_prepare_enable(tegra->clock);
-@@ -672,28 +686,15 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 	}
- 
- 	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
--	tegra->devfreq = devfreq_add_device(&pdev->dev,
--					    &tegra_devfreq_profile,
--					    "tegra_actmon",
--					    NULL);
--	if (IS_ERR(tegra->devfreq)) {
--		err = PTR_ERR(tegra->devfreq);
-+	devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
-+				     "tegra_actmon", NULL);
-+	if (IS_ERR(devfreq)) {
-+		err = PTR_ERR(devfreq);
- 		goto remove_governor;
- 	}
- 
--	err = devm_request_threaded_irq(&pdev->dev, tegra->irq, NULL,
--					actmon_thread_isr, IRQF_ONESHOT,
--					"tegra-devfreq", tegra);
--	if (err) {
--		dev_err(&pdev->dev, "Interrupt request failed: %d\n", err);
--		goto remove_devfreq;
--	}
--
- 	return 0;
- 
--remove_devfreq:
--	devfreq_remove_device(tegra->devfreq);
--
- remove_governor:
- 	devfreq_remove_governor(&tegra_devfreq_governor);
- 
+[1] https://lore.kernel.org/lkml/0fb50eb1-a173-1756-6889-2526a10ac707@gmail.com/T/
+
+Changelog:
+
+v8:  Addressed review comments that were made by Chanwoo Choi to v7 by:
+
+     1. Taking into account suggestions that were made for the "Add new
+        interrupt_driven flag for governors".
+
+     2. Patch "Support variable polling interval" now doesn't use
+        devfreq->stop_polling and uses tegra->cur_freq instead. There is
+        now a comment for the 256ms max polling interval limitation as well.
+
+     The patch "Increase sampling period to 16ms" is dropped from the series
+     for now since we found out that it doesn't bring much benefit.
+
+     The cur_freq value is now refreshed after clk-notifier registration in
+     the "Move clk-notifier's registration to governor's start" patch, for
+     consistency. This also becomes useful for the "Support variable polling
+     interval" patch since it now uses the cur_freq for tracking of the
+     governor's enable-state.
+
+     The patch "Support variable polling interval" now has a proper scaling
+     of the dependency threshold value, which I missed to backport into
+     v7 after dropping some of the v6 patches. The do_percent() function
+     now doesn't suffer from integer overflow bug when freq, boosting and
+     polling interval values are too large.
+
+v7:  Addressed review comments that were made by Chanwoo Choi to v6 by:
+
+     1. Dropping patch "Ensure that target freq won't overflow".
+     2. Making "Use kHz units uniformly in the code" patch more easier
+        for review and improving its commit's message.
+     3. The "Support variable polling interval" patch is reworked, now it
+        doesn't touch things that should stay internal to devfreq core, like
+        devfreq->stop_polling and etc. In a result a new generic
+        interrupt_driven flag is available for devfreq governors (added in a
+        new patch "Add new interrupt_driven flag for governors").
+
+     Patch "Set up watermarks properly" and related to it patches are dropped
+     because I found a case where it doesn't work well. These patches need
+     some more thought and not ready for now, I'll continue working on them.
+     I extracted useful changes from the dropped patches and then tuned up
+     MCCPU boost-down coefficient to keep ACTMON silent when system is idling,
+     in a result there are these new patches:
+
+       1. Don't enable already enabled consecutive interrupts
+       2. Disable consecutive interrupts when appropriate
+       3. Tune up MCCPU boost-down coefficient
+
+v6:  Addressed review comment that was made by Chanwoo Choi to v5 by
+     squashing "Define ACTMON_DEV_CTRL_STOP" patch into the "Use CPUFreq
+     notifier" patch.
+
+v5:  Addressed review comments that were made by Chanwoo Choi to v4 by
+     squashing few patches, dropping some questionable patches, rewording
+     comments to the code, restructuring the code and etc.
+
+     These patches are now dropped from the series:
+
+       PM / devfreq: tegra30: Use tracepoints for debugging
+       PM / devfreq: tegra30: Inline all one-line functions
+
+     The interrupt-optimization patches are squashed into a single patch:
+
+       PM / devfreq: tegra30: Reduce unnecessary interrupts activity
+
+     because it's better to keep the optimizations as a separate change and
+     this also helps to reduce code churning, since the code changes depend
+     on a previous patch in order to stay cleaner.
+
+     Fixed a lockup bug that I spotted recently, which is caused by a
+     clk-notifier->cpufreq_get()->clk_set_rate() sequence. Now a non-blocking
+     variant of CPU's frequency retrieving is used, i.e. cpufreq_quick_get().
+
+     Further optimized the CPUFreq notifier by postponing the delayed
+     updating in accordance to the polling interval, this actually uncovered
+     the above lockup bug.
+
+     Implemented new minor driver feature in the new patch:
+
+       PM / devfreq: tegra30: Support variable polling interval
+
+v4:  Added two new patches to the series:
+
+       PM / devfreq: tegra30: Synchronize average count on target's update
+       PM / devfreq: tegra30: Increase sampling period to 16ms
+
+     The first patch addresses problem where governor could get stuck due
+     to outdated "average count" value which is snapshoted by ISR and there
+     are cases where manual update of the value is required.
+
+     The second patch is just a minor optimization.
+
+v3:  Added support for tracepoints, replacing the debug messages.
+     Fixed few more bugs with the help of tracepoints.
+
+     New patches in this version:
+
+       PM / devfreq: tegra30: Use tracepoints for debugging
+       PM / devfreq: tegra30: Optimize CPUFreq notifier
+       PM / devfreq: tegra30: Optimize upper consecutive watermark selection
+       PM / devfreq: tegra30: Optimize upper average watermark selection
+       PM / devfreq: tegra30: Include appropriate header
+
+     Some of older patches of this series also got some extra minor polish.
+
+v2:  Added more patches that are cleaning driver's code further and
+     squashing another kHz conversion bug.
+
+     The patch "Rework frequency management logic" of the v1 series is now
+     converted to "Set up watermarks properly" because I found some problems
+     in the original patch and then realized that there is no need to change
+     the logic much. So the logic mostly preserved and only got improvements.
+
+     The series is based on the today's linux-next (25 Jun) and takes into
+     account minor changes that MyungJoo Ham made to the already queued
+     patches from the first batch [1].
+
+Dmitry Osipenko (18):
+  PM / devfreq: tegra30: Change irq type to unsigned int
+  PM / devfreq: tegra30: Keep interrupt disabled while governor is
+    stopped
+  PM / devfreq: tegra30: Handle possible round-rate error
+  PM / devfreq: tegra30: Drop write-barrier
+  PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
+  PM / devfreq: tegra30: Use kHz units uniformly in the code
+  PM / devfreq: tegra30: Use CPUFreq notifier
+  PM / devfreq: tegra30: Move clk-notifier's registration to governor's
+    start
+  PM / devfreq: tegra30: Reset boosting on startup
+  PM / devfreq: tegra30: Don't enable consecutive-down interrupt on
+    startup
+  PM / devfreq: tegra30: Constify structs
+  PM / devfreq: tegra30: Include appropriate header
+  PM / devfreq: tegra30: Don't enable already enabled consecutive
+    interrupts
+  PM / devfreq: tegra30: Disable consecutive interrupts when appropriate
+  PM / devfreq: Add new interrupt_driven flag for governors
+  PM / devfreq: tegra30: Support variable polling interval
+  PM / devfreq: tegra30: Tune up MCCPU boost-down coefficient
+  PM / devfreq: tegra20/30: Add Dmitry as a maintainer
+
+ MAINTAINERS                       |   9 +
+ drivers/devfreq/devfreq.c         |   9 +-
+ drivers/devfreq/governor.h        |   3 +
+ drivers/devfreq/tegra30-devfreq.c | 394 +++++++++++++++++++++---------
+ 4 files changed, 303 insertions(+), 112 deletions(-)
+
 -- 
 2.23.0
 
