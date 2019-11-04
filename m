@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 195E2CA9ED5
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48CB6CA9EC9
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E14C820650
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 185EA20650
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ppDmwC5X"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rITuHkgN"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388961AbfKDWBH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Nov 2019 17:01:07 -0500
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:39558 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388954AbfKDWBH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 17:01:07 -0500
-Received: by mail-lj1-f195.google.com with SMTP id y3so19415367ljj.6;
-        Mon, 04 Nov 2019 14:01:05 -0800 (PST)
+        id S2389401AbfKDWT3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Nov 2019 17:19:29 -0500
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:41687 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388944AbfKDWBE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 17:01:04 -0500
+Received: by mail-lj1-f193.google.com with SMTP id m9so19369751ljh.8;
+        Mon, 04 Nov 2019 14:01:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=T6ehYayj/CsEjREzCecGwtuH1vTkkw6hdLvoIOrkLyE=;
-        b=ppDmwC5Xh+v6xV0lSe3C5w7u7se3COpxCCvOTKHZeLdftrQUB7xAkU5gQ/9Ts6JXn/
-         WkCYpfUHyaeR0NpQ+q7Ekb2BBLF9FKNLY1yC2g9tcL4gJwihv3uRUEdItTZXzc0rixHB
-         5blDcQsLQvnD0bD0VSd8aiJ1oXfAKjQjU0r45SyOPaFRJgZ1O6xr1OScbvsMNBrBEISF
-         +CNhmql/yqDD6rjGmthSDNoBaE4weuBTWIkQPbeCQ08bLHQ99cAq5qwBJiBLlNW674Kc
-         l1483nQ9IasMUps6mwuwRslbh6RhfNXhlmXo/L1xH1QIAvF9FOkTeRHFZgH2pqEs4kHY
-         en5A==
+        bh=QriNmcLUT52c0PWl9XCAOvuUeyuuGYT8NGYlPG2RmN8=;
+        b=rITuHkgNdE2RiaxYQ+jQXE8w17351TUMhfAxjgzUZqoXp4Gdt5wjTJswkHxZIhCXpD
+         STBIuyOLgM8fN3WDmRVA1dX2G6Hb/Rqky3yakDuijpSB2tEcJTwEtKo2S3BYC0E+7jRf
+         i9Ygkd6aLquOlCDLomoXNinc2qon8Keq7GDAd4bdAYZc7cMUayGJhMMLsBhzZitSqduq
+         m2PdYrH+JG75MyntjtbzweBfg0sfkEdNmrKwvkbAnfeG2I4r4gb0ktzufeUfMDDEbOT5
+         7xmGjDjLRBLXOJi1mAYMVZCpRLtdZ+ZrnS4oDNqGZl7TFw2zLsXKu6aBKZdTRl2tQj5S
+         Yvqw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=T6ehYayj/CsEjREzCecGwtuH1vTkkw6hdLvoIOrkLyE=;
-        b=FDlOtejpNI8cslEQw7p0pEZfBFmsikiMAxZ/S07XMDsQ6SCDWqnKki3rK/evDgiekl
-         Z25IZSVA8acAt0Z02ULwXwOhEYQJBSWEaKcidtvBMHvu1y9YQKjm456T/icwy+ovmIQX
-         yy/qf74mOQieEJwj43oFs7aYHApqyIRr9Axy0q/20nA4nCy4SQZEs3JYKwpR6u9Ys9Xy
-         g6f3iQHMIBa42w08X0Kdbj0uzwrEtBUDrZt3P8OOEbxewLLADHVQoXWlCaOGmqKQGjbH
-         rQYpsSLonsSRQuQHdRfH+WK5bEeQeIkoq+lXX862tcbAGlVqvrkHyAUZRIbxRtqO8EcZ
-         rIRQ==
-X-Gm-Message-State: APjAAAXraQeXwANxD1uL51eRTgbcuvVQs1LM+wQslxxYXINPxblc1wMH
-        KktbYdRL3sGeiIuGty3bjaA=
-X-Google-Smtp-Source: APXvYqxA7PwqHWRG0FVsAvqXyx5yQtN5BTKOLrgcrY2Rar5bVjT3XnXYr5FdQdUKncowxUtB6XcjgQ==
-X-Received: by 2002:a2e:c51:: with SMTP id o17mr745640ljd.202.1572904865065;
-        Mon, 04 Nov 2019 14:01:05 -0800 (PST)
+        bh=QriNmcLUT52c0PWl9XCAOvuUeyuuGYT8NGYlPG2RmN8=;
+        b=Q97i7jalF5U2DgrIi0ChwaMDu4ApLHma0uIU3ylrBMqnxuWUiUnZ+Tln1KBjyR1lOA
+         YIGRneFJnA+HOPcO1ptrQ47Vtz2B3ONME9llFZSeFqaKAGy9eGsXCJnnNnscHWFfbmaj
+         F5DpUiJT8Z4l27BlhrsCd3tt5BJz/bv39ZjhRguSeFK58KiiApXvDK/qsXN/QkUU6d68
+         H7x/C95ffwRdqpnVsT/yylaUPMsymamfID6RJQKz/0yiD5udlgnaMuAIusBf+p9kqqc1
+         V09Wqb5nLsmXiBNydIU1tHBJguy+LDlQn2CK/MEtr1BRI2dfG8wDDGrkGs0GBPc+CbAZ
+         vmdA==
+X-Gm-Message-State: APjAAAUU7DPa4bPQ1mEnOEb9t5B5OX+M037zDmsp+dKDPLkjbDrnFbsT
+        c/JETqfr5+r4ZtV4uLDj9K1GJRPg
+X-Google-Smtp-Source: APXvYqxwvIhW+sU2X4l+7sS8n0nLJFbt9HYUO4fqO6OhXtRzNow5UqpvUg/hgz6lepiRR3vG44BToQ==
+X-Received: by 2002:a2e:874a:: with SMTP id q10mr20878013ljj.14.1572904862038;
+        Mon, 04 Nov 2019 14:01:02 -0800 (PST)
 Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id g3sm7454669ljj.59.2019.11.04.14.01.04
+        by smtp.gmail.com with ESMTPSA id g3sm7454669ljj.59.2019.11.04.14.01.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Nov 2019 14:01:04 -0800 (PST)
+        Mon, 04 Nov 2019 14:01:01 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -66,9 +66,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v9 06/19] PM / devfreq: tegra30: Use kHz units uniformly in the code
-Date:   Tue,  5 Nov 2019 00:56:04 +0300
-Message-Id: <20191104215617.25544-7-digetx@gmail.com>
+Subject: [PATCH v9 03/19] PM / devfreq: tegra30: Handle possible round-rate error
+Date:   Tue,  5 Nov 2019 00:56:01 +0300
+Message-Id: <20191104215617.25544-4-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191104215617.25544-1-digetx@gmail.com>
 References: <20191104215617.25544-1-digetx@gmail.com>
@@ -79,68 +79,60 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Part of the code uses Hz units and the other kHz, let's switch to kHz
-everywhere for consistency. A small benefit from this change (besides
-code's cleanup) is that now powertop utility correctly displays devfreq's
-stats, for some reason it expects them to be in kHz.
+The EMC clock rate rounding technically could fail, hence let's handle
+the error cases properly.
 
-Tested-by: Peter Geis <pgwipeout@gmail.com>
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Peter Geis <pgwipeout@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/devfreq/tegra30-devfreq.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 7d7b7eecc19c..9ccde64be0a0 100644
+index a0a5f3f7b789..66dfa98d8c6b 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -448,7 +448,7 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 	rate = dev_pm_opp_get_freq(opp);
- 	dev_pm_opp_put(opp);
+@@ -592,8 +592,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	struct tegra_devfreq_device *dev;
+ 	struct tegra_devfreq *tegra;
+ 	struct devfreq *devfreq;
+-	unsigned long rate;
+ 	unsigned int i;
++	long rate;
+ 	int err;
  
--	err = clk_set_min_rate(tegra->emc_clock, rate);
-+	err = clk_set_min_rate(tegra->emc_clock, rate * KHZ);
- 	if (err)
- 		return err;
+ 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
+@@ -650,8 +650,14 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
  
-@@ -477,7 +477,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- 	stat->private_data = tegra;
+ 	reset_control_deassert(tegra->reset);
  
- 	/* The below are to be used by the other governors */
--	stat->current_frequency = cur_freq * KHZ;
-+	stat->current_frequency = cur_freq;
+-	tegra->max_freq = clk_round_rate(tegra->emc_clock, ULONG_MAX) / KHZ;
++	rate = clk_round_rate(tegra->emc_clock, ULONG_MAX);
++	if (rate < 0) {
++		dev_err(&pdev->dev, "Failed to round clock rate: %ld\n", rate);
++		return rate;
++	}
++
+ 	tegra->cur_freq = clk_get_rate(tegra->emc_clock) / KHZ;
++	tegra->max_freq = rate / KHZ;
  
- 	actmon_dev = &tegra->devices[MCALL];
+ 	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
+ 		dev = tegra->devices + i;
+@@ -662,6 +668,13 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
+ 		rate = clk_round_rate(tegra->emc_clock, rate);
  
-@@ -527,7 +527,7 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
- 		target_freq = max(target_freq, dev->target_freq);
- 	}
- 
--	*freq = target_freq * KHZ;
-+	*freq = target_freq;
- 
- 	return 0;
- }
-@@ -663,7 +663,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 			goto remove_opps;
- 		}
- 
--		err = dev_pm_opp_add(&pdev->dev, rate, 0);
-+		err = dev_pm_opp_add(&pdev->dev, rate / KHZ, 0);
++		if (rate < 0) {
++			dev_err(&pdev->dev,
++				"Failed to round clock rate: %ld\n", rate);
++			err = rate;
++			goto remove_opps;
++		}
++
+ 		err = dev_pm_opp_add(&pdev->dev, rate, 0);
  		if (err) {
  			dev_err(&pdev->dev, "Failed to add OPP: %d\n", err);
- 			goto remove_opps;
-@@ -686,7 +686,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		goto unreg_notifier;
- 	}
- 
--	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
-+	tegra_devfreq_profile.initial_freq = tegra->cur_freq;
-+
- 	devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
- 				     "tegra_actmon", NULL);
- 	if (IS_ERR(devfreq)) {
 -- 
 2.23.0
 
