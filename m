@@ -2,125 +2,189 @@ Return-Path: <SRS0=IIwL=Y4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C6C8CA9EC9
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 755BDCA9ED3
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:21:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3F38A204EC
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:44 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WlvVqbk/"
+	by mail.kernel.org (Postfix) with ESMTP id 4C2CB20650
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:21:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1572906091;
+	bh=eGlXKFOROZER5RyUcBE+aS4ezVoEmtWpOWGmXZlSr6k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=WUL1Qbm5UlRyk53MikGjPXgnAkVh4OSCjKZSgk6FjOQq5MwHQC8qbmuB2xNUuRGGy
+	 tV1LqzuqqvpHkiPpXO5vmjJ5CsdJy8Pk9XecVrFtI9P8CaE5Cze9OcedzGbQGuiGgP
+	 VZeLh8UTOTQVjnfHWsc0Lslh3ae5vhZcuhL5nN7U=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389524AbfKDWTi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Nov 2019 17:19:38 -0500
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:34811 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388612AbfKDWBC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 17:01:02 -0500
-Received: by mail-lj1-f196.google.com with SMTP id 139so19446965ljf.1;
-        Mon, 04 Nov 2019 14:01:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ppdzoc/V97ChcXO7v2Rn6eiJN21LngJ2PFR09uQ6kL0=;
-        b=WlvVqbk/liqG+K0UazXBD82hDz7hN4WqmsdFdZrNXEqvEEqYJQBRhIPdnXeBM1bgas
-         kGInSmGqK/nzGxfsyHmJ1SE0m5t+xOCcaORqijgtWAVPx9f9AqLqoXY5K0rqPN/QrS69
-         ScLGhO9Xs6XMldR0q9HYnUnIjQQYNWSyt+qfWC33su0WeNtcW9SXx03TdgPEoQhKSTa5
-         AmTqTcLdP+hphVixw3WcX+XAqBqBbYUuao3Jc+sBPvGBudULEdcVlAdERoybkGmlhl4F
-         SmVBMjP5cvoc6io0dLsEmXRNYmdEW9sQLUsr46CkHAmLT3sLDr4kLEwU9yXIrM9r7AUo
-         mGQg==
+        id S2388809AbfKDWV3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Nov 2019 17:21:29 -0500
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:33232 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388256AbfKDWV3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 17:21:29 -0500
+Received: by mail-oi1-f194.google.com with SMTP id m193so15678327oig.0;
+        Mon, 04 Nov 2019 14:21:28 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ppdzoc/V97ChcXO7v2Rn6eiJN21LngJ2PFR09uQ6kL0=;
-        b=lvWASNYL9iM59Ce9LFBF768udf0g8x5g5VLMQMdcdQleBsNTSSlllj0Hc/hedu5jVd
-         9cRcSQvstjasDwM7zzc+/xe5vWGc1FZGbd0EHyCr552dQ+KJqhQO7fFDFHGSZMtEqbOX
-         akAKFou/5KeJ3Pd41YQo22RQnsc3EvenDfbdHlpWpwQJg0kDXHRz0EdPL8UtKnZ52tCP
-         3WCdVOPLcqt0TwdBsfYmg5xM9xHikQL0Wj8GPtDVIGGIYAxkSyPjQUizwcytRdKomJ2V
-         DL01cV2Ki0sm9mNj6hnVfK1ToatiGwFr8fwB35UC9pvIKAx2Cj+dFMdwVszRPuB/5dYX
-         BAlQ==
-X-Gm-Message-State: APjAAAVlVU4pSM8JdDMLTdNHf3S3REvXlcIwj+f3CEpinrnTw/qLkv6f
-        gWT1+Gj3yrALR4NPc2F5X9g=
-X-Google-Smtp-Source: APXvYqw2UgPu4ftgWC6oZd3FfT5EoMsGb1gPhZoPlY9vWUQao96k5UnzkdIvGn459OLOyUQ5LxBgmw==
-X-Received: by 2002:a2e:85c3:: with SMTP id h3mr7393258ljj.122.1572904860068;
-        Mon, 04 Nov 2019 14:01:00 -0800 (PST)
-Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id g3sm7454669ljj.59.2019.11.04.14.00.59
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=payHkh7CHBV8rLqS9vWrDjrgBgsMsbVwFLh/kgRZ9q0=;
+        b=lnR+X52kApukcG0RwTsGdMoIrhVE50rHL4MLhvghUJ/+Jw7G51Nt46DuNkvwG72qdN
+         YyAF0abmRzGed5SCYUkuNQHbLqjFFblJCjTCqqlhDWEUukxr60ifZ74+tDCizGaWeZ6M
+         E/H3vcsNwP+J5osBgsQViUMoX2ZE0qUsPK0wPQLJyA/b8bBtzrmUI/OBWO+HqwbiDLl8
+         mlGvqGMI3JjCdN3iZXdfi8CIY4n3XvlrtLQTYELmI6WApahHmHOKPMBY7FHJZS00ViBO
+         npjdRTcDFbarS5nbOi7vGp65hTOhK0rIEoStIirpQxYXgOf+RbeRWfAQp3IT7JKmojWh
+         zYWA==
+X-Gm-Message-State: APjAAAX/VnpHIPYHGgt4N6dA3cqkrQ4dhF/FlVtgid2DPla2S9HsQyre
+        80a8d39fQPF+TDHMAT5TNA==
+X-Google-Smtp-Source: APXvYqyG8gIUZ/z2lODppAZ1KjEbQKMvtcQ5xgWeI1/s36z27uzB90b7Q8IkrNuYd2lGq+4xgw7rxw==
+X-Received: by 2002:aca:5691:: with SMTP id k139mr1169176oib.54.1572906087984;
+        Mon, 04 Nov 2019 14:21:27 -0800 (PST)
+Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id d6sm3494169oth.45.2019.11.04.14.21.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Nov 2019 14:00:59 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
+        Mon, 04 Nov 2019 14:21:27 -0800 (PST)
+Date:   Mon, 4 Nov 2019 16:21:26 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Leonard Crestez <leonard.crestez@nxp.com>
+Cc:     Stephen Boyd <sboyd@kernel.org>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Shawn Guo <shawnguo@kernel.org>,
         Chanwoo Choi <cw00.choi@samsung.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v9 01/19] PM / devfreq: tegra30: Change irq type to unsigned int
-Date:   Tue,  5 Nov 2019 00:55:59 +0300
-Message-Id: <20191104215617.25544-2-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191104215617.25544-1-digetx@gmail.com>
-References: <20191104215617.25544-1-digetx@gmail.com>
+        Mark Rutland <mark.rutland@arm.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Artur =?utf-8?B?xZp3aWdvxYQ=?= <a.swigon@partner.samsung.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Angus Ainslie <angus@akkea.ca>,
+        Martin Kepplinger <martink@posteo.de>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Dong Aisheng <aisheng.dong@nxp.com>,
+        Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
+        Anson Huang <Anson.Huang@nxp.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-imx@nxp.com,
+        kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v3 3/6] dt-bindings: devfreq: Add bindings for imx ddr
+ controller
+Message-ID: <20191104222126.GB5218@bogus>
+References: <cover.1572558427.git.leonard.crestez@nxp.com>
+ <b9a87c69eb603622303add4f0c02dd4c1262462a.1572558427.git.leonard.crestez@nxp.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b9a87c69eb603622303add4f0c02dd4c1262462a.1572558427.git.leonard.crestez@nxp.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-IRQ numbers are always positive, hence the corresponding variable should
-be unsigned to keep types consistent. This is a minor change that cleans
-up code a tad more.
+On Thu, Oct 31, 2019 at 11:50:24PM +0200, Leonard Crestez wrote:
+> Add devicetree bindings for the i.MX DDR Controller on imx8m series
+> chips. It supports dynamic frequency switching between multiple data
+> rates and this is exposed to Linux via the devfreq subsystem.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> ---
+>  .../devicetree/bindings/devfreq/imx-ddrc.yaml | 60 +++++++++++++++++++
 
-Suggested-by: Thierry Reding <thierry.reding@gmail.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/devfreq/tegra30-devfreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+.../bindings/memory-controllers/
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index a6ba75f4106d..a27300f40b0b 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -160,7 +160,7 @@ struct tegra_devfreq {
- 
- 	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
- 
--	int irq;
-+	unsigned int		irq;
- };
- 
- struct tegra_actmon_emc_ratio {
-@@ -618,12 +618,12 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return PTR_ERR(tegra->emc_clock);
- 	}
- 
--	tegra->irq = platform_get_irq(pdev, 0);
--	if (tegra->irq < 0) {
--		err = tegra->irq;
-+	err = platform_get_irq(pdev, 0);
-+	if (err < 0) {
- 		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
- 		return err;
- 	}
-+	tegra->irq = err;
- 
- 	reset_control_assert(tegra->reset);
- 
--- 
-2.23.0
+>  1 file changed, 60 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/imx-ddrc.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/devfreq/imx-ddrc.yaml b/Documentation/devicetree/bindings/devfreq/imx-ddrc.yaml
+> new file mode 100644
+> index 000000000000..31db204e6845
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/imx-ddrc.yaml
+> @@ -0,0 +1,60 @@
+> +# SPDX-License-Identifier: GPL-2.0
 
+For new bindings:
+
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/devfreq/imx-devfreq.yaml#
+
+Run 'make dt_binding_check'. This will fail as the filename doesn't 
+match.
+
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: i.MX DDR Controller
+
+Perhaps i.MX8x as it's not all i.MX chips. And the filename too?
+
+> +
+> +maintainers:
+> +  - Leonard Crestez <leonard.crestez@nxp.com>
+> +
+> +properties:
+> +  compatible:
+> +    items:
+> +      - enum:
+> +        - fsl,imx8mn-ddrc
+> +        - fsl,imx8mm-ddrc
+> +        - fsl,imx8mq-ddrc
+> +      - const: fsl,imx8m-ddrc
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 4
+> +
+> +  clock-names:
+> +    items:
+> +      - const: dram_core
+> +      - const: dram_pll
+> +      - const: dram_alt
+> +      - const: dram_apb
+
+Drop 'dram_'
+
+> +
+> +  operating-points-v2: true
+> +
+> +  devfreq-events:
+> +    description: Phandle of PMU node
+> +    $ref: "/schemas/types.yaml#/definitions/phandle"
+> +
+> +required:
+> +  - reg
+> +  - compatible
+> +  - clocks
+> +  - clock-names
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/clock/imx8mm-clock.h>
+> +    ddrc: dram-controller@3d400000 {
+> +        compatible = "fsl,imx8mm-ddrc", "fsl,imx8m-ddrc";
+> +        reg = <0x3d400000 0x400000>;
+> +        clock-names = "dram_core", "dram_pll", "dram_alt", "dram_apb";
+> +        clocks = <&clk IMX8MM_CLK_DRAM_CORE>,
+> +                 <&clk IMX8MM_DRAM_PLL>,
+> +                 <&clk IMX8MM_CLK_DRAM_ALT>,
+> +                 <&clk IMX8MM_CLK_DRAM_APB>;
+> +        operating-points-v2 = <&ddrc_opp_table>;
+> +    };
+> -- 
+> 2.17.1
+> 
