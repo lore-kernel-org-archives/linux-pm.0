@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 488CACA9EC9
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 913C1CA9EC9
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1E597214D8
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 625E8214D8
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:19:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sNRGPYTh"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hxiuORP6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388984AbfKDWBM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Nov 2019 17:01:12 -0500
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:45403 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388969AbfKDWBK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 17:01:10 -0500
-Received: by mail-lf1-f68.google.com with SMTP id v8so13411162lfa.12;
-        Mon, 04 Nov 2019 14:01:08 -0800 (PST)
+        id S2389422AbfKDWTL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Nov 2019 17:19:11 -0500
+Received: from mail-lf1-f65.google.com ([209.85.167.65]:41491 "EHLO
+        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388974AbfKDWBM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 17:01:12 -0500
+Received: by mail-lf1-f65.google.com with SMTP id j14so13448551lfb.8;
+        Mon, 04 Nov 2019 14:01:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=rEzUAio8OEZBvo9nZSIV3+A/WsfLupbu1br1SQPd2S0=;
-        b=sNRGPYThLEo6m9M+I5V9UFFOPfVuWsHtnKW7NvWNdf1d6mRVhLECezllEPq0z+73/k
-         uydbKS4hz84tlGFc9GMOGbgh8RYikQYO4D+XinQHsoXrQkcSXIh6E8ToEli1XTibdsdG
-         U3uUKNWXGhrAMKKb5188kU4aB4W9nl0K029R89i/kFxy5NWigTGcqyshYkwo9B1Oy/iq
-         W81a4cwhk86LG4n3bktfJV0nGDSZbjFQ/pgvAp/lMP1QKN5toZvRK/8ZqzztBMlN0Gpf
-         YSD5TIOooqrhPvTLBZzkYGOBZsqdd1mjtcgcuPGZyxzKGNHlrCXSaXouWvWE8EFlGTBL
-         xnvw==
+        bh=DjmXiphEj07PA2UBQ1Hu0F6jo40/2DwonMVrwbYxHC4=;
+        b=hxiuORP6XfkMPL7hYETvI1R7UGZJg1RRsvu6RE+K+jruMTpnzXRtQGBL3yz97KYT/7
+         vxDqVcdchqidjMkOMoL8IST46v2Y+LrfLbYWP3jL0FpynbbG9Uz1vD54M6l1mBF6rwdQ
+         /xg02E/v+yYy0nKSqLBgLxz9IDsikOVwgcxTdNdKTZxr/VPXRmZga0T/AW68AlGK42c1
+         VcmQJLL3S7YIU7bXLdQpHm+2r4plW7ARxwoASQZRTDOz31Uz6yyQtyq4OpLPMjX03ZDK
+         hRhmel73Btv/f19/6e58WzD+J2hfiCuu8yWAG4OJNJpV9dyA7Iqfs+uCPtqTdM7Y0Ge8
+         zaoQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=rEzUAio8OEZBvo9nZSIV3+A/WsfLupbu1br1SQPd2S0=;
-        b=nPD3SCw86wsTPnaxZp2mEcXet7CsHZS34Qe+2GW7B2zcZOv+ye/KucYvoqFAxQvws3
-         SKE5tP2SzPlq9lmzoiOkpPat2u+AbU2bCZioUzT0aEHzBV3UeRQ5lDNJAYnGmm9Z7UZv
-         8lcMD9WmLKAYINqIUXkjT6/7V6cBo6tzMBtaIqw6iha7m+eNALapeRUZYryAs2nIQgrc
-         jFu77IkWEWj+TjpnWDWogwWceVLM12XtCe2wfukJfxvARu3QCOixFA8P/7a4K9eZPQSz
-         IP/IBkowpkpim81vOkoDBNPr9zu0pgwO3Csy1fh+VyRdSNFJ1ESycmSxKi8975T6hXaK
-         mdrg==
-X-Gm-Message-State: APjAAAWdTZ5yOZgLGPea8kEom2hIJpXUGc3NQhSjyme5E8eUfC0iv044
-        mdk7Ec/WrgnVn815lmNWVxI=
-X-Google-Smtp-Source: APXvYqw8G9Mz+XCHuG/7zu1n4bkCyBbNZkVBePFL2zHn8RRF5tzOgQxKS7KsB0OGvci61Sr/Mhpw1g==
-X-Received: by 2002:a19:750:: with SMTP id 77mr17992493lfh.81.1572904868172;
-        Mon, 04 Nov 2019 14:01:08 -0800 (PST)
+        bh=DjmXiphEj07PA2UBQ1Hu0F6jo40/2DwonMVrwbYxHC4=;
+        b=FdWQFdx7WqvuSn5zMrHFBWm88VrD+H7Lv8d+hAtALcjxVnA7100jXmRNwrZHfSCzJW
+         z9G+aidz7ZnxprtUTq7silh3RRo54Uttt9ctkv8JwJydFJZ8HPhQphH0uEArqD0d++yG
+         x9uv3r2qodCtUkHPYDDWeJeWZ3LV65FjKVqt+xt9sR34ZB/FYxBfqSqJ7w7/Q+LLZgkG
+         HkZouSMcYLIUmLUw0tCzlYZYA3EFJGKOsvNjBPy0iA7+4u8PhXneISVyvTyeCYoPUTLH
+         UuPnBBfpIA5YdNhqEtzII+ayqHf2/TRBlbBhRzoEV0mK6yYhuw/3eex8RULJhP+RWH34
+         B0Rg==
+X-Gm-Message-State: APjAAAVnL7oZ2uTnvlnbUewzQa1W7jUGN753tQeYEQXoLktqZp3pexLH
+        NKqqzUTiGbhXLem4gpBeF6w=
+X-Google-Smtp-Source: APXvYqwPUNwk60VBN+9D8hxM0iRLNxIuCjMxQD2kbfuS7YKAm4CWDBCRFT0IVamMwv0K0yvJXu/Sjg==
+X-Received: by 2002:ac2:5b42:: with SMTP id i2mr18356665lfp.164.1572904870097;
+        Mon, 04 Nov 2019 14:01:10 -0800 (PST)
 Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id g3sm7454669ljj.59.2019.11.04.14.01.07
+        by smtp.gmail.com with ESMTPSA id g3sm7454669ljj.59.2019.11.04.14.01.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Nov 2019 14:01:07 -0800 (PST)
+        Mon, 04 Nov 2019 14:01:09 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -66,9 +66,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v9 09/19] PM / devfreq: tegra30: Reset boosting on startup
-Date:   Tue,  5 Nov 2019 00:56:07 +0300
-Message-Id: <20191104215617.25544-10-digetx@gmail.com>
+Subject: [PATCH v9 11/19] PM / devfreq: tegra30: Constify structs
+Date:   Tue,  5 Nov 2019 00:56:09 +0300
+Message-Id: <20191104215617.25544-12-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191104215617.25544-1-digetx@gmail.com>
 References: <20191104215617.25544-1-digetx@gmail.com>
@@ -79,31 +79,46 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Governor could be stopped while boosting is active. We have assumption
-that everything is reset on governor's restart, including the boosting
-value, which was missed.
+Constify unmodifiable structs, for consistency.
 
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Tested-by: Peter Geis <pgwipeout@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/devfreq/tegra30-devfreq.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 6960d8ba0577..9cb2d6468175 100644
+index bc46af155b99..9bd4dd982927 100644
 --- a/drivers/devfreq/tegra30-devfreq.c
 +++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -467,6 +467,9 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+@@ -108,7 +108,7 @@ enum tegra_actmon_device {
+ 	MCCPU,
+ };
+ 
+-static struct tegra_devfreq_device_config actmon_device_configs[] = {
++static const struct tegra_devfreq_device_config actmon_device_configs[] = {
+ 	{
+ 		/* MCALL: All memory accesses (including from the CPUs) */
+ 		.offset = 0x1c0,
+@@ -177,7 +177,7 @@ struct tegra_actmon_emc_ratio {
+ 	unsigned long emc_freq;
+ };
+ 
+-static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
++static const struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
+ 	{ 1400000,    KHZ_MAX },
+ 	{ 1200000,    750000 },
+ 	{ 1100000,    600000 },
+@@ -295,7 +295,7 @@ static unsigned long actmon_cpu_to_emc_rate(struct tegra_devfreq *tegra,
+ 					    unsigned long cpu_freq)
  {
- 	u32 val = 0;
+ 	unsigned int i;
+-	struct tegra_actmon_emc_ratio *ratio = actmon_emc_ratios;
++	const struct tegra_actmon_emc_ratio *ratio = actmon_emc_ratios;
  
-+	/* reset boosting on governor's restart */
-+	dev->boost_freq = 0;
-+
- 	dev->target_freq = tegra->cur_freq;
- 
- 	dev->avg_count = tegra->cur_freq * ACTMON_SAMPLING_PERIOD;
+ 	for (i = 0; i < ARRAY_SIZE(actmon_emc_ratios); i++, ratio++) {
+ 		if (cpu_freq >= ratio->cpu_freq) {
 -- 
 2.23.0
 
