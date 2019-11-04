@@ -2,93 +2,129 @@ Return-Path: <SRS0=IIwL=Y4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5030ACA9EA0
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 11:52:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA8D1CA9EB5
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 13:30:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1F4EF21D81
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 11:52:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A18842245C
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 13:30:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="YjUYLUPT"
+	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="GB/THL6v"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726633AbfKDLwH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Nov 2019 06:52:07 -0500
-Received: from bombadil.infradead.org ([198.137.202.133]:43930 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726100AbfKDLwH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 06:52:07 -0500
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
-        :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
-        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
-        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-         bh=Z45EwIm/nVJd7d8qmHSBF95/M8CehBnDBQi1wTICEOU=; b=YjUYLUPTB/RXa6Ktkoz1wCjTz
-        4MwPhuteCIwgB1TZ1JwEvX+IhXAVoZOOKoeDptaDYKIShVe3JtHyY9YqCAHH4MobpRws9984uz2HU
-        fPYfKCYTgBC2e3J+JYA0hVDhGrTeaQQDCJu2vaGesZmbUynrnhEV6dpeanDQnGpZTERFZSE/o3k5+
-        i3Xw3FU7OLMpZMBewKCYOWRs7sAGVEQMTPs0DomKXKGT8GoOSj+oiwjFfIoFRDabIzMHLMSDrvogH
-        iquYwc7lBREVKR1QYHI0yG5nY5ms2KRZq0WiQvynjqPxu/FYvWX8c25lxNyOESynm3P8KVPY+h2u4
-        YABuW4BZA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
-        by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1iRatv-0006On-RA; Mon, 04 Nov 2019 11:52:04 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3F052305FC2;
-        Mon,  4 Nov 2019 12:50:58 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 51D022B4220F7; Mon,  4 Nov 2019 12:52:01 +0100 (CET)
-Date:   Mon, 4 Nov 2019 12:52:01 +0100
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Doug Smythies <dsmythies@telus.net>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpuidle: Consolidate disabled state checks
-Message-ID: <20191104115201.GG4131@hirez.programming.kicks-ass.net>
-References: <2717750.dCEzHT3DVQ@kreacher>
+        id S1729043AbfKDNau (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Nov 2019 08:30:50 -0500
+Received: from mx08-00178001.pphosted.com ([91.207.212.93]:52634 "EHLO
+        mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1727236AbfKDNat (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 08:30:49 -0500
+Received: from pps.filterd (m0046661.ppops.net [127.0.0.1])
+        by mx08-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id xA4DNFwM017939;
+        Mon, 4 Nov 2019 14:30:26 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=st.com; h=from : to : subject :
+ date : message-id : in-reply-to : references : mime-version :
+ content-type; s=STMicroelectronics;
+ bh=dWUyjMPm0hw98cUZjpf/Lk4hXPmA04Wmo+g+mY9iROc=;
+ b=GB/THL6vjsrigPm2k3hF4aQolDYn1XCBydGXqGpiIypoA3lfv34OEJJkVpqYs37pta0P
+ DqkbXy7haJMkb4DdOKHKQNAI+S1wKfQzTrLO9CqS/yh4ycMUOjw+X1iYUB12TgEv9ASY
+ 8Cw5NzwAObFWPPrh9d3xipb4E7XavU7ZhW/Z6RCLN1hp/ud7F+DAS3X6kyWdTg5TOzx/
+ v1/61WbkjtWwC5PyFQM7w9GaCdvBTk/HTgoORv9yI0zSJBw5R+Z/4sIy8oHKzOSgjFFI
+ Vpn76/WAVcsMJxs0dzM68gf+7dFP1+Jbc+i3ldaBeEi3ZcjDj0CCo4ciumXSJ4zpnBGO Kg== 
+Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
+        by mx08-00178001.pphosted.com with ESMTP id 2w11jn1vxc-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 04 Nov 2019 14:30:26 +0100
+Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
+        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 62BF3100034;
+        Mon,  4 Nov 2019 14:30:24 +0100 (CET)
+Received: from Webmail-eu.st.com (sfhdag6node2.st.com [10.75.127.17])
+        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 5279B2D379D;
+        Mon,  4 Nov 2019 14:30:24 +0100 (CET)
+Received: from localhost (10.75.127.51) by SFHDAG6NODE2.st.com (10.75.127.17)
+ with Microsoft SMTP Server (TLS) id 15.0.1347.2; Mon, 4 Nov 2019 14:30:23
+ +0100
+From:   Pascal Paillet <p.paillet@st.com>
+To:     <rui.zhang@intel.com>, <edubezval@gmail.com>,
+        <daniel.lezcano@linaro.org>, <amit.kucheria@verdurent.com>,
+        <mcoquelin.stm32@gmail.com>, <alexandre.torgue@st.com>,
+        <p.paillet@st.com>, <david.hernandezsanchez@st.com>,
+        <horms+renesas@verge.net.au>, <wsa+renesas@sang-engineering.com>,
+        <linux-pm@vger.kernel.org>,
+        <linux-stm32@st-md-mailman.stormreply.com>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 2/5] thermal: stm32: fix icifr register name
+Date:   Mon, 4 Nov 2019 14:30:17 +0100
+Message-ID: <20191104133020.8820-3-p.paillet@st.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191104133020.8820-1-p.paillet@st.com>
+References: <20191104133020.8820-1-p.paillet@st.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2717750.dCEzHT3DVQ@kreacher>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
+X-Originating-IP: [10.75.127.51]
+X-ClientProxiedBy: SFHDAG2NODE1.st.com (10.75.127.4) To SFHDAG6NODE2.st.com
+ (10.75.127.17)
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,1.0.8
+ definitions=2019-11-04_08:2019-11-04,2019-11-04 signatures=0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 04, 2019 at 12:16:17PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> There are two reasons why CPU idle states may be disabled: either
-> because the driver has disabled them or because they have been
-> disabled by user space via sysfs.
-> 
-> In the former case, the state's "disabled" flag is set once during
-> the initialization of the driver and it is never cleared later (it
-> is read-only effectively).  In the latter case, the "disable" field
-> of the given state's cpuidle_state_usage struct is set and it may be
-> changed via sysfs.  Thus checking whether or not an idle state has
-> been disabled involves reading these two flags every time.
-> 
-> In order to avoid the additional check of the state's "disabled" flag
-> (which is effectively read-only anyway), use the value of it at the
-> init time to set a (new) flag in the "disable" field of that state's
-> cpuidle_state_usage structure and use the sysfs interface to
-> manipulate another (new) flag in it.  This way the state is disabled
-> whenever the "disable" field of its cpuidle_state_usage structure is
-> nonzero, whatever the reason, and it is the only place to look into
-> to check whether or not the state has been disabled.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Fix a mistake with the ICIFR register name.
 
-Much thanks, that always bugged me.
+Signed-off-by: Pascal Paillet <p.paillet@st.com>
+---
+ drivers/thermal/st/stm_thermal.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
+index 31aa63fb3db1..7577242dadb4 100644
+--- a/drivers/thermal/st/stm_thermal.c
++++ b/drivers/thermal/st/stm_thermal.c
+@@ -30,7 +30,7 @@
+ #define DTS_DR_OFFSET		0x1C
+ #define DTS_SR_OFFSET		0x20
+ #define DTS_ITENR_OFFSET	0x24
+-#define DTS_CIFR_OFFSET		0x28
++#define DTS_ICIFR_OFFSET		0x28
+ 
+ /* DTS_CFGR1 register mask definitions */
+ #define HSREF_CLK_DIV_MASK	GENMASK(30, 24)
+@@ -111,10 +111,10 @@ static irqreturn_t stm_thermal_alarm_irq_thread(int irq, void *sdata)
+ 	value = readl_relaxed(sensor->base + DTS_SR_OFFSET);
+ 
+ 	if ((value & LOW_THRESHOLD) == LOW_THRESHOLD)
+-		writel_relaxed(LOW_THRESHOLD, sensor->base + DTS_CIFR_OFFSET);
++		writel_relaxed(LOW_THRESHOLD, sensor->base + DTS_ICIFR_OFFSET);
+ 
+ 	if ((value & HIGH_THRESHOLD) == HIGH_THRESHOLD)
+-		writel_relaxed(HIGH_THRESHOLD, sensor->base + DTS_CIFR_OFFSET);
++		writel_relaxed(HIGH_THRESHOLD, sensor->base + DTS_ICIFR_OFFSET);
+ 
+ 	thermal_zone_device_update(sensor->th_dev, THERMAL_EVENT_UNSPECIFIED);
+ 
+@@ -336,7 +336,7 @@ static int stm_enable_irq(struct stm_thermal_sensor *sensor)
+ 	 */
+ 
+ 	/* Make sure LOW_THRESHOLD IT is clear before enabling */
+-	writel_relaxed(LOW_THRESHOLD, sensor->base + DTS_CIFR_OFFSET);
++	writel_relaxed(LOW_THRESHOLD, sensor->base + DTS_ICIFR_OFFSET);
+ 
+ 	/* Enable IT generation for low threshold */
+ 	value = readl_relaxed(sensor->base + DTS_ITENR_OFFSET);
+@@ -345,7 +345,7 @@ static int stm_enable_irq(struct stm_thermal_sensor *sensor)
+ 	/* Enable the low temperature threshold if needed */
+ 	if (sensor->low_temp_enabled) {
+ 		/* Make sure HIGH_THRESHOLD IT is clear before enabling */
+-		writel_relaxed(HIGH_THRESHOLD, sensor->base + DTS_CIFR_OFFSET);
++		writel_relaxed(HIGH_THRESHOLD, sensor->base + DTS_ICIFR_OFFSET);
+ 
+ 		/* Enable IT generation for high threshold */
+ 		value |= HIGH_THRESHOLD;
+-- 
+2.17.1
+
