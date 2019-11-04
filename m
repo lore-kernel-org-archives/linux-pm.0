@@ -7,44 +7,44 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA8D1CA9EB5
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 13:30:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B5D7CA9EB5
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 13:31:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A18842245C
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 13:30:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0A59C222C2
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 13:31:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="GB/THL6v"
+	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="PIgiBoa1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729043AbfKDNau (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Nov 2019 08:30:50 -0500
-Received: from mx08-00178001.pphosted.com ([91.207.212.93]:52634 "EHLO
+        id S1729246AbfKDNax (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Nov 2019 08:30:53 -0500
+Received: from mx08-00178001.pphosted.com ([91.207.212.93]:52648 "EHLO
         mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1727236AbfKDNat (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 08:30:49 -0500
+        by vger.kernel.org with ESMTP id S1729153AbfKDNaw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 08:30:52 -0500
 Received: from pps.filterd (m0046661.ppops.net [127.0.0.1])
-        by mx08-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id xA4DNFwM017939;
+        by mx08-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id xA4DNH0m017943;
         Mon, 4 Nov 2019 14:30:26 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=st.com; h=from : to : subject :
  date : message-id : in-reply-to : references : mime-version :
  content-type; s=STMicroelectronics;
- bh=dWUyjMPm0hw98cUZjpf/Lk4hXPmA04Wmo+g+mY9iROc=;
- b=GB/THL6vjsrigPm2k3hF4aQolDYn1XCBydGXqGpiIypoA3lfv34OEJJkVpqYs37pta0P
- DqkbXy7haJMkb4DdOKHKQNAI+S1wKfQzTrLO9CqS/yh4ycMUOjw+X1iYUB12TgEv9ASY
- 8Cw5NzwAObFWPPrh9d3xipb4E7XavU7ZhW/Z6RCLN1hp/ud7F+DAS3X6kyWdTg5TOzx/
- v1/61WbkjtWwC5PyFQM7w9GaCdvBTk/HTgoORv9yI0zSJBw5R+Z/4sIy8oHKzOSgjFFI
- Vpn76/WAVcsMJxs0dzM68gf+7dFP1+Jbc+i3ldaBeEi3ZcjDj0CCo4ciumXSJ4zpnBGO Kg== 
+ bh=p03njtumV+HleK/1bWaZoOME3iGFRP863OGQq660Kvk=;
+ b=PIgiBoa1kx8JUAVRMEO5EaQyJIOEtCjt1ITCMuEomInl3tm0zvZ2t15v2w8EffHY5xFL
+ NQk0b5LwrdNokQLubAgkdod7vRMa8jFVVNtDpclmhcHQyT9Q0hCTwNrY2FREDyjjpPRl
+ kygUqtUwC7fzs9qg0vNywIrdnaRKOGBcz+bTAMP9ewfJqwTPZe3cayXSizq3Ql5Elt2h
+ 1cO1qdkuq5fJmPanp/xLSEPmqZQZbiLZdZDdekOzVNcbEmLiUMvKe3a5TXeLMK9PECBC
+ +ZZOjGMhQ4QqP71VOVerViNK+kbiBCI014/b71K3970LohiZoGMMdk/imJvu/JMcjDYL Qw== 
 Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
-        by mx08-00178001.pphosted.com with ESMTP id 2w11jn1vxc-1
+        by mx08-00178001.pphosted.com with ESMTP id 2w11jn1vxh-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
         Mon, 04 Nov 2019 14:30:26 +0100
 Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
-        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 62BF3100034;
-        Mon,  4 Nov 2019 14:30:24 +0100 (CET)
+        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id DF34B10003D;
+        Mon,  4 Nov 2019 14:30:25 +0100 (CET)
 Received: from Webmail-eu.st.com (sfhdag6node2.st.com [10.75.127.17])
-        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 5279B2D379D;
-        Mon,  4 Nov 2019 14:30:24 +0100 (CET)
-Received: from localhost (10.75.127.51) by SFHDAG6NODE2.st.com (10.75.127.17)
- with Microsoft SMTP Server (TLS) id 15.0.1347.2; Mon, 4 Nov 2019 14:30:23
+        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id CEE9C2FF5C2;
+        Mon,  4 Nov 2019 14:30:25 +0100 (CET)
+Received: from localhost (10.75.127.50) by SFHDAG6NODE2.st.com (10.75.127.17)
+ with Microsoft SMTP Server (TLS) id 15.0.1347.2; Mon, 4 Nov 2019 14:30:25
  +0100
 From:   Pascal Paillet <p.paillet@st.com>
 To:     <rui.zhang@intel.com>, <edubezval@gmail.com>,
@@ -56,16 +56,16 @@ To:     <rui.zhang@intel.com>, <edubezval@gmail.com>,
         <linux-stm32@st-md-mailman.stormreply.com>,
         <linux-arm-kernel@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 2/5] thermal: stm32: fix icifr register name
-Date:   Mon, 4 Nov 2019 14:30:17 +0100
-Message-ID: <20191104133020.8820-3-p.paillet@st.com>
+Subject: [PATCH v2 4/5] thermal: stm32: improve temperature resolution
+Date:   Mon, 4 Nov 2019 14:30:19 +0100
+Message-ID: <20191104133020.8820-5-p.paillet@st.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191104133020.8820-1-p.paillet@st.com>
 References: <20191104133020.8820-1-p.paillet@st.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Originating-IP: [10.75.127.51]
-X-ClientProxiedBy: SFHDAG2NODE1.st.com (10.75.127.4) To SFHDAG6NODE2.st.com
+X-Originating-IP: [10.75.127.50]
+X-ClientProxiedBy: SFHDAG4NODE3.st.com (10.75.127.12) To SFHDAG6NODE2.st.com
  (10.75.127.17)
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.95,1.0.8
  definitions=2019-11-04_08:2019-11-04,2019-11-04 signatures=0
@@ -74,57 +74,126 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix a mistake with the ICIFR register name.
+Currently, the temperature is rounded by 1 or 2 degrees.
+Change the way of computing to avoid rounds.
+Also simplify the sampling time management.
 
 Signed-off-by: Pascal Paillet <p.paillet@st.com>
 ---
- drivers/thermal/st/stm_thermal.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/thermal/st/stm_thermal.c | 58 ++++++++------------------------
+ 1 file changed, 14 insertions(+), 44 deletions(-)
 
 diff --git a/drivers/thermal/st/stm_thermal.c b/drivers/thermal/st/stm_thermal.c
-index 31aa63fb3db1..7577242dadb4 100644
+index cb72252f2800..9986716b17c1 100644
 --- a/drivers/thermal/st/stm_thermal.c
 +++ b/drivers/thermal/st/stm_thermal.c
-@@ -30,7 +30,7 @@
- #define DTS_DR_OFFSET		0x1C
- #define DTS_SR_OFFSET		0x20
- #define DTS_ITENR_OFFSET	0x24
--#define DTS_CIFR_OFFSET		0x28
-+#define DTS_ICIFR_OFFSET		0x28
+@@ -59,7 +59,6 @@
  
- /* DTS_CFGR1 register mask definitions */
- #define HSREF_CLK_DIV_MASK	GENMASK(30, 24)
-@@ -111,10 +111,10 @@ static irqreturn_t stm_thermal_alarm_irq_thread(int irq, void *sdata)
- 	value = readl_relaxed(sensor->base + DTS_SR_OFFSET);
+ /* Less significant bit position definitions */
+ #define TS1_T0_POS		16
+-#define TS1_SMP_TIME_POS	16
+ #define TS1_HITTHD_POS		16
+ #define TS1_LITTHD_POS		0
+ #define HSREF_CLK_DIV_POS	24
+@@ -83,15 +82,10 @@
+ #define ONE_MHZ			1000000
+ #define POLL_TIMEOUT		5000
+ #define STARTUP_TIME		40
+-#define TS1_T0_VAL0		30
+-#define TS1_T0_VAL1		130
++#define TS1_T0_VAL0		30000  /* 30 celsius */
++#define TS1_T0_VAL1		130000 /* 130 celsius */
+ #define NO_HW_TRIG		0
+-
+-/* The Thermal Framework expects millidegrees */
+-#define mcelsius(temp)		((temp) * 1000)
+-
+-/* The Sensor expects oC degrees */
+-#define celsius(temp)		((temp) / 1000)
++#define SAMPLING_TIME		15
  
- 	if ((value & LOW_THRESHOLD) == LOW_THRESHOLD)
--		writel_relaxed(LOW_THRESHOLD, sensor->base + DTS_CIFR_OFFSET);
-+		writel_relaxed(LOW_THRESHOLD, sensor->base + DTS_ICIFR_OFFSET);
+ struct stm_thermal_sensor {
+ 	struct device *dev;
+@@ -259,27 +253,17 @@ static int stm_thermal_calculate_threshold(struct stm_thermal_sensor *sensor,
+ 					   int temp, u32 *th)
+ {
+ 	int freqM;
+-	u32 sampling_time;
+-
+-	/* Retrieve the number of periods to sample */
+-	sampling_time = (readl_relaxed(sensor->base + DTS_CFGR1_OFFSET) &
+-			TS1_SMP_TIME_MASK) >> TS1_SMP_TIME_POS;
  
- 	if ((value & HIGH_THRESHOLD) == HIGH_THRESHOLD)
--		writel_relaxed(HIGH_THRESHOLD, sensor->base + DTS_CIFR_OFFSET);
-+		writel_relaxed(HIGH_THRESHOLD, sensor->base + DTS_ICIFR_OFFSET);
+ 	/* Figure out the CLK_PTAT frequency for a given temperature */
+-	freqM = ((temp - sensor->t0) * sensor->ramp_coeff)
+-		 + sensor->fmt0;
+-
+-	dev_dbg(sensor->dev, "%s: freqM for threshold = %d Hz",
+-		__func__, freqM);
++	freqM = ((temp - sensor->t0) * sensor->ramp_coeff) / 1000 +
++		sensor->fmt0;
  
- 	thermal_zone_device_update(sensor->th_dev, THERMAL_EVENT_UNSPECIFIED);
+ 	/* Figure out the threshold sample number */
+-	*th = clk_get_rate(sensor->clk);
++	*th = clk_get_rate(sensor->clk) * SAMPLING_TIME / freqM;
+ 	if (!*th)
+ 		return -EINVAL;
  
-@@ -336,7 +336,7 @@ static int stm_enable_irq(struct stm_thermal_sensor *sensor)
- 	 */
+-	*th = *th / freqM;
+-
+-	*th *= sampling_time;
++	dev_dbg(sensor->dev, "freqM=%d Hz, threshold=0x%x", freqM, *th);
  
- 	/* Make sure LOW_THRESHOLD IT is clear before enabling */
--	writel_relaxed(LOW_THRESHOLD, sensor->base + DTS_CIFR_OFFSET);
-+	writel_relaxed(LOW_THRESHOLD, sensor->base + DTS_ICIFR_OFFSET);
+ 	return 0;
+ }
+@@ -371,40 +355,26 @@ static int stm_thermal_set_trips(void *data, int low, int high)
+ static int stm_thermal_get_temp(void *data, int *temp)
+ {
+ 	struct stm_thermal_sensor *sensor = data;
+-	u32 sampling_time;
++	u32 periods;
+ 	int freqM, ret;
  
- 	/* Enable IT generation for low threshold */
- 	value = readl_relaxed(sensor->base + DTS_ITENR_OFFSET);
-@@ -345,7 +345,7 @@ static int stm_enable_irq(struct stm_thermal_sensor *sensor)
- 	/* Enable the low temperature threshold if needed */
- 	if (sensor->low_temp_enabled) {
- 		/* Make sure HIGH_THRESHOLD IT is clear before enabling */
--		writel_relaxed(HIGH_THRESHOLD, sensor->base + DTS_CIFR_OFFSET);
-+		writel_relaxed(HIGH_THRESHOLD, sensor->base + DTS_ICIFR_OFFSET);
+ 	if (sensor->mode != THERMAL_DEVICE_ENABLED)
+ 		return -EAGAIN;
  
- 		/* Enable IT generation for high threshold */
- 		value |= HIGH_THRESHOLD;
+-	/* Retrieve the number of samples */
+-	ret = readl_poll_timeout(sensor->base + DTS_DR_OFFSET, freqM,
+-				 (freqM & TS1_MFREQ_MASK), STARTUP_TIME,
+-				 POLL_TIMEOUT);
+-
++	/* Retrieve the number of periods sampled */
++	ret = readl_relaxed_poll_timeout(sensor->base + DTS_DR_OFFSET, periods,
++					 (periods & TS1_MFREQ_MASK),
++					 STARTUP_TIME, POLL_TIMEOUT);
+ 	if (ret)
+ 		return ret;
+ 
+-	if (!freqM)
+-		return -ENODATA;
+-
+-	/* Retrieve the number of periods sampled */
+-	sampling_time = (readl_relaxed(sensor->base + DTS_CFGR1_OFFSET) &
+-			TS1_SMP_TIME_MASK) >> TS1_SMP_TIME_POS;
+-
+-	/* Figure out the number of samples per period */
+-	freqM /= sampling_time;
+-
+ 	/* Figure out the CLK_PTAT frequency */
+-	freqM = clk_get_rate(sensor->clk) / freqM;
++	freqM = (clk_get_rate(sensor->clk) * SAMPLING_TIME) / periods;
+ 	if (!freqM)
+ 		return -EINVAL;
+ 
+-	dev_dbg(sensor->dev, "%s: freqM=%d\n", __func__, freqM);
+-
+ 	/* Figure out the temperature in mili celsius */
+-	*temp = mcelsius(sensor->t0 + ((freqM - sensor->fmt0) /
+-			 sensor->ramp_coeff));
++	*temp = (freqM - sensor->fmt0) * 1000 / sensor->ramp_coeff + sensor->t0;
+ 
+ 	return 0;
+ }
 -- 
 2.17.1
 
