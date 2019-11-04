@@ -2,347 +2,280 @@ Return-Path: <SRS0=IIwL=Y4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A79CA9EC9
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:18:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E000CCA9EC9
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:18:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3AFFD20650
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:18:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1572905911;
-	bh=oP4tzZwBu1obuB2XrfmXXoX4S9RuTLJqIUdIQLVTJ9w=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=pQTOoyHTPcJUZtD87/0rYzhYDZ1jNWdDpYUfGizEPVA5W4viX741M9EDtplYqAuRm
-	 BEEUFaPfYmZem6p5mrgHZOeaVSrFKW/raIOggAHbqmjNE1NxfQVL5trtZLftFE6mdK
-	 aALiLF2NztrgwT4Z3LmATOXNmTOY28RIVTfuvOtE=
+	by mail.kernel.org (Postfix) with ESMTP id A700D20650
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 22:18:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nIngTQUl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389176AbfKDWBr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Nov 2019 17:01:47 -0500
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:35107 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387848AbfKDWBr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 17:01:47 -0500
-Received: by mail-oi1-f195.google.com with SMTP id n16so15635532oig.2;
-        Mon, 04 Nov 2019 14:01:46 -0800 (PST)
+        id S2388930AbfKDWBT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Nov 2019 17:01:19 -0500
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:44166 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388932AbfKDWBT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 17:01:19 -0500
+Received: by mail-lj1-f193.google.com with SMTP id g3so13275877ljl.11;
+        Mon, 04 Nov 2019 14:01:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=RVyypLWArLwRMapvcjjP++4okNfEsrnb9+mcTr4Flpc=;
+        b=nIngTQUlQTRyU7ARgBuzQfHFolIxtzhXr0aLpOY4V7VOempJFhPd1fPk3ZnKlnEBWM
+         9/juwJqdqdJOpWW6q7b/nlRyIEVStBUmsLbFl/C1QojE8z1NUYIJw1yjG8+9MEUxa1pd
+         db3Sz4cSEi7LjO/ZL99/lwE9RThbvwo6/4w92uR5NjFd6Y0SHCMt7akWQTb0yd3s1bMt
+         wfMcRT8Qw2jj6SPs70s/ptnXMxGAKJHTaXaQtethoFyEl0S9BRe9FsTNZNOTWv3sT739
+         DnAC1VctXSN6Neg8wMJtW+7Vt0UBqQ2c1tpN8BhBDQRklpvxr7xb9JOOLRfuLZ343L7r
+         c1hw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=gICVn3u8ASpKk8yKpGUgqNBScOIqpiBNd4WtMocjQ8o=;
-        b=ZtUPH5Qj2aqv3R3NqXMaRNsfHwvHn24ZWw1nnfpkAGTq0xe+Z6YTgAL+4ov4+XUEb/
-         nRPL8VtRGiHfAAX2MFPO16A+rocPoSAKDx7MwljvHsBNs5xKe9gJG9VqlnkwReNpVmB+
-         kDzX4zdTJ026GWuSU3zhKoTp+kbSc0cbzCLtLiuk2bmJIbd++gK8VK+dZ2LEmID3SVWY
-         0xS5YAEHCkzpUvGY2E1aGgHAkC4gD0KmHaZTpq/L8DOc9ZVrqs9L1Nhhbu5hLnzpiHIv
-         14sqDDtEfDST2ULOa49SHCnp3+cXGZlok2pkc0mwf0DeyLtuAn8bVidplL1Rx2FygEzn
-         Vc7g==
-X-Gm-Message-State: APjAAAXxy+rY1QWas9zOozaUlKIeTQX64JJS3BtwzMJybY+DJe1uI1oI
-        NXgcT9YCkRu2hLI8ycFbgw==
-X-Google-Smtp-Source: APXvYqwLHKhqTibA1uW3XY9c8wtsWQIYuDLFvJINilMATw8yBBYyhOv5hhkQXaGX5VRglnSSyVHobw==
-X-Received: by 2002:a54:4484:: with SMTP id v4mr1058881oiv.49.1572904905923;
-        Mon, 04 Nov 2019 14:01:45 -0800 (PST)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id 68sm5857904otw.56.2019.11.04.14.01.45
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=RVyypLWArLwRMapvcjjP++4okNfEsrnb9+mcTr4Flpc=;
+        b=hsOnYuBKDS4l/jX2wQUOGwC7RMHfRp8aaNtNXlLeZH5tWVran4rkYp4cf6VlDqTDU6
+         3Ba2qLypmC9oLz5VkiC5158eIcsUPh6tmp/npg13hVSZ1Jm0zjIB61vCvpiIywR+/tyE
+         LjwI+eajllHKOrg7Rw6tNjr+Qu2B2bU5gSSAGY6NnMUPmU9d5wh+8JJ05e8cL3HQ3nid
+         z7u5zoWCmiBUf4E1Crxw03WnM+e4WaMLtCqQrk6/BEcRXuLJ1lGl8V0lDDvG7U6BMpxg
+         jbH+MjqE+48neWpCKp/QBVe5WXJ0QB9SIc8Gj3pv5YqtYw4VZpUAI1MogHEHRsR81FUY
+         jNbg==
+X-Gm-Message-State: APjAAAVeZM++R7D3PykoHQDsSRIyESf4sIm9r5F9DgltA/wMZKaBtBnZ
+        McAO7HO35Of8obb8hWzHfO4=
+X-Google-Smtp-Source: APXvYqzS+RU1VFsp3K24na/Ur5f7fxpvKpLm/W/sjywk+cCqIvKy+rPUIRp/8bXx6WiTCnfFAJwZsQ==
+X-Received: by 2002:a2e:7c16:: with SMTP id x22mr21064365ljc.94.1572904875747;
+        Mon, 04 Nov 2019 14:01:15 -0800 (PST)
+Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
+        by smtp.gmail.com with ESMTPSA id g3sm7454669ljj.59.2019.11.04.14.01.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 04 Nov 2019 14:01:45 -0800 (PST)
-Date:   Mon, 4 Nov 2019 16:01:44 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Leonard Crestez <leonard.crestez@nxp.com>
-Cc:     Stephen Boyd <sboyd@kernel.org>,
+        Mon, 04 Nov 2019 14:01:15 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Shawn Guo <shawnguo@kernel.org>,
         Chanwoo Choi <cw00.choi@samsung.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Artur =?utf-8?B?xZp3aWdvxYQ=?= <a.swigon@partner.samsung.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Angus Ainslie <angus@akkea.ca>,
-        Martin Kepplinger <martink@posteo.de>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Alexandre Bailon <abailon@baylibre.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Dong Aisheng <aisheng.dong@nxp.com>,
-        Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
-        Anson Huang <Anson.Huang@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-imx@nxp.com,
-        kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v3 6/6] arm64: dts: imx8m: Add ddr controller nodes
-Message-ID: <20191104220144.GA5218@bogus>
-References: <cover.1572558427.git.leonard.crestez@nxp.com>
- <44dcab5a136f5b046092e6ed456d8e206413059f.1572558427.git.leonard.crestez@nxp.com>
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v9 17/19] PM / devfreq: tegra30: Support variable polling interval
+Date:   Tue,  5 Nov 2019 00:56:15 +0300
+Message-Id: <20191104215617.25544-18-digetx@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191104215617.25544-1-digetx@gmail.com>
+References: <20191104215617.25544-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <44dcab5a136f5b046092e6ed456d8e206413059f.1572558427.git.leonard.crestez@nxp.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Oct 31, 2019 at 11:50:27PM +0200, Leonard Crestez wrote:
-> This is used by the imx-ddrc devfreq driver to implement dynamic
-> frequency scaling of DRAM.
-> 
-> Add a devfreq-event link to the dram PMU in order to support on-demand
-> scaling of ddrc based on measured dram bandwidth usage.
-> 
-> Support for proactive scaling via interconnect will come later. The
-> high-performance bus masters which need that (display, vpu, gpu) are not
-> yet enabled in upstream anyway.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> ---
->  arch/arm64/boot/dts/freescale/imx8mm-evk.dts  | 18 ++++++++++++++
->  arch/arm64/boot/dts/freescale/imx8mm.dtsi     | 17 ++++++++++++-
->  .../boot/dts/freescale/imx8mn-ddr4-evk.dts    | 18 ++++++++++++++
->  arch/arm64/boot/dts/freescale/imx8mn.dtsi     | 16 ++++++++++++-
->  arch/arm64/boot/dts/freescale/imx8mq-evk.dts  | 24 +++++++++++++++++++
->  arch/arm64/boot/dts/freescale/imx8mq.dtsi     | 16 ++++++++++++-
->  6 files changed, 106 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/arm64/boot/dts/freescale/imx8mm-evk.dts b/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
-> index 4f5e408d6e6a..be9abd8e4478 100644
-> --- a/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
-> +++ b/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
-> @@ -69,16 +69,34 @@
->  		simple-audio-card,codec {
->  			sound-dai = <&wm8524>;
->  			clocks = <&clk IMX8MM_CLK_SAI3_ROOT>;
->  		};
->  	};
-> +
-> +	ddrc_opp_table: ddrc-opp-table {
-> +		compatible = "operating-points-v2";
-> +
-> +		opp-25M {
-> +			opp-hz = /bits/ 64 <25000000>;
-> +		};
-> +		opp-100M {
-> +			opp-hz = /bits/ 64 <100000000>;
-> +		};
-> +		opp-750M {
-> +			opp-hz = /bits/ 64 <750000000>;
-> +		};
-> +	};
->  };
->  
->  &A53_0 {
->  	cpu-supply = <&buck2_reg>;
->  };
->  
-> +&ddrc {
-> +	operating-points-v2 = <&ddrc_opp_table>;
-> +};
-> +
->  &fec1 {
->  	pinctrl-names = "default";
->  	pinctrl-0 = <&pinctrl_fec1>;
->  	phy-mode = "rgmii-id";
->  	phy-handle = <&ethphy0>;
-> diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-> index 6edbdfe2d0d7..5404870d80d5 100644
-> --- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-> @@ -856,11 +856,26 @@
->  			#interrupt-cells = <3>;
->  			interrupt-controller;
->  			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
->  		};
->  
-> -		ddr-pmu@3d800000 {
-> +		ddrc: dram-controller@3d400000 {
-> +			compatible = "fsl,imx8mm-ddrc", "fsl,imx8m-ddrc";
-> +			reg = <0x3d400000 0x400000>;
+The ACTMON governor is interrupt-driven and currently hardware's polling
+interval is fixed to 16ms in the driver. Devfreq supports variable polling
+interval by the generic governors, let's re-use the generic interface for
+changing of the polling interval. Now the polling interval can be changed
+dynamically via /sys/class/devfreq/devfreq0/polling_interval.
 
-Do you really need the OS to map 4MB of register space? Virtual 
-space on 64-bit doesn't matter, but it's still wasting 2KB of memory 
-just to map all that if only a few pages are needed. Adds up if the 
-whole DT is done this way.
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/devfreq/tegra30-devfreq.c | 78 ++++++++++++++++++++++++++-----
+ 1 file changed, 66 insertions(+), 12 deletions(-)
 
-> +			clock-names = "dram_core",
-> +				      "dram_pll",
-> +				      "dram_alt",
-> +				      "dram_apb";
-> +			clocks = <&clk IMX8MM_CLK_DRAM_CORE>,
-> +				 <&clk IMX8MM_DRAM_PLL>,
-> +				 <&clk IMX8MM_CLK_DRAM_ALT>,
-> +				 <&clk IMX8MM_CLK_DRAM_APB>;
-> +			devfreq-events = <&ddr_pmu>;
-> +			operating-points-v2 = <&ddrc_opp_table>;
-> +		};
-> +
-> +		ddr_pmu: ddr-pmu@3d800000 {
->  			compatible = "fsl,imx8mm-ddr-pmu", "fsl,imx8m-ddr-pmu";
->  			reg = <0x3d800000 0x400000>;
->  			interrupt-parent = <&gic>;
->  			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
->  		};
-> diff --git a/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts b/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-> index 071949412caf..ab2060667671 100644
-> --- a/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-> +++ b/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
-> @@ -9,16 +9,34 @@
->  #include "imx8mn-evk.dtsi"
->  
->  / {
->  	model = "NXP i.MX8MNano DDR4 EVK board";
->  	compatible = "fsl,imx8mn-ddr4-evk", "fsl,imx8mn";
-> +
-> +	ddrc_opp_table: ddrc-opp-table {
+diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+index 3bd920829bfd..e44f1a48f838 100644
+--- a/drivers/devfreq/tegra30-devfreq.c
++++ b/drivers/devfreq/tegra30-devfreq.c
+@@ -171,6 +171,8 @@ struct tegra_devfreq {
+ 	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
+ 
+ 	unsigned int		irq;
++
++	bool			started;
+ };
+ 
+ struct tegra_actmon_emc_ratio {
+@@ -209,18 +211,26 @@ static void device_writel(struct tegra_devfreq_device *dev, u32 val,
+ 	writel_relaxed(val, dev->regs + offset);
+ }
+ 
+-static unsigned long do_percent(unsigned long val, unsigned int pct)
++static unsigned long do_percent(unsigned long long val, unsigned int pct)
+ {
+-	return val * pct / 100;
++	val = val * pct;
++	do_div(val, 100);
++
++	/*
++	 * High freq + high boosting percent + large polling interval are
++	 * resulting in integer overflow when watermarks are calculated.
++	 */
++	return min_t(u64, val, U32_MAX);
+ }
+ 
+ static void tegra_devfreq_update_avg_wmark(struct tegra_devfreq *tegra,
+ 					   struct tegra_devfreq_device *dev)
+ {
+-	u32 avg = dev->avg_count;
+ 	u32 avg_band_freq = tegra->max_freq * ACTMON_DEFAULT_AVG_BAND / KHZ;
+-	u32 band = avg_band_freq * ACTMON_SAMPLING_PERIOD;
++	u32 band = avg_band_freq * tegra->devfreq->profile->polling_ms;
++	u32 avg;
+ 
++	avg = min(dev->avg_count, U32_MAX - band);
+ 	device_writel(dev, avg + band, ACTMON_DEV_AVG_UPPER_WMARK);
+ 
+ 	avg = max(dev->avg_count, band);
+@@ -230,7 +240,7 @@ static void tegra_devfreq_update_avg_wmark(struct tegra_devfreq *tegra,
+ static void tegra_devfreq_update_wmark(struct tegra_devfreq *tegra,
+ 				       struct tegra_devfreq_device *dev)
+ {
+-	u32 val = tegra->cur_freq * ACTMON_SAMPLING_PERIOD;
++	u32 val = tegra->cur_freq * tegra->devfreq->profile->polling_ms;
+ 
+ 	device_writel(dev, do_percent(val, dev->config->boost_up_threshold),
+ 		      ACTMON_DEV_UPPER_WMARK);
+@@ -309,7 +319,7 @@ static unsigned long actmon_device_target_freq(struct tegra_devfreq *tegra,
+ 	unsigned int avg_sustain_coef;
+ 	unsigned long target_freq;
+ 
+-	target_freq = dev->avg_count / ACTMON_SAMPLING_PERIOD;
++	target_freq = dev->avg_count / tegra->devfreq->profile->polling_ms;
+ 	avg_sustain_coef = 100 * 100 / dev->config->boost_up_threshold;
+ 	target_freq = do_percent(target_freq, avg_sustain_coef);
+ 
+@@ -469,7 +479,7 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
+ 
+ 	dev->target_freq = tegra->cur_freq;
+ 
+-	dev->avg_count = tegra->cur_freq * ACTMON_SAMPLING_PERIOD;
++	dev->avg_count = tegra->cur_freq * tegra->devfreq->profile->polling_ms;
+ 	device_writel(dev, dev->avg_count, ACTMON_DEV_INIT_AVG);
+ 
+ 	tegra_devfreq_update_avg_wmark(tegra, dev);
+@@ -505,12 +515,15 @@ static void tegra_actmon_stop_devices(struct tegra_devfreq *tegra)
+ 	}
+ }
+ 
+-static int tegra_actmon_start(struct tegra_devfreq *tegra)
++static int tegra_actmon_resume(struct tegra_devfreq *tegra)
+ {
+ 	unsigned int i;
+ 	int err;
+ 
+-	actmon_writel(tegra, ACTMON_SAMPLING_PERIOD - 1,
++	if (!tegra->devfreq->profile->polling_ms || !tegra->started)
++		return 0;
++
++	actmon_writel(tegra, tegra->devfreq->profile->polling_ms - 1,
+ 		      ACTMON_GLB_PERIOD_CTRL);
+ 
+ 	/*
+@@ -558,8 +571,26 @@ static int tegra_actmon_start(struct tegra_devfreq *tegra)
+ 	return err;
+ }
+ 
+-static void tegra_actmon_stop(struct tegra_devfreq *tegra)
++static int tegra_actmon_start(struct tegra_devfreq *tegra)
+ {
++	int ret = 0;
++
++	if (!tegra->started) {
++		tegra->started = true;
++
++		ret = tegra_actmon_resume(tegra);
++		if (ret)
++			tegra->started = false;
++	}
++
++	return ret;
++}
++
++static void tegra_actmon_pause(struct tegra_devfreq *tegra)
++{
++	if (!tegra->devfreq->profile->polling_ms || !tegra->started)
++		return;
++
+ 	disable_irq(tegra->irq);
+ 
+ 	cpufreq_unregister_notifier(&tegra->cpu_rate_change_nb,
+@@ -572,6 +603,12 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
+ 	clk_notifier_unregister(tegra->emc_clock, &tegra->clk_rate_change_nb);
+ }
+ 
++static void tegra_actmon_stop(struct tegra_devfreq *tegra)
++{
++	tegra_actmon_pause(tegra);
++	tegra->started = false;
++}
++
+ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+ 				u32 flags)
+ {
+@@ -629,7 +666,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ 	stat->busy_time *= 100 / BUS_SATURATION_RATIO;
+ 
+ 	/* Number of cycles in a sampling period */
+-	stat->total_time = ACTMON_SAMPLING_PERIOD * cur_freq;
++	stat->total_time = tegra->devfreq->profile->polling_ms * cur_freq;
+ 
+ 	stat->busy_time = min(stat->busy_time, stat->total_time);
+ 
+@@ -637,7 +674,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ }
+ 
+ static struct devfreq_dev_profile tegra_devfreq_profile = {
+-	.polling_ms	= 0,
++	.polling_ms	= ACTMON_SAMPLING_PERIOD,
+ 	.target		= tegra_devfreq_target,
+ 	.get_dev_status	= tegra_devfreq_get_dev_status,
+ };
+@@ -677,6 +714,7 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
+ 					unsigned int event, void *data)
+ {
+ 	struct tegra_devfreq *tegra = dev_get_drvdata(devfreq->dev.parent);
++	unsigned int *new_delay = data;
+ 	int ret = 0;
+ 
+ 	/*
+@@ -696,6 +734,21 @@ static int tegra_governor_event_handler(struct devfreq *devfreq,
+ 		devfreq_monitor_stop(devfreq);
+ 		break;
+ 
++	case DEVFREQ_GOV_INTERVAL:
++		/*
++		 * ACTMON hardware supports up to 256 milliseconds for the
++		 * sampling period.
++		 */
++		if (*new_delay > 256) {
++			ret = -EINVAL;
++			break;
++		}
++
++		tegra_actmon_pause(tegra);
++		devfreq_interval_update(devfreq, new_delay);
++		ret = tegra_actmon_resume(tegra);
++		break;
++
+ 	case DEVFREQ_GOV_SUSPEND:
+ 		tegra_actmon_stop(tegra);
+ 		devfreq_monitor_suspend(devfreq);
+@@ -715,6 +768,7 @@ static struct devfreq_governor tegra_devfreq_governor = {
+ 	.get_target_freq = tegra_governor_get_target,
+ 	.event_handler = tegra_governor_event_handler,
+ 	.immutable = true,
++	.interrupt_driven = true,
+ };
+ 
+ static int tegra_devfreq_probe(struct platform_device *pdev)
+-- 
+2.23.0
 
-I think it would be better to put this under the ddrc node (and named 
-'opp-table'). Yes, it's kind of silly to have a phandle to a child node, 
-but that still works.
-
-> +		compatible = "operating-points-v2";
-> +
-> +		opp-25M {
-> +			opp-hz = /bits/ 64 <25000000>;
-> +		};
-> +		opp-100M {
-> +			opp-hz = /bits/ 64 <100000000>;
-> +		};
-> +		opp-600M {
-> +			opp-hz = /bits/ 64 <600000000>;
-> +		};
-> +	};
->  };
->  
->  &A53_0 {
->  	cpu-supply = <&buck2_reg>;
->  };
->  
-> +&ddrc {
-> +	operating-points-v2 = <&ddrc_opp_table>;
-> +};
-> +
->  &i2c1 {
->  	pmic@4b {
->  		compatible = "rohm,bd71847";
->  		reg = <0x4b>;
->  		pinctrl-0 = <&pinctrl_pmic>;
-> diff --git a/arch/arm64/boot/dts/freescale/imx8mn.dtsi b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-> index e91625063f8e..344dd777635f 100644
-> --- a/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-> @@ -757,11 +757,25 @@
->  			#interrupt-cells = <3>;
->  			interrupt-controller;
->  			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
->  		};
->  
-> -		ddr-pmu@3d800000 {
-> +		ddrc: dram-controller@3d400000 {
-> +			compatible = "fsl,imx8mn-ddrc", "fsl,imx8m-ddrc";
-> +			reg = <0x3d400000 0x400000>;
-> +			clock-names = "dram_core",
-> +				      "dram_pll",
-> +				      "dram_alt",
-> +				      "dram_apb";
-> +			clocks = <&clk IMX8MN_CLK_DRAM_CORE>,
-> +				 <&clk IMX8MN_DRAM_PLL>,
-> +				 <&clk IMX8MN_CLK_DRAM_ALT>,
-> +				 <&clk IMX8MN_CLK_DRAM_APB>;
-> +			devfreq-events = <&ddr_pmu>;
-> +		};
-> +
-> +		ddr_pmu: ddr-pmu@3d800000 {
->  			compatible = "fsl,imx8mn-ddr-pmu", "fsl,imx8m-ddr-pmu";
->  			reg = <0x3d800000 0x400000>;
->  			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
->  		};
->  	};
-> diff --git a/arch/arm64/boot/dts/freescale/imx8mq-evk.dts b/arch/arm64/boot/dts/freescale/imx8mq-evk.dts
-> index c36685916683..fc4c12ab8991 100644
-> --- a/arch/arm64/boot/dts/freescale/imx8mq-evk.dts
-> +++ b/arch/arm64/boot/dts/freescale/imx8mq-evk.dts
-> @@ -85,10 +85,30 @@
->  		link_codec: simple-audio-card,codec {
->  			sound-dai = <&wm8524>;
->  			clocks = <&clk IMX8MQ_CLK_SAI2_ROOT>;
->  		};
->  	};
-> +
-> +	ddrc_opp_table: ddrc-opp-table {
-> +		compatible = "operating-points-v2";
-> +
-> +		opp-25M {
-> +			opp-hz = /bits/ 64 <25000000>;
-> +		};
-> +		opp-100M {
-> +			opp-hz = /bits/ 64 <100000000>;
-> +		};
-> +		/*
-> +		 * On imx8mq B0 PLL can't be bypassed so low bus is 166M
-> +		 */
-> +		opp-166M {
-> +			opp-hz = /bits/ 64 <166935483>;
-> +		};
-> +		opp-800M {
-> +			opp-hz = /bits/ 64 <800000000>;
-> +		};
-> +	};
->  };
->  
->  &A53_0 {
->  	cpu-supply = <&buck2_reg>;
->  };
-> @@ -103,10 +123,14 @@
->  
->  &A53_3 {
->  	cpu-supply = <&buck2_reg>;
->  };
->  
-> +&ddrc {
-> +	operating-points-v2 = <&ddrc_opp_table>;
-> +};
-> +
->  &fec1 {
->  	pinctrl-names = "default";
->  	pinctrl-0 = <&pinctrl_fec1>;
->  	phy-mode = "rgmii-id";
->  	phy-handle = <&ethphy0>;
-> diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-> index 7f9319452b58..6ef1af41ef68 100644
-> --- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-> @@ -1111,11 +1111,25 @@
->  			interrupt-controller;
->  			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
->  			interrupt-parent = <&gic>;
->  		};
->  
-> -		ddr-pmu@3d800000 {
-> +		ddrc: dram-controller@3d400000 {
-> +			compatible = "fsl,imx8mq-ddrc", "fsl,imx8m-ddrc";
-> +			reg = <0x3d400000 0x400000>;
-> +			clock-names = "dram_core",
-> +				      "dram_pll",
-> +				      "dram_alt",
-> +				      "dram_apb";
-> +			clocks = <&clk IMX8MQ_CLK_DRAM_CORE>,
-> +				 <&clk IMX8MQ_DRAM_PLL_OUT>,
-> +				 <&clk IMX8MQ_CLK_DRAM_ALT>,
-> +				 <&clk IMX8MQ_CLK_DRAM_APB>;
-> +			devfreq-events = <&ddr_pmu>;
-> +		};
-> +
-> +		ddr_pmu: ddr-pmu@3d800000 {
->  			compatible = "fsl,imx8mq-ddr-pmu", "fsl,imx8m-ddr-pmu";
->  			reg = <0x3d800000 0x400000>;
->  			interrupt-parent = <&gic>;
->  			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
->  		};
-> -- 
-> 2.17.1
-> 
