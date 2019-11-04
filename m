@@ -2,85 +2,86 @@ Return-Path: <SRS0=IIwL=Y4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC2DACA9EA0
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 11:35:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7212FCA9ED3
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 11:47:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 777E321D81
-	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 11:35:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1572867306;
-	bh=fMz70i/DC2s3GKWV2m+cs1EhWtSNf/uB+zbGHhfKKXY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=bud7PgW74k2ByvEzCkDYgs0F4DCziygjZLmJdqQJS9Kv+Ir3YMAGiWj5t9RKfs47y
-	 tE+1V5CIUvdGLiJbBxJkatWTKizqI042mc1RUN3maa9M4leMq0DptSiqAK52JQ6jjg
-	 WSwrqOOqkNdye7tgP4/IDXUkSqTsUBsDSJUJ/4ns=
+	by mail.kernel.org (Postfix) with ESMTP id 540DA222C1
+	for <linux-pm@archiver.kernel.org>; Mon,  4 Nov 2019 11:47:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726526AbfKDLfF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 Nov 2019 06:35:05 -0500
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:42418 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726364AbfKDLfF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 06:35:05 -0500
-Received: by mail-ot1-f67.google.com with SMTP id b16so14064919otk.9
-        for <linux-pm@vger.kernel.org>; Mon, 04 Nov 2019 03:35:05 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=3T41h1XsLLHvSP9ZmI/zVvx/+EaAzjaN7MfLaCLo27o=;
-        b=TY4uVgyzCjR8BbsAV3LUBCB9UgGPbPWXGI76amKa1hfMcp/4x83hT1gxLi7eze7Tzl
-         vGEwTFskFkjoxh2FpQeuOmJz6zyD21TqZJmiDpN6J31oUZn47Ykuknm0wuxYO8iBZ/LB
-         /YmiIgj+yxGP2C51euoGTToNvsDA64Vj1BBOubKKBvKgfc9WPNSAB90C5iAikhw0o9Eo
-         E5fm5BeuGm/gMFBMAHI2lKp48uZSgiOXNGsH9796Eo8e7IznpBCaaGIUmMkJVnqmYu2W
-         b/eSP/SqkawZfg+NG/aPa0HeO0lrE1VAT/6kv0KeXjb4q2yURCSlbFqUdTZyLT8nxXnl
-         2w7A==
-X-Gm-Message-State: APjAAAXDhzVlsvc4d5oSbDKlt73RCNbEgWSM9nt/FmgcZbGuZMobyPWi
-        XALtwoTaB0DYYS5Tzp5Tv4Vp3xmNEhVpXJCkrBE=
-X-Google-Smtp-Source: APXvYqwa6JpC+DIXPVUHbtmmviajaSllnandc7mgFqJ3C9Zc/bz42PIPeIAGmm3ayVQRTRhoFrO+ASrOkh6BG+B3Euc=
-X-Received: by 2002:a9d:5907:: with SMTP id t7mr7680211oth.118.1572867304724;
- Mon, 04 Nov 2019 03:35:04 -0800 (PST)
+        id S1728850AbfKDLra (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 Nov 2019 06:47:30 -0500
+Received: from mail-sh.amlogic.com ([58.32.228.43]:27110 "EHLO
+        mail-sh.amlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727236AbfKDLr3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Nov 2019 06:47:29 -0500
+Received: from droid13.amlogic.com (116.236.93.172) by mail-sh.amlogic.com
+ (10.18.11.5) with Microsoft SMTP Server id 15.1.1591.10; Mon, 4 Nov 2019
+ 19:47:38 +0800
+From:   Jianxin Pan <jianxin.pan@amlogic.com>
+To:     Kevin Hilman <khilman@baylibre.com>,
+        <linux-amlogic@lists.infradead.org>
+CC:     Jianxin Pan <jianxin.pan@amlogic.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <devicetree@vger.kernel.org>, Jian Hu <jian.hu@amlogic.com>,
+        Hanjie Lin <hanjie.lin@amlogic.com>,
+        Victor Wan <victor.wan@amlogic.com>,
+        Xingyu Chen <xingyu.chen@amlogic.com>
+Subject: [PATCH v4 4/4] arm64: dts: meson: a1: add secure power domain controller
+Date:   Mon, 4 Nov 2019 19:47:08 +0800
+Message-ID: <1572868028-73076-5-git-send-email-jianxin.pan@amlogic.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1572868028-73076-1-git-send-email-jianxin.pan@amlogic.com>
+References: <1572868028-73076-1-git-send-email-jianxin.pan@amlogic.com>
 MIME-Version: 1.0
-References: <20191031131812.19427-1-rui.zhang@intel.com>
-In-Reply-To: <20191031131812.19427-1-rui.zhang@intel.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 4 Nov 2019 12:34:53 +0100
-Message-ID: <CAJZ5v0hLmPqZYXO_8488X2Z3CSony5rMM6b9y=UnHCVUTaAsZw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powercap/intel_rapl: add support for CometLake Mobile
-To:     Zhang Rui <rui.zhang@intel.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+X-Originating-IP: [116.236.93.172]
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Oct 31, 2019 at 2:18 PM Zhang Rui <rui.zhang@intel.com> wrote:
->
-> Add CometLake Mobile support in intel_rapl driver
->
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/powercap/intel_rapl_common.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-> index 94ddd7d659c8..cc1e82d513a9 100644
-> --- a/drivers/powercap/intel_rapl_common.c
-> +++ b/drivers/powercap/intel_rapl_common.c
-> @@ -978,6 +978,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
->         INTEL_CPU_FAM6(ICELAKE_NNPI, rapl_defaults_core),
->         INTEL_CPU_FAM6(ICELAKE_X, rapl_defaults_hsw_server),
->         INTEL_CPU_FAM6(ICELAKE_D, rapl_defaults_hsw_server),
-> +       INTEL_CPU_FAM6(COMETLAKE_L, rapl_defaults_core),
->
->         INTEL_CPU_FAM6(ATOM_SILVERMONT, rapl_defaults_byt),
->         INTEL_CPU_FAM6(ATOM_AIRMONT, rapl_defaults_cht),
-> --
+Enable power domain controller for Meson A1 SoC.
 
-Applying this and the [2/2] as 5.5 material, thanks!
+Signed-off-by: Jianxin Pan <jianxin.pan@amlogic.com>
+---
+ arch/arm64/boot/dts/amlogic/meson-a1.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/amlogic/meson-a1.dtsi b/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
+index 7210ad0..6fdc0dd 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-a1.dtsi
+@@ -5,6 +5,7 @@
+ 
+ #include <dt-bindings/interrupt-controller/irq.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/power/meson-a1-power.h>
+ 
+ / {
+ 	compatible = "amlogic,a1";
+@@ -93,6 +94,12 @@
+ 				clock-names = "xtal", "pclk", "baud";
+ 				status = "disabled";
+ 			};
++
++			pwrc: power-controller {
++				compatible = "amlogic,meson-a1-pwrc";
++				#power-domain-cells = <1>;
++				status = "okay";
++			};
+ 		};
+ 
+ 		gic: interrupt-controller@ff901000 {
+-- 
+2.7.4
+
