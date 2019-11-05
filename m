@@ -2,138 +2,103 @@ Return-Path: <SRS0=3CTz=Y5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1758DCA9ED5
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Nov 2019 06:06:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A173CA9EC7
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Nov 2019 06:08:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E1B9C2084D
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Nov 2019 06:06:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CC1D62084D
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Nov 2019 06:08:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="UX+opKRz"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="ErOLakDQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727063AbfKEGGe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Nov 2019 01:06:34 -0500
-Received: from gateway24.websitewelcome.com ([192.185.50.45]:23579 "EHLO
-        gateway24.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725800AbfKEGGe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2019 01:06:34 -0500
-X-Greylist: delayed 1442 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Nov 2019 01:06:33 EST
-Received: from cm10.websitewelcome.com (cm10.websitewelcome.com [100.42.49.4])
-        by gateway24.websitewelcome.com (Postfix) with ESMTP id B9DAC3CAC
-        for <linux-pm@vger.kernel.org>; Mon,  4 Nov 2019 23:42:30 -0600 (CST)
-Received: from br164.hostgator.com.br ([192.185.176.180])
-        by cmsmtp with SMTP
-        id Rrbqi3v5HHunhRrbqiVsJ6; Mon, 04 Nov 2019 23:42:30 -0600
-X-Authority-Reason: nr=8
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=castello.eng.br; s=default; h=Content-Transfer-Encoding:MIME-Version:
-        References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
-        Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=H+g7AYW8DqVIzvI+3N37//r3zkgiBk8GNs4olp1Yr9M=; b=UX+opKRzmQ0hfBrmm+lBq0dIxc
-        DgyS9mzqzhkYaQH9CWi9xVly43fnuIOkyxbGVzFFRdzNJQ3IAxApg/B4U20ygvHCIdSoy9r4she+o
-        5WDIioGMPtaQAnaUEwGSZmY+P7yq6KV01SG2yBEYfwvZg7Jl4mPyJUGFRMkkPXosb+kG0ND47a8hZ
-        VlnttIq9G29vYH5PbyFRmV8Z2uU4ugQtDopggFYbXP0L3U+IneO4UlM8VLUWsTBPMUbIJojzO58cN
-        b3DVADXZh5B4tVRh0aUB8vJAAx/TY7dzn8Un0SXk4oYNhIyQx2VrR9jkQckvktdZ9WKLuhZMF9/ps
-        BD8+fODg==;
-Received: from [191.31.196.28] (port=37450 helo=castello.castello)
-        by br164.hostgator.com.br with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
-        (Exim 4.92)
-        (envelope-from <matheus@castello.eng.br>)
-        id 1iRrbp-002sjK-Ve; Tue, 05 Nov 2019 02:42:30 -0300
-From:   Matheus Castello <matheus@castello.eng.br>
-To:     sre@kernel.org, krzk@kernel.org, robh+dt@kernel.org
-Cc:     mark.rutland@arm.com, cw00.choi@samsung.com,
-        b.zolnierkie@samsung.com, lee.jones@linaro.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Matheus Castello <matheus@castello.eng.br>
-Subject: [PATCH v5 2/5] dt-bindings: power: supply: Max17040: Add DT bindings for max17040 fuel gauge
-Date:   Tue,  5 Nov 2019 02:42:15 -0300
-Message-Id: <20191105054218.29826-3-matheus@castello.eng.br>
-X-Mailer: git-send-email 2.24.0.rc2
-In-Reply-To: <20191105054218.29826-1-matheus@castello.eng.br>
-References: <20191105015827.GA332@bogus>
- <20191105054218.29826-1-matheus@castello.eng.br>
+        id S1728515AbfKEGIV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Nov 2019 01:08:21 -0500
+Received: from fllv0015.ext.ti.com ([198.47.19.141]:36242 "EHLO
+        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725800AbfKEGIV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2019 01:08:21 -0500
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id xA568ADZ075972;
+        Tue, 5 Nov 2019 00:08:10 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1572934090;
+        bh=Lj8BuL9H7FwKRGUfF3Cm96AZFzlChHbAeMHo+XORVoY=;
+        h=Subject:To:CC:References:From:Date:In-Reply-To;
+        b=ErOLakDQbiDbOLj3bzCsc+GL6gKpscJhlH5/6IAu5lSYNGJbdQJ72jRR8cXMkX8Np
+         /zLi02UkEswhjGZxWaeFYeieseEHoPmWXr+9WKXBjPOaUZySYrxrkD93RsCEHfuM/1
+         JZ/KYzCCocAosFZyuySaxAHiaHuhJwY6pCScF14I=
+Received: from DFLE110.ent.ti.com (dfle110.ent.ti.com [10.64.6.31])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id xA568A60059425;
+        Tue, 5 Nov 2019 00:08:10 -0600
+Received: from DFLE110.ent.ti.com (10.64.6.31) by DFLE110.ent.ti.com
+ (10.64.6.31) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1713.5; Tue, 5 Nov
+ 2019 00:07:55 -0600
+Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE110.ent.ti.com
+ (10.64.6.31) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1713.5 via
+ Frontend Transport; Tue, 5 Nov 2019 00:07:55 -0600
+Received: from [172.24.191.45] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id xA5686kK089087;
+        Tue, 5 Nov 2019 00:08:07 -0600
+Subject: Re: [PATCH -next] thermal: ti-soc-thermal: Remove dev_err() on
+ platform_get_irq() failure
+To:     YueHaibing <yuehaibing@huawei.com>, <edubezval@gmail.com>,
+        <rui.zhang@intel.com>, <daniel.lezcano@linaro.org>,
+        <amit.kucheria@verdurent.com>
+CC:     <linux-pm@vger.kernel.org>, <linux-omap@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+References: <20191102075654.36700-1-yuehaibing@huawei.com>
+From:   Keerthy <j-keerthy@ti.com>
+Message-ID: <655d95c2-20d2-e03f-539e-32fbe69da9fc@ti.com>
+Date:   Tue, 5 Nov 2019 11:38:35 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - br164.hostgator.com.br
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - castello.eng.br
-X-BWhitelist: no
-X-Source-IP: 191.31.196.28
-X-Source-L: No
-X-Exim-ID: 1iRrbp-002sjK-Ve
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: (castello.castello) [191.31.196.28]:37450
-X-Source-Auth: matheus@castello.eng.br
-X-Email-Count: 40
-X-Source-Cap: Y2FzdGUyNDg7Y2FzdGUyNDg7YnIxNjQuaG9zdGdhdG9yLmNvbS5icg==
-X-Local-Domain: yes
+In-Reply-To: <20191102075654.36700-1-yuehaibing@huawei.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Documentation of max17040 based fuel gauge characteristics.
-For configure low level state of charge threshold alert signaled from
-max17043/max17044 we add "maxim,alert-low-soc-level" property.
 
-Signed-off-by: Matheus Castello <matheus@castello.eng.br>
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- .../power/supply/max17040_battery.txt         | 33 +++++++++++++++++++
- 1 file changed, 33 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-new file mode 100644
-index 000000000000..f2d0b22b5f79
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-@@ -0,0 +1,33 @@
-+max17040_battery
-+~~~~~~~~~~~~~~~~
-+
-+Required properties :
-+ - compatible : "maxim,max17040" or "maxim,max77836-battery"
-+ - reg: i2c slave address
-+
-+Optional properties :
-+- maxim,alert-low-soc-level :	The alert threshold that sets the state of
-+ 				charge level (%) where an interrupt is
-+				generated. Can be configured from 1 up to 32
-+				(%). If skipped the power up default value of
-+				4 (%) will be used.
-+- interrupts : 			Interrupt line see Documentation/devicetree/
-+				bindings/interrupt-controller/interrupts.txt
-+- wakeup-source :		This device has wakeup capabilities. Use this
-+				property to use alert low SOC level interrupt
-+				as wake up source.
-+
-+Optional properties support interrupt functionality for alert low state of
-+charge level, present in some ICs in the same family, and should be used with
-+compatible "maxim,max77836-battery".
-+
-+Example:
-+
-+	battery-fuel-gauge@36 {
-+		compatible = "maxim,max77836-battery";
-+		reg = <0x36>;
-+		maxim,alert-low-soc-level = <10>;
-+		interrupt-parent = <&gpio7>;
-+		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
-+		wakeup-source;
-+	};
---
-2.24.0.rc2
+On 02/11/19 1:26 PM, YueHaibing wrote:
+> platform_get_irq() will call dev_err() itself on failure,
+> so there is no need for the driver to also do this.
+> This is detected by coccinelle.
 
+Acked-by: Keerthy <j-keerthy@ti.com>
+
+> 
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> ---
+>   drivers/thermal/ti-soc-thermal/ti-bandgap.c | 5 ++---
+>   1 file changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> index 2fa78f7..89c3ba7 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -787,10 +787,9 @@ static int ti_bandgap_talert_init(struct ti_bandgap *bgp,
+>   	int ret;
+>   
+>   	bgp->irq = platform_get_irq(pdev, 0);
+> -	if (bgp->irq < 0) {
+> -		dev_err(&pdev->dev, "get_irq failed\n");
+> +	if (bgp->irq < 0)
+>   		return bgp->irq;
+> -	}
+> +
+>   	ret = request_threaded_irq(bgp->irq, NULL,
+>   				   ti_bandgap_talert_irq_handler,
+>   				   IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
+> 
