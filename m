@@ -2,268 +2,114 @@ Return-Path: <SRS0=3CTz=Y5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7C19C49EAB
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Nov 2019 09:59:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F5A9C010A2
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Nov 2019 10:32:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9FEF3217F5
-	for <linux-pm@archiver.kernel.org>; Tue,  5 Nov 2019 09:59:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1572947953;
-	bh=a//9Ivf1W2D94KgA+uVahfTNaNKk12rHld2i20WRf08=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=HwrVFosyljTr51d/35DDi+nru7cWM5eKk+v9t7KIXYC41wc1Zo622SG3GsJR9S5Jh
-	 YyNoGWtgkT12WYrNbPNYjkDgAZxOfxz3voSA3jzrDVsT+JYEEMP+VqLV5B4i2PUATa
-	 uG9ANFhYooKLoc6mAXt++xd8ZLe1x08Nfjeza/z0=
+	by mail.kernel.org (Postfix) with ESMTP id DE11721A4A
+	for <linux-pm@archiver.kernel.org>; Tue,  5 Nov 2019 10:32:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388055AbfKEJ7N (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 5 Nov 2019 04:59:13 -0500
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:42279 "EHLO
-        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730454AbfKEJ7M (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2019 04:59:12 -0500
-Received: by mail-ed1-f67.google.com with SMTP id m13so9300313edv.9;
-        Tue, 05 Nov 2019 01:59:09 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=EsQY1+FYq6hmp/aV3ZQ9R7RWQ2nr+29an3C9DMBubgw=;
-        b=NDbAMQDjrOTGJwtB6zZnPgPim1KpxpAi7BcYVeLuvLXcasuoVPNn4+hq6hDydtPa61
-         RcI5Pi6prEN8WbXO+x1Rd3bZunRN7My/NIoC3Hz331/vUKKSShCvaNATD7yDjVHjgLyC
-         kjNWPMjcyKIY4e3+wY+I04dmrwjgER0ADJphPKSDnvaToBYfTPhevraOHwPx+dS5+dny
-         hQB71hwABZnt68osbaggMbFLEkYBHp529kkZc7DI/a3RKa+8LRFbulM+DZdTdcS8li6W
-         hb6NnTiWe0tOruuIMg+nMP+o3VmJf7mMlGGRwrF889Oag/cwtFaRl8t+v5NO1Oha/RWY
-         rr4Q==
-X-Gm-Message-State: APjAAAVak+K8YPFSi88XlUmlIIpsGlEs00q1EF8MetC2KMJa1DCM/A9P
-        A8g6V4AiY0JQWojKqzT2zRk=
-X-Google-Smtp-Source: APXvYqym7iMcRcDXO9zIYTv1DLgDk242F6B4BEeeidEiTic9E35TdFMtHO5+wzp+4GPeyP9g0jbpsg==
-X-Received: by 2002:a17:906:3285:: with SMTP id 5mr27628244ejw.143.1572947948275;
-        Tue, 05 Nov 2019 01:59:08 -0800 (PST)
-Received: from pi3 ([194.230.155.180])
-        by smtp.googlemail.com with ESMTPSA id j19sm252942ejs.88.2019.11.05.01.59.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 05 Nov 2019 01:59:07 -0800 (PST)
-Date:   Tue, 5 Nov 2019 10:59:05 +0100
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Matheus Castello <matheus@castello.eng.br>
-Cc:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
-        cw00.choi@samsung.com, b.zolnierkie@samsung.com,
-        lee.jones@linaro.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 4/5] power: supply: max17040: Config alert SOC low
- level threshold from FDT
-Message-ID: <20191105095905.GA31721@pi3>
-References: <20191105015827.GA332@bogus>
- <20191105054218.29826-1-matheus@castello.eng.br>
- <20191105054218.29826-5-matheus@castello.eng.br>
+        id S2388666AbfKEKcX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 5 Nov 2019 05:32:23 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:63694 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388465AbfKEKcX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Nov 2019 05:32:23 -0500
+Received: from 79.184.254.83.ipv4.supernova.orange.pl (79.184.254.83) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
+ id fa89029b01134efa; Tue, 5 Nov 2019 11:32:21 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Bjorn Helgaas <helgaas@kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH 5/5] PCI: PM: Fold __pci_complete_power_transition() into its caller
+Date:   Tue, 05 Nov 2019 11:32:02 +0100
+Message-ID: <1769241.yKxyosiRnQ@kreacher>
+In-Reply-To: <2771503.n70vfTtcVb@kreacher>
+References: <2771503.n70vfTtcVb@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20191105054218.29826-5-matheus@castello.eng.br>
-User-Agent: Mutt/1.12.2 (2019-09-21)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 05, 2019 at 02:42:17AM -0300, Matheus Castello wrote:
-> For configuration of fuel gauge alert for a low level state of charge
-> interrupt we add a function to config level threshold and a device tree
-> binding property to set it in flatned device tree node.
-> 
-> Now we can use "maxim,alert-low-soc-level" property with the values from
-> 1% up to 32% to configure alert interrupt threshold.
-> 
-> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
-> ---
->  drivers/power/supply/max17040_battery.c | 96 +++++++++++++++++++++----
->  1 file changed, 82 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-> index 75459f76d02c..c48a691cbd7b 100644
-> --- a/drivers/power/supply/max17040_battery.c
-> +++ b/drivers/power/supply/max17040_battery.c
-> @@ -29,6 +29,9 @@
->  #define MAX17040_DELAY		1000
->  #define MAX17040_BATTERY_FULL	95
-> 
-> +#define MAX17040_ATHD_MASK		0xFFC0
-> +#define MAX17040_ATHD_DEFAULT_POWER_UP	4
-> +
->  struct max17040_chip {
->  	struct i2c_client		*client;
->  	struct delayed_work		work;
-> @@ -43,6 +46,8 @@ struct max17040_chip {
->  	int soc;
->  	/* State Of Charge */
->  	int status;
-> +	/* Low alert threshold from 32% to 1% of the State of Charge */
-> +	u32 low_soc_alert;
->  };
-> 
->  static int max17040_get_property(struct power_supply *psy,
-> @@ -99,6 +104,21 @@ static void max17040_reset(struct i2c_client *client)
->  	max17040_write_reg(client, MAX17040_CMD, 0x0054);
->  }
-> 
-> +static int max17040_set_low_soc_alert(struct i2c_client *client, u32 level)
-> +{
-> +	int ret;
-> +	u16 data;
-> +
-> +	level = 32 - level;
-> +	data = max17040_read_reg(client, MAX17040_RCOMP);
-> +	/* clear the alrt bit and set LSb 5 bits */
-> +	data &= MAX17040_ATHD_MASK;
-> +	data |= level;
-> +	ret = max17040_write_reg(client, MAX17040_RCOMP, data);
-> +
-> +	return ret;
-> +}
-> +
->  static void max17040_get_vcell(struct i2c_client *client)
->  {
->  	struct max17040_chip *chip = i2c_get_clientdata(client);
-> @@ -115,7 +135,6 @@ static void max17040_get_soc(struct i2c_client *client)
->  	u16 soc;
-> 
->  	soc = max17040_read_reg(client, MAX17040_SOC);
-> -
->  	chip->soc = (soc >> 8);
->  }
-> 
-> @@ -161,6 +180,24 @@ static void max17040_get_status(struct i2c_client *client)
->  		chip->status = POWER_SUPPLY_STATUS_FULL;
->  }
-> 
-> +static int max17040_get_of_data(struct max17040_chip *chip)
-> +{
-> +	struct device *dev = &chip->client->dev;
-> +	struct device_node *np = dev->of_node;
-> +	int ret = 0;
-> +
-> +	if (of_property_read_u32(np, "maxim,alert-low-soc-level",
-> +				 &chip->low_soc_alert)) {
-> +		chip->low_soc_alert = MAX17040_ATHD_DEFAULT_POWER_UP;
-> +	} else if (chip->low_soc_alert <= 0 ||
-> +			chip->low_soc_alert >= 33) {
-> +		/* low_soc_alert is not between 1% and 32% */
-> +		ret = -EINVAL;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
->  static void max17040_check_changes(struct i2c_client *client)
->  {
->  	max17040_get_vcell(client);
-> @@ -192,9 +229,27 @@ static irqreturn_t max17040_thread_handler(int id, void *dev)
->  	/* send uevent */
->  	power_supply_changed(chip->battery);
-> 
-> +	/* reset alert bit */
-> +	max17040_set_low_soc_alert(client, chip->low_soc_alert);
-> +
->  	return IRQ_HANDLED;
->  }
-> 
-> +static int max17040_enable_alert_irq(struct max17040_chip *chip)
-> +{
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It does not make really sense to move this code to separate function in
-this patch. This should be done in patch 1/5. Otherwise you add a code
-in patch 1 and later in patch 4 you immediately rearrange it. This
-raises eybrows and gives a hint that patchset is not well structured.
+Because pci_set_power_state() has become the only caller of
+__pci_complete_power_transition(), there is no need for the latter to
+be a separate function any more, so fold it into the former, drop a
+redundant check and reduce the number of lines of code somewhat.
 
-> +	struct i2c_client *client = chip->client;
-> +	unsigned int flags;
-> +	int ret;
-> +
-> +	dev_info(&client->dev, "IRQ: enabled\n");
+Code rearrangement, no intentional functional impact.
 
-While at it, get rid of dev_info here. It does not bring any useful
-information. All this is available in /proc/interrupts.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pci.c |   30 ++++++------------------------
+ 1 file changed, 6 insertions(+), 24 deletions(-)
 
-Best regards,
-Krzysztof
+Index: linux-pm/drivers/pci/pci.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci.c
++++ linux-pm/drivers/pci/pci.c
+@@ -1056,26 +1056,6 @@ void pci_bus_set_current_state(struct pc
+ }
+ 
+ /**
+- * __pci_complete_power_transition - Complete power transition of a PCI device
+- * @dev: PCI device to handle.
+- * @state: State to put the device into.
+- *
+- * This function should not be called directly by device drivers.
+- */
+-static int __pci_complete_power_transition(struct pci_dev *dev, pci_power_t state)
+-{
+-	int ret;
+-
+-	if (state <= PCI_D0)
+-		return -EINVAL;
+-	ret = pci_platform_power_transition(dev, state);
+-	/* Power off the bridge may power off the whole hierarchy */
+-	if (!ret && state == PCI_D3cold)
+-		pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
+-	return ret;
+-}
+-
+-/**
+  * pci_set_power_state - Set the power state of a PCI device
+  * @dev: PCI device to handle.
+  * @state: PCI power state (D0, D1, D2, D3hot) to put the device into.
+@@ -1094,7 +1074,7 @@ static int __pci_complete_power_transiti
+  */
+ int pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+ {
+-	int error;
++	int error, ret;
+ 
+ 	/* Bound the state we're entering */
+ 	if (state > PCI_D3cold)
+@@ -1132,10 +1112,12 @@ int pci_set_power_state(struct pci_dev *
+ 	error = pci_raw_set_power_state(dev, state > PCI_D3hot ?
+ 					PCI_D3hot : state);
+ 
+-	if (!__pci_complete_power_transition(dev, state))
+-		error = 0;
++	ret = pci_platform_power_transition(dev, state);
++	/* Powering off a bridge may power off the whole hierarchy */
++	if (!ret && state == PCI_D3cold)
++		pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
+ 
+-	return error;
++	return ret ? error : 0;
+ }
+ EXPORT_SYMBOL(pci_set_power_state);
+ 
 
-> +	flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
-> +	ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
-> +					max17040_thread_handler, flags,
-> +					chip->battery->desc->name, chip);
-> +
-> +	return ret;
-> +}
-> +
->  static enum power_supply_property max17040_battery_props[] = {
->  	POWER_SUPPLY_PROP_STATUS,
->  	POWER_SUPPLY_PROP_ONLINE,
-> @@ -216,6 +271,7 @@ static int max17040_probe(struct i2c_client *client,
->  	struct i2c_adapter *adapter = client->adapter;
->  	struct power_supply_config psy_cfg = {};
->  	struct max17040_chip *chip;
-> +	int ret;
-> 
->  	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
->  		return -EIO;
-> @@ -226,6 +282,12 @@ static int max17040_probe(struct i2c_client *client,
-> 
->  	chip->client = client;
->  	chip->pdata = client->dev.platform_data;
-> +	ret = max17040_get_of_data(chip);
-> +	if (ret) {
-> +		dev_err(&client->dev,
-> +			"failed: low SOC alert OF data out of bounds\n");
-> +		return ret;
-> +	}
-> 
->  	i2c_set_clientdata(client, chip);
->  	psy_cfg.drv_data = chip;
-> @@ -242,20 +304,26 @@ static int max17040_probe(struct i2c_client *client,
-> 
->  	/* check interrupt */
->  	if (client->irq) {
-> -		int ret;
-> -		unsigned int flags;
-> -
-> -		dev_info(&client->dev, "IRQ: enabled\n");
-> -		flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
-> -		ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
-> -						max17040_thread_handler, flags,
-> -						chip->battery->desc->name,
-> -						chip);
-> -
-> -		if (ret) {
-> -			client->irq = 0;
-> +		if (of_device_is_compatible(client->dev.of_node,
-> +					    "maxim,max77836-battery")) {
-> +			ret = max17040_set_low_soc_alert(client,
-> +							 chip->low_soc_alert);
-> +			if (ret) {
-> +				dev_err(&client->dev,
-> +					"Failed to set low SOC alert: err %d\n",
-> +					ret);
-> +				return ret;
-> +			}
-> +
-> +			ret = max17040_enable_alert_irq(chip);
-> +			if (ret) {
-> +				client->irq = 0;
-> +				dev_warn(&client->dev,
-> +					 "Failed to get IRQ err %d\n", ret);
-> +			}
-> +		} else {
->  			dev_warn(&client->dev,
-> -				"Failed to get IRQ err %d\n", ret);
-> +				 "Device not compatible for IRQ");
->  		}
->  	}
-> 
-> --
-> 2.24.0.rc2
-> 
+
+
