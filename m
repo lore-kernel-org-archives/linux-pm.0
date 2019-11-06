@@ -2,148 +2,111 @@ Return-Path: <SRS0=tRrS=Y6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91041C5DF64
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Nov 2019 11:57:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3735AC5DF62
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Nov 2019 12:32:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5EDB22075C
-	for <linux-pm@archiver.kernel.org>; Wed,  6 Nov 2019 11:57:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="AAj4HeqD"
+	by mail.kernel.org (Postfix) with ESMTP id F3A09218AE
+	for <linux-pm@archiver.kernel.org>; Wed,  6 Nov 2019 12:32:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1573043537;
+	bh=wSigpIcsnv/HBAcpwL8IbhbgAE3kmnu2T2+yNIIN2AI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=E87rORSkTZLIUp/UQVkWJFsVt0XVoa1plfD2R5i5xs3M/5S84HoXKeaC39f4Sx4U3
+	 f/0sdLIKWHFZn4ecjJIlOoNUD0co633p5HEAGYuakgIzYp8Nk8XpD0mMkZwJBHu7sU
+	 ciPqQRTHA+kgcNxBkQORWmdhBIg71sB7eTh1P7Pc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727906AbfKFL5f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 Nov 2019 06:57:35 -0500
-Received: from userp2130.oracle.com ([156.151.31.86]:38446 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727391AbfKFL5f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Nov 2019 06:57:35 -0500
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xA6BsBC5061334;
-        Wed, 6 Nov 2019 11:57:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references; s=corp-2019-08-05;
- bh=QVEFup4AnIoDyOHVkZA0dQXS1IbWCtRajrTPgCoUWZk=;
- b=AAj4HeqDaK7eGF1Wk0zlu/g+kDbsR3UIJS7mmk/XbMbdwDv5gyrsMIxWXrouYnhJpnbQ
- HU0r1jFUkkeVz4suntwMLrHtEl3REKYeOXgl7AODNwEVpzxUhjMPiWeEZ3YuPdnHBbhm
- WJyPH5J2nKQLVP9NxVwnwnx6pWu6Xy3WM63LYynuNug2GpBhLzN2JumEsiC5KIsPiw3m
- o5cLNRTMwstUiLku4qcRJKhKvBWhxGkWSWus7jwdWsFHUVoojd7F+eoj8efCHwXdGzKM
- Z85FY3G3osH6VohTZW2sf2RME5T/VZR6giYX1XO39t56KeCKWW6HKvlmJONZHsiwnfcY ew== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by userp2130.oracle.com with ESMTP id 2w117u5pfg-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 06 Nov 2019 11:57:17 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xA6Bv7WY057904;
-        Wed, 6 Nov 2019 11:57:17 GMT
-Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
-        by userp3020.oracle.com with ESMTP id 2w31639squ-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 06 Nov 2019 11:57:13 +0000
-Received: from abhmp0015.oracle.com (abhmp0015.oracle.com [141.146.116.21])
-        by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id xA6BtkeA002264;
-        Wed, 6 Nov 2019 11:55:46 GMT
-Received: from z2.cn.oracle.com (/10.182.71.218)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Wed, 06 Nov 2019 03:55:46 -0800
-From:   Zhenzhong Duan <zhenzhong.duan@oracle.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     pbonzini@redhat.com, rkrcmar@redhat.com,
-        rafael.j.wysocki@intel.com, joao.m.martins@oracle.com,
-        mtosatti@redhat.com, kvm@vger.kernel.org, linux-pm@vger.kernel.org,
-        Zhenzhong Duan <zhenzhong.duan@oracle.com>
-Subject: [PATCH RESEND v2 3/4] cpuidle-haltpoll: ensure cpu_halt_poll_us in right scope
-Date:   Wed,  6 Nov 2019 19:55:01 +0800
-Message-Id: <1573041302-4904-4-git-send-email-zhenzhong.duan@oracle.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1573041302-4904-1-git-send-email-zhenzhong.duan@oracle.com>
-References: <1573041302-4904-1-git-send-email-zhenzhong.duan@oracle.com>
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9432 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=1 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1908290000 definitions=main-1911060119
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9432 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=1 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1908290000
- definitions=main-1911060119
+        id S1731617AbfKFMcQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 Nov 2019 07:32:16 -0500
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:35312 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731055AbfKFMcP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Nov 2019 07:32:15 -0500
+Received: by mail-oi1-f193.google.com with SMTP id n16so20794235oig.2
+        for <linux-pm@vger.kernel.org>; Wed, 06 Nov 2019 04:32:14 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=FxMiecJXI2G4Dv4929CSvdZSpwrjHBHOvMuihDhu9Vk=;
+        b=gnWRgORntp8IPkOS14BHabiTJL6tPUF1Bilyu5J7SqNdtBiFSKPBAjYVorlIC+Vyc7
+         2ZJsHv+inrHkZY3Pccklc0gDjqy2b37n+9YpIOEzNE8uoGgERc3PnVxfgASaNfvDOIDD
+         GgbCAuN7qelPkOGzJpN0cAYKvXF1V60qCUvI5XWJFnQw0qUC+Mh9lBvo6V3JI1rHYU9g
+         FwLUQNnNyFDHW4WW5JcqrNdpr0loNjdHVUjtjAVaUHWtNigf+6/BHiHl9YLXL7O8ofdB
+         YXofl2lALxzWrvtvs6Gh1pafThCm87cTAFVy145tIk2FkpjezOIIJJOQofSD2XRnHlxj
+         +Mrg==
+X-Gm-Message-State: APjAAAUK9F5FW2iSD+2NZ47wVo4sjxBQmIBoEWv0G2lblfGPCKCgFGNw
+        IRwZSUKK0D8gmOVh6urPOq7atecMxOxfB3WddvM=
+X-Google-Smtp-Source: APXvYqyuuvYZY4B9YPN60odYfVbGfCXlsEd6r04ZlhLckXhLUQQzZ4b+Ifti9T0ZsGUpj/4d5vHn0xrcSByRlDDiUwU=
+X-Received: by 2002:aca:fdd8:: with SMTP id b207mr2106316oii.57.1573043533368;
+ Wed, 06 Nov 2019 04:32:13 -0800 (PST)
+MIME-Version: 1.0
+References: <1573026402-21032-1-git-send-email-shenkai8@huawei.com>
+In-Reply-To: <1573026402-21032-1-git-send-email-shenkai8@huawei.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 6 Nov 2019 13:32:02 +0100
+Message-ID: <CAJZ5v0h5t2Hv60Y77HaM6DgTS3-m2moNu3DOX4zp8S4YgpS_ag@mail.gmail.com>
+Subject: Re: [PATCH]cpufreq: add NULL check to the store method of cpufreq
+To:     Shen Kai <shenkai8@huawei.com>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, hushiyuan@huawei.com,
+        linfeilong@huawei.com, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As user can adjust guest_halt_poll_grow_start and guest_halt_poll_ns
-which leads to cpu_halt_poll_us beyond the two boundaries. This patch
-ensures cpu_halt_poll_us in that scope.
+On Wed, Nov 6, 2019 at 8:47 AM Shen Kai <shenkai8@huawei.com> wrote:
+>
+> From: shenkai <shenkai8@huawei.com>
 
-If guest_halt_poll_shrink is 0, shrink the cpu_halt_poll_us to
-guest_halt_poll_grow_start instead of 0. To disable poll we can set
-guest_halt_poll_ns to 0.
+Can you please use the proper spelling of your name here?
 
-If user wrongly set guest_halt_poll_grow_start > guest_halt_poll_ns > 0,
-guest_halt_poll_ns take precedency and poll time is a fixed value of
-guest_halt_poll_ns.
+>
+> Add NULL check in the store function here to avoid NULL callback invoking.
+> Though some interfaces of cpufreq are set as read-only, user can still get
+> write permission using chmod which can lead to a kernel crash.
+>
+> The following operations can lead to a kernel crash.
+>
+> chmod +w /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+> echo 1 >  /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+>
+> This bug was found on linux 4.19
+>
+> Signed-off-by: shenkai <shenkai8@huawei.com>
 
-Signed-off-by: Zhenzhong Duan <zhenzhong.duan@oracle.com>
----
- drivers/cpuidle/governors/haltpoll.c | 28 +++++++++++++---------------
- 1 file changed, 13 insertions(+), 15 deletions(-)
+And here?
 
-diff --git a/drivers/cpuidle/governors/haltpoll.c b/drivers/cpuidle/governors/haltpoll.c
-index 660859d..4a39df4 100644
---- a/drivers/cpuidle/governors/haltpoll.c
-+++ b/drivers/cpuidle/governors/haltpoll.c
-@@ -97,32 +97,30 @@ static int haltpoll_select(struct cpuidle_driver *drv,
- 
- static void adjust_poll_limit(struct cpuidle_device *dev, unsigned int block_us)
- {
--	unsigned int val;
-+	unsigned int val = dev->poll_limit_ns;
- 	u64 block_ns = block_us*NSEC_PER_USEC;
- 
- 	/* Grow cpu_halt_poll_us if
--	 * cpu_halt_poll_us < block_ns < guest_halt_poll_us
-+	 * cpu_halt_poll_us < block_ns <= guest_halt_poll_us
- 	 */
--	if (block_ns > dev->poll_limit_ns && block_ns <= guest_halt_poll_ns) {
-+	if (block_ns > dev->poll_limit_ns && block_ns <= guest_halt_poll_ns &&
-+	    guest_halt_poll_grow)
- 		val = dev->poll_limit_ns * guest_halt_poll_grow;
--
--		if (val < guest_halt_poll_grow_start)
--			val = guest_halt_poll_grow_start;
--		if (val > guest_halt_poll_ns)
--			val = guest_halt_poll_ns;
--
--		dev->poll_limit_ns = val;
--	} else if (block_ns > guest_halt_poll_ns &&
--		   guest_halt_poll_allow_shrink) {
-+	else if (block_ns > guest_halt_poll_ns &&
-+		 guest_halt_poll_allow_shrink) {
- 		unsigned int shrink = guest_halt_poll_shrink;
- 
--		val = dev->poll_limit_ns;
- 		if (shrink == 0)
--			val = 0;
-+			val = guest_halt_poll_grow_start;
- 		else
- 			val /= shrink;
--		dev->poll_limit_ns = val;
- 	}
-+	if (val < guest_halt_poll_grow_start)
-+		val = guest_halt_poll_grow_start;
-+	if (val > guest_halt_poll_ns)
-+		val = guest_halt_poll_ns;
-+
-+	dev->poll_limit_ns = val;
- }
- 
- /**
--- 
-1.8.3.1
+> Reported-by: linfeilong <linfeilong@huawei.com>
+> Reviewed-by: linfeilong <linfeilong@huawei.com>
 
+And the proper spelling of the reporter/reviewer name here too?
+
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index bffc11b..4ccaa96 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -947,6 +947,9 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
+>         struct freq_attr *fattr = to_attr(attr);
+>         ssize_t ret = -EINVAL;
+>
+> +       if (!fattr->store)
+> +               return ret;
+> +
+>         /*
+>          * cpus_read_trylock() is used here to work around a circular lock
+>          * dependency problem with respect to the cpufreq_register_driver().
+> --
+> 2.6.4.windows.1
+>
+>
