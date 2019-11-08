@@ -2,89 +2,89 @@ Return-Path: <SRS0=dFIf=ZA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42FAFC5DF60
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 19:32:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 825D4FA372C
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 19:40:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1ABDE206A3
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 19:32:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="exIRuS/S";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="ha96SRlV"
+	by mail.kernel.org (Postfix) with ESMTP id 50F012085B
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 19:40:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1573242002;
+	bh=4fvcXoQrLQoe/vprz0nZ+KmDe8Yp2GAbg+rTjWJa0aI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=T2O3We1cJnWE8MWf2odA4/kbV3jbps1/Tyl9UVRT7YBn0hVLyK4zEr/YnkPd57BxP
+	 lqYR02yVROkmPc53mI/fM754b/AskMv6LLrc2vxVMyLtaCtGtRGXcPhAJKniG6TOH6
+	 wjKhipykBvnwIgjfUeaEF4TwI7oGXFMrUrAWZ9go=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732104AbfKHTc1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Nov 2019 14:32:27 -0500
-Received: from smtp.codeaurora.org ([198.145.29.96]:55728 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732084AbfKHTc0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2019 14:32:26 -0500
-Received: by smtp.codeaurora.org (Postfix, from userid 1000)
-        id 02AD4612C1; Fri,  8 Nov 2019 19:32:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1573241546;
-        bh=ce7uFrqbivkUs8WW1oFPj3rAOkE1bz0MfUfo7m78NUA=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=exIRuS/SV5H1O3xegtrJnLzmdfMVQ619R2HM57Z/17MP8/SSMk0L9/8wEyQ1qD4/q
-         MDjixt7pTddbJMXA3wDlynWB822JmpptaGHuFppBniFKxvk8Wk10IhVMlamQL3dof5
-         Zu9nj+f/ytr3G82a3xhB4psdqY5vufp3dXiPcLUg=
-Received: from eberman-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        id S2388431AbfKHTkB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Nov 2019 14:40:01 -0500
+Received: from mail.kernel.org ([198.145.29.99]:58232 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2387400AbfKHTkB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 8 Nov 2019 14:40:01 -0500
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        (Authenticated sender: eberman@smtp.codeaurora.org)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 3AD7B60D5C;
-        Fri,  8 Nov 2019 19:32:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1573241545;
-        bh=ce7uFrqbivkUs8WW1oFPj3rAOkE1bz0MfUfo7m78NUA=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ha96SRlVptgcdnknaIhbpibTWOhAo7YYjB39ACciA8Ak3Tel0AgVR7NBfh+/R9/od
-         jUjwJLjoLjylvQQkmBz1mYl40WVmkMmNheGBUd6aMzRBUDyTvfn2mrFJDtPPKvgh4e
-         lY8se4hy/FwNFQu/ZXAGLCjEwVdhy51NM+NLW8C8=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 3AD7B60D5C
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=eberman@codeaurora.org
-From:   Elliot Berman <eberman@codeaurora.org>
-To:     sre@kernel.org, tkjos@google.com
-Cc:     tsoni@codeaurora.org, rananta@codeaurora.org,
-        bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Elliot Berman <eberman@codeaurora.org>
-Subject: [PATCH 2/2] power: reset: Enable tristate on restart power-off driver
-Date:   Fri,  8 Nov 2019 11:32:12 -0800
-Message-Id: <1573241532-21554-3-git-send-email-eberman@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1573241532-21554-1-git-send-email-eberman@codeaurora.org>
+        by mail.kernel.org (Postfix) with ESMTPSA id 9C789206A3;
+        Fri,  8 Nov 2019 19:40:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1573242001;
+        bh=4fvcXoQrLQoe/vprz0nZ+KmDe8Yp2GAbg+rTjWJa0aI=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=NhBIZm/6BG/c5T1CLVBHAKCtUg/vuja0uU0itTuGOvs1Yz9dTz6O/jC7PjO9G3b2Y
+         huKuAnTQ34FWmUsIifIsdISkRYEpjDSkuPT14s/KYG1HrHkSIonQ+6nJQIC6W1dClG
+         zVblPJbwpmXT2kDMsW5t9bsmC8jbHqeqw30DV748=
+Date:   Fri, 8 Nov 2019 20:39:58 +0100
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Elliot Berman <eberman@codeaurora.org>
+Cc:     sre@kernel.org, tkjos@google.com, tsoni@codeaurora.org,
+        rananta@codeaurora.org, bjorn.andersson@linaro.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/2] reboot: Export reboot_mode
+Message-ID: <20191108193958.GA1273544@kroah.com>
 References: <1573241532-21554-1-git-send-email-eberman@codeaurora.org>
+ <1573241532-21554-2-git-send-email-eberman@codeaurora.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1573241532-21554-2-git-send-email-eberman@codeaurora.org>
+User-Agent: Mutt/1.12.2 (2019-09-21)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since reboot_mode is an exported symbol, restart power-off driver can be
-compiled as module.
+On Fri, Nov 08, 2019 at 11:32:11AM -0800, Elliot Berman wrote:
+> Export reboot_mode to support DLKMs wishing to modify reboot_mode.
 
-Signed-off-by: Elliot Berman <eberman@codeaurora.org>
----
- drivers/power/reset/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+"DLKMs"?  What's that?
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index a564237..8db1d9d 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -150,7 +150,7 @@ config POWER_RESET_QNAP
- 	  Say Y if you have a QNAP NAS.
- 
- config POWER_RESET_RESTART
--	bool "Restart power-off driver"
-+	tristate "Restart power-off driver"
- 	help
- 	  Some boards don't actually have the ability to power off.
- 	  Instead they restart, and u-boot holds the SoC until the
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+A kernel module?
 
+> 
+> Signed-off-by: Elliot Berman <eberman@codeaurora.org>
+> ---
+>  kernel/reboot.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/kernel/reboot.c b/kernel/reboot.c
+> index c4d472b..6518370 100644
+> --- a/kernel/reboot.c
+> +++ b/kernel/reboot.c
+> @@ -32,7 +32,9 @@ EXPORT_SYMBOL(cad_pid);
+>  #define DEFAULT_REBOOT_MODE
+>  #endif
+>  enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
+> +EXPORT_SYMBOL(reboot_mode);
+>  enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
+> +EXPORT_SYMBOL(panic_reboot_mode);
+
+EXPORT_SYMBOL_GPL() perhaps?
+
+thanks,
+
+greg k-h
