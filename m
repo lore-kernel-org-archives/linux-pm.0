@@ -2,132 +2,116 @@ Return-Path: <SRS0=dFIf=ZA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD569C5DF60
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:56:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C852C5DF60
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:59:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A5267215EA
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:56:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573214187;
-	bh=n2Kq4bKS+TGDHgmOJCQsdltB/pApKesDKfkqxEbgnqE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=zmfagYndHO253jS4Fwp8zgsiJqwVtoeBmpB9lBneLvXMuSIo61mkjtUZ8w6VVqw/S
-	 2Ad5jOAh5BYt6hoIQSYFdommhygCF5gkXIyEmhcYNv/INAn1JJ64DeUylwJhYT17FH
-	 c556lWWlqHQdr5pIy3uQL/4dVstRNpC9eYv+BSdw=
+	by mail.kernel.org (Postfix) with ESMTP id F373C20869
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:59:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="MQkK6jcP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390178AbfKHL40 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Nov 2019 06:56:26 -0500
-Received: from mail.kernel.org ([198.145.29.99]:60938 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2391133AbfKHLpc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 Nov 2019 06:45:32 -0500
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 7FF1B20656;
-        Fri,  8 Nov 2019 11:45:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573213532;
-        bh=n2Kq4bKS+TGDHgmOJCQsdltB/pApKesDKfkqxEbgnqE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=rxxqHEp7ZUIxlxoToDOUi70/v5byEwUKLuHcyRlD2Zij1VLGfIOYwMp/wpFXBKiGV
-         uJjd5xSvCDkBVV5B+kTL8an8zyydL+9ie5ZjhWnka3Px+H5VKuhud32LMIgDq8ZCc+
-         jlapWuqvUXV5iFS1CmYxxP8WZ0Iex5rB7CGWpfRM=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 095/103] power: supply: ab8500_fg: silence uninitialized variable warnings
-Date:   Fri,  8 Nov 2019 06:43:00 -0500
-Message-Id: <20191108114310.14363-95-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191108114310.14363-1-sashal@kernel.org>
-References: <20191108114310.14363-1-sashal@kernel.org>
+        id S2389081AbfKHL7e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Nov 2019 06:59:34 -0500
+Received: from mail-ed1-f66.google.com ([209.85.208.66]:40270 "EHLO
+        mail-ed1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2390670AbfKHLoI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2019 06:44:08 -0500
+Received: by mail-ed1-f66.google.com with SMTP id p59so4766287edp.7
+        for <linux-pm@vger.kernel.org>; Fri, 08 Nov 2019 03:44:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:openpgp:message-id:date:mime-version
+         :in-reply-to:content-language:content-transfer-encoding;
+        bh=g/++kKVU7OFaHGAtlltoncuD16PbRuMbUQv6ZhSLLII=;
+        b=MQkK6jcPMk41V1f5zCzkH34OdDS4xlL7bw4LRqs5P3rbwFw8fnCjM3JmTDWj318k6e
+         FREhlTnJtMiseRK9li/i2KKex9+IDrAKyUH49jSGemHMZiWeInZS/lQMgOAn2dwsFhcM
+         6pyp1VxOrHReOPQT1pX26fYiRvsrjw7YtCK6JVZZYU+MpyJLWDqAdDmMOXEbxkMRHK5z
+         AQUBoWqPwGjInz7Mm2JBDo2MgBqzrdh6ffacLGDm0iN4TYJ2lY+F5o0KAEuQM0fpt9/v
+         2vyB0bXT+enHL6P3Up8bnfzV0dfbKDBtUQNSUWUmKO7kM6o8CHiZWLVmSKHp2yxDU6HK
+         RCNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:openpgp:message-id
+         :date:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=g/++kKVU7OFaHGAtlltoncuD16PbRuMbUQv6ZhSLLII=;
+        b=FDfsOdb6BpCN2GbygU05FxfuSfiHcjpwIbVJNB9M2DoN1+AqVhwxA2gfcCrphWsyjf
+         b0eIQl5MsmqT+qNebUWek9vm7VIe2Ez3td/KHkIyuj2NpuOeebYDeyCCerDm58oez+IK
+         JyJNfYSLuqfcDmO1EVE71jZ6aTMvU6GDzICzYmtAuxQ36bu6uSDKA2BKEJG+bsTEz17G
+         TFpRxzXj5br6E4g1vO7aFXjSKfcN0FCuQR65e1DyIe/mlM7d9kLo/e5eLj4zmgtcKFiD
+         060tQCm1C/Tf9RDe5/eNQZu4yLSZcbvg77OyXp1et0QqlAbc+inCBstU+++maWJPQqNH
+         RroA==
+X-Gm-Message-State: APjAAAV+LQSJ2Pw3958MYA0QnqqHWSzS88hIgpbD7CKioVufYqLNIwdo
+        wcVMbBn0p4izBvmTBdpyvy9eAS++0to=
+X-Google-Smtp-Source: APXvYqy+5wkvN8ghdz9sfdp3QIcwFKW0lcB/xb+gSdB1lui68o9slbwHKbtDEd8IikQ88ubpRW95zw==
+X-Received: by 2002:a17:906:278a:: with SMTP id j10mr8262538ejc.125.1573213446765;
+        Fri, 08 Nov 2019 03:44:06 -0800 (PST)
+Received: from [192.168.27.135] ([37.157.136.206])
+        by smtp.googlemail.com with ESMTPSA id d11sm123025edq.39.2019.11.08.03.44.05
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 08 Nov 2019 03:44:06 -0800 (PST)
+Subject: Re: [GIT PULL] interconnect changes for 5.5
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>
+References: <5123bf54-5d62-fc5c-8838-17bc34487d83@linaro.org>
+ <20191107142111.GB109902@kroah.com>
+ <0cb5a6a6-399f-99e3-dc41-50114eea4025@linaro.org>
+ <20191108103917.GB683302@kroah.com>
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+Openpgp: preference=signencrypt
+Message-ID: <77e2922b-162c-5554-57f5-85ba278371fe@linaro.org>
+Date:   Fri, 8 Nov 2019 13:44:05 +0200
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
+In-Reply-To: <20191108103917.GB683302@kroah.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+On 8.11.19 г. 12:39 ч., Greg Kroah-Hartman wrote:
+> On Thu, Nov 07, 2019 at 05:42:13PM +0200, Georgi Djakov wrote:
+>> Hi Greg,
+>>
+>> On 11/7/19 16:21, Greg Kroah-Hartman wrote:
+>>> On Thu, Nov 07, 2019 at 02:46:53PM +0200, Georgi Djakov wrote:
+>>>> Hi Greg,
+>>>>
+>>>> This is a pull request with interconnect patches for the 5.5 merge window.
+>>>> All patches have been for a while in linux-next without reported issues. The
+>>>> details are in the signed tag. Please consider pulling into char-misc-next.
+>>>
+>>> I don't know about
+>>> 0003-interconnect-Disallow-interconnect-core-to-be-built-.patch here.
+>>> Shouldn't you just fix up the dependancies of subsystems that rely on
+>>> this?  We are moving more and more to kernels that "just work" with
+>>> everything as modules, even on arm64 systems.  So forbiding the
+>>> interconnect code from being able to be built as a module does not feel
+>>> good to me at all.
+>>
+>> Thank you for commenting on this! The initial idea was to keep everything as
+>> modular as possible. The reasons behind this change is that other core
+>> frameworks like cpufreq (and possibly others) want to call the interconnect
+>> APIs. Some of these frameworks are built-in only and it would be easier to
+>> handle dependencies if interconnect core built-in too. Now each user that
+>> can be built-in has to specify in Kconfig that it depends on INTERCONNECT ||
+>> !INTERCONNECT.
+> 
+> That's fine, when those subsystems start to use those apis, that
+> dependency needs to be added.  Nothing new here, and you forcing it to
+> either be "on or off" isn't going to change that.  Let's do it correctly
+> please.
 
-[ Upstream commit 54baff8d4e5dce2cef61953b1dc22079cda1ddb1 ]
+Alright! That matches with what we do today. Thanks for the guidance!
 
-If kstrtoul() fails then we print "charge_full" when it's uninitialized.
-The debug printk doesn't add anything so I deleted it and cleaned these
-two functions up a bit.
-
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/power/supply/ab8500_fg.c | 31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
-index c569f82a00718..b87768238b702 100644
---- a/drivers/power/supply/ab8500_fg.c
-+++ b/drivers/power/supply/ab8500_fg.c
-@@ -2437,17 +2437,14 @@ static ssize_t charge_full_store(struct ab8500_fg *di, const char *buf,
- 				 size_t count)
- {
- 	unsigned long charge_full;
--	ssize_t ret;
-+	int ret;
- 
- 	ret = kstrtoul(buf, 10, &charge_full);
-+	if (ret)
-+		return ret;
- 
--	dev_dbg(di->dev, "Ret %zd charge_full %lu", ret, charge_full);
--
--	if (!ret) {
--		di->bat_cap.max_mah = (int) charge_full;
--		ret = count;
--	}
--	return ret;
-+	di->bat_cap.max_mah = (int) charge_full;
-+	return count;
- }
- 
- static ssize_t charge_now_show(struct ab8500_fg *di, char *buf)
-@@ -2459,20 +2456,16 @@ static ssize_t charge_now_store(struct ab8500_fg *di, const char *buf,
- 				 size_t count)
- {
- 	unsigned long charge_now;
--	ssize_t ret;
-+	int ret;
- 
- 	ret = kstrtoul(buf, 10, &charge_now);
-+	if (ret)
-+		return ret;
- 
--	dev_dbg(di->dev, "Ret %zd charge_now %lu was %d",
--		ret, charge_now, di->bat_cap.prev_mah);
--
--	if (!ret) {
--		di->bat_cap.user_mah = (int) charge_now;
--		di->flags.user_cap = true;
--		ret = count;
--		queue_delayed_work(di->fg_wq, &di->fg_periodic_work, 0);
--	}
--	return ret;
-+	di->bat_cap.user_mah = (int) charge_now;
-+	di->flags.user_cap = true;
-+	queue_delayed_work(di->fg_wq, &di->fg_periodic_work, 0);
-+	return count;
- }
- 
- static struct ab8500_fg_sysfs_entry charge_full_attr =
--- 
-2.20.1
-
+BR,
+Georgi
