@@ -2,132 +2,109 @@ Return-Path: <SRS0=dFIf=ZA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 406DDC5DF60
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 12:03:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8328FA372C
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 12:08:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 170A321924
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 12:03:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573214599;
-	bh=rCJCWlVVGLmwt2uICL+fQP9cUjdE8EIa3YhyInu72zs=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=qzq8vM7DdTt+0E2H8e7Lya5KRC1SBKvbDEEthLBNgdEujwXNsikRMdYk7j8tOOYJD
-	 8JWaZMBg/vTqHVtul0EwRtzEM8A+Q0HRB4fz9ssd8hq0t2rR2VzOF7f4/8HXPxDCaI
-	 fXW7DOnYxSAK1zRZIp0Xda6jUw2bx55FDJEfvFi0=
+	by mail.kernel.org (Postfix) with ESMTP id 9635E21848
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 12:08:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390189AbfKHMDN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Nov 2019 07:03:13 -0500
-Received: from mail.kernel.org ([198.145.29.99]:56928 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390151AbfKHLmq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 Nov 2019 06:42:46 -0500
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 2F3F4222C4;
-        Fri,  8 Nov 2019 11:42:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573213365;
-        bh=rCJCWlVVGLmwt2uICL+fQP9cUjdE8EIa3YhyInu72zs=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=nuTVWafa/dI6tg5yXPlDEgJtQ60KY13rOubD1tPTAOYjo00mbhpxCexk8V0nhKI0M
-         5DKW1XoiA/Kck+Gm5RzppFqydpj4EeCwW77WJsmeEiC3jF9xBP2OZDSdaL5ZWhhn1R
-         TV0N/OOx6Dx6dio8w2yfbahEn/+SgmB5NC769e+k=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 193/205] power: supply: ab8500_fg: silence uninitialized variable warnings
-Date:   Fri,  8 Nov 2019 06:37:40 -0500
-Message-Id: <20191108113752.12502-193-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191108113752.12502-1-sashal@kernel.org>
-References: <20191108113752.12502-1-sashal@kernel.org>
+        id S2388712AbfKHMI1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Nov 2019 07:08:27 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:48576 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732218AbfKHLkc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2019 06:40:32 -0500
+Received: from 79.184.254.83.ipv4.supernova.orange.pl (79.184.254.83) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
+ id c6a3f0ec310a8f1c; Fri, 8 Nov 2019 12:40:31 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     linux-pm@vger.kernel.org
+Subject: Re: [PATCH] PM / core: Cleanup some function definitions in power.h
+Date:   Fri, 08 Nov 2019 12:40:31 +0100
+Message-ID: <2547127.Nu07Onx00h@kreacher>
+In-Reply-To: <20191016141627.18642-1-ulf.hansson@linaro.org>
+References: <20191016141627.18642-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+On Wednesday, October 16, 2019 4:16:27 PM CET Ulf Hansson wrote:
+> The power.h is a bit messy due to the various existing CONFIG_PM* Kconfig
+> combinations. However the final section for wakeup_source_sysfs*() can be
+> moved inside one of the existing sections rather than adding yet another
+> one, so let's do that to clean up the code a little bit.
 
-[ Upstream commit 54baff8d4e5dce2cef61953b1dc22079cda1ddb1 ]
+Fair enough.
 
-If kstrtoul() fails then we print "charge_full" when it's uninitialized.
-The debug printk doesn't add anything so I deleted it and cleaned these
-two functions up a bit.
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/power.h | 30 ++++++++++++------------------
+>  1 file changed, 12 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+> index 39a06a0cfdaa..444f5c169a0b 100644
+> --- a/drivers/base/power/power.h
+> +++ b/drivers/base/power/power.h
+> @@ -117,6 +117,13 @@ static inline bool device_pm_initialized(struct device *dev)
+>  	return dev->power.in_dpm_list;
+>  }
+>  
+> +/* drivers/base/power/wakeup_stats.c */
+> +extern int wakeup_source_sysfs_add(struct device *parent,
+> +				   struct wakeup_source *ws);
+> +extern void wakeup_source_sysfs_remove(struct wakeup_source *ws);
+> +
+> +extern int pm_wakeup_source_sysfs_add(struct device *parent);
+> +
+>  #else /* !CONFIG_PM_SLEEP */
+>  
+>  static inline void device_pm_sleep_init(struct device *dev) {}
+> @@ -141,6 +148,11 @@ static inline bool device_pm_initialized(struct device *dev)
+>  	return device_is_registered(dev);
+>  }
+>  
+> +static inline int pm_wakeup_source_sysfs_add(struct device *parent)
+> +{
+> +	return 0;
+> +}
+> +
+>  #endif /* !CONFIG_PM_SLEEP */
+>  
+>  static inline void device_pm_init(struct device *dev)
+> @@ -149,21 +161,3 @@ static inline void device_pm_init(struct device *dev)
+>  	device_pm_sleep_init(dev);
+>  	pm_runtime_init(dev);
+>  }
+> -
+> -#ifdef CONFIG_PM_SLEEP
+> -
+> -/* drivers/base/power/wakeup_stats.c */
+> -extern int wakeup_source_sysfs_add(struct device *parent,
+> -				   struct wakeup_source *ws);
+> -extern void wakeup_source_sysfs_remove(struct wakeup_source *ws);
+> -
+> -extern int pm_wakeup_source_sysfs_add(struct device *parent);
+> -
+> -#else /* !CONFIG_PM_SLEEP */
+> -
+> -static inline int pm_wakeup_source_sysfs_add(struct device *parent)
+> -{
+> -	return 0;
+> -}
+> -
+> -#endif /* CONFIG_PM_SLEEP */
+> 
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/power/supply/ab8500_fg.c | 31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
+Applying as 5.5 material, thanks!
 
-diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
-index 02356f9b5f22a..8bb89c697c1eb 100644
---- a/drivers/power/supply/ab8500_fg.c
-+++ b/drivers/power/supply/ab8500_fg.c
-@@ -2433,17 +2433,14 @@ static ssize_t charge_full_store(struct ab8500_fg *di, const char *buf,
- 				 size_t count)
- {
- 	unsigned long charge_full;
--	ssize_t ret;
-+	int ret;
- 
- 	ret = kstrtoul(buf, 10, &charge_full);
-+	if (ret)
-+		return ret;
- 
--	dev_dbg(di->dev, "Ret %zd charge_full %lu", ret, charge_full);
--
--	if (!ret) {
--		di->bat_cap.max_mah = (int) charge_full;
--		ret = count;
--	}
--	return ret;
-+	di->bat_cap.max_mah = (int) charge_full;
-+	return count;
- }
- 
- static ssize_t charge_now_show(struct ab8500_fg *di, char *buf)
-@@ -2455,20 +2452,16 @@ static ssize_t charge_now_store(struct ab8500_fg *di, const char *buf,
- 				 size_t count)
- {
- 	unsigned long charge_now;
--	ssize_t ret;
-+	int ret;
- 
- 	ret = kstrtoul(buf, 10, &charge_now);
-+	if (ret)
-+		return ret;
- 
--	dev_dbg(di->dev, "Ret %zd charge_now %lu was %d",
--		ret, charge_now, di->bat_cap.prev_mah);
--
--	if (!ret) {
--		di->bat_cap.user_mah = (int) charge_now;
--		di->flags.user_cap = true;
--		ret = count;
--		queue_delayed_work(di->fg_wq, &di->fg_periodic_work, 0);
--	}
--	return ret;
-+	di->bat_cap.user_mah = (int) charge_now;
-+	di->flags.user_cap = true;
-+	queue_delayed_work(di->fg_wq, &di->fg_periodic_work, 0);
-+	return count;
- }
- 
- static struct ab8500_fg_sysfs_entry charge_full_attr =
--- 
-2.20.1
+
 
