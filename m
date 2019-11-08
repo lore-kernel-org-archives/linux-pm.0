@@ -2,190 +2,89 @@ Return-Path: <SRS0=dFIf=ZA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC4BFC5DF60
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 10:56:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2736C5DF60
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:05:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 82E54218AE
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 10:56:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B96D121924
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:05:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573210616;
-	bh=h+YQNCXUpiKIYR4cDyG7MP4Y2XncMarx0q08cfw4XtU=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=qDqHbZSGEDsXh/Hibq71rxpbPGSutY7Aas3dprq+pPAt4vIKs21QovbrtL5YR1ytp
-	 Vrb3fIb/k0HFfF79H8S0Z8lfCcvh5qe1nfqJCZ9dbgqunWIKnjdNPjQgSPfJVLW939
-	 2NiWnnXspnw/xmFcp32+Z+1aw3vYVQXCB7qMfvlI=
+	s=default; t=1573211116;
+	bh=MjWo6dMvGOtsdJD1m66Vq41P+/0nz5UASDJ/rbl+qZo=;
+	h=From:Date:Subject:To:Cc:List-ID:From;
+	b=JcxSv+PTwt5LYcBIkrIkIBRlbcNbJgu76li/e3mQtNNfChePotAZ9Dt+WlJ83FSG0
+	 II3u7+kxAgGBuX7eADN9aPHT5jtWIu3twYEH+kKhoAQbEzIPDZs8jFCQqMSgF+Pzmw
+	 5PeIsgJ95PUMyZhnSSXcQYJl8SvflxAV6cFi4/LI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726149AbfKHK44 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Nov 2019 05:56:56 -0500
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:45800 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729896AbfKHK4z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2019 05:56:55 -0500
-Received: by mail-ot1-f68.google.com with SMTP id r24so4800789otk.12;
-        Fri, 08 Nov 2019 02:56:55 -0800 (PST)
+        id S1731787AbfKHLFN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Nov 2019 06:05:13 -0500
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:34714 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731784AbfKHLFN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2019 06:05:13 -0500
+Received: by mail-oi1-f194.google.com with SMTP id l202so4903439oig.1;
+        Fri, 08 Nov 2019 03:05:12 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=jYFPsIc27u29Yjz0g3atZHfF9HksP2WvNGtvLYXFt4s=;
-        b=nnQVe2u52JrgdNm/ir/kYcrOLYo/Euc16m8pgOwvzIRxdjfxQ3PwUC60stiQTFxIRH
-         blcZbhG31m7jiio653pZW4NlFRhIrGzHdgg5QzGXHNajrdWXgz4LWe9/giW/kE25iZeN
-         LuPvh+pM4dAf8ZrbV/pXpYu/g4PH96cUiU5rR2TXVvGtguuuSi41LfLpOIT7ka6A1aCe
-         mFflPsNf48OcvxiUQ3WIrKpoStjadugceP2ZCXPFmsA10O08gIfLWZN9FB+f7vC2EWkS
-         u4k8iJOPcN9Dh/5rw1HGMiUkEEyQluvyEZFrSYrnzboqp2bf/py9fHWo5TnkKELQxpm7
-         N3rQ==
-X-Gm-Message-State: APjAAAUuqw4/n7DabOP3+H5DTATJJZ8+27u2yzOL47e4+cSmOp56V2Dt
-        +yk+DbNi0P+Nv9fKNZEG60WSHTCPvlGb2eFqksI=
-X-Google-Smtp-Source: APXvYqwzTm3wzOcGarzXjc0wFxFI7PdVtjXIwX5UA760FCYy/aDWzz6JWjT08ku65DSG1EKefuNwr1kUemHUEax+ySw=
-X-Received: by 2002:a05:6830:232a:: with SMTP id q10mr8033641otg.262.1573210614545;
- Fri, 08 Nov 2019 02:56:54 -0800 (PST)
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=3aTH1Z977b25oWGjuZ0H/5AYWBINoF8nmYXtAY/gL1M=;
+        b=qDrYv4CAE9TZIvOUHD/jNU9Ywd3T+mCJ0kTgsCMmDlPsoQFtUbP6RebY/lgrYfE9Je
+         2gsp5GAV4+ibcwoX+5oZ9V03IG6GiTa1LQ2YUL3U/ZQjL49XXhKDqLKBca0TRqLhZlCj
+         ZvUHQ5fuWgnniXN+3WRWxxceuh1MgPVXfGAqPfpNS4/smo9UEZirrj5cbtsTemMzmTWl
+         mI7rZL+62y6UQO7BeMpV2gzPATZYEG/lzoYwsQgubkEek1FYSXdH0HrxvSRl6v4ng5wL
+         tT3pRU5LKnVKUG4w9PAgkBYCk33eAbyfpYx9d6qQjM0CaIxhHNDrkLiwhThp7FFyPYuz
+         OI1w==
+X-Gm-Message-State: APjAAAX4VvsMcLcqMQ8rMPuvvmzxnVvf0c8Aq+PX/STPL0VTSTJQnIYR
+        THtUPlO0GH7QdHVIbe8BcKP6Nm89e0OqI7gFnSA=
+X-Google-Smtp-Source: APXvYqwm4cJl+Tjng1uo+7i3zAU990Nw38Gcd0+2psUThBjuGsUnGyYtPPbeEoP/Y5CrXW17PqUyMwGx9DiAk79SNRo=
+X-Received: by 2002:aca:530c:: with SMTP id h12mr4567158oib.110.1573211112276;
+ Fri, 08 Nov 2019 03:05:12 -0800 (PST)
 MIME-Version: 1.0
-References: <20191030075141.1039-1-daniel.lezcano@linaro.org>
- <20191030075141.1039-2-daniel.lezcano@linaro.org> <143021538.HHUP3Pj7i7@kreacher>
- <9dfe3bd3-1903-4dc4-0605-27cc867d87ad@linaro.org>
-In-Reply-To: <9dfe3bd3-1903-4dc4-0605-27cc867d87ad@linaro.org>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 8 Nov 2019 11:56:43 +0100
-Message-ID: <CAJZ5v0hLZ9O=QtZ+ktc-_Dk7aJjgD9BRLyYKw1g9Ze2n8KZyVQ@mail.gmail.com>
-Subject: Re: [PATCH V6 2/3] cpuidle: play_idle: Specify play_idle with an idle state
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Fri, 8 Nov 2019 12:05:01 +0100
+Message-ID: <CAJZ5v0hTxyzNAyEeeZfqu1XNcFY9mYeft9EnAP+zD6s7x0Csqg@mail.gmail.com>
+Subject: [GIT PULL] Power management fix for v5.4-rc7
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Nov 8, 2019 at 11:47 AM Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
->
-> On 08/11/2019 02:20, Rafael J. Wysocki wrote:
-> > On Wednesday, October 30, 2019 8:51:40 AM CET Daniel Lezcano wrote:
-> >> Currently, the play_idle function does not allow to tell which idle
-> >> state we want to go. Improve this by passing the idle state as
-> >> parameter to the function.
-> >>
-> >> Export cpuidle_find_deepest_state() symbol as it is used from the
-> >> intel_powerclamp driver as a module.
-> >>
-> >> There is no functional changes, the cpuidle state is the deepest one.
-> >>
-> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >> Acked-by: Mathieu Poirier <mathieu.poirier@linaro.org>
-> >> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >> ---
-> >>   V6:
-> >>    - Change variable name 'state' -> 'index':
-> >>      https://lkml.org/lkml/2019/10/28/874
-> >>   V4:
-> >>    - Add EXPORT_SYMBOL_GPL(cpuidle_find_deepest_state) for the
-> >>      intel_powerclamp driver when this one is compiled as a module
-> >>   V3:
-> >>    - Add missing cpuidle.h header
-> >> ---
-> >>  drivers/cpuidle/cpuidle.c                | 1 +
-> >>  drivers/powercap/idle_inject.c           | 4 +++-
-> >>  drivers/thermal/intel/intel_powerclamp.c | 4 +++-
-> >>  include/linux/cpu.h                      | 2 +-
-> >>  kernel/sched/idle.c                      | 4 ++--
-> >>  5 files changed, 10 insertions(+), 5 deletions(-)
-> >>
-> >> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> >> index 18523ea6b11b..b871fc2e8e67 100644
-> >> --- a/drivers/cpuidle/cpuidle.c
-> >> +++ b/drivers/cpuidle/cpuidle.c
-> >> @@ -126,6 +126,7 @@ int cpuidle_find_deepest_state(void)
-> >>
-> >>      return find_deepest_state(drv, dev, UINT_MAX, 0, false);
-> >>  }
-> >> +EXPORT_SYMBOL_GPL(cpuidle_find_deepest_state);
-> >
-> > That doesn't appear to be really necessary to me.
-> >
-> >>
-> >>  #ifdef CONFIG_SUSPEND
-> >>  static void enter_s2idle_proper(struct cpuidle_driver *drv,
-> >> diff --git a/drivers/powercap/idle_inject.c b/drivers/powercap/idle_inject.c
-> >> index cd1270614cc6..233c878cbf46 100644
-> >> --- a/drivers/powercap/idle_inject.c
-> >> +++ b/drivers/powercap/idle_inject.c
-> >> @@ -38,6 +38,7 @@
-> >>  #define pr_fmt(fmt) "ii_dev: " fmt
-> >>
-> >>  #include <linux/cpu.h>
-> >> +#include <linux/cpuidle.h>
-> >>  #include <linux/hrtimer.h>
-> >>  #include <linux/kthread.h>
-> >>  #include <linux/sched.h>
-> >> @@ -138,7 +139,8 @@ static void idle_inject_fn(unsigned int cpu)
-> >>       */
-> >>      iit->should_run = 0;
-> >>
-> >> -    play_idle(READ_ONCE(ii_dev->idle_duration_us));
-> >> +    play_idle(READ_ONCE(ii_dev->idle_duration_us),
-> >> +              cpuidle_find_deepest_state());
-> >
-> > The next patch changes this again and I'm not sure why this intermediate
-> > change is useful.
-> >
-> >>  }
-> >>
-> >>  /**
-> >> diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
-> >> index 53216dcbe173..b55786c169ae 100644
-> >> --- a/drivers/thermal/intel/intel_powerclamp.c
-> >> +++ b/drivers/thermal/intel/intel_powerclamp.c
-> >> @@ -29,6 +29,7 @@
-> >>  #include <linux/delay.h>
-> >>  #include <linux/kthread.h>
-> >>  #include <linux/cpu.h>
-> >> +#include <linux/cpuidle.h>
-> >>  #include <linux/thermal.h>
-> >>  #include <linux/slab.h>
-> >>  #include <linux/tick.h>
-> >> @@ -430,7 +431,8 @@ static void clamp_idle_injection_func(struct kthread_work *work)
-> >>      if (should_skip)
-> >>              goto balance;
-> >>
-> >> -    play_idle(jiffies_to_usecs(w_data->duration_jiffies));
-> >> +    play_idle(jiffies_to_usecs(w_data->duration_jiffies),
-> >> +              cpuidle_find_deepest_state());
-> >
-> > I don't see a reason for changing the code here like this.
-> >
-> > What you really need is to have a way to set a limit on the idle
-> > state exit latency for idle injection on ARM.
->
-> Mmh, yes you are right. The idle state number is part of the internals
-> of the cpuidle framework while the exit latency is an input (from user
-> or kernel).
->
-> > For that you can pass the exit latency limit to play_idle(), but then
-> > you need to change powerclamp to pass UNIT_MAX or similar which is
-> > ugly, or you can redefine cpuidle_use_deepest_state() to take the
-> > exit latency limit as the arg (with 0 meaning use_deepest_state == false).
->
-> Should it make sense to just get the resume latency in
-> cpuidle_use_deepest_state() and pass the value to find_deepest_state()?
+Hi Linus,
 
-Yes, I would change cpuidle_use_deepest_state() to take the max exit
-latency as the arg (maybe with 0 meaning "don't use the deepest state
-only any more").
+Please pull from the tag
 
-> It is the only code path where the constraint is not taken into account
-> AFAICT.
->
-> With this simple change, we can manage everything from the pm_qos API
-> then and this series is no longer needed.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-5.4-rc7
 
-OK
+with top-most commit c31432fa7f825de0e19838f1ac7746381c509ec4
+
+ cpufreq: intel_pstate: Fix invalid EPB setting
+
+on top of commit a99d8080aaf358d5d23581244e5da23b35e340b9
+
+ Linux 5.4-rc6
+
+to receive a power management fix for 5.4-rc7.
+
+This fixes an "unchecked MSR access" warning in the intel_pstate
+cpufreq driver (Srinivas Pandruvada).
+
+Thanks!
+
+
+---------------
+
+Srinivas Pandruvada (1):
+      cpufreq: intel_pstate: Fix invalid EPB setting
+
+---------------
+
+ drivers/cpufreq/intel_pstate.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
