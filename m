@@ -2,132 +2,58 @@ Return-Path: <SRS0=dFIf=ZA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DC9CFC6194
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:47:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25C0CFC6194
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:50:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 552C42245A
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:47:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573213633;
-	bh=lxaBYjJ5B0CHoLiYBCq+c4Te2XzDh6prC0xrVXJ31bc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=idZeroUFt/vjneAPLqcHFuFAr0xON4TntMbgcXpGPAHNrNHTVsxwQM4z+BMoG0KlV
-	 kY5M5TdEB6Jl/hBxwhGezIDXNgJ5dNQc1v6HG2qaa0jXg+7u06TXnwQ4ci2eF7imXO
-	 tAxeCH5RXsZCwhwjlsAf07mCJFGh4hb2/3o+rG8c=
+	by mail.kernel.org (Postfix) with ESMTP id 03B4A222CE
+	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 11:50:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391500AbfKHLrL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Nov 2019 06:47:11 -0500
-Received: from mail.kernel.org ([198.145.29.99]:35452 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2391456AbfKHLrL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 Nov 2019 06:47:11 -0500
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 7416F222C2;
-        Fri,  8 Nov 2019 11:47:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573213630;
-        bh=lxaBYjJ5B0CHoLiYBCq+c4Te2XzDh6prC0xrVXJ31bc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=V5gHJwS17Cy/EYOse9LSdSnvWlw1fmKNfq0v9j+6cNwLaKfPz0UmFamFVa0QhQ1e0
-         KL5WyHXoLna94JJCS8/N8RGaj/ZirlDjUVp8PqiuMzec3i2/ySuAlYCI0if/Wp+HQz
-         tEq/WqDz1J+0KWKnblXFrb6RXo5eMCYPCaC+rZQc=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 57/64] power: supply: ab8500_fg: silence uninitialized variable warnings
-Date:   Fri,  8 Nov 2019 06:45:38 -0500
-Message-Id: <20191108114545.15351-57-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191108114545.15351-1-sashal@kernel.org>
-References: <20191108114545.15351-1-sashal@kernel.org>
+        id S2390798AbfKHLuD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Nov 2019 06:50:03 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:63750 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388183AbfKHLuC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2019 06:50:02 -0500
+Received: from 79.184.254.83.ipv4.supernova.orange.pl (79.184.254.83) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
+ id 1a3ae1af6712ba25; Fri, 8 Nov 2019 12:49:59 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Bjorn Helgaas <helgaas@kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH 0/5] PCI: PM: Cleanups related to power state changes
+Date:   Fri, 08 Nov 2019 12:49:59 +0100
+Message-ID: <10030157.3aYrIYsZTJ@kreacher>
+In-Reply-To: <20191106190250.GA238633@google.com>
+References: <20191106190250.GA238633@google.com>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+On Wednesday, November 6, 2019 8:02:50 PM CET Bjorn Helgaas wrote:
+> On Tue, Nov 05, 2019 at 11:11:57AM +0100, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > This series rearranges some PCI power management code to make it somewhat
+> > easier to follow and explicitly consolidate the power-up (transitions to
+> > D0) code path.
+> > 
+> > It is not intended to change the functionality of the code.
+> 
+> Applied with Mika's reviewed-by to pci/pm for v5.5, thanks!
 
-[ Upstream commit 54baff8d4e5dce2cef61953b1dc22079cda1ddb1 ]
+Any chance to push this out, though?  That would help with integration/testing
+a bit ...
 
-If kstrtoul() fails then we print "charge_full" when it's uninitialized.
-The debug printk doesn't add anything so I deleted it and cleaned these
-two functions up a bit.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/power/supply/ab8500_fg.c | 31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
-index 2199f673118c0..ea8c26a108f00 100644
---- a/drivers/power/supply/ab8500_fg.c
-+++ b/drivers/power/supply/ab8500_fg.c
-@@ -2437,17 +2437,14 @@ static ssize_t charge_full_store(struct ab8500_fg *di, const char *buf,
- 				 size_t count)
- {
- 	unsigned long charge_full;
--	ssize_t ret;
-+	int ret;
- 
- 	ret = kstrtoul(buf, 10, &charge_full);
-+	if (ret)
-+		return ret;
- 
--	dev_dbg(di->dev, "Ret %zd charge_full %lu", ret, charge_full);
--
--	if (!ret) {
--		di->bat_cap.max_mah = (int) charge_full;
--		ret = count;
--	}
--	return ret;
-+	di->bat_cap.max_mah = (int) charge_full;
-+	return count;
- }
- 
- static ssize_t charge_now_show(struct ab8500_fg *di, char *buf)
-@@ -2459,20 +2456,16 @@ static ssize_t charge_now_store(struct ab8500_fg *di, const char *buf,
- 				 size_t count)
- {
- 	unsigned long charge_now;
--	ssize_t ret;
-+	int ret;
- 
- 	ret = kstrtoul(buf, 10, &charge_now);
-+	if (ret)
-+		return ret;
- 
--	dev_dbg(di->dev, "Ret %zd charge_now %lu was %d",
--		ret, charge_now, di->bat_cap.prev_mah);
--
--	if (!ret) {
--		di->bat_cap.user_mah = (int) charge_now;
--		di->flags.user_cap = true;
--		ret = count;
--		queue_delayed_work(di->fg_wq, &di->fg_periodic_work, 0);
--	}
--	return ret;
-+	di->bat_cap.user_mah = (int) charge_now;
-+	di->flags.user_cap = true;
-+	queue_delayed_work(di->fg_wq, &di->fg_periodic_work, 0);
-+	return count;
- }
- 
- static struct ab8500_fg_sysfs_entry charge_full_attr =
--- 
-2.20.1
 
