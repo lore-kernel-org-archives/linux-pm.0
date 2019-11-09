@@ -1,90 +1,106 @@
-Return-Path: <SRS0=dFIf=ZA=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=JWG1=ZB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C74BC17441
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 23:41:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60065C17440
+	for <linux-pm@archiver.kernel.org>; Sat,  9 Nov 2019 00:18:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 07378215EA
-	for <linux-pm@archiver.kernel.org>; Fri,  8 Nov 2019 23:41:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 305FD215EA
+	for <linux-pm@archiver.kernel.org>; Sat,  9 Nov 2019 00:18:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="i+fuSzJF";
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=codeaurora.org header.i=@codeaurora.org header.b="a8Rxa7sf"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WWBipmWU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726640AbfKHXlH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 Nov 2019 18:41:07 -0500
-Received: from smtp.codeaurora.org ([198.145.29.96]:38790 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727497AbfKHXlA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2019 18:41:00 -0500
-Received: by smtp.codeaurora.org (Postfix, from userid 1000)
-        id 2C0B661431; Fri,  8 Nov 2019 23:41:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1573256460;
-        bh=Tx7ydNVYcAhAUVVQSsDerUIhj463VOZnpzpEyLdGsVM=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=i+fuSzJFebMPm442ya5GwFywLAyNOhqg2k5btAgRG9EwasCOnvjkboj8fNC8jyiI2
-         1/zMvXje32tW5KSCArq/KRMnQxXjmkZWLjP8HGBNYnMp8c13z5RbFMyNwJrYV0runx
-         l+mWbWxrq3nRImNGwtdMJdqtj3DLMaF8nlcQCXck=
-Received: from eberman-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: eberman@smtp.codeaurora.org)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 6E25C613EB;
-        Fri,  8 Nov 2019 23:40:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=codeaurora.org;
-        s=default; t=1573256459;
-        bh=Tx7ydNVYcAhAUVVQSsDerUIhj463VOZnpzpEyLdGsVM=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=a8Rxa7sfmGjnRpjLIRwpcFozdHJjcMVWssJYkU2QaxWJ+i/FZwg3Dn1HCrDpWltOM
-         5q+k5A4+iHTSWz+cCh5eCyvyYlu5iE2evQd9uqyb0PAs69az9KB5ufy86KynC+XdiU
-         5PIt0Brdji3Z09RWo+7hg/g1/Yjj/06/TCFCwMIc=
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 6E25C613EB
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: pdx-caf-mail.web.codeaurora.org; spf=none smtp.mailfrom=eberman@codeaurora.org
-From:   Elliot Berman <eberman@codeaurora.org>
-To:     sre@kernel.org, tkjos@google.com, gregkh@linuxfoundation.org
-Cc:     tsoni@codeaurora.org, rananta@codeaurora.org,
-        bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Elliot Berman <eberman@codeaurora.org>
-Subject: [PATCH v2 1/2] reboot: Export reboot_mode
-Date:   Fri,  8 Nov 2019 15:40:51 -0800
-Message-Id: <1573256452-14838-2-git-send-email-eberman@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1573256452-14838-1-git-send-email-eberman@codeaurora.org>
+        id S1726804AbfKIASg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 Nov 2019 19:18:36 -0500
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:38732 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726095AbfKIASg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Nov 2019 19:18:36 -0500
+Received: by mail-pf1-f196.google.com with SMTP id c13so6054238pfp.5
+        for <linux-pm@vger.kernel.org>; Fri, 08 Nov 2019 16:18:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=DLA227JSDThrqcDvBPe+ZMoWdBImgX3jObiKE0Xgwkw=;
+        b=WWBipmWU1An5/dBytWXyJRDgQfp1e7XO7x+Zcu8uWWcIUTFbRsUuR/c1B8rdMdqJGk
+         A2GvlLA6727EJEWOBmdFj+q1HIVPS57BehxiESPbFe6Fwn4mFkCBg4Ds3neXCNHNqdqt
+         rpsZq1sw9EL01jxWESNQ0ViHR7/NeGKdcdc5ssS4DbQRmszYFlXYHGy5rZh/TUwjQGPQ
+         MCNh00+E5/jUtFfdYCMO94th9hMr76d2zJRIjpVzBs6M5ubrDZgJ1vFsmjgZFb/u0pB/
+         7NesZB7n+FmCBfiZpdGEeQ6ee1g2Zbj4VvBhrm+/TD6AhxJBiELMCUv3oOqEX0bbZbkd
+         +OQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=DLA227JSDThrqcDvBPe+ZMoWdBImgX3jObiKE0Xgwkw=;
+        b=oz8xPEwk+gFw7jNDkPdEtzlXpgkpMB+KxICb2rw49CXp7GanToIYkHaVlejqjAHUH0
+         q56bqpl2cD+9d8U4ASLY2mQZSNHr39K9oiAh8j/IdCgqjyuSEVVqjDp60XS/aIl3/a+q
+         sjouEadeAyc7THOYW4wCLcwSKP+rRTf+oTa63fZt5NmzQVxEQtQ30m976/GjvuC4mHBR
+         Go8fhW2C35PM+dWu+qa0+flDmXmAxLUr80UC+AWb5iNTeGYo2VBR9a9D7UNK2F3Pzmy0
+         WOif+eixc8Y0FzSM9yhX5dqszrIm/ZzblO3Q+/wWfNGPv+AjitNhysvwQ8kM1HJUQJBp
+         FufA==
+X-Gm-Message-State: APjAAAXqiJyaIHnvG5BZ1C59ATdGvEcXdMciOGbt2GzAq1hx6+Zki7LF
+        kqh/VTcw41Pp0P+ARJ3/ve9+/Q==
+X-Google-Smtp-Source: APXvYqxtM4kW+4iOrGcT90S2hhiMLXIK3ueLusLgB5r8wnxQkOJWuHvgSLcX+HoRFUPSGI2nIbPUrQ==
+X-Received: by 2002:a17:90a:e651:: with SMTP id ep17mr10060962pjb.74.1573258715438;
+        Fri, 08 Nov 2019 16:18:35 -0800 (PST)
+Received: from tuxbook-pro (104-188-17-28.lightspeed.sndgca.sbcglobal.net. [104.188.17.28])
+        by smtp.gmail.com with ESMTPSA id p7sm7178343pjp.4.2019.11.08.16.18.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 08 Nov 2019 16:18:34 -0800 (PST)
+Date:   Fri, 8 Nov 2019 16:18:32 -0800
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Elliot Berman <eberman@codeaurora.org>
+Cc:     sre@kernel.org, tkjos@google.com, gregkh@linuxfoundation.org,
+        tsoni@codeaurora.org, rananta@codeaurora.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] reboot: Export reboot_mode
+Message-ID: <20191109001832.GA5592@tuxbook-pro>
 References: <1573256452-14838-1-git-send-email-eberman@codeaurora.org>
+ <1573256452-14838-2-git-send-email-eberman@codeaurora.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1573256452-14838-2-git-send-email-eberman@codeaurora.org>
+User-Agent: Mutt/1.12.1 (2019-06-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Export reboot_mode to support kernel modules wishing to modify reboot_mode.
+On Fri 08 Nov 15:40 PST 2019, Elliot Berman wrote:
 
-Signed-off-by: Elliot Berman <eberman@codeaurora.org>
----
- kernel/reboot.c | 2 ++
- 1 file changed, 2 insertions(+)
+> Export reboot_mode to support kernel modules wishing to modify reboot_mode.
+> 
 
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index c4d472b..b1fbc22 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -32,7 +32,9 @@ EXPORT_SYMBOL(cad_pid);
- #define DEFAULT_REBOOT_MODE
- #endif
- enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
-+EXPORT_SYMBOL_GPL(reboot_mode);
- enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
-+EXPORT_SYMBOL_GPL(panic_reboot_mode);
- 
- /*
-  * This variable is used privately to keep track of whether or not
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 
+> Signed-off-by: Elliot Berman <eberman@codeaurora.org>
+> ---
+>  kernel/reboot.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/kernel/reboot.c b/kernel/reboot.c
+> index c4d472b..b1fbc22 100644
+> --- a/kernel/reboot.c
+> +++ b/kernel/reboot.c
+> @@ -32,7 +32,9 @@ EXPORT_SYMBOL(cad_pid);
+>  #define DEFAULT_REBOOT_MODE
+>  #endif
+>  enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
+> +EXPORT_SYMBOL_GPL(reboot_mode);
+>  enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
+> +EXPORT_SYMBOL_GPL(panic_reboot_mode);
+>  
+>  /*
+>   * This variable is used privately to keep track of whether or not
+> -- 
+> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+> a Linux Foundation Collaborative Project
+> 
