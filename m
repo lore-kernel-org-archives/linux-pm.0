@@ -7,45 +7,45 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70212C43331
-	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 03:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C364C17443
+	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 03:06:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4552D215EA
+	by mail.kernel.org (Postfix) with ESMTP id CA0BB208C3
 	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 03:06:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=default; t=1573355170;
-	bh=QJJHtwudMUdjrvEkEKhASbB4r4PZp0YPBCLBKA/Tqo4=;
+	bh=Xty7iWILayDsbcoONT7/PYhnmYTucCABnBcNNL2l8eU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=ThJQvEjyd2+cB7+8qsQZ41WV92ESEjvQXJ5aHtCrzRRdsu28ub/2/Z3AjVY/jEQI3
-	 a6QKYnEaTRzQgdY65gcyGNK2SXOq2ingNkdIcjfQYnYUNVZWQiR/L4BwdNAiwKlWaw
-	 bdij5Igae/TADIYJ0L0v47kTMgkFNajRU2V21u6M=
+	b=L7CGfoJwht/ZIBn80LfeAYze0xrpX60NmIRqHIy+7p3wNuASwgxTl91pTuSFtXUSL
+	 IvIYVnY67TMvbKXUbMWiGSCCHiHW4Ueye54FwzDBaBFoKOf5/2xYIMHLsrRfgp96F0
+	 +jDx4fs++Sz0OxDjnuvd81Tl9R/Odw73SCvKB0DI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727220AbfKJDGF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 9 Nov 2019 22:06:05 -0500
-Received: from mail.kernel.org ([198.145.29.99]:49234 "EHLO mail.kernel.org"
+        id S1728986AbfKJCqK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 9 Nov 2019 21:46:10 -0500
+Received: from mail.kernel.org ([198.145.29.99]:49186 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728991AbfKJCqL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 9 Nov 2019 21:46:11 -0500
+        id S1728251AbfKJCqJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 9 Nov 2019 21:46:09 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id CA66421D7E;
-        Sun, 10 Nov 2019 02:46:09 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id BB0EE21D7B;
+        Sun, 10 Nov 2019 02:46:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573353970;
-        bh=QJJHtwudMUdjrvEkEKhASbB4r4PZp0YPBCLBKA/Tqo4=;
+        s=default; t=1573353969;
+        bh=Xty7iWILayDsbcoONT7/PYhnmYTucCABnBcNNL2l8eU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=puR0aN+pi2uSbGjwqCNps7QOa5QiIpBf62SGglhOVDDQx+b3CXx7QFOYSK3gUOSno
-         X2hUGztopCbNUn5b39YlRbehBtZL+BP9g0qms85OvIzAc2GtsgqQvfYChocwi1x8x3
-         XbOUCovcUsyTz3lHYQwFqqJ9tPudkue7//mnIAug=
+        b=0LNERqct8kEGaXx8Lv3ufMrkx9bdbPw2ZeLVPcX09lGx6GaQvjvjiEp/XbK4M7DLb
+         U8GcAhokRJnGeid4MZuL0+o6nfCEP14iRpUEF5qiCNMFUrwz+c46sKWosbQuqVruAF
+         BrVAEdtbypsZJwIp3/U/X0/TqCwhcemWBzNotdko=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Andreas Kemnade <andreas@kemnade.info>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 018/109] power: supply: twl4030_charger: disable eoc interrupt on linear charge
-Date:   Sat,  9 Nov 2019 21:44:10 -0500
-Message-Id: <20191110024541.31567-18-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 017/109] power: supply: twl4030_charger: fix charging current out-of-bounds
+Date:   Sat,  9 Nov 2019 21:44:09 -0500
+Message-Id: <20191110024541.31567-17-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191110024541.31567-1-sashal@kernel.org>
 References: <20191110024541.31567-1-sashal@kernel.org>
@@ -60,71 +60,34 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Andreas Kemnade <andreas@kemnade.info>
 
-[ Upstream commit 079cdff3d0a09c5da10ae1be35def7a116776328 ]
+[ Upstream commit 8314c212f995bc0d06b54ad02ef0ab4089781540 ]
 
-This avoids getting woken up from suspend after power interruptions
-when the bci wrongly thinks the battery is full just because
-of input current going low because of low input power
+the charging current uses unsigned int variables, if we step back
+if the current is still low, we would run into negative which
+means setting the target to a huge value.
+Better add checks here.
 
 Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/twl4030_charger.c | 27 +++++++++++++++++++++++++-
- 1 file changed, 26 insertions(+), 1 deletion(-)
+ drivers/power/supply/twl4030_charger.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index d3cba954bab54..b20491016b1e4 100644
+index 0cc12bfe7b020..d3cba954bab54 100644
 --- a/drivers/power/supply/twl4030_charger.c
 +++ b/drivers/power/supply/twl4030_charger.c
-@@ -440,6 +440,7 @@ static void twl4030_current_worker(struct work_struct *data)
- static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
- {
- 	int ret;
-+	u32 reg;
+@@ -420,7 +420,8 @@ static void twl4030_current_worker(struct work_struct *data)
  
- 	if (bci->usb_mode == CHARGE_OFF)
- 		enable = false;
-@@ -453,14 +454,38 @@ static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
- 			bci->usb_enabled = 1;
- 		}
- 
--		if (bci->usb_mode == CHARGE_AUTO)
-+		if (bci->usb_mode == CHARGE_AUTO) {
-+			/* Enable interrupts now. */
-+			reg = ~(u32)(TWL4030_ICHGLOW | TWL4030_ICHGEOC |
-+					TWL4030_TBATOR2 | TWL4030_TBATOR1 |
-+					TWL4030_BATSTS);
-+			ret = twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, reg,
-+				       TWL4030_INTERRUPTS_BCIIMR1A);
-+			if (ret < 0) {
-+				dev_err(bci->dev,
-+					"failed to unmask interrupts: %d\n",
-+					ret);
-+				return ret;
-+			}
- 			/* forcing the field BCIAUTOUSB (BOOT_BCI[1]) to 1 */
- 			ret = twl4030_clear_set_boot_bci(0, TWL4030_BCIAUTOUSB);
-+		}
- 
- 		/* forcing USBFASTMCHG(BCIMFSTS4[2]) to 1 */
- 		ret = twl4030_clear_set(TWL_MODULE_MAIN_CHARGE, 0,
- 			TWL4030_USBFASTMCHG, TWL4030_BCIMFSTS4);
- 		if (bci->usb_mode == CHARGE_LINEAR) {
-+			/* Enable interrupts now. */
-+			reg = ~(u32)(TWL4030_ICHGLOW | TWL4030_TBATOR2 |
-+					TWL4030_TBATOR1 | TWL4030_BATSTS);
-+			ret = twl_i2c_write_u8(TWL4030_MODULE_INTERRUPTS, reg,
-+				       TWL4030_INTERRUPTS_BCIIMR1A);
-+			if (ret < 0) {
-+				dev_err(bci->dev,
-+					"failed to unmask interrupts: %d\n",
-+					ret);
-+				return ret;
-+			}
- 			twl4030_clear_set_boot_bci(TWL4030_BCIAUTOAC|TWL4030_CVENAC, 0);
- 			/* Watch dog key: WOVF acknowledge */
- 			ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x33,
+ 	if (v < USB_MIN_VOLT) {
+ 		/* Back up and stop adjusting. */
+-		bci->usb_cur -= USB_CUR_STEP;
++		if (bci->usb_cur >= USB_CUR_STEP)
++			bci->usb_cur -= USB_CUR_STEP;
+ 		bci->usb_cur_target = bci->usb_cur;
+ 	} else if (bci->usb_cur >= bci->usb_cur_target ||
+ 		   bci->usb_cur + USB_CUR_STEP > USB_MAX_CURRENT) {
 -- 
 2.20.1
 
