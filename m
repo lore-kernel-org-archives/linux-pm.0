@@ -2,190 +2,127 @@ Return-Path: <SRS0=u7FU=ZC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E6B0C17443
-	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 03:16:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAA20C43331
+	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 10:16:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 431FA21655
-	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 03:16:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7B6E32085B
+	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 10:16:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573355772;
-	bh=VHiTryP+MU+PLdWreCOV2vP2vxJ3anEvXl6BhTjOKbg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=UdGMzWo7ntrghv7CBs1AswD0i2LXC8EweakSzUzsgG6NLPcfliH+18mQErxruds2K
-	 9HjOt4Kjp+bdse5cYEQ/1II+tx+XOiEHXyIeunvhmGHKJait4n0Kyh8lvluXYTF1gN
-	 EpnKltkS85AWPDBhlURfzXk9ngexS8JvyvzFWRoI=
+	s=default; t=1573381013;
+	bh=ZHgykNJLhXoICPIGV9epeG9Lx+ohtNrv/InlAd61Cys=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=mUomeg1Ay4DI5ZStsiaVnhQ3bcFhf5DMTzXH31WoDvVUfNWrThs2PEKL+GkGPREZB
+	 NgGZR6G6Q9H0WwP3VHlXTnuIcg+7p71B0CRyKT9fjVijTD314O7sjF1Ls3NByKzF3e
+	 HDAtVjs6iFubGDh5hbC9jSiGxuWZc0pW50dVKKYw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727478AbfKJDQL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 9 Nov 2019 22:16:11 -0500
-Received: from mail.kernel.org ([198.145.29.99]:34852 "EHLO mail.kernel.org"
+        id S1726641AbfKJKQx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 10 Nov 2019 05:16:53 -0500
+Received: from mail.kernel.org ([198.145.29.99]:53150 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727187AbfKJClD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 9 Nov 2019 21:41:03 -0500
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        id S1726610AbfKJKQw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 10 Nov 2019 05:16:52 -0500
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id A121C214E0;
-        Sun, 10 Nov 2019 02:41:01 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 9FF5420818;
+        Sun, 10 Nov 2019 10:16:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573353662;
-        bh=VHiTryP+MU+PLdWreCOV2vP2vxJ3anEvXl6BhTjOKbg=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=PEMdlO6wRyUZOiiZ7TFFB5V7IQmoMrPpt+4xWlRessOKHAEwGy9D/GOpD4YHoXJ5x
-         fWPnxLrnuzl9jrzlTdcivDzveXwK+4Cf7y4myHyR/tMsqCwrWlMeHVrjlkwnmkVnOh
-         ZWTJbw5a9PXloewg9f7zGUjoeoHZWWKFChFaea6A=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Niklas Cassel <niklas.cassel@linaro.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 034/191] OPP: Protect dev_list with opp_table lock
-Date:   Sat,  9 Nov 2019 21:37:36 -0500
-Message-Id: <20191110024013.29782-34-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191110024013.29782-1-sashal@kernel.org>
-References: <20191110024013.29782-1-sashal@kernel.org>
+        s=default; t=1573381011;
+        bh=ZHgykNJLhXoICPIGV9epeG9Lx+ohtNrv/InlAd61Cys=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=aDJDLUIH79k8Kxo78ZoADprRwLRoS2aqvzaD4UIZzkneJm9Uj9G/lbW+DZqDzTV6b
+         jFupQWezbQvDjjp9NZ4xpcqfjZylsYYyjz3NB9TWwGNGzhSyfckXylpxfK6AFVp9Sh
+         dJH66T9SDUWHUhuuC/iR6wUJbnKsHSxE3nkkXxho=
+Date:   Sun, 10 Nov 2019 11:16:47 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [GIT PULL] interconnect changes for 5.5
+Message-ID: <20191110101647.GA1441986@kroah.com>
+References: <5123bf54-5d62-fc5c-8838-17bc34487d83@linaro.org>
+ <20191107142111.GB109902@kroah.com>
+ <0cb5a6a6-399f-99e3-dc41-50114eea4025@linaro.org>
+ <20191108103917.GB683302@kroah.com>
+ <CAOCOHw4d0q3uGTAh_UrNWr+Wi6ObDKUFn7M_zkD8cFTkNFEUDA@mail.gmail.com>
+ <20191109084820.GC1289838@kroah.com>
+ <CAOCOHw4AFz2Rj3sLTrboA0pBOkL_5MbitJnFHgBYaVBbWyYATw@mail.gmail.com>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAOCOHw4AFz2Rj3sLTrboA0pBOkL_5MbitJnFHgBYaVBbWyYATw@mail.gmail.com>
+User-Agent: Mutt/1.12.2 (2019-09-21)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
+On Sat, Nov 09, 2019 at 12:27:29PM -0800, Bjorn Andersson wrote:
+> On Sat, Nov 9, 2019 at 12:48 AM Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> >
+> > On Fri, Nov 08, 2019 at 05:36:46PM -0800, Bjorn Andersson wrote:
+> > > On Fri, Nov 8, 2019 at 2:39 AM Greg Kroah-Hartman
+> > > <gregkh@linuxfoundation.org> wrote:
+> > > >
+> > > > On Thu, Nov 07, 2019 at 05:42:13PM +0200, Georgi Djakov wrote:
+> > > > > Hi Greg,
+> > > > >
+> > > > > On 11/7/19 16:21, Greg Kroah-Hartman wrote:
+> > > > > > On Thu, Nov 07, 2019 at 02:46:53PM +0200, Georgi Djakov wrote:
+> > > > > >> Hi Greg,
+> > > > > >>
+> > > > > >> This is a pull request with interconnect patches for the 5.5 merge window.
+> > > > > >> All patches have been for a while in linux-next without reported issues. The
+> > > > > >> details are in the signed tag. Please consider pulling into char-misc-next.
+> > > > > >
+> > > > > > I don't know about
+> > > > > > 0003-interconnect-Disallow-interconnect-core-to-be-built-.patch here.
+> > > > > > Shouldn't you just fix up the dependancies of subsystems that rely on
+> > > > > > this?  We are moving more and more to kernels that "just work" with
+> > > > > > everything as modules, even on arm64 systems.  So forbiding the
+> > > > > > interconnect code from being able to be built as a module does not feel
+> > > > > > good to me at all.
+> > > > >
+> > > > > Thank you for commenting on this! The initial idea was to keep everything as
+> > > > > modular as possible. The reasons behind this change is that other core
+> > > > > frameworks like cpufreq (and possibly others) want to call the interconnect
+> > > > > APIs. Some of these frameworks are built-in only and it would be easier to
+> > > > > handle dependencies if interconnect core built-in too. Now each user that
+> > > > > can be built-in has to specify in Kconfig that it depends on INTERCONNECT ||
+> > > > > !INTERCONNECT.
+> > > >
+> > > > That's fine, when those subsystems start to use those apis, that
+> > > > dependency needs to be added.  Nothing new here, and you forcing it to
+> > > > either be "on or off" isn't going to change that.  Let's do it correctly
+> > > > please.
+> > > >
+> > >
+> > > Please no!
+> > >
+> > > Making our frameworks tristate means that we can no longer rely on
+> > > include file stubs (as framework=m, client=y will fail), so every
+> > > single client must add the "depends on framework || framework=n" - in
+> > > contrast to nothing the framework itself is bool.
+> >
+> > What's wrong with a single "depends on framework"?  If your code relies
+> > on this framework, you should depend on it, right?
+> 
+> As your question shows, everyone gets this wrong and the build breaks
+> all the time (it's not "depends on framework", it's "depends on
+> framework || framework=n" - and everyone you'll talk to will be
+> puzzled as to why this is).
 
-[ Upstream commit 3d2556992a878a2210d3be498416aee39e0c32aa ]
+Ah, now I get it.  Yeah, that sucks.  We need a "shortcut" in Kconfig to
+express that type of dependancy.
 
-The dev_list needs to be protected with a lock, else we may have
-simultaneous access (addition/removal) to it and that would be racy.
-Extend scope of the opp_table lock to protect dev_list as well.
+thanks,
 
-Tested-by: Niklas Cassel <niklas.cassel@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/opp/core.c | 21 +++++++++++++++++++--
- drivers/opp/cpu.c  |  2 ++
- drivers/opp/opp.h  |  2 +-
- 3 files changed, 22 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index f3433bf47b100..14d4ef5943741 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -48,9 +48,14 @@ static struct opp_device *_find_opp_dev(const struct device *dev,
- static struct opp_table *_find_opp_table_unlocked(struct device *dev)
- {
- 	struct opp_table *opp_table;
-+	bool found;
- 
- 	list_for_each_entry(opp_table, &opp_tables, node) {
--		if (_find_opp_dev(dev, opp_table)) {
-+		mutex_lock(&opp_table->lock);
-+		found = !!_find_opp_dev(dev, opp_table);
-+		mutex_unlock(&opp_table->lock);
-+
-+		if (found) {
- 			_get_opp_table_kref(opp_table);
- 
- 			return opp_table;
-@@ -766,6 +771,8 @@ struct opp_device *_add_opp_dev(const struct device *dev,
- 
- 	/* Initialize opp-dev */
- 	opp_dev->dev = dev;
-+
-+	mutex_lock(&opp_table->lock);
- 	list_add(&opp_dev->node, &opp_table->dev_list);
- 
- 	/* Create debugfs entries for the opp_table */
-@@ -773,6 +780,7 @@ struct opp_device *_add_opp_dev(const struct device *dev,
- 	if (ret)
- 		dev_err(dev, "%s: Failed to register opp debugfs (%d)\n",
- 			__func__, ret);
-+	mutex_unlock(&opp_table->lock);
- 
- 	return opp_dev;
- }
-@@ -791,6 +799,7 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
- 	if (!opp_table)
- 		return NULL;
- 
-+	mutex_init(&opp_table->lock);
- 	INIT_LIST_HEAD(&opp_table->dev_list);
- 
- 	opp_dev = _add_opp_dev(dev, opp_table);
-@@ -812,7 +821,6 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
- 
- 	BLOCKING_INIT_NOTIFIER_HEAD(&opp_table->head);
- 	INIT_LIST_HEAD(&opp_table->opp_list);
--	mutex_init(&opp_table->lock);
- 	kref_init(&opp_table->kref);
- 
- 	/* Secure the device table modification */
-@@ -854,6 +862,10 @@ static void _opp_table_kref_release(struct kref *kref)
- 	if (!IS_ERR(opp_table->clk))
- 		clk_put(opp_table->clk);
- 
-+	/*
-+	 * No need to take opp_table->lock here as we are guaranteed that no
-+	 * references to the OPP table are taken at this point.
-+	 */
- 	opp_dev = list_first_entry(&opp_table->dev_list, struct opp_device,
- 				   node);
- 
-@@ -1719,6 +1731,9 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
- {
- 	struct dev_pm_opp *opp, *tmp;
- 
-+	/* Protect dev_list */
-+	mutex_lock(&opp_table->lock);
-+
- 	/* Find if opp_table manages a single device */
- 	if (list_is_singular(&opp_table->dev_list)) {
- 		/* Free static OPPs */
-@@ -1736,6 +1751,8 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
- 	} else {
- 		_remove_opp_dev(_find_opp_dev(dev, opp_table), opp_table);
- 	}
-+
-+	mutex_unlock(&opp_table->lock);
- }
- 
- void _dev_pm_opp_find_and_remove_table(struct device *dev, bool remove_all)
-diff --git a/drivers/opp/cpu.c b/drivers/opp/cpu.c
-index 0c09107094350..2868a022a0407 100644
---- a/drivers/opp/cpu.c
-+++ b/drivers/opp/cpu.c
-@@ -222,8 +222,10 @@ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
- 	cpumask_clear(cpumask);
- 
- 	if (opp_table->shared_opp == OPP_TABLE_ACCESS_SHARED) {
-+		mutex_lock(&opp_table->lock);
- 		list_for_each_entry(opp_dev, &opp_table->dev_list, node)
- 			cpumask_set_cpu(opp_dev->dev->id, cpumask);
-+		mutex_unlock(&opp_table->lock);
- 	} else {
- 		cpumask_set_cpu(cpu_dev->id, cpumask);
- 	}
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 7c540fd063b2d..e0866b1c1f1b2 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -126,7 +126,7 @@ enum opp_table_access {
-  * @dev_list:	list of devices that share these OPPs
-  * @opp_list:	table of opps
-  * @kref:	for reference count of the table.
-- * @lock:	mutex protecting the opp_list.
-+ * @lock:	mutex protecting the opp_list and dev_list.
-  * @np:		struct device_node pointer for opp's DT node.
-  * @clock_latency_ns_max: Max clock latency in nanoseconds.
-  * @shared_opp: OPP is shared between multiple devices.
--- 
-2.20.1
-
+greg k-h
