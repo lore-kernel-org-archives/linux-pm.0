@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A51DC17440
-	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 02:49:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70212C43331
+	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 03:06:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6E45222583
-	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 02:49:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4552D215EA
+	for <linux-pm@archiver.kernel.org>; Sun, 10 Nov 2019 03:06:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573354147;
-	bh=u5HAUch/zt0qKhz/JRb40yB5Wv5KwFM6XhDO9ftbcdI=;
+	s=default; t=1573355170;
+	bh=QJJHtwudMUdjrvEkEKhASbB4r4PZp0YPBCLBKA/Tqo4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=Z/R9ppdtkv5O7sh1YqzT0uKj4AYb2uBPNAbuvazwxDhtIwarFOnl0ksP4AhOWxlrj
-	 XCLA+EOGUrYoeaVQCQuEhEzkWEuMciYPpeeuo7xeapRFVGVr2iFVaU+o8O8y3Z9JbM
-	 uVdHJSCvvHqdWfn5GywZQkRCWFl+t5MNWKqkaaBg=
+	b=ThJQvEjyd2+cB7+8qsQZ41WV92ESEjvQXJ5aHtCrzRRdsu28ub/2/Z3AjVY/jEQI3
+	 a6QKYnEaTRzQgdY65gcyGNK2SXOq2ingNkdIcjfQYnYUNVZWQiR/L4BwdNAiwKlWaw
+	 bdij5Igae/TADIYJ0L0v47kTMgkFNajRU2V21u6M=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729388AbfKJCtE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 9 Nov 2019 21:49:04 -0500
-Received: from mail.kernel.org ([198.145.29.99]:57432 "EHLO mail.kernel.org"
+        id S1727220AbfKJDGF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 9 Nov 2019 22:06:05 -0500
+Received: from mail.kernel.org ([198.145.29.99]:49234 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727121AbfKJCtD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 9 Nov 2019 21:49:03 -0500
+        id S1728991AbfKJCqL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 9 Nov 2019 21:46:11 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 6075422593;
-        Sun, 10 Nov 2019 02:49:02 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id CA66421D7E;
+        Sun, 10 Nov 2019 02:46:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573354143;
-        bh=u5HAUch/zt0qKhz/JRb40yB5Wv5KwFM6XhDO9ftbcdI=;
+        s=default; t=1573353970;
+        bh=QJJHtwudMUdjrvEkEKhASbB4r4PZp0YPBCLBKA/Tqo4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=uz5p0NwrZHIorEZg2qPkIjAxRlhHtFMaXSAJvOGhA+q15EQnHlwEY5lBLN1ZCy7nV
-         6sc0vrydPA4ULPApMkVuy+DfPySvdiLcGYuUGWVTw+uVojGKNy8okTLodqKq11eGvE
-         FDPmfBCLNrfDP02DYhjOAOE08hmFyJtDyC24zjqY=
+        b=puR0aN+pi2uSbGjwqCNps7QOa5QiIpBf62SGglhOVDDQx+b3CXx7QFOYSK3gUOSno
+         X2hUGztopCbNUn5b39YlRbehBtZL+BP9g0qms85OvIzAc2GtsgqQvfYChocwi1x8x3
+         XbOUCovcUsyTz3lHYQwFqqJ9tPudkue7//mnIAug=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Andreas Kemnade <andreas@kemnade.info>,
         Sebastian Reichel <sebastian.reichel@collabora.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 10/66] power: supply: twl4030_charger: disable eoc interrupt on linear charge
-Date:   Sat,  9 Nov 2019 21:47:49 -0500
-Message-Id: <20191110024846.32598-10-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 018/109] power: supply: twl4030_charger: disable eoc interrupt on linear charge
+Date:   Sat,  9 Nov 2019 21:44:10 -0500
+Message-Id: <20191110024541.31567-18-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191110024846.32598-1-sashal@kernel.org>
-References: <20191110024846.32598-1-sashal@kernel.org>
+In-Reply-To: <20191110024541.31567-1-sashal@kernel.org>
+References: <20191110024541.31567-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -74,10 +74,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 26 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index 14fed11e8f6e3..5b1f147b11cb0 100644
+index d3cba954bab54..b20491016b1e4 100644
 --- a/drivers/power/supply/twl4030_charger.c
 +++ b/drivers/power/supply/twl4030_charger.c
-@@ -469,6 +469,7 @@ static void twl4030_current_worker(struct work_struct *data)
+@@ -440,6 +440,7 @@ static void twl4030_current_worker(struct work_struct *data)
  static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
  {
  	int ret;
@@ -85,7 +85,7 @@ index 14fed11e8f6e3..5b1f147b11cb0 100644
  
  	if (bci->usb_mode == CHARGE_OFF)
  		enable = false;
-@@ -482,14 +483,38 @@ static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
+@@ -453,14 +454,38 @@ static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
  			bci->usb_enabled = 1;
  		}
  
