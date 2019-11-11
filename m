@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26F5DC17441
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 20:57:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C8D5C43331
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 20:57:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F1C55206BA
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 20:57:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 200FE21783
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 20:57:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JN4lPrst"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qOXt9iKF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727238AbfKKU5R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Nov 2019 15:57:17 -0500
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:41282 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727128AbfKKU5O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Nov 2019 15:57:14 -0500
-Received: by mail-lf1-f65.google.com with SMTP id j14so10951755lfb.8;
-        Mon, 11 Nov 2019 12:57:12 -0800 (PST)
+        id S1727453AbfKKU52 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Nov 2019 15:57:28 -0500
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:40153 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727148AbfKKU5U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Nov 2019 15:57:20 -0500
+Received: by mail-lj1-f196.google.com with SMTP id q2so15324889ljg.7;
+        Mon, 11 Nov 2019 12:57:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=oZXgBiZ7YOkoGyisWeubyUkOPcMd11xlE2xTsIL1hcs=;
-        b=JN4lPrste717s/4AQdu1jc1YIYNtZXuqu5CWkhLocrAQX9wq1Z9uWmTwoPG3n0KTDd
-         2RnHc82t6mkhZVFE2o2Jdy6YiFfJcqlBhyynKaDmjSRlBWJ2j+gDC59FWpCtMl6Ff5f7
-         vwwnbetoVoQgl98Jwp/bT8OwArU3ewDOVum4hKLf/OmfETeFjH649L9ctPpk21FcfDTB
-         HoagzqDt+LmEsLwBzxwd8Qif+T5zWId5zfj5vGQqbdZ6ZcB3XbVeNcByhQ1EOWFzPvfF
-         vf4iDSD/AL1OMEzEfJbLyhmhKqgYD5SVgxWUHv3x7jvWfeodCf/5mlrmrTtY+zeXIhXZ
-         Gogw==
+        bh=BEJ200kbZVTsss1iDk6Wt5qRmYYgbTDuf+N828TJE+4=;
+        b=qOXt9iKFr6xDFBoRl5SK08VLRff6TgxB2rYOoxCnGnD9ts6+XwNII6M3acbMna2hdm
+         rtmkqVd7RqhlKm74cDnJ33qNeeB4Lt0lZ2LjKmOfYqoV6VLIO/sdSC2Q98+4SMLuYYdw
+         I4CsKrhL2tFpd533/RmENck9GGLadx3xITeW9TUtnFNM3CdVcrAVhRfQ6+ykzRRhG0ix
+         5g+dphPPoJVHJXb8pYHuRuyvvRKDeip0NFFjrz5oQhztZpQHjEpvL76UkQm0AS8OLE/9
+         NhT21CVpE1HY/46aqLg9AqaxoT+HawSuOpPm2RB49eLgU6SdgQNzhJuZFPZ8m9PHb6yu
+         HEUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=oZXgBiZ7YOkoGyisWeubyUkOPcMd11xlE2xTsIL1hcs=;
-        b=FMZBuVcbk9vNfvlElknv7G2IS7j3nY2vn8POF3OzfD0eYrCjkiu7kKu0zPzOfffpOZ
-         w+NhxJfuYzrnzLsj3tm8LA1JkhSJuCLL9IVgtcT/4di+IQpt4ZD6BPuVoWrYQxsNOOth
-         7fwpZlfpxDCf2H9YQDBHEh4H5Fz7Ay8AdJhwpbX25b1ajRkXOSeqpDjn1wH9wlZ7wiXy
-         ZC0TRi3e3fnlvBeaVN66Fw8pdjecKYbyrGwJ+YcImHKQbVq/SnPJnx00+E8koJY/Thga
-         3wYj+GjarjCAHjfSujO0mVFEJXMsOYnEmV1qGHXqmHGc8PXyA9mvjMW68i3W1IRguNEZ
-         pIrw==
-X-Gm-Message-State: APjAAAUG7JBb5iFivfGHa6ure1yjfI3pcODrUr0I7G3rt9czWnsU8fuB
-        8gC7AUy1C2i4MBUCyJUS9iA=
-X-Google-Smtp-Source: APXvYqxRsfVaocdlSi5pMhGFrip887n9pCvGiTBOokLkS0zGZq+wSp+5cS7302YNUSziBslKQS3jMA==
-X-Received: by 2002:a19:4314:: with SMTP id q20mr16210252lfa.146.1573505832319;
-        Mon, 11 Nov 2019 12:57:12 -0800 (PST)
+        bh=BEJ200kbZVTsss1iDk6Wt5qRmYYgbTDuf+N828TJE+4=;
+        b=aDu+ghao32Tn1uGuj+u0+tlbuSX/JfgZ3KebArLJCaBPUOxUcMqRVkquL8Pkp7e78Y
+         JmVQwx4WSvhsIpmbXC4I8FD5X5jjVosUQuGl/q6VvKJ+0duzQaF5p0boHksEDatYryLR
+         MqTQvorjHELwfW6ckGF01XC1+ploWtR61zp4H6jprbyLML+8mn4Vs89o6qLu/C3vQFEi
+         QoqoX5b9+YEmmvuKdRGq3whhB+dXV4EYRuqgyuaruy0rJW4SVtvbMjBGJaXzvGIk0unX
+         2kb+W1za2HLRmb9ri2Y8whcSDfWWDe0iDpmgYu8ScWkHEuNIaHVEb1laVIaemM++2pXS
+         ni6A==
+X-Gm-Message-State: APjAAAXQdcE1HmXO+uiCClrFEEfsk4rXHEKb6qG969gLAeqEOjgGWN44
+        zidd/vd01i+0A4YKjnr4fDc=
+X-Google-Smtp-Source: APXvYqw7eSx5xIx3Pz7djTsqEWoIjJUneZL+QJcwMA6cb31frF+zzEu5E30djLMcC9WQg50DT+3ngw==
+X-Received: by 2002:a2e:b5d0:: with SMTP id g16mr17898135ljn.88.1573505837820;
+        Mon, 11 Nov 2019 12:57:17 -0800 (PST)
 Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id q124sm7423784ljq.93.2019.11.11.12.57.11
+        by smtp.gmail.com with ESMTPSA id q124sm7423784ljq.93.2019.11.11.12.57.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 Nov 2019 12:57:11 -0800 (PST)
+        Mon, 11 Nov 2019 12:57:17 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -69,9 +69,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Marcel Ziswiler <marcel.ziswiler@toradex.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 05/10] clk: tegra30: Use custom CCLK implementation
-Date:   Mon, 11 Nov 2019 23:54:14 +0300
-Message-Id: <20191111205419.16768-6-digetx@gmail.com>
+Subject: [PATCH v4 10/10] ARM: dts: tegra30: beaver: Add CPU Operating Performance Points
+Date:   Mon, 11 Nov 2019 23:54:19 +0300
+Message-Id: <20191111205419.16768-11-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191111205419.16768-1-digetx@gmail.com>
 References: <20191111205419.16768-1-digetx@gmail.com>
@@ -82,43 +82,53 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We're going to use the generic cpufreq-dt driver on Tegra30 and thus CCLK
-intermediate re-parenting will be performed by the clock driver. There is
-now special CCLK implementation that supports all CCLK quirks, this patch
-makes Tegra30 SoCs to use that implementation.
+Utilize common Tegra30 CPU OPP table. CPU DVFS is available now on beaver.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/clk/tegra/clk-tegra30.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/tegra30-beaver.dts | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/drivers/clk/tegra/clk-tegra30.c b/drivers/clk/tegra/clk-tegra30.c
-index c8bc18e4d7e5..0fe03d69fe1a 100644
---- a/drivers/clk/tegra/clk-tegra30.c
-+++ b/drivers/clk/tegra/clk-tegra30.c
-@@ -499,6 +499,8 @@ static struct tegra_clk_pll_params pll_x_params __ro_after_init = {
- 	.freq_table = pll_x_freq_table,
- 	.flags = TEGRA_PLL_HAS_CPCON | TEGRA_PLL_SET_DCCON |
- 		 TEGRA_PLL_USE_LOCK | TEGRA_PLL_HAS_LOCK_ENABLE,
-+	.pre_rate_change = tegra_cclk_pre_pllx_rate_change,
-+	.post_rate_change = tegra_cclk_post_pllx_rate_change,
+diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/tegra30-beaver.dts
+index 6ebb3105af9e..86556622be25 100644
+--- a/arch/arm/boot/dts/tegra30-beaver.dts
++++ b/arch/arm/boot/dts/tegra30-beaver.dts
+@@ -2,6 +2,8 @@
+ /dts-v1/;
+ 
+ #include "tegra30.dtsi"
++#include "tegra30-cpu-opp.dtsi"
++#include "tegra30-cpu-opp-microvolt.dtsi"
+ 
+ / {
+ 	model = "NVIDIA Tegra30 Beaver evaluation board";
+@@ -2124,4 +2126,26 @@
+ 			 <&tegra_car TEGRA30_CLK_EXTERN1>;
+ 		clock-names = "pll_a", "pll_a_out0", "mclk";
+ 	};
++
++	cpus {
++		cpu0: cpu@0 {
++			cpu-supply = <&vddctrl_reg>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++
++		cpu@1 {
++			cpu-supply = <&vddctrl_reg>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++
++		cpu@2 {
++			cpu-supply = <&vddctrl_reg>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++
++		cpu@3 {
++			cpu-supply = <&vddctrl_reg>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++	};
  };
- 
- static struct tegra_clk_pll_params pll_e_params __ro_after_init = {
-@@ -932,11 +934,11 @@ static void __init tegra30_super_clk_init(void)
- 	clk_register_clkdev(clk, "pll_p_out4_cclkg", NULL);
- 
- 	/* CCLKG */
--	clk = tegra_clk_register_super_mux("cclk_g", cclk_g_parents,
-+	clk = tegra_clk_register_super_cclk("cclk_g", cclk_g_parents,
- 				  ARRAY_SIZE(cclk_g_parents),
- 				  CLK_SET_RATE_PARENT,
- 				  clk_base + CCLKG_BURST_POLICY,
--				  0, 4, 0, 0, NULL);
-+				  0, NULL);
- 	clks[TEGRA30_CLK_CCLK_G] = clk;
- 
- 	/*
 -- 
 2.23.0
 
