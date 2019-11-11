@@ -2,217 +2,167 @@ Return-Path: <SRS0=bUgj=ZD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B460C43331
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 21:17:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8609C43331
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 21:29:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E20342084F
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 21:17:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="o6MYb21n"
+	by mail.kernel.org (Postfix) with ESMTP id BA6532084F
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 21:29:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1573507761;
+	bh=n3A6I3A2iM+xFpY1E7BgAkyfwmK7xY+zQPd7CTnRxLY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=u+Au/wn1zttsurYlE9OsE08Sx39lbix2Zt5yoGOXdxEJW752yTohK5weWcEcBnNsJ
+	 dY93VUXWSTq9iqdO8ZhrtHdWI2vCPOT2T/or06JJ5UZgXcxCbjcHFv85a8+Nnp4yOf
+	 cd0H/gyzVxnm/7rh55A2gBmj1IyZq9mQMnNB5OdQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726991AbfKKVQ1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Nov 2019 16:16:27 -0500
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:37876 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726845AbfKKVQ1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Nov 2019 16:16:27 -0500
-Received: by mail-lf1-f68.google.com with SMTP id b20so11000259lfp.4;
-        Mon, 11 Nov 2019 13:16:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=cIEarrw2WjgImaZoYRz2Rblh1b+1lBprmNtT1YhIg+c=;
-        b=o6MYb21n7CQmDXgdECw0RoayER8YCAVxKZZoXUL+xhXdhgwOawzTsAYyUAx/FJnnum
-         mAyw5+v9DOzG6WePMtdcwFPMrryYnw919qBnNLpg3stYcTku2RMNixEezoa7eMAshIRC
-         SGSCEmZQb1cyDyHWe+DXuhyCG/qTolg2k5d9MzgxFEeQqcNQudf5CV/zJChavDEnyy5F
-         gY8O82lxU8/CC0stCAqNzwXMDbk3ofDMWnC7gtoYzqLH5jrMw3iFpvobdwhxrswKUzDf
-         gv2byMbyemrjZqgCMrsReM1O1or/GbQQ8D3bu2DEfjdbf5/r6KF9zPkgC9BVD7PZgEzN
-         inyA==
+        id S1727047AbfKKV3V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Nov 2019 16:29:21 -0500
+Received: from mail-ot1-f67.google.com ([209.85.210.67]:46985 "EHLO
+        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727040AbfKKV3U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Nov 2019 16:29:20 -0500
+Received: by mail-ot1-f67.google.com with SMTP id n23so12469530otr.13;
+        Mon, 11 Nov 2019 13:29:19 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=cIEarrw2WjgImaZoYRz2Rblh1b+1lBprmNtT1YhIg+c=;
-        b=nzLEi5vKEWf6ruTdJgjZAEZLfxxD5v4lr6XeTEp6VdcKat7JnQw9F18Nb8szNT/2BE
-         zkv9+91kdf34IZpRVqfD4vnTucqzbxgdfvdZmshKY1j3JNLIUAQyGlHKk5wim97fhzt1
-         SclBwodsXM/lMMrJdurm9DodG5b7/VAyNAijdrWaOhcD5lVipmKFk4NHgeAe5u5Zp9+F
-         D4pg1eNU0IJoBGl6owW/sLH/l1qfHkDqyvMTHZQThkpRP+43piJX7W90yFQAFddb+apu
-         I0fPCUM3+jl4oHfv/2jyNIISSYlcd1zuNodWUG7yTCOTAdigZUkVD4szTguVdocG8CrX
-         CHeQ==
-X-Gm-Message-State: APjAAAX71lLZeuDMMln0DEE5lwx6egAcCG/5e91K4B/Ppyy1jsFdq2u3
-        HrPpbJunWkek472e37TOpEk=
-X-Google-Smtp-Source: APXvYqyPrjhD9plvILtYg1CPZJeyUyz3Ebu4Kc4Y7xJ8HXIxcgtC65ZDckPu3zSfLJ8e8ClW2U3IDQ==
-X-Received: by 2002:a19:c7d3:: with SMTP id x202mr16864582lff.127.1573506984663;
-        Mon, 11 Nov 2019 13:16:24 -0800 (PST)
-Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id n19sm7913150lfl.85.2019.11.11.13.16.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 Nov 2019 13:16:24 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v7 00/17] Consolidate and improve NVIDIA Tegra CPUIDLE driver(s)
-Date:   Tue, 12 Nov 2019 00:15:39 +0300
-Message-Id: <20191111211556.20723-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=0EaaQakc/Olt1+inLfsxuVhU6rWXEXlsy8c5lcy0DyE=;
+        b=EY8xtl227uo8kNI6SRAs/fKXX6zV4w8eokSbQtFhTMHQ+Ft5DjcRES+dwSRB4kBYP2
+         VYL1QpVxCXjKrjfaW1quhar7B1+oohZBeNolNLG5JizOlwcRVfLiWYaUwdkonKWIF+RY
+         xb0Q14jHmRJ4j3288BRZEWdfO+xJlqXC8WoYvPpX+5hCa5a2stbSjdj0gUPYXQNPEEdc
+         tpLGShN17Fk2wFDUDJW3tp40wmsQ2pcmIj3NBO43YzFsOSNuUogPoolAobATTOfSQQME
+         I/w948Y+iQ/IeNeOAHWrPsKpvSP9XTAx7gH/+cMv/6HucluMgObxCryfYLJ+/rTMzBlJ
+         9hpw==
+X-Gm-Message-State: APjAAAUGh8J08O/kE5CpLVGnZO2St/BlkXkUaSWBaZy08DrH3DDhTwBu
+        /inSbFcyD+ymKFzZntvb9dmfy4bW7HRNWcX8cbQ=
+X-Google-Smtp-Source: APXvYqyn3HyV29I3Exmg96+ZNvBAEDMds2v9BIW3fBJWmGtjU2xIWKaEiub/FOFmNk8ZD2+N7/GBfNsXpdv1kiMswvQ=
+X-Received: by 2002:a05:6830:232a:: with SMTP id q10mr22974750otg.262.1573507759372;
+ Mon, 11 Nov 2019 13:29:19 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <10494959.bKODIZ00nm@kreacher> <000a01d59656$99798710$cc6c9530$@net>
+ <CAJZ5v0gZDJ2=PiiGw2mcCcVKBM2OyM1G9nRvJ+iWLFUQcXqZuw@mail.gmail.com>
+ <6163696.37NBKbymtj@kreacher> <000b01d597f2$06403a50$12c0aef0$@net> <002301d59813$ee18c920$ca4a5b60$@net>
+In-Reply-To: <002301d59813$ee18c920$ca4a5b60$@net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 11 Nov 2019 22:29:08 +0100
+Message-ID: <CAJZ5v0hFjNHgNz-MfbLhXkxPvcJzEmBBvGF7mi8v52jV3CPy2Q@mail.gmail.com>
+Subject: Re: [PATCH v2] cpuidle: Use nanoseconds as the unit of time
+To:     Doug Smythies <dsmythies@telus.net>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Giovanni Gherdovich <ggherdovich@suse.cz>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On Sun, Nov 10, 2019 at 11:12 PM Doug Smythies <dsmythies@telus.net> wrote:
+>
+> On 2019.11.10 10:10 Doug Smythies wrote:
+> > On 2019.11.10 09:24 Rafael J. Wysocki wrote:
+> >> On Sunday, November 10, 2019 5:48:21 PM CET Rafael J. Wysocki wrote:
+> >>
+> >> I have found a bug, which should be addressed by the patch below.
+> >>
+> >> If it still doesn't reduce the discrepancy, we'll need to look further.
+> >>
+> >> ---
+> >> drivers/cpuidle/governors/menu.c |    4 ++--
+> >> 1 file changed, 2 insertions(+), 2 deletions(-)
+> >>
+> >> Index: linux-pm/drivers/cpuidle/governors/menu.c
+> >> ===================================================================
+> >> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+> >> +++ linux-pm/drivers/cpuidle/governors/menu.c
+> >> @@ -516,8 +516,8 @@ static void menu_update(struct cpuidle_d
+> >>      new_factor -= new_factor / DECAY;
+> >>
+> >>      if (data->next_timer_ns > 0 && measured_ns < MAX_INTERESTING)
+> >> -            new_factor += RESOLUTION * div64_u64(measured_ns,
+> >> -                                                 data->next_timer_ns);
+> >> +            new_factor += div64_u64(RESOLUTION * measured_ns,
+> >> +                                    data->next_timer_ns);
+> >>      else
+> >>              /*
+> >>               * we were idle so long that we count it as a perfect
+> >
+> > Yes, that was the exact bit of code I focused on yesterday.
+> > However, my attempt to fix was different, and made no difference,
+> > with the new graph being exactly on top of the old bad one.
+> > I had defined new_factor as u64 and RESOLUTION as ULL.
+>
+> Your patch does fix the problem.
+> I now also understand why my attempt did not.
+>
+> New data added to previous graphs. For those that don't
+> want to go to the graphs, the nanosecond menu graphs are now
+> almost identical to the microsecond based one.
+>
+> http://www.smythies.com/~doug/linux/idle/nano-second-conversion/sweep/index.html
+>
+> Legend:
+> teo-base : linux-next 2019.11.07
+> menu-base: linux-next 2019.11.07
+> teo-v2   : linux-next 2019.11.07 + cpuidle: Consolidate disabled state checks + this v2
+> menu-v2  : linux-next 2019.11.07 + cpuidle: Consolidate disabled state checks + this v2
+> rjw1     : menu-v2 + above patch.
+>
+> Acked-by and tested-by Doug Smythies <dsmythies@telus.net>
 
-This series does the following:
+Thanks a lot!
 
-  1. Unifies Tegra20/30/114 drivers into a single driver and moves it out
-     into common drivers/cpuidle/ directory.
+> Disclaimer: Only teo and menu, not ladder or haltpoll governors.
+>
+> Additional suggestions:
+>
+> Header comments:
+>
+> > microseconds provided by drivers.  In addition to that, change
+> > cpuidle_governor_latency_req() to return the idle state exit
+> > latency constraint in nanoseconds.
+>
+> Suggest:
+>
+> microseconds provided by drivers.  Additionally, change
+> cpuidle_governor_latency_req() to return the idle state exit
+> latency constraint in nanoseconds.
+>
+> > With that, meeasure idle state residency (last_residency_ns in
+>              ^^^^^^^^
+> Suggest:
+>
+> Also measure idle state residency (last_residency_ns in
+>
+> Code:
+> Suggest deletion of this note:
+>
+> /*
+>  * Please note when changing the tuning values:
+>  * If (MAX_INTERESTING-1) * RESOLUTION > UINT_MAX, the result of
+>  * a scaling operation multiplication may overflow on 32 bit platforms.
+>  * In that case, #define RESOLUTION as ULL to get 64 bit result:
+>  * #define RESOLUTION 1024ULL
+>  *
+>  * The default values do not overflow.
+>  */
+>
+> Because you have managed the extra bit requirements as part of the patch.
 
-  2. Enables CPU cluster power-down idling state on Tegra30.
+Good suggestion! :-)
 
-In the end there is a quite nice clean up of the Tegra CPUIDLE drivers
-and of the Tegra's arch code in general. Please review, thanks!
+I have folded the fix and the removal of the comment as suggested
+above into to v2 and applied the resulting patch with tags from you
+and Peter.
 
-Changelog:
+Also the changelog has been updated as suggested.
 
-v7: - drivers/cpuidle/cpuidle-tegra.c now includes an explicit comment that
-      clarifies the new terminology that is used for naming of the idling
-      states. This change was suggested by Peter De Schrijver in the review
-      comment to v6. See the comment to struct tegra_idle_driver in the code.
-
-    - (!) This series is now based on top of the "NVIDIA Tegra20 CPUFreq
-      driver major update" patchset. The conflict between these two series
-      is trivial to resolve, but still it's worth to mention about that.
-
-v6: - Addressed request from Thierry Reding to change the way patches are
-      organized by making changes in a more incremental manner.
-
-    - tegra_sleep_cpu() now checks for the secondary CPUs to be offline
-      in the "Make outer_disable() open-coded" patch.
-
-v5: - Rebased on a recent linux-next, fixed one minor conflict in Kconfig.
-
-    - Improved commit's message of the "Support CPU cluster power-down state
-      on Tegra30" patch.
-
-    - The "Support CPU cluster power-down state on Tegra30" patch is also
-      got split and now there is additional "Make outer_disable() open-coded"
-      patch.
-
-    - Made minor cosmetic changes to the "Introduce unified driver for
-      NVIDIA Tegra SoCs" patch by improving error message and renaming
-      one variable.
-
-v4: - Fixed compilation with !CONFIG_CACHE_L2X0 (and tested that it still
-      works).
-
-    - Replaced ktime_compare() with ktime_before() in the new driver,
-      for consistency.
-
-v3: - Addressed review comments that were made by Jon Hunter to v2 by
-      splitting patches into smaller (and simpler) chunks, better
-      documenting changes in the commit messages and using proper error
-      codes in the code.
-
-      Warnings are replaced with a useful error messages in the code of
-      "Introduce unified driver for NVIDIA Tegra SoCs" patch.
-
-      Secondary CPUs parking timeout increased to 100ms because I found
-      that it actually may happen to take more than 1ms if CPU is running
-      on a *very* low frequency.
-
-      Added diagnostic messages that are reporting Flow Controller state
-      when CPU parking fails.
-
-      Further polished cpuidle driver's code.
-
-      The coupled state entering is now aborted if there is a pending SGI
-      (Software Generated Interrupt) because it will be lost after GIC's
-      power-cycling. Like it was done by the old Tegra20 CPUIDLE driver.
-
-v2: - Added patches to enable the new cpuidle driver in the defconfigs:
-
-        ARM: multi_v7_defconfig: Enable Tegra cpuidle driver
-        ARM: tegra: Enable Tegra cpuidle driver in tegra_defconfig
-
-    - Dropped patches that removed CPUIDLE_FLAG_TIMER_STOP from the idling
-      states because that flag actually doesn't have any negative effects,
-      but still is correct for the case of a local CPU timer on older Tegra
-      SoCs:
-
-        cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from Tegra114/124 idle-state
-        cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from all states
-
-    - The "Add unified driver for NVIDIA Tegra SoCs" patch got more polish.
-      Tegra30 and Terga114 states are now squashed into a single common C7
-      state (following Parker TRM terminology, see 17.2.2.2 Power Management
-      States), more comments added, etc minor changes.
-
-Dmitry Osipenko (17):
-  ARM: tegra: Compile sleep-tegra20/30.S unconditionally
-  ARM: tegra: Add tegra_pm_park_secondary_cpu()
-  ARM: tegra: Remove pen-locking from cpuidle-tegra20
-  ARM: tegra: Change tegra_set_cpu_in_lp2() type to void
-  ARM: tegra: Propagate error from tegra_idle_lp2_last()
-  ARM: tegra: Expose PM functions required for new cpuidle driver
-  ARM: tegra: Rename some of the newly exposed PM functions
-  ARM: tegra: Make outer_disable() open-coded
-  arm: tegra20: cpuidle: Handle case where secondary CPU hangs on
-    entering LP2
-  arm: tegra20: cpuidle: Make abort_flag atomic
-  arm: tegra20/30: cpuidle: Remove unnecessary memory barrier
-  cpuidle: Refactor and move out NVIDIA Tegra20 driver into
-    drivers/cpuidle
-  cpuidle: tegra: Squash Tegra30 driver into the common driver
-  cpuidle: tegra: Support CPU cluster power-down state on Tegra30
-  cpuidle: tegra: Squash Tegra114 driver into the common driver
-  ARM: multi_v7_defconfig: Enable Tegra cpuidle driver
-  ARM: tegra: Enable Tegra cpuidle driver in tegra_defconfig
-
- arch/arm/configs/multi_v7_defconfig           |   1 +
- arch/arm/configs/tegra_defconfig              |   1 +
- arch/arm/mach-tegra/Makefile                  |  19 +-
- arch/arm/mach-tegra/cpuidle-tegra114.c        |  89 -----
- arch/arm/mach-tegra/cpuidle-tegra20.c         | 212 ----------
- arch/arm/mach-tegra/cpuidle-tegra30.c         | 132 -------
- arch/arm/mach-tegra/cpuidle.c                 |  50 ---
- arch/arm/mach-tegra/cpuidle.h                 |  21 -
- arch/arm/mach-tegra/irq.c                     |   3 +-
- arch/arm/mach-tegra/pm.c                      |  54 +--
- arch/arm/mach-tegra/pm.h                      |   4 -
- arch/arm/mach-tegra/reset-handler.S           |  11 -
- arch/arm/mach-tegra/reset.h                   |   9 +-
- arch/arm/mach-tegra/sleep-tegra20.S           | 170 --------
- arch/arm/mach-tegra/sleep-tegra30.S           |   6 +-
- arch/arm/mach-tegra/sleep.h                   |  15 -
- arch/arm/mach-tegra/tegra.c                   |   7 +-
- drivers/cpuidle/Kconfig.arm                   |   8 +
- drivers/cpuidle/Makefile                      |   1 +
- drivers/cpuidle/cpuidle-tegra.c               | 374 ++++++++++++++++++
- include/soc/tegra/cpuidle.h                   |   2 +-
- .../mach-tegra => include/soc/tegra}/irq.h    |   8 +-
- include/soc/tegra/pm.h                        |  31 ++
- 23 files changed, 467 insertions(+), 761 deletions(-)
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra114.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra20.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra30.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle.h
- create mode 100644 drivers/cpuidle/cpuidle-tegra.c
- rename {arch/arm/mach-tegra => include/soc/tegra}/irq.h (59%)
-
--- 
-2.23.0
-
+Thanks!
