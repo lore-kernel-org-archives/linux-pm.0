@@ -8,73 +8,67 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3872CC43331
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 20:57:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48B7BC43331
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 21:16:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 05CCD21655
-	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 20:57:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1CA442084F
+	for <linux-pm@archiver.kernel.org>; Mon, 11 Nov 2019 21:16:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZkINMQoi"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Smv+4ZIq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727028AbfKKU5r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 Nov 2019 15:57:47 -0500
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:39254 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726916AbfKKU5M (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Nov 2019 15:57:12 -0500
-Received: by mail-lf1-f68.google.com with SMTP id j14so2365790lfk.6;
-        Mon, 11 Nov 2019 12:57:10 -0800 (PST)
+        id S1727199AbfKKVQh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 Nov 2019 16:16:37 -0500
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:43549 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727290AbfKKVQg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Nov 2019 16:16:36 -0500
+Received: by mail-lj1-f193.google.com with SMTP id y23so15330940ljh.10;
+        Mon, 11 Nov 2019 13:16:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=pG9lXccv0oOEUJTH/gOp3aikTwBYEJL3+x/Tztb4ZXo=;
-        b=ZkINMQoiT/jCLcB/Il6D7tp13igrBaOrQmFWZ/9dIP4MutQdUT2AKJpNyQTyZ5Q5EW
-         rMnGETQBf/e5bo95mmdlVyUooaNbYYWwuERpY36dfI6JdPcuoLUozMspHwxJIiShTcpC
-         0FIALRAq/js8RsbEDZItkDJLSnPRqsqkgyvx2Xl9YB0KSoKe0s6xdWLPdXOrietuKXBQ
-         M5jlXvHTu0YB+6FqnBI40Si87W/93go0tnzNasghoUzmZtUoGx7j0K/4HQNdSwOKJYBh
-         XhCvstrYDjEwVUQ2p7OXxMPsKvDDh+qshYgEqwG+lIVq59uNL+tR8JHM6aZV0eN7msjA
-         nyaw==
+        bh=Omi0XtqN8Kc5VZbYU+UoqGDpANl8X11C5I6N+y6qX+s=;
+        b=Smv+4ZIqJXYeV9ChVgVPBYhHMpgJjkLPGUCdLXjSYFMj5S2KsDwnpgwzQgYgEt+ENe
+         nNLZbqFpQYXfb3y5rXSlKS+QZe4uVCnRrA29marMZv8SiLLiKyIVVPxggxRqYGOpJoiX
+         SDdVqAxTfCainI1PJ3y7M30lR/alI36SsYguuoAi+93HEJIWKap4bV0a7P0NPvagMk19
+         uU156VTPGxzNL/IOul9NU036Aa/QV3fPaH6Qkfy90ItHCP63+u1R6T9zvR24w9mcGdkb
+         00B9z9CnJr0UgLCxssnpoEHes0mcYnninZiz/77ffygBGPqSzJ3rqAQif9fe3ixdaeHS
+         FoVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=pG9lXccv0oOEUJTH/gOp3aikTwBYEJL3+x/Tztb4ZXo=;
-        b=ElwESIv2iYkLveEkmHxrXvozyR05LYhDT8159G6BHnEOJKP7V854kZMhvDij3k0td+
-         /gEU1Mb89mfPC+tkFUd8c5FrDBtfComsSUPO+uC9d1BacnsW3FLhbTLPQxfozx9CRdUI
-         YnDydh6t1XdrG3XDt6cqDOBVVlIBAZYbuU6Q1P6TNMjYMNiwW0EiXTdHlnwQrKpcM22j
-         AL+7KvmQasE9zMUn4GawI31wo0G+zvP7RHSz/CTK100sTpHhqm7cOZ19a9neubdiEVyb
-         Nz3FYZvJLr1xq2HSCvwtyrA5TYlwG2tGoaY6vEMEcopT8flC4Bs8D1VUOi2BFiSydZWR
-         wFnA==
-X-Gm-Message-State: APjAAAW5F5fz4hBMX4iTPY1fDzXt7qh32Mx7S2jaIwJwimj+/0X07qUk
-        Rk707WpRWuliIJuH42G1L/YikiD7
-X-Google-Smtp-Source: APXvYqyTLvaW2jX9fnIpBh+CACwUJYXd1X6vSzrQ2vWpCHoS0b+gPFRz9R5AOCf5ttzmw8HybM0GZA==
-X-Received: by 2002:a19:ae02:: with SMTP id f2mr7206530lfc.54.1573505830112;
-        Mon, 11 Nov 2019 12:57:10 -0800 (PST)
+        bh=Omi0XtqN8Kc5VZbYU+UoqGDpANl8X11C5I6N+y6qX+s=;
+        b=SbUVGMUfxWBLdoKjGs1TQyrEQ1aXJDSOAAvUyGCuHTioM+N5PTvIwPjHWLrH+aL6k7
+         +Qs1HxPWRR7lomjlDYkeW6VDwt1HFOWRCXsBfnbZnBMvJEffFhBllCcdvwOIJgprlEZB
+         LiPWI8GQ2YRbqQVGvDnvY5WhCTnp4l29J6X2VwQ7JCvJwsbgFH2waMIZbo2cZhh1O83F
+         BzI9PravjMgCKeoYLGT8U0jKeJ6epX07ll5tXsiYOK8MzYjPIRejDigsn5QmkqPVMaqD
+         GTbSFGx+vOAJXPasLF88z//N2QzmACjCaRXBImHjNGNwBKXskaMlCfEyfudZKBiEN9xR
+         JBVA==
+X-Gm-Message-State: APjAAAXnpOcsWSAMzj6hDM39+I9rSoJkd4n+eaxIKYwv/LcbnV6a41Mo
+        v94ulD4Rzj6WCO+In2c1Z/4=
+X-Google-Smtp-Source: APXvYqxLKInKw5WbXYyqQjzIx7MApjM4IFoUWL45UREcv37Rq1FCUtR58qaEJCX6cvt7pWSMwdLpNg==
+X-Received: by 2002:a2e:8597:: with SMTP id b23mr4052321lji.218.1573506994429;
+        Mon, 11 Nov 2019 13:16:34 -0800 (PST)
 Received: from localhost.localdomain (94-29-10-250.dynamic.spd-mgts.ru. [94.29.10.250])
-        by smtp.gmail.com with ESMTPSA id q124sm7423784ljq.93.2019.11.11.12.57.08
+        by smtp.gmail.com with ESMTPSA id n19sm7913150lfl.85.2019.11.11.13.16.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 Nov 2019 12:57:09 -0800 (PST)
+        Mon, 11 Nov 2019 13:16:33 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Prashant Gaikwad <pgaikwad@nvidia.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Marcel Ziswiler <marcel.ziswiler@toradex.com>
+        Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 03/10] clk: tegra: cclk: Add helpers for handling PLLX rate changes
-Date:   Mon, 11 Nov 2019 23:54:12 +0300
-Message-Id: <20191111205419.16768-4-digetx@gmail.com>
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v7 10/17] arm: tegra20: cpuidle: Make abort_flag atomic
+Date:   Tue, 12 Nov 2019 00:15:49 +0300
+Message-Id: <20191111211556.20723-11-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20191111205419.16768-1-digetx@gmail.com>
-References: <20191111205419.16768-1-digetx@gmail.com>
+In-Reply-To: <20191111211556.20723-1-digetx@gmail.com>
+References: <20191111211556.20723-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -82,91 +76,48 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CCLK should be re-parented away from PLLX if PLLX's rate is changing.
-The PLLP parent is a common safe CPU parent for all Tegra SoCs, thus
-CCLK will be re-parented to PLLP before PLLX rate-change begins and then
-switched back to PLLX after the rate-change completion. This patch adds
-helper functions which perform CCLK re-parenting, these helpers will be
-utilized by further patches.
+Replace memory accessors with atomic API just to make code consistent
+with the abort_barrier. The new variant may be even more correct now since
+atomic_read() will prevent compiler from generating wrong things like
+carrying abort_flag value in a register instead of re-fetching it from
+memory.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/clk/tegra/clk-tegra-super-cclk.c | 34 ++++++++++++++++++++++++
- drivers/clk/tegra/clk.h                  |  2 ++
- 2 files changed, 36 insertions(+)
+ arch/arm/mach-tegra/cpuidle-tegra20.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/clk/tegra/clk-tegra-super-cclk.c b/drivers/clk/tegra/clk-tegra-super-cclk.c
-index 7bcb9e8d0860..a03119c30456 100644
---- a/drivers/clk/tegra/clk-tegra-super-cclk.c
-+++ b/drivers/clk/tegra/clk-tegra-super-cclk.c
-@@ -25,6 +25,9 @@
+diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
+index bc5873e92af5..fe80f1988120 100644
+--- a/arch/arm/mach-tegra/cpuidle-tegra20.c
++++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
+@@ -32,7 +32,7 @@
+ #include "sleep.h"
  
- #define SUPER_CDIV_ENB		BIT(31)
+ #ifdef CONFIG_PM_SLEEP
+-static bool abort_flag;
++static atomic_t abort_flag;
+ static atomic_t abort_barrier;
+ static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
+ 				    struct cpuidle_driver *drv,
+@@ -167,13 +167,14 @@ static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
+ 	bool entered_lp2 = false;
  
-+static struct tegra_clk_super_mux *cclk_super;
-+static bool cclk_on_pllx;
-+
- static u8 cclk_super_get_parent(struct clk_hw *hw)
- {
- 	return tegra_clk_super_ops.get_parent(hw);
-@@ -115,6 +118,9 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
- 	struct clk_init_data init;
- 	u32 val;
+ 	if (tegra_pending_sgi())
+-		WRITE_ONCE(abort_flag, true);
++		atomic_set(&abort_flag, 1);
  
-+	if (WARN_ON(cclk_super))
-+		return ERR_PTR(-EBUSY);
-+
- 	super = kzalloc(sizeof(*super), GFP_KERNEL);
- 	if (!super)
- 		return ERR_PTR(-ENOMEM);
-@@ -173,6 +179,34 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
- 	clk = clk_register(NULL, &super->hw);
- 	if (IS_ERR(clk))
- 		kfree(super);
-+	else
-+		cclk_super = super;
+ 	cpuidle_coupled_parallel_barrier(dev, &abort_barrier);
  
- 	return clk;
- }
-+
-+int tegra_cclk_pre_pllx_rate_change(void)
-+{
-+	if (IS_ERR_OR_NULL(cclk_super))
-+		return -EINVAL;
-+
-+	if (cclk_super_get_parent(&cclk_super->hw) == PLLX_INDEX)
-+		cclk_on_pllx = true;
-+	else
-+		cclk_on_pllx = false;
-+
-+	/*
-+	 * CPU needs to be temporarily re-parented away from PLLX if PLLX
-+	 * changes its rate. PLLP is a safe parent for CPU on all Tegra SoCs.
-+	 */
-+	if (cclk_on_pllx)
-+		cclk_super_set_parent(&cclk_super->hw, PLLP_INDEX);
-+
-+	return 0;
-+}
-+
-+void tegra_cclk_post_pllx_rate_change(void)
-+{
-+	if (cclk_on_pllx)
-+		cclk_super_set_parent(&cclk_super->hw, PLLX_INDEX);
-+}
-diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-index fa18bef914af..0afe28f4372b 100644
---- a/drivers/clk/tegra/clk.h
-+++ b/drivers/clk/tegra/clk.h
-@@ -771,6 +771,8 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
- 		const char * const *parent_names, u8 num_parents,
- 		unsigned long flags, void __iomem *reg, u8 clk_super_flags,
- 		spinlock_t *lock);
-+int tegra_cclk_pre_pllx_rate_change(void);
-+void tegra_cclk_post_pllx_rate_change(void);
+-	if (abort_flag) {
++	if (atomic_read(&abort_flag)) {
+ 		cpuidle_coupled_parallel_barrier(dev, &abort_barrier);
+-		abort_flag = false;	/* clean flag for next coming */
++		/* clean flag for next coming */
++		atomic_set(&abort_flag, 0);
+ 		return -EINTR;
+ 	}
  
- /**
-  * struct tegra_sdmmc_mux - switch divider with Low Jitter inputs for SDMMC
 -- 
 2.23.0
 
