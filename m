@@ -2,191 +2,250 @@ Return-Path: <SRS0=dFRJ=ZE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE685C43331
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Nov 2019 11:00:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B9D5C17440
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Nov 2019 11:18:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5873B2084E
-	for <linux-pm@archiver.kernel.org>; Tue, 12 Nov 2019 11:00:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 14C48224ED
+	for <linux-pm@archiver.kernel.org>; Tue, 12 Nov 2019 11:18:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=freesources.org header.i=@freesources.org header.b="Mw+MX/9t"
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="S6/8OSeO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725955AbfKLLA2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Nov 2019 06:00:28 -0500
-Received: from mx3.freesources.org ([195.34.172.217]:40548 "EHLO
-        mx3.freesources.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725954AbfKLLA1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Nov 2019 06:00:27 -0500
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=freesources.org; s=20160526; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:MIME-Version:Date:Message-ID:References:Cc:To:From:Subject:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=++8wCAmdksGfHIF0MlgpD6fcdCnYWunEe52ipk44Fbs=; b=Mw+MX/9tsLJf6Atwoon6OgE/L0
-        lBQpkvyCmvWWjC2+dVoiNcS751rbzyYiu957O+SmnuC0AVHE2JkPCZO7gHBVgtmEIYDJ1/GUO0PLB
-        sq9bbjQQMXOVssK/AZMcMVeIBVawSAiTRRHryRVSh3RKRTNaBf1YnmxB8/ZREe8nvMrE=;
-Received: from anon-38-117.vpn.ipredator.se ([46.246.38.117])
-        by mx3.freesources.org with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.89)
-        (envelope-from <jonas@freesources.org>)
-        id 1iUTuE-0000uF-Bb; Tue, 12 Nov 2019 11:00:18 +0000
-Subject: Re: [RFC PATCH] PM: Add a switch for disabling/enabling sync() before
- suspend
-From:   Jonas Meurer <jonas@freesources.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Len Brown <len.brown@intel.com>,
-        Tim Dittler <tim.dittler@systemli.org>
-References: <56b2db6a-2f76-a6d3-662a-819cfb18d424@freesources.org>
- <2847488.TR0R5COpHM@kreacher>
- <063b2b9e-19f1-e67a-1d54-b1a813364bb8@freesources.org>
- <3858a5b3-7e62-977e-0292-964c4dcfef5a@freesources.org>
- <CAJZ5v0gNAONVcfvrUu4DBPBo=YzWW2NK-3774_Hv__p2JWmPgA@mail.gmail.com>
- <9b8ac136-bd5b-aa4b-fa7f-109e4a61dd28@freesources.org>
- <d9ac5225-51fb-8207-5661-64089ad98a4e@freesources.org>
-Openpgp: preference=signencrypt
-Autocrypt: addr=jonas@freesources.org; prefer-encrypt=mutual; keydata=
- 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
- 2SCIHpzHfm/mpRL2
-Message-ID: <355b0fb4-47da-3ab8-bc65-5191cd8882d6@freesources.org>
-Date:   Tue, 12 Nov 2019 12:00:15 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S1727686AbfKLLSu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Nov 2019 06:18:50 -0500
+Received: from mail-eopbgr20063.outbound.protection.outlook.com ([40.107.2.63]:42335
+        "EHLO EUR02-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1727661AbfKLLSp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 12 Nov 2019 06:18:45 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=UHwNlqFbnCqp9/RyW5BZwMkuUVEbpnEpGN+eW6sn+3l3qWwrO6NRlbZOD63YTwVJo2TCc7u6yItPP4zBj28zCRK/DLF1IHiTNY8fQ/FkFhtCtTPGg1wVcN95ans+YkJg4L4ds6II5JziUUsNKab5oZa+j0R+kDA8O2J4idwj2nuUMldXyen4KBQQgcxKjqHviMoG8WMhV1vla7ftke+8VAKDPVGQw51Ez5RnDOpAgM5SNXFMgrVQzDziD1P3aAwiZDSm6o1uGxrRCoKHKimRvIQoOHPQozQjw+G7y3afBpBZ3EtAfQbdzKBlaD7ZxyFgwSXixIs5rGVxtBETK8xgcA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=WT6j0VAgO9guqVEcCYsSLa/Vn+AN7lcTN5uVzEmKe4U=;
+ b=Cl/MNZ0zkMP4auwyAkXAi7HpGF0LAML/ljeL4bUifT7fpoRR5ArOVhkZWA1mLQyDyOod7ps3p9DtJbm9fxM6pIV7+dZbeh1ZkTJe7ZS53YSGfPm2soCFyXf8XYclcpUVst1Pvk+nRLlEeKMV1T06DUr+T6Aw0iP6LYCeVpb9Ntukbb34sPF2y3fSGO5F5yQ6Gzqgi6ODm7+dub9LvyiuZpCfTVUYj6ik9HmOn1gyOUKN1ePprrwnJu0EmAP5YNsa1O4cHf348aCfSIGTQlf9KmcPe6T9RF736wfsupg7uSjBG+/4eNnpEQVPTU1u7mQYTweDHs4JEpP5NBwG3UFOXQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=WT6j0VAgO9guqVEcCYsSLa/Vn+AN7lcTN5uVzEmKe4U=;
+ b=S6/8OSeOnbAM0skUuxyLIl3iPwqQR/7FOOoH3rPqnTdzeG7u1aPb88TqwS+sIvlWVUmIjBPkOs5WSRDEiQfK9tVQqZwxtUvgPyNl0fjAMG7fFMnIFS9hXq8q+8yfT1L0CBOwGTUG5YYRqJT4oXNRvYHNTNRjUCsWwfK7qdNzKS4=
+Received: from AM0PR04MB5779.eurprd04.prod.outlook.com (20.178.202.151) by
+ AM0PR04MB4051.eurprd04.prod.outlook.com (52.134.125.21) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2430.24; Tue, 12 Nov 2019 11:18:41 +0000
+Received: from AM0PR04MB5779.eurprd04.prod.outlook.com
+ ([fe80::fd44:1b14:587c:9fde]) by AM0PR04MB5779.eurprd04.prod.outlook.com
+ ([fe80::fd44:1b14:587c:9fde%7]) with mapi id 15.20.2430.027; Tue, 12 Nov 2019
+ 11:18:41 +0000
+From:   Abel Vesa <abel.vesa@nxp.com>
+To:     Leonard Crestez <leonard.crestez@nxp.com>
+CC:     Stephen Boyd <sboyd@kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        =?iso-8859-2?Q?Artur_=A6wigo=F1?= <a.swigon@partner.samsung.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Angus Ainslie <angus@akkea.ca>,
+        Martin Kepplinger <martink@posteo.de>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        Jacky Bai <ping.bai@nxp.com>,
+        Anson Huang <anson.huang@nxp.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH v4 2/6] clk: imx: Mark dram pll on 8mm and 8mn with
+ CLK_GET_RATE_NOCACHE
+Thread-Topic: [PATCH v4 2/6] clk: imx: Mark dram pll on 8mm and 8mn with
+ CLK_GET_RATE_NOCACHE
+Thread-Index: AQHVloV7TZnkkId7Yky0Y9av5sUpE6eHaNKA
+Date:   Tue, 12 Nov 2019 11:18:41 +0000
+Message-ID: <20191112111839.jlshj6w567hzh6e7@fsr-ub1664-175>
+References: <cover.1573252696.git.leonard.crestez@nxp.com>
+ <e6230f49275e10e0cea625a8d806f3850ac2a29c.1573252696.git.leonard.crestez@nxp.com>
+In-Reply-To: <e6230f49275e10e0cea625a8d806f3850ac2a29c.1573252696.git.leonard.crestez@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: AM0PR02CA0032.eurprd02.prod.outlook.com
+ (2603:10a6:208:3e::45) To AM0PR04MB5779.eurprd04.prod.outlook.com
+ (2603:10a6:208:131::23)
+x-originating-ip: [89.37.124.34]
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=abel.vesa@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 2deb979e-6c56-4ff8-468a-08d76762125a
+x-ms-traffictypediagnostic: AM0PR04MB4051:|AM0PR04MB4051:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <AM0PR04MB4051DEDDC2EBDBDAB132571FF6770@AM0PR04MB4051.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:2657;
+x-forefront-prvs: 021975AE46
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(7916004)(4636009)(366004)(199004)(189003)(66946007)(6436002)(9686003)(71200400001)(71190400001)(6512007)(1076003)(229853002)(14454004)(256004)(66476007)(64756008)(66446008)(6862004)(66066001)(4326008)(66556008)(6246003)(5660300002)(33716001)(6486002)(44832011)(6636002)(52116002)(7736002)(486006)(76176011)(476003)(446003)(25786009)(11346002)(54906003)(498600001)(86362001)(6116002)(3846002)(2906002)(7416002)(8936002)(6506007)(386003)(99286004)(53546011)(81166006)(81156014)(305945005)(26005)(186003)(8676002)(102836004);DIR:OUT;SFP:1101;SCL:1;SRVR:AM0PR04MB4051;H:AM0PR04MB5779.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: wTGoxY4cLG2SahgiiDBcg7IvS5VBTMsWd5XDpq92iZD/+/UDJettZS7V230Ktsw10UQ444S5NCLYb76W5PyElWBBkQ19agNtO1505YxCJ3q+1b0JtwAZjoa3ub+tzypaSD6+qP04iG7muDYIFmefnjLOznaB+hy2h4y6Jhthibk9+29FL++kmFSh7crW1PSKo7UCPDsCB5//AHPSGR76V3nKBN+lsZrkDyq/LUBbgcq7oLB5t5uf0AVwKu11puLEsrsX9B4syAzF49tjJooS0Yr/gxfdb3b1ji3v4PqL8Bw31SxjG5MvEhtLHcvPOLp3nZIG9vEgzdnVqvCZdcrUKoe3Arak4huXO9qzX3zcYKZj8nEemmhkmaoo0ww5tr2trToUD50S/NFow+Z2yCOQdgmLGJjXX5YZDOtv21VPDhQlft3/MLpy/b86ZtFSYghr
+Content-Type: text/plain; charset="iso-8859-2"
+Content-ID: <5C8B47F4FE43BA4E867456A48B2087B8@eurprd04.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-In-Reply-To: <d9ac5225-51fb-8207-5661-64089ad98a4e@freesources.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: de-DE
-Content-Transfer-Encoding: 7bit
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2deb979e-6c56-4ff8-468a-08d76762125a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Nov 2019 11:18:41.0295
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: QquLOKwYWRWLxk4rwA1kzQp/NQSqJEp+wxBn12/TboXQhLRvG9T7gIyq17C3B5yJo1hMpFBGNtrhUTHtvugJBA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM0PR04MB4051
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
+On 19-11-09 00:39:52, Leonard Crestez wrote:
+> DRAM frequency switches are executed in firmware and can change the
+> configuration of the DRAM PLL outside linux. Mark these CLKs with
+> CLK_GET_RATE_NOCACHE so we always read back the PLL config registers and
+> recalculate rates.
+>=20
+> In current DRAM frequency tables on 8mm/8mn only the maximum frequency
+> uses the PLL so it's always configured in the same way. However reading
+> back the PLL configuration is the correct behavior and allows additional
+> setpoints in the future.
+>=20
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 
-Jonas Meurer:
-> Jonas Meurer:
->> Rafael J. Wysocki:
->>> On Mon, Oct 21, 2019 at 12:47 PM Jonas Meurer <jonas@freesources.org> wrote:
->>>> Hi Rafael and linux-pm maintainers,
->>>>
->>>> sorry for the noise, but again: is there a chance to get a brief review
->>>> of my patchset?
->>>>
->>>> Probably it was a bad idea to rename the build-time flag, right? Should
->>>> I revert that part of the patch?
->>>
->>> Sorry for the delay, I'll get to your patches in the next couple of days.
->>
->> No worries. Thanks a lot for looking into it. It's no problem at all for
->> me/us if it takes a few more days. Just wanted to make sure that it
->> doesn't get lost.
->>
->> If you find a minute to give a quick comment on whether I should revert
->> the renaming of build-time flag CONFIG_SUSPEND_SKIP_SYNC to
->> CONFIG_SKIP_SYNC_ON_SUSPEND, then I could do that in advance to your
->> thorough review.
-> 
-> I went ahead now and reverted the renaming of build-time flag
-> CONFIG_SUSPEND_SKIP_SYNC[1]. There's no reason to do so and it breaks
-> backwards-compability.
-> 
-> Rafael, could you take a look at the patches anytime soon? I'd like to
-> propose them for inclusion into the Linux Kernel within the next weeks.
-> Again the question: would you sign them (if you consider them sensible)?
-> It's my first Linux Kernel contribution, so I'm unsure about the
-> process. My understanding is that a subsystem maintainer should approve
-> the patches first before they can be proposed for upstream integration,
-> right?
+This one looks fine.
 
-Just another friendly reminder: do you think you find time to look into
-my patchset anytime soon? Or shall I re-send them with lkml in the loop
-as they are?
+Reviewed-by: Abel Vesa <abel.vesa@nxp.com>
 
-Kind regards
- jonas
+> ---
+>  drivers/clk/imx/clk-imx8mm.c  | 2 +-
+>  drivers/clk/imx/clk-imx8mn.c  | 2 +-
+>  drivers/clk/imx/clk-pll14xx.c | 7 +++++++
+>  drivers/clk/imx/clk.h         | 1 +
+>  4 files changed, 10 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/clk/imx/clk-imx8mm.c b/drivers/clk/imx/clk-imx8mm.c
+> index c58f988191a5..d500bac3afa1 100644
+> --- a/drivers/clk/imx/clk-imx8mm.c
+> +++ b/drivers/clk/imx/clk-imx8mm.c
+> @@ -326,11 +326,11 @@ static int imx8mm_clocks_probe(struct platform_devi=
+ce *pdev)
+>  	clks[IMX8MM_SYS_PLL3_REF_SEL] =3D imx_clk_mux("sys_pll3_ref_sel", base =
++ 0x114, 0, 2, pll_ref_sels, ARRAY_SIZE(pll_ref_sels));
+> =20
+>  	clks[IMX8MM_AUDIO_PLL1] =3D imx_clk_pll14xx("audio_pll1", "audio_pll1_r=
+ef_sel", base, &imx_1443x_pll);
+>  	clks[IMX8MM_AUDIO_PLL2] =3D imx_clk_pll14xx("audio_pll2", "audio_pll2_r=
+ef_sel", base + 0x14, &imx_1443x_pll);
+>  	clks[IMX8MM_VIDEO_PLL1] =3D imx_clk_pll14xx("video_pll1", "video_pll1_r=
+ef_sel", base + 0x28, &imx_1443x_pll);
+> -	clks[IMX8MM_DRAM_PLL] =3D imx_clk_pll14xx("dram_pll", "dram_pll_ref_sel=
+", base + 0x50, &imx_1443x_pll);
+> +	clks[IMX8MM_DRAM_PLL] =3D imx_clk_pll14xx("dram_pll", "dram_pll_ref_sel=
+", base + 0x50, &imx_1443x_dram_pll);
+>  	clks[IMX8MM_GPU_PLL] =3D imx_clk_pll14xx("gpu_pll", "gpu_pll_ref_sel", =
+base + 0x64, &imx_1416x_pll);
+>  	clks[IMX8MM_VPU_PLL] =3D imx_clk_pll14xx("vpu_pll", "vpu_pll_ref_sel", =
+base + 0x74, &imx_1416x_pll);
+>  	clks[IMX8MM_ARM_PLL] =3D imx_clk_pll14xx("arm_pll", "arm_pll_ref_sel", =
+base + 0x84, &imx_1416x_pll);
+>  	clks[IMX8MM_SYS_PLL1] =3D imx_clk_fixed("sys_pll1", 800000000);
+>  	clks[IMX8MM_SYS_PLL2] =3D imx_clk_fixed("sys_pll2", 1000000000);
+> diff --git a/drivers/clk/imx/clk-imx8mn.c b/drivers/clk/imx/clk-imx8mn.c
+> index ca78cb1249a7..9c605ca1b631 100644
+> --- a/drivers/clk/imx/clk-imx8mn.c
+> +++ b/drivers/clk/imx/clk-imx8mn.c
+> @@ -323,11 +323,11 @@ static int imx8mn_clocks_probe(struct platform_devi=
+ce *pdev)
+>  	clks[IMX8MN_SYS_PLL3_REF_SEL] =3D imx_clk_mux("sys_pll3_ref_sel", base =
++ 0x114, 0, 2, pll_ref_sels, ARRAY_SIZE(pll_ref_sels));
+> =20
+>  	clks[IMX8MN_AUDIO_PLL1] =3D imx_clk_pll14xx("audio_pll1", "audio_pll1_r=
+ef_sel", base, &imx_1443x_pll);
+>  	clks[IMX8MN_AUDIO_PLL2] =3D imx_clk_pll14xx("audio_pll2", "audio_pll2_r=
+ef_sel", base + 0x14, &imx_1443x_pll);
+>  	clks[IMX8MN_VIDEO_PLL1] =3D imx_clk_pll14xx("video_pll1", "video_pll1_r=
+ef_sel", base + 0x28, &imx_1443x_pll);
+> -	clks[IMX8MN_DRAM_PLL] =3D imx_clk_pll14xx("dram_pll", "dram_pll_ref_sel=
+", base + 0x50, &imx_1443x_pll);
+> +	clks[IMX8MN_DRAM_PLL] =3D imx_clk_pll14xx("dram_pll", "dram_pll_ref_sel=
+", base + 0x50, &imx_1443x_dram_pll);
+>  	clks[IMX8MN_GPU_PLL] =3D imx_clk_pll14xx("gpu_pll", "gpu_pll_ref_sel", =
+base + 0x64, &imx_1416x_pll);
+>  	clks[IMX8MN_VPU_PLL] =3D imx_clk_pll14xx("vpu_pll", "vpu_pll_ref_sel", =
+base + 0x74, &imx_1416x_pll);
+>  	clks[IMX8MN_ARM_PLL] =3D imx_clk_pll14xx("arm_pll", "arm_pll_ref_sel", =
+base + 0x84, &imx_1416x_pll);
+>  	clks[IMX8MN_SYS_PLL1] =3D imx_clk_fixed("sys_pll1", 800000000);
+>  	clks[IMX8MN_SYS_PLL2] =3D imx_clk_fixed("sys_pll2", 1000000000);
+> diff --git a/drivers/clk/imx/clk-pll14xx.c b/drivers/clk/imx/clk-pll14xx.=
+c
+> index 5c458199060a..a6d31a7262ef 100644
+> --- a/drivers/clk/imx/clk-pll14xx.c
+> +++ b/drivers/clk/imx/clk-pll14xx.c
+> @@ -65,10 +65,17 @@ struct imx_pll14xx_clk imx_1443x_pll =3D {
+>  	.type =3D PLL_1443X,
+>  	.rate_table =3D imx_pll1443x_tbl,
+>  	.rate_count =3D ARRAY_SIZE(imx_pll1443x_tbl),
+>  };
+> =20
+> +struct imx_pll14xx_clk imx_1443x_dram_pll =3D {
+> +	.type =3D PLL_1443X,
+> +	.rate_table =3D imx_pll1443x_tbl,
+> +	.rate_count =3D ARRAY_SIZE(imx_pll1443x_tbl),
+> +	.flags =3D CLK_GET_RATE_NOCACHE,
+> +};
+> +
+>  struct imx_pll14xx_clk imx_1416x_pll =3D {
+>  	.type =3D PLL_1416X,
+>  	.rate_table =3D imx_pll1416x_tbl,
+>  	.rate_count =3D ARRAY_SIZE(imx_pll1416x_tbl),
+>  };
+> diff --git a/drivers/clk/imx/clk.h b/drivers/clk/imx/clk.h
+> index bc5bb6ac8636..81122c9ab842 100644
+> --- a/drivers/clk/imx/clk.h
+> +++ b/drivers/clk/imx/clk.h
+> @@ -50,10 +50,11 @@ struct imx_pll14xx_clk {
+>  	int flags;
+>  };
+> =20
+>  extern struct imx_pll14xx_clk imx_1416x_pll;
+>  extern struct imx_pll14xx_clk imx_1443x_pll;
+> +extern struct imx_pll14xx_clk imx_1443x_dram_pll;
+> =20
+>  #define imx_clk_cpu(name, parent_name, div, mux, pll, step) \
+>  	imx_clk_hw_cpu(name, parent_name, div, mux, pll, step)->clk
+> =20
+>  #define clk_register_gate2(dev, name, parent_name, flags, reg, bit_idx, =
+\
+> --=20
+> 2.17.1
+>=20
