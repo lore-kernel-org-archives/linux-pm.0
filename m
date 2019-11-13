@@ -2,107 +2,95 @@ Return-Path: <SRS0=pWvJ=ZF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07006C1744A
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 14:08:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 975F0C43331
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 14:09:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DCEC022469
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 14:08:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7433D2245C
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 14:09:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727684AbfKMOIK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Nov 2019 09:08:10 -0500
-Received: from mga14.intel.com ([192.55.52.115]:17314 "EHLO mga14.intel.com"
+        id S1726434AbfKMOJw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Nov 2019 09:09:52 -0500
+Received: from foss.arm.com ([217.140.110.172]:53178 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727673AbfKMOIJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 13 Nov 2019 09:08:09 -0500
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 13 Nov 2019 06:08:08 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.68,300,1569308400"; 
-   d="scan'208";a="235277365"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
-  by fmsmga002.fm.intel.com with ESMTP; 13 Nov 2019 06:08:04 -0800
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
-        (envelope-from <lkp@intel.com>)
-        id 1iUtJU-000B65-EA; Wed, 13 Nov 2019 22:08:04 +0800
-Date:   Wed, 13 Nov 2019 22:07:09 +0800
-From:   kbuild test robot <lkp@intel.com>
-To:     Leonard Crestez <leonard.crestez@nxp.com>
-Cc:     kbuild-all@lists.01.org, Stephen Boyd <sboyd@kernel.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Artur =?utf-8?B?xZp3aWdvxYQ=?= <a.swigon@partner.samsung.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Angus Ainslie <angus@akkea.ca>,
-        Martin Kepplinger <martink@posteo.de>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Alexandre Bailon <abailon@baylibre.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Dong Aisheng <aisheng.dong@nxp.com>,
-        Abel Vesa <abel.vesa@nxp.com>, Jacky Bai <ping.bai@nxp.com>,
-        Anson Huang <Anson.Huang@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-imx@nxp.com,
-        kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v5 4/5] PM / devfreq: Add dynamic scaling for imx8m ddr
- controller
-Message-ID: <201911132114.SNGZxR4v%lkp@intel.com>
-References: <d33acdcc043ce12713a9279636e32d039da5ee54.1573595319.git.leonard.crestez@nxp.com>
+        id S1727168AbfKMOJw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 13 Nov 2019 09:09:52 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B72B97A7;
+        Wed, 13 Nov 2019 06:09:51 -0800 (PST)
+Received: from [192.168.1.15] (unknown [172.31.20.19])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 937823F6C4;
+        Wed, 13 Nov 2019 06:09:48 -0800 (PST)
+Subject: Re: [PATCH v2] sched/freq: move call to cpufreq_update_util
+To:     Vincent Guittot <vincent.guittot@linaro.org>
+Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Mel Gorman <mgorman@suse.de>,
+        Doug Smythies <dsmythies@telus.net>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Sargun Dhillon <sargun@sargun.me>, Tejun Heo <tj@kernel.org>,
+        Xie XiuQi <xiexiuqi@huawei.com>, xiezhipeng1@huawei.com,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+References: <1573570093-1340-1-git-send-email-vincent.guittot@linaro.org>
+ <20191112150544.GA3664@linaro.org>
+ <3b8cafb7-894d-c302-e6c6-b5844b1298b5@arm.com>
+ <CAKfTPtBMNnM2tTfb72VtufDpwBvqu6Ttj3dnLgoNOZ--Q6qo+Q@mail.gmail.com>
+From:   Dietmar Eggemann <dietmar.eggemann@arm.com>
+Message-ID: <bcba52bc-6780-1efc-6ef4-1a75f1cef33d@arm.com>
+Date:   Wed, 13 Nov 2019 15:09:47 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d33acdcc043ce12713a9279636e32d039da5ee54.1573595319.git.leonard.crestez@nxp.com>
-X-Patchwork-Hint: ignore
-User-Agent: NeoMutt/20170113 (1.7.2)
+In-Reply-To: <CAKfTPtBMNnM2tTfb72VtufDpwBvqu6Ttj3dnLgoNOZ--Q6qo+Q@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Leonard,
+On 13.11.19 14:30, Vincent Guittot wrote:
+> On Wed, 13 Nov 2019 at 11:50, Dietmar Eggemann <dietmar.eggemann@arm.com> wrote:
+>>
+>> On 12.11.19 16:05, Vincent Guittot wrote:
+>>> Le Tuesday 12 Nov 2019 à 15:48:13 (+0100), Vincent Guittot a écrit :
 
-Thank you for the patch! Perhaps something to improve:
+[...]
 
-[auto build test WARNING on shawnguo/for-next]
-[also build test WARNING on next-20191113]
-[cannot apply to v5.4-rc7]
-[if your patch is applied to the wrong git tree, please drop us a note to help
-improve the system. BTW, we also suggest to use '--base' option to specify the
-base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
+>>>> @@ -7493,9 +7495,9 @@ static void update_blocked_averages(int cpu)
+>>>>       * that RT, DL and IRQ signals have been updated before updating CFS.
+>>>>       */
+>>>>      curr_class = rq->curr->sched_class;
+>>>> -    update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
+>>>> -    update_dl_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &dl_sched_class);
+>>>> -    update_irq_load_avg(rq, 0);
+>>>> +    decayed |= update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
+>>>> +    decayed |= update_dl_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &dl_sched_class);
+>>>> +    decayed |= update_irq_load_avg(rq, 0);
+>>
+>> Why not 'decayed  = update_cfs_rq_load_avg()' like in the
+>> !CONFIG_FAIR_GROUP_SCHED case?
+> 
+> Because it is handled by the update_load_avg() in
+> for_each_leaf_cfs_rq_safe() loop
+> 
+> This means that we can have 2 calls to cpufreq_update_util in
+> update_blocked_average() but at least the values will be up to date in
+> both calls unlike previously.
+> 
+> I'm going to prepare an additional patch to remove this useless call.
+> I have also seen some possible further optimization that i need to
+> study a bit more before preparing a patch
 
-url:    https://github.com/0day-ci/linux/commits/Leonard-Crestez/PM-devfreq-Add-dynamic-scaling-for-imx8m-ddr-controller/20191113-173930
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux.git for-next
-reproduce:
-        # apt-get install sparse
-        # sparse version: v0.6.1-31-gfd3528a-dirty
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
-
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
-
-
-sparse warnings: (new ones prefixed by >>)
-
->> drivers/devfreq/imx8m-ddrc.c:125:12: sparse: sparse: symbol 'clk_get_parent_by_index' was not declared. Should it be static?
-
-Please review and possibly fold the followup patch.
-
----
-0-DAY kernel test infrastructure                 Open Source Technology Center
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org Intel Corporation
+I see. The update_load_avg() call for the taskgroup skeleton se
+(cfs_rq->tg->se[cpu]). But what happens to the cpu which only has the
+root cfs_rq i the list? It doesn't have a skeleton se.
