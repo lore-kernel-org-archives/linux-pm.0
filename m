@@ -2,26 +2,27 @@ Return-Path: <SRS0=pWvJ=ZF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	TVD_PH_BODY_ACCOUNTS_PRE,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29B87C43331
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 12:41:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAE08C17447
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 12:41:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0660922467
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 12:41:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8CA8A21783
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 12:41:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727032AbfKMMlT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Nov 2019 07:41:19 -0500
-Received: from mx2.suse.de ([195.135.220.15]:39084 "EHLO mx1.suse.de"
+        id S1727345AbfKMMlZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Nov 2019 07:41:25 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39346 "EHLO mx1.suse.de"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726350AbfKMMlS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 13 Nov 2019 07:41:18 -0500
+        id S1727192AbfKMMlX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 13 Nov 2019 07:41:23 -0500
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
-        by mx1.suse.de (Postfix) with ESMTP id 0BBB4B3C0;
-        Wed, 13 Nov 2019 12:41:16 +0000 (UTC)
+        by mx1.suse.de (Postfix) with ESMTP id B9AE6B556;
+        Wed, 13 Nov 2019 12:41:20 +0000 (UTC)
 From:   Giovanni Gherdovich <ggherdovich@suse.cz>
 To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Thomas Gleixner <tglx@linutronix.de>,
@@ -41,119 +42,107 @@ Cc:     x86@kernel.org, linux-pm@vger.kernel.org,
         Dietmar Eggemann <dietmar.eggemann@arm.com>,
         Doug Smythies <dsmythies@telus.net>,
         Giovanni Gherdovich <ggherdovich@suse.cz>
-Subject: [PATCH v4 0/6] Add support for frequency invariance for (some) x86
-Date:   Wed, 13 Nov 2019 13:46:48 +0100
-Message-Id: <20191113124654.18122-1-ggherdovich@suse.cz>
+Subject: [PATCH v4 6/6] x86: intel_pstate: handle runtime turbo disablement/enablement in freq. invariance
+Date:   Wed, 13 Nov 2019 13:46:54 +0100
+Message-Id: <20191113124654.18122-7-ggherdovich@suse.cz>
 X-Mailer: git-send-email 2.16.4
+In-Reply-To: <20191113124654.18122-1-ggherdovich@suse.cz>
+References: <20191113124654.18122-1-ggherdovich@suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-v3 at https://lore.kernel.org/lkml/20191111180549.12166-1-ggherdovich@suse.cz/
+On some platforms such as the Dell XPS 13 laptop the firmware disables turbo
+when the machine is disconnected from AC, and viceversa it enables it again
+when it's reconnected. In these cases a _PPC ACPI notification is issued.
 
-Changes wrt v3:
+The scheduler needs to know freq_max for frequency-invariant calculations.
+To account for turbo availability to come and go, record freq_max at boot as
+if turbo was available and store it in a helper variable. Use a setter
+function to swap between 1024 and freq_max every time turbo goes off or on.
 
-- Add definition of function set_arch_max_freq if !CONFIG_SMP
+Reminder: "freq_max" isn't really the maximum frequency but the ratio
+turbo_freq*1024/base_freq, which becomes 1024 when turbo is disabled. The name
+could be misleading but makes explainations a lot simpler and is really
+convenient in calculations.
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Cover Letter from v3:
+Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+---
+ arch/x86/include/asm/topology.h |  5 +++++
+ arch/x86/kernel/smpboot.c       | 14 ++++++++++----
+ drivers/cpufreq/intel_pstate.c  |  1 +
+ 3 files changed, 16 insertions(+), 4 deletions(-)
 
-v2 at https://lore.kernel.org/lkml/20191002122926.385-1-ggherdovich@suse.cz/
-
-Changes wrt v2:
-
-- Removing the tick_disable mechanism. Frequency scale-invariance isn't
-  just about helping schedutil choose better frequencies, but also
-  providing the scheduler load balancer with better metrics. All users of
-  PELT signals benefit from this feature. The tick_disable patch disabled
-  frequency invariant calculation when a specific driver is in use
-  (intel_pstate in active mode).
-
-- static_branch_enable(&arch_scale_freq_key) is now called earlier, right
-  after we learn that X86_FEATURE_APERFMPERF is available. Previously Peter
-  Z. commented "if we can't tell the max_freq we don't want to use the
-  invariant stuff.". I've decided to do it differently: if we can't tell
-  the max_freq, then it's because the CPU encodes max_freq in MSRs in a way
-  this patch doesn't understand, and we assume max_p is the max_freq which
-  seems like a safe bet. As a reminder, max_freq=max_p is encoded by
-  setting arch_max_freq=1024 as default value. I'm open to feedback.
-
-- Refactoring the switch case statement in set_cpu_max_freq() as Rafael
-  W. Now the first patch doesn't hint at what the following patch will
-  bring along.
-
-- Handling the case were turbo is disabled at runtime and a _PPC ACPI
-  notification is issued, as requested by Rafael W. This happens eg. when
-  some laptop model is disconnected from AC. (Patch #6)
-
-- Handling all Intel x86_64 micro-arches.
-
-- A note for Srinivas P., who expressed concern for Atoms: on Atom CPUs the
-  max_freq is set to the highest turbo level, as a power-efficiency
-  oriented measure. In this way the ratio curr_freq/max_freq tends to be
-  lower, PELT signals are consequently lower, and schedutil doesn't push
-  too hard on speed. (Patches #4 and #5).
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Cover Letter from v2:
-
-v1 at https://lore.kernel.org/lkml/20190909024216.5942-1-ggherdovich@suse.cz/
-
-Changes wrt v1:
-
-- add x86-specific implementation of arch_scale_freq_invariant() using a
-  static key that checks for the availability of APERF and MPERF
-- refer to GOLDMONT_D instead of GOLDMONT_X, according to recent rename
-- set arch_cpu_freq to 1024 from x86_arch_scale_freq_tick_disable() to prevent
-  PELT from being fed stale data
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Cover Letter from v1:
-
-This is a resend with of Peter Zijlstra's patch to support frequency
-scale-invariance on x86 from May 2018 [see 1]. I've added some modifications
-and included performance test results. If Peter doesn't mind, I'm slapping my
-name on it :)
-
-The changes from Peter's original implementation are:
-
-1) normalizing against the 4-cores turbo level instead or 1-core turbo
-2) removing the run-time search for when the above value isn't found in the
-   various Intel MSRs -- the base frequency value is taken in that case.
-
-The section "4. KNOWN LIMITATIONS" in the first patch commit message addresses
-the reason why this approach was dropped back in 2018, and explains that the
-performance gains outweight that issue.
-
-The second patch from Srinivas is taken verbatim from the May 2018 submission
-as it still applies.
-
-I apologies for the length of patch #1 commit message; I've made a table of
-contents with summaries of each section that should make easier to skim
-through the content.
-
-This submission incorporates the feedback and requests for additional tests
-received during the presentation made at OSPM 2019 in Pisa three months ago.
-
-[1] https://lore.kernel.org/lkml/20180516044911.28797-2-srinivas.pandruvada@linux.intel.com/
-
-Giovanni Gherdovich (6):
-  x86,sched: Add support for frequency invariance
-  x86,sched: Add support for frequency invariance on SKYLAKE_X
-  x86,sched: Add support for frequency invariance on XEON_PHI_KNL/KNM
-  x86,sched: Add support for frequency invariance on ATOM_GOLDMONT*
-  x86,sched: Add support for frequency invariance on ATOM
-  x86: intel_pstate: handle runtime turbo disablement/enablement in
-    freq. invariance
-
- arch/x86/include/asm/topology.h |  28 ++++
- arch/x86/kernel/smpboot.c       | 324 +++++++++++++++++++++++++++++++++++++++-
- drivers/cpufreq/intel_pstate.c  |   1 +
- kernel/sched/core.c             |   1 +
- kernel/sched/sched.h            |   7 +
- 5 files changed, 360 insertions(+), 1 deletion(-)
-
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 9b3aca463c8f..4834bde53b5a 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -214,6 +214,11 @@ static inline long arch_scale_freq_capacity(int cpu)
+ extern void arch_scale_freq_tick(void);
+ #define arch_scale_freq_tick arch_scale_freq_tick
+ 
++extern void set_arch_max_freq(bool turbo_disabled);
++#else
++static inline void set_arch_max_freq(bool turbo_disabled)
++{
++}
+ #endif
+ 
+ #endif /* _ASM_X86_TOPOLOGY_H */
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 8988177064be..f94aa1dfc778 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1807,8 +1807,15 @@ DEFINE_STATIC_KEY_FALSE(arch_scale_freq_key);
+ 
+ static DEFINE_PER_CPU(u64, arch_prev_aperf);
+ static DEFINE_PER_CPU(u64, arch_prev_mperf);
++static u64 arch_max_turbo_freq = SCHED_CAPACITY_SCALE;
+ static u64 arch_max_freq = SCHED_CAPACITY_SCALE;
+ 
++void set_arch_max_freq(bool turbo_disabled)
++{
++	arch_max_freq = turbo_disabled ? SCHED_CAPACITY_SCALE :
++					arch_max_turbo_freq;
++}
++
+ static bool turbo_disabled(void)
+ {
+ 	u64 misc_en;
+@@ -2004,9 +2011,6 @@ static void intel_set_cpu_max_freq(void)
+ {
+ 	u64 ratio = 1, turbo_ratio = 1;
+ 
+-	if (turbo_disabled())
+-		return;
+-
+ 	if (slv_set_cpu_max_freq(&ratio, &turbo_ratio))
+ 		goto set_value;
+ 
+@@ -2022,7 +2026,9 @@ static void intel_set_cpu_max_freq(void)
+ 	core_set_cpu_max_freq(&ratio, &turbo_ratio);
+ 
+ set_value:
+-	arch_max_freq = div_u64(turbo_ratio * SCHED_CAPACITY_SCALE, ratio);
++	arch_max_turbo_freq = div_u64(turbo_ratio * SCHED_CAPACITY_SCALE,
++					ratio);
++	set_arch_max_freq(turbo_disabled());
+ 	static_branch_enable(&arch_scale_freq_key);
+ }
+ 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8ab31702cf6a..6bf50783bc24 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -922,6 +922,7 @@ static void intel_pstate_update_limits(unsigned int cpu)
+ 	 */
+ 	if (global.turbo_disabled_mf != global.turbo_disabled) {
+ 		global.turbo_disabled_mf = global.turbo_disabled;
++		set_arch_max_freq(global.turbo_disabled);
+ 		for_each_possible_cpu(cpu)
+ 			intel_pstate_update_max_freq(cpu);
+ 	} else {
 -- 
 2.16.4
 
