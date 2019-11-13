@@ -2,21 +2,21 @@ Return-Path: <SRS0=pWvJ=ZF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2FF6C17442
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 14:08:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07006C1744A
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 14:08:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7D5332245C
+	by mail.kernel.org (Postfix) with ESMTP id DCEC022469
 	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 14:08:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727675AbfKMOIK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1727684AbfKMOIK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 13 Nov 2019 09:08:10 -0500
 Received: from mga14.intel.com ([192.55.52.115]:17314 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726190AbfKMOIJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1727673AbfKMOIJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Wed, 13 Nov 2019 09:08:09 -0500
 X-Amp-Result: UNKNOWN
 X-Amp-Original-Verdict: FILE UNKNOWN
@@ -25,13 +25,13 @@ Received: from fmsmga002.fm.intel.com ([10.253.24.26])
   by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 13 Nov 2019 06:08:08 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.68,300,1569308400"; 
-   d="scan'208";a="235277360"
+   d="scan'208";a="235277365"
 Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
-  by fmsmga002.fm.intel.com with ESMTP; 13 Nov 2019 06:08:03 -0800
+  by fmsmga002.fm.intel.com with ESMTP; 13 Nov 2019 06:08:04 -0800
 Received: from kbuild by lkp-server01 with local (Exim 4.89)
         (envelope-from <lkp@intel.com>)
-        id 1iUtJT-000B2C-NV; Wed, 13 Nov 2019 22:08:03 +0800
-Date:   Wed, 13 Nov 2019 22:07:10 +0800
+        id 1iUtJU-000B65-EA; Wed, 13 Nov 2019 22:08:04 +0800
+Date:   Wed, 13 Nov 2019 22:07:09 +0800
 From:   kbuild test robot <lkp@intel.com>
 To:     Leonard Crestez <leonard.crestez@nxp.com>
 Cc:     kbuild-all@lists.01.org, Stephen Boyd <sboyd@kernel.org>,
@@ -59,8 +59,9 @@ Cc:     kbuild-all@lists.01.org, Stephen Boyd <sboyd@kernel.org>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-imx@nxp.com,
         kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org
-Subject: [RFC PATCH] PM / devfreq: clk_get_parent_by_index() can be static
-Message-ID: <20191113140710.jynosjegdq7t6igk@4978f4969bb8>
+Subject: Re: [PATCH v5 4/5] PM / devfreq: Add dynamic scaling for imx8m ddr
+ controller
+Message-ID: <201911132114.SNGZxR4v%lkp@intel.com>
 References: <d33acdcc043ce12713a9279636e32d039da5ee54.1573595319.git.leonard.crestez@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -73,23 +74,35 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Leonard,
 
-Fixes: f01e004107f3 ("PM / devfreq: Add dynamic scaling for imx8m ddr controller")
-Signed-off-by: kbuild test robot <lkp@intel.com>
+Thank you for the patch! Perhaps something to improve:
+
+[auto build test WARNING on shawnguo/for-next]
+[also build test WARNING on next-20191113]
+[cannot apply to v5.4-rc7]
+[if your patch is applied to the wrong git tree, please drop us a note to help
+improve the system. BTW, we also suggest to use '--base' option to specify the
+base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
+
+url:    https://github.com/0day-ci/linux/commits/Leonard-Crestez/PM-devfreq-Add-dynamic-scaling-for-imx8m-ddr-controller/20191113-173930
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux.git for-next
+reproduce:
+        # apt-get install sparse
+        # sparse version: v0.6.1-31-gfd3528a-dirty
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
+
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
+
+
+sparse warnings: (new ones prefixed by >>)
+
+>> drivers/devfreq/imx8m-ddrc.c:125:12: sparse: sparse: symbol 'clk_get_parent_by_index' was not declared. Should it be static?
+
+Please review and possibly fold the followup patch.
+
 ---
- imx8m-ddrc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
-index 62abb9b79d8a0..228561de94425 100644
---- a/drivers/devfreq/imx8m-ddrc.c
-+++ b/drivers/devfreq/imx8m-ddrc.c
-@@ -122,7 +122,7 @@ static void imx8m_ddrc_smc_set_freq(int target_freq)
- 	local_irq_enable();
- }
- 
--struct clk *clk_get_parent_by_index(struct clk *clk, int index)
-+static struct clk *clk_get_parent_by_index(struct clk *clk, int index)
- {
- 	struct clk_hw *hw;
- 
+0-DAY kernel test infrastructure                 Open Source Technology Center
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org Intel Corporation
