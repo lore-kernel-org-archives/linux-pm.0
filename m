@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30605C17440
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 01:51:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36100C43331
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 01:57:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0B92122459
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 01:51:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F376A222D4
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 01:57:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573609868;
-	bh=S3t5Cafj8u2c9Tf3AxCsWdFvcbncy3FrspDvoheR4uc=;
+	s=default; t=1573610239;
+	bh=lFxxBxjXHU5mvLq0/vlgvYPguApXQkNTD64lNsNZdvk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=E0RRIO3E0Sh8VQ6sl/nNKRgDzYDUJKAfHfWh/pZRq2p/UQjJHAIb/NPncMZgZ1imO
-	 QKlOs/6ngCsO5pJiVlf5UfAC50n7sLuCahIl0izWu5M4z08spJkvVviggX8UE0GqmN
-	 6vsDoaoO6lz8DSZbgqx+DxSiAclunSUEKcXL6kqw=
+	b=C2mu8Qoc+4jyMunO20TnObRjqPa4y1UE5gsK0+iuu/+kLbx8f6+uDYCkvIWWuOO1I
+	 tOFMUvnMbnlYMYCeHNTNKGUIhvHU+lgbb1GuutiC3qkWSe8GSD3lr9bb63HpIRX70+
+	 d2TYRdHmAH1fSTcvj9DD+7pFzcwh0/c8MeKZEzCU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727675AbfKMBvG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Nov 2019 20:51:06 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38392 "EHLO mail.kernel.org"
+        id S1729728AbfKMB5S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Nov 2019 20:57:18 -0500
+Received: from mail.kernel.org ([198.145.29.99]:50334 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727666AbfKMBvG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 12 Nov 2019 20:51:06 -0500
+        id S1728664AbfKMB5R (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 12 Nov 2019 20:57:17 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 3B1DF222D3;
-        Wed, 13 Nov 2019 01:51:05 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 43BC82247A;
+        Wed, 13 Nov 2019 01:57:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573609866;
-        bh=S3t5Cafj8u2c9Tf3AxCsWdFvcbncy3FrspDvoheR4uc=;
+        s=default; t=1573610237;
+        bh=lFxxBxjXHU5mvLq0/vlgvYPguApXQkNTD64lNsNZdvk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=J/Pz5lqE88rQpI6s1juo+V04B/88N2Gpwg5qkexxMoTJV/SmST+U/HJ9YvyTAOFKz
-         dt+lERh5rsjZ5qpzQ/BxqQnhvh2EtKH2n8i3ozsgq/16ujticRto9YulZ3DSAypm43
-         B6GIfVSUVwWPKjADKtd2PpherTNAubblV2ft9TYo=
+        b=AXEW6sBN7qEHe5jZTblr3TMe9n8/RdGLpHTDKJd3mf+h5Eg+OpDmg58K4LyfwzbkJ
+         +ZdMrql9huHOUSp1lYYqPuo+SYtMOH14VWYFFZ71YGFYVyDyDbxOblrrJiwTQbW/ZO
+         aBBE7Hao1whqCKmXWAwfnA8zJx8BjKWqak9BJeH8=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Vincent Donnefort <vincent.donnefort@arm.com>,
-        John Einar Reitan <john.reitan@arm.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
+Cc:     Chen Yu <yu.c.chen@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Pavel Machek <pavel@ucw.cz>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 031/209] PM / devfreq: stopping the governor before device_unregister()
-Date:   Tue, 12 Nov 2019 20:47:27 -0500
-Message-Id: <20191113015025.9685-31-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 037/115] PM / hibernate: Check the success of generating md5 digest before hibernation
+Date:   Tue, 12 Nov 2019 20:55:04 -0500
+Message-Id: <20191113015622.11592-37-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191113015025.9685-1-sashal@kernel.org>
-References: <20191113015025.9685-1-sashal@kernel.org>
+In-Reply-To: <20191113015622.11592-1-sashal@kernel.org>
+References: <20191113015622.11592-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -60,63 +60,63 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Vincent Donnefort <vincent.donnefort@arm.com>
+From: Chen Yu <yu.c.chen@intel.com>
 
-[ Upstream commit 2f061fd0c2d852e32e03a903fccd810663c5c31e ]
+[ Upstream commit 749fa17093ff67b31dea864531a3698b6a95c26c ]
 
-device_release() is freeing the resources before calling the device
-specific release callback which is, in the case of devfreq, stopping
-the governor.
+Currently if get_e820_md5() fails, then it will hibernate nevertheless.
+Actually the error code should be propagated to upper caller so that
+the hibernation could be aware of the result and terminates the process
+if md5 digest fails.
 
-It is a problem as some governors are using the device resources. e.g.
-simpleondemand which is using the devfreq deferrable monitoring work. If it
-is not stopped before the resources are freed, it might lead to a use after
-free.
-
-Signed-off-by: Vincent Donnefort <vincent.donnefort@arm.com>
-Reviewed-by: John Einar Reitan <john.reitan@arm.com>
-[cw00.choi: Fix merge conflict]
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/devfreq/devfreq.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ arch/x86/power/hibernate_64.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 8e21bedc74c38..bcd2279106760 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -578,10 +578,6 @@ static void devfreq_dev_release(struct device *dev)
- 	list_del(&devfreq->node);
- 	mutex_unlock(&devfreq_list_lock);
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index 9c80966c80bae..692a179b1ba32 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -250,9 +250,9 @@ static int get_e820_md5(struct e820_table *table, void *buf)
+ 	return ret;
+ }
  
--	if (devfreq->governor)
--		devfreq->governor->event_handler(devfreq,
--						 DEVFREQ_GOV_STOP, NULL);
+-static void hibernation_e820_save(void *buf)
++static int hibernation_e820_save(void *buf)
+ {
+-	get_e820_md5(e820_table_firmware, buf);
++	return get_e820_md5(e820_table_firmware, buf);
+ }
+ 
+ static bool hibernation_e820_mismatch(void *buf)
+@@ -272,8 +272,9 @@ static bool hibernation_e820_mismatch(void *buf)
+ 	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
+ }
+ #else
+-static void hibernation_e820_save(void *buf)
++static int hibernation_e820_save(void *buf)
+ {
++	return 0;
+ }
+ 
+ static bool hibernation_e820_mismatch(void *buf)
+@@ -318,9 +319,7 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ 
+ 	rdr->magic = RESTORE_MAGIC;
+ 
+-	hibernation_e820_save(rdr->e820_digest);
 -
- 	if (devfreq->profile->exit)
- 		devfreq->profile->exit(devfreq->dev.parent);
+-	return 0;
++	return hibernation_e820_save(rdr->e820_digest);
+ }
  
-@@ -717,7 +713,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- err_init:
- 	mutex_unlock(&devfreq_list_lock);
- 
--	device_unregister(&devfreq->dev);
-+	devfreq_remove_device(devfreq);
- 	devfreq = NULL;
- err_dev:
- 	if (devfreq)
-@@ -738,6 +734,9 @@ int devfreq_remove_device(struct devfreq *devfreq)
- 	if (!devfreq)
- 		return -EINVAL;
- 
-+	if (devfreq->governor)
-+		devfreq->governor->event_handler(devfreq,
-+						 DEVFREQ_GOV_STOP, NULL);
- 	device_unregister(&devfreq->dev);
- 
- 	return 0;
+ /**
 -- 
 2.20.1
 
