@@ -7,44 +7,47 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42785C17448
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 02:23:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B88E7C17441
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 02:24:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0FFE621D7F
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 02:23:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 874892067B
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 02:24:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573611836;
-	bh=0+tj+ChrT6Rg6cUA04EqBppN5Cmg4xlFOYO8ZyoCzEE=;
+	s=default; t=1573611896;
+	bh=GwUErkfOcTNNe8fJakwxrN+hDieJPLPdT00X3OCbnKQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=Qz8A7YLU62Cp3JBGqcSD4ghNs7mD07/OSIWmsFNe7J3+xfYsjYcMwE7ejVxJL9ZK5
-	 m438LXff/qRfSJIDxWWMbMrqiHBcOXRbUZoRiOk5+YMcj9dMjCkaPsG8mpePBlouHR
-	 Zq1o/YY6i5s1jMzrHuV+1BCuRJjMgNcaG3D7WZnI=
+	b=HCjF2zEJmynFB4D8XxIh18U46S7gVk1egDjdzsHkcCjeSWukiLHE+eusGx9RbVhLT
+	 gyFOwb8CBFmuzec/GdYrMNS8UE419Vjz1j4rn1ak6/ifeeHTsJ9VdONR+L5njxxNCh
+	 tcxu8aA+OaRZ5ISB3Z/BxG40YuLLiXgjSekwzaV8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728225AbfKMBwS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 Nov 2019 20:52:18 -0500
-Received: from mail.kernel.org ([198.145.29.99]:40892 "EHLO mail.kernel.org"
+        id S1728049AbfKMBvy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 Nov 2019 20:51:54 -0500
+Received: from mail.kernel.org ([198.145.29.99]:40094 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728220AbfKMBwS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 12 Nov 2019 20:52:18 -0500
+        id S1728040AbfKMBvx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 12 Nov 2019 20:51:53 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id D8D55222CD;
-        Wed, 13 Nov 2019 01:52:16 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 5044A222CD;
+        Wed, 13 Nov 2019 01:51:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573609937;
-        bh=0+tj+ChrT6Rg6cUA04EqBppN5Cmg4xlFOYO8ZyoCzEE=;
+        s=default; t=1573609913;
+        bh=GwUErkfOcTNNe8fJakwxrN+hDieJPLPdT00X3OCbnKQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=YDPcyBhVgEOAgz+WglplywxKuam7xvENL4xyezbIhxJoXbpY7fsHgfCP3lRxa62y7
-         IyF51fAoh8F3lDZVIg8x27M0k5mF+93YfiL3n7/x4fCyAppBk2iBTv0U9QkhoVc+lz
-         yAdl/T5rAPDo5u/zULXTcWmpXgJFiylDkI4ln7So=
+        b=DmpkV7Wm4Exx0ySmIGmPZZ7/SXu4hpf42X1Va4LHvP8qP1dD+/Fh8tUOlPa5PFqej
+         V+pjG8kbZ+ETSg1rYZ9auYLh+/dYl2uIptJ1SF4VQOa+/ijUolLxSZ/QnSqpphOPlj
+         q0ByrSIxEbb3jBP1dMK7ARjENn0J2AqUtpieXUx4=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+Cc:     Chen Yu <yu.c.chen@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Pavel Machek <pavel@ucw.cz>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 080/209] OPP: Return error on error from dev_pm_opp_get_opp_count()
-Date:   Tue, 12 Nov 2019 20:48:16 -0500
-Message-Id: <20191113015025.9685-80-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 062/209] PM / hibernate: Check the success of generating md5 digest before hibernation
+Date:   Tue, 12 Nov 2019 20:47:58 -0500
+Message-Id: <20191113015025.9685-62-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191113015025.9685-1-sashal@kernel.org>
 References: <20191113015025.9685-1-sashal@kernel.org>
@@ -57,32 +60,63 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Chen Yu <yu.c.chen@intel.com>
 
-[ Upstream commit 09f662f95306f3e3d47ab6842bc4b0bb868a80ad ]
+[ Upstream commit 749fa17093ff67b31dea864531a3698b6a95c26c ]
 
-Return error number instead of 0 on failures.
+Currently if get_e820_md5() fails, then it will hibernate nevertheless.
+Actually the error code should be propagated to upper caller so that
+the hibernation could be aware of the result and terminates the process
+if md5 digest fails.
 
-Fixes: a1e8c13600bf ("PM / OPP: "opp-hz" is optional for power domains")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/opp/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/power/hibernate_64.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index f3433bf47b100..1e80f9ec1aa6a 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -313,7 +313,7 @@ int dev_pm_opp_get_opp_count(struct device *dev)
- 		count = PTR_ERR(opp_table);
- 		dev_dbg(dev, "%s: OPP table not found (%d)\n",
- 			__func__, count);
--		return 0;
-+		return count;
- 	}
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index c9986041a5e12..6c3ec193a2465 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -266,9 +266,9 @@ static int get_e820_md5(struct e820_table *table, void *buf)
+ 	return ret;
+ }
  
- 	count = _get_opp_count(opp_table);
+-static void hibernation_e820_save(void *buf)
++static int hibernation_e820_save(void *buf)
+ {
+-	get_e820_md5(e820_table_firmware, buf);
++	return get_e820_md5(e820_table_firmware, buf);
+ }
+ 
+ static bool hibernation_e820_mismatch(void *buf)
+@@ -288,8 +288,9 @@ static bool hibernation_e820_mismatch(void *buf)
+ 	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
+ }
+ #else
+-static void hibernation_e820_save(void *buf)
++static int hibernation_e820_save(void *buf)
+ {
++	return 0;
+ }
+ 
+ static bool hibernation_e820_mismatch(void *buf)
+@@ -334,9 +335,7 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ 
+ 	rdr->magic = RESTORE_MAGIC;
+ 
+-	hibernation_e820_save(rdr->e820_digest);
+-
+-	return 0;
++	return hibernation_e820_save(rdr->e820_digest);
+ }
+ 
+ /**
 -- 
 2.20.1
 
