@@ -7,143 +7,211 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09698C43141
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 18:54:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A641C43215
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 20:21:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4AA8320658
-	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 18:54:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2F0A1206F0
+	for <linux-pm@archiver.kernel.org>; Wed, 13 Nov 2019 20:21:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eg+szh1m"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="APqs78Vo"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727216AbfKMSyp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 Nov 2019 13:54:45 -0500
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:40759 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727943AbfKMSye (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2019 13:54:34 -0500
-Received: by mail-wm1-f65.google.com with SMTP id f3so3211642wmc.5
-        for <linux-pm@vger.kernel.org>; Wed, 13 Nov 2019 10:54:33 -0800 (PST)
+        id S1726179AbfKMUVP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 Nov 2019 15:21:15 -0500
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:46480 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726210AbfKMUVO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Nov 2019 15:21:14 -0500
+Received: by mail-wr1-f65.google.com with SMTP id b3so3855345wrs.13
+        for <linux-pm@vger.kernel.org>; Wed, 13 Nov 2019 12:21:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=zn3z/ohxCZiMEpAOhI2pz3odCG7wV2XPFA28iErwpL0=;
-        b=eg+szh1mA8xKUV7Uc2u6zplCS83M0epV5sOJ1ElLmuQk8iLAJG64JM63oPGXrwcUNv
-         ZzfkqjN0Aa1V568LRe1nBtPAmUK3eOMcxda/eXV3TjHhvGfhZvqWCcil4DAXeSnBzIgv
-         OZ4X1Pbmv01rE3XRIdbxNa7Uf0KZmc9SrUgiISMv6NlDDQrjxRssnlMVgdIACFsN6iUB
-         asJ+n6EUkSxx5jmmWwV+x2H2OS5is4rgxmVWvPF047Pi27O5r99yRGWqxDvtFlyg4qEc
-         MgPEr7KxjFrtr1vS//IMXBkK2LcClSMSFaMZ1i1+hKkDtGjxheiLnW4r2DVcp6db71jO
-         gnkQ==
+        h=from:to:cc:subject:date:message-id;
+        bh=Vxg7fErovmPZRUiQLFPaUndHhsTa0KcxJAK3E2kbzLs=;
+        b=APqs78VoQYRNRcD2z55wsNoVUmqjCvT6dJijUhx0swgrmfCQpKU250Sj2yybQ0+l4w
+         7DyuggHzS7QqSqNTPA2EuRROfb6hPMtcZ91+ttOf9ZaFKX6T7HECTJEZUhpjotm0u020
+         eU9fViHK5VcofIfXsFJ2KLCQP4lnDDD/vxA524dl2Lo5Evjuatpdplj4FRU9e6No9A5q
+         JTzwN6Gt0a2bkHGDdzXSutW2Ov9XccKwR2JJXBLi/uQ+MMEjbsNcd+1PJI12mUBw83E1
+         lIHX/M8S61BMF5oG6/RkshN2v/dRXh8sPz5mdhX8S0NZrcvF/3O5imEYTYJRQ5y0hhJ0
+         3rcg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=zn3z/ohxCZiMEpAOhI2pz3odCG7wV2XPFA28iErwpL0=;
-        b=VhKRkQiTu06azNgjpQaavJXQ/3WqwZ1pVrlFMNeq8AZA+EMdW0imZYre5dQzW004kX
-         NM7BABSpL/S/ZE7P5XeNoSjLyTqDFmxX2Ngr4NiwsE4M3rDOJ3h1YqreGjB9nL7DxB67
-         b9MdXshB+AJxoO2+OdLPvbm4MfmNPTJVRdotCIer2mEsdRvhVvGiyEGEgx6J8nxUuiuV
-         q6CCTBIfh119tvxf/JMAYy1+96OZ5rw+tKXehFwaxEPyKPeHdbkrDSrMu4OiH+L2rKNK
-         HTS9Ugg3p+MonHkWVhllO54Ndjx6fZFNon3PnhokGMxkZ0UbADKzk4rHvWyvc9ZJk24t
-         7Zeg==
-X-Gm-Message-State: APjAAAXPOonUjUFhiUOLWwAO92VdK4ErpdWXOf1ea2N+B4Q6OF+ky+Uj
-        0WPE+M1emGvkSR1tVB41ilxT6Q==
-X-Google-Smtp-Source: APXvYqyOkVmRLFlc95H5iDJQKuaiccJXVPUo0y3gJsmyXXObH3xQOTg7VR3u9y/5WCF/ZTwJbunsLA==
-X-Received: by 2002:a1c:2dd0:: with SMTP id t199mr4027766wmt.58.1573671272661;
-        Wed, 13 Nov 2019 10:54:32 -0800 (PST)
-Received: from localhost.localdomain ([2a01:e34:ed2f:f020:ec92:781d:6592:837])
-        by smtp.gmail.com with ESMTPSA id 17sm2652848wmg.19.2019.11.13.10.54.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Nov 2019 10:54:32 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     rafael@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ulf.hansson@linaro.org
-Subject: [PATCH RFC 2/3] sched: idle: Add a latency parameter to the play_idle function
-Date:   Wed, 13 Nov 2019 19:54:18 +0100
-Message-Id: <20191113185419.13305-2-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191113185419.13305-1-daniel.lezcano@linaro.org>
-References: <20191113185419.13305-1-daniel.lezcano@linaro.org>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=Vxg7fErovmPZRUiQLFPaUndHhsTa0KcxJAK3E2kbzLs=;
+        b=YQ1MlbmZhgqEV5gHlHvEFDsudlsjNMYUKWYmOpPbXpTLhXZn5hrGiTUnhOk/ZywSqn
+         oNYc2afyR7g7doHP9bFKh37yHQpyyBqEDsJfDwO+nthh/sUuxF8EnL6pQ+fWB+n+BQMg
+         AHn+VLn1eTJt2kdCfh8A4Mpfypm+doSwbTaPOb0wRus9GLHn50Qz1BfhvUdhXnJA1IOQ
+         H24AtuMxe9DLqb9YGbBsSbOlQxHNKW1TcYSSFL9kcq5n5naVP2f9txRGpgHUNB2u4PqI
+         ntXagGIwpBAHgj2RtQ6abijP1J6CwZs15Y08rs2fyMg48ekrrhdUK9EtKohiorz+DwZ9
+         Ltvg==
+X-Gm-Message-State: APjAAAWlgGyFIFfove42733wyOMexP4zeiKUK440R7aclS3Gnaecs49F
+        gTrbGWLYNRSyBKdUYPBiuZvyYQ==
+X-Google-Smtp-Source: APXvYqzFEApVCTLE8xYkeDbklVfQuPHlUEPb5AYmu9bzcn/4nBX3xRxtrONHlzi+7zFsI2+zvVw4lQ==
+X-Received: by 2002:a5d:4f06:: with SMTP id c6mr4661339wru.211.1573676470480;
+        Wed, 13 Nov 2019 12:21:10 -0800 (PST)
+Received: from localhost.localdomain ([2a01:e0a:f:6020:bdd0:28e6:f0d9:a18c])
+        by smtp.gmail.com with ESMTPSA id n1sm4262231wrr.24.2019.11.13.12.21.08
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Wed, 13 Nov 2019 12:21:09 -0800 (PST)
+From:   Vincent Guittot <vincent.guittot@linaro.org>
+To:     linux-kernel@vger.kernel.org, mingo@redhat.com,
+        peterz@infradead.org, dietmar.eggemann@arm.com,
+        juri.lelli@redhat.com, rostedt@goodmis.org, mgorman@suse.de,
+        dsmythies@telus.net
+Cc:     linux-pm@vger.kernel.org, torvalds@linux-foundation.org,
+        tglx@linutronix.de, sargun@sargun.me, tj@kernel.org,
+        xiexiuqi@huawei.com, xiezhipeng1@huawei.com,
+        srinivas.pandruvada@linux.intel.com,
+        Vincent Guittot <vincent.guittot@linaro.org>
+Subject: [PATCH v3] sched/freq: move call to cpufreq_update_util
+Date:   Wed, 13 Nov 2019 21:21:01 +0100
+Message-Id: <1573676461-7990-1-git-send-email-vincent.guittot@linaro.org>
+X-Mailer: git-send-email 2.7.4
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-By default the play_idle() function leads to the deepest idle state
-selection which is not necessarily the state we are interested in when
-forcing the CPU to go to idle.
+update_cfs_rq_load_avg() calls cfs_rq_util_change() everytime pelt decays,
+which might be inefficient when cpufreq driver has rate limitation.
 
-Add a latency parameter to the play_idle() function, so the caller can
-use the constraint to allow a shallower state.
+When a task is attached on a CPU, we have call path:
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+update_load_avg()
+  update_cfs_rq_load_avg()
+    cfs_rq_util_change -- > trig frequency update
+  attach_entity_load_avg()
+    cfs_rq_util_change -- > trig frequency update
+
+The 1st frequency update will not take into account the utilization of the
+newly attached task and the 2nd one might be discard because of rate
+limitation of the cpufreq driver.
+
+update_cfs_rq_load_avg() is only called by update_blocked_averages()
+and update_load_avg() so we can move the call to
+cfs_rq_util_change/cpufreq_update_util() into these 2 functions. It's also
+interesting to notice that update_load_avg() already calls directly
+cfs_rq_util_change() for !SMP case.
+
+This changes will also ensure that cpufreq_update_util() is called even
+when there is no more CFS rq in the leaf_cfs_rq_list to update but only
+irq, rt or dl pelt signals.
+
+Reported-by: Doug Smythies <dsmythies@telus.net>
+Fixes: 039ae8bcf7a5 ("sched/fair: Fix O(nr_cgroups) in the load balancing path")
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- drivers/powercap/idle_inject.c           | 2 +-
- drivers/thermal/intel/intel_powerclamp.c | 2 +-
- include/linux/cpu.h                      | 2 +-
- kernel/sched/idle.c                      | 4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/powercap/idle_inject.c b/drivers/powercap/idle_inject.c
-index cd1270614cc6..6f2bfb172e61 100644
---- a/drivers/powercap/idle_inject.c
-+++ b/drivers/powercap/idle_inject.c
-@@ -138,7 +138,7 @@ static void idle_inject_fn(unsigned int cpu)
+changes for v3:
+- fix typo
+- test the decay of root cfs_rq even for !CONFIG_FAIR_GROUP_SCHED case
+
+ kernel/sched/fair.c | 39 ++++++++++++++++++++++++++-------------
+ 1 file changed, 26 insertions(+), 13 deletions(-)
+
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 69a81a5..0a8f4ea 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -3504,9 +3504,6 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+ 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
+ #endif
+ 
+-	if (decayed)
+-		cfs_rq_util_change(cfs_rq, 0);
+-
+ 	return decayed;
+ }
+ 
+@@ -3616,8 +3613,12 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+ 		attach_entity_load_avg(cfs_rq, se, SCHED_CPUFREQ_MIGRATION);
+ 		update_tg_load_avg(cfs_rq, 0);
+ 
+-	} else if (decayed && (flags & UPDATE_TG))
+-		update_tg_load_avg(cfs_rq, 0);
++	} else if (decayed) {
++		cfs_rq_util_change(cfs_rq, 0);
++
++		if (flags & UPDATE_TG)
++			update_tg_load_avg(cfs_rq, 0);
++	}
+ }
+ 
+ #ifndef CONFIG_64BIT
+@@ -7543,6 +7544,7 @@ static void update_blocked_averages(int cpu)
+ 	const struct sched_class *curr_class;
+ 	struct rq_flags rf;
+ 	bool done = true;
++	int decayed;
+ 
+ 	rq_lock_irqsave(rq, &rf);
+ 	update_rq_clock(rq);
+@@ -7552,9 +7554,9 @@ static void update_blocked_averages(int cpu)
+ 	 * that RT, DL and IRQ signals have been updated before updating CFS.
  	 */
- 	iit->should_run = 0;
+ 	curr_class = rq->curr->sched_class;
+-	update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
+-	update_dl_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &dl_sched_class);
+-	update_irq_load_avg(rq, 0);
++	decayed = update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
++	decayed |= update_dl_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &dl_sched_class);
++	decayed |= update_irq_load_avg(rq, 0);
  
--	play_idle(READ_ONCE(ii_dev->idle_duration_us));
-+	play_idle(READ_ONCE(ii_dev->idle_duration_us), UINT_MAX);
+ 	/* Don't need periodic decay once load/util_avg are null */
+ 	if (others_have_blocked(rq))
+@@ -7567,9 +7569,13 @@ static void update_blocked_averages(int cpu)
+ 	for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) {
+ 		struct sched_entity *se;
+ 
+-		if (update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq))
++		if (update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq)) {
+ 			update_tg_load_avg(cfs_rq, 0);
+ 
++			if (cfs_rq == &rq->cfs)
++				decayed = 1;
++		}
++
+ 		/* Propagate pending load changes to the parent, if any: */
+ 		se = cfs_rq->tg->se[cpu];
+ 		if (se && !skip_blocked_update(se))
+@@ -7588,6 +7594,9 @@ static void update_blocked_averages(int cpu)
+ 	}
+ 
+ 	update_blocked_load_status(rq, !done);
++
++	if (decayed)
++		cpufreq_update_util(rq, 0);
+ 	rq_unlock_irqrestore(rq, &rf);
  }
  
- /**
-diff --git a/drivers/thermal/intel/intel_powerclamp.c b/drivers/thermal/intel/intel_powerclamp.c
-index 53216dcbe173..dd1330d59176 100644
---- a/drivers/thermal/intel/intel_powerclamp.c
-+++ b/drivers/thermal/intel/intel_powerclamp.c
-@@ -430,7 +430,7 @@ static void clamp_idle_injection_func(struct kthread_work *work)
- 	if (should_skip)
- 		goto balance;
+@@ -7644,6 +7653,7 @@ static inline void update_blocked_averages(int cpu)
+ 	struct cfs_rq *cfs_rq = &rq->cfs;
+ 	const struct sched_class *curr_class;
+ 	struct rq_flags rf;
++	int decayed;
  
--	play_idle(jiffies_to_usecs(w_data->duration_jiffies));
-+	play_idle(jiffies_to_usecs(w_data->duration_jiffies), UINT_MAX);
+ 	rq_lock_irqsave(rq, &rf);
+ 	update_rq_clock(rq);
+@@ -7653,13 +7663,16 @@ static inline void update_blocked_averages(int cpu)
+ 	 * that RT, DL and IRQ signals have been updated before updating CFS.
+ 	 */
+ 	curr_class = rq->curr->sched_class;
+-	update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
+-	update_dl_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &dl_sched_class);
+-	update_irq_load_avg(rq, 0);
++	decayed = update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
++	decayed |= update_dl_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &dl_sched_class);
++	decayed |= update_irq_load_avg(rq, 0);
  
- balance:
- 	if (clamping && w_data->clamping && cpu_online(w_data->cpu))
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index d0633ebdaa9c..241f558af17a 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -179,7 +179,7 @@ void arch_cpu_idle_dead(void);
- int cpu_report_state(int cpu);
- int cpu_check_up_prepare(int cpu);
- void cpu_set_state_online(int cpu);
--void play_idle(unsigned long duration_us);
-+void play_idle(unsigned long duration_us, unsigned int latency);
+-	update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq);
++	decayed |= update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq);
  
- #ifdef CONFIG_HOTPLUG_CPU
- bool cpu_wait_death(unsigned int cpu, int seconds);
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index 00e064d3dfe1..56a8b9d35cb9 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -311,7 +311,7 @@ static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *timer)
- 	return HRTIMER_NORESTART;
+ 	update_blocked_load_status(rq, cfs_rq_has_blocked(cfs_rq) || others_have_blocked(rq));
++
++	if (decayed)
++		cpufreq_update_util(rq, 0);
+ 	rq_unlock_irqrestore(rq, &rf);
  }
  
--void play_idle(unsigned long duration_us)
-+void play_idle(unsigned long duration_us, unsigned int latency)
- {
- 	struct idle_timer it;
- 
-@@ -328,7 +328,7 @@ void play_idle(unsigned long duration_us)
- 	rcu_sleep_check();
- 	preempt_disable();
- 	current->flags |= PF_IDLE;
--	cpuidle_use_latency(1);
-+	cpuidle_use_latency(latency);
- 
- 	it.done = 0;
- 	hrtimer_init_on_stack(&it.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 -- 
-2.17.1
+2.7.4
 
