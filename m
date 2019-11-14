@@ -2,197 +2,132 @@ Return-Path: <SRS0=zvQi=ZG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FAKE_REPLY_C,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEE91C432C3
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Nov 2019 20:10:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 712F3C432C3
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Nov 2019 20:19:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CD2A920723
-	for <linux-pm@archiver.kernel.org>; Thu, 14 Nov 2019 20:10:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 42BBC20727
+	for <linux-pm@archiver.kernel.org>; Thu, 14 Nov 2019 20:19:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1573762785;
+	bh=Ms+2LTB1+DESJrOdQdCv2D3DR/a6flmiLsM96V8C2E4=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:List-ID:From;
+	b=wulkljuyP4TYfVEgeA7oxiCc5pqHImFgzcLVW2NcRczdYdOFH1e9Lf+P5Q08uuUoB
+	 ZeNLUxByJtaRLHNQC5zx9kgXFbyel6uZOFoVF8TMfNQwwAkb6QHjSgD4kbego1A8lo
+	 xQzKsQRliLW07POeKwT/499soJe7X+8A+C0Tw+I8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726969AbfKNUKw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 14 Nov 2019 15:10:52 -0500
-Received: from inva021.nxp.com ([92.121.34.21]:39642 "EHLO inva021.nxp.com"
+        id S1726605AbfKNUTo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 14 Nov 2019 15:19:44 -0500
+Received: from mail.kernel.org ([198.145.29.99]:48588 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726533AbfKNUKw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 14 Nov 2019 15:10:52 -0500
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 51A3020047C;
-        Thu, 14 Nov 2019 21:10:49 +0100 (CET)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 409B62001E7;
-        Thu, 14 Nov 2019 21:10:49 +0100 (CET)
-Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 2E10B2060A;
-        Thu, 14 Nov 2019 21:10:48 +0100 (CET)
-From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
-        Alexandre Bailon <abailon@baylibre.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Jacky Bai <ping.bai@nxp.com>,
-        Anson Huang <Anson.Huang@nxp.com>,
-        Abel Vesa <abel.vesa@nxp.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Dong Aisheng <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Angus Ainslie <angus@akkea.ca>,
-        Martin Kepplinger <martink@posteo.de>,
-        Silvano di Ninno <silvano.dininno@nxp.com>,
-        linux-pm@vger.kernel.org, kernel@pengutronix.de, linux-imx@nxp.com,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH RFC v6 8/9] arm64: dts: imx8m: Add NOC nodes
-Date:   Thu, 14 Nov 2019 22:09:55 +0200
-Message-Id: <da75b45954e3bf58a63be6f3713aafca4258bcf2.1573761527.git.leonard.crestez@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1573761527.git.leonard.crestez@nxp.com>
-References: <cover.1573761527.git.leonard.crestez@nxp.com>
-In-Reply-To: <cover.1573761527.git.leonard.crestez@nxp.com>
-References: <cover.1573761527.git.leonard.crestez@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1726597AbfKNUTo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 14 Nov 2019 15:19:44 -0500
+Received: from localhost (unknown [69.71.4.100])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 2443A20709;
+        Thu, 14 Nov 2019 20:19:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1573762783;
+        bh=Ms+2LTB1+DESJrOdQdCv2D3DR/a6flmiLsM96V8C2E4=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=nACZ0IrSrZ/AlXj+jZQQZqliQSFvUsfLm7y5kYUBBF5csAwpMtCtZFbVPjaojtxqv
+         35VtNXdJxtyLA/LfY0wty1jGbnOrLtrNLb2bMoOkyvb1OeKiQWOHweYXDWknNfPm5B
+         U8gdqWhghK3nPrvW8oJflow7c0LsEAKkU7BbeGaM=
+Date:   Thu, 14 Nov 2019 14:19:41 -0600
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     linux-pci@vger.kernel.org
+Cc:     Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Keith Busch <keith.busch@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Andrew Murray <andrew.murray@arm.com>
+Subject: Re: [PATCH v2 0/3] PCI: Add PCI_ERROR_RESPONSE, check for errors
+Message-ID: <20191114201941.GA242410@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190822200551.129039-1-helgaas@kernel.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add initial support for dynamic frequency scaling of main NOC.
+[+cc Andrew]
 
-Make DDRC the parent of the NOC (using passive governor) so that the
-main NOC is automatically scaled together with DDRC by default.
+On Thu, Aug 22, 2019 at 03:05:48PM -0500, Bjorn Helgaas wrote:
+> From: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> Reads from a PCI device may fail if the device has been turned off (put
+> into D3cold), removed, or if some other error occurs.  The PCI host bridge
+> typically fabricates ~0 data to complete the CPU's read.
+> 
+> We check for that in a few places, but not in a consistent way.  This
+> series adds a PCI_ERROR_RESPONSE definition to make the checks more
+> consistent and easier to find.  Note that ~0 may indicate a PCI error, but
+> it may also be valid read data, so you need more information (such as
+> knowing that a register can never contain ~0) before concluding that it's
+> an error.
+> 
+> This series also adds a new check for PCI_ERROR_RESPONSE in the power
+> management code because that code frequently encounters devices in D3cold,
+> where we previously misinterpreted ~0 data.  It also uses pci_power_name()
+> to print D-state names more consistently.
+> 
+> Rafael, I didn't add your Reviewed-by to "PCI / PM: Return error when
+> changing power state from D3cold" because I made small changes to try to
+> make the messages more consistent, and I didn't want to presume they'd be
+> OK with you.
+> 
+> Changes since v1:
+>   - Add Rafael's Reviewed-By to the first two patches
+>   - Drop "PCI / PM: Check for error when reading PME status" because Rafael
+>     pointed out that some devices can signal PME even when in D3cold, so
+>     this would require additional rework
+>   - Drop "PCI / PM: Check for error when reading Power State" because
+>     Rafael thinks it's mostly redundant
+> 
+> Bjorn Helgaas (3):
+>   PCI: Add PCI_ERROR_RESPONSE definition
+>   PCI / PM: Decode D3cold power state correctly
+>   PCI / PM: Return error when changing power state from D3cold
 
-Support for proactive scaling via interconnect will come on top.
+I applied patches 2 & 3 (tweaked to not depend on the
+PCI_ERROR_RESPONSE definition) with reviewed-by from Rafael, Keith,
+and Mika to pci/pm for v5.5, thanks everybody for taking a look.
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
----
- arch/arm64/boot/dts/freescale/imx8mm.dtsi | 22 ++++++++++++++++++++++
- arch/arm64/boot/dts/freescale/imx8mn.dtsi | 22 ++++++++++++++++++++++
- arch/arm64/boot/dts/freescale/imx8mq.dtsi | 22 ++++++++++++++++++++++
- 3 files changed, 66 insertions(+)
+Andrew had good ideas for improving the PCI_ERROR_RESPONSE part, so
+it's gone for now but not forgotten.
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-index cf235956bef3..a7eafaedeb40 100644
---- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-@@ -772,10 +772,32 @@
- 				status = "disabled";
- 			};
- 
- 		};
- 
-+		noc: interconnect@32700000 {
-+			compatible = "fsl,imx8mm-noc", "fsl,imx8m-noc";
-+			reg = <0x32700000 0x100000>;
-+			clocks = <&clk IMX8MM_CLK_NOC>;
-+			devfreq = <&ddrc>;
-+			operating-points-v2 = <&noc_opp_table>;
-+
-+			noc_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-150M {
-+					opp-hz = /bits/ 64 <150000000>;
-+				};
-+				opp-375M {
-+					opp-hz = /bits/ 64 <375000000>;
-+				};
-+				opp-750M {
-+					opp-hz = /bits/ 64 <750000000>;
-+				};
-+			};
-+		};
-+
- 		aips4: bus@32c00000 {
- 			compatible = "fsl,aips-bus", "simple-bus";
- 			#address-cells = <1>;
- 			#size-cells = <1>;
- 			ranges = <0x32c00000 0x32c00000 0x400000>;
-diff --git a/arch/arm64/boot/dts/freescale/imx8mn.dtsi b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-index 4b44884e857c..fd47f4aef666 100644
---- a/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-@@ -668,10 +668,32 @@
- 				status = "disabled";
- 			};
- 
- 		};
- 
-+		noc: interconnect@32700000 {
-+			compatible = "fsl,imx8mn-noc", "fsl,imx8m-noc";
-+			reg = <0x32700000 0x100000>;
-+			clocks = <&clk IMX8MN_CLK_NOC>;
-+			devfreq = <&ddrc>;
-+			operating-points-v2 = <&noc_opp_table>;
-+
-+			noc_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-100M {
-+					opp-hz = /bits/ 64 <100000000>;
-+				};
-+				opp-600M {
-+					opp-hz = /bits/ 64 <600000000>;
-+				};
-+				opp-800M {
-+					opp-hz = /bits/ 64 <800000000>;
-+				};
-+			};
-+		};
-+
- 		aips4: bus@32c00000 {
- 			compatible = "fsl,aips-bus", "simple-bus";
- 			reg = <0x32c00000 0x400000>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-index ae4c24c347e2..55231ace5344 100644
---- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-@@ -931,10 +931,32 @@
- 				fsl,num-rx-queues = <3>;
- 				status = "disabled";
- 			};
- 		};
- 
-+		noc: interconnect@32700000 {
-+			compatible = "fsl,imx8mq-noc", "fsl,imx8m-noc";
-+			reg = <0x32700000 0x100000>;
-+			clocks = <&clk IMX8MQ_CLK_NOC>;
-+			devfreq = <&ddrc>;
-+			operating-points-v2 = <&noc_opp_table>;
-+
-+			noc_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-133M {
-+					opp-hz = /bits/ 64 <133333333>;
-+				};
-+				opp-400M {
-+					opp-hz = /bits/ 64 <400000000>;
-+				};
-+				opp-800M {
-+					opp-hz = /bits/ 64 <800000000>;
-+				};
-+			};
-+		};
-+
- 		bus@32c00000 { /* AIPS4 */
- 			compatible = "fsl,imx8mq-aips-bus", "simple-bus";
- 			#address-cells = <1>;
- 			#size-cells = <1>;
- 			ranges = <0x32c00000 0x32c00000 0x400000>;
--- 
-2.17.1
-
+>  drivers/pci/access.c                          | 13 ++++----
+>  .../pci/controller/dwc/pcie-designware-host.c |  2 +-
+>  drivers/pci/controller/pci-aardvark.c         |  2 +-
+>  drivers/pci/controller/pci-mvebu.c            |  4 +--
+>  drivers/pci/controller/pci-thunder-ecam.c     | 20 ++++++------
+>  drivers/pci/controller/pci-thunder-pem.c      |  2 +-
+>  drivers/pci/controller/pcie-altera.c          |  2 +-
+>  drivers/pci/controller/pcie-iproc.c           |  2 +-
+>  drivers/pci/controller/pcie-mediatek.c        |  4 +--
+>  drivers/pci/controller/pcie-rcar.c            |  2 +-
+>  drivers/pci/controller/pcie-rockchip-host.c   |  2 +-
+>  drivers/pci/controller/vmd.c                  |  2 +-
+>  drivers/pci/hotplug/cpqphp_ctrl.c             | 12 +++----
+>  drivers/pci/hotplug/cpqphp_pci.c              | 20 ++++++------
+>  drivers/pci/hotplug/pciehp_hpc.c              |  6 ++--
+>  drivers/pci/pci.c                             | 31 ++++++++++++-------
+>  drivers/pci/pcie/dpc.c                        |  3 +-
+>  drivers/pci/pcie/pme.c                        |  4 +--
+>  drivers/pci/probe.c                           |  4 +--
+>  drivers/pci/quirks.c                          |  2 +-
+>  include/linux/pci.h                           |  7 +++++
+>  21 files changed, 81 insertions(+), 65 deletions(-)
+> 
+> -- 
+> 2.23.0.187.g17f5b7556c-goog
+> 
