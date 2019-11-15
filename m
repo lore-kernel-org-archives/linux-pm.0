@@ -2,62 +2,49 @@ Return-Path: <SRS0=udh8=ZH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA520C43215
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 10:29:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA171C432C3
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 10:38:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8B531206C0
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 10:29:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9D78C2073B
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 10:38:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="q0G6wd3w"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Ynvb5DGR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727112AbfKOK3T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Nov 2019 05:29:19 -0500
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:42816 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727122AbfKOK3S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2019 05:29:18 -0500
-Received: by mail-lj1-f194.google.com with SMTP id n5so10124356ljc.9
-        for <linux-pm@vger.kernel.org>; Fri, 15 Nov 2019 02:29:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=PNO7uhgp1dcpLp+jSsP4cB4QzEUZpe1GKQTX+AAJeuY=;
-        b=q0G6wd3wtT1g3Ze5W4bLdIwUj2olQvXCc26kmtZu4cGRHUgr0c2yofqR/zp1BazHVd
-         4GurAZcPwsvrmGAMNxAnQLpstMvjDpGtH0cbKMLR8ZauXVjV76MPSante0JjgH8u0JhN
-         1tY882Wfa50TCIHKGdfprKC990u64sTz9OwKHeoeV3nj5Qfeox4tA0qEMn1OZuDvvQMM
-         n+i0DaoCXK3ULsgRg1BV+JFn+ySXVebWnu6u842J5Ps6TMSfFAkuYFmxUMNnpCVZoD06
-         pf7ZUXgpfAmis/wJagvkYIqnCznjwZBfMMLaSQOO4TR0ZlmjGK/owvZA3snF4CV/F34n
-         taQQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=PNO7uhgp1dcpLp+jSsP4cB4QzEUZpe1GKQTX+AAJeuY=;
-        b=kTPQwqlfZV9HbacUwRAC/LAFqJiunSKM1ImdoG7vXUAynQ+dcKzj0oMx3STh4VdFQE
-         AJOEhaIzY6hCDOuRE87XiPhxVDmTSqmdaSs5AimTZojmlpKcguOp4G4r3mXav5oML9v8
-         ho7J0H4omYwL0SS6gNJYBS00AcbhU18z3Cd84i2nv8obvJamROuAcwNt/bMDFfbiTPlR
-         icOTw2DKDQdljfDPMtNKtuQFaDwYeL/o2BuQt+IMtDdArRC6uLNWcnrFMcfKB1Retemn
-         cJ38bCikIAX/IxJwz/6GdQsjGJdu6IbqPJGnandRKT8HemqHaKpQATkuG0d0y9D5lwza
-         hqNA==
-X-Gm-Message-State: APjAAAUX++TargNmkWaMTbzFV0mmI9IGcDM4zGB6k7I3OoekWvlXQglR
-        aySSKMOdMOXD02j2H7fYAsw2S6KNcO1+HaKpagDt2g==
-X-Google-Smtp-Source: APXvYqxS72HHnU9jyNroqC25BDaEGu7VNx5qQYXeMTZC7ZEf2Rk0L9H2sBLv3DCxNHHvulZNf2UsHJOXSc7+dOL5STM=
-X-Received: by 2002:a2e:b0e3:: with SMTP id h3mr10169336ljl.193.1573813755258;
- Fri, 15 Nov 2019 02:29:15 -0800 (PST)
-MIME-Version: 1.0
-References: <1573751251-3505-1-git-send-email-vincent.guittot@linaro.org>
- <20191115095447.GU4114@hirez.programming.kicks-ass.net> <CAKfTPtCTcrq1E1H8A3TL1xvALUrQ7ybPoERJ+C2O2+QXpVEZGQ@mail.gmail.com>
-In-Reply-To: <CAKfTPtCTcrq1E1H8A3TL1xvALUrQ7ybPoERJ+C2O2+QXpVEZGQ@mail.gmail.com>
-From:   Vincent Guittot <vincent.guittot@linaro.org>
-Date:   Fri, 15 Nov 2019 11:29:03 +0100
-Message-ID: <CAKfTPtA-up_9WHfTka33WRxXCatUZioYS0v5gY9jjzOGT98oLQ@mail.gmail.com>
-Subject: Re: [PATCH v4] sched/freq: move call to cpufreq_update_util
-To:     Peter Zijlstra <peterz@infradead.org>
+        id S1727380AbfKOKiN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Nov 2019 05:38:13 -0500
+Received: from merlin.infradead.org ([205.233.59.134]:59142 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727365AbfKOKiN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2019 05:38:13 -0500
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+        Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+        List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+         bh=kF17KYqpXXxrOXvE5ZmPkjCvqdlqrYPD5aCNtqKBz40=; b=Ynvb5DGRQwGex8Q0NTJer5TLU
+        KlzMAbWWklLqeWAgE0WFxer4N5SAkywU6V6El8MJ1ylwwM4rQKYH6wU2YzqYQ7EB941XJ7jseH62B
+        uGh3Hl1VvE3HjmC8EWWC0y/rlsSLNjalUONSoHmPisftHOxBV0C3oScR+EhQdVX75aOwu0YN/Wuzj
+        uOOBcWME6abYJoXrPT02rwEnOTuRzPy7DDNSSj8pU+dLCIrMkGinOVgv1JA4DSBrNMUtFBMdZB5re
+        rT+3mIB0u/9//YqC2mNMaEgxxrMve9qZiycW0oskf54iG8Z3kcGFDFfdpHu0zrnwgp5I9yeVMxnlF
+        49GqRWJsg==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1iVYyw-0006Pz-8Q; Fri, 15 Nov 2019 10:37:38 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 8DCD2303D9F;
+        Fri, 15 Nov 2019 11:36:27 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 79AC42B0BC1FB; Fri, 15 Nov 2019 11:37:35 +0100 (CET)
+Date:   Fri, 15 Nov 2019 11:37:35 +0100
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Vincent Guittot <vincent.guittot@linaro.org>
 Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
         Ingo Molnar <mingo@redhat.com>,
         Dietmar Eggemann <dietmar.eggemann@arm.com>,
@@ -71,15 +58,22 @@ Cc:     linux-kernel <linux-kernel@vger.kernel.org>,
         Sargun Dhillon <sargun@sargun.me>, Tejun Heo <tj@kernel.org>,
         Xie XiuQi <xiexiuqi@huawei.com>, xiezhipeng1@huawei.com,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH v4] sched/freq: move call to cpufreq_update_util
+Message-ID: <20191115103735.GE4131@hirez.programming.kicks-ass.net>
+References: <1573751251-3505-1-git-send-email-vincent.guittot@linaro.org>
+ <20191115095447.GU4114@hirez.programming.kicks-ass.net>
+ <CAKfTPtCTcrq1E1H8A3TL1xvALUrQ7ybPoERJ+C2O2+QXpVEZGQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtCTcrq1E1H8A3TL1xvALUrQ7ybPoERJ+C2O2+QXpVEZGQ@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 15 Nov 2019 at 11:18, Vincent Guittot
-<vincent.guittot@linaro.org> wrote:
->
+On Fri, Nov 15, 2019 at 11:18:00AM +0100, Vincent Guittot wrote:
 > On Fri, 15 Nov 2019 at 10:55, Peter Zijlstra <peterz@infradead.org> wrote:
 > >
 > > On Thu, Nov 14, 2019 at 06:07:31PM +0100, Vincent Guittot wrote:
@@ -99,11 +93,15 @@ On Fri, 15 Nov 2019 at 11:18, Vincent Guittot
 > > > limitation of the cpufreq driver.
 > >
 > > Doesn't this just show that a dumb rate limit in the driver is broken?
->
+> 
 > But the rate limit may come from HW constraints that forces to wait
 > let say 4ms or even 10ms between each frequency update.
->
-> >
+
+Sure, but then it can still remember the value passed in last and use
+that state later.
+
+It doesn't _have_ to completely discard values.
+
 > > > update_cfs_rq_load_avg() is only called by update_blocked_averages()
 > > > and update_load_avg() so we can move the call to
 > > > cfs_rq_util_change/cpufreq_update_util() into these 2 functions. It's also
@@ -121,37 +119,17 @@ On Fri, 15 Nov 2019 at 11:18, Vincent Guittot
 > > Which is what that dumb rate-limit thing wants of course. But I'm still
 > > thinking that it's stupid to do. If nothing changes, don't generate
 > > events.
->
+> 
 > When everything (irq, dl, rt, cfs) is 0, we don't generate events
 > because update_blocked_averages is no more called because
 > rq->has_blocked_load is clear
->
-> With current implementation, if cfs is 0 but not irq, dl or rt, we
-> don't call cpufreq_update_util because it is only called through cfs
->
-> >
+
+Aah.. Ok, let me look at this thing again.
+
 > > If anything, update_blocked_avgerages() should look at
 > > @done/others_have_blocked() to emit events for rt,dl,irq.
->
+> 
 > other_have_blocked can be set but no decay happened during the update
 > and we don't need to call cpufreq_update_util
->
-> >
-> > So why are we making the scheduler code more ugly instead of fixing that
-> > driver?
 
-Also, I think that calling cfs_rq_util_change in
-attach_entity_load_avg is not optimal because the attach can happen at
-a child level before it has been propagated down to root
-So I'm working on trying to remove it from attach_entity_load_avg and
-keep it in update_load_avg. this would help cleaning the ugly
-
--       } else if (decayed && (flags & UPDATE_TG))
--               update_tg_load_avg(cfs_rq, 0);
-+       } else if (decayed) {
-+               cfs_rq_util_change(cfs_rq, 0);
-+
-+               if (flags & UPDATE_TG)
-+                       update_tg_load_avg(cfs_rq, 0);
-+       }
- }
+True.
