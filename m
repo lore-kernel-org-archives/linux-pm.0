@@ -2,97 +2,130 @@ Return-Path: <SRS0=udh8=ZH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.4 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22AE8C432C3
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 06:25:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 345F2C432C3
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 09:07:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E92A22053B
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 06:25:30 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="surtFdZ6"
+	by mail.kernel.org (Postfix) with ESMTP id 08E7B20723
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 09:07:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1573808871;
+	bh=xswaWFnxbD0dzOiFDXbhCOPNBl+MZTrev9sN+FtP/jo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=WoyoPL0vC3BM8nFpAGdgjMLN6ibTBwA185SiQiJyqxbaE6971y14Q6cKMAxp5KLY0
+	 YloXpRLNROn5C7q82XLhKbrQDkIESoq4HbQaUnd+oe5x8UEQhwgIv9A/164JrK6E2t
+	 z3hjMLCjDeZFv7x34S2JQJgIR55ihA7JFe0MFbEI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727556AbfKOGZ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Nov 2019 01:25:26 -0500
-Received: from mail-pl1-f195.google.com ([209.85.214.195]:37857 "EHLO
-        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727362AbfKOGZ0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2019 01:25:26 -0500
-Received: by mail-pl1-f195.google.com with SMTP id bb5so3933310plb.4;
-        Thu, 14 Nov 2019 22:25:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hWSFthaD6WQUpptuakDsFyGfoN+3DaezgL6+fYz/Ahc=;
-        b=surtFdZ6zev7u3GpypYS2mChQSvez3bS0pyRfpr0JfAThjv1WU5p0mZ9tfK5pvXCLD
-         xCX/zk8n+XK3BQOsjfd+hE1wpQpfFJ+lOZzDnINijaahKraSSjOD+jrPujRtt7T3tIHr
-         Q5pcmZsObJYz1F5yRoAkJ6MG9NM7KZ9hYzfxzOhUOrufjedpvuQimZE63+HEdWPPQWfx
-         zwZxjATZZForCjopS6WxX7HLFEeJtZQs8NQROfwp8fqa9ZXdVAtqZ/HaEpoKi3pc995g
-         +LrVj9lOLH7RnIsXLttMBNA5d7p7G/BU/cAtXayQNKPRmQXt/mUyMAKRgCJg/8cehpBO
-         BgEQ==
+        id S1727140AbfKOJHu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Nov 2019 04:07:50 -0500
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:45487 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725829AbfKOJHu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2019 04:07:50 -0500
+Received: by mail-oi1-f194.google.com with SMTP id 14so7989296oir.12;
+        Fri, 15 Nov 2019 01:07:49 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hWSFthaD6WQUpptuakDsFyGfoN+3DaezgL6+fYz/Ahc=;
-        b=oL5ZsSUWD4ZEqe6cvcJEUIlQPqrZ7Li1JghBYqGAe/OzpPRj3Q2P7EaGykiX36B9di
-         dGWD+/C/mD5n+xYEZePOkivZQTYTPcRUEM8IMGiXY7ey8BEwbxk48JrD9lgPA/M7jjyr
-         Rd1G9QF1Ue4xSwEnWKO2IaGlXcDxpvNrwF5nYzyhzC/SKlrFvhHncKVBJ60vGm2S8gAo
-         QqIl4bXTNlU9kqVl0ffS35b3NEVfAJjD/8y8xtfgmrT2Kyv6VI44i1RgpCyZG0FFDqdG
-         aCVGBQv5cXhjSognbjVm7T9tP9e3UUTybXalPxXryx+CgBkd4jW/G+fhetoKtME5U0iW
-         8kyg==
-X-Gm-Message-State: APjAAAXKUqYsQQQPSItuZlcQ8QxbCznR6clQoatsWUyJbp8rZe7/EDGU
-        CoFNYi2qgtHNA6SeYUlosVg=
-X-Google-Smtp-Source: APXvYqyUtDRGP8aPtEUpVOiMEJ3XpXw98JSoFyR7XZp1dXU0TZoIdIwfRWpWprrKDJqFByr7GZINAQ==
-X-Received: by 2002:a17:90a:d155:: with SMTP id t21mr16943033pjw.84.1573799124691;
-        Thu, 14 Nov 2019 22:25:24 -0800 (PST)
-Received: from suzukaze.ipads-lab.se.sjtu.edu.cn ([202.120.40.82])
-        by smtp.gmail.com with ESMTPSA id x12sm8682608pfm.130.2019.11.14.22.25.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 Nov 2019 22:25:24 -0800 (PST)
-From:   Chuhong Yuan <hslester96@gmail.com>
-Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>
-Subject: [PATCH] power: supply: pda_power: add missed usb_unregister_notifier
-Date:   Fri, 15 Nov 2019 14:25:15 +0800
-Message-Id: <20191115062515.7087-1-hslester96@gmail.com>
-X-Mailer: git-send-email 2.24.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=1T8ZMHXbmRWySVpMqhSZ6mvt4yKvrwJAfUEqvmZGEFo=;
+        b=P/x/cM6ow2zgScqWC0SOz4iKlG6fUHX2J8MeFvzRIt/SLnDnb18fqmBNULk5Q6ZHFn
+         utszk13Edbnu2W6HmoSLZM2I/LiCX21jr2KG50LYh9h+7zHvwfiES92mEqfxF77/lOEA
+         bvqPPunW1w5YprdXDkdsHbI4apU7vbWr4oQasCLZ+siiBtNWntCOxy/nYlCGH9Y4M6UR
+         PXHfKPOohtluARPwZu8QCk0/WMr9rQCy1gh7wvwiIfREGCM6KfzCa0t1CaKfkinVrDsd
+         9InEu7NoGjVawep4Ju65/wfXvpMhsad0X0q8dmRzozXKyzBEbVHUL5eZz8b3D02GYZan
+         4GCA==
+X-Gm-Message-State: APjAAAU6P3DbNXL3yDjosegGrF/+aKvlwC3h60VBXBbtVbDdw3a0kXdZ
+        P0j9tvXqCPtyfLEfP1aAjo+/sxMORF1+4kaBuSc=
+X-Google-Smtp-Source: APXvYqzI/FOo/sg1miVsMISAbvdhiV1iv9fSqVjCPwEZmKhXSlDhRP22rwowRwXpxJKt6JU7K34qSmypZWxBY3coMQY=
+X-Received: by 2002:aca:1101:: with SMTP id 1mr7322552oir.103.1573808869178;
+ Fri, 15 Nov 2019 01:07:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+References: <13588000.TfE7eV4KYW@kreacher> <3144686.I8R4d9A2JO@kreacher>
+ <CAJZ5v0jiBrx2xxf2EdvGrqke0ByK5YWXEw0R2rpHZYAJjgwJmg@mail.gmail.com> <001a01d59b53$5eb8ae10$1c2a0a30$@net>
+In-Reply-To: <001a01d59b53$5eb8ae10$1c2a0a30$@net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 15 Nov 2019 10:07:38 +0100
+Message-ID: <CAJZ5v0ig_Juva_nHjtWjWPv4bghFYasxiJOZbtv8==cwqhBpdQ@mail.gmail.com>
+Subject: Re: [PATCH 2/3] cpuidle: teo: Avoid expecting unrealistic idle times
+To:     Doug Smythies <dsmythies@telus.net>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The driver forgets to unregister the notifier in remove.
-Add the call to fix it.
+On Fri, Nov 15, 2019 at 2:24 AM Doug Smythies <dsmythies@telus.net> wrote:
+>
+> On 2019.11.14 15:51 Rafael J. Wysocki wrote:
+> > On Wed, Nov 13, 2019 at 1:11 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >>
+> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> If an idle state shallower than the one "matching" the time till the
+> >> next timer event is considered for selection, expect the idle duration
+> >> to fall in the middle of the "bin" corresponding to that state rather
+> >> than at the beginning of it which is unrealistic.
+> >>
+> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> ---
+> >>  drivers/cpuidle/governors/teo.c |    9 ++++++++-
+> >>  1 file changed, 8 insertions(+), 1 deletion(-)
+> >>
+> >> Index: linux-pm/drivers/cpuidle/governors/teo.c
+> >> ===================================================================
+> >> --- linux-pm.orig/drivers/cpuidle/governors/teo.c
+> >> +++ linux-pm/drivers/cpuidle/governors/teo.c
+> >> @@ -360,7 +360,14 @@ static int teo_select(struct cpuidle_dri
+> >>
+> >>                 if (max_early_idx >= 0) {
+> >>                         idx = max_early_idx;
+> >> -                       duration_ns = drv->states[idx].target_residency_ns;
+> >> +                       /*
+> >> +                        * Expect the idle duration to fall in the middle of the
+> >> +                        * "bin" corresponding to idx (note that the maximum
+> >> +                        * state index is guaranteed to be greater than idx at
+> >> +                        * this point).
+> >> +                        */
+> >> +                       duration_ns = (drv->states[idx].target_residency_ns +
+> >> +                               drv->states[idx+1].target_residency_ns) / 2;
+> >>                 }
+> >>         }
+> >
+> > This change turns out to cause the governor to choose idle states that
+> > are too deep or too shallow too often, so I'm withdrawing it.
+>
+> O.K. thanks for letting us know.
+> I did see some differences in the testing I did so far, but hadn't drilled down
+> into it yet.
+> I am somewhat wondering about the above and below stats in general.
+>
+> By the way, I had a daft mistake in my post processing program, such that the
+> "below" graph for idle state 0 was always plotting 0.
+>
+> Reference for that sweep test that I do (which is as far I got so far):
+> http://www.smythies.com/~doug/linux/idle/teo-2019-11/sweep/index.html
+>
+> Legend:
+>
+> teo-v2: re-run of previous teo-v2 so that I could get non-zero idle state "below" data
+> linux-next 2019.11.07 + cpuidle: Consolidate disabled state checks +
+> [PATCH v2] cpuidle: Use nanoseconds as the unit of time
+>
+> teo-v3: teo-v2 + cpuidle: teo: Exclude cpuidle overhead from computations
+>
+> teo-v4: linux-pm + linux-next 2019.11.12 +
+> cpuidle: teo: Avoid code duplication in conditionals
+> cpuidle: teo: Avoid expecting unrealistic idle times
+> cpuidle: teo: Avoid using "early hits" incorrectly
+>
+> teo-v5: teo-v4 + cpuidle: teo: Exclude cpuidle overhead from computations
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
----
- drivers/power/supply/pda_power.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/power/supply/pda_power.c b/drivers/power/supply/pda_power.c
-index 3ae5707d39fa..03a37fd6be27 100644
---- a/drivers/power/supply/pda_power.c
-+++ b/drivers/power/supply/pda_power.c
-@@ -429,6 +429,10 @@ static int pda_power_probe(struct platform_device *pdev)
- 
- static int pda_power_remove(struct platform_device *pdev)
- {
-+#if IS_ENABLED(CONFIG_USB_PHY)
-+	if (!IS_ERR_OR_NULL(transceiver) && pdata->use_otg_notifier)
-+		usb_unregister_notifier(transceiver, &otg_nb);
-+#endif
- 	if (pdata->is_usb_online && usb_irq)
- 		free_irq(usb_irq->start, pda_psy_usb);
- 	if (pdata->is_ac_online && ac_irq)
--- 
-2.24.0
-
+Thanks for running the tests, appreciated!
