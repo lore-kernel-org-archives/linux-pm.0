@@ -2,132 +2,86 @@ Return-Path: <SRS0=udh8=ZH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9DBCC43141
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 10:27:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6275FC432C3
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 10:28:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B10E3206C0
-	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 10:27:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573813621;
-	bh=AHR2am5oKQ0kOiNaOVKezCDCVN1wQZZo7DOXoNLfQjs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=XKfO5eDJQyopmd80DYh9+v0CqyvrAvGrHE1CbUDtaMTahNhghULlwjrSma284gHDX
-	 I5Nm5fJvj2fkPZHyoc0CaXu6TFK41Hs20emvp3yAkI2tUTBrSd0fz+Rn6VA6dI+15Q
-	 Q7uhmVLUlyHU33jPdflM4rMdGtib/WlX09eNdnok=
+	by mail.kernel.org (Postfix) with ESMTP id 44F69206C0
+	for <linux-pm@archiver.kernel.org>; Fri, 15 Nov 2019 10:28:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727406AbfKOK04 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 Nov 2019 05:26:56 -0500
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:37548 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727386AbfKOK04 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Nov 2019 05:26:56 -0500
-Received: by mail-ot1-f68.google.com with SMTP id d5so7605892otp.4;
-        Fri, 15 Nov 2019 02:26:54 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=pem47e68QsfR2xvNK79o7bq8NBfMBA9ulZTmR6QPBXQ=;
-        b=K1vHfbFJfFav1lGD0zptMCjxNGjlxHQMOTx24Z7vDAV4oGg6LhS7onR1GIpDJm9eew
-         OSAYPM64Lekp3X3ycoMo3UD4FYI7hh+16fK/1bYK08Vh4EIbxOSWNSiOMLjYTQIFfU4G
-         WqhhwBhtGiU/itI9TEAUspMcy21LbP33lncsFmv+0+jq1J0vfKK6OHM813aVJTS+eWG3
-         Am0nSyIyvHS/9gKX8VdtDQpl+fAiPQwo8e08BxwW9cWPgRnK6J4oMV2jbj+q85QcMqF7
-         Tsmdy0BtIAS3JYJTVpABZoFGqxiAX07DTTtTUfEiuEn9WPwecLSlyybRQk9MVKWMwDK5
-         jtUg==
-X-Gm-Message-State: APjAAAV04iwVukIyc2QvqA0K1HoYlIaPFw19vuTYAaWH6dqZwosyj8CO
-        B6mDNl1PWWmXDi1Ir0r6KoP0x3gF4O6I0Ym3+ew=
-X-Google-Smtp-Source: APXvYqztMO0pme2trK3Xq1OxPCXqw9OHvMhjZFp3BASCzEKVIw6hhkm5ZGbKg8xG2i1KfPlviXBRToiXidUY4AKPnF0=
-X-Received: by 2002:a9d:6b91:: with SMTP id b17mr10218038otq.189.1573813613955;
- Fri, 15 Nov 2019 02:26:53 -0800 (PST)
-MIME-Version: 1.0
-References: <1573041302-4904-1-git-send-email-zhenzhong.duan@oracle.com> <1573041302-4904-2-git-send-email-zhenzhong.duan@oracle.com>
-In-Reply-To: <1573041302-4904-2-git-send-email-zhenzhong.duan@oracle.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 15 Nov 2019 11:26:43 +0100
-Message-ID: <CAJZ5v0gyszPOvUxd8WX8gxc1OvX_nLUGh3vKn=aXWRj52L76yw@mail.gmail.com>
-Subject: Re: [PATCH RESEND v2 1/4] cpuidle-haltpoll: ensure grow start value
- is nonzero
-To:     Zhenzhong Duan <zhenzhong.duan@oracle.com>
-Cc:     Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
-        Rafael Wysocki <rafael.j.wysocki@intel.com>,
-        Joao Martins <joao.m.martins@oracle.com>,
-        Marcelo Tosatti <mtosatti@redhat.com>,
-        kvm-devel <kvm@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
+        id S1727548AbfKOK2n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 Nov 2019 05:28:43 -0500
+Received: from mx2.suse.de ([195.135.220.15]:38222 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1727122AbfKOK2m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 15 Nov 2019 05:28:42 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+        by mx1.suse.de (Postfix) with ESMTP id C9040AB71;
+        Fri, 15 Nov 2019 10:28:40 +0000 (UTC)
+Message-ID: <1573814061.28635.2.camel@suse.cz>
+Subject: Re: [PATCH v4 5/6] x86,sched: Add support for frequency invariance
+ on ATOM
+From:   Giovanni Gherdovich <ggherdovich@suse.cz>
+To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc:     x86@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Matt Fleming <matt@codeblueprint.co.uk>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Paul Turner <pjt@google.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Quentin Perret <qperret@qperret.net>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Doug Smythies <dsmythies@telus.net>
+Date:   Fri, 15 Nov 2019 11:34:21 +0100
+In-Reply-To: <64baa18f7cd6066cc50360928d77504c1b68773e.camel@linux.intel.com>
+References: <20191113124654.18122-1-ggherdovich@suse.cz>
+         <20191113124654.18122-6-ggherdovich@suse.cz>
+         <64baa18f7cd6066cc50360928d77504c1b68773e.camel@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.26.6 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 6, 2019 at 12:56 PM Zhenzhong Duan
-<zhenzhong.duan@oracle.com> wrote:
->
-> dev->poll_limit_ns could be zeroed in certain cases (e.g. by
-> guest_halt_poll_ns = 0). If guest_halt_poll_grow_start is zero,
-> dev->poll_limit_ns will never be bigger than zero.
+On Wed, 2019-11-13 at 08:50 -0800, Srinivas Pandruvada wrote:
+> On Wed, 2019-11-13 at 13:46 +0100, Giovanni Gherdovich wrote:
+> > The scheduler needs the ratio freq_curr/freq_max for frequency-
+> > invariant
+> > accounting. On all ATOM CPUs prior to Goldmont, set freq_max to the
+> > 1-core
+> > turbo ratio.
+> > 
+> > We intended to perform tests validating that this patch doesn't
+> > regress in
+> > terms of energy efficiency, given that this is the primary concern on
+> > Atom
+> > processors. Alas, we found out that turbostat doesn't support reading
+> > RAPL
+> > interfaces on our test machine (Airmont), and we don't have external
+> > equipment
+> > to measure power consumption; all we have is the performance results
+> > of the
+> > benchmarks we ran.
+> > 
+> 
+> I can run some benchmarks on this.
+> 
 
-I would rephrase this in the following way:
+That'd be appreciated, thank you Srinivas.
 
-"If guest_halt_poll_grow_start is zero and dev->poll_limit_ns becomes
-zero for any reason, it will never be greater than zero again, so use
-..."
 
-The patch itself looks OK to me.
-
-> Use param callback to avoid writing zero to guest_halt_poll_grow_start.
->
-> Signed-off-by: Zhenzhong Duan <zhenzhong.duan@oracle.com>
-> ---
->  drivers/cpuidle/governors/haltpoll.c | 22 +++++++++++++++++++++-
->  1 file changed, 21 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpuidle/governors/haltpoll.c b/drivers/cpuidle/governors/haltpoll.c
-> index 7a703d2..660859d 100644
-> --- a/drivers/cpuidle/governors/haltpoll.c
-> +++ b/drivers/cpuidle/governors/haltpoll.c
-> @@ -20,6 +20,26 @@
->  #include <linux/module.h>
->  #include <linux/kvm_para.h>
->
-> +static int grow_start_set(const char *val, const struct kernel_param *kp)
-> +{
-> +       int ret;
-> +       unsigned int n;
-> +
-> +       if (!val)
-> +               return -EINVAL;
-> +
-> +       ret = kstrtouint(val, 0, &n);
-> +       if (ret || !n)
-> +               return -EINVAL;
-> +
-> +       return param_set_uint(val, kp);
-> +}
-> +
-> +static const struct kernel_param_ops grow_start_ops = {
-> +       .set = grow_start_set,
-> +       .get = param_get_uint,
-> +};
-> +
->  static unsigned int guest_halt_poll_ns __read_mostly = 200000;
->  module_param(guest_halt_poll_ns, uint, 0644);
->
-> @@ -33,7 +53,7 @@
->
->  /* value in us to start growing per-cpu halt_poll_ns */
->  static unsigned int guest_halt_poll_grow_start __read_mostly = 50000;
-> -module_param(guest_halt_poll_grow_start, uint, 0644);
-> +module_param_cb(guest_halt_poll_grow_start, &grow_start_ops, &guest_halt_poll_grow_start, 0644);
->
->  /* allow shrinking guest halt poll */
->  static bool guest_halt_poll_allow_shrink __read_mostly = true;
-> --
-> 1.8.3.1
->
+Giovanni
