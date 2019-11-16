@@ -2,235 +2,120 @@ Return-Path: <SRS0=VRae=ZI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 813C9C432C3
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 13:16:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12FDDC432C3
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 13:54:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4601220700
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 13:16:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CE12E206D3
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 13:54:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GirAD+vK"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b="JCs4egWj"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727517AbfKPNQX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 16 Nov 2019 08:16:23 -0500
-Received: from mail-wr1-f67.google.com ([209.85.221.67]:39948 "EHLO
-        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727437AbfKPNQX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Nov 2019 08:16:23 -0500
-Received: by mail-wr1-f67.google.com with SMTP id q15so1121144wrw.7
-        for <linux-pm@vger.kernel.org>; Sat, 16 Nov 2019 05:16:21 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=tg11cTivSk8CuEqGhmHmDNWvHOysA3jwYAGlqgKbG4c=;
-        b=GirAD+vKxjyd5OFXVVcD73825caTPpQT3zyFYDhPJmQP2+wOrhtIH3Doi0c7zREGmj
-         p1x6DfxjpOLX2Ec/MslH8bQpMTPbvFPrhqstclENzGsx0jJYmeY5UEyKA6dHgIiY//JO
-         qaPC2I+05TfMDm+138SK6j7be0b1aPpocydbxi9HCLMjnzIn4mMkLZM9ZnCFo5suca69
-         ACNkNHfQ9WqlB2ALMDyfuZxiVeCeo59RziqRDnhbm2dRmRDJz0+puD1RaeHpMVQqaa7I
-         8jXOn8UpiFOcHYJF2dF+w3bE/PCL00vm7vWt1xjNkRbUrosteggtbrGXWf3hxv8RpxPS
-         cI2g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=tg11cTivSk8CuEqGhmHmDNWvHOysA3jwYAGlqgKbG4c=;
-        b=R1K6SXDb5GZXlGwB9RsGDEKrrD+UPIRW+zNsqtQ9R5z4bKtaaf0bRSt5TKhbiNuo75
-         NKATATIvo7JdOfSnmXJy7aNHVb9juFcfDc5/EzQOcUicMJSM6jgq6s3Yoi7nwduFVKoJ
-         kRCxvXIni+MR/9QaFHrNr2gx1liMxwa4frXKiJausEV4+cOnAGvDkLAz+ePUqytFrrcL
-         r3HiHv9q/WyYL7JAuO06/7SfZ0h05QQroU64BuJBgY8XJ/DGk8YS7/qVlEvX0VgfHnuu
-         JheVXvPPN5vLpNecVQRrV3cDh2tVH/Gx3/DvBFH1Jn6aTpBWDzWXsee585r3XUOZWlsr
-         B5cw==
-X-Gm-Message-State: APjAAAU7bgeJvbr8br0k2+eyKrZRW8jCpmWIoqo83hANBBAFmOwtSCvk
-        R74sRfb+WuehmYRpZ9hSB2Avyg==
-X-Google-Smtp-Source: APXvYqyHW5ijIPfL2Ep4+ox47SbxoujUX+av53dHNyM6NeuTcEWIcEELLwtuNXkWHbejHNtn0zWz/Q==
-X-Received: by 2002:a05:6000:110a:: with SMTP id z10mr19691490wrw.291.1573910180022;
-        Sat, 16 Nov 2019 05:16:20 -0800 (PST)
-Received: from localhost.localdomain ([2a01:e34:ed2f:f020:b462:d85e:9aab:bc1d])
-        by smtp.gmail.com with ESMTPSA id r2sm11128914wma.44.2019.11.16.05.16.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 16 Nov 2019 05:16:19 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     rafael@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ulf.hansson@linaro.org
-Subject: [PATCH V2 1/2] cpuidle: Replace use_deepest_state flag by forced_idle_latency_limit_ns
-Date:   Sat, 16 Nov 2019 14:16:12 +0100
-Message-Id: <20191116131613.15733-1-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
+        id S1727561AbfKPNy1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 16 Nov 2019 08:54:27 -0500
+Received: from outils.crapouillou.net ([89.234.176.41]:43426 "EHLO
+        crapouillou.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727551AbfKPNy0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Nov 2019 08:54:26 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
+        s=mail; t=1573912464; h=from:from:sender:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=FMg2UQ0AjVfNKkZxaPXgwun/tawVgx5MduyoijaPIVs=;
+        b=JCs4egWjPEhJHCVnunWe+Hv6R2v65qQYjiqSqtcMixHFDWutHoMZF8TjB9+5zoG4Q5pb39
+        BJNhzUS0fRap2UUDLH7OUw0F/7TuQWGjs6aGIR0qZKttvQ/FZgmQiPPYwIIvlTtE0ITBoC
+        4rcssO5nR4YVmfmTNLkTco2LDd1jS2g=
+Date:   Sat, 16 Nov 2019 14:54:18 +0100
+From:   Paul Cercueil <paul@crapouillou.net>
+Subject: Re: [PATCH v2] power/supply: ingenic-battery: Don't change scale if
+ there's only one
+To:     Artur Rojek <contact@artur-rojek.eu>
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Message-Id: <1573912458.3.0@crapouillou.net>
+In-Reply-To: <0f300a5f82b4cce76cdbdb5ba081d7ae@artur-rojek.eu>
+References: <20191114163500.57384-1-paul@crapouillou.net>
+        <0f300a5f82b4cce76cdbdb5ba081d7ae@artur-rojek.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-We want to specify a latency constraint when choosing an idle state at
-play_idle time. Instead of duplicating the information in the
-structure or propagate the latency in the call stack, change the
-use_deepest_state by forced_latency_limit_ns to introduce this
-constraint. The idea being that when it is set, idle is forced
-(i.e. no governors), but there is a latency limit for the state to
-use.
+Hi Artur,
 
-A zero latency constraint means "do not use the deepest idle state
-path" as the 'use_deepest_state' boolean was used in the
-cpuidle_idle_call.
 
-In addition add the play_idle_precise() function getting a nanosec
-base latency constraint as parameter. The play_idle() function becomes
-a wrapper passing an U64_MAX to play_idle_precise().
+Le ven., nov. 15, 2019 at 18:39, Artur Rojek <contact@artur-rojek.eu> a=20
+=E9crit :
+> Hi Paul.
+> Comments inline.
+>=20
+> On 2019-11-14 17:35, Paul Cercueil wrote:
+>> The ADC in the JZ4740 can work either in high-precision mode with a=20
+>> =7F2.5V
+>> range, or in low-precision mode with a 7.5V range. The code in place=20
+>> in
+>> this driver will select the proper scale according to the maximum
+>> voltage of the battery.
+>>=20
+>> The JZ4770 however only has one mode, with a 6.6V range. If only one
+>> scale is available, there's no need to change it (and nothing to=20
+>> change
+>> it to), and trying to do so will fail with -EINVAL.
+>>=20
+>> Fixes: fb24ccfbe1e0 ("power: supply: add Ingenic JZ47xx battery=20
+>> =7Fdriver.")
+>>=20
+>> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+>> Cc: stable@vger.kernel.org
+>> ---
+>>=20
+>> Notes:
+>>     v2: Rebased on v5.4-rc7
+>>=20
+>>  drivers/power/supply/ingenic-battery.c | 4 ++++
+>>  1 file changed, 4 insertions(+)
+>>=20
+>> diff --git a/drivers/power/supply/ingenic-battery.c
+>> b/drivers/power/supply/ingenic-battery.c
+>> index 35816d4b3012..5a53057b4f64 100644
+>> --- a/drivers/power/supply/ingenic-battery.c
+>> +++ b/drivers/power/supply/ingenic-battery.c
+>> @@ -80,6 +80,10 @@ static int ingenic_battery_set_scale(struct
+>> ingenic_battery *bat)
+>>  	if (ret !=3D IIO_AVAIL_LIST || scale_type !=3D IIO_VAL_FRACTIONAL_LOG2=
+)
+>>  		return -EINVAL;
+>>=20
+>> +	/* Only one (fractional) entry - nothing to change */
+>> +	if (scale_len =3D=3D 2)
+>> +		return 0;
+>> +
+>=20
+> This function also serves to validate that the maximum voltage is in=20
+> range of available scales.
+> Please move your code down a bit so that the check for max_mV is=20
+> still being done.
 
-Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/cpuidle.c | 10 +++++-----
- include/linux/cpu.h       |  6 +++++-
- include/linux/cpuidle.h   |  6 +++---
- kernel/sched/idle.c       | 14 +++++++-------
- 4 files changed, 20 insertions(+), 16 deletions(-)
+Good point - I'll send a V3.
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 44ae39f2b47a..62226fadc02d 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -100,19 +100,19 @@ static int find_deepest_state(struct cpuidle_driver *drv,
- 
- /**
-  * cpuidle_use_deepest_state - Set/clear governor override flag.
-- * @enable: New value of the flag.
-+ * @latency_limit_ns: A latency limit constraint
-  *
-- * Set/unset the current CPU to use the deepest idle state (override governors
-- * going forward if set).
-+ * Set/unset the current CPU to use the deepest idle state with the exit
-+ * latency within @latency_limit_ns
-  */
--void cpuidle_use_deepest_state(bool enable)
-+void cpuidle_use_deepest_state(u64 latency_limit_ns)
- {
- 	struct cpuidle_device *dev;
- 
- 	preempt_disable();
- 	dev = cpuidle_get_device();
- 	if (dev)
--		dev->use_deepest_state = enable;
-+		dev->forced_idle_latency_limit_ns = latency_limit_ns;
- 	preempt_enable();
- }
- 
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index d0633ebdaa9c..4c9694e209a5 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -179,7 +179,11 @@ void arch_cpu_idle_dead(void);
- int cpu_report_state(int cpu);
- int cpu_check_up_prepare(int cpu);
- void cpu_set_state_online(int cpu);
--void play_idle(unsigned long duration_us);
-+void play_idle_precise(u64 duration_ns, u64 latency_ns);
-+static inline void play_idle(unsigned long duration_us)
-+{
-+	play_idle_precise(duration_us * NSEC_PER_USEC, U64_MAX);
-+}
- 
- #ifdef CONFIG_HOTPLUG_CPU
- bool cpu_wait_death(unsigned int cpu, int seconds);
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index d23a3b1ddcf6..1f3f4dd01e48 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -83,7 +83,6 @@ struct cpuidle_driver_kobj;
- struct cpuidle_device {
- 	unsigned int		registered:1;
- 	unsigned int		enabled:1;
--	unsigned int		use_deepest_state:1;
- 	unsigned int		poll_time_limit:1;
- 	unsigned int		cpu;
- 	ktime_t			next_hrtimer;
-@@ -91,6 +90,7 @@ struct cpuidle_device {
- 	int			last_state_idx;
- 	int			last_residency;
- 	u64			poll_limit_ns;
-+	u64			forced_idle_latency_limit_ns;
- 	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
- 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
- 	struct cpuidle_driver_kobj *kobj_driver;
-@@ -210,7 +210,7 @@ extern int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
- 				      struct cpuidle_device *dev);
- extern int cpuidle_enter_s2idle(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev);
--extern void cpuidle_use_deepest_state(bool enable);
-+extern void cpuidle_use_deepest_state(u64 latency_limit_ns);
- #else
- static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
- 					     struct cpuidle_device *dev)
-@@ -218,7 +218,7 @@ static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
- static inline int cpuidle_enter_s2idle(struct cpuidle_driver *drv,
- 				       struct cpuidle_device *dev)
- {return -ENODEV; }
--static inline void cpuidle_use_deepest_state(bool enable)
-+static inline void cpuidle_use_deepest_state(u64 latency_limit_ns)
- {
- }
- #endif
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index 8dad5aa600ea..0a817e907192 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -165,7 +165,7 @@ static void cpuidle_idle_call(void)
- 	 * until a proper wakeup interrupt happens.
- 	 */
- 
--	if (idle_should_enter_s2idle() || dev->use_deepest_state) {
-+	if (idle_should_enter_s2idle() || dev->forced_idle_latency_limit_ns) {
- 		if (idle_should_enter_s2idle()) {
- 			rcu_idle_enter();
- 
-@@ -311,7 +311,7 @@ static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *timer)
- 	return HRTIMER_NORESTART;
- }
- 
--void play_idle(unsigned long duration_us)
-+void play_idle_precise(u64 duration_ns, u64 latency_ns)
- {
- 	struct idle_timer it;
- 
-@@ -323,29 +323,29 @@ void play_idle(unsigned long duration_us)
- 	WARN_ON_ONCE(current->nr_cpus_allowed != 1);
- 	WARN_ON_ONCE(!(current->flags & PF_KTHREAD));
- 	WARN_ON_ONCE(!(current->flags & PF_NO_SETAFFINITY));
--	WARN_ON_ONCE(!duration_us);
-+	WARN_ON_ONCE(!duration_ns);
- 
- 	rcu_sleep_check();
- 	preempt_disable();
- 	current->flags |= PF_IDLE;
--	cpuidle_use_deepest_state(true);
-+	cpuidle_use_deepest_state(latency_ns);
- 
- 	it.done = 0;
- 	hrtimer_init_on_stack(&it.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
- 	it.timer.function = idle_inject_timer_fn;
--	hrtimer_start(&it.timer, ns_to_ktime(duration_us * NSEC_PER_USEC),
-+	hrtimer_start(&it.timer, ns_to_ktime(duration_ns),
- 		      HRTIMER_MODE_REL_PINNED);
- 
- 	while (!READ_ONCE(it.done))
- 		do_idle();
- 
--	cpuidle_use_deepest_state(false);
-+	cpuidle_use_deepest_state(0);
- 	current->flags &= ~PF_IDLE;
- 
- 	preempt_fold_need_resched();
- 	preempt_enable();
- }
--EXPORT_SYMBOL_GPL(play_idle);
-+EXPORT_SYMBOL_GPL(play_idle_precise);
- 
- void cpu_startup_entry(enum cpuhp_state state)
- {
--- 
-2.17.1
+-Paul
+
+>=20
+> Thanks,
+> Artur
+>=20
+>>  	max_mV =3D bat->info.voltage_max_design_uv / 1000;
+>>=20
+>>  	for (i =3D 0; i < scale_len; i +=3D 2) {
+
+=
 
