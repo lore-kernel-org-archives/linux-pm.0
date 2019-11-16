@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 849C9C432C3
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 15:58:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9388CC432C3
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 16:03:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 51A5721739
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 15:58:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 621DF21823
+	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 16:03:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573919882;
-	bh=i4QKo1c3jisTV2BspdLecAEOwACkSI6dwzcxae6X5fI=;
+	s=default; t=1573920191;
+	bh=Dr/MgV0CT6e61/f8fbdA16ZEvfZhrv4OxigPBFLptW0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=KsiTr9SN+mj8rXVSgB0e9CcDbAcQwjzKKaGdCItcasWbDoebg3CXgOrQHSVRJLZC+
-	 lPNCGrtc/N4oNfqf3WrIlBaHE5zTIjjwdkyzV8uyE4C/SfiXYzY2IURzCQ0RNwtH9P
-	 KlWvW1G3ltR6CGlRylf6L7fMmzlelH9sx3jhYMY4=
+	b=PH2eU7s9LwhOrWNH4bhiOSP8bG9ow84DXCiSlpa2ECHIAUEiACu4j7KOZJ6uPUyFM
+	 24YNXOQ2qcoUttQRucsDKZYkbPiEBlnV+Mg8C7JfTAzxcYlE8o4zMT4CvRIynZ/k9a
+	 70GhvGEs1/yvXGODaX5aT7TPA2yHydOYbFviwuRM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729947AbfKPP55 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 16 Nov 2019 10:57:57 -0500
-Received: from mail.kernel.org ([198.145.29.99]:36108 "EHLO mail.kernel.org"
+        id S1731179AbfKPQDG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 16 Nov 2019 11:03:06 -0500
+Received: from mail.kernel.org ([198.145.29.99]:32810 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730145AbfKPPy1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 16 Nov 2019 10:54:27 -0500
+        id S1730978AbfKPPwI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 16 Nov 2019 10:52:08 -0500
 Received: from sasha-vm.mshome.net (unknown [50.234.116.4])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 91FB8208E3;
-        Sat, 16 Nov 2019 15:54:26 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 5C26620B7C;
+        Sat, 16 Nov 2019 15:52:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573919666;
-        bh=i4QKo1c3jisTV2BspdLecAEOwACkSI6dwzcxae6X5fI=;
+        s=default; t=1573919527;
+        bh=Dr/MgV0CT6e61/f8fbdA16ZEvfZhrv4OxigPBFLptW0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ghND9pJ10iJPn3seTYiL7rttUJQVIySVfAlYxSW08UQnUsAXPrazLsNrpDXgtoco1
-         pKhMGDPrYk8+79R72fqTvPJxI0h7U8V0Fa+lhlZ7ZLYkSHNEO3idBu8gUBPdOQqxJf
-         /qaYUQE2mk2owMY5Zey8pONJl+F0YrovKgTz8h2Q=
+        b=aQvemwozWZKKdlNQ82WUwPOEOGwQy9LLSrx6d+v9irWNQXI07XFx2Mogn67XKCCmX
+         bJ11/uOnZFrIXK0RCBtYhxIKiOwGbaTAvgKI3q3mnU8F20CXGsyVvwnYrbrcvBSa0k
+         s/SZUKjH9IbQXHXungo3ODz/SZAVwfuKRNtUTDzI=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -45,12 +45,12 @@ Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
         <niklas.soderlund+renesas@ragnatech.se>,
         Eduardo Valentin <edubezval@gmail.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 39/77] thermal: rcar_thermal: Prevent hardware access during system suspend
-Date:   Sat, 16 Nov 2019 10:53:01 -0500
-Message-Id: <20191116155339.11909-39-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 49/99] thermal: rcar_thermal: Prevent hardware access during system suspend
+Date:   Sat, 16 Nov 2019 10:50:12 -0500
+Message-Id: <20191116155103.10971-49-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191116155339.11909-1-sashal@kernel.org>
-References: <20191116155339.11909-1-sashal@kernel.org>
+In-Reply-To: <20191116155103.10971-1-sashal@kernel.org>
+References: <20191116155103.10971-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 X-stable: review
@@ -85,10 +85,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 13d01edc7a043..487c5cd7516c0 100644
+index 73e5fee6cf1d5..83126e2dce36d 100644
 --- a/drivers/thermal/rcar_thermal.c
 +++ b/drivers/thermal/rcar_thermal.c
-@@ -350,8 +350,8 @@ static irqreturn_t rcar_thermal_irq(int irq, void *data)
+@@ -401,8 +401,8 @@ static irqreturn_t rcar_thermal_irq(int irq, void *data)
  	rcar_thermal_for_each_priv(priv, common) {
  		if (rcar_thermal_had_changed(priv, status)) {
  			rcar_thermal_irq_disable(priv);
