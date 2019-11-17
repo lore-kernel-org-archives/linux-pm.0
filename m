@@ -1,109 +1,198 @@
-Return-Path: <SRS0=VRae=ZI=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=FG/a=ZJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A63EC43141
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 16:24:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8026DC432C0
+	for <linux-pm@archiver.kernel.org>; Sun, 17 Nov 2019 08:58:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 05A9921847
-	for <linux-pm@archiver.kernel.org>; Sat, 16 Nov 2019 16:24:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1573921465;
-	bh=d5aN0u3+tlQOnw6rz7zLvdGW+WvOSXR1GFhj+QuTke8=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=g2JrxYoOEB8nv4eXUdIZDBF0P6bRAnS1KnONMQ7HIwcagcafjztjjBh0cZTDLVwQB
-	 7iJbgqeCl5pPGhTxl6zeYabafpzargAoWFc+6U/3sSFajEKEfKgg9DIYJAzskvzCdA
-	 NbIB+Dh4tabC2R1vX9bdt3hxVOuDWX2QGUvd3OcM=
+	by mail.kernel.org (Postfix) with ESMTP id 41F2D20740
+	for <linux-pm@archiver.kernel.org>; Sun, 17 Nov 2019 08:58:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="VMwFC2wd"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728347AbfKPPme (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 16 Nov 2019 10:42:34 -0500
-Received: from mail.kernel.org ([198.145.29.99]:46238 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728338AbfKPPme (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 16 Nov 2019 10:42:34 -0500
-Received: from sasha-vm.mshome.net (unknown [50.234.116.4])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 8A9E320700;
-        Sat, 16 Nov 2019 15:42:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1573918954;
-        bh=d5aN0u3+tlQOnw6rz7zLvdGW+WvOSXR1GFhj+QuTke8=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=TNlyaeq9MZlFWAZXzbVdra6q2EgrIMUf7/in/qBsGzGOmHsoZpoIUa9ZaXYYTiTpO
-         g34/CLyl34016zx3N6OE2NTHTEAxwrbuFLq9O+X2DYagcQN2DCl5/vRrvaXBHeCdgs
-         UKdR+b5t8ZTzUz16EBqjVBcHmbzSFzlGlvkSeppA=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Ulf Hansson <ulf.hansson@linaro.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 073/237] PM / Domains: Deal with multiple states but no governor in genpd
-Date:   Sat, 16 Nov 2019 10:38:28 -0500
-Message-Id: <20191116154113.7417-73-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191116154113.7417-1-sashal@kernel.org>
-References: <20191116154113.7417-1-sashal@kernel.org>
+        id S1726062AbfKQI6R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 17 Nov 2019 03:58:17 -0500
+Received: from aserp2120.oracle.com ([141.146.126.78]:46442 "EHLO
+        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726007AbfKQI6R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Nov 2019 03:58:17 -0500
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+        by aserp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xAH8s1vQ149506;
+        Sun, 17 Nov 2019 08:58:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2019-08-05;
+ bh=1u2ztYk0IAZBqMVrZBfzmUSNb952oa7sXB/iqEXknJY=;
+ b=VMwFC2wdsmFrI9HYJJbWusT9LsBuCZvVRQRFwi5oC9iGxyYu5yzBnsIEJJjsFMSRLwX9
+ RksFjmNvtpGvTHFa5ZRzxRBMhI0x/iS2Jez0vY3OpFzw7qi3/JtbSYXaO6sg031heWAI
+ D0bwQUx1dKZhRhDTE1QsKcKCkTMxMmiTKmG+doN+ca/WmQZnfxIPjA5CCRqYl5WnQaPc
+ U3nqZwbQeI5nk1NxxaAD8g61ikEVV1S6MmXmj5ciGUVObua3GLAh0SfXyi+ysYw7vqYX
+ uHrhAcR8/ld84YKWFiPEqDVTtx5TovfZNnK+0IwjDiGr66kk3J1beRBTekGwAqSQwD3m ag== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+        by aserp2120.oracle.com with ESMTP id 2wa92pb82k-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Sun, 17 Nov 2019 08:58:09 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+        by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xAH8r51U126207;
+        Sun, 17 Nov 2019 08:58:09 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+        by aserp3020.oracle.com with ESMTP id 2watmhf52v-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Sun, 17 Nov 2019 08:58:09 +0000
+Received: from abhmp0010.oracle.com (abhmp0010.oracle.com [141.146.116.16])
+        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id xAH8w3uN019422;
+        Sun, 17 Nov 2019 08:58:03 GMT
+Received: from [10.191.18.30] (/10.191.18.30)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Sun, 17 Nov 2019 00:58:03 -0800
+Subject: Re: [PATCH RESEND v2 3/4] cpuidle-haltpoll: ensure cpu_halt_poll_us
+ in right scope
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-kernel@vger.kernel.org, pbonzini@redhat.com,
+        rkrcmar@redhat.com, rafael.j.wysocki@intel.com,
+        joao.m.martins@oracle.com, mtosatti@redhat.com,
+        kvm@vger.kernel.org, linux-pm@vger.kernel.org
+References: <1573041302-4904-1-git-send-email-zhenzhong.duan@oracle.com>
+ <1573041302-4904-4-git-send-email-zhenzhong.duan@oracle.com>
+ <6161954.sKiXg2khOt@kreacher>
+From:   Zhenzhong Duan <zhenzhong.duan@oracle.com>
+Organization: Oracle Corporation
+Message-ID: <5ff7cb30-b6fb-d9df-ee8d-bf21b95c9cb1@oracle.com>
+Date:   Sun, 17 Nov 2019 16:57:57 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.1
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
+In-Reply-To: <6161954.sKiXg2khOt@kreacher>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9443 signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1911140001 definitions=main-1911170086
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9443 signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
+ suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1911140001
+ definitions=main-1911170086
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Ulf Hansson <ulf.hansson@linaro.org>
+On 2019/11/15 18:45, Rafael J. Wysocki wrote:
 
-[ Upstream commit 2c9b7f8772033cc8bafbd4eefe2ca605bf3eb094 ]
+> On Wednesday, November 6, 2019 12:55:01 PM CET Zhenzhong Duan wrote:
+>> As user can adjust guest_halt_poll_grow_start and guest_halt_poll_ns
+>> which leads to cpu_halt_poll_us beyond the two boundaries. This patch
+>> ensures cpu_halt_poll_us in that scope.
+>>
+>> If guest_halt_poll_shrink is 0, shrink the cpu_halt_poll_us to
+>> guest_halt_poll_grow_start instead of 0. To disable poll we can set
+>> guest_halt_poll_ns to 0.
+>>
+>> If user wrongly set guest_halt_poll_grow_start > guest_halt_poll_ns > 0,
+>> guest_halt_poll_ns take precedency and poll time is a fixed value of
+>> guest_halt_poll_ns.
+>>
+>> Signed-off-by: Zhenzhong Duan <zhenzhong.duan@oracle.com>
+>> ---
+>>   drivers/cpuidle/governors/haltpoll.c | 28 +++++++++++++---------------
+>>   1 file changed, 13 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/governors/haltpoll.c b/drivers/cpuidle/governors/haltpoll.c
+>> index 660859d..4a39df4 100644
+>> --- a/drivers/cpuidle/governors/haltpoll.c
+>> +++ b/drivers/cpuidle/governors/haltpoll.c
+>> @@ -97,32 +97,30 @@ static int haltpoll_select(struct cpuidle_driver *drv,
+>>   
+>>   static void adjust_poll_limit(struct cpuidle_device *dev, unsigned int block_us)
+>>   {
+>> -	unsigned int val;
+>> +	unsigned int val = dev->poll_limit_ns;
+> Not necessary to initialize it here.
 
-A caller of pm_genpd_init() that provides some states for the genpd via the
-->states pointer in the struct generic_pm_domain, should also provide a
-governor. This because it's the job of the governor to pick a state that
-satisfies the constraints.
+Then an random val may bypass all the check and get assigned to dev->poll_limit_ns
 
-Therefore, let's print a warning to inform the user about such bogus
-configuration and avoid to bail out, by instead picking the shallowest
-state before genpd invokes the ->power_off() callback.
+if guest_halt_poll_grow_start< block_ns< uninitialized val< guest_halt_poll_ns
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Lina Iyer <ilina@codeaurora.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/base/power/domain.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+With my change, dev->poll_limit_ns will not be changed in that case, logic same as original code.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index bf5be0bfaf773..52c292d0908a2 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -467,6 +467,10 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 			return -EAGAIN;
- 	}
- 
-+	/* Default to shallowest state. */
-+	if (!genpd->gov)
-+		genpd->state_idx = 0;
-+
- 	if (genpd->power_off) {
- 		int ret;
- 
-@@ -1686,6 +1690,8 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- 		ret = genpd_set_default_power_state(genpd);
- 		if (ret)
- 			return ret;
-+	} else if (!gov) {
-+		pr_warn("%s : no governor for states\n", genpd->name);
- 	}
- 
- 	device_initialize(&genpd->dev);
--- 
-2.20.1
+>
+>>   	u64 block_ns = block_us*NSEC_PER_USEC;
+>>   
+>>   	/* Grow cpu_halt_poll_us if
+>> -	 * cpu_halt_poll_us < block_ns < guest_halt_poll_us
+>> +	 * cpu_halt_poll_us < block_ns <= guest_halt_poll_us
+> You could update the comment to say "dev->poll_limit_ns" instead of
+> "cpu_halt_poll_us" while at it.
+
+Will do, also guest_halt_poll_us to guest_halt_poll_ns
+
+>
+>>   	 */
+>> -	if (block_ns > dev->poll_limit_ns && block_ns <= guest_halt_poll_ns) {
+>> +	if (block_ns > dev->poll_limit_ns && block_ns <= guest_halt_poll_ns &&
+>> +	    guest_halt_poll_grow)
+> The "{" brace is still needed as per the coding style and I'm not sure why
+> to avoid guest_halt_poll_grow equal to zero here?
+
+Will add "{}" and remove guest_halt_poll_grow check. My inital thought was to prevent
+
+dev->poll_limit_ns get shrinked with guest_halt_poll_grow=0.
+
+>
+>>   		val = dev->poll_limit_ns * guest_halt_poll_grow;
+>> -
+>> -		if (val < guest_halt_poll_grow_start)
+>> -			val = guest_halt_poll_grow_start;
+>> -		if (val > guest_halt_poll_ns)
+>> -			val = guest_halt_poll_ns;
+>> -
+>> -		dev->poll_limit_ns = val;
+>> -	} else if (block_ns > guest_halt_poll_ns &&
+>> -		   guest_halt_poll_allow_shrink) {
+>> +	else if (block_ns > guest_halt_poll_ns &&
+>> +		 guest_halt_poll_allow_shrink) {
+>>   		unsigned int shrink = guest_halt_poll_shrink;
+>>   
+>> -		val = dev->poll_limit_ns;
+>>   		if (shrink == 0)
+>> -			val = 0;
+>> +			val = guest_halt_poll_grow_start;
+> That's going to be corrected below, so the original code would be fine.
+
+val was assigned twice using 'val = 0' while it's once with my change, optimal a bit?
+
+>
+>>   		else
+>>   			val /= shrink;
+> Here you can do
+>
+> 			val = dev->poll_limit_ns / shrink;
+
+Any special reason？Looks no difference for me.
+
+>
+>> -		dev->poll_limit_ns = val;
+>>   	}
+>> +	if (val < guest_halt_poll_grow_start)
+>> +		val = guest_halt_poll_grow_start;
+> Note that guest_halt_poll_grow_start is in us (as per the comment next to its
+> definition and the initial value).  That is a bug in the original code too,
+> but anyway.
+
+Good catch! will fix the comment. The default 50000ns vs 50000us, looks author means ns.
+guest_halt_poll_ns defaults to 200000, also hints ns for guest_halt_poll_grow_start.
+
+Thanks
+
+Zhenzhong
 
