@@ -2,332 +2,175 @@ Return-Path: <SRS0=3EEV=ZK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7C0AC432C0
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 22:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A667C432C0
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 23:10:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9947D2230C
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 22:56:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 655FB2230E
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 23:10:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726855AbfKRW4y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Nov 2019 17:56:54 -0500
-Received: from inva021.nxp.com ([92.121.34.21]:57264 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726822AbfKRW4y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 18 Nov 2019 17:56:54 -0500
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 11DA22003CC;
-        Mon, 18 Nov 2019 23:56:52 +0100 (CET)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 030712003C8;
-        Mon, 18 Nov 2019 23:56:52 +0100 (CET)
-Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 888632039B;
-        Mon, 18 Nov 2019 23:56:51 +0100 (CET)
-From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
-        Jacky Bai <ping.bai@nxp.com>, Angus Ainslie <angus@akkea.ca>,
-        linux-pm@vger.kernel.org, linux-imx@nxp.com
-Subject: [PATCH v2 2/2] PM / QoS: Restore DEV_PM_QOS_MIN/MAX_FREQUENCY
-Date:   Tue, 19 Nov 2019 00:56:43 +0200
-Message-Id: <7190da59fb8fbb12538d2b28b87e1ee420cbb705.1574116684.git.leonard.crestez@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1574116684.git.leonard.crestez@nxp.com>
-References: <cover.1574116684.git.leonard.crestez@nxp.com>
-In-Reply-To: <cover.1574116684.git.leonard.crestez@nxp.com>
-References: <cover.1574116684.git.leonard.crestez@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1726939AbfKRXKE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Nov 2019 18:10:04 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:46216 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726787AbfKRXKE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 18:10:04 -0500
+Received: from 79.184.253.244.ipv4.supernova.orange.pl (79.184.253.244) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
+ id 8b755d4becfa1ef3; Tue, 19 Nov 2019 00:10:02 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Len Brown <lenb@kernel.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Doug Smythies <dsmythies@telus.net>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH 1/2] cpuidle: Drop disabled field from struct cpuidle_state
+Date:   Tue, 19 Nov 2019 00:07:32 +0100
+Message-ID: <3935829.cE1St2P3cE@kreacher>
+In-Reply-To: <1688511.GgkECGP1XA@kreacher>
+References: <2717750.dCEzHT3DVQ@kreacher> <CAJZ5v0jsQG37VF3-tiSndE0pXX9jEfgucm0UyvpM0bsyoOcpuA@mail.gmail.com> <1688511.GgkECGP1XA@kreacher>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Support for adding per-device frequency limits was removed in commit
-2aac8bdf7a0f ("PM: QoS: Drop frequency QoS types from device PM QoS")
-after cpufreq switched to use a new "freq_constraints" construct.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Restore support for per-device freq limits but base this upon
-freq_constraints. This is primarily meant to be used by the devfreq
-subsystem.
+After recent cpuidle updates the disabled field in struct
+cpuidle_state is only used by two drivers (intel_idle and shmobile
+cpuidle) for marking unusable idle states, but that may as well be
+achieved with the help of a state flag, so define an "unusable" idle
+state flag, CPUIDLE_FLAG_UNUSABLE, make the drivers in question use
+it instead of the disable field and make the core set
+CPUIDLE_STATE_DISABLED_BY_DRIVER for the idle states with that flag
+set.
 
-This removes the "static" marking on freq_qos_apply but does not export
-it for modules.
+After the above changes, the disabled field in struct cpuidle_state
+is not used any more, so drop it.
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/base/power/qos.c | 69 ++++++++++++++++++++++++++++++++++++----
- include/linux/pm_qos.h   | 12 +++++++
- kernel/power/qos.c       |  4 ++-
- 3 files changed, 78 insertions(+), 7 deletions(-)
+ arch/sh/kernel/cpu/shmobile/cpuidle.c |    8 ++++----
+ drivers/cpuidle/cpuidle.c             |    2 +-
+ drivers/cpuidle/poll_state.c          |    1 -
+ drivers/idle/intel_idle.c             |    6 +++---
+ include/linux/cpuidle.h               |    2 +-
+ 5 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 350dcafd751f..4eefa00aff2d 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -113,14 +113,24 @@ s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type)
- 	unsigned long flags;
- 	s32 ret;
- 
- 	spin_lock_irqsave(&dev->power.lock, flags);
- 
--	if (type == DEV_PM_QOS_RESUME_LATENCY) {
-+	switch (type) {
-+	case DEV_PM_QOS_RESUME_LATENCY:
- 		ret = IS_ERR_OR_NULL(qos) ? PM_QOS_RESUME_LATENCY_NO_CONSTRAINT
- 			: pm_qos_read_value(&qos->resume_latency);
--	} else {
-+		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+		ret = IS_ERR_OR_NULL(qos) ? PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE
-+			: freq_qos_read_value(&qos->freq, FREQ_QOS_MIN);
-+		break;
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		ret = IS_ERR_OR_NULL(qos) ? PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE
-+			: freq_qos_read_value(&qos->freq, FREQ_QOS_MAX);
-+		break;
-+	default:
- 		WARN_ON(1);
- 		ret = 0;
+Index: linux-pm/drivers/idle/intel_idle.c
+===================================================================
+--- linux-pm.orig/drivers/idle/intel_idle.c
++++ linux-pm/drivers/idle/intel_idle.c
+@@ -1291,8 +1291,8 @@ static void sklh_idle_state_table_update
+ 			return;
  	}
  
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
-@@ -157,10 +167,14 @@ static int apply_constraint(struct dev_pm_qos_request *req,
- 		if (ret) {
- 			value = pm_qos_read_value(&qos->latency_tolerance);
- 			req->dev->power.set_latency_tolerance(req->dev, value);
- 		}
- 		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		ret = freq_qos_apply(&req->data.freq, action, value);
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
- 					  action, value);
- 		break;
- 	default:
-@@ -207,10 +221,12 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->target_value = PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE;
- 	c->default_value = PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE;
- 	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
- 	c->type = PM_QOS_MIN;
- 
-+	freq_constraints_init(&qos->freq);
-+
- 	INIT_LIST_HEAD(&qos->flags.list);
- 
- 	spin_lock_irq(&dev->power.lock);
- 	dev->power.qos = qos;
- 	spin_unlock_irq(&dev->power.lock);
-@@ -267,10 +283,22 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
- 
-+	c = &qos->freq.min_freq;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.freq.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
-+
-+	c = &qos->freq.max_freq;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.freq.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
-+
- 	f = &qos->flags;
- 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
-@@ -312,15 +340,26 @@ static int __dev_pm_qos_add_request(struct device *dev,
- 		ret = -ENODEV;
- 	else if (!dev->power.qos)
- 		ret = dev_pm_qos_constraints_allocate(dev);
- 
- 	trace_dev_pm_qos_add_request(dev_name(dev), type, value);
--	if (!ret) {
--		req->dev = dev;
--		req->type = type;
-+	if (ret)
-+		return ret;
-+
-+	req->dev = dev;
-+	req->type = type;
-+	if (req->type == DEV_PM_QOS_MIN_FREQUENCY)
-+		ret = freq_qos_add_request(&dev->power.qos->freq,
-+					   &req->data.freq,
-+					   FREQ_QOS_MIN, value);
-+	else if (req->type == DEV_PM_QOS_MAX_FREQUENCY)
-+		ret = freq_qos_add_request(&dev->power.qos->freq,
-+					   &req->data.freq,
-+					   FREQ_QOS_MAX, value);
-+	else
- 		ret = apply_constraint(req, PM_QOS_ADD_REQ, value);
--	}
-+
- 	return ret;
+-	skl_cstates[5].disabled = 1;	/* C8-SKL */
+-	skl_cstates[6].disabled = 1;	/* C9-SKL */
++	skl_cstates[5].flags |= CPUIDLE_FLAG_UNUSABLE;	/* C8-SKL */
++	skl_cstates[6].flags |= CPUIDLE_FLAG_UNUSABLE;	/* C9-SKL */
  }
+ /*
+  * intel_idle_state_table_update()
+@@ -1355,7 +1355,7 @@ static void __init intel_idle_cpuidle_dr
+ 			continue;
  
- /**
-  * dev_pm_qos_add_request - inserts new qos request into the list
-@@ -380,10 +419,14 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 	case DEV_PM_QOS_LATENCY_TOLERANCE:
- 		curr_value = req->data.pnode.prio;
- 		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		curr_value = req->data.freq.pnode.prio;
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		curr_value = req->data.flr.flags;
- 		break;
- 	default:
+ 		/* if state marked as disabled, skip it */
+-		if (cpuidle_state_table[cstate].disabled != 0) {
++		if (cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_UNUSABLE) {
+ 			pr_debug("state %s is disabled\n",
+ 				 cpuidle_state_table[cstate].name);
+ 			continue;
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -54,7 +54,6 @@ struct cpuidle_state {
+ 	unsigned int	exit_latency; /* in US */
+ 	int		power_usage; /* in mW */
+ 	unsigned int	target_residency; /* in US */
+-	bool		disabled; /* disabled on all CPUs */
+ 
+ 	int (*enter)	(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+@@ -77,6 +76,7 @@ struct cpuidle_state {
+ #define CPUIDLE_FLAG_POLLING	BIT(0) /* polling state */
+ #define CPUIDLE_FLAG_COUPLED	BIT(1) /* state applies to multiple cpus */
+ #define CPUIDLE_FLAG_TIMER_STOP BIT(2) /* timer is stopped on this state */
++#define CPUIDLE_FLAG_UNUSABLE	BIT(3) /* avoid using this state */
+ 
+ struct cpuidle_device_kobj;
+ struct cpuidle_state_kobj;
+Index: linux-pm/arch/sh/kernel/cpu/shmobile/cpuidle.c
+===================================================================
+--- linux-pm.orig/arch/sh/kernel/cpu/shmobile/cpuidle.c
++++ linux-pm/arch/sh/kernel/cpu/shmobile/cpuidle.c
+@@ -67,7 +67,7 @@ static struct cpuidle_driver cpuidle_dri
+ 			.enter = cpuidle_sleep_enter,
+ 			.name = "C2",
+ 			.desc = "SuperH Sleep Mode [SF]",
+-			.disabled = true,
++			.flags = CPUIDLE_FLAG_UNUSABLE,
+ 		},
+ 		{
+ 			.exit_latency = 2300,
+@@ -76,7 +76,7 @@ static struct cpuidle_driver cpuidle_dri
+ 			.enter = cpuidle_sleep_enter,
+ 			.name = "C3",
+ 			.desc = "SuperH Mobile Standby Mode [SF]",
+-			.disabled = true,
++			.flags = CPUIDLE_FLAG_UNUSABLE,
+ 		},
+ 	},
+ 	.safe_state_index = 0,
+@@ -86,10 +86,10 @@ static struct cpuidle_driver cpuidle_dri
+ int __init sh_mobile_setup_cpuidle(void)
+ {
+ 	if (sh_mobile_sleep_supported & SUSP_SH_SF)
+-		cpuidle_driver.states[1].disabled = false;
++		cpuidle_driver.states[1].flags = CPUIDLE_FLAG_NONE;
+ 
+ 	if (sh_mobile_sleep_supported & SUSP_SH_STANDBY)
+-		cpuidle_driver.states[2].disabled = false;
++		cpuidle_driver.states[2].flags = CPUIDLE_FLAG_NONE;
+ 
+ 	return cpuidle_register(&cpuidle_driver, NULL);
+ }
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -570,7 +570,7 @@ static int __cpuidle_register_device(str
  		return -EINVAL;
-@@ -505,10 +548,16 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
- 	switch (type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
- 						       notifier);
- 		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+		ret = freq_qos_add_notifier(&dev->power.qos->freq, FREQ_QOS_MIN, notifier);
-+		break;
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		ret = freq_qos_add_notifier(&dev->power.qos->freq, FREQ_QOS_MAX, notifier);
-+		break;
- 	default:
- 		WARN_ON(1);
- 		ret = -EINVAL;
- 	}
  
-@@ -544,10 +593,18 @@ int dev_pm_qos_remove_notifier(struct device *dev,
- 	switch (type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 		ret = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
- 							 notifier);
- 		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+		ret = freq_qos_remove_notifier(&dev->power.qos->freq,
-+					       FREQ_QOS_MIN, notifier);
-+		break;
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		ret = freq_qos_remove_notifier(&dev->power.qos->freq,
-+					       FREQ_QOS_MAX, notifier);
-+		break;
- 	default:
- 		WARN_ON(1);
- 		ret = -EINVAL;
- 	}
+ 	for (i = 0; i < drv->state_count; i++)
+-		if (drv->states[i].disabled)
++		if (drv->states[i].flags & CPUIDLE_FLAG_UNUSABLE)
+ 			dev->states_usage[i].disable |= CPUIDLE_STATE_DISABLED_BY_DRIVER;
  
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 9105f47f5195..5193915913fe 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -32,10 +32,12 @@ enum pm_qos_flags_status {
- #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	PM_QOS_LATENCY_ANY
- #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT	PM_QOS_LATENCY_ANY
- #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS	PM_QOS_LATENCY_ANY_NS
- #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
-+#define PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE	0
-+#define PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE	(-1)
- #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
- 
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
- 
- struct pm_qos_request {
-@@ -99,25 +101,29 @@ struct freq_qos_request {
- 
- 
- enum dev_pm_qos_req_type {
- 	DEV_PM_QOS_RESUME_LATENCY = 1,
- 	DEV_PM_QOS_LATENCY_TOLERANCE,
-+	DEV_PM_QOS_MIN_FREQUENCY,
-+	DEV_PM_QOS_MAX_FREQUENCY,
- 	DEV_PM_QOS_FLAGS,
- };
- 
- struct dev_pm_qos_request {
- 	enum dev_pm_qos_req_type type;
- 	union {
- 		struct plist_node pnode;
- 		struct pm_qos_flags_request flr;
-+		struct freq_qos_request freq;
- 	} data;
- 	struct device *dev;
- };
- 
- struct dev_pm_qos {
- 	struct pm_qos_constraints resume_latency;
- 	struct pm_qos_constraints latency_tolerance;
-+	struct freq_constraints freq;
- 	struct pm_qos_flags flags;
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
- 	struct dev_pm_qos_request *flags_req;
- };
-@@ -212,10 +218,14 @@ static inline s32 dev_pm_qos_read_value(struct device *dev,
- 					enum dev_pm_qos_req_type type)
- {
- 	switch (type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 		return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+		return PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE;
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		return PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
- 	default:
- 		WARN_ON(1);
- 		return 0;
- 	}
+ 	per_cpu(cpuidle_devices, dev->cpu) = dev;
+Index: linux-pm/drivers/cpuidle/poll_state.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/poll_state.c
++++ linux-pm/drivers/cpuidle/poll_state.c
+@@ -53,7 +53,6 @@ void cpuidle_poll_state_init(struct cpui
+ 	state->target_residency_ns = 0;
+ 	state->power_usage = -1;
+ 	state->enter = poll_idle;
+-	state->disabled = false;
+ 	state->flags = CPUIDLE_FLAG_POLLING;
  }
-@@ -291,10 +301,12 @@ s32 freq_qos_read_value(struct freq_constraints *qos,
- int freq_qos_add_request(struct freq_constraints *qos,
- 			 struct freq_qos_request *req,
- 			 enum freq_qos_req_type type, s32 value);
- int freq_qos_update_request(struct freq_qos_request *req, s32 new_value);
- int freq_qos_remove_request(struct freq_qos_request *req);
-+int freq_qos_apply(struct freq_qos_request *req,
-+		   enum pm_qos_req_action action, s32 value);
- 
- int freq_qos_add_notifier(struct freq_constraints *qos,
- 			  enum freq_qos_req_type type,
- 			  struct notifier_block *notifier);
- int freq_qos_remove_notifier(struct freq_constraints *qos,
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 04e83fdfbe80..b32b4d823bf7 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -712,12 +712,14 @@ s32 freq_qos_read_value(struct freq_constraints *qos,
- /**
-  * freq_qos_apply - Add/modify/remove frequency QoS request.
-  * @req: Constraint request to apply.
-  * @action: Action to perform (add/update/remove).
-  * @value: Value to assign to the QoS request.
-+ *
-+ * This is only meant to be called from inside pm_qos, not drivers.
-  */
--static int freq_qos_apply(struct freq_qos_request *req,
-+int freq_qos_apply(struct freq_qos_request *req,
- 			  enum pm_qos_req_action action, s32 value)
- {
- 	int ret;
- 
- 	switch(req->type) {
--- 
-2.17.1
+ EXPORT_SYMBOL_GPL(cpuidle_poll_state_init);
+
+
 
