@@ -2,167 +2,156 @@ Return-Path: <SRS0=3EEV=ZK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80F25C432C0
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 16:13:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1ED6FC432C0
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 16:46:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 56566218BA
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 16:13:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E5184218BA
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 16:46:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ps7FFNxz"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AMnRbLdQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726939AbfKRQNh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Nov 2019 11:13:37 -0500
-Received: from mail-ua1-f67.google.com ([209.85.222.67]:44522 "EHLO
-        mail-ua1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726423AbfKRQNh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 11:13:37 -0500
-Received: by mail-ua1-f67.google.com with SMTP id r22so5422734uam.11
-        for <linux-pm@vger.kernel.org>; Mon, 18 Nov 2019 08:13:37 -0800 (PST)
+        id S1726511AbfKRQqu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Nov 2019 11:46:50 -0500
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:40905 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726427AbfKRQqu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 11:46:50 -0500
+Received: by mail-lj1-f193.google.com with SMTP id q2so19767485ljg.7;
+        Mon, 18 Nov 2019 08:46:48 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=NOBGWjB9W9cl6b9pfrkUqhdUPzJMZSOyNn3PCn+PlXY=;
-        b=ps7FFNxzjiPoJQ9IWxSNspdjSavrBxSIb1/8hgO4fWvVZk3MuL/IzGWMJZlojzw3N0
-         fsMp2esNGEi5i7cLybVfBTMe5AUg6rCbtcqdMnTMp8wbzCoKZzhKiLdlhUP9yKiDuUfp
-         KKdlty3s6yP+fwKvzjCYP4pIFsukDMiwP7YssOF7Nq68TNAEU5S/N84rdbG85zHFNVV+
-         F4a6yxpANHANYfDOXhHn640c6Ov6vGJPOv105ib3SAmGOuAh4PR2naRaNSQQBas0D6Zv
-         JpTRJbFuLDa6N7ItMBFdIDDjXI4Jss54WFJME0xUKUeJ/1icuNZ5mvUxAG/qOqlWJktQ
-         qFIg==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Y0gNszD0ptBgrgfqARNo4dCfpARXgUJI1xW2pH1mNqQ=;
+        b=AMnRbLdQfenpLVnLwnoKmthFoia/qBJo4V8FZhRcpT1kRligp9K2XHi2QKxXKLRKsh
+         dP6Zy1SGzXjQS+CrKneQNd6HheDriZha3AoH605RNMsdHwaNTmYP28x9ocb2DOcJdJcK
+         qTU/5ykYzr6p0ww8E4Sdjoi2ffgH7apLuTRViE7YDnVmY91r89NTSPepv/K6I082VUiC
+         uhF7KvP1P844SzHRR0VjqHY9nKXL0hUvN8ZZ58yp/jVFdIVebKNWjmnV0sm/FlILwUx7
+         Q4VLcGB76ab3WJBk9LZ/hMoRGXnGwjUw4kSvMZ9QeR58qjepubuQkjnMnGktfYgZuaLk
+         XQbw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=NOBGWjB9W9cl6b9pfrkUqhdUPzJMZSOyNn3PCn+PlXY=;
-        b=XPL23d5xh7gPpKBe3bKKrzZ2mokhhbTVluR1bmLn/t/KA1iP4xPbdYS+e3h0JfIwOP
-         hrl6ifvbpch0PvPQt4EJtnVwCV7gM77HC26x1VDvbiOhLw5oZJNMSojBdVRMvqLpwHML
-         nmREgSfiIxdHnp08Hr/GWM5gZcnyoBpw8823PRHoGpXNGWHnbuBa367vGZAh6C0GMtiB
-         s++sBKxvjgushG2weicvpTWJP6orvVVfm/+wNy+OJGGCLc6HXgYLRNh1HZ0e7+AVA84D
-         i6U6DszSHwK+gHfdIiCN9OF4ZNn7OvYmrPw0hD/DDXsJPONDk/2Gd7kX2XoqXROmNO0R
-         4AsQ==
-X-Gm-Message-State: APjAAAW0hcn4Lp55zvbhlXgWjKKmURpV5qttRS90xmacQpkdR7XzlIuf
-        +T+wW+NxzxwXxDq9DiUlSvcXVRz93+YIJohu2kjFwA==
-X-Google-Smtp-Source: APXvYqyTTuF9zUwn83r+XQtchUtpg488WrjBXUa0RFM7kN+FgCR66+bwwvVp4jVfObasrgnWGDp1Mqi76P5PIhrTWYs=
-X-Received: by 2002:ab0:74cd:: with SMTP id f13mr17698085uaq.104.1574093616414;
- Mon, 18 Nov 2019 08:13:36 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Y0gNszD0ptBgrgfqARNo4dCfpARXgUJI1xW2pH1mNqQ=;
+        b=R/hztodzXVCSUF41/IIyIgV3iSWn6xFvG5jh7Wl7NTWcYS8dFej5CNRDNPzCnVQdAD
+         hhl9uvh6uR3yXZe7oWKHjn28VtpDQprypKpPTg2RGAH0h7HywHWBYkYXlnte8Q3Ny/kp
+         cWEb9t+UpMIpmmsuRcVYVyerid3IwfhjbkpLfK3MNcLhITtzIoocQ4JGOAGYMzC8Gg+B
+         VhPg8feAGqQdVGztS3F7/5TJJgghm5xuW4VkmNjN6xQoO7nNcyGDa63HAiEaIOTwYafK
+         SNPClcOMaGqBCXd3kNSQjcbiTgY0HdUCLPpVphiU3dquKrQiXva1J5a+m8CJcOfFyc6c
+         Cdsw==
+X-Gm-Message-State: APjAAAVoZ2dXxd18BCbtTs7k+wL6IBOajYAXVhCVgCiollY6y1o2Zz+T
+        Jnm71NsXaAL+tLO3Y/EU/Xk=
+X-Google-Smtp-Source: APXvYqz/ScRecKieVBX1sp9czjfXmCAdVkefP5wvCaTAy2Vo6vr9IFK29pNFdWsZc+VSNIF6TFRQvQ==
+X-Received: by 2002:a2e:2c1a:: with SMTP id s26mr243441ljs.239.1574095607750;
+        Mon, 18 Nov 2019 08:46:47 -0800 (PST)
+Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
+        by smtp.gmail.com with ESMTPSA id d4sm8880307lfi.32.2019.11.18.08.46.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 Nov 2019 08:46:47 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Prashant Gaikwad <pgaikwad@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v5 02/11] clk: tegra: pll: Add pre/post rate-change hooks
+Date:   Mon, 18 Nov 2019 19:45:03 +0300
+Message-Id: <20191118164512.8676-3-digetx@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191118164512.8676-1-digetx@gmail.com>
+References: <20191118164512.8676-1-digetx@gmail.com>
 MIME-Version: 1.0
-References: <1573995924-14752-1-git-send-email-aisheng.dong@nxp.com>
-In-Reply-To: <1573995924-14752-1-git-send-email-aisheng.dong@nxp.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Mon, 18 Nov 2019 17:13:00 +0100
-Message-ID: <CAPDyKFrkRPuJ5+1sdLevY9tqO6CoKQu6eGDKGpbYoqOUaghnPA@mail.gmail.com>
-Subject: Re: [PATCH 1/1] firmware: imx: scu-pd: do not power off console domain
-To:     Dong Aisheng <aisheng.dong@nxp.com>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Dong Aisheng <dongas86@gmail.com>,
-        Sascha Hauer <kernel@pengutronix.de>,
-        dl-linux-imx <linux-imx@nxp.com>, Shawn Guo <shawnguo@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, 17 Nov 2019 at 14:07, Dong Aisheng <aisheng.dong@nxp.com> wrote:
->
-> Do not power off console domain in runtime pm.
+There is a need to temporarily re-parent CCLK away from PLLX if PLLX's
+rate is about to change. The newly introduced PLL pre/post rate-change
+hooks allow to handle such case.
 
-Would it be possible to configure a remote wakeup for the console
-while the device becomes runtime suspended, rather than preventing the
-power off altogether?
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/clk/tegra/clk-pll.c | 12 +++++++++++-
+ drivers/clk/tegra/clk.h     |  6 ++++++
+ 2 files changed, 17 insertions(+), 1 deletion(-)
 
-Kind regards
-Uffe
+diff --git a/drivers/clk/tegra/clk-pll.c b/drivers/clk/tegra/clk-pll.c
+index 531c2b3d814e..0b212cf2e794 100644
+--- a/drivers/clk/tegra/clk-pll.c
++++ b/drivers/clk/tegra/clk-pll.c
+@@ -744,13 +744,19 @@ static int _program_pll(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
+ 
+ 	state = clk_pll_is_enabled(hw);
+ 
++	if (state && pll->params->pre_rate_change) {
++		ret = pll->params->pre_rate_change();
++		if (WARN_ON(ret))
++			return ret;
++	}
++
+ 	_get_pll_mnp(pll, &old_cfg);
+ 
+ 	if (state && pll->params->defaults_set && pll->params->dyn_ramp &&
+ 			(cfg->m == old_cfg.m) && (cfg->p == old_cfg.p)) {
+ 		ret = pll->params->dyn_ramp(pll, cfg);
+ 		if (!ret)
+-			return 0;
++			goto done;
+ 	}
+ 
+ 	if (state) {
+@@ -772,6 +778,10 @@ static int _program_pll(struct clk_hw *hw, struct tegra_clk_pll_freq_table *cfg,
+ 		pll_clk_start_ss(pll);
+ 	}
+ 
++done:
++	if (state && pll->params->post_rate_change)
++		pll->params->post_rate_change();
++
+ 	return ret;
+ }
+ 
+diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
+index ee35a847df08..fa18bef914af 100644
+--- a/drivers/clk/tegra/clk.h
++++ b/drivers/clk/tegra/clk.h
+@@ -266,6 +266,10 @@ struct tegra_clk_pll;
+  *				disabled.
+  * @dyn_ramp:			Callback which can be used to define a custom
+  *				dynamic ramp function for a given PLL.
++ * @pre_rate_change:		Callback which is invoked just before changing
++ *				PLL's rate.
++ * @post_rate_change:		Callback which is invoked right after changing
++ *				PLL's rate.
+  *
+  * Flags:
+  * TEGRA_PLL_USE_LOCK - This flag indicated to use lock bits for
+@@ -342,6 +346,8 @@ struct tegra_clk_pll_params {
+ 	void	(*set_defaults)(struct tegra_clk_pll *pll);
+ 	int	(*dyn_ramp)(struct tegra_clk_pll *pll,
+ 			struct tegra_clk_pll_freq_table *cfg);
++	int	(*pre_rate_change)(void);
++	void	(*post_rate_change)(void);
+ };
+ 
+ #define TEGRA_PLL_USE_LOCK BIT(0)
+-- 
+2.23.0
 
->
-> Cc: Shawn Guo <shawnguo@kernel.org>
-> Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> ---
->  drivers/firmware/imx/scu-pd.c | 28 +++++++++++++++++++++++++++-
->  1 file changed, 27 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/firmware/imx/scu-pd.c b/drivers/firmware/imx/scu-pd.c
-> index b556612207e5..770e3681bbbf 100644
-> --- a/drivers/firmware/imx/scu-pd.c
-> +++ b/drivers/firmware/imx/scu-pd.c
-> @@ -85,6 +85,8 @@ struct imx_sc_pd_soc {
->         u8 num_ranges;
->  };
->
-> +int imx_con_rsrc;
-> +
->  static const struct imx_sc_pd_range imx8qxp_scu_pd_ranges[] = {
->         /* LSIO SS */
->         { "pwm", IMX_SC_R_PWM_0, 8, true, 0 },
-> @@ -173,6 +175,23 @@ to_imx_sc_pd(struct generic_pm_domain *genpd)
->         return container_of(genpd, struct imx_sc_pm_domain, pd);
->  }
->
-> +static void imx_sc_pd_get_console_rsrc(void)
-> +{
-> +       struct of_phandle_args specs;
-> +       int ret;
-> +
-> +       if (!of_stdout)
-> +               return;
-> +
-> +       ret = of_parse_phandle_with_args(of_stdout, "power-domains",
-> +                                        "#power-domain-cells",
-> +                                        0, &specs);
-> +       if (ret)
-> +               return;
-> +
-> +       imx_con_rsrc = specs.args[0];
-> +}
-> +
->  static int imx_sc_pd_power(struct generic_pm_domain *domain, bool power_on)
->  {
->         struct imx_sc_msg_req_set_resource_power_mode msg;
-> @@ -233,6 +252,7 @@ imx_scu_add_pm_domain(struct device *dev, int idx,
->                       const struct imx_sc_pd_range *pd_ranges)
->  {
->         struct imx_sc_pm_domain *sc_pd;
-> +       bool is_off = true;
->         int ret;
->
->         sc_pd = devm_kzalloc(dev, sizeof(*sc_pd), GFP_KERNEL);
-> @@ -251,6 +271,10 @@ imx_scu_add_pm_domain(struct device *dev, int idx,
->                          "%s", pd_ranges->name);
->
->         sc_pd->pd.name = sc_pd->name;
-> +       if (imx_con_rsrc == sc_pd->rsrc) {
-> +               sc_pd->pd.flags = GENPD_FLAG_RPM_ALWAYS_ON;
-> +               is_off = false;
-> +       }
->
->         if (sc_pd->rsrc >= IMX_SC_R_LAST) {
->                 dev_warn(dev, "invalid pd %s rsrc id %d found",
-> @@ -260,7 +284,7 @@ imx_scu_add_pm_domain(struct device *dev, int idx,
->                 return NULL;
->         }
->
-> -       ret = pm_genpd_init(&sc_pd->pd, NULL, true);
-> +       ret = pm_genpd_init(&sc_pd->pd, NULL, is_off);
->         if (ret) {
->                 dev_warn(dev, "failed to init pd %s rsrc id %d",
->                          sc_pd->name, sc_pd->rsrc);
-> @@ -326,6 +350,8 @@ static int imx_sc_pd_probe(struct platform_device *pdev)
->         if (!pd_soc)
->                 return -ENODEV;
->
-> +       imx_sc_pd_get_console_rsrc();
-> +
->         return imx_scu_init_pm_domains(&pdev->dev, pd_soc);
->  }
->
-> --
-> 2.23.0
->
