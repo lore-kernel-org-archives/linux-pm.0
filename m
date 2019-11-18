@@ -2,307 +2,112 @@ Return-Path: <SRS0=3EEV=ZK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.7 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69974C432C0
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 17:43:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38F88C432C3
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 20:05:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 35AAA21D7A
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 17:43:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 137332235E
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 20:05:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VO9OtD2S"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726600AbfKRRnQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Nov 2019 12:43:16 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:50580 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726427AbfKRRnQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 12:43:16 -0500
-Received: from [5.158.153.53] (helo=tip-bot2.lab.linutronix.de)
-        by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
-        (Exim 4.80)
-        (envelope-from <tip-bot2@linutronix.de>)
-        id 1iWl2v-000138-Ag; Mon, 18 Nov 2019 18:42:41 +0100
-Received: from [127.0.1.1] (localhost [IPv6:::1])
-        by tip-bot2.lab.linutronix.de (Postfix) with ESMTP id F3EFE1C19B9;
-        Mon, 18 Nov 2019 18:42:40 +0100 (CET)
-Date:   Mon, 18 Nov 2019 17:42:40 -0000
-From:   "tip-bot2 for Vincent Guittot" <tip-bot2@linutronix.de>
-Reply-to: linux-kernel@vger.kernel.org
-To:     linux-tip-commits@vger.kernel.org
-Subject: [tip: sched/core] sched/cpufreq: Move the cfs_rq_util_change() call
- to cpufreq_update_util()
-Cc:     Doug Smythies <dsmythies@telus.net>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Thomas Gleixner <tglx@linutronix.de>, juri.lelli@redhat.com,
-        linux-pm@vger.kernel.org, mgorman@suse.de, rostedt@goodmis.org,
-        sargun@sargun.me, srinivas.pandruvada@linux.intel.com,
-        tj@kernel.org, xiexiuqi@huawei.com, xiezhipeng1@huawei.com,
-        Ingo Molnar <mingo@kernel.org>, Borislav Petkov <bp@alien8.de>,
-        linux-kernel@vger.kernel.org
-In-Reply-To: <1574083279-799-1-git-send-email-vincent.guittot@linaro.org>
-References: <1574083279-799-1-git-send-email-vincent.guittot@linaro.org>
+        id S1727028AbfKRUFi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Nov 2019 15:05:38 -0500
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:36383 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726984AbfKRUFi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 15:05:38 -0500
+Received: by mail-lf1-f68.google.com with SMTP id r14so8264449lff.3;
+        Mon, 18 Nov 2019 12:05:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=jCdUNbrdRJjqVla5VJjyVdTCmGe/PoyPIjNb52FlJnk=;
+        b=VO9OtD2ST829EMBXrnBhCLymPMvO5eLmi1XuG9Kq0emJTuz3Pp5e0NvrJYc1SUPoka
+         AF1PGZKQfjTbYAZhoFZ50zoB2xacpcdGFEGpgyFNdDphIvJGIK8J56WpsXeLS3CNwp8m
+         IsVhTcLaQi+wgi111Ed/fVQ0xvvkWpqS9s+5RFXCd6UxW50mWzgDkMN7ZiOIxDZtFU3t
+         +C2WWbFXX5BiZZC06BSR0j+xZvzb0oPnhZjHf4RVUdHwzpCQIcWwyti++QR53AW9vSeb
+         GDm6ETNP3AEQjrYFVIAyg0DFnYQ1Ce3axJLg3miALUOElX0Pm08YDk4ZowZiYbXy/wi6
+         J9ng==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=jCdUNbrdRJjqVla5VJjyVdTCmGe/PoyPIjNb52FlJnk=;
+        b=sTA2XgTv0gE/Kiabgqyjhxoznb+5nMGqFydqRJoNeKYn1uq2ChDTJvBfS3chjLs8s3
+         m+E3eBtURyEW9+g+Hy4d71EJCHvsYprdRrFTrYSxbtHLGJ/lm2UYTv7ztyUUsvjaL0L2
+         ohKnzucEOTmJ/B5/CLWMmq2NCGBA+4CTqy1k0bXYRL06OOPQsuhPwScjanOmsNn4KzZz
+         QrhWhQqzjrZAw12cDxS8JD57/qo+tdLceUc6lHH6sgNI9DVEs8VVnuqC2EsQh8H/2x9T
+         nKuLTNqdO+ju66NMRt2+7YXFHACRBWdDccyICQLz5TwHqOyY6i1uFfKy4UKAqpOresnv
+         5CcQ==
+X-Gm-Message-State: APjAAAVoQq1BQKX4dOvtbzkAlusip3SMPyuVUJJww5zx+cCD7Mt078WN
+        9Gr0K5P5rGSgKiA7dtWhBqY=
+X-Google-Smtp-Source: APXvYqzD+qc9/bHBgWnn6IDSjtu+yoi+QPOguZvwpPZLJh+aN5o5KBjsxeq8NRupazScBaAsGiI2VA==
+X-Received: by 2002:a19:ee17:: with SMTP id g23mr833981lfb.121.1574107535994;
+        Mon, 18 Nov 2019 12:05:35 -0800 (PST)
+Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
+        by smtp.gmail.com with ESMTPSA id j23sm9166942lji.41.2019.11.18.12.05.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 18 Nov 2019 12:05:35 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Mikko Perttunen <mperttunen@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+Subject: [PATCH v1 06/29] dt-bindings: memory: tegra124: emc: Document new interconnect property
+Date:   Mon, 18 Nov 2019 23:02:24 +0300
+Message-Id: <20191118200247.3567-7-digetx@gmail.com>
+X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191118200247.3567-1-digetx@gmail.com>
+References: <20191118200247.3567-1-digetx@gmail.com>
 MIME-Version: 1.0
-Message-ID: <157409896089.12247.12725628902945080026.tip-bot2@tip-bot2>
-X-Mailer: tip-git-log-daemon
-Robot-ID: <tip-bot2.linutronix.de>
-Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required,  ALL_TRUSTED=-1,SHORTCIRCUIT=-0.0001
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The following commit has been merged into the sched/core branch of tip:
+External memory controller is interconnected with memory controller and
+with external memory. Document new interconnect property which designates
+external memory controller as interconnect provider.
 
-Commit-ID:     bef69dd87828ef5d8ecdab8d857cd3a33cf98675
-Gitweb:        https://git.kernel.org/tip/bef69dd87828ef5d8ecdab8d857cd3a33cf98675
-Author:        Vincent Guittot <vincent.guittot@linaro.org>
-AuthorDate:    Mon, 18 Nov 2019 14:21:19 +01:00
-Committer:     Ingo Molnar <mingo@kernel.org>
-CommitterDate: Mon, 18 Nov 2019 14:42:26 +01:00
-
-sched/cpufreq: Move the cfs_rq_util_change() call to cpufreq_update_util()
-
-update_cfs_rq_load_avg() calls cfs_rq_util_change() every time PELT decays,
-which might be inefficient when the cpufreq driver has rate limitation.
-
-When a task is attached on a CPU, we have this call path:
-
-update_load_avg()
-  update_cfs_rq_load_avg()
-    cfs_rq_util_change -- > trig frequency update
-  attach_entity_load_avg()
-    cfs_rq_util_change -- > trig frequency update
-
-The 1st frequency update will not take into account the utilization of the
-newly attached task and the 2nd one might be discarded because of rate
-limitation of the cpufreq driver.
-
-update_cfs_rq_load_avg() is only called by update_blocked_averages()
-and update_load_avg() so we can move the call to
-cfs_rq_util_change/cpufreq_update_util() into these two functions.
-
-It's also interesting to note that update_load_avg() already calls
-cfs_rq_util_change() directly for the !SMP case.
-
-This change will also ensure that cpufreq_update_util() is called even
-when there is no more CFS rq in the leaf_cfs_rq_list to update, but only
-IRQ, RT or DL PELT signals.
-
-[ mingo: Minor updates. ]
-
-Reported-by: Doug Smythies <dsmythies@telus.net>
-Tested-by: Doug Smythies <dsmythies@telus.net>
-Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: juri.lelli@redhat.com
-Cc: linux-pm@vger.kernel.org
-Cc: mgorman@suse.de
-Cc: rostedt@goodmis.org
-Cc: sargun@sargun.me
-Cc: srinivas.pandruvada@linux.intel.com
-Cc: tj@kernel.org
-Cc: xiexiuqi@huawei.com
-Cc: xiezhipeng1@huawei.com
-Fixes: 039ae8bcf7a5 ("sched/fair: Fix O(nr_cgroups) in the load balancing path")
-Link: https://lkml.kernel.org/r/1574083279-799-1-git-send-email-vincent.guittot@linaro.org
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- kernel/sched/fair.c | 111 ++++++++++++++++++++++++-------------------
- 1 file changed, 62 insertions(+), 49 deletions(-)
+ .../bindings/memory-controllers/nvidia,tegra124-emc.txt        | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 209cad6..08a233e 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -3508,9 +3508,6 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
- 	cfs_rq->load_last_update_time_copy = sa->last_update_time;
- #endif
+diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.txt b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.txt
+index ba0bc3f12419..ff48b46604e6 100644
+--- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.txt
++++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.txt
+@@ -5,6 +5,7 @@ Required properties :
+ - compatible : Should be "nvidia,tegra124-emc".
+ - reg : physical base address and length of the controller's registers.
+ - nvidia,memory-controller : phandle of the MC driver.
++- #interconnect-cells : Should be 1.
  
--	if (decayed)
--		cfs_rq_util_change(cfs_rq, 0);
--
- 	return decayed;
- }
+ The node should contain a "emc-timings" subnode for each supported RAM type
+ (see field RAM_CODE in register PMC_STRAPPING_OPT_A), with its unit address
+@@ -195,6 +196,8 @@ Example SoC include file:
+ 		reg = <0x0 0x7001b000 0x0 0x1000>;
  
-@@ -3620,8 +3617,12 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
- 		attach_entity_load_avg(cfs_rq, se, SCHED_CPUFREQ_MIGRATION);
- 		update_tg_load_avg(cfs_rq, 0);
- 
--	} else if (decayed && (flags & UPDATE_TG))
--		update_tg_load_avg(cfs_rq, 0);
-+	} else if (decayed) {
-+		cfs_rq_util_change(cfs_rq, 0);
+ 		nvidia,memory-controller = <&mc>;
 +
-+		if (flags & UPDATE_TG)
-+			update_tg_load_avg(cfs_rq, 0);
-+	}
- }
++		#interconnect-cells = <1>;
+ 	};
+ };
  
- #ifndef CONFIG_64BIT
-@@ -7482,6 +7483,28 @@ static inline bool others_have_blocked(struct rq *rq) { return false; }
- static inline void update_blocked_load_status(struct rq *rq, bool has_blocked) {}
- #endif
- 
-+static bool __update_blocked_others(struct rq *rq, bool *done)
-+{
-+	const struct sched_class *curr_class;
-+	u64 now = rq_clock_pelt(rq);
-+	bool decayed;
-+
-+	/*
-+	 * update_load_avg() can call cpufreq_update_util(). Make sure that RT,
-+	 * DL and IRQ signals have been updated before updating CFS.
-+	 */
-+	curr_class = rq->curr->sched_class;
-+
-+	decayed = update_rt_rq_load_avg(now, rq, curr_class == &rt_sched_class) |
-+		  update_dl_rq_load_avg(now, rq, curr_class == &dl_sched_class) |
-+		  update_irq_load_avg(rq, 0);
-+
-+	if (others_have_blocked(rq))
-+		*done = false;
-+
-+	return decayed;
-+}
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- 
- static inline bool cfs_rq_is_decayed(struct cfs_rq *cfs_rq)
-@@ -7501,29 +7524,11 @@ static inline bool cfs_rq_is_decayed(struct cfs_rq *cfs_rq)
- 	return true;
- }
- 
--static void update_blocked_averages(int cpu)
-+static bool __update_blocked_fair(struct rq *rq, bool *done)
- {
--	struct rq *rq = cpu_rq(cpu);
- 	struct cfs_rq *cfs_rq, *pos;
--	const struct sched_class *curr_class;
--	struct rq_flags rf;
--	bool done = true;
--
--	rq_lock_irqsave(rq, &rf);
--	update_rq_clock(rq);
--
--	/*
--	 * update_cfs_rq_load_avg() can call cpufreq_update_util(). Make sure
--	 * that RT, DL and IRQ signals have been updated before updating CFS.
--	 */
--	curr_class = rq->curr->sched_class;
--	update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
--	update_dl_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &dl_sched_class);
--	update_irq_load_avg(rq, 0);
--
--	/* Don't need periodic decay once load/util_avg are null */
--	if (others_have_blocked(rq))
--		done = false;
-+	bool decayed = false;
-+	int cpu = cpu_of(rq);
- 
- 	/*
- 	 * Iterates the task_group tree in a bottom up fashion, see
-@@ -7532,9 +7537,13 @@ static void update_blocked_averages(int cpu)
- 	for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) {
- 		struct sched_entity *se;
- 
--		if (update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq))
-+		if (update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq)) {
- 			update_tg_load_avg(cfs_rq, 0);
- 
-+			if (cfs_rq == &rq->cfs)
-+				decayed = true;
-+		}
-+
- 		/* Propagate pending load changes to the parent, if any: */
- 		se = cfs_rq->tg->se[cpu];
- 		if (se && !skip_blocked_update(se))
-@@ -7549,11 +7558,10 @@ static void update_blocked_averages(int cpu)
- 
- 		/* Don't need periodic decay once load/util_avg are null */
- 		if (cfs_rq_has_blocked(cfs_rq))
--			done = false;
-+			*done = false;
- 	}
- 
--	update_blocked_load_status(rq, !done);
--	rq_unlock_irqrestore(rq, &rf);
-+	return decayed;
- }
- 
- /*
-@@ -7603,29 +7611,16 @@ static unsigned long task_h_load(struct task_struct *p)
- 			cfs_rq_load_avg(cfs_rq) + 1);
- }
- #else
--static inline void update_blocked_averages(int cpu)
-+static bool __update_blocked_fair(struct rq *rq, bool *done)
- {
--	struct rq *rq = cpu_rq(cpu);
- 	struct cfs_rq *cfs_rq = &rq->cfs;
--	const struct sched_class *curr_class;
--	struct rq_flags rf;
--
--	rq_lock_irqsave(rq, &rf);
--	update_rq_clock(rq);
--
--	/*
--	 * update_cfs_rq_load_avg() can call cpufreq_update_util(). Make sure
--	 * that RT, DL and IRQ signals have been updated before updating CFS.
--	 */
--	curr_class = rq->curr->sched_class;
--	update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
--	update_dl_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &dl_sched_class);
--	update_irq_load_avg(rq, 0);
-+	bool decayed;
- 
--	update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq);
-+	decayed = update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq);
-+	if (cfs_rq_has_blocked(cfs_rq))
-+		*done = false;
- 
--	update_blocked_load_status(rq, cfs_rq_has_blocked(cfs_rq) || others_have_blocked(rq));
--	rq_unlock_irqrestore(rq, &rf);
-+	return decayed;
- }
- 
- static unsigned long task_h_load(struct task_struct *p)
-@@ -7634,6 +7629,24 @@ static unsigned long task_h_load(struct task_struct *p)
- }
- #endif
- 
-+static void update_blocked_averages(int cpu)
-+{
-+	bool decayed = false, done = true;
-+	struct rq *rq = cpu_rq(cpu);
-+	struct rq_flags rf;
-+
-+	rq_lock_irqsave(rq, &rf);
-+	update_rq_clock(rq);
-+
-+	decayed |= __update_blocked_others(rq, &done);
-+	decayed |= __update_blocked_fair(rq, &done);
-+
-+	update_blocked_load_status(rq, !done);
-+	if (decayed)
-+		cpufreq_update_util(rq, 0);
-+	rq_unlock_irqrestore(rq, &rf);
-+}
-+
- /********** Helpers for find_busiest_group ************************/
- 
- /*
+-- 
+2.23.0
+
