@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1337C43215
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 16:47:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D821C432C3
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 16:47:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 895AD219F6
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 16:47:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 751F6219F6
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 16:47:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jTsDtw9o"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dSWGNAIs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727001AbfKRQq6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Nov 2019 11:46:58 -0500
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:46012 "EHLO
+        id S1727118AbfKRQq4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Nov 2019 11:46:56 -0500
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:41584 "EHLO
         mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727105AbfKRQq5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 11:46:57 -0500
-Received: by mail-lj1-f193.google.com with SMTP id n21so19690759ljg.12;
-        Mon, 18 Nov 2019 08:46:56 -0800 (PST)
+        with ESMTP id S1727031AbfKRQqz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 11:46:55 -0500
+Received: by mail-lj1-f193.google.com with SMTP id m4so14794269ljj.8;
+        Mon, 18 Nov 2019 08:46:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=mzAZfLCHZriyZeqCihOmNKPh325Oe6nsAgLe2vRiK88=;
-        b=jTsDtw9oCgvN1tZfytF8rTf6rjvcB5glix3bogcIm674ZXC7Dga9De30UHCuo4b7a6
-         cpLKMMyvoO5LXk0r//hPOMKNgfu+YH/R9bWoFOusvNhE1ssdTkuxxY4MN+p/bawHDzmK
-         kqqwB1yUYX16Dtnnm0lI2gDkOY+9qLGqTfeZnPiqergPgVDE0P6jkQQHIAHQ2j+U0vEe
-         pJywsrYbPj+sDPW0ZeYHiCIPwRHZBdtHGdPguTPXRIURVaPHCr2+pvrYhAFDm7xyzRws
-         iGWREQemd/KPCMbMTVCdN5TVkngzOcnNE2eiC1gvXp+jpWu1NpI9VxLJykfjnuvTiWjY
-         zl0g==
+        bh=vSS5/MmskIAajZTBs7D6Zb0R76xGQBQ4vfEB2g+VhfI=;
+        b=dSWGNAIscxuox8i/f4k9fxJCYXLkOYs8c4V9uuFlA9SegDARfNXm30V+fA26F1Vh9q
+         qMZeV0Q1U5USzxnGztfqFCZtMakgozLP/mjXIEgy6jYUjpMH6LW6TzqXKOUHh5NhUXmv
+         HgnG2O7OmmNmlwXyiBiSoyLCmrKVf1Iz8h+wG2anEr2cxpqitH4NwCVCIjVOheE3arkl
+         BcYen5b28/Q268gKYw4B4Ll0Je8tZfsHTi704q3QVT4e1OfSpBtLzqRGGThP1ww50lIb
+         e38JewaV4w3qTF4zTNxHYIJAWpes+C2QJH3TJwIuoFdaMkMPhoxJJOqFAaXVIWn7q2j5
+         qwhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=mzAZfLCHZriyZeqCihOmNKPh325Oe6nsAgLe2vRiK88=;
-        b=nGlioWOawBSJdDD9D7rMKFdQVKLTZnhdtw3JmICsiuuaJz4rZlBJ9P46Ng1P9Olz6i
-         SzNN+HoKWOpN8BrRpGAH8TJaHHJ244pC0nHG9ZEEIM5pIpLN5d9xvGH7iD0CDjyuJz1m
-         apol71abqDIIUxqia4jqsvEllU9ISAZrUDje3A8+AMPQVhphNgGTcvEWqufvCxe+kFNb
-         I59Jw9YZY2sb7KbZjltigDXZXPP0KWFCOVtbQyVtjyfrnbgfnEJ+IDV8Om0lPA4rsYk5
-         aE/U8JOftPlApBKYN3G1grm6rHsMNvDI/1mKAvSikvyS0p/jMznXthFp69caL366jHZl
-         0OGA==
-X-Gm-Message-State: APjAAAW5jLQZdWYsacbwjKv/9oZzSGhnQUvalQM6xTaMduJVLGpnriyy
-        3jrA7EmcIs6A94dSnlw32ws=
-X-Google-Smtp-Source: APXvYqx+hi0/v2Zg31tKS5UadyLsnRV7KElGXJc9xwkNnK/wq7pGQnyxMwPOcBqmag3FDGj3kPdKMg==
-X-Received: by 2002:a2e:7204:: with SMTP id n4mr241720ljc.139.1574095615381;
-        Mon, 18 Nov 2019 08:46:55 -0800 (PST)
+        bh=vSS5/MmskIAajZTBs7D6Zb0R76xGQBQ4vfEB2g+VhfI=;
+        b=h/EQjYk14X96cJk4i5xO7Z4DR0Fn/OMVdwtaRszIGhsFW5N+QAOvEIdayuWmrAbgTt
+         pAeJDjV93RnvbptCzf0TnuhcOPx4tyRsMfDzVPiU9OjxXRbo4tKhXi37O+udZ192dYtC
+         KY9F4z8JDVegEYMus+rmgQfWlcs5pnbU0+tEyhV+RYw43W/Zu94UbnMFFmNPBip6mR9q
+         atXDUTUIbenSIMJZyihOnT/cujRwMiBXUz7ZEM4clG/70hPa9IE++hdrpO4hiT7lsCgV
+         tXhfaHLi5slziGOO4S9tW4iMqCHhU29pud/gWldJH1M3l9D7r7zCEbr+ZNmm3QPapKYj
+         RAtg==
+X-Gm-Message-State: APjAAAWe3cjoXUDGR8l1MkL3GlJVzcccKWaY7eXY9R0U9PL2daqHOmDO
+        tJ47a1okXFI744gWVjzYn0U=
+X-Google-Smtp-Source: APXvYqxlqLM20mDO2M7+YU85rS6jMfO1OLrV46UKkfkkIY4+zlzsjCzi+zqjYWX3egQxQ401PtG5VQ==
+X-Received: by 2002:a2e:3313:: with SMTP id d19mr279650ljc.240.1574095613216;
+        Mon, 18 Nov 2019 08:46:53 -0800 (PST)
 Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
-        by smtp.gmail.com with ESMTPSA id d4sm8880307lfi.32.2019.11.18.08.46.54
+        by smtp.gmail.com with ESMTPSA id d4sm8880307lfi.32.2019.11.18.08.46.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Nov 2019 08:46:54 -0800 (PST)
+        Mon, 18 Nov 2019 08:46:52 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -69,9 +69,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Marcel Ziswiler <marcel.ziswiler@toradex.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v5 09/11] ARM: tegra: Create tegra20-cpufreq platform device on Tegra30
-Date:   Mon, 18 Nov 2019 19:45:10 +0300
-Message-Id: <20191118164512.8676-10-digetx@gmail.com>
+Subject: [PATCH v5 07/11] cpufreq: dt-platdev: Blacklist NVIDIA Tegra20 and Tegra30 SoCs
+Date:   Mon, 18 Nov 2019 19:45:08 +0300
+Message-Id: <20191118164512.8676-8-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191118164512.8676-1-digetx@gmail.com>
 References: <20191118164512.8676-1-digetx@gmail.com>
@@ -82,29 +82,35 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The tegra20-cpufreq now instantiates cpufreq-dt and Tegra30 is fully
-supported by that driver.
+Both NVIDIA Tegra20 and Tegra30 SoCs should be blacklisted because CPU
+OPPs use supported_hw and thus platdev isn't suitable for these SoCs.
+Currently cpufreq-dt driver produces a bit annoying warning splats
+during boot because valid OPPs are not found, this will be fixed once
+tegra20-cpufreq driver will be update to support cpufreq-dt. The warnings
+will also happen on older stable kernels using newer device-trees, thus
+this patch should be backported to stable kernels as well.
 
+Cc: <stable@vger.kernel.org>
+Reported-by: Jon Hunter <jonathanh@nvidia.com>
+Fixes: 4053aa65c517 ("ARM: tegra: cardhu-a04: Add CPU Operating Performance Points")
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/mach-tegra/tegra.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
-index e512e606eabd..1e3b85923ca3 100644
---- a/arch/arm/mach-tegra/tegra.c
-+++ b/arch/arm/mach-tegra/tegra.c
-@@ -95,6 +95,10 @@ static void __init tegra_dt_init_late(void)
- 	if (IS_ENABLED(CONFIG_ARCH_TEGRA_2x_SOC) &&
- 	    of_machine_is_compatible("nvidia,tegra20"))
- 		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
-+
-+	if (IS_ENABLED(CONFIG_ARCH_TEGRA_3x_SOC) &&
-+	    of_machine_is_compatible("nvidia,tegra30"))
-+		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
- }
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index f1d170dcf4d3..aba591d57c67 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -121,6 +121,8 @@ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "mediatek,mt8176", },
+ 	{ .compatible = "mediatek,mt8183", },
  
- static const char * const tegra_dt_board_compat[] = {
++	{ .compatible = "nvidia,tegra20", },
++	{ .compatible = "nvidia,tegra30", },
+ 	{ .compatible = "nvidia,tegra124", },
+ 	{ .compatible = "nvidia,tegra210", },
+ 
 -- 
 2.23.0
 
