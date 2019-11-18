@@ -2,167 +2,212 @@ Return-Path: <SRS0=3EEV=ZK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.7 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0496C432C0
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 20:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B56E0C432C0
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 22:34:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 91D7D214DE
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 20:07:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="APzSWzS1"
+	by mail.kernel.org (Postfix) with ESMTP id 925F522317
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 22:34:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726776AbfKRUFc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Nov 2019 15:05:32 -0500
-Received: from mail-lj1-f170.google.com ([209.85.208.170]:46022 "EHLO
-        mail-lj1-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726250AbfKRUFc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 15:05:32 -0500
-Received: by mail-lj1-f170.google.com with SMTP id n21so20392550ljg.12;
-        Mon, 18 Nov 2019 12:05:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=+lYduyo7vPgxp45RLwsY0ZnQLiYVsuFTry8aLXbx4kM=;
-        b=APzSWzS1AWv0t0oARIksAL9UGz8A49gKk4636qenUrw+Td8W04Iz2y8qkPl3AHCr6m
-         l/Y7ReHNWM+fX2S6YoWckzLWIag7992BEYqUq4Gn7ppw4+46i/FfNOopAHsAijIGhjKR
-         tD7SA9PLTVi2s4wgrPZldc+6eFwRb93c5lbw3Ix93bgb7lhuXJ0PlExD9gV/yxANzVju
-         ztDiniGHZn5D2BJ4iYP8hDynklw+eD4ahvr9rBJ6wzY3kA2s+pBf2hpwaxyTKPUB/KNS
-         oCMyalrSMkpWiyay05T2MnJa3wwN2B5WySinWwolMDf4wTAKiDFgGzlR2428ByxDD+/O
-         jcJw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=+lYduyo7vPgxp45RLwsY0ZnQLiYVsuFTry8aLXbx4kM=;
-        b=AMrUuEqRyNQAn3dbqdRGGtTItKb5Fqwy8rXr3WzjZenWV+UtT10zk+EnoQkLWpjxBW
-         qUGdlehbMOQYlf1cITyuSyeOjDbZt0W26wxL5tjvnHfkl5VyTsQmRQj6JsmEJ00GFDHk
-         wpbo9+lDmAOlKtVBa77VW9e+iKzxr1RSCtnv7SGjfxQy93HGeFzTowEHaDlgDlgAo2or
-         uSmCKuMPkLnhAjPjaAqPLQ1AE+uGSRg6grlGSAqDVYTO1xOp+mXfGojAFjdI3/SdDhY/
-         uoA1F7RKuq7rirncpEBEBzDHSjWzp8uKaih9+Y81U/cAL6oUzILxSilKxhypXJEljdjC
-         BcJA==
-X-Gm-Message-State: APjAAAWPyEXjNhCZbod6A2BIvO7BmfM+DT0+MYhBcSc9JjBVzIr01DRJ
-        v7ngAjC3ipwZPWfQOhAxjck=
-X-Google-Smtp-Source: APXvYqxptZWcgvS7sdySo1sH5FxDJRVUucG9P8wDoJrg5exzZstUPyRLwr6nfSCBfGL7tbiFLrJUzA==
-X-Received: by 2002:a2e:574d:: with SMTP id r13mr934150ljd.10.1574107529313;
-        Mon, 18 Nov 2019 12:05:29 -0800 (PST)
-Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
-        by smtp.gmail.com with ESMTPSA id j23sm9166942lji.41.2019.11.18.12.05.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Nov 2019 12:05:28 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Mikko Perttunen <mperttunen@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org
-Subject: [PATCH v1 00/29] Introduce memory interconnect for NVIDIA Tegra SoCs
-Date:   Mon, 18 Nov 2019 23:02:18 +0300
-Message-Id: <20191118200247.3567-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.23.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1726543AbfKRWeL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Nov 2019 17:34:11 -0500
+Received: from inva020.nxp.com ([92.121.34.13]:48876 "EHLO inva020.nxp.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726272AbfKRWeL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 18 Nov 2019 17:34:11 -0500
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E58D11A0427;
+        Mon, 18 Nov 2019 23:34:05 +0100 (CET)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id D7D651A03E7;
+        Mon, 18 Nov 2019 23:34:05 +0100 (CET)
+Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 705D220396;
+        Mon, 18 Nov 2019 23:34:05 +0100 (CET)
+From:   Leonard Crestez <leonard.crestez@nxp.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>
+Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Evan Green <evgreen@chromium.org>,
+        David Dai <daidavid1@codeaurora.org>,
+        Jordan Crouse <jcrouse@codeaurora.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan Corbet <corbet@lwn.net>, linux-pm@vger.kernel.org,
+        linux-doc@vger.kernel.org
+Subject: [PATCH v2] interconnect: Add interconnect_graph file to debugfs
+Date:   Tue, 19 Nov 2019 00:34:01 +0200
+Message-Id: <6798d1469dd31609e76d13f5ac6249f7af48456a.1574116163.git.leonard.crestez@nxp.com>
+X-Mailer: git-send-email 2.17.1
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+The interconnect graphs can be difficult to understand and the current
+"interconnect_summary" file doesn't even display links in any way.
 
-This series brings initial support for memory interconnect to Tegra20,
-Terga30 and Tegra124 SoCs. The interconnect provides are quite generic
-and should be suitable for all Tegra SoCs, but currently upstream kernel
-has EMC/MC drivers only for those three generations of Tegra SoCs.
+Add a new "interconnect_graph" file to debugfs in the graphviz "dot"
+format which describes interconnect providers, nodes and links.
 
-For the start only display controllers are getting interconnect API
-support, others could be supported later on. The display controllers
-have the biggest demand for interconnect API right now because dynamic
-memory frequency scaling can't be done safely without taking into account
-bandwidth requirement from the displays.
+The file is human-readable and can be visualized by piping through
+graphviz. Example:
 
-Dmitry Osipenko (29):
-  dt-bindings: memory: tegra20: mc: Document new interconnect property
-  dt-bindings: memory: tegra20: emc: Document new interconnect property
-  dt-bindings: memory: tegra30: mc: Document new interconnect property
-  dt-bindings: memory: tegra30: emc: Document new interconnect property
-  dt-bindings: memory: tegra124: mc: Document new interconnect property
-  dt-bindings: memory: tegra124: emc: Document new interconnect property
-  dt-bindings: host1x: Document new interconnect properties
-  dt-bindings: interconnect: tegra: Add initial IDs
-  ARM: tegra: Add interconnect properties to Tegra20 device-tree
-  ARM: tegra: Add interconnect properties to Tegra30 device-tree
-  ARM: tegra: Add interconnect properties to Tegra124 device-tree
-  interconnect: Add memory interconnection providers for NVIDIA Tegra
-    SoCs
-  memory: tegra: Register as interconnect provider
-  memory: tegra: Add interconnect nodes for Terga20 display controllers
-  memory: tegra: Add interconnect nodes for Terga30 display controllers
-  memory: tegra: Add interconnect nodes for Terga124 display controllers
-  memory: tegra20-emc: Use devm_platform_ioremap_resource
-  memory: tegra20-emc: Continue probing if timings/IRQ are missing in
-    device-tree
-  memory: tegra20-emc: Register as interconnect provider
-  memory: tegra30-emc: Continue probing if timings are missing in
-    device-tree
-  memory: tegra30-emc: Register as interconnect provider
-  memory: tegra124-emc: Use devm_platform_ioremap_resource
-  memory: tegra124-emc: Register as interconnect provider
-  drm/tegra: dc: Use devm_platform_ioremap_resource
-  drm/tegra: dc: Release PM and RGB output when client's registration
-    fails
-  drm/tegra: dc: Support memory bandwidth management
-  ARM: tegra: Enable interconnect API in tegra_defconfig
-  ARM: multi_v7_defconfig: Enable NVIDIA Tegra interconnect providers
-  MAINTAINERS: Add maintainers for NVIDIA Tegra interconnect drivers
+ssh $TARGET cat /sys/kernel/debug/interconnect/interconnect_graph \
+	| dot -Tsvg > interconnect_graph.svg
 
- .../display/tegra/nvidia,tegra20-host1x.txt   |  67 +++++
- .../nvidia,tegra124-emc.txt                   |   3 +
- .../nvidia,tegra124-mc.yaml                   |   5 +
- .../memory-controllers/nvidia,tegra20-emc.txt |   4 +
- .../memory-controllers/nvidia,tegra20-mc.txt  |   4 +
- .../nvidia,tegra30-emc.yaml                   |   6 +
- .../memory-controllers/nvidia,tegra30-mc.yaml |   5 +
- MAINTAINERS                                   |   9 +
- arch/arm/boot/dts/tegra124.dtsi               |  10 +
- arch/arm/boot/dts/tegra20.dtsi                |  11 +-
- arch/arm/boot/dts/tegra30.dtsi                |  12 +-
- arch/arm/configs/multi_v7_defconfig           |   2 +
- arch/arm/configs/tegra_defconfig              |   2 +
- drivers/gpu/drm/tegra/dc.c                    | 252 +++++++++++++++++-
- drivers/gpu/drm/tegra/dc.h                    |   8 +
- drivers/gpu/drm/tegra/drm.c                   |  18 ++
- drivers/gpu/drm/tegra/plane.c                 |   1 +
- drivers/gpu/drm/tegra/plane.h                 |   4 +-
- drivers/interconnect/Kconfig                  |   1 +
- drivers/interconnect/Makefile                 |   1 +
- drivers/interconnect/tegra/Kconfig            |   6 +
- drivers/interconnect/tegra/Makefile           |   4 +
- drivers/interconnect/tegra/tegra-icc-emc.c    | 138 ++++++++++
- drivers/interconnect/tegra/tegra-icc-mc.c     | 130 +++++++++
- drivers/memory/tegra/mc.c                     |   4 +
- drivers/memory/tegra/tegra124-emc.c           |  28 +-
- drivers/memory/tegra/tegra124.c               |  16 ++
- drivers/memory/tegra/tegra20-emc.c            |  91 ++++---
- drivers/memory/tegra/tegra20.c                |  14 +
- drivers/memory/tegra/tegra30-emc.c            |  34 ++-
- drivers/memory/tegra/tegra30.c                |  14 +
- include/dt-bindings/interconnect/tegra-icc.h  |  11 +
- include/soc/tegra/mc.h                        |  26 ++
- 33 files changed, 883 insertions(+), 58 deletions(-)
- create mode 100644 drivers/interconnect/tegra/Kconfig
- create mode 100644 drivers/interconnect/tegra/Makefile
- create mode 100644 drivers/interconnect/tegra/tegra-icc-emc.c
- create mode 100644 drivers/interconnect/tegra/tegra-icc-mc.c
- create mode 100644 include/dt-bindings/interconnect/tegra-icc.h
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
+ Documentation/driver-api/interconnect.rst | 23 ++++++++
+ drivers/interconnect/core.c               | 66 +++++++++++++++++++++++
+ 2 files changed, 89 insertions(+)
 
+Example output as a github gist:
+https://gist.github.com/cdleonard/2f74a7efe74587e3d4b57cf7983b46a8
+
+The qcs404 driver was hacked to probe on imx, the links to "0" seem to
+from incorrect trailing 0s on DEFINE_QNODE. Possibly fallout from
+switching to ARRAY_SIZE(__VA_ARGS__)?
+
+This makes it easier to understand the interconnect graph than just
+staring at registration code.
+
+Changes since RFC v1:
+* Document under driver-api/interconnect.rst
+* Collect reviews
+Link to v1: https://patchwork.kernel.org/patch/11242921/
+
+diff --git a/Documentation/driver-api/interconnect.rst b/Documentation/driver-api/interconnect.rst
+index cdeb5825f314..77a85aad8d2f 100644
+--- a/Documentation/driver-api/interconnect.rst
++++ b/Documentation/driver-api/interconnect.rst
+@@ -89,5 +89,28 @@ Interconnect consumers
+ 
+ Interconnect consumers are the clients which use the interconnect APIs to
+ get paths between endpoints and set their bandwidth/latency/QoS requirements
+ for these interconnect paths.  These interfaces are not currently
+ documented.
++
++Interconnect debugfs interfaces
++-------------------------------
++
++Like several other subsystems interconnect will create some files for debugging
++and introspection. Files in debugfs are not considered ABI so application
++software shouldn't rely on format details
++change between kernel versions.
++
++``/sys/kernel/debug/interconnect/interconnect_summary``:
++
++Show all interconnect nodes in the system with their aggregated bandwith
++request. Indented under each node show bandwith requests from each device.
++
++``/sys/kernel/debug/interconnect/interconnect_graph``:
++
++Show the interconnect graph in the graphviz dot format. It shows all
++interconnect nodes and links in the system and groups together nodes from the
++same provider as subgraphs. The format is human-readable and can also be piped
++through dot to generate diagrams in many graphical formats::
++
++        $ cat /sys/kernel/debug/interconnect/interconnect_graph | \
++                dot -Tsvg > interconnect_graph.svg
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index c498796adc07..07e91288c7f4 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -92,10 +92,74 @@ static int icc_summary_show(struct seq_file *s, void *data)
+ 
+ 	return 0;
+ }
+ DEFINE_SHOW_ATTRIBUTE(icc_summary);
+ 
++static void icc_graph_show_link(struct seq_file *s, int level,
++				struct icc_node *n, struct icc_node *m)
++{
++	seq_printf(s, "%s\"%d:%s\" -> \"%d:%s\"\n",
++			level == 2 ? "\t\t" : "\t",
++			n->id, n->name, m->id, m->name);
++}
++
++static void icc_graph_show_node(struct seq_file *s, struct icc_node *n)
++{
++	seq_printf(s, "\t\t\"%d:%s\" [label=\"%d:%s",
++		   n->id, n->name, n->id, n->name);
++	seq_printf(s, "\n\t\t\t|avg_bw=%ukBps", n->avg_bw);
++	seq_printf(s, "\n\t\t\t|peak_bw=%ukBps", n->peak_bw);
++	seq_puts(s, "\"]\n");
++}
++
++static int icc_graph_show(struct seq_file *s, void *data)
++{
++	struct icc_provider *provider;
++	struct icc_node *n;
++	int cluster_index = 0;
++	int i;
++
++	seq_puts(s, "digraph {\n\trankdir = LR\n\tnode [shape = record]\n");
++	mutex_lock(&icc_lock);
++
++	/* draw providers as cluster subgraphs */
++	cluster_index = 0;
++	list_for_each_entry(provider, &icc_providers, provider_list) {
++		seq_printf(s, "\tsubgraph cluster_%d {\n", ++cluster_index);
++		if (provider->dev)
++			seq_printf(s, "\t\tlabel = \"%s\"\n",
++				   dev_name(provider->dev));
++
++		/* draw nodes */
++		list_for_each_entry(n, &provider->nodes, node_list)
++			icc_graph_show_node(s, n);
++
++		/* draw internal links */
++		list_for_each_entry(n, &provider->nodes, node_list)
++			for (i = 0; i < n->num_links; ++i)
++				if (n->provider == n->links[i]->provider)
++					icc_graph_show_link(s, 2, n,
++							    n->links[i]);
++
++		seq_puts(s, "\t}\n");
++	}
++
++	/* draw external links */
++	list_for_each_entry(provider, &icc_providers, provider_list)
++		list_for_each_entry(n, &provider->nodes, node_list)
++			for (i = 0; i < n->num_links; ++i)
++				if (n->provider != n->links[i]->provider)
++					icc_graph_show_link(s, 1, n,
++							    n->links[i]);
++
++	mutex_unlock(&icc_lock);
++	seq_puts(s, "}");
++
++	return 0;
++}
++DEFINE_SHOW_ATTRIBUTE(icc_graph);
++
+ static struct icc_node *node_find(const int id)
+ {
+ 	return idr_find(&icc_idr, id);
+ }
+ 
+@@ -800,10 +864,12 @@ EXPORT_SYMBOL_GPL(icc_provider_del);
+ static int __init icc_init(void)
+ {
+ 	icc_debugfs_dir = debugfs_create_dir("interconnect", NULL);
+ 	debugfs_create_file("interconnect_summary", 0444,
+ 			    icc_debugfs_dir, NULL, &icc_summary_fops);
++	debugfs_create_file("interconnect_graph", 0444,
++			    icc_debugfs_dir, NULL, &icc_graph_fops);
+ 	return 0;
+ }
+ 
+ static void __exit icc_exit(void)
+ {
 -- 
-2.23.0
+2.17.1
 
