@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 680D1C432C3
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 20:07:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65E8AC432C0
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 20:07:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3D0EC2231B
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 20:07:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3E0CA22363
+	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 20:07:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tL04NoA4"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nRsVcOLk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726984AbfKRUFo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Nov 2019 15:05:44 -0500
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:36224 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727106AbfKRUFn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 15:05:43 -0500
-Received: by mail-lj1-f196.google.com with SMTP id k15so20441787lja.3;
-        Mon, 18 Nov 2019 12:05:40 -0800 (PST)
+        id S1727615AbfKRUHJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Nov 2019 15:07:09 -0500
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:42256 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727111AbfKRUFo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 15:05:44 -0500
+Received: by mail-lf1-f68.google.com with SMTP id z12so14867481lfj.9;
+        Mon, 18 Nov 2019 12:05:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=2iFp0McD4dqk5YgWCVTRp0Ssb3SKcWOgq/D9CcGeKIY=;
-        b=tL04NoA4xOq6oRXud1L8c1zw/ONwWYxS2KnE9NjB4O9oWkqqhu46L6KBAoQl4OrZq3
-         6AMZduD/v9J09W7TGRLhqhlOVPba5f7a8+KnPxC8dtEfDv2BIskgdiTm5BPpm0UAlW++
-         jbM8TgYS2IbvZxOOEGmAgnkodqL8CX4B/AuVKNoDS+ka+kgnWWs+L0FK7+VW9Ts+wx4+
-         T50tuH2lMPcupJm7qH87zRPw3QsFKNgKsE1vYQZtO9TJQu6nMXxo/A0Zep4V7ShQWsYP
-         C0rNeMgsuDEQj4LHrt7T4c0k+wUYIsPoRXtKM+aAnkefU9tcyBfzSD75D6m5HDcByYe4
-         Gp/Q==
+        bh=PMxRk5+wnUUg0iU/ONgQRtpatlCjk39x02NkmMcM4Ic=;
+        b=nRsVcOLkGpoI+usSPfWzjgGrZRyGz9Uw6yP5tIZ3+LTQWwYscK1o8N0cIZ4QkjUxpe
+         zXSliUsXnlexkVtiS8WWBVBtlsqa4Eo3q0CdEipr5fPHJnUx92Fms2aQ4yJboTCaU8NR
+         g7nf3baq7mFKbPAx+g+zAYL4QaQizn02Fg/63P59KCM8+BhAW+WVI9HWUWKXk5qoJTPe
+         cWn9XoH2aF3TFjzlWKpJT7ZDxG1Pyl+aR7z7KBHGvlgIiqMo1G1MKfdNtEpnU2A/XWPg
+         /kp9ymh20a8EKwQtzJawJ7gSCRswOkBxRnwtS8N3K1LJctrePj4FHXv8V6rxPK84R4np
+         /b1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=2iFp0McD4dqk5YgWCVTRp0Ssb3SKcWOgq/D9CcGeKIY=;
-        b=Sy3U9i0YqT1vXagQUk/ALWNhUVyBEOKAV/LZZpxF38YkktroScqUQtOUC7oVj+8wyz
-         GQijvzbE2StcXKFBoGEJ7DOvL2+q+3A3/Shg7JVOZqk07L2M52o2BqXOK1xfZRU6ny9Q
-         0nCPen1VlD0Dbp8AcA9OaxcePy9zH7JZbnUS3DQhOIFQFLLJg9ALaWqgIXpG3jRZZDDc
-         HaiC0FM3naH/V1VahfolbADc1+caLQoTH1kFVjDXBjrAt24Yvq/+bW4+bQf1t8JKiU5m
-         Ju9G5v3vPSydrN0EQAsA1G96wxBsPF2yD4XvKPK+Olcwni7b1UmQQlkyDbDRqv87rE6c
-         4R6g==
-X-Gm-Message-State: APjAAAWaJEXcLCShk3uhSVhsqgtpU68Cp5j3Ei1XEhQ5cmTqwUBVHR1G
-        C/xrTkzmprfDOCLPVQoasiM=
-X-Google-Smtp-Source: APXvYqyhq0nkF8z5M/s9tUqCARtFUhFB8Jl3ISigj1qsNidZbs53NZUOJaj7p6egJlDCTN7SQFdzIg==
-X-Received: by 2002:a2e:898a:: with SMTP id c10mr871793lji.177.1574107539717;
-        Mon, 18 Nov 2019 12:05:39 -0800 (PST)
+        bh=PMxRk5+wnUUg0iU/ONgQRtpatlCjk39x02NkmMcM4Ic=;
+        b=QyVTThvCcVrljxN4mRV0R3RQOafzevdy6LhmpO92tHzvPqL3inUxbLqZg36X4kZbCd
+         xm10nTtqyvZ6IXjPUTG4hsf9DJe+Biv+T5bCY+TDq7XVNtYWdcBrBdYZ0QliB9UD5WtC
+         x2YZYBQkkw/6kV3DbTyaUQsnMdMNAOwMpCoWuS0zxgSwN+WlO4GwBm7OJ6YDYEYnKyxM
+         yYYB0ThOCIBez24bMXT7CW51D1JetPwaORgLIA1xuejISXncKV7d4GI4nX5KR3FObAuh
+         OgWtfIxbWziK53D/EyWQniCGmkSsvlvXvlwhecivCMuZ168gi9CuTtmHnnkrK7tRZDsi
+         exIw==
+X-Gm-Message-State: APjAAAUIOEkXCmOdQomqzkH1cbcBG1mrg0qzkk0MgCgSez1r3fCDJH2X
+        ZJcRRJA12/rMqkvoLzKM0J0=
+X-Google-Smtp-Source: APXvYqxI6wtsMLrnPYDhgtHFQ96AQeDXAE5xVarMIEaB4V3z7umv4UaozwQFe4A1nX3jMF6rUUD+hg==
+X-Received: by 2002:ac2:5305:: with SMTP id c5mr836180lfh.55.1574107541746;
+        Mon, 18 Nov 2019 12:05:41 -0800 (PST)
 Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
-        by smtp.gmail.com with ESMTPSA id j23sm9166942lji.41.2019.11.18.12.05.38
+        by smtp.gmail.com with ESMTPSA id j23sm9166942lji.41.2019.11.18.12.05.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 18 Nov 2019 12:05:39 -0800 (PST)
+        Mon, 18 Nov 2019 12:05:41 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -65,9 +65,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v1 09/29] ARM: tegra: Add interconnect properties to Tegra20 device-tree
-Date:   Mon, 18 Nov 2019 23:02:27 +0300
-Message-Id: <20191118200247.3567-10-digetx@gmail.com>
+Subject: [PATCH v1 11/29] ARM: tegra: Add interconnect properties to Tegra124 device-tree
+Date:   Mon, 18 Nov 2019 23:02:29 +0300
+Message-Id: <20191118200247.3567-12-digetx@gmail.com>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20191118200247.3567-1-digetx@gmail.com>
 References: <20191118200247.3567-1-digetx@gmail.com>
@@ -84,60 +84,58 @@ of these nodes.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/boot/dts/tegra20.dtsi | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/tegra124.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm/boot/dts/tegra20.dtsi b/arch/arm/boot/dts/tegra20.dtsi
-index 9c58e7fcf5c0..2aa10a34516b 100644
---- a/arch/arm/boot/dts/tegra20.dtsi
-+++ b/arch/arm/boot/dts/tegra20.dtsi
+diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
+index 413bfb981de8..5069af3011cc 100644
+--- a/arch/arm/boot/dts/tegra124.dtsi
++++ b/arch/arm/boot/dts/tegra124.dtsi
 @@ -3,6 +3,7 @@
  #include <dt-bindings/gpio/tegra-gpio.h>
- #include <dt-bindings/memory/tegra20-mc.h>
+ #include <dt-bindings/memory/tegra124-mc.h>
  #include <dt-bindings/pinctrl/pinctrl-tegra.h>
 +#include <dt-bindings/interconnect/tegra-icc.h>
  #include <dt-bindings/interrupt-controller/arm-gic.h>
- 
- / {
-@@ -108,6 +109,9 @@
+ #include <dt-bindings/reset/tegra124-car.h>
+ #include <dt-bindings/thermal/tegra124-soctherm.h>
+@@ -111,6 +112,9 @@
+ 			iommus = <&mc TEGRA_SWGROUP_DC>;
  
  			nvidia,head = <0>;
- 
++
 +			interconnects = <&mc TEGRA_ICC_MC_DC &emc TEGRA_ICC_EMEM>;
 +			interconnect-names = "dma-mem";
-+
- 			rgb {
- 				status = "disabled";
- 			};
-@@ -125,6 +129,9 @@
+ 		};
+ 
+ 		dc@54240000 {
+@@ -126,6 +130,9 @@
+ 			iommus = <&mc TEGRA_SWGROUP_DCB>;
  
  			nvidia,head = <1>;
- 
++
 +			interconnects = <&mc TEGRA_ICC_MC_DCB &emc TEGRA_ICC_EMEM>;
 +			interconnect-names = "dma-mem";
-+
- 			rgb {
- 				status = "disabled";
- 			};
-@@ -624,15 +631,17 @@
+ 		};
+ 
+ 		hdmi: hdmi@54280000 {
+@@ -620,6 +627,7 @@
  		interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>;
- 		#reset-cells = <1>;
- 		#iommu-cells = <0>;
+ 
+ 		#iommu-cells = <1>;
 +		#interconnect-cells = <1>;
  	};
  
--	memory-controller@7000f400 {
-+	emc: memory-controller@7000f400 {
- 		compatible = "nvidia,tegra20-emc";
- 		reg = <0x7000f400 0x200>;
- 		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&tegra_car TEGRA20_CLK_EMC>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
+ 	emc: emc@7001b000 {
+@@ -627,6 +635,8 @@
+ 		reg = <0x0 0x7001b000 0x0 0x1000>;
+ 
+ 		nvidia,memory-controller = <&mc>;
++
 +		#interconnect-cells = <1>;
  	};
  
- 	fuse@7000f800 {
+ 	sata@70020000 {
 -- 
 2.23.0
 
