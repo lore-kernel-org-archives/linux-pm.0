@@ -1,121 +1,102 @@
-Return-Path: <SRS0=3EEV=ZK=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=8f1A=ZL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A7A8C43215
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 23:10:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57DCEC33CA1
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Nov 2019 00:21:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F065A222A9
-	for <linux-pm@archiver.kernel.org>; Mon, 18 Nov 2019 23:10:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 38CEE223AC
+	for <linux-pm@archiver.kernel.org>; Tue, 19 Nov 2019 00:21:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726905AbfKRXKJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 Nov 2019 18:10:09 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:47618 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726922AbfKRXKF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Nov 2019 18:10:05 -0500
-Received: from 79.184.253.244.ipv4.supernova.orange.pl (79.184.253.244) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
- id bde311d14881fd19; Tue, 19 Nov 2019 00:10:02 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Len Brown <lenb@kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
+        id S1727413AbfKSAVu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 Nov 2019 19:21:50 -0500
+Received: from mga18.intel.com ([134.134.136.126]:64622 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727336AbfKSAVt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 18 Nov 2019 19:21:49 -0500
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 18 Nov 2019 16:21:49 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.68,321,1569308400"; 
+   d="scan'208";a="215412049"
+Received: from sjchrist-coffee.jf.intel.com ([10.54.74.41])
+  by fmsmga001.fm.intel.com with ESMTP; 18 Nov 2019 16:21:47 -0800
+From:   Sean Christopherson <sean.j.christopherson@intel.com>
+To:     Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc:     Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
         Peter Zijlstra <peterz@infradead.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Doug Smythies <dsmythies@telus.net>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH 0/2] cpuidle: Allow states to be disabled by default (was: Re: [PATCH] cpuidle: Consolidate disabled state checks)
-Date:   Tue, 19 Nov 2019 00:04:59 +0100
-Message-ID: <1688511.GgkECGP1XA@kreacher>
-In-Reply-To: <CAJZ5v0jsQG37VF3-tiSndE0pXX9jEfgucm0UyvpM0bsyoOcpuA@mail.gmail.com>
-References: <2717750.dCEzHT3DVQ@kreacher> <CAJZ5v0ifOQaOm-8n5gUgud0sCn-Y1KQWWhzhtzdm+exvMLgL7Q@mail.gmail.com> <CAJZ5v0jsQG37VF3-tiSndE0pXX9jEfgucm0UyvpM0bsyoOcpuA@mail.gmail.com>
+        Arnaldo Carvalho de Melo <acme@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Jiri Olsa <jolsa@redhat.com>,
+        Namhyung Kim <namhyung@kernel.org>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Nadav Amit <namit@vmware.com>,
+        "VMware, Inc." <pv-drivers@vmware.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Cezary Rojewski <cezary.rojewski@intel.com>,
+        Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>,
+        Liam Girdwood <liam.r.girdwood@linux.intel.com>,
+        Jie Yang <yang.jie@linux.intel.com>,
+        Mark Brown <broonie@kernel.org>,
+        Jaroslav Kysela <perex@perex.cz>,
+        Takashi Iwai <tiwai@suse.com>, linux-ia64@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-efi@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+        linux-acpi@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: [PATCH 09/12] ASoC: Intel: Skylake: Explicitly include linux/io.h for virt_to_phys()
+Date:   Mon, 18 Nov 2019 16:21:18 -0800
+Message-Id: <20191119002121.4107-10-sean.j.christopherson@intel.com>
+X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20191119002121.4107-1-sean.j.christopherson@intel.com>
+References: <20191119002121.4107-1-sean.j.christopherson@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Monday, November 18, 2019 12:26:57 PM CET Rafael J. Wysocki wrote:
-> On Mon, Nov 18, 2019 at 10:22 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Mon, Nov 18, 2019 at 5:46 AM Len Brown <lenb@kernel.org> wrote:
-> > >
-> > > On Mon, Nov 4, 2019 at 6:16 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > >
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > >
-> > > > There are two reasons why CPU idle states may be disabled: either
-> > > > because the driver has disabled them or because they have been
-> > > > disabled by user space via sysfs.
-> > > >
-> > > > In the former case, the state's "disabled" flag is set once during
-> > > > the initialization of the driver and it is never cleared later (it
-> > > > is read-only effectively).
-> > >
-> > > for x86 (intel_idle and acpi_idle), no states with disabled=1 are  registered
-> > > with cpuidle.  Instead, intel_idle (currently) skips them in the loop
-> > > that registers states.
-> > > (and acpi_idle never touches the disabled field)
-> > >
-> > > And so for x86, governors checking for drv->states[i].disabled is a NOP,
-> > > and the condition described by CPUIDLE_STATE_DISABLED_BY_DRIVER
-> > > does not (yet) exist.
-> >
-> > OK
-> >
-> > > Looking at the ARM code, it seems that cpuidle-imx6q.c and cpuidle-tegra20.c
-> > > reach into the cpuidle states at run time and toggle the
-> > > drv->states[i].disabled.
-> >
-> > I might have overlooked that, let me check.
-> >
-> > > It seems that this patch takes the initial value of
-> > > drv->states->disabled, and sets the (per cpu)
-> > > usage.disable=..BY_DRIVER,
-> > > but that subsequent run-time toggles in drv->states[i]disabled by
-> > > these drivers would be missed,
-> > > because you're removed the run-time checking of drv->states->disabled?
-> >
-> > If it is updated at run time, then yes, the updates will be missed, so
-> > thanks for pointing that out.
-> >
-> > > Finally, I'd like to change intel_idle so that it *can* register a
-> > > state that is disabled, by default.
-> > > If I change the driver to NOT skip registering disabled states, and
-> > > the cpuidle copy has cpuidle_state.disabled=1,
-> > > then the state is indeed, unused at run-time.  But as you said,
-> > > it is effectively read-only, and is not indicated in sysfs, and can
-> > > not be changed via sysfs.
-> > >
-> > > One way to do this is to do what you do here and initialize
-> > > usage.disabled to drv->state.disabled. (not distinguishing between
-> > > DRIVER and USER)
-> > > That way the user could later over-ride what a driver set, by clearing
-> > > the disabled attribute.
-> 
-> I'd rather get rid of the "disabled" field from struct cpuidle_state
-> entirely and introduce a new state flag to indicate the "disabled by
-> default" status.
-> 
-> I also would expose that new flag in a new sysfs attribute of idle
-> states, say "disable_default".
-> 
-> Then, the DISABLED_BY_DRIVER bit would be reserved for driver quirks
-> (as per https://patchwork.kernel.org/patch/11249519/) and the
-> DISABLED_BY_USER one could be used for all of the other purposes.
+Through a labyrinthian sequence of includes, usage of virt_to_phys() is
+dependent on the include of asm/io.h in x86's asm/realmode.h, which is
+included in x86's asm/acpi.h and thus by linux/acpi.h.  Explicitly
+include linux/io.h to break the dependency on realmode.h so that a
+future patch can remove the realmode.h include from acpi.h without
+breaking the build.
 
-To that end, I have the following two experimental patches (on top of
-https://patchwork.kernel.org/patch/11249519/) that IMO are simple
-enough.
+Signed-off-by: Sean Christopherson <sean.j.christopherson@intel.com>
+---
+ sound/soc/intel/skylake/skl-sst-cldma.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Please let me know what you think.
-
-
+diff --git a/sound/soc/intel/skylake/skl-sst-cldma.c b/sound/soc/intel/skylake/skl-sst-cldma.c
+index 5a2c35f58fda..36f697c61074 100644
+--- a/sound/soc/intel/skylake/skl-sst-cldma.c
++++ b/sound/soc/intel/skylake/skl-sst-cldma.c
+@@ -8,6 +8,7 @@
+  */
+ 
+ #include <linux/device.h>
++#include <linux/io.h>
+ #include <linux/mm.h>
+ #include <linux/delay.h>
+ #include "../common/sst-dsp.h"
+-- 
+2.24.0
 
