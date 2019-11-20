@@ -2,124 +2,93 @@ Return-Path: <SRS0=7Ybf=ZM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0DD6C432C0
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 09:09:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 043BFC432C0
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 09:33:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 86DF320731
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 09:09:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1574240944;
-	bh=MUIgVFDwkUr1ntkeGVGC9cGKbm8MC5EhUUlhuOr1nLg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=IWU3PWopMRukEq/ONDrkcwgM79gHUlpsoRNq0NKfuMfkxOz4OeqHX4K9XRZDJvDed
-	 IeCHHH+YVCpZrdvaFtXS7eWsDhuB4KsxpSK8uhQjXV+G1iKWtEmlsEbQz6rAO+jyeS
-	 c9r8f2tzI++W404+3aHvCwtp3iqRCDptFfE+yA94=
+	by mail.kernel.org (Postfix) with ESMTP id D9E732243F
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 09:33:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728062AbfKTJJD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Nov 2019 04:09:03 -0500
-Received: from mail-oi1-f194.google.com ([209.85.167.194]:47095 "EHLO
-        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727816AbfKTJJD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2019 04:09:03 -0500
-Received: by mail-oi1-f194.google.com with SMTP id n14so21800353oie.13;
-        Wed, 20 Nov 2019 01:09:03 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=fxjAZZwG5hIfrc3YBFvEHX0U8tqNbosfqpgXVFQpjTc=;
-        b=dmCR20i9ljycuzcdpQ/+b/WzPGniZOP3/6mDPi8Lf2AIOn/ZMrlKNLkRzOyYvLfEbF
-         k7RcT/zJpksB6x3YX4q6Pzry8vL61YqQ8mLEk9wjOY14zfyDHls6QQeB+IVrhh+Qaess
-         5wAaaEGr3TNr2+1Np2IJlt+hp3Pg7JqHFcqv5svCoDEV7cWk/QbFDr9aSIQ0s4iQed3B
-         m6Sh5WPOXyEo2VbsXThlgB55DAi/bUtCombh8WjA4zHLys/gPUhlqqO/rqz0EK0YksJP
-         +HOSy2Kb3NFYa+EXH9awcsVtbc3cU9S7TNG9pbKKq8F9KwlbPO75LOh1+giw/ugacKTB
-         nGUQ==
-X-Gm-Message-State: APjAAAWYSGq45lA3bd6E63YBkYTvAJsx0lX5T/JZ+SxTmmAflbftLDS/
-        bISBT2pmRrIemUy1Ss0PrK0dfsjyZANcPLL3AO0=
-X-Google-Smtp-Source: APXvYqxQjCBlQqe/f/mECD0vZZyqUXnBDslf+mcXcDjZNftUBzoDIa8ouyVTVLVhR1a+rSsJzXW2qceRI7vfoJ5tp48=
-X-Received: by 2002:a05:6808:901:: with SMTP id w1mr1897534oih.57.1574240942620;
- Wed, 20 Nov 2019 01:09:02 -0800 (PST)
-MIME-Version: 1.0
-References: <2811202.iOFZ6YHztY@kreacher> <000401d59ee6$959e3da0$c0dab8e0$@net>
- <CAJZ5v0i1iAjpWju6FiCjP3RvspKDRfSwz4=b_3qgGhhfz8sSrw@mail.gmail.com>
- <6710300.onecg0m5mP@kreacher> <002a01d59f6f$7f609540$7e21bfc0$@net>
-In-Reply-To: <002a01d59f6f$7f609540$7e21bfc0$@net>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 20 Nov 2019 10:08:50 +0100
-Message-ID: <CAJZ5v0i1UqdQBvXm1cozOQeQ8YRdTxOAQPP9=RyZHHnsmuGHTw@mail.gmail.com>
-Subject: Re: [RFT][PATCH 1/3] PM: QoS: Introduce frequency QoS
-To:     Doug Smythies <dsmythies@telus.net>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
+        id S1728180AbfKTJdh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Nov 2019 04:33:37 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:59057 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725956AbfKTJdh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2019 04:33:37 -0500
+Received: from 79.184.253.244.ipv4.supernova.orange.pl (79.184.253.244) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
+ id 4da6d083348937fd; Wed, 20 Nov 2019 10:33:34 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
         Linux ACPI <linux-acpi@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Dmitry Osipenko <digetx@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+        Doug Smythies <dsmythies@telus.net>,
+        Leonard Crestez <leonard.crestez@nxp.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] PM: QoS: Invalidate frequency QoS requests after removal
+Date:   Wed, 20 Nov 2019 10:33:34 +0100
+Message-ID: <12409907.uLZWGnKmhe@kreacher>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 20, 2019 at 7:55 AM Doug Smythies <dsmythies@telus.net> wrote:
->
-> On 2019.11.19 14:14 Rafael J. Wysocki wrote:
-> > On Tuesday, November 19, 2019 8:17:05 PM CET Rafael J. Wysocki wrote:
->
-> ...
->
-> >> However, I now also see that freq_qos_remove_request() doesn't clear
-> >> the qos field in req which is should do, so freq_qos_add_request()
-> >> will complain and fail if the object pointed to by req is passed to it
-> >> again.
-> >>
-> >> I'll send a patch to test for this later today.
-> >>
-> >
-> > The patch is appended.  Please test it (on top of 5.4-rc8) and report back.
-> >
-> > ---
-> > kernel/power/qos.c |    8 +++++++-
-> > 1 file changed, 7 insertions(+), 1 deletion(-)
-> >
-> > Index: linux-pm/kernel/power/qos.c
-> > ===================================================================
-> > --- linux-pm.orig/kernel/power/qos.c
-> > +++ linux-pm/kernel/power/qos.c
-> > @@ -814,6 +814,8 @@ EXPORT_SYMBOL_GPL(freq_qos_update_reques
-> >  */
-> > int freq_qos_remove_request(struct freq_qos_request *req)
-> > {
-> > +     int ret;
-> > +
-> >       if (!req)
-> >               return -EINVAL;
-> >
-> > @@ -821,7 +823,11 @@ int freq_qos_remove_request(struct freq_
-> >                "%s() called for unknown object\n", __func__))
-> >               return -EINVAL;
-> >
-> > -     return freq_qos_apply(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-> > +     ret = freq_qos_apply(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-> > +     req->qos = NULL;
-> > +     req->type = 0;
-> > +
-> > +     return ret;
-> >  }
-> >  EXPORT_SYMBOL_GPL(freq_qos_remove_request);
->
-> Yes the patch fixes the problem. Thanks.
->
-> I tested several hundred times switching between
-> passive and active modes with the intel_pstate driver,
-> including with various CPUs disabled and re-enabled.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks a lot!
+Switching cpufreq drivers (or switching operation modes of the
+intel_pstate driver from "active" to "passive" and vice versa)
+does not work on some x86 systems with ACPI after commit
+3000ce3c52f8 ("cpufreq: Use per-policy frequency QoS"), because
+the ACPI _PPC and thermal code uses the same frequency QoS request
+object for a given CPU every time a cpufreq driver is registered
+and freq_qos_remove_request() does not invalidate the request after
+removing it from its QoS list, so freq_qos_add_request() complains
+and fails when that request is passed to it again.
 
-Let me resend the patch with a changelog and tags.
+Fix the issue by modifying freq_qos_remove_request() to clear the qos
+and type fields of the frequency request pointed to by its argument
+after removing it from its QoS list so as to invalidate it.
+
+Fixes: 3000ce3c52f8 ("cpufreq: Use per-policy frequency QoS")
+Reported-and-tested-by: Doug Smythies <dsmythies@telus.net>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/qos.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+Index: linux-pm/kernel/power/qos.c
+===================================================================
+--- linux-pm.orig/kernel/power/qos.c
++++ linux-pm/kernel/power/qos.c
+@@ -814,6 +814,8 @@ EXPORT_SYMBOL_GPL(freq_qos_update_reques
+  */
+ int freq_qos_remove_request(struct freq_qos_request *req)
+ {
++	int ret;
++
+ 	if (!req)
+ 		return -EINVAL;
+ 
+@@ -821,7 +823,11 @@ int freq_qos_remove_request(struct freq_
+ 		 "%s() called for unknown object\n", __func__))
+ 		return -EINVAL;
+ 
+-	return freq_qos_apply(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
++	ret = freq_qos_apply(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
++	req->qos = NULL;
++	req->type = 0;
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(freq_qos_remove_request);
+ 
+
+
+
