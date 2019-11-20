@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB1BDC432C3
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 15:46:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EBF1C432C3
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 15:46:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 92BB22070B
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 15:46:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5605020709
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 15:46:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pyfzMEiX"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HprR3YeZ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731516AbfKTPq0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Nov 2019 10:46:26 -0500
-Received: from mail-pf1-f196.google.com ([209.85.210.196]:33973 "EHLO
-        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732464AbfKTPp6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2019 10:45:58 -0500
-Received: by mail-pf1-f196.google.com with SMTP id n13so14420077pff.1
-        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2019 07:45:58 -0800 (PST)
+        id S1730229AbfKTPpm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Nov 2019 10:45:42 -0500
+Received: from mail-pj1-f67.google.com ([209.85.216.67]:33473 "EHLO
+        mail-pj1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732425AbfKTPpl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2019 10:45:41 -0500
+Received: by mail-pj1-f67.google.com with SMTP id o14so26739pjr.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2019 07:45:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :in-reply-to:references;
-        bh=NSg5zBP2bkEtgf/AJ9lwtdlcJh9mMI+s8A/QE9EBrqI=;
-        b=pyfzMEiXET5WNLh0lbzWH2k8Ma4kL/gchA2TSfgf9FOt77Ipge3tgeetL+B/eMQ3nQ
-         qK74PRyKA6Xzfhp8SDKE8IDOG9FnvPqI6zAxyvVWg6TQP7y92eClE7VPgn5EQgevKmTn
-         31isyeVwYrt/63T3W7c/7GYIA5cpiXc/FjWnfRx3+zoDJBZViOljMLADxrUxQ7RA6vsu
-         R4P0FAggkEapQV9P/JrJvCvOqiJCr2EcBVxIorboYb7NdrqFEAaI3ZrbK10/PJQHQdmL
-         XAbs0VUQKIfNCfpp8OueO+3Wys7vJrR6BqL9ZgscME+PrmMK7xFCfeyBCRbpBj9pzPrW
-         baSg==
+        bh=bpr+XgLcp0GJ6wIDnaLswXE+7+Imau06ErXv0DJpW/A=;
+        b=HprR3YeZNVzUJusAYWgK/uwgFmScXge99pfc8msCYNQ72Nf4zHGsDis5kchJKKyRJ0
+         CWKzDLrLfqmS+xtX9sE4rgAR7/d5Znx/HnYAzunhijrbr8cO0hY2ej/Abiy1ibWALYhZ
+         4kzEE5XgtlcJFzIOfPVLagE/MN57OAaooQNrlUwiNEdbf12hmfUHtf6tA2cr8ApzjDXE
+         1p09hF8ndjfVOtD0XBxAt1ccoygg8SB4qvt3Upb/W2s+hCVUfNXnJFxt186HIA0Cil7U
+         5JuMBwXvMuNGWN2lmrjUO9WsiWbGtUfIQ+8X5AuD7eIQx+jKbObMxGP3gPYsxBsBOqfO
+         nlhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:in-reply-to:references;
-        bh=NSg5zBP2bkEtgf/AJ9lwtdlcJh9mMI+s8A/QE9EBrqI=;
-        b=kF2xZGOXDBdRtfP21wAbxis/Y89JL4WXVztVfNgRlvJhH3T6hVOmDZGsW/l7uH4EwR
-         LZhURGAB0Ej6e9EGcw5rBhPmuaD9dFKaZgMAX/EG72nSVLkmrkDphcp68m3ymnVMPULb
-         LwcGN06eDu5gcdYRUUwsBGDaEBKsAh/dDZc14pcX7x5KW12YJWjbTJ68vR2Gr44hth5o
-         iiopaoBO9zsVZQvmpDh7RpUuZvPc5kXeaGrCddymGJ8Zb0/68KNd3Xbj/+tLoPf13YJ8
-         QZ6CbEiATGYrzU0InH6TS652iwU/GrCaG+cGCBKLhB2HPb2dacFOUsCWc5RwDr7oCvl6
-         URsQ==
-X-Gm-Message-State: APjAAAUtQq/QySdU22hK3ET1YPhynas78PXYSk8Ym0OrQ7pEzKUP1m+E
-        +WELCW82n/7kbw/plgJihr7BAw==
-X-Google-Smtp-Source: APXvYqzJUD458tw9LKLIOVTpzUVrazVeldBx+3/BvF6tmCLBMY2h07OohUoX/CJQd6M8piZEF0jNfw==
-X-Received: by 2002:aa7:8b08:: with SMTP id f8mr4854182pfd.92.1574264757863;
-        Wed, 20 Nov 2019 07:45:57 -0800 (PST)
+        bh=bpr+XgLcp0GJ6wIDnaLswXE+7+Imau06ErXv0DJpW/A=;
+        b=YzPWW4fg+m3pMCR1212bNT5/1E+QdIRz+TH6uYz3B2MOvdhhb1PgcJXW3N2HUCtM9c
+         LdY4my2BYsIELk4CWIzuGuclFSk5L4BnV21tTEhs4sTFIZVJsWpoWWfXtfLnN2+exdQM
+         2XRp4V9n2ZW4xiviz8NhckavJcNa3oMkHb+XRJAwZrruBzmlQ8Qfs0cHVlBFY0f7A3sK
+         TLUKOgNMJccJsPShYvc9GLb4VzNu5XKygraCmQ/1BGOidKiu7YxFLe/GTjDhjvIARaWe
+         alOdaJwMyOgB2a0gCRBDfKycXI8d5pD4LEZ3KxQv84U6omVfTYMC/5KlHTRceNyOnH5U
+         1M7Q==
+X-Gm-Message-State: APjAAAUu6XglIcQo8cdNgaK4+5pBjhvLP2y1LLbfOXmXaskvHQ80Goeq
+        6R2QIvJDb3KGDjQNwwMxmDGPcg==
+X-Google-Smtp-Source: APXvYqwoEPmMYiC5RZe26XEvZqQ4Z4Nw9yF/I0EtDQW4twuoRbQQVPeSpxc4pSrm4S5vV6pYT9JKXg==
+X-Received: by 2002:a17:90b:3007:: with SMTP id hg7mr5111000pjb.73.1574264739276;
+        Wed, 20 Nov 2019 07:45:39 -0800 (PST)
 Received: from localhost ([14.96.110.98])
-        by smtp.gmail.com with ESMTPSA id 125sm29559387pfu.136.2019.11.20.07.45.56
+        by smtp.gmail.com with ESMTPSA id f59sm7044014pje.0.2019.11.20.07.45.38
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 20 Nov 2019 07:45:57 -0800 (PST)
+        Wed, 20 Nov 2019 07:45:38 -0800 (PST)
 From:   Amit Kucheria <amit.kucheria@linaro.org>
 To:     linux-kernel@vger.kernel.org, edubezval@gmail.com,
         Amit Daniel Kachhap <amit.kachhap@gmail.com>,
@@ -72,11 +72,10 @@ To:     linux-kernel@vger.kernel.org, edubezval@gmail.com,
         Thierry Reding <thierry.reding@gmail.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>
-Cc:     linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 08/11] thermal: samsung: Appease the kernel-doc deity
-Date:   Wed, 20 Nov 2019 21:15:17 +0530
-Message-Id: <1ded1697c6e5eff11b034b3302b9c79e88fa9c42.1574242756.git.amit.kucheria@linaro.org>
+Cc:     linux-pm@vger.kernel.org
+Subject: [PATCH v2 03/11] thermal: step_wise: Appease the kernel-doc deity
+Date:   Wed, 20 Nov 2019 21:15:12 +0530
+Message-Id: <5d48ac6f85667a53902092ad5bbfef8cc89a7162.1574242756.git.amit.kucheria@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1574242756.git.amit.kucheria@linaro.org>
 References: <cover.1574242756.git.amit.kucheria@linaro.org>
@@ -87,49 +86,88 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix up the following warning when compiled with make W=1:
+Replace - with : to appease the kernel-doc gods and fix warnings such as
+the following when compiled with make W=1:
 
-linux.git/drivers/thermal/samsung/exynos_tmu.c:141: warning: bad
-line:         driver
-linux.git/drivers/thermal/samsung/exynos_tmu.c:203: warning: Function
-parameter or member 'tzd' not described in 'exynos_tmu_data'
-linux.git/drivers/thermal/samsung/exynos_tmu.c:203: warning: Function
-parameter or member 'tmu_set_trip_temp' not described in
-'exynos_tmu_data'
-linux.git/drivers/thermal/samsung/exynos_tmu.c:203: warning: Function
-parameter or member 'tmu_set_trip_hyst' not described in
-'exynos_tmu_data'
+linux-amit.git/drivers/thermal/step_wise.c:187: warning: Function
+parameter or member 'tz' not described in 'step_wise_throttle'
+linux-amit.git/drivers/thermal/step_wise.c:187: warning: Function
+parameter or member 'trip' not described in 'step_wise_throttle'
+
+linux.git/drivers/thermal/fair_share.c:79: warning: Function parameter
+or member 'tz' not described in 'fair_share_throttle'
+linux.git/drivers/thermal/fair_share.c:79: warning: Function parameter
+or member 'trip' not described in 'fair_share_throttle'
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/samsung/exynos_tmu.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/thermal/fair_share.c    | 4 ++--
+ drivers/thermal/gov_bang_bang.c | 4 ++--
+ drivers/thermal/step_wise.c     | 4 ++--
+ drivers/thermal/user_space.c    | 4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index fb2c55123a99..8193b66a3f83 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -138,7 +138,7 @@ enum soc_type {
+diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+index afd99f668c65..aaa07180ab48 100644
+--- a/drivers/thermal/fair_share.c
++++ b/drivers/thermal/fair_share.c
+@@ -58,8 +58,8 @@ static long get_target_state(struct thermal_zone_device *tz,
  
  /**
-  * struct exynos_tmu_data : A structure to hold the private data of the TMU
--	driver
-+ *			    driver
-  * @id: identifier of the one instance of the TMU controller.
-  * @base: base address of the single instance of the TMU controller.
-  * @base_second: base address of the common registers of the TMU controller.
-@@ -162,8 +162,11 @@ enum soc_type {
-  *	0 < reference_voltage <= 31
-  * @regulator: pointer to the TMU regulator structure.
-  * @reg_conf: pointer to structure to register with core thermal.
-+ * @tzd: pointer to thermal_zone_device structure
-  * @ntrip: number of supported trip points.
-  * @enabled: current status of TMU device
-+ * @tmu_set_trip_temp: SoC specific method to set trip (rising threshold)
-+ * @tmu_set_trip_hyst: SoC specific to set hysteresis (falling threshold)
-  * @tmu_initialize: SoC specific TMU initialization method
-  * @tmu_control: SoC specific TMU control method
-  * @tmu_read: SoC specific TMU temperature read method
+  * fair_share_throttle - throttles devices associated with the given zone
+- * @tz - thermal_zone_device
+- * @trip - trip point index
++ * @tz: thermal_zone_device
++ * @trip: trip point index
+  *
+  * Throttling Logic: This uses three parameters to calculate the new
+  * throttle state of the cooling devices associated with the given zone.
+diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
+index b831fc77cf64..991a1c54296d 100644
+--- a/drivers/thermal/gov_bang_bang.c
++++ b/drivers/thermal/gov_bang_bang.c
+@@ -71,8 +71,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+ 
+ /**
+  * bang_bang_control - controls devices associated with the given zone
+- * @tz - thermal_zone_device
+- * @trip - the trip point
++ * @tz: thermal_zone_device
++ * @trip: the trip point
+  *
+  * Regulation Logic: a two point regulation, deliver cooling state depending
+  * on the previous state shown in this diagram:
+diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+index 6e051cbd824f..2ae7198d3067 100644
+--- a/drivers/thermal/step_wise.c
++++ b/drivers/thermal/step_wise.c
+@@ -174,8 +174,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+ 
+ /**
+  * step_wise_throttle - throttles devices associated with the given zone
+- * @tz - thermal_zone_device
+- * @trip - trip point index
++ * @tz: thermal_zone_device
++ * @trip: trip point index
+  *
+  * Throttling Logic: This uses the trend of the thermal zone to throttle.
+  * If the thermal zone is 'heating up' this throttles all the cooling
+diff --git a/drivers/thermal/user_space.c b/drivers/thermal/user_space.c
+index 962873fd9242..293cffd9c8ad 100644
+--- a/drivers/thermal/user_space.c
++++ b/drivers/thermal/user_space.c
+@@ -17,8 +17,8 @@
+ 
+ /**
+  * notify_user_space - Notifies user space about thermal events
+- * @tz - thermal_zone_device
+- * @trip - trip point index
++ * @tz: thermal_zone_device
++ * @trip: trip point index
+  *
+  * This function notifies the user space through UEvents.
+  */
 -- 
 2.20.1
 
