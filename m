@@ -2,111 +2,74 @@ Return-Path: <SRS0=7Ybf=ZM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FAKE_REPLY_C,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02C4BC33CA2
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 12:57:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40E12C432C0
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 13:26:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C426522523
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 12:57:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="V3yYTK2+"
+	by mail.kernel.org (Postfix) with ESMTP id 1348122520
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 13:26:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1574256396;
+	bh=DsDYSq/DHhqcdU7x2gyp7R8L2zInP4Q/+ZwnP14xfC8=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:List-ID:From;
+	b=DhqUcrTEGHbnBi8mQsnaBk26bsZZkemSICw5+xXp7INnVQpxH8CzWWnd57832JyKb
+	 +Ypisc4wWPWIwQlZz19bYPJ5uYKBc28mNKjej6GFMnvRhLdUQE10Oo2pAGk6uUY9TV
+	 Cp+XSDjki6YPPSBP4CFHbBqomBBGUOmdf96Efd6g=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729960AbfKTM4s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Nov 2019 07:56:48 -0500
-Received: from mail-qv1-f66.google.com ([209.85.219.66]:39426 "EHLO
-        mail-qv1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729958AbfKTM4r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2019 07:56:47 -0500
-Received: by mail-qv1-f66.google.com with SMTP id v16so9641345qvq.6
-        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2019 04:56:47 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=Bjn8ReEOuhGj9F9W8fuw8HgClV07G2HHM36EtHpy9gw=;
-        b=V3yYTK2+0pBvo3Fs29fkJr+7+mmKEYMjFkE7Ka3SjI9crrpN1l2CayK3y0m4ygetZ3
-         nlTP0SZkttXLJbDk5AOuS6mH+hTEpZkfTBcG+NUhtj2fwrBaoGZCtzSWrQysLdKVzK6G
-         82BJ8fTCqtLxFEutXC0gQzqzT+b5UJC7ur3ECvk4P6L6747BLjqdVCcBzBeh0GFR44xO
-         TI/nl70KdWfEcZ2jjkTNH1sWgohGuRtMyxavuy530AY0D8o3H4iRL+3+s1mBeoMlYguD
-         CRTIxUPLmNgN3NAZR8vYGqsc8gqU5PIQyqE51k+aXurXAhWBYR/jx70NiwU8ZN6stAVZ
-         Dg7Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=Bjn8ReEOuhGj9F9W8fuw8HgClV07G2HHM36EtHpy9gw=;
-        b=eQhH9mTBFMQEkF5gltT2uO4uCTkaodKpF/dMg4W0pxmZCNS+fNzn6IRs3FTEVJtFki
-         HzUzjyQxr4M9TdPz2pKn/vpBh1n+hdo2ydyKzXbhrRW77X+h09poKv6PQhCxSJ25S0l9
-         kEea/RZGMV1Lt5lRZxdSslRNzO3W7xHcCpvJx3Paxa0iHPcTDVx/TAzryv63hb5Dch3K
-         789y9rt6mRCkUlAEFyFv7kas5m3VPkYhnSPF9HmdGgycqPMZWAifHupzGF1akha8JErF
-         SGeo8+k2kx2aIUlNc9UDWJynabANuiEsF/eWsfwFN3xILO86htQessOiqYYGIE6ny83j
-         /4yA==
-X-Gm-Message-State: APjAAAWo5XoxjrR7WUVR/9H/r9V9DJuIVmPAUkLL/D3O+GpmmFe+Sc6S
-        Lggn+WZasMwEbkKgyo7/oYiMYw==
-X-Google-Smtp-Source: APXvYqxf+sKw7EwManApOCl7KSNRE1MiRk/sThSYeiR8bBGoNF0Mhv4ABmcOFKGpvjkgYskeZk0h+w==
-X-Received: by 2002:a0c:e947:: with SMTP id n7mr1303514qvo.103.1574254606578;
-        Wed, 20 Nov 2019 04:56:46 -0800 (PST)
-Received: from Thara-Work-Ubuntu.fios-router.home (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
-        by smtp.googlemail.com with ESMTPSA id r2sm14109637qtc.28.2019.11.20.04.56.43
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Wed, 20 Nov 2019 04:56:44 -0800 (PST)
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-To:     edubezval@gmail.com, rui.zhang@intel.com, ulf.hansson@linaro.org,
-        daniel.lezcano@linaro.org, bjorn.andersson@linaro.org,
-        agross@kernel.org
-Cc:     amit.kucheria@verdurent.com, mark.rutland@arm.com,
-        rjw@rjwysocki.net, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [Patch v4 2/7] soc: qcom: rpmhpd: Introduce function to retrieve power domain performance state count
-Date:   Wed, 20 Nov 2019 07:56:28 -0500
-Message-Id: <1574254593-16078-3-git-send-email-thara.gopinath@linaro.org>
-X-Mailer: git-send-email 2.1.4
-In-Reply-To: <1574254593-16078-1-git-send-email-thara.gopinath@linaro.org>
-References: <1574254593-16078-1-git-send-email-thara.gopinath@linaro.org>
+        id S1727905AbfKTN0f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Nov 2019 08:26:35 -0500
+Received: from mail.kernel.org ([198.145.29.99]:38332 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727798AbfKTN0f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 20 Nov 2019 08:26:35 -0500
+Received: from localhost (173-25-83-245.client.mchsi.com [173.25.83.245])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 64BE5224F3;
+        Wed, 20 Nov 2019 13:26:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1574256394;
+        bh=DsDYSq/DHhqcdU7x2gyp7R8L2zInP4Q/+ZwnP14xfC8=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=FIpUZW/KMEsdAr5Fm7S9pIXa746/f8Kgf29oYt4vjombJ0MJRjGbemJJlubK/KWoi
+         WypaXCzNSSCcJypzI/5gFfbJKMGuBSYgTG1qL/ZdnU5W2CFaMheI4C/Ic/oRSA5qEB
+         4Mu5JBq6dNUdYxiFeG9vDQJLutf59sizvVKdNICo=
+Date:   Wed, 20 Nov 2019 07:26:33 -0600
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PM / QoS: Wrap documentation to fit in 80 columns
+Message-ID: <20191120132633.GA87581@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gzspKm_Zy8JzWC54iPfJKU=2Hx_FzP-vLBS=CreyKgbA@mail.gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Populate .get_performace_state_count in genpd ops to retrieve the count of
-performance states supported by a rpmh power domain.
+On Wed, Nov 20, 2019 at 12:18:16PM +0100, Rafael J. Wysocki wrote:
+> On Tue, Nov 19, 2019 at 3:09 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+> >
+> > From: Bjorn Helgaas <bhelgaas@google.com>
+> >
+> > Wrap to 80 columns.  No textual change except to correct some "it's" that
+> > should be "its".
+> >
+> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> Applied for 5.5, but I've dropped the "QoS" part from the subject, as
+> this is not only about QoS.
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
----
- drivers/soc/qcom/rpmhpd.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/soc/qcom/rpmhpd.c b/drivers/soc/qcom/rpmhpd.c
-index 5741ec3..9d37534 100644
---- a/drivers/soc/qcom/rpmhpd.c
-+++ b/drivers/soc/qcom/rpmhpd.c
-@@ -285,6 +285,13 @@ static unsigned int rpmhpd_get_performance_state(struct generic_pm_domain *genpd
- 	return dev_pm_opp_get_level(opp);
- }
- 
-+static int rpmhpd_performance_states_count(struct generic_pm_domain *domain)
-+{
-+	struct rpmhpd *pd = domain_to_rpmhpd(domain);
-+
-+	return pd->level_count;
-+}
-+
- static int rpmhpd_update_level_mapping(struct rpmhpd *rpmhpd)
- {
- 	int i;
-@@ -373,6 +380,8 @@ static int rpmhpd_probe(struct platform_device *pdev)
- 		rpmhpds[i]->pd.power_on = rpmhpd_power_on;
- 		rpmhpds[i]->pd.set_performance_state = rpmhpd_set_performance_state;
- 		rpmhpds[i]->pd.opp_to_performance_state = rpmhpd_get_performance_state;
-+		rpmhpds[i]->pd.get_performance_state_count =
-+					rpmhpd_performance_states_count;
- 		pm_genpd_init(&rpmhpds[i]->pd, NULL, true);
- 
- 		data->domains[i] = &rpmhpds[i]->pd;
--- 
-2.1.4
-
+Thank you!  Can't remember why I included "QoS" because it doesn't
+make any sense.
