@@ -7,53 +7,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F962C432C3
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 15:45:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B1D1C43215
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 15:45:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 22C2820714
-	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 15:45:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 491E32070E
+	for <linux-pm@archiver.kernel.org>; Wed, 20 Nov 2019 15:45:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ozv7hJZq"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="E3AnSLk8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731314AbfKTPpp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Nov 2019 10:45:45 -0500
-Received: from mail-pl1-f193.google.com ([209.85.214.193]:46107 "EHLO
-        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732430AbfKTPpn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2019 10:45:43 -0500
-Received: by mail-pl1-f193.google.com with SMTP id l4so13990809plt.13
-        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2019 07:45:43 -0800 (PST)
+        id S1730153AbfKTPpw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Nov 2019 10:45:52 -0500
+Received: from mail-pg1-f196.google.com ([209.85.215.196]:45688 "EHLO
+        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732455AbfKTPpv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Nov 2019 10:45:51 -0500
+Received: by mail-pg1-f196.google.com with SMTP id k1so12187137pgg.12
+        for <linux-pm@vger.kernel.org>; Wed, 20 Nov 2019 07:45:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :in-reply-to:references;
-        bh=LB0mFTtKkHmo2cL12xdptGbf+C8Nvz2KFyNdinT86Hs=;
-        b=Ozv7hJZqH8HGUR9P7JW0bGRieZObuXO21O+rOP+m+JocLXsFbjmIS6wZqm2AAlU+ns
-         tO6Ukn+1PEnZi1PyTTv/o79FJhchMEw+I02xkgXAocUiVyy1QPPcXYNGr4oeEZ7eAADS
-         /q2CKsqN8t++k8KFeA+U8Ykfs+Yi1UHvZQxH3ad7wUea8s0STHkCYkxxj5+DxgDDMVJ0
-         UfC6nlhol5VLPIaphGXQLYuN+3g9u38AgNbOWe16OyZIzBIaDVUe/ZJJU5XW39KBPFSB
-         pvzEvWKJcd/yolqJz/n+1tX1QL9gEQQw3GQTLdBnqqoOSUM7ZwfFcHota0z0NYHrmcG4
-         +M4w==
+        bh=e/+C0/U/7T8ETxCupoulTe1zya9/ISeKYAztNAzb164=;
+        b=E3AnSLk8a93bsgWxr4fcB/GPFvJ4Rxo5soxyRn5bqg6l49xuRK6YcbzlIUUW+u31d/
+         JA22kRY/pMbbK6pIyxFgfeLHI+IcM3+2nwmI0qvXJDZabbmDuqUiVLRhLr/SlgQh51oV
+         UsRDODil4tFnA/SKcLzQnQ+fH8TLmKtJQuaXjNyammLFz8sJfJUN/4NBihEftSt/l1LP
+         x+sqw0txJaK5+awwGSe60/jM8OFzrCCRY2WBzh7ui94S3wFWodQ+jtN2oCBeDML5mYft
+         gGYXdwx2NpSBdm09KeHKgUEzj1qYlvdnhYlD26aXvxQF6VchwF5Zd1bpM9qETPcn/vAF
+         N3Bw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:in-reply-to:references;
-        bh=LB0mFTtKkHmo2cL12xdptGbf+C8Nvz2KFyNdinT86Hs=;
-        b=ug++vVP4InKiTbbMPeL7KXRWCYBZLoJfIwsVijfbxXH7EIqQy+41+jktgZ6fWBdm8p
-         QqC1KJfInXQw1Bw4rSfJDrWbhrVgCVKlfFu+poVBm4XjQPMYlkrmb5IcX3gTQfXV0jNI
-         Nr0DR6RY7/5ReoWDHN7vSXsTAsbkYULCYaLMMnVVOzc0RuU8/5e0gTErcSV5RWlLRvv9
-         Yv0F0qPW6JGFYtzxOS6z7ksqKSQRi1MINi3Bi+NVgo9e+qmbQxOPItkN7xBWy70YmjnR
-         UNY+ZbMrYTGt5SRUKk91zPY0Ia0F/Ru9WYSkV0fDs0nHsZmJIlcaEgw9kl4f6j8ffL7S
-         m5aw==
-X-Gm-Message-State: APjAAAU0oQspU+GwZamgUST2/2biUkjwUi/atCESyGzWf5CdOAdD5GMk
-        KwStOzWqTJNMahBhrhQquHwzIg==
-X-Google-Smtp-Source: APXvYqyB42bSl+V4AlIGVMjAxYwx7VypP3HVgpqXRen6G2VGgOnmLvy7kE8oL/ksozcdL9YR6IvUBA==
-X-Received: by 2002:a17:902:7287:: with SMTP id d7mr3666727pll.333.1574264742918;
-        Wed, 20 Nov 2019 07:45:42 -0800 (PST)
+        bh=e/+C0/U/7T8ETxCupoulTe1zya9/ISeKYAztNAzb164=;
+        b=KPSM9DuxynOnXbBBEcnsuMjhfVLtSUnjOn2UpiWma2VfLX9FHBXFe8MbG3Twy4pvkA
+         RUOwjbHOj6qDQXBvXKeQJNi4TcYGtrYxhZmXfz3T3UYNLQYA+lSRICC0DEi31Hx3eKNP
+         9NilF2aXB/W79w/KZaKGRDjHLG3dcRv4ceoxgb0ELIFr8BKyzGOVJyb8yT6j+KtalBkx
+         tIj6Q9j8KaYj+ABfY5vpHGBXXnAkBD4GBiSHBQDxNbThBG4RHauFGTZF34QNMbxzSuGQ
+         zt/lDeddRAwLCIe/RGR2uGokIR+dtDt80EjcyMAw3ZKbp2JQ/QwwTvY/YNu/+O01Q6mF
+         Pdlg==
+X-Gm-Message-State: APjAAAUrESwq8Js+HRrec+qG4YpDZvknM8QSrnTVvifF9eZw5XNoTZOj
+        r9IZYrTDoMD6he5pcuBzwwTWww==
+X-Google-Smtp-Source: APXvYqzj7lopeOEFvFadHOn4FAisXgAAfQF8EcvPp5oAfbvhy/8a9sOXfobTdg947a+fRpG3+UQUCw==
+X-Received: by 2002:a63:d20f:: with SMTP id a15mr4164989pgg.268.1574264750264;
+        Wed, 20 Nov 2019 07:45:50 -0800 (PST)
 Received: from localhost ([14.96.110.98])
-        by smtp.gmail.com with ESMTPSA id i102sm7833530pje.17.2019.11.20.07.45.41
+        by smtp.gmail.com with ESMTPSA id u20sm30558372pgo.50.2019.11.20.07.45.49
         (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 20 Nov 2019 07:45:42 -0800 (PST)
+        Wed, 20 Nov 2019 07:45:49 -0800 (PST)
 From:   Amit Kucheria <amit.kucheria@linaro.org>
 To:     linux-kernel@vger.kernel.org, edubezval@gmail.com,
         Amit Daniel Kachhap <amit.kachhap@gmail.com>,
@@ -72,10 +72,11 @@ To:     linux-kernel@vger.kernel.org, edubezval@gmail.com,
         Thierry Reding <thierry.reding@gmail.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>
-Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH v2 04/11] thermal: devfreq_cooling: Appease the kernel-doc deity
-Date:   Wed, 20 Nov 2019 21:15:13 +0530
-Message-Id: <7059d82472fe12139fc7a3379c5b9716a23cce5c.1574242756.git.amit.kucheria@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org
+Subject: [PATCH v2 06/11] thermal: mediatek: Appease the kernel-doc deity
+Date:   Wed, 20 Nov 2019 21:15:15 +0530
+Message-Id: <ba10b886705879fd1b7d529fec50503d6696df20.1574242756.git.amit.kucheria@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1574242756.git.amit.kucheria@linaro.org>
 References: <cover.1574242756.git.amit.kucheria@linaro.org>
@@ -86,42 +87,91 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix up the following warnings with make W=1:
+Replace a comment starting with /** by simply /* to avoid having it
+interpreted as a kernel-doc comment. Describe missing function
+parameters where needed.
 
-linux.git/drivers/thermal/devfreq_cooling.c:68: warning: Function
-parameter or member 'capped_state' not described in
-'devfreq_cooling_device'
-linux.git/drivers/thermal/devfreq_cooling.c:593: warning: Function
-parameter or member 'cdev' not described in 'devfreq_cooling_unregister'
-linux.git/drivers/thermal/devfreq_cooling.c:593: warning: Excess
-function parameter 'dfc' description in 'devfreq_cooling_unregister'
+Fixes up the following warnings when compiled with make W=1:
+
+linux.git/drivers/thermal/mtk_thermal.c:374: warning: cannot understand
+function prototype: 'const struct mtk_thermal_data mt8173_thermal_data =
+'
+linux.git/drivers/thermal/mtk_thermal.c:413: warning: cannot understand
+function prototype: 'const struct mtk_thermal_data mt2701_thermal_data =
+'
+linux.git/drivers/thermal/mtk_thermal.c:443: warning: cannot understand
+function prototype: 'const struct mtk_thermal_data mt2712_thermal_data =
+'
+linux.git/drivers/thermal/mtk_thermal.c:499: warning: cannot understand
+function prototype: 'const struct mtk_thermal_data mt8183_thermal_data =
+'
+linux.git/drivers/thermal/mtk_thermal.c:529: warning: Function parameter
+or member 'sensno' not described in 'raw_to_mcelsius'
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/devfreq_cooling.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/thermal/mtk_thermal.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index ef59256887ff..a87d4fa031c8 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -53,6 +53,7 @@ static DEFINE_IDA(devfreq_ida);
-  *		'utilization' (which is	'busy_time / 'total_time').
-  *		The 'res_util' range is from 100 to (power_table[state] * 100)
-  *		for the corresponding 'state'.
-+ * @capped_state:	index to cooling state with in dynamic power budget
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index acf4854cbb8b..76e30603d4d5 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -358,7 +358,7 @@ static const int mt7622_mux_values[MT7622_NUM_SENSORS] = { 0, };
+ static const int mt7622_vts_index[MT7622_NUM_SENSORS] = { VTS1 };
+ static const int mt7622_tc_offset[MT7622_NUM_CONTROLLER] = { 0x0, };
+ 
+-/**
++/*
+  * The MT8173 thermal controller has four banks. Each bank can read up to
+  * four temperature sensors simultaneously. The MT8173 has a total of 5
+  * temperature sensors. We use each bank to measure a certain area of the
+@@ -400,7 +400,7 @@ static const struct mtk_thermal_data mt8173_thermal_data = {
+ 	.sensor_mux_values = mt8173_mux_values,
+ };
+ 
+-/**
++/*
+  * The MT2701 thermal controller has one bank, which can read up to
+  * three temperature sensors simultaneously. The MT2701 has a total of 3
+  * temperature sensors.
+@@ -430,7 +430,7 @@ static const struct mtk_thermal_data mt2701_thermal_data = {
+ 	.sensor_mux_values = mt2701_mux_values,
+ };
+ 
+-/**
++/*
+  * The MT2712 thermal controller has one bank, which can read up to
+  * four temperature sensors simultaneously. The MT2712 has a total of 4
+  * temperature sensors.
+@@ -484,7 +484,7 @@ static const struct mtk_thermal_data mt7622_thermal_data = {
+ 	.sensor_mux_values = mt7622_mux_values,
+ };
+ 
+-/**
++/*
+  * The MT8183 thermal controller has one bank for the current SW framework.
+  * The MT8183 has a total of 6 temperature sensors.
+  * There are two thermal controller to control the six sensor.
+@@ -495,7 +495,6 @@ static const struct mtk_thermal_data mt7622_thermal_data = {
+  * data, and this indeed needs the temperatures of the individual banks
+  * for making better decisions.
   */
- struct devfreq_cooling_device {
- 	int id;
-@@ -587,7 +588,7 @@ EXPORT_SYMBOL_GPL(devfreq_cooling_register);
+-
+ static const struct mtk_thermal_data mt8183_thermal_data = {
+ 	.auxadc_channel = MT8183_TEMP_AUXADC_CHANNEL,
+ 	.num_banks = MT8183_NUM_SENSORS_PER_ZONE,
+@@ -519,7 +518,8 @@ static const struct mtk_thermal_data mt8183_thermal_data = {
  
  /**
-  * devfreq_cooling_unregister() - Unregister devfreq cooling device.
-- * @dfc: Pointer to devfreq cooling device to unregister.
-+ * @cdev: Pointer to devfreq cooling device to unregister.
-  */
- void devfreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
+  * raw_to_mcelsius - convert a raw ADC value to mcelsius
+- * @mt:		The thermal controller
++ * @mt:	The thermal controller
++ * @sensno:	sensor number
+  * @raw:	raw ADC value
+  *
+  * This converts the raw ADC value to mcelsius using the SoC specific
 -- 
 2.20.1
 
