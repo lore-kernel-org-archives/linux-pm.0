@@ -7,46 +7,44 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B0B6C432C3
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 03:19:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E793C432C3
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 03:20:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E8D1420898
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 03:19:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 37E3E2089D
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 03:20:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1574306361;
-	bh=5CuMeteoMTQfuON89jjX7S9uHe2uK9dnR5V5Sn9kLeA=;
+	s=default; t=1574306404;
+	bh=X0Vkav8AN/Y4ly6J0JOv/ouzlDy9mO5Na/nrav0JajA=;
 	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=VpZyeEiD+QrXSl7XBKMrvR2hzBOEMAa4931iMW979yygg/0aHyH6UDVc+F9Ub5Se/
-	 mXNBsk9N3NjaCGd/2U5f2jyABqIBJqx42nzoHHBbptaqUVLJY6Gny7b5v9ylTqGYQ8
-	 5xIiU0QN1zSBwaOfmBgAR9WFb9c8+YsnFyrpyxk4=
+	b=TIxeSxq6Bh8YyEWl6DeqihFKjbUwfETRYDyA1s4U/i4tOdA3Jq0gXxEYc+quJtSHM
+	 Pl+CAEE8o5GLKIlfG3zvazFHHi4rJmYpqvrLAew4mXOOpBBegfccG/Ms0v1td6mgk4
+	 Ij6/OxNpq66+NAC28sYcoDSS7/YhOeHJ+HqKVVkQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727097AbfKUDTQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Nov 2019 22:19:16 -0500
-Received: from mail.kernel.org ([198.145.29.99]:60816 "EHLO mail.kernel.org"
+        id S1727295AbfKUDUA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Nov 2019 22:20:00 -0500
+Received: from mail.kernel.org ([198.145.29.99]:33486 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725819AbfKUDTP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 20 Nov 2019 22:19:15 -0500
+        id S1727345AbfKUDT7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 20 Nov 2019 22:19:59 -0500
 Received: from PC-kkoz.proceq.com (unknown [213.160.61.66])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 296F22089D;
-        Thu, 21 Nov 2019 03:19:14 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 31B5220721;
+        Thu, 21 Nov 2019 03:19:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1574306355;
-        bh=5CuMeteoMTQfuON89jjX7S9uHe2uK9dnR5V5Sn9kLeA=;
+        s=default; t=1574306398;
+        bh=X0Vkav8AN/Y4ly6J0JOv/ouzlDy9mO5Na/nrav0JajA=;
         h=From:To:Cc:Subject:Date:From;
-        b=Y60ApEHOfo0BCRaWUCXTxlQ6aFMjv4aMNbUHN5R0Hd95JndyxB2ntvJtLJxCEDS+S
-         Ep4WASmKQgVGAVyQAdZbFS6YeaHMu5/u2GaXtuM3xIzXnX5jfRsLxP2oJ0hUhTFq7M
-         I+D7FK6BRGwW42WS0n2E7FGWY5Rtczwqr6BDIm1c=
+        b=YM/oP5LlNOO07WQZHM+AY4YXVDFIs7yu3TVPAUKE7NvZeDCzIg2L2ru5OnR1Fcuy2
+         49nzzfKgsOFBt99HlG4mA/FqIFpgCa4lEAMY74dwgEllt6KuPSTaQoqBlAbKKA+QGf
+         Cr4MmU3+rKAHitF3cIz3cFllJ2ZJgSmDlAYvyO2s=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2] cpuidle: Fix Kconfig indentation
-Date:   Thu, 21 Nov 2019 04:19:12 +0100
-Message-Id: <1574306352-29264-1-git-send-email-krzk@kernel.org>
+        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH v2] power: reset: Fix Kconfig indentation
+Date:   Thu, 21 Nov 2019 04:19:55 +0100
+Message-Id: <1574306395-12906-1-git-send-email-krzk@kernel.org>
 X-Mailer: git-send-email 2.7.4
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -64,72 +62,36 @@ Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 Changes since v1:
 1. Fix also 7-space and tab+1 space indentation issues.
 ---
- drivers/cpuidle/Kconfig     | 16 ++++++++--------
- drivers/cpuidle/Kconfig.arm | 16 ++++++++--------
- 2 files changed, 16 insertions(+), 16 deletions(-)
+ drivers/power/reset/Kconfig | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 88727b7c0d59..c0aeedd66f02 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -16,7 +16,7 @@ config CPU_IDLE
- if CPU_IDLE
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index c721939767eb..0498363203e8 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -141,14 +141,14 @@ config POWER_RESET_LTC2952
+ 	  down via the LTC2952. Bindings are made in the device tree.
  
- config CPU_IDLE_MULTIPLE_DRIVERS
--        bool
-+	bool
- 
- config CPU_IDLE_GOV_LADDER
- 	bool "Ladder governor (for periodic timer tick)"
-@@ -63,13 +63,13 @@ source "drivers/cpuidle/Kconfig.powerpc"
- endmenu
- 
- config HALTPOLL_CPUIDLE
--       tristate "Halt poll cpuidle driver"
--       depends on X86 && KVM_GUEST
--       default y
+ config POWER_RESET_MT6323
+-       bool "MediaTek MT6323 power-off driver"
+-       depends on MFD_MT6397
 -       help
--         This option enables halt poll cpuidle driver, which allows to poll
--         before halting in the guest (more efficient than polling in the
--         host via halt_poll_ns for some scenarios).
-+	tristate "Halt poll cpuidle driver"
-+	depends on X86 && KVM_GUEST
-+	default y
+-         The power-off driver is responsible for externally shutdown down
+-         the power of a remote MediaTek SoC MT6323 is connected to through
+-         controlling a tiny circuit BBPU inside MT6323 RTC.
+-
+-         Say Y if you have a board where MT6323 could be found.
++	bool "MediaTek MT6323 power-off driver"
++	depends on MFD_MT6397
 +	help
-+	 This option enables halt poll cpuidle driver, which allows to poll
-+	 before halting in the guest (more efficient than polling in the
-+	 host via halt_poll_ns for some scenarios).
++	  The power-off driver is responsible for externally shutdown down
++	  the power of a remote MediaTek SoC MT6323 is connected to through
++	  controlling a tiny circuit BBPU inside MT6323 RTC.
++
++	  Say Y if you have a board where MT6323 could be found.
  
- endif
- 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index d8530475493c..e91ab792d14d 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -3,15 +3,15 @@
- # ARM CPU Idle drivers
- #
- config ARM_CPUIDLE
--        bool "Generic ARM/ARM64 CPU idle Driver"
--        select DT_IDLE_STATES
-+	bool "Generic ARM/ARM64 CPU idle Driver"
-+	select DT_IDLE_STATES
- 	select CPU_IDLE_MULTIPLE_DRIVERS
--        help
--          Select this to enable generic cpuidle driver for ARM.
--          It provides a generic idle driver whose idle states are configured
--          at run-time through DT nodes. The CPUidle suspend backend is
--          initialized by calling the CPU operations init idle hook
--          provided by architecture code.
-+	help
-+	  Select this to enable generic cpuidle driver for ARM.
-+	  It provides a generic idle driver whose idle states are configured
-+	  at run-time through DT nodes. The CPUidle suspend backend is
-+	  initialized by calling the CPU operations init idle hook
-+	  provided by architecture code.
- 
- config ARM_PSCI_CPUIDLE
- 	bool "PSCI CPU idle Driver"
+ config POWER_RESET_QNAP
+ 	bool "QNAP power-off driver"
 -- 
 2.7.4
 
