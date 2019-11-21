@@ -2,112 +2,183 @@ Return-Path: <SRS0=nqDD=ZN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FAKE_REPLY_C,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDF83C43141
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 18:15:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 078D3C432C0
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 18:41:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B757E2070A
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 18:15:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1574360103;
-	bh=ijyd7cvmLy8JKNJbgtDDlfBXxuIHmN+a8yLmCNyGDqQ=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:List-ID:From;
-	b=igbjD+B8FtcYPz7Da+8Y0x2JnG1n82pbNmsAY74w7T7EGUL6bu2Hby+Mbd4kCV/l3
-	 aVvWXtndATfaCTv4ijvXcxkoaW+IOiHjRER+Q07TOZ60Yemrbjp/t0Sppc9qupy/oX
-	 HJ/A8CU6APFcZdRKO07rWqZHJkmogMqs1jp2zDC8=
+	by mail.kernel.org (Postfix) with ESMTP id D75D0206CB
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 18:41:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726990AbfKUSPC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Nov 2019 13:15:02 -0500
-Received: from mail.kernel.org ([198.145.29.99]:53426 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726279AbfKUSPC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 21 Nov 2019 13:15:02 -0500
-Received: from localhost (unknown [69.71.4.100])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 78F07206CB;
-        Thu, 21 Nov 2019 18:15:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1574360101;
-        bh=ijyd7cvmLy8JKNJbgtDDlfBXxuIHmN+a8yLmCNyGDqQ=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=VgwLmUNzZRbIdTmWHbDI8KdQQ+ScwxNVOV7pkZGey2MAv2Ut5eFUXXTW67vDabEOV
-         RHtsfLKq8QC+/GnTC3C0fo9kMAqptOayz2c1bZmnXLhoIdEEcn/zAk22QVqBcSuHCI
-         kM/dv9vzFnnBE3Ix/ZmKNfzQenYhqT4eob4P/E1s=
-Date:   Thu, 21 Nov 2019 12:15:00 -0600
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     Daniel Drake <drake@endlessm.com>
-Cc:     linux-pci@vger.kernel.org, rafael.j.wysocki@intel.com,
-        linux@endlessm.com, linux-pm@vger.kernel.org,
-        linux-usb@vger.kernel.org
-Subject: Re: [PATCH] PCI: increase D3 delay for AMD Ryzen5/7 XHCI controllers
-Message-ID: <20191121181500.GA55996@google.com>
+        id S1726379AbfKUSly (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Nov 2019 13:41:54 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:61632 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726279AbfKUSly (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2019 13:41:54 -0500
+Received: from 79.184.253.244.ipv4.supernova.orange.pl (79.184.253.244) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.292)
+ id 1158072d821797ee; Thu, 21 Nov 2019 19:41:51 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Len Brown <len.brown@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Len Brown <lenb@kernel.org>,
+        Rafael Wysocki <rafael@kernel.org>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org
+Subject: [PATCH 1/2] cpuidle: Drop disabled field from struct cpuidle_state
+Date:   Thu, 21 Nov 2019 19:41:51 +0100
+Message-ID: <3690440.Wzkxfdnirm@kreacher>
+In-Reply-To: <5961586.ml7s97geqL@kreacher>
+References: <5961586.ml7s97geqL@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191120002836.GA247344@google.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 19, 2019 at 06:28:36PM -0600, Bjorn Helgaas wrote:
-> On Mon, Oct 14, 2019 at 02:13:55PM +0800, Daniel Drake wrote:
-> > On Asus laptops with AMD Ryzen7 3700U and AMD Ryzen5 3500U,
-> 
-> Can you include specific models here in case we revisit this or find a
-> generic solution that needs to be tested to make sure we don't regress
-> these platforms?
-> 
-> Maybe a bugzilla with complete "lspci -vvnn" and dmesg logs?
-> 
-> > the XHCI controller fails to resume from runtime suspend or s2idle,
-> > and USB becomes unusable from that point.
-> > 
-> > xhci_hcd 0000:03:00.4: Refused to change power state, currently in D3
-> > xhci_hcd 0000:03:00.4: enabling device (0000 -> 0002)
-> > xhci_hcd 0000:03:00.4: WARN: xHC restore state timeout
-> > xhci_hcd 0000:03:00.4: PCI post-resume error -110!
-> > xhci_hcd 0000:03:00.4: HC died; cleaning up
-> > 
-> > The D3-to-D0 transition is successful if the D3 delay is increased
-> > to 20ms. Add an appropriate quirk for the affected hardware.
-> 
-> IIUC, we're doing a D3cold-to-D0 transition in this path:
-> 
->   pci_pm_default_resume_early
->     pci_power_up
->       platform_pci_set_power_state(PCI_D0)    # turn on via ACPI
->       pci_raw_set_power_state(PCI_D0)
->         pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr)
->         # pmcsr says device is in D3hot
->         pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr)
->         # sets to D0
->         pci_dev_d3_sleep                      # <-- need more time here
-> 
-> I would sort of expect that ACPI would be putting the device in D0,
-> not leaving it in D3hot, but maybe that's just my ignorance.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I definitely was not understanding this correctly.  There is no path
-for a D3cold -> D3hot transition.  Per spec (PCIe r5.0, sec 5.8), the
-only legal exit from D3cold is to D0uninitialized.
+After recent cpuidle updates the "disabled" field in struct
+cpuidle_state is only used by two drivers (intel_idle and shmobile
+cpuidle) for marking unusable idle states, but that may as well be
+achieved with the help of a state flag, so define an "unusable" idle
+state flag, CPUIDLE_FLAG_UNUSABLE, make the drivers in question use
+it instead of the "disabled" field and make the core set
+CPUIDLE_STATE_DISABLED_BY_DRIVER for the idle states with that flag
+set.
 
-I know you tried a debug patch to call pci_dev_wait(), and it didn't
-work, but I'm not sure exactly where it was called.  I have these
-patches on my pci/pm branch for v5.5:
+After the above changes, the "disabled" field in struct cpuidle_state
+is not used any more, so drop it.
 
-  bae26849372b ("PCI/PM: Move pci_dev_wait() definition earlier")
-  395f121e6199 ("PCI/PM: Wait for device to become ready after power-on")
+No intentional functional impact.
 
-The latter adds the wait just before we call
-pci_raw_set_power_state().  If the device is responding with CRS
-status, that should be the point where we'd see it.  If you have a
-chance to try it, I'd be interested in the results.  Here's the
-branch:
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git/commit/?h=pci/pm&id=395f121e61994bc135bb669eb35325d5457d669d
+Changes from RFC:
+
+ - Do not add extra braces (unrelated to the rest of the patch).
+
+---
+ arch/sh/kernel/cpu/shmobile/cpuidle.c |    8 ++++----
+ drivers/cpuidle/cpuidle.c             |    2 +-
+ drivers/cpuidle/poll_state.c          |    1 -
+ drivers/idle/intel_idle.c             |    6 +++---
+ include/linux/cpuidle.h               |    2 +-
+ 5 files changed, 9 insertions(+), 10 deletions(-)
+
+Index: linux-pm/drivers/idle/intel_idle.c
+===================================================================
+--- linux-pm.orig/drivers/idle/intel_idle.c
++++ linux-pm/drivers/idle/intel_idle.c
+@@ -1291,8 +1291,8 @@ static void sklh_idle_state_table_update
+ 			return;
+ 	}
+ 
+-	skl_cstates[5].disabled = 1;	/* C8-SKL */
+-	skl_cstates[6].disabled = 1;	/* C9-SKL */
++	skl_cstates[5].flags |= CPUIDLE_FLAG_UNUSABLE;	/* C8-SKL */
++	skl_cstates[6].flags |= CPUIDLE_FLAG_UNUSABLE;	/* C9-SKL */
+ }
+ /*
+  * intel_idle_state_table_update()
+@@ -1355,7 +1355,7 @@ static void __init intel_idle_cpuidle_dr
+ 			continue;
+ 
+ 		/* if state marked as disabled, skip it */
+-		if (cpuidle_state_table[cstate].disabled != 0) {
++		if (cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_UNUSABLE) {
+ 			pr_debug("state %s is disabled\n",
+ 				 cpuidle_state_table[cstate].name);
+ 			continue;
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -54,7 +54,6 @@ struct cpuidle_state {
+ 	unsigned int	exit_latency; /* in US */
+ 	int		power_usage; /* in mW */
+ 	unsigned int	target_residency; /* in US */
+-	bool		disabled; /* disabled on all CPUs */
+ 
+ 	int (*enter)	(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+@@ -77,6 +76,7 @@ struct cpuidle_state {
+ #define CPUIDLE_FLAG_POLLING	BIT(0) /* polling state */
+ #define CPUIDLE_FLAG_COUPLED	BIT(1) /* state applies to multiple cpus */
+ #define CPUIDLE_FLAG_TIMER_STOP BIT(2) /* timer is stopped on this state */
++#define CPUIDLE_FLAG_UNUSABLE	BIT(3) /* avoid using this state */
+ 
+ struct cpuidle_device_kobj;
+ struct cpuidle_state_kobj;
+Index: linux-pm/arch/sh/kernel/cpu/shmobile/cpuidle.c
+===================================================================
+--- linux-pm.orig/arch/sh/kernel/cpu/shmobile/cpuidle.c
++++ linux-pm/arch/sh/kernel/cpu/shmobile/cpuidle.c
+@@ -67,7 +67,7 @@ static struct cpuidle_driver cpuidle_dri
+ 			.enter = cpuidle_sleep_enter,
+ 			.name = "C2",
+ 			.desc = "SuperH Sleep Mode [SF]",
+-			.disabled = true,
++			.flags = CPUIDLE_FLAG_UNUSABLE,
+ 		},
+ 		{
+ 			.exit_latency = 2300,
+@@ -76,7 +76,7 @@ static struct cpuidle_driver cpuidle_dri
+ 			.enter = cpuidle_sleep_enter,
+ 			.name = "C3",
+ 			.desc = "SuperH Mobile Standby Mode [SF]",
+-			.disabled = true,
++			.flags = CPUIDLE_FLAG_UNUSABLE,
+ 		},
+ 	},
+ 	.safe_state_index = 0,
+@@ -86,10 +86,10 @@ static struct cpuidle_driver cpuidle_dri
+ int __init sh_mobile_setup_cpuidle(void)
+ {
+ 	if (sh_mobile_sleep_supported & SUSP_SH_SF)
+-		cpuidle_driver.states[1].disabled = false;
++		cpuidle_driver.states[1].flags = CPUIDLE_FLAG_NONE;
+ 
+ 	if (sh_mobile_sleep_supported & SUSP_SH_STANDBY)
+-		cpuidle_driver.states[2].disabled = false;
++		cpuidle_driver.states[2].flags = CPUIDLE_FLAG_NONE;
+ 
+ 	return cpuidle_register(&cpuidle_driver, NULL);
+ }
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -570,7 +570,7 @@ static int __cpuidle_register_device(str
+ 		return -EINVAL;
+ 
+ 	for (i = 0; i < drv->state_count; i++)
+-		if (drv->states[i].disabled)
++		if (drv->states[i].flags & CPUIDLE_FLAG_UNUSABLE)
+ 			dev->states_usage[i].disable |= CPUIDLE_STATE_DISABLED_BY_DRIVER;
+ 
+ 	per_cpu(cpuidle_devices, dev->cpu) = dev;
+Index: linux-pm/drivers/cpuidle/poll_state.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/poll_state.c
++++ linux-pm/drivers/cpuidle/poll_state.c
+@@ -53,7 +53,6 @@ void cpuidle_poll_state_init(struct cpui
+ 	state->target_residency_ns = 0;
+ 	state->power_usage = -1;
+ 	state->enter = poll_idle;
+-	state->disabled = false;
+ 	state->flags = CPUIDLE_FLAG_POLLING;
+ }
+ EXPORT_SYMBOL_GPL(cpuidle_poll_state_init);
+
+
+
