@@ -4,49 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A76BEC432C3
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 03:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 454D8C432C3
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 03:21:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7C2D4208CC
-	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 03:20:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 06EA2208C3
+	for <linux-pm@archiver.kernel.org>; Thu, 21 Nov 2019 03:21:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1574306414;
-	bh=HEUpb8bNwc8SarAfdtsw12BjG6dRX4eNspNtneMvqTQ=;
+	s=default; t=1574306471;
+	bh=Ez6X3EKrkxhppyCurfnzf160xqaEmJGUUDMp8vXIXhM=;
 	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=FLh+UC33tDTLAMlMjdBbY4Ny7TobbXkZwklkOFpK2Pku4ir50yQqQMSH/PtKw8fhm
-	 vjVHDjiyGNh38oxvbLCL5S5i17X/R+jr3RAcLbvYAmA2Lq6athqqE5wyv4Zi4VtObM
-	 YYQCIUGp81agV8wwSQa+f2u7CeFgBZTkBslrUWOk=
+	b=nU4ps855Bz2OuEG2T0TRN12n+PRV8CYv0hYw+neOvmnfll02fi5zcteOg6W9hpo/F
+	 h1LXzEJTgyGVmU4+tvl8Z7hjgSUGtyMg8P0NNK/rLj9AxP9XtNEtMvCP+O6JJADdZH
+	 DGWafZBMtVFuatYydkOmaYyYaOw7G83kDpPokRTc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727116AbfKUDTU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 20 Nov 2019 22:19:20 -0500
-Received: from mail.kernel.org ([198.145.29.99]:60890 "EHLO mail.kernel.org"
+        id S1727674AbfKUDVK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 20 Nov 2019 22:21:10 -0500
+Received: from mail.kernel.org ([198.145.29.99]:35208 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725819AbfKUDTT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 20 Nov 2019 22:19:19 -0500
+        id S1726083AbfKUDVJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 20 Nov 2019 22:21:09 -0500
 Received: from PC-kkoz.proceq.com (unknown [213.160.61.66])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B2DF520721;
-        Thu, 21 Nov 2019 03:19:17 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id A76FE208CE;
+        Thu, 21 Nov 2019 03:21:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1574306358;
-        bh=HEUpb8bNwc8SarAfdtsw12BjG6dRX4eNspNtneMvqTQ=;
+        s=default; t=1574306469;
+        bh=Ez6X3EKrkxhppyCurfnzf160xqaEmJGUUDMp8vXIXhM=;
         h=From:To:Cc:Subject:Date:From;
-        b=UVa/7Q5rZROQia7OQ2qGtMmzIqt/reLDb7O4T6Y9egPwaYhpIYwO3MnREteXgE4ms
-         wdeZln250gAydvCr91UpTgl9Cdlcz0lFKU3CGw8IW10rZTCCiZVJ3rOlVY2dAscNy3
-         NqGFkDTuEQcaZXM4oyvc3bo67yB42BkFoHkFEiYo=
+        b=VSM9cNglHXCjUUaiqDjqpR/fymL0/I82COgAM48NBfhZasH1dtOnuncvPzVEjP4pT
+         /YRk2IO0fs1Rk/ZzgX/Vu6L3nwO0cJ4TLYl3tuOQ6ZNixaJJkCxvRzOc0BluEuQN6y
+         prEDEdTIUjEYj1R42AEpy43SAS1O1UQ+YIhw7Juo=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2] cpufreq: Fix Kconfig indentation
-Date:   Thu, 21 Nov 2019 04:19:15 +0100
-Message-Id: <1574306355-29316-1-git-send-email-krzk@kernel.org>
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH v2] interconnect: qcom: Fix Kconfig indentation
+Date:   Thu, 21 Nov 2019 04:21:05 +0100
+Message-Id: <1574306465-8959-1-git-send-email-krzk@kernel.org>
 X-Mailer: git-send-email 2.7.4
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -64,58 +65,34 @@ Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 Changes since v1:
 1. Fix also 7-space and tab+1 space indentation issues.
 ---
- drivers/cpufreq/Kconfig.powerpc |  8 ++++----
- drivers/cpufreq/Kconfig.x86     | 16 ++++++++--------
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/interconnect/qcom/Kconfig | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-index 35b4f700f054..58151ca56695 100644
---- a/drivers/cpufreq/Kconfig.powerpc
-+++ b/drivers/cpufreq/Kconfig.powerpc
-@@ -48,9 +48,9 @@ config PPC_PASEMI_CPUFREQ
- 	  PWRficient processors.
+diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
+index c49afbea3458..2f9304d1db49 100644
+--- a/drivers/interconnect/qcom/Kconfig
++++ b/drivers/interconnect/qcom/Kconfig
+@@ -6,13 +6,13 @@ config INTERCONNECT_QCOM
+ 	  Support for Qualcomm's Network-on-Chip interconnect hardware.
  
- config POWERNV_CPUFREQ
--       tristate "CPU frequency scaling for IBM POWERNV platform"
--       depends on PPC_POWERNV
--       default y
+ config INTERCONNECT_QCOM_MSM8974
+-       tristate "Qualcomm MSM8974 interconnect driver"
+-       depends on INTERCONNECT_QCOM
+-       depends on QCOM_SMD_RPM
+-       select INTERCONNECT_QCOM_SMD_RPM
 -       help
-+	tristate "CPU frequency scaling for IBM POWERNV platform"
-+	depends on PPC_POWERNV
-+	default y
+-         This is a driver for the Qualcomm Network-on-Chip on msm8974-based
+-         platforms.
++	tristate "Qualcomm MSM8974 interconnect driver"
++	depends on INTERCONNECT_QCOM
++	depends on QCOM_SMD_RPM
++	select INTERCONNECT_QCOM_SMD_RPM
 +	help
- 	 This adds support for CPU frequency switching on IBM POWERNV
- 	 platform
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index dfa6457deaf6..a6528388952e 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -4,17 +4,17 @@
- #
++	 This is a driver for the Qualcomm Network-on-Chip on msm8974-based
++	 platforms.
  
- config X86_INTEL_PSTATE
--       bool "Intel P state control"
--       depends on X86
--       select ACPI_PROCESSOR if ACPI
--       select ACPI_CPPC_LIB if X86_64 && ACPI && SCHED_MC_PRIO
--       help
--          This driver provides a P state for Intel core processors.
-+	bool "Intel P state control"
-+	depends on X86
-+	select ACPI_PROCESSOR if ACPI
-+	select ACPI_CPPC_LIB if X86_64 && ACPI && SCHED_MC_PRIO
-+	help
-+	  This driver provides a P state for Intel core processors.
- 	  The driver implements an internal governor and will become
--          the scaling driver and governor for Sandy bridge processors.
-+	  the scaling driver and governor for Sandy bridge processors.
- 
- 	  When this driver is enabled it will become the preferred
--          scaling driver for Sandy bridge processors.
-+	  scaling driver for Sandy bridge processors.
- 
- 	  If in doubt, say N.
- 
+ config INTERCONNECT_QCOM_QCS404
+ 	tristate "Qualcomm QCS404 interconnect driver"
 -- 
 2.7.4
 
