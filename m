@@ -2,178 +2,124 @@ Return-Path: <SRS0=t+QV=ZO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91E42C432C3
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:27:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48A19C43215
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:32:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 696F920721
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:27:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2020F20715
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:32:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NaRspV1i"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Uh2amNqw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726836AbfKVP1d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Nov 2019 10:27:33 -0500
-Received: from mail-wr1-f68.google.com ([209.85.221.68]:33885 "EHLO
-        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727112AbfKVP1R (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2019 10:27:17 -0500
-Received: by mail-wr1-f68.google.com with SMTP id t2so9135697wrr.1
-        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2019 07:27:16 -0800 (PST)
+        id S1726836AbfKVPcM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Nov 2019 10:32:12 -0500
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:54472 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726784AbfKVPcM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2019 10:32:12 -0500
+Received: by mail-wm1-f65.google.com with SMTP id x26so7599083wmk.4
+        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2019 07:32:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=uArUv8vdpySZgh7Lm5Xr7vRuWHgZ37E7MwLwkpMIDCE=;
-        b=NaRspV1i9R/2DSgO46P3hMCkjk1YhaYl/30P0KnMRJ4U2uvFGg3fyz0Adr5Jvd2tOs
-         eN0cW4S1Frgb4REXIEtg2D0LYumT1r8ky//58cBQQ3nZGGPeaxEo0lCTHngODV8isvfq
-         W82UlSHKhkNGQOOq36treKn6APbHFSpLG+0dFlmrZZSujY7v8yE9lKTGkPRnL6nseJWm
-         01BumRD7UQxFXWoLol0hM1dgiNFU9P+mFr3MudOfVmKMxprhxWd5tWk789FwO7mK6Igz
-         lOJRq6RcGGB1vWLC8Blp6UdSHvoICayQN2/Iz4s7GX/jXbDRLUPGeLRU8uCjFc2ygEvF
-         vIGQ==
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=f59CCVfdihRZS7ABtJ0WDahBA/Iy5s/bA0O3KEpFY/E=;
+        b=Uh2amNqwsPriinB9f10eWW+TPFILFo4KxSfpIEHM3KvBQX7JKAopy83o94uVwpi9IW
+         qhOp1EN1DvZvGv36bsfnqdqhq2IlesC/i4qdwh+kLYQxx4gknws+uhGduim+N0rCjD8I
+         tj/8vQ+pcNRI9ibch0NgeBojkFdEihVti+2twm4qmohKwPc70aiULFFrQISwdzfiCszm
+         ZpJWld7ESjOy1ZGwp0QxRQuCJ5RSrw9M/z7pdcadGwhcWmXe+kI7zgh6Cz232uEIQeMt
+         qhPJx/kkCELGnyPoFgaIcjs/WFr3cjEFEL31BPMzux+RvUJ+pice08CYehD09MlRVa+Q
+         /lwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=uArUv8vdpySZgh7Lm5Xr7vRuWHgZ37E7MwLwkpMIDCE=;
-        b=EbnfuT8ovUekmCMZ6DxQ03RQosZ9dVz7bIF+2Nol0tkJavNnmRVdHdi2VKaFIxSLrR
-         cCr055z4LQcV7uh8IT/OqqOfdhcl0GME4Mw5zuQFZn+hB8MzZzM02/UBMpPTCGxMzzGh
-         Sd3O+M4+TLpuFt/tZZWGV2j519N+C/HEtcTVrKLlK4iDYw6ztbiPwSigsEqJqYE9woyG
-         q7IXNXnZj4IjMamOaNYEH4sAV197Bb58b4f5V4B6IPhohyFoSnNY6+641We1ceR1VeHv
-         fbekOQ1lbeqyLgfiHAw1QmA3Cxmdlt3Tv333ioi+vdFZg1USJWUfz/XHCRjiwygC3NWE
-         Kb4Q==
-X-Gm-Message-State: APjAAAW3M9U6cL+P3E94A59GFRbwlxX7uCePtYmxKFYXyI8xtFmgOoKA
-        jqfCnfexOUWCQarqDd303JaD3Fw9a+A=
-X-Google-Smtp-Source: APXvYqxpsLMTp4Sdlls7Ue49+WvdlWM7+fPYuN826F9zWH2JGbW4mESQKUt8w3gc6nmveBI8y85HEg==
-X-Received: by 2002:adf:fad1:: with SMTP id a17mr17735327wrs.328.1574436435728;
-        Fri, 22 Nov 2019 07:27:15 -0800 (PST)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id a206sm4061081wmf.15.2019.11.22.07.27.14
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 22 Nov 2019 07:27:15 -0800 (PST)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org, rostedt@goodmis.org, mingo@redhat.com
-Cc:     bjorn.andersson@linaro.org, vincent.guittot@linaro.org,
-        daidavid1@codeaurora.org, okukatla@codeaurora.org,
-        evgreen@chromium.org, mka@chromium.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        georgi.djakov@linaro.org
-Subject: [PATCH v3 1/3] interconnect: Move internal structs into a separate file
-Date:   Fri, 22 Nov 2019 17:27:10 +0200
-Message-Id: <20191122152712.19105-2-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191122152712.19105-1-georgi.djakov@linaro.org>
-References: <20191122152712.19105-1-georgi.djakov@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=f59CCVfdihRZS7ABtJ0WDahBA/Iy5s/bA0O3KEpFY/E=;
+        b=UgETqslVrQwW9Ff3Cjb8ZMxlJ3H+oBsdZ1G92UlJHLEOCXqXJAX1EatN0Hm9KNYRKd
+         4nYZ5BhGrAKqUfjRPotDX+5VokpBqH0q2+HDSJQ9IXhss7RAW6uNKoEHp8bDVFCD8aMM
+         EmTSvGVBUtoxWrsShiDSdlnNlYzYj5Y12uFccOsUsZzZKDfIZWZysSJiwX8dyjR3H9hm
+         1DrzVEuis0EzYpyvqOGGYs1T747DmRpve0RxpSTpBbo8699iDjDLq1v3IXCjQ0LKFO+Y
+         kqrd9K6hjRdM0XTGd19FEsJU+tTj5cbRxFQCVVIwSw9ypfJEKlKe/ukByoX9eKgoDXSL
+         TI6A==
+X-Gm-Message-State: APjAAAUhg5t8MgQ1N9vFkC+XIocd26XdStZCivjBzWWoMv6KuF6Bi4g/
+        hjsbj6oXSM197V75ND+gi9z7lOK/nO61cMtmF+8=
+X-Google-Smtp-Source: APXvYqxkvzqFIGq5vSlIDYpnyQujQVYMTlOWzqVWoKNhRKOEL0jWqVRBLWBWMeYtS4PPpcgTyBhHJdbdAFBDmoy33+g=
+X-Received: by 2002:a05:600c:214a:: with SMTP id v10mr17022781wml.102.1574436730664;
+ Fri, 22 Nov 2019 07:32:10 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20191015065002.18701-1-drake@endlessm.com> <CADnq5_M4Leu0raYS6M72MqTm1+PLg9BjHCHLAYuB2-dEVP56_A@mail.gmail.com>
+ <CAD8Lp443ZhPEo0PJRxbTSB9DY9x92OvWBeH29m9Ehpyhg+2n5A@mail.gmail.com>
+In-Reply-To: <CAD8Lp443ZhPEo0PJRxbTSB9DY9x92OvWBeH29m9Ehpyhg+2n5A@mail.gmail.com>
+From:   Alex Deucher <alexdeucher@gmail.com>
+Date:   Fri, 22 Nov 2019 10:31:58 -0500
+Message-ID: <CADnq5_OaATVESAY9E2mtd7PoV2VjG=WLS56LCHVpieSHDTas0A@mail.gmail.com>
+Subject: Re: [PATCH] drm/amdgpu: always reset asic when going into suspend
+To:     Daniel Drake <drake@endlessm.com>
+Cc:     "Deucher, Alexander" <alexander.deucher@amd.com>,
+        Christian Koenig <christian.koenig@amd.com>,
+        Chunming Zhou <David1.Zhou@amd.com>,
+        amd-gfx list <amd-gfx@lists.freedesktop.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Move the interconnect framework internal structs into a separate file,
-so that it can be included and used by ftrace code. This will allow us
-to expose some more useful information in the traces.
+On Wed, Oct 16, 2019 at 3:24 AM Daniel Drake <drake@endlessm.com> wrote:
+>
+> On Wed, Oct 16, 2019 at 2:43 AM Alex Deucher <alexdeucher@gmail.com> wrote:
+> > Is s2idle actually powering down the GPU?
+>
+> My understanding is that s2idle (at a high level) just calls all
+> devices suspend routines and then puts the CPU into its deepest
+> running state.
+> So if there is something special to be done to power off the GPU, I
+> believe that amdgpu is responsible for making arrangements for that to
+> happen.
+> In this case the amdgpu code already does:
+>
+>         pci_disable_device(dev->pdev);
+>         pci_set_power_state(dev->pdev, PCI_D3hot);
+>
+> And the PCI layer will call through to any appropriate ACPI methods
+> related to that low power state.
+>
+> > Do you see a difference in power usage?  I think you are just working around the fact that the
+> > GPU never actually gets powered down.
+>
+> I ran a series of experiments.
+>
+> Base setup: no UI running, ran "setterm -powersave 1; setterm -blank
+> 1" and waited 1 minute for screen to turn off.
+> Base power usage in this state is 4.7W as reported by BAT0/power_now
+>
+> 1. Run amdgpu_device_suspend(ddev, true, true); before my change
+> --> Power usage increases to 6.1W
+>
+> 2. Run amdgpu_device_suspend(ddev, true, true); with my change applied
+> --> Power usage increases to 6.0W
+>
+> 3. Put amdgpu device in runtime suspend
+> --> Power usage increases to 6.2W
+>
+> 4. Try unmodified suspend path but d3cold instead of d3hot
+> --> Power usage increases to 6.1W
+>
+> So, all of the suspend schemes actually increase the power usage by
+> roughly the same amount, reset or not, with and without my patch :/
+> Any ideas?
 
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- drivers/interconnect/core.c     | 30 ++-----------------------
- drivers/interconnect/internal.h | 40 +++++++++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+), 28 deletions(-)
- create mode 100644 drivers/interconnect/internal.h
+Do these patches help?
+https://patchwork.freedesktop.org/patch/341775/
+https://patchwork.freedesktop.org/patch/341968/
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index c498796adc07..b06ed180bae3 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -19,39 +19,13 @@
- #include <linux/of.h>
- #include <linux/overflow.h>
- 
-+#include "internal.h"
-+
- static DEFINE_IDR(icc_idr);
- static LIST_HEAD(icc_providers);
- static DEFINE_MUTEX(icc_lock);
- static struct dentry *icc_debugfs_dir;
- 
--/**
-- * struct icc_req - constraints that are attached to each node
-- * @req_node: entry in list of requests for the particular @node
-- * @node: the interconnect node to which this constraint applies
-- * @dev: reference to the device that sets the constraints
-- * @tag: path tag (optional)
-- * @avg_bw: an integer describing the average bandwidth in kBps
-- * @peak_bw: an integer describing the peak bandwidth in kBps
-- */
--struct icc_req {
--	struct hlist_node req_node;
--	struct icc_node *node;
--	struct device *dev;
--	u32 tag;
--	u32 avg_bw;
--	u32 peak_bw;
--};
--
--/**
-- * struct icc_path - interconnect path structure
-- * @num_nodes: number of hops (nodes)
-- * @reqs: array of the requests applicable to this path of nodes
-- */
--struct icc_path {
--	size_t num_nodes;
--	struct icc_req reqs[];
--};
--
- static void icc_summary_show_one(struct seq_file *s, struct icc_node *n)
- {
- 	if (!n)
-diff --git a/drivers/interconnect/internal.h b/drivers/interconnect/internal.h
-new file mode 100644
-index 000000000000..5853e8faf223
---- /dev/null
-+++ b/drivers/interconnect/internal.h
-@@ -0,0 +1,40 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Interconnect framework internal structs
-+ *
-+ * Copyright (c) 2019, Linaro Ltd.
-+ * Author: Georgi Djakov <georgi.djakov@linaro.org>
-+ */
-+
-+#ifndef __DRIVERS_INTERCONNECT_INTERNAL_H
-+#define __DRIVERS_INTERCONNECT_INTERNAL_H
-+
-+/**
-+ * struct icc_req - constraints that are attached to each node
-+ * @req_node: entry in list of requests for the particular @node
-+ * @node: the interconnect node to which this constraint applies
-+ * @dev: reference to the device that sets the constraints
-+ * @tag: path tag (optional)
-+ * @avg_bw: an integer describing the average bandwidth in kBps
-+ * @peak_bw: an integer describing the peak bandwidth in kBps
-+ */
-+struct icc_req {
-+	struct hlist_node req_node;
-+	struct icc_node *node;
-+	struct device *dev;
-+	u32 tag;
-+	u32 avg_bw;
-+	u32 peak_bw;
-+};
-+
-+/**
-+ * struct icc_path - interconnect path structure
-+ * @num_nodes: number of hops (nodes)
-+ * @reqs: array of the requests applicable to this path of nodes
-+ */
-+struct icc_path {
-+	size_t num_nodes;
-+	struct icc_req reqs[];
-+};
-+
-+#endif
+Alex
+
+>
+> Thanks,
+> Daniel
