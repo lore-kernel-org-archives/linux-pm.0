@@ -2,58 +2,57 @@ Return-Path: <SRS0=t+QV=ZO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10BE1C43215
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:27:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5445C432C0
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:27:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D7A0320721
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:27:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9B76D2072D
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:27:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ee4cbJHq"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UFaFecI+"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727197AbfKVP1T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Nov 2019 10:27:19 -0500
-Received: from mail-wr1-f68.google.com ([209.85.221.68]:33890 "EHLO
-        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727208AbfKVP1T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2019 10:27:19 -0500
-Received: by mail-wr1-f68.google.com with SMTP id t2so9135798wrr.1
-        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2019 07:27:18 -0800 (PST)
+        id S1727051AbfKVP1c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Nov 2019 10:27:32 -0500
+Received: from mail-wr1-f66.google.com ([209.85.221.66]:35665 "EHLO
+        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727171AbfKVP1S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2019 10:27:18 -0500
+Received: by mail-wr1-f66.google.com with SMTP id s5so9116810wrw.2
+        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2019 07:27:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=eweICdklgtftJBxCro04D547skXpMw40lN0wG851Q8Y=;
-        b=Ee4cbJHqmAb7pyy2MpzCOQm8pAD4EZdA9GpnkGAu00Qo6T6NoW6AyF8/fgzxC/5slv
-         5iRVO0Wr82T9F1XXz/1vTI6AXz7ta3qUDkp3B41/q5RJAta1wKh73G9ySad/CPZzyX3v
-         UVkshIEEiIb11rkciVTahVMKB7z4j6t6tZzhd5g4qDIVQWlHLYBBr1FMgw4ZlF3JOK3S
-         BFHI4O+1kJ5kAfn1NqotmKfJc2wMtESn9EB7YSvPnGFIq5VcJBLG8FOsQorCvFCWehrw
-         IzioRR4M860jpSOOiFt6ZmMiH5a1a1Fjh/7qum6Civz6CPeLoH19PWCGWpWJWFThANtg
-         AqYw==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=cBh+C98xO+z8qsX915RR0pFfiuyA4L1CQVRjFLzavOE=;
+        b=UFaFecI+e6XK8CQPbA6dCzXoCQ06/oN/oWaAhPOH1Qak+kbiErxtomFZ6fj4P7C9Zo
+         3QX0sFM5e9uFdF9zuGQGx7l7Ps/PDPkMoBDOidrfjGJa/ujBhawqhB4Yu0prfQ3JvhOb
+         XAOvNXeL9hiCSs6xfaStRiOAIRY9IQTi6+059rtxuPoSTk7s1aE2ezXaVtpEuhFptBUx
+         4ZdgBqeOFwy2jWvsslYWbzd+NaHtOl9YxiljccQE2Z47s7NuAgSSbP36ZOYohtU1VuG2
+         WNvmOhbrcOeaYo0vyIo2wn7LncEBuk89pu8MQTsxS5Te0dewt6/UbytRueHQ9lD65H4x
+         hGRQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=eweICdklgtftJBxCro04D547skXpMw40lN0wG851Q8Y=;
-        b=XJFFnMK0csjnWJeTKNkdsia8jGeMg9HaRzc87oQMOpY86Bl/0H0LUgIdB3WClCFrgd
-         7i7b698gK3t5yCCl2tTBgduiqOCTKrRK60LbSKOkwCPV9EmUko2zDbV/rnaRR2NghYrM
-         JPwHD/8/V2a3ZJVF3yvc1LoiXzv7oaNe68ggl+PNMboOP0+uggwgY9PXsW/KKCrcxuu+
-         QR0r204Y/Qn/XmDkgK+27Mp2iv595drNBclQ6FTLyzcZvU4QtqJBmg4oA23AZIEFiX8j
-         hovDEtKK08WgeY1liIDWjNtCb4+9057KgnKqaeHQnNbe5y6ovLPRZ2Iylbb3C2Ip7Jzx
-         lUzw==
-X-Gm-Message-State: APjAAAVHMBSYIRWtblLhdRgJeWtWaw2clFB1Z9ZktUkPFvcfwBouUtgo
-        OYEKUwgcSUARlejUgfFh4eR+6Tbx59Y=
-X-Google-Smtp-Source: APXvYqxyLgrpG1CNItLEZ8lsMfMwN8Lz3v0Z8pAzTXjVib3+blzMHQx9v9FBAhIYDtIgyEIu2HLh8g==
-X-Received: by 2002:adf:e911:: with SMTP id f17mr19085504wrm.300.1574436437060;
-        Fri, 22 Nov 2019 07:27:17 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=cBh+C98xO+z8qsX915RR0pFfiuyA4L1CQVRjFLzavOE=;
+        b=KBK6gkezN911/3eXMLo7l4ZYODSYBxPR0aIDnzLkETWI3zJQG9u74bJvbKtQm27MKc
+         tz2qD/5SweWkts03bIOsHeeqwsdB/Gn/KW94I1beDDlXOgtVq+mr0SYBq1x0NLpg0QRK
+         AwFBGA2KTT6uFNhZGrizmqz7OeQTZlxdZYtb8QcuJ4omOFe82UxZqjyKjBKmUD2+AKIo
+         URlleeZKzSgx7/v/I6XDhSDN8uEprDlhyBWY1w6b7c7a1lFiw8jzFpunMPvTUCTy79Si
+         k4juu7ugDkquUkZVPZmpAsAAtknKI5oL5w61uNiBolaNPCGTkGun4UfAB2BUFu+DMFK1
+         vzIw==
+X-Gm-Message-State: APjAAAVRypx0HI1xg4RVRTzGx39USZGTHKHVCKmnnb0GHlF0YIULg2va
+        FzKiMYBumt8Y0vuyBpxlWT8n5ufn0Bs=
+X-Google-Smtp-Source: APXvYqwi1bJWuQJ2ZyfSz6IK7AWXUIHOuNwTnYpwXJGni0c209ZDVHhlziX/ecY+BW5ZP9RiO7TvDQ==
+X-Received: by 2002:adf:b193:: with SMTP id q19mr17173456wra.78.1574436434458;
+        Fri, 22 Nov 2019 07:27:14 -0800 (PST)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id a206sm4061081wmf.15.2019.11.22.07.27.15
+        by smtp.googlemail.com with ESMTPSA id a206sm4061081wmf.15.2019.11.22.07.27.13
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 22 Nov 2019 07:27:16 -0800 (PST)
+        Fri, 22 Nov 2019 07:27:13 -0800 (PST)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     linux-pm@vger.kernel.org, rostedt@goodmis.org, mingo@redhat.com
 Cc:     bjorn.andersson@linaro.org, vincent.guittot@linaro.org,
@@ -61,12 +60,10 @@ Cc:     bjorn.andersson@linaro.org, vincent.guittot@linaro.org,
         evgreen@chromium.org, mka@chromium.org,
         linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
         georgi.djakov@linaro.org
-Subject: [PATCH v3 2/3] interconnect: Add a name to struct icc_path
-Date:   Fri, 22 Nov 2019 17:27:11 +0200
-Message-Id: <20191122152712.19105-3-georgi.djakov@linaro.org>
+Subject: [PATCH v3 0/3] interconnect: Add basic tracepoints
+Date:   Fri, 22 Nov 2019 17:27:09 +0200
+Message-Id: <20191122152712.19105-1-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191122152712.19105-1-georgi.djakov@linaro.org>
-References: <20191122152712.19105-1-georgi.djakov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -74,80 +71,36 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When debugging interconnect things, it turned out that saving the path
-name and including it in the traces is quite useful, especially for
-devices with multiple paths.
+The tracepoints can help with understanding the system behavior of a
+given interconnect path when the consumer drivers change their bandwidth
+demands. This might be interesting when we want to monitor the requested
+interconnect bandwidth for each client driver. The paths may share the
+same nodes and this will help to understand "who and when is requesting
+what". All this is useful for subsystem drivers developers and may also
+provide hints when optimizing the power and performance profile of the
+system.
 
-For the path name we use the one specified in DT, or if we use platform
-data, the name is based on the source and destination node names.
+v3: https://lore.kernel.org/r/20191101130031.27996-1-georgi.djakov@linaro.org
+- In order to avoid #including a file with relative path, move the trace.h
+  header into drivers/interconnect/. (Steven)
 
-Suggested-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- drivers/interconnect/core.c     | 18 +++++++++++++++---
- drivers/interconnect/internal.h |  2 ++
- 2 files changed, 17 insertions(+), 3 deletions(-)
+v2:
+- Moved dev_name() into TP_fast_assign() to reduce cache footprint. (Steven)
+- Added path name to traces (Bjorn)
+- Added trace for path, device and ret. (Bjorn)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index b06ed180bae3..1ddad8ef3cf0 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -356,9 +356,17 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
- 
- 	mutex_lock(&icc_lock);
- 	path = path_find(dev, src_node, dst_node);
--	if (IS_ERR(path))
--		dev_err(dev, "%s: invalid path=%ld\n", __func__, PTR_ERR(path));
- 	mutex_unlock(&icc_lock);
-+	if (IS_ERR(path)) {
-+		dev_err(dev, "%s: invalid path=%ld\n", __func__, PTR_ERR(path));
-+		return path;
-+	}
-+
-+	if (name)
-+		path->name = kstrdup(name, GFP_KERNEL);
-+	else
-+		path->name = kasprintf(GFP_KERNEL, "%s-%s",
-+				       src_node->name, dst_node->name);
- 
- 	return path;
- }
-@@ -481,9 +489,12 @@ struct icc_path *icc_get(struct device *dev, const int src_id, const int dst_id)
- 		goto out;
- 
- 	path = path_find(dev, src, dst);
--	if (IS_ERR(path))
-+	if (IS_ERR(path)) {
- 		dev_err(dev, "%s: invalid path=%ld\n", __func__, PTR_ERR(path));
-+		goto out;
-+	}
- 
-+	path->name = kasprintf(GFP_KERNEL, "%s-%s", src->name, dst->name);
- out:
- 	mutex_unlock(&icc_lock);
- 	return path;
-@@ -519,6 +530,7 @@ void icc_put(struct icc_path *path)
- 	}
- 	mutex_unlock(&icc_lock);
- 
-+	kfree(path->name);
- 	kfree(path);
- }
- EXPORT_SYMBOL_GPL(icc_put);
-diff --git a/drivers/interconnect/internal.h b/drivers/interconnect/internal.h
-index 5853e8faf223..bf18cb7239df 100644
---- a/drivers/interconnect/internal.h
-+++ b/drivers/interconnect/internal.h
-@@ -29,10 +29,12 @@ struct icc_req {
- 
- /**
-  * struct icc_path - interconnect path structure
-+ * @name: a string name of the path (useful for ftrace)
-  * @num_nodes: number of hops (nodes)
-  * @reqs: array of the requests applicable to this path of nodes
-  */
- struct icc_path {
-+	const char *name;
- 	size_t num_nodes;
- 	struct icc_req reqs[];
- };
+v1: https://lore.kernel.org/r/20191018140224.15087-1-georgi.djakov@linaro.org
+
+Georgi Djakov (3):
+  interconnect: Move internal structs into a separate file
+  interconnect: Add a name to struct icc_path
+  interconnect: Add basic tracepoints
+
+ drivers/interconnect/Makefile   |  1 +
+ drivers/interconnect/core.c     | 55 +++++++++-----------
+ drivers/interconnect/internal.h | 42 +++++++++++++++
+ drivers/interconnect/trace.h    | 90 +++++++++++++++++++++++++++++++++
+ 4 files changed, 157 insertions(+), 31 deletions(-)
+ create mode 100644 drivers/interconnect/internal.h
+ create mode 100644 drivers/interconnect/trace.h
+
