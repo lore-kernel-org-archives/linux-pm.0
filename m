@@ -6,27 +6,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDADEC33CA3
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 21:45:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EFE7C33C9A
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 21:45:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A00822071B
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 21:45:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 77D1B2071F
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 21:45:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726895AbfKVVpc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Nov 2019 16:45:32 -0500
-Received: from inva020.nxp.com ([92.121.34.13]:39070 "EHLO inva020.nxp.com"
+        id S1726907AbfKVVpd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Nov 2019 16:45:33 -0500
+Received: from inva020.nxp.com ([92.121.34.13]:39158 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726526AbfKVVpb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Nov 2019 16:45:31 -0500
+        id S1726089AbfKVVpd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Nov 2019 16:45:33 -0500
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 16D1E1A0724;
-        Fri, 22 Nov 2019 22:45:29 +0100 (CET)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6870F1A02E5;
+        Fri, 22 Nov 2019 22:45:31 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 09B571A02E5;
-        Fri, 22 Nov 2019 22:45:29 +0100 (CET)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 5A8901A025D;
+        Fri, 22 Nov 2019 22:45:31 +0100 (CET)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id E6B5820465;
-        Fri, 22 Nov 2019 22:45:27 +0100 (CET)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 4216F20465;
+        Fri, 22 Nov 2019 22:45:30 +0100 (CET)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     Stephen Boyd <sboyd@kernel.org>,
         Chanwoo Choi <cw00.choi@samsung.com>,
@@ -54,9 +54,9 @@ Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
         devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-imx@nxp.com,
         kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v7 3/5] dt-bindings: memory: Add bindings for imx8m ddr controller
-Date:   Fri, 22 Nov 2019 23:45:02 +0200
-Message-Id: <5b2f8980c471e1a8a9a3307903829fe015fd4b6c.1574458460.git.leonard.crestez@nxp.com>
+Subject: [PATCH v7 5/5] arm64: dts: imx8m: Add ddr controller nodes
+Date:   Fri, 22 Nov 2019 23:45:04 +0200
+Message-Id: <23e46c12c98947315229c20dea6784ad40d294c4.1574458460.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1574458460.git.leonard.crestez@nxp.com>
 References: <cover.1574458460.git.leonard.crestez@nxp.com>
@@ -68,96 +68,203 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add devicetree bindings for the i.MX DDR Controller on imx8m series
-chips. It supports dynamic frequency switching between multiple data
-rates and this is exposed to Linux via the devfreq subsystem.
+This is used by the imx-ddrc devfreq driver to implement dynamic
+frequency scaling of DRAM.
+
+Support for proactive scaling via interconnect will come later. The
+high-performance bus masters which need that (display, vpu, gpu) are
+mostly not yet enabled in upstream anyway.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- .../memory-controllers/fsl/imx8m-ddrc.yaml    | 72 +++++++++++++++++++
- 1 file changed, 72 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/memory-controllers/fsl/imx8m-ddrc.yaml
+ arch/arm64/boot/dts/freescale/imx8mm-evk.dts  | 18 ++++++++++++++
+ arch/arm64/boot/dts/freescale/imx8mm.dtsi     | 10 ++++++++
+ .../boot/dts/freescale/imx8mn-ddr4-evk.dts    | 18 ++++++++++++++
+ arch/arm64/boot/dts/freescale/imx8mn.dtsi     | 10 ++++++++
+ arch/arm64/boot/dts/freescale/imx8mq-evk.dts  | 24 +++++++++++++++++++
+ arch/arm64/boot/dts/freescale/imx8mq.dtsi     | 10 ++++++++
+ 6 files changed, 90 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/memory-controllers/fsl/imx8m-ddrc.yaml b/Documentation/devicetree/bindings/memory-controllers/fsl/imx8m-ddrc.yaml
-new file mode 100644
-index 000000000000..c9e6c22cb5be
---- /dev/null
-+++ b/Documentation/devicetree/bindings/memory-controllers/fsl/imx8m-ddrc.yaml
-@@ -0,0 +1,72 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/memory-controllers/fsl/imx8m-ddrc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-evk.dts b/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
+index 28ab17a277bb..ecf0d385c164 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
+@@ -75,10 +75,28 @@
+ 
+ &A53_0 {
+ 	cpu-supply = <&buck2_reg>;
+ };
+ 
++&ddrc {
++	operating-points-v2 = <&ddrc_opp_table>;
 +
-+title: i.MX8M DDR Controller
++	ddrc_opp_table: opp-table {
++		compatible = "operating-points-v2";
 +
-+maintainers:
-+  - Leonard Crestez <leonard.crestez@nxp.com>
++		opp-25M {
++			opp-hz = /bits/ 64 <25000000>;
++		};
++		opp-100M {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp-750M {
++			opp-hz = /bits/ 64 <750000000>;
++		};
++	};
++};
 +
-+description:
-+  The DDRC block is integrated in i.MX8M for interfacing with DDR based
-+  memories.
+ &fec1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_fec1>;
+ 	phy-mode = "rgmii-id";
+ 	phy-handle = <&ethphy0>;
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
+index 6edbdfe2d0d7..3d4802375715 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
+@@ -856,10 +856,20 @@
+ 			#interrupt-cells = <3>;
+ 			interrupt-controller;
+ 			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
++		ddrc: memory-controller@3d400000 {
++			compatible = "fsl,imx8mm-ddrc", "fsl,imx8m-ddrc";
++			reg = <0x3d400000 0x400000>;
++			clock-names = "core", "pll", "alt", "apb";
++			clocks = <&clk IMX8MM_CLK_DRAM_CORE>,
++				 <&clk IMX8MM_DRAM_PLL>,
++				 <&clk IMX8MM_CLK_DRAM_ALT>,
++				 <&clk IMX8MM_CLK_DRAM_APB>;
++		};
 +
-+  It supports switching between different frequencies at runtime but during
-+  this process RAM itself becomes briefly inaccessible so actual frequency
-+  switching is implemented by TF-A code which runs from a SRAM area.
+ 		ddr-pmu@3d800000 {
+ 			compatible = "fsl,imx8mm-ddr-pmu", "fsl,imx8m-ddr-pmu";
+ 			reg = <0x3d800000 0x400000>;
+ 			interrupt-parent = <&gic>;
+ 			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
+diff --git a/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts b/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
+index 071949412caf..b051c927c11e 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dts
+@@ -15,10 +15,28 @@
+ 
+ &A53_0 {
+ 	cpu-supply = <&buck2_reg>;
+ };
+ 
++&ddrc {
++	operating-points-v2 = <&ddrc_opp_table>;
 +
-+  The Linux driver for the DDRC doesn't even map registers (they're included
-+  for the sake of "describing hardware"), it mostly just exposes firmware
-+  capabilities through standard Linux mechanism like devfreq and OPP tables.
++	ddrc_opp_table: opp-table {
++		compatible = "operating-points-v2";
 +
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+        - fsl,imx8mn-ddrc
-+        - fsl,imx8mm-ddrc
-+        - fsl,imx8mq-ddrc
-+      - const: fsl,imx8m-ddrc
++		opp-25M {
++			opp-hz = /bits/ 64 <25000000>;
++		};
++		opp-100M {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		opp-600M {
++			opp-hz = /bits/ 64 <600000000>;
++		};
++	};
++};
 +
-+  reg:
-+    maxItems: 1
-+    description:
-+      Base address and size of DDRC CTL area.
-+      This is not currently mapped by the imx8m-ddrc driver.
+ &i2c1 {
+ 	pmic@4b {
+ 		compatible = "rohm,bd71847";
+ 		reg = <0x4b>;
+ 		pinctrl-0 = <&pinctrl_pmic>;
+diff --git a/arch/arm64/boot/dts/freescale/imx8mn.dtsi b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
+index e91625063f8e..3a79fdddc72b 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mn.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
+@@ -757,10 +757,20 @@
+ 			#interrupt-cells = <3>;
+ 			interrupt-controller;
+ 			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
++		ddrc: memory-controller@3d400000 {
++			compatible = "fsl,imx8mn-ddrc", "fsl,imx8m-ddrc";
++			reg = <0x3d400000 0x400000>;
++			clock-names = "core", "pll", "alt", "apb";
++			clocks = <&clk IMX8MN_CLK_DRAM_CORE>,
++				 <&clk IMX8MN_DRAM_PLL>,
++				 <&clk IMX8MN_CLK_DRAM_ALT>,
++				 <&clk IMX8MN_CLK_DRAM_APB>;
++		};
 +
-+  clocks:
-+    maxItems: 4
+ 		ddr-pmu@3d800000 {
+ 			compatible = "fsl,imx8mn-ddr-pmu", "fsl,imx8m-ddr-pmu";
+ 			reg = <0x3d800000 0x400000>;
+ 			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-evk.dts b/arch/arm64/boot/dts/freescale/imx8mq-evk.dts
+index c36685916683..ee6dc5f07622 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-evk.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mq-evk.dts
+@@ -103,10 +103,34 @@
+ 
+ &A53_3 {
+ 	cpu-supply = <&buck2_reg>;
+ };
+ 
++&ddrc {
++	operating-points-v2 = <&ddrc_opp_table>;
 +
-+  clock-names:
-+    items:
-+      - const: core
-+      - const: pll
-+      - const: alt
-+      - const: apb
++	ddrc_opp_table: opp-table {
++		compatible = "operating-points-v2";
 +
-+  operating-points-v2: true
-+  opp-table: true
++		opp-25M {
++			opp-hz = /bits/ 64 <25000000>;
++		};
++		opp-100M {
++			opp-hz = /bits/ 64 <100000000>;
++		};
++		/*
++		 * On imx8mq B0 PLL can't be bypassed so low bus is 166M
++		 */
++		opp-166M {
++			opp-hz = /bits/ 64 <166935483>;
++		};
++		opp-800M {
++			opp-hz = /bits/ 64 <800000000>;
++		};
++	};
++};
 +
-+required:
-+  - reg
-+  - compatible
-+  - clocks
-+  - clock-names
+ &fec1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_fec1>;
+ 	phy-mode = "rgmii-id";
+ 	phy-handle = <&ethphy0>;
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+index 7f9319452b58..d1fcf9887f8b 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
+@@ -1111,10 +1111,20 @@
+ 			interrupt-controller;
+ 			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
+ 			interrupt-parent = <&gic>;
+ 		};
+ 
++		ddrc: memory-controller@3d400000 {
++			compatible = "fsl,imx8mq-ddrc", "fsl,imx8m-ddrc";
++			reg = <0x3d400000 0x400000>;
++			clock-names = "core", "pll", "alt", "apb";
++			clocks = <&clk IMX8MQ_CLK_DRAM_CORE>,
++				 <&clk IMX8MQ_DRAM_PLL_OUT>,
++				 <&clk IMX8MQ_CLK_DRAM_ALT>,
++				 <&clk IMX8MQ_CLK_DRAM_APB>;
++		};
 +
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/imx8mm-clock.h>
-+    ddrc: memory-controller@3d400000 {
-+        compatible = "fsl,imx8mm-ddrc", "fsl,imx8m-ddrc";
-+        reg = <0x3d400000 0x400000>;
-+        clock-names = "core", "pll", "alt", "apb";
-+        clocks = <&clk IMX8MM_CLK_DRAM_CORE>,
-+                 <&clk IMX8MM_DRAM_PLL>,
-+                 <&clk IMX8MM_CLK_DRAM_ALT>,
-+                 <&clk IMX8MM_CLK_DRAM_APB>;
-+        operating-points-v2 = <&ddrc_opp_table>;
-+    };
+ 		ddr-pmu@3d800000 {
+ 			compatible = "fsl,imx8mq-ddr-pmu", "fsl,imx8m-ddr-pmu";
+ 			reg = <0x3d800000 0x400000>;
+ 			interrupt-parent = <&gic>;
+ 			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
 -- 
 2.17.1
 
