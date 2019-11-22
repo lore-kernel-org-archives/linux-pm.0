@@ -2,219 +2,78 @@ Return-Path: <SRS0=t+QV=ZO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAA1EC432C0
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 00:22:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E672FC432C0
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 00:28:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C06BA206D8
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 00:22:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="fCmcaWEO"
+	by mail.kernel.org (Postfix) with ESMTP id B70AB206D8
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 00:28:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726454AbfKVAWI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 21 Nov 2019 19:22:08 -0500
-Received: from us-smtp-2.mimecast.com ([205.139.110.61]:35667 "EHLO
-        us-smtp-delivery-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1726038AbfKVAWI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Nov 2019 19:22:08 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1574382125;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=rUekpHztE4Y/AJCnx5fkeLUBunhkT4upfB7DGt7EVwQ=;
-        b=fCmcaWEOdY9WjtjbdbD5tNTvwKPuFT///7QPItfehuaGA4DxihS58J4FsrmcmOdjDR4Bea
-        tjRcn1b8A6m7g++/LdmGjrEvvsTHVKw9Sl3pehINWZA3CBlc+UWZAxmTUDRuEa2dFvVrLG
-        HWaVxuNwkVe7bM1QKHdvtgLycnS+upY=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-234-Zh_7u-e5OCqmCoFLzUBKwg-1; Thu, 21 Nov 2019 19:22:04 -0500
-Received: by mail-wr1-f70.google.com with SMTP id q12so2999623wrr.3
-        for <linux-pm@vger.kernel.org>; Thu, 21 Nov 2019 16:22:04 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=W1fJRPx8jNVd2/thMPiixkjKvF9zObui3jPum3g5eVQ=;
-        b=g4WXs9pqInAQA/J2hS9YAZ9XrD9w60xTbMnjlckSAaFuJMX35RXP94zE7KjVGQPVQK
-         UFGNVSJGYQ3MVv/E3YJkOxZ/PKw/WVynCDk7Yyu0bm9AgJ3FLij97qMkrGBKZXpW2ixE
-         dK+wIXCtb7FgR/Go34qtnX4KJ2uRMNkqJ5lWn41jFuN+rVs6g0xDnrDfMen1q3fXq7Rc
-         8vhKXa/gOTy3ITZX95Rh09xtMswRa+RCck8C3rm0u1p5aA+FuQ5BTberofOZW9p7ivqL
-         8RyQq6vx8qzTYMxg5z8l0UllN3S4vKn3TPHJhSw/et6y8Ifkdftt/AShybAykSo+hJV3
-         FysA==
-X-Gm-Message-State: APjAAAUYqbYgtl16CscB3U056yM/FPFHFUdWKFUhTdQB2EFXVQESSk7w
-        wUZt5kqeYNZolusP2d0XTUMejxlzQCZ86vpV33xzAkrLzjD0ZSaEWXFjqVnYVGZ5eQFae1IeIjy
-        wgNuGnnQ+0N6kfGyJFJs=
-X-Received: by 2002:adf:b1cb:: with SMTP id r11mr14748009wra.246.1574382123124;
-        Thu, 21 Nov 2019 16:22:03 -0800 (PST)
-X-Google-Smtp-Source: APXvYqwoJAmffZuZMuES1MgzeSD7DVWMT78Ozvsm2ZLIe1GjyavVRSTTjvnluR6Q46fXQRM4NmNd1A==
-X-Received: by 2002:adf:b1cb:: with SMTP id r11mr14747987wra.246.1574382122838;
-        Thu, 21 Nov 2019 16:22:02 -0800 (PST)
-Received: from kherbst.pingu.com ([2a02:8308:b0be:6900:f836:f331:d633:a9f0])
-        by smtp.gmail.com with ESMTPSA id d16sm3510565wrg.27.2019.11.21.16.22.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 21 Nov 2019 16:22:01 -0800 (PST)
-From:   Karol Herbst <kherbst@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Karol Herbst <kherbst@redhat.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Lyude Paul <lyude@redhat.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Mika Westerberg <mika.westerberg@intel.com>,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org
-Subject: [PATCH v5] pci: prevent putting nvidia GPUs into lower device states on certain intel bridges
-Date:   Fri, 22 Nov 2019 01:21:59 +0100
-Message-Id: <20191122002159.4159-1-kherbst@redhat.com>
-X-Mailer: git-send-email 2.23.0
+        id S1726408AbfKVA2G (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 21 Nov 2019 19:28:06 -0500
+Received: from l2mail1.panix.com ([166.84.1.75]:50003 "EHLO l2mail1.panix.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726454AbfKVA2G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 21 Nov 2019 19:28:06 -0500
+X-Greylist: delayed 969 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Nov 2019 19:28:06 EST
+Received: from mailbackend.panix.com (mailbackend.panix.com [166.84.1.89])
+        by l2mail1.panix.com (Postfix) with ESMTPS id 47Jxgf28wFzDxl
+        for <linux-pm@vger.kernel.org>; Thu, 21 Nov 2019 19:11:58 -0500 (EST)
+Received: from hp-x360n.router (unknown [107.72.99.23])
+        by mailbackend.panix.com (Postfix) with ESMTPSA id 47Jxgd08lkz1M1M;
+        Thu, 21 Nov 2019 19:11:56 -0500 (EST)
+Date:   Thu, 21 Nov 2019 16:11:55 -0800 (PST)
+From:   "Kenneth R. Crudup" <kenny@panix.com>
+Reply-To: "Kenneth R. Crudup" <kenny@panix.com>
+To:     rafael.j.wysocki@intel.com
+cc:     linux-pm@vger.kernel.org
+Subject: Help me fix a regression caused by 56b9918490 (PM: sleep: Simplify
+ suspend-to-idle control flow)
+Message-ID: <alpine.DEB.2.21.1911211549500.3167@hp-x360n>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-X-MC-Unique: Zh_7u-e5OCqmCoFLzUBKwg-1
-X-Mimecast-Spam-Score: 0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fixes state transitions of Nvidia Pascal GPUs from D3cold into higher devic=
-e
-states.
 
-v2: convert to pci_dev quirk
-    put a proper technical explanation of the issue as a in-code comment
-v3: disable it only for certain combinations of intel and nvidia hardware
-v4: simplify quirk by setting flag on the GPU itself
-v5: restructure quirk to make it easier to add new IDs
-    fix whitespace issues
-    fix potential NULL pointer access
-    update the quirk documentation
+I've been running Linus' tip for a while, mostly to get the PM improvements
+on s2idle (I hate this mode so much- I'm tired of taking a warm laptop out
+of my bag) and I'd reported after a previous merge to Linus' tip from pm-next:
 
-Signed-off-by: Karol Herbst <kherbst@redhat.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Lyude Paul <lyude@redhat.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Mika Westerberg <mika.westerberg@intel.com>
-Cc: linux-pci@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: nouveau@lists.freedesktop.org
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=3D205623
----
- drivers/pci/pci.c    |  7 ++++++
- drivers/pci/quirks.c | 51 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci.h  |  1 +
- 3 files changed, 59 insertions(+)
+On Wed, 18 Sep 2019, Kenneth R. Crudup wrote:
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 57f15a7e6f0b..e08db2daa924 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -850,6 +850,13 @@ static int pci_raw_set_power_state(struct pci_dev *dev=
-, pci_power_t state)
- =09   || (state =3D=3D PCI_D2 && !dev->d2_support))
- =09=09return -EIO;
-=20
-+=09/*
-+=09 * Check if we have a bad combination of bridge controller and nvidia
-+=09 * GPU, see quirk_broken_nv_runpm for more info
-+=09 */
-+=09if (state !=3D PCI_D0 && dev->broken_nv_runpm)
-+=09=09return 0;
-+
- =09pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-=20
- =09/*
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 44c4ae1abd00..24e3f247d291 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -5268,3 +5268,54 @@ static void quirk_reset_lenovo_thinkpad_p50_nvgpu(st=
-ruct pci_dev *pdev)
- DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_VENDOR_ID_NVIDIA, 0x13b1,
- =09=09=09      PCI_CLASS_DISPLAY_VGA, 8,
- =09=09=09      quirk_reset_lenovo_thinkpad_p50_nvgpu);
-+
-+/*
-+ * Some Intel PCIe bridge controllers cause devices to not reappear doing =
-a
-+ * D0 -> D3hot -> D3cold -> D0 sequence. Skipping the intermediate D3hot s=
-tep
-+ * seems to make it work again.
-+ *
-+ * This leads to various manifestations of this issue:
-+ *  - AIML code execution hits an infinite loop (as the coe waits on devic=
-e
-+ *    memory to change).
-+ *  - kernel crashes, as all PCI reads return -1, which most code isn't ab=
-le
-+ *    to handle well enough.
-+ *  - sudden shutdowns, as the kernel identified an unrecoverable error af=
-ter
-+ *    userspace tries to access the GPU.
-+ *
-+ * In all cases dmesg will contain at least one line like this:
-+ * 'nouveau 0000:01:00.0: Refused to change power state, currently in D3'
-+ * followed by a lot of nouveau timeouts.
-+ *
-+ * ACPI code writes bit 0x80 to the not documented PCI register 0x248 of t=
-he
-+ * Intel PCIe bridge controller (0x1901) in order to power down the GPU.
-+ * Nonetheless, there are other code paths inside the ACPI firmware which =
-use
-+ * other registers, which seem to work fine:
-+ *  - 0xbc bit 0x20 (publicly available documentation claims 'reserved')
-+ *  - 0xb0 bit 0x10 (link disable)
-+ * Changing the conditions inside the firmware by poking into the relevant
-+ * addresses does resolve the issue, but it seemed to be ACPI private memo=
-ry
-+ * and not any device accessible memory at all, so there is no portable wa=
-y of
-+ * changing the conditions.
-+ *
-+ * The only systems where this behavior can be seen are hybrid graphics la=
-ptops
-+ * with a secondary Nvidia Maxwell, Pascal or Turing GPU. It cannot be rul=
-ed
-+ * out that this issue only occurs in combination with listed Intel PCIe
-+ * bridge controllers and the mentioned GPUs or if it's only a hw bug in t=
-he
-+ * bridge controller.
-+ */
-+
-+static void quirk_broken_nv_runpm(struct pci_dev *dev)
-+{
-+=09struct pci_dev *bridge =3D pci_upstream_bridge(dev);
-+
-+=09if (!bridge || bridge->vendor !=3D PCI_VENDOR_ID_INTEL)
-+=09=09return;
-+
-+=09switch (bridge->device) {
-+=09case 0x1901:
-+=09=09dev->broken_nv_runpm =3D 1;
-+=09}
-+}
-+DECLARE_PCI_FIXUP_CLASS_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID,
-+=09=09=09      PCI_BASE_CLASS_DISPLAY, 16,
-+=09=09=09      quirk_broken_nv_runpm);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index ac8a6c4e1792..903a0b3a39ec 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -416,6 +416,7 @@ struct pci_dev {
- =09unsigned int=09__aer_firmware_first_valid:1;
- =09unsigned int=09__aer_firmware_first:1;
- =09unsigned int=09broken_intx_masking:1;=09/* INTx masking can't be used *=
-/
-+=09unsigned int=09broken_nv_runpm:1;=09/* some combinations of intel bridg=
-e controller and nvidia GPUs break rtd3 */
- =09unsigned int=09io_window_1k:1;=09=09/* Intel bridge 1K I/O windows */
- =09unsigned int=09irq_managed:1;
- =09unsigned int=09has_secondary_link:1;
---=20
-2.23.0
+> - Randomly, if left suspended, nothing other than a hard power off will get
+>   it back  ...  It appears "ec_no_wakeup=1" doesn't have this issue
 
+So I noticed this bug seems to only happen if the laptop is plugged in and
+charging- but only if the battery is < 100%; now that I had a real failure
+mode I started bisecting, and I traced it to 56b991849, "PM: sleep: Simplify
+suspend-to-idle control flow".
+
+What happens is I'll initiate a suspend, then when I try to resume the power
+LED doesn't come on, and the machine is completely unresponsive. I have to
+force a reset by holding the power key.
+
+I'd like to help you fix this issue; I figure if it's affecting my device
+it's affecting others, too. I'm quite proficient with the kernel overall,
+but know very little about ACPI or the EC. I'm assuming- totally wild guess-
+that when we get some of those EC GPEs(?) while suspended(?) we're panic()ing
+or hanging somewhere so the BIOS is getting hung up and the whole system is
+stalled out.
+
+Where should I begin to help debug this? I have EFI store set up so BUG_ON()s
+et al.  will dump there for retrival later if inserting those at critical
+places could help.
+
+Thanks,
+
+	-Kenny
+
+-- 
+Kenneth R. Crudup  Sr. SW Engineer, Scott County Consulting, Silicon Valley
