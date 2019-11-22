@@ -6,93 +6,139 @@ X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 720E2C432C0
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 10:12:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 344BAC33C9A
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 11:15:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4645E20714
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 10:12:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0AB8A20718
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 11:15:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1574417574;
-	bh=KUa1zOIytNoZzxHw6tMoM2jPs9igMXGfUjMyy/5Zil4=;
+	s=default; t=1574421348;
+	bh=n5Tj7+vySHNtfOYaPZa8PHZ4JUxOfxEeh1VYkp2jr0I=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=jF95IAVxf4u2c7xMoMQxwRsQlqi6RSD3ZzQ0XQ961YRpDWXDCr5wo0GSBJDtVR0Zv
-	 Fd10rRS9zxbo+Ad+Er7/AdbIZu6MEmXHoppviUB92cx2coRtdcT0Vl3S8lwVuzEPcG
-	 a//3M4kpSwj/Jl07tn/gTpd1TjmnwopJ9K/+Qw0s=
+	b=rpktfXVQvyi1yOYvZuoT3+KJhdMOCRfX4RCVQricrYTIHcrQ6bxqfYoFoekDmdtwL
+	 osLNAZpwBzjBHAxdTCV71zo7vOF1n+bUBo4UkODzheFgESevX0UL8XNJERDNzdGKrK
+	 NFAkfQ1Hm1jBmo8nXbZmfrcEYnPZZER7x7bo0IQw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726568AbfKVKMx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Nov 2019 05:12:53 -0500
-Received: from mail-oi1-f171.google.com ([209.85.167.171]:36024 "EHLO
-        mail-oi1-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726563AbfKVKMx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2019 05:12:53 -0500
-Received: by mail-oi1-f171.google.com with SMTP id j7so6052669oib.3
-        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2019 02:12:53 -0800 (PST)
+        id S1726990AbfKVLPp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Nov 2019 06:15:45 -0500
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:45382 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726977AbfKVLPo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2019 06:15:44 -0500
+Received: by mail-ot1-f65.google.com with SMTP id r24so5801118otk.12;
+        Fri, 22 Nov 2019 03:15:44 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=kastVHhagzRBS2jF1vY5Xy9GzDog5t2lB64T5jmZDOQ=;
-        b=Zsnzck9UuOcwg17T4vcADVjyfp1myXVSEWPVEgIS5Z/6fhzaNYMulp/IMPbBjpIdMP
-         p+go/wsj4gJmnWNTC/0d0H5gcK/djcu8OheRkrlXozwL2ti6RruNHoU43i3R4NJlRnMB
-         LrGvNpPQqQLHe1d9lnu08z6zjRIMHPAXcTFuyg4KdseXf6NkdBYWB5yR+OXgIPRFiNA8
-         CWbM2WwzrS+zw9VSAy1ap5qJeTHKu5kM/xYIrdu/daWh2k9OKZB0phBKDrZVA5r1OjwT
-         A0JTdAfb5E8JNLh7UZKJiBk2kYLjTUZzDQK6AXn+B7CQ1i099NeUoJE758PqjgeSCGDc
-         abjg==
-X-Gm-Message-State: APjAAAVM+ZpIGaOKOO4mj2bHVwhOp+Nl3yzZXx4D5ZIgVmRqkyqwjiZl
-        JBVA2rfG8FX+Rdkxhrlgk/Wih2FpyToSGNElpOc=
-X-Google-Smtp-Source: APXvYqyNe4N5b3jrCEDALzivA/ktFgOKd+59EDpdw7ay58Aq1fqtem6gByDyyR80VuHnBZfy+crKnO3kZ67V8UwWAwA=
-X-Received: by 2002:aca:c753:: with SMTP id x80mr11019685oif.115.1574417572681;
- Fri, 22 Nov 2019 02:12:52 -0800 (PST)
+        bh=nNKtVKyyjIN7C8LjAkItasX2zQVTgor2/9I8mXAyorg=;
+        b=fCZm79oJVZkKo5JwWGeYhhF8pGwccbVhp5WC/Byqz+WEsWkxGMunQ7A5X4/A1Q3Pdd
+         T+n5qEDRoeKXpwAp/dgCRhsvzXuMA9GSRMSv5CLEYOgkQy2F1glD9oW9V/ngiDMRY4/d
+         PcgF5ssHOUGN2+cDPBg139T5AlRqLk65iUME/FwNNKLNCKlIn6MPo7410/bTl6z1oVBr
+         tpBTCMimRzVbuLGw7DGMuqI0K0v9b+R4wf1QplrH9QykFBja4GV/7bkd4GTPFPBVnQ9j
+         QFO12fDViDEot4PkdXi4zQGqbHXbVI+nG/08egbOiPlnxCVc3NiNb4pJkDvh6IcsKWdt
+         2PdQ==
+X-Gm-Message-State: APjAAAW0L4zA4Y5cSnxefVhevisnUs8O5rV3sW9eAPUiZZ6D5AgRXrsh
+        xNsVrtzGfuPSLqafSXIYEu3fI7hBtoQ+BNXMf/U=
+X-Google-Smtp-Source: APXvYqw6rx/VUVi1y7XpMTeo1Luu8jyyvaYJR9fSFz7IDXuJ6jQyoL6CF4Qr1VL30IGVHRJWFqxlQHiVA51h8tuH9ZI=
+X-Received: by 2002:a9d:6b91:: with SMTP id b17mr10084485otq.189.1574421343635;
+ Fri, 22 Nov 2019 03:15:43 -0800 (PST)
 MIME-Version: 1.0
-References: <alpine.DEB.2.21.1911211549500.3167@hp-x360n>
-In-Reply-To: <alpine.DEB.2.21.1911211549500.3167@hp-x360n>
+References: <20191120002836.GA247344@google.com> <20191121181500.GA55996@google.com>
+ <CAD8Lp47o6PqKnQYBba0o_8LSGhd3_APhVuXAVsJRT7TedeqXDg@mail.gmail.com>
+In-Reply-To: <CAD8Lp47o6PqKnQYBba0o_8LSGhd3_APhVuXAVsJRT7TedeqXDg@mail.gmail.com>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 22 Nov 2019 11:12:41 +0100
-Message-ID: <CAJZ5v0jQ3RY8An+V2VYH+ZKLC6=HrCYUMomM6jyEXJ47aeLT+A@mail.gmail.com>
-Subject: Re: Help me fix a regression caused by 56b9918490 (PM: sleep:
- Simplify suspend-to-idle control flow)
-To:     "Kenneth R. Crudup" <kenny@panix.com>
-Cc:     Rafael Wysocki <rafael.j.wysocki@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>
+Date:   Fri, 22 Nov 2019 12:15:32 +0100
+Message-ID: <CAJZ5v0hxa9OGF-w82ZkQ0n_p5VM7uOdKD_UrdGVoz0MAfeqy0w@mail.gmail.com>
+Subject: Re: [PATCH] PCI: increase D3 delay for AMD Ryzen5/7 XHCI controllers
+To:     Daniel Drake <drake@endlessm.com>
+Cc:     Bjorn Helgaas <helgaas@kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>,
+        Linux Upstreaming Team <linux@endlessm.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux USB Mailing List <linux-usb@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Nov 22, 2019 at 1:28 AM Kenneth R. Crudup <kenny@panix.com> wrote:
+On Fri, Nov 22, 2019 at 4:00 AM Daniel Drake <drake@endlessm.com> wrote:
 >
+> On Fri, Nov 22, 2019 at 2:15 AM Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > I definitely was not understanding this correctly.  There is no path
+> > for a D3cold -> D3hot transition.  Per spec (PCIe r5.0, sec 5.8), the
+> > only legal exit from D3cold is to D0uninitialized.
 >
-> I've been running Linus' tip for a while, mostly to get the PM improvements
-> on s2idle (I hate this mode so much- I'm tired of taking a warm laptop out
-> of my bag) and I'd reported after a previous merge to Linus' tip from pm-next:
+> I'm also learning these details as we go.
 >
-> On Wed, 18 Sep 2019, Kenneth R. Crudup wrote:
->
-> > - Randomly, if left suspended, nothing other than a hard power off will get
-> >   it back  ...  It appears "ec_no_wakeup=1" doesn't have this issue
->
-> So I noticed this bug seems to only happen if the laptop is plugged in and
-> charging- but only if the battery is < 100%; now that I had a real failure
-> mode I started bisecting, and I traced it to 56b991849, "PM: sleep: Simplify
-> suspend-to-idle control flow".
->
-> What happens is I'll initiate a suspend, then when I try to resume the power
-> LED doesn't come on, and the machine is completely unresponsive. I have to
-> force a reset by holding the power key.
->
-> I'd like to help you fix this issue; I figure if it's affecting my device
-> it's affecting others, too. I'm quite proficient with the kernel overall,
-> but know very little about ACPI or the EC. I'm assuming- totally wild guess-
-> that when we get some of those EC GPEs(?) while suspended(?) we're panic()ing
-> or hanging somewhere so the BIOS is getting hung up and the whole system is
-> stalled out.
->
-> Where should I begin to help debug this? I have EFI store set up so BUG_ON()s
-> et al.  will dump there for retrival later if inserting those at critical
-> places could help.
+> During runtime suspend, the ACPI _PS3 method (which does exist on this
+> device) is called, then _PR3 resources are turned off, which (I think)
+> means that the state should now be D3cold.
 
-First off, please try to change the sleep_no_lps0 ACPI module
-parameter (/sys/module/acpi/parameters/sleep_no_lps0) to 1 and see if
-that makes any difference.  If it helps, I don't think we can do much
-except for blacklisting your machine.
+Correct.
+
+> During runtime resume, the ACPI _PR0 resources are turned on, then
+> ACPI _PS0 method is called (and does exist on this device), and my
+> reading is that this should put the device in D0.
+
+That should be something like D0uninitialized.
+
+> But then when pci_update_current_state() is called, it reads pmcsr as
+> 3 (D3hot). That's not what I would expect. I guess this means that
+> this platform's _PR3/_PS3 do not actually allow us to put the device
+> into D3cold,
+
+That you can't really say.
+
+Anyway, it is not guaranteed to do that.  For example, the power
+resource(s) listed by _PR3 for the device may be referenced by
+something else too which prevents them from being turned off.
+
+> and/or the _PR0/_PS0 transition does not actually transition the device to D0.
+
+Yes.
+
+Which may be the case if the power resource(s) in _PR3 have not been
+turned off really.
+
+[To debug this a bit more, you can enable dynamic debug in
+drivers/acpi/device_pm.c.]
+
+> While there is some ACPI strangeness here, the D3hot vs D3cold thing
+> is perhaps not the most relevant point. If I hack the code to avoid
+> D3cold altogether, just trying to do D0->D3hot->D0, it fails in the
+> same way.
+
+OK, but then you don't really flip the power resource(s), so that only
+means that _PS0 does not restore D0, but in general it only is valid
+to execute _PS0 after _PS3 (if both are present which is the case
+here), so this is not conclusive again.
+
+> > I know you tried a debug patch to call pci_dev_wait(), and it didn't
+> > work, but I'm not sure exactly where it was called.  I have these
+> > patches on my pci/pm branch for v5.5:
+> >
+> >   bae26849372b ("PCI/PM: Move pci_dev_wait() definition earlier")
+> >   395f121e6199 ("PCI/PM: Wait for device to become ready after power-on")
+> >
+> > The latter adds the wait just before we call
+> > pci_raw_set_power_state().  If the device is responding with CRS
+> > status, that should be the point where we'd see it.  If you have a
+> > chance to try it, I'd be interested in the results.
+>
+> pci_dev_wait() doesn't have any effect no matter where you put it
+> because we have yet to observe this device presenting a CRS-like
+> condition. According to our earlier experiments, PCI_VENDOR_ID and
+> PCI_COMMAND never return the ~0 value that would be needed for
+> pci_dev_wait() to have any effect.
+>
+> I tried the branch anyway and it doesn't solve the issue.
+>
+> I haven't finished gathering all the logs you asked for, but I tried
+> to summarize my current understanding at
+> https://bugzilla.kernel.org/show_bug.cgi?id=205587 - hopefully that
+> helps.
+
+OK, thanks for that!
