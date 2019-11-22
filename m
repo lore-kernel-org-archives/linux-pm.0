@@ -2,104 +2,231 @@ Return-Path: <SRS0=t+QV=ZO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A708C43215
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 12:45:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57AECC432C0
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:27:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2254C20706
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 12:45:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1574426722;
-	bh=pgUsogIC738G0jITQqJ2huCbfEmx981QTnsqT5iEXzY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=xG/F7aWWeVueqvS1rjTkAXy/ISO3ckx/NCrT9OMiL30IsuJ89mg6nEN+LxxjLM/N3
-	 0RgLkpMApqKK9o00koPADi8lG/iGorW/9wD1SkSUqUdnsrO0sZrrt2yEOs5e3/5uEX
-	 NFAK9FiNfrHEo3HlIO9ax5hHfF1vQ4Vz/Gi3VqDY=
+	by mail.kernel.org (Postfix) with ESMTP id 2694F2071C
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 15:27:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QSk14tTR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726802AbfKVMpV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Nov 2019 07:45:21 -0500
-Received: from mail-oi1-f175.google.com ([209.85.167.175]:36389 "EHLO
-        mail-oi1-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726750AbfKVMpV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2019 07:45:21 -0500
-Received: by mail-oi1-f175.google.com with SMTP id j7so6387488oib.3
-        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2019 04:45:21 -0800 (PST)
+        id S1726736AbfKVP1Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Nov 2019 10:27:25 -0500
+Received: from mail-wr1-f66.google.com ([209.85.221.66]:43365 "EHLO
+        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727146AbfKVP1V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Nov 2019 10:27:21 -0500
+Received: by mail-wr1-f66.google.com with SMTP id n1so9060784wra.10
+        for <linux-pm@vger.kernel.org>; Fri, 22 Nov 2019 07:27:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=hEkNkSrp8km0CreoucFi1BgIya/dvxAxyWgm3O9Oa4A=;
+        b=QSk14tTRm3kPhwN6nMGxS2I+AOA5Yl5RN2zUYTGICyoS2r9hGYszK6D+SeVAFo5k/E
+         rZg5dQhJeMELMLUnot7FxpdB3tvbuncb16aLcyDf9TXGIZaAJ2JMHmY/odWmuX7XGiHx
+         j5wzKu8913t98T0zibWM+lYRjiaZrw73nDpenqq6+8FPBd9arcSxRuPX145b9U7tU2Ms
+         FnWatqUXBw3z14nvMiybYtO3SyScaMZhmCO1JrNfwQQFsaM2uozdSmHRRFzLghUwRZBe
+         qscpyU8Bg/mHWr3AYzCpkkttdkI/CeGHFIQawqX7VhHU+ZkuSwXVj/1b8tGNnk4gNmF2
+         hD1g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=6D3qbowcLqgqfuxBXnJWiB2jEEAUP/PftFC1bKDTvTY=;
-        b=jXwumvfvtin5i6lKac8Y+8hRcHKeq89QtsIc20qVjujM/ap4QdgrYRCjUfi3XL6GtM
-         UJQWU955gOn2IDTpluYt742WSbiM6tlpjzVkvQU0HUG2KZVxrHoSsTQfnlZtB1+b4jHz
-         uawC3EdAdpjA6wNsPM0zrflBOLBzWK1ZeubTyZWhie6j4AKIk++TcHAoqCONRkQCMMOs
-         2ZNQfwt7EVBz/vUtI44W6ASDdPQcymWIDrVd2vi7tV8wuzl0/QKAiPbH82FQLBA+uppu
-         fJ8Ok08Xkc0jvJfolPoISl8iZ+eDBwinq2CDFLjqPxRMSlZkkXVYMfXOUDHaW9xqHPmd
-         IQVg==
-X-Gm-Message-State: APjAAAW7LjKKOqqsfUBnshMhjJHvX+jyFRa9U5NQeCJoAbqUQmXHSHrD
-        3Q7/EXpqkTElB0PC1s9Bc/HfVUo+WsVkkSI6wH0=
-X-Google-Smtp-Source: APXvYqzFOMPbBykIODBvKpqm97UUOSCYnD/1fcyu4jwBT4w2SApMObDHX1suAUF3GPwlQagX3tXtjmgjZpuTLgGbsf0=
-X-Received: by 2002:aca:1101:: with SMTP id 1mr12339998oir.103.1574426720480;
- Fri, 22 Nov 2019 04:45:20 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=hEkNkSrp8km0CreoucFi1BgIya/dvxAxyWgm3O9Oa4A=;
+        b=EeY2VGzKPFk7hHrT9EynpCm6emIWyEu2dAvVB1VdgxQ2ThUfFV1qMhW9asKZgK/en+
+         UsgfysVPsO+rjvH5YDSSyFl9hUUfNr74qv9rO7w4Jy2aQhwKKjNL1+VFqsyMT17nRjJS
+         dzj8Z/B307KTVcS0pKiT3Sc3eJxNiQhkivgu/9sDF15PL9J3FBoSe6XoGjPpBHxZ7uQl
+         6VCNOFCqqVXctsSa/KxfWckXbbIz06cG4x10V7Vx0tYbUsTWayihD3jG++wdTZC+mbU/
+         TYYMZcUlGcYMRmOHZWNks+QKXxfd1M5PoPH7YUg0H8gtlWwe8nd0atqWyAukvrt8trYD
+         iBFQ==
+X-Gm-Message-State: APjAAAWKKb+HTPmm1z6OMK4aBrauSqtqR8SM5na2A0TKuz1uJjobJphR
+        tM2ZODb17OKKk2O2cMr+Smz64n8HHIQ=
+X-Google-Smtp-Source: APXvYqzisXnUeVOdqP1dS2D+LXMimH6hbmBWtHQ0u9pukgly+38mDbFsbQyPNY45Eg2lEr3tB7fKRQ==
+X-Received: by 2002:adf:f987:: with SMTP id f7mr18326940wrr.284.1574436438619;
+        Fri, 22 Nov 2019 07:27:18 -0800 (PST)
+Received: from localhost.localdomain ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id a206sm4061081wmf.15.2019.11.22.07.27.17
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Fri, 22 Nov 2019 07:27:17 -0800 (PST)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     linux-pm@vger.kernel.org, rostedt@goodmis.org, mingo@redhat.com
+Cc:     bjorn.andersson@linaro.org, vincent.guittot@linaro.org,
+        daidavid1@codeaurora.org, okukatla@codeaurora.org,
+        evgreen@chromium.org, mka@chromium.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        georgi.djakov@linaro.org
+Subject: [PATCH v3 3/3] interconnect: Add basic tracepoints
+Date:   Fri, 22 Nov 2019 17:27:12 +0200
+Message-Id: <20191122152712.19105-4-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20191122152712.19105-1-georgi.djakov@linaro.org>
+References: <20191122152712.19105-1-georgi.djakov@linaro.org>
 MIME-Version: 1.0
-References: <alpine.DEB.2.21.1911211549500.3167@hp-x360n> <CAJZ5v0jQ3RY8An+V2VYH+ZKLC6=HrCYUMomM6jyEXJ47aeLT+A@mail.gmail.com>
-In-Reply-To: <CAJZ5v0jQ3RY8An+V2VYH+ZKLC6=HrCYUMomM6jyEXJ47aeLT+A@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 22 Nov 2019 13:45:09 +0100
-Message-ID: <CAJZ5v0gKvDb8=Y04DB3wQe0rK8Zfw5yNuAybV980ozxfmem=BQ@mail.gmail.com>
-Subject: Re: Help me fix a regression caused by 56b9918490 (PM: sleep:
- Simplify suspend-to-idle control flow)
-To:     "Kenneth R. Crudup" <kenny@panix.com>
-Cc:     Rafael Wysocki <rafael.j.wysocki@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Nov 22, 2019 at 11:12 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Fri, Nov 22, 2019 at 1:28 AM Kenneth R. Crudup <kenny@panix.com> wrote:
-> >
-> >
-> > I've been running Linus' tip for a while, mostly to get the PM improvements
-> > on s2idle (I hate this mode so much- I'm tired of taking a warm laptop out
-> > of my bag) and I'd reported after a previous merge to Linus' tip from pm-next:
-> >
-> > On Wed, 18 Sep 2019, Kenneth R. Crudup wrote:
-> >
-> > > - Randomly, if left suspended, nothing other than a hard power off will get
-> > >   it back  ...  It appears "ec_no_wakeup=1" doesn't have this issue
+The tracepoints can help with understanding the system behavior of a
+given interconnect path when the consumer drivers change their bandwidth
+demands. This might be interesting when we want to monitor the requested
+interconnect bandwidth for each client driver. The paths may share the
+same nodes and this will help to understand "who and when is requesting
+what". All this is useful for subsystem drivers developers and may also
+provide hints when optimizing the power and performance profile of the
+system.
 
-BTW, is the ec_no_wakeup=1 workaround still effective?
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+---
+ drivers/interconnect/Makefile |  1 +
+ drivers/interconnect/core.c   |  7 +++
+ drivers/interconnect/trace.h  | 90 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 98 insertions(+)
+ create mode 100644 drivers/interconnect/trace.h
 
-If so, does the lid and/or power button wake up the system from
-suspend with ec_no_wakeup=1?
-
-> > So I noticed this bug seems to only happen if the laptop is plugged in and
-> > charging- but only if the battery is < 100%; now that I had a real failure
-> > mode I started bisecting, and I traced it to 56b991849, "PM: sleep: Simplify
-> > suspend-to-idle control flow".
-> >
-> > What happens is I'll initiate a suspend, then when I try to resume the power
-> > LED doesn't come on, and the machine is completely unresponsive. I have to
-> > force a reset by holding the power key.
-> >
-> > I'd like to help you fix this issue; I figure if it's affecting my device
-> > it's affecting others, too. I'm quite proficient with the kernel overall,
-> > but know very little about ACPI or the EC. I'm assuming- totally wild guess-
-> > that when we get some of those EC GPEs(?) while suspended(?) we're panic()ing
-> > or hanging somewhere so the BIOS is getting hung up and the whole system is
-> > stalled out.
-> >
-> > Where should I begin to help debug this? I have EFI store set up so BUG_ON()s
-> > et al.  will dump there for retrival later if inserting those at critical
-> > places could help.
->
-> First off, please try to change the sleep_no_lps0 ACPI module
-> parameter (/sys/module/acpi/parameters/sleep_no_lps0) to 1 and see if
-> that makes any difference.  If it helps, I don't think we can do much
-> except for blacklisting your machine.
+diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
+index 28f2ab0824d5..725029ae7a2c 100644
+--- a/drivers/interconnect/Makefile
++++ b/drivers/interconnect/Makefile
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
++CFLAGS_core.o				:= -I$(src)
+ icc-core-objs				:= core.o
+ 
+ obj-$(CONFIG_INTERCONNECT)		+= icc-core.o
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 1ddad8ef3cf0..b218a2609f6b 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -19,6 +19,9 @@
+ #include <linux/of.h>
+ #include <linux/overflow.h>
+ 
++#define CREATE_TRACE_POINTS
++#include "trace.h"
++
+ #include "internal.h"
+ 
+ static DEFINE_IDR(icc_idr);
+@@ -435,6 +438,8 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
+ 
+ 		/* aggregate requests for this node */
+ 		aggregate_requests(node);
++
++		trace_icc_set_bw(path, node, i, avg_bw, peak_bw);
+ 	}
+ 
+ 	ret = apply_constraints(path);
+@@ -453,6 +458,8 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
+ 
+ 	mutex_unlock(&icc_lock);
+ 
++	trace_icc_set_bw_end(path, ret);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(icc_set_bw);
+diff --git a/drivers/interconnect/trace.h b/drivers/interconnect/trace.h
+new file mode 100644
+index 000000000000..d2421bf7b389
+--- /dev/null
++++ b/drivers/interconnect/trace.h
+@@ -0,0 +1,90 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Interconnect framework tracepoints
++ * Copyright (c) 2019, Linaro Ltd.
++ * Author: Georgi Djakov <georgi.djakov@linaro.org>
++ */
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM interconnect
++
++#if !defined(_TRACE_INTERCONNECT_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_INTERCONNECT_H
++
++#include <linux/interconnect.h>
++#include <linux/tracepoint.h>
++
++#include "internal.h"
++
++TRACE_EVENT(icc_set_bw,
++
++	TP_PROTO(struct icc_path *p, struct icc_node *n, int i,
++		 u32 avg_bw, u32 peak_bw),
++
++	TP_ARGS(p, n, i, avg_bw, peak_bw),
++
++	TP_STRUCT__entry(
++		__string(path_name, p->name)
++		__string(dev, dev_name(p->reqs[i].dev))
++		__string(node_name, n->name)
++		__field(u32, avg_bw)
++		__field(u32, peak_bw)
++		__field(u32, node_avg_bw)
++		__field(u32, node_peak_bw)
++	),
++
++	TP_fast_assign(
++		__assign_str(path_name, p->name);
++		__assign_str(dev, dev_name(p->reqs[i].dev));
++		__assign_str(node_name, n->name);
++		__entry->avg_bw = avg_bw;
++		__entry->peak_bw = peak_bw;
++		__entry->node_avg_bw = n->avg_bw;
++		__entry->node_peak_bw = n->peak_bw;
++	),
++
++	TP_printk("path=%s dev=%s node=%s avg_bw=%u peak_bw=%u agg_avg=%u agg_peak=%u",
++		  __get_str(path_name),
++		  __get_str(dev),
++		  __get_str(node_name),
++		  __entry->avg_bw,
++		  __entry->peak_bw,
++		  __entry->node_avg_bw,
++		  __entry->node_peak_bw)
++);
++
++TRACE_EVENT(icc_set_bw_end,
++
++	TP_PROTO(struct icc_path *p, int ret),
++
++	TP_ARGS(p, ret),
++
++	TP_STRUCT__entry(
++		__string(path_name, p->name)
++		__string(dev, dev_name(p->reqs[0].dev))
++		__field(int, ret)
++	),
++
++	TP_fast_assign(
++		__assign_str(path_name, p->name);
++		__assign_str(dev, dev_name(p->reqs[0].dev));
++		__entry->ret = ret;
++	),
++
++	TP_printk("path=%s dev=%s ret=%d",
++		  __get_str(path_name),
++		  __get_str(dev),
++		  __entry->ret)
++);
++
++#endif /* _TRACE_INTERCONNECT_H */
++
++/* This part must be outside protection */
++
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace
++
++#include <trace/define_trace.h>
