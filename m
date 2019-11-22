@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81690C432C3
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 06:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6913EC432C0
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 06:19:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 500372071F
-	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 06:13:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 354392053B
+	for <linux-pm@archiver.kernel.org>; Fri, 22 Nov 2019 06:19:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1574403192;
-	bh=2NavNmSSRIUFC61aNh873EINxN+3wfIG+QCBYvnDcQ0=;
+	s=default; t=1574403563;
+	bh=JNSklQNz9vqxyS3kmFKL2m9+pzdRIfV4JKVPzeen/oE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=cahCny0ppcgu4I9A2gC89eXUJ57b9gXL4A9N38fwaz0A77TzVH3G6rNE7rOxWNtGU
-	 tp7+gi7WRqsjao3Ug1JMkYG2HGeyBuPQmxM7UrZB0hL7H1qL69mWztnt+4P8FD950x
-	 ArMiRcWNN1OAlUJdyfG7Rp3J0ENInmMtCFj79TuM=
+	b=t2O4c+LJbyKF+Zxf1d/jbjxeekBfNDaY3+qwigw4gRTEbgyhT8EURtgYXeaxHt4UZ
+	 rlh8h1nJgM1Tfb7giCvlePDlCEJY95I3N7S6Ift7jHy+U+0lo/TAMa/0XHpEWmy6Sk
+	 PITKBGT+n4CYJK4J//ZqnHC5DGFjZDhUnl/ztuXA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728207AbfKVGNL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 Nov 2019 01:13:11 -0500
-Received: from mail.kernel.org ([198.145.29.99]:50306 "EHLO mail.kernel.org"
+        id S1726750AbfKVGTS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 Nov 2019 01:19:18 -0500
+Received: from mail.kernel.org ([198.145.29.99]:33658 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728697AbfKVGNK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Nov 2019 01:13:10 -0500
+        id S1728974AbfKVFz6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Nov 2019 00:55:58 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id D935820717;
-        Fri, 22 Nov 2019 06:13:08 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 370D32068F;
+        Fri, 22 Nov 2019 05:55:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1574403189;
-        bh=2NavNmSSRIUFC61aNh873EINxN+3wfIG+QCBYvnDcQ0=;
+        s=default; t=1574402158;
+        bh=JNSklQNz9vqxyS3kmFKL2m9+pzdRIfV4JKVPzeen/oE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=a7YmesbZd3v+t2ed/lPjgaVlaD5/O4RFwNdXExqYaa3E1k7uyBPzjFfLSgDwz41/c
-         7jTTWMayFnWBjYnwVkEN1eRwaKalkGk5sdX0zm8comTlHLJFRrJtKhYLeQQ4BMQw3M
-         qpZMQBXbMOf2HoHAE88MjkM2mpWEjqO0HOj+A7F4=
+        b=rWMMR5pVhXNDSja98rITJwr+HGisDyRMo2xwbvCbIvfVA3r4NP/L9YLeAuKKds80M
+         OJGTJaPfjKpedRTx8v6pFjtMcmh15ZCsj6Qn3kwGT0RTLk1Xy+WootaOJDiyNzH0GB
+         pvlQBLZ6BJnziphik+ctaQy/q8ki901y30xUv09I=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Thomas Meyer <thomas@m3y3r.de>,
         Kevin Hilman <khilman@baylibre.com>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 07/68] PM / AVS: SmartReflex: NULL check before some freeing functions is not needed
-Date:   Fri, 22 Nov 2019 01:12:00 -0500
-Message-Id: <20191122061301.4947-6-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 012/127] PM / AVS: SmartReflex: NULL check before some freeing functions is not needed
+Date:   Fri, 22 Nov 2019 00:53:50 -0500
+Message-Id: <20191122055544.3299-11-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191122061301.4947-1-sashal@kernel.org>
-References: <20191122061301.4947-1-sashal@kernel.org>
+In-Reply-To: <20191122055544.3299-1-sashal@kernel.org>
+References: <20191122055544.3299-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -74,10 +74,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-index db9973bb53f19..ecc59798fd0aa 100644
+index 974fd684bab2c..4b6fddc183948 100644
 --- a/drivers/power/avs/smartreflex.c
 +++ b/drivers/power/avs/smartreflex.c
-@@ -1001,8 +1001,7 @@ static int omap_sr_remove(struct platform_device *pdev)
+@@ -994,8 +994,7 @@ static int omap_sr_remove(struct platform_device *pdev)
  
  	if (sr_info->autocomp_active)
  		sr_stop_vddautocomp(sr_info);
