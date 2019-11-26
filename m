@@ -7,27 +7,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6C2CC33CA1
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:17:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02C78C33C9E
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:17:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AA6F420885
+	by mail.kernel.org (Postfix) with ESMTP id D06C220885
 	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:17:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726049AbfKZPRX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Nov 2019 10:17:23 -0500
-Received: from inva021.nxp.com ([92.121.34.21]:57200 "EHLO inva021.nxp.com"
+        id S1728433AbfKZPRY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Nov 2019 10:17:24 -0500
+Received: from inva021.nxp.com ([92.121.34.21]:57234 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728419AbfKZPRW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 26 Nov 2019 10:17:22 -0500
+        id S1728427AbfKZPRX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 26 Nov 2019 10:17:23 -0500
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6550C2005D6;
-        Tue, 26 Nov 2019 16:17:20 +0100 (CET)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9ACE9200343;
+        Tue, 26 Nov 2019 16:17:21 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 569B420011C;
-        Tue, 26 Nov 2019 16:17:20 +0100 (CET)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 861F420011C;
+        Tue, 26 Nov 2019 16:17:21 +0100 (CET)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id B5AA520507;
-        Tue, 26 Nov 2019 16:17:19 +0100 (CET)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id E8A5020506;
+        Tue, 26 Nov 2019 16:17:20 +0100 (CET)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Matthias Kaehlcke <mka@chromium.org>,
@@ -40,9 +40,9 @@ Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
         Brendan Higgins <brendanhiggins@google.com>,
         linux-kselftest@vger.kernel.org, kunit-dev@googlegroups.com,
         linux-pm@vger.kernel.org, linux-imx@nxp.com
-Subject: [PATCH v4 1/4] PM / QoS: Initial kunit test
-Date:   Tue, 26 Nov 2019 17:17:10 +0200
-Message-Id: <be196b656bb5fbf2c59a179e6453aa963b862109.1574781196.git.leonard.crestez@nxp.com>
+Subject: [PATCH v4 3/4] PM / QoS: Reorder pm_qos/freq_qos/dev_pm_qos structs
+Date:   Tue, 26 Nov 2019 17:17:12 +0200
+Message-Id: <8ca3c4f69921b3d65eb354d528614e4763094bf7.1574781196.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1574781196.git.leonard.crestez@nxp.com>
 References: <cover.1574781196.git.leonard.crestez@nxp.com>
@@ -54,178 +54,126 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pm_qos family of APIs are used in relatively difficult to reproduce
-scenarios such as thermal throttling so they benefit from unit testing.
-
-Start by adding basic tests from the the freq_qos APIs. It includes
-tests for issues that were brought up on mailing lists:
-
-https://patchwork.kernel.org/patch/11252425/#23017005
-https://patchwork.kernel.org/patch/11253421/
+This allows dev_pm_qos to embed freq_qos structs, which is done in the
+next patch. Separate commit to make it easier to review.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- drivers/base/Kconfig          |   4 ++
- drivers/base/power/Makefile   |   1 +
- drivers/base/power/qos-test.c | 117 ++++++++++++++++++++++++++++++++++
- 3 files changed, 122 insertions(+)
- create mode 100644 drivers/base/power/qos-test.c
+ include/linux/pm_qos.h | 74 ++++++++++++++++++++++--------------------
+ 1 file changed, 38 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
-index e37d37684132..d4ae1c1adf69 100644
---- a/drivers/base/Kconfig
-+++ b/drivers/base/Kconfig
-@@ -155,10 +155,14 @@ config DEBUG_TEST_DRIVER_REMOVE
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 24a6263c9931..678fec6da5b9 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -47,25 +47,10 @@ struct pm_qos_request {
+ struct pm_qos_flags_request {
+ 	struct list_head node;
+ 	s32 flags;	/* Do not change to 64 bit */
+ };
  
- 	  This option is expected to find errors and may render your system
- 	  unusable. You should say N here unless you are explicitly looking to
- 	  test this functionality.
+-enum dev_pm_qos_req_type {
+-	DEV_PM_QOS_RESUME_LATENCY = 1,
+-	DEV_PM_QOS_LATENCY_TOLERANCE,
+-	DEV_PM_QOS_FLAGS,
+-};
+-
+-struct dev_pm_qos_request {
+-	enum dev_pm_qos_req_type type;
+-	union {
+-		struct plist_node pnode;
+-		struct pm_qos_flags_request flr;
+-	} data;
+-	struct device *dev;
+-};
+-
+ enum pm_qos_type {
+ 	PM_QOS_UNITIALIZED,
+ 	PM_QOS_MAX,		/* return the largest value */
+ 	PM_QOS_MIN,		/* return the smallest value */
+ 	PM_QOS_SUM		/* return the sum */
+@@ -88,10 +73,48 @@ struct pm_qos_constraints {
+ struct pm_qos_flags {
+ 	struct list_head list;
+ 	s32 effective_flags;	/* Do not change to 64 bit */
+ };
  
-+config PM_QOS_KUNIT_TEST
-+	bool "KUnit Test for PM QoS features"
-+	depends on KUNIT
 +
- config HMEM_REPORTING
- 	bool
- 	default n
- 	depends on NUMA
- 	help
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index ec5bb190b9d0..8fdd0073eeeb 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -2,7 +2,8 @@
- obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o wakeirq.o
- obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o wakeup_stats.o
- obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
- obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
- obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
-+obj-$(CONFIG_PM_QOS_KUNIT_TEST) += qos-test.o
- 
- ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-diff --git a/drivers/base/power/qos-test.c b/drivers/base/power/qos-test.c
-new file mode 100644
-index 000000000000..3115db08d56b
---- /dev/null
-+++ b/drivers/base/power/qos-test.c
-@@ -0,0 +1,117 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright 2019 NXP
-+ */
-+#include <kunit/test.h>
-+#include <linux/pm_qos.h>
++#define FREQ_QOS_MIN_DEFAULT_VALUE	0
++#define FREQ_QOS_MAX_DEFAULT_VALUE	S32_MAX
 +
-+/* Basic test for aggregating two "min" requests */
-+static void freq_qos_test_min(struct kunit *test)
-+{
-+	struct freq_constraints	qos;
-+	struct freq_qos_request	req1, req2;
-+	int ret;
-+
-+	freq_constraints_init(&qos);
-+	memset(&req1, 0, sizeof(req1));
-+	memset(&req2, 0, sizeof(req2));
-+
-+	ret = freq_qos_add_request(&qos, &req1, FREQ_QOS_MIN, 1000);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+	ret = freq_qos_add_request(&qos, &req2, FREQ_QOS_MIN, 2000);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MIN), 2000);
-+
-+	ret = freq_qos_remove_request(&req2);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MIN), 1000);
-+
-+	ret = freq_qos_remove_request(&req1);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MIN),
-+			FREQ_QOS_MIN_DEFAULT_VALUE);
-+}
-+
-+/* Test that requests for MAX_DEFAULT_VALUE have no effect */
-+static void freq_qos_test_maxdef(struct kunit *test)
-+{
-+	struct freq_constraints	qos;
-+	struct freq_qos_request	req1, req2;
-+	int ret;
-+
-+	freq_constraints_init(&qos);
-+	memset(&req1, 0, sizeof(req1));
-+	memset(&req2, 0, sizeof(req2));
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MAX),
-+			FREQ_QOS_MAX_DEFAULT_VALUE);
-+
-+	ret = freq_qos_add_request(&qos, &req1, FREQ_QOS_MAX,
-+			FREQ_QOS_MAX_DEFAULT_VALUE);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+	ret = freq_qos_add_request(&qos, &req2, FREQ_QOS_MAX,
-+			FREQ_QOS_MAX_DEFAULT_VALUE);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+
-+	/* Add max 1000 */
-+	ret = freq_qos_update_request(&req1, 1000);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MAX), 1000);
-+
-+	/* Add max 2000, no impact */
-+	ret = freq_qos_update_request(&req2, 2000);
-+	KUNIT_EXPECT_EQ(test, ret, 0);
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MAX), 1000);
-+
-+	/* Remove max 1000, new max 2000 */
-+	ret = freq_qos_remove_request(&req1);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MAX), 2000);
-+}
-+
-+/*
-+ * Test that a freq_qos_request can be added again after removal
-+ *
-+ * This issue was solved by commit 05ff1ba412fd ("PM: QoS: Invalidate frequency
-+ * QoS requests after removal")
-+ */
-+static void freq_qos_test_readd(struct kunit *test)
-+{
-+	struct freq_constraints	qos;
-+	struct freq_qos_request	req;
-+	int ret;
-+
-+	freq_constraints_init(&qos);
-+	memset(&req, 0, sizeof(req));
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MIN),
-+			FREQ_QOS_MIN_DEFAULT_VALUE);
-+
-+	/* Add */
-+	ret = freq_qos_add_request(&qos, &req, FREQ_QOS_MIN, 1000);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MIN), 1000);
-+
-+	/* Remove */
-+	ret = freq_qos_remove_request(&req);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MIN),
-+			FREQ_QOS_MIN_DEFAULT_VALUE);
-+
-+	/* Add again */
-+	ret = freq_qos_add_request(&qos, &req, FREQ_QOS_MIN, 2000);
-+	KUNIT_EXPECT_EQ(test, ret, 1);
-+	KUNIT_EXPECT_EQ(test, freq_qos_read_value(&qos, FREQ_QOS_MIN), 2000);
-+}
-+
-+static struct kunit_case pm_qos_test_cases[] = {
-+	KUNIT_CASE(freq_qos_test_min),
-+	KUNIT_CASE(freq_qos_test_maxdef),
-+	KUNIT_CASE(freq_qos_test_readd),
-+	{},
++enum freq_qos_req_type {
++	FREQ_QOS_MIN = 1,
++	FREQ_QOS_MAX,
 +};
 +
-+static struct kunit_suite pm_qos_test_module = {
-+	.name = "qos-kunit-test",
-+	.test_cases = pm_qos_test_cases,
++struct freq_constraints {
++	struct pm_qos_constraints min_freq;
++	struct blocking_notifier_head min_freq_notifiers;
++	struct pm_qos_constraints max_freq;
++	struct blocking_notifier_head max_freq_notifiers;
 +};
-+kunit_test_suite(pm_qos_test_module);
++
++struct freq_qos_request {
++	enum freq_qos_req_type type;
++	struct plist_node pnode;
++	struct freq_constraints *qos;
++};
++
++
++enum dev_pm_qos_req_type {
++	DEV_PM_QOS_RESUME_LATENCY = 1,
++	DEV_PM_QOS_LATENCY_TOLERANCE,
++	DEV_PM_QOS_FLAGS,
++};
++
++struct dev_pm_qos_request {
++	enum dev_pm_qos_req_type type;
++	union {
++		struct plist_node pnode;
++		struct pm_qos_flags_request flr;
++	} data;
++	struct device *dev;
++};
++
+ struct dev_pm_qos {
+ 	struct pm_qos_constraints resume_latency;
+ 	struct pm_qos_constraints latency_tolerance;
+ 	struct pm_qos_flags flags;
+ 	struct dev_pm_qos_request *resume_latency_req;
+@@ -253,31 +276,10 @@ static inline s32 dev_pm_qos_raw_resume_latency(struct device *dev)
+ {
+ 	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+ }
+ #endif
+ 
+-#define FREQ_QOS_MIN_DEFAULT_VALUE	0
+-#define FREQ_QOS_MAX_DEFAULT_VALUE	S32_MAX
+-
+-enum freq_qos_req_type {
+-	FREQ_QOS_MIN = 1,
+-	FREQ_QOS_MAX,
+-};
+-
+-struct freq_constraints {
+-	struct pm_qos_constraints min_freq;
+-	struct blocking_notifier_head min_freq_notifiers;
+-	struct pm_qos_constraints max_freq;
+-	struct blocking_notifier_head max_freq_notifiers;
+-};
+-
+-struct freq_qos_request {
+-	enum freq_qos_req_type type;
+-	struct plist_node pnode;
+-	struct freq_constraints *qos;
+-};
+-
+ static inline int freq_qos_request_active(struct freq_qos_request *req)
+ {
+ 	return !IS_ERR_OR_NULL(req->qos);
+ }
+ 
 -- 
 2.17.1
 
