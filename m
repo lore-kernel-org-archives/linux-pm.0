@@ -2,339 +2,115 @@ Return-Path: <SRS0=zVwF=ZS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A495FC33CA3
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:17:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99D37C432C3
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:34:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 88A87207DD
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:17:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 760F620727
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:34:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728427AbfKZPRY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Nov 2019 10:17:24 -0500
-Received: from inva020.nxp.com ([92.121.34.13]:55238 "EHLO inva020.nxp.com"
+        id S1728547AbfKZPeo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Nov 2019 10:34:44 -0500
+Received: from mga17.intel.com ([192.55.52.151]:3914 "EHLO mga17.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728428AbfKZPRY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 26 Nov 2019 10:17:24 -0500
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 2159E1A0624;
-        Tue, 26 Nov 2019 16:17:22 +0100 (CET)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 13F891A005A;
-        Tue, 26 Nov 2019 16:17:22 +0100 (CET)
-Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 83A3720507;
-        Tue, 26 Nov 2019 16:17:21 +0100 (CET)
-From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
-        Angus Ainslie <angus@akkea.ca>,
-        Brendan Higgins <brendanhiggins@google.com>,
-        linux-kselftest@vger.kernel.org, kunit-dev@googlegroups.com,
-        linux-pm@vger.kernel.org, linux-imx@nxp.com
-Subject: [PATCH v4 4/4] PM / QoS: Restore DEV_PM_QOS_MIN/MAX_FREQUENCY
-Date:   Tue, 26 Nov 2019 17:17:13 +0200
-Message-Id: <44cfaddb5be6403f687a0e56e57f17925b9a521b.1574781196.git.leonard.crestez@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1574781196.git.leonard.crestez@nxp.com>
-References: <cover.1574781196.git.leonard.crestez@nxp.com>
-In-Reply-To: <cover.1574781196.git.leonard.crestez@nxp.com>
-References: <cover.1574781196.git.leonard.crestez@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1727028AbfKZPeo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 26 Nov 2019 10:34:44 -0500
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 26 Nov 2019 07:34:43 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,246,1571727600"; 
+   d="scan'208";a="233783662"
+Received: from fmsmsx107.amr.corp.intel.com ([10.18.124.205])
+  by fmsmga004.fm.intel.com with ESMTP; 26 Nov 2019 07:34:43 -0800
+Received: from fmsmsx118.amr.corp.intel.com (10.18.116.18) by
+ fmsmsx107.amr.corp.intel.com (10.18.124.205) with Microsoft SMTP Server (TLS)
+ id 14.3.439.0; Tue, 26 Nov 2019 07:34:43 -0800
+Received: from shsmsx106.ccr.corp.intel.com (10.239.4.159) by
+ fmsmsx118.amr.corp.intel.com (10.18.116.18) with Microsoft SMTP Server (TLS)
+ id 14.3.439.0; Tue, 26 Nov 2019 07:34:42 -0800
+Received: from shsmsx108.ccr.corp.intel.com ([169.254.8.41]) by
+ SHSMSX106.ccr.corp.intel.com ([169.254.10.248]) with mapi id 14.03.0439.000;
+ Tue, 26 Nov 2019 23:34:41 +0800
+From:   "Zhang, Rui" <rui.zhang@intel.com>
+To:     "Zhang, Rui" <rui.zhang@intel.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        "eduval@amazon.com" <eduval@amazon.com>
+CC:     LKML <linux-kernel@vger.kernel.org>,
+        "eduval@amazon.com" <eduval@amazon.com>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: RE: [PATCH] MAINTAINERS: thermal: Eduardo's email is bouncing
+Thread-Topic: [PATCH] MAINTAINERS: thermal: Eduardo's email is bouncing
+Thread-Index: AQHVohS5Ixvfndb26E+eyP+M+LEZvKebIy2AgAFHYgCAAS68EA==
+Date:   Tue, 26 Nov 2019 15:34:40 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B90926377666A90@SHSMSX108.ccr.corp.intel.com>
+References: <20191123154303.2202-1-f.fainelli@gmail.com>
+         <CAHLCerPKQSLrgybYhhFDxjXu56BD+iAyz1OYF14rTbjotEkD7g@mail.gmail.com>
+ <b146b35e4434a0bf57dfd8052b2b455f06fa46ab.camel@intel.com>
+In-Reply-To: <b146b35e4434a0bf57dfd8052b2b455f06fa46ab.camel@intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-titus-metadata-40: eyJDYXRlZ29yeUxhYmVscyI6IiIsIk1ldGFkYXRhIjp7Im5zIjoiaHR0cDpcL1wvd3d3LnRpdHVzLmNvbVwvbnNcL0ludGVsMyIsImlkIjoiNTRmMjY4MjYtOTc1NC00MTE3LWEwNzEtNjIyMGJlNzFmMGUyIiwicHJvcHMiOlt7Im4iOiJDVFBDbGFzc2lmaWNhdGlvbiIsInZhbHMiOlt7InZhbHVlIjoiQ1RQX05UIn1dfV19LCJTdWJqZWN0TGFiZWxzIjpbXSwiVE1DVmVyc2lvbiI6IjE3LjEwLjE4MDQuNDkiLCJUcnVzdGVkTGFiZWxIYXNoIjoiUCtaeHNaMUxPbmdxZExrcHd0WWhWYTJFUlwvaG12ekM1V1MwdTltUEN3S1BUOXFNTzkrZ1dvSXV4V0hSclNhZksifQ==
+x-ctpclassification: CTP_NT
+dlp-product: dlpe-windows
+dlp-version: 11.2.0.6
+dlp-reaction: no-action
+x-originating-ip: [10.239.127.40]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Support for adding per-device frequency limits was removed in
-commit 2aac8bdf7a0f ("PM: QoS: Drop frequency QoS types from device PM QoS")
-after cpufreq switched to use a new "freq_constraints" construct.
-
-Restore support for per-device freq limits but base this upon
-freq_constraints. This is primarily meant to be used by the devfreq
-subsystem.
-
-This removes the "static" marking on freq_qos_apply but does not export
-it for modules.
-
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
----
- drivers/base/power/qos.c | 73 ++++++++++++++++++++++++++++++++++++----
- include/linux/pm_qos.h   | 12 +++++++
- kernel/power/qos.c       |  4 ++-
- 3 files changed, 82 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 350dcafd751f..8e93167f1783 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -113,14 +113,24 @@ s32 dev_pm_qos_read_value(struct device *dev, enum dev_pm_qos_req_type type)
- 	unsigned long flags;
- 	s32 ret;
- 
- 	spin_lock_irqsave(&dev->power.lock, flags);
- 
--	if (type == DEV_PM_QOS_RESUME_LATENCY) {
-+	switch (type) {
-+	case DEV_PM_QOS_RESUME_LATENCY:
- 		ret = IS_ERR_OR_NULL(qos) ? PM_QOS_RESUME_LATENCY_NO_CONSTRAINT
- 			: pm_qos_read_value(&qos->resume_latency);
--	} else {
-+		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+		ret = IS_ERR_OR_NULL(qos) ? PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE
-+			: freq_qos_read_value(&qos->freq, FREQ_QOS_MIN);
-+		break;
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		ret = IS_ERR_OR_NULL(qos) ? PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE
-+			: freq_qos_read_value(&qos->freq, FREQ_QOS_MAX);
-+		break;
-+	default:
- 		WARN_ON(1);
- 		ret = 0;
- 	}
- 
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
-@@ -157,10 +167,14 @@ static int apply_constraint(struct dev_pm_qos_request *req,
- 		if (ret) {
- 			value = pm_qos_read_value(&qos->latency_tolerance);
- 			req->dev->power.set_latency_tolerance(req->dev, value);
- 		}
- 		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		ret = freq_qos_apply(&req->data.freq, action, value);
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
- 					  action, value);
- 		break;
- 	default:
-@@ -207,10 +221,12 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->target_value = PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE;
- 	c->default_value = PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE;
- 	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
- 	c->type = PM_QOS_MIN;
- 
-+	freq_constraints_init(&qos->freq);
-+
- 	INIT_LIST_HEAD(&qos->flags.list);
- 
- 	spin_lock_irq(&dev->power.lock);
- 	dev->power.qos = qos;
- 	spin_unlock_irq(&dev->power.lock);
-@@ -267,10 +283,24 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
- 
-+	c = &qos->freq.min_freq;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.freq.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ,
-+				 PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
-+
-+	c = &qos->freq.max_freq;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.freq.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ,
-+				 PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
-+
- 	f = &qos->flags;
- 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
-@@ -312,15 +342,26 @@ static int __dev_pm_qos_add_request(struct device *dev,
- 		ret = -ENODEV;
- 	else if (!dev->power.qos)
- 		ret = dev_pm_qos_constraints_allocate(dev);
- 
- 	trace_dev_pm_qos_add_request(dev_name(dev), type, value);
--	if (!ret) {
--		req->dev = dev;
--		req->type = type;
-+	if (ret)
-+		return ret;
-+
-+	req->dev = dev;
-+	req->type = type;
-+	if (req->type == DEV_PM_QOS_MIN_FREQUENCY)
-+		ret = freq_qos_add_request(&dev->power.qos->freq,
-+					   &req->data.freq,
-+					   FREQ_QOS_MIN, value);
-+	else if (req->type == DEV_PM_QOS_MAX_FREQUENCY)
-+		ret = freq_qos_add_request(&dev->power.qos->freq,
-+					   &req->data.freq,
-+					   FREQ_QOS_MAX, value);
-+	else
- 		ret = apply_constraint(req, PM_QOS_ADD_REQ, value);
--	}
-+
- 	return ret;
- }
- 
- /**
-  * dev_pm_qos_add_request - inserts new qos request into the list
-@@ -380,10 +421,14 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 	case DEV_PM_QOS_LATENCY_TOLERANCE:
- 		curr_value = req->data.pnode.prio;
- 		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		curr_value = req->data.freq.pnode.prio;
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		curr_value = req->data.flr.flags;
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -505,10 +550,18 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
- 	switch (type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
- 						       notifier);
- 		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+		ret = freq_qos_add_notifier(&dev->power.qos->freq,
-+					    FREQ_QOS_MIN, notifier);
-+		break;
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		ret = freq_qos_add_notifier(&dev->power.qos->freq,
-+					    FREQ_QOS_MAX, notifier);
-+		break;
- 	default:
- 		WARN_ON(1);
- 		ret = -EINVAL;
- 	}
- 
-@@ -544,10 +597,18 @@ int dev_pm_qos_remove_notifier(struct device *dev,
- 	switch (type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 		ret = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
- 							 notifier);
- 		break;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+		ret = freq_qos_remove_notifier(&dev->power.qos->freq,
-+					       FREQ_QOS_MIN, notifier);
-+		break;
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		ret = freq_qos_remove_notifier(&dev->power.qos->freq,
-+					       FREQ_QOS_MAX, notifier);
-+		break;
- 	default:
- 		WARN_ON(1);
- 		ret = -EINVAL;
- 	}
- 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 678fec6da5b9..19eafca5680e 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -32,10 +32,12 @@ enum pm_qos_flags_status {
- #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	PM_QOS_LATENCY_ANY
- #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT	PM_QOS_LATENCY_ANY
- #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS	PM_QOS_LATENCY_ANY_NS
- #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
-+#define PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE	0
-+#define PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE	FREQ_QOS_MAX_DEFAULT_VALUE
- #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
- 
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
- 
- struct pm_qos_request {
-@@ -99,25 +101,29 @@ struct freq_qos_request {
- 
- 
- enum dev_pm_qos_req_type {
- 	DEV_PM_QOS_RESUME_LATENCY = 1,
- 	DEV_PM_QOS_LATENCY_TOLERANCE,
-+	DEV_PM_QOS_MIN_FREQUENCY,
-+	DEV_PM_QOS_MAX_FREQUENCY,
- 	DEV_PM_QOS_FLAGS,
- };
- 
- struct dev_pm_qos_request {
- 	enum dev_pm_qos_req_type type;
- 	union {
- 		struct plist_node pnode;
- 		struct pm_qos_flags_request flr;
-+		struct freq_qos_request freq;
- 	} data;
- 	struct device *dev;
- };
- 
- struct dev_pm_qos {
- 	struct pm_qos_constraints resume_latency;
- 	struct pm_qos_constraints latency_tolerance;
-+	struct freq_constraints freq;
- 	struct pm_qos_flags flags;
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
- 	struct dev_pm_qos_request *flags_req;
- };
-@@ -212,10 +218,14 @@ static inline s32 dev_pm_qos_read_value(struct device *dev,
- 					enum dev_pm_qos_req_type type)
- {
- 	switch (type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 		return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-+	case DEV_PM_QOS_MIN_FREQUENCY:
-+		return PM_QOS_MIN_FREQUENCY_DEFAULT_VALUE;
-+	case DEV_PM_QOS_MAX_FREQUENCY:
-+		return PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE;
- 	default:
- 		WARN_ON(1);
- 		return 0;
- 	}
- }
-@@ -291,10 +301,12 @@ s32 freq_qos_read_value(struct freq_constraints *qos,
- int freq_qos_add_request(struct freq_constraints *qos,
- 			 struct freq_qos_request *req,
- 			 enum freq_qos_req_type type, s32 value);
- int freq_qos_update_request(struct freq_qos_request *req, s32 new_value);
- int freq_qos_remove_request(struct freq_qos_request *req);
-+int freq_qos_apply(struct freq_qos_request *req,
-+		   enum pm_qos_req_action action, s32 value);
- 
- int freq_qos_add_notifier(struct freq_constraints *qos,
- 			  enum freq_qos_req_type type,
- 			  struct notifier_block *notifier);
- int freq_qos_remove_notifier(struct freq_constraints *qos,
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index a45cba7df0ae..83edf8698118 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -712,12 +712,14 @@ s32 freq_qos_read_value(struct freq_constraints *qos,
- /**
-  * freq_qos_apply - Add/modify/remove frequency QoS request.
-  * @req: Constraint request to apply.
-  * @action: Action to perform (add/update/remove).
-  * @value: Value to assign to the QoS request.
-+ *
-+ * This is only meant to be called from inside pm_qos, not drivers.
-  */
--static int freq_qos_apply(struct freq_qos_request *req,
-+int freq_qos_apply(struct freq_qos_request *req,
- 			  enum pm_qos_req_action action, s32 value)
- {
- 	int ret;
- 
- 	switch(req->type) {
--- 
-2.17.1
-
+TGV0J3MgdHJ5IEVkdWFyZG8nIEFtYXpvbiBlbWFpbCBhY2NvdW50IGJlZm9yZSBhcHBseWluZyB0
+aGlzIG9uZS4NCg0KVGhhbmtzLA0KcnVpDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gRnJvbTogbGludXgtcG0tb3duZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtcG0t
+DQo+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFpoYW5nIFJ1aQ0KPiBTZW50
+OiBUdWVzZGF5LCBOb3ZlbWJlciAyNiwgMjAxOSAxOjI5IFBNDQo+IFRvOiBBbWl0IEt1Y2hlcmlh
+IDxhbWl0Lmt1Y2hlcmlhQHZlcmR1cmVudC5jb20+OyBGbG9yaWFuIEZhaW5lbGxpDQo+IDxmLmZh
+aW5lbGxpQGdtYWlsLmNvbT4NCj4gQ2M6IExLTUwgPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5v
+cmc+OyBlZHV2YWxAYW1hem9uLmNvbTsgTGludXggUE0NCj4gbGlzdCA8bGludXgtcG1Admdlci5r
+ZXJuZWwub3JnPjsgRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+DQo+
+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIE1BSU5UQUlORVJTOiB0aGVybWFsOiBFZHVhcmRvJ3MgZW1h
+aWwgaXMgYm91bmNpbmcNCj4gDQo+IE9uIE1vbiwgMjAxOS0xMS0yNSBhdCAxNToyNyArMDUzMCwg
+QW1pdCBLdWNoZXJpYSB3cm90ZToNCj4gPiBPbiBTYXQsIE5vdiAyMywgMjAxOSBhdCA5OjEzIFBN
+IEZsb3JpYW4gRmFpbmVsbGkgPA0KPiA+IGYuZmFpbmVsbGlAZ21haWwuY29tPiB3cm90ZToNCj4g
+PiA+DQo+ID4gPiBUaGUgbGFzdCB0d28gZW1haWxzIHRvIEVkdWFyZG8gd2VyZSByZXR1cm5lZCB3
+aXRoOg0KPiA+ID4NCj4gPiA+IDQ1MiA0LjIuMiBUaGUgZW1haWwgYWNjb3VudCB0aGF0IHlvdSB0
+cmllZCB0byByZWFjaCBpcyBvdmVyIHF1b3RhLg0KPiA+ID4gUGxlYXNlIGRpcmVjdCB0aGUgcmVj
+aXBpZW50IHRvDQo+ID4gPiBodHRwczovL3N1cHBvcnQuZ29vZ2xlLmNvbS9tYWlsLz9wPU92ZXJR
+dW90YVRlbXANCj4gajE3c29yNjI2MTYyd3JxLjQ5DQo+ID4gPiAtDQo+ID4gPiBnc210cA0KPiA+
+DQo+ID4gUmlnaHQsIEkndmUgYmVlbiBzZWVpbmcgdGhlIHNhbWUgZm9yIHRoZSBsYXN0IHdlZWsg
+Zm9yIGFsbCBteQ0KPiA+IHBvc3RpbmdzLg0KPiANCj4gb2theSwgSSB3aWxsIHF1ZXVlIHRoaXMg
+cGF0Y2guDQo+IA0KPiA+DQo+ID4gUnVpLCB3aWxsIHlvdSBwbGVhc2Ugc2VuZCB0aGUgcHVsbCBy
+ZXF1ZXN0IHRvIExpbnVzIGZvciA1LjUgKGFuZCBnb2luZw0KPiA+IGZvcndhcmQpIHdpdGggYWxs
+IHRoZSBjb250ZW50cyBvZiB0aGVybWFsL25leHRbMV0/IE90aGVyd2lzZSwgdGhlDQo+ID4gdGhl
+cm1hbCBzb2MgcGF0Y2hlcyB3aWxsIHVubmVjZXNzYXJpbHkgbWlzcyB0aGUgbWVyZ2Ugd2luZG93
+LiBUaGV5J3ZlDQo+ID4gYmVlbiBiYWtpbmcgaW4gbGludXgtbmV4dCBmb3IgYSB3aGlsZS4NCj4g
+DQo+IHllcywgYWxsIHRoZSBwYXRjaGVzIGluIHRoZXJtYWwvbmV4dCBhcmUgZm9yIDUuNS1yYzEu
+DQo+IA0KPiB0aGFua3MsDQo+IHJ1aQ0KPiANCj4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogRmxv
+cmlhbiBGYWluZWxsaSA8Zi5mYWluZWxsaUBnbWFpbC5jb20+DQo+ID4NCj4gPiBbMV0NCj4gPiBo
+dHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC90aGVybWFsL2xp
+bnV4LmdpdC9sb2cvDQo+ID4gP2g9dGhlcm1hbC9uZXh0DQo+ID4NCj4gPg0KPiA+DQo+ID4gPiAt
+LS0NCj4gPiA+ICBNQUlOVEFJTkVSUyB8IDEgLQ0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxIGRl
+bGV0aW9uKC0pDQo+ID4gPg0KPiA+ID4gZGlmZiAtLWdpdCBhL01BSU5UQUlORVJTIGIvTUFJTlRB
+SU5FUlMgaW5kZXgNCj4gPiA+IGU0ZjE3MGQ4YmMyOS4uODRlOGJkYWU0YmViIDEwMDY0NA0KPiA+
+ID4gLS0tIGEvTUFJTlRBSU5FUlMNCj4gPiA+ICsrKyBiL01BSU5UQUlORVJTDQo+ID4gPiBAQCAt
+MTYwODUsNyArMTYwODUsNiBAQCBGOiAgICAgIGRyaXZlcnMvbWVkaWEvcmFkaW8vcmFkaW8tDQo+
+ID4gPiByYXJlbW9uby5jDQo+ID4gPg0KPiA+ID4gIFRIRVJNQUwNCj4gPiA+ICBNOiAgICAgWmhh
+bmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0KPiA+ID4gLU06ICAgICBFZHVhcmRvIFZhbGVu
+dGluIDxlZHViZXp2YWxAZ21haWwuY29tPg0KPiA+ID4gIFI6ICAgICBEYW5pZWwgTGV6Y2FubyA8
+ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz4NCj4gPiA+ICBSOiAgICAgQW1pdCBLdWNoZXJpYSA8
+YW1pdC5rdWNoZXJpYUB2ZXJkdXJlbnQuY29tPg0KPiA+ID4gIEw6ICAgICBsaW51eC1wbUB2Z2Vy
+Lmtlcm5lbC5vcmcNCj4gPiA+IC0tDQo+ID4gPiAyLjE3LjENCj4gPiA+DQoNCg==
