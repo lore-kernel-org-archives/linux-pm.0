@@ -2,26 +2,26 @@ Return-Path: <SRS0=zVwF=ZS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8ABDCC432C0
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C76A8C43141
 	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 13:13:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5E3F92073F
+	by mail.kernel.org (Postfix) with ESMTP id A5AC820869
 	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 13:13:06 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727655AbfKZNM7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Nov 2019 08:12:59 -0500
-Received: from esa4.microchip.iphmx.com ([68.232.154.123]:27044 "EHLO
-        esa4.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727386AbfKZNM6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2019 08:12:58 -0500
-Received-SPF: Pass (esa4.microchip.iphmx.com: domain of
+        id S1726121AbfKZNM4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Nov 2019 08:12:56 -0500
+Received: from esa3.microchip.iphmx.com ([68.232.153.233]:56971 "EHLO
+        esa3.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727386AbfKZNMz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2019 08:12:55 -0500
+Received-SPF: Pass (esa3.microchip.iphmx.com: domain of
   Claudiu.Beznea@microchip.com designates 198.175.253.82 as
   permitted sender) identity=mailfrom;
-  client-ip=198.175.253.82; receiver=esa4.microchip.iphmx.com;
+  client-ip=198.175.253.82; receiver=esa3.microchip.iphmx.com;
   envelope-from="Claudiu.Beznea@microchip.com";
   x-sender="Claudiu.Beznea@microchip.com";
   x-conformance=spf_only; x-record-type="v=spf1";
@@ -29,30 +29,30 @@ Received-SPF: Pass (esa4.microchip.iphmx.com: domain of
   a:smtpout.microchip.com -exists:%{i}.spf.microchip.iphmx.com
   include:servers.mcsv.net include:mktomail.com
   include:spf.protection.outlook.com ~all"
-Received-SPF: None (esa4.microchip.iphmx.com: no sender
+Received-SPF: None (esa3.microchip.iphmx.com: no sender
   authenticity information available from domain of
   postmaster@email.microchip.com) identity=helo;
-  client-ip=198.175.253.82; receiver=esa4.microchip.iphmx.com;
+  client-ip=198.175.253.82; receiver=esa3.microchip.iphmx.com;
   envelope-from="Claudiu.Beznea@microchip.com";
   x-sender="postmaster@email.microchip.com";
   x-conformance=spf_only
-Authentication-Results: esa4.microchip.iphmx.com; dkim=none (message not signed) header.i=none; spf=Pass smtp.mailfrom=Claudiu.Beznea@microchip.com; spf=None smtp.helo=postmaster@email.microchip.com; dmarc=pass (p=none dis=none) d=microchip.com
-IronPort-SDR: KxslchlwZBJmurAvl/0rXqdVNm05ODGfgUNjjqt91fLE9YEbmObXWCPniQ/PsycbLZ7s7gDw0V
- tLUeQVe8E1SYHN1lLBmHYAQcK29XnVhtZ+Yh4MYtkWRz9BW2EL9quD1cxOCOi16KfincaYMcvb
- N0PJ2LxQXcz+fwaQ8SzVH497XdmNLGwbdwL8/fcPkSjtBG9vECkQjfqi/FfVr3at97xnBTYJKP
- Roj06q1jR+iYdNyJ/4TCpqesEEXIXAxBWHa3Skr8lhqsd0mGFfo1Mmv3b2epLrXG8fv88ck0Of
- 1N0=
+Authentication-Results: esa3.microchip.iphmx.com; dkim=none (message not signed) header.i=none; spf=Pass smtp.mailfrom=Claudiu.Beznea@microchip.com; spf=None smtp.helo=postmaster@email.microchip.com; dmarc=pass (p=none dis=none) d=microchip.com
+IronPort-SDR: s1r+VMWgk8BGUsk6zfUdzjdhEn82Pb8LNILPviEHf6UKZVsA7TEfbZZp12ue+QiPgRIrTxS1G9
+ EIY0liGmNCUs4qKK372toowLGz37a79E0bwdfueQtWRauFBOVlEcMhqjYwDFdYzZbqB7VUnzK8
+ MhIXM0CWnh4AigxQZ+xuJxl9askTSJ2xgSph6ZdvolZa+Zy2zKQOP4Z7k+Ec6m2fwmCc1oeubf
+ deGhJlKMKKUZBwApeSwNZj6gMENvLXL5cG1T51cbA3H5sntk/l0djihRRFOyRnbUTZy5ifRn0a
+ BCc=
 X-IronPort-AV: E=Sophos;i="5.69,245,1571727600"; 
-   d="scan'208";a="56669027"
+   d="scan'208";a="58391051"
 Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
-  by esa4.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 26 Nov 2019 06:12:58 -0700
+  by esa3.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 26 Nov 2019 06:12:54 -0700
 Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1713.5; Tue, 26 Nov 2019 06:12:57 -0700
+ 15.1.1713.5; Tue, 26 Nov 2019 06:12:52 -0700
 Received: from m18063-ThinkPad-T460p.mchp-main.com (10.10.85.251) by
  chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
- 15.1.1713.5 via Frontend Transport; Tue, 26 Nov 2019 06:12:55 -0700
+ 15.1.1713.5 via Frontend Transport; Tue, 26 Nov 2019 06:12:49 -0700
 From:   Claudiu Beznea <claudiu.beznea@microchip.com>
 To:     <linux@armlinux.org.uk>, <nicolas.ferre@microchip.com>,
         <alexandre.belloni@bootlin.com>, <ludovic.desroches@microchip.com>,
@@ -60,12 +60,10 @@ To:     <linux@armlinux.org.uk>, <nicolas.ferre@microchip.com>,
 CC:     <linux-arm-kernel@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: [PATCH v2 02/17] ARM: at91: pm: move SAM9X60's PM under its own SoC config flag
-Date:   Tue, 26 Nov 2019 15:12:06 +0200
-Message-ID: <1574773941-20649-3-git-send-email-claudiu.beznea@microchip.com>
+Subject: [PATCH v2 00/17] SoC and defconfig support for SAM9X60
+Date:   Tue, 26 Nov 2019 15:12:04 +0200
+Message-ID: <1574773941-20649-1-git-send-email-claudiu.beznea@microchip.com>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1574773941-20649-1-git-send-email-claudiu.beznea@microchip.com>
-References: <1574773941-20649-1-git-send-email-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-pm-owner@vger.kernel.org
@@ -73,110 +71,61 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Move SAM9X60's PM part under SoC config flag. This allows the building
-of SAM9X60 platform withouth depending on CONFIG_SOC_AT91SAM9 flag,
-allowing us to select only necessary config flags for SAM9X60.
+Hi,
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
----
- arch/arm/mach-at91/Makefile   |  1 +
- arch/arm/mach-at91/at91sam9.c | 18 ------------------
- arch/arm/mach-at91/pm.c       |  2 +-
- arch/arm/mach-at91/sam9x60.c  | 34 ++++++++++++++++++++++++++++++++++
- 4 files changed, 36 insertions(+), 19 deletions(-)
+This series enables proper support for SAM9X60 in Kconfig and
+defconfig.
+
+Thank you,
+Claudiu Beznea
+
+Changes in v2:
+- cahnged cover letter title; previously it was:
+  "add defconfig support for SAM9X60"
+- have new entry in arch/arm/mach-at91/Kconfig for SOC_SAM9X60
+  independent of SOC_AT91SAM9 to be able to select only necessary
+  config flags for SAM9X60 (patches 02/17, 03/17)
+- select POWER_RESET_AT91_RESET and POWER_RESET_AT91_SAMA5D2_SHDWC
+  as for SAMA5D2 (patches 04/17, 05/17)
+- select DEBUG_AT91_RM9200_DBGU (patch 06/17)
+- shaped a bit the patches titles and commit desciptions for defconfig
+  patches (patches 09-17/17)
+
+Claudiu Beznea (12):
+  ARM: at91: Kconfig: add sam9x60 pll config flag
+  ARM: at91: pm: move SAM9X60's PM under its own SoC config flag
+  drivers: soc: atmel: move sam9x60 under its own config flag
+  power: reset: Kconfig: select POWER_RESET_AT91_RESET for sam9x60
+  drivers: soc: atmel: select POWER_RESET_AT91_SAMA5D2_SHDWC for sam9x60
+  ARM: debug-ll: select DEBUG_AT91_RM9200_DBGU for sam9x60
+  ARM: at91: Kconfig: add config flag for SAM9X60 SoC
+  ARM: at91/defconfig: use savedefconfig
+  ARM: at91/defconfig: enable config flag for sam9x60 SoC
+  ARM: at91/defconfig: enable config flag for atmel maxtouch
+  ARM: at91/defconfig: enable config flag for flexcom
+  ARM: at91/defconfig: enable config flag for XDMAC
+
+Codrin Ciubotariu (3):
+  ARM: at91/defconfig: enable config flag for I2S Multi-channel
+  ARM: at91/defconfig: enable config flag for audio PROTO board
+  ARM: at91/defconfig: enable config flag for CLASSD
+
+Tudor Ambarus (2):
+  ARM: at91/defconfig: enable config flag for SAMA5D2's ADC
+  ARM: at91/defconfig: enable config flag for ATMEL QUADSPI
+
+ arch/arm/Kconfig.debug             |  6 ++---
+ arch/arm/configs/at91_dt_defconfig | 55 ++++++++++++++++++--------------------
+ arch/arm/mach-at91/Kconfig         | 24 +++++++++++++++--
+ arch/arm/mach-at91/Makefile        |  1 +
+ arch/arm/mach-at91/at91sam9.c      | 18 -------------
+ arch/arm/mach-at91/pm.c            |  2 +-
+ arch/arm/mach-at91/sam9x60.c       | 34 +++++++++++++++++++++++
+ drivers/power/reset/Kconfig        |  4 +--
+ drivers/soc/atmel/soc.c            |  5 ++--
+ 9 files changed, 92 insertions(+), 57 deletions(-)
  create mode 100644 arch/arm/mach-at91/sam9x60.c
 
-diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
-index de64301dcff2..f565490f1b70 100644
---- a/arch/arm/mach-at91/Makefile
-+++ b/arch/arm/mach-at91/Makefile
-@@ -6,6 +6,7 @@
- # CPU-specific support
- obj-$(CONFIG_SOC_AT91RM9200)	+= at91rm9200.o
- obj-$(CONFIG_SOC_AT91SAM9)	+= at91sam9.o
-+obj-$(CONFIG_SOC_SAM9X60)	+= sam9x60.o
- obj-$(CONFIG_SOC_SAMA5)		+= sama5.o
- obj-$(CONFIG_SOC_SAMV7)		+= samv7.o
- 
-diff --git a/arch/arm/mach-at91/at91sam9.c b/arch/arm/mach-at91/at91sam9.c
-index bf629c90c758..7e572189a5eb 100644
---- a/arch/arm/mach-at91/at91sam9.c
-+++ b/arch/arm/mach-at91/at91sam9.c
-@@ -31,21 +31,3 @@ DT_MACHINE_START(at91sam_dt, "Atmel AT91SAM9")
- 	.init_machine	= at91sam9_init,
- 	.dt_compat	= at91_dt_board_compat,
- MACHINE_END
--
--static void __init sam9x60_init(void)
--{
--	of_platform_default_populate(NULL, NULL, NULL);
--
--	sam9x60_pm_init();
--}
--
--static const char *const sam9x60_dt_board_compat[] __initconst = {
--	"microchip,sam9x60",
--	NULL
--};
--
--DT_MACHINE_START(sam9x60_dt, "Microchip SAM9X60")
--	/* Maintainer: Microchip */
--	.init_machine	= sam9x60_init,
--	.dt_compat	= sam9x60_dt_board_compat,
--MACHINE_END
-diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
-index d5af6aedc02c..56a6a49b19e2 100644
---- a/arch/arm/mach-at91/pm.c
-+++ b/arch/arm/mach-at91/pm.c
-@@ -805,7 +805,7 @@ void __init at91rm9200_pm_init(void)
- 
- void __init sam9x60_pm_init(void)
- {
--	if (!IS_ENABLED(CONFIG_SOC_AT91SAM9))
-+	if (!IS_ENABLED(CONFIG_SOC_SAM9X60))
- 		return;
- 
- 	at91_pm_modes_init();
-diff --git a/arch/arm/mach-at91/sam9x60.c b/arch/arm/mach-at91/sam9x60.c
-new file mode 100644
-index 000000000000..d8c739d25458
---- /dev/null
-+++ b/arch/arm/mach-at91/sam9x60.c
-@@ -0,0 +1,34 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Setup code for SAM9X60.
-+ *
-+ * Copyright (C) 2019 Microchip Technology Inc. and its subsidiaries
-+ *
-+ * Author: Claudiu Beznea <claudiu.beznea@microchip.com>
-+ */
-+
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/mach/arch.h>
-+#include <asm/system_misc.h>
-+
-+#include "generic.h"
-+
-+static void __init sam9x60_init(void)
-+{
-+	of_platform_default_populate(NULL, NULL, NULL);
-+
-+	sam9x60_pm_init();
-+}
-+
-+static const char *const sam9x60_dt_board_compat[] __initconst = {
-+	"microchip,sam9x60",
-+	NULL
-+};
-+
-+DT_MACHINE_START(sam9x60_dt, "Microchip SAM9X60")
-+	/* Maintainer: Microchip */
-+	.init_machine	= sam9x60_init,
-+	.dt_compat	= sam9x60_dt_board_compat,
-+MACHINE_END
 -- 
 2.7.4
 
