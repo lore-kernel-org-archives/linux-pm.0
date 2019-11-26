@@ -2,83 +2,126 @@ Return-Path: <SRS0=zVwF=ZS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MIME_BASE64_TEXT,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8461BC432C0
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 05:35:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0252AC432C0
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 05:59:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5C5C2207DD
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 05:35:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CA6762073F
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 05:59:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="jtWj3dO2"
+	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="sCCZcTBW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727386AbfKZFfB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Nov 2019 00:35:01 -0500
-Received: from mailgw01.mediatek.com ([210.61.82.183]:36382 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1725372AbfKZFfB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2019 00:35:01 -0500
-X-UUID: 6408d35a8ce442359e705cb85c5e23d5-20191126
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=+ylx+liID2k/ZQg5HjGKdpWZLavo0cVeqpmKRzq/c94=;
-        b=jtWj3dO27grh1T0HwxocZGqyNoMbvz5HPzjRlHDkFYbL0pKm7qWtd54KwoauhHActfkMFSKnUi7lszYOdpRqP9HyvcXOUcpl4osHmH9kIlG7+YIJpdIPSRs5YdMR3W4rUDbYLrT3YIZnrCXh8G0i3zZ4A8J0I8EWvY3QgvkKRZI=;
-X-UUID: 6408d35a8ce442359e705cb85c5e23d5-20191126
-Received: from mtkcas06.mediatek.inc [(172.21.101.30)] by mailgw01.mediatek.com
-        (envelope-from <freddy.hsin@mediatek.com>)
-        (Cellopoint E-mail Firewall v4.1.10 Build 0809 with TLS)
-        with ESMTP id 1110702092; Tue, 26 Nov 2019 13:34:55 +0800
-Received: from mtkcas08.mediatek.inc (172.21.101.126) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1395.4; Tue, 26 Nov 2019 13:34:50 +0800
-Received: from mtkswgap22.mediatek.inc (172.21.77.33) by mtkcas08.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1395.4 via Frontend
- Transport; Tue, 26 Nov 2019 13:34:35 +0800
-From:   <freddy.hsin@mediatek.com>
-To:     <sre@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <wim@linux-watchdog.org>,
-        <linux@roeck-us.net>, <matthias.bgg@gmail.com>,
-        <linux-watchdog@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>, <robh+dt@kernel.org>,
-        <mark.rutland@arm.com>, <devicetree@vger.kernel.org>
-CC:     <Chang-An.Chen@mediatek.com>, <wsd_upstream@mediatek.com>,
-        Freddy Hsin <freddy.hsin@mediatek.com>
-Subject: [PATCH v1 2/4] watchdog: populate reboot mode node in toprgu node of MTK RGU (Reset Generation Unit)
-Date:   Tue, 26 Nov 2019 13:34:48 +0800
-Message-ID: <1574746490-625-3-git-send-email-freddy.hsin@mediatek.com>
-X-Mailer: git-send-email 1.7.9.5
-In-Reply-To: <1574746490-625-1-git-send-email-freddy.hsin@mediatek.com>
-References: <1574746490-625-1-git-send-email-freddy.hsin@mediatek.com>
+        id S1727097AbfKZF7a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Nov 2019 00:59:30 -0500
+Received: from cmta19.telus.net ([209.171.16.92]:59850 "EHLO cmta19.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726052AbfKZF73 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 26 Nov 2019 00:59:29 -0500
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id ZTsgi5W0bhFQMZTshiLxqh; Mon, 25 Nov 2019 22:59:27 -0700
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1574747967; bh=z8K/VrFh+Mh+HHkwgWhGVWNDyBSRROvGxEQPmJ/967I=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=sCCZcTBW2BMiJWxHG+31qUiS8xoOOxA3Rs9G5zJZw8Dal6ujQ/ma8xWDjNcsmQ5Cr
+         wnhoI1/VLFGMkPWdQZKjfz6v+CIc7+II6RlrWfO58nWSvlairt9prGEO6WRvwp/l2a
+         eqeLT09Sntw/V8/Zi/g52Dhkiihc8uGLToMGFyz72eBL61h+gb5yMnz9TopxqdF+rj
+         RD73LskYr1EEGG6i2oGEF4xNJgh9he+/OfGad3bZujgpTUMi4ftyNPyubQ3rRJiSo5
+         owq+gdT5pYveQowNp+0FupqQD3NQMbkWn2yPG9D2B76pXpjVh3cI2ljUTHCJv4X+Ed
+         FgcXCH0NXW/Cw==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.3 cv=ZPWpZkzb c=1 sm=1 tr=0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=jpOVt7BSZ2e4Z31A5e1TngXxSK0=:19
+ a=IkcTkHD0fZMA:10 a=JFpEMq-k8J54Cn6rv2oA:9 a=QEXdDO2ut3YA:10
+ a=pHzHmUro8NiASowvMSCR:22 a=Ew2E2A-JSTLzCXPT_086:22
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Giovanni Gherdovich'" <ggherdovich@suse.cz>,
+        "'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>,
+        "'Thomas Gleixner'" <tglx@linutronix.de>,
+        "'Ingo Molnar'" <mingo@redhat.com>,
+        "'Peter Zijlstra'" <peterz@infradead.org>,
+        "'Borislav Petkov'" <bp@suse.de>, "'Len Brown'" <lenb@kernel.org>,
+        "'Rafael J . Wysocki'" <rjw@rjwysocki.net>
+Cc:     <x86@kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        "'Mel Gorman'" <mgorman@techsingularity.net>,
+        "'Matt Fleming'" <matt@codeblueprint.co.uk>,
+        "'Viresh Kumar'" <viresh.kumar@linaro.org>,
+        "'Juri Lelli'" <juri.lelli@redhat.com>,
+        "'Paul Turner'" <pjt@google.com>,
+        "'Vincent Guittot'" <vincent.guittot@linaro.org>,
+        "'Quentin Perret'" <qperret@qperret.net>,
+        "'Dietmar Eggemann'" <dietmar.eggemann@arm.com>
+References: <20191113124654.18122-1-ggherdovich@suse.cz>         <20191113124654.18122-2-ggherdovich@suse.cz>    <000001d5a29b$c944fd70$5bcef850$@net> <1574697961.16378.5.camel@suse.cz>
+In-Reply-To: <1574697961.16378.5.camel@suse.cz>
+Subject: RE: [PATCH v4 1/6] x86,sched: Add support for frequency invariance
+Date:   Mon, 25 Nov 2019 21:59:19 -0800
+Message-ID: <000801d5a41e$a7fce2c0$f7f6a840$@net>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
-Content-Transfer-Encoding: base64
+Content-Type: text/plain;
+        charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AdWjqXhG/2FkhiwgRMuiczjnDuyRDAAcWJdQ
+Content-Language: en-ca
+X-CMAE-Envelope: MS4wfInqMyosb61dzHgkCKzooGPz79WDnaXBPCmUSZDIwyZ5LmcPMdmWp44zLZREww2ABFfDRsT+z8Bgb6nk5mhKfDYozE8wV31XBvSJrTGlvGaCUEyO45Nm
+ ATKnDQWFQYihptyBVYWzlUx6dE/qeohbR2bjHUu/L3NipUmb/r1zLITY27BGqlwMVGcaDCHr3kVjLAE5fKX/cBg7Zl7To46YJn8Pji4L2JTKNWm1OSQaQoo9
+ 1Eg6kLlG3apyrkB6WoXltwHQQFvc8o058qggz40RXX2q7xys/KoYmXrfuHA+nKj+bypSPCzXs7Fhq8D30Xw1bIQQlLSUuHWOyvhyomfCvBmnZchiTuyLGRrN
+ YVvUBWqikuOPIAFT3SjmewJZqGJZ39T7E4qPvVZNNMHNeYniOYK29gb5+vHW56yaOXeMorj7rGGREntvD4r/az0kT0aMEzOTUmMa/DIGkVXvFVVunG3Wi11z
+ IbEHZeTxqdp8AbcLqw8v2X2kf3VN7O4o/CCTI9h8Vy0WisgXni9O5+oRpnvnKtQ9nmZPg2W+HQiXTfAUD978fTetQqJFv4aRGCfXki4zKiN/mJfZZmSjppSK
+ 1aj/0KNZh1UAeT07CoJNmK9lSkjxfsI7kBPKNpY3lyhkyu3Ds4r72CJVygeV8mBQZUQbitq/gPklx/hhbBBRgPkSxG5o1DlDXOaDwL18On8J4KepLw/S75zG
+ Fy62+K/DIgEU/E+yNwAotg2DGBPDBlV8vYs95DAXw07dA+gUCArEEQ==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-RnJvbTogRnJlZGR5IEhzaW4gPGZyZWRkeS5oc2luQG1lZGlhdGVrLmNvbT4NCg0Kb2ZfcGxhdGZv
-cm1fcG9wdWxhdGlvbiBzaG91bGQgYmUgYWRkZWQgaW4gdGhlIHByb2JlIGZ1bmN0aW9uIG9mDQp0
-b3ByZ3UgZHJpdmVyLCBvciB0aGUgcmVib290IG1vZGUgZHJpdmVyIHdpbGwgbm90IGJlIHByb2Jl
-ZA0KDQpTaWduZWQtb2ZmLWJ5OiBGcmVkZHkgSHNpbiA8ZnJlZGR5LmhzaW5AbWVkaWF0ZWsuY29t
-Pg0KLS0tDQogZHJpdmVycy93YXRjaGRvZy9tdGtfd2R0LmMgfCAgICAzICsrKw0KIDEgZmlsZSBj
-aGFuZ2VkLCAzIGluc2VydGlvbnMoKykNCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvd2F0Y2hkb2cv
-bXRrX3dkdC5jIGIvZHJpdmVycy93YXRjaGRvZy9tdGtfd2R0LmMNCmluZGV4IDljM2QwMDMuLjJm
-YjI2MTQgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL3dhdGNoZG9nL210a193ZHQuYw0KKysrIGIvZHJp
-dmVycy93YXRjaGRvZy9tdGtfd2R0LmMNCkBAIC0yMCw2ICsyMCw3IEBADQogI2luY2x1ZGUgPGxp
-bnV4L3R5cGVzLmg+DQogI2luY2x1ZGUgPGxpbnV4L3dhdGNoZG9nLmg+DQogI2luY2x1ZGUgPGxp
-bnV4L2RlbGF5Lmg+DQorI2luY2x1ZGUgPGxpbnV4L29mX3BsYXRmb3JtLmg+DQogDQogI2RlZmlu
-ZSBXRFRfTUFYX1RJTUVPVVQJCTMxDQogI2RlZmluZSBXRFRfTUlOX1RJTUVPVVQJCTENCkBAIC0x
-NjcsNiArMTY4LDggQEAgc3RhdGljIGludCBtdGtfd2R0X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9k
-ZXZpY2UgKnBkZXYpDQogCWlmIChJU19FUlIobXRrX3dkdC0+d2R0X2Jhc2UpKQ0KIAkJcmV0dXJu
-IFBUUl9FUlIobXRrX3dkdC0+d2R0X2Jhc2UpOw0KIA0KKwlvZl9wbGF0Zm9ybV9wb3B1bGF0ZShw
-ZGV2LT5kZXYub2Zfbm9kZSwgTlVMTCwgTlVMTCwgJnBkZXYtPmRldik7DQorDQogCW10a193ZHQt
-PndkdF9kZXYuaW5mbyA9ICZtdGtfd2R0X2luZm87DQogCW10a193ZHQtPndkdF9kZXYub3BzID0g
-Jm10a193ZHRfb3BzOw0KIAltdGtfd2R0LT53ZHRfZGV2LnRpbWVvdXQgPSBXRFRfTUFYX1RJTUVP
-VVQ7DQotLSANCjEuNy45LjUNCg==
+On 2019.11.25 08:06 Giovanni Gherdovich wrote:
+> On Sat, 2019-11-23 at 23:49 -0800, Doug Smythies wrote:
+>> ...
+>> Kernel 5.4-rc8 + revert, intel_cpufreq/schedutil: 3899 seconds
+>> Kernel 5.4-rc8 + gg 6 + revert, intel_cpufreq/schedutil: 2740.7 seconds
+>> Ratio: 0.70 (as expected)
+>> Kernel 5.4-rc8, intel_cpufreq/schedutil: 2334.7 seconds (faster than expected)
+>> Kernel 5.4-rc8 + gg 6 patch set, intel_cpufreq/schedutil: 2275.0 seconds (faster than expected)
+>> Ratio: 0.97 (not as expected)
+>> Kernel 5.4-rc8, intel_cpufreq/performance: 2215.3 seconds
+>> Kernel 5.4-rc8, intel_cpufreq/ondemand: 3286.3 seconds
+>> Re-stated from previous e-mail:
+>> Kernel 5.3-rc8, intel_cpufreq/schedutil: ratio: 0.69 (I don't have the original times)
+>
+> Hello Doug,
+>
+> schedutil in 5.4 going a lot faster than in 5.3 would be a surprise. I'm
+> running that same test too to check if I can see it as well.
+
+Great, thanks. But see below.
+
+>
+> Besides, as it's already been said this patchset adds frequency
+> scale-invariance to scheduler metrics such as load and utilization and that's
+> useful also in areas other than frequency scaling (most notably the scheduler
+> load balancer).
+
+The issue with the schedutil governor not working properly in the 5.4 RC series
+appears to be hardware dependant.
+
+My test computer is Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz., Sandy Bridge.
+On a temporary basis, I acquired a computer with an
+Intel(R) Core(TM) i5-4460 CPU @ 3.20GHz, Haswell,
+and schedutil governor behaviour with the exact same kernels is fine:
+
+That "gitsource" test, "make test" 6 times, first run thrown out:
+
+Kernel 5.4 intel_cpufreq/schedutil: 3411.8 seconds
+Kernel 5.4 + gg 6 intel_cpufreq/schedutil: 1696.7 seconds
+Ratio: 0.49
+Recall you got a ratio of 0.49 with 5th generation, Broadwell.
+
+... Doug
+
 
