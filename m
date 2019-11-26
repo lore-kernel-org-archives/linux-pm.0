@@ -2,107 +2,107 @@ Return-Path: <SRS0=zVwF=ZS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3ABFC432C0
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 13:14:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B681AC432C3
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 14:34:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C411520722
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 13:14:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8A48D20727
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 14:34:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LOhTfDCb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727385AbfKZNNg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Nov 2019 08:13:36 -0500
-Received: from esa1.microchip.iphmx.com ([68.232.147.91]:58371 "EHLO
-        esa1.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727304AbfKZNNf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2019 08:13:35 -0500
-Received-SPF: Pass (esa1.microchip.iphmx.com: domain of
-  Claudiu.Beznea@microchip.com designates 198.175.253.82 as
-  permitted sender) identity=mailfrom;
-  client-ip=198.175.253.82; receiver=esa1.microchip.iphmx.com;
-  envelope-from="Claudiu.Beznea@microchip.com";
-  x-sender="Claudiu.Beznea@microchip.com";
-  x-conformance=spf_only; x-record-type="v=spf1";
-  x-record-text="v=spf1 mx a:ushub1.microchip.com
-  a:smtpout.microchip.com -exists:%{i}.spf.microchip.iphmx.com
-  include:servers.mcsv.net include:mktomail.com
-  include:spf.protection.outlook.com ~all"
-Received-SPF: None (esa1.microchip.iphmx.com: no sender
-  authenticity information available from domain of
-  postmaster@email.microchip.com) identity=helo;
-  client-ip=198.175.253.82; receiver=esa1.microchip.iphmx.com;
-  envelope-from="Claudiu.Beznea@microchip.com";
-  x-sender="postmaster@email.microchip.com";
-  x-conformance=spf_only
-Authentication-Results: esa1.microchip.iphmx.com; dkim=none (message not signed) header.i=none; spf=Pass smtp.mailfrom=Claudiu.Beznea@microchip.com; spf=None smtp.helo=postmaster@email.microchip.com; dmarc=pass (p=none dis=none) d=microchip.com
-IronPort-SDR: AQzjhkv+SaQLIPoobzzor6IBEarP1+46b50vziCMwO1f4M3BBMmvrEWVA1lGOtBdf4R81jyuAR
- jXzoaTy8qr4k5gFLpTAs2ov0AtSxEgNFD83/UU8B4scIUTqS61Ph4KIw+7uE2HprqOP0rhr25j
- UAywhlTQ5cdYLtOc/bvHAlsFj0L1QYUX37ugU93gk4YxNpkcPAK4vkKE3S2Lb+1MudY6lTdjAE
- 9TWH6MtLhu8qAm2fft8wGwDGnwOfQ9DIo0R5rdZZox6/p5PnxZd8hT1ZoNA97seN559uVeI5GG
- FcM=
-X-IronPort-AV: E=Sophos;i="5.69,245,1571727600"; 
-   d="scan'208";a="59777355"
-Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
-  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 26 Nov 2019 06:13:19 -0700
-Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1713.5; Tue, 26 Nov 2019 06:13:08 -0700
-Received: from m18063-ThinkPad-T460p.mchp-main.com (10.10.85.251) by
- chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server id
- 15.1.1713.5 via Frontend Transport; Tue, 26 Nov 2019 06:13:05 -0700
-From:   Claudiu Beznea <claudiu.beznea@microchip.com>
-To:     <linux@armlinux.org.uk>, <nicolas.ferre@microchip.com>,
-        <alexandre.belloni@bootlin.com>, <ludovic.desroches@microchip.com>,
-        <sre@kernel.org>
-CC:     <linux-arm-kernel@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: [PATCH v2 06/17] ARM: debug-ll: select DEBUG_AT91_RM9200_DBGU for sam9x60
-Date:   Tue, 26 Nov 2019 15:12:10 +0200
-Message-ID: <1574773941-20649-7-git-send-email-claudiu.beznea@microchip.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1574773941-20649-1-git-send-email-claudiu.beznea@microchip.com>
-References: <1574773941-20649-1-git-send-email-claudiu.beznea@microchip.com>
+        id S1727530AbfKZOev (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Nov 2019 09:34:51 -0500
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:38753 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726049AbfKZOev (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Nov 2019 09:34:51 -0500
+Received: by mail-lj1-f194.google.com with SMTP id k8so9949183ljh.5;
+        Tue, 26 Nov 2019 06:34:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=o6Aof0yAWGeShjgJcUg1Y0lQGsYW6In2/ZZmFux/330=;
+        b=LOhTfDCbXM8wo5cGG2LnHtN506MEG78VOZmbVbs05lxPZSuAEdB7bxPlo15f6tqb4J
+         IYVlqXY0WPPU7xgoWiSMgFW+r6o0s0fpbuPMeI2eRUAhpwplaU3GJUz2meBOFt6AbqOP
+         pUEsHlqK6njDTIyJ5bjf6xX3TUT9ZndPzz6JZZ94Nf+MsSO6gLGwDwfhWN7Ol6SspLIy
+         TuCdLhNq5q7zXHVbBRz7Qs4gaN/3dwUt9vkZhjHEFUWHGRtGyaKDxDoL2CGF4u882hLI
+         bhD+YCUgZFqAr21busgL++mfQmz2mVg6dhyYgCzsz2ryvknKULP0XxUaNj8Lbt7QajAq
+         JwZA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=o6Aof0yAWGeShjgJcUg1Y0lQGsYW6In2/ZZmFux/330=;
+        b=phmCViNZtg55XGt79D601g4TcrN+SgpL++5wM6bXYMVtkXF3UL3+RVZjKzZXGzaoxy
+         /mfRyKfBUpft2KPGAjfnfdSTJXImOGO9cN8XWu+U6BgJrtr9F55u4Ma22MciRhQr0Ihd
+         kLfU4Do4HcGO8wrA/vjpsUIDNBmDKEP02yFitjq1a3SmTRw5+JVE8gFZBfXyPGaJrqFh
+         le2y5thuCgw+eOt+Wjc7RnLcVzHJy8ZpFj3LlH1y+0oOLS+x5MI72p8hVBc8d9GVkjgh
+         TnTsa25RP+JgOIFB38+AY9xeGD/ngHkpmWLnDoaWtfMkoruMN+XnpE5iQ9+Yhlo/7Lv1
+         Tykw==
+X-Gm-Message-State: APjAAAVdrcEMUCnZcZgXEORM9JefcdVcJl96ce8AIUNBFm+N2qHvREyU
+        icDYMObVXEsmekBlemsBrWqf5yKuYPGOcQ2x+OII7qLKWF0=
+X-Google-Smtp-Source: APXvYqxom9w1r9meKO7BwtGxZ8J84olw1mlQR/g2adENixyRp0DFx+OrWkHvlSUo6GpFwxHjIqzoDQ7OSEXi60qRUaA=
+X-Received: by 2002:a05:651c:20f:: with SMTP id y15mr26375869ljn.31.1574778889212;
+ Tue, 26 Nov 2019 06:34:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <1574604530-9024-1-git-send-email-akinobu.mita@gmail.com>
+ <1574604530-9024-5-git-send-email-akinobu.mita@gmail.com> <CAHp75VfOUiN_2bW+o-AqGmAY32mmdNxP54B2f2+gj0NTEr9FTQ@mail.gmail.com>
+ <CAC5umygc95VBWz1L5CTZO9kmkZL2MCEL2_z9d2TJ6Ow5+fKYPw@mail.gmail.com> <CAHp75VfPR7JSa7Mn5s_wJs22tXy7rC+W8x1jHLP=Npyd06BJ5w@mail.gmail.com>
+In-Reply-To: <CAHp75VfPR7JSa7Mn5s_wJs22tXy7rC+W8x1jHLP=Npyd06BJ5w@mail.gmail.com>
+From:   Akinobu Mita <akinobu.mita@gmail.com>
+Date:   Tue, 26 Nov 2019 23:34:36 +0900
+Message-ID: <CAC5umyiHsidih_VBvEOT4ApXR_ocBTqCvfFcg-gs9imcZczf6Q@mail.gmail.com>
+Subject: Re: [PATCH 4/8] platform/x86: intel_menlow: switch to use
+ <linux/temperature.h> helpers
+To:     Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     Linux NVMe Mailinglist <linux-nvme@lists.infradead.org>,
+        linux-hwmon@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Sujith Thomas <sujith.thomas@intel.com>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@fb.com>,
+        Christoph Hellwig <hch@lst.de>,
+        Sagi Grimberg <sagi@grimberg.me>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Select DEBUG_AT91_RM9200_DBGU for SAM9X60 SoC.
+2019=E5=B9=B411=E6=9C=8826=E6=97=A5(=E7=81=AB) 4:07 Andy Shevchenko <andy.s=
+hevchenko@gmail.com>:
+>
+> On Mon, Nov 25, 2019 at 4:35 PM Akinobu Mita <akinobu.mita@gmail.com> wro=
+te:
+> > 2019=E5=B9=B411=E6=9C=8825=E6=97=A5(=E6=9C=88) 4:58 Andy Shevchenko <an=
+dy.shevchenko@gmail.com>:
+> > > On Sun, Nov 24, 2019 at 4:09 PM Akinobu Mita <akinobu.mita@gmail.com>=
+ wrote:
+>
+> > > > -       return result ? result : sprintf(buf, "%lu", DECI_KELVIN_TO=
+_CELSIUS(value));
+> > > > +       return sprintf(buf, "%ld", deci_kelvin_to_celsius(value));
+> > >
+> > > Can you explain the change %lu to %ld?
+> >
+> > Isn't it possible for aux values to be lower than 0 degrees Celsius?
+>
+> If it's a change due to requirement of new helpers, put it in the
+> commit message, otherwise leave as is.
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
----
- arch/arm/Kconfig.debug | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
-index 8bcbd0cd739b..b70d7debf5ca 100644
---- a/arch/arm/Kconfig.debug
-+++ b/arch/arm/Kconfig.debug
-@@ -147,14 +147,14 @@ choice
- 		    0x80024000      | 0xf0024000     | UART9
- 
- 	config DEBUG_AT91_RM9200_DBGU
--		bool "Kernel low-level debugging on AT91RM9200, AT91SAM9 DBGU"
-+		bool "Kernel low-level debugging on AT91RM9200, AT91SAM9, SAM9X60 DBGU"
- 		select DEBUG_AT91_UART
--		depends on SOC_AT91RM9200 || SOC_AT91SAM9
-+		depends on SOC_AT91RM9200 || SOC_AT91SAM9 || SOC_SAM9X60
- 		help
- 		  Say Y here if you want kernel low-level debugging support
- 		  on the DBGU port of:
- 		    at91rm9200, at91sam9260, at91sam9g20, at91sam9261,
--		    at91sam9g10, at91sam9n12, at91sam9rl64, at91sam9x5
-+		    at91sam9g10, at91sam9n12, at91sam9rl64, at91sam9x5, sam9x60
- 
- 	config DEBUG_AT91_SAM9263_DBGU
- 		bool "Kernel low-level debugging on AT91SAM{9263,9G45,A5D3} DBGU"
--- 
-2.7.4
-
+OK, I'll leave it as is.
+The format string will be fixed by a separate patch.
