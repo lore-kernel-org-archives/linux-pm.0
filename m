@@ -2,101 +2,97 @@ Return-Path: <SRS0=zVwF=ZS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3718C432C0
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:14:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FFE6C33C99
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:17:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CF5B820722
-	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:14:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 57BEE20869
+	for <linux-pm@archiver.kernel.org>; Tue, 26 Nov 2019 15:17:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728359AbfKZPOU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 Nov 2019 10:14:20 -0500
-Received: from mx2.suse.de ([195.135.220.15]:58184 "EHLO mx1.suse.de"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728078AbfKZPOU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 26 Nov 2019 10:14:20 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
-        by mx1.suse.de (Postfix) with ESMTP id 1E196B9ED;
-        Tue, 26 Nov 2019 15:14:18 +0000 (UTC)
-Message-ID: <1574781600.7677.2.camel@suse.cz>
-Subject: Re: [PATCH v4 1/6] x86,sched: Add support for frequency invariance
-From:   Giovanni Gherdovich <ggherdovich@suse.cz>
-To:     Doug Smythies <dsmythies@telus.net>,
-        'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>,
-        'Thomas Gleixner' <tglx@linutronix.de>,
-        'Ingo Molnar' <mingo@redhat.com>,
-        'Peter Zijlstra' <peterz@infradead.org>,
-        'Borislav Petkov' <bp@suse.de>, 'Len Brown' <lenb@kernel.org>,
-        "'Rafael J . Wysocki'" <rjw@rjwysocki.net>
-Cc:     x86@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        'Mel Gorman' <mgorman@techsingularity.net>,
-        'Matt Fleming' <matt@codeblueprint.co.uk>,
-        'Viresh Kumar' <viresh.kumar@linaro.org>,
-        'Juri Lelli' <juri.lelli@redhat.com>,
-        'Paul Turner' <pjt@google.com>,
-        'Vincent Guittot' <vincent.guittot@linaro.org>,
-        'Quentin Perret' <qperret@qperret.net>,
-        'Dietmar Eggemann' <dietmar.eggemann@arm.com>
-Date:   Tue, 26 Nov 2019 16:20:00 +0100
-In-Reply-To: <000801d5a41e$a7fce2c0$f7f6a840$@net>
-References: <20191113124654.18122-1-ggherdovich@suse.cz>
-                 <20191113124654.18122-2-ggherdovich@suse.cz>
-                 <000001d5a29b$c944fd70$5bcef850$@net> <1574697961.16378.5.camel@suse.cz>
-         <000801d5a41e$a7fce2c0$f7f6a840$@net>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.26.6 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+        id S1728430AbfKZPRX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 Nov 2019 10:17:23 -0500
+Received: from inva020.nxp.com ([92.121.34.13]:55206 "EHLO inva020.nxp.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726049AbfKZPRW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 26 Nov 2019 10:17:22 -0500
+Received: from inva020.nxp.com (localhost [127.0.0.1])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E9AD81A0616;
+        Tue, 26 Nov 2019 16:17:20 +0100 (CET)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id DC8F01A0118;
+        Tue, 26 Nov 2019 16:17:20 +0100 (CET)
+Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 504B520506;
+        Tue, 26 Nov 2019 16:17:20 +0100 (CET)
+From:   Leonard Crestez <leonard.crestez@nxp.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Chanwoo Choi <cw00.choi@samsung.com>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
+        Angus Ainslie <angus@akkea.ca>,
+        Brendan Higgins <brendanhiggins@google.com>,
+        linux-kselftest@vger.kernel.org, kunit-dev@googlegroups.com,
+        linux-pm@vger.kernel.org, linux-imx@nxp.com
+Subject: [PATCH v4 2/4] PM / QoS: Redefine FREQ_QOS_MAX_DEFAULT_VALUE to S32_MAX
+Date:   Tue, 26 Nov 2019 17:17:11 +0200
+Message-Id: <ac4d360b6a2505ca277757d47d5480c45af21066.1574781196.git.leonard.crestez@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1574781196.git.leonard.crestez@nxp.com>
+References: <cover.1574781196.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1574781196.git.leonard.crestez@nxp.com>
+References: <cover.1574781196.git.leonard.crestez@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 2019-11-25 at 21:59 -0800, Doug Smythies wrote:
-> [...]
-> The issue with the schedutil governor not working properly in the 5.4 RC series
-> appears to be hardware dependant.
-> 
-> My test computer is Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz., Sandy Bridge.
-> On a temporary basis, I acquired a computer with an
-> Intel(R) Core(TM) i5-4460 CPU @ 3.20GHz, Haswell,
-> and schedutil governor behaviour with the exact same kernels is fine:
-> 
-> That "gitsource" test, "make test" 6 times, first run thrown out:
-> 
-> Kernel 5.4 intel_cpufreq/schedutil: 3411.8 seconds
-> Kernel 5.4 + gg 6 intel_cpufreq/schedutil: 1696.7 seconds
-> Ratio: 0.49
-> Recall you got a ratio of 0.49 with 5th generation, Broadwell.
+QOS requests for DEFAULT_VALUE are supposed to be ignored but this is
+not the case for FREQ_QOS_MAX. Adding one request for MAX_DEFAULT_VALUE
+and one for a real value will cause freq_qos_read_value to unexpectedly
+return MAX_DEFAULT_VALUE (-1).
 
-It's good to hear that we're getting the same performance numbers for this
-patchset on all hardware that is not a Sandy Bridge. Thanks for double
-checking, independent verification is always valuable.
+This happens because freq_qos max value is aggregated with PM_QOS_MIN
+but FREQ_QOS_MAX_DEFAULT_VALUE is (-1) so it's smaller than other
+values.
 
-Now, regarding the 5.4 regression for schedutil you see on Sandy Bridge: can
-we move this to the kernel bugzilla? Would you care to open a bug there and CC
-me to it? If it's reproducible we should assess it and see what can be done.
+Fix this by redefining FREQ_QOS_MAX_DEFAULT_VALUE to S32_MAX.
 
-I've tried gitsource on 5.3 versus 5.4, using intel_cpufreq + schedutil; I
-don't see the drop you're observing, but I don't have a Sandy Bridge readily
-available. This is what I see:
+Looking at current users for freq_qos it seems that none of them create
+requests for FREQ_QOS_MAX_DEFAULT_VALUE.
 
-Arithmetic mean of elapsed time for gitsource over 5 iterations (seconds):
+Fixes: 77751a466ebd ("PM: QoS: Introduce frequency QoS")
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Reported-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ include/linux/pm_qos.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    microarch         v5.3 (baseline)                             v5.4
-    ------------------------------------------------------------------
-    Haswell         1337.84  +- 0.11%     1336.35  +- 0.12% (   0.11%)
-    Broadwell       1335.42  +- 0.08%     1352.54  +- 0.03% (  -1.28%)
-    Skylake          887.03  +- 1.02%      870.90  +- 1.19% (   1.82%)
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index ebf5ef17cc2a..24a6263c9931 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -254,11 +254,11 @@ static inline s32 dev_pm_qos_raw_resume_latency(struct device *dev)
+ 	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+ }
+ #endif
+ 
+ #define FREQ_QOS_MIN_DEFAULT_VALUE	0
+-#define FREQ_QOS_MAX_DEFAULT_VALUE	(-1)
++#define FREQ_QOS_MAX_DEFAULT_VALUE	S32_MAX
+ 
+ enum freq_qos_req_type {
+ 	FREQ_QOS_MIN = 1,
+ 	FREQ_QOS_MAX,
+ };
+-- 
+2.17.1
 
-I'm looking around for a Sandy Bridge but I can make no promises at the
-moment.
-
-
-Thanks,
-Giovanni
