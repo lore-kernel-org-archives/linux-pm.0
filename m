@@ -2,442 +2,303 @@ Return-Path: <SRS0=h+KV=ZT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BBF84C43141
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Nov 2019 10:29:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2A8FC432C0
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Nov 2019 10:59:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 88BCE2075C
-	for <linux-pm@archiver.kernel.org>; Wed, 27 Nov 2019 10:29:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 53B562071E
+	for <linux-pm@archiver.kernel.org>; Wed, 27 Nov 2019 10:59:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QgfDNcaW"
+	dkim=pass (1024-bit key) header.d=microchiptechnology.onmicrosoft.com header.i=@microchiptechnology.onmicrosoft.com header.b="PIHvmMkH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727154AbfK0K3l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Nov 2019 05:29:41 -0500
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:38997 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727156AbfK0K3k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2019 05:29:40 -0500
-Received: by mail-lj1-f196.google.com with SMTP id e10so14679139ljj.6
-        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2019 02:29:37 -0800 (PST)
+        id S1726267AbfK0K70 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Nov 2019 05:59:26 -0500
+Received: from esa1.microchip.iphmx.com ([68.232.147.91]:45397 "EHLO
+        esa1.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726240AbfK0K7Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2019 05:59:25 -0500
+Received-SPF: Pass (esa1.microchip.iphmx.com: domain of
+  Nicolas.Ferre@microchip.com designates 198.175.253.82 as
+  permitted sender) identity=mailfrom;
+  client-ip=198.175.253.82; receiver=esa1.microchip.iphmx.com;
+  envelope-from="Nicolas.Ferre@microchip.com";
+  x-sender="Nicolas.Ferre@microchip.com";
+  x-conformance=spf_only; x-record-type="v=spf1";
+  x-record-text="v=spf1 mx a:ushub1.microchip.com
+  a:smtpout.microchip.com -exists:%{i}.spf.microchip.iphmx.com
+  include:servers.mcsv.net include:mktomail.com
+  include:spf.protection.outlook.com ~all"
+Received-SPF: None (esa1.microchip.iphmx.com: no sender
+  authenticity information available from domain of
+  postmaster@email.microchip.com) identity=helo;
+  client-ip=198.175.253.82; receiver=esa1.microchip.iphmx.com;
+  envelope-from="Nicolas.Ferre@microchip.com";
+  x-sender="postmaster@email.microchip.com";
+  x-conformance=spf_only
+Authentication-Results: esa1.microchip.iphmx.com; spf=Pass smtp.mailfrom=Nicolas.Ferre@microchip.com; spf=None smtp.helo=postmaster@email.microchip.com; dkim=pass (signature verified) header.i=@microchiptechnology.onmicrosoft.com; dmarc=pass (p=none dis=none) d=microchip.com
+IronPort-SDR: +i+4K0RORoR4XEzeFiWDg+dHA4Yx3Gs0nVyr0Onz4rOkwS0KMbxXnlhMbERi+z1o8eLgottKvA
+ 604aAkVM88OWmfdvCpv34mKQlhFlk/eZK7UinxDDRkTtGtU7r4WP4UBmkRdPsCPeK9L5oxYmAx
+ ng+8VblewbDBeWCdC868GYIK2W24k9Na9Is4k7WVOlcWyh0FHHgKIJoJxKPJd8PB0nk6unQoN1
+ ugV33Rsf5Yxrl+r6SxnBYKvMCZufyRtGcZRJbJI1DbI8Z5ngHz1ir7fNAE3t6zcECdZeseR9mB
+ bQ4=
+X-IronPort-AV: E=Sophos;i="5.69,249,1571727600"; 
+   d="scan'208";a="59919370"
+Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
+  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 27 Nov 2019 03:59:24 -0700
+Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
+ chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.1713.5; Wed, 27 Nov 2019 03:59:24 -0700
+Received: from NAM05-DM3-obe.outbound.protection.outlook.com (10.10.215.89) by
+ email.microchip.com (10.10.87.151) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1713.5
+ via Frontend Transport; Wed, 27 Nov 2019 03:59:23 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=dsP8ryTK10p6WTjOta4wJQnbP/ZPc7HfT1vpgNLG1yprehxeDCJZc9/kXmqumQ8lsbl5QxQqQ7wu7OU+Pl1dmzHVkdHbkGhf3SUBTSYlJbQtjoyQZFwGDyPgBYfsjcGLLdQO5PfVaVzaYFTw835qG9EJpSqif1s9n+nEGs0gCzFNb5g7nFr2k6CieZMz0JozuMGPzSUmZwSykBFSZCZhCxmLtKBLfQu6XtCGtiOEmdDV6puedcv3FRmzOVOikURXLcvFh91BuAGVm2UV+fC1IN3goLKZJwUPV8sRHb1sPajJhC6czvkuaJ2w3CO/ojq27M+nC8ykKLbbM2oV6aXRNg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=uMGZ6gHqXo3o89bszpP/4qQ+3csgFF81B8MgVh/JOoM=;
+ b=DkOha67bY8dOMZPpOkYMJ/em9cM4frl8a6wBiYkHXNBXdGYPDhAnW9DlmMfzxsLBR3k/9ROAPZdZEug4Xb+8JEYBHW5YDSnFY8dn9nGpXufOkba7R1IOF8o8THLqfT51IhqWjwUTMAZSg66CoJr1M7qqovi+4qvdP9EvVYjiokCaOeUXqz97SM44wv5awknoTVJTjc38fzACh7JtQLcfdsGIpTxujYbQjr726OaLdNeLvB8vRBrCjM+cZvmv1SeDJtgIGC+CuzCvThtJxuAy/Eq/kt7u0JteZNNDj6Zb1+NNG27sKw7+6exvQEGtZGHeTC16brTmUSHT8dtsCei9uQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=microchip.com; dmarc=pass action=none
+ header.from=microchip.com; dkim=pass header.d=microchip.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=ojwf4ly83xUW6dp5+GMXCBlvMV1YbXRntOyZUrl5OUs=;
-        b=QgfDNcaWwKS5maCkGGbNpmSdSl/WAalIAc/5R/ZXnVBMsZZgArohJaxvBkhuNgmFdu
-         x4fnF8qGa42tHrcucj7lYauL0So26pAO7RnIEAS5zm1scv1phGjPJxhWtnqJJUoEa/na
-         EcdYO5kuPFju1CBlKVUcMbmG8ZE/MRGT9Yyl1sR2dfZppVVMKB97/2nVtptw2CTaKFjx
-         dWxXLkziNsEwDI5R04CJIriYCSkzzNOpt68rzcQVnXaT1raB41QjBryDPzyy/gb5Hcuh
-         VPE+LUs6LRkF5AtPpE9TV4qKFiMZZEiE3rHIRTAXw4f0H5asiFq8SetwbUP6Qs4ofVOx
-         DYjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=ojwf4ly83xUW6dp5+GMXCBlvMV1YbXRntOyZUrl5OUs=;
-        b=cm7r1VRhnFxWRBm6nGDuzf16Y5YJdY5yhlxyDfuwsR0qGd20jal0eQr+znFioXHL5F
-         96i7Fn6hv/objZEA4LvmvAEUpMX0v5qZI0ELgqgP6PEG2H88xwZKhn/nzugeKqJ/F9A4
-         R93LpPu4ZpmAql3uga3i8m3SP3hGZtdhFh5NLL9hwrB4et+1CpVgsWM5oGFwtIVM31wV
-         50kXsX2X2g6bB/w8vupSiGPl56lyH8Ifhq1uaatLK06jD7UUWWJq+aBnFcngXe8gvcFC
-         aLaCuWhgyxpuI4tpelJ4TjcyEaRlW9hSPS7YKIFQG6OL3uymI7WiGpB5UtgMudfwrz9j
-         ykcw==
-X-Gm-Message-State: APjAAAUfJTt9u5bLgUbhbfpAeoISQzRxrDhYB/a9rCYJIfaI6wUIDBJ8
-        v6JVnqjSlyMFp8pifQISRl8i6w==
-X-Google-Smtp-Source: APXvYqxSrADzY+DNQH6KW7/kvRcSzE/0+zwazwzkYrgGsO2J2TR75kSdIzocGBWy1mQNQ1Gtuf/ChQ==
-X-Received: by 2002:a2e:8695:: with SMTP id l21mr29828905lji.53.1574850576223;
-        Wed, 27 Nov 2019 02:29:36 -0800 (PST)
-Received: from uffe-XPS-13-9360.ideon.se ([85.235.10.227])
-        by smtp.gmail.com with ESMTPSA id t9sm6868260ljj.19.2019.11.27.02.29.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Nov 2019 02:29:35 -0800 (PST)
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-To:     Sudeep Holla <sudeep.holla@arm.com>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v3 12/13] cpuidle: psci: Add support for PM domains by using genpd
-Date:   Wed, 27 Nov 2019 11:29:13 +0100
-Message-Id: <20191127102914.18729-13-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191127102914.18729-1-ulf.hansson@linaro.org>
-References: <20191127102914.18729-1-ulf.hansson@linaro.org>
+ d=microchiptechnology.onmicrosoft.com;
+ s=selector2-microchiptechnology-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=uMGZ6gHqXo3o89bszpP/4qQ+3csgFF81B8MgVh/JOoM=;
+ b=PIHvmMkHs+uF6aRc/2+ThJtlZb567epHFeDlv0Q5jvw20s7DeOqzEgirqGelxiJne1SRkidyw/02EwJQsUedc9bnQeDpD0uTOwxAtuSdQqgo1WTFVdMPpOjc0q5DJXl5TLyCB08oe2sswEQ+fUoI14IkviS3jR5TNCmjiUyftAs=
+Received: from SN6PR11MB2830.namprd11.prod.outlook.com (52.135.93.21) by
+ SN6PR11MB3007.namprd11.prod.outlook.com (52.135.125.138) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2474.19; Wed, 27 Nov 2019 10:59:20 +0000
+Received: from SN6PR11MB2830.namprd11.prod.outlook.com
+ ([fe80::74c7:7e0e:5565:a0e5]) by SN6PR11MB2830.namprd11.prod.outlook.com
+ ([fe80::74c7:7e0e:5565:a0e5%7]) with mapi id 15.20.2474.022; Wed, 27 Nov 2019
+ 10:59:20 +0000
+From:   <Nicolas.Ferre@microchip.com>
+To:     <alexandre.belloni@bootlin.com>, <Claudiu.Beznea@microchip.com>
+CC:     <linux@armlinux.org.uk>, <Ludovic.Desroches@microchip.com>,
+        <sre@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v2 02/17] ARM: at91: pm: move SAM9X60's PM under its own
+ SoC config flag
+Thread-Topic: [PATCH v2 02/17] ARM: at91: pm: move SAM9X60's PM under its own
+ SoC config flag
+Thread-Index: AQHVpKCR5gUDGDWLVkmRZzfKMYr546eeqfmAgAAhsQCAAA57AA==
+Date:   Wed, 27 Nov 2019 10:59:20 +0000
+Message-ID: <ed32a4fd-973a-ec59-c695-11411dd47dd1@microchip.com>
+References: <1574773941-20649-1-git-send-email-claudiu.beznea@microchip.com>
+ <1574773941-20649-3-git-send-email-claudiu.beznea@microchip.com>
+ <20191126212841.GR299836@piout.net>
+ <10705ea9-7a0f-5af4-e383-293fabed6b89@microchip.com>
+ <20191127100722.GI299836@piout.net>
+In-Reply-To: <20191127100722.GI299836@piout.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: PR2PR09CA0007.eurprd09.prod.outlook.com
+ (2603:10a6:101:16::19) To SN6PR11MB2830.namprd11.prod.outlook.com
+ (2603:10b6:805:5b::21)
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [2a01:cb1c:a97:7600:4101:ade1:25ee:c9ca]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 645395c3-a8fa-4d5f-d369-08d77328daaf
+x-ms-traffictypediagnostic: SN6PR11MB3007:
+x-ms-exchange-purlcount: 1
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <SN6PR11MB3007FF48745015187F6E170BE0440@SN6PR11MB3007.namprd11.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:6430;
+x-forefront-prvs: 023495660C
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(366004)(376002)(39860400002)(396003)(346002)(136003)(199004)(189003)(966005)(14454004)(8936002)(52116002)(36756003)(2906002)(478600001)(4326008)(31686004)(71200400001)(71190400001)(110136005)(14444005)(54906003)(99286004)(5024004)(256004)(66946007)(53546011)(386003)(31696002)(64756008)(66476007)(66446008)(66556008)(5660300002)(6436002)(229853002)(8676002)(6306002)(6512007)(316002)(76176011)(102836004)(6246003)(25786009)(6116002)(305945005)(46003)(6636002)(81166006)(7736002)(446003)(11346002)(81156014)(6506007)(186003)(86362001)(6486002)(2616005);DIR:OUT;SFP:1101;SCL:1;SRVR:SN6PR11MB3007;H:SN6PR11MB2830.namprd11.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: microchip.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: 8sFn5TD7uIe6sEVwkurBtuReESzwLTJqhzk6j4mYAsOeGQ97QV+Jya+Fsujrxeom+8vrj89Nw2Mh5eAAfn3dQryQIP8mECeVe+ySPNI8aDTItbJh4MbbWX6gvX1wxB2EXq+XRmd+vu/N68x87ELIbWimtTxGNIHRjWmO5BWZLzk2seOSCvM2rbaH0e0nzDtNsFHEK6iheYY/IR1bFHIbAw8vW+vqiZJ+isBkA7ESI7LnYb6AKF8ZomXjV2jKRdLExVRSROTkIJpl0Wd+RZXjT6+fv+7Fb7JrFwp+46tVrZI3Yj6107uRx5lC1jqBviue0nwiGri4l4WHvefuXj55wgurVuk5akfLdP26/jhxXN7uFnmMg00uhMLBMQqj1BYKlKeoPnLlpTugk2t3kRNAysSRKsYY8WVhgIRmZvuVHRM+8R4PI+Ec2UTQxormMptd70kb8kXwMhhu3TO8XQ1FbwPfeL4vnfZT4yZzh+hT0CQ=
+Content-Type: text/plain; charset="Windows-1252"
+Content-ID: <D94D4C6F3553F04FA8F3A03DE88723EC@namprd11.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-Network-Message-Id: 645395c3-a8fa-4d5f-d369-08d77328daaf
+X-MS-Exchange-CrossTenant-originalarrivaltime: 27 Nov 2019 10:59:20.3255
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 3f4057f3-b418-4d4e-ba84-d55b4e897d88
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: bnCxr2uGdRyEUqwmyNB+LturV7msme+OVWf9q4Eus9OmHRBn7Z/r+wJmLU6gsYWffQ+XskHgMUqCgeTJIyja0DQsgS/q6LcQQ3V42diRt4A=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR11MB3007
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When the hierarchical CPU topology layout is used in DT and the PSCI OSI
-mode is supported by the PSCI FW, let's initialize a corresponding PM
-domain topology by using genpd. This enables a CPU and a group of CPUs,
-when attached to the topology, to be power-managed accordingly.
+On 27/11/2019 at 11:07, Alexandre Belloni wrote:
+> On 27/11/2019 08:06:47+0000, Claudiu.Beznea@microchip.com wrote:
+>>
+>>
+>> On 26.11.2019 23:28, Alexandre Belloni wrote:
+>>> EXTERNAL EMAIL: Do not click links or open attachments unless you know =
+the content is safe
+>>>
+>>> On 26/11/2019 15:12:06+0200, Claudiu Beznea wrote:
+>>>> Move SAM9X60's PM part under SoC config flag. This allows the building
+>>>> of SAM9X60 platform withouth depending on CONFIG_SOC_AT91SAM9 flag,
+>>>> allowing us to select only necessary config flags for SAM9X60.
+>>>>
+>>>
+>>> I'm really wondering, how much space does that really save?
+>>>
+>>> The net benefit seems to be very small...
+>>
+>> Not that much, indeed. We want to be independent of SOC_AT91SAM9.
+>>
+>=20
+> The question is why? I don't see the technical benefit but I
+> definitively see the maintenance burden of having two separate configs
+> doing almost the same thing.
 
-To trigger the attempt to initialize the genpd data structures let's use a
-subsys_initcall, which should be early enough to allow CPUs, but also other
-devices to be attached.
+The AT91SAM9 config embeds a bunch of earlier drivers/clock definitions=20
+that are not needed anymore in the new SAM9X60. Likewise, some sam9x60=20
+new things are not needed at all for the older sam9 series.
+There is somehow a generation gap between them...
 
-The initialization consists of parsing the PSCI OF node for the topology
-and the "domain idle states" DT bindings. In case the idle states are
-compatible with "domain-idle-state", the initialized genpd becomes
-responsible of selecting an idle state for the PM domain, via assigning it
-a genpd governor.
+I would like that we preserve the possibility to only embed the sam9x60=20
+alone in a tailored kernel configuration, basically how it is done for=20
+our SAMA5s. I know that we're talking about ~100s of KB here, but=20
+however, it's easy to do now and it could make a difference when=20
+targeting low spec systems.
+Maintaining the SAMA5 as separate config options never proved us to be=20
+difficult to do.
 
-Note that, a successful initialization of the genpd data structures, is
-followed by a call to psci_set_osi_mode(), as to try to enable the OSI mode
-in the PSCI FW. In case this fails, we fall back into a degraded mode
-rather than bailing out and returning an error code.
+Best regards,
+   Nicolas
 
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+>>>> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+>>>> ---
+>>>>   arch/arm/mach-at91/Makefile   |  1 +
+>>>>   arch/arm/mach-at91/at91sam9.c | 18 ------------------
+>>>>   arch/arm/mach-at91/pm.c       |  2 +-
+>>>>   arch/arm/mach-at91/sam9x60.c  | 34 +++++++++++++++++++++++++++++++++=
++
+>>>>   4 files changed, 36 insertions(+), 19 deletions(-)
+>>>>   create mode 100644 arch/arm/mach-at91/sam9x60.c
+>>>>
+>>>> diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
+>>>> index de64301dcff2..f565490f1b70 100644
+>>>> --- a/arch/arm/mach-at91/Makefile
+>>>> +++ b/arch/arm/mach-at91/Makefile
+>>>> @@ -6,6 +6,7 @@
+>>>>   # CPU-specific support
+>>>>   obj-$(CONFIG_SOC_AT91RM9200) +=3D at91rm9200.o
+>>>>   obj-$(CONFIG_SOC_AT91SAM9)   +=3D at91sam9.o
+>>>> +obj-$(CONFIG_SOC_SAM9X60)    +=3D sam9x60.o
+>>>>   obj-$(CONFIG_SOC_SAMA5)              +=3D sama5.o
+>>>>   obj-$(CONFIG_SOC_SAMV7)              +=3D samv7.o
+>>>>
+>>>> diff --git a/arch/arm/mach-at91/at91sam9.c b/arch/arm/mach-at91/at91sa=
+m9.c
+>>>> index bf629c90c758..7e572189a5eb 100644
+>>>> --- a/arch/arm/mach-at91/at91sam9.c
+>>>> +++ b/arch/arm/mach-at91/at91sam9.c
+>>>> @@ -31,21 +31,3 @@ DT_MACHINE_START(at91sam_dt, "Atmel AT91SAM9")
+>>>>        .init_machine   =3D at91sam9_init,
+>>>>        .dt_compat      =3D at91_dt_board_compat,
+>>>>   MACHINE_END
+>>>> -
+>>>> -static void __init sam9x60_init(void)
+>>>> -{
+>>>> -     of_platform_default_populate(NULL, NULL, NULL);
+>>>> -
+>>>> -     sam9x60_pm_init();
+>>>> -}
+>>>> -
+>>>> -static const char *const sam9x60_dt_board_compat[] __initconst =3D {
+>>>> -     "microchip,sam9x60",
+>>>> -     NULL
+>>>> -};
+>>>> -
+>>>> -DT_MACHINE_START(sam9x60_dt, "Microchip SAM9X60")
+>>>> -     /* Maintainer: Microchip */
+>>>> -     .init_machine   =3D sam9x60_init,
+>>>> -     .dt_compat      =3D sam9x60_dt_board_compat,
+>>>> -MACHINE_END
+>>>> diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
+>>>> index d5af6aedc02c..56a6a49b19e2 100644
+>>>> --- a/arch/arm/mach-at91/pm.c
+>>>> +++ b/arch/arm/mach-at91/pm.c
+>>>> @@ -805,7 +805,7 @@ void __init at91rm9200_pm_init(void)
+>>>>
+>>>>   void __init sam9x60_pm_init(void)
+>>>>   {
+>>>> -     if (!IS_ENABLED(CONFIG_SOC_AT91SAM9))
+>>>> +     if (!IS_ENABLED(CONFIG_SOC_SAM9X60))
+>>>>                return;
+>>>>
+>>>>        at91_pm_modes_init();
+>>>> diff --git a/arch/arm/mach-at91/sam9x60.c b/arch/arm/mach-at91/sam9x60=
+.c
+>>>> new file mode 100644
+>>>> index 000000000000..d8c739d25458
+>>>> --- /dev/null
+>>>> +++ b/arch/arm/mach-at91/sam9x60.c
+>>>> @@ -0,0 +1,34 @@
+>>>> +// SPDX-License-Identifier: GPL-2.0+
+>>>> +/*
+>>>> + * Setup code for SAM9X60.
+>>>> + *
+>>>> + * Copyright (C) 2019 Microchip Technology Inc. and its subsidiaries
+>>>> + *
+>>>> + * Author: Claudiu Beznea <claudiu.beznea@microchip.com>
+>>>> + */
+>>>> +
+>>>> +#include <linux/of.h>
+>>>> +#include <linux/of_platform.h>
+>>>> +
+>>>> +#include <asm/mach/arch.h>
+>>>> +#include <asm/system_misc.h>
+>>>> +
+>>>> +#include "generic.h"
+>>>> +
+>>>> +static void __init sam9x60_init(void)
+>>>> +{
+>>>> +     of_platform_default_populate(NULL, NULL, NULL);
+>>>> +
+>>>> +     sam9x60_pm_init();
+>>>> +}
+>>>> +
+>>>> +static const char *const sam9x60_dt_board_compat[] __initconst =3D {
+>>>> +     "microchip,sam9x60",
+>>>> +     NULL
+>>>> +};
+>>>> +
+>>>> +DT_MACHINE_START(sam9x60_dt, "Microchip SAM9X60")
+>>>> +     /* Maintainer: Microchip */
+>>>> +     .init_machine   =3D sam9x60_init,
+>>>> +     .dt_compat      =3D sam9x60_dt_board_compat,
+>>>> +MACHINE_END
+>>>> --
+>>>> 2.7.4
+>>>>
+>>>
+>>> --
+>>> Alexandre Belloni, Bootlin
+>>> Embedded Linux and Kernel engineering
+>>> https://bootlin.com
+>>>
+>=20
+> --
+> Alexandre Belloni, Bootlin
+> Embedded Linux and Kernel engineering
+> https://bootlin.com
+>=20
 
-Changes in v3:
-	- None.
 
----
- drivers/cpuidle/cpuidle-psci-domain.c | 266 ++++++++++++++++++++++++++
- drivers/cpuidle/cpuidle-psci.c        |   4 +-
- drivers/cpuidle/cpuidle-psci.h        |   5 +
- 3 files changed, 273 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
-index bc7df4dc0686..7429fd7626a1 100644
---- a/drivers/cpuidle/cpuidle-psci-domain.c
-+++ b/drivers/cpuidle/cpuidle-psci-domain.c
-@@ -7,15 +7,281 @@
-  *
-  */
- 
-+#define pr_fmt(fmt) "CPUidle PSCI: " fmt
-+
- #include <linux/cpu.h>
- #include <linux/device.h>
- #include <linux/kernel.h>
- #include <linux/pm_domain.h>
- #include <linux/pm_runtime.h>
- #include <linux/psci.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
- 
- #include "cpuidle-psci.h"
- 
-+struct psci_pd_provider {
-+	struct list_head link;
-+	struct device_node *node;
-+};
-+
-+static LIST_HEAD(psci_pd_providers);
-+static bool osi_mode_enabled;
-+
-+static int psci_pd_power_off(struct generic_pm_domain *pd)
-+{
-+	struct genpd_power_state *state = &pd->states[pd->state_idx];
-+	u32 *pd_state;
-+
-+	/* If we have failed to enable OSI mode, then abort power off. */
-+	if (!osi_mode_enabled)
-+		return -EBUSY;
-+
-+	if (!state->data)
-+		return 0;
-+
-+	/* OSI mode is enabled, set the corresponding domain state. */
-+	pd_state = state->data;
-+	psci_set_domain_state(*pd_state);
-+
-+	return 0;
-+}
-+
-+static int __init psci_pd_parse_state_nodes(struct genpd_power_state *states,
-+					int state_count)
-+{
-+	int i, ret;
-+	u32 psci_state, *psci_state_buf;
-+
-+	for (i = 0; i < state_count; i++) {
-+		ret = psci_dt_parse_state_node(to_of_node(states[i].fwnode),
-+					&psci_state);
-+		if (ret)
-+			goto free_state;
-+
-+		psci_state_buf = kmalloc(sizeof(u32), GFP_KERNEL);
-+		if (!psci_state_buf) {
-+			ret = -ENOMEM;
-+			goto free_state;
-+		}
-+		*psci_state_buf = psci_state;
-+		states[i].data = psci_state_buf;
-+	}
-+
-+	return 0;
-+
-+free_state:
-+	i--;
-+	for (; i >= 0; i--)
-+		kfree(states[i].data);
-+	return ret;
-+}
-+
-+static int __init psci_pd_parse_states(struct device_node *np,
-+			struct genpd_power_state **states, int *state_count)
-+{
-+	int ret;
-+
-+	/* Parse the domain idle states. */
-+	ret = of_genpd_parse_idle_states(np, states, state_count);
-+	if (ret)
-+		return ret;
-+
-+	/* Fill out the PSCI specifics for each found state. */
-+	ret = psci_pd_parse_state_nodes(*states, *state_count);
-+	if (ret)
-+		kfree(*states);
-+
-+	return ret;
-+}
-+
-+static void psci_pd_free_states(struct genpd_power_state *states,
-+				unsigned int state_count)
-+{
-+	int i;
-+
-+	for (i = 0; i < state_count; i++)
-+		kfree(states[i].data);
-+	kfree(states);
-+}
-+
-+static int __init psci_pd_init(struct device_node *np)
-+{
-+	struct generic_pm_domain *pd;
-+	struct psci_pd_provider *pd_provider;
-+	struct dev_power_governor *pd_gov;
-+	struct genpd_power_state *states = NULL;
-+	int ret = -ENOMEM, state_count = 0;
-+
-+	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-+	if (!pd)
-+		goto out;
-+
-+	pd_provider = kzalloc(sizeof(*pd_provider), GFP_KERNEL);
-+	if (!pd_provider)
-+		goto free_pd;
-+
-+	pd->name = kasprintf(GFP_KERNEL, "%pOF", np);
-+	if (!pd->name)
-+		goto free_pd_prov;
-+
-+	/*
-+	 * Parse the domain idle states and let genpd manage the state selection
-+	 * for those being compatible with "domain-idle-state".
-+	 */
-+	ret = psci_pd_parse_states(np, &states, &state_count);
-+	if (ret)
-+		goto free_name;
-+
-+	pd->free_states = psci_pd_free_states;
-+	pd->name = kbasename(pd->name);
-+	pd->power_off = psci_pd_power_off;
-+	pd->states = states;
-+	pd->state_count = state_count;
-+	pd->flags |= GENPD_FLAG_IRQ_SAFE | GENPD_FLAG_CPU_DOMAIN;
-+
-+	/* Use governor for CPU PM domains if it has some states to manage. */
-+	pd_gov = state_count > 0 ? &pm_domain_cpu_gov : NULL;
-+
-+	ret = pm_genpd_init(pd, pd_gov, false);
-+	if (ret) {
-+		psci_pd_free_states(states, state_count);
-+		goto free_name;
-+	}
-+
-+	ret = of_genpd_add_provider_simple(np, pd);
-+	if (ret)
-+		goto remove_pd;
-+
-+	pd_provider->node = of_node_get(np);
-+	list_add(&pd_provider->link, &psci_pd_providers);
-+
-+	pr_debug("init PM domain %s\n", pd->name);
-+	return 0;
-+
-+remove_pd:
-+	pm_genpd_remove(pd);
-+free_name:
-+	kfree(pd->name);
-+free_pd_prov:
-+	kfree(pd_provider);
-+free_pd:
-+	kfree(pd);
-+out:
-+	pr_err("failed to init PM domain ret=%d %pOF\n", ret, np);
-+	return ret;
-+}
-+
-+static void __init psci_pd_remove(void)
-+{
-+	struct psci_pd_provider *pd_provider, *it;
-+	struct generic_pm_domain *genpd;
-+
-+	list_for_each_entry_safe(pd_provider, it, &psci_pd_providers, link) {
-+		of_genpd_del_provider(pd_provider->node);
-+
-+		genpd = of_genpd_remove_last(pd_provider->node);
-+		if (!IS_ERR(genpd))
-+			kfree(genpd);
-+
-+		of_node_put(pd_provider->node);
-+		list_del(&pd_provider->link);
-+		kfree(pd_provider);
-+	}
-+}
-+
-+static int __init psci_pd_init_topology(struct device_node *np)
-+{
-+	struct device_node *node;
-+	struct of_phandle_args child, parent;
-+	int ret;
-+
-+	for_each_child_of_node(np, node) {
-+		if (of_parse_phandle_with_args(node, "power-domains",
-+					"#power-domain-cells", 0, &parent))
-+			continue;
-+
-+		child.np = node;
-+		child.args_count = 0;
-+
-+		ret = of_genpd_add_subdomain(&parent, &child);
-+		of_node_put(parent.np);
-+		if (ret) {
-+			of_node_put(node);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id psci_of_match[] __initconst = {
-+	{ .compatible = "arm,psci" },
-+	{ .compatible = "arm,psci-0.2" },
-+	{ .compatible = "arm,psci-1.0" },
-+	{}
-+};
-+
-+static int __init psci_idle_init_domains(void)
-+{
-+	struct device_node *np = of_find_matching_node(NULL, psci_of_match);
-+	struct device_node *node;
-+	int ret = 0, pd_count = 0;
-+
-+	if (!np)
-+		return -ENODEV;
-+
-+	/* Currently limit the hierarchical topology to be used in OSI mode. */
-+	if (!psci_has_osi_support())
-+		goto out;
-+
-+	/*
-+	 * Parse child nodes for the "#power-domain-cells" property and
-+	 * initialize a genpd/genpd-of-provider pair when it's found.
-+	 */
-+	for_each_child_of_node(np, node) {
-+		if (!of_find_property(node, "#power-domain-cells", NULL))
-+			continue;
-+
-+		ret = psci_pd_init(node);
-+		if (ret)
-+			goto put_node;
-+
-+		pd_count++;
-+	}
-+
-+	/* Bail out if not using the hierarchical CPU topology. */
-+	if (!pd_count)
-+		goto out;
-+
-+	/* Link genpd masters/subdomains to model the CPU topology. */
-+	ret = psci_pd_init_topology(np);
-+	if (ret)
-+		goto remove_pd;
-+
-+	/* Try to enable OSI mode. */
-+	ret = psci_set_osi_mode();
-+	if (ret)
-+		pr_warn("failed to enable OSI mode: %d\n", ret);
-+	else
-+		osi_mode_enabled = true;
-+
-+	of_node_put(np);
-+	pr_info("Initialized CPU PM domain topology\n");
-+	return pd_count;
-+
-+put_node:
-+	of_node_put(node);
-+remove_pd:
-+	if (pd_count)
-+		psci_pd_remove();
-+	pr_err("failed to create CPU PM domains ret=%d\n", ret);
-+out:
-+	of_node_put(np);
-+	return ret;
-+}
-+subsys_initcall(psci_idle_init_domains);
-+
- struct device *psci_dt_attach_cpu(int cpu)
- {
- 	struct device *dev;
-diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.c
-index 0707222a40bd..835c7c3aa118 100644
---- a/drivers/cpuidle/cpuidle-psci.c
-+++ b/drivers/cpuidle/cpuidle-psci.c
-@@ -32,7 +32,7 @@ struct psci_cpuidle_data {
- static DEFINE_PER_CPU_READ_MOSTLY(struct psci_cpuidle_data, psci_cpuidle_data);
- static DEFINE_PER_CPU(u32, domain_state);
- 
--static inline void psci_set_domain_state(u32 state)
-+void psci_set_domain_state(u32 state)
- {
- 	__this_cpu_write(domain_state, state);
- }
-@@ -103,7 +103,7 @@ static const struct of_device_id psci_idle_state_match[] __initconst = {
- 	{ },
- };
- 
--static int __init psci_dt_parse_state_node(struct device_node *np, u32 *state)
-+int __init psci_dt_parse_state_node(struct device_node *np, u32 *state)
- {
- 	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
- 
-diff --git a/drivers/cpuidle/cpuidle-psci.h b/drivers/cpuidle/cpuidle-psci.h
-index 0cadbb71dc55..d2e55cad9ac6 100644
---- a/drivers/cpuidle/cpuidle-psci.h
-+++ b/drivers/cpuidle/cpuidle-psci.h
-@@ -3,6 +3,11 @@
- #ifndef __CPUIDLE_PSCI_H
- #define __CPUIDLE_PSCI_H
- 
-+struct device_node;
-+
-+void psci_set_domain_state(u32 state);
-+int __init psci_dt_parse_state_node(struct device_node *np, u32 *state);
-+
- #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
- struct device *psci_dt_attach_cpu(int cpu);
- #else
--- 
-2.17.1
-
+--=20
+Nicolas Ferre
