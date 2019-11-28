@@ -2,31 +2,32 @@ Return-Path: <SRS0=GzKS=ZU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	UPPERCASE_50_75,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AE1AC43141
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:40:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8408FC432C3
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:40:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1B56F2158A
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:40:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5ECBF2168B
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:40:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727732AbfK1BkY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Nov 2019 20:40:24 -0500
-Received: from mga02.intel.com ([134.134.136.20]:10954 "EHLO mga02.intel.com"
+        id S1727854AbfK1Bkk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Nov 2019 20:40:40 -0500
+Received: from mga02.intel.com ([134.134.136.20]:10957 "EHLO mga02.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727677AbfK1BkY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 27 Nov 2019 20:40:24 -0500
+        id S1727768AbfK1BkZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 27 Nov 2019 20:40:25 -0500
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 27 Nov 2019 17:40:19 -0800
+  by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 27 Nov 2019 17:40:20 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.69,251,1571727600"; 
-   d="scan'208";a="221166492"
+   d="scan'208";a="221166519"
 Received: from sjchrist-coffee.jf.intel.com ([10.54.74.41])
-  by orsmga002.jf.intel.com with ESMTP; 27 Nov 2019 17:40:19 -0800
+  by orsmga002.jf.intel.com with ESMTP; 27 Nov 2019 17:40:20 -0800
 From:   Sean Christopherson <sean.j.christopherson@intel.com>
 To:     Thomas Gleixner <tglx@linutronix.de>,
         Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
@@ -52,9 +53,9 @@ Cc:     "H. Peter Anvin" <hpa@zytor.com>,
         linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kselftest@vger.kernel.org, Borislav Petkov <bp@suse.de>,
         Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: [PATCH v4 09/19] x86/vmx: Introduce VMX_FEATURES_*
-Date:   Wed, 27 Nov 2019 17:40:06 -0800
-Message-Id: <20191128014016.4389-10-sean.j.christopherson@intel.com>
+Subject: [PATCH v4 17/19] KVM: VMX: Use VMX_FEATURE_* flags to define VMCS control bits
+Date:   Wed, 27 Nov 2019 17:40:14 -0800
+Message-Id: <20191128014016.4389-18-sean.j.christopherson@intel.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191128014016.4389-1-sean.j.christopherson@intel.com>
 References: <20191128014016.4389-1-sean.j.christopherson@intel.com>
@@ -65,175 +66,153 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a VMX specific variant of X86_FEATURE_* flags, which will eventually
-supplant the synthetic VMX flags defined in cpufeatures word 8.  Use the
-Intel-defined layouts for the major VMX execution controls so that their
-word entries can be directly populated from their respective MSRs, and
-so that the VMX_FEATURE_* flags can be used to define the existing bit
-definitions in asm/vmx.h, i.e. force developers to define a VMX_FEATURE
-flag when adding support for a new hardware feature.
+Define the VMCS execution control flags (consumed by KVM) using their
+associated VMX_FEATURE_* to provide a strong hint that new VMX features
+are expected to be added to VMX_FEATURE and considered for reporting via
+/proc/cpuinfo.
 
-The majority of Intel's (and compatible CPU's) VMX capabilities are
-enumerated via MSRs and not CPUID, i.e. querying /proc/cpuinfo doesn't
-naturally provide any insight into the virtualization capabilities of
-VMX enabled CPUs.  Commit e38e05a85828d ("x86: extended "flags" to show
-virtualization HW feature in /proc/cpuinfo") attempted to address the
-issue by synthesizing select VMX features into a Linux-defined word in
-cpufeatures.
-
-Lack of reporting of VMX capabilities via /proc/cpuinfo is problematic
-because there is no sane way for a user to query the capabilities of
-their platform, e.g. when trying to find a platform to test a feature or
-debug an issue that has a hardware dependency.  Lack of reporting is
-especially problematic when the user isn't familiar with VMX, e.g. the
-format of the MSRs is non-standard, existence of some MSRs is reported
-by bits in other MSRs, several "features" from KVM's point of view are
-enumerated as 3+ distinct features by hardware, etc...
-
-The synthetic cpufeatures approach has several flaws:
-
-  - The set of synthesized VMX flags has become extremely stale with
-    respect to the full set of VMX features, e.g. only one new flag
-    (EPT A/D) has been added in the the decade since the introduction of
-    the synthetic VMX features.  Failure to keep the VMX flags up to
-    date is likely due to the lack of a mechanism that forces developers
-    to consider whether or not a new feature is worth reporting.
-
-  - The synthetic flags may incorrectly be misinterpreted as affecting
-    kernel behavior, i.e. KVM, the kernel's sole consumer of VMX,
-    completely ignores the synthetic flags.
-
-  - New CPU vendors that support VMX have duplicated the hideous code
-    that propagates VMX features from MSRs to cpufeatures.  Bringing the
-    synthetic VMX flags up to date would exacerbate the copy+paste
-    trainwreck.
-
-Define separate VMX_FEATURE flags to set the stage for enumerating VMX
-capabilities outside of the cpu_has() framework, and for adding
-functional usage of VMX_FEATURE_* to help ensure the features reported
-via /proc/cpuinfo is up to date with respect to kernel recognition of
-VMX capabilities.
+No functional change intended.
 
 Signed-off-by: Sean Christopherson <sean.j.christopherson@intel.com>
 ---
- MAINTAINERS                        |  2 +-
- arch/x86/include/asm/processor.h   |  1 +
- arch/x86/include/asm/vmxfeatures.h | 81 ++++++++++++++++++++++++++++++
- 3 files changed, 83 insertions(+), 1 deletion(-)
- create mode 100644 arch/x86/include/asm/vmxfeatures.h
+ arch/x86/include/asm/vmx.h | 105 +++++++++++++++++++------------------
+ 1 file changed, 55 insertions(+), 50 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 31ea754560bd..d1f0fd8dc2c5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9107,7 +9107,7 @@ F:	arch/x86/include/uapi/asm/svm.h
- F:	arch/x86/include/asm/kvm*
- F:	arch/x86/include/asm/pvclock-abi.h
- F:	arch/x86/include/asm/svm.h
--F:	arch/x86/include/asm/vmx.h
-+F:	arch/x86/include/asm/vmx*.h
- F:	arch/x86/kernel/kvm.c
- F:	arch/x86/kernel/kvmclock.c
- 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 0340aad3f2fc..bab513404606 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -25,6 +25,7 @@ struct vm86;
- #include <asm/special_insns.h>
- #include <asm/fpu/types.h>
- #include <asm/unwind_hints.h>
+diff --git a/arch/x86/include/asm/vmx.h b/arch/x86/include/asm/vmx.h
+index 1835767aa335..9fbba31be825 100644
+--- a/arch/x86/include/asm/vmx.h
++++ b/arch/x86/include/asm/vmx.h
+@@ -15,67 +15,70 @@
+ #include <linux/bitops.h>
+ #include <linux/types.h>
+ #include <uapi/asm/vmx.h>
 +#include <asm/vmxfeatures.h>
++
++#define VMCS_CONTROL_BIT(x)	BIT(VMX_FEATURE_##x & 0x1f)
  
- #include <linux/personality.h>
- #include <linux/cache.h>
-diff --git a/arch/x86/include/asm/vmxfeatures.h b/arch/x86/include/asm/vmxfeatures.h
-new file mode 100644
-index 000000000000..1b96b03c1147
---- /dev/null
-+++ b/arch/x86/include/asm/vmxfeatures.h
-@@ -0,0 +1,81 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_X86_VMXFEATURES_H
-+#define _ASM_X86_VMXFEATURES_H
+ /*
+  * Definitions of Primary Processor-Based VM-Execution Controls.
+  */
+-#define CPU_BASED_VIRTUAL_INTR_PENDING          0x00000004
+-#define CPU_BASED_USE_TSC_OFFSETING             0x00000008
+-#define CPU_BASED_HLT_EXITING                   0x00000080
+-#define CPU_BASED_INVLPG_EXITING                0x00000200
+-#define CPU_BASED_MWAIT_EXITING                 0x00000400
+-#define CPU_BASED_RDPMC_EXITING                 0x00000800
+-#define CPU_BASED_RDTSC_EXITING                 0x00001000
+-#define CPU_BASED_CR3_LOAD_EXITING		0x00008000
+-#define CPU_BASED_CR3_STORE_EXITING		0x00010000
+-#define CPU_BASED_CR8_LOAD_EXITING              0x00080000
+-#define CPU_BASED_CR8_STORE_EXITING             0x00100000
+-#define CPU_BASED_TPR_SHADOW                    0x00200000
+-#define CPU_BASED_VIRTUAL_NMI_PENDING		0x00400000
+-#define CPU_BASED_MOV_DR_EXITING                0x00800000
+-#define CPU_BASED_UNCOND_IO_EXITING             0x01000000
+-#define CPU_BASED_USE_IO_BITMAPS                0x02000000
+-#define CPU_BASED_MONITOR_TRAP_FLAG             0x08000000
+-#define CPU_BASED_USE_MSR_BITMAPS               0x10000000
+-#define CPU_BASED_MONITOR_EXITING               0x20000000
+-#define CPU_BASED_PAUSE_EXITING                 0x40000000
+-#define CPU_BASED_ACTIVATE_SECONDARY_CONTROLS   0x80000000
++#define CPU_BASED_VIRTUAL_INTR_PENDING          VMCS_CONTROL_BIT(VIRTUAL_INTR_PENDING)
++#define CPU_BASED_USE_TSC_OFFSETING             VMCS_CONTROL_BIT(TSC_OFFSETTING)
++#define CPU_BASED_HLT_EXITING                   VMCS_CONTROL_BIT(HLT_EXITING)
++#define CPU_BASED_INVLPG_EXITING                VMCS_CONTROL_BIT(INVLPG_EXITING)
++#define CPU_BASED_MWAIT_EXITING                 VMCS_CONTROL_BIT(MWAIT_EXITING)
++#define CPU_BASED_RDPMC_EXITING                 VMCS_CONTROL_BIT(RDPMC_EXITING)
++#define CPU_BASED_RDTSC_EXITING                 VMCS_CONTROL_BIT(RDTSC_EXITING)
++#define CPU_BASED_CR3_LOAD_EXITING		VMCS_CONTROL_BIT(CR3_LOAD_EXITING)
++#define CPU_BASED_CR3_STORE_EXITING		VMCS_CONTROL_BIT(CR3_STORE_EXITING)
++#define CPU_BASED_CR8_LOAD_EXITING              VMCS_CONTROL_BIT(CR8_LOAD_EXITING)
++#define CPU_BASED_CR8_STORE_EXITING             VMCS_CONTROL_BIT(CR8_STORE_EXITING)
++#define CPU_BASED_TPR_SHADOW                    VMCS_CONTROL_BIT(VIRTUAL_TPR)
++#define CPU_BASED_VIRTUAL_NMI_PENDING		VMCS_CONTROL_BIT(VIRTUAL_NMI_PENDING)
++#define CPU_BASED_MOV_DR_EXITING                VMCS_CONTROL_BIT(MOV_DR_EXITING)
++#define CPU_BASED_UNCOND_IO_EXITING             VMCS_CONTROL_BIT(UNCOND_IO_EXITING)
++#define CPU_BASED_USE_IO_BITMAPS                VMCS_CONTROL_BIT(USE_IO_BITMAPS)
++#define CPU_BASED_MONITOR_TRAP_FLAG             VMCS_CONTROL_BIT(MONITOR_TRAP_FLAG)
++#define CPU_BASED_USE_MSR_BITMAPS               VMCS_CONTROL_BIT(USE_MSR_BITMAPS)
++#define CPU_BASED_MONITOR_EXITING               VMCS_CONTROL_BIT(MONITOR_EXITING)
++#define CPU_BASED_PAUSE_EXITING                 VMCS_CONTROL_BIT(PAUSE_EXITING)
++#define CPU_BASED_ACTIVATE_SECONDARY_CONTROLS   VMCS_CONTROL_BIT(SEC_CONTROLS)
+ 
+ #define CPU_BASED_ALWAYSON_WITHOUT_TRUE_MSR	0x0401e172
+ 
+ /*
+  * Definitions of Secondary Processor-Based VM-Execution Controls.
+  */
+-#define SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES 0x00000001
+-#define SECONDARY_EXEC_ENABLE_EPT               0x00000002
+-#define SECONDARY_EXEC_DESC			0x00000004
+-#define SECONDARY_EXEC_RDTSCP			0x00000008
+-#define SECONDARY_EXEC_VIRTUALIZE_X2APIC_MODE   0x00000010
+-#define SECONDARY_EXEC_ENABLE_VPID              0x00000020
+-#define SECONDARY_EXEC_WBINVD_EXITING		0x00000040
+-#define SECONDARY_EXEC_UNRESTRICTED_GUEST	0x00000080
+-#define SECONDARY_EXEC_APIC_REGISTER_VIRT       0x00000100
+-#define SECONDARY_EXEC_VIRTUAL_INTR_DELIVERY    0x00000200
+-#define SECONDARY_EXEC_PAUSE_LOOP_EXITING	0x00000400
+-#define SECONDARY_EXEC_RDRAND_EXITING		0x00000800
+-#define SECONDARY_EXEC_ENABLE_INVPCID		0x00001000
+-#define SECONDARY_EXEC_ENABLE_VMFUNC            0x00002000
+-#define SECONDARY_EXEC_SHADOW_VMCS              0x00004000
+-#define SECONDARY_EXEC_ENCLS_EXITING		0x00008000
+-#define SECONDARY_EXEC_RDSEED_EXITING		0x00010000
+-#define SECONDARY_EXEC_ENABLE_PML               0x00020000
+-#define SECONDARY_EXEC_PT_CONCEAL_VMX		0x00080000
+-#define SECONDARY_EXEC_XSAVES			0x00100000
+-#define SECONDARY_EXEC_PT_USE_GPA		0x01000000
+-#define SECONDARY_EXEC_MODE_BASED_EPT_EXEC	0x00400000
+-#define SECONDARY_EXEC_TSC_SCALING              0x02000000
++#define SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES VMCS_CONTROL_BIT(VIRT_APIC_ACCESSES)
++#define SECONDARY_EXEC_ENABLE_EPT               VMCS_CONTROL_BIT(EPT)
++#define SECONDARY_EXEC_DESC			VMCS_CONTROL_BIT(DESC_EXITING)
++#define SECONDARY_EXEC_RDTSCP			VMCS_CONTROL_BIT(RDTSCP)
++#define SECONDARY_EXEC_VIRTUALIZE_X2APIC_MODE   VMCS_CONTROL_BIT(VIRTUAL_X2APIC)
++#define SECONDARY_EXEC_ENABLE_VPID              VMCS_CONTROL_BIT(VPID)
++#define SECONDARY_EXEC_WBINVD_EXITING		VMCS_CONTROL_BIT(WBINVD_EXITING)
++#define SECONDARY_EXEC_UNRESTRICTED_GUEST	VMCS_CONTROL_BIT(UNRESTRICTED_GUEST)
++#define SECONDARY_EXEC_APIC_REGISTER_VIRT       VMCS_CONTROL_BIT(APIC_REGISTER_VIRT)
++#define SECONDARY_EXEC_VIRTUAL_INTR_DELIVERY    VMCS_CONTROL_BIT(VIRT_INTR_DELIVERY)
++#define SECONDARY_EXEC_PAUSE_LOOP_EXITING	VMCS_CONTROL_BIT(PAUSE_LOOP_EXITING)
++#define SECONDARY_EXEC_RDRAND_EXITING		VMCS_CONTROL_BIT(RDRAND_EXITING)
++#define SECONDARY_EXEC_ENABLE_INVPCID		VMCS_CONTROL_BIT(INVPCID)
++#define SECONDARY_EXEC_ENABLE_VMFUNC            VMCS_CONTROL_BIT(VMFUNC)
++#define SECONDARY_EXEC_SHADOW_VMCS              VMCS_CONTROL_BIT(SHADOW_VMCS)
++#define SECONDARY_EXEC_ENCLS_EXITING		VMCS_CONTROL_BIT(ENCLS_EXITING)
++#define SECONDARY_EXEC_RDSEED_EXITING		VMCS_CONTROL_BIT(RDSEED_EXITING)
++#define SECONDARY_EXEC_ENABLE_PML               VMCS_CONTROL_BIT(PAGE_MOD_LOGGING)
++#define SECONDARY_EXEC_PT_CONCEAL_VMX		VMCS_CONTROL_BIT(PT_CONCEAL_VMX)
++#define SECONDARY_EXEC_XSAVES			VMCS_CONTROL_BIT(XSAVES)
++#define SECONDARY_EXEC_MODE_BASED_EPT_EXEC	VMCS_CONTROL_BIT(MODE_BASED_EPT_EXEC)
++#define SECONDARY_EXEC_PT_USE_GPA		VMCS_CONTROL_BIT(PT_USE_GPA)
++#define SECONDARY_EXEC_TSC_SCALING              VMCS_CONTROL_BIT(TSC_SCALING)
+ #define SECONDARY_EXEC_ENABLE_USR_WAIT_PAUSE	0x04000000
+ 
+-#define PIN_BASED_EXT_INTR_MASK                 0x00000001
+-#define PIN_BASED_NMI_EXITING                   0x00000008
+-#define PIN_BASED_VIRTUAL_NMIS                  0x00000020
+-#define PIN_BASED_VMX_PREEMPTION_TIMER          0x00000040
+-#define PIN_BASED_POSTED_INTR                   0x00000080
++#define PIN_BASED_EXT_INTR_MASK                 VMCS_CONTROL_BIT(INTR_EXITING)
++#define PIN_BASED_NMI_EXITING                   VMCS_CONTROL_BIT(NMI_EXITING)
++#define PIN_BASED_VIRTUAL_NMIS                  VMCS_CONTROL_BIT(VIRTUAL_NMIS)
++#define PIN_BASED_VMX_PREEMPTION_TIMER          VMCS_CONTROL_BIT(PREEMPTION_TIMER)
++#define PIN_BASED_POSTED_INTR                   VMCS_CONTROL_BIT(POSTED_INTR)
+ 
+ #define PIN_BASED_ALWAYSON_WITHOUT_TRUE_MSR	0x00000016
+ 
+@@ -114,7 +117,9 @@
+ #define VMX_MISC_MSR_LIST_MULTIPLIER		512
+ 
+ /* VMFUNC functions */
+-#define VMX_VMFUNC_EPTP_SWITCHING               0x00000001
++#define VMFUNC_CONTROL_BIT(x)	BIT((VMX_FEATURE_##x & 0x1f) - 28)
 +
-+/*
-+ * Note: If the comment begins with a quoted string, that string is used
-+ * in /proc/cpuinfo instead of the macro name.  If the string is "",
-+ * this feature bit is not displayed in /proc/cpuinfo at all.
-+ */
-+
-+/* Pin-Based VM-Execution Controls, EPT/VPID, APIC and VM-Functions, word 0 */
-+#define VMX_FEATURE_INTR_EXITING	( 0*32+  0) /* "" VM-Exit on vectored interrupts */
-+#define VMX_FEATURE_NMI_EXITING		( 0*32+  3) /* "" VM-Exit on NMIs */
-+#define VMX_FEATURE_VIRTUAL_NMIS	( 0*32+  5) /* NMI virtualization */
-+#define VMX_FEATURE_PREEMPTION_TIMER	( 0*32+  6) /* VMX Preemption Timer */
-+#define VMX_FEATURE_POSTED_INTR		( 0*32+  7) /* Posted Interrupts */
-+
-+/* EPT/VPID features, scattered to bits 16-23 */
-+#define VMX_FEATURE_INVVPID		( 0*32+ 16) /* INVVPID is supported */
-+#define VMX_FEATURE_EPT_EXECUTE_ONLY	( 0*32+ 17) /* "ept_x_only" EPT entries can be execute only */
-+#define VMX_FEATURE_EPT_AD		( 0*32+ 18) /* EPT Accessed/Dirty bits */
-+#define VMX_FEATURE_EPT_1GB		( 0*32+ 19) /* 1GB EPT pages */
-+
-+/* Aggregated APIC features 24-27 */
-+#define VMX_FEATURE_FLEXPRIORITY	( 0*32+ 24) /* TPR shadow + virt APIC */
-+#define VMX_FEATURE_APICV	        ( 0*32+ 25) /* TPR shadow + APIC reg virt + virt intr delivery + posted interrupts */
-+
-+/* VM-Functions, shifted to bits 28-31 */
-+#define VMX_FEATURE_EPTP_SWITCHING	( 0*32+ 28) /* EPTP switching (in guest) */
-+
-+/* Primary Processor-Based VM-Execution Controls, word 1 */
-+#define VMX_FEATURE_VIRTUAL_INTR_PENDING ( 1*32+  2) /* "" VM-Exit if INTRs are unblocked in guest */
-+#define VMX_FEATURE_TSC_OFFSETTING	( 1*32+  3) /* Offset hardware TSC when read in guest */
-+#define VMX_FEATURE_HLT_EXITING		( 1*32+  7) /* "" VM-Exit on HLT */
-+#define VMX_FEATURE_INVLPG_EXITING	( 1*32+  9) /* "" VM-Exit on INVLPG */
-+#define VMX_FEATURE_MWAIT_EXITING	( 1*32+ 10) /* "" VM-Exit on MWAIT */
-+#define VMX_FEATURE_RDPMC_EXITING	( 1*32+ 11) /* "" VM-Exit on RDPMC */
-+#define VMX_FEATURE_RDTSC_EXITING	( 1*32+ 12) /* "" VM-Exit on RDTSC */
-+#define VMX_FEATURE_CR3_LOAD_EXITING	( 1*32+ 15) /* "" VM-Exit on writes to CR3 */
-+#define VMX_FEATURE_CR3_STORE_EXITING	( 1*32+ 16) /* "" VM-Exit on reads from CR3 */
-+#define VMX_FEATURE_CR8_LOAD_EXITING	( 1*32+ 19) /* "" VM-Exit on writes to CR8 */
-+#define VMX_FEATURE_CR8_STORE_EXITING	( 1*32+ 20) /* "" VM-Exit on reads from CR8 */
-+#define VMX_FEATURE_VIRTUAL_TPR		( 1*32+ 21) /* TPR virtualization, a.k.a. TPR shadow */
-+#define VMX_FEATURE_VIRTUAL_NMI_PENDING	( 1*32+ 22) /* "" VM-Exit if NMIs are unblocked in guest */
-+#define VMX_FEATURE_MOV_DR_EXITING	( 1*32+ 23) /* "" VM-Exit on accesses to debug registers */
-+#define VMX_FEATURE_UNCOND_IO_EXITING	( 1*32+ 24) /* "" VM-Exit on *all* IN{S} and OUT{S}*/
-+#define VMX_FEATURE_USE_IO_BITMAPS	( 1*32+ 25) /* "" VM-Exit based on I/O port */
-+#define VMX_FEATURE_MONITOR_TRAP_FLAG	( 1*32+ 27) /* "mtf" VMX single-step VM-Exits */
-+#define VMX_FEATURE_USE_MSR_BITMAPS	( 1*32+ 28) /* "" VM-Exit based on MSR index */
-+#define VMX_FEATURE_MONITOR_EXITING	( 1*32+ 29) /* "" VM-Exit on MONITOR (MWAIT's accomplice) */
-+#define VMX_FEATURE_PAUSE_EXITING	( 1*32+ 30) /* "" VM-Exit on PAUSE (unconditionally) */
-+#define VMX_FEATURE_SEC_CONTROLS	( 1*32+ 31) /* "" Enable Secondary VM-Execution Controls */
-+
-+/* Secondary Processor-Based VM-Execution Controls, word 2 */
-+#define VMX_FEATURE_VIRT_APIC_ACCESSES	( 2*32+  0) /* Virtualize memory mapped APIC accesses */
-+#define VMX_FEATURE_EPT			( 2*32+  1) /* Extended Page Tables, a.k.a. Two-Dimensional Paging */
-+#define VMX_FEATURE_DESC_EXITING	( 2*32+  2) /* "" VM-Exit on {S,L}*DT instructions */
-+#define VMX_FEATURE_RDTSCP		( 2*32+  3) /* "" Enable RDTSCP in guest */
-+#define VMX_FEATURE_VIRTUAL_X2APIC	( 2*32+  4) /* "" Virtualize X2APIC for the guest */
-+#define VMX_FEATURE_VPID		( 2*32+  5) /* Virtual Processor ID (TLB ASID modifier) */
-+#define VMX_FEATURE_WBINVD_EXITING	( 2*32+  6) /* "" VM-Exit on WBINVD */
-+#define VMX_FEATURE_UNRESTRICTED_GUEST	( 2*32+  7) /* Allow Big Real Mode and other "invalid" states */
-+#define VMX_FEATURE_APIC_REGISTER_VIRT	( 2*32+  8) /* Hardware emulation of reads to the virtual-APIC */
-+#define VMX_FEATURE_VIRT_INTR_DELIVERY	( 2*32+  9) /* Evaluation and delivery of pending virtual interrupts */
-+#define VMX_FEATURE_PAUSE_LOOP_EXITING	( 2*32+ 10) /* "ple" Conditionally VM-Exit on PAUSE at CPL0 */
-+#define VMX_FEATURE_RDRAND_EXITING	( 2*32+ 11) /* "" VM-Exit on RDRAND*/
-+#define VMX_FEATURE_INVPCID		( 2*32+ 12) /* "" Enable INVPCID in guest */
-+#define VMX_FEATURE_VMFUNC		( 2*32+ 13) /* "" Enable VM-Functions (leaf dependent) */
-+#define VMX_FEATURE_SHADOW_VMCS		( 2*32+ 14) /* VMREAD/VMWRITE in guest can access shadow VMCS */
-+#define VMX_FEATURE_ENCLS_EXITING	( 2*32+ 15) /* "" VM-Exit on ENCLS (leaf dependent) */
-+#define VMX_FEATURE_RDSEED_EXITING	( 2*32+ 16) /* "" VM-Exit on RDSEED */
-+#define VMX_FEATURE_PAGE_MOD_LOGGING	( 2*32+ 17) /* "pml" Log dirty pages into buffer */
-+#define VMX_FEATURE_EPT_VIOLATION_VE	( 2*32+ 18) /* "" Conditionally reflect EPT violations as #VE exceptions */
-+#define VMX_FEATURE_PT_CONCEAL_VMX	( 2*32+ 19) /* "" Suppress VMX indicators in Processor Trace */
-+#define VMX_FEATURE_XSAVES		( 2*32+ 20) /* "" Enable XSAVES and XRSTORS in guest */
-+#define VMX_FEATURE_MODE_BASED_EPT_EXEC	( 2*32+ 22) /* Enable separate EPT EXEC bits for supervisor vs. user */
-+#define VMX_FEATURE_PT_USE_GPA		( 2*32+ 24) /* "" Processor Trace logs GPAs */
-+#define VMX_FEATURE_TSC_SCALING		( 2*32+ 25) /* Scale hardware TSC when read in guest */
-+#define VMX_FEATURE_ENCLV_EXITING	( 2*32+ 28) /* "" VM-Exit on ENCLV (leaf dependent) */
-+
-+#endif /* _ASM_X86_VMXFEATURES_H */
++#define VMX_VMFUNC_EPTP_SWITCHING               VMFUNC_CONTROL_BIT(EPTP_SWITCHING)
+ #define VMFUNC_EPTP_ENTRIES  512
+ 
+ static inline u32 vmx_basic_vmcs_revision_id(u64 vmx_basic)
 -- 
 2.24.0
 
