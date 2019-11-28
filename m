@@ -2,107 +2,281 @@ Return-Path: <SRS0=GzKS=ZU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F0D7C432C0
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 13:34:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48906C43215
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 13:43:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 272E721781
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 13:34:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E79521787
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 13:43:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bgiHFLu8"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Anr74Gy0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726747AbfK1Nem (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Nov 2019 08:34:42 -0500
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:34044 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726703AbfK1Nek (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2019 08:34:40 -0500
-Received: by mail-wr1-f66.google.com with SMTP id t2so31112648wrr.1
-        for <linux-pm@vger.kernel.org>; Thu, 28 Nov 2019 05:34:39 -0800 (PST)
+        id S1726641AbfK1NnG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Nov 2019 08:43:06 -0500
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:41579 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726496AbfK1NnG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2019 08:43:06 -0500
+Received: by mail-lj1-f194.google.com with SMTP id m4so28540509ljj.8;
+        Thu, 28 Nov 2019 05:43:02 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=wLwJHHdjApYdyG7yY2KSph4X2YQrPHDGykhy5Aqw6Z8=;
-        b=bgiHFLu8ynS/16sAB+4eIkko3HK+fGyqlncWTZc32UQ3iNjt9ShZ33eLJw7yXNNcKD
-         TP/EEVAS7wVeSxY7oq7Meo018sBlL8S2fZeeYAWV3DKJyKv3NRy2FuNhiVRWZzcCRLvc
-         JGO/2Q/HKe+CzWp3aLxT0cCMniXHlFRYDKWJ0OeSkcsFjRS5I2O1KtkajNoGmH9qm3R1
-         TR931WJLk9Ffv6qBwjrGYglz21HBVz3C1x74xCDBGNDVil+KsiyOOdDdCSg9rCmnp4um
-         SSIJ/jLdInNc1uuA+D78/rjHZkWEl3AlBo48mWHRIpxj/bYkW7V1SQuhmhBLoT0pN70M
-         WLAg==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=k++zKOWR7+l/xQIAkNb0fLZi0BFwwtjyoFUG5S/EzTQ=;
+        b=Anr74Gy0lFS1cEnVC+5++VOKZzfAF1xunFXGF95LQcwnt8mjR1BoAAQNUB6CtNen70
+         6ZEqFqYBdzMzE2m2zaF9+IQMa0gFRJ1L3Fa2HhpR0wFLLWXE7pa6c8kfbJmLw7a6HkuE
+         5tQNHkCRUhgoAYP/GiJcgqNsff1sdKlkqNA9+o0lDdmhyPdPJL5bX0U+Ldd+OHmmpR0v
+         4ttPOO5gpeJN3hQwmR9GJMcQgWSbQqzrv/PlvjOWD6+E47+VCjGO8UhzvYOulGUnM4yw
+         AoP1S4wj8d7naGJLjKwwOiRGHWnaPtsATtii/Dx2seE22S71XRFPsx8F3VieuXEIEyLr
+         Di1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=wLwJHHdjApYdyG7yY2KSph4X2YQrPHDGykhy5Aqw6Z8=;
-        b=XmHpHw9ItxKwNNsvQGFeAnR8KHu4sf08sO4g2wrJ4rfIfSxx0P7/fBRWEEjEiFXHyA
-         9EKycmdjyZgf5EY4eIGnxpQVMBIWwg7Xd9FYGwt0qxx7n1Aae052dWB+2kelvWEQ4oY7
-         HvsD0+We1hr5In+asVb/3M6HNgn1nuQm7OtP3TJyGSCqybyJWGAnJYveL3oMhlOgMCFW
-         q3OC85YjpMeIg1Py0XKJgZ7y2rTDfpIM9BohQkzJgXzO2zdZ2svnRLgkF13KogOExGv7
-         08VAMPBgkpDfQMwX95bEl3CHRnPB47Xf8JMp7CueK5PzGhJ7/xXpVGpIkf9nuvFhzX6E
-         zc/g==
-X-Gm-Message-State: APjAAAV7g4s5uZPsKYzWzn4GlumhCZrW97x0RAUNRo4AAx8XMXvf9IRE
-        yQJKE0dWSzWzbER8frWuSt58mZ9uF7A=
-X-Google-Smtp-Source: APXvYqxcKq0U6gGtpcy9xqY7Tw6Tx53nu1boMNRPw2zCymn44RKNCySHUEyNHfBn7+z+FSz6BUXB2Q==
-X-Received: by 2002:a5d:6181:: with SMTP id j1mr46853978wru.251.1574948078252;
-        Thu, 28 Nov 2019 05:34:38 -0800 (PST)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id y20sm2220451wmi.25.2019.11.28.05.34.37
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Thu, 28 Nov 2019 05:34:37 -0800 (PST)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org
-Cc:     bjorn.andersson@linaro.org, agross@kernel.org, digetx@gmail.com,
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=k++zKOWR7+l/xQIAkNb0fLZi0BFwwtjyoFUG5S/EzTQ=;
+        b=Dpf3jrds5mY3g2l6KgnMDaD30VKp4KxRWvgxfcM87opNRMmXKUjo3D3aCI+9NACq0g
+         0Xl3qai68Ya26UihzGDys98QMJWNNUwg0YMy7Md9deiurdkJCiaWNopKqE3bb8G+r7NK
+         0D9vV0p48Nxs1GlZMw5NTm5uduaL4H09iLEihP7H6SqAIGJJMJt3D/kSskpOFgYo8hAm
+         Aqi+sWqfbmVMeO/GP0fbFehpn4dFn+cp4yEU0/4d9mkgw2epVbVl9s7N43k3E8WsghOY
+         coV9xHQVAsKPvdslnD2Yc54B7iWExligT4tgTjzXuScSO9HN+sEvyOhmXvG/cfK9KH0O
+         i/+A==
+X-Gm-Message-State: APjAAAUiY9rHx/iRT1GE5PTbIsRKTsWAlAx0yhDI+Kb6PTzm8w5lOf5c
+        W0sT3Q7xZU0sPzvhO71TmWMYuxAX
+X-Google-Smtp-Source: APXvYqzcQE+bVA3nOvw6x4i6uhErx84iEbgBf0inm07P7/UyMpc1ogVQJ9E5vgkROc/O1sOpORHvVg==
+X-Received: by 2002:a2e:81c1:: with SMTP id s1mr33861504ljg.83.1574948581976;
+        Thu, 28 Nov 2019 05:43:01 -0800 (PST)
+Received: from [192.168.2.145] (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
+        by smtp.googlemail.com with ESMTPSA id 207sm10026632ljj.72.2019.11.28.05.43.00
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 28 Nov 2019 05:43:01 -0800 (PST)
+Subject: Re: [PATCH 5/5] interconnect: qcom: Use the new common helper for
+ node removal
+To:     Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org
+Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
         evgreen@chromium.org, daidavid1@codeaurora.org,
         masneyb@onstation.org, sibis@codeaurora.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        georgi.djakov@linaro.org
-Subject: [PATCH 2/5] interconnect: qcom: qcs404: Walk the list safely on node removal
-Date:   Thu, 28 Nov 2019 15:34:32 +0200
-Message-Id: <20191128133435.25667-2-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191128133435.25667-1-georgi.djakov@linaro.org>
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
 References: <20191128133435.25667-1-georgi.djakov@linaro.org>
+ <20191128133435.25667-5-georgi.djakov@linaro.org>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <5686a003-d72f-7a20-4851-9ebb3d2e9b20@gmail.com>
+Date:   Thu, 28 Nov 2019 16:43:00 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.1.1
 MIME-Version: 1.0
+In-Reply-To: <20191128133435.25667-5-georgi.djakov@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As we will remove items off the list using list_del(), we need to use the
-safe version of list_for_each_entry().
+28.11.2019 16:34, Georgi Djakov пишет:
+> There is a new helper function for removing all nodes. Let's use it instead
+> of duplicating the code.
+> 
+> In addition to the above, instead of duplicating the code, simplify the
+> probe function error path by calling driver removal function directly.
+> 
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>  drivers/interconnect/qcom/msm8974.c | 40 ++++++++++-------------------
+>  drivers/interconnect/qcom/qcs404.c  | 31 ++++++++--------------
+>  drivers/interconnect/qcom/sdm845.c  | 29 +++++++--------------
+>  3 files changed, 33 insertions(+), 67 deletions(-)
+> 
+> diff --git a/drivers/interconnect/qcom/msm8974.c b/drivers/interconnect/qcom/msm8974.c
+> index 0a1a8ba6afa7..8823dce811c3 100644
+> --- a/drivers/interconnect/qcom/msm8974.c
+> +++ b/drivers/interconnect/qcom/msm8974.c
+> @@ -644,6 +644,15 @@ static int msm8974_icc_set(struct icc_node *src, struct icc_node *dst)
+>  	return 0;
+>  }
+>  
+> +static int msm8974_icc_remove(struct platform_device *pdev)
+> +{
+> +	struct msm8974_icc_provider *qp = platform_get_drvdata(pdev);
+> +
+> +	icc_nodes_remove(&qp->provider);
+> +	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+> +	return icc_provider_del(&qp->provider);
+> +}
+> +
+>  static int msm8974_icc_probe(struct platform_device *pdev)
+>  {
+>  	const struct msm8974_icc_desc *desc;
+> @@ -701,7 +710,8 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+>  	ret = icc_provider_add(provider);
+>  	if (ret) {
+>  		dev_err(dev, "error adding interconnect provider: %d\n", ret);
+> -		goto err_disable_clks;
+> +		clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+> +		return ret;
+>  	}
+>  
+>  	for (i = 0; i < num_nodes; i++) {
+> @@ -710,7 +720,7 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+>  		node = icc_node_create(qnodes[i]->id);
+>  		if (IS_ERR(node)) {
+>  			ret = PTR_ERR(node);
+> -			goto err_del_icc;
+> +			goto err;
+>  		}
+>  
+>  		node->name = qnodes[i]->name;
+> @@ -731,34 +741,12 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+>  
+>  	return 0;
+>  
+> -err_del_icc:
+> -	list_for_each_entry_safe(node, &provider->nodes, node_list) {
+> -		icc_node_del(node);
+> -		icc_node_destroy(node->id);
+> -	}
+> -	icc_provider_del(provider);
+> -
+> -err_disable_clks:
+> -	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+> +err:
+> +	msm8974_icc_remove(pdev);
+>  
+>  	return ret;
+>  }
+>  
+> -static int msm8974_icc_remove(struct platform_device *pdev)
+> -{
+> -	struct msm8974_icc_provider *qp = platform_get_drvdata(pdev);
+> -	struct icc_provider *provider = &qp->provider;
+> -	struct icc_node *n;
+> -
+> -	list_for_each_entry_safe(n, &provider->nodes, node_list) {
+> -		icc_node_del(n);
+> -		icc_node_destroy(n->id);
+> -	}
+> -	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+> -
+> -	return icc_provider_del(provider);
+> -}
+> -
+>  static const struct of_device_id msm8974_noc_of_match[] = {
+>  	{ .compatible = "qcom,msm8974-bimc", .data = &msm8974_bimc},
+>  	{ .compatible = "qcom,msm8974-cnoc", .data = &msm8974_cnoc},
+> diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+> index d2b455021416..a4c6ba715f61 100644
+> --- a/drivers/interconnect/qcom/qcs404.c
+> +++ b/drivers/interconnect/qcom/qcs404.c
+> @@ -406,6 +406,15 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+>  	return 0;
+>  }
+>  
+> +static int qnoc_remove(struct platform_device *pdev)
+> +{
+> +	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+> +
+> +	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+> +	icc_nodes_remove(&qp->provider);
+> +	return icc_provider_del(&qp->provider);
+> +}
+> +
+>  static int qnoc_probe(struct platform_device *pdev)
+>  {
+>  	struct device *dev = &pdev->dev;
+> @@ -494,31 +503,11 @@ static int qnoc_probe(struct platform_device *pdev)
+>  
+>  	return 0;
+>  err:
+> -	list_for_each_entry_safe(node, &provider->nodes, node_list) {
+> -		icc_node_del(node);
+> -		icc_node_destroy(node->id);
+> -	}
+> -	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+> -	icc_provider_del(provider);
+> +	qnoc_remove(pdev);
+>  
+>  	return ret;
+>  }
+>  
+> -static int qnoc_remove(struct platform_device *pdev)
+> -{
+> -	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+> -	struct icc_provider *provider = &qp->provider;
+> -	struct icc_node *n;
+> -
+> -	list_for_each_entry_safe(n, &provider->nodes, node_list) {
+> -		icc_node_del(n);
+> -		icc_node_destroy(n->id);
+> -	}
+> -	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+> -
+> -	return icc_provider_del(provider);
+> -}
+> -
+>  static const struct of_device_id qcs404_noc_of_match[] = {
+>  	{ .compatible = "qcom,qcs404-bimc", .data = &qcs404_bimc },
+>  	{ .compatible = "qcom,qcs404-pcnoc", .data = &qcs404_pcnoc },
+> diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
+> index 924c2d056d85..2b8f13e78471 100644
+> --- a/drivers/interconnect/qcom/sdm845.c
+> +++ b/drivers/interconnect/qcom/sdm845.c
+> @@ -768,6 +768,14 @@ static int cmp_vcd(const void *_l, const void *_r)
+>  		return 1;
+>  }
+>  
+> +static int qnoc_remove(struct platform_device *pdev)
+> +{
+> +	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+> +
+> +	icc_nodes_remove(&qp->provider);
+> +	return icc_provider_del(&qp->provider);
+> +}
+> +
+>  static int qnoc_probe(struct platform_device *pdev)
+>  {
+>  	const struct qcom_icc_desc *desc;
+> @@ -855,29 +863,10 @@ static int qnoc_probe(struct platform_device *pdev)
+>  
+>  	return ret;
+>  err:
+> -	list_for_each_entry(node, &provider->nodes, node_list) {
+> -		icc_node_del(node);
+> -		icc_node_destroy(node->id);
+> -	}
+> -
+> -	icc_provider_del(provider);
+> +	qnoc_remove(pdev);
 
-Fixes: 5e4e6c4d3ae0 ("interconnect: qcom: Add QCS404 interconnect provider driver")
-Reported-by: Dmitry Osipenko <digetx@gmail.com>
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- drivers/interconnect/qcom/qcs404.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+This is wrong because platform_set_drvdata() is invoked at the end of
+qnoc_probe(), thus platform_get_drvdata() of qnoc_remove() returns NULL
+here.
 
-diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
-index b4966d8f3348..d2b455021416 100644
---- a/drivers/interconnect/qcom/qcs404.c
-+++ b/drivers/interconnect/qcom/qcs404.c
-@@ -494,7 +494,7 @@ static int qnoc_probe(struct platform_device *pdev)
- 
- 	return 0;
- err:
--	list_for_each_entry(node, &provider->nodes, node_list) {
-+	list_for_each_entry_safe(node, &provider->nodes, node_list) {
- 		icc_node_del(node);
- 		icc_node_destroy(node->id);
- 	}
-@@ -510,7 +510,7 @@ static int qnoc_remove(struct platform_device *pdev)
- 	struct icc_provider *provider = &qp->provider;
- 	struct icc_node *n;
- 
--	list_for_each_entry(n, &provider->nodes, node_list) {
-+	list_for_each_entry_safe(n, &provider->nodes, node_list) {
- 		icc_node_del(n);
- 		icc_node_destroy(n->id);
- 	}
+>  	return ret;
+>  }
+>  
+> -static int qnoc_remove(struct platform_device *pdev)
+> -{
+> -	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+> -	struct icc_provider *provider = &qp->provider;
+> -	struct icc_node *n;
+> -
+> -	list_for_each_entry_safe(n, &provider->nodes, node_list) {
+> -		icc_node_del(n);
+> -		icc_node_destroy(n->id);
+> -	}
+> -
+> -	return icc_provider_del(provider);
+> -}
+> -
+>  static const struct of_device_id qnoc_of_match[] = {
+>  	{ .compatible = "qcom,sdm845-rsc-hlos", .data = &sdm845_rsc_hlos },
+>  	{ },
+> 
+
