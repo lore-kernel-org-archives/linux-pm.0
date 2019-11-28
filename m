@@ -2,58 +2,59 @@ Return-Path: <SRS0=GzKS=ZU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81DADC432C0
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 16:03:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B9DAC432C3
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 16:03:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 56D4721771
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 16:03:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3310B217D6
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 16:03:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ScUb3/Ni"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PB5LHoZs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726957AbfK1QDX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Nov 2019 11:03:23 -0500
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:39704 "EHLO
+        id S1726401AbfK1QDY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Nov 2019 11:03:24 -0500
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:50575 "EHLO
         mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726401AbfK1QDT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2019 11:03:19 -0500
-Received: by mail-wm1-f65.google.com with SMTP id s14so5423733wmh.4;
-        Thu, 28 Nov 2019 08:03:18 -0800 (PST)
+        with ESMTP id S1726641AbfK1QDY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2019 11:03:24 -0500
+Received: by mail-wm1-f65.google.com with SMTP id l17so11511428wmh.0;
+        Thu, 28 Nov 2019 08:03:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=uucM1tKJc5jWqCc67DTWheZ6n5xnlGm793Fj7re5sec=;
-        b=ScUb3/Nie1rHzq0BskCOA9h4NfcMr0F3zMYSBP6ux5FKBJrjKCq6xrw7dTVdXSpxx6
-         boXBSHDFKbdNVaY0UEIYFxoLOxQgBmIRwmEf7YAPHNY8EAEWPgBHQTTckOAlCK5GsDVT
-         I2ydTL4+YjQME5K/Td+A27GPDACteFoDCNluHZaJIQSJwfVDLbkymJkL6a/kBuDORq0v
-         2CwaOueAfH7P3jiwihGD+ujJxF/063K0Qi3ltXxkNi6IwV0fnx7YA7a4tFWv2FyGl+CZ
-         9jelOAZUls0n71h/qXNZD9LHfe1E8zpYixdWpBvdk/dWt/MeDlqDlAGt4XxTucLXSwqm
-         9kRA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=jiPFkJr8K+r185dz3meGF9Rkk5ahdrm7UQfYURLxxJE=;
+        b=PB5LHoZshTGHaxfaPdX6fSYl+Me/Ge/gdvpmr49K3UIpK4gfRq/KpgCsQ1oq5HKSFw
+         1zfeG/fGqvCfpmDSrXL73JkAnw2f0+umB9V8TBXB4OoTk9jER+lOm/GAysrxR8W2v46M
+         uIfg11Ne+LX4ZRz/S1ACz4sOdbLfUxmYDPlu0fzS8sEU+uD7FvMKdm7VCAB852vUW7Qn
+         VqPvGE+p7tCDAuFm4aR4F2alNFpDHpclNOEN5XrUmoOARu4MVcT9peAXQyntutLcMyNn
+         BMjfUGJ4bDHlQQYe3PMTVoql96B6dNLYj1EgQgdz1068X63FWvet0T6ECffMCgZF0xtu
+         PLQg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=uucM1tKJc5jWqCc67DTWheZ6n5xnlGm793Fj7re5sec=;
-        b=Csc48VjHxvgpVLa4suHjJBkWE90vrvEVoSeOY1Vm38/0nYH9ax7xhhEEHDSjMm8wTV
-         huiIiM0T4N6xMily0agfG9hODJjLNrhR43WKcmt6Yj7S4PQ9z5f8qSIpksCI9/iScZs5
-         NViepjZjLp8cq2ibpcFNnwRenCcSLzbrT2mKgBmiEspr1nnSIeXNZEKC3fz45eflIkXU
-         eTVv1hz/Z7mQt0RnJGkAKZNfHH9PqtC8A947cEqIqzAOyuW7UegXkGEbjtOS+FsR7YKX
-         J4JN6SkC+FioVez1vGZcleMD44ZTjSgX+Y6YWcqmykJzHwgCG9GMv4LNotTUiWzfBFnF
-         uT3w==
-X-Gm-Message-State: APjAAAVfbeabiWVULRysY1pGfgWjpreXVZqJrpED5/3OZFhzfFvvqynT
-        VW6Ul+tJsHqhB4Sx6MdYSNk=
-X-Google-Smtp-Source: APXvYqwWg14hIzEy7xtKUoZNjVc9x68LHyXjjnN6zGyvic3/XoEZKRwAtefKiOcnBebLDi3JrYU0wg==
-X-Received: by 2002:a1c:a548:: with SMTP id o69mr10148533wme.31.1574956997396;
-        Thu, 28 Nov 2019 08:03:17 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=jiPFkJr8K+r185dz3meGF9Rkk5ahdrm7UQfYURLxxJE=;
+        b=SoOylo9PxjsgG1IETcrofOK2/npAbflSmdLRjCsNhXDK0GpT3sM4CDRlE3iL0Z9Emx
+         0t3O/HoQjPTcZfNV3iIX0ihx7Mto/GDKrdTcH6jUfyDK6qqn5ZCLcpfsD7RclpV3ef09
+         50wyaJpcolThgNxvbJqhduvRyt54GgK7NiwlyFec/8Rg9KLCBVrqwiuthP0Dz1uX9R6a
+         Ge69rm/PUs2igF7Z+0V1+A4Xc4nNU2NRjQWTteNgBvwmMuSuD4R6e0QqBScI2CNJazUn
+         Lb2o6m+pMdALhLDyfdKKQw/PxX0MWgHYRRbRY9FQka24v8HfckRJ++bwmk/xHIyGUnAU
+         Q3AQ==
+X-Gm-Message-State: APjAAAVXIBvnGkdoK6BPHKzHIgyLKBNKLnPkoRhTO0I46BCWbm9YY7RG
+        oBr6XE5kMfgVX4JBJf0o054=
+X-Google-Smtp-Source: APXvYqx+k4JQZLKsE8o2E6bpXGMJN487dEZBP+g2+g5JjAWAcxUXYJTrNdAN+zermTFhePpO/HD/dg==
+X-Received: by 2002:a1c:f317:: with SMTP id q23mr9783029wmq.97.1574957001542;
+        Thu, 28 Nov 2019 08:03:21 -0800 (PST)
 Received: from localhost (pD9E518ED.dip0.t-ipconnect.de. [217.229.24.237])
-        by smtp.gmail.com with ESMTPSA id a64sm12210356wmc.18.2019.11.28.08.03.15
+        by smtp.gmail.com with ESMTPSA id h15sm24670157wrb.44.2019.11.28.08.03.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 Nov 2019 08:03:16 -0800 (PST)
+        Thu, 28 Nov 2019 08:03:20 -0800 (PST)
 From:   Thierry Reding <thierry.reding@gmail.com>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Thierry Reding <thierry.reding@gmail.com>
@@ -61,10 +62,12 @@ Cc:     Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Dmitry Osipenko <digetx@gmail.com>, linux-pm@vger.kernel.org,
         dri-devel@lists.freedesktop.org, linux-tegra@vger.kernel.org
-Subject: [PATCH 0/2] PM / runtime: Allow drivers to override runtime PM behaviour on sleep
-Date:   Thu, 28 Nov 2019 17:03:12 +0100
-Message-Id: <20191128160314.2381249-1-thierry.reding@gmail.com>
+Subject: [PATCH 2/2] drm/tegra: Allow runtime suspend on system sleep
+Date:   Thu, 28 Nov 2019 17:03:14 +0100
+Message-Id: <20191128160314.2381249-3-thierry.reding@gmail.com>
 X-Mailer: git-send-email 2.23.0
+In-Reply-To: <20191128160314.2381249-1-thierry.reding@gmail.com>
+References: <20191128160314.2381249-1-thierry.reding@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -74,54 +77,102 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Thierry Reding <treding@nvidia.com>
 
-This is a result of looking into a more formal way of doing what was
-proposed here:
+By default the PM core prevents devices from being runtime suspended
+during system sleep. This is needed to avoid some common cases where
+devices cannot be properly resumed because their parents are runtime
+suspended at an unfortunate point in time.
 
-	http://patchwork.ozlabs.org/patch/1145363/
+However, there are cases where suspend/resume works in a way that it
+becomes possible for devices to be runtime suspended at system sleep
+time. In fact, for some devices runtime suspension can be equivalent
+to their state in system sleep.
 
-The Tegra DRM driver is written such that runtime PM controls all
-aspects of bringing up and shutting down the hardware associated with a
-display pipeline. This works very nicely with the DRM/KMS atomic mode-
-setting framework that has very rigorous call sequences. There are also
-suspend/resume helpers for system sleep that are built on top of these
-generic helpers and that cause the same code sequences to be run as if
-users had simply chosen to disable all display pipelines at normal
-runtime.
+Typically this would be solved by making the runtime suspend/resume
+callbacks the same as the system suspend/resume callbacks. For some
+subsystems it isn't quite that simple, unfortunately.
 
-The current behaviour of the PM core to disallow runtime suspend/resume
-during system sleep gets in the way of this because the devices do not
-in fact runtime suspend/resume during that time. Most of the time this
-causes display outputs to malfunction upon resume.
+For example, the DRM subsystem has subsystem-level suspend/resume
+helpers that control how display pipelines are shut down on suspend
+and brought up again on resume. This procedure is the same as their
+operation under normal circumstances (when the user switches on/off
+a subset of the displays in their configuration). These helpers are
+carefully ordering the operations to make sure the right sequences
+between connectors, encoders and display controllers are respected.
 
-Now, there are good reasons for preventing runtime suspend during system
-sleep, as given in commit eea3fc0357eb ("PCI / PM: Detect early wakeup
-in pci_pm_prepare()") that originally introduced this mechanism. There
-can, however, also be cases, like the one described above, where it is
-safe to allow this. Add a flag and a set of helpers to set or clear that
-new flag so that drivers that know it will be safe to runtime suspend a
-device at system sleep time can mark the device as such.
+In order for suspend/resume to not get in the way of the sequencing
+that's already happening at the subsystem level, allow the devices
+involved in the display pipelines to runtime suspend during system
+sleep.
 
-If a device has the flag set, the PM core will no longer take a runtime
-PM reference for it, thus allowing the device to runtime suspend at the
-expected time.
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ drivers/gpu/drm/tegra/dc.c   | 1 +
+ drivers/gpu/drm/tegra/dsi.c  | 1 +
+ drivers/gpu/drm/tegra/hdmi.c | 1 +
+ drivers/gpu/drm/tegra/hub.c  | 1 +
+ drivers/gpu/drm/tegra/sor.c  | 1 +
+ 5 files changed, 5 insertions(+)
 
-Thierry
-
-Thierry Reding (2):
-  PM / runtime: Allow drivers to override runtime PM behaviour on sleep
-  drm/tegra: Allow runtime suspend on system sleep
-
- drivers/base/power/main.c    |  6 ++++--
- drivers/base/power/runtime.c | 16 ++++++++++++++++
- drivers/gpu/drm/tegra/dc.c   |  1 +
- drivers/gpu/drm/tegra/dsi.c  |  1 +
- drivers/gpu/drm/tegra/hdmi.c |  1 +
- drivers/gpu/drm/tegra/hub.c  |  1 +
- drivers/gpu/drm/tegra/sor.c  |  1 +
- include/linux/pm.h           |  1 +
- include/linux/pm_runtime.h   |  2 ++
- 9 files changed, 28 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+index 2b9a25c977c0..386819b4662b 100644
+--- a/drivers/gpu/drm/tegra/dc.c
++++ b/drivers/gpu/drm/tegra/dc.c
+@@ -2506,6 +2506,7 @@ static int tegra_dc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	platform_set_drvdata(pdev, dc);
++	pm_runtime_always_allow(&pdev->dev);
+ 	pm_runtime_enable(&pdev->dev);
+ 
+ 	INIT_LIST_HEAD(&dc->client.list);
+diff --git a/drivers/gpu/drm/tegra/dsi.c b/drivers/gpu/drm/tegra/dsi.c
+index a5d47e301c5f..683a27f9ba52 100644
+--- a/drivers/gpu/drm/tegra/dsi.c
++++ b/drivers/gpu/drm/tegra/dsi.c
+@@ -1552,6 +1552,7 @@ static int tegra_dsi_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	platform_set_drvdata(pdev, dsi);
++	pm_runtime_always_allow(&pdev->dev);
+ 	pm_runtime_enable(&pdev->dev);
+ 
+ 	INIT_LIST_HEAD(&dsi->client.list);
+diff --git a/drivers/gpu/drm/tegra/hdmi.c b/drivers/gpu/drm/tegra/hdmi.c
+index 50269ffbcb6b..2562bf607be1 100644
+--- a/drivers/gpu/drm/tegra/hdmi.c
++++ b/drivers/gpu/drm/tegra/hdmi.c
+@@ -1664,6 +1664,7 @@ static int tegra_hdmi_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	platform_set_drvdata(pdev, hdmi);
++	pm_runtime_always_allow(&pdev->dev);
+ 	pm_runtime_enable(&pdev->dev);
+ 
+ 	INIT_LIST_HEAD(&hdmi->client.list);
+diff --git a/drivers/gpu/drm/tegra/hub.c b/drivers/gpu/drm/tegra/hub.c
+index e56c0f7d3a13..aced537ac990 100644
+--- a/drivers/gpu/drm/tegra/hub.c
++++ b/drivers/gpu/drm/tegra/hub.c
+@@ -844,6 +844,7 @@ static int tegra_display_hub_probe(struct platform_device *pdev)
+ 		return err;
+ 
+ 	platform_set_drvdata(pdev, hub);
++	pm_runtime_always_allow(&pdev->dev);
+ 	pm_runtime_enable(&pdev->dev);
+ 
+ 	INIT_LIST_HEAD(&hub->client.list);
+diff --git a/drivers/gpu/drm/tegra/sor.c b/drivers/gpu/drm/tegra/sor.c
+index a68d3b36b972..20058f11bf81 100644
+--- a/drivers/gpu/drm/tegra/sor.c
++++ b/drivers/gpu/drm/tegra/sor.c
+@@ -3833,6 +3833,7 @@ static int tegra_sor_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	platform_set_drvdata(pdev, sor);
++	pm_runtime_always_allow(&pdev->dev);
+ 	pm_runtime_enable(&pdev->dev);
+ 
+ 	/*
 -- 
 2.23.0
 
