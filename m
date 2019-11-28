@@ -2,79 +2,267 @@ Return-Path: <SRS0=GzKS=ZU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C945C43215
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 10:16:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CF3FC432C3
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 13:34:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7E79621741
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 10:16:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 37F1C21781
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 13:34:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="w7KZ1TIq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726593AbfK1KQC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Nov 2019 05:16:02 -0500
-Received: from foss.arm.com ([217.140.110.172]:33202 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726133AbfK1KQB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 28 Nov 2019 05:16:01 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 308F61042;
-        Thu, 28 Nov 2019 02:16:01 -0800 (PST)
-Received: from usa.arm.com (e107155-lin.cambridge.arm.com [10.1.196.42])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id AC69D3F6C4;
-        Thu, 28 Nov 2019 02:15:59 -0800 (PST)
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Liviu Dudau <liviu.dudau@arm.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Morten Rasmussen <morten.rasmussen@arm.com>,
-        Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH 2/2] cpufreq: vexpress-spc: Switch cpumask from topology core to OPP sharing
-Date:   Thu, 28 Nov 2019 10:15:47 +0000
-Message-Id: <20191128101547.519-2-sudeep.holla@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191128101547.519-1-sudeep.holla@arm.com>
-References: <20191128101547.519-1-sudeep.holla@arm.com>
+        id S1726963AbfK1Nep (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Nov 2019 08:34:45 -0500
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:50293 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726856AbfK1Nep (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2019 08:34:45 -0500
+Received: by mail-wm1-f68.google.com with SMTP id l17so11019556wmh.0
+        for <linux-pm@vger.kernel.org>; Thu, 28 Nov 2019 05:34:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=8VrphYeqahrQ5kATlO0grU5q+TZ5g96u9ghQO6Q2fFc=;
+        b=w7KZ1TIqRorqFk6V1hPTFmPCV+1JsZnF6guXwmyWEmd2W7y9YMCY2uwvxnvykWSA6f
+         OsOSqJsju0xA5ElMwpLTwVTRv+KgcOwVqfZccUsaSaxCRkyLOSj0qvii+PazYdpeCffQ
+         IC4Xunj4UuQIFPzmkkZANHwXqAB64nMhMa+ixovKeNQUyJtjA9TjeYonMCz20PF1aonP
+         A33R5BIWPqXSNyxyGTgTP0WYofOi2L1YNjBeTEXqgCAJH7ZCXxOuZP13AGhJLI9pqIqn
+         ZeNR8Op/b22RzqQAWtf4p1HVMSovwHjxeyFFkV0+fLXM6lwm21OXN5OetG6ysGEnCuc/
+         o80A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=8VrphYeqahrQ5kATlO0grU5q+TZ5g96u9ghQO6Q2fFc=;
+        b=IjcOom8F6pUeDcgsU1tRDdLFKjU8PNBGPPW33oU3XdVcN9kPdyYaC7LWr5Co2JACpj
+         AZl6k9xHhbzA6EI+dzDNWPGbD/FXQC70zCmLQ6YaLqesHsmJeu1wqU9Ooi74A2qc3J4H
+         yjJ2J9moGdqKgGH9FKjEk3zKteHqAyIitb0HLz6jEm7Jpf6OcFI9P02Uq7Fgglr4Gljd
+         MSH54/JqFlKtxo2DLrLywOvgrva0VpH16udnZaQB6vPsy3lI0NF4ZyU/37jISbpHCWW3
+         uYyDjLNLpKf5CG69VVQP6bTl755qLxj1fF2OQtBQRZEqFzI0Mjr/IYpDzknkNUWD0DvR
+         6gEw==
+X-Gm-Message-State: APjAAAXKg/6p5eNB2a+CVpaCuXBWojyNif5g13VTeUAJZG6AAmv3eRse
+        eU4256hsivhM+DFQ4X6wJTE6YCHmNOc=
+X-Google-Smtp-Source: APXvYqyDndcOfTmJ55lnby2VAYUUKyUwBpprxa7XtgXE/tKbSY5omtNvM2XPx2ePvPyTj7Mg+KyTJQ==
+X-Received: by 2002:a1c:1b88:: with SMTP id b130mr8979340wmb.4.1574948082044;
+        Thu, 28 Nov 2019 05:34:42 -0800 (PST)
+Received: from localhost.localdomain ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id y20sm2220451wmi.25.2019.11.28.05.34.40
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Thu, 28 Nov 2019 05:34:41 -0800 (PST)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     linux-pm@vger.kernel.org
+Cc:     bjorn.andersson@linaro.org, agross@kernel.org, digetx@gmail.com,
+        evgreen@chromium.org, daidavid1@codeaurora.org,
+        masneyb@onstation.org, sibis@codeaurora.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        georgi.djakov@linaro.org
+Subject: [PATCH 5/5] interconnect: qcom: Use the new common helper for node removal
+Date:   Thu, 28 Nov 2019 15:34:35 +0200
+Message-Id: <20191128133435.25667-5-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20191128133435.25667-1-georgi.djakov@linaro.org>
+References: <20191128133435.25667-1-georgi.djakov@linaro.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since commit ca74b316df96 ("arm: Use common cpu_topology structure and
-functions.") the core cpumask has to be modified during cpu hotplug
-operations. So using them to set up cpufreq policy cpumask may be
-incorrect as it may contain only cpus that are online at that instance.
+There is a new helper function for removing all nodes. Let's use it instead
+of duplicating the code.
 
-Instead, we can use the cpumask setup by OPP library that contains all
-the cpus sharing OPP table using dev_pm_opp_get_sharing_cpus.
+In addition to the above, instead of duplicating the code, simplify the
+probe function error path by calling driver removal function directly.
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/cpufreq/vexpress-spc-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/interconnect/qcom/msm8974.c | 40 ++++++++++-------------------
+ drivers/interconnect/qcom/qcs404.c  | 31 ++++++++--------------
+ drivers/interconnect/qcom/sdm845.c  | 29 +++++++--------------
+ 3 files changed, 33 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
-index 506e3f2bf53a..83c85d3d67e3 100644
---- a/drivers/cpufreq/vexpress-spc-cpufreq.c
-+++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
-@@ -434,7 +434,7 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
- 	if (cur_cluster < MAX_CLUSTERS) {
- 		int cpu;
+diff --git a/drivers/interconnect/qcom/msm8974.c b/drivers/interconnect/qcom/msm8974.c
+index 0a1a8ba6afa7..8823dce811c3 100644
+--- a/drivers/interconnect/qcom/msm8974.c
++++ b/drivers/interconnect/qcom/msm8974.c
+@@ -644,6 +644,15 @@ static int msm8974_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	return 0;
+ }
  
--		cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
-+		dev_pm_opp_get_sharing_cpus(cpu_dev, policy->cpus);
++static int msm8974_icc_remove(struct platform_device *pdev)
++{
++	struct msm8974_icc_provider *qp = platform_get_drvdata(pdev);
++
++	icc_nodes_remove(&qp->provider);
++	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++	return icc_provider_del(&qp->provider);
++}
++
+ static int msm8974_icc_probe(struct platform_device *pdev)
+ {
+ 	const struct msm8974_icc_desc *desc;
+@@ -701,7 +710,8 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+ 	ret = icc_provider_add(provider);
+ 	if (ret) {
+ 		dev_err(dev, "error adding interconnect provider: %d\n", ret);
+-		goto err_disable_clks;
++		clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++		return ret;
+ 	}
  
- 		for_each_cpu(cpu, policy->cpus)
- 			per_cpu(physical_cluster, cpu) = cur_cluster;
--- 
-2.17.1
-
+ 	for (i = 0; i < num_nodes; i++) {
+@@ -710,7 +720,7 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+ 		node = icc_node_create(qnodes[i]->id);
+ 		if (IS_ERR(node)) {
+ 			ret = PTR_ERR(node);
+-			goto err_del_icc;
++			goto err;
+ 		}
+ 
+ 		node->name = qnodes[i]->name;
+@@ -731,34 +741,12 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
+-err_del_icc:
+-	list_for_each_entry_safe(node, &provider->nodes, node_list) {
+-		icc_node_del(node);
+-		icc_node_destroy(node->id);
+-	}
+-	icc_provider_del(provider);
+-
+-err_disable_clks:
+-	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++err:
++	msm8974_icc_remove(pdev);
+ 
+ 	return ret;
+ }
+ 
+-static int msm8974_icc_remove(struct platform_device *pdev)
+-{
+-	struct msm8974_icc_provider *qp = platform_get_drvdata(pdev);
+-	struct icc_provider *provider = &qp->provider;
+-	struct icc_node *n;
+-
+-	list_for_each_entry_safe(n, &provider->nodes, node_list) {
+-		icc_node_del(n);
+-		icc_node_destroy(n->id);
+-	}
+-	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+-
+-	return icc_provider_del(provider);
+-}
+-
+ static const struct of_device_id msm8974_noc_of_match[] = {
+ 	{ .compatible = "qcom,msm8974-bimc", .data = &msm8974_bimc},
+ 	{ .compatible = "qcom,msm8974-cnoc", .data = &msm8974_cnoc},
+diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+index d2b455021416..a4c6ba715f61 100644
+--- a/drivers/interconnect/qcom/qcs404.c
++++ b/drivers/interconnect/qcom/qcs404.c
+@@ -406,6 +406,15 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	return 0;
+ }
+ 
++static int qnoc_remove(struct platform_device *pdev)
++{
++	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
++
++	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++	icc_nodes_remove(&qp->provider);
++	return icc_provider_del(&qp->provider);
++}
++
+ static int qnoc_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -494,31 +503,11 @@ static int qnoc_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ err:
+-	list_for_each_entry_safe(node, &provider->nodes, node_list) {
+-		icc_node_del(node);
+-		icc_node_destroy(node->id);
+-	}
+-	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+-	icc_provider_del(provider);
++	qnoc_remove(pdev);
+ 
+ 	return ret;
+ }
+ 
+-static int qnoc_remove(struct platform_device *pdev)
+-{
+-	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+-	struct icc_provider *provider = &qp->provider;
+-	struct icc_node *n;
+-
+-	list_for_each_entry_safe(n, &provider->nodes, node_list) {
+-		icc_node_del(n);
+-		icc_node_destroy(n->id);
+-	}
+-	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
+-
+-	return icc_provider_del(provider);
+-}
+-
+ static const struct of_device_id qcs404_noc_of_match[] = {
+ 	{ .compatible = "qcom,qcs404-bimc", .data = &qcs404_bimc },
+ 	{ .compatible = "qcom,qcs404-pcnoc", .data = &qcs404_pcnoc },
+diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
+index 924c2d056d85..2b8f13e78471 100644
+--- a/drivers/interconnect/qcom/sdm845.c
++++ b/drivers/interconnect/qcom/sdm845.c
+@@ -768,6 +768,14 @@ static int cmp_vcd(const void *_l, const void *_r)
+ 		return 1;
+ }
+ 
++static int qnoc_remove(struct platform_device *pdev)
++{
++	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
++
++	icc_nodes_remove(&qp->provider);
++	return icc_provider_del(&qp->provider);
++}
++
+ static int qnoc_probe(struct platform_device *pdev)
+ {
+ 	const struct qcom_icc_desc *desc;
+@@ -855,29 +863,10 @@ static int qnoc_probe(struct platform_device *pdev)
+ 
+ 	return ret;
+ err:
+-	list_for_each_entry(node, &provider->nodes, node_list) {
+-		icc_node_del(node);
+-		icc_node_destroy(node->id);
+-	}
+-
+-	icc_provider_del(provider);
++	qnoc_remove(pdev);
+ 	return ret;
+ }
+ 
+-static int qnoc_remove(struct platform_device *pdev)
+-{
+-	struct qcom_icc_provider *qp = platform_get_drvdata(pdev);
+-	struct icc_provider *provider = &qp->provider;
+-	struct icc_node *n;
+-
+-	list_for_each_entry_safe(n, &provider->nodes, node_list) {
+-		icc_node_del(n);
+-		icc_node_destroy(n->id);
+-	}
+-
+-	return icc_provider_del(provider);
+-}
+-
+ static const struct of_device_id qnoc_of_match[] = {
+ 	{ .compatible = "qcom,sdm845-rsc-hlos", .data = &sdm845_rsc_hlos },
+ 	{ },
