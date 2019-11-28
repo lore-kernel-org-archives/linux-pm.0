@@ -2,147 +2,66 @@ Return-Path: <SRS0=GzKS=ZU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C760C432C0
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 22:48:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14905C43141
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 22:51:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 358AA21775
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 22:48:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="obgBs6BW"
+	by mail.kernel.org (Postfix) with ESMTP id E976C21882
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 22:51:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726681AbfK1Wsh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 Nov 2019 17:48:37 -0500
-Received: from cmta20.telus.net ([209.171.16.93]:46547 "EHLO cmta20.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726670AbfK1Wsh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 28 Nov 2019 17:48:37 -0500
-Received: from dougxps ([173.180.45.4])
-        by cmsmtp with SMTP
-        id aSaKiIsVnN5I9aSaLiqyaf; Thu, 28 Nov 2019 15:48:35 -0700
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
-        t=1574981315; bh=CPFK3woqfG6ZOimrL1hyYBRtHBi0+2WkWsR2eHMBihE=;
-        h=From:To:Cc:References:In-Reply-To:Subject:Date;
-        b=obgBs6BWp7aVFKj+IDbPc4DbdD6QYY5DDjRyWx21zRHHYN1AolGuUV42JFQASN6p6
-         87g2EkjmH/4gVEPYwBYqW2yceFZ2fNOzr1o0d4lOtvTcogeClfhOUVx4ZfHe/1X6SO
-         kugz9rVgeI/CqX8+5nyY/HBTX1/GYDO92FHUgH95fm/8lN1CaFcoyBr25Uk1/HT6Dw
-         rpsBqnsMC+lMtKHyLirTyFkEH1pgat/Wbvd+A9nOiOLv76TbQPK1G9JV1lbhY6ilCK
-         qrsv8lYLgSK63HPh7tsA9hdOTg0TQZyTHi8hsNxYvC7zMWqUrqXVY7N0JUIHsmzN+V
-         pQXdSzWYRS3pg==
-X-Telus-Authed: none
-X-Authority-Analysis: v=2.3 cv=K/Fc4BeI c=1 sm=1 tr=0
- a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
- a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=jpOVt7BSZ2e4Z31A5e1TngXxSK0=:19
- a=IkcTkHD0fZMA:10 a=siDWz7SyTkNVcnO4k2gA:9 a=QEXdDO2ut3YA:10
-From:   "Doug Smythies" <dsmythies@telus.net>
-To:     "'Giovanni Gherdovich'" <ggherdovich@suse.cz>
-Cc:     <x86@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        "'Mel Gorman'" <mgorman@techsingularity.net>,
-        "'Matt Fleming'" <matt@codeblueprint.co.uk>,
-        "'Viresh Kumar'" <viresh.kumar@linaro.org>,
-        "'Juri Lelli'" <juri.lelli@redhat.com>,
-        "'Paul Turner'" <pjt@google.com>,
-        "'Peter Zijlstra'" <peterz@infradead.org>,
-        "'Vincent Guittot'" <vincent.guittot@linaro.org>,
-        "'Quentin Perret'" <qperret@qperret.net>,
-        "'Dietmar Eggemann'" <dietmar.eggemann@arm.com>,
-        "'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>,
-        "'Thomas Gleixner'" <tglx@linutronix.de>,
-        "'Ingo Molnar'" <mingo@redhat.com>,
-        "'Borislav Petkov'" <bp@suse.de>, "'Len Brown'" <lenb@kernel.org>,
-        "'Rafael J . Wysocki'" <rjw@rjwysocki.net>
-References: <20191113124654.18122-1-ggherdovich@suse.cz>                 <20191113124654.18122-2-ggherdovich@suse.cz>                 <000001d5a29b$c944fd70$5bcef850$@net> <1574697961.16378.5.camel@suse.cz>         <000801d5a41e$a7fce2c0$f7f6a840$@net> <1574781600.7677.2.camel@suse.cz> <001d01d5a4f4$d96b21b0$8c416510$@net>
-In-Reply-To: <001d01d5a4f4$d96b21b0$8c416510$@net>
-Subject: RE: [PATCH v4 1/6] x86,sched: Add support for frequency invariance
-Date:   Thu, 28 Nov 2019 14:48:27 -0800
-Message-ID: <003d01d5a63d$f6ab3950$e401abf0$@net>
+        id S1726733AbfK1WvD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 Nov 2019 17:51:03 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:45514 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726582AbfK1WvC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Nov 2019 17:51:02 -0500
+Received: from 79.184.255.242.ipv4.supernova.orange.pl (79.184.255.242) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
+ id 7a1bba6277687c37; Thu, 28 Nov 2019 23:51:00 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        "Kenneth R. Crudup" <kenny@panix.com>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] ACPI: PM: s2idle: Fix possible suspend lock-up
+Date:   Thu, 28 Nov 2019 23:42:09 +0100
+Message-ID: <2787005.CsmIKtZlk9@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Content-Language: en-ca
-Thread-Index: AdWkbC8LB/SpP9sCRCWbwO3FO+l3UwAhVS2wAEbrT1A=
-X-CMAE-Envelope: MS4wfOtRsfbZnTQ5Z2TeTXge1GkRx76NgDeB6Idj4Im7L8yxQYgF202u0DBMVSNoWZSRA184sTQcvdhfQTMZRqjm83yLiNYr7mi+r5B71b7H5gKcDmwyhPKz
- YPpQGfo857MCu3WE+JalTWJ4pBObDzwNn/l12OWiQq9g3e7YROVQ9J9Q42vIJ0ETSG/z5Zp8i6FXpJUTcv287q4WIBzxoNm5KQWagwLCTT3Yb8acVnu5rXs4
- fKQ1xFAFzXsewHb0L0G+y7FxkxzQq50q8YvEnOLhAIB8hI8B0xJg+YEKmKoYIfsGV6Vi003OVWNYcJOQitKBpbUYvgtPEFpFofN1TanLtiWvvmgRCVas3S6x
- UTpOMF5GCtEcIY9lrf/Fee4UBQDaJ6KhGqWkRcQJW+MeKngOvGNbds2W2PehqUfeajE4lrUNzDHX9s1BRFHUJpFdp01XDw7Voujxx6jmz3iMwZe1zaL18nj1
- Wri7NoVppwX5iJCltMdaaR7ATanz7Bhve2vI6keDBkC1pthBVMm3Zp2ZyIdWeSDmuD22EYWA8mI0JFykWIBa8AfFbxs3gNhQ601CQDPgFOQ10DSB+/+rt8HY
- TwyjYpmGimfhRPkf2Wgeo1pUeNJ5qTT0eiLj0VBaDmp7NWDmxKMwhbyiI3LjmXWvFWN9/+N4B1wkyvtib4ayVW2FEJpDl/8tpUqsI02mBNBNJnKSnrc0EXlt
- EIeiSs8c8tnKcfqvXIA4LFGNlzdBJAN7268FmshEVm0EEhi/H9S7vQ==
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Summary: There never was an issue here.
+Hi All,
 
-Sorry for the noise of this thread, and the resulting waste of time.
+The first patch in this series is a fix for a suspend-to-idle issues introduced
+in 5.4 (see its changelog for details).
 
-On 2019.11.26 23:33 Doug Smythies wrote:
-> On 2019.11.26 07:20 Giovanni Gherdovich wrote:
->> On Mon, 2019-11-25 at 21:59 -0800, Doug Smythies wrote:
->>> [...]
->>> The issue with the schedutil governor not working properly in the 5.4 RC series
->>> appears to be hardware dependant.
+The second one is more of an optimization, although some systems may need it
+too (depending on how fragile their platform firmware is).
 
-No it 's not.
+Kenneth,
 
-Issues with my Sandy Bridge, i7-2600K, test computer and kernel 5.4
-seem to be because it is running an older Ubuntu server version,
-apparently somewhat dependant on cgroup V1 and their cgmanager package.
-I am unable to remove the package to test further because I do use VMs
-that seem to depend on it.
+This series is roughly equivalent to the patch at
 
-In the kernel configuration when CONFIG_UCLAMP_TASK_GROUP=y
-the computer behaves as though the new parameter "cpu.uclamp.min"
-is set to max rather than 0, but I can not prove it.
+https://lore.kernel.org/linux-pm/CAJZ5v0h1Ro75++4xuCznkx6GNYd+G5NpMGP96z1jdh=dm9uZbw@mail.gmail.com/T/#m11ca9a14efe4e5193bbda69767595a5fb7bd5479
 
->>> My test computer is Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz., Sandy Bridge.
->>> On a temporary basis, I acquired a computer with an
->>> Intel(R) Core(TM) i5-4460 CPU @ 3.20GHz, Haswell,
->>> and schedutil governor behaviour with the exact same kernels is fine:
+The main difference is that it flushes system_wq before ec_query_wq, but that
+should not really matter if the issue you saw in 5.4 is the one described
+in the changelog of patch [1/2].
 
-I failed to mention that was brand new Ubuntu server 20.04 development version
-installation, which turns out to have been an important omission.
+Please test this series and let me know if it works for you too.
 
->>> 
->>> That "gitsource" test, "make test" 6 times, first run thrown out:
->>> 
->>> Kernel 5.4 intel_cpufreq/schedutil: 3411.8 seconds
->>> Kernel 5.4 + gg 6 intel_cpufreq/schedutil: 1696.7 seconds
->>> Ratio: 0.49
->>> Recall you got a ratio of 0.49 with 5th generation, Broadwell.
+In case it does work, it would be good to know if patch [1/2] is sufficient to
+fix the suspend problem at least with ec_no_wakeup == 0 (it may not be
+sufficient with ec_no_wakeup == 1).
 
-I took the disk from the Haswell computer and put it in the Sandy Bridge
-computer, and then everything was fine:
+Thanks!
 
-Kernel 5.4 intel_cpufreq/schedutil: 3636 seconds
-Kernel 5.4 + gg 6 intel_cpufreq/schedutil: 2427.6 seconds
-Ratio: 0.67 which is consistent with previous Sandy Bridge results
-
-...
-
-Those above kernels included:
-
-CONFIG_UCLAMP_TASK_GROUP=y
-
-Which cause my older Ubuntu server edition using the 
-intel_cpufreq/schedutil to respond much like the performance
-governor, as reported the other day and above.
-
-I also booted the Sandy Bridge computer, with its original disk,
-with the kernel command line containing:
-
-cgroup_no_v1=all
-
-and, while it complained during boot, it did work as expected
-using the intel_cpufreq/schedutil driver/governor.
-
-... Doug
 
 
