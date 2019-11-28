@@ -2,285 +2,102 @@ Return-Path: <SRS0=GzKS=ZU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BD1CC43215
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:06:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64F4DC432C3
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:40:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 019CC215F2
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:06:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=castello.eng.br header.i=@castello.eng.br header.b="O3JngmG8"
+	by mail.kernel.org (Postfix) with ESMTP id 442B9215E5
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:40:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727176AbfK1BGy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Nov 2019 20:06:54 -0500
-Received: from gateway21.websitewelcome.com ([192.185.45.91]:33515 "EHLO
-        gateway21.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726984AbfK1BGy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2019 20:06:54 -0500
-Received: from cm17.websitewelcome.com (cm17.websitewelcome.com [100.42.49.20])
-        by gateway21.websitewelcome.com (Postfix) with ESMTP id 4BA50400DC98D
-        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2019 19:06:52 -0600 (CST)
-Received: from br164.hostgator.com.br ([192.185.176.180])
-        by cmsmtp with SMTP
-        id a8Giif8gKqNtva8GiiQnV7; Wed, 27 Nov 2019 19:06:52 -0600
-X-Authority-Reason: nr=8
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=castello.eng.br; s=default; h=Content-Transfer-Encoding:Content-Type:
-        In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
-        :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-        Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
-        List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=hvOYKQUJE21stIgSn0WN4z50J2vix7puMNZz1Y1suDY=; b=O3JngmG83jQxHb4ZrcNpw7Mhpn
-        AiYoiDIeR3kYXDxmlz4VfrTSAd3m90MhLtm/mpC4PFRU26ZLpm6RVcVac4N5/L4MnsjfzUhV6VZQL
-        S5C6Xd7bPm1JAodGyvuSbG3vikDQmCGbZppNrVp2h4/Z+k1qcAYsLkJzO2oGqrKCpr55Ahv7WHmxa
-        rvKEpbg5362IgyELfg40R2FpopiWAbqisX6mw/7QxsEQwOm1XRfwwkN4cY9KDYI9qM4CJVK5Hlq4H
-        VAiC2nuRexYHEL1Vjmfu6wlYhYlRo/h9fOmb+zJLAM+i69/djeCNRUoIpPm0pnfNiws0WQIYQbW88
-        fcdzTgOQ==;
-Received: from [191.31.194.237] (port=59596 helo=[192.168.15.4])
-        by br164.hostgator.com.br with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
-        (Exim 4.92)
-        (envelope-from <matheus@castello.eng.br>)
-        id 1ia8Gh-0041CU-Br; Wed, 27 Nov 2019 22:06:51 -0300
-Subject: Re: [PATCH v7 4/5] power: supply: max17040: Config alert SOC low
- level threshold from FDT
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
-        cw00.choi@samsung.com, b.zolnierkie@samsung.com,
-        lee.jones@linaro.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20191117141335.23404-1-matheus@castello.eng.br>
- <20191117141335.23404-5-matheus@castello.eng.br>
- <20191126145200.xqtvfrm6qc6yuutb@earth.universe>
-From:   Matheus Castello <matheus@castello.eng.br>
-Message-ID: <c5bb4962-10f7-0877-0c99-c2dad5bb53cf@castello.eng.br>
-Date:   Wed, 27 Nov 2019 22:06:47 -0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.2.2
+        id S1727663AbfK1BkX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Nov 2019 20:40:23 -0500
+Received: from mga02.intel.com ([134.134.136.20]:10961 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727628AbfK1BkW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 27 Nov 2019 20:40:22 -0500
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 27 Nov 2019 17:40:19 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,251,1571727600"; 
+   d="scan'208";a="221166479"
+Received: from sjchrist-coffee.jf.intel.com ([10.54.74.41])
+  by orsmga002.jf.intel.com with ESMTP; 27 Nov 2019 17:40:19 -0800
+From:   Sean Christopherson <sean.j.christopherson@intel.com>
+To:     Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        x86@kernel.org
+Cc:     "H. Peter Anvin" <hpa@zytor.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Arnaldo Carvalho de Melo <acme@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Jiri Olsa <jolsa@redhat.com>,
+        Namhyung Kim <namhyung@kernel.org>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
+        Sean Christopherson <sean.j.christopherson@intel.com>,
+        Vitaly Kuznetsov <vkuznets@redhat.com>,
+        Wanpeng Li <wanpengli@tencent.com>,
+        Jim Mattson <jmattson@google.com>,
+        Joerg Roedel <joro@8bytes.org>,
+        Tony Luck <tony.luck@intel.com>,
+        Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
+        Len Brown <lenb@kernel.org>, Shuah Khan <shuah@kernel.org>,
+        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+        linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kselftest@vger.kernel.org, Borislav Petkov <bp@suse.de>,
+        Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+Subject: [PATCH v4 05/19] x86/mce: WARN once if IA32_FEAT_CTL MSR is left unlocked
+Date:   Wed, 27 Nov 2019 17:40:02 -0800
+Message-Id: <20191128014016.4389-6-sean.j.christopherson@intel.com>
+X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20191128014016.4389-1-sean.j.christopherson@intel.com>
+References: <20191128014016.4389-1-sean.j.christopherson@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20191126145200.xqtvfrm6qc6yuutb@earth.universe>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Language: pt-BR
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - br164.hostgator.com.br
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - castello.eng.br
-X-BWhitelist: no
-X-Source-IP: 191.31.194.237
-X-Source-L: No
-X-Exim-ID: 1ia8Gh-0041CU-Br
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: ([192.168.15.4]) [191.31.194.237]:59596
-X-Source-Auth: matheus@castello.eng.br
-X-Email-Count: 8
-X-Source-Cap: Y2FzdGUyNDg7Y2FzdGUyNDg7YnIxNjQuaG9zdGdhdG9yLmNvbS5icg==
-X-Local-Domain: yes
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Sebastian,
+WARN if the IA32_FEAT_CTL MSR is somehow left unlocked now that CPU
+initialization unconditionally locks the MSR.
 
-Em 11/26/19 11:52 AM, Sebastian Reichel escreveu:
-> Hi,
-> 
-> On Sun, Nov 17, 2019 at 11:13:34AM -0300, Matheus Castello wrote:
->> For configuration of fuel gauge alert for a low level state of charge
->> interrupt we add a function to config level threshold and a device tree
->> binding property to set it in flatned device tree node.
->>
->> Now we can use "maxim,alert-low-soc-level" property with the values from
->> 1% up to 32% to configure alert interrupt threshold.
->>
->> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
->> ---
->>   drivers/power/supply/max17040_battery.c | 75 ++++++++++++++++++++++---
->>   1 file changed, 67 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
->> index 9909f8cd7b5d..3fc9e1c7b257 100644
->> --- a/drivers/power/supply/max17040_battery.c
->> +++ b/drivers/power/supply/max17040_battery.c
->> @@ -29,6 +29,9 @@
->>   #define MAX17040_DELAY		1000
->>   #define MAX17040_BATTERY_FULL	95
->>
->> +#define MAX17040_ATHD_MASK		0xFFC0
->> +#define MAX17040_ATHD_DEFAULT_POWER_UP	4
->> +
->>   struct max17040_chip {
->>   	struct i2c_client		*client;
->>   	struct delayed_work		work;
->> @@ -43,6 +46,8 @@ struct max17040_chip {
->>   	int soc;
->>   	/* State Of Charge */
->>   	int status;
->> +	/* Low alert threshold from 32% to 1% of the State of Charge */
->> +	u32 low_soc_alert;
->>   };
->>
->>   static int max17040_get_property(struct power_supply *psy,
->> @@ -99,6 +104,21 @@ static void max17040_reset(struct i2c_client *client)
->>   	max17040_write_reg(client, MAX17040_CMD, 0x0054);
->>   }
->>
->> +static int max17040_set_low_soc_alert(struct i2c_client *client, u32 level)
->> +{
->> +	int ret;
->> +	u16 data;
->> +
->> +	level = 32 - level;
->> +	data = max17040_read_reg(client, MAX17040_RCOMP);
->> +	/* clear the alrt bit and set LSb 5 bits */
->> +	data &= MAX17040_ATHD_MASK;
->> +	data |= level;
->> +	ret = max17040_write_reg(client, MAX17040_RCOMP, data);
->> +
->> +	return ret;
->> +}
->> +
->>   static void max17040_get_vcell(struct i2c_client *client)
->>   {
->>   	struct max17040_chip *chip = i2c_get_clientdata(client);
->> @@ -115,7 +135,6 @@ static void max17040_get_soc(struct i2c_client *client)
->>   	u16 soc;
->>
->>   	soc = max17040_read_reg(client, MAX17040_SOC);
->> -
-> 
-> unrelated change.
-> 
->>   	chip->soc = (soc >> 8);
->>   }
->>
->> @@ -161,6 +180,24 @@ static void max17040_get_status(struct i2c_client *client)
->>   		chip->status = POWER_SUPPLY_STATUS_FULL;
->>   }
->>
->> +static int max17040_get_of_data(struct max17040_chip *chip)
->> +{
->> +	struct device *dev = &chip->client->dev;
->> +	struct device_node *np = dev->of_node;
->> +	int ret = 0;
->> +
->> +	if (of_property_read_u32(np, "maxim,alert-low-soc-level",
->> +				 &chip->low_soc_alert)) {
->> +		chip->low_soc_alert = MAX17040_ATHD_DEFAULT_POWER_UP;
->> +	} else if (chip->low_soc_alert <= 0 ||
->> +			chip->low_soc_alert >= 33) {
->> +		/* low_soc_alert is not between 1% and 32% */
->> +		ret = -EINVAL;
->> +	}
-> 
-> use device_property_read_u32(), which is not DT specific. Also
-> code can be simplified a bit:
-> 
-> chip->low_soc_alert = MAX17040_ATHD_DEFAULT_POWER_UP;
-> device_property_read_u32(dev, "maxim,alert-low-soc-level", &chip->low_soc_alert);
-> if (chip->low_soc_alert <= 0 || chip->low_soc_alert >= 33)
->      return -EINVAL;
-> return 0;
-> 
+Signed-off-by: Sean Christopherson <sean.j.christopherson@intel.com>
+---
+ arch/x86/kernel/cpu/mce/intel.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-Thanks for the review, I will use this.
+diff --git a/arch/x86/kernel/cpu/mce/intel.c b/arch/x86/kernel/cpu/mce/intel.c
+index c238518b84a2..5627b1091b85 100644
+--- a/arch/x86/kernel/cpu/mce/intel.c
++++ b/arch/x86/kernel/cpu/mce/intel.c
+@@ -116,14 +116,15 @@ static bool lmce_supported(void)
+ 	/*
+ 	 * BIOS should indicate support for LMCE by setting bit 20 in
+ 	 * IA32_FEAT_CTL without which touching MCG_EXT_CTL will generate a #GP
+-	 * fault.
++	 * fault.  The MSR must also be locked for LMCE_ENABLED to take effect.
++	 * WARN if the MSR isn't locked as init_ia32_feat_ctl() unconditionally
++	 * locks the MSR in the event that it wasn't already locked by BIOS.
+ 	 */
+ 	rdmsrl(MSR_IA32_FEAT_CTL, tmp);
+-	if ((tmp & (FEAT_CTL_LOCKED | FEAT_CTL_LMCE_ENABLED)) ==
+-		   (FEAT_CTL_LOCKED | FEAT_CTL_LMCE_ENABLED))
+-		return true;
++	if (WARN_ON_ONCE(!(tmp & FEAT_CTL_LOCKED)))
++		return false;
+ 
+-	return false;
++	return tmp & FEAT_CTL_LMCE_ENABLED;
+ }
+ 
+ bool mce_intel_cmci_poll(void)
+-- 
+2.24.0
 
->> +
->> +	return ret;
->> +}
->> +
->>   static void max17040_check_changes(struct i2c_client *client)
->>   {
->>   	max17040_get_vcell(client);
->> @@ -192,6 +229,9 @@ static irqreturn_t max17040_thread_handler(int id, void *dev)
->>   	/* send uevent */
->>   	power_supply_changed(chip->battery);
->>
->> +	/* reset alert bit */
->> +	max17040_set_low_soc_alert(client, chip->low_soc_alert);
->> +
->>   	return IRQ_HANDLED;
->>   }
->>
->> @@ -230,6 +270,7 @@ static int max17040_probe(struct i2c_client *client,
->>   	struct i2c_adapter *adapter = client->adapter;
->>   	struct power_supply_config psy_cfg = {};
->>   	struct max17040_chip *chip;
->> +	int ret;
->>
->>   	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
->>   		return -EIO;
->> @@ -240,6 +281,12 @@ static int max17040_probe(struct i2c_client *client,
->>
->>   	chip->client = client;
->>   	chip->pdata = client->dev.platform_data;
->> +	ret = max17040_get_of_data(chip);
->> +	if (ret) {
->> +		dev_err(&client->dev,
->> +			"failed: low SOC alert OF data out of bounds\n");
->> +		return ret;
->> +	}
->>
->>   	i2c_set_clientdata(client, chip);
->>   	psy_cfg.drv_data = chip;
->> @@ -256,14 +303,26 @@ static int max17040_probe(struct i2c_client *client,
->>
->>   	/* check interrupt */
->>   	if (client->irq) {
->> -		int ret;
->> -
->> -		ret = max17040_enable_alert_irq(chip);
->> -
->> -		if (ret) {
->> -			client->irq = 0;
->> +		if (of_device_is_compatible(client->dev.of_node,
->> +					    "maxim,max77836-battery")) {
->> +			ret = max17040_set_low_soc_alert(client,
->> +							 chip->low_soc_alert);
->> +			if (ret) {
->> +				dev_err(&client->dev,
->> +					"Failed to set low SOC alert: err %d\n",
->> +					ret);
->> +				return ret;
->> +			}
->> +
->> +			ret = max17040_enable_alert_irq(chip);
->> +			if (ret) {
->> +				client->irq = 0;
->> +				dev_warn(&client->dev,
->> +					 "Failed to get IRQ err %d\n", ret);
->> +			}
->> +		} else {
->>   			dev_warn(&client->dev,
->> -				 "Failed to get IRQ err %d\n", ret);
->> +				 "Device not compatible for IRQ");
-> 
-> Something is odd here. Either this should be part of the first
-> patch ("max17040: Add IRQ handler for low SOC alert"), or both
-> device types support the IRQ and this check should be removed.
-> > -- Sebastian
->
-
-The first patch add the IRQ without the configuration of the low SoC 
-alert, using the default state of charge level. This patch is working 
-with registers to config the low state of charge level, so it was 
-proposed to just try to write registers in the models compatible with 
-that (maxim,max77836-battery).
-
-Maybe join the first patch to this one, and let DT binding be the first 
-patch on the series so we can already test compatible here, let me know 
-what you think about it.
-
->>   		}
->>   	}
->>
->> --
->> 2.24.0.rc2
->>
