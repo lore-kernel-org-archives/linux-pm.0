@@ -2,329 +2,136 @@ Return-Path: <SRS0=GzKS=ZU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A9B8C43141
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:42:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2CE3C432C3
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 02:31:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F0050215F1
-	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 01:42:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 939812158A
+	for <linux-pm@archiver.kernel.org>; Thu, 28 Nov 2019 02:31:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="AbV2WhvU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727191AbfK1BkU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 Nov 2019 20:40:20 -0500
-Received: from mga02.intel.com ([134.134.136.20]:10954 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727088AbfK1BkU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 27 Nov 2019 20:40:20 -0500
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 27 Nov 2019 17:40:19 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.69,251,1571727600"; 
-   d="scan'208";a="221166465"
-Received: from sjchrist-coffee.jf.intel.com ([10.54.74.41])
-  by orsmga002.jf.intel.com with ESMTP; 27 Nov 2019 17:40:18 -0800
-From:   Sean Christopherson <sean.j.christopherson@intel.com>
-To:     Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        x86@kernel.org
-Cc:     "H. Peter Anvin" <hpa@zytor.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Arnaldo Carvalho de Melo <acme@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Jiri Olsa <jolsa@redhat.com>,
-        Namhyung Kim <namhyung@kernel.org>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
-        Sean Christopherson <sean.j.christopherson@intel.com>,
-        Vitaly Kuznetsov <vkuznets@redhat.com>,
-        Wanpeng Li <wanpengli@tencent.com>,
-        Jim Mattson <jmattson@google.com>,
-        Joerg Roedel <joro@8bytes.org>,
-        Tony Luck <tony.luck@intel.com>,
-        Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
-        Len Brown <lenb@kernel.org>, Shuah Khan <shuah@kernel.org>,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kselftest@vger.kernel.org, Borislav Petkov <bp@suse.de>,
-        Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: [PATCH v4 01/19] x86/msr-index: Clean up bit defines for IA32_FEATURE_CONTROL MSR
-Date:   Wed, 27 Nov 2019 17:39:58 -0800
-Message-Id: <20191128014016.4389-2-sean.j.christopherson@intel.com>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191128014016.4389-1-sean.j.christopherson@intel.com>
-References: <20191128014016.4389-1-sean.j.christopherson@intel.com>
+        id S1728315AbfK1CbW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 Nov 2019 21:31:22 -0500
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:34052 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728290AbfK1CbV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Nov 2019 21:31:21 -0500
+Received: by mail-pf1-f195.google.com with SMTP id n13so12354530pff.1
+        for <linux-pm@vger.kernel.org>; Wed, 27 Nov 2019 18:31:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=w3MhAgNwJCDzFmg83BGAd8t/eEyIf/GsxgnTUb2ToXs=;
+        b=AbV2WhvURSc4H37cMnU1McRpKMN3PNtGgOrYok6XE+t9/06vmiOzXjxO8o2/A4nNp4
+         Th474P4Odokl5RWixStRMW5aLqjuL+perV6RJMm+oYT0og/XFeKaql61vRSRiMJ2pq32
+         0omD61mSXnitttdyY+8RdTvxmea7rn86qHhC8uuVGiCvCxLNuvzRjfd/GUuY0RIQYSP2
+         cmdskrvBVEhe3S9Q8lDcJdRWRIlI7bSrEFH1y1U4Rk/tYvNaQaqZi/+FF5T+ytaNx+SZ
+         qeKAzvV5MkymttKH0wbACMhRa1dZMoMvjL94xGienEDXbooxuQVYAxmfQ3NFUZlSxovl
+         0VrQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=w3MhAgNwJCDzFmg83BGAd8t/eEyIf/GsxgnTUb2ToXs=;
+        b=AK0MDlrz4DgJTQUgErCYoyeqVV5aZibiuqfgpG9BGSxD8ly471NKJjXFwtJB40RAYm
+         S2WuvnXX7UoA4hR7oJ7jlQ2ieWKBsbDF8/yTr9m0IG5SvUWsgvwPNpKZZVut/t4RCzy+
+         HTHUug7nGm/45BSLKBA2rKR0lnqBFwaEx6AHrUEvjCSMtRQGnLR90FNBe53y2qN4caS/
+         opvGiRV7nG3/IiKM9LEwp1svr1cZpA5dL14DfhWUDwB51tDfka0zYZh5qu9FyV1xSgCU
+         uCu3hXTZObdhwCLvF2JkoRERWnH0NFfhU+TXViKyxeUe7O0oT49ymY5Fz1H2L5o9YW1e
+         uXKw==
+X-Gm-Message-State: APjAAAUIEyTL2dkP3eVcVhP9EuZktfiztzKlz8LsU/Ah79Opv1GmqaWS
+        +Ii7rFUpFDvxp291qYLxAzrzBw==
+X-Google-Smtp-Source: APXvYqx4TG+a8InkKBmHDvzMujmJEOUlgarnckvNwhCekHG+3RWiohoP5Zo9pN47GWMMV9wizulVyg==
+X-Received: by 2002:a62:cf46:: with SMTP id b67mr30054210pfg.77.1574908280836;
+        Wed, 27 Nov 2019 18:31:20 -0800 (PST)
+Received: from localhost ([122.171.112.123])
+        by smtp.gmail.com with ESMTPSA id q15sm1312656pgi.55.2019.11.27.18.31.19
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 27 Nov 2019 18:31:20 -0800 (PST)
+Date:   Thu, 28 Nov 2019 08:01:16 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: vexpress-spc: Fix wrong alternation of
+ policy->related_cpus during CPU hp
+Message-ID: <20191128023116.3skwbeowk7wtjaxc@vireshk-i7>
+References: <20191127114801.23837-1-dietmar.eggemann@arm.com>
+ <20191127120816.GC29301@bogus>
+ <20191127121402.vd3tul4gmqm6qtyb@vireshk-i7>
+ <20191127133200.GE29301@bogus>
+ <a60cab69-4d47-d418-94bd-74630bf9e846@arm.com>
+ <20191127154029.GA4826@bogus>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191127154029.GA4826@bogus>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-As pointed out by Boris, the defines for bits in IA32_FEATURE_CONTROL
-are quite a mouthful, especially the VMX bits which must differentiate
-between enabling VMX inside and outside SMX (TXT) operation.  Rename the
-MSR and its bit defines to abbreviate FEATURE_CONTROL as FEAT_CTL to
-make them a little friendlier on the eyes.
+On 27-11-19, 15:40, Sudeep Holla wrote:
+> diff --git i/arch/arm/mach-vexpress/spc.c w/arch/arm/mach-vexpress/spc.c
+> index 354e0e7025ae..e0e2e789a0b7 100644
+> --- i/arch/arm/mach-vexpress/spc.c
+> +++ w/arch/arm/mach-vexpress/spc.c
+> @@ -551,8 +551,9 @@ static struct clk *ve_spc_clk_register(struct device *cpu_dev)
+> 
+>  static int __init ve_spc_clk_init(void)
+>  {
+> -       int cpu;
+> +       int cpu, cluster;
+>         struct clk *clk;
+> +       bool init_opp_table[MAX_CLUSTERS] = { false };
+> 
+>         if (!info)
+>                 return 0; /* Continue only if SPC is initialised */
+> @@ -578,8 +579,17 @@ static int __init ve_spc_clk_init(void)
+>                         continue;
+>                 }
+> 
+> +               cluster = topology_physical_package_id(cpu_dev->id);
+> +               if (init_opp_table[cluster])
+> +                       continue;
+> +
+>                 if (ve_init_opp_table(cpu_dev))
+>                         pr_warn("failed to initialise cpu%d opp table\n", cpu);
+> +               else if (dev_pm_opp_set_sharing_cpus(cpu_dev,
+> +                        topology_core_cpumask(cpu_dev->id)))
+> +                       pr_warn("failed to mark OPPs shared for cpu%d\n", cpu);
+> +
+> +               init_opp_table[cluster] = true;
+>         }
+> 
+>         platform_device_register_simple("vexpress-spc-cpufreq", -1, NULL, 0);
+> diff --git i/drivers/cpufreq/vexpress-spc-cpufreq.c w/drivers/cpufreq/vexpress-spc-cpufreq.c
+> index 506e3f2bf53a..83c85d3d67e3 100644
+> --- i/drivers/cpufreq/vexpress-spc-cpufreq.c
+> +++ w/drivers/cpufreq/vexpress-spc-cpufreq.c
+> @@ -434,7 +434,7 @@ static int ve_spc_cpufreq_init(struct cpufreq_policy *policy)
+>         if (cur_cluster < MAX_CLUSTERS) {
+>                 int cpu;
+> 
+> -               cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
+> +               dev_pm_opp_get_sharing_cpus(cpu_dev, policy->cpus);
+> 
+>                 for_each_cpu(cpu, policy->cpus)
+>                         per_cpu(physical_cluster, cpu) = cur_cluster;
 
-Arguably the MSR itself should keep the full IA32_FEATURE_CONTROL name
-to match Intel's SDM, but a future patch will add a dedicated Kconfig,
-file and functions for the MSR.  Using the full name for those assets is
-rather unwieldy, so bite the bullet and use IA32_FEAT_CTL so that its
-nomenclature is consistent throughout the kernel.
+This is a better *work-around* I would say, as we can't break it the
+way I explained earlier :)
 
-Opportunistically fix a few other annoyances with the defines:
-
-  - Relocate the bit defines so that they immediately follow the MSR
-    define, e.g. aren't mistaken as belonging to MISC_FEATURE_CONTROL.
-  - Add whitespace around the block of feature control defines to make
-    it clear they're all related.
-  - Use BIT() instead of manually encoding the bit shift.
-  - Use "VMX" instead of "VMXON" to match the SDM.
-  - Append "_ENABLED" to the LMCE (Local Machine Check Exception) bit to
-    be consistent with the kernel's verbiage used for all other feature
-    control bits.  Note, the SDM refers to the LMCE bit as LMCE_ON,
-    likely to differentiate it from IA32_MCG_EXT_CTL.LMCE_EN.  Ignore
-    the (literal) one-off usage of _ON, the SDM is simply "wrong".
-
-Cc: Borislav Petkov <bp@alien8.de>
-Signed-off-by: Sean Christopherson <sean.j.christopherson@intel.com>
----
- arch/x86/include/asm/msr-index.h | 14 +++++-----
- arch/x86/kernel/cpu/mce/intel.c  | 10 +++----
- arch/x86/kvm/vmx/nested.c        |  4 +--
- arch/x86/kvm/vmx/vmx.c           | 46 ++++++++++++++++----------------
- arch/x86/kvm/vmx/vmx.h           |  2 +-
- arch/x86/kvm/x86.c               |  2 +-
- 6 files changed, 40 insertions(+), 38 deletions(-)
-
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 084e98da04a7..ebe1685e92dd 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -558,7 +558,14 @@
- #define MSR_IA32_EBL_CR_POWERON		0x0000002a
- #define MSR_EBC_FREQUENCY_ID		0x0000002c
- #define MSR_SMI_COUNT			0x00000034
--#define MSR_IA32_FEATURE_CONTROL        0x0000003a
-+
-+/* Referred to as IA32_FEATURE_CONTROL in Intel's SDM. */
-+#define MSR_IA32_FEAT_CTL		0x0000003a
-+#define FEAT_CTL_LOCKED				BIT(0)
-+#define FEAT_CTL_VMX_ENABLED_INSIDE_SMX		BIT(1)
-+#define FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX	BIT(2)
-+#define FEAT_CTL_LMCE_ENABLED			BIT(20)
-+
- #define MSR_IA32_TSC_ADJUST             0x0000003b
- #define MSR_IA32_BNDCFGS		0x00000d90
- 
-@@ -566,11 +573,6 @@
- 
- #define MSR_IA32_XSS			0x00000da0
- 
--#define FEATURE_CONTROL_LOCKED				(1<<0)
--#define FEATURE_CONTROL_VMXON_ENABLED_INSIDE_SMX	(1<<1)
--#define FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX	(1<<2)
--#define FEATURE_CONTROL_LMCE				(1<<20)
--
- #define MSR_IA32_APICBASE		0x0000001b
- #define MSR_IA32_APICBASE_BSP		(1<<8)
- #define MSR_IA32_APICBASE_ENABLE	(1<<11)
-diff --git a/arch/x86/kernel/cpu/mce/intel.c b/arch/x86/kernel/cpu/mce/intel.c
-index e270d0770134..c238518b84a2 100644
---- a/arch/x86/kernel/cpu/mce/intel.c
-+++ b/arch/x86/kernel/cpu/mce/intel.c
-@@ -115,12 +115,12 @@ static bool lmce_supported(void)
- 
- 	/*
- 	 * BIOS should indicate support for LMCE by setting bit 20 in
--	 * IA32_FEATURE_CONTROL without which touching MCG_EXT_CTL will
--	 * generate a #GP fault.
-+	 * IA32_FEAT_CTL without which touching MCG_EXT_CTL will generate a #GP
-+	 * fault.
- 	 */
--	rdmsrl(MSR_IA32_FEATURE_CONTROL, tmp);
--	if ((tmp & (FEATURE_CONTROL_LOCKED | FEATURE_CONTROL_LMCE)) ==
--		   (FEATURE_CONTROL_LOCKED | FEATURE_CONTROL_LMCE))
-+	rdmsrl(MSR_IA32_FEAT_CTL, tmp);
-+	if ((tmp & (FEAT_CTL_LOCKED | FEAT_CTL_LMCE_ENABLED)) ==
-+		   (FEAT_CTL_LOCKED | FEAT_CTL_LMCE_ENABLED))
- 		return true;
- 
- 	return false;
-diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 4aea7d304beb..6879966b7648 100644
---- a/arch/x86/kvm/vmx/nested.c
-+++ b/arch/x86/kvm/vmx/nested.c
-@@ -4588,8 +4588,8 @@ static int handle_vmon(struct kvm_vcpu *vcpu)
- 	gpa_t vmptr;
- 	uint32_t revision;
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
--	const u64 VMXON_NEEDED_FEATURES = FEATURE_CONTROL_LOCKED
--		| FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX;
-+	const u64 VMXON_NEEDED_FEATURES = FEAT_CTL_LOCKED
-+		| FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX;
- 
- 	/*
- 	 * The Intel VMX Instruction Reference lists a bunch of bits that are
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 1b9ab4166397..ecf3ccf71bb2 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -1839,11 +1839,11 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
- 	case MSR_IA32_MCG_EXT_CTL:
- 		if (!msr_info->host_initiated &&
- 		    !(vmx->msr_ia32_feature_control &
--		      FEATURE_CONTROL_LMCE))
-+		      FEAT_CTL_LMCE_ENABLED))
- 			return 1;
- 		msr_info->data = vcpu->arch.mcg_ext_ctl;
- 		break;
--	case MSR_IA32_FEATURE_CONTROL:
-+	case MSR_IA32_FEAT_CTL:
- 		msr_info->data = vmx->msr_ia32_feature_control;
- 		break;
- 	case MSR_IA32_VMX_BASIC ... MSR_IA32_VMX_VMFUNC:
-@@ -2074,15 +2074,15 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
- 	case MSR_IA32_MCG_EXT_CTL:
- 		if ((!msr_info->host_initiated &&
- 		     !(to_vmx(vcpu)->msr_ia32_feature_control &
--		       FEATURE_CONTROL_LMCE)) ||
-+		       FEAT_CTL_LMCE_ENABLED)) ||
- 		    (data & ~MCG_EXT_CTL_LMCE_EN))
- 			return 1;
- 		vcpu->arch.mcg_ext_ctl = data;
- 		break;
--	case MSR_IA32_FEATURE_CONTROL:
-+	case MSR_IA32_FEAT_CTL:
- 		if (!vmx_feature_control_msr_valid(vcpu, data) ||
- 		    (to_vmx(vcpu)->msr_ia32_feature_control &
--		     FEATURE_CONTROL_LOCKED && !msr_info->host_initiated))
-+		     FEAT_CTL_LOCKED && !msr_info->host_initiated))
- 			return 1;
- 		vmx->msr_ia32_feature_control = data;
- 		if (msr_info->host_initiated && data == 0)
-@@ -2206,22 +2206,22 @@ static __init int vmx_disabled_by_bios(void)
- {
- 	u64 msr;
- 
--	rdmsrl(MSR_IA32_FEATURE_CONTROL, msr);
--	if (msr & FEATURE_CONTROL_LOCKED) {
-+	rdmsrl(MSR_IA32_FEAT_CTL, msr);
-+	if (msr & FEAT_CTL_LOCKED) {
- 		/* launched w/ TXT and VMX disabled */
--		if (!(msr & FEATURE_CONTROL_VMXON_ENABLED_INSIDE_SMX)
-+		if (!(msr & FEAT_CTL_VMX_ENABLED_INSIDE_SMX)
- 			&& tboot_enabled())
- 			return 1;
- 		/* launched w/o TXT and VMX only enabled w/ TXT */
--		if (!(msr & FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX)
--			&& (msr & FEATURE_CONTROL_VMXON_ENABLED_INSIDE_SMX)
-+		if (!(msr & FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX)
-+			&& (msr & FEAT_CTL_VMX_ENABLED_INSIDE_SMX)
- 			&& !tboot_enabled()) {
- 			printk(KERN_WARNING "kvm: disable TXT in the BIOS or "
- 				"activate TXT before enabling KVM\n");
- 			return 1;
- 		}
- 		/* launched w/o TXT and VMX disabled */
--		if (!(msr & FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX)
-+		if (!(msr & FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX)
- 			&& !tboot_enabled())
- 			return 1;
- 	}
-@@ -2269,16 +2269,16 @@ static int hardware_enable(void)
- 	 */
- 	crash_enable_local_vmclear(cpu);
- 
--	rdmsrl(MSR_IA32_FEATURE_CONTROL, old);
-+	rdmsrl(MSR_IA32_FEAT_CTL, old);
- 
--	test_bits = FEATURE_CONTROL_LOCKED;
--	test_bits |= FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX;
-+	test_bits = FEAT_CTL_LOCKED;
-+	test_bits |= FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX;
- 	if (tboot_enabled())
--		test_bits |= FEATURE_CONTROL_VMXON_ENABLED_INSIDE_SMX;
-+		test_bits |= FEAT_CTL_VMX_ENABLED_INSIDE_SMX;
- 
- 	if ((old & test_bits) != test_bits) {
- 		/* enable and lock */
--		wrmsrl(MSR_IA32_FEATURE_CONTROL, old | test_bits);
-+		wrmsrl(MSR_IA32_FEAT_CTL, old | test_bits);
- 	}
- 	kvm_cpu_vmxon(phys_addr);
- 	if (enable_ept)
-@@ -6807,7 +6807,7 @@ static struct kvm_vcpu *vmx_create_vcpu(struct kvm *kvm, unsigned int id)
- 	vmx->nested.posted_intr_nv = -1;
- 	vmx->nested.current_vmptr = -1ull;
- 
--	vmx->msr_ia32_feature_control_valid_bits = FEATURE_CONTROL_LOCKED;
-+	vmx->msr_ia32_feature_control_valid_bits = FEAT_CTL_LOCKED;
- 
- 	/*
- 	 * Enforce invariant: pi_desc.nv is always either POSTED_INTR_VECTOR
-@@ -7107,12 +7107,12 @@ static void vmx_cpuid_update(struct kvm_vcpu *vcpu)
- 
- 	if (nested_vmx_allowed(vcpu))
- 		to_vmx(vcpu)->msr_ia32_feature_control_valid_bits |=
--			FEATURE_CONTROL_VMXON_ENABLED_INSIDE_SMX |
--			FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX;
-+			FEAT_CTL_VMX_ENABLED_INSIDE_SMX |
-+			FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX;
- 	else
- 		to_vmx(vcpu)->msr_ia32_feature_control_valid_bits &=
--			~(FEATURE_CONTROL_VMXON_ENABLED_INSIDE_SMX |
--			  FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX);
-+			~(FEAT_CTL_VMX_ENABLED_INSIDE_SMX |
-+			  FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX);
- 
- 	if (nested_vmx_allowed(vcpu)) {
- 		nested_vmx_cr_fixed1_bits_update(vcpu);
-@@ -7531,10 +7531,10 @@ static void vmx_setup_mce(struct kvm_vcpu *vcpu)
- {
- 	if (vcpu->arch.mcg_cap & MCG_LMCE_P)
- 		to_vmx(vcpu)->msr_ia32_feature_control_valid_bits |=
--			FEATURE_CONTROL_LMCE;
-+			FEAT_CTL_LMCE_ENABLED;
- 	else
- 		to_vmx(vcpu)->msr_ia32_feature_control_valid_bits &=
--			~FEATURE_CONTROL_LMCE;
-+			~FEAT_CTL_LMCE_ENABLED;
- }
- 
- static int vmx_smi_allowed(struct kvm_vcpu *vcpu)
-diff --git a/arch/x86/kvm/vmx/vmx.h b/arch/x86/kvm/vmx/vmx.h
-index 7c1b978b2df4..b2c87f6be987 100644
---- a/arch/x86/kvm/vmx/vmx.h
-+++ b/arch/x86/kvm/vmx/vmx.h
-@@ -283,7 +283,7 @@ struct vcpu_vmx {
- 
- 	/*
- 	 * Only bits masked by msr_ia32_feature_control_valid_bits can be set in
--	 * msr_ia32_feature_control. FEATURE_CONTROL_LOCKED is always included
-+	 * msr_ia32_feature_control. FEAT_CTL_LOCKED is always included
- 	 * in msr_ia32_feature_control_valid_bits.
- 	 */
- 	u64 msr_ia32_feature_control;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index cf917139de6b..740d3ee42455 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1142,7 +1142,7 @@ static const u32 msrs_to_save_all[] = {
- 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
- #endif
- 	MSR_IA32_TSC, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA,
--	MSR_IA32_FEATURE_CONTROL, MSR_IA32_BNDCFGS, MSR_TSC_AUX,
-+	MSR_IA32_FEAT_CTL, MSR_IA32_BNDCFGS, MSR_TSC_AUX,
- 	MSR_IA32_SPEC_CTRL,
- 	MSR_IA32_RTIT_CTL, MSR_IA32_RTIT_STATUS, MSR_IA32_RTIT_CR3_MATCH,
- 	MSR_IA32_RTIT_OUTPUT_BASE, MSR_IA32_RTIT_OUTPUT_MASK,
 -- 
-2.24.0
-
+viresh
