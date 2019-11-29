@@ -2,281 +2,242 @@ Return-Path: <SRS0=4B4i=ZV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=DATE_IN_PAST_03_06,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB7A1C432C0
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Nov 2019 19:10:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 515DDC432C0
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Nov 2019 20:27:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id ADD7121736
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Nov 2019 19:10:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1156621774
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Nov 2019 20:27:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ffwll.ch header.i=@ffwll.ch header.b="H06JGztG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727146AbfK2TKw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Nov 2019 14:10:52 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:40724 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726980AbfK2TKw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2019 14:10:52 -0500
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id AE433291EAE
-Received: by earth.universe (Postfix, from userid 1000)
-        id BC5753C0C71; Fri, 29 Nov 2019 15:03:09 +0100 (CET)
-Date:   Fri, 29 Nov 2019 15:03:09 +0100
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Paul Cercueil <paul@crapouillou.net>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        od@zcrc.me
-Subject: Re: [PATCH 2/2] power/supply: Add generic USB charger driver
-Message-ID: <20191129140309.ae4urya6f2hussxn@earth.universe>
-References: <20191103220801.10666-1-paul@crapouillou.net>
- <20191103220801.10666-2-paul@crapouillou.net>
+        id S1727060AbfK2U1k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Nov 2019 15:27:40 -0500
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:36862 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727073AbfK2U1k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2019 15:27:40 -0500
+Received: by mail-wm1-f68.google.com with SMTP id p17so10509072wma.1
+        for <linux-pm@vger.kernel.org>; Fri, 29 Nov 2019 12:27:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ffwll.ch; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=dAr/eDqhv9Ud8ZSYN/AId0Oghe+xqTiZDWWez4ZYfgo=;
+        b=H06JGztG7aul8sMAoUmAu5eic+Qlir+slRE61mGgNT2j9HvOw/o+Pc3VlmshBrxLZd
+         V9Wef3xMJ2JwVpMFzQQYHcloZvfTnVGlZceDaRKqBMPVoCbBozXhKWJgr+3D7+W0kW6e
+         CwOLcPzMBenSjLDMlW4K9P2BnhshbyDy/CC9o=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=dAr/eDqhv9Ud8ZSYN/AId0Oghe+xqTiZDWWez4ZYfgo=;
+        b=DJ3+YvjVBUGqWh0mJmhIpWiytDAAA58/3haA8kMC96sAUOB0VxxIiCs8SlU7mXMh83
+         x8gZHL/+PeIv7AnA2FGmxqCTmNWI3IKxx1WzLIX/HcGQ7h1qNFdL/a5CfGFQrn+YQfP+
+         Mj642gryrtJS/qn7qjB089ls8UOjYNM8v5WC3k/rkIleutpW5CnSBU5n5fXa6+9aqVRP
+         3s01CgVVUoXnD6VDlX5cskHgMPtZiXvaYC/av9PP02e4DDhWaZDmkruphZPP78n3BMcd
+         PQgWLxYzowghvBEpVF0YgZDCHDsGELOdq0kq+j+vZbkCNOljH6ZJp2R4SXbQP8hIqIzA
+         9iIA==
+X-Gm-Message-State: APjAAAUfefIWitp8RRh+qvfIRF95KjNuEa8Qi3LOXHyGt0PZfASZt0a/
+        Y+VypzELefPco2rRiWcxHFJu/VOARbI=
+X-Google-Smtp-Source: APXvYqzizH66FbKznJhCk3/6chUJ5dXYdcQrM2jvQCv0FSVbQD0zf7OntdNn3VnLrWmeWdG7wOps3g==
+X-Received: by 2002:a1c:2e0f:: with SMTP id u15mr16546880wmu.47.1575059257153;
+        Fri, 29 Nov 2019 12:27:37 -0800 (PST)
+Received: from phenom.ffwll.local (212-51-149-96.fiber7.init7.net. [212.51.149.96])
+        by smtp.gmail.com with ESMTPSA id a184sm5669596wmf.29.2019.11.29.12.27.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 29 Nov 2019 12:27:35 -0800 (PST)
+Date:   Fri, 29 Nov 2019 21:27:34 +0100
+From:   Daniel Vetter <daniel@ffwll.ch>
+To:     Thierry Reding <thierry.reding@gmail.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        linux-tegra <linux-tegra@vger.kernel.org>,
+        Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [PATCH 1/2] PM / runtime: Allow drivers to override runtime PM
+ behaviour on sleep
+Message-ID: <20191129202734.GU624164@phenom.ffwll.local>
+References: <20191128160314.2381249-1-thierry.reding@gmail.com>
+ <20191128163623.GA2382107@ulmo>
+ <2310325.iNVD75376c@kreacher>
+ <4149037.GOuMSCS4uT@kreacher>
+ <20191129094303.GB2770902@ulmo>
+ <CAJZ5v0hhMSmLBr+M5CxCrfrcJHH2DzYkRFJBVyBymP0xs35Yzw@mail.gmail.com>
+ <20191129120719.GF2771912@ulmo>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bajdzh3ywfjytgnd"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191103220801.10666-2-paul@crapouillou.net>
+In-Reply-To: <20191129120719.GF2771912@ulmo>
+X-Operating-System: Linux phenom 5.3.0-2-amd64 
+User-Agent: Mutt/1.12.2 (2019-09-21)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Fri, Nov 29, 2019 at 01:07:19PM +0100, Thierry Reding wrote:
+> On Fri, Nov 29, 2019 at 11:22:08AM +0100, Rafael J. Wysocki wrote:
+> > On Fri, Nov 29, 2019 at 11:08 AM Thierry Reding
+> > <thierry.reding@gmail.com> wrote:
+> > >
+> > > On Thu, Nov 28, 2019 at 11:20:01PM +0100, Rafael J. Wysocki wrote:
+> > > > On Thursday, November 28, 2019 11:03:57 PM CET Rafael J. Wysocki wrote:
+> > > > > On Thursday, November 28, 2019 5:50:26 PM CET Thierry Reding wrote:
+> > > > > >
+> > > > > > --0F1p//8PRICkK4MW
+> > > > > > Content-Type: text/plain; charset=us-ascii
+> > > > > > Content-Disposition: inline
+> > > > > > Content-Transfer-Encoding: quoted-printable
+> > > > > >
+> > > > > > On Thu, Nov 28, 2019 at 05:14:51PM +0100, Rafael J. Wysocki wrote:
+> > > > > > > On Thu, Nov 28, 2019 at 5:03 PM Thierry Reding <thierry.reding@gmail.com>=
+> > > > > >  wrote:
+> > > > > > > >
+> > > > > > > > From: Thierry Reding <treding@nvidia.com>
+> > > > > > > >
+> > > > > > > > Currently the driver PM core will automatically acquire a runtime PM
+> > > > > > > > reference for devices before system sleep is entered. This is needed
+> > > > > > > > to avoid potential issues related to devices' parents getting put to
+> > > > > > > > runtime suspend at the wrong time and causing problems with their
+> > > > > > > > children.
+> > > > > > >=20
+> > > > > > > Not only for that.
+> > > > > > >=20
+> > > > > > > > In some cases drivers are carefully written to avoid such issues and
+> > > > > > > > the default behaviour can be changed to allow runtime PM to operate
+> > > > > > > > regularly during system sleep.
+> > > > > > >=20
+> > > > > > > But this change breaks quite a few assumptions in the core too, so no,
+> > > > > > > it can't be made.
+> > > > > >
+> > > > > > Anything in particular that I can look at? I'm not seeing any issues
+> > > > > > when I test this, which could of course mean that I'm just getting
+> > > > > > lucky.
+> > > > >
+> > > > > There are races and such that you may never hit during casual testing.
+> > > > >
+> > > > > > One thing that irritated me is that I think this used to work. I do
+> > > > > > recall testing suspend/resume a few years ago and devices would get
+> > > > > > properly runtime suspended/resumed.
+> > > > >
+> > > > > Not true at all.
+> > > > >
+> > > > > The PM core has always taken PM-runtime references on all devices pretty much
+> > > > > since when PM-runtime was introduced.
+> > > > >
+> > > > > > I did some digging but couldn't
+> > > > > > find anything that would have had an impact on this.
+> > > > > >
+> > > > > > Given that this is completely opt-in feature, why are you categorically
+> > > > > > NAK'ing this?
+> > > > >
+> > > > > The general problem is that if any device has been touched by system-wide
+> > > > > suspend code, it should not be subject to PM-runtime any more until the
+> > > > > subsequent system-wide resume is able to undo whatever the suspend did.
+> > > > >
+> > > > > Moreover, if a device is runtime-suspended, the system-wide suspend code
+> > > > > may mishandle it, in general.  That's why PM-runtime suspend is not allowed
+> > > > > during system-wide transitions at all.  And it has always been like that.
+> > > > >
+> > > > > For a specific platform you may be able to overcome these limitations if
+> > > > > you are careful enough, but certainly they are there in general and surely
+> > > > > you cannot prevent people from using your opt-in just because they think
+> > > > > that they know what they are doing.
+> > > >
+> > > > BTW, what if user space prevents PM-runtime from suspending devices by writing
+> > > > "on" to their "control" files?
+> > > >
+> > > > System-wide suspend is (of course) still expected to work in that case, so how
+> > > > exactly would you overcome that?
+> > >
+> > > I suppose one way to overcome that would be to make it an error to write
+> > > "on" to the "control" files for these devices.
+> > 
+> > Seeing suggestions like this in messages from seasoned kernel
+> > developers is seriously disappointing. :-/
+> > 
+> > > Currently doing this is likely going to break display support on Tegra,
+> > > so this would be a good idea in this case anyway.
+> > 
+> > PM-runtime has always allowed user space to prevent devices from being
+> > suspended and it seems that this has not been taken into account by
+> > Tegra display support developers at all.
+> > 
+> > > Again, I could avoid all of these issues by avoiding runtime PM in this driver,
+> > 
+> > I don't quite see the connection here.
+> > 
+> > Preventing a device from suspending should never be a functional
+> > problem.  It may be an energy-efficiency problem, but that's something
+> > for user space to consider before writing "on" to a device's control
+> > file.
+> 
+> That's really a question of how you define suspension. In the case of
+> display drivers we have the somewhat unfortunate situation that in most
+> SoCs the display "device" is actually represented by a collection of
+> different devices. On Tegra specifically, for example, you have a couple
+> of display controllers, then some "encoders" that take pixel streams
+> from the display controllers and encode them into some wire format like
+> LVDS, HDMI, DSI or DP.
+> 
+> Prohibiting suspension of any of the individual devices causes problems
+> because it effectively makes the whole composite display device not
+> suspendable. Doing so in turn usually means that you can't change the
+> display configuration anymore because devices need to be powered up and
+> down in order to change the configuration.
+> 
+> I consider powering up and down the devices a form of suspension. Hence
+> it seemed natural to implement using runtime PM.
+> 
+> It sounds to me like userspace preventing runtime PM is problematic in
+> most scenarios that involve composite devices because it makes all of
+> the interactions between the devices a bit complicated.
 
---bajdzh3ywfjytgnd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yeah with the DT model of how a SoC works, all these tiny little devices
+are essentially implementation details that userspace really shouldn't
+ever care about, much less change anything with them.
 
-Hi Paul,
+If userspace doesn't want the gpu to auto-suspend, then there's the
+overall gpu device that it can set that on, and I guess doing that should
+not break a decently written driver. For all the others insisting that
+userspace can be stupid essentially means we get to hand roll large chunks
+of runtime pm in drivers, which feels rather pointless. We have a lot of
+that home-grown runtime pm for subcomponents in i915, and I very much
+understand why the DT folks wanted to standardize all that with lots of
+little explicit devices.
 
-On Sun, Nov 03, 2019 at 11:08:01PM +0100, Paul Cercueil wrote:
-> This simple charger driver uses the USB PHY framework to detect the
-> presence of a charger.
->=20
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> ---
->  drivers/power/supply/Kconfig               |   7 ++
->  drivers/power/supply/Makefile              |   1 +
->  drivers/power/supply/generic-usb-charger.c | 140 +++++++++++++++++++++
->  3 files changed, 148 insertions(+)
->  create mode 100644 drivers/power/supply/generic-usb-charger.c
->=20
-> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index c84a7b1caeb6..069a91d89a42 100644
-> --- a/drivers/power/supply/Kconfig
-> +++ b/drivers/power/supply/Kconfig
-> @@ -51,6 +51,13 @@ config GENERIC_ADC_BATTERY
->  	  Say Y here to enable support for the generic battery driver
->  	  which uses IIO framework to read adc.
-> =20
-> +config GENERIC_USB_CHARGER
-> +	tristate "Generic USB charger"
-> +	depends on USB_PHY
-> +	help
-> +	  Say Y here to enable a generic USB charger driver which uses
-> +	  the USB PHY framework to detect the presence of the charger.
-> +
->  config MAX8925_POWER
->  	tristate "MAX8925 battery charger support"
->  	depends on MFD_MAX8925
-> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-> index 6c7da920ea83..03f9b553bdfc 100644
-> --- a/drivers/power/supply/Makefile
-> +++ b/drivers/power/supply/Makefile
-> @@ -8,6 +8,7 @@ power_supply-$(CONFIG_LEDS_TRIGGERS)	+=3D power_supply_le=
-ds.o
->  obj-$(CONFIG_POWER_SUPPLY)	+=3D power_supply.o
->  obj-$(CONFIG_POWER_SUPPLY_HWMON) +=3D power_supply_hwmon.o
->  obj-$(CONFIG_GENERIC_ADC_BATTERY)	+=3D generic-adc-battery.o
-> +obj-$(CONFIG_GENERIC_USB_CHARGER)	+=3D generic-usb-charger.o
-> =20
->  obj-$(CONFIG_PDA_POWER)		+=3D pda_power.o
->  obj-$(CONFIG_APM_POWER)		+=3D apm_power.o
-> diff --git a/drivers/power/supply/generic-usb-charger.c b/drivers/power/s=
-upply/generic-usb-charger.c
-> new file mode 100644
-> index 000000000000..d005acfc33c7
-> --- /dev/null
-> +++ b/drivers/power/supply/generic-usb-charger.c
-> @@ -0,0 +1,140 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Simple USB charger driver
-> + * Copyright (c) 2019 Paul Cercueil <paul@crapouillou.net>
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/power_supply.h>
-> +#include <linux/usb/phy.h>
+Maybe the mistake was simply allowing these to be visible to userspace.
+-Daniel
 
-Missing <linux/of.h> for of_match_ptr()
+> > > but I would end up reimplementing some of the same concepts. I'd
+> > > rather use something that's supported by the PM core and that might be
+> > > useful to other drivers than reinvent the wheel.
+> > 
+> > Which doesn't have to be by using PM-runtime suspend for the handling
+> > of system-wide suspend, at least in my view.
+> 
+> Well, runtime PM is very convenient for this, though. It would allow the
+> same code paths to be used in all cases.
+> 
+> Thierry
 
-> +
-> +struct usb_charger {
-> +	struct usb_phy *phy;
-> +	struct notifier_block nb;
-> +	struct power_supply_desc desc;
-> +	struct power_supply *charger;
-> +};
-> +
-> +static enum power_supply_property usb_charger_properties[] =3D {
-> +	POWER_SUPPLY_PROP_ONLINE,
-> +};
-> +
-> +static int usb_charger_get_property(struct power_supply *psy,
-> +				    enum power_supply_property psp,
-> +				    union power_supply_propval *val)
-> +{
-> +	struct usb_charger *charger =3D power_supply_get_drvdata(psy);
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_ONLINE:
-> +		val->intval =3D charger->phy->chg_state =3D=3D USB_CHARGER_PRESENT;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int usb_charger_event(struct notifier_block *nb,
-> +			     unsigned long event, void *d)
-> +{
-> +	struct usb_charger *charger =3D container_of(nb, struct usb_charger, nb=
-);
-> +
-> +	power_supply_changed(charger->charger);
-> +
-> +	return 0;
-> +}
-> +
-> +static int usb_charger_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev =3D &pdev->dev;
-> +	struct power_supply_desc *desc;
-> +	struct usb_charger *charger;
-> +	struct power_supply_config cfg =3D {
-> +		.of_node =3D dev->of_node,
-> +	};
-> +	int err;
-> +
-> +	charger =3D devm_kzalloc(dev, sizeof(*charger), GFP_KERNEL);
-> +	if (!charger)
-> +		return -ENOMEM;
-> +
-> +	platform_set_drvdata(pdev, charger);
-> +	charger->nb.notifier_call =3D usb_charger_event;
-> +	cfg.drv_data =3D charger;
-> +
-> +	if (dev->of_node)
-> +		charger->phy =3D devm_usb_get_phy_by_phandle(dev, "phys", 0);
-> +	else
-> +		charger->phy =3D devm_usb_get_phy(dev, USB_PHY_TYPE_USB2);
-> +	if (IS_ERR(charger->phy)) {
-> +		err =3D PTR_ERR(charger->phy);
-> +		if (err !=3D -EPROBE_DEFER)
-> +			dev_err(dev, "No transceiver configured");
-> +		return err;
-> +	}
-> +
-> +	desc =3D &charger->desc;
-> +	desc->name =3D "usb-charger";
-> +	desc->properties =3D usb_charger_properties;
-> +	desc->num_properties =3D ARRAY_SIZE(usb_charger_properties);
-> +	desc->get_property =3D usb_charger_get_property;
-> +
-> +	switch (charger->phy->chg_type) {
-> +	case SDP_TYPE:
-> +		desc->type =3D POWER_SUPPLY_TYPE_USB;
-> +		break;
-> +	case DCP_TYPE:
-> +		desc->type =3D POWER_SUPPLY_TYPE_USB_DCP;
-> +		break;
-> +	case CDP_TYPE:
-> +		desc->type =3D POWER_SUPPLY_TYPE_USB_CDP;
-> +		break;
-> +	case ACA_TYPE:
-> +		desc->type =3D POWER_SUPPLY_TYPE_USB_ACA;
-> +		break;
-> +	default:
-> +		desc->type =3D POWER_SUPPLY_TYPE_UNKNOWN;
-> +	}
 
-This is deprecated in favour of the POWER_SUPPLY_PROP_USB_TYPE
-property. Set desc->type to POWER_SUPPLY_TYPE_USB and have a
-look at e.g. drivers/power/supply/cros_usbpd-charger.c to see
-how POWER_SUPPLY_PROP_USB_TYPE is supposed to work.
 
-> +	charger->charger =3D devm_power_supply_register(dev, desc, &cfg);
-> +	if (IS_ERR(charger->charger)) {
-> +		dev_err(dev, "Unable to register charger");
-> +		return PTR_ERR(charger->charger);
-> +	}
-> +
-> +	return usb_register_notifier(charger->phy, &charger->nb);
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
-Please register with devm_add_action_or_reset() or (better)
-create a devm_usb_register_notifier().
 
-> +}
-> +
-> +static int usb_charger_remove(struct platform_device *pdev)
-> +{
-> +	struct usb_charger *charger =3D platform_get_drvdata(pdev);
-> +
-> +	usb_unregister_notifier(charger->phy, &charger->nb);
-> +
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_OF
-> +static const struct of_device_id usb_charger_of_match[] =3D {
-> +	{ .compatible =3D "usb-charger" },
-> +	{ /* sentinel */ },
-> +};
-> +MODULE_DEVICE_TABLE(of, usb_charger_of_match);
-> +#endif
-> +
-> +static struct platform_driver usb_charger_driver =3D {
-> +	.driver =3D {
-> +		.name =3D "usb-charger",
-> +		.of_match_table =3D of_match_ptr(usb_charger_of_match),
-> +	},
-> +	.probe =3D usb_charger_probe,
-> +	.remove =3D usb_charger_remove,
-> +};
-> +module_platform_driver(usb_charger_driver);
-> +
-> +MODULE_DESCRIPTION("Simple USB charger driver");
-> +MODULE_AUTHOR("Paul Cercueil <paul@crapouillou.net>");
-> +MODULE_LICENSE("GPL");
-
--- Sebastian
-
---bajdzh3ywfjytgnd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl3hJRoACgkQ2O7X88g7
-+ppwUQ//S4fkfoZcxF+Bd69hJM9WCajnDkVjzSK6kRqpi7HFltSP4bRf9p/3uLdk
-p9tB0afL5DHlQ8f4+dMBkaFA+47L1G4fuHojEYwsTpj3ClAvUNbbH4RwCko3GBwH
-9LglJrav6t0l8rrQ6gCHgjzVyCvILN8YDdNUI2DSBIzgEi2iNjz2q6gryHD15YMe
-k95eDRTuDBCyEWL50sQBM3iDhFMwoNhauPJ+c5KlmlOCt32kEk0Ng+dqPLkjBRWD
-RwgeQawiHduZJpKAWX3q27dVORcSVwPKfQ85tkkjjsbJ1SUzVFQsNRdcvAZrgb/y
-DTT8KfE0YlU7EfNKfD7ZYHgCVQgCAz3yqjIjU3xHuwu5P29S7sIqS27apKLYrKH3
-5+XLpaN2fu1W5QzjXCJ8AfMKU/HTgDY1zBAGvmFtNNlQLXMKrBcZ1oBWUdKoqkQo
-4sf7jqxvrKq/+x4BkJXTHKZT2bnXa68PdZCixSyOQ9fM7ha4lmo66q1zsHzCyJb9
-8bEQnWBnEBBYdyLNFjAfNBPa+3Jzi3OZQske88pf4ntO2336rqL3/JoNfWYqVejj
-3S6PM/By/lCnlXMOTTAQ9Keip37YigpNB5PHstJ1TU9XxRLkH9l/PuKdbuR9vOnm
-bmTNcGlSd62X3+I4+R6+Czrs8Bc6AUJ2Gyb/bFsT1wz1HJO01R0=
-=k+8E
------END PGP SIGNATURE-----
-
---bajdzh3ywfjytgnd--
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch
