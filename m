@@ -2,138 +2,104 @@ Return-Path: <SRS0=4B4i=ZV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=DATE_IN_PAST_03_06,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3C3BFC43215
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Nov 2019 18:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C01AC432C0
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Nov 2019 19:10:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 166D6217BC
-	for <linux-pm@archiver.kernel.org>; Fri, 29 Nov 2019 18:33:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2778921736
+	for <linux-pm@archiver.kernel.org>; Fri, 29 Nov 2019 19:10:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727004AbfK2Sdp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 Nov 2019 13:33:45 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:40054 "EHLO
+        id S1727113AbfK2TKw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 Nov 2019 14:10:52 -0500
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:40726 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726980AbfK2Sdp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2019 13:33:45 -0500
+        with ESMTP id S1727111AbfK2TKw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Nov 2019 14:10:52 -0500
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 0AED228C03C
+        with ESMTPSA id B1BE6292BA4
 Received: by earth.universe (Postfix, from userid 1000)
-        id 40A483C0C78; Fri, 29 Nov 2019 19:33:40 +0100 (CET)
-Date:   Fri, 29 Nov 2019 19:33:40 +0100
+        id 990293C0C77; Fri, 29 Nov 2019 15:06:01 +0100 (CET)
+Date:   Fri, 29 Nov 2019 15:06:01 +0100
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Matheus Castello <matheus@castello.eng.br>
-Cc:     krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
-        cw00.choi@samsung.com, b.zolnierkie@samsung.com,
-        lee.jones@linaro.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v7 4/5] power: supply: max17040: Config alert SOC low
- level threshold from FDT
-Message-ID: <20191129183340.hsjddxot7ocnxran@earth.universe>
-References: <20191117141335.23404-1-matheus@castello.eng.br>
- <20191117141335.23404-5-matheus@castello.eng.br>
- <20191126145200.xqtvfrm6qc6yuutb@earth.universe>
- <c5bb4962-10f7-0877-0c99-c2dad5bb53cf@castello.eng.br>
+To:     Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc:     linux@armlinux.org.uk, nicolas.ferre@microchip.com,
+        alexandre.belloni@bootlin.com, ludovic.desroches@microchip.com,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 04/17] power: reset: Kconfig: select
+ POWER_RESET_AT91_RESET for sam9x60
+Message-ID: <20191129140601.fgbxwhk2c7rlvvyz@earth.universe>
+References: <1574773941-20649-1-git-send-email-claudiu.beznea@microchip.com>
+ <1574773941-20649-5-git-send-email-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="xcuscrzzo6oezrpv"
+        protocol="application/pgp-signature"; boundary="qqra4xv2pgsrtjif"
 Content-Disposition: inline
-In-Reply-To: <c5bb4962-10f7-0877-0c99-c2dad5bb53cf@castello.eng.br>
+In-Reply-To: <1574773941-20649-5-git-send-email-claudiu.beznea@microchip.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---xcuscrzzo6oezrpv
+--qqra4xv2pgsrtjif
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Nov 27, 2019 at 10:06:47PM -0300, Matheus Castello wrote:
-> [...]
-> > > @@ -256,14 +303,26 @@ static int max17040_probe(struct i2c_client *cl=
-ient,
-> > >=20
-> > >   	/* check interrupt */
-> > >   	if (client->irq) {
-> > > -		int ret;
-> > > -
-> > > -		ret =3D max17040_enable_alert_irq(chip);
-> > > -
-> > > -		if (ret) {
-> > > -			client->irq =3D 0;
-> > > +		if (of_device_is_compatible(client->dev.of_node,
-> > > +					    "maxim,max77836-battery")) {
-> > > +			ret =3D max17040_set_low_soc_alert(client,
-> > > +							 chip->low_soc_alert);
-> > > +			if (ret) {
-> > > +				dev_err(&client->dev,
-> > > +					"Failed to set low SOC alert: err %d\n",
-> > > +					ret);
-> > > +				return ret;
-> > > +			}
-> > > +
-> > > +			ret =3D max17040_enable_alert_irq(chip);
-> > > +			if (ret) {
-> > > +				client->irq =3D 0;
-> > > +				dev_warn(&client->dev,
-> > > +					 "Failed to get IRQ err %d\n", ret);
-> > > +			}
-> > > +		} else {
-> > >   			dev_warn(&client->dev,
-> > > -				 "Failed to get IRQ err %d\n", ret);
-> > > +				 "Device not compatible for IRQ");
-> >=20
-> > Something is odd here. Either this should be part of the first
-> > patch ("max17040: Add IRQ handler for low SOC alert"), or both
-> > device types support the IRQ and this check should be removed.
+On Tue, Nov 26, 2019 at 03:12:08PM +0200, Claudiu Beznea wrote:
+> Select POWER_RESET_AT91_RESET for SAM9X60 SoC.
 >=20
-> The first patch add the IRQ without the configuration of the low SoC aler=
-t,
-> using the default state of charge level. This patch is working with
-> registers to config the low state of charge level, so it was proposed to
-> just try to write registers in the models compatible with that
-> (maxim,max77836-battery).
+> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+> ---
+>  drivers/power/reset/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> Maybe join the first patch to this one, and let DT binding be the first
-> patch on the series so we can already test compatible here, let me know w=
-hat
-> you think about it.
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index c721939767eb..886e60017f4d 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -26,7 +26,7 @@ config POWER_RESET_AT91_POWEROFF
+>  config POWER_RESET_AT91_RESET
+>  	tristate "Atmel AT91 reset driver"
+>  	depends on ARCH_AT91
+> -	default SOC_AT91SAM9 || SOC_SAMA5
+> +	default SOC_AT91SAM9 || SOC_SAM9X60 || SOC_SAMA5
+>  	help
+>  	  This driver supports restart for Atmel AT91SAM9 and SAMA5
+>  	  SoCs
 
-Assuming the !max77836 do not have any interrupt support, you can
-just add the OF check in the first patch in "if (client->irq)", so
-that it reads=20
+I suppose this will go through ARM:
 
-if (client->irq && of_device_is_compatible(...)) {
-    ...
-}
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
 -- Sebastian
 
---xcuscrzzo6oezrpv
+--qqra4xv2pgsrtjif
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl3hZIAACgkQ2O7X88g7
-+pqwQQ/+JvYfTlob8QpLMuveqR4F7Jz+118C4j8H6w4xx8uCSp/xPQSxGSQ7zSIg
-mrAm5+YQnm12m4e2nZwdLNAkePuW++O+U9was7s0TUsjVFRC4tQhtwo+LIAbirBz
-RjqOm7tzZnTGu2w6Bhfoe3iyIRvNxELaEl4jk1iEV1qgn6G+z55p6Z6KpbMKWxKu
-8PKEtmZdeN9s9fZQdkyukjvPAs23E2pUB8a++mc7Y5kML6xMMwqnR6Wn+MzaJgq9
-7jL1dNZJ///rH/3JtOr/F237jAZdFdocwIhzS+uDYIU2FxC3WYu3/lD8TMXmWeBb
-kYwOUHDvSx2sh1Bx52UyKvLT1rAtSIbp/u2NbOj9w3zB7k+cl9ePqw7HqiJlZ11d
-V8T93H6bQvCXbftcSAvtRUA8HKh1HSO8o1U8+RMtBxz1y6B2LqNfD4dFT+wltWSj
-Q+HyuzGfz6mrFQ3owFmohyeOSOC1FHJa6Fc1Z40obR3XKYBBMrO+8qXckTim9/dk
-SsPF7E0O6UNJyqthzw9HL1R99F7AX9JX2fjOMAsWpVvoaDEqDkt3Ebt96Gl/YvRL
-x+/+cWQSwGxikSHdDg6drOOYQri/jzySqwFJJhCtvnjqXGRUCRFxgluAIzy4qDBf
-+67VS9ef6Xd2QDlxOPjxRAeqOYbCz6Z8v91q2s0FfS/uC5r7jCo=
-=+2/E
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl3hJckACgkQ2O7X88g7
++pqhDQ//WNmLXqjre475NYvywJrUR10v2JH2NyVYPBlYw5NtMdaj/2qgjlOOA5by
+KaHTlh1gsCthLa5RF+xVpKc9QnKEPnt3ZIHys+QO1vBl50CA4uSdP7SJ0X8pqhSm
+s/KfSa5dlkGF0z3cu6XXJg4c/oG4HSsCGPnGrbwVIaCN1kQBA8ESEBhwyggIu59J
+DjBw092F4Wp+o+McqZW+xR/ILbNhqkqzz5OkJdg5r3XcWr+K3ubNUrfEIKn60+C6
+49PI6hvkvbZHtHRtJgkcxW7TX/IsmFNWGWO0VSPLh7sa5DiD9Pf4Mux3mHAU6uk6
+QaFfWZahcRqNvpwxcqJUqntwawnpIzYmoJfzDoqScHEfU1kZ+p3U/RenNfHBHioQ
+SPO/15E2hC5Anb7JNYbxS4JccBF+0xRmpVIGRqmNJFFRaVvEhRgYuH/LWZqdgQEn
+K/ZPHCXsYS/5cTMNOJ/Ma1FfgVaEbeCXv5r89ExS2/JuHtDXCD3KdC7eIYnwEvJn
+9nYnHxRdBJRH92QpooEUOJI0fXKgBsGBn2lcAwqlt7ctfVNG3fL/aK8E7SuXNomw
+LQyahophFRjRjCKT8ZscFperzBF70gMVXws0eiV2u55ZHVtvXBIEF7BapxxjgI6a
+dg22CtqsGb4xQGY2srR7qjL4rJd9JJuQrQcuRYBwxsRnDG80Wto=
+=HxsT
 -----END PGP SIGNATURE-----
 
---xcuscrzzo6oezrpv--
+--qqra4xv2pgsrtjif--
