@@ -2,230 +2,215 @@ Return-Path: <SRS0=3XvL=ZZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33320C432C0
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Dec 2019 00:43:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F75BC432C0
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Dec 2019 04:57:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F049520717
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Dec 2019 00:43:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ED7622054F
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Dec 2019 04:57:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cnBoBZIy"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hzBgzHbt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725941AbfLCAnY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Dec 2019 19:43:24 -0500
-Received: from mail-lf1-f68.google.com ([209.85.167.68]:38524 "EHLO
-        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726079AbfLCAmD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Dec 2019 19:42:03 -0500
-Received: by mail-lf1-f68.google.com with SMTP id r14so1410709lfm.5;
-        Mon, 02 Dec 2019 16:42:00 -0800 (PST)
+        id S1726811AbfLCE5W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Dec 2019 23:57:22 -0500
+Received: from mail-vs1-f67.google.com ([209.85.217.67]:32965 "EHLO
+        mail-vs1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726480AbfLCE5W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Dec 2019 23:57:22 -0500
+Received: by mail-vs1-f67.google.com with SMTP id n27so1555735vsa.0
+        for <linux-pm@vger.kernel.org>; Mon, 02 Dec 2019 20:57:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=v4N1OcUBKXpOd3igKUZEfBbM0cyqXgkxpiVaaCCMo0w=;
-        b=cnBoBZIyK102YaUZ+RCdvvZo0+0KaVlNAZqiJGDc12MmRT+pSQ0hTfp5txPpZEoom0
-         4m4lBdMUe6gGh3lpWR3zr5iWo0MWlzryfUHC98ZvW+FCk4FsP79y80iTgqf9TDTbbsT8
-         tP0sR+PuV+FrEv5FDCWff3Sj2DMq/hvWW78D17JLZtXkTovPGyukgK3GA2no/1yxYE56
-         I3lcLkOTV5pBmTv+MpW2sUn48Q55IFYpjqwEHqLaB+Z/O3iXA9Ch3VjV9cwBmoQ1+oPi
-         PqYW2YniZbLMEQ8fIho0phek3lcOwLDS9PsWXRX1XhM5mJgubcyiGmPRXwtunciZFVoh
-         NzNQ==
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=ml7IBhdccfwW8j+1FG8S3XplDMBYZxcPTBvONmJE1w4=;
+        b=hzBgzHbtVIyov5zqV3RPememS0AoB5zpkOlw8cfhalKrZwGNpYSLoE0xQf4l02oWrV
+         FQIwZiBvAZGZJ/BLUAO+1ElZTAkEskhn665uiBkS/GtVX27yP0iD3c5CkHdCKNx9l6In
+         UFupIM/RbBb37lwylN9sEEofwxfW2F/UqYr5luhxyHmAL1N16l9X7W2mEZvw/ZNL6z5H
+         Bw0S6R/TIziKvfDb0bRK17RsVL3J33ww8NtVkfr2CaQtHOH+X9xfeD6ku0Dv40XKt/eg
+         yOyby/1W9LCUCJpSHehZru40vphONetoeBGtYAtubxFjaRwoy0ue+KAF6POvHQs4DZ9a
+         Fwow==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=v4N1OcUBKXpOd3igKUZEfBbM0cyqXgkxpiVaaCCMo0w=;
-        b=MBR8VcXzMf6dK6L6cDG/v2hxqNr5C7/u7ojoImPrAHYxFJKKcpvpOwld4k4ABppDuu
-         Pfhnu+ZpKqLv1HYujVeEqdFHleTnLosZ1sMhAzSuMZnv+sQlPQOHTMmzGEtzyGi1gRTc
-         QM4y1oejCvhq5R32PtIZpVG4enEm7Ab8RmJb8HgnL1joqMEufJ2WjRoZPM/JWFx6o18E
-         E7tPAjr7f0DwJbArQw4LzpWW8V5v4Y3fX/fUGyGAlFHtGlo0Hpwjbl8XAgTaT8NSfhCA
-         80EBcgRQC/A4aYBeZQif2r0f8WD6SQ2/vFZtfywhPkzITJxyzgDrN4cBLQ4/LGxTMgRc
-         YfHg==
-X-Gm-Message-State: APjAAAUadHWc0NICGeiuim8waE1gY7wVUpkgPJyhub08Gbbt/FGWxlyk
-        UTZJ8ppK1tjogoWYTUZrWzM=
-X-Google-Smtp-Source: APXvYqw6Jf8V2Q4b3H3bL0Z+TWaZXzpmHICATpunlQj30SAJFSKTUJwEMFlcKl4SH8lPE6b5CuStIA==
-X-Received: by 2002:ac2:483c:: with SMTP id 28mr1081814lft.14.1575333719968;
-        Mon, 02 Dec 2019 16:41:59 -0800 (PST)
-Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
-        by smtp.gmail.com with ESMTPSA id y21sm456384ljm.25.2019.12.02.16.41.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Dec 2019 16:41:59 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v8 00/19] Consolidate and improve NVIDIA Tegra CPUIDLE driver(s)
-Date:   Tue,  3 Dec 2019 03:40:57 +0300
-Message-Id: <20191203004116.11771-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.24.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ml7IBhdccfwW8j+1FG8S3XplDMBYZxcPTBvONmJE1w4=;
+        b=ShnMJ4fq16gsyGpgEN5+QBJs3NFJl/5YwyPqok9Tynv53Z17/3tY0XUupOEXezr4To
+         tdkqnkwQcuRyWtMakstvPblae0yR15C73bhdiqNFIem8Yfzw7b2nMkfapE/2XzaND858
+         IzOwe/+mVcphYiF82LuXxvidxJQU5PJwOKB/VB+5WhQiU0lcHFoWS6wKzXve1M9voQqO
+         xcyh1+vzus3p7RY8Q53Pklq4zEJ0uj47igosrI0MM+d4qp16pVjL5FKNmw81ShehvYUG
+         yZzYdldeZQms+WrzwJki23ncn/qVQ71HM/kOKxDrYuLvKtq7Lxjh87nxzH1wH/47nYFF
+         ktVA==
+X-Gm-Message-State: APjAAAVHb6ftrvBxy2X3sdvmOGtICKw7+neQ02sMmI3bXxAFDAO6p6iT
+        3AMbUIon1o6BNrdJFpZifwyCy1EluTLm6i5c2pxj3A==
+X-Google-Smtp-Source: APXvYqzzuJ7zVrjIE0Y2zaZ/PAovWXEvXm3YYHoOqOoTi9vqEY52XFNHaanurVBB7nEb72UyUNt1t6NXf2SV3i7mJvQ=
+X-Received: by 2002:a05:6102:1261:: with SMTP id q1mr1756256vsg.182.1575349040559;
+ Mon, 02 Dec 2019 20:57:20 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <cover.1573499020.git.amit.kucheria@linaro.org>
+ <4b949a4f401a7f9d403ed0f0c16c7feb083f3524.1573499020.git.amit.kucheria@linaro.org>
+ <5dcdda2a.1c69fb81.27852.ac35@mx.google.com>
+In-Reply-To: <5dcdda2a.1c69fb81.27852.ac35@mx.google.com>
+From:   Amit Kucheria <amit.kucheria@linaro.org>
+Date:   Tue, 3 Dec 2019 10:27:09 +0530
+Message-ID: <CAHLCerNw_FuFeqDfckjmsSE+=ZGCn5EkvquUtDn7EEVjrw9aVQ@mail.gmail.com>
+Subject: Re: [PATCH 1/3] drivers: thermal: tsens: Add critical interrupt support
+To:     Stephen Boyd <swboyd@chromium.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>, sivaa@codeaurora.org,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On Fri, Nov 15, 2019 at 4:20 AM Stephen Boyd <swboyd@chromium.org> wrote:
+>
+> Quoting Amit Kucheria (2019-11-11 11:21:27)
+> > diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> > index 4359a4247ac3..2989cb952cdb 100644
+> > --- a/drivers/thermal/qcom/tsens-common.c
+> > +++ b/drivers/thermal/qcom/tsens-common.c
+> > @@ -321,6 +357,65 @@ static inline u32 masked_irq(u32 hw_id, u32 mask, enum tsens_ver ver)
+> >         return 0;
+> >  }
+> >
+> > +/**
+> > + * tsens_critical_irq_thread - Threaded interrupt handler for critical interrupts
+> > + * @irq: irq number
+> > + * @data: tsens controller private data
+> > + *
+> > + * Check all sensors to find ones that violated their critical threshold limits.
+> > + * Clear and then re-enable the interrupt.
+> > + *
+> > + * The level-triggered interrupt might deassert if the temperature returned to
+> > + * within the threshold limits by the time the handler got scheduled. We
+> > + * consider the irq to have been handled in that case.
+> > + *
+> > + * Return: IRQ_HANDLED
+> > + */
+> > +irqreturn_t tsens_critical_irq_thread(int irq, void *data)
+> > +{
+> > +       struct tsens_priv *priv = data;
+> > +       struct tsens_irq_data d;
+> > +       bool enable = true, disable = false;
+>
+> Why not just use true and false in the one place these variables are
+> used?
 
-This series does the following:
+Will fix.
 
-  1. Unifies Tegra20/30/114 drivers into a single driver and moves it out
-     into common drivers/cpuidle/ directory.
+> > +       unsigned long flags;
+> > +       int temp, ret, i;
+> > +
+> > +       for (i = 0; i < priv->num_sensors; i++) {
+> > +               struct tsens_sensor *s = &priv->sensor[i];
+>
+> Maybe make this const?
 
-  2. Enables CPU cluster power-down idling state on Tegra30.
+OK.
 
-In the end there is a quite nice clean up of the Tegra CPUIDLE drivers
-and of the Tegra's arch code in general. Please review, thanks!
+>
+> > +               u32 hw_id = s->hw_id;
+> > +
+> > +               if (IS_ERR(priv->sensor[i].tzd))
+>
+> IS_ERR(s->tzd)?
 
-Changelog:
+Yup.
 
-v8: - Rebased on recent linux-next, now making use of
-      cpuidle_driver_state_disabled(). Added new patch to make this new API
-      usable by the updated Tegra cpuidle driver:
+>
+> > +                       continue;
+> > +               if (!tsens_threshold_violated(priv, hw_id, &d))
+> > +                       continue;
+> > +               ret = get_temp_tsens_valid(s, &temp);
+>
+> Can this accept a const 's'?
 
-        cpuidle: Avoid NULL dereference in cpuidle_driver_state_disabled()
+Yes.
 
-    - Added new patch to handle case where LP2 isn't available:
+> > +               if (ret) {
+> > +                       dev_err(priv->dev, "[%u] %s: error reading sensor\n", hw_id, __func__);
+> > +                       continue;
+> > +               }
+> > +
+> > +               spin_lock_irqsave(&priv->ul_lock, flags);
+> > +
+> > +               tsens_read_irq_state(priv, hw_id, s, &d);
+> > +
+> > +               if (d.crit_viol &&
+> > +                   !masked_irq(hw_id, d.crit_irq_mask, tsens_version(priv))) {
+> > +                       tsens_set_interrupt(priv, hw_id, CRITICAL, disable);
+> > +                       if (d.crit_thresh > temp) {
+> > +                               dev_dbg(priv->dev, "[%u] %s: re-arm upper\n",
+> > +                                       priv->sensor[i].hw_id, __func__);
+>
+> hw_id instead of priv->sensor...?
 
-        cpuidle: tegra: Disable CC6 state if LP2 unavailable
+Done. Will fixup for older code in a separate patch.
 
-v7: - drivers/cpuidle/cpuidle-tegra.c now includes an explicit comment that
-      clarifies the new terminology that is used for naming of the idling
-      states. This change was suggested by Peter De Schrijver in the review
-      comment to v6. See the comment to struct tegra_idle_driver in the code.
+> > +                       } else {
+> > +                               dev_dbg(priv->dev, "[%u] %s: TZ update trigger (%d mC)\n",
+> > +                                       hw_id, __func__, temp);
+> > +                       }
+> > +                       tsens_set_interrupt(priv, hw_id, CRITICAL, enable);
+> > +               }
+> > +
+> > +               spin_unlock_irqrestore(&priv->crit_lock, flags);
+> > +       }
+> > +
+> > +       return IRQ_HANDLED;
+> > +}
+> > +
+> >  /**
+> >   * tsens_irq_thread - Threaded interrupt handler for uplow interrupts
+> >   * @irq: irq number
+> > diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+> > index 7d317660211e..784c4976c4f9 100644
+> > --- a/drivers/thermal/qcom/tsens.c
+> > +++ b/drivers/thermal/qcom/tsens.c
+> > @@ -121,6 +121,27 @@ static int tsens_register(struct tsens_priv *priv)
+> >
+> >         enable_irq_wake(irq);
+> >
+> > +       if (tsens_version(priv) > VER_1_X) {
+> > +               irq = platform_get_irq_byname(pdev, "critical");
+> > +               if (irq < 0) {
+> > +                       ret = irq;
+> > +                       goto err_put_device;
+> > +               }
+> > +
+> > +               ret = devm_request_threaded_irq(&pdev->dev, irq,
+> > +                                               NULL, tsens_critical_irq_thread,
+> > +                                               IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
+> > +                                               dev_name(&pdev->dev), priv);
+> > +               if (ret) {
+> > +                       dev_err(&pdev->dev, "%s: failed to get critical irq\n", __func__);
+> > +                       goto err_put_device;
+>
+> Do we need to disable_irq_wake() for the previous irq here?
 
-    - (!) This series is now based on top of the "NVIDIA Tegra20 CPUFreq
-      driver major update" patchset. The conflict between these two series
-      is trivial to resolve, but still it's worth to mention about that.
+Or we could just move the earlier enable_irq_wake() to after
+successful registration of the critical interrupt to avoid the error
+branch. See v2 posting.
 
-v6: - Addressed request from Thierry Reding to change the way patches are
-      organized by making changes in a more incremental manner.
 
-    - tegra_sleep_cpu() now checks for the secondary CPUs to be offline
-      in the "Make outer_disable() open-coded" patch.
 
-v5: - Rebased on a recent linux-next, fixed one minor conflict in Kconfig.
-
-    - Improved commit's message of the "Support CPU cluster power-down state
-      on Tegra30" patch.
-
-    - The "Support CPU cluster power-down state on Tegra30" patch is also
-      got split and now there is additional "Make outer_disable() open-coded"
-      patch.
-
-    - Made minor cosmetic changes to the "Introduce unified driver for
-      NVIDIA Tegra SoCs" patch by improving error message and renaming
-      one variable.
-
-v4: - Fixed compilation with !CONFIG_CACHE_L2X0 (and tested that it still
-      works).
-
-    - Replaced ktime_compare() with ktime_before() in the new driver,
-      for consistency.
-
-v3: - Addressed review comments that were made by Jon Hunter to v2 by
-      splitting patches into smaller (and simpler) chunks, better
-      documenting changes in the commit messages and using proper error
-      codes in the code.
-
-      Warnings are replaced with a useful error messages in the code of
-      "Introduce unified driver for NVIDIA Tegra SoCs" patch.
-
-      Secondary CPUs parking timeout increased to 100ms because I found
-      that it actually may happen to take more than 1ms if CPU is running
-      on a *very* low frequency.
-
-      Added diagnostic messages that are reporting Flow Controller state
-      when CPU parking fails.
-
-      Further polished cpuidle driver's code.
-
-      The coupled state entering is now aborted if there is a pending SGI
-      (Software Generated Interrupt) because it will be lost after GIC's
-      power-cycling. Like it was done by the old Tegra20 CPUIDLE driver.
-
-v2: - Added patches to enable the new cpuidle driver in the defconfigs:
-
-        ARM: multi_v7_defconfig: Enable Tegra cpuidle driver
-        ARM: tegra: Enable Tegra cpuidle driver in tegra_defconfig
-
-    - Dropped patches that removed CPUIDLE_FLAG_TIMER_STOP from the idling
-      states because that flag actually doesn't have any negative effects,
-      but still is correct for the case of a local CPU timer on older Tegra
-      SoCs:
-
-        cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from Tegra114/124 idle-state
-        cpuidle: tegra: Remove CPUIDLE_FLAG_TIMER_STOP from all states
-
-    - The "Add unified driver for NVIDIA Tegra SoCs" patch got more polish.
-      Tegra30 and Terga114 states are now squashed into a single common C7
-      state (following Parker TRM terminology, see 17.2.2.2 Power Management
-      States), more comments added, etc minor changes.
-
-Dmitry Osipenko (19):
-  ARM: tegra: Compile sleep-tegra20/30.S unconditionally
-  ARM: tegra: Add tegra_pm_park_secondary_cpu()
-  ARM: tegra: Remove pen-locking from cpuidle-tegra20
-  ARM: tegra: Change tegra_set_cpu_in_lp2() type to void
-  ARM: tegra: Propagate error from tegra_idle_lp2_last()
-  ARM: tegra: Expose PM functions required for new cpuidle driver
-  ARM: tegra: Rename some of the newly exposed PM functions
-  ARM: tegra: Make outer_disable() open-coded
-  arm: tegra20: cpuidle: Handle case where secondary CPU hangs on
-    entering LP2
-  arm: tegra20: cpuidle: Make abort_flag atomic
-  arm: tegra20/30: cpuidle: Remove unnecessary memory barrier
-  cpuidle: Avoid NULL dereference in cpuidle_driver_state_disabled()
-  cpuidle: Refactor and move out NVIDIA Tegra20 driver into
-    drivers/cpuidle
-  cpuidle: tegra: Squash Tegra30 driver into the common driver
-  cpuidle: tegra: Support CPU cluster power-down state on Tegra30
-  cpuidle: tegra: Squash Tegra114 driver into the common driver
-  cpuidle: tegra: Disable CC6 state if LP2 unavailable
-  ARM: multi_v7_defconfig: Enable Tegra cpuidle driver
-  ARM: tegra: Enable Tegra cpuidle driver in tegra_defconfig
-
- arch/arm/configs/multi_v7_defconfig           |   1 +
- arch/arm/configs/tegra_defconfig              |   1 +
- arch/arm/mach-tegra/Makefile                  |  19 +-
- arch/arm/mach-tegra/cpuidle-tegra114.c        |  89 -----
- arch/arm/mach-tegra/cpuidle-tegra20.c         | 212 ----------
- arch/arm/mach-tegra/cpuidle-tegra30.c         | 132 ------
- arch/arm/mach-tegra/cpuidle.c                 |  50 ---
- arch/arm/mach-tegra/cpuidle.h                 |  21 -
- arch/arm/mach-tegra/irq.c                     |   3 +-
- arch/arm/mach-tegra/pm.c                      |  54 ++-
- arch/arm/mach-tegra/pm.h                      |   4 -
- arch/arm/mach-tegra/reset-handler.S           |  11 -
- arch/arm/mach-tegra/reset.h                   |   9 +-
- arch/arm/mach-tegra/sleep-tegra20.S           | 170 --------
- arch/arm/mach-tegra/sleep-tegra30.S           |   6 +-
- arch/arm/mach-tegra/sleep.h                   |  15 -
- arch/arm/mach-tegra/tegra.c                   |   7 +-
- drivers/cpuidle/Kconfig.arm                   |   8 +
- drivers/cpuidle/Makefile                      |   1 +
- drivers/cpuidle/cpuidle-tegra.c               | 376 ++++++++++++++++++
- drivers/cpuidle/driver.c                      |   4 +
- include/soc/tegra/cpuidle.h                   |   2 +-
- .../mach-tegra => include/soc/tegra}/irq.h    |   8 +-
- include/soc/tegra/pm.h                        |  31 ++
- 24 files changed, 473 insertions(+), 761 deletions(-)
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra114.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra20.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle-tegra30.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle.c
- delete mode 100644 arch/arm/mach-tegra/cpuidle.h
- create mode 100644 drivers/cpuidle/cpuidle-tegra.c
- rename {arch/arm/mach-tegra => include/soc/tegra}/irq.h (59%)
-
--- 
-2.24.0
-
+> > +               }
+> > +
+> > +               enable_irq_wake(irq);
+> > +       }
+> > +
+> > +       return 0;
+> > +
+> >  err_put_device:
+> >         put_device(&pdev->dev);
+> >         return ret;
