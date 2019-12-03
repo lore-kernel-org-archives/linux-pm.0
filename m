@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BBD37C432C3
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Dec 2019 00:42:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D25CC43141
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Dec 2019 00:42:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9093020717
+	by mail.kernel.org (Postfix) with ESMTP id E787520717
 	for <linux-pm@archiver.kernel.org>; Tue,  3 Dec 2019 00:42:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aLOtU4r/"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LGDylwQ1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726808AbfLCAmQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Dec 2019 19:42:16 -0500
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:37755 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726791AbfLCAmP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Dec 2019 19:42:15 -0500
-Received: by mail-lf1-f65.google.com with SMTP id b15so1413423lfc.4;
-        Mon, 02 Dec 2019 16:42:13 -0800 (PST)
+        id S1726824AbfLCAmR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Dec 2019 19:42:17 -0500
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:33541 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725954AbfLCAmN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Dec 2019 19:42:13 -0500
+Received: by mail-lf1-f66.google.com with SMTP id n25so1439872lfl.0;
+        Mon, 02 Dec 2019 16:42:11 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=YPWz6Eps+PhevUacVbz0yxoPDkrfT6VaPLM5BXqdcsI=;
-        b=aLOtU4r//tQHJ0s0P85Xa2GTz9bMIPnWQbIWq0RIjUxJPAc5Gfy7ojVkUz8wlTY+2d
-         0L2B8iHVVr3F6ZMyhdIMq4tm6RbTAQ5fWPVytZWQUVifQ3CWm2g6FTroG1rAEXzpov/Z
-         PNCkJ/FMlkgA0EJEnG2rCTEG2+oRpcYP6r36LKEnMA77d8IJ89q27mgeHJfSkLegZdkG
-         Zho5xsE+6Xpqf6UM1Ltr8VDoaWXZcGnZ+qhKZ1jJSjsgr/EkfajrP0/H10jIm1jdqWxV
-         PY54SwiB21bzhKz/w1xJY2DO5LBcKBDhKX2bt9eAWJjlcCSQTxfGEtShaI7GtxPVg8aw
-         dYgg==
+        bh=L9kXKgBrYXH+hSm9TkMRosOtHlt6sNljimu1oTCcerc=;
+        b=LGDylwQ1uES/B4cybQXOfkvOFEhf0Hm84ek9j4YkQe99WFBJwpYQTSlqLObeFSkH16
+         iAs0jzYnz4icjgNDVq5kavQUC0NULbYVB0io3HZU0xzCpvekX8ZCwTilMv4rEdD/tBAZ
+         tUN8PKZJRi6CPLqYRNbNGkK8/VwUm56feKkLYoLmnPZIpLijdC8GB0iNA1tbwkw0ge+J
+         03GFZ5pLKRR/nzuUmtN6mvd4ITYfPCs6+7251TwM9a+wT8OJmSUQJYZDQ+DsazTMS5aD
+         o0YjlkbOS2dL+y2Xw7RPjFCKi9qwrKJbgpwYFX8XEw96s/ssLcWxUoBS7ytHQQZPBMer
+         5BWA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=YPWz6Eps+PhevUacVbz0yxoPDkrfT6VaPLM5BXqdcsI=;
-        b=tz+ibvIP6yt3eq5tk0nkCyYpa2B0qI0eBvucbduYij/USz8CF9oawgcC2TGrjBoAgK
-         /1V/vQbLZj5w1hJl9G7fyDanhPzldR3/sPrtlGVVe7uRV/75Ib3c2mGcioifN8vkpE9F
-         Qsdj3koLZrNwKdIQTXE3OMV6MxRY6B4WYjzKJOd5Hx3QLmzb48nmKNKnjHX9Krw5Hu4d
-         CJEbWc0QZxqhhJKjWcCaiN8skTdz0jrntuRPFldXsWfKxQaqPRbePE/iztI89EFFFWhs
-         cF3bgU7wU5JxqFK1XWvwHYXuNg+YEMg6fH5/2VdLtXkO2hSK0V4SyMBnHM6KmjrEpcqQ
-         5iAw==
-X-Gm-Message-State: APjAAAX/U1MuTKQU9lak1hYT27AS7/5YpTA6qnnjBEQDlAZw0izQp92j
-        zLueoO5oDayuRiqNCSpXqkA=
-X-Google-Smtp-Source: APXvYqzCGutgD2DB6pOTAMV4est1pbVbMLLuTEe/8IXprp0YJhjGPp9cyqhBlQN0h55qaukg9EJC/Q==
-X-Received: by 2002:a19:7611:: with SMTP id c17mr983236lff.86.1575333732664;
-        Mon, 02 Dec 2019 16:42:12 -0800 (PST)
+        bh=L9kXKgBrYXH+hSm9TkMRosOtHlt6sNljimu1oTCcerc=;
+        b=ucw5Elvt88/7JNhkP2WNjVJJv/P0nJAR0KfrXhRhqxGlK01DEbd0ay2JIofkMATwFC
+         2jitXzkNsmfxetL+EoLWMshoI71JEuMtSjkgpofLrBEEwuYW8U0TDwgA0m2XQGsT8BSD
+         cHR2m99Gkghj71/xxOi8+fRpAfK5SNb7YmlraMbbw4LjOLQWZJcv6y4nS9odMN+4ZCRw
+         Shjr6CII7IH3v3nTySXMHzMoBhX4E+bkKcwU4lWmGnYiCV933dicGHCYxi58mxqQm9UB
+         pr2xU+HOopVMCrlNoUafNwOhCiufGcaAIVBsB0Z88FVfi6HzgKRDF2BOz07c+Szlxjna
+         4KSw==
+X-Gm-Message-State: APjAAAU0GunRrDMrzcfpaKNRVRI7/md8e8t4ejGADh4LLg0WWcRDexnx
+        vgJfA/+UTSa+ZrzIR/5n43E=
+X-Google-Smtp-Source: APXvYqyCWZUYj7IQPwpmCQO5dZi3l3VfqdgaW/bUqPRVmQbxgEnXrSU1/qr8rk2oDFgLc2tLfKbcFw==
+X-Received: by 2002:ac2:568d:: with SMTP id 13mr1002023lfr.113.1575333730737;
+        Mon, 02 Dec 2019 16:42:10 -0800 (PST)
 Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
-        by smtp.gmail.com with ESMTPSA id y21sm456384ljm.25.2019.12.02.16.42.11
+        by smtp.gmail.com with ESMTPSA id y21sm456384ljm.25.2019.12.02.16.42.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 02 Dec 2019 16:42:12 -0800 (PST)
+        Mon, 02 Dec 2019 16:42:10 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -63,9 +63,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v8 11/19] arm: tegra20/30: cpuidle: Remove unnecessary memory barrier
-Date:   Tue,  3 Dec 2019 03:41:08 +0300
-Message-Id: <20191203004116.11771-12-digetx@gmail.com>
+Subject: [PATCH v8 09/19] arm: tegra20: cpuidle: Handle case where secondary CPU hangs on entering LP2
+Date:   Tue,  3 Dec 2019 03:41:06 +0300
+Message-Id: <20191203004116.11771-10-digetx@gmail.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191203004116.11771-1-digetx@gmail.com>
 References: <20191203004116.11771-1-digetx@gmail.com>
@@ -76,42 +76,78 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There is no good justification for smp_rmb() after returning from LP2
-because there are no memory operations that require SMP synchronization.
-Thus remove the confusing barrier.
+It is possible that something may go wrong with the secondary CPU, in that
+case it is much nicer to get a dump of the flow-controller state before
+hanging machine.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/mach-tegra/cpuidle-tegra20.c | 2 --
- arch/arm/mach-tegra/cpuidle-tegra30.c | 2 --
- 2 files changed, 4 deletions(-)
+ arch/arm/mach-tegra/cpuidle-tegra20.c | 46 +++++++++++++++++++++++++--
+ 1 file changed, 44 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
-index 3f4c75dbb4aa..78cc424fac35 100644
+index 9672c619f4bc..f3a898f69a1d 100644
 --- a/arch/arm/mach-tegra/cpuidle-tegra20.c
 +++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
-@@ -193,8 +193,6 @@ static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
- 
- 	local_fiq_enable();
- 
--	smp_rmb();
--
- 	return entered_lp2 ? index : 0;
+@@ -83,14 +83,56 @@ static inline void tegra20_wake_cpu1_from_reset(void)
  }
  #endif
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra30.c b/arch/arm/mach-tegra/cpuidle-tegra30.c
-index a4f0add46a27..80ae64bcdf50 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra30.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra30.c
-@@ -113,8 +113,6 @@ static int tegra30_idle_lp2(struct cpuidle_device *dev,
  
- 	local_fiq_enable();
++static void tegra20_report_cpus_state(void)
++{
++	unsigned int cpu, lcpu;
++
++	pr_err("secondary CPU taking too long to park\n");
++
++	for_each_cpu(lcpu, cpu_possible_mask) {
++		cpu = cpu_logical_map(lcpu);
++
++		pr_err("cpu%u: online=%d flowctrl_csr=0x%08x\n",
++		       cpu, cpu_online(lcpu), flowctrl_read_cpu_csr(cpu));
++	}
++}
++
++static int tegra20_wait_for_secondary_cpu_parking(void)
++{
++	unsigned int retries = 3;
++
++	while (retries--) {
++		ktime_t timeout = ktime_add_ms(ktime_get(), 500);
++
++		/*
++		 * The primary CPU0 core shall wait for the secondaries
++		 * shutdown in order to power-off CPU's cluster safely.
++		 * The timeout value depends on the current CPU frequency,
++		 * it takes about 40-150us  in average and over 1000us in
++		 * a worst case scenario.
++		 */
++		do {
++			if (tegra_cpu_rail_off_ready())
++				return 0;
++
++		} while (ktime_before(ktime_get(), timeout));
++
++		tegra20_report_cpus_state();
++	}
++
++	pr_err("timed out waiting secondaries to park\n");
++
++	return -ETIMEDOUT;
++}
++
+ static bool tegra20_cpu_cluster_power_down(struct cpuidle_device *dev,
+ 					   struct cpuidle_driver *drv,
+ 					   int index)
+ {
+ 	bool ret;
  
--	smp_rmb();
--
- 	return (entered_lp2) ? index : 0;
- }
- #endif
+-	while (!tegra_cpu_rail_off_ready())
+-		cpu_relax();
++	if (tegra20_wait_for_secondary_cpu_parking())
++		return false;
+ 
+ 	ret = !tegra_pm_enter_lp2();
+ 
 -- 
 2.24.0
 
