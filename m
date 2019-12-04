@@ -2,108 +2,199 @@ Return-Path: <SRS0=yql6=Z2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3227C3E8AC
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 06:51:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35D8FC3F68F
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 06:56:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BE0582467B
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 06:31:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="ZfBIirHv"
+	by mail.kernel.org (Postfix) with ESMTP id A0BC62465D
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 06:16:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726217AbfLDGbT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Dec 2019 01:31:19 -0500
-Received: from userp2120.oracle.com ([156.151.31.85]:44238 "EHLO
-        userp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725791AbfLDGbT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2019 01:31:19 -0500
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
-        by userp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xB46T5E5052836;
-        Wed, 4 Dec 2019 06:31:07 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=corp-2019-08-05;
- bh=LDsen7ptk7tsQBaPePRbudj2yMR0eeO7aaitOS++uvc=;
- b=ZfBIirHvT+CBVUpviIxxWVRERbBcCuLUMeemPOprZ6ZePnjFrHFv9HHNtM8pxpW2AB32
- QGsSvJpW3QD1u2YQH0BoMM7UcAPg6hpZFxy0Gz1Yg+KmS9sIPKKHfLt2bKzxkvY3tlnr
- 5ymOougA72MrPOB/eArziWAT0nuXgOu4u09lJmhnfN1mK4wMhubGyXz6jnLbEbQX9uPU
- 41vvStCnHvrCNpEuIxsmI6J1i0qXyk0JSEDTqvEQDyvHRRUmbAghf8YTzwSW+DxhxMcV
- Ir1DV96OPsrQXklDaxDfkodkoWaGccw5i2Rww0nqroHHAZ4dXyW5iLryNAgAV5HHgElV pQ== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by userp2120.oracle.com with ESMTP id 2wkh2rc6xf-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 04 Dec 2019 06:31:07 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xB46Sj6S030440;
-        Wed, 4 Dec 2019 06:31:06 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by userp3020.oracle.com with ESMTP id 2wnvqxq21w-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 04 Dec 2019 06:31:06 +0000
-Received: from abhmp0018.oracle.com (abhmp0018.oracle.com [141.146.116.24])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id xB46V5X3007232;
-        Wed, 4 Dec 2019 06:31:05 GMT
-Received: from kadam (/129.205.23.165)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Tue, 03 Dec 2019 22:31:05 -0800
-Date:   Wed, 4 Dec 2019 09:30:58 +0300
-From:   Dan Carpenter <dan.carpenter@oracle.com>
-To:     Mao Wenan <maowenan@huawei.com>
-Cc:     sre@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-        Hulk Robot <hulkci@huawei.com>
-Subject: Re: [PATCH -next] power: supply: ab8500: Drop pointless static
- qualifier in ab8500_btemp_batctrl_volt_to_res()
-Message-ID: <20191204063058.GE1765@kadam>
-References: <20191204010506.159128-1-maowenan@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191204010506.159128-1-maowenan@huawei.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9460 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1911140001 definitions=main-1912040046
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9460 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1911140001
- definitions=main-1912040046
+        id S1725932AbfLDGQ7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Dec 2019 01:16:59 -0500
+Received: from mga07.intel.com ([134.134.136.100]:59519 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725791AbfLDGQ6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 4 Dec 2019 01:16:58 -0500
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by orsmga105.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 03 Dec 2019 22:16:57 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,276,1571727600"; 
+   d="scan'208";a="412469165"
+Received: from yuanwan1-mobl.ccr.corp.intel.com ([10.249.174.225])
+  by fmsmga006.fm.intel.com with ESMTP; 03 Dec 2019 22:16:56 -0800
+Message-ID: <7f4da1c663268f53f2123424c1b8abdbe8316556.camel@intel.com>
+Subject: [GIT PULL] Thermal management updates for v5.5-rc1
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Zhang, Rui" <rui.zhang@intel.com>
+Date:   Wed, 04 Dec 2019 14:16:55 +0800
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Dec 04, 2019 at 09:05:06AM +0800, Mao Wenan wrote:
-> There is no need to have the 'T *v' variable static
-> since new value always be assigned before use it.
-> 
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Mao Wenan <maowenan@huawei.com>
-> ---
->  drivers/power/supply/ab8500_btemp.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
-> index 909f0242bacb..d3d4f7327d1b 100644
-> --- a/drivers/power/supply/ab8500_btemp.c
-> +++ b/drivers/power/supply/ab8500_btemp.c
-> @@ -180,7 +180,7 @@ static int ab8500_btemp_batctrl_volt_to_res(struct ab8500_btemp *di,
->  static int ab8500_btemp_read_batctrl_voltage(struct ab8500_btemp *di)
->  {
->  	int vbtemp, ret;
-> -	static int prev;
-> +	int prev;
+Hi, Linus,
 
-No.  We use it first on linux-next (yesterday).  It needs to be static.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
+thermal/next
 
-regards,
-dan carpenter
+to receive the latest Thermal Management updates for v5.5-rc1 with
+top-most commit 163b00cde7cf2206e248789d2780121ad5e6a70b:
+
+  thermal: Fix deadlock in thermal thermal_zone_device_check (2019-11-
+14 22:41:09 +0800)
+
+on top of commit a99d8080aaf358d5d23581244e5da23b35e340b9:
+
+  Linux 5.4-rc6 (2019-11-03 14:07:26 -0800)
+
+Specifics:
+
+- Fix a deadlock regression in thermal core framework, which is
+introduced in 5.3. (Wei Wang)
+
+- Initialize thermal control framework earlier to enable thermal
+mitigation during boot. (Amit Kucheria)
+
+- Convert the Intelligent Power Allocator (IPA) thermal governor to
+follow the generic PM_EM instead of its own Energy Model. (Quentin
+Perret)
+
+- Introduce a new Amlogic soc thermal driver. (Guillaume La Roque)
+
+- Add interrupt support for tsens thermal driver. (Amit Kucheria)
+
+- Add support for MSM8956/8976 in tsens thermal driver.
+(AngeloGioacchino Del Regno)
+
+- Add support for r8a774b1 in rcar thermal driver. (Biju Das)
+
+- Add support for Thermal Monitor Unit v2 in qoriq thermal driver.
+(Yuantian Tang)
+
+- Some other fixes/cleanups on thermal core framework and soc thermal
+drivers. (Colin Ian King, Daniel Lezcano, Hsin-Yi Wang, Tian Tao)
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Amit Kucheria (13):
+      drivers: thermal: tsens: Get rid of id field in tsens_sensor
+      drivers: thermal: tsens: Simplify code flow in tsens_probe
+      drivers: thermal: tsens: Add __func__ identifier to debug
+statements
+      drivers: thermal: tsens: Add debugfs support
+      dt-bindings: thermal: tsens: Convert over to a yaml schema
+      drivers: thermal: tsens: Create function to return sign-extended
+temperature
+      drivers: thermal: tsens: Add interrupt support
+      thermal: Remove netlink support
+      thermal: Initialize thermal subsystem earlier
+      cpufreq: Initialize the governors in core_initcall
+      cpufreq: Initialize cpufreq-dt driver earlier
+      clk: qcom: Initialize clock drivers earlier
+      cpufreq: qcom-hw: Move driver initialization earlier
+
+AngeloGioacchino Del Regno (2):
+      thermal: qcom: tsens-v1: Add support for MSM8956 and MSM8976
+      dt: thermal: tsens: Document compatible for MSM8976/56
+
+Biju Das (2):
+      thermal: rcar_gen3_thermal: Add r8a774b1 support
+      dt-bindings: thermal: rcar-gen3-thermal: Add r8a774b1 support
+
+Colin Ian King (2):
+      thermal: qcom: tsens-v1: Fix kfree of a non-pointer value
+      drivers: thermal: tsens: fix potential integer overflow on
+multiply
+
+Daniel Lezcano (2):
+      thermal: cpu_cooling: Remove pointless dependency on CONFIG_OF
+      thermal: cpu_cooling: Reorder the header file
+
+Guillaume La Roque (3):
+      dt-bindings: thermal: Add DT bindings documentation for Amlogic
+Thermal
+      thermal: amlogic: Add thermal driver to support G12 SoCs
+      MAINTAINERS: add entry for Amlogic Thermal driver
+
+Hsin-Yi Wang (1):
+      thermal-generic-adc: Silent error message for EPROBE_DEFER
+
+Quentin Perret (4):
+      arm64: defconfig: Enable CONFIG_ENERGY_MODEL
+      PM / EM: Declare EM data types unconditionally
+      thermal: cpu_cooling: Make the power-related code depend on IPA
+      thermal: cpu_cooling: Migrate to using the EM framework
+
+Tian Tao (1):
+      thermal: no need to set .owner when using module_platform_driver
+
+Wei Wang (1):
+      thermal: Fix deadlock in thermal thermal_zone_device_check
+
+Yuantian Tang (1):
+      thermal: qoriq: add thermal monitor unit version 2 support
+
+ .../bindings/thermal/amlogic,thermal.yaml          |  54 +++
+ .../devicetree/bindings/thermal/qcom-tsens.txt     |  55 ---
+ .../devicetree/bindings/thermal/qcom-tsens.yaml    | 170 +++++++
+ .../bindings/thermal/rcar-gen3-thermal.txt         |   1 +
+ Documentation/driver-api/thermal/sysfs-api.rst     |  26 +-
+ MAINTAINERS                                        |  10 +
+ arch/arm64/configs/defconfig                       |   1 +
+ drivers/clk/qcom/clk-rpmh.c                        |   2 +-
+ drivers/clk/qcom/gcc-qcs404.c                      |   2 +-
+ drivers/clk/qcom/gcc-sdm845.c                      |   2 +-
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   2 +-
+ drivers/cpufreq/cpufreq_conservative.c             |   2 +-
+ drivers/cpufreq/cpufreq_ondemand.c                 |   2 +-
+ drivers/cpufreq/cpufreq_performance.c              |   2 +-
+ drivers/cpufreq/cpufreq_powersave.c                |   2 +-
+ drivers/cpufreq/cpufreq_userspace.c                |   2 +-
+ drivers/cpufreq/qcom-cpufreq-hw.c                  |   2 +-
+ drivers/thermal/Kconfig                            |  12 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/amlogic_thermal.c                  | 333 +++++++++++++
+ drivers/thermal/cpu_cooling.c                      | 404 +++++++----
+-----
+ drivers/thermal/qcom/tsens-8960.c                  |   4 +-
+ drivers/thermal/qcom/tsens-common.c                | 529
++++++++++++++++++++--
+ drivers/thermal/qcom/tsens-v0_1.c                  |  11 +
+ drivers/thermal/qcom/tsens-v1.c                    | 198 +++++++-
+ drivers/thermal/qcom/tsens-v2.c                    |  13 +
+ drivers/thermal/qcom/tsens.c                       |  62 ++-
+ drivers/thermal/qcom/tsens.h                       | 288 +++++++++--
+ drivers/thermal/qoriq_thermal.c                    | 120 ++++-
+ drivers/thermal/rcar_gen3_thermal.c                |   4 +
+ drivers/thermal/thermal-generic-adc.c              |   9 +-
+ drivers/thermal/thermal_core.c                     | 107 +----
+ drivers/thermal/thermal_mmio.c                     |   1 -
+ include/linux/cpu_cooling.h                        |  18 +-
+ include/linux/energy_model.h                       |   3 +-
+ include/linux/thermal.h                            |  11 -
+ kernel/sched/cpufreq_schedutil.c                   |   2 +-
+ 37 files changed, 1878 insertions(+), 589 deletions(-)
+ create mode 100644
+Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
+ delete mode 100644 Documentation/devicetree/bindings/thermal/qcom-
+tsens.txt
+ create mode 100644 Documentation/devicetree/bindings/thermal/qcom-
+tsens.yaml
+ create mode 100644 drivers/thermal/amlogic_thermal.c
 
