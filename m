@@ -2,199 +2,185 @@ Return-Path: <SRS0=yql6=Z2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35D8FC3F68F
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 06:56:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EDF2C43603
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 07:10:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A0BC62465D
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 06:16:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D8347206DF
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 07:10:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dAZovbzV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725932AbfLDGQ7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Dec 2019 01:16:59 -0500
-Received: from mga07.intel.com ([134.134.136.100]:59519 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725791AbfLDGQ6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Dec 2019 01:16:58 -0500
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by orsmga105.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 03 Dec 2019 22:16:57 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.69,276,1571727600"; 
-   d="scan'208";a="412469165"
-Received: from yuanwan1-mobl.ccr.corp.intel.com ([10.249.174.225])
-  by fmsmga006.fm.intel.com with ESMTP; 03 Dec 2019 22:16:56 -0800
-Message-ID: <7f4da1c663268f53f2123424c1b8abdbe8316556.camel@intel.com>
-Subject: [GIT PULL] Thermal management updates for v5.5-rc1
-From:   Zhang Rui <rui.zhang@intel.com>
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
+        id S1727195AbfLDHKi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Dec 2019 02:10:38 -0500
+Received: from mail-qt1-f169.google.com ([209.85.160.169]:40719 "EHLO
+        mail-qt1-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727184AbfLDHKi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2019 02:10:38 -0500
+Received: by mail-qt1-f169.google.com with SMTP id z22so6725903qto.7
+        for <linux-pm@vger.kernel.org>; Tue, 03 Dec 2019 23:10:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=FoH24prRqjuYLXuwyUpm8iFK/jB9SCwX9PmqD0+uB3k=;
+        b=dAZovbzV5b5d/sU3m2nFWIn3kT2RzhUfvdoV74Hs70IdTHVUaObf67ed8gAw9GunIt
+         7mcUjEsbonBBeSV/SGSDjP4ojbAkK05wUILd9/NFWoPwq4JIhf7fmaDUTAhCnI+81ksr
+         EAPBPRykfVcjK+twCfyPhHhLO9c0nCRdaHMNodoBbNndt6g0RsoAfbXNbfwX3O3ZIiCg
+         I3nD5/mJQ74tGRmCUck/16C5E5K8UEvnx0bN9efIDDRDJCJnlhSz67Ei2459JPIBJ+bU
+         akTdN58OpV8IOu2M6NTO7ZWnxsoivwZfiIIeD3u4emJqWYYKNelgmp3sIB0Fts8WWLSz
+         y1mQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=FoH24prRqjuYLXuwyUpm8iFK/jB9SCwX9PmqD0+uB3k=;
+        b=NT9ccSZmdpeAt+F26yp+35RYRvjHk3n3V0afXR77vG9nzcjKfCj1hDBcbFCFL6b65f
+         JZ7evWwJAmGfMQvaywGZ6r44MUUUzdfd0HZtQlTk9Y+CxaPol5vJoeJR5YKRPx0lfXUw
+         Egg3itlrGb2tRgqQWzJBN0/yGS2m3G+lB8GHgzmplyywPIiglWbUAj8QEvP9Z4Y4N1ke
+         Ghp6HvexXd+R3G12zPplq2V5jStuCJBhzmUh7260bj1Ff+z3qRoB2opo+nZtKFUBNR8j
+         F30ZHu/VxNZplSQsPHZIb19JnJQ2e+5a6OzLVfTy3ACSOHR19SRQ4gYOsHgvB7wi98Pf
+         f1Cw==
+X-Gm-Message-State: APjAAAVrjqj07+AK/2AM6472aYL2cFJ2W0/N1RYwzFC6oXUU+AZI4rTZ
+        /Jff5VDUVfCNEM3ReePVDJEWhnzxbS4tqtSEg84nBA==
+X-Google-Smtp-Source: APXvYqzdZWkOTSjtEhCab5JFf8/MyIT+x2Q9c27MNI4zCxtt6eydpzFhKrh/KAeIx4HawkCuL8Q6xLqs1rmdQUKrDxY=
+X-Received: by 2002:ac8:3177:: with SMTP id h52mr1491863qtb.264.1575443436869;
+ Tue, 03 Dec 2019 23:10:36 -0800 (PST)
+MIME-Version: 1.0
+References: <20191203093704.7037-1-daniel.lezcano@linaro.org>
+ <20191203093704.7037-2-daniel.lezcano@linaro.org> <CAP245DV=kd=LdvgZ2x1Q8-ZahpS3423Z9vHXw91N20aQ6DKxAQ@mail.gmail.com>
+ <7e851d43-ecb5-179a-ebfd-847dffd29636@linaro.org>
+In-Reply-To: <7e851d43-ecb5-179a-ebfd-847dffd29636@linaro.org>
+From:   Amit Kucheria <amit.kucheria@linaro.org>
+Date:   Wed, 4 Dec 2019 12:40:25 +0530
+Message-ID: <CAP245DXJZ9pTmFBD2EcOk6pkbYr+n1tR1o2AAZvGeiaf=U1rHQ@mail.gmail.com>
+Subject: Re: [PATCH V3 2/4] thermal/drivers/cpu_cooling: Add idle cooling
+ device documentation
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Eduardo Valentin <edubezval@gmail.com>,
         Linux PM list <linux-pm@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Zhang, Rui" <rui.zhang@intel.com>
-Date:   Wed, 04 Dec 2019 14:16:55 +0800
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi, Linus,
+On Wed, Dec 4, 2019 at 12:20 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+>
+> Hi Amit,
+>
+> thanks for the review.
+>
+>
+> On 04/12/2019 05:24, Amit Kucheria wrote:
+>
+> [ ... ]
+>
+> >> +the CPUs will have to wakeup from a deep sleep state.
+> >> +
+> >> +     ^
+> >> +     |
+> >> +     |
+> >> +     |-------       -------       -------
+> >> +     |_______|_____|_______|_____|_______|___________
+> >> +
+> >> +      <----->
+> >> +       idle  <---->
+> >> +              running
+> >> +
+> >> +With the fixed idle injection duration, we can give a value which is
+> >> +an acceptable performance drop off or latency when we reach a specifi=
+c
+> >> +temperature and we begin to mitigate by varying the Idle injection
+> >> +period.
+> >> +
+> >
+> > I'm not sure what it the purpose of this statement. You've described
+> > how the period value starts at a maximum and is adjusted dynamically
+> > below.
+>
+> We can have different way to inject idle periods. We can increase the
+> idle duration and/or keep this duration constant but make a variation of
+> the period. This statement clarify the method which is the latter
+> because we want to have a constant latency per period easier to deal with=
+.
 
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
-thermal/next
+I think I read period as duration leading to confusion. I suggest
+using duty-cycle instead of period throughout this series. I think it
+will improve the explanation.
 
-to receive the latest Thermal Management updates for v5.5-rc1 with
-top-most commit 163b00cde7cf2206e248789d2780121ad5e6a70b:
+The above paragraph could be rewritten as:
 
-  thermal: Fix deadlock in thermal thermal_zone_device_check (2019-11-
-14 22:41:09 +0800)
+"We use a fixed duration of idle injection that gives an acceptable
+performance penalty and a fixed latency. Mitigation can be increased
+or decreased by modulating the duty cycle of the idle injection."
 
-on top of commit a99d8080aaf358d5d23581244e5da23b35e340b9:
+Perhaps you could also enhance your ascii art above to show fixed
+duration idles and different duty cyles to drive home the point.
 
-  Linux 5.4-rc6 (2019-11-03 14:07:26 -0800)
+> >> +The mitigation begins with a maximum period value which decrease when
+> >
+> > Shouldn't the idle injection period increase to get more cooling effect=
+?
+>
+> The period is the opposite of the frequency. The highest the period, the
+> lowest the frequency, thus less idle cycles and lesser cooling effect.
 
-Specifics:
+Yeah, I definitely confused period with duration :-)
 
-- Fix a deadlock regression in thermal core framework, which is
-introduced in 5.3. (Wei Wang)
+> >> +more cooling effect is requested. When the period duration is equal t=
+o
+> >> +the idle duration, then we are in a situation the platform can=E2=80=
+=99t
+> >> +dissipate the heat enough and the mitigation fails. In this case the
+> >> +situation is considered critical and there is nothing to do. The idle
+> >> +injection duration must be changed by configuration and until we reac=
+h
+> >> +the cooling effect, otherwise an additionnal cooling device must be
+> >
+> > typo: additional
+> >
+> >> +used or ultimately decrease the SoC performance by dropping the
+> >> +highest OPP point of the SoC.
+> >> +
+> >> +The idle injection duration value must comply with the constraints:
+> >> +
+> >> +- It is lesser or equal to the latency we tolerate when the mitigatio=
+n
+> >
+> > s/lesser/less than/
+> >
+> >> +  begins. It is platform dependent and will depend on the user
+> >> +  experience, reactivity vs performance trade off we want. This value
+> >> +  should be specified.
+> >> +
+> >> +- It is greater than the idle state=E2=80=99s target residency we wan=
+t to go
+> >> +  for thermal mitigation, otherwise we end up consuming more energy.
+> >> +
+> >> +Minimum period
+> >> +--------------
+> >> +
+> >> +The idle injection duration being fixed, it is obvious the minimum
+> >
+> > Change to:
+> > When the idle injection duration is fixed,
+> >
+>
+> The idle duration is always fixed in the cpuidle cooling device, why do
+> you want to add the sentence above?
 
-- Initialize thermal control framework earlier to enable thermal
-mitigation during boot. (Amit Kucheria)
+Ignore for now.
 
-- Convert the Intelligent Power Allocator (IPA) thermal governor to
-follow the generic PM_EM instead of its own Energy Model. (Quentin
-Perret)
-
-- Introduce a new Amlogic soc thermal driver. (Guillaume La Roque)
-
-- Add interrupt support for tsens thermal driver. (Amit Kucheria)
-
-- Add support for MSM8956/8976 in tsens thermal driver.
-(AngeloGioacchino Del Regno)
-
-- Add support for r8a774b1 in rcar thermal driver. (Biju Das)
-
-- Add support for Thermal Monitor Unit v2 in qoriq thermal driver.
-(Yuantian Tang)
-
-- Some other fixes/cleanups on thermal core framework and soc thermal
-drivers. (Colin Ian King, Daniel Lezcano, Hsin-Yi Wang, Tian Tao)
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Amit Kucheria (13):
-      drivers: thermal: tsens: Get rid of id field in tsens_sensor
-      drivers: thermal: tsens: Simplify code flow in tsens_probe
-      drivers: thermal: tsens: Add __func__ identifier to debug
-statements
-      drivers: thermal: tsens: Add debugfs support
-      dt-bindings: thermal: tsens: Convert over to a yaml schema
-      drivers: thermal: tsens: Create function to return sign-extended
-temperature
-      drivers: thermal: tsens: Add interrupt support
-      thermal: Remove netlink support
-      thermal: Initialize thermal subsystem earlier
-      cpufreq: Initialize the governors in core_initcall
-      cpufreq: Initialize cpufreq-dt driver earlier
-      clk: qcom: Initialize clock drivers earlier
-      cpufreq: qcom-hw: Move driver initialization earlier
-
-AngeloGioacchino Del Regno (2):
-      thermal: qcom: tsens-v1: Add support for MSM8956 and MSM8976
-      dt: thermal: tsens: Document compatible for MSM8976/56
-
-Biju Das (2):
-      thermal: rcar_gen3_thermal: Add r8a774b1 support
-      dt-bindings: thermal: rcar-gen3-thermal: Add r8a774b1 support
-
-Colin Ian King (2):
-      thermal: qcom: tsens-v1: Fix kfree of a non-pointer value
-      drivers: thermal: tsens: fix potential integer overflow on
-multiply
-
-Daniel Lezcano (2):
-      thermal: cpu_cooling: Remove pointless dependency on CONFIG_OF
-      thermal: cpu_cooling: Reorder the header file
-
-Guillaume La Roque (3):
-      dt-bindings: thermal: Add DT bindings documentation for Amlogic
-Thermal
-      thermal: amlogic: Add thermal driver to support G12 SoCs
-      MAINTAINERS: add entry for Amlogic Thermal driver
-
-Hsin-Yi Wang (1):
-      thermal-generic-adc: Silent error message for EPROBE_DEFER
-
-Quentin Perret (4):
-      arm64: defconfig: Enable CONFIG_ENERGY_MODEL
-      PM / EM: Declare EM data types unconditionally
-      thermal: cpu_cooling: Make the power-related code depend on IPA
-      thermal: cpu_cooling: Migrate to using the EM framework
-
-Tian Tao (1):
-      thermal: no need to set .owner when using module_platform_driver
-
-Wei Wang (1):
-      thermal: Fix deadlock in thermal thermal_zone_device_check
-
-Yuantian Tang (1):
-      thermal: qoriq: add thermal monitor unit version 2 support
-
- .../bindings/thermal/amlogic,thermal.yaml          |  54 +++
- .../devicetree/bindings/thermal/qcom-tsens.txt     |  55 ---
- .../devicetree/bindings/thermal/qcom-tsens.yaml    | 170 +++++++
- .../bindings/thermal/rcar-gen3-thermal.txt         |   1 +
- Documentation/driver-api/thermal/sysfs-api.rst     |  26 +-
- MAINTAINERS                                        |  10 +
- arch/arm64/configs/defconfig                       |   1 +
- drivers/clk/qcom/clk-rpmh.c                        |   2 +-
- drivers/clk/qcom/gcc-qcs404.c                      |   2 +-
- drivers/clk/qcom/gcc-sdm845.c                      |   2 +-
- drivers/cpufreq/cpufreq-dt-platdev.c               |   2 +-
- drivers/cpufreq/cpufreq_conservative.c             |   2 +-
- drivers/cpufreq/cpufreq_ondemand.c                 |   2 +-
- drivers/cpufreq/cpufreq_performance.c              |   2 +-
- drivers/cpufreq/cpufreq_powersave.c                |   2 +-
- drivers/cpufreq/cpufreq_userspace.c                |   2 +-
- drivers/cpufreq/qcom-cpufreq-hw.c                  |   2 +-
- drivers/thermal/Kconfig                            |  12 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/amlogic_thermal.c                  | 333 +++++++++++++
- drivers/thermal/cpu_cooling.c                      | 404 +++++++----
------
- drivers/thermal/qcom/tsens-8960.c                  |   4 +-
- drivers/thermal/qcom/tsens-common.c                | 529
-+++++++++++++++++++--
- drivers/thermal/qcom/tsens-v0_1.c                  |  11 +
- drivers/thermal/qcom/tsens-v1.c                    | 198 +++++++-
- drivers/thermal/qcom/tsens-v2.c                    |  13 +
- drivers/thermal/qcom/tsens.c                       |  62 ++-
- drivers/thermal/qcom/tsens.h                       | 288 +++++++++--
- drivers/thermal/qoriq_thermal.c                    | 120 ++++-
- drivers/thermal/rcar_gen3_thermal.c                |   4 +
- drivers/thermal/thermal-generic-adc.c              |   9 +-
- drivers/thermal/thermal_core.c                     | 107 +----
- drivers/thermal/thermal_mmio.c                     |   1 -
- include/linux/cpu_cooling.h                        |  18 +-
- include/linux/energy_model.h                       |   3 +-
- include/linux/thermal.h                            |  11 -
- kernel/sched/cpufreq_schedutil.c                   |   2 +-
- 37 files changed, 1878 insertions(+), 589 deletions(-)
- create mode 100644
-Documentation/devicetree/bindings/thermal/amlogic,thermal.yaml
- delete mode 100644 Documentation/devicetree/bindings/thermal/qcom-
-tsens.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/qcom-
-tsens.yaml
- create mode 100644 drivers/thermal/amlogic_thermal.c
-
+Regards,
+Amit
