@@ -2,235 +2,121 @@ Return-Path: <SRS0=yql6=Z2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71B80C43603
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 12:45:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F30AC43603
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 13:57:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 237922081B
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 12:45:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3290D2077B
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 13:57:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="D1ekevAW"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GBCEQDEd"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727781AbfLDMpT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Dec 2019 07:45:19 -0500
-Received: from mail-ua1-f65.google.com ([209.85.222.65]:42057 "EHLO
-        mail-ua1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727779AbfLDMpT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2019 07:45:19 -0500
-Received: by mail-ua1-f65.google.com with SMTP id 31so2702458uas.9
-        for <linux-pm@vger.kernel.org>; Wed, 04 Dec 2019 04:45:18 -0800 (PST)
+        id S1727850AbfLDN55 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Dec 2019 08:57:57 -0500
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:44709 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727838AbfLDN55 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2019 08:57:57 -0500
+Received: by mail-lj1-f194.google.com with SMTP id c19so8159610lji.11;
+        Wed, 04 Dec 2019 05:57:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=I9943LC2W7GsN2VUvqciqhs/8irYc/Qkc8ElGhd6zWY=;
-        b=D1ekevAWvG+e76RI65wfYbzcBE//kYMXdoapAplUlqEKsH4lspdwwbuzCIsIT2rtnh
-         teHLwE8FcjmIdJ49WoIO3Bf/vg4AcQL7Yv79j4W0JTj/5Rx7UxGyWPInSerl/AM+bSvW
-         orZxCtyqnmw2Qq/FMPznXPj0oUldse3cTNv7YVtcHf5lhwwN/LN57yq1yI8lYTuEngev
-         VkDvmAwvtRUgHtsdWqsAYP27U9sCFGQVBeHYsA2CwWd92QIjCLCq7Mm1k9EIlW1+xtDs
-         qpsKc57ER7izsMdTaHgEOanMx2naxLKsqvXDiCbBFL3YS7pS4HlBCNYocQ/XzbAvnz83
-         ykGA==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=qLSQXMzVG7swZ/e2rtQnLP6u3joRR7UaM1wgCcu+ICA=;
+        b=GBCEQDEd/RigkNNY6V8k56hcEXgv1oGrqA4Sk5jqPw9gRxAUoE6DSV4wgmVobAmjiO
+         y/hMq98ujSr9yJ0waZF6+f6Dl7e3iUTI+opAqkfR6JDRqrwIlXYKKzZBc9n0WCEbbUsr
+         JVNTa0iNMbKl8A776pXac0EnqUthD73y2pmukSmXhsx12C6/iWRzcR6vGs3+q12lqRYJ
+         Hxm67bi8j//nv+B6fjEDLYGDuDFfDhy6wJp6Af4aM/J7ctH4MudCyQkpFTfBUtILYbJa
+         xGBWDBAGV+s6WPAk9/v9/xhnX4KSwmDDKKJgXBBjBtlwkXL9/3KXHGB5w4M3wBdcFtxO
+         RhJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=I9943LC2W7GsN2VUvqciqhs/8irYc/Qkc8ElGhd6zWY=;
-        b=l0QFXm37SiZK+TRmx4EHKO7Ac4xjyKByPeEjO3hjCtroXBlIbjz8DATpRVkH/zx1eS
-         XgWkKEar96rN9SHFjpMHsxLc7cmBkp9XJAwomD1whTo0EM2zVKGVlSfjqH8gx2b+KWc6
-         ObX7JC+eMVQNSU3P8pBraeYngYsiXHZ32Qbt9AvJGCIobpvlwHkWmXbCs6g525yX5MQ7
-         E+KTghHEn8kCn2+MDKOqug6MC3c24zQPJ+nUA6Pa3giSHFudFZ7HuRm8OBYQsi5s+AB2
-         kaLyRLhu2qNv+EQyKWnbqAAKZDuZRokLgOiW7EFwJ04sHxuH3kk7IBe3N/I/+pvTMpci
-         2fWg==
-X-Gm-Message-State: APjAAAUoTrg8GDzWKIO30sRGH3lP6xffJKCH8f+FhCEszw8I95VE3Huy
-        XddEVGriOeCDTcl6Xz0zslxCKQWdWJNuK5IhsvcxHg==
-X-Google-Smtp-Source: APXvYqzuDbb/FE6aisnhUS4N4Cr5qvRQgmOLAGnNdex1jh+7Kfj7K66vq/MMKaXX5/JENpgqwfDSOBiCzC2R8WXXQus=
-X-Received: by 2002:ab0:7027:: with SMTP id u7mr2326314ual.94.1575463517590;
- Wed, 04 Dec 2019 04:45:17 -0800 (PST)
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=qLSQXMzVG7swZ/e2rtQnLP6u3joRR7UaM1wgCcu+ICA=;
+        b=snhY7uKywy+nedy+YKdN6WLfNHKt7lVdcvV29pGQIoTAqTUgTgkSM77xnO3HW8JTWb
+         thgwD2tOHsA63A2b13wv+JpH5MPnCv7OGv6FtRYv9pzSDRr2tVMm+e9S2zfgTHLJ0kGQ
+         liH8lF/TXfElXHLS4AuHBxNF6yO3hH09FvOZ4C3GDV4/fW+eJoS3EjwkHwEuuowBdj0T
+         V9zwtSNwXaVtPl07HFMOsOPlUoBhj4tG833w1uyzp22CvgsmWrTcSfitj+MtMelL/ga8
+         fwYCN9e62mX0Np/6X+lXKrYm0cZoxxWwSvzy+kh0HaPGAuc5gbfj6GUqBdiYHvM/JIyK
+         Irmg==
+X-Gm-Message-State: APjAAAVZ5cXYZXRNZT661/nox53hD8q12r5dqxe0HrzU7d0ChMgcfzM0
+        dbd6BP40eUAwfvmUyUgvUjqik148
+X-Google-Smtp-Source: APXvYqwPUyYNLY1YxBHRZjdAA1FL89xaYpCwqzoggRVxnCZoi49/FwzOsVjl7zgNf1dRjeX2HDj4Mw==
+X-Received: by 2002:a05:651c:32a:: with SMTP id b10mr2142347ljp.132.1575467875071;
+        Wed, 04 Dec 2019 05:57:55 -0800 (PST)
+Received: from [192.168.2.145] (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
+        by smtp.googlemail.com with ESMTPSA id y23sm3238750ljk.6.2019.12.04.05.57.53
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 04 Dec 2019 05:57:54 -0800 (PST)
+Subject: Re: [TEGRA194_CPUFREQ Patch 2/3] cpufreq: Add Tegra194 cpufreq driver
+To:     Viresh Kumar <viresh.kumar@linaro.org>, sumitg <sumitg@nvidia.com>
+Cc:     rjw@rjwysocki.net, catalin.marinas@arm.com, will@kernel.org,
+        thierry.reding@gmail.com, jonathanh@nvidia.com, talho@nvidia.com,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        bbasu@nvidia.com, mperttunen@nvidia.com
+References: <1575394348-17649-1-git-send-email-sumitg@nvidia.com>
+ <1575394348-17649-2-git-send-email-sumitg@nvidia.com>
+ <20191204054043.o4ff7pnqec3fwdgu@vireshk-i7>
+ <7347caa6-43a3-f761-de83-481b45f7b22a@nvidia.com>
+ <20191204112749.jkwlyteal4hfvnhb@vireshk-i7>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <0b634341-ea2b-e9cd-4986-dc9a01c839bb@gmail.com>
+Date:   Wed, 4 Dec 2019 16:57:53 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.2.2
 MIME-Version: 1.0
-References: <20191015061349.141448-1-wvw@google.com> <CAHLCerNffKDgJKqaVTH3Kp_QfBLtm2M4H80xFDy=2fGXTVQR+w@mail.gmail.com>
- <CAHLCerN0CWOox-_=ywVO40R9LCahBRoU6Myg3Ca3p_TkZyJAMw@mail.gmail.com>
- <CAGXk5yp4uSCESvve5j_LbCr7b_55DqBagjNr_Dsdi=HppSpBPg@mail.gmail.com>
- <CAHLCerN4ymf7LOGQPRLuAwirwCUaQGynrnUMfgU6+frDswey5A@mail.gmail.com> <CAGXk5ypP0qSm-GMbHJy+hQtYN1hw6Ow6XgeO9JDni0bD1bFSVg@mail.gmail.com>
-In-Reply-To: <CAGXk5ypP0qSm-GMbHJy+hQtYN1hw6Ow6XgeO9JDni0bD1bFSVg@mail.gmail.com>
-From:   Amit Kucheria <amit.kucheria@verdurent.com>
-Date:   Wed, 4 Dec 2019 18:15:06 +0530
-Message-ID: <CAHLCerOD2wOJq7QNGBOcLvkMz4wvc1+6Hk2+ZD__NFged3tLcw@mail.gmail.com>
-Subject: Re: [PATCH] thermal: create softlink by name for thermal_zone and cooling_device
-To:     Wei Wang <wvw@google.com>
-Cc:     Wei Wang <wei.vince.wang@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20191204112749.jkwlyteal4hfvnhb@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 11, 2019 at 11:22 PM Wei Wang <wvw@google.com> wrote:
->
-> On Sun, Nov 10, 2019 at 9:26 PM Amit Kucheria
-> <amit.kucheria@verdurent.com> wrote:
-> >
-> > On Thu, Oct 17, 2019 at 3:04 AM Wei Wang <wvw@google.com> wrote:
-> > >
-> > > On Wed, Oct 16, 2019 at 10:16 AM Amit Kucheria
-> > > <amit.kucheria@verdurent.com> wrote:
-> > > >
-> > > > On Wed, Oct 16, 2019 at 10:20 PM Amit Kucheria
-> > > > <amit.kucheria@verdurent.com> wrote:
-> > > > >
-> > > > > On Tue, Oct 15, 2019 at 11:43 AM Wei Wang <wvw@google.com> wrote:
-> > > > > >
-> > > > > > The paths thermal_zone%d and cooling_device%d are not intuitive and the
-> > > > > > numbers are subject to change due to device tree change. This usually
-> > > > > > leads to tree traversal in userspace code.
-> > > > > > The patch creates `tz-by-name' and `cdev-by-name' for thermal zone and
-> > > > > > cooling_device respectively.
-> > > > >
-> > > > > I like this.
-> > > > >
-> > > > > > Signed-off-by: Wei Wang <wvw@google.com>
-> > > > > > ---
-> > > > > >  drivers/thermal/thermal_core.c | 23 +++++++++++++++++++++--
-> > > > > >  1 file changed, 21 insertions(+), 2 deletions(-)
-> > > > > >
-> > > > > > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> > > > > > index d4481cc8958f..0ff8fb1d7b0a 100644
-> > > > > > --- a/drivers/thermal/thermal_core.c
-> > > > > > +++ b/drivers/thermal/thermal_core.c
-> > > > > > @@ -22,6 +22,7 @@
-> > > > > >  #include <net/netlink.h>
-> > > > > >  #include <net/genetlink.h>
-> > > > > >  #include <linux/suspend.h>
-> > > > > > +#include <linux/kobject.h>
-> > > > > >
-> > > > > >  #define CREATE_TRACE_POINTS
-> > > > > >  #include <trace/events/thermal.h>
-> > > > > > @@ -46,6 +47,8 @@ static DEFINE_MUTEX(poweroff_lock);
-> > > > > >
-> > > > > >  static atomic_t in_suspend;
-> > > > > >  static bool power_off_triggered;
-> > > > > > +static struct kobject *cdev_link_kobj;
-> > > > > > +static struct kobject *tz_link_kobj;
-> > > > > >
-> > > > > >  static struct thermal_governor *def_governor;
-> > > > > >
-> > > > > > @@ -954,7 +957,7 @@ __thermal_cooling_device_register(struct device_node *np,
-> > > > > >         struct thermal_zone_device *pos = NULL;
-> > > > > >         int result;
-> > > > > >
-> > > > > > -       if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-> > > > > > +       if (!type || !type[0] || strlen(type) >= THERMAL_NAME_LENGTH)
-> > > > > >                 return ERR_PTR(-EINVAL);
-> > > > >
-> > > > > This should be a separate fix, if needed.
-> > > Agree, but the link now requires that "" as invalid _type_.
-> >
-> > I'm not sure I understand. What does this change have to do with
-> > adding symlinks below?
-> >
->
-> cdev->type will be used later in sysfs_create_link and adding "" as
-> symlink is kind of bad practise AIUI.
->
+04.12.2019 14:27, Viresh Kumar пишет:
+> On 04-12-19, 16:25, sumitg wrote:
+>> In T194, CCPLEX doesn't have access to set clocks and the
+>>
+>> clk_{get|set}_rate() functions set clocks by hook to BPMP R5.
+>>
+>> CPU freq can be directly set by CCPLEX using MSR(NVFREQ_REQ_EL1).
+>>
+>> As DVFS run's on BPMP, another MSR (NVFREQ_FEEDBACK_EL1) is
+>>
+>> used to read the counters and calculate "actual" cpu freq at CCPLEX.
+>>
+>> So, "cpuinfo_cur_freq" node gives the actual cpu frequency and not
+>>
+>> given by node "scaling_cur_freq".
+> 
+> Right, but why can't this be hidden in the CPU's clk driver instead,
+> so cpufreq driver can just do clk_get_rate() and clk_set_rate() ?
 
-Perhaps I'm being dense here, in which case my apologies.
+What about to make use of dev_pm_opp_register_set_opp_helper()?
 
-But what stops us from splitting the patch into two?
-1. Make type == "" as invalid by using your change above and fixing up
-the strlcpy(cdev->type....) further down.
-2. Create the actual symlinks in a separate patch.
 
-Regards,
-Amit
+>>> - populating cpufreq table, you can probably add OPPs instead using
+>>>    the same mechanism
+>>
+>> We are reading available frequencies from BPMP to populate
+>>
+>> cpufreq table and not using static opp table.
+> 
+> Right and lot of other platforms read it from firmware (I believe BBMP
+> is a firmware here), and create OPPs at runtime. Look at this for
+> example:
+> 
+> drivers/cpufreq/qcom-cpufreq-hw.c
+> 
+> and search for dev_pm_opp_add().
+> 
 
-> > > > >
-> > > > > >         if (!ops || !ops->get_max_state || !ops->get_cur_state ||
-> > > > > > @@ -989,9 +992,15 @@ __thermal_cooling_device_register(struct device_node *np,
-> > > > > >                 return ERR_PTR(result);
-> > > > > >         }
-> > > > > >
-> > > > > > -       /* Add 'this' new cdev to the global cdev list */
-> > > > > > +       /* Add 'this' new cdev to the global cdev list and create link*/
-> > > > > >         mutex_lock(&thermal_list_lock);
-> > > > > >         list_add(&cdev->node, &thermal_cdev_list);
-> > > > > > +       if (!cdev_link_kobj)
-> > > > > > +               cdev_link_kobj = kobject_create_and_add("cdev-by-name",
-> > > > > > +                                               cdev->device.kobj.parent);
-> > > > > > +       if (!cdev_link_kobj || sysfs_create_link(cdev_link_kobj,
-> > > > > > +                                               &cdev->device.kobj, cdev->type))
-> > > > > > +               dev_err(&cdev->device, "Failed to create cdev-by-name link\n");
-> > > > >
-> > > > > Any reason not to use the following form instead? It seems easier to read.
-> > > > >
-> > > > > if (!cdev_link_kobj) {
-> > > > >                cdev_link_kobj = kobject_create_and_add("cdev-by-name",
-> > > > >                                                cdev->device.kobj.parent);
-> > > > >               ret = sysfs_create_link(cdev_link_kobj,
-> > > > >                                               &cdev->device.kobj, cdev->type))
-> > > > >               if (ret)
-> > > > >                        dev_err(&cdev->device, "Failed to create
-> > > > > cdev-by-name link\n");
-> > > > > }
-> > > >
-> > > > I can now see why you had to do that - none of the other links would
-> > > > get created after the first one.
-> > > >
-> > > > Perhaps create the directories in the __init functions and only create
-> > > > the links here?
-> > > >
-> > > AFAICT, this is no such API except the private get_device_parent()
-> > > under driver/base/. Also the lazy initialization makes sense in such
-> > > case when there is no thermal device attached. Looks like the class
-> > > dir is also lazy-initialized when first device registered
-> > > https://elixir.bootlin.com/linux/v5.3.5/source/drivers/base/core.c#L1790.
-> >
-> > OK.
-> >
-> > > >
-> > > > > >         mutex_unlock(&thermal_list_lock);
-> > > > > >
-> > > > > >         /* Update binding information for 'this' new cdev */
-> > > > > > @@ -1157,6 +1166,8 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
-> > > > > >                         }
-> > > > > >                 }
-> > > > > >         }
-> > > > > > +       if (cdev_link_kobj)
-> > > > > > +               sysfs_remove_link(cdev_link_kobj, cdev->type);
-> > > > > >
-> > > > > >         mutex_unlock(&thermal_list_lock);
-> > > > > >
-> > > > > > @@ -1340,6 +1351,12 @@ thermal_zone_device_register(const char *type, int trips, int mask,
-> > > > > >
-> > > > > >         mutex_lock(&thermal_list_lock);
-> > > > > >         list_add_tail(&tz->node, &thermal_tz_list);
-> > > > > > +       if (!tz_link_kobj)
-> > > > > > +               tz_link_kobj = kobject_create_and_add("tz-by-name",
-> > > > > > +                                               tz->device.kobj.parent);
-> > > > > > +       if (!tz_link_kobj || sysfs_create_link(tz_link_kobj,
-> > > > > > +                                               &tz->device.kobj, tz->type))
-> > > > > > +               dev_err(&tz->device, "Failed to create tz-by-name link\n");
-> > > > >
-> > > > > Same as above.
-> > > > >
-> > > > > >         mutex_unlock(&thermal_list_lock);
-> > > > > >
-> > > > > >         /* Bind cooling devices for this zone */
-> > > > > > @@ -1411,6 +1428,8 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
-> > > > > >                         }
-> > > > > >                 }
-> > > > > >         }
-> > > > > > +       if (tz_link_kobj)
-> > > > > > +               sysfs_remove_link(tz_link_kobj, tz->type);
-> > > > > >
-> > > > > >         mutex_unlock(&thermal_list_lock);
-> > > > > >
-> > > > > > --
-> > > > > > 2.23.0.700.g56cf767bdb-goog
-> > > > > >
