@@ -7,282 +7,188 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 206D2C43603
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 15:39:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4550C2BC73
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 15:39:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DF09E2084B
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 15:39:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8176E2154A
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Dec 2019 15:39:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qsESq1Zl"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="c0n/xZi+"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728396AbfLDPjs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Dec 2019 10:39:48 -0500
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:33489 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728324AbfLDPjr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2019 10:39:47 -0500
-Received: by mail-wm1-f66.google.com with SMTP id y23so5135275wma.0
-        for <linux-pm@vger.kernel.org>; Wed, 04 Dec 2019 07:39:46 -0800 (PST)
+        id S1728311AbfLDPjx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Dec 2019 10:39:53 -0500
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:33912 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728471AbfLDPjw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2019 10:39:52 -0500
+Received: by mail-wm1-f65.google.com with SMTP id f4so5122437wmj.1
+        for <linux-pm@vger.kernel.org>; Wed, 04 Dec 2019 07:39:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=eHar8caGVk2CHYCleN7lzgXckcrdAjaPRcEzE+leMkc=;
-        b=qsESq1ZlfGlT7CaPQkcDkqRCPhUkYAp1MvgB6WHuCAtK2sLShsuWQSKYsRZfUbBjDu
-         Aa34HDxy7CO9PAE+CqsIwkYOlE6g1R+xCTygjCW6/FRra8CoMU13b6h1CN807oeWvz1P
-         X4bv54JEPFFcIaCTz1s9fGbZFjSL7TNxQJBFxSldkK9opfBZqWtK0+4w/NNqDLA3SYwb
-         vjaCX9GUrosUFAdqnlqA3nEUzvg8gFhF1Vne6UC9bkeTo6yQv9BXQG8/LS1+wy9ztJ9K
-         neH8DCaRsy421eJKTwbslQObGAG6+xHvBOGn8N0BQfFaC5oh6jjNpI+B3zE2FyiGHH49
-         XAKg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=1niKCMXXnmGnzZRABJx3hRarOaikbE/OwsjmxwSrkNE=;
+        b=c0n/xZi+mCTzNlQRlLCYjL7pSvvKCB2mFzQHqcD21Rl2yMihwatj4fu8MSQQephKYM
+         a53jHtNdVOTYqPaU2OTmrxTns5ls+7huxMeLT3DF6hgUepdwGGF+jS0dLiaXZ+apjioK
+         O6sCTN1jtZFL4PnYdDcsMiYukIKh36htiy9e2m5GzxW+GzrlyV3Fe+okrXsjG4vwpshO
+         He65muV6t5s792gfmkrfXiBfyEtlVjzecqV/9lrd6qTEiP95sdeLmpHFh6tNENFOrVqu
+         Fpz5JPkPK+doI9Ejk9P3ITy0Gz19Drwy5yrhavCIeo547Rnlrb9P8xDm0qEkJ/ut8xBm
+         NG5A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=eHar8caGVk2CHYCleN7lzgXckcrdAjaPRcEzE+leMkc=;
-        b=c+3dFhOtlU6g2z5dWAApst9wOprf/4Xj25MlRvkR88by0p18P11UT/+iCyBJumAG1L
-         URFOyDkAX07oCGkBUTiDbwHiNx6gy+Vfc8jrSHoLRuZsjHwZLBFUbhzEbcqEq0lDy80q
-         G6k+CyP6srkWgmiyw49Jb/LIpCvUEvDMggtfZAHAFmzeJIwOi0vg+PcqFQ5BGK0YFvz+
-         w3TRLl2Q9FCPE30MmKOXmFL/owfqZXIliGqP8z3U1bQDFZ799vBClIGr+GyomgkfWoSE
-         BA8EiLSYqA4FAici3x4XBxjc4RSHVAwCpxztR/XDZ++D6Aj5/6m4abhcs+10IuV7aE/i
-         LFbw==
-X-Gm-Message-State: APjAAAU1Y9tJAypwHUea/fF1LIuchuXufBnzrthOALAydWBiu6IVfYvl
-        8VWPv9b8SV1SV4ztOwG+jwbHsA==
-X-Google-Smtp-Source: APXvYqw1kYniniNowTRLikUrObTHcJHLzEg4O/0rOwjvdKhhUrBQDVQ/JLrIEBaYjmWZR3u1t2vIJw==
-X-Received: by 2002:a1c:a906:: with SMTP id s6mr180759wme.125.1575473985220;
-        Wed, 04 Dec 2019 07:39:45 -0800 (PST)
+         :references;
+        bh=1niKCMXXnmGnzZRABJx3hRarOaikbE/OwsjmxwSrkNE=;
+        b=uXEGaXwIvsOqnL8MlSz6ntPAbqIU/jTL3+Yb/0If0Z5OjGAWhfsZvUCkxDZebq63xW
+         5AK1UZ95p70iD2FQ+HcbOd1/+UC1i5wxyAe5jgVgtP2VRpprTeCjB6Pr9Azt/PsDxHAQ
+         KhH9FdVYECNgTQtLBgTNAkkVMXxx914wM5bntXBwxsF/h7AM2NcdIuoKH0Phk/Lonfgr
+         VZUzpfWQ5Rb+AiPx4+SzVwglOQjj20NiqhukuQ82YI2too+mXidonfKmlA80bH8SCoQQ
+         zpTC0jj7INtkCqqaLLft4LQgKWdPK/5tICqGRtG3ekWFk2zYj5Va0OdxMH1ktlF6QapQ
+         2swg==
+X-Gm-Message-State: APjAAAVzMkYN8tFlSdMuaYEzNx9JIHNIGc9jdC9BMvm6kTWtfFiB+hwJ
+        PLPzXDZ4FoX4j9Hn+iV1Mxqqrg==
+X-Google-Smtp-Source: APXvYqzGZovPj+AGgg4lhMwHJDGfAEKbPIbXfCW4qwAbL+vEzcG67Zt+AoImghY4NiEo/jaiI/gqWw==
+X-Received: by 2002:a1c:9d4a:: with SMTP id g71mr239894wme.50.1575473990613;
+        Wed, 04 Dec 2019 07:39:50 -0800 (PST)
 Received: from localhost.localdomain ([2a01:e34:ed2f:f020:a551:321a:c21f:1f92])
-        by smtp.gmail.com with ESMTPSA id f1sm8631311wrp.93.2019.12.04.07.39.42
+        by smtp.gmail.com with ESMTPSA id f1sm8631311wrp.93.2019.12.04.07.39.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Dec 2019 07:39:44 -0800 (PST)
+        Wed, 04 Dec 2019 07:39:50 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     edubezval@gmail.com, rui.zhang@intel.com
 Cc:     rjw@rjwysocki.net, linux-pm@vger.kernel.org,
         viresh.kumar@linaro.org, amit.kucheria@linaro.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH V4 2/4] thermal/drivers/cpu_cooling: Add idle cooling device documentation
-Date:   Wed,  4 Dec 2019 16:39:28 +0100
-Message-Id: <20191204153930.9128-2-daniel.lezcano@linaro.org>
+Subject: [PATCH V4 4/4] thermal/drivers/cpu_cooling: Rename to cpufreq_cooling
+Date:   Wed,  4 Dec 2019 16:39:30 +0100
+Message-Id: <20191204153930.9128-4-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191204153930.9128-1-daniel.lezcano@linaro.org>
 References: <20191204153930.9128-1-daniel.lezcano@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Provide some documentation for the idle injection cooling effect in
-order to let people to understand the rational of the approach for the
-idle injection CPU cooling device.
+As we introduced the idle injection cooling device called
+cpuidle_cooling, let's be consistent and rename the cpu_cooling to
+cpufreq_cooling as this one mitigates with OPPs changes.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
   V4:
-    - Fixed typos, replaced 'period' per 'duty cycles', clarified some
-      wording (Amit Kucheria)
+    - Added Acked-by and Reviewed-by
+  V3:
+    - Fix missing name conversion (Viresh Kumar)
 ---
- .../driver-api/thermal/cpu-idle-cooling.rst   | 189 ++++++++++++++++++
- 1 file changed, 189 insertions(+)
- create mode 100644 Documentation/driver-api/thermal/cpu-idle-cooling.rst
+ Documentation/driver-api/thermal/exynos_thermal.rst  | 2 +-
+ MAINTAINERS                                          | 2 +-
+ drivers/thermal/Makefile                             | 2 +-
+ drivers/thermal/clock_cooling.c                      | 2 +-
+ drivers/thermal/{cpu_cooling.c => cpufreq_cooling.c} | 6 +++---
+ include/linux/clock_cooling.h                        | 2 +-
+ 6 files changed, 8 insertions(+), 8 deletions(-)
+ rename drivers/thermal/{cpu_cooling.c => cpufreq_cooling.c} (99%)
 
-diff --git a/Documentation/driver-api/thermal/cpu-idle-cooling.rst b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
-new file mode 100644
-index 000000000000..13d7fe4e8de8
---- /dev/null
-+++ b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
-@@ -0,0 +1,189 @@
-+
-+Situation:
-+----------
-+
-+Under certain circumstances a SoC can reach a critical temperature
-+limit and is unable to stabilize the temperature around a temperature
-+control. When the SoC has to stabilize the temperature, the kernel can
-+act on a cooling device to mitigate the dissipated power. When the
-+critical temperature is reached, a decision must be taken to reduce
-+the temperature, that, in turn impacts performance.
-+
-+Another situation is when the silicon temperature continues to
-+increase even after the dynamic leakage is reduced to its minimum by
-+clock gating the component. This runaway phenomenon can continue due
-+to the static leakage. The only solution is to power down the
-+component, thus dropping the dynamic and static leakage that will
-+allow the component to cool down.
-+
-+Last but not least, the system can ask for a specific power budget but
-+because of the OPP density, we can only choose an OPP with a power
-+budget lower than the requested one and under-utilize the CPU, thus
-+losing performance. In other words, one OPP under-utilizes the CPU
-+with a power less than the requested power budget and the next OPP
-+exceeds the power budget. An intermediate OPP could have been used if
-+it were present.
-+
-+Solutions:
-+----------
-+
-+If we can remove the static and the dynamic leakage for a specific
-+duration in a controlled period, the SoC temperature will
-+decrease. Acting on the idle state duration or the idle cycle
-+injection period, we can mitigate the temperature by modulating the
-+power budget.
-+
-+The Operating Performance Point (OPP) density has a great influence on
-+the control precision of cpufreq, however different vendors have a
-+plethora of OPP density, and some have large power gap between OPPs,
-+that will result in loss of performance during thermal control and
-+loss of power in other scenarios.
-+
-+At a specific OPP, we can assume that injecting idle cycle on all CPUs
-+belong to the same cluster, with a duration greater than the cluster
-+idle state target residency, we lead to dropping the static and the
-+dynamic leakage for this period (modulo the energy needed to enter
-+this state). So the sustainable power with idle cycles has a linear
-+relation with the OPP’s sustainable power and can be computed with a
-+coefficient similar to:
-+
-+	    Power(IdleCycle) = Coef x Power(OPP)
-+
-+Idle Injection:
-+---------------
-+
-+The base concept of the idle injection is to force the CPU to go to an
-+idle state for a specified time each control cycle, it provides
-+another way to control CPU power and heat in addition to
-+cpufreq. Ideally, if all CPUs belonging to the same cluster, inject
-+their idle cycles synchronously, the cluster can reach its power down
-+state with a minimum power consumption and reduce the static leakage
-+to almost zero.  However, these idle cycles injection will add extra
-+latencies as the CPUs will have to wakeup from a deep sleep state.
-+
-+We use a fixed duration of idle injection that gives an acceptable
-+performance penalty and a fixed latency. Mitigation can be increased
-+or decreased by modulating the duty cycle of the idle injection.
-+
-+     ^
-+     |
-+     |
-+     |-------                         -------
-+     |_______|_______________________|_______|___________
-+
-+     <------>
-+       idle  <---------------------->
-+                    running
-+
-+      <----------------------------->
-+              duty cycle 25%
-+
-+	      
-+The implementation of the cooling device bases the number of states on
-+the duty cycle percentage. When no mitigation is happening the cooling
-+device state is zero, meaning the duty cycle is 0%.
-+
-+When the mitigation begins, depending on the governor's policy, a
-+starting state is selected. With a fixed idle duration and the duty
-+cycle (aka the cooling device state), the running duration can be
-+computed.
-+
-+The governor will change the cooling device state thus the duty cycle
-+and this variation will modulate the cooling effect.
-+
-+     ^
-+     |
-+     |
-+     |-------                 -------
-+     |_______|_______________|_______|___________
-+
-+     <------>
-+       idle  <-------------->
-+                running
-+
-+      <----------------------------->
-+              duty cycle 33%
-+
-+
-+     ^
-+     |
-+     |
-+     |-------         -------
-+     |_______|_______|_______|___________
-+
-+     <------>
-+       idle  <------>
-+              running
-+
-+      <------------->
-+       duty cycle 50%
-+
-+The idle injection duration value must comply with the constraints:
-+
-+- It is less than or equal to the latency we tolerate when the
-+  mitigation begins. It is platform dependent and will depend on the
-+  user experience, reactivity vs performance trade off we want. This
-+  value should be specified.
-+
-+- It is greater than the idle state’s target residency we want to go
-+  for thermal mitigation, otherwise we end up consuming more energy.
-+
-+Power considerations
-+--------------------
-+  
-+When we reach the thermal trip point, we have to sustain a specified
-+power for a specific temperature but at this time we consume:
-+
-+ Power = Capacitance x Voltage^2 x Frequency x Utilisation
-+
-+... which is more than the sustainable power (or there is something
-+wrong in the system setup). The ‘Capacitance’ and ‘Utilisation’ are a
-+fixed value, ‘Voltage’ and the ‘Frequency’ are fixed artificially
-+because we don’t want to change the OPP. We can group the
-+‘Capacitance’ and the ‘Utilisation’ into a single term which is the
-+‘Dynamic Power Coefficient (Cdyn)’ Simplifying the above, we have:
-+
-+ Pdyn = Cdyn x Voltage^2 x Frequency
-+
-+The power allocator governor will ask us somehow to reduce our power
-+in order to target the sustainable power defined in the device
-+tree. So with the idle injection mechanism, we want an average power
-+(Ptarget) resulting in an amount of time running at full power on a
-+specific OPP and idle another amount of time. That could be put in a
-+equation:
-+
-+ P(opp)target = ((Trunning x (P(opp)running) + (Tidle x P(opp)idle)) /
-+			(Trunning + Tidle)
-+  ...
-+
-+ Tidle = Trunning x ((P(opp)running / P(opp)target) - 1)
-+
-+At this point if we know the running period for the CPU, that gives us
-+the idle injection we need. Alternatively if we have the idle
-+injection duration, we can compute the running duration with:
-+
-+ Trunning = Tidle / ((P(opp)running / P(opp)target) - 1)
-+
-+Practically, if the running power is less than the targeted power, we
-+end up with a negative time value, so obviously the equation usage is
-+bound to a power reduction, hence a higher OPP is needed to have the
-+running power greater than the targeted power.
-+
-+However, in this demonstration we ignore three aspects:
-+
-+ * The static leakage is not defined here, we can introduce it in the
-+   equation but assuming it will be zero most of the time as it is
-+   difficult to get the values from the SoC vendors
-+
-+ * The idle state wake up latency (or entry + exit latency) is not
-+   taken into account, it must be added in the equation in order to
-+   rigorously compute the idle injection
-+
-+ * The injected idle duration must be greater than the idle state
-+   target residency, otherwise we end up consuming more energy and
-+   potentially invert the mitigation effect
-+
-+So the final equation is:
-+
-+ Trunning = (Tidle - Twakeup ) x
-+		(((P(opp)dyn + P(opp)static ) - P(opp)target) / P(opp)target )
+diff --git a/Documentation/driver-api/thermal/exynos_thermal.rst b/Documentation/driver-api/thermal/exynos_thermal.rst
+index 5bd556566c70..d4e4a5b75805 100644
+--- a/Documentation/driver-api/thermal/exynos_thermal.rst
++++ b/Documentation/driver-api/thermal/exynos_thermal.rst
+@@ -67,7 +67,7 @@ TMU driver description:
+ The exynos thermal driver is structured as::
+ 
+ 					Kernel Core thermal framework
+-				(thermal_core.c, step_wise.c, cpu_cooling.c)
++				(thermal_core.c, step_wise.c, cpufreq_cooling.c)
+ 								^
+ 								|
+ 								|
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d2e92a0360f2..26e4be914765 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -16194,7 +16194,7 @@ L:	linux-pm@vger.kernel.org
+ S:	Supported
+ F:	Documentation/driver-api/thermal/cpu-cooling-api.rst
+ F:	Documentation/driver-api/thermal/cpu-idle-cooling.rst
+-F:	drivers/thermal/cpu_cooling.c
++F:	drivers/thermal/cpufreq_cooling.c
+ F:	drivers/thermal/cpuidle_cooling.c
+ F:	include/linux/cpu_cooling.h
+ 
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 9c8aa2d4bd28..5c98472ffd8b 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -19,7 +19,7 @@ thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)	+= user_space.o
+ thermal_sys-$(CONFIG_THERMAL_GOV_POWER_ALLOCATOR)	+= power_allocator.o
+ 
+ # cpufreq cooling
+-thermal_sys-$(CONFIG_CPU_FREQ_THERMAL)	+= cpu_cooling.o
++thermal_sys-$(CONFIG_CPU_FREQ_THERMAL)	+= cpufreq_cooling.o
+ thermal_sys-$(CONFIG_CPU_IDLE_THERMAL)	+= cpuidle_cooling.o
+ 
+ # clock cooling
+diff --git a/drivers/thermal/clock_cooling.c b/drivers/thermal/clock_cooling.c
+index 3ad3256c48fd..7cb3ae4b44ee 100644
+--- a/drivers/thermal/clock_cooling.c
++++ b/drivers/thermal/clock_cooling.c
+@@ -7,7 +7,7 @@
+  *  Copyright (C) 2013	Texas Instruments Inc.
+  *  Contact:  Eduardo Valentin <eduardo.valentin@ti.com>
+  *
+- *  Highly based on cpu_cooling.c.
++ *  Highly based on cpufreq_cooling.c.
+  *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
+  *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
+  */
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpufreq_cooling.c
+similarity index 99%
+rename from drivers/thermal/cpu_cooling.c
+rename to drivers/thermal/cpufreq_cooling.c
+index 6b9865c786ba..3a3f9cf94b6d 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpufreq_cooling.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- *  linux/drivers/thermal/cpu_cooling.c
++ *  linux/drivers/thermal/cpufreq_cooling.c
+  *
+  *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
+  *
+@@ -694,7 +694,7 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
+ 	u32 capacitance = 0;
+ 
+ 	if (!np) {
+-		pr_err("cpu_cooling: OF node not available for cpu%d\n",
++		pr_err("cpufreq_cooling: OF node not available for cpu%d\n",
+ 		       policy->cpu);
+ 		return NULL;
+ 	}
+@@ -705,7 +705,7 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
+ 
+ 		cdev = __cpufreq_cooling_register(np, policy, capacitance);
+ 		if (IS_ERR(cdev)) {
+-			pr_err("cpu_cooling: cpu%d failed to register as cooling device: %ld\n",
++			pr_err("cpufreq_cooling: cpu%d failed to register as cooling device: %ld\n",
+ 			       policy->cpu, PTR_ERR(cdev));
+ 			cdev = NULL;
+ 		}
+diff --git a/include/linux/clock_cooling.h b/include/linux/clock_cooling.h
+index b5cebf766e02..4b0a69863656 100644
+--- a/include/linux/clock_cooling.h
++++ b/include/linux/clock_cooling.h
+@@ -7,7 +7,7 @@
+  *  Copyright (C) 2013	Texas Instruments Inc.
+  *  Contact:  Eduardo Valentin <eduardo.valentin@ti.com>
+  *
+- *  Highly based on cpu_cooling.c.
++ *  Highly based on cpufreq_cooling.c.
+  *  Copyright (C) 2012	Samsung Electronics Co., Ltd(http://www.samsung.com)
+  *  Copyright (C) 2012  Amit Daniel <amit.kachhap@linaro.org>
+  */
 -- 
 2.17.1
 
