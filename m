@@ -2,203 +2,130 @@ Return-Path: <SRS0=unav=Z3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D290C43603
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Dec 2019 14:55:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32444C43603
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Dec 2019 15:24:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 460FE2464E
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Dec 2019 14:55:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0341B24648
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Dec 2019 15:24:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="QHpYzvUR"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BPLCZYCi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729430AbfLEOz5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Dec 2019 09:55:57 -0500
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:54472 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729489AbfLEOzp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Dec 2019 09:55:45 -0500
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20191205145543euoutp014ea933ef1675b7143e92f8a51737ee1e~dgWukiNnE2715727157euoutp01Q
-        for <linux-pm@vger.kernel.org>; Thu,  5 Dec 2019 14:55:43 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20191205145543euoutp014ea933ef1675b7143e92f8a51737ee1e~dgWukiNnE2715727157euoutp01Q
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1575557744;
-        bh=KmaGbTzTlYOOvKR3naErFrRnhfXJ6/RYsdqeeRcafSs=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=QHpYzvURmvkX1PAyQBb39PJFR2i46c41lpb7R1QHOChrley1ztJQVvEPfYwPViOdj
-         KiIVOjiZRNnJakA0DddVh9O97Zn0qtHwmhmUO96fawAbAgIzfI/iJDPoqxxknK8Wtw
-         7vwewRUO6EXbhgQJsOpibD2gJzGlE53sZPrc8lZg=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20191205145543eucas1p23a5368ab9dc57e6fe78a8e29f7d17dc9~dgWuJcaJ61720517205eucas1p2C;
-        Thu,  5 Dec 2019 14:55:43 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id CC.A4.61286.F6A19ED5; Thu,  5
-        Dec 2019 14:55:43 +0000 (GMT)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20191205145543eucas1p11798d11e91f6a691d5989db7cba81b96~dgWt3wZKv1327913279eucas1p1H;
-        Thu,  5 Dec 2019 14:55:43 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20191205145543eusmtrp1f3355a836fc8a958c1009709d1b86884~dgWt3E9rm2543125431eusmtrp1j;
-        Thu,  5 Dec 2019 14:55:43 +0000 (GMT)
-X-AuditID: cbfec7f2-ef1ff7000001ef66-47-5de91a6fb8fd
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 94.6F.08375.F6A19ED5; Thu,  5
-        Dec 2019 14:55:43 +0000 (GMT)
-Received: from AMDC3218.digital.local (unknown [106.120.51.18]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20191205145542eusmtip27da929fb6ee9b5e7ebc6b73b5ba4c9dd~dgWtaoyNy2088220882eusmtip2X;
-        Thu,  5 Dec 2019 14:55:42 +0000 (GMT)
-From:   Kamil Konieczny <k.konieczny@samsung.com>
-To:     k.konieczny@samsung.com
-Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH v3 1/3] devfreq: change time stats to 64-bit
-Date:   Thu,  5 Dec 2019 15:55:25 +0100
-Message-Id: <20191205145527.26117-2-k.konieczny@samsung.com>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191205145527.26117-1-k.konieczny@samsung.com>
+        id S1729047AbfLEPYk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Dec 2019 10:24:40 -0500
+Received: from mail-ua1-f66.google.com ([209.85.222.66]:37978 "EHLO
+        mail-ua1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725909AbfLEPYk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Dec 2019 10:24:40 -0500
+Received: by mail-ua1-f66.google.com with SMTP id z17so1448823uac.5
+        for <linux-pm@vger.kernel.org>; Thu, 05 Dec 2019 07:24:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=q2FMWNFt1zt70/iXYITjo1zth7yHens6Q8x9GtKkI7U=;
+        b=BPLCZYCiL3bwts6S4smiewIRilsp2BOsKBmLJc8pz5wrfBZ2a3EOtkPCjLm5/k++6+
+         ibzo8W26z8mM9JgfksD4FcsR3sFhZI5NKnoc+GKN3lCWR3rXCgJMn0Wc61We+qxYP/7k
+         PcNzrAxOHFlrhnMEcljiJZjT/3Koy7l9dQ9z4DnLol8A1Lgc8N1iZMj2DHxMTCaqfLYF
+         rhkqD/CsHa3/oUJ8EqIcKSCMpnlehsmiPIKkBHzfGcMlgI3TBxUhKJ8dFWLYoK0CG156
+         Q5LTDt1LEm8OeC9qxldiQsJwLMURKqETJAaATzaniMbQvV+XfowKXxnEyQMkiTH2IoVV
+         pYaw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=q2FMWNFt1zt70/iXYITjo1zth7yHens6Q8x9GtKkI7U=;
+        b=a7xRW+Q/r1UH7p67EMrLZosCb54Do2dMpTj9HIDyckZMXGB3ey424Rnu/W9XVuNeac
+         dfBX58/g1wPlv52G9cBG42JXJoYJ6tNpsZ/FSbJuMjkh/B7vieN0U91eySTgX/vFvkfz
+         NVx7g7t7rvCruiUQOH3OPITINEv0VZm3CDL0Na04nygAU01ZdAl8GNkjWBd0hrmJAWhD
+         OwY+ghas2JazkHj7+YYO6VIJJwmGDX+n1UdBE+4W9UAFSyNUN2oB1AKx604zChJ37+fs
+         xe4O/9j4XxhUgitYb7Nvsz7iCN6Blsq3B69aefVfKTazh1auDUc18ihyMm37OPRnl23N
+         8F0A==
+X-Gm-Message-State: APjAAAXbSB2K6UA7WPyxdJzoYThBRSIK4X8PX8ltS69lnzdz7nVQQyCu
+        o6ijbqjWp/RBzGaR4CqI2o0OLpUw3mmLVLA1CSpKptXagcU=
+X-Google-Smtp-Source: APXvYqzM3iLhOfE5wLyMayZyiGOnOx969gmlHmwBQmhxfp3xBcLHf4zaSc0MqMupvKiC/ibckJrJOfoQxIuft1deLE4=
+X-Received: by 2002:ab0:5510:: with SMTP id t16mr4362385uaa.15.1575559479138;
+ Thu, 05 Dec 2019 07:24:39 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprLKsWRmVeSWpSXmKPExsWy7djPc7r5Ui9jDZrOyFhsnLGe1eL6l+es
-        Fgs+zWC1OH9+A7vF2aY37BaXd81hs/jce4TRYu2Ru+wWtxtXsDlwemxa1cnm0bdlFaPH501y
-        AcxRXDYpqTmZZalF+nYJXBkLF/xkK5gmUfFw5hLmBsYekS5GTg4JAROJ9zu2MXcxcnEICaxg
-        lJjQ9JcdwvnCKPHuzUZWCOczo8TTvjWsMC3rFrwBs4UEljNKbN7tC9fxcsplFpAEm4C+xMGz
-        J8FsEQFpic5FE5lAipgFjjFJ7Dr0F6xbWMBG4uvXKYwgNouAqsTxsz+YQWxeoPiSjS1sXYwc
-        QNvkJea81QAJcwrYSmy79IwJokRQ4uTMJ2DzmYFKmrfOBvtBQqCbXeLHh4dQl7pI/J9/AsoW
-        lnh1fAs7hC0jcXpyDwuEXS7xdGEfO0RzC6PEg/aPUAlricPHL7KCHMEsoCmxfpc+RNhR4uWn
-        FawQt/FJ3HgrCHEDn8SkbdOZIcK8Eh1tQhDVqhLPT/UwQdjSEl3/10F1ekj8X8E+gVFxFpJn
-        ZiF5ZhbC2gWMzKsYxVNLi3PTU4sN81LL9YoTc4tL89L1kvNzNzECE83pf8c/7WD8einpEKMA
-        B6MSD++Mzy9ihVgTy4orcw8xSnAwK4nwpvO9jBXiTUmsrEotyo8vKs1JLT7EKM3BoiTOW83w
-        IFpIID2xJDU7NbUgtQgmy8TBKdXA6GUd9aJN+ITJAr55z5ldJ37UtbP7URX/zLai8923r6vO
-        yx8OFH7VXrHkWannk/6IcMt7PytShEr339XTUUh50Rwny713S7ZLSaR9gniR1vlVHdHvKx8t
-        t46qUuh4qxW3LUFOLzDl1J9tB8451e9c3BeU+2Vr4sXfLWrd2WqF3WtO85xsUPNUYinOSDTU
-        Yi4qTgQARHX3EDADAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFupmkeLIzCtJLcpLzFFi42I5/e/4Pd18qZexBq/fclhsnLGe1eL6l+es
-        Fgs+zWC1OH9+A7vF2aY37BaXd81hs/jce4TRYu2Ru+wWtxtXsDlwemxa1cnm0bdlFaPH501y
-        AcxRejZF+aUlqQoZ+cUltkrRhhZGeoaWFnpGJpZ6hsbmsVZGpkr6djYpqTmZZalF+nYJehkL
-        F/xkK5gmUfFw5hLmBsYekS5GTg4JAROJdQvesHYxcnEICSxllHjV/4sRIiEt0Xh6NROELSzx
-        51oXG0TRJ0aJo+vOsIAk2AT0JQ6ePQlmiwA1dC6aCNbALHCGSeJXSwWILSxgI/H16xSwoSwC
-        qhLHz/5gBrF5geJLNrYADeUAWiAvMeetBkiYU8BWYtulZ0wgYSGgkoY3LBDVghInZz5hgZgu
-        L9G8dTbzBEaBWUhSs5CkFjAyrWIUSS0tzk3PLTbUK07MLS7NS9dLzs/dxAiMiG3Hfm7ewXhp
-        Y/AhRgEORiUe3hmfX8QKsSaWFVfmHmKU4GBWEuFN53sZK8SbklhZlVqUH19UmpNafIjRFOiF
-        icxSosn5wGjNK4k3NDU0t7A0NDc2NzazUBLn7RA4GCMkkJ5YkpqdmlqQWgTTx8TBKdXAaGMu
-        4RTBoB2wJvupepewY/vf/JWPoq6H3i3QO5S8vi4svPjuF8vJi6Ij+L48vn9incmanxP7LqSX
-        Lb/kzcLlGs+29qS/yRO2yzPjC01EL7yS6Wdo2/HwbW3BF2+xJcfPK8z4I8XXof1UsmzSjtKf
-        ijHb/0SLOpy4/5aVW5hjls3BKCnGLW0lSizFGYmGWsxFxYkAYS788Z4CAAA=
-X-CMS-MailID: 20191205145543eucas1p11798d11e91f6a691d5989db7cba81b96
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20191205145543eucas1p11798d11e91f6a691d5989db7cba81b96
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20191205145543eucas1p11798d11e91f6a691d5989db7cba81b96
-References: <20191205145527.26117-1-k.konieczny@samsung.com>
-        <CGME20191205145543eucas1p11798d11e91f6a691d5989db7cba81b96@eucas1p1.samsung.com>
+References: <20191205115150.18836-1-rui.zhang@intel.com> <CAPDyKFqFswOjqNn0s7Y3BAeYuVr+z2NrX3fbn+yu+O1vgWb8tA@mail.gmail.com>
+ <d00ea4a1636cd0cfb8c672ef0edc260e7a4759c3.camel@intel.com>
+In-Reply-To: <d00ea4a1636cd0cfb8c672ef0edc260e7a4759c3.camel@intel.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Thu, 5 Dec 2019 16:24:03 +0100
+Message-ID: <CAPDyKFq1P3RX+KDbfoF_NehHO8WWuQpdDd_orgu6PSWsnr8eRw@mail.gmail.com>
+Subject: Re: [PATCH] thermal: Add Daniel Lezcano as the thermal maintainer
+To:     Zhang Rui <rui.zhang@intel.com>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Change time stats counting to bigger type by using 64-bit jiffies.
-This will make devfreq stats code look similar to cpufreq stats and
-prevents overflow (for HZ = 1000 after 49.7 days).
+On Thu, 5 Dec 2019 at 13:19, Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> On Thu, 2019-12-05 at 13:03 +0100, Ulf Hansson wrote:
+> > On Thu, 5 Dec 2019 at 12:52, Zhang Rui <rui.zhang@intel.com> wrote:
+> > >
+> > > Add Daniel Lezcano as the co-maintainer of thermal subsystem.
+> > >
+> > > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > > ---
+> > >  MAINTAINERS | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >
+> > > diff --git a/MAINTAINERS b/MAINTAINERS
+> > > index c8abdb50af79..0efadb61fe8b 100644
+> > > --- a/MAINTAINERS
+> > > +++ b/MAINTAINERS
+> > > @@ -16287,7 +16287,7 @@ F:      drivers/media/radio/radio-
+> > > raremono.c
+> > >
+> > >  THERMAL
+> > >  M:     Zhang Rui <rui.zhang@intel.com>
+> > > -R:     Daniel Lezcano <daniel.lezcano@linaro.org>
+> > > +M:     Daniel Lezcano <daniel.lezcano@linaro.org>
+> > >  R:     Amit Kucheria <amit.kucheria@verdurent.com>
+> > >  L:     linux-pm@vger.kernel.org
+> > >  T:     git
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+> >
+> > Great!
+> >
+> > Did you guys also agree on how to work with the git tree? There is
+> > one
+> > common git, maintained by Rui?
+>
+> we have a shared tree where both Daniel and I are maintaining.
+> https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git/
 
-Signed-off-by: Kamil Konieczny <k.konieczny@samsung.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
----
-Changes in v3:
-- changed types of cur_time and last_stats_updated to u64 as this is
-  returned by get_jiffies_64()
+Cool, that definitely makes it easier for contributors!
 
-Changes in v2:
-- added Acked-by, rebased on linux-next
----
- drivers/devfreq/devfreq.c | 14 +++++++-------
- include/linux/devfreq.h   |  4 ++--
- 2 files changed, 9 insertions(+), 9 deletions(-)
+>
+> thermal/linux-next branch contains all the upstream candidate, and it
+> is included in linux-next for testing.
+> Daniel and I will cherry-pick the patches from thermal/linux-next to
+> thermal/fixes or thermal/next branch, where thermal/fixes are materials
+> for next -rc and thermal/next are materials for next merge window.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index bdeb4189c978..abecadeb3dc2 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -199,10 +199,10 @@ static int set_freq_table(struct devfreq *devfreq)
- int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
- {
- 	int lev, prev_lev, ret = 0;
--	unsigned long cur_time;
-+	u64 cur_time;
- 
- 	lockdep_assert_held(&devfreq->lock);
--	cur_time = jiffies;
-+	cur_time = get_jiffies_64();
- 
- 	/* Immediately exit if previous_freq is not initialized yet. */
- 	if (!devfreq->previous_freq)
-@@ -525,7 +525,7 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
- 			msecs_to_jiffies(devfreq->profile->polling_ms));
- 
- out_update:
--	devfreq->last_stat_updated = jiffies;
-+	devfreq->last_stat_updated = get_jiffies_64();
- 	devfreq->stop_polling = false;
- 
- 	if (devfreq->profile->get_cur_freq &&
-@@ -748,7 +748,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	devfreq->time_in_state = devm_kcalloc(&devfreq->dev,
- 			devfreq->profile->max_state,
--			sizeof(unsigned long),
-+			sizeof(*devfreq->time_in_state),
- 			GFP_KERNEL);
- 	if (!devfreq->time_in_state) {
- 		mutex_unlock(&devfreq->lock);
-@@ -756,7 +756,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_devfreq;
- 	}
- 
--	devfreq->last_stat_updated = jiffies;
-+	devfreq->last_stat_updated = get_jiffies_64();
- 
- 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
- 
-@@ -1470,8 +1470,8 @@ static ssize_t trans_stat_show(struct device *dev,
- 		for (j = 0; j < max_state; j++)
- 			len += sprintf(buf + len, "%10u",
- 				devfreq->trans_table[(i * max_state) + j]);
--		len += sprintf(buf + len, "%10u\n",
--			jiffies_to_msecs(devfreq->time_in_state[i]));
-+		len += sprintf(buf + len, "%10llu\n", (u64)
-+			jiffies64_to_msecs(devfreq->time_in_state[i]));
- 	}
- 
- 	len += sprintf(buf + len, "Total transition : %u\n",
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 2bae9ed3c783..41f15e7a22b8 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -174,8 +174,8 @@ struct devfreq {
- 	/* information for device frequency transition */
- 	unsigned int total_trans;
- 	unsigned int *trans_table;
--	unsigned long *time_in_state;
--	unsigned long last_stat_updated;
-+	u64 *time_in_state;
-+	u64 last_stat_updated;
- 
- 	struct srcu_notifier_head transition_notifier_list;
- };
--- 
-2.24.0
+You may also ask Stephen to include your fixes branch into linux-next,
+as that is being built separately in his pending-fixes branch.
 
+>
+> Daniel and I will sync privately to check who will send the PR.
+>
+> thanks,
+> rui
+>
+> >
+> > Just to let people aware of the workflow...
+
+Thanks a lot for sharing the updates!
+
+Kind regards
+Uffe
