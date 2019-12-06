@@ -2,102 +2,110 @@ Return-Path: <SRS0=U1Ks=Z4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7715CC43603
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Dec 2019 07:55:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 115D3C43603
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Dec 2019 09:16:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 43E3624680
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Dec 2019 07:55:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JjCpjTdl"
+	by mail.kernel.org (Postfix) with ESMTP id D44B620659
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Dec 2019 09:16:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1575623769;
+	bh=y6ILhcciKSuJM1a593n3n8Eqnwm9Q4AS+WZPaSSa4Kk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=YbpyvwKY9l+hT+lHH295nBvML4Z8LutgivSJJfFllvL32/SnwxT1B2QBl3wkfDHnr
+	 eSidsNPU8tWs90vNlJejQEttpBqjZig290P0AhUiO0rAPZcBR7VNzHVR5F/OQ+Qx9n
+	 z4ILl2mjJoNVfp/TLTq0tmYKiqcjo9wD3ootVKQc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726689AbfLFHzo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Dec 2019 02:55:44 -0500
-Received: from mail-pg1-f194.google.com ([209.85.215.194]:38503 "EHLO
-        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726370AbfLFHzo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Dec 2019 02:55:44 -0500
-Received: by mail-pg1-f194.google.com with SMTP id a33so2692794pgm.5;
-        Thu, 05 Dec 2019 23:55:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=b6sEPD+7f9rrFrxPhOl7e8WDEqgliGQGOKb/WtjO5Ls=;
-        b=JjCpjTdldUb5Ee7hf+FyCpro5m3bK+w+nKTnerlO61bkactO3Pyg/DYFivgT6NI8PC
-         B84PnZ/bCNOr4p+Wn1tV2ToQPvy1XTdvyjLTTWTw3Bzs/1VNYstBAOfITJT+uZKlmMgu
-         FjPUmvVbd1Kouub0lAIwtbreOKXF7zzrgdp0Sq571C/7L1rY/ph5vovRfrbuGKiRqM8n
-         kCC12Ye/dNaLbAoEcrXrmKI6QMG2tJFKVn75gQajCMFMcbDpi7DEe4mnmMyzru7bCH9Q
-         vcDpwm+GtdGap0BMgwSEzhqlnN06LkyGZGzJbRConkvc1zdr7h04fs0j6s8xV0vgr/H/
-         nWeQ==
+        id S1726168AbfLFJQJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Dec 2019 04:16:09 -0500
+Received: from mail-ed1-f66.google.com ([209.85.208.66]:46826 "EHLO
+        mail-ed1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726065AbfLFJQJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Dec 2019 04:16:09 -0500
+Received: by mail-ed1-f66.google.com with SMTP id m8so5166146edi.13;
+        Fri, 06 Dec 2019 01:16:08 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=b6sEPD+7f9rrFrxPhOl7e8WDEqgliGQGOKb/WtjO5Ls=;
-        b=fegqUmbvyGXUU1z8cA5iS8oRmzwMxwMmovO3yfD+fWpZambgqHFHX6HNzj8wU/LBZD
-         ycxtRAlJIykeL30cYCZNk4XdfbEUgb1yt1tSS/8043Eba/Jnsq5861VTvxpSOn5hnj0l
-         aCd7zGXl1UBpBNGFC/EeyhKZPLfhdFmlY1RDZf5G8n+P2CrBe9QddBF9uD1LjjA6ZPv0
-         lt0vjSUOs4FW5O7ZWnTzBCGYh/Aokc76vNqr/cdZ6TCY+fZgx/Kr7eMK013GghEqYTYR
-         l35BDZz49Nro/DqE2tY3alD8mJFAmyWE5isrYriInkTzFuWycfzIneu+V7y8wRsspLGk
-         nS3w==
-X-Gm-Message-State: APjAAAUr/lUnVnfnkWahIcMengqpZYTBR6Igg9Yrcycmw7nnitNckfy8
-        oUYCNWTk0FsompfOBeeCa9Q=
-X-Google-Smtp-Source: APXvYqxYsMlnlr32fMRFumCNpuqkIcvwFIN120LLG60hSJicwgrN05/T+i/EfDN6esL3zZuRH8S3dA==
-X-Received: by 2002:aa7:90c4:: with SMTP id k4mr12870805pfk.216.1575618943947;
-        Thu, 05 Dec 2019 23:55:43 -0800 (PST)
-Received: from suzukaze.ipads-lab.se.sjtu.edu.cn ([202.120.40.82])
-        by smtp.gmail.com with ESMTPSA id q3sm15890301pfc.114.2019.12.05.23.55.37
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=CLhIUnSQb3DuWXz3N42A7JIEyaDX6uaUCV8BfcXUUCU=;
+        b=DR+9/YR70lp+Pw+kkVGEMKHYg3DgPgO3NpWn9HiTa6IocSqyr0pUx37p3Del1LmI+9
+         YVuZgL40u8cRpP0h3TXGjazlpld4J6ktXUdPb5A3x2sYXCQTMjNWtaL2vH4XyVcDIhCz
+         db1oHqO5ZOT7Yb5uJyB/gnsSxamliWRvb/DPFjeSAtT0Ie47MPlpw6OANc0z8UeIZlbX
+         J6d59vilxeLjbGhMibDfoDbZ2pYBphrMRBC2FZYg53der5E0hgFEQ0YQGdMI1PIe1ATv
+         r2KmWNJkkbYnAnJ8Rlef9z5z9osNixlWqR5QYqxUsyfl84KmqzSRiox6JqHVecmtTZ8x
+         L7Mw==
+X-Gm-Message-State: APjAAAVJh/WROQS9BtM7XIiXBbOeBYgr1zzlBl0H2Mku04JckHdRKWnF
+        lXsvVa1NxYtMALig6JNnVDA=
+X-Google-Smtp-Source: APXvYqw3O7n8tTxkxboIFuc77FlpUlH+YxTztIHvP6ctEMe+RUDMybzeng1P3Ox5rIlUaTOFh1xQHQ==
+X-Received: by 2002:a17:906:6d58:: with SMTP id a24mr13836696ejt.153.1575623767249;
+        Fri, 06 Dec 2019 01:16:07 -0800 (PST)
+Received: from pi3 ([194.230.155.234])
+        by smtp.googlemail.com with ESMTPSA id by12sm158488ejb.17.2019.12.06.01.16.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Dec 2019 23:55:43 -0800 (PST)
-From:   Chuhong Yuan <hslester96@gmail.com>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Chuhong Yuan <hslester96@gmail.com>
-Subject: [PATCH] thermal: intel: fix unmatched pci_release_region
-Date:   Fri,  6 Dec 2019 15:55:31 +0800
-Message-Id: <20191206075531.18637-1-hslester96@gmail.com>
-X-Mailer: git-send-email 2.24.0
+        Fri, 06 Dec 2019 01:16:06 -0800 (PST)
+Date:   Fri, 6 Dec 2019 10:16:04 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Matheus Castello <matheus@castello.eng.br>
+Cc:     sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
+        cw00.choi@samsung.com, b.zolnierkie@samsung.com,
+        lee.jones@linaro.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v8 3/5] devicetree: mfd: max14577: Add reference to
+ max14040_battery.txt descriptions
+Message-ID: <20191206091604.GA1917@pi3>
+References: <20191205154410.29462-1-matheus@castello.eng.br>
+ <20191205154410.29462-4-matheus@castello.eng.br>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20191205154410.29462-4-matheus@castello.eng.br>
+User-Agent: Mutt/1.12.2 (2019-09-21)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The driver calls pci_request_regions() in probe and uses
-pci_release_regions() in probe failure.
-However, it calls pci_release_region() in remove, which does
-match the other two calls.
-Use pci_release_regions() instead to unify them.
+On Thu, Dec 05, 2019 at 12:44:08PM -0300, Matheus Castello wrote:
+> max77836 MFD has a fuel gauge that has a low SOC alert feature that is
+> described in Documentation/devicetree/bindings/power/supply/max17040_battery.txt.
+> Adding the reference to de documentation here.
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
----
- drivers/thermal/intel/intel_pch_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The subject prefix should be:
+dt-bindings: mfd: max14577: ...
 
-diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
-index 4f0bb8f502e1..5f7798b8d35f 100644
---- a/drivers/thermal/intel/intel_pch_thermal.c
-+++ b/drivers/thermal/intel/intel_pch_thermal.c
-@@ -365,7 +365,7 @@ static void intel_pch_thermal_remove(struct pci_dev *pdev)
- 	thermal_zone_device_unregister(ptd->tzd);
- 	iounmap(ptd->hw_base);
- 	pci_set_drvdata(pdev, NULL);
--	pci_release_region(pdev, 0);
-+	pci_release_regions(pdev);
- 	pci_disable_device(pdev);
- }
- 
--- 
-2.24.0
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
+Best regards,
+Krzysztof
+
+
+> 
+> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
+> Acked-by: Rob Herring <robh@kernel.org>
+> ---
+>  Documentation/devicetree/bindings/mfd/max14577.txt | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/max14577.txt b/Documentation/devicetree/bindings/mfd/max14577.txt
+> index fc6f0f4e8beb..45c7f414aee0 100644
+> --- a/Documentation/devicetree/bindings/mfd/max14577.txt
+> +++ b/Documentation/devicetree/bindings/mfd/max14577.txt
+> @@ -5,6 +5,8 @@ Battery Charger and SFOUT LDO output for powering USB devices. It is
+>  interfaced to host controller using I2C.
+> 
+>  MAX77836 additionally contains PMIC (with two LDO regulators) and Fuel Gauge.
+> +For the description of Fuel Gauge low SOC alert interrupt see:
+> +power/supply/max17040_battery.txt
+> 
+> 
+>  Required properties:
+> --
+> 2.24.0.rc2
+> 
