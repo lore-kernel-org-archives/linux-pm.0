@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89943C2D0BF
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 16:42:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CD92C00454
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 16:42:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5B2C3208C3
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 16:42:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5F0E6208C3
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 16:42:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="R340kJVk"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ga+8gM7y"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727664AbfLJQmL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Dec 2019 11:42:11 -0500
-Received: from mail-pg1-f196.google.com ([209.85.215.196]:46003 "EHLO
-        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727508AbfLJQmJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 11:42:09 -0500
-Received: by mail-pg1-f196.google.com with SMTP id b9so8755179pgk.12;
-        Tue, 10 Dec 2019 08:42:08 -0800 (PST)
+        id S1727861AbfLJQm3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Dec 2019 11:42:29 -0500
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:35274 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727831AbfLJQm2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 11:42:28 -0500
+Received: by mail-pf1-f194.google.com with SMTP id b19so126731pfo.2;
+        Tue, 10 Dec 2019 08:42:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=pjibFk638PnQ42hwKONZvOkVbixVgcRlW8yZGOEeC5k=;
-        b=R340kJVkWJNHcEMhdnyHpd44lvGwReYozuc5ySZzK5nc1oJ0Pjk60wYFad1hFzc3AA
-         t8dN6jAavm6xOs/1GFfbz9hcqOEO4bfr1bRLx2nddNNVyRPWGDov9Sbjut1A8d/IgMw7
-         vJ4iX8Sr+njRpuDt7rTRBGpjjVkMnyE2cjFstZIs6cPMa8rFN5ef8hLukjaKC5FUqZvi
-         yNLn2WM44kTm3p0GZehSIB7iCqXVciT0X2KXedXbemK1QfehzCkz6Xk5IP7lfOW3aGHu
-         MiJ5hy66syJbHNkKz36R3C/IMdop2wl1WamBFAu7HRJcIXNKP+LSgALmNtntkZ8DMN9A
-         XMlg==
+        bh=U90+xxPa/n6CEWdGb92kTN2mRHFkhOKFhP+vKnVn8pU=;
+        b=ga+8gM7y0/a7dq8h7Be7uego7Viw+xRA4OAMvc8ASgW2a/Ugh5/sGxd2g+uaSYRNmq
+         fqYAUgo5R3hQWYC8S6daWKT4SJZrDKv9CRhN8o7rne8oSWovy6DIxNaheBvFJWerApSU
+         6Mzg8h+BoufdPRY4Dl0aRCqlaTI7YA99ndFzTNU9DPmT5eK4OWGz/7oj4FPLdO70a1i7
+         W6awMxhNGDcTjeUq+xY6cniGqZqsFIbidlJq7NntjMV0RU9/E0q52KndT2C8mCz3Lh3Q
+         k5VX8/aVTT1Fi1ZdneHBVhaNX8z3Djz+jNH1J6SHVWRjex4QXBRnxVnotR6kp6ASw8T/
+         D+IA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=pjibFk638PnQ42hwKONZvOkVbixVgcRlW8yZGOEeC5k=;
-        b=OWvYK7hEzxbstDr7LKFipG0e2SOpZoLAncGOWFeARkEbpwp/5AE55V6exS6sGYMnA1
-         Khr1slKJdQFjGV2JUJWBS7bJfk8eEAMZ+X5SwGvorm9nY9I4opsZHUKKT1O6O4xDUdTB
-         8i0MKuvoeqoWxzhZ3EnRYcqcKuKLzCR9XROWPbXutg+h6nxLgWUo0gaSQwF8QCyLi0L2
-         iK0F3VsNndc9q84BC7bxsnBYBlhwE5gMP5PDP26r3iH352bQxsLaCFXyFFihOQVL9ukN
-         ba673NBsJjYWU7Idwl+fBakxK0bHFNYDDneFe7DpCFMqmPbcC/+K5VYP8i4pZFGXBd/T
-         K0dg==
-X-Gm-Message-State: APjAAAVFbubGrMOquIwSXuY3Y2JOhjqbDKEsaL9L20R4oygvmcqD3UY6
-        3bsTQjdhEyN7OJSw6EO5J3Ebgswgr60=
-X-Google-Smtp-Source: APXvYqzWk6B2yzJ7FtTSAlswTDUDgrDrRvzUx/IRVowCGQH2J+1hpA2U+w/5ZLO/F5QjJwreNWe3UA==
-X-Received: by 2002:a63:4b24:: with SMTP id y36mr25444347pga.176.1575996128192;
-        Tue, 10 Dec 2019 08:42:08 -0800 (PST)
+        bh=U90+xxPa/n6CEWdGb92kTN2mRHFkhOKFhP+vKnVn8pU=;
+        b=gXlqgDy80gld2MVfrRyUBfOTZ9rQcrUpjQLhJyXJ54lFVcp48dCazn82FhkNxZ197x
+         eIg+Rvd0sjYGNDMOD9KeRzhEJKd/DhKe/VWJS2Kjs2Z5MtNOp+2H9L+OYVSB727L3tn7
+         prAyB+T5abb/vNvKnSodJE+7Bu24HPc66pDGF3lUo8pW0DjucTUhuXLoZdH7lxbg7aF/
+         m80OvavBRiJe8p/NNy00i3ZM6K/9HtMKdIFCsiQSDI5+/ABs9QMktsF+LlUyUaWYv/TP
+         1e6p611YvqA8suhqQOzHt9Wlb1Ayuc4l0N1/ek01Rm/3SogeP9qHzHdPNCleMfcMe/Uk
+         W9HA==
+X-Gm-Message-State: APjAAAWU6M8wajj0M2K6FXV7r2KSYugWQGirexc4V1mjn86V7CyxpztM
+        6nOno3M4MA+0F9muw15V3LA=
+X-Google-Smtp-Source: APXvYqxNayeTWaLSe9RInRfTVj1oOjtaqUWtxFeFSKVUSRKIs280RrcgkQ0po0Tu4au3EG3heSR9FA==
+X-Received: by 2002:a63:4f64:: with SMTP id p36mr26649705pgl.271.1575996148068;
+        Tue, 10 Dec 2019 08:42:28 -0800 (PST)
 Received: from localhost.localdomain (c-67-165-113-11.hsd1.wa.comcast.net. [67.165.113.11])
-        by smtp.gmail.com with ESMTPSA id j38sm4034634pgj.27.2019.12.10.08.42.06
+        by smtp.gmail.com with ESMTPSA id j38sm4034634pgj.27.2019.12.10.08.42.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Dec 2019 08:42:06 -0800 (PST)
+        Tue, 10 Dec 2019 08:42:26 -0800 (PST)
 From:   Andrey Smirnov <andrew.smirnov@gmail.com>
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
@@ -63,9 +63,9 @@ Cc:     Andrey Smirnov <andrew.smirnov@gmail.com>,
         Eduardo Valentin <edubezval@gmail.com>,
         Angus Ainslie <angus@akkea.ca>, linux-imx@nxp.com,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v8 01/12] thermal: qoriq: Add local struct device pointer
-Date:   Tue, 10 Dec 2019 08:41:42 -0800
-Message-Id: <20191210164153.10463-2-andrew.smirnov@gmail.com>
+Subject: [PATCH v8 12/12] thermal: qoriq: Add hwmon support
+Date:   Tue, 10 Dec 2019 08:41:53 -0800
+Message-Id: <20191210164153.10463-13-andrew.smirnov@gmail.com>
 X-Mailer: git-send-email 2.21.0
 In-Reply-To: <20191210164153.10463-1-andrew.smirnov@gmail.com>
 References: <20191210164153.10463-1-andrew.smirnov@gmail.com>
@@ -76,11 +76,11 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use a local "struct device *dev" for brevity. No functional change
-intended.
+Expose thermal readings as a HWMON device, so that it could be
+accessed using lm-sensors.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Tested-by: Lucas Stach <l.stach@pengutronix.de>
 Cc: Chris Healy <cphealy@gmail.com>
 Cc: Lucas Stach <l.stach@pengutronix.de>
@@ -91,54 +91,33 @@ Cc: linux-imx@nxp.com
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/thermal/qoriq_thermal.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/thermal/qoriq_thermal.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 45e9fcb172cc..dd47b31aeecc 100644
+index b684d3ceda69..b75d34e07da5 100644
 --- a/drivers/thermal/qoriq_thermal.c
 +++ b/drivers/thermal/qoriq_thermal.c
-@@ -262,8 +262,9 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 	u32 ver;
- 	struct qoriq_tmu_data *data;
- 	struct device_node *np = pdev->dev.of_node;
-+	struct device *dev = &pdev->dev;
+@@ -13,6 +13,7 @@
+ #include <linux/thermal.h>
  
--	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-+	data = devm_kzalloc(dev, sizeof(struct qoriq_tmu_data),
- 			    GFP_KERNEL);
- 	if (!data)
- 		return -ENOMEM;
-@@ -274,17 +275,17 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ #include "thermal_core.h"
++#include "thermal_hwmon.h"
  
- 	data->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(data->regs)) {
--		dev_err(&pdev->dev, "Failed to get memory region\n");
-+		dev_err(dev, "Failed to get memory region\n");
- 		return PTR_ERR(data->regs);
+ #define SITES_MAX		16
+ #define TMR_DISABLE		0x0
+@@ -139,6 +140,11 @@ static int qoriq_tmu_register_tmu_zone(struct device *dev,
+ 			regmap_write(qdata->regmap, REGS_TMR, TMR_DISABLE);
+ 			return ret;
+ 		}
++
++		if (devm_thermal_add_hwmon_sysfs(tzd))
++			dev_warn(dev,
++				 "Failed to add hwmon sysfs attributes\n");
++
  	}
  
--	data->clk = devm_clk_get_optional(&pdev->dev, NULL);
-+	data->clk = devm_clk_get_optional(dev, NULL);
- 	if (IS_ERR(data->clk))
- 		return PTR_ERR(data->clk);
- 
- 	ret = clk_prepare_enable(data->clk);
- 	if (ret) {
--		dev_err(&pdev->dev, "Failed to enable clock\n");
-+		dev_err(dev, "Failed to enable clock\n");
- 		return ret;
- 	}
- 
-@@ -302,7 +303,7 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 
- 	ret = qoriq_tmu_register_tmu_zone(pdev);
- 	if (ret < 0) {
--		dev_err(&pdev->dev, "Failed to register sensors\n");
-+		dev_err(dev, "Failed to register sensors\n");
- 		ret = -ENODEV;
- 		goto err;
- 	}
+ 	return 0;
 -- 
 2.21.0
 
