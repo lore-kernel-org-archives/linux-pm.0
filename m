@@ -2,369 +2,93 @@ Return-Path: <SRS0=LKPD=2A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44D7EC43603
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 11:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47615C2D0BF
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 11:48:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 11C1920828
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 11:40:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="BEtGQbxT"
+	by mail.kernel.org (Postfix) with ESMTP id 1DE8C24655
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 11:48:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727227AbfLJLku (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Dec 2019 06:40:50 -0500
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:44518 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726957AbfLJLkj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 06:40:39 -0500
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20191210114037euoutp010a70c38560557a319e357e45f92fe145~e-6y_zPhN1618016180euoutp01L
-        for <linux-pm@vger.kernel.org>; Tue, 10 Dec 2019 11:40:37 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20191210114037euoutp010a70c38560557a319e357e45f92fe145~e-6y_zPhN1618016180euoutp01L
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1575978037;
-        bh=aiVnQzPbPozJNU83F/hiDg/No+tUDZ/IodGWUQHWRto=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=BEtGQbxThmIa6H2Zp9ul8AD0rVON4VzjyJruk4oO8i8jHhpMAdiZ86I+BHUbrfLg0
-         HW2xZFYrgEKc8cwqGAolK73NBXkOlMDT5sh6YHcs2ap9lrUHwlX04GLp2Nr1JCtQAL
-         dtJgJt8PWApfdsSNIRJEU4/d/ATQOolA39zVcIEA=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20191210114036eucas1p22c80daa0215fa2fa06ca3dcf4bc44873~e-6yvGlTN2407724077eucas1p2l;
-        Tue, 10 Dec 2019 11:40:36 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges3new.samsung.com (EUCPMTA) with SMTP id 23.87.60698.4348FED5; Tue, 10
-        Dec 2019 11:40:36 +0000 (GMT)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20191210114036eucas1p2b0205a5dcdf1f26485235a232a5cbf20~e-6yaR9L52393723937eucas1p2m;
-        Tue, 10 Dec 2019 11:40:36 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20191210114036eusmtrp1652822c7a907e6a1f0ee8ed7724132f3~e-6yZj4jt2588725887eusmtrp1S;
-        Tue, 10 Dec 2019 11:40:36 +0000 (GMT)
-X-AuditID: cbfec7f5-a0fff7000001ed1a-a0-5def8434f9ce
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id F3.BF.08375.4348FED5; Tue, 10
-        Dec 2019 11:40:36 +0000 (GMT)
-Received: from AMDC2765.digital.local (unknown [106.120.51.73]) by
-        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20191210114035eusmtip100b278fd846293c6cfe242055958815b~e-6x2cvR22043220432eusmtip1f;
-        Tue, 10 Dec 2019 11:40:35 +0000 (GMT)
-From:   Marek Szyprowski <m.szyprowski@samsung.com>
-To:     linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Cc:     Marek Szyprowski <m.szyprowski@samsung.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Kamil Konieczny <k.konieczny@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Doug Anderson <dianders@chromium.org>,
-        Andreas Faerber <afaerber@suse.de>,
-        Arjun K V <arjun.kv@samsung.com>
-Subject: [PATCH 1/2] ARM: dts: exynos: Add initial data for coupled
- regulators for Exynos5422/5800
-Date:   Tue, 10 Dec 2019 12:40:26 +0100
-Message-Id: <20191210114027.14910-2-m.szyprowski@samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191210114027.14910-1-m.szyprowski@samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFupjleLIzCtJLcpLzFFi42LZduzneV2TlvexBief61g0byq2WL5yF4vF
-        xhnrWS2uf3nOanF22UE2iwWfZrBanD+/gd3i8q45bBafe48wWsw4v4/JYu2Ru+wO3B6zGy6y
-        eGxa1cnm0bdlFaPH5tPVHp83yQWwRnHZpKTmZJalFunbJXBlfLq9j7HguG3F5kkWDYwNBl2M
-        nBwSAiYS1+cuYexi5OIQEljBKLHoyE02COcLo8TfmxeZQKqEBD4zSuzudYPpeDepG6pjOaPE
-        2o2/WeE6Vh77ywpSxSZgKNH1tosNxBYRiJd41H+XBaSIWeASk8SSxu/sIAlhgRSJjifzwBpY
-        BFQlXt24CBbnFbCVOLu9gwlinbzE6g0HmEFsTgE7iUlv+plABkkINLNL/Jp9jgWiyEWi6/hV
-        NghbWOLV8S3sELaMxOnJPSxQDYwSD8+tZYdwehglLjfNYISospY4fPwi0BkcQPdpSqzfpQ8R
-        dpRY03aQDSQsIcAnceOtIEiYGcictG06M0SYV6KjTQiiWk1i1vF1cGsPXrjEDGF7SLw9fQYa
-        phMZJfY9uMk4gVF+FsKyBYyMqxjFU0uLc9NTi43zUsv1ihNzi0vz0vWS83M3MQJTyel/x7/u
-        YNz3J+kQowAHoxIP7wKHd7FCrIllxZW5hxglOJiVRHiPtwGFeFMSK6tSi/Lji0pzUosPMUpz
-        sCiJ8xovehkrJJCeWJKanZpakFoEk2Xi4JRqYNy1SzBv76GsB9uOn4u89EF7ftyvgxveVHw9
-        deCtlYZ/Hee8ZbPsP3+YeFxdVNcnQohrfcKFHpOH8oIv9jywNTXYa75nCoP//j7RN97eZdJv
-        pQ0ZT/zImyK558rS6Rlmt+un1lecW6I1p1YphfXu9+nfJEpt/TTTg5NWfEibf8HmxqP1i/Z1
-        SXkosRRnJBpqMRcVJwIAeYD5CiEDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrPLMWRmVeSWpSXmKPExsVy+t/xu7omLe9jDS79ELRo3lRssXzlLhaL
-        jTPWs1pc//Kc1eLssoNsFgs+zWC1OH9+A7vF5V1z2Cw+9x5htJhxfh+Txdojd9kduD1mN1xk
-        8di0qpPNo2/LKkaPzaerPT5vkgtgjdKzKcovLUlVyMgvLrFVija0MNIztLTQMzKx1DM0No+1
-        MjJV0rezSUnNySxLLdK3S9DL+HR7H2PBcduKzZMsGhgbDLoYOTkkBEwk3k3qZuxi5OIQEljK
-        KNHyYwoTREJG4uS0BlYIW1jiz7UuNoiiT4wSS5vOsYMk2AQMJbregiQ4OUQEEiVmf5wNVsQs
-        cINJ4tLbOWCThAWSJPrnzwebxCKgKvHqxkWwZl4BW4mz2zugtslLrN5wgBnE5hSwk5j0ph8s
-        LgRUs2XpFOYJjHwLGBlWMYqklhbnpucWG+oVJ+YWl+al6yXn525iBAb2tmM/N+9gvLQx+BCj
-        AAejEg/vAod3sUKsiWXFlbmHGCU4mJVEeI+3AYV4UxIrq1KL8uOLSnNSiw8xmgIdNZFZSjQ5
-        Hxh1eSXxhqaG5haWhubG5sZmFkrivB0CB2OEBNITS1KzU1MLUotg+pg4OKUaGPsnrU85ahWQ
-        zDIjoD1SrXGx2k7RDRK5TJ/faQRs2t91wWvjNYP5R6WYbP3Tn08KvSw1K0wxZ2cK16QKa637
-        lmeTZZI9NkVMTrwhV25+NkrZx/JI95yAJ0aLEjZ/k5oy5c5UnclBq9ROc82WnbSJa2nuesYp
-        C3lZfn58eMQkuutLreUPg/q8u0osxRmJhlrMRcWJABf6z1aCAgAA
-X-CMS-MailID: 20191210114036eucas1p2b0205a5dcdf1f26485235a232a5cbf20
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20191210114036eucas1p2b0205a5dcdf1f26485235a232a5cbf20
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20191210114036eucas1p2b0205a5dcdf1f26485235a232a5cbf20
-References: <20191210114027.14910-1-m.szyprowski@samsung.com>
-        <CGME20191210114036eucas1p2b0205a5dcdf1f26485235a232a5cbf20@eucas1p2.samsung.com>
+        id S1727619AbfLJLsl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Dec 2019 06:48:41 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:58892 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727753AbfLJLsi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 06:48:38 -0500
+Received: from 79.184.255.117.ipv4.supernova.orange.pl (79.184.255.117) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
+ id 4e04c00f13f68e91; Tue, 10 Dec 2019 12:48:36 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM mailing list <linux-pm@vger.kernel.org>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        NXP Linux Team <Linux-imx@nxp.com>
+Subject: [PATCH] cpuidle: Fix cpuidle_driver_state_disabled()
+Date:   Tue, 10 Dec 2019 12:48:35 +0100
+Message-ID: <2533476.AZShXAyBN7@kreacher>
+In-Reply-To: <7b0313c4-0d2b-fbd9-469b-1e0ce79aacc3@linaro.org>
+References: <7b0313c4-0d2b-fbd9-469b-1e0ce79aacc3@linaro.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Declare Exynos5422/5800 voltage ranges for opp points for big cpu core and
-bus wcore and couple their voltage supllies as vdd_arm and vdd_int should
-be in 300mV range.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-[k.konieczny: add missing patch description]
-Signed-off-by: Kamil Konieczny <k.konieczny@samsung.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
----
-This patch is the same as https://patchwork.kernel.org/patch/11172427/
-which has been dropped due to the other issues in the regulator framework.
-Those issues has been resolved now, so it is safe to apply it.
----
- arch/arm/boot/dts/exynos5420.dtsi             | 34 +++++++++----------
- arch/arm/boot/dts/exynos5422-odroid-core.dtsi |  4 +++
- arch/arm/boot/dts/exynos5800-peach-pi.dts     |  4 +++
- arch/arm/boot/dts/exynos5800.dtsi             | 32 ++++++++---------
- 4 files changed, 41 insertions(+), 33 deletions(-)
+It turns out that cpuidle_driver_state_disabled() can be called
+before registering the cpufreq driver on some platforms, which
+was not expected when it was introduced and which leads to a NULL
+pointer dereference when trying to walk the CPUs associated with
+the given cpuidle driver.
 
-diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-index d39907a41f78..1ae5211f7d79 100644
---- a/arch/arm/boot/dts/exynos5420.dtsi
-+++ b/arch/arm/boot/dts/exynos5420.dtsi
-@@ -48,62 +48,62 @@
+Fix the problem by making cpuidle_driver_state_disabled() check if
+the driver's mask of CPUs associated with it is present and to set
+CPUIDLE_FLAG_UNUSABLE for the given idle state in the driver's states
+list if that is not the case to cause __cpuidle_register_device() to
+set CPUIDLE_STATE_DISABLED_BY_DRIVER for that state for all cpuidle
+devices registered by it later.
+
+Fixes: cbda56d5fefc ("cpuidle: Introduce cpuidle_driver_state_disabled() for driver quirks")
+Reported-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Tested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/driver.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+Index: linux-pm/drivers/cpuidle/driver.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/driver.c
++++ linux-pm/drivers/cpuidle/driver.c
+@@ -403,6 +403,13 @@ void cpuidle_driver_state_disabled(struc
  
- 		opp-1800000000 {
- 			opp-hz = /bits/ 64 <1800000000>;
--			opp-microvolt = <1250000>;
-+			opp-microvolt = <1250000 1250000 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-1700000000 {
- 			opp-hz = /bits/ 64 <1700000000>;
--			opp-microvolt = <1212500>;
-+			opp-microvolt = <1212500 1212500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-1600000000 {
- 			opp-hz = /bits/ 64 <1600000000>;
--			opp-microvolt = <1175000>;
-+			opp-microvolt = <1175000 1175000 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-1500000000 {
- 			opp-hz = /bits/ 64 <1500000000>;
--			opp-microvolt = <1137500>;
-+			opp-microvolt = <1137500 1137500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-1400000000 {
- 			opp-hz = /bits/ 64 <1400000000>;
--			opp-microvolt = <1112500>;
-+			opp-microvolt = <1112500 1112500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-1300000000 {
- 			opp-hz = /bits/ 64 <1300000000>;
--			opp-microvolt = <1062500>;
-+			opp-microvolt = <1062500 1062500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
--			opp-microvolt = <1037500>;
-+			opp-microvolt = <1037500 1037500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
--			opp-microvolt = <1012500>;
-+			opp-microvolt = <1012500 1012500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = < 987500>;
-+			opp-microvolt = < 987500 987500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-900000000 {
- 			opp-hz = /bits/ 64 <900000000>;
--			opp-microvolt = < 962500>;
-+			opp-microvolt = < 962500 962500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-800000000 {
- 			opp-hz = /bits/ 64 <800000000>;
--			opp-microvolt = < 937500>;
-+			opp-microvolt = < 937500 937500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 		opp-700000000 {
- 			opp-hz = /bits/ 64 <700000000>;
--			opp-microvolt = < 912500>;
-+			opp-microvolt = < 912500 912500 1500000>;
- 			clock-latency-ns = <140000>;
- 		};
- 	};
-@@ -1171,23 +1171,23 @@
+ 	mutex_lock(&cpuidle_lock);
  
- 			opp00 {
- 				opp-hz = /bits/ 64 <84000000>;
--				opp-microvolt = <925000>;
-+				opp-microvolt = <925000 925000 1400000>;
- 			};
- 			opp01 {
- 				opp-hz = /bits/ 64 <111000000>;
--				opp-microvolt = <950000>;
-+				opp-microvolt = <950000 950000 1400000>;
- 			};
- 			opp02 {
- 				opp-hz = /bits/ 64 <222000000>;
--				opp-microvolt = <950000>;
-+				opp-microvolt = <950000 950000 1400000>;
- 			};
- 			opp03 {
- 				opp-hz = /bits/ 64 <333000000>;
--				opp-microvolt = <950000>;
-+				opp-microvolt = <950000 950000 1400000>;
- 			};
- 			opp04 {
- 				opp-hz = /bits/ 64 <400000000>;
--				opp-microvolt = <987500>;
-+				opp-microvolt = <987500 987500 1400000>;
- 			};
- 		};
++	spin_lock(&cpuidle_driver_lock);
++
++	if (!drv->cpumask) {
++		drv->states[idx].flags |= CPUIDLE_FLAG_UNUSABLE;
++		goto unlock;
++	}
++
+ 	for_each_cpu(cpu, drv->cpumask) {
+ 		struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
  
-diff --git a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-index 059fa32d1a8f..8a34a861c191 100644
---- a/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-+++ b/arch/arm/boot/dts/exynos5422-odroid-core.dtsi
-@@ -601,6 +601,8 @@
- 				regulator-max-microvolt = <1500000>;
- 				regulator-always-on;
- 				regulator-boot-on;
-+				regulator-coupled-with = <&buck3_reg>;
-+				regulator-coupled-max-spread = <300000>;
+@@ -415,5 +422,8 @@ void cpuidle_driver_state_disabled(struc
+ 			dev->states_usage[idx].disable &= ~CPUIDLE_STATE_DISABLED_BY_DRIVER;
+ 	}
  
- 				regulator-state-mem {
- 					regulator-off-in-suspend;
-@@ -613,6 +615,8 @@
- 				regulator-max-microvolt = <1400000>;
- 				regulator-always-on;
- 				regulator-boot-on;
-+				regulator-coupled-with = <&buck2_reg>;
-+				regulator-coupled-max-spread = <300000>;
- 
- 				regulator-state-mem {
- 					regulator-off-in-suspend;
-diff --git a/arch/arm/boot/dts/exynos5800-peach-pi.dts b/arch/arm/boot/dts/exynos5800-peach-pi.dts
-index 60ca3d685247..c1e38139ce4f 100644
---- a/arch/arm/boot/dts/exynos5800-peach-pi.dts
-+++ b/arch/arm/boot/dts/exynos5800-peach-pi.dts
-@@ -257,6 +257,8 @@
- 				regulator-always-on;
- 				regulator-boot-on;
- 				regulator-ramp-delay = <12500>;
-+				regulator-coupled-with = <&buck3_reg>;
-+				regulator-coupled-max-spread = <300000>;
- 				regulator-state-mem {
- 					regulator-off-in-suspend;
- 				};
-@@ -269,6 +271,8 @@
- 				regulator-always-on;
- 				regulator-boot-on;
- 				regulator-ramp-delay = <12500>;
-+				regulator-coupled-with = <&buck2_reg>;
-+				regulator-coupled-max-spread = <300000>;
- 				regulator-state-mem {
- 					regulator-off-in-suspend;
- 				};
-diff --git a/arch/arm/boot/dts/exynos5800.dtsi b/arch/arm/boot/dts/exynos5800.dtsi
-index 16177d815ee4..1be7eb60439a 100644
---- a/arch/arm/boot/dts/exynos5800.dtsi
-+++ b/arch/arm/boot/dts/exynos5800.dtsi
-@@ -22,61 +22,61 @@
- 
- &cluster_a15_opp_table {
- 	opp-1700000000 {
--		opp-microvolt = <1250000>;
-+		opp-microvolt = <1250000 1250000 1500000>;
- 	};
- 	opp-1600000000 {
--		opp-microvolt = <1250000>;
-+		opp-microvolt = <1250000 1250000 1500000>;
- 	};
- 	opp-1500000000 {
--		opp-microvolt = <1100000>;
-+		opp-microvolt = <1100000 1100000 1500000>;
- 	};
- 	opp-1400000000 {
--		opp-microvolt = <1100000>;
-+		opp-microvolt = <1100000 1100000 1500000>;
- 	};
- 	opp-1300000000 {
--		opp-microvolt = <1100000>;
-+		opp-microvolt = <1100000 1100000 1500000>;
- 	};
- 	opp-1200000000 {
--		opp-microvolt = <1000000>;
-+		opp-microvolt = <1000000 1000000 1500000>;
- 	};
- 	opp-1100000000 {
--		opp-microvolt = <1000000>;
-+		opp-microvolt = <1000000 1000000 1500000>;
- 	};
- 	opp-1000000000 {
--		opp-microvolt = <1000000>;
-+		opp-microvolt = <1000000 1000000 1500000>;
- 	};
- 	opp-900000000 {
--		opp-microvolt = <1000000>;
-+		opp-microvolt = <1000000 1000000 1500000>;
- 	};
- 	opp-800000000 {
--		opp-microvolt = <900000>;
-+		opp-microvolt = <900000 900000 1500000>;
- 	};
- 	opp-700000000 {
--		opp-microvolt = <900000>;
-+		opp-microvolt = <900000 900000 1500000>;
- 	};
- 	opp-600000000 {
- 		opp-hz = /bits/ 64 <600000000>;
--		opp-microvolt = <900000>;
-+		opp-microvolt = <900000 900000 1500000>;
- 		clock-latency-ns = <140000>;
- 	};
- 	opp-500000000 {
- 		opp-hz = /bits/ 64 <500000000>;
--		opp-microvolt = <900000>;
-+		opp-microvolt = <900000 900000 1500000>;
- 		clock-latency-ns = <140000>;
- 	};
- 	opp-400000000 {
- 		opp-hz = /bits/ 64 <400000000>;
--		opp-microvolt = <900000>;
-+		opp-microvolt = <900000 900000 1500000>;
- 		clock-latency-ns = <140000>;
- 	};
- 	opp-300000000 {
- 		opp-hz = /bits/ 64 <300000000>;
--		opp-microvolt = <900000>;
-+		opp-microvolt = <900000 900000 1500000>;
- 		clock-latency-ns = <140000>;
- 	};
- 	opp-200000000 {
- 		opp-hz = /bits/ 64 <200000000>;
--		opp-microvolt = <900000>;
-+		opp-microvolt = <900000 900000 1500000>;
- 		clock-latency-ns = <140000>;
- 	};
- };
--- 
-2.17.1
++unlock:
++	spin_unlock(&cpuidle_driver_lock);
++
+ 	mutex_unlock(&cpuidle_lock);
+ }
+
+
 
