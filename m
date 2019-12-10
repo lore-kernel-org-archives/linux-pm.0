@@ -2,75 +2,191 @@ Return-Path: <SRS0=LKPD=2A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C392C43603
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 11:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 217DEC43603
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 12:08:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3CA4320828
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 11:55:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EB439207FF
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 12:08:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i4Vp1W98"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727227AbfLJLzk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Dec 2019 06:55:40 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:58344 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726956AbfLJLzj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 06:55:39 -0500
-Received: from 79.184.255.117.ipv4.supernova.orange.pl (79.184.255.117) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
- id 9eb461fbea0d2796; Tue, 10 Dec 2019 12:55:37 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Len Brown <len.brown@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>
-Subject: [RFC v2][PATCH 0/9] cpuidle: intel_idle: Use ACPI _CTS to get idle states information
-Date:   Tue, 10 Dec 2019 12:54:55 +0100
-Message-ID: <35821518.IbFVMVmUy3@kreacher>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+        id S1727231AbfLJMIP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Dec 2019 07:08:15 -0500
+Received: from mail-pl1-f196.google.com ([209.85.214.196]:34812 "EHLO
+        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727223AbfLJMIP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 07:08:15 -0500
+Received: by mail-pl1-f196.google.com with SMTP id x17so1980804pln.1;
+        Tue, 10 Dec 2019 04:08:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=l5uHiV+Yi1b/Weaw8ObG18hI7s+mQL2W7TckPvD0Lmw=;
+        b=i4Vp1W98Nl1Bui3BDaWfwjqHavE+84yuA5Oq/NNngoDymHqy40lpX0wJWRF15laQ3H
+         RK8TOdxrCq4G/QeARICf2XgwZof7eTk1qmGv7X9T40sSWaDdIYBFm60zecRsPFFbXCKT
+         +hNlW/WYxHPKhZFf+N3HsnpbTlkrLmQ8DpTB9b2Aa+VGMvCvvr+B7kNBkx17bmB8nYtx
+         7tmApRoh8ZzY8VIiDzw6wyJOfFVCYELv6VeMJwjrHPNe2hiMgUfoNRAV18a/Y86mIuUF
+         xQust9GBGsSVyXNjUqu0yU0aB6E8D+XaNme3V++1hR5w2Ipz0qRLJZPF7fVnFZpqMWxp
+         xU2g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=l5uHiV+Yi1b/Weaw8ObG18hI7s+mQL2W7TckPvD0Lmw=;
+        b=KYJygE0nYzym2qy9Z9jLEYLFwFZi1LVdApKq6bWNmp3xwsb8ALoeguEogc0qd7FHTq
+         ZkNe+GPA0UkhRSIf9bsDK6zWc0kqw1W6R/oP5v/hKLUqxJq+yPGA5dwmpMOOQPadZiUh
+         lROd9dxcAFRlwt8vmz+YkdVUiwGMVcl0YA8/2FD/CHTDEYNcxv25UjuTIqRw8gEE5PTw
+         SiQc9eKFmPMGKc46iIT0smKZMnh+4Kmj2J5B0Gu6W+AnJhXFoNdh2bAaChzhXa74KKUU
+         nuvvPmu7qh8rjG3UGGsXeRVbhXF1csvpoxDLAMe9/Gx3MeOpgm0lQG9ueG+odT4Nkd3d
+         F7gA==
+X-Gm-Message-State: APjAAAUPKNu6+Shm7Wmc3J8+ZLmF/lHUVJKU26fm7WLd2jG2IYJAX82+
+        +mkLf2pHB9LqTkoga3G2brM=
+X-Google-Smtp-Source: APXvYqzMbUr5xi4SJjUYbbZL+R0wEZ6fVbQcFoDtmRRcltk45AuEjKcpMO2nVrmYiwGmXZkR4VhLGg==
+X-Received: by 2002:a17:90a:8903:: with SMTP id u3mr4968272pjn.137.1575979694925;
+        Tue, 10 Dec 2019 04:08:14 -0800 (PST)
+Received: from baolinwangubtpc.spreadtrum.com ([117.18.48.82])
+        by smtp.gmail.com with ESMTPSA id r193sm3440295pfr.100.2019.12.10.04.08.09
+        (version=TLS1 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Tue, 10 Dec 2019 04:08:13 -0800 (PST)
+From:   Baolin Wang <baolin.wang7@gmail.com>
+To:     rui.zhang@intel.com, edubezval@gmail.com,
+        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
+        robh+dt@kernel.org, mark.rutland@arm.com
+Cc:     orsonzhai@gmail.com, baolin.wang@linaro.org,
+        baolin.wang7@gmail.com, freeman.liu@unisoc.com,
+        zhang.lyra@gmail.com, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/2] dt-bindings: thermal: sprd: Add the Spreadtrum thermal documentation
+Date:   Tue, 10 Dec 2019 20:07:17 +0800
+Message-Id: <8d5358a67746b2aff5f6995cabd11d0d7c9e579e.1575978484.git.baolin.wang7@gmail.com>
+X-Mailer: git-send-email 1.7.9.5
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+From: Baolin Wang <baolin.wang@unisoc.com>
 
-The purpose of this set of patches is to allow the intel_idle driver to use
-C-states information from ACPI _CST on systems where the processor is not
-recognized by it.
+Add the Spreadtrum thermal documentation.
 
-The first five patches are preparatory (please look into the changelogs for
-details) and are not expected to make any functional difference.
+Signed-off-by: Baolin Wang <baolin.wang@unisoc.com>
+Signed-off-by: Baolin Wang <baolin.wang7@gmail.com>
+---
+Changes from v1:
+ - Change to yaml format.
+---
+ .../devicetree/bindings/thermal/sprd-thermal.yaml  |   97 ++++++++++++++++++++
+ 1 file changed, 97 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
 
-The patch [6/9] adds ACPI _CST support to intel_idle so that _CST is used when
-the driver does not have a dedicated list of C-states for the given processor.
-
-Patch [7/9] is the same as https://patchwork.kernel.org/patch/11256815/.
-
-Patch [8/9] changes intel_idle to also use ACPI _CST if there is a tables
-of C-states for the given processor in the driver, in which case it will use
-the _CST information to decide which C-state to enable by default.
-
-The last patch adds a module parameter called "no_acpi" that can be used to
-prevent intel_idle from using ACPI _CST via the kernel command line.
-
-This has been lightly tested on a Dell XPS13 9360 (with an additional patch to
-drop the Kaby Lake entries from intel_idle_ids[] which normally would prevent
-intel_idle from registering itself as the cpuidle driver).  The difference
-between using the idle states list from _CST and the built-in one generally is
-that in the latter case the processor spends more time in package C-state when
-the system is idle.
-
-If there are any concerns about this series, please let me know.
-
-Thanks,
-Rafael
-
-
+diff --git a/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+new file mode 100644
+index 0000000..92d208a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+@@ -0,0 +1,97 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/sprd-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Spreadtrum thermal sensor controller bindings
++
++maintainers:
++  - Orson Zhai <orsonzhai@gmail.com>
++  - Baolin Wang <baolin.wang7@gmail.com>
++  - Chunyan Zhang <zhang.lyra@gmail.com>
++
++properties:
++  compatible:
++    const: sprd,ums512-thermal
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  clock-names:
++    items:
++      - const: enable
++
++  nvmem-cells:
++    maxItems: 2
++    description:
++      Reference to nvmem nodes for the calibration data.
++
++  nvmem-cells-names:
++    maxItems: 2
++    items:
++      - const: thm_sign_cal
++      - const: thm_ratio_cal
++
++  "#thermal-sensor-cells":
++    const: 1
++
++  child-node:
++    description: Represent one thermal sensor.
++
++    properties:
++      reg:
++        description: Specify the sensor id.
++        maxItems: 1
++
++      nvmem-cells:
++        maxItems: 1
++        description:
++          Reference to an nvmem node for the calibration data.
++
++      nvmem-cells-names:
++        maxItems: 1
++        items:
++          - const: sen_delta_cal
++
++    required:
++      - reg
++      - nvmem-cells
++      - nvmem-cells-names
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - clock-names
++  - nvmem-cells
++  - nvmem-cells-names
++  - "#thermal-sensor-cells"
++
++examples:
++  - |
++        ap_thm0: thermal@32200000 {
++                compatible = "sprd,ums512-thermal";
++                reg = <0 0x32200000 0 0x10000>;
++                clock-names = "enable";
++                clocks = <&aonapb_gate 32>;
++                #thermal-sensor-cells = <1>;
++                nvmem-cells = <&thm0_sign>, <&thm0_ratio>;
++                nvmem-cell-names = "thm_sign_cal", "thm_ratio_cal";
++
++                prometheus0-sensor@0 {
++                        reg = <0>;
++                        nvmem-cells = <&thm0_sen0>;
++                        nvmem-cell-names = "sen_delta_cal";
++                };
++
++                ank1-sensor@1 {
++                        reg = <1>;
++                        nvmem-cells = <&thm0_sen1>;
++                        nvmem-cell-names = "sen_delta_cal";
++                };
++        };
++...
+-- 
+1.7.9.5
 
