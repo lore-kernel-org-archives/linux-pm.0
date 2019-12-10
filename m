@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09C98C2D0BF
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:35:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55E0AC43603
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:40:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D2DF3214D8
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:35:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2C31620836
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:40:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576017358;
-	bh=x9I7T5T7xIgdzAY+wPHiDtGNSoQ7jwk2khFKjd709c4=;
+	s=default; t=1576017653;
+	bh=MXSy9xgI7k1GVB+RQ+ZSVie9LG4HggPXOZQGiVR9ENk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=QLFJpj7KfWVPBh9FWYktXhKbH4HyFk9JCUm2kkaewAp63vWd52E6OM2ZIHw7HrRp6
-	 SJvGqnsFv+f57jVCuEyCvbVmRl4pbQl6u2lSQtPc9DbcAIaH4JzeoAZAQtTZZQc0/B
-	 6NsHaHdAE2m2MrgnPIueXYyr4vO85EY36t7lrmIk=
+	b=ANJWy2hCjNfyHg7KoCih+LcLH1W2fVzngiN05HnluxP82abgg/QFhLzARTDxkwLyZ
+	 UR6SL4CG8EZJ55W01XpxB5SVqY5fcS2+1VtOIPIIeU5y2fqGQLJH8IeXDtYLqhl+Mt
+	 WltSlczaGce1kQzsn2VFtykvzHWNiH03IHV8FeCc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729471AbfLJWe1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Dec 2019 17:34:27 -0500
-Received: from mail.kernel.org ([198.145.29.99]:55834 "EHLO mail.kernel.org"
+        id S1727963AbfLJWkr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Dec 2019 17:40:47 -0500
+Received: from mail.kernel.org ([198.145.29.99]:52310 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730314AbfLJWe0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Dec 2019 17:34:26 -0500
+        id S1728718AbfLJWcC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Dec 2019 17:32:02 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 4D931207FF;
-        Tue, 10 Dec 2019 22:34:25 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0E932206EC;
+        Tue, 10 Dec 2019 22:32:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576017266;
-        bh=x9I7T5T7xIgdzAY+wPHiDtGNSoQ7jwk2khFKjd709c4=;
+        s=default; t=1576017121;
+        bh=MXSy9xgI7k1GVB+RQ+ZSVie9LG4HggPXOZQGiVR9ENk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=wDOjGTiT/J53Tn8XztpwjRoUmnhXQVNBfgLjmFn8xYIdxsGVDrRkVxAUH3Re+wZna
-         uO2Mk6K1bHwmktyr3+vr3yF3jX3CbXivtHBE4LOH+Y3Qoe4BR/e7vQB26BZSYJQEvZ
-         slx/D93Tety0auKclZFU0aGcY9QNtwxRdp8THB+4=
+        b=Xvb3iMALl99Akx9NEqHYhhCdGMks7+rFAr00zXrvhGVn/4bMHh8f44iP1kWVATXTQ
+         WFgPfRnQeh586vqkHcV0G2ARi1qPfufEr0KYT618lZTWrTm+ps4V+AJ5uPdFpGY4+S
+         V4KeaQoDsZZo/NUmtOkRB40VGTgvol4PKdYuGi7k=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
@@ -45,12 +45,12 @@ Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
         Amit Kucheria <amit.kucheria@linaro.org>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 59/71] cpufreq: Register drivers only after CPU devices have been registered
-Date:   Tue, 10 Dec 2019 17:33:04 -0500
-Message-Id: <20191210223316.14988-59-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 73/91] cpufreq: Register drivers only after CPU devices have been registered
+Date:   Tue, 10 Dec 2019 17:30:17 -0500
+Message-Id: <20191210223035.14270-73-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191210223316.14988-1-sashal@kernel.org>
-References: <20191210223316.14988-1-sashal@kernel.org>
+In-Reply-To: <20191210223035.14270-1-sashal@kernel.org>
+References: <20191210223035.14270-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -104,10 +104,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 7 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2239d42bdadd9..49aa58e617db4 100644
+index 063ce77df6196..86d48f8c6a2e2 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -2426,6 +2426,13 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+@@ -2449,6 +2449,13 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
  	if (cpufreq_disabled())
  		return -ENODEV;
  
