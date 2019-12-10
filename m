@@ -5,51 +5,51 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71D08C43603
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:13:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B69B6C43603
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:33:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3F93420836
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:13:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8B66E214AF
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:33:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576016000;
-	bh=llBBnJ3P3pa6zL/Mt18ioHegHYSz5Sae7jjVQ7Lw7aI=;
+	s=default; t=1576017215;
+	bh=dGlrQtKk+2i3iVauwHrp2MuaUdZqTCOvi9Gm7Ko0JIk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=TvFj95W3MxA/h4CVxrvDqjFshM5jKcqoE6Gi4hxqcXy1Bu/cvFrRK5FOaIWzWx33E
-	 g8rPBYgowddP8ivamjvbQwAydkoU7ki2uVypAgJpcZM678JRkXWNMPoKmultS62yvq
-	 FNs9QlTo7lv7ARHqbFda/FT+PO9gc/7ohp7u0wUw=
+	b=aXT8Pm+cdSYCDrDoBd/7sAo1uMGN9YjJmLO2Uj+nbxSI6Iyw6A03DtclqoqDOMZHm
+	 CijmimZt2h6xrVth9onq4azeL+45KUYrPleAlyB9Nsr51yjzyNf5wYN2LgQArlm75x
+	 jXy6ZcFQ81w7AUK7XzT6Jv9hxR3z+FXDGkHLc6ng=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727778AbfLJWNP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Dec 2019 17:13:15 -0500
-Received: from mail.kernel.org ([198.145.29.99]:33486 "EHLO mail.kernel.org"
+        id S1729829AbfLJWdd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Dec 2019 17:33:33 -0500
+Received: from mail.kernel.org ([198.145.29.99]:54374 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727631AbfLJWDY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Dec 2019 17:03:24 -0500
+        id S1729811AbfLJWdc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Dec 2019 17:33:32 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id AE84720828;
-        Tue, 10 Dec 2019 22:03:22 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 7F572207FF;
+        Tue, 10 Dec 2019 22:33:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576015403;
-        bh=llBBnJ3P3pa6zL/Mt18ioHegHYSz5Sae7jjVQ7Lw7aI=;
+        s=default; t=1576017211;
+        bh=dGlrQtKk+2i3iVauwHrp2MuaUdZqTCOvi9Gm7Ko0JIk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=00zn+CZnbUUpsPihA386qLxperAQaPjX64eOJCIN6Kd0kVjoDXSq/z24FzV217uaQ
-         ARCO+UH9+ToioieDV05umaWJiu/WRuiL6PsJ749iE9weWEVhB39Benjn2RaAUSRDwn
-         iDT6Ciubxn0HX+qddkX+XvZSMYYHm04AIM22gOvI=
+        b=AjGZeC/4VLtMNJuUMNInEaTzTJX0jhNxTegip9q6m7zcDlYE7eizxsSVlZRY0+NjG
+         qqhlltC3dR3AvgqI2plOqoAv7LF21eWSiO0r3BJzlG4B4UOwMNBXotYC26hqX+BtYH
+         NIYD8idsG9WUKCbxWZNfsTM0IAjNNrmBB1BJtP1g=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Nathan Chancellor <natechancellor@gmail.com>,
         Shuah Khan <skhan@linuxfoundation.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
         clang-built-linux@googlegroups.com
-Subject: [PATCH AUTOSEL 4.14 018/130] tools/power/cpupower: Fix initializer override in hsw_ext_cstates
-Date:   Tue, 10 Dec 2019 17:01:09 -0500
-Message-Id: <20191210220301.13262-18-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 12/71] tools/power/cpupower: Fix initializer override in hsw_ext_cstates
+Date:   Tue, 10 Dec 2019 17:32:17 -0500
+Message-Id: <20191210223316.14988-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191210220301.13262-1-sashal@kernel.org>
-References: <20191210220301.13262-1-sashal@kernel.org>
+In-Reply-To: <20191210223316.14988-1-sashal@kernel.org>
+References: <20191210223316.14988-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -103,7 +103,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 deletion(-)
 
 diff --git a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
-index f794d6bbb7e9f..3e4ff4a1cdf4b 100644
+index ebeaba6571a38..475e18e043187 100644
 --- a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
 +++ b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
 @@ -40,7 +40,6 @@ static cstate_t hsw_ext_cstates[HSW_EXT_CSTATE_COUNT] = {
