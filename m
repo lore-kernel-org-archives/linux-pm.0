@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5F13C2D0BF
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 21:24:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26664C00454
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 21:31:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8B8352073B
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 21:24:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E63072073B
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 21:31:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576013059;
-	bh=iKHzYfg2mi5+rXn4bwwSLeTeA/Prirx9XvsHR+GrqNA=;
+	s=default; t=1576013490;
+	bh=ZkQNR1TZKmTtQmGs/IMX1SC2ZreDZnDVq2Ta/ZZTK8Y=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=iP/QxUqyE0fsE4yzB9K4jyfeeVWG2yIuoGJveEWiN0LCLpLK5WOPyIKpEYGoTa2K0
-	 RAMV239tDvZygv8pauc8Z0POUmMgGXh9h+SHuknYtZIp55IJtiK64cu7vK3AkdpcFG
-	 cFHH6Fxat605LeS6uYNGKOTI/+hD5sql8fVAS/A8=
+	b=o9brAluCoZKkS1g/3oPq07lZujBpQBFVbNDAOUE59QA/wCJI8/K+Op1QUXIxZsG9j
+	 Ap7Pv8ZRtp4EZ0xQGr9cuBrkIW8wksI49hRGv0FGzGQJ95CGGAgc4757bct7RIFRgU
+	 6wMWCnXLLnw5rm2l8wnmd9lXUwzYHVQX+MdgHhxA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728877AbfLJVYO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Dec 2019 16:24:14 -0500
-Received: from mail.kernel.org ([198.145.29.99]:33036 "EHLO mail.kernel.org"
+        id S1728186AbfLJVJc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Dec 2019 16:09:32 -0500
+Received: from mail.kernel.org ([198.145.29.99]:58154 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727500AbfLJVKz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Dec 2019 16:10:55 -0500
+        id S1727075AbfLJVJb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Dec 2019 16:09:31 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 99D51246AE;
-        Tue, 10 Dec 2019 21:10:53 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 7E43A246B6;
+        Tue, 10 Dec 2019 21:09:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576012254;
-        bh=iKHzYfg2mi5+rXn4bwwSLeTeA/Prirx9XvsHR+GrqNA=;
+        s=default; t=1576012171;
+        bh=ZkQNR1TZKmTtQmGs/IMX1SC2ZreDZnDVq2Ta/ZZTK8Y=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=B4sagRIvW9990KfUKB6onyejIIjyx/Xi3LNSViu1NLzmTPHrslZQizeYb0lUdOc7E
-         bsvtQgtwhOsn2x5VF/JTf8zDKhVt8gJTFplzgB1bbshq+qaXxyeuS1EblgP/lvJsn/
-         K5kWwtJF77fnLA3YCVIsTcBbUE66aaJCyjNp8uQQ=
+        b=H4xCL4TiTIpvs4gkvK5qWXoIMYF7IAO2RsNHv+LR8wvTfVMSd8pEo2QlIaPJLBedk
+         5Zlo8L1woZYpxL4fsgZTpd3FTK1TyGSsEaKBS6cg0+xSEDxAHByqVmtLAMkFjK57NF
+         cNMor3WHzt3yqoQ559Q+owcfLv6pcihKZ8p4EvGk=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Ondrej Jirman <megous@megous.com>,
-        Maxime Ripard <mripard@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH AUTOSEL 5.4 201/350] cpufreq: sun50i: Fix CPU speed bin detection
-Date:   Tue, 10 Dec 2019 16:05:06 -0500
-Message-Id: <20191210210735.9077-162-sashal@kernel.org>
+Cc:     Tony Lindgren <tony@atomide.com>,
+        Merlijn Wajer <merlijn@wizzup.org>,
+        Pavel Machek <pavel@ucw.cz>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.4 130/350] power: supply: cpcap-battery: Check voltage before orderly_poweroff
+Date:   Tue, 10 Dec 2019 16:03:55 -0500
+Message-Id: <20191210210735.9077-91-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191210210735.9077-1-sashal@kernel.org>
 References: <20191210210735.9077-1-sashal@kernel.org>
@@ -60,87 +60,52 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Ondrej Jirman <megous@megous.com>
+From: Tony Lindgren <tony@atomide.com>
 
-[ Upstream commit c23734487fb44ee16c1b007ba72d793c085e4ec4 ]
+[ Upstream commit 639c1524da3b273d20c42ff2387d08eb4b12e903 ]
 
-I have observed failures to boot on Orange Pi 3, because this driver
-determined that my SoC is from the normal bin, but my SoC only works
-reliably with the OPP values for the slowest bin.
+We can get the low voltage interrupt trigger sometimes way too early,
+maybe because of CPU load spikes. This causes orderly_poweroff() be
+called too easily.
 
-By querying H6 owners, it was found that e-fuse values found in the wild
-are in the range of 1-3, value of 7 was not reported, yet. From this and
-from unused defines in BSP code, it can be assumed that meaning of efuse
-values on H6 actually is:
+Let's check the voltage before orderly_poweroff in case it was not
+yet a permanent condition. We will be getting more interrupts anyways
+if the condition persists.
 
-- 1 = slowest bin
-- 2 = normal bin
-- 3 = fastest bin
+Let's also show the measured voltages for low battery and battery
+empty warnings since we have them.
 
-Vendor code actually treats 0 and 2 as invalid efuse values, but later
-treats all invalid values as a normal bin. This looks like a mistake in
-bin detection code, that was plastered over by a hack in cpufreq code,
-so let's not repeat it here. It probably only works because there are no
-SoCs in the wild with efuse value of 0, and fast bin SoCs are made to
-use normal bin OPP tables, which is also safe.
-
-Let's play it safe and interpret 0 as the slowest bin, but fix detection
-of other bins to match this research. More research will be done before
-actual OPP tables are merged.
-
-Fixes: f328584f7bff ("cpufreq: Add sun50i nvmem based CPU scaling driver")
-Acked-by: Maxime Ripard <mripard@kernel.org>
-Signed-off-by: Ondrej Jirman <megous@megous.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Merlijn Wajer <merlijn@wizzup.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/sun50i-cpufreq-nvmem.c | 25 ++++++++++---------------
- 1 file changed, 10 insertions(+), 15 deletions(-)
+ drivers/power/supply/cpcap-battery.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-index eca32e443716c..9907a165135b7 100644
---- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-@@ -25,7 +25,7 @@
- static struct platform_device *cpufreq_dt_pdev, *sun50i_cpufreq_pdev;
- 
- /**
-- * sun50i_cpufreq_get_efuse() - Parse and return efuse value present on SoC
-+ * sun50i_cpufreq_get_efuse() - Determine speed grade from efuse value
-  * @versions: Set to the value parsed from efuse
-  *
-  * Returns 0 if success.
-@@ -69,21 +69,16 @@ static int sun50i_cpufreq_get_efuse(u32 *versions)
- 		return PTR_ERR(speedbin);
- 
- 	efuse_value = (*speedbin >> NVMEM_SHIFT) & NVMEM_MASK;
--	switch (efuse_value) {
--	case 0b0001:
--		*versions = 1;
--		break;
--	case 0b0011:
--		*versions = 2;
--		break;
--	default:
--		/*
--		 * For other situations, we treat it as bin0.
--		 * This vf table can be run for any good cpu.
--		 */
-+
-+	/*
-+	 * We treat unexpected efuse values as if the SoC was from
-+	 * the slowest bin. Expected efuse values are 1-3, slowest
-+	 * to fastest.
-+	 */
-+	if (efuse_value >= 1 && efuse_value <= 3)
-+		*versions = efuse_value - 1;
-+	else
- 		*versions = 0;
--		break;
--	}
- 
- 	kfree(speedbin);
- 	return 0;
+diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/cpcap-battery.c
+index 61d6447d1966f..00a96e4a1cdc3 100644
+--- a/drivers/power/supply/cpcap-battery.c
++++ b/drivers/power/supply/cpcap-battery.c
+@@ -562,12 +562,14 @@ static irqreturn_t cpcap_battery_irq_thread(int irq, void *data)
+ 	switch (d->action) {
+ 	case CPCAP_BATTERY_IRQ_ACTION_BATTERY_LOW:
+ 		if (latest->current_ua >= 0)
+-			dev_warn(ddata->dev, "Battery low at 3.3V!\n");
++			dev_warn(ddata->dev, "Battery low at %imV!\n",
++				latest->voltage / 1000);
+ 		break;
+ 	case CPCAP_BATTERY_IRQ_ACTION_POWEROFF:
+-		if (latest->current_ua >= 0) {
++		if (latest->current_ua >= 0 && latest->voltage <= 3200000) {
+ 			dev_emerg(ddata->dev,
+-				  "Battery empty at 3.1V, powering off\n");
++				  "Battery empty at %imV, powering off\n",
++				  latest->voltage / 1000);
+ 			orderly_poweroff(true);
+ 		}
+ 		break;
 -- 
 2.20.1
 
