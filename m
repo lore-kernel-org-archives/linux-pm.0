@@ -2,152 +2,95 @@ Return-Path: <SRS0=LKPD=2A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01902C2D0BF
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 12:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63E87C43603
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 12:19:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D21C420838
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 12:14:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E98F42077B
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 12:19:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nMUGE9oj"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727526AbfLJMNc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Dec 2019 07:13:32 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:49526 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727306AbfLJMNb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 07:13:31 -0500
-Received: from 79.184.255.117.ipv4.supernova.orange.pl (79.184.255.117) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
- id 0a5678278498855a; Tue, 10 Dec 2019 13:13:28 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Len Brown <len.brown@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>
-Subject: [RFC v2][PATCH 8/9] intel_idle: Use ACPI _CST for selected known processors
-Date:   Tue, 10 Dec 2019 13:13:04 +0100
-Message-ID: <2165961.YlpjWumQq8@kreacher>
-In-Reply-To: <35821518.IbFVMVmUy3@kreacher>
-References: <35821518.IbFVMVmUy3@kreacher>
+        id S1727224AbfLJMTc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Dec 2019 07:19:32 -0500
+Received: from mail-lj1-f180.google.com ([209.85.208.180]:36782 "EHLO
+        mail-lj1-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727131AbfLJMTb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 07:19:31 -0500
+Received: by mail-lj1-f180.google.com with SMTP id r19so19657085ljg.3;
+        Tue, 10 Dec 2019 04:19:30 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=mZr/+6HpSIONAz05WKaRqDWYK5bxI03ma7Dp4hXBj4Y=;
+        b=nMUGE9ojdwfx0CYOyowero9vGQjdbfF89mEUclB2RMCR99DXXtRTKdjAe9UYrHCXl+
+         yMd9U8yaKIpJHa/pzllZRZm3WZvZeiI/65EemTHFHEqwtx/7QGrssXMNS8tCkhb0qJyy
+         SOo72CzR9bc5QntEM6TCY5c84vgzQ2/+JwHwCvlr6Ez8e7P7pfQiNmK/gNeJFso3heF6
+         UF3H7O83XG6Yx5JR+uWjto0uCIURwxn4ndrt+ajjQwiy5mifPQ8hhTMCXdBIZatE4sCJ
+         H1nANPPM5+5XL0zZi+MTgE28Zkep3Y4GSdRMsEET/FY6wWlfBto/AArG3dJHlBJSr8xY
+         gzLg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=mZr/+6HpSIONAz05WKaRqDWYK5bxI03ma7Dp4hXBj4Y=;
+        b=pIIp0Npgb8BPSpixTNf71S1EopRWbMhpsVcX/T62Lnm8G14RR8u1G3aTaIjG/ONwar
+         BEC8llJKKguPfwMStks2rw/vGeA7t6z5ZMl/S2xjNaPUcWyd1L8ZouAh4zTrK9cChg7G
+         HjZ+Fbmh7Lpo+UbopUlL8bQqwuhiMwARahQQGZr81yujomesrS5OilRrNm15dSkTWOuS
+         GA7xbwU37HYOzhOq4unRKzQiFM+9iiEt0Ds4crbpoUUhZ+5MR7Q/DBw7JrPKrVSF8ywi
+         ORe6YcvTyrDKi/u+NdcJLNLbr6LiMzRhW+BEzbuzJInjuumxVpzJsOgl4JDmpunERYWl
+         jyhA==
+X-Gm-Message-State: APjAAAXrNV+6YSVkMWoqcwltJuoQR3pbHvWHEoXh7DGoZA/g1alJJ5G+
+        3901KHgGhyyFUQ62L9Z0piAYcWE4ChJPrdsVfOc=
+X-Google-Smtp-Source: APXvYqww+mmoqgVXNIbfcua+rHzXuSgDDkoZs8OWbxCzt9D+f/gPdFAfoXdomnkfJO5QwjZfHhzqKWF9QGxZRgLWfY0=
+X-Received: by 2002:a2e:6e10:: with SMTP id j16mr20421893ljc.202.1575980369201;
+ Tue, 10 Dec 2019 04:19:29 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+References: <08794fde-cdd0-287c-62bf-e2e3b8c80686@gmail.com>
+ <20191203101509.wte47aad5k4mqu2y@pengutronix.de> <CAOMZO5Cn993y9VeFN6hPO3-cfNnUKiuFd_rqAZ8htz=dO6t6ig@mail.gmail.com>
+ <CAOMZO5BniszDhWKkoWY=P62kv9cY160r9P=pjpbSOZasxJvdBA@mail.gmail.com> <77fff313-3f40-6b5e-fe30-5a65a189bdff@gmail.com>
+In-Reply-To: <77fff313-3f40-6b5e-fe30-5a65a189bdff@gmail.com>
+From:   Fabio Estevam <festevam@gmail.com>
+Date:   Tue, 10 Dec 2019 09:19:18 -0300
+Message-ID: <CAOMZO5Ay6opfhb2cOOFHsbC_kgwreG=0TBAwtwwxM6PVE6tK6w@mail.gmail.com>
+Subject: Re: Issue with imx_get_temp()
+To:     Igor Plyatov <plyatov@gmail.com>
+Cc:     Marco Felsch <m.felsch@pengutronix.de>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Igor,
 
-Update the intel_idle driver to get the C-states information from ACPI
-_CST in some cases in which the processor is known to the driver, as long as
-that information is available and the new use_acpi flag is set in the
-profile of the processor in question.
+On Tue, Dec 3, 2019 at 11:36 AM Igor Plyatov <plyatov@gmail.com> wrote:
+>
+> Dear Fabio,
+>
+> > Does the following patch help?
+> > http://code.bulix.org/l3rz2e-982595
+>
+> Thank you!
+>
+> Patch applied and will be tested.
+>
+> I will inform you about results.
 
-In the cases when there is a specific table of C-states for the given
-processor in the driver, that table is used as the primary source of
-information on the available C-states, but if ACPI _CST is present,
-the C-states that are not listed by it will not be enabled by default
-(they still can be enabled later by user space via sysfs, though).
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/idle/intel_idle.c |   45 ++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 42 insertions(+), 3 deletions(-)
-
-Index: linux-pm/drivers/idle/intel_idle.c
-===================================================================
---- linux-pm.orig/drivers/idle/intel_idle.c
-+++ linux-pm/drivers/idle/intel_idle.c
-@@ -80,6 +80,7 @@ struct idle_cpu {
- 	unsigned long auto_demotion_disable_flags;
- 	bool byt_auto_demotion_disable_flag;
- 	bool disable_promotion_to_c1e;
-+	bool use_acpi;
- };
- 
- static const struct idle_cpu *icpu;
-@@ -91,6 +92,11 @@ static void intel_idle_s2idle(struct cpu
- static struct cpuidle_state *cpuidle_state_table;
- 
- /*
-+ * Enable this state by default even if the ACPI _CST does not list it.
-+ */
-+#define CPUIDLE_FLAG_IGNORE_ACPI	BIT(15)
-+
-+/*
-  * Set this flag for states where the HW flushes the TLB for us
-  * and so we don't need cross-calls to keep it consistent.
-  * If this flag is set, SW flushes the TLB, so even if the
-@@ -1221,9 +1227,33 @@ static void intel_idle_init_cstates_acpi
- 		state->enter_s2idle = intel_idle_s2idle;
- 	}
- }
-+
-+static bool intel_idle_off_by_default(u32 mwait_hint)
-+{
-+	int cstate, limit;
-+
-+	/*
-+	 * If there are no _CST C-states, do not disable any C-states by
-+	 * default.
-+	 */
-+	if (!acpi_state_table.count)
-+		return false;
-+
-+	limit = min_t(int, CPUIDLE_STATE_MAX, acpi_state_table.count);
-+	/*
-+	 * If limit > 0, intel_idle_cst_usable() has returned 'true', so all of
-+	 * the interesting states are ACPI_CSTATE_FFH.
-+	 */
-+	for (cstate = 1; cstate < limit; cstate++) {
-+		if (acpi_state_table.states[cstate].address == mwait_hint)
-+			return false;
-+	}
-+	return true;
-+}
- #else /* !CONFIG_ACPI_PROCESSOR_CSTATE */
- static inline bool intel_idle_acpi_cst_extract(void) { return false; }
- static inline void intel_idle_init_cstates_acpi(struct cpuidle_driver *drv) { }
-+static inline bool intel_idle_off_by_default(u32 mwait_hint) { return false; }
- #endif /* !CONFIG_ACPI_PROCESSOR_CSTATE */
- 
- /*
-@@ -1264,10 +1294,13 @@ static int __init intel_idle_probe(void)
- 	pr_debug("MWAIT substates: 0x%x\n", mwait_substates);
- 
- 	icpu = (const struct idle_cpu *)id->driver_data;
--	if (icpu)
-+	if (icpu) {
- 		cpuidle_state_table = icpu->state_table;
--	else if (!intel_idle_acpi_cst_extract())
-+		if (icpu->use_acpi)
-+			intel_idle_acpi_cst_extract();
-+	} else if (!intel_idle_acpi_cst_extract()) {
- 		return -ENODEV;
-+	}
- 
- 	pr_debug("v" INTEL_IDLE_VERSION " model 0x%X\n",
- 		 boot_cpu_data.x86_model);
-@@ -1475,7 +1508,13 @@ static void intel_idle_init_cstates_icpu
- 			continue;
- 
- 		/* Structure copy. */
--		drv->states[drv->state_count++] = cpuidle_state_table[cstate];
-+		drv->states[drv->state_count] = cpuidle_state_table[cstate];
-+
-+		if (icpu->use_acpi && intel_idle_off_by_default(mwait_hint) &&
-+		    !(cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_IGNORE_ACPI))
-+			drv->states[drv->state_count].flags |= CPUIDLE_FLAG_OFF;
-+
-+		drv->state_count++;
- 	}
- 
- 	if (icpu->byt_auto_demotion_disable_flag) {
-
-
-
+How did your tests go?
