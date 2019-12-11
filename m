@@ -2,196 +2,162 @@ Return-Path: <SRS0=LDln=2B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1989EC2D0C6
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 15:34:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03F64C00454
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 15:44:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D8D9624656
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 15:34:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CC7B02073D
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 15:44:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="saTYAymW"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="p5CrlKDt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733023AbfLKPet (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Dec 2019 10:34:49 -0500
-Received: from mail-pg1-f193.google.com ([209.85.215.193]:37240 "EHLO
-        mail-pg1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387561AbfLKPer (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Dec 2019 10:34:47 -0500
-Received: by mail-pg1-f193.google.com with SMTP id q127so10944456pga.4;
-        Wed, 11 Dec 2019 07:34:47 -0800 (PST)
+        id S1732036AbfLKPoA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Dec 2019 10:44:00 -0500
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:34966 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388761AbfLKPn6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Dec 2019 10:43:58 -0500
+Received: by mail-lj1-f195.google.com with SMTP id j6so24622655lja.2
+        for <linux-pm@vger.kernel.org>; Wed, 11 Dec 2019 07:43:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=HVbcFREEaAqSDDWDOprFJiM+U7AawLPMDqSvqgEPZVM=;
-        b=saTYAymWtQJVo2xDI5CVVPD7OFscZvr3OmDkn9R98p/K2QPfrErbyRBfLSWuDw82Je
-         o5ei0YTQ5fgmkh7BZCrXIsR8OBZyO/sfNZyPb/2FHmifAkGNyAGukafSKofRjuTXMFXl
-         WMQxGPuD9wxK4yLU1VhNzWYYmxihNPVzCRYgjRidEsjCXlEHWzI7tLoB4bV+Tg3p4Myq
-         VXt9uBaV6jd+hJ6IiKy+pcyDX7aXRViVdLgvrrtrP2D7MFxBpcCNbOct/mx5x6fZqNzY
-         wB9Y8YH11zoDDTXPnrVGiEROE/KKqb2trAGgVZw0dOKu3YAS5kWfyPCL9O/gC/FZ67Mj
-         Od8w==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=rTyFfehsHZ4NrOw6RaeXcNkMIHnoS8zNHPnwBdHCVW4=;
+        b=p5CrlKDt3mkO5z+JaPTIxWFp1zu66so+e8FkAUrFkoA8GpcVCIRnRFbgMKzLoaHzlW
+         HCv+6p5dqkThhU/6+gENScBRN2Ij182cE77XbziWSrktZRYLrulaWpBFRO4l1Fr/ITes
+         XMrApT04irJm6q/vvKyw0CjHNrtvRz3jxX/ux2yCHAbH4j8a7VSuUN91m7v6KQevqpWh
+         5rwME1geedwsSxeTd32eFCIwPYPb4gns9rdDMoY7+L46ViaYCQfjBTlJ8omHwMW+vMl9
+         Yuel0R2OWPSUCRoJTIy9gsQF8SUuIS6aAYxo8lNs+lJ8yiQsqFiaDuKhBwv2/9lre3TK
+         1qUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=HVbcFREEaAqSDDWDOprFJiM+U7AawLPMDqSvqgEPZVM=;
-        b=bYAetMkQEIiFZIm3qnffBXcd6lIlL9J+d3IgIYIvwk3iFFmlv6oL6Xef1QRJ8h/xYX
-         BS5uk3rmX+n6N4zUJ/WF4i36CNeNLI7fc+oPNjOYrO55/WiXoqGgPhojY8bcSIS8MwaY
-         D0xT9omgE62Ud+OZ2s5zVaa2n8S1F67lp2doKCSb9Ejv5925cM93w6MZmhKyXNI0K+3C
-         miyyY4u4sxrPSKqGcVKHH5s+WtaeXJRrWZJDKN9ggsLlmZ2iDnqMheTxnUM/vR3CteLt
-         bNWz0wRPvIwaupjz/CBrDdRHag6wWQeYZqDDkHc9vO/6U8NHpal14A7ThErWqXfdcJ90
-         yMCQ==
-X-Gm-Message-State: APjAAAXONB2Wd6FQyap/8Kga4+tUPU3aML+AsSWGjPvAoXWT9epAtMWA
-        u7F4U+Q3lhoLS/zSGYv6vAwREvrkN4min5dBMto=
-X-Google-Smtp-Source: APXvYqzJ499NHPqVSLLyDUscDbmBddDHmzhr28AkkyOZGKxqfxHIirybt8amARCuiU4PKcyZgP8Qc63k0WPAFrMp7QU=
-X-Received: by 2002:a62:1944:: with SMTP id 65mr4526218pfz.151.1576078486945;
- Wed, 11 Dec 2019 07:34:46 -0800 (PST)
-MIME-Version: 1.0
-References: <1576075099-3441-1-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1576075099-3441-1-git-send-email-akinobu.mita@gmail.com>
-From:   Andy Shevchenko <andy.shevchenko@gmail.com>
-Date:   Wed, 11 Dec 2019 17:34:37 +0200
-Message-ID: <CAHp75VcsfbkG7n6FHkpnPN0sG_PdKg_iKS7VGfATxuPVYU5jcQ@mail.gmail.com>
-Subject: Re: [PATCH v3 00/12] add header file for kelvin to/from Celsius
- conversion helpers
-To:     Akinobu Mita <akinobu.mita@gmail.com>
-Cc:     Linux NVMe Mailinglist <linux-nvme@lists.infradead.org>,
-        linux-hwmon@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
-        "open list:TI WILINK WIRELES..." <linux-wireless@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Sujith Thomas <sujith.thomas@intel.com>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Zhang Rui <rui.zhang@intel.com>,
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=rTyFfehsHZ4NrOw6RaeXcNkMIHnoS8zNHPnwBdHCVW4=;
+        b=kfX/S/fymelbc+2UuPgV+qHcDx1RGOCd1RJatwGLx3J5T21goJq5f7oA3jfFRYF5JD
+         K9U29N+qFsjs9lC5XuBnuh8xl/OVFLBxrjekIGOgCZFZnEiRschlPJHWl2vDSWHKqp1H
+         grSnTqPUWnT+uie2YddWmBqNDWkzsL70sNnZ878oLDesrVYA6mOZmI9BM5sQ6zE5GQFQ
+         99H+F/aV/M3F4XWjDV12Zhs8It/1Amlo0tZhRuLqUQYiNx9cMwn5OkyjM0Ruy8gYDGQP
+         h7tfF6G2SYWNWjLAkjbkegvxv8UwOKWF8RLGM7xa63ZR6KxZb4eH+ND8aZw4qFeZXlCV
+         RAFw==
+X-Gm-Message-State: APjAAAXIH52/oNl1Jf/UdMZw5ojjtav3cPbhY8tWIs0kQgxKf8+Keb81
+        WFcNc3+DgABmJ2ppu383uoHhYQ==
+X-Google-Smtp-Source: APXvYqyuPt21/xnIK8FG2LgE0sYaNL0lj+qHjE9ysH3DMI2EmfAOl/ZGGEJEhFZhyeNFNpE1jzEoxQ==
+X-Received: by 2002:a2e:9a51:: with SMTP id k17mr2389984ljj.206.1576079035828;
+        Wed, 11 Dec 2019 07:43:55 -0800 (PST)
+Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
+        by smtp.gmail.com with ESMTPSA id b14sm1389608lff.68.2019.12.11.07.43.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 11 Dec 2019 07:43:55 -0800 (PST)
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+To:     Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@fb.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>,
-        Kalle Valo <kvalo@codeaurora.org>,
-        Stanislaw Gruszka <sgruszka@redhat.com>,
-        Johannes Berg <johannes.berg@intel.com>,
-        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-        Luca Coelho <luciano.coelho@intel.com>,
-        Intel Linux Wireless <linuxwifi@intel.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Content-Type: text/plain; charset="UTF-8"
+        Mark Rutland <mark.rutland@arm.com>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+Subject: [PATCH v4 03/14] firmware: psci: Export functions to manage the OSI mode
+Date:   Wed, 11 Dec 2019 16:43:32 +0100
+Message-Id: <20191211154343.29765-4-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191211154343.29765-1-ulf.hansson@linaro.org>
+References: <20191211154343.29765-1-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Dec 11, 2019 at 4:38 PM Akinobu Mita <akinobu.mita@gmail.com> wrote:
->
-> There are several helper macros to convert kelvin to/from Celsius in
-> <linux/thermal.h> for thermal drivers.  These are useful for any other
-> drivers or subsystems, but it's odd to include <linux/thermal.h> just for
-> the helpers.
->
-> This adds a new <linux/units.h> that provides the equivalent inline
-> functions for any drivers or subsystems, and switches all the users of
-> conversion helpers in <linux/thermal.h> to use <linux/units.h>
-> helpers.
->
+To allow subsequent changes to implement support for OSI mode through the
+cpuidle-psci driver, export the existing psci_has_osi_support(). Export
+also a new function, psci_set_osi_mode(), that allows its caller to enable
+the OS-initiated CPU-suspend mode in the PSCI FW.
 
-Thank you for an update.
+To deal with backwards compatibility for a kernel started through a kexec
+call, default to set the CPU-suspend mode to the Platform Coordinated mode
+during boot.
 
-For non-commented patches
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+---
 
-> * v3
-> - rename new header name from <linux/temperature.h> to <linux/units.h>
-> - add milli_kelvin_to_millicelsius() and millicelsius_to_milli_kelvin() and
->   use them for implementing other helpers
-> - add MILLIDEGREE_PER_DEGREE and MILLIDEGREE_PER_DECIDEGREE and replace
->   the hardcoded constants
-> - add kelvin_to_celsius() and celsius_to_kelvin() in <linux/units.h>
-> - add Reviewed-by tags
-> - switch iwlegacy driver to use <linux/units.h> helpers
-> - switch iwlwifi driver to use <linux/units.h> helpers
-> - remove unused TO_MCELSIUS macro in armada thermal driver
-> - switch qcom-vadc-common module to use <linux/units.h> helpers
->
-> * v2
-> - add deci_kelvin_to_millicelsius_with_offset() in linux/temperature.h
-> - stop including linux/temperature.h from linux/thermal.h
-> - include <linux/temperature.h> explicitly from thermal drivers
-> - fix s/temprature/temperature/ typo in commit log
-> - use deci_kelvin_to_millicelsius_with_offset() in ACPI thermal zone driver
-> - don't mix up another fix (format string for cellsius value)
-> - add Acked-by and Reviewed-by tags
->
-> Akinobu Mita (12):
->   add helpers for kelvin to/from Celsius conversion
->   ACPI: thermal: switch to use <linux/units.h> helpers
->   platform/x86: asus-wmi: switch to use <linux/units.h> helpers
->   platform/x86: intel_menlow: switch to use <linux/units.h> helpers
->   thermal: int340x: switch to use <linux/units.h> helpers
->   thermal: intel_pch: switch to use <linux/units.h> helpers
->   nvme: hwmon: switch to use <linux/units.h> helpers
->   thermal: remove kelvin to/from Celsius conversion helpers from
->     <linux/thermal.h>
->   wireless: iwlegacy: use <linux/units.h> helpers
->   wireless: iwlwifi: use <linux/units.h> helpers
->   thermal: armada: remove unused TO_MCELSIUS macro
->   iio: adc: qcom-vadc-common: use <linux/units.h> helpers
->
->  drivers/acpi/thermal.c                             | 36 +++++-----
->  drivers/iio/adc/qcom-vadc-common.c                 |  6 +-
->  drivers/iio/adc/qcom-vadc-common.h                 |  1 -
->  drivers/net/wireless/intel/iwlegacy/4965-mac.c     |  3 +-
->  drivers/net/wireless/intel/iwlegacy/4965.c         | 11 +--
->  drivers/net/wireless/intel/iwlegacy/common.h       |  3 -
->  drivers/net/wireless/intel/iwlwifi/dvm/dev.h       |  5 --
->  drivers/net/wireless/intel/iwlwifi/dvm/devices.c   |  6 +-
->  drivers/nvme/host/hwmon.c                          | 13 ++--
->  drivers/platform/x86/asus-wmi.c                    |  7 +-
->  drivers/platform/x86/intel_menlow.c                |  9 ++-
->  drivers/thermal/armada_thermal.c                   |  2 -
->  .../intel/int340x_thermal/int340x_thermal_zone.c   |  7 +-
->  drivers/thermal/intel/intel_pch_thermal.c          |  3 +-
->  include/linux/thermal.h                            | 11 ---
->  include/linux/units.h                              | 84 ++++++++++++++++++++++
->  16 files changed, 139 insertions(+), 68 deletions(-)
->  create mode 100644 include/linux/units.h
->
-> Cc: Sujith Thomas <sujith.thomas@intel.com>
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: Andy Shevchenko <andy@infradead.org>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Amit Kucheria <amit.kucheria@verdurent.com>
-> Cc: Jean Delvare <jdelvare@suse.com>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Keith Busch <kbusch@kernel.org>
-> Cc: Jens Axboe <axboe@fb.com>
-> Cc: Christoph Hellwig <hch@lst.de>
-> Cc: Sagi Grimberg <sagi@grimberg.me>
-> Cc: Kalle Valo <kvalo@codeaurora.org>
-> Cc: Stanislaw Gruszka <sgruszka@redhat.com>
-> Cc: Johannes Berg <johannes.berg@intel.com>
-> Cc: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
-> Cc: Luca Coelho <luciano.coelho@intel.com>
-> Cc: Intel Linux Wireless <linuxwifi@intel.com>
-> Cc: Jonathan Cameron <jic23@kernel.org>
-> Cc: Hartmut Knaack <knaack.h@gmx.de>
-> Cc: Lars-Peter Clausen <lars@metafoo.de>
-> Cc: Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-> --
-> 2.7.4
->
+Changes in v4:
+	- None.
 
+---
+ drivers/firmware/psci/psci.c | 18 ++++++++++++++++--
+ include/linux/psci.h         |  2 ++
+ 2 files changed, 18 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index b3b6c15e7b36..2937d44b5df4 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -97,7 +97,7 @@ static inline bool psci_has_ext_power_state(void)
+ 				PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK;
+ }
+ 
+-static inline bool psci_has_osi_support(void)
++bool psci_has_osi_support(void)
+ {
+ 	return psci_cpu_suspend_feature & PSCI_1_0_OS_INITIATED;
+ }
+@@ -162,6 +162,15 @@ static u32 psci_get_version(void)
+ 	return invoke_psci_fn(PSCI_0_2_FN_PSCI_VERSION, 0, 0, 0);
+ }
+ 
++int psci_set_osi_mode(void)
++{
++	int err;
++
++	err = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			     PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
++	return psci_to_linux_errno(err);
++}
++
+ static int psci_cpu_suspend(u32 state, unsigned long entry_point)
+ {
+ 	int err;
+@@ -544,9 +553,14 @@ static int __init psci_1_0_init(struct device_node *np)
+ 	if (err)
+ 		return err;
+ 
+-	if (psci_has_osi_support())
++	if (psci_has_osi_support()) {
+ 		pr_info("OSI mode supported.\n");
+ 
++		/* Default to PC mode. */
++		invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			       PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/psci.h b/include/linux/psci.h
+index ebe0a881d13d..a67712b73b6c 100644
+--- a/include/linux/psci.h
++++ b/include/linux/psci.h
+@@ -18,6 +18,8 @@ bool psci_tos_resident_on(int cpu);
+ 
+ int psci_cpu_suspend_enter(u32 state);
+ bool psci_power_state_is_valid(u32 state);
++int psci_set_osi_mode(void);
++bool psci_has_osi_support(void);
+ 
+ enum smccc_version {
+ 	SMCCC_VERSION_1_0,
 -- 
-With Best Regards,
-Andy Shevchenko
+2.17.1
+
