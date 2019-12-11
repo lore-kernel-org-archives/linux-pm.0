@@ -2,75 +2,97 @@ Return-Path: <SRS0=LDln=2B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B82F1C2D0C6
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 18:33:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF35AC43603
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 20:02:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 83C9A24654
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 18:33:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576089223;
-	bh=geCPNnHlvTAPkg1jPd3NplLkeVVLFJc4GxXn2pD4Nuk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=02u7QKIIgQ2up3E+qxwLgR3tPQ3mXOa5gTTQhGSY1brFNXOG/MIil35k5IpEzmqTr
-	 CFaId1vhthPXkFaFs1rvu3vToIxp1r8i7nxepncOBdd/fg3h+oM/7KpJzHGEu57s/r
-	 4czPks94VFJi5FvGc651W9AwlGGys+eVC6pdNa5s=
+	by mail.kernel.org (Postfix) with ESMTP id A1B2420637
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 20:02:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729955AbfLKSdm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Dec 2019 13:33:42 -0500
-Received: from mail.kernel.org ([198.145.29.99]:59790 "EHLO mail.kernel.org"
+        id S1726592AbfLKUCY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Dec 2019 15:02:24 -0500
+Received: from mga02.intel.com ([134.134.136.20]:39328 "EHLO mga02.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729877AbfLKSdm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 11 Dec 2019 13:33:42 -0500
-Received: from redsun51.ssa.fujisawa.hgst.com (unknown [199.255.47.7])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 5AA6020836;
-        Wed, 11 Dec 2019 18:33:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576089222;
-        bh=geCPNnHlvTAPkg1jPd3NplLkeVVLFJc4GxXn2pD4Nuk=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=Q6GkFEpYTujJd+HLMhZoFmMEYFFXR+BSsi7MnEQwTY/13Gaaak3YGAjFzi1WN2U2g
-         OE2puDDuCk6aaCrsaK7AwVtqXzNgdaZcCqmfXLyIpevzR52ISF9qmiJ1zxmWNMQ2tJ
-         pAwcUzIHEmtUJhRMzHdEzTcaREb7tlil+rIvYmaw=
-Date:   Thu, 12 Dec 2019 03:33:35 +0900
-From:   Keith Busch <kbusch@kernel.org>
-To:     Akinobu Mita <akinobu.mita@gmail.com>
-Cc:     linux-nvme@lists.infradead.org, linux-hwmon@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Sujith Thomas <sujith.thomas@intel.com>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>, Jens Axboe <axboe@fb.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>
-Subject: Re: [PATCH v2 7/8] nvme: hwmon: switch to use <linux/temperature.h>
- helpers
-Message-ID: <20191211183335.GA26280@redsun51.ssa.fujisawa.hgst.com>
-References: <1574952879-7200-1-git-send-email-akinobu.mita@gmail.com>
- <1574952879-7200-8-git-send-email-akinobu.mita@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1574952879-7200-8-git-send-email-akinobu.mita@gmail.com>
-User-Agent: Mutt/1.12.1 (2019-06-15)
+        id S1726463AbfLKUCY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 11 Dec 2019 15:02:24 -0500
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 11 Dec 2019 12:02:23 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,303,1571727600"; 
+   d="scan'208";a="207815737"
+Received: from gayuk-dev-mach.sc.intel.com ([10.3.79.172])
+  by orsmga008.jf.intel.com with ESMTP; 11 Dec 2019 12:02:23 -0800
+From:   Gayatri Kammela <gayatri.kammela@intel.com>
+To:     linux-pm@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org,
+        amit.kucheria@verdurent.com, charles.d.prestopine@intel.com,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Zhang rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1] thermal/intel: intel_pch_thermal: Add Comet Lake (CML) platform support
+Date:   Wed, 11 Dec 2019 12:00:43 -0800
+Message-Id: <20191211200043.4985-1-gayatri.kammela@intel.com>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Nov 28, 2019 at 11:54:38PM +0900, Akinobu Mita wrote:
-> This switches the nvme driver to use kelvin_to_millicelsius() and
-> millicelsius_to_kelvin() in <linux/temperature.h>.
+Add Comet Lake to the list of the platforms to support intel_pch_thermal
+driver.
 
-nvme change looks fine to me.
+Cc: Zhang rui <rui.zhang@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Gayatri Kammela <gayatri.kammela@intel.com>
+---
+ drivers/thermal/intel/intel_pch_thermal.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Reviewed-by: Keith Busch <kbusch@kernel.org>
+diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
+index 4f0bb8f502e1..9356f3a7f961 100644
+--- a/drivers/thermal/intel/intel_pch_thermal.c
++++ b/drivers/thermal/intel/intel_pch_thermal.c
+@@ -23,6 +23,7 @@
+ #define PCH_THERMAL_DID_SKL_H	0xA131 /* Skylake PCH 100 series */
+ #define PCH_THERMAL_DID_CNL	0x9Df9 /* CNL PCH */
+ #define PCH_THERMAL_DID_CNL_H	0xA379 /* CNL-H PCH */
++#define PCH_THERMAL_DID_CML_H	0X06F9 /* CML-H PCH */
+ 
+ /* Wildcat Point-LP  PCH Thermal registers */
+ #define WPT_TEMP	0x0000	/* Temperature */
+@@ -272,6 +273,7 @@ enum board_ids {
+ 	board_wpt,
+ 	board_skl,
+ 	board_cnl,
++	board_cml,
+ };
+ 
+ static const struct board_info {
+@@ -294,6 +296,10 @@ static const struct board_info {
+ 		.name = "pch_cannonlake",
+ 		.ops = &pch_dev_ops_wpt,
+ 	},
++	[board_cml] = {
++		.name = "pch_cometlake",
++		.ops = &pch_dev_ops_wpt,
++	}
+ };
+ 
+ static int intel_pch_thermal_probe(struct pci_dev *pdev,
+@@ -398,6 +404,8 @@ static const struct pci_device_id intel_pch_thermal_id[] = {
+ 		.driver_data = board_cnl, },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_CNL_H),
+ 		.driver_data = board_cnl, },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_CML_H),
++		.driver_data = board_cml, },
+ 	{ 0, },
+ };
+ MODULE_DEVICE_TABLE(pci, intel_pch_thermal_id);
+-- 
+2.17.1
+
