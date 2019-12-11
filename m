@@ -2,133 +2,118 @@ Return-Path: <SRS0=LDln=2B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4A2BC2D0C6
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 14:40:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AF21C2D0C6
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 14:44:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AA4762173E
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 14:40:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3EB3A208C3
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 14:44:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iPTNp0Ed"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SdQ+mOfg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730094AbfLKOjY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Dec 2019 09:39:24 -0500
-Received: from mail-pj1-f65.google.com ([209.85.216.65]:33631 "EHLO
-        mail-pj1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729686AbfLKOjX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Dec 2019 09:39:23 -0500
-Received: by mail-pj1-f65.google.com with SMTP id r67so9022996pjb.0;
-        Wed, 11 Dec 2019 06:39:23 -0800 (PST)
+        id S1727554AbfLKOoc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Dec 2019 09:44:32 -0500
+Received: from mail-lf1-f65.google.com ([209.85.167.65]:43126 "EHLO
+        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729689AbfLKOoc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Dec 2019 09:44:32 -0500
+Received: by mail-lf1-f65.google.com with SMTP id 9so16885042lfq.10;
+        Wed, 11 Dec 2019 06:44:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=30ClsBWVMQFbgwDIq9w8WCwwNMvj/q4ymjJp8oUF1J0=;
-        b=iPTNp0EdadO4y2qivxFKBUpzEsaPwhGKdyaPxOlJenJBVxrjZDK77cuy1xm8y3/vwo
-         XAU33lFCH4T/3DEpnMyPFn6xvlTZdCX8Y/G3vVNDBizKWUagtzlppvbFHBKxI8/Qzgli
-         056XNDvIhN4ii1itJlKwXt80wjd295T2EeFmuKxHDcesF1kjQH1DUsdulYHgs8J8gmp8
-         InGX15hisePqvBdSawpSkTi5rAQXLdhUlmEHERSnfwz5Z3FiZ+nZFa1WP1exJSLOjypP
-         wqQIAcTsATodjUx32eYVG4H6IPzbyD7WHdjJLcss5z7w5GHfOtNx7Sjbyizgieki1RVz
-         OCDw==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=RLcmDX3Xl0I1T2TfjUDQrn1yh+H1GJi9jjADEglfdt0=;
+        b=SdQ+mOfgltwR/Q22SJ8lSEx3kpyybc82wHJHFeHjfN76Lm8bsgzzbfzp3OPqY3O5IM
+         chUKPt0VD09h59lpk6zJyJXscq34fugbNdATsiw49BJaI0Pt91km3Pw8mojw/mHpuoGe
+         MVXlXFmZnG//nqmDBeHwpmVEhKPMVPzcN3Ree1rTwhVvXJlwomLEKyWGG8/Fe2TbYBe+
+         v1RRl8KH5Q32xggmPC8P2BHHKmnxM9uSs2K5mYK/LK6oV33UWJvIdPURmt1sDpiLnTtY
+         w/8w7Q2/+c+STpgW2wAy7YYTzUVBeLrb9TbHsmb4aLU/6WoofFr/oh/AAFMxOU5Wr/e0
+         yObQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=30ClsBWVMQFbgwDIq9w8WCwwNMvj/q4ymjJp8oUF1J0=;
-        b=XEnL7GaPaeT21ukAOLDLbrJCEIffd1/pPBntbnnXFAx4vEYN2D/vWSwyFzBOHJ4WjQ
-         yumsvPYHa4/Ts8WVryCkexOC7coPFEj1nn27uPMIgXV1JJtlLTX0yt/gp/ckkHBMTZdv
-         2OX+34wjKinNvqzUHQhv3BivkieG+B5hVM6Vd2XjYCvJI9/hsNOKQDyTizrwH+BTceDu
-         a8EfZAWzNKywDBaSAQbWhmNAxUsu+4OKJXcgWJ411txVWq9YuAOUQupG5W0eTEIkQhyG
-         TCFR00OxBaB0ZRE1XxmWCYahGzsTzR61u1ReDF44ZAKQsbQLv5CK4xJeyxBLqaWqPRHM
-         Z44A==
-X-Gm-Message-State: APjAAAUr1L3avFoJiqi83vC+lHapLRatgs+dzI2/CzW/13krHTeRuJoc
-        p7rOo/LKCBJtJ5sIMteceXDfmWQatkc=
-X-Google-Smtp-Source: APXvYqyPc4UFSiMgsD4yZYd76DuxU8U2qOWD+TGrVH0/E0V5787xpYx4yK1YXlYV7OTuxTKh7/rsHg==
-X-Received: by 2002:a17:902:8507:: with SMTP id bj7mr3489251plb.69.1576075163124;
-        Wed, 11 Dec 2019 06:39:23 -0800 (PST)
-Received: from localhost.localdomain ([240f:34:212d:1:368e:e048:68f1:84e7])
-        by smtp.gmail.com with ESMTPSA id q11sm3444239pff.111.2019.12.11.06.39.18
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Wed, 11 Dec 2019 06:39:22 -0800 (PST)
-From:   Akinobu Mita <akinobu.mita@gmail.com>
-To:     linux-nvme@lists.infradead.org, linux-hwmon@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Akinobu Mita <akinobu.mita@gmail.com>,
-        Sujith Thomas <sujith.thomas@intel.com>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@fb.com>,
-        Christoph Hellwig <hch@lst.de>,
-        Sagi Grimberg <sagi@grimberg.me>
-Subject: [PATCH v3 06/12] thermal: intel_pch: switch to use <linux/units.h> helpers
-Date:   Wed, 11 Dec 2019 23:38:13 +0900
-Message-Id: <1576075099-3441-7-git-send-email-akinobu.mita@gmail.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1576075099-3441-1-git-send-email-akinobu.mita@gmail.com>
-References: <1576075099-3441-1-git-send-email-akinobu.mita@gmail.com>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=RLcmDX3Xl0I1T2TfjUDQrn1yh+H1GJi9jjADEglfdt0=;
+        b=Fhx7VEPkH8UDYSIVQfWEWHZvqOy7d5l9Wsab/QHHNjpK11FSgf0Y4xNLOmDoIAJZ2L
+         Bz80FNTgvtBrSFGmKtSRAy/YE30q00YmV5dC+HNjdLCbiLyD2KM9E/Hu7U8j5MMs+BO2
+         wUAqEUDxcJ6KDGU48EdSsYXfeylqYPn9UMqa9mvxtrYJIJQz0BYr9vZvkYb/o11o4qJg
+         h1gyd4Q8cSjFkZwfReIq1pPSw+jivgG5e9TbfeyuvDuXOOT9fqypq0DKmwt2KGZgUtPC
+         2KlhWwF2RyPp3mgl25VnUkwttxi9LGuu4X95FlxAf/iR41k5qw0xuHgSpUFUk3LwnCBs
+         DuKA==
+X-Gm-Message-State: APjAAAXcGgJqBVWWksaE6wm+clmEZ2MhhzWJqMOyV+365H6+Ln4X7Krs
+        XttWYtxfBgvZRayRLzjhZnryt9bU
+X-Google-Smtp-Source: APXvYqx+pHd1o6C8oJgYgMxRKZGy92H63UCjcCY3WzShV/a2GIJ6XLcQ7vKColdhnQ22qudl2XcvrQ==
+X-Received: by 2002:a19:ec14:: with SMTP id b20mr2483615lfa.63.1576075469979;
+        Wed, 11 Dec 2019 06:44:29 -0800 (PST)
+Received: from [192.168.2.145] (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
+        by smtp.googlemail.com with ESMTPSA id h19sm1279298ljl.57.2019.12.11.06.44.28
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 11 Dec 2019 06:44:29 -0800 (PST)
+Subject: Re: [PATCH] PM / devfreq: tegra: add COMMON_CLK dependency
+To:     Arnd Bergmann <arnd@arndb.de>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20191211125411.1857250-1-arnd@arndb.de>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <b6aee51a-295e-dfa3-d9a7-cc378afa0373@gmail.com>
+Date:   Wed, 11 Dec 2019 17:44:28 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.3.0
+MIME-Version: 1.0
+In-Reply-To: <20191211125411.1857250-1-arnd@arndb.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This switches the intel pch thermal driver to use
-deci_kelvin_to_millicelsius() in <linux/units.h> instead of helpers in
-<linux/thermal.h>.
+11.12.2019 15:54, Arnd Bergmann пишет:
+> Compile-testing this driver fails if CONFIG_COMMON_CLK is not set:
+> 
+> drivers/devfreq/tegra30-devfreq.o: In function `tegra_devfreq_target':
+> tegra30-devfreq.c:(.text+0x164): undefined reference to `clk_set_min_rate'
+> 
+> Fixes: 35f8dbc72721 ("PM / devfreq: tegra: Enable COMPILE_TEST for the driver")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/devfreq/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index defe1d438710..f712c3de0876 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -98,6 +98,7 @@ config ARM_TEGRA_DEVFREQ
+>  		ARCH_TEGRA_132_SOC || ARCH_TEGRA_124_SOC || \
+>  		ARCH_TEGRA_210_SOC || \
+>  		COMPILE_TEST
+> +	depends on COMMON_CLK
+>  	select PM_OPP
+>  	help
+>  	  This adds the DEVFREQ driver for the Tegra family of SoCs.
+> 
 
-This is preparation for centralizing the kelvin to/from Celsius conversion
-helpers in <linux/units.h>.
+Hello Arnd,
 
-Cc: Sujith Thomas <sujith.thomas@intel.com>
-Cc: Darren Hart <dvhart@infradead.org>
-Cc: Andy Shevchenko <andy@infradead.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@verdurent.com>
-Cc: Jean Delvare <jdelvare@suse.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Keith Busch <kbusch@kernel.org>
-Cc: Jens Axboe <axboe@fb.com>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Sagi Grimberg <sagi@grimberg.me>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
-* v3
-- rename new header name from <linux/temperature.h> to <linux/units.h>
+I was about to send the same change because Geert Uytterhoeven reported
+the problem a day ago [1], but you beat me to it.
 
- drivers/thermal/intel/intel_pch_thermal.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+[1] https://www.spinics.net/lists/linux-tegra/msg46169.html
 
-diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
-index 4f0bb8f..b118611 100644
---- a/drivers/thermal/intel/intel_pch_thermal.c
-+++ b/drivers/thermal/intel/intel_pch_thermal.c
-@@ -13,6 +13,7 @@
- #include <linux/pci.h>
- #include <linux/acpi.h>
- #include <linux/thermal.h>
-+#include <linux/units.h>
- #include <linux/pm.h>
- 
- /* Intel PCH thermal Device IDs */
-@@ -92,7 +93,7 @@ static void pch_wpt_add_acpi_psv_trip(struct pch_thermal_device *ptd,
- 		if (ACPI_SUCCESS(status)) {
- 			unsigned long trip_temp;
- 
--			trip_temp = DECI_KELVIN_TO_MILLICELSIUS(r);
-+			trip_temp = deci_kelvin_to_millicelsius(r);
- 			if (trip_temp) {
- 				ptd->psv_temp = trip_temp;
- 				ptd->psv_trip_id = *nr_trips;
--- 
-2.7.4
 
+Thank you very much for the patch!
+
+Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
