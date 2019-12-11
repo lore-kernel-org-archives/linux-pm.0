@@ -1,119 +1,113 @@
-Return-Path: <SRS0=LKPD=2A=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=LDln=2B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4113C43603
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D5A1C43603
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 02:39:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8825A2053B
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Dec 2019 22:43:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576017838;
-	bh=dGlrQtKk+2i3iVauwHrp2MuaUdZqTCOvi9Gm7Ko0JIk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=DGl+P6qnhso7SQ/EpbOLKOMubf5HdGzuouVzyFOekPT0/eQ6aSzri7UCmpO2z92AZ
-	 Y1ev4nB/s+taNYT+BW/ic74wABqRpdEAsNI+IeESY4CvjV3wP3bi56nJdWYJs64rWy
-	 pJJKBUUsvfzbf82S/kNOIOaFkVJXZdTj8Wvddxuo=
+	by mail.kernel.org (Postfix) with ESMTP id 50D61205ED
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Dec 2019 02:39:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QiQikR6k"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727630AbfLJWa4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Dec 2019 17:30:56 -0500
-Received: from mail.kernel.org ([198.145.29.99]:50750 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727594AbfLJWa4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Dec 2019 17:30:56 -0500
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 680662077B;
-        Tue, 10 Dec 2019 22:30:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576017055;
-        bh=dGlrQtKk+2i3iVauwHrp2MuaUdZqTCOvi9Gm7Ko0JIk=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=SQTRQFrjQefJbSI6OWlFjnZH61v1HZekXlaYeTLy/uaqqsDK50KQ9141BNJqc4Cqy
-         Y19EGHanmQuQLVAjZjbQRVY+mi+fXw6B4H0mUHqshdnvmkzuypAc91GVesfznCw7aQ
-         3MGQAvIzi/LQxcA1GG1Z80t2YNVzCyQ6FA3ir08k=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Nathan Chancellor <natechancellor@gmail.com>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        clang-built-linux@googlegroups.com
-Subject: [PATCH AUTOSEL 4.9 16/91] tools/power/cpupower: Fix initializer override in hsw_ext_cstates
-Date:   Tue, 10 Dec 2019 17:29:20 -0500
-Message-Id: <20191210223035.14270-16-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20191210223035.14270-1-sashal@kernel.org>
-References: <20191210223035.14270-1-sashal@kernel.org>
+        id S1727317AbfLKCjM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Dec 2019 21:39:12 -0500
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:40734 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727297AbfLKCjM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Dec 2019 21:39:12 -0500
+Received: by mail-pf1-f196.google.com with SMTP id q8so992025pfh.7
+        for <linux-pm@vger.kernel.org>; Tue, 10 Dec 2019 18:39:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=lkeETUhQ3f8lWNeTP8ytVN52+By7QmgfsOQEQVp/5Bk=;
+        b=QiQikR6kEHX9KZ1Ty8ohFw4WHZKRp4hr1Qd30w5/P5llrwO/ghQvr5AVO96DGVV/iQ
+         zUlSw9bd3ZcVlEopdECizjka55M5lzl/Wf/45NGHMMsJQLOW/TrmVP788fJsQQ70A7T0
+         xBSdCDZV8jPuHHsFDM3Mssemmmu/UydbPzPAKKrV9z67P+iaSLPmDdiQn77BrVmU88TZ
+         r5yjmGbkbcMEBx5HFS6LgJll/Z8K9vMyK4PlxQEBw7UQ2BYt+cNA6N9u36EVxMZWWjM+
+         txxz4bz5rM3o1QfR4C+p67D6MKRGg9p85mESLdzx0CPcdazh5iyhqbaWgD1TJ8gFWqG1
+         8dHg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=lkeETUhQ3f8lWNeTP8ytVN52+By7QmgfsOQEQVp/5Bk=;
+        b=VKrbIxzkrVkK8vpPbYMf2ADRgulaAqOaevRwrTn3eKBu7Iv9Ch4V1k0aXp0+k74ev8
+         T1AjKrE1DtkUFV3K4IiyTbhxdXdPP7v67soClsftgeO+TB1ZcS+sED2u5LaPY0DtYyuI
+         w/bdMzelGNRxsRwF3p8kgrM4x2D0fQC65UFYEU+1VnwqqCphZHV0BGF4wA6Yg6K8pqDO
+         +aaj8YKMK2WVPIuCss9YINSDIGD4upBJpLa5OPTwZj/APOZoFrlHCqq2SxBMcoIXXsi6
+         emMg46nvv30aCpwpInbOGaQy7TqWSXGZg7cLfZKU5QKDSUKZK9lguj8kMUnElnJu3uVh
+         T/3A==
+X-Gm-Message-State: APjAAAVFoodunFovTPUSgDMmn0LUSvP34CkdH3lQhDr3/ay9cZWN9IeH
+        foTgVSViWDR2XG96ZEBSgpeC3Q==
+X-Google-Smtp-Source: APXvYqwv4FD7npjWh+xM8yEtWzQSvRX+xQWGcV0kVvGQhmKaR0MAmXhCirrzY7eQKyfmK8n6ahuV9g==
+X-Received: by 2002:a63:364d:: with SMTP id d74mr1504299pga.408.1576031951864;
+        Tue, 10 Dec 2019 18:39:11 -0800 (PST)
+Received: from localhost ([122.171.112.123])
+        by smtp.gmail.com with ESMTPSA id 200sm398800pfz.121.2019.12.10.18.39.10
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 10 Dec 2019 18:39:11 -0800 (PST)
+Date:   Wed, 11 Dec 2019 08:09:09 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Cristian Marussi <cristian.marussi@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 13/15] cpufreq: scmi: Match scmi device by both name and
+ protocol id
+Message-ID: <20191211023909.7iun7kdk6pjkync6@vireshk-i7>
+References: <20191210145345.11616-1-sudeep.holla@arm.com>
+ <20191210145345.11616-14-sudeep.holla@arm.com>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191210145345.11616-14-sudeep.holla@arm.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Nathan Chancellor <natechancellor@gmail.com>
+On 10-12-19, 14:53, Sudeep Holla wrote:
+> The scmi bus now has support to match the driver with devices not only
+> based on their protocol id but also based on their device name if one is
+> available. This was added to cater the need to support multiple devices
+> and drivers for the same protocol.
+> 
+> Let us add the name "cpufreq" to scmi_device_id table in the driver so
+> that in matches only with device with the same name and protocol id
+> SCMI_PROTOCOL_PERF. This will help to add "devfreq" device/driver.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/cpufreq/scmi-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+> index e6182c89df79..61623e2ff149 100644
+> --- a/drivers/cpufreq/scmi-cpufreq.c
+> +++ b/drivers/cpufreq/scmi-cpufreq.c
+> @@ -261,7 +261,7 @@ static void scmi_cpufreq_remove(struct scmi_device *sdev)
+>  }
+> 
+>  static const struct scmi_device_id scmi_id_table[] = {
+> -	{ SCMI_PROTOCOL_PERF },
+> +	{ SCMI_PROTOCOL_PERF, "cpufreq" },
+>  	{ },
+>  };
+>  MODULE_DEVICE_TABLE(scmi, scmi_id_table);
 
-[ Upstream commit 7e5705c635ecfccde559ebbbe1eaf05b5cc60529 ]
+Applied. Thanks.
 
-When building cpupower with clang, the following warning appears:
-
- utils/idle_monitor/hsw_ext_idle.c:42:16: warning: initializer overrides
- prior initialization of this subobject [-Winitializer-overrides]
-                 .desc                   = N_("Processor Package C2"),
-                                              ^~~~~~~~~~~~~~~~~~~~~~
- ./utils/helpers/helpers.h:25:33: note: expanded from macro 'N_'
- #define N_(String) gettext_noop(String)
-                                 ^~~~~~
- ./utils/helpers/helpers.h:23:30: note: expanded from macro
- 'gettext_noop'
- #define gettext_noop(String) String
-                              ^~~~~~
- utils/idle_monitor/hsw_ext_idle.c:41:16: note: previous initialization
- is here
-                 .desc                   = N_("Processor Package C9"),
-                                              ^~~~~~~~~~~~~~~~~~~~~~
- ./utils/helpers/helpers.h:25:33: note: expanded from macro 'N_'
- #define N_(String) gettext_noop(String)
-                                 ^~~~~~
- ./utils/helpers/helpers.h:23:30: note: expanded from macro
- 'gettext_noop'
- #define gettext_noop(String) String
-                             ^~~~~~
- 1 warning generated.
-
-This appears to be a copy and paste or merge mistake because the name
-and id fields both have PC9 in them, not PC2. Remove the second
-assignment to fix the warning.
-
-Fixes: 7ee767b69b68 ("cpupower: Add Haswell family 0x45 specific idle monitor to show PC8,9,10 states")
-Link: https://github.com/ClangBuiltLinux/linux/issues/718
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
-Signed-off-by: Shuah Khan <skhan@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
-index ebeaba6571a38..475e18e043187 100644
---- a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
-+++ b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
-@@ -40,7 +40,6 @@ static cstate_t hsw_ext_cstates[HSW_EXT_CSTATE_COUNT] = {
- 	{
- 		.name			= "PC9",
- 		.desc			= N_("Processor Package C9"),
--		.desc			= N_("Processor Package C2"),
- 		.id			= PC9,
- 		.range			= RANGE_PACKAGE,
- 		.get_count_percent	= hsw_ext_get_count_percent,
 -- 
-2.20.1
-
+viresh
