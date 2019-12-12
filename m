@@ -2,65 +2,72 @@ Return-Path: <SRS0=HhKR=2C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4109BC43603
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 17:55:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B02BEC2D0C9
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 17:57:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1C6B922527
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 17:55:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8E1532253D
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 17:57:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="PoQ6r/4M"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="P/NXCOyu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730254AbfLLRzp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Dec 2019 12:55:45 -0500
-Received: from userp2130.oracle.com ([156.151.31.86]:60758 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729883AbfLLRzo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2019 12:55:44 -0500
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xBCHnOgC036659;
-        Thu, 12 Dec 2019 17:53:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to;
- s=corp-2019-08-05; bh=rST6ENnAdZRv2WqfQdDx44BDqgbldHjd9KZkDpog8vg=;
- b=PoQ6r/4MlKkROzkCpqTq0NDBXozpksln20zP8VQ6blzu9iHeDJKruy+x3umD1XycYmvi
- yf2ImrMIR8MUods+0erQvUY7M20550y6cw2ywE2Id9pFxTl7+ylCJLT0s0iHVSNCrX6c
- pbyhq+HpudLGtt3FbbebImclvqVQ1B31hQsYeO/kea2t2FsNJO5oHGhbxlThuVisSv7d
- fUbCXDUTrb+UD88/rZY8L0woWpTS6vSGkNf03eocltQHxEDThUd8waiDXHdVe5NOXyFx
- 7GzxjAbMIKmd0UORZnoBsC14766PVtahXkWFPu5PSN9BwUJ0A/O2Vl7zSOcny+1N+bA9 0g== 
-Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
-        by userp2130.oracle.com with ESMTP id 2wrw4nhf07-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 12 Dec 2019 17:53:08 +0000
-Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
-        by userp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xBCHnQqW040983;
-        Thu, 12 Dec 2019 17:53:08 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by userp3020.oracle.com with ESMTP id 2wums9rkmv-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 12 Dec 2019 17:53:08 +0000
-Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id xBCHr6R0025815;
-        Thu, 12 Dec 2019 17:53:06 GMT
-Received: from [192.168.14.112] (/109.65.223.49)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Thu, 12 Dec 2019 09:53:06 -0800
-Content-Type: text/plain;
-        charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 11.1 \(3445.4.7\))
-Subject: Re: [PATCH v4 11/19] x86/cpu: Print VMX flags in /proc/cpuinfo using
- VMX_FEATURES_*
-From:   Liran Alon <liran.alon@oracle.com>
-In-Reply-To: <52dd758d-a590-52a6-4248-22d6852b75cd@redhat.com>
-Date:   Thu, 12 Dec 2019 19:52:55 +0200
-Cc:     Sean Christopherson <sean.j.christopherson@intel.com>,
+        id S1730290AbfLLR5X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Dec 2019 12:57:23 -0500
+Received: from mail-io1-f68.google.com ([209.85.166.68]:39461 "EHLO
+        mail-io1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730276AbfLLR5W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2019 12:57:22 -0500
+Received: by mail-io1-f68.google.com with SMTP id c16so3732404ioh.6
+        for <linux-pm@vger.kernel.org>; Thu, 12 Dec 2019 09:57:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Z3b25UQSnY6IqzYufZw5HPv7RWsFnuJ1qSwiqH0n/5k=;
+        b=P/NXCOyuvKPRWV08VvBA1CWwjXOq2454qr5DFs1i0dx4F3LwmHgj/7p/j/+AGA99YD
+         XIWPe87cEztItjq6Zn8pXyHQMZzUEyk8kqXBqi68MgB1GzmECBjHyMdn1YF8qh4niHqF
+         15iEyVZAXPani4kohcMWSIPOP56G3yUYSGRJL25s3s84BNsfC5kk8KqEHY45RIJQ+km+
+         7nHZhB/fWqMWEC6MkyRtbCJy0SemmaaZZQ7fv7RUOd6VaANEf7I7bBZlkcwJwTtSaJyL
+         vQnVIlgojZJ3h4eqkao2clnBKHHZBF/oNu3jwsKJCm7C8CENNAUPifuciLGZ/2ZT8P21
+         DDpA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Z3b25UQSnY6IqzYufZw5HPv7RWsFnuJ1qSwiqH0n/5k=;
+        b=qJU31pbhDjR+lR1Si9Y8tsuouZxcui+AxKcTIY3WKS1GWlI25HwumfvxPiva2YWzmN
+         /qlkxoDi6HscLsP5N/MkKGc+FS2ai6YlPQB6QrAUuffkCww4wS2Ty9I9YTfiPpkdQ/Zn
+         2ekAAy1REoBC7Z43HOD/7Yon9IqCdkws9U7hmFKcUFS8ClD8NhVrYl31Zsz79SZcvcPC
+         r0eS/77dDGC+/e0gXk3ZD33o7bVWdWwmZ0K/c7eHOtFCblvvivFuZIjV7k3ZKgaH1IwW
+         yL65pRYNN2JU5plaamDAKhZOTm47GD8rIOpmkzHVK5J/n+ME0HI9syx1aLplP8Ci3+w9
+         shLQ==
+X-Gm-Message-State: APjAAAUdz/3cQ1BQTsaj11cwyLZLuTNo9K0fJzEA4goJks30y7+gHZ3M
+        QYUU2so+B/MlzBLkANYj11IXb1nC4KpjNuUCDjLAsw==
+X-Google-Smtp-Source: APXvYqyPE6NbezzK+SCpWx81FOcItGOWVU3L02OQJNEvkysZZsXSDO4rXcsGBPHVc3pNcmN4ZTMpi09J8E7N8GzXb0A=
+X-Received: by 2002:a5e:9b15:: with SMTP id j21mr3746698iok.108.1576173439923;
+ Thu, 12 Dec 2019 09:57:19 -0800 (PST)
+MIME-Version: 1.0
+References: <20191128014016.4389-1-sean.j.christopherson@intel.com>
+ <20191128014016.4389-12-sean.j.christopherson@intel.com> <20191212122646.GE4991@zn.tnic>
+ <d0b21e7e-69f5-09f9-3e1c-14d49fa42b9f@redhat.com> <4A24DE75-4E68-4EC6-B3F3-4ACB0EE82BF0@oracle.com>
+ <17c6569e-d0af-539c-6d63-f4c07367d8d1@redhat.com> <20191212174357.GE3163@linux.intel.com>
+ <52dd758d-a590-52a6-4248-22d6852b75cd@redhat.com> <DA429131-7A4C-4B74-A020-6CE7622ED2F8@oracle.com>
+In-Reply-To: <DA429131-7A4C-4B74-A020-6CE7622ED2F8@oracle.com>
+From:   Jim Mattson <jmattson@google.com>
+Date:   Thu, 12 Dec 2019 09:57:08 -0800
+Message-ID: <CALMp9eRAYj=dKDtnPymkUA_OOMv+9a4WdPNt4hdpFtBgzwNA9w@mail.gmail.com>
+Subject: Re: [PATCH v4 11/19] x86/cpu: Print VMX flags in /proc/cpuinfo using VMX_FEATURES_*
+To:     Liran Alon <liran.alon@oracle.com>
+Cc:     Paolo Bonzini <pbonzini@redhat.com>,
+        Sean Christopherson <sean.j.christopherson@intel.com>,
         Borislav Petkov <bp@alien8.de>,
         Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
+        Ingo Molnar <mingo@redhat.com>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
         "H. Peter Anvin" <hpa@zytor.com>,
         Peter Zijlstra <peterz@infradead.org>,
         Arnaldo Carvalho de Melo <acme@kernel.org>,
@@ -68,77 +75,31 @@ Cc:     Sean Christopherson <sean.j.christopherson@intel.com>,
         Alexander Shishkin <alexander.shishkin@linux.intel.com>,
         Jiri Olsa <jolsa@redhat.com>,
         Namhyung Kim <namhyung@kernel.org>,
-        =?utf-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+        =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
         Vitaly Kuznetsov <vkuznets@redhat.com>,
         Wanpeng Li <wanpengli@tencent.com>,
-        Jim Mattson <jmattson@google.com>,
         Joerg Roedel <joro@8bytes.org>,
         Tony Luck <tony.luck@intel.com>,
         Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
         Len Brown <lenb@kernel.org>, Shuah Khan <shuah@kernel.org>,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>,
+        kvm list <kvm@vger.kernel.org>, linux-edac@vger.kernel.org,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        "open list:KERNEL SELFTEST FRAMEWORK" 
+        <linux-kselftest@vger.kernel.org>,
         Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <DA429131-7A4C-4B74-A020-6CE7622ED2F8@oracle.com>
-References: <20191128014016.4389-1-sean.j.christopherson@intel.com>
- <20191128014016.4389-12-sean.j.christopherson@intel.com>
- <20191212122646.GE4991@zn.tnic>
- <d0b21e7e-69f5-09f9-3e1c-14d49fa42b9f@redhat.com>
- <4A24DE75-4E68-4EC6-B3F3-4ACB0EE82BF0@oracle.com>
- <17c6569e-d0af-539c-6d63-f4c07367d8d1@redhat.com>
- <20191212174357.GE3163@linux.intel.com>
- <52dd758d-a590-52a6-4248-22d6852b75cd@redhat.com>
-To:     Paolo Bonzini <pbonzini@redhat.com>
-X-Mailer: Apple Mail (2.3445.4.7)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9469 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1911140001 definitions=main-1912120140
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9469 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1911140001
- definitions=main-1912120140
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Thu, Dec 12, 2019 at 9:53 AM Liran Alon <liran.alon@oracle.com> wrote:
 
+> Why should CPU VMX features be treated differently than standard CPUID deduced features?
 
-> On 12 Dec 2019, at 19:47, Paolo Bonzini <pbonzini@redhat.com> wrote:
->=20
-> On 12/12/19 18:43, Sean Christopherson wrote:
->> Key word being "usually".  My intent in printing out partially =
-redundant
->> flags was to help users debug/understand why the combined feature =
-isn't
->> supported.  E.g. userspace can already easily (relatively speaking) =
-query
->> flexpriority support via =
-/sys/module/kvm_intel/parameters/flexpriority.
->> But if that comes back "N", the user has no way to determine exactly =
-why
->> flexpriority is disabled.
->=20
-> There are tools such as vmxcap.  It is part of QEMU, but I wouldn't =
-mind
-> moving it into the kernel tree.
->=20
-> Paolo
->=20
+Do we have the right Intel people on the recipient list to answer this
+question? Presumably, Intel felt that this information should be
+available in supervisor mode only.
 
-True. But it relies on /dev/msr0 (exposed from msr kernel module) to be =
-able to read any host arbitrary MSR.
-It=E2=80=99s much more elegant to just report CPU VMX features in a =
-/proc/cpuinfo pseudo-file and don=E2=80=99t require strong privileges.
-Why should CPU VMX features be treated differently than standard CPUID =
-deduced features?
-CPU SVM features are also present in /proc/cpuinfo today (Because they =
-are deduced from CPUID leafs). So it should be similar.
-
--Liran=
+Sean?
