@@ -2,64 +2,36 @@ Return-Path: <SRS0=HhKR=2C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F201BC3F68F
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 17:49:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E011EC2D0C9
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 17:55:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D152A22527
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 17:49:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="D9Ypnds+"
+	by mail.kernel.org (Postfix) with ESMTP id C83C5206DA
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 17:55:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730200AbfLLRtc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Dec 2019 12:49:32 -0500
-Received: from userp2130.oracle.com ([156.151.31.86]:53738 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729771AbfLLRtc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Dec 2019 12:49:32 -0500
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xBCHijtl032917;
-        Thu, 12 Dec 2019 17:48:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to;
- s=corp-2019-08-05; bh=209O+3Xe8wnGXL8s/3e5RLbnSLi6zch/ZA2bLBFzw5k=;
- b=D9Ypnds+tQTjBQGTQIEeJCcGvTNeF9gbB0luV0hEZsxC6+/RwzXtgkkbWvWUPmInuihf
- 7b2NNY071RtRuhyE7nERl7VUh8eMzxFg6Lpa4oRd5MxuE4BW/tTSP9Z4ku2//O0qmI17
- 8I3rqYbDY8USDlsxSFsypeDczQV/nf0RlNqmMBnVoqC/iUNozGASW5kTFpe1L079/K0R
- Mz8PsfX0HvRVrvioXCUM4ibgk6rXBboq69ebCwSYwUYv5lp+ZO7DEoIcbmCe/Ll//4rS
- 2YSwr0OXT+iRa/umdy6P5bw6arI3aPtFHdrOBt/sOyenQcs//VZk5HYRt/9WDn8nhu2Z 3A== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by userp2130.oracle.com with ESMTP id 2wrw4nhe5r-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 12 Dec 2019 17:48:01 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xBCHhg0D177364;
-        Thu, 12 Dec 2019 17:48:01 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by aserp3020.oracle.com with ESMTP id 2wumw0nwp2-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 12 Dec 2019 17:48:00 +0000
-Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id xBCHm0EX022395;
-        Thu, 12 Dec 2019 17:48:00 GMT
-Received: from [192.168.14.112] (/109.65.223.49)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Thu, 12 Dec 2019 09:47:59 -0800
-Content-Type: text/plain;
-        charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 11.1 \(3445.4.7\))
-Subject: Re: [PATCH v4 11/19] x86/cpu: Print VMX flags in /proc/cpuinfo using
- VMX_FEATURES_*
-From:   Liran Alon <liran.alon@oracle.com>
-In-Reply-To: <20191212174357.GE3163@linux.intel.com>
-Date:   Thu, 12 Dec 2019 19:47:51 +0200
-Cc:     Paolo Bonzini <pbonzini@redhat.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
+        id S1730091AbfLLRzO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Dec 2019 12:55:14 -0500
+Received: from mga07.intel.com ([134.134.136.100]:38099 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729771AbfLLRzO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Dec 2019 12:55:14 -0500
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orsmga105.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 12 Dec 2019 09:55:12 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,306,1571727600"; 
+   d="scan'208";a="245819700"
+Received: from sjchrist-coffee.jf.intel.com (HELO linux.intel.com) ([10.54.74.202])
+  by fmsmga002.fm.intel.com with ESMTP; 12 Dec 2019 09:55:11 -0800
+Date:   Thu, 12 Dec 2019 09:55:11 -0800
+From:   Sean Christopherson <sean.j.christopherson@intel.com>
+To:     Borislav Petkov <bp@alien8.de>
+Cc:     Thomas Gleixner <tglx@linutronix.de>,
         Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
         "H. Peter Anvin" <hpa@zytor.com>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -68,7 +40,8 @@ Cc:     Paolo Bonzini <pbonzini@redhat.com>,
         Alexander Shishkin <alexander.shishkin@linux.intel.com>,
         Jiri Olsa <jolsa@redhat.com>,
         Namhyung Kim <namhyung@kernel.org>,
-        =?utf-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
         Vitaly Kuznetsov <vkuznets@redhat.com>,
         Wanpeng Li <wanpengli@tencent.com>,
         Jim Mattson <jmattson@google.com>,
@@ -80,80 +53,83 @@ Cc:     Paolo Bonzini <pbonzini@redhat.com>,
         linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kselftest@vger.kernel.org,
         Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <407604A2-354E-4358-91EC-E04A57F506C1@oracle.com>
+Subject: Re: [PATCH v4 10/19] x86/cpu: Detect VMX features on Intel, Centaur
+ and Zhaoxin CPUs
+Message-ID: <20191212175511.GG3163@linux.intel.com>
 References: <20191128014016.4389-1-sean.j.christopherson@intel.com>
- <20191128014016.4389-12-sean.j.christopherson@intel.com>
- <20191212122646.GE4991@zn.tnic>
- <d0b21e7e-69f5-09f9-3e1c-14d49fa42b9f@redhat.com>
- <4A24DE75-4E68-4EC6-B3F3-4ACB0EE82BF0@oracle.com>
- <17c6569e-d0af-539c-6d63-f4c07367d8d1@redhat.com>
- <20191212174357.GE3163@linux.intel.com>
-To:     Sean Christopherson <sean.j.christopherson@intel.com>
-X-Mailer: Apple Mail (2.3445.4.7)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9469 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=601
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1911140001 definitions=main-1912120139
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9469 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=668 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1911140001
- definitions=main-1912120139
+ <20191128014016.4389-11-sean.j.christopherson@intel.com>
+ <20191212113838.GD4991@zn.tnic>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20191212113838.GD4991@zn.tnic>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Thu, Dec 12, 2019 at 12:38:38PM +0100, Borislav Petkov wrote:
+> On Wed, Nov 27, 2019 at 05:40:07PM -0800, Sean Christopherson wrote:
+> > +static void init_vmx_capabilities(struct cpuinfo_x86 *c)
+> > +{
+> > +	u32 supported, funcs, ept, vpid, ign;
+> > +
+> > +	BUILD_BUG_ON(NVMXINTS != NR_VMX_FEATURE_WORDS);
+> > +
+> > +	/*
+> > +	 * The high bits contain the allowed-1 settings, i.e. features that can
+> > +	 * be turned on.  The low bits contain the allowed-0 settings, i.e.
+> > +	 * features that can be turned off.  Ignore the allowed-0 settings,
+> > +	 * if a feature can be turned on then it's supported.
+> > +	 */
+> > +	rdmsr(MSR_IA32_VMX_PROCBASED_CTLS, ign, supported);
+> > +	c->vmx_capability[PRIMARY_PROC_CTLS] = supported;
+> > +
+> > +	rdmsr_safe(MSR_IA32_VMX_PROCBASED_CTLS2, &ign, &supported);
+> > +	c->vmx_capability[SECONDARY_PROC_CTLS] = supported;
+> > +
+> > +	rdmsr(MSR_IA32_VMX_PINBASED_CTLS, ign, supported);
+> > +	rdmsr_safe(MSR_IA32_VMX_VMFUNC, &ign, &funcs);
+> > +
+> > +	/*
+> > +	 * Except for EPT+VPID, which enumerates support for both in a single
+> > +	 * MSR, low for EPT, high for VPID.
+> > +	 */
+> > +	rdmsr_safe(MSR_IA32_VMX_EPT_VPID_CAP, &ept, &vpid);
+> 
+> Right, so this is a garden variety of rdmsr() and rdmsr_safe() and
+> the safe variant's retval needs to be checked, strictly speaking. It
+> probably doesn't matter here since you'll get 0s if it fails, which
+> means feature not supported, so all good.
+> 
+> But I guess you can still use rdmsr_safe() everywhere just so it doesn't
+> cause head scratching in the future, when one looks at that code.
 
+The reasoning behind using vanilla rdmsr() on PROC and PIN controls is that
+those MSRs should exist on any CPU that supports VMX, i.e. we want the WARN.
 
-> On 12 Dec 2019, at 19:43, Sean Christopherson =
-<sean.j.christopherson@intel.com> wrote:
->=20
-> On Thu, Dec 12, 2019 at 04:57:10PM +0100, Paolo Bonzini wrote:
->> On 12/12/19 16:52, Liran Alon wrote:
->>>>> virt_apic_accesses	-> vapic
->>>> apicv
->>> Frankly, I dislike APICv terminology. I prefer to enumerate the
->>> various VMX features which are collectively called APICv by KVM.=20
->>> APICv currently represents in KVM terminology the combination of
->>> APIC-register virtualization, virtual-interrupt-delivery and
->>> posted-interrupts (See cpu_has_vmx_apicv()).
->>>=20
->>> In fact, the coupling of =E2=80=9Cenable_apicv=E2=80=9D module =
-parameter have made me
->>> multiple times to need to disable entire APICv features when there
->>> for example was only a bug in posted-interrupts.
->>>=20
->>> Even you got confused as virtualize-apic-access is not part of =
-KVM=E2=80=99s
->>> APICv terminology but rather it=E2=80=99s enablement depend on
->>> flexpriority_enabled (See cpu_need_virtualize_apic_accesses()). i.e.
->>> It can be used for faster intercept handling of accesses to guest
->>> xAPIC MMIO page.
->>=20
->> Right, I got confused with APIC-register virtualization.  Virtualize
->> APIC accesses is another one I wouldn't bother putting in =
-/proc/cpuinfo,
->> since it's usually present together with flexpriority.
->=20
-> Key word being "usually".  My intent in printing out partially =
-redundant
-> flags was to help users debug/understand why the combined feature =
-isn't
-> supported.  E.g. userspace can already easily (relatively speaking) =
-query
-> flexpriority support via =
-/sys/module/kvm_intel/parameters/flexpriority.
-> But if that comes back "N", the user has no way to determine exactly =
-why
-> flexpriority is disabled.
+The alternative would be to use rdmsr_safe() for everything and then
+explicitly disable VMX if a fault on PROC or PIN occurs, but that circles
+us back to the handling a fault on rdmsr(MSR_IA32_FEAT_CTL), i.e. is it
+really worth gracefully handling a fault that should never occur?
 
-+1 on that.
+> 
+> > +#endif /* CONFIG_X86_VMX_FEATURE_NAMES */
+> >  
+> >  #undef pr_fmt
+> >  #define pr_fmt(fmt)	"x86/cpu: " fmt
+> > @@ -50,5 +116,9 @@ void init_ia32_feat_ctl(struct cpuinfo_x86 *c)
+> >  		pr_err_once("VMX (%s TXT) disabled by BIOS\n",
+> >  			    tboot ? "inside" : "outside");
+> >  		clear_cpu_cap(c, X86_FEATURE_VMX);
+> > +	} else {
+> > +#ifdef CONFIG_X86_VMX_FEATURE_NAMES
+> > +		init_vmx_capabilities(c);
+> > +#endif
+> 
+> Can't say that I'm happy about all that ifdeffery but I guess we need
+> to perpetuate this since X86_FEATURE_NAMES is there for embedded. In
+> practice, probably no one disables it...
 
-/proc/cpuinfo should just dump supported VMX features that kernel is =
-aware of as exposed from CPU.
-Without further processing.
-
+Ya, systemd wasn't happy when I tried booting without X86_FEATURE_NAMES.
