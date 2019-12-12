@@ -2,42 +2,37 @@ Return-Path: <SRS0=HhKR=2C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0354C2D0CA
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 18:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63AC7C2D0C9
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 18:28:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7E95C24671
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 18:24:59 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="RUPwEtc2"
+	by mail.kernel.org (Postfix) with ESMTP id 4B29A22527
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Dec 2019 18:28:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730508AbfLLSY6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Dec 2019 13:24:58 -0500
-Received: from mail.skyhub.de ([5.9.137.197]:45940 "EHLO mail.skyhub.de"
+        id S1730306AbfLLS2i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Dec 2019 13:28:38 -0500
+Received: from mga14.intel.com ([192.55.52.115]:12749 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730387AbfLLSY6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 12 Dec 2019 13:24:58 -0500
-Received: from zn.tnic (p200300EC2F0A5A0010289BED6992E3B4.dip0.t-ipconnect.de [IPv6:2003:ec:2f0a:5a00:1028:9bed:6992:e3b4])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 0F9D91EC0D00;
-        Thu, 12 Dec 2019 19:24:56 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1576175096;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-        bh=2TIUuWa9aevx3nEsXKaaJadXZODvPPCYg3qJs/3YyTc=;
-        b=RUPwEtc2CyutYOTrS9uUbw0IzlfZzeDWyGpy0WBgpf3SauLu0oZsdtWZ3BZQsU2nKP7gGj
-        5/E6w07e/8PMng4lFhpGy3IG+UdEDJzSUlUV+xwqgXfC9rCs1iaXMv0tJjXB5yIIkPKYm/
-        5k0uPzwn4ZqpQ4gImaqfM5EdnwounOs=
-Date:   Thu, 12 Dec 2019 19:24:55 +0100
-From:   Borislav Petkov <bp@alien8.de>
-To:     Sean Christopherson <sean.j.christopherson@intel.com>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
+        id S1730017AbfLLS2h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Dec 2019 13:28:37 -0500
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 12 Dec 2019 10:18:04 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,306,1571727600"; 
+   d="scan'208";a="239040465"
+Received: from sjchrist-coffee.jf.intel.com (HELO linux.intel.com) ([10.54.74.202])
+  by fmsmga004.fm.intel.com with ESMTP; 12 Dec 2019 10:18:02 -0800
+Date:   Thu, 12 Dec 2019 10:18:02 -0800
+From:   Sean Christopherson <sean.j.christopherson@intel.com>
+To:     Paolo Bonzini <pbonzini@redhat.com>
+Cc:     Borislav Petkov <bp@alien8.de>,
+        Thomas Gleixner <tglx@linutronix.de>,
         Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
         "H. Peter Anvin" <hpa@zytor.com>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -46,7 +41,6 @@ Cc:     Thomas Gleixner <tglx@linutronix.de>,
         Alexander Shishkin <alexander.shishkin@linux.intel.com>,
         Jiri Olsa <jolsa@redhat.com>,
         Namhyung Kim <namhyung@kernel.org>,
-        Paolo Bonzini <pbonzini@redhat.com>,
         Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
         Vitaly Kuznetsov <vkuznets@redhat.com>,
         Wanpeng Li <wanpengli@tencent.com>,
@@ -59,39 +53,89 @@ Cc:     Thomas Gleixner <tglx@linutronix.de>,
         linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kselftest@vger.kernel.org,
         Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: Re: [PATCH v4 10/19] x86/cpu: Detect VMX features on Intel, Centaur
- and Zhaoxin CPUs
-Message-ID: <20191212182455.GH4991@zn.tnic>
+Subject: Re: [PATCH v4 11/19] x86/cpu: Print VMX flags in /proc/cpuinfo using
+ VMX_FEATURES_*
+Message-ID: <20191212181802.GH3163@linux.intel.com>
 References: <20191128014016.4389-1-sean.j.christopherson@intel.com>
- <20191128014016.4389-11-sean.j.christopherson@intel.com>
- <20191212113838.GD4991@zn.tnic>
- <20191212175511.GG3163@linux.intel.com>
+ <20191128014016.4389-12-sean.j.christopherson@intel.com>
+ <20191212122646.GE4991@zn.tnic>
+ <d0b21e7e-69f5-09f9-3e1c-14d49fa42b9f@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20191212175511.GG3163@linux.intel.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <d0b21e7e-69f5-09f9-3e1c-14d49fa42b9f@redhat.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Dec 12, 2019 at 09:55:11AM -0800, Sean Christopherson wrote:
-> The reasoning behind using vanilla rdmsr() on PROC and PIN controls is that
-> those MSRs should exist on any CPU that supports VMX, i.e. we want the WARN.
+On Thu, Dec 12, 2019 at 03:13:45PM +0100, Paolo Bonzini wrote:
+> On 12/12/19 13:26, Borislav Petkov wrote:
+> > 
+> > vmx flags       : virtual_nmis preemption_timer invvpid ept_x_only ept_ad ept_1gb flexpriority tsc_offsetting virtual_tpr mtf virt_apic_accesses ept vpid unrestricted_guest ple shadow_vmcs pml mode_based_ept_exec
+
+Tying into the consistency comment below, any objection to always prefixing
+"ept" for relevant controls instead of following the SDM?  Specifically,
+that would yield ept_mode_based_exec and ept_spp
+
+> > 
+> > virtual_nmis		-> vnmis
 > 
-> The alternative would be to use rdmsr_safe() for everything and then
-> explicitly disable VMX if a fault on PROC or PIN occurs, but that circles
-> us back to the handling a fault on rdmsr(MSR_IA32_FEAT_CTL), i.e. is it
-> really worth gracefully handling a fault that should never occur?
+> Even vnmi
+> 
+> > preemption_timer	-> preempt_tmr
+> 
+> I would prefer the full one here.
+> 
+> > flexpriority		-> flexprio
+> 
+> Full name?
+> 
+> > tsc_offsetting		-> tsc_ofs
+> 
+> tsc_offset?
 
-No but pls put a comment above it explaining why we're doing rdmsr()
-only with those two MSRs.
+I'll go with tsc_offset.
 
-Thx.
+> > virtual_tpr		-> vtpr
+> 
+> Do we need this?  It's usually included together with flexpriority.
+> 
+> > virt_apic_accesses	-> vapic
 
--- 
-Regards/Gruss,
-    Boris.
+Using v<feature> across the board makes sense to keep things consistent,
+i.e. vnmi, vtpr, vapic, etc...
 
-https://people.kernel.org/tglx/notes-about-netiquette
+Anyone have thoughts on how to shorten "APIC-register virtualization"
+without colliding with vapic or apicv?  I currently have apic_reg_virt,
+which is a bit wordy.  apic_regv isn't awful, but I don't love it.
+
+The other control that will be awkard is "Virtual Interrupt Delivery".
+vint_delivery?
+
+> > unrestricted_guest	-> unres_guest
+> 
+> Full? Or just unrestricted
+
+I prefer unrestricted_guest, a bare unrestricted just makes me wonder
+"unrestricted what?".   But I can live with "unrestricted" if that's the
+consensus.
+
+> In general I would stick to the same names as kvm_intel module
+> parameters (sans "enable_" if applicable) and not even bother publishing
+> the others.  Some features are either not used by KVM or available on
+> all VMX processors.
+
+IMO there's value in printing features that are not 1:1 with module params.
+
+I also think it makes sense to print features of interest even if KVM
+doesn't (yet) support the feature, e.g. to allow a user/developer to check
+if they can use/test a KVM build with support for a new feature without
+having to build and install the new kernel.
+
+> Paolo
+> 
+> > and so on. Those are just my examples - I betcha the SDM is more
+> > creative here with abbreviations. But you guys are going to grep for
+> > them. If it were me, I'd save on typing. :-)
