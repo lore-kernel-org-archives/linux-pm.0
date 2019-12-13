@@ -2,126 +2,67 @@ Return-Path: <SRS0=q8es=2D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73838C2D0C9
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:53:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39B03C2D0C9
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:55:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4394F2465A
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:53:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576230838;
-	bh=jKIh3iYUlWtz83Qxczyg8PVQYY3+Pnl8BOzN1kt4UHA=;
-	h=From:Date:Subject:To:Cc:List-ID:From;
-	b=H918JCQKfnU5TBMQoAVXRzrAy9IkuhiYgVi13e+TphaTo4cyPFnxLZD9UB9ucL9eO
-	 9aN+L56iO4KGZANXgt6O4gdw4MQ78+4fiSTnpyaVoTMCSuIvTJpk8HuNsA4nK5wbYB
-	 nAe4RfjLdCI1Lt9jNzxOCIHBkCSYWgc5YhetUGwY=
+	by mail.kernel.org (Postfix) with ESMTP id 0CD7F24658
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:55:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725945AbfLMJx5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Dec 2019 04:53:57 -0500
-Received: from mail-ot1-f66.google.com ([209.85.210.66]:34266 "EHLO
-        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725799AbfLMJx5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2019 04:53:57 -0500
-Received: by mail-ot1-f66.google.com with SMTP id a15so5794274otf.1;
-        Fri, 13 Dec 2019 01:53:56 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=kQXMOkKLQBuzsUmvhlFsweud8OIK7QsHH7RggCqtmtM=;
-        b=ZT4tK+3ACxlVp+ZkROCmgagZqkWnGXiBITNjKoJBRUgfVnCJ6NRLwjTokcRuvhpRCK
-         ylS5plvgBIH2GyCF38cjKWcg3+Jh8Bh7BHlBwSL3yPe3TNLz+/GhQ3piREgBYvshmnyi
-         jxGsgvKKo0shp3rjbf6oy0Vlc5XWAOLWx7tC790yD+8VEsphREz8EhA3zlIaw5simVuT
-         Vu8J+zKX+NfOOg3PuMkQoqAkAvY+48CcpUVDXF/rnfQoIJFkyDZoWolMsdC2gEX+V+Sz
-         JQlKYjlk3KEzCFbqgRD/AXWStWWQSbo4Wd+LtElNkuivVfpJeGVXXD1mpeUc4rqOGIIB
-         4Q8Q==
-X-Gm-Message-State: APjAAAWsW6hy3NRqrtLk0JFcfvYGysvL5P4sbuS0Pfu9HoNj17w16zjl
-        ddudbTioRf7cXKIDB87xUMJEmnYhacgA2CIOOhlVBoXM
-X-Google-Smtp-Source: APXvYqycFbChVrFtM0/G5UhaTCn0IsrJkn0qmL3txvpHumg1p3pXeX7Yx1NDMUDXiQsmNM2Jza76bAJY2XM3A/HAAb0=
-X-Received: by 2002:a05:6830:95:: with SMTP id a21mr12964851oto.167.1576230836441;
- Fri, 13 Dec 2019 01:53:56 -0800 (PST)
-MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 13 Dec 2019 10:53:45 +0100
-Message-ID: <CAJZ5v0g-xo1f2yPWGzFnrGQKFuHV=aDk_nV6s7hpWNnhnqyv5g@mail.gmail.com>
-Subject: [GIT PULL] Power management updates for v5.5-rc2
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        id S1725818AbfLMJzr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Dec 2019 04:55:47 -0500
+Received: from paleale.coelho.fi ([176.9.41.70]:52134 "EHLO
+        farmhouse.coelho.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1725747AbfLMJzr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2019 04:55:47 -0500
+X-Greylist: delayed 2039 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Dec 2019 04:55:45 EST
+Received: from 91-156-6-193.elisa-laajakaista.fi ([91.156.6.193] helo=redipa)
+        by farmhouse.coelho.fi with esmtpsa (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+        (Exim 4.92.2)
+        (envelope-from <luca@coelho.fi>)
+        id 1ifh8p-0002Lp-1I; Fri, 13 Dec 2019 11:21:43 +0200
+Message-ID: <3fc87add008ee42892f747bc247f15e09f6ed2d4.camel@coelho.fi>
+From:   Luca Coelho <luca@coelho.fi>
+To:     Akinobu Mita <akinobu.mita@gmail.com>,
+        linux-nvme@lists.infradead.org, linux-hwmon@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Kalle Valo <kvalo@codeaurora.org>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>
+Date:   Fri, 13 Dec 2019 11:21:40 +0200
+In-Reply-To: <1576075099-3441-11-git-send-email-akinobu.mita@gmail.com>
+References: <1576075099-3441-1-git-send-email-akinobu.mita@gmail.com>
+         <1576075099-3441-11-git-send-email-akinobu.mita@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.1-2+b1 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH v3 10/12] wireless: iwlwifi: use <linux/units.h> helpers
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Wed, 2019-12-11 at 23:38 +0900, Akinobu Mita wrote:
+> This switches the iwlwifi driver to use celsius_to_kelvin() and
+> kelvin_to_celsius() in <linux/units.h>.
+> 
+> Cc: Kalle Valo <kvalo@codeaurora.org>
+> Cc: Johannes Berg <johannes.berg@intel.com>
+> Cc: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
+> Cc: Luca Coelho <luciano.coelho@intel.com>
+> Cc: Intel Linux Wireless <linuxwifi@intel.com>
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> ---
 
-Please pull from the tag
+Acked-by: Luca Coelho <luciano.coelho@intel.com>
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.5-rc2
+--
+Cheers,
+Luca.
 
-with top-most commit 4c84515da8099f4bab5d9312a0ffaf40f14aa87b
-
- Merge branches 'pm-cpuidle' and 'acpi-pm'
-
-on top of commit e42617b825f8073569da76dc4510bfa019b1c35a
-
- Linux 5.5-rc1
-
-to receive power management updates for 5.5-rc2.
-
-These add PM QoS support to devfreq and fix a few issues in that
-subsystem, fix two cpuidle issues and do one minor cleanup in there,
-and address an ACPI power management problem related to devices with
-special power management requirements, like fans.
-
-Specifics:
-
- - Add PM QoS support, based on the frequency QoS introduced during
-   the 5.4 cycle, to devfreq (Leonard Crestez).
-
- - Fix some assorted devfreq issues (Leonard Crestez).
-
- - Fix an unintentional cpuidle behavior change (introduced during
-   the 5.4 cycle) related to the active polling time limit (Marcelo
-   Tosatti).
-
- - Fix a recently introduced cpuidle helper function and do a minor
-   cleanup in the cpuidle core (Rafael Wysocki).
-
- - Avoid adding devices with special power management requirements,
-   like fans, to the generic ACPI PM domain (Rafael Wysocki).
-
-Thanks!
-
-
----------------
-
-Leonard Crestez (6):
-      PM / devfreq: Fix devfreq_notifier_call returning errno
-      PM / devfreq: Set scaling_max_freq to max on OPP notifier error
-      PM / devfreq: Introduce get_freq_range helper
-      PM / devfreq: Don't fail devfreq_dev_release if not in list
-      PM / devfreq: Add PM QoS support
-      PM / devfreq: Use PM QoS for sysfs min/max_freq
-
-Marcelo Tosatti (1):
-      cpuidle: use first valid target residency as poll time
-
-Rafael J. Wysocki (3):
-      ACPI: PM: Avoid attaching ACPI PM domain to certain devices
-      cpuidle: Fix cpuidle_driver_state_disabled()
-      cpuidle: Drop unnecessary type cast in cpuidle_poll_time()
-
----------------
-
- drivers/acpi/device_pm.c  |  12 +-
- drivers/cpuidle/cpuidle.c |   3 +-
- drivers/cpuidle/driver.c  |  10 ++
- drivers/devfreq/devfreq.c | 273 ++++++++++++++++++++++++++++++++++------------
- include/linux/devfreq.h   |  14 ++-
- 5 files changed, 235 insertions(+), 77 deletions(-)
