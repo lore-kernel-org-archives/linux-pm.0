@@ -2,67 +2,70 @@ Return-Path: <SRS0=q8es=2D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39B03C2D0C9
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:55:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B86FC2D0C9
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 10:15:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0CD7F24658
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:55:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 77C6C2465E
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 10:15:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725818AbfLMJzr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Dec 2019 04:55:47 -0500
-Received: from paleale.coelho.fi ([176.9.41.70]:52134 "EHLO
-        farmhouse.coelho.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1725747AbfLMJzr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2019 04:55:47 -0500
-X-Greylist: delayed 2039 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Dec 2019 04:55:45 EST
-Received: from 91-156-6-193.elisa-laajakaista.fi ([91.156.6.193] helo=redipa)
-        by farmhouse.coelho.fi with esmtpsa (TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-        (Exim 4.92.2)
-        (envelope-from <luca@coelho.fi>)
-        id 1ifh8p-0002Lp-1I; Fri, 13 Dec 2019 11:21:43 +0200
-Message-ID: <3fc87add008ee42892f747bc247f15e09f6ed2d4.camel@coelho.fi>
-From:   Luca Coelho <luca@coelho.fi>
-To:     Akinobu Mita <akinobu.mita@gmail.com>,
-        linux-nvme@lists.infradead.org, linux-hwmon@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     Kalle Valo <kvalo@codeaurora.org>,
-        Johannes Berg <johannes.berg@intel.com>,
-        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-        Intel Linux Wireless <linuxwifi@intel.com>
-Date:   Fri, 13 Dec 2019 11:21:40 +0200
-In-Reply-To: <1576075099-3441-11-git-send-email-akinobu.mita@gmail.com>
-References: <1576075099-3441-1-git-send-email-akinobu.mita@gmail.com>
-         <1576075099-3441-11-git-send-email-akinobu.mita@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.1-2+b1 
+        id S1725890AbfLMKPk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Dec 2019 05:15:40 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:42832 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725793AbfLMKPj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2019 05:15:39 -0500
+Received: from 79.184.255.82.ipv4.supernova.orange.pl (79.184.255.82) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
+ id fa3bee42b0e7e8f9; Fri, 13 Dec 2019 11:15:37 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc:     kbuild-all@lists.01.org,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        kbuild test robot <lkp@intel.com>
+Subject: Re: [PATCH v9] software node: add basic tests for property entries
+Date:   Fri, 13 Dec 2019 11:15:37 +0100
+Message-ID: <1629612.3OA72MvNtE@kreacher>
+In-Reply-To: <20191213001829.GG101194@dtor-ws>
+References: <201912040922.hUcG8uqP%lkp@intel.com> <12135118.EjhP6glzqA@kreacher> <20191213001829.GG101194@dtor-ws>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [PATCH v3 10/12] wireless: iwlwifi: use <linux/units.h> helpers
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 2019-12-11 at 23:38 +0900, Akinobu Mita wrote:
-> This switches the iwlwifi driver to use celsius_to_kelvin() and
-> kelvin_to_celsius() in <linux/units.h>.
+On Friday, December 13, 2019 1:18:29 AM CET Dmitry Torokhov wrote:
+> On Wed, Dec 11, 2019 at 11:53:05AM +0100, Rafael J. Wysocki wrote:
+> > On Monday, December 9, 2019 9:44:47 AM CET Rafael J. Wysocki wrote:
+> > > On Wed, Dec 4, 2019 at 7:53 PM Dmitry Torokhov
+> > > <dmitry.torokhov@gmail.com> wrote:
+> > > >
+> > > > This adds tests for creating software nodes with properties supplied by
+> > > > PROPERTY_ENTRY_XXX() macros and fetching and validating data from said
+> > > > nodes/properties.
+> > > >
+> > > > We are using KUnit framework for the tests.
+> > > >
+> > > > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> > > 
+> > > Applied (as 5.5 material), thanks!
+> > 
+> > And dropped again, because 0-day still complains.
+> > 
+> > I'm going to push the rest of the series to Linus this week.  The last patch
+> > can wait, even though it would be good to have it.
 > 
-> Cc: Kalle Valo <kvalo@codeaurora.org>
-> Cc: Johannes Berg <johannes.berg@intel.com>
-> Cc: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
-> Cc: Luca Coelho <luciano.coelho@intel.com>
-> Cc: Intel Linux Wireless <linuxwifi@intel.com>
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> ---
+> Could you point me to the 0-say compaint for the latest version as I did
+> not get it. I am still interested in sorting it all out.
+> 
 
-Acked-by: Luca Coelho <luciano.coelho@intel.com>
+I have forwarded it to you: https://lore.kernel.org/linux-acpi/1860961.FledB3ecnK@kreacher/T/#u
 
---
-Cheers,
-Luca.
+
 
