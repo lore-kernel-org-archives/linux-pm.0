@@ -2,166 +2,82 @@ Return-Path: <SRS0=q8es=2D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D7CAC43603
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:28:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0403C2D0C9
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:35:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 39D392253D
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:28:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 86709214D8
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:35:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726671AbfLMJ1c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Dec 2019 04:27:32 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:51073 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725948AbfLMJ1b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2019 04:27:31 -0500
-Received: from 79.184.255.82.ipv4.supernova.orange.pl (79.184.255.82) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
- id 304d567ef6754ccf; Fri, 13 Dec 2019 10:27:29 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Len Brown <len.brown@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>
-Subject: [PATCH v1 08/10] intel_idle: Allow ACPI _CST to be used for selected known processors
-Date:   Fri, 13 Dec 2019 10:24:02 +0100
-Message-ID: <1902757.UdhMkU40YC@kreacher>
-In-Reply-To: <3950312.2WmFeOdZGY@kreacher>
-References: <3950312.2WmFeOdZGY@kreacher>
+        id S1726833AbfLMJfI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Dec 2019 04:35:08 -0500
+Received: from mga14.intel.com ([192.55.52.115]:13644 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726802AbfLMJfH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 13 Dec 2019 04:35:07 -0500
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 13 Dec 2019 01:34:41 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.69,309,1571727600"; 
+   d="scan'208";a="208406553"
+Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
+  by orsmga008.jf.intel.com with ESMTP; 13 Dec 2019 01:34:37 -0800
+Received: from andy by smile with local (Exim 4.93-RC7)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1ifhLJ-00066h-JG; Fri, 13 Dec 2019 11:34:37 +0200
+Date:   Fri, 13 Dec 2019 11:34:37 +0200
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Gayatri Kammela <gayatri.kammela@intel.com>
+Cc:     linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+        alex.hung@canonical.com, linux-acpi@vger.kernel.org,
+        lenb@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
+        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
+        charles.d.prestopine@intel.com, dvhart@infradead.org,
+        Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH v1 1/4] acpi: dptf: Add new Tiger Lake hardware IDs to
+ support DPTF drivers in acpi
+Message-ID: <20191213093437.GO32742@smile.fi.intel.com>
+References: <cover.1576189376.git.gayatri.kammela@intel.com>
+ <baaa3d7d1d1129a31c5a000578d1ad8198ca3881.1576189376.git.gayatri.kammela@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <baaa3d7d1d1129a31c5a000578d1ad8198ca3881.1576189376.git.gayatri.kammela@intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+On Thu, Dec 12, 2019 at 02:37:17PM -0800, Gayatri Kammela wrote:
+> Tiger Lake has new unique hardware IDs that are needed to support
+> DPTF drivers. Hence, add them.
 
-Update the intel_idle driver to get the C-states information from ACPI
-_CST in some cases in which the processor is known to the driver, as long as
-that information is available and the new use_acpi flag is set in the
-profile of the processor in question.
+>  	{"INT3407", 0},
+> +	{"INT1047", 0},
 
-In the cases when there is a specific table of C-states for the given
-processor in the driver, that table is used as the primary source of
-information on the available C-states, but if ACPI _CST is present,
-the C-states that are not listed by it will not be enabled by default
-(they still can be enabled later by user space via sysfs, though).
+Can we keep them in sorted order?
 
-The new CPUIDLE_FLAG_ALWAYS_ENABLE flag can be used for marking
-C-states that should be enabled by default even if they are not
-listed by ACPI _CST.
+>  	{"INT3409"},
+>  	{"INT340A"},
+>  	{"INT340B"},
+> +	{"INT1040"},
+> +	{"INT1043"},
+> +	{"INT1044"},
+> +	{"INT1047"},
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Ditto.
 
-Changes from the RFC version:
- - Subject and changelog update.
- - Call the new state flag CPUIDLE_FLAG_ALWAYS_ENABLE (instead of _IGNORE_ACPI).
-
----
- drivers/idle/intel_idle.c | 45 ++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 42 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 28812d93d59a..a072b84d9595 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -80,6 +80,7 @@ struct idle_cpu {
- 	unsigned long auto_demotion_disable_flags;
- 	bool byt_auto_demotion_disable_flag;
- 	bool disable_promotion_to_c1e;
-+	bool use_acpi;
- };
- 
- static const struct idle_cpu *icpu;
-@@ -90,6 +91,11 @@ static void intel_idle_s2idle(struct cpuidle_device *dev,
- 			      struct cpuidle_driver *drv, int index);
- static struct cpuidle_state *cpuidle_state_table;
- 
-+/*
-+ * Enable this state by default even if the ACPI _CST does not list it.
-+ */
-+#define CPUIDLE_FLAG_ALWAYS_ENABLE	BIT(15)
-+
- /*
-  * Set this flag for states where the HW flushes the TLB for us
-  * and so we don't need cross-calls to keep it consistent.
-@@ -1230,9 +1236,33 @@ static void intel_idle_init_cstates_acpi(struct cpuidle_driver *drv)
- 		state->enter_s2idle = intel_idle_s2idle;
- 	}
- }
-+
-+static bool intel_idle_off_by_default(u32 mwait_hint)
-+{
-+	int cstate, limit;
-+
-+	/*
-+	 * If there are no _CST C-states, do not disable any C-states by
-+	 * default.
-+	 */
-+	if (!acpi_state_table.count)
-+		return false;
-+
-+	limit = min_t(int, CPUIDLE_STATE_MAX, acpi_state_table.count);
-+	/*
-+	 * If limit > 0, intel_idle_cst_usable() has returned 'true', so all of
-+	 * the interesting states are ACPI_CSTATE_FFH.
-+	 */
-+	for (cstate = 1; cstate < limit; cstate++) {
-+		if (acpi_state_table.states[cstate].address == mwait_hint)
-+			return false;
-+	}
-+	return true;
-+}
- #else /* !CONFIG_ACPI_PROCESSOR_CSTATE */
- static inline bool intel_idle_acpi_cst_extract(void) { return false; }
- static inline void intel_idle_init_cstates_acpi(struct cpuidle_driver *drv) { }
-+static inline bool intel_idle_off_by_default(u32 mwait_hint) { return false; }
- #endif /* !CONFIG_ACPI_PROCESSOR_CSTATE */
- 
- /*
-@@ -1273,10 +1303,13 @@ static int __init intel_idle_probe(void)
- 	pr_debug("MWAIT substates: 0x%x\n", mwait_substates);
- 
- 	icpu = (const struct idle_cpu *)id->driver_data;
--	if (icpu)
-+	if (icpu) {
- 		cpuidle_state_table = icpu->state_table;
--	else if (!intel_idle_acpi_cst_extract())
-+		if (icpu->use_acpi)
-+			intel_idle_acpi_cst_extract();
-+	} else if (!intel_idle_acpi_cst_extract()) {
- 		return -ENODEV;
-+	}
- 
- 	pr_debug("v" INTEL_IDLE_VERSION " model 0x%X\n",
- 		 boot_cpu_data.x86_model);
-@@ -1484,7 +1517,13 @@ static void intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- 			continue;
- 
- 		/* Structure copy. */
--		drv->states[drv->state_count++] = cpuidle_state_table[cstate];
-+		drv->states[drv->state_count] = cpuidle_state_table[cstate];
-+
-+		if (icpu->use_acpi && intel_idle_off_by_default(mwait_hint) &&
-+		    !(cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_ALWAYS_ENABLE))
-+			drv->states[drv->state_count].flags |= CPUIDLE_FLAG_OFF;
-+
-+		drv->state_count++;
- 	}
- 
- 	if (icpu->byt_auto_demotion_disable_flag) {
 -- 
-2.16.4
-
-
-
+With Best Regards,
+Andy Shevchenko
 
 
