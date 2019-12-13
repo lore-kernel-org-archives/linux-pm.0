@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B06FAC2D0C9
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D7CAC43603
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:28:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 91B6324684
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:28:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 39D392253D
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:28:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726944AbfLMJ2K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Dec 2019 04:28:10 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:48022 "EHLO
+        id S1726671AbfLMJ1c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Dec 2019 04:27:32 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:51073 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726717AbfLMJ1e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2019 04:27:34 -0500
+        with ESMTP id S1725948AbfLMJ1b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2019 04:27:31 -0500
 Received: from 79.184.255.82.ipv4.supernova.orange.pl (79.184.255.82) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
- id ca8ad0f169ccbab0; Fri, 13 Dec 2019 10:27:32 +0100
+ id 304d567ef6754ccf; Fri, 13 Dec 2019 10:27:29 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -28,9 +28,9 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Len Brown <len.brown@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Len Brown <lenb@kernel.org>
-Subject: [PATCH v1 05/10] intel_idle: Refactor intel_idle_cpuidle_driver_init()
-Date:   Fri, 13 Dec 2019 10:16:04 +0100
-Message-ID: <15175612.mLOhOsQDLf@kreacher>
+Subject: [PATCH v1 08/10] intel_idle: Allow ACPI _CST to be used for selected known processors
+Date:   Fri, 13 Dec 2019 10:24:02 +0100
+Message-ID: <1902757.UdhMkU40YC@kreacher>
 In-Reply-To: <3950312.2WmFeOdZGY@kreacher>
 References: <3950312.2WmFeOdZGY@kreacher>
 MIME-Version: 1.0
@@ -43,104 +43,118 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Move the C-state verification and checks from
-intel_idle_cpuidle_driver_init() to a separate function,
-intel_idle_verify_cstate(), and make the former call it after
-checking the CPUIDLE_FLAG_UNUSABLE state flag.
+Update the intel_idle driver to get the C-states information from ACPI
+_CST in some cases in which the processor is known to the driver, as long as
+that information is available and the new use_acpi flag is set in the
+profile of the processor in question.
 
-Also combine the drv->states[] updates with the incrementation of
-drv->state_count.
+In the cases when there is a specific table of C-states for the given
+processor in the driver, that table is used as the primary source of
+information on the available C-states, but if ACPI _CST is present,
+the C-states that are not listed by it will not be enabled by default
+(they still can be enabled later by user space via sysfs, though).
 
-No intentional functional impact.
+The new CPUIDLE_FLAG_ALWAYS_ENABLE flag can be used for marking
+C-states that should be enabled by default even if they are not
+listed by ACPI _CST.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-No changes from the RFC version.
+Changes from the RFC version:
+ - Subject and changelog update.
+ - Call the new state flag CPUIDLE_FLAG_ALWAYS_ENABLE (instead of _IGNORE_ACPI).
 
 ---
- drivers/idle/intel_idle.c | 49 ++++++++++++++++++++++++-----------------------
- 1 file changed, 25 insertions(+), 24 deletions(-)
+ drivers/idle/intel_idle.c | 45 ++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 42 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 75fd2a7b0842..47255d3cf51f 100644
+index 28812d93d59a..a072b84d9595 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -944,6 +944,22 @@ static void intel_idle_s2idle(struct cpuidle_device *dev,
- 	mwait_idle_with_hints(eax, ecx);
- }
+@@ -80,6 +80,7 @@ struct idle_cpu {
+ 	unsigned long auto_demotion_disable_flags;
+ 	bool byt_auto_demotion_disable_flag;
+ 	bool disable_promotion_to_c1e;
++	bool use_acpi;
+ };
  
-+static bool intel_idle_verify_cstate(unsigned int mwait_hint)
-+{
-+	unsigned int mwait_cstate = MWAIT_HINT2CSTATE(mwait_hint) + 1;
-+	unsigned int num_substates = (mwait_substates >> mwait_cstate * 4) &
-+					MWAIT_SUBSTATE_MASK;
+ static const struct idle_cpu *icpu;
+@@ -90,6 +91,11 @@ static void intel_idle_s2idle(struct cpuidle_device *dev,
+ 			      struct cpuidle_driver *drv, int index);
+ static struct cpuidle_state *cpuidle_state_table;
+ 
++/*
++ * Enable this state by default even if the ACPI _CST does not list it.
++ */
++#define CPUIDLE_FLAG_ALWAYS_ENABLE	BIT(15)
 +
-+	/* Ignore the C-state if there are NO sub-states in CPUID for it. */
-+	if (num_substates == 0)
+ /*
+  * Set this flag for states where the HW flushes the TLB for us
+  * and so we don't need cross-calls to keep it consistent.
+@@ -1230,9 +1236,33 @@ static void intel_idle_init_cstates_acpi(struct cpuidle_driver *drv)
+ 		state->enter_s2idle = intel_idle_s2idle;
+ 	}
+ }
++
++static bool intel_idle_off_by_default(u32 mwait_hint)
++{
++	int cstate, limit;
++
++	/*
++	 * If there are no _CST C-states, do not disable any C-states by
++	 * default.
++	 */
++	if (!acpi_state_table.count)
 +		return false;
 +
-+	if (mwait_cstate > 2 && !boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
-+		mark_tsc_unstable("TSC halts in idle states deeper than C2");
-+
++	limit = min_t(int, CPUIDLE_STATE_MAX, acpi_state_table.count);
++	/*
++	 * If limit > 0, intel_idle_cst_usable() has returned 'true', so all of
++	 * the interesting states are ACPI_CSTATE_FFH.
++	 */
++	for (cstate = 1; cstate < limit; cstate++) {
++		if (acpi_state_table.states[cstate].address == mwait_hint)
++			return false;
++	}
 +	return true;
 +}
-+
- static void __setup_broadcast_timer(bool on)
- {
- 	if (on)
-@@ -1332,10 +1348,10 @@ static void __init intel_idle_cpuidle_driver_init(void)
- 	drv->state_count = 1;
+ #else /* !CONFIG_ACPI_PROCESSOR_CSTATE */
+ static inline bool intel_idle_acpi_cst_extract(void) { return false; }
+ static inline void intel_idle_init_cstates_acpi(struct cpuidle_driver *drv) { }
++static inline bool intel_idle_off_by_default(u32 mwait_hint) { return false; }
+ #endif /* !CONFIG_ACPI_PROCESSOR_CSTATE */
  
- 	for (cstate = 0; cstate < CPUIDLE_STATE_MAX; ++cstate) {
--		int num_substates, mwait_hint, mwait_cstate;
-+		unsigned int mwait_hint;
+ /*
+@@ -1273,10 +1303,13 @@ static int __init intel_idle_probe(void)
+ 	pr_debug("MWAIT substates: 0x%x\n", mwait_substates);
  
--		if ((cpuidle_state_table[cstate].enter == NULL) &&
--		    (cpuidle_state_table[cstate].enter_s2idle == NULL))
-+		if (!cpuidle_state_table[cstate].enter &&
-+		    !cpuidle_state_table[cstate].enter_s2idle)
- 			break;
+ 	icpu = (const struct idle_cpu *)id->driver_data;
+-	if (icpu)
++	if (icpu) {
+ 		cpuidle_state_table = icpu->state_table;
+-	else if (!intel_idle_acpi_cst_extract())
++		if (icpu->use_acpi)
++			intel_idle_acpi_cst_extract();
++	} else if (!intel_idle_acpi_cst_extract()) {
+ 		return -ENODEV;
++	}
  
- 		if (cstate + 1 > max_cstate) {
-@@ -1343,34 +1359,19 @@ static void __init intel_idle_cpuidle_driver_init(void)
- 			break;
- 		}
- 
--		mwait_hint = flg2MWAIT(cpuidle_state_table[cstate].flags);
--		mwait_cstate = MWAIT_HINT2CSTATE(mwait_hint);
--
--		/* number of sub-states for this state in CPUID.MWAIT */
--		num_substates = (mwait_substates >> ((mwait_cstate + 1) * 4))
--					& MWAIT_SUBSTATE_MASK;
--
--		/* if NO sub-states for this state in CPUID, skip it */
--		if (num_substates == 0)
--			continue;
--
--		/* if state marked as disabled, skip it */
-+		/* If marked as unusable, skip this state. */
- 		if (cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_UNUSABLE) {
- 			pr_debug("state %s is disabled\n",
- 				 cpuidle_state_table[cstate].name);
+ 	pr_debug("v" INTEL_IDLE_VERSION " model 0x%X\n",
+ 		 boot_cpu_data.x86_model);
+@@ -1484,7 +1517,13 @@ static void intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
  			continue;
- 		}
  
-+		mwait_hint = flg2MWAIT(cpuidle_state_table[cstate].flags);
-+		if (!intel_idle_verify_cstate(mwait_hint))
-+			continue;
- 
--		if (((mwait_cstate + 1) > 2) &&
--			!boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
--			mark_tsc_unstable("TSC halts in idle"
--					" states deeper than C2");
--
--		drv->states[drv->state_count] =	/* structure copy */
--			cpuidle_state_table[cstate];
--
--		drv->state_count += 1;
-+		/* Structure copy. */
-+		drv->states[drv->state_count++] = cpuidle_state_table[cstate];
+ 		/* Structure copy. */
+-		drv->states[drv->state_count++] = cpuidle_state_table[cstate];
++		drv->states[drv->state_count] = cpuidle_state_table[cstate];
++
++		if (icpu->use_acpi && intel_idle_off_by_default(mwait_hint) &&
++		    !(cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_ALWAYS_ENABLE))
++			drv->states[drv->state_count].flags |= CPUIDLE_FLAG_OFF;
++
++		drv->state_count++;
  	}
  
  	if (icpu->byt_auto_demotion_disable_flag) {
