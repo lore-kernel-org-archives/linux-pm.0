@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DBC5C2D0CA
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:27:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94EBAC2D0BF
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:27:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5CCDD2077B
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:27:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6B5D1214D8
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Dec 2019 09:27:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726705AbfLMJ1d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726739AbfLMJ1d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 13 Dec 2019 04:27:33 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:61210 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:43689 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725945AbfLMJ1d (ORCPT
+        with ESMTP id S1725799AbfLMJ1d (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Dec 2019 04:27:33 -0500
 Received: from 79.184.255.82.ipv4.supernova.orange.pl (79.184.255.82) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
- id 3e4136f9a6c3eaa5; Fri, 13 Dec 2019 10:27:30 +0100
+ id 8de01d217efb030e; Fri, 13 Dec 2019 10:27:28 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -28,9 +28,9 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Len Brown <len.brown@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Len Brown <lenb@kernel.org>
-Subject: [PATCH v1 07/10] cpuidle: Allow idle states to be disabled by default
-Date:   Fri, 13 Dec 2019 10:22:04 +0100
-Message-ID: <23901825.xGlorUmkL0@kreacher>
+Subject: [PATCH v1 10/10] intel_idle: Use ACPI _CST on server systems
+Date:   Fri, 13 Dec 2019 10:27:07 +0100
+Message-ID: <3728343.TGOlGdFZx8@kreacher>
 In-Reply-To: <3950312.2WmFeOdZGY@kreacher>
 References: <3950312.2WmFeOdZGY@kreacher>
 MIME-Version: 1.0
@@ -43,130 +43,268 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-In certain situations it may be useful to prevent some idle states
-from being used by default while allowing user space to enable them
-later on.
+In many cases, especially on server systems, it is desirable to avoid
+enabling C-states that have been disabled in the platform firmware
+(BIOS) setup, except for C1E.
 
-For this purpose, introduce a new state flag, CPUIDLE_FLAG_OFF, to
-mark idle states that should be disabled by default, make the core
-set CPUIDLE_STATE_DISABLED_BY_USER for those states at the
-initialization time and add a new state attribute in sysfs,
-"default_status", to inform user space of the initial status of
-the given idle state ("disabled" if CPUIDLE_FLAG_OFF is set for it,
-"enabled" otherwise).
+As a rule, the C-states disabled this way are not listed by ACPI
+_CST, so if that is used by intel_idle along with the specific
+table of C-states that it has for the given processor, the C-states
+disabled through the platform firmware will not be enabled by default
+by intel_idle.
+
+Accordingly, set the use_acpi flag (introduced previously) in all
+server processor profiles defined in intel_idle (so as to make it use
+ACPI _CST to decide which C-states to enable by default) and set
+the CPUIDLE_FLAG_ALWAYS_ENABLE flag (also introduced previously)
+for C1E in all C-states tables in intel_idle that contain C1 too
+(so that C1E is enabled regardless of whether or not it is listed
+by ACPI _CST).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
-Changes from the RFC version:
- - Call the new sysfs attribute "default_status" (instead of "initial_status").
+New patch, not present in the RFC.
 
 ---
- Documentation/ABI/testing/sysfs-devices-system-cpu |  6 ++++++
- Documentation/admin-guide/pm/cpuidle.rst           |  3 +++
- drivers/cpuidle/cpuidle.c                          |  6 +++++-
- drivers/cpuidle/sysfs.c                            | 10 ++++++++++
- include/linux/cpuidle.h                            |  1 +
- 5 files changed, 25 insertions(+), 1 deletion(-)
+ drivers/idle/intel_idle.c | 70 +++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 50 insertions(+), 20 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index fc20cde63d1e..2e0e3b45d02a 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -196,6 +196,12 @@ Description:
- 		does not reflect it. Likewise, if one enables a deep state but a
- 		lighter state still is disabled, then this has no effect.
- 
-+What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/default_status
-+Date:		December 2019
-+KernelVersion:	v5.6
-+Contact:	Linux power management list <linux-pm@vger.kernel.org>
-+Description:
-+		(RO) The default status of this state, "enabled" or "disabled".
- 
- What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/residency
- Date:		March 2014
-diff --git a/Documentation/admin-guide/pm/cpuidle.rst b/Documentation/admin-guide/pm/cpuidle.rst
-index e70b365dbc60..311cd7cc2b75 100644
---- a/Documentation/admin-guide/pm/cpuidle.rst
-+++ b/Documentation/admin-guide/pm/cpuidle.rst
-@@ -506,6 +506,9 @@ object corresponding to it, as follows:
- ``disable``
- 	Whether or not this idle state is disabled.
- 
-+``default_status``
-+	The default status of this state, "enabled" or "disabled".
-+
- ``latency``
- 	Exit latency of the idle state in microseconds.
- 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 0005be5ea2b4..24eaa4c8138b 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -571,10 +571,14 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
- 	if (!try_module_get(drv->owner))
- 		return -EINVAL;
- 
--	for (i = 0; i < drv->state_count; i++)
-+	for (i = 0; i < drv->state_count; i++) {
- 		if (drv->states[i].flags & CPUIDLE_FLAG_UNUSABLE)
- 			dev->states_usage[i].disable |= CPUIDLE_STATE_DISABLED_BY_DRIVER;
- 
-+		if (drv->states[i].flags & CPUIDLE_FLAG_OFF)
-+			dev->states_usage[i].disable |= CPUIDLE_STATE_DISABLED_BY_USER;
-+	}
-+
- 	per_cpu(cpuidle_devices, dev->cpu) = dev;
- 	list_add(&dev->device_list, &cpuidle_detected_devices);
- 
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index 38ef770be90d..254d1560dc19 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -327,6 +327,14 @@ static ssize_t store_state_disable(struct cpuidle_state *state,
- 	return size;
- }
- 
-+static ssize_t show_state_default_status(struct cpuidle_state *state,
-+					  struct cpuidle_state_usage *state_usage,
-+					  char *buf)
-+{
-+	return sprintf(buf, "%s\n",
-+		       state->flags & CPUIDLE_FLAG_OFF ? "disabled" : "enabled");
-+}
-+
- define_one_state_ro(name, show_state_name);
- define_one_state_ro(desc, show_state_desc);
- define_one_state_ro(latency, show_state_exit_latency);
-@@ -337,6 +345,7 @@ define_one_state_ro(time, show_state_time);
- define_one_state_rw(disable, show_state_disable, store_state_disable);
- define_one_state_ro(above, show_state_above);
- define_one_state_ro(below, show_state_below);
-+define_one_state_ro(default_status, show_state_default_status);
- 
- static struct attribute *cpuidle_state_default_attrs[] = {
- 	&attr_name.attr,
-@@ -349,6 +358,7 @@ static struct attribute *cpuidle_state_default_attrs[] = {
- 	&attr_disable.attr,
- 	&attr_above.attr,
- 	&attr_below.attr,
-+	&attr_default_status.attr,
- 	NULL
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 26fe383bb921..1467490adfc3 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -131,7 +131,7 @@ static struct cpuidle_state nehalem_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -168,7 +168,7 @@ static struct cpuidle_state snb_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -303,7 +303,7 @@ static struct cpuidle_state ivb_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -348,7 +348,7 @@ static struct cpuidle_state ivt_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 80,
+ 		.enter = &intel_idle,
+@@ -385,7 +385,7 @@ static struct cpuidle_state ivt_cstates_4s[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 250,
+ 		.enter = &intel_idle,
+@@ -422,7 +422,7 @@ static struct cpuidle_state ivt_cstates_8s[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 500,
+ 		.enter = &intel_idle,
+@@ -459,7 +459,7 @@ static struct cpuidle_state hsw_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -527,7 +527,7 @@ static struct cpuidle_state bdw_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -596,7 +596,7 @@ static struct cpuidle_state skl_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -665,7 +665,7 @@ static struct cpuidle_state skx_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -815,7 +815,7 @@ static struct cpuidle_state bxt_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -876,7 +876,7 @@ static struct cpuidle_state dnv_cstates[] = {
+ 	{
+ 		.name = "C1E",
+ 		.desc = "MWAIT 0x01",
+-		.flags = MWAIT2flg(0x01),
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
+ 		.exit_latency = 10,
+ 		.target_residency = 20,
+ 		.enter = &intel_idle,
+@@ -998,6 +998,13 @@ static const struct idle_cpu idle_cpu_nehalem = {
+ 	.disable_promotion_to_c1e = true,
  };
  
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 1dabe36bd011..ebfb52b3ffbf 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -77,6 +77,7 @@ struct cpuidle_state {
- #define CPUIDLE_FLAG_COUPLED	BIT(1) /* state applies to multiple cpus */
- #define CPUIDLE_FLAG_TIMER_STOP BIT(2) /* timer is stopped on this state */
- #define CPUIDLE_FLAG_UNUSABLE	BIT(3) /* avoid using this state */
-+#define CPUIDLE_FLAG_OFF	BIT(4) /* disable this state by default */
++static const struct idle_cpu idle_cpu_nhx = {
++	.state_table = nehalem_cstates,
++	.auto_demotion_disable_flags = NHM_C1_AUTO_DEMOTE | NHM_C3_AUTO_DEMOTE,
++	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
++};
++
+ static const struct idle_cpu idle_cpu_atom = {
+ 	.state_table = atom_cstates,
+ };
+@@ -1016,6 +1023,12 @@ static const struct idle_cpu idle_cpu_snb = {
+ 	.disable_promotion_to_c1e = true,
+ };
  
- struct cpuidle_device_kobj;
- struct cpuidle_state_kobj;
++static const struct idle_cpu idle_cpu_snx = {
++	.state_table = snb_cstates,
++	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
++};
++
+ static const struct idle_cpu idle_cpu_byt = {
+ 	.state_table = byt_cstates,
+ 	.disable_promotion_to_c1e = true,
+@@ -1036,6 +1049,7 @@ static const struct idle_cpu idle_cpu_ivb = {
+ static const struct idle_cpu idle_cpu_ivt = {
+ 	.state_table = ivt_cstates,
+ 	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
+ };
+ 
+ static const struct idle_cpu idle_cpu_hsw = {
+@@ -1043,11 +1057,23 @@ static const struct idle_cpu idle_cpu_hsw = {
+ 	.disable_promotion_to_c1e = true,
+ };
+ 
++static const struct idle_cpu idle_cpu_hsx = {
++	.state_table = hsw_cstates,
++	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
++};
++
+ static const struct idle_cpu idle_cpu_bdw = {
+ 	.state_table = bdw_cstates,
+ 	.disable_promotion_to_c1e = true,
+ };
+ 
++static const struct idle_cpu idle_cpu_bdx = {
++	.state_table = bdw_cstates,
++	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
++};
++
+ static const struct idle_cpu idle_cpu_skl = {
+ 	.state_table = skl_cstates,
+ 	.disable_promotion_to_c1e = true,
+@@ -1056,15 +1082,18 @@ static const struct idle_cpu idle_cpu_skl = {
+ static const struct idle_cpu idle_cpu_skx = {
+ 	.state_table = skx_cstates,
+ 	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
+ };
+ 
+ static const struct idle_cpu idle_cpu_avn = {
+ 	.state_table = avn_cstates,
+ 	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
+ };
+ 
+ static const struct idle_cpu idle_cpu_knl = {
+ 	.state_table = knl_cstates,
++	.use_acpi = true,
+ };
+ 
+ static const struct idle_cpu idle_cpu_bxt = {
+@@ -1075,20 +1104,21 @@ static const struct idle_cpu idle_cpu_bxt = {
+ static const struct idle_cpu idle_cpu_dnv = {
+ 	.state_table = dnv_cstates,
+ 	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
+ };
+ 
+ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+-	INTEL_CPU_FAM6(NEHALEM_EP,		idle_cpu_nehalem),
++	INTEL_CPU_FAM6(NEHALEM_EP,		idle_cpu_nhx),
+ 	INTEL_CPU_FAM6(NEHALEM,			idle_cpu_nehalem),
+ 	INTEL_CPU_FAM6(NEHALEM_G,		idle_cpu_nehalem),
+ 	INTEL_CPU_FAM6(WESTMERE,		idle_cpu_nehalem),
+-	INTEL_CPU_FAM6(WESTMERE_EP,		idle_cpu_nehalem),
+-	INTEL_CPU_FAM6(NEHALEM_EX,		idle_cpu_nehalem),
++	INTEL_CPU_FAM6(WESTMERE_EP,		idle_cpu_nhx),
++	INTEL_CPU_FAM6(NEHALEM_EX,		idle_cpu_nhx),
+ 	INTEL_CPU_FAM6(ATOM_BONNELL,		idle_cpu_atom),
+ 	INTEL_CPU_FAM6(ATOM_BONNELL_MID,	idle_cpu_lincroft),
+-	INTEL_CPU_FAM6(WESTMERE_EX,		idle_cpu_nehalem),
++	INTEL_CPU_FAM6(WESTMERE_EX,		idle_cpu_nhx),
+ 	INTEL_CPU_FAM6(SANDYBRIDGE,		idle_cpu_snb),
+-	INTEL_CPU_FAM6(SANDYBRIDGE_X,		idle_cpu_snb),
++	INTEL_CPU_FAM6(SANDYBRIDGE_X,		idle_cpu_snx),
+ 	INTEL_CPU_FAM6(ATOM_SALTWELL,		idle_cpu_atom),
+ 	INTEL_CPU_FAM6(ATOM_SILVERMONT,		idle_cpu_byt),
+ 	INTEL_CPU_FAM6(ATOM_SILVERMONT_MID,	idle_cpu_tangier),
+@@ -1096,14 +1126,14 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+ 	INTEL_CPU_FAM6(IVYBRIDGE,		idle_cpu_ivb),
+ 	INTEL_CPU_FAM6(IVYBRIDGE_X,		idle_cpu_ivt),
+ 	INTEL_CPU_FAM6(HASWELL,			idle_cpu_hsw),
+-	INTEL_CPU_FAM6(HASWELL_X,		idle_cpu_hsw),
++	INTEL_CPU_FAM6(HASWELL_X,		idle_cpu_hsx),
+ 	INTEL_CPU_FAM6(HASWELL_L,		idle_cpu_hsw),
+ 	INTEL_CPU_FAM6(HASWELL_G,		idle_cpu_hsw),
+ 	INTEL_CPU_FAM6(ATOM_SILVERMONT_D,	idle_cpu_avn),
+ 	INTEL_CPU_FAM6(BROADWELL,		idle_cpu_bdw),
+ 	INTEL_CPU_FAM6(BROADWELL_G,		idle_cpu_bdw),
+-	INTEL_CPU_FAM6(BROADWELL_X,		idle_cpu_bdw),
+-	INTEL_CPU_FAM6(BROADWELL_D,		idle_cpu_bdw),
++	INTEL_CPU_FAM6(BROADWELL_X,		idle_cpu_bdx),
++	INTEL_CPU_FAM6(BROADWELL_D,		idle_cpu_bdx),
+ 	INTEL_CPU_FAM6(SKYLAKE_L,		idle_cpu_skl),
+ 	INTEL_CPU_FAM6(SKYLAKE,			idle_cpu_skl),
+ 	INTEL_CPU_FAM6(KABYLAKE_L,		idle_cpu_skl),
 -- 
 2.16.4
 
