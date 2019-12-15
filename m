@@ -2,105 +2,133 @@ Return-Path: <SRS0=v0wl=2F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2617C2D0CB
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Dec 2019 05:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C9F95C43603
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Dec 2019 12:30:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 88DB822B48
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Dec 2019 05:17:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Id8NfdTF"
+	by mail.kernel.org (Postfix) with ESMTP id 9AE5722B48
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Dec 2019 12:30:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1576413002;
+	bh=2l6Be057Q7FKP+fhTZ0hbvUe6NBP4LC0WK/+kFX+Qzw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
+	b=vjqtJUjp8E0q+7RfwaJhUjG9F4gTeGBr6EKeQgW8trNnPdXb8Akb8g2Ywx1vj6rgD
+	 hnoyBTDCIBcVZZxUa9U+sSTF8J2Ah91tzt9BkWuWPI4hPrEddpENITRMmX7VXzdxfn
+	 5iJRBHyUWHhsA/myh4oaVn+U0iU3/XC42Nc5dVoo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726260AbfLOFRp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 15 Dec 2019 00:17:45 -0500
-Received: from mail-pj1-f68.google.com ([209.85.216.68]:33858 "EHLO
-        mail-pj1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725990AbfLOFRn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Dec 2019 00:17:43 -0500
-Received: by mail-pj1-f68.google.com with SMTP id j11so1532808pjs.1;
-        Sat, 14 Dec 2019 21:17:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=iJPFiDdoTrBrSdqjTpE+VPFHmC8ax0pLThG7IGKangk=;
-        b=Id8NfdTFPUPB+fc7GWUtnaZycNxT1n/743f1r4mmprU8vigdUiO+qwV5Rrz9bb5cvS
-         JFpw4kpX7F7iUhfnq57t+ScMl4f95d3tqi8LeBRCdyGMExAcUz/W8rfHTPc1pfSrXXti
-         PMZTllluPehaVveLsU7xboTHQ5CkDcPhifUoApxdDmxQ0gAQqd5oYjDFsEAUunFDK7mP
-         TgcWBy3rf9x/fCIN+Yd/BB4jRXSBr+guHfyatZ7v7cIomD3n8NclP80repjcNSP2ECzf
-         CQnlPaqXdr5iEeQn0VfsxWvGaI4UFf1hAQLbeaaVRYg/4hB/8zQGjBw3kzQd6RWBhlRU
-         G1hQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=iJPFiDdoTrBrSdqjTpE+VPFHmC8ax0pLThG7IGKangk=;
-        b=Yxuw4TE52sHPoJf2HuP820He3Ll3M6Y31MXPV8EFu/4tSjBr2t0Yg/Kheiytcj1p4X
-         8gRI65q0JzPXvr+cuedFdX0sXDiImNa7haKlmE4z4Y0MomGjIvuEIy2V4E1Z9C5Wq9lL
-         xh8Icbyd3MS7jyTBz8FiwheBTcHxo/9OEr1Wjl8IrpO5HoFhJWTwpw95SUUDeO8VPo0P
-         l77SMG38d7Q+aRnPk56WNV81DeofkCoQ93V5WR81GvxD1zOYqTMZbp4WZxn9j2C48mcn
-         jgJlUbgdTYVEUxOl+yJ9AGWFnFmZ7O62QzskqON84QIMhPZHmnftwCafTI3y2CARS6S9
-         9Bxg==
-X-Gm-Message-State: APjAAAVQQeiIsp22nEXdysvI/55P8smopliF2C8WEfdJQTe6V35DNXd+
-        P1AwiGSRV36nFz38wRQkYHY=
-X-Google-Smtp-Source: APXvYqxTG4dxeNv2aoSLu1cumiV7gAuV9hcPKvGjbWfymM/Tqr7q01DvKziXiVpBQtLaPO5sHG9+HQ==
-X-Received: by 2002:a17:902:bd8e:: with SMTP id q14mr9152361pls.199.1576387062386;
-        Sat, 14 Dec 2019 21:17:42 -0800 (PST)
-Received: from localhost.localdomain ([240f:34:212d:1:368e:e048:68f1:84e7])
-        by smtp.gmail.com with ESMTPSA id u10sm16596528pgg.41.2019.12.14.21.17.38
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Sat, 14 Dec 2019 21:17:41 -0800 (PST)
-From:   Akinobu Mita <akinobu.mita@gmail.com>
-To:     linux-nvme@lists.infradead.org, linux-hwmon@vger.kernel.org,
+        id S1726135AbfLOM3y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 15 Dec 2019 07:29:54 -0500
+Received: from mail.kernel.org ([198.145.29.99]:54342 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726101AbfLOM3y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 15 Dec 2019 07:29:54 -0500
+Received: from archlinux (cpc149474-cmbg20-2-0-cust94.5-4.cable.virginm.net [82.4.196.95])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 91F14205C9;
+        Sun, 15 Dec 2019 12:29:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1576412993;
+        bh=2l6Be057Q7FKP+fhTZ0hbvUe6NBP4LC0WK/+kFX+Qzw=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+        b=nVrMJK9o/bHwLle8h8ijpAz587lP5+UzFmyLzVpLfTk03WtVsGSd0loHEyynmYNq5
+         ZO+RG0dI/Kx+fn9QH1NyD5MnPsvXc/87YDMePY13Ank41Tf5vh/jWPNIlaByRYCDFY
+         LtYFkKZ5ESKhTJfvAY6m8xnv8KxC7oWcCIvH9fXk=
+Date:   Sun, 15 Dec 2019 12:29:48 +0000
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Akinobu Mita <akinobu.mita@gmail.com>
+Cc:     linux-nvme@lists.infradead.org, linux-hwmon@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        akpm@linux-foundation.org
-Cc:     Akinobu Mita <akinobu.mita@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: [PATCH v4 11/12] thermal: armada: remove unused TO_MCELSIUS macro
-Date:   Sun, 15 Dec 2019 14:16:14 +0900
-Message-Id: <1576386975-7941-12-git-send-email-akinobu.mita@gmail.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1576386975-7941-1-git-send-email-akinobu.mita@gmail.com>
+        akpm@linux-foundation.org, Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
+Subject: Re: [PATCH v4 12/12] iio: adc: qcom-vadc-common: use
+ <linux/units.h> helpers
+Message-ID: <20191215122948.773bbc42@archlinux>
+In-Reply-To: <1576386975-7941-13-git-send-email-akinobu.mita@gmail.com>
 References: <1576386975-7941-1-git-send-email-akinobu.mita@gmail.com>
+        <1576386975-7941-13-git-send-email-akinobu.mita@gmail.com>
+X-Mailer: Claws Mail 3.17.4 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This removes unused TO_MCELSIUS() macro.
+On Sun, 15 Dec 2019 14:16:15 +0900
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@verdurent.com>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
-* v4
-- add Reviewed-by tag
+> This switches the qcom-vadc-common to use milli_kelvin_to_millicelsius()
+> in <linux/units.h>.
+> 
+> Cc: Jonathan Cameron <jic23@kernel.org>
+> Cc: Hartmut Knaack <knaack.h@gmx.de>
+> Cc: Lars-Peter Clausen <lars@metafoo.de>
+> Cc: Peter Meerwald-Stadler <pmeerw@pmeerw.net>
+> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
- drivers/thermal/armada_thermal.c | 2 --
- 1 file changed, 2 deletions(-)
+Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 709a22f..fc6dc10 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -21,8 +21,6 @@
- 
- #include "thermal_core.h"
- 
--#define TO_MCELSIUS(c)			((c) * 1000)
--
- /* Thermal Manager Control and Status Register */
- #define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
- #define PMU_TM_DISABLE_OFFS		0
--- 
-2.7.4
+Thanks,
+
+
+> ---
+> * v4
+> - add Reviewed-by tag
+> 
+>  drivers/iio/adc/qcom-vadc-common.c | 6 +++---
+>  drivers/iio/adc/qcom-vadc-common.h | 1 -
+>  2 files changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
+> index dcd7fb5..2bb78d1 100644
+> --- a/drivers/iio/adc/qcom-vadc-common.c
+> +++ b/drivers/iio/adc/qcom-vadc-common.c
+> @@ -6,6 +6,7 @@
+>  #include <linux/log2.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+> +#include <linux/units.h>
+>  
+>  #include "qcom-vadc-common.h"
+>  
+> @@ -236,8 +237,7 @@ static int qcom_vadc_scale_die_temp(const struct vadc_linear_graph *calib_graph,
+>  		voltage = 0;
+>  	}
+>  
+> -	voltage -= KELVINMIL_CELSIUSMIL;
+> -	*result_mdec = voltage;
+> +	*result_mdec = milli_kelvin_to_millicelsius(voltage);
+>  
+>  	return 0;
+>  }
+> @@ -325,7 +325,7 @@ static int qcom_vadc_scale_hw_calib_die_temp(
+>  {
+>  	*result_mdec = qcom_vadc_scale_code_voltage_factor(adc_code,
+>  				prescale, data, 2);
+> -	*result_mdec -= KELVINMIL_CELSIUSMIL;
+> +	*result_mdec = milli_kelvin_to_millicelsius(*result_mdec);
+>  
+>  	return 0;
+>  }
+> diff --git a/drivers/iio/adc/qcom-vadc-common.h b/drivers/iio/adc/qcom-vadc-common.h
+> index bbb1fa0..e074902a 100644
+> --- a/drivers/iio/adc/qcom-vadc-common.h
+> +++ b/drivers/iio/adc/qcom-vadc-common.h
+> @@ -38,7 +38,6 @@
+>  #define VADC_AVG_SAMPLES_MAX			512
+>  #define ADC5_AVG_SAMPLES_MAX			16
+>  
+> -#define KELVINMIL_CELSIUSMIL			273150
+>  #define PMIC5_CHG_TEMP_SCALE_FACTOR		377500
+>  #define PMIC5_SMB_TEMP_CONSTANT			419400
+>  #define PMIC5_SMB_TEMP_SCALE_FACTOR		356
 
