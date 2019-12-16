@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DB24C43603
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 18:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 209A4C2D0BF
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 18:34:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D6F60207FF
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 18:33:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E97F6206EC
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 18:34:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729741AbfLPSd7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Dec 2019 13:33:59 -0500
-Received: from mga06.intel.com ([134.134.136.31]:57077 "EHLO mga06.intel.com"
+        id S1730880AbfLPSdi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Dec 2019 13:33:38 -0500
+Received: from mga12.intel.com ([192.55.52.136]:15476 "EHLO mga12.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730352AbfLPSdo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Dec 2019 13:33:44 -0500
+        id S1730850AbfLPSdh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Dec 2019 13:33:37 -0500
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 16 Dec 2019 10:33:43 -0800
+  by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 16 Dec 2019 10:33:36 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.69,322,1571727600"; 
-   d="scan'208";a="389550308"
+   d="scan'208";a="389550279"
 Received: from gayuk-dev-mach.sc.intel.com ([10.3.79.172])
-  by orsmga005.jf.intel.com with ESMTP; 16 Dec 2019 10:33:43 -0800
+  by orsmga005.jf.intel.com with ESMTP; 16 Dec 2019 10:33:36 -0800
 From:   Gayatri Kammela <gayatri.kammela@intel.com>
 To:     linux-pm@vger.kernel.org
 Cc:     platform-driver-x86@vger.kernel.org, alex.hung@canonical.com,
@@ -38,9 +38,9 @@ Cc:     platform-driver-x86@vger.kernel.org, alex.hung@canonical.com,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@intel.com>
-Subject: [PATCH v3 3/5] acpi: device_pm: Add new Tiger Lake hardware ID to support ACPI device power management
-Date:   Mon, 16 Dec 2019 10:31:50 -0800
-Message-Id: <ede54916a71e4e517b533f4e601be9c1284142d7.1576520244.git.gayatri.kammela@intel.com>
+Subject: [PATCH v3 1/5] acpi: dptf: Add new Tiger Lake hardware IDs to support DPTF drivers in ACPI
+Date:   Mon, 16 Dec 2019 10:31:48 -0800
+Message-Id: <887468770c82ed69ddd124529fe001598acd4e57.1576520244.git.gayatri.kammela@intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1576520244.git.gayatri.kammela@intel.com>
 References: <cover.1576520244.git.gayatri.kammela@intel.com>
@@ -51,9 +51,8 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Tiger Lake has a new unique hardware ID that supports ACPI device power
-management. Hence, add it to the list of special device power management
-IDs.
+Tiger Lake has new unique hardware IDs that are needed to support
+DPTF drivers. Hence, add them.
 
 Cc: Rafael J. Wysocki <rafael@kernel.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
@@ -61,21 +60,37 @@ Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Srinivas Pandruvada <srinivas.pandruvada@intel.com>
 Signed-off-by: Gayatri Kammela <gayatri.kammela@intel.com>
 ---
- drivers/acpi/device_pm.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/acpi/dptf/dptf_power.c      | 1 +
+ drivers/acpi/dptf/int340x_thermal.c | 4 ++++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
-index 5e4a8860a9c0..b64c62bfcea5 100644
---- a/drivers/acpi/device_pm.c
-+++ b/drivers/acpi/device_pm.c
-@@ -1321,6 +1321,7 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
- 	 */
- 	static const struct acpi_device_id special_pm_ids[] = {
- 		{"PNP0C0B", }, /* Generic ACPI fan */
-+		{"INT1044", }, /* Fan for Tiger Lake generation */
- 		{"INT3404", }, /* Fan */
- 		{}
- 	};
+diff --git a/drivers/acpi/dptf/dptf_power.c b/drivers/acpi/dptf/dptf_power.c
+index eb58fc475a03..387f27ef3368 100644
+--- a/drivers/acpi/dptf/dptf_power.c
++++ b/drivers/acpi/dptf/dptf_power.c
+@@ -97,6 +97,7 @@ static int dptf_power_remove(struct platform_device *pdev)
+ }
+ 
+ static const struct acpi_device_id int3407_device_ids[] = {
++	{"INT1047", 0},
+ 	{"INT3407", 0},
+ 	{"", 0},
+ };
+diff --git a/drivers/acpi/dptf/int340x_thermal.c b/drivers/acpi/dptf/int340x_thermal.c
+index 5c7a90186e3c..1ec7b6900662 100644
+--- a/drivers/acpi/dptf/int340x_thermal.c
++++ b/drivers/acpi/dptf/int340x_thermal.c
+@@ -13,6 +13,10 @@
+ 
+ #define INT3401_DEVICE 0X01
+ static const struct acpi_device_id int340x_thermal_device_ids[] = {
++	{"INT1040"},
++	{"INT1043"},
++	{"INT1044"},
++	{"INT1047"},
+ 	{"INT3400"},
+ 	{"INT3401", INT3401_DEVICE},
+ 	{"INT3402"},
 -- 
 2.17.1
 
