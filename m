@@ -2,35 +2,35 @@ Return-Path: <SRS0=q0VI=2G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA886C43603
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 11:21:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BF93C43603
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 11:34:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 972A4206CB
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 11:21:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E0BC2072B
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 11:34:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727335AbfLPLVK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Dec 2019 06:21:10 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:51835 "EHLO
+        id S1727265AbfLPLex (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Dec 2019 06:34:53 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:49632 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727310AbfLPLVK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2019 06:21:10 -0500
+        with ESMTP id S1727138AbfLPLex (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2019 06:34:53 -0500
 Received: from 79.184.253.1.ipv4.supernova.orange.pl (79.184.253.1) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
- id e45c4e508fae84d8; Mon, 16 Dec 2019 12:21:07 +0100
+ id 3930d591b1240d67; Mon, 16 Dec 2019 12:34:51 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Yangtao Li <tiny.windzz@gmail.com>
-Cc:     daniel.lezcano@linaro.org, shc_work@mail.ru,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] cpuidle: kirkwood: convert to devm_platform_ioremap_resource
-Date:   Mon, 16 Dec 2019 12:21:07 +0100
-Message-ID: <6350875.0eM1BVzdex@kreacher>
-In-Reply-To: <20191215130206.30265-2-tiny.windzz@gmail.com>
-References: <20191215130206.30265-1-tiny.windzz@gmail.com> <20191215130206.30265-2-tiny.windzz@gmail.com>
+To:     Linux ACPI <linux-acpi@vger.kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Len Brown <len.brown@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Len Brown <lenb@kernel.org>
+Subject: [PATCH] ACPI: processor: Make ACPI_PROCESSOR_CSTATE depend on ACPI_PROCESSOR
+Date:   Mon, 16 Dec 2019 12:34:50 +0100
+Message-ID: <16614264.JRhOIQ9zEg@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -39,33 +39,39 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sunday, December 15, 2019 2:02:06 PM CET Yangtao Li wrote:
-> Use devm_platform_ioremap_resource() to simplify code.
-> 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> ---
->  drivers/cpuidle/cpuidle-kirkwood.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
-> index d23d8f468c12..511c4f46027a 100644
-> --- a/drivers/cpuidle/cpuidle-kirkwood.c
-> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
-> @@ -55,10 +55,7 @@ static struct cpuidle_driver kirkwood_idle_driver = {
->  /* Initialize CPU idle by registering the idle states */
->  static int kirkwood_cpuidle_probe(struct platform_device *pdev)
->  {
-> -	struct resource *res;
-> -
-> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
-> +	ddr_operation_base = devm_platform_ioremap_resource(pdev, 0);
->  	if (IS_ERR(ddr_operation_base))
->  		return PTR_ERR(ddr_operation_base);
->  
-> 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Daniel, any concerns here?
+To avoid build errors when CONFIG_ACPI_PROCESSOR_CSTATE is set and
+CONFIG_ACPI_PROCESSOR is not (that may appear in randconfig builds),
+make the former depend on the latter.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+The build issues addressed by this patch are exposed by the series adding ACPI
+support to intel_idle:
+
+https://lore.kernel.org/linux-pm/3950312.2WmFeOdZGY@kreacher/T/#t
+
+so it has been added to the intel_idle+acpi branch (which has been rebased on
+top of 5.5-rc2).
+
+---
+ drivers/acpi/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-pm/drivers/acpi/Kconfig
+===================================================================
+--- linux-pm.orig/drivers/acpi/Kconfig
++++ linux-pm/drivers/acpi/Kconfig
+@@ -241,6 +241,7 @@ config ACPI_CPU_FREQ_PSS
+ 
+ config ACPI_PROCESSOR_CSTATE
+ 	def_bool y
++	depends on ACPI_PROCESSOR
+ 	depends on IA64 || X86
+ 
+ config ACPI_PROCESSOR_IDLE
 
 
 
