@@ -2,94 +2,91 @@ Return-Path: <SRS0=q0VI=2G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3392C43603
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 18:34:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DB0DC43603
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 21:36:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9B4C52082E
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 18:34:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3F07C24655
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 21:36:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1576532204;
+	bh=vJ2usFWIeCmkzmTC7qcf2zGiRqXsS5ix2vXMB0EkNbI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=JvcwjoqhgTCznLmhn3ZtbmoOUiwy/GIZcyA7zovA+3vB3sFObAgBv0KEl1I/6jF2y
+	 RDsaa7GyJqh/db9yHKUNuw+uobd20U9aDDAY4Sukr5MtBRETQTbxraVuWX/jyvn6SX
+	 pi3IwNONKZZ8hAlYwboaN+YXgqX08Xo1FYumzmwY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730662AbfLPSdg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Dec 2019 13:33:36 -0500
-Received: from mga12.intel.com ([192.55.52.136]:15476 "EHLO mga12.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730601AbfLPSdf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Dec 2019 13:33:35 -0500
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 16 Dec 2019 10:33:35 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.69,322,1571727600"; 
-   d="scan'208";a="389550262"
-Received: from gayuk-dev-mach.sc.intel.com ([10.3.79.172])
-  by orsmga005.jf.intel.com with ESMTP; 16 Dec 2019 10:33:33 -0800
-From:   Gayatri Kammela <gayatri.kammela@intel.com>
-To:     linux-pm@vger.kernel.org
-Cc:     platform-driver-x86@vger.kernel.org, alex.hung@canonical.com,
-        linux-acpi@vger.kernel.org, lenb@kernel.org, rjw@rjwysocki.net,
-        linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, charles.d.prestopine@intel.com,
-        dvhart@infradead.org, Gayatri Kammela <gayatri.kammela@intel.com>,
+        id S1727480AbfLPVfr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Dec 2019 16:35:47 -0500
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:46351 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726610AbfLPVfq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2019 16:35:46 -0500
+Received: by mail-oi1-f194.google.com with SMTP id a124so4491632oii.13;
+        Mon, 16 Dec 2019 13:35:46 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=vJ2usFWIeCmkzmTC7qcf2zGiRqXsS5ix2vXMB0EkNbI=;
+        b=KyxZePEZ3YNKJXcVKlyZlVzzbTLYeNjCNtwazWD9XU6GxZwyS6zEXU9qDAidHsUClO
+         fZoXkOrdKzRm5B7vnHgC08d3RsMbT//W1k32OP4m6uLoJ4dRNbjeRr5h9ErcKpe7jMRZ
+         yYtklx9Vc8T51qnsL8Mt3FU7I2bzOGlHiR89i3S9PFzjTyWnZJRh2RSufSvJBVOI8wHQ
+         XxKKg8KoeLkMcvtJ/b/IfBa5yMOiJ0HUTry9lu2P8XX8hE973JkgcRX5cc3YIBRjdhe9
+         SZ72QCmoOE0wbu0QB+yqeevDB9ybeihVkErjsN0zQ1WTtHpjaEKiYV87ZAa3sGpAkeDW
+         JP/w==
+X-Gm-Message-State: APjAAAV/sXZU2MaveHIs/Z3n2DjWrWpUHExSXX/aZ1Kc1zrECMrOlgTh
+        s7TBaiE82djpNoqFFWcstBl1G0zJuM2kqx3GYCE=
+X-Google-Smtp-Source: APXvYqzeC3z/0g7tRLvdvvwAJCteCRLAbygW1va+REys9e3fUJcMxQkdZnEB0iQtUlOzmkKHEvgmtrZmAiwIi1djeJc=
+X-Received: by 2002:a05:6808:b38:: with SMTP id t24mr729850oij.110.1576532145696;
+ Mon, 16 Dec 2019 13:35:45 -0800 (PST)
+MIME-Version: 1.0
+References: <cover.1576520244.git.gayatri.kammela@intel.com>
+In-Reply-To: <cover.1576520244.git.gayatri.kammela@intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 16 Dec 2019 22:35:34 +0100
+Message-ID: <CAJZ5v0g2UHJcnczekgegX6_7kzHrmXNS_e3KRCC2d4LQ1+RceA@mail.gmail.com>
+Subject: Re: [PATCH v3 0/5] drivers: Add Tiger Lake hardware IDs to support ACPI,
+To:     Gayatri Kammela <gayatri.kammela@intel.com>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Platform Driver <platform-driver-x86@vger.kernel.org>,
+        Alex Hung <alex.hung@canonical.com>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        "Prestopine, Charles D" <charles.d.prestopine@intel.com>,
+        Darren Hart <dvhart@infradead.org>,
         "Rafael J . Wysocki" <rafael@kernel.org>,
         Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Zhang Rui <rui.zhang@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@intel.com>
-Subject: [PATCH v3 0/5] drivers: Add Tiger Lake hardware IDs to support ACPI,
-Date:   Mon, 16 Dec 2019 10:31:47 -0800
-Message-Id: <cover.1576520244.git.gayatri.kammela@intel.com>
-X-Mailer: git-send-email 2.17.1
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Mon, Dec 16, 2019 at 7:33 PM Gayatri Kammela
+<gayatri.kammela@intel.com> wrote:
+>
+> Hi,
+>
+> Tiger Lake supports devices whose hardware IDs are changed for various
+> drivers. Hence, add the new hardware IDs.
+>
+> Patch 1: Add Tiger Lake support to DPTF driver
+> Patch 2: Add Tiger Lake support to fan driver
+> Patch 3: Add Tiger Lake support to device_pm
+> Patch 4: Add Tiger Lake support to Intel's HID driver
+> Patch 5: Add Tiger Lake support to thermal driver
 
-Tiger Lake supports devices whose hardware IDs are changed for various
-drivers. Hence, add the new hardware IDs.
+I'm going to apply the whole series (for 5.6) if nobody has any issues
+with that.
 
-Patch 1: Add Tiger Lake support to DPTF driver
-Patch 2: Add Tiger Lake support to fan driver
-Patch 3: Add Tiger Lake support to device_pm
-Patch 4: Add Tiger Lake support to Intel's HID driver
-Patch 5: Add Tiger Lake support to thermal driver
-
-Changes since v1:
-1) Maintain the readability by adding hardware IDs in a sorted order
-
-Changes since v2:
-1) Added Tiger Lake support to device_pm
-2) Changed acpi to ACPI in commit messages
-
-Gayatri Kammela (5):
-  acpi: dptf: Add new Tiger Lake hardware IDs to support DPTF drivers in
-    ACPI
-  acpi: fan: Add new Tiger Lake hardware ID to support fan driver in
-    ACPI
-  acpi: device_pm: Add new Tiger Lake hardware ID to support ACPI device
-    power management
-  platform/x86: intel-hid: Add new Tiger Lake hardware ID to support HID
-    driver
-  thermal: int340x_thermal: Add new Tiger Lake hardware IDs to support
-    thermal driver
-
- drivers/acpi/device_pm.c                                | 1 +
- drivers/acpi/dptf/dptf_power.c                          | 1 +
- drivers/acpi/dptf/int340x_thermal.c                     | 4 ++++
- drivers/acpi/fan.c                                      | 1 +
- drivers/platform/x86/intel-hid.c                        | 1 +
- drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 1 +
- drivers/thermal/intel/int340x_thermal/int3403_thermal.c | 1 +
- 7 files changed, 10 insertions(+)
-
-Cc: Rafael J. Wysocki <rafael@kernel.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@intel.com>
--- 
-2.17.1
-
+Thanks!
