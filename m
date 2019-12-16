@@ -2,113 +2,131 @@ Return-Path: <SRS0=q0VI=2G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D736CC2D0BF
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 14:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C802C2D0C3
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 14:11:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B8A12206A5
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 14:06:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D497F206EC
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 14:11:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jrqJzc+/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728040AbfLPOGs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Dec 2019 09:06:48 -0500
-Received: from foss.arm.com ([217.140.110.172]:56568 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727952AbfLPOGr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Dec 2019 09:06:47 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CA8001045;
-        Mon, 16 Dec 2019 06:06:46 -0800 (PST)
-Received: from e123648.arm.com (unknown [10.37.12.145])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 894E93F718;
-        Mon, 16 Dec 2019 06:06:44 -0800 (PST)
-From:   lukasz.luba@arm.com
-To:     linux-kernel@vger.kernel.org, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
-        linux-doc@vger.kernel.org
-Cc:     amit.kucheria@verdurent.com, corbet@lwn.net, lukasz.luba@arm.com,
-        dietmar.eggemann@arm.com
-Subject: [PATCH  1/3] docs: thermal: Add bind, unbind information together with trip point
-Date:   Mon, 16 Dec 2019 14:06:20 +0000
-Message-Id: <20191216140622.25467-2-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191216140622.25467-1-lukasz.luba@arm.com>
-References: <20191216140622.25467-1-lukasz.luba@arm.com>
+        id S1727995AbfLPOLb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Dec 2019 09:11:31 -0500
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:41617 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727807AbfLPOLb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2019 09:11:31 -0500
+Received: by mail-lj1-f195.google.com with SMTP id h23so6953850ljc.8;
+        Mon, 16 Dec 2019 06:11:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=HhL5GMKIFDddfWEaX7NT4E3scjRhU5x3XuH72/9QCyo=;
+        b=jrqJzc+/u/LblZplRKW3eR4/Ge+b4/2IipInHNNk7BL2mZZnJtPHF2ZpEvr4zsXT1J
+         uNT59SvM5Amun90YFgy8GJzXdI5uoQJyXExaUd7leci+peFjiC7FlTNA92UA8SXbq3eU
+         MOegPJ7i/pv8To6BHlKcZOUywqyxx7q8eDcm/w8IcgvKWVKOInasra8tqfsDnbVAZCeo
+         FpIablaEjBiUFVOb5Oc0Dbr0b4mJ8ZAykZ3nLPICiBB6XgqFk8G8mN64aUBY5aLZxTf+
+         nO2neK1yMlESAkGPyxew4xii+fD4A3cY7oTtZWnvBa7G3H6/qK9o1TnCZa/65H7yPpe+
+         HIsQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=HhL5GMKIFDddfWEaX7NT4E3scjRhU5x3XuH72/9QCyo=;
+        b=gmfTl1Diu40j8X3EqhewKQ99dyOTAVcsxIrFljpKAgAUOFq/CnD0DxoTQZWeuxz16W
+         fAlbjPcLxHH7qq4N62UHzR/o1/Ee8tVrH98cW/8xZEmN/oIDykf4YBsxWXSpb/+v2rI9
+         5drstD3nEfMo1zkvnowEvLO+DPHR/aY93DT9rzAPOkniKhwcu2tTAyhYqVbMqmNTkRZa
+         vM8EKHYWPfLmsjHc/B3PzoNnwEJhDiK5EeftziQp3QbSFEp+COfUeX/WV8Qor0n3g7hU
+         eh//W/XGa9Em2Od0OUtx5yDsSRLoHNKhZ82CeQwnIuN26Cmv0bc/88Phtq5ATxSTJTpO
+         7ERQ==
+X-Gm-Message-State: APjAAAWGUxGmuzNr0oPQm8xyNkxmEMsvOWJr6YuFSLwWxAl7sLLn2ETz
+        TdYFbTNghitDNCD3oWitdq4fNQQe
+X-Google-Smtp-Source: APXvYqxVulbjGD7qBtkHu8dFjhoK+mY8pmMw7WHa5Lz77cd2cK6am3IF8jv4B0zPS4UWLTmlFAOg1g==
+X-Received: by 2002:a2e:9216:: with SMTP id k22mr19606187ljg.52.1576505488021;
+        Mon, 16 Dec 2019 06:11:28 -0800 (PST)
+Received: from [192.168.2.145] (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
+        by smtp.googlemail.com with ESMTPSA id z9sm10499851ljm.40.2019.12.16.06.11.26
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 16 Dec 2019 06:11:27 -0800 (PST)
+Subject: Re: [PATCH v5 07/11] cpufreq: dt-platdev: Blacklist NVIDIA Tegra20
+ and Tegra30 SoCs
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Prashant Gaikwad <pgaikwad@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Marcel Ziswiler <marcel.ziswiler@toradex.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20191118164512.8676-1-digetx@gmail.com>
+ <20191118164512.8676-8-digetx@gmail.com>
+ <20191216040532.mzdovqoub5rdztwb@vireshk-i7>
+ <20191216040808.w67jxu7oapxgm7yh@vireshk-i7>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <a57c80f0-59a7-c758-c914-025f12c85ba8@gmail.com>
+Date:   Mon, 16 Dec 2019 17:11:25 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.3.0
+MIME-Version: 1.0
+In-Reply-To: <20191216040808.w67jxu7oapxgm7yh@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Lukasz Luba <lukasz.luba@arm.com>
+16.12.2019 07:08, Viresh Kumar пишет:
+> On 16-12-19, 09:35, Viresh Kumar wrote:
+>> On 18-11-19, 19:45, Dmitry Osipenko wrote:
+>>> Both NVIDIA Tegra20 and Tegra30 SoCs should be blacklisted because CPU
+>>> OPPs use supported_hw and thus platdev isn't suitable for these SoCs.
+>>> Currently cpufreq-dt driver produces a bit annoying warning splats
+>>> during boot because valid OPPs are not found, this will be fixed once
+>>> tegra20-cpufreq driver will be update to support cpufreq-dt. The warnings
+>>> will also happen on older stable kernels using newer device-trees, thus
+>>> this patch should be backported to stable kernels as well.
+>>>
+>>> Cc: <stable@vger.kernel.org>
+>>> Reported-by: Jon Hunter <jonathanh@nvidia.com>
+>>> Fixes: 4053aa65c517 ("ARM: tegra: cardhu-a04: Add CPU Operating Performance Points")
+>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>>> ---
+>>>  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+>>>  1 file changed, 2 insertions(+)
+>>>
+>>> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+>>> index f1d170dcf4d3..aba591d57c67 100644
+>>> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+>>> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+>>> @@ -121,6 +121,8 @@ static const struct of_device_id blacklist[] __initconst = {
+>>>  	{ .compatible = "mediatek,mt8176", },
+>>>  	{ .compatible = "mediatek,mt8183", },
+>>>  
+>>> +	{ .compatible = "nvidia,tegra20", },
+>>> +	{ .compatible = "nvidia,tegra30", },
+>>>  	{ .compatible = "nvidia,tegra124", },
+>>>  	{ .compatible = "nvidia,tegra210", },
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Oops, pasted the wrong register here :(
+> 
+> Applied. Thanks.
+> 
 
-Update sysfs interface documentation about new attributes in the cooling
-device folder: bind and unbind. It also updates the changed cooling device
-associated trip point interface extending it by information about writable
-values.
-
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- .../driver-api/thermal/sysfs-api.rst          | 30 +++++++++++++++++--
- 1 file changed, 28 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/driver-api/thermal/sysfs-api.rst b/Documentation/driver-api/thermal/sysfs-api.rst
-index b40b1f839148..605f0d9ffe71 100644
---- a/Documentation/driver-api/thermal/sysfs-api.rst
-+++ b/Documentation/driver-api/thermal/sysfs-api.rst
-@@ -407,6 +407,8 @@ Thermal cooling device sys I/F, created once it's registered::
-     |---stats/time_in_state_ms:	Time (msec) spent in various cooling states
-     |---stats/total_trans:	Total number of times cooling state is changed
-     |---stats/trans_table:	Cooing state transition table
-+    |---bind_tz:	Interface for binding cooling device to thermal zone
-+    |---unbind_tz:	Interface for unbinding cooling device from thermal zone
- 
- 
- Then next two dynamic attributes are created/removed in pairs. They represent
-@@ -507,9 +509,12 @@ available_policies
- `cdev[0-*]_trip_point`
- 	The trip point in this thermal zone which `cdev[0-*]` is associated
- 	with; -1 means the cooling device is not associated with any trip
--	point.
-+	point. Writing a value (a proper integer) will set new trip point
-+	to this cooling device. The value -1 will cause the cooling device
-+	is not associated to any trip point and can be unbind from the
-+	thermal zone.
- 
--	RO, Optional
-+	RW, Optional
- 
- `cdev[0-*]_weight`
- 	The influence of `cdev[0-*]` in this thermal zone. This value
-@@ -637,6 +642,27 @@ max_state
- 
- 	RO, Required
- 
-+bind_tz
-+	Writing the thermal zone name binds this cooling device with the
-+	specified thermal zone. A new dynamic attributes 'cdev*' will be
-+	created inside the thermal zone directory.
-+	The proper thermal zone name can be from read the attribute:
-+	/sys/class/thermal/thermal_zone*/type
-+	The default (-1) trip point will be set into the cooling instance,
-+	which should be updated later using 'cdev*_trip_point' interface.
-+
-+	WO, Required
-+
-+unbind_tz
-+	Writing the thermal zone name unbinds this cooling device from
-+	the specified thermal zone. The cooling instance needs to set -1
-+	into the associated cooling device instance 'cdev*_trip_point'
-+	first.
-+	The proper thermal zone name can be read from the attribute:
-+	/sys/class/thermal/thermal_zone*/type
-+
-+	WO, Required
-+
- cur_state
- 	The current cooling state of this cooling device.
- 	The value can any integer numbers between 0 and max_state:
--- 
-2.17.1
-
+Thanks!
