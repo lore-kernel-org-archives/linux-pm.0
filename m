@@ -2,77 +2,88 @@ Return-Path: <SRS0=q0VI=2G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E83F1C43603
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 14:19:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1299DC2D0C3
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 14:21:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BCD2C206A5
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 14:19:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D1E412072B
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Dec 2019 14:21:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1576506117;
+	bh=DyR7tL6XVvqzLf083I2Bl4aXPpGAB+e/nogKomWBQVw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=e6HcJPlmiXPdieAqfWooHarhlTpimfp1OqpRgmV/UWShAV3eeleIRwbKGtgGdyYd6
+	 xcwWNy4+KX5kxmGzcbhTbpxX1pwsss2Q0o+vmMBG1XqssfvBXTh80GveCKlZGYT2b+
+	 NV+qgtWKVMFUcTtf+l+F1bvsyY9zTt/EDFa7Dbn8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728012AbfLPOTY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Dec 2019 09:19:24 -0500
-Received: from foss.arm.com ([217.140.110.172]:56966 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728091AbfLPOTY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Dec 2019 09:19:24 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A2D8A1FB;
-        Mon, 16 Dec 2019 06:19:23 -0800 (PST)
-Received: from e123648.arm.com (unknown [10.37.12.145])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id AF5C43F718;
-        Mon, 16 Dec 2019 06:19:21 -0800 (PST)
-From:   lukasz.luba@arm.com
-To:     linux-kernel@vger.kernel.org, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, linux-pm@vger.kernel.org
-Cc:     amit.kucheria@verdurent.com, lukasz.luba@arm.com,
-        dietmar.eggemann@arm.com
-Subject: [PATCH  1/2] thermal: devfreq_cooling: Change license header to SPDX
-Date:   Mon, 16 Dec 2019 14:19:08 +0000
-Message-Id: <20191216141909.30063-2-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191216141909.30063-1-lukasz.luba@arm.com>
-References: <20191216141909.30063-1-lukasz.luba@arm.com>
+        id S1728012AbfLPOV5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Dec 2019 09:21:57 -0500
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:41905 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727995AbfLPOV5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Dec 2019 09:21:57 -0500
+Received: by mail-oi1-f193.google.com with SMTP id i1so3400321oie.8;
+        Mon, 16 Dec 2019 06:21:56 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=SaHjW4n0zvwoawguKMSzzinC58G2gxyriauO/X4GMCM=;
+        b=MW885Dak5dsQioDYXdbfU3nhTqapSRqr7FbHhXdegeeN5z91ISQpyizEXp4Loq3Qir
+         6ZkBC3ujouZmYcTkKwkmgqt3elY2JpM+eipY3uarzqY9XEOfkdW9ML4iYRVeyHqy4mw2
+         M0h0HzW2o4wBT+F0WQpfUmb4zC714xKjriIFBwvVXPf8axjEAUtcT5B481NXIEyDj2bv
+         qn1FAVEHmULzkjv3yiySWeeB+66EKYfz5Qxgy/OWYpcvv3yW8iZa6tqhqNbyvOnehzGU
+         mcwBKLTv98kS9AhvpoPE3iURtYVSoDL19m2iwNnoF1QzLiCsYnE5y+TC67A7v+koenFq
+         erBg==
+X-Gm-Message-State: APjAAAV2zkZEYkFhOYB/mGJ+LuEU6XFSYiX++SeHJpzhdLk42dSSNgnZ
+        nu9bn0mt1x+Yast+pmwkrdzMT+FWtgcgPY8cbkRvKw==
+X-Google-Smtp-Source: APXvYqx7e1cUSJQewGZjGCWSnzYCUwFNC6T/ar6UamMUtChiL1yRn9RrIJ5esh13a0l7XzpmylQ57sR31ILTFk2gVgU=
+X-Received: by 2002:a05:6808:1c5:: with SMTP id x5mr9945222oic.57.1576506116067;
+ Mon, 16 Dec 2019 06:21:56 -0800 (PST)
+MIME-Version: 1.0
+References: <201912162148.hTRbNfPp%lkp@intel.com>
+In-Reply-To: <201912162148.hTRbNfPp%lkp@intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 16 Dec 2019 15:21:45 +0100
+Message-ID: <CAJZ5v0iTOSnvZqKuL7gy7QBtdHxcM7wPS8qdgbvs6+sQxZX5yg@mail.gmail.com>
+Subject: Re: [pm:intel_idle+acpi 4/10] acpi_processor.c:undefined reference to `acpi_processor_ffh_cstate_probe'
+To:     kbuild test robot <lkp@intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>, kbuild-all@lists.01.org,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        "open list:ACPI COMPONENT ARCHITECTURE (ACPICA)" <devel@acpica.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Lukasz Luba <lukasz.luba@arm.com>
+On Mon, Dec 16, 2019 at 2:26 PM kbuild test robot <lkp@intel.com> wrote:
+>
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git intel_idle+acpi
+> head:   dcedc03145600b929a32acb85b212131b079bc46
+> commit: 0300cf31f061e6287810c894337f29df2e200e2d [4/10] ACPI: processor: Export acpi_processor_evaluate_cst()
 
-Align with the new license header requirements and switch to SPDX form.
+Outdated.  Please stop sending these.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/thermal/devfreq_cooling.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index a87d4fa031c8..1861241c7ef5 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -1,17 +1,9 @@
-+// SPDX-License-Identifier: GPL-2.0
- /*
-  * devfreq_cooling: Thermal cooling device implementation for devices using
-  *                  devfreq
-  *
-- * Copyright (C) 2014-2015 ARM Limited
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-- * kind, whether express or implied; without even the implied warranty
-- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-+ * Copyright (C) 2014-2019 ARM Limited
-  *
-  * TODO:
-  *    - If OPPs are added or removed after devfreq cooling has
--- 
-2.17.1
-
+> config: x86_64-randconfig-b002-20191216 (attached as .config)
+> compiler: gcc-7 (Debian 7.5.0-1) 7.5.0
+> reproduce:
+>         git checkout 0300cf31f061e6287810c894337f29df2e200e2d
+>         # save the attached .config to linux build tree
+>         make ARCH=x86_64
+>
+> If you fix the issue, kindly add following tag
+> Reported-by: kbuild test robot <lkp@intel.com>
+>
+> All errors (new ones prefixed by >>):
+>
+>    ld: drivers/acpi/acpi_processor.o: in function `acpi_processor_evaluate_cst':
+> >> acpi_processor.c:(.text+0x542): undefined reference to `acpi_processor_ffh_cstate_probe'
+>
+> ---
+> 0-DAY kernel test infrastructure                 Open Source Technology Center
+> https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org Intel Corporation
