@@ -1,209 +1,504 @@
-Return-Path: <SRS0=unav=Z3=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=GiNv=2H=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF5CCC43603
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Dec 2019 00:45:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B197C2D0CD
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Dec 2019 21:05:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9D66C21823
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Dec 2019 00:45:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5D5D42176D
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Dec 2019 21:05:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="CKwgtTgF"
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="ZffOO6aa"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728510AbfLEAp5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Dec 2019 19:45:57 -0500
-Received: from mailout2.samsung.com ([203.254.224.25]:53165 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728011AbfLEAp4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Dec 2019 19:45:56 -0500
-Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
-        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20191205004553epoutp02fb5c117968f99de5f7876fff2a90fb84~dUwuGQe3T1872518725epoutp022
-        for <linux-pm@vger.kernel.org>; Thu,  5 Dec 2019 00:45:53 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20191205004553epoutp02fb5c117968f99de5f7876fff2a90fb84~dUwuGQe3T1872518725epoutp022
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1575506753;
-        bh=4yx3iV5vYirEct6BeRZWUx6tNEIRqMbuST2Pl2b84Hs=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=CKwgtTgFa5Jd30MUoNnsnbxjFbkyhG+MrCoTT6s7hk/PrOJcHCcV8DCZJxziWG+z3
-         EOsgpfmMMC+9i0vDL2dkQaRbVf+enjMsxUXMcSqkVJOCp4ScJ+ccnAeRhhlLHxUK7x
-         XUgYhoSs6oqWgykqKUVL8Az5LSThCoP5bCiMgwA8=
-Received: from epsnrtp4.localdomain (unknown [182.195.42.165]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20191205004553epcas1p1ef977b6ac7d666fe7336f4405b9ec6d9~dUwtirXGF1335713357epcas1p1y;
-        Thu,  5 Dec 2019 00:45:53 +0000 (GMT)
-Received: from epsmges1p3.samsung.com (unknown [182.195.40.157]) by
-        epsnrtp4.localdomain (Postfix) with ESMTP id 47Sxpk4L7TzMqYkb; Thu,  5 Dec
-        2019 00:45:50 +0000 (GMT)
-Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
-        epsmges1p3.samsung.com (Symantec Messaging Gateway) with SMTP id
-        70.32.52419.D3358ED5; Thu,  5 Dec 2019 09:45:49 +0900 (KST)
-Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
-        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20191205004549epcas1p29c48279019c4812fbdf92f3a744ac55d~dUwqORc0A0507205072epcas1p2V;
-        Thu,  5 Dec 2019 00:45:49 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
-        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20191205004549epsmtrp1737b8bc0f8edebc49190e5dd6bdd8852~dUwqNeHwq3139631396epsmtrp17;
-        Thu,  5 Dec 2019 00:45:49 +0000 (GMT)
-X-AuditID: b6c32a37-59fff7000001ccc3-2b-5de8533dd4de
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        41.E9.10238.D3358ED5; Thu,  5 Dec 2019 09:45:49 +0900 (KST)
-Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20191205004549epsmtip18584782c722c1abdc598c3b1606c927f~dUwp6c4oS0331103311epsmtip1i;
-        Thu,  5 Dec 2019 00:45:49 +0000 (GMT)
-Subject: Re: [PATCH RFC 0/2] PM / devfreq: Add dev_pm_qos support with
- minimal changes
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Leonard Crestez <leonard.crestez@nxp.com>
-Cc:     Matthias Kaehlcke <mka@chromium.org>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        =?UTF-8?B?QXJ0dXIgxZp3aWdvxYQ=?= <a.swigon@partner.samsung.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
+        id S1727558AbfLQVFz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 Dec 2019 16:05:55 -0500
+Received: from mail-eopbgr60087.outbound.protection.outlook.com ([40.107.6.87]:52999
+        "EHLO EUR04-DB3-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726252AbfLQVFz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 17 Dec 2019 16:05:55 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=X5VrYUOOW732Uc+fL2V/poXcO/iQtQtTzAJRZRVJFp9FEL0wbLfCqTJAoa/prr165pXfuz+NGCsl1mytQb2XXxmVQhA3hDdiheXw701biN5ocV/rRGZVNjV9jIJqWEQnlOwTu6UmdE/CdbvCupjtH5EAe/XvOWbVqGw/V9emcskkJcCxsiwR+Bx99V7DWbN8gtM+QVKBP1xT86+oZ53Ool0OMQgR+IeV6ztqYHoslPckpqP/X+EerCC9fh0uoBA2SQCjaRP293SGgB/nIg0EKobsSAnBXq/LHngF5T+mhVaJHxHulYNMO9IET5jBs577RwkBBzFcWYo9ehc+WyVMlw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=69evSFg0ME5PSuqJdUZj3Pn7ZwH1PCxUXkDYALpm4tQ=;
+ b=AUbFOs1VcGkF7EXR8X/HNZlvVZQUvmt0WMyybar3QomaPfA4Mqz/u1/tzgJ3WBQy7QEva6LZGatyFnY2m2f7+xw1Y4X8rw7u0+zXh1W5nMkJhIgy2GwVNRupTNP9uQCY5GIRVBkFrAu0BZsci8Hqv/PgbhvPefDL/zE7qsLfjrH/QbDbRirzRTJmDemuylcGyRRStyHrLeyJe/p+yE9MBTZyn78W8hj+fh7IIQyY1OSCDJXYpBR8bSNdLQp3rw+CNt1PFuDchdNX9N/0w5xXpW6m/ILOZsMaHa810Y2+1CjGhx+VR/8+LDWpjXxCh6OPDYOdzC7oJ6uYkoPetlmmwg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=69evSFg0ME5PSuqJdUZj3Pn7ZwH1PCxUXkDYALpm4tQ=;
+ b=ZffOO6aa359Fqktj0Jv2ZRpOZvbO2zAOLUngb7BgnyWb1WYCV5bc3DkKPmDgDGdDnoSZ6XWsGik5PaKyVq4ZuKkIVrZ5VZQrX+p/6pEvB+f9aSCy2aBm1FuPkUXHQ2SZcpJzkyir5/PlITcXZhIuz5JP4dyyHUqMY9z0A+e4h+Q=
+Received: from VI1PR04MB7023.eurprd04.prod.outlook.com (10.186.159.144) by
+ VI1PR04MB5279.eurprd04.prod.outlook.com (20.177.52.156) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.2538.18; Tue, 17 Dec 2019 21:05:48 +0000
+Received: from VI1PR04MB7023.eurprd04.prod.outlook.com
+ ([fe80::2c49:44c8:2c02:68b1]) by VI1PR04MB7023.eurprd04.prod.outlook.com
+ ([fe80::2c49:44c8:2c02:68b1%5]) with mapi id 15.20.2538.019; Tue, 17 Dec 2019
+ 21:05:48 +0000
+From:   Leonard Crestez <leonard.crestez@nxp.com>
+To:     Chanwoo Choi <cw00.choi@samsung.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>
+CC:     Rob Herring <robh+dt@kernel.org>,
         Alexandre Bailon <abailon@baylibre.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
         Jacky Bai <ping.bai@nxp.com>,
+        Anson Huang <anson.huang@nxp.com>,
+        Abel Vesa <abel.vesa@nxp.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Mark Rutland <mark.rutland@arm.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-Organization: Samsung Electronics
-Message-ID: <f13d1b5e-0c33-4cf4-352d-d48ddf309b5c@samsung.com>
-Date:   Thu, 5 Dec 2019 09:52:03 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
-        Thunderbird/59.0
-MIME-Version: 1.0
-In-Reply-To: <5794906.l6Fuony6qs@kreacher>
+        Shawn Guo <shawnguo@kernel.org>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Angus Ainslie <angus@akkea.ca>,
+        Martin Kepplinger <martink@posteo.de>,
+        Silvano Di Ninno <silvano.dininno@nxp.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "kernel@pengutronix.de" <kernel@pengutronix.de>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH RFC v6 2/9] PM / devfreq: Add generic imx bus scaling
+ driver
+Thread-Topic: [PATCH RFC v6 2/9] PM / devfreq: Add generic imx bus scaling
+ driver
+Thread-Index: AQHVmyeZDID07b0oVkajwef04uXjmg==
+Date:   Tue, 17 Dec 2019 21:05:48 +0000
+Message-ID: <VI1PR04MB7023F0CCD7FAF5EEA74C7873EE500@VI1PR04MB7023.eurprd04.prod.outlook.com>
+References: <cover.1573761527.git.leonard.crestez@nxp.com>
+ <CGME20191114201049epcas5p4a24607634af7b31e6a2dbdb4166dd862@epcas5p4.samsung.com>
+ <f329e715898a6b9fd0cee707a93fb1e144e31bd4.1573761527.git.leonard.crestez@nxp.com>
+ <8734a934-79e2-7445-c3e5-a0bb59afd4a8@samsung.com>
+ <047990a5-263d-d447-7f0a-77a99e4b1f63@samsung.com>
+ <25e3177f-e2b9-6be4-cfb8-24f87ccba45b@samsung.com>
+ <VI1PR04MB702396D09FCED6CBA49B6AE7EE510@VI1PR04MB7023.eurprd04.prod.outlook.com>
+ <698357b4-32e7-7f4b-3e67-59f5890f574a@samsung.com>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrBJsWRmVeSWpSXmKPExsWy7bCmvq5d8ItYg4eLlS0OHdvKbvH19ClG
-        i+l7N7FZnD+/gd3ibNMbdosVdz+yWmx6fI3VouvXSmaLz71HGC0+b3jMaHG7cQWbxepzB9ks
-        zpy+BJQ99JfNYuNXDwd+j/c3Wtk9ZjdcZPFYsKnUY9OqTjaPO9f2sHlsXlLvsfHdDiaPg+/2
-        MHlsudrO4tG3ZRWjx+dNcgHcUdk2GamJKalFCql5yfkpmXnptkrewfHO8aZmBoa6hpYW5koK
-        eYm5qbZKLj4Bum6ZOUCfKCmUJeaUAoUCEouLlfTtbIryS0tSFTLyi0tslVILUnIKLAv0ihNz
-        i0vz0vWS83OtDA0MjEyBChOyM55t2sdWcFmu4sSuacwNjBcluxg5OSQETCQuPv3K2MXIxSEk
-        sINR4vmxLYwgCSGBT4wSXQ8zIBLfGCXebd3ICtNx8t1CVoiivYwSE2a5QBS9Z5RY+vcqO0hC
-        WCBC4s2/BiYQWwTIXvR1DtgKZoHpLBIdiyAmsQloSex/cYMNxOYXUJS4+uMx2GpeATuJmTsf
-        M4PYLAIqEt1Nx8DqRQXCJE5ua4GqEZQ4OfMJC4jNCTRn1pI+MJtZQFzi1pP5TBC2vMT2t3OY
-        QRZLCFxjl9j5awEbxAsuEqfmX4OyhSVeHd/CDmFLSbzsb4OyqyVWnjzCBtHcwSixZf8FqP+N
-        JfYvnQy0gQNog6bE+l36EGFFiZ2/5zJCLOaTePe1hxWkREKAV6KjTQiiRFni8oO7TBC2pMTi
-        9k62CYxKs5C8MwvJC7OQvDALYdkCRpZVjGKpBcW56anFhgXGyLG9iRGcyrXMdzBuOOdziFGA
-        g1GJh7dh0/NYIdbEsuLK3EOMEhzMSiK82ySexgrxpiRWVqUW5ccXleakFh9iNAWG9kRmKdHk
-        fGCeySuJNzQ1MjY2tjAxNDM1NFQS5+X4cTFWSCA9sSQ1OzW1ILUIpo+Jg1OqgbHEMV/4zdb9
-        lmHzpJuMPknsW/ibrUiVs4mjVPv33rTl6+v/1fV8K/pi+7Lz39ql+6ce2lMV1lL2Z4Xmm4WS
-        hw+yxS+/bH9++lyR9DC5E379z5Ula29FKh3KXCFh8zOa0apIeOG3r/KihT7rLi5/U/h1zdO6
-        PGenfVcmCsTYH9cIYJl74rPw5qNKLMUZiYZazEXFiQA4bqVg+wMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrMIsWRmVeSWpSXmKPExsWy7bCSnK5t8ItYg0svBC0OHdvKbvH19ClG
-        i+l7N7FZnD+/gd3ibNMbdosVdz+yWmx6fI3VouvXSmaLz71HGC0+b3jMaHG7cQWbxepzB9ks
-        zpy+BJQ99JfNYuNXDwd+j/c3Wtk9ZjdcZPFYsKnUY9OqTjaPO9f2sHlsXlLvsfHdDiaPg+/2
-        MHlsudrO4tG3ZRWjx+dNcgHcUVw2Kak5mWWpRfp2CVwZzzbtYyu4LFdxYtc05gbGi5JdjJwc
-        EgImEiffLWTtYuTiEBLYzSix/P4MVoiEpMS0i0eZuxg5gGxhicOHiyFq3jJKdF7ewQhSIywQ
-        IfF+w0xmEFsEyJ61+gg7SBGzwEwWiaPrvrGBJIQE1jFKrDthA2KzCWhJ7H9xAyzOL6AocfXH
-        Y7BBvAJ2EjN3PgYbxCKgItHddAzsCFGBMImdSx4zQdQISpyc+YQFxOYEmjNrSR+YzSygLvFn
-        3iVmCFtc4taT+UwQtrzE9rdzmCcwCs9C0j4LScssJC2zkLQsYGRZxSiZWlCcm55bbFhgmJda
-        rlecmFtcmpeul5yfu4kRHNVamjsYLy+JP8QowMGoxMPbsOl5rBBrYllxZe4hRgkOZiUR3m0S
-        T2OFeFMSK6tSi/Lji0pzUosPMUpzsCiJ8z7NOxYpJJCeWJKanZpakFoEk2Xi4JRqYKw6uKz3
-        7789apZGGfnRm7zP/lPw3sTzVO/UeuanXAfMd3H5OywrDatdyHsldOLWJYHK8Ws4kt995Q4I
-        NtXfpsaxL2SF58rKo5dMdt7x/b0+Omd+2tf7liJ5dY1rptmucX1+uav1R+8HxW9uB2Tjfksr
-        3pZf+CqZyz/Xb+WhvUfktPemPvoqbaPEUpyRaKjFXFScCACQ0ZgN5gIAAA==
-X-CMS-MailID: 20191205004549epcas1p29c48279019c4812fbdf92f3a744ac55d
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20191204104624epcas1p16af5e2778fe0691c1ec29b25f11dc385
-References: <cover.1574179738.git.leonard.crestez@nxp.com>
-        <CGME20191204104624epcas1p16af5e2778fe0691c1ec29b25f11dc385@epcas1p1.samsung.com>
-        <5794906.l6Fuony6qs@kreacher>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=leonard.crestez@nxp.com; 
+x-originating-ip: [89.37.124.34]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: 5f2534b6-ff0d-46a9-56fc-08d78334e3fc
+x-ms-traffictypediagnostic: VI1PR04MB5279:|VI1PR04MB5279:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <VI1PR04MB5279653EFCAD7B764800AB01EE500@VI1PR04MB5279.eurprd04.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:9508;
+x-forefront-prvs: 02543CD7CD
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(136003)(396003)(366004)(39860400002)(346002)(376002)(189003)(199004)(51444003)(91956017)(64756008)(76116006)(6506007)(53546011)(7696005)(52536014)(33656002)(5660300002)(44832011)(81156014)(2906002)(71200400001)(478600001)(26005)(81166006)(8936002)(4326008)(9686003)(55016002)(186003)(30864003)(110136005)(8676002)(86362001)(54906003)(66946007)(66446008)(66556008)(66476007)(7416002)(316002)(41533002);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB5279;H:VI1PR04MB7023.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: XfOXAYTo6Hck3zB+wsWhTfMz7LmeevB9+Q2mTKQ5Wfs7SxxV/qCLvj9Ln7cqmQO2b0fFHm7kulRC5MMLNbz2F1NdfxRHRYDPwjGa4ytENGPC+oDorBUghZuLFy1UjcyVA83Nr1I0SDXzlCGU92P8VTEZqFtwcjfNIZDkEdhOiIRVbJZ7PV6289cJgxhN0BiPNEFOrtk3t+5K81wEMWD+US0xqHW8kWgPq/NaGLaimYfY/sQPFUZv+OpuqcFAGQr2fYhIKy9zhBMl4F1wzgrF4jP4Y/HhNiSGnOXKtduoFYUZ5dJFEfgbITRJWO43cUBkKqRG7VWx7cZ5js50gJWmgkG+gekiStW1OCX2KPWO2OrA+VerX47yG9zCLjpnOx5VWlFyRK6wlbOnkK2NFG/ztpWnAxUON4/sh9V1wvEymvrNNyC6izIbWEPou9nIPeaWpIgk/AhpgVMlrL026DQjhOSp81SJXG8NhULFw9O8Dnt7C4FfIrYCRufDE3/B8KdSC3sDk44dCVvfNSVQ5o5oFg==
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5f2534b6-ff0d-46a9-56fc-08d78334e3fc
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Dec 2019 21:05:48.0836
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: YWYN0UxmiYNi4RlmEvWPAMBDX31TTizdQqXjVpsQnHJOOwfEeO2NSK0edaKl11y5vSAx9/K3q/CMgwvRDCwDLA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5279
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12/4/19 7:46 PM, Rafael J. Wysocki wrote:
-> On Tuesday, November 19, 2019 5:12:12 PM CET Leonard Crestez wrote:
->> Add dev_pm_qos notifiers to devfreq core in order to support frequency
->> limits via dev_pm_qos_add_request.
->>
->> Unlike the rest of devfreq the dev_pm_qos frequency is measured in kHz,
->> this is consistent with current dev_pm_qos usage for cpufreq and
->> allows frequencies above 2Ghz (pm_qos expresses limits as s32).
->>
->> Like with cpufreq the handling of min_freq/max_freq is moved to the
->> dev_pm_qos mechanism. Constraints from userspace are no longer clamped on
->> store, instead all values can be written and we only check against OPPs in a
->> new devfreq_get_freq_range function. This is consistent with the design of
->> dev_pm_qos.
->>
->> Notifiers from pm_qos are executed under a single global dev_pm_qos_mtx and
->> need to take devfreq->lock, this means that calls into dev_pm_qos while holding
->> devfreq->lock are not allowed (lockdep warns about possible deadlocks).
->>
->> Fix this by only adding the qos request and notifiers after devfreq->lock is
->> released inside devfreq_add_device. In theory this means sysfs writes
->> are possible before the min/max requests are initialized so we guard
->> against that explictly. The dev_pm_qos_update_request function would
->> otherwise print a big WARN splat.
->>
->> Alternatively devfreq initialization could be refactored to avoid taking
->> devfreq->lock but that requires several intricate changes:
->>
->> 	https://protect2.fireeye.com/url?k=0cd18bf1-51473286-0cd000be-0cc47a312ab0-56d7069e720c53c0&u=https://patchwork.kernel.org/cover/11242865/
->>
->> I considered making dev_pm_qos call notifiers outside the lock but
->> that's another complex refactoring and it's difficult to ensure
->> correctness. If two identical qos requests are made in parallel then the
->> second shouldn't return until all notifiers are completely executed for
->> the first and QOS is enforced; otherwise it mostly defeats the purpose
->> of making proactive requests.
->>
->> This series implements the minimal changes in order to implement dev_pm_qos
->> support for devfreq. It only costs a little defensive programming.
->>
->> This series is also marked as [RFC] because it depends on restoring
->> DEV_PM_QOS_MIN/MAX_FREQUENCY inside the pm core:
->>
->> 	https://protect2.fireeye.com/url?k=304e4bce-6dd8f2b9-304fc081-0cc47a312ab0-ae5dd24df5aed564&u=https://patchwork.kernel.org/cover/11250413/
->>
->> ---
->> Changes since "big version" v10:
->> * Drop accepted cleanups
->> * Work with current locking approach (split cleanups into other series)
->> * Drop acks and deliberately relabel as a new series. It still incorporates
->> most previous discussion but takes a different approach to locking.
->> * Don't print errors if devfreq_dev_release is called on error cleanup from
->> devfreq_add_device, just accept that requests and notifiers might not be
->> registered yet. I wish dev_pm_qos cleanups behaved like standard "kfree" and
->> silently did nothing when there's nothing to be done.
->> Link to v10: https://protect2.fireeye.com/url?k=221a9dd6-7f8c24a1-221b1699-0cc47a312ab0-2fdb90bdac06bfe8&u=https://patchwork.kernel.org/project/linux-arm-kernel/list/?series=196443
->>
->> Leonard Crestez (2):
->>   PM / devfreq: Add PM QoS support
->>   PM / devfreq: Use PM QoS for sysfs min/max_freq
->>
->>  drivers/devfreq/devfreq.c | 151 ++++++++++++++++++++++++++++++++++----
->>  include/linux/devfreq.h   |  14 +++-
->>  2 files changed, 145 insertions(+), 20 deletions(-)
-> 
-> Please resend this series as non-RFC with the ACKs from Chanwoo included.
-> 
-> It may still be viable to push it for 5.5 during the -rc period.
-> 
-
-If Leonard resend this patch with Ack, I'll send the pull-request for -rc period
-with the related minimal patches. Thanks.
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+On 17.12.2019 02:35, Chanwoo Choi wrote:=0A=
+> On 12/16/19 11:57 PM, Leonard Crestez wrote:=0A=
+>> On 16.12.2019 03:00, Chanwoo Choi wrote:=0A=
+>>> Hi,=0A=
+>>>=0A=
+>>> Also, I think that 'devfreq' word is not proper for device driver name.=
+=0A=
+>>> imx-bus.c or imx-noc.c or others to inform the role of this driver of d=
+eveloper.=0A=
+>>=0A=
+>> I'll rename to "imx-bus". Calling it "imx-noc" is not appropriate=0A=
+>> because I also want to use it for PL301 NICs.=0A=
+> =0A=
+> OK.=0A=
+> =0A=
+>>=0A=
+>>> And, I have a question.=0A=
+>>> This driver adds the devfreq device with either passive governor=0A=
+>>> or userspace governor.=0A=
+>>>=0A=
+>>> As I understood, the devfreq device with passive governor=0A=
+>>> will be operated with imx8m-ddrc.c driver.=0A=
+>>> But, when is operating with userspace governor?=0A=
+>>=0A=
+>> There are multiple scalable buses inside the SOC, for example there's a=
+=0A=
+>> NIC for display controllers and one for (pci+usb). They can use=0A=
+>> userspace governor for explicit frequency control.=0A=
+>>=0A=
+>>> I think that you better to add the explanation to description=0A=
+>>> for two scenarios how to operate with interconnect provider=0A=
+>>> on either passive governor or userspace governor usage case.=0A=
+>>=0A=
+>> I'll elaborate the example in bindings.=0A=
+> =0A=
+> OK.=0A=
+> =0A=
+>>=0A=
+>>> On 12/13/19 10:51 AM, Chanwoo Choi wrote:=0A=
+>>>> On 12/13/19 10:30 AM, Chanwoo Choi wrote:=0A=
+>>>>> Hi,=0A=
+>>>>>=0A=
+>>>>> On 11/15/19 5:09 AM, Leonard Crestez wrote:=0A=
+>>>>>> Add initial support for dynamic frequency switching on pieces of the=
+ imx=0A=
+>>>>>> interconnect fabric.=0A=
+>>>>>>=0A=
+>>>>>> All this driver does is set a clk rate based on an opp table, it doe=
+s=0A=
+>>>>>> not map register areas.=0A=
+>>>>>>=0A=
+>>>>>> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>=0A=
+>>>>>> ---=0A=
+>>>>>>    drivers/devfreq/Kconfig       |   9 ++=0A=
+>>>>>>    drivers/devfreq/Makefile      |   1 +=0A=
+>>>>>>    drivers/devfreq/imx-devfreq.c | 150 +++++++++++++++++++++++++++++=
++++++=0A=
+>>>>>>    3 files changed, 160 insertions(+)=0A=
+>>>>>>    create mode 100644 drivers/devfreq/imx-devfreq.c=0A=
+>>>>>>=0A=
+>>>>>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig=0A=
+>>>>>> index 923a6132e741..fef5ce831e90 100644=0A=
+>>>>>> --- a/drivers/devfreq/Kconfig=0A=
+>>>>>> +++ b/drivers/devfreq/Kconfig=0A=
+>>>>>> @@ -98,10 +98,19 @@ config ARM_IMX8M_DDRC_DEVFREQ=0A=
+>>>>>>    	select DEVFREQ_GOV_USERSPACE=0A=
+>>>>>>    	help=0A=
+>>>>>>    	  This adds the DEVFREQ driver for the i.MX8M DDR Controller. It=
+ allows=0A=
+>>>>>>    	  adjusting DRAM frequency.=0A=
+>>>>>>    =0A=
+>>>>>> +config ARM_IMX_DEVFREQ=0A=
+>>>>>> +	tristate "i.MX Generic DEVFREQ Driver"=0A=
+>>>>>> +	depends on ARCH_MXC || COMPILE_TEST=0A=
+>>>>>> +	select DEVFREQ_GOV_PASSIVE=0A=
+>>>>>> +	select DEVFREQ_GOV_USERSPACE=0A=
+>>>>>> +	help=0A=
+>>>>>> +	  This adds the generic DEVFREQ driver for i.MX interconnects. It=
+=0A=
+>>>>>> +	  allows adjusting NIC/NOC frequency.=0A=
+>>>>>> +=0A=
+>>>>>>    config ARM_TEGRA_DEVFREQ=0A=
+>>>>>>    	tristate "NVIDIA Tegra30/114/124/210 DEVFREQ Driver"=0A=
+>>>>>>    	depends on ARCH_TEGRA_3x_SOC || ARCH_TEGRA_114_SOC || \=0A=
+>>>>>>    		ARCH_TEGRA_132_SOC || ARCH_TEGRA_124_SOC || \=0A=
+>>>>>>    		ARCH_TEGRA_210_SOC || \=0A=
+>>>>>> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile=0A=
+>>>>>> index 3eb4d5e6635c..61d0edee16f7 100644=0A=
+>>>>>> --- a/drivers/devfreq/Makefile=0A=
+>>>>>> +++ b/drivers/devfreq/Makefile=0A=
+>>>>>> @@ -8,10 +8,11 @@ obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+=3D governor_=
+userspace.o=0A=
+>>>>>>    obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+=3D governor_passive.o=0A=
+>>>>>>    =0A=
+>>>>>>    # DEVFREQ Drivers=0A=
+>>>>>>    obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+=3D exynos-bus.o=0A=
+>>>>>>    obj-$(CONFIG_ARM_IMX8M_DDRC_DEVFREQ)	+=3D imx8m-ddrc.o=0A=
+>>>>>> +obj-$(CONFIG_ARM_IMX_DEVFREQ)		+=3D imx-devfreq.o=0A=
+>>>>>>    obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+=3D rk3399_dmc.o=0A=
+>>>>>>    obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+=3D tegra30-devfreq.o=0A=
+>>>>>>    obj-$(CONFIG_ARM_TEGRA20_DEVFREQ)	+=3D tegra20-devfreq.o=0A=
+>>>>>>    =0A=
+>>>>>>    # DEVFREQ Event Drivers=0A=
+>>>>>> diff --git a/drivers/devfreq/imx-devfreq.c b/drivers/devfreq/imx-dev=
+freq.c=0A=
+>>>>>> new file mode 100644=0A=
+>>>>>> index 000000000000..620b344e87aa=0A=
+>>>>>> --- /dev/null=0A=
+>>>>>> +++ b/drivers/devfreq/imx-devfreq.c=0A=
+>>>>>> @@ -0,0 +1,150 @@=0A=
+>>>>>> +// SPDX-License-Identifier: GPL-2.0=0A=
+>>>>>> +/*=0A=
+>>>>>> + * Copyright 2019 NXP=0A=
+>>>>>> + */=0A=
+>>>>>> +=0A=
+>>>>>> +#include <linux/clk.h>=0A=
+>>>>>> +#include <linux/devfreq.h>=0A=
+>>>>>> +#include <linux/device.h>=0A=
+>>>>>> +#include <linux/module.h>=0A=
+>>>>>> +#include <linux/of_device.h>=0A=
+>>>>>> +#include <linux/pm_opp.h>=0A=
+>>>>>> +#include <linux/platform_device.h>=0A=
+>>>>>> +#include <linux/slab.h>=0A=
+>>>>>> +=0A=
+>>>>>> +struct imx_devfreq {=0A=
+>>>>>> +	struct devfreq_dev_profile profile;=0A=
+>>>>>> +	struct devfreq *devfreq;=0A=
+>>>>>> +	struct clk *clk;=0A=
+>>>>>> +	struct devfreq_passive_data passive_data;=0A=
+>>>>>> +};=0A=
+>>>>>> +=0A=
+>>>>>> +static int imx_devfreq_target(struct device *dev,=0A=
+>>>>>> +			      unsigned long *freq, u32 flags)=0A=
+>>>>>=0A=
+>>>>> Don't use space for the indentation. Please use only tab.=0A=
+>>=0A=
+>> OK=0A=
+=0A=
+The spaces are required in order to align arguments to open paranthesis. =
+=0A=
+Should I drop that?=0A=
+=0A=
+It seems that check_patch.pl and process/coding-style.rst doesn't have a =
+=0A=
+strong opinion on this; my personal preference is for long argument =0A=
+lists to just use double indentation.=0A=
+=0A=
+>>>>>> +{=0A=
+>>>>>> +	struct imx_devfreq *priv =3D dev_get_drvdata(dev);=0A=
+>>>>>> +	struct dev_pm_opp *new_opp;=0A=
+>>>>>> +	unsigned long new_freq;=0A=
+>>>>>> +	int ret;=0A=
+>>>>>> +=0A=
+>>>>>> +	new_opp =3D devfreq_recommended_opp(dev, freq, flags);=0A=
+>>>>>> +	if (IS_ERR(new_opp)) {=0A=
+>>>>>> +		ret =3D PTR_ERR(new_opp);=0A=
+>>>>>> +		dev_err(dev, "failed to get recommended opp: %d\n", ret);=0A=
+>>>>>> +		return ret;=0A=
+>>>>>> +	}=0A=
+>>>>>> +	new_freq =3D dev_pm_opp_get_freq(new_opp);=0A=
+>>>>>> +	dev_pm_opp_put(new_opp);=0A=
+>>>>>> +=0A=
+>>>>>> +	return clk_set_rate(priv->clk, new_freq);=0A=
+>>>>>> +}=0A=
+>>>>>> +=0A=
+>>>>>> +static int imx_devfreq_get_cur_freq(struct device *dev, unsigned lo=
+ng *freq)=0A=
+>>>>>> +{=0A=
+>>>>>> +	struct imx_devfreq *priv =3D dev_get_drvdata(dev);=0A=
+>>>>>> +=0A=
+>>>>>> +	*freq =3D clk_get_rate(priv->clk);=0A=
+>>>>>> +=0A=
+>>>>>> +	return 0;=0A=
+>>>>>> +}=0A=
+>>>>>> +=0A=
+>>>>>> +static int imx_devfreq_get_dev_status(struct device *dev,=0A=
+>>>>>> +				      struct devfreq_dev_status *stat)=0A=
+>>>>>=0A=
+>>>>> ditto. Please use tab for the indentation.=0A=
+>>>>>=0A=
+>>>>>> +{=0A=
+>>>>>> +	struct imx_devfreq *priv =3D dev_get_drvdata(dev);=0A=
+>>>>>> +=0A=
+>>>>>> +	stat->busy_time =3D 0;=0A=
+>>>>>> +	stat->total_time =3D 0;=0A=
+>>>>>> +	stat->current_frequency =3D clk_get_rate(priv->clk);=0A=
+>>>>>> +=0A=
+>>>>>> +	return 0;=0A=
+>>>>>> +}=0A=
+>>>>>> +=0A=
+>>>>>> +static void imx_devfreq_exit(struct device *dev)=0A=
+>>>>>> +{=0A=
+>>>>>> +	dev_pm_opp_of_remove_table(dev);=0A=
+>>>>>> +}=0A=
+>>>>>> +=0A=
+>>>>>> +static int imx_devfreq_probe(struct platform_device *pdev)=0A=
+>>>>>> +{=0A=
+>>>>>> +	struct device *dev =3D &pdev->dev;=0A=
+>>>>>> +	struct imx_devfreq *priv;=0A=
+>>>>>=0A=
+>>>>> How about changing the variable name 'priv' to 'imx' or 'imx_data'?=
+=0A=
+>>>>> because it is not easy to catch the role of 'priv' from variable name=
+.=0A=
+>>=0A=
+>> The name "priv" refers to private data of current device: it is short=0A=
+>> and not ambiguous in this context. I don't think that mentioning "imx"=
+=0A=
+>> adds any additional useful information.=0A=
+>>=0A=
+>> It doesn't seem like there's much of a convention for "local variable=0A=
+>> containing private data", for example exynos-bus.c uses "struct=0A=
+>> exynos_bus* bus" internally.=0A=
+> =0A=
+> OK. it is nitpick. Keep your style.=0A=
+> =0A=
+>>=0A=
+>>>>>=0A=
+>>>>>> +	const char *gov =3D DEVFREQ_GOV_USERSPACE;=0A=
+>>>>>> +	void *govdata =3D NULL;=0A=
+>>>>>=0A=
+>>>>> How about changing the variable name 'govdata' to 'gov_data'?=0A=
+>>>>> - govdata -> gov_data=0A=
+>>=0A=
+>> OK=0A=
+>>=0A=
+>>>>>> +	int ret;=0A=
+>>>>>> +=0A=
+>>>>>> +	priv =3D devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);=0A=
+>>>>>> +	if (!priv)=0A=
+>>>>>> +		return -ENOMEM;=0A=
+>>>>>> +=0A=
+>>>>>> +	priv->clk =3D devm_clk_get(dev, NULL);=0A=
+>>>>>=0A=
+>>>>> nitpick: because the clock-name is not mandatory.=0A=
+>>>>> Don't need to specify the clock name to inform the role of clock=0A=
+>>>>> of other developer/user?=0A=
+>>>>>=0A=
+>>>>> For example, "ddr", "bus" and so on.=0A=
+>>=0A=
+>> I'll call this bus, but I'm not sure it's useful when a single clock is=
+=0A=
+>> involved.=0A=
+>>=0A=
+>>>> And, this driver doesn't include the 'clk_prepare_enable'.=0A=
+>>>> how to enable the clock?=0A=
+>>=0A=
+>> Clocks are either always on or perhaps controlled by some other=0A=
+>> peripheral. This driver only provides scaling.=0A=
+> =0A=
+> It is not proper use-case of clock. If device driver=0A=
+> want to control the clock, it have to be enabled on device driver.=0A=
+=0A=
+> Even it clock is always, the user don't know the state of clock.=0A=
+> Also, user can't know what kind of device driver control the clock.=0A=
+> =0A=
+> It have to be controlled on this device driver=0A=
+> before changing the clock frequency.=0A=
+=0A=
+ From clock framework perspective prepare/enable and rate bits can be =0A=
+controlled separately.=0A=
+=0A=
+Many peripherals are grouped with their own bus (for example a PL301 =0A=
+NIC) which is normally off and only gets enabled when explicitly =0A=
+requested by drivers. If this devfreq driver always enabled bus clocks =0A=
+then it would waste power for no reason.=0A=
+=0A=
+For example a display controller will first enable clocks to allow =0A=
+access to device registers, then configure a resolution and make a =0A=
+bandwith request which gets translated a min_freq request. Then when the =
+=0A=
+display is blanked the entire display bus should be powered off, even if =
+=0A=
+this makes control registers inaccessible.=0A=
+=0A=
+This series only enables scaling for the main NOC which can't be turned =0A=
+off anyway.=0A=
+=0A=
+>>>>>> +	if (IS_ERR(priv->clk)) {=0A=
+>>>>>> +		ret =3D PTR_ERR(priv->clk);=0A=
+>>>>>> +		dev_err(dev, "failed to fetch clk: %d\n", ret);=0A=
+>>>>>> +		return ret;=0A=
+>>>>>> +	}=0A=
+>>>>>> +	platform_set_drvdata(pdev, priv);=0A=
+>>>>>> +=0A=
+>>>>>> +	ret =3D dev_pm_opp_of_add_table(dev);=0A=
+>>>>>> +	if (ret < 0) {=0A=
+>>>>>> +		dev_err(dev, "failed to get OPP table\n");=0A=
+>>>>>> +		return ret;=0A=
+>>>>>> +	}=0A=
+>>>>>> +=0A=
+>>>>>> +	priv->profile.polling_ms =3D 1000;=0A=
+>>>>>> +	priv->profile.target =3D imx_devfreq_target;=0A=
+>>>>>> +	priv->profile.get_dev_status =3D imx_devfreq_get_dev_status;=0A=
+>>>>>> +	priv->profile.exit =3D imx_devfreq_exit;=0A=
+>>>>>> +	priv->profile.get_cur_freq =3D imx_devfreq_get_cur_freq;=0A=
+>>>>>> +	priv->profile.initial_freq =3D clk_get_rate(priv->clk);=0A=
+>>>>>> +=0A=
+>>>>>> +	/* Handle passive devfreq parent link */=0A=
+>>>>>> +	priv->passive_data.parent =3D devfreq_get_devfreq_by_phandle(dev, =
+0);=0A=
+>>>>>> +	if (!IS_ERR(priv->passive_data.parent)) {=0A=
+>>>>>> +		dev_info(dev, "setup passive link to %s\n",=0A=
+>>>>>> +			 dev_name(priv->passive_data.parent->dev.parent));=0A=
+>>>>>> +		gov =3D DEVFREQ_GOV_PASSIVE;=0A=
+>>>>>> +		govdata =3D &priv->passive_data;=0A=
+>>>>>> +	} else if (priv->passive_data.parent !=3D ERR_PTR(-ENODEV)) {=0A=
+>>>>>> +		// -ENODEV means no parent: not an error.=0A=
+>>>>>> +		ret =3D PTR_ERR(priv->passive_data.parent);=0A=
+>>>>>> +		if (ret !=3D -EPROBE_DEFER)=0A=
+>>>>>> +			dev_warn(dev, "failed to get initialize passive parent: %d\n",=
+=0A=
+>>>>>> +				 ret);=0A=
+>>>>>> +		goto err;=0A=
+>>>>>> +	}=0A=
+>>>>>=0A=
+>>>>> You better to change the exception handling as following: It is more =
+simple.=0A=
+>>>>>=0A=
+>>>>> 	} else if (PTR_ERR(priv->passive_data.parent) =3D=3D -EPROBE_DEFER)=
+=0A=
+>>>>> 			|| PTR_ERR(priv->passive_data.parent) =3D=3D -ENODEV) {=0A=
+>>>>> 		goto err;=0A=
+>>>>> 	} else {=0A=
+>>>>> 		ret =3D PTR_ERR(priv->passive_data.parent);=0A=
+>>>>> 		dev_err(dev, "failed to get initialize passive parent: %d\n", ret);=
+=0A=
+>>>>> 		goto err;=0A=
+>>>>> 	}=0A=
+>>=0A=
+>> But -ENODEV is not an error, it means no passive parent was found.=0A=
+> =0A=
+> OK. just I want to make 'if statement' more simple. This style=0A=
+> is complicated.=0A=
+=0A=
+I can avoid handling EPROBE_DEFER in a nested if.=0A=
+=0A=
+>>>>>> +	priv->devfreq =3D devm_devfreq_add_device(dev, &priv->profile,=0A=
+>>>>>> +						gov, govdata);=0A=
+>>>>>> +	if (IS_ERR(priv->devfreq)) {=0A=
+>>>>>> +		ret =3D PTR_ERR(priv->devfreq);=0A=
+>>>>>> +		dev_err(dev, "failed to add devfreq device: %d\n", ret);=0A=
+>>>>>> +		goto err;=0A=
+>>>>>> +	}=0A=
+>>>>>> +=0A=
+>>>>>> +	return 0;=0A=
+>>>>>> +=0A=
+>>>>>> +err:=0A=
+>>>>>> +	dev_pm_opp_of_remove_table(dev);=0A=
+>>>>>> +	return ret;=0A=
+>>>>>> +}=0A=
+>>>>>> +=0A=
+>>>>>> +static const struct of_device_id imx_devfreq_of_match[] =3D {=0A=
+>>>>>> +	{ .compatible =3D "fsl,imx8m-noc", },=0A=
+>>>>>> +	{ .compatible =3D "fsl,imx8m-nic", },=0A=
+>>>>>> +	{ /* sentinel */ },=0A=
+>>>>>> +};=0A=
+>>>>>> +MODULE_DEVICE_TABLE(of, imx_devfreq_of_match);=0A=
+>>>>>> +=0A=
+>>>>>> +static struct platform_driver imx_devfreq_platdrv =3D {=0A=
+>>>>>> +	.probe		=3D imx_devfreq_probe,=0A=
+>>>>>> +	.driver =3D {=0A=
+>>>>>> +		.name	=3D "imx-devfreq",=0A=
+>>>>>> +		.of_match_table =3D of_match_ptr(imx_devfreq_of_match),=0A=
+>>>>>> +	},=0A=
+>>>>>> +};=0A=
+>>>>>> +module_platform_driver(imx_devfreq_platdrv);=0A=
+>>>>>> +=0A=
+>>>>>> +MODULE_DESCRIPTION("Generic i.MX bus frequency driver");=0A=
+>>>>>=0A=
+>>>>> If this driver is for bus frequency, you better to use 'bus' for the =
+clock-name=0A=
+>>>>> for the readability.=0A=
+=0A=
+=0A=
