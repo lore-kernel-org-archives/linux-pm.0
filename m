@@ -2,232 +2,172 @@ Return-Path: <SRS0=GiNv=2H=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C80B3C47409
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Dec 2019 05:51:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE970C43603
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Dec 2019 07:25:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9ABFC21835
-	for <linux-pm@archiver.kernel.org>; Tue, 17 Dec 2019 05:51:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B47872067C
+	for <linux-pm@archiver.kernel.org>; Tue, 17 Dec 2019 07:25:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="vEzkA/Bz"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="cUkwmnpH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727741AbfLQFvw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 17 Dec 2019 00:51:52 -0500
-Received: from mailout3.samsung.com ([203.254.224.33]:31603 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727799AbfLQFvM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Dec 2019 00:51:12 -0500
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
-        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20191217055110epoutp03f47b4c3b3d09cf7d7123e718b9ff8ec2~hEqsJNk-I0699506995epoutp03u
-        for <linux-pm@vger.kernel.org>; Tue, 17 Dec 2019 05:51:10 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20191217055110epoutp03f47b4c3b3d09cf7d7123e718b9ff8ec2~hEqsJNk-I0699506995epoutp03u
+        id S1726680AbfLQHZP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 17 Dec 2019 02:25:15 -0500
+Received: from mailout1.samsung.com ([203.254.224.24]:32919 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727174AbfLQHZO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Dec 2019 02:25:14 -0500
+Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20191217072510epoutp01ffb8267a9464924c1eb1c9e2c1bd4794~hF8ws08_d2419324193epoutp01B
+        for <linux-pm@vger.kernel.org>; Tue, 17 Dec 2019 07:25:10 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20191217072510epoutp01ffb8267a9464924c1eb1c9e2c1bd4794~hF8ws08_d2419324193epoutp01B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1576561870;
-        bh=O72tznyqE+/XDINrHrD7q4VDYOKlq2biAtS4Ew50ktM=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=vEzkA/BzIbfWiNG79pOlmsY/gN2TkPXAgn7BcajOYj0kYGHQmsWxvEDKvJr9ZjPIF
-         E/aDqMdoAoUOEDvZ65UngD5vI8rZsihgeyt5h7Wx+KZuknAUAE64QTC2rHTAjo7kdp
-         G8VLnUGu6zUMS0/PyEzf2QolSiCAqn59YEKDOHgA=
+        s=mail20170921; t=1576567510;
+        bh=jsZgMfZBFENSHUxjARWp1+l9QDIbLF9XpJF95DHtcvY=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=cUkwmnpHs3QEA8gZc8j6pIlISP9HAOh2Sm+8f64QgqZsNNCHx+2Cer/teZO4C/nuQ
+         SKqWESzNH7lFN/pD8bGEEuDHR6Wq1yL8Yuf2DdkpDRstA5shM48udP6nIqsM2XCaMR
+         moTgvfZ0pae8qi0qSsxwqhrh8VnA4SXbxph6th14=
 Received: from epsnrtp2.localdomain (unknown [182.195.42.163]) by
-        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
-        20191217055109epcas1p3fcdaeb07dbad56ae5ced7dc78f8683e5~hEqrkFQZW1374813748epcas1p3k;
-        Tue, 17 Dec 2019 05:51:09 +0000 (GMT)
-Received: from epsmges1p5.samsung.com (unknown [182.195.40.152]) by
-        epsnrtp2.localdomain (Postfix) with ESMTP id 47cS1Q1XfXzMqYkt; Tue, 17 Dec
-        2019 05:51:06 +0000 (GMT)
-Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
-        epsmges1p5.samsung.com (Symantec Messaging Gateway) with SMTP id
-        45.0D.51241.ACC68FD5; Tue, 17 Dec 2019 14:51:06 +0900 (KST)
-Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
+        20191217072509epcas1p4324b8c934d6a4ca1cf86b4e178b3001f~hF8wDyjSu3077330773epcas1p4V;
+        Tue, 17 Dec 2019 07:25:09 +0000 (GMT)
+Received: from epsmges1p3.samsung.com (unknown [182.195.40.153]) by
+        epsnrtp2.localdomain (Postfix) with ESMTP id 47cV5t4jxwzMqYkk; Tue, 17 Dec
+        2019 07:25:06 +0000 (GMT)
+Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
+        epsmges1p3.samsung.com (Symantec Messaging Gateway) with SMTP id
+        93.54.52419.2D288FD5; Tue, 17 Dec 2019 16:25:06 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
         epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
-        20191217055105epcas1p3bacbf54550c52979fe819ab33bb21d30~hEqntGdws1374813748epcas1p3e;
-        Tue, 17 Dec 2019 05:51:05 +0000 (GMT)
+        20191217072506epcas1p36bf0e286c809f5e9b82f3ccf9e75f586~hF8s4nCAw2913129131epcas1p3X;
+        Tue, 17 Dec 2019 07:25:06 +0000 (GMT)
 Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
-        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20191217055105epsmtrp25d086cf2e7287f69d6b2485ddaecd81a~hEqnsO-nq1905819058epsmtrp28;
-        Tue, 17 Dec 2019 05:51:05 +0000 (GMT)
-X-AuditID: b6c32a39-163ff7000001c829-45-5df86ccad7bb
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20191217072506epsmtrp1e9479d2e9221b0e08a8f7ed6a1c528d8~hF8s3pAnI0758107581epsmtrp1U;
+        Tue, 17 Dec 2019 07:25:06 +0000 (GMT)
+X-AuditID: b6c32a37-5b7ff7000001ccc3-98-5df882d268e3
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
         epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        BA.5D.10238.9CC68FD5; Tue, 17 Dec 2019 14:51:05 +0900 (KST)
-Received: from localhost.localdomain (unknown [10.113.221.102]) by
-        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20191217055105epsmtip147e4c06741ba45fb928cc9047cb8ffa3~hEqncM2z53193831938epsmtip1W;
-        Tue, 17 Dec 2019 05:51:05 +0000 (GMT)
+        DE.85.10238.1D288FD5; Tue, 17 Dec 2019 16:25:06 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20191217072505epsmtip2e0f5fca9c77e96f2a1eb00806e493075~hF8skYWcr0201702017epsmtip2Z;
+        Tue, 17 Dec 2019 07:25:05 +0000 (GMT)
+Subject: Re: [v5, PATCH 0/5] Add cpufreq and cci devfreq for mt8183, and SVS
+ support
+To:     "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        srv_heupstream@mediatek.com, fan.chen@mediatek.com
 From:   Chanwoo Choi <cw00.choi@samsung.com>
-To:     krzk@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com,
-        heiko@sntech.de, leonard.crestez@nxp.com, lukasz.luba@arm.com
-Cc:     a.swigon@samsung.com, m.szyprowski@samsung.com, kgene@kernel.org,
-        cw00.choi@samsung.com, myungjoo.ham@samsung.com,
-        kyungmin.park@samsung.com, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-rockchip@lists.infradead.org
-Subject: [PATCH 1/9] PM / devfreq: Add devfreq_get_devfreq_by_node function
-Date:   Tue, 17 Dec 2019 14:57:30 +0900
-Message-Id: <20191217055738.28445-2-cw00.choi@samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20191217055738.28445-1-cw00.choi@samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0xTZxj26+m5oNacVTZf65R6lv6QBOSAxQ8txkTmTtQ4EhYTTbAe4YQi
-        vdlTzNzi/TJFEQ1LNF5AnURXFLASqCigpbjJgsDYcGjIqmbDtQaieIvG1LaHRf897/M+7+V7
-        vpchtLWUjim2uyWXXbRy1ER1U8ec1JQu6+v8NF8Dif+u2oPw3efDJK4O3CFx5GGYxBWPwgTu
-        6WmgcffOJzS+MPSUxN5HAyTubzlJ4bHyAMLPghECH+tpU+EzO3fT+FJgiMY1d/tU+P6OCxTe
-        0xqgF2uFi1UXkeD17KeEK+e2CZdHfCrhUKMHCc0DVYQw5p2VS68pMVkksVBy6SV7gaOw2F6U
-        zS3PMy8xGzPT+BQ+C8/n9HbRJmVzOStyU5YWW6PP4PSbRGtplMoVZZmbu8jkcpS6Jb3FIbuz
-        OclZaHVmOVNl0SaX2otSCxy2BXxaWroxKlxXYvEeO0E5f5vx7a63XeR2VDmtDDEMsPPgSffs
-        MjSR0bI+BD9e8yAleIYgVF6nUoKXCPrau+kylBCvqP/nAa0kWhF0RuooJXiOoOfhQFxFscnQ
-        /vgvKoYT2a1Q3eGLtyLYQRVc//0eGUtMZZfDaG8kLlKzBvCfv0LEsIZdAGdeVquVcUlQ23Aj
-        ziewC2G4KRxvBGyEgq7DRwlFlAM1bS3jeCqEfmkc31UHYyOtlIK/h59vByileB+CxvZeUklk
-        QHtNpSpmB8HOgfqWuQo9G66+PYVimGCnwMiLg6TimAb27dUqki+gPzikUvB0+OmH/eOjBCgP
-        3SMUVw4heDd6hDyMZh3/MOE0Qh70meSUbUWSzDuNH/+ZF8UPNTnLh27dWeFHLIO4yRpwv8rX
-        kuImebPNj4AhuESNTx+lNIXi5u8kl8PsKrVKsh8Zo1YeIXSfFjiiZ293m3ljekZGBp7HZxp5
-        npumYV735WvZItEtlUiSU3L9X6diEnTbETOabji7pSLxT0PAGn4jdxBJG2+Y+nX/DQSXrW8q
-        ezBpw0xTTuev33iMSyuT1uSvPB0+cKutYuPqTzoz83prLd5I89ddxweFQP1XtNCXu2rLkuKx
-        tYvKFwdNNwuaDwQNVO3R7rwv74/k+A2rzQs7daF/606qT4WS/sj73D2c0JQ9OIFTyxaRTyZc
-        svgeSl59D74DAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrMLMWRmVeSWpSXmKPExsWy7bCSnO7JnB+xBhtOyVrcn9fKaHH9y3NW
-        i/lHzrFa/H/0mtWi//FrZovz5zewW5xtesNuseLuR1aLTY+vsVpc3jWHzeJz7xFGi08P/jNb
-        zDi/j8liYVMLu8XaI3fZLZZev8hkcbtxBZtF694j7A5CHmvmrWH02LSqk81j85J6j43vdjB5
-        9G1Zxeix/do8Zo/Pm+QC2KO4bFJSczLLUov07RK4MjbNmM1WcFq6ovn3KdYGxsniXYycHBIC
-        JhLrnz5k72Lk4hAS2M0osWrpR2aIhKTEtItHgWwOIFtY4vDhYoiaT4wSFza9YQSpYRPQktj/
-        4gYbiC0i0MYoseS7HIjNLPCcSWJflxmILSzgLfH+wn+wGhYBVYlDyzeDzecVsJJY+G0+C8Qu
-        eYnVGw6AxTkFrCWeb3vNBGILAdX8nPqMdQIj3wJGhlWMkqkFxbnpucWGBYZ5qeV6xYm5xaV5
-        6XrJ+bmbGMFBr6W5g/HykvhDjAIcjEo8vBIl32OFWBPLiitzDzFKcDArifDuUAAK8aYkVlal
-        FuXHF5XmpBYfYpTmYFES532adyxSSCA9sSQ1OzW1ILUIJsvEwSnVwMibfnSLqd277e5qrY5z
-        drUsXVi0V9DGzrklLmNdz1X5S3sVww68/sZeGijKdXCCbn+ytcfqY6lLOdYofZilcppDYDtn
-        Tut8vvPn5jG/XmZmcIyVWetKt6D9zFcWW06ZdTbuStHs/bQ+/tj1ydy33h/bdn3uHPUbzaps
-        yWfLyhL/uBapzQv481GJpTgj0VCLuag4EQCG3KPNdgIAAA==
-X-CMS-MailID: 20191217055105epcas1p3bacbf54550c52979fe819ab33bb21d30
+Organization: Samsung Electronics
+Message-ID: <cfce1a04-68e9-f948-0d3a-3bccfa44c797@samsung.com>
+Date:   Tue, 17 Dec 2019 16:31:40 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
+MIME-Version: 1.0
+In-Reply-To: <1574769046-28449-1-git-send-email-andrew-sh.cheng@mediatek.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrHJsWRmVeSWpSXmKPExsWy7bCmru6lph+xBic7VSy2r3/BajH/yDlW
+        i293fjNZnG16w26x6fE1VovLu+awWVxuvsho8bn3CKPF0usXmSyaWowtbjeuYLN48+Msk8WZ
+        05dYLVr3HmG3+HdtI4vF9LtCFhu/ejgIeqyZt4bRY+esu+wem1Z1snncubaHzWPzknqPlpP7
+        WTy2XG1n8ejbsorR4/iN7UwenzfJBXBFZdtkpCampBYppOYl56dk5qXbKnkHxzvHm5oZGOoa
+        WlqYKynkJeam2iq5+AToumXmAH2jpFCWmFMKFApILC5W0rezKcovLUlVyMgvLrFVSi1IySmw
+        LNArTswtLs1L10vOz7UyNDAwMgUqTMjO+LHvMVvBb+6K53s/sTcw9nF2MXJySAiYSNztn87Y
+        xcjFISSwg1Fi94cLTBDOJ0aJpV/3sEE43xglzr3ZzAzTsnzXJRaIxF5GiUUXp7JDOO8ZJY40
+        rmIBqRIWCJN4PG8VK0hCRGASs8SEzQ8YQRLMArcYJV7vZwOx2QS0JPa/uAFm8wsoSlz98Ris
+        hlfATuLw+fesIDaLgKrEkvWnweKiQENPbmuBqhGUODnzCdgyTgFfiVPTT7FDzBeXuPVkPhOE
+        LS+x/e0cZpAjJATusUvsfTOdHeIHF4mr3X9YIWxhiVfHt0DFpSRe9rdB2dUSK08eYYNo7mCU
+        2LL/AlSDscT+pZOBNnAAbdCUWL9LHyKsKLHz91yoJ/kk3n3tYQUpkRDglehoE4IoUZa4/OAu
+        E4QtKbG4vZNtAqPSLCTvzELywiwkL8xCWLaAkWUVo1hqQXFuemqxYYExcnxvYgSndS3zHYwb
+        zvkcYhTgYFTi4S0o+x4rxJpYVlyZe4hRgoNZSYR3hwJQiDclsbIqtSg/vqg0J7X4EKMpMLQn
+        MkuJJucDc05eSbyhqZGxsbGFiaGZqaGhkjgvx4+LsUIC6YklqdmpqQWpRTB9TBycUsAUNfPP
+        JGaz+P0Rix73HLy7ZYWIrIz4D1alpLiel26B3xOnT77haLYsoFnko2DXybtpZVJ7xHM4br9d
+        9SJ47b66tsWLrRzOTfMxS5DdzspVepWj6fnBRd/FvXr+69y/9/bskt/2Gd+Vgz4X7wt49Vf/
+        NMNfR95yiy9mrQutj597NXvBjdSEubrySizFGYmGWsxFxYkANpRDiwEEAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrJIsWRmVeSWpSXmKPExsWy7bCSvO6lph+xBqfPMFpsX/+C1WL+kXOs
+        Ft/u/GayONv0ht1i0+NrrBaXd81hs7jcfJHR4nPvEUaLpdcvMlk0tRhb3G5cwWbx5sdZJosz
+        py+xWrTuPcJu8e/aRhaL6XeFLDZ+9XAQ9Fgzbw2jx85Zd9k9Nq3qZPO4c20Pm8fmJfUeLSf3
+        s3hsudrO4tG3ZRWjx/Eb25k8Pm+SC+CK4rJJSc3JLEst0rdL4Mr4se8xW8Fv7ornez+xNzD2
+        cXYxcnJICJhILN91iaWLkYtDSGA3o8Szt4dZIBKSEtMuHmXuYuQAsoUlDh8uhqh5yyixaP9h
+        VpAaYYEwicfzVrGCJEQEpjFLPP33mg3EYRa4xSixqfkIO0TLAkaJ3lvXwVrYBLQk9r+4wQZi
+        8wsoSlz98ZgRxOYVsJM4fP49WA2LgKrEkvWnweKiQCt2LnnMBFEjKHFy5hOw8zgFfCVOTT/F
+        DmIzC6hL/Jl3iRnCFpe49WQ+E4QtL7H97RzmCYzCs5C0z0LSMgtJyywkLQsYWVYxSqYWFOem
+        5xYbFhjmpZbrFSfmFpfmpesl5+duYgRHuJbmDsbLS+IPMQpwMCrx8EqUfI8VYk0sK67MPcQo
+        wcGsJMK7QwEoxJuSWFmVWpQfX1Sak1p8iFGag0VJnPdp3rFIIYH0xJLU7NTUgtQimCwTB6dU
+        A6NWsJdIk+0nj+R7NdYhC0pi7grPnJK5/vCPXKXUKL5K+c+dG3cclX5/LnRHWjz/qoLYNXfE
+        K2eove20n8Ghc/z/2o5nU4S38E/yZn1WmPjxz6zzD2ft+6uSsMBPzcnv4T+3++tmqRyzf+uz
+        fOcGG+6jexqkO7bufBu9h3eZqJHRNuEzIs4pCvuVWIozEg21mIuKEwE7Gqa27AIAAA==
+X-CMS-MailID: 20191217072506epcas1p36bf0e286c809f5e9b82f3ccf9e75f586
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
 X-Sendblock-Type: SVC_REQ_APPROVE
 CMS-TYPE: 101P
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20191217055105epcas1p3bacbf54550c52979fe819ab33bb21d30
-References: <20191217055738.28445-1-cw00.choi@samsung.com>
-        <CGME20191217055105epcas1p3bacbf54550c52979fe819ab33bb21d30@epcas1p3.samsung.com>
+X-CMS-RootMailID: 20191126115058epcas1p3caa6da2508caa5fbe71c202834184b15
+References: <CGME20191126115058epcas1p3caa6da2508caa5fbe71c202834184b15@epcas1p3.samsung.com>
+        <1574769046-28449-1-git-send-email-andrew-sh.cheng@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Leonard Crestez <leonard.crestez@nxp.com>
+Hi,
 
-Split off part of devfreq_get_devfreq_by_phandle into a separate
-function. This allows callers to fetch devfreq instances by enumerating
-devicetree instead of explicit phandles.
+On 11/26/19 8:50 PM, Andrew-sh.Cheng wrote:
+> From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
+> 
+> MT8183 supports CPU DVFS and CCI DVFS, and LITTLE cpus and CCI are in the same voltage domain.
+> So, this series is to add drivers to handle the voltage coupling between CPU and CCI DVFS.
+> 
+> For SVS support, need OPP_EVENT_ADJUST_VOLTAGE and corresponding reaction.
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-[cw00.choi: Export devfreq_get_devfreq_by_node function and
- add function to devfreq.h when CONFIG_PM_DEVFREQ is enabled.]
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 46 +++++++++++++++++++++++++++++----------
- include/linux/devfreq.h   |  6 +++++
- 2 files changed, 41 insertions(+), 11 deletions(-)
+What is correct full word of SVS?
+- S(?) VS (Voltage Scaling) ?
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 89260b17598f..cb8ca81c8973 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -966,6 +966,32 @@ struct devfreq *devm_devfreq_add_device(struct device *dev,
- EXPORT_SYMBOL(devm_devfreq_add_device);
- 
- #ifdef CONFIG_OF
-+/*
-+ * devfreq_get_devfreq_by_node - Get the devfreq device from devicetree
-+ * @node - pointer to device_node
-+ *
-+ * return the instance of devfreq device
-+ */
-+struct devfreq *devfreq_get_devfreq_by_node(struct device_node *node)
-+{
-+	struct devfreq *devfreq;
-+
-+	if (!node)
-+		return ERR_PTR(-EINVAL);
-+
-+	mutex_lock(&devfreq_list_lock);
-+	list_for_each_entry(devfreq, &devfreq_list, node) {
-+		if (devfreq->dev.parent
-+			&& devfreq->dev.parent->of_node == node) {
-+			mutex_unlock(&devfreq_list_lock);
-+			return devfreq;
-+		}
-+	}
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	return ERR_PTR(-ENODEV);
-+}
-+
- /*
-  * devfreq_get_devfreq_by_phandle - Get the devfreq device from devicetree
-  * @dev - instance to the given device
-@@ -988,26 +1014,24 @@ struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
- 	if (!node)
- 		return ERR_PTR(-ENODEV);
- 
--	mutex_lock(&devfreq_list_lock);
--	list_for_each_entry(devfreq, &devfreq_list, node) {
--		if (devfreq->dev.parent
--			&& devfreq->dev.parent->of_node == node) {
--			mutex_unlock(&devfreq_list_lock);
--			of_node_put(node);
--			return devfreq;
--		}
--	}
--	mutex_unlock(&devfreq_list_lock);
-+	devfreq = devfreq_get_devfreq_by_node(node);
- 	of_node_put(node);
- 
--	return ERR_PTR(-EPROBE_DEFER);
-+	return devfreq;
- }
-+
- #else
-+struct devfreq *devfreq_get_devfreq_by_node(struct device_node *node)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
- {
- 	return ERR_PTR(-ENODEV);
- }
- #endif /* CONFIG_OF */
-+EXPORT_SYMBOL_GPL(devfreq_get_devfreq_by_node);
- EXPORT_SYMBOL_GPL(devfreq_get_devfreq_by_phandle);
- 
- /**
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index c6f82d4bec9f..e3633ae43349 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -253,6 +253,7 @@ extern void devm_devfreq_unregister_notifier(struct device *dev,
- 				struct devfreq *devfreq,
- 				struct notifier_block *nb,
- 				unsigned int list);
-+extern struct devfreq *devfreq_get_devfreq_by_node(struct device_node *node);
- extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
- 						int index);
- 
-@@ -407,6 +408,11 @@ static inline void devm_devfreq_unregister_notifier(struct device *dev,
- {
- }
- 
-+struct devfreq *devfreq_get_devfreq_by_node(struct device_node *node)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
- 							int index)
- {
+> depend on:
+> 	https://patchwork.kernel.org/patch/11193513/ 
+> 
+> Change since v4:
+> 	- Remove redundant code
+> 
+> 
+> Andrew-sh.Cheng (5):
+>   cpufreq: mediatek: add clock enable for intermediate clock
+>   dt-bindings: devfreq: add compatible for mt8183 cci devfreq
+>   devfreq: add mediatek cci devfreq
+>   cpufreq: mediatek: add opp notification for SVS support
+>   devfreq: mediatek: cci devfreq register opp notification for SVS
+>     support
+> 
+>  .../bindings/devfreq/mt8183-cci-devfreq.txt        |  20 ++
+>  drivers/cpufreq/mediatek-cpufreq.c                 |  92 +++++-
+>  drivers/devfreq/Kconfig                            |  10 +
+>  drivers/devfreq/Makefile                           |   1 +
+>  drivers/devfreq/mt8183-cci-devfreq.c               | 308 +++++++++++++++++++++
+>  5 files changed, 429 insertions(+), 2 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/mt8183-cci-devfreq.txt
+>  create mode 100644 drivers/devfreq/mt8183-cci-devfreq.c
+> 
+
+
 -- 
-2.17.1
-
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
