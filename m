@@ -2,134 +2,269 @@ Return-Path: <SRS0=vy9M=2I=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE985C2D0BF
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Dec 2019 21:07:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3D96C2D0CD
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Dec 2019 22:00:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BFE7D24676
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Dec 2019 21:07:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Kc+epk9i"
+	by mail.kernel.org (Postfix) with ESMTP id C536324672
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Dec 2019 22:00:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1576706441;
+	bh=BHrAQFIGbbIvTg9mW+NwpWTBkboWudvsPo35DCHjyKU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=on7ixeJ6zbgabTK+q2t7WLCAOlj3/ABfmmhW4i1eDhImFeRGwJRTXKauVB5P/H84N
+	 zRosnRRqX6eSVG3Pj9Y+jOgisUIWhPdb2XB6o2JhJDZdR3Vzn0nCGBsuAWoRdm3OCJ
+	 A9FWsZNvVrSkjf2SN+nqjVt+JhORiLP5LovM5HOk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726609AbfLRVGm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Dec 2019 16:06:42 -0500
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:43858 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726530AbfLRVGl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2019 16:06:41 -0500
-Received: by mail-lj1-f195.google.com with SMTP id a13so3716574ljm.10;
-        Wed, 18 Dec 2019 13:06:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ntVu9I3XrhWfhrQTxhKWXPXWtQH1te/zTY/xV+5R5ck=;
-        b=Kc+epk9iVsrcYKd1AhP2pJbSIakkbj7sE7TsSLmqLD7g4n9JKPPf3Ri+IMrYOlQzz2
-         VoX48J+qWP2tYmVE5SVfpILRofHBWYk+lrji78eIIYE3354t5U8Kz7ZbbwmRCGyZCb8t
-         tRX8qRpEU01B8sHXn8YA/5ETc6N1OWN4ILfqlILkGAASCuuR5GKsb85dIS00/h/KU9Ss
-         c9uBFQ+N/0R4342enAx1v8a3DDoPiTJRN6CTsWTxv+H2oGIz0WL1W7QIBqWgFuFLiVwW
-         8TrFym3VN0W3DsioImqWDuIiO5omLlNklHaUQ8SoCQhYZb0MwKp5iuqNUkTaCH9nfUFz
-         w8eQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ntVu9I3XrhWfhrQTxhKWXPXWtQH1te/zTY/xV+5R5ck=;
-        b=X2SnmHKLMehmlcZgpb0/EqWdkIzEu8Hrpo0gbYVnpFPeSMq240FOLn51VCoy2fbDwn
-         tYlocL9mRLoLlrTGh5zCcC2ujtAUJsOde11MX68ao5an9ENE6KpzrTdWy6K1+YjVQZ8g
-         gTTLUXXdzNnkJfV4TCanX9KdWNsLNMSAAtmC8LkQbg4BjF9YL5901J/zH7SKpA9SPdmf
-         U90RkbCTzVd8oo0O2osx0ukO24UvTNl9kxwaO75WsIxzpF+hlRjHkqljbzJp98Bji6uy
-         OoCVzAN59NPlNpdd/3OVj/D6B8lJV8oPMBaBhJhhccKm9MvzRIWsHpwG+wZ3dPbteN+4
-         2wnQ==
-X-Gm-Message-State: APjAAAWMadrPXBhdkv3NqN3quge5e3gayyfRdBEm2sx7PDJQbm6E25W4
-        ySOAsmaPEnai18mhdlzDpPvDRKzW
-X-Google-Smtp-Source: APXvYqxu0TylR3ICWuTMlcE6n7+VPYU8W/rDeiaJMwGSQ+h88FLauLohsJ7hy3mKVFwOpVeXqBeM4A==
-X-Received: by 2002:a2e:b0f5:: with SMTP id h21mr1335570ljl.9.1576703199037;
-        Wed, 18 Dec 2019 13:06:39 -0800 (PST)
-Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
-        by smtp.gmail.com with ESMTPSA id r15sm1754648ljk.3.2019.12.18.13.06.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Dec 2019 13:06:38 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        id S1726539AbfLRWAl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Dec 2019 17:00:41 -0500
+Received: from mail.kernel.org ([198.145.29.99]:44214 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726598AbfLRWAk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 18 Dec 2019 17:00:40 -0500
+Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 7C43E2146E;
+        Wed, 18 Dec 2019 22:00:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1576706439;
+        bh=BHrAQFIGbbIvTg9mW+NwpWTBkboWudvsPo35DCHjyKU=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=aUiiz0YBKuuTNqGtZUBFxpAtyAvA7wMfZV6DH+GQ/h96SUDYnp49gpjr195CweqU8
+         jR/OTEUynai/TzIMVUvyBnqfuvp4CYlm2PzeJtATAsKDvbY8YeAkhkMIJxjWsgpe+z
+         YWT6uZAFFiGY72eQYemkOy+F2LVxbpBfyKJMQbGE=
+Date:   Wed, 18 Dec 2019 23:00:37 +0100
+From:   Maxime Ripard <mripard@kernel.org>
+To:     Vasily Khoruzhick <anarsoul@gmail.com>
+Cc:     Yangtao Li <tiny.windzz@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        =?utf-8?Q?Ond=C5=99ej?= Jirman <megous@megous.com>,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v9 02/17] ARM: tegra: Add tegra_pm_park_secondary_cpu()
-Date:   Thu, 19 Dec 2019 00:04:48 +0300
-Message-Id: <20191218210503.6689-3-digetx@gmail.com>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20191218210503.6689-1-digetx@gmail.com>
-References: <20191218210503.6689-1-digetx@gmail.com>
+Subject: Re: [PATCH v7 2/7] dt-bindings: thermal: add YAML schema for
+ sun8i-thermal driver bindings
+Message-ID: <20191218220037.4g6pzdvrhroaj4qu@gilmour.lan>
+References: <20191218042121.1471954-1-anarsoul@gmail.com>
+ <20191218042121.1471954-3-anarsoul@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="nfb3broi25z4qfbb"
+Content-Disposition: inline
+In-Reply-To: <20191218042121.1471954-3-anarsoul@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This function resembles tegra_cpu_die() of the hotplug code, but
-this variant is more suitable to be used for CPU PM because it's made
-specifically to be used by cpu_suspend(). In short this function puts
-secondary CPU offline, it will be used by the new CPUIDLE driver.
 
-Acked-by: Peter De Schrijver <pdeschrijver@nvidia.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- arch/arm/mach-tegra/pm.c | 14 ++++++++++++++
- arch/arm/mach-tegra/pm.h |  5 +++++
- 2 files changed, 19 insertions(+)
+--nfb3broi25z4qfbb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/arm/mach-tegra/pm.c b/arch/arm/mach-tegra/pm.c
-index 3cab81b82866..f5ff3dd1dd81 100644
---- a/arch/arm/mach-tegra/pm.c
-+++ b/arch/arm/mach-tegra/pm.c
-@@ -436,4 +436,18 @@ void __init tegra_init_suspend(void)
- 
- 	suspend_set_ops(&tegra_suspend_ops);
- }
-+
-+int tegra_pm_park_secondary_cpu(unsigned long cpu)
-+{
-+	if (cpu > 0) {
-+		tegra_disable_clean_inv_dcache(TEGRA_FLUSH_CACHE_LOUIS);
-+
-+		if (tegra_get_chip_id() == TEGRA20)
-+			tegra20_hotplug_shutdown();
-+		else
-+			tegra30_hotplug_shutdown();
-+	}
-+
-+	return -EINVAL;
-+}
- #endif
-diff --git a/arch/arm/mach-tegra/pm.h b/arch/arm/mach-tegra/pm.h
-index 569151b3edc0..9a790f00237f 100644
---- a/arch/arm/mach-tegra/pm.h
-+++ b/arch/arm/mach-tegra/pm.h
-@@ -31,8 +31,13 @@ extern void (*tegra_tear_down_cpu)(void);
- 
- #ifdef CONFIG_PM_SLEEP
- void tegra_init_suspend(void);
-+int tegra_pm_park_secondary_cpu(unsigned long cpu);
- #else
- static inline void tegra_init_suspend(void) {}
-+static inline int tegra_pm_park_secondary_cpu(unsigned long cpu)
-+{
-+	return -ENOTSUPP;
-+}
- #endif
- 
- #endif /* _MACH_TEGRA_PM_H_ */
--- 
-2.24.0
+Hi,
 
+On Tue, Dec 17, 2019 at 08:21:16PM -0800, Vasily Khoruzhick wrote:
+> From: Yangtao Li <tiny.windzz@gmail.com>
+>
+> sun8i-thermal driver supports thermal sensor in wide range of Allwinner
+> SoCs. Add YAML schema for its bindings.
+>
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
+> ---
+>  .../thermal/allwinner,sun8i-a83t-ths.yaml     | 146 ++++++++++++++++++
+>  1 file changed, 146 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml b/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml
+> new file mode 100644
+> index 000000000000..8768c2450633
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml
+> @@ -0,0 +1,146 @@
+> +# SPDX-License-Identifier: GPL-2.0
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/thermal/allwinner,sun8i-a83t-ths.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Allwinner SUN8I Thermal Controller Device Tree Bindings
+> +
+> +maintainers:
+> +  - Yangtao Li <tiny.windzz@gmail.com>
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - allwinner,sun8i-a83t-ths
+> +      - allwinner,sun8i-h3-ths
+> +      - allwinner,sun8i-r40-ths
+> +      - allwinner,sun50i-a64-ths
+> +      - allwinner,sun50i-h5-ths
+> +      - allwinner,sun50i-h6-ths
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  resets:
+> +    maxItems: 1
+> +
+> +  nvmem-cells:
+> +    maxItems: 1
+> +    description: Calibration data for thermal sensors
+> +
+> +  nvmem-cell-names:
+> +    const: calibration
+> +
+> +allOf:
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: allwinner,sun50i-h6-ths
+> +
+> +    then:
+> +      properties:
+> +        clocks:
+> +          minItems: 1
+> +          maxItems: 1
+
+When minItems and maxItems are equal, you can only set one, the other
+will be filled automatically.
+
+> +
+> +        clock-names:
+> +          minItems: 1
+> +          maxItems: 1
+> +          items:
+> +            - const: bus
+
+And this can even be just
+
+clock-names:
+  const: bus
+
+> +
+> +    else:
+> +      properties:
+> +        clocks:
+> +          minItems: 1
+> +          maxItems: 2
+> +
+> +        clock-names:
+> +          minItems: 1
+> +          maxItems: 2
+> +          items:
+> +            - const: bus
+> +            - const: mod
+
+I'm not sure why you need the minItems set to 1 here though?
+
+it's always 2 for the !H6 case, right?
+
+if so, then we should even do something like:
+
+properties:
+  ...
+
+  # This is needed because we will need to check both the H6 and !H6
+  # case, and it must validate. So we make sure we match against the
+  # union of both cases.
+  clocks:
+    minItems: 1
+    maxItems: 2
+    items:
+      - description: Bus Clock
+      - description: Module Clock
+
+  # Same story here
+  clock-names:
+    minItems: 1
+    maxItems: 2
+    items:
+      - const: bus
+      - const: mod
+
+allOf:
+  - if:
+    properties:
+      compatible:
+        contains:
+	  const: allwinner,sun50i-h6-ths
+
+    # Here we validate in the H6 case we only have one clock
+    then:
+      properties:
+        clocks:
+	  maxItems: 1
+
+        clock-names:
+	  maxItems: 1
+
+    # and here that in the other case we have two clocks, the names
+    # being validated by the schema above
+    else:
+      properties:
+        clocks:
+	  maxItems: 2
+
+        clock-names:
+	  maxItems: 2
+
+# And now we can set this since all our properties will have been
+# expressed in the upper level schema
+additionalProperties: false
+
+> +
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: allwinner,sun8i-h3-ths
+> +
+> +    then:
+> +      properties:
+> +        "#thermal-sensor-cells":
+> +          const: 0
+> +
+> +    else:
+> +      properties:
+> +        "#thermal-sensor-cells":
+> +          const: 1
+
+Same thing here, you should have an enum accepting both values in the
+upper schema, the condition here only making further checks. Also, in
+the case where #thermal-sensor-cells is one, then you need to document
+what that argument is.
+
+Thanks!
+Maxime
+
+--nfb3broi25z4qfbb
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXfqhhQAKCRDj7w1vZxhR
+xWvSAQCi6mjrJCTS8SWPU7PcgNEc6pA17UBJm2Xk4XKoLO7m6wD9EPOHRneAtdBr
+BtJRS/RwZk8fGlXI46Xa48uRjngLqw4=
+=F0Nc
+-----END PGP SIGNATURE-----
+
+--nfb3broi25z4qfbb--
