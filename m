@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F319C2D0BF
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Dec 2019 20:22:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63843C43603
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Dec 2019 20:22:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 02E1C24682
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Dec 2019 20:22:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3659D21582
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Dec 2019 20:22:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NKW5BRmT"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pRKki1GK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727681AbfLRUWM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Dec 2019 15:22:12 -0500
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:42269 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727548AbfLRUWL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2019 15:22:11 -0500
-Received: by mail-lj1-f193.google.com with SMTP id e28so3579914ljo.9;
-        Wed, 18 Dec 2019 12:22:09 -0800 (PST)
+        id S1727628AbfLRUWH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Dec 2019 15:22:07 -0500
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:40102 "EHLO
+        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727548AbfLRUWG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Dec 2019 15:22:06 -0500
+Received: by mail-lj1-f196.google.com with SMTP id u1so3589406ljk.7;
+        Wed, 18 Dec 2019 12:22:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=0LVP+iyn0/XBlD8Ke7JIDAuwMPawO+EOabRpPUVKvwY=;
-        b=NKW5BRmTUsj8VqgwQfQ6bEVAwVRxd47UgnYDw632pjWprF9XhIR0joM6Dk5bdNoSv5
-         Y6yTjL8uJxZOaIBkr1lklmaF70wuhQ3UQX1xLDH69QHaIKHMEYYMrvQ4ToY2KMwWfqmn
-         MUWblNu4SX/7BQRdedctg7G7q+msTJlDwwzGr1Xe3R43eywBQ69O7qDdqN9hGikjoBCA
-         zbA0O9N39ENAwbWdccgxHOE4XSEgoUNNAMPGKkV65sODBq1lUKjs2LRdrqzV9Zky9AbM
-         TMT87N4ZpshQcxvGDVzXCMTIhzhG1zoLYgBHiHbc57AYtrlr3zB4sO+QVa4ZITI0Skyj
-         YYmg==
+        bh=K5HlnYJPIwYxVleWdO7CO0bzUDmsMGuP+g11IVxSh3M=;
+        b=pRKki1GKBPSMKIMwHJNJbUOoTSffcGV4/u8nAIW+KUeM33SlEpfxBX6VajkI5oDkIR
+         r0SFc9gntwgx7UMhHyTODk2tWI+on/Zrp2j2SNFUlmYAfeWwec2DsA4j0DzY7A0tW9+f
+         qI27MUM5oiSHkpKHQ83cMy2xAZdgBWxKKCk7WParmOy9z/INZEUsEVcun9A/tIFEvb6k
+         Nz5H8QSlMmzubj4RmCIJiQBvCsnkwqq65DLEdDTrLM3KrSCfU2QoxCVZu00z4c2cwK4j
+         eXR5UOB9drDVFHkEAXCe6i0zQjbIqMLE4lT1rYMavyPLKJcCsWWZBjMrKg54ztbN6dY1
+         q8Vw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=0LVP+iyn0/XBlD8Ke7JIDAuwMPawO+EOabRpPUVKvwY=;
-        b=rajprKFBcJTBb0n9kgqg9wFXSLQ6ESCBVs7W7fFaoaDl8DYURmkt6OolIJatVLRLhC
-         Gnxgak6I7428777nfaCwgf7KQYbIQlk+ULkrhUm8wi9gI4ommjccn4R1ibgJbfR2HpBp
-         gTf3ijatdd9dNZDOInyN1Qpqmt2FiUXjQiRuPJAh29uGuj9+cz9ow7Mz/6KNRojs+Od2
-         TuDYuGtD+bwnfkJBBX6SgqBLZ4PpHhRG3+r1yAavbxscTwwyq4X4YXeQ4KuXxwcp/Gy9
-         3vFGQ+qI51nOekayc80F84VxR/8cyXT0F1r8XTxxj9qgBYdiU4OS4lpkRyiguH0+7ATy
-         UyUA==
-X-Gm-Message-State: APjAAAVxCTC2br4+ZyFIyodGRqSv7giy5b2x95arDdgtdI39NioRZdOr
-        TFeYyr6cOH1g9dxbOpS3als=
-X-Google-Smtp-Source: APXvYqzHMyiuwsN2Eme46cqdi8wdMs9EmVAvUMDfxsClyqq1IcMCGxcMqjwczR05MoSmVvp96BI0aw==
-X-Received: by 2002:a2e:9cd8:: with SMTP id g24mr3166213ljj.243.1576700528802;
-        Wed, 18 Dec 2019 12:22:08 -0800 (PST)
+        bh=K5HlnYJPIwYxVleWdO7CO0bzUDmsMGuP+g11IVxSh3M=;
+        b=O+xAWCwHNVThr0HtWPvaZUplT02rFYEwfvZOf3YfoVVM/sxfVCGsHvRL+fiSSCXuSr
+         KBQllEkKsbbZli/h34LhllHBi71bb70JP878nuXdL9QjOBj62k5SZpDjFAqCRX9kTqN2
+         IGVp12moDB+uxW1ZWqRJEsuhzQ01nUrGdayFfnf6FTd2SqL+s9QuhmiHEzL8NV8t7rd4
+         t/DneaZJHwND+WWSQcNTaLsXs/JECfJkWPiIl/uUWl0Y5rmBfAFX6a+z9wMKDbfr675i
+         4eb+Ptir1CA8rNVVxLTdmFZ9sHIpB7yf2HJatUJ8EKph4FCV8OprSsMU2PZyTbn2txf8
+         N7BA==
+X-Gm-Message-State: APjAAAV7bAbiwZdxb6Z8STzZkm+N4e2z/0n/3eYjXZCogVw9X5BOX9kW
+        DBASaztC1mABmUInfqKAwhY=
+X-Google-Smtp-Source: APXvYqwQRyeToKP+ODMia48YTGwgR/XlDVi8uJnRU1eq9o72QRChD98WM/TUp0eK6iJbQd3HU/0OZg==
+X-Received: by 2002:a2e:9e03:: with SMTP id e3mr3258522ljk.186.1576700524025;
+        Wed, 18 Dec 2019 12:22:04 -0800 (PST)
 Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
-        by smtp.gmail.com with ESMTPSA id m15sm1766993ljg.4.2019.12.18.12.22.07
+        by smtp.gmail.com with ESMTPSA id m15sm1766993ljg.4.2019.12.18.12.22.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Dec 2019 12:22:08 -0800 (PST)
+        Wed, 18 Dec 2019 12:22:03 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -69,9 +69,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Marcel Ziswiler <marcel.ziswiler@toradex.com>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v6 10/12] ARM: tegra: Create tegra20-cpufreq platform device on Tegra30
-Date:   Wed, 18 Dec 2019 23:21:40 +0300
-Message-Id: <20191218202142.11717-11-digetx@gmail.com>
+Subject: [PATCH v6 06/12] ARM: tegra: Switch CPU to PLLP on resume from LP1 on Tegra30/114/124
+Date:   Wed, 18 Dec 2019 23:21:36 +0300
+Message-Id: <20191218202142.11717-7-digetx@gmail.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20191218202142.11717-1-digetx@gmail.com>
 References: <20191218202142.11717-1-digetx@gmail.com>
@@ -82,29 +82,35 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The tegra20-cpufreq now instantiates cpufreq-dt and Tegra30 is fully
-supported by that driver.
+The early-resume code shall not switch CPU to PLLX because PLLX
+configuration could be unstable or PLLX should be simply disabled if
+CPU enters into suspend running off some other PLL (the case if CPUFREQ
+driver is active). The actual burst policy is restored by the clock
+drivers.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/mach-tegra/tegra.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm/mach-tegra/sleep-tegra30.S | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
-index e512e606eabd..1e3b85923ca3 100644
---- a/arch/arm/mach-tegra/tegra.c
-+++ b/arch/arm/mach-tegra/tegra.c
-@@ -95,6 +95,10 @@ static void __init tegra_dt_init_late(void)
- 	if (IS_ENABLED(CONFIG_ARCH_TEGRA_2x_SOC) &&
- 	    of_machine_is_compatible("nvidia,tegra20"))
- 		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
-+
-+	if (IS_ENABLED(CONFIG_ARCH_TEGRA_3x_SOC) &&
-+	    of_machine_is_compatible("nvidia,tegra30"))
-+		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
- }
+diff --git a/arch/arm/mach-tegra/sleep-tegra30.S b/arch/arm/mach-tegra/sleep-tegra30.S
+index 3341a12bbb9c..9a20c93abe48 100644
+--- a/arch/arm/mach-tegra/sleep-tegra30.S
++++ b/arch/arm/mach-tegra/sleep-tegra30.S
+@@ -383,11 +383,8 @@ _pll_m_c_x_done:
+ 	ldr	r4, [r5, #0x1C]		@ restore SCLK_BURST
+ 	str	r4, [r0, #CLK_RESET_SCLK_BURST]
  
- static const char * const tegra_dt_board_compat[] = {
+-	cmp	r10, #TEGRA30
+-	movweq	r4, #:lower16:((1 << 28) | (0x8))	@ burst policy is PLLX
+-	movteq	r4, #:upper16:((1 << 28) | (0x8))
+-	movwne	r4, #:lower16:((1 << 28) | (0xe))
+-	movtne	r4, #:upper16:((1 << 28) | (0xe))
++	movw	r4, #:lower16:((1 << 28) | (0x4))	@ burst policy is PLLP
++	movt	r4, #:upper16:((1 << 28) | (0x4))
+ 	str	r4, [r0, #CLK_RESET_CCLK_BURST]
+ 
+ 	/* Restore pad power state to normal */
 -- 
 2.24.0
 
