@@ -2,42 +2,42 @@ Return-Path: <SRS0=UOP4=2J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9D67C43603
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 17:32:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B0F6C2D0D1
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 17:33:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 74F5B24676
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 17:32:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CE18224679
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 17:33:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576776763;
-	bh=k50cd5B88xhBvXY5ZkbJXqjGZEzoE+Hb2bzMFriQpZ8=;
+	s=default; t=1576776804;
+	bh=Y3xByJTEgCOaNoNsGe4pKVIS9XI0ZCLfbAdIESGvlxM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=soOzeDnyEw+gTgNs6AYmbWfTbatmsOZ2qCnLFEv7vRJGGvZROp/KWansyfhZv7GQl
-	 C0KHZxiFNzbMk4XSgdwqSzkp3ov7I2QIxgzSMrRuGIlElWyoK/sA8kH6PC/fwhaPyq
-	 cSP3/6E9kACzYUfre5VjZIyTQ7mBn6RksgI7dwU8=
+	b=IbdAhiShbUQMsvb099AIk0Ol2RI8x2Fr8ChEaP/E1c7RmTWr+9/FEfJ/rscv/ffFn
+	 ph2jqR4RHjPiiGwUQRG6adqyIxMgPCwwACazWH1uMsGqp0qRAjcys8GWPr0stPP2OY
+	 pKhk+KpddQTx0DNVuX6wq/uKaoDQJPCY/2VNNie0=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726840AbfLSRcn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Dec 2019 12:32:43 -0500
-Received: from mail.kernel.org ([198.145.29.99]:52130 "EHLO mail.kernel.org"
+        id S1726836AbfLSRdY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Dec 2019 12:33:24 -0500
+Received: from mail.kernel.org ([198.145.29.99]:52626 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726818AbfLSRcm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 19 Dec 2019 12:32:42 -0500
+        id S1726818AbfLSRdY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Dec 2019 12:33:24 -0500
 Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 62FF221655;
-        Thu, 19 Dec 2019 17:32:41 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id F14EB21655;
+        Thu, 19 Dec 2019 17:33:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576776761;
-        bh=k50cd5B88xhBvXY5ZkbJXqjGZEzoE+Hb2bzMFriQpZ8=;
+        s=default; t=1576776803;
+        bh=Y3xByJTEgCOaNoNsGe4pKVIS9XI0ZCLfbAdIESGvlxM=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=l+pkf4mWOw9JhNDQ7HH184KSQ2rLXHpRDxLiDMXneBjcfNPsiqN9pwBDqncxUqp3y
-         02V9/Hy5Xt7Ba71s2LypscPsGoMfVn7kl28ZVRnwLrByw9Peto+nA532n1Y8Fgg0hZ
-         gS09GGMTJWITcGexVVTd9FY8vVCbldDv++OTw5tQ=
-Date:   Thu, 19 Dec 2019 18:32:38 +0100
+        b=A7XHdThvled/qPuJrHfh8WDRBCGmbBlX8Qm16xJmq4b3/auOSP0X0WdRi7kcVRQft
+         AxxquNXIx9tq78P+zTe7QRWMJYF+DCqi0KUdHrYBZVNzlVKfUcGChxMp8Lyc+CYNEM
+         ObsJprmDL5/iDJDSnRhoA7meyAwq3o+5Ydrsv7vs=
+Date:   Thu, 19 Dec 2019 18:33:21 +0100
 From:   Maxime Ripard <mripard@kernel.org>
 To:     Vasily Khoruzhick <anarsoul@gmail.com>
 Cc:     Yangtao Li <tiny.windzz@gmail.com>,
@@ -54,49 +54,46 @@ Cc:     Yangtao Li <tiny.windzz@gmail.com>,
         linux-arm-kernel@lists.infradead.org,
         =?utf-8?Q?Ond=C5=99ej?= Jirman <megous@megous.com>,
         linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v8 2/7] dt-bindings: thermal: add YAML schema for
- sun8i-thermal driver bindings
-Message-ID: <20191219173238.zfcpfac46bs2gejk@gilmour.lan>
+Subject: Re: [PATCH v8 0/7] add thermal sensor driver for A64, A83T, H3, H5,
+ H6, R40
+Message-ID: <20191219173321.bni4tbrhfkkphv7k@gilmour.lan>
 References: <20191219172823.1652600-1-anarsoul@gmail.com>
- <20191219172823.1652600-3-anarsoul@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="qvpkkhg37mvl6gwe"
+        protocol="application/pgp-signature"; boundary="w5q3jazkvks4ahe3"
 Content-Disposition: inline
-In-Reply-To: <20191219172823.1652600-3-anarsoul@gmail.com>
+In-Reply-To: <20191219172823.1652600-1-anarsoul@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---qvpkkhg37mvl6gwe
+--w5q3jazkvks4ahe3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Thu, Dec 19, 2019 at 09:28:18AM -0800, Vasily Khoruzhick wrote:
-> From: Yangtao Li <tiny.windzz@gmail.com>
->
-> sun8i-thermal driver supports thermal sensor in wide range of Allwinner
-> SoCs. Add YAML schema for its bindings.
->
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> Signed-off-by: Vasily Khoruzhick <anarsoul@gmail.com>
+Hi,
 
-Acked-by: Maxime Ripard <mripard@kernel.org>
+On Thu, Dec 19, 2019 at 09:28:16AM -0800, Vasily Khoruzhick wrote:
+> This patchset adds driver for thermal sensor in A64, A83T, H3, H5,
+> H6 and R40 SoCs.
 
-Thanks!
+Thanks again for working on this.
+
+I'll merge the DT patches when the driver will have been merged.
+
 Maxime
 
---qvpkkhg37mvl6gwe
+--w5q3jazkvks4ahe3
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXfu0NgAKCRDj7w1vZxhR
-xTsHAP4pjKvGwYzFATi3ZRZ9Icy+5en/9wH9EXDxgCLFt/7Z2gD/WbLkhcAZQUIg
-h4Q76OJzfvYCKvCdvc/BVGFPYmKwQwU=
-=TiK5
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXfu0YQAKCRDj7w1vZxhR
+xb1VAP4xjI8YI2zdKwYfiKElxYGUogPWWoFs7p5Em1VmwApCcwEAv4GZSBrUwgDf
+iL9xxj+jWVL/hIbcgq1jXocUjXhSiQY=
+=1zC1
 -----END PGP SIGNATURE-----
 
---qvpkkhg37mvl6gwe--
+--w5q3jazkvks4ahe3--
