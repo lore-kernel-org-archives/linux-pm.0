@@ -2,125 +2,181 @@ Return-Path: <SRS0=UOP4=2J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 727C9C43603
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:18:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71E9AC2D0C1
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:18:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 47A5C2146E
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:18:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576772302;
-	bh=1G7FsQcIs7vqbkyh2F1vAEGEbbdVT8Ma5gTl6fOBv5w=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=iZkJS1kEM9zBoBPMxqvYVFEQeVsh0rsn6Bg6GUhsgQ++NQkwykgC/gg02mJCEoVQ+
-	 YpgvY7pX5yLYPrmKSXowVTetguLjl8b+wauecEW0PvuTviF7hi3Q8Y+sTyBoTv05VT
-	 QDrptaJhRr41IrDI+/iTG433unYEARaYj7HAoQqU=
+	by mail.kernel.org (Postfix) with ESMTP id 38D25227BF
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:18:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="EnMlWN7X"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726801AbfLSQSV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Dec 2019 11:18:21 -0500
-Received: from mail.kernel.org ([198.145.29.99]:57964 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726776AbfLSQSV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 19 Dec 2019 11:18:21 -0500
-Received: from mail-lj1-f182.google.com (mail-lj1-f182.google.com [209.85.208.182])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 33F1E24680;
-        Thu, 19 Dec 2019 16:18:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576772300;
-        bh=1G7FsQcIs7vqbkyh2F1vAEGEbbdVT8Ma5gTl6fOBv5w=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=e7keS3P1LwF4ZT2yhL3hUCAcyVJrTsIR9UzKe57oNdsSAbK91huuUmxw4uj5fehea
-         NPASNTU1i78K0CrfxLQzQTqC8PFXyuK78gWLUe1LkPDzOG6vkj8LaNDRMqbIllRKcW
-         T4iQc286CEEUti1oEOpDrf0yM1+lENmw2XdKNYw4=
-Received: by mail-lj1-f182.google.com with SMTP id k8so6866223ljh.5;
-        Thu, 19 Dec 2019 08:18:20 -0800 (PST)
-X-Gm-Message-State: APjAAAU0x40zpci5J3G0cWwdsMzCLVSzYN6y7pKloPZCDf5nhEACZCB7
-        baMj4YqOZTyOiPxL9dzDIy/OiQkKK0nmjVYW/gs=
-X-Google-Smtp-Source: APXvYqzjT3A3BOaMem5ewvhYkhpvnQHmXadd3vZ1Bf2o2UnYr9PFiKmPucQrvExdBSOloWvbcQbzeuZa1+Z2P1vedZA=
-X-Received: by 2002:a2e:2d01:: with SMTP id t1mr1311467ljt.36.1576772298339;
- Thu, 19 Dec 2019 08:18:18 -0800 (PST)
-MIME-Version: 1.0
-References: <CGME20190724014230epcas5p371a5fdee330f91a646d619fbcc024acf@epcas5p3.samsung.com>
- <20190724014222.110767-1-saravanak@google.com> <cb0d4aad-81e4-0b8d-40f2-7f58ef1e38d9@samsung.com>
- <CAGETcx-tUtnX0T47YGdf7-cgp6e8K9Rgb34Mfe5Za9L4YMGS1g@mail.gmail.com> <754ec843-eb8f-5149-bf7f-ec4abf938821@samsung.com>
-In-Reply-To: <754ec843-eb8f-5149-bf7f-ec4abf938821@samsung.com>
-From:   Chanwoo Choi <chanwoo@kernel.org>
-Date:   Fri, 20 Dec 2019 01:17:41 +0900
-X-Gmail-Original-Message-ID: <CAGTfZH37ALwUHd8SpRRrBzZ6x1-++YtzS60_yRQvN-TN6rOzaA@mail.gmail.com>
-Message-ID: <CAGTfZH37ALwUHd8SpRRrBzZ6x1-++YtzS60_yRQvN-TN6rOzaA@mail.gmail.com>
-Subject: Re: [PATCH v4 0/5] Add required-opps support to devfreq passive gov
-To:     Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     Saravana Kannan <saravanak@google.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Sibi Sankar <sibis@codeaurora.org>,
-        Android Kernel Team <kernel-team@android.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        id S1726964AbfLSQSx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Dec 2019 11:18:53 -0500
+Received: from userp2120.oracle.com ([156.151.31.85]:51372 "EHLO
+        userp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726880AbfLSQSw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2019 11:18:52 -0500
+Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
+        by userp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xBJGEJ8D119693;
+        Thu, 19 Dec 2019 16:18:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
+ subject : date : message-id; s=corp-2019-08-05;
+ bh=U9cMW9SZLbBtmgqabstWfkfHdgUKUAYyt+h4V5ncAvQ=;
+ b=EnMlWN7XJ8d4XAnJgNhonGydb1id4LSO8iIVmr74nEOBXKdL4cPB7rAvwyEpgx3ynG+W
+ T0qNfvCqIMeRUCDa4ATdAHhKaAsEB7wFs2VIHNjW6C0t+pd8sEblwwt00/yxaPNig5PK
+ VW6sXzwwZXKiXSDZlpQxZXemvQhx/qxjgYGQHKooLjpDIipWB9+lSae+o3ou/Lz891RQ
+ xOw/k4x94SMZKiEL4GDZQeY37SeHay+YKKvJ9Ors/YcIFjOgfLAh+v5HIQYqES2fjGv7
+ SrnarZn3ldjSF8T+8wB3AMFg2wCm8yJ5oybCL+JWjxZ9ih6MRd0trgStWC68l3Y7ymji rQ== 
+Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
+        by userp2120.oracle.com with ESMTP id 2x0ag10v6j-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 19 Dec 2019 16:18:20 +0000
+Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
+        by aserp3030.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xBJGESba136853;
+        Thu, 19 Dec 2019 16:18:20 GMT
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+        by aserp3030.oracle.com with ESMTP id 2wyut5jj2w-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 19 Dec 2019 16:18:19 +0000
+Received: from abhmp0006.oracle.com (abhmp0006.oracle.com [141.146.116.12])
+        by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id xBJGI8O9019545;
+        Thu, 19 Dec 2019 16:18:09 GMT
+Received: from dhcp-10-175-212-35.vpn.oracle.com (/10.175.212.35)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Thu, 19 Dec 2019 08:18:08 -0800
+From:   Alan Maguire <alan.maguire@oracle.com>
+To:     brendanhiggins@google.com, linux-kselftest@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, kunit-dev@googlegroups.com,
+        keescook@chromium.org, yzaikin@google.com,
+        akpm@linux-foundation.org, yamada.masahiro@socionext.com,
+        catalin.marinas@arm.com, joe.lawrence@redhat.com,
+        penguin-kernel@i-love.sakura.ne.jp, urezki@gmail.com,
+        andriy.shevchenko@linux.intel.com, corbet@lwn.net,
+        davidgow@google.com, adilger.kernel@dilger.ca, tytso@mit.edu,
+        mcgrof@kernel.org, linux-doc@vger.kernel.org, rjw@rjwysocki.net,
+        pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org,
+        krzk@kernel.org, linux-pm@vger.kernel.org,
+        linux-ext4@vger.kernel.org, Alan Maguire <alan.maguire@oracle.com>
+Subject: [PATCH v7 linux-kselftest-test 0/6] kunit: support building core/tests as modules
+Date:   Thu, 19 Dec 2019 16:17:33 +0000
+Message-Id: <1576772259-31382-1-git-send-email-alan.maguire@oracle.com>
+X-Mailer: git-send-email 1.8.3.1
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9476 signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=3 malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1911140001 definitions=main-1912190135
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9476 signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
+ suspectscore=3 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1911140001
+ definitions=main-1912190135
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Saravana,
+The current kunit execution model is to provide base kunit functionality
+and tests built-in to the kernel.  The aim of this series is to allow
+building kunit itself and tests as modules.  This in turn allows a
+simple form of selective execution; load the module you wish to test.
+In doing so, kunit itself (if also built as a module) will be loaded as
+an implicit dependency.
 
-2019=EB=85=84 11=EC=9B=94 14=EC=9D=BC (=EB=AA=A9) =EC=98=A4=ED=9B=84 5:36, =
-Chanwoo Choi <cw00.choi@samsung.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=84=B1:
->
-> Hi Saravana,
->
-> On 11/14/19 5:23 PM, Saravana Kannan wrote:
-> > On Wed, Nov 13, 2019 at 11:48 PM Chanwoo Choi <cw00.choi@samsung.com> w=
-rote:
-> >>
-> >> Dear Saravana,
-> >>
-> >> Any other progress of this series?
-> >
-> > Hi Chanwoo,
-> >
-> > Thanks for checking. I haven't abandoned this patch series. This patch
-> > series depends on "lazy linking" of required-opps to avoid a cyclic
-> > dependency between devfreq and OPP table population. But Viresh wasn't
-> > happy with my implementation of the lazy liking for reasonable
-> > reasons.
-> >
-> > I had a chat with Viresh during one of the several conferences that I
-> > met him at. To fix the lazy linking in the way he wanted it meant we
-> > had to fix other issues in the OPP framework that arise when OPP
-> > tables are shared in DT but not in memory. So he was kind enough to
-> > sign up to add lazy linking support to OPPs so that I won't have to do
-> > it. So, I'm waiting on that. So once that's added, I should be able to
-> > drop a few patches in this series, do some minor updates and then this
-> > will be good to go.
->
-> Thanks for the detailed explanation. I'll expect the your next version.
+Because this requires a core API modification - if a module delivers
+multiple suites, they must be declared with the kunit_test_suites()
+macro - we're proposing this patch set as a candidate to be applied to the
+test tree before too many kunit consumers appear.  We attempt to deal
+with existing consumers in patch 3.
 
-As I know, the lazy linking issue was fixed by Viresh.
-If possible, I want to know your plan about 'required-opp' with
-passive governor.
-Because I think that the patch[1] is good for devfreq device.
+Changes since v6:
+ - reintroduce kunit_test_suite() definition to handle users in other trees
+   not yet converted to using kunit_test_suites() (kbuild error when
+   applying patches to ext4/dev tree)
+ - modify drivers/base/power/qos-test.c to use kunit_test_suites()
+   to register suite.  We do not convert it to support module build now as
+   the suite uses a few unexported function; see patch 3 for details.
+   
+Changes since v5:
+ - fixed fs/ext4/Makefile to remove unneeded conditional compilation
+   (Iurii, patch 3)
+ - added Reviewed-by, Acked-by to patches 3, 4, 5 and 6
 
-As you mentioned, you have the other idea to implement the 'cpu based
-scaling support'
-to passive governor without cpu notifier. Actually, if there are no
-any other best solution,
-I prefer to use cpu notifier for 'cpu based scaling support to
-passive_governor'.
+Changes since v4:
+ - fixed signoff chain to use Co-developed-by: prior to Knut's signoff
+   (Stephen, all patches)
+ - added Reviewed-by, Tested-by for patches 1, 2, 4 and 6
+ - updated comment describing try-catch-impl.h (Stephen, patch 2)
+ - fixed MODULE_LICENSEs to be GPL v2 (Stephen, patches 3, 5)
+ - added __init to kunit_init() (Stephen, patch 5)
 
-[1] https://patchwork.kernel.org/patch/11046147/
-- [RFC,v2] PM / devfreq: Add cpu based scaling support to passive_governor
+Changes since v3:
+ - removed symbol lookup patch for separate submission later
+ - removed use of sysctl_hung_task_timeout_seconds (patch 4, as discussed
+   with Brendan and Stephen)
+ - disabled build of string-stream-test when CONFIG_KUNIT_TEST=m; this
+   is to avoid having to deal with symbol lookup issues
+ - changed string-stream-impl.h back to string-stream.h (Brendan)
+ - added module build support to new list, ext4 tests
 
---=20
-Best Regards,
-Chanwoo Choi
+Changes since v2:
+ - moved string-stream.h header to lib/kunit/string-stream-impl.h (Brendan)
+   (patch 1)
+ - split out non-exported interfaces in try-catch-impl.h (Brendan)
+   (patch 2)
+ - added kunit_find_symbol() and KUNIT_INIT_SYMBOL to lookup non-exported
+   symbols (patches 3, 4)
+ - removed #ifdef MODULE around module licenses (Randy, Brendan, Andy)
+   (patch 4)
+ - replaced kunit_test_suite() with kunit_test_suites() rather than
+   supporting both (Brendan) (patch 4)
+ - lookup sysctl_hung_task_timeout_secs as kunit may be built as a module
+   and the symbol may not be available (patch 5)
+
+Alan Maguire (6):
+  kunit: move string-stream.h to lib/kunit
+  kunit: hide unexported try-catch interface in try-catch-impl.h
+  kunit: allow kunit tests to be loaded as a module
+  kunit: remove timeout dependence on sysctl_hung_task_timeout_seconds
+  kunit: allow kunit to be loaded as a module
+  kunit: update documentation to describe module-based build
+
+ Documentation/dev-tools/kunit/faq.rst              |  3 +-
+ Documentation/dev-tools/kunit/index.rst            |  3 ++
+ Documentation/dev-tools/kunit/usage.rst            | 16 ++++++++++
+ drivers/base/power/qos-test.c                      |  2 +-
+ fs/ext4/Kconfig                                    |  2 +-
+ fs/ext4/Makefile                                   |  3 +-
+ fs/ext4/inode-test.c                               |  4 ++-
+ include/kunit/assert.h                             |  3 +-
+ include/kunit/test.h                               | 37 ++++++++++++++++------
+ include/kunit/try-catch.h                          | 10 ------
+ kernel/sysctl-test.c                               |  4 ++-
+ lib/Kconfig.debug                                  |  4 +--
+ lib/kunit/Kconfig                                  |  6 ++--
+ lib/kunit/Makefile                                 | 14 +++++---
+ lib/kunit/assert.c                                 | 10 ++++++
+ lib/kunit/{example-test.c => kunit-example-test.c} |  4 ++-
+ lib/kunit/{test-test.c => kunit-test.c}            |  7 ++--
+ lib/kunit/string-stream-test.c                     |  5 +--
+ lib/kunit/string-stream.c                          |  3 +-
+ {include => lib}/kunit/string-stream.h             |  0
+ lib/kunit/test.c                                   | 25 ++++++++++++++-
+ lib/kunit/try-catch-impl.h                         | 27 ++++++++++++++++
+ lib/kunit/try-catch.c                              | 37 +++++-----------------
+ lib/list-test.c                                    |  4 ++-
+ 24 files changed, 160 insertions(+), 73 deletions(-)
+ rename lib/kunit/{example-test.c => kunit-example-test.c} (97%)
+ rename lib/kunit/{test-test.c => kunit-test.c} (98%)
+ rename {include => lib}/kunit/string-stream.h (100%)
+ create mode 100644 lib/kunit/try-catch-impl.h
+
+-- 
+1.8.3.1
+
