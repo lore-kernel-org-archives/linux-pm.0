@@ -2,118 +2,67 @@ Return-Path: <SRS0=UOP4=2J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 425A8C2D0D1
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:22:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A89DC43603
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:40:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 18E3C24650
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:22:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 197A4227BF
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:40:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576772547;
-	bh=8OuFFD1TFHDoCrgZRL1h9iYeu7sAdMLkzDh6ZazxVv0=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=wK5psNwSMOHBS/RZCJtzvxtMBJ2ENAxtfAwA1aH+OJEp1EIVVnX9qzv2cKqwlqy9o
-	 gb0YWDOMBGaT3hYH0Y+UIleUQiQ+imoZzQeFoOtQY03qMMc1hzHqq0ciGB8A70ELNR
-	 LMLc6yuBmYtAXwOPW97ls5fnaeMH1t6Avs5R+/F8=
+	s=default; t=1576773612;
+	bh=kVZO1y7O7/FeMWl1i0VTlzIBrjOvi3NOrNm0YAIByyk=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
+	b=AcqjigS0PIOblZNVRyCJRluOH3B+a4y2xdJoFiZMFX0/RS7Z8IMv9lE1yWrrz4ZlO
+	 olyPfji49E7kAg+3N+3IPgog/sgCL58LR3N+XVB1gUXojuMkpg1UKVLayhx6NheAOg
+	 ZaVailgzx0fo6Odncd9V1VwpRZu1bYPBx1QeL7Xk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726930AbfLSQW0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Dec 2019 11:22:26 -0500
-Received: from mail.kernel.org ([198.145.29.99]:33242 "EHLO mail.kernel.org"
+        id S1726818AbfLSQkL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Dec 2019 11:40:11 -0500
+Received: from mail.kernel.org ([198.145.29.99]:46922 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726760AbfLSQW0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 19 Dec 2019 11:22:26 -0500
-Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 637D524650
-        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2019 16:22:25 +0000 (UTC)
+        id S1726801AbfLSQkL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Dec 2019 11:40:11 -0500
+Subject: Re: [GIT PULL] Power management fix for v5.5-rc2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576772545;
-        bh=8OuFFD1TFHDoCrgZRL1h9iYeu7sAdMLkzDh6ZazxVv0=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=xW+MceaUkzQchW0YpKJ9RQZctcv7phmV5BbEr2UTMV3tWzq6oC23a2pVM69DyMaZH
-         fLB/SN7iS/gyl+SSuEPGQrX1rrwa1SUozRB2vkRf/TjMIgZ43Csm3xwy8mf0IWJBkC
-         5/npyR1EtgqpSVWueQBqBT1B1YPusOFO0eJuK08A=
-Received: by mail-lf1-f44.google.com with SMTP id b15so4780839lfc.4
-        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2019 08:22:25 -0800 (PST)
-X-Gm-Message-State: APjAAAVN2zRUXw8V56kSKczeQ/QS2LC4inB1ahZa5Jjjsg+0m6kjhOdD
-        n4w928KhheOS3VIWr/QCMEYmwC7PIANVvoZhRzk=
-X-Google-Smtp-Source: APXvYqze9h9zYParr2EHk1MaY5ARIQ4YV1nSXLXSOoiPLwUieUFE8IclP58x/cxSU7P/mdd88b/5nuQQmcrPbf86df0=
-X-Received: by 2002:ac2:5444:: with SMTP id d4mr6177339lfn.49.1576772543571;
- Thu, 19 Dec 2019 08:22:23 -0800 (PST)
-MIME-Version: 1.0
-References: <9e89485ca173e1d118748dbe5cfc7068f74079bf.1576769985.git.leonard.crestez@nxp.com>
-In-Reply-To: <9e89485ca173e1d118748dbe5cfc7068f74079bf.1576769985.git.leonard.crestez@nxp.com>
-From:   Chanwoo Choi <chanwoo@kernel.org>
-Date:   Fri, 20 Dec 2019 01:21:47 +0900
-X-Gmail-Original-Message-ID: <CAGTfZH3BNkq4Rz9qgBwXABsPyaiE6V+3ApEfCdS67AZK957jVw@mail.gmail.com>
-Message-ID: <CAGTfZH3BNkq4Rz9qgBwXABsPyaiE6V+3ApEfCdS67AZK957jVw@mail.gmail.com>
-Subject: Re: [PATCH] PM / devfreq: imx8m-ddrc: Remove unused defines
-To:     Leonard Crestez <leonard.crestez@nxp.com>
-Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Adam Ford <aford173@gmail.com>,
-        Martin Kepplinger <martink@posteo.de>,
-        Jacky Bai <ping.bai@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
-        Dong Aisheng <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>, kernel@pengutronix.de,
-        dl-linux-imx <linux-imx@nxp.com>,
-        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        s=default; t=1576773610;
+        bh=kVZO1y7O7/FeMWl1i0VTlzIBrjOvi3NOrNm0YAIByyk=;
+        h=From:In-Reply-To:References:Date:To:Cc:From;
+        b=kprPBqkGFsL/3lQQGPTSf25JKXQ8jud2aVvzaTdAJUDNIN4gvnupJAhCXVxxIs7aB
+         /GW+DIpi5U/j9c+BLztfbZeP1ZSyMcTyWxkOS8EJ0RAoQ0p0qo6SMPPux5AiIBHCz1
+         xMIhz2yYgcSR7LkUK6TFFq1EP5wZvqwSrODwTN4o=
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0hm1D5CJq81Ew9YjGc_ik8nw9Q_-w0a+7iMdarwPmsH7A@mail.gmail.com>
+References: <CAJZ5v0hm1D5CJq81Ew9YjGc_ik8nw9Q_-w0a+7iMdarwPmsH7A@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0hm1D5CJq81Ew9YjGc_ik8nw9Q_-w0a+7iMdarwPmsH7A@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.5-rc3
+X-PR-Tracked-Commit-Id: 505b308b6944a91fa8437a3fd9f2dab29b5c3c88
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 5f096c0ecd53263a94124bdfa516a29f154e44ed
+Message-Id: <157677361077.29970.17745239851738773392.pr-tracker-bot@kernel.org>
+Date:   Thu, 19 Dec 2019 16:40:10 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-2019=EB=85=84 12=EC=9B=94 20=EC=9D=BC (=EA=B8=88) =EC=98=A4=EC=A0=84 12:43,=
- Leonard Crestez <leonard.crestez@nxp.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=
-=84=B1:
->
-> The IMX_SIP_DDR_DVFS_WAIT_CHANGE and IMX_SIP_DDR_FREQ_SET_HIGH defines
-> are not used so they can be removed.
->
-> Fixes: 518e99e2a22e ("PM / devfreq: Add dynamic scaling for imx8m ddr con=
-troller")
->
-> Reported-by: Shawn Guo <shawn.guo@kernel.org>
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> ---
->  drivers/devfreq/imx8m-ddrc.c | 6 ------
->  1 file changed, 6 deletions(-)
->
-> diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
-> index fea169619c59..ecbb1db05ea0 100644
-> --- a/drivers/devfreq/imx8m-ddrc.c
-> +++ b/drivers/devfreq/imx8m-ddrc.c
-> @@ -13,16 +13,10 @@
->  #include <linux/clk-provider.h>
->  #include <linux/arm-smccc.h>
->
->  #define IMX_SIP_DDR_DVFS                       0xc2000004
->
-> -/* Values starting from 0 switch to specific frequency */
-> -#define IMX_SIP_DDR_FREQ_SET_HIGH              0x00
-> -
-> -/* Deprecated after moving IRQ handling to ATF */
-> -#define IMX_SIP_DDR_DVFS_WAIT_CHANGE           0x0F
-> -
->  /* Query available frequencies. */
->  #define IMX_SIP_DDR_DVFS_GET_FREQ_COUNT                0x10
->  #define IMX_SIP_DDR_DVFS_GET_FREQ_INFO         0x11
->
->  /*
-> --
-> 2.17.1
->
+The pull request you sent on Thu, 19 Dec 2019 16:35:29 +0100:
 
-Applied it. Thanks.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.5-rc3
 
---=20
-Best Regards,
-Chanwoo Choi
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/5f096c0ecd53263a94124bdfa516a29f154e44ed
+
+Thank you!
+
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
