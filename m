@@ -2,230 +2,119 @@ Return-Path: <SRS0=UOP4=2J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 789C0C3F68F
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49E66C43603
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:22:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4EADF24676
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:19:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="eGtwbQMZ"
+	by mail.kernel.org (Postfix) with ESMTP id 1801224650
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:22:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1576772522;
+	bh=8cHyARGEDs7lTo3LVRUHzaY/3fzYFhr6LHjqGqDD3sQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=tRNcft9CxmYn6r7D0WR/2P5vOFvLI6szTFejRRI00zn1eFE6oDvlEtyXueslLcfpK
+	 qj1Tjz8PAsL289FpuNDAT0+VUESg9mjn1wCaetN6wO7QfwH8UKftaWPwGyDu1BFlIX
+	 R92FjWtNjwbshkB1nVpApOSYYB2ijHT804OYCz1A=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727072AbfLSQTq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Dec 2019 11:19:46 -0500
-Received: from aserp2120.oracle.com ([141.146.126.78]:37432 "EHLO
-        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726801AbfLSQTq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2019 11:19:46 -0500
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
-        by aserp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xBJGESd8126854;
-        Thu, 19 Dec 2019 16:18:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references; s=corp-2019-08-05;
- bh=K+A93ZAv9I878HBX82hzx7n9260RnjvxaGQwnMGdHIs=;
- b=eGtwbQMZ9K6Vne6Ty2zYFf54fGHhhOGCWl0xXvGPhiZNRFMn9JhnK4qqHaARnbBrsYD+
- ErYVr/4TaTUffBjsLzOP4YAhbIipPY3r/svsFEuOtRpIg6HxBCK8obLCS1lWIdVShB2x
- AyfnRZ8PfECPa067G9CXES/eZtCMXmkZgMDMr2bLuVEGevukTbvF2tNKouAqWwAR/uF7
- zEBM9mNDshsEvGmwC4rJZ4epQCSUxfpRsbJAoKGToGZGEwZZOICv3Cw+fezBElqpL7sa
- 3oPd6m5DnZ3x5JDX8nRriM1aA2CCD52U6iuMSPO+dRkmWbRIB4kwi6Z0GATOn2ONuVD3 eQ== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by aserp2120.oracle.com with ESMTP id 2x01knkupg-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 19 Dec 2019 16:18:21 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.27/8.16.0.27) with SMTP id xBJGEIHE114098;
-        Thu, 19 Dec 2019 16:18:21 GMT
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
-        by aserp3020.oracle.com with ESMTP id 2x04mq61u2-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 19 Dec 2019 16:18:21 +0000
-Received: from abhmp0006.oracle.com (abhmp0006.oracle.com [141.146.116.12])
-        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id xBJGIJSZ011021;
-        Thu, 19 Dec 2019 16:18:19 GMT
-Received: from dhcp-10-175-212-35.vpn.oracle.com (/10.175.212.35)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Thu, 19 Dec 2019 08:18:19 -0800
-From:   Alan Maguire <alan.maguire@oracle.com>
-To:     brendanhiggins@google.com, linux-kselftest@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org, kunit-dev@googlegroups.com,
-        keescook@chromium.org, yzaikin@google.com,
-        akpm@linux-foundation.org, yamada.masahiro@socionext.com,
-        catalin.marinas@arm.com, joe.lawrence@redhat.com,
-        penguin-kernel@i-love.sakura.ne.jp, urezki@gmail.com,
-        andriy.shevchenko@linux.intel.com, corbet@lwn.net,
-        davidgow@google.com, adilger.kernel@dilger.ca, tytso@mit.edu,
-        mcgrof@kernel.org, linux-doc@vger.kernel.org, rjw@rjwysocki.net,
-        pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org,
-        krzk@kernel.org, linux-pm@vger.kernel.org,
-        linux-ext4@vger.kernel.org, Alan Maguire <alan.maguire@oracle.com>,
-        Knut Omang <knut.omang@oracle.com>
-Subject: [PATCH v7 linux-kselftest-test 2/6] kunit: hide unexported try-catch interface in try-catch-impl.h
-Date:   Thu, 19 Dec 2019 16:17:35 +0000
-Message-Id: <1576772259-31382-3-git-send-email-alan.maguire@oracle.com>
-X-Mailer: git-send-email 1.8.3.1
-In-Reply-To: <1576772259-31382-1-git-send-email-alan.maguire@oracle.com>
-References: <1576772259-31382-1-git-send-email-alan.maguire@oracle.com>
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9476 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=3 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.0.1-1911140001 definitions=main-1912190135
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9476 signatures=668685
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 priorityscore=1501 malwarescore=0
- suspectscore=3 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1911140001
- definitions=main-1912190135
+        id S1726925AbfLSQWB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Dec 2019 11:22:01 -0500
+Received: from mail.kernel.org ([198.145.29.99]:60888 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726760AbfLSQWB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Dec 2019 11:22:01 -0500
+Received: from mail-lj1-f181.google.com (mail-lj1-f181.google.com [209.85.208.181])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 8EFD424650
+        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2019 16:22:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1576772520;
+        bh=8cHyARGEDs7lTo3LVRUHzaY/3fzYFhr6LHjqGqDD3sQ=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=dNtqxXSb9RXsgjsat5GnJUPwKcZtcZp11VhmiNaiNQsBD9zVMLFpnARICIGeHXLRf
+         Ig2mOcrqGHLUKgN4z/gll+WKDOM4FOC+lcazelwP4i5lgO+XQivVuKuuPiFYicaI9i
+         Jx4r+RMV71eKLzNjdE67xPINiCnkv+A0ko0ZkqZw=
+Received: by mail-lj1-f181.google.com with SMTP id p8so6917610ljg.0
+        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2019 08:22:00 -0800 (PST)
+X-Gm-Message-State: APjAAAUuJUf3VZg2vuy9TvQAomS5Kv3K9y5q/OXLHDjbn1ChXN9EFvTa
+        ytKX+TcOorZU7sN5QS/eOFR9WFzLx5ovdOf++UA=
+X-Google-Smtp-Source: APXvYqxl+K5zBixu/7n+VPaR/qjqPttipninehsXtuq3tlmTV5OThfj30o7TWHIisjKoIrLzeBZl5H8DFoS3neFEJ40=
+X-Received: by 2002:a2e:9b05:: with SMTP id u5mr6673387lji.59.1576772518791;
+ Thu, 19 Dec 2019 08:21:58 -0800 (PST)
+MIME-Version: 1.0
+References: <8485366fbf06600d528ac31ef4a873f6717f2fd7.1576770177.git.leonard.crestez@nxp.com>
+In-Reply-To: <8485366fbf06600d528ac31ef4a873f6717f2fd7.1576770177.git.leonard.crestez@nxp.com>
+From:   Chanwoo Choi <chanwoo@kernel.org>
+Date:   Fri, 20 Dec 2019 01:21:22 +0900
+X-Gmail-Original-Message-ID: <CAGTfZH30gYt-o3fJtOKKuUh5Qh0V4xybB3ahH5YVpeD5d=acRg@mail.gmail.com>
+Message-ID: <CAGTfZH30gYt-o3fJtOKKuUh5Qh0V4xybB3ahH5YVpeD5d=acRg@mail.gmail.com>
+Subject: Re: [PATCH] PM / devfreq: imx8m-ddrc: Fix argument swap in error print
+To:     Leonard Crestez <leonard.crestez@nxp.com>
+Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Adam Ford <aford173@gmail.com>,
+        Martin Kepplinger <martink@posteo.de>,
+        Jacky Bai <ping.bai@nxp.com>, Shawn Guo <shawnguo@kernel.org>,
+        Dong Aisheng <aisheng.dong@nxp.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>, kernel@pengutronix.de,
+        dl-linux-imx <linux-imx@nxp.com>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Define function as static inline in try-catch-impl.h to allow it to
-be used in kunit itself and tests.  Also remove unused
-kunit_generic_try_catch
+2019=EB=85=84 12=EC=9B=94 20=EC=9D=BC (=EA=B8=88) =EC=98=A4=EC=A0=84 12:44,=
+ Leonard Crestez <leonard.crestez@nxp.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=
+=84=B1:
+>
+> When frequency adjustment fails the old/new frequencies are swapped on
+> the dev_err call.
+>
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> ---
+>  drivers/devfreq/imx8m-ddrc.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/devfreq/imx8m-ddrc.c b/drivers/devfreq/imx8m-ddrc.c
+> index ecbb1db05ea0..53df7923d893 100644
+> --- a/drivers/devfreq/imx8m-ddrc.c
+> +++ b/drivers/devfreq/imx8m-ddrc.c
+> @@ -258,14 +258,14 @@ static int imx8m_ddrc_target(struct device *dev, un=
+signed long *freq, u32 flags)
+>         ret =3D imx8m_ddrc_set_freq(dev, freq_info);
+>
+>         new_freq =3D clk_get_rate(priv->dram_core);
+>         if (ret)
+>                 dev_err(dev, "ddrc failed freq switch to %lu from %lu: er=
+ror %d. now at %lu\n",
+> -                       old_freq, *freq, ret, new_freq);
+> +                       *freq, old_freq, ret, new_freq);
+>         else if (*freq !=3D new_freq)
+>                 dev_err(dev, "ddrc failed freq update to %lu from %lu, no=
+w at %lu\n",
+> -                       old_freq, *freq, new_freq);
+> +                       *freq, old_freq, new_freq);
+>         else
+>                 dev_dbg(dev, "ddrc freq set to %lu (was %lu)\n",
+>                         *freq, old_freq);
+>
+>         return ret;
+> --
+> 2.17.1
+>
 
-Co-developed-by: Knut Omang <knut.omang@oracle.com>
-Signed-off-by: Knut Omang <knut.omang@oracle.com>
-Signed-off-by: Alan Maguire <alan.maguire@oracle.com>
-Reviewed-by: Brendan Higgins <brendanhiggins@google.com>
-Tested-by: Brendan Higgins <brendanhiggins@google.com>
----
- include/kunit/try-catch.h  | 10 ----------
- lib/kunit/test-test.c      |  2 ++
- lib/kunit/test.c           |  2 +-
- lib/kunit/try-catch-impl.h | 27 +++++++++++++++++++++++++++
- lib/kunit/try-catch.c      | 13 ++-----------
- 5 files changed, 32 insertions(+), 22 deletions(-)
- create mode 100644 lib/kunit/try-catch-impl.h
+If you agree, I want to squash this patch to original patch on
+devfreq-next patch
+without separate patch applied.
 
-diff --git a/include/kunit/try-catch.h b/include/kunit/try-catch.h
-index 404f336..c507dd4 100644
---- a/include/kunit/try-catch.h
-+++ b/include/kunit/try-catch.h
-@@ -53,11 +53,6 @@ struct kunit_try_catch {
- 	void *context;
- };
- 
--void kunit_try_catch_init(struct kunit_try_catch *try_catch,
--			  struct kunit *test,
--			  kunit_try_catch_func_t try,
--			  kunit_try_catch_func_t catch);
--
- void kunit_try_catch_run(struct kunit_try_catch *try_catch, void *context);
- 
- void __noreturn kunit_try_catch_throw(struct kunit_try_catch *try_catch);
-@@ -67,9 +62,4 @@ static inline int kunit_try_catch_get_result(struct kunit_try_catch *try_catch)
- 	return try_catch->try_result;
- }
- 
--/*
-- * Exposed for testing only.
-- */
--void kunit_generic_try_catch_init(struct kunit_try_catch *try_catch);
--
- #endif /* _KUNIT_TRY_CATCH_H */
-diff --git a/lib/kunit/test-test.c b/lib/kunit/test-test.c
-index 5ebe059..5a6cc04 100644
---- a/lib/kunit/test-test.c
-+++ b/lib/kunit/test-test.c
-@@ -7,6 +7,8 @@
-  */
- #include <kunit/test.h>
- 
-+#include "try-catch-impl.h"
-+
- struct kunit_try_catch_test_context {
- 	struct kunit_try_catch *try_catch;
- 	bool function_called;
-diff --git a/lib/kunit/test.c b/lib/kunit/test.c
-index 36ebf47..58a6227 100644
---- a/lib/kunit/test.c
-+++ b/lib/kunit/test.c
-@@ -7,11 +7,11 @@
-  */
- 
- #include <kunit/test.h>
--#include <kunit/try-catch.h>
- #include <linux/kernel.h>
- #include <linux/sched/debug.h>
- 
- #include "string-stream.h"
-+#include "try-catch-impl.h"
- 
- static void kunit_set_failure(struct kunit *test)
- {
-diff --git a/lib/kunit/try-catch-impl.h b/lib/kunit/try-catch-impl.h
-new file mode 100644
-index 0000000..203ba6a
---- /dev/null
-+++ b/lib/kunit/try-catch-impl.h
-@@ -0,0 +1,27 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Internal kunit try catch implementation to be shared with tests.
-+ *
-+ * Copyright (C) 2019, Google LLC.
-+ * Author: Brendan Higgins <brendanhiggins@google.com>
-+ */
-+
-+#ifndef _KUNIT_TRY_CATCH_IMPL_H
-+#define _KUNIT_TRY_CATCH_IMPL_H
-+
-+#include <kunit/try-catch.h>
-+#include <linux/types.h>
-+
-+struct kunit;
-+
-+static inline void kunit_try_catch_init(struct kunit_try_catch *try_catch,
-+					struct kunit *test,
-+					kunit_try_catch_func_t try,
-+					kunit_try_catch_func_t catch)
-+{
-+	try_catch->test = test;
-+	try_catch->try = try;
-+	try_catch->catch = catch;
-+}
-+
-+#endif /* _KUNIT_TRY_CATCH_IMPL_H */
-diff --git a/lib/kunit/try-catch.c b/lib/kunit/try-catch.c
-index 55686839..4a66d16 100644
---- a/lib/kunit/try-catch.c
-+++ b/lib/kunit/try-catch.c
-@@ -8,12 +8,13 @@
-  */
- 
- #include <kunit/test.h>
--#include <kunit/try-catch.h>
- #include <linux/completion.h>
- #include <linux/kernel.h>
- #include <linux/kthread.h>
- #include <linux/sched/sysctl.h>
- 
-+#include "try-catch-impl.h"
-+
- void __noreturn kunit_try_catch_throw(struct kunit_try_catch *try_catch)
- {
- 	try_catch->try_result = -EFAULT;
-@@ -106,13 +107,3 @@ void kunit_try_catch_run(struct kunit_try_catch *try_catch, void *context)
- 
- 	try_catch->catch(try_catch->context);
- }
--
--void kunit_try_catch_init(struct kunit_try_catch *try_catch,
--			  struct kunit *test,
--			  kunit_try_catch_func_t try,
--			  kunit_try_catch_func_t catch)
--{
--	try_catch->test = test;
--	try_catch->try = try;
--	try_catch->catch = catch;
--}
--- 
-1.8.3.1
-
+--=20
+Best Regards,
+Chanwoo Choi
