@@ -2,99 +2,114 @@ Return-Path: <SRS0=UOP4=2J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80D05C43603
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 20:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D423CC2D0C1
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 20:22:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5634B24682
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 20:21:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576786896;
-	bh=0j11NTQ86XlrdjZV34nyqjEyOI6l9Je8mZJwP+guy+E=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=d/Dkor2UlTnW/CybBc/vGOl+ggS1ztxY4iafSEMTi1v8T0v3QbqsmB0YTRdYxTQqT
-	 88e3fRqZgmsoQFg+edFZEeCB6kpQc41Iw9Ekj25z6+pt8/WJbzjRcp85LH2uTvshsm
-	 62TP4MxIW0agToMpl66blSUlejeP7A9CVQIX8N2w=
+	by mail.kernel.org (Postfix) with ESMTP id AC90324687
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 20:22:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726984AbfLSUVb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Dec 2019 15:21:31 -0500
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:42182 "EHLO
-        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726880AbfLSUVb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2019 15:21:31 -0500
-Received: by mail-ed1-f67.google.com with SMTP id e10so6139850edv.9;
-        Thu, 19 Dec 2019 12:21:30 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=GR1PmJOvhGpPpzVfO8kgGmz6p0Ok+BYanL+ypVYCuIo=;
-        b=VHE0h/z8QUohGr0nxIUjLPnxbiZBiczVgQ7CLypXARylblDBDbT56ycS7qfgca7I2N
-         auOka92SQcKGx0XGKWzvtegmnm0vqflHXidkL+V8oPep3qo5Grnyqv/1g/icuFwiiO6c
-         RJH+4xtU2s5sLUKLCUrdLBsfGAKsSW59VXA/2OkFTaOor8o+X90GL3Ix+FzNH6jaDE8H
-         miubaUMCV1uiYOvebxGn27psdfNRpBPcczaxDyjmK0oKKzRZWgumqyfPe3p/isfF/o1I
-         KGQFQKZT5vameJ9Yspbsgl2xIquC7V6yp4w9/rFfxGDV7AqNFQZNllO1KpI8GS6Fb8o0
-         2SCw==
-X-Gm-Message-State: APjAAAXUHxPK/5zZeBWP0+9UKF0ZUvso5Q2/sNgz7CwEEl1HSGV0S8wL
-        qtvJru+lYvsJnzzQ3CRwSv8=
-X-Google-Smtp-Source: APXvYqwZwMHJTRig+SXE0kz2DegMMU7qPuSgopAX7Pwr9Y8S6Q8VfZ+NYpDzWXBIncow4tB/gDtDLA==
-X-Received: by 2002:a17:906:4a12:: with SMTP id w18mr11475789eju.321.1576786889413;
-        Thu, 19 Dec 2019 12:21:29 -0800 (PST)
-Received: from kozik-lap ([194.230.155.234])
-        by smtp.googlemail.com with ESMTPSA id u25sm722974ejb.53.2019.12.19.12.21.27
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Thu, 19 Dec 2019 12:21:28 -0800 (PST)
-Date:   Thu, 19 Dec 2019 21:21:26 +0100
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     robh+dt@kernel.org, mark.rutland@arm.com, heiko@sntech.de,
-        leonard.crestez@nxp.com, lukasz.luba@arm.com, a.swigon@samsung.com,
-        m.szyprowski@samsung.com, kgene@kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org
-Subject: Re: [PATCH 8/9] ARM: dts: exynos: Replace deprecated property for
- Exynos bus and DMC
-Message-ID: <20191219202126.GB21576@kozik-lap>
-References: <20191217055738.28445-1-cw00.choi@samsung.com>
- <CGME20191217055106epcas1p4c0f65bec74e53b38d95e984e146bf8b6@epcas1p4.samsung.com>
- <20191217055738.28445-9-cw00.choi@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20191217055738.28445-9-cw00.choi@samsung.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+        id S1727354AbfLSUWA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Dec 2019 15:22:00 -0500
+Received: from mx2.suse.de ([195.135.220.15]:47988 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727473AbfLSUV7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Dec 2019 15:21:59 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+        by mx2.suse.de (Postfix) with ESMTP id 28E59B2EF;
+        Thu, 19 Dec 2019 20:21:57 +0000 (UTC)
+Message-ID: <1576787264.8929.10.camel@suse.cz>
+Subject: Re: [PATCH v4 1/6] x86,sched: Add support for frequency invariance
+From:   Giovanni Gherdovich <ggherdovich@suse.cz>
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     Ionela Voinescu <ionela.voinescu@arm.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>,
+        Len Brown <lenb@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>, x86@kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Matt Fleming <matt@codeblueprint.co.uk>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Paul Turner <pjt@google.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Quentin Perret <qperret@qperret.net>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Doug Smythies <dsmythies@telus.net>
+Date:   Thu, 19 Dec 2019 21:27:44 +0100
+In-Reply-To: <20191218193429.GH11457@worktop.programming.kicks-ass.net>
+References: <20191113124654.18122-1-ggherdovich@suse.cz>
+         <20191113124654.18122-2-ggherdovich@suse.cz>
+         <20191202162232.GA9777@arm.com> <4d1b776d8e797224e92952a4d590a625@suse.cz>
+         <20191218193429.GH11457@worktop.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.26.6 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Dec 17, 2019 at 02:57:37PM +0900, Chanwoo Choi wrote:
-> Replace the property related to devfreq and devfreq-event device
-> to remove the deprecated property name.
-> - Replace 'devfreq' with 'exynos,parent-bus' property
->   for getting the parent devfreq device of exynos-bus.
-> - Replace 'devfreq-events' with 'exynos,ppmu-device' property
->   for getting the devfreq-event device to monitor bus utilization.
+On Wed, 2019-12-18 at 20:34 +0100, Peter Zijlstra wrote:
+> On Fri, Dec 06, 2019 at 12:57:46PM +0100, Giovanni Gherdovich wrote:
+> > > On Wednesday 13 Nov 2019 at 13:46:49 (+0100), Giovanni Gherdovich wrote:
+> > > I see above that you enable the static key (and therefore frequency
+> > > invariance before setting the max frequency ratio (if possible) and
+> > > before you initialise the counter references. Is there any reason for
+> > > doing this?
+> > This is a fair point; mine was a deliberate choice but you're the second
+> > person making this remark (Peter Zijlstra also suggested I find the max
+> > frequency before I set the static key), so it appears this design is
+> > unpopular
+> > enough to warrant a change in v5.
 > 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  arch/arm/boot/dts/exynos3250-monk.dts         |  2 +-
->  arch/arm/boot/dts/exynos3250-rinato.dts       | 18 +++++-----
->  .../boot/dts/exynos4412-itop-scp-core.dtsi    | 16 ++++-----
->  arch/arm/boot/dts/exynos4412-midas.dtsi       | 18 +++++-----
->  .../boot/dts/exynos4412-odroid-common.dtsi    | 18 +++++-----
->  arch/arm/boot/dts/exynos5422-odroid-core.dtsi | 34 +++++++++----------
->  6 files changed, 53 insertions(+), 53 deletions(-)
+> You actually 'fix' this in the next patch. I thought it was a patch
+> management 'fail' that it didn't end up in this patch.
+
+Uhm. I'm not sure I agree; let me paste the function intel_set_cpu_max_freq
+after the entire series is applied:
+
+> static void intel_set_cpu_max_freq(void)
+> {
+>         u64 ratio = 1, turbo_ratio = 1;
 > 
+>         if (slv_set_cpu_max_freq(&ratio, &turbo_ratio))
+>                 goto set_value;
+> 
+>         if (glm_set_cpu_max_freq(&ratio, &turbo_ratio))
+>                 goto set_value;
+> 
+>         if (knl_set_cpu_max_freq(&ratio, &turbo_ratio))
+>                 goto set_value;
+> 
+>         if (skx_set_cpu_max_freq(&ratio, &turbo_ratio))
+>                 goto set_value;
+> 
+>         core_set_cpu_max_freq(&ratio, &turbo_ratio);
+>
 
-It will have to wait till next release, after driver changes get
-accepted.
+let's say that all functions return false; as I don't check the return value of
+the last one, you can very well end up here with 'ratio' and 'turbo_ratio'
+that are still untouched, =1 since their initialization, and I would go on and
+set the static key anyway (because I previously checked X86_FEATURE_APERFMPERF).
 
-Best regards,
-Krzysztof
+Right?
+
+> set_value:
+>         arch_max_turbo_freq = div_u64(turbo_ratio * SCHED_CAPACITY_SCALE,
+>                                         ratio);
+>         set_arch_max_freq(turbo_disabled());
+>         static_branch_enable(&arch_scale_freq_key);
+> }
+
+But again, not only people disagree with this behavior, it's probably a little
+misleading too in how it's written. Changing in v5.
+
+Giovanni
