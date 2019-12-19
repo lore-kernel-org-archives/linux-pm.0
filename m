@@ -2,116 +2,96 @@ Return-Path: <SRS0=UOP4=2J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71C6BC43603
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:44:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0CBFC43603
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 17:04:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 45DB1227BF
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 16:44:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="XYNY/1ju"
+	by mail.kernel.org (Postfix) with ESMTP id BD5F124672
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Dec 2019 17:04:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726948AbfLSQoA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Dec 2019 11:44:00 -0500
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:35220 "EHLO
-        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726760AbfLSQoA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2019 11:44:00 -0500
-Received: by mail-ed1-f67.google.com with SMTP id f8so5540462edv.2
-        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2019 08:43:59 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Q6MJKY5kaJhdcPD2Yij+K4j3QBznO/FzqxPRwZHg2tA=;
-        b=XYNY/1juioQpuXWDwItjvluLKzqTb1s+LUDJh70eT+FynV6pmhNjrfR8rKpTN0Y4Vq
-         95LNMIm35iIung4zroafpJpZMFHIQW6gyl0nMe0sXzlo0Usj/osB8dJgXFazZDihbiKk
-         TXHN/eqPdNOFXyC7+ATLgVoMdiY/9k9+NozPc=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Q6MJKY5kaJhdcPD2Yij+K4j3QBznO/FzqxPRwZHg2tA=;
-        b=kvoZ10CM7AavKZ15rzJK6UsYeGjlF0gtcsYp+BC42aiznQ40+B10zdICp/HcSZngIL
-         oFPO7JBAkIzb14qpED6gUiHk/SCBdqG2UqA0+pracGHtbQGxcZT0IsoqnaTkUKwluctD
-         ym1P214AZujh11k7R2QewAGjDkteDOv7npZALpW5PT7vE+U6YNSXxhJemZ+N0XUMYZK8
-         SAddvPUriYj9W6dAyvVZKtBthj0VDB0PAKrqVXWLvGMzkogDn/XYc5cbuVWfySttfKnw
-         ytHSURo3PonzrN+C/7w3xi9QUczP7I4jiK48esb8SjIUpVDQ9QcWnMULPcVL5aqbLU5t
-         C0cQ==
-X-Gm-Message-State: APjAAAXVVfzZKwmo2PL/TMpW3ykF59g/VwaRxrrFqfbidB7biPVbVAXl
-        fGh/vBzwjb7vyvM5LGQTd8e7aZrRJqw=
-X-Google-Smtp-Source: APXvYqwtVqeUaiHoZf0renc7H8tb9qZPiCuvB/h9WV6K4BFOU47pdQXSuxaa/2vlboAtjAAlrwn/SA==
-X-Received: by 2002:a50:fd15:: with SMTP id i21mr10206221eds.91.1576773838192;
-        Thu, 19 Dec 2019 08:43:58 -0800 (PST)
-Received: from mail-wr1-f53.google.com (mail-wr1-f53.google.com. [209.85.221.53])
-        by smtp.gmail.com with ESMTPSA id y21sm521772edu.70.2019.12.19.08.43.57
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 19 Dec 2019 08:43:57 -0800 (PST)
-Received: by mail-wr1-f53.google.com with SMTP id y11so6663648wrt.6
-        for <linux-pm@vger.kernel.org>; Thu, 19 Dec 2019 08:43:57 -0800 (PST)
-X-Received: by 2002:adf:ee92:: with SMTP id b18mr10865736wro.281.1576773336863;
- Thu, 19 Dec 2019 08:35:36 -0800 (PST)
+        id S1726869AbfLSRE3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Dec 2019 12:04:29 -0500
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:49484 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726760AbfLSRE3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Dec 2019 12:04:29 -0500
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id 63C77292B37
+Received: by earth.universe (Postfix, from userid 1000)
+        id CCDED3C0C7B; Thu, 19 Dec 2019 18:04:24 +0100 (CET)
+Date:   Thu, 19 Dec 2019 18:04:24 +0100
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc:     nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] at91-sama5d2_shdwc shutdown controller
+Message-ID: <20191219170424.lx42pzdysqjwzoal@earth.universe>
+References: <1576765674-22070-1-git-send-email-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
-References: <20191205000957.112719-1-thgarnie@chromium.org> <20191219133452.GM2827@hirez.programming.kicks-ass.net>
-In-Reply-To: <20191219133452.GM2827@hirez.programming.kicks-ass.net>
-From:   Thomas Garnier <thgarnie@chromium.org>
-Date:   Thu, 19 Dec 2019 08:35:25 -0800
-X-Gmail-Original-Message-ID: <CAJcbSZEubkFN0BLugoBm8fsPrNWxfFCDytC3nYUepr74dQFS=w@mail.gmail.com>
-Message-ID: <CAJcbSZEubkFN0BLugoBm8fsPrNWxfFCDytC3nYUepr74dQFS=w@mail.gmail.com>
-Subject: Re: [PATCH v10 00/11] x86: PIE support to extend KASLR randomization
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Kernel Hardening <kernel-hardening@lists.openwall.com>,
-        Kristen Carlson Accardi <kristen@linux.intel.com>,
-        Kees Cook <keescook@chromium.org>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        "David S. Miller" <davem@davemloft.net>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        "the arch/x86 maintainers" <x86@kernel.org>,
-        Andy Lutomirski <luto@kernel.org>,
-        Juergen Gross <jgross@suse.com>,
-        Thomas Hellstrom <thellstrom@vmware.com>,
-        "VMware, Inc." <pv-drivers@vmware.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-        Will Deacon <will@kernel.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Jiri Slaby <jslaby@suse.cz>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Alexios Zavras <alexios.zavras@intel.com>,
-        Allison Randal <allison@lohutok.net>,
-        Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        virtualization@lists.linux-foundation.org,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="cbfgrqhlxasynysk"
+Content-Disposition: inline
+In-Reply-To: <1576765674-22070-1-git-send-email-claudiu.beznea@microchip.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Dec 19, 2019 at 5:35 AM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Wed, Dec 04, 2019 at 04:09:37PM -0800, Thomas Garnier wrote:
-> > Minor changes based on feedback and rebase from v9.
-> >
-> > Splitting the previous serie in two. This part contains assembly code
-> > changes required for PIE but without any direct dependencies with the
-> > rest of the patchset.
->
-> ISTR suggestion you add an objtool pass that verifies there are no
-> absolute text references left. Otherwise we'll forever be chasing that
-> last one..
 
-Correct, I have a reference in the changelog saying I will tackle in
-the next patchset because we still have non-pie references in other
-places but the fix is a bit more complex (for exemple per-cpu) and not
-included in this phase. I will add a better explanation in the next
-message for patch v11.
+--cbfgrqhlxasynysk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Thu, Dec 19, 2019 at 04:27:52PM +0200, Claudiu Beznea wrote:
+> PMC master clock register offset is different b/w sam9x60 and
+> other SoCs. Since there is a need of this register offset in
+> shutdown procedure we need to have it per SoC. This is what
+> this series does.
+
+Patches look good to me, but I will wait a bit to give Nicolas
+and Alexandre a chance to review/test the changes.
+
+-- Sebastian
+
+> Claudiu Beznea (2):
+>   power: reset: at91-sama5d2_shdwc: introduce struct shdwc_reg_config
+>   power: reset: at91-sama5d2_shdwc: use proper master clock register
+>     offset
+>=20
+>  drivers/power/reset/at91-sama5d2_shdwc.c | 75 +++++++++++++++++++++-----=
+------
+>  1 file changed, 49 insertions(+), 26 deletions(-)
+>=20
+> --=20
+> 2.7.4
+>=20
+
+--cbfgrqhlxasynysk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl37rZIACgkQ2O7X88g7
++ppKTQ//WW4FUtcXIE3pmAzAQCHDm6oLLp1IgXG6CBKRP9apk/d5HxS1lDCRwC7M
+lK2MQp23XVxO6dhUTrAaC51//Esv4qrouga7pdnQT1ruYXGuCP9YivvENv4WZYQK
+qLpFCFeK853DKEbh6R/vqWAhTxcZeeFLjs51DpCFDNGGBP6A09CvrvodAaAf/NBH
+NteprA/W29YjYoo1WImBALdgiaB2kMH9dzXTJhRHjvEjkMCg+KNe9GC0A8t5n5TK
+0UXa7NxJIun5ISzJKzZYFF4qxAlDE7cY2mfBA2YKsL/UdE2CaM/k4gGB55eMv5Q4
+m6h836d5Ypq6Xt1P3cQgB8wr4r+p4W5oxA7dosSTx487H7QRcrSUkZ4vhBp8/d5O
+kL0vuD8qdViMyVE9klommHijvKTxdZdKxG2bxZxMUljyhjmlEAs8bQule/Og2Xzp
+NqubWnlofcOyGZpSiBIvPfzfaWmRsZdWByxTnXl9Im5NUIivQOMkpeP48lVCNPa3
+KMWGHIvUxfNvVL6dEuh73O2FXctutcmt9xYKlyl0V5p+mhQRyKWR5nSiAnEUBV2p
+uLanxn+IitxK7tLZ5n6DEjQmGk1g8vxAoA7h36sjhK6Vt7M6ruZI5EE8O2rfwbmb
+j4DKfsU8zxj8hyHKFIbkrMsJJNZuAZmStjY36J5M8Cpzbc+vRUI=
+=Rjmv
+-----END PGP SIGNATURE-----
+
+--cbfgrqhlxasynysk--
