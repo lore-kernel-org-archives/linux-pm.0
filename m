@@ -7,46 +7,46 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69309C2D0C0
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:34:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E4F8C2D0C0
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:35:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3509224680
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:34:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 34F262465E
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:35:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576852485;
-	bh=lqaGR2TYC51/762tju8eQFYclxtnGJZuXbyMwTYjnIU=;
+	s=default; t=1576852520;
+	bh=EORNhPZLJFNshtpIwBCg2nMHFc3I05xt2lsmpmEoUn4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=kraOKmfzwA9Y8RJoIjHfFrfOkZNT9mI1+BukqfqHgiUa8GRpGpIupE0EKs8sR7wU2
-	 7wkod54714/shqcE0xZ3hk3Yhy3QkXWKAMigoRhxe3wwMBAuGtiioqOChfCEdxB2A8
-	 HUbig4kW8wfJBEICgNvZtCxblvvw9qJGOcHVCzWQ=
+	b=FUUof7SpIalY1msgWGKRaCbBQKIuLRATu/aSo99UTsmY+8Mr8D9qZVHpexhOhi1ma
+	 /c1ORDHVd4h8IcHX2QlMMibF5NbPCbN7rZHbwQ9GqL7zfwBiybV+GiZG7o5q9GeMYo
+	 JO7j82QUL4Lo7huNdqE9OTtZug8Pj8QpB4Mjueus=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728259AbfLTOeo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Dec 2019 09:34:44 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38822 "EHLO mail.kernel.org"
+        id S1728397AbfLTOfS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Dec 2019 09:35:18 -0500
+Received: from mail.kernel.org ([198.145.29.99]:39752 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728200AbfLTOen (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Dec 2019 09:34:43 -0500
+        id S1728021AbfLTOfS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 20 Dec 2019 09:35:18 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 751E124688;
-        Fri, 20 Dec 2019 14:34:42 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id CBD1621D7E;
+        Fri, 20 Dec 2019 14:35:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576852483;
-        bh=lqaGR2TYC51/762tju8eQFYclxtnGJZuXbyMwTYjnIU=;
+        s=default; t=1576852517;
+        bh=EORNhPZLJFNshtpIwBCg2nMHFc3I05xt2lsmpmEoUn4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=B2FV82Cl5pW69yAUvQ1R5B0k3J8wF2YTmlSlSc4kBkcWFkJy6I9ZcrXTtjFGTu7xu
-         8TesAD73xSoD9el1OHhbpmFwA36s/P0ea8WFxLaTuQBuO6DcPfT8G8FuQGMWG7T0JX
-         DdvvWZ7+wDXGNP6mVvPLkNKPsGZazqzPQ5+XHPVU=
+        b=EnvCNoVaVKyAf/KclV3vK0U4ICRfYYpI0+ArcowBwevHacqj8eMET99GhL1aA6C95
+         3lBbhQLPQnfNc5HxidUN5d7EckdMStwnwS+SQ1gm51To9N/14hdPAVq2c+xvzzsnai
+         ySLyvPIJAXVm8qWg5PqUkJH0etlq3fbW/bK0w7sA=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Leonard Crestez <leonard.crestez@nxp.com>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
+Cc:     Andy Whitcroft <apw@canonical.com>,
+        Andrea Righi <andrea.righi@canonical.com>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 07/34] PM / devfreq: Fix devfreq_notifier_call returning errno
-Date:   Fri, 20 Dec 2019 09:34:06 -0500
-Message-Id: <20191220143433.9922-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 34/34] PM / hibernate: memory_bm_find_bit(): Tighten node optimisation
+Date:   Fri, 20 Dec 2019 09:34:33 -0500
+Message-Id: <20191220143433.9922-34-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191220143433.9922-1-sashal@kernel.org>
 References: <20191220143433.9922-1-sashal@kernel.org>
@@ -59,71 +59,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Leonard Crestez <leonard.crestez@nxp.com>
+From: Andy Whitcroft <apw@canonical.com>
 
-[ Upstream commit e876e710ede23f670494331e062d643928e4142a ]
+[ Upstream commit da6043fe85eb5ec621e34a92540735dcebbea134 ]
 
-Notifier callbacks shouldn't return negative errno but one of the
-NOTIFY_OK/DONE/BAD values.
+When looking for a bit by number we make use of the cached result from the
+preceding lookup to speed up operation.  Firstly we check if the requested
+pfn is within the cached zone and if not lookup the new zone.  We then
+check if the offset for that pfn falls within the existing cached node.
+This happens regardless of whether the node is within the zone we are
+now scanning.  With certain memory layouts it is possible for this to
+false trigger creating a temporary alias for the pfn to a different bit.
+This leads the hibernation code to free memory which it was never allocated
+with the expected fallout.
 
-The OPP core will ignore return values from notifiers but returning a
-value that matches NOTIFY_STOP_MASK will stop the notification chain.
+Ensure the zone we are scanning matches the cached zone before considering
+the cached node.
 
-Fix by always returning NOTIFY_OK.
+Deep thanks go to Andrea for many, many, many hours of hacking and testing
+that went into cornering this bug.
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reported-by: Andrea Righi <andrea.righi@canonical.com>
+Tested-by: Andrea Righi <andrea.righi@canonical.com>
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/devfreq/devfreq.c | 24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
+ kernel/power/snapshot.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 61fbaa89d7b4f..34e297f28fc2a 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -538,26 +538,28 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
- 				 void *devp)
- {
- 	struct devfreq *devfreq = container_of(nb, struct devfreq, nb);
--	int ret;
-+	int err = -EINVAL;
- 
- 	mutex_lock(&devfreq->lock);
- 
- 	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
--	if (!devfreq->scaling_min_freq) {
--		mutex_unlock(&devfreq->lock);
--		return -EINVAL;
--	}
-+	if (!devfreq->scaling_min_freq)
-+		goto out;
- 
- 	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
--	if (!devfreq->scaling_max_freq) {
--		mutex_unlock(&devfreq->lock);
--		return -EINVAL;
--	}
-+	if (!devfreq->scaling_max_freq)
-+		goto out;
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 3d37c279c0900..f2635fc751d93 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -736,8 +736,15 @@ static int memory_bm_find_bit(struct memory_bitmap *bm, unsigned long pfn,
+ 	 * We have found the zone. Now walk the radix tree to find the leaf node
+ 	 * for our PFN.
+ 	 */
 +
-+	err = update_devfreq(devfreq);
++	/*
++	 * If the zone we wish to scan is the the current zone and the
++	 * pfn falls into the current node then we do not need to walk
++	 * the tree.
++	 */
+ 	node = bm->cur.node;
+-	if (((pfn - zone->start_pfn) & ~BM_BLOCK_MASK) == bm->cur.node_pfn)
++	if (zone == bm->cur.zone &&
++	    ((pfn - zone->start_pfn) & ~BM_BLOCK_MASK) == bm->cur.node_pfn)
+ 		goto node_found;
  
--	ret = update_devfreq(devfreq);
-+out:
- 	mutex_unlock(&devfreq->lock);
-+	if (err)
-+		dev_err(devfreq->dev.parent,
-+			"failed to update frequency from OPP notifier (%d)\n",
-+			err);
- 
--	return ret;
-+	return NOTIFY_OK;
- }
- 
- /**
+ 	node      = zone->rtree;
 -- 
 2.20.1
 
