@@ -7,46 +7,46 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD360C43603
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:36:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BCF1C43603
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:36:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8215721D7E
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:36:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5377521D7E
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:36:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576852617;
-	bh=gnJZRlgJ/CeVAJBsrZW+w07CQEeA1dGWRqEb9Mh6Uuo=;
+	s=default; t=1576852619;
+	bh=iN58pcI4a/v+xDGOOjVsgiJM/JmC6IAXuqWupv9eqd0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=pXF72GnUCGktTuSwg0/8eQjQ+ThPmtcA4xMIp8fhTMHY/E9Vklwj9S8ypl4LP4j1V
-	 XRKmdKiNFb41NobKvVywyS3OxmOASSHNQpSFnROg8+2drRr00MW0veRMvovZZFtn0k
-	 1bZR2NdB2BFwcAyMbCIYRZZnkOiwvyXkvl09kM0s=
+	b=LkokWpXFJG7QNMVXA1yObUBZo0gdfpucvBVQjVoEgkIy48ISiAUaL7RY0+DvkiivS
+	 Se4npUXS+TXO7nCRAt4oKCbZ23jlD24iolDgOzzh0Md/VFGqky1Atxs0jKYCbS7YVJ
+	 diVrHVRdCkAtRO/MJby9TyljRUz8Pj+J86dkQQMA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727973AbfLTOgy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Dec 2019 09:36:54 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38892 "EHLO mail.kernel.org"
+        id S1728276AbfLTOep (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Dec 2019 09:34:45 -0500
+Received: from mail.kernel.org ([198.145.29.99]:38838 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728280AbfLTOeq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Dec 2019 09:34:46 -0500
+        id S1728268AbfLTOep (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 20 Dec 2019 09:34:45 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id C53582468A;
-        Fri, 20 Dec 2019 14:34:44 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 96E212465E;
+        Fri, 20 Dec 2019 14:34:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576852485;
-        bh=gnJZRlgJ/CeVAJBsrZW+w07CQEeA1dGWRqEb9Mh6Uuo=;
+        s=default; t=1576852484;
+        bh=iN58pcI4a/v+xDGOOjVsgiJM/JmC6IAXuqWupv9eqd0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=TJG4we+09fASlW5b05g9fnQIBQkLn4A/6Njvrw3hWfOTGBWFM74MuRfULiH0zTWNg
-         S14cyW9R8V0WEnh2/YxBsCRPUTyMzSLad7OewN4Tt/tY25d0JFPqGk3uwcgM1vW9hY
-         NvTlytzM+mkQE6lLsvibKgRN4QnUM0/tTcG5ceaA=
+        b=gDQ3XWykOnZIYpZ1/cXEXR0Li7tJHbU/nvIBl3Z60aegx63Izay3rSEViSKOsFodt
+         CcHiKTaAtzDox9X+gl842l3kjxVFRnjFe8M3/J/AfUpzXYtleio+W+RDPnJ+oukA5o
+         Db7z9A2B8hMQPBszGmTwhHPLg2zngQ21rc0UUfrI=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Leonard Crestez <leonard.crestez@nxp.com>,
         Matthias Kaehlcke <mka@chromium.org>,
         Chanwoo Choi <cw00.choi@samsung.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 09/34] PM / devfreq: Don't fail devfreq_dev_release if not in list
-Date:   Fri, 20 Dec 2019 09:34:08 -0500
-Message-Id: <20191220143433.9922-9-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 08/34] PM / devfreq: Set scaling_max_freq to max on OPP notifier error
+Date:   Fri, 20 Dec 2019 09:34:07 -0500
+Message-Id: <20191220143433.9922-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20191220143433.9922-1-sashal@kernel.org>
 References: <20191220143433.9922-1-sashal@kernel.org>
@@ -61,17 +61,14 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Leonard Crestez <leonard.crestez@nxp.com>
 
-[ Upstream commit 42a6b25e67df6ee6675e8d1eaf18065bd73328ba ]
+[ Upstream commit e7cc792d00049c874010b398a27c3cc7bc8fef34 ]
 
-Right now devfreq_dev_release will print a warning and abort the rest of
-the cleanup if the devfreq instance is not part of the global
-devfreq_list. But this is a valid scenario, for example it can happen if
-the governor can't be found or on any other init error that happens
-after device_register.
+The devfreq_notifier_call functions will update scaling_min_freq and
+scaling_max_freq when the OPP table is updated.
 
-Initialize devfreq->node to an empty list head in devfreq_add_device so
-that list_del becomes a safe noop inside devfreq_dev_release and we can
-continue the rest of the cleanup.
+If fetching the maximum frequency fails then scaling_max_freq remains
+set to zero which is confusing. Set to ULONG_MAX instead so we don't
+need special handling for this case in other places.
 
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
@@ -79,33 +76,25 @@ Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/devfreq/devfreq.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/devfreq/devfreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index a47e76a62287f..69bbb1e9ab23d 100644
+index 34e297f28fc2a..a47e76a62287f 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -575,11 +575,6 @@ static void devfreq_dev_release(struct device *dev)
- 	struct devfreq *devfreq = to_devfreq(dev);
+@@ -547,8 +547,10 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+ 		goto out;
  
- 	mutex_lock(&devfreq_list_lock);
--	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
--		mutex_unlock(&devfreq_list_lock);
--		dev_warn(&devfreq->dev, "releasing devfreq which doesn't exist\n");
--		return;
--	}
- 	list_del(&devfreq->node);
- 	mutex_unlock(&devfreq_list_lock);
+ 	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
+-	if (!devfreq->scaling_max_freq)
++	if (!devfreq->scaling_max_freq) {
++		devfreq->scaling_max_freq = ULONG_MAX;
+ 		goto out;
++	}
  
-@@ -634,6 +629,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->dev.parent = dev;
- 	devfreq->dev.class = devfreq_class;
- 	devfreq->dev.release = devfreq_dev_release;
-+	INIT_LIST_HEAD(&devfreq->node);
- 	devfreq->profile = profile;
- 	strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
- 	devfreq->previous_freq = profile->initial_freq;
+ 	err = update_devfreq(devfreq);
+ 
 -- 
 2.20.1
 
