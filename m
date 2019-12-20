@@ -2,141 +2,206 @@ Return-Path: <SRS0=kun6=2K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-8.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4F56C2D0D2
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 12:01:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 719ADC2D0D2
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 12:01:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B465424679
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 12:01:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4846F24689
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 12:01:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="fRG9JCy6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727258AbfLTMBU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Dec 2019 07:01:20 -0500
-Received: from foss.arm.com ([217.140.110.172]:50032 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727184AbfLTMBT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Dec 2019 07:01:19 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6006530E;
-        Fri, 20 Dec 2019 04:01:19 -0800 (PST)
-Received: from bogus (e107155-lin.cambridge.arm.com [10.1.196.42])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 613AB3F719;
-        Fri, 20 Dec 2019 04:01:17 -0800 (PST)
-Date:   Fri, 20 Dec 2019 12:01:12 +0000
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>
-Subject: Re: [PATCH v4 13/14] cpuidle: psci: Add support for PM domains by
- using genpd
-Message-ID: <20191220120112.GA26547@bogus>
-References: <20191211154343.29765-1-ulf.hansson@linaro.org>
- <20191211154343.29765-14-ulf.hansson@linaro.org>
- <20191219143427.GF20746@bogus>
- <CAPDyKFpPmtXkP6LSNWBbfyTJowjQXF39_4LN5YEcDtW1BzVw-g@mail.gmail.com>
- <20191219180629.GC21846@bogus>
- <CAPDyKFrtrkASV4d2+x+A2P=TMrnLGh4LK9nzNeqZCg71Hs2TEQ@mail.gmail.com>
- <20191220100745.GB6731@bogus>
- <CAPDyKFqaH8otvkRH-+AM6qJyT4TLc+S-qR2-ZCfTT56pWXVfaA@mail.gmail.com>
+        id S1727262AbfLTMBn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Dec 2019 07:01:43 -0500
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:36362 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727276AbfLTMBn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2019 07:01:43 -0500
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20191220120141euoutp015a15e05e072f72591697e743174c0f6f~iEqDhQMEO1021410214euoutp01A
+        for <linux-pm@vger.kernel.org>; Fri, 20 Dec 2019 12:01:41 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20191220120141euoutp015a15e05e072f72591697e743174c0f6f~iEqDhQMEO1021410214euoutp01A
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1576843301;
+        bh=o8kqTbI3GWwahjeMr7ptW3eNW7y3qIfdXJX6mSqJ8GU=;
+        h=From:To:Cc:Subject:Date:References:From;
+        b=fRG9JCy6XCwtp4ZdCi7PJzn3R5kwHooe2fVk+33c3GV2959QFdWTCqaNwlbgWfID7
+         x7aVTbQ7JBD6/EAlSUIW/oDTWydvAN84A76DH2owSsHzXq6WucpD3pTV6Ldm9YRMrt
+         /K4K6HSAMKBeJ35F+6m9rHHNYXmHBfhWHPQ219uo=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20191220120141eucas1p1346b57898e6b86bf808788dc151be72e~iEqDHDdLL2294822948eucas1p15;
+        Fri, 20 Dec 2019 12:01:41 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges2new.samsung.com (EUCPMTA) with SMTP id 5E.84.60679.528BCFD5; Fri, 20
+        Dec 2019 12:01:41 +0000 (GMT)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20191220120140eucas1p14ad33c20882f8f48e02337ea16754d91~iEqC0-4Uz1895118951eucas1p1f;
+        Fri, 20 Dec 2019 12:01:40 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20191220120140eusmtrp2e53173ce4cb4fe4f518a9ac1d5e90469~iEqC0RcnC2149221492eusmtrp2q;
+        Fri, 20 Dec 2019 12:01:40 +0000 (GMT)
+X-AuditID: cbfec7f4-0e5ff7000001ed07-18-5dfcb8251d32
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms2.samsung.com (EUCPMTA) with SMTP id 7D.58.07950.428BCFD5; Fri, 20
+        Dec 2019 12:01:40 +0000 (GMT)
+Received: from AMDC3555.digital.local (unknown [106.120.51.67]) by
+        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20191220120140eusmtip2d5da1c65c2cb57bed1af99b2eb661293~iEqCD-7rN2783527835eusmtip2t;
+        Fri, 20 Dec 2019 12:01:40 +0000 (GMT)
+From:   =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>
+To:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
+        cw00.choi@samsung.com, myungjoo.ham@samsung.com,
+        inki.dae@samsung.com, sw0312.kim@samsung.com,
+        georgi.djakov@linaro.org, leonard.crestez@nxp.com,
+        m.szyprowski@samsung.com, b.zolnierkie@samsung.com, krzk@kernel.org
+Subject: [RFC PATCH v3 0/7] PM / devfreq: Simple QoS for exynos-bus using
+ interconnect
+Date:   Fri, 20 Dec 2019 12:56:46 +0100
+Message-Id: <20191220115653.6487-1-a.swigon@samsung.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFqaH8otvkRH-+AM6qJyT4TLc+S-qR2-ZCfTT56pWXVfaA@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA02Se0hTcRTH++3u3l1XG3dT6LReNhJKqGUW/KJlT+pC9KKIiEZNu6jkVuxm
+        pQVNI7GVJSvxkahUpJiyuXzMsSRkZA/UzEfho4WPSqOsfESmmbdrj/++53vO5/zOOfxoQt1C
+        auhY80nOYjbGaSm5tPLR98ZlIe5xw4qer0rsz7uIcFmWg8Qvh9+RON/XQOKWkUEKZz5wUdju
+        T5fixkanDBd1fSGxq6eNxM2eXAoPpfkQzmqskeBSX5cMdyQVUTjrej+1gWFdxZcotrPNS7H+
+        y3US9v6d82zZJ7eEvVpejNgh14LdsoNy/VEuLvYUZ9FFHJHHZLb60YnWhWeeVDVRVuTV2BBN
+        A7MK7Jl7bUhOq5kiBKMTo0gMhhHYurtkNhQwFQwhGOnfKWgBqM9Io8SiQgQp7fXkX6Jiwi8R
+        qihmI9gz3siERBDjQ3C9YFAqBASTK4HUS4VSoSqQOQAjpQ2/CSkTArc9DkLQCgZD37U3EvG9
+        hXDP+XDaV8GT7N7fLDHlX6i4SQhNgWmXwQuHG4nAFuj61kuJOhAG6splop4Hk9X500156Kv2
+        kyJsReC66yPExFrobBijhNMQzFJweHSivREmur0y8WJKePVRJc6gBHtlJiHaCkhNUYtSC55s
+        pQgCJN9rm+7NwttnkxLxogboaXIQ6Sg457/Fcv5bLOffCAWIKEazuXjeFM3xK83c6eW80cTH
+        m6OXRx03udDUX3v2s27YjTzjkbWIoZF2luJ91A+DmjSe4hNMtQhoQhuk6Ej9blArjhoTEjnL
+        8cOW+DiOr0Vzaal2tiL8Vr9BzUQbT3LHOO4EZ/mTldABGiuqeD4+4+zoxZr1j8dG9gWXbK5/
+        XaA5xxauduq/lfCqqjrLoq1Rm3evzGtODI9xNkekdG5KomynN7lqmcjPyvnjQVd026t3ZHeH
+        vQ70WZ9GDSzRx9+YGVl5O91btV8+FjrnzoKBdWkBW8N20TElodt0KoN6W0pG1p416/XJi999
+        KFUd0kr5GGNYKGHhjb8ABpOM6GcDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrIIsWRmVeSWpSXmKPExsVy+t/xe7oqO/7EGnR+sbC4P6+V0WLjjPWs
+        Fte/PGe1mH/kHKvFla/v2Sym793EZjHp/gQWi/PnN7BbrLj7kdVi0+NrrBaXd81hs/jce4TR
+        Ysb5fUwWa4/cZbe43biCzWLG5JdsDgIem1Z1snncubaHzeN+93Emj81L6j02vtvB5NG3ZRWj
+        x+dNcgHsUXo2RfmlJakKGfnFJbZK0YYWRnqGlhZ6RiaWeobG5rFWRqZK+nY2Kak5mWWpRfp2
+        CXoZ06/eZyy4Kl9xcvtFtgbGPVJdjJwcEgImEmen9rJ1MXJxCAksZZT4e/U6K0RCQuLj+htQ
+        trDEn2tdUEWfGCXe/H/IBpJgE3CUmDT1ATtIQkTgFKPE1uXnwBLMAiuYJPrnCHcxcnAIC4RJ
+        TGu0AwmzCKhKLN61nhnE5hWwkHja/4AJYoG8xOoNB6DighInZz5hAWllFlCXWD9PCGKivETz
+        1tnMExj5ZyGpmoVQNQtJ1QJG5lWMIqmlxbnpucVGesWJucWleel6yfm5mxiB0bft2M8tOxi7
+        3gUfYhTgYFTi4XVI+x0rxJpYVlyZe4hRgoNZSYT3dsfPWCHelMTKqtSi/Pii0pzU4kOMpkAv
+        TGSWEk3OByaGvJJ4Q1NDcwtLQ3Njc2MzCyVx3g6BgzFCAumJJanZqakFqUUwfUwcnFINjBr2
+        Dx57/DiTwdi84qhswTQp9p3WRiujzs2c/+KI4zWmvcc1OhiTQ2v0wj+knFu91eJd/sTTP1Zt
+        7Pm+9EJZo5lGfvjPwy9+iB2rfv+/pufUhxunrvouOjPTze+tQkHsvXlvnHwD9t7azCASW594
+        /MOvhKlBNUrfreqDP7zZJLbTaiZ/kHXW791KLMUZiYZazEXFiQAR5L591AIAAA==
+X-CMS-MailID: 20191220120140eucas1p14ad33c20882f8f48e02337ea16754d91
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20191220120140eucas1p14ad33c20882f8f48e02337ea16754d91
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20191220120140eucas1p14ad33c20882f8f48e02337ea16754d91
+References: <CGME20191220120140eucas1p14ad33c20882f8f48e02337ea16754d91@eucas1p1.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Dec 20, 2019 at 12:27:39PM +0100, Ulf Hansson wrote:
-> On Fri, 20 Dec 2019 at 11:07, Sudeep Holla <sudeep.holla@arm.com> wrote:
+The following patchset adds interconnect[1][2] framework support to the
+exynos-bus devfreq driver. Extending the devfreq driver with
+interconnect functionality started as a response to the issue referenced
+in [3]. The patches can be subdivided into three groups:
 
-[...]
+(a) Tweaking the interconnect framework to support the exynos-bus use
+case (patches 01--03/07). Exporting of_icc_get_from_provider() allows to
+avoid hardcoding every single graph edge in the DT or driver source, and
+relaxing the requirement on #interconnect-cells removes the need to
+provide dummy node IDs in the DT. A new field in struct icc_provider is
+used to explicitly allow configuring node pairs from two different
+providers.
 
-> >
-> > Even if you don't create all these genpd domains, it is still degraded
-> > mode and we are anyway not changing that. Let me know if my understanding
-> > is wrong here.
->
-> Your understanding is wrong.
->
-> If I remove the genpds because psci_set_osi_mode() fails, then in the
-> current suggested initialization path, that will lead to that the
-> entire cpuidle-psci driver will fail to initiate (which is because
-> psci_dt_attach_cpu() returns an error). In other words, only WFI state
-> will be used by cpuidle as there will be no cpuidle driver registered
-> at all.
->
-> That would not be an acceptable behaviour, as it would make the
-> situation worse than today.
->
-> What we want in this scenario is to keep using all the idle states for
-> the CPUs, but ignores those for the cluster. That we both agree on,
-> right?
->
+(b) Implementing interconnect providers in the exynos-bus devfreq driver
+and adding required DT properties for one selected platform, namely
+Exynos4412 (patches 04--05/07). Due to the fact that this aims to be a
+generic driver for various Exynos SoCs, node IDs are generated
+dynamically (rather than hardcoded).
 
-Yes, I agree and understand that. I was assuming as part of this change
-you will fixup psci_dt_cpu_init_idle not to return error but just allow
-CPU level idle. Sorry if that was not clear, I was always assuming that.
+(c) Implementing a sample interconnect consumer for exynos-mixer
+targeted at solving the issue referenced in [3], again with DT
+properties only for Exynos4412 (patches 06--07/07).
 
-> >
-> > I am sure, DTB may get copied to different platform and the firmware may
-> > not support OSI. I know we have logs, but creating and leaving those
-> > genpd domains unused will be just confusing. Please change that.
->
-> We are not creating any genpds unless OSI mode is supported. We do not
-> even try to attach CPUs to the PM domains, unless OSI mode is
-> supported. So this should already work according to your expectations
-> and previous requests.
->
+Integration of devfreq and interconnect frameworks is achieved by using
+the dev_pm_qos_*() API. When CONFIG_INTERCONNECT is 'n' (such as in
+exynos_defconfig) all interconnect API functions are no-ops.
 
-Yes I understand, but checking if "OSI mode is supported" is not same as
-"setting OSI mode". Until OSI mode is set, it is default/PC mode, so we
-need to work based on that assumption.
+This series depends on these three patches (merged into devfreq-next[6]):
+* https://patchwork.kernel.org/patch/11279087/
+* https://patchwork.kernel.org/patch/11279093/
+* https://patchwork.kernel.org/patch/11293765/
+and on this series:
+* https://patchwork.kernel.org/cover/11304545/
+(which does not apply cleanly on next-20191220, adding
+--exclude=arch/arm/boot/dts/exynos5422-odroid-core.dtsi to 'git am' is a
+quick workaround)
 
-> To address your concern about removing genpds when psci_set_osi_mode()
-> fails, we also need to address the problems we get when calling
-> psci_dt_attach_cpu(). There are two viable options as I see it.
->
+---
+Changes since v2 [5]:
+* Use icc_std_aggregate().
+* Implement a different modification of apply_constraints() in
+  drivers/interconnect/core.c (patch 03).
+* Use 'exynos,interconnect-parent-node' in the DT instead of
+  'devfreq'/'parent', depending on the bus.
+* Rebase on DT patches that deprecate the 'devfreq' DT property.
+* Improve error handling, including freeing generated IDs on failure.
+* Remove exynos_bus_icc_connect() and add exynos_bus_icc_get_parent().
 
-Shouldn't that fail ? Sorry, I might be missing something.
+---
+Changes since v1 [4]:
+* Rebase on coupled regulators patches.
+* Use dev_pm_qos_*() API instead of overriding frequency in
+  exynos_bus_target().
+* Use IDR for node ID allocation.
+* Reverse order of multiplication and division in
+  mixer_set_memory_bandwidth() (patch 07) to avoid integer overflow.
 
-> 1. Prevent calling psci_dt_attach_cpu() altogether when
-> psci_set_osi_mode() failed. This means another function needs to be
-> shared from cpuidle-psci-domain.c to let cpuidle-psci.c know about it.
->
+---
+Artur Świgoń
+Samsung R&D Institute Poland
+Samsung Electronics
 
-If we don't create any genpd, will psci_dt_attach_cpu fail ?
+---
+References:
+[1] Documentation/interconnect/interconnect.rst
+[2] Documentation/devicetree/bindings/interconnect/interconnect.txt
+[3] https://patchwork.kernel.org/patch/10861757/ (original issue)
+[4] https://patchwork.kernel.org/cover/11054417/ (v1 of this RFC)
+[5] https://patchwork.kernel.org/cover/11152595/ (v2 of this RFC)
+[6] https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/log/?h=devfreq-next
 
-> 2. We can let psci_dt_attach_cpu() return NULL, when
-> psci_set_osi_mode() failed - as this information is already known by
-> cpuidle-psci-domain.c.
->
+Artur Świgoń (6):
+  interconnect: Export of_icc_get_from_provider()
+  interconnect: Relax requirement in of_icc_get_from_provider()
+  interconnect: Allow inter-provider pairs to be configured
+  arm: dts: exynos: Add interconnect bindings for Exynos4412
+  devfreq: exynos-bus: Add interconnect functionality to exynos-bus
+  arm: dts: exynos: Add interconnects to Exynos4412 mixer
 
-Yes I was making all the arguments/discussion based on that. Do you see
-any issues with that ? Any races possible ?
+Marek Szyprowski (1):
+  drm: exynos: mixer: Add interconnect support
 
-> I vote for option 2, but what do you think?
->
-
-Me too from the time I started the discussion, I assume a lot and
-don't put this into words in the email.
+ .../boot/dts/exynos4412-odroid-common.dtsi    |   5 +
+ arch/arm/boot/dts/exynos4412.dtsi             |   1 +
+ drivers/devfreq/exynos-bus.c                  | 144 ++++++++++++++++++
+ drivers/gpu/drm/exynos/exynos_mixer.c         |  71 ++++++++-
+ drivers/interconnect/core.c                   |  16 +-
+ include/linux/interconnect-provider.h         |   8 +
+ 6 files changed, 232 insertions(+), 13 deletions(-)
 
 --
-Regards,
-Sudeep
+2.17.1
+
