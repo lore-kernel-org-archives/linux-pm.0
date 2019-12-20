@@ -2,108 +2,89 @@ Return-Path: <SRS0=kun6=2K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A009C43603
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:48:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF345C43603
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 15:31:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 06F4A24679
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:48:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576853339;
-	bh=pdUyHJteufkCXxpdXdKTIz/lLrsqxkuHnSEupLHzhRE=;
-	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=aIhxblLCMJOBr3oiGCymTvnvC5SnewYefbLZwoTUJLcdaS+7y0j7AGOBUj10T6dUp
-	 c9BiQ5KOwvH4z+7/VJ+eFOhSppKFhXmJHc3IacB2qfYKbneymH2NwtfN5UvTf98R6d
-	 rdpmIW3wsIWNvnaXihirNpX3w3L/2Swr9EtjwKRA=
+	by mail.kernel.org (Postfix) with ESMTP id AAB2624679
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 15:31:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727400AbfLTOrB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Dec 2019 09:47:01 -0500
-Received: from mail.kernel.org ([198.145.29.99]:45146 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727381AbfLTOrB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Dec 2019 09:47:01 -0500
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 0C7C8218AC;
-        Fri, 20 Dec 2019 14:46:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576853220;
-        bh=pdUyHJteufkCXxpdXdKTIz/lLrsqxkuHnSEupLHzhRE=;
-        h=From:To:Cc:Subject:Date:From;
-        b=kbTaoQQ9VjrL5bpLnKtfIs/tromjBqJEhDu/ydv7AggqC798GpYF7Mm2La1j0R6wo
-         sTuqlWp2fkIsKOfVQzVxlSKL1RfUVdAq0YXWgMVdd2XUkQ4iQ2qY/HTZmEnEPcvTmM
-         r3z6qd4JbdQ7K1Ot/f5gqDZJ6twjI5T2naeoZFqk=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Leonard Crestez <leonard.crestez@nxp.com>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 01/14] PM / devfreq: Don't fail devfreq_dev_release if not in list
-Date:   Fri, 20 Dec 2019 09:46:45 -0500
-Message-Id: <20191220144658.10414-1-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
+        id S1727428AbfLTPbZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Dec 2019 10:31:25 -0500
+Received: from esa6.microchip.iphmx.com ([216.71.154.253]:32238 "EHLO
+        esa6.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727384AbfLTPbY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Dec 2019 10:31:24 -0500
+Received-SPF: Pass (esa6.microchip.iphmx.com: domain of
+  Claudiu.Beznea@microchip.com designates 198.175.253.82 as
+  permitted sender) identity=mailfrom;
+  client-ip=198.175.253.82; receiver=esa6.microchip.iphmx.com;
+  envelope-from="Claudiu.Beznea@microchip.com";
+  x-sender="Claudiu.Beznea@microchip.com";
+  x-conformance=spf_only; x-record-type="v=spf1";
+  x-record-text="v=spf1 mx a:ushub1.microchip.com
+  a:smtpout.microchip.com -exists:%{i}.spf.microchip.iphmx.com
+  include:servers.mcsv.net include:mktomail.com
+  include:spf.protection.outlook.com ~all"
+Received-SPF: None (esa6.microchip.iphmx.com: no sender
+  authenticity information available from domain of
+  postmaster@email.microchip.com) identity=helo;
+  client-ip=198.175.253.82; receiver=esa6.microchip.iphmx.com;
+  envelope-from="Claudiu.Beznea@microchip.com";
+  x-sender="postmaster@email.microchip.com";
+  x-conformance=spf_only
+Authentication-Results: esa6.microchip.iphmx.com; dkim=none (message not signed) header.i=none; spf=Pass smtp.mailfrom=Claudiu.Beznea@microchip.com; spf=None smtp.helo=postmaster@email.microchip.com; dmarc=pass (p=none dis=none) d=microchip.com
+IronPort-SDR: FTCSFpRtgN7lXrlDsFDpdQV+UrKxCvj219yph4+nQ228/FAh47AcjPT6Rdvg/cbrvhUg/PsvyM
+ LeoWRRi6HRiHeE0j9UlUkJz4HSXMBh4IVGfh4bkSJprSmt1dE1HO34QufT6f/gWcOayWKLzHSy
+ mp2rJWkJYGeg3yBfUqLTNQFbykT3C/RNw6zT1DoDf5+tv0DrtFlYcdZ0xQJYyK2pUPCRVp5vpV
+ +ZrimcMoGhbhYdyVP47Rwdmcf7UchOO2785/e+FQhuYwcKjK5bqLqZUKdpHTqkLAXS3eEiC4o7
+ IdE=
+X-IronPort-AV: E=Sophos;i="5.69,336,1571727600"; 
+   d="scan'208";a="58490660"
+Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
+  by esa6.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 20 Dec 2019 08:31:23 -0700
+Received: from chn-vm-ex03.mchp-main.com (10.10.85.151) by
+ chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.1713.5; Fri, 20 Dec 2019 08:31:27 -0700
+Received: from m18063-ThinkPad-T460p.mchp-main.com (10.10.85.251) by
+ chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server id
+ 15.1.1713.5 via Frontend Transport; Fri, 20 Dec 2019 08:31:21 -0700
+From:   Claudiu Beznea <claudiu.beznea@microchip.com>
+To:     <nicolas.ferre@microchip.com>, <sre@kernel.org>,
+        <alexandre.belloni@bootlin.com>
+CC:     <linux-pm@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>,
+        Claudiu Beznea <claudiu.beznea@microchip.com>
+Subject: [PATCH v2 0/2] at91-sama5d2_shdwc shutdown controller
+Date:   Fri, 20 Dec 2019 17:31:16 +0200
+Message-ID: <1576855878-13213-1-git-send-email-claudiu.beznea@microchip.com>
+X-Mailer: git-send-email 2.7.4
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Leonard Crestez <leonard.crestez@nxp.com>
+PMC master clock register offset is different b/w sam9x60 and
+other SoCs. Since there is a need of this register offset in
+shutdown procedure we need to have it per SoC. This is what
+this series does.
 
-[ Upstream commit 42a6b25e67df6ee6675e8d1eaf18065bd73328ba ]
+Changes in v2:
+- do not use r5 as intermediary registers in at91_poweroff 
 
-Right now devfreq_dev_release will print a warning and abort the rest of
-the cleanup if the devfreq instance is not part of the global
-devfreq_list. But this is a valid scenario, for example it can happen if
-the governor can't be found or on any other init error that happens
-after device_register.
+Claudiu Beznea (2):
+  power: reset: at91-poweroff: introduce struct shdwc_reg_config
+  power: reset: at91-poweroff: use proper master clock register offset
 
-Initialize devfreq->node to an empty list head in devfreq_add_device so
-that list_del becomes a safe noop inside devfreq_dev_release and we can
-continue the rest of the cleanup.
+ drivers/power/reset/at91-sama5d2_shdwc.c | 72 +++++++++++++++++++++-----------
+ 1 file changed, 47 insertions(+), 25 deletions(-)
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/devfreq/devfreq.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index db70cee71caa1..dc103edc9fc17 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -481,11 +481,6 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
- static void _remove_devfreq(struct devfreq *devfreq)
- {
- 	mutex_lock(&devfreq_list_lock);
--	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
--		mutex_unlock(&devfreq_list_lock);
--		dev_warn(&devfreq->dev, "releasing devfreq which doesn't exist\n");
--		return;
--	}
- 	list_del(&devfreq->node);
- 	mutex_unlock(&devfreq_list_lock);
- 
-@@ -557,6 +552,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->dev.parent = dev;
- 	devfreq->dev.class = devfreq_class;
- 	devfreq->dev.release = devfreq_dev_release;
-+	INIT_LIST_HEAD(&devfreq->node);
- 	devfreq->profile = profile;
- 	strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
- 	devfreq->previous_freq = profile->initial_freq;
 -- 
-2.20.1
+2.7.4
 
