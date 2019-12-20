@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE133C43603
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:47:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A009C43603
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:48:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BBDB021D7E
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:47:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 06F4A24679
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Dec 2019 14:48:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1576853268;
-	bh=MO0/HY9PnNyk0zObAy/yukYooxhFZmu/FbobxKc5itY=;
+	s=default; t=1576853339;
+	bh=pdUyHJteufkCXxpdXdKTIz/lLrsqxkuHnSEupLHzhRE=;
 	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=IArvfzXpGfRarXMXGBd1PZ8fswCR1wuquTpM7FOQJkyQ0mHU0DJBCA+vt+IWdlyhT
-	 fyiuS1emZQmY1HqESZrgldVqgQk8ryib0GCeFa+8DOWr8Joyv3IAlKRZP9QdUI+mW3
-	 hWgnfFiQPf2Yg8TjzvvAFyp+emngc5YW6QqtZ9LE=
+	b=aIhxblLCMJOBr3oiGCymTvnvC5SnewYefbLZwoTUJLcdaS+7y0j7AGOBUj10T6dUp
+	 c9BiQ5KOwvH4z+7/VJ+eFOhSppKFhXmJHc3IacB2qfYKbneymH2NwtfN5UvTf98R6d
+	 rdpmIW3wsIWNvnaXihirNpX3w3L/2Swr9EtjwKRA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727390AbfLTOrr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Dec 2019 09:47:47 -0500
-Received: from mail.kernel.org ([198.145.29.99]:46136 "EHLO mail.kernel.org"
+        id S1727400AbfLTOrB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Dec 2019 09:47:01 -0500
+Received: from mail.kernel.org ([198.145.29.99]:45146 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727381AbfLTOrq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Dec 2019 09:47:46 -0500
+        id S1727381AbfLTOrB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 20 Dec 2019 09:47:01 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 355E021D7E;
-        Fri, 20 Dec 2019 14:47:45 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0C7C8218AC;
+        Fri, 20 Dec 2019 14:46:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1576853266;
-        bh=MO0/HY9PnNyk0zObAy/yukYooxhFZmu/FbobxKc5itY=;
+        s=default; t=1576853220;
+        bh=pdUyHJteufkCXxpdXdKTIz/lLrsqxkuHnSEupLHzhRE=;
         h=From:To:Cc:Subject:Date:From;
-        b=ULsynnl43c3Cjf7487bCQ6bgVR+orGb7F5JtLAy1zBjqGL729pDxvTq8YZmSC6etB
-         JtreBs3f+WmfisFbtDHKGMLvVjA035YpGL6pqZ+7+5KJmuA02spqhxpQrE6nvfpvCR
-         qTvxoDAeire7yycyobKYLsr/p/SflhOmrdytvcAQ=
+        b=kbTaoQQ9VjrL5bpLnKtfIs/tromjBqJEhDu/ydv7AggqC798GpYF7Mm2La1j0R6wo
+         sTuqlWp2fkIsKOfVQzVxlSKL1RfUVdAq0YXWgMVdd2XUkQ4iQ2qY/HTZmEnEPcvTmM
+         r3z6qd4JbdQ7K1Ot/f5gqDZJ6twjI5T2naeoZFqk=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Leonard Crestez <leonard.crestez@nxp.com>,
         Matthias Kaehlcke <mka@chromium.org>,
         Chanwoo Choi <cw00.choi@samsung.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 01/11] PM / devfreq: Don't fail devfreq_dev_release if not in list
-Date:   Fri, 20 Dec 2019 09:47:33 -0500
-Message-Id: <20191220144744.10565-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 01/14] PM / devfreq: Don't fail devfreq_dev_release if not in list
+Date:   Fri, 20 Dec 2019 09:46:45 -0500
+Message-Id: <20191220144658.10414-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 X-stable: review
@@ -81,10 +81,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 4f6fc1cfd7da2..f01f7434df8eb 100644
+index db70cee71caa1..dc103edc9fc17 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -396,11 +396,6 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+@@ -481,11 +481,6 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
  static void _remove_devfreq(struct devfreq *devfreq)
  {
  	mutex_lock(&devfreq_list_lock);
@@ -96,7 +96,7 @@ index 4f6fc1cfd7da2..f01f7434df8eb 100644
  	list_del(&devfreq->node);
  	mutex_unlock(&devfreq_list_lock);
  
-@@ -472,6 +467,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+@@ -557,6 +552,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
  	devfreq->dev.parent = dev;
  	devfreq->dev.class = devfreq_class;
  	devfreq->dev.release = devfreq_dev_release;
