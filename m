@@ -2,243 +2,199 @@ Return-Path: <SRS0=vAOg=2L=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11AACC43603
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E267FC3F68F
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 06:14:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D8F7021927
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:47:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C33D12253D
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 06:14:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726736AbfLUEpx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Dec 2019 23:45:53 -0500
-Received: from mga03.intel.com ([134.134.136.65]:31824 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726613AbfLUEpw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Dec 2019 23:45:52 -0500
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 20 Dec 2019 20:45:50 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.69,338,1571727600"; 
-   d="scan'208";a="222620045"
-Received: from sjchrist-coffee.jf.intel.com ([10.54.74.202])
-  by fmsmga001.fm.intel.com with ESMTP; 20 Dec 2019 20:45:50 -0800
-From:   Sean Christopherson <sean.j.christopherson@intel.com>
-To:     Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        x86@kernel.org
-Cc:     "H. Peter Anvin" <hpa@zytor.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Arnaldo Carvalho de Melo <acme@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Jiri Olsa <jolsa@redhat.com>,
-        Namhyung Kim <namhyung@kernel.org>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>,
-        Sean Christopherson <sean.j.christopherson@intel.com>,
-        Vitaly Kuznetsov <vkuznets@redhat.com>,
-        Wanpeng Li <wanpengli@tencent.com>,
-        Jim Mattson <jmattson@google.com>,
-        Joerg Roedel <joro@8bytes.org>,
-        Tony Luck <tony.luck@intel.com>,
-        Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
-        Jacob Pan <jacob.jun.pan@linux.intel.com>,
-        Len Brown <lenb@kernel.org>, Shuah Khan <shuah@kernel.org>,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kselftest@vger.kernel.org, Borislav Petkov <bp@suse.de>,
-        Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: [PATCH v5 00/19] x86/cpu: Clean up handling of VMX features
-Date:   Fri, 20 Dec 2019 20:44:54 -0800
-Message-Id: <20191221044513.21680-1-sean.j.christopherson@intel.com>
-X-Mailer: git-send-email 2.24.1
+        id S1725829AbfLUGOU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 21 Dec 2019 01:14:20 -0500
+Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:52656
+        "EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1725773AbfLUGOT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Dec 2019 01:14:19 -0500
+X-IronPort-AV: E=Sophos;i="5.69,338,1571695200"; 
+   d="scan'208";a="333931587"
+Received: from abo-154-110-68.mrs.modulonet.fr (HELO hadrien) ([85.68.110.154])
+  by mail3-relais-sop.national.inria.fr with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 21 Dec 2019 07:14:13 +0100
+Date:   Sat, 21 Dec 2019 07:14:12 +0100 (CET)
+From:   Julia Lawall <julia.lawall@inria.fr>
+X-X-Sender: jll@hadrien
+To:     Niklas Cassel <niklas.cassel@linaro.org>
+cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org,
+        devel@acpica.org, linux-acpi@vger.kernel.org,
+        kbuild-all@lists.01.org
+Subject: [pm:bleeding-edge 59/60] drivers/power/avs/qcom-cpr.c:1539:5-21:
+ WARNING: Unsigned expression compared with zero: drv -> num_corners < 0
+ (fwd)
+Message-ID: <alpine.DEB.2.21.1912210710140.2559@hadrien>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Clean up a handful of interrelated warts in the kernel's handling of VMX:
+Please see line 1539.  It seems that the num_corners field is unsigned, so
+it will not be less than 0.
 
-  - Enable VMX in IA32_FEATURE_CONTROL during boot instead of on-demand
-    during KVM load to avoid future contention over IA32_FEATURE_CONTROL.
+julia
 
-  - Rework VMX feature reporting so that it is accurate and up-to-date,
-    now and in the future.
 
-  - Consolidate code across CPUs that support VMX.
 
-This series stems from two separate but related issues.  The first issue,
-pointed out by Boris in the SGX enabling series[*], is that the kernel
-currently doesn't ensure the IA32_FEATURE_CONTROL MSR is configured during
-boot.  The second issue is that the kernel's reporting of VMX features is
-stale, potentially inaccurate, and difficult to maintain.
+---------- Forwarded message ----------
+Date: Sat, 21 Dec 2019 06:52:19 +0800
+From: kbuild test robot <lkp@intel.com>
+To: kbuild@lists.01.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>
+Subject: [pm:bleeding-edge 59/60] drivers/power/avs/qcom-cpr.c:1539:5-21:
+    WARNING: Unsigned expression compared with zero: drv -> num_corners < 0
 
-v5:
-  - Rebase to tip/master, ec7b10f2d023 ("Merge branch 'x86/cleanups'")
-  - Fix a missing IA32_FEAT_CTL change in the idle driver (which amusingly
-    reads the MSR to deal with SGX). [kbuild test robot]
-  - Tweak the displayed names for VMX flags. [Boris, Paolo, Liran]
-  - Add a comment above the raw rdmsr() calls in the VMX feature flag
-    parsing. [Boris]
-  - Fix a few changelog typos. [Boris]
-  - Use VMX_F() instead of F() for the VMX flag extraction macro. [Boris]
-  - Drop 'PROC' from the PRIMARY_CTLS and SECONDARY_CTLS enums to keep
-    line lengths sane.
-  - Keep the pr_fmt at the top of feat_ctl.c when the flag populating code
-    is introduced (previously got buried in the middle of the file).
+CC: kbuild-all@lists.01.org
+CC: linux-acpi@vger.kernel.org
+CC: devel@acpica.org
+CC: linux-pm@vger.kernel.org
+TO: Niklas Cassel <niklas.cassel@linaro.org>
+CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+CC: "Jorge Ramirez-Ortiz" <jorge.ramirez-ortiz@linaro.org>
+CC: Bjorn Andersson <bjorn.andersson@linaro.org>
+CC: Ulf Hansson <ulf.hansson@linaro.org>
 
-v4:
-  - Rebase to tip/master, 8a1b070333f4 ("Merge branch 'WIP.x86/mm'")
-  - Rename everything feature control related to IA32_FEAT_CTL. [Boris]
-  - Minor coding style tweaks [Boris and Jarkko].
-  - Print VMX feature flags in "vmx flags" to avoid polluting "flags",
-    but keep printing the current synthetic VMX in "flags" so as not to
-    break the ABI. [Boris]
-  - Don't bother printing an error message in the extremely unlikely
-    event VMX is supported but IA32_FEAT_CTL doesn't exist. [Boris]
-  - Beef up a few changelogs and comments. [Boris]
-  - Add a comment in the LMCE code for the new WARN. [Jarkko]
-  - Check CONFIG_KVM_INTEL instead of CONFIG_KVM when deciding whether
-    or not to enable VMX.
-  - Add a patch to introduce X86_FEATURE_MSR_IA32_FEAT_CTL.
-  - Dropped Jim's Reviewed-by from a few KVM patches due to the above
-    addition.
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+head:   89eba9e38dc4ed4576eaf7711c60403568663291
+commit: bf6910abf54871b0e976e52f56fb3b3dd1b90e48 [59/60] power: avs: Add support for CPR (Core Power Reduction)
+:::::: branch date: 13 hours ago
+:::::: commit date: 13 hours ago
 
-v3:
-  - Rebase to tip/master, ceceaf1f12ba ("Merge branch 'WIP.x86/cleanups'").
-  - Rename the feature control MSR bit defines [Boris].
-  - Rewrite the error message displayed when reading feature control MSR
-    faults on a VMX capable CPU to explicitly state that it's likely a
-    hardware or hypervisor issue [Boris].
-  - Collect a Reviewed-by for the LMCE change [Boris].
-  - Enable VMX in feature control (if it's unlocked) if and only if
-    KVM is enabled [Paolo].
-  - Remove a big pile of redudant MSR defines from the KVM selftests that
-    was discovered when renaming the feature control defines.
-  - Fix a changelog typo [Boris].
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
+Reported-by: Julia Lawall <julia.lawall@lip6.fr>
 
-v2:
-  - Rebase to latest tip/x86/cpu (1edae1ae6258, "x86/Kconfig: Enforce...)
-  - Collect Jim's reviews.
-  - Fix a typo in setting of EPT capabilities [TonyWWang-oc].
-  - Remove defines for reserved VMX feature flags [Paolo].
-  - Print the VMX features under "flags" and maintain all existing names
-    to be backward compatible with the ABI [Paolo].
-  - Create aggregate APIC features to report FLEXPRIORITY and APICV, so
-    that the full feature *and* their associated individual features are
-    printed, e.g. to aid in recognizing why an APIC feature isn't being
-    used.
-  - Fix a few copy paste errors in changelogs.
+>> drivers/power/avs/qcom-cpr.c:1539:5-21: WARNING: Unsigned expression compared with zero: drv -> num_corners < 0
 
-v1 cover letter:
+# https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git/commit/?id=bf6910abf54871b0e976e52f56fb3b3dd1b90e48
+git remote add pm https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+git remote update pm
+git checkout bf6910abf54871b0e976e52f56fb3b3dd1b90e48
+vim +1539 drivers/power/avs/qcom-cpr.c
 
-== IA32_FEATURE_CONTROL ==
-Lack of IA32_FEATURE_CONTROL configuration during boot isn't a functional
-issue in the current kernel as the majority of platforms set and lock
-IA32_FEATURE_CONTROL in firmware.  And when the MSR is left unlocked, KVM
-is the only subsystem that writes IA32_FEATURE_CONTROL.  That will change
-if/when SGX support is enabled, as SGX will also want to fully enable
-itself when IA32_FEATURE_CONTROL is unlocked.
+bf6910abf54871 Niklas Cassel 2019-11-29  1487
+bf6910abf54871 Niklas Cassel 2019-11-29  1488  static int cpr_pd_attach_dev(struct generic_pm_domain *domain,
+bf6910abf54871 Niklas Cassel 2019-11-29  1489  			     struct device *dev)
+bf6910abf54871 Niklas Cassel 2019-11-29  1490  {
+bf6910abf54871 Niklas Cassel 2019-11-29  1491  	struct cpr_drv *drv = container_of(domain, struct cpr_drv, pd);
+bf6910abf54871 Niklas Cassel 2019-11-29  1492  	const struct acc_desc *acc_desc = drv->acc_desc;
+bf6910abf54871 Niklas Cassel 2019-11-29  1493  	int ret = 0;
+bf6910abf54871 Niklas Cassel 2019-11-29  1494
+bf6910abf54871 Niklas Cassel 2019-11-29  1495  	mutex_lock(&drv->lock);
+bf6910abf54871 Niklas Cassel 2019-11-29  1496
+bf6910abf54871 Niklas Cassel 2019-11-29  1497  	dev_dbg(drv->dev, "attach callback for: %s\n", dev_name(dev));
+bf6910abf54871 Niklas Cassel 2019-11-29  1498
+bf6910abf54871 Niklas Cassel 2019-11-29  1499  	/*
+bf6910abf54871 Niklas Cassel 2019-11-29  1500  	 * This driver only supports scaling voltage for a CPU cluster
+bf6910abf54871 Niklas Cassel 2019-11-29  1501  	 * where all CPUs in the cluster share a single regulator.
+bf6910abf54871 Niklas Cassel 2019-11-29  1502  	 * Therefore, save the struct device pointer only for the first
+bf6910abf54871 Niklas Cassel 2019-11-29  1503  	 * CPU device that gets attached. There is no need to do any
+bf6910abf54871 Niklas Cassel 2019-11-29  1504  	 * additional initialization when further CPUs get attached.
+bf6910abf54871 Niklas Cassel 2019-11-29  1505  	 */
+bf6910abf54871 Niklas Cassel 2019-11-29  1506  	if (drv->attached_cpu_dev)
+bf6910abf54871 Niklas Cassel 2019-11-29  1507  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1508
+bf6910abf54871 Niklas Cassel 2019-11-29  1509  	/*
+bf6910abf54871 Niklas Cassel 2019-11-29  1510  	 * cpr_scale_voltage() requires the direction (if we are changing
+bf6910abf54871 Niklas Cassel 2019-11-29  1511  	 * to a higher or lower OPP). The first time
+bf6910abf54871 Niklas Cassel 2019-11-29  1512  	 * cpr_set_performance_state() is called, there is no previous
+bf6910abf54871 Niklas Cassel 2019-11-29  1513  	 * performance state defined. Therefore, we call
+bf6910abf54871 Niklas Cassel 2019-11-29  1514  	 * cpr_find_initial_corner() that gets the CPU clock frequency
+bf6910abf54871 Niklas Cassel 2019-11-29  1515  	 * set by the bootloader, so that we can determine the direction
+bf6910abf54871 Niklas Cassel 2019-11-29  1516  	 * the first time cpr_set_performance_state() is called.
+bf6910abf54871 Niklas Cassel 2019-11-29  1517  	 */
+bf6910abf54871 Niklas Cassel 2019-11-29  1518  	drv->cpu_clk = devm_clk_get(dev, NULL);
+bf6910abf54871 Niklas Cassel 2019-11-29  1519  	if (IS_ERR(drv->cpu_clk)) {
+bf6910abf54871 Niklas Cassel 2019-11-29  1520  		ret = PTR_ERR(drv->cpu_clk);
+bf6910abf54871 Niklas Cassel 2019-11-29  1521  		if (ret != -EPROBE_DEFER)
+bf6910abf54871 Niklas Cassel 2019-11-29  1522  			dev_err(drv->dev, "could not get cpu clk: %d\n", ret);
+bf6910abf54871 Niklas Cassel 2019-11-29  1523  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1524  	}
+bf6910abf54871 Niklas Cassel 2019-11-29  1525  	drv->attached_cpu_dev = dev;
+bf6910abf54871 Niklas Cassel 2019-11-29  1526
+bf6910abf54871 Niklas Cassel 2019-11-29  1527  	dev_dbg(drv->dev, "using cpu clk from: %s\n",
+bf6910abf54871 Niklas Cassel 2019-11-29  1528  		dev_name(drv->attached_cpu_dev));
+bf6910abf54871 Niklas Cassel 2019-11-29  1529
+bf6910abf54871 Niklas Cassel 2019-11-29  1530  	/*
+bf6910abf54871 Niklas Cassel 2019-11-29  1531  	 * Everything related to (virtual) corners has to be initialized
+bf6910abf54871 Niklas Cassel 2019-11-29  1532  	 * here, when attaching to the power domain, since we need to know
+bf6910abf54871 Niklas Cassel 2019-11-29  1533  	 * the maximum frequency for each fuse corner, and this is only
+bf6910abf54871 Niklas Cassel 2019-11-29  1534  	 * available after the cpufreq driver has attached to us.
+bf6910abf54871 Niklas Cassel 2019-11-29  1535  	 * The reason for this is that we need to know the highest
+bf6910abf54871 Niklas Cassel 2019-11-29  1536  	 * frequency associated with each fuse corner.
+bf6910abf54871 Niklas Cassel 2019-11-29  1537  	 */
+bf6910abf54871 Niklas Cassel 2019-11-29  1538  	drv->num_corners = dev_pm_opp_get_opp_count(&drv->pd.dev);
+bf6910abf54871 Niklas Cassel 2019-11-29 @1539  	if (drv->num_corners < 0) {
+bf6910abf54871 Niklas Cassel 2019-11-29  1540  		ret = drv->num_corners;
+bf6910abf54871 Niklas Cassel 2019-11-29  1541  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1542  	}
+bf6910abf54871 Niklas Cassel 2019-11-29  1543  	if (drv->num_corners < 2) {
+bf6910abf54871 Niklas Cassel 2019-11-29  1544  		dev_err(drv->dev, "need at least 2 OPPs to use CPR\n");
+bf6910abf54871 Niklas Cassel 2019-11-29  1545  		ret = -EINVAL;
+bf6910abf54871 Niklas Cassel 2019-11-29  1546  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1547  	}
+bf6910abf54871 Niklas Cassel 2019-11-29  1548
+bf6910abf54871 Niklas Cassel 2019-11-29  1549  	dev_dbg(drv->dev, "number of OPPs: %d\n", drv->num_corners);
+bf6910abf54871 Niklas Cassel 2019-11-29  1550
+bf6910abf54871 Niklas Cassel 2019-11-29  1551  	drv->corners = devm_kcalloc(drv->dev, drv->num_corners,
+bf6910abf54871 Niklas Cassel 2019-11-29  1552  				    sizeof(*drv->corners),
+bf6910abf54871 Niklas Cassel 2019-11-29  1553  				    GFP_KERNEL);
+bf6910abf54871 Niklas Cassel 2019-11-29  1554  	if (!drv->corners) {
+bf6910abf54871 Niklas Cassel 2019-11-29  1555  		ret = -ENOMEM;
+bf6910abf54871 Niklas Cassel 2019-11-29  1556  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1557  	}
+bf6910abf54871 Niklas Cassel 2019-11-29  1558
+bf6910abf54871 Niklas Cassel 2019-11-29  1559  	ret = cpr_corner_init(drv);
+bf6910abf54871 Niklas Cassel 2019-11-29  1560  	if (ret)
+bf6910abf54871 Niklas Cassel 2019-11-29  1561  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1562
+bf6910abf54871 Niklas Cassel 2019-11-29  1563  	cpr_set_loop_allowed(drv);
+bf6910abf54871 Niklas Cassel 2019-11-29  1564
+bf6910abf54871 Niklas Cassel 2019-11-29  1565  	ret = cpr_init_parameters(drv);
+bf6910abf54871 Niklas Cassel 2019-11-29  1566  	if (ret)
+bf6910abf54871 Niklas Cassel 2019-11-29  1567  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1568
+bf6910abf54871 Niklas Cassel 2019-11-29  1569  	/* Configure CPR HW but keep it disabled */
+bf6910abf54871 Niklas Cassel 2019-11-29  1570  	ret = cpr_config(drv);
+bf6910abf54871 Niklas Cassel 2019-11-29  1571  	if (ret)
+bf6910abf54871 Niklas Cassel 2019-11-29  1572  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1573
+bf6910abf54871 Niklas Cassel 2019-11-29  1574  	ret = cpr_find_initial_corner(drv);
+bf6910abf54871 Niklas Cassel 2019-11-29  1575  	if (ret)
+bf6910abf54871 Niklas Cassel 2019-11-29  1576  		goto unlock;
+bf6910abf54871 Niklas Cassel 2019-11-29  1577
+bf6910abf54871 Niklas Cassel 2019-11-29  1578  	if (acc_desc->config)
+bf6910abf54871 Niklas Cassel 2019-11-29  1579  		regmap_multi_reg_write(drv->tcsr, acc_desc->config,
+bf6910abf54871 Niklas Cassel 2019-11-29  1580  				       acc_desc->num_regs_per_fuse);
+bf6910abf54871 Niklas Cassel 2019-11-29  1581
+bf6910abf54871 Niklas Cassel 2019-11-29  1582  	/* Enable ACC if required */
+bf6910abf54871 Niklas Cassel 2019-11-29  1583  	if (acc_desc->enable_mask)
+bf6910abf54871 Niklas Cassel 2019-11-29  1584  		regmap_update_bits(drv->tcsr, acc_desc->enable_reg,
+bf6910abf54871 Niklas Cassel 2019-11-29  1585  				   acc_desc->enable_mask,
+bf6910abf54871 Niklas Cassel 2019-11-29  1586  				   acc_desc->enable_mask);
+bf6910abf54871 Niklas Cassel 2019-11-29  1587
+bf6910abf54871 Niklas Cassel 2019-11-29  1588  unlock:
+bf6910abf54871 Niklas Cassel 2019-11-29  1589  	mutex_unlock(&drv->lock);
+bf6910abf54871 Niklas Cassel 2019-11-29  1590
+bf6910abf54871 Niklas Cassel 2019-11-29  1591  	return ret;
+bf6910abf54871 Niklas Cassel 2019-11-29  1592  }
+bf6910abf54871 Niklas Cassel 2019-11-29  1593
 
-== VMX Feature Reporting ==
-VMX features are not enumerated via CPUID, but instead are enumerated
-through VMX MSRs.  As a result, new VMX features are not automatically
-reported via /proc/cpuinfo.
-
-An attempt was made long ago to report interesting and/or meaningful VMX
-features by synthesizing select features into a Linux-defined cpufeatures
-word.  Synthetic feature flags worked for the initial purpose, but the
-existence of the synthetic flags was forgotten almost immediately, e.g.
-only one new flag (EPT A/D) has been added in the the decade since the
-synthetic VMX features were introduced, while VMX and KVM have gained
-support for many new features.
-
-Placing the synthetic flags in x86_capability also allows them to be
-queried via cpu_has() and company, which is misleading as the flags exist
-purely for reporting via /proc/cpuinfo.  KVM, the only in-kernel user of
-VMX, ignores the flags.
-
-Last but not least, VMX features are reported in /proc/cpuinfo even
-when VMX is unusable due to lack of enabling in IA32_FEATURE_CONTROL.
-
-== Caveats ==
-All of the testing of non-standard flows was done in a VM, as I don't
-have a system that leaves IA32_FEATURE_CONTROL unlocked, or locks it with
-VMX disabled.
-
-The Centaur and Zhaoxin changes are somewhat speculative, as I haven't
-confirmed they actually support IA32_FEATURE_CONTROL, or that they want to
-gain "official" KVM support.  I assume they unofficially support KVM given
-that both CPUs went through the effort of enumerating VMX features.  That
-in turn would require them to support IA32_FEATURE_CONTROL since KVM will
-fault and refuse to load if the MSR doesn't exist.
-
-[*] https://lkml.kernel.org/r/20190925085156.GA3891@zn.tnic
-
-Sean Christopherson (19):
-  x86/msr-index: Clean up bit defines for IA32_FEATURE_CONTROL MSR
-  selftests: kvm: Replace manual MSR defs with common msr-index.h
-  tools arch x86: Sync msr-index.h from kernel sources
-  x86/intel: Initialize IA32_FEAT_CTL MSR at boot
-  x86/mce: WARN once if IA32_FEAT_CTL MSR is left unlocked
-  x86/centaur: Use common IA32_FEAT_CTL MSR initialization
-  x86/zhaoxin: Use common IA32_FEAT_CTL MSR initialization
-  x86/cpu: Clear VMX feature flag if VMX is not fully enabled
-  x86/vmx: Introduce VMX_FEATURES_*
-  x86/cpu: Detect VMX features on Intel, Centaur and Zhaoxin CPUs
-  x86/cpu: Print VMX flags in /proc/cpuinfo using VMX_FEATURES_*
-  x86/cpu: Set synthetic VMX cpufeatures during init_ia32_feat_ctl()
-  x86/cpufeatures: Add flag to track whether MSR IA32_FEAT_CTL is
-    configured
-  KVM: VMX: Drop initialization of IA32_FEAT_CTL MSR
-  KVM: VMX: Use VMX feature flag to query BIOS enabling
-  KVM: VMX: Check for full VMX support when verifying CPU compatibility
-  KVM: VMX: Use VMX_FEATURE_* flags to define VMCS control bits
-  perf/x86: Provide stubs of KVM helpers for non-Intel CPUs
-  KVM: VMX: Allow KVM_INTEL when building for Centaur and/or Zhaoxin
-    CPUs
-
- MAINTAINERS                                   |   2 +-
- arch/x86/Kconfig.cpu                          |   8 +
- arch/x86/boot/mkcpustr.c                      |   1 +
- arch/x86/include/asm/cpufeatures.h            |   1 +
- arch/x86/include/asm/msr-index.h              |  14 +-
- arch/x86/include/asm/perf_event.h             |  22 +-
- arch/x86/include/asm/processor.h              |   4 +
- arch/x86/include/asm/vmx.h                    | 105 +--
- arch/x86/include/asm/vmxfeatures.h            |  86 +++
- arch/x86/kernel/cpu/Makefile                  |   6 +-
- arch/x86/kernel/cpu/centaur.c                 |  35 +-
- arch/x86/kernel/cpu/common.c                  |   3 +
- arch/x86/kernel/cpu/cpu.h                     |   4 +
- arch/x86/kernel/cpu/feat_ctl.c                | 144 ++++
- arch/x86/kernel/cpu/intel.c                   |  49 +-
- arch/x86/kernel/cpu/mce/intel.c               |  15 +-
- arch/x86/kernel/cpu/mkcapflags.sh             |  15 +-
- arch/x86/kernel/cpu/proc.c                    |  15 +
- arch/x86/kernel/cpu/zhaoxin.c                 |  35 +-
- arch/x86/kvm/Kconfig                          |  10 +-
- arch/x86/kvm/vmx/nested.c                     |   4 +-
- arch/x86/kvm/vmx/vmx.c                        |  67 +-
- arch/x86/kvm/vmx/vmx.h                        |   2 +-
- arch/x86/kvm/x86.c                            |   2 +-
- drivers/idle/intel_idle.c                     |   2 +-
- tools/arch/x86/include/asm/msr-index.h        |  14 +-
- tools/power/x86/turbostat/turbostat.c         |   4 +-
- tools/testing/selftests/kvm/Makefile          |   4 +-
- .../selftests/kvm/include/x86_64/processor.h  | 726 +-----------------
- tools/testing/selftests/kvm/lib/x86_64/vmx.c  |   8 +-
- 30 files changed, 420 insertions(+), 987 deletions(-)
- create mode 100644 arch/x86/include/asm/vmxfeatures.h
- create mode 100644 arch/x86/kernel/cpu/feat_ctl.c
-
--- 
-2.24.1
-
+---
+0-DAY kernel test infrastructure                 Open Source Technology Center
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org Intel Corporation
