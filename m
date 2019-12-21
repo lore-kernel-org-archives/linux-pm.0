@@ -6,27 +6,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9E00C2D0C0
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:47:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3889AC43603
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:47:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B89572253D
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:47:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 17A102253D
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:47:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726874AbfLUErL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Dec 2019 23:47:11 -0500
+        id S1727592AbfLUErT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Dec 2019 23:47:19 -0500
 Received: from mga03.intel.com ([134.134.136.65]:31827 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726613AbfLUEp7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Dec 2019 23:45:59 -0500
+        id S1726900AbfLUEp5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 20 Dec 2019 23:45:57 -0500
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 20 Dec 2019 20:45:58 -0800
+  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 20 Dec 2019 20:45:56 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.69,338,1571727600"; 
-   d="scan'208";a="222620090"
+   d="scan'208";a="222620078"
 Received: from sjchrist-coffee.jf.intel.com ([10.54.74.202])
-  by fmsmga001.fm.intel.com with ESMTP; 20 Dec 2019 20:45:58 -0800
+  by fmsmga001.fm.intel.com with ESMTP; 20 Dec 2019 20:45:56 -0800
 From:   Sean Christopherson <sean.j.christopherson@intel.com>
 To:     Thomas Gleixner <tglx@linutronix.de>,
         Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
@@ -53,9 +53,9 @@ Cc:     "H. Peter Anvin" <hpa@zytor.com>,
         linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kselftest@vger.kernel.org, Borislav Petkov <bp@suse.de>,
         Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: [PATCH v5 08/19] x86/cpu: Clear VMX feature flag if VMX is not fully enabled
-Date:   Fri, 20 Dec 2019 20:45:02 -0800
-Message-Id: <20191221044513.21680-9-sean.j.christopherson@intel.com>
+Subject: [PATCH v5 06/19] x86/centaur: Use common IA32_FEAT_CTL MSR initialization
+Date:   Fri, 20 Dec 2019 20:45:00 -0800
+Message-Id: <20191221044513.21680-7-sean.j.christopherson@intel.com>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20191221044513.21680-1-sean.j.christopherson@intel.com>
 References: <20191221044513.21680-1-sean.j.christopherson@intel.com>
@@ -66,70 +66,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that IA32_FEAT_CTL is always configured and locked for CPUs that are
-known to support VMX[*], clear the VMX capability flag if the MSR is
-unsupported or BIOS disabled VMX, i.e. locked IA32_FEAT_CTL and didn't
-set the appropriate VMX enable bit.
-
-[*] Because init_ia32_feat_ctl() is called from vendors ->c_init(), it's
-    still possible for IA32_FEAT_CTL to be left unlocked when VMX is
-    supported by the CPU.  This is not fatal, and will be addressed in a
-    future patch.
+Use the recently added IA32_FEAT_CTL MSR initialization sequence to
+opportunistically enable VMX support when running on a Centaur CPU.
 
 Signed-off-by: Sean Christopherson <sean.j.christopherson@intel.com>
 ---
- arch/x86/kernel/cpu/feat_ctl.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ arch/x86/Kconfig.cpu          | 2 +-
+ arch/x86/kernel/cpu/centaur.c | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/cpu/feat_ctl.c b/arch/x86/kernel/cpu/feat_ctl.c
-index c4f8f767853b..a46c9e46f937 100644
---- a/arch/x86/kernel/cpu/feat_ctl.c
-+++ b/arch/x86/kernel/cpu/feat_ctl.c
-@@ -5,15 +5,21 @@
- #include <asm/msr-index.h>
- #include <asm/processor.h>
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 98be76fa2978..cba5b64266df 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -389,7 +389,7 @@ config X86_DEBUGCTLMSR
  
-+#undef pr_fmt
-+#define pr_fmt(fmt)	"x86/cpu: " fmt
+ config IA32_FEAT_CTL
+ 	def_bool y
+-	depends on CPU_SUP_INTEL
++	depends on CPU_SUP_INTEL || CPU_SUP_CENTAUR
+ 
+ menuconfig PROCESSOR_SELECT
+ 	bool "Supported processor vendors" if EXPERT
+diff --git a/arch/x86/kernel/cpu/centaur.c b/arch/x86/kernel/cpu/centaur.c
+index 14433ff5b828..084f6040b4df 100644
+--- a/arch/x86/kernel/cpu/centaur.c
++++ b/arch/x86/kernel/cpu/centaur.c
+@@ -250,6 +250,8 @@ static void init_centaur(struct cpuinfo_x86 *c)
+ 	set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
+ #endif
+ 
++	init_ia32_feat_ctl(c);
 +
- void init_ia32_feat_ctl(struct cpuinfo_x86 *c)
- {
-+	bool tboot = tboot_enabled();
- 	u64 msr;
- 
--	if (rdmsrl_safe(MSR_IA32_FEAT_CTL, &msr))
-+	if (rdmsrl_safe(MSR_IA32_FEAT_CTL, &msr)) {
-+		clear_cpu_cap(c, X86_FEATURE_VMX);
- 		return;
-+	}
- 
- 	if (msr & FEAT_CTL_LOCKED)
--		return;
-+		goto update_caps;
- 
- 	/*
- 	 * Ignore whatever value BIOS left in the MSR to avoid enabling random
-@@ -29,9 +35,20 @@ void init_ia32_feat_ctl(struct cpuinfo_x86 *c)
- 	if (cpu_has(c, X86_FEATURE_VMX) && IS_ENABLED(CONFIG_KVM_INTEL)) {
- 		msr |= FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX;
- 
--		if (tboot_enabled())
-+		if (tboot)
- 			msr |= FEAT_CTL_VMX_ENABLED_INSIDE_SMX;
- 	}
- 
- 	wrmsrl(MSR_IA32_FEAT_CTL, msr);
-+
-+update_caps:
-+	if (!cpu_has(c, X86_FEATURE_VMX))
-+		return;
-+
-+	if ( (tboot && !(msr & FEAT_CTL_VMX_ENABLED_INSIDE_SMX)) ||
-+	    (!tboot && !(msr & FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX))) {
-+		pr_err_once("VMX (%s TXT) disabled by BIOS\n",
-+			    tboot ? "inside" : "outside");
-+		clear_cpu_cap(c, X86_FEATURE_VMX);
-+	}
+ 	if (cpu_has(c, X86_FEATURE_VMX))
+ 		centaur_detect_vmx_virtcap(c);
  }
 -- 
 2.24.1
