@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9B84C2D0D4
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:46:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A9B2C2D0C0
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:46:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A05B524688
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:46:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2AC3C2467D
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Dec 2019 04:46:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727256AbfLUEqH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Dec 2019 23:46:07 -0500
-Received: from mga03.intel.com ([134.134.136.65]:31838 "EHLO mga03.intel.com"
+        id S1727377AbfLUEqL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Dec 2019 23:46:11 -0500
+Received: from mga03.intel.com ([134.134.136.65]:31841 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727215AbfLUEqG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Dec 2019 23:46:06 -0500
+        id S1727313AbfLUEqJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 20 Dec 2019 23:46:09 -0500
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 20 Dec 2019 20:46:04 -0800
+  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 20 Dec 2019 20:46:07 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.69,338,1571727600"; 
-   d="scan'208";a="222620123"
+   d="scan'208";a="222620133"
 Received: from sjchrist-coffee.jf.intel.com ([10.54.74.202])
-  by fmsmga001.fm.intel.com with ESMTP; 20 Dec 2019 20:46:04 -0800
+  by fmsmga001.fm.intel.com with ESMTP; 20 Dec 2019 20:46:07 -0800
 From:   Sean Christopherson <sean.j.christopherson@intel.com>
 To:     Thomas Gleixner <tglx@linutronix.de>,
         Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
@@ -53,9 +53,9 @@ Cc:     "H. Peter Anvin" <hpa@zytor.com>,
         linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kselftest@vger.kernel.org, Borislav Petkov <bp@suse.de>,
         Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: [PATCH v5 15/19] KVM: VMX: Use VMX feature flag to query BIOS enabling
-Date:   Fri, 20 Dec 2019 20:45:09 -0800
-Message-Id: <20191221044513.21680-16-sean.j.christopherson@intel.com>
+Subject: [PATCH v5 18/19] perf/x86: Provide stubs of KVM helpers for non-Intel CPUs
+Date:   Fri, 20 Dec 2019 20:45:12 -0800
+Message-Id: <20191221044513.21680-19-sean.j.christopherson@intel.com>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20191221044513.21680-1-sean.j.christopherson@intel.com>
 References: <20191221044513.21680-1-sean.j.christopherson@intel.com>
@@ -66,56 +66,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Replace KVM's manual checks on IA32_FEAT_CTL with a query on the boot
-CPU's MSR_IA32_FEAT_CTL and VMX feature flags.  The MSR_IA32_FEAT_CTL
-indicates that IA32_FEAT_CTL has been configured and that dependent
-features are accurately reflected in cpufeatures, e.g. the VMX flag is
-now cleared during boot if VMX isn't fully enabled via IA32_FEAT_CTL,
-including the case where the MSR isn't supported.
+Provide stubs for perf_guest_get_msrs() and intel_pt_handle_vmx() when
+building without support for Intel CPUs, i.e. CPU_SUP_INTEL=n.  Lack of
+stubs is not currently a problem as the only user, KVM_INTEL, takes a
+dependency on CPU_SUP_INTEL=y.  Provide the stubs for all CPUs so that
+KVM_INTEL can be built for any CPU with compatible hardware support,
+e.g. Centuar and Zhaoxin CPUs.
+
+Note, the existing stub for perf_guest_get_msrs() is essentially dead
+code as KVM selects CONFIG_PERF_EVENTS, i.e. the only user guarantees
+the full implementation is built.
 
 Signed-off-by: Sean Christopherson <sean.j.christopherson@intel.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 27 ++-------------------------
- 1 file changed, 2 insertions(+), 25 deletions(-)
+ arch/x86/include/asm/perf_event.h | 22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index a026334ffc58..06e0e5262704 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -2204,31 +2204,8 @@ static __init int cpu_has_kvm_support(void)
+diff --git a/arch/x86/include/asm/perf_event.h b/arch/x86/include/asm/perf_event.h
+index ee26e9215f18..29964b0e1075 100644
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -322,17 +322,10 @@ struct perf_guest_switch_msr {
+ 	u64 host, guest;
+ };
  
- static __init int vmx_disabled_by_bios(void)
+-extern struct perf_guest_switch_msr *perf_guest_get_msrs(int *nr);
+ extern void perf_get_x86_pmu_capability(struct x86_pmu_capability *cap);
+ extern void perf_check_microcode(void);
+ extern int x86_perf_rdpmc_index(struct perf_event *event);
+ #else
+-static inline struct perf_guest_switch_msr *perf_guest_get_msrs(int *nr)
+-{
+-	*nr = 0;
+-	return NULL;
+-}
+-
+ static inline void perf_get_x86_pmu_capability(struct x86_pmu_capability *cap)
  {
--	u64 msr;
--
--	rdmsrl(MSR_IA32_FEAT_CTL, msr);
--
--	if (unlikely(!(msr & FEAT_CTL_LOCKED)))
--		return 1;
--
--	/* launched w/ TXT and VMX disabled */
--	if (!(msr & FEAT_CTL_VMX_ENABLED_INSIDE_SMX) &&
--	    tboot_enabled())
--		return 1;
--	/* launched w/o TXT and VMX only enabled w/ TXT */
--	if (!(msr & FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX) &&
--	    (msr & FEAT_CTL_VMX_ENABLED_INSIDE_SMX) &&
--	    !tboot_enabled()) {
--		pr_warn("kvm: disable TXT in the BIOS or "
--			"activate TXT before enabling KVM\n");
--		return 1;
--	}
--	/* launched w/o TXT and VMX disabled */
--	if (!(msr & FEAT_CTL_VMX_ENABLED_OUTSIDE_SMX) &&
--	    !tboot_enabled())
--		return 1;
--
--	return 0;
-+	return !boot_cpu_has(X86_FEATURE_MSR_IA32_FEAT_CTL) ||
-+	       !boot_cpu_has(X86_FEATURE_VMX);
- }
+ 	memset(cap, 0, sizeof(*cap));
+@@ -342,8 +335,23 @@ static inline void perf_events_lapic_init(void)	{ }
+ static inline void perf_check_microcode(void) { }
+ #endif
  
- static void kvm_cpu_vmxon(u64 addr)
++#if defined(CONFIG_PERF_EVENTS) && defined(CONFIG_CPU_SUP_INTEL)
++extern struct perf_guest_switch_msr *perf_guest_get_msrs(int *nr);
++#else
++static inline struct perf_guest_switch_msr *perf_guest_get_msrs(int *nr)
++{
++	*nr = 0;
++	return NULL;
++}
++#endif
++
+ #ifdef CONFIG_CPU_SUP_INTEL
+  extern void intel_pt_handle_vmx(int on);
++#else
++static inline void intel_pt_handle_vmx(int on)
++{
++
++}
+ #endif
+ 
+ #if defined(CONFIG_PERF_EVENTS) && defined(CONFIG_CPU_SUP_AMD)
 -- 
 2.24.1
 
