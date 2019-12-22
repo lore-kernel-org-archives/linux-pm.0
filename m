@@ -2,153 +2,181 @@ Return-Path: <SRS0=O+3y=2M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E745C2D0D4
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Dec 2019 17:47:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04E85C2D0D3
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Dec 2019 18:50:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5963E2084D
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Dec 2019 17:47:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C84D6205C9
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Dec 2019 18:50:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mhl+f14s"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IWvfa6cb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725971AbfLVRrp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 22 Dec 2019 12:47:45 -0500
-Received: from mail-io1-f65.google.com ([209.85.166.65]:38323 "EHLO
-        mail-io1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725919AbfLVRrp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Dec 2019 12:47:45 -0500
-Received: by mail-io1-f65.google.com with SMTP id v3so14176134ioj.5;
-        Sun, 22 Dec 2019 09:47:45 -0800 (PST)
+        id S1726860AbfLVSup (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 22 Dec 2019 13:50:45 -0500
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:46163 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726824AbfLVSup (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Dec 2019 13:50:45 -0500
+Received: by mail-pl1-f194.google.com with SMTP id y8so6309453pll.13;
+        Sun, 22 Dec 2019 10:50:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=cXV560NztAEyf3QDB9vqOOSo8xQQ1EuVI594ay/V1a0=;
-        b=mhl+f14sIzO6v8IsTbkTnbhaRdufq3zfWQfi6Df8LI0VJjjz3dRfeoo5uE5XAFwTRa
-         ooZKiYQiTn1JgPl3MJpOSzCZIELxSzUc2H9ugBb3A/+SBhXxvQCs6U60PF1w5hj5j9dy
-         aF2knVluG3eKMrX91w+2SZtEvKtzvZ6PhoVmJb1XV3yZX/sCe29/76D2aOhmrz2Q+9Es
-         bdV55vsGNk2eEfNKbtute1UFurvy4Xd7z9hH5Y1zkOytY8Z7QQLjkltpdRbk24sTW6fe
-         VDdXi9VRoh/q/1XrVaTjIpfdr1OC4YgNGRHVMN2fIcNwqg+t0uOytBm2zUssB1CBe1ck
-         2zIA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=zogEy1R5bHAzYb0JSK89rU9lJX3Wruc73hLWvRKN/jg=;
+        b=IWvfa6cbF84MPkGoGhvjZjcoRqq4uO59BCTZeZG/vKbNza8MhOFdV5dpqdOq7FHmtn
+         piFe9b6NPPyBI5IY4Cl+FYvpDwNgr94dUjj3j7lVDgHfkzRmsoukLUeXmQovUjSiJMnF
+         vJ8FBnGPHmWYy/VsFOKNb78z+ZaEK4AAjVvEgk3tfth0ea3Q+ikx/oPCDxZT/3njhlYg
+         bCVJZA6tvnmCmhhXN+q/DPlritdPq3ayfH9wus/5n0RKF2LiKYlRvvKj/6L5Gtv5WMaU
+         7OBqrDoxyuurfeOCt04NsK6fJWfx7LOBZhGRHafGemQHEn7CZBxD6e2rgcmx4YvPx6dd
+         9AOw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=cXV560NztAEyf3QDB9vqOOSo8xQQ1EuVI594ay/V1a0=;
-        b=qpOJy/wxeTM2aorQ1XAQaUb0ObCdwk/PGo4kmizkz/qxXU8usXFdsgXbCSnCVsFwym
-         PqamxWBayaywSAL7e2Yc168PKz0hYnfHBos2Gus5RUonRkCcaAmhIDHtSMArJcFfwSQS
-         MUFx54GWXf4iqzyqMY6Y63uMvA2CnVo1viNPNsDSGo6f9bV/n93l6JDyQfm5RddIIsEd
-         zZ2DWXkg+49Q0dxsj7Kh4Wn/J+nb8q4R1lCoG2WHa7lV9cIUK/Mw1JDDYKt22bhTAUNP
-         XPSNvPAy4zlP1Ym4b/1cm7n1JtpJgZfhdcMz7rIWZP65YekY/GAavkeX9v2V8IRw6nR5
-         XJYw==
-X-Gm-Message-State: APjAAAXE64QaklSzlF658WWxvS9l9AvJsT9p1nN8oy5hMO1xBq/SYqoT
-        /csx0GMC8ipOAj0jt+c8G3jIzBTJx+TgWUigGVs=
-X-Google-Smtp-Source: APXvYqyqUD6V4nvBIWhPs+C6CdFKb8TEp89BFkN5R9+8ioRXvOtarOaPqoj/gFFYH7cG7aXPZrRFpdpOhInv7dyjAu4=
-X-Received: by 2002:a6b:b941:: with SMTP id j62mr18408028iof.168.1577036864950;
- Sun, 22 Dec 2019 09:47:44 -0800 (PST)
-MIME-Version: 1.0
-References: <20191221181855.31380-1-tiny.windzz@gmail.com> <20191221181855.31380-2-tiny.windzz@gmail.com>
- <CAGTfZH2vqk1R9Hkv4DjO8ktmpHEW+mV-+xreUHPyp6ZT2D7AxA@mail.gmail.com>
-In-Reply-To: <CAGTfZH2vqk1R9Hkv4DjO8ktmpHEW+mV-+xreUHPyp6ZT2D7AxA@mail.gmail.com>
-From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Mon, 23 Dec 2019 01:47:33 +0800
-Message-ID: <CAEExFWsGJ7Mv=z0tf2pvA2UooEd1bU0+Bo4ZaCMzA5randTr=w@mail.gmail.com>
-Subject: Re: [PATCH 2/2] PM / devfreq: exynos-bus: add missing
- exynos_bus_disable_edev in exynos_bus_profile_init
-To:     Chanwoo Choi <chanwoo@kernel.org>
-Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Kukjin Kim <kgene@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
-        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=zogEy1R5bHAzYb0JSK89rU9lJX3Wruc73hLWvRKN/jg=;
+        b=a3fUg6B+Qtj9tokuAKGzUtiPf+OAD1WeYI/f0Ijn/fu0G/E4ORobmrdHklSOelsDWw
+         b2/0ZoSKh+nVw1GWY+4LvqRCwYLErOCeQCaw3uYHmZrN/As4GwqnRAzYIVw0B8hVcqPe
+         P3ROgZC5FtSTGWwO/7UvjfktPaTHmpw+i8yBhOVkfz5sCqQiHdjEbaQT1dhPWRBOcW5Q
+         nf5YwPpT7Tk1wMMGUde5n3DTn1WIQq4/RNfz3NelwA3TZ4webfENaticvdorPnysVDgF
+         shR3KPqaYtd6u83QYakKlz6mkYMRuiXRtpbt1lbmm4ZtD9Y6rwaxMQiwMEklYTU/nQ/Z
+         FvZQ==
+X-Gm-Message-State: APjAAAUaTjE96tFrEkMqN1kjFI5ToliYatFX9HbGcCw58UTmLG6nGRdY
+        luMp9X05F8PUE+tqM3FOnC4=
+X-Google-Smtp-Source: APXvYqyKKfxfSyCuABzQ6eqEF5lsR+6vnx8hRy7dJwwQCFJClBYG8jWJoC5x8F/QV0jwvtIYirEEig==
+X-Received: by 2002:a17:902:b681:: with SMTP id c1mr27401740pls.220.1577040644128;
+        Sun, 22 Dec 2019 10:50:44 -0800 (PST)
+Received: from localhost ([2001:19f0:6001:12c8:5400:2ff:fe72:6403])
+        by smtp.gmail.com with ESMTPSA id f8sm21035451pfn.2.2019.12.22.10.50.43
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Sun, 22 Dec 2019 10:50:43 -0800 (PST)
+From:   Yangtao Li <tiny.windzz@gmail.com>
+To:     ssantosh@kernel.org, paul@crapouillou.net, matthias.bgg@gmail.com,
+        rogerq@ti.com, tony@atomide.com, lukasz.luba@arm.com,
+        kgene@kernel.org, krzk@kernel.org, thierry.reding@gmail.com,
+        jonathanh@nvidia.com, allison@lohutok.net, tglx@linutronix.de,
+        yong.wu@mediatek.com, jroedel@suse.de, evgreen@chromium.org,
+        rfontana@redhat.com, digetx@gmail.com, pdeschrijver@nvidia.com,
+        john@phrozen.org, alexios.zavras@intel.com, sboyd@kernel.org,
+        kstewart@linuxfoundation.org, info@metux.net,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-omap@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-tegra@vger.kernel.org
+Cc:     Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH 4/9] memory: tegra: convert to devm_platform_ioremap_resource
+Date:   Sun, 22 Dec 2019 18:50:29 +0000
+Message-Id: <20191222185034.4665-4-tiny.windzz@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191222185034.4665-1-tiny.windzz@gmail.com>
+References: <20191222185034.4665-1-tiny.windzz@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Dec 23, 2019 at 1:02 AM Chanwoo Choi <chanwoo@kernel.org> wrote:
->
-> Hi,
->
-> Please use capital letter for the first char of patch title
-> and better to edit the patch title as following:
-> Actually, it is difficult to understand the role by only reading
-> the function name. It depends on only this driver.
-> So, better to edit it as following because devfreq-event
-> is standard name in linux kernel. I think it is easy to understand
-> what the patch does.
->
-> - PM / devfreq: exynos-bus: Disable the devfreq-event device when failed
->
->
-> 2019=EB=85=84 12=EC=9B=94 22=EC=9D=BC (=EC=9D=BC) =EC=98=A4=EC=A0=84 3:21=
-, Yangtao Li <tiny.windzz@gmail.com>=EB=8B=98=EC=9D=B4 =EC=9E=91=EC=84=B1:
-> >
-> > The exynos_bus_profile_init process may fail, but the devfreq event dev=
-ice
-> > remains enabled. Call devfreq_event_disable_edev on the error return pa=
-th.
-> >
-> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > ---
-> >  drivers/devfreq/exynos-bus.c | 6 +++++-
-> >  1 file changed, 5 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.=
-c
-> > index 7f5917d59072..5e54eaf3cfc6 100644
-> > --- a/drivers/devfreq/exynos-bus.c
-> > +++ b/drivers/devfreq/exynos-bus.c
-> > @@ -335,10 +335,14 @@ static int exynos_bus_profile_init(struct exynos_=
-bus *bus,
-> >         ret =3D exynos_bus_set_event(bus);
-> >         if (ret < 0) {
-> >                 dev_err(dev, "failed to set event to devfreq-event devi=
-ces\n");
-> > -               return ret;
-> > +               goto err_disable_edev;
-> >         }
-> >
-> >         return 0;
-> > +
-> > +err_disable_edev:
->
-> err_edev is enough instead of 'err_disable_edev'
->
-> > +       exynos_bus_disable_edev(bus);
->
-> exynos_bus_disable_edev() has return value for detecting the error.
-> Need to add following warning message.
->
-> if (ret < 0)
->      dev_warn(dev, "failed to disable the devfreq-event devices\n");
+Use devm_platform_ioremap_resource() to simplify code.
 
-I'm not sure if it should be like this,
-it may rewrite the above error code.
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ drivers/memory/tegra/mc.c           | 4 +---
+ drivers/memory/tegra/tegra124-emc.c | 4 +---
+ drivers/memory/tegra/tegra186.c     | 4 +---
+ drivers/memory/tegra/tegra20-emc.c  | 4 +---
+ 4 files changed, 4 insertions(+), 12 deletions(-)
 
-Yangtao
+diff --git a/drivers/memory/tegra/mc.c b/drivers/memory/tegra/mc.c
+index ec8403557ed4..71390d4ad809 100644
+--- a/drivers/memory/tegra/mc.c
++++ b/drivers/memory/tegra/mc.c
+@@ -593,7 +593,6 @@ static __maybe_unused irqreturn_t tegra20_mc_irq(int irq, void *data)
+ 
+ static int tegra_mc_probe(struct platform_device *pdev)
+ {
+-	struct resource *res;
+ 	struct tegra_mc *mc;
+ 	void *isr;
+ 	u64 mask;
+@@ -619,8 +618,7 @@ static int tegra_mc_probe(struct platform_device *pdev)
+ 	/* length of MC tick in nanoseconds */
+ 	mc->tick = 30;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	mc->regs = devm_ioremap_resource(&pdev->dev, res);
++	mc->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(mc->regs))
+ 		return PTR_ERR(mc->regs);
+ 
+diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
+index 464f0ceaee63..2c73260654ba 100644
+--- a/drivers/memory/tegra/tegra124-emc.c
++++ b/drivers/memory/tegra/tegra124-emc.c
+@@ -1085,7 +1085,6 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 	struct platform_device *mc;
+ 	struct device_node *np;
+ 	struct tegra_emc *emc;
+-	struct resource *res;
+ 	u32 ram_code;
+ 	int err;
+ 
+@@ -1095,8 +1094,7 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 
+ 	emc->dev = &pdev->dev;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	emc->regs = devm_ioremap_resource(&pdev->dev, res);
++	emc->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(emc->regs))
+ 		return PTR_ERR(emc->regs);
+ 
+diff --git a/drivers/memory/tegra/tegra186.c b/drivers/memory/tegra/tegra186.c
+index 441213a35930..226d2b16036d 100644
+--- a/drivers/memory/tegra/tegra186.c
++++ b/drivers/memory/tegra/tegra186.c
+@@ -534,7 +534,6 @@ static const struct tegra_mc_client tegra186_mc_clients[] = {
+ 
+ static int tegra186_mc_probe(struct platform_device *pdev)
+ {
+-	struct resource *res;
+ 	struct tegra_mc *mc;
+ 	unsigned int i;
+ 	int err = 0;
+@@ -543,8 +542,7 @@ static int tegra186_mc_probe(struct platform_device *pdev)
+ 	if (!mc)
+ 		return -ENOMEM;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	mc->regs = devm_ioremap_resource(&pdev->dev, res);
++	mc->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(mc->regs))
+ 		return PTR_ERR(mc->regs);
+ 
+diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
+index 1b23b1c34476..d2efd0c658c0 100644
+--- a/drivers/memory/tegra/tegra20-emc.c
++++ b/drivers/memory/tegra/tegra20-emc.c
+@@ -482,7 +482,6 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np;
+ 	struct tegra_emc *emc;
+-	struct resource *res;
+ 	int irq, err;
+ 
+ 	/* driver has nothing to do in a case of memory timing absence */
+@@ -518,8 +517,7 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 	if (err)
+ 		return err;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	emc->regs = devm_ioremap_resource(&pdev->dev, res);
++	emc->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(emc->regs))
+ 		return PTR_ERR(emc->regs);
+ 
+-- 
+2.17.1
 
->
->
-> > +       return ret;
-> >  }
-> >
-> >  static int exynos_bus_profile_init_passive(struct exynos_bus *bus,
-> > --
-> > 2.17.1
-> >
->
->
-> --
-> Best Regards,
-> Chanwoo Choi
