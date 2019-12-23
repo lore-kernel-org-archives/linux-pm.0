@@ -7,49 +7,50 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CEE9C2D0D0
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Dec 2019 14:21:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BA54C2D0C0
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Dec 2019 14:26:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 460EF21569
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Dec 2019 14:21:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2DD1320709
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Dec 2019 14:26:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=flawful.org header.i=@flawful.org header.b="Go0Z7Dm9"
+	dkim=pass (1024-bit key) header.d=flawful.org header.i=@flawful.org header.b="eBaGpOHS"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726866AbfLWOVI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 23 Dec 2019 09:21:08 -0500
-Received: from pio-pvt-msa2.bahnhof.se ([79.136.2.41]:33602 "EHLO
-        pio-pvt-msa2.bahnhof.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726763AbfLWOVI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2019 09:21:08 -0500
+        id S1726795AbfLWO0m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 23 Dec 2019 09:26:42 -0500
+Received: from ste-pvt-msa1.bahnhof.se ([213.80.101.70]:13431 "EHLO
+        ste-pvt-msa1.bahnhof.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726763AbfLWO0m (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Dec 2019 09:26:42 -0500
+X-Greylist: delayed 371 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Dec 2019 09:26:41 EST
 Received: from localhost (localhost [127.0.0.1])
-        by pio-pvt-msa2.bahnhof.se (Postfix) with ESMTP id 53EF13FBB5;
-        Mon, 23 Dec 2019 15:21:06 +0100 (CET)
-Authentication-Results: pio-pvt-msa2.bahnhof.se;
-        dkim=pass (1024-bit key; unprotected) header.d=flawful.org header.i=@flawful.org header.b=Go0Z7Dm9;
+        by ste-pvt-msa1.bahnhof.se (Postfix) with ESMTP id 0C58F3F719;
+        Mon, 23 Dec 2019 15:20:55 +0100 (CET)
+Authentication-Results: ste-pvt-msa1.bahnhof.se;
+        dkim=pass (1024-bit key; unprotected) header.d=flawful.org header.i=@flawful.org header.b=eBaGpOHS;
         dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at bahnhof.se
-Received: from pio-pvt-msa2.bahnhof.se ([127.0.0.1])
-        by localhost (pio-pvt-msa2.bahnhof.se [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id WnGWaXUCLzGK; Mon, 23 Dec 2019 15:21:05 +0100 (CET)
+Received: from ste-pvt-msa1.bahnhof.se ([127.0.0.1])
+        by localhost (ste-pvt-msa1.bahnhof.se [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id lwOSmu6K9FBX; Mon, 23 Dec 2019 15:20:54 +0100 (CET)
 Received: from flawful.org (ua-84-217-220-205.bbcust.telenor.se [84.217.220.205])
         (Authenticated sender: mb274189)
-        by pio-pvt-msa2.bahnhof.se (Postfix) with ESMTPA id B9AEA3F9B3;
-        Mon, 23 Dec 2019 15:21:04 +0100 (CET)
+        by ste-pvt-msa1.bahnhof.se (Postfix) with ESMTPA id 52D933F6BF;
+        Mon, 23 Dec 2019 15:20:54 +0100 (CET)
 Received: by flawful.org (Postfix, from userid 1001)
-        id 5B9C81451; Mon, 23 Dec 2019 15:21:04 +0100 (CET)
+        id E72401451; Mon, 23 Dec 2019 15:20:53 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flawful.org; s=mail;
-        t=1577110864; bh=ksOkWQMmX+4q/9NHyXFHGnFxhabHh8Tb5y2rKm1ZcN0=;
+        t=1577110854; bh=EVSdvjDj26Gix+tIhFTyvvE5GErU3GO5VoBVKSCGr7c=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Go0Z7Dm9ROW3yNuSBWCeLXEiPRFcRNW+/QV8CMDtJlvpeaB9A8fG4JdjZ1/VhHWzM
-         /IiJI6pG3u3NmIW89AQYTuIG+3Yj+ez09GiNu7of5u26+82ypvpWgaIYaWBkILSzjG
-         fuglCTbZQ3WKs+gz3YpdXeeoVnHf1iYITeevDVnY=
+        b=eBaGpOHSK/RfhpoUK84NvRX174ijyj896C0x8fx2SWvy+v/MtILAx/6ja4TmoS4HS
+         GJ07Xzw/cvB9FfZ7JKpbuL1CXfiPQnvjAqesaR7MAhKDNkZgCEGYqpH4Y1Hy8IcWql
+         kXVfT9ImosR9ig9iHIXGdA2+1tp/UiINGJbr79Jo=
 From:   Niklas Cassel <nks@flawful.org>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>
 Cc:     linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Niklas Cassel <nks@flawful.org>
-Subject: [PATCH 5/5] power: avs: qcom-cpr: make cpr_get_opp_hz_for_req() static
-Date:   Mon, 23 Dec 2019 15:19:34 +0100
-Message-Id: <20191223141934.19837-6-nks@flawful.org>
+Subject: [PATCH 3/5] power: avs: qcom-cpr: make sure that regmap is available
+Date:   Mon, 23 Dec 2019 15:19:32 +0100
+Message-Id: <20191223141934.19837-4-nks@flawful.org>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20191223141934.19837-1-nks@flawful.org>
 References: <20191223141934.19837-1-nks@flawful.org>
@@ -61,31 +62,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-drivers/power/avs/qcom-cpr.c:1081:15:
-warning: no previous prototype for ‘cpr_get_opp_hz_for_req’
-
-Detected when running make with W=1.
+drivers/power/avs/qcom-cpr.c:402:4:
+error: implicit declaration of function ‘regmap_multi_reg_write’
 
 Signed-off-by: Niklas Cassel <nks@flawful.org>
 ---
- drivers/power/avs/qcom-cpr.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/power/avs/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/avs/qcom-cpr.c b/drivers/power/avs/qcom-cpr.c
-index 484dd498f8b9..9247f53550b3 100644
---- a/drivers/power/avs/qcom-cpr.c
-+++ b/drivers/power/avs/qcom-cpr.c
-@@ -1078,8 +1078,8 @@ static unsigned int cpr_get_fuse_corner(struct dev_pm_opp *opp)
- 	return fuse_corner;
- }
- 
--unsigned long cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
--				     struct device *cpu_dev)
-+static unsigned long cpr_get_opp_hz_for_req(struct dev_pm_opp *ref,
-+					    struct device *cpu_dev)
- {
- 	u64 rate = 0;
- 	struct device_node *ref_np;
+diff --git a/drivers/power/avs/Kconfig b/drivers/power/avs/Kconfig
+index c21882908a66..b8fe166cd0d9 100644
+--- a/drivers/power/avs/Kconfig
++++ b/drivers/power/avs/Kconfig
+@@ -16,6 +16,7 @@ config QCOM_CPR
+ 	tristate "QCOM Core Power Reduction (CPR) support"
+ 	depends on POWER_AVS
+ 	select PM_OPP
++	select REGMAP
+ 	help
+ 	  Say Y here to enable support for the CPR hardware found on Qualcomm
+ 	  SoCs like QCS404.
 -- 
 2.24.1
 
