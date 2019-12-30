@@ -7,52 +7,52 @@ X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BDCFC3F68F
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Dec 2019 14:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34A33C2D0D3
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Dec 2019 14:44:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 31F2120748
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Dec 2019 14:44:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 05C752071E
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Dec 2019 14:44:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="k+dt5ccd"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cZDkTeTB"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727609AbfL3Oo1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Dec 2019 09:44:27 -0500
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:33131 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727577AbfL3Oo1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Dec 2019 09:44:27 -0500
-Received: by mail-lj1-f196.google.com with SMTP id y6so25495162lji.0
-        for <linux-pm@vger.kernel.org>; Mon, 30 Dec 2019 06:44:25 -0800 (PST)
+        id S1727624AbfL3Ooa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Dec 2019 09:44:30 -0500
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:41829 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727615AbfL3Ooa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Dec 2019 09:44:30 -0500
+Received: by mail-lj1-f193.google.com with SMTP id h23so33513993ljc.8
+        for <linux-pm@vger.kernel.org>; Mon, 30 Dec 2019 06:44:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=sZefleScox1nm0+WYdQ3BBhBjbSL9pi9Q8gxjnjPNiI=;
-        b=k+dt5ccdM3owzCTK74XbbbsHMqeeevmQDr+sXGOzZz/nvx6U4OyDozmpHNQUhuaKRe
-         vRVVXwZjnYNFQ3TNWlJlAuJo7RQgfXlH+c2rsmGReY5lw4rMtjSN9RbIU2iPKUIKMXyg
-         Am/JZdq9S2seigcx0WOPNH7heKDq3ujz9N9afSvlxLivAVB8SSuDmeC85/GDTrf0eWTI
-         MbAXC7Vog/fdCvT99X/JoC1IfKYVLgJhYzLT+sqGCpwsXms2XobgUMwP++a5glp3poQn
-         QKLTJHgyhyGIxD+zCfo0yHfKFCRR/77wPTYWkxwowB4AYOhFPIPJF/EesW3EJqk6QpFF
-         lboQ==
+        bh=iP0q67cVa7joTIBbxM/rB2PXgLYhwll7Ud0Qeuw7uE4=;
+        b=cZDkTeTBaAAlRRZrP1XLtXSbuzbscAVY8zmWFyVTHUO5xJzFNqhSGbfNaVWsCH1AuX
+         4rT40nwkm1sYOV87tQsTVNYOpKm/XQgnTfubKy97NWJGHyYGyJ+cykHyuBuzwg1e4vI+
+         dP2uBSyDD85o+XaR8nCem4voDrHfRNDwol6CbGAaupD5x1CDQNr/ejTTClgbNp+xnOmR
+         2Bybqk0ajXhcvXbxyM51KKuqO7Pq9KUok4Z20H1s3n3ChONQsVe8t0SEdohf+xd9LlR9
+         TwQyqLl/Nqa3iyclS4fQCNrW5jt9RzhUB79qF7nkaemxrQzWOlFc+6vmMc74MtPky/iM
+         eUnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=sZefleScox1nm0+WYdQ3BBhBjbSL9pi9Q8gxjnjPNiI=;
-        b=rjvT3G6IGLyM77RFjcejD/X1YQxRpTbMtcJFP3TEJDCXKY6sow4AgnrwHUvPkx/Jov
-         ryY77XyHwwR4TYtFUA7ao0HHN7lmB1apMHC+SoJhLN/kvvTBfre3jq3M3VoLcJScK7m5
-         IoA3Imjts1TC78CY6noBx8j111Lcp9gMDjKlCPbQoEhDTf7C86E76wWcNxtyS+pCRj1Y
-         1lMj6RY9mZySlwSysEf5y5Ummhl3od4MO+Jc9SqI3OX43VcbA2TAbsmdde8RWanBuvJ5
-         OXHtnmNX8ytqhIRymJ4C790Xxi151yx0Y0jftrnn2sWejPCTJ9oD0l6NTBhv49WoywrB
-         dI9Q==
-X-Gm-Message-State: APjAAAV5aFZdYYVOnPkaePaOPNr5REhdkdiCJ0BbBW5VTDbzzLhwpA+0
-        8mq19QnUotn6omCj/6At4rmCyg==
-X-Google-Smtp-Source: APXvYqxJiXnez81BgsM8+ozNoti4VBDX7b1Vf0pT/sSFBdtMD2BiZFUGesyFglHR4O41EPd4kYP/DA==
-X-Received: by 2002:a2e:80d9:: with SMTP id r25mr39573873ljg.8.1577717064736;
-        Mon, 30 Dec 2019 06:44:24 -0800 (PST)
+        bh=iP0q67cVa7joTIBbxM/rB2PXgLYhwll7Ud0Qeuw7uE4=;
+        b=JYKJwqO4vaAwOhvAlW2IIXUWsKeq8SEGIEA7WoUmmIqu+dQCLnkQyBtoVa0tV5jIIL
+         nKTf9FWy0QhT7MWUL3MkjP7UesPQV7SP8mf8QIMYaM3BEAEy6uDfQtqpuMYDedsHR/Mj
+         dlGVNLeawtnKv/COf8bibOrcuPeytwgKjh8Lsav7QH6vj65We0OdUOOotXvw7vGH4rZE
+         Y+8lcWMyyd+LCilhiVX4gZoLymQD5287a/mSA1bxpnKuG6lvXvjFnladKtFJ5SgI0qvb
+         FlF+R+dOHFocfZHOdmEw9oh9tAprr8Dup9FKhNti2OMnuPLradv+fUpQCzGRaov9RQs8
+         7kOw==
+X-Gm-Message-State: APjAAAWTPWY+VreU4JxFEI5aPC/9HUGwFHRS4rY1/g1iuNgfphn/Zfxm
+        RjCwSUVogMMcsTbWCu39nrUKbg==
+X-Google-Smtp-Source: APXvYqzBs/tiWnncxKxVYy6elFVnD48Lxju0cyn1aR3gEPXIkZtrCY33Ut1F1NTu0L4H0jjmnQTcwg==
+X-Received: by 2002:a2e:8090:: with SMTP id i16mr39630757ljg.88.1577717067493;
+        Mon, 30 Dec 2019 06:44:27 -0800 (PST)
 Received: from localhost.localdomain (h-158-174-22-210.NA.cust.bahnhof.se. [158.174.22.210])
-        by smtp.gmail.com with ESMTPSA id a21sm18744931lfg.44.2019.12.30.06.44.23
+        by smtp.gmail.com with ESMTPSA id a21sm18744931lfg.44.2019.12.30.06.44.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Dec 2019 06:44:24 -0800 (PST)
+        Mon, 30 Dec 2019 06:44:26 -0800 (PST)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     Sudeep Holla <sudeep.holla@arm.com>,
         Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
@@ -67,11 +67,10 @@ Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Kevin Hilman <khilman@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v5 10/15] cpuidle: psci: Prepare to use OS initiated suspend mode via PM domains
-Date:   Mon, 30 Dec 2019 15:43:57 +0100
-Message-Id: <20191230144402.30195-11-ulf.hansson@linaro.org>
+        linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+Subject: [PATCH v5 12/15] cpuidle: psci: Support CPU hotplug for the hierarchical model
+Date:   Mon, 30 Dec 2019 15:43:59 +0100
+Message-Id: <20191230144402.30195-13-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20191230144402.30195-1-ulf.hansson@linaro.org>
 References: <20191230144402.30195-1-ulf.hansson@linaro.org>
@@ -80,146 +79,126 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The per CPU variable psci_power_state, contains an array of fixed values,
-which reflects the corresponding arm,psci-suspend-param parsed from DT, for
-each of the available CPU idle states.
+When the hierarchical CPU topology is used and when a CPU is put offline,
+that CPU prevents its PM domain from being powered off, which is because
+genpd observes the corresponding attached device as being active from a
+runtime PM point of view. Furthermore, any potential master PM domains are
+also prevented from being powered off.
 
-This isn't sufficient when using the hierarchical CPU topology in DT, in
-combination with having PSCI OS initiated (OSI) mode enabled. More
-precisely, in OSI mode, Linux is responsible of telling the PSCI FW what
-idle state the cluster (a group of CPUs) should enter, while in PSCI
-Platform Coordinated (PC) mode, each CPU independently votes for an idle
-state of the cluster.
+To address this limitation, let's add add a new CPU hotplug state
+(CPUHP_AP_CPU_PM_STARTING) and register up/down callbacks for it, which
+allows us to deal with runtime PM accordingly.
 
-For this reason, introduce a per CPU variable called domain_state and
-implement two helper functions to read/write its value. Then let the
-domain_state take precedence over the regular selected state, when entering
-and idle state.
-
-To avoid executing the above OSI specific code in the ->enter() callback,
-while operating in the default PSCI Platform Coordinated mode, let's also
-add a new enter-function and use it for OSI.
-
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
 
 Changes in v5:
-	- None.
+	- Make CPUHP function/variable initdata.
 
 ---
- drivers/cpuidle/cpuidle-psci.c | 56 ++++++++++++++++++++++++++++++----
- 1 file changed, 50 insertions(+), 6 deletions(-)
+ drivers/cpuidle/cpuidle-psci.c | 45 +++++++++++++++++++++++++++++++++-
+ include/linux/cpuhotplug.h     |  1 +
+ 2 files changed, 45 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.c
-index 6a87848be3c3..9600fe674a89 100644
+index 6e7804e697ed..9d779be27071 100644
 --- a/drivers/cpuidle/cpuidle-psci.c
 +++ b/drivers/cpuidle/cpuidle-psci.c
-@@ -29,14 +29,47 @@ struct psci_cpuidle_data {
- };
+@@ -8,6 +8,7 @@
+ 
+ #define pr_fmt(fmt) "CPUidle PSCI: " fmt
+ 
++#include <linux/cpuhotplug.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpu_pm.h>
+@@ -31,6 +32,7 @@ struct psci_cpuidle_data {
  
  static DEFINE_PER_CPU_READ_MOSTLY(struct psci_cpuidle_data, psci_cpuidle_data);
-+static DEFINE_PER_CPU(u32, domain_state);
-+
-+static inline void psci_set_domain_state(u32 state)
-+{
-+	__this_cpu_write(domain_state, state);
-+}
-+
-+static inline u32 psci_get_domain_state(void)
-+{
-+	return __this_cpu_read(domain_state);
-+}
-+
-+static inline int psci_enter_state(int idx, u32 state)
-+{
-+	return CPU_PM_CPU_IDLE_ENTER_PARAM(psci_cpu_suspend_enter, idx, state);
-+}
-+
-+static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
-+					struct cpuidle_driver *drv, int idx)
-+{
-+	struct psci_cpuidle_data *data = this_cpu_ptr(&psci_cpuidle_data);
-+	u32 *states = data->psci_states;
-+	u32 state = psci_get_domain_state();
-+	int ret;
-+
-+	if (!state)
-+		state = states[idx];
-+
-+	ret = psci_enter_state(idx, state);
-+
-+	/* Clear the domain state to start fresh when back from idle. */
-+	psci_set_domain_state(0);
-+	return ret;
-+}
+ static DEFINE_PER_CPU(u32, domain_state);
++static bool psci_cpuidle_use_cpuhp __initdata;
  
- static int psci_enter_idle_state(struct cpuidle_device *dev,
- 				struct cpuidle_driver *drv, int idx)
+ static inline void psci_set_domain_state(u32 state)
  {
- 	u32 *state = __this_cpu_read(psci_cpuidle_data.psci_states);
- 
--	return CPU_PM_CPU_IDLE_ENTER_PARAM(psci_cpu_suspend_enter,
--					   idx, state[idx]);
-+	return psci_enter_state(idx, state[idx]);
- }
- 
- static struct cpuidle_driver psci_idle_driver __initdata = {
-@@ -79,7 +112,8 @@ static int __init psci_dt_parse_state_node(struct device_node *np, u32 *state)
- 	return 0;
- }
- 
--static int __init psci_dt_cpu_init_idle(struct device_node *cpu_node,
-+static int __init psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
-+					struct device_node *cpu_node,
- 					unsigned int state_count, int cpu)
- {
- 	int i, ret = 0;
-@@ -118,6 +152,15 @@ static int __init psci_dt_cpu_init_idle(struct device_node *cpu_node,
- 			ret = PTR_ERR(data->dev);
- 			goto free_mem;
- 		}
-+
-+		/*
-+		 * Using the deepest state for the CPU to trigger a potential
-+		 * selection of a shared state for the domain, assumes the
-+		 * domain states are all deeper states.
-+		 */
-+		if (data->dev)
-+			drv->states[state_count - 1].enter =
-+				psci_enter_domain_idle_state;
- 	}
- 
- 	/* Idle states parsed correctly, store them in the per-cpu struct. */
-@@ -129,7 +172,8 @@ static int __init psci_dt_cpu_init_idle(struct device_node *cpu_node,
+@@ -72,6 +74,44 @@ static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
  	return ret;
  }
  
--static __init int psci_cpu_init_idle(unsigned int cpu, unsigned int state_count)
-+static __init int psci_cpu_init_idle(struct cpuidle_driver *drv,
-+				     unsigned int cpu, unsigned int state_count)
++static int psci_idle_cpuhp_up(unsigned int cpu)
++{
++	struct device *pd_dev = __this_cpu_read(psci_cpuidle_data.dev);
++
++	if (pd_dev)
++		pm_runtime_get_sync(pd_dev);
++
++	return 0;
++}
++
++static int psci_idle_cpuhp_down(unsigned int cpu)
++{
++	struct device *pd_dev = __this_cpu_read(psci_cpuidle_data.dev);
++
++	if (pd_dev) {
++		pm_runtime_put_sync(pd_dev);
++		/* Clear domain state to start fresh at next online. */
++		psci_set_domain_state(0);
++	}
++
++	return 0;
++}
++
++static void __init psci_idle_init_cpuhp(void)
++{
++	int err;
++
++	if (!psci_cpuidle_use_cpuhp)
++		return;
++
++	err = cpuhp_setup_state_nocalls(CPUHP_AP_CPU_PM_STARTING,
++					"cpuidle/psci:online",
++					psci_idle_cpuhp_up,
++					psci_idle_cpuhp_down);
++	if (err)
++		pr_warn("Failed %d while setup cpuhp state\n", err);
++}
++
+ static int psci_enter_idle_state(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv, int idx)
  {
- 	struct device_node *cpu_node;
- 	int ret;
-@@ -145,7 +189,7 @@ static __init int psci_cpu_init_idle(unsigned int cpu, unsigned int state_count)
- 	if (!cpu_node)
- 		return -ENODEV;
+@@ -166,9 +206,11 @@ static int __init psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+ 		 * selection of a shared state for the domain, assumes the
+ 		 * domain states are all deeper states.
+ 		 */
+-		if (data->dev)
++		if (data->dev) {
+ 			drv->states[state_count - 1].enter =
+ 				psci_enter_domain_idle_state;
++			psci_cpuidle_use_cpuhp = true;
++		}
+ 	}
  
--	ret = psci_dt_cpu_init_idle(cpu_node, state_count, cpu);
-+	ret = psci_dt_cpu_init_idle(drv, cpu_node, state_count, cpu);
+ 	/* Idle states parsed correctly, store them in the per-cpu struct. */
+@@ -289,6 +331,7 @@ static int __init psci_idle_init(void)
+ 			goto out_fail;
+ 	}
  
- 	of_node_put(cpu_node);
++	psci_idle_init_cpuhp();
+ 	return 0;
  
-@@ -201,7 +245,7 @@ static int __init psci_idle_init_cpu(int cpu)
- 	/*
- 	 * Initialize PSCI idle states.
- 	 */
--	ret = psci_cpu_init_idle(cpu, ret);
-+	ret = psci_cpu_init_idle(drv, cpu, ret);
- 	if (ret) {
- 		pr_err("CPU %d failed to PSCI idle\n", cpu);
- 		goto out_kfree_drv;
+ out_fail:
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index e51ee772b9f5..01f04ed6ad92 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -95,6 +95,7 @@ enum cpuhp_state {
+ 	CPUHP_AP_OFFLINE,
+ 	CPUHP_AP_SCHED_STARTING,
+ 	CPUHP_AP_RCUTREE_DYING,
++	CPUHP_AP_CPU_PM_STARTING,
+ 	CPUHP_AP_IRQ_GIC_STARTING,
+ 	CPUHP_AP_IRQ_HIP04_STARTING,
+ 	CPUHP_AP_IRQ_ARMADA_XP_STARTING,
 -- 
 2.17.1
 
