@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0F89C2D0DC
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Jan 2020 14:54:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26609C3276D
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Jan 2020 14:54:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7DCA121734
+	by mail.kernel.org (Postfix) with ESMTP id EE26C206DA
 	for <linux-pm@archiver.kernel.org>; Thu,  2 Jan 2020 14:54:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tFow0Sn7"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OUjZ+/Z3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728579AbgABOyp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 Jan 2020 09:54:45 -0500
-Received: from mail-pl1-f195.google.com ([209.85.214.195]:41675 "EHLO
-        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728551AbgABOyo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jan 2020 09:54:44 -0500
-Received: by mail-pl1-f195.google.com with SMTP id bd4so17903299plb.8
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jan 2020 06:54:44 -0800 (PST)
+        id S1728606AbgABOyw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 Jan 2020 09:54:52 -0500
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:32872 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728591AbgABOyv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jan 2020 09:54:51 -0500
+Received: by mail-pf1-f195.google.com with SMTP id z16so22163312pfk.0
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jan 2020 06:54:51 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Oi1EZVs7PMYW3ENjMtAVgWjqAjOWibzgib65seKOwXo=;
-        b=tFow0Sn7YTiwe2D73xLlEkZ9oIpD8IHksnf4/mF5jN7q6oUqO9/ojjPtotq0cKziKp
-         9bwYhbpm/VP7wxPBXWnjanl2/rb2g+wMSoECmUBGonNtDV6KCOo5b2R561AzhFieCE3q
-         CJ0kIELidP5ZwgRPZmfscrCXZyurPxioCB2G8C9kJtCquIiJgt+PqJkKEe19IRMuiOoJ
-         9sLJvowmoasu4f80Ghf+zhqjORwJVCQgOaj+HnjRfDlBzz5mCwIwyt9BDY81n5nbsVXI
-         tlgwdGCGVMKtiU81UzyknIMR3HTgYus+XuSX4JX9ovKDdN/kJxGgR0HQ0pKICt+b5TH2
-         gnMg==
+        bh=EjOF1oUSrrO0URh0mj4+ZNJlrmQRUgZsgYN9DFASUmw=;
+        b=OUjZ+/Z3trmas3K38X08vZdhWSVxLFcdDC4Vc//HoLDX4rxQqVIf4Tb47d0OzLNuZm
+         Bc6LZxRWPBdGnRsSgXqCsD4UAPQbo0QsBAYNby6WycX4c0ykyK3P1NfIIzP/wlyVopec
+         4jP+WrTcitu+1Up81c4GyLcsDBl54OWLS1RY3bpXdp0xmhf+5vxMrCiSHGwu5W7j1gNk
+         s4xnHuCqEz8RRhamhtFWya22394C75t2zX2d4vCVM65A7T3lkIh2yQS2Mt7KizoUVksf
+         mcnbxEbY+Kwx+W+/xGKKfW0mZKdbXO8zUT25WBiJ1d2hMelHiPZZG2F4++H5uLy9lTlN
+         EVzw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Oi1EZVs7PMYW3ENjMtAVgWjqAjOWibzgib65seKOwXo=;
-        b=VIKK5IUaIfFzjEacUwtrhQiU3yFedd4S37ggUVJoimN9ZDyUEtpblmP/Fx3McrPCtH
-         RfGOafw+nczhtgLt42ldk06M5ypUBsHd9Wpsr4BbH1O9pWla2zxFlUYmvU15dCUAKmMN
-         kKf6NvLcUgbuTxovVJ5TtQaPxwEu4H3qMCums5rNHQJFLpu23m8LUPoNxTHDIP1fBp7W
-         DD3mqE9Zj+R/VIKgAZNzCOLKWwQsZHgZQKJkizdBu1X3Syt4CHUzuAFxdgGpy9p0kSRL
-         zXYGjTLDOVc36Mr5KbafTLi5K8yLIGhx4MO/cv1gqf1Y/PuTrMFdv0hO2g4cQAvDKTWo
-         7A+A==
-X-Gm-Message-State: APjAAAVdWP8Nzn61DftUEyeBYqM9U3oIn29+1gyQgmr/dU2rEyVk1r9x
-        pPvQMSWGQR8ouElXrKg7kNRKog==
-X-Google-Smtp-Source: APXvYqy8ZGu+KM0WH5cNzQStEA9QGuI2scj5BCjLtHSS6FnxWlE27OWukvSdYX4iGOT/Vd5TZxuv0Q==
-X-Received: by 2002:a17:90a:2486:: with SMTP id i6mr21090473pje.9.1577976884202;
-        Thu, 02 Jan 2020 06:54:44 -0800 (PST)
+        bh=EjOF1oUSrrO0URh0mj4+ZNJlrmQRUgZsgYN9DFASUmw=;
+        b=iHis7CDMhFWw3xDdE3AGIah/qMi02jsSPkWOuZLZknmmJpEEsh5q7p1RWh8HQG3Tlu
+         buu/XolsxTZ55gxvh/KX2IdA+eHr045p8pp1tygl54/+9Oy7KtcbkbqtW9H9mPHHs1s8
+         Wlbx5UwW7UyY+jdzJgUh8TK4WrYW91+kKC7WhhSc1mqXrWqDZS1EVDAhm167CcXDVp/o
+         zduCKJ2uTbE/hQPAK3dc0bXobkytlaLbPVP4ZdGecftHmrfEGzdQct42ockbqG2PekxA
+         X6wgnEzQQBH5r+pCKBRAUjrEPh0dIuc6pcU9k3n9Teb9xhSWn+hWnBnv6PXpoY2GrvDe
+         MY+Q==
+X-Gm-Message-State: APjAAAWRicnygpual/0oVDS9PD4kchJGeshe9tbheUkku9oK9RikTwPT
+        FIA2gEHXtwSZ8IuwI85TyKLDWA==
+X-Google-Smtp-Source: APXvYqwlvaympWHfPGjB6g1AcZQTDfAAvQcu0Ua50SZ5Ouow2P0IMHFFkmzhdtLSzyH2/OMx+0G9jQ==
+X-Received: by 2002:a63:d108:: with SMTP id k8mr88808304pgg.434.1577976891078;
+        Thu, 02 Jan 2020 06:54:51 -0800 (PST)
 Received: from localhost ([103.195.202.148])
-        by smtp.gmail.com with ESMTPSA id c22sm41824155pfo.50.2020.01.02.06.54.43
+        by smtp.gmail.com with ESMTPSA id b42sm11581627pjc.27.2020.01.02.06.54.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jan 2020 06:54:43 -0800 (PST)
+        Thu, 02 Jan 2020 06:54:50 -0800 (PST)
 From:   Amit Kucheria <amit.kucheria@linaro.org>
 To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         bjorn.andersson@linaro.org, swboyd@chromium.org,
         sivaa@codeaurora.org, Andy Gross <agross@kernel.org>
 Cc:     Amit Kucheria <amit.kucheria@verdurent.com>,
         linux-pm@vger.kernel.org
-Subject: [PATCH v3 1/9] drivers: thermal: tsens: De-constify struct tsens_features
-Date:   Thu,  2 Jan 2020 20:24:26 +0530
-Message-Id: <77dd80eb58f0db29a03097cb442d606f810a849a.1577976221.git.amit.kucheria@linaro.org>
+Subject: [PATCH v3 3/9] drivers: thermal: tsens: use simpler variables
+Date:   Thu,  2 Jan 2020 20:24:28 +0530
+Message-Id: <09ac47eea963e84bd3eb630897c2b77f3868b90b.1577976221.git.amit.kucheria@linaro.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <cover.1577976221.git.amit.kucheria@linaro.org>
 References: <cover.1577976221.git.amit.kucheria@linaro.org>
@@ -73,170 +73,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-struct tsens_features is currently initialized as part of platform data
-at compile-time and not modifiable. We now have some usecases in feature
-detection across IP versions where it is more flexible to update the
-features after probing registers.
-
-Remove const qualifier from tsens_features and the encapsulating
-tsens_plat_data.
+We already dereference the sensor and save it into a variable. Use the
+variable directly to make the code easier to read.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens-8960.c |  2 +-
- drivers/thermal/qcom/tsens-v0_1.c |  6 +++---
- drivers/thermal/qcom/tsens-v1.c   |  6 +++---
- drivers/thermal/qcom/tsens-v2.c   |  6 +++---
- drivers/thermal/qcom/tsens.h      | 12 ++++++------
- 5 files changed, 16 insertions(+), 16 deletions(-)
+ drivers/thermal/qcom/tsens-common.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index fb77acb8d13b..a383a57cfbbc 100644
---- a/drivers/thermal/qcom/tsens-8960.c
-+++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -279,7 +279,7 @@ static const struct tsens_ops ops_8960 = {
- 	.resume		= resume_8960,
- };
+diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+index c2df30a08b9e..1cbc5a6e5b4f 100644
+--- a/drivers/thermal/qcom/tsens-common.c
++++ b/drivers/thermal/qcom/tsens-common.c
+@@ -368,7 +368,7 @@ irqreturn_t tsens_irq_thread(int irq, void *data)
+ 			tsens_set_interrupt(priv, hw_id, UPPER, disable);
+ 			if (d.up_thresh > temp) {
+ 				dev_dbg(priv->dev, "[%u] %s: re-arm upper\n",
+-					priv->sensor[i].hw_id, __func__);
++					hw_id, __func__);
+ 				tsens_set_interrupt(priv, hw_id, UPPER, enable);
+ 			} else {
+ 				trigger = true;
+@@ -379,7 +379,7 @@ irqreturn_t tsens_irq_thread(int irq, void *data)
+ 			tsens_set_interrupt(priv, hw_id, LOWER, disable);
+ 			if (d.low_thresh < temp) {
+ 				dev_dbg(priv->dev, "[%u] %s: re-arm low\n",
+-					priv->sensor[i].hw_id, __func__);
++					hw_id, __func__);
+ 				tsens_set_interrupt(priv, hw_id, LOWER, enable);
+ 			} else {
+ 				trigger = true;
+@@ -392,7 +392,7 @@ irqreturn_t tsens_irq_thread(int irq, void *data)
+ 		if (trigger) {
+ 			dev_dbg(priv->dev, "[%u] %s: TZ update trigger (%d mC)\n",
+ 				hw_id, __func__, temp);
+-			thermal_zone_device_update(priv->sensor[i].tzd,
++			thermal_zone_device_update(s->tzd,
+ 						   THERMAL_EVENT_UNSPECIFIED);
+ 		} else {
+ 			dev_dbg(priv->dev, "[%u] %s: no violation:  %d\n",
+@@ -435,7 +435,7 @@ int tsens_set_trips(void *_sensor, int low, int high)
+ 	spin_unlock_irqrestore(&priv->ul_lock, flags);
  
--const struct tsens_plat_data data_8960 = {
-+struct tsens_plat_data data_8960 = {
- 	.num_sensors	= 11,
- 	.ops		= &ops_8960,
- };
-diff --git a/drivers/thermal/qcom/tsens-v0_1.c b/drivers/thermal/qcom/tsens-v0_1.c
-index 4b8dd6de02ce..959a9371d205 100644
---- a/drivers/thermal/qcom/tsens-v0_1.c
-+++ b/drivers/thermal/qcom/tsens-v0_1.c
-@@ -327,7 +327,7 @@ static int calibrate_8974(struct tsens_priv *priv)
+ 	dev_dbg(dev, "[%u] %s: (%d:%d)->(%d:%d)\n",
+-		s->hw_id, __func__, d.low_thresh, d.up_thresh, cl_low, cl_high);
++		hw_id, __func__, d.low_thresh, d.up_thresh, cl_low, cl_high);
  
- /* v0.1: 8916, 8974 */
- 
--static const struct tsens_features tsens_v0_1_feat = {
-+static struct tsens_features tsens_v0_1_feat = {
- 	.ver_major	= VER_0_1,
- 	.crit_int	= 0,
- 	.adc		= 1,
-@@ -377,7 +377,7 @@ static const struct tsens_ops ops_8916 = {
- 	.get_temp	= get_temp_common,
- };
- 
--const struct tsens_plat_data data_8916 = {
-+struct tsens_plat_data data_8916 = {
- 	.num_sensors	= 5,
- 	.ops		= &ops_8916,
- 	.hw_ids		= (unsigned int []){0, 1, 2, 4, 5 },
-@@ -392,7 +392,7 @@ static const struct tsens_ops ops_8974 = {
- 	.get_temp	= get_temp_common,
- };
- 
--const struct tsens_plat_data data_8974 = {
-+struct tsens_plat_data data_8974 = {
- 	.num_sensors	= 11,
- 	.ops		= &ops_8974,
- 	.feat		= &tsens_v0_1_feat,
-diff --git a/drivers/thermal/qcom/tsens-v1.c b/drivers/thermal/qcom/tsens-v1.c
-index bd2ddb684a45..b682a4df0081 100644
---- a/drivers/thermal/qcom/tsens-v1.c
-+++ b/drivers/thermal/qcom/tsens-v1.c
-@@ -299,7 +299,7 @@ static int calibrate_8976(struct tsens_priv *priv)
- 
- /* v1.x: msm8956,8976,qcs404,405 */
- 
--static const struct tsens_features tsens_v1_feat = {
-+static struct tsens_features tsens_v1_feat = {
- 	.ver_major	= VER_1_X,
- 	.crit_int	= 0,
- 	.adc		= 1,
-@@ -368,7 +368,7 @@ static const struct tsens_ops ops_generic_v1 = {
- 	.get_temp	= get_temp_tsens_valid,
- };
- 
--const struct tsens_plat_data data_tsens_v1 = {
-+struct tsens_plat_data data_tsens_v1 = {
- 	.ops		= &ops_generic_v1,
- 	.feat		= &tsens_v1_feat,
- 	.fields	= tsens_v1_regfields,
-@@ -381,7 +381,7 @@ static const struct tsens_ops ops_8976 = {
- };
- 
- /* Valid for both MSM8956 and MSM8976. Sensor ID 3 is unused. */
--const struct tsens_plat_data data_8976 = {
-+struct tsens_plat_data data_8976 = {
- 	.num_sensors	= 11,
- 	.ops		= &ops_8976,
- 	.hw_ids		= (unsigned int[]){0, 1, 2, 4, 5, 6, 7, 8, 9, 10},
-diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index a4d15e1abfdd..f1c8ec62e69f 100644
---- a/drivers/thermal/qcom/tsens-v2.c
-+++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -27,7 +27,7 @@
- 
- /* v2.x: 8996, 8998, sdm845 */
- 
--static const struct tsens_features tsens_v2_feat = {
-+static struct tsens_features tsens_v2_feat = {
- 	.ver_major	= VER_2_X,
- 	.crit_int	= 1,
- 	.adc		= 0,
-@@ -81,14 +81,14 @@ static const struct tsens_ops ops_generic_v2 = {
- 	.get_temp	= get_temp_tsens_valid,
- };
- 
--const struct tsens_plat_data data_tsens_v2 = {
-+struct tsens_plat_data data_tsens_v2 = {
- 	.ops		= &ops_generic_v2,
- 	.feat		= &tsens_v2_feat,
- 	.fields	= tsens_v2_regfields,
- };
- 
- /* Kept around for backward compatibility with old msm8996.dtsi */
--const struct tsens_plat_data data_8996 = {
-+struct tsens_plat_data data_8996 = {
- 	.num_sensors	= 13,
- 	.ops		= &ops_generic_v2,
- 	.feat		= &tsens_v2_feat,
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index e24a865fbc34..be364bf1d5a6 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -440,7 +440,7 @@ struct tsens_plat_data {
- 	const u32		num_sensors;
- 	const struct tsens_ops	*ops;
- 	unsigned int		*hw_ids;
--	const struct tsens_features	*feat;
-+	struct tsens_features	*feat;
- 	const struct reg_field		*fields;
- };
- 
-@@ -481,7 +481,7 @@ struct tsens_priv {
- 
- 	struct regmap_field		*rf[MAX_REGFIELDS];
- 	struct tsens_context		ctx;
--	const struct tsens_features	*feat;
-+	struct tsens_features		*feat;
- 	const struct reg_field		*fields;
- 	const struct tsens_ops		*ops;
- 
-@@ -502,15 +502,15 @@ int tsens_set_trips(void *_sensor, int low, int high);
- irqreturn_t tsens_irq_thread(int irq, void *data);
- 
- /* TSENS target */
--extern const struct tsens_plat_data data_8960;
-+extern struct tsens_plat_data data_8960;
- 
- /* TSENS v0.1 targets */
--extern const struct tsens_plat_data data_8916, data_8974;
-+extern struct tsens_plat_data data_8916, data_8974;
- 
- /* TSENS v1 targets */
--extern const struct tsens_plat_data data_tsens_v1, data_8976;
-+extern struct tsens_plat_data data_tsens_v1, data_8976;
- 
- /* TSENS v2 targets */
--extern const struct tsens_plat_data data_8996, data_tsens_v2;
-+extern struct tsens_plat_data data_8996, data_tsens_v2;
- 
- #endif /* __QCOM_TSENS_H__ */
+ 	return 0;
+ }
 -- 
 2.20.1
 
