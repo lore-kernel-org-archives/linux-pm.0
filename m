@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E210AC32771
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Jan 2020 01:24:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29198C33C9A
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Jan 2020 01:24:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B7C5A2465D
+	by mail.kernel.org (Postfix) with ESMTP id F10C32465D
 	for <linux-pm@archiver.kernel.org>; Sun,  5 Jan 2020 01:24:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=sholland.org header.i=@sholland.org header.b="aG63STUP";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="MxUC43Y9"
+	dkim=pass (2048-bit key) header.d=sholland.org header.i=@sholland.org header.b="Bmngpm/p";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="H9rY78IO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726608AbgAEBYV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Jan 2020 20:24:21 -0500
+        id S1726515AbgAEBYU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Jan 2020 20:24:20 -0500
 Received: from out5-smtp.messagingengine.com ([66.111.4.29]:46859 "EHLO
         out5-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726504AbgAEBYU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Jan 2020 20:24:20 -0500
+        by vger.kernel.org with ESMTP id S1726264AbgAEBYT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Jan 2020 20:24:19 -0500
 Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-        by mailout.nyi.internal (Postfix) with ESMTP id 1DE7D21DFB;
-        Sat,  4 Jan 2020 20:24:20 -0500 (EST)
+        by mailout.nyi.internal (Postfix) with ESMTP id ACB4C21B62;
+        Sat,  4 Jan 2020 20:24:18 -0500 (EST)
 Received: from mailfrontend1 ([10.202.2.162])
-  by compute5.internal (MEProxy); Sat, 04 Jan 2020 20:24:20 -0500
+  by compute5.internal (MEProxy); Sat, 04 Jan 2020 20:24:18 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
         from:to:cc:subject:date:message-id:in-reply-to:references
-        :mime-version:content-transfer-encoding; s=fm1; bh=aq+SCX2ysa3GN
-        XpW7Iu1dniHsmrxkX+iV1kY3kri6/Q=; b=aG63STUPdUgAi83lALGXu7nDyzZ16
-        9AuIrnD77aY66A2o2eGB+2PWTHjgZCptI9T49Zvd9WT2bkziAUGhJndzHPL+11BF
-        om/Gu2HP+aJrCFvPP0Vo6CrKryaQZ1uNc+OIprv+XrGkBkgdDN0BR9pITC4FH74I
-        j7Es278cU81EfPTrTSmbi7IkaVw6VrUJ6vVjT1Mc2ejkKjqhj/zb2ENwEsOMO6cY
-        r2ik5ls6Y4gv5CiKiXtTepiUbgNeY1FQHJHs1tfetBAzrWHMJUPCUxRleerkD8/b
-        gMyk58QlA0fUbbAQP4Z7Fhqf2pAeJEYG2F9HHNFyR7uVcM+KuVjZh4e2Q==
+        :mime-version:content-transfer-encoding; s=fm1; bh=WrStUasd4Cc83
+        ADtqUJg0NBcBBfCEyykALqqb1HDxp0=; b=Bmngpm/p82u8HlP8dz+JVbgpI0tV4
+        V/s5M75CDS0laVWRnoHAX1taL1WU0A3IF9aG9BFT7TtlT49jEWqq0MLtMUj6gb61
+        5S7nj+jabFawxBU1XgRv3J5DpggvfNPflMWtreg3hgN5UTdmmfTE04A0CEt+m/RA
+        s07CSYTlPZdcPKktq67MVvX2dpOdOlPP5DrqN0k94dq8u/7JiwjesiVbLbhq64eB
+        BTHmDaMCcNnzyYJWmWFgslt59MZl1WdGiKpjMBjdQuDeQCqqxWQVYxN3YI8aaP0+
+        HHHNmvX25ol+BkC+1YsoR9fiKOevB/UFQ1HCPyaSSY1sqaJKqSUaPMdlg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
         messagingengine.com; h=cc:content-transfer-encoding:date:from
         :in-reply-to:message-id:mime-version:references:subject:to
         :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm1; bh=aq+SCX2ysa3GNXpW7Iu1dniHsmrxkX+iV1kY3kri6/Q=; b=MxUC43Y9
-        KibCUcJzJxDK/qf1bn5xTutsErZVA8I0bHAZeiEwqL/Zj1uEcALsirdPaUAHcIcL
-        JpZQiDBdKDLCjU9f2JMvK7oS0Qp0/rnc/QbEcCqqjeVFmIkdZPIAR100oVu3NwLv
-        vk6vdX58s1xFIdS7OzQnyioep60BmXyFgFNr7jGECfJdg8h050iHIPuDqfq3CuhM
-        YyRT/+tqSXVUq8M/engIZ3T3dCNqB2enelzZhj3j9bEiMf6I7xm3Sc0iIXAJJ2Hj
-        g/hHBTDXY1CGM0pVf0ssHyw9cHjFf7Fe1/tSR+W7LyHkRdKlQbdtsZJea5YijuT+
-        enlPIbCBZa71KQ==
-X-ME-Sender: <xms:xDoRXqnoGR-VZxDIbw0-9knmTlhdY3KsHIutvX2YEXdKtuEx9NDpBw>
+        fm1; bh=WrStUasd4Cc83ADtqUJg0NBcBBfCEyykALqqb1HDxp0=; b=H9rY78IO
+        aP7yVg65WG7IvewRQlW+irQdD8dX/AptJVHGHVU4UOmS6VTNewm9UR0h7e5vUf00
+        RCdKj3iOjC08cEXxaBkem+wMhfmTLa+5uiDH0qSzXRkXKq/EKmfxa+JWrNiFd3rY
+        T/kiqAvx7wBtMNmvJh4Tbjp9Z/Cu6rs4Od9YB1qQzQBSUG0gcrINQZaCvQr1R5qs
+        nOUt5qVTUKp8l6PS7Tp+4PJocKRux8Iyp6Ml47YFnJOvTqUj2ahLgB69YV6gOEg0
+        E2M2XJQcUDzJkL/xowSiUpfptiipBz4c4PS0t1xJr1OcEwY49mQfbN/Gcd/0uG1R
+        ++qe4KpmioKL9Q==
+X-ME-Sender: <xms:wjoRXmUAMH0x8WXUSVU3713I0s8ziKsUtidluCecKWij7vDy8WsSlA>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedrvdegiedgfeegucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
@@ -55,13 +55,13 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedrvdegiedgfeegucetufdoteggod
     lhcujfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucfkph
     epjedtrddufeehrddugeekrdduhedunecurfgrrhgrmhepmhgrihhlfhhrohhmpehsrghm
     uhgvlhesshhhohhllhgrnhgurdhorhhgnecuvehluhhsthgvrhfuihiivgepvd
-X-ME-Proxy: <xmx:xDoRXk58hQ4pzm1yFE8QqloT1FbXhsEhsmu2o60E8uc88g_IRQoEdg>
-    <xmx:xDoRXn7HCBwyYIH9X_-mbtaeFb2PUIvCShGQ5guY2l89DJmlisegRA>
-    <xmx:xDoRXsR7VMAJfGFUlGKIkcNqrXvSLCC1-rwaOp1yBUkjjmVotbZwTQ>
-    <xmx:xDoRXr6eX08Wca0FgP4LCHYnLqFzYKALCO_Xe1Qzr1R3g8jqO4BSOw>
+X-ME-Proxy: <xmx:wjoRXk6lVZYUe_VSnf_zImo9j2UP-2k5QSAAIEQXAqOIhU16xxD0hw>
+    <xmx:wjoRXp-5l1W4X3LmnhV5A7nNQgpAOnUbg-8ZQ-WWbId-mwQO-BI01A>
+    <xmx:wjoRXknIOznZJH_es1_E6KeC5rWl51mahItWVHwYLaAPBaaymvbOEw>
+    <xmx:wjoRXiH4_VmsHqqZsSgXIXPUmXFDjdvKAP60l2VekZIn4G-ajoWgAw>
 Received: from titanium.stl.sholland.net (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
-        by mail.messagingengine.com (Postfix) with ESMTPA id 75F4980059;
-        Sat,  4 Jan 2020 20:24:19 -0500 (EST)
+        by mail.messagingengine.com (Postfix) with ESMTPA id 0016980061;
+        Sat,  4 Jan 2020 20:24:17 -0500 (EST)
 From:   Samuel Holland <samuel@sholland.org>
 To:     Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>,
         Lee Jones <lee.jones@linaro.org>,
@@ -70,9 +70,9 @@ To:     Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>,
         Quentin Schulz <quentin.schulz@bootlin.com>
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-sunxi@googlegroups.com, Samuel Holland <samuel@sholland.org>
-Subject: [PATCH v2 7/9] power: supply: axp20x_usb_power: Allow offlining
-Date:   Sat,  4 Jan 2020 19:24:14 -0600
-Message-Id: <20200105012416.23296-8-samuel@sholland.org>
+Subject: [PATCH v2 4/9] power: supply: axp20x_ac_power: Add wakeup control
+Date:   Sat,  4 Jan 2020 19:24:11 -0600
+Message-Id: <20200105012416.23296-5-samuel@sholland.org>
 X-Mailer: git-send-email 2.23.0
 In-Reply-To: <20200105012416.23296-1-samuel@sholland.org>
 References: <20200105012416.23296-1-samuel@sholland.org>
@@ -83,81 +83,215 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-AXP803/AXP813 have a flag that enables/disables the USB power supply
-input. Allow control of this flag via the ONLINE property on those
-variants.
+The AC power supply input can be used as a wakeup source. Hook up the
+ACIN_PLUGIN IRQ to trigger wakeup based on userspace configuration.
 
-It may be necessary to offline the USB power supply input when using
-the USB port in OTG mode, or to allow userspace to disable charging.
+To do this, we must remember the list of IRQs for the life of the
+device. To know how much space to allocate for the flexible array
+member, we switch from using a NULL sentinel to using an array length.
 
-When the USB VBUS input is disabled via the PATH_SEL bit, the VBUS_USED
-bit in PWR_INPUT_STATUS is cleared, so there is no change needed when
-getting the property.
+Because we now depend on the specific order of the IRQs (we assume
+ACIN_PLUGIN is first and always present), failing to acquire an IRQ
+during probe must be a fatal error.
+
+To avoid spuriously waking up the system when the AC power supply is
+not configured as a wakeup source, we must explicitly disable all non-
+wake IRQs during system suspend. This is because the SoC's NMI input is
+shared among all IRQs on the AXP PMIC. Due to the use of regmap-irq, the
+individual IRQs within the PMIC are nested threaded interrupts, and are
+therefore not automatically disabled during system suspend.
+
+The upshot is that if any other device within the MFD (such as the power
+key) is an enabled wakeup source, all enabled IRQs within the PMIC will
+cause wakeup. We still need to call enable_irq_wake() when we *do* want
+wakeup, in case those other wakeup sources on the PMIC are all disabled.
 
 Signed-off-by: Samuel Holland <samuel@sholland.org>
 ---
- drivers/power/supply/axp20x_usb_power.c | 27 +++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ drivers/power/supply/axp20x_ac_power.c | 91 +++++++++++++++++++++-----
+ 1 file changed, 74 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index 2d7272e19a87..68443f264dff 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -29,6 +29,9 @@
+diff --git a/drivers/power/supply/axp20x_ac_power.c b/drivers/power/supply/axp20x_ac_power.c
+index bc2663cd47fa..177b5c1eee8f 100644
+--- a/drivers/power/supply/axp20x_ac_power.c
++++ b/drivers/power/supply/axp20x_ac_power.c
+@@ -15,6 +15,7 @@
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
++#include <linux/pm.h>
+ #include <linux/power_supply.h>
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+@@ -44,6 +45,8 @@ struct axp20x_ac_power {
+ 	struct iio_channel *acin_v;
+ 	struct iio_channel *acin_i;
+ 	bool has_acin_path_sel;
++	unsigned int num_irqs;
++	unsigned int irqs[];
+ };
  
- #define AXP20X_USB_STATUS_VBUS_VALID	BIT(2)
+ static irqreturn_t axp20x_ac_power_irq(int irq, void *devid)
+@@ -242,38 +245,86 @@ static const struct power_supply_desc axp813_ac_power_desc = {
+ 	.set_property = axp813_ac_power_set_property,
+ };
  
-+#define AXP20X_VBUS_PATH_SEL		BIT(7)
-+#define AXP20X_VBUS_PATH_SEL_OFFSET	7
++static const char * const axp20x_irq_names[] = {
++	"ACIN_PLUGIN",
++	"ACIN_REMOVAL",
++};
 +
- #define AXP20X_VBUS_VHOLD_uV(b)		(4000000 + (((b) >> 3) & 7) * 100000)
- #define AXP20X_VBUS_VHOLD_MASK		GENMASK(5, 3)
- #define AXP20X_VBUS_VHOLD_OFFSET	3
-@@ -263,6 +266,16 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 	return 0;
- }
+ struct axp_data {
+ 	const struct power_supply_desc	*power_desc;
++	const char * const		*irq_names;
++	unsigned int			num_irq_names;
+ 	bool				acin_adc;
+ 	bool				acin_path_sel;
+ };
  
-+static int axp813_usb_power_set_online(struct axp20x_usb_power *power,
-+				       int intval)
+ static const struct axp_data axp20x_data = {
+ 	.power_desc	= &axp20x_ac_power_desc,
++	.irq_names	= axp20x_irq_names,
++	.num_irq_names	= ARRAY_SIZE(axp20x_irq_names),
+ 	.acin_adc	= true,
+ 	.acin_path_sel	= false,
+ };
+ 
+ static const struct axp_data axp22x_data = {
+ 	.power_desc	= &axp22x_ac_power_desc,
++	.irq_names	= axp20x_irq_names,
++	.num_irq_names	= ARRAY_SIZE(axp20x_irq_names),
+ 	.acin_adc	= false,
+ 	.acin_path_sel	= false,
+ };
+ 
+ static const struct axp_data axp813_data = {
+ 	.power_desc	= &axp813_ac_power_desc,
++	.irq_names	= axp20x_irq_names,
++	.num_irq_names	= ARRAY_SIZE(axp20x_irq_names),
+ 	.acin_adc	= false,
+ 	.acin_path_sel	= true,
+ };
+ 
++#ifdef CONFIG_PM_SLEEP
++static int axp20x_ac_power_suspend(struct device *dev)
 +{
-+	int val = !intval << AXP20X_VBUS_PATH_SEL_OFFSET;
-+
-+	return regmap_update_bits(power->regmap,
-+				  AXP20X_VBUS_IPSOUT_MGMT,
-+				  AXP20X_VBUS_PATH_SEL, val);
-+}
-+
- static int axp20x_usb_power_set_voltage_min(struct axp20x_usb_power *power,
- 					    int intval)
- {
-@@ -344,6 +357,9 @@ static int axp20x_usb_power_set_property(struct power_supply *psy,
- 	struct axp20x_usb_power *power = power_supply_get_drvdata(psy);
- 
- 	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		return axp813_usb_power_set_online(power, val->intval);
-+
- 	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
- 		return axp20x_usb_power_set_voltage_min(power, val->intval);
- 
-@@ -363,6 +379,17 @@ static int axp20x_usb_power_set_property(struct power_supply *psy,
- static int axp20x_usb_power_prop_writeable(struct power_supply *psy,
- 					   enum power_supply_property psp)
- {
-+	struct axp20x_usb_power *power = power_supply_get_drvdata(psy);
++	struct axp20x_ac_power *power = dev_get_drvdata(dev);
++	int i = 0;
 +
 +	/*
-+	 * Both AXP2xx and AXP8xx have a VBUS path select flag.
-+	 * On AXP2xx, setting the flag enables VBUS (ignoring N_VBUSEN).
-+	 * On AXP8xx, setting the flag disables VBUS (ignoring N_VBUSEN).
-+	 * So we only expose the control on AXP8xx where it is meaningful.
++	 * Allow wake via ACIN_PLUGIN only.
++	 *
++	 * As nested threaded IRQs are not automatically disabled during
++	 * suspend, we must explicitly disable the remainder of the IRQs.
 +	 */
-+	if (psp == POWER_SUPPLY_PROP_ONLINE)
-+		return power->axp20x_id == AXP813_ID;
++	if (device_may_wakeup(&power->supply->dev))
++		enable_irq_wake(power->irqs[i++]);
++	while (i < power->num_irqs)
++		disable_irq(power->irqs[i++]);
 +
- 	return psp == POWER_SUPPLY_PROP_VOLTAGE_MIN ||
- 	       psp == POWER_SUPPLY_PROP_CURRENT_MAX;
- }
++	return 0;
++}
++
++static int axp20x_ac_power_resume(struct device *dev)
++{
++	struct axp20x_ac_power *power = dev_get_drvdata(dev);
++	int i = 0;
++
++	if (device_may_wakeup(&power->supply->dev))
++		disable_irq_wake(power->irqs[i++]);
++	while (i < power->num_irqs)
++		enable_irq(power->irqs[i++]);
++
++	return 0;
++}
++#endif
++
++static SIMPLE_DEV_PM_OPS(axp20x_ac_power_pm_ops, axp20x_ac_power_suspend,
++						 axp20x_ac_power_resume);
++
+ static int axp20x_ac_power_probe(struct platform_device *pdev)
+ {
+ 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+ 	struct power_supply_config psy_cfg = {};
+ 	struct axp20x_ac_power *power;
+ 	const struct axp_data *axp_data;
+-	static const char * const irq_names[] = { "ACIN_PLUGIN", "ACIN_REMOVAL",
+-		NULL };
+ 	int i, irq, ret;
+ 
+ 	if (!of_device_is_available(pdev->dev.of_node))
+@@ -284,12 +335,14 @@ static int axp20x_ac_power_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
+-	power = devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
++	axp_data = of_device_get_match_data(&pdev->dev);
++
++	power = devm_kzalloc(&pdev->dev,
++			     struct_size(power, irqs, axp_data->num_irq_names),
++			     GFP_KERNEL);
+ 	if (!power)
+ 		return -ENOMEM;
+ 
+-	axp_data = of_device_get_match_data(&pdev->dev);
+-
+ 	if (axp_data->acin_adc) {
+ 		power->acin_v = devm_iio_channel_get(&pdev->dev, "acin_v");
+ 		if (IS_ERR(power->acin_v)) {
+@@ -308,6 +361,7 @@ static int axp20x_ac_power_probe(struct platform_device *pdev)
+ 
+ 	power->regmap = dev_get_regmap(pdev->dev.parent, NULL);
+ 	power->has_acin_path_sel = axp_data->acin_path_sel;
++	power->num_irqs = axp_data->num_irq_names;
+ 
+ 	platform_set_drvdata(pdev, power);
+ 
+@@ -321,20 +375,22 @@ static int axp20x_ac_power_probe(struct platform_device *pdev)
+ 		return PTR_ERR(power->supply);
+ 
+ 	/* Request irqs after registering, as irqs may trigger immediately */
+-	for (i = 0; irq_names[i]; i++) {
+-		irq = platform_get_irq_byname(pdev, irq_names[i]);
++	for (i = 0; i < axp_data->num_irq_names; i++) {
++		irq = platform_get_irq_byname(pdev, axp_data->irq_names[i]);
+ 		if (irq < 0) {
+-			dev_warn(&pdev->dev, "No IRQ for %s: %d\n",
+-				 irq_names[i], irq);
+-			continue;
++			dev_err(&pdev->dev, "No IRQ for %s: %d\n",
++				axp_data->irq_names[i], irq);
++			return irq;
+ 		}
+-		irq = regmap_irq_get_virq(axp20x->regmap_irqc, irq);
+-		ret = devm_request_any_context_irq(&pdev->dev, irq,
++		power->irqs[i] = regmap_irq_get_virq(axp20x->regmap_irqc, irq);
++		ret = devm_request_any_context_irq(&pdev->dev, power->irqs[i],
+ 						   axp20x_ac_power_irq, 0,
+ 						   DRVNAME, power);
+-		if (ret < 0)
+-			dev_warn(&pdev->dev, "Error requesting %s IRQ: %d\n",
+-				 irq_names[i], ret);
++		if (ret < 0) {
++			dev_err(&pdev->dev, "Error requesting %s IRQ: %d\n",
++				axp_data->irq_names[i], ret);
++			return ret;
++		}
+ 	}
+ 
+ 	return 0;
+@@ -357,8 +413,9 @@ MODULE_DEVICE_TABLE(of, axp20x_ac_power_match);
+ static struct platform_driver axp20x_ac_power_driver = {
+ 	.probe = axp20x_ac_power_probe,
+ 	.driver = {
+-		.name = DRVNAME,
+-		.of_match_table = axp20x_ac_power_match,
++		.name		= DRVNAME,
++		.of_match_table	= axp20x_ac_power_match,
++		.pm		= &axp20x_ac_power_pm_ops,
+ 	},
+ };
+ 
 -- 
 2.23.0
 
