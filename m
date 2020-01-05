@@ -2,125 +2,291 @@ Return-Path: <SRS0=Ao3z=22=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9457BC33C99
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Jan 2020 01:25:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5BB0C33C9A
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Jan 2020 06:55:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6A531215A4
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Jan 2020 01:25:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A2FDE21775
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Jan 2020 06:55:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=sholland.org header.i=@sholland.org header.b="Yz/15x6b";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="nhkAjP3W"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="EYYemt4g"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726240AbgAEBY7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Jan 2020 20:24:59 -0500
-Received: from out5-smtp.messagingengine.com ([66.111.4.29]:38875 "EHLO
-        out5-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726205AbgAEBYS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Jan 2020 20:24:18 -0500
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-        by mailout.nyi.internal (Postfix) with ESMTP id 4A79C21B6A;
-        Sat,  4 Jan 2020 20:24:17 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute5.internal (MEProxy); Sat, 04 Jan 2020 20:24:17 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
-        from:to:cc:subject:date:message-id:mime-version
-        :content-transfer-encoding; s=fm1; bh=GKK6wqE4U1lTliVglqZDNGDO+1
-        0THmTKZg0GRYtue70=; b=Yz/15x6bvTrs+8MyRAf6WIx/31jwMPNCmSpJv+UFxI
-        O1VQsQW22vxWmN1dVGOPYf2cztd0iMQUqDYp2cMUldC7bys7IgDUb/pE5VZdpdAh
-        dOs11XzoLpL2ews0EuE4kMEF+cjZEsG22YJpeyUAS1Gx7w13u4jtotVOxJjPFyej
-        cKh5YV80Li8isHROhBxv5g0v5K105YYjS1fL4SyN8uiPV9Z+MipsPHXMqQMYGGaW
-        SiPk4JS7jpWztSqyploZBPDfraxQmDBUHDMkc0r3YQphGuhyUiiI5s4gaXi7LuCK
-        8O4GTg9gFz0vA15rV0G2AWFn0490N6VzSnN9LMsrin7w==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-transfer-encoding:date:from
-        :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
-        :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=GKK6wqE4U1lTliVgl
-        qZDNGDO+10THmTKZg0GRYtue70=; b=nhkAjP3WTI3+wuu1os8CTZAxHbz9OqDDK
-        Igi9BZlfz/V5q43owWwXZPpYahvBfyopwkRry6vpC0MjTtYj1o086ScHoHHvLOsT
-        uJhLn5RRGHsLWkqJxW3b0aZ5bPRgqm+kXCHHfKmc7JoXNeoS2bUoJOnOPZeLgWuJ
-        EWTptDNTSYZkRu0PX72+AFp5EmeU9ntzKEzH1i0KuXBr+EsiBmh+AkGz7BEjHRS3
-        0qzbRy0KHGEOL8T3yzOyUQAJEKjESPhOPJP/qcEkLZKZyQOYIz3L+N/gEot9Olg6
-        55llBVraOll/ZTuN5MPxKwg5ChjpkyhbHWLKtD/Uxr+p6bGn455gA==
-X-ME-Sender: <xms:wDoRXv3MPrtKB6dgPteitwwoMHHxvvSmsNIEGaoZITAjjcLGIQcv-w>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedufedrvdegiedgfeegucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhephffvufffkffoggfgsedtkeertdertddtnecuhfhrohhmpefurghmuhgvlhcu
-    jfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucfkphepje
-    dtrddufeehrddugeekrdduhedunecurfgrrhgrmhepmhgrihhlfhhrohhmpehsrghmuhgv
-    lhesshhhohhllhgrnhgurdhorhhgnecuvehluhhsthgvrhfuihiivgeptd
-X-ME-Proxy: <xmx:wDoRXhAeDaGg_SDgRU--beqAwqvd0BZrLJBeQExgckxmzBmxh1loAQ>
-    <xmx:wDoRXmped2Wrg1Pzl_um9F5bhsBREE9f4DSW3HQgcnQ_Ic0zkaZ7Kg>
-    <xmx:wDoRXu_rOFhwIz1f8_hxs0orq7KM4u6xwEHbpDbsBBJB1VnKY8PTaQ>
-    <xmx:wToRXlvCI7zTeQTxhlv-uSfv2bESCx2gxbnFgIe1T94OTNe7-4KxNg>
-Received: from titanium.stl.sholland.net (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
-        by mail.messagingengine.com (Postfix) with ESMTPA id AE0438005C;
-        Sat,  4 Jan 2020 20:24:15 -0500 (EST)
-From:   Samuel Holland <samuel@sholland.org>
-To:     Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Oskari Lemmela <oskari@lemmela.net>,
-        Quentin Schulz <quentin.schulz@bootlin.com>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-sunxi@googlegroups.com, Samuel Holland <samuel@sholland.org>
-Subject: [PATCH v2 0/9] X-Powers Power Supply Improvements
-Date:   Sat,  4 Jan 2020 19:24:07 -0600
-Message-Id: <20200105012416.23296-1-samuel@sholland.org>
-X-Mailer: git-send-email 2.23.0
+        id S1725948AbgAEGzj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Jan 2020 01:55:39 -0500
+Received: from mail-pl1-f196.google.com ([209.85.214.196]:35582 "EHLO
+        mail-pl1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725828AbgAEGzj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jan 2020 01:55:39 -0500
+Received: by mail-pl1-f196.google.com with SMTP id g6so20613770plt.2
+        for <linux-pm@vger.kernel.org>; Sat, 04 Jan 2020 22:55:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=message-id:mime-version:content-transfer-encoding:in-reply-to
+         :references:cc:subject:to:from:user-agent:date;
+        bh=BO1WZysMmnkDiZyMpnrijand6L7VBnHht4X1wph901M=;
+        b=EYYemt4gC82sIRviMZwJ6bAWs/sPxzJmC6hKjL2s0IyeerRg/xnFHCApBt8noAvW2U
+         TD0QWn4eTp3tPdWN3QMKWGZ5VU4CF5OiIOb6u8ISrfTM5J4il0zL29k9tqzFwHHjGviB
+         DUuWEebX76f26QzWsjopJJS9O88HfBZbeZcfs=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:mime-version
+         :content-transfer-encoding:in-reply-to:references:cc:subject:to:from
+         :user-agent:date;
+        bh=BO1WZysMmnkDiZyMpnrijand6L7VBnHht4X1wph901M=;
+        b=C87Xp2iNTbp7vVVBNvZCRzpShIl5HZ2MM1reuS2coHtrtFByoBAUHl2NnxHuVaINBm
+         Y5au0dfWevid1iH9GQ79bVvxusjCXluOtbgHtkIQqaCezXDS6xIrZj1gpCknM131VjYj
+         HOXna6eutbDNCX0nlBfHAYWDGQep3sNPDD/TN1FwIOuqSliUtgaMORZPXZVN8jDefLcC
+         qk+MyeWtIU2ukDRn8t1fJS0xwE2KhVY07Lz6ZLe9Se49KudMSVHb7wlobFaO8Rx3qguw
+         r0YOWw1QV8AcdnPLZo9zeNpdDIjwPKVmfnFscPI3bd0z/8aFdm+woX6Aqb2yB7FTCTiw
+         RqWA==
+X-Gm-Message-State: APjAAAUl3Udnji7uVIZu0fYEneypc+PgFwHJCCqPXPpB/CHuD6OkVcLb
+        VFPZsq61JoSOjuQ+s9mag8svHg==
+X-Google-Smtp-Source: APXvYqw5dtRFwrji0lraFoWIcYPcyRwDIOD1NW1KT9D1onxeHicXKbQR/zeVI6PHcVRjLxy3lI34OA==
+X-Received: by 2002:a17:90a:c211:: with SMTP id e17mr37750675pjt.14.1578207338520;
+        Sat, 04 Jan 2020 22:55:38 -0800 (PST)
+Received: from chromium.org ([2620:15c:202:1:fa53:7765:582b:82b9])
+        by smtp.gmail.com with ESMTPSA id u2sm67988487pgc.19.2020.01.04.22.55.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 04 Jan 2020 22:55:37 -0800 (PST)
+Message-ID: <5e118869.1c69fb81.c28bf.4564@mx.google.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1577782737-32068-3-git-send-email-okukatla@codeaurora.org>
+References: <1577782737-32068-1-git-send-email-okukatla@codeaurora.org> <1577782737-32068-3-git-send-email-okukatla@codeaurora.org>
+Cc:     ilina@codeaurora.org, seansw@qti.qualcomm.com, elder@linaro.org,
+        linux-arm-msm-owner@vger.kernel.org,
+        Odelu Kukatla <okukatla@codeaurora.org>
+Subject: Re: [V2, 2/3] interconnect: qcom: Add SC7180 interconnect provider driver
+To:     Andy Gross <agross@kernel.org>,
+        Odelu Kukatla <okukatla@codeaurora.org>,
+        bjorn.andersson@linaro.org, daidavid1@codeaurora.org,
+        evgreen@google.com, georgi.djakov@linaro.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+From:   Stephen Boyd <swboyd@chromium.org>
+User-Agent: alot/0.8.1
+Date:   Sat, 04 Jan 2020 22:55:36 -0800
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds some improvements to the axp20x* power supply drivers
-to better support suspend/resume and use on mobile devices.
+Quoting Odelu Kukatla (2019-12-31 00:58:56)
+> diff --git a/drivers/interconnect/qcom/sc7180.c b/drivers/interconnect/qc=
+om/sc7180.c
+> new file mode 100644
+> index 0000000..4a398e0
+> --- /dev/null
+> +++ b/drivers/interconnect/qcom/sc7180.c
+> @@ -0,0 +1,788 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+> + *
+> + */
+> +
+> +#include <dt-bindings/interconnect/qcom,sc7180.h>
 
-The first two patches fix bugs I found while testing the ONLINE control
-added in later patches.
+Can you include this after linux/ headers? That is the "preferred" way
+to include headers.
 
-Patches 3 and 7 allow userspace to take the power supplies offline.
-Patches 4 and 8 allow userspace to control the wakeup behavior.
+> +#include <linux/device.h>
+> +#include <linux/interconnect.h>
+> +#include <linux/interconnect-provider.h>
+> +#include <linux/module.h>
+> +#include <linux/of_device.h>
 
-Patch 9 avoids polling USB VBUS presence when possible. While working on
-the RSB driver, I was seeing ~50 transfers per second, while idle and
-tracked it down to this VBUS polling (20 reads/second). The polling
-often caused the CPU to clock up and back down, which triggered the
-remaining transfers (changes to the CPU voltage).
+Hopefully this include isn't used and can be removed.
 
-Unfortunately, I don't see a way to avoid the polling when running on
-battery (where it matters most), other than to move the polling back to
-the USB PHY driver.
+> +#include <linux/of_platform.h>
 
-Changes since v1:
- - Add patches 1-2
- - Shift value properly in calls to regmap_update_bits (3, 7)
- - Use #ifdef instead of #if to avoid -Wundef warnings (4, 8)
- - Poll once after an IRQ, instead of setting power->online in the IRQ (9)
- - Poll once on resume, in case the state changed during suspend (9)
+Is this include used?
 
-Samuel Holland (9):
-  mfd: axp20x: Mark AXP20X_VBUS_IPSOUT_MGMT as volatile
-  power: supply: axp20x_ac_power: Fix reporting online status
-  power: supply: axp20x_ac_power: Allow offlining
-  power: supply: axp20x_ac_power: Add wakeup control
-  power: supply: axp20x_usb_power: Remove unused device_node
-  power: supply: axp20x_usb_power: Use a match structure
-  power: supply: axp20x_usb_power: Allow offlining
-  power: supply: axp20x_usb_power: Add wakeup control
-  power: supply: axp20x_usb_power: Only poll while offline
+> +#include <linux/platform_device.h>
+> +
+> +#include "icc-rpmh.h"
+> +#include "bcm-voter.h"
+> +
+[...]
+> +
+> +static struct qcom_icc_node *system_noc_nodes[] =3D {
+> +       [MASTER_SNOC_CFG] =3D &qhm_snoc_cfg,
+> +       [MASTER_A1NOC_SNOC] =3D &qnm_aggre1_noc,
+> +       [MASTER_A2NOC_SNOC] =3D &qnm_aggre2_noc,
+> +       [MASTER_GEM_NOC_SNOC] =3D &qnm_gemnoc,
+> +       [MASTER_PIMEM] =3D &qxm_pimem,
+> +       [SLAVE_APPSS] =3D &qhs_apss,
+> +       [SLAVE_SNOC_CNOC] =3D &qns_cnoc,
+> +       [SLAVE_SNOC_GEM_NOC_GC] =3D &qns_gemnoc_gc,
+> +       [SLAVE_SNOC_GEM_NOC_SF] =3D &qns_gemnoc_sf,
+> +       [SLAVE_IMEM] =3D &qxs_imem,
+> +       [SLAVE_PIMEM] =3D &qxs_pimem,
+> +       [SLAVE_SERVICE_SNOC] =3D &srvc_snoc,
+> +       [SLAVE_QDSS_STM] =3D &xs_qdss_stm,
+> +       [SLAVE_TCU] =3D &xs_sys_tcu_cfg,
+> +};
+> +
+> +static struct qcom_icc_desc sc7180_system_noc =3D {
 
- drivers/mfd/axp20x.c                    |   2 +-
- drivers/power/supply/axp20x_ac_power.c  | 131 +++++++++++---
- drivers/power/supply/axp20x_usb_power.c | 220 ++++++++++++++++++------
- 3 files changed, 276 insertions(+), 77 deletions(-)
+Can this be const? And the other ones?
 
--- 
-2.23.0
+> +       .nodes =3D system_noc_nodes,
+> +       .num_nodes =3D ARRAY_SIZE(system_noc_nodes),
+> +       .bcms =3D system_noc_bcms,
+> +       .num_bcms =3D ARRAY_SIZE(system_noc_bcms),
+> +};
+> +
+> +static int qnoc_probe(struct platform_device *pdev)
+> +{
+> +       const struct qcom_icc_desc *desc;
+> +       struct icc_onecell_data *data;
+> +       struct icc_provider *provider;
+> +       struct qcom_icc_node **qnodes;
+> +       struct qcom_icc_provider *qp;
+> +       struct icc_node *node;
+> +       size_t num_nodes, i;
+> +       int ret;
+> +
+> +       desc =3D of_device_get_match_data(&pdev->dev);
 
+Use device_get_match_data() instead?
+
+> +       if (!desc)
+> +               return -EINVAL;
+> +
+> +       qnodes =3D desc->nodes;
+> +       num_nodes =3D desc->num_nodes;
+> +
+> +       qp =3D devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
+> +       if (!qp)
+> +               return -ENOMEM;
+> +
+> +       data =3D devm_kcalloc(&pdev->dev, num_nodes, sizeof(*node), GFP_K=
+ERNEL);
+> +       if (!data)
+> +               return -ENOMEM;
+> +
+> +       provider =3D &qp->provider;
+> +       provider->dev =3D &pdev->dev;
+> +       provider->set =3D qcom_icc_set;
+> +       provider->pre_aggregate =3D qcom_icc_pre_aggregate;
+> +       provider->aggregate =3D qcom_icc_aggregate;
+> +       provider->xlate =3D of_icc_xlate_onecell;
+> +       INIT_LIST_HEAD(&provider->nodes);
+> +       provider->data =3D data;
+> +
+> +       qp->dev =3D &pdev->dev;
+> +       qp->bcms =3D desc->bcms;
+> +       qp->num_bcms =3D desc->num_bcms;
+> +
+> +       qp->voter =3D of_bcm_voter_get(qp->dev, NULL);
+> +       if (IS_ERR(qp->voter))
+> +               return PTR_ERR(qp->voter);
+> +
+> +       ret =3D icc_provider_add(provider);
+> +       if (ret) {
+> +               dev_err(&pdev->dev, "error adding interconnect provider\n=
+");
+> +               return ret;
+> +       }
+> +
+> +       for (i =3D 0; i < num_nodes; i++) {
+> +               size_t j;
+> +
+> +               if (!qnodes[i])
+> +                       continue;
+> +
+> +               node =3D icc_node_create(qnodes[i]->id);
+> +               if (IS_ERR(node)) {
+> +                       ret =3D PTR_ERR(node);
+> +                       goto err;
+> +               }
+> +
+> +               node->name =3D qnodes[i]->name;
+> +               node->data =3D qnodes[i];
+> +               icc_node_add(node, provider);
+> +
+> +               dev_dbg(&pdev->dev, "registered node %pK %s %d\n", node,
+> +                       qnodes[i]->name, node->id);
+
+Is this more debug junk? Maybe if it is useful it can be part of the
+core framework instead of in this driver?
+
+> +
+> +               /* populate links */
+
+Useless comment.
+
+> +               for (j =3D 0; j < qnodes[i]->num_links; j++)
+> +                       icc_link_create(node, qnodes[i]->links[j]);
+> +
+> +               data->nodes[i] =3D node;
+> +       }
+> +       data->num_nodes =3D num_nodes;
+> +
+> +       for (i =3D 0; i < qp->num_bcms; i++)
+> +               qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
+> +
+> +       platform_set_drvdata(pdev, qp);
+> +
+> +       dev_dbg(&pdev->dev, "Registered SC7180 ICC\n");
+
+This driver debug message is pretty useless. Please remove it.
+
+> +
+> +       return ret;
+
+return 0?
+
+> +err:
+> +       icc_nodes_remove(provider);
+> +       icc_provider_del(provider);
+> +       return ret;
+> +}
+> +
+> +static int qnoc_remove(struct platform_device *pdev)
+> +{
+> +       struct qcom_icc_provider *qp =3D platform_get_drvdata(pdev);
+> +
+> +       icc_nodes_remove(&qp->provider);
+> +       return icc_provider_del(&qp->provider);
+> +}
+> +
+> +static const struct of_device_id qnoc_of_match[] =3D {
+> +       { .compatible =3D "qcom,sc7180-aggre1-noc",
+> +         .data =3D &sc7180_aggre1_noc},
+> +       { .compatible =3D "qcom,sc7180-aggre2-noc",
+> +         .data =3D &sc7180_aggre2_noc},
+> +       { .compatible =3D "qcom,sc7180-camnoc-virt",
+> +         .data =3D &sc7180_camnoc_virt},
+> +       { .compatible =3D "qcom,sc7180-compute-noc",
+> +         .data =3D &sc7180_compute_noc},
+> +       { .compatible =3D "qcom,sc7180-config-noc",
+> +         .data =3D &sc7180_config_noc},
+> +       { .compatible =3D "qcom,sc7180-dc-noc",
+> +         .data =3D &sc7180_dc_noc},
+> +       { .compatible =3D "qcom,sc7180-gem-noc",
+> +         .data =3D &sc7180_gem_noc},
+> +       { .compatible =3D "qcom,sc7180-ipa-virt",
+> +         .data =3D &sc7180_ipa_virt},
+> +       { .compatible =3D "qcom,sc7180-mc-virt",
+> +         .data =3D &sc7180_mc_virt},
+> +       { .compatible =3D "qcom,sc7180-mmss-noc",
+> +         .data =3D &sc7180_mmss_noc},
+> +       { .compatible =3D "qcom,sc7180-npu-noc",
+> +         .data =3D &sc7180_npu_noc},
+> +       { .compatible =3D "qcom,sc7180-qup-virt",
+> +         .data =3D &sc7180_qup_virt},
+> +       { .compatible =3D "qcom,sc7180-system-noc",
+> +         .data =3D &sc7180_system_noc},
+> +       { },
+
+Nitpick: Drop the comma as it's the sentinel and nothing can come after.
+
+> +};
+> +MODULE_DEVICE_TABLE(of, qnoc_of_match);
