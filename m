@@ -2,100 +2,124 @@ Return-Path: <SRS0=myb9=23=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC299C33C8C
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Jan 2020 17:27:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 797BFC33C9B
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Jan 2020 17:29:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8183B207FD
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Jan 2020 17:27:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4BFC220731
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Jan 2020 17:29:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jzpuGAHB"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HlJEyMb8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726536AbgAFR1r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Jan 2020 12:27:47 -0500
-Received: from mail-wr1-f65.google.com ([209.85.221.65]:45137 "EHLO
-        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726526AbgAFR1q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2020 12:27:46 -0500
-Received: by mail-wr1-f65.google.com with SMTP id j42so50514839wrj.12
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jan 2020 09:27:45 -0800 (PST)
+        id S1726698AbgAFR3Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Jan 2020 12:29:16 -0500
+Received: from mail-ed1-f66.google.com ([209.85.208.66]:37998 "EHLO
+        mail-ed1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726692AbgAFR3P (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2020 12:29:15 -0500
+Received: by mail-ed1-f66.google.com with SMTP id i16so48063683edr.5
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jan 2020 09:29:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=eA5OqXkB3++UqCw3nWhtcdXsiHuPwWe3zZsMrY+R6g0=;
-        b=jzpuGAHB6DfsAm0+WuzL4ucBxTHVpKeYsWix/3HqlDl/edJ/k1pa7eKLvJPg1I9b5x
-         /KRJ3qh4H/O+NGKjY/7bQM9LmELJTS3ZIIyxXp/lhVPeODk3JK5r3WQa91+3foXpUdLf
-         kI+io8ZjBwrS6qmYGu5Bqw/fNNCwnnDauNCl5moVv8JmjzLmt0lza/L/gKo6PH/vk/0n
-         FPpAwtDPxch0nChyvNUxMOR7KlcEcV6Y61WGG9mrzWa/Qib7Lm+OSwOGB+/atVUdA3F/
-         mmNtHZwldHU0b7JiBcme5V3ekCtC7hdEPmKxijaiYc5UheEkoqMMWgDLprFv0kjyHBpO
-         Za2A==
+        h=subject:to:cc:references:from:message-id:date:mime-version
+         :in-reply-to:content-language:content-transfer-encoding;
+        bh=xILTpET5HvTSzruyix3vfVm6CvfCGp/jihwvwllbC3w=;
+        b=HlJEyMb8VUi7sQRbOTe70KWZFvO4offX7v6+PJlsTms05KH/5Zk2AcWBD9QwLXKqGT
+         ieSHoimZJohktzModRyY8OAzatcq9yauRfiGnkz32G9Ipx/4A49q5YqcD5aPva03h2Gw
+         iG/yDXnl2eWu9nK2nKVrfDj721JJZDwkforMU2Jn8MknDcBd+czSHnh1eS8CymkNkqAV
+         r9k3nOJs2+i89oIxZFd9w2Yqh4Va+CZT2PGBQCWYuAyQmw47boYD9S7MyfCSZNt3wfn9
+         tcKDGcFrzCrm9o/daxrbRT35fhFe4Ez0ffBC1AeUnDlIeJp8mZKfYprbwwzxEAAyBLh/
+         A8Aw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=eA5OqXkB3++UqCw3nWhtcdXsiHuPwWe3zZsMrY+R6g0=;
-        b=Yt1xAB7UtL0jmfroMiUtjjDcEqQ0LlqmQGqA0QH9CqhuL31iBr3Lrh/6gQcLVqpQOV
-         0Q9rjYynPKNr1qGePWjlNBaXpcmAv6Fjb32wCkJllIHSnHUidtMYcBbE3Mx9NPoQUQPe
-         AUdrCE/WPSfayJT6W+ewqXm4fqzlL6iaiCHj0RVte2wYbbqH6hm1BAl271pzeLntaJvM
-         H1NhV/xuiQC6+3z1tkQfg8ch1/h88ZtCJuwbfWygQYpzZ1YNc+wmf42KeActylfgutAt
-         wD+BymbiPDjK9hy8cTA6Xq2BFiBe1j1z4YX2sU9MYE04T9AYxXhJRy3hQUu0fVmlBQ4M
-         zIzg==
-X-Gm-Message-State: APjAAAWAblbFDD003Idjo2LPhh4h4P3gB5+uS1udh9RxJd2e3OV1QdP0
-        V3Q8qppAF5In7aRPF3ff/NtvDQ7axbw=
-X-Google-Smtp-Source: APXvYqxvtLdAzA4Euyn71p/fPtmaNI3o9qzBh3vLsIJoUiDtgviZd1Out3FTo5PZH5A0cZazGSBx0g==
-X-Received: by 2002:a05:6000:f:: with SMTP id h15mr98382623wrx.90.1578331664634;
-        Mon, 06 Jan 2020 09:27:44 -0800 (PST)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id z187sm23725757wme.16.2020.01.06.09.27.43
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Mon, 06 Jan 2020 09:27:44 -0800 (PST)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org
-Cc:     bjorn.andersson@linaro.org, evgreen@chromium.org,
-        daidavid1@codeaurora.org, okukatla@codeaurora.org,
-        jcrouse@codeaurora.org, georgi.djakov@linaro.org,
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=xILTpET5HvTSzruyix3vfVm6CvfCGp/jihwvwllbC3w=;
+        b=qss30hRYZpTc94P5lxftJeuVEvoeZIngFHNuzwTd232/tSDMiI1DpbQjml00fJJNyo
+         YXnoHIcnExW0bDAqh4BrFPcj47d3+jPLL9dPjThuK8/GctOahdpTdts3E2K6meDxXcuS
+         TvWdCIMDzvDKXQ1Uf3cIfmQfbKOhm0TSw9T1hamW8h36Ryg+W/9JF2YmLsfutKu1HlMd
+         eQleWU+r+dn5RBUN2eGwGuO51AOUs1Bm3LvtalAUVYK1vc1na3YhFLaZh6oYyHXqEpxB
+         p+G2l//WyDaY7UkeM9cuUB6SQEuQpmeIDqi57G52mMEHjIirPQQDlh9mmz6Il8Odv8YC
+         q74w==
+X-Gm-Message-State: APjAAAUz3/1s6kCJCrPZU5QEKWph/fxvl/ilI/vl1d+RQZui5E6tjQVZ
+        YEMl2+9MEsfD7n4T8HLFJZohHg==
+X-Google-Smtp-Source: APXvYqxEzJZM06OUQohBMr1QHRp1MDY9Ku71gw8Iw1kMg/pbAp8k7JloMdp2qZLjR6txq6yNFFdkFQ==
+X-Received: by 2002:a17:906:b301:: with SMTP id n1mr108850634ejz.285.1578331754162;
+        Mon, 06 Jan 2020 09:29:14 -0800 (PST)
+Received: from [192.168.27.135] ([37.157.136.193])
+        by smtp.googlemail.com with ESMTPSA id e24sm7403328edy.93.2020.01.06.09.29.12
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Jan 2020 09:29:13 -0800 (PST)
+Subject: Re: [V2, 3/3] arm64: dts: sc7180: Add interconnect provider DT nodes
+To:     Odelu Kukatla <okukatla@codeaurora.org>, daidavid1@codeaurora.org,
+        bjorn.andersson@linaro.org, evgreen@google.com,
+        Andy Gross <agross@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v2] interconnect: Check for valid path in icc_set_bw()
-Date:   Mon,  6 Jan 2020 19:27:46 +0200
-Message-Id: <20200106172746.19803-1-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.24.1
+Cc:     sboyd@kernel.org, ilina@codeaurora.org, seansw@qti.qualcomm.com,
+        elder@linaro.org, linux-pm@vger.kernel.org,
+        linux-arm-msm-owner@vger.kernel.org
+References: <1577782737-32068-1-git-send-email-okukatla@codeaurora.org>
+ <1577782737-32068-4-git-send-email-okukatla@codeaurora.org>
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+Message-ID: <f144cc82-d4d9-b841-0cdf-41202e11b979@linaro.org>
+Date:   Mon, 6 Jan 2020 19:29:11 +0200
 MIME-Version: 1.0
+In-Reply-To: <1577782737-32068-4-git-send-email-okukatla@codeaurora.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use IS_ERR() to ensure that the path passed to icc_set_bw() is valid.
+On 31.12.19 г. 10:58 ч., Odelu Kukatla wrote:
+> Add the DT nodes for the network-on-chip interconnect buses found
+> on sc7180-based platforms.
+> ---
+>   arch/arm64/boot/dts/qcom/sc7180.dtsi | 96 ++++++++++++++++++++++++++++++++++++
+>   1 file changed, 96 insertions(+)
+> 
+> diff --git a/arch/arm64/boot/dts/qcom/sc7180.dtsi b/arch/arm64/boot/dts/qcom/sc7180.dtsi
+> index 3676bfd..077b1e5 100644
+> --- a/arch/arm64/boot/dts/qcom/sc7180.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/sc7180.dtsi
+> @@ -8,6 +8,7 @@
+>   #include <dt-bindings/clock/qcom,gcc-sc7180.h>
+>   #include <dt-bindings/clock/qcom,rpmh.h>
+>   #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +#include <dt-bindings/interconnect/qcom,sc7180.h>
 
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
-v2:
-- Use WARN_ON() instead of pr_err() (Bjorn)
+This should be moved one line up if we want to keep the headers sorted.
 
- drivers/interconnect/core.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+>   #include <dt-bindings/phy/phy-qcom-qusb2.h>
+>   #include <dt-bindings/soc/qcom,rpmh-rsc.h>
+>   
+> @@ -1286,6 +1287,10 @@
+>   				clock-names = "xo";
+>   				#clock-cells = <1>;
+>   			};
+> +
+> +			apps_bcm_voter: bcm_voter {
+> +				compatible = "qcom,sc7180-bcm-voter";
+> +			};
+>   		};
+>   
+>   		cpufreq_hw: cpufreq@18323000 {
+> @@ -1298,6 +1303,97 @@
+>   
+>   			#freq-domain-cells = <1>;
+>   		};
+> + > +		config_noc: interconnect@1500000 {
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 63c164264b73..d2ba5ae7d25b 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -495,9 +495,12 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
- 	size_t i;
- 	int ret;
- 
--	if (!path || !path->num_nodes)
-+	if (!path)
- 		return 0;
- 
-+	if (WARN_ON(IS_ERR(path) || !path->num_nodes))
-+		return -EINVAL;
-+
- 	mutex_lock(&icc_lock);
- 
- 	old_avg = path->reqs[0].avg_bw;
+All DT nodes in this file are ordered by their address. Please move these up
+to keep it consistent.
+
+Thanks,
+Georgi
