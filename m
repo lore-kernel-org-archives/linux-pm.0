@@ -4,73 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33CA1C33C8C
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Jan 2020 12:06:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C7F1C33C9E
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Jan 2020 13:30:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0764F20731
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Jan 2020 12:06:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7526A214D8
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Jan 2020 13:30:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726281AbgAFMGG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Jan 2020 07:06:06 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:43311 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725787AbgAFMGG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2020 07:06:06 -0500
-Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <colin.king@canonical.com>)
-        id 1ioR8w-0008Es-8J; Mon, 06 Jan 2020 12:05:58 +0000
-From:   Colin King <colin.king@canonical.com>
+        id S1726751AbgAFNaL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Jan 2020 08:30:11 -0500
+Received: from alexa-out-blr-01.qualcomm.com ([103.229.18.197]:36505 "EHLO
+        alexa-out-blr-01.qualcomm.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726696AbgAFNaK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jan 2020 08:30:10 -0500
+Received: from ironmsg02-blr.qualcomm.com ([10.86.208.131])
+  by alexa-out-blr-01.qualcomm.com with ESMTP/TLS/AES256-SHA; 06 Jan 2020 19:00:00 +0530
+Received: from c-rkambl-linux1.qualcomm.com ([10.242.50.190])
+  by ironmsg02-blr.qualcomm.com with ESMTP; 06 Jan 2020 18:59:44 +0530
+Received: by c-rkambl-linux1.qualcomm.com (Postfix, from userid 2344811)
+        id 1965A11E4; Mon,  6 Jan 2020 18:59:43 +0530 (IST)
+From:   Rajeshwari <rkambl@codeaurora.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Niklas Cassel <niklas.cassel@linaro.org>,
-        Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][next] power: avs: fix uninitialized error return on failed cpr_read_fuse_uV call
-Date:   Mon,  6 Jan 2020 12:05:58 +0000
-Message-Id: <20200106120558.37758-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.24.0
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+        Rob Herring <robh+dt@kernel.org>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Mark Rutland <mark.rutland@arm.com>
+Cc:     linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        sanm@codeaurora.org, sivaa@codeaurora.org, manaf@codeaurora.org,
+        Rajeshwari <rkambl@codeaurora.org>
+Subject: [PATCH v2 2/2] dt-bindings: thermal: tsens: Add configuration in yaml
+Date:   Mon,  6 Jan 2020 18:59:29 +0530
+Message-Id: <1578317369-16045-3-git-send-email-rkambl@codeaurora.org>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1578317369-16045-1-git-send-email-rkambl@codeaurora.org>
+References: <1578317369-16045-1-git-send-email-rkambl@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+Added configuration in dt-bindings for SC7180.
 
-Currently when the call cpr_read_fuse_uV returns an error the value in the
-uninitialized variable ret is returned. Fix this by instread returning the
-error value in the variable uV.
-
-Addresses-Coverity: ("Uninitialized scalar variable")
-Fixes: bf6910abf548 ("power: avs: Add support for CPR (Core Power Reduction)")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Signed-off-by: Rajeshwari <rkambl@codeaurora.org>
 ---
- drivers/power/avs/qcom-cpr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/avs/qcom-cpr.c b/drivers/power/avs/qcom-cpr.c
-index 9247f53550b3..0321729431a5 100644
---- a/drivers/power/avs/qcom-cpr.c
-+++ b/drivers/power/avs/qcom-cpr.c
-@@ -922,7 +922,7 @@ static int cpr_fuse_corner_init(struct cpr_drv *drv)
- 		uV = cpr_read_fuse_uV(desc, fdata, fuses->init_voltage,
- 				      step_volt, drv);
- 		if (uV < 0)
--			return ret;
-+			return uV;
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index eef13b9..c0ed030 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -38,6 +38,7 @@ properties:
+           - enum:
+               - qcom,msm8996-tsens
+               - qcom,msm8998-tsens
++              - qcom,sc7180-tsens
+               - qcom,sdm845-tsens
+           - const: qcom,tsens-v2
  
- 		fuse->min_uV = fdata->min_uV;
- 		fuse->max_uV = fdata->max_uV;
 -- 
-2.24.0
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member 
+of Code Aurora Forum, hosted by The Linux Foundation
 
