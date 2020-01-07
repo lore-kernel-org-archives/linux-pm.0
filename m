@@ -2,100 +2,118 @@ Return-Path: <SRS0=gDq+=24=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MIME_BASE64_TEXT,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F11CBC33C99
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 06:46:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24FB7C33C9B
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 07:02:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C14F9207FD
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 06:46:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EAFAD206DB
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 07:02:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="G7PcX1Rm"
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="JBD/Sw1O"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725914AbgAGGqi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jan 2020 01:46:38 -0500
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:44549 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725781AbgAGGqi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2020 01:46:38 -0500
-Received: by mail-pf1-f194.google.com with SMTP id 195so27246408pfw.11
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jan 2020 22:46:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
-         :user-agent;
-        bh=hXySPSq7rHgw0OwQs5jXUSVuOO0+vuYf7jbQMni+qeM=;
-        b=G7PcX1Rmf79ZcFBicjkH8QhH3XYeIUH8q0VuUV3hK1Itb6Eq+HmTcABldx2TbhJR9Y
-         d7YwqA6KpBM/HYjJ5iteZKF2xxBBxhoaEDI91sspCUn9PRa9dNxBhSuiS3vFhmL9boof
-         WM/VW/icP0Grj5OaCftyMyInmmZvqrsjlucyl8hiRR29/15R3u7CeAjR8aplO0Uzt6DB
-         Rd33jHLXGyNiZejH3ok+twO9Dfczk6n4aYuoUlnqm509NxSOwe4S+14Q4RL02tcKWm8B
-         kmZ77m9QtrIT3uEOo+dPEDzQ6FqISoXmYCbQQY8lb6nsadY8OUAVCrKB/KyuzTXMdRKS
-         uL+g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
-         :content-disposition:user-agent;
-        bh=hXySPSq7rHgw0OwQs5jXUSVuOO0+vuYf7jbQMni+qeM=;
-        b=U/TvCTDI5aRvFLtPEubFosNsQxNxM4PR7SybLA12mpTlFh3V2r7btGRuGk8twjpfYu
-         zsOOr2wj9Yy3XolhaRn96RI4fiSNHY76zSC4MjOi4IIEPe7pTgNItEXoReW0CZ6pc7Wa
-         N9v11OAbQuWP6dOItWrVQzwgYWGPv/KvwEtaXv5DmGqeTGLnLqdKzS6jcPiIDERiJ/SK
-         HY41HvxpnSl8XnV4uFDBZ7BsQ/3lDGHTYVzXpa+Wbx8rDW/SS6+0EJZxQi1hT8ad+XdD
-         2dth9XbAV6ScuQH3hFbI/Ucp0pBRZWO72LAHcKNPRhri/BYTUjXg+kLRgQkyOhD+DKyp
-         QAGA==
-X-Gm-Message-State: APjAAAXLwDUfFEjE+Mu9O45iQ9rhEULuAIT2XC8CsZM1IyzdMPuD+Yfw
-        7LtjOm7gb8aQusFyjVnuoAYfAQ==
-X-Google-Smtp-Source: APXvYqxDPL5R5bqOzUh3WYy+QtWEyS3DYUNxELRRjaXJvdZtG2ISVMfMF0IaN1mFv6dtRyuI+Ke12w==
-X-Received: by 2002:aa7:9816:: with SMTP id e22mr114969091pfl.229.1578379597303;
-        Mon, 06 Jan 2020 22:46:37 -0800 (PST)
-Received: from localhost ([122.172.26.121])
-        by smtp.gmail.com with ESMTPSA id s20sm26621379pjn.2.2020.01.06.22.46.36
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 06 Jan 2020 22:46:36 -0800 (PST)
-Date:   Tue, 7 Jan 2020 12:16:34 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>
-Subject: [GIT PULL] cpufreq/arm/fixes for 5.5-rc6
-Message-ID: <20200107064634.dqudplqrp47elm64@vireshk-i7>
+        id S1725781AbgAGHCX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jan 2020 02:02:23 -0500
+Received: from mailgw01.mediatek.com ([210.61.82.183]:54404 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1725941AbgAGHCV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2020 02:02:21 -0500
+X-UUID: d7f4e0bbbce04b3daa3f82671df82199-20200107
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=ZgMcfgUXfofl7ppb6JVcLQnubeAeOacfSQLzxh6HvtY=;
+        b=JBD/Sw1OQwB+URKu9J5VtmkUtT2fsZhQ3tBCVX2rBhmqQr0m8YSohLbog2XFA6Z3zDsrA7EbVlo9lRbZb3X2Z6N4OxXJcWir8dMe9lo4iPyY2ni4shyrJfjngKuczTLCZIxXOQKsN2KcmplemkjUk1QralsATxVZ0FlNLGMtXEg=;
+X-UUID: d7f4e0bbbce04b3daa3f82671df82199-20200107
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw01.mediatek.com
+        (envelope-from <roger.lu@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.10 Build 0809 with TLS)
+        with ESMTP id 376256834; Tue, 07 Jan 2020 15:02:16 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs01n2.mediatek.inc (172.21.101.79) with Microsoft SMTP Server (TLS) id
+ 15.0.1395.4; Tue, 7 Jan 2020 15:00:14 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1395.4 via Frontend
+ Transport; Tue, 7 Jan 2020 15:01:09 +0800
+From:   Roger Lu <roger.lu@mediatek.com>
+To:     Kevin Hilman <khilman@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Stephen Boyd <sboyd@kernel.org>
+CC:     Fan Chen <fan.chen@mediatek.com>,
+        HenryC Chen <HenryC.Chen@mediatek.com>,
+        YT Lee <yt.lee@mediatek.com>,
+        Xiaoqing Liu <Xiaoqing.Liu@mediatek.com>,
+        Charles Yang <Charles.Yang@mediatek.com>,
+        Angus Lin <Angus.Lin@mediatek.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Nishanth Menon <nm@ti.com>, Roger Lu <roger.lu@mediatek.com>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
+Subject: [PATCH v6 2/3] arm64: dts: mt8183: add svs device information
+Date:   Tue, 7 Jan 2020 15:01:53 +0800
+Message-ID: <20200107070154.1574-3-roger.lu@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20200107070154.1574-1-roger.lu@mediatek.com>
+References: <20200107070154.1574-1-roger.lu@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Type: text/plain
+X-TM-SNTS-SMTP: 6574980AB277B55A1F7FCE341005B6D070A31BFA25A81AF81F3A0AF40AA10C602000:8
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
-
-This pull request contains a single commit:
-
-- Blacklist Tegra20/30 for probing by cpufreq-dt driver.
-
---
-viresh
-
--------------------------8<-------------------------
-
-The following changes since commit e42617b825f8073569da76dc4510bfa019b1c35a:
-
-  Linux 5.5-rc1 (2019-12-08 14:57:55 -0800)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/arm/fixes
-
-for you to fetch changes up to 26a7a47510ed12cbbce689184c8d6b63062b4fb9:
-
-  cpufreq: dt-platdev: Blacklist NVIDIA Tegra20 and Tegra30 SoCs (2019-12-16 09:34:45 +0530)
-
-----------------------------------------------------------------
-Dmitry Osipenko (1):
-      cpufreq: dt-platdev: Blacklist NVIDIA Tegra20 and Tegra30 SoCs
-
- drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
- 1 file changed, 2 insertions(+)
+YWRkIHBtaWMvY2xvY2svaXJxL2VmdXNlIHNldHRpbmcgaW4gc3ZzIG5vZGUNCg0KU2lnbmVkLW9m
+Zi1ieTogUm9nZXIgTHUgPHJvZ2VyLmx1QG1lZGlhdGVrLmNvbT4NCi0tLQ0KIGFyY2gvYXJtNjQv
+Ym9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLWV2Yi5kdHMgfCAxNiArKysrKysrKw0KIGFyY2gvYXJt
+NjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0c2kgICAgfCA0MSArKysrKysrKysrKysrKysr
+KysrKysNCiAyIGZpbGVzIGNoYW5nZWQsIDU3IGluc2VydGlvbnMoKykNCg0KZGlmZiAtLWdpdCBh
+L2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLWV2Yi5kdHMgYi9hcmNoL2FybTY0
+L2Jvb3QvZHRzL21lZGlhdGVrL210ODE4My1ldmIuZHRzDQppbmRleCAxZmIxOTVjNjgzYzMuLjZh
+ZTFkOWExYmNiZiAxMDA2NDQNCi0tLSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4
+MTgzLWV2Yi5kdHMNCisrKyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLWV2
+Yi5kdHMNCkBAIC0yMzEsNiArMjMxLDIyIEBADQogDQogfTsNCiANCismc3ZzX2NwdV9saXR0bGUg
+ew0KKwl2Y3B1LWxpdHRsZS1zdXBwbHkgPSA8Jm10NjM1OF92cHJvYzEyX3JlZz47DQorfTsNCisN
+Cismc3ZzX2NwdV9iaWcgew0KKwl2Y3B1LWJpZy1zdXBwbHkgPSA8Jm10NjM1OF92cHJvYzExX3Jl
+Zz47DQorfTsNCisNCismc3ZzX2NjaSB7DQorCXZjY2ktc3VwcGx5ID0gPCZtdDYzNThfdnByb2Mx
+Ml9yZWc+Ow0KK307DQorDQorJnN2c19ncHUgew0KKwl2Z3B1LXNwcGx5ID0gPCZtdDYzNThfdmdw
+dV9yZWc+Ow0KK307DQorDQogJnVhcnQwIHsNCiAJc3RhdHVzID0gIm9rYXkiOw0KIH07DQpkaWZm
+IC0tZ2l0IGEvYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaSBiL2FyY2gv
+YXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0c2kNCmluZGV4IDEwYjMyNDcxYmM3Yi4u
+OTk2ZTY1OTQyZjQ4IDEwMDY0NA0KLS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9t
+dDgxODMuZHRzaQ0KKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRz
+aQ0KQEAgLTM4OSw2ICszODksMzkgQEANCiAJCQlzdGF0dXMgPSAiZGlzYWJsZWQiOw0KIAkJfTsN
+CiANCisJCXN2czogc3ZzQDExMDBiMDAwIHsNCisJCQljb21wYXRpYmxlID0gIm1lZGlhdGVrLG10
+ODE4My1zdnMiOw0KKwkJCXJlZyA9IDwwIDB4MTEwMGIwMDAgMCAweDEwMDA+Ow0KKwkJCWludGVy
+cnVwdHMgPSA8R0lDX1NQSSAxMjcgSVJRX1RZUEVfTEVWRUxfTE9XPjsNCisJCQljbG9ja3MgPSA8
+JmluZnJhY2ZnIENMS19JTkZSQV9USEVSTT47DQorCQkJY2xvY2stbmFtZXMgPSAibWFpbiI7DQor
+CQkJbnZtZW0tY2VsbHMgPSA8JnN2c19jYWxpYnJhdGlvbj4sDQorCQkJCSAgICAgIDwmdGhlcm1h
+bF9jYWxpYnJhdGlvbj47DQorCQkJbnZtZW0tY2VsbC1uYW1lcyA9ICJzdnMtY2FsaWJyYXRpb24t
+ZGF0YSIsDQorCQkJCQkgICAiY2FsaWJyYXRpb24tZGF0YSI7DQorDQorCQkJc3ZzX2NwdV9saXR0
+bGU6IHN2cy1jcHUtbGl0dGxlIHsNCisJCQkJY29tcGF0aWJsZSA9ICJtZWRpYXRlayxtdDgxODMt
+c3ZzLWNwdS1saXR0bGUiOw0KKwkJCQlvcGVyYXRpbmctcG9pbnRzLXYyID0gPCZjbHVzdGVyMF9v
+cHA+Ow0KKwkJCX07DQorDQorCQkJc3ZzX2NwdV9iaWc6IHN2cy1jcHUtYmlnIHsNCisJCQkJY29t
+cGF0aWJsZSA9ICJtZWRpYXRlayxtdDgxODMtc3ZzLWNwdS1iaWciOw0KKwkJCQlvcGVyYXRpbmct
+cG9pbnRzLXYyID0gPCZjbHVzdGVyMV9vcHA+Ow0KKwkJCX07DQorDQorCQkJc3ZzX2NjaTogc3Zz
+LWNjaSB7DQorCQkJCWNvbXBhdGlibGUgPSAibWVkaWF0ZWssbXQ4MTgzLXN2cy1jY2kiOw0KKwkJ
+CQlvcGVyYXRpbmctcG9pbnRzLXYyID0gPCZjY2lfb3BwPjsNCisJCQl9Ow0KKw0KKwkJCXN2c19n
+cHU6IHN2cy1ncHUgew0KKwkJCQljb21wYXRpYmxlID0gIm1lZGlhdGVrLG10ODE4My1zdnMtZ3B1
+IjsNCisJCQkJcG93ZXItZG9tYWlucyA9IDwmc2Nwc3lzIE1UODE4M19QT1dFUl9ET01BSU5fTUZH
+XzJEPjsNCisJCQkJb3BlcmF0aW5nLXBvaW50cy12MiA9IDwmZ3B1X29wcF90YWJsZT47DQorCQkJ
+fTsNCisJCX07DQorDQogCQlpMmMzOiBpMmNAMTEwMGYwMDAgew0KIAkJCWNvbXBhdGlibGUgPSAi
+bWVkaWF0ZWssbXQ4MTgzLWkyYyI7DQogCQkJcmVnID0gPDAgMHgxMTAwZjAwMCAwIDB4MTAwMD4s
+DQpAQCAtNTgwLDYgKzYxMywxNCBAQA0KIAkJCWNvbXBhdGlibGUgPSAibWVkaWF0ZWssbXQ4MTgz
+LWVmdXNlIiwNCiAJCQkJICAgICAibWVkaWF0ZWssZWZ1c2UiOw0KIAkJCXJlZyA9IDwwIDB4MTFm
+MTAwMDAgMCAweDEwMDA+Ow0KKwkJCSNhZGRyZXNzLWNlbGxzID0gPDE+Ow0KKwkJCSNzaXplLWNl
+bGxzID0gPDE+Ow0KKwkJCXRoZXJtYWxfY2FsaWJyYXRpb246IGNhbGliQDE4MCB7DQorCQkJCXJl
+ZyA9IDwweDE4MCAweGM+Ow0KKwkJCX07DQorCQkJc3ZzX2NhbGlicmF0aW9uOiBjYWxpYkA1ODAg
+ew0KKwkJCQlyZWcgPSA8MHg1ODAgMHg2ND47DQorCQkJfTsNCiAJCX07DQogDQogCQltZmdjZmc6
+IHN5c2NvbkAxMzAwMDAwMCB7DQotLSANCjIuMTguMA0K
 
