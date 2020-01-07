@@ -2,36 +2,37 @@ Return-Path: <SRS0=gDq+=24=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 248B1C282DD
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 18:16:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69CFFC33C9E
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 18:16:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F3B0C20848
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 18:16:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3E9DB24679
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 18:16:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="d9HAQrSH"
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="Idmw230V"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727925AbgAGSQS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jan 2020 13:16:18 -0500
-Received: from mout.gmx.net ([212.227.15.15]:53391 "EHLO mout.gmx.net"
+        id S1728421AbgAGSQU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jan 2020 13:16:20 -0500
+Received: from mout.gmx.net ([212.227.15.19]:53047 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728358AbgAGSQS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 7 Jan 2020 13:16:18 -0500
+        id S1728358AbgAGSQU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 7 Jan 2020 13:16:20 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1578420964;
-        bh=fStf+8RF6qmT38/5o2VMhgNCxx4YDKOqS+6ymSk2hVA=;
-        h=X-UI-Sender-Class:From:To:Cc:Subject:Date;
-        b=d9HAQrSHcd8IpQHrnD7QnLWvY34o9aZGluK5xDCOfkXl/ctDqARxBO039GMtLY6p8
-         4b1dgvRfu8liXH5Sd4umlA1YgbS7OujTTja38Esiy9gCnKDzIqRxUH50o6udP4Vpn+
-         fdZXnzQFcmCibON1iNWwO0ggMgR3NxaYqumiaA1M=
+        s=badeba3b8450; t=1578420966;
+        bh=ywvSvkZtxIFgQK2uzodzJ55BZghcFbFAXSLbAwo36wY=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=Idmw230VWPBhZW2v+dAYw62P6JElxPEL/uqCuoHO0gDvDK3VOnfVdcv9d1ALNkZ2+
+         Y+8kPpr9BiXxUfm8bw+Xmjv/SzBxlFpg2EK/a8Hg1b+OzEQC+AII1OlGsc5FjmhCdA
+         PYd0h0yBiUAl3qCFDZaEL6GR5SqLeAQ2sKdGgVLY=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from localhost.localdomain ([37.4.249.154]) by mail.gmx.com
  (mrgmx004 [212.227.17.190]) with ESMTPSA (Nemesis) id
- 1MTAFh-1jHAwl1fqx-00UXyY; Tue, 07 Jan 2020 19:16:04 +0100
+ 1M1HZo-1irdDo1LiM-002s6V; Tue, 07 Jan 2020 19:16:06 +0100
 From:   Stefan Wahren <wahrenst@gmx.net>
 To:     Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -45,75 +46,77 @@ To:     Zhang Rui <rui.zhang@intel.com>,
 Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         bcm-kernel-feedback-list@broadcom.com, devicetree@vger.kernel.org,
         Stefan Wahren <wahrenst@gmx.net>
-Subject: [PATCH V3 0/4] ARM: Enable thermal support for Raspberry Pi 4
-Date:   Tue,  7 Jan 2020 19:15:53 +0100
-Message-Id: <1578420957-32229-1-git-send-email-wahrenst@gmx.net>
+Subject: [PATCH V3 4/4] ARM: configs: Build BCM2711 thermal as module
+Date:   Tue,  7 Jan 2020 19:15:57 +0100
+Message-Id: <1578420957-32229-5-git-send-email-wahrenst@gmx.net>
 X-Mailer: git-send-email 2.7.4
-X-Provags-ID: V03:K1:xkFz0dLUtTbMvdFsQps4ETe/MuVllBCYSLf/H/6OpwsfMs6tNd3
- X6PXvReYKhvwDSzLeprp9PesTWWsWfWB5Mkt87VssaeyetCzrSlQ8A4oX4Y6Ttkfz+VUObT
- rooWqxyoOcHxc2KFR6nigDhPGGfIgXaiM5Bj8aRB64sLA4ybf5r3nS/stlYgzy8O5GY6X1L
- UsOGhE69KexYdQRATkT9A==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:WIesbUME1I0=:JFzG6lFhRvAeiyna9slav0
- mYylMG+lG39zpj0pqbGUrF0+eF9YfjFSr+H4N01Av1elAtoRK6AUStVwP7oW0C3wz+YIdkh8k
- TjVti9j3GBJ6+4PDN84kj+FU3F5N2z297iobibGRAtVMlFM/D8tulsoqpYMWO55fgZvxqms6a
- ahcYsWKqG2SzzMXjMUEmz5GjcnKSw3aikD8IAvS8pcSuRrtTHmg3iwfRd6pYBLzJihedkA0pe
- H/Q5a86O+3joTklgCO0A8BzALBWv/p6IqxWC/yQjF5gLUgvn49YnSQXgujREA2siVEtIVt6Xq
- TA6qMH/4KB9+CCRdvGHjZcXQhX94kc6p/pWH6ThPb6r6PqNpUe6ZhS9CpMqSwqu/6hCIXtBad
- EkAbwBAN5RimQlydCtvo+k7gT7Ob38p+sffQ9s6SxTnlTn4YNd9UbQxYo2yxS0mepGvZNZRjg
- 3BbqRkj6ZkoqE5uXWZIyHfMUjEWdTdjwiavlW+SXSplrWjwuQG5BDrgPIsigFzGaXsXwdyTmX
- mldBdohc0x4HtyLZoA3HHW1tWNz4/noA/XB28FSpIh0fwjN98mx/u7iULeEMK9ICfOw2E817K
- OCBgPNRvAbgolZes3oW5TuzJL54zeCTqDG1KKMg07i9xg6dEoH0oEsfYdrwEz6cIAgEU+h/ak
- FQ5VgifCAtEMYRvTE1ykThGY/IbqzbthkNJMSx7gpfeOJijZ0vfGe+P5gmDuzCAY2fwzSughh
- c6klPCMDscqZod6FPanG0VkpnVT0CYDEOOBQ0y1wAgk5c8A7EptnQ8Cranysoz8MeF541FcnS
- m+wJbn7bAunCBP7/6u4R7DbQij0I2VWkns9EXmE1BkVWYurNvIDxCwYiOVlI1mNBUhox83k7T
- C63zidmO7y/GNSsQnrgfmgAt2S549/zWHyfUvaQJnRRS8WGs08KkN4mbRSKag9vplfCV0bLHl
- uXap25Tupjzppe23e9oyBmKXo6j8/pnvXSGKnzws+UC5ev3y/2ooqceJnIMzhB43GbUGkWkNA
- VyzAs6+Lyd8WeILoNip4Wa+tYHG2xS3ceTGw9yzYsMSGJJgMd0n2lc6v1FRECoD+z615aE624
- /RzGwNmXe9txKmx7Ynw7NLWM9WFd8+0Zt5XtJ4Tbdlku544Yt3yJRgaZqAMc0A+RfX950YbzS
- uz1Z2SFir2axcrKnlO9tYeq7vnU5HF//M+ck+JtvwH8yVgyt1vUXulh/vl4gwTGYxyigjvOBK
- 7/Eyh/gKcnRbDez7QxE13FM/hi8MkSjT6TBddIA==
+In-Reply-To: <1578420957-32229-1-git-send-email-wahrenst@gmx.net>
+References: <1578420957-32229-1-git-send-email-wahrenst@gmx.net>
+X-Provags-ID: V03:K1:KgT8/xCsDfTXBG/ZvIRxjN+W6EAwuQgL8jv7F25Vy4z+LXj8G1P
+ FvRXVhgSwOlulZ964d6rnvX7HL7dcwoY5KFt4EhM20cYoQ7YJ90EDHTamYirCxIqbox1UqU
+ ONycfR3lNn3uKEv5yBZAPy3RJBy/loio9XdwmoBs6tYkYaaVTtIztndrmforVufG7I03eQv
+ W3OI55XFGJevmqp5FLjsQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:XO0bOe0Ep8o=:kSgMi1gYunuPgzCu/XiJe8
+ 55cXkb2VEpp+0ZB7lgktyFvshluW/8SnuuoMm0yhsBOUju5moUy3EZx62VduAycSWKQ78+NnI
+ nuuYaeMimJEZFIkXd/bIo8qA7TQgY5Ai7wFwAtnufeOK6yhqeXld+O6drS9SE7OUPwiRaFLvX
+ a4z3zZIJ/WSdgxfIjZJl+1A8tbqJu7QHtc7BvlrnNqu0L7T9RP/4wKZFs+iqJxgb56ONYX6aW
+ eJEAdrGioHnjoWK1N2opYc6mYPThXU7WIGI67W1LEp4sdfzemZwQzCuEX4itQkAnL2DeCQ5Ga
+ TB3twKe/JfrKyCgWbB1LzE4zIekmdDkNCLP1O1ry0t5+zdTGCZqjgF0aW1XQwp7nUNAKqvnkR
+ oGFH00fcZrTjP7GTsAHM1SFbj/j8S4XbS2KGdNqEc+X3ozKoe941uA4inBhtY+DCHFbDc82RB
+ saG1XiaXGsPKwjXuAqFoy+XoGrMHnHWh5g9mP7Zd8K8eY9UW2y2qLVLlIfRct6viL+vCIg5bq
+ bBOs7WNQuQK66Q8JwSFVNkWe5cjQ4sjCurxBOCJu6414eyACNqp75abbUH3UXbZ1ZWeQB05gV
+ pAQjr6XZtxFBUpzRIscP1mp92bxLC60clMvMwMY7L3J2tmJzvf+8KaEZ46/AXpMn/5UHILhV8
+ RHgsmsQOZtPYbgegdxdoBc4kR22+31P9QayG4NNZpKN6TEFlqDfoNUbNez4dIJleG22IlSiAm
+ HnfbzPvVXjeK2JiZBcfGTDhAuoGbB8Fj+2eQ26gxDe6zKM6e+8/ggitNae4Dbbw0frlGYT/H6
+ Wawodx5tZYYdi+XZ6h7xR7gVz+qUtDxU3/g+269QUGswvjIS+a6z7lzkEuyK7V6ieV8u7Eh4X
+ sN1khUObrdWcgax2sqRsD0RD05hMRw3yVlf9xuWpUo/SWo+mVR/rXK6YkXDiRCL5kmMzaJ/ZF
+ b4PktMNM1fUynsV780QqPYKWWfAdvMlDCWnofVBqBUPHArgmZeAkiFzfCcecwEBz+jAxwUZmE
+ ANzUWQENqeKB/qYYpxtBwoBTpfvKT9aAuk83/Xxf8kHjFo2JE0BLWXqe+/i6FQUtXR4VmNd2G
+ UVWlOQJHCJCaXerv7dUwcdFH2tluzwimauf3xv9Suhg06gzqG2AzZefj6DSqfSFAESG+a1r9m
+ u1k2ZLky+lFSekVHbbxsc5W/2rXnl7YvbHVJ1NqvR0HhNJjn7ISBZGvzeJz7kFQCKjXZiQA76
+ XprBZmCVmQkyOoIyjE6h4g5xdzecqsXUyniZ7MA==
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series enables thermal support for the Raspberry Pi 4. Neither the
-bcm2835_thermal nor the brcmstb_thermal are suitable for the BCM2711.
-So add a new thermal driver to read out the SoC temperature from the
-AVS RO block of the BCM2711.
+This builds the BCM2711 thermal driver as module for the Raspberry Pi 4.
 
-Changes in V3:
-- add Rob's, Florian's and Nicolas' reviewed-by/tested-by
-- adjust binding license
-- make error pointer handling consistent
+Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
+Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
+Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Tested-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+=2D--
+ arch/arm/configs/multi_v7_defconfig | 1 +
+ arch/arm64/configs/defconfig        | 1 +
+ 2 files changed, 2 insertions(+)
 
-Changes in V2:
-- rebase on thermal/linux-next
-- convert binding to YAML
-- make AVS RO block a subnode of AVS monitor and access it via syscon
-- drop unnecessary TSENS clock and get the rid of remove callback
-- add Florian's reviewed-by to last/unchanged patch
-
-Stefan Wahren (4):
-  dt-bindings: Add Broadcom AVS RO thermal
-  thermal: Add BCM2711 thermal driver
-  ARM: dts: bcm2711: Enable thermal
-  ARM: configs: Build BCM2711 thermal as module
-
- .../bindings/thermal/brcm,avs-ro-thermal.yaml      |  45 +++++++
- arch/arm/boot/dts/bcm2711.dtsi                     |  12 ++
- arch/arm/configs/multi_v7_defconfig                |   1 +
- arch/arm64/configs/defconfig                       |   1 +
- drivers/thermal/broadcom/Kconfig                   |   7 ++
- drivers/thermal/broadcom/Makefile                  |   1 +
- drivers/thermal/broadcom/bcm2711_thermal.c         | 129 ++++++++++++++++=
-+++++
- 7 files changed, 196 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-ro-=
-thermal.yaml
- create mode 100644 drivers/thermal/broadcom/bcm2711_thermal.c
-
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_=
+v7_defconfig
+index 3f1b96d..f5d19cc 100644
+=2D-- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -496,6 +496,7 @@ CONFIG_IMX_THERMAL=3Dy
+ CONFIG_ROCKCHIP_THERMAL=3Dy
+ CONFIG_RCAR_THERMAL=3Dy
+ CONFIG_ARMADA_THERMAL=3Dy
++CONFIG_BCM2711_THERMAL=3Dm
+ CONFIG_BCM2835_THERMAL=3Dm
+ CONFIG_BRCMSTB_THERMAL=3Dm
+ CONFIG_ST_THERMAL_MEMMAP=3Dy
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 6a83ba2..b2f6673 100644
+=2D-- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -442,6 +442,7 @@ CONFIG_ROCKCHIP_THERMAL=3Dm
+ CONFIG_RCAR_THERMAL=3Dy
+ CONFIG_RCAR_GEN3_THERMAL=3Dy
+ CONFIG_ARMADA_THERMAL=3Dy
++CONFIG_BCM2711_THERMAL=3Dm
+ CONFIG_BCM2835_THERMAL=3Dm
+ CONFIG_BRCMSTB_THERMAL=3Dm
+ CONFIG_EXYNOS_THERMAL=3Dy
 =2D-
 2.7.4
 
