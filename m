@@ -2,119 +2,109 @@ Return-Path: <SRS0=gDq+=24=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FD54C282DD
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 23:45:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA5CDC282DD
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 23:46:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 646BD206DB
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 23:45:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7E2A42070E
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 23:46:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="EI/EFyjf"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="gkmbpd8b"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726836AbgAGXps (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jan 2020 18:45:48 -0500
-Received: from smtp-fw-2101.amazon.com ([72.21.196.25]:60707 "EHLO
-        smtp-fw-2101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726470AbgAGXpr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2020 18:45:47 -0500
+        id S1727767AbgAGXqG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jan 2020 18:46:06 -0500
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:40151 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727761AbgAGXqG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2020 18:46:06 -0500
+Received: by mail-lj1-f195.google.com with SMTP id u1so1397765ljk.7
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jan 2020 15:46:05 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1578440746; x=1609976746;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=NHm42TlJLKDMXwfLCWbPw7bKb/s9QHjU3lyklyyG0cI=;
-  b=EI/EFyjfG0QSvSKGZQrLy3ruBsZhASNC7DTJtlviSuSDbYOtly12AUGQ
-   5L3IEuk90suW/RQUiQv6N9mwmLK4S7dWb2eM4wtz9BgeV1RR+X92Uapdt
-   0vm/LJesemandrsGUNnOTUX7/QroFH52cRO0Wk7RtFPy6OEK0670o9/uO
-   I=;
-IronPort-SDR: gkNYw935e97eoztM5ARiz4jflA1dZJd8BbTSLZxwZdbg2Lz2qjmfDCPJWMmvzfDoR8KoPOg4GN
- Ps++MVqJl7vA==
-X-IronPort-AV: E=Sophos;i="5.69,407,1571702400"; 
-   d="scan'208";a="11408855"
-Received: from iad12-co-svc-p1-lb1-vlan2.amazon.com (HELO email-inbound-relay-1d-f273de60.us-east-1.amazon.com) ([10.43.8.2])
-  by smtp-border-fw-out-2101.iad2.amazon.com with ESMTP; 07 Jan 2020 23:45:46 +0000
-Received: from EX13MTAUEB002.ant.amazon.com (iad55-ws-svc-p15-lb9-vlan2.iad.amazon.com [10.40.159.162])
-        by email-inbound-relay-1d-f273de60.us-east-1.amazon.com (Postfix) with ESMTPS id D093FA2715;
-        Tue,  7 Jan 2020 23:45:38 +0000 (UTC)
-Received: from EX13D08UEB001.ant.amazon.com (10.43.60.245) by
- EX13MTAUEB002.ant.amazon.com (10.43.60.12) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Tue, 7 Jan 2020 23:44:58 +0000
-Received: from EX13MTAUEA001.ant.amazon.com (10.43.61.82) by
- EX13D08UEB001.ant.amazon.com (10.43.60.245) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Tue, 7 Jan 2020 23:44:57 +0000
-Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
- (172.22.96.68) by mail-relay.amazon.com (10.43.61.243) with Microsoft SMTP
- Server id 15.0.1367.3 via Frontend Transport; Tue, 7 Jan 2020 23:44:57 +0000
-Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
-        id 9A92F40E65; Tue,  7 Jan 2020 23:44:57 +0000 (UTC)
-Date:   Tue, 7 Jan 2020 23:44:57 +0000
-From:   Anchal Agarwal <anchalag@amazon.com>
-To:     <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
-        <hpa@zytor.com>, <x86@kernel.org>, <boris.ostrovsky@oracle.com>,
-        <jgross@suse.com>, <linux-pm@vger.kernel.org>,
-        <linux-mm@kvack.org>, <kamatam@amazon.com>,
-        <sstabellini@kernel.org>, <konrad.wilk@oracle.co>,
-        <roger.pau@citrix.com>, <axboe@kernel.dk>, <davem@davemloft.net>,
-        <rjw@rjwysocki.net>, <len.brown@intel.com>, <pavel@ucw.cz>,
-        <peterz@infradead.org>, <eduval@amazon.com>, <sblbir@amazon.com>,
-        <anchalag@amazon.com>, <xen-devel@lists.xenproject.org>,
-        <vkuznets@redhat.com>, <netdev@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <Woodhouse@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>,
-        <dwmw@amazon.co.uk>, <fllinden@amaozn.com>
-CC:     <anchalag@amazon.com>
-Subject: [RFC PATCH V2 10/11] PM / hibernate: update the resume offset on
- SNAPSHOT_SET_SWAP_AREA
-Message-ID: <20200107234457.GA18829@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=HQMY8R3LoWt/DsrAqKQp49rhgXtLc3e3mn4wK30Z9bk=;
+        b=gkmbpd8bIKIIQEgsb7PEU+2r4ebECX1mH3jgU38dGjJQ8bwXIJG5GKLnoLrnX3Q1Tp
+         v1SDB6I1ZXgqhUT4odQ8aVr64tXRhQzQKUJB+gim+8tzuQBIEEgYa0NEh52zxV9MySl4
+         8hPqbEMycxVGQOzMT2ZoovSrn2sYCBWsQ2InRnJJnXhziW8CiS8uBVxVuagMUfjKujCp
+         HniHcll8yMXWX4ecEITXFam+QamI4BHfLL7Gcvl7S+kf3c4RHt8RoST1Bi3vdrXuETyI
+         Kn2nFOF6G8BTDLxmpQhXEOKSQ8HHgKI3g4y9E8Ezgf28cpYXwn+lC6jP8DwKEiXAfN4W
+         io5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=HQMY8R3LoWt/DsrAqKQp49rhgXtLc3e3mn4wK30Z9bk=;
+        b=BJXZzvl74opj0LVrbrzuZ0BDYCrkpBivuO8Co3jYBXiMtLdmqs75Vm7rl/cvI9xPt6
+         KNWpZsfdIwl7XjXC/oF4A2jtvJemUMMCWKWiU6Xi3NiYjTocc3VjHGB0ZpHPF6fD+buR
+         FWdZbG3CR+dpwDnoBHS5dvkRJ6qSs/ZqD6//q658NZ9XfjJO4YeC06AXfc0ESyt5Yq0e
+         FKNobBMvvAidSH1jUaJEz9ZUtwB1QP9kajVOE7zYkEyo7kKUTSsKXmOjo++4g/yAYGYx
+         dBOFIK8QKBUWxrbruivpQNLWl7wvxy0GmUUs2sCDA8mWAwDUWM+Rjkb49idd2+XuMyLp
+         puzA==
+X-Gm-Message-State: APjAAAWtGAAlvNZG4BP1imWqR8bGyfQftBGMgXFBjag901jamFJhdw3g
+        CQvVrhGqVhhQmON7atcVDHvdMelDXZZbgAXCy+IX2w==
+X-Google-Smtp-Source: APXvYqzbmu2DObIlWLfaO9ELFQorRtShpVBsWWzBcZIoobIaBkYXNLSVmLfU7WKSlp/DDnONAcCNR9yJlu88wu2FxpQ=
+X-Received: by 2002:a2e:9e03:: with SMTP id e3mr1170522ljk.186.1578440764122;
+ Tue, 07 Jan 2020 15:46:04 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.21 (2010-09-15)
+References: <1576475925-20601-1-git-send-email-daidavid1@codeaurora.org>
+In-Reply-To: <1576475925-20601-1-git-send-email-daidavid1@codeaurora.org>
+From:   Evan Green <evgreen@google.com>
+Date:   Tue, 7 Jan 2020 15:45:27 -0800
+Message-ID: <CAE=gft6sxsZfvPZZXKqbEMjCH_hGKXp_1MS3qTAz6hmMPfn09A@mail.gmail.com>
+Subject: Re: [PATCH v1 0/4] Split SDM845 interconnect nodes and consolidate
+ RPMh support
+To:     David Dai <daidavid1@codeaurora.org>
+Cc:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>, sboyd@kernel.org,
+        Lina Iyer <ilina@codeaurora.org>,
+        Sean Sweeney <seansw@qti.qualcomm.com>,
+        Alex Elder <elder@linaro.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Aleksei Besogonov <cyberax@amazon.com>
+On Sun, Dec 15, 2019 at 9:59 PM David Dai <daidavid1@codeaurora.org> wrote:
+>
+> While there are no current consumers of the SDM845 interconnect device in
+> devicetree, take this opportunity to redefine the interconnect device nodes
+> as the previous definitions of using a single child node under the apps_rsc
+> device did not accurately capture the description of the hardware.
+> The Network-On-Chip (NoC) interconnect devices should be represented in a
+> manner akin to QCS404 platforms[1] where there is a separation of NoC devices
+> and its RPM/RPMh counterparts.
+>
+> The bcm-voter devices are representing the RPMh devices that the interconnect
+> providers need to communicate with and there can be more than one instance of
+> the Bus Clock Manager (BCM) which can live under different instances of Resource
+> State Coordinators (RSC). There are display use cases where consumers may need
+> to target a different bcm-voter (Some display specific RSC) than the default,
+> and there needs to be a way to represent this connection in devicetree.
 
-The SNAPSHOT_SET_SWAP_AREA is supposed to be used to set the hibernation
-offset on a running kernel to enable hibernating to a swap file.
-However, it doesn't actually update the swsusp_resume_block variable. As
-a result, the hibernation fails at the last step (after all the data is
-written out) in the validation of the swap signature in
-mark_swapfiles().
+So for my own understanding, the problem here is that things want to
+vote for interconnect bandwidth within a specific RSC context? Where
+normally the RSC context is simply "Apps@EL1", we might also have
+"Apps@EL3" for trustzone, or in the case we're coding for,
+"display-specific RSC context". I guess this context might stay on
+even if Apps@EL1 votes are entirely discounted or off? So then would
+there be an additional interconnect provider for "display context RSC"
+next to apps_bcm_voter? Would that expose all the same nodes as
+apps_bcm_voter, or a different set of nodes?
 
-Before this patch, the command line processing was the only place where
-swsusp_resume_block was set.
-
-Signed-off-by: Aleksei Besogonov <cyberax@amazon.com>
-Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
-Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
----
- kernel/power/user.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 77438954cc2b..d396e313cb7b 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -374,8 +374,12 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
- 			if (swdev) {
- 				offset = swap_area.offset;
- 				data->swap = swap_type_of(swdev, offset, NULL);
--				if (data->swap < 0)
-+				if (data->swap < 0) {
- 					error = -ENODEV;
-+				} else {
-+					swsusp_resume_device = swdev;
-+					swsusp_resume_block = offset;
-+				}
- 			} else {
- 				data->swap = -1;
- 				error = -EINVAL;
--- 
-2.15.3.AMZN
-
+Assuming it's exposing some of the same nodes as apps_bcm_voter, the
+other way to do this would be increasing #interconnect-cells, and
+putting the RSC context there. Did you choose not to go that way
+because nearly all the clients would end up specifying the same thing
+of "Apps@EL1"?
