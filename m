@@ -2,61 +2,61 @@ Return-Path: <SRS0=gDq+=24=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E213C33C9B
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 08:58:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40207C33C99
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 08:58:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4D8C220715
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 08:58:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0B29920715
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 08:58:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="FUNbeCBR"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="kjx5jHwT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727658AbgAGI6W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jan 2020 03:58:22 -0500
-Received: from mailout3.samsung.com ([203.254.224.33]:47751 "EHLO
+        id S1727277AbgAGI6U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jan 2020 03:58:20 -0500
+Received: from mailout3.samsung.com ([203.254.224.33]:47741 "EHLO
         mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726937AbgAGI6W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2020 03:58:22 -0500
-Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
-        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20200107085818epoutp03f2b149b790b70897a8fd3a25766e22f8~njxEY6Ua02237122371epoutp03O
-        for <linux-pm@vger.kernel.org>; Tue,  7 Jan 2020 08:58:18 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20200107085818epoutp03f2b149b790b70897a8fd3a25766e22f8~njxEY6Ua02237122371epoutp03O
+        with ESMTP id S1726558AbgAGI6T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2020 03:58:19 -0500
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20200107085817epoutp0374ea58388f400304e1e747e026f44593~njxD1ih6j2237722377epoutp03E
+        for <linux-pm@vger.kernel.org>; Tue,  7 Jan 2020 08:58:17 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20200107085817epoutp0374ea58388f400304e1e747e026f44593~njxD1ih6j2237722377epoutp03E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1578387498;
-        bh=FLa4KnUZ5rMfMlLM4VPxHFp24QTpTY3HFoTJ1AO15RE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=FUNbeCBRYT/mopcqJC2ouD2A2a5XEhPahctky1fl3q7eFn+cXtSi+loxSggLiyZDv
-         nhpgEqCMxa27W+9Zloubh07KeOzAadbaQsTIW4rgbYOI7gMlRKSVLn0ReW0qzBA2m6
-         CXA/7RqWwE2PxfLhcln9CT5hKcRzorwCJGH30vnY=
-Received: from epsnrtp3.localdomain (unknown [182.195.42.164]) by
-        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
-        20200107085817epcas1p3e38ddb1e54d731ff285cf691ddf7034c~njxD3XnVz1830918309epcas1p3Z;
-        Tue,  7 Jan 2020 08:58:17 +0000 (GMT)
-Received: from epsmges1p5.samsung.com (unknown [182.195.40.156]) by
-        epsnrtp3.localdomain (Postfix) with ESMTP id 47sR9g3r5GzMqYkq; Tue,  7 Jan
-        2020 08:58:15 +0000 (GMT)
+        s=mail20170921; t=1578387497;
+        bh=xduV6rhh5+o1JdOJHE6ZCgY3RHSwpf2Qms8mHriv/Yc=;
+        h=From:To:Cc:Subject:Date:References:From;
+        b=kjx5jHwTgIUH+WTGZulkz0g11t+8wQMJNM10zLpdfxph6qQ+yhDlFDuOkxVRhjYb7
+         ScOm1QJ/4+TBMicyTLbtX9o9Pdlcrj9dH3UMqbmsciXmkn9moSKb18Vm9XzlTgjkat
+         R5ZazLI6HDtHQ84AxIcG0Ls0Em3AkBCr3QM2xVAY=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20200107085816epcas1p2418d6d3378233d53d17583eb049b4c6b~njxDcXkrw2752827528epcas1p2H;
+        Tue,  7 Jan 2020 08:58:16 +0000 (GMT)
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.152]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 47sR9d1n7LzMqYm2; Tue,  7 Jan
+        2020 08:58:13 +0000 (GMT)
 Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
-        epsmges1p5.samsung.com (Symantec Messaging Gateway) with SMTP id
-        85.6B.51241.528441E5; Tue,  7 Jan 2020 17:58:13 +0900 (KST)
+        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
+        22.E9.48019.528441E5; Tue,  7 Jan 2020 17:58:13 +0900 (KST)
 Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
         epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
-        20200107085812epcas1p4670ae2265573d887aa75cab36c04b1ea~njw-ojZJw1742217422epcas1p4R;
+        20200107085812epcas1p4eb4f51c2ade10db700fbfd62ab4779fb~njw-ZL_dK1481014810epcas1p4Z;
         Tue,  7 Jan 2020 08:58:12 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+Received: from epsmgms1p2new.samsung.com (unknown [182.195.42.42]) by
         epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20200107085812epsmtrp274fa39990b38887cf12918ac3c7c06e3~njw-nnD8Z1572115721epsmtrp2x;
+        20200107085812epsmtrp2d05c48a00ac4752a34948d92a0366884~njw-YNosO1554315543epsmtrp24;
         Tue,  7 Jan 2020 08:58:12 +0000 (GMT)
-X-AuditID: b6c32a39-14bff7000001c829-a4-5e1448258564
+X-AuditID: b6c32a38-257ff7000001bb93-47-5e144825f0c7
 Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        4A.81.10238.428441E5; Tue,  7 Jan 2020 17:58:12 +0900 (KST)
+        epsmgms1p2new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        97.42.06569.428441E5; Tue,  7 Jan 2020 17:58:12 +0900 (KST)
 Received: from localhost.localdomain (unknown [10.113.221.102]) by
         epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20200107085812epsmtip2a359407b35a7795572e68c44cd8d4f38~njw-a7LSb2373423734epsmtip24;
+        20200107085812epsmtip2bbd6f2a0188cd5f39950a9fd63a68e23~njw-Ln0fa2433524335epsmtip2m;
         Tue,  7 Jan 2020 08:58:12 +0000 (GMT)
 From:   Chanwoo Choi <cw00.choi@samsung.com>
 To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -65,75 +65,96 @@ Cc:     leonard.crestez@nxp.com, lukasz.luba@arm.com, a.swigon@samsung.com,
         hl@rock-chips.com, digetx@gmail.com, bjorn.andersson@linaro.org,
         jcrouse@codeaurora.org, cw00.choi@samsung.com, chanwoo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Subject: [PATCH 2/2] PM / devfreq: Add devfreq_transitions debugfs file
-Date:   Tue,  7 Jan 2020 18:05:19 +0900
-Message-Id: <20200107090519.3231-3-cw00.choi@samsung.com>
+Subject: [PATCH 0/2] PM / devfreq: Add debugfs support
+Date:   Tue,  7 Jan 2020 18:05:17 +0900
+Message-Id: <20200107090519.3231-1-cw00.choi@samsung.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200107090519.3231-1-cw00.choi@samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA02SWUwTURSGvTPtdECrkwJ6RaMwBhcEy1irFyJq1OgYecBgfECljnQCSLd0
-        ClH0AXHDRhBjIoKIEJRgQS2kMQWtJbVxQxSDG2pdonFBRRFcqjHYMhh9++65/zn/PeceElfY
-        iEgyx2DhzQZORxOhkvOXZynjY9jwjIRG22j0rHoPQB3uPgk69PCuBD0YfCNFjf0vAWp67AHo
-        h/0GjpprclFn0QcZavD1S1F3WxWBBkq8ANUW7ZahM16fDD3e2UAsGcc2VTcBtru0BGOdvpOA
-        ba30ydgW236CfXL/IsE29zkx9nelW8KWOmyAHWiZkhqanrswm+e0vDmKN2QatTmGrGR6dZpm
-        mUY9P4GJZxLRAjrKwOn5ZHp5Smr8ihxdoA06Kp/T5QVCqZwg0MpFC83GPAsflW0ULMk0b9Lq
-        TImmOQKnF/IMWXMyjfokJiFhrjog3JSb3XTMgZkerdnqH7ovKQRPF1tBCAmpeXBPhVVmBaGk
-        gnICWO6twsTDFwB7z9YA8fANwKpfdeBviqfnnizICsoFYH3dZpEHAfxQnhRkgoqF7rcPiSCH
-        U0mwY6gYDxbCKTcGy/wf8eBFGLUS2g4elgZZQsXAVy8uY0GWU4mwt79aKppNhY329mF9SKDQ
-        4PtPw2+F1C4ZLLrRKRNFy2Fh6QWJyGGw96pjJB4JB/pchMjb4enrXkJMLgbQ4e4acVBB96nD
-        AWcy8LxZ8FybUgxHw9Zfx4c7xqmxsO/rAWlQAik5LN6rECXTYPdzHybyRFi3b/+IFQs7na0j
-        kysB8KDVhZWBKZX/HGoAsIHxvEnQZ/ECY1L//2UtYHhPYxOd4MqtFA+gSECPkZdNDstQSLl8
-        YZveAyCJ0+Hy2LjwDIVcy20r4M1GjTlPxwseoA6M8hAeGZFpDGy9waJh1HNVKhWax8xXMww9
-        QU7+uLNRQWVxFj6X5028+W8eRoZEFoKKAwXRZ98qd44Z1etv8eufqe7MPEJrb7ZrL0Wfth6x
-        DKoydfkbFjxQvfOVF25wr73t71IN1cd8bvjeUbu0OMI+6m5rxXo76WisjUu7ZnfZNXXauHWp
-        W9J6rsj31u9gjk2K8B7d7drX9v51Rvvzn6sKWPOJGT2z07tKXJ9TpitZVkpLhGyOicXNAvcH
-        21n78b0DAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrCLMWRmVeSWpSXmKPExsWy7bCSvK6Kh0icwdbvxhb357UyWpze/47F
+X-Brightmail-Tracker: H4sIAAAAAAAAA02SWUwTURSGczvTaUGrY1v1SlxwDImgQAcoXggYjcaMkUSiDxpjgREmQOiW
+        TuueiCCCCwgqPgCiDYqyKRBEXIuIIOAKRgjaiEvUoBQRFxS3KYPRt+/c8//57z33yDFlMeEl
+        TzZaOYuR1VOEJ15/0zfQ34dRx2iq7RPQs+IMgDocLhzl9TzCUfenN1JUMfQSoMonTQCNVLdj
+        qOZkCrqb9l6GzjqHpKjrchGBhrObAbKn7ZGhqmanDD3ZfZZYMpmpLK4ETFdOtoRpcJ4CzKUC
+        p4ypLd9HME8fXyWYGleDhPlZ4MCZnLpywAzXzo723JASkcSxCZzFmzPGmxKSjYmR1Kq1scti
+        taEa2p8OQ4sobyNr4CKp5VHR/iuS9cIzKO/NrN4mHEWzPE8FLo6wmGxWzjvJxFsjKc6coDeH
+        mQN41sDbjIkB8SZDOK3RBGkFYVxKUnrbDWDOCdh68EwakQpqZu0HHnJIhsCLpSW4m5VkA4CZ
+        FdP2A0+BPwJY/zoDF4svAPZ2juB/Hf32WzKxcQ3AO4UvJGLxSSjeD8rcKoL0g463PYSb1WQ4
+        7PidhblFGOmQwNxvA5i7oSJD4YG+ljEDTvrA1sF3UjcryDB4u9MlFePmwIrqxjEzJN8QsPPF
+        q/HGcthXsVsisgr2t9bJRPaCw65rhMg7YFlbMyGaswCsczwYNwdDx+kjglkuXMkXnr8cKB7P
+        hZdGjwM3Y+Qk6Pp8UOqWQFIBs/YqRck82NXnHI+dAUsy941HMfBE9yEgDlIHy4vuE7lgVsG/
+        gJMAlINpnJk3JHI8bQ75/5tqwdhu+qEGcPVeVBMg5YCaqMidqYpRStnN/DZDE4ByjFIr/Baq
+        Y5SKBHbbds5iirXY9BzfBLTC9PIwr6nxJmHTjdZYWhsUHByMQuhQLU1T0xXykYc6JZnIWrkU
+        jjNzlr8+idzDKxVcqK2yFs4OmNDfvvFb3qbWyZXrDreMzs/AFmwY/XFe41/Wteb+Bx+qJOTM
+        EbagzLR+Z82U5991+cdT73V/BUPT83XVQXTodfs6evhXftSp0imOY0d3DXy3X1ncGOehbsNB
+        6SLdOWJ1+palcWTPCpV0ZJ4q2ybpXRlZlJ/T+9n2tYqhcD6Jpf0wC8/+Ab/haZqxAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrDLMWRmVeSWpSXmKPExsWy7bCSvK6Kh0icweN7yhb357UyWpze/47F
         YuKNKywW1788Z7VY/fExo8Wa24cYLX5sOMVssXFBtsXZpjfsFivufmS1uLxrDpvF594jjBYL
         m1rYLdYeuctucbtxBZsDv8eaeWsYPS739TJ57Li7hNFj56y77B6bVnWyedy5tofNY+O7HUwe
-        f2ftZ/Ho27KK0ePzJrkArigum5TUnMyy1CJ9uwSujDWztzAV3Aqs+Pn/GksD4z37LkZODgkB
-        E4lDN6+ydzFycQgJ7GaU6D6xkg0iISkx7eJR5i5GDiBbWOLw4WKImk+MEo+O72AHqWET0JLY
-        /+IGWL2IgI3E3cXXWECKmAXOM0m0L5/KCJIQFnCXWNU/mRXEZhFQlXjy8DATiM0rYCnx6uM8
-        Vohl8hKrNxxgBrE5Bawkvrx+D7ZACKhmzdYLjBMY+RYwMqxilEwtKM5Nzy02LDDMSy3XK07M
-        LS7NS9dLzs/dxAgOey3NHYyXl8QfYhTgYFTi4bWQEo4TYk0sK67MPcQowcGsJMKrpSMSJ8Sb
-        klhZlVqUH19UmpNafIhRmoNFSZz3ad6xSCGB9MSS1OzU1ILUIpgsEwenVANj5Lp/JRv582PO
-        MPkuPv/2IoPE2nahjAKHSSFC7PunOfR6PJuq9uaXzqS/Pc0BWx9eff5TxDnjUu+/bWc+Zxoy
-        7bc0e+j+x6Bcmc/53vQHbLPCmW2WlXD47lS/lshl8kJt7eG19UHGX1wW1v5KPZxXUn9J7efn
-        xymsUu8Uzk6zTAuSSPj6sbpFiaU4I9FQi7moOBEAc0lDtncCAAA=
-X-CMS-MailID: 20200107085812epcas1p4670ae2265573d887aa75cab36c04b1ea
+        f2ftZ/Ho27KK0ePzJrkArigum5TUnMyy1CJ9uwSujOaTBxkL+vQqepY3sTUwbpTtYuTkkBAw
+        kXi18Ch7FyMXh5DAbkaJ221vWCESkhLTLh5l7mLkALKFJQ4fLoao+cQoseXlHrAaNgEtif0v
+        brCB2CICNhJ3F19jASliFjjPJNG+fCojSEJYwEyi+8ExdhCbRUBV4vj712DNvAKWEicuvYNa
+        Ji+xesMB5gmMPAsYGVYxSqYWFOem5xYbFhjlpZbrFSfmFpfmpesl5+duYgSHsZbWDsYTJ+IP
+        MQpwMCrx8FpICccJsSaWFVfmHmKU4GBWEuHV0hGJE+JNSaysSi3Kjy8qzUktPsQozcGiJM4r
+        n38sUkggPbEkNTs1tSC1CCbLxMEp1cCYsKivTODy1E1PPbYbzloZxbb6n+MZiSV/j0pK5N1M
+        El/4+vkbjpmMF/ZnHl/NVbk9X1vvArN7iOFay4nvfAJX236WNt05M3uh7K+j5c5LLh4sKPD2
+        CHmyxlNv2hl1/RP73vAtSv2wlaPgQ+jTFWZGO1w+ae/tvlaWsdWpnk9Tc+pamYB5q2o/KLEU
+        ZyQaajEXFScCAOiHbypfAgAA
+X-CMS-MailID: 20200107085812epcas1p4eb4f51c2ade10db700fbfd62ab4779fb
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
 X-Sendblock-Type: SVC_REQ_APPROVE
 CMS-TYPE: 101P
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20200107085812epcas1p4670ae2265573d887aa75cab36c04b1ea
-References: <20200107090519.3231-1-cw00.choi@samsung.com>
-        <CGME20200107085812epcas1p4670ae2265573d887aa75cab36c04b1ea@epcas1p4.samsung.com>
+X-CMS-RootMailID: 20200107085812epcas1p4eb4f51c2ade10db700fbfd62ab4779fb
+References: <CGME20200107085812epcas1p4eb4f51c2ade10db700fbfd62ab4779fb@epcas1p4.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add new devfreq_transitions debugfs file to track the frequency transitions
-of all devfreq devices for the simple profiling as following:
-- /sys/kernel/debug/devfreq/devfreq_transitions
+Add debugfs interface to provide debugging information of devfreq device.
+It contains 'devfreq_summary' and 'debug_transitions' debugfs file
+in order to provide the simple profiling to user via debugfs
+without any specific profiling tool.
 
-And the user can decide the storage size (CONFIG_NR_DEVFREQ_TRANSITIONS)
-in Kconfig in order to save the transition history.
+[Added debugfs file]
+- "/sys/kernel/debug/devfreq/devfreq_summary"
+  : Show the summary of the registered devfreq devices.
+- "/sys/kernel/debug/devfreq/devfreq_transitions"
+  : Show the frequency transition of the registered devfreq devices.
 
-[Detailed description of each field of 'devfreq_transitions' debugfs file]
-- time_ms	: Change time of frequency transition. (unit: millisecond)
-- dev_name	: Device name of h/w.
-- dev		: Device name made by devfreq core.
-- parent_dev	: If devfreq device uses the passive governor,
-		  show parent devfreq device name.
-- load_%	: If devfreq device uses the simple_ondemand governor,
-		  load is used by governor whene deciding the new frequency.
-		  (unit: percentage)
-- old_freq_hz	: Frequency before changing. (unit: hz)
-- new_freq_hz	: Frequency after changed. (unit: hz)
+Recommend the each patch to check the detailed description
+of each fields of both devfreq_summary and devfreq_transitions.
 
-[For example on Exynos5422-based Odroid-XU3 board]
+This series contains the patch[1] and add the patch2 for 'devfreq_transitions'
+[1] https://patchwork.kernel.org/patch/11320265/
+- [v3] PM / devfreq: Add debugfs support with devfreq_summary file
+
+
+For example on Exynos5422-based Odroid-XU3 board,
+- In order to show the multiple governors on devfreq_summay result,
+change the governor of devfreq0 from simple_ondemand to userspace.
+
+$ cat /sys/kernel/debug/devfreq/devfreq_summary
+dev_name                       dev        parent_dev governor        polling_ms cur_freq_hz  min_freq_hz  max_freq_hz
+------------------------------ ---------- ---------- --------------- ---------- ------------ ------------ ------------
+10c20000.memory-controller     devfreq0              userspace       0          206000000    165000000    825000000
+soc:bus_wcore                  devfreq1              simple_ondemand 50         532000000    88700000     532000000
+soc:bus_noc                    devfreq2   devfreq1   passive         0          111000000    66600000     111000000
+soc:bus_fsys_apb               devfreq3   devfreq1   passive         0          222000000    111000000    222000000
+soc:bus_fsys                   devfreq4   devfreq1   passive         0          200000000    75000000     200000000
+soc:bus_fsys2                  devfreq5   devfreq1   passive         0          200000000    75000000     200000000
+soc:bus_mfc                    devfreq6   devfreq1   passive         0          333000000    83250000     333000000
+soc:bus_gen                    devfreq7   devfreq1   passive         0          266000000    88700000     266000000
+soc:bus_peri                   devfreq8   devfreq1   passive         0          66600000     66600000     66600000
+soc:bus_g2d                    devfreq9   devfreq1   passive         0          0            83250000     333000000
+soc:bus_g2d_acp                devfreq10  devfreq1   passive         0          0            66500000     266000000
+soc:bus_jpeg                   devfreq11  devfreq1   passive         0          0            75000000     300000000
+soc:bus_jpeg_apb               devfreq12  devfreq1   passive         0          0            83250000     166500000
+soc:bus_disp1_fimd             devfreq13  devfreq1   passive         0          0            120000000    200000000
+soc:bus_disp1                  devfreq14  devfreq1   passive         0          0            120000000    300000000
+soc:bus_gscl_scaler            devfreq15  devfreq1   passive         0          0            150000000    300000000
+soc:bus_mscl                   devfreq16  devfreq1   passive         0          0            84000000     666000000
+
 $ cat /sys/kernel/debug/devfreq/devfreq_transitions
 time_ms    dev_name                       dev        parent_dev load_% old_freq_hz  new_freq_hz
 ---------- ------------------------------ ---------- ---------- ---------- ------------ ------------
@@ -157,239 +178,23 @@ time_ms    dev_name                       dev        parent_dev load_% old_freq_
 15873      soc:bus_noc                    devfreq2   devfreq1   0      67000000     100000000
 [snip]
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/Kconfig            |  13 +++
- drivers/devfreq/devfreq.c          | 126 +++++++++++++++++++++++++++++
+
+Depends on:
+It depends on patch[2] for preventing the merge conflic.
+[2] https://patchwork.kernel.org/patch/11320257/
+- PM / devfreq: Add missing function description and rename static functions
+
+Chanwoo Choi (2):
+  PM / devfreq: Add debugfs support with devfreq_summary file
+  PM / devfreq: Add devfreq_transitions debugfs file
+
+ drivers/devfreq/Kconfig            |  13 ++
+ drivers/devfreq/devfreq.c          | 206 +++++++++++++++++++++++++++++
  drivers/devfreq/governor.h         |   3 +
  drivers/devfreq/governor_passive.c |   2 +
  include/linux/devfreq.h            |   1 +
- 5 files changed, 145 insertions(+)
+ 5 files changed, 225 insertions(+)
 
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 0b1df12e0f21..84936eec0ef9 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -74,6 +74,19 @@ config DEVFREQ_GOV_PASSIVE
- 	  through sysfs entries. The passive governor recommends that
- 	  devfreq device uses the OPP table to get the frequency/voltage.
- 
-+comment "DEVFREQ Debugging"
-+
-+config NR_DEVFREQ_TRANSITIONS
-+	int "Maximum storage size to save DEVFREQ Transitions (10-1000)"
-+	depends on DEBUG_FS
-+	range 10 1000
-+	default "100"
-+	help
-+	  Show the frequency transitions of all devfreq devices via
-+	  '/sys/kernel/debug/devfreq/devfreq_transitions' for the simple
-+	  profiling. It needs to decide the storage size to save transition
-+	  history of all devfreq devices.
-+
- comment "DEVFREQ Drivers"
- 
- config ARM_EXYNOS_BUS_DEVFREQ
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index c7f5e4e06420..7abaae06fa65 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -268,6 +268,57 @@ int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
- }
- EXPORT_SYMBOL(devfreq_update_status);
- 
-+/**
-+ * devfreq_update_transitions() - Update frequency transitions for debugfs file
-+ * @devfreq:	the devfreq instance
-+ * @old_freq:	the previous frequency before changing the frequency
-+ * @new_freq:	the new frequency after frequency is changed
-+ */
-+struct devfreq_transitions {
-+	struct devfreq *devfreq;
-+	struct devfreq_freqs freqs;
-+	unsigned long load;
-+} debugfs_transitions[CONFIG_NR_DEVFREQ_TRANSITIONS];
-+
-+static spinlock_t devfreq_debugfs_lock;
-+static int debugfs_transitions_index;
-+
-+void devfreq_update_transitions(struct devfreq *devfreq,
-+			unsigned long old_freq, unsigned long new_freq,
-+			unsigned long busy_time, unsigned long total_time)
-+{
-+	unsigned long load;
-+	int i;
-+
-+	if (!devfreq_debugfs || !devfreq || (old_freq == new_freq))
-+		return;
-+
-+	spin_lock_nested(&devfreq_debugfs_lock, SINGLE_DEPTH_NESTING);
-+
-+	i = debugfs_transitions_index;
-+
-+	/*
-+	 * Calculate the load and if load is larger than 100,
-+	 * initialize to 100 because the unit of load is percentage.
-+	 */
-+	load = (total_time == 0 ? 0 : (100 * busy_time) / total_time);
-+	if (load > 100)
-+		load = 100;
-+
-+	debugfs_transitions[i].devfreq = devfreq;
-+	debugfs_transitions[i].freqs.time = ktime_to_ms(ktime_get());
-+	debugfs_transitions[i].freqs.old = old_freq;
-+	debugfs_transitions[i].freqs.new = new_freq;
-+	debugfs_transitions[i].load = load;
-+
-+	if (++i == CONFIG_NR_DEVFREQ_TRANSITIONS)
-+		i = 0;
-+	debugfs_transitions_index = i;
-+
-+	spin_unlock(&devfreq_debugfs_lock);
-+}
-+EXPORT_SYMBOL(devfreq_update_transitions);
-+
- /**
-  * find_devfreq_governor() - Find devfreq governor from name
-  * @name:	name of the governor
-@@ -401,6 +452,10 @@ static int set_target(struct devfreq *devfreq,
- 		return err;
- 	}
- 
-+	devfreq_update_transitions(devfreq, cur_freq, new_freq,
-+					devfreq->last_status.busy_time,
-+					devfreq->last_status.total_time);
-+
- 	freqs.new = new_freq;
- 	notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
- 
-@@ -1787,6 +1842,72 @@ static int devfreq_summary_show(struct seq_file *s, void *data)
- }
- DEFINE_SHOW_ATTRIBUTE(devfreq_summary);
- 
-+/**
-+ * devfreq_transitions_show() - Show the frequency transitions of the registered
-+ *			devfreq devices via 'devfreq_transitions' debugfs file.
-+ */
-+static int devfreq_transitions_show(struct seq_file *s, void *data)
-+{
-+	struct devfreq *devfreq = NULL;
-+	struct devfreq *p_devfreq = NULL;
-+	struct devfreq_freqs *freqs = NULL;
-+	unsigned long load;
-+	int i = debugfs_transitions_index;
-+	int count;
-+
-+	seq_printf(s, "%-10s %-30s %-10s %-10s %-6s %-12s %-12s\n",
-+			"time_ms",
-+			"dev_name",
-+			"dev",
-+			"parent_dev",
-+			"load_%",
-+			"old_freq_hz",
-+			"new_freq_hz");
-+	seq_printf(s, "%-10s %-30s %-10s %-10s %-6s %-12s %-12s\n",
-+			"----------",
-+			"------------------------------",
-+			"----------",
-+			"----------",
-+			"----------",
-+			"------------",
-+			"------------");
-+
-+	spin_lock(&devfreq_debugfs_lock);
-+	for (count = 0; count < CONFIG_NR_DEVFREQ_TRANSITIONS; count++) {
-+		devfreq = debugfs_transitions[i].devfreq;
-+		freqs = &debugfs_transitions[i].freqs;
-+		load = debugfs_transitions[i].load;
-+
-+		i = (CONFIG_NR_DEVFREQ_TRANSITIONS == ++i) ? 0 : i;
-+		if (!devfreq)
-+			continue;
-+
-+#if IS_ENABLED(CONFIG_DEVFREQ_GOV_PASSIVE)
-+		if (!strncmp(devfreq->governor_name,
-+				DEVFREQ_GOV_PASSIVE, DEVFREQ_NAME_LEN)) {
-+			struct devfreq_passive_data *data = devfreq->data;
-+
-+			if (data)
-+				p_devfreq = data->parent;
-+		} else {
-+			p_devfreq = NULL;
-+		}
-+#endif
-+		seq_printf(s, "%-10lld %-30s %-10s %-10s %-6ld %-12ld %-12ld\n",
-+			freqs->time,
-+			dev_name(devfreq->dev.parent),
-+			dev_name(&devfreq->dev),
-+			p_devfreq ? dev_name(&p_devfreq->dev) : "",
-+			load,
-+			freqs->old,
-+			freqs->new);
-+	}
-+	spin_unlock(&devfreq_debugfs_lock);
-+
-+	return 0;
-+}
-+DEFINE_SHOW_ATTRIBUTE(devfreq_transitions);
-+
- static int __init devfreq_init(void)
- {
- 	devfreq_class = class_create(THIS_MODULE, "devfreq");
-@@ -1808,9 +1929,14 @@ static int __init devfreq_init(void)
- 		devfreq_debugfs = NULL;
- 		pr_warn("%s: couldn't create debugfs dir\n", __FILE__);
- 	} else {
-+		spin_lock_init(&devfreq_debugfs_lock);
-+
- 		debugfs_create_file("devfreq_summary", 0444,
- 				devfreq_debugfs, NULL,
- 				&devfreq_summary_fops);
-+		debugfs_create_file("devfreq_transitions", 0444,
-+				devfreq_debugfs, NULL,
-+				&devfreq_transitions_fops);
- 	}
- 
- 	return 0;
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index dc7533ccc3db..01eecfdaf2d6 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -68,6 +68,9 @@ extern int devfreq_add_governor(struct devfreq_governor *governor);
- extern int devfreq_remove_governor(struct devfreq_governor *governor);
- 
- extern int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
-+extern void devfreq_update_transitions(struct devfreq *devfreq,
-+			unsigned long old_freq, unsigned long new_freq,
-+			unsigned long busy_time, unsigned long total_time);
- 
- static inline int devfreq_update_stats(struct devfreq *df)
- {
-diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-index be6eeab9c814..05fa654239f5 100644
---- a/drivers/devfreq/governor_passive.c
-+++ b/drivers/devfreq/governor_passive.c
-@@ -109,6 +109,8 @@ static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
- 	if (ret < 0)
- 		goto out;
- 
-+	devfreq_update_transitions(devfreq, devfreq->previous_freq, freq, 0, 0);
-+
- 	if (devfreq->profile->freq_table
- 		&& (devfreq_update_status(devfreq, freq)))
- 		dev_err(&devfreq->dev,
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 49cdb2378030..933692e5d867 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -196,6 +196,7 @@ struct devfreq {
- };
- 
- struct devfreq_freqs {
-+	s64 time;
- 	unsigned long old;
- 	unsigned long new;
- };
 -- 
 2.17.1
 
