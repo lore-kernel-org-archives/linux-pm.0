@@ -8,31 +8,31 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85787C33C9B
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 18:16:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77EB0C282DD
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 18:16:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 60FE52187F
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 18:16:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 54AF821744
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 18:16:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="BJDhWiM+"
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="dq7Bd9O5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728440AbgAGSQV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jan 2020 13:16:21 -0500
-Received: from mout.gmx.net ([212.227.15.19]:56535 "EHLO mout.gmx.net"
+        id S1728386AbgAGSQW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jan 2020 13:16:22 -0500
+Received: from mout.gmx.net ([212.227.15.18]:33463 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728386AbgAGSQV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 7 Jan 2020 13:16:21 -0500
+        id S1728358AbgAGSQW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 7 Jan 2020 13:16:22 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
-        s=badeba3b8450; t=1578420965;
-        bh=u7twVNjh2D9zy5OC10Di3QMaWd8qSsrGW9KSWjAYn3g=;
+        s=badeba3b8450; t=1578420966;
+        bh=aWglA2PfdwtIHtm2mDExM6LOMnFuWnZiRAiujdoAMW8=;
         h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
-        b=BJDhWiM+5P9ZadhIRk4bTNFKVwW+JTvjQQxBte6Z9/lEi/hUMLjX6X6wI0UsdG/9q
-         F4Cwa0tCAECdod5u4KiSRbsYOd1o4Z/dYru23Wk+v5LX/L1GSxqimU6Rt6Y750q8m7
-         H8qhNz2GpltKbfQYfiCht8+4Noq2Ir1n+/dUhyGU=
+        b=dq7Bd9O5pRIoP35pWiEbr3vIwPVUIZdztKslWibSe4sYkKnlLAbn2Tly+3mecxMX4
+         plidbchinnJHsr1byo3468d32bXORW9ghvyBGxOn50Zs4URcLnZ6Mj9sUeBhkRs9yz
+         afE9G4bQQvpFS9Aa/ELtd1yj+QyiHuLkxDC5oxSA=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from localhost.localdomain ([37.4.249.154]) by mail.gmx.com
  (mrgmx004 [212.227.17.190]) with ESMTPSA (Nemesis) id
- 1M6llE-1im9Zy3f6U-008MHP; Tue, 07 Jan 2020 19:16:05 +0100
+ 1MoO2E-1jUaw13WDg-00onqT; Tue, 07 Jan 2020 19:16:05 +0100
 From:   Stefan Wahren <wahrenst@gmx.net>
 To:     Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -46,107 +46,82 @@ To:     Zhang Rui <rui.zhang@intel.com>,
 Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         bcm-kernel-feedback-list@broadcom.com, devicetree@vger.kernel.org,
         Stefan Wahren <wahrenst@gmx.net>
-Subject: [PATCH V3 1/4] dt-bindings: Add Broadcom AVS RO thermal
-Date:   Tue,  7 Jan 2020 19:15:54 +0100
-Message-Id: <1578420957-32229-2-git-send-email-wahrenst@gmx.net>
+Subject: [PATCH V3 3/4] ARM: dts: bcm2711: Enable thermal
+Date:   Tue,  7 Jan 2020 19:15:56 +0100
+Message-Id: <1578420957-32229-4-git-send-email-wahrenst@gmx.net>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1578420957-32229-1-git-send-email-wahrenst@gmx.net>
 References: <1578420957-32229-1-git-send-email-wahrenst@gmx.net>
-X-Provags-ID: V03:K1:JNoVLD/m7l4v/En9GYWWvMF90Sn/VtIIReEvqeT1ahKtoJ1LkyQ
- iAtYBYTb+NwFUEidrSbyieU8GW35aLLzyYQnuJTNqPmnSbG2PnoXvhwHuDsxvWSwUy6mkwH
- 8ZEA1Til7h0N3jLmIx+k620EBhcirK4sOEO1dRoCyQ0YuU8w1s6WymV1wzmIWI654AscZ9o
- J8IrwX+k75qsiQ2SovoOg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:1m7ABTNKeYs=:dwivK5EisaHNhkVyhbAPYp
- kvAhhRRErs0LcQc8ZbpEAx/yq5NZ5xne4VViuO86ljYW/FoCw48Pz8APxSxRAFasQ5XgUJLP5
- TwCvRfPRrdfLO3tE5KvLJTW7FJPetXyuRGB9vpPgp8f7UmdUL542Li3JvUZ33oouVIjMEPek6
- eJ7EymgiCWO2bamuE79cyu30HsDd1LGBBQrzvFwQleMU8BbbLmaiQtIfSxdPKqyjHm+bvLtDP
- uK/ei0MTgAsXPpgIdHoGsb71RQ0HY5PtjoLmMsNb3Nvcu9FNWgu+ybES1IfFGXvrkd1C8fgCB
- Q5VlqL1b7kUD0EHnh7rjg8rGKBiaqdQCE0rsj3GJDHLnhxpSblechYL1CIMYh0+YmL8VtDREe
- qzbJ3wdWDTKF1F8njEuuvjb05/C/4X6IzbpEWS5uxJ9wVdqWX2b6MpQQ7x7H4B88IHb0/IU+D
- vdYY8z+R3R5MkQzZJngkBLWIif2N/omDDhmHv+9TJcHmvbZJaDpHIfZ0rdtGe50zbA3DaQjjs
- bDwDylhHw0I+Hc8nBJUH7PN84Fiiime6VMByUd9PFiy9cpm2bP6AwEi1Mwefb1URWcmgwnYEe
- JmxWZoJ8JfGcW8ITKWyEuka8Ux5E2Ci1R82cWYUo5brxrZvFcYg2pUnUwpOysMZzLKCUWy2FL
- QwuEZfTk676yMpqbF1y0Xsuf+c9Q9pOvwzC3N+VKiDm3UOdnS5kmkaDAtRFJVCderrdeMv11a
- S2iZm2wNIvmHXsogK8savP05nVqWUbyf8h2vR0jlTRBz2kAyQmtZrJyPLBjww/6Vrx7SeElxk
- alcdmtEi3tdo6eMkRsFebFaCUPqItnfbJbHbXJ4udFSh4fsjduS3UppT4JbCCzqm+XNGVrUqR
- BT9vCmRbySk5wIT3D0Eg76wFeIZv4OSRzQguvVF9jkBp1Rpg++L8ryT16Wlox17PM5Er2T8Hn
- DvtQYG2N0H4cY1aJW/zPeQBWHH1uSqJfAew37CAL+skNaSTa0vFcZ767XBCfg6RLfXyKh85qm
- Gt8gRY7Js2eGw9uR74OlrgJ4TIun187UAelKzqsGADORGyoHo1fMJuk0Mdiowqu+iX5qn3+cE
- hCcZPwE2VuH0H9J8fUNRrotICpKdurbLvl40ubrd7Ke2b80dNLZfLbLnOKHSQyYy7TFJ8FgZ0
- eSlGh0KXP7kZU1n2gIGKqpYdthjTXDHyHw9QqRUStYpd/WtcY5d4gxnomwYCghPPhaIzjeHkD
- ifQLPwagP2YYxjG2ZH8f8ZQSh3kEP4r9bbTGpIw==
+X-Provags-ID: V03:K1:nnCaGh26y5WZ7Y+Du8wo80ycqs5dd0zUOiU8IyxmRBut3vh+kbS
+ hWpSdRT6jUdGy0zdQC4p0GWbndKZlE8PcisuGyj1O6JS+PZF0lvHyqMgg93jy1GqVcINVAT
+ m9kwkGNF9DR+OKHvvajSgRYV5gRp3BIZpN7jBioSwAr2xEZCwI3aFYzZL0/nM1tdwZi08do
+ f9kojNp6jUr4vT/oaeL8g==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:eypfnYKWbbQ=:3vD1OpSV55xSk4yzLYUc8F
+ ss17pikWe3sKTkGoI3BFvSL2dMCJntwyDYvcMBefgSpGcgd2z3eK3CjpAhx5Z35UkdK7cr6ep
+ lsMn51ut2iKyCZ1FGpPY5mDJroBPqJFUDxNCh0BAQJn/Vyd5aWvtIStBX8vhSZeSLwOpkgYtq
+ INAm+O2AD+nw7gqpqya1+fc2pMPvW9S2I6sYSLCuOP1gqJraZSDDgUp8hn2DbLlhVPgD5MSet
+ VUMc8Crizcnnhu+3dx1SJtxS/Vykaw4X0YVr5/sV3mNPI9sqSWpndRywGkJfhs6ruCBSTZPqD
+ lR/PwjRR58iwZ2J2O3oBfahA9dQYEQNQqxsQxIcJ296R7AyEpq8PePDjT6Z0qKPaIP1KiR9/8
+ bq+HA6Be/peO7fvhwDxJNy0yQSnXJDjLqu8Gop7ybALxiK+c+alVEtyBJwd7wL+FCdL3hNnHi
+ gGsohKQNAHfMWgJXcnYBqr/mcSjQf07IYNuidrfs7biH4SIVMneDFBM+bDyXpPKaHrAf3f8AJ
+ 6RwAQAuSBoGRrR6lOKFx63o3tmAI4R/vfyosXbLXm8nheUTCB3tmW+/J++QiCrafqCA8rzZCF
+ eZgIaNncjMxPxyUmV608AjOWEnE6xf0cXC57Cw6mOq19oVtp3qesCkDvbyaAskyCX2IXZJ7hp
+ R4RpokH33Uhu6IaIyGV2LuP3GZK9YmAOG1CZc6l5u7se8WRN7N1n2HkLLe2u6DM/WjZmdT7HR
+ uOAbQn7NWoke1DXdnj57eY3h0Y+OJlYvhkdh7pWVUiWRLRqOOnD+ME2CRRRqD6RlKuSilEpeu
+ qvPT2/eJFvIL4pejhNNrPB2C3RiHhHmyeUbQo+2Na5X/sLn3vwhfDac57ev5NKIeD7FPGPgzr
+ 4YF/E/rSQhXylqhqwomJMyE77jIsa09OD73gY0UYIW38Z3bfj1MlNpM3Dzq68Uy7ILcunYJgS
+ JYdohNePZWLE8JBRj3z04HdTs4ogtDQLrJZEoPqWJwyYXpIblHXV3hcEm99M6ZiBCVeJQz2st
+ narTYNER7iY19YC1Bc/z0ahz5Y/DiKEZI1KwPjmqzwl9DtgiFpahgvJ/htv/UFTl6UZHKBM9g
+ k/uJbVQbreofaRz730uheNJu0ruz6QvWSAMa21Ge+vl84CGbcDOtC2ydUXhbjpVYa12n5Eg5A
+ pQS244oqQTS3hWqK8xrFNm4jmBcCDAPGv3xVBW1Jg6pRqybLzta5jN+FfPaMbWh0yVV5VO6qu
+ tKLGAzCzdsJVRK3ly7+y1msAZ7D0THx91qoghfQ==
 Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since the BCM2711 doesn't have a AVS TMON block, the thermal information
-must be retrieved from the AVS ring oscillator block. This block is part
-of the AVS monitor which contains a bunch of raw sensors.
+This enables thermal for the BCM2711 (used on Raspberry Pi 4) by adding
+the AVS monitor and a subnode for the thermal part.
 
 Signed-off-by: Stefan Wahren <wahrenst@gmx.net>
-Reviewed-by: Rob Herring <robh@kernel.org>
 Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Tested-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 =2D--
- .../bindings/thermal/brcm,avs-ro-thermal.yaml      | 45 +++++++++++++++++=
-+++++
- 1 file changed, 45 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-ro-=
-thermal.yaml
+ arch/arm/boot/dts/bcm2711.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal=
-.yaml b/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-new file mode 100644
-index 0000000..98e7b57
-=2D-- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-@@ -0,0 +1,45 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/brcm,avs-ro-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm/boot/dts/bcm2711.dtsi b/arch/arm/boot/dts/bcm2711.dt=
+si
+index 961bed8..96f341d 100644
+=2D-- a/arch/arm/boot/dts/bcm2711.dtsi
++++ b/arch/arm/boot/dts/bcm2711.dtsi
+@@ -66,6 +66,17 @@
+ 						 IRQ_TYPE_LEVEL_HIGH)>;
+ 		};
+
++		avs_monitor: avs-monitor@7d5d2000 {
++			compatible =3D "brcm,bcm2711-avs-monitor",
++				     "syscon", "simple-mfd";
++			reg =3D <0x7d5d2000 0xf00>;
 +
-+title: Broadcom AVS ring oscillator thermal
++			thermal: thermal {
++				compatible =3D "brcm,bcm2711-thermal";
++				#thermal-sensor-cells =3D <0>;
++			};
++		};
 +
-+maintainers:
-+  - Stefan Wahren <wahrenst@gmx.net>
-+
-+description: |+
-+  The thermal node should be the child of a syscon node with the
-+  required property:
-+
-+  - compatible: Should be one of the following:
-+                "brcm,bcm2711-avs-monitor", "syscon", "simple-mfd"
-+
-+  Refer to the the bindings described in
-+  Documentation/devicetree/bindings/mfd/syscon.txt
-+
-+properties:
-+  compatible:
-+    const: brcm,bcm2711-thermal
-+
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+examples:
-+  - |
-+        avs-monitor@7d5d2000 {
-+                compatible =3D "brcm,bcm2711-avs-monitor",
-+                             "syscon", "simple-mfd";
-+                reg =3D <0x7d5d2000 0xf00>;
-+
-+                thermal: thermal {
-+                        compatible =3D "brcm,bcm2711-thermal";
-+                        #thermal-sensor-cells =3D <0>;
-+                };
-+        };
-+...
+ 		dma: dma@7e007000 {
+ 			compatible =3D "brcm,bcm2835-dma";
+ 			reg =3D <0x7e007000 0xb00>;
+@@ -363,6 +374,7 @@
+
+ &cpu_thermal {
+ 	coefficients =3D <(-487) 410040>;
++	thermal-sensors =3D <&thermal>;
+ };
+
+ &dsi0 {
 =2D-
 2.7.4
 
