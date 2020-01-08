@@ -2,96 +2,101 @@ Return-Path: <SRS0=Gqwv=25=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70BC1C33CA1
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jan 2020 17:26:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79109C282DD
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jan 2020 17:58:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 186C0206F0
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jan 2020 17:26:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=crapouillou.net header.i=@crapouillou.net header.b="jjra4u+J"
+	by mail.kernel.org (Postfix) with ESMTP id 46F892073A
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jan 2020 17:58:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1578506318;
+	bh=SdtmN8vMPYr6lvvcJ19d5FHoncte7Ipmo58T/30pIBE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=sbe7mx1d6V/udfAW8plDTZ9Rh6ZcFnNQ+6/Us5wdfaS42AvNmaU9Zpsk21FBglV4o
+	 EXdlXKA9B/tc43Pv0OMYHN0TvnS6YpwDW+dHTejIvzUpZbOinZRBxk5xnaOWNwTa7T
+	 OHoUXQTZmcaCBFL0fmkij3hk2FJ6jSLx4q3M8T04=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729720AbgAHR02 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jan 2020 12:26:28 -0500
-Received: from outils.crapouillou.net ([89.234.176.41]:37106 "EHLO
-        crapouillou.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729544AbgAHR02 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jan 2020 12:26:28 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
-        s=mail; t=1578504384; h=from:from:sender:reply-to:subject:subject:date:date:
-         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
-         content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=D1C87d/9wmB9b0Kh7sgb9rQjZKP4LGxrzK55NGLAZA8=;
-        b=jjra4u+J1Z5T6DcXVIQheaaHeylugxiEeeDAuYtZSP2E5iljr4QiSvUXc3b7oLP9ERVUu6
-        lZUeQgQLQhnUa3cXEfHhuCaolWDsPvA3D7e1nc92PzFlhJgocBmP+QDlCGXmVUBy8VBXVN
-        DYJwjxMBuxPe9tirwc45ueb9fGBdKGE=
-Date:   Wed, 08 Jan 2020 14:26:10 -0300
-From:   Paul Cercueil <paul@crapouillou.net>
-Subject: Re: [PATCH] usb: common: usb-conn-gpio: Register charger
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+        id S1727437AbgAHR6h (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jan 2020 12:58:37 -0500
+Received: from mail.kernel.org ([198.145.29.99]:32784 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727127AbgAHR6h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 8 Jan 2020 12:58:37 -0500
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 797722067D;
+        Wed,  8 Jan 2020 17:58:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1578506316;
+        bh=SdtmN8vMPYr6lvvcJ19d5FHoncte7Ipmo58T/30pIBE=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=KahEnhp61ZYr9Kt8C5+kMPQ74X4OJW/0iqGXeJ3xTIyK7mqeMOzuAb/MC4MxIS22E
+         HPP86YtIG54fmcXdabmpLcq7fn/79xIv0ZuyMCtQKTAInevdfFigJ4Y42NSSqa19DJ
+         f/N51BQoshrnlRUZrqr78i/GNE+V7jIt/AtumAb8=
+Date:   Wed, 8 Jan 2020 18:58:34 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Paul Cercueil <paul@crapouillou.net>
 Cc:     Chunfeng Yun <chunfeng.yun@mediatek.com>, od@zcrc.me,
         linux-usb@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Message-Id: <1578504370.3.1@crapouillou.net>
-In-Reply-To: <20200108165323.GA2506374@kroah.com>
+Subject: Re: [PATCH] usb: common: usb-conn-gpio: Register charger
+Message-ID: <20200108175834.GC2546185@kroah.com>
 References: <20200107002901.940297-1-paul@crapouillou.net>
-        <20200108165323.GA2506374@kroah.com>
+ <20200108165323.GA2506374@kroah.com>
+ <1578504370.3.1@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1578504370.3.1@crapouillou.net>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Greg,
+On Wed, Jan 08, 2020 at 02:26:10PM -0300, Paul Cercueil wrote:
+> Hi Greg,
+> 
+> 
+> Le mer., janv. 8, 2020 at 17:53, Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> a écrit :
+> > On Tue, Jan 07, 2020 at 01:29:01AM +0100, Paul Cercueil wrote:
+> > >  Register a power supply charger, whose online state depends on
+> > > whether
+> > >  the USB role is set to device or not.
+> > 
+> > That says _what_ you are doing, but I have no idea _why_ you want to do
+> > this.
+> > 
+> > What is this going to cause to have happen?  What new userspace api is
+> > going to result?  What will a user do with this?
+> 
+> This is useful when the USB role is the only way to know if the device is
+> charging from USB.
+> 
+> The API is the standard power supply charger API, you get a
+> /sys/class/power_supply/xxx/online node which tells you the state of the
+> charger.
+> 
+> The sole purpose of this is to give userspace applications a way to know
+> whether or not the charger is plugged.
 
+Ok, this is all good info that should go into the changelog text for
+when you resend this.
 
-Le mer., janv. 8, 2020 at 17:53, Greg Kroah-Hartman=20
-<gregkh@linuxfoundation.org> a =E9crit :
-> On Tue, Jan 07, 2020 at 01:29:01AM +0100, Paul Cercueil wrote:
->>  Register a power supply charger, whose online state depends on=20
->> whether
->>  the USB role is set to device or not.
->=20
-> That says _what_ you are doing, but I have no idea _why_ you want to=20
-> do
-> this.
->=20
-> What is this going to cause to have happen?  What new userspace api is
-> going to result?  What will a user do with this?
+> > Is this going to always show up, no matter if the role is not even
+> > relevant for a power supply?
+> 
+> I guess it'd always show up, yes. In which case would the role not be
+> relevant for a power supply? Is gpio-b-connector not always used for OTG
+> connectors?
 
-This is useful when the USB role is the only way to know if the device=20
-is charging from USB.
+I do not know, I thought OTG was dead :)
 
-The API is the standard power supply charger API, you get a=20
-/sys/class/power_supply/xxx/online node which tells you the state of=20
-the charger.
+thanks,
 
-The sole purpose of this is to give userspace applications a way to=20
-know whether or not the charger is plugged.
-
-> Is this going to always show up, no matter if the role is not even
-> relevant for a power supply?
-
-I guess it'd always show up, yes. In which case would the role not be=20
-relevant for a power supply? Is gpio-b-connector not always used for=20
-OTG connectors?
-
-Cheers,
--Paul
-
-
-> You need a lot more text here to make this mergable.
->=20
-> thanks,
->=20
-> greg k-h
-
-=
-
+greg k-h
