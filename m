@@ -1,220 +1,218 @@
-Return-Path: <SRS0=gDq+=24=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=Gqwv=25=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 998BCC282DD
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 23:46:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22965C33C99
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jan 2020 00:31:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 615222081E
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jan 2020 23:46:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DBA18206F0
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jan 2020 00:31:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="Sr9NWBfY"
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="DS0//9CY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727562AbgAGXqD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jan 2020 18:46:03 -0500
-Received: from smtp-fw-9101.amazon.com ([207.171.184.25]:5234 "EHLO
-        smtp-fw-9101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727563AbgAGXqC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2020 18:46:02 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1578440763; x=1609976763;
-  h=date:from:to:cc:subject:message-id:mime-version;
-  bh=C+JaTHQLVFTnM8u9L8ZSkRBth8A1GrfPB1444d3zUEk=;
-  b=Sr9NWBfYr6ulkMkmcFHEzSiwvc0g0eAjiTkqpLLBYc2/3t4/dVKFqR95
-   Do7mIs2bQBbtpyX5AUEL3C5jVkolmJ6faHxFTbFlZ/Pza6obA4kGp2B5r
-   JChND7g4GwILW0PlTH91rspBZ0sB3LgcHihQr23kjXX0aOamypKS61tRf
-   0=;
-IronPort-SDR: tgZkjPccZ3NN32ilYfpUAqXwfPAg3ycN79+7mbg/yBELHAIIAEhZkb41aLfWqiI5YJOmjh5N2D
- RKzL0UoG9vhw==
-X-IronPort-AV: E=Sophos;i="5.69,407,1571702400"; 
-   d="scan'208";a="8919095"
-Received: from sea32-co-svc-lb4-vlan3.sea.corp.amazon.com (HELO email-inbound-relay-1d-474bcd9f.us-east-1.amazon.com) ([10.47.23.38])
-  by smtp-border-fw-out-9101.sea19.amazon.com with ESMTP; 07 Jan 2020 23:46:01 +0000
-Received: from EX13MTAUEE002.ant.amazon.com (iad55-ws-svc-p15-lb9-vlan2.iad.amazon.com [10.40.159.162])
-        by email-inbound-relay-1d-474bcd9f.us-east-1.amazon.com (Postfix) with ESMTPS id 04022A2516;
-        Tue,  7 Jan 2020 23:45:52 +0000 (UTC)
-Received: from EX13D08UEE003.ant.amazon.com (10.43.62.118) by
- EX13MTAUEE002.ant.amazon.com (10.43.62.24) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Tue, 7 Jan 2020 23:45:26 +0000
-Received: from EX13MTAUEE002.ant.amazon.com (10.43.62.24) by
- EX13D08UEE003.ant.amazon.com (10.43.62.118) with Microsoft SMTP Server (TLS)
- id 15.0.1367.3; Tue, 7 Jan 2020 23:45:26 +0000
-Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
- (172.22.96.68) by mail-relay.amazon.com (10.43.62.224) with Microsoft SMTP
- Server id 15.0.1367.3 via Frontend Transport; Tue, 7 Jan 2020 23:45:26 +0000
-Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
-        id 982CE40E65; Tue,  7 Jan 2020 23:45:26 +0000 (UTC)
-Date:   Tue, 7 Jan 2020 23:45:26 +0000
-From:   Anchal Agarwal <anchalag@amazon.com>
-To:     <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
-        <hpa@zytor.com>, <x86@kernel.org>, <boris.ostrovsky@oracle.com>,
-        <jgross@suse.com>, <linux-pm@vger.kernel.org>,
-        <linux-mm@kvack.org>, <kamatam@amazon.com>,
-        <sstabellini@kernel.org>, <konrad.wilk@oracle.co>,
-        <roger.pau@citrix.com>, <axboe@kernel.dk>, <davem@davemloft.net>,
-        <rjw@rjwysocki.net>, <len.brown@intel.com>, <pavel@ucw.cz>,
-        <peterz@infradead.org>, <eduval@amazon.com>, <sblbir@amazon.com>,
-        <anchalag@amazon.com>, <xen-devel@lists.xenproject.org>,
-        <vkuznets@redhat.com>, <netdev@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <Woodhouse@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>,
-        <dwmw@amazon.co.uk>, <fllinden@amaozn.com>
-CC:     <anchalag@amazon.com>
-Subject: [RFC PATCH V2 11/11] x86: tsc: avoid system instability in
- hibernation
-Message-ID: <20200107234526.GA19034@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+        id S1726295AbgAHAbz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jan 2020 19:31:55 -0500
+Received: from mail25.static.mailgun.info ([104.130.122.25]:59237 "EHLO
+        mail25.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726290AbgAHAbz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jan 2020 19:31:55 -0500
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1578443514; h=Content-Transfer-Encoding: Content-Type:
+ In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
+ Subject: Sender; bh=Z7BlDSHpENI8oTNIekEC/fQs16wNbuD2eY0egRw6Q1M=; b=DS0//9CYZzneSl1gL0Ru+/VXD/1K26CIgiTMsgBTp55b5Jj3Eg7MNsXOXE46A32SKvGgeQyI
+ bCpCOAmlb7/i1cRRGkoofVXfr5Obtu6EycqL3NxmCql4Dm6Nof7FPKRXQhlHpioUJN+0L6Kg
+ 1Ibg7zIo5u1+No69TvFR0pPoZnU=
+X-Mailgun-Sending-Ip: 104.130.122.25
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171])
+ by mxa.mailgun.org with ESMTP id 5e1522f9.7ff4c7091f48-smtp-out-n01;
+ Wed, 08 Jan 2020 00:31:53 -0000 (UTC)
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 8BD03C447A1; Wed,  8 Jan 2020 00:31:51 +0000 (UTC)
+Received: from [10.226.59.103] (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: rkumbako)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 84400C43383;
+        Wed,  8 Jan 2020 00:31:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 84400C43383
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=rkumbako@codeaurora.org
+Subject: Re: [PATCH] drivers: thermal: step_wise: add support for hysteresis
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        bjorn.andersson@linaro.org, swboyd@chromium.org, j-keerthy@ti.com,
+        thara.gopinath@linaro.org, Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>
+Cc:     Lina Iyer <ilina@codeaurora.org>, linux-pm@vger.kernel.org
+References: <8e812065f4a76325097c5f9c17f3386736d8c1d4.1574315190.git.amit.kucheria@linaro.org>
+ <962d48d2-87fd-1236-0623-148352a98de6@linaro.org>
+From:   Ram Chandrasekar <rkumbako@codeaurora.org>
+Message-ID: <4f75a862-4525-fe11-ed03-f53a13926c15@codeaurora.org>
+Date:   Tue, 7 Jan 2020 17:31:48 -0700
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <962d48d2-87fd-1236-0623-148352a98de6@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Eduardo Valentin <eduval@amazon.com>
 
-System instability are seen during resume from hibernation when system
-is under heavy CPU load. This is due to the lack of update of sched
-clock data, and the scheduler would then think that heavy CPU hog
-tasks need more time in CPU, causing the system to freeze
-during the unfreezing of tasks. For example, threaded irqs,
-and kernel processes servicing network interface may be delayed
-for several tens of seconds, causing the system to be unreachable.
 
-Situation like this can be reported by using lockup detectors
-such as workqueue lockup detectors:
+On 12/11/2019 6:35 AM, Daniel Lezcano wrote:
+> On 21/11/2019 06:50, Amit Kucheria wrote:
+>> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+>>
+>> Currently, step wise governor increases the mitigation when the
+>> temperature goes above a threshold and decreases the mitigation when the
+>> temperature goes below the threshold.
+>>
+>> If there is a case where the
+>> temperature is wavering around the threshold, the mitigation will be
+>> applied and removed every iteration, which is not very efficient.
+>>
+>> The use of hysteresis temperature could avoid this ping-pong of
+>> mitigation by relaxing the mitigation to happen only when the
+>> temperature goes below this lower hysteresis value.
+> 
+> What I'm worried about is how the hysteresis is used in the current
+> code, where the destination of this data is to set the value in the
+> sensor hardware if it is supported.
+> 
+> Using the hysteresis in the governor seems like abusing the initial
+> purpose of this information.
+> 
+> Moreover, the hysteresis creates a gray area where the above algorithm
+> (DROPPING && !throttle) => state-- or (RAISING && throttle) => state++
+> may drop the performances because we will continue mitigating even below
+> the threshold.
+> 
+> As the governor is an open-loop controller, I'm not sure if we can do
+> something except adding some kind of low pass filter to prevent
+> mitigation bounces.
+> 
 
-[root@ip-172-31-67-114 ec2-user]# echo disk > /sys/power/state
+We have two different use cases for the step wise algorithm, and the 
+hysteresis makes sense only in one.
 
-Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
- kernel:BUG: workqueue lockup - pool cpus=0 node=0 flags=0x0 nice=0 stuck for 57s!
+For example, say we are controlling CPU junction temperature at 95C. 
+When using step wise, mitigation is applied iteratively and there is a 
+possibility that temperature can shoot up before the algorithm can reach 
+an optimal mitigation level to keep the temperature near threshold.
 
-Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
- kernel:BUG: workqueue lockup - pool cpus=1 node=0 flags=0x0 nice=0 stuck for 57s!
+In order to help this state machine, we use a second back stop rule in 
+the same thermal zone at a higher temperature (say 105C) with a 
+hysteresis of 10C to mitigate CPU to a fixed value, by specifying 
+upper/lower limit to be the same. The idea is that the second rule will 
+place a hard hammer to bring the temperature down close to 95C and then 
+it will remove the mitigation. Once mitigation is removed, the junction 
+temperature rule state machine will re-adjust from that point to an 
+optimal mitigation level. The junction temperature rule doesn’t use 
+hysteresis.
 
-Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
- kernel:BUG: workqueue lockup - pool cpus=3 node=0 flags=0x1 nice=0 stuck for 57s!
+Another example is skin temperature mitigation for mobile devices, where 
+the step wise algorithm with hysteresis just reduces the operating max 
+frequency to a fixed value, when the threshold is reached. And the 
+junction temperature rule starts mitigating from this operating max.
 
-Message from syslogd@ip-172-31-67-114 at May  7 18:29:06 ...
- kernel:BUG: workqueue lockup - pool cpus=3 node=0 flags=0x1 nice=0 stuck for 403s!
+That is the reason we have not generalized or mandated the hysteresis 
+usage in this patch. The idea is to use it selectively based on use case.
 
-The fix for this situation is to mark the sched clock as unstable
-as early as possible in the resume path, leaving it unstable
-for the duration of the resume process. This will force the
-scheduler to attempt to align the sched clock across CPUs using
-the delta with time of day, updating sched clock data. In a post
-hibernation event, we can then mark the sched clock as stable
-again, avoiding unnecessary syncs with time of day on systems
-in which TSC is reliable.
 
-Reviewed-by: Erik Quanstrom <quanstro@amazon.com>
-Reviewed-by: Frank van der Linden <fllinden@amazon.com>
-Reviewed-by: Balbir Singh <sblbir@amazon.com>
-Reviewed-by: Munehisa Kamata <kamatam@amazon.com>
-Tested-by: Anchal Agarwal <anchalag@amazon.com>
-Signed-off-by: Eduardo Valentin <eduval@amazon.com>
----
- arch/x86/kernel/tsc.c       | 29 +++++++++++++++++++++++++++++
- include/linux/sched/clock.h |  5 +++++
- kernel/sched/clock.c        |  4 ++--
- 3 files changed, 36 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 7e322e2daaf5..ae77b8bc4e46 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -14,6 +14,7 @@
- #include <linux/percpu.h>
- #include <linux/timex.h>
- #include <linux/static_key.h>
-+#include <linux/suspend.h>
- 
- #include <asm/hpet.h>
- #include <asm/timer.h>
-@@ -1534,3 +1535,31 @@ unsigned long calibrate_delay_is_known(void)
- 	return 0;
- }
- #endif
-+
-+static int tsc_pm_notifier(struct notifier_block *notifier,
-+			    unsigned long pm_event, void *unused)
-+{
-+	switch (pm_event) {
-+	case PM_HIBERNATION_PREPARE:
-+		clear_sched_clock_stable();
-+		break;
-+	case PM_POST_HIBERNATION:
-+		/* Set back to the default */
-+		if (!check_tsc_unstable())
-+			set_sched_clock_stable();
-+		break;
-+	}
-+
-+	return 0;
-+};
-+
-+static struct notifier_block tsc_pm_notifier_block = {
-+       .notifier_call = tsc_pm_notifier,
-+};
-+
-+static int tsc_setup_pm_notifier(void)
-+{
-+       return register_pm_notifier(&tsc_pm_notifier_block);
-+}
-+
-+subsys_initcall(tsc_setup_pm_notifier);
-diff --git a/include/linux/sched/clock.h b/include/linux/sched/clock.h
-index 867d588314e0..902654ac5f7e 100644
---- a/include/linux/sched/clock.h
-+++ b/include/linux/sched/clock.h
-@@ -32,6 +32,10 @@ static inline void clear_sched_clock_stable(void)
- {
- }
- 
-+static inline void set_sched_clock_stable(void)
-+{
-+}
-+
- static inline void sched_clock_idle_sleep_event(void)
- {
- }
-@@ -51,6 +55,7 @@ static inline u64 local_clock(void)
- }
- #else
- extern int sched_clock_stable(void);
-+extern void set_sched_clock_stable(void);
- extern void clear_sched_clock_stable(void);
- 
- /*
-diff --git a/kernel/sched/clock.c b/kernel/sched/clock.c
-index 1152259a4ca0..374d40e5b1a2 100644
---- a/kernel/sched/clock.c
-+++ b/kernel/sched/clock.c
-@@ -116,7 +116,7 @@ static void __scd_stamp(struct sched_clock_data *scd)
- 	scd->tick_raw = sched_clock();
- }
- 
--static void __set_sched_clock_stable(void)
-+void set_sched_clock_stable(void)
- {
- 	struct sched_clock_data *scd;
- 
-@@ -236,7 +236,7 @@ static int __init sched_clock_init_late(void)
- 	smp_mb(); /* matches {set,clear}_sched_clock_stable() */
- 
- 	if (__sched_clock_stable_early)
--		__set_sched_clock_stable();
-+		set_sched_clock_stable();
- 
- 	return 0;
- }
--- 
-2.15.3.AMZN
-
+>> Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
+>> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+>> [Rebased patch from downstream]
+>> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+>> ---
+>>   drivers/thermal/step_wise.c | 35 ++++++++++++++++++++++++-----------
+>>   1 file changed, 24 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+>> index 6e051cbd824ff..2c8a34a7cf959 100644
+>> --- a/drivers/thermal/step_wise.c
+>> +++ b/drivers/thermal/step_wise.c
+>> @@ -24,7 +24,7 @@
+>>    *       for this trip point
+>>    *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
+>>    *       for this trip point
+>> - * If the temperature is lower than a trip point,
+>> + * If the temperature is lower than a hysteresis temperature,
+>>    *    a. if the trend is THERMAL_TREND_RAISING, do nothing
+>>    *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
+>>    *       state for this trip point, if the cooling state already
+>> @@ -115,30 +115,31 @@ static void update_passive_instance(struct thermal_zone_device *tz,
+>>   
+>>   static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>>   {
+>> -	int trip_temp;
+>> +	int trip_temp, hyst_temp;
+>>   	enum thermal_trip_type trip_type;
+>>   	enum thermal_trend trend;
+>>   	struct thermal_instance *instance;
+>> -	bool throttle = false;
+>> +	bool throttle;
+>>   	int old_target;
+>>   
+>>   	if (trip == THERMAL_TRIPS_NONE) {
+>> -		trip_temp = tz->forced_passive;
+>> +		hyst_temp = trip_temp = tz->forced_passive;
+>>   		trip_type = THERMAL_TRIPS_NONE;
+>>   	} else {
+>>   		tz->ops->get_trip_temp(tz, trip, &trip_temp);
+>> +		hyst_temp = trip_temp;
+>> +		if (tz->ops->get_trip_hyst) {
+>> +			tz->ops->get_trip_hyst(tz, trip, &hyst_temp);
+>> +			hyst_temp = trip_temp - hyst_temp;
+>> +		}
+>>   		tz->ops->get_trip_type(tz, trip, &trip_type);
+>>   	}
+>>   
+>>   	trend = get_tz_trend(tz, trip);
+>>   
+>> -	if (tz->temperature >= trip_temp) {
+>> -		throttle = true;
+>> -		trace_thermal_zone_trip(tz, trip, trip_type);
+>> -	}
+>> -
+>> -	dev_dbg(&tz->device, "Trip%d[type=%d,temp=%d]:trend=%d,throttle=%d\n",
+>> -				trip, trip_type, trip_temp, trend, throttle);
+>> +	dev_dbg(&tz->device,
+>> +		"Trip%d[type=%d,temp=%d,hyst=%d]:trend=%d,throttle=%d\n",
+>> +		trip, trip_type, trip_temp, hyst_temp, trend, throttle);
+>>   
+>>   	mutex_lock(&tz->lock);
+>>   
+>> @@ -147,6 +148,18 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>>   			continue;
+>>   
+>>   		old_target = instance->target;
+>> +		throttle = false;
+>> +		/*
+>> +		 * Lower the mitigation only if the temperature
+>> +		 * goes below the hysteresis temperature.
+>> +		 */
+>> +		if (tz->temperature >= trip_temp ||
+>> +		    (tz->temperature >= hyst_temp &&
+>> +		     old_target != THERMAL_NO_TARGET)) {
+>> +			throttle = true;
+>> +			trace_thermal_zone_trip(tz, trip, trip_type);
+>> +		}
+>> +
+>>   		instance->target = get_target_state(instance, trend, throttle);
+>>   		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
+>>   					old_target, (int)instance->target);
+>>
+> 
+> 
