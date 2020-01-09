@@ -2,201 +2,95 @@ Return-Path: <SRS0=uEWQ=26=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DCCDC32771
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jan 2020 12:08:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7082C32771
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jan 2020 12:17:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 645812077B
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jan 2020 12:08:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7D1E02077B
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jan 2020 12:17:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mjvHnzbE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730243AbgAIMH7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jan 2020 07:07:59 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:54079 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728653AbgAIMH7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2020 07:07:59 -0500
-Received: from [5.158.153.52] (helo=nanos.tec.linutronix.de)
-        by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
-        (Exim 4.80)
-        (envelope-from <tglx@linutronix.de>)
-        id 1ipWb1-0000nt-Tc; Thu, 09 Jan 2020 13:07:28 +0100
-Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
-        id 492021060CF; Thu,  9 Jan 2020 13:07:27 +0100 (CET)
-From:   Thomas Gleixner <tglx@linutronix.de>
-To:     Anchal Agarwal <anchalag@amazon.com>
-Cc:     mingo@redhat.com, bp@alien8.de, hpa@zytor.com, x86@kernel.org,
-        boris.ostrovsky@oracle.com, jgross@suse.com,
-        linux-pm@vger.kernel.org, linux-mm@kvack.org, kamatam@amazon.com,
-        sstabellini@kernel.org, konrad.wilk@oracle.co,
-        roger.pau@citrix.com, axboe@kernel.dk, davem@davemloft.net,
-        rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
-        peterz@infradead.org, eduval@amazon.com, sblbir@amazon.com,
-        xen-devel@lists.xenproject.org, vkuznets@redhat.com,
-        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-        dwmw@amazon.co.uk, fllinden@amazon.com, anchalag@amazon.com
-Subject: Re: [RFC PATCH V2 09/11] xen: Clear IRQD_IRQ_STARTED flag during shutdown PIRQs
-In-Reply-To: <20200108212417.GA22381@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
-References: <20200107234420.GA18738@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com> <877e22ezv6.fsf@nanos.tec.linutronix.de> <20200108212417.GA22381@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
-Date:   Thu, 09 Jan 2020 13:07:27 +0100
-Message-ID: <874kx4omtc.fsf@nanos.tec.linutronix.de>
+        id S1730249AbgAIMRt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jan 2020 07:17:49 -0500
+Received: from mail-lj1-f169.google.com ([209.85.208.169]:43837 "EHLO
+        mail-lj1-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728974AbgAIMRt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2020 07:17:49 -0500
+Received: by mail-lj1-f169.google.com with SMTP id a13so6962841ljm.10;
+        Thu, 09 Jan 2020 04:17:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=kJr9DdZZf2/ANld+Ul9RudgAsohen5RqZzNVnbAqTsg=;
+        b=mjvHnzbEaIbsQ0NrLtzCJRIhUTVzBGpQVrz43beSCllrFgzbAODIdEWPM6fiwSkcIu
+         xD/gC+72yKJXiV0m/oD9K9IyhwgwpCMl2rrp0ynPOetXgn3z4+wy5Frbb36/2PqTqZHn
+         HcHBVnCKltDcjjTRy+NsKATYq8umfzgbRbIroF1FYyTOLdBhKJsARpLUQ/uDGdqqtnRj
+         x6IL2kwuJCygf3xZtI5IguBxcK4MlZjaYTVcrO9+PrG2dTV90SlbpjXZByf6qskfTMDL
+         OqSqTQJLRYLbZkRDtN7X6jbLlHh+aBwkl7O0axkckjmj46m89yeyNbKH73C2Pohga2Pk
+         CpfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=kJr9DdZZf2/ANld+Ul9RudgAsohen5RqZzNVnbAqTsg=;
+        b=mmnLCRenYuIpPcCYNIcskTbby5qXek840Tuo5PVMhsabt/6hLGMiFda6f0AtuoWMOv
+         4tgklh8KVwQerUkA9xC54GCqeOHfxSqiMjxF3ky46RV/9x9rkBJePy6zGAvSn3Wo2NcP
+         uK6MZaaayT2g70Ol0SErzZKaIs8C1WxxAzj87AuIJM9J2Jjd0C595kCwwzaBL3cjl+Uj
+         qIAbfHvIzYWtEXtO6SQDSXssZ6O+vZqNNjQ8lDjAurxIeOiG47DDj0FFAbFh+DgMLPG4
+         OLkRG6iFzaX9oYn+VzNxeP80kk2QiGzTn7zy7JLxdU5jf9BJUbplX69fe9w/c2Jq7gyH
+         +dOw==
+X-Gm-Message-State: APjAAAWsOdZ/DKgQL8pGsPnLn6IdT/t3ACzHPs4IDw6bdsFSPcdHohcX
+        J7ttc8iXIwwhS8LTPTu4PRCuF/IP6UIVthhCeQE=
+X-Google-Smtp-Source: APXvYqwTcIlvIE0lUCJi3FRLOlS1u3VgGMOmgYWiU57KWCLBT1IzZv7XrENayxwaVo2Wm+OfP7BbhpaMMuEa7apsGDA=
+X-Received: by 2002:a2e:943:: with SMTP id 64mr6356480ljj.17.1578572266871;
+ Thu, 09 Jan 2020 04:17:46 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <08794fde-cdd0-287c-62bf-e2e3b8c80686@gmail.com>
+ <20191203101509.wte47aad5k4mqu2y@pengutronix.de> <CAOMZO5Cn993y9VeFN6hPO3-cfNnUKiuFd_rqAZ8htz=dO6t6ig@mail.gmail.com>
+ <CAOMZO5BniszDhWKkoWY=P62kv9cY160r9P=pjpbSOZasxJvdBA@mail.gmail.com> <77fff313-3f40-6b5e-fe30-5a65a189bdff@gmail.com>
+In-Reply-To: <77fff313-3f40-6b5e-fe30-5a65a189bdff@gmail.com>
+From:   Fabio Estevam <festevam@gmail.com>
+Date:   Thu, 9 Jan 2020 09:17:35 -0300
+Message-ID: <CAOMZO5DyJ_niuoBX62B1NLkKRpYQQtKUiX06L62TmA6PNMKO5A@mail.gmail.com>
+Subject: Re: Issue with imx_get_temp()
+To:     Igor Plyatov <plyatov@gmail.com>
+Cc:     Marco Felsch <m.felsch@pengutronix.de>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        NXP Linux Team <linux-imx@nxp.com>, linux-pm@vger.kernel.org,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Anchal Agarwal <anchalag@amazon.com> writes:
-> On Wed, Jan 08, 2020 at 04:23:25PM +0100, Thomas Gleixner wrote:
->> Anchal Agarwal <anchalag@amazon.com> writes:
->> > +void irq_state_clr_started(struct irq_desc *desc)
->> >  {
->> >  	irqd_clear(&desc->irq_data, IRQD_IRQ_STARTED);
->> >  }
->> > +EXPORT_SYMBOL_GPL(irq_state_clr_started);
->> 
->> This is core internal state and not supposed to be fiddled with by
->> drivers.
->> 
->> irq_chip has irq_suspend/resume/pm_shutdown callbacks for a reason.
->>
-> I agree, as its mentioned in the previous patch {[RFC PATCH V2 08/11]} this is 
-> one way of explicitly shutting down legacy devices without introducing too much 
-> code for each of the legacy devices. . for eg. in case of floppy there 
-> is no suspend/freeze handler which should have done the needful.
-> .
-> Either we implement them for all the legacy devices that have them missing or
-> explicitly shutdown pirqs. I have choosen later for simplicity. I understand
-> that ideally we should enable/disable devices interrupts in suspend/resume 
-> devices but that requires adding code for doing that to few drivers[and I may
-> not know all of them either]
+Hi Igor,
+
+On Tue, Dec 3, 2019 at 11:36 AM Igor Plyatov <plyatov@gmail.com> wrote:
 >
-> Now I discovered during the flow in hibernation_platform_enter under resume 
-> devices that for such devices irq_startup is called which checks for 
-> IRQD_IRQ_STARTED flag and based on that it calls irq_enable or irq_startup.
-> They are only restarted if the flag is not set which is cleared during shutdown. 
-> shutdown_pirq does not do that. Only masking/unmasking of evtchn does not work 
-> as pirq needs to be restarted.
-> xen-pirq.enable_irq is called rather than stratup_pirq. On resume if these pirqs
-> are not restarted in this case ACPI SCI interrupts, I do not see receiving 
-> any interrupts under cat /proc/interrupts even though host keeps generating 
-> S4 ACPI events. 
-> Does that makes sense?
+> Dear Fabio,
+>
+> > Does the following patch help?
+> > http://code.bulix.org/l3rz2e-982595
+>
+> Thank you!
+>
+> Patch applied and will be tested.
+>
+> I will inform you about results.
 
-No. You still violate all abstraction boundaries. On one hand you use a
-XEN specific suspend function to shut down interrupts, but then you want
-the core code to reestablish them on resume. That's just bad hackery which
-abuses partial knowledge of core internals. The state flag is only one
-part of the core internal state and just clearing it does not make the
-rest consistent. It just works by chance and not by design and any
-change of the core code will break it in colourful ways.
-
-So either you can handle it purely on the XEN side without touching any
-core state or you need to come up with some way of letting the core code
-know that it should invoke shutdown instead of disable.
-
-Something like the completely untested patch below.
-
-Thanks,
-
-       tglx
-
-8<----------------
-
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 7853eb9301f2..50f2057bc339 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -511,6 +511,7 @@ struct irq_chip {
-  * IRQCHIP_EOI_THREADED:	Chip requires eoi() on unmask in threaded mode
-  * IRQCHIP_SUPPORTS_LEVEL_MSI	Chip can provide two doorbells for Level MSIs
-  * IRQCHIP_SUPPORTS_NMI:	Chip can deliver NMIs, only for root irqchips
-+ * IRQCHIP_SHUTDOWN_ON_SUSPEND:	Shutdown non wake irqs in the suspend path
-  */
- enum {
- 	IRQCHIP_SET_TYPE_MASKED		= (1 <<  0),
-@@ -522,6 +523,7 @@ enum {
- 	IRQCHIP_EOI_THREADED		= (1 <<  6),
- 	IRQCHIP_SUPPORTS_LEVEL_MSI	= (1 <<  7),
- 	IRQCHIP_SUPPORTS_NMI		= (1 <<  8),
-+	IRQCHIP_SHUTDOWN_ON_SUSPEND	= (1 <<  9),
- };
- 
- #include <linux/irqdesc.h>
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index b3fa2d87d2f3..0fe355f72a15 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -233,7 +233,7 @@ __irq_startup_managed(struct irq_desc *desc, struct cpumask *aff, bool force)
- }
- #endif
- 
--static int __irq_startup(struct irq_desc *desc)
-+int __irq_startup(struct irq_desc *desc)
- {
- 	struct irq_data *d = irq_desc_get_irq_data(desc);
- 	int ret = 0;
-diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
-index 3924fbe829d4..11c7c55bda63 100644
---- a/kernel/irq/internals.h
-+++ b/kernel/irq/internals.h
-@@ -80,6 +80,7 @@ extern void __enable_irq(struct irq_desc *desc);
- extern int irq_activate(struct irq_desc *desc);
- extern int irq_activate_and_startup(struct irq_desc *desc, bool resend);
- extern int irq_startup(struct irq_desc *desc, bool resend, bool force);
-+extern int __irq_startup(struct irq_desc *desc);
- 
- extern void irq_shutdown(struct irq_desc *desc);
- extern void irq_shutdown_and_deactivate(struct irq_desc *desc);
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index 8f557fa1f4fe..597f0602510a 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -85,16 +85,22 @@ static bool suspend_device_irq(struct irq_desc *desc)
- 	}
- 
- 	desc->istate |= IRQS_SUSPENDED;
--	__disable_irq(desc);
--
--	/*
--	 * Hardware which has no wakeup source configuration facility
--	 * requires that the non wakeup interrupts are masked at the
--	 * chip level. The chip implementation indicates that with
--	 * IRQCHIP_MASK_ON_SUSPEND.
--	 */
--	if (irq_desc_get_chip(desc)->flags & IRQCHIP_MASK_ON_SUSPEND)
--		mask_irq(desc);
-+
-+	/* Some irq chips (e.g. XEN PIRQ) require a full shutdown on suspend */
-+	if (irq_desc_get_chip(desc)->flags & IRQCHIP_SHUTDOWN_ON_SUSPEND) {
-+		irq_shutdown(desc);
-+	} else {
-+		__disable_irq(desc);
-+
-+		/*
-+		 * Hardware which has no wakeup source configuration facility
-+		 * requires that the non wakeup interrupts are masked at the
-+		 * chip level. The chip implementation indicates that with
-+		 * IRQCHIP_MASK_ON_SUSPEND.
-+		 */
-+		if (irq_desc_get_chip(desc)->flags & IRQCHIP_MASK_ON_SUSPEND)
-+			mask_irq(desc);
-+	}
- 	return true;
- }
- 
-@@ -152,7 +158,10 @@ static void resume_irq(struct irq_desc *desc)
- 	irq_state_set_masked(desc);
- resume:
- 	desc->istate &= ~IRQS_SUSPENDED;
--	__enable_irq(desc);
-+	if (irq_desc_get_chip(desc)->flags & IRQCHIP_SHUTDOWN_ON_SUSPEND)
-+		__irq_startup(desc);
-+	else
-+		__enable_irq(desc);
- }
- 
- static void resume_irqs(bool want_early)
+Have you had a chance to test the patch?
