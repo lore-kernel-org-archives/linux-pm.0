@@ -2,72 +2,75 @@ Return-Path: <SRS0=uEWQ=26=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4362BC33CA2
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jan 2020 11:31:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DF92C32771
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jan 2020 11:45:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 18C442077B
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jan 2020 11:31:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E986E2087F
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jan 2020 11:45:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="stC15YtX"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QMff/w1W"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730157AbgAILbp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jan 2020 06:31:45 -0500
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:33510 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730682AbgAILbp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2020 06:31:45 -0500
-Received: by mail-wm1-f66.google.com with SMTP id d139so1839278wmd.0
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jan 2020 03:31:42 -0800 (PST)
+        id S1728584AbgAILp1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jan 2020 06:45:27 -0500
+Received: from mail-wr1-f68.google.com ([209.85.221.68]:43415 "EHLO
+        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728567AbgAILp0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2020 06:45:26 -0500
+Received: by mail-wr1-f68.google.com with SMTP id d16so7016897wre.10
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jan 2020 03:45:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=OOxWvQMLp4ZsWkTKSAbMncAsJ5cLIJsRh2QXIRd9sbw=;
-        b=stC15YtXpa19hc/XU1EULn5dJxJHw29cNAi9MbvUSkQwZ2LxgxfvK617m/N+9IF/y8
-         nxqKt+qehHAMFBf20Y74TjSrDbWaD+3xYdidSNl/bNTQItPGO4HPKDP3eQRoodS7ZnEl
-         7RonP001QbmQke4qqTjUbznUDF5Th23P7sJVL0woYjgatpjdRAyNx0kVRxFfMvD6j7t4
-         ugUiKskztwwi4akdectS8v4McBdxXg/z8s9rWNXy+QfcIfx38v0vkAxCgURhdbE1XyMF
-         pDqMJCCZFE8+3J9F3vvk4DQczsNtlrOdPlTWd0B3CUF0L2LqZogRvUrZRRjRFetkPkLE
-         wN1Q==
+        bh=M+Hleybvc0xNgkFFNo5eVdjk4X0NArxdjlsDgPzB5xM=;
+        b=QMff/w1W9s6CsJj7ISgeRx7ZokETKM1nkN+g0axCcpzfZHTd12c1zJ5D+3CHxqwvXE
+         s0k66KlUh3BR7eP7CwGA8+3/BP5ELuADkxMGo4M9/GAGivWntmJQpYwH1TUumw8gW2Da
+         3WioL9jhSPLhwcj2yKVHIpVfXrXXrXdKWEU/rsXeQEHoej8vPyA/iKLBu5AzX0QoFZYm
+         0vyPMJVvnmx3ktn8dFkHTuaGOw9HziD5NrSodSgOWBcH+SiJA7RsOHSNrHnzUSdOFciK
+         QFm7Ly+EYGZMZa72e0H9rkgadLLCSDC+kWdBvN8Cp6kQ0zdj4xD2Y9OangAPTDz9kiWC
+         +0oA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:autocrypt
          :message-id:date:user-agent:mime-version:in-reply-to
          :content-language:content-transfer-encoding;
-        bh=OOxWvQMLp4ZsWkTKSAbMncAsJ5cLIJsRh2QXIRd9sbw=;
-        b=YFwJEksepKaB9YwSizt6ox7eAgusF9yIJHnFjxk0CJXgNO4hXScJWdqegFb3tN4jcZ
-         BqyXcs2GKBjUcMdg0LS5jTlnZVauHd/2sYDLbfFcOtKIA/g9HuuH0sCu2StRxyA0yoQ9
-         GVgjwq3m+UfdHldfUWbvLupvAU8X6+mBDBB7y1EDxmwUgYKepeZLxIMjILp4IVp1qn5q
-         lDHKTZpKy69hCbUUE6+KV78ZdlEemfswIlWSs1i88CLOyY1Khniid9lR6Z1yX3xFdx8J
-         +fGR1t1IN3nQW0ThewWRUzgj3lgwHbchqdGTJQiMCkkEQZld7i91epqGuXdhL3Yigc3/
-         nkIA==
-X-Gm-Message-State: APjAAAUzmyGfXGbsp/2Q4kmyITl6vZq7BRYgNPRPIfFnQ6DE/JLfGoov
-        jyT43N4pkxyRTw7wZK836MWpJA==
-X-Google-Smtp-Source: APXvYqw7k0jKzu0T1tLI+IVHX318TWsNdPPilv6KUY1LTD4g4cHjebf2/7Y9dJuKMk7JNsz45Vp1NA==
-X-Received: by 2002:a1c:44d5:: with SMTP id r204mr4465543wma.122.1578569501802;
-        Thu, 09 Jan 2020 03:31:41 -0800 (PST)
+        bh=M+Hleybvc0xNgkFFNo5eVdjk4X0NArxdjlsDgPzB5xM=;
+        b=hhqwSgcg+zHiESUkO6301EN9+pW3HqZmDoSwqNT/c5vBmGvEj+D9sLdLKCCfX2hAxV
+         L2xr4q83pP0uISovexaU+cxgfJ7zRp31GRfY72Rd6BYiyLgizQH6n6dls0eKrQ7sG1yY
+         9f4Qrq1foFsjt3qO9OoRDLyCndOXSPh923Jl2cCjxmrxSZoOZe9ndiPaEd+Xwo4KkR0k
+         /8B///aZJHba9uQ4NJ3vWr/6Js1SAySv+JeFtMTLknUA6nDoNSoq4cWhF8UBlly9JFLf
+         +t/C7arlWPo9pvyWyG5RDhPkLTZ81FxRJX1CrilBS/HuosndEsIzWmIRsNb0mN41QZRt
+         /Pwg==
+X-Gm-Message-State: APjAAAUrfFnlB1R4mxJ/TXpGWD5Cz4izCud3haIWaRHOfI9O2V7Um8Ny
+        1asXRecVgTDfj0xsk0OAdFgXbw==
+X-Google-Smtp-Source: APXvYqz13xiaB2c/AHMygGlCgFvL4DXkCGf0TFO1taGJ+xr9xsy5Q8LnIcRYOXeQIqh7/inPIHKmNw==
+X-Received: by 2002:a5d:6886:: with SMTP id h6mr10473834wru.154.1578570325074;
+        Thu, 09 Jan 2020 03:45:25 -0800 (PST)
 Received: from ?IPv6:2a01:e34:ed2f:f020:f1d5:61e0:e9d8:1c3d? ([2a01:e34:ed2f:f020:f1d5:61e0:e9d8:1c3d])
-        by smtp.googlemail.com with ESMTPSA id z123sm2660179wme.18.2020.01.09.03.31.40
+        by smtp.googlemail.com with ESMTPSA id b16sm8163491wrj.23.2020.01.09.03.45.22
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 09 Jan 2020 03:31:41 -0800 (PST)
-Subject: Re: [PATCH v3,1/8] arm64: dts: mt8183: add thermal zone node
-To:     Michael Kao <michael.kao@mediatek.com>,
+        Thu, 09 Jan 2020 03:45:24 -0800 (PST)
+Subject: Re: [PATCH v2 06/20] thermal: exynos: Rename Samsung and Exynos to
+ lowercase
+To:     Krzysztof Kozlowski <krzk@kernel.org>, linux-kernel@vger.kernel.org
+Cc:     Jonathan Corbet <corbet@lwn.net>, Kukjin Kim <kgene@kernel.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
         Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
         Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>, hsinyi@chromium.org,
-        linux-pm@vger.kernel.org, srv_heupstream@mediatek.com
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-References: <20200103064407.19861-1-michael.kao@mediatek.com>
- <20200103064407.19861-2-michael.kao@mediatek.com>
+        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+References: <20200104152107.11407-1-krzk@kernel.org>
+ <20200104152107.11407-7-krzk@kernel.org>
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 Autocrypt: addr=daniel.lezcano@linaro.org; prefer-encrypt=mutual; keydata=
  xsFNBFv/yykBEADDdW8RZu7iZILSf3zxq5y8YdaeyZjI/MaqgnvG/c3WjFaunoTMspeusiFE
@@ -123,12 +126,12 @@ Autocrypt: addr=daniel.lezcano@linaro.org; prefer-encrypt=mutual; keydata=
  i6D9VoMMi6ICko/CXUZ77OgLtMsy3JtzTRbn/wRySOY2AsMgg0Sw6yJ0wfrVk6XAMoLGjaVt
  X4iPTvwocEhjvrO4eXCicRBocsIB2qZaIj3mlhk2u4AkSpkKm9cN0KWYFUxlENF4/NKWMK+g
  fGfsCsS3cXXiZpufZFGr+GoHwiELqfLEAQ9AhlrHGCKcgVgTOI6NHg==
-Message-ID: <00c8be46-3ba1-571a-0230-7c722ce1901e@linaro.org>
-Date:   Thu, 9 Jan 2020 12:31:39 +0100
+Message-ID: <7a61f167-07be-f60d-ec8e-cca171caeb94@linaro.org>
+Date:   Thu, 9 Jan 2020 12:45:21 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.2.2
 MIME-Version: 1.0
-In-Reply-To: <20200103064407.19861-2-michael.kao@mediatek.com>
+In-Reply-To: <20200104152107.11407-7-krzk@kernel.org>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -137,52 +140,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 03/01/2020 07:44, Michael Kao wrote:
-> From: "michael.kao" <michael.kao@mediatek.com>
+On 04/01/2020 16:20, Krzysztof Kozlowski wrote:
+> Fix up inconsistent usage of upper and lowercase letters in "Samsung"
+> and "Exynos" names.
 > 
-> Add thermal zone node to Mediatek MT8183 dts file.
+> "SAMSUNG" and "EXYNOS" are not abbreviations but regular trademarked
+> names.  Therefore they should be written with lowercase letters starting
+> with capital letter.
 > 
-> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+> The lowercase "Exynos" name is promoted by its manufacturer Samsung
+> Electronics Co., Ltd., in advertisement materials and on website.
+> 
+> Although advertisement materials usually use uppercase "SAMSUNG", the
+> lowercase version is used in all legal aspects (e.g. on Wikipedia and in
+> privacy/legal statements on
+> https://www.samsung.com/semiconductor/privacy-global/).
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 > ---
->  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 85 ++++++++++++++++++++++++
->  1 file changed, 85 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> index 10b32471bc7b..a2793cf3d994 100644
-> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> @@ -570,6 +570,88 @@
->  			status = "disabled";
->  		};
->  
-> +		thermal: thermal@1100b000 {
-> +			#thermal-sensor-cells = <1>;
-> +			compatible = "mediatek,mt8183-thermal";
-> +			reg = <0 0x1100b000 0 0x1000>;
-> +			interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>;
 
-What is this interrupt for?
-
-> +			clocks = <&infracfg CLK_INFRA_THERM>,
-> +				 <&infracfg CLK_INFRA_AUXADC>;
-> +			clock-names = "therm", "auxadc";
-> +			resets = <&infracfg  MT8183_INFRACFG_AO_THERM_SW_RST>;
-> +			mediatek,auxadc = <&auxadc>;
-> +			mediatek,apmixedsys = <&apmixedsys>;
-> +			mediatek,hw-reset-temp = <117000>;
-> +			nvmem-cells = <&thermal_calibration>;
-> +			nvmem-cell-names = "calibration-data";
-> +		};
-> +
-> +		thermal-zones {
-> +			cpu_thermal: cpu_thermal {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-
-[ ... ]
-
-
-
+Applied.
 
 
 
