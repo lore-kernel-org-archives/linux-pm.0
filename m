@@ -6,54 +6,54 @@ X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02D02C33CA2
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 06:54:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F4E0C33CA3
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 07:01:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CD58B2073A
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 06:54:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D74B12084D
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 07:01:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sKUMJWsX"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ugPkvx1r"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731580AbgAJGyZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Jan 2020 01:54:25 -0500
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:46565 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731537AbgAJGyY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2020 01:54:24 -0500
-Received: by mail-pf1-f194.google.com with SMTP id n9so642680pff.13
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jan 2020 22:54:24 -0800 (PST)
+        id S1726295AbgAJHBq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Jan 2020 02:01:46 -0500
+Received: from mail-pj1-f65.google.com ([209.85.216.65]:36008 "EHLO
+        mail-pj1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726692AbgAJHBp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2020 02:01:45 -0500
+Received: by mail-pj1-f65.google.com with SMTP id n59so591393pjb.1
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jan 2020 23:01:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=YhPLZOvbusu+BDcW4xtLEV0ezjrgdDBJUzmow7dtjMQ=;
-        b=sKUMJWsXvcFP9jEO0Hl4uUyNvbyljQCLxhGsldiqDRvsC8IpLpEay5tiVJTep7pkQo
-         oRqBgROQLiR2Dvoq/TyO1UMoQhdyRJ3wjy/MPdywSKlfQfgIT8OA5zHb8eDxN8hur6+m
-         bmj0RfiXa6xUTOzhi3oi6cDzqHFZQqMWYm1TGCbkHjBAjoW1ygXyRXpF3uzJoPIuknpy
-         U45mfuGgCk9q6RAjFHyZZE2ggGK2YJciePz/phNcN5zwDp79efcs1taM0Ee8bj8mvq6Z
-         Vmx+d9BNX8QdTcgXvWiC6oEoF3c/fN21NQ2PM/PN7y0A+ZT+UCIE+AziDVobHNKrEQ5H
-         6cpQ==
+        bh=3lXSs26I3wGImS7PjlRCzszP97Zcz7qic/VgP0ssNd4=;
+        b=ugPkvx1rLtZXxhEYXIWg2OwEtYgmXZkT7SoavpBZ5DNn9Cej1ydJjHZEHicrV4MfVZ
+         NeK3xhRNUAb4nVseqqQG38o5elE5JgigX+wQovkXoGX/nHbknVACCA255Ye1joc9LqJb
+         MMU6Z/tulGuel8VTKi/LrIQikdtqSsweXHSbxco4jvjHAW+63JF5spFg1vJwb5YWg8lG
+         pljb8AMfvEIlPr0+vev7MXLlVIY/lB6LGHaq7AWJCAb65o8PY8weHrMKrFzfzCoeHrd0
+         aSHogVLh7bmTFZ/B/VVK9U+KI4a2z0EKpVFK6Sf4LdhFn0JxkbbgQkFokBnqMXSigx0n
+         WGxw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=YhPLZOvbusu+BDcW4xtLEV0ezjrgdDBJUzmow7dtjMQ=;
-        b=t5m22qBnt/AEs2s4AzBdtYbjQ6C1Q2huO47a3na67waCWIeMAIYDRhlTPjZcoqej5J
-         WdQVJ9tpFnxW2yCaj47AxygsaHo3iobUPImVtOV4AbcD3hASZgfSFboOFPNft8wWL3ls
-         pCYhdQQHWqMIqRsM1kR0suRqALMhLXHtq4ofIpuhSvlJto6nBjCxcKlUdUqjxN+7zy4N
-         81aHgQho3cfTfvvq6ty0YeTOW22m/Kyn7vEKrd1Mkv2ZHmFfD4S9wweIozfqyOTc44S8
-         U9XQmssy8A0AplW7+3geB0pp5wnBqtrDC52t9xxtTWhGTIb2ggkDtwsKulfdiqGqqgyD
-         6lqg==
-X-Gm-Message-State: APjAAAWxQ86jbun6w9F/DxXjQ0aJ9lBG9xtn+DQ10j/9yoRAgBhlyl0N
-        BC/k1xbTjzPp+lDO9oLj0qudWA==
-X-Google-Smtp-Source: APXvYqyqmwrNqG8WUg323dOQJc2jziGsBSe/4bAS5Q+Tv3gJE3iTY9fjXWBEohxRSFWlHgkV0K65JA==
-X-Received: by 2002:a63:4824:: with SMTP id v36mr2501774pga.343.1578639263873;
-        Thu, 09 Jan 2020 22:54:23 -0800 (PST)
+        bh=3lXSs26I3wGImS7PjlRCzszP97Zcz7qic/VgP0ssNd4=;
+        b=mXs3ZLCjvDkFuHnT6XWXxcEZt48HRIMlzpffHfcF0e425ByQXykfBO8B5BzLWNCrig
+         bnOiG52NjW8ZEvT590oorOC7Bgxds3mq9OJrTXYBE93asJfWeGQdnVF2JlIoos4WxcmA
+         RtG35C+Ye9WOYRk/08X0S0Oy362FuyMkn+dmubv60m0cpLs+85A+66/F9HRbEkFbY/Y6
+         8vCSxklTawnlR4rY4bf1nZUsUAxK+CSjNfIgY2ogv8IR7Kubj7j45p7MtqXcZfeDfJKK
+         bLiyROPz/2DrjAoKTr+zjY2mzinrVQYAhZ3jUl2ZCDT0ycyD4Nzl5Axud/RcIiYmzTc5
+         ZNTg==
+X-Gm-Message-State: APjAAAWkOIsfU+W9bHXo7p3Ju6Uc4ua8elisoMw7q47gF2eWGOtH/G/N
+        CEvIrjQra2mlea9YrmRzsghGvA==
+X-Google-Smtp-Source: APXvYqwcHxSntks6ca+zn8Ku5M5DI1ACFUm8wuF7NB9Nt7J0Q9XlY9PQzsc/RT9UFe0UTbOaG4QUUg==
+X-Received: by 2002:a17:902:8f97:: with SMTP id z23mr2542710plo.170.1578639705002;
+        Thu, 09 Jan 2020 23:01:45 -0800 (PST)
 Received: from localhost ([122.172.140.51])
-        by smtp.gmail.com with ESMTPSA id i3sm1384035pfo.72.2020.01.09.22.54.22
+        by smtp.gmail.com with ESMTPSA id 200sm1414725pfz.121.2020.01.09.23.01.43
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 09 Jan 2020 22:54:23 -0800 (PST)
-Date:   Fri, 10 Jan 2020 12:24:20 +0530
+        Thu, 09 Jan 2020 23:01:44 -0800 (PST)
+Date:   Fri, 10 Jan 2020 12:31:42 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Saravana Kannan <saravanak@google.com>
 Cc:     Rob Herring <robh+dt@kernel.org>,
@@ -73,57 +73,56 @@ Cc:     Rob Herring <robh+dt@kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
         "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
         <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v6 2/3] OPP: Add support for bandwidth OPP tables
-Message-ID: <20200110065420.3bp4fjj2wbezoyrc@vireshk-i7>
+Subject: Re: [PATCH v6 3/3] OPP: Add helper function for bandwidth OPP tables
+Message-ID: <20200110070142.gn3fnpytxhu3dqti@vireshk-i7>
 References: <20191207002424.201796-1-saravanak@google.com>
- <20191207002424.201796-3-saravanak@google.com>
- <20200108105348.p4y3s2mbuchiu4mf@vireshk-i7>
- <CAGETcx8QEV+_+d2yt_+bE09mi4qyHZDHPJqPiDXv_HgJPgQJoQ@mail.gmail.com>
- <20200109043108.fzvk3hp7vodtw6zy@vireshk-i7>
- <CAGETcx_1B8AfxBuJ9Mbq8BNx-fYyP8pOnF6caN=ooyPARaaJ3A@mail.gmail.com>
+ <20191207002424.201796-4-saravanak@google.com>
+ <20200108111947.q5aafrlz26tnk3nq@vireshk-i7>
+ <CAGETcx_T7VONkSd-r9CY-5OpZBZ2iD0tFoCf0+d8CY2b5zgr9g@mail.gmail.com>
+ <20200109044051.62ocfpt44q25q6qi@vireshk-i7>
+ <CAGETcx-UWFSaZ8q1iiFVFUEPLN8t1uFb-u6v4VJiMarS21RLRQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAGETcx_1B8AfxBuJ9Mbq8BNx-fYyP8pOnF6caN=ooyPARaaJ3A@mail.gmail.com>
+In-Reply-To: <CAGETcx-UWFSaZ8q1iiFVFUEPLN8t1uFb-u6v4VJiMarS21RLRQ@mail.gmail.com>
 User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 09-01-20, 10:35, Saravana Kannan wrote:
-> Agreed for the example you are giving where PM domains/voltages are
-> dropped automatically when dropping the device freq to suspend freq.
-> I'm just wondering about a different scenario where if some power
-> domain needed to be at say 0.5v when it's suspended (no consumer using
-> it)
+On 09-01-20, 10:44, Saravana Kannan wrote:
+> Agree, the OPP framework itself shouldn't be responsible. And I'm not
+> doing anything here? Just giving those devices a way to look up what
+> their suspend bandwidth is? So they can vote for it when they suspend?
 
-The domain should be powered off in this case I think.
+I think this will originate by itself from the device in case of
+interconnects as well and you don't need to separately have that for
+interconnects.
 
-> to not lose state, or to come back up without brownouts, etc then
-> suspend OPP for PM domains might be useful. But I don't know enough
-> about that to speak with authority, so I'll leave it at this.
-> 
-> I see this suspend-opp as a way to mark to what level the bandwidth
-> needs to be dropped to/brought back up from during suspend/resume by
-> the driver making interconnect bandwidth requests. For example, what
-> if the CPU -> DDR needed to be at some level to avoid suspend/resume
-> issues (say CPU bug with respect to timing/latencies)? In this
-> example, the CPU driver would be the one making bandwidth requests for
-> CPU -> DDR bandwidth during normal operation and during
-> suspend/resume. So it's basically exactly the same way it would treat
-> CPU freq OPP.
+For example, the device (lets say GPU) will have one of its OPP (and
+frequency, maybe the lowest one) marked as suspend-OPP. Then the
+driver which is doing the co-relation normally between GPU/DDR/Cache
+OPPs should be able to do this conversion as well without any extra
+help from the interconnect table.
 
-I understand your concerns but to me it all looks hypothetical right
-now. I am not saying we won't support suspend-opp for interconnect or
-domains, but that we should do it only if it is required.
+If the minimum freq of the device correspond to the minimum freq of
+the DDR/Cache during normal operation, that should still work during
+suspend times, isn't it ?
 
-> Btw, I don't have a strong opinion on this. But, even if we do only a
-> rate comparison, what does it even mean to compare rates for genpd or
-> BW opp tables?
+> Ok, but you want this done only for "exact" or for all the other
+> helpers too?
 
-We will never do the comparison because those tables will never have
-the suspend OPP in the respective tables.
+All helpers that you need for PM domains and interconnects.
+
+> Also, this means that I'll have to implement a
+> _opp_compare_key2() or whatever because the generic one that
+> automatically picks the key is still needed for the generic code. Is
+> that fine by you?
+
+I am not concerned about the number of helpers but their optimization.
+I will leave it for you to do that and review it when I see how you
+have done it :)
 
 -- 
 viresh
