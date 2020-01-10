@@ -2,43 +2,45 @@ Return-Path: <SRS0=bbN6=27=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63C71C33CA3
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 04:33:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BB46C33C99
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 04:33:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 394A12073A
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 04:33:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 313052084D
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 04:33:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="key not found in DNS" (0-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="b4c/+ygv"
+	dkim=fail reason="key not found in DNS" (0-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="u9VVJ/dV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731345AbgAJEdt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jan 2020 23:33:49 -0500
-Received: from mail26.static.mailgun.info ([104.130.122.26]:42899 "EHLO
+        id S1731331AbgAJEdV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jan 2020 23:33:21 -0500
+Received: from mail26.static.mailgun.info ([104.130.122.26]:53933 "EHLO
         mail26.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1731290AbgAJEdU (ORCPT
+        by vger.kernel.org with ESMTP id S1731177AbgAJEdU (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jan 2020 23:33:20 -0500
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1578630799; h=Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=FI/mpR0o5+xTEAnYT2bvYhcVqrPO4KjahbOFDjhFyz0=; b=b4c/+ygvBgRpLYPTT8LSs7u2gugEq+BMk5VZXUQWCg5cmuQ4WtuUhPJh+eHbfo89Hs8rq91s
- cMinVnmgvm8skEeUJp+oOZlF71KpRnw6GY2FdbWOIEocClyZsuolz3Womm2BTTtsNS4Lw6M9
- 8rvYNAumzCnIew1M1GWVuQGrjgA=
+ s=smtp; t=1578630800; h=References: In-Reply-To: Message-Id: Date:
+ Subject: Cc: To: From: Sender;
+ bh=GrR/W/SgcUP00nknn2BhxY4oWqjrKnWJ8ganUzPSUHo=; b=u9VVJ/dV6Jv2lCsmjQYATM5LSaFLZDcUM8UVPD35HagYf1fpu//JAATwcu5+M+jzHgChK6g2
+ Y/QOQr5Swkg7FcuBAhwZfk5Ggriv36VMfCZZmSX/FtWJv+MrjpwJlHY4J7RSxLfZwYn9FxN1
+ a88PePbG/5N8SojgFjc6fiWhPoY=
 X-Mailgun-Sending-Ip: 104.130.122.26
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171])
- by mxa.mailgun.org with ESMTP id 5e17fe8a.7fb8349763b0-smtp-out-n01;
- Fri, 10 Jan 2020 04:33:14 -0000 (UTC)
+ by mxa.mailgun.org with ESMTP id 5e17fe8e.7f30e1bf8df8-smtp-out-n02;
+ Fri, 10 Jan 2020 04:33:18 -0000 (UTC)
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 8CF6EC447A2; Fri, 10 Jan 2020 04:33:14 +0000 (UTC)
+        id A2594C433A2; Fri, 10 Jan 2020 04:33:18 +0000 (UTC)
 Received: from davidai-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: daidavid1)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 3C760C433A2;
-        Fri, 10 Jan 2020 04:33:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 3C760C433A2
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 8EB6CC4479C;
+        Fri, 10 Jan 2020 04:33:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 8EB6CC4479C
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=daidavid1@codeaurora.org
 From:   David Dai <daidavid1@codeaurora.org>
@@ -49,79 +51,77 @@ Cc:     David Dai <daidavid1@codeaurora.org>, evgreen@google.com,
         elder@linaro.org, linux-kernel@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 0/6] Split SDM845 interconnect nodes and consolidate RPMh support
-Date:   Thu,  9 Jan 2020 20:32:58 -0800
-Message-Id: <1578630784-962-1-git-send-email-daidavid1@codeaurora.org>
+Subject: [PATCH v2 2/6] dt-bindings: interconnect: Add YAML schemas for QCOM bcm-voter
+Date:   Thu,  9 Jan 2020 20:33:00 -0800
+Message-Id: <1578630784-962-3-git-send-email-daidavid1@codeaurora.org>
 X-Mailer: git-send-email 1.9.1
+In-Reply-To: <1578630784-962-1-git-send-email-daidavid1@codeaurora.org>
+References: <1578630784-962-1-git-send-email-daidavid1@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-While there are no current consumers of the SDM845 interconnect device in
-devicetree, take this opportunity to redefine the interconnect device nodes
-as the previous definitions of using a single child node under the apps_rsc
-device did not accurately capture the description of the hardware.
-The Network-On-Chip (NoC) interconnect devices should be represented in a
-manner akin to QCS404 platforms[1] where there is a separation of NoC devices
-and its RPM/RPMh counterparts.
+Add YAML schemas for interconnect bcm-voters found on QCOM RPMh-based
+SoCs.
 
-The bcm-voter devices are representing the RPMh devices that the interconnect
-providers need to communicate with and there can be more than one instance of
-the Bus Clock Manager (BCM) which can live under different instances of Resource
-State Coordinators (RSC). There are display use cases where consumers may need
-to target a different bcm-voter (Some display specific RSC) than the default,
-and there needs to be a way to represent this connection in devicetree.
-
-This patches series extends the discussions[2][3] involving the SDM845
-interconnect bindings by adding accompanying driver implementations
-using the split NoC devices. Some of the code used to support the SDM845
-provider driver are refactored into common modules that can used by other
-RPMh based interconnect providers such as SC7180[4]. This patch series also
-updates existing sdm845 binding documentation to DT schema format using
-json-schema.
-
-v2: 
-- Reorganized dt-binding patches
-- Fixed a bug that adds duplicate BCM node to voter (Georgi)
-- Addressed misc. comments (Georgi)
-
-v1: https://lkml.org/lkml/2019/12/16/15
-
-[1]: https://lkml.org/lkml/2019/6/13/143
-[2]: https://lkml.org/lkml/2019/7/19/1063
-[3]: https://lkml.org/lkml/2019/10/16/1793
-[4]: https://lkml.org/lkml/2019/11/26/389
-
-David Dai (6):
-  dt-bindings: interconnect: Convert qcom,sdm845 to DT schema
-  dt-bindings: interconnect: Add YAML schemas for QCOM bcm-voter
-  dt-bindings: interconnect: Update Qualcomm SDM845 DT bindings
-  interconnect: qcom: Consolidate interconnect RPMh support
-  interconnect: qcom: sdm845: Split qnodes into their respective NoCs
-  arm64: dts: sdm845: Redefine interconnect provider DT nodes
-
- .../bindings/interconnect/qcom,bcm-voter.yaml      |   45 +
- .../bindings/interconnect/qcom,sdm845.txt          |   24 -
- .../bindings/interconnect/qcom,sdm845.yaml         |   74 ++
- arch/arm64/boot/dts/qcom/sdm845.dtsi               |   61 +-
- drivers/interconnect/qcom/Kconfig                  |    8 +
- drivers/interconnect/qcom/Makefile                 |    4 +
- drivers/interconnect/qcom/bcm-voter.c              |  363 +++++++
- drivers/interconnect/qcom/bcm-voter.h              |   28 +
- drivers/interconnect/qcom/icc-rpmh.c               |  158 +++
- drivers/interconnect/qcom/icc-rpmh.h               |  151 +++
- drivers/interconnect/qcom/sdm845.c                 | 1132 ++++++++------------
- include/dt-bindings/interconnect/qcom,sdm845.h     |  263 ++---
- 12 files changed, 1498 insertions(+), 813 deletions(-)
+Signed-off-by: David Dai <daidavid1@codeaurora.org>
+---
+ .../bindings/interconnect/qcom,bcm-voter.yaml      | 45 ++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml
- delete mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.yaml
- create mode 100644 drivers/interconnect/qcom/bcm-voter.c
- create mode 100644 drivers/interconnect/qcom/bcm-voter.h
- create mode 100644 drivers/interconnect/qcom/icc-rpmh.c
- create mode 100644 drivers/interconnect/qcom/icc-rpmh.h
 
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml b/Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml
+new file mode 100644
+index 0000000..a6bdf6e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml
+@@ -0,0 +1,45 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/qcom,bcm-voter.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm BCM-Voter Interconnect
++
++maintainers:
++  - David Dai <daidavid1@codeaurora.org>
++
++description: |
++    The Bus Clock Manager (BCM) is a dedicated hardware accelerator
++    that manages shared system resources by aggregating requests
++    from multiple Resource State Coordinators (RSC). Interconnect
++    providers are able to vote for aggregated thresholds values from
++    consumers by communicating through their respective RSCs.
++
++properties:
++  compatible:
++    enum:
++      - qcom,sdm845-bcm-voter
++
++required:
++  - compatible
++
++additionalProperties: false
++
++examples:
++  - |
++    apps_rsc: interconnect@179c0000 {
++        compatible = "qcom,rpmh-rsc";
++
++        apps_bcm_voter: bcm_voter {
++            compatible = "qcom,sdm845-bcm-voter";
++        };
++    };
++
++    disp_rsc: interconnect@179d0000 {
++        compatible = "qcom,rpmh-rsc";
++
++        disp_bcm_voter: bcm_voter {
++            compatible = "qcom,sdm845-bcm-voter";
++        };
++    };
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
