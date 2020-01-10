@@ -6,29 +6,29 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C376C33CA5
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 10:58:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C928C33CA2
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 10:58:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D0DCB2187F
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 10:57:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0B5F22082E
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jan 2020 10:58:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727716AbgAJK56 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Jan 2020 05:57:58 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:52228 "EHLO
+        id S1727758AbgAJK6A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Jan 2020 05:58:00 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:54097 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727540AbgAJK55 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2020 05:57:57 -0500
+        with ESMTP id S1727745AbgAJK6A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jan 2020 05:58:00 -0500
 Received: from 79.184.255.90.ipv4.supernova.orange.pl (79.184.255.90) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
- id 1afd37b8bd6ed074; Fri, 10 Jan 2020 11:57:55 +0100
+ id 7037ea166fca5e63; Fri, 10 Jan 2020 11:57:58 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
         Len Brown <len.brown@intel.com>,
         Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 5/8] intel_idle: Move and clean up intel_idle_cpuidle_devices_uninit()
-Date:   Fri, 10 Jan 2020 11:49:58 +0100
-Message-ID: <5879575.B8f60l20lB@kreacher>
+Subject: [PATCH 1/8] intel_idle: Eliminate __setup_broadcast_timer()
+Date:   Fri, 10 Jan 2020 11:43:23 +0100
+Message-ID: <26343594.6IAkRYhI4F@kreacher>
 In-Reply-To: <14127826.m9lEolTOYu@kreacher>
 References: <14127826.m9lEolTOYu@kreacher>
 MIME-Version: 1.0
@@ -41,61 +41,48 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Move intel_idle_cpuidle_devices_uninit() closer to its caller,
-intel_idle_init(), add the __init modifier to its header, drop a
-redundant local variable from it and fix up its kerneldoc comment.
+The __setup_broadcast_timer() static function is only called in one
+place and "true" is passed to it as the argument in there, so
+effectively it is a wrapper arround tick_broadcast_enable().
+
+To simplify the code, call tick_broadcast_enable() directly instead
+of __setup_broadcast_timer() and drop the latter.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/idle/intel_idle.c |   26 +++++++++++---------------
- 1 file changed, 11 insertions(+), 15 deletions(-)
+ drivers/idle/intel_idle.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
 Index: linux-pm/drivers/idle/intel_idle.c
 ===================================================================
 --- linux-pm.orig/drivers/idle/intel_idle.c
 +++ linux-pm/drivers/idle/intel_idle.c
-@@ -1297,21 +1297,6 @@ static inline bool intel_idle_off_by_def
- #endif /* !CONFIG_ACPI_PROCESSOR_CSTATE */
- 
- /*
-- * intel_idle_cpuidle_devices_uninit()
-- * Unregisters the cpuidle devices.
-- */
--static void intel_idle_cpuidle_devices_uninit(void)
--{
--	int i;
--	struct cpuidle_device *dev;
--
--	for_each_online_cpu(i) {
--		dev = per_cpu_ptr(intel_idle_cpuidle_devices, i);
--		cpuidle_unregister_device(dev);
--	}
--}
--
--/*
-  * ivt_idle_state_table_update(void)
-  *
-  * Tune IVT multi-socket targets
-@@ -1565,6 +1550,17 @@ static int intel_idle_cpu_online(unsigne
- 	return 0;
+@@ -967,14 +967,6 @@ static bool intel_idle_verify_cstate(uns
+ 	return true;
  }
  
-+/**
-+ * intel_idle_cpuidle_devices_uninit - Unregister all cpuidle devices.
-+ */
-+static void __init intel_idle_cpuidle_devices_uninit(void)
-+{
-+	int i;
-+
-+	for_each_online_cpu(i)
-+		cpuidle_unregister_device(per_cpu_ptr(intel_idle_cpuidle_devices, i));
-+}
-+
- static int __init intel_idle_init(void)
+-static void __setup_broadcast_timer(bool on)
+-{
+-	if (on)
+-		tick_broadcast_enable();
+-	else
+-		tick_broadcast_disable();
+-}
+-
+ static void auto_demotion_disable(void)
  {
- 	const struct x86_cpu_id *id;
+ 	unsigned long long msr_bits;
+@@ -1624,7 +1616,7 @@ static int intel_idle_cpu_online(unsigne
+ 	struct cpuidle_device *dev;
+ 
+ 	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
+-		__setup_broadcast_timer(true);
++		tick_broadcast_enable();
+ 
+ 	/*
+ 	 * Some systems can hotplug a cpu at runtime after
 
 
 
