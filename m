@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9843AC47409
-	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 642A6C33CA4
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 79B082082E
-	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 460D820661
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730344AbgAKQQS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 11 Jan 2020 11:16:18 -0500
-Received: from mout.kundenserver.de ([212.227.17.13]:58405 "EHLO
+        id S1730249AbgAKQQc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 11 Jan 2020 11:16:32 -0500
+Received: from mout.kundenserver.de ([217.72.192.74]:53159 "EHLO
         mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730322AbgAKQQS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jan 2020 11:16:18 -0500
+        with ESMTP id S1730241AbgAKQQc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jan 2020 11:16:32 -0500
 Received: from localhost.localdomain ([37.4.249.154]) by
  mrelayeu.kundenserver.de (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis)
- id 1N2VGj-1joql63Bip-013ze2; Sat, 11 Jan 2020 17:15:51 +0100
+ id 1MlO5j-1jWldt45e9-00lm2O; Sat, 11 Jan 2020 17:15:53 +0100
 From:   Stefan Wahren <stefan.wahren@i2se.com>
 To:     Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -34,211 +34,70 @@ To:     Zhang Rui <rui.zhang@intel.com>,
 Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         bcm-kernel-feedback-list@broadcom.com, devicetree@vger.kernel.org,
         Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH V4 2/4] thermal: Add BCM2711 thermal driver
-Date:   Sat, 11 Jan 2020 17:15:40 +0100
-Message-Id: <1578759342-4550-3-git-send-email-stefan.wahren@i2se.com>
+Subject: [PATCH V4 4/4] ARM: configs: Build BCM2711 thermal as module
+Date:   Sat, 11 Jan 2020 17:15:42 +0100
+Message-Id: <1578759342-4550-5-git-send-email-stefan.wahren@i2se.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1578759342-4550-1-git-send-email-stefan.wahren@i2se.com>
 References: <1578759342-4550-1-git-send-email-stefan.wahren@i2se.com>
-X-Provags-ID: V03:K1:jpF70Cx2jUyAw6JIvYmMLcAnFVDLZaCts+nTxiBrfb4+0NVpStD
- bD85rov7s3eKlRtF9OCsAN8N5X3nelMp777k//ChHAsvbr0um0P1eenRhsKIcgi54EDv1e4
- Yaej82NAf2Q8NWZhsrJyI/y3lRJi0GKAWmr8TAZjZ6EM0XoSWryu9wUogTheqEl5rWtYrU6
- 8FHknqHHCKqXgJFPc+wlA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:6yyhpYWfYjg=:hDWk++0d+zTF3NotoYlqgq
- dG1kqCik+ZYKFdfG1J+91LHuJhIvdsLxxSgJAAx6RbWf2sAiLBClM1kFG6It9JDlGhOsgAprt
- IVqH3P5G+DoHKrl0klrpG99Bb9M0hCQ633IEzToWodC4rzWNR0GlL6YrWucrLxAc+cEI7c8ft
- PqJZKxnVY0OiGqsdm+OwB9ffRINi4YFvDrtdyxv7dgNmiYc42TMr0TMRrsUasbTkISu3aQ22r
- qeDJYBfzm104DvYM6PP+NvSn5+6YfCgddo7V/OlQafkutHPyYWAuDfULVVds5njv6c8dS2gjm
- FaC/icnWnM8HBDMLsCTptyQelF9DSH4SjYwPm1TvbtMhMqqMj91CtsYqlI30dCacRWtDI3bSP
- 97bejCjJ4gt3GE2qEVfMXKme9RrhDWkYe9FyPK+gdUSdKkWXgRsuYmkfq83ts0T02KBswQhHB
- ceoIZlaA1YYvsrc4Hc8SkUq5MJt2Uyc1hL0FOaKEsbExkr5GVF3XiSfWVIkky30E204OZxV2A
- L+ROBXxw+NeeA8L97GSLzlCXRLn0Cth+f9R+3AZJu7NtpDXsMa64wHPOL8xG5ZrH3f/6CulbN
- /X/IO09piUzG7lRtBXozPsGqKxYdWPCxC7EuWZubUYsUXhskbJeL68d1xISpwUqFCm6N1TmR4
- H17hhOGx40U2JTDZG5xRWq06SFXECzBw4yNR579WkkfMagtoT1q3sEUEumVhzT+B178qlqjvC
- HzXXxXG79AFfjWXyVWYnaYC9Z9XdKQKlrAawejVGNwQI3X3ZHtTcYcf4vABglID+NF4qgsL6P
- Zo2ymwSegKqbHeK5Xf4K2CIpj0tDG9cbIiKbQh1jOzuUpxMW34LH5zSGDXrMfN2tvfAvlORaO
- 88yVTTYPEmWnTTBBOSdpFhlO5+IfaddBSqysmbmGk=
+X-Provags-ID: V03:K1:PGzIYruZHR30DesD7wJ+elb2eQS3441bmcXLTgoww362SkbKOqv
+ y7l5+cOKxknUI5qQREvnPRQFO9rGVdK/fg6udRYDUhnh6l2HVbHpbVal0TisaemPqmZhYd9
+ hkKTRdm5rttJmKhtKWCgonPaRep1878OxdPg5aJhFQBzNBEZOTx4v633r3p2gAoMpP60lJt
+ +K5AO/aaMSTS4iYcMYffQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:zIMcgdIknNE=:G0dKVNn1GloLF3qitLLuSB
+ zg3m/E+0b0lWgdxg8628Ty/PZDjhlxYm4PEja1NDFOtC4y6ia8Dwt4EX4CBaw9utcqdeZIxtz
+ 8r5UHDDQdVuyacIOpBbGnHjCOuvxstimNhT94ji1iQEM3bpOyb8lOKKbRizkHGB6KX5aAWvPi
+ GdW78ry9/fDuUeOsoyvKxKuAvwwL6pEiMqaOtPnhMeqwORtId7bJGkPZuFMyyh6QxeWVRRM14
+ i6729LkdbfxD3x+Mbwg3bkWi5gkgCd/Zl5sO6gdeLhrRjXvT0b0MEx9GCv5uxfkHdBp7//QB+
+ zrzCLslqKP5+dGPvdxgnsgLMZ5mn93NcYehcjUKx3Vt1mzVUlAeRK3Ym2Pw3YE/jH4r3+aIke
+ l5Jo2NbRLZHa7cvO7YGTfdtfr/jWp99vwx3v8vLEQAEi8vy/L2LeVlfhRjB2eRbPHOJFMLQg3
+ ocpxR74nwNS9gVY8ioJ3RiWrlbCaHKeIk2xqCIAtxByxP7brYblBsjdUa2DARzR9D7otEvHUE
+ rxtWTtJfX1TdzaUCBbCoy/frTSqG5b6XUp+LE3vVBP5rDWvA+8jd+aQy38ANIyE+mJNZLNQ3A
+ ZctZLrhuuGGNyWzqkc5U1rqQEydTcp0iBq1qp/2KI7ObuYUWhqYHCy3pvh9daKNB8+o/YdJwj
+ IOFg4CZx0LqlaUQiBI7vJ59a+XdFCar6TIzH4dD2Y3X/Xo02ahJH+uEG14zE6vXKL1nhhukqs
+ z7JvsEmSfX6M1vawD2IgfkzDyHef70gWjgiZ8wNVT16aAde6qpzU+T54P0OCKYFO5RbPK+iLS
+ vFA//jHVaVxwTiem8wL/ER7q1/KP+Gj8FM/mxndW8WXkFkQ6+cfiJGRY8KAlpeJuYHL+FENuF
+ dm82scAuUFUTGlMWM6M/ZJBbDeu0P0viprN25wAQI=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds the thermal sensor driver for the Broadcom BCM2711 SoC,
-which is placed on the Raspberry Pi 4. The driver only provides
-SoC temperature reading so far.
+This builds the BCM2711 thermal driver as module for the Raspberry Pi 4.
 
 Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
 Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 Tested-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 ---
- drivers/thermal/broadcom/Kconfig           |   7 ++
- drivers/thermal/broadcom/Makefile          |   1 +
- drivers/thermal/broadcom/bcm2711_thermal.c | 129 +++++++++++++++++++++++++++++
- 3 files changed, 137 insertions(+)
- create mode 100644 drivers/thermal/broadcom/bcm2711_thermal.c
+ arch/arm/configs/multi_v7_defconfig | 1 +
+ arch/arm64/configs/defconfig        | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/drivers/thermal/broadcom/Kconfig b/drivers/thermal/broadcom/Kconfig
-index cf43e15..061f1db 100644
---- a/drivers/thermal/broadcom/Kconfig
-+++ b/drivers/thermal/broadcom/Kconfig
-@@ -1,4 +1,11 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+config BCM2711_THERMAL
-+	tristate "Broadcom AVS RO thermal sensor driver"
-+	depends on ARCH_BCM2835 || COMPILE_TEST
-+	depends on THERMAL_OF && MFD_SYSCON
-+	help
-+	  Support for thermal sensors on Broadcom BCM2711 SoCs.
-+
- config BCM2835_THERMAL
- 	tristate "Thermal sensors on bcm2835 SoC"
- 	depends on ARCH_BCM2835 || COMPILE_TEST
-diff --git a/drivers/thermal/broadcom/Makefile b/drivers/thermal/broadcom/Makefile
-index 490ab1f..c917b24 100644
---- a/drivers/thermal/broadcom/Makefile
-+++ b/drivers/thermal/broadcom/Makefile
-@@ -1,4 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_BCM2711_THERMAL)		+= bcm2711_thermal.o
- obj-$(CONFIG_BCM2835_THERMAL)		+= bcm2835_thermal.o
- obj-$(CONFIG_BRCMSTB_THERMAL)		+= brcmstb_thermal.o
- obj-$(CONFIG_BCM_NS_THERMAL)		+= ns-thermal.o
-diff --git a/drivers/thermal/broadcom/bcm2711_thermal.c b/drivers/thermal/broadcom/bcm2711_thermal.c
-new file mode 100644
-index 0000000..b1d3c4d
---- /dev/null
-+++ b/drivers/thermal/broadcom/bcm2711_thermal.c
-@@ -0,0 +1,129 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Broadcom AVS RO thermal sensor driver
-+ *
-+ * based on brcmstb_thermal
-+ *
-+ * Copyright (C) 2020 Stefan Wahren
-+ */
-+
-+#include <linux/bitops.h>
-+#include <linux/clk.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/of_device.h>
-+#include <linux/regmap.h>
-+#include <linux/thermal.h>
-+
-+#include "../thermal_hwmon.h"
-+
-+#define AVS_RO_TEMP_STATUS		0x200
-+ #define AVS_RO_TEMP_STATUS_valid_msk	(BIT(16) | BIT(10))
-+ #define AVS_RO_TEMP_STATUS_data_msk	GENMASK(9, 0)
-+
-+struct bcm2711_thermal_priv {
-+	struct regmap *regmap;
-+	struct device *dev;
-+	struct thermal_zone_device *thermal;
-+};
-+
-+static int bcm2711_get_temp(void *data, int *temp)
-+{
-+	struct bcm2711_thermal_priv *priv = data;
-+	int slope = thermal_zone_get_slope(priv->thermal);
-+	int offset = thermal_zone_get_offset(priv->thermal);
-+	u32 val;
-+	int ret;
-+	long t;
-+
-+	ret = regmap_read(priv->regmap, AVS_RO_TEMP_STATUS, &val);
-+	if (ret)
-+		return ret;
-+
-+	if (!(val & AVS_RO_TEMP_STATUS_valid_msk)) {
-+		dev_err(priv->dev, "reading not valid\n");
-+		return -EIO;
-+	}
-+
-+	val &= AVS_RO_TEMP_STATUS_data_msk;
-+
-+	/* Convert a HW code to a temperature reading (millidegree celsius) */
-+	t = slope * val + offset;
-+	if (t < 0)
-+		*temp = 0;
-+	else
-+		*temp = t;
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops bcm2711_thermal_of_ops = {
-+	.get_temp	= bcm2711_get_temp,
-+};
-+
-+static const struct of_device_id bcm2711_thermal_id_table[] = {
-+	{ .compatible = "brcm,bcm2711-thermal" },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, bcm2711_thermal_id_table);
-+
-+static int bcm2711_thermal_probe(struct platform_device *pdev)
-+{
-+	struct thermal_zone_device *thermal;
-+	struct bcm2711_thermal_priv *priv;
-+	struct device *dev = &pdev->dev;
-+	struct device_node *parent;
-+	struct regmap *regmap;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	/* get regmap from syscon node */
-+	parent = of_get_parent(dev->of_node); /* parent should be syscon node */
-+	regmap = syscon_node_to_regmap(parent);
-+	of_node_put(parent);
-+	if (IS_ERR(regmap)) {
-+		ret = PTR_ERR(regmap);
-+		dev_err(dev, "failed to get regmap: %d\n", ret);
-+		return ret;
-+	}
-+	priv->regmap = regmap;
-+	priv->dev = dev;
-+
-+	thermal = devm_thermal_zone_of_sensor_register(dev, 0, priv,
-+						       &bcm2711_thermal_of_ops);
-+	if (IS_ERR(thermal)) {
-+		ret = PTR_ERR(thermal);
-+		dev_err(dev, "could not register sensor: %d\n", ret);
-+		return ret;
-+	}
-+
-+	priv->thermal = thermal;
-+
-+	thermal->tzp->no_hwmon = false;
-+	ret = thermal_add_hwmon_sysfs(thermal);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static struct platform_driver bcm2711_thermal_driver = {
-+	.probe = bcm2711_thermal_probe,
-+	.driver = {
-+		.name = "bcm2711_thermal",
-+		.of_match_table = bcm2711_thermal_id_table,
-+	},
-+};
-+module_platform_driver(bcm2711_thermal_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Stefan Wahren");
-+MODULE_DESCRIPTION("Broadcom AVS RO thermal sensor driver");
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index 3f1b96d..f5d19cc 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -496,6 +496,7 @@ CONFIG_IMX_THERMAL=y
+ CONFIG_ROCKCHIP_THERMAL=y
+ CONFIG_RCAR_THERMAL=y
+ CONFIG_ARMADA_THERMAL=y
++CONFIG_BCM2711_THERMAL=m
+ CONFIG_BCM2835_THERMAL=m
+ CONFIG_BRCMSTB_THERMAL=m
+ CONFIG_ST_THERMAL_MEMMAP=y
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 6a83ba2..b2f6673 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -442,6 +442,7 @@ CONFIG_ROCKCHIP_THERMAL=m
+ CONFIG_RCAR_THERMAL=y
+ CONFIG_RCAR_GEN3_THERMAL=y
+ CONFIG_ARMADA_THERMAL=y
++CONFIG_BCM2711_THERMAL=m
+ CONFIG_BCM2835_THERMAL=m
+ CONFIG_BRCMSTB_THERMAL=m
+ CONFIG_EXYNOS_THERMAL=y
 -- 
 2.7.4
 
