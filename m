@@ -2,25 +2,25 @@ Return-Path: <SRS0=E9iA=3A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3F65C33CA4
-	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2307C33CA5
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 81DEF2084D
-	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C033320661
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730343AbgAKQQQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 11 Jan 2020 11:16:16 -0500
-Received: from mout.kundenserver.de ([212.227.17.13]:35909 "EHLO
+        id S1730348AbgAKQQS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 11 Jan 2020 11:16:18 -0500
+Received: from mout.kundenserver.de ([217.72.192.73]:52643 "EHLO
         mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730322AbgAKQQQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jan 2020 11:16:16 -0500
+        with ESMTP id S1730344AbgAKQQR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jan 2020 11:16:17 -0500
 Received: from localhost.localdomain ([37.4.249.154]) by
  mrelayeu.kundenserver.de (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis)
- id 1N8nrc-1jmtkG2NRW-015tRv; Sat, 11 Jan 2020 17:15:50 +0100
+ id 1MAxLT-1iwc0f1XRZ-00BKky; Sat, 11 Jan 2020 17:15:52 +0100
 From:   Stefan Wahren <stefan.wahren@i2se.com>
 To:     Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -34,70 +34,75 @@ To:     Zhang Rui <rui.zhang@intel.com>,
 Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         bcm-kernel-feedback-list@broadcom.com, devicetree@vger.kernel.org,
         Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH V4 0/4] ARM: Enable thermal support for Raspberry Pi 4
-Date:   Sat, 11 Jan 2020 17:15:38 +0100
-Message-Id: <1578759342-4550-1-git-send-email-stefan.wahren@i2se.com>
+Subject: [PATCH V4 3/4] ARM: dts: bcm2711: Enable thermal
+Date:   Sat, 11 Jan 2020 17:15:41 +0100
+Message-Id: <1578759342-4550-4-git-send-email-stefan.wahren@i2se.com>
 X-Mailer: git-send-email 2.7.4
-X-Provags-ID: V03:K1:rYmDnJ/p/2M5yiHMY7ZWxfCjQjh91TWH0PLDwBcOocszvwo4FvW
- /5Zp8iJJ6i8SKmxc7FAQLWOrCNndtm4ltII4dKOa/Lc2hcwNCug7Z5ysI3NzigQwPz9nSkK
- IhIWsHT2k8OuICKKpSD2aFWvZHOL8XGQ2GWfRnrB1ThvqcLcz+1MKNv4EWgaFmvrrs7w9HV
- k1M+ynnUFDunJNdGrCgpg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:7SUTA/eFNfI=:Z28JbYq+DuU6GRmgZR0LOQ
- ZO70M+X4H27vFIM45Cj6FFdVPQEEMrPHPCb9nByN8I9fWgMRINE37LEMrV31RfCRazjt2zevo
- 4DuXisXWONXO3/alzWuzrC5q2/+bhZ1fPPLFWYFyGhfH4APGy6w+Kb+qh7prTDEuBOMp6aACN
- cRTVo7ysP5wmuGD01ggtubUYMi/CCPsOqKygjl0FFOw2Yze2/m2g7n5mAR5qhly/935ysbU56
- Fz7TEFMxnau+MgWFETs+ga+L3+qGLox+8q2XE445mCZMuo023SIwcecz6Qx+i0BCdF2IApvjN
- ZqGxlF1Tau7OjAshAdmCVeps2hAVBLHZ6/jCnAmj2TbttM6UZ0sIbvICOrKWQMpYkxGgbPj/s
- rPPz1EmaSsvFtCOCEmaaV3Up27AGb1HWaEGRMkOUNqbukwmFnUPlEI70nlW1eNRuzw3hJ7D09
- VnLm9d6D5JMd8RXXyguFf0ZEkuLlWTp0ZDG5e/u+/V8SSxC2PMioA1ZNG3YXTpmdziF5loD9v
- OmLzudHLDR5RbDmImBRBfPlotE0Fv0eneXeje1Ky+i8qsQoXDKd7l9X5d1p6H7JBOFfM1A9Zj
- QHs4IyuwTSXmTwv/IADR8JVS4sqftU792FvEr61GWDU+l7boA4U6Fa1DU7+16TGn4mjWYReLX
- 3S3zgzaF3y6RP+sYkJcXJ+ACcr0udFC8SIOegxMRc2iSOS6tSMdNRmCQsJvsrAneW/BWc6tW7
- NxIiQ3Vtd/2Kj4AzwHU3X2Y0xHOQdm1esznXEFjI+VbgGrXQUtf44+BFNcpMh3XUeAU6X8BgA
- MGDVlDFhlFqymcq7IhlWFTbMrIrWzlQfjJWt06XX9ZCqJh1ynEjcbHnjef7CDhIns7NdQxx9w
- kFTxt4HunVn04QHpo4Hhgg9DDiRJ7OPJvoVPsQigE=
+In-Reply-To: <1578759342-4550-1-git-send-email-stefan.wahren@i2se.com>
+References: <1578759342-4550-1-git-send-email-stefan.wahren@i2se.com>
+X-Provags-ID: V03:K1:0IUicZLxdYp4qHZTyX6kmYwbihuuzvekhpMT2zBM5MdAzJFI8Zb
+ TnyIvYP83Sd6Q1mNIZClhRa8DgoepMjtak3u/3UC2PvTJmhvKg3bOobmKjRNuX3Ct6zVOib
+ 4MZj57j1ValZPtjVGT6916Kct6VP+7X7KmoUzAzbBAtxzozfuE54d7Dp7jg/s3tZkWDDzhr
+ O0pRr8746i+6ag5larC/g==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:PG4FVKCkg8o=:p72Bcm07B31S0vAEPP3C86
+ pvVcGFbOsQmqlyiyCFi8u4/QcSZ12aNgOePNixWnVmNS43xMhc6AwZ1tbkcopV1d3TyZY7nJp
+ stfc0RO3zPWkGXHejh4Beg+PVoiZKNuzUEm/L711hKjGyWBsrNZUnOqjQPdY0UMPH7SekX6OB
+ XJGsBDbvF6CGZ3f2NpSis5xmV4Bb4lfJBLPIuFSUzZxHDXQRkeT2Oh9SGROvogfojcq3RjPCd
+ CmCafC+JsEF6hfeMOqtDGVJoUx1yaX4zox5SAnANVNB5V+dxFHV+5FzNsQ76BzJr8nH0qJ9yQ
+ JCZ/iwnsuGB+10NS85x58oDGDTawCy7LEEYiDW1Kh/Nrf8FALg9bRE54llfWv6pExV39numVO
+ KgSO+LUoisGO0ehBkjWNCPDoZ2eyihsH2iyYSZqDzQltuQPYJgMdwJBY85Gw4iyREktWPjnm8
+ f99GqOiVjleHPOWigwV9XnYoDON4Xc7OV8p55Kzox2Y4zmXArBeummyn3o1k9ghss9u1NA+T/
+ oK5izKsf1SGZK5gxh1ewEiu2AIskARqqo6L43Tf8a3m/t7hMb2sPRE9ZSKHKbU170d1iO225W
+ CtxngFJtKhV1X+uebG1W25w6q9cIxrKb8dBLZFkKeiUpxfoi5dUSm7TLrZlaeyhy2C/N5h57I
+ 8Cl1C/XcB3HITsiSYfkHeMXJHcC0lKCzJea9xxBsmC2l9h6U530wsY5ddBplZ95bIfxDB3l7r
+ egNDPMvZZOr+buA8iBcNRTZuCRjxQJnbfjZWC0fupJB3veiDZxeCnkOfQC5QNygRNWoEpx/Mr
+ QJl4Y06GbntfFN1lz08k0RAwEIKAplo4dtuJv1WAQOrCows68pjYWMILRXJFoTvx0dGkpevui
+ AtsY/W8p5s9TFG6LUTe1gdFLiM54Ojwm0PeJYwHxU=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series enables thermal support for the Raspberry Pi 4. Neither the
-bcm2835_thermal nor the brcmstb_thermal are suitable for the BCM2711.
-So add a new thermal driver to read out the SoC temperature from the
-AVS RO block of the BCM2711.
+This enables thermal for the BCM2711 (used on Raspberry Pi 4) by adding
+the AVS monitor and a subnode for the thermal part.
 
-Changes in V4:
-- change my email address to avoid spurious characters
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Tested-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ arch/arm/boot/dts/bcm2711.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-Changes in V3:
-- add Rob's, Florian's and Nicolas' reviewed-by/tested-by
-- adjust binding license
-- make error pointer handling consistent
-
-Changes in V2:
-- rebase on thermal/linux-next
-- convert binding to YAML
-- make AVS RO block a subnode of AVS monitor and access it via syscon
-- drop unnecessary TSENS clock and get the rid of remove callback
-- add Florian's reviewed-by to last/unchanged patch
-
-Stefan Wahren (4):
-  dt-bindings: Add Broadcom AVS RO thermal
-  thermal: Add BCM2711 thermal driver
-  ARM: dts: bcm2711: Enable thermal
-  ARM: configs: Build BCM2711 thermal as module
-
- .../bindings/thermal/brcm,avs-ro-thermal.yaml      |  45 +++++++
- arch/arm/boot/dts/bcm2711.dtsi                     |  12 ++
- arch/arm/configs/multi_v7_defconfig                |   1 +
- arch/arm64/configs/defconfig                       |   1 +
- drivers/thermal/broadcom/Kconfig                   |   7 ++
- drivers/thermal/broadcom/Makefile                  |   1 +
- drivers/thermal/broadcom/bcm2711_thermal.c         | 129 +++++++++++++++++++++
- 7 files changed, 196 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
- create mode 100644 drivers/thermal/broadcom/bcm2711_thermal.c
-
+diff --git a/arch/arm/boot/dts/bcm2711.dtsi b/arch/arm/boot/dts/bcm2711.dtsi
+index 961bed8..96f341d 100644
+--- a/arch/arm/boot/dts/bcm2711.dtsi
++++ b/arch/arm/boot/dts/bcm2711.dtsi
+@@ -66,6 +66,17 @@
+ 						 IRQ_TYPE_LEVEL_HIGH)>;
+ 		};
+ 
++		avs_monitor: avs-monitor@7d5d2000 {
++			compatible = "brcm,bcm2711-avs-monitor",
++				     "syscon", "simple-mfd";
++			reg = <0x7d5d2000 0xf00>;
++
++			thermal: thermal {
++				compatible = "brcm,bcm2711-thermal";
++				#thermal-sensor-cells = <0>;
++			};
++		};
++
+ 		dma: dma@7e007000 {
+ 			compatible = "brcm,bcm2835-dma";
+ 			reg = <0x7e007000 0xb00>;
+@@ -363,6 +374,7 @@
+ 
+ &cpu_thermal {
+ 	coefficients = <(-487) 410040>;
++	thermal-sensors = <&thermal>;
+ };
+ 
+ &dsi0 {
 -- 
 2.7.4
 
