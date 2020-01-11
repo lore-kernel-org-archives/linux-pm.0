@@ -2,25 +2,25 @@ Return-Path: <SRS0=E9iA=3A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80207C3F68F
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3F65C33CA4
 	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6076F2082E
+	by mail.kernel.org (Postfix) with ESMTP id 81DEF2084D
 	for <linux-pm@archiver.kernel.org>; Sat, 11 Jan 2020 16:16:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730323AbgAKQQQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1730343AbgAKQQQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sat, 11 Jan 2020 11:16:16 -0500
-Received: from mout.kundenserver.de ([212.227.17.13]:46109 "EHLO
+Received: from mout.kundenserver.de ([212.227.17.13]:35909 "EHLO
         mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730319AbgAKQQQ (ORCPT
+        with ESMTP id S1730322AbgAKQQQ (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jan 2020 11:16:16 -0500
 Received: from localhost.localdomain ([37.4.249.154]) by
  mrelayeu.kundenserver.de (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis)
- id 1MMWcT-1j9DUG0YRr-00JcDG; Sat, 11 Jan 2020 17:15:51 +0100
+ id 1N8nrc-1jmtkG2NRW-015tRv; Sat, 11 Jan 2020 17:15:50 +0100
 From:   Stefan Wahren <stefan.wahren@i2se.com>
 To:     Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
@@ -34,98 +34,70 @@ To:     Zhang Rui <rui.zhang@intel.com>,
 Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         bcm-kernel-feedback-list@broadcom.com, devicetree@vger.kernel.org,
         Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH V4 1/4] dt-bindings: Add Broadcom AVS RO thermal
-Date:   Sat, 11 Jan 2020 17:15:39 +0100
-Message-Id: <1578759342-4550-2-git-send-email-stefan.wahren@i2se.com>
+Subject: [PATCH V4 0/4] ARM: Enable thermal support for Raspberry Pi 4
+Date:   Sat, 11 Jan 2020 17:15:38 +0100
+Message-Id: <1578759342-4550-1-git-send-email-stefan.wahren@i2se.com>
 X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1578759342-4550-1-git-send-email-stefan.wahren@i2se.com>
-References: <1578759342-4550-1-git-send-email-stefan.wahren@i2se.com>
-X-Provags-ID: V03:K1:c1+Mg9NKoWCLsN8E1wZaMxrh5a2EHZsNfpj80gj1+uD4c7oIiwg
- B3VvaHwXDziW/0JZNSoLmcZX8rLv0yBvdngyCtKwW1gYSC5Tb2b7wF6GswrAYW9I+WHKu/o
- LTaFSb+hdE937/T5VA55+bpUm7bMwoXxhCnwMuCcO7Kvivv9lh/LFNaaELpESpgXuR7c5Od
- yOjaNwupb1GP1TMr/Lp0g==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:bDV4gChWJ6A=:zVDMyHIm0wg/sFXJsxBFfg
- vngWYXC+y1Ggagzjk+77JYoa5b8mlaU7s3yQysh/DUcYDchjc2QE+oKBV2X/cMebilELriIOu
- GhmEp0SQpix3GArGJMKuMqF1IxCI15L9gjDGX/RNoJVqFqxqgGOs647EWR1TAcGe12Xl/UFzF
- yQQ3cDZ/IbLfKTKf3FUm27gVfsJFK+as6TGliiefFdHgdRg2HE4hklN4EPR3EFivwP8bpboNc
- 3ZvgkRDm7duKqdiWFQSZ1zB6e0WeTBhbrJ9UZaT6D7af6Bu/U6072B+qAUgA+2w0h1zJUppqH
- Hr8vvVFWdZo3nyqjZ+qiB6EJ8QkkeU9rCxBlxU7ZjF9IInhJBOamwjbNAudlesivbMfVy0jzz
- a+JlGtygizahGncvqBM+hLVuYgPeMvUBieneXCq24uAVJEFch9oUeUn3bEulqZ0Sj/2gRFe63
- wqRPYahB1wAEch+A/wKcVMj7y37TTMtvm0A84VT9UnkEE56//NhE5gL7BUmA7m2MfABMb4aVg
- vKkjETfAuqYxj0A2yh6+v5cOyztnjBG/zt8+/eryT11h91mPcDtd5ltWmSuhVeqomXNIjaDIJ
- JxoEgCFbd/fAHqE/tczrz0Of38IQjktzXm96FpwwLa8u8hKjLBcf6oYjOJv5sNgbDoZBHu7YR
- 1Gvjse1+vdz6hef6XU/FO/D3xqp+taSVj9IUZIOsV1lGBaeVUcI1zVA1quOEhVza36sLDPamj
- xGoaGYGp0FYhbEdG3ZlTLzHLtZM8N0nE5YZ0cunW8Yv5NPSCTwZ0oBp6hnT6Y1eeBAyM+K+7W
- apIiRHo9Vaa68SxMS4JXRGizA4wnUmXXPxX0Jbo4/0YDzMSDHc+JBLFeDxKTbgmlLlAY5+4en
- QmlpyU4MCCmOIQr/pmA6q3/sIYrU2c0p6DC4rPrwA=
+X-Provags-ID: V03:K1:rYmDnJ/p/2M5yiHMY7ZWxfCjQjh91TWH0PLDwBcOocszvwo4FvW
+ /5Zp8iJJ6i8SKmxc7FAQLWOrCNndtm4ltII4dKOa/Lc2hcwNCug7Z5ysI3NzigQwPz9nSkK
+ IhIWsHT2k8OuICKKpSD2aFWvZHOL8XGQ2GWfRnrB1ThvqcLcz+1MKNv4EWgaFmvrrs7w9HV
+ k1M+ynnUFDunJNdGrCgpg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:7SUTA/eFNfI=:Z28JbYq+DuU6GRmgZR0LOQ
+ ZO70M+X4H27vFIM45Cj6FFdVPQEEMrPHPCb9nByN8I9fWgMRINE37LEMrV31RfCRazjt2zevo
+ 4DuXisXWONXO3/alzWuzrC5q2/+bhZ1fPPLFWYFyGhfH4APGy6w+Kb+qh7prTDEuBOMp6aACN
+ cRTVo7ysP5wmuGD01ggtubUYMi/CCPsOqKygjl0FFOw2Yze2/m2g7n5mAR5qhly/935ysbU56
+ Fz7TEFMxnau+MgWFETs+ga+L3+qGLox+8q2XE445mCZMuo023SIwcecz6Qx+i0BCdF2IApvjN
+ ZqGxlF1Tau7OjAshAdmCVeps2hAVBLHZ6/jCnAmj2TbttM6UZ0sIbvICOrKWQMpYkxGgbPj/s
+ rPPz1EmaSsvFtCOCEmaaV3Up27AGb1HWaEGRMkOUNqbukwmFnUPlEI70nlW1eNRuzw3hJ7D09
+ VnLm9d6D5JMd8RXXyguFf0ZEkuLlWTp0ZDG5e/u+/V8SSxC2PMioA1ZNG3YXTpmdziF5loD9v
+ OmLzudHLDR5RbDmImBRBfPlotE0Fv0eneXeje1Ky+i8qsQoXDKd7l9X5d1p6H7JBOFfM1A9Zj
+ QHs4IyuwTSXmTwv/IADR8JVS4sqftU792FvEr61GWDU+l7boA4U6Fa1DU7+16TGn4mjWYReLX
+ 3S3zgzaF3y6RP+sYkJcXJ+ACcr0udFC8SIOegxMRc2iSOS6tSMdNRmCQsJvsrAneW/BWc6tW7
+ NxIiQ3Vtd/2Kj4AzwHU3X2Y0xHOQdm1esznXEFjI+VbgGrXQUtf44+BFNcpMh3XUeAU6X8BgA
+ MGDVlDFhlFqymcq7IhlWFTbMrIrWzlQfjJWt06XX9ZCqJh1ynEjcbHnjef7CDhIns7NdQxx9w
+ kFTxt4HunVn04QHpo4Hhgg9DDiRJ7OPJvoVPsQigE=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since the BCM2711 doesn't have a AVS TMON block, the thermal information
-must be retrieved from the AVS ring oscillator block. This block is part
-of the AVS monitor which contains a bunch of raw sensors.
+This series enables thermal support for the Raspberry Pi 4. Neither the
+bcm2835_thermal nor the brcmstb_thermal are suitable for the BCM2711.
+So add a new thermal driver to read out the SoC temperature from the
+AVS RO block of the BCM2711.
 
-Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
- .../bindings/thermal/brcm,avs-ro-thermal.yaml      | 45 ++++++++++++++++++++++
- 1 file changed, 45 insertions(+)
+Changes in V4:
+- change my email address to avoid spurious characters
+
+Changes in V3:
+- add Rob's, Florian's and Nicolas' reviewed-by/tested-by
+- adjust binding license
+- make error pointer handling consistent
+
+Changes in V2:
+- rebase on thermal/linux-next
+- convert binding to YAML
+- make AVS RO block a subnode of AVS monitor and access it via syscon
+- drop unnecessary TSENS clock and get the rid of remove callback
+- add Florian's reviewed-by to last/unchanged patch
+
+Stefan Wahren (4):
+  dt-bindings: Add Broadcom AVS RO thermal
+  thermal: Add BCM2711 thermal driver
+  ARM: dts: bcm2711: Enable thermal
+  ARM: configs: Build BCM2711 thermal as module
+
+ .../bindings/thermal/brcm,avs-ro-thermal.yaml      |  45 +++++++
+ arch/arm/boot/dts/bcm2711.dtsi                     |  12 ++
+ arch/arm/configs/multi_v7_defconfig                |   1 +
+ arch/arm64/configs/defconfig                       |   1 +
+ drivers/thermal/broadcom/Kconfig                   |   7 ++
+ drivers/thermal/broadcom/Makefile                  |   1 +
+ drivers/thermal/broadcom/bcm2711_thermal.c         | 129 +++++++++++++++++++++
+ 7 files changed, 196 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
+ create mode 100644 drivers/thermal/broadcom/bcm2711_thermal.c
 
-diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml b/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-new file mode 100644
-index 0000000..98e7b57
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-@@ -0,0 +1,45 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/brcm,avs-ro-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Broadcom AVS ring oscillator thermal
-+
-+maintainers:
-+  - Stefan Wahren <wahrenst@gmx.net>
-+
-+description: |+
-+  The thermal node should be the child of a syscon node with the
-+  required property:
-+
-+  - compatible: Should be one of the following:
-+                "brcm,bcm2711-avs-monitor", "syscon", "simple-mfd"
-+
-+  Refer to the the bindings described in
-+  Documentation/devicetree/bindings/mfd/syscon.txt
-+
-+properties:
-+  compatible:
-+    const: brcm,bcm2711-thermal
-+
-+  reg:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+examples:
-+  - |
-+        avs-monitor@7d5d2000 {
-+                compatible = "brcm,bcm2711-avs-monitor",
-+                             "syscon", "simple-mfd";
-+                reg = <0x7d5d2000 0xf00>;
-+
-+                thermal: thermal {
-+                        compatible = "brcm,bcm2711-thermal";
-+                        #thermal-sensor-cells = <0>;
-+                };
-+        };
-+...
 -- 
 2.7.4
 
