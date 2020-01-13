@@ -2,125 +2,121 @@ Return-Path: <SRS0=HpL5=3C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4522AC33CA8
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jan 2020 09:26:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECD82C33C9A
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jan 2020 10:01:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2312C24125
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jan 2020 09:26:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C1AB52084D
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jan 2020 10:01:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1578909700;
+	bh=NK0UGTfPKqpkCkm221GzQdzg8zupU25GsEb0NnPTvUc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=n3J7+4Z5uh9N1PFEj5TwDb68jB+HI0+SplpewU95+J8ZkccXw7SRyMtD5Sph3VTpv
+	 Pst77EXX4wZ7ctK7vVGYlqBIeNiOxcyvNeLvb2ol3U1dKJWH7fy1UxQyjys0wZyv2/
+	 kW9SST5ZlAiU0399QJifu5M00gneoBnNL99Zt5gY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725992AbgAMJ0N (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jan 2020 04:26:13 -0500
-Received: from mail.sig21.net ([80.244.240.74]:38390 "EHLO mail.sig21.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726480AbgAMJ0N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Jan 2020 04:26:13 -0500
-Received: from localhorst ([127.0.0.1])
-         by mail.sig21.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
-         (Exim 4.84_2)
-        (envelope-from <js@sig21.net>)
-         id 1iqvz6-0006Qo-Ur ; Mon, 13 Jan 2020 10:26:11 +0100
-Received: from js by abc.local with local (Exim 4.93)
-        (envelope-from <js@sig21.net>)
-        id 1iqvz2-00075O-HY; Mon, 13 Jan 2020 10:26:04 +0100
-Date:   Mon, 13 Jan 2020 10:26:04 +0100
-From:   Johannes Stezenbach <js@sig21.net>
-To:     linux-pm@vger.kernel.org
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Alexander Potapenko <glider@google.com>
-Subject: Re: init_on_free breaks hibernate
-Message-ID: <20200113092604.GA26365@sig21.net>
-References: <20191223211309.GA4609@sig21.net>
+        id S1726109AbgAMKBk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jan 2020 05:01:40 -0500
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:43806 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726001AbgAMKBk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jan 2020 05:01:40 -0500
+Received: by mail-oi1-f195.google.com with SMTP id p125so7654060oif.10;
+        Mon, 13 Jan 2020 02:01:39 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ZxfV/19Ef7tFibMeoIeo9F/UijjdOkO2LaetF4dIIo0=;
+        b=qrJ8ErRecFBrZNDQt5zpAywuMnx+r7RwWrdrZYIB3gd7nXLRmVhPXrlxUGAVg8MRpn
+         KsV2vgwV9cBjl+Zblx01A2ks7My5BeEj45MgCC70gAIhTxoNgdjmZp3pj8dbRT2dlNSW
+         h5UL0SFg1dxjgE2+8fkCOp/7je/A4Y1ghuoa7+QJYZ7Q+o6Ii9KtFG9tJsTl0kEfY6Sx
+         QQC6Dp9PeMnUnsXdEK5PHz7uaupbM9VBoeR5UbPWSn3INkBL4cKq+MRmKondEDcck9U8
+         /qwuUC1KO5OIzdjBj+aE4CFw6wJW8GkszZ3Ng6POI6BRGnhzhKIArZzkSK5s0jqevFXO
+         AMvg==
+X-Gm-Message-State: APjAAAWxs2IDVChzDNR9UCkgVVKCvpqOYdvv5DYixXJ9HlUlGI1MM8qM
+        3go6VyYA+aYCzpZGjrNUT8zV0jsrRXtE9LakRD3eOw==
+X-Google-Smtp-Source: APXvYqx5ZelIAVdutcTucnolspYO4WcppcqO3Ff2Re+R9IogvrNCiCfqsVFFkZKXph7HvHLiXpiXTkCA3XZ1IZ51i2A=
+X-Received: by 2002:a54:4e96:: with SMTP id c22mr12444869oiy.110.1578909699188;
+ Mon, 13 Jan 2020 02:01:39 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191223211309.GA4609@sig21.net>
+References: <20200113060724.19571-1-yu.c.chen@intel.com>
+In-Reply-To: <20200113060724.19571-1-yu.c.chen@intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 13 Jan 2020 11:01:28 +0100
+Message-ID: <CAJZ5v0jgdfAG_BDefdSQFV9hM61o68Aj31PxShNxxcpsYFpxgw@mail.gmail.com>
+Subject: Re: [PATCH] PCI/PM: Print the pci config space of devices before suspend
+To:     Chen Yu <yu.c.chen@intel.com>
+Cc:     Linux PCI <linux-pci@vger.kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Mon, Jan 13, 2020 at 7:08 AM Chen Yu <yu.c.chen@intel.com> wrote:
+>
+> The pci config space was found to be insane during resume
 
-On Mon, Dec 23, 2019 at 10:13:09PM +0100, Johannes Stezenbach wrote:
-> I upgraded the kernel on one of my machines to 5.3.18 (from 5.2.x)
-> and found it failed after resume from hibernate due to what seemed
-> to be memory corruption. I had a hunch it could be related to
-> CONFIG_INIT_ON_ALLOC_DEFAULT_ON or CONFIG_INIT_ON_FREE_DEFAULT_ON,
-> and a quick web search found this which seems to confirm:
-> https://bbs.archlinux.org/viewtopic.php?pid=1877845#p1877845
-> 
-> I rebuilt the kernel with CONFIG_INIT_ON_FREE_DEFAULT_ON disabled,
-> and hibernate works again.  I'm fine with this workaround and
-> just wanted to share this information.
-> 
-> The commit that introduces CONFIG_INIT_ON_FREE_DEFAULT_ON:
-> 6471384af2a6 mm: security: introduce init_on_alloc=1 and init_on_free=1 boot options
+I wouldn't call it "insane".
 
-I tested 5.4.11 and current git master (b07f636fca1c8)
-in Qemu and was able to reproduce the issue in both.
+It probably means that the device was not present or not accessible
+during hibernation and now it appears to be present (maybe the restore
+kernel found it and configured it).
 
-Basically I followed the description here
-http://ncmiller.github.io/2016/05/14/linux-and-qemu.html
-to build a minimal image using busybox (I'm using
-the binary from Debian's busybox-static package),
-then added s swap image (-drive file=disk.img,if=virtio),
-do "mkswap /dev/vda" the first time.
+> from hibernation(S4, or suspend to disk) on a VM:
+>
+>  serial 0000:00:16.3: restoring config space at offset 0x14
+>  (was 0x9104e000, writing 0xffffffff)
+>
+> Either the snapshot on the disk has been scribbled or the pci
+> config space becomes invalid before suspend.
 
-hibernate: swapon /dev/vda; echo disk >/sys/power/state
-resume: echo 254:0 >/sys/power/resume
+Or, most likely, the above.
 
-Since busybox is very light on memory usage it doesn't
-trigger immediately, but these commands seem to do it
-reliably:
+> To narrow down and benefit future debugging, print the pci config space
+> being saved before suspend, which is symmetric to the log
+> in pci_restore_config_dword().
 
-  dmesg | gzip >/dev/null
-  find /sys | bzip2 | sha512sum
+But the code change makes sense to me.
 
-
-my initramfs:
-  6012997      4 drwxr-xr-x   4 js       js           4096 Jan  8 21:25 initramfs
-  6022584      4 drwxr-xr-x   2 js       js           4096 Jan  8 21:21 initramfs/dev
-  5909013      4 -rwxr-xr-x   1 js       js            514 Jan  8 21:25 initramfs/init
-  6012998      4 drwxr-xr-x   2 js       js           4096 Jan  8 20:41 initramfs/bin
-  5909011   1904 -rwxr-xr-x   1 js       js        1945856 Apr  1  2019 initramfs/bin/busybox
-  5909012      0 lrwxrwxrwx   1 js       js              7 Feb 14  2018 initramfs/bin/sh -> busybox
-
-my /init:
-#!/bin/sh
-
-PATH=/bin
-export PATH
-
-# Create dirs
-/bin/busybox mkdir -p /proc /sys /etc /tmp /usr
-/bin/busybox ln -s /bin /sbin
-/bin/busybox ln -s /bin /usr/bin
-/bin/busybox ln -s /bin /usr/sbin
-# Create all the symlinks to busybox
-/bin/busybox --install -s
-
-mount -t proc proc /proc
-mount -t sysfs sysfs /sys
-mount -t devtmpfs devtmpfs /dev
-
-echo -e "\nBoot took $(cut -d' ' -f1 /proc/uptime) seconds\n"
-
-# shell where ^C works
-setsid busybox cttyhack sh
-# avoid "PID 1 exited" oops
-poweroff -f
----------
-
-
-qemu-system-x86_64 -m 128 -enable-kvm \
-  -kernel ../linux/arch/x86/boot/bzImage \
-  -initrd initramfs.cpio \
-  -drive file=disk.img,if=virtio \
-  -nographic -append "console=ttyS0 init_on_alloc=1 init_on_free=1"
-
-
-Johannes
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/pci/pci.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index e87196cc1a7f..34cde70440c3 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -1372,8 +1372,11 @@ int pci_save_state(struct pci_dev *dev)
+>  {
+>         int i;
+>         /* XXX: 100% dword access ok here? */
+> -       for (i = 0; i < 16; i++)
+> +       for (i = 0; i < 16; i++) {
+>                 pci_read_config_dword(dev, i * 4, &dev->saved_config_space[i]);
+> +               pci_dbg(dev, "saving config space at offset %#x (reading %#x)\n",
+> +                       i * 4, dev->saved_config_space[i]);
+> +       }
+>         dev->state_saved = true;
+>
+>         i = pci_save_pcie_state(dev);
+> --
+> 2.17.1
+>
