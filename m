@@ -2,222 +2,107 @@ Return-Path: <SRS0=HpL5=3C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF3F3C33CAE
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jan 2020 18:52:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CDEFC33CAF
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jan 2020 18:56:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BB229207E0
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jan 2020 18:52:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="CHuOHTdN"
+	by mail.kernel.org (Postfix) with ESMTP id 07043214AF
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jan 2020 18:56:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728689AbgAMSw0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jan 2020 13:52:26 -0500
-Received: from mail.skyhub.de ([5.9.137.197]:58730 "EHLO mail.skyhub.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726435AbgAMSw0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Jan 2020 13:52:26 -0500
-Received: from zn.tnic (p200300EC2F05D30049A87F91DFBF49F4.dip0.t-ipconnect.de [IPv6:2003:ec:2f05:d300:49a8:7f91:dfbf:49f4])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 264231EC0CBF;
-        Mon, 13 Jan 2020 19:52:24 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1578941544;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-        bh=nroBP1M9a+oDLvFHSrWrc/9Pg86AU7wcX7yapLqPoeI=;
-        b=CHuOHTdNpZGOYG47VGt6oBtE5RAxe7d8TvFCYjsAjjFB8fSqH+3OwPexCnHeVJYgCxrKU5
-        IHJd/aI68UOL0L5Xxri11CE+Z3Pd/sEcYcACZ/aanHHJVcI9MnRWqznCzy7OzLpZcSTqE7
-        gfib7yhDI3gdZFNlUJjJvYXaBq+E0UQ=
-Date:   Mon, 13 Jan 2020 19:52:16 +0100
-From:   Borislav Petkov <bp@alien8.de>
-To:     Sean Christopherson <sean.j.christopherson@intel.com>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Arnaldo Carvalho de Melo <acme@kernel.org>,
+        id S1728633AbgAMS46 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jan 2020 13:56:58 -0500
+Received: from mout.kundenserver.de ([212.227.126.134]:54771 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726435AbgAMS46 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jan 2020 13:56:58 -0500
+Received: from localhost.localdomain ([37.4.249.154]) by
+ mrelayeu.kundenserver.de (mreue011 [212.227.15.167]) with ESMTPSA (Nemesis)
+ id 1Ml6Zo-1jVahK26do-00lTfi; Mon, 13 Jan 2020 19:56:42 +0100
+From:   Stefan Wahren <stefan.wahren@i2se.com>
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Jiri Olsa <jolsa@redhat.com>,
-        Namhyung Kim <namhyung@kernel.org>,
-        Paolo Bonzini <pbonzini@redhat.com>,
-        Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
-        Vitaly Kuznetsov <vkuznets@redhat.com>,
-        Wanpeng Li <wanpengli@tencent.com>,
-        Jim Mattson <jmattson@google.com>,
-        Joerg Roedel <joro@8bytes.org>,
-        Tony Luck <tony.luck@intel.com>,
-        Tony W Wang-oc <TonyWWang-oc@zhaoxin.com>,
-        Jacob Pan <jacob.jun.pan@linux.intel.com>,
-        Len Brown <lenb@kernel.org>, Shuah Khan <shuah@kernel.org>,
-        linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-        linux-edac@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kselftest@vger.kernel.org,
-        Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: [PATCH] KVM: VMX: Rename define to CPU_BASED_USE_TSC_OFFSETTING
-Message-ID: <20200113185216.GQ13310@zn.tnic>
-References: <20191221044513.21680-1-sean.j.christopherson@intel.com>
- <20191221044513.21680-18-sean.j.christopherson@intel.com>
- <20200113183228.GO13310@zn.tnic>
- <20200113183705.GL1175@linux.intel.com>
- <20200113183823.GP13310@zn.tnic>
- <20200113184217.GA2216@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20200113184217.GA2216@linux.intel.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        bcm-kernel-feedback-list@broadcom.com, devicetree@vger.kernel.org,
+        Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH V5 3/4] ARM: dts: bcm2711: Enable thermal
+Date:   Mon, 13 Jan 2020 19:56:17 +0100
+Message-Id: <1578941778-23321-4-git-send-email-stefan.wahren@i2se.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1578941778-23321-1-git-send-email-stefan.wahren@i2se.com>
+References: <1578941778-23321-1-git-send-email-stefan.wahren@i2se.com>
+X-Provags-ID: V03:K1:SNWSISItmXIx6eBnLoCptDc6JzOtBscQcH5BvXlshAHdxm/pO/U
+ nWGuWALXvxvoi2nUl2x5Bi5mw5ROnHHYRUmjT6GQBGF3ovXlPXW29EN1QuzwMuEF7iMWWvG
+ oJorM/yZN5rYbL/0027fpe4I3SxbGTfNvYJMbvklxeW8H9cHpkzV1x8HW/znp2jgkWOOG16
+ ci+0JH72mCKwJhY9ujULA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:1sUaqkNUY28=:ONGBQllNlMxWag82getHbF
+ C9TRj8WODi5/zj5ZssXoX7usomRTx3C6d0JBt+gExp++FSA3PSho3BpyxtHN1Iyd1CiGwa9zj
+ e4z2JaiEBTOIVx64KItMokdZNraIsKkPxYdVgGJqEMFOTGjlfxqovj1FMbADRa605CsXW5T3D
+ 6RiR50kOfCv6Y773oh3TQYjZ45sBmQ9bY8aw1s7yiT4jD8PmF+u8qLMYsfM3kcJe1/hXGCk6w
+ 6XmAGu/ue0WskYFG9JfHPLVt7fxs4bwrmM1Gg6by8D6UKjR9v2b05QPsQdKCgYfb26Rp5SrDr
+ 8VLZZhwu34EgughC1Xn3p0wXA0UmT/cAnK5Nd5Fnp8CEUpZByVt2YwX2fMP0PBZQvB5cDlzcW
+ G5BoFUU0YjBQG1dBlsAJKheBQvvvqpIEjnH/uD0eywf0k65nLGkH9EEp3UfqAl3bfsuz6r4dn
+ nh/CG/IBsgxgQ/Gki0SXjypWYXJz6mzU3l5zRR+a5L3AVWfBPqvqup8Qhodihg45va5cVp0l4
+ KNyqZAG+gpOEqP0AKbks5XzDInZsnnmS3Ijs65hFj8xnQKNdF9MSedlaxwiZQ2iXPXLY7IYiq
+ 2WAzeArBITr/2gQlJVxpYTpmcBvboRoyqKRZym2v5FUL7oZXIz3a7xLMBvb87RWc81MjXCcin
+ 0sCeyN5PqQKUWna+JSF8JUuWuNqKu/2ea8W8xqOwNCLY8t4Fa/1yOM/4W+cLtC9IfF5cpZHUq
+ 7eQ6saS4a4C39bNzUMsnNNOef9qUrekTL8BBqOYs0pUF04ekLJ64KBBzTVQatp4k+/VvdNz8K
+ KvLclkEQeRGtmn0ycInTaVvlZKbWE4oNxxA2GRVBwu6TlgdciKNGLgLcS1I3GDRznyPIT7qvh
+ swdPoGeXY5wyMNNAbwMpIqzD4B13UTKAFD86w2Zlw=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jan 13, 2020 at 10:42:17AM -0800, Sean Christopherson wrote:
-> > Doesn't bother me, I could do it in a patch ontop. But your call.
-> 
-> No objection here.
+This enables thermal for the BCM2711 (used on Raspberry Pi 4) by adding
+the AVS monitor and a subnode for the thermal part.
 
-Something like this:
-
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Tested-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 ---
-From: Borislav Petkov <bp@suse.de>
+ arch/arm/boot/dts/bcm2711.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-... so that "offsetting" is spelled the same as the respective VMX feature
-bit VMX_FEATURE_TSC_OFFSETTING.
-
-No functional changes.
-
-Signed-off-by: Borislav Petkov <bp@suse.de>
----
- arch/x86/include/asm/vmx.h                               | 2 +-
- arch/x86/kvm/vmx/nested.c                                | 8 ++++----
- arch/x86/kvm/vmx/vmx.c                                   | 6 +++---
- tools/testing/selftests/kvm/include/x86_64/vmx.h         | 2 +-
- tools/testing/selftests/kvm/x86_64/vmx_tsc_adjust_test.c | 2 +-
- 5 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/include/asm/vmx.h b/arch/x86/include/asm/vmx.h
-index 9fbba31be825..6df8b3b94483 100644
---- a/arch/x86/include/asm/vmx.h
-+++ b/arch/x86/include/asm/vmx.h
-@@ -23,7 +23,7 @@
-  * Definitions of Primary Processor-Based VM-Execution Controls.
-  */
- #define CPU_BASED_VIRTUAL_INTR_PENDING          VMCS_CONTROL_BIT(VIRTUAL_INTR_PENDING)
--#define CPU_BASED_USE_TSC_OFFSETING             VMCS_CONTROL_BIT(TSC_OFFSETTING)
-+#define CPU_BASED_USE_TSC_OFFSETTING             VMCS_CONTROL_BIT(TSC_OFFSETTING)
- #define CPU_BASED_HLT_EXITING                   VMCS_CONTROL_BIT(HLT_EXITING)
- #define CPU_BASED_INVLPG_EXITING                VMCS_CONTROL_BIT(INVLPG_EXITING)
- #define CPU_BASED_MWAIT_EXITING                 VMCS_CONTROL_BIT(MWAIT_EXITING)
-diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 6879966b7648..d466666b1de9 100644
---- a/arch/x86/kvm/vmx/nested.c
-+++ b/arch/x86/kvm/vmx/nested.c
-@@ -3230,7 +3230,7 @@ enum nvmx_vmentry_status nested_vmx_enter_non_root_mode(struct kvm_vcpu *vcpu,
- 	}
+diff --git a/arch/arm/boot/dts/bcm2711.dtsi b/arch/arm/boot/dts/bcm2711.dtsi
+index 961bed8..96f341d 100644
+--- a/arch/arm/boot/dts/bcm2711.dtsi
++++ b/arch/arm/boot/dts/bcm2711.dtsi
+@@ -66,6 +66,17 @@
+ 						 IRQ_TYPE_LEVEL_HIGH)>;
+ 		};
  
- 	enter_guest_mode(vcpu);
--	if (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETING)
-+	if (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETTING)
- 		vcpu->arch.tsc_offset += vmcs12->tsc_offset;
++		avs_monitor: avs-monitor@7d5d2000 {
++			compatible = "brcm,bcm2711-avs-monitor",
++				     "syscon", "simple-mfd";
++			reg = <0x7d5d2000 0xf00>;
++
++			thermal: thermal {
++				compatible = "brcm,bcm2711-thermal";
++				#thermal-sensor-cells = <0>;
++			};
++		};
++
+ 		dma: dma@7e007000 {
+ 			compatible = "brcm,bcm2835-dma";
+ 			reg = <0x7e007000 0xb00>;
+@@ -363,6 +374,7 @@
  
- 	if (prepare_vmcs02(vcpu, vmcs12, &exit_qual))
-@@ -3294,7 +3294,7 @@ enum nvmx_vmentry_status nested_vmx_enter_non_root_mode(struct kvm_vcpu *vcpu,
- 	 * 26.7 "VM-entry failures during or after loading guest state".
- 	 */
- vmentry_fail_vmexit_guest_mode:
--	if (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETING)
-+	if (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETTING)
- 		vcpu->arch.tsc_offset -= vmcs12->tsc_offset;
- 	leave_guest_mode(vcpu);
+ &cpu_thermal {
+ 	coefficients = <(-487) 410040>;
++	thermal-sensors = <&thermal>;
+ };
  
-@@ -4209,7 +4209,7 @@ void nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32 exit_reason,
- 	if (nested_cpu_has_preemption_timer(vmcs12))
- 		hrtimer_cancel(&to_vmx(vcpu)->nested.preemption_timer);
- 
--	if (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETING)
-+	if (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETTING)
- 		vcpu->arch.tsc_offset -= vmcs12->tsc_offset;
- 
- 	if (likely(!vmx->fail)) {
-@@ -6016,7 +6016,7 @@ void nested_vmx_setup_ctls_msrs(struct nested_vmx_msrs *msrs, u32 ept_caps,
- 		CPU_BASED_ALWAYSON_WITHOUT_TRUE_MSR;
- 	msrs->procbased_ctls_high &=
- 		CPU_BASED_VIRTUAL_INTR_PENDING |
--		CPU_BASED_VIRTUAL_NMI_PENDING | CPU_BASED_USE_TSC_OFFSETING |
-+		CPU_BASED_VIRTUAL_NMI_PENDING | CPU_BASED_USE_TSC_OFFSETTING |
- 		CPU_BASED_HLT_EXITING | CPU_BASED_INVLPG_EXITING |
- 		CPU_BASED_MWAIT_EXITING | CPU_BASED_CR3_LOAD_EXITING |
- 		CPU_BASED_CR3_STORE_EXITING |
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index cdb4bf50ee14..e543232a28b2 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -1716,7 +1716,7 @@ static u64 vmx_read_l1_tsc_offset(struct kvm_vcpu *vcpu)
- 	struct vmcs12 *vmcs12 = get_vmcs12(vcpu);
- 
- 	if (is_guest_mode(vcpu) &&
--	    (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETING))
-+	    (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETTING))
- 		return vcpu->arch.tsc_offset - vmcs12->tsc_offset;
- 
- 	return vcpu->arch.tsc_offset;
-@@ -1734,7 +1734,7 @@ static u64 vmx_write_l1_tsc_offset(struct kvm_vcpu *vcpu, u64 offset)
- 	 * to the newly set TSC to get L2's TSC.
- 	 */
- 	if (is_guest_mode(vcpu) &&
--	    (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETING))
-+	    (vmcs12->cpu_based_vm_exec_control & CPU_BASED_USE_TSC_OFFSETTING))
- 		g_tsc_offset = vmcs12->tsc_offset;
- 
- 	trace_kvm_write_tsc_offset(vcpu->vcpu_id,
-@@ -2322,7 +2322,7 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
- 	      CPU_BASED_CR3_STORE_EXITING |
- 	      CPU_BASED_UNCOND_IO_EXITING |
- 	      CPU_BASED_MOV_DR_EXITING |
--	      CPU_BASED_USE_TSC_OFFSETING |
-+	      CPU_BASED_USE_TSC_OFFSETTING |
- 	      CPU_BASED_MWAIT_EXITING |
- 	      CPU_BASED_MONITOR_EXITING |
- 	      CPU_BASED_INVLPG_EXITING |
-diff --git a/tools/testing/selftests/kvm/include/x86_64/vmx.h b/tools/testing/selftests/kvm/include/x86_64/vmx.h
-index f52e0ba84fed..969a0f0c2ec0 100644
---- a/tools/testing/selftests/kvm/include/x86_64/vmx.h
-+++ b/tools/testing/selftests/kvm/include/x86_64/vmx.h
-@@ -19,7 +19,7 @@
-  * Definitions of Primary Processor-Based VM-Execution Controls.
-  */
- #define CPU_BASED_VIRTUAL_INTR_PENDING		0x00000004
--#define CPU_BASED_USE_TSC_OFFSETING		0x00000008
-+#define CPU_BASED_USE_TSC_OFFSETTING		0x00000008
- #define CPU_BASED_HLT_EXITING			0x00000080
- #define CPU_BASED_INVLPG_EXITING		0x00000200
- #define CPU_BASED_MWAIT_EXITING			0x00000400
-diff --git a/tools/testing/selftests/kvm/x86_64/vmx_tsc_adjust_test.c b/tools/testing/selftests/kvm/x86_64/vmx_tsc_adjust_test.c
-index 5590fd2bcf87..69e482a95c47 100644
---- a/tools/testing/selftests/kvm/x86_64/vmx_tsc_adjust_test.c
-+++ b/tools/testing/selftests/kvm/x86_64/vmx_tsc_adjust_test.c
-@@ -98,7 +98,7 @@ static void l1_guest_code(struct vmx_pages *vmx_pages)
- 	prepare_vmcs(vmx_pages, l2_guest_code,
- 		     &l2_guest_stack[L2_GUEST_STACK_SIZE]);
- 	control = vmreadz(CPU_BASED_VM_EXEC_CONTROL);
--	control |= CPU_BASED_USE_MSR_BITMAPS | CPU_BASED_USE_TSC_OFFSETING;
-+	control |= CPU_BASED_USE_MSR_BITMAPS | CPU_BASED_USE_TSC_OFFSETTING;
- 	vmwrite(CPU_BASED_VM_EXEC_CONTROL, control);
- 	vmwrite(TSC_OFFSET, TSC_OFFSET_VALUE);
- 
+ &dsi0 {
 -- 
-2.21.0
+2.7.4
 
--- 
-Regards/Gruss,
-    Boris.
-
-https://people.kernel.org/tglx/notes-about-netiquette
