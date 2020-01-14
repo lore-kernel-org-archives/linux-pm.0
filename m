@@ -2,91 +2,67 @@ Return-Path: <SRS0=hhfx=3D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B6E6C33CB3
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 20:36:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1D0BC33C9E
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 22:36:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 21A0824670
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 20:36:25 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="WkM6BbNg"
+	by mail.kernel.org (Postfix) with ESMTP id 9C1EF2187F
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 22:36:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728346AbgANUgY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jan 2020 15:36:24 -0500
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:41631 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726839AbgANUgY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 15:36:24 -0500
-Received: by mail-lj1-f196.google.com with SMTP id h23so15910621ljc.8;
-        Tue, 14 Jan 2020 12:36:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=a7uP1zpb1ztpEYbYJJBds6WIHHRIrU9oQfAy4KVLdh8=;
-        b=WkM6BbNgq866gAfEyXf/gMGTEPI7AGNlC+zQWZSwrcsNPuuPppyqnkFEBBtson9/Iu
-         xGeijtj56fxzc76sFKTlKyjgyMGtdL9NA66kuAfzB6zAp91zZ3wMN5dnzriKZBhpr1cH
-         TosQEr0TNEmseHF0LfUKTjmZIDx9M2PCEFYrKGQ8TqSCkEkqdNMitHggjtgCltAw6HcM
-         oHIQowQ8VnukyVLrVlYfVUyO3I0yQ15B7EHiqQtVhV3oiBQCpuiJkmlYxDEhzFk5VmdB
-         qfS4aYJwtURtwI6nkjHb3UwBHma2eyY1boZd03gbKorj3P9FqzRd1PtRsrj+zEwzc/az
-         oqOw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=a7uP1zpb1ztpEYbYJJBds6WIHHRIrU9oQfAy4KVLdh8=;
-        b=JMVztwvnd+QNvnqYxr8DkDaFkbwDyckD6eNxXjWbg7cQHceL7DdCbkcY8MMu/EiHm1
-         +oaGf/gIbo52b7QDW+bgj76shHX7oL2eEC6iwf9loaZjUuqSTmwf7/yxmFiPqh3j4u6A
-         v+C3TTkbBJI4rdSwxOYXBgTAkdOZAFXze54y/5bjj8CPoQbEYzCrZjRLBiua6ahMMulH
-         FKy5r+PYq9M7A2dBPqHAweSpWq031pU4VCDV5mbGbkAFFBoP8TafW04PmrT7UasU0EoP
-         Eno188NPHcuzaXQrm89Zg0rViTPCnojV8KZ1YAYjuf5huHBm4YJMhiocr1BEJiIi9wiG
-         ll8w==
-X-Gm-Message-State: APjAAAUqlHGNsPMqKP/w0h2q9FGl64ZGxgoN/qY1yODAsaRplV6s66cF
-        AH+MHjwZKPvFZo0guwx+/EqHwgCF
-X-Google-Smtp-Source: APXvYqxe6Hlj5r5z0SlnmU6Lvr152puMRcx58+cpCLnqZW5j0mbPOf0IUgcQv0WPyX0GTg4xcIyEkQ==
-X-Received: by 2002:a2e:3a12:: with SMTP id h18mr15983388lja.81.1579034181518;
-        Tue, 14 Jan 2020 12:36:21 -0800 (PST)
-Received: from [192.168.2.145] (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
-        by smtp.googlemail.com with ESMTPSA id p26sm7784178lfh.64.2020.01.14.12.36.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 14 Jan 2020 12:36:20 -0800 (PST)
-Subject: Re: [PATCH v6 00/12] NVIDIA Tegra20 CPUFreq driver major update
-To:     Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Prashant Gaikwad <pgaikwad@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Marcel Ziswiler <marcel.ziswiler@toradex.com>,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20191218202142.11717-1-digetx@gmail.com>
- <20200114155306.GI28289@pdeschrijver-desktop.Nvidia.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <3ebb7123-db2b-bacc-1f35-f6691a12c94d@gmail.com>
-Date:   Tue, 14 Jan 2020 23:36:19 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.3.0
+        id S1727102AbgANWgE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jan 2020 17:36:04 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:57416 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727072AbgANWgE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 17:36:04 -0500
+Received: from 79.184.255.90.ipv4.supernova.orange.pl (79.184.255.90) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
+ id 0a93bb85a3dfdab7; Tue, 14 Jan 2020 23:36:01 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Alexander Potapenko <glider@google.com>
+Cc:     Johannes Stezenbach <js@sig21.net>, Pavel Machek <pavel@ucw.cz>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Kees Cook <keescook@chromium.org>,
+        Michal Hocko <mhocko@suse.cz>, linux-pm@vger.kernel.org
+Subject: Re: init_on_free breaks hibernate
+Date:   Tue, 14 Jan 2020 23:36:01 +0100
+Message-ID: <38519837.OfHf9z5LDp@kreacher>
+In-Reply-To: <CAG_fn=VjzJSguf4ZB2x8Xn=U9MCHyfyqd2DVwPPC36t5+S+VsQ@mail.gmail.com>
+References: <20191223211309.GA4609@sig21.net> <CAG_fn=UgU3vibsaug6p35Xs1dzLgBecA48t-PqS9OtRTHNu54g@mail.gmail.com> <CAG_fn=VjzJSguf4ZB2x8Xn=U9MCHyfyqd2DVwPPC36t5+S+VsQ@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20200114155306.GI28289@pdeschrijver-desktop.Nvidia.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-14.01.2020 18:53, Peter De Schrijver пишет:
-> Acked-By: Peter De Schrijver <pdeschrijver@nvidia.com>
+On Tuesday, January 14, 2020 12:38:53 PM CET Alexander Potapenko wrote:
+> > > Strange about the resume=/dev/vda, it worked for me the way I described it.
+> > > Maybe device numbers are dynamic, 254:0 is what I got from ls -l /dev/vda.
+> > Indeed, for me it's 253:0, and resuming from console works with that number.
+> >
+> > > > The memory corruption is also reproducible for me, taking a look.
+> > >
+> 
+> I think I know what is causing the problem.
+> Upon resume the free pages may contain stale information from the
+> kernel that initiated the resume.
+> There's clear_free_pages()
+> (https://elixir.bootlin.com/linux/latest/source/kernel/power/snapshot.c#L1148)
+> that clears the pages in the case CONFIG_PAGE_POISONING_ZERO is
+> enabled, we just need to reuse it for init_on_free.
+> See the potential fix below.
+> 
+> Rafael, Pavel, I've noticed that in the setup suggested by Johannes
+> even the defconfig kernel with heap initialization cannot hibernate
+> more than twice, the third hibernate hangs.
+> Is that a known problem?
 
-Thanks! Should help to get these patches into 5.7 :)
+No, it is not.
+
+
+
