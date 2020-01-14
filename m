@@ -2,77 +2,74 @@ Return-Path: <SRS0=hhfx=3D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D635BC33C9E
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 22:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CBE4C33CB2
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 22:51:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A6A2F24658
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 22:37:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5F04524676
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 22:51:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727073AbgANWhy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jan 2020 17:37:54 -0500
-Received: from bin-mail-out-05.binero.net ([195.74.38.228]:11318 "EHLO
-        bin-mail-out-05.binero.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727072AbgANWhy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 17:37:54 -0500
-X-Halon-ID: 87a82090-371d-11ea-b6d8-005056917f90
-Authorized-sender: niklas@soderlund.pp.se
-Received: from bismarck.berto.se (p54ac5d7b.dip0.t-ipconnect.de [84.172.93.123])
-        by bin-vsp-out-02.atm.binero.net (Halon) with ESMTPA
-        id 87a82090-371d-11ea-b6d8-005056917f90;
-        Tue, 14 Jan 2020 23:30:56 +0100 (CET)
-From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-To:     linux-pm@vger.kernel.org,
-        Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc:     linux-renesas-soc@vger.kernel.org,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH 1/2] thermal: rcar_thermal: Remove temperature bound
-Date:   Tue, 14 Jan 2020 23:29:44 +0100
-Message-Id: <20200114222945.3128250-2-niklas.soderlund+renesas@ragnatech.se>
-X-Mailer: git-send-email 2.24.1
-In-Reply-To: <20200114222945.3128250-1-niklas.soderlund+renesas@ragnatech.se>
-References: <20200114222945.3128250-1-niklas.soderlund+renesas@ragnatech.se>
+        id S1728883AbgANWvH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jan 2020 17:51:07 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:51809 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728746AbgANWvG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 17:51:06 -0500
+Received: from 79.184.255.90.ipv4.supernova.orange.pl (79.184.255.90) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.320)
+ id c1cb78ac0f69600f; Tue, 14 Jan 2020 23:51:04 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org
+Subject: Re: [PATCH] cpuidle: arm: Enable compile testing for some of drivers
+Date:   Tue, 14 Jan 2020 23:51:03 +0100
+Message-ID: <4692219.51FEeoGIeG@kreacher>
+In-Reply-To: <92592736-fa55-8fe8-c893-e9e7129fe910@linaro.org>
+References: <20191229180912.17100-1-krzk@kernel.org> <a4fa3f89-e792-aeee-b9ea-9af244ace04a@linaro.org> <92592736-fa55-8fe8-c893-e9e7129fe910@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The hardware manual states that the operation of the sensor is not
-guaranteed outside the range of -40°C to 125°C, not that the readings
-are invalid. Remove the bound check and try to deliver temperature
-readings even if we are outside the guaranteed operation range.
+On Monday, January 13, 2020 1:24:00 PM CET Daniel Lezcano wrote:
+> On 13/01/2020 12:58, Daniel Lezcano wrote:
+> > On 13/01/2020 12:51, Rafael J. Wysocki wrote:
+> >> On Sunday, December 29, 2019 7:09:12 PM CET Krzysztof Kozlowski wrote:
+> >>> Some of cpuidle drivers for ARMv7 can be compile tested on this
+> >>> architecture because they do not depend on mach-specific bits.  Enable
+> >>> compile testing for big.LITTLE, Kirkwood, Zynq, AT91, Exynos and mvebu
+> >>> cpuidle drivers.
+> >>>
+> >>> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> >>> ---
+> 
+> [ ... ]
+> 
+> >> Daniel, any concerns regarding this one?
+> > 
+> > Yes, I have a doubt about this patch. I'll double check before commenting.
+> 
+> Actually it is fine.
+> 
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
----
- drivers/thermal/rcar_thermal.c | 7 -------
- 1 file changed, 7 deletions(-)
+OK, patch applied.
 
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index d0873de718da9218..2ae60b27a0183db1 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -275,13 +275,6 @@ static int rcar_thermal_get_current_temp(struct rcar_thermal_priv *priv,
- 		tmp = MCELSIUS((priv->ctemp * 5) - 60);
- 	mutex_unlock(&priv->lock);
- 
--	if ((tmp < MCELSIUS(-45)) || (tmp > MCELSIUS(125))) {
--		struct device *dev = rcar_priv_to_dev(priv);
--
--		dev_err(dev, "it couldn't measure temperature correctly\n");
--		return -EIO;
--	}
--
- 	*temp = tmp;
- 
- 	return 0;
--- 
-2.24.1
+Thanks!
+
+
 
