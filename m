@@ -2,56 +2,58 @@ Return-Path: <SRS0=hhfx=3D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B7A4C33CB3
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 19:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB284C33C9E
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 19:06:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 37DAE24672
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 19:06:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A539924673
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 19:06:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pqIDTum/"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XICSL1Rk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728688AbgANTGY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jan 2020 14:06:24 -0500
-Received: from mail-pg1-f195.google.com ([209.85.215.195]:43562 "EHLO
-        mail-pg1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726491AbgANTGY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 14:06:24 -0500
-Received: by mail-pg1-f195.google.com with SMTP id k197so6815728pga.10;
-        Tue, 14 Jan 2020 11:06:23 -0800 (PST)
+        id S1728914AbgANTGi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jan 2020 14:06:38 -0500
+Received: from mail-pf1-f193.google.com ([209.85.210.193]:34379 "EHLO
+        mail-pf1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728872AbgANTGa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 14:06:30 -0500
+Received: by mail-pf1-f193.google.com with SMTP id i6so7029030pfc.1;
+        Tue, 14 Jan 2020 11:06:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=+hPubKNXoscOquUFuUg8wCoFmK2UJGRL5czKa1SRJrg=;
-        b=pqIDTum/4xK6Gk4dpSXs6uOcELVtrOjobja0bYjtq+TW0v0ptivJ3PzVORm7lMjVl6
-         cwxPQlxjqgwWZdWyDfQDiAN+NbOYAq0r23n59uxmbTJsy1uezEWh6LpwwRg5vWLFjhHr
-         1GCadP27R7lpu2NAfVuTA67uqCFfUY+cFp8IPEPrEOLQS4PA4mbd3x20+HNP35r9GT+H
-         vqijWp83vVzIcfYCWdvQFKn47/tbHOs3BZEy2mBND12QS1sJcNyYb7Kuc8LZXBDxxrpz
-         n4sW/TxNr2Jxm3Zy8TA++Dn9MzmUWtfdUAlchgD3GdPLQMhnzpD8Of4de4iQSE5uuBY2
-         ALzw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=pdqFhCoobMXuCQErm2fyAM9nvtAnhN2zKc0BHszTXso=;
+        b=XICSL1Rk08ZtNKUFEan9CneKTurtx+KU4l8I9KYCJJvel3de5/tnLtPzCWmhy5tWuS
+         zVJOubUDyYYgFfZMSuVu6UORRh4R0C8s21pJ1m/QNOMDcN3ZLNKu/6MtF1C9jqskKbOZ
+         zQLTmkbcdraiIGNfhTHDULSOzrM2hc1dNAwqe4eEVeDCY8lkA9HxRZe0yO31aeVjm+oh
+         oi+SZ1Q/rG55ihhOiS8a/ZCTXezKkZLpDbz5NYUpjM3zWRQKgzd88Ppyk0X1fuc5uiLC
+         06SOKTxr+xAuXG8NScl6LMDuQXAeHzzqiG27mfSvgm80c77vroHU+MzrVg/XPZE4V+Ic
+         s1SQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=+hPubKNXoscOquUFuUg8wCoFmK2UJGRL5czKa1SRJrg=;
-        b=MlqXtolzu9xhnYN36vsKieyOVV1/6RyKhBDQjw0uf87xogYYGKCvaNP5Pmocc2zBKK
-         A7EWUnkesWYdVK76HN8afvBwWnYHo1becUX9nsAZ8HuBZP8oXMJ6dmtRJlCBl/zgeu2G
-         7x12pfri1PnJAGnFd0mTo+NOpcktPU3ct1ivPo2sgZq3PLUUdvRz/FAo9zU7zDtmC0vC
-         nDTimKXtVukioz0DBin1T7ny1ZFIoLypcQCDkTf/6fdgxFE1EM6CU70nymOlE+tph6h/
-         EF8l1cdLC43ScZCW7oLDndV/13zjwtuwNyY/8wl6m4moN2UZ1aq26QK5j+y/KkUIqMRI
-         7wkw==
-X-Gm-Message-State: APjAAAX0JnAAkbIUe8V7mKQ1Rtvms20Yv1UJPXTYDwtsyX6lJpDxuniT
-        XMehZ1aQSWsojS6GMlTYfUq6RlwO
-X-Google-Smtp-Source: APXvYqy+K/IGJGx+SwbNg1zLTYiArYpJ71V2j5GV9N0ZwFn68QJAk7EFMvUS3kFclpBAcrTbht+djw==
-X-Received: by 2002:a62:5343:: with SMTP id h64mr26058168pfb.171.1579028783171;
-        Tue, 14 Jan 2020 11:06:23 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=pdqFhCoobMXuCQErm2fyAM9nvtAnhN2zKc0BHszTXso=;
+        b=f1bZ1wwMLn2pzOe4RhV0TsePdFy+NF4MCUOZN2p8KSiZ6jp1nkpQ5vlXyP95gUBEKr
+         8bMkZc2KotIaZrLUhiZ70Trx8zZbVOKZRXFCm1/3GyUGmvv2rEEUkP8Oq2eZcmmOZEUB
+         L0+BI6G8eXhhL+J7Yecoz1qazp64N8M2K29oqQhoHQZqWvKCKIfRnBbBWLdbgdv1s89+
+         2jrCASlWdiyt5+3g6P4yjCFV1Bpg7+I/3LVzmw9z1cnwzN1n7di50zmusG9iv1AGHk87
+         A878ZP4BNd9CgFrWz/6E3YkamVdvyBkcPPfvI4/jt7Xz0aR0wRxVeRobL7Jlx6w6E9/F
+         OPHg==
+X-Gm-Message-State: APjAAAWLBBgZ2EW2h9qC17ozmZFIs5SE5GoewH6kIpHqR463GtYYRLlr
+        m55QwQ780y7zmIRpmpqeUkN07JRH
+X-Google-Smtp-Source: APXvYqzRroJjj7y1B13WecukIAzkgxjPBRhiKYGRxVC0DQon8cavTK407Wh+9iS54uf7EUBtSdwnPg==
+X-Received: by 2002:aa7:9111:: with SMTP id 17mr27652957pfh.163.1579028789694;
+        Tue, 14 Jan 2020 11:06:29 -0800 (PST)
 Received: from fainelli-desktop.igp.broadcom.net ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id a195sm19284528pfa.120.2020.01.14.11.06.21
+        by smtp.gmail.com with ESMTPSA id a195sm19284528pfa.120.2020.01.14.11.06.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jan 2020 11:06:22 -0800 (PST)
+        Tue, 14 Jan 2020 11:06:29 -0800 (PST)
 From:   Florian Fainelli <f.fainelli@gmail.com>
 To:     linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org
 Cc:     Florian Fainelli <f.fainelli@gmail.com>,
@@ -66,48 +68,88 @@ Cc:     Florian Fainelli <f.fainelli@gmail.com>,
         DEVICE TREE BINDINGS),
         linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM BCM7XXX
         ARM ARCHITECTURE)
-Subject: [PATCH v3 0/6] brcmstb_thermal updates for new processes
-Date:   Tue, 14 Jan 2020 11:06:01 -0800
-Message-Id: <20200114190607.29339-1-f.fainelli@gmail.com>
+Subject: [PATCH v3 6/6] thermal: brcmstb_thermal: Register different ops per process
+Date:   Tue, 14 Jan 2020 11:06:07 -0800
+Message-Id: <20200114190607.29339-7-f.fainelli@gmail.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200114190607.29339-1-f.fainelli@gmail.com>
+References: <20200114190607.29339-1-f.fainelli@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Since we do not have interrupts on BCM7216, we cannot have trip point
+crossing, the thermal subsystem expects us to provide a NULL set_trips
+operation in that case, so make it possible to provide per-process
+thermal_zone_of_device_ops
 
-This patch series contains a bug fix for the existing platforms and then
-paves the way for adding support for Broadcom STB's latest chips in 16nm
-processes, and finally updates the driver with pecularities introduced
-with the 16nm, like the lack of interrupt notification from the HW.
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+---
+ drivers/thermal/broadcom/brcmstb_thermal.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-Please queue up the first patch for -stable if you want, thanks!
-
-Changes in v3:
-- do not change AVS_TMON_TEMP_MAX with AVS_TMON_TEMP_MASK
-- use of of_device_get_match_data
-- maintain function pointers back to of_device_id::data
-
-Changes in v2:
-
-- kept defined constants in patch #1 and keep using them for subsequent
-  patches
-- add Reviewed-by tags to patches #3 through #6
-- rebase against v5.5.-rc1
-
-Florian Fainelli (6):
-  thermal: brcmstb_thermal: Do not use DT coefficients
-  thermal: brcmstb_thermal: Prepare to support a different process
-  dt-bindings: thermal: Define BCM7216 thermal sensor compatible
-  thermal: brcmstb_thermal: Add 16nm process thermal parameters
-  thermal: brcmstb_thermal: Restructure interrupt registration
-  thermal: brcmstb_thermal: Register different ops per process
-
- .../bindings/thermal/brcm,avs-tmon.txt        |  8 +-
- drivers/thermal/broadcom/brcmstb_thermal.c    | 96 +++++++++++--------
- 2 files changed, 64 insertions(+), 40 deletions(-)
-
+diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
+index 6ded4b9c53be..8df5edef1ded 100644
+--- a/drivers/thermal/broadcom/brcmstb_thermal.c
++++ b/drivers/thermal/broadcom/brcmstb_thermal.c
+@@ -105,6 +105,7 @@ static struct avs_tmon_trip avs_tmon_trips[] = {
+ struct brcmstb_thermal_params {
+ 	unsigned int offset;
+ 	unsigned int mult;
++	const struct thermal_zone_of_device_ops *of_ops;
+ };
+ 
+ struct brcmstb_thermal_priv {
+@@ -287,19 +288,25 @@ static int brcmstb_set_trips(void *data, int low, int high)
+ 	return 0;
+ }
+ 
+-static const struct thermal_zone_of_device_ops of_ops = {
++static const struct thermal_zone_of_device_ops brcmstb_16nm_of_ops = {
+ 	.get_temp	= brcmstb_get_temp,
+-	.set_trips	= brcmstb_set_trips,
+ };
+ 
+ static const struct brcmstb_thermal_params brcmstb_16nm_params = {
+ 	.offset	= 457829,
+ 	.mult	= 557,
++	.of_ops	= &brcmstb_16nm_of_ops,
++};
++
++static const struct thermal_zone_of_device_ops brcmstb_28nm_of_ops = {
++	.get_temp	= brcmstb_get_temp,
++	.set_trips	= brcmstb_set_trips,
+ };
+ 
+ static const struct brcmstb_thermal_params brcmstb_28nm_params = {
+ 	.offset	= 410040,
+ 	.mult	= 487,
++	.of_ops	= &brcmstb_28nm_of_ops,
+ };
+ 
+ static const struct of_device_id brcmstb_thermal_id_table[] = {
+@@ -311,6 +318,7 @@ MODULE_DEVICE_TABLE(of, brcmstb_thermal_id_table);
+ 
+ static int brcmstb_thermal_probe(struct platform_device *pdev)
+ {
++	const struct thermal_zone_of_device_ops *of_ops;
+ 	struct thermal_zone_device *thermal;
+ 	struct brcmstb_thermal_priv *priv;
+ 	struct resource *res;
+@@ -331,9 +339,10 @@ static int brcmstb_thermal_probe(struct platform_device *pdev)
+ 
+ 	priv->dev = &pdev->dev;
+ 	platform_set_drvdata(pdev, priv);
++	of_ops = priv->temp_params->of_ops;
+ 
+ 	thermal = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv,
+-						       &of_ops);
++						       of_ops);
+ 	if (IS_ERR(thermal)) {
+ 		ret = PTR_ERR(thermal);
+ 		dev_err(&pdev->dev, "could not register sensor: %d\n", ret);
 -- 
 2.17.1
 
