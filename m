@@ -2,171 +2,247 @@ Return-Path: <SRS0=hhfx=3D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54FD9C33CB3
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 19:06:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A31D5C33C9E
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 19:07:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3233A24673
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 19:06:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 73AA6222C4
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jan 2020 19:07:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H9zkXg6j"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="DOjVACsA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726491AbgANTGZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jan 2020 14:06:25 -0500
-Received: from mail-pl1-f193.google.com ([209.85.214.193]:45731 "EHLO
-        mail-pl1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728734AbgANTGZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 14:06:25 -0500
-Received: by mail-pl1-f193.google.com with SMTP id b22so5586242pls.12;
-        Tue, 14 Jan 2020 11:06:24 -0800 (PST)
+        id S1728748AbgANTHq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jan 2020 14:07:46 -0500
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:46313 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728633AbgANTHp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 14:07:45 -0500
+Received: by mail-pf1-f194.google.com with SMTP id n9so7009218pff.13
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jan 2020 11:07:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=bUI3dxAJmLbR2verpuQbHht/NnNgFc4Xm8emQetKLeY=;
-        b=H9zkXg6jxTLY3Zf994WcfVL5r28Y6dR2Q/ybE2c3Pi4qGR4BhL9EQpP7HqLnUNzOYC
-         FLZAhk3XvPUAy9TUjqZvHJH2n55NqnaycqLyKThGj7c6im+6KTrl0Z6OG3xIRZPfrVKn
-         nx84xIZWKJQeOS3ysCePa31x+8S3tqikkbkAksyShUdp/TnewAhU74/OfhbPbWXYd3a0
-         vfLOeFtIrTCcU1CaxH9/s30yHznb3jZQOlv4BNqipoJ/R7SasP5dZxbsluPD9yzZjH9f
-         cl/WuLgExWG9lJf1Jpf4pTm4ZsIZjpemmYa2Bi/9No866yj+TzOSHlQHe2LVMTmU7Uif
-         5ySg==
+        d=chromium.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=aLELjPYcaLo58QAAHC+0RioxZHEHGruSV5XSCPDClP4=;
+        b=DOjVACsA2rRiS1aDwEMcceeN2dNSvb9rjohA9MxOUbTcAVYrKBgIYw+en0ypMeJgnT
+         CBeuzWi6XwUAA8SCJ0srksS+ZIfko3Cg4FD3RAyIta3Ei/gX3GbOiHX89gtoRLGTsh75
+         SQdMdYm2M09apsaZDDNHhsq4sRgp4Y61i9rIE=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=bUI3dxAJmLbR2verpuQbHht/NnNgFc4Xm8emQetKLeY=;
-        b=p70jvMQf5gWtaXWNadH0b12piZ4v5DmF1rEMkNx8uNw8pw7Bm5uqjd5usmVEqK8Q/P
-         zLbqpN3nVVrCVLTw0FIbeX9y3TzxOw3DxHx4D0eWnN7C0kKg8bMOZbzdrCi2krfTuNf7
-         dpT6q74d+r0IOONwV5q76rzOknJEKBv3SaI7hIjUY6Ek5S2UbMwZORw5dy5y/cqlBmUL
-         rzu+hNDNFlDx0QohEfY1HmXz+IH2ZfwV78OWOxaQ3s2tMyE/c3rEiMvhxTaWHP311/oZ
-         2lYUCl0YuaGe9R8CtfZ7tJ4kNKRcEFtUgilcTBWKAVASjQT7gFrI6TGTBZ9ok4ZrY/h/
-         Jwcg==
-X-Gm-Message-State: APjAAAV8AOMIYJncyww7OP5fAg5e2GCoxm2WtbJOSWz3tPJEdFk8yLdk
-        r1dsZtOJL64G1fKqRBFjpJlfOZOg
-X-Google-Smtp-Source: APXvYqzaeyStl5zxy5XUEqSmclev0JfVwR009tJs/43CxE4oEzpicozRzjtH2tejfJTVfAa+Osvy/w==
-X-Received: by 2002:a17:90b:30c8:: with SMTP id hi8mr30814632pjb.73.1579028784213;
-        Tue, 14 Jan 2020 11:06:24 -0800 (PST)
-Received: from fainelli-desktop.igp.broadcom.net ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id a195sm19284528pfa.120.2020.01.14.11.06.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jan 2020 11:06:23 -0800 (PST)
-From:   Florian Fainelli <f.fainelli@gmail.com>
-To:     linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org
-Cc:     Florian Fainelli <f.fainelli@gmail.com>,
-        Markus Mayer <mmayer@broadcom.com>,
-        bcm-kernel-feedback-list@broadcom.com (maintainer:BROADCOM STB AVS TMON
-        DRIVER), Zhang Rui <rui.zhang@intel.com>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=aLELjPYcaLo58QAAHC+0RioxZHEHGruSV5XSCPDClP4=;
+        b=bMOCUdWxO7wC8dojbQbvlVXEib/v/FvmraCEYPCRzV86olKVLhX0Dxx1BIMfDCWO6p
+         0fngT65wpp6C/vZLK5pCDXw7ZFBC6HIibtS7rdX6J2IIN3GGfMNu+Ukk4LpIPww9BFUY
+         LVu2enInzq2eH+9lE7eM56jLK0cLMd5wSZF9+ftpuslLlG07Pn6vG1itTJfTb9fPY2bC
+         BE0GAf6PmnYiRImzu1ixES8TtvNEeUeLODsYUDo9SeTPtOiRFfStqwrrM0ospOWFXC5Y
+         cZAybt3FZeXMsAFqThdbRSC6D0KpfupC2Njzkk9+WYRaBI07kD6+LdJEFv1/1hGIXGRc
+         2k5Q==
+X-Gm-Message-State: APjAAAVGqMY8aZSkhETecQZfBr2YZRE1q973PvYHo3uHjTiNilZ/gl7d
+        g8fwLzfUNMXrPd5/fZ/+BpktDw==
+X-Google-Smtp-Source: APXvYqwUca6Vt0SP3mVbw2bEHts0IsE5hoEobysKSj0tyGVbqh08fZ+JkcgA+iecdazZI1U5J1w5Ag==
+X-Received: by 2002:a63:dc41:: with SMTP id f1mr29452244pgj.119.1579028864875;
+        Tue, 14 Jan 2020 11:07:44 -0800 (PST)
+Received: from localhost ([2620:15c:202:1:4fff:7a6b:a335:8fde])
+        by smtp.gmail.com with ESMTPSA id s21sm18963322pfe.20.2020.01.14.11.07.44
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 14 Jan 2020 11:07:44 -0800 (PST)
+Date:   Tue, 14 Jan 2020 11:07:43 -0800
+From:   Matthias Kaehlcke <mka@chromium.org>
+To:     Leonard Crestez <leonard.crestez@nxp.com>
+Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Amit Kucheria <amit.kucheria@verdurent.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        linux-pm@vger.kernel.org (open list:BROADCOM STB AVS TMON DRIVER),
-        devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED
-        DEVICE TREE BINDINGS),
-        linux-arm-kernel@lists.infradead.org (moderated list:BROADCOM BCM7XXX
-        ARM ARCHITECTURE)
-Subject: [PATCH v3 1/6] thermal: brcmstb_thermal: Do not use DT coefficients
-Date:   Tue, 14 Jan 2020 11:06:02 -0800
-Message-Id: <20200114190607.29339-2-f.fainelli@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200114190607.29339-1-f.fainelli@gmail.com>
-References: <20200114190607.29339-1-f.fainelli@gmail.com>
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] thermal: devfreq_cooling: Use PM QoS to set
+ frequency limits
+Message-ID: <20200114190743.GK89495@google.com>
+References: <20200110094913.1.I146403d05b9ec82f48b807efd416a57f545b447a@changeid>
+ <VI1PR04MB70233705094CCA4BA7545CF0EE340@VI1PR04MB7023.eurprd04.prod.outlook.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <VI1PR04MB70233705094CCA4BA7545CF0EE340@VI1PR04MB7023.eurprd04.prod.outlook.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-At the time the brcmstb_thermal driver and its binding were merged, the
-DT binding did not make the coefficients properties a mandatory one,
-therefore all users of the brcmstb_thermal driver out there have a non
-functional implementation with zero coefficients. Even if these
-properties were provided, the formula used for computation is incorrect.
+On Tue, Jan 14, 2020 at 04:08:38PM +0000, Leonard Crestez wrote:
+> On 10.01.2020 19:49, Matthias Kaehlcke wrote:
+> > Now that devfreq supports limiting the frequency range of a device
+> > through PM QoS make use of it instead of disabling OPPs that should
+> > not be used.
+> > 
+> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> 
+> It is not obvious but this changes behavior when min max requests 
+> conflict (min > max): with PM QoS a MIN_FREQUENCY request takes 
+> precedence but if higher OPPs are disabled then this will override 
+> MIN_FREQUENCY.
 
-The coefficients are entirely process specific (right now, only 28nm is
-supported) and not board or SoC specific, it is therefore appropriate to
-hard code them in the driver given the compatibility string we are
-probed with which has to be updated whenever a new process is
-introduced.
+Thanks for pointing this out.
 
-We remove the existing coefficients definition since subsequent patches
-are going to add support for a new process and will introduce new
-coefficients as well.
+> There are very few users of this functionality so I don't think there 
+> are any systems that depend on this behaving one way or the other but 
+> perhaps it should be mentioned in commit message?
 
-Fixes: 9e03cf1b2dd5 ("thermal: add brcmstb AVS TMON driver")
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
----
- drivers/thermal/broadcom/brcmstb_thermal.c | 31 +++++++---------------
- 1 file changed, 9 insertions(+), 22 deletions(-)
+Sounds good, I'll add a note.
 
-diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
-index 5825ac581f56..680f1a070606 100644
---- a/drivers/thermal/broadcom/brcmstb_thermal.c
-+++ b/drivers/thermal/broadcom/brcmstb_thermal.c
-@@ -49,7 +49,7 @@
- #define AVS_TMON_TP_TEST_ENABLE		0x20
- 
- /* Default coefficients */
--#define AVS_TMON_TEMP_SLOPE		-487
-+#define AVS_TMON_TEMP_SLOPE		487
- #define AVS_TMON_TEMP_OFFSET		410040
- 
- /* HW related temperature constants */
-@@ -108,23 +108,12 @@ struct brcmstb_thermal_priv {
- 	struct thermal_zone_device *thermal;
- };
- 
--static void avs_tmon_get_coeffs(struct thermal_zone_device *tz, int *slope,
--				int *offset)
--{
--	*slope = thermal_zone_get_slope(tz);
--	*offset = thermal_zone_get_offset(tz);
--}
--
- /* Convert a HW code to a temperature reading (millidegree celsius) */
- static inline int avs_tmon_code_to_temp(struct thermal_zone_device *tz,
- 					u32 code)
- {
--	const int val = code & AVS_TMON_TEMP_MASK;
--	int slope, offset;
--
--	avs_tmon_get_coeffs(tz, &slope, &offset);
--
--	return slope * val + offset;
-+	return (AVS_TMON_TEMP_OFFSET -
-+		(int)((code & AVS_TMON_TEMP_MAX) * AVS_TMON_TEMP_SLOPE));
- }
- 
- /*
-@@ -136,20 +125,18 @@ static inline int avs_tmon_code_to_temp(struct thermal_zone_device *tz,
- static inline u32 avs_tmon_temp_to_code(struct thermal_zone_device *tz,
- 					int temp, bool low)
- {
--	int slope, offset;
--
- 	if (temp < AVS_TMON_TEMP_MIN)
--		return AVS_TMON_TEMP_MAX; /* Maximum code value */
--
--	avs_tmon_get_coeffs(tz, &slope, &offset);
-+		return AVS_TMON_TEMP_MAX;	/* Maximum code value */
- 
--	if (temp >= offset)
-+	if (temp >= AVS_TMON_TEMP_OFFSET)
- 		return 0;	/* Minimum code value */
- 
- 	if (low)
--		return (u32)(DIV_ROUND_UP(offset - temp, abs(slope)));
-+		return (u32)(DIV_ROUND_UP(AVS_TMON_TEMP_OFFSET - temp,
-+					  AVS_TMON_TEMP_SLOPE));
- 	else
--		return (u32)((offset - temp) / abs(slope));
-+		return (u32)((AVS_TMON_TEMP_OFFSET - temp) /
-+			      AVS_TMON_TEMP_SLOPE);
- }
- 
- static int brcmstb_get_temp(void *data, int *temp)
--- 
-2.17.1
+> As far as I can tell the only user of devfreq_cooling in upstream is 
+> drivers/gpu/drm/panfrost?
 
+Indeed, apparently GPUs are the primary devfreq device used for cooling,
+and unfortunately most GPU drivers are not in upstream.
+
+> >   drivers/thermal/devfreq_cooling.c | 66 ++++++++++---------------------
+> >   1 file changed, 20 insertions(+), 46 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+> > index ef59256887ff..3a63603afcf2 100644
+> > --- a/drivers/thermal/devfreq_cooling.c
+> > +++ b/drivers/thermal/devfreq_cooling.c
+> > @@ -24,11 +24,13 @@
+> >   #include <linux/idr.h>
+> >   #include <linux/slab.h>
+> >   #include <linux/pm_opp.h>
+> > +#include <linux/pm_qos.h>
+> >   #include <linux/thermal.h>
+> >   
+> >   #include <trace/events/thermal.h>
+> >   
+> > -#define SCALE_ERROR_MITIGATION 100
+> > +#define HZ_PER_KHZ		1000
+> > +#define SCALE_ERROR_MITIGATION	100
+> >   
+> >   static DEFINE_IDA(devfreq_ida);
+> >   
+> > @@ -65,49 +67,9 @@ struct devfreq_cooling_device {
+> >   	struct devfreq_cooling_power *power_ops;
+> >   	u32 res_util;
+> >   	int capped_state;
+> > +	struct dev_pm_qos_request req_max_freq;
+> >   };
+> >   
+> > -/**
+> > - * partition_enable_opps() - disable all opps above a given state
+> > - * @dfc:	Pointer to devfreq we are operating on
+> > - * @cdev_state:	cooling device state we're setting
+> > - *
+> > - * Go through the OPPs of the device, enabling all OPPs until
+> > - * @cdev_state and disabling those frequencies above it.
+> > - */
+> > -static int partition_enable_opps(struct devfreq_cooling_device *dfc,
+> > -				 unsigned long cdev_state)
+> > -{
+> > -	int i;
+> > -	struct device *dev = dfc->devfreq->dev.parent;
+> > -
+> > -	for (i = 0; i < dfc->freq_table_size; i++) {
+> > -		struct dev_pm_opp *opp;
+> > -		int ret = 0;
+> > -		unsigned int freq = dfc->freq_table[i];
+> > -		bool want_enable = i >= cdev_state ? true : false;
+> > -
+> > -		opp = dev_pm_opp_find_freq_exact(dev, freq, !want_enable);
+> > -
+> > -		if (PTR_ERR(opp) == -ERANGE)
+> > -			continue;
+> > -		else if (IS_ERR(opp))
+> > -			return PTR_ERR(opp);
+> > -
+> > -		dev_pm_opp_put(opp);
+> > -
+> > -		if (want_enable)
+> > -			ret = dev_pm_opp_enable(dev, freq);
+> > -		else
+> > -			ret = dev_pm_opp_disable(dev, freq);
+> > -
+> > -		if (ret)
+> > -			return ret;
+> > -	}
+> > -
+> > -	return 0;
+> > -}
+> > -
+> >   static int devfreq_cooling_get_max_state(struct thermal_cooling_device *cdev,
+> >   					 unsigned long *state)
+> >   {
+> > @@ -134,7 +96,7 @@ static int devfreq_cooling_set_cur_state(struct thermal_cooling_device *cdev,
+> >   	struct devfreq_cooling_device *dfc = cdev->devdata;
+> >   	struct devfreq *df = dfc->devfreq;
+> >   	struct device *dev = df->dev.parent;
+> > -	int ret;
+> > +	unsigned long freq;
+> >   
+> >   	if (state == dfc->cooling_state)
+> >   		return 0;
+> > @@ -144,9 +106,10 @@ static int devfreq_cooling_set_cur_state(struct thermal_cooling_device *cdev,
+> >   	if (state >= dfc->freq_table_size)
+> >   		return -EINVAL;
+> >   
+> > -	ret = partition_enable_opps(dfc, state);
+> > -	if (ret)
+> > -		return ret;
+> > +	freq = dfc->freq_table[state];
+> > +
+> > +	dev_pm_qos_update_request(&dfc->req_max_freq,
+> > +				  DIV_ROUND_UP(freq, HZ_PER_KHZ));
+> >   
+> >   	dfc->cooling_state = state;
+> >   
+> > @@ -529,6 +492,12 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
+> >   	if (err)
+> >   		goto free_dfc;
+> >   
+> > +	err = dev_pm_qos_add_request(df->dev.parent, &dfc->req_max_freq,
+> > +				     DEV_PM_QOS_MAX_FREQUENCY,
+> > +				     PM_QOS_MAX_FREQUENCY_DEFAULT_VALUE);
+> > +	if (err < 0)
+> > +		goto remove_qos_req;
+> > +
+> >   	err = ida_simple_get(&devfreq_ida, 0, 0, GFP_KERNEL);
+> >   	if (err < 0)
+> >   		goto free_tables;
+> > @@ -552,6 +521,10 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
+> >   
+> >   release_ida:
+> >   	ida_simple_remove(&devfreq_ida, dfc->id);
+> > +
+> > +remove_qos_req:
+> > +	dev_pm_qos_remove_request(&dfc->req_max_freq); > +
+> 
+> A quirk of the dev_pm_qos API is that dev_pm_qos_remove_request prints a 
+> WARN splat if !dev_pm_qos_request_active and this can true on 
+> dev_pm_qos_add_request error.
+> 
+> I dealt with this by checking dev_pm_qos_request_active explicitly but 
+> perhaps dev_pm_qos API could be changed? In general "free/release" 
+> functions shouldn't complain if there's nothing to do.
+
+I think we should be good here if we jump to 'free_tables' if
+_add_request() fails, as requested by Chanwoo. Then _remove_request() is
+only called when _add_request() was successful.
+
+> >   free_tables:
+> >   	kfree(dfc->power_table);
+> >   	kfree(dfc->freq_table);
+> > @@ -600,6 +573,7 @@ void devfreq_cooling_unregister(struct thermal_cooling_device *cdev)
+> >   
+> >   	thermal_cooling_device_unregister(dfc->cdev);
+> >   	ida_simple_remove(&devfreq_ida, dfc->id);
+> > +	dev_pm_qos_remove_request(&dfc->req_max_freq);
+> >   	kfree(dfc->power_table);
+> >   	kfree(dfc->freq_table);
