@@ -2,163 +2,173 @@ Return-Path: <SRS0=oIQb=3E=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0B49C33C9E
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jan 2020 03:41:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45339C33CB1
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jan 2020 05:58:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BBA682467A
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jan 2020 03:41:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0D11524679
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jan 2020 05:58:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=sholland.org header.i=@sholland.org header.b="ahJ0WMUa";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="wXzqhRwu"
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="o+vsV3oM"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728911AbgAODlM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jan 2020 22:41:12 -0500
-Received: from out5-smtp.messagingengine.com ([66.111.4.29]:56633 "EHLO
-        out5-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1729048AbgAODkv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jan 2020 22:40:51 -0500
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-        by mailout.nyi.internal (Postfix) with ESMTP id 957DD22131;
-        Tue, 14 Jan 2020 22:40:50 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute5.internal (MEProxy); Tue, 14 Jan 2020 22:40:50 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
-        from:to:cc:subject:date:message-id:in-reply-to:references
-        :mime-version:content-transfer-encoding; s=fm1; bh=xScHInzV3pGYC
-        GSlKPZMPOWxtY3Fnc4q0/FsYlG3OLs=; b=ahJ0WMUaBq5GJoBURKIBPxBWo+VkF
-        SsOOGKRlG2c+CR6dyZR7Eft4RVTDgPdLZu8zIHTgTZDn0a2ENIKuUNTLlBYkPbli
-        dfYpSiQ2m3RTHaeRer5YgoTmDfQIz3nJa3t2Yv2ugHqFUyD0+Ac+rZTFHUUMe1gb
-        YNyoKHmZ5T1y7uRJw0Fsn69dokf/wwYOWiAhAvWW6rwi1C42qUd7gFOTgYwGR9Sk
-        l65zfDLsCmDYDaPj7RURLF09kV8V/S8BCkbC7QeZjY24fLwHRw+eT1DKHZMQ6CvP
-        7OFqneqa2pf7AaR9yzvlEP7lKkBwTQC8mm4Ds6adjiTJ7y2OwdA2sW44g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-transfer-encoding:date:from
-        :in-reply-to:message-id:mime-version:references:subject:to
-        :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-        fm1; bh=xScHInzV3pGYCGSlKPZMPOWxtY3Fnc4q0/FsYlG3OLs=; b=wXzqhRwu
-        k4x5z8PuP1ucVTKBjnwPRyG2sWniGCl1O7GFrUvRMvM6IPwQ9PnstkxGSXhJUtjA
-        KHH+An/Ie2dnRlN2DkUC5gSV8UVxVO2GwfU1jYm8gzdJpP3Q2NdaLXdvcZcSvTw0
-        2WdLGZs4NE8xz5X4TOG4pvB3Bm7MsfKYkYEky+73SVYWOfQuxoUPi2SX5jPz3y1y
-        gJW1xW2V5+quCyCeDp4Yt7FnNBroy8e4f9oq9VdtBpdXsUigdnYzwzrRwDHRBUAN
-        P7PLG5LLCdfgJStGYywGTPw8cBI2VZxUL4uYnFE1nvxJmQkKKR8csfqBcWXNilUU
-        xw1QD2TYAD42Vg==
-X-ME-Sender: <xms:wokeXvpoO37uIL5n04N2WI6qZm9i72SF2tVIKxuE4NYKl2r0w8QXvg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedugedrtddvgdeitdcutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpefhvffufffkofgjfhgggfestdekredtredttdenucfhrhhomhepufgrmhhuvghl
-    ucfjohhllhgrnhguuceoshgrmhhuvghlsehshhholhhlrghnugdrohhrgheqnecukfhppe
-    ejtddrudefhedrudegkedrudehudenucfrrghrrghmpehmrghilhhfrhhomhepshgrmhhu
-    vghlsehshhholhhlrghnugdrohhrghenucevlhhushhtvghrufhiiigvpedt
-X-ME-Proxy: <xmx:wokeXhAUaetD-urlZghgWgtQe44fqbnYmjDAINQgs6uZQnbJdovmtg>
-    <xmx:wokeXoM483QPS5a2ii-TRFxxuU6j4i2LAh5403H-0JmAsIagKPFFIA>
-    <xmx:wokeXshWnvZbhRnjF4fUMjYe3XtYzUp3cm24lSE1HqptfUo2OKsipQ>
-    <xmx:wokeXlxEyVpqA8c6bwBMB7nSx9N1YpWNRXoHu1gGoi7HIjFcYhIAzg>
-Received: from titanium.stl.sholland.net (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
-        by mail.messagingengine.com (Postfix) with ESMTPA id 259FB30607CD;
-        Tue, 14 Jan 2020 22:40:50 -0500 (EST)
-From:   Samuel Holland <samuel@sholland.org>
-To:     Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
-Cc:     Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com,
-        Samuel Holland <samuel@sholland.org>
-Subject: [PATCH v4 2/4] power: supply: axp20x_usb_power: Allow offlining
-Date:   Tue, 14 Jan 2020 21:40:46 -0600
-Message-Id: <20200115034048.24901-3-samuel@sholland.org>
-X-Mailer: git-send-email 2.23.0
-In-Reply-To: <20200115034048.24901-1-samuel@sholland.org>
-References: <20200115034048.24901-1-samuel@sholland.org>
+        id S1726100AbgAOF6O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jan 2020 00:58:14 -0500
+Received: from mail-ua1-f65.google.com ([209.85.222.65]:38951 "EHLO
+        mail-ua1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725962AbgAOF6O (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jan 2020 00:58:14 -0500
+Received: by mail-ua1-f65.google.com with SMTP id 73so5809026uac.6
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jan 2020 21:58:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=e5xJRkqeZeVuqWjzuTjcTAvJI4fzZrcr+Isw3uqYLKg=;
+        b=o+vsV3oMBFRJ1mv7DjQiU8XPXWxqrhMJgML2HsKufa6V56I+MLrFTdPDjwZPSsgTGb
+         RPljyQh7++xAIXl+sjGHAcqYF7B8DzcB6Oo1DobaDz5W3DISZkeQpCFAmjS/FVTzaYfX
+         Lv4sSGxgPS+oxOZUR98FZokoBK0xXYuvPjAG/rV/Q+TOE5lOD9un0NuMfpcsCn3ySND0
+         AihW5IkU4QPEm66XCcNbaNWP82U5XaVpK/uGPVa4LI14xAFQVafishSL6JyPxtozxAgL
+         5lw5wlrwYUp0QXBNutVanw8TNPbMb5mYYPFGp1yOm9cZ2Inl7eOyR6eD7frdc9XswOGW
+         sY4g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=e5xJRkqeZeVuqWjzuTjcTAvJI4fzZrcr+Isw3uqYLKg=;
+        b=aBUEFBP0+liyDH4aRJ4DVL8BKYVVpAK/5HyM3rMe51xl7hO+nNcDU6S65JJM9Me0pD
+         VETQVR1pMIm6loUwrLx6/gQU9Y/vp+20sW9WeLoUFh51Hs8RyScnvJFAnW+5Hbd5mGoP
+         yn/6TrZPiqYxDkrr7sGCNEkiA5CjwY0NKGBvco0o2m6yzk3QZu8TJyNSBrEl6BmLhLAP
+         wu3oRGOXTjpdQBjVoxvi+yp5sM2fiYlEIsP9zAqOs8rmrapYDqOBzEvG09PaIbvJPVDm
+         sx8fofSmJtGbLBl284moU/pGmaMP/A/bQnMulRjjXc/+7LyvhdBdtnwfMnaZ2fLMH2U9
+         yUkw==
+X-Gm-Message-State: APjAAAVDbpp5Sgq3XhJj8gJEayu8O7VExHeIRDF+ceHcm4XqTbk7QSoz
+        xM6onzb4eEWa0CxbCyB/veW10/Brxabyk9K+QQIwwQ==
+X-Google-Smtp-Source: APXvYqyHRDquLaL0bEm7oQ9JtTMteQmR4X4JG9yvX/H3A2qtA1O/wnBD9raOEACyIMcJLv3MZehD7pa6uUYuo68Tdw4=
+X-Received: by 2002:ab0:2252:: with SMTP id z18mr12952463uan.60.1579067893051;
+ Tue, 14 Jan 2020 21:58:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200114190607.29339-1-f.fainelli@gmail.com> <20200114190607.29339-2-f.fainelli@gmail.com>
+In-Reply-To: <20200114190607.29339-2-f.fainelli@gmail.com>
+From:   Amit Kucheria <amit.kucheria@verdurent.com>
+Date:   Wed, 15 Jan 2020 11:28:02 +0530
+Message-ID: <CAHLCerO1OARY9OMDpGudSfBdmtRfeP_pYaE9=-Sn-10ZVjgXKA@mail.gmail.com>
+Subject: Re: [PATCH v3 1/6] thermal: brcmstb_thermal: Do not use DT coefficients
+To:     Florian Fainelli <f.fainelli@gmail.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Markus Mayer <mmayer@broadcom.com>,
+        "maintainer:BROADCOM STB AVS TMON DRIVER" 
+        <bcm-kernel-feedback-list@broadcom.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        "open list:BROADCOM STB AVS TMON DRIVER" <linux-pm@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        "moderated list:BROADCOM BCM7XXX ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-AXP803/AXP813 have a flag that enables/disables the USB power supply
-input. Allow control of this flag via the ONLINE property on those
-variants.
+On Wed, Jan 15, 2020 at 12:36 AM Florian Fainelli <f.fainelli@gmail.com> wrote:
+>
+> At the time the brcmstb_thermal driver and its binding were merged, the
+> DT binding did not make the coefficients properties a mandatory one,
+> therefore all users of the brcmstb_thermal driver out there have a non
+> functional implementation with zero coefficients. Even if these
+> properties were provided, the formula used for computation is incorrect.
+>
+> The coefficients are entirely process specific (right now, only 28nm is
+> supported) and not board or SoC specific, it is therefore appropriate to
+> hard code them in the driver given the compatibility string we are
+> probed with which has to be updated whenever a new process is
+> introduced.
+>
+> We remove the existing coefficients definition since subsequent patches
+> are going to add support for a new process and will introduce new
+> coefficients as well.
+>
+> Fixes: 9e03cf1b2dd5 ("thermal: add brcmstb AVS TMON driver")
+> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 
-It may be necessary to offline the USB power supply input when using
-the USB port in OTG mode, or to allow userspace to disable charging.
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
-When the USB VBUS input is disabled via the PATH_SEL bit, the VBUS_USED
-bit in PWR_INPUT_STATUS is cleared, so there is no change needed when
-getting the property.
-
-Reviewed-by: Chen-Yu Tsai <wens@csie.org>
-Signed-off-by: Samuel Holland <samuel@sholland.org>
----
- drivers/power/supply/axp20x_usb_power.c | 30 +++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
-
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index cd7071057457..f14736041c41 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -29,6 +29,9 @@
- 
- #define AXP20X_USB_STATUS_VBUS_VALID	BIT(2)
- 
-+#define AXP20X_VBUS_PATH_SEL		BIT(7)
-+#define AXP20X_VBUS_PATH_SEL_OFFSET	7
-+
- #define AXP20X_VBUS_VHOLD_uV(b)		(4000000 + (((b) >> 3) & 7) * 100000)
- #define AXP20X_VBUS_VHOLD_MASK		GENMASK(5, 3)
- #define AXP20X_VBUS_VHOLD_OFFSET	3
-@@ -263,6 +266,16 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 	return 0;
- }
- 
-+static int axp813_usb_power_set_online(struct axp20x_usb_power *power,
-+				       int intval)
-+{
-+	int val = !intval << AXP20X_VBUS_PATH_SEL_OFFSET;
-+
-+	return regmap_update_bits(power->regmap,
-+				  AXP20X_VBUS_IPSOUT_MGMT,
-+				  AXP20X_VBUS_PATH_SEL, val);
-+}
-+
- static int axp20x_usb_power_set_voltage_min(struct axp20x_usb_power *power,
- 					    int intval)
- {
-@@ -344,6 +357,11 @@ static int axp20x_usb_power_set_property(struct power_supply *psy,
- 	struct axp20x_usb_power *power = power_supply_get_drvdata(psy);
- 
- 	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		if (power->axp20x_id != AXP813_ID)
-+			return -EINVAL;
-+		return axp813_usb_power_set_online(power, val->intval);
-+
- 	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
- 		return axp20x_usb_power_set_voltage_min(power, val->intval);
- 
-@@ -363,6 +381,18 @@ static int axp20x_usb_power_set_property(struct power_supply *psy,
- static int axp20x_usb_power_prop_writeable(struct power_supply *psy,
- 					   enum power_supply_property psp)
- {
-+	struct axp20x_usb_power *power = power_supply_get_drvdata(psy);
-+
-+	/*
-+	 * The VBUS path select flag works differently on on AXP288 and newer:
-+	 *  - On AXP20x and AXP22x, the flag enables VBUS (ignoring N_VBUSEN).
-+	 *  - On AXP288 and AXP8xx, the flag disables VBUS (ignoring N_VBUSEN).
-+	 * We only expose the control on variants where it can be used to force
-+	 * the VBUS input offline.
-+	 */
-+	if (psp == POWER_SUPPLY_PROP_ONLINE)
-+		return power->axp20x_id == AXP813_ID;
-+
- 	return psp == POWER_SUPPLY_PROP_VOLTAGE_MIN ||
- 	       psp == POWER_SUPPLY_PROP_CURRENT_MAX;
- }
--- 
-2.23.0
-
+> ---
+>  drivers/thermal/broadcom/brcmstb_thermal.c | 31 +++++++---------------
+>  1 file changed, 9 insertions(+), 22 deletions(-)
+>
+> diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
+> index 5825ac581f56..680f1a070606 100644
+> --- a/drivers/thermal/broadcom/brcmstb_thermal.c
+> +++ b/drivers/thermal/broadcom/brcmstb_thermal.c
+> @@ -49,7 +49,7 @@
+>  #define AVS_TMON_TP_TEST_ENABLE                0x20
+>
+>  /* Default coefficients */
+> -#define AVS_TMON_TEMP_SLOPE            -487
+> +#define AVS_TMON_TEMP_SLOPE            487
+>  #define AVS_TMON_TEMP_OFFSET           410040
+>
+>  /* HW related temperature constants */
+> @@ -108,23 +108,12 @@ struct brcmstb_thermal_priv {
+>         struct thermal_zone_device *thermal;
+>  };
+>
+> -static void avs_tmon_get_coeffs(struct thermal_zone_device *tz, int *slope,
+> -                               int *offset)
+> -{
+> -       *slope = thermal_zone_get_slope(tz);
+> -       *offset = thermal_zone_get_offset(tz);
+> -}
+> -
+>  /* Convert a HW code to a temperature reading (millidegree celsius) */
+>  static inline int avs_tmon_code_to_temp(struct thermal_zone_device *tz,
+>                                         u32 code)
+>  {
+> -       const int val = code & AVS_TMON_TEMP_MASK;
+> -       int slope, offset;
+> -
+> -       avs_tmon_get_coeffs(tz, &slope, &offset);
+> -
+> -       return slope * val + offset;
+> +       return (AVS_TMON_TEMP_OFFSET -
+> +               (int)((code & AVS_TMON_TEMP_MAX) * AVS_TMON_TEMP_SLOPE));
+>  }
+>
+>  /*
+> @@ -136,20 +125,18 @@ static inline int avs_tmon_code_to_temp(struct thermal_zone_device *tz,
+>  static inline u32 avs_tmon_temp_to_code(struct thermal_zone_device *tz,
+>                                         int temp, bool low)
+>  {
+> -       int slope, offset;
+> -
+>         if (temp < AVS_TMON_TEMP_MIN)
+> -               return AVS_TMON_TEMP_MAX; /* Maximum code value */
+> -
+> -       avs_tmon_get_coeffs(tz, &slope, &offset);
+> +               return AVS_TMON_TEMP_MAX;       /* Maximum code value */
+>
+> -       if (temp >= offset)
+> +       if (temp >= AVS_TMON_TEMP_OFFSET)
+>                 return 0;       /* Minimum code value */
+>
+>         if (low)
+> -               return (u32)(DIV_ROUND_UP(offset - temp, abs(slope)));
+> +               return (u32)(DIV_ROUND_UP(AVS_TMON_TEMP_OFFSET - temp,
+> +                                         AVS_TMON_TEMP_SLOPE));
+>         else
+> -               return (u32)((offset - temp) / abs(slope));
+> +               return (u32)((AVS_TMON_TEMP_OFFSET - temp) /
+> +                             AVS_TMON_TEMP_SLOPE);
+>  }
+>
+>  static int brcmstb_get_temp(void *data, int *temp)
+> --
+> 2.17.1
+>
