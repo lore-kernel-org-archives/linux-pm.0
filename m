@@ -4,54 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86F7CC33CB6
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:56:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5751C33CAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:04:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5FB2724679
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:56:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9F0F8214AF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:04:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1579197375;
-	bh=7Ib8Ng+ghXxuvkABsdz66tKXJ5t4d1VzFvS70GhBrfI=;
+	s=default; t=1579197878;
+	bh=3RtKo9fNT9NjHx0/Y2PqP792HkDrmdJwQYGQFD+g2H8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=EnIopxYCqaWddaB9WMAOUnomWMnvrKbGuqTzOFfFiYoNt/QNjbz+8ZpBHo7aL2JST
-	 d8V15HyLVamPTfwg2x2vcoE5RJZjwdIfXqZsW0evjvA9VA+h3lT512ucw1rqQkuhYT
-	 dGxxiVt0VgQ+p6Cj2OGNGRqfWTmndolkYHHHMsIo=
+	b=VZmljZpJaasQLpjBhSDUNYkRC/o5vdoxI3M0W7ljoZN24A5M67oU7Uxhwtvzl4btA
+	 owGC22myA1m3k0h4tb5P8qHPUAe8wacXUPJnf5YizBvB1Nz/r5LatJLKiHtRbQTamK
+	 2p/zgtRFuFzIZjEuI7ilN8qM9mPrp3/+jJq5XON8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2405898AbgAPRoC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 12:44:02 -0500
-Received: from mail.kernel.org ([198.145.29.99]:34702 "EHLO mail.kernel.org"
+        id S2394813AbgAPSEh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 13:04:37 -0500
+Received: from mail.kernel.org ([198.145.29.99]:57492 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2405894AbgAPRoC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Jan 2020 12:44:02 -0500
+        id S2390946AbgAPRkX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Jan 2020 12:40:23 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id AF5CC24744;
-        Thu, 16 Jan 2020 17:44:00 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id C981824712;
+        Thu, 16 Jan 2020 17:40:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1579196642;
-        bh=7Ib8Ng+ghXxuvkABsdz66tKXJ5t4d1VzFvS70GhBrfI=;
+        s=default; t=1579196422;
+        bh=3RtKo9fNT9NjHx0/Y2PqP792HkDrmdJwQYGQFD+g2H8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=1NuWSwpdeOShvs5QGtSSvgL4P4XL0GLnRdX1u/p3Ith6TU4VaKZUlwwyltTzyfkJj
-         bhqCyUVOWGYJQHejbQzs1QkIKUvGCQGoE48bxLoX+kU/1vHaiUgi7NrCLbfmZM//LJ
-         27fD96f5Q9wsmD5u2i4J6WPhp6/6k/S1uApVu7Mo=
+        b=woIUzEbKl6cHHpOEVdbfpf9Z5V5eixdWMY/Q+NK8EMwAxsnxM1ykhvuDD9s325enZ
+         0dzFn3nyVd3QepgkW+QLRBOX5cwyHjy4tFSJ4R3iwn/lk9rPue6GF33NgmCbyfI8Xn
+         trV5WQShiS/hCNYpFQIQkxbywNCiCe8NXFa/HawM=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Marek Szyprowski <m.szyprowski@samsung.com>,
-        Nicolas Pitre <nico@linaro.org>,
-        Anand Moon <linux.amoon@gmail.com>,
-        Russell King <rmk+kernel@armlinux.org.uk>,
-        Sasha Levin <sashal@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 053/174] ARM: 8847/1: pm: fix HYP/SVC mode mismatch when MCPM is used
-Date:   Thu, 16 Jan 2020 12:40:50 -0500
-Message-Id: <20200116174251.24326-53-sashal@kernel.org>
+Cc:     Stephen Boyd <swboyd@chromium.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Tri Vo <trong@android.com>,
+        Kalesh Singh <kaleshsingh@google.com>,
+        Ravi Chandra Sadineni <ravisadineni@chromium.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.9 191/251] power: supply: Init device wakeup after device_add()
+Date:   Thu, 16 Jan 2020 12:35:40 -0500
+Message-Id: <20200116173641.22137-151-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200116174251.24326-1-sashal@kernel.org>
-References: <20200116174251.24326-1-sashal@kernel.org>
+In-Reply-To: <20200116173641.22137-1-sashal@kernel.org>
+References: <20200116173641.22137-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -61,95 +64,67 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Marek Szyprowski <m.szyprowski@samsung.com>
+From: Stephen Boyd <swboyd@chromium.org>
 
-[ Upstream commit ca70ea43f80c98582f5ffbbd1e6f4da2742da0c4 ]
+[ Upstream commit 8288022284859acbcc3cf1a073a1e2692d6c2543 ]
 
-MCPM does a soft reset of the CPUs and uses common cpu_resume() routine to
-perform low-level platform initialization. This results in a try to install
-HYP stubs for the second time for each CPU and results in false HYP/SVC
-mode mismatch detection. The HYP stubs are already installed at the
-beginning of the kernel initialization on the boot CPU (head.S) or in the
-secondary_startup() for other CPUs. To fix this issue MCPM code should use
-a cpu_resume() routine without HYP stubs installation.
+We may want to use the device pointer in device_init_wakeup() with
+functions that expect the device to already be added with device_add().
+For example, if we were to link the device initializing wakeup to
+something in sysfs such as a class for wakeups we'll run into an error.
+It looks like this code was written with the assumption that the device
+would be added before initializing wakeup due to the order of operations
+in power_supply_unregister().
 
-This change fixes HYP/SVC mode mismatch on Samsung Exynos5422-based Odroid
-XU3/XU4/HC1 boards.
+Let's change the order of operations so we don't run into problems here.
 
-Fixes: 3721924c8154 ("ARM: 8081/1: MCPM: provide infrastructure to allow for MCPM loopback")
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Acked-by: Nicolas Pitre <nico@linaro.org>
-Tested-by: Anand Moon <linux.amoon@gmail.com>
-Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+Fixes: 948dcf966228 ("power_supply: Prevent suspend until power supply events are processed")
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Tri Vo <trong@android.com>
+Cc: Kalesh Singh <kaleshsingh@google.com>
+Cc: Ravi Chandra Sadineni <ravisadineni@chromium.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/arm/common/mcpm_entry.c   |  2 +-
- arch/arm/include/asm/suspend.h |  1 +
- arch/arm/kernel/sleep.S        | 12 ++++++++++++
- 3 files changed, 14 insertions(+), 1 deletion(-)
+ drivers/power/supply/power_supply_core.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/common/mcpm_entry.c b/arch/arm/common/mcpm_entry.c
-index a923524d1040..8617323eb273 100644
---- a/arch/arm/common/mcpm_entry.c
-+++ b/arch/arm/common/mcpm_entry.c
-@@ -379,7 +379,7 @@ static int __init nocache_trampoline(unsigned long _arg)
- 	unsigned int cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
- 	phys_reset_t phys_reset;
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 9e05ae0430a9..cb0b3d3d132f 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -764,14 +764,14 @@ __power_supply_register(struct device *parent,
+ 	}
  
--	mcpm_set_entry_vector(cpu, cluster, cpu_resume);
-+	mcpm_set_entry_vector(cpu, cluster, cpu_resume_no_hyp);
- 	setup_mm_for_reboot();
+ 	spin_lock_init(&psy->changed_lock);
+-	rc = device_init_wakeup(dev, ws);
+-	if (rc)
+-		goto wakeup_init_failed;
+-
+ 	rc = device_add(dev);
+ 	if (rc)
+ 		goto device_add_failed;
  
- 	__mcpm_cpu_going_down(cpu, cluster);
-diff --git a/arch/arm/include/asm/suspend.h b/arch/arm/include/asm/suspend.h
-index 6c7182f32cef..e6c2f426f8c8 100644
---- a/arch/arm/include/asm/suspend.h
-+++ b/arch/arm/include/asm/suspend.h
-@@ -7,6 +7,7 @@ struct sleep_save_sp {
- };
- 
- extern void cpu_resume(void);
-+extern void cpu_resume_no_hyp(void);
- extern void cpu_resume_arm(void);
- extern int cpu_suspend(unsigned long, int (*)(unsigned long));
- 
-diff --git a/arch/arm/kernel/sleep.S b/arch/arm/kernel/sleep.S
-index 0f6c1000582c..c8569390e7e7 100644
---- a/arch/arm/kernel/sleep.S
-+++ b/arch/arm/kernel/sleep.S
-@@ -119,6 +119,14 @@ ENDPROC(cpu_resume_after_mmu)
- 	.text
- 	.align
- 
-+#ifdef CONFIG_MCPM
-+	.arm
-+THUMB(	.thumb			)
-+ENTRY(cpu_resume_no_hyp)
-+ARM_BE8(setend be)			@ ensure we are in BE mode
-+	b	no_hyp
-+#endif
++	rc = device_init_wakeup(dev, ws);
++	if (rc)
++		goto wakeup_init_failed;
 +
- #ifdef CONFIG_MMU
- 	.arm
- ENTRY(cpu_resume_arm)
-@@ -134,6 +142,7 @@ ARM_BE8(setend be)			@ ensure we are in BE mode
- 	bl	__hyp_stub_install_secondary
- #endif
- 	safe_svcmode_maskall r1
-+no_hyp:
- 	mov	r1, #0
- 	ALT_SMP(mrc p15, 0, r0, c0, c0, 5)
- 	ALT_UP_B(1f)
-@@ -162,6 +171,9 @@ ENDPROC(cpu_resume)
- 
- #ifdef CONFIG_MMU
- ENDPROC(cpu_resume_arm)
-+#endif
-+#ifdef CONFIG_MCPM
-+ENDPROC(cpu_resume_no_hyp)
- #endif
- 
- 	.align 2
+ 	rc = psy_register_thermal(psy);
+ 	if (rc)
+ 		goto register_thermal_failed;
+@@ -808,8 +808,8 @@ __power_supply_register(struct device *parent,
+ 	psy_unregister_thermal(psy);
+ register_thermal_failed:
+ 	device_del(dev);
+-device_add_failed:
+ wakeup_init_failed:
++device_add_failed:
+ check_supplies_failed:
+ dev_set_name_failed:
+ 	put_device(dev);
 -- 
 2.20.1
 
