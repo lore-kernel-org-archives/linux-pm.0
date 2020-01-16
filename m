@@ -2,68 +2,117 @@ Return-Path: <SRS0=m8DM=3F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5407C33CAF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:51:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33406C33CB6
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:53:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8B7EB206D7
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:51:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C3402073A
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:53:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1579200788;
+	bh=eIgptUVK7RSEOmpu2bxskleTrU5m+xjTInP8YUwnX0s=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=UMxO8df0wr+Olfg9CHpzwB+pgl+evr0/cSv1ywylleqYu2GebomNGBLNldWQYBqxR
+	 dBw/sk0/PHFRueqQPPHi+RTctNTwGqYEvXa/5oZj9ZGfFt5O+fevWEJxwPiwyC+kyw
+	 2swtVehhXBuHomxvE/16UjJWXn34/XkT6hmU/mXU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389265AbgAPSva (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 13:51:30 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:45870 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389571AbgAPRJD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2020 12:09:03 -0500
-Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <colin.king@canonical.com>)
-        id 1is8dh-0001uN-1q; Thu, 16 Jan 2020 17:09:01 +0000
-From:   Colin King <colin.king@canonical.com>
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Yauhen Kharuzhy <jekhor@gmail.com>, linux-pm@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][next] power: supply: bq25890_charger: fix incorrect error return when bq25890_field_read fails
-Date:   Thu, 16 Jan 2020 17:09:00 +0000
-Message-Id: <20200116170900.86548-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.24.0
+        id S2389379AbgAPRIT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 12:08:19 -0500
+Received: from mail.kernel.org ([198.145.29.99]:41690 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2389376AbgAPRIT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Jan 2020 12:08:19 -0500
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id AB4E0205F4;
+        Thu, 16 Jan 2020 17:08:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1579194498;
+        bh=eIgptUVK7RSEOmpu2bxskleTrU5m+xjTInP8YUwnX0s=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=xF+D4psUuPDDH+Wn7ZZrph0K5/2zoVcjaKEdLPGsxRoeEpTnfBawiSRNzQp/CZV/b
+         iXGSDD8YvXaH71H2ErV90ALtzcIHhIYEE/a1VGcMttN1c+Yfo7hgdiMxAkxKQTvoR6
+         JtJNxV+TtS6DGBnTJ1RomnYQR6k+teCcWMMX0fb0=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Florian Fainelli <f.fainelli@gmail.com>,
+        Markus Mayer <mmayer@broadcom.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH AUTOSEL 4.19 395/671] cpufreq: brcmstb-avs-cpufreq: Fix types for voltage/frequency
+Date:   Thu, 16 Jan 2020 12:00:33 -0500
+Message-Id: <20200116170509.12787-132-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
+References: <20200116170509.12787-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
 
-Currently a read failure by bq25890_field_read on F_DEV_REV is returning
-an error in id instead of rev. Fix this by returning the value in rev.
+[ Upstream commit 4c5681fcc684c762b09435de3e82ffeee7769d21 ]
 
-Addresses-Coverity: ("Copy-paste error")
-Fixes: d20267c9a98e ("power: supply: bq25890_charger: Add support of BQ25892 and BQ25896 chips")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+What we read back from the register is going to be capped at 32-bits,
+and cpufreq_freq_table.frequency is an unsigned int. Avoid any possible
+value truncation by using the appropriate return value.
+
+Fixes: de322e085995 ("cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq driver for Broadcom STB SoCs")
+Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+Acked-by: Markus Mayer <mmayer@broadcom.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/bq25890_charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 785dbc6307b0..aebd1253dbc9 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -765,7 +765,7 @@ static int bq25890_get_chip_version(struct bq25890_device *bq)
- 	rev = bq25890_field_read(bq, F_DEV_REV);
- 	if (rev < 0) {
- 		dev_err(bq->dev, "Cannot read chip revision.\n");
--		return id;
-+		return rev;
- 	}
+diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+index 6ed53ca8aa98..77b0e5d0fb13 100644
+--- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
++++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+@@ -384,12 +384,12 @@ static int brcm_avs_set_pstate(struct private_data *priv, unsigned int pstate)
+ 	return __issue_avs_command(priv, AVS_CMD_SET_PSTATE, true, args);
+ }
  
- 	switch (id) {
+-static unsigned long brcm_avs_get_voltage(void __iomem *base)
++static u32 brcm_avs_get_voltage(void __iomem *base)
+ {
+ 	return readl(base + AVS_MBOX_VOLTAGE1);
+ }
+ 
+-static unsigned long brcm_avs_get_frequency(void __iomem *base)
++static u32 brcm_avs_get_frequency(void __iomem *base)
+ {
+ 	return readl(base + AVS_MBOX_FREQUENCY) * 1000;	/* in kHz */
+ }
+@@ -653,14 +653,14 @@ static ssize_t show_brcm_avs_voltage(struct cpufreq_policy *policy, char *buf)
+ {
+ 	struct private_data *priv = policy->driver_data;
+ 
+-	return sprintf(buf, "0x%08lx\n", brcm_avs_get_voltage(priv->base));
++	return sprintf(buf, "0x%08x\n", brcm_avs_get_voltage(priv->base));
+ }
+ 
+ static ssize_t show_brcm_avs_frequency(struct cpufreq_policy *policy, char *buf)
+ {
+ 	struct private_data *priv = policy->driver_data;
+ 
+-	return sprintf(buf, "0x%08lx\n", brcm_avs_get_frequency(priv->base));
++	return sprintf(buf, "0x%08x\n", brcm_avs_get_frequency(priv->base));
+ }
+ 
+ cpufreq_freq_attr_ro(brcm_avs_pstate);
 -- 
-2.24.0
+2.20.1
 
