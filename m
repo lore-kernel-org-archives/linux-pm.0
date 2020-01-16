@@ -2,145 +2,115 @@ Return-Path: <SRS0=m8DM=3F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B953CC33CB7
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:33:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FECFC33CB6
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:53:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 91C4C246AD
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:33:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 380D12469F
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:53:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1579196023;
-	bh=2G0Ng8OaQXY0myuwsXjYgysTnAkfNx4yCUXz8txEl2Y=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=MD5BPPKP3cLmexJuHXLnCcLexpAvRYprMdDx24yPAwHg+Ksb7JZ6l6TEoYvctu4RI
-	 g6xEzdkkyAhY1C7UCQxwQ0ZR2dmu3oNsyfHFDzAkfzTvaqmDZMAhh+Gdzonlr7B4PC
-	 xS87drc6KyLWqbmit+cqWIBje+3FKELut2SLHKc0=
+	s=default; t=1579197212;
+	bh=Qt4jd1fuYQukkTXACstAqazYGh2Nsco3xZj82oL/EFM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=z6sjeXIfzpYxGsLAnAP0acwjHhjKH6N5tvq+UlfPB/B5W0sOep1ht3ggCwwd4y6Nf
+	 rP+B2iet1xa6yN6WoWGq5fP1YFx73VJ3IVVG1d57oGacAV5uhD8ed6sHtykv4Fc0aA
+	 qOdkn1QkqFGGok8thDll3SjYgFrlTslZIGXG/WXg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404833AbgAPRdl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 12:33:41 -0500
-Received: from mail.kernel.org ([198.145.29.99]:47422 "EHLO mail.kernel.org"
+        id S2406047AbgAPRpC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 12:45:02 -0500
+Received: from mail.kernel.org ([198.145.29.99]:36410 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387875AbgAPRdl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Jan 2020 12:33:41 -0500
-Received: from mail-qk1-f169.google.com (mail-qk1-f169.google.com [209.85.222.169])
+        id S2406039AbgAPRpB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Jan 2020 12:45:01 -0500
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 45613246D8;
-        Thu, 16 Jan 2020 17:33:40 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id D3C192475E;
+        Thu, 16 Jan 2020 17:44:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1579196020;
-        bh=2G0Ng8OaQXY0myuwsXjYgysTnAkfNx4yCUXz8txEl2Y=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=vd/D2dqhVkk/59pyEhm3YzDslAjdxWxnY8HVcflYPu9BYi5M2fluN/7qGED+/2x3q
-         FEqZtepLYPcur1TFx9cTTrpOQa+XAOiY74agLTBgaVPlHxKEc6VLGwSnfUWyzBngsS
-         F0k9PXMbe2fYpxERpAz/dVRnYfE/ibbxVX1YntZ8=
-Received: by mail-qk1-f169.google.com with SMTP id c16so19884519qko.6;
-        Thu, 16 Jan 2020 09:33:40 -0800 (PST)
-X-Gm-Message-State: APjAAAUNxCmxqLox94WRRfH/E86xRM0pSnahAV7aZPnShduhjumT/Wlp
-        QHvV2DP36Mt2igFg2cUNIBEyOcduN1K1WlvP1g==
-X-Google-Smtp-Source: APXvYqzp8zTCERQIV+x1zdU2FH8qa9LdLhrgMgX7M1lyS8XHlvveUMh4kI3m0RFeC5HMz+WfbUraLiUXsMQZdBiBvTg=
-X-Received: by 2002:a05:620a:135b:: with SMTP id c27mr31335279qkl.119.1579196019371;
- Thu, 16 Jan 2020 09:33:39 -0800 (PST)
-MIME-Version: 1.0
-References: <1578941778-23321-1-git-send-email-stefan.wahren@i2se.com> <1578941778-23321-2-git-send-email-stefan.wahren@i2se.com>
-In-Reply-To: <1578941778-23321-2-git-send-email-stefan.wahren@i2se.com>
-From:   Rob Herring <robh+dt@kernel.org>
-Date:   Thu, 16 Jan 2020 11:33:27 -0600
-X-Gmail-Original-Message-ID: <CAL_Jsq+w0KGE-=XkAwpdqh67pH=V34ETCy8X92L_u1=_8xuKCg@mail.gmail.com>
-Message-ID: <CAL_Jsq+w0KGE-=XkAwpdqh67pH=V34ETCy8X92L_u1=_8xuKCg@mail.gmail.com>
-Subject: Re: [PATCH V5 1/4] dt-bindings: Add Broadcom AVS RO thermal
-To:     Stefan Wahren <stefan.wahren@i2se.com>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
+        s=default; t=1579196700;
+        bh=Qt4jd1fuYQukkTXACstAqazYGh2Nsco3xZj82oL/EFM=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=kvq4MFn8UM2Oi6LD2tWOiQcOLsEX1Ycfit535UrWhYxS1BkXP9n2TmwiUL+qxAKWR
+         4O1EXUcc/mZair9judEyZxowkwgVYTXiFJ4PghZ28jhHI1sQP0ZkLr6tYVi1qlAzIt
+         m2jIMVVgz3fv9QafY+IlUbomCN/4Of6hUd0i6E4U=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Matthias Kaehlcke <mka@chromium.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "maintainer:BROADCOM BCM7XXX ARM ARCHITECTURE" 
-        <bcm-kernel-feedback-list@broadcom.com>, devicetree@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        Javi Merino <javi.merino@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.4 093/174] thermal: cpu_cooling: Actually trace CPU load in thermal_power_cpu_get_power
+Date:   Thu, 16 Jan 2020 12:41:30 -0500
+Message-Id: <20200116174251.24326-93-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200116174251.24326-1-sashal@kernel.org>
+References: <20200116174251.24326-1-sashal@kernel.org>
+MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jan 13, 2020 at 12:56 PM Stefan Wahren <stefan.wahren@i2se.com> wrote:
->
-> Since the BCM2711 doesn't have a AVS TMON block, the thermal information
-> must be retrieved from the AVS ring oscillator block. This block is part
-> of the AVS monitor which contains a bunch of raw sensors.
->
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-> ---
->  .../bindings/thermal/brcm,avs-ro-thermal.yaml      | 45 ++++++++++++++++++++++
->  1 file changed, 45 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
+From: Matthias Kaehlcke <mka@chromium.org>
 
-The example fails 'make dt_binding_check':
+[ Upstream commit bf45ac18b78038e43af3c1a273cae4ab5704d2ce ]
 
-/builds/robherring/linux-dt-bindings/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.example.dt.yaml:
-thermal: 'reg' is a required property
+The CPU load values passed to the thermal_power_cpu_get_power
+tracepoint are zero for all CPUs, unless, unless the
+thermal_power_cpu_limit tracepoint is enabled too:
 
-> diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml b/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-> new file mode 100644
-> index 0000000..98e7b57
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml
-> @@ -0,0 +1,45 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/thermal/brcm,avs-ro-thermal.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Broadcom AVS ring oscillator thermal
-> +
-> +maintainers:
-> +  - Stefan Wahren <wahrenst@gmx.net>
-> +
-> +description: |+
-> +  The thermal node should be the child of a syscon node with the
-> +  required property:
-> +
-> +  - compatible: Should be one of the following:
-> +                "brcm,bcm2711-avs-monitor", "syscon", "simple-mfd"
-> +
-> +  Refer to the the bindings described in
-> +  Documentation/devicetree/bindings/mfd/syscon.txt
-> +
-> +properties:
-> +  compatible:
-> +    const: brcm,bcm2711-thermal
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +examples:
-> +  - |
-> +        avs-monitor@7d5d2000 {
-> +                compatible = "brcm,bcm2711-avs-monitor",
-> +                             "syscon", "simple-mfd";
-> +                reg = <0x7d5d2000 0xf00>;
-> +
-> +                thermal: thermal {
-> +                        compatible = "brcm,bcm2711-thermal";
-> +                        #thermal-sensor-cells = <0>;
+  irq/41-rockchip-98    [000] ....   290.972410: thermal_power_cpu_get_power:
+  cpus=0000000f freq=1800000 load={{0x0,0x0,0x0,0x0}} dynamic_power=4815
 
-Also this is not documented. That's not caught because
-'additionalProperties: false' is also needed.
+vs
 
-Rob
+  irq/41-rockchip-96    [000] ....    95.773585: thermal_power_cpu_get_power:
+  cpus=0000000f freq=1800000 load={{0x56,0x64,0x64,0x5e}} dynamic_power=4959
+  irq/41-rockchip-96    [000] ....    95.773596: thermal_power_cpu_limit:
+  cpus=0000000f freq=408000 cdev_state=10 power=416
+
+There seems to be no good reason for omitting the CPU load information
+depending on another tracepoint. My guess is that the intention was to
+check whether thermal_power_cpu_get_power is (still) enabled, however
+'load_cpu != NULL' already indicates that it was at least enabled when
+cpufreq_get_requested_power() was entered, there seems little gain
+from omitting the assignment if the tracepoint was just disabled, so
+just remove the check.
+
+Fixes: 6828a4711f99 ("thermal: add trace events to the power allocator governor")
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Javi Merino <javi.merino@kernel.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/thermal/cpu_cooling.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 87d87ac1c8a0..96567b4a4f20 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -607,7 +607,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+ 			load = 0;
+ 
+ 		total_load += load;
+-		if (trace_thermal_power_cpu_limit_enabled() && load_cpu)
++		if (load_cpu)
+ 			load_cpu[i] = load;
+ 
+ 		i++;
+-- 
+2.20.1
+
