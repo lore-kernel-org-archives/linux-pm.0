@@ -2,87 +2,154 @@ Return-Path: <SRS0=m8DM=3F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 038ACC33CAF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:58:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24170C33CAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 19:04:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C995D206D7
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:58:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 001E5206D7
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 19:04:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1579201109;
-	bh=xQHaMmW5+OUanOpzT3F10iGg7VHntvomNgGXkgpU0/4=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=LWUEiPBxcGCH7VGuTyn6TIuhZkHL8A2w5G5kbSE71hLenOzcAExd8cxd7dowd8yfe
-	 egdYIL5DaM7IPvBR1hLGD4ugQgUD6cqBKWR3z6NPW0P0RoQ3UHgsXEIhuqzkDVo73W
-	 VhetZ9yzLfs776LgN32g2gj56hgTYJJGFhNVcj7c=
+	s=default; t=1579201496;
+	bh=nShCqT2uvYfQBzQLZCUGFnVXfb9CFk7xefGo0uh3A2Y=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=knfTzqx25h5cSvrLenwDfDMR1ns8FA+JU5A6pKY83tJA8PVj5drvIAZh/Sd3vQCli
+	 pMZTeWQ3GCa2MgyzYt4AccOGjjj+74ZZMdlwPrhrkfUIqiOausRF5DPsf4dw3u7J8i
+	 uIEvJ/VyBskeejr0klZ5WhwZqJ68g7rNaP5dfpgU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389001AbgAPS62 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 13:58:28 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38264 "EHLO mail.kernel.org"
+        id S2388947AbgAPTEt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 14:04:49 -0500
+Received: from mail.kernel.org ([198.145.29.99]:54534 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389538AbgAPS62 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Jan 2020 13:58:28 -0500
-Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com [209.85.222.174])
+        id S2388283AbgAPRCK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Jan 2020 12:02:10 -0500
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 83AE121D56;
-        Thu, 16 Jan 2020 18:58:27 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id DB0B2207FF;
+        Thu, 16 Jan 2020 17:02:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1579201107;
-        bh=xQHaMmW5+OUanOpzT3F10iGg7VHntvomNgGXkgpU0/4=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=pW1ad/mr9lv4mjG0KEHhw15B0zLcU7PWxrVIHtozNIlIefsGUj+3aY68lA0al2hhz
-         oWtE//Q1g1pAS6w0SBmCk64FIpGJjxgsQAswNY8yo9mAkJeDp4c/olz+VXoP3Kme05
-         TC1GjKQjhsUfwbm5bhgzsLb7A7y6H9uLiQgNebmM=
-Received: by mail-qk1-f174.google.com with SMTP id a203so20225382qkc.3;
-        Thu, 16 Jan 2020 10:58:27 -0800 (PST)
-X-Gm-Message-State: APjAAAX7EBSkaL+2UN0vHHUSOPaWAykL58uzba7Sdl55VtITmLMHVai7
-        7nddZv4d5aJCXwXX1c7AtfQlKWE22hP4xROPJw==
-X-Google-Smtp-Source: APXvYqz7Jds+/Z0T2jKmrW9vc4gPA0ja7tR3DL5ZNZX7bEiGSGPBQq4mA+KAyBwwQDFM1HxCAgDqUAjb3yEtcnqqaag=
-X-Received: by 2002:a05:620a:1eb:: with SMTP id x11mr35416430qkn.254.1579201106608;
- Thu, 16 Jan 2020 10:58:26 -0800 (PST)
+        s=default; t=1579194129;
+        bh=nShCqT2uvYfQBzQLZCUGFnVXfb9CFk7xefGo0uh3A2Y=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=m2u66MctmG3vlkfqllM4gRs3jr5Il8eowdhYQNFo5o9OY2dnuGnIokpb14BJ6y82v
+         xpn99iyb76MKup5tGViEtaTOYmnzXiBxNVtzU8J/txyhgrT7zmHVOP+HZFpAxJ0/h6
+         nKVA77PL9+Jy2MM0aCMbaKz9jgF2c2i5lq1jQRLs=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Marek Szyprowski <m.szyprowski@samsung.com>,
+        Nicolas Pitre <nico@linaro.org>,
+        Anand Moon <linux.amoon@gmail.com>,
+        Russell King <rmk+kernel@armlinux.org.uk>,
+        Sasha Levin <sashal@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 220/671] ARM: 8847/1: pm: fix HYP/SVC mode mismatch when MCPM is used
+Date:   Thu, 16 Jan 2020 11:52:09 -0500
+Message-Id: <20200116165940.10720-103-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200116165940.10720-1-sashal@kernel.org>
+References: <20200116165940.10720-1-sashal@kernel.org>
 MIME-Version: 1.0
-References: <1579200077-17496-1-git-send-email-stefan.wahren@i2se.com>
-In-Reply-To: <1579200077-17496-1-git-send-email-stefan.wahren@i2se.com>
-From:   Rob Herring <robh+dt@kernel.org>
-Date:   Thu, 16 Jan 2020 12:58:15 -0600
-X-Gmail-Original-Message-ID: <CAL_Jsq+51A_wKBzxwihkQd=eo_AEQ-wo4pK_GthO5b8WT=6oKw@mail.gmail.com>
-Message-ID: <CAL_Jsq+51A_wKBzxwihkQd=eo_AEQ-wo4pK_GthO5b8WT=6oKw@mail.gmail.com>
-Subject: Re: [PATCH] dt-bindings: brcm,avs-ro-thermal: Fix binding check issues
-To:     Stefan Wahren <stefan.wahren@i2se.com>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "maintainer:BROADCOM BCM7XXX ARM ARCHITECTURE" 
-        <bcm-kernel-feedback-list@broadcom.com>, devicetree@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jan 16, 2020 at 12:42 PM Stefan Wahren <stefan.wahren@i2se.com> wrote:
->
-> Drop the reg property since this only necessary for the parent and
-> add the missing thermal-sensor-cells property description.
->
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> Fixes: 3d4849897691 ("dt-bindings: Add Broadcom AVS RO thermal")
-> ---
->  .../devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml         | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+From: Marek Szyprowski <m.szyprowski@samsung.com>
 
-Thanks for the quick fix.
+[ Upstream commit ca70ea43f80c98582f5ffbbd1e6f4da2742da0c4 ]
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+MCPM does a soft reset of the CPUs and uses common cpu_resume() routine to
+perform low-level platform initialization. This results in a try to install
+HYP stubs for the second time for each CPU and results in false HYP/SVC
+mode mismatch detection. The HYP stubs are already installed at the
+beginning of the kernel initialization on the boot CPU (head.S) or in the
+secondary_startup() for other CPUs. To fix this issue MCPM code should use
+a cpu_resume() routine without HYP stubs installation.
+
+This change fixes HYP/SVC mode mismatch on Samsung Exynos5422-based Odroid
+XU3/XU4/HC1 boards.
+
+Fixes: 3721924c8154 ("ARM: 8081/1: MCPM: provide infrastructure to allow for MCPM loopback")
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Acked-by: Nicolas Pitre <nico@linaro.org>
+Tested-by: Anand Moon <linux.amoon@gmail.com>
+Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/arm/common/mcpm_entry.c   |  2 +-
+ arch/arm/include/asm/suspend.h |  1 +
+ arch/arm/kernel/sleep.S        | 12 ++++++++++++
+ 3 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/common/mcpm_entry.c b/arch/arm/common/mcpm_entry.c
+index ad574d20415c..1b1b82b37ce0 100644
+--- a/arch/arm/common/mcpm_entry.c
++++ b/arch/arm/common/mcpm_entry.c
+@@ -381,7 +381,7 @@ static int __init nocache_trampoline(unsigned long _arg)
+ 	unsigned int cluster = MPIDR_AFFINITY_LEVEL(mpidr, 1);
+ 	phys_reset_t phys_reset;
+ 
+-	mcpm_set_entry_vector(cpu, cluster, cpu_resume);
++	mcpm_set_entry_vector(cpu, cluster, cpu_resume_no_hyp);
+ 	setup_mm_for_reboot();
+ 
+ 	__mcpm_cpu_going_down(cpu, cluster);
+diff --git a/arch/arm/include/asm/suspend.h b/arch/arm/include/asm/suspend.h
+index 452bbdcbcc83..506314265c6f 100644
+--- a/arch/arm/include/asm/suspend.h
++++ b/arch/arm/include/asm/suspend.h
+@@ -10,6 +10,7 @@ struct sleep_save_sp {
+ };
+ 
+ extern void cpu_resume(void);
++extern void cpu_resume_no_hyp(void);
+ extern void cpu_resume_arm(void);
+ extern int cpu_suspend(unsigned long, int (*)(unsigned long));
+ 
+diff --git a/arch/arm/kernel/sleep.S b/arch/arm/kernel/sleep.S
+index a8257fc9cf2a..5dc8b80bb693 100644
+--- a/arch/arm/kernel/sleep.S
++++ b/arch/arm/kernel/sleep.S
+@@ -120,6 +120,14 @@ ENDPROC(cpu_resume_after_mmu)
+ 	.text
+ 	.align
+ 
++#ifdef CONFIG_MCPM
++	.arm
++THUMB(	.thumb			)
++ENTRY(cpu_resume_no_hyp)
++ARM_BE8(setend be)			@ ensure we are in BE mode
++	b	no_hyp
++#endif
++
+ #ifdef CONFIG_MMU
+ 	.arm
+ ENTRY(cpu_resume_arm)
+@@ -135,6 +143,7 @@ ARM_BE8(setend be)			@ ensure we are in BE mode
+ 	bl	__hyp_stub_install_secondary
+ #endif
+ 	safe_svcmode_maskall r1
++no_hyp:
+ 	mov	r1, #0
+ 	ALT_SMP(mrc p15, 0, r0, c0, c0, 5)
+ 	ALT_UP_B(1f)
+@@ -163,6 +172,9 @@ ENDPROC(cpu_resume)
+ 
+ #ifdef CONFIG_MMU
+ ENDPROC(cpu_resume_arm)
++#endif
++#ifdef CONFIG_MCPM
++ENDPROC(cpu_resume_no_hyp)
+ #endif
+ 
+ 	.align 2
+-- 
+2.20.1
+
