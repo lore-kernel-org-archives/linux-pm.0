@@ -2,58 +2,59 @@ Return-Path: <SRS0=m8DM=3F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97DE5C33CB3
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:53:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21475C33CAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:53:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6BAD324699
+	by mail.kernel.org (Postfix) with ESMTP id F2587246A4
 	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 17:53:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="N1igzSg8"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="lHqSloGr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2394454AbgAPRxo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 12:53:44 -0500
-Received: from lelv0143.ext.ti.com ([198.47.23.248]:42730 "EHLO
-        lelv0143.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2394443AbgAPRxo (ORCPT
+        id S2394456AbgAPRxp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 12:53:45 -0500
+Received: from lelv0142.ext.ti.com ([198.47.23.249]:58726 "EHLO
+        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2394448AbgAPRxo (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2020 12:53:44 -0500
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 00GHrebX029057;
-        Thu, 16 Jan 2020 11:53:40 -0600
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 00GHrfjR014806;
+        Thu, 16 Jan 2020 11:53:41 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1579197220;
-        bh=t8orkGLdN+VEXtw9A9i1nVzcxXSIJKWT0HvQf4WRsYY=;
-        h=From:To:CC:Subject:Date;
-        b=N1igzSg8HbQMxuU4mta1clFA76Qk1XUzdinIySGWB+yb/Zux0quMvg80JWiaE9ayb
-         /5shhxzvWfPk4XkO+83lET+byiR7cu3XFaNKVueVt4+ay3muvxw+3LaYSUyAYXYKon
-         nKdeT6DSnxLA2o8qMd1Nv2e2aL9Se7Dmy4VX2oN8=
-Received: from DLEE109.ent.ti.com (dlee109.ent.ti.com [157.170.170.41])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 00GHreNl075932
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Thu, 16 Jan 2020 11:53:40 -0600
-Received: from DLEE107.ent.ti.com (157.170.170.37) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
+        s=ti-com-17Q1; t=1579197221;
+        bh=B6F7pyXdU2wc51jU/3JM/80f6cY1moA5Y8ew6WJIoeg=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=lHqSloGrjJfFbt3br4/oZrIrkCcLkHhzNbO6LAOdM7JMtuKZnTBo7tVosJwpuioEi
+         91BCfA0XFV0VkdxkxPtYvo3PjMCqGq/Qn3ze4Xzay3oztguDrgJ/9BN56xzwRqkQBt
+         zwRQcGlF47kvpT2V0yPJd7J/RRsOURFxzggJzHwA=
+Received: from DFLE109.ent.ti.com (dfle109.ent.ti.com [10.64.6.30])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 00GHrfp1039198;
+        Thu, 16 Jan 2020 11:53:41 -0600
+Received: from DFLE113.ent.ti.com (10.64.6.34) by DFLE109.ent.ti.com
+ (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Thu, 16
- Jan 2020 11:53:40 -0600
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE107.ent.ti.com
- (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
+ Jan 2020 11:53:41 -0600
+Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE113.ent.ti.com
+ (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Thu, 16 Jan 2020 11:53:40 -0600
+ Frontend Transport; Thu, 16 Jan 2020 11:53:41 -0600
 Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 00GHresi040565;
-        Thu, 16 Jan 2020 11:53:40 -0600
+        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 00GHrebF040580;
+        Thu, 16 Jan 2020 11:53:41 -0600
 From:   Dan Murphy <dmurphy@ti.com>
 To:     <sebastian.reichel@collabora.com>
 CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         Dan Murphy <dmurphy@ti.com>
-Subject: [PATCH v4 0/4] BQ25150/155 Driver introduction
-Date:   Thu, 16 Jan 2020 11:50:35 -0600
-Message-ID: <20200116175039.1317-1-dmurphy@ti.com>
+Subject: [PATCH v4 3/4] dt-bindings: power: Add the bq2515x family dt bindings
+Date:   Thu, 16 Jan 2020 11:50:38 -0600
+Message-ID: <20200116175039.1317-4-dmurphy@ti.com>
 X-Mailer: git-send-email 2.25.0
+In-Reply-To: <20200116175039.1317-1-dmurphy@ti.com>
+References: <20200116175039.1317-1-dmurphy@ti.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -63,35 +64,110 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello
+Add the bindings for the bq25150 and bq25155 500mA
+charging ICs from Texas Instruments.
 
-I am introducing the TI BQ25150/155 Charge driver.
-The driver also supports the JEITA spec for Thermal battery management. This
-support for Hot, Warm and Cool are being added to the power supply class.
-
-Datasheets for these devices can be found at:
+Datasheet:
 http://www.ti.com/lit/ds/symlink/bq25150.pdf
 http://www.ti.com/lit/ds/symlink/bq25155.pdf
 
-Dan
-
-Dan Murphy (4):
-  power: supply: core: Update sysfs-class-power ABI document
-  power_supply: Add additional health properties to the header
-  dt-bindings: power: Add the bq2515x family dt bindings
-  power: supply: bq2515x: Introduce the bq2515x family
-
- Documentation/ABI/testing/sysfs-class-power   |   3 +-
- .../bindings/power/supply/bq2515x.yaml        |  85 ++
- drivers/power/supply/Kconfig                  |   8 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/bq2515x_charger.c        | 739 ++++++++++++++++++
- drivers/power/supply/power_supply_sysfs.c     |   2 +-
- include/linux/power_supply.h                  |   3 +
- 7 files changed, 839 insertions(+), 2 deletions(-)
+Signed-off-by: Dan Murphy <dmurphy@ti.com>
+---
+ .../bindings/power/supply/bq2515x.yaml        | 85 +++++++++++++++++++
+ 1 file changed, 85 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/supply/bq2515x.yaml
- create mode 100644 drivers/power/supply/bq2515x_charger.c
 
+diff --git a/Documentation/devicetree/bindings/power/supply/bq2515x.yaml b/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
+new file mode 100644
+index 000000000000..670952021e8d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
+@@ -0,0 +1,85 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++# Copyright (C) 2019 Texas Instruments Incorporated
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/bq2515x.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: TI bq2515x 500-mA Linear charger family
++
++maintainers:
++  - Dan Murphy <dmurphy@ti.com>
++
++description: |
++  The BQ2515x family is a highly integrated battery charge management IC that
++  integrates the most common functions for wearable devices, namely a charger,
++  an output voltage rail, ADC for battery and system monitoring, and
++  push-button controller.
++
++  Specifications about the charger can be found at:
++    http://www.ti.com/lit/ds/symlink/bq25150.pdf
++    http://www.ti.com/lit/ds/symlink/bq25155.pdf
++
++properties:
++  compatible:
++    enum:
++      - ti,bq25150
++      - ti,bq25155
++
++  reg:
++    maxItems: 1
++
++  pg-gpios:
++    description: |
++       GPIO used for connecting the bq2515x device PG (Power Good)
++       pin.  This pin should be used if possible as this is the
++       recommended way to obtain the charger's input PG state.
++       If this pin is not specified a software-based approach for PG
++       detection is used.
++
++  reset-gpios:
++    description: |
++       GPIO used for hardware reset.
++
++  low-power-gpios:
++    description: |
++       GPIO used for low power mode of IC.
++
++  charge-enable-gpios:
++    description: |
++       GPIO used to turn on and off charging.
++
++  constant-charge-current-max-microamp:
++    description: |
++       Maximum charging current in micro Amps.
++    minimum: 50000
++    maximum: 600000
++
++  constant-charge-voltage-max-microvolt:
++    description: |
++       Maximum charging voltage in micro volts.
++    minimum: 3600000
++    maximum: 4600000
++
++required:
++  - compatible
++  - reg
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++      charger@6b {
++          compatible = "ti,bq25150";
++          reg = <0x6b>;
++
++          pg-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
++          reset-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
++          low-power-gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
++          charge-enable-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
++          constant-charge-current-max-microamp = <300000>;
++          voltage-max-design-microvolt = <4200000>;
++      };
++    };
 -- 
 2.25.0
 
