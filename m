@@ -2,169 +2,172 @@ Return-Path: <SRS0=m8DM=3F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06EF6C33CB6
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 14:42:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10D09C33CB6
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 15:15:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D06192075B
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 14:42:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D645D20730
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 15:15:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="kykSK39w"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vStNgSmr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726785AbgAPOmn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 09:42:43 -0500
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:34829 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726574AbgAPOmn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2020 09:42:43 -0500
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20200116144242euoutp0172fae3fb7d2adcdef97c54e18ac027be~qZRV7pbd83202932029euoutp01Y
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jan 2020 14:42:42 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20200116144242euoutp0172fae3fb7d2adcdef97c54e18ac027be~qZRV7pbd83202932029euoutp01Y
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1579185762;
-        bh=CXr3GrbWvOph9Y8HeGsYAdfWBQr4CaRWt2qdsDKZRyE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=kykSK39wDCXtzSpJpUgzg1i+mkumA4/eDfKje60DOH6eWVAg0A0qSpbnLF3RRoXWd
-         s/Qu8AeNzD5AgHSUwg9db2hnjy5kCCvB9EG4NPVlthdtGxfkfAdolgJcYQmm+NmqGA
-         jYErHK2ljdb+6hWMMj2qMnFg7Cb0QNgplzwIoAJ8=
-Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20200116144242eucas1p1d3567a2def247298ca22477d7914468a~qZRVtb-Q41363913639eucas1p1T;
-        Thu, 16 Jan 2020 14:42:42 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id F6.F2.60679.166702E5; Thu, 16
-        Jan 2020 14:42:41 +0000 (GMT)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20200116144241eucas1p18dcf099873015e955d71d90712bbe9e0~qZRVZ6AHk0497304973eucas1p1G;
-        Thu, 16 Jan 2020 14:42:41 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20200116144241eusmtrp137959cff65a2af54c977c33027387ca1~qZRVZIe-m0584505845eusmtrp1U;
-        Thu, 16 Jan 2020 14:42:41 +0000 (GMT)
-X-AuditID: cbfec7f4-0e5ff7000001ed07-40-5e207661c6d3
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id A9.E4.07950.166702E5; Thu, 16
-        Jan 2020 14:42:41 +0000 (GMT)
-Received: from AMDC3555.digital.local (unknown [106.120.51.67]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20200116144241eusmtip2b3eb3262f81e594c643ca8124a5ed374~qZRU1_EwE2382523825eusmtip2Y;
-        Thu, 16 Jan 2020 14:42:41 +0000 (GMT)
-From:   =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>
-To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org
-Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
-        georgi.djakov@linaro.org, cw00.choi@samsung.com,
-        b.zolnierkie@samsung.com, m.szyprowski@samsung.com, krzk@kernel.org
-Subject: [PATCH v4 1/3] interconnect: Export of_icc_get_from_provider()
-Date:   Thu, 16 Jan 2020 15:42:00 +0100
-Message-Id: <20200116144202.12116-2-a.swigon@samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200116144202.12116-1-a.swigon@samsung.com>
+        id S1726812AbgAPPPF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 10:15:05 -0500
+Received: from mail-wm1-f67.google.com ([209.85.128.67]:56177 "EHLO
+        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726343AbgAPPPF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2020 10:15:05 -0500
+Received: by mail-wm1-f67.google.com with SMTP id q9so4127170wmj.5
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jan 2020 07:15:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Dcl4UWfwgHtLs/lgK4pT0D4Mt03++vm5tf12mbGu0xs=;
+        b=vStNgSmrMLGS7lullHFZJ4mszFBlfG9oRk3sJBx4adfSwy4pLS1/ZH+eGZxRuZTC3u
+         mOAHizA2D3yxxFamFt2q2AtZ0uYLsEjYYlmU0W7E6FyIIKHHeG6RJj+2rOLXggaZ2S/A
+         fr/d0Xcy6H3352EwsFFCMXuXFw9PG5kPq/j+YAe5TKGDyc0NtQG/1l8ML0lL3vB5RSPR
+         O6/HJ827LVcDvMAaRJc+KiP46QDqCr1s3JyIs17mEF07MLG71+3gT/9WZ09AEPFrQeEV
+         pcG85pYqAzyfPBnJh6L5dea/h+Mv0eTSJxYf/aYb7mAoh8RQP+6O9HnO2tqs07HJCj87
+         LxjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=Dcl4UWfwgHtLs/lgK4pT0D4Mt03++vm5tf12mbGu0xs=;
+        b=FxUWLcbJ2HWtULAcStrbocZT1/mJ0zm211Mn1+xl/BM+Vo7uP57gpzITpUK/q/dwWP
+         WE7kZBKnVGok+xpPO5RnCFCPqGoKhCPk5V1P1EzXTUDD+Bm3qVp9WaBkb4WVR0DrLnEj
+         fIqDwlhAhjJ5BTYxburAHvFRmfWAAmXOfyxxiMbogsRk6dH4L1qStdfflJAqEXRbL2Ev
+         Mkm0Eypuv901QEJhNYKASb4SUzgzTUoKFrOC8ARGwMQxiFuf+0lIkgY6ax9tyqL6p4C9
+         uOG/QMm98bjvMLk4eM3j5SUh8XQRsrT3x6zBw1B6n9k9HkZvRJKnONOQKYDutZ8k0j0z
+         gZDw==
+X-Gm-Message-State: APjAAAWH6IXJJVEUewwHX9BE77xcJyCCqTXwxA9+jc22uidqgUeAGSFl
+        s7idLFkA2TeBUNPgG5ybHeSU+AWrFUYFjwZ/ftw=
+X-Google-Smtp-Source: APXvYqydd32jTkNrJfMblX4hCLRewlE2tvVwHRRjYQWceAfkd/fp+hJmsjVJhSxR+0SPsMsEfv1v+dWTcLBDSuFvu1A=
+X-Received: by 2002:a7b:ca4b:: with SMTP id m11mr6734923wml.164.1579187702280;
+ Thu, 16 Jan 2020 07:15:02 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrMKsWRmVeSWpSXmKPExsWy7djPc7qJZQpxBmd3WFvcn9fKaLFxxnpW
-        i+tfnrNaTN+7ic3i/PkN7BaXd81hs/jce4TRYsb5fUwWa4/cZXfg9Ni0qpPN4861PWwefVtW
-        MXp83iQXwBLFZZOSmpNZllqkb5fAlXFr0Rf2gq0CFauWHGZvYGzi62Lk5JAQMJHon9vO3MXI
-        xSEksIJRovfmARYI5wujxPYNF6Ccz4wSL3vvssO0PNr4DiqxnFHiw/51jHAtd09NZAapYhNw
-        lJg09QFYh4hAvMTHbf/AOpgFdjJKHPn7hwkkISzgLvHsDMRYFgFVif0fJrOA2LwClhI/T11k
-        glgnL7F6wwGgoRwcnAJWEp8fq0KUCEqcnPkErJwZqKR562ywJyQE1rFLnNvTwwbR6yLx8uVV
-        KFtY4tXxLVAvyEicntzDAmEXSzzdeZ8VormBUWLTsiPMEAlriTvnfrGBLGYW0JRYv0sfIuwo
-        8fTETbCwhACfxI23ghA38ElM2jadGSLMK9HRJgRhKknsmgkNagmJptXXoGZ7SMz/vZd9AqPi
-        LCTPzELyzCyEtQsYmVcxiqeWFuempxYb5aWW6xUn5haX5qXrJefnbmIEJp3T/45/2cG460/S
-        IUYBDkYlHt4ZQQpxQqyJZcWVuYcYJTiYlUR4T86QjRPiTUmsrEotyo8vKs1JLT7EKM3BoiTO
-        a7zoZayQQHpiSWp2ampBahFMlomDU6qBcfpKMcaT93ql0kTPt/+54F3QY5LpfOexg9HhREYL
-        6w6HM99d1gpfMeP/tpxj9+sjlwu6cr7X5C3pFQwuyHjawv5x0+Rvoou//g5xMcjWFp1lb9DC
-        kmewd9O+B9LslyZMjru/6OSU1NiZfPcDpB9cEsoNvvy+6bBw4/ud0/qYI+eequD/VHYlQYml
-        OCPRUIu5qDgRANcwnb02AwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrBIsWRmVeSWpSXmKPExsVy+t/xe7qJZQpxBmduqlrcn9fKaLFxxnpW
-        i+tfnrNaTN+7ic3i/PkN7BaXd81hs/jce4TRYsb5fUwWa4/cZXfg9Ni0qpPN4861PWwefVtW
-        MXp83iQXwBKlZ1OUX1qSqpCRX1xiqxRtaGGkZ2hpoWdkYqlnaGwea2VkqqRvZ5OSmpNZllqk
-        b5egl3Fr0Rf2gq0CFauWHGZvYGzi62Lk5JAQMJF4tPEdSxcjF4eQwFJGiYVHzrFDJCQkPq6/
-        wQphC0v8udbFBlH0iVHix6/HTCAJNgFHiUlTH4A1iAgkStx69JgZpIhZYD+jxMs7bWwgCWEB
-        d4lnZ+6CFbEIqErs/zCZBcTmFbCU+HnqIhPEBnmJ1RsOADVzcHAKWEl8fqwKEhYCKrm9sZsV
-        olxQ4uTMJywgJcwC6hLr5wmBhJmBOpu3zmaewCg4C0nVLISqWUiqFjAyr2IUSS0tzk3PLTbS
-        K07MLS7NS9dLzs/dxAiMpW3Hfm7Zwdj1LvgQowAHoxIP74wghTgh1sSy4srcQ4wSHMxKIrwn
-        Z8jGCfGmJFZWpRblxxeV5qQWH2I0BfpsIrOUaHI+MM7zSuINTQ3NLSwNzY3Njc0slMR5OwQO
-        xggJpCeWpGanphakFsH0MXFwSjUwutcavy241yqYpr/2WaTcpQYd9rwLwjd/ZW5337bDcd77
-        4yd3b0u/dXKqwQL9OXPOLha7ImvBwixsmnrANVV+ab2J6+v6gIbcgyqRCzsPzO54ZVv++mRM
-        CMvHOn6X8LqC/tRZD1ek90k+eNxhtEMg5MqxwyyS649YJCWsvuLIUn74U7SupZqyEktxRqKh
-        FnNRcSIAv2xK1bsCAAA=
-X-CMS-MailID: 20200116144241eucas1p18dcf099873015e955d71d90712bbe9e0
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20200116144241eucas1p18dcf099873015e955d71d90712bbe9e0
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20200116144241eucas1p18dcf099873015e955d71d90712bbe9e0
-References: <20200116144202.12116-1-a.swigon@samsung.com>
-        <CGME20200116144241eucas1p18dcf099873015e955d71d90712bbe9e0@eucas1p1.samsung.com>
+References: <20191015065002.18701-1-drake@endlessm.com> <CADnq5_M4Leu0raYS6M72MqTm1+PLg9BjHCHLAYuB2-dEVP56_A@mail.gmail.com>
+ <CAD8Lp443ZhPEo0PJRxbTSB9DY9x92OvWBeH29m9Ehpyhg+2n5A@mail.gmail.com>
+ <CADnq5_OaATVESAY9E2mtd7PoV2VjG=WLS56LCHVpieSHDTas0A@mail.gmail.com>
+ <CAD8Lp46f9LR_VJ26BGfOGvj8sTjKZowkbjLNv6R4CsVMfRZQ=Q@mail.gmail.com>
+ <CAD8Lp46+Te+AUQKLkLEcGf34izw=JzkU5w=CsZRf_UKJQ_k7qg@mail.gmail.com>
+ <CADnq5_OObnKTP7-tBmPz75R5qXs8ubRxgfX-qkBnzqcox0TZyQ@mail.gmail.com> <CAD8Lp44FKuEsmdK+zDX_-ZYQEnqjQM-z6nnfE-CJ62mutd+scA@mail.gmail.com>
+In-Reply-To: <CAD8Lp44FKuEsmdK+zDX_-ZYQEnqjQM-z6nnfE-CJ62mutd+scA@mail.gmail.com>
+From:   Alex Deucher <alexdeucher@gmail.com>
+Date:   Thu, 16 Jan 2020 10:14:49 -0500
+Message-ID: <CADnq5_PNGr4=MqpBeKbhxJ-gpniSCj7L0wO5_V6mjuwpKoaCAg@mail.gmail.com>
+Subject: Re: [PATCH] drm/amdgpu: always reset asic when going into suspend
+To:     Daniel Drake <drake@endlessm.com>
+Cc:     "Deucher, Alexander" <alexander.deucher@amd.com>,
+        Christian Koenig <christian.koenig@amd.com>,
+        Chunming Zhou <David1.Zhou@amd.com>,
+        amd-gfx list <amd-gfx@lists.freedesktop.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch makes the above function public (for use in exynos-bus devfreq
-driver).
+On Wed, Jan 15, 2020 at 2:44 AM Daniel Drake <drake@endlessm.com> wrote:
+>
+> On Thu, Dec 19, 2019 at 10:08 PM Alex Deucher <alexdeucher@gmail.com> wrote:
+> > I think there may be some AMD specific handling needed in
+> > drivers/acpi/sleep.c.  My understanding from reading the modern
+> > standby documents from MS is that each vendor needs to provide a
+> > platform specific PEP driver.  I'm not sure how much of that current
+> > code is Intel specific or not.
+>
+> I don't think there is anything Intel-specific in drivers/acpi/sleep.c.
+>
+> Reading more about PEP, I see that Linux supports PEP devices with
+> ACPI ID INT33A1 or PNP0D80. Indeed the Intel platforms we work with
+> have INT33A1 devices in their ACPI tables.
+>
+> This product has a \_SB.PEP ACPI device with _HID AMD0004 and _CID
+> PNP0D80. Full acpidump:
+> https://gist.github.com/dsd/ff3dfc0f63cdd9eba4a0fbd9e776e8be (see
+> ssdt7)
+>
+> This PEP device responds to a _DSM with UUID argument
+> "e3f32452-febc-43ce-9039-932122d37721", which is not the one
+> documented at https://uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
+>
+> Nevertheless, there is some data about the GPU:
+>                     Package (0x04)
+>                     {
+>                         One,
+>                         "\\_SB.PCI0.GP17.VGA",
+>                         Zero,
+>                         0x03
+>                     },
+>
+> However since this data is identical to many other devices that
+> suspend and resume just fine, I wonder if it is really important.
+>
+> The one supported method does offer two calls which may mirror the
+> Display Off/On Notifications in the above spec:
+>                         Case (0x02)
+>                         {
+>                             \_SB.PCI0.SBRG.EC0.CSEE (0xB7)
+>                             Return (Zero)
+>                         }
+>                         Case (0x03)
+>                         {
+>                             \_SB.PCI0.SBRG.EC0.CSEE (0xB8)
+>                             Notify (\_SB.PCI0.SBRG.EC0.LID, 0x80) //
+> Status Change
+>                             Return (Zero)
+>                         }
+>
+> but I tried executing this code after suspending amdgpu, and the
+> problem still stands, amdgpu cannot wakeup correctly.
+>
+> There's nothing else really interesting in the PEP device as far as I can see.
+>
+> PEP things aside, I am still quite suspicious about the fact that
+> calling amdgpu_device_suspend() then amdgpu_device_resume() on
+> multiple products (not just this one) fails. It seems that this code
+> flow is relying on the BIOS doing something in the S3 suspend/resume
+> path in order to make the device resumable by amdgpu_device_resume(),
+> which is why we have only encountered this issue for the first time on
+> our first AMD platform that does not support S3 suspend.
+>
 
-Signed-off-by: Artur Świgoń <a.swigon@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/interconnect/core.c           | 3 ++-
- include/linux/interconnect-provider.h | 6 ++++++
- 2 files changed, 8 insertions(+), 1 deletion(-)
+It makes sense.  This is an SOC, not a collection of individual
+devices.  There are more devices than power rails so the sbios (via
+ACPI) has to handle the power rail.  All of the devices using that
+power rail have to suspend and tell the sbios before the platform
+microcontroller can turn off the power rail.  Presumably there is
+something missing that prevents the microcontroller for powering down
+the rail.  If the power rail is kept on, the device is never powered
+off and still retains its current state.
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index f277e467156f..0be1764d3528 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -330,7 +330,7 @@ EXPORT_SYMBOL_GPL(of_icc_xlate_onecell);
-  * Returns a valid pointer to struct icc_node on success or ERR_PTR()
-  * on failure.
-  */
--static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
-+struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
- {
- 	struct icc_node *node = ERR_PTR(-EPROBE_DEFER);
- 	struct icc_provider *provider;
-@@ -349,6 +349,7 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
- 
- 	return node;
- }
-+EXPORT_SYMBOL_GPL(of_icc_get_from_provider);
- 
- /**
-  * of_icc_get() - get a path handle from a DT node based on name
-diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
-index 0c494534b4d3..cc965b8fab53 100644
---- a/include/linux/interconnect-provider.h
-+++ b/include/linux/interconnect-provider.h
-@@ -103,6 +103,7 @@ void icc_node_del(struct icc_node *node);
- int icc_nodes_remove(struct icc_provider *provider);
- int icc_provider_add(struct icc_provider *provider);
- int icc_provider_del(struct icc_provider *provider);
-+struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec);
- 
- #else
- 
-@@ -154,6 +155,11 @@ static inline int icc_provider_del(struct icc_provider *provider)
- 	return -ENOTSUPP;
- }
- 
-+struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
-+{
-+	return ERR_PTR(-ENOTSUPP);
-+}
-+
- #endif /* CONFIG_INTERCONNECT */
- 
- #endif /* __LINUX_INTERCONNECT_PROVIDER_H */
--- 
-2.17.1
+> With that in mind, and lacking any better info, wouldn't it make sense
+> for amdgpu_device_resume() to always call reset? Maybe it's not
+> necessary in the S3 case, but it shouldn't harm anything. Or perhaps
+> it could check if the device is alive and reset it if it's not?
 
+It's just papering over the problem.  It would be better from a power
+perspective for the driver to just not suspend and keep running like
+normal.  When the driver is not suspended runtime things like clock
+and power gating are active which keep the GPU power at a minimum.
+
+>
+> Alternatively do you have any other contacts within AMD that could
+> help us figure out the underlying question of how to correctly suspend
+> and resume these devices? Happy to ship an affected product sample
+> your way.
+>
+
+I talked to our sbios team and they seem to think our S0ix
+implementation works pretty differently from Intel's.  I'm not really
+an expert on this area however.  We have a new team ramping on up this
+for Linux however.
+
+Alex
