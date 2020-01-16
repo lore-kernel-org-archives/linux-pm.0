@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33406C33CB6
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:53:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B8D3C33CB6
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:53:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0C3402073A
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:53:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 628CB20663
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:53:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1579200788;
-	bh=eIgptUVK7RSEOmpu2bxskleTrU5m+xjTInP8YUwnX0s=;
+	s=default; t=1579200793;
+	bh=QpYERrgkh0whBg/uo4s9zBgACzT9vkRLbjjTrgrqeqI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=UMxO8df0wr+Olfg9CHpzwB+pgl+evr0/cSv1ywylleqYu2GebomNGBLNldWQYBqxR
-	 dBw/sk0/PHFRueqQPPHi+RTctNTwGqYEvXa/5oZj9ZGfFt5O+fevWEJxwPiwyC+kyw
-	 2swtVehhXBuHomxvE/16UjJWXn34/XkT6hmU/mXU=
+	b=134V7OyXYcvdSGeVtk3NOIiZjiuqYePZ0whPvB1O7NSfHzynvtsTzT2I3EBDTxnqK
+	 prIyHWHAPnH5MrHcuyNqR2+ov0blwTqaBy5Bq324WB+tdSXUn/uI1qkb3qRhMS249r
+	 8EaSrFacCGJY+lhrybXn4vRAyF+z3gXrQZnlj2jg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389379AbgAPRIT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 12:08:19 -0500
-Received: from mail.kernel.org ([198.145.29.99]:41690 "EHLO mail.kernel.org"
+        id S2436542AbgAPSxI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 13:53:08 -0500
+Received: from mail.kernel.org ([198.145.29.99]:41654 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389376AbgAPRIT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Jan 2020 12:08:19 -0500
+        id S2389366AbgAPRIR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Jan 2020 12:08:17 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id AB4E0205F4;
-        Thu, 16 Jan 2020 17:08:17 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 64AC324653;
+        Thu, 16 Jan 2020 17:08:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1579194498;
-        bh=eIgptUVK7RSEOmpu2bxskleTrU5m+xjTInP8YUwnX0s=;
+        s=default; t=1579194497;
+        bh=QpYERrgkh0whBg/uo4s9zBgACzT9vkRLbjjTrgrqeqI=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=xF+D4psUuPDDH+Wn7ZZrph0K5/2zoVcjaKEdLPGsxRoeEpTnfBawiSRNzQp/CZV/b
-         iXGSDD8YvXaH71H2ErV90ALtzcIHhIYEE/a1VGcMttN1c+Yfo7hgdiMxAkxKQTvoR6
-         JtJNxV+TtS6DGBnTJ1RomnYQR6k+teCcWMMX0fb0=
+        b=I3mrYiYH2o6BywU3GFH20EnQMN990kQTrDb7ctAhgwW/iyj/bnSc7GZ3SuSPqLb4p
+         33kdMV/sDKHUaOf7A+IV96ZqLK8CYXc03jYlxwlnzqgNv1nQ5I2Oi5Eiu1uN1SgaHH
+         FFkdMQyUZIDFzbsF9km7wlVuncFiLPF3JH2/wuR0=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Florian Fainelli <f.fainelli@gmail.com>,
@@ -45,9 +45,9 @@ Cc:     Florian Fainelli <f.fainelli@gmail.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
-Subject: [PATCH AUTOSEL 4.19 395/671] cpufreq: brcmstb-avs-cpufreq: Fix types for voltage/frequency
-Date:   Thu, 16 Jan 2020 12:00:33 -0500
-Message-Id: <20200116170509.12787-132-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 394/671] cpufreq: brcmstb-avs-cpufreq: Fix initial command check
+Date:   Thu, 16 Jan 2020 12:00:32 -0500
+Message-Id: <20200116170509.12787-131-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
 References: <20200116170509.12787-1-sashal@kernel.org>
@@ -62,11 +62,11 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Florian Fainelli <f.fainelli@gmail.com>
 
-[ Upstream commit 4c5681fcc684c762b09435de3e82ffeee7769d21 ]
+[ Upstream commit 22a26cc6a51ef73dcfeb64c50513903f6b2d53d8 ]
 
-What we read back from the register is going to be capped at 32-bits,
-and cpufreq_freq_table.frequency is an unsigned int. Avoid any possible
-value truncation by using the appropriate return value.
+There is a logical error in brcm_avs_is_firmware_loaded() whereby if the
+firmware returns -EINVAL, we will be reporting this as an error. The
+comment is correct, the code was not.
 
 Fixes: de322e085995 ("cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq driver for Broadcom STB SoCs")
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
@@ -74,45 +74,24 @@ Acked-by: Markus Mayer <mmayer@broadcom.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/brcmstb-avs-cpufreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-index 6ed53ca8aa98..77b0e5d0fb13 100644
+index e6f9cbe5835f..6ed53ca8aa98 100644
 --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
 +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-@@ -384,12 +384,12 @@ static int brcm_avs_set_pstate(struct private_data *priv, unsigned int pstate)
- 	return __issue_avs_command(priv, AVS_CMD_SET_PSTATE, true, args);
+@@ -446,8 +446,8 @@ static bool brcm_avs_is_firmware_loaded(struct private_data *priv)
+ 	rc = brcm_avs_get_pmap(priv, NULL);
+ 	magic = readl(priv->base + AVS_MBOX_MAGIC);
+ 
+-	return (magic == AVS_FIRMWARE_MAGIC) && (rc != -ENOTSUPP) &&
+-		(rc != -EINVAL);
++	return (magic == AVS_FIRMWARE_MAGIC) && ((rc != -ENOTSUPP) ||
++		(rc != -EINVAL));
  }
  
--static unsigned long brcm_avs_get_voltage(void __iomem *base)
-+static u32 brcm_avs_get_voltage(void __iomem *base)
- {
- 	return readl(base + AVS_MBOX_VOLTAGE1);
- }
- 
--static unsigned long brcm_avs_get_frequency(void __iomem *base)
-+static u32 brcm_avs_get_frequency(void __iomem *base)
- {
- 	return readl(base + AVS_MBOX_FREQUENCY) * 1000;	/* in kHz */
- }
-@@ -653,14 +653,14 @@ static ssize_t show_brcm_avs_voltage(struct cpufreq_policy *policy, char *buf)
- {
- 	struct private_data *priv = policy->driver_data;
- 
--	return sprintf(buf, "0x%08lx\n", brcm_avs_get_voltage(priv->base));
-+	return sprintf(buf, "0x%08x\n", brcm_avs_get_voltage(priv->base));
- }
- 
- static ssize_t show_brcm_avs_frequency(struct cpufreq_policy *policy, char *buf)
- {
- 	struct private_data *priv = policy->driver_data;
- 
--	return sprintf(buf, "0x%08lx\n", brcm_avs_get_frequency(priv->base));
-+	return sprintf(buf, "0x%08x\n", brcm_avs_get_frequency(priv->base));
- }
- 
- cpufreq_freq_attr_ro(brcm_avs_pstate);
+ static unsigned int brcm_avs_cpufreq_get(unsigned int cpu)
 -- 
 2.20.1
 
