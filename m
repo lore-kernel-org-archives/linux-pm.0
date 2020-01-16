@@ -2,113 +2,129 @@ Return-Path: <SRS0=m8DM=3F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55912C33CAF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:42:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AB2FC33CB3
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:43:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1B4DA2077B
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:42:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=anarazel.de header.i=@anarazel.de header.b="FeT3Zq8G";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="OGQecjOu"
+	by mail.kernel.org (Postfix) with ESMTP id 37FF52073A
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:43:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1579200232;
+	bh=YUoZyX6P5M0BCnBJRl5x8rurwys2tcaoje5mSFIVESc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=p1yaOld+2YTZFbAtsg4zGOAUgM/V8ADVc4bG+D/ckdvWEBcRf7EBPtQQZQiDgB/b9
+	 HhIK4NRAl1Q/kSE7Qh7DfGsV1/Wwq82Cromyy4wv/5HSr9iYN+mK/Kfn3TnBKN/yOs
+	 xYX9+Hli7dsaGVTcoq95ITfZEIdzwT7VCzVgH7z4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390227AbgAPSmy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 13:42:54 -0500
-Received: from wout4-smtp.messagingengine.com ([64.147.123.20]:44557 "EHLO
-        wout4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S2388922AbgAPSmx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jan 2020 13:42:53 -0500
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-        by mailout.west.internal (Postfix) with ESMTP id 8D4E6513;
-        Thu, 16 Jan 2020 13:42:52 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute5.internal (MEProxy); Thu, 16 Jan 2020 13:42:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=anarazel.de; h=
-        date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm3; bh=/7fhTR1f92cLpIrCbJ+2OWqkhpv
-        1kl/VUQPVVPmZgEc=; b=FeT3Zq8GQ8qzz7uwZ61cvMkHaF09X3eo/FpFVoHqOD3
-        fD2mUOt9ZN1aIwAIlALjLeieBa4NJV38bhYqf5lHt8/P6R0YWsGiFcsCGp8bjSUR
-        S5i+v2OLYpL3wN994Aa6eLnpfnxUUyTbZUvbUxqjSpfIq2LN8SjA06t3Aeurr63g
-        DFh3EId6sc4pd3ofGp0hCm2iQuuNFaFlTuOgifAF1YWmWiy9SJpZUZ4uCL+LTFOX
-        eJi4VkmRq21YTtPj0kWerE278gG75nGVd7DUOonrl86y4ie2zd97oESJkTDNTbbx
-        ZKDLTeMCZqgrvK4sgURIYvh0qyZLvgJjbQD3n62OZ1Q==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-type:date:from:in-reply-to
-        :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=/7fhTR
-        1f92cLpIrCbJ+2OWqkhpv1kl/VUQPVVPmZgEc=; b=OGQecjOuzXXqPotapCj+I4
-        hCuvcE20Lyo2NHyxVzMaaw5u6fApAawM44/CZ8My+gEWIpAs+A1W7yTbIl7stc4U
-        ISwGutrvWf/fY6Wmt+BLTxJ1+sYJIxqNYL8oYFngXv80cCUmI4Kgyktp6E0jpCpR
-        la10h+G6XmMbRRwLVVdI+K608MXDXZR1CuY72vVELP2tkdq2bnqgTQFu+9eyv4ml
-        TWU4fhudiNebOAXbnIIuo3/9sIsJT7wmpFBg//qGKmdnYKIMlN5gZmtAGuVO2V8U
-        L/HMsBy9jcqt7dhf/7FTqH8wbhGNS9Se5wRDTTxSRZlT7FmI2E9/H6+Ubg5IZw1w
-        ==
-X-ME-Sender: <xms:q64gXs06QPv33nJkcPtUk0Ur3ju3En2cj8wJxS3uN-QreHvl4-Pwrg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedugedrtdehgdduudegucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvffukfhfgggtuggjsehttdertddttddvnecuhfhrohhmpeetnhgurhgv
-    shcuhfhrvghunhguuceorghnughrvghssegrnhgrrhgriigvlhdruggvqeenucfkphepie
-    ejrdduiedtrddvudejrddvhedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrnhgurhgv
-    shesrghnrghrrgiivghlrdguvgenucevlhhushhtvghrufhiiigvpedt
-X-ME-Proxy: <xmx:q64gXtDAe7wB3ahvp589SNBrCT9khM1atZVGja4paJJTGI7rV0GEXQ>
-    <xmx:q64gXukD8ZZnxNDb3j7CjbDibL3L_2233B4CJth2LKaOHbZep9jdOA>
-    <xmx:q64gXmokCmoSG3Z4Djh47-T19UppDuXU2so7VC1b9R8rhdFOalZlKw>
-    <xmx:rK4gXuY4u1yVTdjBmqiSUv6UekfymvvUZDtRPdiw9i8O_zgjZHdeEw>
-Received: from intern.anarazel.de (c-67-160-217-250.hsd1.ca.comcast.net [67.160.217.250])
-        by mail.messagingengine.com (Postfix) with ESMTPA id A8DE13060840;
-        Thu, 16 Jan 2020 13:42:51 -0500 (EST)
-Date:   Thu, 16 Jan 2020 10:42:50 -0800
-From:   Andres Freund <andres@anarazel.de>
-To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc:     Tushar Dave <tushar.n.dave@intel.com>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] thermal: intel_pch_thermal: Add PCI ids for Lewisburg
- PCH.
-Message-ID: <20200116184250.qlvc3ilx2b42czqk@alap3.anarazel.de>
-References: <20200115184415.1726953-1-andres@anarazel.de>
- <2a5e9df32e2df27297149a577512f6b1557de241.camel@linux.intel.com>
+        id S2390161AbgAPRLI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 12:11:08 -0500
+Received: from mail.kernel.org ([198.145.29.99]:51040 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2390158AbgAPRLI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Jan 2020 12:11:08 -0500
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 7515D2468A;
+        Thu, 16 Jan 2020 17:11:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1579194667;
+        bh=YUoZyX6P5M0BCnBJRl5x8rurwys2tcaoje5mSFIVESc=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=NSvcvOGlu7k4t3LSiBH4Jg5WrbCkXyndMRXo+CfjbDMl+QJ4sFnX0PIpIG7/Au6j1
+         kuo3jrKFyNi7iVM0ESeyDZ6cA2r0YAjlBi3Mf9wqLFIUc5r5qBVU02etP4Gqmw0Zeb
+         LLTuQADKbNXlinKCvxOpOXUiOF33gA6+U697r8aE=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Stephen Boyd <swboyd@chromium.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Tri Vo <trong@android.com>,
+        Kalesh Singh <kaleshsingh@google.com>,
+        Ravi Chandra Sadineni <ravisadineni@chromium.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 516/671] power: supply: Init device wakeup after device_add()
+Date:   Thu, 16 Jan 2020 12:02:34 -0500
+Message-Id: <20200116170509.12787-253-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
+References: <20200116170509.12787-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2a5e9df32e2df27297149a577512f6b1557de241.camel@linux.intel.com>
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+From: Stephen Boyd <swboyd@chromium.org>
 
-On 2020-01-16 05:53:13 -0800, Srinivas Pandruvada wrote:
-> On Wed, 2020-01-15 at 10:44 -0800, Andres Freund wrote:
-> > I noticed that I couldn't read the PCH temperature on my workstation
-> > (C620 series chipset, w/ 2x Xeon Gold 5215 CPUs) directly, but had to
-> > go
-> > through IPMI. Looking at the data sheet, it looks to me like the
-> > existing intel PCH thermal driver should work without changes for
-> > Lewisburg.
-> Does the temperature reading match with what you read via IPMI?
+[ Upstream commit 8288022284859acbcc3cf1a073a1e2692d6c2543 ]
 
-It does:
+We may want to use the device pointer in device_init_wakeup() with
+functions that expect the device to already be added with device_add().
+For example, if we were to link the device initializing wakeup to
+something in sysfs such as a class for wakeups we'll run into an error.
+It looks like this code was written with the assumption that the device
+would be added before initializing wakeup due to the order of operations
+in power_supply_unregister().
 
-root@awork3:~# ipmitool sdr|grep ^PCH
-PCH Temp         | 58 degrees C      | ok
+Let's change the order of operations so we don't run into problems here.
 
-andres@awork3:~$ cat /sys/class/thermal/thermal_zone0/type
-pch_lewisburg
-andres@awork3:~$ cat /sys/class/thermal/thermal_zone0/temp
-58000
+Fixes: 948dcf966228 ("power_supply: Prevent suspend until power supply events are processed")
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Tri Vo <trong@android.com>
+Cc: Kalesh Singh <kaleshsingh@google.com>
+Cc: Ravi Chandra Sadineni <ravisadineni@chromium.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Stephen Boyd <swboyd@chromium.org>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/power/supply/power_supply_core.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-And if I generate some load, it rises for both:
-root@awork3:~# ipmitool sdr|grep ^PCH
-PCH Temp         | 60 degrees C      | ok
-andres@awork3:~$ cat /sys/class/thermal/thermal_zone0/temp
-60000
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index e85361878450..e43a7b3b570c 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -902,14 +902,14 @@ __power_supply_register(struct device *parent,
+ 	}
+ 
+ 	spin_lock_init(&psy->changed_lock);
+-	rc = device_init_wakeup(dev, ws);
+-	if (rc)
+-		goto wakeup_init_failed;
+-
+ 	rc = device_add(dev);
+ 	if (rc)
+ 		goto device_add_failed;
+ 
++	rc = device_init_wakeup(dev, ws);
++	if (rc)
++		goto wakeup_init_failed;
++
+ 	rc = psy_register_thermal(psy);
+ 	if (rc)
+ 		goto register_thermal_failed;
+@@ -946,8 +946,8 @@ __power_supply_register(struct device *parent,
+ 	psy_unregister_thermal(psy);
+ register_thermal_failed:
+ 	device_del(dev);
+-device_add_failed:
+ wakeup_init_failed:
++device_add_failed:
+ check_supplies_failed:
+ dev_set_name_failed:
+ 	put_device(dev);
+-- 
+2.20.1
 
-Regards,
-
-Andres
