@@ -2,175 +2,87 @@ Return-Path: <SRS0=m8DM=3F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEF9EC33CAF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:56:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 038ACC33CAF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:58:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 992B42053B
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:56:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C995D206D7
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jan 2020 18:58:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1579200972;
-	bh=hBuBI2R1N9tqyEoCpNH88R2pYUVEAJ7+0Sj6SoGPYp0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=ITIxSJ4AhnXshfOnckFW2pxjwoxjxSTXwhXs6zpKC9bn9l0XTPivB3E4O/XYmSlwy
-	 H5altQaDojUkQvvHOHL+uffZg1pAdc1OuFrtkC28dmPeoa1GvT0Q/Xb7vJi1zFic0c
-	 VSnU3rh/q8SfmK/QFZj7c/STgEP/D1kzr+iIlOUY=
+	s=default; t=1579201109;
+	bh=xQHaMmW5+OUanOpzT3F10iGg7VHntvomNgGXkgpU0/4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=LWUEiPBxcGCH7VGuTyn6TIuhZkHL8A2w5G5kbSE71hLenOzcAExd8cxd7dowd8yfe
+	 egdYIL5DaM7IPvBR1hLGD4ugQgUD6cqBKWR3z6NPW0P0RoQ3UHgsXEIhuqzkDVo73W
+	 VhetZ9yzLfs776LgN32g2gj56hgTYJJGFhNVcj7c=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388825AbgAPRH1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jan 2020 12:07:27 -0500
-Received: from mail.kernel.org ([198.145.29.99]:39336 "EHLO mail.kernel.org"
+        id S2389001AbgAPS62 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jan 2020 13:58:28 -0500
+Received: from mail.kernel.org ([198.145.29.99]:38264 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389169AbgAPRH1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Jan 2020 12:07:27 -0500
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        id S2389538AbgAPS62 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Jan 2020 13:58:28 -0500
+Received: from mail-qk1-f174.google.com (mail-qk1-f174.google.com [209.85.222.174])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 015F12081E;
-        Thu, 16 Jan 2020 17:07:24 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 83AE121D56;
+        Thu, 16 Jan 2020 18:58:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1579194446;
-        bh=hBuBI2R1N9tqyEoCpNH88R2pYUVEAJ7+0Sj6SoGPYp0=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Ic5kAoWMYAX4kbzHpbFz5s0TvBiRKN7gC7mkXTflkmLNIYCKvWAPg4Fzte5MRqTyz
-         jlpzPW1v/2oiXShTIEzGVjZSHzy6EnVNQH7ne7qwa/ut8AjArxNw6vfB9fnxWx7NGZ
-         FZCcQG2NF2cPKlzk8BiEp2swTVViGH7UXNL4CuAo=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Jiada Wang <jiada_wang@mentor.com>,
-        Simon Horman <horms+renesas@verge.net.au>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 357/671] thermal: rcar_gen3_thermal: fix interrupt type
-Date:   Thu, 16 Jan 2020 11:59:55 -0500
-Message-Id: <20200116170509.12787-94-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200116170509.12787-1-sashal@kernel.org>
-References: <20200116170509.12787-1-sashal@kernel.org>
+        s=default; t=1579201107;
+        bh=xQHaMmW5+OUanOpzT3F10iGg7VHntvomNgGXkgpU0/4=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=pW1ad/mr9lv4mjG0KEHhw15B0zLcU7PWxrVIHtozNIlIefsGUj+3aY68lA0al2hhz
+         oWtE//Q1g1pAS6w0SBmCk64FIpGJjxgsQAswNY8yo9mAkJeDp4c/olz+VXoP3Kme05
+         TC1GjKQjhsUfwbm5bhgzsLb7A7y6H9uLiQgNebmM=
+Received: by mail-qk1-f174.google.com with SMTP id a203so20225382qkc.3;
+        Thu, 16 Jan 2020 10:58:27 -0800 (PST)
+X-Gm-Message-State: APjAAAX7EBSkaL+2UN0vHHUSOPaWAykL58uzba7Sdl55VtITmLMHVai7
+        7nddZv4d5aJCXwXX1c7AtfQlKWE22hP4xROPJw==
+X-Google-Smtp-Source: APXvYqz7Jds+/Z0T2jKmrW9vc4gPA0ja7tR3DL5ZNZX7bEiGSGPBQq4mA+KAyBwwQDFM1HxCAgDqUAjb3yEtcnqqaag=
+X-Received: by 2002:a05:620a:1eb:: with SMTP id x11mr35416430qkn.254.1579201106608;
+ Thu, 16 Jan 2020 10:58:26 -0800 (PST)
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+References: <1579200077-17496-1-git-send-email-stefan.wahren@i2se.com>
+In-Reply-To: <1579200077-17496-1-git-send-email-stefan.wahren@i2se.com>
+From:   Rob Herring <robh+dt@kernel.org>
+Date:   Thu, 16 Jan 2020 12:58:15 -0600
+X-Gmail-Original-Message-ID: <CAL_Jsq+51A_wKBzxwihkQd=eo_AEQ-wo4pK_GthO5b8WT=6oKw@mail.gmail.com>
+Message-ID: <CAL_Jsq+51A_wKBzxwihkQd=eo_AEQ-wo4pK_GthO5b8WT=6oKw@mail.gmail.com>
+Subject: Re: [PATCH] dt-bindings: brcm,avs-ro-thermal: Fix binding check issues
+To:     Stefan Wahren <stefan.wahren@i2se.com>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Will Deacon <will@kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "maintainer:BROADCOM BCM7XXX ARM ARCHITECTURE" 
+        <bcm-kernel-feedback-list@broadcom.com>, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Jiada Wang <jiada_wang@mentor.com>
+On Thu, Jan 16, 2020 at 12:42 PM Stefan Wahren <stefan.wahren@i2se.com> wrote:
+>
+> Drop the reg property since this only necessary for the parent and
+> add the missing thermal-sensor-cells property description.
+>
+> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+> Fixes: 3d4849897691 ("dt-bindings: Add Broadcom AVS RO thermal")
+> ---
+>  .../devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml         | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
 
-[ Upstream commit 2c0928c9e004589dc9e7672c40a38d6c4ca12701 ]
+Thanks for the quick fix.
 
-Currently IRQF_SHARED type interrupt line is allocated, but it
-is not appropriate, as the interrupt line isn't shared between
-different devices, instead IRQF_ONESHOT is the proper type.
-
-By changing interrupt type to IRQF_ONESHOT, now irq handler is
-no longer needed, as clear of interrupt status can be done in
-threaded interrupt context.
-
-Because IRQF_ONESHOT type interrupt line is kept disabled until
-the threaded handler has been run, so there is no need to protect
-read/write of REG_GEN3_IRQSTR with lock.
-
-Fixes: 7d4b269776ec6 ("enable hardware interrupts for trip points")
-Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
-Tested-by: Simon Horman <horms+renesas@verge.net.au>
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/thermal/rcar_gen3_thermal.c | 38 +++++------------------------
- 1 file changed, 6 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 704c8ad045bb..8f553453dd7f 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -14,7 +14,6 @@
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
--#include <linux/spinlock.h>
- #include <linux/sys_soc.h>
- #include <linux/thermal.h>
- 
-@@ -81,7 +80,6 @@ struct rcar_gen3_thermal_tsc {
- struct rcar_gen3_thermal_priv {
- 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
- 	unsigned int num_tscs;
--	spinlock_t lock; /* Protect interrupts on and off */
- 	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
- };
- 
-@@ -231,38 +229,16 @@ static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
- {
- 	struct rcar_gen3_thermal_priv *priv = data;
- 	u32 status;
--	int i, ret = IRQ_HANDLED;
-+	int i;
- 
--	spin_lock(&priv->lock);
- 	for (i = 0; i < priv->num_tscs; i++) {
- 		status = rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
- 		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
- 		if (status)
--			ret = IRQ_WAKE_THREAD;
-+			thermal_zone_device_update(priv->tscs[i]->zone,
-+						   THERMAL_EVENT_UNSPECIFIED);
- 	}
- 
--	if (ret == IRQ_WAKE_THREAD)
--		rcar_thermal_irq_set(priv, false);
--
--	spin_unlock(&priv->lock);
--
--	return ret;
--}
--
--static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
--{
--	struct rcar_gen3_thermal_priv *priv = data;
--	unsigned long flags;
--	int i;
--
--	for (i = 0; i < priv->num_tscs; i++)
--		thermal_zone_device_update(priv->tscs[i]->zone,
--					   THERMAL_EVENT_UNSPECIFIED);
--
--	spin_lock_irqsave(&priv->lock, flags);
--	rcar_thermal_irq_set(priv, true);
--	spin_unlock_irqrestore(&priv->lock, flags);
--
- 	return IRQ_HANDLED;
- }
- 
-@@ -364,8 +340,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	if (soc_device_match(r8a7795es1))
- 		priv->thermal_init = rcar_gen3_thermal_init_r8a7795es1;
- 
--	spin_lock_init(&priv->lock);
--
- 	platform_set_drvdata(pdev, priv);
- 
- 	/*
-@@ -383,9 +357,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 		if (!irqname)
- 			return -ENOMEM;
- 
--		ret = devm_request_threaded_irq(dev, irq, rcar_gen3_thermal_irq,
--						rcar_gen3_thermal_irq_thread,
--						IRQF_SHARED, irqname, priv);
-+		ret = devm_request_threaded_irq(dev, irq, NULL,
-+						rcar_gen3_thermal_irq,
-+						IRQF_ONESHOT, irqname, priv);
- 		if (ret)
- 			return ret;
- 	}
--- 
-2.20.1
-
+Reviewed-by: Rob Herring <robh@kernel.org>
