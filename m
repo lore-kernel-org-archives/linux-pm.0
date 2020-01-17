@@ -7,62 +7,61 @@ X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77C24C33CB1
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:58:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AC0CC33CB1
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:58:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4E0882073A
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:58:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2CAF52073A
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:58:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XnUDwVsA"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ROhabsZf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726973AbgAQJ6X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Jan 2020 04:58:23 -0500
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:54961 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726554AbgAQJ6V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2020 04:58:21 -0500
-Received: by mail-wm1-f66.google.com with SMTP id b19so6763243wmj.4
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jan 2020 01:58:20 -0800 (PST)
+        id S1728831AbgAQJ61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Jan 2020 04:58:27 -0500
+Received: from mail-wr1-f68.google.com ([209.85.221.68]:45799 "EHLO
+        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726553AbgAQJ60 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2020 04:58:26 -0500
+Received: by mail-wr1-f68.google.com with SMTP id j42so22013693wrj.12
+        for <linux-pm@vger.kernel.org>; Fri, 17 Jan 2020 01:58:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=qe7hebl/mzA5Y4yspidYJnXz8QIxCuPLK7wWr6/hKiU=;
-        b=XnUDwVsAsNbFlvaGv/Mxxp0g86KC+WA5dTFlLpL3YnqfDrJo/0yGU2CmRdOBii7lpG
-         cgNKD4vTO3v0iOZt1Jh7WC8sDleIaoYBdJDF3pzL8Mg0w0h3bmnLF7/+Gnqmj/TiHn+u
-         LgoRzxYHQuZERRdKSOJOMMAT6ez71f4mH4BW+EgVXHQYR9g2DLgjw0Pzwxh9veFGhnew
-         XLurquhFXdcDw336nu8esZFEMSAOfVZ+8RqYK9Q5pBxPJ/DvIcxT8WuwRCPTppiMo8ny
-         NnuooOC+D0jo5hqmTC7sFj/rP5wAb3Ve1hNlMQmlo44t+cq8FP/9A3jqncxCeKwrI1PW
-         mu7g==
+        bh=vdr1R6he+EPUd/NCIYt7CQBDB83sSDrPxTnifgtApfQ=;
+        b=ROhabsZfAAiEDR7Gzc8sCW8VUDb0mnVMwJ06LQzZcVDa8sh7M+fsbMH83pXxpwM+U1
+         Xa3XjS8pqN9oEcjv/1DIf5uRHpbrCwMesgQCfzdTbrh9fSHnoXq/dAEGtOAk2iFs1Pke
+         CpuYNTjhkp1JN8cF/f4n5ICIo7eKCktztF8g69TA2UF5348dxmb6wABTxzDfnPatN54a
+         qKVaOc8ULZPv5VU8K9uYDmS6tl5M3sYwNi14NL+46CihyhOAXeNSTSln6KVR/iGquJar
+         1b0zxh3WLCpley9d6LWSCRco2mkxjleo5/NvJXy0Z0kIg4ImjUmt051jkCUzBiodVGQw
+         3DLQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=qe7hebl/mzA5Y4yspidYJnXz8QIxCuPLK7wWr6/hKiU=;
-        b=i4WuG1siTchDTEg+jakQegAUc/tiDfmbWejw5GO/V8T5gcZOMjFdYXAfuYnY9fRM+0
-         sKu9U4isG111ThwVHXWQrhYmRUviSAHPeNmoAPglZB9Jo5WcqTlURBi+Hh32P1y1W8Kr
-         wp1+qBU9RoG0wAlMZZk2oRyYu47cLLie25tLpmoqQ3GaM81mswvnOiLJLicXNBkVAXjE
-         FRQ+4Z6ah6Jx0t+QZ9c0KXk+jfyoIvhOm4z4yg0obMUcstEqMlArAdBuL2Gi4WAzkye6
-         Dt98QSsU5jsjuqpwizoKp837qXQU9rcWDGFMuVPniTUxRC8Yn5nVyag90Vf1geof5bac
-         K4og==
-X-Gm-Message-State: APjAAAUbFQ5wXufJUTuWb20fKBpBs++IJyq7R6ThsivfltjZbWA8WK/4
-        M1KNOrKm1sYeZ8/l74hzPt+hnA==
-X-Google-Smtp-Source: APXvYqwpwCwY0KSiQCpa+dAUbkJVcleZ1Gny74AahZORM5PCAEWPnzkdDQK3w/4N3GYV63g7phio2g==
-X-Received: by 2002:a05:600c:2046:: with SMTP id p6mr3729467wmg.110.1579255099536;
-        Fri, 17 Jan 2020 01:58:19 -0800 (PST)
+        bh=vdr1R6he+EPUd/NCIYt7CQBDB83sSDrPxTnifgtApfQ=;
+        b=MATHoNzjm5i8pZRC0aLWV1DpScST/hCtDlX/IZVUjMy+bw7pxBtNmifmcjJPqCnJsw
+         WXqCX5JJYhCzwhgD0tLd0grAyQiaYphAp7jxiO8WukC2ih5Nz4weryMQIfACabUuuDuE
+         m8Hv5iVcsE7gwRdefyPXx3Ohiji2go8iDXW9sAMUds5/HwOQ8R8NBMhpTK8k0uiiDwz/
+         aAkzmsvNkh5ituPQK+v782f/tuK5SunO3w1YWizD4UrYptD2/2FcWcqKX64ko+lUgy6c
+         CZvUizmKot5u6Cvw7eIT8/gdzv2kBPdWgWAsRk8YKTXx1HRa6CtFiLQkOSct1dJ+MbMl
+         yEZA==
+X-Gm-Message-State: APjAAAUtESRjB6Mp6JMHHUPgfjiy2VyqwObGzcWfbtMEn5wg+h721WVK
+        QPW8Wgd2AfKdJ34C8bt2+X+Ieg==
+X-Google-Smtp-Source: APXvYqyKSTIDCTHrX8b2t3m5uHVW+d+9ClLZ1lMfZMNYkwzcXqTaqzGYB0PXLzgjZl0YD61ceN2+sA==
+X-Received: by 2002:a5d:6406:: with SMTP id z6mr2166824wru.294.1579255104160;
+        Fri, 17 Jan 2020 01:58:24 -0800 (PST)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id r62sm9967007wma.32.2020.01.17.01.58.18
+        by smtp.googlemail.com with ESMTPSA id r62sm9967007wma.32.2020.01.17.01.58.22
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 17 Jan 2020 01:58:19 -0800 (PST)
+        Fri, 17 Jan 2020 01:58:23 -0800 (PST)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Georgi Djakov <georgi.djakov@linaro.org>,
-        Dmitry Osipenko <digetx@gmail.com>,
         Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH 01/12] interconnect: Add a common helper for removing all nodes
-Date:   Fri, 17 Jan 2020 11:58:05 +0200
-Message-Id: <20200117095816.23575-2-georgi.djakov@linaro.org>
+Subject: [PATCH 04/12] interconnect: Add a name to struct icc_path
+Date:   Fri, 17 Jan 2020 11:58:08 +0200
+Message-Id: <20200117095816.23575-5-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200117095816.23575-1-georgi.djakov@linaro.org>
 References: <20200117095816.23575-1-georgi.djakov@linaro.org>
@@ -73,72 +72,81 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The removal of all nodes from a provider seem to be a common functionality
-for all existing users and it would make sense to factor out this into a
-a common helper function.
+When debugging interconnect things, it turned out that saving the path
+name and including it in the traces is quite useful, especially for
+devices with multiple paths.
 
-Suggested-by: Dmitry Osipenko <digetx@gmail.com>
+For the path name we use the one specified in DT, or if we use platform
+data, the name is based on the source and destination node names.
+
+Suggested-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/interconnect/core.c           | 22 ++++++++++++++++++++++
- include/linux/interconnect-provider.h |  6 ++++++
- 2 files changed, 28 insertions(+)
+ drivers/interconnect/core.c     | 18 +++++++++++++++---
+ drivers/interconnect/internal.h |  2 ++
+ 2 files changed, 17 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index c498796adc07..1b811423020a 100644
+index f30a326dc7ce..4f9bdb7f9165 100644
 --- a/drivers/interconnect/core.c
 +++ b/drivers/interconnect/core.c
-@@ -742,6 +742,28 @@ void icc_node_del(struct icc_node *node)
- }
- EXPORT_SYMBOL_GPL(icc_node_del);
+@@ -356,9 +356,17 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
  
-+/**
-+ * icc_nodes_remove() - remove all previously added nodes from provider
-+ * @provider: the interconnect provider we are removing nodes from
-+ *
-+ * Return: 0 on success, or an error code otherwise
-+ */
-+int icc_nodes_remove(struct icc_provider *provider)
-+{
-+	struct icc_node *n, *tmp;
-+
-+	if (WARN_ON(IS_ERR_OR_NULL(provider)))
-+		return -EINVAL;
-+
-+	list_for_each_entry_safe_reverse(n, tmp, &provider->nodes, node_list) {
-+		icc_node_del(n);
-+		icc_node_destroy(n->id);
+ 	mutex_lock(&icc_lock);
+ 	path = path_find(dev, src_node, dst_node);
+-	if (IS_ERR(path))
+-		dev_err(dev, "%s: invalid path=%ld\n", __func__, PTR_ERR(path));
+ 	mutex_unlock(&icc_lock);
++	if (IS_ERR(path)) {
++		dev_err(dev, "%s: invalid path=%ld\n", __func__, PTR_ERR(path));
++		return path;
 +	}
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(icc_nodes_remove);
-+
- /**
-  * icc_provider_add() - add a new interconnect provider
-  * @provider: the interconnect provider that will be added into topology
-diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
-index b16f9effa555..31440c921216 100644
---- a/include/linux/interconnect-provider.h
-+++ b/include/linux/interconnect-provider.h
-@@ -98,6 +98,7 @@ int icc_link_create(struct icc_node *node, const int dst_id);
- int icc_link_destroy(struct icc_node *src, struct icc_node *dst);
- void icc_node_add(struct icc_node *node, struct icc_provider *provider);
- void icc_node_del(struct icc_node *node);
-+int icc_nodes_remove(struct icc_provider *provider);
- int icc_provider_add(struct icc_provider *provider);
- int icc_provider_del(struct icc_provider *provider);
++	if (name)
++		path->name = kstrdup_const(name, GFP_KERNEL);
++	else
++		path->name = kasprintf(GFP_KERNEL, "%s-%s",
++				       src_node->name, dst_node->name);
  
-@@ -130,6 +131,11 @@ void icc_node_del(struct icc_node *node)
- {
+ 	return path;
  }
+@@ -481,9 +489,12 @@ struct icc_path *icc_get(struct device *dev, const int src_id, const int dst_id)
+ 		goto out;
  
-+static inline int icc_nodes_remove(struct icc_provider *provider)
-+{
-+	return -ENOTSUPP;
-+}
-+
- static inline int icc_provider_add(struct icc_provider *provider)
- {
- 	return -ENOTSUPP;
+ 	path = path_find(dev, src, dst);
+-	if (IS_ERR(path))
++	if (IS_ERR(path)) {
+ 		dev_err(dev, "%s: invalid path=%ld\n", __func__, PTR_ERR(path));
++		goto out;
++	}
+ 
++	path->name = kasprintf(GFP_KERNEL, "%s-%s", src->name, dst->name);
+ out:
+ 	mutex_unlock(&icc_lock);
+ 	return path;
+@@ -519,6 +530,7 @@ void icc_put(struct icc_path *path)
+ 	}
+ 	mutex_unlock(&icc_lock);
+ 
++	kfree_const(path->name);
+ 	kfree(path);
+ }
+ EXPORT_SYMBOL_GPL(icc_put);
+diff --git a/drivers/interconnect/internal.h b/drivers/interconnect/internal.h
+index 5853e8faf223..bf18cb7239df 100644
+--- a/drivers/interconnect/internal.h
++++ b/drivers/interconnect/internal.h
+@@ -29,10 +29,12 @@ struct icc_req {
+ 
+ /**
+  * struct icc_path - interconnect path structure
++ * @name: a string name of the path (useful for ftrace)
+  * @num_nodes: number of hops (nodes)
+  * @reqs: array of the requests applicable to this path of nodes
+  */
+ struct icc_path {
++	const char *name;
+ 	size_t num_nodes;
+ 	struct icc_req reqs[];
+ };
