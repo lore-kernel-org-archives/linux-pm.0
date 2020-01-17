@@ -4,65 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E93C5C33CB3
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:58:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B2DDC33CB1
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:58:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B6DAB2083E
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:58:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4F897214AF
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:58:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sPtoIYGg"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="l6EGo0Bl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729016AbgAQJ6c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Jan 2020 04:58:32 -0500
-Received: from mail-wm1-f68.google.com ([209.85.128.68]:39459 "EHLO
-        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728896AbgAQJ6b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2020 04:58:31 -0500
-Received: by mail-wm1-f68.google.com with SMTP id 20so6912172wmj.4
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jan 2020 01:58:29 -0800 (PST)
+        id S1726587AbgAQJ6o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Jan 2020 04:58:44 -0500
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:38180 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729100AbgAQJ6i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2020 04:58:38 -0500
+Received: by mail-wm1-f65.google.com with SMTP id u2so6908323wmc.3
+        for <linux-pm@vger.kernel.org>; Fri, 17 Jan 2020 01:58:35 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=IimwIZWWa1VVuWQv/hNX0pZ26OrvQk2Ht7ELq9Rp8kU=;
-        b=sPtoIYGgKgbKnmSo9AtWDGiCuHSmO5L294/W3C2j92HNEh7QAMJFnM+oJTjnRVUzvj
-         Q9mOgBpiVZWbraG3mi94QLdB6b55VI475xn1NkvGGeQFtii1vviWdNHoOfQt85KAnC9K
-         CCvTjSwDR3pFtrPQxtQGLAefeCqxZi3+B4A2kRaCTF7WFRtPEYdOtcmbhIVH9qaQbISO
-         1QjvuU1RTOlHo4Fpj0RfZ/875g39n9fC9WEuhSYWsqcEeAfpYK370w9CJEAbMNzx2mLD
-         PbcuUkkN7KkOQv+dIKNJY9Sp0sfBP0dKjPSyqwTYsY12T/EYe1eFjULCfyXqQ8531/BI
-         nKWA==
+        bh=2c4lQrNZStI/vrxf9lYwOru3C8SOkGXHNveqzCYZlTA=;
+        b=l6EGo0BloL/e7+VcLvM3THqFpcU8CVg9TUN7jBDRDUoROGkF7pSdUbs9KxLsouDxMe
+         AXNogg5S77F2cRfJkrobPSRNj8DzrX0hNPEbAMNL5b5FJprEnQcV3Iz796d/e5Cq1Jac
+         +ga71GIvM1evaLRpKXPSaMr9yhJkBT9QxxF7wrE+zMs1xFGuEmhJlkNr7Dlx0KykHMGE
+         uNmPdsi3rCD6vsxHP4FtpH75YMBYkwJadUiZOU05Lxpn3KKUxJk4/FakLY/+6FRXsZLa
+         I7xF2NB0FPwiuh3+7QVDg/pcWaESCGGA7gZyi/x7sGvObBxUp3c+ZKBWxU/SNMX/qapM
+         I6Ww==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=IimwIZWWa1VVuWQv/hNX0pZ26OrvQk2Ht7ELq9Rp8kU=;
-        b=CExBQpYkNZxs+Xso1dKntat03DkSJeOjbr9kaYc0+aRiAD9C+m+qj3gFZkaSCElZAp
-         e5cj3ueBHtLW7XVI3JxOcZucxI/8JiJgdfEQt1V+iFLDkr4wzHlkwgw1KmzVegp51/pO
-         nGHMjzUUShqW4MTkJecwk76pycdZMKp8B06Qeu154MzNLf1rHlZshsz4SMbR7lbH4Met
-         nW2TAqpwSJUW3OWoWAZb60hdPqEVXM9zfrfmAObMXKA7oJa0nU9G93Kq8Fi7VxxYJ5ql
-         UZw60aIMovpiwIY0RyauIYIvBMIL8iaBWJg0dyoQ0qsjct/vUejslFdAjOkZcwSFOU46
-         xkQA==
-X-Gm-Message-State: APjAAAUjN4tiiwbsuozfvmlqrewE3/cf+CtwA9/MGVna8B2za9humljC
-        mytPNL2bfXQzUA0jNPnSfZiRaA==
-X-Google-Smtp-Source: APXvYqyJqeYqOx1EGqfxZtobmXX5KKSqDMm15dAMTEW8mxEziDijPrt5c6EvACASyGYl51sdTJc7GA==
-X-Received: by 2002:a1c:7901:: with SMTP id l1mr3620817wme.67.1579255109154;
-        Fri, 17 Jan 2020 01:58:29 -0800 (PST)
+        bh=2c4lQrNZStI/vrxf9lYwOru3C8SOkGXHNveqzCYZlTA=;
+        b=bpERMI5Rs1ENd5E77roNgevot6sZ/2Cu/X+rDSBQPXVchelw2VoU3o+x6keV1Wl1fB
+         X/sud0CrcPRX+5NiOt5/faaJ/ZKBsI/zsLetBlRV8ntm+WEvmA5hEjgFClnlKNd9L4PY
+         MsqaFdIpybYbODRJ59SNTwFtCd5gKfYhooauld88mNSrxpT8VhuZJwsIWjrMOKpaVrIG
+         JzSOseYC1D0e11++bZWomGIJlqzFSxLzQIx+VTo17xlc3i84g5CuWkCfYHmoVMPGs80i
+         ROChLtmb93VfVmTNG6oYJAS2Sro7jwtmbAIuzC41OiKQCT/v4W4EtzZ8gPU5TmZw7GDl
+         wK2w==
+X-Gm-Message-State: APjAAAX4PaNc6aqZoh9OuWIwIheDBMnEAxG2l6YRFxrR2Qq4rb3Eta/8
+        D2hCPRSdR459tPtkcARQdanJ6g==
+X-Google-Smtp-Source: APXvYqyOOXXQGk3y0yfLd5Twhdy42noa4YL4sgR4gLEUZgmN7blMLikvCRahSdQbjh1AgR7trwlYhA==
+X-Received: by 2002:a7b:cf12:: with SMTP id l18mr3839909wmg.66.1579255114253;
+        Fri, 17 Jan 2020 01:58:34 -0800 (PST)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id r62sm9967007wma.32.2020.01.17.01.58.28
+        by smtp.googlemail.com with ESMTPSA id r62sm9967007wma.32.2020.01.17.01.58.33
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 17 Jan 2020 01:58:28 -0800 (PST)
+        Fri, 17 Jan 2020 01:58:33 -0800 (PST)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Leonard Crestez <leonard.crestez@nxp.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH 08/12] interconnect: Add interconnect_graph file to debugfs
-Date:   Fri, 17 Jan 2020 11:58:12 +0200
-Message-Id: <20200117095816.23575-9-georgi.djakov@linaro.org>
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Evan Green <evgreen@chromium.org>
+Subject: [PATCH 12/12] interconnect: qcom: Add MSM8916 interconnect provider driver
+Date:   Fri, 17 Jan 2020 11:58:16 +0200
+Message-Id: <20200117095816.23575-13-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200117095816.23575-1-georgi.djakov@linaro.org>
 References: <20200117095816.23575-1-georgi.djakov@linaro.org>
@@ -73,140 +72,614 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Leonard Crestez <leonard.crestez@nxp.com>
+Add driver for the Qualcomm interconnect buses found in MSM8916 based
+platforms. The topology consists of three NoCs that are controlled by
+a remote processor that collects the aggregated bandwidth for each
+master-slave pairs.
 
-The interconnect graphs can be difficult to understand and the current
-"interconnect_summary" file doesn't even display links in any way.
-
-Add a new "interconnect_graph" file to debugfs in the graphviz "dot"
-format which describes interconnect providers, nodes and links.
-
-The file is human-readable and can be visualized by piping through
-graphviz. Example:
-
-ssh $TARGET cat /sys/kernel/debug/interconnect/interconnect_graph \
-	| dot -Tsvg > interconnect_graph.svg
-
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Reviewed-by: Evan Green <evgreen@chromium.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- Documentation/driver-api/interconnect.rst | 22 ++++++++
- drivers/interconnect/core.c               | 66 +++++++++++++++++++++++
- 2 files changed, 88 insertions(+)
+ drivers/interconnect/qcom/Kconfig   |   9 +
+ drivers/interconnect/qcom/Makefile  |   2 +
+ drivers/interconnect/qcom/msm8916.c | 554 ++++++++++++++++++++++++++++
+ 3 files changed, 565 insertions(+)
+ create mode 100644 drivers/interconnect/qcom/msm8916.c
 
-diff --git a/Documentation/driver-api/interconnect.rst b/Documentation/driver-api/interconnect.rst
-index cdeb5825f314..5ed4f57a6bac 100644
---- a/Documentation/driver-api/interconnect.rst
-+++ b/Documentation/driver-api/interconnect.rst
-@@ -91,3 +91,25 @@ Interconnect consumers are the clients which use the interconnect APIs to
- get paths between endpoints and set their bandwidth/latency/QoS requirements
- for these interconnect paths.  These interfaces are not currently
- documented.
-+
-+Interconnect debugfs interfaces
-+-------------------------------
-+
-+Like several other subsystems interconnect will create some files for debugging
-+and introspection. Files in debugfs are not considered ABI so application
-+software shouldn't rely on format details change between kernel versions.
-+
-+``/sys/kernel/debug/interconnect/interconnect_summary``:
-+
-+Show all interconnect nodes in the system with their aggregated bandwidth
-+request. Indented under each node show bandwidth requests from each device.
-+
-+``/sys/kernel/debug/interconnect/interconnect_graph``:
-+
-+Show the interconnect graph in the graphviz dot format. It shows all
-+interconnect nodes and links in the system and groups together nodes from the
-+same provider as subgraphs. The format is human-readable and can also be piped
-+through dot to generate diagrams in many graphical formats::
-+
-+        $ cat /sys/kernel/debug/interconnect/interconnect_graph | \
-+                dot -Tsvg > interconnect_graph.svg
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 03625406c69f..63c164264b73 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -71,6 +71,70 @@ static int icc_summary_show(struct seq_file *s, void *data)
- }
- DEFINE_SHOW_ATTRIBUTE(icc_summary);
+diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
+index 2f9304d1db49..76938ece1658 100644
+--- a/drivers/interconnect/qcom/Kconfig
++++ b/drivers/interconnect/qcom/Kconfig
+@@ -5,6 +5,15 @@ config INTERCONNECT_QCOM
+ 	help
+ 	  Support for Qualcomm's Network-on-Chip interconnect hardware.
  
-+static void icc_graph_show_link(struct seq_file *s, int level,
-+				struct icc_node *n, struct icc_node *m)
-+{
-+	seq_printf(s, "%s\"%d:%s\" -> \"%d:%s\"\n",
-+		   level == 2 ? "\t\t" : "\t",
-+		   n->id, n->name, m->id, m->name);
-+}
++config INTERCONNECT_QCOM_MSM8916
++	tristate "Qualcomm MSM8916 interconnect driver"
++	depends on INTERCONNECT_QCOM
++	depends on QCOM_SMD_RPM
++	select INTERCONNECT_QCOM_SMD_RPM
++	help
++	  This is a driver for the Qualcomm Network-on-Chip on msm8916-based
++	  platforms.
 +
-+static void icc_graph_show_node(struct seq_file *s, struct icc_node *n)
-+{
-+	seq_printf(s, "\t\t\"%d:%s\" [label=\"%d:%s",
-+		   n->id, n->name, n->id, n->name);
-+	seq_printf(s, "\n\t\t\t|avg_bw=%ukBps", n->avg_bw);
-+	seq_printf(s, "\n\t\t\t|peak_bw=%ukBps", n->peak_bw);
-+	seq_puts(s, "\"]\n");
-+}
+ config INTERCONNECT_QCOM_MSM8974
+ 	tristate "Qualcomm MSM8974 interconnect driver"
+ 	depends on INTERCONNECT_QCOM
+diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
+index 9adf9e380545..e8271575e3d8 100644
+--- a/drivers/interconnect/qcom/Makefile
++++ b/drivers/interconnect/qcom/Makefile
+@@ -1,10 +1,12 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
++qnoc-msm8916-objs			:= msm8916.o
+ qnoc-msm8974-objs			:= msm8974.o
+ qnoc-qcs404-objs			:= qcs404.o
+ qnoc-sdm845-objs			:= sdm845.o
+ icc-smd-rpm-objs			:= smd-rpm.o
+ 
++obj-$(CONFIG_INTERCONNECT_QCOM_MSM8916) += qnoc-msm8916.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8974) += qnoc-msm8974.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_QCS404) += qnoc-qcs404.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_SDM845) += qnoc-sdm845.o
+diff --git a/drivers/interconnect/qcom/msm8916.c b/drivers/interconnect/qcom/msm8916.c
+new file mode 100644
+index 000000000000..e94f3c5228b7
+--- /dev/null
++++ b/drivers/interconnect/qcom/msm8916.c
+@@ -0,0 +1,554 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2018-2020 Linaro Ltd
++ * Author: Georgi Djakov <georgi.djakov@linaro.org>
++ */
 +
-+static int icc_graph_show(struct seq_file *s, void *data)
-+{
-+	struct icc_provider *provider;
-+	struct icc_node *n;
-+	int cluster_index = 0;
-+	int i;
++#include <linux/clk.h>
++#include <linux/device.h>
++#include <linux/interconnect-provider.h>
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/of_device.h>
 +
-+	seq_puts(s, "digraph {\n\trankdir = LR\n\tnode [shape = record]\n");
-+	mutex_lock(&icc_lock);
++#include <dt-bindings/interconnect/qcom,msm8916.h>
 +
-+	/* draw providers as cluster subgraphs */
-+	cluster_index = 0;
-+	list_for_each_entry(provider, &icc_providers, provider_list) {
-+		seq_printf(s, "\tsubgraph cluster_%d {\n", ++cluster_index);
-+		if (provider->dev)
-+			seq_printf(s, "\t\tlabel = \"%s\"\n",
-+				   dev_name(provider->dev));
++#include "smd-rpm.h"
 +
-+		/* draw nodes */
-+		list_for_each_entry(n, &provider->nodes, node_list)
-+			icc_graph_show_node(s, n);
++#define RPM_BUS_MASTER_REQ      0x73616d62
++#define RPM_BUS_SLAVE_REQ       0x766c7362
 +
-+		/* draw internal links */
-+		list_for_each_entry(n, &provider->nodes, node_list)
-+			for (i = 0; i < n->num_links; ++i)
-+				if (n->provider == n->links[i]->provider)
-+					icc_graph_show_link(s, 2, n,
-+							    n->links[i]);
++enum {
++	MSM8916_BIMC_SNOC_MAS = 1,
++	MSM8916_BIMC_SNOC_SLV,
++	MSM8916_MASTER_AMPSS_M0,
++	MSM8916_MASTER_LPASS,
++	MSM8916_MASTER_BLSP_1,
++	MSM8916_MASTER_DEHR,
++	MSM8916_MASTER_GRAPHICS_3D,
++	MSM8916_MASTER_JPEG,
++	MSM8916_MASTER_MDP_PORT0,
++	MSM8916_MASTER_CRYPTO_CORE0,
++	MSM8916_MASTER_SDCC_1,
++	MSM8916_MASTER_SDCC_2,
++	MSM8916_MASTER_QDSS_BAM,
++	MSM8916_MASTER_QDSS_ETR,
++	MSM8916_MASTER_SNOC_CFG,
++	MSM8916_MASTER_SPDM,
++	MSM8916_MASTER_TCU0,
++	MSM8916_MASTER_TCU1,
++	MSM8916_MASTER_USB_HS,
++	MSM8916_MASTER_VFE,
++	MSM8916_MASTER_VIDEO_P0,
++	MSM8916_SNOC_MM_INT_0,
++	MSM8916_SNOC_MM_INT_1,
++	MSM8916_SNOC_MM_INT_2,
++	MSM8916_SNOC_MM_INT_BIMC,
++	MSM8916_PNOC_INT_0,
++	MSM8916_PNOC_INT_1,
++	MSM8916_PNOC_MAS_0,
++	MSM8916_PNOC_MAS_1,
++	MSM8916_PNOC_SLV_0,
++	MSM8916_PNOC_SLV_1,
++	MSM8916_PNOC_SLV_2,
++	MSM8916_PNOC_SLV_3,
++	MSM8916_PNOC_SLV_4,
++	MSM8916_PNOC_SLV_8,
++	MSM8916_PNOC_SLV_9,
++	MSM8916_PNOC_SNOC_MAS,
++	MSM8916_PNOC_SNOC_SLV,
++	MSM8916_SNOC_QDSS_INT,
++	MSM8916_SLAVE_AMPSS_L2,
++	MSM8916_SLAVE_APSS,
++	MSM8916_SLAVE_LPASS,
++	MSM8916_SLAVE_BIMC_CFG,
++	MSM8916_SLAVE_BLSP_1,
++	MSM8916_SLAVE_BOOT_ROM,
++	MSM8916_SLAVE_CAMERA_CFG,
++	MSM8916_SLAVE_CATS_128,
++	MSM8916_SLAVE_OCMEM_64,
++	MSM8916_SLAVE_CLK_CTL,
++	MSM8916_SLAVE_CRYPTO_0_CFG,
++	MSM8916_SLAVE_DEHR_CFG,
++	MSM8916_SLAVE_DISPLAY_CFG,
++	MSM8916_SLAVE_EBI_CH0,
++	MSM8916_SLAVE_GRAPHICS_3D_CFG,
++	MSM8916_SLAVE_IMEM_CFG,
++	MSM8916_SLAVE_IMEM,
++	MSM8916_SLAVE_MPM,
++	MSM8916_SLAVE_MSG_RAM,
++	MSM8916_SLAVE_MSS,
++	MSM8916_SLAVE_PDM,
++	MSM8916_SLAVE_PMIC_ARB,
++	MSM8916_SLAVE_PNOC_CFG,
++	MSM8916_SLAVE_PRNG,
++	MSM8916_SLAVE_QDSS_CFG,
++	MSM8916_SLAVE_QDSS_STM,
++	MSM8916_SLAVE_RBCPR_CFG,
++	MSM8916_SLAVE_SDCC_1,
++	MSM8916_SLAVE_SDCC_2,
++	MSM8916_SLAVE_SECURITY,
++	MSM8916_SLAVE_SNOC_CFG,
++	MSM8916_SLAVE_SPDM,
++	MSM8916_SLAVE_SRVC_SNOC,
++	MSM8916_SLAVE_TCSR,
++	MSM8916_SLAVE_TLMM,
++	MSM8916_SLAVE_USB_HS,
++	MSM8916_SLAVE_VENUS_CFG,
++	MSM8916_SNOC_BIMC_0_MAS,
++	MSM8916_SNOC_BIMC_0_SLV,
++	MSM8916_SNOC_BIMC_1_MAS,
++	MSM8916_SNOC_BIMC_1_SLV,
++	MSM8916_SNOC_INT_0,
++	MSM8916_SNOC_INT_1,
++	MSM8916_SNOC_INT_BIMC,
++	MSM8916_SNOC_PNOC_MAS,
++	MSM8916_SNOC_PNOC_SLV,
++};
 +
-+		seq_puts(s, "\t}\n");
++#define to_msm8916_provider(_provider) \
++	container_of(_provider, struct msm8916_icc_provider, provider)
++
++static const struct clk_bulk_data msm8916_bus_clocks[] = {
++	{ .id = "bus" },
++	{ .id = "bus_a" },
++};
++
++/**
++ * struct msm8916_icc_provider - Qualcomm specific interconnect provider
++ * @provider: generic interconnect provider
++ * @bus_clks: the clk_bulk_data table of bus clocks
++ * @num_clks: the total number of clk_bulk_data entries
++ */
++struct msm8916_icc_provider {
++	struct icc_provider provider;
++	struct clk_bulk_data *bus_clks;
++	int num_clks;
++};
++
++#define MSM8916_MAX_LINKS	8
++
++/**
++ * struct msm8916_icc_node - Qualcomm specific interconnect nodes
++ * @name: the node name used in debugfs
++ * @id: a unique node identifier
++ * @links: an array of nodes where we can go next while traversing
++ * @num_links: the total number of @links
++ * @buswidth: width of the interconnect between a node and the bus (bytes)
++ * @mas_rpm_id:	RPM ID for devices that are bus masters
++ * @slv_rpm_id:	RPM ID for devices that are bus slaves
++ * @rate: current bus clock rate in Hz
++ */
++struct msm8916_icc_node {
++	unsigned char *name;
++	u16 id;
++	u16 links[MSM8916_MAX_LINKS];
++	u16 num_links;
++	u16 buswidth;
++	int mas_rpm_id;
++	int slv_rpm_id;
++	u64 rate;
++};
++
++struct msm8916_icc_desc {
++	struct msm8916_icc_node **nodes;
++	size_t num_nodes;
++};
++
++#define DEFINE_QNODE(_name, _id, _buswidth, _mas_rpm_id, _slv_rpm_id,	\
++					...)				\
++		static struct msm8916_icc_node _name = {		\
++		.name = #_name,						\
++		.id = _id,						\
++		.buswidth = _buswidth,					\
++		.mas_rpm_id = _mas_rpm_id,				\
++		.slv_rpm_id = _slv_rpm_id,				\
++		.num_links = ARRAY_SIZE(((int[]){ __VA_ARGS__ })),	\
++		.links = { __VA_ARGS__ },				\
 +	}
 +
-+	/* draw external links */
-+	list_for_each_entry(provider, &icc_providers, provider_list)
-+		list_for_each_entry(n, &provider->nodes, node_list)
-+			for (i = 0; i < n->num_links; ++i)
-+				if (n->provider != n->links[i]->provider)
-+					icc_graph_show_link(s, 1, n,
-+							    n->links[i]);
++DEFINE_QNODE(bimc_snoc_mas, MSM8916_BIMC_SNOC_MAS, 8, -1, -1, MSM8916_BIMC_SNOC_SLV);
++DEFINE_QNODE(bimc_snoc_slv, MSM8916_BIMC_SNOC_SLV, 8, -1, -1, MSM8916_SNOC_INT_0, MSM8916_SNOC_INT_1);
++DEFINE_QNODE(mas_apss, MSM8916_MASTER_AMPSS_M0, 8, -1, -1, MSM8916_SLAVE_EBI_CH0, MSM8916_BIMC_SNOC_MAS, MSM8916_SLAVE_AMPSS_L2);
++DEFINE_QNODE(mas_audio, MSM8916_MASTER_LPASS, 4, -1, -1, MSM8916_PNOC_MAS_0);
++DEFINE_QNODE(mas_blsp_1, MSM8916_MASTER_BLSP_1, 4, -1, -1, MSM8916_PNOC_MAS_1);
++DEFINE_QNODE(mas_dehr, MSM8916_MASTER_DEHR, 4, -1, -1, MSM8916_PNOC_MAS_0);
++DEFINE_QNODE(mas_gfx, MSM8916_MASTER_GRAPHICS_3D, 8, -1, -1, MSM8916_SLAVE_EBI_CH0, MSM8916_BIMC_SNOC_MAS, MSM8916_SLAVE_AMPSS_L2);
++DEFINE_QNODE(mas_jpeg, MSM8916_MASTER_JPEG, 16, -1, -1, MSM8916_SNOC_MM_INT_0, MSM8916_SNOC_MM_INT_2);
++DEFINE_QNODE(mas_mdp, MSM8916_MASTER_MDP_PORT0, 16, -1, -1, MSM8916_SNOC_MM_INT_0, MSM8916_SNOC_MM_INT_2);
++DEFINE_QNODE(mas_pcnoc_crypto_0, MSM8916_MASTER_CRYPTO_CORE0, 8, -1, -1, MSM8916_PNOC_INT_1);
++DEFINE_QNODE(mas_pcnoc_sdcc_1, MSM8916_MASTER_SDCC_1, 8, -1, -1, MSM8916_PNOC_INT_1);
++DEFINE_QNODE(mas_pcnoc_sdcc_2, MSM8916_MASTER_SDCC_2, 8, -1, -1, MSM8916_PNOC_INT_1);
++DEFINE_QNODE(mas_qdss_bam, MSM8916_MASTER_QDSS_BAM, 8, -1, -1, MSM8916_SNOC_QDSS_INT);
++DEFINE_QNODE(mas_qdss_etr, MSM8916_MASTER_QDSS_ETR, 8, -1, -1, MSM8916_SNOC_QDSS_INT);
++DEFINE_QNODE(mas_snoc_cfg, MSM8916_MASTER_SNOC_CFG, 4, 20, -1, MSM8916_SNOC_QDSS_INT);
++DEFINE_QNODE(mas_spdm, MSM8916_MASTER_SPDM, 4, -1, -1, MSM8916_PNOC_MAS_0);
++DEFINE_QNODE(mas_tcu0, MSM8916_MASTER_TCU0, 8, -1, -1, MSM8916_SLAVE_EBI_CH0, MSM8916_BIMC_SNOC_MAS, MSM8916_SLAVE_AMPSS_L2);
++DEFINE_QNODE(mas_tcu1, MSM8916_MASTER_TCU1, 8, -1, -1, MSM8916_SLAVE_EBI_CH0, MSM8916_BIMC_SNOC_MAS, MSM8916_SLAVE_AMPSS_L2);
++DEFINE_QNODE(mas_usb_hs, MSM8916_MASTER_USB_HS, 4, -1, -1, MSM8916_PNOC_MAS_1);
++DEFINE_QNODE(mas_vfe, MSM8916_MASTER_VFE, 16, -1, -1, MSM8916_SNOC_MM_INT_1, MSM8916_SNOC_MM_INT_2);
++DEFINE_QNODE(mas_video, MSM8916_MASTER_VIDEO_P0, 16, -1, -1, MSM8916_SNOC_MM_INT_0, MSM8916_SNOC_MM_INT_2);
++DEFINE_QNODE(mm_int_0, MSM8916_SNOC_MM_INT_0, 16, -1, -1, MSM8916_SNOC_MM_INT_BIMC);
++DEFINE_QNODE(mm_int_1, MSM8916_SNOC_MM_INT_1, 16, -1, -1, MSM8916_SNOC_MM_INT_BIMC);
++DEFINE_QNODE(mm_int_2, MSM8916_SNOC_MM_INT_2, 16, -1, -1, MSM8916_SNOC_INT_0);
++DEFINE_QNODE(mm_int_bimc, MSM8916_SNOC_MM_INT_BIMC, 16, -1, -1, MSM8916_SNOC_BIMC_1_MAS);
++DEFINE_QNODE(pcnoc_int_0, MSM8916_PNOC_INT_0, 8, -1, -1, MSM8916_PNOC_SNOC_MAS, MSM8916_PNOC_SLV_0, MSM8916_PNOC_SLV_1, MSM8916_PNOC_SLV_2, MSM8916_PNOC_SLV_3, MSM8916_PNOC_SLV_4, MSM8916_PNOC_SLV_8, MSM8916_PNOC_SLV_9);
++DEFINE_QNODE(pcnoc_int_1, MSM8916_PNOC_INT_1, 8, -1, -1, MSM8916_PNOC_SNOC_MAS);
++DEFINE_QNODE(pcnoc_m_0, MSM8916_PNOC_MAS_0, 8, -1, -1, MSM8916_PNOC_INT_0);
++DEFINE_QNODE(pcnoc_m_1, MSM8916_PNOC_MAS_1, 8, -1, -1, MSM8916_PNOC_SNOC_MAS);
++DEFINE_QNODE(pcnoc_s_0, MSM8916_PNOC_SLV_0, 8, -1, -1, MSM8916_SLAVE_CLK_CTL, MSM8916_SLAVE_TLMM, MSM8916_SLAVE_TCSR, MSM8916_SLAVE_SECURITY, MSM8916_SLAVE_MSS);
++DEFINE_QNODE(pcnoc_s_1, MSM8916_PNOC_SLV_1, 8, -1, -1, MSM8916_SLAVE_IMEM_CFG, MSM8916_SLAVE_CRYPTO_0_CFG, MSM8916_SLAVE_MSG_RAM, MSM8916_SLAVE_PDM, MSM8916_SLAVE_PRNG);
++DEFINE_QNODE(pcnoc_s_2, MSM8916_PNOC_SLV_2, 8, -1, -1, MSM8916_SLAVE_SPDM, MSM8916_SLAVE_BOOT_ROM, MSM8916_SLAVE_BIMC_CFG, MSM8916_SLAVE_PNOC_CFG, MSM8916_SLAVE_PMIC_ARB);
++DEFINE_QNODE(pcnoc_s_3, MSM8916_PNOC_SLV_3, 8, -1, -1, MSM8916_SLAVE_MPM, MSM8916_SLAVE_SNOC_CFG, MSM8916_SLAVE_RBCPR_CFG, MSM8916_SLAVE_QDSS_CFG, MSM8916_SLAVE_DEHR_CFG);
++DEFINE_QNODE(pcnoc_s_4, MSM8916_PNOC_SLV_4, 8, -1, -1, MSM8916_SLAVE_VENUS_CFG, MSM8916_SLAVE_CAMERA_CFG, MSM8916_SLAVE_DISPLAY_CFG);
++DEFINE_QNODE(pcnoc_s_8, MSM8916_PNOC_SLV_8, 8, -1, -1, MSM8916_SLAVE_USB_HS, MSM8916_SLAVE_SDCC_1, MSM8916_SLAVE_BLSP_1);
++DEFINE_QNODE(pcnoc_s_9, MSM8916_PNOC_SLV_9, 8, -1, -1, MSM8916_SLAVE_SDCC_2, MSM8916_SLAVE_LPASS, MSM8916_SLAVE_GRAPHICS_3D_CFG);
++DEFINE_QNODE(pcnoc_snoc_mas, MSM8916_PNOC_SNOC_MAS, 8, 29, -1, MSM8916_PNOC_SNOC_SLV);
++DEFINE_QNODE(pcnoc_snoc_slv, MSM8916_PNOC_SNOC_SLV, 8, -1, 45, MSM8916_SNOC_INT_0, MSM8916_SNOC_INT_BIMC, MSM8916_SNOC_INT_1);
++DEFINE_QNODE(qdss_int, MSM8916_SNOC_QDSS_INT, 8, -1, -1, MSM8916_SNOC_INT_0, MSM8916_SNOC_INT_BIMC);
++DEFINE_QNODE(slv_apps_l2, MSM8916_SLAVE_AMPSS_L2, 8, -1, -1, 0);
++DEFINE_QNODE(slv_apss, MSM8916_SLAVE_APSS, 4, -1, 20, 0);
++DEFINE_QNODE(slv_audio, MSM8916_SLAVE_LPASS, 4, -1, -1, 0);
++DEFINE_QNODE(slv_bimc_cfg, MSM8916_SLAVE_BIMC_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_blsp_1, MSM8916_SLAVE_BLSP_1, 4, -1, -1, 0);
++DEFINE_QNODE(slv_boot_rom, MSM8916_SLAVE_BOOT_ROM, 4, -1, -1, 0);
++DEFINE_QNODE(slv_camera_cfg, MSM8916_SLAVE_CAMERA_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_cats_0, MSM8916_SLAVE_CATS_128, 16, -1, 106, 0);
++DEFINE_QNODE(slv_cats_1, MSM8916_SLAVE_OCMEM_64, 8, -1, 107, 0);
++DEFINE_QNODE(slv_clk_ctl, MSM8916_SLAVE_CLK_CTL, 4, -1, -1, 0);
++DEFINE_QNODE(slv_crypto_0_cfg, MSM8916_SLAVE_CRYPTO_0_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_dehr_cfg, MSM8916_SLAVE_DEHR_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_display_cfg, MSM8916_SLAVE_DISPLAY_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_ebi_ch0, MSM8916_SLAVE_EBI_CH0, 8, -1, 0, 0);
++DEFINE_QNODE(slv_gfx_cfg, MSM8916_SLAVE_GRAPHICS_3D_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_imem_cfg, MSM8916_SLAVE_IMEM_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_imem, MSM8916_SLAVE_IMEM, 8, -1, 26, 0);
++DEFINE_QNODE(slv_mpm, MSM8916_SLAVE_MPM, 4, -1, -1, 0);
++DEFINE_QNODE(slv_msg_ram, MSM8916_SLAVE_MSG_RAM, 4, -1, -1, 0);
++DEFINE_QNODE(slv_mss, MSM8916_SLAVE_MSS, 4, -1, -1, 0);
++DEFINE_QNODE(slv_pdm, MSM8916_SLAVE_PDM, 4, -1, -1, 0);
++DEFINE_QNODE(slv_pmic_arb, MSM8916_SLAVE_PMIC_ARB, 4, -1, -1, 0);
++DEFINE_QNODE(slv_pcnoc_cfg, MSM8916_SLAVE_PNOC_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_prng, MSM8916_SLAVE_PRNG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_qdss_cfg, MSM8916_SLAVE_QDSS_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_qdss_stm, MSM8916_SLAVE_QDSS_STM, 4, -1, 30, 0);
++DEFINE_QNODE(slv_rbcpr_cfg, MSM8916_SLAVE_RBCPR_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_sdcc_1, MSM8916_SLAVE_SDCC_1, 4, -1, -1, 0);
++DEFINE_QNODE(slv_sdcc_2, MSM8916_SLAVE_SDCC_2, 4, -1, -1, 0);
++DEFINE_QNODE(slv_security, MSM8916_SLAVE_SECURITY, 4, -1, -1, 0);
++DEFINE_QNODE(slv_snoc_cfg, MSM8916_SLAVE_SNOC_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(slv_spdm, MSM8916_SLAVE_SPDM, 4, -1, -1, 0);
++DEFINE_QNODE(slv_srvc_snoc, MSM8916_SLAVE_SRVC_SNOC, 8, -1, 29, 0);
++DEFINE_QNODE(slv_tcsr, MSM8916_SLAVE_TCSR, 4, -1, -1, 0);
++DEFINE_QNODE(slv_tlmm, MSM8916_SLAVE_TLMM, 4, -1, -1, 0);
++DEFINE_QNODE(slv_usb_hs, MSM8916_SLAVE_USB_HS, 4, -1, -1, 0);
++DEFINE_QNODE(slv_venus_cfg, MSM8916_SLAVE_VENUS_CFG, 4, -1, -1, 0);
++DEFINE_QNODE(snoc_bimc_0_mas, MSM8916_SNOC_BIMC_0_MAS, 8, 3, -1, MSM8916_SNOC_BIMC_0_SLV);
++DEFINE_QNODE(snoc_bimc_0_slv, MSM8916_SNOC_BIMC_0_SLV, 8, -1, 24, MSM8916_SLAVE_EBI_CH0);
++DEFINE_QNODE(snoc_bimc_1_mas, MSM8916_SNOC_BIMC_1_MAS, 16, -1, -1, MSM8916_SNOC_BIMC_1_SLV);
++DEFINE_QNODE(snoc_bimc_1_slv, MSM8916_SNOC_BIMC_1_SLV, 8, -1, -1, MSM8916_SLAVE_EBI_CH0);
++DEFINE_QNODE(snoc_int_0, MSM8916_SNOC_INT_0, 8, 99, 130, MSM8916_SLAVE_QDSS_STM, MSM8916_SLAVE_IMEM, MSM8916_SNOC_PNOC_MAS);
++DEFINE_QNODE(snoc_int_1, MSM8916_SNOC_INT_1, 8, 100, 131, MSM8916_SLAVE_APSS, MSM8916_SLAVE_CATS_128, MSM8916_SLAVE_OCMEM_64);
++DEFINE_QNODE(snoc_int_bimc, MSM8916_SNOC_INT_BIMC, 8, 101, 132, MSM8916_SNOC_BIMC_0_MAS);
++DEFINE_QNODE(snoc_pcnoc_mas, MSM8916_SNOC_PNOC_MAS, 8, -1, -1, MSM8916_SNOC_PNOC_SLV);
++DEFINE_QNODE(snoc_pcnoc_slv, MSM8916_SNOC_PNOC_SLV, 8, -1, -1, MSM8916_PNOC_INT_0);
 +
-+	mutex_unlock(&icc_lock);
-+	seq_puts(s, "}");
++static struct msm8916_icc_node *msm8916_snoc_nodes[] = {
++	[BIMC_SNOC_SLV] = &bimc_snoc_slv,
++	[MASTER_JPEG] = &mas_jpeg,
++	[MASTER_MDP_PORT0] = &mas_mdp,
++	[MASTER_QDSS_BAM] = &mas_qdss_bam,
++	[MASTER_QDSS_ETR] = &mas_qdss_etr,
++	[MASTER_SNOC_CFG] = &mas_snoc_cfg,
++	[MASTER_VFE] = &mas_vfe,
++	[MASTER_VIDEO_P0] = &mas_video,
++	[SNOC_MM_INT_0] = &mm_int_0,
++	[SNOC_MM_INT_1] = &mm_int_1,
++	[SNOC_MM_INT_2] = &mm_int_2,
++	[SNOC_MM_INT_BIMC] = &mm_int_bimc,
++	[PCNOC_SNOC_SLV] = &pcnoc_snoc_slv,
++	[SLAVE_APSS] = &slv_apss,
++	[SLAVE_CATS_128] = &slv_cats_0,
++	[SLAVE_OCMEM_64] = &slv_cats_1,
++	[SLAVE_IMEM] = &slv_imem,
++	[SLAVE_QDSS_STM] = &slv_qdss_stm,
++	[SLAVE_SRVC_SNOC] = &slv_srvc_snoc,
++	[SNOC_BIMC_0_MAS] = &snoc_bimc_0_mas,
++	[SNOC_BIMC_1_MAS] = &snoc_bimc_1_mas,
++	[SNOC_INT_0] = &snoc_int_0,
++	[SNOC_INT_1] = &snoc_int_1,
++	[SNOC_INT_BIMC] = &snoc_int_bimc,
++	[SNOC_PCNOC_MAS] = &snoc_pcnoc_mas,
++	[SNOC_QDSS_INT] = &qdss_int,
++};
++
++static struct msm8916_icc_desc msm8916_snoc = {
++	.nodes = msm8916_snoc_nodes,
++	.num_nodes = ARRAY_SIZE(msm8916_snoc_nodes),
++};
++
++static struct msm8916_icc_node *msm8916_bimc_nodes[] = {
++	[BIMC_SNOC_MAS] = &bimc_snoc_mas,
++	[MASTER_AMPSS_M0] = &mas_apss,
++	[MASTER_GRAPHICS_3D] = &mas_gfx,
++	[MASTER_TCU0] = &mas_tcu0,
++	[MASTER_TCU1] = &mas_tcu1,
++	[SLAVE_AMPSS_L2] = &slv_apps_l2,
++	[SLAVE_EBI_CH0] = &slv_ebi_ch0,
++	[SNOC_BIMC_0_SLV] = &snoc_bimc_0_slv,
++	[SNOC_BIMC_1_SLV] = &snoc_bimc_1_slv,
++};
++
++static struct msm8916_icc_desc msm8916_bimc = {
++	.nodes = msm8916_bimc_nodes,
++	.num_nodes = ARRAY_SIZE(msm8916_bimc_nodes),
++};
++
++static struct msm8916_icc_node *msm8916_pcnoc_nodes[] = {
++	[MASTER_BLSP_1] = &mas_blsp_1,
++	[MASTER_DEHR] = &mas_dehr,
++	[MASTER_LPASS] = &mas_audio,
++	[MASTER_CRYPTO_CORE0] = &mas_pcnoc_crypto_0,
++	[MASTER_SDCC_1] = &mas_pcnoc_sdcc_1,
++	[MASTER_SDCC_2] = &mas_pcnoc_sdcc_2,
++	[MASTER_SPDM] = &mas_spdm,
++	[MASTER_USB_HS] = &mas_usb_hs,
++	[PCNOC_INT_0] = &pcnoc_int_0,
++	[PCNOC_INT_1] = &pcnoc_int_1,
++	[PCNOC_MAS_0] = &pcnoc_m_0,
++	[PCNOC_MAS_1] = &pcnoc_m_1,
++	[PCNOC_SLV_0] = &pcnoc_s_0,
++	[PCNOC_SLV_1] = &pcnoc_s_1,
++	[PCNOC_SLV_2] = &pcnoc_s_2,
++	[PCNOC_SLV_3] = &pcnoc_s_3,
++	[PCNOC_SLV_4] = &pcnoc_s_4,
++	[PCNOC_SLV_8] = &pcnoc_s_8,
++	[PCNOC_SLV_9] = &pcnoc_s_9,
++	[PCNOC_SNOC_MAS] = &pcnoc_snoc_mas,
++	[SLAVE_BIMC_CFG] = &slv_bimc_cfg,
++	[SLAVE_BLSP_1] = &slv_blsp_1,
++	[SLAVE_BOOT_ROM] = &slv_boot_rom,
++	[SLAVE_CAMERA_CFG] = &slv_camera_cfg,
++	[SLAVE_CLK_CTL] = &slv_clk_ctl,
++	[SLAVE_CRYPTO_0_CFG] = &slv_crypto_0_cfg,
++	[SLAVE_DEHR_CFG] = &slv_dehr_cfg,
++	[SLAVE_DISPLAY_CFG] = &slv_display_cfg,
++	[SLAVE_GRAPHICS_3D_CFG] = &slv_gfx_cfg,
++	[SLAVE_IMEM_CFG] = &slv_imem_cfg,
++	[SLAVE_LPASS] = &slv_audio,
++	[SLAVE_MPM] = &slv_mpm,
++	[SLAVE_MSG_RAM] = &slv_msg_ram,
++	[SLAVE_MSS] = &slv_mss,
++	[SLAVE_PDM] = &slv_pdm,
++	[SLAVE_PMIC_ARB] = &slv_pmic_arb,
++	[SLAVE_PCNOC_CFG] = &slv_pcnoc_cfg,
++	[SLAVE_PRNG] = &slv_prng,
++	[SLAVE_QDSS_CFG] = &slv_qdss_cfg,
++	[SLAVE_RBCPR_CFG] = &slv_rbcpr_cfg,
++	[SLAVE_SDCC_1] = &slv_sdcc_1,
++	[SLAVE_SDCC_2] = &slv_sdcc_2,
++	[SLAVE_SECURITY] = &slv_security,
++	[SLAVE_SNOC_CFG] = &slv_snoc_cfg,
++	[SLAVE_SPDM] = &slv_spdm,
++	[SLAVE_TCSR] = &slv_tcsr,
++	[SLAVE_TLMM] = &slv_tlmm,
++	[SLAVE_USB_HS] = &slv_usb_hs,
++	[SLAVE_VENUS_CFG] = &slv_venus_cfg,
++	[SNOC_PCNOC_SLV] = &snoc_pcnoc_slv,
++};
++
++static struct msm8916_icc_desc msm8916_pcnoc = {
++	.nodes = msm8916_pcnoc_nodes,
++	.num_nodes = ARRAY_SIZE(msm8916_pcnoc_nodes),
++};
++
++static int msm8916_icc_set(struct icc_node *src, struct icc_node *dst)
++{
++	struct msm8916_icc_provider *qp;
++	struct msm8916_icc_node *qn;
++	u64 sum_bw, max_peak_bw, rate;
++	u32 agg_avg = 0, agg_peak = 0;
++	struct icc_provider *provider;
++	struct icc_node *n;
++	int ret, i;
++
++	qn = src->data;
++	provider = src->provider;
++	qp = to_msm8916_provider(provider);
++
++	list_for_each_entry(n, &provider->nodes, node_list)
++		provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
++				    &agg_avg, &agg_peak);
++
++	sum_bw = icc_units_to_bps(agg_avg);
++	max_peak_bw = icc_units_to_bps(agg_peak);
++
++	/* send bandwidth request message to the RPM processor */
++	if (qn->mas_rpm_id != -1) {
++		ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
++					    RPM_BUS_MASTER_REQ,
++					    qn->mas_rpm_id,
++					    sum_bw);
++		if (ret) {
++			pr_err("qcom_icc_rpm_smd_send mas %d error %d\n",
++			       qn->mas_rpm_id, ret);
++			return ret;
++		}
++	}
++
++	if (qn->slv_rpm_id != -1) {
++		ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
++					    RPM_BUS_SLAVE_REQ,
++					    qn->slv_rpm_id,
++					    sum_bw);
++		if (ret) {
++			pr_err("qcom_icc_rpm_smd_send slv error %d\n",
++			       ret);
++			return ret;
++		}
++	}
++
++	rate = max(sum_bw, max_peak_bw);
++
++	do_div(rate, qn->buswidth);
++
++	if (qn->rate == rate)
++		return 0;
++
++	for (i = 0; i < qp->num_clks; i++) {
++		ret = clk_set_rate(qp->bus_clks[i].clk, rate);
++		if (ret) {
++			pr_err("%s clk_set_rate error: %d\n",
++			       qp->bus_clks[i].id, ret);
++			return ret;
++		}
++	}
++
++	qn->rate = rate;
 +
 +	return 0;
 +}
-+DEFINE_SHOW_ATTRIBUTE(icc_graph);
 +
- static struct icc_node *node_find(const int id)
- {
- 	return idr_find(&icc_idr, id);
-@@ -827,6 +891,8 @@ static int __init icc_init(void)
- 	icc_debugfs_dir = debugfs_create_dir("interconnect", NULL);
- 	debugfs_create_file("interconnect_summary", 0444,
- 			    icc_debugfs_dir, NULL, &icc_summary_fops);
-+	debugfs_create_file("interconnect_graph", 0444,
-+			    icc_debugfs_dir, NULL, &icc_graph_fops);
- 	return 0;
- }
- 
++static int msm8916_qnoc_probe(struct platform_device *pdev)
++{
++	const struct msm8916_icc_desc *desc;
++	struct msm8916_icc_node **qnodes;
++	struct msm8916_icc_provider *qp;
++	struct device *dev = &pdev->dev;
++	struct icc_onecell_data *data;
++	struct icc_provider *provider;
++	struct icc_node *node;
++	size_t num_nodes, i;
++	int ret;
++
++	/* wait for the RPM proxy */
++	if (!qcom_icc_rpm_smd_available())
++		return -EPROBE_DEFER;
++
++	desc = of_device_get_match_data(dev);
++	if (!desc)
++		return -EINVAL;
++
++	qnodes = desc->nodes;
++	num_nodes = desc->num_nodes;
++
++	qp = devm_kzalloc(dev, sizeof(*qp), GFP_KERNEL);
++	if (!qp)
++		return -ENOMEM;
++
++	data = devm_kzalloc(dev, struct_size(data, nodes, num_nodes),
++			    GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	qp->bus_clks = devm_kmemdup(dev, msm8916_bus_clocks,
++				    sizeof(msm8916_bus_clocks), GFP_KERNEL);
++	if (!qp->bus_clks)
++		return -ENOMEM;
++
++	qp->num_clks = ARRAY_SIZE(msm8916_bus_clocks);
++	ret = devm_clk_bulk_get(dev, qp->num_clks, qp->bus_clks);
++	if (ret)
++		return ret;
++
++	ret = clk_bulk_prepare_enable(qp->num_clks, qp->bus_clks);
++	if (ret)
++		return ret;
++
++	provider = &qp->provider;
++	INIT_LIST_HEAD(&provider->nodes);
++	provider->dev = dev;
++	provider->set = msm8916_icc_set;
++	provider->aggregate = icc_std_aggregate;
++	provider->xlate = of_icc_xlate_onecell;
++	provider->data = data;
++
++	ret = icc_provider_add(provider);
++	if (ret) {
++		dev_err(dev, "error adding interconnect provider: %d\n", ret);
++		clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++		return ret;
++	}
++
++	for (i = 0; i < num_nodes; i++) {
++		size_t j;
++
++		node = icc_node_create(qnodes[i]->id);
++		if (IS_ERR(node)) {
++			ret = PTR_ERR(node);
++			goto err;
++		}
++
++		node->name = qnodes[i]->name;
++		node->data = qnodes[i];
++		icc_node_add(node, provider);
++
++		for (j = 0; j < qnodes[i]->num_links; j++)
++			icc_link_create(node, qnodes[i]->links[j]);
++
++		data->nodes[i] = node;
++	}
++	data->num_nodes = num_nodes;
++
++	platform_set_drvdata(pdev, qp);
++
++	return 0;
++
++err:
++	icc_nodes_remove(provider);
++	icc_provider_del(provider);
++	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++
++	return ret;
++}
++
++static int msm8916_qnoc_remove(struct platform_device *pdev)
++{
++	struct msm8916_icc_provider *qp = platform_get_drvdata(pdev);
++
++	icc_nodes_remove(&qp->provider);
++	clk_bulk_disable_unprepare(qp->num_clks, qp->bus_clks);
++	return icc_provider_del(&qp->provider);
++}
++
++static const struct of_device_id msm8916_noc_of_match[] = {
++	{ .compatible = "qcom,msm8916-bimc", .data = &msm8916_bimc },
++	{ .compatible = "qcom,msm8916-pcnoc", .data = &msm8916_pcnoc },
++	{ .compatible = "qcom,msm8916-snoc", .data = &msm8916_snoc },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, msm8916_noc_of_match);
++
++static struct platform_driver msm8916_noc_driver = {
++	.probe = msm8916_qnoc_probe,
++	.remove = msm8916_qnoc_remove,
++	.driver = {
++		.name = "qnoc-msm8916",
++		.of_match_table = msm8916_noc_of_match,
++	},
++};
++module_platform_driver(msm8916_noc_driver);
++MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org>");
++MODULE_DESCRIPTION("Qualcomm MSM8916 NoC driver");
++MODULE_LICENSE("GPL v2");
