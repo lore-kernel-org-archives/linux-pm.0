@@ -7,62 +7,63 @@ X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2873AC33CB3
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:59:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AFDBC33CB1
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:59:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F01E421582
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:59:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2158B2082F
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:59:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="F2avq/Wj"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WkASaBpC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729027AbgAQJ7D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Jan 2020 04:59:03 -0500
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:54986 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728998AbgAQJ6d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2020 04:58:33 -0500
-Received: by mail-wm1-f66.google.com with SMTP id b19so6763893wmj.4
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jan 2020 01:58:32 -0800 (PST)
+        id S1728949AbgAQJ6b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Jan 2020 04:58:31 -0500
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:50416 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726988AbgAQJ6a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2020 04:58:30 -0500
+Received: by mail-wm1-f65.google.com with SMTP id a5so6810231wmb.0
+        for <linux-pm@vger.kernel.org>; Fri, 17 Jan 2020 01:58:28 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=qs32CPE+6w8H62hd9kXr/ee/9U4Omu1sZciOmm+hYl8=;
-        b=F2avq/WjQTkOblM6OBaohDkNkFC/G/rzHjdCB9gkWGztwFXHHLMQAEUFo437ob2btR
-         kbj0Oj3lHdUxPFsEo+CaW1ACvtXvJl2EkqR0VpSmKR0sRe/ImmNVEUpVre4OnXYM99Dq
-         magfKT++abV11SaIJD+AYaG245Qw5xjCzho73AwemJ9Fahz3jpPy1PcHaCWITjNYxMn5
-         vWs0O9wGbzSCm5biNcq5AlR9vyIynXA5ZO3E9m6H7IsTKX2WSuZtXITmJc4HII84tm+5
-         GsHAuhK07k1QXb6MwT9SEEr3kBzbO7JEZYuzojx2szjPkmbzNcGWHuprwGaqWFLbrJW4
-         CbIw==
+        bh=NCMDhhcV5Co8iy+iIHE40yl0F53n9N1ZTv4ZVbZXaTE=;
+        b=WkASaBpCCtMQpQiYrnAyLL7EXfhipWDs/RyGnHO7GWnpGpuXGACNAfgCvbR2nG95uI
+         HJc/lRc3OCKS4/2B05ipoDed7tI10ERAWJL/5281XUsl7mLSNwjPB57/dg9ON0RrWlrU
+         M79AIn1fit0gfdfS9XGA1euAANxBYCGsKhTYWR9NaxF5HaxcENxte9GoSSJ8zwJHQg1E
+         t9xS5VugIGG+Zlwbm2FBolvx1gdG4djnNGzZ1zZzRqd4W9uyx/kb039P3eQIFNsPmaZC
+         Dc2as+WnVyRX8D0ZG8HF5zz+ejJTQLhjVSTJxnVXWfz/gfVAckud51/uF8RO2rd+jcGl
+         iMYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=qs32CPE+6w8H62hd9kXr/ee/9U4Omu1sZciOmm+hYl8=;
-        b=KQijmd5e15v1L7ZlOkhrxK4MLos9RiAx0t6YzG8pXFOiyvSj16fG/RC1m1DIg0bfBp
-         0k5yp1EIWnJITkK683EfwxBdzNnOJubyjVaJm30wFiV/lXxD4hMzRFYwmjweGWlzBYrY
-         OzWylzJmlWv8c1Fvkuy+GTyJkARvwNyNVN1E1GvgZ4wByqDq4u++m0oljuMyn4qJ4hKC
-         ifChZD31jxRLsKYZJbkiSmsyy5o1JlEXyY9TAxtqGMdGRA1Ht8l3zHfTsuz7NC/Jd5D8
-         XFXZ+NTZdGFZQRKx36dJ+bs4FpMZl/hb2JRKTcHf35wCHksExED8GOa0XXzahdKoZXVM
-         t1Mw==
-X-Gm-Message-State: APjAAAX8c8Xh0r0uyWBk/ZJKaACM5u7hTXFyLUd2PEPCWuWrG8sASbwC
-        Y58UrocEDfTlH+ml8o+4MdO21Q==
-X-Google-Smtp-Source: APXvYqyd8UlYY4DGVzaOxKU/U/u//HxKkMgytc4CTZO/eE/zbcYiEzSU/sWZAbV5hhhv1BsLkwtrVA==
-X-Received: by 2002:a05:600c:2c06:: with SMTP id q6mr3880069wmg.154.1579255111881;
-        Fri, 17 Jan 2020 01:58:31 -0800 (PST)
+        bh=NCMDhhcV5Co8iy+iIHE40yl0F53n9N1ZTv4ZVbZXaTE=;
+        b=LuSRzIqg2xquyztRb70WfYwFcOxxT8CjAxQ25s1S6BqrAcGYAy9VqK0l6p8rlrJPbp
+         LtvxFG5vpV7SuxfayAxeEJy9OCI6iPUG7IKyMAW8CpRO+bBZb3nnpuuc1C49PBABPe1W
+         8EAgYuFIcEahHtma0z2eGFAVaMc5+pnEBPRvpgxn/d9j8X+wLCQe1XuzRxd6I2zeTW0Q
+         2IBnIHbOJ23gZVXEBl2QxOV1EzBT4rl2oks5OrxTMfnW/yeja38LaSkPB+V0RnmNRSwf
+         RbksUral5K8bO27UNM5W3PocytKbywWdkq+rhc2HIw2K7mjargDyiMhuaH04bCH7zelY
+         uHvw==
+X-Gm-Message-State: APjAAAU8vwDaza4Y+CWfa58dDftJgc+RYD57513F/81kVi42FkDHZL6A
+        42KL4wDNrJ9JJneUEWa/laLxPA==
+X-Google-Smtp-Source: APXvYqzjRBo5valf4Bh2cFZL0ciRsfHmmVsJOf1HzVgXjWWXljJyez39HDwladdtbiiJRXkTKhuqUA==
+X-Received: by 2002:a1c:1d1:: with SMTP id 200mr3724723wmb.181.1579255107985;
+        Fri, 17 Jan 2020 01:58:27 -0800 (PST)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id r62sm9967007wma.32.2020.01.17.01.58.30
+        by smtp.googlemail.com with ESMTPSA id r62sm9967007wma.32.2020.01.17.01.58.26
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 17 Jan 2020 01:58:31 -0800 (PST)
+        Fri, 17 Jan 2020 01:58:27 -0800 (PST)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Georgi Djakov <georgi.djakov@linaro.org>,
-        Evan Green <evgreen@chromium.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH 10/12] interconnect: Check for valid path in icc_set_bw()
-Date:   Fri, 17 Jan 2020 11:58:14 +0200
-Message-Id: <20200117095816.23575-11-georgi.djakov@linaro.org>
+        Brian Masney <masneyb@onstation.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Evan Green <evgreen@chromium.org>
+Subject: [PATCH 07/12] interconnect: qcom: Use the standard aggregate function
+Date:   Fri, 17 Jan 2020 11:58:11 +0200
+Message-Id: <20200117095816.23575-8-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200117095816.23575-1-georgi.djakov@linaro.org>
 References: <20200117095816.23575-1-georgi.djakov@linaro.org>
@@ -73,30 +74,95 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use IS_ERR() to ensure that the path passed to icc_set_bw() is valid.
+Now we have a common function for standard aggregation, so let's use it,
+instead of duplicating the code.
 
-Reviewed-by: Evan Green <evgreen@chromium.org>
+Reviewed-by: Brian Masney <masneyb@onstation.org>
 Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Reviewed-by: Evan Green <evgreen@chromium.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/interconnect/core.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/interconnect/qcom/msm8974.c | 15 +++------------
+ drivers/interconnect/qcom/qcs404.c  | 15 +++------------
+ 2 files changed, 6 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 10dde5df9251..f277e467156f 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -495,9 +495,12 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
- 	size_t i;
- 	int ret;
+diff --git a/drivers/interconnect/qcom/msm8974.c b/drivers/interconnect/qcom/msm8974.c
+index e669a1f726d2..3a313e11e73d 100644
+--- a/drivers/interconnect/qcom/msm8974.c
++++ b/drivers/interconnect/qcom/msm8974.c
+@@ -550,15 +550,6 @@ static struct msm8974_icc_desc msm8974_snoc = {
+ 	.num_nodes = ARRAY_SIZE(msm8974_snoc_nodes),
+ };
  
--	if (!path || !path->num_nodes)
-+	if (!path)
- 		return 0;
+-static int msm8974_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+-				 u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
+-{
+-	*agg_avg += avg_bw;
+-	*agg_peak = max(*agg_peak, peak_bw);
+-
+-	return 0;
+-}
+-
+ static void msm8974_icc_rpm_smd_send(struct device *dev, int rsc_type,
+ 				     char *name, int id, u64 val)
+ {
+@@ -603,8 +594,8 @@ static int msm8974_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	qp = to_msm8974_icc_provider(provider);
  
-+	if (WARN_ON(IS_ERR(path) || !path->num_nodes))
-+		return -EINVAL;
-+
- 	mutex_lock(&icc_lock);
+ 	list_for_each_entry(n, &provider->nodes, node_list)
+-		msm8974_icc_aggregate(n, 0, n->avg_bw, n->peak_bw,
+-				      &agg_avg, &agg_peak);
++		provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
++				    &agg_avg, &agg_peak);
  
- 	old_avg = path->reqs[0].avg_bw;
+ 	sum_bw = icc_units_to_bps(agg_avg);
+ 	max_peak_bw = icc_units_to_bps(agg_peak);
+@@ -694,7 +685,7 @@ static int msm8974_icc_probe(struct platform_device *pdev)
+ 	INIT_LIST_HEAD(&provider->nodes);
+ 	provider->dev = dev;
+ 	provider->set = msm8974_icc_set;
+-	provider->aggregate = msm8974_icc_aggregate;
++	provider->aggregate = icc_std_aggregate;
+ 	provider->xlate = of_icc_xlate_onecell;
+ 	provider->data = data;
+ 
+diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
+index c8eb1276cce8..d4769a5ea182 100644
+--- a/drivers/interconnect/qcom/qcs404.c
++++ b/drivers/interconnect/qcom/qcs404.c
+@@ -327,15 +327,6 @@ static struct qcom_icc_desc qcs404_snoc = {
+ 	.num_nodes = ARRAY_SIZE(qcs404_snoc_nodes),
+ };
+ 
+-static int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+-			      u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
+-{
+-	*agg_avg += avg_bw;
+-	*agg_peak = max(*agg_peak, peak_bw);
+-
+-	return 0;
+-}
+-
+ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ {
+ 	struct qcom_icc_provider *qp;
+@@ -354,8 +345,8 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ 	qp = to_qcom_provider(provider);
+ 
+ 	list_for_each_entry(n, &provider->nodes, node_list)
+-		qcom_icc_aggregate(n, 0, n->avg_bw, n->peak_bw,
+-				   &agg_avg, &agg_peak);
++		provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
++				    &agg_avg, &agg_peak);
+ 
+ 	sum_bw = icc_units_to_bps(agg_avg);
+ 	max_peak_bw = icc_units_to_bps(agg_peak);
+@@ -456,7 +447,7 @@ static int qnoc_probe(struct platform_device *pdev)
+ 	INIT_LIST_HEAD(&provider->nodes);
+ 	provider->dev = dev;
+ 	provider->set = qcom_icc_set;
+-	provider->aggregate = qcom_icc_aggregate;
++	provider->aggregate = icc_std_aggregate;
+ 	provider->xlate = of_icc_xlate_onecell;
+ 	provider->data = data;
+ 
