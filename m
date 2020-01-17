@@ -7,63 +7,62 @@ X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AFDBC33CB1
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:59:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40706C33CB1
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:59:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2158B2082F
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:59:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 182852176D
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jan 2020 09:59:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WkASaBpC"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sea0KpwG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728949AbgAQJ6b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Jan 2020 04:58:31 -0500
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:50416 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726988AbgAQJ6a (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2020 04:58:30 -0500
-Received: by mail-wm1-f65.google.com with SMTP id a5so6810231wmb.0
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jan 2020 01:58:28 -0800 (PST)
+        id S1726085AbgAQJ7Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Jan 2020 04:59:24 -0500
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:37135 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726362AbgAQJ60 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jan 2020 04:58:26 -0500
+Received: by mail-wm1-f68.google.com with SMTP id f129so6920708wmf.2
+        for <linux-pm@vger.kernel.org>; Fri, 17 Jan 2020 01:58:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=NCMDhhcV5Co8iy+iIHE40yl0F53n9N1ZTv4ZVbZXaTE=;
-        b=WkASaBpCCtMQpQiYrnAyLL7EXfhipWDs/RyGnHO7GWnpGpuXGACNAfgCvbR2nG95uI
-         HJc/lRc3OCKS4/2B05ipoDed7tI10ERAWJL/5281XUsl7mLSNwjPB57/dg9ON0RrWlrU
-         M79AIn1fit0gfdfS9XGA1euAANxBYCGsKhTYWR9NaxF5HaxcENxte9GoSSJ8zwJHQg1E
-         t9xS5VugIGG+Zlwbm2FBolvx1gdG4djnNGzZ1zZzRqd4W9uyx/kb039P3eQIFNsPmaZC
-         Dc2as+WnVyRX8D0ZG8HF5zz+ejJTQLhjVSTJxnVXWfz/gfVAckud51/uF8RO2rd+jcGl
-         iMYg==
+        bh=69zkeA3EsoksrgUY9Um/6N1yWF5rzIHjf5tDoqGZRjI=;
+        b=sea0KpwGHD3wCe5ufSr5NLlr4rEoNNOinI4ctaz8jmXEG28tG4zKZtlJL3i9I4qW/M
+         T8AwNZyC2VQTGl3AgkVCvsvAvG7OhnaHBNy8hghQ1N+D+dGW9J9/e61CUgtx4BAARx22
+         Mm/2g7FfeNT5T/HobvqAlKUJjjrQ8yceJ0dVgXPsdJPYHyxoEcp2uCcRbYOaecrgLqUW
+         vp3aa3OrIdCOm63ZPndB6GwSYPGB+nGgNbIJIBkvcJ/eCT8bdwX4IUR0v285L9YBoXIs
+         IDcSN+uNsOFxv0s8Gj37bEftJBxtW18p+eIO8HbtyujAraPC24OYil5Oc7JBXkPW3Dzd
+         X28A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=NCMDhhcV5Co8iy+iIHE40yl0F53n9N1ZTv4ZVbZXaTE=;
-        b=LuSRzIqg2xquyztRb70WfYwFcOxxT8CjAxQ25s1S6BqrAcGYAy9VqK0l6p8rlrJPbp
-         LtvxFG5vpV7SuxfayAxeEJy9OCI6iPUG7IKyMAW8CpRO+bBZb3nnpuuc1C49PBABPe1W
-         8EAgYuFIcEahHtma0z2eGFAVaMc5+pnEBPRvpgxn/d9j8X+wLCQe1XuzRxd6I2zeTW0Q
-         2IBnIHbOJ23gZVXEBl2QxOV1EzBT4rl2oks5OrxTMfnW/yeja38LaSkPB+V0RnmNRSwf
-         RbksUral5K8bO27UNM5W3PocytKbywWdkq+rhc2HIw2K7mjargDyiMhuaH04bCH7zelY
-         uHvw==
-X-Gm-Message-State: APjAAAU8vwDaza4Y+CWfa58dDftJgc+RYD57513F/81kVi42FkDHZL6A
-        42KL4wDNrJ9JJneUEWa/laLxPA==
-X-Google-Smtp-Source: APXvYqzjRBo5valf4Bh2cFZL0ciRsfHmmVsJOf1HzVgXjWWXljJyez39HDwladdtbiiJRXkTKhuqUA==
-X-Received: by 2002:a1c:1d1:: with SMTP id 200mr3724723wmb.181.1579255107985;
-        Fri, 17 Jan 2020 01:58:27 -0800 (PST)
+        bh=69zkeA3EsoksrgUY9Um/6N1yWF5rzIHjf5tDoqGZRjI=;
+        b=KsNiN4zM07rnQxgmvuJTlxRMC2nbpnPyoX4cM361A7kyXgkE9WEorxH3+ARxT5X8Pb
+         n6u0TQC/81ogSxDfU+AJ3ABiGk+5thGeMn/MIGxVtwbZ1Xv72/aOkrJTpvYAIPOZ4uZK
+         HOUwXWXw9o2rp+oujqrwQtdj3U8dr57Of4YEcntXMjrLDG7Wq/YagPgOALwdJ/niSP8L
+         SCwy/olOxrrJTn82BsE8KFzMbqU+DxLCUpqxRzThl2L4HNa4MQQEYEn5XY4Oz+8Amxhg
+         B9IKmC3x4nON35JElVWknOU8/586OQZkQsh6WesCII7M/RMpFtwRHUMGYN3BbBb4nB05
+         YkqQ==
+X-Gm-Message-State: APjAAAXS9OtnY9K7duR2/rmp8G8J3xbeBkELdRgvJeKIm+q4DVpBZaOV
+        NfGT7MSgof75o5/Bei1NNP1sGQ==
+X-Google-Smtp-Source: APXvYqwo0Z7gY5lIK21vyoJch58yh5Dhjb6c6doWW6Fay3i1RC5pYgBybK/0QI27Sif2nJLw+LPoYw==
+X-Received: by 2002:a7b:c4cc:: with SMTP id g12mr3950050wmk.68.1579255105355;
+        Fri, 17 Jan 2020 01:58:25 -0800 (PST)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id r62sm9967007wma.32.2020.01.17.01.58.26
+        by smtp.googlemail.com with ESMTPSA id r62sm9967007wma.32.2020.01.17.01.58.24
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 17 Jan 2020 01:58:27 -0800 (PST)
+        Fri, 17 Jan 2020 01:58:24 -0800 (PST)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     gregkh@linuxfoundation.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Georgi Djakov <georgi.djakov@linaro.org>,
-        Brian Masney <masneyb@onstation.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Evan Green <evgreen@chromium.org>
-Subject: [PATCH 07/12] interconnect: qcom: Use the standard aggregate function
-Date:   Fri, 17 Jan 2020 11:58:11 +0200
-Message-Id: <20200117095816.23575-8-georgi.djakov@linaro.org>
+        Steven Rostedt <rostedt@goodmis.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: [PATCH 05/12] interconnect: Add basic tracepoints
+Date:   Fri, 17 Jan 2020 11:58:09 +0200
+Message-Id: <20200117095816.23575-6-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <20200117095816.23575-1-georgi.djakov@linaro.org>
 References: <20200117095816.23575-1-georgi.djakov@linaro.org>
@@ -74,95 +73,159 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now we have a common function for standard aggregation, so let's use it,
-instead of duplicating the code.
+The tracepoints can help with understanding the system behavior of a
+given interconnect path when the consumer drivers change their bandwidth
+demands. This might be interesting when we want to monitor the requested
+interconnect bandwidth for each client driver. The paths may share the
+same nodes and this will help to understand "who and when is requesting
+what". All this is useful for subsystem drivers developers and may also
+provide hints when optimizing the power and performance profile of the
+system.
 
-Reviewed-by: Brian Masney <masneyb@onstation.org>
+Reviewed-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
 Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Reviewed-by: Evan Green <evgreen@chromium.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/interconnect/qcom/msm8974.c | 15 +++------------
- drivers/interconnect/qcom/qcs404.c  | 15 +++------------
- 2 files changed, 6 insertions(+), 24 deletions(-)
+ drivers/interconnect/Makefile |  1 +
+ drivers/interconnect/core.c   |  7 +++
+ drivers/interconnect/trace.h  | 88 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 96 insertions(+)
+ create mode 100644 drivers/interconnect/trace.h
 
-diff --git a/drivers/interconnect/qcom/msm8974.c b/drivers/interconnect/qcom/msm8974.c
-index e669a1f726d2..3a313e11e73d 100644
---- a/drivers/interconnect/qcom/msm8974.c
-+++ b/drivers/interconnect/qcom/msm8974.c
-@@ -550,15 +550,6 @@ static struct msm8974_icc_desc msm8974_snoc = {
- 	.num_nodes = ARRAY_SIZE(msm8974_snoc_nodes),
- };
+diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
+index 28f2ab0824d5..725029ae7a2c 100644
+--- a/drivers/interconnect/Makefile
++++ b/drivers/interconnect/Makefile
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
  
--static int msm8974_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
--				 u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
--{
--	*agg_avg += avg_bw;
--	*agg_peak = max(*agg_peak, peak_bw);
--
--	return 0;
--}
--
- static void msm8974_icc_rpm_smd_send(struct device *dev, int rsc_type,
- 				     char *name, int id, u64 val)
- {
-@@ -603,8 +594,8 @@ static int msm8974_icc_set(struct icc_node *src, struct icc_node *dst)
- 	qp = to_msm8974_icc_provider(provider);
++CFLAGS_core.o				:= -I$(src)
+ icc-core-objs				:= core.o
  
- 	list_for_each_entry(n, &provider->nodes, node_list)
--		msm8974_icc_aggregate(n, 0, n->avg_bw, n->peak_bw,
--				      &agg_avg, &agg_peak);
-+		provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
-+				    &agg_avg, &agg_peak);
+ obj-$(CONFIG_INTERCONNECT)		+= icc-core.o
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 4f9bdb7f9165..fbec2e4fdfeb 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -21,6 +21,9 @@
  
- 	sum_bw = icc_units_to_bps(agg_avg);
- 	max_peak_bw = icc_units_to_bps(agg_peak);
-@@ -694,7 +685,7 @@ static int msm8974_icc_probe(struct platform_device *pdev)
- 	INIT_LIST_HEAD(&provider->nodes);
- 	provider->dev = dev;
- 	provider->set = msm8974_icc_set;
--	provider->aggregate = msm8974_icc_aggregate;
-+	provider->aggregate = icc_std_aggregate;
- 	provider->xlate = of_icc_xlate_onecell;
- 	provider->data = data;
+ #include "internal.h"
  
-diff --git a/drivers/interconnect/qcom/qcs404.c b/drivers/interconnect/qcom/qcs404.c
-index c8eb1276cce8..d4769a5ea182 100644
---- a/drivers/interconnect/qcom/qcs404.c
-+++ b/drivers/interconnect/qcom/qcs404.c
-@@ -327,15 +327,6 @@ static struct qcom_icc_desc qcs404_snoc = {
- 	.num_nodes = ARRAY_SIZE(qcs404_snoc_nodes),
- };
++#define CREATE_TRACE_POINTS
++#include "trace.h"
++
+ static DEFINE_IDR(icc_idr);
+ static LIST_HEAD(icc_providers);
+ static DEFINE_MUTEX(icc_lock);
+@@ -435,6 +438,8 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
  
--static int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
--			      u32 peak_bw, u32 *agg_avg, u32 *agg_peak)
--{
--	*agg_avg += avg_bw;
--	*agg_peak = max(*agg_peak, peak_bw);
--
--	return 0;
--}
--
- static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- {
- 	struct qcom_icc_provider *qp;
-@@ -354,8 +345,8 @@ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
- 	qp = to_qcom_provider(provider);
+ 		/* aggregate requests for this node */
+ 		aggregate_requests(node);
++
++		trace_icc_set_bw(path, node, i, avg_bw, peak_bw);
+ 	}
  
- 	list_for_each_entry(n, &provider->nodes, node_list)
--		qcom_icc_aggregate(n, 0, n->avg_bw, n->peak_bw,
--				   &agg_avg, &agg_peak);
-+		provider->aggregate(n, 0, n->avg_bw, n->peak_bw,
-+				    &agg_avg, &agg_peak);
+ 	ret = apply_constraints(path);
+@@ -453,6 +458,8 @@ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw)
  
- 	sum_bw = icc_units_to_bps(agg_avg);
- 	max_peak_bw = icc_units_to_bps(agg_peak);
-@@ -456,7 +447,7 @@ static int qnoc_probe(struct platform_device *pdev)
- 	INIT_LIST_HEAD(&provider->nodes);
- 	provider->dev = dev;
- 	provider->set = qcom_icc_set;
--	provider->aggregate = qcom_icc_aggregate;
-+	provider->aggregate = icc_std_aggregate;
- 	provider->xlate = of_icc_xlate_onecell;
- 	provider->data = data;
+ 	mutex_unlock(&icc_lock);
  
++	trace_icc_set_bw_end(path, ret);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(icc_set_bw);
+diff --git a/drivers/interconnect/trace.h b/drivers/interconnect/trace.h
+new file mode 100644
+index 000000000000..3d668ff566bf
+--- /dev/null
++++ b/drivers/interconnect/trace.h
+@@ -0,0 +1,88 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Interconnect framework tracepoints
++ * Copyright (c) 2019, Linaro Ltd.
++ * Author: Georgi Djakov <georgi.djakov@linaro.org>
++ */
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM interconnect
++
++#if !defined(_TRACE_INTERCONNECT_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_INTERCONNECT_H
++
++#include <linux/interconnect.h>
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(icc_set_bw,
++
++	TP_PROTO(struct icc_path *p, struct icc_node *n, int i,
++		 u32 avg_bw, u32 peak_bw),
++
++	TP_ARGS(p, n, i, avg_bw, peak_bw),
++
++	TP_STRUCT__entry(
++		__string(path_name, p->name)
++		__string(dev, dev_name(p->reqs[i].dev))
++		__string(node_name, n->name)
++		__field(u32, avg_bw)
++		__field(u32, peak_bw)
++		__field(u32, node_avg_bw)
++		__field(u32, node_peak_bw)
++	),
++
++	TP_fast_assign(
++		__assign_str(path_name, p->name);
++		__assign_str(dev, dev_name(p->reqs[i].dev));
++		__assign_str(node_name, n->name);
++		__entry->avg_bw = avg_bw;
++		__entry->peak_bw = peak_bw;
++		__entry->node_avg_bw = n->avg_bw;
++		__entry->node_peak_bw = n->peak_bw;
++	),
++
++	TP_printk("path=%s dev=%s node=%s avg_bw=%u peak_bw=%u agg_avg=%u agg_peak=%u",
++		  __get_str(path_name),
++		  __get_str(dev),
++		  __get_str(node_name),
++		  __entry->avg_bw,
++		  __entry->peak_bw,
++		  __entry->node_avg_bw,
++		  __entry->node_peak_bw)
++);
++
++TRACE_EVENT(icc_set_bw_end,
++
++	TP_PROTO(struct icc_path *p, int ret),
++
++	TP_ARGS(p, ret),
++
++	TP_STRUCT__entry(
++		__string(path_name, p->name)
++		__string(dev, dev_name(p->reqs[0].dev))
++		__field(int, ret)
++	),
++
++	TP_fast_assign(
++		__assign_str(path_name, p->name);
++		__assign_str(dev, dev_name(p->reqs[0].dev));
++		__entry->ret = ret;
++	),
++
++	TP_printk("path=%s dev=%s ret=%d",
++		  __get_str(path_name),
++		  __get_str(dev),
++		  __entry->ret)
++);
++
++#endif /* _TRACE_INTERCONNECT_H */
++
++/* This part must be outside protection */
++
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace
++
++#include <trace/define_trace.h>
