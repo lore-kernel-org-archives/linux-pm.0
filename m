@@ -2,136 +2,136 @@ Return-Path: <SRS0=GK9d=3K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79333C33CAF
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jan 2020 06:33:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79C67C2D0DB
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jan 2020 07:52:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 59DE324656
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jan 2020 06:33:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5289922522
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jan 2020 07:52:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728901AbgAUGdX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Jan 2020 01:33:23 -0500
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:2182 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1728456AbgAUGdX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2020 01:33:23 -0500
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 00L6X6YY133274
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jan 2020 01:33:21 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2xmg3amjjf-1
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jan 2020 01:33:21 -0500
-Received: from localhost
-        by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <parth@linux.ibm.com>;
-        Tue, 21 Jan 2020 06:33:19 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
-        by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
-        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Tue, 21 Jan 2020 06:33:15 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
-        by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 00L6XE0J57933886
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 21 Jan 2020 06:33:15 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id DFC64A405D;
-        Tue, 21 Jan 2020 06:33:14 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id E03AFA405B;
-        Tue, 21 Jan 2020 06:33:12 +0000 (GMT)
-Received: from localhost.in.ibm.com (unknown [9.124.35.158])
-        by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-        Tue, 21 Jan 2020 06:33:12 +0000 (GMT)
-From:   Parth Shah <parth@linux.ibm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org,
-        dietmar.eggemann@arm.com, patrick.bellasi@matbug.net,
-        valentin.schneider@arm.com, pavel@ucw.cz, dsmythies@telus.net,
-        qperret@google.com, tim.c.chen@linux.intel.com
-Subject: [RFC v6 2/5] sched/core: Update turbo_sched count only when required
-Date:   Tue, 21 Jan 2020 12:03:04 +0530
-X-Mailer: git-send-email 2.17.2
-In-Reply-To: <20200121063307.17221-1-parth@linux.ibm.com>
-References: <20200121063307.17221-1-parth@linux.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 20012106-0012-0000-0000-0000037F40E3
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20012106-0013-0000-0000-000021BB7FBE
-Message-Id: <20200121063307.17221-3-parth@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138,18.0.572
- definitions=2020-01-21_01:2020-01-20,2020-01-21 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
- impostorscore=0 phishscore=0 malwarescore=0 suspectscore=0
- lowpriorityscore=0 adultscore=0 mlxscore=0 priorityscore=1501
- mlxlogscore=999 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-1910280000 definitions=main-2001210056
+        id S1727141AbgAUHwB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Jan 2020 02:52:01 -0500
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:35267 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726911AbgAUHwB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2020 02:52:01 -0500
+Received: by mail-oi1-f194.google.com with SMTP id k4so1742404oik.2;
+        Mon, 20 Jan 2020 23:52:01 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=MDgz85X+/B08T8yz6srovuNqFf4QQmdWLURf7KUyCg4=;
+        b=DX7yvMs6jtv6wWHAQqV+zTc3NJwn9ypoxqilXVkC8KM0zva8i489rLvnu93IhQ/RzV
+         +rGcycDLij8o201FCJRtTWiO5tbv0tIJ4LtPnIyUE8zxIGU5XVemCPuXtdFCDCKYPx1j
+         cBBMVi4eIVgmibt8YNwRO1gIm0ulZjHZ0b+bGhvqLvfLu01dHwb951mdKK+srQ0Nm7u2
+         qIcdNDAfu7wHVlUUoB+pgiAnPW9yGGB+em4S6zg6zqUKxgwBsfR7xBelB+pc45zZYgzr
+         VgYO2IkHpJfG4Ae3QR+NWALbhHmAIsBgm5IpColswbBkYr83XPvHZbq52L49lMKvQ/IO
+         YAmA==
+X-Gm-Message-State: APjAAAULxKMm6KGbIK3HmGbf5F1QVxWBx/wrXkcllt9pB7CVWUPK2QbM
+        CpWSEf3TP5sTjlLXXOdY1vUDs1urXBIYOR/YL9g=
+X-Google-Smtp-Source: APXvYqyEbiPJtyFwuk87U9zx0TmCGKo8t1J113p1j6w4+uDnAhXGqiiKQtaWsyvl7UxuVjAHkm7/BGrTOtclPJ+xaoc=
+X-Received: by 2002:aca:1a06:: with SMTP id a6mr1990188oia.148.1579593120705;
+ Mon, 20 Jan 2020 23:52:00 -0800 (PST)
+MIME-Version: 1.0
+References: <201911151357.A9MjGImg%lkp@intel.com> <CAMuHMdX6-jb1W8uC2_237m8ctCpsnGp=JCxqt8pCWVqNXHmkVg@mail.gmail.com>
+ <CAJZ5v0i4nezntZJRSpv-LOwE_ZkE5Vr+YHkwJ8tX5GgG64gB=Q@mail.gmail.com> <22577568.Kaohy42qHH@kreacher>
+In-Reply-To: <22577568.Kaohy42qHH@kreacher>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 21 Jan 2020 08:51:49 +0100
+Message-ID: <CAMuHMdVDmdhEQKkkw9Ap5nSwMNH-jGb1TcMRgoQjPk44RwdY5w@mail.gmail.com>
+Subject: Re: drivers/acpi/processor_thermal.c:66:1: warning: the frame size of
+ 2160 bytes is larger than 2048 bytes
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use the get/put methods to add/remove the use of TurboSched support, such
-that the feature is turned on only in the presence of atleast one
-classified small bckground task.
+Hi Rafael,
 
-Signed-off-by: Parth Shah <parth@linux.ibm.com>
----
- kernel/sched/core.c  | 9 +++++++++
- kernel/sched/sched.h | 3 +++
- 2 files changed, 12 insertions(+)
+On Tue, Jan 21, 2020 at 1:40 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, January 20, 2020 11:16:12 AM CET Rafael J. Wysocki wrote:
+> > On Fri, Jan 17, 2020 at 4:51 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > On Fri, Nov 15, 2019 at 6:23 AM kbuild test robot <lkp@intel.com> wrote:
+> > > > tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
+> > > > head:   96b95eff4a591dbac582c2590d067e356a18aacb
+> > > > commit: 3000ce3c52f8b8db093e4dc649cd172390f71137 cpufreq: Use per-policy frequency QoS
+> > > > date:   4 weeks ago
+> > > > config: ia64-randconfig-a001-20191115 (attached as .config)
+> > > > compiler: ia64-linux-gcc (GCC) 7.4.0
+> > > > reproduce:
+> > > >         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+> > > >         chmod +x ~/bin/make.cross
+> > > >         git checkout 3000ce3c52f8b8db093e4dc649cd172390f71137
+> > > >         # save the attached .config to linux build tree
+> > > >         GCC_VERSION=7.4.0 make.cross ARCH=ia64
+> > > >
+> > > > If you fix the issue, kindly add following tag
+> > > > Reported-by: kbuild test robot <lkp@intel.com>
+> > >
+> > > Seeing similar warnings on arm64, so this triggered my attention.
+> > >
+> > > > --
+> > > >    drivers/cpufreq/cpufreq.c: In function 'refresh_frequency_limits.part.33':
+> > > > >> drivers/cpufreq/cpufreq.c:1116:1: warning: the frame size of 2160 bytes is larger than 2048 bytes [-Wframe-larger-than=]
+> > >
+> > > |       struct cpufreq_policy new_policy;
+> > >
+> > > That's a large struct on the stack...
+> > >
+> > > |       if (!policy_is_inactive(policy)) {
+> > > |               new_policy = *policy;
+> > >
+> > > Let's make a copy?
+> > > How well does this work, given struct cpufreq_policy contains a
+> > > work_struct, list_head, kobject, completion, semaphore, spinlock_t,
+> > > wait_queue_head_t, and two notifier_blocks, which are all objects you
+> > > cannot just copy and reuse?
+> > >
+> > > |               pr_debug("updating policy for CPU %u\n", policy->cpu);
+> > > |
+> > > |               cpufreq_set_policy(policy, &new_policy);
+> > >
+> > > If cpufreq_set_policy() uses only a few fields from new_policy,
+> >
+> > That's really the case.
+> >
+> > > it might be a good idea to extract those into its own structure.
+> >
+> > Or organize the code differently.
+> >
+> > This is old code that hasn't been change, but I'll look at it since it
+> > is problematic.
+>
+> So what about the patch below (untested)?
+>
+> It should be mostly self-explanatory, and the point is basically that
+> cpufreq_set_policy() gets the limits values from freq QoS, so it only
+> needs to get the new governor/policy value from the caller and more
+> data need to be passed to the driver's ->verify() callback.
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index dfbb52d66b29..629c2589d727 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -3272,6 +3272,9 @@ static struct rq *finish_task_switch(struct task_struct *prev)
- 		mmdrop(mm);
- 	}
- 	if (unlikely(prev_state == TASK_DEAD)) {
-+		if (unlikely(is_bg_task(prev)))
-+			turbo_sched_put();
-+
- 		if (prev->sched_class->task_dead)
- 			prev->sched_class->task_dead(prev);
- 
-@@ -4800,6 +4803,8 @@ static int __sched_setscheduler(struct task_struct *p,
- 	int reset_on_fork;
- 	int queue_flags = DEQUEUE_SAVE | DEQUEUE_MOVE | DEQUEUE_NOCLOCK;
- 	struct rq *rq;
-+	bool attr_leniency = bgtask_latency(attr->sched_latency_nice);
-+
- 
- 	/* The pi code expects interrupts enabled */
- 	BUG_ON(pi && in_interrupt());
-@@ -5024,6 +5029,10 @@ static int __sched_setscheduler(struct task_struct *p,
- 
- 	prev_class = p->sched_class;
- 
-+	/* Refcount tasks classified as a small background task */
-+	if (is_bg_task(p) != attr_leniency)
-+		attr_leniency ? turbo_sched_get() : turbo_sched_put();
-+
- 	__setscheduler(rq, p, attr, pi);
- 	__setscheduler_uclamp(p, attr);
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index f841297b7d56..0a00e16e033a 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -2498,6 +2498,9 @@ static inline void membarrier_switch_mm(struct rq *rq,
- }
- #endif
- 
-+#define bgtask_latency(lat)	((lat) == MAX_LATENCY_NICE)
-+#define is_bg_task(p)		(bgtask_latency((p)->latency_nice))
-+
- void turbo_sched_get(void);
- void turbo_sched_put(void);
- 
+Thanks, LGTM!
+No Rb, as I'm not that familiar with the code, and only browsed through
+the core parts.
+
+I can confirm it gets rids of the -Wframe-larger-than warnings on arm64,
+though.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.17.2
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
