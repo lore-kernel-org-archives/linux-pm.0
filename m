@@ -2,142 +2,85 @@ Return-Path: <SRS0=8fnT=3L=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 725C7C32771
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 03:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05F52C2D0DB
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 09:06:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4E88721835
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 03:47:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B72BC24125
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 09:05:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1579683959;
+	bh=ACdgyHgVO+oxxxaGgy1XHNef+vgnij9AxwNKIEgKQOg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=y1R+yqPqfSwZUI9IRBkb4KdSUAmPbDoekXKriQ1bIRbMHO1/HkGCw/GS+hPMuQ4XV
+	 ddtQpS+3Zenl90goLwDMYEI9EgUG6BzaMkQeEHllw51BetlpkADOWnMuvSgVRKBvt1
+	 /muYrU87WxyH1HCrnAvuuStiw7L8qXPtPBIJlRvA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729157AbgAVDrg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Jan 2020 22:47:36 -0500
-Received: from mail.cn.fujitsu.com ([183.91.158.132]:16388 "EHLO
-        heian.cn.fujitsu.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1729146AbgAVDrf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jan 2020 22:47:35 -0500
-X-IronPort-AV: E=Sophos;i="5.70,347,1574092800"; 
-   d="scan'208";a="82364064"
-Received: from unknown (HELO cn.fujitsu.com) ([10.167.33.5])
-  by heian.cn.fujitsu.com with ESMTP; 22 Jan 2020 11:47:30 +0800
-Received: from G08CNEXMBPEKD04.g08.fujitsu.local (unknown [10.167.33.201])
-        by cn.fujitsu.com (Postfix) with ESMTP id 78257406AB15;
-        Wed, 22 Jan 2020 11:38:14 +0800 (CST)
-Received: from G08CNEXCHPEKD05.g08.fujitsu.local (10.167.33.203) by
- G08CNEXMBPEKD04.g08.fujitsu.local (10.167.33.201) with Microsoft SMTP Server
- (TLS) id 15.0.1395.4; Wed, 22 Jan 2020 11:47:25 +0800
-Received: from TEST.g08.fujitsu.local (10.167.226.147) by
- G08CNEXCHPEKD05.g08.fujitsu.local (10.167.33.209) with Microsoft SMTP Server
- id 15.0.1395.4 via Frontend Transport; Wed, 22 Jan 2020 11:47:25 +0800
-From:   Cao jin <caoj.fnst@cn.fujitsu.com>
-To:     <x86@kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     <rjw@rjwysocki.net>, <len.brown@intel.com>, <pavel@ucw.cz>,
-        <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
-        <hpa@zytor.com>
-Subject: [RFC PATCH 1/2] x86/acpi: Improve code readablity of early madt processing
-Date:   Wed, 22 Jan 2020 11:47:22 +0800
-Message-ID: <20200122034723.1863-2-caoj.fnst@cn.fujitsu.com>
-X-Mailer: git-send-email 2.21.0
-In-Reply-To: <20200122034723.1863-1-caoj.fnst@cn.fujitsu.com>
-References: <20200122034723.1863-1-caoj.fnst@cn.fujitsu.com>
+        id S1725970AbgAVJF7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Jan 2020 04:05:59 -0500
+Received: from mail.kernel.org ([198.145.29.99]:54802 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725911AbgAVJF7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Jan 2020 04:05:59 -0500
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 1190824125;
+        Wed, 22 Jan 2020 09:05:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1579683958;
+        bh=ACdgyHgVO+oxxxaGgy1XHNef+vgnij9AxwNKIEgKQOg=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=sKOSI4efdRAs3/snKdm8nnPxLlePssAbtuA3wfsptRBIHgncjocyZfCWJjimdPM87
+         Jqn6nl4zWPwBlm8UVpOGkY4GPxCf0letEfA0TjxdZR7GKoMFIr+gtS/QiNGe02uK8S
+         4q3lKny/EYCZj4QU7ucLRyrrb/3HAz16zaP2x0/U=
+Date:   Wed, 22 Jan 2020 10:05:56 +0100
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Georgi Djakov <georgi.djakov@linaro.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL 00/12] interconnect changes for 5.6
+Message-ID: <20200122090556.GA2613910@kroah.com>
+References: <20200117095816.23575-1-georgi.djakov@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-yoursite-MailScanner-ID: 78257406AB15.A89D3
-X-yoursite-MailScanner: Found to be clean
-X-yoursite-MailScanner-From: caoj.fnst@cn.fujitsu.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200117095816.23575-1-georgi.djakov@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Current processing logic is confusing.
+On Fri, Jan 17, 2020 at 11:58:04AM +0200, Georgi Djakov wrote:
+> Hi Greg,
+> 
+> Here are the interconnect patches for the 5.6-rc1 merge window.
+> 
+> - New core helper functions for some common functionalities in drivers.
+> - Improvements in the information exposed via debugfs.
+> - Basic tracepoints support.
+> - New interconnect driver for msm8916 platforms.
+> - Misc fixes.
+> 
+> All patches have been for a while in linux-next without reported issues.
+> Please consider queuing them into char-misc-next.
+> 
+> The same is also available via a pull request with a signed tag below.
+> 
+> Thanks,
+> Georgi
+> 
+> The following changes since commit d1eef1c619749b2a57e514a3fa67d9a516ffa919:
+> 
+>   Linux 5.5-rc2 (2019-12-15 15:16:08 -0800)
+> 
+> are available in the Git repository at:
+> 
+>   https://git.linaro.org/people/georgi.djakov/linux.git tags/icc-5.6-rc1
 
-Return value of early_acpi_parse_madt_lapic_addr_ovr() indicates error(< 0),
-parsed entry number(>= 0). So, it makes no sense to initialize acpi_lapic &
-smp_found_config seeing no override entry, instead, initialize them seeing
-MADT.
+Pulled and pushed out, thanks.
 
-Put register_lapic_address() into override entry processing doesn't make
-sense either.
-
-Improved all the related comments too.
-
-Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
----
- arch/x86/kernel/acpi/boot.c | 28 ++++++++++------------------
- 1 file changed, 10 insertions(+), 18 deletions(-)
-
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 04205ce127a1..2131035bba98 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -1003,11 +1003,7 @@ static int __init acpi_parse_fadt(struct acpi_table_header *table)
- }
- 
- #ifdef	CONFIG_X86_LOCAL_APIC
--/*
-- * Parse LAPIC entries in MADT
-- * returns 0 on success, < 0 on error
-- */
--
-+/* Returns >= 0 on success, indicates parsed entry number; < 0 on error. */
- static int __init early_acpi_parse_madt_lapic_addr_ovr(void)
- {
- 	int count;
-@@ -1025,11 +1021,8 @@ static int __init early_acpi_parse_madt_lapic_addr_ovr(void)
- 	if (count < 0) {
- 		printk(KERN_ERR PREFIX
- 		       "Error parsing LAPIC address override entry\n");
--		return count;
- 	}
- 
--	register_lapic_address(acpi_lapic_addr);
--
- 	return count;
- }
- 
-@@ -1234,19 +1227,16 @@ static inline int acpi_parse_madt_ioapic_entries(void)
- static void __init early_acpi_process_madt(void)
- {
- #ifdef CONFIG_X86_LOCAL_APIC
--	int error;
-+	int ret;
- 
- 	if (!acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt)) {
-+		/* Found MADT */
-+		acpi_lapic = 1;
-+		smp_found_config = 1;
- 
--		/*
--		 * Parse MADT LAPIC entries
--		 */
--		error = early_acpi_parse_madt_lapic_addr_ovr();
--		if (!error) {
--			acpi_lapic = 1;
--			smp_found_config = 1;
--		}
--		if (error == -EINVAL) {
-+		/* See if override entry exists. */
-+		ret = early_acpi_parse_madt_lapic_addr_ovr();
-+		if (ret == -EINVAL) {
- 			/*
- 			 * Dell Precision Workstation 410, 610 come here.
- 			 */
-@@ -1254,6 +1244,8 @@ static void __init early_acpi_process_madt(void)
- 			       "Invalid BIOS MADT, disabling ACPI\n");
- 			disable_acpi();
- 		}
-+
-+		register_lapic_address(acpi_lapic_addr);
- 	}
- #endif
- }
--- 
-2.21.0
-
-
-
+greg k-h
