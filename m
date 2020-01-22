@@ -2,27 +2,26 @@ Return-Path: <SRS0=8fnT=3L=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	TVD_PH_BODY_ACCOUNTS_PRE,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 091B5C2D0DB
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69962C33CBA
 	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 15:10:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D76892467B
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 15:10:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 44B4524125
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 15:10:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726232AbgAVPKt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Jan 2020 10:10:49 -0500
-Received: from mx2.suse.de ([195.135.220.15]:39578 "EHLO mx2.suse.de"
+        id S1726780AbgAVPKf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Jan 2020 10:10:35 -0500
+Received: from mx2.suse.de ([195.135.220.15]:39536 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726191AbgAVPKg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Jan 2020 10:10:36 -0500
+        id S1725836AbgAVPKd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Jan 2020 10:10:33 -0500
 X-Virus-Scanned: by amavisd-new at test-mx.suse.de
 Received: from relay2.suse.de (unknown [195.135.220.254])
-        by mx2.suse.de (Postfix) with ESMTP id 7EB35AD11;
-        Wed, 22 Jan 2020 15:10:33 +0000 (UTC)
+        by mx2.suse.de (Postfix) with ESMTP id B490CACD9;
+        Wed, 22 Jan 2020 15:10:31 +0000 (UTC)
 From:   Giovanni Gherdovich <ggherdovich@suse.cz>
 To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Thomas Gleixner <tglx@linutronix.de>,
@@ -43,9 +42,9 @@ Cc:     x86@kernel.org, linux-pm@vger.kernel.org,
         Doug Smythies <dsmythies@telus.net>,
         Ionela Voinescu <ionela.voinescu@arm.com>,
         Giovanni Gherdovich <ggherdovich@suse.cz>
-Subject: [PATCH v5 6/6] x86: intel_pstate: handle runtime turbo disablement/enablement in freq. invariance
-Date:   Wed, 22 Jan 2020 16:16:17 +0100
-Message-Id: <20200122151617.531-7-ggherdovich@suse.cz>
+Subject: [PATCH v5 4/6] x86,sched: Add support for frequency invariance on ATOM_GOLDMONT*
+Date:   Wed, 22 Jan 2020 16:16:15 +0100
+Message-Id: <20200122151617.531-5-ggherdovich@suse.cz>
 X-Mailer: git-send-email 2.16.4
 In-Reply-To: <20200122151617.531-1-ggherdovich@suse.cz>
 References: <20200122151617.531-1-ggherdovich@suse.cz>
@@ -54,93 +53,59 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On some platforms such as the Dell XPS 13 laptop the firmware disables turbo
-when the machine is disconnected from AC, and viceversa it enables it again
-when it's reconnected. In these cases a _PPC ACPI notification is issued.
+The scheduler needs the ratio freq_curr/freq_max for frequency-invariant
+accounting. On GOLDMONT (aka Apollo Lake), GOLDMONT_D (aka Denverton) and
+GOLDMONT_PLUS CPUs (aka Gemini Lake) set freq_max to the highest frequency
+reported by the CPU.
 
-The scheduler needs to know freq_max for frequency-invariant calculations.
-To account for turbo availability to come and go, record freq_max at boot as
-if turbo was available and store it in a helper variable. Use a setter
-function to swap between freq_base and freq_max every time turbo goes off or on.
+The encoding of turbo ratios for GOLDMONT* is identical to the one for
+SKYLAKE_X, but we treat the Atom case apart because we want to set freq_max to
+a higher value, thus the ratio freq_curr/freq_max to be lower, leading to more
+conservative frequency selections (favoring power efficiency).
 
 Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
 ---
- arch/x86/include/asm/topology.h |  5 +++++
- arch/x86/kernel/smpboot.c       | 15 ++++++++++-----
- drivers/cpufreq/intel_pstate.c  |  1 +
- 3 files changed, 16 insertions(+), 5 deletions(-)
+ arch/x86/kernel/smpboot.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 2ebf7b7b2126..79d8d5496330 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -211,6 +211,11 @@ static inline long arch_scale_freq_capacity(int cpu)
- extern void arch_scale_freq_tick(void);
- #define arch_scale_freq_tick arch_scale_freq_tick
- 
-+extern void arch_set_max_freq_ratio(bool turbo_disabled);
-+#else
-+static inline void arch_set_max_freq_ratio(bool turbo_disabled)
-+{
-+}
- #endif
- 
- #endif /* _ASM_X86_TOPOLOGY_H */
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 5f04bf8419f9..467191e51196 100644
+index 8cb3113377a9..3e32d620f1fb 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -1807,8 +1807,15 @@ DEFINE_STATIC_KEY_FALSE(arch_scale_freq_key);
- 
- static DEFINE_PER_CPU(u64, arch_prev_aperf);
- static DEFINE_PER_CPU(u64, arch_prev_mperf);
-+static u64 arch_turbo_freq_ratio = SCHED_CAPACITY_SCALE;
- static u64 arch_max_freq_ratio = SCHED_CAPACITY_SCALE;
- 
-+void arch_set_max_freq_ratio(bool turbo_disabled)
-+{
-+	arch_max_freq_ratio = turbo_disabled ? SCHED_CAPACITY_SCALE :
-+					arch_turbo_freq_ratio;
-+}
-+
- static bool turbo_disabled(void)
- {
- 	u64 misc_en;
-@@ -1956,10 +1963,7 @@ static bool core_set_max_freq_ratio(u64 *base_freq, u64 *turbo_freq)
- 
- static bool intel_set_max_freq_ratio(void)
- {
--	u64 base_freq = 1, turbo_freq = 1;
--
--	if (turbo_disabled())
--		goto out;
-+	u64 base_freq, turbo_freq;
- 
- 	if (slv_set_max_freq_ratio(&base_freq, &turbo_freq))
- 		goto out;
-@@ -1981,8 +1985,9 @@ static bool intel_set_max_freq_ratio(void)
- 	return false;
- 
- out:
--	arch_max_freq_ratio = div_u64(turbo_freq * SCHED_CAPACITY_SCALE,
-+	arch_turbo_freq_ratio = div_u64(turbo_freq * SCHED_CAPACITY_SCALE,
- 					base_freq);
-+	arch_set_max_freq_ratio(turbo_disabled());
- 	return true;
- }
- 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index d2fa3e9ccd97..abbeeca8bb3b 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -922,6 +922,7 @@ static void intel_pstate_update_limits(unsigned int cpu)
+@@ -1795,6 +1795,10 @@ void native_play_dead(void)
+  * which would ignore the entire turbo range (a conspicuous part, making
+  * freq_curr/freq_max always maxed out).
+  *
++ * An exception to the heuristic above is the Atom uarch, where we choose the
++ * highest turbo level for freq_max since Atom's are generally oriented towards
++ * power efficiency.
++ *
+  * Setting freq_max to anything less than the 1C turbo ratio makes the ratio
+  * freq_curr / freq_max to eventually grow >1, in which case we clip it to 1.
+  */
+@@ -1937,18 +1941,18 @@ static bool intel_set_max_freq_ratio(void)
+ 	/*
+ 	 * TODO: add support for:
+ 	 *
+-	 * - Atom Goldmont
+ 	 * - Atom Silvermont
  	 */
- 	if (global.turbo_disabled_mf != global.turbo_disabled) {
- 		global.turbo_disabled_mf = global.turbo_disabled;
-+		arch_set_max_freq_ratio(global.turbo_disabled);
- 		for_each_possible_cpu(cpu)
- 			intel_pstate_update_max_freq(cpu);
- 	} else {
+ 
+ 	u64 base_freq = 1, turbo_freq = 1;
+ 
+-	if (x86_match_cpu(has_glm_turbo_ratio_limits))
+-		return false;
+-
+ 	if (turbo_disabled())
+ 		goto out;
+ 
++	if (x86_match_cpu(has_glm_turbo_ratio_limits) &&
++	    skx_set_max_freq_ratio(&base_freq, &turbo_freq, 1))
++		goto out;
++
+ 	if (knl_set_max_freq_ratio(&base_freq, &turbo_freq, 1))
+ 		goto out;
+ 
 -- 
 2.16.4
 
