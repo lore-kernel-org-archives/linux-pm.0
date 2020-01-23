@@ -1,114 +1,142 @@
-Return-Path: <SRS0=8fnT=3L=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=B1NY=3M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50F75C33CB6
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 23:47:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AF69C32771
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jan 2020 01:32:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 222A82465B
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Jan 2020 23:47:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1579736826;
-	bh=nLTmZJ6Wnp6Jiius7oftOgw98Fv4YqtJuCBPj22NxdM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=etVne2OM3icf8vDwsWzmU/f9Ee3D/cslQtGCnkGrYdxDkgr2l/SkfYGwqrBqaJjH5
-	 Kimhpm9qTEdPXPyArscpHhTJgl9+lI79mSBiBZj13t1cnlqoyJjT3+CeuMaU1TXXxS
-	 M/vHgCt1bGhoAU1FCR4wk+uMJW57U1+3xQUPboR8=
+	by mail.kernel.org (Postfix) with ESMTP id 276CF2467A
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jan 2020 01:32:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726054AbgAVXrF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Jan 2020 18:47:05 -0500
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:36252 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725911AbgAVXrF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jan 2020 18:47:05 -0500
-Received: by mail-ot1-f67.google.com with SMTP id m2so1096822otq.3;
-        Wed, 22 Jan 2020 15:47:04 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=1ijeMfptlUQ+pwbNvh3VIsU5PJPv8c6coBhP2L0ToSk=;
-        b=uDPjRKwbgNk3NQomHOJ0Icm27FsNS4VX5vQctgHbbJA7kDe4tlvWUIObPlUen7ew/M
-         PRroi1ahvwlrQACuKP9nqXdaSMsjpvaUdz8to7PY6fTfzhqG1nBHUVQVYDuRPxmRkUgn
-         oShfkv5R6MKsSPfPdRi/5m6njkOGUbzhoKhBkR8DOGop9SRC3FgmbhRWQ6WaYAlgvoKk
-         EaGT6OIlW0SAXQIc+5QF5Eg900uM+teJt5m/rgIZpBortXlhX71BVnCdNTSbwHMxrE/l
-         IfgZK6PkohprPYsxMrf8QmT7K48kHcspdyPqisbvw3vlr1vWcAfOtFTH5Emq10eFfLBC
-         OI1Q==
-X-Gm-Message-State: APjAAAUgnt9he6ttKUoU1La7Xw9DQzq1fU8QcsDWt2yVpoShe9fIaeLn
-        +52ll8k3TBL5H9IdhF7PKxdAnPsag1eW21DQkno=
-X-Google-Smtp-Source: APXvYqyR1Y5s7+fFOMg6ezJ2h8VJY8liRSi34iuMWDTc6MoFuroMArxoLbn9m3JI3neF3vKPWezDc8U2q8nGY0AIs1c=
-X-Received: by 2002:a05:6830:1651:: with SMTP id h17mr8810330otr.167.1579736824565;
- Wed, 22 Jan 2020 15:47:04 -0800 (PST)
+        id S1726026AbgAWBcp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Jan 2020 20:32:45 -0500
+Received: from mail.cn.fujitsu.com ([183.91.158.132]:61226 "EHLO
+        heian.cn.fujitsu.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1725943AbgAWBcp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jan 2020 20:32:45 -0500
+X-IronPort-AV: E=Sophos;i="5.70,351,1574092800"; 
+   d="scan'208";a="82502155"
+Received: from unknown (HELO cn.fujitsu.com) ([10.167.33.5])
+  by heian.cn.fujitsu.com with ESMTP; 23 Jan 2020 09:32:43 +0800
+Received: from G08CNEXMBPEKD04.g08.fujitsu.local (unknown [10.167.33.201])
+        by cn.fujitsu.com (Postfix) with ESMTP id 0D34850A996F;
+        Thu, 23 Jan 2020 09:23:29 +0800 (CST)
+Received: from G08CNEXCHPEKD05.g08.fujitsu.local (10.167.33.203) by
+ G08CNEXMBPEKD04.g08.fujitsu.local (10.167.33.201) with Microsoft SMTP Server
+ (TLS) id 15.0.1395.4; Thu, 23 Jan 2020 09:32:42 +0800
+Received: from TEST.g08.fujitsu.local (10.167.226.147) by
+ G08CNEXCHPEKD05.g08.fujitsu.local (10.167.33.209) with Microsoft SMTP Server
+ id 15.0.1395.4 via Frontend Transport; Thu, 23 Jan 2020 09:32:41 +0800
+From:   Cao jin <caoj.fnst@cn.fujitsu.com>
+To:     <x86@kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+CC:     <rjw@rjwysocki.net>, <len.brown@intel.com>, <pavel@ucw.cz>,
+        <tglx@linutronix.de>, <mingo@redhat.com>, <hpa@zytor.com>
+Subject: [RFC PATCH 1/2] x86/acpi: Improve code readablity of early madt processing
+Date:   Thu, 23 Jan 2020 09:32:37 +0800
+Message-ID: <20200123013238.19059-2-caoj.fnst@cn.fujitsu.com>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20200123013238.19059-1-caoj.fnst@cn.fujitsu.com>
+References: <20200123013238.19059-1-caoj.fnst@cn.fujitsu.com>
 MIME-Version: 1.0
-References: <or5zh9l5ok.fsf@livre.home> <20200120180612.gurkikzbh77stk4v@pburton-laptop>
- <20200121045354.2ugc6u2p6j7k6kof@vireshk-i7> <oro8uxgfey.fsf@livre.home>
-In-Reply-To: <oro8uxgfey.fsf@livre.home>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 23 Jan 2020 00:46:53 +0100
-Message-ID: <CAJZ5v0ha0Wp5-8eRZhcJq23VOTyqp2TYXZVQW1EEHmpQzgo6Mw@mail.gmail.com>
-Subject: Re: [PATCH] [Loongson2F] adjust cpufreq uses of LOONGSON_CHIPCFG
-To:     Alexandre Oliva <lxoliva@fsfla.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Paul Burton <paulburton@kernel.org>,
-        Jiaxun Yang <jiaxun.yang@flygoat.com>,
-        linux-mips@vger.kernel.org, paul.burton@mips.com,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-yoursite-MailScanner-ID: 0D34850A996F.ADAA6
+X-yoursite-MailScanner: Found to be clean
+X-yoursite-MailScanner-From: caoj.fnst@cn.fujitsu.com
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jan 21, 2020 at 1:39 PM Alexandre Oliva <lxoliva@fsfla.org> wrote:
->
-> The post-fork cleanup of loongson2ef from loongson64 changed
-> LOONGSON_CHIPCFG from a single-argument functional macro to a
-> non-functional macro with an mmio address in loongson2ef, but
-> loongson2_cpufreq still uses the notation of a functional macro call
-> expecting it to be an lvalue.  Fixed based on loongson_suspend_enter.
->
-> Signed-off-by: Alexandre Oliva <lxoliva@fsfla.org>
-> Cc: Jiaxun Yang <jiaxun.yang@flygoat.com>
-> Cc: linux-mips@vger.kernel.org
-> Cc: paul.burton@mips.com
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Current processing logic is confusing.
 
-Queued up as 5.6 material under modified subject ("cpufreq:
-loongson2_cpufreq: adjust cpufreq uses of LOONGSON_CHIPCFG"), thanks!
+Return value of early_acpi_parse_madt_lapic_addr_ovr() indicates error(< 0),
+parsed entry number(>= 0). So, it makes no sense to initialize acpi_lapic &
+smp_found_config seeing no override entry, instead, initialize them seeing
+MADT.
 
-> ---
->  drivers/cpufreq/loongson2_cpufreq.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-> index 84f0eee..ace2d46 100644
-> --- a/drivers/cpufreq/loongson2_cpufreq.c
-> +++ b/drivers/cpufreq/loongson2_cpufreq.c
-> @@ -144,9 +144,11 @@ static void loongson2_cpu_wait(void)
->         u32 cpu_freq;
->
->         spin_lock_irqsave(&loongson2_wait_lock, flags);
-> -       cpu_freq = LOONGSON_CHIPCFG(0);
-> -       LOONGSON_CHIPCFG(0) &= ~0x7;    /* Put CPU into wait mode */
-> -       LOONGSON_CHIPCFG(0) = cpu_freq; /* Restore CPU state */
-> +       cpu_freq = readl(LOONGSON_CHIPCFG);
-> +       /* Put CPU into wait mode */
-> +       writel(readl(LOONGSON_CHIPCFG) & ~0x7, LOONGSON_CHIPCFG);
-> +       /* Restore CPU state */
-> +       writel(cpu_freq, LOONGSON_CHIPCFG);
->         spin_unlock_irqrestore(&loongson2_wait_lock, flags);
->         local_irq_enable();
->  }
-> --
-> 2.7.4
->
-> --
-> Alexandre Oliva, freedom fighter   he/him   https://FSFLA.org/blogs/lxo
-> Free Software Evangelist           Stallman was right, but he's left :(
-> GNU Toolchain Engineer    FSMatrix: It was he who freed the first of us
-> FSF & FSFLA board member                The Savior shall return (true);
+Put register_lapic_address() into override entry processing doesn't make
+sense either.
+
+Improved all the related comments too.
+
+Signed-off-by: Cao jin <caoj.fnst@cn.fujitsu.com>
+---
+ arch/x86/kernel/acpi/boot.c | 28 ++++++++++------------------
+ 1 file changed, 10 insertions(+), 18 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 04205ce127a1..2131035bba98 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -1003,11 +1003,7 @@ static int __init acpi_parse_fadt(struct acpi_table_header *table)
+ }
+ 
+ #ifdef	CONFIG_X86_LOCAL_APIC
+-/*
+- * Parse LAPIC entries in MADT
+- * returns 0 on success, < 0 on error
+- */
+-
++/* Returns >= 0 on success, indicates parsed entry number; < 0 on error. */
+ static int __init early_acpi_parse_madt_lapic_addr_ovr(void)
+ {
+ 	int count;
+@@ -1025,11 +1021,8 @@ static int __init early_acpi_parse_madt_lapic_addr_ovr(void)
+ 	if (count < 0) {
+ 		printk(KERN_ERR PREFIX
+ 		       "Error parsing LAPIC address override entry\n");
+-		return count;
+ 	}
+ 
+-	register_lapic_address(acpi_lapic_addr);
+-
+ 	return count;
+ }
+ 
+@@ -1234,19 +1227,16 @@ static inline int acpi_parse_madt_ioapic_entries(void)
+ static void __init early_acpi_process_madt(void)
+ {
+ #ifdef CONFIG_X86_LOCAL_APIC
+-	int error;
++	int ret;
+ 
+ 	if (!acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt)) {
++		/* Found MADT */
++		acpi_lapic = 1;
++		smp_found_config = 1;
+ 
+-		/*
+-		 * Parse MADT LAPIC entries
+-		 */
+-		error = early_acpi_parse_madt_lapic_addr_ovr();
+-		if (!error) {
+-			acpi_lapic = 1;
+-			smp_found_config = 1;
+-		}
+-		if (error == -EINVAL) {
++		/* See if override entry exists. */
++		ret = early_acpi_parse_madt_lapic_addr_ovr();
++		if (ret == -EINVAL) {
+ 			/*
+ 			 * Dell Precision Workstation 410, 610 come here.
+ 			 */
+@@ -1254,6 +1244,8 @@ static void __init early_acpi_process_madt(void)
+ 			       "Invalid BIOS MADT, disabling ACPI\n");
+ 			disable_acpi();
+ 		}
++
++		register_lapic_address(acpi_lapic_addr);
+ 	}
+ #endif
+ }
+-- 
+2.21.0
+
+
+
