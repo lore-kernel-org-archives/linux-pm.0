@@ -2,105 +2,136 @@ Return-Path: <SRS0=B1NY=3M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E686FC2D0DB
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Jan 2020 14:33:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6400EC2D0DB
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jan 2020 14:53:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C515A2087E
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Jan 2020 14:33:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 23C2624655
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Jan 2020 14:53:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="JI3RP/gV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726729AbgAWOdg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 Jan 2020 09:33:36 -0500
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:8480 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1726231AbgAWOdf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jan 2020 09:33:35 -0500
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 00NEReL2039530
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jan 2020 09:33:34 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2xqaneq7ps-1
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jan 2020 09:33:34 -0500
-Received: from localhost
-        by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <latha@linux.vnet.ibm.com>;
-        Thu, 23 Jan 2020 14:33:33 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
-        by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted;
-        (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
-        Thu, 23 Jan 2020 14:33:31 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-        by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 00NEXULA56164378
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Thu, 23 Jan 2020 14:33:30 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id F0CBEAE058;
-        Thu, 23 Jan 2020 14:33:29 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id BCC05AE04D;
-        Thu, 23 Jan 2020 14:33:28 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.199.37.157])
-        by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-        Thu, 23 Jan 2020 14:33:28 +0000 (GMT)
-From:   latha@linux.vnet.ibm.com
-To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     trenn@suse.com, shuah@kernel.org,
-        Brahadambal Srinivasan <latha@linux.vnet.ibm.com>
-Subject: [PATCH] Correction to manpage of cpupower
-Date:   Thu, 23 Jan 2020 20:03:19 +0530
-X-Mailer: git-send-email 2.19.1
+        id S1729121AbgAWOxd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 Jan 2020 09:53:33 -0500
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:50645 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728921AbgAWOxd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jan 2020 09:53:33 -0500
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20200123145332euoutp0128d02161b48aa150c636e019c8ba3ef2~si7zJj1SB2779027790euoutp01X
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jan 2020 14:53:32 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20200123145332euoutp0128d02161b48aa150c636e019c8ba3ef2~si7zJj1SB2779027790euoutp01X
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1579791212;
+        bh=gUt0xdJYsjZMQC8Hykq0BgkZD7XebHRDKl7WMh5ImJE=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=JI3RP/gVkaD9dJ5vvzp3vwzH2hWE7OgIkkFQISse6n+pYfzH05A764Xe7zbk4TSNM
+         2TvKwddGOvIYQzpfcJMmCCfZfHxOs+A6js6wMHTy9euICWmsTU8nR67oXL2zw5Fuzo
+         iB6HGFRl2d/WrzOwRwi3vYsq39MSJXJ3dVeiaRro=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20200123145331eucas1p102fdaf977d34988fb2e95a98d113170b~si7y6Co_j2151721517eucas1p10;
+        Thu, 23 Jan 2020 14:53:31 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges1new.samsung.com (EUCPMTA) with SMTP id 72.8B.61286.B63B92E5; Thu, 23
+        Jan 2020 14:53:31 +0000 (GMT)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20200123145331eucas1p2aaf6eccd724af9edc25a547b6fde7961~si7yKabuE3021030210eucas1p2J;
+        Thu, 23 Jan 2020 14:53:31 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20200123145331eusmtrp1a63db195c5616fa163544891c9764d3a~si7yJxBfb2757227572eusmtrp1P;
+        Thu, 23 Jan 2020 14:53:31 +0000 (GMT)
+X-AuditID: cbfec7f2-ef1ff7000001ef66-1e-5e29b36b5107
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms2.samsung.com (EUCPMTA) with SMTP id 4A.43.07950.B63B92E5; Thu, 23
+        Jan 2020 14:53:31 +0000 (GMT)
+Received: from AMDC3218.digital.local (unknown [106.120.51.18]) by
+        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20200123145330eusmtip2f4c1ce251dd8ada3925cc44767e7f33a~si7xlJ5TV1862618626eusmtip2M;
+        Thu, 23 Jan 2020 14:53:30 +0000 (GMT)
+From:   Kamil Konieczny <k.konieczny@samsung.com>
+To:     k.konieczny@samsung.com
+Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Kukjin Kim <kgene@kernel.org>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        Marek Szyprowski <m.szyprowski@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH 1/3] PM / devfreq: exynos-nocp: fix debug print type
+Date:   Thu, 23 Jan 2020 15:53:11 +0100
+Message-Id: <20200123145313.27539-2-k.konieczny@samsung.com>
+X-Mailer: git-send-email 2.25.0
+In-Reply-To: <20200123145313.27539-1-k.konieczny@samsung.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 20012314-4275-0000-0000-0000039A4328
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 20012314-4276-0000-0000-000038AE5112
-Message-Id: <20200123143319.19580-1-latha@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138,18.0.572
- definitions=2020-01-23_08:2020-01-23,2020-01-23 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- bulkscore=0 mlxscore=0 impostorscore=0 adultscore=0 mlxlogscore=999
- priorityscore=1501 malwarescore=0 spamscore=0 clxscore=1011 phishscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-1910280000 definitions=main-2001230124
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprPKsWRmVeSWpSXmKPExsWy7djP87rZmzXjDO7sMbXYOGM9q8WCTzNY
+        Lfofv2a2OH9+A7vF2aY37BaXd81hs/jce4TRYu2Ru+wWtxtXsDlwemxa1cnm0bdlFaPH501y
+        AcxRXDYpqTmZZalF+nYJXBkLGg6zF/SxV5yfvJGlgbGTrYuRk0NCwERi8arrrF2MXBxCAisY
+        JRpvzmOBcL4wSsxs7WKGcD4zSmw4087UxcgB1nJnbjpEfDmjxLwle5nhOia+/MACMpdNQF/i
+        4NmTYLaIgLRE56KJTCBFzAL7mSQ2XXrDDJIQFnCROPF0LTuIzSKgKvFi32FGEJtXwEbi8dvH
+        rBAHykvMbjwNdiyngK3E1AcL2SBqBCVOznwCtoAZqKZ562ywKyQE+tkles88hGp2kVjU3cwI
+        YQtLvDq+hR3ClpE4PbmHBcIul3i6sI8dormFUeJB+0eohLXEnXO/2EB+ZhbQlFi/Sx8i7Cgx
+        f/VqFkhQ8EnceCsIcQOfxKRt05khwrwSHW1CENWqEs9P9TBB2NISXf/XQV3mIfGt6zrjBEbF
+        WUi+mYXkm1kIexcwMq9iFE8tLc5NTy02zEst1ytOzC0uzUvXS87P3cQITDan/x3/tIPx66Wk
+        Q4wCHIxKPLwSvZpxQqyJZcWVuYcYJTiYlUR4GcOAQrwpiZVVqUX58UWlOanFhxilOViUxHmN
+        F72MFRJITyxJzU5NLUgtgskycXBKNTDu3qoxcU/whzuK14s23nvHfkf4cMjbgm2qJ0syS61Z
+        u3MqHyy4aDN93jIW7gULjGd1VH0/97ImorXl6OW36ufPLO/KvvHOLuuOsbx38eeDM1qvbHlm
+        rCxRl2H/obTim2LwEVFhQcXNtu4OG0pj49fMt3gu1cJ6eyH7geAr/dOvSBQ4WV5b9N9ciaU4
+        I9FQi7moOBEAE89eFzIDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFuplkeLIzCtJLcpLzFFi42I5/e/4Pd3szZpxBt/es1psnLGe1WLBpxms
+        Fv2PXzNbnD+/gd3ibNMbdovLu+awWXzuPcJosfbIXXaL240r2Bw4PTat6mTz6NuyitHj8ya5
+        AOYoPZui/NKSVIWM/OISW6VoQwsjPUNLCz0jE0s9Q2PzWCsjUyV9O5uU1JzMstQifbsEvYwF
+        DYfZC/rYK85P3sjSwNjJ1sXIwSEhYCJxZ256FyMXh5DAUkaJR28+s3QxcgLFpSUaT69mgrCF
+        Jf5c62KDKPrEKHGy4QA7SIJNQF/i4NmTYA0iQA2diyYygRQxCxxlklhy5ARYQljAReLE07Vg
+        DSwCqhIv9h1mBLF5BWwkHr99zAqxQV5iduNpNhCbU8BWYuqDhWC2EFDN513HWSHqBSVOznwC
+        NpMZqL5562zmCYwCs5CkZiFJLWBkWsUoklpanJueW2ykV5yYW1yal66XnJ+7iREYFduO/dyy
+        g7HrXfAhRgEORiUeXolezTgh1sSy4srcQ4wSHMxKIryMYUAh3pTEyqrUovz4otKc1OJDjKZA
+        T0xklhJNzgdGbF5JvKGpobmFpaG5sbmxmYWSOG+HwMEYIYH0xJLU7NTUgtQimD4mDk6pBsae
+        8h6GmRJ8q22El2frzxe4/DustvD977Nyxt9Sjs35yyZw6uJGzhsPDmw+9LH7XNhz3RlrF7PP
+        NK+NMu9rXTFvkh33u/LcsqPyis3bcptY+zT2qLrwsJ2TiyprlZroyqxVv+9oe9oXp9C5uSdC
+        rlRuvMpoKMNyT/rotb7Py6buyd7a8Uz+iokSS3FGoqEWc1FxIgA/ZYrKoAIAAA==
+X-CMS-MailID: 20200123145331eucas1p2aaf6eccd724af9edc25a547b6fde7961
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20200123145331eucas1p2aaf6eccd724af9edc25a547b6fde7961
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200123145331eucas1p2aaf6eccd724af9edc25a547b6fde7961
+References: <20200123145313.27539-1-k.konieczny@samsung.com>
+        <CGME20200123145331eucas1p2aaf6eccd724af9edc25a547b6fde7961@eucas1p2.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Brahadambal Srinivasan <latha@linux.vnet.ibm.com>
+Values printed in dev_dbg are both unsigned long, but were
+printed as signed decimals. Change this to unsigned long.
 
-Manpage of cpupower is listing wrong sub-commands in "See Also"
-section. The option for cpupower-idle(1) should actually be
-cpupower-idle-info(1) and cpupower-idle-set(1). This patch corrects
-this anomaly.
-
-Signed-off-by: Brahadambal Srinivasan <latha@linux.vnet.ibm.com>
+Signed-off-by: Kamil Konieczny <k.konieczny@samsung.com>
 ---
- tools/power/cpupower/man/cpupower.1 | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/devfreq/event/exynos-nocp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/power/cpupower/man/cpupower.1 b/tools/power/cpupower/man/cpupower.1
-index baf741d06e82..bdbf089794c7 100644
---- a/tools/power/cpupower/man/cpupower.1
-+++ b/tools/power/cpupower/man/cpupower.1
-@@ -62,9 +62,9 @@ all cores
- Print the package name and version number.
+diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
+index ccc531ee6938..ebe9cdf94f54 100644
+--- a/drivers/devfreq/event/exynos-nocp.c
++++ b/drivers/devfreq/event/exynos-nocp.c
+@@ -167,7 +167,7 @@ static int exynos_nocp_get_event(struct devfreq_event_dev *edev,
+ 	edata->load_count = ((counter[1] << 16) | counter[0]);
+ 	edata->total_count = ((counter[3] << 16) | counter[2]);
  
- .SH "SEE ALSO"
--cpupower-set(1), cpupower-info(1), cpupower-idle(1),
--cpupower-frequency-set(1), cpupower-frequency-info(1), cpupower-monitor(1),
--powertop(1)
-+cpupower-set(1), cpupower-info(1), cpupower-idle-info(1), 
-+cpupower-idle-set(1), cpupower-frequency-set(1), cpupower-frequency-info(1), 
-+cpupower-monitor(1), powertop(1)
- .PP
- .SH AUTHORS
- .nf
+-	dev_dbg(&edev->dev, "%s (event: %ld/%ld)\n", edev->desc->name,
++	dev_dbg(&edev->dev, "%s (event: %lu/%lu)\n", edev->desc->name,
+ 					edata->load_count, edata->total_count);
+ 
+ 	return 0;
 -- 
-2.19.1
+2.25.0
 
