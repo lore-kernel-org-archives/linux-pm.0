@@ -2,204 +2,108 @@ Return-Path: <SRS0=VFB/=3N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FSL_HELO_FAKE,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1,
+	USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D889C2D0DB
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Jan 2020 14:15:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 563BFC2D0DB
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Jan 2020 14:37:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1A37B21734
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Jan 2020 14:15:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 265B8214DB
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Jan 2020 14:37:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="oZ7Y+9+B"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="G4PCXCZv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390349AbgAXOPR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Jan 2020 09:15:17 -0500
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:54079 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388801AbgAXOPJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2020 09:15:09 -0500
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20200124141507euoutp028d5b67447ab8688f523f37b6bfd5ff5e~s2DizuAW_3064830648euoutp02C
-        for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2020 14:15:07 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20200124141507euoutp028d5b67447ab8688f523f37b6bfd5ff5e~s2DizuAW_3064830648euoutp02C
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1579875307;
-        bh=SyUER5XtPQaR5PqGkKYS+jSgkqDS6pK5BSu+qlUCJYk=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=oZ7Y+9+BtznngctigeIfqyrwg73fDmKNSzev+TZGgrOmkuD1XrvefeVkQTA4XQG2p
-         t34FzZxTyiGW0RiWgSE7LRQh5xhpF0OztPvbknyrJ9MhKDhEO0o8yn4u37vfljbK+K
-         b4IkfRw7Wb/IesdBLZJaalAQXy+XpJgfwEHwOGaE=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20200124141507eucas1p172a87a1033df439ed837dc0b47b57b1b~s2DinRh-E2191621916eucas1p1q;
-        Fri, 24 Jan 2020 14:15:07 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id B6.5F.61286.BEBFA2E5; Fri, 24
-        Jan 2020 14:15:07 +0000 (GMT)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20200124141506eucas1p1d2fdb3b5d26d123272cafeddecd5708a~s2DiVyscR2198621986eucas1p1z;
-        Fri, 24 Jan 2020 14:15:06 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20200124141506eusmtrp135a260c16c8b2bb95fb23a90621d2573~s2DiVJB9j1786817868eusmtrp1e;
-        Fri, 24 Jan 2020 14:15:06 +0000 (GMT)
-X-AuditID: cbfec7f2-f0bff7000001ef66-4c-5e2afbeb61a9
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id A6.C2.07950.AEBFA2E5; Fri, 24
-        Jan 2020 14:15:06 +0000 (GMT)
-Received: from AMDC3218.digital.local (unknown [106.120.51.18]) by
-        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20200124141506eusmtip1eea5f29f451889f60fd8d12840c623cc~s2DhoZx_00071400714eusmtip1C;
-        Fri, 24 Jan 2020 14:15:06 +0000 (GMT)
-From:   Kamil Konieczny <k.konieczny@samsung.com>
-To:     k.konieczny@samsung.com
-Cc:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Kukjin Kim <kgene@kernel.org>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH RESEND 2/3] PM / devfreq: exynos-bus: prepare for change in
- load calc in exynos-nocp
-Date:   Fri, 24 Jan 2020 15:14:48 +0100
-Message-Id: <20200124141449.19844-3-k.konieczny@samsung.com>
-X-Mailer: git-send-email 2.25.0
-In-Reply-To: <20200124141449.19844-1-k.konieczny@samsung.com>
+        id S2387613AbgAXOhL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Jan 2020 09:37:11 -0500
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:35703 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387691AbgAXOhK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jan 2020 09:37:10 -0500
+Received: by mail-wm1-f65.google.com with SMTP id p17so1925883wmb.0
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jan 2020 06:37:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=dzsZn5YGBm3wUhQPoMDUJ14zEU+MEc78x4rzaBDLSP0=;
+        b=G4PCXCZvqK2HNyrqpe/9EKycb+jQXw97AZkRxWS9FasZLV3pYn+fkJ1xa1QmczUANh
+         PZQWXmEaQFOnW9EpzrRP/J7zOtCN7iy2MIdoGWSpUPdIoxynMQ3KWZh6W9fxM1w55urS
+         oCRqjJmrd9DrJRcfO1teS8g8zNr/5XJJycB8t40LS4sHy9sVgls/wyDfKwVPK8sq4PbD
+         Z/n+2MMHuoCSzBI6hRHHirCQyy33Axe6x/gM7tn+Q96IKsdn7lOSybmec5hqZ29PRzSt
+         J4J3bpoBYjTnNWrT9kMH6N08+3+irqZ547Dx1GLy99S0ZVBl7v4cdRzBAvCaZYbKTJC6
+         NasA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=dzsZn5YGBm3wUhQPoMDUJ14zEU+MEc78x4rzaBDLSP0=;
+        b=P61gdOaZMhXP3Fz2DTYdieCrR2zOuD+lMVMtPM1p/lI989B5JNeRm9SukZ1jTPKMm0
+         p8rhFS2Z7HTttqQs9kJpd4qeDEfgGS9c2PjhsGSuSqm3Q9yhHnVyYaOKeYDrspf0Tpgt
+         U6j+AGl4/w+UhQqCsLBpEcQdyB0eTsJIlA6d9vFMKn52khM9mky4ifIRkrWHqRy3ayJ2
+         Xa8FtPE/efczjXAPjYdZ78e3z7dpMv6nP4TVP0RiksNaah3817IRhTN6djdB0zfqWORW
+         xgzDDs3RcXll5oBFhhzQ3GZS99SYsr0x4zVvj5v54ix4qxD4uXJzIEp6GEP3gL3ZWhe1
+         ujtg==
+X-Gm-Message-State: APjAAAWeNy0OCVaHLDZESuVtsLdHarbESoDbkp3x50H6W8GuE56hS08g
+        aKu2aDsbz6TXybtM84E1b0/AtA==
+X-Google-Smtp-Source: APXvYqyMVfaMhToiGNn5b34BkYqDXlqLtMg4JBeFdVJpPM+zLlKRZ/0/+kA99MsGFZbIep1CF9uRPA==
+X-Received: by 2002:a1c:9602:: with SMTP id y2mr3569784wmd.23.1579876628063;
+        Fri, 24 Jan 2020 06:37:08 -0800 (PST)
+Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
+        by smtp.gmail.com with ESMTPSA id s19sm6831173wmj.33.2020.01.24.06.37.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Jan 2020 06:37:07 -0800 (PST)
+Date:   Fri, 24 Jan 2020 14:37:04 +0000
+From:   Quentin Perret <qperret@google.com>
+To:     Douglas Raillard <douglas.raillard@arm.com>
+Cc:     linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
+        viresh.kumar@linaro.org, peterz@infradead.org,
+        juri.lelli@redhat.com, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, linux-pm@vger.kernel.org
+Subject: Re: [RFC PATCH v4 3/6] sched/cpufreq: Hook em_pd_get_higher_power()
+ into get_next_freq()
+Message-ID: <20200124143704.GA215244@google.com>
+References: <20200122173538.1142069-1-douglas.raillard@arm.com>
+ <20200122173538.1142069-4-douglas.raillard@arm.com>
+ <20200123161644.GA144523@google.com>
+ <5a2af4e7-f9eb-4f23-908a-fab2c7395a99@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrAKsWRmVeSWpSXmKPExsWy7djPc7qvf2vFGbx9zWaxccZ6VovrX56z
-        Wiz4NIPVov/xa2aL8+c3sFucbXrDbrHp8TVWi8u75rBZfO49wmgx4/w+Jou1R+6yW9xuXMHm
-        wOOxaVUnm8fmJfUefVtWMXp83iQXwBLFZZOSmpNZllqkb5fAlXGxYzZzwT+Rij0rVjA2ME4T
-        7GLk5JAQMJE4duIeM4gtJLCCUaJ7p3cXIxeQ/YVR4tmDVlYI5zOjxL65PYwwHSsmrWeGSCxn
-        lJi8egYjXMua9r3sIFVsAvoSB8+eZAGxRQSkJToXTWQCKWIW2MQsceDpFCaQhLBAmsTk2UfA
-        bBYBVYltZ5rBDuEVsJHY1XKOGWKdvMTsxtNsIDangK3EqjOr2CFqBCVOznwCtoAZqKZ562yo
-        +nXsEn92+EDYLhIfHjxgh7CFJV4d3wJly0icntzDAmGXSzxd2McOcpyEQAujxIP2j1AJa4k7
-        534BLeYAWqApsX6XPkTYUWLOjf1gYQkBPokbbwUhTuCTmLRtOjNEmFeio00IolpV4vmpHiYI
-        W1qi6/86VogSD4ktOysmMCrOQvLLLCS/zEJYu4CReRWjeGppcW56arFhXmq5XnFibnFpXrpe
-        cn7uJkZgOjr97/inHYxfLyUdYhTgYFTi4Z1xTytOiDWxrLgy9xCjBAezkggvY5hmnBBvSmJl
-        VWpRfnxRaU5q8SFGaQ4WJXFe40UvY4UE0hNLUrNTUwtSi2CyTBycUg2M1jHa51NqTn5Kndgr
-        K7sowoKJb0bi3mdN9jY2GmIWwlO4+Mzfq+xJ2N68ru+e1d93xh+3z/HcNts0RWbZ6yN5hzLZ
-        lp5oTV6XLejgtCAx//aDdvWZ75WXOd3nUq5YOfHB7zeBqVULJwrIe1gdWiV9J5/dJWlxaLl+
-        u17GWYNETj3ZzzUcn64osRRnJBpqMRcVJwIA8caDNUMDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrIIsWRmVeSWpSXmKPExsVy+t/xu7qvfmvFGTx6q2+xccZ6VovrX56z
-        Wiz4NIPVov/xa2aL8+c3sFucbXrDbrHp8TVWi8u75rBZfO49wmgx4/w+Jou1R+6yW9xuXMHm
-        wOOxaVUnm8fmJfUefVtWMXp83iQXwBKlZ1OUX1qSqpCRX1xiqxRtaGGkZ2hpoWdkYqlnaGwe
-        a2VkqqRvZ5OSmpNZllqkb5egl3GxYzZzwT+Rij0rVjA2ME4T7GLk5JAQMJFYMWk9cxcjF4eQ
-        wFJGie55S9ghEtISjadXM0HYwhJ/rnWxQRR9YpTYO30DI0iCTUBf4uDZkywgtghQQ+eiiUwg
-        RcwCu5gltly+yAqSEBZIkXjzdypYA4uAqsS2M83MIDavgI3ErpZzzBAb5CVmN55mA7E5BWwl
-        Vp1ZBXaFEFDNlK2rGCHqBSVOznwCtowZqL5562zmCYwCs5CkZiFJLWBkWsUoklpanJueW2yk
-        V5yYW1yal66XnJ+7iREYPduO/dyyg7HrXfAhRgEORiUeXoc7WnFCrIllxZW5hxglOJiVRHgZ
-        wzTjhHhTEiurUovy44tKc1KLDzGaAj0xkVlKNDkfGNl5JfGGpobmFpaG5sbmxmYWSuK8HQIH
-        Y4QE0hNLUrNTUwtSi2D6mDg4pRoYG8Kn690oDXPpdLE3amA8Ea/Uf8lGNcevhZvBc8HDpgPz
-        eBdvFRH9onn29Kfncqaiy/5KT3G5cTK5R7ddicF86W1BtXQ7Zd2szMW/jtb9rmY//+/8t8OL
-        1XZEKuqn3rwsYvFnz6nURw+Vpsf4aR+c41cUJNw//+mOJqlm9d2L5ISybtx6en+CEktxRqKh
-        FnNRcSIAEuiY97QCAAA=
-X-CMS-MailID: 20200124141506eucas1p1d2fdb3b5d26d123272cafeddecd5708a
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20200124141506eucas1p1d2fdb3b5d26d123272cafeddecd5708a
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20200124141506eucas1p1d2fdb3b5d26d123272cafeddecd5708a
-References: <20200124141449.19844-1-k.konieczny@samsung.com>
-        <CGME20200124141506eucas1p1d2fdb3b5d26d123272cafeddecd5708a@eucas1p1.samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5a2af4e7-f9eb-4f23-908a-fab2c7395a99@arm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add time to struct exynos_bus and time and current frequency to
-struct devfreq_event_data. This will allow to calculate load and
-max bandwidth in exynos-nocp driver.
+On Thursday 23 Jan 2020 at 17:52:53 (+0000), Douglas Raillard wrote:
+> We can't really move the call to em_pd_get_higher_freq() into
+> cpufreq_driver_resolve_freq() since that's a schedutil-specific feature,
+> and we would loose the !sg_policy->need_freq_update optimization.
 
-Signed-off-by: Kamil Konieczny <k.konieczny@samsung.com>
----
- drivers/devfreq/exynos-bus.c  | 21 ++++++++++++++++++++-
- include/linux/devfreq-event.h |  4 ++++
- 2 files changed, 24 insertions(+), 1 deletion(-)
+Depends how you do it. You could add a new method to cpufreq_policy that
+is defined only for sugov or something along those lines. And you'd call
+that instead of cpufreq_frequency_table_target() when that makes sense.
 
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index 8fa8eb541373..f04ce5b84e75 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -14,6 +14,7 @@
- #include <linux/devfreq-event.h>
- #include <linux/device.h>
- #include <linux/export.h>
-+#include <linux/jiffies.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/pm_opp.h>
-@@ -31,6 +32,7 @@ struct exynos_bus {
- 	struct mutex lock;
- 
- 	unsigned long curr_freq;
-+	unsigned long prev_time;
- 
- 	struct opp_table *opp_table;
- 	struct clk *clk;
-@@ -57,7 +59,22 @@ static int exynos_bus_##ops(struct exynos_bus *bus)		\
- }
- exynos_bus_ops_edev(enable_edev);
- exynos_bus_ops_edev(disable_edev);
--exynos_bus_ops_edev(set_event);
-+
-+static int exynos_bus_set_event(struct exynos_bus *bus)
-+{
-+	int i, ret;
-+
-+	bus->prev_time = jiffies;
-+	for (i = 0; i < bus->edev_count; i++) {
-+		if (!bus->edev[i])
-+			continue;
-+		ret = devfreq_event_set_event(bus->edev[i]);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
- 
- static int exynos_bus_get_event(struct exynos_bus *bus,
- 				struct devfreq_event_data *edata)
-@@ -66,6 +83,8 @@ static int exynos_bus_get_event(struct exynos_bus *bus,
- 	unsigned long load_count = 0, total_count = 0;
- 	int i, ret = 0;
- 
-+	event_data.curr_freq = bus->curr_freq;
-+	event_data.prev_time = bus->prev_time;
- 	for (i = 0; i < bus->edev_count; i++) {
- 		if (!bus->edev[i])
- 			continue;
-diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
-index f14f17f8cb7f..b57ccfcb775b 100644
---- a/include/linux/devfreq-event.h
-+++ b/include/linux/devfreq-event.h
-@@ -41,12 +41,16 @@ struct devfreq_event_dev {
-  *		  each count may represent a clock cycle, a time unit
-  *		  (ns/us/...), or anything the device driver wants.
-  *		  Generally, utilization is load_count / total_count.
-+ * @prev_time	: jiffies for interval calculations with polling.
-+ * @curr_freq	: current frequency for calculating max bandwidth.
-  *
-  * This structure contains the data of devfreq-event device for polling period.
-  */
- struct devfreq_event_data {
- 	unsigned long load_count;
- 	unsigned long total_count;
-+	unsigned long prev_time;
-+	unsigned long curr_freq;
- };
- 
- /**
--- 
-2.25.0
+> Maybe we can add a flag to cpufreq_driver_resolve_freq() that promises
+> that the frequency is already a valid one. We have to be careful though,
+> since a number of things can make that untrue:
+>  - em_pd_get_higher_freq() will return the passed freq verbatim if it's
+> higher than the max freq, so em_pd_get_higher_freq() will have to set
+> the flag itself in case that logic changes.
+>  - policy limits can change the value
+>  - future things could tinker with the freq and forget to reset the flag.
+> 
+> If you think it's worth it I can make these changes.
 
+The thing is, not only with the current patch we end up iterating the
+frequencies twice for nothing, but also I think it'd be interesting to
+use the EM for consistency with EAS. It'd be nice to use the same data
+structure for the predictions we do in compute_energy() and for the
+actual request.
+
+Thoughts ?
+
+Quentin
