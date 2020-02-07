@@ -2,161 +2,69 @@ Return-Path: <SRS0=Rrqj=33=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 731D3C2BA83
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Feb 2020 16:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBB1DC35242
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Feb 2020 21:55:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 51E2D22314
-	for <linux-pm@archiver.kernel.org>; Fri,  7 Feb 2020 16:16:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 932B822314
+	for <linux-pm@archiver.kernel.org>; Fri,  7 Feb 2020 21:55:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1581112520;
+	bh=fOCxGy7MCh6Fy+wzJ7TB/GLsOp9F+XkQM82zHKt/dy4=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
+	b=DVwmPcrQ0weSpVDX4iamrQ6aQGiewYNQsVxT0rhWgPNc0u8mOjU3dHU1KRzqucsRR
+	 /VGe+ASOOmBEIrDhJDOqxHCTslwqFCBulI5rrPuiRUgDbfh7LR3xxGpIWx2Uz5J8oZ
+	 O7GZ8+rq/qxyvX/Mb5Gz2vBkTkV7kABT06vyruvA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727009AbgBGQPx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 7 Feb 2020 11:15:53 -0500
-Received: from foss.arm.com ([217.140.110.172]:41724 "EHLO foss.arm.com"
+        id S1727727AbgBGVzU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 7 Feb 2020 16:55:20 -0500
+Received: from mail.kernel.org ([198.145.29.99]:42396 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726951AbgBGQPx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Feb 2020 11:15:53 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7D8771FB;
-        Fri,  7 Feb 2020 08:15:52 -0800 (PST)
-Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 184913F68E;
-        Fri,  7 Feb 2020 08:15:49 -0800 (PST)
-Date:   Fri, 7 Feb 2020 16:15:47 +0000
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Maulik Shah <mkshah@codeaurora.org>,
-        Stephen Boyd <swboyd@chromium.org>,
-        Andy Gross <agross@kernel.org>,
-        David Brown <david.brown@linaro.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        id S1727691AbgBGVzT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 7 Feb 2020 16:55:19 -0500
+Subject: Re: [GIT PULL] Additional power management updates for v5.6-rc1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1581112519;
+        bh=fOCxGy7MCh6Fy+wzJ7TB/GLsOp9F+XkQM82zHKt/dy4=;
+        h=From:In-Reply-To:References:Date:To:Cc:From;
+        b=gqJTqaewu2c2VeI6pZAfLJ8gD+QlUeHlkV4axuxLfndSj+IcODUlpKdW+8HLk49CW
+         Qu+WuFmV4YV8o9XB6shdoIoMs74GihUvgT7izgr6dSvFtTHKm3UFpYrHRhwUiltkAV
+         NLeIXmaF0qT5FpnTF7E+ieX9PvLNCRva+cxnUtCI=
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0iDEpbZmZvTKxhZYq0CQWJSRZBDfhXgNOJT-wSxUrsb3g@mail.gmail.com>
+References: <CAJZ5v0iDEpbZmZvTKxhZYq0CQWJSRZBDfhXgNOJT-wSxUrsb3g@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0iDEpbZmZvTKxhZYq0CQWJSRZBDfhXgNOJT-wSxUrsb3g@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+ pm-5.6-rc1-3
+X-PR-Tracked-Commit-Id: 332008256f1f7cd8294acd6e288fb821f685d1a9
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: ba7dcfc7badad87e450e4aaec79662a038dbf9ed
+Message-Id: <158111251898.9631.17351659043416665666.pr-tracker-bot@kernel.org>
+Date:   Fri, 07 Feb 2020 21:55:18 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Evan Green <evgreen@chromium.org>,
-        Doug Anderson <dianders@chromium.org>,
-        Rajendra Nayak <rnayak@codeaurora.org>, lsrao@codeaurora.org,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 5/7] drivers: firmware: psci: Add hierarchical domain
- idle states converter
-Message-ID: <20200207161547.GB8342@bogus>
-References: <6ff7c82d-4204-a339-4070-0154ab4515f1@codeaurora.org>
- <20200205140603.GB38466@bogus>
- <CAPDyKFoyepN2VX4COMomp1e9dXPozzrgCdcy0paee2jp8Wm3YA@mail.gmail.com>
- <20200205161816.GD38466@bogus>
- <CAPDyKFqaA7oN2+oLS=Puw+jQXke_ErGQAWYuTuU-6PS7mo5YbQ@mail.gmail.com>
- <20200206204514.GB8107@codeaurora.org>
- <20200207111955.GA40103@bogus>
- <CAPDyKFp-zvD1iFcpRaTFiuazxYmLEx0Czf3=TZJxjSCDmmPsvA@mail.gmail.com>
- <20200207144850.GA18655@e121166-lin.cambridge.arm.com>
- <CAPDyKFoZ+QQFdG3yQ5wGpg2Z5c9WksUhresGz02o3HVrGt1UhQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFoZ+QQFdG3yQ5wGpg2Z5c9WksUhresGz02o3HVrGt1UhQ@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Feb 07, 2020 at 04:52:52PM +0100, Ulf Hansson wrote:
-> On Fri, 7 Feb 2020 at 15:48, Lorenzo Pieralisi
-> <lorenzo.pieralisi@arm.com> wrote:
-> >
-> > On Fri, Feb 07, 2020 at 01:32:28PM +0100, Ulf Hansson wrote:
-> > > [...]
-> > >
-> > > > > I understand the arguments for using PC vs OSI and agree with it. But
-> > > > > what in PSCI is against Linux knowing when the last core is powering
-> > > > > down when the PSCI is configured to do only Platform Cordinated.
-> > > >
-> > > > Nothing :D. But knowing the evolution and reasons for adding OSI in the
-> > > > PSCI specification and having argued about benefits of OSI over PC for
-> > > > years and finally when we have it in mainline, this argument of using
-> > > > PC for exact reasons why OSI evolved is something I can't understand
-> > > > and I am confused.
-> > > >
-> > > > > There should not be any objection to drivers knowing when all the cores
-> > > > > are powered down, be it reference counting CPU PM notifications or using
-> > > > > a cleaner approach like this where GendPD framwork does everything
-> > > > > cleanly and gives a nice callback. ARM architecture allows for different
-> > > > > aspects of CPU access be handled at different levels. I see this as an
-> > > > > extension of that approach.
-> > > > >
-> > > >
-> > > > One thing that was repeatedly pointed out during OSI patch review was no
-> > > > extra overhead for PC mode where firmware can make decisions. So, just
-> > > > use OSI now and let us be done with this discussion of OSI vs PC. If PC
-> > > > is what you think you need for future, we can revert all OSI changes and
-> > > > start discussing again :-)
-> > >
-> > > Just to make it clear, I fully agree with you in regards to overhead
-> > > for PC-mode. This is especially critical for ARM SoCs with lots of
-> > > cores, I assume.
-> > >
-> > > However, the overhead you refer to, is *only* going to be present in
-> > > case when the DTS has the hierarchical CPU topology description with
-> > > "power-domains". Because, that is *optional* to use, I am expecting
-> > > only those SoC/platforms that needs to manage last-man activities to
-> > > use this layout, the others will remain unaffected.
-> >
-> > In PC mode not only there is no need but it is wrong to manage
-> > any last-man activity in the kernel. I wonder why we are still
-> > talking about this to be honest.
->
-> I guess the discussion is here because there is a use case to consider now.
->
+The pull request you sent on Fri, 7 Feb 2020 11:34:48 +0100:
 
-If this is what Bjorn presented in his email, I have responded to that.
-If it's any different, please let us know the complete details.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.6-rc1-3
 
-> For sure, we agree on what is the best solution. But this is rather
-> about what can we do to improve the current situation, if we should do
-> anything.
->
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/ba7dcfc7badad87e450e4aaec79662a038dbf9ed
 
-Sure, and I haven't found a reason to do that in OSPM yet(as part of the
-discussion in this thread)
+Thank you!
 
-> >
-> > Code to handle PSCI platform coordinated mode has been/is in
-> > the kernel today and that's all is needed according to the PSCI
-> > specifications.
->
-> PSCI specifies CPU power management, not SoC power management. If
-> these things were completely decoupled, I would agree with you, but
-> that's not the case. Maybe SCMI, etc, helps with this in future.
->
-
-Why does that not work even if they are not decoupled. The IO/device
-that share with CPU votes from OSPM and the CPU/Cluster from PSCI in
-PC mode. There is no argument there, but why it needs to be done in OSPM
-is the objection here.
-
-> Anyway, my fear is that not many ARM vendors implements OSI support,
-> but still they have "last-man-activities" to deal with. This is not
-> only QCOM.
->
-
-I am interested to hear from them. And the same question to same too as
-above.
-
-> I guess an option would be to add OSI support to the public ARM
-> Trusted Firmware, then we could more easily point to that - rather
-> than trying to mitigate the problem on the kernel side.
->
-
-I would say go for it. But don't mix responsibility of OSPM in PC vs OSI.
-We have discussed this for years and I hope this discussion ends ASAP.
-I don't see any point in dragging this any further.
-
---
-Regards,
-Sudeep
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
