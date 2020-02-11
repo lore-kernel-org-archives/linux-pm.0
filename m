@@ -6,31 +6,29 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9AC5C47409
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB1B3C35242
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AED872070A
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B565720842
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727924AbgBKXkb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Feb 2020 18:40:31 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:47266 "EHLO
+        id S1728047AbgBKXin (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Feb 2020 18:38:43 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:50946 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728035AbgBKXip (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:38:45 -0500
+        with ESMTP id S1727985AbgBKXim (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:38:42 -0500
 Received: from 79.184.254.199.ipv4.supernova.orange.pl (79.184.254.199) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 520e3db86b693f71; Wed, 12 Feb 2020 00:38:42 +0100
+ id b104e132117a5803; Wed, 12 Feb 2020 00:38:40 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
         Amit Kucheria <amit.kucheria@linaro.org>,
-        Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>
-Subject: [PATCH 24/28] sound: Call cpu_latency_qos_*() instead of pm_qos_*()
-Date:   Wed, 12 Feb 2020 00:34:15 +0100
-Message-ID: <197693303.hiACyxC3Vm@kreacher>
+        Linux Documentation <linux-doc@vger.kernel.org>
+Subject: [PATCH 27/28] Documentation: PM: QoS: Update to reflect previous code changes
+Date:   Wed, 12 Feb 2020 00:36:35 +0100
+Message-ID: <263587662.Lb29Xrxheq@kreacher>
 In-Reply-To: <1654227.8mz0SueHsU@kreacher>
 References: <1654227.8mz0SueHsU@kreacher>
 MIME-Version: 1.0
@@ -43,219 +41,251 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Call cpu_latency_qos_add/update/remove_request() and
-cpu_latency_qos_request_active() instead of
-pm_qos_add/update/remove_request() and pm_qos_request_active(),
-respectively, because the latter are going to be dropped.
-
-No intentional functional impact.
+Update the PM QoS documentation to reflect the previous code changes
+regarding the removal of PM QoS classes and the CPU latency QoS API
+rework.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- sound/core/pcm_native.c               | 14 +++++++-------
- sound/soc/intel/atom/sst/sst.c        |  5 ++---
- sound/soc/intel/atom/sst/sst_loader.c |  4 ++--
- sound/soc/ti/omap-dmic.c              |  7 ++++---
- sound/soc/ti/omap-mcbsp.c             | 16 ++++++++--------
- sound/soc/ti/omap-mcpdm.c             | 16 ++++++++--------
- 6 files changed, 31 insertions(+), 31 deletions(-)
+ Documentation/admin-guide/pm/cpuidle.rst | 73 +++++++++++++--------------
+ Documentation/power/pm_qos_interface.rst | 86 +++++++++++++++-----------------
+ 2 files changed, 75 insertions(+), 84 deletions(-)
 
-diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-index 336406bcb59e..151bac1bbd0b 100644
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -748,11 +748,11 @@ static int snd_pcm_hw_params(struct snd_pcm_substream *substream,
- 	snd_pcm_timer_resolution_change(substream);
- 	snd_pcm_set_state(substream, SNDRV_PCM_STATE_SETUP);
+diff --git a/Documentation/admin-guide/pm/cpuidle.rst b/Documentation/admin-guide/pm/cpuidle.rst
+index 6a06dc473dd6..5605cc6f9560 100644
+--- a/Documentation/admin-guide/pm/cpuidle.rst
++++ b/Documentation/admin-guide/pm/cpuidle.rst
+@@ -583,20 +583,17 @@ Power Management Quality of Service for CPUs
+ The power management quality of service (PM QoS) framework in the Linux kernel
+ allows kernel code and user space processes to set constraints on various
+ energy-efficiency features of the kernel to prevent performance from dropping
+-below a required level.  The PM QoS constraints can be set globally, in
+-predefined categories referred to as PM QoS classes, or against individual
+-devices.
++below a required level.
  
--	if (pm_qos_request_active(&substream->latency_pm_qos_req))
--		pm_qos_remove_request(&substream->latency_pm_qos_req);
-+	if (cpu_latency_qos_request_active(&substream->latency_pm_qos_req))
-+		cpu_latency_qos_remove_request(&substream->latency_pm_qos_req);
- 	if ((usecs = period_to_usecs(runtime)) >= 0)
--		pm_qos_add_request(&substream->latency_pm_qos_req,
--				   PM_QOS_CPU_DMA_LATENCY, usecs);
-+		cpu_latency_qos_add_request(&substream->latency_pm_qos_req,
-+					    usecs);
- 	return 0;
-  _error:
- 	/* hardware might be unusable from this time,
-@@ -821,7 +821,7 @@ static int snd_pcm_hw_free(struct snd_pcm_substream *substream)
- 		return -EBADFD;
- 	result = do_hw_free(substream);
- 	snd_pcm_set_state(substream, SNDRV_PCM_STATE_OPEN);
--	pm_qos_remove_request(&substream->latency_pm_qos_req);
-+	cpu_latency_qos_remove_request(&substream->latency_pm_qos_req);
- 	return result;
- }
+ CPU idle time management can be affected by PM QoS in two ways, through the
+-global constraint in the ``PM_QOS_CPU_DMA_LATENCY`` class and through the
+-resume latency constraints for individual CPUs.  Kernel code (e.g. device
+-drivers) can set both of them with the help of special internal interfaces
+-provided by the PM QoS framework.  User space can modify the former by opening
+-the :file:`cpu_dma_latency` special device file under :file:`/dev/` and writing
+-a binary value (interpreted as a signed 32-bit integer) to it.  In turn, the
+-resume latency constraint for a CPU can be modified by user space by writing a
+-string (representing a signed 32-bit integer) to the
+-:file:`power/pm_qos_resume_latency_us` file under
++global CPU latency limit and through the resume latency constraints for
++individual CPUs.  Kernel code (e.g. device drivers) can set both of them with
++the help of special internal interfaces provided by the PM QoS framework.  User
++space can modify the former by opening the :file:`cpu_dma_latency` special
++device file under :file:`/dev/` and writing a binary value (interpreted as a
++signed 32-bit integer) to it.  In turn, the resume latency constraint for a CPU
++can be modified from user space by writing a string (representing a signed
++32-bit integer) to the :file:`power/pm_qos_resume_latency_us` file under
+ :file:`/sys/devices/system/cpu/cpu<N>/` in ``sysfs``, where the CPU number
+ ``<N>`` is allocated at the system initialization time.  Negative values
+ will be rejected in both cases and, also in both cases, the written integer
+@@ -605,32 +602,34 @@ number will be interpreted as a requested PM QoS constraint in microseconds.
+ The requested value is not automatically applied as a new constraint, however,
+ as it may be less restrictive (greater in this particular case) than another
+ constraint previously requested by someone else.  For this reason, the PM QoS
+-framework maintains a list of requests that have been made so far in each
+-global class and for each device, aggregates them and applies the effective
+-(minimum in this particular case) value as the new constraint.
++framework maintains a list of requests that have been made so far for the
++global CPU latency limit and for each individual CPU, aggregates them and
++applies the effective (minimum in this particular case) value as the new
++constraint.
  
-@@ -2598,8 +2598,8 @@ void snd_pcm_release_substream(struct snd_pcm_substream *substream)
- 		substream->ops->close(substream);
- 		substream->hw_opened = 0;
- 	}
--	if (pm_qos_request_active(&substream->latency_pm_qos_req))
--		pm_qos_remove_request(&substream->latency_pm_qos_req);
-+	if (cpu_latency_qos_request_active(&substream->latency_pm_qos_req))
-+		cpu_latency_qos_remove_request(&substream->latency_pm_qos_req);
- 	if (substream->pcm_release) {
- 		substream->pcm_release(substream);
- 		substream->pcm_release = NULL;
-diff --git a/sound/soc/intel/atom/sst/sst.c b/sound/soc/intel/atom/sst/sst.c
-index 68bcec5241f7..d6563985e008 100644
---- a/sound/soc/intel/atom/sst/sst.c
-+++ b/sound/soc/intel/atom/sst/sst.c
-@@ -325,8 +325,7 @@ int sst_context_init(struct intel_sst_drv *ctx)
- 		ret = -ENOMEM;
- 		goto do_free_mem;
- 	}
--	pm_qos_add_request(ctx->qos, PM_QOS_CPU_DMA_LATENCY,
--				PM_QOS_DEFAULT_VALUE);
-+	cpu_latency_qos_add_request(ctx->qos, PM_QOS_DEFAULT_VALUE);
+ In fact, opening the :file:`cpu_dma_latency` special device file causes a new
+-PM QoS request to be created and added to the priority list of requests in the
+-``PM_QOS_CPU_DMA_LATENCY`` class and the file descriptor coming from the
+-"open" operation represents that request.  If that file descriptor is then
+-used for writing, the number written to it will be associated with the PM QoS
+-request represented by it as a new requested constraint value.  Next, the
+-priority list mechanism will be used to determine the new effective value of
+-the entire list of requests and that effective value will be set as a new
+-constraint.  Thus setting a new requested constraint value will only change the
+-real constraint if the effective "list" value is affected by it.  In particular,
+-for the ``PM_QOS_CPU_DMA_LATENCY`` class it only affects the real constraint if
+-it is the minimum of the requested constraints in the list.  The process holding
+-a file descriptor obtained by opening the :file:`cpu_dma_latency` special device
+-file controls the PM QoS request associated with that file descriptor, but it
+-controls this particular PM QoS request only.
++PM QoS request to be created and added to a global priority list of CPU latency
++limit requests and the file descriptor coming from the "open" operation
++represents that request.  If that file descriptor is then used for writing, the
++number written to it will be associated with the PM QoS request represented by
++it as a new requested limit value.  Next, the priority list mechanism will be
++used to determine the new effective value of the entire list of requests and
++that effective value will be set as a new CPU latency limit.  Thus requesting a
++new limit value will only change the real limit if the effective "list" value is
++affected by it, which is the case if it is the minimum of the requested values
++in the list.
++
++The process holding a file descriptor obtained by opening the
++:file:`cpu_dma_latency` special device file controls the PM QoS request
++associated with that file descriptor, but it controls this particular PM QoS
++request only.
  
- 	dev_dbg(ctx->dev, "Requesting FW %s now...\n", ctx->firmware_name);
- 	ret = request_firmware_nowait(THIS_MODULE, true, ctx->firmware_name,
-@@ -364,7 +363,7 @@ void sst_context_cleanup(struct intel_sst_drv *ctx)
- 	sysfs_remove_group(&ctx->dev->kobj, &sst_fw_version_attr_group);
- 	flush_scheduled_work();
- 	destroy_workqueue(ctx->post_msg_wq);
--	pm_qos_remove_request(ctx->qos);
-+	cpu_latency_qos_remove_request(ctx->qos);
- 	kfree(ctx->fw_sg_list.src);
- 	kfree(ctx->fw_sg_list.dst);
- 	ctx->fw_sg_list.list_len = 0;
-diff --git a/sound/soc/intel/atom/sst/sst_loader.c b/sound/soc/intel/atom/sst/sst_loader.c
-index ce11c36848c4..9b0e3739c738 100644
---- a/sound/soc/intel/atom/sst/sst_loader.c
-+++ b/sound/soc/intel/atom/sst/sst_loader.c
-@@ -412,7 +412,7 @@ int sst_load_fw(struct intel_sst_drv *sst_drv_ctx)
- 		return -ENOMEM;
+ Closing the :file:`cpu_dma_latency` special device file or, more precisely, the
+ file descriptor obtained while opening it, causes the PM QoS request associated
+-with that file descriptor to be removed from the ``PM_QOS_CPU_DMA_LATENCY``
+-class priority list and destroyed.  If that happens, the priority list mechanism
+-will be used, again, to determine the new effective value for the whole list
+-and that value will become the new real constraint.
++with that file descriptor to be removed from the global priority list of CPU
++latency limit requests and destroyed.  If that happens, the priority list
++mechanism will be used again, to determine the new effective value for the whole
++list and that value will become the new limit.
  
- 	/* Prevent C-states beyond C6 */
--	pm_qos_update_request(sst_drv_ctx->qos, 0);
-+	cpu_latency_qos_update_request(sst_drv_ctx->qos, 0);
+ In turn, for each CPU there is one resume latency PM QoS request associated with
+ the :file:`power/pm_qos_resume_latency_us` file under
+@@ -647,10 +646,10 @@ CPU in question every time the list of requests is updated this way or another
+ (there may be other requests coming from kernel code in that list).
  
- 	sst_drv_ctx->sst_state = SST_FW_LOADING;
+ CPU idle time governors are expected to regard the minimum of the global
+-effective ``PM_QOS_CPU_DMA_LATENCY`` class constraint and the effective
+-resume latency constraint for the given CPU as the upper limit for the exit
+-latency of the idle states they can select for that CPU.  They should never
+-select any idle states with exit latency beyond that limit.
++(effective) CPU latency limit and the effective resume latency constraint for
++the given CPU as the upper limit for the exit latency of the idle states that
++they are allowed to select for that CPU.  They should never select any idle
++states with exit latency beyond that limit.
  
-@@ -442,7 +442,7 @@ int sst_load_fw(struct intel_sst_drv *sst_drv_ctx)
  
- restore:
- 	/* Re-enable Deeper C-states beyond C6 */
--	pm_qos_update_request(sst_drv_ctx->qos, PM_QOS_DEFAULT_VALUE);
-+	cpu_latency_qos_update_request(sst_drv_ctx->qos, PM_QOS_DEFAULT_VALUE);
- 	sst_free_block(sst_drv_ctx, block);
- 	dev_dbg(sst_drv_ctx->dev, "fw load successful!!!\n");
+ Idle States Control Via Kernel Command Line
+diff --git a/Documentation/power/pm_qos_interface.rst b/Documentation/power/pm_qos_interface.rst
+index 0d62d506caf0..064f668fbdab 100644
+--- a/Documentation/power/pm_qos_interface.rst
++++ b/Documentation/power/pm_qos_interface.rst
+@@ -7,86 +7,78 @@ performance expectations by drivers, subsystems and user space applications on
+ one of the parameters.
  
-diff --git a/sound/soc/ti/omap-dmic.c b/sound/soc/ti/omap-dmic.c
-index 3f226be123d4..913579c43e9d 100644
---- a/sound/soc/ti/omap-dmic.c
-+++ b/sound/soc/ti/omap-dmic.c
-@@ -112,7 +112,7 @@ static void omap_dmic_dai_shutdown(struct snd_pcm_substream *substream,
+ Two different PM QoS frameworks are available:
+-1. PM QoS classes for cpu_dma_latency
++1. CPU latency QoS.
+ 2. The per-device PM QoS framework provides the API to manage the
+    per-device latency constraints and PM QoS flags.
  
- 	mutex_lock(&dmic->mutex);
+-Each parameters have defined units:
+-
+- * latency: usec
+- * timeout: usec
+- * throughput: kbs (kilo bit / sec)
+- * memory bandwidth: mbs (mega bit / sec)
++The latency unit used in the PM QoS framework is the microsecond (usec).
  
--	pm_qos_remove_request(&dmic->pm_qos_req);
-+	cpu_latency_qos_remove_request(&dmic->pm_qos_req);
  
- 	if (!dai->active)
- 		dmic->active = 0;
-@@ -230,8 +230,9 @@ static int omap_dmic_dai_prepare(struct snd_pcm_substream *substream,
- 	struct omap_dmic *dmic = snd_soc_dai_get_drvdata(dai);
- 	u32 ctrl;
+ 1. PM QoS framework
+ ===================
  
--	if (pm_qos_request_active(&dmic->pm_qos_req))
--		pm_qos_update_request(&dmic->pm_qos_req, dmic->latency);
-+	if (cpu_latency_qos_request_active(&dmic->pm_qos_req))
-+		cpu_latency_qos_update_request(&dmic->pm_qos_req,
-+					       dmic->latency);
+-The infrastructure exposes multiple misc device nodes one per implemented
+-parameter.  The set of parameters implement is defined by pm_qos_power_init()
+-and pm_qos_params.h.  This is done because having the available parameters
+-being runtime configurable or changeable from a driver was seen as too easy to
+-abuse.
+-
+-For each parameter a list of performance requests is maintained along with
+-an aggregated target value.  The aggregated target value is updated with
+-changes to the request list or elements of the list.  Typically the
+-aggregated target value is simply the max or min of the request values held
+-in the parameter list elements.
++A global list of CPU latency QoS requests is maintained along with an aggregated
++(effective) target value.  The aggregated target value is updated with changes
++to the request list or elements of the list.  For CPU latency QoS, the
++aggregated target value is simply the min of the request values held in the list
++elements.
++
+ Note: the aggregated target value is implemented as an atomic variable so that
+ reading the aggregated value does not require any locking mechanism.
  
- 	/* Configure uplink threshold */
- 	omap_dmic_write(dmic, OMAP_DMIC_FIFO_CTRL_REG, dmic->threshold);
-diff --git a/sound/soc/ti/omap-mcbsp.c b/sound/soc/ti/omap-mcbsp.c
-index 26b503bbdb5f..302d5c493c29 100644
---- a/sound/soc/ti/omap-mcbsp.c
-+++ b/sound/soc/ti/omap-mcbsp.c
-@@ -836,10 +836,10 @@ static void omap_mcbsp_dai_shutdown(struct snd_pcm_substream *substream,
- 	int stream2 = tx ? SNDRV_PCM_STREAM_CAPTURE : SNDRV_PCM_STREAM_PLAYBACK;
++From kernel space the use of this interface is simple:
  
- 	if (mcbsp->latency[stream2])
--		pm_qos_update_request(&mcbsp->pm_qos_req,
--				      mcbsp->latency[stream2]);
-+		cpu_latency_qos_update_request(&mcbsp->pm_qos_req,
-+					       mcbsp->latency[stream2]);
- 	else if (mcbsp->latency[stream1])
--		pm_qos_remove_request(&mcbsp->pm_qos_req);
-+		cpu_latency_qos_remove_request(&mcbsp->pm_qos_req);
+-From kernel mode the use of this interface is simple:
+-
+-void pm_qos_add_request(handle, param_class, target_value):
+-  Will insert an element into the list for that identified PM QoS class with the
+-  target value.  Upon change to this list the new target is recomputed and any
+-  registered notifiers are called only if the target value is now different.
+-  Clients of pm_qos need to save the returned handle for future use in other
+-  pm_qos API functions.
++void cpu_latency_qos_add_request(handle, target_value):
++  Will insert an element into the CPU latency QoS list with the target value.
++  Upon change to this list the new target is recomputed and any registered
++  notifiers are called only if the target value is now different.
++  Clients of PM QoS need to save the returned handle for future use in other
++  PM QoS API functions.
  
- 	mcbsp->latency[stream1] = 0;
+-void pm_qos_update_request(handle, new_target_value):
++void cpu_latency_qos_update_request(handle, new_target_value):
+   Will update the list element pointed to by the handle with the new target
+   value and recompute the new aggregated target, calling the notification tree
+   if the target is changed.
  
-@@ -863,10 +863,10 @@ static int omap_mcbsp_dai_prepare(struct snd_pcm_substream *substream,
- 	if (!latency || mcbsp->latency[stream1] < latency)
- 		latency = mcbsp->latency[stream1];
+-void pm_qos_remove_request(handle):
++void cpu_latency_qos_remove_request(handle):
+   Will remove the element.  After removal it will update the aggregate target
+   and call the notification tree if the target was changed as a result of
+   removing the request.
  
--	if (pm_qos_request_active(pm_qos_req))
--		pm_qos_update_request(pm_qos_req, latency);
-+	if (cpu_latency_qos_request_active(pm_qos_req))
-+		cpu_latency_qos_update_request(pm_qos_req, latency);
- 	else if (latency)
--		pm_qos_add_request(pm_qos_req, PM_QOS_CPU_DMA_LATENCY, latency);
-+		cpu_latency_qos_add_request(pm_qos_req, latency);
+-int pm_qos_request(param_class):
+-  Returns the aggregated value for a given PM QoS class.
++int cpu_latency_qos_limit():
++  Returns the aggregated value for the CPU latency QoS.
++
++int cpu_latency_qos_request_active(handle):
++  Returns if the request is still active, i.e. it has not been removed from the
++  CPU latency QoS list.
  
- 	return 0;
- }
-@@ -1434,8 +1434,8 @@ static int asoc_mcbsp_remove(struct platform_device *pdev)
- 	if (mcbsp->pdata->ops && mcbsp->pdata->ops->free)
- 		mcbsp->pdata->ops->free(mcbsp->id);
+-int pm_qos_request_active(handle):
+-  Returns if the request is still active, i.e. it has not been removed from a
+-  PM QoS class constraints list.
++int cpu_latency_qos_add_notifier(notifier):
++  Adds a notification callback function to the CPU latency QoS. The callback is
++  called when the aggregated value for the CPU latency QoS is changed.
  
--	if (pm_qos_request_active(&mcbsp->pm_qos_req))
--		pm_qos_remove_request(&mcbsp->pm_qos_req);
-+	if (cpu_latency_qos_request_active(&mcbsp->pm_qos_req))
-+		cpu_latency_qos_remove_request(&mcbsp->pm_qos_req);
+-int pm_qos_add_notifier(param_class, notifier):
+-  Adds a notification callback function to the PM QoS class. The callback is
+-  called when the aggregated value for the PM QoS class is changed.
++int cpu_latency_qos_remove_notifier(notifier):
++  Removes the notification callback function from the CPU latency QoS.
  
- 	if (mcbsp->pdata->buffer_size)
- 		sysfs_remove_group(&mcbsp->dev->kobj, &additional_attr_group);
-diff --git a/sound/soc/ti/omap-mcpdm.c b/sound/soc/ti/omap-mcpdm.c
-index a726cd7a8252..d7ac4df6f2d9 100644
---- a/sound/soc/ti/omap-mcpdm.c
-+++ b/sound/soc/ti/omap-mcpdm.c
-@@ -281,10 +281,10 @@ static void omap_mcpdm_dai_shutdown(struct snd_pcm_substream *substream,
- 	}
+-int pm_qos_remove_notifier(int param_class, notifier):
+-  Removes the notification callback function for the PM QoS class.
  
- 	if (mcpdm->latency[stream2])
--		pm_qos_update_request(&mcpdm->pm_qos_req,
--				      mcpdm->latency[stream2]);
-+		cpu_latency_qos_update_request(&mcpdm->pm_qos_req,
-+					       mcpdm->latency[stream2]);
- 	else if (mcpdm->latency[stream1])
--		pm_qos_remove_request(&mcpdm->pm_qos_req);
-+		cpu_latency_qos_remove_request(&mcpdm->pm_qos_req);
++From user space:
  
- 	mcpdm->latency[stream1] = 0;
+-From user mode:
++The infrastructure exposes one device node, /dev/cpu_dma_latency, for the CPU
++latency QoS.
  
-@@ -386,10 +386,10 @@ static int omap_mcpdm_prepare(struct snd_pcm_substream *substream,
- 	if (!latency || mcpdm->latency[stream1] < latency)
- 		latency = mcpdm->latency[stream1];
+-Only processes can register a pm_qos request.  To provide for automatic
++Only processes can register a PM QoS request.  To provide for automatic
+ cleanup of a process, the interface requires the process to register its
+-parameter requests in the following way:
++parameter requests as follows.
  
--	if (pm_qos_request_active(pm_qos_req))
--		pm_qos_update_request(pm_qos_req, latency);
-+	if (cpu_latency_qos_request_active(pm_qos_req))
-+		cpu_latency_qos_update_request(pm_qos_req, latency);
- 	else if (latency)
--		pm_qos_add_request(pm_qos_req, PM_QOS_CPU_DMA_LATENCY, latency);
-+		cpu_latency_qos_add_request(pm_qos_req, latency);
+-To register the default pm_qos target for the specific parameter, the process
+-must open /dev/cpu_dma_latency
++To register the default PM QoS target for the CPU latency QoS, the process must
++open /dev/cpu_dma_latency.
  
- 	if (!omap_mcpdm_active(mcpdm)) {
- 		omap_mcpdm_start(mcpdm);
-@@ -451,8 +451,8 @@ static int omap_mcpdm_remove(struct snd_soc_dai *dai)
- 	free_irq(mcpdm->irq, (void *)mcpdm);
- 	pm_runtime_disable(mcpdm->dev);
+ As long as the device node is held open that process has a registered
+ request on the parameter.
  
--	if (pm_qos_request_active(&mcpdm->pm_qos_req))
--		pm_qos_remove_request(&mcpdm->pm_qos_req);
-+	if (cpu_latency_qos_request_active(&mcpdm->pm_qos_req))
-+		cpu_latency_qos_remove_request(&mcpdm->pm_qos_req);
+-To change the requested target value the process needs to write an s32 value to
+-the open device node.  Alternatively the user mode program could write a hex
+-string for the value using 10 char long format e.g. "0x12345678".  This
+-translates to a pm_qos_update_request call.
++To change the requested target value, the process needs to write an s32 value to
++the open device node.  Alternatively, it can write a hex string for the value
++using the 10 char long format e.g. "0x12345678".  This translates to a
++cpu_latency_qos_update_request() call.
  
- 	return 0;
- }
+ To remove the user mode request for a target value simply close the device
+ node.
 -- 
 2.16.4
 
