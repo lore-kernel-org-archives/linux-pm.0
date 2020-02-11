@@ -4,30 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D899BC35242
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B77CEC35242
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B10C82073C
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 948662070A
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728008AbgBKXj5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Feb 2020 18:39:57 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:53061 "EHLO
+        id S1728068AbgBKXkC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Feb 2020 18:40:02 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:46019 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728130AbgBKXiv (ORCPT
+        with ESMTP id S1728117AbgBKXiv (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:38:51 -0500
 Received: from 79.184.254.199.ipv4.supernova.orange.pl (79.184.254.199) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 173fdcca87f84597; Wed, 12 Feb 2020 00:38:50 +0100
+ id 7e947757f6db853b; Wed, 12 Feb 2020 00:38:48 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH 12/28] PM: QoS: Adjust pm_qos_request() signature and reorder pm_qos.h
-Date:   Wed, 12 Feb 2020 00:07:01 +0100
-Message-ID: <4773738.66pf8vIe9V@kreacher>
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 14/28] cpuidle: Call cpu_latency_qos_limit() instead of pm_qos_request()
+Date:   Wed, 12 Feb 2020 00:08:42 +0100
+Message-ID: <3830254.4za0FlGIKD@kreacher>
 In-Reply-To: <1654227.8mz0SueHsU@kreacher>
 References: <1654227.8mz0SueHsU@kreacher>
 MIME-Version: 1.0
@@ -40,67 +41,31 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Change the return type of pm_qos_request() to be the same as the
-one of pm_qos_read_value() called by it internally and stop exporting
-it to modules (because its only caller, cpuidle, is not modular).
-
-Also move the pm_qos_read_value() header away from the CPU latency
-QoS API function headers in pm_qos.h (because it technically does
-not belong to that API).
+Call cpu_latency_qos_limit() instead of pm_qos_request(), because the
+latter is going to be dropped.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- include/linux/pm_qos.h | 6 +++---
- kernel/power/qos.c     | 3 +--
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/cpuidle/governor.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index a3e0bfc6c470..3c4bee29ecda 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -137,20 +137,20 @@ static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
- 	return req->dev != NULL;
- }
- 
-+s32 pm_qos_read_value(struct pm_qos_constraints *c);
- int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 			 enum pm_qos_req_action action, int value);
- bool pm_qos_update_flags(struct pm_qos_flags *pqf,
- 			 struct pm_qos_flags_request *req,
- 			 enum pm_qos_req_action action, s32 val);
-+
- void pm_qos_add_request(struct pm_qos_request *req, int pm_qos_class,
- 			s32 value);
- void pm_qos_update_request(struct pm_qos_request *req,
- 			   s32 new_value);
- void pm_qos_remove_request(struct pm_qos_request *req);
--
--int pm_qos_request(int pm_qos_class);
-+s32 pm_qos_request(int pm_qos_class);
- int pm_qos_request_active(struct pm_qos_request *req);
--s32 pm_qos_read_value(struct pm_qos_constraints *c);
- 
- #ifdef CONFIG_PM
- enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index afac7010e0f2..7bb55aca03bb 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -235,11 +235,10 @@ static struct pm_qos_constraints cpu_latency_constraints = {
-  *
-  * This function returns the current target value.
+diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+index e48271e117a3..29acaf48e575 100644
+--- a/drivers/cpuidle/governor.c
++++ b/drivers/cpuidle/governor.c
+@@ -109,9 +109,9 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
   */
--int pm_qos_request(int pm_qos_class)
-+s32 pm_qos_request(int pm_qos_class)
+ s64 cpuidle_governor_latency_req(unsigned int cpu)
  {
- 	return pm_qos_read_value(&cpu_latency_constraints);
- }
--EXPORT_SYMBOL_GPL(pm_qos_request);
+-	int global_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+ 	struct device *device = get_cpu_device(cpu);
+ 	int device_req = dev_pm_qos_raw_resume_latency(device);
++	int global_req = cpu_latency_qos_limit();
  
- int pm_qos_request_active(struct pm_qos_request *req)
- {
+ 	if (device_req > global_req)
+ 		device_req = global_req;
 -- 
 2.16.4
 
