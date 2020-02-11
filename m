@@ -2,134 +2,105 @@ Return-Path: <SRS0=vVHs=37=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F23B2C352A3
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57296C35242
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:48:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D48B02070A
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 14B7220708
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:48:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728039AbgBKXin (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Feb 2020 18:38:43 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:53835 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727847AbgBKXim (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:38:42 -0500
-Received: from 79.184.254.199.ipv4.supernova.orange.pl (79.184.254.199) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 9926a881a97b5522; Wed, 12 Feb 2020 00:38:40 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
+        id S1727976AbgBKXsK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Feb 2020 18:48:10 -0500
+Received: from mga06.intel.com ([134.134.136.31]:29089 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727955AbgBKXsK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Feb 2020 18:48:10 -0500
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 11 Feb 2020 15:48:09 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.70,428,1574150400"; 
+   d="asc'?scan'208";a="233621554"
+Received: from jtkirshe-desk1.jf.intel.com ([134.134.177.74])
+  by orsmga003.jf.intel.com with ESMTP; 11 Feb 2020 15:48:09 -0800
+Message-ID: <43c9336e1c0c23e374420586868052e947b75126.camel@intel.com>
+Subject: Re: [PATCH 20/28] drivers: net: Call cpu_latency_qos_*() instead of
+ pm_qos_*()
+From:   Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Reply-To: jeffrey.t.kirsher@intel.com
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH 26/28] PM: QoS: Update file information comments
-Date:   Wed, 12 Feb 2020 00:35:39 +0100
-Message-ID: <2027470.TsXNxnrcfu@kreacher>
-In-Reply-To: <1654227.8mz0SueHsU@kreacher>
-References: <1654227.8mz0SueHsU@kreacher>
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        intel-wired-lan@lists.osuosl.org,
+        Kalle Valo <kvalo@codeaurora.org>,
+        linux-wireless@vger.kernel.org
+Date:   Tue, 11 Feb 2020 15:48:09 -0800
+In-Reply-To: <10624145.o336LLEsho@kreacher>
+References: <1654227.8mz0SueHsU@kreacher> <10624145.o336LLEsho@kreacher>
+Organization: Intel
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-GaZoanpPv4L3uFpFpUoG"
+User-Agent: Evolution 3.34.3 (3.34.3-1.fc31) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Update the file information comments in include/linux/pm_qos.h
-and kernel/power/qos.c by adding titles along with copyright and
-authors information to them and changing the qos.c description to
-better reflect its contents (outdated information is dropped from
-it in particular).
+--=-GaZoanpPv4L3uFpFpUoG
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- include/linux/pm_qos.h | 15 +++++++++++----
- kernel/power/qos.c     | 34 ++++++++++++----------------------
- 2 files changed, 23 insertions(+), 26 deletions(-)
+On Wed, 2020-02-12 at 00:24 +0100, Rafael J. Wysocki wrote:
+> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+>=20
+> Call cpu_latency_qos_add/update/remove_request() instead of
+> pm_qos_add/update/remove_request(), respectively, because the
+> latter are going to be dropped.
+>=20
+> No intentional functional impact.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index e0ca4d780457..df065db3f57a 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -1,10 +1,17 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--#ifndef _LINUX_PM_QOS_H
--#define _LINUX_PM_QOS_H
--/* interface for the pm_qos_power infrastructure of the linux kernel.
-+/*
-+ * Definitions related to Power Management Quality of Service (PM QoS).
-+ *
-+ * Copyright (C) 2020 Intel Corporation
-  *
-- * Mark Gross <mgross@linux.intel.com>
-+ * Authors:
-+ *	Mark Gross <mgross@linux.intel.com>
-+ *	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-  */
-+
-+#ifndef _LINUX_PM_QOS_H
-+#define _LINUX_PM_QOS_H
-+
- #include <linux/plist.h>
- #include <linux/notifier.h>
- #include <linux/device.h>
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 7374c76f409a..ef73573db43d 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -1,31 +1,21 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-- * This module exposes the interface to kernel space for specifying
-- * QoS dependencies.  It provides infrastructure for registration of:
-+ * Power Management Quality of Service (PM QoS) support base.
-  *
-- * Dependents on a QoS value : register requests
-- * Watchers of QoS value : get notified when target QoS value changes
-+ * Copyright (C) 2020 Intel Corporation
-  *
-- * This QoS design is best effort based.  Dependents register their QoS needs.
-- * Watchers register to keep track of the current QoS needs of the system.
-+ * Authors:
-+ *	Mark Gross <mgross@linux.intel.com>
-+ *	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-  *
-- * There are 3 basic classes of QoS parameter: latency, timeout, throughput
-- * each have defined units:
-- * latency: usec
-- * timeout: usec <-- currently not used.
-- * throughput: kbs (kilo byte / sec)
-+ * Provided here is an interface for specifying PM QoS dependencies.  It allows
-+ * entities depending on QoS constraints to register their requests which are
-+ * aggregated as appropriate to produce effective constraints (target values)
-+ * that can be monitored by entities needing to respect them, either by polling
-+ * or through a built-in notification mechanism.
-  *
-- * There are lists of pm_qos_objects each one wrapping requests, notifiers
-- *
-- * User mode requests on a QOS parameter register themselves to the
-- * subsystem by opening the device node /dev/... and writing there request to
-- * the node.  As long as the process holds a file handle open to the node the
-- * client continues to be accounted for.  Upon file release the usermode
-- * request is removed and a new qos target is computed.  This way when the
-- * request that the application has is cleaned up when closes the file
-- * pointer or exits the pm_qos_object will get an opportunity to clean up.
-- *
-- * Mark Gross <mgross@linux.intel.com>
-+ * In addition to the basic functionality, more specific interfaces for managing
-+ * global CPU latency QoS requests and frequency QoS requests are provided.
-  */
- 
- /*#define DEBUG*/
--- 
-2.16.4
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com
+
+For the e1000e changes
+
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c   | 13 ++++++-------
+>  drivers/net/wireless/ath/ath10k/core.c       |  4 ++--
+>  drivers/net/wireless/intel/ipw2x00/ipw2100.c | 10 +++++-----
+>  3 files changed, 13 insertions(+), 14 deletions(-)
 
 
+--=-GaZoanpPv4L3uFpFpUoG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
+-----BEGIN PGP SIGNATURE-----
 
+iQIzBAABCAAdFiEEiTyZWz+nnTrOJ1LZ5W/vlVpL7c4FAl5DPTkACgkQ5W/vlVpL
+7c4a3g//SCBWhCZ3vnz6qb26ASH5pK5fgz/l9o0FmD/sOn6jHfXbGmD3C8zTo6ic
+j1pQ488wAXMKm+Ay6CNyy3tqC3l9Lg1GKu6wQ4R/evm7cCk38Mwg7+sHa5aNdjwo
+6+KmMvHD9aY3Ya+QzsrJg5ZztvW/CWP69SJ1J2JfM9a401S0Us5MX/O2WmdyYo/9
+nXRGTYYj3Aekg1Ghs2JdWkYyiPGUDTic1R8psB8I7rDHZV5zmrrBferSMz8jB9Gk
+ReQE43h5rF0CZKQevMws/J6gO2Ndfbre5BZoXA7wydzs4kkV2O98u0aTc/HBP16l
+q8vf//TZ0cJy+rTEexxKIlWsfdIKQbYsWIenY6GEjR7W0n/chJYQZw40wGODisMd
+Et4ZZwL7fVpWxLxVtSrhlAieD2RpAYyCYl6l9s46lcmHSf59kbx1EyN/EmwrpEIn
+N9wCiCX9s1Nj4kH1CQAdTXhK8InLFKxKdApKSbACTwXyKuxMB/Pk65fbh4BVGTGo
+kX0PZgKNIFo4+YvZZUwin+rioyBGQopgfbgy5z4StXQ2Rd0jEpwrMIu0mxXy39PG
+X9A0+gUBAlsWDr+Jv8NCXpw5Q74vbSzHuUZwi4wpDbwnjqb6WO2yXv9mJXJCgR+b
+xJA8RDrjt9XmBr4zk43EzPZqqPlp5w2oiPH3e7cJ84sDSG7H9Sc=
+=6ivJ
+-----END PGP SIGNATURE-----
+
+--=-GaZoanpPv4L3uFpFpUoG--
 
