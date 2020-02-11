@@ -4,32 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78B74C35242
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:39:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEB7CC3B187
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:39:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 51BEB215A4
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:39:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A0DCD2070A
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:39:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728031AbgBKXjn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Feb 2020 18:39:43 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:44121 "EHLO
+        id S1728205AbgBKXjA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Feb 2020 18:39:00 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:46840 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728008AbgBKXjA (ORCPT
+        with ESMTP id S1728189AbgBKXjA (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:39:00 -0500
 Received: from 79.184.254.199.ipv4.supernova.orange.pl (79.184.254.199) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 542d1a53373c3871; Wed, 12 Feb 2020 00:38:56 +0100
+ id 8117770a5ac94a1f; Wed, 12 Feb 2020 00:38:58 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-serial@vger.kernel.org
-Subject: [PATCH 10/28] PM: QoS: Rename things related to the CPU latency QoS
-Date:   Wed, 12 Feb 2020 00:04:31 +0100
-Message-ID: <3305010.P0mNzRSuHC@kreacher>
+        Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH 07/28] PM: QoS: Clean up misc device file operations
+Date:   Wed, 12 Feb 2020 00:00:12 +0100
+Message-ID: <8377820.a6Hm6vfviC@kreacher>
 In-Reply-To: <1654227.8mz0SueHsU@kreacher>
 References: <1654227.8mz0SueHsU@kreacher>
 MIME-Version: 1.0
@@ -42,240 +40,138 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-First, rename PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE to
-PM_QOS_CPU_LATENCY_DEFAULT_VALUE and update all of the code
-referring to it accordingly.
+Reorder the code to avoid using extra function header declarations
+for the pm_qos_power_*() family of functions and drop those
+declarations.
 
-Next, rename cpu_dma_constraints to cpu_latency_constraints, move
-the definition of it closer to the functions referring to it and
-update all of them accordingly.  [While at it, add a comment to mark
-the start of the code related to the CPU latency QoS.]
-
-Finally, rename the pm_qos_power_*() family of functions and
-pm_qos_power_fops to cpu_latency_qos_*() and cpu_latency_qos_fops,
-respectively, and update the definition of cpu_latency_qos_miscdev.
-[While at it, update the miscdev interface code start comment.]
+Also clean up the internals of those functions to consolidate checks,
+avoid using redundant local variables and similar.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/tty/serial/8250/8250_omap.c |  6 ++--
- drivers/tty/serial/omap-serial.c    |  6 ++--
- include/linux/pm_qos.h              |  2 +-
- kernel/power/qos.c                  | 56 +++++++++++++++++++------------------
- 4 files changed, 36 insertions(+), 34 deletions(-)
+ kernel/power/qos.c | 62 +++++++++++++++++++++++-------------------------------
+ 1 file changed, 26 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
-index 6f343ca08440..19f8d2f9e7ba 100644
---- a/drivers/tty/serial/8250/8250_omap.c
-+++ b/drivers/tty/serial/8250/8250_omap.c
-@@ -1222,8 +1222,8 @@ static int omap8250_probe(struct platform_device *pdev)
- 			 DEFAULT_CLK_SPEED);
- 	}
- 
--	priv->latency = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE;
--	priv->calc_latency = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE;
-+	priv->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
-+	priv->calc_latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
- 	pm_qos_add_request(&priv->pm_qos_request, PM_QOS_CPU_DMA_LATENCY,
- 			   priv->latency);
- 	INIT_WORK(&priv->qos_work, omap8250_uart_qos_work);
-@@ -1445,7 +1445,7 @@ static int omap8250_runtime_suspend(struct device *dev)
- 	if (up->dma && up->dma->rxchan)
- 		omap_8250_rx_dma_flush(up);
- 
--	priv->latency = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE;
-+	priv->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
- 	schedule_work(&priv->qos_work);
- 
- 	return 0;
-diff --git a/drivers/tty/serial/omap-serial.c b/drivers/tty/serial/omap-serial.c
-index 48017cec7f2f..ce2558767eee 100644
---- a/drivers/tty/serial/omap-serial.c
-+++ b/drivers/tty/serial/omap-serial.c
-@@ -1722,8 +1722,8 @@ static int serial_omap_probe(struct platform_device *pdev)
- 			 DEFAULT_CLK_SPEED);
- 	}
- 
--	up->latency = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE;
--	up->calc_latency = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE;
-+	up->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
-+	up->calc_latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
- 	pm_qos_add_request(&up->pm_qos_request,
- 		PM_QOS_CPU_DMA_LATENCY, up->latency);
- 	INIT_WORK(&up->qos_work, serial_omap_uart_qos_work);
-@@ -1869,7 +1869,7 @@ static int serial_omap_runtime_suspend(struct device *dev)
- 
- 	serial_omap_enable_wakeup(up, true);
- 
--	up->latency = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE;
-+	up->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
- 	schedule_work(&up->qos_work);
- 
- 	return 0;
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index cb57e5918a25..a3e0bfc6c470 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -28,7 +28,7 @@ enum pm_qos_flags_status {
- #define PM_QOS_LATENCY_ANY	S32_MAX
- #define PM_QOS_LATENCY_ANY_NS	((s64)PM_QOS_LATENCY_ANY * NSEC_PER_USEC)
- 
--#define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
-+#define PM_QOS_CPU_LATENCY_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	PM_QOS_LATENCY_ANY
- #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT	PM_QOS_LATENCY_ANY
- #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS	PM_QOS_LATENCY_ANY_NS
 diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 201b43bc6457..a6bf53e9db17 100644
+index 57ff542a4f9d..9f67584d4466 100644
 --- a/kernel/power/qos.c
 +++ b/kernel/power/qos.c
-@@ -56,14 +56,6 @@
-  */
- static DEFINE_SPINLOCK(pm_qos_lock);
- 
--static struct pm_qos_constraints cpu_dma_constraints = {
--	.list = PLIST_HEAD_INIT(cpu_dma_constraints.list),
--	.target_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
--	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
--	.no_constraint_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
--	.type = PM_QOS_MIN,
--};
--
- /**
-  * pm_qos_read_value - Return the current effective constraint value.
-  * @c: List of PM QoS constraint requests.
-@@ -227,6 +219,16 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
- 	return prev_value != curr_value;
- }
- 
-+/* Definitions related to the CPU latency QoS. */
-+
-+static struct pm_qos_constraints cpu_latency_constraints = {
-+	.list = PLIST_HEAD_INIT(cpu_latency_constraints.list),
-+	.target_value = PM_QOS_CPU_LATENCY_DEFAULT_VALUE,
-+	.default_value = PM_QOS_CPU_LATENCY_DEFAULT_VALUE,
-+	.no_constraint_value = PM_QOS_CPU_LATENCY_DEFAULT_VALUE,
-+	.type = PM_QOS_MIN,
-+};
-+
- /**
-  * pm_qos_request - returns current system wide qos expectation
-  * @pm_qos_class: Ignored.
-@@ -235,13 +237,13 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
-  */
- int pm_qos_request(int pm_qos_class)
- {
--	return pm_qos_read_value(&cpu_dma_constraints);
-+	return pm_qos_read_value(&cpu_latency_constraints);
- }
- EXPORT_SYMBOL_GPL(pm_qos_request);
- 
- int pm_qos_request_active(struct pm_qos_request *req)
- {
--	return req->qos == &cpu_dma_constraints;
-+	return req->qos == &cpu_latency_constraints;
- }
- EXPORT_SYMBOL_GPL(pm_qos_request_active);
- 
-@@ -278,7 +280,7 @@ void pm_qos_add_request(struct pm_qos_request *req,
- 
- 	trace_pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY, value);
- 
--	req->qos = &cpu_dma_constraints;
-+	req->qos = &cpu_latency_constraints;
- 	cpu_latency_qos_update(req, PM_QOS_ADD_REQ, value);
- }
- EXPORT_SYMBOL_GPL(pm_qos_add_request);
-@@ -338,9 +340,9 @@ void pm_qos_remove_request(struct pm_qos_request *req)
- }
- EXPORT_SYMBOL_GPL(pm_qos_remove_request);
- 
--/* User space interface to global PM QoS via misc device. */
-+/* User space interface to the CPU latency QoS via misc device. */
- 
--static int pm_qos_power_open(struct inode *inode, struct file *filp)
-+static int cpu_latency_qos_open(struct inode *inode, struct file *filp)
- {
- 	struct pm_qos_request *req;
- 
-@@ -354,7 +356,7 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
- 	return 0;
- }
- 
--static int pm_qos_power_release(struct inode *inode, struct file *filp)
-+static int cpu_latency_qos_release(struct inode *inode, struct file *filp)
- {
- 	struct pm_qos_request *req = filp->private_data;
- 
-@@ -366,8 +368,8 @@ static int pm_qos_power_release(struct inode *inode, struct file *filp)
- 	return 0;
- }
- 
--static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
--				 size_t count, loff_t *f_pos)
-+static ssize_t cpu_latency_qos_read(struct file *filp, char __user *buf,
-+				    size_t count, loff_t *f_pos)
- {
- 	struct pm_qos_request *req = filp->private_data;
- 	unsigned long flags;
-@@ -377,14 +379,14 @@ static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
- 		return -EINVAL;
- 
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	value = pm_qos_get_value(&cpu_dma_constraints);
-+	value = pm_qos_get_value(&cpu_latency_constraints);
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
- 	return simple_read_from_buffer(buf, count, f_pos, &value, sizeof(s32));
- }
+@@ -83,21 +83,6 @@ static struct pm_qos_object *pm_qos_array[] = {
+ 	&cpu_dma_pm_qos,
+ };
  
 -static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
--				  size_t count, loff_t *f_pos)
-+static ssize_t cpu_latency_qos_write(struct file *filp, const char __user *buf,
-+				     size_t count, loff_t *f_pos)
- {
- 	s32 value;
- 
-@@ -404,21 +406,21 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- 	return count;
- }
- 
+-		size_t count, loff_t *f_pos);
+-static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
+-		size_t count, loff_t *f_pos);
+-static int pm_qos_power_open(struct inode *inode, struct file *filp);
+-static int pm_qos_power_release(struct inode *inode, struct file *filp);
+-
 -static const struct file_operations pm_qos_power_fops = {
 -	.write = pm_qos_power_write,
 -	.read = pm_qos_power_read,
 -	.open = pm_qos_power_open,
 -	.release = pm_qos_power_release,
-+static const struct file_operations cpu_latency_qos_fops = {
-+	.write = cpu_latency_qos_write,
-+	.read = cpu_latency_qos_read,
-+	.open = cpu_latency_qos_open,
-+	.release = cpu_latency_qos_release,
- 	.llseek = noop_llseek,
- };
+-	.llseek = noop_llseek,
+-};
+-
+ /**
+  * pm_qos_read_value - Return the current effective constraint value.
+  * @c: List of PM QoS constraint requests.
+@@ -414,15 +399,6 @@ EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
  
- static struct miscdevice cpu_latency_qos_miscdev = {
- 	.minor = MISC_DYNAMIC_MINOR,
- 	.name = "cpu_dma_latency",
--	.fops = &pm_qos_power_fops,
-+	.fops = &cpu_latency_qos_fops,
- };
+ /* User space interface to global PM QoS via misc device. */
  
--static int __init pm_qos_power_init(void)
-+static int __init cpu_latency_qos_init(void)
+-static int register_pm_qos_misc(struct pm_qos_object *qos)
+-{
+-	qos->pm_qos_power_miscdev.minor = MISC_DYNAMIC_MINOR;
+-	qos->pm_qos_power_miscdev.name = qos->name;
+-	qos->pm_qos_power_miscdev.fops = &pm_qos_power_fops;
+-
+-	return misc_register(&qos->pm_qos_power_miscdev);
+-}
+-
+ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+ {
+ 	struct pm_qos_request *req;
+@@ -439,9 +415,10 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+ 
+ static int pm_qos_power_release(struct inode *inode, struct file *filp)
+ {
+-	struct pm_qos_request *req;
++	struct pm_qos_request *req = filp->private_data;
++
++	filp->private_data = NULL;
+ 
+-	req = filp->private_data;
+ 	pm_qos_remove_request(req);
+ 	kfree(req);
+ 
+@@ -449,15 +426,13 @@ static int pm_qos_power_release(struct inode *inode, struct file *filp)
+ }
+ 
+ static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
+-		size_t count, loff_t *f_pos)
++				 size_t count, loff_t *f_pos)
+ {
+-	s32 value;
+-	unsigned long flags;
+ 	struct pm_qos_request *req = filp->private_data;
++	unsigned long flags;
++	s32 value;
+ 
+-	if (!req)
+-		return -EINVAL;
+-	if (!pm_qos_request_active(req))
++	if (!req || !pm_qos_request_active(req))
+ 		return -EINVAL;
+ 
+ 	spin_lock_irqsave(&pm_qos_lock, flags);
+@@ -468,10 +443,9 @@ static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
+ }
+ 
+ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+-		size_t count, loff_t *f_pos)
++				  size_t count, loff_t *f_pos)
+ {
+ 	s32 value;
+-	struct pm_qos_request *req;
+ 
+ 	if (count == sizeof(s32)) {
+ 		if (copy_from_user(&value, buf, sizeof(s32)))
+@@ -484,12 +458,28 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ 			return ret;
+ 	}
+ 
+-	req = filp->private_data;
+-	pm_qos_update_request(req, value);
++	pm_qos_update_request(filp->private_data, value);
+ 
+ 	return count;
+ }
+ 
++static const struct file_operations pm_qos_power_fops = {
++	.write = pm_qos_power_write,
++	.read = pm_qos_power_read,
++	.open = pm_qos_power_open,
++	.release = pm_qos_power_release,
++	.llseek = noop_llseek,
++};
++
++static int register_pm_qos_misc(struct pm_qos_object *qos)
++{
++	qos->pm_qos_power_miscdev.minor = MISC_DYNAMIC_MINOR;
++	qos->pm_qos_power_miscdev.name = qos->name;
++	qos->pm_qos_power_miscdev.fops = &pm_qos_power_fops;
++
++	return misc_register(&qos->pm_qos_power_miscdev);
++}
++
+ static int __init pm_qos_power_init(void)
  {
  	int ret;
- 
-@@ -429,7 +431,7 @@ static int __init pm_qos_power_init(void)
- 
- 	return ret;
- }
--late_initcall(pm_qos_power_init);
-+late_initcall(cpu_latency_qos_init);
- 
- /* Definitions related to the frequency QoS below. */
- 
 -- 
 2.16.4
 
