@@ -2,98 +2,108 @@ Return-Path: <SRS0=vVHs=37=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CCC09C35242
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 19:06:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5961C35242
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:38:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A4CE02173E
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 19:06:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581447977;
-	bh=nrvRIWnQUnk1P/L5m9G2XIN8KKI3HWQAciY5bRTbzJM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=Q01iNundGWJ0FSN/JeoCmOgSXa8O1Yb51/71aavvlL7VTjPlqVidc/LX4sEdJ7VW1
-	 Tz+c5ZyuzuNVW04QHDp3Aun2kSRZOFifpVwIh4Kdb1kHmwZg+XweWLSGq+grgndWg6
-	 KtQPaiTC9vEkX49WTOXlFlqtfmEjBe6Gw2x3yBbw=
+	by mail.kernel.org (Postfix) with ESMTP id 798392070A
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:38:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730836AbgBKTGR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Feb 2020 14:06:17 -0500
-Received: from foss.arm.com ([217.140.110.172]:52708 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728503AbgBKTGR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Feb 2020 14:06:17 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 447741FB;
-        Tue, 11 Feb 2020 11:06:16 -0800 (PST)
-Received: from localhost (unknown [10.37.6.21])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BD8913F68F;
-        Tue, 11 Feb 2020 11:06:15 -0800 (PST)
-Date:   Tue, 11 Feb 2020 19:06:14 +0000
-From:   Mark Brown <broonie@kernel.org>
-To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc:     mazziesaccount@gmail.com, mikko.mutanen@fi.rohmeurope.com,
-        markus.laine@fi.rohmeurope.com,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/3] power: (regmap:) Add linear_range helper
-Message-ID: <20200211190614.GP4543@sirena.org.uk>
-References: <cover.1581327762.git.matti.vaittinen@fi.rohmeurope.com>
- <20b107ac6e40206b82d014a145abe0569d7a6f81.1581327762.git.matti.vaittinen@fi.rohmeurope.com>
+        id S1727988AbgBKXim (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Feb 2020 18:38:42 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:64962 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727933AbgBKXil (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:38:41 -0500
+Received: from 79.184.254.199.ipv4.supernova.orange.pl (79.184.254.199) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
+ id 58cecbe0eccce4dc; Wed, 12 Feb 2020 00:38:39 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 28/28] PM: QoS: Make CPU latency QoS depend on CONFIG_CPU_IDLE
+Date:   Wed, 12 Feb 2020 00:37:11 +0100
+Message-ID: <3915146.cHaPKLg5L1@kreacher>
+In-Reply-To: <1654227.8mz0SueHsU@kreacher>
+References: <1654227.8mz0SueHsU@kreacher>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ftQmbtOmUf2cr8rB"
-Content-Disposition: inline
-In-Reply-To: <20b107ac6e40206b82d014a145abe0569d7a6f81.1581327762.git.matti.vaittinen@fi.rohmeurope.com>
-X-Cookie: Hire the morally handicapped.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
---ftQmbtOmUf2cr8rB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Because cpuidle is the only user of the effective constraint coming
+from the CPU latency QoS, add #ifdef CONFIG_CPU_IDLE around that code
+to avoid building it unnecessarily.
 
-On Mon, Feb 10, 2020 at 02:13:13PM +0200, Matti Vaittinen wrote:
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/pm_qos.h | 13 +++++++++++++
+ kernel/power/qos.c     |  2 ++
+ 2 files changed, 15 insertions(+)
 
-> Provide a linear_range helper which can do conversion from user value
-> to register value 'selector'.
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index df065db3f57a..4a69d4af3ff8 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -143,11 +143,24 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+ 			 struct pm_qos_flags_request *req,
+ 			 enum pm_qos_req_action action, s32 val);
+ 
++#ifdef CONFIG_CPU_IDLE
+ s32 cpu_latency_qos_limit(void);
+ bool cpu_latency_qos_request_active(struct pm_qos_request *req);
+ void cpu_latency_qos_add_request(struct pm_qos_request *req, s32 value);
+ void cpu_latency_qos_update_request(struct pm_qos_request *req, s32 new_value);
+ void cpu_latency_qos_remove_request(struct pm_qos_request *req);
++#else
++static inline s32 cpu_latency_qos_limit(void) { return INT_MAX; }
++static inline bool cpu_latency_qos_request_active(struct pm_qos_request *req)
++{
++	return false;
++}
++static inline void cpu_latency_qos_add_request(struct pm_qos_request *req,
++					       s32 value) {}
++static inline void cpu_latency_qos_update_request(struct pm_qos_request *req,
++						  s32 new_value) {}
++static inline void cpu_latency_qos_remove_request(struct pm_qos_request *req) {}
++#endif
+ 
+ #ifdef CONFIG_PM
+ enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index ef73573db43d..32927682bcc4 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -209,6 +209,7 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+ 	return prev_value != curr_value;
+ }
+ 
++#ifdef CONFIG_CPU_IDLE
+ /* Definitions related to the CPU latency QoS. */
+ 
+ static struct pm_qos_constraints cpu_latency_constraints = {
+@@ -421,6 +422,7 @@ static int __init cpu_latency_qos_init(void)
+ 	return ret;
+ }
+ late_initcall(cpu_latency_qos_init);
++#endif /* CONFIG_CPU_IDLE */
+ 
+ /* Definitions related to the frequency QoS below. */
+ 
+-- 
+2.16.4
 
-> Mark, this is loosely bound to register handling... Do you think
-> the regmap could host these helpers?
 
-There's no real tie to regmap here, something like this could quite
-happily be used by memory mapped devices where regmap has limited uses
-and would be a lot to pull in.  A separate library would probably make
-more sense.  Not sure how many users there would be outside of power
-related stuff, I don't recall seeing the pattern elsewhere.
 
-Note also that we already have quite extensive helpers for this sort of
-stuff in the regulator API which I sense may have been involved in this
-implementation and to an extent in ALSA which takes a different approach
-with TLVs since it baked selectors directly into the ABI.
 
---ftQmbtOmUf2cr8rB
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl5C+yUACgkQJNaLcl1U
-h9BvKAf/RRzCbi0uxTdR1wgKG+fIeGPs3TkKagNkbWs4xD+Ppm3RpSu7lGNVDe2P
-pNzxz4qP/9Q46Dm6iRplC5CsAARbYKjkflALvQ1TvuZB+vss5jc/9ARdOeKpRuhJ
-T9kFP6CfRPh5JgDPwqqk/lUhe9fe5Ta26uoegdG9wZsn8J/vW5pnY7EDUkV4axPt
-43zEvmzeyYnSBMARnvl9jdj4ysDEh6YpGy/lKGV9wvUMN8JmwtuEqbXgrtrVFzBd
-dS12KPckixezMm7VwMrcZ9ain+W5knJt1yh/fjnBCqjd73rsWvsD8ijNNn7U0wPR
-NdkkyrqpvCiXu7Om10I9uS2DhFOfYg==
-=hzV/
------END PGP SIGNATURE-----
-
---ftQmbtOmUf2cr8rB--
