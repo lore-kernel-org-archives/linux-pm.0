@@ -6,28 +6,29 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEB7CC3B187
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:39:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A3B2C35242
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:39:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A0DCD2070A
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:39:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 72C9E2070A
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:39:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728205AbgBKXjA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728194AbgBKXjA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 11 Feb 2020 18:39:00 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:46840 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:51238 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728189AbgBKXjA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:39:00 -0500
+        with ESMTP id S1728182AbgBKXi7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:38:59 -0500
 Received: from 79.184.254.199.ipv4.supernova.orange.pl (79.184.254.199) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 8117770a5ac94a1f; Wed, 12 Feb 2020 00:38:58 +0100
+ id 8bb256ff5905def3; Wed, 12 Feb 2020 00:38:57 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH 07/28] PM: QoS: Clean up misc device file operations
-Date:   Wed, 12 Feb 2020 00:00:12 +0100
-Message-ID: <8377820.a6Hm6vfviC@kreacher>
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 09/28] PM: QoS: Drop PM_QOS_CPU_DMA_LATENCY notifier chain
+Date:   Wed, 12 Feb 2020 00:02:30 +0100
+Message-ID: <1901998.KeA0Q3sAH1@kreacher>
 In-Reply-To: <1654227.8mz0SueHsU@kreacher>
 References: <1654227.8mz0SueHsU@kreacher>
 MIME-Version: 1.0
@@ -40,138 +41,199 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Reorder the code to avoid using extra function header declarations
-for the pm_qos_power_*() family of functions and drop those
-declarations.
+Notice that pm_qos_remove_notifier() is not used at all and the only
+caller of pm_qos_add_notifier() is the cpuidle core, which only needs
+the PM_QOS_CPU_DMA_LATENCY notifier to invoke wake_up_all_idle_cpus()
+upon changes of the PM_QOS_CPU_DMA_LATENCY target value.
 
-Also clean up the internals of those functions to consolidate checks,
-avoid using redundant local variables and similar.
+First, to ensure that wake_up_all_idle_cpus() will be called
+whenever the PM_QOS_CPU_DMA_LATENCY target value changes, modify the
+pm_qos_add/update/remove_request() family of functions to check if
+the effective constraint for the PM_QOS_CPU_DMA_LATENCY has changed
+and call wake_up_all_idle_cpus() directly in that case.
 
-No intentional functional impact.
+Next, drop the PM_QOS_CPU_DMA_LATENCY notifier from cpuidle as it is
+not necessary any more.
+
+Finally, drop both pm_qos_add_notifier() and pm_qos_remove_notifier(),
+as they have no callers now, along with cpu_dma_lat_notifier which is
+only used by them.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/power/qos.c | 62 +++++++++++++++++++++++-------------------------------
- 1 file changed, 26 insertions(+), 36 deletions(-)
+ drivers/cpuidle/cpuidle.c | 40 +---------------------------------------
+ include/linux/pm_qos.h    |  2 --
+ kernel/power/qos.c        | 47 +++++++++++------------------------------------
+ 3 files changed, 12 insertions(+), 77 deletions(-)
 
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 57ff542a4f9d..9f67584d4466 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -83,21 +83,6 @@ static struct pm_qos_object *pm_qos_array[] = {
- 	&cpu_dma_pm_qos,
- };
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index de81298051b3..c149d9e20dfd 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -736,53 +736,15 @@ int cpuidle_register(struct cpuidle_driver *drv,
+ }
+ EXPORT_SYMBOL_GPL(cpuidle_register);
  
--static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
--		size_t count, loff_t *f_pos);
--static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
--		size_t count, loff_t *f_pos);
--static int pm_qos_power_open(struct inode *inode, struct file *filp);
--static int pm_qos_power_release(struct inode *inode, struct file *filp);
+-#ifdef CONFIG_SMP
 -
--static const struct file_operations pm_qos_power_fops = {
--	.write = pm_qos_power_write,
--	.read = pm_qos_power_read,
--	.open = pm_qos_power_open,
--	.release = pm_qos_power_release,
--	.llseek = noop_llseek,
--};
--
- /**
-  * pm_qos_read_value - Return the current effective constraint value.
-  * @c: List of PM QoS constraint requests.
-@@ -414,15 +399,6 @@ EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
- 
- /* User space interface to global PM QoS via misc device. */
- 
--static int register_pm_qos_misc(struct pm_qos_object *qos)
+-/*
+- * This function gets called when a part of the kernel has a new latency
+- * requirement.  This means we need to get all processors out of their C-state,
+- * and then recalculate a new suitable C-state. Just do a cross-cpu IPI; that
+- * wakes them all right up.
+- */
+-static int cpuidle_latency_notify(struct notifier_block *b,
+-		unsigned long l, void *v)
 -{
--	qos->pm_qos_power_miscdev.minor = MISC_DYNAMIC_MINOR;
--	qos->pm_qos_power_miscdev.name = qos->name;
--	qos->pm_qos_power_miscdev.fops = &pm_qos_power_fops;
--
--	return misc_register(&qos->pm_qos_power_miscdev);
+-	wake_up_all_idle_cpus();
+-	return NOTIFY_OK;
 -}
 -
- static int pm_qos_power_open(struct inode *inode, struct file *filp)
+-static struct notifier_block cpuidle_latency_notifier = {
+-	.notifier_call = cpuidle_latency_notify,
+-};
+-
+-static inline void latency_notifier_init(struct notifier_block *n)
+-{
+-	pm_qos_add_notifier(PM_QOS_CPU_DMA_LATENCY, n);
+-}
+-
+-#else /* CONFIG_SMP */
+-
+-#define latency_notifier_init(x) do { } while (0)
+-
+-#endif /* CONFIG_SMP */
+-
+ /**
+  * cpuidle_init - core initializer
+  */
+ static int __init cpuidle_init(void)
  {
- 	struct pm_qos_request *req;
-@@ -439,9 +415,10 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+-	int ret;
+-
+ 	if (cpuidle_disabled())
+ 		return -ENODEV;
  
- static int pm_qos_power_release(struct inode *inode, struct file *filp)
- {
--	struct pm_qos_request *req;
-+	struct pm_qos_request *req = filp->private_data;
-+
-+	filp->private_data = NULL;
- 
--	req = filp->private_data;
- 	pm_qos_remove_request(req);
- 	kfree(req);
- 
-@@ -449,15 +426,13 @@ static int pm_qos_power_release(struct inode *inode, struct file *filp)
+-	ret = cpuidle_add_interface(cpu_subsys.dev_root);
+-	if (ret)
+-		return ret;
+-
+-	latency_notifier_init(&cpuidle_latency_notifier);
+-
+-	return 0;
++	return cpuidle_add_interface(cpu_subsys.dev_root);
  }
  
- static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
--		size_t count, loff_t *f_pos)
-+				 size_t count, loff_t *f_pos)
- {
--	s32 value;
--	unsigned long flags;
- 	struct pm_qos_request *req = filp->private_data;
-+	unsigned long flags;
-+	s32 value;
+ module_param(off, int, 0444);
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index bef110aa80cc..cb57e5918a25 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -149,8 +149,6 @@ void pm_qos_update_request(struct pm_qos_request *req,
+ void pm_qos_remove_request(struct pm_qos_request *req);
  
--	if (!req)
--		return -EINVAL;
--	if (!pm_qos_request_active(req))
-+	if (!req || !pm_qos_request_active(req))
- 		return -EINVAL;
+ int pm_qos_request(int pm_qos_class);
+-int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
+-int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+ int pm_qos_request_active(struct pm_qos_request *req);
+ s32 pm_qos_read_value(struct pm_qos_constraints *c);
  
- 	spin_lock_irqsave(&pm_qos_lock, flags);
-@@ -468,10 +443,9 @@ static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 952c5f55e23c..201b43bc6457 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -56,14 +56,12 @@
+  */
+ static DEFINE_SPINLOCK(pm_qos_lock);
+ 
+-static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+ static struct pm_qos_constraints cpu_dma_constraints = {
+ 	.list = PLIST_HEAD_INIT(cpu_dma_constraints.list),
+ 	.target_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
+ 	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
+ 	.no_constraint_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
+ 	.type = PM_QOS_MIN,
+-	.notifiers = &cpu_dma_lat_notifier,
+ };
+ 
+ /**
+@@ -247,6 +245,14 @@ int pm_qos_request_active(struct pm_qos_request *req)
  }
+ EXPORT_SYMBOL_GPL(pm_qos_request_active);
  
- static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
--		size_t count, loff_t *f_pos)
-+				  size_t count, loff_t *f_pos)
- {
- 	s32 value;
--	struct pm_qos_request *req;
- 
- 	if (count == sizeof(s32)) {
- 		if (copy_from_user(&value, buf, sizeof(s32)))
-@@ -484,12 +458,28 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- 			return ret;
- 	}
- 
--	req = filp->private_data;
--	pm_qos_update_request(req, value);
-+	pm_qos_update_request(filp->private_data, value);
- 
- 	return count;
- }
- 
-+static const struct file_operations pm_qos_power_fops = {
-+	.write = pm_qos_power_write,
-+	.read = pm_qos_power_read,
-+	.open = pm_qos_power_open,
-+	.release = pm_qos_power_release,
-+	.llseek = noop_llseek,
-+};
-+
-+static int register_pm_qos_misc(struct pm_qos_object *qos)
++static void cpu_latency_qos_update(struct pm_qos_request *req,
++				   enum pm_qos_req_action action, s32 value)
 +{
-+	qos->pm_qos_power_miscdev.minor = MISC_DYNAMIC_MINOR;
-+	qos->pm_qos_power_miscdev.name = qos->name;
-+	qos->pm_qos_power_miscdev.fops = &pm_qos_power_fops;
-+
-+	return misc_register(&qos->pm_qos_power_miscdev);
++	int ret = pm_qos_update_target(req->qos, &req->node, action, value);
++	if (ret > 0)
++		wake_up_all_idle_cpus();
 +}
 +
- static int __init pm_qos_power_init(void)
- {
- 	int ret;
+ /**
+  * pm_qos_add_request - inserts new qos request into the list
+  * @req: pointer to a preallocated handle
+@@ -273,7 +279,7 @@ void pm_qos_add_request(struct pm_qos_request *req,
+ 	trace_pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY, value);
+ 
+ 	req->qos = &cpu_dma_constraints;
+-	pm_qos_update_target(req->qos, &req->node, PM_QOS_ADD_REQ, value);
++	cpu_latency_qos_update(req, PM_QOS_ADD_REQ, value);
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_add_request);
+ 
+@@ -302,7 +308,7 @@ void pm_qos_update_request(struct pm_qos_request *req, s32 new_value)
+ 	if (new_value == req->node.prio)
+ 		return;
+ 
+-	pm_qos_update_target(req->qos, &req->node, PM_QOS_UPDATE_REQ, new_value);
++	cpu_latency_qos_update(req, PM_QOS_UPDATE_REQ, new_value);
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_update_request);
+ 
+@@ -327,42 +333,11 @@ void pm_qos_remove_request(struct pm_qos_request *req)
+ 
+ 	trace_pm_qos_remove_request(PM_QOS_CPU_DMA_LATENCY, PM_QOS_DEFAULT_VALUE);
+ 
+-	pm_qos_update_target(req->qos, &req->node, PM_QOS_REMOVE_REQ,
+-			     PM_QOS_DEFAULT_VALUE);
++	cpu_latency_qos_update(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+ 	memset(req, 0, sizeof(*req));
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_remove_request);
+ 
+-/**
+- * pm_qos_add_notifier - sets notification entry for changes to target value
+- * @pm_qos_class: Ignored.
+- * @notifier: notifier block managed by caller.
+- *
+- * will register the notifier into a notification chain that gets called
+- * upon changes to the PM_QOS_CPU_DMA_LATENCY target value.
+- */
+-int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
+-{
+-	return blocking_notifier_chain_register(cpu_dma_constraints.notifiers,
+-						notifier);
+-}
+-EXPORT_SYMBOL_GPL(pm_qos_add_notifier);
+-
+-/**
+- * pm_qos_remove_notifier - deletes notification entry from chain.
+- * @pm_qos_class: Ignored.
+- * @notifier: notifier block to be removed.
+- *
+- * will remove the notifier from the notification chain that gets called
+- * upon changes to the PM_QOS_CPU_DMA_LATENCY target value.
+- */
+-int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
+-{
+-	return blocking_notifier_chain_unregister(cpu_dma_constraints.notifiers,
+-						  notifier);
+-}
+-EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
+-
+ /* User space interface to global PM QoS via misc device. */
+ 
+ static int pm_qos_power_open(struct inode *inode, struct file *filp)
 -- 
 2.16.4
 
