@@ -6,29 +6,32 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA76BC352A3
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67B90C35242
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B6691214DB
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 465D92073C
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Feb 2020 23:40:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728117AbgBKXkL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Feb 2020 18:40:11 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:51057 "EHLO
+        id S1728373AbgBKXkM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Feb 2020 18:40:12 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:59099 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728092AbgBKXit (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:38:49 -0500
+        with ESMTP id S1728069AbgBKXis (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Feb 2020 18:38:48 -0500
 Received: from 79.184.254.199.ipv4.supernova.orange.pl (79.184.254.199) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 9bb898a50f6407aa; Wed, 12 Feb 2020 00:38:46 +0100
+ id 5033a46d26c3f379; Wed, 12 Feb 2020 00:38:44 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
         Amit Kucheria <amit.kucheria@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH 17/28] drivers: hsi: Call cpu_latency_qos_*() instead of pm_qos_*()
-Date:   Wed, 12 Feb 2020 00:13:17 +0100
-Message-ID: <5212477.aCSzomBNgy@kreacher>
+        Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+        intel-wired-lan@lists.osuosl.org,
+        Kalle Valo <kvalo@codeaurora.org>,
+        linux-wireless@vger.kernel.org
+Subject: [PATCH 20/28] drivers: net: Call cpu_latency_qos_*() instead of pm_qos_*()
+Date:   Wed, 12 Feb 2020 00:24:36 +0100
+Message-ID: <10624145.o336LLEsho@kreacher>
 In-Reply-To: <1654227.8mz0SueHsU@kreacher>
 References: <1654227.8mz0SueHsU@kreacher>
 MIME-Version: 1.0
@@ -41,50 +44,125 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Call cpu_latency_qos_add/remove_request() and
-cpu_latency_qos_request_active() instead of
-pm_qos_add/remove_request() and pm_qos_request_active(),
-respectively, because the latter are going to be dropped.
+Call cpu_latency_qos_add/update/remove_request() instead of
+pm_qos_add/update/remove_request(), respectively, because the
+latter are going to be dropped.
 
 No intentional functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/hsi/clients/cmt_speech.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/e1000e/netdev.c   | 13 ++++++-------
+ drivers/net/wireless/ath/ath10k/core.c       |  4 ++--
+ drivers/net/wireless/intel/ipw2x00/ipw2100.c | 10 +++++-----
+ 3 files changed, 13 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/hsi/clients/cmt_speech.c b/drivers/hsi/clients/cmt_speech.c
-index 9eec970cdfa5..89869c66fb9d 100644
---- a/drivers/hsi/clients/cmt_speech.c
-+++ b/drivers/hsi/clients/cmt_speech.c
-@@ -965,14 +965,13 @@ static int cs_hsi_buf_config(struct cs_hsi_iface *hi,
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index db4ea58bac82..0f02c7a5ee9b 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3280,10 +3280,10 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
  
- 	if (old_state != hi->iface_state) {
- 		if (hi->iface_state == CS_STATE_CONFIGURED) {
--			pm_qos_add_request(&hi->pm_qos_req,
--				PM_QOS_CPU_DMA_LATENCY,
-+			cpu_latency_qos_add_request(&hi->pm_qos_req,
- 				CS_QOS_LATENCY_FOR_DATA_USEC);
- 			local_bh_disable();
- 			cs_hsi_read_on_data(hi);
- 			local_bh_enable();
- 		} else if (old_state == CS_STATE_CONFIGURED) {
--			pm_qos_remove_request(&hi->pm_qos_req);
-+			cpu_latency_qos_remove_request(&hi->pm_qos_req);
- 		}
+ 		dev_info(&adapter->pdev->dev,
+ 			 "Some CPU C-states have been disabled in order to enable jumbo frames\n");
+-		pm_qos_update_request(&adapter->pm_qos_req, lat);
++		cpu_latency_qos_update_request(&adapter->pm_qos_req, lat);
+ 	} else {
+-		pm_qos_update_request(&adapter->pm_qos_req,
+-				      PM_QOS_DEFAULT_VALUE);
++		cpu_latency_qos_update_request(&adapter->pm_qos_req,
++					       PM_QOS_DEFAULT_VALUE);
  	}
- 	return r;
-@@ -1075,8 +1074,8 @@ static void cs_hsi_stop(struct cs_hsi_iface *hi)
- 	WARN_ON(!cs_state_idle(hi->control_state));
- 	WARN_ON(!cs_state_idle(hi->data_state));
  
--	if (pm_qos_request_active(&hi->pm_qos_req))
--		pm_qos_remove_request(&hi->pm_qos_req);
-+	if (cpu_latency_qos_request_active(&hi->pm_qos_req))
-+		cpu_latency_qos_remove_request(&hi->pm_qos_req);
+ 	/* Enable Receives */
+@@ -4636,8 +4636,7 @@ int e1000e_open(struct net_device *netdev)
+ 		e1000_update_mng_vlan(adapter);
  
- 	spin_lock_bh(&hi->lock);
- 	cs_hsi_free_data(hi);
+ 	/* DMA latency requirement to workaround jumbo issue */
+-	pm_qos_add_request(&adapter->pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
+-			   PM_QOS_DEFAULT_VALUE);
++	cpu_latency_qos_add_request(&adapter->pm_qos_req, PM_QOS_DEFAULT_VALUE);
+ 
+ 	/* before we allocate an interrupt, we must be ready to handle it.
+ 	 * Setting DEBUG_SHIRQ in the kernel makes it fire an interrupt
+@@ -4679,7 +4678,7 @@ int e1000e_open(struct net_device *netdev)
+ 	return 0;
+ 
+ err_req_irq:
+-	pm_qos_remove_request(&adapter->pm_qos_req);
++	cpu_latency_qos_remove_request(&adapter->pm_qos_req);
+ 	e1000e_release_hw_control(adapter);
+ 	e1000_power_down_phy(adapter);
+ 	e1000e_free_rx_resources(adapter->rx_ring);
+@@ -4743,7 +4742,7 @@ int e1000e_close(struct net_device *netdev)
+ 	    !test_bit(__E1000_TESTING, &adapter->state))
+ 		e1000e_release_hw_control(adapter);
+ 
+-	pm_qos_remove_request(&adapter->pm_qos_req);
++	cpu_latency_qos_remove_request(&adapter->pm_qos_req);
+ 
+ 	pm_runtime_put_sync(&pdev->dev);
+ 
+diff --git a/drivers/net/wireless/ath/ath10k/core.c b/drivers/net/wireless/ath/ath10k/core.c
+index 5ec16ce19b69..a202a4eea76a 100644
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -1052,11 +1052,11 @@ static int ath10k_download_fw(struct ath10k *ar)
+ 	}
+ 
+ 	memset(&latency_qos, 0, sizeof(latency_qos));
+-	pm_qos_add_request(&latency_qos, PM_QOS_CPU_DMA_LATENCY, 0);
++	cpu_latency_qos_add_request(&latency_qos, 0);
+ 
+ 	ret = ath10k_bmi_fast_download(ar, address, data, data_len);
+ 
+-	pm_qos_remove_request(&latency_qos);
++	cpu_latency_qos_remove_request(&latency_qos);
+ 
+ 	return ret;
+ }
+diff --git a/drivers/net/wireless/intel/ipw2x00/ipw2100.c b/drivers/net/wireless/intel/ipw2x00/ipw2100.c
+index 536cd729c086..5dfcce77d094 100644
+--- a/drivers/net/wireless/intel/ipw2x00/ipw2100.c
++++ b/drivers/net/wireless/intel/ipw2x00/ipw2100.c
+@@ -1730,7 +1730,7 @@ static int ipw2100_up(struct ipw2100_priv *priv, int deferred)
+ 	/* the ipw2100 hardware really doesn't want power management delays
+ 	 * longer than 175usec
+ 	 */
+-	pm_qos_update_request(&ipw2100_pm_qos_req, 175);
++	cpu_latency_qos_update_request(&ipw2100_pm_qos_req, 175);
+ 
+ 	/* If the interrupt is enabled, turn it off... */
+ 	spin_lock_irqsave(&priv->low_lock, flags);
+@@ -1875,7 +1875,8 @@ static void ipw2100_down(struct ipw2100_priv *priv)
+ 	ipw2100_disable_interrupts(priv);
+ 	spin_unlock_irqrestore(&priv->low_lock, flags);
+ 
+-	pm_qos_update_request(&ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
++	cpu_latency_qos_update_request(&ipw2100_pm_qos_req,
++				       PM_QOS_DEFAULT_VALUE);
+ 
+ 	/* We have to signal any supplicant if we are disassociating */
+ 	if (associated)
+@@ -6566,8 +6567,7 @@ static int __init ipw2100_init(void)
+ 	printk(KERN_INFO DRV_NAME ": %s, %s\n", DRV_DESCRIPTION, DRV_VERSION);
+ 	printk(KERN_INFO DRV_NAME ": %s\n", DRV_COPYRIGHT);
+ 
+-	pm_qos_add_request(&ipw2100_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
+-			   PM_QOS_DEFAULT_VALUE);
++	cpu_latency_qos_add_request(&ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
+ 
+ 	ret = pci_register_driver(&ipw2100_pci_driver);
+ 	if (ret)
+@@ -6594,7 +6594,7 @@ static void __exit ipw2100_exit(void)
+ 			   &driver_attr_debug_level);
+ #endif
+ 	pci_unregister_driver(&ipw2100_pci_driver);
+-	pm_qos_remove_request(&ipw2100_pm_qos_req);
++	cpu_latency_qos_remove_request(&ipw2100_pm_qos_req);
+ }
+ 
+ module_init(ipw2100_init);
 -- 
 2.16.4
 
