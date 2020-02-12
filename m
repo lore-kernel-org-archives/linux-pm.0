@@ -2,99 +2,143 @@ Return-Path: <SRS0=mnou=4A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C085C2BA83
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 09:39:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00AF6C3B186
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:02:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E0B0D206ED
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 09:39:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581500367;
-	bh=3pi3Zybmnork8kr91VLAJgzyrfNVa2a/2MXIw55KnJU=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=W+NXuDBP3zhVn2r9db22imXUm1/sN19A3HT5HjQfUarjn9bb29oip8zW3JaGCQP7A
-	 DK4X7/4TcSKuDMRDLBRLEIJovNCorVFoh6hFbENT+f297nJPAjHerN5Cvw6/P+FWXx
-	 6nsyu+72l1afq/0V6tz1u3j/wMmSdEZ1L6uYWhxI=
+	by mail.kernel.org (Postfix) with ESMTP id CE7D120848
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:02:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728737AbgBLJj1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Feb 2020 04:39:27 -0500
-Received: from mail-ot1-f66.google.com ([209.85.210.66]:36119 "EHLO
-        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728748AbgBLJj1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2020 04:39:27 -0500
-Received: by mail-ot1-f66.google.com with SMTP id j20so1288542otq.3;
-        Wed, 12 Feb 2020 01:39:26 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=TVHOXdZQIG1hvtkU7bEsPCeerg5kIqs/hMFqFNcg7JQ=;
-        b=MgFVvTtWfybkX/WaurDlA9sq1dsTTfieDJf//q15OBbbO0GlW5+RyhJ8SpmhaYvtkE
-         Zxb1aFYLWqamEfHj37bpMvcjvi5E3OdSY23+Yt2HCafifN3BjjTCseJgjc6hNlPGBNFQ
-         d7a5rx98Df1AIATFgzn552ndLacOCSbQr0LbQT2KiJQBpZFg6RgMT2rQUKmPC2JR1ieT
-         IgWL9QWevNbNCzJIAeL7GZdJ4TEtWN6uTLlged6igijw2sMDBeLKpThXrS5YuSK9+Iff
-         XIOte3k7juJUzPsjEiuqOXxu/W9rO9sroqSPDQ1pUdkfa7kIGhTBijisAMxn+RMCWTFq
-         rAfg==
-X-Gm-Message-State: APjAAAWp+MmFWraqspUWsBYGa096WhtO45cJNLZ5Wo6hDQkAuZPnjxpU
-        24p45HZ+JFi9L1n5KtapY7b/9IhJqoAcV9/djkEEYlsv
-X-Google-Smtp-Source: APXvYqyf5AKNcupGWKoQbkmna9mQluMsReB0/JD7RKP0eRz9UunJT3HBsSKQKZIs5ApbFq6dG7AZKOkfvWCTNbbuqa4=
-X-Received: by 2002:a9d:67d7:: with SMTP id c23mr8653774otn.262.1581500366103;
- Wed, 12 Feb 2020 01:39:26 -0800 (PST)
+        id S1728988AbgBLKCB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 Feb 2020 05:02:01 -0500
+Received: from foss.arm.com ([217.140.110.172]:58362 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728843AbgBLKCB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Feb 2020 05:02:01 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 516BF30E;
+        Wed, 12 Feb 2020 02:02:00 -0800 (PST)
+Received: from [10.37.12.187] (unknown [10.37.12.187])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BCACC3F68F;
+        Wed, 12 Feb 2020 02:01:56 -0800 (PST)
+Subject: Re: [PATCH v3 7/7] clocksource/drivers/arm_arch_timer: validate
+ arch_timer_rate
+To:     Ionela Voinescu <ionela.voinescu@arm.com>, catalin.marinas@arm.com,
+        will@kernel.org, mark.rutland@arm.com, maz@kernel.org,
+        suzuki.poulose@arm.com, sudeep.holla@arm.com,
+        valentin.schneider@arm.com, rjw@rjwysocki.net
+Cc:     peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org,
+        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20200211184542.29585-1-ionela.voinescu@arm.com>
+ <20200211184542.29585-8-ionela.voinescu@arm.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <89339501-5ee4-e871-3076-c8b02c6fbf6e@arm.com>
+Date:   Wed, 12 Feb 2020 10:01:54 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-References: <1654227.8mz0SueHsU@kreacher>
-In-Reply-To: <1654227.8mz0SueHsU@kreacher>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 12 Feb 2020 10:39:13 +0100
-Message-ID: <CAJZ5v0h1z2p66J5KB3P0RjPkLE-DfDbcfhG_OrnDG_weir7HMA@mail.gmail.com>
-Subject: Re: [PATCH 00/28] PM: QoS: Get rid of unuseful code and rework CPU
- latency QoS interface
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20200211184542.29585-8-ionela.voinescu@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Feb 12, 2020 at 12:39 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> Hi All,
->
-> This series of patches is based on the observation that after commit
-> c3082a674f46 ("PM: QoS: Get rid of unused flags") the only global PM QoS class
-> in use is PM_QOS_CPU_DMA_LATENCY, but there is still a significant amount of
-> code dedicated to the handling of global PM QoS classes in general.  That code
-> takes up space and adds overhead in vain, so it is better to get rid of it.
->
-> Moreover, with that unuseful code removed, the interface for adding QoS
-> requests for CPU latency becomes inelegant and confusing, so it is better to
-> clean it up.
->
-> Patches [01/28-12/28] do the first part described above, which also includes
-> some assorted cleanups of the core PM QoS code that doesn't go away.
->
-> Patches [13/28-25/28] rework the CPU latency QoS interface (in the classic
-> "define stubs, migrate users, change the API proper" manner), patches
-> [26-27/28] update the general comments and documentation to match the code
-> after the previous changes and the last one makes the CPU latency QoS depend
-> on CPU_IDLE (because cpuidle is the only user of its target value today).
->
-> The majority of the patches in this series don't change the functionality of
-> the code at all (at least not intentionally).
->
-> Please refer to the changelogs of individual patches for details.
->
-> Thanks!
+Hi Ionela, Valentin
 
-This patch series is available in the git branch at
+On 2/11/20 6:45 PM, Ionela Voinescu wrote:
+> From: Valentin Schneider <valentin.schneider@arm.com>
+> 
+> Using an arch timer with a frequency of less than 1MHz can result in an
+> incorrect functionality of the system which assumes a reasonable rate.
+> 
+> One example is the use of activity monitors for frequency invariance
+> which uses the rate of the arch timer as the known rate of the constant
+> cycle counter in computing its ratio compared to the maximum frequency
+> of a CPU. For arch timer frequencies less than 1MHz this ratio could
+> end up being 0 which is an invalid value for its use.
+> 
+> Therefore, warn if the arch timer rate is below 1MHz which contravenes
+> the recommended architecture interval of 1 to 50MHz.
+> 
+> Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Marc Zyngier <maz@kernel.org>
+> ---
+>   drivers/clocksource/arm_arch_timer.c | 18 +++++++++++++++---
+>   1 file changed, 15 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/clocksource/arm_arch_timer.c b/drivers/clocksource/arm_arch_timer.c
+> index 9a5464c625b4..4faa930eabf8 100644
+> --- a/drivers/clocksource/arm_arch_timer.c
+> +++ b/drivers/clocksource/arm_arch_timer.c
+> @@ -885,6 +885,17 @@ static int arch_timer_starting_cpu(unsigned int cpu)
+>   	return 0;
+>   }
+>   
+> +static int validate_timer_rate(void)
+> +{
+> +	if (!arch_timer_rate)
+> +		return -EINVAL;
+> +
+> +	/* Arch timer frequency < 1MHz can cause trouble */
+> +	WARN_ON(arch_timer_rate < 1000000);
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-cpu-latency-qos
+I don't see a big value of having a patch just to add one extra warning,
+in a situation which we handle in our code with in 6/7 with:
 
-for easier access, but please note that it may be updated in response
-to review comments etc.
++	if (!ratio) {
++		pr_err("System timer frequency too low.\n");
++		return -EINVAL;
++	}
+
+Furthermore, the value '100000' here is because of our code and
+calculation in there, so it does not belong to arch timer. Someone
+might ask why it's not 200000 or a define in our header...
+Or questions asking why do you warn when that arch timer and cpu is not
+AMU capable...
+
+> +
+> +	return 0;
+> +}
+> +
+>   /*
+>    * For historical reasons, when probing with DT we use whichever (non-zero)
+>    * rate was probed first, and don't verify that others match. If the first node
+> @@ -900,7 +911,7 @@ static void arch_timer_of_configure_rate(u32 rate, struct device_node *np)
+>   		arch_timer_rate = rate;
+>   
+>   	/* Check the timer frequency. */
+> -	if (arch_timer_rate == 0)
+> +	if (validate_timer_rate())
+>   		pr_warn("frequency not available\n");
+>   }
+>   
+> @@ -1594,9 +1605,10 @@ static int __init arch_timer_acpi_init(struct acpi_table_header *table)
+>   	 * CNTFRQ value. This *must* be correct.
+>   	 */
+>   	arch_timer_rate = arch_timer_get_cntfrq();
+> -	if (!arch_timer_rate) {
+> +	ret = validate_timer_rate();
+> +	if (ret) {
+>   		pr_err(FW_BUG "frequency not available.\n");
+> -		return -EINVAL;
+> +		return ret;
+>   	}
+>   
+>   	arch_timer_uses_ppi = arch_timer_select_ppi();
+> 
+
+Lastly, this is arch timer.
+To increase chances of getting merge soon, I would recommend to drop
+the patch from this series.
+
+Regards,
+Lukasz
