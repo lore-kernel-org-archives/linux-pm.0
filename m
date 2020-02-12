@@ -2,190 +2,179 @@ Return-Path: <SRS0=mnou=4A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1666C352A4
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF2B1C2BA83
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:53:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A4DD720848
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:44:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 977AB20675
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:53:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1581504781;
+	bh=Pwajte22fjxHiBAlHtssck/Qimw2kttlGORfRLvD6OM=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=PEDJrPXMxubvp9D+9DuDf55xbMRRQB0vHRNxQUMh0GZD+40YDOPpz5Q9Ss7JCtm8H
+	 JW2Y6zsQXpcgKVpEWo68VY1mu5qIa/PtWVSwE75AopN/hSroIcHKV7KgMHTCpJUzIY
+	 IRMJRGYS+H78xadrRKewNOD145x4rwOYvuMYSlSA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727575AbgBLKov (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Feb 2020 05:44:51 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:52524 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727429AbgBLKnl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2020 05:43:41 -0500
-Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j1pUY-0005aC-EF; Wed, 12 Feb 2020 10:43:38 +0000
-From:   Christian Brauner <christian.brauner@ubuntu.com>
-To:     "David S. Miller" <davem@davemloft.net>,
+        id S1725874AbgBLKxB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 Feb 2020 05:53:01 -0500
+Received: from mail-ot1-f67.google.com ([209.85.210.67]:39519 "EHLO
+        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725821AbgBLKxA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2020 05:53:00 -0500
+Received: by mail-ot1-f67.google.com with SMTP id 77so1457615oty.6;
+        Wed, 12 Feb 2020 02:53:00 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=xDaTG9CjFB5v08pxicGCnpkVMw06DjcCCmv/DeDv44U=;
+        b=HIUS7iAUkK28kZCD5AEONCrJZT4uY97mXLftnxlSbHOR7DsnTiwn/K6IvMSpN/3qJi
+         KpQZCBxOirR1XFrPnRkJ9xAMMqC7uiXJWywNvp8tIyPNIhXtR4TvacHNK+qOPtge86jU
+         EPlQLUV8Se+oNvdXBvoMcquEeP5dLmKVYHpFUTPap0ZAzfq3W1EuRVfkuPYS140V0Z7l
+         uuqRpNBFQs0RChDrCeY37lCTgf2aSHGyRcZXNybu9/6KWC0vYmMTZ1g+oatetAt9GHjW
+         nMkYBHQdiZcQKpnhddFalnmTsHS5EXZPQXVUing/IyS1WpG8uvqLo+F6f18XReRHx0WV
+         ItcQ==
+X-Gm-Message-State: APjAAAVzqH1JOnGkAp+xEVtEwq1mfXqwKfCgwKSmWEXWun4ImdoxGHei
+        565V2gWgelr6MbF/db2NhvSFWuQU5tGy+HXVghPd54yk
+X-Google-Smtp-Source: APXvYqwlBWTrC37R7VTa9EjcJ61LqHAjx4orj3e8146ySRFGC3hM/aolrQr5MVazU5TX6FEIW3dTsCxbWszSxvggp/s=
+X-Received: by 2002:a05:6830:1651:: with SMTP id h17mr8361894otr.167.1581504779738;
+ Wed, 12 Feb 2020 02:52:59 -0800 (PST)
+MIME-Version: 1.0
+References: <20200212104321.43570-1-christian.brauner@ubuntu.com> <20200212104321.43570-8-christian.brauner@ubuntu.com>
+In-Reply-To: <20200212104321.43570-8-christian.brauner@ubuntu.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 12 Feb 2020 11:52:49 +0100
+Message-ID: <CAJZ5v0i+BFg6fEt4UP0vGb=KXBf=iWQcf1cL-2nk-xr=2xZ66w@mail.gmail.com>
+Subject: Re: [PATCH net-next 07/10] drivers/base/power: add dpm_sysfs_change_owner()
+To:     Christian Brauner <christian.brauner@ubuntu.com>
+Cc:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        netdev <netdev@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
         Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
         Eric Dumazet <edumazet@google.com>,
         Stephen Hemminger <stephen@networkplumber.org>,
-        linux-pm@vger.kernel.org,
-        Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH net-next 03/10] sysfs: add sysfs_group_change_owner()
-Date:   Wed, 12 Feb 2020 11:43:14 +0100
-Message-Id: <20200212104321.43570-4-christian.brauner@ubuntu.com>
-X-Mailer: git-send-email 2.25.0
-In-Reply-To: <20200212104321.43570-1-christian.brauner@ubuntu.com>
-References: <20200212104321.43570-1-christian.brauner@ubuntu.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a helper to change the owner of a sysfs group.
-The ownership of a sysfs object is determined based on the ownership of
-the corresponding kobject, i.e. only if the ownership of a kobject is
-changed will this function change the ownership of the corresponding
-sysfs entry.
-This function will be used to correctly account for kobject ownership
-changes, e.g. when moving network devices between network namespaces.
+On Wed, Feb 12, 2020 at 11:43 AM Christian Brauner
+<christian.brauner@ubuntu.com> wrote:
+>
+> Add a helper to change the owner of a device's power entries. This
+> needs to happen when the ownership of a device is changed, e.g. when
+> moving network devices between network namespaces.
+> The ownership of a device's power entries is determined based on the
+> ownership of the corresponding kobject, i.e. only if the ownership of a
+> kobject is changed will this function change the ownership of the
+> corresponding sysfs entries.
+> This function will be used to correctly account for ownership changes,
+> e.g. when moving network devices between network namespaces.
+>
+> Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+> ---
+>  drivers/base/core.c        |  4 ++++
+>  drivers/base/power/power.h |  2 ++
+>  drivers/base/power/sysfs.c | 37 +++++++++++++++++++++++++++++++++++++
+>  3 files changed, 43 insertions(+)
+>
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 262217287a09..dfaf6d3614fa 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -3515,6 +3515,10 @@ int device_change_owner(struct device *dev)
+>         if (error)
+>                 goto out;
+>
+> +       error = dpm_sysfs_change_owner(dev);
+> +       if (error)
+> +               goto out;
+> +
+>  #ifdef CONFIG_BLOCK
+>         if (sysfs_deprecated && dev->class == &block_class)
+>                 goto out;
+> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+> index 444f5c169a0b..f68490d0811b 100644
+> --- a/drivers/base/power/power.h
+> +++ b/drivers/base/power/power.h
+> @@ -74,6 +74,7 @@ extern int pm_qos_sysfs_add_flags(struct device *dev);
+>  extern void pm_qos_sysfs_remove_flags(struct device *dev);
+>  extern int pm_qos_sysfs_add_latency_tolerance(struct device *dev);
+>  extern void pm_qos_sysfs_remove_latency_tolerance(struct device *dev);
+> +extern int dpm_sysfs_change_owner(struct device *dev);
+>
+>  #else /* CONFIG_PM */
+>
+> @@ -88,6 +89,7 @@ static inline void pm_runtime_remove(struct device *dev) {}
+>
+>  static inline int dpm_sysfs_add(struct device *dev) { return 0; }
+>  static inline void dpm_sysfs_remove(struct device *dev) {}
+> +static inline int dpm_sysfs_change_owner(struct device *dev) { return 0; }
+>
+>  #endif
+>
+> diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+> index d7d82db2e4bc..ce1fd346e854 100644
+> --- a/drivers/base/power/sysfs.c
+> +++ b/drivers/base/power/sysfs.c
+> @@ -684,6 +684,43 @@ int dpm_sysfs_add(struct device *dev)
+>         return rc;
+>  }
+>
+> +int dpm_sysfs_change_owner(struct device *dev)
+> +{
+> +       int rc;
+> +
+> +       if (device_pm_not_required(dev))
+> +               return 0;
+> +
+> +       rc = sysfs_group_change_owner(&dev->kobj, &pm_attr_group);
+> +       if (rc)
+> +               return rc;
+> +
+> +       if (pm_runtime_callbacks_present(dev)) {
+> +               rc = sysfs_group_change_owner(&dev->kobj,
+> +                                             &pm_runtime_attr_group);
+> +               if (rc)
+> +                       return rc;
+> +       }
+> +       if (device_can_wakeup(dev)) {
+> +               rc = sysfs_group_change_owner(&dev->kobj,
+> +                                             &pm_wakeup_attr_group);
+> +               if (rc)
+> +                       return rc;
+> +       }
+> +       if (dev->power.set_latency_tolerance) {
+> +               rc = sysfs_group_change_owner(&dev->kobj,
+> +                               &pm_qos_latency_tolerance_attr_group);
+> +               if (rc)
+> +                       return rc;
+> +       }
+> +       if (dev->power.wakeup && dev->power.wakeup->dev) {
 
-Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
----
- fs/sysfs/group.c      | 85 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/sysfs.h |  8 ++++
- 2 files changed, 93 insertions(+)
+This is related to the device_can_wakeup(dev) condition above (i.e. it
+will never be 'true' if that one is 'false').
 
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index c4ab045926b7..34b702ec9782 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -13,6 +13,7 @@
- #include <linux/dcache.h>
- #include <linux/namei.h>
- #include <linux/err.h>
-+#include <linux/fs.h>
- #include "sysfs.h"
- 
- 
-@@ -457,3 +458,87 @@ int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
- 	return PTR_ERR_OR_ZERO(link);
- }
- EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
-+
-+static int sysfs_group_attrs_change_owner(struct kernfs_node *grp_kn,
-+					  const struct attribute_group *grp,
-+					  struct iattr *newattrs)
-+{
-+	struct kernfs_node *kn;
-+	int error;
-+
-+	if (grp->attrs) {
-+		struct attribute *const *attr;
-+
-+		for (attr = grp->attrs; *attr; attr++) {
-+			kn = kernfs_find_and_get(grp_kn, (*attr)->name);
-+			if (!kn)
-+				return -ENOENT;
-+
-+			error = kernfs_setattr(kn, newattrs);
-+			kernfs_put(kn);
-+			if (error)
-+				return error;
-+		}
-+	}
-+
-+	if (grp->bin_attrs) {
-+		struct bin_attribute *const *bin_attr;
-+
-+		for (bin_attr = grp->bin_attrs; *bin_attr; bin_attr++) {
-+			kn = kernfs_find_and_get(grp_kn, (*bin_attr)->attr.name);
-+			if (!kn)
-+				return -ENOENT;
-+
-+			error = kernfs_setattr(kn, newattrs);
-+			kernfs_put(kn);
-+			if (error)
-+				return error;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * sysfs_group_change_owner - change owner of an attribute group.
-+ * @kobj:	The kobject containing the group.
-+ * @grp:	The attribute group.
-+ *
-+ * Returns 0 on success or error code on failure.
-+ */
-+int sysfs_group_change_owner(struct kobject *kobj,
-+			     const struct attribute_group *grp)
-+{
-+	struct kernfs_node *grp_kn;
-+	kuid_t uid;
-+	kgid_t gid;
-+	int error;
-+	struct iattr newattrs = {
-+		.ia_valid = ATTR_UID | ATTR_GID,
-+	};
-+
-+	if (!kobj->state_in_sysfs)
-+		return -EINVAL;
-+
-+	if (grp->name) {
-+		grp_kn = kernfs_find_and_get(kobj->sd, grp->name);
-+	} else {
-+		kernfs_get(kobj->sd);
-+		grp_kn = kobj->sd;
-+	}
-+	if (!grp_kn)
-+		return -ENOENT;
-+
-+	kobject_get_ownership(kobj, &uid, &gid);
-+	newattrs.ia_uid = uid;
-+	newattrs.ia_gid = gid;
-+
-+	error = kernfs_setattr(grp_kn, &newattrs);
-+	if (!error)
-+		error = sysfs_group_attrs_change_owner(grp_kn, grp, &newattrs);
-+
-+	kernfs_put(grp_kn);
-+
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(sysfs_group_change_owner);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 4e10085739b7..9363c61b9349 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -313,6 +313,8 @@ static inline void sysfs_enable_ns(struct kernfs_node *kn)
- int sysfs_file_change_owner(struct kobject *kobj, const char *name);
- int sysfs_link_change_owner(struct kobject *kobj, struct kobject *targ,
- 			    const char *name);
-+int sysfs_group_change_owner(struct kobject *kobj,
-+			     const struct attribute_group *groups);
- 
- #else /* CONFIG_SYSFS */
- 
-@@ -538,6 +540,12 @@ static inline int sysfs_link_change_owner(struct kobject *kobj,
- 	return 0;
- }
- 
-+static inline int sysfs_group_change_owner(struct kobject *kobj,
-+			 const struct attribute_group **groups)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_SYSFS */
- 
- static inline int __must_check sysfs_create_file(struct kobject *kobj,
--- 
-2.25.0
+LGTM apart from this.
 
+> +               rc = device_change_owner(dev->power.wakeup->dev);
+> +               if (rc)
+> +                       return rc;
+> +       }
+> +       return 0;
+> +}
+> +
+>  int wakeup_sysfs_add(struct device *dev)
+>  {
+>         return sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
+> --
+> 2.25.0
+>
