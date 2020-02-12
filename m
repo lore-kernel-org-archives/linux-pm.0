@@ -2,164 +2,143 @@ Return-Path: <SRS0=mnou=4A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E469CC2BA83
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B0FBC2BA83
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:43:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B95762073C
-	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:35:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581503739;
-	bh=Sl+/cipXsrq+sS8JYDf2ZOugjHi27lTSrmo0pjYIbMs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=TYtlaD95Nuz+SVf4joyjHD76sSEskSeqjnOrCqijPtmKQmvj9MRidkfew2tI3j+cL
-	 AvrT7MWJtgviBpwi41U6XPAZIkEURCnO3sJOPWxZjAhgPDQ02INcP5mPjOH1xsR5ms
-	 3DW+WOOp2iBKglAPyqZ+WaiUwxoKp7uGrZrVowjI=
+	by mail.kernel.org (Postfix) with ESMTP id 5F0F920848
+	for <linux-pm@archiver.kernel.org>; Wed, 12 Feb 2020 10:43:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727347AbgBLKfj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 12 Feb 2020 05:35:39 -0500
-Received: from mail-oi1-f196.google.com ([209.85.167.196]:35740 "EHLO
-        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727361AbgBLKfi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2020 05:35:38 -0500
-Received: by mail-oi1-f196.google.com with SMTP id b18so1567037oie.2;
-        Wed, 12 Feb 2020 02:35:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=NnnbDSzoop0s0gj0miT73Peda0TDZhvlDkQKNkLxkbs=;
-        b=LOyIbD3I3b5JwiL+mGbgzmuh3mR/H8dkgkps/koXX6WCvPSSHPdeGxhFcPIXh6PnG3
-         SPfhexHgQaAB1m029SjjqGXPRh1FP89Ml6a5c6CUuxJjXmUlEtqsBliZHsUjv8k47CN+
-         bgwc/kddOwkRb9Q6EnQuIGnoEbUEOFpoITuuG27D9qg5mUk7xes+liNC+QuMDln+QcCW
-         SdaJPo2C88L72iBTClz755t3MZM49u8HBXGI35InZW5wfdtqLpWDtZSCVTHDN9vTY70M
-         SqXmsd3V/J2rdAXJbta+/d9g9rcMkMvjaot9/pLhGRErTGNQjTPDZPco1gJmUrDP6JfR
-         /EKA==
-X-Gm-Message-State: APjAAAVnTC/d362cp49tGDSvfQmJOJKO1rp1T+5rp8ByqCKF6MDvB5/U
-        VSmizxSLNaPBS1Fi+Al9Rgf3DYsv4OQg7bJgkWimchiR
-X-Google-Smtp-Source: APXvYqx/wHUIDKIKoZeysuin0Zjc/oUAVs+aOzddBBu1ZdL8iabUtwLtopMZOgBPOMdlL9Sajxk811bKA7gbDfAMaTc=
-X-Received: by 2002:a54:4e96:: with SMTP id c22mr5929326oiy.110.1581503736425;
- Wed, 12 Feb 2020 02:35:36 -0800 (PST)
-MIME-Version: 1.0
-References: <1654227.8mz0SueHsU@kreacher> <2339403.frKpfgBVMR@kreacher>
-In-Reply-To: <2339403.frKpfgBVMR@kreacher>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 12 Feb 2020 11:35:25 +0100
-Message-ID: <CAJZ5v0itHeg2nb40ZFRxzoZG-33UqypE1F-wGucHdyAD8BSH9A@mail.gmail.com>
-Subject: Re: [PATCH 22/28] drivers: tty: Call cpu_latency_qos_*() instead of pm_qos_*()
-To:     linux-serial@vger.kernel.org
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
+        id S1727555AbgBLKnj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 12 Feb 2020 05:43:39 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:52520 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725887AbgBLKnj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Feb 2020 05:43:39 -0500
+Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <christian.brauner@ubuntu.com>)
+        id 1j1pUX-0005aC-8l; Wed, 12 Feb 2020 10:43:37 +0000
+From:   Christian Brauner <christian.brauner@ubuntu.com>
+To:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Content-Type: text/plain; charset="UTF-8"
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
+        Eric Dumazet <edumazet@google.com>,
+        Stephen Hemminger <stephen@networkplumber.org>,
+        linux-pm@vger.kernel.org,
+        Christian Brauner <christian.brauner@ubuntu.com>
+Subject: [PATCH net-next 01/10] sysfs: add sysfs_file_change_owner()
+Date:   Wed, 12 Feb 2020 11:43:12 +0100
+Message-Id: <20200212104321.43570-2-christian.brauner@ubuntu.com>
+X-Mailer: git-send-email 2.25.0
+In-Reply-To: <20200212104321.43570-1-christian.brauner@ubuntu.com>
+References: <20200212104321.43570-1-christian.brauner@ubuntu.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Feb 12, 2020 at 12:40 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
->
-> Call cpu_latency_qos_add/update/remove_request() instead of
-> pm_qos_add/update/remove_request(), respectively, because the
-> latter are going to be dropped.
->
-> No intentional functional impact.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Add a helper to change the owner of a sysfs file.
+The ownership of a sysfs object is determined based on the ownership of
+the corresponding kobject, i.e. only if the ownership of a kobject is
+changed will this function change the ownership of the corresponding
+sysfs entry.
+This function will be used to correctly account for kobject ownership
+changes, e.g. when moving network devices between network namespaces.
 
-Please note that the whole series is available here:
+Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+---
+ fs/sysfs/file.c       | 46 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/sysfs.h |  7 +++++++
+ 2 files changed, 53 insertions(+)
 
-https://lore.kernel.org/linux-pm/1654227.8mz0SueHsU@kreacher/
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 130fc6fbcc03..007b97ca8165 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -558,3 +558,49 @@ void sysfs_remove_bin_file(struct kobject *kobj,
+ 	kernfs_remove_by_name(kobj->sd, attr->attr.name);
+ }
+ EXPORT_SYMBOL_GPL(sysfs_remove_bin_file);
++
++static int internal_change_owner(struct kernfs_node *kn, struct kobject *kobj)
++{
++	kuid_t uid;
++	kgid_t gid;
++	struct iattr newattrs = {
++		.ia_valid = ATTR_UID | ATTR_GID,
++	};
++
++	kobject_get_ownership(kobj, &uid, &gid);
++	newattrs.ia_uid = uid;
++	newattrs.ia_gid = gid;
++
++	return kernfs_setattr(kn, &newattrs);
++}
++
++/**
++ *	sysfs_file_change_owner - change owner of a file.
++ *	@kobj:	object.
++ *	@name:	name of the file to change.
++ *	        can be NULL to change current file.
++ */
++int sysfs_file_change_owner(struct kobject *kobj, const char *name)
++{
++	struct kernfs_node *kn;
++	int error;
++
++	if (!kobj->state_in_sysfs)
++		return -EINVAL;
++
++	if (name) {
++		kn = kernfs_find_and_get(kobj->sd, name);
++	} else {
++		kernfs_get(kobj->sd);
++		kn = kobj->sd;
++	}
++	if (!kn)
++		return -ENOENT;
++
++	error = internal_change_owner(kn, kobj);
++
++	kernfs_put(kn);
++
++	return error;
++}
++EXPORT_SYMBOL_GPL(sysfs_file_change_owner);
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index fa7ee503fb76..58fa71d47c7f 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -310,6 +310,8 @@ static inline void sysfs_enable_ns(struct kernfs_node *kn)
+ 	return kernfs_enable_ns(kn);
+ }
+ 
++int sysfs_file_change_owner(struct kobject *kobj, const char *name);
++
+ #else /* CONFIG_SYSFS */
+ 
+ static inline int sysfs_create_dir_ns(struct kobject *kobj, const void *ns)
+@@ -522,6 +524,11 @@ static inline void sysfs_enable_ns(struct kernfs_node *kn)
+ {
+ }
+ 
++static inline int sysfs_file_change_owner(struct kobject *kobj, const char *name)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_SYSFS */
+ 
+ static inline int __must_check sysfs_create_file(struct kobject *kobj,
+-- 
+2.25.0
 
-> ---
->  drivers/tty/serial/8250/8250_omap.c | 7 +++----
->  drivers/tty/serial/omap-serial.c    | 9 ++++-----
->  2 files changed, 7 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
-> index 19f8d2f9e7ba..76fe72bfb8bb 100644
-> --- a/drivers/tty/serial/8250/8250_omap.c
-> +++ b/drivers/tty/serial/8250/8250_omap.c
-> @@ -569,7 +569,7 @@ static void omap8250_uart_qos_work(struct work_struct *work)
->         struct omap8250_priv *priv;
->
->         priv = container_of(work, struct omap8250_priv, qos_work);
-> -       pm_qos_update_request(&priv->pm_qos_request, priv->latency);
-> +       cpu_latency_qos_update_request(&priv->pm_qos_request, priv->latency);
->  }
->
->  #ifdef CONFIG_SERIAL_8250_DMA
-> @@ -1224,8 +1224,7 @@ static int omap8250_probe(struct platform_device *pdev)
->
->         priv->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
->         priv->calc_latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
-> -       pm_qos_add_request(&priv->pm_qos_request, PM_QOS_CPU_DMA_LATENCY,
-> -                          priv->latency);
-> +       cpu_latency_qos_add_request(&priv->pm_qos_request, priv->latency);
->         INIT_WORK(&priv->qos_work, omap8250_uart_qos_work);
->
->         spin_lock_init(&priv->rx_dma_lock);
-> @@ -1295,7 +1294,7 @@ static int omap8250_remove(struct platform_device *pdev)
->         pm_runtime_put_sync(&pdev->dev);
->         pm_runtime_disable(&pdev->dev);
->         serial8250_unregister_port(priv->line);
-> -       pm_qos_remove_request(&priv->pm_qos_request);
-> +       cpu_latency_qos_remove_request(&priv->pm_qos_request);
->         device_init_wakeup(&pdev->dev, false);
->         return 0;
->  }
-> diff --git a/drivers/tty/serial/omap-serial.c b/drivers/tty/serial/omap-serial.c
-> index ce2558767eee..e0b720ac754b 100644
-> --- a/drivers/tty/serial/omap-serial.c
-> +++ b/drivers/tty/serial/omap-serial.c
-> @@ -831,7 +831,7 @@ static void serial_omap_uart_qos_work(struct work_struct *work)
->         struct uart_omap_port *up = container_of(work, struct uart_omap_port,
->                                                 qos_work);
->
-> -       pm_qos_update_request(&up->pm_qos_request, up->latency);
-> +       cpu_latency_qos_update_request(&up->pm_qos_request, up->latency);
->  }
->
->  static void
-> @@ -1724,8 +1724,7 @@ static int serial_omap_probe(struct platform_device *pdev)
->
->         up->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
->         up->calc_latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
-> -       pm_qos_add_request(&up->pm_qos_request,
-> -               PM_QOS_CPU_DMA_LATENCY, up->latency);
-> +       cpu_latency_qos_add_request(&up->pm_qos_request, up->latency);
->         INIT_WORK(&up->qos_work, serial_omap_uart_qos_work);
->
->         platform_set_drvdata(pdev, up);
-> @@ -1759,7 +1758,7 @@ static int serial_omap_probe(struct platform_device *pdev)
->         pm_runtime_dont_use_autosuspend(&pdev->dev);
->         pm_runtime_put_sync(&pdev->dev);
->         pm_runtime_disable(&pdev->dev);
-> -       pm_qos_remove_request(&up->pm_qos_request);
-> +       cpu_latency_qos_remove_request(&up->pm_qos_request);
->         device_init_wakeup(up->dev, false);
->  err_rs485:
->  err_port_line:
-> @@ -1777,7 +1776,7 @@ static int serial_omap_remove(struct platform_device *dev)
->         pm_runtime_dont_use_autosuspend(up->dev);
->         pm_runtime_put_sync(up->dev);
->         pm_runtime_disable(up->dev);
-> -       pm_qos_remove_request(&up->pm_qos_request);
-> +       cpu_latency_qos_remove_request(&up->pm_qos_request);
->         device_init_wakeup(&dev->dev, false);
->
->         return 0;
-> --
-> 2.16.4
->
->
->
->
->
