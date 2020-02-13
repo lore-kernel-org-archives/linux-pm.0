@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 398C8C352A3
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Feb 2020 22:05:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D7FB0C352A3
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Feb 2020 22:05:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id F3B6D2168B
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Feb 2020 22:05:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A12792168B
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Feb 2020 22:05:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728650AbgBMWFb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Feb 2020 17:05:31 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:51260 "EHLO
+        id S1728129AbgBMWFE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Feb 2020 17:05:04 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:56758 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727519AbgBMWFE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2020 17:05:04 -0500
+        with ESMTP id S1727902AbgBMWFD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Feb 2020 17:05:03 -0500
 Received: from 79.184.254.199.ipv4.supernova.orange.pl (79.184.254.199) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id b120af7d0df2dbec; Thu, 13 Feb 2020 23:05:02 +0100
+ id cd99d6a76986736f; Thu, 13 Feb 2020 23:05:00 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     Len Brown <len.brown@intel.com>,
@@ -28,9 +28,9 @@ Cc:     Len Brown <len.brown@intel.com>,
         Zhang Rui <rui.zhang@intel.com>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 7/9] intel_idle: Clean up kerneldoc comments of multiple functions
-Date:   Thu, 13 Feb 2020 23:03:07 +0100
-Message-ID: <16490706.IjqtDSzaaB@kreacher>
+Subject: [PATCH 9/9] intel_idle: Update copyright notice, known limitations and version
+Date:   Thu, 13 Feb 2020 23:04:30 +0100
+Message-ID: <21103799.F4mdUiJjoy@kreacher>
 In-Reply-To: <2960689.qre192dJKD@kreacher>
 References: <2960689.qre192dJKD@kreacher>
 MIME-Version: 1.0
@@ -43,98 +43,53 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Turn the description comments of some functions in the intel_idle
-driver into proper kerneldoc ones and clean them up.
+Update the copyright notice in intel_idle.c to cover the recent
+changes, drop the description of a "known limitation" that is not
+a limitation any more and bump up the driver version number.
 
 No functional impact.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/idle/intel_idle.c | 40 +++++++++++++++++++++-------------------
- 1 file changed, 21 insertions(+), 19 deletions(-)
+ drivers/idle/intel_idle.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 3a93cd1036fb..9575615c8f4a 100644
+index de1367d996c5..65b84d5dc457 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
-@@ -1288,11 +1288,11 @@ static inline void intel_idle_init_cstates_acpi(struct cpuidle_driver *drv) { }
- static inline bool intel_idle_off_by_default(u32 mwait_hint) { return false; }
- #endif /* !CONFIG_ACPI_PROCESSOR_CSTATE */
- 
--/*
-- * ivt_idle_state_table_update(void)
-+/**
-+ * ivt_idle_state_table_update - Tune the idle states table for Ivy Town.
+@@ -2,8 +2,9 @@
+ /*
+  * intel_idle.c - native hardware idle loop for modern Intel processors
   *
-- * Tune IVT multi-socket targets
-- * Assumption: num_sockets == (max_package_num + 1)
-+ * Tune IVT multi-socket targets.
-+ * Assumption: num_sockets == (max_package_num + 1).
+- * Copyright (c) 2013, Intel Corporation.
++ * Copyright (c) 2013 - 2020, Intel Corporation.
+  * Len Brown <len.brown@intel.com>
++ * Rafael J. Wysocki <rafael.j.wysocki@intel.com>
   */
- static void __init ivt_idle_state_table_update(void)
- {
-@@ -1338,11 +1338,11 @@ static unsigned long long __init irtl_2_usec(unsigned long long irtl)
- 	return div_u64((irtl & 0x3FF) * ns, NSEC_PER_USEC);
- }
  
--/*
-- * bxt_idle_state_table_update(void)
-+/**
-+ * bxt_idle_state_table_update - Fix up the Broxton idle states table.
+ /*
+@@ -25,11 +26,6 @@
+ /*
+  * Known limitations
   *
-- * On BXT, we trust the IRTL to show the definitive maximum latency
-- * We use the same value for target_residency.
-+ * On BXT, trust the IRTL (Interrupt Response Time Limit) MSR to show the
-+ * definitive maximum latency and use the same value for target_residency.
-  */
- static void __init bxt_idle_state_table_update(void)
- {
-@@ -1385,11 +1385,11 @@ static void __init bxt_idle_state_table_update(void)
- 	}
+- * The driver currently initializes for_each_online_cpu() upon modprobe.
+- * It it unaware of subsequent processors hot-added to the system.
+- * This means that if you boot with maxcpus=n and later online
+- * processors above n, those processors will use C1 only.
+- *
+  * ACPI has a .suspend hack to turn off deep c-statees during suspend
+  * to avoid complications with the lapic timer workaround.
+  * Have not seen issues with suspend, but may need same workaround here.
+@@ -55,7 +51,7 @@
+ #include <asm/mwait.h>
+ #include <asm/msr.h>
  
- }
--/*
-- * sklh_idle_state_table_update(void)
-+
-+/**
-+ * sklh_idle_state_table_update - Fix up the Sky Lake idle states table.
-  *
-- * On SKL-H (model 0x5e) disable C8 and C9 if:
-- * C10 is enabled and SGX disabled
-+ * On SKL-H (model 0x5e) skip C8 and C9 if C10 is enabled and SGX disabled.
-  */
- static void __init sklh_idle_state_table_update(void)
- {
-@@ -1500,9 +1500,9 @@ static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- 	}
- }
+-#define INTEL_IDLE_VERSION "0.4.1"
++#define INTEL_IDLE_VERSION "0.5.1"
  
--/*
-- * intel_idle_cpuidle_driver_init()
-- * allocate, initialize cpuidle_states
-+/**
-+ * intel_idle_cpuidle_driver_init - Create the list of available idle states.
-+ * @drv: cpuidle driver structure to initialize.
-  */
- static void __init intel_idle_cpuidle_driver_init(struct cpuidle_driver *drv)
- {
-@@ -1537,10 +1537,12 @@ static void c1e_promotion_disable(void)
- 	wrmsrl(MSR_IA32_POWER_CTL, msr_bits);
- }
- 
--/*
-- * intel_idle_cpu_init()
-- * allocate, initialize, register cpuidle_devices
-- * @cpu: cpu/core to initialize
-+/**
-+ * intel_idle_cpu_init - Register the target CPU with the cpuidle core.
-+ * @cpu: CPU to initialize.
-+ *
-+ * Register a cpuidle device object for @cpu and update its MSRs in accordance
-+ * with the processor model flags.
-  */
- static int intel_idle_cpu_init(unsigned int cpu)
- {
+ static struct cpuidle_driver intel_idle_driver = {
+ 	.name = "intel_idle",
 -- 
 2.16.4
 
