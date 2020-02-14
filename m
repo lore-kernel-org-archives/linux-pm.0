@@ -7,45 +7,47 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30CC3C2BA83
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 18:06:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2F10C3B1B2
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 18:07:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 097DA2187F
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 18:06:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C52EF2467B
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 18:07:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581703619;
-	bh=kHrVyKQu4EWN7X+O0OX9IdROv4KxjFWl9tyQX76enSU=;
+	s=default; t=1581703624;
+	bh=K+GbBvUYMrSGOr40poPKHl1+OJzijRKgppJ0R0XLZ9M=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=QXrRVwu1J6CX7xKzKLiE0Wbvoobi5mepyLvAJa79pXexU6KNYo4i3aGEsjJts0Gz5
-	 AghJ5vSxtPRZPxb9UWq0FZvCxv7s946Vx1kPZ+rYCblCTSMqip+dLFC9C1XR0n9Kle
-	 X/z0l2doNbCruJNqNONKjNDqo53aibluIydfftq4=
+	b=kG5ZpS6+sSWKge2GE6En31LEgF/Z4i34xLhYYVninUHY4N1RWPKzSvaiexyiXfXcI
+	 JftnCUgkvVt6prTacw7Gta4eciJ0KJlgV2nt7PGB+REhRgw36qaKXfz/pIxYuOhbEj
+	 6dP8RXziiDy4B9o6oJWayLoH/EJ5jVvYlokTEIyk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731622AbgBNPyp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Feb 2020 10:54:45 -0500
-Received: from mail.kernel.org ([198.145.29.99]:35136 "EHLO mail.kernel.org"
+        id S2392113AbgBNSG7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Feb 2020 13:06:59 -0500
+Received: from mail.kernel.org ([198.145.29.99]:35106 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731158AbgBNPyp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Feb 2020 10:54:45 -0500
+        id S1731170AbgBNPyn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Feb 2020 10:54:43 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 6637B2465D;
-        Fri, 14 Feb 2020 15:54:43 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 1DD5E24684;
+        Fri, 14 Feb 2020 15:54:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1581695684;
-        bh=kHrVyKQu4EWN7X+O0OX9IdROv4KxjFWl9tyQX76enSU=;
+        s=default; t=1581695682;
+        bh=K+GbBvUYMrSGOr40poPKHl1+OJzijRKgppJ0R0XLZ9M=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GyTR6JGeJBVjr+Lb53+bGATpqUQ40QYomJ5ImiJpxJMxnYEtD/bSYia/aBEI6/XC0
-         3EVlcPZ0ECy8epEbrXqFq03r0/VBcM8ELg5f7Yt4pjlfuAoyxF6KnrEO8keuia1Xjw
-         abHVRgSGRKk5OTVUYQX0g7QIM7A4OpKLewQFcukU=
+        b=ZwMC+UC7EYD9rN+Wa9p/lSvnmW5KE8KoQ7o4TMU/Q1mJwKKFAmbLdzrJ1tFCQVL1r
+         5yZzxTN5iyryegTP/d/y4tJhpB5GbXJmKCbMZC7Pj6wdJWZAUjmRAD3hu1N3RbQwl+
+         83z2aqYS2XdGvpZ++nLyb7plQS5kjvK9AM5mZGts=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Kamil Konieczny <k.konieczny@samsung.com>,
+Cc:     Arnd Bergmann <arnd@arndb.de>,
         Chanwoo Choi <cw00.choi@samsung.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.5 269/542] PM / devfreq: Change time stats to 64-bit
-Date:   Fri, 14 Feb 2020 10:44:21 -0500
-Message-Id: <20200214154854.6746-269-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.5 268/542] PM / devfreq: exynos-ppmu: Fix excessive stack usage
+Date:   Fri, 14 Feb 2020 10:44:20 -0500
+Message-Id: <20200214154854.6746-268-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200214154854.6746-1-sashal@kernel.org>
 References: <20200214154854.6746-1-sashal@kernel.org>
@@ -58,93 +60,72 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Kamil Konieczny <k.konieczny@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
 
-[ Upstream commit b76b3479dab948bea0a98b6d263eb56d8f358528 ]
+[ Upstream commit d4556f5e99d5f603913bac01adaff8670cb2d08b ]
 
-Change time stats counting to bigger type by using 64-bit jiffies.
-This will make devfreq stats code look similar to cpufreq stats and
-prevents overflow (for HZ = 1000 after 49.7 days).
+Putting a 'struct devfreq_event_dev' object on the stack is generally
+a bad idea and here it leads to a warnig about potential stack overflow:
 
-Signed-off-by: Kamil Konieczny <k.konieczny@samsung.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+drivers/devfreq/event/exynos-ppmu.c:643:12: error: stack frame size of 1040 bytes in function 'exynos_ppmu_probe' [-Werror,-Wframe-larger-than=]
+
+There is no real need for the device structure, only the string inside
+it, so add an internal helper function that simply takes the string
+as its argument and remove the device structure.
+
+Fixes: 1dd62c66d345 ("PM / devfreq: events: extend events by type of counted data")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+[cw00.choi: Fix the issue from 'desc->name' to 'desc[j].name']
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/devfreq/devfreq.c | 14 +++++++-------
- include/linux/devfreq.h   |  4 ++--
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/devfreq/event/exynos-ppmu.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 07602083c743e..554d155106a5f 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -209,10 +209,10 @@ static int set_freq_table(struct devfreq *devfreq)
- int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
+diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+index 85c7a77bf3f0d..055deea42c373 100644
+--- a/drivers/devfreq/event/exynos-ppmu.c
++++ b/drivers/devfreq/event/exynos-ppmu.c
+@@ -101,17 +101,22 @@ static struct __exynos_ppmu_events {
+ 	PPMU_EVENT(dmc1_1),
+ };
+ 
+-static int exynos_ppmu_find_ppmu_id(struct devfreq_event_dev *edev)
++static int __exynos_ppmu_find_ppmu_id(const char *edev_name)
  {
- 	int lev, prev_lev, ret = 0;
--	unsigned long cur_time;
-+	u64 cur_time;
+ 	int i;
  
- 	lockdep_assert_held(&devfreq->lock);
--	cur_time = jiffies;
-+	cur_time = get_jiffies_64();
+ 	for (i = 0; i < ARRAY_SIZE(ppmu_events); i++)
+-		if (!strcmp(edev->desc->name, ppmu_events[i].name))
++		if (!strcmp(edev_name, ppmu_events[i].name))
+ 			return ppmu_events[i].id;
  
- 	/* Immediately exit if previous_freq is not initialized yet. */
- 	if (!devfreq->previous_freq)
-@@ -535,7 +535,7 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
- 			msecs_to_jiffies(devfreq->profile->polling_ms));
+ 	return -EINVAL;
+ }
  
- out_update:
--	devfreq->last_stat_updated = jiffies;
-+	devfreq->last_stat_updated = get_jiffies_64();
- 	devfreq->stop_polling = false;
++static int exynos_ppmu_find_ppmu_id(struct devfreq_event_dev *edev)
++{
++	return __exynos_ppmu_find_ppmu_id(edev->desc->name);
++}
++
+ /*
+  * The devfreq-event ops structure for PPMU v1.1
+  */
+@@ -556,13 +561,11 @@ static int of_get_devfreq_events(struct device_node *np,
+ 			 * use default if not.
+ 			 */
+ 			if (info->ppmu_type == EXYNOS_TYPE_PPMU_V2) {
+-				struct devfreq_event_dev edev;
+ 				int id;
+ 				/* Not all registers take the same value for
+ 				 * read+write data count.
+ 				 */
+-				edev.desc = &desc[j];
+-				id = exynos_ppmu_find_ppmu_id(&edev);
++				id = __exynos_ppmu_find_ppmu_id(desc[j].name);
  
- 	if (devfreq->profile->get_cur_freq &&
-@@ -820,7 +820,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	devfreq->time_in_state = devm_kcalloc(&devfreq->dev,
- 			devfreq->profile->max_state,
--			sizeof(unsigned long),
-+			sizeof(*devfreq->time_in_state),
- 			GFP_KERNEL);
- 	if (!devfreq->time_in_state) {
- 		mutex_unlock(&devfreq->lock);
-@@ -828,7 +828,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_devfreq;
- 	}
- 
--	devfreq->last_stat_updated = jiffies;
-+	devfreq->last_stat_updated = get_jiffies_64();
- 
- 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
- 
-@@ -1589,8 +1589,8 @@ static ssize_t trans_stat_show(struct device *dev,
- 		for (j = 0; j < max_state; j++)
- 			len += sprintf(buf + len, "%10u",
- 				devfreq->trans_table[(i * max_state) + j]);
--		len += sprintf(buf + len, "%10u\n",
--			jiffies_to_msecs(devfreq->time_in_state[i]));
-+		len += sprintf(buf + len, "%10llu\n", (u64)
-+			jiffies64_to_msecs(devfreq->time_in_state[i]));
- 	}
- 
- 	len += sprintf(buf + len, "Total transition : %u\n",
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index fb376b5b72819..95816a8e3d266 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -177,8 +177,8 @@ struct devfreq {
- 	/* information for device frequency transition */
- 	unsigned int total_trans;
- 	unsigned int *trans_table;
--	unsigned long *time_in_state;
--	unsigned long last_stat_updated;
-+	u64 *time_in_state;
-+	u64 last_stat_updated;
- 
- 	struct srcu_notifier_head transition_notifier_list;
- 
+ 				switch (id) {
+ 				case PPMU_PMNCNT0:
 -- 
 2.20.1
 
