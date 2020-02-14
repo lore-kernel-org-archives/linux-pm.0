@@ -7,48 +7,48 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9587AC2BA83
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 17:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C1CCC2BA83
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 17:32:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 659C320656
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 17:07:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E33CD222C4
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 17:32:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581700055;
-	bh=MoUzBAvRtBWq8Ndubur4hy59jRiTGFG7/mRJIg9KZ+E=;
+	s=default; t=1581701536;
+	bh=BN8+ZaNbGgmLxYVRgR35u0FGVKgnwKnoUJxz89LB8gU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=SDaFAO0wK6/MoH0F2vYuL9usGrnTrsUtqxWIHojQ8qo5FBekH0P/n8tIobpzMtIRO
-	 8K32uXAQOsytnWVUS6XYIXu9+iWiFaMHi8dqJFzOgyALLcZ537kAOz39p3aYO9gcdL
-	 cQNk4dfeFAOYgV5KtNhS+2bkSvdEpRUYCbHv8eXY=
+	b=akA9dWWEKDgjt4duH+wDLrNJHxkG+I8quUi5TjYRH9EB9Ai9WSXDRNBRmcg7xf1yT
+	 ydJDN/lSD9u0oZCCsiNa/xD/JjHe8tNQAqA4Ku0JkFEulDHF8dWe6lfn5Ua2ZsbUeH
+	 VF9Bu4lAfZ7saIJwec+EJbzXUC2+gQMhlLt03+y8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404018AbgBNQOY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Feb 2020 11:14:24 -0500
-Received: from mail.kernel.org ([198.145.29.99]:43954 "EHLO mail.kernel.org"
+        id S2390269AbgBNRcJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Feb 2020 12:32:09 -0500
+Received: from mail.kernel.org ([198.145.29.99]:57536 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2403902AbgBNQOX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Feb 2020 11:14:23 -0500
+        id S2390519AbgBNQGv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Feb 2020 11:06:51 -0500
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 9F470246D1;
-        Fri, 14 Feb 2020 16:14:22 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 496BB206D7;
+        Fri, 14 Feb 2020 16:06:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1581696863;
-        bh=MoUzBAvRtBWq8Ndubur4hy59jRiTGFG7/mRJIg9KZ+E=;
+        s=default; t=1581696411;
+        bh=BN8+ZaNbGgmLxYVRgR35u0FGVKgnwKnoUJxz89LB8gU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=jmhw/mCzW993eCvPUqfV6EZcrF9iRvPjFcnSQ7Bhzn+54cZJQk/ltkdYCnlFtq7Ac
-         XbXO4XJfeAUODuZKGSDembsa8SbHWVCeqq3lQwj4eF1OqbBrcUclMlhh4U06bFPbFj
-         mmnTGT4vIDgnU89UY1xzMZwLm2ferHgpm/YqoHn8=
+        b=WOKWK5OsW1TKzXNpk86e7xoewTRArZTkg43TkPjHOirhrwtj7pQi9YdX+uXH67r4A
+         yILK3dLjjofCjRtcLkHTTmxcakSQsMrvUmFP+JFX6AmCZQhcRnHcu4L1AON8wctpz9
+         o6hXmlYjDslIWF2rn0xFFL2S38QVsvpjFYMPcDBU=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
         kbuild test robot <lkp@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 122/252] PM / devfreq: rk3399_dmc: Add COMPILE_TEST and HAVE_ARM_SMCCC dependency
-Date:   Fri, 14 Feb 2020 11:09:37 -0500
-Message-Id: <20200214161147.15842-122-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 233/459] PM / devfreq: rk3399_dmc: Add COMPILE_TEST and HAVE_ARM_SMCCC dependency
+Date:   Fri, 14 Feb 2020 10:58:03 -0500
+Message-Id: <20200214160149.11681-233-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200214161147.15842-1-sashal@kernel.org>
-References: <20200214161147.15842-1-sashal@kernel.org>
+In-Reply-To: <20200214160149.11681-1-sashal@kernel.org>
+References: <20200214160149.11681-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -76,10 +76,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 6a172d338f6dc..4c4ec68b0566d 100644
+index af4a3ccb96b34..1433f2ba9d3b1 100644
 --- a/drivers/devfreq/Kconfig
 +++ b/drivers/devfreq/Kconfig
-@@ -103,7 +103,8 @@ config ARM_TEGRA_DEVFREQ
+@@ -118,7 +118,8 @@ config ARM_TEGRA20_DEVFREQ
  
  config ARM_RK3399_DMC_DEVFREQ
  	tristate "ARM RK3399 DMC DEVFREQ Driver"
@@ -90,10 +90,10 @@ index 6a172d338f6dc..4c4ec68b0566d 100644
  	select DEVFREQ_GOV_SIMPLE_ONDEMAND
  	select PM_DEVFREQ_EVENT
 diff --git a/drivers/devfreq/event/Kconfig b/drivers/devfreq/event/Kconfig
-index cd949800eed96..8851bc4e8e3e1 100644
+index cef2cf5347ca7..a53e0a6ffdfeb 100644
 --- a/drivers/devfreq/event/Kconfig
 +++ b/drivers/devfreq/event/Kconfig
-@@ -33,7 +33,7 @@ config DEVFREQ_EVENT_EXYNOS_PPMU
+@@ -34,7 +34,7 @@ config DEVFREQ_EVENT_EXYNOS_PPMU
  
  config DEVFREQ_EVENT_ROCKCHIP_DFI
  	tristate "ROCKCHIP DFI DEVFREQ event Driver"
